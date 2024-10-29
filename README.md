@@ -82,7 +82,7 @@ require:<br>
 Then you can build every lib from source code, the source code of the libs, see <a href=https://github.com/catpuppyapp/PuppyGit?tab=readme-ov-file#libs>Libs</a>
 
 ## Security
-For reduce risk of password leak, Your passwords of git repos(e.g. github) are encrypted saved in PuppyGit's database on your device, the password of password encryptor is not in this open source repo for security reason, if you want build PuppyGit by yourself, you better update the password and version to yours and dont share it for more safe (just better, not enforce and necessary):
+For reduce risk of password leak, Your passwords of git repos(e.g. github) are encrypted saved in PuppyGit's database on your device, the password of password encryptor is not in this open source repo for security reason, if you want build PuppyGit by yourself, you better update the password and version to yours and dont share it for more safe:
 - update `EncryptorImpl.kt`, set your password encryptor, or simple use default encryptor
 - set your encryptor version and password in `PassEncryptHelper.kt`, the password must enough to long and better don't make it be public
 
