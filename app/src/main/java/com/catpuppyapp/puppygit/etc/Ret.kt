@@ -82,19 +82,27 @@ class Ret<T> private constructor(initData:T){
     }
 
     companion object {
-        fun <T>createError(errMsg:String, data:T? =null, errCode:Int=ErrCode.default, exception: Exception?=null):Ret<T?> {
+        fun <T>createErrorDefaultDataNull(errMsg:String, data:T? =null, errCode:Int=ErrCode.default, exception: Exception?=null):Ret<T?> {
             return create(data, errMsg, errCode, exception)
         }
 
-        fun <T>createError(data:T? =null, errMsg:String, errCode:Int=ErrCode.default, exception: Exception?=null):Ret<T?> {
+        fun <T>createErrorDefaultDataNull(data:T? =null, errMsg:String, errCode:Int=ErrCode.default, exception: Exception?=null):Ret<T?> {
             return create(data, errMsg, errCode, exception)
         }
 
-        fun <T>createSuccess(data:T? =null, successMsg:String="", successCode:Int=SuccessCode.default):Ret<T?> {
+        fun <T>createSuccessDefaultDataNull(data:T? =null, successMsg:String="", successCode:Int=SuccessCode.default):Ret<T?> {
             return create(data, successMsg, successCode, exception=null)
         }
 
-        fun <T>create(data:T?, msg:String, code:Int, exception: Exception?):Ret<T?> {
+        fun <T>createError(data:T, errMsg:String, errCode:Int=ErrCode.default, exception: Exception?=null):Ret<T> {
+            return create(data, errMsg, errCode, exception)
+        }
+
+        fun <T>createSuccess(data:T, successMsg:String="", successCode:Int=SuccessCode.default):Ret<T> {
+            return create(data, successMsg, successCode, exception=null)
+        }
+
+        fun <T>create(data:T, msg:String, code:Int, exception: Exception?):Ret<T> {
             val r = Ret(data)
             r.data=data
             r.msg=msg
@@ -102,5 +110,7 @@ class Ret<T> private constructor(initData:T){
             r.exception=exception
             return  r
         }
+
     }
+
 }

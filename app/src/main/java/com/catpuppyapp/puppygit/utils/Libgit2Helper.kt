@@ -5622,11 +5622,11 @@ class Libgit2Helper {
         ):Ret<Oid?> {
             try {
                 if(commitMsg.isBlank()) {
-                    return Ret.createError("commit msg is empty")
+                    return Ret.createErrorDefaultDataNull("commit msg is empty")
                 }
 
                 if(targetOidStr.isBlank()) {
-                    return Ret.createError("target oid is empty")
+                    return Ret.createErrorDefaultDataNull("target oid is empty")
                 }
 
                 // reset HEAD to target
@@ -5645,7 +5645,7 @@ class Libgit2Helper {
                 )
 
             }catch (e:Exception) {
-                return Ret.createError(e.localizedMessage?:"unknown err", exception = e)
+                return Ret.createErrorDefaultDataNull(e.localizedMessage?:"unknown err", exception = e)
             }
 
         }
