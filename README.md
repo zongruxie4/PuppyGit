@@ -20,7 +20,7 @@ PuppyGit made by Bandeapart1964 of catpuppyapp
 
 
 ## Download
-<a href=https://github.com/catpuppyapp/PuppyGitPro/releases>Github Release</a>
+<a href=https://github.com/catpuppyapp/PuppyGit/releases>Github Release</a>
 
 
 ## The Difference Of "PuppyGit Pro" and "PuppyGit"
