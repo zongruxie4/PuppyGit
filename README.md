@@ -8,7 +8,7 @@ PuppyGit is A Git Client for Android, Open Source and No Ads and Free to use
 ## Author
 PuppyGit made by Bandeapart1964 of catpuppyapp
 
-### PuppyGit is a free app though, but if it helpful to you, please consider star this project and/or <a href=https://github.com/Bandeapart1964/PuppyGit/blob/main/donate.md>Donate</a>, it will help this project long live.
+### PuppyGit is a free app though, but if it helpful to you, please consider star this project and/or <a href=https://github.com/catpuppyapp/PuppyGit/blob/main/donate.md>Donate</a>, it will help this project long live.
 
 
 
@@ -20,7 +20,7 @@ PuppyGit made by Bandeapart1964 of catpuppyapp
 
 
 ## Download
-<a href=https://github.com/Bandeapart1964/PuppyGitPro/releases>Github Release</a>
+<a href=https://github.com/catpuppyapp/PuppyGitPro/releases>Github Release</a>
 
 
 ## The Difference Of PuppyGit Pro and Non-Pro
@@ -79,7 +79,7 @@ require:<br>
 - jdk 1.8 or later (oracle or openjdk or adoptjdk, should all worked as expect)
 - <a href=https://github.com/android/ndk/wiki/Changelog-r26#r26b>android ndk r26b</a>, and target abi is 'android21'
 <br>
-Then you can build every lib from source code, the source code of the libs, see <a href=https://github.com/Bandeapart1964/PuppyGit?tab=readme-ov-file#libs>Libs</a>
+Then you can build every lib from source code, the source code of the libs, see <a href=https://github.com/catpuppyapp/PuppyGit?tab=readme-ov-file#libs>Libs</a>
 
 ## Security
 For reduce risk of password leak, Your passwords of git repos(e.g. github) are encrypted saved in PuppyGit's database on your device, the password of password encryptor is not in this open source repo for security reason, if you want build PuppyGit by yourself, you better update the password and version to yours and dont share it for more safe (just better, not enforce and necessary):
@@ -90,7 +90,7 @@ note: you should not change the passwords of old versions of password encryptors
 
 
 ## Help translate
-1. Download <a href="https://github.com/Bandeapart1964/PuppyGit/blob/main/app/src/main/res/values/strings.xml">strings.xml</a>
+1. Download <a href="https://github.com/catpuppyapp/PuppyGit/blob/main/app/src/main/res/values/strings.xml">strings.xml</a>
 2. Translate the file's values to your language, e.g.```<help>help translate</help>```to```<help>帮助翻译</help>```
 3. Create a issue attaching the file you was translated, the issue should tell which language you traslated to
 

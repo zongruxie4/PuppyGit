@@ -44,7 +44,7 @@ const val authorMailLink = "mailto:$authorMail"
 const val madeBy = "Made by Bandeapart1964 of catpuppyapp"
 const val madeByLink = "https://github.com/Bandeapart1964"
 
-const val sourceCodeLink = "https://github.com/Bandeapart1964/PuppyGitPro"
+const val sourceCodeLink = "https://github.com/catpuppyapp/PuppyGit"
 const val privacyPolicyLink = "$sourceCodeLink/blob/main/PrivacyPolicy.md"
 const val discussionLink = "$sourceCodeLink/discussions"
 const val reportBugsLink = "$sourceCodeLink/issues/new"
