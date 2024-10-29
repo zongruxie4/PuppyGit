@@ -1,3 +1,7 @@
+next version :
+- support squash commits
+
+
 1.0.5.7v33 - 20241029:
 - Optimize page scroll performance
 - Editor, resolve conflict optimize: 

@@ -2043,7 +2043,18 @@ class Libgit2Helper {
          * 若想commit后清除仓库state，需自行操作，本函数不负责
          * @param indexItemList 用来生成提交信息，可不传，将自动查询index，建议如果在index页面执行commit就顺便传一下
          */
-        fun createCommit(repo: Repository, msg: String, username: String, email: String, branchFullRefName:String="", indexItemList:List<StatusTypeEntrySaver> ?= null, parents:List<Commit>? = null, amend:Boolean = false, overwriteAuthorWhenAmend:Boolean = false, cleanRepoStateIfSuccess:Boolean=false):Ret<Oid?> {
+        fun createCommit(
+            repo: Repository,
+            msg: String,
+            username: String,
+            email: String,
+            branchFullRefName:String="",
+            indexItemList:List<StatusTypeEntrySaver> ?= null,
+            parents:List<Commit>? = null,
+            amend:Boolean = false,
+            overwriteAuthorWhenAmend:Boolean = false,
+            cleanRepoStateIfSuccess:Boolean=false
+        ):Ret<Oid?> {
             val funName = "createCommit"
 
 //            println("repo.state=${repo.state()}") //test, debug
@@ -5547,6 +5558,96 @@ class Libgit2Helper {
                         it == Submodule.StatusT.WD_UNTRACKED  // submodule has untracked files
 
             } != -1
+        }
+
+        fun squashCommitsGenCommitMsg(targetOidStr:String, headOidStr:String):String {
+            return "squash ${getShortOidStrByFull(targetOidStr)}..${getShortOidStrByFull(headOidStr)}"
+        }
+
+        /**
+         * @param isShowingCommitListForHEAD  the commit history showing for HEAD or not, only true allow do squash
+         */
+        fun squashCommitsCheckBeforeShowDialog(repo: Repository, targetOidStr: String, isShowingCommitListForHEAD:Boolean):Ret<String?>  {
+            try {
+                // check the history is showing for HEAD or not
+                if(!isShowingCommitListForHEAD) {
+                    return Ret.createError(null, "squash only available for Current Branch or Detached HEAD")
+                }
+
+                // check repo state
+                if(repo.state() != Repository.StateT.NONE) {
+                    return Ret.createError(null, "repo state is not NONE")
+                }
+
+                //check commit
+                val headCommitRet = resolveCommitByHashOrRef(repo, "HEAD")
+                if(headCommitRet.hasError()) {
+                    return Ret.createError(null, headCommitRet.msg, headCommitRet.code, headCommitRet.exception)
+                }
+
+                val headCommit = headCommitRet.data!!
+                if(targetOidStr == headCommit.id().toString()) {
+                    return Ret.createError(null, "can't squash HEAD to HEAD")
+                }
+
+                return Ret.createSuccess(null)
+            }catch (e:Exception) {
+                return Ret.createError(null, e.localizedMessage?:"err", exception = e)
+            }
+
+        }
+
+        fun squashCommitsCheckBeforeExecute(repo: Repository, makeSureIndexIsClean:Boolean):Ret<String?>  {
+            try {
+                if(makeSureIndexIsClean && indexIsEmpty(repo).not()) {
+                    return Ret.createError(null, "index dirty")
+                }
+
+                return Ret.createSuccess(null)
+            }catch (e:Exception) {
+                return Ret.createError(null, e.localizedMessage?:"err", exception = e)
+            }
+        }
+
+        /**
+         * soft reset HEAD to targetOidStr, then create a commit
+         */
+        fun squashCommits(
+            repo: Repository,
+            targetOidStr:String,
+            commitMsg: String,
+            username: String,
+            email: String,
+            currentBranchNameOrHEAD: String // current branch name, or "HEAD"(when detached or first commit)
+        ):Ret<Oid?> {
+            try {
+                if(commitMsg.isBlank()) {
+                    return Ret.createError("commit msg is empty")
+                }
+
+                if(targetOidStr.isBlank()) {
+                    return Ret.createError("target oid is empty")
+                }
+
+                // reset HEAD to target
+                val resetRet = resetToRevspec(repo, targetOidStr, Reset.ResetT.SOFT)
+                if(resetRet.hasError()) {
+                    return resetRet.copyWithNewData()
+                }
+
+                //create a new commit
+                return createCommit(
+                    repo=repo,
+                    msg=commitMsg,
+                    username=username,
+                    email=email,
+                    branchFullRefName=currentBranchNameOrHEAD,
+                )
+
+            }catch (e:Exception) {
+                return Ret.createError(e.localizedMessage?:"unknown err", exception = e)
+            }
+
         }
 
 
