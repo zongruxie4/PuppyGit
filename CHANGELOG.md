@@ -1,10 +1,12 @@
 next version :
 - maybe will support termux git cli, I have no any test for now, if possible, it will be able access git cli provide by termux in puppy git
 
+1.0.5.8v34 - 20241030:
+- support squash commits
+- Improve view differences performance, now very fast
+
 
 1.0.5.7v33 - 20241029:
-- support squash commits
-- Improve view difference performance, now very fast
 - Optimize page scroll performance
 - Editor, resolve conflict optimize: 
   - ours/theirs now has background color
