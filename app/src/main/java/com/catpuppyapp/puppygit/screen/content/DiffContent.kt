@@ -227,51 +227,58 @@ fun DiffContent(
 
             //数据结构是一个hunk header N 个行
             diffItem.value.hunks.forEachIndexed { index, hunkAndLines: PuppyHunkAndLines ->
-                item{
-                    if(fileChangeTypeIsModified && proFeatureEnabled(detailsDiffTestPassed)) {  //增量diff
-                        if(!settings.diff.groupDiffContentByLineNum || FlagFileName.flagFileExist(FlagFileName.disableGroupDiffContentByLineNum)) {
-                            //this method need use some caches, clear them before iterate lines
-                            //这种方式需要使用缓存，每次遍历lines前都需要先清下缓存，否则可能多显示或少显示某些行
-                            hunkAndLines.clearCachesForShown()
+                if(fileChangeTypeIsModified && proFeatureEnabled(detailsDiffTestPassed)) {  //增量diff
+                    if(!settings.diff.groupDiffContentByLineNum || FlagFileName.flagFileExist(FlagFileName.disableGroupDiffContentByLineNum)) {
+                        //this method need use some caches, clear them before iterate lines
+                        //这种方式需要使用缓存，每次遍历lines前都需要先清下缓存，否则可能多显示或少显示某些行
+                        hunkAndLines.clearCachesForShown()
 
-                            hunkAndLines.lines.forEach printLine@{ line: PuppyLine ->
-                                //若非 新增行、删除行、上下文 ，不显示
-                                if (line.originType != Diff.Line.OriginType.ADDITION.toString()
-                                    && line.originType != Diff.Line.OriginType.DELETION.toString()
-                                    && line.originType != Diff.Line.OriginType.CONTEXT.toString()
-                                ) {
-                                    return@printLine
-                                }
+                        hunkAndLines.lines.forEach printLine@{ line: PuppyLine ->
+                            //若非 新增行、删除行、上下文 ，不显示
+                            if (line.originType != Diff.Line.OriginType.ADDITION.toString()
+                                && line.originType != Diff.Line.OriginType.DELETION.toString()
+                                && line.originType != Diff.Line.OriginType.CONTEXT.toString()
+                            ) {
+                                return@printLine
+                            }
 
-                                val mergeAddDelLineResult = hunkAndLines.needShowAddOrDelLineAsContext(line.lineNum)
-                                // ignore which lines has ADD and DEL 2 types, but only difference at has '\n' or has not
-                                if(mergeAddDelLineResult.needShowAsContext) {
-                                    // 合并只有末尾是否有换行符的添加和删除行为context等于显示一个没修改的行，既然没修改，直接不显示不就行了？反正本来就自带context，顶多差一行
-                                    if(mergeAddDelLineResult.data!=null) {  // now showed this line before, show it
+                            val mergeAddDelLineResult = hunkAndLines.needShowAddOrDelLineAsContext(line.lineNum)
+                            // ignore which lines has ADD and DEL 2 types, but only difference at has '\n' or has not
+                            if(mergeAddDelLineResult.needShowAsContext) {
+                                // 合并只有末尾是否有换行符的添加和删除行为context等于显示一个没修改的行，既然没修改，直接不显示不就行了？反正本来就自带context，顶多差一行
+                                if(mergeAddDelLineResult.data!=null) {  // now showed this line before, show it
+                                    item {
                                         DiffRow(
                                             //随便拷贝下del或add（不拷贝只改类型也行但不推荐以免有坏影响）把类型改成context，就行了
                                             line = mergeAddDelLineResult.data,
                                             fileFullPath=fileFullPath
                                         )
-                                    }
 
-                                    return@printLine
+                                    }
                                 }
 
+                                return@printLine
+                            }
 
-                                if(line.originType == Diff.Line.OriginType.CONTEXT.toString()) {
+
+                            if(line.originType == Diff.Line.OriginType.CONTEXT.toString()) {
+                                item {
                                     DiffRow(
                                         line = line,
                                         fileFullPath=fileFullPath
                                     )
-                                }else {  // add or del
-                                    val modifyResult = hunkAndLines.getModifyResult(line.lineNum, requireBetterMatchingForCompare.value)
-                                    if(modifyResult == null || !modifyResult.matched) {
+                                }
+                            }else {  // add or del
+                                val modifyResult = hunkAndLines.getModifyResult(line.lineNum, requireBetterMatchingForCompare.value)
+                                if(modifyResult == null || !modifyResult.matched) {
+                                    item {
                                         DiffRow(
                                             line = line,
                                             fileFullPath=fileFullPath
                                         )
-                                    }else{  // matched
+                                    }
+                                }else{  // matched
+                                    item {
                                         DiffRow(
                                             line = line,
                                             fileFullPath=fileFullPath,
@@ -279,88 +286,106 @@ fun DiffContent(
                                         )
                                     }
                                 }
-
                             }
-                        }else {  // grouped lines by line num
 
-                            hunkAndLines.groupedLines.forEach printLine@{ (_lineNum:Int, lines:HashMap<String, PuppyLine>) ->
-                                //若非 新增行、删除行、上下文 ，不显示
-                                if (!(lines.contains(Diff.Line.OriginType.ADDITION.toString())
-                                      || lines.contains(Diff.Line.OriginType.DELETION.toString())
-                                      || lines.contains(Diff.Line.OriginType.CONTEXT.toString())
-                                     )
-                                ) {
-                                    return@printLine
-                                }
+                        }
+                    }else {  // grouped lines by line num
 
-                                val add = lines.get(Diff.Line.OriginType.ADDITION.toString())
-                                val del = lines.get(Diff.Line.OriginType.DELETION.toString())
-                                val context = lines.get(Diff.Line.OriginType.CONTEXT.toString())
+                        hunkAndLines.groupedLines.forEach printLine@{ (_lineNum:Int, lines:HashMap<String, PuppyLine>) ->
+                            //若非 新增行、删除行、上下文 ，不显示
+                            if (!(lines.contains(Diff.Line.OriginType.ADDITION.toString())
+                                  || lines.contains(Diff.Line.OriginType.DELETION.toString())
+                                  || lines.contains(Diff.Line.OriginType.CONTEXT.toString())
+                                 )
+                            ) {
+                                return@printLine
+                            }
 
-                                //若 context del add同时存在，打印顺序为 context/del/add，不过不太可能3个同时存在，顶多两个同时存在
+                            val add = lines.get(Diff.Line.OriginType.ADDITION.toString())
+                            val del = lines.get(Diff.Line.OriginType.DELETION.toString())
+                            val context = lines.get(Diff.Line.OriginType.CONTEXT.toString())
 
-                                if(context!=null) {
+                            //若 context del add同时存在，打印顺序为 context/del/add，不过不太可能3个同时存在，顶多两个同时存在
+
+                            if(context!=null) {
+                                item {
                                     //打印context
                                     DiffRow(
                                         line = context,
                                         fileFullPath=fileFullPath
                                     )
                                 }
+                            }
 
-                                if(add!=null && del!=null) {  //同样行号，同时存在删除和新增，执行增量diff
-                                    //解决：两行除了末尾换行符没任何区别的情况仍显示diff的bug（有红有绿但没区别，令人迷惑）
-                                    if(add.content.removeSuffix("\n").equals(del.content.removeSuffix("\n"))){
+                            if(add!=null && del!=null) {  //同样行号，同时存在删除和新增，执行增量diff
+                                //解决：两行除了末尾换行符没任何区别的情况仍显示diff的bug（有红有绿但没区别，令人迷惑）
+                                if(add.content.removeSuffix("\n").equals(del.content.removeSuffix("\n"))){
+                                    item {
                                         DiffRow(
                                             //随便拷贝下del或add（不拷贝只改类型也行但不推荐以免有坏影响）把类型改成context，就行了
                                             line = del.copy(originType = Diff.Line.OriginType.CONTEXT.toString()),
                                             fileFullPath=fileFullPath
                                         )
 
-                                    }else {
+                                    }
 
-                                        val modifyResult2 =
-                                            SimilarCompare.INSTANCE.doCompare(
-                                                StringCompareParam(add.content),
-                                                StringCompareParam(del.content),
+                                }else {
 
-                                                //为true则对比更精细，但是，时间复杂度乘积式增加，不开 O(n)， 开了 O(nm)
-                                                requireBetterMatching = requireBetterMatchingForCompare.value
-                                            )
+                                    val modifyResult2 =
+                                        SimilarCompare.INSTANCE.doCompare(
+                                            StringCompareParam(add.content),
+                                            StringCompareParam(del.content),
 
-                                        if(modifyResult2.matched) {
+                                            //为true则对比更精细，但是，时间复杂度乘积式增加，不开 O(n)， 开了 O(nm)
+                                            requireBetterMatching = requireBetterMatchingForCompare.value
+                                        )
+
+                                    if(modifyResult2.matched) {
+                                        item {
                                             DiffRow(
                                                 line = del,
                                                 stringPartList = modifyResult2.del,
                                                 fileFullPath=fileFullPath
 
                                             )
+                                        }
+
+                                        item {
                                             DiffRow(
                                                 line = add,
                                                 stringPartList = modifyResult2.add,
                                                 fileFullPath=fileFullPath
 
                                             )
+                                        }
 
-                                        }else {
-                                            // 直接使用addContent和delContent即可，不用遍历数组，虽然遍历数组也行，但直接使用字符串性能会稍微好一丢丢
+                                    }else {
+                                        // 直接使用addContent和delContent即可，不用遍历数组，虽然遍历数组也行，但直接使用字符串性能会稍微好一丢丢
+                                        item {
                                             DiffRow(
                                                 line = del,
                                                 fileFullPath=fileFullPath
                                             )
+                                        }
+                                        item {
                                             DiffRow(
                                                 line = add,
                                                 fileFullPath=fileFullPath
                                             )
                                         }
                                     }
-                                }else{ //有一个为null，不用对比
-                                    if(del!=null) {
+                                }
+                            }else{ //有一个为null，不用对比
+                                if(del!=null) {
+                                    item {
                                         DiffRow(
                                             line = del,
                                             fileFullPath=fileFullPath
                                         )
                                     }
-                                    if(add!=null) {
+                                }
+                                if(add!=null) {
+                                    item {
                                         DiffRow(
                                             line = add,
                                             fileFullPath=fileFullPath
@@ -368,14 +393,15 @@ fun DiffContent(
                                     }
                                 }
                             }
-
                         }
 
+                    }
 
 
-                    }else { //普通预览，非pro或关闭细节compare时走这里
 
-                        //libgit2 1.7.1 header末尾会加上下一行的内容，有点问题，暂时不显示header了，以后考虑要不要显示
+                }else { //普通预览，非pro或关闭细节compare时走这里
+
+                    //libgit2 1.7.1 header末尾会加上下一行的内容，有点问题，暂时不显示header了，以后考虑要不要显示
 //                if (it.hunk.header.isNotBlank()) {
 //                    val color = Color.Gray
 //                    Row(
@@ -398,13 +424,14 @@ fun DiffContent(
 ////                    println("hunkheader:::::"+hal.hunk!!.header)
 //                    }
 //                }
-                        //遍历行
-                        hunkAndLines.lines.forEach printLine@{ line: PuppyLine ->
-                            //若非 新增行、删除行、上下文 ，不显示
-                            if (line.originType == Diff.Line.OriginType.ADDITION.toString()
-                                || line.originType == Diff.Line.OriginType.DELETION.toString()
-                                || line.originType == Diff.Line.OriginType.CONTEXT.toString()
-                            ) {
+                    //遍历行
+                    hunkAndLines.lines.forEach printLine@{ line: PuppyLine ->
+                        //若非 新增行、删除行、上下文 ，不显示
+                        if (line.originType == Diff.Line.OriginType.ADDITION.toString()
+                            || line.originType == Diff.Line.OriginType.DELETION.toString()
+                            || line.originType == Diff.Line.OriginType.CONTEXT.toString()
+                        ) {
+                            item {
                                 DiffRow(
                                     line = line,
                                     fileFullPath=fileFullPath
@@ -412,21 +439,25 @@ fun DiffContent(
                             }
                         }
                     }
+                }
 
 
-                    //EOF_NL only appear at last hunk, so better check index avoid non-sense iterate
-                    if(index == lastIndex) {
-                        // if delete EOFNL or add EOFNL , show it
-                        val indexOfEOFNL = hunkAndLines.lines.indexOfFirst { it.originType ==  Diff.Line.OriginType.ADD_EOFNL.toString() || it.originType ==  Diff.Line.OriginType.DEL_EOFNL.toString()}
-                        if(indexOfEOFNL != -1) {  // found originType EOFNL
-                            val eofLine = hunkAndLines.lines.get(indexOfEOFNL)
+                //EOF_NL only appear at last hunk, so better check index avoid non-sense iterate
+                if(index == lastIndex) {
+                    // if delete EOFNL or add EOFNL , show it
+                    val indexOfEOFNL = hunkAndLines.lines.indexOfFirst { it.originType ==  Diff.Line.OriginType.ADD_EOFNL.toString() || it.originType ==  Diff.Line.OriginType.DEL_EOFNL.toString()}
+                    if(indexOfEOFNL != -1) {  // found originType EOFNL
+                        val eofLine = hunkAndLines.lines.get(indexOfEOFNL)
+                        item {
                             DiffRow(
                                 line = LineNum.EOF.transLineToEofLine(eofLine, add = eofLine.originType ==  Diff.Line.OriginType.ADD_EOFNL.toString()),
                                 fileFullPath=fileFullPath
                             )
                         }
                     }
+                }
 
+                item {
                     //每个hunk之间显示个分割线
                     HorizontalDivider(
                         modifier = Modifier.padding(vertical = 30.dp),

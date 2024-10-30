@@ -3,6 +3,7 @@ next version :
 
 
 1.0.5.7v33 - 20241029:
+- Improve view difference performance, now very fast
 - Optimize page scroll performance
 - Editor, resolve conflict optimize: 
   - ours/theirs now has background color
