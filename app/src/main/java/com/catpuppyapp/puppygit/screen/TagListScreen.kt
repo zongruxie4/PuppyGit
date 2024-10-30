@@ -774,8 +774,8 @@ fun TagListScreen(
                         val fullOidKey:String = Cache.setThenReturnKey(it.targetFullOidStr)
                         val shortBranchNameKey:String = Cache.setThenReturnKey(it.shortName)  //actually is "tag name" at here
                         val useFullOid = "1"
-                        val isCurrent = "0"
-                        navController.navigate(Cons.nav_CommitListScreen + "/" + repoId +"/" +useFullOid + "/" + fullOidKey +"/" +shortBranchNameKey +"/" +isCurrent)
+                        val isHEAD = "0"
+                        navController.navigate(Cons.nav_CommitListScreen + "/" + repoId +"/" +useFullOid + "/" + fullOidKey +"/" +shortBranchNameKey +"/"+ isHEAD)
                     }
                 }
 

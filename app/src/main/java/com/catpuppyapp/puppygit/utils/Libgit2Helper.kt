@@ -23,6 +23,7 @@ import com.catpuppyapp.puppygit.git.PuppyHunkAndLines
 import com.catpuppyapp.puppygit.git.PuppyLine
 import com.catpuppyapp.puppygit.git.ReflogEntryDto
 import com.catpuppyapp.puppygit.git.RemoteAndCredentials
+import com.catpuppyapp.puppygit.git.SquashData
 import com.catpuppyapp.puppygit.git.StashDto
 import com.catpuppyapp.puppygit.git.StatusTypeEntrySaver
 import com.catpuppyapp.puppygit.git.SubmoduleDto
@@ -1838,6 +1839,7 @@ class Libgit2Helper {
         }
 
         /**
+         * get username and email from repo, if repo not set, try get from global git config, else return empty string
          * @return Pair(username, email)
          */
         fun getGitUsernameAndEmail(repo: Repository):Pair<String, String> {
@@ -3417,6 +3419,26 @@ class Libgit2Helper {
             }
         }
 
+        /**
+         * @param tryResolveRefToDirect this only make difference when Reference pointed to a symbolic target
+         */
+        fun resolveRefByName2(
+            repo:Repository,
+            refNameShortOrFull:String,
+            trueUseDwimFalseUseLookup:Boolean=true,
+            tryResolveRefToDirect:Boolean=true
+        ):Ret<Reference?> {
+            try {
+//                MyLog.d(TAG, "#resolveRefByNameRetVersion(refNameShortOrFull=$refNameShortOrFull, trueUseDwimFalseUseLookup=$trueUseDwimFalseUseLookup)")
+
+                //注：如果使用lookup必须全名查找，例如refs/heads/main 或 refs/remotes/origin/main，而且lookup不会解引用对象，如果ref是个符号引用(symbolic reference)，就会返回一个符号引用
+                val ref = if(trueUseDwimFalseUseLookup) Reference.dwim(repo, refNameShortOrFull) else Reference.lookup(repo, refNameShortOrFull)
+                return Ret.createSuccess(if(tryResolveRefToDirect) ref?.resolve() else ref)  //resolve reference to direct ref, direct ref is point to commit, no symbolicTarget
+            }catch (e:Exception) {
+                return Ret.createError(null, e.localizedMessage ?:"err", exception = e)
+            }
+        }
+
         fun resolveGitObject(repo:Repository, targetOid:Oid, type:GitObject.Type):GitObject? {
             try {
                 val gitObj = GitObject.lookup(repo, targetOid, type)
@@ -4719,6 +4741,26 @@ class Libgit2Helper {
             }
         }
 
+        /**
+         * @return if success, return Ret success and non-null Oid; else return err and null data and err msg, and exception(if have)
+         */
+        fun resolveCommitOidByRef2(repo:Repository, shortOrFullRefSpec:String):Ret<Oid?> {
+            try {
+                val ref = resolveRefByName(repo, shortOrFullRefSpec)
+                val cid = ref?.peel(GitObject.Type.COMMIT)?.id()
+
+                if(cid==null) {
+                    return Ret.createError(null, "resolved commit oid is null")
+                }
+
+                return Ret.createSuccess(cid)
+            }catch (e:Exception) {
+//                MyLog.e(TAG, "#resolveCommitOidByRef() error, params are (shortOrFullRefSpec=$shortOrFullRefSpec}),\nerr is:"+e.stackTraceToString())
+
+                return Ret.createError(null, e.localizedMessage ?:"err", exception = e)
+            }
+        }
+
         fun resolveCommitByRef(repo:Repository, shortOrFullRefSpec:String):Commit? {
             try {
                 val cid = resolveCommitOidByRef(repo, shortOrFullRefSpec)
@@ -5560,14 +5602,14 @@ class Libgit2Helper {
             } != -1
         }
 
-        fun squashCommitsGenCommitMsg(targetOidStr:String, headOidStr:String):String {
-            return "squash ${getShortOidStrByFull(targetOidStr)}..${getShortOidStrByFull(headOidStr)}"
+        fun squashCommitsGenCommitMsg(targetShortOidStr:String, headShortOidStr:String):String {
+            return "squash: ${targetShortOidStr}..${headShortOidStr}"
         }
 
         /**
          * @param isShowingCommitListForHEAD  the commit history showing for HEAD or not, only true allow do squash
          */
-        fun squashCommitsCheckBeforeShowDialog(repo: Repository, targetOidStr: String, isShowingCommitListForHEAD:Boolean):Ret<String?>  {
+        fun squashCommitsCheckBeforeShowDialog(repo: Repository, targetFullOidStr: String, isShowingCommitListForHEAD:Boolean):Ret<SquashData?>  {
             try {
                 // check the history is showing for HEAD or not
                 if(!isShowingCommitListForHEAD) {
@@ -5579,27 +5621,44 @@ class Libgit2Helper {
                     return Ret.createError(null, "repo state is not NONE")
                 }
 
-                //check commit
-                val headCommitRet = resolveCommitByHashOrRef(repo, "HEAD")
-                if(headCommitRet.hasError()) {
-                    return Ret.createError(null, headCommitRet.msg, headCommitRet.code, headCommitRet.exception)
+                val (username, email) = getGitUsernameAndEmail(repo)
+                if(username.isBlank() || email.isBlank()) {
+                    return Ret.createErrorDefaultDataNull("plz set git username and email first")
                 }
 
-                val headCommit = headCommitRet.data!!
-                if(targetOidStr == headCommit.id().toString()) {
+                //check commit
+                val headRefRet = resolveRefByName2(repo, "HEAD")
+                if(headRefRet.hasError()) {
+                    return headRefRet.copyWithNewData()
+                }
+
+                val headRef = headRefRet.data!!
+                val headFullOid = headRef.peel(GitObject.Type.COMMIT)?.id()?.toString()
+                if(headFullOid==null) {
+                    return Ret.createError(null, "resolve head oid failed")
+                }
+
+                if(targetFullOidStr == headFullOid) {
                     return Ret.createError(null, "can't squash HEAD to HEAD")
                 }
 
-                return Ret.createSuccess(null)
+                return Ret.createSuccess(
+                    SquashData(
+                        username = username,
+                        email = email,
+                        headFullOid = headFullOid,
+                        headFullName = headRef.name()
+                    )
+                )
             }catch (e:Exception) {
                 return Ret.createError(null, e.localizedMessage?:"err", exception = e)
             }
 
         }
 
-        fun squashCommitsCheckBeforeExecute(repo: Repository, makeSureIndexIsClean:Boolean):Ret<String?>  {
+        fun squashCommitsCheckBeforeExecute(repo: Repository, force:Boolean):Ret<String?>  {
             try {
-                if(makeSureIndexIsClean && indexIsEmpty(repo).not()) {
+                if(!force && !indexIsEmpty(repo)) {
                     return Ret.createError(null, "index dirty")
                 }
 
@@ -5610,27 +5669,27 @@ class Libgit2Helper {
         }
 
         /**
-         * soft reset HEAD to targetOidStr, then create a commit
+         * soft reset HEAD to targetFullOidStr, then create a commit
          */
         fun squashCommits(
             repo: Repository,
-            targetOidStr:String,
+            targetFullOidStr:String,
             commitMsg: String,
             username: String,
             email: String,
-            currentBranchNameOrHEAD: String // current branch name, or "HEAD"(when detached or first commit)
+            currentBranchFullNameOrHEAD: String // current branch name, or "HEAD"(when detached or first commit)
         ):Ret<Oid?> {
             try {
                 if(commitMsg.isBlank()) {
                     return Ret.createErrorDefaultDataNull("commit msg is empty")
                 }
 
-                if(targetOidStr.isBlank()) {
+                if(targetFullOidStr.isBlank()) {
                     return Ret.createErrorDefaultDataNull("target oid is empty")
                 }
 
                 // reset HEAD to target
-                val resetRet = resetToRevspec(repo, targetOidStr, Reset.ResetT.SOFT)
+                val resetRet = resetToRevspec(repo, targetFullOidStr, Reset.ResetT.SOFT)
                 if(resetRet.hasError()) {
                     return resetRet.copyWithNewData()
                 }
@@ -5641,7 +5700,7 @@ class Libgit2Helper {
                     msg=commitMsg,
                     username=username,
                     email=email,
-                    branchFullRefName=currentBranchNameOrHEAD,
+                    branchFullRefName=currentBranchFullNameOrHEAD,
                 )
 
             }catch (e:Exception) {

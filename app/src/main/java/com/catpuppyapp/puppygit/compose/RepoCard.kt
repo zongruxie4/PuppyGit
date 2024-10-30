@@ -412,9 +412,9 @@ fun RepoCard(
                                 val fullOidKey:String = Cache.setThenReturnKey("")  //这里不需要传分支名，会通过HEAD解析当前分支
                                 val shortBranchNameKey = fullOidKey  //这里用不到这个值，所以没必要创建那么多key，都用一个关联无效value的key就行了
                                 val useFullOid = "0"
-                                val isCurrent = "0"
+                                val isHEAD= "1"
                                 //注：如果fullOidKey传null，会变成字符串 "null"，然后查不出东西，返回空字符串，与其在导航组件取值时做处理，不如直接传空字符串，不做处理其实也行，只要“null“作为cache key取不出东西就行，但要是不做处理万一字符串"null"作为cache key能查出东西，就歇菜了，总之，走正常流程取得有效cache key，cache value传空字符串，即可
-                                navController.navigate(Cons.nav_CommitListScreen + "/" + repoDto.id + "/" + useFullOid + "/" + fullOidKey +"/"+shortBranchNameKey +"/" +isCurrent)
+                                navController.navigate(Cons.nav_CommitListScreen + "/" + repoDto.id + "/" + useFullOid + "/" + fullOidKey +"/"+shortBranchNameKey +"/"+isHEAD)
                             },
                             fontWeight = FontWeight.Light
 

@@ -1549,8 +1549,8 @@ fun BranchListScreen(
                 val fullOidKey:String = Cache.setThenReturnKey(it.oidStr)
                 val shortBranchNameKey:String = Cache.setThenReturnKey(it.shortName)
                 val useFullOid = "1"
-                val isCurrent = if(it.isCurrent) "1" else "0"
-                navController.navigate(Cons.nav_CommitListScreen + "/" + repoId +"/" +useFullOid + "/" + fullOidKey +"/" +shortBranchNameKey +"/" +isCurrent)
+                val isHEAD = if(it.isCurrent) "1" else "0"
+                navController.navigate(Cons.nav_CommitListScreen + "/" + repoId +"/" +useFullOid + "/" + fullOidKey +"/" +shortBranchNameKey + "/" + isHEAD)
             }
 
             HorizontalDivider()

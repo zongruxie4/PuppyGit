@@ -92,13 +92,13 @@ fun AppScreenNavigator() {
             Profile(navController, backStackEntry.arguments?.getString("userId"))
             }
          */
-        composable(Cons.nav_CommitListScreen + "/{repoId}/{useFullOid}/{fullOidKey}/{shortBranchNameKey}/{isCurrent}") {
+        composable(Cons.nav_CommitListScreen + "/{repoId}/{useFullOid}/{fullOidKey}/{shortBranchNameKey}/{isHEAD}") {
             CommitListScreen(
                 repoId = it.arguments?.getString("repoId")?:"",
                 useFullOid = it.arguments?.getString("useFullOid") != "0",  //非0就为真
                 fullOidKey = it.arguments?.getString("fullOidKey")?:"",
                 shortBranchNameKey = it.arguments?.getString("shortBranchNameKey")?:"",
-                isCurrent = it.arguments?.getString("isCurrent") != "0",
+                isHEAD = it.arguments?.getString("isHEAD") != "0",
                 naviUp = { navController.navigateUp() },
             )
         }

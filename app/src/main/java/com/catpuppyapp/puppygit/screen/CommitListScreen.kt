@@ -18,6 +18,7 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Close
+import androidx.compose.material.icons.filled.Error
 import androidx.compose.material.icons.filled.FilterAlt
 import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.material.icons.filled.MoveToInbox
@@ -26,6 +27,7 @@ import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.HorizontalDivider
+import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
@@ -113,6 +115,7 @@ import com.catpuppyapp.puppygit.utils.replaceStringResList
 import com.catpuppyapp.puppygit.utils.state.mutableCustomStateListOf
 import com.catpuppyapp.puppygit.utils.state.mutableCustomStateOf
 import com.catpuppyapp.puppygit.utils.withMainContext
+import com.github.git24j.core.GitObject
 import com.github.git24j.core.Oid
 import com.github.git24j.core.Repository
 import com.github.git24j.core.Revwalk
@@ -140,10 +143,21 @@ fun CommitListScreen(
 //    homeTopBarScrollBehavior: TopAppBarScrollBehavior,
     repoId: String,
 
+
+
     useFullOid:Boolean,
     fullOidKey:String,
     shortBranchNameKey:String,
-    isCurrent:Boolean, // HEAD是否指向当前分支
+//    isCurrent:Boolean, // HEAD是否指向当前分支
+
+    /*
+        `isHEAD` indicate this page is loaded commit history for the HEAD
+        only 3 places this value should be true:
+         1 from RepoCard
+         2 non-detached HEAD and from current branch of branch list
+         3 from ChangeList
+     */
+    isHEAD:Boolean,
 
     naviUp: () -> Boolean,
 ) {
@@ -197,6 +211,15 @@ fun CommitListScreen(
         initValue = Cons.allZeroOid
     )
 
+    /*
+        first oid in the list of this screen
+     */
+    val headOidOfThisScreen = mutableCustomStateOf<Oid>(
+        keyTag = stateKeyTag,
+        keyName = "headOidOfThisScreen",
+        initValue = Cons.allZeroOid
+    )
+
     //这个页面的滚动状态不用记住，每次点开重置也无所谓
     val listState = rememberLazyListState()
     //如果再多几个"mode"，就改用字符串判断，直接把mode含义写成常量
@@ -204,8 +227,8 @@ fun CommitListScreen(
     val showDiffCommitDialog = rememberSaveable { mutableStateOf(false)}
     val isSearchingMode = rememberSaveable { mutableStateOf(false)}
     val isShowSearchResultMode = rememberSaveable { mutableStateOf(false)}
-    val searchKeyword = rememberSaveable { mutableStateOf( "")}
-    val repoOnBranchOrDetachedHash = rememberSaveable { mutableStateOf( "")}
+//    val searchKeyword = rememberSaveable { mutableStateOf("")}
+    val repoOnBranchOrDetachedHash = rememberSaveable { mutableStateOf("")}
     val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = MyStyleKt.BottomSheet.skipPartiallyExpanded)
     val showBottomSheet = rememberSaveable { mutableStateOf(false)}
 //    val curCommit = rememberSaveable{ mutableStateOf(CommitDto()) }
@@ -299,7 +322,7 @@ fun CommitListScreen(
                 loadMoreText.value = appContext.getString(R.string.loading)
 
                 try {
-                    if (firstLoad || repositoryForRevWalk.value==null || revwalk.value==null) {
+                    if (firstLoad || forceReload || repositoryForRevWalk.value==null || revwalk.value==null) {
                         // do reset: clear list and release old repo instance
                         //如果是第一次加载或刷新页面（重新初始化页面），清下列表
                         // if is first load or refresh page, clear list
@@ -373,44 +396,171 @@ fun CommitListScreen(
     }
 
     val clipboardManager = LocalClipboardManager.current
-    val showViewDialog = rememberSaveable { mutableStateOf(false)}
-    val viewDialogText = rememberSaveable { mutableStateOf("")}
-    val viewDialogTitle = rememberSaveable { mutableStateOf("")}
 
-    val requireShowViewDialog = { title: String, text: String ->
-        viewDialogTitle.value = title
-        viewDialogText.value = text
-        showViewDialog.value = true
+    val showSquashDialog = rememberSaveable { mutableStateOf(false)}
+    val forceSquash = rememberSaveable { mutableStateOf(false)}
+    val headFullNameForSquashDialog = rememberSaveable { mutableStateOf("")} // branch full name or HEAD
+    val headCommitFullOidForSquashDialog = rememberSaveable { mutableStateOf("")}
+    val headCommitShortOidForSquashDialog = rememberSaveable { mutableStateOf("")}
+    val targetCommitFullOidForSquashDialog = rememberSaveable { mutableStateOf("")}
+    val targetCommitShortOidForSquashDialog = rememberSaveable { mutableStateOf("")}
+    val commitMsgForSquashDialog = rememberSaveable { mutableStateOf("")}
+    val usernameForSquashDialog = rememberSaveable { mutableStateOf("")}
+    val emailForSquashDialog = rememberSaveable { mutableStateOf("")}
+    val closeSquashDialog = {
+        showSquashDialog.value = false
+    }
+    val initShowSquashDialog = {targetFullOid:String, targetShortOid:String, headFullOid:String, headFullName:String, username:String, email:String->
+        headFullNameForSquashDialog.value = headFullName
+
+        headCommitFullOidForSquashDialog.value= headFullOid
+        headCommitShortOidForSquashDialog.value = Libgit2Helper.getShortOidStrByFull(headFullOid)
+
+        targetCommitFullOidForSquashDialog.value = targetFullOid
+        targetCommitShortOidForSquashDialog.value = targetShortOid
+
+        commitMsgForSquashDialog.value = Libgit2Helper.squashCommitsGenCommitMsg(targetShortOid, headCommitShortOidForSquashDialog.value)
+
+        usernameForSquashDialog.value = username
+        emailForSquashDialog.value = email
+
+        forceSquash.value = false
+
+        showSquashDialog.value = true
     }
 
-    if (showViewDialog.value) {
-        ConfirmDialog(
-            title = viewDialogTitle.value,
+    if(showSquashDialog.value) {
+        ConfirmDialog2(
+            title = stringResource(R.string.squash),
             requireShowTextCompose = true,
             textCompose = {
-                Column(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .verticalScroll(rememberScrollState())
-                ) {
-                    Text(
-                        text = viewDialogText.value
+                ScrollableColumn {
+                    Text(replaceStringResList(stringResource(R.string.squash_commits_not_include_the_left_commit), listOf(targetCommitShortOidForSquashDialog.value, headCommitShortOidForSquashDialog.value)))
+
+                    Spacer(Modifier.height(15.dp))
+
+                    TextField(
+                        modifier = Modifier.fillMaxWidth(),
+                        isError = commitMsgForSquashDialog.value.isBlank(),
+                        trailingIcon = {
+                            if (commitMsgForSquashDialog.value.isBlank()) {
+                                Icon(
+                                    imageVector=Icons.Filled.Error,
+                                    contentDescription=null,
+                                    tint = MaterialTheme.colorScheme.error
+                                )
+                            }
+                        },
+                        value = commitMsgForSquashDialog.value,
+                        onValueChange = {
+                            commitMsgForSquashDialog.value = it
+                        },
+                        label = {
+                            Text(stringResource(R.string.commit_message))
+                        },
+                        placeholder = {
+                            Text(stringResource(R.string.input_your_commit_message))
+                        }
                     )
+                    Spacer(Modifier.height(10.dp))
+
+                    MyCheckBox(stringResource(R.string.force), forceSquash)
+
+                    if(forceSquash.value) {
+                        Text(stringResource(R.string.if_index_contains_uncommitted_changes_will_commit_as_well), fontWeight = FontWeight.ExtraBold, color = MyStyleKt.TextColor.danger)
+                    }
+
                 }
             },
-            cancelBtnText = stringResource(id = R.string.close),
-            okBtnText = stringResource(id = R.string.copy),
-            onCancel = {
-                showViewDialog.value = false
+            okBtnEnabled = commitMsgForSquashDialog.value.isNotBlank(),
+            onCancel = closeSquashDialog
+        ) {
+            closeSquashDialog()
+            val commitMsg = commitMsgForSquashDialog.value
+            val targetFullOid = targetCommitFullOidForSquashDialog.value
+//            val headOid = headCommitFullOidForSquashDialog.value
+            val headFullName = headFullNameForSquashDialog.value
+            val username = usernameForSquashDialog.value
+            val email = emailForSquashDialog.value
 
+//            println("ffffffffffffffff-headFullName = $headFullName")  // same with expect: when detached show "HEAD", else show current branche name
+
+            doJobThenOffLoading(loadingOn, loadingOff, appContext.getString(R.string.loading)) job@{
+                try {
+                    Repository.open(curRepo.value.fullSavePath).use { repo->
+                        val checkRet = Libgit2Helper.squashCommitsCheckBeforeExecute(repo, forceSquash.value)
+                        if(checkRet.hasError()) {
+                            throw checkRet.exception ?: RuntimeException(checkRet.msg)
+                        }
+
+                        val ret = Libgit2Helper.squashCommits(
+                            repo = repo,
+                            targetFullOidStr = targetFullOid,
+                            commitMsg = commitMsg,
+                            username = username,
+                            email = email,
+                            currentBranchFullNameOrHEAD = headFullName
+                        )
+
+                        if(ret.hasError()) {
+                            throw ret.exception ?: RuntimeException(ret.msg)
+                        }
+
+                        // update fullOid for refresh list of this screen
+                        fullOid.value = ret.data!!.toString()
+                    }
+
+                    Msg.requireShow(appContext.getString(R.string.success))
+
+                    changeStateTriggerRefreshPage(needRefresh, StateRequestType.forceReload)
+                }catch (e:Exception) {
+                    Msg.requireShowLongDuration(e.localizedMessage ?:"err")
+                    createAndInsertError(curRepo.value.id, "do squash err: ${e.localizedMessage}")
+                    MyLog.e(TAG, "#SquashDialog err: " + e.stackTraceToString())
+                }
             }
-        ) { //复制到剪贴板
-            showViewDialog.value = false
-            clipboardManager.setText(AnnotatedString(viewDialogText.value))
-            requireShowToast(appContext.getString(R.string.copied))
-
         }
     }
+
+//
+//    val showViewDialog = rememberSaveable { mutableStateOf(false)}
+//    val viewDialogText = rememberSaveable { mutableStateOf("")}
+//    val viewDialogTitle = rememberSaveable { mutableStateOf("")}
+//
+//    val requireShowViewDialog = { title: String, text: String ->
+//        viewDialogTitle.value = title
+//        viewDialogText.value = text
+//        showViewDialog.value = true
+//    }
+//
+//    if (showViewDialog.value) {
+//        ConfirmDialog(
+//            title = viewDialogTitle.value,
+//            requireShowTextCompose = true,
+//            textCompose = {
+//                Column(
+//                    modifier = Modifier
+//                        .fillMaxWidth()
+//                        .verticalScroll(rememberScrollState())
+//                ) {
+//                    Text(
+//                        text = viewDialogText.value
+//                    )
+//                }
+//            },
+//            cancelBtnText = stringResource(id = R.string.close),
+//            okBtnText = stringResource(id = R.string.copy),
+//            onCancel = {
+//                showViewDialog.value = false
+//
+//            }
+//        ) { //复制到剪贴板
+//            showViewDialog.value = false
+//            clipboardManager.setText(AnnotatedString(viewDialogText.value))
+//            requireShowToast(appContext.getString(R.string.copied))
+//
+//        }
+//    }
 
     //参数1，要创建的本地分支名；2是否基于HEAD创建分支，3如果不基于HEAD，提供一个引用名
     //只有在basedHead为假的时候，才会使用baseRefSpec
@@ -624,7 +774,7 @@ fun CommitListScreen(
                 curRepo.value.isDetached = boolToDbInt(isDetached)
 
                 //如果从仓库卡片点击提交号进入 或 从分支列表点击分支条目进入但点的是当前HEAD指向的分支，则刷新页面，重载列表
-                if(!useFullOid || isCurrent) {  // from repoCard tap commit hash in this page or from branch list tap branch of HEAD, will in this if block
+                if(!useFullOid || isHEAD) {  // from repoCard tap commit hash in this page or from branch list tap branch of HEAD, will in this if block
                     //从分支页面进这个页面，不会强制重刷列表，但如果当前显示的分支是仓库的当前分支(被HEAD指向)，那如果reset hard 成功，就得更新下提交列表，于是，就通过更新fullOid来重设当前页面的起始hash
                     fullOid.value=curCommit.value.oidStr  // only make sense when come this page from branch list page with condition `useFullOid==true && isCurrent==true`,update it for show latest commit list of current branch of repo when hard reset success.
                     changeStateTriggerRefreshPage(needRefresh, StateRequestType.forceReload)
@@ -1363,6 +1513,33 @@ fun CommitListScreen(
                         showResetDialog.value = true
                     }
                 }
+
+                if(isHEAD) {
+                    BottomSheetItem(sheetState, showBottomSheet, stringResource(R.string.squash)) {
+                        val targetCommitFullOid = curCommit.value.oidStr
+                        val targetCommitShortOid = curCommit.value.shortOidStr
+
+                        doJobThenOffLoading {
+                            Repository.open(curRepo.value.fullSavePath).use { repo ->
+                                val ret = Libgit2Helper.squashCommitsCheckBeforeShowDialog(
+                                    repo = repo,
+                                    targetFullOidStr = targetCommitFullOid,
+                                    isShowingCommitListForHEAD = isHEAD
+                                )
+
+                                if(ret.hasError()) {
+                                    Msg.requireShowLongDuration(ret.msg)
+                                    createAndInsertError(curRepo.value.id, "squash commits pre-check err: "+ret.msg)
+                                }else {
+                                    val squashData = ret.data!!
+                                    initShowSquashDialog(targetCommitFullOid, targetCommitShortOid, squashData.headFullOid, squashData.headFullName, squashData.username, squashData.email)
+                                }
+                            }
+
+                        }
+                    }
+                }
+
                 BottomSheetItem(sheetState, showBottomSheet, stringResource(R.string.details)) {
                     // onClick()
 //                    requireShowViewDialog(appContext.getString(R.string.view_hash), curCommit.value.oidStr)
@@ -1693,49 +1870,51 @@ fun CommitListScreen(
                 needRefresh.value,
                 getThenDel = true
             )
+            val forceReload = (requestType == StateRequestType.forceReload)
 
-            //从db查数据
-            val repoDb = AppModel.singleInstanceHolder.dbContainer.repoRepository
-            val repoFromDb = repoDb.getById(repoId)
-            if (repoFromDb == null) {
-                MyLog.w(TAG, "#LaunchedEffect: query repo info from db error! repoId=$repoId}")
-                return@job
-            }
-            curRepo.value = repoFromDb
-            val repoFullPath = repoFromDb.fullSavePath
-            val repoName = repoFromDb.repoName
-//            val isDetached = dbIntToBool(repoFromDb.isDetached)
-            var oid:Oid? = null
-
-            Repository.open(repoFullPath).use { repo ->
-                oid = if(!useFullOid) {  // resolve head
-                    val head = Libgit2Helper.resolveHEAD(repo)
-                    if (head == null) {
-                        MyLog.w(TAG, "#LaunchedEffect: head is null! repoId=$repoId}")
-                        return@job
-                    }
-                    val headOid = head.id()
-                    if (headOid == null || headOid.isNullOrEmptyOrZero) {
-                        MyLog.w(
-                            TAG,
-                            "#LaunchedEffect: head oid is null or invalid! repoId=$repoId}, headOid=${headOid.toString()}"
-                        )
-                        return@job
-                    }
-
-                    repoOnBranchOrDetachedHash.value = Libgit2Helper.getRepoOnBranchOrOnDetachedHash(repoFromDb)
-
-                    headOid
-                }else {  // resolve branch to commit
-//                    val ref = Libgit2Helper.resolveRefByName(repo, fullOid.value, trueUseDwimFalseUseLookup = true)  // useDwim for get direct ref, which is point to a valid commit
-                    val commit = Libgit2Helper.resolveCommitByHash(repo, fullOid.value)
-                    val commitOid = commit?.id() ?: throw RuntimeException("resolve commit err!")
-                    //注：虽然这个变量名是分支短名和短hash名blabala，但实际上，如果通过分支条目进入，只会有短分支名，不会有短提交号，短提交号是之前考虑欠佳即使分支条目点进来的提交历史也一checkout就刷新页面更新标题而残留下的东西
-                    branchShortNameOrShortHashByFullOidForShowOnTitle.value = Libgit2Helper.getBranchNameOfRepoName(repoName, branchShortNameOrShortHashByFullOid.value)
-
-                    commitOid
+            if(forceReload || curRepo.value.id.isBlank() || headOidOfThisScreen.value.isNullOrEmptyOrZero) {
+                //从db查数据
+                val repoDb = AppModel.singleInstanceHolder.dbContainer.repoRepository
+                val repoFromDb = repoDb.getById(repoId)
+                if (repoFromDb == null) {
+                    MyLog.w(TAG, "#LaunchedEffect: query repo info from db error! repoId=$repoId}")
+                    return@job
                 }
+                curRepo.value = repoFromDb
+                val repoFullPath = repoFromDb.fullSavePath
+                val repoName = repoFromDb.repoName
+//            val isDetached = dbIntToBool(repoFromDb.isDetached)
 
+                Repository.open(repoFullPath).use { repo ->
+                    headOidOfThisScreen.value = if(!useFullOid) {  // resolve head
+                        val head = Libgit2Helper.resolveHEAD(repo)
+                        if (head == null) {
+                            MyLog.w(TAG, "#LaunchedEffect: head is null! repoId=$repoId}")
+                            return@job
+                        }
+                        val headOid = head.peel(GitObject.Type.COMMIT)?.id()
+                        if (headOid == null || headOid.isNullOrEmptyOrZero) {
+                            MyLog.w(
+                                TAG,
+                                "#LaunchedEffect: head oid is null or invalid! repoId=$repoId}, headOid=${headOid.toString()}"
+                            )
+                            return@job
+                        }
+
+                        repoOnBranchOrDetachedHash.value = Libgit2Helper.getRepoOnBranchOrOnDetachedHash(repoFromDb)
+
+                        headOid
+                    }else {  // resolve branch to commit
+//                    val ref = Libgit2Helper.resolveRefByName(repo, fullOid.value, trueUseDwimFalseUseLookup = true)  // useDwim for get direct ref, which is point to a valid commit
+                        val commit = Libgit2Helper.resolveCommitByHash(repo, fullOid.value)
+                        val commitOid = commit?.id() ?: throw RuntimeException("resolve commit err!")
+                        //注：虽然这个变量名是分支短名和短hash名blabala，但实际上，如果通过分支条目进入，只会有短分支名，不会有短提交号，短提交号是之前考虑欠佳即使分支条目点进来的提交历史也一checkout就刷新页面更新标题而残留下的东西
+                        branchShortNameOrShortHashByFullOidForShowOnTitle.value = Libgit2Helper.getBranchNameOfRepoName(repoName, branchShortNameOrShortHashByFullOid.value)
+
+                        commitOid
+                    }
+
+                }
 
                 //第一次查询，指向headOid，NO！不要这么做，不然compose销毁又重建，恢复数据时，指向原本列表之后的commit就又重新指向head了，就乱了
                 //不要在这给nexCommitOid和条目列表赋值！要在doLoadMore里给它们赋值！
@@ -1743,13 +1922,12 @@ fun CommitListScreen(
 
             }
 
-
             // do first load
             val firstLoad = true
-            val forceReload = (requestType == StateRequestType.forceReload)
             val loadToEnd = false
+
             //传repoFullPath是用来打开git仓库的
-            doLoadMore(repoFullPath, oid!!, firstLoad, forceReload, loadToEnd)
+            doLoadMore(curRepo.value.fullSavePath, headOidOfThisScreen.value, firstLoad, forceReload, loadToEnd)
         }
     }
 

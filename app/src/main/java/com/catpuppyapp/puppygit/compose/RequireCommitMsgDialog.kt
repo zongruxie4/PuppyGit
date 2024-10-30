@@ -16,6 +16,7 @@ import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
@@ -37,7 +38,7 @@ fun RequireCommitMsgDialog(
     onOk: (msg:String) -> Unit,
     onCancel: () -> Unit,
 ) {
-    val appContext = AppModel.singleInstanceHolder.appContext
+    val appContext = LocalContext.current
 
     val repoStateIsRebase= repoState == Repository.StateT.REBASE_MERGE.bit
 
