@@ -435,7 +435,13 @@ fun CommitListScreen(
             requireShowTextCompose = true,
             textCompose = {
                 ScrollableColumn {
-                    Text(replaceStringResList(stringResource(R.string.squash_commits_not_include_the_left_commit), listOf(targetCommitShortOidForSquashDialog.value, headCommitShortOidForSquashDialog.value)))
+                    Text(
+                        text = replaceStringResList(
+                            stringResource(R.string.squash_commits_not_include_the_left_commit),
+                            listOf(targetCommitShortOidForSquashDialog.value, headCommitShortOidForSquashDialog.value)
+                        ),
+                        fontWeight = FontWeight.Light
+                    )
 
                     Spacer(Modifier.height(15.dp))
 
@@ -467,7 +473,10 @@ fun CommitListScreen(
                     MyCheckBox(stringResource(R.string.force), forceSquash)
 
                     if(forceSquash.value) {
-                        Text(stringResource(R.string.if_index_contains_uncommitted_changes_will_commit_as_well), fontWeight = FontWeight.ExtraBold, color = MyStyleKt.TextColor.danger)
+                        Text(
+                            stringResource(R.string.if_index_contains_uncommitted_changes_will_commit_as_well),
+                            color = MyStyleKt.TextColor.danger
+                        )
                     }
 
                 }
