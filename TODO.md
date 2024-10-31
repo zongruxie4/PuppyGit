@@ -1,4 +1,5 @@
 ## TODO (welcome pr)
+- improve ChangeList load performance
 - multi cherry-pick
 - optimize Editor performance
 - Editor merge mode: add colors for ours/theirs blocks
