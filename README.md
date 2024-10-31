@@ -30,7 +30,7 @@ PuppyGit made by Bandeapart1964 of catpuppyapp
 <del><a href=https://github.com/catpuppyapp/PuppyGit/blob/main/GooglePlayIsShit.md>The History about the app names</a></del>
 
 
-## PuppyGit + Notes App = A new Way to sync your notes on Android!
+## PuppyGit + Notes App = A new way to sync your notes on Android!
 Not only sync codes, You can use PuppyGit sync your notes repository create by note-taking apps like: <a href="https://github.com/obsidianmd/obsidian-releases">Obsidian</a> / <a href="https://github.com/gsantner/markor">Markor</a> or Other!
 
 ## 2fa
@@ -64,7 +64,9 @@ see:<br>
 - patch
 - reflog
 - tags
-- stash
+- stashes
+- remotes
+- branches
 - submodules
 - squash commits
 - reset
