@@ -23,11 +23,8 @@ PuppyGit made by Bandeapart1964 of catpuppyapp
 <a href=https://github.com/catpuppyapp/PuppyGit/releases>Github Release</a>
 
 
-## The Difference Of "PuppyGit Pro" and "PuppyGit"
-### TLDR; The "PuppyGit Pro" was an old name, now the app name is "PuppyGit", no difference of features, all features are free use to everyone. (but the icon still include "Pro" text, and I have no plan to remove it for now.)
+###### PS:If you are an old user, maybe you was saw "PuppyGit Pro",and now it's disappered, Don't worry, No Difference Of "PuppyGit Pro" and "PuppyGit", just changed the name for simple.
 
-<br><br>
-<del><a href=https://github.com/catpuppyapp/PuppyGit/blob/main/GooglePlayIsShit.md>The History about the app names</a></del>
 
 
 ## PuppyGit + Notes App = A new way to sync your notes on Android!
