@@ -53,18 +53,21 @@ see:<br>
 ## Features
 - fetch
 - merge
+- pull
 - push
 - files explorer
 - simple file editor (only utf8 supported)
 - commit history (git log)
-- shallow clone
+- shallow clone(git clone with depth)
 - rebase
 - cherry-pick
 - patch
 - reflog
-- tags manage
-- stash manage
-- submodules manage
+- tags
+- stash
+- submodules
+- squash commits
+- reset
 
 
 ## About ssh
