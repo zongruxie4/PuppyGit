@@ -1,4 +1,5 @@
 ## TODO (welcome pr)
+- show process detail when cloning (now only show"Cloning...")
 - improve ChangeList load performance
 - multi cherry-pick
 - optimize Editor performance
