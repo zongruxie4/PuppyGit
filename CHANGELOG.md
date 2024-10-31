@@ -16,7 +16,10 @@ next version :
   - ours/theirs now has background color
   - add accept ours/theirs buttons
 - can switch Prev/Next File in DiffScreen
-- adjust go to top fab
+- adjust go to top fab:
+    - can permanent hide from settings
+    - can temporary hide
+    - support go to bottom
 - fixed bug: commit history list omit commits
 - able to copy clone err msg by long pressing the err msg on err repo card
 - show last modified time in Files(selected single file) and Editor(clicked title, show file details)
