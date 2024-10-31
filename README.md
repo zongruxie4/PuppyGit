@@ -87,8 +87,8 @@ require:<br>
 <br>
 Then you can build every lib from source code, the source code of the libs, see <a href=https://github.com/catpuppyapp/PuppyGit?tab=readme-ov-file#libs>Libs</a>
 
-<br>
-I'll create some script for build the c libs in future. if you want to build them now, only way is do it by your hands🤗
+<br><br>
+I'll create some scripts for build the c libs in future. if you want to build them now, only way is do it by your hands🤗
 
 
 ## Security
