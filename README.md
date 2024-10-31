@@ -70,6 +70,7 @@ see:<br>
 - submodules
 - squash commits
 - reset
+- resolve conflicts
 
 
 ## About ssh
