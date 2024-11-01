@@ -603,7 +603,7 @@
     <string name="note_as_default_remote_will_not_override_local_tags">注意: 默认情况下, 远程标签 [不会覆盖] 本地同名标签, 除非你勾选 \'强制\'</string>
     <string name="note_as_default_local_will_override_remote_tags">注意: 默认情况下, 对于轻量分支, 如果本地标签提交号领先远程仓库(forwardable)，远程仓库的标签 [将被覆盖]</string>
     <string name="load_to_end">加载到末尾</string>
-    <string name="creating">Creating…</string>
+    <string name="creating">正在创建…</string>
     <string name="new_oid">新oid</string>
     <string name="old_oid">旧oid</string>
     <string name="stash_id">贮存ID</string>

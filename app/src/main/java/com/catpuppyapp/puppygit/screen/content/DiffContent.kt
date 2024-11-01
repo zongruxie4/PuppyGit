@@ -507,6 +507,10 @@ fun DiffContent(
                         val repoDb = dbContainer.repoRepository
                         val repoFromDb = repoDb.getById(repoId)
 
+                        if(channelForThisJob.tryReceive().isClosed) {
+                            return@launch
+                        }
+
                         repoFromDb?:return@launch
 
                         curRepo.value = repoFromDb
@@ -546,9 +550,11 @@ fun DiffContent(
                                     )
                                 }
 
-                                if(!channelForThisJob.tryReceive().isClosed) {
-                                    diffItem.value = diffItemSaver
+                                if(channelForThisJob.tryReceive().isClosed) {
+                                    return@launch
                                 }
+
+                                diffItem.value = diffItemSaver
                             }else {  //indexToWorktree or headToIndex
                                 val diffItemSaver = Libgit2Helper.getSingleDiffItem(
                                     repo,
@@ -560,21 +566,33 @@ fun DiffContent(
                                     checkChannelSizeLimit = settings.diff.loadDiffContentCheckAbortSignalSize,
                                 )
 
-                                if(!channelForThisJob.tryReceive().isClosed) {
-                                    diffItem.value = diffItemSaver
+                                if(channelForThisJob.tryReceive().isClosed) {
+                                    return@launch
                                 }
+
+                                diffItem.value = diffItemSaver
                             }
 
 
                             // only when compare to work tree need check submodule is or is not dirty. because only non-dirty(clean) submodule can be stage to index, and can be commit to log.
                             if(isDiffToLocal && isSubmodule) {
-                                submoduleIsDirty.value = Libgit2Helper.submoduleIsDirty(parentRepo = repo, submoduleName = relativePathUnderRepoDecoded)
+                                val submdirty = Libgit2Helper.submoduleIsDirty(parentRepo = repo, submoduleName = relativePathUnderRepoDecoded)
+
+                                if(channelForThisJob.tryReceive().isClosed) {
+                                    return@launch
+                                }
+
+                                submoduleIsDirty.value = submdirty
                             }
 
                         }
 
                         loading.value=false
                     }catch (e:Exception) {
+                        if(channelForThisJob.tryReceive().isClosed) {
+                            return@launch
+                        }
+
                         val errMsg = errorStrRes + ":" + e.localizedMessage
 
                         errMsgState.value = errMsg
