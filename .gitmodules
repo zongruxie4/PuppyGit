@@ -1,0 +1,9 @@
+[submodule "deps/libgit2"]
+	path = deps/libgit2
+	url = https://github.com/libgit2/libgit2.git
+[submodule "deps/openssl"]
+	path = deps/openssl
+	url = https://github.com/openssl/openssl.git
+[submodule "deps/git24j"]
+	path = deps/git24j
+	url = https://github.com/Frank997/git24j.git
