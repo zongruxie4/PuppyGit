@@ -42,6 +42,7 @@ import com.catpuppyapp.puppygit.utils.cache.Cache
 import com.catpuppyapp.puppygit.utils.changeStateTriggerRefreshPage
 import com.catpuppyapp.puppygit.utils.getFileNameFromCanonicalPath
 import com.catpuppyapp.puppygit.utils.getParentPathEndsWithSeparator
+import com.catpuppyapp.puppygit.utils.state.mutableCustomStateListOf
 import com.catpuppyapp.puppygit.utils.state.mutableCustomStateOf
 import java.io.File
 
@@ -80,7 +81,7 @@ fun DiffScreen(
 //    val relativePathUnderRepoDecoded = (Cache.Map.getThenDel(Cache.Map.Key.diffScreen_UnderRepoPath) as? String)?:""
     val relativePathUnderRepoState = rememberSaveable { mutableStateOf((Cache.getByTypeThenDel<String>(underRepoPathKey)) ?: "")}
 
-    val diffableItemList = rememberSaveable { (Cache.getByTypeThenDel<List<StatusTypeEntrySaver>>(diffableItemListKey)) ?: listOf()}
+    val diffableItemList = mutableCustomStateListOf(stateKeyTag, "diffableItemList") { (Cache.getByTypeThenDel<List<StatusTypeEntrySaver>>(diffableItemListKey)) ?: listOf()}
     val curItemIndex = rememberSaveable { mutableIntStateOf(curItemIndexAtDiffableItemList) }
     val changeType = rememberSaveable { mutableStateOf(changeType) }
     val fileSize = rememberSaveable { mutableLongStateOf(fileSize) }
@@ -293,7 +294,7 @@ fun DiffScreen(
                 loading=loading,dbContainer=dbContainer,contentPadding, treeOid1Str, treeOid2Str,
                 needRefresh = needRefresh, listState = listState, curRepo=curRepo,
                 requireBetterMatchingForCompare = requireBetterMatchingForCompare, fileFullPath = fileFullPath.value,
-                isSubmodule=isSubmodule.value, isDiffToLocal = isDiffToLocal,diffableItemList= diffableItemList,
+                isSubmodule=isSubmodule.value, isDiffToLocal = isDiffToLocal,diffableItemList= diffableItemList.value,
                 curItemIndex=curItemIndex, switchItem=switchItem
             )
         }
