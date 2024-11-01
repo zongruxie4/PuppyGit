@@ -8,7 +8,7 @@ PuppyGit is A Git Client for Android, Open Source and No Ads and Free to use
 ## Author
 PuppyGit made by Bandeapart1964 of catpuppyapp
 
-### PuppyGit is a free app though, but if it helpful to you, please consider star this project and/or <a href=https://github.com/catpuppyapp/PuppyGit/blob/main/donate.md>Donate</a>, it will help this project long live.
+### PuppyGit is a free app though, but if it helpful to you, please consider Star + <a href=https://github.com/catpuppyapp/PuppyGit/blob/main/donate.md>Donate</a>, it will help this project long live.
 
 
 
@@ -23,7 +23,7 @@ PuppyGit made by Bandeapart1964 of catpuppyapp
 <a href=https://github.com/catpuppyapp/PuppyGit/releases>Github Release</a>
 
 
-###### PS:If you are an old user, maybe you was saw "PuppyGit Pro",and now it's disappered, Don't worry, No Difference Of "PuppyGit Pro" and "PuppyGit", just changed the name for simple.
+###### PS:If you are an old user, maybe you was saw "PuppyGit Pro",and now it's disappeared, Don't worry, No Difference Of "PuppyGit Pro" and "PuppyGit", just changed the name for simple.
 
 
 
