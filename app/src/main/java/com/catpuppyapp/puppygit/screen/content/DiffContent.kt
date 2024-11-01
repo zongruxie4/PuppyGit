@@ -154,8 +154,13 @@ fun DiffContent(
 //        showToast(AppModel.singleInstanceHolder.appContext, errOpenFileFailed+":"+errMsg.value)
 //        return
 //    }
+    val loadingFinishedButHasErr = (loading.value.not() && errMsgState.value.isNotBlank())
+    val unsupportedChangeType = !isSupportedChangeType
+    val isBinary = diffItem.value.flags.contains(Diff.FlagT.BINARY)
+    val fileNoChange = !diffItem.value.isFileModified
+
     //不支持预览二进制文件、超出限制大小、文件未修改
-    if ((loading.value.not() && errMsgState.value.isNotBlank()) || !isSupportedChangeType || loading.value || diffItem.value.flags.contains(Diff.FlagT.BINARY) || diffItem.value.isContentSizeOverLimit || !diffItem.value.isFileModified) {
+    if (loadingFinishedButHasErr || unsupportedChangeType || loading.value || isBinary || diffItem.value.isContentSizeOverLimit || fileNoChange) {
         Column(
             modifier = Modifier
                 //fillMaxSize 必须在最上面！要不然，文字不会显示在中间！
@@ -168,21 +173,21 @@ fun DiffContent(
             horizontalAlignment = Alignment.CenterHorizontally,
         ) {
             Row {
-                if(loading.value.not() && errMsgState.value.isNotBlank()) {
+                if(loadingFinishedButHasErr) {
                     Text(text = errMsgState.value, color = MyStyleKt.TextColor.error)
-                } else if(!isSupportedChangeType){
+                } else if(unsupportedChangeType){
                     Text(text = stringResource(R.string.unknown_change_type))
                 }else if(loading.value) {
                     Text(stringResource(R.string.loading))
-                }else if(diffItem.value.flags.contains(Diff.FlagT.BINARY)) {
+                }else if(isBinary) {
                     Text(stringResource(R.string.doesnt_support_view_binary_file))
                 }else if(diffItem.value.isContentSizeOverLimit) {
                     Text(text = stringResource(R.string.content_size_over_limit)+"("+ getHumanReadableSizeStr(settings.diff.diffContentSizeMaxLimit) +")")
-                }else if(!diffItem.value.isFileModified) {
+                }else if(fileNoChange) {
                     if(isSubmodule && submoduleIsDirty.value) {  // submodule no diff for shown, give user a hint
                         Text(stringResource(R.string.submodule_is_dirty_note))
                     }else {
-                        Text(stringResource(R.string.file_unmodified_no_diff_for_shown))
+                        Text(stringResource(R.string.the_file_has_not_changed))
                     }
                 }
             }
@@ -220,6 +225,20 @@ fun DiffContent(
 
                     ) {
                         Text(stringResource(R.string.submodule_is_dirty_note_short), fontWeight = FontWeight.Light, fontStyle = FontStyle.Italic)
+                    }
+                }
+            }
+
+            if(diffItem.value.hunks.isEmpty()) {
+                item {
+                    Row(modifier = Modifier
+                        .fillMaxSize()
+                        .padding(vertical = 100.dp),
+                        horizontalArrangement = Arrangement.Center,
+                        verticalAlignment = Alignment.CenterVertically
+
+                    ) {
+                        Text(stringResource(R.string.file_is_empty), fontWeight = FontWeight.Light, fontStyle = FontStyle.Italic)
                     }
                 }
             }

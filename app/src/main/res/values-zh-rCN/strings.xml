@@ -974,6 +974,8 @@
     <string name="squash">整合</string>
     <string name="squash_commits_not_include_the_left_commit">整合提交: ph_a3f241dc_1..ph_a3f241dc_2 (不包含左边的提交)</string>
     <string name="if_index_contains_uncommitted_changes_will_commit_as_well">若索引包含未提交修改，将一并提交</string>
+    <string name="file_is_empty">空文件</string>
+    <string name="the_file_has_not_changed">文件无修改</string>
 
 
 </resources>

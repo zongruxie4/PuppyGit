@@ -985,5 +985,7 @@
     <!--    e.g. Squash commits: abc1234..456abcd (not include the Left commit)-->
     <string name="squash_commits_not_include_the_left_commit">Squash commits: ph_a3f241dc_1..ph_a3f241dc_2 (not include the Left commit)</string>
     <string name="if_index_contains_uncommitted_changes_will_commit_as_well">If the Index contains uncommitted changes, will commit them as well</string>
+    <string name="file_is_empty">File is empty</string>
+    <string name="the_file_has_not_changed">The file has not changed</string>
 
 </resources>
