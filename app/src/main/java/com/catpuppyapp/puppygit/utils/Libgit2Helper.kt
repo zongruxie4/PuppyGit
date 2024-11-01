@@ -5079,6 +5079,10 @@ class Libgit2Helper {
                 if (smWorkdir.exists()) {
                     MyLog.d(TAG, "will delete submodule workdir files at: ${smWorkdir.canonicalPath}")
                     smWorkdir.deleteRecursively()
+
+                    // re-create the submodule folder for avoid show submdules deleted in git status
+                    // smWorkdir.mkdir() should be fine too, but mkdirs() more reliable
+                    smWorkdir.mkdirs()
                 }
             }
 
