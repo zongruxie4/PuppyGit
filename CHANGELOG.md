@@ -1,6 +1,9 @@
 next version :
 - maybe will support termux git cli, I have no any test for now, if possible, it will be able access git cli provide by termux in puppy git
 
+1.0.6.0v36 - 20241101:
+- fix Difference Screen crash
+
 1.0.5.9v35 - 20241031:
 - update git24j libs
 
