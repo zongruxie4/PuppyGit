@@ -1308,6 +1308,7 @@ fun RepoInnerPage(
             val tmpList = repoList.value.filter {
                 it.repoName.lowercase().contains(k)
                         || it.branch.lowercase().contains(k)
+                        || it.gitRepoState.toString().lowercase().contains(k)
                         || it.cloneUrl.lowercase().contains(k)
                         || it.lastCommitHash.lowercase().contains(k)
                         || it.latestUncheckedErrMsg.lowercase().contains(k)
