@@ -57,6 +57,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import com.catpuppyapp.puppygit.compose.AskGitUsernameAndEmailDialogWithSelection
 import com.catpuppyapp.puppygit.compose.BottomBar
 import com.catpuppyapp.puppygit.compose.ChangeListItem
@@ -2895,7 +2896,13 @@ fun ChangeListInnerPage(
                                         }
                                     }
 
+                                    val fontSizeOfPullPushSync = 16.sp
+
+                                    val splitSign = " | "
+                                    val splitHorizonPadding = 10.dp
+
                                     Row (
+                                        modifier = Modifier.padding(horizontal = 10.dp),
                                         horizontalArrangement = Arrangement.Center,
                                         verticalAlignment = Alignment.CenterVertically
                                     ){
@@ -2903,6 +2910,7 @@ fun ChangeListInnerPage(
                                         //如果设置了上游，显示pull/push
                                         if(!upstreamNotSet) {
                                             Text(text = stringResource(R.string.pull),
+                                                fontSize = fontSizeOfPullPushSync,
                                                 color = MyStyleKt.ClickableText.color,
                                                 style = MyStyleKt.ClickableText.style,
                                                 modifier = MyStyleKt.ClickableText.modifierNoPadding.clickable {
@@ -2918,9 +2926,10 @@ fun ChangeListInnerPage(
                                                 }
                                             )
 
-                                            Text(text = " | ")
+                                            Text(text = splitSign, modifier = Modifier.padding(horizontal = splitHorizonPadding))
 
                                             Text(text = stringResource(R.string.push),
+                                                fontSize = fontSizeOfPullPushSync,
                                                 color = MyStyleKt.ClickableText.color,
                                                 style = MyStyleKt.ClickableText.style,
                                                 modifier = MyStyleKt.ClickableText.modifierNoPadding.clickable {
@@ -2947,10 +2956,12 @@ fun ChangeListInnerPage(
                                                     }
                                                 }
                                             )
-                                            Text(text = " | ")
+                                            Text(text = splitSign, modifier = Modifier.padding(horizontal = splitHorizonPadding))
 
                                         }
+
                                         Text(text = stringResource(if(upstreamNotSet) R.string.set_upstream_and_sync else R.string.sync),
+                                            fontSize = fontSizeOfPullPushSync,
                                             color = MyStyleKt.ClickableText.color,
                                             style = MyStyleKt.ClickableText.style,
                                             modifier = MyStyleKt.ClickableText.modifierNoPadding.clickable {
