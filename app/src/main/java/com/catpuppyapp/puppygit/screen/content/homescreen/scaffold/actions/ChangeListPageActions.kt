@@ -35,7 +35,6 @@ import com.catpuppyapp.puppygit.utils.UIHelper
 import com.catpuppyapp.puppygit.utils.cache.Cache
 import com.catpuppyapp.puppygit.utils.dbIntToBool
 import com.catpuppyapp.puppygit.utils.state.CustomStateSaveable
-import com.catpuppyapp.puppygit.utils.state.StateUtil
 import com.github.git24j.core.Repository
 import kotlinx.coroutines.CoroutineScope
 
@@ -61,7 +60,8 @@ fun ChangeListPageActions(
     hasNoConflictItems:Boolean,
     changeListPageFilterModeOn:MutableState<Boolean>,
     changeListPageFilterKeyWord:CustomStateSaveable<TextFieldValue>,
-    rebaseCurOfAll:String
+    rebaseCurOfAll:String,
+    naviTarget:MutableState<String>,
 ) {
     val isWorktreePage = fromTo == Cons.gitDiffFromIndexToWorktree
     val navController = AppModel.singleInstanceHolder.navController
@@ -80,6 +80,7 @@ fun ChangeListPageActions(
             iconContentDesc = stringResource(R.string.index),
             iconColor = UIHelper.getIconEnableColorOrNull(changeListHasIndexItems.value)
         ) {
+            naviTarget.value = Cons.ChangeListNaviTarget_Index
             navController.navigate(Cons.nav_IndexScreen)
         }
     }

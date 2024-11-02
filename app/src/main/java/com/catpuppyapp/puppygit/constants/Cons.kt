@@ -8,7 +8,11 @@ import java.util.concurrent.ConcurrentHashMap
 
 class Cons {
     companion object {
-        // use as path separator
+
+        const val ChangeListNaviTarget_InitValue = "cl_navi_init_value"
+        const val ChangeListNaviTarget_Index = "cl_navi_to_index"
+
+            // use as path separator
         const val slash = "/"
         const val slashChar = '/'
 

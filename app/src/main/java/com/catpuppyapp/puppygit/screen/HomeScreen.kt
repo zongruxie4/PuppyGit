@@ -64,6 +64,8 @@ import com.catpuppyapp.puppygit.constants.PageRequest
 import com.catpuppyapp.puppygit.data.entity.RepoEntity
 import com.catpuppyapp.puppygit.dto.FileItemDto
 import com.catpuppyapp.puppygit.dto.FileSimpleDto
+import com.catpuppyapp.puppygit.fileeditor.texteditor.state.TextEditorState
+import com.catpuppyapp.puppygit.fileeditor.texteditor.view.ScrollEvent
 import com.catpuppyapp.puppygit.git.StatusTypeEntrySaver
 import com.catpuppyapp.puppygit.play.pro.R
 import com.catpuppyapp.puppygit.screen.content.homescreen.innerpage.AboutInnerPage
@@ -97,8 +99,6 @@ import com.catpuppyapp.puppygit.utils.changeStateTriggerRefreshPage
 import com.catpuppyapp.puppygit.utils.state.mutableCustomStateListOf
 import com.catpuppyapp.puppygit.utils.state.mutableCustomStateOf
 import com.github.git24j.core.Repository.StateT
-import com.catpuppyapp.puppygit.fileeditor.texteditor.state.TextEditorState
-import com.catpuppyapp.puppygit.fileeditor.texteditor.view.ScrollEvent
 import kotlinx.coroutines.launch
 
 
@@ -167,6 +167,7 @@ fun HomeScreen(
     val changeListPageNoRepo = rememberSaveable { mutableStateOf(false)}
     val changeListPageHasNoConflictItems = rememberSaveable { mutableStateOf(false)}
     val changeListPageRebaseCurOfAll = rememberSaveable { mutableStateOf("")}
+    val changeListNaviTarget = rememberSaveable { mutableStateOf(Cons.ChangeListNaviTarget_InitValue)}
 
     val changeListPageFilterKeyWord = mutableCustomStateOf(
         keyTag = stateKeyTag,
@@ -777,7 +778,8 @@ fun HomeScreen(
                                     hasNoConflictItems = changeListPageHasNoConflictItems.value,
                                     changeListPageFilterModeOn= changeListPageFilterModeOn,
                                     changeListPageFilterKeyWord=changeListPageFilterKeyWord,
-                                    rebaseCurOfAll = changeListPageRebaseCurOfAll.value
+                                    rebaseCurOfAll = changeListPageRebaseCurOfAll.value,
+                                    naviTarget = changeListNaviTarget
                                 )
 
                             }
@@ -983,7 +985,8 @@ fun HomeScreen(
                     changeListRepoList= changeListRepoList,
                     goToChangeListPage=goToChangeListPage,
                     needReQueryRepoList = needReQueryRepoListForChangeListTitle,
-                    newestPageId = changelistNewestPageId
+                    newestPageId = changelistNewestPageId,
+                    naviTarget = changeListNaviTarget
                     // index..worktree, need not pass params, because `fromTo` already implicit `indexToWorktree` or `headToIndex`
 //                    commit1OidStr = Cons.gitIndexCommitHash,
 //                    commit2OidStr = Cons.gitLocalWorktreeCommitHash

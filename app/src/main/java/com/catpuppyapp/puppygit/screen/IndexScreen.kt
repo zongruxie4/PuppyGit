@@ -82,6 +82,8 @@ fun IndexScreen(
     val changeListPageHasNoConflictItems = rememberSaveable { mutableStateOf(false)}
 
     val changeListPageRebaseCurOfAll = rememberSaveable { mutableStateOf( "")}
+    val changeListNaviTarget = rememberSaveable { mutableStateOf(Cons.ChangeListNaviTarget_InitValue)}
+
 
 
     val changeListPageFilterKeyWord = mutableCustomStateOf(
@@ -163,6 +165,7 @@ fun IndexScreen(
                     }
 
                 },
+
                 actions = {
                     if(!changeListPageFilterModeOn.value) {
                         ChangeListPageActions(
@@ -180,8 +183,8 @@ fun IndexScreen(
                             hasNoConflictItems = changeListPageHasNoConflictItems.value,
                             changeListPageFilterModeOn=changeListPageFilterModeOn,
                             changeListPageFilterKeyWord=changeListPageFilterKeyWord,
-                            rebaseCurOfAll = changeListPageRebaseCurOfAll.value
-
+                            rebaseCurOfAll = changeListPageRebaseCurOfAll.value,
+                            naviTarget = changeListNaviTarget
                         )
 
                     }
@@ -233,7 +236,8 @@ fun IndexScreen(
             commitForQueryParents = "",
             rebaseCurOfAll = changeListPageRebaseCurOfAll,
             openDrawer = {}, //非顶级页面按返回键不需要打开抽屉
-            newestPageId = changelistNewestPageId
+            newestPageId = changelistNewestPageId,
+            naviTarget = changeListNaviTarget
 
 //            commit1OidStr=commit1OidStr,
 //            commitParentList=commitParentList

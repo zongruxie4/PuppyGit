@@ -168,6 +168,7 @@ fun TreeToTreeChangeListScreen(
     val changeListPageSelectedItemList = mutableCustomStateListOf(keyTag = stateKeyTag, keyName = "changeListPageSelectedItemList", initValue = listOf<StatusTypeEntrySaver>())
     val changelistPageScrolled = remember { mutableStateOf(settings.showNaviButtons) }
     val changelistNewestPageId = rememberSaveable { mutableStateOf("") }
+    val changeListNaviTarget = rememberSaveable { mutableStateOf(Cons.ChangeListNaviTarget_InitValue)}
 
     val changeListPageFilterKeyWord = mutableCustomStateOf(
         keyTag = stateKeyTag,
@@ -376,7 +377,8 @@ fun TreeToTreeChangeListScreen(
             swap=swap.value,
             commitForQueryParents = commitForQueryParents,
             openDrawer = {}, //非顶级页面按返回键不需要打开抽屉
-            newestPageId = changelistNewestPageId
+            newestPageId = changelistNewestPageId,
+            naviTarget = changeListNaviTarget
 
 
 //            isDiffToHead=isDiffToHead

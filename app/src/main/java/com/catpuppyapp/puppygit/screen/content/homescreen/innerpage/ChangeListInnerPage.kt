@@ -173,8 +173,9 @@ fun ChangeListInnerPage(
     goToChangeListPage:(goToThisRepo:RepoEntity)->Unit ={},
     needReQueryRepoList:MutableState<String>? =null,
     newestPageId:MutableState<String>,  // for check if switched page （用来检测页面是否切换过，有时候有的仓库查询慢，切换仓库，切换后查出来了，会覆盖条目列表，出现仓库b显示了仓库a的条目的问题，更新列表前检测下此值是否有变化能避免此bug）
-    //这组件再多一个参数就崩溃了，不要再加了，会报verifyError错误，升级gradle或许可以解决，具体原因不明（缓存问题，删除项目根目录下的.gradle目录重新构建即可）
+    //这组件再多一个参数就崩溃了，不要再加了，会报verifyError错误，升级gradle或许可以解决，具体原因不明（缓存问题，删除项目根目录下的.gradle目录重新构建即可），后来发现是compose变异器本身的bug，编译太复杂的组件就可能报错
 //    isDiffToHead:MutableState<Boolean> = mutableStateOf(false),  //仅 treeTotree页面需要此参数，用来判断是否在和headdiff
+    naviTarget:MutableState<String>
 ) {
 
     // for detect page changed, avoid loading repo1, swiched repo2, repo2 loaded, then repo1 loaded, page show wrong items of repo1
@@ -2785,12 +2786,13 @@ fun ChangeListInnerPage(
             okTextColor = MyStyleKt.TextColor.danger,
             onCancel = {showRevertAlert.value=false}
         ) {  //onOk
+            showRevertAlert.value=false
+
             doJobThenOffLoading(
                 loadingOn = loadingOn,
                 loadingOff = loadingOff,
                 loadingText = appContext.getString(R.string.reverting)
             ) {
-                showRevertAlert.value=false
                 doRevert()
             }
         }
@@ -3291,71 +3293,83 @@ fun ChangeListInnerPage(
     }
 
 
-    if(lastRequireRefreshValue.value != refreshRequiredByParentPage.value) {
-        lastRequireRefreshValue.value = refreshRequiredByParentPage.value
+//    if(lastRequireRefreshValue.value != refreshRequiredByParentPage.value) {
+//        lastRequireRefreshValue.value = refreshRequiredByParentPage.value
 
-        LaunchedEffect(Unit) {
-            try {
-                // this assigned should not be necessary,
-                // because remember haven't hold a mutableState value,
-                // so it just a simple variable, should catchable as constant by lambda
-                // on the other hand, assigned is fine though
-                val pageIdSnapshot = pageId
+    LaunchedEffect(refreshRequiredByParentPage.value) {
+        if(lastRequireRefreshValue.value != refreshRequiredByParentPage.value
 
-                changeListInit(
-                    dbContainer = dbContainer,
-                    appContext = appContext,
+            // if navi back from Index, need refresh
+            || (isWorktreePage && naviTarget.value == Cons.ChangeListNaviTarget_Index)
+        ) {
+            naviTarget.value = Cons.ChangeListNaviTarget_InitValue
+            lastRequireRefreshValue.value = refreshRequiredByParentPage.value
+        }else {  // need not refresh
+            return@LaunchedEffect
+        }
+
+
+        try {
+            // this assigned should not be necessary,
+            // because remember haven't hold a mutableState value,
+            // so it just a simple variable, should catchable as constant by lambda
+            // on the other hand, assigned is fine though
+            val pageIdSnapshot = pageId
+
+            changeListInit(
+                dbContainer = dbContainer,
+                appContext = appContext,
 //        needRefresh = needRefreshChangeListPage,
 //        needRefreshParent = refreshRequiredByParentPage,
-                    curRepoUpstream=curRepoUpstream,
-                    isFileSelectionMode = isFileSelectionMode,
-                    changeListPageNoRepo = changeListPageNoRepo,
-                    changeListPageHasIndexItem = changeListPageHasIndexItem,
-                    changeListPageHasWorktreeItem = changeListPageHasWorktreeItem,
-                    itemList = itemList,
-                    requireShowToast=requireShowToast,
-                    curRepoFromParentPage = curRepoFromParentPage,
-                    selectedItemList = selectedItemList,
-                    fromTo = fromTo,
-                    repoState=repoState,
-                    commit1OidStr = commit1OidStr,
-                    commit2OidStr=commit2OidStr,
-                    commitParentList=commitParentList,
-                    repoId = repoId,
-                    setErrMsg=setErrMsg,
-                    clearErrMsg=clearErrMsg,
-                    loadingOn=loadingOn,
-                    loadingOff=loadingOff,
-                    hasNoConflictItems=hasNoConflictItems,
-                    swap=swap,
-                    commitForQueryParents=commitForQueryParents,
-                    rebaseCurOfAll=rebaseCurOfAll,
-                    credentialList=credentialList,
-                    repoChanged = {
-                        // debug start (test passed)
+                curRepoUpstream=curRepoUpstream,
+                isFileSelectionMode = isFileSelectionMode,
+                changeListPageNoRepo = changeListPageNoRepo,
+                changeListPageHasIndexItem = changeListPageHasIndexItem,
+                changeListPageHasWorktreeItem = changeListPageHasWorktreeItem,
+                itemList = itemList,
+                requireShowToast=requireShowToast,
+                curRepoFromParentPage = curRepoFromParentPage,
+                selectedItemList = selectedItemList,
+                fromTo = fromTo,
+                repoState=repoState,
+                commit1OidStr = commit1OidStr,
+                commit2OidStr=commit2OidStr,
+                commitParentList=commitParentList,
+                repoId = repoId,
+                setErrMsg=setErrMsg,
+                clearErrMsg=clearErrMsg,
+                loadingOn=loadingOn,
+                loadingOff=loadingOff,
+                hasNoConflictItems=hasNoConflictItems,
+                swap=swap,
+                commitForQueryParents=commitForQueryParents,
+                rebaseCurOfAll=rebaseCurOfAll,
+                credentialList=credentialList,
+                repoChanged = {
+                    // debug start (test passed)
 //                    val repoChanged = repoId != repoIdState.value
 //                    if(repoChanged) {
 //                        println("仓库变了！old:$repoId, new: ${repoIdState.value}")
 //                    }
 //                    repoChanged
-                        // debug end
+                    // debug end
 
-                        // production
+                    // production
 
-                        // if true, page changed
-                        pageIdSnapshot != newestPageId.value
-                    }
+                    // if true, page changed
+                    pageIdSnapshot != newestPageId.value
+                }
 
 //        isDiffToHead=isDiffToHead,
 //        headCommitHash=headCommitHash
 //        scope
-                )
+            )
 
-            } catch (e: Exception) {
-                MyLog.e(TAG, "#LaunchedEffect err: ${e.stackTraceToString()}")
-            }
+        } catch (e: Exception) {
+            MyLog.e(TAG, "#LaunchedEffect err: ${e.stackTraceToString()}")
         }
     }
+//    }
 
     DisposableEffect(Unit) {
         onDispose {
