@@ -304,7 +304,6 @@ object ChangeListFunctions {
         }
     }
 
-
     suspend fun doMerge(requireCloseBottomBar:Boolean,
                         upstreamParam: Upstream?,
                         showMsgIfHasConflicts:Boolean,
@@ -427,6 +426,7 @@ object ChangeListFunctions {
         }
 
     }
+
     suspend fun doPush(requireCloseBottomBar:Boolean,
                        upstreamParam:Upstream?,
                        force:Boolean=false,
@@ -436,7 +436,7 @@ object ChangeListFunctions {
                        loadingText:MutableState<String>,
                        bottomBarActDoneCallback:(String)->Unit,
                        dbContainer: AppContainer
-   ) : Boolean {
+    ) : Boolean {
         try {
 //            MyLog.d(TAG, "#doPush: start")
             Repository.open(curRepoFromParentPage.value.fullSavePath).use { repo ->

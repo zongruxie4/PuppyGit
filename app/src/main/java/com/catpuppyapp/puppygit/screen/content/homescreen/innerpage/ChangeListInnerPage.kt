@@ -30,7 +30,6 @@ import androidx.compose.material.icons.outlined.SelectAll
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.MutableIntState
 import androidx.compose.runtime.MutableState
@@ -229,7 +228,7 @@ fun ChangeListInnerPage(
     //这个变量用来在导航返回到这个页面时确保执行LaunchedEffect，不能用rememberSaveable
 //    val needRefreshChangeListPage = remember { mutableStateOf("justForTriggerLaunchedEffectAfterNaviBack") }
     // must make sure the init value 100% difference with `refreshRequiredByParentPage`, so dont use empty string as init value
-    val lastRequireRefreshValue = rememberSaveable { mutableStateOf("TheValueNever=RequireRefresh")}
+//    val lastRequireRefreshValue = rememberSaveable { mutableStateOf("TheValueNever=RequireRefresh")}
 //    val changeListPageWorktreeItemList = remember { mutableStateListOf<StatusTypeEntrySaver>() }
 //    val itemList = mutableCustomStateOf(value = mutableListOf<StatusTypeEntrySaver>())  //这个反正旋转屏幕都会清空，没必要用我写的自定义状态存储器
 //    val changeListPageConflictItemList = mutableCustomStateOf(value = mutableListOf<StatusTypeEntrySaver>())
@@ -2607,6 +2606,8 @@ fun ChangeListInnerPage(
                 return@open
             }
 
+            naviTarget.value = Cons.ChangeListNaviTarget_NoNeedReload
+
             //open file，在子页面打开，不要跳转到主页的editor页面
             openFileWithInnerEditor(item.canonicalPath, item.changeType == Cons.gitStatusConflict)
 
@@ -3196,6 +3197,8 @@ fun ChangeListInnerPage(
                             //添加路径到缓存，然后在diffscreen取出来
                             //                        Cache.Map.set(Cache.Map.Key.diffScreen_UnderRepoPath, item.relativePathUnderRepo)
                             if(it.changeType == Cons.gitStatusConflict) {  //如果是冲突条目，直接用编辑器打开（冲突条目没法预览diff）
+                                naviTarget.value = Cons.ChangeListNaviTarget_NoNeedReload
+
                                 val initMergeMode = true  //因为changeType == conflict，所以这里直接传true即可
                                 openFileWithInnerEditor(it.canonicalPath, initMergeMode)
                             }
@@ -3224,11 +3227,13 @@ fun ChangeListInnerPage(
 
                                 val diffableListKey = Cache.setThenReturnKey(diffableList)
 
+                                naviTarget.value = Cons.ChangeListNaviTarget_NoNeedReload
+
                                 //导航到diffScreen
                                 navController.navigate(
                                     Cons.nav_DiffScreen +
                                             "/" + it.repoIdFromDb +
-                                            //                                    "/" + encodeStrUri(item.relativePathUnderRepo) +
+                                            //    "/" + encodeStrUri(item.relativePathUnderRepo) +
                                             "/" + fromTo +
                                             "/" + it.changeType +
                                             "/" + it.fileSizeInBytes +
@@ -3279,18 +3284,15 @@ fun ChangeListInnerPage(
 //        lastRequireRefreshValue.value = refreshRequiredByParentPage.value
 
     LaunchedEffect(refreshRequiredByParentPage.value) {
-        if(lastRequireRefreshValue.value != refreshRequiredByParentPage.value
-
+        //if navi to Difference page or internal Editor then navi back, actually most time no need reload page
+        if(naviTarget.value == Cons.ChangeListNaviTarget_NoNeedReload){
             // if navi back from Index, need refresh
-            || (isWorktreePage && naviTarget.value != Cons.ChangeListNaviTarget_NoNeedReloadPage)
-        ) {
             naviTarget.value = Cons.ChangeListNaviTarget_InitValue
-            lastRequireRefreshValue.value = refreshRequiredByParentPage.value
-        }else {  // need not refresh
             return@LaunchedEffect
         }
 
 
+        // do reload
         try {
             // this assigned should not be necessary,
             // because remember haven't hold a mutableState value,
