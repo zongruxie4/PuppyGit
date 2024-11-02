@@ -80,7 +80,6 @@ fun ChangeListPageActions(
             iconContentDesc = stringResource(R.string.index),
             iconColor = UIHelper.getIconEnableColorOrNull(changeListHasIndexItems.value)
         ) {
-            naviTarget.value = Cons.ChangeListNaviTarget_Index
             navController.navigate(Cons.nav_IndexScreen)
         }
     }

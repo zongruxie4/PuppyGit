@@ -229,7 +229,7 @@ fun ChangeListInnerPage(
     //这个变量用来在导航返回到这个页面时确保执行LaunchedEffect，不能用rememberSaveable
 //    val needRefreshChangeListPage = remember { mutableStateOf("justForTriggerLaunchedEffectAfterNaviBack") }
     // must make sure the init value 100% difference with `refreshRequiredByParentPage`, so dont use empty string as init value
-    val lastRequireRefreshValue = rememberSaveable { mutableStateOf(getShortUUID())}
+    val lastRequireRefreshValue = rememberSaveable { mutableStateOf("TheValueNever=RequireRefresh")}
 //    val changeListPageWorktreeItemList = remember { mutableStateListOf<StatusTypeEntrySaver>() }
 //    val itemList = mutableCustomStateOf(value = mutableListOf<StatusTypeEntrySaver>())  //这个反正旋转屏幕都会清空，没必要用我写的自定义状态存储器
 //    val changeListPageConflictItemList = mutableCustomStateOf(value = mutableListOf<StatusTypeEntrySaver>())
@@ -2793,7 +2793,6 @@ fun ChangeListInnerPage(
                                     style = MyStyleKt.ClickableText.style,
                                     modifier = MyStyleKt.ClickableText.modifierNoPadding
                                         .clickable {  //导航到Index页面
-                                            naviTarget.value = Cons.ChangeListNaviTarget_Index
                                             navController.navigate(Cons.nav_IndexScreen)
                                         }
                                     ,
@@ -3283,7 +3282,7 @@ fun ChangeListInnerPage(
         if(lastRequireRefreshValue.value != refreshRequiredByParentPage.value
 
             // if navi back from Index, need refresh
-            || (isWorktreePage && naviTarget.value == Cons.ChangeListNaviTarget_Index)
+            || (isWorktreePage && naviTarget.value != Cons.ChangeListNaviTarget_NoNeedReloadPage)
         ) {
             naviTarget.value = Cons.ChangeListNaviTarget_InitValue
             lastRequireRefreshValue.value = refreshRequiredByParentPage.value

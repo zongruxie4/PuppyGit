@@ -10,7 +10,7 @@ class Cons {
     companion object {
 
         const val ChangeListNaviTarget_InitValue = "cl_navi_init_value"
-        const val ChangeListNaviTarget_Index = "cl_navi_to_index"
+        const val ChangeListNaviTarget_NoNeedReloadPage = "cl_navi_no_need_reload"
 
             // use as path separator
         const val slash = "/"
