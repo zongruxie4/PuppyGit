@@ -31,4 +31,5 @@
   - show/hide +/- sign for add/del line
 - squash commits
 - ChangeList: view difference of all changed files in one page(提供一个入口，点击进入diff页面，可预览所有修改过的文件的diff内容）
+- support terminal: provide a git cli by termux, can use ssh or intent to communicate with termux, but, the only sense of this feature is can let termux use credential provided by PuppyGit, in other case, users can use ssh client instead or direct use Termux
 - <del> (checked, actually is fine) check code, fix memory leak: I bet this code has many memory leak, because in git24j, many constructors create instance with weak ptr, which hold instance, but never free it </del>
