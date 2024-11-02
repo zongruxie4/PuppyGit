@@ -225,7 +225,9 @@ fun ChangeListInnerPage(
     val showAbortMergeDialog = rememberSaveable { mutableStateOf(false)}
     val showMergeAcceptTheirsOrOursDialog = rememberSaveable { mutableStateOf(false)}
     val mergeAcceptTheirs = rememberSaveable { mutableStateOf(false)}
-//    val needRefreshChangeListPage = rememberSaveable { mutableStateOf("") }
+    //this state used for make navi back to this page do LaunchedEffect, it must not rememberSaveable
+    //这个变量用来在导航返回到这个页面时确保执行LaunchedEffect，不能用rememberSaveable
+//    val needRefreshChangeListPage = remember { mutableStateOf("justForTriggerLaunchedEffectAfterNaviBack") }
     // must make sure the init value 100% difference with `refreshRequiredByParentPage`, so dont use empty string as init value
     val lastRequireRefreshValue = rememberSaveable { mutableStateOf(getShortUUID())}
 //    val changeListPageWorktreeItemList = remember { mutableStateListOf<StatusTypeEntrySaver>() }
@@ -2791,6 +2793,7 @@ fun ChangeListInnerPage(
                                     style = MyStyleKt.ClickableText.style,
                                     modifier = MyStyleKt.ClickableText.modifierNoPadding
                                         .clickable {  //导航到Index页面
+                                            naviTarget.value = Cons.ChangeListNaviTarget_Index
                                             navController.navigate(Cons.nav_IndexScreen)
                                         }
                                     ,
@@ -3351,12 +3354,12 @@ fun ChangeListInnerPage(
     }
 //    }
 
-    DisposableEffect(Unit) {
-        onDispose {
-            //退出时，把父页面传来的变量重置一下，不然有可能发生editor页面没刷新那样的bug
-            changeListPageHasIndexItem.value = false
-        }
-    }
+//    DisposableEffect(Unit) {
+//        onDispose {
+//            //退出时，把父页面传来的变量重置一下，不然有可能发生editor页面没刷新那样的bug
+//            changeListPageHasIndexItem.value = false
+//        }
+//    }
 }
 
 
@@ -3405,6 +3408,7 @@ private fun changeListInit(
             clearErrMsg()
             //先设置无仓库为假，后面如果查了发现确实没会改成真
             changeListPageNoRepo.value=false
+            changeListPageHasIndexItem.value=false
             //先清空列表
             //TODO 这里实现恢复的逻辑，如果列表不为空，就直接恢复数据，不清空列表，也不重新查询，如果刷新，加个flag，强制重新查询
             itemList.value.clear()
