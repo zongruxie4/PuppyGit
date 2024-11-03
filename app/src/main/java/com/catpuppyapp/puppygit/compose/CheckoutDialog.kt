@@ -309,7 +309,7 @@ fun CheckoutDialog(
                     MyCheckBox(text = stringResource(R.string.force), value = forceCheckout)
 
                     if(forceCheckout.value) {
-                        Row { Text(text = stringResource(R.string.warn_force_checkout_will_overwrite_uncommitted_changes), color = MyStyleKt.TextColor.danger) }
+                        Row { Text(text = stringResource(R.string.warn_force_checkout_will_overwrite_uncommitted_changes), color = MyStyleKt.TextColor.danger()) }
                     }
                 }
 

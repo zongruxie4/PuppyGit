@@ -274,7 +274,7 @@ fun ErrorListScreen(
         if(showClearAllConfirmDialog.value) {
             ConfirmDialog(title=stringResource(R.string.clear_all),
                 text=stringResource(R.string.clear_all_ask_text),
-                okTextColor = MyStyleKt.TextColor.danger,
+                okTextColor = MyStyleKt.TextColor.danger(),
                 onCancel = {showClearAllConfirmDialog.value=false},  //关闭弹窗
                 onOk = {
                     showClearAllConfirmDialog.value=false  //关闭弹窗
@@ -288,7 +288,7 @@ fun ErrorListScreen(
 //                BottomSheetItem(sheetState=sheetState, showBottomSheet=showBottomSheet, text=stringResource(R.string.view_msg)){
 //                    //弹窗显示错误信息，可复制
 //                }
-                BottomSheetItem(sheetState=sheetState, showBottomSheet=showBottomSheet, text=stringResource(R.string.delete), textColor = MyStyleKt.TextColor.danger){
+                BottomSheetItem(sheetState=sheetState, showBottomSheet=showBottomSheet, text=stringResource(R.string.delete), textColor = MyStyleKt.TextColor.danger()){
                     // onClick()
                     //在这里可以直接用state curObj取到当前选中条目，curObjInState在长按条目后会被更新为当前被长按的条目
                     // 不用确认，直接删除，可以有撤销的snackbar，但非必须

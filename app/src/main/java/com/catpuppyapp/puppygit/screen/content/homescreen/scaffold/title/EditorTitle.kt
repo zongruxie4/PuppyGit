@@ -109,7 +109,7 @@ fun EditorTitle(editorPageShowingFilePath: MutableState<String>,
                         fontSize = 15.sp,
                         maxLines=1,
                         overflow = TextOverflow.Ellipsis,
-                        color = if(editorPageMergeMode) MyStyleKt.TextColor.danger else Color.Unspecified
+                        color = if(editorPageMergeMode) MyStyleKt.TextColor.danger() else Color.Unspecified
                     )
                 }
                 Row(modifier = Modifier.horizontalScroll(rememberScrollState())) {

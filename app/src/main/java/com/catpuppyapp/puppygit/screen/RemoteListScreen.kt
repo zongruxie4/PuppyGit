@@ -186,7 +186,7 @@ fun RemoteListScreen(
         ConfirmDialog(
             title = stringResource(id = R.string.delete) +" '$remoteNameWillDel'",
             text = stringResource(id = R.string.are_you_sure),
-            okTextColor = MyStyleKt.TextColor.danger,
+            okTextColor = MyStyleKt.TextColor.danger(),
             onCancel = { showDelRemoteDialog.value = false }
         ) {
             showDelRemoteDialog.value = false
@@ -838,7 +838,7 @@ fun RemoteListScreen(
 
                 //添加remote和删除remote配套，都是pro feature，不能只开放其中一个，不然会有问题，想像一下，你就一个remote，而你删了它，但没法创建，是不是很不合理？所以删除和添加应该配套，一个是pro feature另一个也必须是
                 if(proFeatureEnabled(createRemoteTestPassed)) {
-                    BottomSheetItem(sheetState=sheetState, showBottomSheet=showBottomSheet, text=stringResource(R.string.delete), textColor = MyStyleKt.TextColor.danger){
+                    BottomSheetItem(sheetState=sheetState, showBottomSheet=showBottomSheet, text=stringResource(R.string.delete), textColor = MyStyleKt.TextColor.danger()){
                         showDelRemoteDialog.value=true
                     }
                 }

@@ -214,7 +214,7 @@ fun CreateBranchDialog(
                         if(forceCheckout.value) {
                             Row {
                                 Text(text = stringResource(R.string.warn_force_checkout_will_overwrite_uncommitted_changes),
-                                    color = MyStyleKt.TextColor.danger
+                                    color = MyStyleKt.TextColor.danger()
                                 )
                             }
 

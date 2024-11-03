@@ -51,7 +51,7 @@ fun IndexScreenTitle(
     Libgit2Helper.setRepoStateText(repoState.intValue, needShowRepoState, repoStateText, appContext)
 
     val getTitleColor = {
-        if(repoState.intValue == Repository.StateT.MERGE.bit || repoState.intValue == Repository.StateT.REBASE_MERGE.bit || repoState.intValue==Repository.StateT.CHERRYPICK.bit) Color.Red else Color.Unspecified
+        if(repoState.intValue == Repository.StateT.MERGE.bit || repoState.intValue == Repository.StateT.REBASE_MERGE.bit || repoState.intValue==Repository.StateT.CHERRYPICK.bit) MyStyleKt.TextColor.danger() else Color.Unspecified
     }
 
     Column(modifier = Modifier

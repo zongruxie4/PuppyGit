@@ -1058,7 +1058,7 @@ fun BranchListScreen(
 
                         if(forcePublish.value) {
                             Text(text = stringResource(R.string.will_force_overwrite_remote_branch_even_it_is_ahead_to_local),
-                                color = MyStyleKt.TextColor.danger)
+                                color = MyStyleKt.TextColor.danger())
                         }
                     }
                 },
@@ -1475,7 +1475,7 @@ fun BranchListScreen(
                     }
                 }
 
-                BottomSheetItem(sheetState, showBottomSheet, stringResource(R.string.delete), textColor = MyStyleKt.TextColor.danger,
+                BottomSheetItem(sheetState, showBottomSheet, stringResource(R.string.delete), textColor = MyStyleKt.TextColor.danger(),
                     //只能删除非当前分支，不过如果是detached，所有分支都能删。这个不做检测了，因为就算界面出了问题，用户针对当前分支执行了删除操作，libgit2也会抛异常，所以还是不会被执行。
                     enabled = curObjInPage.value.shortName != repoCurrentActiveBranchOrShortDetachedHashForShown.value
                 ){

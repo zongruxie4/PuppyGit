@@ -129,7 +129,7 @@ fun CredentialRemoteListScreen(
     if(showUnLinkAllDialog.value) {
         ConfirmDialog(title = stringResource(id = R.string.unlink_all),
             text = stringResource(id = R.string.unlink_all_ask_text),
-            okTextColor = MyStyleKt.TextColor.danger,
+            okTextColor = MyStyleKt.TextColor.danger(),
             onCancel = {showUnLinkAllDialog.value=false }
         ) {
             showUnLinkAllDialog.value=false
@@ -140,7 +140,7 @@ fun CredentialRemoteListScreen(
     if(showOverrideLinkDialog.value) {
         ConfirmDialog(title = stringResource(id = R.string.override_link),
             text = stringResource(id = R.string.override_link_ask_text),
-            okTextColor = MyStyleKt.TextColor.danger,
+            okTextColor = MyStyleKt.TextColor.danger(),
             onCancel = {showOverrideLinkDialog.value=false }
         ) {
             showOverrideLinkDialog.value=false

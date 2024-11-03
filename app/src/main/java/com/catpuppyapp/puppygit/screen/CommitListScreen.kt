@@ -475,7 +475,7 @@ fun CommitListScreen(
                     if(forceSquash.value) {
                         Text(
                             stringResource(R.string.if_index_contains_uncommitted_changes_will_commit_as_well),
-                            color = MyStyleKt.TextColor.danger
+                            color = MyStyleKt.TextColor.danger()
                         )
                     }
 

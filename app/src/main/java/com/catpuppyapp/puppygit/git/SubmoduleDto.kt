@@ -2,6 +2,7 @@ package com.catpuppyapp.puppygit.git
 
 import androidx.compose.ui.graphics.Color
 import com.catpuppyapp.puppygit.play.pro.R
+import com.catpuppyapp.puppygit.style.MyStyleKt
 import com.catpuppyapp.puppygit.utils.AppModel
 import com.github.git24j.core.Submodule
 
@@ -31,7 +32,7 @@ data class SubmoduleDto (
 
     fun getStatusColor(): Color {
         return if(tempStatus.isNotBlank()) {
-            Color.Red
+            MyStyleKt.TextColor.danger()
         }else if(cloned) {
             Color(0xFF4CAF50)
         }else {

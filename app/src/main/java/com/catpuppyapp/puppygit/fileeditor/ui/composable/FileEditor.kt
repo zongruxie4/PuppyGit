@@ -137,7 +137,7 @@ fun FileEditor(requestFromParent:MutableState<String>,
         ConfirmDialog(
             title = stringResource(R.string.delete_lines),
             text = replaceStringResList(stringResource(R.string.will_delete_n_lines_ask), listOf(textEditorState.value.getSelectedCount().toString())) ,
-            okTextColor = MyStyleKt.TextColor.danger,
+            okTextColor = MyStyleKt.TextColor.danger(),
             onCancel = { showDeleteDialog.value=false }
         ) {
             //关弹窗

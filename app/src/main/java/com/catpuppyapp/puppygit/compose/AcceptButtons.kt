@@ -35,27 +35,32 @@ fun AcceptButtons(
     lineIndex: Int,
     lineText: String,
     prepareAcceptBlock: (Boolean, Boolean, Int, String) -> Unit,
-    conflictOursBlockBgColor: Color,
-    conflictTheirsBlockBgColor: Color,
-    conflictSplitLineBgColor: Color,
-    useLongPressedIconVersion:Boolean = true,
+//    conflictOursBlockBgColor: Color,
+//    conflictTheirsBlockBgColor: Color,
+//    conflictSplitLineBgColor: Color,
+//    useLongPressedIconVersion:Boolean = true,
 ) {
-    if(useLongPressedIconVersion) {
-        AcceptButtons_LongPressedIcon(
-            lineIndex = lineIndex,
-            lineText = lineText,
-            prepareAcceptBlock = prepareAcceptBlock,
-        )
-    }else {
-        AcceptButtons_TextButton(
-            lineIndex = lineIndex,
-            lineText = lineText,
-            prepareAcceptBlock = prepareAcceptBlock,
-            conflictOursBlockBgColor = conflictOursBlockBgColor,
-            conflictTheirsBlockBgColor = conflictTheirsBlockBgColor,
-            conflictSplitLineBgColor = conflictSplitLineBgColor
-        )
-    }
+    AcceptButtons_LongPressedIcon(
+        lineIndex = lineIndex,
+        lineText = lineText,
+        prepareAcceptBlock = prepareAcceptBlock,
+    )
+//    if(useLongPressedIconVersion) {
+//        AcceptButtons_LongPressedIcon(
+//            lineIndex = lineIndex,
+//            lineText = lineText,
+//            prepareAcceptBlock = prepareAcceptBlock,
+//        )
+//    }else {
+//        AcceptButtons_TextButton(
+//            lineIndex = lineIndex,
+//            lineText = lineText,
+//            prepareAcceptBlock = prepareAcceptBlock,
+//            conflictOursBlockBgColor = conflictOursBlockBgColor,
+//            conflictTheirsBlockBgColor = conflictTheirsBlockBgColor,
+//            conflictSplitLineBgColor = conflictSplitLineBgColor
+//        )
+//    }
 }
 
 
@@ -115,52 +120,52 @@ private fun AcceptButtons_LongPressedIcon(
     }
 }
 
-
-/**
- * if text long, this may over-sized
- */
-@Composable
-private fun AcceptButtons_TextButton(
-    lineIndex: Int,
-    lineText: String,
-    prepareAcceptBlock: (Boolean, Boolean, Int, String) -> Unit,
-    conflictOursBlockBgColor: Color,
-    conflictTheirsBlockBgColor: Color,
-    conflictSplitLineBgColor: Color
-) {
-    Row {
-        TextButton(
-            colors = ButtonDefaults.textButtonColors().copy(containerColor = conflictOursBlockBgColor),
-            onClick = {
-                prepareAcceptBlock(true, false, lineIndex, lineText)
-            },
-        ) {
-            Text(stringResource(R.string.accept_ours))
-        }
-        TextButton(
-            colors = ButtonDefaults.textButtonColors().copy(containerColor = conflictTheirsBlockBgColor),
-            onClick = {
-                prepareAcceptBlock(false, true, lineIndex, lineText)
-            }
-        ) {
-            Text(stringResource(R.string.accept_theirs))
-        }
-        TextButton(
-            colors = ButtonDefaults.textButtonColors().copy(containerColor = conflictSplitLineBgColor.copy(alpha = .5f)),
-            onClick = {
-                prepareAcceptBlock(true, true, lineIndex, lineText)
-            }
-        ) {
-            Text(stringResource(R.string.accept_both))
-        }
-        TextButton(
-            colors = ButtonDefaults.textButtonColors().copy(containerColor = MyStyleKt.TextColor.danger.copy(alpha = .3f)),
-            onClick = {
-                prepareAcceptBlock(false, false, lineIndex, lineText)
-            }
-        ) {
-            Text(stringResource(R.string.reject_both))
-        }
-    }
-}
-
+//
+///**
+// * if text long, this may over-sized
+// */
+//@Composable
+//private fun AcceptButtons_TextButton(
+//    lineIndex: Int,
+//    lineText: String,
+//    prepareAcceptBlock: (Boolean, Boolean, Int, String) -> Unit,
+//    conflictOursBlockBgColor: Color,
+//    conflictTheirsBlockBgColor: Color,
+//    conflictSplitLineBgColor: Color
+//) {
+//    Row {
+//        TextButton(
+//            colors = ButtonDefaults.textButtonColors().copy(containerColor = conflictOursBlockBgColor),
+//            onClick = {
+//                prepareAcceptBlock(true, false, lineIndex, lineText)
+//            },
+//        ) {
+//            Text(stringResource(R.string.accept_ours))
+//        }
+//        TextButton(
+//            colors = ButtonDefaults.textButtonColors().copy(containerColor = conflictTheirsBlockBgColor),
+//            onClick = {
+//                prepareAcceptBlock(false, true, lineIndex, lineText)
+//            }
+//        ) {
+//            Text(stringResource(R.string.accept_theirs))
+//        }
+//        TextButton(
+//            colors = ButtonDefaults.textButtonColors().copy(containerColor = conflictSplitLineBgColor.copy(alpha = .5f)),
+//            onClick = {
+//                prepareAcceptBlock(true, true, lineIndex, lineText)
+//            }
+//        ) {
+//            Text(stringResource(R.string.accept_both))
+//        }
+//        TextButton(
+//            colors = ButtonDefaults.textButtonColors().copy(containerColor = MyStyleKt.TextColor.danger()),
+//            onClick = {
+//                prepareAcceptBlock(false, false, lineIndex, lineText)
+//            }
+//        ) {
+//            Text(stringResource(R.string.reject_both))
+//        }
+//    }
+//}
+//

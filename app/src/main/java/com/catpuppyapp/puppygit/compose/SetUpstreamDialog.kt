@@ -72,7 +72,7 @@ fun SetUpstreamDialog(
 
                 if(remoteList.isEmpty()){  //remotelist为空，显示提示，同时应禁用ok按钮
                     Text(text = stringResource(R.string.err_remote_list_is_empty),
-                        color = MyStyleKt.TextColor.error)
+                        color = MyStyleKt.TextColor.error())
                 }else{
 
                     SingleSelectList(optionsList = remoteList, selectedOptionIndex = selectedOption)

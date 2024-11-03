@@ -139,7 +139,7 @@ fun CreateTagDialog(showDialog:MutableState<Boolean>,
                 if(annotate.value) {
                     if(gitConfigUsername.value.isEmpty() || gitConfigEmail.value.isEmpty()) {  //未设置用户名和邮箱
                         Text(text = stringResource(R.string.err_must_set_username_and_email_before_create_annotate_tag),
-                            color = MyStyleKt.TextColor.error
+                            color = MyStyleKt.TextColor.error()
                         )
                     }else {  //设置了用户名和邮箱，显示msg输入框
                         Row(modifier = Modifier.padding(5.dp)) {
@@ -185,7 +185,7 @@ fun CreateTagDialog(showDialog:MutableState<Boolean>,
                 if(force.value) {
                     Row {
                         Text(text = stringResource(R.string.warn_will_override_if_tag_name_already_exists),
-                            color = MyStyleKt.TextColor.danger
+                            color = MyStyleKt.TextColor.danger()
                         )
                     }
                 }

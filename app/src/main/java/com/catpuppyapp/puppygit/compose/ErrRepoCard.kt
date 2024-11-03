@@ -164,7 +164,7 @@ fun ErrRepoCard(
                     horizontalArrangement = Arrangement.Center
                 ) {
                     Text(text = stringResource(R.string.error)+":"+repoDto.createErrMsg,
-                        color= Color.Red,
+                        color= MyStyleKt.TextColor.error(),
                         textAlign = TextAlign.Left,
 
                         )

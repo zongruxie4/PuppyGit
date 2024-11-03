@@ -807,14 +807,14 @@ fun RepoInnerPage(
                         }
                         if(requireDelFilesOnDisk.value) {
                             Text(text = "("+stringResource(R.string.will_delete_repo_and_all_its_files_on_disk)+")",
-                                color = MyStyleKt.TextColor.danger
+                                color = MyStyleKt.TextColor.danger()
                             )
                         }
                     }
                 }
 
             },
-            okTextColor = MyStyleKt.TextColor.danger,
+            okTextColor = MyStyleKt.TextColor.danger(),
             onCancel = { showDelRepoDialog.value=false }
         ) {
             //关闭弹窗
@@ -964,7 +964,7 @@ fun RepoInnerPage(
                                   Text(text = stringResource(R.string.are_you_sure),
                                   )
                                   Text(text = "("+stringResource(R.string.unshallow_success_cant_back)+")",
-                                      color = Color.Red
+                                      color = MyStyleKt.TextColor.danger()
                                   )
                               }
                           }
@@ -1197,7 +1197,7 @@ fun RepoInnerPage(
                 }
             }
 
-            BottomSheetItem(sheetState, showBottomSheet, stringResource(R.string.delete), textColor = MyStyleKt.TextColor.danger) {
+            BottomSheetItem(sheetState, showBottomSheet, stringResource(R.string.delete), textColor = MyStyleKt.TextColor.danger()) {
                 requireDelRepo(curRepo.value)
             }
         }

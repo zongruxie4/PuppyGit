@@ -355,7 +355,7 @@ fun EditorInnerPage(
             ConfirmDialog(
                 title = stringResource(id = R.string.close),
                 text = stringResource(id = R.string.will_close_file_are_u_sure),
-                okTextColor = MyStyleKt.TextColor.danger,
+                okTextColor = MyStyleKt.TextColor.danger(),
                 onCancel = { showCloseDialog.value=false }
             ) {
                 showCloseDialog.value=false
@@ -409,7 +409,7 @@ fun EditorInnerPage(
             ConfirmDialog(
                 title = stringResource(id = R.string.reload_file),
                 text = stringResource(id = R.string.will_reload_file_are_u_sure),
-                okTextColor = MyStyleKt.TextColor.danger,
+                okTextColor = MyStyleKt.TextColor.danger(),
                 onCancel = { showReloadDialog.value=false }
             ) {
                 showReloadDialog.value=false

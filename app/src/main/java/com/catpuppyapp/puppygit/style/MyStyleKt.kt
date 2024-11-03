@@ -12,6 +12,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.catpuppyapp.puppygit.ui.theme.Theme
 
 class MyStyleKt{
 
@@ -72,9 +73,10 @@ class MyStyleKt{
         val darkThemeFontColor = Color.Gray
         val darkThemeSecondaryFontColor = Color.DarkGray
 
-        val error = Color.Red
+        fun error() = if(Theme.inDarkTheme) Color(0xFFF53737) else Color.Red.copy(alpha = .8f)
+//        fun error() = Color.Red.copy(alpha = .8f)
 
-        val danger = Color.Red
+        fun danger() = error()
     }
 
     object TextSize {

@@ -956,9 +956,9 @@ fun TextEditor(
                                 lineIndex = index,
                                 lineText = curLineText,
                                 prepareAcceptBlock = prepareAcceptBlock,
-                                conflictOursBlockBgColor = conflictOursBlockBgColor,
-                                conflictTheirsBlockBgColor = conflictTheirsBlockBgColor,
-                                conflictSplitLineBgColor = conflictSplitLineBgColor
+//                                conflictOursBlockBgColor = conflictOursBlockBgColor,
+//                                conflictTheirsBlockBgColor = conflictTheirsBlockBgColor,
+//                                conflictSplitLineBgColor = conflictSplitLineBgColor
                             )
                         }
                     }
@@ -1131,9 +1131,9 @@ fun TextEditor(
                                 lineIndex = index,
                                 lineText = curLineText,
                                 prepareAcceptBlock = prepareAcceptBlock,
-                                conflictOursBlockBgColor = conflictOursBlockBgColor,
-                                conflictTheirsBlockBgColor = conflictTheirsBlockBgColor,
-                                conflictSplitLineBgColor = conflictSplitLineBgColor
+//                                conflictOursBlockBgColor = conflictOursBlockBgColor,
+//                                conflictTheirsBlockBgColor = conflictTheirsBlockBgColor,
+//                                conflictSplitLineBgColor = conflictSplitLineBgColor
                             )
                         }
                     }

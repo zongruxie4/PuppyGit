@@ -1089,7 +1089,7 @@ fun FilesInnerPage(
                     verticalArrangement = Arrangement.Center,
                     horizontalAlignment = Alignment.CenterHorizontally,
                 ) {
-                    Text(openDirErr.value, color=MyStyleKt.TextColor.error)
+                    Text(openDirErr.value, color=MyStyleKt.TextColor.error())
                 }
             }else {
                 val k = filesPageSimpleFilterKeyWord.value.text.lowercase()  //关键字
@@ -1304,7 +1304,7 @@ fun FilesInnerPage(
         ConfirmDialog2(
             title = stringResource(id = R.string.delete),
             text = replaceStringResList(stringResource(R.string.n_items_will_be_deleted), listOf(""+allCountForDelDialog.value)),
-            okTextColor = MyStyleKt.TextColor.danger,
+            okTextColor = MyStyleKt.TextColor.danger(),
             onCancel = { showDelFileDialog.value=false }
         ) {
             //关闭弹窗

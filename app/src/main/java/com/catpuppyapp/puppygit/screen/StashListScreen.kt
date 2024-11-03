@@ -199,7 +199,7 @@ fun StashListScreen(
         ConfirmDialog(
             title = stringResource(R.string.pop),
             text = stringResource(R.string.will_apply_then_delete_item_are_you_sure),
-            okTextColor = MyStyleKt.TextColor.danger,
+            okTextColor = MyStyleKt.TextColor.danger(),
             onCancel = { showPopDialog.value=false}
         ) {
             showPopDialog.value=false
@@ -227,7 +227,7 @@ fun StashListScreen(
         ConfirmDialog(
             title = stringResource(R.string.apply),
             text = stringResource(R.string.will_apply_item_are_you_sure),
-            okTextColor = MyStyleKt.TextColor.danger,
+            okTextColor = MyStyleKt.TextColor.danger(),
             onCancel = { showApplyDialog.value=false}
         ) {
             showApplyDialog.value=false
@@ -255,7 +255,7 @@ fun StashListScreen(
         ConfirmDialog(
             title = stringResource(R.string.apply),
             text = stringResource(R.string.will_delete_item_are_you_sure),
-            okTextColor = MyStyleKt.TextColor.danger,
+            okTextColor = MyStyleKt.TextColor.danger(),
             onCancel = { showDelDialog.value=false}
         ) {
             showDelDialog.value=false
@@ -473,7 +473,7 @@ fun StashListScreen(
                 ){
                     showApplyDialog.value = true
                 }
-                BottomSheetItem(sheetState, showBottomSheet, stringResource(R.string.delete), textColor = MyStyleKt.TextColor.danger,
+                BottomSheetItem(sheetState, showBottomSheet, stringResource(R.string.delete), textColor = MyStyleKt.TextColor.danger(),
                 ){
                     showDelDialog.value = true
                 }

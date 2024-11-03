@@ -739,13 +739,13 @@ fun ChangeListInnerPage(
             textCompose = {
                 Column {
                     Text(stringResource(id = R.string.will_force_overwrite_remote_branch_even_it_is_ahead_to_local),
-                        color = MyStyleKt.TextColor.danger
+                        color = MyStyleKt.TextColor.danger()
                     )
                     Spacer(modifier = Modifier.height(10.dp))
                     Text(stringResource(id = R.string.are_you_sure))
                 }
             },
-            okTextColor = MyStyleKt.TextColor.danger,
+            okTextColor = MyStyleKt.TextColor.danger(),
             onCancel = { showPushForceDialog.value = false }
         ) {
             showPushForceDialog.value = false
@@ -1386,7 +1386,7 @@ fun ChangeListInnerPage(
         ConfirmDialog(
             title=stringResource(R.string.abort_merge),
             text=stringResource(R.string.abort_merge_notice_text),
-            okTextColor = MyStyleKt.TextColor.danger,
+            okTextColor = MyStyleKt.TextColor.danger(),
             onCancel = {
                 showAbortMergeDialog.value=false
             }
@@ -1422,7 +1422,7 @@ fun ChangeListInnerPage(
         ConfirmDialog(
             title=if(acceptTheirs) stringResource(R.string.accept_theirs) else stringResource(R.string.accept_ours),
             text=stringResource(R.string.ask_do_operation_for_selected_conflict_items),
-            okTextColor = MyStyleKt.TextColor.danger,
+            okTextColor = MyStyleKt.TextColor.danger(),
             onCancel = {
                 showMergeAcceptTheirsOrOursDialog.value=false
             }
@@ -2043,13 +2043,13 @@ fun ChangeListInnerPage(
                     if(checkoutForce.value) {
                         Text(text = stringResource(R.string.if_local_has_uncommitted_changes_will_overwrite),
                             fontWeight = FontWeight.Light,
-                            color = MyStyleKt.TextColor.danger,
+                            color = MyStyleKt.TextColor.danger(),
                             modifier=Modifier.padding(horizontal = MyStyleKt.CheckoutBox.horizontalPadding)
                         )
                     }
                 }
             },
-            okTextColor = if(checkoutForce.value) MyStyleKt.TextColor.danger else Color.Unspecified,
+            okTextColor = if(checkoutForce.value) MyStyleKt.TextColor.danger() else Color.Unspecified,
             onCancel = { showCheckoutFilesDialog.value = false }
         ) {
             showCheckoutFilesDialog.value = false
@@ -2742,7 +2742,7 @@ fun ChangeListInnerPage(
         ConfirmDialog(
             title=stringResource(R.string.revert),
             text=stringResource(R.string.will_revert_modified_or_deleted_and_rm_new_files_are_you_sure),
-            okTextColor = MyStyleKt.TextColor.danger,
+            okTextColor = MyStyleKt.TextColor.danger(),
             onCancel = {showRevertAlert.value=false}
         ) {  //onOk
             showRevertAlert.value=false
@@ -2776,7 +2776,7 @@ fun ChangeListInnerPage(
 
             ) {
                 MySelectionContainer {
-                    Text(errMsg.value, color = MyStyleKt.TextColor.error)
+                    Text(errMsg.value, color = MyStyleKt.TextColor.error())
                 }
             }
         }else {  //有仓库，但条目列表为空，可能没修改的东西，这时显示仓库是否clean是否和远程同步等信息

@@ -239,7 +239,7 @@ fun DomainCredentialListScreen(
         ConfirmDialog(
             title = stringResource(R.string.delete_credential),
             text = stringResource(R.string.are_you_sure),
-            okTextColor = MyStyleKt.TextColor.danger,
+            okTextColor = MyStyleKt.TextColor.danger(),
             onCancel = { showDeleteDialog.value = false }
         ) {   // onOk
             showDeleteDialog.value=false
@@ -416,7 +416,7 @@ fun DomainCredentialListScreen(
     //                //显示弹窗，询问将会与所有remotes解除关联，是否确定？
     //            }
 
-                BottomSheetItem(sheetState=sheetState, showBottomSheet=showBottomSheet, text=stringResource(R.string.delete), textColor = MyStyleKt.TextColor.danger){
+                BottomSheetItem(sheetState=sheetState, showBottomSheet=showBottomSheet, text=stringResource(R.string.delete), textColor = MyStyleKt.TextColor.danger()){
                     showDeleteDialog.value=true
                 }
             }

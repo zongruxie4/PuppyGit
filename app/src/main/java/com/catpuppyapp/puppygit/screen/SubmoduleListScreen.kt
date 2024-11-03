@@ -848,7 +848,7 @@ fun SubmoduleListScreen(
 
                     MyCheckBox(text = stringResource(R.string.recursive), value = recursiveClone)
                     if(recursiveClone.value) {
-                        Text(stringResource(R.string.recursive_clone_submodule_nested_loop_warn), color = MyStyleKt.TextColor.danger)
+                        Text(stringResource(R.string.recursive_clone_submodule_nested_loop_warn), color = MyStyleKt.TextColor.danger())
                     }
                     Spacer(Modifier.height(10.dp))
 
@@ -955,7 +955,7 @@ fun SubmoduleListScreen(
 
                     MyCheckBox(text = stringResource(R.string.recursive), value = recursiveUpdate)
                     if(recursiveUpdate.value) {
-                        Text(stringResource(R.string.recursive_update_submodule_nested_loop_warn), color = MyStyleKt.TextColor.danger)
+                        Text(stringResource(R.string.recursive_update_submodule_nested_loop_warn), color = MyStyleKt.TextColor.danger())
                     }
                     Spacer(Modifier.height(10.dp))
 

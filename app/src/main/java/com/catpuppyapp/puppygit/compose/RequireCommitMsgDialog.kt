@@ -57,7 +57,7 @@ fun RequireCommitMsgDialog(
             ScrollableColumn {
                 if(repoState==Repository.StateT.NONE.bit && amend.value.not() && indexIsEmptyForCommitDialog.value) {
                     Row(modifier = Modifier.padding(5.dp)) {
-                        Text(text = stringResource(R.string.warn_index_is_empty_will_create_a_empty_commit), color = MyStyleKt.TextColor.danger)
+                        Text(text = stringResource(R.string.warn_index_is_empty_will_create_a_empty_commit), color = MyStyleKt.TextColor.danger())
                     }
                 }
 

@@ -194,7 +194,7 @@ fun TagFetchPushDialog(
                                 Text(text = if(trueFetchFalsePush) stringResource(R.string.warn_remote_tag_override_local_tag)
                                             else stringResource(R.string.warn_local_tag_override_remote_tag)
                                     ,
-                                    color = MyStyleKt.TextColor.danger
+                                    color = MyStyleKt.TextColor.danger()
                                 )
                             }
                         }

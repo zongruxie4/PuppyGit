@@ -174,7 +174,7 @@ fun DiffContent(
         ) {
             Row {
                 if(loadingFinishedButHasErr) {
-                    Text(text = errMsgState.value, color = MyStyleKt.TextColor.error)
+                    Text(text = errMsgState.value, color = MyStyleKt.TextColor.error())
                 } else if(unsupportedChangeType){
                     Text(text = stringResource(R.string.unknown_change_type))
                 }else if(loading.value) {
