@@ -97,7 +97,7 @@ fun ChangeListTitle(
 
     val getTitleColor={
             if(enableAction) {
-                if(repoState.intValue == Repository.StateT.MERGE.bit || repoState.intValue == Repository.StateT.REBASE_MERGE.bit || repoState.intValue==Repository.StateT.CHERRYPICK.bit) MyStyleKt.TextColor.danger() else Color.Unspecified
+                UIHelper.getChangeListTitleColor(repoState.intValue)
             } else {
                 UIHelper.getDisableBtnColor(inDarkTheme)
             }

@@ -15,10 +15,11 @@ import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
+import com.catpuppyapp.puppygit.fileeditor.texteditor.view.ExpectConflictStrDto
 import com.catpuppyapp.puppygit.settings.AppSettings
 import com.catpuppyapp.puppygit.style.MyStyleKt
 import com.catpuppyapp.puppygit.ui.theme.Theme
-import com.catpuppyapp.puppygit.fileeditor.texteditor.view.ExpectConflictStrDto
+import com.github.git24j.core.Repository
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
 
@@ -284,5 +285,9 @@ object UIHelper {
     fun getIconForSwitcher(state: MutableState<Boolean>) = if (state.value) Icons.Filled.ToggleOn else Icons.Filled.ToggleOff
 
     fun getColorForSwitcher(state: MutableState<Boolean>) = if (state.value) Color(0xFF0090FF) else if(Theme.inDarkTheme) Color.LightGray else Color.Gray
+
+    fun getChangeListTitleColor(repoStateValue: Int):Color {
+        return if(repoStateValue == Repository.StateT.MERGE.bit || repoStateValue == Repository.StateT.REBASE_MERGE.bit || repoStateValue == Repository.StateT.CHERRYPICK.bit) MyStyleKt.TextColor.danger() else Color.Unspecified
+    }
 
 }
