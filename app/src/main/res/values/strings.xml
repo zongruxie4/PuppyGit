@@ -987,5 +987,6 @@
     <string name="if_index_contains_uncommitted_changes_will_commit_as_well">If the Index contains uncommitted changes, will commit them as well</string>
     <string name="file_is_empty">File is empty</string>
     <string name="the_file_has_not_changed">The file has not changed</string>
+    <string name="warn_index_is_empty_will_create_a_empty_commit">Warn: Index is Empty, will create a empty Commit</string>
 
 </resources>

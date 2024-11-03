@@ -49,8 +49,10 @@ object ChangeListFunctions {
         bottomBarActDoneCallback:(String)->Unit,
         fromTo:String,
         itemList:CustomStateListSaveable<StatusTypeEntrySaver>,
-        successCommitStrRes:String
+        successCommitStrRes:String,
+        indexIsEmptyForCommitDialog:MutableState<Boolean>
     ):Boolean{
+        indexIsEmptyForCommitDialog.value = false // will update this after check
         //可以用context获取string resource
 //        requireShowToast("test context getsTring:"+appContext.getString(R.string.n_files_staged))
 //            MyLog.d(TAG, "#doCommit, start")
@@ -71,14 +73,19 @@ object ChangeListFunctions {
             //检查是否存在冲突条目，有可能已经stage了，就不存在了，就能提交，否则，不能提交
             val readyCreateCommit = Libgit2Helper.isReadyCreateCommit(repo)
             if(readyCreateCommit.hasError()) {
-                //显示错误信息
-                Msg.requireShowLongDuration(readyCreateCommit.msg)
-
                 //20240819 支持index为空时创建提交，因为目前实现了amend而amend可仅修改之前的提交且不提交新内容，所以index非空检测就不能强制了，显示个提示就够了，但仍允许提交
                 if(readyCreateCommit.code != Ret.ErrCode.indexIsEmpty) {  //若错误不是index为空，则结束提交
+                    //显示错误信息
+                    Msg.requireShowLongDuration(readyCreateCommit.msg)
                     //若有错，必刷新页面
                     changeStateTriggerRefreshPage(refreshRequiredByParentPage)
                     return@doCommit false
+                }else {
+                    // allow create empty commit, but show a warning
+                    // (only show warning when repostate==NONE and amend==false, when MERGE/CHERRYPICK/REBASE,
+                    // will not show warning, cuz MERGE allow empty is necessary,
+                    // CHERRYPICK and REABSE will try ignore empty commit when continue)
+                    indexIsEmptyForCommitDialog.value = true
                 }
 
             }

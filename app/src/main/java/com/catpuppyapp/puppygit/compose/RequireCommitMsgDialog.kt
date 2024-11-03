@@ -35,6 +35,7 @@ fun RequireCommitMsgDialog(
     overwriteAuthor:MutableState<Boolean>,
     amend:MutableState<Boolean>,
     commitMsg: MutableState<String>,
+    indexIsEmptyForCommitDialog:MutableState<Boolean>,
     onOk: (msg:String) -> Unit,
     onCancel: () -> Unit,
 ) {
@@ -56,10 +57,13 @@ fun RequireCommitMsgDialog(
             Text(stringResource(R.string.commit_message))
         },
         text = {
-            Column {
-//                Row(modifier = Modifier.padding(5.dp)) {
-//                    Text(text = stringResource(R.string.please_input_commit_msg))
-//                }
+            ScrollableColumn {
+                if(repoState==Repository.StateT.NONE.bit && amend.value.not() && indexIsEmptyForCommitDialog.value) {
+                    Row(modifier = Modifier.padding(5.dp)) {
+                        Text(text = stringResource(R.string.warn_index_is_empty_will_create_a_empty_commit), color = MyStyleKt.TextColor.danger)
+                    }
+                }
+
                 TextField(
                     modifier = Modifier.fillMaxWidth(),
 

@@ -546,6 +546,7 @@ fun ChangeListInnerPage(
     val amendCommit = rememberSaveable { mutableStateOf(false)}
     val overwriteAuthor = rememberSaveable { mutableStateOf(false)}
     val commitMsg = rememberSaveable { mutableStateOf("")}
+    val indexIsEmptyForCommitDialog = rememberSaveable { mutableStateOf(false)}
 
     //upstream
 //    val upstreamRemoteOptionsList = mutableCustomStateOf(value = mutableListOf<String>())
@@ -1124,7 +1125,8 @@ fun ChangeListInnerPage(
                         bottomBarActDoneCallback = bottomBarActDoneCallback,
                         fromTo = fromTo,
                         itemList = itemList,
-                        successCommitStrRes = successCommitStrRes
+                        successCommitStrRes = successCommitStrRes,
+                        indexIsEmptyForCommitDialog=indexIsEmptyForCommitDialog
                     )
                 }catch (e:Exception){
                     showErrAndSaveLog(TAG,"require commit error:"+e.stackTraceToString(), appContext.getString(R.string.commit_failed)+":"+e.localizedMessage, requireShowToast,curRepoFromParentPage.value.id)
@@ -1172,7 +1174,8 @@ fun ChangeListInnerPage(
                                 bottomBarActDoneCallback = bottomBarActDoneCallback,
                                 fromTo = fromTo,
                                 itemList = itemList,
-                                successCommitStrRes = successCommitStrRes
+                                successCommitStrRes = successCommitStrRes,
+                                indexIsEmptyForCommitDialog=indexIsEmptyForCommitDialog
                             )
                         }
 
@@ -1211,7 +1214,8 @@ fun ChangeListInnerPage(
                         bottomBarActDoneCallback = bottomBarActDoneCallback,
                         fromTo = fromTo,
                         itemList = itemList,
-                        successCommitStrRes = successCommitStrRes
+                        successCommitStrRes = successCommitStrRes,
+                        indexIsEmptyForCommitDialog=indexIsEmptyForCommitDialog
                     )
                 }catch (e:Exception){
                     showErrAndSaveLog(TAG,"require Rebase Continue error:"+e.stackTraceToString(), appContext.getString(R.string.rebase_continue_err)+":"+e.localizedMessage, requireShowToast,repoId)
@@ -1313,7 +1317,8 @@ fun ChangeListInnerPage(
                         bottomBarActDoneCallback = bottomBarActDoneCallback,
                         fromTo = fromTo,
                         itemList = itemList,
-                        successCommitStrRes = successCommitStrRes
+                        successCommitStrRes = successCommitStrRes,
+                        indexIsEmptyForCommitDialog=indexIsEmptyForCommitDialog
                     )
                 }catch (e:Exception){
                     showErrAndSaveLog(TAG,"require Cherrypick Continue error:"+e.stackTraceToString(), appContext.getString(R.string.cherrypick_continue_err)+":"+e.localizedMessage, requireShowToast,repoId)
@@ -1559,7 +1564,8 @@ fun ChangeListInnerPage(
                             bottomBarActDoneCallback = bottomBarActDoneCallback,
                             fromTo = fromTo,
                             itemList = itemList,
-                            successCommitStrRes = successCommitStrRes
+                            successCommitStrRes = successCommitStrRes,
+                            indexIsEmptyForCommitDialog=indexIsEmptyForCommitDialog
                         )
                         if(requireDoSync) {
                             if(commitSuccess){
@@ -1599,6 +1605,7 @@ fun ChangeListInnerPage(
                     }
                 }
             },
+            indexIsEmptyForCommitDialog = indexIsEmptyForCommitDialog,
             onCancel={
                 showCommitMsgDialog.value = false
                 changeStateTriggerRefreshPage(refreshRequiredByParentPage)
@@ -1695,7 +1702,8 @@ fun ChangeListInnerPage(
                             bottomBarActDoneCallback = bottomBarActDoneCallback,
                             fromTo = fromTo,
                             itemList = itemList,
-                            successCommitStrRes = successCommitStrRes
+                            successCommitStrRes = successCommitStrRes,
+                            indexIsEmptyForCommitDialog = indexIsEmptyForCommitDialog
                         )
                     } else {
                         requireShowToast(invalidUsernameOrEmail)
@@ -2145,7 +2153,8 @@ fun ChangeListInnerPage(
                             bottomBarActDoneCallback = bottomBarActDoneCallback,
                             fromTo = fromTo,
                             itemList = itemList,
-                            successCommitStrRes = successCommitStrRes
+                            successCommitStrRes = successCommitStrRes,
+                            indexIsEmptyForCommitDialog=indexIsEmptyForCommitDialog
                         )
                     }
                 }
@@ -2181,7 +2190,8 @@ fun ChangeListInnerPage(
                             bottomBarActDoneCallback = bottomBarActDoneCallback,
                             fromTo = fromTo,
                             itemList = itemList,
-                            successCommitStrRes = successCommitStrRes
+                            successCommitStrRes = successCommitStrRes,
+                            indexIsEmptyForCommitDialog=indexIsEmptyForCommitDialog
                         )
                     }
                 }
@@ -2221,7 +2231,8 @@ fun ChangeListInnerPage(
                     bottomBarActDoneCallback = bottomBarActDoneCallback,
                     fromTo = fromTo,
                     itemList = itemList,
-                    successCommitStrRes = successCommitStrRes
+                    successCommitStrRes = successCommitStrRes,
+                    indexIsEmptyForCommitDialog=indexIsEmptyForCommitDialog
                 )
             }
         },
@@ -2252,7 +2263,8 @@ fun ChangeListInnerPage(
                     bottomBarActDoneCallback = bottomBarActDoneCallback,
                     fromTo = fromTo,
                     itemList = itemList,
-                    successCommitStrRes = successCommitStrRes
+                    successCommitStrRes = successCommitStrRes,
+                    indexIsEmptyForCommitDialog=indexIsEmptyForCommitDialog
                 )
             }
 

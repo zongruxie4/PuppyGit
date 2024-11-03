@@ -976,6 +976,7 @@
     <string name="if_index_contains_uncommitted_changes_will_commit_as_well">若索引包含未提交修改，将一并提交</string>
     <string name="file_is_empty">空文件</string>
     <string name="the_file_has_not_changed">文件无修改</string>
+    <string name="warn_index_is_empty_will_create_a_empty_commit">警告：索引为空，将创建空提交</string>
 
 
 </resources>
