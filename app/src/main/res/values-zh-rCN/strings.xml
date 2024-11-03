@@ -675,7 +675,7 @@
     <string name="overwrite_author">覆盖作者</string>
     <string name="last_commit_msg">上一提交信息</string>
     <string name="origin_commit_msg">原提交信息</string>
-    <string name="will_use_your_username_and_email_overwrite_old_commit_s_author_info">将使用你的用户名和邮箱覆盖原提交者的信息</string>
+    <string name="will_use_your_username_and_email_overwrite_original_commits_author_info">将使用你的用户名和邮箱覆盖原始提交的作者信息</string>
     <string name="soft">软</string>
     <string name="mixed">混合</string>
     <string name="hard">硬</string>

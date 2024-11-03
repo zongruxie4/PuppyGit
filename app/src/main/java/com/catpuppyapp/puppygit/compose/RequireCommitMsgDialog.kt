@@ -1,7 +1,6 @@
 package com.catpuppyapp.puppygit.compose
 
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -22,9 +21,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import com.catpuppyapp.puppygit.play.pro.R
 import com.catpuppyapp.puppygit.style.MyStyleKt
-import com.catpuppyapp.puppygit.utils.AppModel
 import com.catpuppyapp.puppygit.utils.Libgit2Helper
-import com.catpuppyapp.puppygit.utils.state.StateUtil
 import com.github.git24j.core.Repository
 
 
@@ -124,7 +121,7 @@ fun RequireCommitMsgDialog(
                 }
 
                 if(overwriteAuthor.value){
-                    Text(text = stringResource(R.string.will_use_your_username_and_email_overwrite_old_commit_s_author_info),
+                    Text(text = stringResource(R.string.will_use_your_username_and_email_overwrite_original_commits_author_info),
                         fontWeight = FontWeight.Light,
                         modifier = Modifier.padding(horizontal = MyStyleKt.CheckoutBox.horizontalPadding)
                         )

@@ -675,7 +675,7 @@
     <string name="overwrite_author">Overwrite Author</string>
     <string name="last_commit_msg">last commit msg</string>
     <string name="origin_commit_msg">origin commit msg</string>
-    <string name="will_use_your_username_and_email_overwrite_old_commit_s_author_info">Will use your username and email overwrite old commit\'s author info</string>
+    <string name="will_use_your_username_and_email_overwrite_original_commits_author_info">Will use your username and email overwrite original commit\'s author info</string>
     <string name="soft">Soft</string>
     <string name="mixed">mixed</string>
     <string name="hard">Hard</string>
