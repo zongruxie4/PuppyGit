@@ -41,6 +41,8 @@ import com.catpuppyapp.puppygit.utils.Msg
 import com.catpuppyapp.puppygit.utils.cache.Cache
 import com.catpuppyapp.puppygit.utils.changeStateTriggerRefreshPage
 import com.catpuppyapp.puppygit.utils.getFileNameFromCanonicalPath
+import com.catpuppyapp.puppygit.utils.getFormattedLastModifiedTimeOfFile
+import com.catpuppyapp.puppygit.utils.getHumanReadableSizeStr
 import com.catpuppyapp.puppygit.utils.getParentPathEndsWithSeparator
 import com.catpuppyapp.puppygit.utils.state.mutableCustomStateListOf
 import com.catpuppyapp.puppygit.utils.state.mutableCustomStateOf
@@ -165,10 +167,19 @@ fun DiffScreen(
     if(request.value == PageRequest.showDetails) {
         PageRequest.clearStateThenDoAct(request) {
             val sb = StringBuilder()
-            sb.append(appContext.getString(R.string.file_name)+": ").appendLine(fileNameOnly.value).appendLine()
-            sb.append(appContext.getString(R.string.path_under_repo)+": ").appendLine(relativePathUnderRepoState.value).appendLine()
+            sb.append(appContext.getString(R.string.name)+": ").appendLine(fileNameOnly.value).appendLine()
+            sb.append(appContext.getString(R.string.path)+": ").appendLine(relativePathUnderRepoState.value).appendLine()
 
-            sb.append(appContext.getString(R.string.path)+": ").appendLine(fileFullPath.value)  // no more append line yet, because is last line
+            sb.append(appContext.getString(R.string.full_path)+": ").appendLine(fileFullPath.value)
+
+            val file = File(fileFullPath.value)
+            if(file.exists()) {
+                sb.appendLine()
+                if(file.isFile) {
+                    sb.append(appContext.getString(R.string.size)+": ").appendLine(getHumanReadableSizeStr(file.length())).appendLine()
+                }
+                sb.append(appContext.getString(R.string.last_modified)+": ").appendLine(getFormattedLastModifiedTimeOfFile(file))
+            }
 
             detailsString.value = sb.toString()
             showDetailsDialog.value=true

@@ -56,6 +56,9 @@ import com.catpuppyapp.puppygit.constants.LineNum
 import com.catpuppyapp.puppygit.constants.PageRequest
 import com.catpuppyapp.puppygit.dev.bug_Editor_GoToColumnCantHideKeyboard_Fixed
 import com.catpuppyapp.puppygit.dev.bug_Editor_SelectColumnRangeOfLine_Fixed
+import com.catpuppyapp.puppygit.fileeditor.texteditor.controller.EditorController
+import com.catpuppyapp.puppygit.fileeditor.texteditor.controller.FindDirection
+import com.catpuppyapp.puppygit.fileeditor.texteditor.state.TextEditorState
 import com.catpuppyapp.puppygit.play.pro.R
 import com.catpuppyapp.puppygit.settings.AppSettings
 import com.catpuppyapp.puppygit.settings.FileEditedPos
@@ -69,14 +72,10 @@ import com.catpuppyapp.puppygit.utils.MyLog
 import com.catpuppyapp.puppygit.utils.UIHelper
 import com.catpuppyapp.puppygit.utils.doJobThenOffLoading
 import com.catpuppyapp.puppygit.utils.fileopenhistory.FileOpenHistoryMan
-import com.catpuppyapp.puppygit.utils.getFormatTimeFromSec
+import com.catpuppyapp.puppygit.utils.getFormattedLastModifiedTimeOfFile
 import com.catpuppyapp.puppygit.utils.getHumanReadableSizeStr
-import com.catpuppyapp.puppygit.utils.getSystemDefaultTimeZoneOffset
 import com.catpuppyapp.puppygit.utils.replaceStringResList
 import com.catpuppyapp.puppygit.utils.state.mutableCustomStateOf
-import com.catpuppyapp.puppygit.fileeditor.texteditor.controller.EditorController
-import com.catpuppyapp.puppygit.fileeditor.texteditor.controller.FindDirection
-import com.catpuppyapp.puppygit.fileeditor.texteditor.state.TextEditorState
 import java.io.File
 import java.util.Date
 
@@ -431,7 +430,8 @@ fun TextEditor(
             val file = File(fileFullPath)
             val fileSize = getHumanReadableSizeStr(file.length())
             val (charsCount, linesCount) = editableController.getCharsAndLinesCount()
-            val lastModifiedTimeStr = getFormatTimeFromSec(sec=file.lastModified()/1000, offset = getSystemDefaultTimeZoneOffset())
+//            val lastModifiedTimeStr = getFormatTimeFromSec(sec=file.lastModified()/1000, offset = getSystemDefaultTimeZoneOffset())
+            val lastModifiedTimeStr = getFormattedLastModifiedTimeOfFile(file)
             val sb = StringBuilder()
 
             sb.appendLine(appContext.getString(R.string.file_name)+": "+file.name).appendLine()

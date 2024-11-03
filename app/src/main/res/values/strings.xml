@@ -988,5 +988,6 @@
     <string name="file_is_empty">File is empty</string>
     <string name="the_file_has_not_changed">The file has not changed</string>
     <string name="warn_index_is_empty_will_create_a_empty_commit">Warn: Index is Empty, will create a empty Commit</string>
+    <string name="size">Size</string>
 
 </resources>

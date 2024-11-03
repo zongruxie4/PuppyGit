@@ -690,3 +690,7 @@ fun getDomainByUrl(url:String):String {
         return ""
     }
 }
+
+fun getFormattedLastModifiedTimeOfFile(file:File):String{
+    return getFormatTimeFromSec(sec=file.lastModified()/1000, offset = getSystemDefaultTimeZoneOffset())
+}
