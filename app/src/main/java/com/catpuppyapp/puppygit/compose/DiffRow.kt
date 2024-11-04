@@ -4,28 +4,37 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.material3.DropdownMenu
+import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.text.withStyle
+import androidx.compose.ui.unit.DpOffset
+import androidx.compose.ui.unit.dp
 import com.catpuppyapp.puppygit.constants.Cons
 import com.catpuppyapp.puppygit.constants.LineNum
 import com.catpuppyapp.puppygit.git.PuppyLine
+import com.catpuppyapp.puppygit.play.pro.R
 import com.catpuppyapp.puppygit.style.MyStyleKt
 import com.catpuppyapp.puppygit.ui.theme.Theme
 import com.catpuppyapp.puppygit.utils.AppModel
 import com.catpuppyapp.puppygit.utils.Libgit2Helper
 import com.catpuppyapp.puppygit.utils.cache.Cache
 import com.catpuppyapp.puppygit.utils.compare.result.IndexStringPart
+import com.github.git24j.core.Diff.Line
 
 /**
  * @param stringPartList 如果用不到，可传null或使用默认值（还是null）
  */
 @Composable
-fun DiffRow (line:PuppyLine, stringPartList:List<IndexStringPart>? = null, fileFullPath:String) {
+fun DiffRow (line:PuppyLine, stringPartList:List<IndexStringPart>? = null, fileFullPath:String, isFileAndExist:Boolean) {
     val useStringPartList = !stringPartList.isNullOrEmpty()
 
     val navController = AppModel.singleInstanceHolder.navController
@@ -55,9 +64,24 @@ fun DiffRow (line:PuppyLine, stringPartList:List<IndexStringPart>? = null, fileF
     val prefix = "$lineNum:"  // only show line num (can use color figure add or del), e.g. "123:"
 
 
+    val expandedMenu = remember { mutableStateOf(false) }
+
+
+    // this check include `originType` check, it is redundant actually, because when into this page, the line originType always one of CONTEXT or ADDITION or DELETION,
+    //  because ADD_EOFNL/DEL_EOFNL already trans to ADDITION/DELETION, and the CONTEXT_EOFNL is deleted, will not shown
+//    val enableLineActions = remember {
+//            isFileAndExist
+//            && (line.originType == Line.OriginType.CONTEXT.toString()
+//                  || line.originType == Line.OriginType.ADDITION.toString()
+//                  || line.originType == Line.OriginType.DELETION.toString()
+//               )
+//    }
+
+    val enableLineActions = isFileAndExist
+
     //因为下面用Row换行了，所以不需要内容以换行符结尾
-//    prefix = prefix.removeSuffix("\n")
-//    content = content.removeSuffix("\n")
+//    prefix = prefix.removeSuffix(Cons.lineBreak)
+//    content = content.removeSuffix(Cons.lineBreak)
 
     Row(
         modifier = Modifier
@@ -101,7 +125,7 @@ fun DiffRow (line:PuppyLine, stringPartList:List<IndexStringPart>? = null, fileF
                     stringPartList.forEachIndexed {idx, it ->
                         val text = content.substring(it.start, it.end)
                         //末尾会有个换行符，移除下，不然显示会多个行
-                        val textNoLineSeparator = if(idx == lastIndex) text.removeSuffix("\n") else text
+                        val textNoLineSeparator = if(idx == lastIndex) text.removeSuffix(Cons.lineBreak) else text
 
                         if(it.modified) {  //为修改的内容设置高亮颜色
                             withStyle(style = SpanStyle(background = color)) {
@@ -115,18 +139,57 @@ fun DiffRow (line:PuppyLine, stringPartList:List<IndexStringPart>? = null, fileF
 
                 color = textColor,
                 overflow = TextOverflow.Visible,
-                softWrap = true
+                softWrap = true,
+
+                modifier=Modifier.fillMaxWidth().clickable(enabled = enableLineActions){ expandedMenu.value = true }
             )
         }else {
             //文本内容
             Text(
-                text = content.removeSuffix("\n"),
+                text = content.removeSuffix(Cons.lineBreak),
                 color = textColor,
                 overflow = TextOverflow.Visible,
-                softWrap = true
+                softWrap = true,
+
+                modifier=Modifier.fillMaxWidth().clickable(enabled = enableLineActions) { expandedMenu.value = true }
+
             )
 
         }
+
+
+        if(enableLineActions) {
+            DropdownMenu(
+                expanded = expandedMenu.value,
+                onDismissRequest = { expandedMenu.value = false },
+                offset = DpOffset(x=150.dp, y=0.dp)
+            ) {
+                DropdownMenuItem(text = { Text(line.originType+lineNum)},
+                    enabled = false,
+                    onClick ={}
+                )
+
+                // EOFNL status maybe wrong, before Edit or Del, must check it actually exists or is not, when edit line num is EOF and EOFNL is not exists, then prepend a LineBreak before users input
+                //编辑或删除前，如果行号是EOF，必须检查EOF NL是否实际存在，如果EOFNL不存在，则先添加一个空行，再写入用户的实际内容，如果执行删除EOF且文件末尾无空行，则不执行任何删除；
+                // 如果EOF为删除，则不用检查，点击恢复后直接在文件末尾添加一个空行即可
+                if(line.originType == Line.OriginType.ADDITION.toString() || line.originType == Line.OriginType.CONTEXT.toString()){
+                    DropdownMenuItem(text = { Text(stringResource(R.string.edit))},
+                        onClick = {
+                        }
+                    )
+                    DropdownMenuItem(text = { Text(stringResource(R.string.del))},
+                        onClick = {
+                        }
+                    )
+                }else if(line.originType == Line.OriginType.DELETION.toString()) {
+                    DropdownMenuItem(text = { Text(stringResource(R.string.restore))},
+                        onClick = {
+                        }
+                    )
+                }
+            }
+        }
+
     }
 
 }

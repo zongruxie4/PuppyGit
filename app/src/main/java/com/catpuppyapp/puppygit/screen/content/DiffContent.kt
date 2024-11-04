@@ -20,6 +20,7 @@ import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.MutableIntState
 import androidx.compose.runtime.MutableState
+import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
@@ -57,6 +58,7 @@ import com.catpuppyapp.puppygit.utils.state.mutableCustomStateOf
 import com.github.git24j.core.Diff
 import com.github.git24j.core.Repository
 import kotlinx.coroutines.channels.Channel
+import java.io.File
 
 private val TAG = "DiffContent"
 private val stateKeyTag = "DiffContent"
@@ -109,9 +111,23 @@ fun DiffContent(
 //    val newLineAt = stringResource(R.string.new_line_at)
     val errorStrRes = stringResource(R.string.error)
 
+
+    val isFileAndExist = remember(isSubmodule, changeType, fileFullPath) {
+        derivedStateOf {
+            if(isSubmodule || (changeType != Cons.gitStatusNew && changeType != Cons.gitStatusModified)){
+                false
+            }else{
+                val f= File(fileFullPath)
+                f.exists() && f.isFile
+            }
+        }
+    }
+
+
     //判断是否是支持预览的修改类型
     // 注意：冲突条目不能diff，会提示unmodified！所以支持预览冲突条目没意义，若支持的话，在当前判断条件后追加后面的代码即可: `|| changeType == Cons.gitStatusConflict`
-    val isSupportedChangeType = (changeType == Cons.gitStatusModified
+    val isSupportedChangeType = (
+            changeType == Cons.gitStatusModified
             || changeType == Cons.gitStatusNew
             || changeType == Cons.gitStatusDeleted
             || changeType == Cons.gitStatusTypechanged  // e.g. submodule folder path change to a file, will show type changed, view this is ok
@@ -270,7 +286,8 @@ fun DiffContent(
                                         DiffRow(
                                             //随便拷贝下del或add（不拷贝只改类型也行但不推荐以免有坏影响）把类型改成context，就行了
                                             line = mergeAddDelLineResult.data,
-                                            fileFullPath=fileFullPath
+                                            fileFullPath=fileFullPath,
+                                            isFileAndExist = isFileAndExist.value
                                         )
 
                                     }
@@ -284,7 +301,8 @@ fun DiffContent(
                                 item {
                                     DiffRow(
                                         line = line,
-                                        fileFullPath=fileFullPath
+                                        fileFullPath=fileFullPath,
+                                        isFileAndExist = isFileAndExist.value
                                     )
                                 }
                             }else {  // add or del
@@ -293,7 +311,8 @@ fun DiffContent(
                                     item {
                                         DiffRow(
                                             line = line,
-                                            fileFullPath=fileFullPath
+                                            fileFullPath=fileFullPath,
+                                            isFileAndExist = isFileAndExist.value
                                         )
                                     }
                                 }else{  // matched
@@ -301,7 +320,8 @@ fun DiffContent(
                                         DiffRow(
                                             line = line,
                                             fileFullPath=fileFullPath,
-                                            stringPartList = if(line.originType == Diff.Line.OriginType.ADDITION.toString()) modifyResult.add else modifyResult.del
+                                            stringPartList = if(line.originType == Diff.Line.OriginType.ADDITION.toString()) modifyResult.add else modifyResult.del,
+                                            isFileAndExist = isFileAndExist.value
                                         )
                                     }
                                 }
@@ -331,7 +351,8 @@ fun DiffContent(
                                     //打印context
                                     DiffRow(
                                         line = context,
-                                        fileFullPath=fileFullPath
+                                        fileFullPath=fileFullPath,
+                                        isFileAndExist = isFileAndExist.value
                                     )
                                 }
                             }
@@ -343,7 +364,8 @@ fun DiffContent(
                                         DiffRow(
                                             //随便拷贝下del或add（不拷贝只改类型也行但不推荐以免有坏影响）把类型改成context，就行了
                                             line = del.copy(originType = Diff.Line.OriginType.CONTEXT.toString()),
-                                            fileFullPath=fileFullPath
+                                            fileFullPath=fileFullPath,
+                                            isFileAndExist = isFileAndExist.value
                                         )
 
                                     }
@@ -364,7 +386,8 @@ fun DiffContent(
                                             DiffRow(
                                                 line = del,
                                                 stringPartList = modifyResult2.del,
-                                                fileFullPath=fileFullPath
+                                                fileFullPath=fileFullPath,
+                                                isFileAndExist = isFileAndExist.value
 
                                             )
                                         }
@@ -373,7 +396,8 @@ fun DiffContent(
                                             DiffRow(
                                                 line = add,
                                                 stringPartList = modifyResult2.add,
-                                                fileFullPath=fileFullPath
+                                                fileFullPath=fileFullPath,
+                                                isFileAndExist = isFileAndExist.value
 
                                             )
                                         }
@@ -383,13 +407,15 @@ fun DiffContent(
                                         item {
                                             DiffRow(
                                                 line = del,
-                                                fileFullPath=fileFullPath
+                                                fileFullPath=fileFullPath,
+                                                isFileAndExist = isFileAndExist.value
                                             )
                                         }
                                         item {
                                             DiffRow(
                                                 line = add,
-                                                fileFullPath=fileFullPath
+                                                fileFullPath=fileFullPath,
+                                                isFileAndExist = isFileAndExist.value
                                             )
                                         }
                                     }
@@ -399,7 +425,8 @@ fun DiffContent(
                                     item {
                                         DiffRow(
                                             line = del,
-                                            fileFullPath=fileFullPath
+                                            fileFullPath=fileFullPath,
+                                            isFileAndExist = isFileAndExist.value
                                         )
                                     }
                                 }
@@ -407,7 +434,8 @@ fun DiffContent(
                                     item {
                                         DiffRow(
                                             line = add,
-                                            fileFullPath=fileFullPath
+                                            fileFullPath=fileFullPath,
+                                            isFileAndExist = isFileAndExist.value
                                         )
                                     }
                                 }
@@ -453,7 +481,8 @@ fun DiffContent(
                             item {
                                 DiffRow(
                                     line = line,
-                                    fileFullPath=fileFullPath
+                                    fileFullPath=fileFullPath,
+                                    isFileAndExist = isFileAndExist.value
                                 )
                             }
                         }
@@ -470,7 +499,8 @@ fun DiffContent(
                         item {
                             DiffRow(
                                 line = LineNum.EOF.transLineToEofLine(eofLine, add = eofLine.originType ==  Diff.Line.OriginType.ADD_EOFNL.toString()),
-                                fileFullPath=fileFullPath
+                                fileFullPath=fileFullPath,
+                                isFileAndExist = isFileAndExist.value
                             )
                         }
                     }

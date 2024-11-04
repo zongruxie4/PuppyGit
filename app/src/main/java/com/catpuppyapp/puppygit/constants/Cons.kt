@@ -12,9 +12,11 @@ class Cons {
         const val ChangeListNaviTarget_InitValue = "cl_navi_init_value"
         const val ChangeListNaviTarget_NoNeedReload = "cl_navi_no_need_reload"  //导航到这些页面(Difference/Editor)再返回不需要刷新页面(navi to these pages(Difference/Editor) then navi back, no need reload)
 
-            // use as path separator
+        // use as path separator
         const val slash = "/"
         const val slashChar = '/'
+        const val lineBreak = "\n"
+        const val lineBreakChar = '\n'
 
 //        @Deprecated("改用：StorageDirCons.DefaultStorageDir.allRepoParentsDir.name")  //20240527：禁用，sd相关
         const val defaultAllRepoParentDirName = "PuppyGitRepos"

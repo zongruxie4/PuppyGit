@@ -19,7 +19,7 @@ object LineNum {
         fun transLineToEofLine(line: PuppyLine, add:Boolean): PuppyLine {
             return line.copy(lineNum = LINE_NUM,
                 originType = if(add) Diff.Line.OriginType.ADDITION.toString() else Diff.Line.OriginType.DELETION.toString(),
-                content = "\n",
+                content = Cons.lineBreak,
                 contentLen = 1
             )
         }
