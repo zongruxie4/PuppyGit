@@ -2062,7 +2062,7 @@ fun FilesInnerPage(
     //注：匹配带数据的request应该用startsWith
 //    if(filesPageRequestFromParent.value.startsWith(PageRequest.DataRequest.goToIndexWithDataSplit)) {
     if(PageRequest.DataRequest.isDataRequest(filesPageRequestFromParent.value, PageRequest.goToIndex)) {
-        PageRequest.clearStateThenDoAct(filesPageRequestFromParent) { request ->
+        PageRequest.getRequestThenClearStateThenDoAct(filesPageRequestFromParent) { request ->
             val index = try {
                 PageRequest.DataRequest.getDataFromRequest(request).toInt()
             }catch (e:Exception) {

@@ -70,7 +70,12 @@ object PageRequest {
     const val showOpenAsDialog = "showOpenAsDialog"
     const val switchBetweenFirstLineAndLastEditLine = "switchBetweenFirstLineAndLastEditLine"   //实现双击时在返回顶部和返回上次编辑行之间切换
 
-    fun clearStateThenDoAct(state:MutableState<String>, act:(request:String)->Unit) {
+    fun clearStateThenDoAct(state:MutableState<String>, act:()->Unit) {
+        state.value=""
+        act()
+    }
+
+    fun getRequestThenClearStateThenDoAct(state:MutableState<String>, act:(request:String)->Unit) {
         val request = state.value
         state.value=""
         act(request)
@@ -85,6 +90,10 @@ object PageRequest {
 
         // maybe has data, so use startsWith check
         fun isDataRequest(actually:String, expect:String):Boolean {
+            if(actually.isBlank() || expect.isBlank()) {
+                return false
+            }
+
             return actually.startsWith(expect)
         }
 
