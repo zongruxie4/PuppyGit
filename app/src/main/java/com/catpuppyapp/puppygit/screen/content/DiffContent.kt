@@ -85,7 +85,8 @@ fun DiffContent(
     isDiffToLocal:Boolean,
     diffableItemList:List<StatusTypeEntrySaver>,
     curItemIndex:MutableIntState,
-    switchItem:(StatusTypeEntrySaver, index:Int) -> Unit
+    switchItem:(StatusTypeEntrySaver, index:Int) -> Unit,
+    pageRequest:MutableState<String>
 ) {
     //废弃，改用获取diffItem时动态计算实际需要显示的contentLen总和了
 //    val fileSizeOverLimit = isFileSizeOverLimit(fileSize)
@@ -287,7 +288,8 @@ fun DiffContent(
                                             //随便拷贝下del或add（不拷贝只改类型也行但不推荐以免有坏影响）把类型改成context，就行了
                                             line = mergeAddDelLineResult.data,
                                             fileFullPath=fileFullPath,
-                                            isFileAndExist = isFileAndExist.value
+                                            isFileAndExist = isFileAndExist.value,
+                                            pageRequest = pageRequest
                                         )
 
                                     }
@@ -302,7 +304,8 @@ fun DiffContent(
                                     DiffRow(
                                         line = line,
                                         fileFullPath=fileFullPath,
-                                        isFileAndExist = isFileAndExist.value
+                                        isFileAndExist = isFileAndExist.value,
+                                        pageRequest = pageRequest
                                     )
                                 }
                             }else {  // add or del
@@ -312,7 +315,8 @@ fun DiffContent(
                                         DiffRow(
                                             line = line,
                                             fileFullPath=fileFullPath,
-                                            isFileAndExist = isFileAndExist.value
+                                            isFileAndExist = isFileAndExist.value,
+                                            pageRequest = pageRequest
                                         )
                                     }
                                 }else{  // matched
@@ -321,7 +325,8 @@ fun DiffContent(
                                             line = line,
                                             fileFullPath=fileFullPath,
                                             stringPartList = if(line.originType == Diff.Line.OriginType.ADDITION.toString()) modifyResult.add else modifyResult.del,
-                                            isFileAndExist = isFileAndExist.value
+                                            isFileAndExist = isFileAndExist.value,
+                                            pageRequest = pageRequest
                                         )
                                     }
                                 }
@@ -352,7 +357,8 @@ fun DiffContent(
                                     DiffRow(
                                         line = context,
                                         fileFullPath=fileFullPath,
-                                        isFileAndExist = isFileAndExist.value
+                                        isFileAndExist = isFileAndExist.value,
+                                        pageRequest = pageRequest
                                     )
                                 }
                             }
@@ -365,7 +371,8 @@ fun DiffContent(
                                             //随便拷贝下del或add（不拷贝只改类型也行但不推荐以免有坏影响）把类型改成context，就行了
                                             line = del.copy(originType = Diff.Line.OriginType.CONTEXT.toString()),
                                             fileFullPath=fileFullPath,
-                                            isFileAndExist = isFileAndExist.value
+                                            isFileAndExist = isFileAndExist.value,
+                                            pageRequest = pageRequest
                                         )
 
                                     }
@@ -387,7 +394,8 @@ fun DiffContent(
                                                 line = del,
                                                 stringPartList = modifyResult2.del,
                                                 fileFullPath=fileFullPath,
-                                                isFileAndExist = isFileAndExist.value
+                                                isFileAndExist = isFileAndExist.value,
+                                                pageRequest = pageRequest
 
                                             )
                                         }
@@ -397,7 +405,8 @@ fun DiffContent(
                                                 line = add,
                                                 stringPartList = modifyResult2.add,
                                                 fileFullPath=fileFullPath,
-                                                isFileAndExist = isFileAndExist.value
+                                                isFileAndExist = isFileAndExist.value,
+                                                pageRequest = pageRequest
 
                                             )
                                         }
@@ -408,14 +417,16 @@ fun DiffContent(
                                             DiffRow(
                                                 line = del,
                                                 fileFullPath=fileFullPath,
-                                                isFileAndExist = isFileAndExist.value
+                                                isFileAndExist = isFileAndExist.value,
+                                                pageRequest = pageRequest
                                             )
                                         }
                                         item {
                                             DiffRow(
                                                 line = add,
                                                 fileFullPath=fileFullPath,
-                                                isFileAndExist = isFileAndExist.value
+                                                isFileAndExist = isFileAndExist.value,
+                                                pageRequest = pageRequest
                                             )
                                         }
                                     }
@@ -426,7 +437,8 @@ fun DiffContent(
                                         DiffRow(
                                             line = del,
                                             fileFullPath=fileFullPath,
-                                            isFileAndExist = isFileAndExist.value
+                                            isFileAndExist = isFileAndExist.value,
+                                            pageRequest = pageRequest
                                         )
                                     }
                                 }
@@ -435,7 +447,8 @@ fun DiffContent(
                                         DiffRow(
                                             line = add,
                                             fileFullPath=fileFullPath,
-                                            isFileAndExist = isFileAndExist.value
+                                            isFileAndExist = isFileAndExist.value,
+                                            pageRequest = pageRequest
                                         )
                                     }
                                 }
@@ -482,7 +495,8 @@ fun DiffContent(
                                 DiffRow(
                                     line = line,
                                     fileFullPath=fileFullPath,
-                                    isFileAndExist = isFileAndExist.value
+                                    isFileAndExist = isFileAndExist.value,
+                                    pageRequest = pageRequest
                                 )
                             }
                         }
@@ -500,7 +514,8 @@ fun DiffContent(
                             DiffRow(
                                 line = LineNum.EOF.transLineToEofLine(eofLine, add = eofLine.originType ==  Diff.Line.OriginType.ADD_EOFNL.toString()),
                                 fileFullPath=fileFullPath,
-                                isFileAndExist = isFileAndExist.value
+                                isFileAndExist = isFileAndExist.value,
+                                pageRequest = pageRequest
                             )
                         }
                     }

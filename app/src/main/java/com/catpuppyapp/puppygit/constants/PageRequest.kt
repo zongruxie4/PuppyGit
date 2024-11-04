@@ -11,6 +11,12 @@ object PageRequest {
     //注意：同一条渲染链上不同组件不可使用相同的请求值，否则只有第一个匹配的组件会执行request，换句话说，再同一渲染链上请求值必须唯一且只有一个消费者
 
 
+    const val requireEditLine = "requireEditLine"  // request#linenum#linecontent
+    const val requireDelLine = "requireDelLine"  // request#linenum#linecontent
+    const val requireRestoreLine = "requireRestoreLine"  // request#linenum#linecontent
+    const val goToIndex ="goToIndex"  //这个使用时可能会带数据，goToIndex#Index，#后面是要goto的index
+
+
     const val showOther = "showOther"
     const val goParent = "goParent"
     const val showInRepos = "showInRepos"
@@ -73,16 +79,18 @@ object PageRequest {
         //"request#data"
         const val dataSplitBy = "#"
 
-        //request值 开始
-        const val goToIndexWithDataSplit ="goToIndex$dataSplitBy"  //这个使用时可能会带数据，goToIndex#Index，#后面是要goto的index
-        //request值 结束
+
+        // maybe has data, so use startsWith check
+        fun isDataRequest(actually:String, expect:String):Boolean {
+            return actually.startsWith(expect)
+        }
 
         /**
          * 返回携带了data的request
          */
-        fun build(requestWithDataSplit:String, data:String):String {
+        fun build(request:String, data:String):String {
             //"request#data"
-            return requestWithDataSplit+data
+            return request+dataSplitBy+data
         }
 
         /**

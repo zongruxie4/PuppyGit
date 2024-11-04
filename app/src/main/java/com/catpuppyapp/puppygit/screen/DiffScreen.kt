@@ -306,7 +306,7 @@ fun DiffScreen(
                 needRefresh = needRefresh, listState = listState, curRepo=curRepo,
                 requireBetterMatchingForCompare = requireBetterMatchingForCompare, fileFullPath = fileFullPath.value,
                 isSubmodule=isSubmodule.value, isDiffToLocal = isDiffToLocal,diffableItemList= diffableItemList.value,
-                curItemIndex=curItemIndex, switchItem=switchItem
+                curItemIndex=curItemIndex, switchItem=switchItem, pageRequest = request
             )
         }
 

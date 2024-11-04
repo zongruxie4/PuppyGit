@@ -2060,7 +2060,8 @@ fun FilesInnerPage(
     }
 
     //注：匹配带数据的request应该用startsWith
-    if(filesPageRequestFromParent.value.startsWith(PageRequest.DataRequest.goToIndexWithDataSplit)) {
+//    if(filesPageRequestFromParent.value.startsWith(PageRequest.DataRequest.goToIndexWithDataSplit)) {
+    if(PageRequest.DataRequest.isDataRequest(filesPageRequestFromParent.value, PageRequest.goToIndex)) {
         val index = try {
             PageRequest.DataRequest.getDataFromRequest(filesPageRequestFromParent.value).toInt()
         }catch (e:Exception) {
@@ -2281,7 +2282,7 @@ private fun doInit(
             }
 
             //下次渲染时请求滚动页面到对应条目
-            filesPageRequestFromParent.value = PageRequest.DataRequest.build(PageRequest.DataRequest.goToIndexWithDataSplit, ""+indexForScrollTo)
+            filesPageRequestFromParent.value = PageRequest.DataRequest.build(PageRequest.goToIndex, ""+indexForScrollTo)
         }
 
         //设置面包屑
