@@ -2062,13 +2062,13 @@ fun FilesInnerPage(
     //注：匹配带数据的request应该用startsWith
 //    if(filesPageRequestFromParent.value.startsWith(PageRequest.DataRequest.goToIndexWithDataSplit)) {
     if(PageRequest.DataRequest.isDataRequest(filesPageRequestFromParent.value, PageRequest.goToIndex)) {
-        val index = try {
-            PageRequest.DataRequest.getDataFromRequest(filesPageRequestFromParent.value).toInt()
-        }catch (e:Exception) {
-            0
-        }
+        PageRequest.clearStateThenDoAct(filesPageRequestFromParent) { request ->
+            val index = try {
+                PageRequest.DataRequest.getDataFromRequest(request).toInt()
+            }catch (e:Exception) {
+                0
+            }
 
-        PageRequest.clearStateThenDoAct(filesPageRequestFromParent) {
             UIHelper.scrollToItem(scope, curListState.value, index)
         }
     }

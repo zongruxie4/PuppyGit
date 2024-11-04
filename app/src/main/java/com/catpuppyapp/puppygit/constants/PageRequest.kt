@@ -11,10 +11,10 @@ object PageRequest {
     //注意：同一条渲染链上不同组件不可使用相同的请求值，否则只有第一个匹配的组件会执行request，换句话说，再同一渲染链上请求值必须唯一且只有一个消费者
 
 
-    const val requireEditLine = "requireEditLine"  // request#linenum#linecontent
-    const val requireDelLine = "requireDelLine"  // request#linenum#linecontent
-    const val requireRestoreLine = "requireRestoreLine"  // request#linenum#linecontent
-    const val goToIndex ="goToIndex"  //这个使用时可能会带数据，goToIndex#Index，#后面是要goto的index
+    const val requireEditLine = "requireEditLine"  // request#cacheKeyOfData
+    const val requireDelLine = "requireDelLine"  // request#cacheKeyOfData
+    const val requireRestoreLine = "requireRestoreLine"  // request#cacheKeyOfData
+    const val goToIndex ="goToIndex"  //goToIndex#Index，#后面是要goto的index
 
 
     const val showOther = "showOther"
@@ -68,9 +68,10 @@ object PageRequest {
     const val showOpenAsDialog = "showOpenAsDialog"
     const val switchBetweenFirstLineAndLastEditLine = "switchBetweenFirstLineAndLastEditLine"   //实现双击时在返回顶部和返回上次编辑行之间切换
 
-    fun clearStateThenDoAct(state:MutableState<String>, act:()->Unit) {
+    fun clearStateThenDoAct(state:MutableState<String>, act:(request:String)->Unit) {
+        val request = state.value
         state.value=""
-        act()
+        act(request)
     }
 
     object DataRequest{
@@ -92,11 +93,12 @@ object PageRequest {
             //"request#data"
             return request+dataSplitBy+data
         }
-
-        fun build(request:StringBuilder, data:String):StringBuilder {
-            //"request#data"
-            return request.append(dataSplitBy).append(data)
-        }
+//
+        // better dont payload data over 1
+//        fun build(request:StringBuilder, data:String):StringBuilder {
+//            //"request#data"
+//            return request.append(dataSplitBy).append(data)
+//        }
 
         /**
          * 返回request中的data
@@ -104,7 +106,7 @@ object PageRequest {
         fun getDataFromRequest(request:String):String {
             val splitIndex = request.indexOf(dataSplitBy)
 
-            if(splitIndex== -1 || splitIndex == request.lastIndex) {
+            if(splitIndex == -1 || splitIndex == request.lastIndex) {
                 return ""
             }else {
                 return request.substring(splitIndex+1)
@@ -113,18 +115,21 @@ object PageRequest {
 
     }
 
-    class Builder(
-        val initRequest:String,
-    ) {
-        private var requestSb: StringBuilder = StringBuilder(initRequest)
+    // better dont payload data over 1
+//    class Builder(
+//        val initRequest:String,
+//    ) {
+//        private var requestSb: StringBuilder = StringBuilder(initRequest)
+//
+//        fun toRequest():String {
+//            return requestSb.toString()
+//        }
+//
+//        fun build(data:String):Builder {
+//            requestSb = DataRequest.build(requestSb, data)
+//            return this
+//        }
+//    }
 
-        fun toRequest():String {
-            return requestSb.toString()
-        }
 
-        fun build(data:String):Builder {
-            requestSb = DataRequest.build(requestSb, data)
-            return this
-        }
-    }
 }

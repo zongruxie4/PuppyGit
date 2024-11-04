@@ -181,33 +181,28 @@ fun DiffRow (
                 //编辑或删除前，如果行号是EOF，必须检查EOF NL是否实际存在，如果EOFNL不存在，则先添加一个空行，再写入用户的实际内容，如果执行删除EOF且文件末尾无空行，则不执行任何删除；
                 // 如果EOF为删除，则不用检查，点击恢复后直接在文件末尾添加一个空行即可
                 if(line.originType == Line.OriginType.ADDITION.toString() || line.originType == Line.OriginType.CONTEXT.toString()){
+                    val cacheKey = Cache.setThenReturnKey(line)
+
                     DropdownMenuItem(text = { Text(stringResource(R.string.edit))},
                         onClick = {
-                            pageRequest.value = PageRequest.Builder(PageRequest.requireEditLine)
-                                .build(lineNum)
-                                .build(content)
-                                .toRequest()
+                            pageRequest.value = PageRequest.DataRequest.build(PageRequest.requireEditLine, cacheKey)
 
                             expandedMenu.value = false
                         }
                     )
                     DropdownMenuItem(text = { Text(stringResource(R.string.del))},
                         onClick = {
-                            pageRequest.value = PageRequest.Builder(PageRequest.requireDelLine)
-                                .build(lineNum)
-                                .build(content)
-                                .toRequest()
+                            pageRequest.value = PageRequest.DataRequest.build(PageRequest.requireDelLine, cacheKey)
 
                             expandedMenu.value = false
                         }
                     )
                 }else if(line.originType == Line.OriginType.DELETION.toString()) {
+                    val cacheKey = Cache.setThenReturnKey(line)
+
                     DropdownMenuItem(text = { Text(stringResource(R.string.restore))},
                         onClick = {
-                            pageRequest.value = PageRequest.Builder(PageRequest.requireRestoreLine)
-                                .build(lineNum)
-                                .build(content)
-                                .toRequest()
+                            pageRequest.value = PageRequest.DataRequest.build(PageRequest.requireRestoreLine, cacheKey)
 
                             expandedMenu.value = false
                         }

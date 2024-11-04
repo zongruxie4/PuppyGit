@@ -30,6 +30,7 @@ import com.catpuppyapp.puppygit.compose.OpenAsDialog
 import com.catpuppyapp.puppygit.constants.Cons
 import com.catpuppyapp.puppygit.constants.PageRequest
 import com.catpuppyapp.puppygit.data.entity.RepoEntity
+import com.catpuppyapp.puppygit.git.PuppyLine
 import com.catpuppyapp.puppygit.git.StatusTypeEntrySaver
 import com.catpuppyapp.puppygit.play.pro.R
 import com.catpuppyapp.puppygit.screen.content.DiffContent
@@ -185,6 +186,28 @@ fun DiffScreen(
             showDetailsDialog.value=true
         }
     }
+
+    if(PageRequest.DataRequest.isDataRequest(request.value, PageRequest.requireEditLine)) {
+        PageRequest.clearStateThenDoAct(request) { requestCopy ->
+            val line = Cache.getByTypeThenDel<PuppyLine>(PageRequest.DataRequest.getDataFromRequest(requestCopy))
+        }
+    }
+
+    if(PageRequest.DataRequest.isDataRequest(request.value, PageRequest.requireDelLine)) {
+        PageRequest.clearStateThenDoAct(request) { requestCopy ->
+            val line = Cache.getByTypeThenDel<PuppyLine>(PageRequest.DataRequest.getDataFromRequest(requestCopy))
+
+        }
+    }
+
+    if(PageRequest.DataRequest.isDataRequest(request.value, PageRequest.requireRestoreLine)) {
+        PageRequest.clearStateThenDoAct(request) { requestCopy ->
+            val line = Cache.getByTypeThenDel<PuppyLine>(PageRequest.DataRequest.getDataFromRequest(requestCopy))
+
+        }
+    }
+
+
 
     // 向下滚动监听，开始
     val pageScrolled = remember { mutableStateOf(settings.showNaviButtons) }
