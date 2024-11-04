@@ -24,14 +24,13 @@ import androidx.compose.ui.text.AnnotatedString
 import com.catpuppyapp.puppygit.compose.ConfirmDialog
 import com.catpuppyapp.puppygit.compose.CopyableDialog
 import com.catpuppyapp.puppygit.compose.GoToTopAndGoToBottomFab
+import com.catpuppyapp.puppygit.compose.LoadingDialog
 import com.catpuppyapp.puppygit.compose.LongPressAbleIconBtn
 import com.catpuppyapp.puppygit.compose.MySelectionContainer
 import com.catpuppyapp.puppygit.compose.OpenAsDialog
 import com.catpuppyapp.puppygit.constants.Cons
-import com.catpuppyapp.puppygit.constants.LineNum
 import com.catpuppyapp.puppygit.constants.PageRequest
 import com.catpuppyapp.puppygit.data.entity.RepoEntity
-import com.catpuppyapp.puppygit.git.PuppyLine
 import com.catpuppyapp.puppygit.git.StatusTypeEntrySaver
 import com.catpuppyapp.puppygit.play.pro.R
 import com.catpuppyapp.puppygit.screen.content.DiffContent
@@ -103,8 +102,19 @@ fun DiffScreen(
     //20240618:目前临时开启O(nm)算法的机制是在预览diff页面三击屏幕，但app启动时会重置为关闭，日后需要添加相关设置项以方便用户使用
     val requireBetterMatchingForCompare = rememberSaveable { mutableStateOf(false) }
 
+    // this loading not shown as default, only show when executing action,
+    //  use DiffContent's loading state indicating is loading diff content or not
+    val loadingForAction= rememberSaveable { mutableStateOf(false)}
+    val loadingText = rememberSaveable { mutableStateOf("")}
+    val loadingOn = { text:String ->
+        loadingText.value = text
+        loadingForAction.value = true
+    }
+    val loadingOff = {
+        loadingForAction.value = false
+        loadingText.value = ""
+    }
 
-    val loading = rememberSaveable { mutableStateOf(true)}
     val needRefresh = rememberSaveable { mutableStateOf("")}
 
     val request = rememberSaveable { mutableStateOf("")}
@@ -159,43 +169,6 @@ fun DiffScreen(
         }
     }
 
-    val lineContentOfEditLineDialog = rememberSaveable { mutableStateOf("") }
-    val lineNumOfEditLineDialog = rememberSaveable { mutableStateOf(LineNum.invalidButNotEof) }  // this is line number not index, should start from 1
-    val showEditLineDialog = rememberSaveable { mutableStateOf(false) }
-    val showDelLineDialog = rememberSaveable { mutableStateOf(false) }
-    val showRestoreLineDialog = rememberSaveable { mutableStateOf(false) }
-
-    val initEditLineDialog = {content:String, lineNum:Int ->
-        if(lineNum == LineNum.invalidButNotEof){
-            Msg.requireShowLongDuration(appContext.getString(R.string.invalid_line_number))
-        }else {
-            lineContentOfEditLineDialog.value = content
-            lineNumOfEditLineDialog.value = lineNum
-            showEditLineDialog.value = true
-        }
-    }
-    val initDelLineDialog = {lineNum:Int ->
-        if(lineNum == LineNum.invalidButNotEof){
-            Msg.requireShowLongDuration(appContext.getString(R.string.invalid_line_number))
-        }else {
-            lineNumOfEditLineDialog.value = lineNum
-            showDelLineDialog.value = true
-        }
-    }
-    val initRestoreLineDialog = {lineNum:Int ->
-        if(lineNum == LineNum.invalidButNotEof){
-            Msg.requireShowLongDuration(appContext.getString(R.string.invalid_line_number))
-        }else {
-            lineNumOfEditLineDialog.value = lineNum
-            showRestoreLineDialog.value = true
-        }
-    }
-
-
-    if(showEditLineDialog.value) {
-dddddd
-    }
-
 
     if(request.value == PageRequest.showOpenAsDialog) {
         PageRequest.clearStateThenDoAct(request) {
@@ -226,26 +199,6 @@ dddddd
         }
     }
 
-    if(PageRequest.DataRequest.isDataRequest(request.value, PageRequest.requireEditLine)) {
-        PageRequest.clearStateThenDoAct(request) { requestCopy ->
-            val line = Cache.getByTypeThenDel<PuppyLine>(PageRequest.DataRequest.getDataFromRequest(requestCopy))
-            initEditLineDialog(line?.content?:"", line?.lineNum ?:LineNum.invalidButNotEof)
-        }
-    }
-
-    if(PageRequest.DataRequest.isDataRequest(request.value, PageRequest.requireDelLine)) {
-        PageRequest.clearStateThenDoAct(request) { requestCopy ->
-            val line = Cache.getByTypeThenDel<PuppyLine>(PageRequest.DataRequest.getDataFromRequest(requestCopy))
-            initDelLineDialog(line?.lineNum ?:LineNum.invalidButNotEof)
-        }
-    }
-
-    if(PageRequest.DataRequest.isDataRequest(request.value, PageRequest.requireRestoreLine)) {
-        PageRequest.clearStateThenDoAct(request) { requestCopy ->
-            val line = Cache.getByTypeThenDel<PuppyLine>(PageRequest.DataRequest.getDataFromRequest(requestCopy))
-            initRestoreLineDialog(line?.lineNum?:LineNum.invalidButNotEof)
-        }
-    }
 
 
 
@@ -345,6 +298,11 @@ dddddd
             }
         }
     ) { contentPadding ->
+
+        if(loadingForAction.value) {
+            LoadingDialog(loadingText.value)
+        }
+
 //        if(fileSizeOverLimit) {  // 文件过大不加载
 //            Column(
 //                modifier = Modifier
@@ -364,12 +322,13 @@ dddddd
         //改成统一在DiffContent里检查实际diff需要获取的内容的大小了，和文件大小有所不同，有时候文件大小很大，但需要diff的内容大小实际很小，这时其实可以diff，性能不会太差
         MySelectionContainer {
             DiffContent(repoId=repoId,relativePathUnderRepoDecoded=relativePathUnderRepoState.value,
-                fromTo=fromTo,changeType=changeType.value,fileSize=fileSize.value, naviUp=naviUp,
-                loading=loading,dbContainer=dbContainer,contentPadding, treeOid1Str, treeOid2Str,
+                fromTo=fromTo,changeType=changeType.value,fileSize=fileSize.value, naviUp=naviUp, dbContainer=dbContainer,
+                contentPadding = contentPadding, treeOid1Str = treeOid1Str, treeOid2Str = treeOid2Str,
                 needRefresh = needRefresh, listState = listState, curRepo=curRepo,
                 requireBetterMatchingForCompare = requireBetterMatchingForCompare, fileFullPath = fileFullPath.value,
                 isSubmodule=isSubmodule.value, isDiffToLocal = isDiffToLocal,diffableItemList= diffableItemList.value,
-                curItemIndex=curItemIndex, switchItem=switchItem, pageRequest = request
+                curItemIndex=curItemIndex, switchItem=switchItem, clipboardManager=clipboardManager,
+                loadingOnParent=loadingOn, loadingOffParent=loadingOff
             )
         }
 

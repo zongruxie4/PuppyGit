@@ -6,6 +6,7 @@ import com.github.git24j.core.Diff
 object LineNum {
 
     const val invalidButNotEof = -998
+    const val max = Int.MAX_VALUE
 
     // used for restore last edited or viewed line number
     //这个值代表期望恢复上次编辑位置

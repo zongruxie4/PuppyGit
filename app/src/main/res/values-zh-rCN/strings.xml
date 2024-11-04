@@ -981,6 +981,13 @@
     <string name="del">删除</string>
     <string name="restore">恢复</string>
     <string name="invalid_line_number">无效行号</string>
+    <string name="edit_line">编辑行</string>
+    <string name="line_at_n">行号: ph_a3f241dc_1</string>
+    <string name="new_line_at_n">新行: ph_a3f241dc_1</string>
+    <string name="content">内容</string>
+    <string name="prepend">向前追加</string>
+    <string name="append">向后追加</string>
+    <string name="note_if_line_number_doesnt_exist_will_append_content_to_the_end_of_the_file">注意：如果 \'行号\' 不存在，将追加内容到文件末尾</string>
 
 
 </resources>

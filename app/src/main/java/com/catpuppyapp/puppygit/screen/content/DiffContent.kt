@@ -23,8 +23,10 @@ import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.ClipboardManager
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.font.FontWeight
@@ -47,6 +49,7 @@ import com.catpuppyapp.puppygit.settings.SettingsUtil
 import com.catpuppyapp.puppygit.style.MyStyleKt
 import com.catpuppyapp.puppygit.utils.Libgit2Helper
 import com.catpuppyapp.puppygit.utils.MyLog
+import com.catpuppyapp.puppygit.utils.changeStateTriggerRefreshPage
 import com.catpuppyapp.puppygit.utils.compare.SimilarCompare
 import com.catpuppyapp.puppygit.utils.compare.param.StringCompareParam
 import com.catpuppyapp.puppygit.utils.createAndInsertError
@@ -71,7 +74,6 @@ fun DiffContent(
     changeType: String,  //modification, new, del，之类的只有modification需要diff
     fileSize:Long,  //如果用来判断文件是否过大来决定是否加载的话，上级页面已经判断了，过大根本不会加载此组件，所以这变量可能没用，可以考虑以后显示下文件大小之类的？
     naviUp: () -> Boolean,
-    loading: MutableState<Boolean>,
     dbContainer: AppContainer,
     contentPadding: PaddingValues,
     treeOid1Str:String,
@@ -86,7 +88,9 @@ fun DiffContent(
     diffableItemList:List<StatusTypeEntrySaver>,
     curItemIndex:MutableIntState,
     switchItem:(StatusTypeEntrySaver, index:Int) -> Unit,
-    pageRequest:MutableState<String>
+    clipboardManager:ClipboardManager,
+    loadingOnParent:(String)->Unit,
+    loadingOffParent:()->Unit,
 ) {
     //废弃，改用获取diffItem时动态计算实际需要显示的contentLen总和了
 //    val fileSizeOverLimit = isFileSizeOverLimit(fileSize)
@@ -98,13 +102,18 @@ fun DiffContent(
     //用remember是为了确保组件生命周期内只创建一个channel实例
     val loadChannel = remember { mutableStateOf(Channel<Int>())  }
 //    val loadChannelLock = Mutex()
-
+    val refreshPageIfIsWorkTreePage={
+        if(fromTo == Cons.gitDiffFromIndexToWorktree) {
+            changeStateTriggerRefreshPage(needRefresh)
+        }
+    }
 
 //    val appContext = AppModel.singleInstanceHolder.appContext
 //    val inDarkTheme = Theme.inDarkTheme
 
     val diffItem = mutableCustomStateOf(keyTag = stateKeyTag, keyName = "diffItem", initValue = DiffItemSaver())
 
+    val loading = rememberSaveable { mutableStateOf(true)}
     val submoduleIsDirty = remember { mutableStateOf(false)}
     val errMsgState = remember { mutableStateOf("")}
 
@@ -289,7 +298,11 @@ fun DiffContent(
                                             line = mergeAddDelLineResult.data,
                                             fileFullPath=fileFullPath,
                                             isFileAndExist = isFileAndExist.value,
-                                            pageRequest = pageRequest
+                                            clipboardManager=clipboardManager,
+                                            loadingOn=loadingOnParent,
+                                            loadingOff=loadingOffParent,
+                                            refreshPageIfIsWorkTree=refreshPageIfIsWorkTreePage,
+                                            repoId=repoId,
                                         )
 
                                     }
@@ -305,7 +318,11 @@ fun DiffContent(
                                         line = line,
                                         fileFullPath=fileFullPath,
                                         isFileAndExist = isFileAndExist.value,
-                                        pageRequest = pageRequest
+                                        clipboardManager=clipboardManager,
+                                        loadingOn=loadingOnParent,
+                                        loadingOff=loadingOffParent,
+                                        refreshPageIfIsWorkTree=refreshPageIfIsWorkTreePage,
+                                        repoId=repoId,
                                     )
                                 }
                             }else {  // add or del
@@ -316,7 +333,11 @@ fun DiffContent(
                                             line = line,
                                             fileFullPath=fileFullPath,
                                             isFileAndExist = isFileAndExist.value,
-                                            pageRequest = pageRequest
+                                            clipboardManager=clipboardManager,
+                                            loadingOn=loadingOnParent,
+                                            loadingOff=loadingOffParent,
+                                            refreshPageIfIsWorkTree=refreshPageIfIsWorkTreePage,
+                                            repoId=repoId,
                                         )
                                     }
                                 }else{  // matched
@@ -326,7 +347,11 @@ fun DiffContent(
                                             fileFullPath=fileFullPath,
                                             stringPartList = if(line.originType == Diff.Line.OriginType.ADDITION.toString()) modifyResult.add else modifyResult.del,
                                             isFileAndExist = isFileAndExist.value,
-                                            pageRequest = pageRequest
+                                            clipboardManager=clipboardManager,
+                                            loadingOn=loadingOnParent,
+                                            loadingOff=loadingOffParent,
+                                            refreshPageIfIsWorkTree=refreshPageIfIsWorkTreePage,
+                                            repoId=repoId,
                                         )
                                     }
                                 }
@@ -358,7 +383,11 @@ fun DiffContent(
                                         line = context,
                                         fileFullPath=fileFullPath,
                                         isFileAndExist = isFileAndExist.value,
-                                        pageRequest = pageRequest
+                                        clipboardManager=clipboardManager,
+                                        loadingOn=loadingOnParent,
+                                        loadingOff=loadingOffParent,
+                                        refreshPageIfIsWorkTree=refreshPageIfIsWorkTreePage,
+                                        repoId=repoId,
                                     )
                                 }
                             }
@@ -372,7 +401,11 @@ fun DiffContent(
                                             line = del.copy(originType = Diff.Line.OriginType.CONTEXT.toString()),
                                             fileFullPath=fileFullPath,
                                             isFileAndExist = isFileAndExist.value,
-                                            pageRequest = pageRequest
+                                            clipboardManager=clipboardManager,
+                                            loadingOn=loadingOnParent,
+                                            loadingOff=loadingOffParent,
+                                            refreshPageIfIsWorkTree=refreshPageIfIsWorkTreePage,
+                                            repoId=repoId,
                                         )
 
                                     }
@@ -395,7 +428,11 @@ fun DiffContent(
                                                 stringPartList = modifyResult2.del,
                                                 fileFullPath=fileFullPath,
                                                 isFileAndExist = isFileAndExist.value,
-                                                pageRequest = pageRequest
+                                                clipboardManager=clipboardManager,
+                                                loadingOn=loadingOnParent,
+                                                loadingOff=loadingOffParent,
+                                                refreshPageIfIsWorkTree=refreshPageIfIsWorkTreePage,
+                                                repoId=repoId,
 
                                             )
                                         }
@@ -406,7 +443,11 @@ fun DiffContent(
                                                 stringPartList = modifyResult2.add,
                                                 fileFullPath=fileFullPath,
                                                 isFileAndExist = isFileAndExist.value,
-                                                pageRequest = pageRequest
+                                                clipboardManager=clipboardManager,
+                                                loadingOn=loadingOnParent,
+                                                loadingOff=loadingOffParent,
+                                                refreshPageIfIsWorkTree=refreshPageIfIsWorkTreePage,
+                                                repoId=repoId,
 
                                             )
                                         }
@@ -418,7 +459,11 @@ fun DiffContent(
                                                 line = del,
                                                 fileFullPath=fileFullPath,
                                                 isFileAndExist = isFileAndExist.value,
-                                                pageRequest = pageRequest
+                                                clipboardManager=clipboardManager,
+                                                loadingOn=loadingOnParent,
+                                                loadingOff=loadingOffParent,
+                                                refreshPageIfIsWorkTree=refreshPageIfIsWorkTreePage,
+                                                repoId=repoId,
                                             )
                                         }
                                         item {
@@ -426,7 +471,11 @@ fun DiffContent(
                                                 line = add,
                                                 fileFullPath=fileFullPath,
                                                 isFileAndExist = isFileAndExist.value,
-                                                pageRequest = pageRequest
+                                                clipboardManager=clipboardManager,
+                                                loadingOn=loadingOnParent,
+                                                loadingOff=loadingOffParent,
+                                                refreshPageIfIsWorkTree=refreshPageIfIsWorkTreePage,
+                                                repoId=repoId,
                                             )
                                         }
                                     }
@@ -438,7 +487,11 @@ fun DiffContent(
                                             line = del,
                                             fileFullPath=fileFullPath,
                                             isFileAndExist = isFileAndExist.value,
-                                            pageRequest = pageRequest
+                                            clipboardManager=clipboardManager,
+                                            loadingOn=loadingOnParent,
+                                            loadingOff=loadingOffParent,
+                                            refreshPageIfIsWorkTree=refreshPageIfIsWorkTreePage,
+                                            repoId=repoId,
                                         )
                                     }
                                 }
@@ -448,7 +501,11 @@ fun DiffContent(
                                             line = add,
                                             fileFullPath=fileFullPath,
                                             isFileAndExist = isFileAndExist.value,
-                                            pageRequest = pageRequest
+                                            clipboardManager=clipboardManager,
+                                            loadingOn=loadingOnParent,
+                                            loadingOff=loadingOffParent,
+                                            refreshPageIfIsWorkTree=refreshPageIfIsWorkTreePage,
+                                            repoId=repoId,
                                         )
                                     }
                                 }
@@ -496,7 +553,11 @@ fun DiffContent(
                                     line = line,
                                     fileFullPath=fileFullPath,
                                     isFileAndExist = isFileAndExist.value,
-                                    pageRequest = pageRequest
+                                    clipboardManager=clipboardManager,
+                                    loadingOn=loadingOnParent,
+                                    loadingOff=loadingOffParent,
+                                    refreshPageIfIsWorkTree=refreshPageIfIsWorkTreePage,
+                                    repoId=repoId,
                                 )
                             }
                         }
@@ -515,7 +576,11 @@ fun DiffContent(
                                 line = LineNum.EOF.transLineToEofLine(eofLine, add = eofLine.originType ==  Diff.Line.OriginType.ADD_EOFNL.toString()),
                                 fileFullPath=fileFullPath,
                                 isFileAndExist = isFileAndExist.value,
-                                pageRequest = pageRequest
+                                clipboardManager=clipboardManager,
+                                loadingOn=loadingOnParent,
+                                loadingOff=loadingOffParent,
+                                refreshPageIfIsWorkTree=refreshPageIfIsWorkTreePage,
+                                repoId=repoId,
                             )
                         }
                     }

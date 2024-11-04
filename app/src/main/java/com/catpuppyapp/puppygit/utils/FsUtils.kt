@@ -13,6 +13,7 @@ import androidx.compose.runtime.MutableState
 import androidx.core.content.FileProvider
 import androidx.documentfile.provider.DocumentFile
 import com.catpuppyapp.puppygit.constants.Cons
+import com.catpuppyapp.puppygit.constants.LineNum
 import com.catpuppyapp.puppygit.dto.FileSimpleDto
 import com.catpuppyapp.puppygit.etc.Ret
 import com.catpuppyapp.puppygit.play.pro.R
@@ -48,6 +49,45 @@ object FsUtils {
     const val appExportFolderName = "PuppyGitExport"
     const val appExportFolderNameUnderDocumentsDirShowToUser = "Documents/${appExportFolderName}"  //显示给用户看的路径
 
+
+    object Patch {
+        const val suffix = ".patch"
+
+        fun getPatchDir():File{
+            return AppModel.singleInstanceHolder.getOrCreatePatchDir()
+        }
+
+        fun newPatchFile(repoName:String, commitLeft:String, commitRight:String):File {
+            val patchDir = getPatchDir()
+
+            //在patchdir创建repo目录 (patch目录结构：patchDir/repoName/xxx..xxx.patch)
+            val parentDir = File(patchDir, repoName)
+            if(!parentDir.exists()) {
+                parentDir.mkdirs()
+            }
+
+            val commitLeft = Libgit2Helper.getShortOidStrByFull(commitLeft)
+            val commitRight = Libgit2Helper.getShortOidStrByFull(commitRight)
+
+            var file = File(parentDir.canonicalPath, genFileName(commitLeft, commitRight))
+            if(file.exists()) {  //如果文件已存在，重新生成一个，当然，仍然有可能存在，不过概率非常非常非常小，可忽略不计，因为文件名包含随机数和精确到分钟的时间戳
+                file = File(parentDir.canonicalPath, genFileName(commitLeft, commitRight))
+                if(file.exists()) {
+                    file = File(parentDir.canonicalPath, genFileName(commitLeft, commitRight))
+                    if(file.exists()) {
+                        file = File(parentDir.canonicalPath, genFileName(commitLeft, commitRight))
+                    }
+                }
+            }
+
+            return file
+        }
+
+        private fun genFileName(commitLeft: String, commitRight: String):String {
+            //文件名示例：abc1234..def3456-adeq12-202405031122.patch
+            return "$commitLeft..$commitRight-${getShortUUID(6)}-${getNowInSecFormatted(Cons.dateTimeFormatter_yyyyMMddHHmm)}$suffix"
+        }
+    }
 
     object FileMimeTypes {
         val typeList= listOf(
@@ -852,42 +892,163 @@ object FsUtils {
         return path.removePrefix(externalPathPrefix)
     }
 
-    object Patch {
-        const val suffix = ".patch"
+    fun stringToLines(string: String):List<String> {
+        return string.lines()
+    }
 
-        fun getPatchDir():File{
-            return AppModel.singleInstanceHolder.getOrCreatePatchDir()
+    /**
+     * 替换多个行到指定行号
+     * replace lines to specified line number
+     *
+     * the EOF: only delete EOF when its empty, and only if the EOF is not empty but require replace, will change to append
+     *
+     * @param file the file which would be replaced
+     * @param startLineNum the line number start from 1
+     * @param newLines the lines will replace
+     * @param trueInsertFalseReplaceNullDelete true insert , false replace, null delete
+     */
+    private fun replaceOrInsertOrDeleteLinesToFile(file: File, startLineNum: Int, newLines: List<String>, trueInsertFalseReplaceNullDelete:Boolean?) {
+        if(trueInsertFalseReplaceNullDelete != null && newLines.isEmpty()) {
+            return
         }
 
-        fun newPatchFile(repoName:String, commitLeft:String, commitRight:String):File {
-            val patchDir = getPatchDir()
+        val targetIsEof = startLineNum==LineNum.EOF.LINE_NUM
 
-            //在patchdir创建repo目录 (patch目录结构：patchDir/repoName/xxx..xxx.patch)
-            val parentDir = File(patchDir, repoName)
-            if(!parentDir.exists()) {
-                parentDir.mkdirs()
-            }
+        if(startLineNum<1 && targetIsEof.not()) {
+            throw RuntimeException("invalid line num")
+        }
 
-            val commitLeft = Libgit2Helper.getShortOidStrByFull(commitLeft)
-            val commitRight = Libgit2Helper.getShortOidStrByFull(commitRight)
+        if(file.exists().not()) {
+            throw RuntimeException("target file doesn't exist")
+        }
 
-            var file = File(parentDir.canonicalPath, genFileName(commitLeft, commitRight))
-            if(file.exists()) {  //如果文件已存在，重新生成一个，当然，仍然有可能存在，不过概率非常非常非常小，可忽略不计，因为文件名包含随机数和精确到分钟的时间戳
-                file = File(parentDir.canonicalPath, genFileName(commitLeft, commitRight))
-                if(file.exists()) {
-                    file = File(parentDir.canonicalPath, genFileName(commitLeft, commitRight))
-                    if(file.exists()) {
-                        file = File(parentDir.canonicalPath, genFileName(commitLeft, commitRight))
+        //RLTF =  acronym of the function name replaceLinesToFile (RLTF=函数名首字母缩写)
+        val tmpFileName = "RLTF-${getShortUUID()}"
+        val tempFile = File(AppModel.singleInstanceHolder.externalCacheDir.canonicalPath, tmpFileName)
+
+        var found = false
+
+        file.bufferedReader().use { reader ->
+            tempFile.bufferedWriter().use { writer ->
+                var currentLine = 1
+                val lines = mutableListOf<String>()
+                reader.forEachLine { lines.add(it) }
+                val lastLineNum = lines.size
+
+                var hasEOFNL = false
+                lines.forEach readerForEach@{ line ->
+                    val reachedEof = currentLine == lastLineNum
+
+                    if (currentLine++ == startLineNum) {
+                        found = true
+
+                        // delete line
+                        if(trueInsertFalseReplaceNullDelete == null) {
+                            return@readerForEach
+                        }
+
+                        for(i in newLines.indices) {
+                            writer.write(newLines[i])
+                            writer.newLine()
+                        }
+
+                        // prepend line
+                        if(trueInsertFalseReplaceNullDelete == true) {
+                            writer.write(line)
+                            if(!(reachedEof && line.isNotEmpty())) {
+                                writer.newLine()
+                            }
+                        }
+                    }else {  // not match
+                        // is and reached EOF
+                        if(targetIsEof && reachedEof) {
+                            found = true
+                            val hasEOFNL_2 = line.isEmpty()
+                            if(hasEOFNL_2) {
+                                if(trueInsertFalseReplaceNullDelete != null) {
+                                    for(i in newLines.indices) {
+                                        writer.write(newLines[i])
+                                        writer.newLine()
+                                    }
+                                    if(trueInsertFalseReplaceNullDelete == true) {
+                                        writer.write(line)
+                                        writer.newLine()
+                                    }
+                                }
+                            }else {  // EOF is not empty or blank, maybe is libgit2 show wrong state of EOFNL or really has not EOFNL
+
+                                // keep old EOF
+                                writer.write(line)
+
+                                if(trueInsertFalseReplaceNullDelete != null) {
+                                    writer.newLine()
+                                    val lastIndexOfNewLines = newLines.lastIndex
+                                    for(i in newLines.indices) {
+                                        writer.write(newLines[i])
+                                        if(i!=lastIndexOfNewLines) {  // ignore last new line, because source file has not EOFNL
+                                            writer.newLine()
+                                        }
+                                    }
+//                                  // cuz no EOFNL, so just append content, no need add a EOFNL
+//                                    if(trueInsertFalseReplaceNullDelete == true) {
+//                                        writer.newLine()
+//                                    }
+                                }
+                            }
+
+                        }else { // target is not EOF
+                            writer.write(line)
+                            if(reachedEof.not()){
+                                writer.newLine()
+                            }else { // target is not eof and reached eof
+                                hasEOFNL = line.isEmpty()
+                            }
+                        }
+                    }
+                }
+
+                if(hasEOFNL) {
+                    writer.newLine()
+                }
+
+                // not found and not delete mode, append line to the end of file
+                if (found.not() && targetIsEof.not() && trueInsertFalseReplaceNullDelete!=null) {
+                    if(hasEOFNL.not()) {
+                        writer.newLine()
+                    }
+                    val lastidx = newLines.lastIndex
+                    for(i in newLines.indices) {
+                        writer.write(newLines[i])
+                        if(hasEOFNL || i!=lastidx) {
+                            writer.newLine()
+                        }
                     }
                 }
             }
-
-            return file
         }
 
-        private fun genFileName(commitLeft: String, commitRight: String):String {
-            //文件名示例：abc1234..def3456-adeq12-202405031122.patch
-            return "$commitLeft..$commitRight-${getShortUUID(6)}-${getNowInSecFormatted(Cons.dateTimeFormatter_yyyyMMddHHmm)}$suffix"
-        }
+        // replace old file
+        tempFile.renameTo(file)
     }
+
+    fun replaceLinesToFile(file: File, startLineNum: Int, newLines: List<String>) {
+        replaceOrInsertOrDeleteLinesToFile(file, startLineNum, newLines, trueInsertFalseReplaceNullDelete = false)
+    }
+
+    fun insertLinesToFile(file: File, startLineNum: Int, newLines: List<String>) {
+        prependLinesToFile(file, startLineNum, newLines)
+    }
+
+    fun prependLinesToFile(file: File, startLineNum: Int, newLines: List<String>) {
+        replaceOrInsertOrDeleteLinesToFile(file, startLineNum, newLines, trueInsertFalseReplaceNullDelete = true)
+    }
+
+    fun appendLinesToFile(file: File, startLineNum: Int, newLines: List<String>) {
+        replaceOrInsertOrDeleteLinesToFile(file, startLineNum+1, newLines, trueInsertFalseReplaceNullDelete = true)
+    }
+
+    fun deleteLineToFile(file: File, lineNum: Int) {
+        replaceOrInsertOrDeleteLinesToFile(file, lineNum, newLines=listOf(), trueInsertFalseReplaceNullDelete = null)
+    }
+
 }

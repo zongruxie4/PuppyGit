@@ -11,9 +11,11 @@ object PageRequest {
     //注意：同一条渲染链上不同组件不可使用相同的请求值，否则只有第一个匹配的组件会执行request，换句话说，再同一渲染链上请求值必须唯一且只有一个消费者
 
 
-    const val requireEditLine = "requireEditLine"  // request#cacheKeyOfData
-    const val requireDelLine = "requireDelLine"  // request#cacheKeyOfData
-    const val requireRestoreLine = "requireRestoreLine"  // request#cacheKeyOfData
+//    const val requirePrependLine = "requirePrependLine"  // request#cacheKeyOfData
+//    const val requireAppendLine = "requireAppendLine"  // request#cacheKeyOfData
+//    const val requireEditLine = "requireEditLine"  // request#cacheKeyOfData
+//    const val requireDelLine = "requireDelLine"  // request#cacheKeyOfData
+//    const val requireRestoreLine = "requireRestoreLine"  // request#cacheKeyOfData
     const val goToIndex ="goToIndex"  //goToIndex#Index，#后面是要goto的index
 
 

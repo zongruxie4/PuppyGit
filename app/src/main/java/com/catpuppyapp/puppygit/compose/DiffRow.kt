@@ -3,34 +3,46 @@ package com.catpuppyapp.puppygit.compose
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextField
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.ClipboardManager
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.buildAnnotatedString
+import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.DpOffset
 import androidx.compose.ui.unit.dp
 import com.catpuppyapp.puppygit.constants.Cons
 import com.catpuppyapp.puppygit.constants.LineNum
-import com.catpuppyapp.puppygit.constants.PageRequest
 import com.catpuppyapp.puppygit.git.PuppyLine
 import com.catpuppyapp.puppygit.play.pro.R
 import com.catpuppyapp.puppygit.style.MyStyleKt
 import com.catpuppyapp.puppygit.ui.theme.Theme
 import com.catpuppyapp.puppygit.utils.AppModel
+import com.catpuppyapp.puppygit.utils.FsUtils
 import com.catpuppyapp.puppygit.utils.Libgit2Helper
+import com.catpuppyapp.puppygit.utils.Msg
 import com.catpuppyapp.puppygit.utils.cache.Cache
 import com.catpuppyapp.puppygit.utils.compare.result.IndexStringPart
+import com.catpuppyapp.puppygit.utils.createAndInsertError
+import com.catpuppyapp.puppygit.utils.doJobThenOffLoading
+import com.catpuppyapp.puppygit.utils.replaceStringResList
 import com.github.git24j.core.Diff.Line
+import java.io.File
 
 /**
  * @param stringPartList 如果用不到，可传null或使用默认值（还是null）
@@ -41,11 +53,17 @@ fun DiffRow (
     stringPartList:List<IndexStringPart>? = null,
     fileFullPath:String,
     isFileAndExist:Boolean,
-    pageRequest:MutableState<String>
-) {
+    clipboardManager: ClipboardManager,
+    loadingOn:(String)->Unit,
+    loadingOff:()->Unit,
+    refreshPageIfIsWorkTree:()->Unit,
+    repoId:String,
+
+    ) {
     val useStringPartList = !stringPartList.isNullOrEmpty()
 
     val navController = AppModel.singleInstanceHolder.navController
+    val appContext = AppModel.singleInstanceHolder.appContext
 
     val inDarkTheme = Theme.inDarkTheme
     //libgit2会把连续行整合到一起，这里用getLines()获取拆分后的行
@@ -71,6 +89,237 @@ fun DiffRow (
 //    prefix = line.originType + lineNum + ":"  // show add or del and line num, e.g. "+123:" or "-123:"
     val prefix = "$lineNum:"  // only show line num (can use color figure add or del), e.g. "123:"
 
+
+    val lineContentOfEditLineDialog = rememberSaveable { mutableStateOf("") }
+    val lineNumOfEditLineDialog = rememberSaveable { mutableStateOf(LineNum.invalidButNotEof) }  // this is line number not index, should start from 1
+    val lineNumStrOfEditLineDialog = rememberSaveable { mutableStateOf("") }  // this is line number not index, should start from 1
+
+    val truePrependFalseAppendNullReplace = rememberSaveable { mutableStateOf<Boolean?>(null) }
+    val showEditLineDialog = rememberSaveable { mutableStateOf(false) }
+    val showDelLineDialog = rememberSaveable { mutableStateOf(false) }
+    val showRestoreLineDialog = rememberSaveable { mutableStateOf(false) }
+
+    val initEditLineDialog = {content:String, lineNum:Int, prependOrApendOrReplace:Boolean? ->
+        if(lineNum == LineNum.invalidButNotEof){
+            Msg.requireShowLongDuration(appContext.getString(R.string.invalid_line_number))
+        }else {
+            truePrependFalseAppendNullReplace.value = prependOrApendOrReplace
+            lineContentOfEditLineDialog.value = content
+            lineNumOfEditLineDialog.value = lineNum
+            showEditLineDialog.value = true
+        }
+    }
+    val initDelLineDialog = {lineNum:Int ->
+        if(lineNum == LineNum.invalidButNotEof){
+            Msg.requireShowLongDuration(appContext.getString(R.string.invalid_line_number))
+        }else {
+            lineNumOfEditLineDialog.value = lineNum
+            showDelLineDialog.value = true
+        }
+    }
+    val initRestoreLineDialog = {content:String, lineNum:Int ->
+        if(lineNum == LineNum.invalidButNotEof){
+            Msg.requireShowLongDuration(appContext.getString(R.string.invalid_line_number))
+        }else {
+            lineContentOfEditLineDialog.value = content
+            lineNumOfEditLineDialog.value = lineNum
+            lineNumStrOfEditLineDialog.value = ""+lineNum
+            showRestoreLineDialog.value = true
+        }
+    }
+
+
+    if(showEditLineDialog.value) {
+        ConfirmDialog2(
+            title = if(truePrependFalseAppendNullReplace.value == true) stringResource(R.string.prepend) else if(truePrependFalseAppendNullReplace.value == false) stringResource(R.string.append) else stringResource(R.string.edit),
+            requireShowTextCompose = true,
+            textCompose = {
+                ScrollableColumn {
+                    Text(
+                        replaceStringResList(
+                            stringResource(if (truePrependFalseAppendNullReplace.value == null) R.string.line_at_n else R.string.new_line_at_n),
+                            listOf(
+                                "" + (
+                                        if(lineNumOfEditLineDialog.value == LineNum.EOF.LINE_NUM) {
+                                            LineNum.EOF.TEXT
+                                        }else if (truePrependFalseAppendNullReplace.value != false) {
+                                            lineNumOfEditLineDialog.value
+                                        } else {
+                                            lineNumOfEditLineDialog.value + 1
+                                        }
+                                        )
+                            )
+                        )
+                    )
+
+                    Spacer(modifier = Modifier.height(10.dp))
+
+                    TextField(
+                        modifier = Modifier.fillMaxWidth(),
+                        value = lineContentOfEditLineDialog.value,
+                        onValueChange = {
+                            lineContentOfEditLineDialog.value = it
+                        },
+                        label = {
+                            Text(stringResource(R.string.content))
+                        },
+                    )
+                }
+            },
+            okBtnText = stringResource(R.string.save),
+            onCancel = {showEditLineDialog.value = false}
+        ) {
+            showEditLineDialog.value = false
+            doJobThenOffLoading(loadingOn, loadingOff, appContext.getString(R.string.saving)) job@{
+                try {
+                    val lineNum = lineNumOfEditLineDialog.value
+                    if(lineNum<1 && lineNum!=LineNum.EOF.LINE_NUM) {
+                        Msg.requireShowLongDuration(appContext.getString(R.string.invalid_line_number))
+                        return@job
+                    }
+
+                    val lines = FsUtils.stringToLines(lineContentOfEditLineDialog.value)
+                    val file = File(fileFullPath)
+                    if(truePrependFalseAppendNullReplace.value == true) {
+                        FsUtils.prependLinesToFile(file, lineNum, lines)
+                    }else if (truePrependFalseAppendNullReplace.value == false) {
+                        FsUtils.appendLinesToFile(file, lineNum, lines)
+                    }else {
+                        FsUtils.replaceLinesToFile(file, lineNum, lines)
+                    }
+
+                    Msg.requireShow(appContext.getString(R.string.success))
+
+                    refreshPageIfIsWorkTree()
+                }catch (e:Exception) {
+                    val errMsg = e.localizedMessage ?:"err"
+                    Msg.requireShowLongDuration(errMsg)
+                    createAndInsertError(repoId, errMsg)
+                }
+            }
+        }
+    }
+
+    if(showDelLineDialog.value) {
+        ConfirmDialog2(
+            title = stringResource(R.string.delete),
+            requireShowTextCompose = true,
+            textCompose = {
+                ScrollableColumn {
+                    Text(
+                        replaceStringResList(
+                            stringResource(R.string.line_at_n),
+                            listOf(
+                                if (lineNumOfEditLineDialog.value != LineNum.EOF.LINE_NUM) {
+                                    "" + lineNumOfEditLineDialog.value
+                                } else {
+                                    LineNum.EOF.TEXT
+                                }
+                            )
+                        )
+                    )
+                }
+            },
+            okBtnText = stringResource(R.string.delete),
+            okTextColor = MyStyleKt.TextColor.danger(),
+            onCancel = {showDelLineDialog.value = false}
+        ) {
+            showDelLineDialog.value = false
+
+            doJobThenOffLoading(loadingOn, loadingOff, appContext.getString(R.string.deleting)) job@{
+                try {
+                    val lineNum = lineNumOfEditLineDialog.value
+                    if(lineNum<1 && lineNum!=LineNum.EOF.LINE_NUM) {
+                        Msg.requireShowLongDuration(appContext.getString(R.string.invalid_line_number))
+                        return@job
+                    }
+
+                    val file = File(fileFullPath)
+                    FsUtils.deleteLineToFile(file, lineNum)
+
+                    Msg.requireShow(appContext.getString(R.string.success))
+
+                    refreshPageIfIsWorkTree()
+
+                }catch (e:Exception) {
+                    val errMsg = e.localizedMessage ?:"err"
+                    Msg.requireShowLongDuration(errMsg)
+                    createAndInsertError(repoId, errMsg)
+                }
+            }
+        }
+    }
+
+    if(showRestoreLineDialog.value) {
+        ConfirmDialog2(
+            title = stringResource(R.string.restore),
+            requireShowTextCompose = true,
+            textCompose = {
+                ScrollableColumn {
+                    Text(stringResource(R.string.note_if_line_number_doesnt_exist_will_append_content_to_the_end_of_the_file), color = MyStyleKt.TextColor.highlighting_green)
+                    Spacer(modifier = Modifier.height(10.dp))
+
+                    TextField(
+                        modifier = Modifier.fillMaxWidth(),
+                        singleLine = true,
+                        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
+                        value = lineNumStrOfEditLineDialog.value,
+                        onValueChange = {
+                            lineNumStrOfEditLineDialog.value = it
+                        },
+                        label = {
+                            Text(stringResource(R.string.line_number))
+                        },
+                    )
+
+                    Spacer(modifier = Modifier.height(10.dp))
+
+                    TextField(
+                        modifier = Modifier.fillMaxWidth(),
+                        value = lineContentOfEditLineDialog.value,
+                        onValueChange = {
+                            lineContentOfEditLineDialog.value = it
+                        },
+                        label = {
+                            Text(stringResource(R.string.content))
+                        },
+                    )
+                }
+            },
+            okBtnText = stringResource(R.string.restore),
+            onCancel = {showRestoreLineDialog.value = false}
+        ) {
+            showRestoreLineDialog.value = false
+
+            doJobThenOffLoading(loadingOn, loadingOff, appContext.getString(R.string.restoring)) job@{
+                try {
+                    val lineNum = try {
+                        lineNumStrOfEditLineDialog.value.toInt()
+                    }catch (_:Exception) {
+                        LineNum.invalidButNotEof
+                    }
+
+                    if(lineNum<1 && lineNum!=LineNum.EOF.LINE_NUM) {
+                        Msg.requireShowLongDuration(appContext.getString(R.string.invalid_line_number))
+                        return@job
+                    }
+
+                    val lines = FsUtils.stringToLines(lineContentOfEditLineDialog.value)
+                    val file = File(fileFullPath)
+                    FsUtils.prependLinesToFile(file, lineNum, lines)
+
+                    Msg.requireShow(appContext.getString(R.string.success))
+
+                    refreshPageIfIsWorkTree()
+
+                }catch (e:Exception) {
+                    val errMsg = e.localizedMessage ?:"err"
+                    Msg.requireShowLongDuration(errMsg)
+                    createAndInsertError(repoId, errMsg)
+                }
+            }
+        }
+    }
 
     val expandedMenu = remember { mutableStateOf(false) }
 
@@ -181,33 +430,51 @@ fun DiffRow (
                 //编辑或删除前，如果行号是EOF，必须检查EOF NL是否实际存在，如果EOFNL不存在，则先添加一个空行，再写入用户的实际内容，如果执行删除EOF且文件末尾无空行，则不执行任何删除；
                 // 如果EOF为删除，则不用检查，点击恢复后直接在文件末尾添加一个空行即可
                 if(line.originType == Line.OriginType.ADDITION.toString() || line.originType == Line.OriginType.CONTEXT.toString()){
-                    val cacheKey = Cache.setThenReturnKey(line)
-
                     DropdownMenuItem(text = { Text(stringResource(R.string.edit))},
                         onClick = {
-                            pageRequest.value = PageRequest.DataRequest.build(PageRequest.requireEditLine, cacheKey)
+                            initEditLineDialog(content.removeSuffix(Cons.lineBreak), line.lineNum, null)
+
+                            expandedMenu.value = false
+                        }
+                    )
+                    DropdownMenuItem(text = { Text(stringResource(R.string.prepend))},
+                        onClick = {
+                            initEditLineDialog(content.removeSuffix(Cons.lineBreak), line.lineNum, true)
+
+                            expandedMenu.value = false
+                        }
+                    )
+                    DropdownMenuItem(text = { Text(stringResource(R.string.append))},
+                        onClick = {
+                            initEditLineDialog(content.removeSuffix(Cons.lineBreak), line.lineNum, false)
 
                             expandedMenu.value = false
                         }
                     )
                     DropdownMenuItem(text = { Text(stringResource(R.string.del))},
                         onClick = {
-                            pageRequest.value = PageRequest.DataRequest.build(PageRequest.requireDelLine, cacheKey)
-
+                            initDelLineDialog(line.lineNum)
                             expandedMenu.value = false
                         }
                     )
                 }else if(line.originType == Line.OriginType.DELETION.toString()) {
-                    val cacheKey = Cache.setThenReturnKey(line)
-
                     DropdownMenuItem(text = { Text(stringResource(R.string.restore))},
                         onClick = {
-                            pageRequest.value = PageRequest.DataRequest.build(PageRequest.requireRestoreLine, cacheKey)
-
+                            initRestoreLineDialog(content.removeSuffix(Cons.lineBreak), line.lineNum)
                             expandedMenu.value = false
                         }
                     )
                 }
+
+
+                DropdownMenuItem(text = { Text(stringResource(R.string.copy))},
+                    onClick = {
+                        clipboardManager.setText(AnnotatedString(content))
+                        Msg.requireShow(appContext.getString(R.string.copied))
+
+                        expandedMenu.value = false
+                    }
+                )
             }
         }
 
