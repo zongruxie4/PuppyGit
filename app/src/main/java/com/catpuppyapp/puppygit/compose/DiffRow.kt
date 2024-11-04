@@ -8,6 +8,7 @@ import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
@@ -20,6 +21,7 @@ import androidx.compose.ui.unit.DpOffset
 import androidx.compose.ui.unit.dp
 import com.catpuppyapp.puppygit.constants.Cons
 import com.catpuppyapp.puppygit.constants.LineNum
+import com.catpuppyapp.puppygit.constants.PageRequest
 import com.catpuppyapp.puppygit.git.PuppyLine
 import com.catpuppyapp.puppygit.play.pro.R
 import com.catpuppyapp.puppygit.style.MyStyleKt
@@ -34,7 +36,13 @@ import com.github.git24j.core.Diff.Line
  * @param stringPartList 如果用不到，可传null或使用默认值（还是null）
  */
 @Composable
-fun DiffRow (line:PuppyLine, stringPartList:List<IndexStringPart>? = null, fileFullPath:String, isFileAndExist:Boolean) {
+fun DiffRow (
+    line:PuppyLine,
+    stringPartList:List<IndexStringPart>? = null,
+    fileFullPath:String,
+    isFileAndExist:Boolean,
+    pageRequest:MutableState<String>
+) {
     val useStringPartList = !stringPartList.isNullOrEmpty()
 
     val navController = AppModel.singleInstanceHolder.navController
@@ -175,15 +183,33 @@ fun DiffRow (line:PuppyLine, stringPartList:List<IndexStringPart>? = null, fileF
                 if(line.originType == Line.OriginType.ADDITION.toString() || line.originType == Line.OriginType.CONTEXT.toString()){
                     DropdownMenuItem(text = { Text(stringResource(R.string.edit))},
                         onClick = {
+                            pageRequest.value = PageRequest.Builder(PageRequest.requireEditLine)
+                                .build(lineNum)
+                                .build(content)
+                                .toRequest()
+
+                            expandedMenu.value = false
                         }
                     )
                     DropdownMenuItem(text = { Text(stringResource(R.string.del))},
                         onClick = {
+                            pageRequest.value = PageRequest.Builder(PageRequest.requireDelLine)
+                                .build(lineNum)
+                                .build(content)
+                                .toRequest()
+
+                            expandedMenu.value = false
                         }
                     )
                 }else if(line.originType == Line.OriginType.DELETION.toString()) {
                     DropdownMenuItem(text = { Text(stringResource(R.string.restore))},
                         onClick = {
+                            pageRequest.value = PageRequest.Builder(PageRequest.requireRestoreLine)
+                                .build(lineNum)
+                                .build(content)
+                                .toRequest()
+
+                            expandedMenu.value = false
                         }
                     )
                 }

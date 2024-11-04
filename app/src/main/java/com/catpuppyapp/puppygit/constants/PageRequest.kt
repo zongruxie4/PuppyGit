@@ -93,6 +93,11 @@ object PageRequest {
             return request+dataSplitBy+data
         }
 
+        fun build(request:StringBuilder, data:String):StringBuilder {
+            //"request#data"
+            return request.append(dataSplitBy).append(data)
+        }
+
         /**
          * 返回request中的data
          */
@@ -106,5 +111,20 @@ object PageRequest {
             }
         }
 
+    }
+
+    class Builder(
+        val initRequest:String,
+    ) {
+        private var requestSb: StringBuilder = StringBuilder(initRequest)
+
+        fun toRequest():String {
+            return requestSb.toString()
+        }
+
+        fun build(data:String):Builder {
+            requestSb = DataRequest.build(requestSb, data)
+            return this
+        }
     }
 }
