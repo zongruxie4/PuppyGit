@@ -28,6 +28,7 @@ import com.catpuppyapp.puppygit.compose.LongPressAbleIconBtn
 import com.catpuppyapp.puppygit.compose.MySelectionContainer
 import com.catpuppyapp.puppygit.compose.OpenAsDialog
 import com.catpuppyapp.puppygit.constants.Cons
+import com.catpuppyapp.puppygit.constants.LineNum
 import com.catpuppyapp.puppygit.constants.PageRequest
 import com.catpuppyapp.puppygit.data.entity.RepoEntity
 import com.catpuppyapp.puppygit.git.PuppyLine
@@ -158,6 +159,44 @@ fun DiffScreen(
         }
     }
 
+    val lineContentOfEditLineDialog = rememberSaveable { mutableStateOf("") }
+    val lineNumOfEditLineDialog = rememberSaveable { mutableStateOf(LineNum.invalidButNotEof) }  // this is line number not index, should start from 1
+    val showEditLineDialog = rememberSaveable { mutableStateOf(false) }
+    val showDelLineDialog = rememberSaveable { mutableStateOf(false) }
+    val showRestoreLineDialog = rememberSaveable { mutableStateOf(false) }
+
+    val initEditLineDialog = {content:String, lineNum:Int ->
+        if(lineNum == LineNum.invalidButNotEof){
+            Msg.requireShowLongDuration(appContext.getString(R.string.invalid_line_number))
+        }else {
+            lineContentOfEditLineDialog.value = content
+            lineNumOfEditLineDialog.value = lineNum
+            showEditLineDialog.value = true
+        }
+    }
+    val initDelLineDialog = {lineNum:Int ->
+        if(lineNum == LineNum.invalidButNotEof){
+            Msg.requireShowLongDuration(appContext.getString(R.string.invalid_line_number))
+        }else {
+            lineNumOfEditLineDialog.value = lineNum
+            showDelLineDialog.value = true
+        }
+    }
+    val initRestoreLineDialog = {lineNum:Int ->
+        if(lineNum == LineNum.invalidButNotEof){
+            Msg.requireShowLongDuration(appContext.getString(R.string.invalid_line_number))
+        }else {
+            lineNumOfEditLineDialog.value = lineNum
+            showRestoreLineDialog.value = true
+        }
+    }
+
+
+    if(showEditLineDialog.value) {
+dddddd
+    }
+
+
     if(request.value == PageRequest.showOpenAsDialog) {
         PageRequest.clearStateThenDoAct(request) {
             openAsDialogFilePath.value = fileFullPath.value
@@ -190,20 +229,21 @@ fun DiffScreen(
     if(PageRequest.DataRequest.isDataRequest(request.value, PageRequest.requireEditLine)) {
         PageRequest.clearStateThenDoAct(request) { requestCopy ->
             val line = Cache.getByTypeThenDel<PuppyLine>(PageRequest.DataRequest.getDataFromRequest(requestCopy))
+            initEditLineDialog(line?.content?:"", line?.lineNum ?:LineNum.invalidButNotEof)
         }
     }
 
     if(PageRequest.DataRequest.isDataRequest(request.value, PageRequest.requireDelLine)) {
         PageRequest.clearStateThenDoAct(request) { requestCopy ->
             val line = Cache.getByTypeThenDel<PuppyLine>(PageRequest.DataRequest.getDataFromRequest(requestCopy))
-
+            initDelLineDialog(line?.lineNum ?:LineNum.invalidButNotEof)
         }
     }
 
     if(PageRequest.DataRequest.isDataRequest(request.value, PageRequest.requireRestoreLine)) {
         PageRequest.clearStateThenDoAct(request) { requestCopy ->
             val line = Cache.getByTypeThenDel<PuppyLine>(PageRequest.DataRequest.getDataFromRequest(requestCopy))
-
+            initRestoreLineDialog(line?.lineNum?:LineNum.invalidButNotEof)
         }
     }
 

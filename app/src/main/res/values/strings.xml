@@ -991,5 +991,6 @@
     <string name="size">Size</string>
     <string name="del">Del</string>
     <string name="restore">Restore</string>
+    <string name="invalid_line_number">invalid line number</string>
 
 </resources>

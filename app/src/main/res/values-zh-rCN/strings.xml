@@ -980,6 +980,7 @@
     <string name="size">大小</string>
     <string name="del">删除</string>
     <string name="restore">恢复</string>
+    <string name="invalid_line_number">无效行号</string>
 
 
 </resources>

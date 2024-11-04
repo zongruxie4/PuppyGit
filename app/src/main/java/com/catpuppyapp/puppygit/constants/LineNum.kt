@@ -4,6 +4,9 @@ import com.catpuppyapp.puppygit.git.PuppyLine
 import com.github.git24j.core.Diff
 
 object LineNum {
+
+    const val invalidButNotEof = -998
+
     // used for restore last edited or viewed line number
     //这个值代表期望恢复上次编辑位置
     const val lastPosition = -2
