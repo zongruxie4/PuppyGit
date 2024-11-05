@@ -328,15 +328,15 @@ fun DiffRow (
 
             doJobThenOffLoading(loadingOn, loadingOff, appContext.getString(R.string.restoring)) job@{
                 try {
-                    val lineNum = try {
+                    var lineNum = try {
                         lineNumStrOfEditLineDialog.value.toInt()
                     }catch (_:Exception) {
                         LineNum.invalidButNotEof
                     }
 
-                    if(lineNum<1 && lineNum!=LineNum.EOF.LINE_NUM) {
-                        Msg.requireShowLongDuration(appContext.getString(R.string.invalid_line_number))
-                        return@job
+                    if(lineNum<1) {
+                        // for append content to EOF
+                        lineNum=LineNum.EOF.LINE_NUM
                     }
 
                     val lines = FsUtils.stringToLines(lineContentOfEditLineDialog.value)
@@ -369,7 +369,9 @@ fun DiffRow (
 //               )
 //    }
 
-    val enableLineActions = isFileAndExist
+    // disable for EOF, the EOF showing sometimes false-added
+    // 禁用EOF点击菜单，EOF有时候假添加，就是明明没有eof，但显示新增了eof，可能是libgit2 bug
+    val enableLineActions = isFileAndExist && line.lineNum != LineNum.EOF.LINE_NUM
 
     //因为下面用Row换行了，所以不需要内容以换行符结尾
 //    prefix = prefix.removeSuffix(Cons.lineBreak)

@@ -16,11 +16,11 @@ import com.catpuppyapp.puppygit.constants.Cons
 import com.catpuppyapp.puppygit.constants.LineNum
 import com.catpuppyapp.puppygit.dto.FileSimpleDto
 import com.catpuppyapp.puppygit.etc.Ret
+import com.catpuppyapp.puppygit.fileeditor.texteditor.state.TextEditorState
 import com.catpuppyapp.puppygit.play.pro.R
 import com.catpuppyapp.puppygit.utils.snapshot.SnapshotFileFlag
 import com.catpuppyapp.puppygit.utils.snapshot.SnapshotUtil
 import com.catpuppyapp.puppygit.utils.state.CustomStateSaveable
-import com.catpuppyapp.puppygit.fileeditor.texteditor.state.TextEditorState
 import java.io.File
 import java.io.FileInputStream
 import java.io.FileOutputStream
@@ -900,10 +900,11 @@ object FsUtils {
      * 替换多个行到指定行号
      * replace lines to specified line number
      *
-     * the EOF: only delete EOF when its empty, and only if the EOF is not empty but require replace, will change to append
+     * note: if target line doesn't exist, will append content to the EOF, and delete/append content is not available for EOF
      *
      * @param file the file which would be replaced
-     * @param startLineNum the line number start from 1
+     * @param startLineNum the line number start from 1 or -1 represent EOF, when you want to append content to the end of file, use -1 or a line number which bigger than the file actually lines is ok
+     * @param startLineNum 行号可以是大于1的值或-1，如果想追加内容到文件末尾，可传-1或大于文件实际行号的值
      * @param newLines the lines will replace
      * @param trueInsertFalseReplaceNullDelete true insert , false replace, null delete
      */
@@ -912,9 +913,7 @@ object FsUtils {
             return
         }
 
-        val targetIsEof = startLineNum==LineNum.EOF.LINE_NUM
-
-        if(startLineNum<1 && targetIsEof.not()) {
+        if(startLineNum<1 && startLineNum!=LineNum.EOF.LINE_NUM) {
             throw RuntimeException("invalid line num")
         }
 
@@ -922,23 +921,16 @@ object FsUtils {
             throw RuntimeException("target file doesn't exist")
         }
 
-        //RLTF =  acronym of the function name replaceLinesToFile (RLTF=函数名首字母缩写)
-        val tmpFileName = "RLTF-${getShortUUID()}"
-        val tempFile = File(AppModel.singleInstanceHolder.externalCacheDir.canonicalPath, tmpFileName)
-
+        //RLTF =  acronym of the "Replace-Lines-To-File" (RLTF=函数名首字母缩写)
+        val tempFile = FsUtils.createTempFile("RLTF")
         var found = false
 
         file.bufferedReader().use { reader ->
             tempFile.bufferedWriter().use { writer ->
                 var currentLine = 1
-                val lines = mutableListOf<String>()
-                reader.forEachLine { lines.add(it) }
-                val lastLineNum = lines.size
-
-                var hasEOFNL = false
-                lines.forEach readerForEach@{ line ->
-                    val reachedEof = currentLine == lastLineNum
-
+                reader.forEachLine readerForEach@{ line ->
+                    // note: if target line num is EOF, this if never execute, but will append content to the EOF of target file after looped
+                    // 注意：如果目标行号是EOF，if里的代码永远不会被执行，然后会追加内容到目标文件的末尾
                     if (currentLine++ == startLineNum) {
                         found = true
 
@@ -952,83 +944,33 @@ object FsUtils {
                             writer.newLine()
                         }
 
-                        // prepend line
+                        // prepend(insert) line
                         if(trueInsertFalseReplaceNullDelete == true) {
                             writer.write(line)
-                            if(!(reachedEof && line.isNotEmpty())) {
-                                writer.newLine()
-                            }
+                            writer.newLine()
                         }
                     }else {  // not match
-                        // is and reached EOF
-                        if(targetIsEof && reachedEof) {
-                            found = true
-                            val hasEOFNL_2 = line.isEmpty()
-                            if(hasEOFNL_2) {
-                                if(trueInsertFalseReplaceNullDelete != null) {
-                                    for(i in newLines.indices) {
-                                        writer.write(newLines[i])
-                                        writer.newLine()
-                                    }
-                                    if(trueInsertFalseReplaceNullDelete == true) {
-                                        writer.write(line)
-                                        writer.newLine()
-                                    }
-                                }
-                            }else {  // EOF is not empty or blank, maybe is libgit2 show wrong state of EOFNL or really has not EOFNL
-
-                                // keep old EOF
-                                writer.write(line)
-
-                                if(trueInsertFalseReplaceNullDelete != null) {
-                                    writer.newLine()
-                                    val lastIndexOfNewLines = newLines.lastIndex
-                                    for(i in newLines.indices) {
-                                        writer.write(newLines[i])
-                                        if(i!=lastIndexOfNewLines) {  // ignore last new line, because source file has not EOFNL
-                                            writer.newLine()
-                                        }
-                                    }
-//                                  // cuz no EOFNL, so just append content, no need add a EOFNL
-//                                    if(trueInsertFalseReplaceNullDelete == true) {
-//                                        writer.newLine()
-//                                    }
-                                }
-                            }
-
-                        }else { // target is not EOF
-                            writer.write(line)
-                            if(reachedEof.not()){
-                                writer.newLine()
-                            }else { // target is not eof and reached eof
-                                hasEOFNL = line.isEmpty()
-                            }
-                        }
+                        writer.write(line)
+                        writer.newLine()
                     }
-                }
-
-                if(hasEOFNL) {
-                    writer.newLine()
                 }
 
                 // not found and not delete mode, append line to the end of file
-                if (found.not() && targetIsEof.not() && trueInsertFalseReplaceNullDelete!=null) {
-                    if(hasEOFNL.not()) {
-                        writer.newLine()
-                    }
-                    val lastidx = newLines.lastIndex
+                if (found.not() && trueInsertFalseReplaceNullDelete!=null) {
                     for(i in newLines.indices) {
                         writer.write(newLines[i])
-                        if(hasEOFNL || i!=lastidx) {
-                            writer.newLine()
-                        }
+                        writer.newLine()
                     }
                 }
             }
         }
 
-        // replace old file
-        tempFile.renameTo(file)
+        // if content updated, replace the origin file
+        if(found.not() && trueInsertFalseReplaceNullDelete==null){  // no update, remove temp file
+            tempFile.delete()
+        }else {  // updated, move temp file to origin file, temp file will delete after move
+            tempFile.renameTo(file)
+        }
     }
 
     fun replaceLinesToFile(file: File, startLineNum: Int, newLines: List<String>) {
@@ -1051,4 +993,7 @@ object FsUtils {
         replaceOrInsertOrDeleteLinesToFile(file, lineNum, newLines=listOf(), trueInsertFalseReplaceNullDelete = null)
     }
 
+    fun createTempFile(prefix:String):File{
+        return File(AppModel.singleInstanceHolder.externalCacheDir.canonicalPath, "$prefix-${generateRandomString()}")
+    }
 }
