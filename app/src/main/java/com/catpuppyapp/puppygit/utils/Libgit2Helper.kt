@@ -793,6 +793,12 @@ class Libgit2Helper {
                         stes.fileSizeInBytes = newFile.size.toLong()  //修改时，也是取新文件的size，和新增时一样
                     }else{ //新旧文件oid都是全0
                         // 这种情况不会发生，新旧oid都全0，那文件根本就不存在，所以也不可能遍历到这个文件
+//                        println("全0？：${stes.fileName}, ${oldFileOid.isNullOrEmptyOrZero}, ${newFileOid.isNullOrEmptyOrZero}")
+//                        stes.changeType = Cons.gitStatusUntracked
+                        stes.changeType = Cons.gitStatusDeleted
+                        stes.fileSizeInBytes = oldFile.size.toLong()
+//                        println("oldFile.size=${oldFile.size}")  // old size is ok, new size is 0
+//                        println("newFile.size=${newFile.size}")
                     }
                     ret.add(stes)
                     0

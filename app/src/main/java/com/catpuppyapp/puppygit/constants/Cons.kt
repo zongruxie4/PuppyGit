@@ -233,7 +233,8 @@ class Cons {
 
         //git status
         const val gitStatusModified = "Modified"
-        const val gitStatusNew = "New"  //untracked
+        const val gitStatusNew = "New"  //most time this same as untracked
+//        const val gitStatusUntracked = "Untracked"  //untracked
         const val gitStatusRenamed = "Renamed"  //这种状态在我的app里应该不会出现，拆分成Deleted的和New的两种状态了
         const val gitStatusDeleted = "Deleted"
 
