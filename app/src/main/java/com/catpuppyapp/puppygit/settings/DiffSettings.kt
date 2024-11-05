@@ -32,4 +32,10 @@ data class DiffSettings (
      */
     var loadDiffContentCheckAbortSignalSize:Long=1000000L,  // unit byte, default 1MB
 
+
+    var showLineNum:Boolean=true,
+    var showOriginType:Boolean=false,
+    var fontSize:Int = SettingsCons.defaultFontSize,  //字体大小，单位sp
+    var lineNumFontSize:Int = SettingsCons.defaultLineNumFontSize,  //行号字体大小
+
 )

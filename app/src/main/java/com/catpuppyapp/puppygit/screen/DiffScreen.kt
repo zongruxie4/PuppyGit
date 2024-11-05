@@ -1,14 +1,18 @@
 package com.catpuppyapp.puppygit.screen
 
+import FontSizeAdjuster
+import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.filled.Close
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableLongStateOf
@@ -36,6 +40,7 @@ import com.catpuppyapp.puppygit.play.pro.R
 import com.catpuppyapp.puppygit.screen.content.DiffContent
 import com.catpuppyapp.puppygit.screen.content.homescreen.scaffold.actions.DiffPageActions
 import com.catpuppyapp.puppygit.screen.content.homescreen.scaffold.title.DiffScreenTitle
+import com.catpuppyapp.puppygit.settings.SettingsCons
 import com.catpuppyapp.puppygit.settings.SettingsUtil
 import com.catpuppyapp.puppygit.utils.AppModel
 import com.catpuppyapp.puppygit.utils.Msg
@@ -103,6 +108,12 @@ fun DiffScreen(
     //ps: 这个值要么做成可在设置页面关闭（当然，其他与预览diff不相关的页面也行，总之别做成只能在正在执行O(nm)的diff页面开关就行），要么就默认app启动后重置为关闭，绝对不能做成只能在预览diff的页面开关，不然万一O(nm)算法太慢卡死导致这个东西关不了就尴尬了
     //20240618:目前临时开启O(nm)算法的机制是在预览diff页面三击屏幕，但app启动时会重置为关闭，日后需要添加相关设置项以方便用户使用
     val requireBetterMatchingForCompare = rememberSaveable { mutableStateOf(false) }
+    val adjustFontSizeModeOn = rememberSaveable { mutableStateOf(false) }
+    val adjustLineNumSizeModeOn = rememberSaveable { mutableStateOf(false) }
+    val showLineNum = rememberSaveable { mutableStateOf(settings.diff.showLineNum) }
+    val showOriginType = rememberSaveable { mutableStateOf(settings.diff.showOriginType) }
+    val fontSize = rememberSaveable { mutableIntStateOf(settings.diff.fontSize) }
+    val lineNumFontSize = rememberSaveable { mutableIntStateOf(settings.diff.lineNumFontSize) }
 
     // this loading not shown as default, only show when executing action,
     //  use DiffContent's loading state indicating is loading diff content or not
@@ -208,6 +219,9 @@ fun DiffScreen(
         PageRequest.clearStateThenDoAct(request) {
             val sb = StringBuilder()
             sb.append(appContext.getString(R.string.name)+": ").appendLine(fileNameOnly.value).appendLine()
+            sb.append(appContext.getString(R.string.change_type)+": ").appendLine(changeType.value).appendLine()
+
+
             sb.append(appContext.getString(R.string.path)+": ").appendLine(relativePathUnderRepoState.value).appendLine()
 
             sb.append(appContext.getString(R.string.full_path)+": ").appendLine(fileFullPath.value)
@@ -272,6 +286,38 @@ fun DiffScreen(
         changeStateTriggerRefreshPage(needRefresh)
     }
 
+    val saveFontSizeAndQuitAdjust = {
+        adjustFontSizeModeOn.value = false
+
+        SettingsUtil.update {
+            it.diff.fontSize = fontSize.intValue
+        }
+
+        Unit
+    }
+    val saveLineNumFontSizeAndQuitAdjust = {
+        adjustLineNumSizeModeOn.value = false
+
+        SettingsUtil.update {
+            it.diff.lineNumFontSize = lineNumFontSize.intValue
+        }
+
+        Unit
+    }
+
+//    val isBackHandlerEnable = rememberSaveable { mutableStateOf(true) }
+
+    BackHandler(
+        onBack = getBackHandler(
+            naviUp = naviUp,
+            adjustFontSizeMode=adjustFontSizeModeOn,
+            adjustLineNumFontSizeMode=adjustLineNumSizeModeOn,
+            saveFontSizeAndQuitAdjust = saveFontSizeAndQuitAdjust,
+            saveLineNumFontSizeAndQuitAdjust = saveLineNumFontSizeAndQuitAdjust,
+        )
+    )
+
+
     Scaffold(
         modifier = Modifier.nestedScroll(homeTopBarScrollBehavior.nestedScrollConnection),
         topBar = {
@@ -291,26 +337,53 @@ fun DiffScreen(
                     )
                 },
                 navigationIcon = {
-                    LongPressAbleIconBtn(
-                        tooltipText = stringResource(R.string.back),
-                        icon = Icons.AutoMirrored.Filled.ArrowBack,
-                        iconContentDesc = stringResource(R.string.back),
+                    if(adjustFontSizeModeOn.value || adjustLineNumSizeModeOn.value) {
+                        LongPressAbleIconBtn(
+                            tooltipText = stringResource(R.string.close),
+                            icon = Icons.Filled.Close,
+                            iconContentDesc = stringResource(R.string.close),
 
                         ) {
-                        naviUp()
+                            if(adjustFontSizeModeOn.value) {
+                                saveFontSizeAndQuitAdjust()
+                            }else {
+                                saveLineNumFontSizeAndQuitAdjust()
+                            }
+                        }
+                    }else {
+                        LongPressAbleIconBtn(
+                            tooltipText = stringResource(R.string.back),
+                            icon = Icons.AutoMirrored.Filled.ArrowBack,
+                            iconContentDesc = stringResource(R.string.back),
+
+                        ) {
+                            naviUp()
+                        }
+
                     }
                 },
 
                 actions = {
-                    DiffPageActions(
-                        changeType=changeType.value,
-                        refreshPage = { changeStateTriggerRefreshPage(needRefresh) },
-                        request = request,
-                        fileFullPath = fileFullPath.value,
-                        requireBetterMatchingForCompare = requireBetterMatchingForCompare,
-                        copyModeOn = copyModeOn,
-                        copyModeSwitchable = copyModeSwitchable.value
-                    )
+                    if(adjustFontSizeModeOn.value) {
+                        FontSizeAdjuster(fontSize = fontSize, resetValue = SettingsCons.defaultFontSize)
+                    }else if(adjustLineNumSizeModeOn.value){
+                        FontSizeAdjuster(fontSize = lineNumFontSize, resetValue = SettingsCons.defaultLineNumFontSize)
+                    }else {
+                        DiffPageActions(
+                            changeType=changeType.value,
+                            refreshPage = { changeStateTriggerRefreshPage(needRefresh) },
+                            request = request,
+                            fileFullPath = fileFullPath.value,
+                            requireBetterMatchingForCompare = requireBetterMatchingForCompare,
+                            copyModeOn = copyModeOn,
+                            copyModeSwitchable = copyModeSwitchable.value,
+                            showLineNum=showLineNum,
+                            showOriginType=showOriginType,
+                            adjustFontSizeModeOn = adjustFontSizeModeOn,
+                            adjustLineNumSizeModeOn = adjustLineNumSizeModeOn,
+                        )
+
+                    }
 
                 },
                 scrollBehavior = homeTopBarScrollBehavior,
@@ -358,7 +431,9 @@ fun DiffScreen(
                 requireBetterMatchingForCompare = requireBetterMatchingForCompare, fileFullPath = fileFullPath.value,
                 isSubmodule=isSubmodule.value, isDiffToLocal = isDiffToLocal,diffableItemList= diffableItemList.value,
                 curItemIndex=curItemIndex, switchItem=switchItem, clipboardManager=clipboardManager,
-                loadingOnParent=loadingOn, loadingOffParent=loadingOff,isFileAndExist=enableLineTapMenu
+                loadingOnParent=loadingOn, loadingOffParent=loadingOff,isFileAndExist=enableLineTapMenu,
+                showLineNum=showLineNum.value, showOriginType=showOriginType.value,
+                fontSize=fontSize.intValue, lineNumSize=lineNumFontSize.intValue
             )
         }else {
             MySelectionContainer {
@@ -369,7 +444,11 @@ fun DiffScreen(
                     requireBetterMatchingForCompare = requireBetterMatchingForCompare, fileFullPath = fileFullPath.value,
                     isSubmodule=isSubmodule.value, isDiffToLocal = isDiffToLocal,diffableItemList= diffableItemList.value,
                     curItemIndex=curItemIndex, switchItem=switchItem, clipboardManager=clipboardManager,
-                    loadingOnParent=loadingOn, loadingOffParent=loadingOff, isFileAndExist=enableLineTapMenu
+                    loadingOnParent=loadingOn, loadingOffParent=loadingOff, isFileAndExist=enableLineTapMenu,
+                    showLineNum=showLineNum.value, showOriginType=showOriginType.value,
+                    fontSize=fontSize.intValue, lineNumSize=lineNumFontSize.intValue
+
+
                 )
             }
         }
@@ -384,3 +463,26 @@ fun DiffScreen(
 //    }
 }
 
+
+@Composable
+private fun getBackHandler(
+    naviUp:()->Boolean,
+    adjustFontSizeMode: MutableState<Boolean>,
+    adjustLineNumFontSizeMode: MutableState<Boolean>,
+    saveFontSizeAndQuitAdjust:()->Unit,
+    saveLineNumFontSizeAndQuitAdjust:()->Unit,
+): () -> Unit {
+    val backHandlerOnBack = {
+        if(adjustFontSizeMode.value) {
+            saveFontSizeAndQuitAdjust()
+        }else if(adjustLineNumFontSizeMode.value) {
+            saveLineNumFontSizeAndQuitAdjust()
+        }else {
+            naviUp()
+        }
+
+        Unit
+    }
+
+    return backHandlerOnBack
+}

@@ -27,6 +27,7 @@ import com.catpuppyapp.puppygit.constants.PageRequest
 import com.catpuppyapp.puppygit.dev.detailsDiffTestPassed
 import com.catpuppyapp.puppygit.dev.dev_EnableUnTestedFeature
 import com.catpuppyapp.puppygit.play.pro.R
+import com.catpuppyapp.puppygit.settings.SettingsUtil
 import com.catpuppyapp.puppygit.user.UserUtil
 import com.catpuppyapp.puppygit.utils.AppModel
 import com.catpuppyapp.puppygit.utils.Msg
@@ -45,7 +46,11 @@ fun DiffPageActions(
     fileFullPath:String,
     requireBetterMatchingForCompare:MutableState<Boolean>,
     copyModeOn:MutableState<Boolean>,
-    copyModeSwitchable:Boolean
+    copyModeSwitchable:Boolean,
+    showLineNum:MutableState<Boolean>,
+    showOriginType:MutableState<Boolean>,
+    adjustFontSizeModeOn:MutableState<Boolean>,
+    adjustLineNumSizeModeOn:MutableState<Boolean>,
 ) {
 
     val navController = AppModel.singleInstanceHolder.navController
@@ -164,6 +169,70 @@ fun DiffPageActions(
         expanded = dropDownMenuExpendState.value,
         onDismissRequest = { dropDownMenuExpendState.value=false }
     ) {
+
+        DropdownMenuItem(
+            text = { Text(stringResource(R.string.font_size)) },
+            onClick = {
+                adjustFontSizeModeOn.value = true
+
+                dropDownMenuExpendState.value = false
+            }
+
+        )
+
+        DropdownMenuItem(
+            text = { Text(stringResource(R.string.line_num_size)) },
+
+            onClick = {
+                adjustLineNumSizeModeOn.value = true
+
+                dropDownMenuExpendState.value = false
+            }
+
+        )
+
+        DropdownMenuItem(
+            text = { Text(stringResource(R.string.show_line_num)) },
+            trailingIcon = {
+                Icon(
+                    imageVector = if(showLineNum.value) Icons.Filled.CheckBox else Icons.Filled.CheckBoxOutlineBlank,
+                    contentDescription = null
+                )
+            },
+            onClick = {
+                showLineNum.value = !showLineNum.value
+
+                SettingsUtil.update {
+                    it.diff.showLineNum = showLineNum.value
+                }
+
+                dropDownMenuExpendState.value = false
+            }
+
+        )
+
+
+        DropdownMenuItem(
+            text = { Text(stringResource(R.string.show_change_type)) },
+            trailingIcon = {
+                Icon(
+                    imageVector = if(showOriginType.value) Icons.Filled.CheckBox else Icons.Filled.CheckBoxOutlineBlank,
+                    contentDescription = null
+                )
+            },
+            onClick = {
+                showOriginType.value = !showOriginType.value
+
+                SettingsUtil.update {
+                    it.diff.showOriginType = showOriginType.value
+                }
+
+                dropDownMenuExpendState.value = false
+            }
+
+        )
+
+
         DropdownMenuItem(
             enabled = copyModeSwitchable,
             text = { Text(stringResource(R.string.copy_mode)) },
@@ -180,6 +249,7 @@ fun DiffPageActions(
             }
 
         )
+
 
     }
 }

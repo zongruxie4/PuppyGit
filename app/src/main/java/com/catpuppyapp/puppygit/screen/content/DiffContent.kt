@@ -91,6 +91,10 @@ fun DiffContent(
     loadingOnParent:(String)->Unit,
     loadingOffParent:()->Unit,
     isFileAndExist:State<Boolean>,
+    showLineNum:Boolean,
+    showOriginType:Boolean,
+    fontSize:Int,
+    lineNumSize:Int,
 ) {
     //废弃，改用获取diffItem时动态计算实际需要显示的contentLen总和了
 //    val fileSizeOverLimit = isFileSizeOverLimit(fileSize)
@@ -294,6 +298,10 @@ fun DiffContent(
                                             loadingOff=loadingOffParent,
                                             refreshPageIfIsWorkTree=refreshPageIfIsWorkTreePage,
                                             repoId=repoId,
+                                            showOriginType = showOriginType,
+                                            showLineNum = showLineNum,
+                                            fontSize = fontSize,
+                                            lineNumSize = lineNumSize
                                         )
 
                                     }
@@ -314,6 +322,10 @@ fun DiffContent(
                                         loadingOff=loadingOffParent,
                                         refreshPageIfIsWorkTree=refreshPageIfIsWorkTreePage,
                                         repoId=repoId,
+                                        showOriginType = showOriginType,
+                                        showLineNum = showLineNum,
+                                        fontSize = fontSize,
+                                        lineNumSize = lineNumSize
                                     )
                                 }
                             }else {  // add or del
@@ -329,6 +341,10 @@ fun DiffContent(
                                             loadingOff=loadingOffParent,
                                             refreshPageIfIsWorkTree=refreshPageIfIsWorkTreePage,
                                             repoId=repoId,
+                                            showOriginType = showOriginType,
+                                            showLineNum = showLineNum,
+                                            fontSize = fontSize,
+                                            lineNumSize = lineNumSize
                                         )
                                     }
                                 }else{  // matched
@@ -343,6 +359,10 @@ fun DiffContent(
                                             loadingOff=loadingOffParent,
                                             refreshPageIfIsWorkTree=refreshPageIfIsWorkTreePage,
                                             repoId=repoId,
+                                            showOriginType = showOriginType,
+                                            showLineNum = showLineNum,
+                                            fontSize = fontSize,
+                                            lineNumSize = lineNumSize
                                         )
                                     }
                                 }
@@ -379,6 +399,10 @@ fun DiffContent(
                                         loadingOff=loadingOffParent,
                                         refreshPageIfIsWorkTree=refreshPageIfIsWorkTreePage,
                                         repoId=repoId,
+                                        showOriginType = showOriginType,
+                                        showLineNum = showLineNum,
+                                        fontSize = fontSize,
+                                        lineNumSize = lineNumSize
                                     )
                                 }
                             }
@@ -397,6 +421,10 @@ fun DiffContent(
                                             loadingOff=loadingOffParent,
                                             refreshPageIfIsWorkTree=refreshPageIfIsWorkTreePage,
                                             repoId=repoId,
+                                            showOriginType = showOriginType,
+                                            showLineNum = showLineNum,
+                                            fontSize = fontSize,
+                                            lineNumSize = lineNumSize
                                         )
 
                                     }
@@ -424,6 +452,10 @@ fun DiffContent(
                                                 loadingOff=loadingOffParent,
                                                 refreshPageIfIsWorkTree=refreshPageIfIsWorkTreePage,
                                                 repoId=repoId,
+                                                showOriginType = showOriginType,
+                                                showLineNum = showLineNum,
+                                                fontSize = fontSize,
+                                                lineNumSize = lineNumSize
 
                                             )
                                         }
@@ -439,6 +471,10 @@ fun DiffContent(
                                                 loadingOff=loadingOffParent,
                                                 refreshPageIfIsWorkTree=refreshPageIfIsWorkTreePage,
                                                 repoId=repoId,
+                                                showOriginType = showOriginType,
+                                                showLineNum = showLineNum,
+                                                fontSize = fontSize,
+                                                lineNumSize = lineNumSize
 
                                             )
                                         }
@@ -455,6 +491,10 @@ fun DiffContent(
                                                 loadingOff=loadingOffParent,
                                                 refreshPageIfIsWorkTree=refreshPageIfIsWorkTreePage,
                                                 repoId=repoId,
+                                                showOriginType = showOriginType,
+                                                showLineNum = showLineNum,
+                                                fontSize = fontSize,
+                                                lineNumSize = lineNumSize
                                             )
                                         }
                                         item {
@@ -467,6 +507,10 @@ fun DiffContent(
                                                 loadingOff=loadingOffParent,
                                                 refreshPageIfIsWorkTree=refreshPageIfIsWorkTreePage,
                                                 repoId=repoId,
+                                                showOriginType = showOriginType,
+                                                showLineNum = showLineNum,
+                                                fontSize = fontSize,
+                                                lineNumSize = lineNumSize
                                             )
                                         }
                                     }
@@ -483,6 +527,10 @@ fun DiffContent(
                                             loadingOff=loadingOffParent,
                                             refreshPageIfIsWorkTree=refreshPageIfIsWorkTreePage,
                                             repoId=repoId,
+                                            showOriginType = showOriginType,
+                                            showLineNum = showLineNum,
+                                            fontSize = fontSize,
+                                            lineNumSize = lineNumSize
                                         )
                                     }
                                 }
@@ -497,6 +545,10 @@ fun DiffContent(
                                             loadingOff=loadingOffParent,
                                             refreshPageIfIsWorkTree=refreshPageIfIsWorkTreePage,
                                             repoId=repoId,
+                                            showOriginType = showOriginType,
+                                            showLineNum = showLineNum,
+                                            fontSize = fontSize,
+                                            lineNumSize = lineNumSize
                                         )
                                     }
                                 }
@@ -549,6 +601,10 @@ fun DiffContent(
                                     loadingOff=loadingOffParent,
                                     refreshPageIfIsWorkTree=refreshPageIfIsWorkTreePage,
                                     repoId=repoId,
+                                    showOriginType = showOriginType,
+                                    showLineNum = showLineNum,
+                                    fontSize = fontSize,
+                                    lineNumSize = lineNumSize
                                 )
                             }
                         }
@@ -572,6 +628,10 @@ fun DiffContent(
                                 loadingOff=loadingOffParent,
                                 refreshPageIfIsWorkTree=refreshPageIfIsWorkTreePage,
                                 repoId=repoId,
+                                showOriginType = showOriginType,
+                                showLineNum = showLineNum,
+                                fontSize = fontSize,
+                                lineNumSize = lineNumSize
                             )
                         }
                     }

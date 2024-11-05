@@ -104,7 +104,7 @@ fun checkFileOrFolderNameAndTryCreateFile(nameWillCheck:String, appContext: Cont
         }
 
         //获取缓存目录
-        val cacheDir = AppModel.singleInstanceHolder.externalCacheDir
+        val cacheDir = AppModel.singleInstanceHolder.getOrCreateExternalCacheDir()
 //        val fileNameNeedTest = Cons.createDirTestNamePrefix + str +"_"+ getRandomUUID()  //e.g. prefix_yourreponame_uuid，uuid是为了避免文件夹存在
 
         //拼接文件名

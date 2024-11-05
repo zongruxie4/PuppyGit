@@ -32,6 +32,7 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.DpOffset
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
 import com.catpuppyapp.puppygit.constants.Cons
@@ -66,6 +67,10 @@ fun DiffRow (
     loadingOff:()->Unit,
     refreshPageIfIsWorkTree:()->Unit,
     repoId:String,
+    showLineNum:Boolean,
+    showOriginType:Boolean,
+    fontSize:Int,
+    lineNumSize:Int,
 ) {
     val view = LocalView.current
     val isKeyboardVisible = remember { mutableStateOf(false) }
@@ -116,7 +121,18 @@ fun DiffRow (
 //                    } else
 
 //    prefix = line.originType + lineNum + ":"  // show add or del and line num, e.g. "+123:" or "-123:"
-    val prefix = "$lineNum:"  // only show line num (can use color figure add or del), e.g. "123:"
+//    var prefix = if(showOriginType) line.originType else ""
+//    prefix += (if(showLineNum) "$lineNum:" else ":")  // only show line num (can use color figure add or del), e.g. "123:"
+
+    val prefix = if(showOriginType && showLineNum.not()) {
+        "${line.originType}:"
+    } else if(showOriginType.not() && showLineNum) {
+        "$lineNum:"
+    } else if(showOriginType && showLineNum) {
+        "${line.originType}$lineNum:"
+    } else {
+        ""
+    }
 
 
     val lineContentOfEditLineDialog = rememberSaveable { mutableStateOf("") }
@@ -127,6 +143,7 @@ fun DiffRow (
     val showEditLineDialog = rememberSaveable { mutableStateOf(false) }
     val showDelLineDialog = rememberSaveable { mutableStateOf(false) }
     val showRestoreLineDialog = rememberSaveable { mutableStateOf(false) }
+    val trueRestoreFalseReplace = rememberSaveable { mutableStateOf(false) }
 
     val initEditLineDialog = {content:String, lineNum:Int, prependOrApendOrReplace:Boolean? ->
         if(lineNum == LineNum.invalidButNotEof){
@@ -146,13 +163,14 @@ fun DiffRow (
             showDelLineDialog.value = true
         }
     }
-    val initRestoreLineDialog = {content:String, lineNum:Int ->
+    val initRestoreLineDialog = {content:String, lineNum:Int, trueRestoreFalseReplace_param:Boolean ->
         if(lineNum == LineNum.invalidButNotEof){
             Msg.requireShowLongDuration(appContext.getString(R.string.invalid_line_number))
         }else {
             lineContentOfEditLineDialog.value = content
             lineNumOfEditLineDialog.value = lineNum
             lineNumStrOfEditLineDialog.value = ""+lineNum
+            trueRestoreFalseReplace.value = trueRestoreFalseReplace_param
             showRestoreLineDialog.value = true
         }
     }
@@ -285,7 +303,7 @@ fun DiffRow (
 
     if(showRestoreLineDialog.value) {
         ConfirmDialog2(
-            title = stringResource(R.string.restore),
+            title = if(trueRestoreFalseReplace.value) stringResource(R.string.restore) else stringResource(R.string.replace),
             requireShowTextCompose = true,
             textCompose = {
                 Column {
@@ -341,7 +359,11 @@ fun DiffRow (
 
                     val lines = FsUtils.stringToLines(lineContentOfEditLineDialog.value)
                     val file = File(fileFullPath)
-                    FsUtils.prependLinesToFile(file, lineNum, lines)
+                    if(trueRestoreFalseReplace.value) {
+                        FsUtils.prependLinesToFile(file, lineNum, lines)
+                    }else {
+                        FsUtils.replaceLinesToFile(file, lineNum, lines)
+                    }
 
                     Msg.requireShow(appContext.getString(R.string.success))
 
@@ -398,7 +420,7 @@ fun DiffRow (
         Text(
             text = prefix,
             color = lineNumColor,
-            fontSize = MyStyleKt.TextSize.lineNumSize,
+            fontSize = lineNumSize.sp,
             modifier = Modifier.clickable {
                 val filePathKey = Cache.setThenReturnKey(fileFullPath)
                 //if jump line is EOF, should go to last line of file, but didn't know the line num, so set line num to a enough big number
@@ -434,6 +456,7 @@ fun DiffRow (
                 color = textColor,
                 overflow = TextOverflow.Visible,
                 softWrap = true,
+                fontSize = fontSize.sp,
 
                 modifier= Modifier
                     .fillMaxWidth()
@@ -452,7 +475,7 @@ fun DiffRow (
                 color = textColor,
                 overflow = TextOverflow.Visible,
                 softWrap = true,
-
+                fontSize = fontSize.sp,
                 modifier= Modifier
                     .fillMaxWidth().then(
                         if(enableLineActions) {
@@ -509,9 +532,16 @@ fun DiffRow (
                         }
                     )
                 }else if(line.originType == Line.OriginType.DELETION.toString()) {
+                    // prepend(insert)
                     DropdownMenuItem(text = { Text(stringResource(R.string.restore))},
                         onClick = {
-                            initRestoreLineDialog(line.getContentNoLineBreak(), line.lineNum)
+                            initRestoreLineDialog(line.getContentNoLineBreak(), line.lineNum, true)
+                            expandedMenu.value = false
+                        }
+                    )
+                    DropdownMenuItem(text = { Text(stringResource(R.string.replace))},
+                        onClick = {
+                            initRestoreLineDialog(line.getContentNoLineBreak(), line.lineNum, false)
                             expandedMenu.value = false
                         }
                     )

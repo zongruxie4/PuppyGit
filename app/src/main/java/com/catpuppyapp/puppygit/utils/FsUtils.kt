@@ -994,6 +994,6 @@ object FsUtils {
     }
 
     fun createTempFile(prefix:String, suffix:String=".tmp"):File{
-        return File(AppModel.singleInstanceHolder.externalCacheDir.canonicalPath, "$prefix-${generateRandomString()}$suffix")
+        return File(AppModel.singleInstanceHolder.getOrCreateExternalCacheDir().canonicalPath, "$prefix-${generateRandomString()}$suffix")
     }
 }

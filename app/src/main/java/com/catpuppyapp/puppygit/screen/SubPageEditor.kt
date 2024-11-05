@@ -344,19 +344,19 @@ fun SubPageEditor(
 
 
 
-    //compose创建时的副作用
-//    LaunchedEffect(currentPage.intValue) {
-    LaunchedEffect(Unit) {
-    }
-
-
-    //compose被销毁时执行的副作用
-    DisposableEffect(Unit) {
-//        ("DisposableEffect: entered main")
-        onDispose {
-//            ("DisposableEffect: exited main")
-        }
-    }
+//    //compose创建时的副作用
+////    LaunchedEffect(currentPage.intValue) {
+//    LaunchedEffect(Unit) {
+//    }
+//
+//
+//    //compose被销毁时执行的副作用
+//    DisposableEffect(Unit) {
+////        ("DisposableEffect: entered main")
+//        onDispose {
+////            ("DisposableEffect: exited main")
+//        }
+//    }
 
 }
 

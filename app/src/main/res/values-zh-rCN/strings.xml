@@ -989,6 +989,9 @@
     <string name="append">追加</string>
     <string name="note_if_line_number_doesnt_exist_will_append_content_to_the_end_of_the_file">注意：如果 \'行号\' 不存在，将追加内容到文件末尾</string>
     <string name="copy_mode">拷贝模式</string>
+    <string name="show_change_type">显示修改类型</string>
+    <string name="replace">替换</string>
+    <string name="change_type">修改类型</string>
 
 
 </resources>

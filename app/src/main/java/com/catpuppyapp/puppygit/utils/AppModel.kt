@@ -573,5 +573,12 @@ class AppModel {
         return debugModeFlagFile.exists()
     }
 
+    fun getOrCreateExternalCacheDir():File{
+        if(externalCacheDir.exists().not()) {
+            externalCacheDir.mkdirs()
+        }
+
+        return externalCacheDir
+    }
 
 }
