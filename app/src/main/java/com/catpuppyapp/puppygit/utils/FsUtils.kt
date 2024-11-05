@@ -993,7 +993,7 @@ object FsUtils {
         replaceOrInsertOrDeleteLinesToFile(file, lineNum, newLines=listOf(), trueInsertFalseReplaceNullDelete = null)
     }
 
-    fun createTempFile(prefix:String):File{
-        return File(AppModel.singleInstanceHolder.externalCacheDir.canonicalPath, "$prefix-${generateRandomString()}")
+    fun createTempFile(prefix:String, suffix:String=".tmp"):File{
+        return File(AppModel.singleInstanceHolder.externalCacheDir.canonicalPath, "$prefix-${generateRandomString()}$suffix")
     }
 }
