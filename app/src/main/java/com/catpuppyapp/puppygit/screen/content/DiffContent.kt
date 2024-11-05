@@ -20,7 +20,7 @@ import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.MutableIntState
 import androidx.compose.runtime.MutableState
-import androidx.compose.runtime.derivedStateOf
+import androidx.compose.runtime.State
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
@@ -61,7 +61,6 @@ import com.catpuppyapp.puppygit.utils.state.mutableCustomStateOf
 import com.github.git24j.core.Diff
 import com.github.git24j.core.Repository
 import kotlinx.coroutines.channels.Channel
-import java.io.File
 
 private val TAG = "DiffContent"
 private val stateKeyTag = "DiffContent"
@@ -91,7 +90,7 @@ fun DiffContent(
     clipboardManager:ClipboardManager,
     loadingOnParent:(String)->Unit,
     loadingOffParent:()->Unit,
-    localAtDiffRight:Boolean
+    isFileAndExist:State<Boolean>,
 ) {
     //废弃，改用获取diffItem时动态计算实际需要显示的contentLen总和了
 //    val fileSizeOverLimit = isFileSizeOverLimit(fileSize)
@@ -123,17 +122,7 @@ fun DiffContent(
     val errorStrRes = stringResource(R.string.error)
 
 
-    val isFileAndExist = remember(isSubmodule, changeType, fileFullPath, localAtDiffRight) {
-        derivedStateOf {
-            // only check when local as diff right(xxx..local)
-            if(localAtDiffRight.not() || isSubmodule || (changeType != Cons.gitStatusNew && changeType != Cons.gitStatusModified)){
-                false
-            }else{
-                val f= File(fileFullPath)
-                f.exists() && f.isFile
-            }
-        }
-    }
+
 
 
     //判断是否是支持预览的修改类型

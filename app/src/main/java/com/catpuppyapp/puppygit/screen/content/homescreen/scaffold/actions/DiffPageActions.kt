@@ -2,18 +2,28 @@ package com.catpuppyapp.puppygit.screen.content.homescreen.scaffold.actions
 
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.OpenInNew
+import androidx.compose.material.icons.filled.CheckBox
+import androidx.compose.material.icons.filled.CheckBoxOutlineBlank
 import androidx.compose.material.icons.filled.Compare
 import androidx.compose.material.icons.filled.FileOpen
+import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.material.icons.filled.Refresh
+import androidx.compose.material3.DropdownMenu
+import androidx.compose.material3.DropdownMenuItem
+import androidx.compose.material3.Icon
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.MutableState
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.unit.DpOffset
+import androidx.compose.ui.unit.dp
 import com.catpuppyapp.puppygit.compose.LongPressAbleIconBtn
 import com.catpuppyapp.puppygit.constants.Cons
 import com.catpuppyapp.puppygit.constants.LineNum
 import com.catpuppyapp.puppygit.constants.PageRequest
-import com.catpuppyapp.puppygit.data.entity.RepoEntity
 import com.catpuppyapp.puppygit.dev.detailsDiffTestPassed
 import com.catpuppyapp.puppygit.dev.dev_EnableUnTestedFeature
 import com.catpuppyapp.puppygit.play.pro.R
@@ -23,31 +33,27 @@ import com.catpuppyapp.puppygit.utils.Msg
 import com.catpuppyapp.puppygit.utils.MyLog
 import com.catpuppyapp.puppygit.utils.UIHelper
 import com.catpuppyapp.puppygit.utils.cache.Cache
-import com.catpuppyapp.puppygit.utils.state.CustomStateSaveable
-import kotlinx.coroutines.CoroutineScope
 import java.io.File
 
+private val TAG = "DiffPageActions"
 
 @Composable
 fun DiffPageActions(
-    curRepo: CustomStateSaveable<RepoEntity>,
-    fromTo: String,
     changeType: String,
-    relativePathUnderRepoState: MutableState<String>,
     refreshPage: () -> Unit,
-//    listState: ScrollState,
-    scope: CoroutineScope,
     request:MutableState<String>,
     fileFullPath:String,
-    requireBetterMatchingForCompare:MutableState<Boolean>
+    requireBetterMatchingForCompare:MutableState<Boolean>,
+    copyModeOn:MutableState<Boolean>,
+    copyModeSwitchable:Boolean
 ) {
-    val TAG = "DiffPageActions"
 
     val navController = AppModel.singleInstanceHolder.navController
     val appContext= LocalContext.current
 
     val fileChangeTypeIsModified = changeType == Cons.gitStatusModified
 
+    val dropDownMenuExpendState = rememberSaveable { mutableStateOf(false) }
 
     if (fileChangeTypeIsModified && UserUtil.isPro()
         && (dev_EnableUnTestedFeature || detailsDiffTestPassed)
@@ -136,6 +142,45 @@ fun DiffPageActions(
             Msg.requireShowLongDuration("err:"+e.localizedMessage)
             MyLog.e(TAG, "'Open As' err:"+e.stackTraceToString())
         }
+    }
+
+    //menu icon
+    LongPressAbleIconBtn(
+        //这种需展开的菜单，禁用内部的选项即可
+//        enabled = enableAction.value,
+
+        tooltipText = stringResource(R.string.menu),
+        icon = Icons.Filled.MoreVert,
+        iconContentDesc = stringResource(R.string.menu),
+        onClick = {
+            //切换菜单展开状态
+            dropDownMenuExpendState.value = !dropDownMenuExpendState.value
+        }
+    )
+
+    // menu items
+    DropdownMenu(
+        offset = DpOffset(x=78.dp, y=8.dp),
+        expanded = dropDownMenuExpendState.value,
+        onDismissRequest = { dropDownMenuExpendState.value=false }
+    ) {
+        DropdownMenuItem(
+            enabled = copyModeSwitchable,
+            text = { Text(stringResource(R.string.copy_mode)) },
+            trailingIcon = {
+                Icon(
+                    imageVector = if(copyModeOn.value) Icons.Filled.CheckBox else Icons.Filled.CheckBoxOutlineBlank,
+                    contentDescription = null
+                )
+            },
+            onClick = {
+                copyModeOn.value = !copyModeOn.value
+
+                dropDownMenuExpendState.value = false
+            }
+
+        )
+
     }
 }
 

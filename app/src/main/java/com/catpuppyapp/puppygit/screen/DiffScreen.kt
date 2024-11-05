@@ -69,9 +69,7 @@ fun DiffScreen(
     naviUp: () -> Boolean,
 ) {
 
-    val localAtDiffRight = rememberSaveable { mutableStateOf(localAtDiffRight) }
-
-    val isWorkTree = fromTo == Cons.gitDiffFromIndexToWorktree
+//    val isWorkTree = fromTo == Cons.gitDiffFromIndexToWorktree
     //废弃，改用diffContent里获取diffItem时动态计算了
 //    val fileSizeOverLimit = isFileSizeOverLimit(fileSize)
     val dbContainer = AppModel.singleInstanceHolder.dbContainer
@@ -125,6 +123,31 @@ fun DiffScreen(
 
     val listState = rememberLazyListState()
     val fileFullPath = remember{ derivedStateOf{curRepo.value.fullSavePath + File.separator + relativePathUnderRepoState.value}}
+
+    val isFileAndExist = remember(fileFullPath.value) { derivedStateOf {
+        val f= File(fileFullPath.value)
+        f.exists() && f.isFile
+    } }
+
+    val copyModeSwitchable = remember(localAtDiffRight, fileFullPath.value) { derivedStateOf {
+        localAtDiffRight && isFileAndExist.value
+    }}
+
+    val copyModeOn = rememberSaveable(copyModeSwitchable.value) { mutableStateOf(copyModeSwitchable.value.not()) }
+
+    val enableLineTapMenu = remember(isSubmodule.value, changeType.value, fileFullPath.value, localAtDiffRight, copyModeOn.value) {
+        derivedStateOf {
+            // only check when local as diff right(xxx..local)
+            if(localAtDiffRight.not() || copyModeOn.value || isSubmodule.value || (changeType.value != Cons.gitStatusNew && changeType.value != Cons.gitStatusModified)){
+                false
+            }else{
+                val f= File(fileFullPath.value)
+                f.exists() && f.isFile
+            }
+        }
+    }
+
+
 
     val showBackFromExternalAppAskReloadDialog = rememberSaveable { mutableStateOf(false)}
     if(showBackFromExternalAppAskReloadDialog.value) {
@@ -279,13 +302,14 @@ fun DiffScreen(
                 },
 
                 actions = {
-                    DiffPageActions(curRepo, fromTo = fromTo, changeType=changeType.value,
-                        relativePathUnderRepoState, { changeStateTriggerRefreshPage(needRefresh) },
-//                        listState,
-                        scope,
-                        request,
-                        fileFullPath.value,
-                        requireBetterMatchingForCompare
+                    DiffPageActions(
+                        changeType=changeType.value,
+                        refreshPage = { changeStateTriggerRefreshPage(needRefresh) },
+                        request = request,
+                        fileFullPath = fileFullPath.value,
+                        requireBetterMatchingForCompare = requireBetterMatchingForCompare,
+                        copyModeOn = copyModeOn,
+                        copyModeSwitchable = copyModeSwitchable.value
                     )
 
                 },
@@ -326,7 +350,7 @@ fun DiffScreen(
         //改成统一在DiffContent里检查实际diff需要获取的内容的大小了，和文件大小有所不同，有时候文件大小很大，但需要diff的内容大小实际很小，这时其实可以diff，性能不会太差
 
         // if diff to local, enable edit menu and disable copy(because may cause app crashed), else disable edit menu but enable copy(no complex layout enable copy is ok)
-        if(localAtDiffRight.value){
+        if(localAtDiffRight && copyModeOn.value.not()){
             DiffContent(repoId=repoId,relativePathUnderRepoDecoded=relativePathUnderRepoState.value,
                 fromTo=fromTo,changeType=changeType.value,fileSize=fileSize.value, naviUp=naviUp, dbContainer=dbContainer,
                 contentPadding = contentPadding, treeOid1Str = treeOid1Str, treeOid2Str = treeOid2Str,
@@ -334,7 +358,7 @@ fun DiffScreen(
                 requireBetterMatchingForCompare = requireBetterMatchingForCompare, fileFullPath = fileFullPath.value,
                 isSubmodule=isSubmodule.value, isDiffToLocal = isDiffToLocal,diffableItemList= diffableItemList.value,
                 curItemIndex=curItemIndex, switchItem=switchItem, clipboardManager=clipboardManager,
-                loadingOnParent=loadingOn, loadingOffParent=loadingOff,localAtDiffRight=localAtDiffRight.value
+                loadingOnParent=loadingOn, loadingOffParent=loadingOff,isFileAndExist=enableLineTapMenu
             )
         }else {
             MySelectionContainer {
@@ -345,7 +369,7 @@ fun DiffScreen(
                     requireBetterMatchingForCompare = requireBetterMatchingForCompare, fileFullPath = fileFullPath.value,
                     isSubmodule=isSubmodule.value, isDiffToLocal = isDiffToLocal,diffableItemList= diffableItemList.value,
                     curItemIndex=curItemIndex, switchItem=switchItem, clipboardManager=clipboardManager,
-                    loadingOnParent=loadingOn, loadingOffParent=loadingOff,localAtDiffRight=localAtDiffRight.value
+                    loadingOnParent=loadingOn, loadingOffParent=loadingOff, isFileAndExist=enableLineTapMenu
                 )
             }
         }
