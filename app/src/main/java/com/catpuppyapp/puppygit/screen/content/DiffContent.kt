@@ -91,6 +91,7 @@ fun DiffContent(
     clipboardManager:ClipboardManager,
     loadingOnParent:(String)->Unit,
     loadingOffParent:()->Unit,
+    localAtDiffRight:Boolean
 ) {
     //废弃，改用获取diffItem时动态计算实际需要显示的contentLen总和了
 //    val fileSizeOverLimit = isFileSizeOverLimit(fileSize)
@@ -122,9 +123,10 @@ fun DiffContent(
     val errorStrRes = stringResource(R.string.error)
 
 
-    val isFileAndExist = remember(isSubmodule, changeType, fileFullPath) {
+    val isFileAndExist = remember(isSubmodule, changeType, fileFullPath, localAtDiffRight) {
         derivedStateOf {
-            if(isSubmodule || (changeType != Cons.gitStatusNew && changeType != Cons.gitStatusModified)){
+            // only check when local as diff right(xxx..local)
+            if(localAtDiffRight.not() || isSubmodule || (changeType != Cons.gitStatusNew && changeType != Cons.gitStatusModified)){
                 false
             }else{
                 val f= File(fileFullPath)

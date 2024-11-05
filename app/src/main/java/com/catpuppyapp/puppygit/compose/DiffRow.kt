@@ -66,7 +66,6 @@ fun DiffRow (
     loadingOff:()->Unit,
     refreshPageIfIsWorkTree:()->Unit,
     repoId:String,
-
 ) {
     val view = LocalView.current
     val isKeyboardVisible = remember { mutableStateOf(false) }
@@ -438,7 +437,13 @@ fun DiffRow (
 
                 modifier= Modifier
                     .fillMaxWidth()
-                    .clickable(enabled = enableLineActions) { expandedMenu.value = true }
+                    .then(
+                        if(enableLineActions) {
+                            Modifier.clickable { expandedMenu.value = true }
+                        }else{
+                            Modifier
+                        }
+                    )
             )
         }else {
             //文本内容
@@ -449,9 +454,13 @@ fun DiffRow (
                 softWrap = true,
 
                 modifier= Modifier
-                    .fillMaxWidth()
-                    .clickable(enabled = enableLineActions) { expandedMenu.value = true }
-
+                    .fillMaxWidth().then(
+                        if(enableLineActions) {
+                            Modifier.clickable { expandedMenu.value = true }
+                        }else{
+                            Modifier
+                        }
+                    )
             )
 
         }

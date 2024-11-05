@@ -194,6 +194,13 @@ fun ChangeListInnerPage(
     val isDiffToLocal = fromTo == Cons.gitDiffFromIndexToWorktree || commit1OidStr==Cons.gitLocalWorktreeCommitHash || commit2OidStr==Cons.gitLocalWorktreeCommitHash
     val isWorktreePage = fromTo == Cons.gitDiffFromIndexToWorktree
 
+    // xxx diff to local, not local diff to xxx
+    val localAtDiffRight = remember(fromTo, commit1OidStr, commit2OidStr, swap) { derivedStateOf {
+        (fromTo == Cons.gitDiffFromIndexToWorktree
+                || (if(swap) commit1OidStr==Cons.gitLocalWorktreeCommitHash else commit2OidStr==Cons.gitLocalWorktreeCommitHash)
+        )
+    } }
+
     val haptic = LocalHapticFeedback.current
 
     val allRepoParentDir = AppModel.singleInstanceHolder.allRepoParentDir;
@@ -3305,6 +3312,7 @@ fun ChangeListInnerPage(
                                             "/" + (if(isDiffToLocal) 1 else 0)
                                             + "/" + diffableListKey
                                             + "/" + indexAtDiffableList
+                                            +"/" + (if(localAtDiffRight.value) 1 else 0)
                                 )
 
                             }
