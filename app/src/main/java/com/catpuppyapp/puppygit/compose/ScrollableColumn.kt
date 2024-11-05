@@ -5,11 +5,10 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
-import com.catpuppyapp.puppygit.utils.state.StateUtil
 
 @Composable
-fun ScrollableColumn(content:@Composable ()->Unit) {
-    Column(modifier = Modifier.verticalScroll(rememberScrollState())) {
+fun ScrollableColumn(modifier: Modifier=Modifier, content:@Composable ()->Unit) {
+    Column(modifier = modifier.verticalScroll(rememberScrollState())) {
         content()
     }
 }

@@ -1,22 +1,27 @@
 package com.catpuppyapp.puppygit.compose
 
+import android.view.ViewTreeObserver
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.ClipboardManager
+import androidx.compose.ui.platform.LocalView
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.SpanStyle
@@ -26,6 +31,8 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.DpOffset
 import androidx.compose.ui.unit.dp
+import androidx.core.view.ViewCompat
+import androidx.core.view.WindowInsetsCompat
 import com.catpuppyapp.puppygit.constants.Cons
 import com.catpuppyapp.puppygit.constants.LineNum
 import com.catpuppyapp.puppygit.git.PuppyLine
@@ -59,7 +66,29 @@ fun DiffRow (
     refreshPageIfIsWorkTree:()->Unit,
     repoId:String,
 
-    ) {
+) {
+    val view = LocalView.current
+    val isKeyboardVisible = remember { mutableStateOf(false) }
+    val keyboardPadding = 200.dp
+
+    // 监听键盘的弹出和隐藏 (listening keyboard visible/hidden)
+    DisposableEffect(view) {
+        val listener = ViewTreeObserver.OnPreDrawListener {
+            val insets = ViewCompat.getRootWindowInsets(view)
+            isKeyboardVisible.value = insets?.isVisible(WindowInsetsCompat.Type.ime()) == true
+//            println("isKeyboardVisible.value=${isKeyboardVisible.value}")
+            true
+        }
+
+        view.viewTreeObserver.addOnPreDrawListener(listener)
+
+        onDispose {
+            view.viewTreeObserver.removeOnPreDrawListener(listener)
+        }
+    }
+
+
+
     val useStringPartList = !stringPartList.isNullOrEmpty()
 
     val navController = AppModel.singleInstanceHolder.navController
@@ -134,7 +163,7 @@ fun DiffRow (
             title = if(truePrependFalseAppendNullReplace.value == true) stringResource(R.string.prepend) else if(truePrependFalseAppendNullReplace.value == false) stringResource(R.string.append) else stringResource(R.string.edit),
             requireShowTextCompose = true,
             textCompose = {
-                ScrollableColumn {
+                Column {
                     Text(
                         replaceStringResList(
                             stringResource(if (truePrependFalseAppendNullReplace.value == null) R.string.line_at_n else R.string.new_line_at_n),
@@ -155,7 +184,10 @@ fun DiffRow (
                     Spacer(modifier = Modifier.height(10.dp))
 
                     TextField(
-                        modifier = Modifier.fillMaxWidth(),
+                        modifier = Modifier
+                            .fillMaxWidth().then(
+                                if (isKeyboardVisible.value) Modifier.padding(bottom = keyboardPadding) else Modifier
+                            ),
                         value = lineContentOfEditLineDialog.value,
                         onValueChange = {
                             lineContentOfEditLineDialog.value = it
@@ -198,6 +230,7 @@ fun DiffRow (
                 }
             }
         }
+
     }
 
     if(showDelLineDialog.value) {
@@ -205,7 +238,7 @@ fun DiffRow (
             title = stringResource(R.string.delete),
             requireShowTextCompose = true,
             textCompose = {
-                ScrollableColumn {
+                Column {
                     Text(
                         replaceStringResList(
                             stringResource(R.string.line_at_n),
@@ -255,7 +288,7 @@ fun DiffRow (
             title = stringResource(R.string.restore),
             requireShowTextCompose = true,
             textCompose = {
-                ScrollableColumn {
+                Column {
                     Text(stringResource(R.string.note_if_line_number_doesnt_exist_will_append_content_to_the_end_of_the_file), color = MyStyleKt.TextColor.highlighting_green)
                     Spacer(modifier = Modifier.height(10.dp))
 
@@ -275,7 +308,9 @@ fun DiffRow (
                     Spacer(modifier = Modifier.height(10.dp))
 
                     TextField(
-                        modifier = Modifier.fillMaxWidth(),
+                        modifier = Modifier.fillMaxWidth().then(
+                            if (isKeyboardVisible.value) Modifier.padding(bottom = keyboardPadding) else Modifier
+                        ),
                         value = lineContentOfEditLineDialog.value,
                         onValueChange = {
                             lineContentOfEditLineDialog.value = it
@@ -344,7 +379,7 @@ fun DiffRow (
         modifier = Modifier
             .fillMaxWidth()
             //如果是经过compare的添加或删除行，背景半透明，然后真修改的内容用不透明，这样就能突出真修改的内容
-            .background(if(useStringPartList) color.copy(alpha = 0.6f) else color)
+            .background(if (useStringPartList) color.copy(alpha = 0.6f) else color)
 //            .background(color)
 //                            .clickable {
 //
@@ -398,17 +433,21 @@ fun DiffRow (
                 overflow = TextOverflow.Visible,
                 softWrap = true,
 
-                modifier=Modifier.fillMaxWidth().clickable(enabled = enableLineActions){ expandedMenu.value = true }
+                modifier= Modifier
+                    .fillMaxWidth()
+                    .clickable(enabled = enableLineActions) { expandedMenu.value = true }
             )
         }else {
             //文本内容
             Text(
-                text = content.removeSuffix(Cons.lineBreak),
+                text = line.getContentNoLineBreak(),
                 color = textColor,
                 overflow = TextOverflow.Visible,
                 softWrap = true,
 
-                modifier=Modifier.fillMaxWidth().clickable(enabled = enableLineActions) { expandedMenu.value = true }
+                modifier= Modifier
+                    .fillMaxWidth()
+                    .clickable(enabled = enableLineActions) { expandedMenu.value = true }
 
             )
 
@@ -432,21 +471,21 @@ fun DiffRow (
                 if(line.originType == Line.OriginType.ADDITION.toString() || line.originType == Line.OriginType.CONTEXT.toString()){
                     DropdownMenuItem(text = { Text(stringResource(R.string.edit))},
                         onClick = {
-                            initEditLineDialog(content.removeSuffix(Cons.lineBreak), line.lineNum, null)
+                            initEditLineDialog(line.getContentNoLineBreak(), line.lineNum, null)
 
                             expandedMenu.value = false
                         }
                     )
                     DropdownMenuItem(text = { Text(stringResource(R.string.prepend))},
                         onClick = {
-                            initEditLineDialog(content.removeSuffix(Cons.lineBreak), line.lineNum, true)
+                            initEditLineDialog(line.getContentNoLineBreak(), line.lineNum, true)
 
                             expandedMenu.value = false
                         }
                     )
                     DropdownMenuItem(text = { Text(stringResource(R.string.append))},
                         onClick = {
-                            initEditLineDialog(content.removeSuffix(Cons.lineBreak), line.lineNum, false)
+                            initEditLineDialog(line.getContentNoLineBreak(), line.lineNum, false)
 
                             expandedMenu.value = false
                         }
@@ -460,7 +499,7 @@ fun DiffRow (
                 }else if(line.originType == Line.OriginType.DELETION.toString()) {
                     DropdownMenuItem(text = { Text(stringResource(R.string.restore))},
                         onClick = {
-                            initRestoreLineDialog(content.removeSuffix(Cons.lineBreak), line.lineNum)
+                            initRestoreLineDialog(line.getContentNoLineBreak(), line.lineNum)
                             expandedMenu.value = false
                         }
                     )

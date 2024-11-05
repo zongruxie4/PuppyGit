@@ -5,6 +5,7 @@ import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
 import com.catpuppyapp.puppygit.play.pro.R
@@ -16,6 +17,7 @@ import com.catpuppyapp.puppygit.play.pro.R
  */
 @Composable
 fun ConfirmDialog2(
+    modifier: Modifier=Modifier,
     title: String="",
     text: String="",
     requireShowTitleCompose:Boolean=false,
@@ -34,6 +36,7 @@ fun ConfirmDialog2(
     onOk: () -> Unit,
 ) {
     AlertDialog(
+        modifier = modifier,
         title = {
             if(requireShowTitleCompose) {
                 titleCompose()

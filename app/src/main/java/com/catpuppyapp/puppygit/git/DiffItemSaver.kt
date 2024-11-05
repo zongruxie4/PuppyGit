@@ -201,4 +201,12 @@ data class PuppyLine (
 //        return lines
 //    }
 
-)
+){
+    private var contentNoBreak:String? = null
+    fun getContentNoLineBreak():String {  // not safe for concurrency
+        if(contentNoBreak == null) {
+            contentNoBreak = content.removeSuffix(Cons.lineBreak)
+        }
+        return contentNoBreak ?: content.removeSuffix(Cons.lineBreak)
+    }
+}
