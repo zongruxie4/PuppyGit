@@ -6,6 +6,7 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
@@ -185,7 +186,7 @@ fun DiffRow (
 
                     TextField(
                         modifier = Modifier
-                            .fillMaxWidth().then(
+                            .fillMaxSize().then(
                                 if (isKeyboardVisible.value) Modifier.padding(bottom = keyboardPadding) else Modifier
                             ),
                         value = lineContentOfEditLineDialog.value,
@@ -308,7 +309,7 @@ fun DiffRow (
                     Spacer(modifier = Modifier.height(10.dp))
 
                     TextField(
-                        modifier = Modifier.fillMaxWidth().then(
+                        modifier = Modifier.fillMaxSize().then(
                             if (isKeyboardVisible.value) Modifier.padding(bottom = keyboardPadding) else Modifier
                         ),
                         value = lineContentOfEditLineDialog.value,
