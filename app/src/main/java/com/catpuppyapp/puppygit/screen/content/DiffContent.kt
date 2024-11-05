@@ -95,6 +95,7 @@ fun DiffContent(
     showOriginType:Boolean,
     fontSize:Int,
     lineNumSize:Int,
+    groupDiffContentByLineNum:Boolean
 ) {
     //废弃，改用获取diffItem时动态计算实际需要显示的contentLen总和了
 //    val fileSizeOverLimit = isFileSizeOverLimit(fileSize)
@@ -268,7 +269,7 @@ fun DiffContent(
             //数据结构是一个hunk header N 个行
             diffItem.value.hunks.forEachIndexed { index, hunkAndLines: PuppyHunkAndLines ->
                 if(fileChangeTypeIsModified && proFeatureEnabled(detailsDiffTestPassed)) {  //增量diff
-                    if(!settings.diff.groupDiffContentByLineNum || FlagFileName.flagFileExist(FlagFileName.disableGroupDiffContentByLineNum)) {
+                    if(!groupDiffContentByLineNum || FlagFileName.flagFileExist(FlagFileName.disableGroupDiffContentByLineNum)) {
                         //this method need use some caches, clear them before iterate lines
                         //这种方式需要使用缓存，每次遍历lines前都需要先清下缓存，否则可能多显示或少显示某些行
                         hunkAndLines.clearCachesForShown()

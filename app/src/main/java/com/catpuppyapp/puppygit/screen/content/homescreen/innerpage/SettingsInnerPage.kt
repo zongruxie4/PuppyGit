@@ -393,31 +393,34 @@ fun SettingsInnerPage(
             )
         }
 
-        SettingsTitle(stringResource(R.string.diff))
-
-        SettingsContent(onClick = {
-            val newValue = !groupContentByLineNum.value
-
-            groupContentByLineNum.value = newValue
-            SettingsUtil.update {
-                it.diff.groupDiffContentByLineNum = newValue
-            }
-        }) {
-            Column(modifier = Modifier.fillMaxWidth(itemLeftWidthForSwitcher)) {
-                Text(stringResource(R.string.group_content_by_line_num), fontSize = itemFontSize)
-//                Text(stringResource(R.string.before_saving_a_file_create_a_snapshot_first), fontSize = itemDescFontSize, fontWeight = FontWeight.Light)
-//                Text(stringResource(R.string.require_restart_app), fontSize = itemDescFontSize, fontWeight = FontWeight.Light, fontStyle = FontStyle.Italic)
-
-            }
-
-            Icon(
-                modifier = Modifier.size(switcherIconSize),
-                imageVector = UIHelper.getIconForSwitcher(groupContentByLineNum),
-                contentDescription = if(groupContentByLineNum.value) stringResource(R.string.enable) else stringResource(R.string.disable),
-                tint = UIHelper.getColorForSwitcher(groupContentByLineNum),
-
-            )
-        }
+        // diff settings block start
+//
+//        SettingsTitle(stringResource(R.string.diff))
+//
+//        SettingsContent(onClick = {
+//            val newValue = !groupContentByLineNum.value
+//
+//            groupContentByLineNum.value = newValue
+//            SettingsUtil.update {
+//                it.diff.groupDiffContentByLineNum = newValue
+//            }
+//        }) {
+//            Column(modifier = Modifier.fillMaxWidth(itemLeftWidthForSwitcher)) {
+//                Text(stringResource(R.string.group_content_by_line_num), fontSize = itemFontSize)
+////                Text(stringResource(R.string.before_saving_a_file_create_a_snapshot_first), fontSize = itemDescFontSize, fontWeight = FontWeight.Light)
+////                Text(stringResource(R.string.require_restart_app), fontSize = itemDescFontSize, fontWeight = FontWeight.Light, fontStyle = FontStyle.Italic)
+//
+//            }
+//
+//            Icon(
+//                modifier = Modifier.size(switcherIconSize),
+//                imageVector = UIHelper.getIconForSwitcher(groupContentByLineNum),
+//                contentDescription = if(groupContentByLineNum.value) stringResource(R.string.enable) else stringResource(R.string.disable),
+//                tint = UIHelper.getColorForSwitcher(groupContentByLineNum),
+//
+//            )
+//        }
+        // diff settings block end
 
 //        SettingsTitle(stringResource(R.string.clean))
 

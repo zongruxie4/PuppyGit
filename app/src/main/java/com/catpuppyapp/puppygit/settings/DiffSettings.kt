@@ -38,4 +38,6 @@ data class DiffSettings (
     var fontSize:Int = SettingsCons.defaultFontSize,  //字体大小，单位sp
     var lineNumFontSize:Int = SettingsCons.defaultLineNumFontSize,  //行号字体大小
 
+    var enableBetterButSlowCompare:Boolean=false,
+
 )

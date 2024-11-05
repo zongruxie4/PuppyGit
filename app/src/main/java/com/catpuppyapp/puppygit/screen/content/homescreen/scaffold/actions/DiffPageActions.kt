@@ -51,6 +51,7 @@ fun DiffPageActions(
     showOriginType:MutableState<Boolean>,
     adjustFontSizeModeOn:MutableState<Boolean>,
     adjustLineNumSizeModeOn:MutableState<Boolean>,
+    groupDiffContentByLineNum:MutableState<Boolean>,
 ) {
 
     val navController = AppModel.singleInstanceHolder.navController
@@ -64,19 +65,23 @@ fun DiffPageActions(
         && (dev_EnableUnTestedFeature || detailsDiffTestPassed)
     ){
         LongPressAbleIconBtn(
-            tooltipText = stringResource(R.string.better_compare),
+            tooltipText = stringResource(R.string.better_but_slow_compare),
             icon = Icons.Filled.Compare,
-            iconContentDesc = stringResource(R.string.better_compare),
+            iconContentDesc = stringResource(R.string.better_but_slow_compare),
             iconColor = UIHelper.getIconEnableColorOrNull(requireBetterMatchingForCompare.value),
             enabled = true,
         ) {
             requireBetterMatchingForCompare.value = !requireBetterMatchingForCompare.value
 
             // show msg: "better but slow compare: ON/OFF"
-            Msg.requireShow(
-                appContext.getString(R.string.better_but_slow_compare)+": "
-                + (if(requireBetterMatchingForCompare.value) appContext.getString(R.string.on_str) else appContext.getString(R.string.off_str))
-            )
+//            Msg.requireShow(
+//                appContext.getString(R.string.better_but_slow_compare)+": "
+//                + (if(requireBetterMatchingForCompare.value) appContext.getString(R.string.on_str) else appContext.getString(R.string.off_str))
+//            )
+
+            SettingsUtil.update {
+                it.diff.enableBetterButSlowCompare = requireBetterMatchingForCompare.value
+            }
 
         }
 
@@ -233,6 +238,25 @@ fun DiffPageActions(
         )
 
 
+        DropdownMenuItem(
+            text = { Text(stringResource(R.string.group_by_line)) },
+            trailingIcon = {
+                Icon(
+                    imageVector = if(groupDiffContentByLineNum.value) Icons.Filled.CheckBox else Icons.Filled.CheckBoxOutlineBlank,
+                    contentDescription = null
+                )
+            },
+            onClick = {
+                groupDiffContentByLineNum.value = !groupDiffContentByLineNum.value
+
+                SettingsUtil.update {
+                    it.diff.groupDiffContentByLineNum = groupDiffContentByLineNum.value
+                }
+
+                dropDownMenuExpendState.value = false
+            }
+
+        )
         DropdownMenuItem(
             enabled = copyModeSwitchable,
             text = { Text(stringResource(R.string.copy_mode)) },

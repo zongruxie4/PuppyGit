@@ -992,6 +992,7 @@
     <string name="show_change_type">显示修改类型</string>
     <string name="replace">替换</string>
     <string name="change_type">修改类型</string>
+    <string name="group_by_line">按行分组</string>
 
 
 </resources>

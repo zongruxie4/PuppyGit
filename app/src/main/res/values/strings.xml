@@ -1005,5 +1005,6 @@
     <string name="show_change_type">Show Change Type</string>
     <string name="replace">Replace</string>
     <string name="change_type">Change Type</string>
+    <string name="group_by_line">Group By Line</string>
 
 </resources>
