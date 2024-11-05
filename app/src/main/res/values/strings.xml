@@ -997,7 +997,8 @@
     <string name="line_at_n">Line at: ph_a3f241dc_1</string>
     <string name="new_line_at_n">New Line at: ph_a3f241dc_1</string>
     <string name="content">Content</string>
-    <string name="prepend">Prepend</string>
+    <!--    insert = prepend -->
+    <string name="insert">Insert</string>
     <string name="append">Append</string>
     <string name="note_if_line_number_doesnt_exist_will_append_content_to_the_end_of_the_file">note: if the \'Line Number\' doesn\'t exist, will append content to the end of the file</string>
 

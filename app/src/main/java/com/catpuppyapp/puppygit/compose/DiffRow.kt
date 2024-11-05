@@ -161,7 +161,7 @@ fun DiffRow (
 
     if(showEditLineDialog.value) {
         ConfirmDialog2(
-            title = if(truePrependFalseAppendNullReplace.value == true) stringResource(R.string.prepend) else if(truePrependFalseAppendNullReplace.value == false) stringResource(R.string.append) else stringResource(R.string.edit),
+            title = if(truePrependFalseAppendNullReplace.value == true) stringResource(R.string.insert) else if(truePrependFalseAppendNullReplace.value == false) stringResource(R.string.append) else stringResource(R.string.edit),
             requireShowTextCompose = true,
             textCompose = {
                 Column {
@@ -479,7 +479,7 @@ fun DiffRow (
                             expandedMenu.value = false
                         }
                     )
-                    DropdownMenuItem(text = { Text(stringResource(R.string.prepend))},
+                    DropdownMenuItem(text = { Text(stringResource(R.string.insert))},
                         onClick = {
                             initEditLineDialog(line.getContentNoLineBreak(), line.lineNum, true)
 
