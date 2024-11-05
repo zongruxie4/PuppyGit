@@ -320,7 +320,7 @@ fun DiffScreen(
 //        }else {  //文件大小ok
 
         //改成统一在DiffContent里检查实际diff需要获取的内容的大小了，和文件大小有所不同，有时候文件大小很大，但需要diff的内容大小实际很小，这时其实可以diff，性能不会太差
-        MySelectionContainer {
+//        MySelectionContainer {
             DiffContent(repoId=repoId,relativePathUnderRepoDecoded=relativePathUnderRepoState.value,
                 fromTo=fromTo,changeType=changeType.value,fileSize=fileSize.value, naviUp=naviUp, dbContainer=dbContainer,
                 contentPadding = contentPadding, treeOid1Str = treeOid1Str, treeOid2Str = treeOid2Str,
@@ -330,7 +330,7 @@ fun DiffScreen(
                 curItemIndex=curItemIndex, switchItem=switchItem, clipboardManager=clipboardManager,
                 loadingOnParent=loadingOn, loadingOffParent=loadingOff
             )
-        }
+//        }
 
 //        }
     }
