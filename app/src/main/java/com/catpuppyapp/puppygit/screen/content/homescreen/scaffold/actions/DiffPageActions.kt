@@ -170,7 +170,7 @@ fun DiffPageActions(
 
     // menu items
     DropdownMenu(
-        offset = DpOffset(x=78.dp, y=8.dp),
+        offset = DpOffset(x=100.dp, y=8.dp),
         expanded = dropDownMenuExpendState.value,
         onDismissRequest = { dropDownMenuExpendState.value=false }
     ) {
