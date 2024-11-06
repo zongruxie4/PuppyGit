@@ -207,7 +207,15 @@ fun DiffRow (
             title = if(truePrependFalseAppendNullReplace.value == true) stringResource(R.string.insert) else if(truePrependFalseAppendNullReplace.value == false) stringResource(R.string.append) else stringResource(R.string.edit),
             requireShowTextCompose = true,
             textCompose = {
-                Column {
+                Column(
+                    // get height for add bottom padding when showing softkeyboard
+                    modifier = Modifier.onGloballyPositioned { layoutCoordinates ->
+//                                println("layoutCoordinates.size.height:${layoutCoordinates.size.height}")
+                        // 获取组件的高度
+                        // unit is px ( i am not very sure)
+                        componentHeight.intValue = layoutCoordinates.size.height
+                    }
+                ) {
                     Text(
                         replaceStringResList(
                             stringResource(if (truePrependFalseAppendNullReplace.value == null) R.string.line_at_n else R.string.new_line_at_n),
@@ -230,12 +238,6 @@ fun DiffRow (
                     TextField(
                         modifier = Modifier
                             .fillMaxWidth()
-                            .onGloballyPositioned { layoutCoordinates ->
-//                                println("layoutCoordinates.size.height:${layoutCoordinates.size.height}")
-                                // 获取组件的高度
-                                // unit is px ( i am not very sure)
-                                componentHeight.intValue = layoutCoordinates.size.height
-                            }
                             .then(
                                 if (isKeyboardCoveredComponent.value) Modifier.padding(bottom = keyboardPaddingDp.value) else Modifier
                             ),
@@ -339,7 +341,15 @@ fun DiffRow (
             title = if(trueRestoreFalseReplace.value) stringResource(R.string.restore) else stringResource(R.string.replace),
             requireShowTextCompose = true,
             textCompose = {
-                Column {
+                Column(
+                    // get height for add bottom padding when showing softkeyboard
+                    modifier = Modifier.onGloballyPositioned { layoutCoordinates ->
+//                                println("layoutCoordinates.size.height:${layoutCoordinates.size.height}")
+                        // 获取组件的高度
+                        // unit is px ( i am not very sure)
+                        componentHeight.intValue = layoutCoordinates.size.height
+                    }
+                ) {
                     Text(stringResource(R.string.note_if_line_number_doesnt_exist_will_append_content_to_the_end_of_the_file), color = MyStyleKt.TextColor.highlighting_green)
                     Spacer(modifier = Modifier.height(10.dp))
 
@@ -361,11 +371,6 @@ fun DiffRow (
                     TextField(
                         modifier = Modifier
                             .fillMaxWidth()
-                            .onGloballyPositioned { layoutCoordinates ->
-//                                println("layoutCoordinates.size.height:${layoutCoordinates.size.height}")
-                                // 获取组件的高度
-                                componentHeight.intValue = layoutCoordinates.size.height
-                            }
                             .then(
                                 if (isKeyboardCoveredComponent.value) Modifier.padding(bottom = keyboardPaddingDp.value) else Modifier
                             ),
