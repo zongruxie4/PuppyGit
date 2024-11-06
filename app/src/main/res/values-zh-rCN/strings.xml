@@ -1008,6 +1008,8 @@
     <string name="commit_id">提交ID</string>
     <string name="target_ph">目标: ph_a3f241dc_1</string>
     <string name="diff_to_prev">比较前版</string>
+    <string name="plz_lode_more_then_try_again">请加载更多后重试</string>
+    <string name="no_prev_to_compare">无上版供比较</string>
 
 
 </resources>

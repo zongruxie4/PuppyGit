@@ -27,6 +27,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.AnnotatedString
 import com.catpuppyapp.puppygit.compose.ConfirmDialog
 import com.catpuppyapp.puppygit.compose.CopyableDialog
+import com.catpuppyapp.puppygit.compose.FileHistoryRestoreDialog
 import com.catpuppyapp.puppygit.compose.GoToTopAndGoToBottomFab
 import com.catpuppyapp.puppygit.compose.LoadingDialog
 import com.catpuppyapp.puppygit.compose.LongPressAbleIconBtn
@@ -44,6 +45,7 @@ import com.catpuppyapp.puppygit.screen.content.homescreen.scaffold.title.DiffScr
 import com.catpuppyapp.puppygit.settings.SettingsCons
 import com.catpuppyapp.puppygit.settings.SettingsUtil
 import com.catpuppyapp.puppygit.utils.AppModel
+import com.catpuppyapp.puppygit.utils.Libgit2Helper
 import com.catpuppyapp.puppygit.utils.Msg
 import com.catpuppyapp.puppygit.utils.cache.Cache
 import com.catpuppyapp.puppygit.utils.changeStateTriggerRefreshPage
@@ -83,7 +85,8 @@ fun DiffScreen(
 
     val appContext = AppModel.singleInstanceHolder.appContext
 
-    val isFileHistoryToLocal = fromTo == Cons.gitDiffFromFileHistoryToLocal
+    val isFileHistoryTreeToLocal = fromTo == Cons.gitDiffFileHistoryFromTreeToLocal
+    val isFileHistoryTreeToTree = fromTo == Cons.gitDiffFileHistoryFromTreeToTree
 
     val scope = rememberCoroutineScope()
     val settings = remember { SettingsUtil.getSettingsSnapshot() }
@@ -91,20 +94,21 @@ fun DiffScreen(
     val clipboardManager = LocalClipboardManager.current
 
     val treeOid1Str = rememberSaveable { mutableStateOf(treeOid1Str) }
+    val treeOid2Str = rememberSaveable { mutableStateOf(treeOid2Str) }
 
     //这个值存到状态变量里之后就不用管了，与页面共存亡即可，如果旋转屏幕也没事，返回rememberSaveable可恢复
 //    val relativePathUnderRepoDecoded = (Cache.Map.getThenDel(Cache.Map.Key.diffScreen_UnderRepoPath) as? String)?:""
     val relativePathUnderRepoState = rememberSaveable { mutableStateOf((Cache.getByTypeThenDel<String>(underRepoPathKey)) ?: "")}
 
     val diffableItemList = mutableCustomStateListOf(stateKeyTag, "diffableItemList") {
-        if(isFileHistoryToLocal) {
+        if(isFileHistoryTreeToLocal) {
             listOf()
         } else {
             (Cache.getByTypeThenDel<List<StatusTypeEntrySaver>>(diffableItemListKey)) ?: listOf()
         }
     }
     val diffableItemListForFileHistory = mutableCustomStateListOf(stateKeyTag, "diffableItemListForFileHistory") {
-        if(isFileHistoryToLocal) {
+        if(isFileHistoryTreeToLocal) {
             (Cache.getByTypeThenDel<List<FileHistoryDto>>(diffableItemListKey)) ?: listOf()
         }else {
             listOf()
@@ -120,7 +124,7 @@ fun DiffScreen(
 //    val curRepo = rememberSaveable { mutableStateOf(RepoEntity()) }
     val curRepo = mutableCustomStateOf(keyTag = stateKeyTag, keyName = "curRepo", initValue = RepoEntity())
     val fileNameOnly = remember{ derivedStateOf {  getFileNameFromCanonicalPath(relativePathUnderRepoState.value)} }
-    val fileUnderRepoRelativePathOnly = remember{ derivedStateOf {getParentPathEndsWithSeparator(relativePathUnderRepoState.value)}}
+    val fileParentPathOnly = remember{ derivedStateOf {getParentPathEndsWithSeparator(relativePathUnderRepoState.value)}}
 
     //考虑将这个功能做成开关，所以用状态变量存其值
     //ps: 这个值要么做成可在设置页面关闭（当然，其他与预览diff不相关的页面也行，总之别做成只能在正在执行O(nm)的diff页面开关就行），要么就默认app启动后重置为关闭，绝对不能做成只能在预览diff的页面开关，不然万一O(nm)算法太慢卡死导致这个东西关不了就尴尬了
@@ -226,6 +230,28 @@ fun DiffScreen(
         }
     }
 
+    val showRestoreDialog = rememberSaveable { mutableStateOf(false)}
+    if(showRestoreDialog.value) {
+        FileHistoryRestoreDialog(
+            // only show restore for history
+            targetCommitOidStr = if(isFileHistoryTreeToLocal){
+                treeOid1Str.value
+            }else { // isFileHistoryTreeToTree
+                treeOid2Str.value
+            },
+            showRestoreDialog = showRestoreDialog,
+            loadingOn = loadingOn,
+            loadingOff = loadingOff,
+            appContext = appContext,
+            curRepo = curRepo,
+            fileRelativePath = relativePathUnderRepoState.value,
+            repoId = repoId,
+            onSuccess = {
+                changeStateTriggerRefreshPage(needRefresh)
+            }
+        )
+    }
+
 
     if(request.value == PageRequest.showOpenAsDialog) {
         PageRequest.clearStateThenDoAct(request) {
@@ -234,11 +260,18 @@ fun DiffScreen(
         }
     }
 
+    if(request.value == PageRequest.showRestoreDialog) {
+        PageRequest.clearStateThenDoAct(request) {
+            showRestoreDialog.value = true
+        }
+    }
+
     if(request.value == PageRequest.showDetails) {
         PageRequest.clearStateThenDoAct(request) {
             val sb = StringBuilder()
+            sb.appendLine("${Libgit2Helper.getShortOidStrByFull(treeOid1Str.value)}..${Libgit2Helper.getShortOidStrByFull(treeOid2Str.value)}").appendLine()
             sb.append(appContext.getString(R.string.name)+": ").appendLine(fileNameOnly.value).appendLine()
-            if(isFileHistoryToLocal){
+            if(isFileHistoryTreeToLocal || isFileHistoryTreeToTree){
                 sb.append(appContext.getString(R.string.commit_id)+": ").appendLine(treeOid1Str.value).appendLine()
                 sb.append(appContext.getString(R.string.entry_id)+": ").appendLine(diffableItemListForFileHistory.value[curItemIndex.intValue].treeEntryOidStr).appendLine()
 
@@ -360,7 +393,7 @@ fun DiffScreen(
                 title = {
                     DiffScreenTitle(
                         fileName = fileNameOnly.value,
-                        filePath = fileUnderRepoRelativePathOnly.value,
+                        filePath = fileParentPathOnly.value,
                         fileRelativePathUnderRepoState = relativePathUnderRepoState,
                         listState,
                         scope,
@@ -401,6 +434,7 @@ fun DiffScreen(
                         FontSizeAdjuster(fontSize = lineNumFontSize, resetValue = SettingsCons.defaultLineNumFontSize)
                     }else {
                         DiffPageActions(
+                            fromTo=fromTo,
                             changeType=changeType.value,
                             refreshPage = { changeStateTriggerRefreshPage(needRefresh) },
                             request = request,
@@ -458,7 +492,7 @@ fun DiffScreen(
         if(localAtDiffRight && copyModeOn.value.not()){
             DiffContent(repoId=repoId,relativePathUnderRepoDecoded=relativePathUnderRepoState.value,
                 fromTo=fromTo,changeType=changeType.value,fileSize=fileSize.longValue, naviUp=naviUp, dbContainer=dbContainer,
-                contentPadding = contentPadding, treeOid1Str = treeOid1Str.value, treeOid2Str = treeOid2Str,
+                contentPadding = contentPadding, treeOid1Str = treeOid1Str.value, treeOid2Str = treeOid2Str.value,
                 needRefresh = needRefresh, listState = listState, curRepo=curRepo,
                 requireBetterMatchingForCompare = requireBetterMatchingForCompare, fileFullPath = fileFullPath.value,
                 isSubmodule=isSubmodule.value, isDiffToLocal = isDiffToLocal,
@@ -473,7 +507,7 @@ fun DiffScreen(
             MySelectionContainer {
                 DiffContent(repoId=repoId,relativePathUnderRepoDecoded=relativePathUnderRepoState.value,
                     fromTo=fromTo,changeType=changeType.value,fileSize=fileSize.longValue, naviUp=naviUp, dbContainer=dbContainer,
-                    contentPadding = contentPadding, treeOid1Str = treeOid1Str.value, treeOid2Str = treeOid2Str,
+                    contentPadding = contentPadding, treeOid1Str = treeOid1Str.value, treeOid2Str = treeOid2Str.value,
                     needRefresh = needRefresh, listState = listState, curRepo=curRepo,
                     requireBetterMatchingForCompare = requireBetterMatchingForCompare, fileFullPath = fileFullPath.value,
                     isSubmodule=isSubmodule.value, isDiffToLocal = isDiffToLocal,

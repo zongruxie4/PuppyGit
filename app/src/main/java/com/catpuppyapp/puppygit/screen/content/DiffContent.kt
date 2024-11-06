@@ -100,6 +100,8 @@ fun DiffContent(
     groupDiffContentByLineNum:Boolean,
     switchItemForFileHistory:(FileHistoryDto, index:Int)->Unit
 ) {
+
+    val isDiffFileHistoryFromTreeToTree = fromTo == Cons.gitDiffFileHistoryFromTreeToTree
     //废弃，改用获取diffItem时动态计算实际需要显示的contentLen总和了
 //    val fileSizeOverLimit = isFileSizeOverLimit(fileSize)
 //    val scope = rememberCoroutineScope()
@@ -153,7 +155,7 @@ fun DiffContent(
 
             loadChannel.value = Channel()
 
-            if(fromTo == Cons.gitDiffFromFileHistoryToLocal) {
+            if(fromTo == Cons.gitDiffFileHistoryFromTreeToLocal) {
                 switchItemForFileHistory(item as FileHistoryDto, index)
             }else {
                 // switch new item
@@ -223,9 +225,18 @@ fun DiffContent(
 
 
             Spacer(Modifier.height(100.dp))
-            NaviButton(diffableItemList = diffableItemList, curItemIndex = curItemIndex, switchItem = closeChannelThenSwitchItem, switchItemForFileHistory = closeChannelThenSwitchItem, fromTo = fromTo, diffableItemListForFileHistory = diffableItemListForFileHistory)
 
-            Spacer(Modifier.height(100.dp))
+            if(isDiffFileHistoryFromTreeToTree.not()) {
+                NaviButton(
+                    diffableItemList = diffableItemList,
+                    curItemIndex = curItemIndex,
+                    switchItem = closeChannelThenSwitchItem,
+                    switchItemForFileHistory = closeChannelThenSwitchItem,
+                    fromTo = fromTo,
+                    diffableItemListForFileHistory = diffableItemListForFileHistory
+                )
+                Spacer(Modifier.height(100.dp))
+            }
         }
     }else {  //文本类型且没超过大小且文件修改过，正常显示diff信息
         val lastIndex = diffItem.value.hunks.size - 1
@@ -656,7 +667,18 @@ fun DiffContent(
 
             item {
                 Spacer(Modifier.height(50.dp))
-                NaviButton(diffableItemList = diffableItemList, curItemIndex = curItemIndex, switchItem = closeChannelThenSwitchItem, switchItemForFileHistory = closeChannelThenSwitchItem, fromTo = fromTo, diffableItemListForFileHistory = diffableItemListForFileHistory)
+
+                if(isDiffFileHistoryFromTreeToTree.not()) {
+                    NaviButton(
+                        diffableItemList = diffableItemList,
+                        curItemIndex = curItemIndex,
+                        switchItem = closeChannelThenSwitchItem,
+                        switchItemForFileHistory = closeChannelThenSwitchItem,
+                        fromTo = fromTo,
+                        diffableItemListForFileHistory = diffableItemListForFileHistory
+                    )
+                }
+
                 Spacer(Modifier.height(100.dp))
             }
 
@@ -704,7 +726,7 @@ fun DiffContent(
                         curRepo.value = repoFromDb
 
                         Repository.open(repoFromDb.fullSavePath).use { repo->
-                            if(fromTo == Cons.gitDiffFromTreeToTree || fromTo==Cons.gitDiffFromFileHistoryToLocal){  //从提交列表点击提交进入
+                            if(fromTo == Cons.gitDiffFromTreeToTree || fromTo==Cons.gitDiffFileHistoryFromTreeToLocal || fromTo==Cons.gitDiffFileHistoryFromTreeToTree){  //从提交列表点击提交进入
                                 val diffItemSaver = if(Libgit2Helper.CommitUtil.isLocalCommitHash(treeOid1Str) || Libgit2Helper.CommitUtil.isLocalCommitHash(treeOid2Str)) {  // tree to work tree, oid1 or oid2 is local, both local will cause err
                                     val reverse = Libgit2Helper.CommitUtil.isLocalCommitHash(treeOid1Str)
 //                                    println("1:$treeOid1Str, 2:$treeOid2Str, reverse=$reverse")
@@ -818,23 +840,23 @@ private fun NaviButton(
     switchItem: (StatusTypeEntrySaver, index: Int) -> Unit,
     switchItemForFileHistory: (FileHistoryDto, index: Int) -> Unit,
 ) {
-    val diffFileHistoryToLocal = fromTo==Cons.gitDiffFromFileHistoryToLocal
+    val isFileHistoryTreeToLocal = fromTo==Cons.gitDiffFileHistoryFromTreeToLocal
     Column(
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.Center
     ) {
-        val size = if(diffFileHistoryToLocal) diffableItemListForFileHistory.size else diffableItemList.size
+        val size = if(isFileHistoryTreeToLocal) diffableItemListForFileHistory.size else diffableItemList.size
         val previousIndex = curItemIndex.intValue - 1
         val nextIndex = curItemIndex.intValue + 1
         val hasPrevious = previousIndex >= 0 && previousIndex < size
         val hasNext = nextIndex >= 0 && nextIndex < size
         CardButton(
             text =  replaceStringResList(stringResource(R.string.prev_filename), listOf(if(hasPrevious) {
-                if(diffFileHistoryToLocal) diffableItemListForFileHistory[previousIndex].commitOidStr else diffableItemList[previousIndex].fileName
+                if(isFileHistoryTreeToLocal) diffableItemListForFileHistory[previousIndex].commitOidStr else diffableItemList[previousIndex].fileName
             } else stringResource(R.string.none))),
             enabled = hasPrevious
         ) {
-            if(diffFileHistoryToLocal) {
+            if(isFileHistoryTreeToLocal) {
                 switchItemForFileHistory(diffableItemListForFileHistory[previousIndex], previousIndex)
             }else{
                 switchItem(diffableItemList[previousIndex], previousIndex)
@@ -843,11 +865,11 @@ private fun NaviButton(
         Spacer(Modifier.height(10.dp))
         CardButton(
             text = replaceStringResList(stringResource(R.string.next_filename), listOf(if(hasNext) {
-                if(diffFileHistoryToLocal) diffableItemListForFileHistory[nextIndex].commitOidStr else diffableItemList[nextIndex].fileName
+                if(isFileHistoryTreeToLocal) diffableItemListForFileHistory[nextIndex].commitOidStr else diffableItemList[nextIndex].fileName
             } else stringResource(R.string.none))),
             enabled = hasNext
         ) {
-            if(diffFileHistoryToLocal) {
+            if(isFileHistoryTreeToLocal) {
                 switchItemForFileHistory(diffableItemListForFileHistory[nextIndex], nextIndex)
             }else{
                 switchItem(diffableItemList[nextIndex], nextIndex)

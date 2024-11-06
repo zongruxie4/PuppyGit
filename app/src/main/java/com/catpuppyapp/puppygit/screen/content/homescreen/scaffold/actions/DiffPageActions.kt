@@ -8,6 +8,7 @@ import androidx.compose.material.icons.filled.Compare
 import androidx.compose.material.icons.filled.FileOpen
 import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.material.icons.filled.Refresh
+import androidx.compose.material.icons.filled.Restore
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.Icon
@@ -40,6 +41,7 @@ private val TAG = "DiffPageActions"
 
 @Composable
 fun DiffPageActions(
+    fromTo:String,
     changeType: String,
     refreshPage: () -> Unit,
     request:MutableState<String>,
@@ -87,15 +89,16 @@ fun DiffPageActions(
 //
 //    }
 
-//    LongPressAbleIconBtn(
-//        tooltipText = stringResource(R.string.go_to_top),
-//        icon =  Icons.Filled.VerticalAlignTop,
-//        iconContentDesc = stringResource(id = R.string.go_to_top),
-//        enabled = true,
-//
-//    ) {
-//        UIHelper.scrollTo(scope, listState, 0)
-//    }
+    if(fromTo == Cons.gitDiffFileHistoryFromTreeToTree || fromTo == Cons.gitDiffFileHistoryFromTreeToLocal) {
+        LongPressAbleIconBtn(
+            tooltipText = stringResource(R.string.restore),
+            icon =  Icons.Filled.Restore,
+            iconContentDesc = stringResource(R.string.restore),
+        ) {
+            request.value = PageRequest.showRestoreDialog
+        }
+
+    }
 
     LongPressAbleIconBtn(
         tooltipText = stringResource(R.string.refresh),

@@ -21,7 +21,6 @@ import androidx.compose.material.icons.automirrored.filled.List
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.FilterAlt
 import androidx.compose.material.icons.filled.MoreVert
-import androidx.compose.material.icons.filled.MoveToInbox
 import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
@@ -64,6 +63,7 @@ import com.catpuppyapp.puppygit.compose.ConfirmDialog2
 import com.catpuppyapp.puppygit.compose.CopyableDialog
 import com.catpuppyapp.puppygit.compose.DiffCommitsDialog
 import com.catpuppyapp.puppygit.compose.FileHistoryItem
+import com.catpuppyapp.puppygit.compose.FileHistoryRestoreDialog
 import com.catpuppyapp.puppygit.compose.FilterTextField
 import com.catpuppyapp.puppygit.compose.GoToTopAndGoToBottomFab
 import com.catpuppyapp.puppygit.compose.LoadMore
@@ -75,18 +75,13 @@ import com.catpuppyapp.puppygit.compose.ScrollableColumn
 import com.catpuppyapp.puppygit.constants.Cons
 import com.catpuppyapp.puppygit.data.entity.RepoEntity
 import com.catpuppyapp.puppygit.dev.commitsDiffCommitsTestPassed
-import com.catpuppyapp.puppygit.dev.commitsDiffToLocalTestPassed
-import com.catpuppyapp.puppygit.dev.dev_EnableUnTestedFeature
 import com.catpuppyapp.puppygit.dev.proFeatureEnabled
 import com.catpuppyapp.puppygit.dev.resetByHashTestPassed
-import com.catpuppyapp.puppygit.etc.Ret
 import com.catpuppyapp.puppygit.git.CommitDto
 import com.catpuppyapp.puppygit.git.FileHistoryDto
-import com.catpuppyapp.puppygit.git.StatusTypeEntrySaver
 import com.catpuppyapp.puppygit.play.pro.R
 import com.catpuppyapp.puppygit.settings.SettingsUtil
 import com.catpuppyapp.puppygit.style.MyStyleKt
-import com.catpuppyapp.puppygit.user.UserUtil
 import com.catpuppyapp.puppygit.utils.AppModel
 import com.catpuppyapp.puppygit.utils.Libgit2Helper
 import com.catpuppyapp.puppygit.utils.Msg
@@ -99,10 +94,10 @@ import com.catpuppyapp.puppygit.utils.createAndInsertError
 import com.catpuppyapp.puppygit.utils.doActIfIndexGood
 import com.catpuppyapp.puppygit.utils.doJobThenOffLoading
 import com.catpuppyapp.puppygit.utils.getRequestDataByState
+import com.catpuppyapp.puppygit.utils.isGoodIndexForList
 import com.catpuppyapp.puppygit.utils.replaceStringResList
 import com.catpuppyapp.puppygit.utils.state.mutableCustomStateListOf
 import com.catpuppyapp.puppygit.utils.state.mutableCustomStateOf
-import com.github.git24j.core.Checkout
 import com.github.git24j.core.GitObject
 import com.github.git24j.core.Oid
 import com.github.git24j.core.Repository
@@ -358,29 +353,16 @@ fun FileHistoryScreen(
 
     val showRestoreDialog = rememberSaveable { mutableStateOf(false)}
     if(showRestoreDialog.value) {
-        ConfirmDialog2(
-            title = stringResource(R.string.restore),
-            text = replaceStringResList(stringResource(R.string.target_ph), listOf(curObj.value.commitOidStr)) ,
-            onCancel = {showRestoreDialog.value=false},
-            okBtnText = stringResource(R.string.restore)
-        ) {
-            showRestoreDialog.value = false
-            doJobThenOffLoading(loadingOn, loadingOff, appContext.getString(R.string.restoring)) {
-                try {
-                    Repository.open(curRepo.value.fullSavePath).use { repo->
-                        //fun checkoutFiles(repo: Repository, targetCommitHash:String, pathSpecs: List<String>, force: Boolean, checkoutOptions: Checkout.Options?=null): Ret<Unit?> {
-                        Libgit2Helper.checkoutFiles(repo, curObj.value.commitOidStr, pathSpecs = listOf(fileRelativePath), force = true)
-
-                    }
-
-                    Msg.requireShow(appContext.getString(R.string.success))
-                }catch (e:Exception) {
-                    val errMsg = e.localizedMessage ?: "unknown err"
-                    Msg.requireShowLongDuration(errMsg)
-                    createAndInsertError(repoId, errMsg)
-                }
-            }
-        }
+        FileHistoryRestoreDialog(
+            targetCommitOidStr = curObj.value.commitOidStr,
+            showRestoreDialog = showRestoreDialog,
+            loadingOn = loadingOn,
+            loadingOff = loadingOff,
+            appContext = appContext,
+            curRepo = curRepo,
+            fileRelativePath = fileRelativePath,
+            repoId = repoId
+        )
     }
 
     val requireUserInputCommitHash = rememberSaveable { mutableStateOf(false)}
@@ -787,8 +769,53 @@ fun FileHistoryScreen(
                    showRestoreDialog.value = true
                 }
 
-                BottomSheetItem(sheetState, showBottomSheet, stringResource(R.string.diff_to_prev)) {
-                   showRestoreDialog.value = true
+                BottomSheetItem(sheetState, showBottomSheet, stringResource(R.string.diff_to_prev)) label@{
+                    val indexAtDiffableList = curObjIndex.intValue
+                    val previousIndex = indexAtDiffableList +1
+                    if(!isGoodIndexForList(previousIndex, list.value)) {
+                        if(hasMore.value) {
+                            Msg.requireShowLongDuration(appContext.getString(R.string.plz_lode_more_then_try_again))
+                        }else {
+                            Msg.requireShowLongDuration(appContext.getString(R.string.no_prev_to_compare))
+                        }
+
+                        return@label
+                    }
+
+                    val previous = list.value[previousIndex]
+
+                    val underRepoPathKey = Cache.setThenReturnKey(fileRelativePath)
+                    val diffableListKey = "here no need list"
+
+                    val commit1 = previous.commitOidStr
+                    val commit2 = curObj.value.commitOidStr
+
+//                    println("commit1:"+commit1)
+//                    println("commit2:"+commit2)
+//                    println("fileRelativePath:"+fileRelativePath)
+
+                    val isSubm =0
+                    val isDiffToLocal = 0
+                    val localAtDiffRight = 0
+                    val fileSize = 0
+
+                    //导航到diffScreen
+                    navController.navigate(
+                        Cons.nav_DiffScreen +
+                                "/" + repoId+
+                                //    "/" + encodeStrUri(item.relativePathUnderRepo) +
+                                "/" + Cons.gitDiffFileHistoryFromTreeToTree +
+                                "/" + Cons.gitStatusModified +
+                                "/" + fileSize +
+                                "/" + underRepoPathKey +
+                                "/" + commit1 +
+                                "/" + commit2 +
+                                "/" + isSubm +
+                                "/" + isDiffToLocal
+                                + "/" + diffableListKey
+                                + "/" + indexAtDiffableList
+                                +"/" + localAtDiffRight
+                    )
                 }
 
 
@@ -938,16 +965,20 @@ fun FileHistoryScreen(
                 val commit2 = Cons.gitLocalWorktreeCommitHash
 
                 val isSubm =0
+                val fileSize =0
                 val isDiffToLocal = 1
                 val localAtDiffRight = 1
+
+                Msg.requireShow(appContext.getString(R.string.diff_to_local))
+
                 //导航到diffScreen
                 navController.navigate(
                     Cons.nav_DiffScreen +
                             "/" + repoId+
                             //    "/" + encodeStrUri(item.relativePathUnderRepo) +
-                            "/" + Cons.gitDiffFromFileHistoryToLocal +
+                            "/" + Cons.gitDiffFileHistoryFromTreeToLocal +
                             "/" + Cons.gitStatusModified +
-                            "/" + "0" +
+                            "/" + fileSize +
                             "/" + underRepoPathKey +
                             "/" + commit1 +
                             "/" + commit2 +
@@ -957,6 +988,7 @@ fun FileHistoryScreen(
                             + "/" + indexAtDiffableList
                             +"/" + localAtDiffRight
                 )
+
             }
 
             HorizontalDivider()
@@ -1092,4 +1124,3 @@ fun FileHistoryScreen(
     }
 
 }
-

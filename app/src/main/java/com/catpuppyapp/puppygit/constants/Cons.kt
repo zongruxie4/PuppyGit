@@ -262,7 +262,8 @@ class Cons {
         val gitDiffFromHeadToWorktree = "3";
         val gitDiffFromTreeToTree = "4";  //例如：一个提交和另一个提交比较，就属于这个类型
 //        val gitDiffFromTreeToWorktree = "5"
-        val gitDiffFromFileHistoryToLocal = "10"
+        val gitDiffFileHistoryFromTreeToLocal = "20"
+        val gitDiffFileHistoryFromTreeToTree = "21"
 
         //必须得用平常的文件名不会包含的那种字符
 //        val separatorReplaceStr = "\\kn16K0_ivanrof\\"
