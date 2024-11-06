@@ -6,7 +6,6 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
@@ -17,11 +16,14 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.platform.ClipboardManager
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalView
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.AnnotatedString
@@ -73,22 +75,40 @@ fun DiffRow (
     lineNumSize:Int,
 ) {
     val view = LocalView.current
-    val isKeyboardVisible = remember { mutableStateOf(false) }
-    val keyboardPadding = 200.dp
+    val density = LocalDensity.current
 
+    val isKeyboardVisible = remember { mutableStateOf(false) }
+    //indicate keyboard covered component
+    val isKeyboardCoveredComponent = remember { mutableStateOf(false) }
+    // which component expect adjust heghit or padding when softkeyboard shown
+    val componentHeight = remember { mutableIntStateOf(0) }
+    // the padding value when softkeyboard shown
+    val keyboardPaddingDp = remember { mutableStateOf(0.dp) }
+
+    // this code gen by chat-gpt, wow
+    // except: this code may not work when use use a float keyboard or softkeyboard with single-hand mode
     // 监听键盘的弹出和隐藏 (listening keyboard visible/hidden)
     DisposableEffect(view) {
-        val listener = ViewTreeObserver.OnPreDrawListener {
+        val callback = ViewTreeObserver.OnGlobalLayoutListener {
             val insets = ViewCompat.getRootWindowInsets(view)
             isKeyboardVisible.value = insets?.isVisible(WindowInsetsCompat.Type.ime()) == true
-//            println("isKeyboardVisible.value=${isKeyboardVisible.value}")
-            true
+
+            // 获取软键盘的高度 (get soft keyboard height)
+            val keyboardHeightPx = insets?.getInsets(WindowInsetsCompat.Type.ime())?.bottom ?: 0
+
+            // 判断组件是否被遮盖 (check component whether got covered)
+            isKeyboardCoveredComponent.value = (componentHeight.intValue > 0) && (view.height - keyboardHeightPx < componentHeight.intValue)
+
+            keyboardPaddingDp.value = if(isKeyboardCoveredComponent.value) {
+                with(density) { keyboardHeightPx.toDp()-120.dp }
+            }else {
+                0.dp
+            }
         }
 
-        view.viewTreeObserver.addOnPreDrawListener(listener)
-
+        view.viewTreeObserver.addOnGlobalLayoutListener(callback)
         onDispose {
-            view.viewTreeObserver.removeOnPreDrawListener(listener)
+            view.viewTreeObserver.removeOnGlobalLayoutListener(callback)
         }
     }
 
@@ -203,8 +223,15 @@ fun DiffRow (
 
                     TextField(
                         modifier = Modifier
-                            .fillMaxSize().then(
-                                if (isKeyboardVisible.value) Modifier.padding(bottom = keyboardPadding) else Modifier
+                            .fillMaxWidth()
+                            .onGloballyPositioned { layoutCoordinates ->
+//                                println("layoutCoordinates.size.height:${layoutCoordinates.size.height}")
+                                // 获取组件的高度
+                                // unit is px ( i am not very sure)
+                                componentHeight.intValue = layoutCoordinates.size.height
+                            }
+                            .then(
+                                if (isKeyboardCoveredComponent.value) Modifier.padding(bottom = keyboardPaddingDp.value) else Modifier
                             ),
                         value = lineContentOfEditLineDialog.value,
                         onValueChange = {
@@ -326,9 +353,16 @@ fun DiffRow (
                     Spacer(modifier = Modifier.height(10.dp))
 
                     TextField(
-                        modifier = Modifier.fillMaxSize().then(
-                            if (isKeyboardVisible.value) Modifier.padding(bottom = keyboardPadding) else Modifier
-                        ),
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .onGloballyPositioned { layoutCoordinates ->
+//                                println("layoutCoordinates.size.height:${layoutCoordinates.size.height}")
+                                // 获取组件的高度
+                                componentHeight.intValue = layoutCoordinates.size.height
+                            }
+                            .then(
+                                if (isKeyboardCoveredComponent.value) Modifier.padding(bottom = keyboardPaddingDp.value) else Modifier
+                            ),
                         value = lineContentOfEditLineDialog.value,
                         onValueChange = {
                             lineContentOfEditLineDialog.value = it
@@ -461,9 +495,9 @@ fun DiffRow (
                 modifier= Modifier
                     .fillMaxWidth()
                     .then(
-                        if(enableLineActions) {
+                        if (enableLineActions) {
                             Modifier.clickable { expandedMenu.value = true }
-                        }else{
+                        } else {
                             Modifier
                         }
                     )
@@ -477,10 +511,11 @@ fun DiffRow (
                 softWrap = true,
                 fontSize = fontSize.sp,
                 modifier= Modifier
-                    .fillMaxWidth().then(
-                        if(enableLineActions) {
+                    .fillMaxWidth()
+                    .then(
+                        if (enableLineActions) {
                             Modifier.clickable { expandedMenu.value = true }
-                        }else{
+                        } else {
                             Modifier
                         }
                     )
