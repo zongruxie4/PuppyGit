@@ -101,14 +101,14 @@ fun DiffScreen(
     val relativePathUnderRepoState = rememberSaveable { mutableStateOf((Cache.getByTypeThenDel<String>(underRepoPathKey)) ?: "")}
 
     val diffableItemList = mutableCustomStateListOf(stateKeyTag, "diffableItemList") {
-        if(isFileHistoryTreeToLocal) {
+        if(isFileHistoryTreeToLocal || isFileHistoryTreeToTree) {
             listOf()
         } else {
             (Cache.getByTypeThenDel<List<StatusTypeEntrySaver>>(diffableItemListKey)) ?: listOf()
         }
     }
     val diffableItemListForFileHistory = mutableCustomStateListOf(stateKeyTag, "diffableItemListForFileHistory") {
-        if(isFileHistoryTreeToLocal) {
+        if(isFileHistoryTreeToLocal || isFileHistoryTreeToTree) {
             (Cache.getByTypeThenDel<List<FileHistoryDto>>(diffableItemListKey)) ?: listOf()
         }else {
             listOf()

@@ -10,6 +10,7 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
@@ -85,6 +86,7 @@ import com.catpuppyapp.puppygit.compose.LoadingDialog
 import com.catpuppyapp.puppygit.compose.LongPressAbleIconBtn
 import com.catpuppyapp.puppygit.compose.MyCheckBox
 import com.catpuppyapp.puppygit.compose.MyLazyColumn
+import com.catpuppyapp.puppygit.compose.MySelectionContainer
 import com.catpuppyapp.puppygit.compose.ResetDialog
 import com.catpuppyapp.puppygit.compose.ScrollableColumn
 import com.catpuppyapp.puppygit.compose.SingleSelectList
@@ -480,13 +482,14 @@ fun CommitListScreen(
 
                     }
 
-                    loadMoreLoading.value = false
 
                 }catch (e:Exception) {
                     val errMsg = e.localizedMessage ?: "unknown err"
                     Msg.requireShowLongDuration(errMsg)
                     createAndInsertError(repoId, "err: $errMsg")
                     MyLog.e(TAG, "#doLoadMore: err: ${e.stackTraceToString()}")
+                }finally {
+                    loadMoreLoading.value = false
                 }
             }
         }
@@ -1388,12 +1391,20 @@ fun CommitListScreen(
         }
     }
 
-    val showRepoInfoDialog = remember { mutableStateOf(false) }
-    if(showRepoInfoDialog.value) {
+    val showTitleInfoDialog = remember { mutableStateOf(false) }
+    if(showTitleInfoDialog.value) {
         ConfirmDialog2(
             title = stringResource(R.string.info),
-            text = if(useFullOid) branchShortNameOrShortHashByFullOidForShowOnTitle.value else repoOnBranchOrDetachedHash.value,
-            onCancel = {showRepoInfoDialog.value = false},
+            requireShowTextCompose = true,
+            textCompose = {
+                ScrollableColumn {
+                    MySelectionContainer {
+                        Text(if(useFullOid) branchShortNameOrShortHashByFullOidForShowOnTitle.value else repoOnBranchOrDetachedHash.value)
+                    }
+
+                }
+            },
+            onCancel = {showTitleInfoDialog.value = false},
             cancelBtnText = stringResource(R.string.close),
             showOk = false
         ) { }
@@ -1437,7 +1448,7 @@ fun CommitListScreen(
                                     Msg.requireShow("loaded: ${list.value.size}")
                                 }
                             ) { // onClick
-                                showRepoInfoDialog.value = true
+                                showTitleInfoDialog.value = true
                             }
                         ) {
                             Row(
@@ -1610,196 +1621,212 @@ fun CommitListScreen(
             }
         }
     ) { contentPadding ->
+        if(loadMoreLoading.value.not() && list.value.isEmpty()) {
+            Column(
+                modifier = Modifier
+                    //fillMaxSize 必须在最上面！要不然，文字不会显示在中间！
+                    .fillMaxSize()
+                    .padding(contentPadding)
+                    .padding(10.dp)
+                    .verticalScroll(rememberScrollState())
+                ,
+                verticalArrangement = Arrangement.Center,
+                horizontalAlignment = Alignment.CenterHorizontally,
+            ) {
+                Text(stringResource(R.string.commit_history_is_empty))
+            }
+        }else {
+
 //        val commitLen = 10;
-        if (showBottomSheet.value) {
+            if (showBottomSheet.value) {
 //            var commitOid = curCommit.value.oidStr
 //            if(commitOid.length > Cons.gitShortCommitHashRangeEndInclusive) {  //避免commitOid不够长导致抛异常，正常来说commitOid是40位，不会有问题，除非哪里出了问题
 //                commitOid = commitOid.substring(Cons.gitShortCommitHashRange)+"..."
 //            }
-            BottomSheet(showBottomSheet, sheetState, curCommit.value.shortOidStr) {
-                BottomSheetItem(sheetState, showBottomSheet, stringResource(R.string.checkout)) {
-                    // onClick()
-                    // 弹出确认框，询问是否确定执行checkout，可detach head，可创建分支，类似checkout remote branch
-                    //初始化弹窗默认选项
-                    val requireUserInputHash = false
-                    initCheckoutDialogComposableVersion(requireUserInputHash)
-                }
-                if(dev_EnableUnTestedFeature || tagsTestPassed) {
-                    BottomSheetItem(sheetState, showBottomSheet, stringResource(R.string.new_tag)) {
+                BottomSheet(showBottomSheet, sheetState, curCommit.value.shortOidStr) {
+                    BottomSheetItem(sheetState, showBottomSheet, stringResource(R.string.checkout)) {
                         // onClick()
                         // 弹出确认框，询问是否确定执行checkout，可detach head，可创建分支，类似checkout remote branch
                         //初始化弹窗默认选项
-                        initNewTagDialog(curCommit.value.oidStr)
+                        val requireUserInputHash = false
+                        initCheckoutDialogComposableVersion(requireUserInputHash)
                     }
-                }
-                if(proFeatureEnabled(resetByHashTestPassed)) {
-                    BottomSheetItem(sheetState, showBottomSheet, stringResource(R.string.reset)) {
-                        // onClick()
-                        //初始化弹窗默认选项
+                    if(dev_EnableUnTestedFeature || tagsTestPassed) {
+                        BottomSheetItem(sheetState, showBottomSheet, stringResource(R.string.new_tag)) {
+                            // onClick()
+                            // 弹出确认框，询问是否确定执行checkout，可detach head，可创建分支，类似checkout remote branch
+                            //初始化弹窗默认选项
+                            initNewTagDialog(curCommit.value.oidStr)
+                        }
+                    }
+                    if(proFeatureEnabled(resetByHashTestPassed)) {
+                        BottomSheetItem(sheetState, showBottomSheet, stringResource(R.string.reset)) {
+                            // onClick()
+                            //初始化弹窗默认选项
 //                    acceptHardReset.value = false
-                        resetOid.value = curCommit.value.oidStr
-                        showResetDialog.value = true
-                    }
-                }
-
-                if(isHEAD) {
-                    BottomSheetItem(sheetState, showBottomSheet, stringResource(R.string.squash)) {
-                        val targetCommitFullOid = curCommit.value.oidStr
-                        val targetCommitShortOid = curCommit.value.shortOidStr
-
-                        doJobThenOffLoading {
-                            Repository.open(curRepo.value.fullSavePath).use { repo ->
-                                val ret = Libgit2Helper.squashCommitsCheckBeforeShowDialog(
-                                    repo = repo,
-                                    targetFullOidStr = targetCommitFullOid,
-                                    isShowingCommitListForHEAD = isHEAD
-                                )
-
-                                if(ret.hasError()) {
-                                    Msg.requireShowLongDuration(ret.msg)
-                                    createAndInsertError(curRepo.value.id, "squash commits pre-check err: "+ret.msg)
-                                }else {
-                                    val squashData = ret.data!!
-                                    initShowSquashDialog(targetCommitFullOid, targetCommitShortOid, squashData.headFullOid, squashData.headFullName, squashData.username, squashData.email)
-                                }
-                            }
-
+                            resetOid.value = curCommit.value.oidStr
+                            showResetDialog.value = true
                         }
                     }
-                }
 
-                BottomSheetItem(sheetState, showBottomSheet, stringResource(R.string.details)) {
-                    // onClick()
-//                    requireShowViewDialog(appContext.getString(R.string.view_hash), curCommit.value.oidStr)
-                    val sb = StringBuilder()
-                    sb.appendLine("${appContext.getString(R.string.hash)}: "+curCommit.value.oidStr)
-                    sb.appendLine()
-                    sb.appendLine("${appContext.getString(R.string.author)}: "+ Libgit2Helper.getFormattedUsernameAndEmail(curCommit.value.author, curCommit.value.email))
-                    sb.appendLine()
-                    sb.appendLine("${appContext.getString(R.string.committer)}: "+ Libgit2Helper.getFormattedUsernameAndEmail(curCommit.value.committerUsername, curCommit.value.committerEmail))
-                    sb.appendLine()
-                    sb.appendLine("${appContext.getString(R.string.date)}: "+curCommit.value.dateTime)
-                    sb.appendLine()
-                    sb.appendLine("${appContext.getString(R.string.msg)}: "+curCommit.value.msg)
-                    sb.appendLine()
-                    if(curCommit.value.branchShortNameList.isNotEmpty()){
-                        sb.appendLine((if(curCommit.value.branchShortNameList.size > 1) appContext.getString(R.string.branches) else appContext.getString(R.string.branch)) +": "+curCommit.value.branchShortNameList.toString())
-                        sb.appendLine()
-                    }
-                    if(curCommit.value.tagShortNameList.isNotEmpty()) {
-                        sb.appendLine((if(curCommit.value.tagShortNameList.size > 1) appContext.getString(R.string.tags) else appContext.getString(R.string.tag)) +": "+curCommit.value.tagShortNameList.toString())
-                        sb.appendLine()
-                    }
-                    if(curCommit.value.parentOidStrList.isNotEmpty()) {
-                        sb.appendLine((if(curCommit.value.parentOidStrList.size > 1) appContext.getString(R.string.parents) else appContext.getString(R.string.parent)) +": "+curCommit.value.parentOidStrList.toString())
-                        sb.appendLine()
-                    }
+                    if(isHEAD) {
+                        BottomSheetItem(sheetState, showBottomSheet, stringResource(R.string.squash)) {
+                            val targetCommitFullOid = curCommit.value.oidStr
+                            val targetCommitShortOid = curCommit.value.shortOidStr
 
-                    if(curCommit.value.hasOther()) {
-                        sb.appendLine("${appContext.getString(R.string.other)}: ${curCommit.value.getOther()}")
-                        sb.appendLine()
-                    }
-
-                    detailsString.value = sb.toString()
-                    showDetailsDialog.value = true
-                }
-
-                if(UserUtil.isPro() && (dev_EnableUnTestedFeature || commitsDiffToLocalTestPassed)) {
-                    BottomSheetItem(sheetState, showBottomSheet, stringResource(R.string.diff_to_local)) {
-    //                    diff to local，点击跳转到tree to tree页面，然后diff
-                        //当前比较的描述信息的key，用来在界面显示这是在比较啥，值例如“和父提交比较”或者“比较两个提交”之类的
-                        val descKey = Cache.setThenReturnKey(appContext.getString(R.string.compare_to_local))
-                        //这里需要传当前commit，然后cl页面会用当前commit查出当前commit的parents
-                        val commit2 = Cons.gitLocalWorktreeCommitHash
-                        val commitForQueryParents = Cons.allZeroOidStr
-                        // url 参数： 页面导航id/repoId/treeoid1/treeoid2/desckey
-                        navController.navigate(
-                            //注意是 parentTreeOid to thisObj.treeOid，也就是 旧提交to新提交，相当于 git diff abc...def，比较的是旧版到新版，新增或删除或修改了什么，反过来的话，新增删除之类的也就反了
-                            "${Cons.nav_TreeToTreeChangeListScreen}/${curRepo.value.id}/${curCommit.value.oidStr}/$commit2/$descKey/$commitForQueryParents"
-                        )
-                    }
-                }
-
-                if(proFeatureEnabled(diffToHeadTestPassed)) {
-                    BottomSheetItem(sheetState, showBottomSheet, stringResource(R.string.diff_to_head)) {
-                        doJobThenOffLoading job@{
-                            Repository.open(curRepo.value.fullSavePath).use { repo->
-                                //这里需要传当前commit，然后cl页面会用当前commit查出当前commit的parents
-                                val commit2Ret = Libgit2Helper.getHeadCommit(repo)
-                                if(commit2Ret.hasError()) {
-                                    Msg.requireShowLongDuration(commit2Ret.msg)
-                                    return@job
-                                }
-
-                                val commit2 = commit2Ret.data!!.id().toString()
-                                val commit1 = curCommit.value.oidStr
-                                if(commit2 == commit1) {  //避免 Compare HEAD to HEAD
-                                    Msg.requireShowLongDuration(appContext.getString(R.string.num2_commits_same))
-                                    return@job
-                                }
-
-                                //当前比较的描述信息的key，用来在界面显示这是在比较啥，值例如“和父提交比较”或者“比较两个提交”之类的
-                                val descKey = Cache.setThenReturnKey(appContext.getString(R.string.compare_to_head))
-                                val commitForQueryParents = Cons.allZeroOidStr
-
-                                withMainContext {
-                                    // url 参数： 页面导航id/repoId/treeoid1/treeoid2/desckey
-                                    navController.navigate(
-                                        //注意是 parentTreeOid to thisObj.treeOid，也就是 旧提交to新提交，相当于 git diff abc...def，比较的是旧版到新版，新增或删除或修改了什么，反过来的话，新增删除之类的也就反了
-                                        "${Cons.nav_TreeToTreeChangeListScreen}/${curRepo.value.id}/$commit1/$commit2/$descKey/$commitForQueryParents"
+                            doJobThenOffLoading {
+                                Repository.open(curRepo.value.fullSavePath).use { repo ->
+                                    val ret = Libgit2Helper.squashCommitsCheckBeforeShowDialog(
+                                        repo = repo,
+                                        targetFullOidStr = targetCommitFullOid,
+                                        isShowingCommitListForHEAD = isHEAD
                                     )
+
+                                    if(ret.hasError()) {
+                                        Msg.requireShowLongDuration(ret.msg)
+                                        createAndInsertError(curRepo.value.id, "squash commits pre-check err: "+ret.msg)
+                                    }else {
+                                        val squashData = ret.data!!
+                                        initShowSquashDialog(targetCommitFullOid, targetCommitShortOid, squashData.headFullOid, squashData.headFullName, squashData.username, squashData.email)
+                                    }
                                 }
 
                             }
-
                         }
                     }
-                }
 
-                if(proFeatureEnabled(cherrypickTestPassed)) {
-                    BottomSheetItem(sheetState, showBottomSheet, stringResource(R.string.cherrypick)) {
-                        //弹窗，让选parent，默认选中第一个
-                        if(curCommit.value.parentOidStrList.isEmpty()) {
-                            Msg.requireShowLongDuration(appContext.getString(R.string.no_parent_for_find_changes_for_cherrypick))
-                        }else {
-                            //默认选中第一个parent
-                            initCherrypickDialog(curCommit.value.oidStr, curCommit.value.parentOidStrList[0], curCommit.value.parentOidStrList)
+                    BottomSheetItem(sheetState, showBottomSheet, stringResource(R.string.details)) {
+                        // onClick()
+//                    requireShowViewDialog(appContext.getString(R.string.view_hash), curCommit.value.oidStr)
+                        val sb = StringBuilder()
+                        sb.appendLine("${appContext.getString(R.string.hash)}: "+curCommit.value.oidStr)
+                        sb.appendLine()
+                        sb.appendLine("${appContext.getString(R.string.author)}: "+ Libgit2Helper.getFormattedUsernameAndEmail(curCommit.value.author, curCommit.value.email))
+                        sb.appendLine()
+                        sb.appendLine("${appContext.getString(R.string.committer)}: "+ Libgit2Helper.getFormattedUsernameAndEmail(curCommit.value.committerUsername, curCommit.value.committerEmail))
+                        sb.appendLine()
+                        sb.appendLine("${appContext.getString(R.string.date)}: "+curCommit.value.dateTime)
+                        sb.appendLine()
+                        sb.appendLine("${appContext.getString(R.string.msg)}: "+curCommit.value.msg)
+                        sb.appendLine()
+                        if(curCommit.value.branchShortNameList.isNotEmpty()){
+                            sb.appendLine((if(curCommit.value.branchShortNameList.size > 1) appContext.getString(R.string.branches) else appContext.getString(R.string.branch)) +": "+curCommit.value.branchShortNameList.toString())
+                            sb.appendLine()
+                        }
+                        if(curCommit.value.tagShortNameList.isNotEmpty()) {
+                            sb.appendLine((if(curCommit.value.tagShortNameList.size > 1) appContext.getString(R.string.tags) else appContext.getString(R.string.tag)) +": "+curCommit.value.tagShortNameList.toString())
+                            sb.appendLine()
+                        }
+                        if(curCommit.value.parentOidStrList.isNotEmpty()) {
+                            sb.appendLine((if(curCommit.value.parentOidStrList.size > 1) appContext.getString(R.string.parents) else appContext.getString(R.string.parent)) +": "+curCommit.value.parentOidStrList.toString())
+                            sb.appendLine()
+                        }
+
+                        if(curCommit.value.hasOther()) {
+                            sb.appendLine("${appContext.getString(R.string.other)}: ${curCommit.value.getOther()}")
+                            sb.appendLine()
+                        }
+
+                        detailsString.value = sb.toString()
+                        showDetailsDialog.value = true
+                    }
+
+                    if(UserUtil.isPro() && (dev_EnableUnTestedFeature || commitsDiffToLocalTestPassed)) {
+                        BottomSheetItem(sheetState, showBottomSheet, stringResource(R.string.diff_to_local)) {
+                            //                    diff to local，点击跳转到tree to tree页面，然后diff
+                            //当前比较的描述信息的key，用来在界面显示这是在比较啥，值例如“和父提交比较”或者“比较两个提交”之类的
+                            val descKey = Cache.setThenReturnKey(appContext.getString(R.string.compare_to_local))
+                            //这里需要传当前commit，然后cl页面会用当前commit查出当前commit的parents
+                            val commit2 = Cons.gitLocalWorktreeCommitHash
+                            val commitForQueryParents = Cons.allZeroOidStr
+                            // url 参数： 页面导航id/repoId/treeoid1/treeoid2/desckey
+                            navController.navigate(
+                                //注意是 parentTreeOid to thisObj.treeOid，也就是 旧提交to新提交，相当于 git diff abc...def，比较的是旧版到新版，新增或删除或修改了什么，反过来的话，新增删除之类的也就反了
+                                "${Cons.nav_TreeToTreeChangeListScreen}/${curRepo.value.id}/${curCommit.value.oidStr}/$commit2/$descKey/$commitForQueryParents"
+                            )
                         }
                     }
-                }
 
-                if(proFeatureEnabled(createPatchTestPassed)) {
-                    BottomSheetItem(sheetState, showBottomSheet, stringResource(R.string.create_patch)) {
-                        //弹窗，让选parent，默认选中第一个
-                        if(curCommit.value.parentOidStrList.isEmpty()) {
-                            Msg.requireShowLongDuration(appContext.getString(R.string.no_parent_for_find_changes_for_create_patch))
-                        }else {
-                            //默认选中第一个parent
-                            initCreatePatchDialog(curCommit.value.oidStr, curCommit.value.parentOidStrList[0], curCommit.value.parentOidStrList)
-                        }
-                    }
-                }
+                    if(proFeatureEnabled(diffToHeadTestPassed)) {
+                        BottomSheetItem(sheetState, showBottomSheet, stringResource(R.string.diff_to_head)) {
+                            doJobThenOffLoading job@{
+                                Repository.open(curRepo.value.fullSavePath).use { repo->
+                                    //这里需要传当前commit，然后cl页面会用当前commit查出当前commit的parents
+                                    val commit2Ret = Libgit2Helper.getHeadCommit(repo)
+                                    if(commit2Ret.hasError()) {
+                                        Msg.requireShowLongDuration(commit2Ret.msg)
+                                        return@job
+                                    }
 
+                                    val commit2 = commit2Ret.data!!.id().toString()
+                                    val commit1 = curCommit.value.oidStr
+                                    if(commit2 == commit1) {  //避免 Compare HEAD to HEAD
+                                        Msg.requireShowLongDuration(appContext.getString(R.string.num2_commits_same))
+                                        return@job
+                                    }
 
-                //如果是filter模式，显示show in list以在列表揭示filter条目以查看前后提交（或者说上下文）
-                if(enableFilterState.value) {
-                    BottomSheetItem(sheetState, showBottomSheet, stringResource(R.string.show_in_list)) {
-                        filterModeOn.value = false
-                        showBottomSheet.value = false
+                                    //当前比较的描述信息的key，用来在界面显示这是在比较啥，值例如“和父提交比较”或者“比较两个提交”之类的
+                                    val descKey = Cache.setThenReturnKey(appContext.getString(R.string.compare_to_head))
+                                    val commitForQueryParents = Cons.allZeroOidStr
 
-                        doJobThenOffLoading {
-//                            delay(100)  // wait rendering, may unnecessary yet
-                            val curItemIndex = curCommitIndex.intValue  // 被长按的条目在 filterlist中的索引
-                            val idxList = filterIdxList.value  //取出存储filter索引和源列表索引的 index list，条目索引对应filter list条目索引，条目值对应的是源列表的真实索引
+                                    withMainContext {
+                                        // url 参数： 页面导航id/repoId/treeoid1/treeoid2/desckey
+                                        navController.navigate(
+                                            //注意是 parentTreeOid to thisObj.treeOid，也就是 旧提交to新提交，相当于 git diff abc...def，比较的是旧版到新版，新增或删除或修改了什么，反过来的话，新增删除之类的也就反了
+                                            "${Cons.nav_TreeToTreeChangeListScreen}/${curRepo.value.id}/$commit1/$commit2/$descKey/$commitForQueryParents"
+                                        )
+                                    }
 
-                            doActIfIndexGood(curItemIndex, idxList) {  // it为当前被长按的条目在源列表中的真实索引
-                                UIHelper.scrollToItem(scope, listState, it)  //在源列表中定位条目
-                                requireBlinkIdx.intValue = it  //设置条目闪烁以便用户发现
+                                }
+
                             }
                         }
                     }
 
-                }
+                    if(proFeatureEnabled(cherrypickTestPassed)) {
+                        BottomSheetItem(sheetState, showBottomSheet, stringResource(R.string.cherrypick)) {
+                            //弹窗，让选parent，默认选中第一个
+                            if(curCommit.value.parentOidStrList.isEmpty()) {
+                                Msg.requireShowLongDuration(appContext.getString(R.string.no_parent_for_find_changes_for_cherrypick))
+                            }else {
+                                //默认选中第一个parent
+                                initCherrypickDialog(curCommit.value.oidStr, curCommit.value.parentOidStrList[0], curCommit.value.parentOidStrList)
+                            }
+                        }
+                    }
+
+                    if(proFeatureEnabled(createPatchTestPassed)) {
+                        BottomSheetItem(sheetState, showBottomSheet, stringResource(R.string.create_patch)) {
+                            //弹窗，让选parent，默认选中第一个
+                            if(curCommit.value.parentOidStrList.isEmpty()) {
+                                Msg.requireShowLongDuration(appContext.getString(R.string.no_parent_for_find_changes_for_create_patch))
+                            }else {
+                                //默认选中第一个parent
+                                initCreatePatchDialog(curCommit.value.oidStr, curCommit.value.parentOidStrList[0], curCommit.value.parentOidStrList)
+                            }
+                        }
+                    }
+
+
+                    //如果是filter模式，显示show in list以在列表揭示filter条目以查看前后提交（或者说上下文）
+                    if(enableFilterState.value) {
+                        BottomSheetItem(sheetState, showBottomSheet, stringResource(R.string.show_in_list)) {
+                            filterModeOn.value = false
+                            showBottomSheet.value = false
+
+                            doJobThenOffLoading {
+//                            delay(100)  // wait rendering, may unnecessary yet
+                                val curItemIndex = curCommitIndex.intValue  // 被长按的条目在 filterlist中的索引
+                                val idxList = filterIdxList.value  //取出存储filter索引和源列表索引的 index list，条目索引对应filter list条目索引，条目值对应的是源列表的真实索引
+
+                                doActIfIndexGood(curItemIndex, idxList) {  // it为当前被长按的条目在源列表中的真实索引
+                                    UIHelper.scrollToItem(scope, listState, it)  //在源列表中定位条目
+                                    requireBlinkIdx.intValue = it  //设置条目闪烁以便用户发现
+                                }
+                            }
+                        }
+
+                    }
 //                BottomSheetItem(sheetState, showBottomSheet, stringResource(R.string.create_branch)){
 //                // TODO (日后再考虑是否实现这个) (这个选项个特点是“仅创建分支，但不checkout”，感觉意义不是很大，而且可以通过“先detach head检出commit，在去分支页面创建分支并不勾选checkout”来曲线实现)弹出确认框，提示基于当前commit创建分支，并有一个checkout勾选框，如果确定，则创建分支（并checkout(如果勾选了的话)）
 //                }
@@ -1823,90 +1850,102 @@ fun CommitListScreen(
 //
 //                }
 
+                }
             }
-        }
 
-        //根据关键字过滤条目
-        val k = filterKeyword.value.text.lowercase()  //关键字
-        val needFilterByPath = pathsForFilter.value.isNotEmpty()
-        var paths:List<String>? = null
-        val enableFilter = filterModeOn.value && (k.isNotEmpty() || needFilterByPath)
-        val list = if(enableFilter){
-            filterIdxList.value.clear()
+            //根据关键字过滤条目
+            val k = filterKeyword.value.text.lowercase()  //关键字
+            val needFilterByPath = pathsForFilter.value.isNotEmpty()
+            var paths:List<String>? = null
+            val enableFilter = filterModeOn.value && (k.isNotEmpty() || needFilterByPath)
+            val list = if(enableFilter){
+                filterIdxList.value.clear()
 
-            val repo = if(needFilterByPath) {
-                try{
-                    paths = pathsForFilter.value.lines()
-                    Repository.open(curRepo.value.fullSavePath)
-                }catch (_:Exception) {
+                val repo = if(needFilterByPath) {
+                    try{
+                        paths = pathsForFilter.value.lines()
+                        Repository.open(curRepo.value.fullSavePath)
+                    }catch (_:Exception) {
+                        null
+                    }
+                }else {
                     null
                 }
-            }else {
-                null
-            }
 
-            val retlist = list.value.filterIndexed {idx, it ->
-                var found = it.oidStr.lowercase().contains(k)
-                        || it.email.lowercase().contains(k)
-                        || it.author.lowercase().contains(k)
-                        || it.committerEmail.lowercase().contains(k)
-                        || it.committerUsername.lowercase().contains(k)
-                        || it.dateTime.lowercase().contains(k)
-                        || it.branchShortNameList.toString().lowercase().contains(k)
-                        || it.tagShortNameList.toString().lowercase().contains(k)
-                        || it.parentOidStrList.toString().lowercase().contains(k)
-                        || it.treeOidStr.lowercase().contains(k)
-                        || it.msg.lowercase().contains(k)
-                        || it.getOther().lowercase().contains(k)
+                val retlist = list.value.filterIndexed {idx, it ->
+                    var found = it.oidStr.lowercase().contains(k)
+                            || it.email.lowercase().contains(k)
+                            || it.author.lowercase().contains(k)
+                            || it.committerEmail.lowercase().contains(k)
+                            || it.committerUsername.lowercase().contains(k)
+                            || it.dateTime.lowercase().contains(k)
+                            || it.branchShortNameList.toString().lowercase().contains(k)
+                            || it.tagShortNameList.toString().lowercase().contains(k)
+                            || it.parentOidStrList.toString().lowercase().contains(k)
+                            || it.treeOidStr.lowercase().contains(k)
+                            || it.msg.lowercase().contains(k)
+                            || it.getOther().lowercase().contains(k)
 
-                // for "show in list"
-                if(found) {
-                    if(needFilterByPath && repo!=null && paths?.isNotEmpty() == true) {
-                        found = Libgit2Helper.isCommitIncludePaths(repo, commitFullOid = it.oidStr, paths=paths)
-                    }
-
+                    // for "show in list"
                     if(found) {
-                        filterIdxList.value.add(idx)
+                        if(needFilterByPath && repo!=null && paths?.isNotEmpty() == true) {
+                            found = Libgit2Helper.isCommitIncludePaths(repo, commitFullOid = it.oidStr, paths=paths)
+                        }
+
+                        if(found) {
+                            filterIdxList.value.add(idx)
+                        }
                     }
+
+                    found
                 }
 
-                found
+                repo?.close()
+
+                retlist
+            }else {
+                list.value
             }
 
-            repo?.close()
-
-            retlist
-        }else {
-            list.value
-        }
-
-        val listState = if(enableFilter) filterListState else listState
+            val listState = if(enableFilter) filterListState else listState
 //        if(enableFilter) {  //更新filter列表state
 //            filterListState.value = listState
 //        }
 
-        //更新是否启用filter
-        enableFilterState.value = enableFilter
+            //更新是否启用filter
+            enableFilterState.value = enableFilter
 
-        MyLazyColumn(
-            contentPadding = contentPadding,
-            list = list,
-            listState = listState,
-            requireForEachWithIndex = true,
-            requirePaddingAtBottom = false,
-            requireCustomBottom = true,
-            customBottom = {
-                LoadMore(
-                    pageSize=pageSize,
-                    rememberPageSize=rememberPageSize,
-                    showSetPageSizeDialog=showSetPageSizeDialog,
-                    pageSizeForDialog=pageSizeForDialog,
-                    text = loadMoreText.value,
-                    enableLoadMore = !loadMoreLoading.value && hasMore.value, enableAndShowLoadToEnd = !loadMoreLoading.value && hasMore.value,
-                    loadToEndOnClick = {
+            MyLazyColumn(
+                contentPadding = contentPadding,
+                list = list,
+                listState = listState,
+                requireForEachWithIndex = true,
+                requirePaddingAtBottom = false,
+                requireCustomBottom = true,
+                customBottom = {
+                    LoadMore(
+                        pageSize=pageSize,
+                        rememberPageSize=rememberPageSize,
+                        showSetPageSizeDialog=showSetPageSizeDialog,
+                        pageSizeForDialog=pageSizeForDialog,
+                        text = loadMoreText.value,
+                        enableLoadMore = !loadMoreLoading.value && hasMore.value, enableAndShowLoadToEnd = !loadMoreLoading.value && hasMore.value,
+                        loadToEndOnClick = {
+                            val firstLoad = false
+                            val forceReload = false
+                            val loadToEnd = true
+                            doLoadMore(
+                                curRepo.value.fullSavePath,
+                                nextCommitOid.value,
+                                firstLoad,
+                                forceReload,
+                                loadToEnd
+                            )
+                        }
+                    ) {
                         val firstLoad = false
                         val forceReload = false
-                        val loadToEnd = true
+                        val loadToEnd = false
                         doLoadMore(
                             curRepo.value.fullSavePath,
                             nextCommitOid.value,
@@ -1914,71 +1953,71 @@ fun CommitListScreen(
                             forceReload,
                             loadToEnd
                         )
+
                     }
+                }
+            ) { idx, it ->
+                CommitItem(showBottomSheet, curCommit, curCommitIndex, idx, it, requireBlinkIdx) { thisObj ->
+                    val parents = thisObj.parentOidStrList
+                    if (parents.isEmpty()) {  // 如果没父提交，例如最初的提交就没父提交，提示没parent可比较
+                        //TODO 改成没父提交时列出当前提交的所有文件
+                        requireShowToast(appContext.getString(R.string.no_parent_for_compare))
+                    } else {  //有父提交，取出第一个父提交和当前提交进行比较
+                        //当前比较的描述信息的key，用来在界面显示这是在比较啥，值例如“和父提交比较”或者“比较两个提交”之类的
+                        val descKey =
+                            Cache.setThenReturnKey(appContext.getString(R.string.compare_to_parent))
+                        //这里需要传当前commit，然后cl页面会用当前commit查出当前commit的parents
+                        val commit1 = parents[0]
+                        val commit2 = thisObj.oidStr
+                        val commitForQueryParents = commit2
+                        // url 参数： 页面导航id/repoId/treeoid1/treeoid2/desckey
+                        navController.navigate(
+                            //注意是 parentTreeOid to thisObj.treeOid，也就是 旧提交to新提交，相当于 git diff abc...def，比较的是旧版到新版，新增或删除或修改了什么，反过来的话，新增删除之类的也就反了
+                            "${Cons.nav_TreeToTreeChangeListScreen}/${curRepo.value.id}/$commit1/$commit2/$descKey/$commitForQueryParents"
+                        )
+
+                    }
+                }
+                HorizontalDivider()
+            }
+
+            // filter mode 有可能查无条目，但是可继续加载更多，这时也应显示加载更多按钮
+            if(filterModeOn.value && list.isEmpty()) {
+                Column(
+                    modifier = Modifier
+                        .padding(contentPadding)
+                        .verticalScroll(rememberScrollState())
+                    ,
+                    horizontalAlignment = Alignment.CenterHorizontally,
+                    verticalArrangement = Arrangement.Center
                 ) {
-                    val firstLoad = false
-                    val forceReload = false
-                    val loadToEnd = false
-                    doLoadMore(
-                        curRepo.value.fullSavePath,
-                        nextCommitOid.value,
-                        firstLoad,
-                        forceReload,
-                        loadToEnd
-                    )
+                    Spacer(Modifier.height(50.dp))
+                    Text(stringResource(R.string.no_matched_item), fontWeight = FontWeight.Light)
 
-                }
-            }
-        ) { idx, it ->
-            CommitItem(showBottomSheet, curCommit, curCommitIndex, idx, it, requireBlinkIdx) { thisObj ->
-                val parents = thisObj.parentOidStrList
-                if (parents.isEmpty()) {  // 如果没父提交，例如最初的提交就没父提交，提示没parent可比较
-                    //TODO 改成没父提交时列出当前提交的所有文件
-                    requireShowToast(appContext.getString(R.string.no_parent_for_compare))
-                } else {  //有父提交，取出第一个父提交和当前提交进行比较
-                    //当前比较的描述信息的key，用来在界面显示这是在比较啥，值例如“和父提交比较”或者“比较两个提交”之类的
-                    val descKey =
-                        Cache.setThenReturnKey(appContext.getString(R.string.compare_to_parent))
-                    //这里需要传当前commit，然后cl页面会用当前commit查出当前commit的parents
-                    val commit1 = parents[0]
-                    val commit2 = thisObj.oidStr
-                    val commitForQueryParents = commit2
-                    // url 参数： 页面导航id/repoId/treeoid1/treeoid2/desckey
-                    navController.navigate(
-                        //注意是 parentTreeOid to thisObj.treeOid，也就是 旧提交to新提交，相当于 git diff abc...def，比较的是旧版到新版，新增或删除或修改了什么，反过来的话，新增删除之类的也就反了
-                        "${Cons.nav_TreeToTreeChangeListScreen}/${curRepo.value.id}/$commit1/$commit2/$descKey/$commitForQueryParents"
-                    )
-
-                }
-            }
-            HorizontalDivider()
-        }
-
-        // filter mode 有可能查无条目，但是可继续加载更多，这时也应显示加载更多按钮
-        if(filterModeOn.value && list.isEmpty()) {
-            Column(
-                modifier = Modifier
-                    .padding(contentPadding)
-                    .verticalScroll(rememberScrollState())
-                ,
-                horizontalAlignment = Alignment.CenterHorizontally,
-                verticalArrangement = Arrangement.Center
-            ) {
-                Spacer(Modifier.height(50.dp))
-                Text(stringResource(R.string.no_matched_item), fontWeight = FontWeight.Light)
-
-                LoadMore(
-                    modifier = Modifier.padding(top = 30.dp),
-                    pageSize=pageSize,
-                    rememberPageSize=rememberPageSize,
-                    showSetPageSizeDialog=showSetPageSizeDialog,
-                    pageSizeForDialog=pageSizeForDialog,
-                    text = loadMoreText.value,
-                    enableLoadMore = !loadMoreLoading.value && hasMore.value, enableAndShowLoadToEnd = !loadMoreLoading.value && hasMore.value,
-                    loadToEndOnClick = {
+                    LoadMore(
+                        modifier = Modifier.padding(top = 30.dp),
+                        pageSize=pageSize,
+                        rememberPageSize=rememberPageSize,
+                        showSetPageSizeDialog=showSetPageSizeDialog,
+                        pageSizeForDialog=pageSizeForDialog,
+                        text = loadMoreText.value,
+                        enableLoadMore = !loadMoreLoading.value && hasMore.value, enableAndShowLoadToEnd = !loadMoreLoading.value && hasMore.value,
+                        loadToEndOnClick = {
+                            val firstLoad = false
+                            val forceReload = false
+                            val loadToEnd = true
+                            doLoadMore(
+                                curRepo.value.fullSavePath,
+                                nextCommitOid.value,
+                                firstLoad,
+                                forceReload,
+                                loadToEnd
+                            )
+                        }
+                    ) {
                         val firstLoad = false
                         val forceReload = false
-                        val loadToEnd = true
+                        val loadToEnd = false
                         doLoadMore(
                             curRepo.value.fullSavePath,
                             nextCommitOid.value,
@@ -1986,19 +2025,8 @@ fun CommitListScreen(
                             forceReload,
                             loadToEnd
                         )
-                    }
-                ) {
-                    val firstLoad = false
-                    val forceReload = false
-                    val loadToEnd = false
-                    doLoadMore(
-                        curRepo.value.fullSavePath,
-                        nextCommitOid.value,
-                        firstLoad,
-                        forceReload,
-                        loadToEnd
-                    )
 
+                    }
                 }
             }
         }
@@ -2034,6 +2062,8 @@ fun CommitListScreen(
                 curRepo.value = repoFromDb
                 val repoFullPath = repoFromDb.fullSavePath
                 val repoName = repoFromDb.repoName
+                repoOnBranchOrDetachedHash.value = repoName
+                branchShortNameOrShortHashByFullOidForShowOnTitle.value = repoName
 //            val isDetached = dbIntToBool(repoFromDb.isDetached)
 
                 Repository.open(repoFullPath).use { repo ->

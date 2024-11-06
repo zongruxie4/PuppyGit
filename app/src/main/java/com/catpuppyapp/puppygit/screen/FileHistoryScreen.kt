@@ -8,6 +8,7 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
@@ -71,6 +72,7 @@ import com.catpuppyapp.puppygit.compose.LoadingDialog
 import com.catpuppyapp.puppygit.compose.LongPressAbleIconBtn
 import com.catpuppyapp.puppygit.compose.MyCheckBox
 import com.catpuppyapp.puppygit.compose.MyLazyColumn
+import com.catpuppyapp.puppygit.compose.MySelectionContainer
 import com.catpuppyapp.puppygit.compose.ScrollableColumn
 import com.catpuppyapp.puppygit.constants.Cons
 import com.catpuppyapp.puppygit.data.entity.RepoEntity
@@ -337,13 +339,15 @@ fun FileHistoryScreen(
 
                     }
 
-                    loadMoreLoading.value = false
 
                 }catch (e:Exception) {
                     val errMsg = e.localizedMessage ?: "unknown err"
                     Msg.requireShowLongDuration(errMsg)
                     createAndInsertError(repoId, "err: $errMsg")
                     MyLog.e(TAG, "#doLoadMore: err: ${e.stackTraceToString()}")
+                }finally {
+                    loadMoreLoading.value = false
+
                 }
             }
         }
@@ -402,6 +406,11 @@ fun FileHistoryScreen(
         keyTag = stateKeyTag,
         keyName = "filterIdxList",
         listOf<Int>()
+    )
+    val filterList = mutableCustomStateListOf(
+        keyTag = stateKeyTag,
+        keyName = "filterList",
+        listOf<FileHistoryDto>()
     )
 
     //filter相关，结束
@@ -578,11 +587,27 @@ fun FileHistoryScreen(
     if(showTitleInfoDialog.value) {
         ConfirmDialog2(
             title = stringResource(R.string.info),
-            text = titleInfo.value,
+            requireShowTextCompose = true,
+            textCompose = {
+                ScrollableColumn {
+                    MySelectionContainer {
+                        Text(titleInfo.value)
+                    }
+
+                }
+            },
             onCancel = {showTitleInfoDialog.value = false},
             cancelBtnText = stringResource(R.string.close),
             showOk = false
         ) { }
+    }
+
+    val getActuallyList = {
+        if(filterModeOn.value) {
+            filterList.value
+        }else{
+            list.value
+        }
     }
 
     Scaffold(
@@ -758,87 +783,104 @@ fun FileHistoryScreen(
             }
         }
     ) { contentPadding ->
+
+        if(loadMoreLoading.value.not() && list.value.isEmpty()) {
+            Column(
+                modifier = Modifier
+                    //fillMaxSize 必须在最上面！要不然，文字不会显示在中间！
+                    .fillMaxSize()
+                    .padding(contentPadding)
+                    .padding(10.dp)
+                    .verticalScroll(rememberScrollState())
+                ,
+                verticalArrangement = Arrangement.Center,
+                horizontalAlignment = Alignment.CenterHorizontally,
+            ) {
+                Text(stringResource(R.string.file_hasnt_history_yet))
+            }
+        }else {
 //        val commitLen = 10;
-        if (showBottomSheet.value) {
+            if (showBottomSheet.value) {
 //            var commitOid = curCommit.value.oidStr
 //            if(commitOid.length > Cons.gitShortCommitHashRangeEndInclusive) {  //避免commitOid不够长导致抛异常，正常来说commitOid是40位，不会有问题，除非哪里出了问题
 //                commitOid = commitOid.substring(Cons.gitShortCommitHashRange)+"..."
 //            }
-            BottomSheet(showBottomSheet, sheetState, curObjShortOid.value) {
-                BottomSheetItem(sheetState, showBottomSheet, stringResource(R.string.restore)) {
-                   showRestoreDialog.value = true
-                }
-
-                BottomSheetItem(sheetState, showBottomSheet, stringResource(R.string.diff_to_prev)) label@{
-                    val indexAtDiffableList = curObjIndex.intValue
-                    val previousIndex = indexAtDiffableList +1
-                    if(!isGoodIndexForList(previousIndex, list.value)) {
-                        if(hasMore.value) {
-                            Msg.requireShowLongDuration(appContext.getString(R.string.plz_lode_more_then_try_again))
-                        }else {
-                            Msg.requireShowLongDuration(appContext.getString(R.string.no_prev_to_compare))
-                        }
-
-                        return@label
+                BottomSheet(showBottomSheet, sheetState, curObjShortOid.value) {
+                    BottomSheetItem(sheetState, showBottomSheet, stringResource(R.string.restore)) {
+                        showRestoreDialog.value = true
                     }
 
-                    val previous = list.value[previousIndex]
+                    BottomSheetItem(sheetState, showBottomSheet, stringResource(R.string.diff_to_prev)) label@{
+                        val list = getActuallyList()
+                        val indexAtDiffableList = curObjIndex.intValue
+                        val previousIndex = indexAtDiffableList +1
+                        if(!isGoodIndexForList(previousIndex, list)) {
+                            if(hasMore.value) {
+                                Msg.requireShowLongDuration(appContext.getString(R.string.plz_lode_more_then_try_again))
+                            }else {
+                                Msg.requireShowLongDuration(appContext.getString(R.string.no_prev_to_compare))
+                            }
 
-                    val underRepoPathKey = Cache.setThenReturnKey(fileRelativePath)
-                    val diffableListKey = "here no need list"
+                            return@label
+                        }
 
-                    val commit1 = previous.commitOidStr
-                    val commit2 = curObj.value.commitOidStr
+
+                        val underRepoPathKey = Cache.setThenReturnKey(fileRelativePath)
+                        val diffableListKey = Cache.setThenReturnKey(list)
+
+                        val previous = list[previousIndex]
+                        val commit1 = previous.commitOidStr
+                        val commit2 = curObj.value.commitOidStr
 
 //                    println("commit1:"+commit1)
 //                    println("commit2:"+commit2)
 //                    println("fileRelativePath:"+fileRelativePath)
 
-                    val isSubm =0
-                    val isDiffToLocal = 0
-                    val localAtDiffRight = 0
-                    val fileSize = 0
+                        val isSubm =0
+                        val isDiffToLocal = 0
+                        val localAtDiffRight = 0
+                        val fileSize = 0
 
-                    //导航到diffScreen
-                    navController.navigate(
-                        Cons.nav_DiffScreen +
-                                "/" + repoId+
-                                //    "/" + encodeStrUri(item.relativePathUnderRepo) +
-                                "/" + Cons.gitDiffFileHistoryFromTreeToTree +
-                                "/" + Cons.gitStatusModified +
-                                "/" + fileSize +
-                                "/" + underRepoPathKey +
-                                "/" + commit1 +
-                                "/" + commit2 +
-                                "/" + isSubm +
-                                "/" + isDiffToLocal
-                                + "/" + diffableListKey
-                                + "/" + indexAtDiffableList
-                                +"/" + localAtDiffRight
-                    )
-                }
+                        //导航到diffScreen
+                        navController.navigate(
+                            Cons.nav_DiffScreen +
+                                    "/" + repoId+
+                                    //    "/" + encodeStrUri(item.relativePathUnderRepo) +
+                                    "/" + Cons.gitDiffFileHistoryFromTreeToTree +
+                                    "/" + Cons.gitStatusModified +
+                                    "/" + fileSize +
+                                    "/" + underRepoPathKey +
+                                    "/" + commit1 +
+                                    "/" + commit2 +
+                                    "/" + isSubm +
+                                    "/" + isDiffToLocal
+                                    + "/" + diffableListKey
+                                    + "/" + indexAtDiffableList
+                                    +"/" + localAtDiffRight
+                        )
+                    }
 
 
-                BottomSheetItem(sheetState, showBottomSheet, stringResource(R.string.details)) {
-                    // onClick()
+                    BottomSheetItem(sheetState, showBottomSheet, stringResource(R.string.details)) {
+                        // onClick()
 //                    requireShowViewDialog(appContext.getString(R.string.view_hash), curCommit.value.oidStr)
-                    val sb = StringBuilder()
-                    sb.appendLine("${appContext.getString(R.string.path)}: "+curObj.value.filePathUnderRepo).appendLine()
-                    sb.appendLine("${appContext.getString(R.string.commit_id)}: "+curObj.value.commitOidStr).appendLine()
-                    sb.appendLine("${appContext.getString(R.string.entry_id)}: "+curObj.value.treeEntryOidStr).appendLine()
-                    sb.appendLine("${appContext.getString(R.string.author)}: "+ Libgit2Helper.getFormattedUsernameAndEmail(curObj.value.authorUsername, curObj.value.authorEmail))
-                    sb.appendLine()
-                    sb.appendLine("${appContext.getString(R.string.committer)}: "+ Libgit2Helper.getFormattedUsernameAndEmail(curObj.value.committerUsername, curObj.value.committerEmail))
-                    sb.appendLine()
-                    sb.appendLine("${appContext.getString(R.string.date)}: "+curObj.value.dateTime)
-                    sb.appendLine()
-                    sb.appendLine("${appContext.getString(R.string.msg)}: "+curObj.value.msg)
-                    sb.appendLine()
+                        val sb = StringBuilder()
+                        sb.appendLine("${appContext.getString(R.string.path)}: "+curObj.value.filePathUnderRepo).appendLine()
+                        sb.appendLine("${appContext.getString(R.string.commit_id)}: "+curObj.value.commitOidStr).appendLine()
+                        sb.appendLine("${appContext.getString(R.string.entry_id)}: "+curObj.value.treeEntryOidStr).appendLine()
+                        sb.appendLine("${appContext.getString(R.string.author)}: "+ Libgit2Helper.getFormattedUsernameAndEmail(curObj.value.authorUsername, curObj.value.authorEmail))
+                        sb.appendLine()
+                        sb.appendLine("${appContext.getString(R.string.committer)}: "+ Libgit2Helper.getFormattedUsernameAndEmail(curObj.value.committerUsername, curObj.value.committerEmail))
+                        sb.appendLine()
+                        sb.appendLine("${appContext.getString(R.string.date)}: "+curObj.value.dateTime)
+                        sb.appendLine()
+                        sb.appendLine("${appContext.getString(R.string.msg)}: "+curObj.value.msg)
+                        sb.appendLine()
 
 
-                    detailsString.value = sb.toString()
-                    showDetailsDialog.value = true
-                }
+                        detailsString.value = sb.toString()
+                        showDetailsDialog.value = true
+                    }
 //
 //                if(UserUtil.isPro() && (dev_EnableUnTestedFeature || commitsDiffToLocalTestPassed)) {
 //                    BottomSheetItem(sheetState, showBottomSheet, stringResource(R.string.diff_to_local)) {
@@ -857,82 +899,95 @@ fun FileHistoryScreen(
 //                }
 
 
-                //如果是filter模式，显示show in list以在列表揭示filter条目以查看前后提交（或者说上下文）
-                if(enableFilterState.value) {
-                    BottomSheetItem(sheetState, showBottomSheet, stringResource(R.string.show_in_list)) {
-                        filterModeOn.value = false
-                        showBottomSheet.value = false
+                    //如果是filter模式，显示show in list以在列表揭示filter条目以查看前后提交（或者说上下文）
+                    if(enableFilterState.value) {
+                        BottomSheetItem(sheetState, showBottomSheet, stringResource(R.string.show_in_list)) {
+                            filterModeOn.value = false
+                            showBottomSheet.value = false
 
-                        doJobThenOffLoading {
+                            doJobThenOffLoading {
 //                            delay(100)  // wait rendering, may unnecessary yet
-                            val curItemIndex = curObjIndex.intValue  // 被长按的条目在 filterlist中的索引
-                            val idxList = filterIdxList.value  //取出存储filter索引和源列表索引的 index list，条目索引对应filter list条目索引，条目值对应的是源列表的真实索引
+                                val curItemIndex = curObjIndex.intValue  // 被长按的条目在 filterlist中的索引
+                                val idxList = filterIdxList.value  //取出存储filter索引和源列表索引的 index list，条目索引对应filter list条目索引，条目值对应的是源列表的真实索引
 
-                            doActIfIndexGood(curItemIndex, idxList) {  // it为当前被长按的条目在源列表中的真实索引
-                                UIHelper.scrollToItem(scope, listState, it)  //在源列表中定位条目
-                                requireBlinkIdx.intValue = it  //设置条目闪烁以便用户发现
+                                doActIfIndexGood(curItemIndex, idxList) {  // it为当前被长按的条目在源列表中的真实索引
+                                    UIHelper.scrollToItem(scope, listState, it)  //在源列表中定位条目
+                                    requireBlinkIdx.intValue = it  //设置条目闪烁以便用户发现
+                                }
                             }
                         }
-                    }
 
+                    }
                 }
             }
-        }
 
-        //根据关键字过滤条目
-        val k = filterKeyword.value.text.lowercase()  //关键字
-        val enableFilter = filterModeOn.value && k.isNotEmpty()
-        val list = if(enableFilter){
-            filterIdxList.value.clear()
+            //根据关键字过滤条目
+            val k = filterKeyword.value.text.lowercase()  //关键字
+            val enableFilter = filterModeOn.value && k.isNotEmpty()
+            val list = if(enableFilter){
+                filterIdxList.value.clear()
+                filterList.value.clear()
 
-            val retlist = list.value.filterIndexed {idx, it ->
-                val found = it.treeEntryOidStr.lowercase().contains(k)
-                        || it.authorEmail.lowercase().contains(k)
-                        || it.authorUsername.lowercase().contains(k)
-                        || it.committerEmail.lowercase().contains(k)
-                        || it.committerUsername.lowercase().contains(k)
-                        || it.dateTime.lowercase().contains(k)
-                        || it.commitOidStr.lowercase().contains(k)
-                        || it.msg.lowercase().contains(k)
+                val retlist = list.value.filterIndexed {idx, it ->
+                    val found = it.treeEntryOidStr.lowercase().contains(k)
+                            || it.authorEmail.lowercase().contains(k)
+                            || it.authorUsername.lowercase().contains(k)
+                            || it.committerEmail.lowercase().contains(k)
+                            || it.committerUsername.lowercase().contains(k)
+                            || it.dateTime.lowercase().contains(k)
+                            || it.commitOidStr.lowercase().contains(k)
+                            || it.msg.lowercase().contains(k)
 
 
-                filterIdxList.value.add(idx)
+                    filterIdxList.value.add(idx)
+                    filterList.value.add(it)
+                    found
+                }
 
-                found
+                retlist
+            }else {
+                list.value
             }
 
-            retlist
-        }else {
-            list.value
-        }
-
-        val listState = if(enableFilter) filterListState else listState
+            val listState = if(enableFilter) filterListState else listState
 //        if(enableFilter) {  //更新filter列表state
 //            filterListState.value = listState
 //        }
 
-        //更新是否启用filter
-        enableFilterState.value = enableFilter
+            //更新是否启用filter
+            enableFilterState.value = enableFilter
 
-        MyLazyColumn(
-            contentPadding = contentPadding,
-            list = list,
-            listState = listState,
-            requireForEachWithIndex = true,
-            requirePaddingAtBottom = false,
-            requireCustomBottom = true,
-            customBottom = {
-                LoadMore(
-                    pageSize=pageSize,
-                    rememberPageSize=rememberPageSize,
-                    showSetPageSizeDialog=showSetPageSizeDialog,
-                    pageSizeForDialog=pageSizeForDialog,
-                    text = loadMoreText.value,
-                    enableLoadMore = !loadMoreLoading.value && hasMore.value, enableAndShowLoadToEnd = !loadMoreLoading.value && hasMore.value,
-                    loadToEndOnClick = {
+            MyLazyColumn(
+                contentPadding = contentPadding,
+                list = list,
+                listState = listState,
+                requireForEachWithIndex = true,
+                requirePaddingAtBottom = false,
+                requireCustomBottom = true,
+                customBottom = {
+                    LoadMore(
+                        pageSize=pageSize,
+                        rememberPageSize=rememberPageSize,
+                        showSetPageSizeDialog=showSetPageSizeDialog,
+                        pageSizeForDialog=pageSizeForDialog,
+                        text = loadMoreText.value,
+                        enableLoadMore = !loadMoreLoading.value && hasMore.value, enableAndShowLoadToEnd = !loadMoreLoading.value && hasMore.value,
+                        loadToEndOnClick = {
+                            val firstLoad = false
+                            val forceReload = false
+                            val loadToEnd = true
+                            doLoadMore(
+                                curRepo.value.fullSavePath,
+                                nextCommitOid.value,
+                                firstLoad,
+                                forceReload,
+                                loadToEnd
+                            )
+                        }
+                    ) {
                         val firstLoad = false
                         val forceReload = false
-                        val loadToEnd = true
+                        val loadToEnd = false
                         doLoadMore(
                             curRepo.value.fullSavePath,
                             nextCommitOid.value,
@@ -940,85 +995,85 @@ fun FileHistoryScreen(
                             forceReload,
                             loadToEnd
                         )
+
                     }
-                ) {
-                    val firstLoad = false
-                    val forceReload = false
-                    val loadToEnd = false
-                    doLoadMore(
-                        curRepo.value.fullSavePath,
-                        nextCommitOid.value,
-                        firstLoad,
-                        forceReload,
-                        loadToEnd
+                }
+            ) { idx, it ->
+                FileHistoryItem(showBottomSheet, curObj, curObjIndex, idx, it, requireBlinkIdx) { thisObj ->
+                    val underRepoPathKey = Cache.setThenReturnKey(fileRelativePath)
+                    val indexAtDiffableList = idx
+                    val diffableListKey = Cache.setThenReturnKey(list.toList())
+
+                    val commit1 = it.commitOidStr
+                    val commit2 = Cons.gitLocalWorktreeCommitHash
+
+                    val isSubm =0
+                    val fileSize =0
+                    val isDiffToLocal = 1
+                    val localAtDiffRight = 1
+
+                    Msg.requireShow(appContext.getString(R.string.diff_to_local))
+
+                    //导航到diffScreen
+                    navController.navigate(
+                        Cons.nav_DiffScreen +
+                                "/" + repoId+
+                                //    "/" + encodeStrUri(item.relativePathUnderRepo) +
+                                "/" + Cons.gitDiffFileHistoryFromTreeToLocal +
+                                "/" + Cons.gitStatusModified +
+                                "/" + fileSize +
+                                "/" + underRepoPathKey +
+                                "/" + commit1 +
+                                "/" + commit2 +
+                                "/" + isSubm +
+                                "/" + isDiffToLocal
+                                + "/" + diffableListKey
+                                + "/" + indexAtDiffableList
+                                +"/" + localAtDiffRight
                     )
 
                 }
-            }
-        ) { idx, it ->
-            FileHistoryItem(showBottomSheet, curObj, curObjIndex, idx, it, requireBlinkIdx) { thisObj ->
-                val underRepoPathKey = Cache.setThenReturnKey(fileRelativePath)
-                val indexAtDiffableList = idx
-                val diffableListKey = Cache.setThenReturnKey(list.toList())
 
-                val commit1 = it.commitOidStr
-                val commit2 = Cons.gitLocalWorktreeCommitHash
-
-                val isSubm =0
-                val fileSize =0
-                val isDiffToLocal = 1
-                val localAtDiffRight = 1
-
-                Msg.requireShow(appContext.getString(R.string.diff_to_local))
-
-                //导航到diffScreen
-                navController.navigate(
-                    Cons.nav_DiffScreen +
-                            "/" + repoId+
-                            //    "/" + encodeStrUri(item.relativePathUnderRepo) +
-                            "/" + Cons.gitDiffFileHistoryFromTreeToLocal +
-                            "/" + Cons.gitStatusModified +
-                            "/" + fileSize +
-                            "/" + underRepoPathKey +
-                            "/" + commit1 +
-                            "/" + commit2 +
-                            "/" + isSubm +
-                            "/" + isDiffToLocal
-                            + "/" + diffableListKey
-                            + "/" + indexAtDiffableList
-                            +"/" + localAtDiffRight
-                )
-
+                HorizontalDivider()
             }
 
-            HorizontalDivider()
-        }
+            // filter mode 有可能查无条目，但是可继续加载更多，这时也应显示加载更多按钮
+            if(filterModeOn.value && list.isEmpty()) {
+                Column(
+                    modifier = Modifier
+                        .padding(contentPadding)
+                        .verticalScroll(rememberScrollState())
+                    ,
+                    horizontalAlignment = Alignment.CenterHorizontally,
+                    verticalArrangement = Arrangement.Center
+                ) {
+                    Spacer(Modifier.height(50.dp))
+                    Text(stringResource(R.string.no_matched_item), fontWeight = FontWeight.Light)
 
-        // filter mode 有可能查无条目，但是可继续加载更多，这时也应显示加载更多按钮
-        if(filterModeOn.value && list.isEmpty()) {
-            Column(
-                modifier = Modifier
-                    .padding(contentPadding)
-                    .verticalScroll(rememberScrollState())
-                ,
-                horizontalAlignment = Alignment.CenterHorizontally,
-                verticalArrangement = Arrangement.Center
-            ) {
-                Spacer(Modifier.height(50.dp))
-                Text(stringResource(R.string.no_matched_item), fontWeight = FontWeight.Light)
-
-                LoadMore(
-                    modifier = Modifier.padding(top = 30.dp),
-                    pageSize=pageSize,
-                    rememberPageSize=rememberPageSize,
-                    showSetPageSizeDialog=showSetPageSizeDialog,
-                    pageSizeForDialog=pageSizeForDialog,
-                    text = loadMoreText.value,
-                    enableLoadMore = !loadMoreLoading.value && hasMore.value, enableAndShowLoadToEnd = !loadMoreLoading.value && hasMore.value,
-                    loadToEndOnClick = {
+                    LoadMore(
+                        modifier = Modifier.padding(top = 30.dp),
+                        pageSize=pageSize,
+                        rememberPageSize=rememberPageSize,
+                        showSetPageSizeDialog=showSetPageSizeDialog,
+                        pageSizeForDialog=pageSizeForDialog,
+                        text = loadMoreText.value,
+                        enableLoadMore = !loadMoreLoading.value && hasMore.value, enableAndShowLoadToEnd = !loadMoreLoading.value && hasMore.value,
+                        loadToEndOnClick = {
+                            val firstLoad = false
+                            val forceReload = false
+                            val loadToEnd = true
+                            doLoadMore(
+                                curRepo.value.fullSavePath,
+                                nextCommitOid.value,
+                                firstLoad,
+                                forceReload,
+                                loadToEnd
+                            )
+                        }
+                    ) {
                         val firstLoad = false
                         val forceReload = false
-                        val loadToEnd = true
+                        val loadToEnd = false
                         doLoadMore(
                             curRepo.value.fullSavePath,
                             nextCommitOid.value,
@@ -1026,22 +1081,12 @@ fun FileHistoryScreen(
                             forceReload,
                             loadToEnd
                         )
-                    }
-                ) {
-                    val firstLoad = false
-                    val forceReload = false
-                    val loadToEnd = false
-                    doLoadMore(
-                        curRepo.value.fullSavePath,
-                        nextCommitOid.value,
-                        firstLoad,
-                        forceReload,
-                        loadToEnd
-                    )
 
+                    }
                 }
             }
         }
+
     }
 
     BackHandler {

@@ -1023,5 +1023,7 @@
     <string name="diff_to_prev">Diff To Prev</string>
     <string name="plz_lode_more_then_try_again">plz lode more then try again</string>
     <string name="no_prev_to_compare">no prev to compare</string>
+    <string name="file_hasnt_history_yet">File hasn\'t history yet</string>
+    <string name="commit_history_is_empty">Commit history is empty</string>
 
 </resources>

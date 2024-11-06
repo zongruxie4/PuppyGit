@@ -32,7 +32,7 @@ fun FileHistoryRestoreDialog(
         title = stringResource(R.string.restore),
         requireShowTextCompose = true,
         textCompose = {
-            Column {
+            ScrollableColumn {
                 MySelectionContainer {
                     Text(
                         replaceStringResList(stringResource(R.string.target_ph), listOf(targetCommitOidStr))
