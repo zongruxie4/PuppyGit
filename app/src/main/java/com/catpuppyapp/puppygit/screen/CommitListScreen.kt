@@ -1392,6 +1392,17 @@ fun CommitListScreen(
         }
     }
 
+    val showRepoInfoDialog = remember { mutableStateOf(false) }
+    if(showRepoInfoDialog.value) {
+        ConfirmDialog2(
+            title = stringResource(R.string.info),
+            text = if(useFullOid) branchShortNameOrShortHashByFullOidForShowOnTitle.value else repoOnBranchOrDetachedHash.value,
+            onCancel = {showRepoInfoDialog.value = false},
+            cancelBtnText = stringResource(R.string.close),
+            showOk = false
+        ) { }
+    }
+
     Scaffold(
         modifier = Modifier.nestedScroll(homeTopBarScrollBehavior.nestedScrollConnection),
         topBar = {
@@ -1430,7 +1441,7 @@ fun CommitListScreen(
                                     Msg.requireShow("loaded: ${list.value.size}")
                                 }
                             ) { // onClick
-
+                                showRepoInfoDialog.value = true
                             }
                         ) {
                             Row(
