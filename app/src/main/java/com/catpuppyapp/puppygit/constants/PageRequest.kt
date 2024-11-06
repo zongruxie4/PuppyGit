@@ -19,6 +19,7 @@ object PageRequest {
     const val goToIndex ="goToIndex"  //goToIndex#Index，#后面是要goto的index
 
 
+    const val requireGoToFileHistory = "requireGoToFileHistory"
     const val showRestoreDialog = "showRestoreDialog"
     const val showOther = "showOther"
     const val goParent = "goParent"

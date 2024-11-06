@@ -68,6 +68,7 @@ import com.catpuppyapp.puppygit.fileeditor.ui.composable.FileEditor
 import com.catpuppyapp.puppygit.fileeditor.ui.extension.createCancelledState
 import com.catpuppyapp.puppygit.fileeditor.texteditor.state.TextEditorState
 import com.catpuppyapp.puppygit.fileeditor.texteditor.view.ScrollEvent
+import com.catpuppyapp.puppygit.screen.functions.goToFileHistory
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 import java.io.File
@@ -541,6 +542,12 @@ fun EditorInnerPage(
     if(requestFromParent.value == PageRequest.showInFiles) {
         PageRequest.clearStateThenDoAct(requestFromParent) {
             checkPathThenGoToFilesPage()
+        }
+    }
+
+    if(requestFromParent.value == PageRequest.requireGoToFileHistory) {
+        PageRequest.clearStateThenDoAct(requestFromParent) {
+            goToFileHistory(editorPageShowingFilePath.value, appContext)
         }
     }
 

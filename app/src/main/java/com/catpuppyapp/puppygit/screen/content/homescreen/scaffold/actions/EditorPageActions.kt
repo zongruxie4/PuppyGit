@@ -228,6 +228,17 @@ fun EditorPageActions(
 
             DropdownMenuItem(
                 enabled = enableMenuItem,
+
+                text = { Text(stringResource(R.string.file_history)) },
+                onClick = {
+                    editorPageRequest.value = PageRequest.requireGoToFileHistory
+
+                    closeMenu()
+                }
+            )
+
+            DropdownMenuItem(
+                enabled = enableMenuItem,
                 text = { Text(stringResource(R.string.go_to_line)) },
                 onClick = {
                     editorPageRequest.value = PageRequest.goToLine  //发请求，由TextEditor组件开启搜索模式
