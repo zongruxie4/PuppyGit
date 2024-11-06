@@ -61,31 +61,31 @@ fun DiffPageActions(
 
     val dropDownMenuExpendState = rememberSaveable { mutableStateOf(false) }
 
-    if (fileChangeTypeIsModified && UserUtil.isPro()
-        && (dev_EnableUnTestedFeature || detailsDiffTestPassed)
-    ){
-        LongPressAbleIconBtn(
-            tooltipText = stringResource(R.string.better_but_slow_compare),
-            icon = Icons.Filled.Compare,
-            iconContentDesc = stringResource(R.string.better_but_slow_compare),
-            iconColor = UIHelper.getIconEnableColorOrNull(requireBetterMatchingForCompare.value),
-            enabled = true,
-        ) {
-            requireBetterMatchingForCompare.value = !requireBetterMatchingForCompare.value
-
-            // show msg: "better but slow compare: ON/OFF"
-//            Msg.requireShow(
-//                appContext.getString(R.string.better_but_slow_compare)+": "
-//                + (if(requireBetterMatchingForCompare.value) appContext.getString(R.string.on_str) else appContext.getString(R.string.off_str))
-//            )
-
-            SettingsUtil.update {
-                it.diff.enableBetterButSlowCompare = requireBetterMatchingForCompare.value
-            }
-
-        }
-
-    }
+//    if (fileChangeTypeIsModified && UserUtil.isPro()
+//        && (dev_EnableUnTestedFeature || detailsDiffTestPassed)
+//    ){
+//        LongPressAbleIconBtn(
+//            tooltipText = stringResource(R.string.better_but_slow_compare),
+//            icon = Icons.Filled.Compare,
+//            iconContentDesc = stringResource(R.string.better_but_slow_compare),
+//            iconColor = UIHelper.getIconEnableColorOrNull(requireBetterMatchingForCompare.value),
+//            enabled = true,
+//        ) {
+//            requireBetterMatchingForCompare.value = !requireBetterMatchingForCompare.value
+//
+//            // show msg: "better but slow compare: ON/OFF"
+////            Msg.requireShow(
+////                appContext.getString(R.string.better_but_slow_compare)+": "
+////                + (if(requireBetterMatchingForCompare.value) appContext.getString(R.string.on_str) else appContext.getString(R.string.off_str))
+////            )
+//
+//            SettingsUtil.update {
+//                it.diff.enableBetterButSlowCompare = requireBetterMatchingForCompare.value
+//            }
+//
+//        }
+//
+//    }
 
 //    LongPressAbleIconBtn(
 //        tooltipText = stringResource(R.string.go_to_top),
@@ -255,8 +255,32 @@ fun DiffPageActions(
 
                 dropDownMenuExpendState.value = false
             }
-
         )
+
+        if (fileChangeTypeIsModified && UserUtil.isPro()
+            && (dev_EnableUnTestedFeature || detailsDiffTestPassed)
+        ){
+            DropdownMenuItem(
+                text = { Text(stringResource(R.string.better_compare)) },
+                trailingIcon = {
+                    Icon(
+                        imageVector = if(requireBetterMatchingForCompare.value) Icons.Filled.CheckBox else Icons.Filled.CheckBoxOutlineBlank,
+                        contentDescription = null
+                    )
+                },
+                onClick = {
+                    requireBetterMatchingForCompare.value = !requireBetterMatchingForCompare.value
+
+                    SettingsUtil.update {
+                        it.diff.enableBetterButSlowCompare = requireBetterMatchingForCompare.value
+                    }
+
+                    dropDownMenuExpendState.value = false
+                }
+            )
+
+        }
+
         DropdownMenuItem(
             enabled = copyModeSwitchable,
             text = { Text(stringResource(R.string.copy_mode)) },

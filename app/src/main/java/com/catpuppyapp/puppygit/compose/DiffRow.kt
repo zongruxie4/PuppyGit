@@ -74,6 +74,10 @@ fun DiffRow (
     fontSize:Int,
     lineNumSize:Int,
 ) {
+    val showEditLineDialog = rememberSaveable { mutableStateOf(false) }
+    val showRestoreLineDialog = rememberSaveable { mutableStateOf(false) }
+
+
     val view = LocalView.current
     val density = LocalDensity.current
 
@@ -89,7 +93,11 @@ fun DiffRow (
     // except: this code may not work when use use a float keyboard or softkeyboard with single-hand mode
     // 监听键盘的弹出和隐藏 (listening keyboard visible/hidden)
     DisposableEffect(view) {
-        val callback = ViewTreeObserver.OnGlobalLayoutListener {
+        val callback = ViewTreeObserver.OnGlobalLayoutListener cb@{
+            if(!(showEditLineDialog.value || showRestoreLineDialog.value)) {
+                return@cb
+            }
+
             val insets = ViewCompat.getRootWindowInsets(view)
             isKeyboardVisible.value = insets?.isVisible(WindowInsetsCompat.Type.ime()) == true
 
@@ -160,9 +168,7 @@ fun DiffRow (
     val lineNumStrOfEditLineDialog = rememberSaveable { mutableStateOf("") }  // this is line number not index, should start from 1
 
     val truePrependFalseAppendNullReplace = rememberSaveable { mutableStateOf<Boolean?>(null) }
-    val showEditLineDialog = rememberSaveable { mutableStateOf(false) }
     val showDelLineDialog = rememberSaveable { mutableStateOf(false) }
-    val showRestoreLineDialog = rememberSaveable { mutableStateOf(false) }
     val trueRestoreFalseReplace = rememberSaveable { mutableStateOf(false) }
 
     val initEditLineDialog = {content:String, lineNum:Int, prependOrApendOrReplace:Boolean? ->
