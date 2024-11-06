@@ -2614,7 +2614,7 @@ fun ChangeListInnerPage(
         stringResource(R.string.open_as),
         stringResource(R.string.show_in_files),
         stringResource(R.string.copy_path),
-        stringResource(R.string.copy_real_path),
+        stringResource(R.string.copy_full_path),
         stringResource(R.string.import_as_repo),
         stringResource(R.string.go_sub),
     )

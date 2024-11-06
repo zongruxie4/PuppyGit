@@ -419,7 +419,7 @@ fun FilesInnerPage(
 //        这列表如果添加元素最好往头或尾加，别往中间加，不然改关联的数组可能容易改错位置
 //        stringResource(R.string.copy_path),
         stringResource(R.string.copy_repo_relative_path),
-        stringResource(R.string.copy_real_path),
+        stringResource(R.string.copy_full_path),
 
 //        stringResource(R.string.export),  //改到批量操作里了
 //        stringResource(id = R.string.delete)  //改用长按菜单的删除功能了
@@ -431,7 +431,7 @@ fun FilesInnerPage(
 //        stringResource(R.string.copy_path),
         stringResource(R.string.copy_repo_relative_path),
 
-        stringResource(R.string.copy_real_path),
+        stringResource(R.string.copy_full_path),
 //        stringResource(id = R.string.delete)  //改用长按菜单的删除功能了
     )
 
@@ -1046,10 +1046,18 @@ fun FilesInnerPage(
 
                                         DropdownMenuItem(
                                             enabled = enableMenuItem,
-                                            text = { Text(stringResource(R.string.copy_real_path)) },
+                                            text = { Text(stringResource(R.string.copy_full_path)) },
                                             onClick = {
                                                 breadCrumbDropDownMenuExpendState.value = false
                                                 copyThenShowCopied(it.fullPath)
+                                            }
+                                        )
+                                        DropdownMenuItem(
+                                            enabled = enableMenuItem,
+                                            text = { Text(stringResource(R.string.copy_repo_relative_path)) },
+                                            onClick = {
+                                                breadCrumbDropDownMenuExpendState.value = false
+                                                copyRepoRelativePath(it.fullPath)
                                             }
                                         )
                                         DropdownMenuItem(

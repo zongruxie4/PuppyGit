@@ -283,7 +283,7 @@ fun DiffPageActions(
 
         DropdownMenuItem(
             enabled = copyModeSwitchable,
-            text = { Text(stringResource(R.string.copy_mode)) },
+            text = { Text(stringResource(R.string.read_only)) },
             trailingIcon = {
                 Icon(
                     imageVector = if(copyModeOn.value) Icons.Filled.CheckBox else Icons.Filled.CheckBoxOutlineBlank,
