@@ -86,6 +86,7 @@ import com.catpuppyapp.puppygit.dto.FileItemDto
 import com.catpuppyapp.puppygit.etc.Ret
 import com.catpuppyapp.puppygit.git.ImportRepoResult
 import com.catpuppyapp.puppygit.play.pro.R
+import com.catpuppyapp.puppygit.screen.functions.goToFileHistory
 import com.catpuppyapp.puppygit.settings.AppSettings
 import com.catpuppyapp.puppygit.settings.SettingsUtil
 import com.catpuppyapp.puppygit.style.MyStyleKt
@@ -473,27 +474,6 @@ fun FilesInnerPage(
         }
     }
 
-    val goToFileHistory = {realFullPath:String ->
-        try {
-            val repo = Libgit2Helper.findRepoByPath(realFullPath)
-            if(repo == null) {
-                Msg.requireShow(appContext.getString(R.string.no_repo_found))
-            }else {
-                // file is belong a repo, but need check is under .git folder
-                repo.use {
-                    val repoGitDir = Libgit2Helper.getRepoGitDirPathNoEndsWithSlash(it)
-                    if(realFullPath.startsWith(repoGitDir)) {
-                        Msg.requireShowLongDuration(appContext.getString(R.string.err_file_under_git_dir))
-                    }else {
-                        go to file history page
-                    }
-                }
-            }
-        }catch (e:Exception) {
-            Msg.requireShowLongDuration(e.localizedMessage?:"err")
-            MyLog.e(TAG, "#goToFileHistory err: ${e.stackTraceToString()}")
-        }
-    }
 
     val renameFile = {item:FileItemDto ->
         renameFileItemDto.value = item  // 旧item
@@ -544,7 +524,7 @@ fun FilesInnerPage(
 //            copyPath(it.fullPath)
 //        },
         fileHistory@{
-            goToFileHistory(it.fullPath)
+            goToFileHistory(it.fullPath, appContext)
         },
         copyRepoRelativePath@{
             copyRepoRelativePath(it.fullPath)

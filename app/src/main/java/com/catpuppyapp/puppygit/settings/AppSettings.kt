@@ -82,4 +82,10 @@ data class AppSettings(
      * show/hide go to top/bottom buttons
      */
     var showNaviButtons:Boolean = false,
+
+    /**
+     * file history page size
+     */
+    var fileHistoryPageSize:Int = 10,
+
 )

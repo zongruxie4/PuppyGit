@@ -3,11 +3,12 @@ package com.catpuppyapp.puppygit.dto
 import com.catpuppyapp.puppygit.constants.Cons
 import com.catpuppyapp.puppygit.git.BranchNameAndTypeDto
 import com.catpuppyapp.puppygit.git.CommitDto
+import com.catpuppyapp.puppygit.git.FileHistoryDto
 import com.catpuppyapp.puppygit.git.SubmoduleDto
 import com.catpuppyapp.puppygit.git.TagDto
 import com.catpuppyapp.puppygit.utils.Libgit2Helper
-import com.catpuppyapp.puppygit.utils.Libgit2Helper.Companion.isValidGitRepo
 import com.catpuppyapp.puppygit.utils.Libgit2Helper.Companion.getParentRecordedTargetHashForSubmodule
+import com.catpuppyapp.puppygit.utils.Libgit2Helper.Companion.isValidGitRepo
 import com.github.git24j.core.Commit
 import com.github.git24j.core.Oid
 import com.github.git24j.core.Repository
@@ -147,3 +148,35 @@ fun createSubmoduleDto(
 
     return smDto
 }
+
+
+
+fun createFileHistoryDto(
+    commitOidStr: String,
+    treeEntryOidStr:String,
+    commit: Commit,
+    repoId: String,
+    fileRelativePathUnderRepo:String,
+): FileHistoryDto {
+    val obj = FileHistoryDto()
+
+    obj.filePathUnderRepo = fileRelativePathUnderRepo
+    obj.treeEntryOidStr = treeEntryOidStr
+    obj.commitOidStr = commitOidStr
+    obj.dateTime = Libgit2Helper.getDateTimeStrOfCommit(commit)
+
+    val commitSignature = commit.author()  // git log 命令默认输出的author
+    obj.authorUsername = commitSignature.name
+    obj.authorEmail = commitSignature.email
+
+    val committer = commit.committer()  //实际提交的人
+    obj.committerUsername = committer.name
+    obj.committerEmail = committer.email
+
+    obj.shortMsg = commit.summary()
+    obj.msg = commit.message()
+    obj.repoId = repoId
+
+    return obj
+}
+

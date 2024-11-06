@@ -1003,6 +1003,7 @@
     <string name="path_not_under_repo">路径不在仓库下</string>
     <string name="file_history">文件历史</string>
     <string name="err_file_under_git_dir">错误: 文件在 \'.git\' 目录下</string>
+    <string name="plz_import_repo_then_try_again">请导入仓库后重试</string>
 
 
 </resources>

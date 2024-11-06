@@ -1016,5 +1016,6 @@
     <string name="path_not_under_repo">Path not under repo</string>
     <string name="file_history">File History</string>
     <string name="err_file_under_git_dir">err: file under \'.git\' dir</string>
+    <string name="plz_import_repo_then_try_again">Plz import repo then try again</string>
 
 </resources>

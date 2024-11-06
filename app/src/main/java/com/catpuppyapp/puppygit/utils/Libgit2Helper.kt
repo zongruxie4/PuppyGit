@@ -14,6 +14,7 @@ import com.catpuppyapp.puppygit.data.repository.RemoteRepository
 import com.catpuppyapp.puppygit.data.repository.RepoRepository
 import com.catpuppyapp.puppygit.dto.RemoteDto
 import com.catpuppyapp.puppygit.dto.createCommitDto
+import com.catpuppyapp.puppygit.dto.createFileHistoryDto
 import com.catpuppyapp.puppygit.dto.createSubmoduleDto
 import com.catpuppyapp.puppygit.etc.Ret
 import com.catpuppyapp.puppygit.git.BranchNameAndTypeDto
@@ -3744,35 +3745,39 @@ class Libgit2Helper {
             }
         }
 
+
+        /**
+         * @return last(previous) tree entry oid,  maybe is null but still has more commits, casue if commit no entry will return null, but it maybe exists in subsequent commits
+         * @return 上一条目在树中的id，可能是null但仍有更多提交，因为如果提交中没有条目就会返回null，但不代表后续的提交中没有
+         *
+         */
         fun getFileHistoryList(
             repo: Repository,
             revwalk: Revwalk,
             initNext:Oid?,
             repoId: String,
             pageSize:Int,
-            retList: MutableList<FileHistoryDto>, gotofile hisotry
+            retList: MutableList<FileHistoryDto>,
             loadChannel:Channel<Int>,
             // load to this count, check once channel
             checkChannelFrequency:Int,
-        ) {
+            lastVersionEntryOid:String?,
+            fileRelativePathUnderRepo:String, // file pathspec
+        ): String? {
 //            if(debugModeOn) {
 //                MyLog.d(TAG, "#getCommitList: startOid="+startOid.toString())
 //            }
 
             if(initNext == null || initNext.isNullOrEmptyOrZero) {
-                return
+//                return FileHistoryQueryResult(false, lastVersionOid)
+                return lastVersionEntryOid
             }
+
+            var lastVersionEntryOid = lastVersionEntryOid
 
             var next = initNext
 
             var count = 0
-            val allBranchList = getBranchList(repo)
-
-            val repoIsShallow = isRepoShallow(repo)
-//            val shallowOidList = ShallowManage.getShallowOidList(repo.workdir().toString()+File.separator+".git")
-            val shallowOidList = ShallowManage.getShallowOidList(getRepoGitDirPathNoEndsWithSlash(repo))
-
-            val allTagList = getAllTags(repo)
 
             var checkChannelCount = 0
 
@@ -3789,7 +3794,7 @@ class Libgit2Helper {
 //                                loadChannel.close()
 ////                                println("close成功了")
 //                            }
-                            MyLog.d(TAG, "#getCommitList: abort by terminate signal")
+                            MyLog.d(TAG, "#getFileHistoryList: abort by terminate signal")
                             break
                         }else {
                             checkChannelCount = 0
@@ -3809,13 +3814,30 @@ class Libgit2Helper {
                     val nextStr = next.toString()
                     val commit = resolveCommitByHash(repo, nextStr)
                     if(commit!=null) {
-                        val c = createCommitDto(next, allBranchList, allTagList, commit, repoId, repoIsShallow, shallowOidList)
-                        //添加元素
-                        retList.add(c)
-                    }else {
-                        MyLog.e(TAG, "#getCommitList(): resolve commit failed, target=$nextStr")
-                    }
+                        val tree = commit.tree()
+                        if(tree != null) {
+                            val entry =getEntryByPathOrNull(tree, fileRelativePathUnderRepo)
+                            if(entry!=null) {
+                                val entryOid = entry.id()
+                                if(!entryOid.isNullOrEmptyOrZero) {
+                                    val entryOidStr = entryOid.toString()
+                                    if(entryOidStr != lastVersionEntryOid) {
+                                        retList.add(createFileHistoryDto(
+                                            commitOidStr= nextStr,
+                                            treeEntryOidStr= entryOidStr,
+                                            commit=commit,
+                                            repoId=repoId,
+                                            fileRelativePathUnderRepo=fileRelativePathUnderRepo,
+                                        ))
 
+                                        lastVersionEntryOid = entryOidStr
+                                    }
+                                }
+
+                            }
+                        }
+
+                    }
 
                     if(++count >= pageSize) {
                         break
@@ -3829,8 +3851,19 @@ class Libgit2Helper {
                 }
 
             }
+
+//            return FileHistoryQueryResult(hasMore, lastVersionEntryOid)
+            return lastVersionEntryOid
         }
 
+        fun getEntryByPathOrNull(tree:Tree, path:String):Tree.Entry? {
+            try {
+                return tree.entryByPath(path)
+            }catch (e:Exception) {
+                MyLog.e(TAG, "#getEntryByPathOrNull: err: ${e.stackTraceToString()}")
+                return null
+            }
+        }
 
         //获取一个提交的所有父提交的oid字符串列表
         fun getCommitParentsOidStrList(repo: Repository, commitOidStr:String):List<String> {

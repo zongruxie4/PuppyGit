@@ -12,7 +12,6 @@ import androidx.navigation.compose.composable
 import com.catpuppyapp.puppygit.constants.Cons
 import com.catpuppyapp.puppygit.constants.LineNum
 import com.catpuppyapp.puppygit.utils.AppModel
-import com.catpuppyapp.puppygit.utils.state.StateUtil
 
 @Composable
 fun AppScreenNavigator() {
@@ -243,6 +242,16 @@ fun AppScreenNavigator() {
         composable(Cons.nav_SubmoduleListScreen+"/{repoId}") {
             SubmoduleListScreen(
                 repoId = it.arguments?.getString("repoId") ?: "",
+                naviUp = {
+                    navController.navigateUp()
+                },
+            )
+        }
+
+        composable(Cons.nav_FileHistoryScreen+"/{repoId}/{fileRelativePathKey}") {
+            FileHistoryScreen(
+                repoId = it.arguments?.getString("repoId") ?: "",
+                fileRelativePathKey = it.arguments?.getString("fileRelativePathKey") ?: "",
                 naviUp = {
                     navController.navigateUp()
                 },

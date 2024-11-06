@@ -1,9 +1,7 @@
 package com.catpuppyapp.puppygit.screen
 
-import android.view.ViewTreeObserver
 import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.ExperimentalFoundationApi
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Arrangement
@@ -21,7 +19,6 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.automirrored.filled.List
 import androidx.compose.material.icons.filled.Close
-import androidx.compose.material.icons.filled.Error
 import androidx.compose.material.icons.filled.FilterAlt
 import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.material.icons.filled.MoveToInbox
@@ -30,7 +27,6 @@ import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.HorizontalDivider
-import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
@@ -51,11 +47,9 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.input.nestedscroll.nestedScroll
-import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.platform.LocalClipboardManager
-import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalHapticFeedback
-import androidx.compose.ui.platform.LocalView
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.SpanStyle
@@ -66,12 +60,8 @@ import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.dp
-import androidx.core.view.ViewCompat
-import androidx.core.view.WindowInsetsCompat
 import com.catpuppyapp.puppygit.compose.BottomSheet
 import com.catpuppyapp.puppygit.compose.BottomSheetItem
-import com.catpuppyapp.puppygit.compose.CheckoutDialog
-import com.catpuppyapp.puppygit.compose.CheckoutDialogFrom
 import com.catpuppyapp.puppygit.compose.CommitItem
 import com.catpuppyapp.puppygit.compose.ConfirmDialog
 import com.catpuppyapp.puppygit.compose.ConfirmDialog2
@@ -85,7 +75,6 @@ import com.catpuppyapp.puppygit.compose.LoadingDialog
 import com.catpuppyapp.puppygit.compose.LongPressAbleIconBtn
 import com.catpuppyapp.puppygit.compose.MyCheckBox
 import com.catpuppyapp.puppygit.compose.MyLazyColumn
-import com.catpuppyapp.puppygit.compose.ResetDialog
 import com.catpuppyapp.puppygit.compose.ScrollableColumn
 import com.catpuppyapp.puppygit.compose.SingleSelectList
 import com.catpuppyapp.puppygit.constants.Cons
@@ -112,19 +101,16 @@ import com.catpuppyapp.puppygit.utils.Msg
 import com.catpuppyapp.puppygit.utils.MyLog
 import com.catpuppyapp.puppygit.utils.StateRequestType
 import com.catpuppyapp.puppygit.utils.UIHelper
-import com.catpuppyapp.puppygit.utils.boolToDbInt
 import com.catpuppyapp.puppygit.utils.cache.Cache
 import com.catpuppyapp.puppygit.utils.changeStateTriggerRefreshPage
 import com.catpuppyapp.puppygit.utils.createAndInsertError
 import com.catpuppyapp.puppygit.utils.doActIfIndexGood
 import com.catpuppyapp.puppygit.utils.doJobThenOffLoading
 import com.catpuppyapp.puppygit.utils.getRequestDataByState
-import com.catpuppyapp.puppygit.utils.isGoodIndexForList
 import com.catpuppyapp.puppygit.utils.replaceStringResList
 import com.catpuppyapp.puppygit.utils.state.mutableCustomStateListOf
 import com.catpuppyapp.puppygit.utils.state.mutableCustomStateOf
 import com.catpuppyapp.puppygit.utils.withMainContext
-import com.github.git24j.core.GitObject
 import com.github.git24j.core.Oid
 import com.github.git24j.core.Repository
 import com.github.git24j.core.Revwalk
@@ -132,54 +118,22 @@ import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 
-private val TAG = "CommitListScreen"
-private val stateKeyTag = "CommitListScreen"
-
-//TODO 备忘：修改这个页面为可多选的形式，记得加一个 filterList remmeber变量，在过滤模式点击全选或span选择时，操作filterList
+private val TAG = "FileHistoryScreen"
+private val stateKeyTag = "FileHistoryScreen"
 
 
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalFoundationApi::class)
 @Composable
-fun CommitListScreen(
+fun FileHistoryScreen(
 //    context: Context,
 //    navController: NavHostController,
 //    scope: CoroutineScope,
 //    haptic:HapticFeedback,
 //    homeTopBarScrollBehavior: TopAppBarScrollBehavior,
     repoId: String,
-
-
-
-    useFullOid:Boolean,
-    fullOidKey:String,
-    shortBranchNameKey:String,
-//    isCurrent:Boolean, // HEAD是否指向当前分支
-
-    /*
-        `isHEAD` indicate this page is loaded commit history for the HEAD
-        only 3 places this value should be true:
-         1 from RepoCard
-         2 non-detached HEAD and from current branch of branch list
-         3 from ChangeList
-     */
-    isHEAD:Boolean,
-
+    fileRelativePathKey:String,  // relative path under repo
     naviUp: () -> Boolean,
 ) {
-    // softkeyboard show/hidden relate start
-
-    val view = LocalView.current
-    val density = LocalDensity.current
-
-    val isKeyboardVisible = remember { mutableStateOf(false) }
-    //indicate keyboard covered component
-    val isKeyboardCoveredComponent = remember { mutableStateOf(false) }
-    // which component expect adjust heghit or padding when softkeyboard shown
-    val componentHeight = remember { mutableIntStateOf(0) }
-    // the padding value when softkeyboard shown
-    val keyboardPaddingDp = remember { mutableStateOf(0.dp) }
-
-    // softkeyboard show/hidden relate end
 
 
     //已处理这种情况，传参时传有效key，但把value设为空字符串，就解决了
@@ -187,23 +141,10 @@ fun CommitListScreen(
 //    println("fullOidKey="+fullOidKey)  //expect true when nav from repoCard
 
     val homeTopBarScrollBehavior = AppModel.singleInstanceHolder.homeTopBarScrollBehavior
-    val appContext = AppModel.singleInstanceHolder.appContext
+    val appContext = LocalContext.current
     val navController = AppModel.singleInstanceHolder.navController
     val scope = rememberCoroutineScope()
     val haptic = LocalHapticFeedback.current
-
-    val fullOidValue =  Cache.getByTypeThenDel(fullOidKey) ?: ""
-    val shortBranchName = Cache.getByTypeThenDel(shortBranchNameKey) ?: ""
-
-    //"main" or "origin/main", get by ref#shorthand(), don't use full branchName, such as "refs/remotes/origin/main", will cause resolve branch failed
-    val fullOid = rememberSaveable { mutableStateOf(fullOidValue)}  //这个值需要更新，但最终是否使用，取决于常量 useFullOidParam
-    val branchShortNameOrShortHashByFullOid =rememberSaveable { mutableStateOf(shortBranchName)}  //如果checkout会改变此状态的值
-    val branchShortNameOrShortHashByFullOidForShowOnTitle = rememberSaveable { mutableStateOf(shortBranchName)}  //显示在标题上的 "branch of repo" 字符串，当刷新页面时会更新此变量，此变量依赖branchShortNameOrShortHashByFullOid的值，所以，必须在checkout成功后更新其值（已更新），不然会显示过时信息
-
-    //测试旋转屏幕是否能恢复getThendel的值。测试结果：能
-//    println("fullOid: "+fullOid.value)
-//    println("branchShortNameOrShortHashByFullOid: "+branchShortNameOrShortHashByFullOid.value)
-//    assert(fullOid.value.isNotBlank())
 
     val loadChannel = remember { Channel<Int>() }
 
@@ -223,7 +164,7 @@ fun CommitListScreen(
 //    }
     val settings = remember { SettingsUtil.getSettingsSnapshot() }
     //page size for load more
-    val pageSize = rememberSaveable{ mutableStateOf(settings.commitHistoryPageSize) }
+    val pageSize = rememberSaveable{ mutableStateOf(settings.fileHistoryPageSize) }
     val rememberPageSize = rememberSaveable { mutableStateOf(false) }
 
     val nextCommitOid = mutableCustomStateOf<Oid>(
@@ -275,84 +216,6 @@ fun CommitListScreen(
     val pathsCacheForFilterByPathsDialog = rememberSaveable { mutableStateOf("") }  // cache the paths until user clicked the ok, then assign the value to `pathsForFilter`
     val pathsForFilter = rememberSaveable { mutableStateOf("") }
 
-    if(showFilterByPathsDialog.value) {
-        ConfirmDialog2(
-            title = stringResource(R.string.filter_by_paths),
-            requireShowTextCompose = true,
-            textCompose = {
-                Column(
-                    // get height for add bottom padding when showing softkeyboard
-                    modifier = Modifier.onGloballyPositioned { layoutCoordinates ->
-//                                println("layoutCoordinates.size.height:${layoutCoordinates.size.height}")
-                        // 获取组件的高度
-                        // unit is px ( i am not very sure)
-                        componentHeight.intValue = layoutCoordinates.size.height
-                    }
-                ) {
-                    Text(stringResource(R.string.filter_commits_which_included_the_paths_leave_empty_for_show_all))
-
-
-                    Spacer(modifier = Modifier.height(10.dp))
-
-                    Text(stringResource(R.string.per_line_one_path), fontWeight = FontWeight.Light)
-                    Spacer(modifier = Modifier.height(5.dp))
-                    TextField(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .then(
-                                if (isKeyboardCoveredComponent.value) Modifier.padding(bottom = keyboardPaddingDp.value) else Modifier
-                            ),
-                        value = pathsCacheForFilterByPathsDialog.value,
-                        onValueChange = {
-                            pathsCacheForFilterByPathsDialog.value = it
-                        },
-                        label = {
-                            Text(stringResource(R.string.paths))
-                        },
-                    )
-
-                    Spacer(Modifier.height(10.dp))
-
-                    Column(
-                        modifier= Modifier
-                            .fillMaxWidth()
-                            .padding(end = 10.dp)
-                        ,
-                        horizontalAlignment = Alignment.End
-                    ) {
-                        Text(
-                            text = stringResource(R.string.clear),
-                            style = MyStyleKt.ClickableText.style,
-                            color = MyStyleKt.ClickableText.color,
-                            modifier = MyStyleKt.ClickableText.modifier.clickable {
-                                pathsCacheForFilterByPathsDialog.value = ""
-                            },
-                            fontWeight = FontWeight.Light
-                        )
-
-                        Spacer(Modifier.height(10.dp))
-
-                    }
-                }
-            },
-            onCancel = {showFilterByPathsDialog.value = false}
-        ) {
-            showFilterByPathsDialog.value = false
-
-            pathsForFilter.value = pathsCacheForFilterByPathsDialog.value
-        }
-    }
-
-
-
-//    val doSearch = {
-//        isShowSearchResultMode.value = true;
-//        isSearchingMode.value = false;
-//        // TODO 搜索提交时判断 “如果包含 / 或者 非hex字符” 就只搜分支列表（然后判断分支是否符号引用若是peel commit，若否直接取出id）。
-//        // do search with keyword, may need async and give user a loading anime when querying data
-//        // use "searchKeyword.value" do search
-////        println("doSearch with:::"+searchKeyword.value)
-//    }
     val requireShowToast: (String) -> Unit = Msg.requireShow
 
 
@@ -524,108 +387,6 @@ fun CommitListScreen(
         forceSquash.value = false
 
         showSquashDialog.value = true
-    }
-
-    if(showSquashDialog.value) {
-        ConfirmDialog2(
-            title = stringResource(R.string.squash),
-            requireShowTextCompose = true,
-            textCompose = {
-                ScrollableColumn {
-                    Text(
-                        text = replaceStringResList(
-                            stringResource(R.string.squash_commits_not_include_the_left_commit),
-                            listOf(targetCommitShortOidForSquashDialog.value, headCommitShortOidForSquashDialog.value)
-                        ),
-                        fontWeight = FontWeight.Light
-                    )
-
-                    Spacer(Modifier.height(15.dp))
-
-                    TextField(
-                        modifier = Modifier.fillMaxWidth(),
-                        isError = commitMsgForSquashDialog.value.isBlank(),
-                        trailingIcon = {
-                            if (commitMsgForSquashDialog.value.isBlank()) {
-                                Icon(
-                                    imageVector=Icons.Filled.Error,
-                                    contentDescription=null,
-                                    tint = MaterialTheme.colorScheme.error
-                                )
-                            }
-                        },
-                        value = commitMsgForSquashDialog.value,
-                        onValueChange = {
-                            commitMsgForSquashDialog.value = it
-                        },
-                        label = {
-                            Text(stringResource(R.string.commit_message))
-                        },
-                        placeholder = {
-                            Text(stringResource(R.string.input_your_commit_message))
-                        }
-                    )
-                    Spacer(Modifier.height(10.dp))
-
-                    MyCheckBox(stringResource(R.string.force), forceSquash)
-
-                    if(forceSquash.value) {
-                        Text(
-                            stringResource(R.string.if_index_contains_uncommitted_changes_will_commit_as_well),
-                            color = MyStyleKt.TextColor.danger()
-                        )
-                    }
-
-                }
-            },
-            okBtnEnabled = commitMsgForSquashDialog.value.isNotBlank(),
-            onCancel = closeSquashDialog
-        ) {
-            closeSquashDialog()
-            val commitMsg = commitMsgForSquashDialog.value
-            val targetFullOid = targetCommitFullOidForSquashDialog.value
-//            val headOid = headCommitFullOidForSquashDialog.value
-            val headFullName = headFullNameForSquashDialog.value
-            val username = usernameForSquashDialog.value
-            val email = emailForSquashDialog.value
-
-//            println("ffffffffffffffff-headFullName = $headFullName")  // same with expect: when detached show "HEAD", else show current branche name
-
-            doJobThenOffLoading(loadingOn, loadingOff, appContext.getString(R.string.loading)) job@{
-                try {
-                    Repository.open(curRepo.value.fullSavePath).use { repo->
-                        val checkRet = Libgit2Helper.squashCommitsCheckBeforeExecute(repo, forceSquash.value)
-                        if(checkRet.hasError()) {
-                            throw checkRet.exception ?: RuntimeException(checkRet.msg)
-                        }
-
-                        val ret = Libgit2Helper.squashCommits(
-                            repo = repo,
-                            targetFullOidStr = targetFullOid,
-                            commitMsg = commitMsg,
-                            username = username,
-                            email = email,
-                            currentBranchFullNameOrHEAD = headFullName
-                        )
-
-                        if(ret.hasError()) {
-                            throw ret.exception ?: RuntimeException(ret.msg)
-                        }
-
-                        // update fullOid for refresh list of this screen
-                        fullOid.value = ret.data!!.toString()
-                    }
-
-                    Msg.requireShow(appContext.getString(R.string.success))
-
-                    changeStateTriggerRefreshPage(needRefresh, StateRequestType.forceReload)
-                }catch (e:Exception) {
-                    Msg.requireShowLongDuration(e.localizedMessage ?:"err")
-                    createAndInsertError(curRepo.value.id, "do squash err: ${e.localizedMessage}")
-                    MyLog.e(TAG, "#SquashDialog err: " + e.stackTraceToString())
-                }
-            }
-        }
     }
 
 //
@@ -838,107 +599,12 @@ fun CommitListScreen(
         showCheckoutDialog.value = true
     }
 
-    if(showCheckoutDialog.value) {
-        CheckoutDialog(
-            showCheckoutDialog=showCheckoutDialog,
-            from = CheckoutDialogFrom.OTHER,
-            expectCheckoutType = Cons.checkoutType_checkoutCommitThenDetachHead,
-            curRepo = curRepo.value,
-            shortName = curCommit.value.shortOidStr,
-            fullName = curCommit.value.oidStr,
-            curCommitOid = curCommit.value.oidStr,
-            curCommitShortOid = curCommit.value.shortOidStr,
-            requireUserInputCommitHash = requireUserInputCommitHash.value,
-            loadingOn = loadingOn,
-            loadingOff = loadingOff,
-            onlyUpdateCurItem = useFullOid,
-            updateCurItem = {curItemIdx, fullOid-> updateCurCommitInfo(curRepo.value.fullSavePath, curItemIdx, fullOid, list.value)},
-            refreshPage = { changeStateTriggerRefreshPage(needRefresh, StateRequestType.forceReload) },
-            curCommitIndex = if(filterModeOn.value) -1 else curCommitIndex.intValue,  //若开了filter模式，则一律在原始列表重新查找条目索引（传无效索引-1即可触发查找），不然可能会更新错条目
-            findCurItemIdxInList = { fullOid->
-                list.value.toList().indexOfFirst { it.oidStr == fullOid }
-            }
-        )
-    }
-
 
     val resetOid = rememberSaveable { mutableStateOf("")}
 //    val acceptHardReset = StateUtil.getRememberSaveableState(initValue = false)
     val showResetDialog = rememberSaveable { mutableStateOf(false)}
     val closeResetDialog = {
         showResetDialog.value = false
-    }
-
-    if (showResetDialog.value) {
-        ResetDialog(
-            fullOidOrBranchOrTag = resetOid,
-            closeDialog=closeResetDialog,
-            repoFullPath = curRepo.value.fullSavePath,
-            repoId=curRepo.value.id,
-            refreshPage = { oldHeadCommitOid, isDetached ->
-                //顺便更新下仓库的detached状态，因为若从分支条目进来，不怎么常刷新页面，所以仓库状态可能过时
-                curRepo.value.isDetached = boolToDbInt(isDetached)
-
-                //如果从仓库卡片点击提交号进入 或 从分支列表点击分支条目进入但点的是当前HEAD指向的分支，则刷新页面，重载列表
-                if(!useFullOid || isHEAD) {  // from repoCard tap commit hash in this page or from branch list tap branch of HEAD, will in this if block
-                    //从分支页面进这个页面，不会强制重刷列表，但如果当前显示的分支是仓库的当前分支(被HEAD指向)，那如果reset hard 成功，就得更新下提交列表，于是，就通过更新fullOid来重设当前页面的起始hash
-                    fullOid.value=curCommit.value.oidStr  // only make sense when come this page from branch list page with condition `useFullOid==true && isCurrent==true`,update it for show latest commit list of current branch of repo when hard reset success.
-                    changeStateTriggerRefreshPage(needRefresh, StateRequestType.forceReload)
-                }else {  //useFullOid==true && isCurrent==false, from branch list page tap a branch item which is not pointed by HEAD(isCurrent==false), will in this block
-                    val curCommitIdx = if(filterModeOn.value) {
-                        try {  //取出当前长按条目在源列表中的索引
-                            filterIdxList.value[curCommitIndex.intValue]
-                        }catch (_:Exception) {
-                            -1
-                        }
-                    } else {  //非过滤模式，此值直接就是源列表索引
-                        curCommitIndex.intValue
-                    }
-
-                    val repoFullPath = curRepo.value.fullSavePath
-                    val commitList = list.value
-                    //需要更新两个提交：一个是当前hard reset的目标提交，需要更新信息以使其显示刚才HEAD关联的分支名；一个是HEAD在reset之前指向的提交，需更新以使其删除HEAD当前关联的分支名。
-                    //执行到这，代表在分支页面点击分支条目进入提交列表，然后长按某个commit执行了reset，这时，如果当前非detached HEAD，则当前HEAD指向的分支会指向当前提交，所以应当更新当前选中的提交信息以显示新指向它的分支
-                    //遍历当前列表，若包含上个提交号，则更新其信息（目的是为了移除HEAD之前指向的分支的首个提交上的分支名，现在那个分支头已经被Hard Reset到新分支上了，不应再在旧提交上显示)
-                    if(!isDetached) { //如果当前非detached，遍历commits条目，把当前分支从旧commit的分支列表移除；if is detached, Hard Reset will not update any branch, so need not update commit info
-                        //更新新提交以显示HEAD指向的分支
-
-                        //非过滤模式，直接根据长按条目的索引更新条目信息；若是过滤模式，则会在下边遍历列表更新旧条目信息时顺便更新原始列表中当前长按条目的信息
-
-                        val curCommitOidStr= curCommit.value.oidStr  //当前长按触发reset的条目的full oid
-
-                        // 触发当前reset的被长按的条目是否被更新
-                        var curItemUpdated = if(isGoodIndexForList(curCommitIdx, commitList)) {
-                            updateCurCommitInfo(repoFullPath, curCommitIdx, curCommitOidStr, commitList)
-                            true  //非过滤模式，直接用长按条目索引更新此条目即可
-                        }else{
-                            false  //后续在循环中更新旧head关联的提交时顺便更新此条目
-                        }
-
-                        var oldUpdated = false  //之前指向被更新的分支的条目信息是否已刷新
-
-                        //更新旧提交以删除HEAD指向的提交
-                        for((idx, commit) in commitList.toList().withIndex()) {
-                            if(oldUpdated && curItemUpdated) {
-                                break
-                            }
-
-                            if(!curItemUpdated && commit.oidStr == curCommitOidStr) {
-                                updateCurCommitInfo(repoFullPath, idx, commit.oidStr, commitList)
-                                curItemUpdated = true
-                            }
-
-                            //有个小小缺陷，若当前条目和旧条目相同，会更新两次，不过问题不大
-                            if(!oldUpdated && commit.oidStr == oldHeadCommitOid) {
-                                updateCurCommitInfo(repoFullPath, idx, commit.oidStr, commitList)
-                                oldUpdated = true
-                            }
-                        }
-                    }
-                }
-            }
-        )
-
     }
 
     val showDetailsDialog = rememberSaveable { mutableStateOf( false)}
@@ -1377,7 +1043,7 @@ fun CommitListScreen(
 
                     if(rememberPageSize.value) {
                         SettingsUtil.update {
-                            it.commitHistoryPageSize = newPageSize
+                            it.fileHistoryPageSize = newPageSize
                         }
                     }
                 }
@@ -1388,12 +1054,13 @@ fun CommitListScreen(
         }
     }
 
-    val showRepoInfoDialog = remember { mutableStateOf(false) }
-    if(showRepoInfoDialog.value) {
+    val showTitleInfoDialog = remember { mutableStateOf(false) }
+    val titleInfo = rememberSaveable { mutableStateOf("") }
+    if(showTitleInfoDialog.value) {
         ConfirmDialog2(
             title = stringResource(R.string.info),
-            text = if(useFullOid) branchShortNameOrShortHashByFullOidForShowOnTitle.value else repoOnBranchOrDetachedHash.value,
-            onCancel = {showRepoInfoDialog.value = false},
+            text = titleInfo.value,
+            onCancel = {showTitleInfoDialog.value = false},
             cancelBtnText = stringResource(R.string.close),
             showOk = false
         ) { }
@@ -1422,7 +1089,6 @@ fun CommitListScreen(
                             }
                         )
                     }else{
-                        val repoAndBranchText = if(useFullOid) branchShortNameOrShortHashByFullOidForShowOnTitle.value else repoOnBranchOrDetachedHash.value
                         Column(
                             modifier = Modifier.combinedClickable(
                                 onDoubleClick = {
@@ -1437,7 +1103,7 @@ fun CommitListScreen(
                                     Msg.requireShow("loaded: ${list.value.size}")
                                 }
                             ) { // onClick
-                                showRepoInfoDialog.value = true
+                                showTitleInfoDialog.value = true
                             }
                         ) {
                             Row(
@@ -1456,7 +1122,7 @@ fun CommitListScreen(
                                     .horizontalScroll(rememberScrollState()),
                             ) {
                                 Text(
-                                    text = repoAndBranchText,
+                                    text = titleInfo.value,
                                     maxLines = 1,
                                     overflow = TextOverflow.Ellipsis,
                                     fontSize = MyStyleKt.Title.secondLineFontSize
@@ -1642,31 +1308,6 @@ fun CommitListScreen(
                     }
                 }
 
-                if(isHEAD) {
-                    BottomSheetItem(sheetState, showBottomSheet, stringResource(R.string.squash)) {
-                        val targetCommitFullOid = curCommit.value.oidStr
-                        val targetCommitShortOid = curCommit.value.shortOidStr
-
-                        doJobThenOffLoading {
-                            Repository.open(curRepo.value.fullSavePath).use { repo ->
-                                val ret = Libgit2Helper.squashCommitsCheckBeforeShowDialog(
-                                    repo = repo,
-                                    targetFullOidStr = targetCommitFullOid,
-                                    isShowingCommitListForHEAD = isHEAD
-                                )
-
-                                if(ret.hasError()) {
-                                    Msg.requireShowLongDuration(ret.msg)
-                                    createAndInsertError(curRepo.value.id, "squash commits pre-check err: "+ret.msg)
-                                }else {
-                                    val squashData = ret.data!!
-                                    initShowSquashDialog(targetCommitFullOid, targetCommitShortOid, squashData.headFullOid, squashData.headFullName, squashData.username, squashData.email)
-                                }
-                            }
-
-                        }
-                    }
-                }
 
                 BottomSheetItem(sheetState, showBottomSheet, stringResource(R.string.details)) {
                     // onClick()
@@ -2036,35 +1677,7 @@ fun CommitListScreen(
                 val repoName = repoFromDb.repoName
 //            val isDetached = dbIntToBool(repoFromDb.isDetached)
 
-                Repository.open(repoFullPath).use { repo ->
-                    headOidOfThisScreen.value = if(!useFullOid) {  // resolve head
-                        val head = Libgit2Helper.resolveHEAD(repo)
-                        if (head == null) {
-                            MyLog.w(TAG, "#LaunchedEffect: head is null! repoId=$repoId}")
-                            return@job
-                        }
-                        val headOid = head.peel(GitObject.Type.COMMIT)?.id()
-                        if (headOid == null || headOid.isNullOrEmptyOrZero) {
-                            MyLog.w(
-                                TAG,
-                                "#LaunchedEffect: head oid is null or invalid! repoId=$repoId}, headOid=${headOid.toString()}"
-                            )
-                            return@job
-                        }
-
-                        repoOnBranchOrDetachedHash.value = Libgit2Helper.getRepoOnBranchOrOnDetachedHash(repoFromDb)
-
-                        headOid
-                    }else {  // resolve branch to commit
-//                    val ref = Libgit2Helper.resolveRefByName(repo, fullOid.value, trueUseDwimFalseUseLookup = true)  // useDwim for get direct ref, which is point to a valid commit
-                        val commit = Libgit2Helper.resolveCommitByHash(repo, fullOid.value)
-                        val commitOid = commit?.id() ?: throw RuntimeException("resolve commit err!")
-                        //注：虽然这个变量名是分支短名和短hash名blabala，但实际上，如果通过分支条目进入，只会有短分支名，不会有短提交号，短提交号是之前考虑欠佳即使分支条目点进来的提交历史也一checkout就刷新页面更新标题而残留下的东西
-                        branchShortNameOrShortHashByFullOidForShowOnTitle.value = Libgit2Helper.getBranchNameOfRepoName(repoName, branchShortNameOrShortHashByFullOid.value)
-
-                        commitOid
-                    }
-
+                Repository.open(repoFullPath).use {
                 }
 
                 //第一次查询，指向headOid，NO！不要这么做，不然compose销毁又重建，恢复数据时，指向原本列表之后的commit就又重新指向head了，就乱了
@@ -2091,40 +1704,6 @@ fun CommitListScreen(
             doJobThenOffLoading {
                 loadChannel.close()
             }
-        }
-    }
-
-    // this code gen by chat-gpt, wow
-    // except: this code may not work when use use a float keyboard or softkeyboard with single-hand mode
-    // 监听键盘的弹出和隐藏 (listening keyboard visible/hidden)
-    DisposableEffect(view) {
-        val callback = ViewTreeObserver.OnGlobalLayoutListener cb@{
-            // this check only for add bottom padding when use filter paths dialog,
-            // if used for other cases, uncomment this if block
-            if(showFilterByPathsDialog.value.not()) {
-                return@cb
-            }
-
-            val insets = ViewCompat.getRootWindowInsets(view)
-            isKeyboardVisible.value = insets?.isVisible(WindowInsetsCompat.Type.ime()) == true
-
-            // 获取软键盘的高度 (get soft keyboard height)
-            val keyboardHeightPx = insets?.getInsets(WindowInsetsCompat.Type.ime())?.bottom ?: 0
-
-            // 判断组件是否被遮盖 (check component whether got covered)
-            isKeyboardCoveredComponent.value = (componentHeight.intValue > 0) && (view.height - keyboardHeightPx < componentHeight.intValue)
-
-            keyboardPaddingDp.value = if(isKeyboardCoveredComponent.value) {
-                with(density) { keyboardHeightPx.toDp()-120.dp }
-            }else {
-                0.dp
-            }
-        }
-
-        view.viewTreeObserver.addOnGlobalLayoutListener(callback)
-
-        onDispose {
-            view.viewTreeObserver.removeOnGlobalLayoutListener(callback)
         }
     }
 
