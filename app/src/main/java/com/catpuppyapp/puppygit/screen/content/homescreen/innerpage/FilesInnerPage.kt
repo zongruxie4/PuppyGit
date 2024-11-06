@@ -418,6 +418,7 @@ fun FilesInnerPage(
         if(proFeatureEnabled(applyPatchTestPassed)) stringResource(R.string.apply_as_patch) else "",  //应用patch，弹窗让用户选仓库，然后可对仓库应用patch
 //        这列表如果添加元素最好往头或尾加，别往中间加，不然改关联的数组可能容易改错位置
 //        stringResource(R.string.copy_path),
+        stringResource(R.string.copy_repo_relative_path),
         stringResource(R.string.copy_real_path),
 
 //        stringResource(R.string.export),  //改到批量操作里了
@@ -428,21 +429,47 @@ fun FilesInnerPage(
     val dirMenuKeyTextList = listOf(
         stringResource(R.string.rename),
 //        stringResource(R.string.copy_path),
+        stringResource(R.string.copy_repo_relative_path),
+
         stringResource(R.string.copy_real_path),
 //        stringResource(id = R.string.delete)  //改用长按菜单的删除功能了
     )
 
     val clipboardManager = LocalClipboardManager.current
 
-    // 复制app内路径到剪贴板，显示提示copied
-    val copyPath = {realFullPath:String ->
-        clipboardManager.setText(AnnotatedString(getFilePathStrBasedRepoDir(realFullPath, returnResultStartsWithSeparator = true)))
+
+    // 复制真实路径到剪贴板，显示提示copied
+    val copyThenShowCopied = { text:String ->
+        clipboardManager.setText(AnnotatedString(text))
         Msg.requireShow(appContext.getString(R.string.copied))
     }
-    // 复制真实路径到剪贴板，显示提示copied
-    val copyRealPath = {realFullPath:String ->
-        clipboardManager.setText(AnnotatedString(realFullPath))
-        Msg.requireShow(appContext.getString(R.string.copied))
+
+    // 复制app内路径到剪贴板，显示提示copied
+    val copyPath = {realFullPath:String ->
+        copyThenShowCopied(getFilePathStrBasedRepoDir(realFullPath, returnResultStartsWithSeparator = true))
+    }
+
+    val copyRepoRelativePath = {realFullPath:String ->
+        try {
+            val repo = Libgit2Helper.findRepoByPath(realFullPath)
+            if(repo == null) {
+                Msg.requireShow(appContext.getString(R.string.no_repo_found))
+            }else {
+                repo.use {
+                    val realtivePath = Libgit2Helper.getRelativePathUnderRepo(Libgit2Helper.getRepoWorkdirNoEndsWithSlash(it), realFullPath)
+
+                    // well, the repo already found, but the path got null, usually it happens when trying to copy a repo-relative-path from a repo folder
+                    if(realtivePath == null) {
+                        Msg.requireShow(appContext.getString(R.string.path_not_under_repo))
+                    }else {
+                        copyThenShowCopied(realtivePath)
+                    }
+                }
+            }
+        }catch (e:Exception) {
+            Msg.requireShowLongDuration(e.localizedMessage?:"err")
+            MyLog.e(TAG, "#copyRepoRelativePath err: ${e.stackTraceToString()}")
+        }
     }
 
     val renameFile = {item:FileItemDto ->
@@ -493,8 +520,11 @@ fun FilesInnerPage(
 //        copyPath@{
 //            copyPath(it.fullPath)
 //        },
+        copyRepoRelativePath@{
+            copyRepoRelativePath(it.fullPath)
+        },
         copyRealPath@{
-            copyRealPath(it.fullPath)
+            copyThenShowCopied(it.fullPath)
         }
 //        export@{ item:FileItemDto ->
 //            val ret = FsUtils.getAppDirUnderPublicDocument()
@@ -515,8 +545,11 @@ fun FilesInnerPage(
 //        copyPath@{
 //            copyPath(it.fullPath)
 //        },
+        copyRepoRelativePath@{
+            copyRepoRelativePath(it.fullPath)
+        },
         copyRealPath@{
-            copyRealPath(it.fullPath)
+            copyThenShowCopied(it.fullPath)
         }
     )
 
@@ -1016,7 +1049,7 @@ fun FilesInnerPage(
                                             text = { Text(stringResource(R.string.copy_real_path)) },
                                             onClick = {
                                                 breadCrumbDropDownMenuExpendState.value = false
-                                                copyRealPath(it.fullPath)
+                                                copyThenShowCopied(it.fullPath)
                                             }
                                         )
                                         DropdownMenuItem(
@@ -2089,7 +2122,7 @@ fun FilesInnerPage(
 
     if(filesPageRequestFromParent.value==PageRequest.copyRealPath) {
         PageRequest.clearStateThenDoAct(filesPageRequestFromParent) {
-            copyRealPath(currentPath.value)
+            copyThenShowCopied(currentPath.value)
         }
     }
     if(filesPageRequestFromParent.value==PageRequest.goToInternalStorage) {

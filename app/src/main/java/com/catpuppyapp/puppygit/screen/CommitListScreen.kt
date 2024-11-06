@@ -1,7 +1,9 @@
 package com.catpuppyapp.puppygit.screen
 
+import android.view.ViewTreeObserver
 import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.ExperimentalFoundationApi
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Arrangement
@@ -17,6 +19,7 @@ import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.automirrored.filled.List
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Error
 import androidx.compose.material.icons.filled.FilterAlt
@@ -45,10 +48,14 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.input.nestedscroll.nestedScroll
+import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.platform.LocalClipboardManager
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalHapticFeedback
+import androidx.compose.ui.platform.LocalView
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.SpanStyle
@@ -59,6 +66,8 @@ import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.dp
+import androidx.core.view.ViewCompat
+import androidx.core.view.WindowInsetsCompat
 import com.catpuppyapp.puppygit.compose.BottomSheet
 import com.catpuppyapp.puppygit.compose.BottomSheetItem
 import com.catpuppyapp.puppygit.compose.CheckoutDialog
@@ -161,6 +170,22 @@ fun CommitListScreen(
 
     naviUp: () -> Boolean,
 ) {
+    // softkeyboard show/hidden relate start
+
+    val view = LocalView.current
+    val density = LocalDensity.current
+
+    val isKeyboardVisible = remember { mutableStateOf(false) }
+    //indicate keyboard covered component
+    val isKeyboardCoveredComponent = remember { mutableStateOf(false) }
+    // which component expect adjust heghit or padding when softkeyboard shown
+    val componentHeight = remember { mutableIntStateOf(0) }
+    // the padding value when softkeyboard shown
+    val keyboardPaddingDp = remember { mutableStateOf(0.dp) }
+
+    // softkeyboard show/hidden relate end
+
+
     //已处理这种情况，传参时传有效key，但把value设为空字符串，就解决了
 //    println("fullOidKey.isEmpty()="+fullOidKey.isEmpty())  //expect true when nav from repoCard, result: is not empty yet
 //    println("fullOidKey="+fullOidKey)  //expect true when nav from repoCard
@@ -247,6 +272,82 @@ fun CommitListScreen(
     val goToTop = {
         UIHelper.scrollToItem(scope, listState, 0)
     }
+
+
+    val showFilterByPathsDialog = rememberSaveable { mutableStateOf(false) }
+//    val pathsForFilterByPathsDialog = mutableCustomStateListOf(stateKeyTag, "pathsForFilterByPathsDialog") { listOf<String>() }
+    val pathsCacheForFilterByPathsDialog = rememberSaveable { mutableStateOf("") }  // cache the paths until user clicked the ok, then assign the value to `pathsForFilter`
+    val pathsForFilter = rememberSaveable { mutableStateOf("") }
+
+    if(showFilterByPathsDialog.value) {
+        ConfirmDialog2(
+            title = stringResource(R.string.filter_by_paths),
+            requireShowTextCompose = true,
+            textCompose = {
+                Column(
+                    // get height for add bottom padding when showing softkeyboard
+                    modifier = Modifier.onGloballyPositioned { layoutCoordinates ->
+//                                println("layoutCoordinates.size.height:${layoutCoordinates.size.height}")
+                        // 获取组件的高度
+                        // unit is px ( i am not very sure)
+                        componentHeight.intValue = layoutCoordinates.size.height
+                    }
+                ) {
+                    Text(stringResource(R.string.filter_commits_which_included_the_paths_leave_empty_for_show_all))
+
+
+                    Spacer(modifier = Modifier.height(10.dp))
+
+                    Text(stringResource(R.string.per_line_one_path), fontWeight = FontWeight.Light)
+                    Spacer(modifier = Modifier.height(5.dp))
+                    TextField(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .then(
+                                if (isKeyboardCoveredComponent.value) Modifier.padding(bottom = keyboardPaddingDp.value) else Modifier
+                            ),
+                        value = pathsCacheForFilterByPathsDialog.value,
+                        onValueChange = {
+                            pathsCacheForFilterByPathsDialog.value = it
+                        },
+                        label = {
+                            Text(stringResource(R.string.paths))
+                        },
+                    )
+
+                    Spacer(Modifier.height(10.dp))
+
+                    Column(
+                        modifier= Modifier
+                            .fillMaxWidth()
+                            .padding(end = 10.dp)
+                        ,
+                        horizontalAlignment = Alignment.End
+                    ) {
+                        Text(
+                            text = stringResource(R.string.clear),
+                            style = MyStyleKt.ClickableText.style,
+                            color = MyStyleKt.ClickableText.color,
+                            modifier = MyStyleKt.ClickableText.modifier.clickable {
+                                pathsCacheForFilterByPathsDialog.value = ""
+                            },
+                            fontWeight = FontWeight.Light
+                        )
+
+                        Spacer(Modifier.height(10.dp))
+
+                    }
+                }
+            },
+            onCancel = {showFilterByPathsDialog.value = false}
+        ) {
+            showFilterByPathsDialog.value = false
+
+            pathsForFilter.value = pathsCacheForFilterByPathsDialog.value
+        }
+    }
+
+
 
     val doSearch = {
         isShowSearchResultMode.value = true;
@@ -1303,6 +1404,15 @@ fun CommitListScreen(
                     if(filterModeOn.value) {
                         FilterTextField(
                             filterKeyword,
+                            trailingIconTooltipText= stringResource(R.string.filter_by_paths),
+                            trailingIcon = Icons.AutoMirrored.Filled.List,
+                            trailingIconColor = UIHelper.getIconEnableColorOrNull(pathsForFilter.value.isNotEmpty()) ?: Color.Unspecified,
+                            trailingIconDesc = stringResource(R.string.a_list_icon_lor_filter_commits_by_paths),
+                            trailingIconOnClick = {
+                                // show filte by path dialog
+                                pathsCacheForFilterByPathsDialog.value = pathsForFilter.value  // assign current working filter paths to paths cache for accept user input
+                                showFilterByPathsDialog.value = true
+                            }
                         )
                     }else{
                         val repoAndBranchText = if(useFullOid) branchShortNameOrShortHashByFullOidForShowOnTitle.value else repoOnBranchOrDetachedHash.value
@@ -1380,6 +1490,8 @@ fun CommitListScreen(
                             ) {
                                 // filter item
                                 filterKeyword.value = TextFieldValue("")
+                                pathsForFilter.value = ""
+
                                 filterModeOn.value = true
                             }
 
@@ -1709,12 +1821,25 @@ fun CommitListScreen(
 
         //根据关键字过滤条目
         val k = filterKeyword.value.text.lowercase()  //关键字
-        val enableFilter = filterModeOn.value && k.isNotEmpty()
+        val needFilterByPath = pathsForFilter.value.isNotEmpty()
+        var paths:List<String>? = null
+        val enableFilter = filterModeOn.value && (k.isNotEmpty() || needFilterByPath)
         val list = if(enableFilter){
             filterIdxList.value.clear()
 
-            list.value.filterIndexed {idx, it ->
-                val found = it.oidStr.lowercase().contains(k)
+            val repo = if(needFilterByPath) {
+                try{
+                    paths = pathsForFilter.value.lines()
+                    Repository.open(curRepo.value.fullSavePath)
+                }catch (_:Exception) {
+                    null
+                }
+            }else {
+                null
+            }
+
+            val retlist = list.value.filterIndexed {idx, it ->
+                var found = it.oidStr.lowercase().contains(k)
                         || it.email.lowercase().contains(k)
                         || it.author.lowercase().contains(k)
                         || it.committerEmail.lowercase().contains(k)
@@ -1729,11 +1854,21 @@ fun CommitListScreen(
 
                 // for "show in list"
                 if(found) {
-                    filterIdxList.value.add(idx)
+                    if(needFilterByPath && repo!=null && paths?.isNotEmpty() == true) {
+                        found = Libgit2Helper.isCommitIncludePaths(repo, commitFullOid = it.oidStr, paths=paths)
+                    }
+
+                    if(found) {
+                        filterIdxList.value.add(idx)
+                    }
                 }
 
                 found
             }
+
+            repo?.close()
+
+            retlist
         }else {
             list.value
         }
@@ -1940,12 +2075,49 @@ fun CommitListScreen(
         }
     }
 
+
+    // multi DisposableEffect is ok, each DisposableEffect manage self's code block
+
     //compose被销毁时执行的副作用(SideEffect)
     DisposableEffect(Unit) {  // param changed or DisposableEffect destroying will run onDispose
         onDispose {
             doJobThenOffLoading {
                 loadChannel.close()
             }
+        }
+    }
+
+    // this code gen by chat-gpt, wow
+    // except: this code may not work when use use a float keyboard or softkeyboard with single-hand mode
+    // 监听键盘的弹出和隐藏 (listening keyboard visible/hidden)
+    DisposableEffect(view) {
+        val callback = ViewTreeObserver.OnGlobalLayoutListener cb@{
+            // this check only for add bottom padding when use filter paths dialog,
+            // if used for other cases, uncomment this if block
+            if(showFilterByPathsDialog.value.not()) {
+                return@cb
+            }
+
+            val insets = ViewCompat.getRootWindowInsets(view)
+            isKeyboardVisible.value = insets?.isVisible(WindowInsetsCompat.Type.ime()) == true
+
+            // 获取软键盘的高度 (get soft keyboard height)
+            val keyboardHeightPx = insets?.getInsets(WindowInsetsCompat.Type.ime())?.bottom ?: 0
+
+            // 判断组件是否被遮盖 (check component whether got covered)
+            isKeyboardCoveredComponent.value = (componentHeight.intValue > 0) && (view.height - keyboardHeightPx < componentHeight.intValue)
+
+            keyboardPaddingDp.value = if(isKeyboardCoveredComponent.value) {
+                with(density) { keyboardHeightPx.toDp()-120.dp }
+            }else {
+                0.dp
+            }
+        }
+
+        view.viewTreeObserver.addOnGlobalLayoutListener(callback)
+
+        onDispose {
+            view.viewTreeObserver.removeOnGlobalLayoutListener(callback)
         }
     }
 

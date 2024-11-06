@@ -1006,5 +1006,13 @@
     <string name="replace">Replace</string>
     <string name="change_type">Change Type</string>
     <string name="group_by_line">Group By Line</string>
+    <string name="a_list_icon_lor_filter_commits_by_paths">A list icon lor filter commits by paths</string>
+    <string name="filter_by_paths">Filter By Paths</string>
+    <string name="paths">Paths</string>
+    <string name="filter_commits_which_included_the_paths_leave_empty_for_show_all">Filter commits which included the paths, leave empty for show all</string>
+    <string name="per_line_one_path">per line one path</string>
+    <string name="copy_repo_relative_path">Copy Repo Relative Path</string>
+    <string name="no_repo_found">no repo found</string>
+    <string name="path_not_under_repo">Path not under repo</string>
 
 </resources>

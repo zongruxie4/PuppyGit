@@ -83,12 +83,14 @@ object UIHelper {
      */
     @Composable
     fun getIconEnableColorOrNull(enable:Boolean):Color? {
+        if(!enable) return null
+
         //darkTheme用反转颜色；否则用主颜色
         val color = if(Theme.inDarkTheme) MaterialTheme.colorScheme.inversePrimary else MaterialTheme.colorScheme.primary
 //        val enableColor = Color(red=(color.red+0.3f).coerceAtMost(1f), green = (color.green+0.3f).coerceAtMost(1f), blue = (color.blue+0.3f).coerceAtMost(1f), alpha = 1f)
         //如果是darkTheme，提升整体亮度；否则只增加蓝色
         val enableColor = if(Theme.inDarkTheme) Color(red=(color.red+0.3f).coerceAtMost(1f), green = (color.green+0.3f).coerceAtMost(1f), blue = (color.blue+0.3f).coerceAtMost(1f), alpha = 1f) else Color(red=color.red, green = color.green, blue = (color.blue+0.5f).coerceAtMost(1f), alpha = 1f)
-        return if(enable) enableColor else null
+        return enableColor
     }
 
     //长按选中连续条目

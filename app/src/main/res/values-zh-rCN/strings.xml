@@ -56,10 +56,10 @@
     <string name="reflog">引用日志</string>
     <string name="hash_or_branch">哈希或分支</string>
     <string name="revert">恢复</string>
-    <string name="copy_hash">拷贝哈希</string>
-    <string name="copy_author">拷贝作者</string>
-    <string name="copy_email">拷贝邮箱</string>
-    <string name="copy_commit_msg">拷贝信息</string>
+    <string name="copy_hash">复制哈希</string>
+    <string name="copy_author">复制作者</string>
+    <string name="copy_email">复制邮箱</string>
+    <string name="copy_commit_msg">复制信息</string>
     <string name="hash">哈希</string>
     <string name="email">邮箱</string>
     <string name="date">日期</string>
@@ -234,7 +234,7 @@
     <string name="are_you_sure">你确定吗？</string>
     <string name="fetch">下载</string>
     <string name="check_update">检查更新</string>
-    <string name="copy_msg">拷贝信息</string>
+    <string name="copy_msg">复制信息</string>
     <string name="view_msg">查看信息</string>
     <string name="detached">Detached</string>
     <string name="branches">分支</string>
@@ -325,9 +325,9 @@
     <string name="err_doesnt_support_open_file_over_limit">错误: 不支持打开超过限制大小的文件</string>
     <string name="will_reload_file_are_u_sure">将重载文件，未保存内容将丢失，你确定吗？</string>
     <string name="will_close_file_are_u_sure">将关闭文件，未保存内容将丢失，你确定吗？</string>
-    <string name="copied">已拷贝!</string>
+    <string name="copied">已复制!</string>
 <!--    ph_a3f241dc_1 is a placeholder for selected lines count-->
-    <string name="n_lines_copied">ph_a3f241dc_1 行已拷贝</string>
+    <string name="n_lines_copied">ph_a3f241dc_1 行已复制</string>
     <string name="view_hash">查看哈希</string>
     <string name="resolve_reference_failed">解析引用失败!</string>
     <string name="err_upstream_invalid_plz_go_branches_page_set_it_then_try_again">错误:上游无效，请前往分支页面设置上游然后重试</string>
@@ -368,7 +368,7 @@
     <string name="import_has_err">导入出错</string>
     <string name="import_success">导入成功</string>
     <string name="import_failed">导入失败</string>
-    <string name="you_can_click_here_copy_err_msg">点此拷贝错误信息到剪贴板</string>
+    <string name="you_can_click_here_copy_err_msg">点此复制错误信息到剪贴板</string>
     <string name="err_msg">错误信息</string>
     <string name="file_not_found">文件未找到!</string>
     <string name="do_you_want_save_before_close_file">关闭文件前你想先保存吗？</string>
@@ -716,7 +716,7 @@
     <string name="cherrypick_continue_err">继续精选出错</string>
     <string name="creating_patch">创建补丁中…</string>
     <string name="will_create_patch_of_selected_files_are_you_sure">将为选中的文件创建补丁，你确定吗？</string>
-    <string name="copy_path">拷贝哈希</string>
+    <string name="copy_path">复制路径</string>
     <string name="committer">提交者</string>
     <string name="apply_as_patch">作为补丁应用</string>
     <string name="apply_patch">应用补丁</string>
@@ -822,7 +822,7 @@
     <string name="no_dir_selected">无目录被选中</string>
     <string name="paths_are_repo_parent_dir">路径是仓库父目录</string>
     <string name="will_scan_repos_under_folders">将扫描文件夹下的仓库</string>
-    <string name="path_copied">路径已拷贝</string>
+    <string name="path_copied">路径已复制</string>
     <string name="external_storage">外部存储</string>
     <string name="err_read_folder_failed">错误: 读取文件夹失败</string>
     <string name="current_dir_doesnt_exist_anymore">当前目录已不存在</string>
@@ -850,7 +850,7 @@
     <string name="update_config">更新配置</string>
     <string name="init_repo">初始化仓库</string>
     <string name="restore_dot_git_file">恢复 .git 文件</string>
-    <string name="copy_full_path">拷贝完整路径</string>
+    <string name="copy_full_path">复制完整路径</string>
     <string name="will_sync_info_from_gitmodules_to_selected_configs">将同步 .gitmodules 中的信息到选中的配置文件</string>
     <string name="submodule">子模块</string>
     <string name="updating">更新中…</string>
@@ -934,8 +934,8 @@
     <string name="content_snapshot">内容快照</string>
     <string name="diff">差异</string>
     <string name="group_content_by_line_num">将内容按行号分组</string>
-    <string name="clear">清理</string>
-    <string name="clear_cache">清理缓存</string>
+    <string name="clear">清空</string>
+    <string name="clear_cache">清空缓存</string>
     <string name="cleaning">正在清理…</string>
     <string name="clean">清理</string>
     <string name="storage_paths">存储路径</string>
@@ -988,11 +988,19 @@
     <string name="insert">插入</string>
     <string name="append">追加</string>
     <string name="note_if_line_number_doesnt_exist_will_append_content_to_the_end_of_the_file">注意：如果 \'行号\' 不存在，将追加内容到文件末尾</string>
-    <string name="copy_mode">拷贝模式</string>
+    <string name="copy_mode">复制模式</string>
     <string name="show_change_type">显示修改类型</string>
     <string name="replace">替换</string>
     <string name="change_type">修改类型</string>
     <string name="group_by_line">按行分组</string>
+    <string name="a_list_icon_lor_filter_commits_by_paths">一个列表图标用来根据路径过滤提交</string>
+    <string name="filter_by_paths">根据路径过滤</string>
+    <string name="paths">路径</string>
+    <string name="filter_commits_which_included_the_paths_leave_empty_for_show_all">过滤包含指定路径的提交，留空则显示所有</string>
+    <string name="per_line_one_path">每行一个路径</string>
+    <string name="copy_repo_relative_path">复制仓库相对路径</string>
+    <string name="no_repo_found">未找到仓库</string>
+    <string name="path_not_under_repo">路径不在仓库下</string>
 
 
 </resources>

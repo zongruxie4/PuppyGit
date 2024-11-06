@@ -466,8 +466,13 @@ class Libgit2Helper {
         }
 
         //repoPathNoFileSeparatorAtEnd，结尾没有路径分隔符的repo path
-        fun getRelativePathUnderRepo(repoPathNoFileSeparatorAtEnd: String, fileFullPath: String): String {
-            return fileFullPath.substring(fileFullPath.indexOf(repoPathNoFileSeparatorAtEnd)+repoPathNoFileSeparatorAtEnd.length+1)
+        fun getRelativePathUnderRepo(repoPathNoFileSeparatorAtEnd: String, fileFullPath: String): String? {
+            try {
+                return fileFullPath.substring(fileFullPath.indexOf(repoPathNoFileSeparatorAtEnd)+repoPathNoFileSeparatorAtEnd.length+1)
+            }catch (e:Exception) {
+                MyLog.e(TAG, "#getRelativePathUnderRepo err: ${e.stackTraceToString()}")
+                return null
+            }
         }
 
         //废弃，改用 DiffItemSaver 内部的 getLines()
@@ -5717,6 +5722,21 @@ class Libgit2Helper {
                 return Ret.createErrorDefaultDataNull(e.localizedMessage?:"unknown err", exception = e)
             }
 
+        }
+
+        fun isCommitIncludePaths(repo:Repository, commitFullOid: String, paths: List<String>): Boolean {
+            val tree = resolveTree(repo, commitFullOid)
+            if(tree==null) {
+                 return false
+            }
+
+            for(i in paths.indices) {
+                if(tree.entryByPath(paths[i]) != null) {
+                    return true
+                }
+            }
+
+            return false
         }
 
 
