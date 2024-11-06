@@ -176,7 +176,7 @@ fun SetBranchForRemoteDialog(
                     //更新状态变量
                     isAll.value = isAllRealValue
 
-                    if (isAll.value) {
+                    if (isAllRealValue) {
                         branchCsvStr.value = ""
                     } else {
                         val sb = StringBuilder()

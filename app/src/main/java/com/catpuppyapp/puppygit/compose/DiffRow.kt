@@ -339,7 +339,7 @@ fun DiffRow (
                     )
                 }
             },
-            okBtnText = stringResource(R.string.restore),
+            okBtnText = if(trueRestoreFalseReplace.value) stringResource(R.string.restore) else stringResource(R.string.replace),
             onCancel = {showRestoreLineDialog.value = false}
         ) {
             showRestoreLineDialog.value = false
