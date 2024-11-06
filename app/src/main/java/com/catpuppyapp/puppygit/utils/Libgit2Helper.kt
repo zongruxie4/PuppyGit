@@ -19,6 +19,7 @@ import com.catpuppyapp.puppygit.etc.Ret
 import com.catpuppyapp.puppygit.git.BranchNameAndTypeDto
 import com.catpuppyapp.puppygit.git.CommitDto
 import com.catpuppyapp.puppygit.git.DiffItemSaver
+import com.catpuppyapp.puppygit.git.FileHistoryDto
 import com.catpuppyapp.puppygit.git.PuppyHunkAndLines
 import com.catpuppyapp.puppygit.git.PuppyLine
 import com.catpuppyapp.puppygit.git.ReflogEntryDto
@@ -3742,6 +3743,94 @@ class Libgit2Helper {
 
             }
         }
+
+        fun getFileHistoryList(
+            repo: Repository,
+            revwalk: Revwalk,
+            initNext:Oid?,
+            repoId: String,
+            pageSize:Int,
+            retList: MutableList<FileHistoryDto>, gotofile hisotry
+            loadChannel:Channel<Int>,
+            // load to this count, check once channel
+            checkChannelFrequency:Int,
+        ) {
+//            if(debugModeOn) {
+//                MyLog.d(TAG, "#getCommitList: startOid="+startOid.toString())
+//            }
+
+            if(initNext == null || initNext.isNullOrEmptyOrZero) {
+                return
+            }
+
+            var next = initNext
+
+            var count = 0
+            val allBranchList = getBranchList(repo)
+
+            val repoIsShallow = isRepoShallow(repo)
+//            val shallowOidList = ShallowManage.getShallowOidList(repo.workdir().toString()+File.separator+".git")
+            val shallowOidList = ShallowManage.getShallowOidList(getRepoGitDirPathNoEndsWithSlash(repo))
+
+            val allTagList = getAllTags(repo)
+
+            var checkChannelCount = 0
+
+            while (next!=null) {
+                try {
+//                    try {
+                    //check channel, may received terminal signal
+                    if(++checkChannelCount > checkChannelFrequency) {
+                        val recv = loadChannel.tryReceive()
+//                        println("recv.toString(): ${recv.toString()}")
+                        if(recv.isClosed){  // not failure meant success or closed
+//                            println("进来了！")
+//                            if(!recv.isClosed) {
+//                                loadChannel.close()
+////                                println("close成功了")
+//                            }
+                            MyLog.d(TAG, "#getCommitList: abort by terminate signal")
+                            break
+                        }else {
+                            checkChannelCount = 0
+                        }
+                    }
+
+                    //test abort signal， passed
+//                    continue
+                    //test
+
+//                    }catch (cherr:Exception) {
+//                        MyLog.e(TAG, "#getCommitList: get channel result err: ${cherr.localizedMessage}")
+//                        break
+//                    }
+
+
+                    val nextStr = next.toString()
+                    val commit = resolveCommitByHash(repo, nextStr)
+                    if(commit!=null) {
+                        val c = createCommitDto(next, allBranchList, allTagList, commit, repoId, repoIsShallow, shallowOidList)
+                        //添加元素
+                        retList.add(c)
+                    }else {
+                        MyLog.e(TAG, "#getCommitList(): resolve commit failed, target=$nextStr")
+                    }
+
+
+                    if(++count >= pageSize) {
+                        break
+                    }
+
+                    //更新迭代器
+                    next = revwalk.next()
+                }catch (e:Exception) {
+//                    MyLog.e(TAG, "#getCommitList():err:"+e.stackTraceToString())
+                    throw e
+                }
+
+            }
+        }
+
 
         //获取一个提交的所有父提交的oid字符串列表
         fun getCommitParentsOidStrList(repo: Repository, commitOidStr:String):List<String> {

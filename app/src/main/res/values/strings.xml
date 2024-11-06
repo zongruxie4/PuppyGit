@@ -1014,5 +1014,7 @@
     <string name="copy_repo_relative_path">Copy Repo Relative Path</string>
     <string name="no_repo_found">no repo found</string>
     <string name="path_not_under_repo">Path not under repo</string>
+    <string name="file_history">File History</string>
+    <string name="err_file_under_git_dir">err: file under \'.git\' dir</string>
 
 </resources>

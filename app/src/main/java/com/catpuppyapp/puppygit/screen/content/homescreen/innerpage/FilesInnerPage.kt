@@ -418,6 +418,7 @@ fun FilesInnerPage(
         if(proFeatureEnabled(applyPatchTestPassed)) stringResource(R.string.apply_as_patch) else "",  //应用patch，弹窗让用户选仓库，然后可对仓库应用patch
 //        这列表如果添加元素最好往头或尾加，别往中间加，不然改关联的数组可能容易改错位置
 //        stringResource(R.string.copy_path),
+        stringResource(R.string.file_history),
         stringResource(R.string.copy_repo_relative_path),
         stringResource(R.string.copy_full_path),
 
@@ -472,6 +473,28 @@ fun FilesInnerPage(
         }
     }
 
+    val goToFileHistory = {realFullPath:String ->
+        try {
+            val repo = Libgit2Helper.findRepoByPath(realFullPath)
+            if(repo == null) {
+                Msg.requireShow(appContext.getString(R.string.no_repo_found))
+            }else {
+                // file is belong a repo, but need check is under .git folder
+                repo.use {
+                    val repoGitDir = Libgit2Helper.getRepoGitDirPathNoEndsWithSlash(it)
+                    if(realFullPath.startsWith(repoGitDir)) {
+                        Msg.requireShowLongDuration(appContext.getString(R.string.err_file_under_git_dir))
+                    }else {
+                        go to file history page
+                    }
+                }
+            }
+        }catch (e:Exception) {
+            Msg.requireShowLongDuration(e.localizedMessage?:"err")
+            MyLog.e(TAG, "#goToFileHistory err: ${e.stackTraceToString()}")
+        }
+    }
+
     val renameFile = {item:FileItemDto ->
         renameFileItemDto.value = item  // 旧item
         renameFileName.value = TextFieldValue(item.name)  //旧文件名
@@ -520,6 +543,9 @@ fun FilesInnerPage(
 //        copyPath@{
 //            copyPath(it.fullPath)
 //        },
+        fileHistory@{
+            goToFileHistory(it.fullPath)
+        },
         copyRepoRelativePath@{
             copyRepoRelativePath(it.fullPath)
         },

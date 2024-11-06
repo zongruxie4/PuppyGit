@@ -1001,6 +1001,8 @@
     <string name="copy_repo_relative_path">复制仓库相对路径</string>
     <string name="no_repo_found">未找到仓库</string>
     <string name="path_not_under_repo">路径不在仓库下</string>
+    <string name="file_history">文件历史</string>
+    <string name="err_file_under_git_dir">错误: 文件在 \'.git\' 目录下</string>
 
 
 </resources>
