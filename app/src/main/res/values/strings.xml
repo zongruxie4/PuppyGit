@@ -1017,5 +1017,9 @@
     <string name="file_history">File History</string>
     <string name="err_file_under_git_dir">err: file under \'.git\' dir</string>
     <string name="plz_import_repo_then_try_again">Plz import repo then try again</string>
+    <string name="entry_id">Entry ID</string>
+    <string name="commit_id">Commit ID</string>
+    <string name="target_ph">target: ph_a3f241dc_1</string>
+    <string name="diff_to_prev">Diff To Prev</string>
 
 </resources>

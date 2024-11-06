@@ -3287,6 +3287,8 @@ fun ChangeListInnerPage(
                                 var indexAtDiffableList = -1
 
                                 val diffableList = mutableListOf<StatusTypeEntrySaver>()
+                                // if filter mode on, this item list is filter list, logically, no changed required
+                                // 如果开启过滤模式，这个列表会是过滤后的列表，符合逻辑，不用修改
                                 val itemCopy = itemList.toList()
                                 for(idx in itemCopy.indices) {
                                     val item = itemCopy[idx]

@@ -37,6 +37,7 @@ import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -52,22 +53,17 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.AnnotatedString
-import androidx.compose.ui.text.SpanStyle
-import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.text.style.TextOverflow
-import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.dp
 import com.catpuppyapp.puppygit.compose.BottomSheet
 import com.catpuppyapp.puppygit.compose.BottomSheetItem
-import com.catpuppyapp.puppygit.compose.CommitItem
-import com.catpuppyapp.puppygit.compose.ConfirmDialog
 import com.catpuppyapp.puppygit.compose.ConfirmDialog2
 import com.catpuppyapp.puppygit.compose.CopyableDialog
-import com.catpuppyapp.puppygit.compose.CreateTagDialog
 import com.catpuppyapp.puppygit.compose.DiffCommitsDialog
+import com.catpuppyapp.puppygit.compose.FileHistoryItem
 import com.catpuppyapp.puppygit.compose.FilterTextField
 import com.catpuppyapp.puppygit.compose.GoToTopAndGoToBottomFab
 import com.catpuppyapp.puppygit.compose.LoadMore
@@ -76,26 +72,22 @@ import com.catpuppyapp.puppygit.compose.LongPressAbleIconBtn
 import com.catpuppyapp.puppygit.compose.MyCheckBox
 import com.catpuppyapp.puppygit.compose.MyLazyColumn
 import com.catpuppyapp.puppygit.compose.ScrollableColumn
-import com.catpuppyapp.puppygit.compose.SingleSelectList
 import com.catpuppyapp.puppygit.constants.Cons
 import com.catpuppyapp.puppygit.data.entity.RepoEntity
-import com.catpuppyapp.puppygit.dev.cherrypickTestPassed
 import com.catpuppyapp.puppygit.dev.commitsDiffCommitsTestPassed
 import com.catpuppyapp.puppygit.dev.commitsDiffToLocalTestPassed
-import com.catpuppyapp.puppygit.dev.createPatchTestPassed
 import com.catpuppyapp.puppygit.dev.dev_EnableUnTestedFeature
-import com.catpuppyapp.puppygit.dev.diffToHeadTestPassed
 import com.catpuppyapp.puppygit.dev.proFeatureEnabled
 import com.catpuppyapp.puppygit.dev.resetByHashTestPassed
-import com.catpuppyapp.puppygit.dev.tagsTestPassed
 import com.catpuppyapp.puppygit.etc.Ret
 import com.catpuppyapp.puppygit.git.CommitDto
+import com.catpuppyapp.puppygit.git.FileHistoryDto
+import com.catpuppyapp.puppygit.git.StatusTypeEntrySaver
 import com.catpuppyapp.puppygit.play.pro.R
 import com.catpuppyapp.puppygit.settings.SettingsUtil
 import com.catpuppyapp.puppygit.style.MyStyleKt
 import com.catpuppyapp.puppygit.user.UserUtil
 import com.catpuppyapp.puppygit.utils.AppModel
-import com.catpuppyapp.puppygit.utils.FsUtils
 import com.catpuppyapp.puppygit.utils.Libgit2Helper
 import com.catpuppyapp.puppygit.utils.Msg
 import com.catpuppyapp.puppygit.utils.MyLog
@@ -110,7 +102,8 @@ import com.catpuppyapp.puppygit.utils.getRequestDataByState
 import com.catpuppyapp.puppygit.utils.replaceStringResList
 import com.catpuppyapp.puppygit.utils.state.mutableCustomStateListOf
 import com.catpuppyapp.puppygit.utils.state.mutableCustomStateOf
-import com.catpuppyapp.puppygit.utils.withMainContext
+import com.github.git24j.core.Checkout
+import com.github.git24j.core.GitObject
 import com.github.git24j.core.Oid
 import com.github.git24j.core.Repository
 import com.github.git24j.core.Revwalk
@@ -148,6 +141,10 @@ fun FileHistoryScreen(
 
     val loadChannel = remember { Channel<Int>() }
 
+    val fileRelativePath = rememberSaveable { Cache.getByTypeThenDel<String>(fileRelativePathKey) ?:"" }
+    val lastVersionEntryOid = rememberSaveable { mutableStateOf<String?>(null) }
+
+
 //    val sumPage = MockData.getCommitSum(repoId,branch)
     //获取假数据
 //    val list = remember { mutableStateListOf<CommitDto>() };
@@ -155,7 +152,7 @@ fun FileHistoryScreen(
     val list = mutableCustomStateListOf(
         keyTag = stateKeyTag,
         keyName = "list",
-        initValue = listOf<CommitDto>()
+        initValue = listOf<FileHistoryDto>()
     )
 //    val list = rememberSaveable(
 //        stateSaver = getSaver()
@@ -187,23 +184,23 @@ fun FileHistoryScreen(
     //如果再多几个"mode"，就改用字符串判断，直接把mode含义写成常量
     val showTopBarMenu = rememberSaveable { mutableStateOf(false)}
     val showDiffCommitDialog = rememberSaveable { mutableStateOf(false)}
-    val isSearchingMode = rememberSaveable { mutableStateOf(false)}
-    val isShowSearchResultMode = rememberSaveable { mutableStateOf(false)}
-//    val searchKeyword = rememberSaveable { mutableStateOf("")}
-    val repoOnBranchOrDetachedHash = rememberSaveable { mutableStateOf("")}
     val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = MyStyleKt.BottomSheet.skipPartiallyExpanded)
     val showBottomSheet = rememberSaveable { mutableStateOf(false)}
 //    val curCommit = rememberSaveable{ mutableStateOf(CommitDto()) }
-    val curCommit = mutableCustomStateOf(
+    val curObj = mutableCustomStateOf(
         keyTag = stateKeyTag,
-        keyName = "curCommit",
-        initValue = CommitDto()
+        keyName = "curObj",
+        initValue = FileHistoryDto()
     )
     val curRepo = mutableCustomStateOf(
         keyTag = stateKeyTag,
         keyName = "curRepo",
         initValue = RepoEntity(id = "")
     )
+
+    val curObjShortOid = remember(curObj.value.commitOidStr) { derivedStateOf{
+        Libgit2Helper.getShortOidStrByFull(curObj.value.commitOidStr)
+    }}
 
     // 两个用途：1点击刷新按钮后回到列表顶部 2放到刷新按钮旁边，用户滚动到底部后，想回到顶部，可点击这个按钮
     val goToTop = {
@@ -216,7 +213,7 @@ fun FileHistoryScreen(
     val pathsCacheForFilterByPathsDialog = rememberSaveable { mutableStateOf("") }  // cache the paths until user clicked the ok, then assign the value to `pathsForFilter`
     val pathsForFilter = rememberSaveable { mutableStateOf("") }
 
-    val requireShowToast: (String) -> Unit = Msg.requireShow
+//    val requireShowToast: (String) -> Unit = Msg.requireShow
 
 
     val loadMoreLoading = rememberSaveable { mutableStateOf(false)}
@@ -325,7 +322,7 @@ fun FileHistoryScreen(
                         loadMoreText.value = appContext.getString(R.string.end_of_the_list)
                     }else {
                         //start travel commit history
-                        Libgit2Helper.getCommitList(
+                        lastVersionEntryOid.value = Libgit2Helper.getFileHistoryList(
                             repo,
                             revwalk.value!!,
                             nextCommitOid.value,
@@ -333,7 +330,9 @@ fun FileHistoryScreen(
                             if(loadToEnd) Int.MAX_VALUE else pageSize.value,
                             retList = list.value,  //直接赋值给状态列表了，若性能差，可实现一个批量添加机制，比如查出50个条目添加一次，之类的
                             loadChannel = loadChannel,
-                            checkChannelFrequency = settings.commitHistoryLoadMoreCheckAbortSignalFrequency
+                            checkChannelFrequency = settings.commitHistoryLoadMoreCheckAbortSignalFrequency,
+                            lastVersionEntryOid = lastVersionEntryOid.value,
+                            fileRelativePathUnderRepo = fileRelativePath
                         )
 
                         //update state
@@ -357,134 +356,38 @@ fun FileHistoryScreen(
 
     val clipboardManager = LocalClipboardManager.current
 
-    val showSquashDialog = rememberSaveable { mutableStateOf(false)}
-    val forceSquash = rememberSaveable { mutableStateOf(false)}
-    val headFullNameForSquashDialog = rememberSaveable { mutableStateOf("")} // branch full name or HEAD
-    val headCommitFullOidForSquashDialog = rememberSaveable { mutableStateOf("")}
-    val headCommitShortOidForSquashDialog = rememberSaveable { mutableStateOf("")}
-    val targetCommitFullOidForSquashDialog = rememberSaveable { mutableStateOf("")}
-    val targetCommitShortOidForSquashDialog = rememberSaveable { mutableStateOf("")}
-    val commitMsgForSquashDialog = rememberSaveable { mutableStateOf("")}
-    val usernameForSquashDialog = rememberSaveable { mutableStateOf("")}
-    val emailForSquashDialog = rememberSaveable { mutableStateOf("")}
-    val closeSquashDialog = {
-        showSquashDialog.value = false
-    }
-    val initShowSquashDialog = {targetFullOid:String, targetShortOid:String, headFullOid:String, headFullName:String, username:String, email:String->
-        headFullNameForSquashDialog.value = headFullName
+    val showRestoreDialog = rememberSaveable { mutableStateOf(false)}
+    if(showRestoreDialog.value) {
+        ConfirmDialog2(
+            title = stringResource(R.string.restore),
+            text = replaceStringResList(stringResource(R.string.target_ph), listOf(curObj.value.commitOidStr)) ,
+            onCancel = {showRestoreDialog.value=false},
+            okBtnText = stringResource(R.string.restore)
+        ) {
+            showRestoreDialog.value = false
+            doJobThenOffLoading(loadingOn, loadingOff, appContext.getString(R.string.restoring)) {
+                try {
+                    Repository.open(curRepo.value.fullSavePath).use { repo->
+                        //fun checkoutFiles(repo: Repository, targetCommitHash:String, pathSpecs: List<String>, force: Boolean, checkoutOptions: Checkout.Options?=null): Ret<Unit?> {
+                        Libgit2Helper.checkoutFiles(repo, curObj.value.commitOidStr, pathSpecs = listOf(fileRelativePath), force = true)
 
-        headCommitFullOidForSquashDialog.value= headFullOid
-        headCommitShortOidForSquashDialog.value = Libgit2Helper.getShortOidStrByFull(headFullOid)
+                    }
 
-        targetCommitFullOidForSquashDialog.value = targetFullOid
-        targetCommitShortOidForSquashDialog.value = targetShortOid
-
-        commitMsgForSquashDialog.value = Libgit2Helper.squashCommitsGenCommitMsg(targetShortOid, headCommitShortOidForSquashDialog.value)
-
-        usernameForSquashDialog.value = username
-        emailForSquashDialog.value = email
-
-        forceSquash.value = false
-
-        showSquashDialog.value = true
+                    Msg.requireShow(appContext.getString(R.string.success))
+                }catch (e:Exception) {
+                    val errMsg = e.localizedMessage ?: "unknown err"
+                    Msg.requireShowLongDuration(errMsg)
+                    createAndInsertError(repoId, errMsg)
+                }
+            }
+        }
     }
 
-//
-//    val showViewDialog = rememberSaveable { mutableStateOf(false)}
-//    val viewDialogText = rememberSaveable { mutableStateOf("")}
-//    val viewDialogTitle = rememberSaveable { mutableStateOf("")}
-//
-//    val requireShowViewDialog = { title: String, text: String ->
-//        viewDialogTitle.value = title
-//        viewDialogText.value = text
-//        showViewDialog.value = true
-//    }
-//
-//    if (showViewDialog.value) {
-//        ConfirmDialog(
-//            title = viewDialogTitle.value,
-//            requireShowTextCompose = true,
-//            textCompose = {
-//                Column(
-//                    modifier = Modifier
-//                        .fillMaxWidth()
-//                        .verticalScroll(rememberScrollState())
-//                ) {
-//                    Text(
-//                        text = viewDialogText.value
-//                    )
-//                }
-//            },
-//            cancelBtnText = stringResource(id = R.string.close),
-//            okBtnText = stringResource(id = R.string.copy),
-//            onCancel = {
-//                showViewDialog.value = false
-//
-//            }
-//        ) { //复制到剪贴板
-//            showViewDialog.value = false
-//            clipboardManager.setText(AnnotatedString(viewDialogText.value))
-//            requireShowToast(appContext.getString(R.string.copied))
-//
-//        }
-//    }
-
-    //参数1，要创建的本地分支名；2是否基于HEAD创建分支，3如果不基于HEAD，提供一个引用名
-    //只有在basedHead为假的时候，才会使用baseRefSpec
-//    val doCreateBranch: (String, String, Boolean) -> Ret<Triple<String, String, String>?> = doCreateBranch@{ branchNamePram: String, baseRefSpec: String, overwriteIfExists:Boolean ->
-//            Repository.open(curRepo.value.fullSavePath).use { repo ->
-//
-//                //第4个参数是base head，在提交页面创建，肯定不base head，base head是在分支页面用顶栏的按钮创建分支的默认选项
-//                val ret = Libgit2Helper.doCreateBranch(
-//                    repo,
-//                    repoId,
-//                    branchNamePram,
-//                    false,
-//                    baseRefSpec,
-//                    false,
-//                    overwriteIfExists
-//                )
-//
-//                return@doCreateBranch ret
-//            }
-//        }
-//
-//    val doCheckoutBranch: suspend (String, String, String, Boolean, Boolean,Boolean, Int) -> Ret<Oid?> =
-//        doCheckoutLocalBranch@{ shortBranchNameOrHash: String, fullBranchNameOrHash: String, upstreamBranchShortNameParam: String, isDetachCheckout: Boolean , force:Boolean, updateHead:Boolean, checkoutType:Int->
-//            Repository.open(curRepo.value.fullSavePath).use { repo ->
-//                val ret = Libgit2Helper.doCheckoutBranchThenUpdateDb(
-//                    repo,
-//                    repoId,
-//                    shortBranchNameOrHash,
-//                    fullBranchNameOrHash,
-//                    upstreamBranchShortNameParam,
-//                    checkoutType,
-//                    force,
-//                    updateHead
-//                )
-//
-//                return@doCheckoutLocalBranch ret
-//            }
-//        }
-//
-//    val checkoutOptionDontUpdateHead = 0
-//    val checkoutOptionDetachHead = 1
-//    val checkoutOptionCreateBranch = 2
-//    val checkoutOptionDefault = checkoutOptionCreateBranch  //默认选中创建分支，detach head如果没reflog，有可能丢数据
-//    val checkoutRemoteOptions = listOf(
-//        appContext.getString(R.string.dont_update_head),
-//        appContext.getString(R.string.detach_head),
-//        appContext.getString(R.string.new_branch) + "(" + appContext.getString(R.string.recommend) + ")"
-//    )
-
-//    val checkoutSelectedOption = StateUtil.getRememberSaveableIntState(initValue = checkoutOptionDefault)
-//    val checkoutRemoteCreateBranchName = StateUtil.getRememberSaveableState(initValue = "")
-//    val checkoutUserInputCommitHash = StateUtil.getRememberSaveableState(initValue = "")
     val requireUserInputCommitHash = rememberSaveable { mutableStateOf(false)}
 //    val forceCheckout = StateUtil.getRememberSaveableState(initValue = false)
     val showCheckoutDialog = rememberSaveable { mutableStateOf(false)}
     //当前长按commit在列表中的索引，用来更新单个条目时使用，为-1时无效，不要执行操作
-    val curCommitIndex = rememberSaveable{mutableIntStateOf(-1)}
+    val curObjIndex = rememberSaveable{mutableIntStateOf(-1)}
 //    val initCheckoutDialog = { requireUserInputHash:Boolean ->
 //        checkoutSelectedOption.intValue = checkoutOptionDefault
 //        requireUserInputCommitHash.value = requireUserInputHash
@@ -535,62 +438,6 @@ fun FileHistoryScreen(
         overwriteIfNameExistOfNewTag.value = false
         showDialogOfNewTag.value = true
     }
-    
-    if(showDialogOfNewTag.value) {
-        CreateTagDialog(
-            showDialog = showDialogOfNewTag,
-            curRepo = curRepo.value,
-            tagName = nameOfNewTag,
-            commitHashShortOrLong = hashOfNewTag,
-            annotate = annotateOfNewTag,
-            tagMsg = msgOfNewTag,
-            force = overwriteIfNameExistOfNewTag,
-        ) success@{newTagOidStr ->
-            if(newTagOidStr.isBlank()) {  //should never into here
-                Msg.requireShowLongDuration(appContext.getString(R.string.tag_oid_invalid))
-                return@success
-            }
-
-            // update item
-            val curOidStr = curCommit.value.oidStr
-            val curIdx = curCommitIndex.intValue
-
-            //如果没开filter模式且最终创建的tag和长按条目一致，直接更新长按条目；若开了filter模式，则必须更新原始列表，而这里设置的长按条目索引是filterList的，所以无效，需要重新从原始列表查找对应条目索引，然后更新原始列表以显示最新条目
-            if(!filterModeOn.value && newTagOidStr == curOidStr) {
-                //更新当前条目以显示新创建的tag(仅适用于更新当前长按条目)
-                updateCurCommitInfo(curRepo.value.fullSavePath, curIdx, curOidStr, list.value)
-            }else {  //最终创建的tag和长按条目不一致，查找并更新对应条目
-                //x 无需处理过滤列表，我测试了下，过滤模式创建分支和tag都没问题，能正常显示新tag和分支，因为只要更新原始列表相关代码就会重新执行，filterList也会重新生成) 更新过滤列表
-//                if(enableFilter) {
-//                    //更新filter列表
-//                }
-
-                //更新普通列表
-                val list = list.value
-                val idx = list.toList().indexOfFirst { it.oidStr==newTagOidStr }
-                if(idx != -1) {  //不等于-1代表找到了
-                    updateCurCommitInfo(curRepo.value.fullSavePath, idx, newTagOidStr, list)
-                }
-
-            }
-
-//            changeStateTriggerRefreshPage(needRefresh)  //创建tag后没必要刷新整个页面，更新对应commit即可
-        }
-    }
-
-//    val getCheckoutOkBtnEnabled:()->Boolean = getCheckoutOkBtnEnabled@{
-//        //请求checkout时创建分支但没填分支，返回假
-//        if(checkoutSelectedOption.intValue == checkoutOptionCreateBranch && checkoutRemoteCreateBranchName.value.isBlank()) {
-//            return@getCheckoutOkBtnEnabled false
-//        }
-//
-//        //请求checkout to hash但没填hash，返回假
-//        if(requireUserInputCommitHash.value && checkoutUserInputCommitHash.value.isBlank()) {
-//            return@getCheckoutOkBtnEnabled false
-//        }
-//
-//        return@getCheckoutOkBtnEnabled true
-//    }
 
 
     //初始化组件版本的checkout对话框
@@ -611,7 +458,7 @@ fun FileHistoryScreen(
     val detailsString = rememberSaveable { mutableStateOf( "")}
     if(showDetailsDialog.value) {
         CopyableDialog(
-            title = "'${curCommit.value.shortOidStr}'"+ " " +stringResource(id = R.string.details),
+            title = stringResource(id = R.string.details),
             text = detailsString.value,
             onCancel = { showDetailsDialog.value = false }
         ) {
@@ -629,40 +476,6 @@ fun FileHistoryScreen(
 //    val filterListState =mutableCustomStateOf(keyTag = stateKeyTag, keyName = "filterListState", LazyListState(0,0))
     val filterListState = rememberLazyListState()
     val enableFilterState = rememberSaveable { mutableStateOf(false)}
-//    val firstVisible = remember { derivedStateOf { if(enableFilterState.value) filterListState.value.firstVisibleItemIndex else listState.firstVisibleItemIndex } }
-//    ScrollListener(
-//        nowAt = firstVisible.value,
-//        onScrollUp = {scrollingDown.value = false}
-//    ) { // onScrollDown
-//        scrollingDown.value = true
-//    }
-//
-//    val lastAt = remember { mutableIntStateOf(0) }
-//    val lastIsScrollDown = remember { mutableStateOf(false) }
-//    val forUpdateScrollState = remember {
-//        derivedStateOf {
-//            val nowAt = if(enableFilterState.value) {
-//                filterListState.firstVisibleItemIndex
-//            } else {
-//                listState.firstVisibleItemIndex
-//            }
-//
-//            val scrolledDown = nowAt > lastAt.intValue  // scroll down
-////            val scrolledUp = nowAt < lastAt.intValue
-//
-//            val scrolled = nowAt != lastAt.intValue  // scrolled
-//            lastAt.intValue = nowAt
-//
-//            // only update state when this scroll down and last is not scroll down, or this is scroll up and last is not scroll up
-//            if(scrolled && ((lastIsScrollDown.value && !scrolledDown) || (!lastIsScrollDown.value && scrolledDown))) {
-//                pageScrolled.value = true
-//            }
-//
-//            lastIsScrollDown.value = scrolledDown
-//        }
-//    }.value
-    // 向下滚动监听，结束
-
 
     val diffCommitsDialogCommit1 = rememberSaveable { mutableStateOf("")}
     val diffCommitsDialogCommit2 = rememberSaveable { mutableStateOf("")}
@@ -712,282 +525,6 @@ fun FileHistoryScreen(
 
         showCreatePatchDialog.value = true
     }
-
-
-    if(showCreatePatchDialog.value) {
-        val shortTarget = Libgit2Helper.getShortOidStrByFull(createPatchTargetHash.value)
-        val shortParent = Libgit2Helper.getShortOidStrByFull(createPatchParentHash.value)
-
-        val padding=10.dp
-
-        ConfirmDialog(
-            okBtnText = stringResource(R.string.ok),
-            cancelBtnText = stringResource(R.string.cancel),
-            title = stringResource(R.string.create_patch),
-            requireShowTextCompose = true,
-            textCompose = {
-                Column{
-                    Text(text =  buildAnnotatedString {
-                        append(stringResource(R.string.target)+": ")
-                        withStyle(style = SpanStyle(fontWeight = FontWeight.ExtraBold)) {
-                            append(shortTarget)
-                        }
-                    },
-                        modifier = Modifier.padding(horizontal = padding)
-                    )
-
-                    Row(modifier = Modifier.padding(padding)) {
-                        Text(text = stringResource(R.string.select_a_parent_for_find_changes)+":")
-                    }
-
-                    SingleSelectList(
-                        optionsList = createPatchParentList.value,
-                        selectedOptionIndex = null,
-                        selectedOptionValue = createPatchParentHash.value,
-                        menuItemSelected = {_, value-> value==createPatchParentHash.value},
-                        menuItemOnClick = {idx, value ->
-                            createPatchParentHash.value = value
-                        },
-                        menuItemFormatter = {_, value ->
-                            Libgit2Helper.getShortOidStrByFull(value?:"")
-                        }
-                    )
-
-//
-//                    MyLazyColumn(
-//                        modifier = Modifier.heightIn(max=150.dp),
-//                        requireUseParamModifier = true,
-//                        contentPadding = PaddingValues(0.dp),
-//                        list = createPatchParentList.value,
-//                        listState = StateUtil.getRememberLazyListState(),
-//                        requireForEachWithIndex = true,
-//                        requirePaddingAtBottom =false
-//                    ) {k, optext ->
-//                        Row(
-//                            Modifier
-//                                .fillMaxWidth()
-//                                .heightIn(min = MyStyleKt.RadioOptions.minHeight)
-//
-//                                .selectable(
-//                                    selected = createPatchParentHash.value == optext,
-//                                    onClick = {
-//                                        //更新选择值
-//                                        createPatchParentHash.value = optext
-//                                    },
-//                                    role = Role.RadioButton
-//                                )
-//                                .padding(horizontal = padding),
-//                            verticalAlignment = Alignment.CenterVertically
-//                        ) {
-//                            RadioButton(
-//                                selected = createPatchParentHash.value == optext,
-//                                onClick = null // null recommended for accessibility with screenreaders
-//                            )
-//                            Text(
-//                                text = Libgit2Helper.getShortOidStrByFull(optext),
-//                                style = MaterialTheme.typography.bodyLarge,
-//                                modifier = Modifier.padding(start = padding)
-//                            )
-//                        }
-//
-//                    }
-                }
-            },
-            onCancel = { showCreatePatchDialog.value = false }
-        ) {
-            showCreatePatchDialog.value = false
-
-            doJobThenOffLoading(
-                loadingOn,
-                loadingOff,
-                appContext.getString(R.string.creating_patch)
-            ) {
-                try {
-                    val left = createPatchParentHash.value
-                    val right = createPatchTargetHash.value
-
-                    Repository.open(curRepo.value.fullSavePath).use { repo->
-                        val tree1 = Libgit2Helper.resolveTree(repo, left) ?: throw RuntimeException("resolve left tree failed, 10137466")
-                        val tree2 = Libgit2Helper.resolveTree(repo, right) ?: throw RuntimeException("resolve right tree failed, 11015534")
-
-                        // 注意应该是：parent..target，parent在左
-                        val outFile = FsUtils.Patch.newPatchFile(curRepo.value.repoName, left, right)
-
-                        val ret = Libgit2Helper.savePatchToFileAndGetContent(
-                            outFile=outFile,
-                            repo = repo,
-                            tree1 = tree1,
-                            tree2 = tree2,
-                            fromTo = Cons.gitDiffFromTreeToTree,
-                            reverse = false,
-                            treeToWorkTree = false,
-                            returnDiffContent = false  //是否返回输出的内容，若返回，可在ret中取出字符串
-                        )
-
-                        if(ret.hasError()) {
-                            Msg.requireShowLongDuration(ret.msg)
-                            if(ret.code != Ret.ErrCode.alreadyUpToDate) {  //如果错误码不是 Already up-to-date ，就log下
-
-                                //选提交时记日志把files改成commit用来区分
-                                createAndInsertError(repoId, "create patch of '$shortParent..$shortTarget' err:"+ret.msg)
-                            }
-                        }else {
-                            //输出格式： /puppygitDataDir/patch/xxxx..xxxx，可前往Files页面通过Go To功能跳转到对应目录并选中文件
-//                            savePatchPath.value = getFilePathStrBasedRepoDir(outFile.canonicalPath, returnResultStartsWithSeparator = true)
-                            savePatchPath.value = outFile.canonicalPath
-                            showSavePatchSuccessDialog.value = true
-                        }
-                    }
-                }catch (e:Exception) {
-                    val errPrefix = "create patch err:"
-                    Msg.requireShowLongDuration(e.localizedMessage ?: errPrefix)
-                    createAndInsertError(curRepo.value.id, errPrefix+e.localizedMessage)
-                }
-
-            }
-        }
-    }
-
-
-
-
-
-    val showCherrypickDialog = rememberSaveable { mutableStateOf(false)}
-    val cherrypickTargetHash = rememberSaveable { mutableStateOf("")}
-    val cherrypickParentHash = rememberSaveable { mutableStateOf("")}
-    val cherrypickParentList = mutableCustomStateListOf(keyTag = stateKeyTag, keyName = "cherrypickParentList", listOf<String>())
-    val cherrypickAutoCommit = rememberSaveable { mutableStateOf(false)}
-
-    val initCherrypickDialog = { targetFullHash:String, defaultParentFullHash:String, parentList:List<String> ->
-        cherrypickParentList.value.clear()
-        cherrypickParentList.value.addAll(parentList)
-
-        cherrypickTargetHash.value = targetFullHash
-        cherrypickParentHash.value = defaultParentFullHash
-
-        cherrypickAutoCommit.value = false
-
-        showCherrypickDialog.value = true
-    }
-
-    if(showCherrypickDialog.value) {
-        val shortTarget = Libgit2Helper.getShortOidStrByFull(cherrypickTargetHash.value)
-        val shortParent = Libgit2Helper.getShortOidStrByFull(cherrypickParentHash.value)
-
-        val padding=10.dp
-
-        ConfirmDialog(
-            okBtnText = stringResource(R.string.ok),
-            cancelBtnText = stringResource(R.string.cancel),
-            title = stringResource(R.string.cherrypick),
-            requireShowTextCompose = true,
-            textCompose = {
-                Column{
-                    Text(text =  buildAnnotatedString {
-                        append(stringResource(R.string.target)+": ")
-                        withStyle(style = SpanStyle(fontWeight = FontWeight.ExtraBold)) {
-                            append(shortTarget)
-                        }
-                    },
-                        modifier = Modifier.padding(horizontal = padding)
-                    )
-
-                    Row(modifier = Modifier.padding(padding)) {
-                        Text(text = stringResource(R.string.select_a_parent_for_find_changes)+":")
-                    }
-
-
-                    SingleSelectList(
-                        optionsList = cherrypickParentList.value,
-                        selectedOptionIndex = null,
-                        selectedOptionValue = cherrypickParentHash.value,
-                        menuItemSelected = {_, value-> value==cherrypickParentHash.value},
-                        menuItemOnClick = {idx, value ->
-                            cherrypickParentHash.value = value
-                        },
-                        menuItemFormatter = {_, value ->
-                            Libgit2Helper.getShortOidStrByFull(value?:"")
-                        }
-                    )
-
-//
-//                    MyLazyColumn(
-//                        modifier = Modifier.heightIn(max=150.dp),
-//                        requireUseParamModifier = true,
-//                        contentPadding = PaddingValues(0.dp),
-//                        list = cherrypickParentList.value,
-//                        listState = StateUtil.getRememberLazyListState(),
-//                        requireForEachWithIndex = true,
-//                        requirePaddingAtBottom =false
-//                    ) {k, optext ->
-//                        Row(
-//                            Modifier
-//                                .fillMaxWidth()
-//                                .heightIn(min = MyStyleKt.RadioOptions.minHeight)
-//
-//                                .selectable(
-//                                    selected = cherrypickParentHash.value == optext,
-//                                    onClick = {
-//                                        //更新选择值
-//                                        cherrypickParentHash.value = optext
-//                                    },
-//                                    role = Role.RadioButton
-//                                )
-//                                .padding(horizontal = padding),
-//                            verticalAlignment = Alignment.CenterVertically
-//                        ) {
-//                            RadioButton(
-//                                selected = cherrypickParentHash.value == optext,
-//                                onClick = null // null recommended for accessibility with screenreaders
-//                            )
-//                            Text(
-//                                text = Libgit2Helper.getShortOidStrByFull(optext),
-//                                style = MaterialTheme.typography.bodyLarge,
-//                                modifier = Modifier.padding(start = padding)
-//                            )
-//                        }
-//
-//                    }
-
-
-
-                    Spacer(modifier = Modifier.height(padding))
-
-                    MyCheckBox(text = stringResource(R.string.auto_commit), value = cherrypickAutoCommit)
-                }
-            },
-            onCancel = { showCherrypickDialog.value = false }
-        ) {
-            showCherrypickDialog.value = false
-
-            doJobThenOffLoading(
-                loadingOn,
-                loadingOff,
-                appContext.getString(R.string.cherrypicking)
-            ) {
-                Repository.open(curRepo.value.fullSavePath).use { repo->
-                    val ret = Libgit2Helper.cherrypick(
-                        repo,
-                        targetCommitFullHash = cherrypickTargetHash.value,
-                        parentCommitFullHash = cherrypickParentHash.value,
-                        autoCommit = cherrypickAutoCommit.value
-                    )
-
-                    if(ret.hasError()) {
-                        Msg.requireShowLongDuration(ret.msg)
-                        if(ret.code != Ret.ErrCode.alreadyUpToDate) {  //如果错误码不是 Already up-to-date ，就log下
-
-                            //选提交时记日志把files改成commit用来区分
-                            createAndInsertError(repoId, "cherrypick commit changes of '$shortParent..$shortTarget' err:"+ret.msg)
-                        }
-                    }else {
-                        Msg.requireShow(appContext.getString(R.string.success))
-                    }
-                }
-            }
-        }
-    }
-
 
 
     val invalidPageSize = -1
@@ -1055,7 +592,7 @@ fun FileHistoryScreen(
     }
 
     val showTitleInfoDialog = remember { mutableStateOf(false) }
-    val titleInfo = rememberSaveable { mutableStateOf("") }
+    val titleInfo = rememberSaveable { mutableStateOf(fileRelativePath) }
     if(showTitleInfoDialog.value) {
         ConfirmDialog2(
             title = stringResource(R.string.info),
@@ -1111,7 +648,7 @@ fun FileHistoryScreen(
                                     .horizontalScroll(rememberScrollState()),
                             ) {
                                 Text(
-                                    text = stringResource(R.string.commit_history),
+                                    text = stringResource(R.string.file_history),
                                     maxLines = 1,
                                     overflow = TextOverflow.Ellipsis
                                 )
@@ -1182,18 +719,6 @@ fun FileHistoryScreen(
                                     StateRequestType.forceReload
                                 )
                             }
-                            LongPressAbleIconBtn(
-                                tooltipText = stringResource(R.string.checkout_to),
-                                icon = Icons.Filled.MoveToInbox,
-                                iconContentDesc = stringResource(id = R.string.checkout_to),
-                                enabled = true,
-
-                            ) {
-                                val requireUserInputHash = true
-                                initCheckoutDialogComposableVersion(
-                                    requireUserInputHash
-                                )
-                            }
 
                             if((proFeatureEnabled(commitsDiffCommitsTestPassed) || proFeatureEnabled(resetByHashTestPassed))) {
     //                            显示more三点菜单
@@ -1215,31 +740,6 @@ fun FileHistoryScreen(
                                     expanded = showTopBarMenu.value,
                                     onDismissRequest = { showTopBarMenu.value=false }
                                 ) {
-    //                                    选项“diff commits”，点击弹窗，让用户输入两个提交号，跳转到tree to tree页面比较这两个提交
-                                    if(proFeatureEnabled(commitsDiffCommitsTestPassed)) {
-                                        DropdownMenuItem(
-                                            text = { Text(stringResource(R.string.diff_commits)) },
-                                            onClick = {
-                                                showDiffCommitDialog.value = true
-
-                                                //关闭顶栏菜单
-                                                showTopBarMenu.value = false
-                                            }
-                                        )
-                                    }
-
-                                    if(proFeatureEnabled(resetByHashTestPassed)){
-                                        DropdownMenuItem(
-                                            text = { Text(stringResource(R.string.reset)) },
-                                            onClick = {
-                                                showResetDialog.value = true
-
-                                                //关闭顶栏菜单
-                                                showTopBarMenu.value = false
-                                            }
-                                        )
-                                    }
-
                                     DropdownMenuItem(
                                         text = { Text(stringResource(R.string.page_size)) },
                                         onClick = {
@@ -1282,30 +782,13 @@ fun FileHistoryScreen(
 //            if(commitOid.length > Cons.gitShortCommitHashRangeEndInclusive) {  //避免commitOid不够长导致抛异常，正常来说commitOid是40位，不会有问题，除非哪里出了问题
 //                commitOid = commitOid.substring(Cons.gitShortCommitHashRange)+"..."
 //            }
-            BottomSheet(showBottomSheet, sheetState, curCommit.value.shortOidStr) {
-                BottomSheetItem(sheetState, showBottomSheet, stringResource(R.string.checkout)) {
-                    // onClick()
-                    // 弹出确认框，询问是否确定执行checkout，可detach head，可创建分支，类似checkout remote branch
-                    //初始化弹窗默认选项
-                    val requireUserInputHash = false
-                    initCheckoutDialogComposableVersion(requireUserInputHash)
+            BottomSheet(showBottomSheet, sheetState, curObjShortOid.value) {
+                BottomSheetItem(sheetState, showBottomSheet, stringResource(R.string.restore)) {
+                   showRestoreDialog.value = true
                 }
-                if(dev_EnableUnTestedFeature || tagsTestPassed) {
-                    BottomSheetItem(sheetState, showBottomSheet, stringResource(R.string.new_tag)) {
-                        // onClick()
-                        // 弹出确认框，询问是否确定执行checkout，可detach head，可创建分支，类似checkout remote branch
-                        //初始化弹窗默认选项
-                        initNewTagDialog(curCommit.value.oidStr)
-                    }
-                }
-                if(proFeatureEnabled(resetByHashTestPassed)) {
-                    BottomSheetItem(sheetState, showBottomSheet, stringResource(R.string.reset)) {
-                        // onClick()
-                        //初始化弹窗默认选项
-//                    acceptHardReset.value = false
-                        resetOid.value = curCommit.value.oidStr
-                        showResetDialog.value = true
-                    }
+
+                BottomSheetItem(sheetState, showBottomSheet, stringResource(R.string.diff_to_prev)) {
+                   showRestoreDialog.value = true
                 }
 
 
@@ -1313,113 +796,38 @@ fun FileHistoryScreen(
                     // onClick()
 //                    requireShowViewDialog(appContext.getString(R.string.view_hash), curCommit.value.oidStr)
                     val sb = StringBuilder()
-                    sb.appendLine("${appContext.getString(R.string.hash)}: "+curCommit.value.oidStr)
+                    sb.appendLine("${appContext.getString(R.string.path)}: "+curObj.value.filePathUnderRepo).appendLine()
+                    sb.appendLine("${appContext.getString(R.string.commit_id)}: "+curObj.value.commitOidStr).appendLine()
+                    sb.appendLine("${appContext.getString(R.string.entry_id)}: "+curObj.value.treeEntryOidStr).appendLine()
+                    sb.appendLine("${appContext.getString(R.string.author)}: "+ Libgit2Helper.getFormattedUsernameAndEmail(curObj.value.authorUsername, curObj.value.authorEmail))
                     sb.appendLine()
-                    sb.appendLine("${appContext.getString(R.string.author)}: "+ Libgit2Helper.getFormattedUsernameAndEmail(curCommit.value.author, curCommit.value.email))
+                    sb.appendLine("${appContext.getString(R.string.committer)}: "+ Libgit2Helper.getFormattedUsernameAndEmail(curObj.value.committerUsername, curObj.value.committerEmail))
                     sb.appendLine()
-                    sb.appendLine("${appContext.getString(R.string.committer)}: "+ Libgit2Helper.getFormattedUsernameAndEmail(curCommit.value.committerUsername, curCommit.value.committerEmail))
+                    sb.appendLine("${appContext.getString(R.string.date)}: "+curObj.value.dateTime)
                     sb.appendLine()
-                    sb.appendLine("${appContext.getString(R.string.date)}: "+curCommit.value.dateTime)
+                    sb.appendLine("${appContext.getString(R.string.msg)}: "+curObj.value.msg)
                     sb.appendLine()
-                    sb.appendLine("${appContext.getString(R.string.msg)}: "+curCommit.value.msg)
-                    sb.appendLine()
-                    if(curCommit.value.branchShortNameList.isNotEmpty()){
-                        sb.appendLine((if(curCommit.value.branchShortNameList.size > 1) appContext.getString(R.string.branches) else appContext.getString(R.string.branch)) +": "+curCommit.value.branchShortNameList.toString())
-                        sb.appendLine()
-                    }
-                    if(curCommit.value.tagShortNameList.isNotEmpty()) {
-                        sb.appendLine((if(curCommit.value.tagShortNameList.size > 1) appContext.getString(R.string.tags) else appContext.getString(R.string.tag)) +": "+curCommit.value.tagShortNameList.toString())
-                        sb.appendLine()
-                    }
-                    if(curCommit.value.parentOidStrList.isNotEmpty()) {
-                        sb.appendLine((if(curCommit.value.parentOidStrList.size > 1) appContext.getString(R.string.parents) else appContext.getString(R.string.parent)) +": "+curCommit.value.parentOidStrList.toString())
-                        sb.appendLine()
-                    }
 
-                    if(curCommit.value.hasOther()) {
-                        sb.appendLine("${appContext.getString(R.string.other)}: ${curCommit.value.getOther()}")
-                        sb.appendLine()
-                    }
 
                     detailsString.value = sb.toString()
                     showDetailsDialog.value = true
                 }
-
-                if(UserUtil.isPro() && (dev_EnableUnTestedFeature || commitsDiffToLocalTestPassed)) {
-                    BottomSheetItem(sheetState, showBottomSheet, stringResource(R.string.diff_to_local)) {
-    //                    diff to local，点击跳转到tree to tree页面，然后diff
-                        //当前比较的描述信息的key，用来在界面显示这是在比较啥，值例如“和父提交比较”或者“比较两个提交”之类的
-                        val descKey = Cache.setThenReturnKey(appContext.getString(R.string.compare_to_local))
-                        //这里需要传当前commit，然后cl页面会用当前commit查出当前commit的parents
-                        val commit2 = Cons.gitLocalWorktreeCommitHash
-                        val commitForQueryParents = Cons.allZeroOidStr
-                        // url 参数： 页面导航id/repoId/treeoid1/treeoid2/desckey
-                        navController.navigate(
-                            //注意是 parentTreeOid to thisObj.treeOid，也就是 旧提交to新提交，相当于 git diff abc...def，比较的是旧版到新版，新增或删除或修改了什么，反过来的话，新增删除之类的也就反了
-                            "${Cons.nav_TreeToTreeChangeListScreen}/${curRepo.value.id}/${curCommit.value.oidStr}/$commit2/$descKey/$commitForQueryParents"
-                        )
-                    }
-                }
-
-                if(proFeatureEnabled(diffToHeadTestPassed)) {
-                    BottomSheetItem(sheetState, showBottomSheet, stringResource(R.string.diff_to_head)) {
-                        doJobThenOffLoading job@{
-                            Repository.open(curRepo.value.fullSavePath).use { repo->
-                                //这里需要传当前commit，然后cl页面会用当前commit查出当前commit的parents
-                                val commit2Ret = Libgit2Helper.getHeadCommit(repo)
-                                if(commit2Ret.hasError()) {
-                                    Msg.requireShowLongDuration(commit2Ret.msg)
-                                    return@job
-                                }
-
-                                val commit2 = commit2Ret.data!!.id().toString()
-                                val commit1 = curCommit.value.oidStr
-                                if(commit2 == commit1) {  //避免 Compare HEAD to HEAD
-                                    Msg.requireShowLongDuration(appContext.getString(R.string.num2_commits_same))
-                                    return@job
-                                }
-
-                                //当前比较的描述信息的key，用来在界面显示这是在比较啥，值例如“和父提交比较”或者“比较两个提交”之类的
-                                val descKey = Cache.setThenReturnKey(appContext.getString(R.string.compare_to_head))
-                                val commitForQueryParents = Cons.allZeroOidStr
-
-                                withMainContext {
-                                    // url 参数： 页面导航id/repoId/treeoid1/treeoid2/desckey
-                                    navController.navigate(
-                                        //注意是 parentTreeOid to thisObj.treeOid，也就是 旧提交to新提交，相当于 git diff abc...def，比较的是旧版到新版，新增或删除或修改了什么，反过来的话，新增删除之类的也就反了
-                                        "${Cons.nav_TreeToTreeChangeListScreen}/${curRepo.value.id}/$commit1/$commit2/$descKey/$commitForQueryParents"
-                                    )
-                                }
-
-                            }
-
-                        }
-                    }
-                }
-
-                if(proFeatureEnabled(cherrypickTestPassed)) {
-                    BottomSheetItem(sheetState, showBottomSheet, stringResource(R.string.cherrypick)) {
-                        //弹窗，让选parent，默认选中第一个
-                        if(curCommit.value.parentOidStrList.isEmpty()) {
-                            Msg.requireShowLongDuration(appContext.getString(R.string.no_parent_for_find_changes_for_cherrypick))
-                        }else {
-                            //默认选中第一个parent
-                            initCherrypickDialog(curCommit.value.oidStr, curCommit.value.parentOidStrList[0], curCommit.value.parentOidStrList)
-                        }
-                    }
-                }
-
-                if(proFeatureEnabled(createPatchTestPassed)) {
-                    BottomSheetItem(sheetState, showBottomSheet, stringResource(R.string.create_patch)) {
-                        //弹窗，让选parent，默认选中第一个
-                        if(curCommit.value.parentOidStrList.isEmpty()) {
-                            Msg.requireShowLongDuration(appContext.getString(R.string.no_parent_for_find_changes_for_create_patch))
-                        }else {
-                            //默认选中第一个parent
-                            initCreatePatchDialog(curCommit.value.oidStr, curCommit.value.parentOidStrList[0], curCommit.value.parentOidStrList)
-                        }
-                    }
-                }
+//
+//                if(UserUtil.isPro() && (dev_EnableUnTestedFeature || commitsDiffToLocalTestPassed)) {
+//                    BottomSheetItem(sheetState, showBottomSheet, stringResource(R.string.diff_to_local)) {
+//    //                    diff to local，点击跳转到tree to tree页面，然后diff
+//                        //当前比较的描述信息的key，用来在界面显示这是在比较啥，值例如“和父提交比较”或者“比较两个提交”之类的
+//                        val descKey = Cache.setThenReturnKey(appContext.getString(R.string.compare_to_local))
+//                        //这里需要传当前commit，然后cl页面会用当前commit查出当前commit的parents
+//                        val commit2 = Cons.gitLocalWorktreeCommitHash
+//                        val commitForQueryParents = Cons.allZeroOidStr
+//                        // url 参数： 页面导航id/repoId/treeoid1/treeoid2/desckey
+//                        navController.navigate(
+//                            //注意是 parentTreeOid to thisObj.treeOid，也就是 旧提交to新提交，相当于 git diff abc...def，比较的是旧版到新版，新增或删除或修改了什么，反过来的话，新增删除之类的也就反了
+//                            "${Cons.nav_TreeToTreeChangeListScreen}/${curRepo.value.id}/${curObj.value.oidStr}/$commit2/$descKey/$commitForQueryParents"
+//                        )
+//                    }
+//                }
 
 
                 //如果是filter模式，显示show in list以在列表揭示filter条目以查看前后提交（或者说上下文）
@@ -1430,7 +838,7 @@ fun FileHistoryScreen(
 
                         doJobThenOffLoading {
 //                            delay(100)  // wait rendering, may unnecessary yet
-                            val curItemIndex = curCommitIndex.intValue  // 被长按的条目在 filterlist中的索引
+                            val curItemIndex = curObjIndex.intValue  // 被长按的条目在 filterlist中的索引
                             val idxList = filterIdxList.value  //取出存储filter索引和源列表索引的 index list，条目索引对应filter list条目索引，条目值对应的是源列表的真实索引
 
                             doActIfIndexGood(curItemIndex, idxList) {  // it为当前被长按的条目在源列表中的真实索引
@@ -1441,80 +849,30 @@ fun FileHistoryScreen(
                     }
 
                 }
-//                BottomSheetItem(sheetState, showBottomSheet, stringResource(R.string.create_branch)){
-//                // TODO (日后再考虑是否实现这个) (这个选项个特点是“仅创建分支，但不checkout”，感觉意义不是很大，而且可以通过“先detach head检出commit，在去分支页面创建分支并不勾选checkout”来曲线实现)弹出确认框，提示基于当前commit创建分支，并有一个checkout勾选框，如果确定，则创建分支（并checkout(如果勾选了的话)）
-//                }
-//                BottomSheetItem(sheetState, showBottomSheet, stringResource(R.string.view_hash)){
-//                    // onClick()
-//                    requireShowViewDialog(appContext.getString(R.string.view_hash), curCommit.value.oidStr)
-//
-//                }
-//                BottomSheetItem(sheetState, showBottomSheet, stringResource(R.string.view_messages)){
-//                    // 弹窗显示分支列表
-//                    requireShowViewDialog(appContext.getString(R.string.view_messages), curCommit.value.msg)
-//                }
-//                BottomSheetItem(sheetState, showBottomSheet, stringResource(R.string.view_branches)){
-//                    // 弹窗显示分支列表
-//                    requireShowViewDialog(appContext.getString(R.string.view_branches), curCommit.value.branchShortNameList.toString())
-//
-//                }
-//                BottomSheetItem(sheetState, showBottomSheet, stringResource(R.string.view_parents)){
-//                    // 弹窗显示父提交长id列表
-//                    requireShowViewDialog(appContext.getString(R.string.view_parents), curCommit.value.parentOidStrList.toString())
-//
-//                }
-
             }
         }
 
         //根据关键字过滤条目
         val k = filterKeyword.value.text.lowercase()  //关键字
-        val needFilterByPath = pathsForFilter.value.isNotEmpty()
-        var paths:List<String>? = null
-        val enableFilter = filterModeOn.value && (k.isNotEmpty() || needFilterByPath)
+        val enableFilter = filterModeOn.value && k.isNotEmpty()
         val list = if(enableFilter){
             filterIdxList.value.clear()
 
-            val repo = if(needFilterByPath) {
-                try{
-                    paths = pathsForFilter.value.lines()
-                    Repository.open(curRepo.value.fullSavePath)
-                }catch (_:Exception) {
-                    null
-                }
-            }else {
-                null
-            }
-
             val retlist = list.value.filterIndexed {idx, it ->
-                var found = it.oidStr.lowercase().contains(k)
-                        || it.email.lowercase().contains(k)
-                        || it.author.lowercase().contains(k)
+                val found = it.treeEntryOidStr.lowercase().contains(k)
+                        || it.authorEmail.lowercase().contains(k)
+                        || it.authorUsername.lowercase().contains(k)
                         || it.committerEmail.lowercase().contains(k)
                         || it.committerUsername.lowercase().contains(k)
                         || it.dateTime.lowercase().contains(k)
-                        || it.branchShortNameList.toString().lowercase().contains(k)
-                        || it.tagShortNameList.toString().lowercase().contains(k)
-                        || it.parentOidStrList.toString().lowercase().contains(k)
-                        || it.treeOidStr.lowercase().contains(k)
+                        || it.commitOidStr.lowercase().contains(k)
                         || it.msg.lowercase().contains(k)
-                        || it.getOther().lowercase().contains(k)
 
-                // for "show in list"
-                if(found) {
-                    if(needFilterByPath && repo!=null && paths?.isNotEmpty() == true) {
-                        found = Libgit2Helper.isCommitIncludePaths(repo, commitFullOid = it.oidStr, paths=paths)
-                    }
 
-                    if(found) {
-                        filterIdxList.value.add(idx)
-                    }
-                }
+                filterIdxList.value.add(idx)
 
                 found
             }
-
-            repo?.close()
 
             retlist
         }else {
@@ -1571,27 +929,36 @@ fun FileHistoryScreen(
                 }
             }
         ) { idx, it ->
-            CommitItem(showBottomSheet, curCommit, curCommitIndex, idx, it, requireBlinkIdx) { thisObj ->
-                val parents = thisObj.parentOidStrList
-                if (parents.isEmpty()) {  // 如果没父提交，例如最初的提交就没父提交，提示没parent可比较
-                    //TODO 改成没父提交时列出当前提交的所有文件
-                    requireShowToast(appContext.getString(R.string.no_parent_for_compare))
-                } else {  //有父提交，取出第一个父提交和当前提交进行比较
-                    //当前比较的描述信息的key，用来在界面显示这是在比较啥，值例如“和父提交比较”或者“比较两个提交”之类的
-                    val descKey =
-                        Cache.setThenReturnKey(appContext.getString(R.string.compare_to_parent))
-                    //这里需要传当前commit，然后cl页面会用当前commit查出当前commit的parents
-                    val commit1 = parents[0]
-                    val commit2 = thisObj.oidStr
-                    val commitForQueryParents = commit2
-                    // url 参数： 页面导航id/repoId/treeoid1/treeoid2/desckey
-                    navController.navigate(
-                        //注意是 parentTreeOid to thisObj.treeOid，也就是 旧提交to新提交，相当于 git diff abc...def，比较的是旧版到新版，新增或删除或修改了什么，反过来的话，新增删除之类的也就反了
-                        "${Cons.nav_TreeToTreeChangeListScreen}/${curRepo.value.id}/$commit1/$commit2/$descKey/$commitForQueryParents"
-                    )
+            FileHistoryItem(showBottomSheet, curObj, curObjIndex, idx, it, requireBlinkIdx) { thisObj ->
+                val underRepoPathKey = Cache.setThenReturnKey(fileRelativePath)
+                val indexAtDiffableList = idx
+                val diffableListKey = Cache.setThenReturnKey(list.toList())
 
-                }
+                val commit1 = it.commitOidStr
+                val commit2 = Cons.gitLocalWorktreeCommitHash
+
+                val isSubm =0
+                val isDiffToLocal = 1
+                val localAtDiffRight = 1
+                //导航到diffScreen
+                navController.navigate(
+                    Cons.nav_DiffScreen +
+                            "/" + repoId+
+                            //    "/" + encodeStrUri(item.relativePathUnderRepo) +
+                            "/" + Cons.gitDiffFromFileHistoryToLocal +
+                            "/" + Cons.gitStatusModified +
+                            "/" + "0" +
+                            "/" + underRepoPathKey +
+                            "/" + commit1 +
+                            "/" + commit2 +
+                            "/" + isSubm +
+                            "/" + isDiffToLocal
+                            + "/" + diffableListKey
+                            + "/" + indexAtDiffableList
+                            +"/" + localAtDiffRight
+                )
             }
+
             HorizontalDivider()
         }
 
@@ -1674,10 +1041,27 @@ fun FileHistoryScreen(
                 }
                 curRepo.value = repoFromDb
                 val repoFullPath = repoFromDb.fullSavePath
-                val repoName = repoFromDb.repoName
+                titleInfo.value = repoFromDb.repoName +": "+fileRelativePath
+
 //            val isDetached = dbIntToBool(repoFromDb.isDetached)
 
-                Repository.open(repoFullPath).use {
+                Repository.open(repoFullPath).use { repo ->
+                    val head = Libgit2Helper.resolveHEAD(repo)
+                    if (head == null) {
+                        MyLog.w(TAG, "#LaunchedEffect: head is null! repoId=$repoId}")
+                        return@job
+                    }
+                    val headOid = head.peel(GitObject.Type.COMMIT)?.id()
+                    if (headOid == null || headOid.isNullOrEmptyOrZero) {
+                        MyLog.w(
+                            TAG,
+                            "#LaunchedEffect: head oid is null or invalid! repoId=$repoId}, headOid=${headOid.toString()}"
+                        )
+                        return@job
+                    }
+
+
+                    headOidOfThisScreen.value = headOid
                 }
 
                 //第一次查询，指向headOid，NO！不要这么做，不然compose销毁又重建，恢复数据时，指向原本列表之后的commit就又重新指向head了，就乱了

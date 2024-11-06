@@ -35,6 +35,7 @@ import com.catpuppyapp.puppygit.compose.OpenAsDialog
 import com.catpuppyapp.puppygit.constants.Cons
 import com.catpuppyapp.puppygit.constants.PageRequest
 import com.catpuppyapp.puppygit.data.entity.RepoEntity
+import com.catpuppyapp.puppygit.git.FileHistoryDto
 import com.catpuppyapp.puppygit.git.StatusTypeEntrySaver
 import com.catpuppyapp.puppygit.play.pro.R
 import com.catpuppyapp.puppygit.screen.content.DiffContent
@@ -82,16 +83,33 @@ fun DiffScreen(
 
     val appContext = AppModel.singleInstanceHolder.appContext
 
+    val isFileHistoryToLocal = fromTo == Cons.gitDiffFromFileHistoryToLocal
+
     val scope = rememberCoroutineScope()
     val settings = remember { SettingsUtil.getSettingsSnapshot() }
 
     val clipboardManager = LocalClipboardManager.current
 
+    val treeOid1Str = rememberSaveable { mutableStateOf(treeOid1Str) }
+
     //这个值存到状态变量里之后就不用管了，与页面共存亡即可，如果旋转屏幕也没事，返回rememberSaveable可恢复
 //    val relativePathUnderRepoDecoded = (Cache.Map.getThenDel(Cache.Map.Key.diffScreen_UnderRepoPath) as? String)?:""
     val relativePathUnderRepoState = rememberSaveable { mutableStateOf((Cache.getByTypeThenDel<String>(underRepoPathKey)) ?: "")}
 
-    val diffableItemList = mutableCustomStateListOf(stateKeyTag, "diffableItemList") { (Cache.getByTypeThenDel<List<StatusTypeEntrySaver>>(diffableItemListKey)) ?: listOf()}
+    val diffableItemList = mutableCustomStateListOf(stateKeyTag, "diffableItemList") {
+        if(isFileHistoryToLocal) {
+            listOf()
+        } else {
+            (Cache.getByTypeThenDel<List<StatusTypeEntrySaver>>(diffableItemListKey)) ?: listOf()
+        }
+    }
+    val diffableItemListForFileHistory = mutableCustomStateListOf(stateKeyTag, "diffableItemListForFileHistory") {
+        if(isFileHistoryToLocal) {
+            (Cache.getByTypeThenDel<List<FileHistoryDto>>(diffableItemListKey)) ?: listOf()
+        }else {
+            listOf()
+        }
+    }
     val curItemIndex = rememberSaveable { mutableIntStateOf(curItemIndexAtDiffableItemList) }
     val changeType = rememberSaveable { mutableStateOf(changeType) }
     val fileSize = rememberSaveable { mutableLongStateOf(fileSize) }
@@ -220,7 +238,13 @@ fun DiffScreen(
         PageRequest.clearStateThenDoAct(request) {
             val sb = StringBuilder()
             sb.append(appContext.getString(R.string.name)+": ").appendLine(fileNameOnly.value).appendLine()
-            sb.append(appContext.getString(R.string.change_type)+": ").appendLine(changeType.value).appendLine()
+            if(isFileHistoryToLocal){
+                sb.append(appContext.getString(R.string.commit_id)+": ").appendLine(treeOid1Str.value).appendLine()
+                sb.append(appContext.getString(R.string.entry_id)+": ").appendLine(diffableItemListForFileHistory.value[curItemIndex.intValue].treeEntryOidStr).appendLine()
+
+            }else {
+                sb.append(appContext.getString(R.string.change_type)+": ").appendLine(changeType.value).appendLine()
+            }
 
 
             sb.append(appContext.getString(R.string.path)+": ").appendLine(relativePathUnderRepoState.value).appendLine()
@@ -279,11 +303,17 @@ fun DiffScreen(
     val switchItem = {newItem:StatusTypeEntrySaver, newItemIndex:Int->
         changeType.value = newItem.changeType ?:""
         isSubmodule.value = newItem.itemType == Cons.gitItemTypeSubmodule
-        fileSize.value = newItem.fileSizeInBytes
+        fileSize.longValue = newItem.fileSizeInBytes
         relativePathUnderRepoState.value = newItem.relativePathUnderRepo
 
-        curItemIndex.value = newItemIndex
+        curItemIndex.intValue = newItemIndex
 
+        changeStateTriggerRefreshPage(needRefresh)
+    }
+
+    val switchItemForFileHistory = {newItem:FileHistoryDto, newItemIndex:Int->
+        curItemIndex.intValue = newItemIndex
+        treeOid1Str.value = newItem.commitOidStr
         changeStateTriggerRefreshPage(needRefresh)
     }
 
@@ -427,30 +457,32 @@ fun DiffScreen(
         // if diff to local, enable edit menu and disable copy(because may cause app crashed), else disable edit menu but enable copy(no complex layout enable copy is ok)
         if(localAtDiffRight && copyModeOn.value.not()){
             DiffContent(repoId=repoId,relativePathUnderRepoDecoded=relativePathUnderRepoState.value,
-                fromTo=fromTo,changeType=changeType.value,fileSize=fileSize.value, naviUp=naviUp, dbContainer=dbContainer,
-                contentPadding = contentPadding, treeOid1Str = treeOid1Str, treeOid2Str = treeOid2Str,
+                fromTo=fromTo,changeType=changeType.value,fileSize=fileSize.longValue, naviUp=naviUp, dbContainer=dbContainer,
+                contentPadding = contentPadding, treeOid1Str = treeOid1Str.value, treeOid2Str = treeOid2Str,
                 needRefresh = needRefresh, listState = listState, curRepo=curRepo,
                 requireBetterMatchingForCompare = requireBetterMatchingForCompare, fileFullPath = fileFullPath.value,
-                isSubmodule=isSubmodule.value, isDiffToLocal = isDiffToLocal,diffableItemList= diffableItemList.value,
+                isSubmodule=isSubmodule.value, isDiffToLocal = isDiffToLocal,
+                diffableItemList= diffableItemList.value,diffableItemListForFileHistory=diffableItemListForFileHistory.value,
                 curItemIndex=curItemIndex, switchItem=switchItem, clipboardManager=clipboardManager,
                 loadingOnParent=loadingOn, loadingOffParent=loadingOff,isFileAndExist=enableLineTapMenu,
                 showLineNum=showLineNum.value, showOriginType=showOriginType.value,
                 fontSize=fontSize.intValue, lineNumSize=lineNumFontSize.intValue,
-                groupDiffContentByLineNum=groupDiffContentByLineNum.value
+                groupDiffContentByLineNum=groupDiffContentByLineNum.value,switchItemForFileHistory=switchItemForFileHistory
             )
         }else {
             MySelectionContainer {
                 DiffContent(repoId=repoId,relativePathUnderRepoDecoded=relativePathUnderRepoState.value,
-                    fromTo=fromTo,changeType=changeType.value,fileSize=fileSize.value, naviUp=naviUp, dbContainer=dbContainer,
-                    contentPadding = contentPadding, treeOid1Str = treeOid1Str, treeOid2Str = treeOid2Str,
+                    fromTo=fromTo,changeType=changeType.value,fileSize=fileSize.longValue, naviUp=naviUp, dbContainer=dbContainer,
+                    contentPadding = contentPadding, treeOid1Str = treeOid1Str.value, treeOid2Str = treeOid2Str,
                     needRefresh = needRefresh, listState = listState, curRepo=curRepo,
                     requireBetterMatchingForCompare = requireBetterMatchingForCompare, fileFullPath = fileFullPath.value,
-                    isSubmodule=isSubmodule.value, isDiffToLocal = isDiffToLocal,diffableItemList= diffableItemList.value,
+                    isSubmodule=isSubmodule.value, isDiffToLocal = isDiffToLocal,
+                    diffableItemList= diffableItemList.value,diffableItemListForFileHistory=diffableItemListForFileHistory.value,
                     curItemIndex=curItemIndex, switchItem=switchItem, clipboardManager=clipboardManager,
                     loadingOnParent=loadingOn, loadingOffParent=loadingOff, isFileAndExist=enableLineTapMenu,
                     showLineNum=showLineNum.value, showOriginType=showOriginType.value,
                     fontSize=fontSize.intValue, lineNumSize=lineNumFontSize.intValue,
-                    groupDiffContentByLineNum=groupDiffContentByLineNum.value
+                    groupDiffContentByLineNum=groupDiffContentByLineNum.value,switchItemForFileHistory=switchItemForFileHistory
 
 
                 )
