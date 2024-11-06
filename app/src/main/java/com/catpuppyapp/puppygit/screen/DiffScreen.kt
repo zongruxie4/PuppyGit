@@ -269,7 +269,9 @@ fun DiffScreen(
     if(request.value == PageRequest.showDetails) {
         PageRequest.clearStateThenDoAct(request) {
             val sb = StringBuilder()
-            sb.appendLine("${Libgit2Helper.getShortOidStrByFull(treeOid1Str.value)}..${Libgit2Helper.getShortOidStrByFull(treeOid2Str.value)}").appendLine()
+            if(treeOid1Str.value != Cons.allZeroOidStr || treeOid2Str.value!=Cons.allZeroOidStr){
+                sb.appendLine("${Libgit2Helper.getShortOidStrByFull(treeOid1Str.value)}..${Libgit2Helper.getShortOidStrByFull(treeOid2Str.value)}").appendLine()
+            }
             sb.append(appContext.getString(R.string.name)+": ").appendLine(fileNameOnly.value).appendLine()
             if(isFileHistoryTreeToLocal || isFileHistoryTreeToTree){
                 sb.append(appContext.getString(R.string.commit_id)+": ").appendLine(treeOid1Str.value).appendLine()
