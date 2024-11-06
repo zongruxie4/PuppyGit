@@ -127,7 +127,7 @@ The `libcrypto.so` and `libssl.so` built from <a href=https://github.com/openssl
 The Editor of PuppyGit is modified from kaleidot725's <a href=https://github.com/kaleidot725/text-editor-compose>text-editor-compose</a>(<a href=https://raw.githubusercontent.com/kaleidot725/text-editor-compose/main/LICENSE>LICENSE</a>)
 
 ### Other Files
-The `MIMEType` related util classes copied from ZhangHai's <a href=https://github.com/zhanghai/MaterialFiles>Material Files</a>(<a href=https://github.com/zhanghai/MaterialFiles/blob/master/LICENSE>LICENSE</a>)
-The util class `FsUtil` origin version copied from <a href=https://github.com/maks/MGit/blob/master/app/src/main/java/me/sheimi/android/utils/FsUtils.java>MGit FsUtil Class</a>(<a href=https://github.com/maks/MGit/blob/master/COPYING>LICENSE</a>)
+The `MIMEType` related util classes copied from ZhangHai's <a href=https://github.com/zhanghai/MaterialFiles>Material Files</a>(<a href=https://github.com/zhanghai/MaterialFiles/blob/master/LICENSE>LICENSE</a>)<br>
+The util class `FsUtil` origin version copied from <a href=https://github.com/maks/MGit/blob/master/app/src/main/java/me/sheimi/android/utils/FsUtils.java>MGit FsUtil Class</a>(<a href=https://github.com/maks/MGit/blob/master/COPYING>LICENSE</a>)<br>
 The `PermissionUtils` copied from <a href=https://github.com/NeoApplications/Neo-Backup/blob/main/src/main/java/com/machiav3lli/backup/utils/PermissionUtils.kt>Neo-Backup PermissionUtils class</a>(<a href=https://github.com/NeoApplications/Neo-Backup/blob/main/LICENSE.md>LICENSE</a>)
 
