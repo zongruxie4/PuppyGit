@@ -93,8 +93,24 @@ fun DiffScreen(
 
     val clipboardManager = LocalClipboardManager.current
 
-    val treeOid1Str = rememberSaveable { mutableStateOf(treeOid1Str) }
-    val treeOid2Str = rememberSaveable { mutableStateOf(treeOid2Str) }
+    val treeOid1Str = rememberSaveable { mutableStateOf(
+        if(fromTo == Cons.gitDiffFromIndexToWorktree) {
+            Cons.gitIndexCommitHash
+        }else if(fromTo == Cons.gitDiffFromHeadToIndex) {
+            Cons.gitHeadCommitHash
+        }else{
+            treeOid1Str
+        }
+    ) }
+    val treeOid2Str = rememberSaveable { mutableStateOf(
+        if(fromTo == Cons.gitDiffFromIndexToWorktree) {
+            Cons.gitLocalWorktreeCommitHash
+        }else if(fromTo == Cons.gitDiffFromHeadToIndex) {
+            Cons.gitIndexCommitHash
+        }else {
+            treeOid2Str
+        }
+    ) }
 
     //这个值存到状态变量里之后就不用管了，与页面共存亡即可，如果旋转屏幕也没事，返回rememberSaveable可恢复
 //    val relativePathUnderRepoDecoded = (Cache.Map.getThenDel(Cache.Map.Key.diffScreen_UnderRepoPath) as? String)?:""
@@ -247,7 +263,9 @@ fun DiffScreen(
             fileRelativePath = relativePathUnderRepoState.value,
             repoId = repoId,
             onSuccess = {
-                changeStateTriggerRefreshPage(needRefresh)
+                if(isFileHistoryTreeToLocal) {
+                    changeStateTriggerRefreshPage(needRefresh)
+                }
             }
         )
     }
@@ -270,7 +288,7 @@ fun DiffScreen(
         PageRequest.clearStateThenDoAct(request) {
             val sb = StringBuilder()
             if(treeOid1Str.value != Cons.allZeroOidStr || treeOid2Str.value!=Cons.allZeroOidStr){
-                sb.appendLine("${Libgit2Helper.getShortOidStrByFull(treeOid1Str.value)}..${Libgit2Helper.getShortOidStrByFull(treeOid2Str.value)}").appendLine()
+                sb.append(appContext.getString(R.string.comparing)+": ").appendLine("${Libgit2Helper.getShortOidStrByFull(treeOid1Str.value)}..${Libgit2Helper.getShortOidStrByFull(treeOid2Str.value)}").appendLine()
             }
             sb.append(appContext.getString(R.string.name)+": ").appendLine(fileNameOnly.value).appendLine()
             if(isFileHistoryTreeToLocal){

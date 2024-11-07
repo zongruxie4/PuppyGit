@@ -1014,6 +1014,7 @@
     <string name="commit_history_is_empty">提交历史为空</string>
     <string name="item_count_n">条目数: ph_a3f241dc_1</string>
     <string name="current_n_all_m">当前: ph_a3f241dc_1, 总共: ph_a3f241dc_2</string>
+    <string name="comparing">正在比较</string>
 
 
 </resources>
