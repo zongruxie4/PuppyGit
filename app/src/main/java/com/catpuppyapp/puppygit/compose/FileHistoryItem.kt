@@ -94,7 +94,7 @@ fun FileHistoryItem(
 
             Text(text = stringResource(R.string.commit_id) + ":")
             Text(
-                text = dto.commitOidStr,
+                text = dto.getCachedCommitShortOidStr(),
                 maxLines = 1,
                 overflow = TextOverflow.Ellipsis,
                 fontWeight = FontWeight.Light
@@ -109,7 +109,7 @@ fun FileHistoryItem(
 
             Text(text = stringResource(R.string.entry_id) + ":")
             Text(
-                text = dto.treeEntryOidStr,
+                text = dto.getCachedTreeEntryShortOidStr(),
                 maxLines = 1,
                 overflow = TextOverflow.Ellipsis,
                 fontWeight = FontWeight.Light

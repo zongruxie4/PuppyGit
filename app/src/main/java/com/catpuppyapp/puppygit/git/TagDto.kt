@@ -19,6 +19,9 @@ class TagDto (
     var date:OffsetDateTime?=null,
     var msg:String=""
 ) {
+
+    private var targetShortOidStr:String?=null
+
     fun getFormattedTaggerNameAndEmail():String {
         return Libgit2Helper.getFormattedUsernameAndEmail(taggerName, taggerEmail)
     }
@@ -31,5 +34,13 @@ class TagDto (
         val appContext = AppModel.singleInstanceHolder.appContext
 
         return if(isAnnotated) appContext.getString(R.string.annotated) else appContext.getString(R.string.lightweight)
+    }
+
+    fun getCachedTargetShortOidStr():String {
+        if(targetShortOidStr==null) {
+            targetShortOidStr=Libgit2Helper.getShortOidStrByFull(targetFullOidStr)
+        }
+
+        return targetShortOidStr ?: ""
     }
 }

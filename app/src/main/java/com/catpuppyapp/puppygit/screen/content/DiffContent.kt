@@ -869,7 +869,7 @@ private fun NaviButton(
 
         CardButton(
             text =  replaceStringResList(stringResource(R.string.prev_filename), listOf(if(hasPrevious) {
-                if(isFileHistoryTreeToLocalOrTree) diffableItemListForFileHistory[previousIndex].commitOidStr else diffableItemList[previousIndex].fileName
+                if(isFileHistoryTreeToLocalOrTree) diffableItemListForFileHistory[previousIndex].getCachedCommitShortOidStr() else diffableItemList[previousIndex].fileName
             } else stringResource(R.string.none))),
             enabled = hasPrevious
         ) {
@@ -882,7 +882,7 @@ private fun NaviButton(
         Spacer(Modifier.height(10.dp))
         CardButton(
             text = replaceStringResList(stringResource(R.string.next_filename), listOf(if(hasNext) {
-                if(isFileHistoryTreeToLocalOrTree) diffableItemListForFileHistory[nextIndex].commitOidStr else diffableItemList[nextIndex].fileName
+                if(isFileHistoryTreeToLocalOrTree) diffableItemListForFileHistory[nextIndex].getCachedCommitShortOidStr() else diffableItemList[nextIndex].fileName
             } else stringResource(R.string.none))),
             enabled = hasNext
         ) {

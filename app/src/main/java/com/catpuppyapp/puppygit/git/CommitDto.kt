@@ -22,7 +22,7 @@ class CommitDto (
                  var tagShortNameList:MutableList<String> = mutableListOf()
 ) {
 
-    var otherMsg:String?=null
+    private var otherMsg:String?=null
 
     fun hasOther():Boolean {
         return isGrafted || isMerged()

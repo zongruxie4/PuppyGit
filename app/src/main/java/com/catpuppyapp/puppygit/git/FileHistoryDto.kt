@@ -1,5 +1,7 @@
 package com.catpuppyapp.puppygit.git
 
+import com.catpuppyapp.puppygit.utils.Libgit2Helper
+
 class FileHistoryDto (
 //    var fileName:String="",
     var filePathUnderRepo:String="",
@@ -15,12 +17,24 @@ class FileHistoryDto (
     var msg: String="",  //完整commit信息
     var repoId:String="",  //数据库的repoId，用来判断当前是在操作哪个仓库
 ) {
+
+    private var commitShortOidStr:String?=null
+    private var treeEntryShortOidStr:String?=null
+
     fun authorAndCommitterAreSame():Boolean {
         return authorUsername==committerUsername && authorEmail==committerEmail
     }
+
+    fun getCachedCommitShortOidStr():String {
+        if(commitShortOidStr==null) {
+            commitShortOidStr = Libgit2Helper.getShortOidStrByFull(commitOidStr)
+        }
+        return commitShortOidStr ?:""
+    }
+    fun getCachedTreeEntryShortOidStr():String {
+        if(treeEntryShortOidStr==null) {
+            treeEntryShortOidStr = Libgit2Helper.getShortOidStrByFull(treeEntryOidStr)
+        }
+        return treeEntryShortOidStr ?:""
+    }
 }
-//
-//class FileHistoryQueryResult(
-//    hasMore:Boolean,  // not 100% has more, but at least can try more once revwalk.next(), if return null, is really no more
-//    lastVersionTreeEntryOidStr:String?
-//)

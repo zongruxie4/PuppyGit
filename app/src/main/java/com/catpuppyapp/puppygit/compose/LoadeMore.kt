@@ -26,7 +26,6 @@ import com.catpuppyapp.puppygit.play.pro.R
 import com.catpuppyapp.puppygit.style.MyStyleKt
 import com.catpuppyapp.puppygit.ui.theme.Theme
 import com.catpuppyapp.puppygit.utils.UIHelper
-import com.catpuppyapp.puppygit.utils.replaceStringResList
 
 
 private val TAG = "LoadMore"
@@ -44,7 +43,7 @@ fun LoadMore(
     rememberPageSize:MutableState<Boolean>,
     showSetPageSizeDialog:MutableState<Boolean>,
     pageSizeForDialog:MutableState<String>,
-    loadedCount:Int,
+    btnUpsideText:String?=null, // text at upside of buttons, usually show count of items etc...
     onClick:()->Unit
 ) {
     val inDarkTheme = Theme.inDarkTheme
@@ -63,13 +62,13 @@ fun LoadMore(
         .padding(start = 10.dp, end = 10.dp)
         .then(modifier)
     ) {
-        if(loadedCount>0) {
+        if(btnUpsideText!=null) {
             Row (
                 modifier = Modifier.fillMaxWidth(),
                 verticalAlignment = Alignment.CenterVertically,
                 horizontalArrangement = Arrangement.Center
             ){
-                Text(replaceStringResList(stringResource(R.string.item_count_n), listOf(""+loadedCount)), fontWeight = FontWeight.Light, fontStyle = FontStyle.Italic, color = UIHelper.getSecondaryFontColor())
+                Text(btnUpsideText, fontWeight = FontWeight.Light, fontStyle = FontStyle.Italic, color = UIHelper.getSecondaryFontColor())
             }
         }
         Row (

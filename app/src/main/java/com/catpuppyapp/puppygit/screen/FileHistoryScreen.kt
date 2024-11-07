@@ -82,6 +82,7 @@ import com.catpuppyapp.puppygit.dev.resetByHashTestPassed
 import com.catpuppyapp.puppygit.git.CommitDto
 import com.catpuppyapp.puppygit.git.FileHistoryDto
 import com.catpuppyapp.puppygit.play.pro.R
+import com.catpuppyapp.puppygit.screen.functions.getLoadText
 import com.catpuppyapp.puppygit.settings.SettingsUtil
 import com.catpuppyapp.puppygit.style.MyStyleKt
 import com.catpuppyapp.puppygit.utils.AppModel
@@ -977,7 +978,7 @@ fun FileHistoryScreen(
                         showSetPageSizeDialog=showSetPageSizeDialog,
                         pageSizeForDialog=pageSizeForDialog,
                         text = loadMoreText.value,
-                        loadedCount = list.size,
+                        btnUpsideText = getLoadText(list.size, enableFilter, appContext),
                         enableLoadMore = !loadMoreLoading.value && hasMore.value, enableAndShowLoadToEnd = !loadMoreLoading.value && hasMore.value,
                         loadToEndOnClick = {
                             val firstLoad = false
@@ -1064,7 +1065,7 @@ fun FileHistoryScreen(
                         showSetPageSizeDialog=showSetPageSizeDialog,
                         pageSizeForDialog=pageSizeForDialog,
                         text = loadMoreText.value,
-                        loadedCount = list.size,
+                        btnUpsideText = getLoadText(list.size, enableFilter, appContext),
                         enableLoadMore = !loadMoreLoading.value && hasMore.value, enableAndShowLoadToEnd = !loadMoreLoading.value && hasMore.value,
                         loadToEndOnClick = {
                             val firstLoad = false

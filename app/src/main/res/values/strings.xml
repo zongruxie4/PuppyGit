@@ -1032,5 +1032,6 @@
     <!--    e.g. current: 10, all:30 -->
     <string name="current_n_all_m">current: ph_a3f241dc_1, all: ph_a3f241dc_2</string>
     <string name="comparing">Comparing</string>
+    <string name="loaded_n">loaded: ph_a3f241dc_1</string>
 
 </resources>

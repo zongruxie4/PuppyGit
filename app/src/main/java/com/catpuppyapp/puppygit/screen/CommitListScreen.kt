@@ -54,6 +54,7 @@ import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.platform.LocalClipboardManager
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.platform.LocalView
@@ -104,6 +105,7 @@ import com.catpuppyapp.puppygit.dev.tagsTestPassed
 import com.catpuppyapp.puppygit.etc.Ret
 import com.catpuppyapp.puppygit.git.CommitDto
 import com.catpuppyapp.puppygit.play.pro.R
+import com.catpuppyapp.puppygit.screen.functions.getLoadText
 import com.catpuppyapp.puppygit.settings.SettingsUtil
 import com.catpuppyapp.puppygit.style.MyStyleKt
 import com.catpuppyapp.puppygit.user.UserUtil
@@ -189,7 +191,7 @@ fun CommitListScreen(
 //    println("fullOidKey="+fullOidKey)  //expect true when nav from repoCard
 
     val homeTopBarScrollBehavior = AppModel.singleInstanceHolder.homeTopBarScrollBehavior
-    val appContext = AppModel.singleInstanceHolder.appContext
+    val appContext = LocalContext.current
     val navController = AppModel.singleInstanceHolder.navController
     val scope = rememberCoroutineScope()
     val haptic = LocalHapticFeedback.current
@@ -1917,6 +1919,8 @@ fun CommitListScreen(
             //更新是否启用filter
             enableFilterState.value = enableFilter
 
+
+
             MyLazyColumn(
                 contentPadding = contentPadding,
                 list = list,
@@ -1932,7 +1936,7 @@ fun CommitListScreen(
                         pageSizeForDialog=pageSizeForDialog,
                         text = loadMoreText.value,
                         enableLoadMore = !loadMoreLoading.value && hasMore.value, enableAndShowLoadToEnd = !loadMoreLoading.value && hasMore.value,
-                        loadedCount = list.size,
+                        btnUpsideText = getLoadText(list.size, enableFilter, appContext),
                         loadToEndOnClick = {
                             val firstLoad = false
                             val forceReload = false
@@ -2004,7 +2008,7 @@ fun CommitListScreen(
                         showSetPageSizeDialog=showSetPageSizeDialog,
                         pageSizeForDialog=pageSizeForDialog,
                         text = loadMoreText.value,
-                        loadedCount = list.size,
+                        btnUpsideText = getLoadText(list.size, enableFilter, appContext),
                         enableLoadMore = !loadMoreLoading.value && hasMore.value, enableAndShowLoadToEnd = !loadMoreLoading.value && hasMore.value,
                         loadToEndOnClick = {
                             val firstLoad = false

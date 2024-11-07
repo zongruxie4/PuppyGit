@@ -94,7 +94,7 @@ fun CommitItem(
         ){
 
             Text(text = stringResource(R.string.hash) +":")
-            Text(text = commitDto.oidStr,
+            Text(text = commitDto.shortOidStr,
                 maxLines = 1,
                 overflow = TextOverflow.Ellipsis,
                 fontWeight = FontWeight.Light

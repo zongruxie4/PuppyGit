@@ -9,6 +9,7 @@ import com.catpuppyapp.puppygit.utils.Msg
 import com.catpuppyapp.puppygit.utils.MyLog
 import com.catpuppyapp.puppygit.utils.cache.Cache
 import com.catpuppyapp.puppygit.utils.doJobThenOffLoading
+import com.catpuppyapp.puppygit.utils.replaceStringResList
 import com.catpuppyapp.puppygit.utils.withMainContext
 
 private val TAG = "ScreenHelper"
@@ -68,3 +69,13 @@ fun goToFileHistory(fileFullPath:String, appContext: Context){
     }
 }
 
+
+fun getLoadText(loadedCount:Int, actuallyEnabledFilterMode:Boolean, appContext:Context):String?{
+    return if(loadedCount < 1){
+        null
+    }else if(actuallyEnabledFilterMode) {
+        replaceStringResList(appContext.getString(R.string.item_count_n), listOf(""+loadedCount))
+    }else {
+        replaceStringResList(appContext.getString(R.string.loaded_n), listOf(""+loadedCount))
+    }
+}
