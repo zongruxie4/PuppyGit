@@ -50,6 +50,7 @@ import com.catpuppyapp.puppygit.settings.SettingsUtil
 import com.catpuppyapp.puppygit.style.MyStyleKt
 import com.catpuppyapp.puppygit.utils.Libgit2Helper
 import com.catpuppyapp.puppygit.utils.MyLog
+import com.catpuppyapp.puppygit.utils.UIHelper
 import com.catpuppyapp.puppygit.utils.changeStateTriggerRefreshPage
 import com.catpuppyapp.puppygit.utils.compare.SimilarCompare
 import com.catpuppyapp.puppygit.utils.compare.param.StringCompareParam
@@ -850,6 +851,22 @@ private fun NaviButton(
         val nextIndex = curItemIndex.intValue + 1
         val hasPrevious = previousIndex >= 0 && previousIndex < size
         val hasNext = nextIndex >= 0 && nextIndex < size
+
+        if(size>0) {
+            Row (
+                modifier = Modifier.fillMaxWidth(),
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.Center
+            ){
+                Text(
+                    replaceStringResList(stringResource(R.string.current_n_all_m), listOf("" + (curItemIndex.intValue+1), "" + size)),
+                    fontWeight = FontWeight.Light,
+                    fontStyle = FontStyle.Italic,
+                    color = UIHelper.getSecondaryFontColor()
+                )
+            }
+        }
+
         CardButton(
             text =  replaceStringResList(stringResource(R.string.prev_filename), listOf(if(hasPrevious) {
                 if(isFileHistoryTreeToLocal) diffableItemListForFileHistory[previousIndex].commitOidStr else diffableItemList[previousIndex].fileName

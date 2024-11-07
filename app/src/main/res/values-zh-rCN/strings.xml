@@ -1013,6 +1013,7 @@
     <string name="file_hasnt_history_yet">无文件历史记录</string>
     <string name="commit_history_is_empty">提交历史为空</string>
     <string name="loaded_n">已加载: ph_a3f241dc_1</string>
+    <string name="current_n_all_m">当前: ph_a3f241dc_1, 总共: ph_a3f241dc_2</string>
 
 
 </resources>
