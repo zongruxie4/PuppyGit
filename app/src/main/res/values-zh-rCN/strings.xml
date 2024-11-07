@@ -1012,6 +1012,7 @@
     <string name="no_prev_to_compare">无上版供比较</string>
     <string name="file_hasnt_history_yet">无文件历史记录</string>
     <string name="commit_history_is_empty">提交历史为空</string>
+    <string name="loaded_n">已加载: ph_a3f241dc_1</string>
 
 
 </resources>

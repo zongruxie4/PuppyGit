@@ -23,6 +23,8 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.font.FontStyle
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import com.catpuppyapp.puppygit.play.pro.R
@@ -33,6 +35,7 @@ import com.catpuppyapp.puppygit.utils.AppModel
 import com.catpuppyapp.puppygit.utils.Msg
 import com.catpuppyapp.puppygit.utils.MyLog
 import com.catpuppyapp.puppygit.utils.UIHelper
+import com.catpuppyapp.puppygit.utils.replaceStringResList
 
 
 private val TAG = "LoadMore"
@@ -50,6 +53,7 @@ fun LoadMore(
     rememberPageSize:MutableState<Boolean>,
     showSetPageSizeDialog:MutableState<Boolean>,
     pageSizeForDialog:MutableState<String>,
+    loadedCount:Int,
     onClick:()->Unit
 ) {
     val inDarkTheme = Theme.inDarkTheme
@@ -68,6 +72,15 @@ fun LoadMore(
         .padding(start = 10.dp, end = 10.dp)
         .then(modifier)
     ) {
+        if(loadedCount>0) {
+            Row (
+                modifier = Modifier.fillMaxWidth(),
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.Center
+            ){
+                Text(replaceStringResList(stringResource(R.string.loaded_n), listOf(""+loadedCount)), fontWeight = FontWeight.Light, fontStyle = FontStyle.Italic, color = UIHelper.getSecondaryFontColor())
+            }
+        }
         Row (
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.SpaceBetween

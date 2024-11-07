@@ -65,16 +65,16 @@ object UIHelper {
         }
     }
 
-    fun getFontColor(inDarkTheme:Boolean): Color {
+    fun getFontColor(inDarkTheme:Boolean=Theme.inDarkTheme): Color {
         return if(inDarkTheme) MyStyleKt.TextColor.darkThemeFontColor else MyStyleKt.TextColor.fontColor
     }
 
-    fun getDisableBtnColor(inDarkTheme: Boolean):Color {
+    fun getDisableBtnColor(inDarkTheme: Boolean=Theme.inDarkTheme):Color {
         return if(inDarkTheme) MyStyleKt.IconColor.disable_DarkTheme else MyStyleKt.IconColor.disable
     }
 
     //不太重要的字体颜色
-    fun getSecondaryFontColor(inDarkTheme:Boolean): Color {
+    fun getSecondaryFontColor(inDarkTheme:Boolean=Theme.inDarkTheme): Color {
         return if(inDarkTheme) MyStyleKt.TextColor.darkThemeSecondaryFontColor else MyStyleKt.TextColor.secondaryFontColor
     }
 

@@ -399,7 +399,9 @@ fun FileHistoryScreen(
         keyName = "filterKeyword",
         initValue = TextFieldValue("")
     )
-    val filterModeOn = rememberSaveable { mutableStateOf(false)
+    // should use `enableFilterState` check filter mode really work or not, cause even this value true,
+    // but maybe no filter text inputted, then actually filter mode still not really working
+    val filterModeOn_dontUseThisCheckFilterModeReallyEnabledOrNot = rememberSaveable { mutableStateOf(false)
 }
     //存储符合过滤条件的条目在源列表中的真实索引。本列表索引对应filter list条目索引，值对应原始列表索引
     val filterIdxList = mutableCustomStateListOf(
@@ -603,7 +605,7 @@ fun FileHistoryScreen(
     }
 
     val getActuallyList = {
-        if(filterModeOn.value) {
+        if(enableFilterState.value) {
             filterList.value
         }else{
             list.value
@@ -619,7 +621,7 @@ fun FileHistoryScreen(
                     titleContentColor = MaterialTheme.colorScheme.primary,
                 ),
                 title = {
-                    if(filterModeOn.value) {
+                    if(filterModeOn_dontUseThisCheckFilterModeReallyEnabledOrNot.value) {
                         FilterTextField(
                             filterKeyword,
                             trailingIconTooltipText= stringResource(R.string.filter_by_paths),
@@ -642,9 +644,10 @@ fun FileHistoryScreen(
                                 onLongClick = {
                                     //长按显示仓库和分支信息
                                     haptic.performHapticFeedback(HapticFeedbackType.LongPress)
-//                                    Msg.requireShow(repoAndBranchText)
+
+                                    val count = if(enableFilterState.value) filterIdxList.value.size else list.value.size
                                     // show loaded how many items
-                                    Msg.requireShow("loaded: ${list.value.size}")
+                                    Msg.requireShow(replaceStringResList(appContext.getString(R.string.loaded_n), listOf(""+count)))
                                 }
                             ) { // onClick
                                 showTitleInfoDialog.value = true
@@ -677,14 +680,14 @@ fun FileHistoryScreen(
                     }
                 },
                 navigationIcon = {
-                    if(filterModeOn.value) {
+                    if(filterModeOn_dontUseThisCheckFilterModeReallyEnabledOrNot.value) {
                         LongPressAbleIconBtn(
                             tooltipText = stringResource(R.string.close),
                             icon = Icons.Filled.Close,
                             iconContentDesc = stringResource(R.string.close),
 
                         ) {
-                            filterModeOn.value = false
+                            filterModeOn_dontUseThisCheckFilterModeReallyEnabledOrNot.value = false
                         }
                     } else {
                         LongPressAbleIconBtn(
@@ -698,7 +701,7 @@ fun FileHistoryScreen(
                     }
                 },
                 actions = {
-                    if(!filterModeOn.value) {
+                    if(!filterModeOn_dontUseThisCheckFilterModeReallyEnabledOrNot.value) {
                         Row {
                             LongPressAbleIconBtn(
                                 tooltipText = stringResource(R.string.filter),
@@ -709,7 +712,7 @@ fun FileHistoryScreen(
                                 filterKeyword.value = TextFieldValue("")
                                 pathsForFilter.value = ""
 
-                                filterModeOn.value = true
+                                filterModeOn_dontUseThisCheckFilterModeReallyEnabledOrNot.value = true
                             }
 
                             //刷新按钮
@@ -902,7 +905,7 @@ fun FileHistoryScreen(
                     //如果是filter模式，显示show in list以在列表揭示filter条目以查看前后提交（或者说上下文）
                     if(enableFilterState.value) {
                         BottomSheetItem(sheetState, showBottomSheet, stringResource(R.string.show_in_list)) {
-                            filterModeOn.value = false
+                            filterModeOn_dontUseThisCheckFilterModeReallyEnabledOrNot.value = false
                             showBottomSheet.value = false
 
                             doJobThenOffLoading {
@@ -923,7 +926,7 @@ fun FileHistoryScreen(
 
             //根据关键字过滤条目
             val k = filterKeyword.value.text.lowercase()  //关键字
-            val enableFilter = filterModeOn.value && k.isNotEmpty()
+            val enableFilter = filterModeOn_dontUseThisCheckFilterModeReallyEnabledOrNot.value && k.isNotEmpty()
             val list = if(enableFilter){
                 filterIdxList.value.clear()
                 filterList.value.clear()
@@ -974,6 +977,7 @@ fun FileHistoryScreen(
                         showSetPageSizeDialog=showSetPageSizeDialog,
                         pageSizeForDialog=pageSizeForDialog,
                         text = loadMoreText.value,
+                        loadedCount = list.size,
                         enableLoadMore = !loadMoreLoading.value && hasMore.value, enableAndShowLoadToEnd = !loadMoreLoading.value && hasMore.value,
                         loadToEndOnClick = {
                             val firstLoad = false
@@ -1041,7 +1045,7 @@ fun FileHistoryScreen(
             }
 
             // filter mode 有可能查无条目，但是可继续加载更多，这时也应显示加载更多按钮
-            if(filterModeOn.value && list.isEmpty()) {
+            if(enableFilter && list.isEmpty()) {
                 Column(
                     modifier = Modifier
                         .padding(contentPadding)
@@ -1060,6 +1064,7 @@ fun FileHistoryScreen(
                         showSetPageSizeDialog=showSetPageSizeDialog,
                         pageSizeForDialog=pageSizeForDialog,
                         text = loadMoreText.value,
+                        loadedCount = list.size,
                         enableLoadMore = !loadMoreLoading.value && hasMore.value, enableAndShowLoadToEnd = !loadMoreLoading.value && hasMore.value,
                         loadToEndOnClick = {
                             val firstLoad = false
@@ -1093,8 +1098,8 @@ fun FileHistoryScreen(
     }
 
     BackHandler {
-        if(filterModeOn.value) {
-            filterModeOn.value = false
+        if(filterModeOn_dontUseThisCheckFilterModeReallyEnabledOrNot.value) {
+            filterModeOn_dontUseThisCheckFilterModeReallyEnabledOrNot.value = false
         } else {
             naviUp()
         }

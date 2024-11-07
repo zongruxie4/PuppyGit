@@ -752,8 +752,10 @@ fun CommitListScreen(
         keyName = "filterKeyword",
         initValue = TextFieldValue("")
     )
-    val filterModeOn = rememberSaveable { mutableStateOf(false)
-}
+    val filterModeOn_dontUseThisCheckFilterModeReallyEnabledOrNot = rememberSaveable { mutableStateOf(false) }
+    // indicate filter really working
+    val enableFilterState = rememberSaveable { mutableStateOf(false)}
+
     //存储符合过滤条件的条目在源列表中的真实索引。本列表索引对应filter list条目索引，值对应原始列表索引
     val filterIdxList = mutableCustomStateListOf(
         keyTag = stateKeyTag,
@@ -798,7 +800,7 @@ fun CommitListScreen(
             val curIdx = curCommitIndex.intValue
 
             //如果没开filter模式且最终创建的tag和长按条目一致，直接更新长按条目；若开了filter模式，则必须更新原始列表，而这里设置的长按条目索引是filterList的，所以无效，需要重新从原始列表查找对应条目索引，然后更新原始列表以显示最新条目
-            if(!filterModeOn.value && newTagOidStr == curOidStr) {
+            if(!enableFilterState.value && newTagOidStr == curOidStr) {
                 //更新当前条目以显示新创建的tag(仅适用于更新当前长按条目)
                 updateCurCommitInfo(curRepo.value.fullSavePath, curIdx, curOidStr, list.value)
             }else {  //最终创建的tag和长按条目不一致，查找并更新对应条目
@@ -857,7 +859,7 @@ fun CommitListScreen(
             onlyUpdateCurItem = useFullOid,
             updateCurItem = {curItemIdx, fullOid-> updateCurCommitInfo(curRepo.value.fullSavePath, curItemIdx, fullOid, list.value)},
             refreshPage = { changeStateTriggerRefreshPage(needRefresh, StateRequestType.forceReload) },
-            curCommitIndex = if(filterModeOn.value) -1 else curCommitIndex.intValue,  //若开了filter模式，则一律在原始列表重新查找条目索引（传无效索引-1即可触发查找），不然可能会更新错条目
+            curCommitIndex = if(enableFilterState.value) -1 else curCommitIndex.intValue,  //若开了filter模式，则一律在原始列表重新查找条目索引（传无效索引-1即可触发查找），不然可能会更新错条目
             findCurItemIdxInList = { fullOid->
                 list.value.toList().indexOfFirst { it.oidStr == fullOid }
             }
@@ -888,7 +890,7 @@ fun CommitListScreen(
                     fullOid.value=curCommit.value.oidStr  // only make sense when come this page from branch list page with condition `useFullOid==true && isCurrent==true`,update it for show latest commit list of current branch of repo when hard reset success.
                     changeStateTriggerRefreshPage(needRefresh, StateRequestType.forceReload)
                 }else {  //useFullOid==true && isCurrent==false, from branch list page tap a branch item which is not pointed by HEAD(isCurrent==false), will in this block
-                    val curCommitIdx = if(filterModeOn.value) {
+                    val curCommitIdx = if(enableFilterState.value) {
                         try {  //取出当前长按条目在源列表中的索引
                             filterIdxList.value[curCommitIndex.intValue]
                         }catch (_:Exception) {
@@ -965,7 +967,6 @@ fun CommitListScreen(
 
 //    val filterListState =mutableCustomStateOf(keyTag = stateKeyTag, keyName = "filterListState", LazyListState(0,0))
     val filterListState = rememberLazyListState()
-    val enableFilterState = rememberSaveable { mutableStateOf(false)}
 //    val firstVisible = remember { derivedStateOf { if(enableFilterState.value) filterListState.value.firstVisibleItemIndex else listState.firstVisibleItemIndex } }
 //    ScrollListener(
 //        nowAt = firstVisible.value,
@@ -1419,7 +1420,7 @@ fun CommitListScreen(
                     titleContentColor = MaterialTheme.colorScheme.primary,
                 ),
                 title = {
-                    if(filterModeOn.value) {
+                    if(filterModeOn_dontUseThisCheckFilterModeReallyEnabledOrNot.value) {
                         FilterTextField(
                             filterKeyword,
                             trailingIconTooltipText= stringResource(R.string.filter_by_paths),
@@ -1444,8 +1445,9 @@ fun CommitListScreen(
                                     //长按显示仓库和分支信息
                                     haptic.performHapticFeedback(HapticFeedbackType.LongPress)
 //                                    Msg.requireShow(repoAndBranchText)
+                                    val count = if(enableFilterState.value) filterIdxList.value.size else list.value.size
                                     // show loaded how many items
-                                    Msg.requireShow("loaded: ${list.value.size}")
+                                    Msg.requireShow(replaceStringResList(appContext.getString(R.string.loaded_n), listOf(""+count)))
                                 }
                             ) { // onClick
                                 showTitleInfoDialog.value = true
@@ -1478,14 +1480,14 @@ fun CommitListScreen(
                     }
                 },
                 navigationIcon = {
-                    if(filterModeOn.value) {
+                    if(filterModeOn_dontUseThisCheckFilterModeReallyEnabledOrNot.value) {
                         LongPressAbleIconBtn(
                             tooltipText = stringResource(R.string.close),
                             icon = Icons.Filled.Close,
                             iconContentDesc = stringResource(R.string.close),
 
                         ) {
-                            filterModeOn.value = false
+                            filterModeOn_dontUseThisCheckFilterModeReallyEnabledOrNot.value = false
                         }
                     } else {
                         LongPressAbleIconBtn(
@@ -1499,7 +1501,7 @@ fun CommitListScreen(
                     }
                 },
                 actions = {
-                    if(!filterModeOn.value) {
+                    if(!filterModeOn_dontUseThisCheckFilterModeReallyEnabledOrNot.value) {
                         Row {
                             LongPressAbleIconBtn(
                                 tooltipText = stringResource(R.string.filter),
@@ -1510,7 +1512,7 @@ fun CommitListScreen(
                                 filterKeyword.value = TextFieldValue("")
                                 pathsForFilter.value = ""
 
-                                filterModeOn.value = true
+                                filterModeOn_dontUseThisCheckFilterModeReallyEnabledOrNot.value = true
                             }
 
                             //刷新按钮
@@ -1811,7 +1813,7 @@ fun CommitListScreen(
                     //如果是filter模式，显示show in list以在列表揭示filter条目以查看前后提交（或者说上下文）
                     if(enableFilterState.value) {
                         BottomSheetItem(sheetState, showBottomSheet, stringResource(R.string.show_in_list)) {
-                            filterModeOn.value = false
+                            filterModeOn_dontUseThisCheckFilterModeReallyEnabledOrNot.value = false
                             showBottomSheet.value = false
 
                             doJobThenOffLoading {
@@ -1857,7 +1859,7 @@ fun CommitListScreen(
             val k = filterKeyword.value.text.lowercase()  //关键字
             val needFilterByPath = pathsForFilter.value.isNotEmpty()
             var paths:List<String>? = null
-            val enableFilter = filterModeOn.value && (k.isNotEmpty() || needFilterByPath)
+            val enableFilter = filterModeOn_dontUseThisCheckFilterModeReallyEnabledOrNot.value && (k.isNotEmpty() || needFilterByPath)
             val list = if(enableFilter){
                 filterIdxList.value.clear()
 
@@ -1930,6 +1932,7 @@ fun CommitListScreen(
                         pageSizeForDialog=pageSizeForDialog,
                         text = loadMoreText.value,
                         enableLoadMore = !loadMoreLoading.value && hasMore.value, enableAndShowLoadToEnd = !loadMoreLoading.value && hasMore.value,
+                        loadedCount = list.size,
                         loadToEndOnClick = {
                             val firstLoad = false
                             val forceReload = false
@@ -1982,7 +1985,7 @@ fun CommitListScreen(
             }
 
             // filter mode 有可能查无条目，但是可继续加载更多，这时也应显示加载更多按钮
-            if(filterModeOn.value && list.isEmpty()) {
+            if(enableFilter && list.isEmpty()) {
                 Column(
                     modifier = Modifier
                         .padding(contentPadding)
@@ -2001,6 +2004,7 @@ fun CommitListScreen(
                         showSetPageSizeDialog=showSetPageSizeDialog,
                         pageSizeForDialog=pageSizeForDialog,
                         text = loadMoreText.value,
+                        loadedCount = list.size,
                         enableLoadMore = !loadMoreLoading.value && hasMore.value, enableAndShowLoadToEnd = !loadMoreLoading.value && hasMore.value,
                         loadToEndOnClick = {
                             val firstLoad = false
@@ -2033,8 +2037,8 @@ fun CommitListScreen(
     }
 
     BackHandler {
-        if(filterModeOn.value) {
-            filterModeOn.value = false
+        if(filterModeOn_dontUseThisCheckFilterModeReallyEnabledOrNot.value) {
+            filterModeOn_dontUseThisCheckFilterModeReallyEnabledOrNot.value = false
         } else {
             naviUp()
         }
