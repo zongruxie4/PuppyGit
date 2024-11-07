@@ -3768,6 +3768,7 @@ class Libgit2Helper {
 //                MyLog.d(TAG, "#getCommitList: startOid="+startOid.toString())
 //            }
 
+            // no more
             if(initNext == null || initNext.isNullOrEmptyOrZero) {
 //                return FileHistoryQueryResult(false, lastVersionOid)
                 return lastVersionEntryOid
@@ -3831,6 +3832,7 @@ class Libgit2Helper {
                                         ))
 
                                         lastVersionEntryOid = entryOidStr
+                                        count++
                                     }
                                 }
 
@@ -3839,7 +3841,7 @@ class Libgit2Helper {
 
                     }
 
-                    if(++count >= pageSize) {
+                    if(count >= pageSize) {
                         break
                     }
 
