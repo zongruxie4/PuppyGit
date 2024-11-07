@@ -1,3 +1,8 @@
+next version:
+- support view file history
+- support direct item line in diff screen
+- commit list support filter commits by paths
+
 
 1.0.6.0v36 - 20241101:
 - fix Difference Screen crash
