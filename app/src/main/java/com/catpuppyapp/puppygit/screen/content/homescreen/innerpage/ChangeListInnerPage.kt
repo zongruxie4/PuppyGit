@@ -24,6 +24,8 @@ import androidx.compose.material.icons.filled.Folder
 import androidx.compose.material.icons.filled.History
 import androidx.compose.material.icons.filled.LibraryAdd
 import androidx.compose.material.icons.filled.SelectAll
+import androidx.compose.material.icons.filled.Sync
+import androidx.compose.material.icons.filled.Upload
 import androidx.compose.material.icons.outlined.Check
 import androidx.compose.material.icons.outlined.CloudDone
 import androidx.compose.material.icons.outlined.SelectAll
@@ -2770,6 +2772,9 @@ fun ChangeListInnerPage(
         }
     }
 
+    val iconModifier = MyStyleKt.Icon.modifier
+
+
     if(isLoading.value) {
         //LoadingText默认开启滚动，所以无需处理(ps 滚动是为了显隐顶栏
         LoadingText(text = loadingText.value, contentPadding = contentPadding)
@@ -2934,113 +2939,81 @@ fun ChangeListInnerPage(
 
 
                                 } else {
-                                    Text(text = stringResource(id = R.string.already_up_to_date_with_upstream))
+                                    Text(text = stringResource(id = R.string.already_up_to_date))
                                 }
 
 
                                 Row {
                                     //如果设置了上游，显示pull/push
                                     if(!upstreamNotSet) {
-                                        Text(text = stringResource(R.string.pull),
-                                            fontSize = fontSizeOfPullPushSync,
-                                            color = MyStyleKt.ClickableText.color,
-                                            style = MyStyleKt.ClickableText.style,
-                                            modifier = MyStyleKt.ClickableText.modifierNoPadding.clickable {
-                                                doJobThenOffLoading(
-                                                    loadingOn,
-                                                    loadingOff,
-                                                    appContext.getString(
-                                                        R.string.pulling
-                                                    )
-                                                ) {
-                                                    doPull()
-                                                }
-                                            }
-                                        )
+                                        LongPressAbleIconBtn(
+                                            iconModifier = iconModifier,
+                                            tooltipText = stringResource(R.string.pull),
+                                            icon =  Icons.Filled.Download,
+                                            iconContentDesc = stringResource(id = R.string.pull),
 
-                                        Text(text = splitSign, modifier = Modifier.padding(horizontal = splitHorizonPadding))
-
-
-                                        Text(text = stringResource(R.string.push),
-                                            fontSize = fontSizeOfPullPushSync,
-                                            color = MyStyleKt.ClickableText.color,
-                                            style = MyStyleKt.ClickableText.style,
-                                            modifier = MyStyleKt.ClickableText.modifierNoPadding.clickable {
-                                                doJobThenOffLoading(loadingOn, loadingOff, appContext.getString(R.string.pushing)) {
-                                                    try {
-//                                                            val success = doPush(true, null)
-                                                        val success = ChangeListFunctions.doPush(
-                                                            requireCloseBottomBar = true,
-                                                            upstreamParam = null,
-                                                            force = false,
-                                                            curRepoFromParentPage = curRepoFromParentPage,
-                                                            requireShowToast = requireShowToast,
-                                                            appContext = appContext,
-                                                            loadingText = loadingText,
-                                                            bottomBarActDoneCallback = bottomBarActDoneCallback,
-                                                            dbContainer = dbContainer
-                                                        )
-                                                        if (!success) {
-                                                            requireShowToast(appContext.getString(R.string.push_failed))
-                                                        } else {
-                                                            requireShowToast(appContext.getString(R.string.push_success))
-                                                        }
-                                                    } catch (e: Exception) {
-                                                        showErrAndSaveLog(
-                                                            TAG,
-                                                            "require push error:" + e.stackTraceToString(),
-                                                            appContext.getString(R.string.push_failed) + ":" + e.localizedMessage,
-                                                            requireShowToast,
-                                                            curRepoFromParentPage.value.id
-                                                        )
-                                                    } finally {
-                                                        changeStateTriggerRefreshPage(refreshRequiredByParentPage)
-                                                    }
-
-                                                }
-                                            }
-                                        )
-
-                                        Text(text = splitSign, modifier = Modifier.padding(horizontal = splitHorizonPadding))
-
-                                    }
-
-                                    Text(text = stringResource(if(upstreamNotSet) R.string.set_upstream_and_sync else R.string.sync),
-                                        fontSize = fontSizeOfPullPushSync,
-                                        color = MyStyleKt.ClickableText.color,
-                                        style = MyStyleKt.ClickableText.style,
-                                        modifier = MyStyleKt.ClickableText.modifierNoPadding.clickable {
+                                        ) {
                                             doJobThenOffLoading(
-                                                loadingOn, loadingOff,
-                                                appContext.getString(R.string.syncing)
+                                                loadingOn,
+                                                loadingOff,
+                                                appContext.getString(
+                                                    R.string.pulling
+                                                )
                                             ) {
+                                                doPull()
+                                            }
+
+                                        }
+//                                        Text(text = stringResource(R.string.pull),
+//                                            fontSize = fontSizeOfPullPushSync,
+//                                            color = MyStyleKt.ClickableText.color,
+//                                            style = MyStyleKt.ClickableText.style,
+//                                            modifier = MyStyleKt.ClickableText.modifierNoPadding.clickable {
+//                                                doJobThenOffLoading(
+//                                                    loadingOn,
+//                                                    loadingOff,
+//                                                    appContext.getString(
+//                                                        R.string.pulling
+//                                                    )
+//                                                ) {
+//                                                    doPull()
+//                                                }
+//                                            }
+//                                        )
+
+//                                        Text(text = splitSign, modifier = Modifier.padding(horizontal = splitHorizonPadding))
+
+                                        LongPressAbleIconBtn(
+                                            iconModifier = iconModifier,
+                                            tooltipText = stringResource(R.string.push),
+                                            icon =  Icons.Filled.Upload,
+                                            iconContentDesc = stringResource(id = R.string.push),
+
+                                        ) {
+                                            doJobThenOffLoading(loadingOn, loadingOff, appContext.getString(R.string.pushing)) {
                                                 try {
-//                                                        doSync(true)
-                                                    ChangeListFunctions.doSync(
+//                                                            val success = doPush(true, null)
+                                                    val success = ChangeListFunctions.doPush(
                                                         requireCloseBottomBar = true,
-                                                        trueMergeFalseRebase = true,
+                                                        upstreamParam = null,
+                                                        force = false,
                                                         curRepoFromParentPage = curRepoFromParentPage,
                                                         requireShowToast = requireShowToast,
                                                         appContext = appContext,
-                                                        bottomBarActDoneCallback = bottomBarActDoneCallback,
-                                                        plzSetUpStreamForCurBranch = plzSetUpStreamForCurBranch,
-                                                        upstreamRemoteOptionsList = upstreamRemoteOptionsList,
-                                                        upstreamSelectedRemote = upstreamSelectedRemote,
-                                                        upstreamBranchSameWithLocal = upstreamBranchSameWithLocal,
-                                                        upstreamBranchShortRefSpec = upstreamBranchShortRefSpec,
-                                                        upstreamCurBranchShortName = upstreamCurBranchShortName,
-                                                        upstreamDialogOnOkText = upstreamDialogOnOkText,
-                                                        showSetUpstreamDialog = showSetUpstreamDialog,
                                                         loadingText = loadingText,
+                                                        bottomBarActDoneCallback = bottomBarActDoneCallback,
                                                         dbContainer = dbContainer
                                                     )
+                                                    if (!success) {
+                                                        requireShowToast(appContext.getString(R.string.push_failed))
+                                                    } else {
+                                                        requireShowToast(appContext.getString(R.string.push_success))
+                                                    }
                                                 } catch (e: Exception) {
                                                     showErrAndSaveLog(
                                                         TAG,
-                                                        "sync error:" + e.stackTraceToString(),
-                                                        appContext.getString(
-                                                            R.string.sync_failed
-                                                        ) + ":" + e.localizedMessage,
+                                                        "require push error:" + e.stackTraceToString(),
+                                                        appContext.getString(R.string.push_failed) + ":" + e.localizedMessage,
                                                         requireShowToast,
                                                         curRepoFromParentPage.value.id
                                                     )
@@ -3050,22 +3023,97 @@ fun ChangeListInnerPage(
 
                                             }
                                         }
-                                    )
+//                                        Text(text = stringResource(R.string.push),
+//                                            fontSize = fontSizeOfPullPushSync,
+//                                            color = MyStyleKt.ClickableText.color,
+//                                            style = MyStyleKt.ClickableText.style,
+//                                            modifier = MyStyleKt.ClickableText.modifierNoPadding.clickable {}
+//                                        )
+//
+//                                        Text(text = splitSign, modifier = Modifier.padding(horizontal = splitHorizonPadding))
+
+                                    }
+
+                                    val syncText = stringResource(if(upstreamNotSet) R.string.set_upstream_and_sync else R.string.sync)
+                                    LongPressAbleIconBtn(
+                                        iconModifier = iconModifier,
+                                        tooltipText = syncText,
+                                        icon =  Icons.Filled.Sync,
+                                        iconContentDesc = syncText,
+
+                                    ) {
+
+                                        doJobThenOffLoading(
+                                            loadingOn, loadingOff,
+                                            appContext.getString(R.string.syncing)
+                                        ) {
+                                            try {
+//                                                        doSync(true)
+                                                ChangeListFunctions.doSync(
+                                                    requireCloseBottomBar = true,
+                                                    trueMergeFalseRebase = true,
+                                                    curRepoFromParentPage = curRepoFromParentPage,
+                                                    requireShowToast = requireShowToast,
+                                                    appContext = appContext,
+                                                    bottomBarActDoneCallback = bottomBarActDoneCallback,
+                                                    plzSetUpStreamForCurBranch = plzSetUpStreamForCurBranch,
+                                                    upstreamRemoteOptionsList = upstreamRemoteOptionsList,
+                                                    upstreamSelectedRemote = upstreamSelectedRemote,
+                                                    upstreamBranchSameWithLocal = upstreamBranchSameWithLocal,
+                                                    upstreamBranchShortRefSpec = upstreamBranchShortRefSpec,
+                                                    upstreamCurBranchShortName = upstreamCurBranchShortName,
+                                                    upstreamDialogOnOkText = upstreamDialogOnOkText,
+                                                    showSetUpstreamDialog = showSetUpstreamDialog,
+                                                    loadingText = loadingText,
+                                                    dbContainer = dbContainer
+                                                )
+                                            } catch (e: Exception) {
+                                                showErrAndSaveLog(
+                                                    TAG,
+                                                    "sync error:" + e.stackTraceToString(),
+                                                    appContext.getString(
+                                                        R.string.sync_failed
+                                                    ) + ":" + e.localizedMessage,
+                                                    requireShowToast,
+                                                    curRepoFromParentPage.value.id
+                                                )
+                                            } finally {
+                                                changeStateTriggerRefreshPage(refreshRequiredByParentPage)
+                                            }
+
+                                        }
+
+                                    }
+//                                    Text(text = syncText,
+//                                        fontSize = fontSizeOfPullPushSync,
+//                                        color = MyStyleKt.ClickableText.color,
+//                                        style = MyStyleKt.ClickableText.style,
+//                                        modifier = MyStyleKt.ClickableText.modifierNoPadding.clickable {}
+//                                    )
                                 }
                             }
                         }
 
                         //只有非detache 且 设置了上游（没发布也行） 才显示检查更新
                         if(!dbIntToBool(curRepoFromParentPage.value.isDetached) && curRepoUpstream.value.branchRefsHeadsFullRefSpec.isNotBlank()) {
-                            Row (modifier=Modifier.padding(top=18.dp)
+                            Row (
+//                                modifier=Modifier.padding(top=18.dp)
 
                             ){
+//                                LongPressAbleIconBtn(
+//                                    iconModifier = iconModifier,
+//                                    tooltipText = stringResource(id = R.string.check_update),
+//                                    icon =  Icons.Filled.CloudDownload,
+//                                    iconContentDesc = stringResource(id = R.string.check_update),
+//
+//                                ) {}
                                 Text(
                                     text = stringResource(id = R.string.check_update),
                                     color = MyStyleKt.ClickableText.color,
                                     style = MyStyleKt.ClickableText.style,
                                     modifier = MyStyleKt.ClickableText.modifierNoPadding
-                                        .clickable {  // fetch
+                                        .clickable {
+                                            // fetch
                                             doJobThenOffLoading(
                                                 loadingOn,
                                                 loadingOff,
@@ -3122,7 +3170,6 @@ fun ChangeListInnerPage(
                                 horizontalArrangement = Arrangement.Center,
                                 verticalAlignment = Alignment.CenterVertically
                             ) {
-                                val iconModifier = MyStyleKt.Icon.modifier
 
                                 LongPressAbleIconBtn(
                                     enabled = true,
@@ -3131,7 +3178,7 @@ fun ChangeListInnerPage(
                                     icon =  Icons.Filled.Folder,
                                     iconContentDesc = stringResource(id = R.string.files),
 
-                                    ) { // go to Files page
+                                ) { // go to Files page
                                     goToFilesPage(curRepoFromParentPage.value.fullSavePath)
                                 }
 
@@ -3142,7 +3189,7 @@ fun ChangeListInnerPage(
                                     icon = ImageVector.vectorResource(id = R.drawable.branch),
                                     iconContentDesc = stringResource(id = R.string.branches),
 
-                                    ) { // go to branches page
+                                ) { // go to branches page
                                     navController.navigate(Cons.nav_BranchListScreen + "/" + curRepoFromParentPage.value.id)
                                 }
 
@@ -3153,7 +3200,7 @@ fun ChangeListInnerPage(
                                     icon =  Icons.Filled.History,
                                     iconContentDesc = stringResource(id = R.string.commit_history),
 
-                                    ) {  // go to commit history (git log) page
+                                ) {  // go to commit history (git log) page
 
                                     //打开当前仓库的提交记录页面，话说，那个树形怎么搞？可以先不搞树形，以后再弄
                                     val fullOidKey:String = Cache.setThenReturnKey("")  //这里不需要传分支名，会通过HEAD解析当前分支
