@@ -1019,7 +1019,8 @@
     <string name="plz_import_repo_then_try_again">Plz import repo then try again</string>
     <string name="entry_id">Entry ID</string>
     <string name="commit_id">Commit ID</string>
-    <string name="target_ph">target: ph_a3f241dc_1</string>
+    <!-- e.g. Target: abcdef12(full or short commit hash) -->
+    <string name="target_ph">Target: ph_a3f241dc_1</string>
     <string name="diff_to_prev">Diff To Prev</string>
     <string name="plz_lode_more_then_try_again">plz lode more then try again</string>
     <string name="no_prev_to_compare">no prev to compare</string>

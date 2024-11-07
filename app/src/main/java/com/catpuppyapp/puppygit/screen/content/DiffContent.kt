@@ -156,7 +156,7 @@ fun DiffContent(
 
             loadChannel.value = Channel()
 
-            if(fromTo == Cons.gitDiffFileHistoryFromTreeToLocal) {
+            if(fromTo == Cons.gitDiffFileHistoryFromTreeToLocal || fromTo == Cons.gitDiffFileHistoryFromTreeToTree) {
                 switchItemForFileHistory(item as FileHistoryDto, index)
             }else {
                 // switch new item
@@ -841,12 +841,12 @@ private fun NaviButton(
     switchItem: (StatusTypeEntrySaver, index: Int) -> Unit,
     switchItemForFileHistory: (FileHistoryDto, index: Int) -> Unit,
 ) {
-    val isFileHistoryTreeToLocal = fromTo==Cons.gitDiffFileHistoryFromTreeToLocal
+    val isFileHistoryTreeToLocalOrTree = fromTo==Cons.gitDiffFileHistoryFromTreeToLocal || fromTo==Cons.gitDiffFileHistoryFromTreeToTree
     Column(
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.Center
     ) {
-        val size = if(isFileHistoryTreeToLocal) diffableItemListForFileHistory.size else diffableItemList.size
+        val size = if(isFileHistoryTreeToLocalOrTree) diffableItemListForFileHistory.size else diffableItemList.size
         val previousIndex = curItemIndex.intValue - 1
         val nextIndex = curItemIndex.intValue + 1
         val hasPrevious = previousIndex >= 0 && previousIndex < size
@@ -869,11 +869,11 @@ private fun NaviButton(
 
         CardButton(
             text =  replaceStringResList(stringResource(R.string.prev_filename), listOf(if(hasPrevious) {
-                if(isFileHistoryTreeToLocal) diffableItemListForFileHistory[previousIndex].commitOidStr else diffableItemList[previousIndex].fileName
+                if(isFileHistoryTreeToLocalOrTree) diffableItemListForFileHistory[previousIndex].commitOidStr else diffableItemList[previousIndex].fileName
             } else stringResource(R.string.none))),
             enabled = hasPrevious
         ) {
-            if(isFileHistoryTreeToLocal) {
+            if(isFileHistoryTreeToLocalOrTree) {
                 switchItemForFileHistory(diffableItemListForFileHistory[previousIndex], previousIndex)
             }else{
                 switchItem(diffableItemList[previousIndex], previousIndex)
@@ -882,11 +882,11 @@ private fun NaviButton(
         Spacer(Modifier.height(10.dp))
         CardButton(
             text = replaceStringResList(stringResource(R.string.next_filename), listOf(if(hasNext) {
-                if(isFileHistoryTreeToLocal) diffableItemListForFileHistory[nextIndex].commitOidStr else diffableItemList[nextIndex].fileName
+                if(isFileHistoryTreeToLocalOrTree) diffableItemListForFileHistory[nextIndex].commitOidStr else diffableItemList[nextIndex].fileName
             } else stringResource(R.string.none))),
             enabled = hasNext
         ) {
-            if(isFileHistoryTreeToLocal) {
+            if(isFileHistoryTreeToLocalOrTree) {
                 switchItemForFileHistory(diffableItemListForFileHistory[nextIndex], nextIndex)
             }else{
                 switchItem(diffableItemList[nextIndex], nextIndex)

@@ -273,10 +273,14 @@ fun DiffScreen(
                 sb.appendLine("${Libgit2Helper.getShortOidStrByFull(treeOid1Str.value)}..${Libgit2Helper.getShortOidStrByFull(treeOid2Str.value)}").appendLine()
             }
             sb.append(appContext.getString(R.string.name)+": ").appendLine(fileNameOnly.value).appendLine()
-            if(isFileHistoryTreeToLocal || isFileHistoryTreeToTree){
+            if(isFileHistoryTreeToLocal){
                 sb.append(appContext.getString(R.string.commit_id)+": ").appendLine(treeOid1Str.value).appendLine()
+                // at here: curItemIndex is on FileHistory, which item got clicked
                 sb.append(appContext.getString(R.string.entry_id)+": ").appendLine(diffableItemListForFileHistory.value[curItemIndex.intValue].treeEntryOidStr).appendLine()
-
+            }else if(isFileHistoryTreeToTree){
+                sb.append(appContext.getString(R.string.commit_id)+": ").appendLine(treeOid2Str.value).appendLine()
+                // at here: curItemIndex is on FileHistory, which item got long pressed
+                sb.append(appContext.getString(R.string.entry_id)+": ").appendLine(diffableItemListForFileHistory.value[curItemIndex.intValue].treeEntryOidStr).appendLine()
             }else {
                 sb.append(appContext.getString(R.string.change_type)+": ").appendLine(changeType.value).appendLine()
             }

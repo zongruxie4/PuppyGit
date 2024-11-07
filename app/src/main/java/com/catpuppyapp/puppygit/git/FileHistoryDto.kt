@@ -19,8 +19,8 @@ class FileHistoryDto (
         return authorUsername==committerUsername && authorEmail==committerEmail
     }
 }
-
-class FileHistoryQueryResult(
-    hasMore:Boolean,  // not 100% has more, but at least can try more once revwalk.next(), if return null, is really no more
-    lastVersionTreeEntryOidStr:String?
-)
+//
+//class FileHistoryQueryResult(
+//    hasMore:Boolean,  // not 100% has more, but at least can try more once revwalk.next(), if return null, is really no more
+//    lastVersionTreeEntryOidStr:String?
+//)
