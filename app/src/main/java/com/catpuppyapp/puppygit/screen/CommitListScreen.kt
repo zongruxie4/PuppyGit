@@ -1447,7 +1447,7 @@ fun CommitListScreen(
 //                                    Msg.requireShow(repoAndBranchText)
                                     val count = if(enableFilterState.value) filterIdxList.value.size else list.value.size
                                     // show loaded how many items
-                                    Msg.requireShow(replaceStringResList(appContext.getString(R.string.loaded_n), listOf(""+count)))
+                                    Msg.requireShow(replaceStringResList(appContext.getString(R.string.item_count_n), listOf(""+count)))
                                 }
                             ) { // onClick
                                 showTitleInfoDialog.value = true

@@ -1026,8 +1026,8 @@
     <string name="file_hasnt_history_yet">File hasn\'t history yet</string>
     <string name="commit_history_is_empty">Commit history is empty</string>
 
-    <!--    e.g. loaded: 10-->
-    <string name="loaded_n">loaded: ph_a3f241dc_1</string>
+    <!--    e.g. item count: 10-->
+    <string name="item_count_n">item count: ph_a3f241dc_1</string>
     <!--    e.g. current: 10, all:30 -->
     <string name="current_n_all_m">current: ph_a3f241dc_1, all: ph_a3f241dc_2</string>
 
