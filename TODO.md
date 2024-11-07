@@ -1,4 +1,5 @@
 ## TODO (welcome pr)
+- show translation and web search and share etc when selected text (may need filter the apps which supportted PROCESS_TEXT intent)
 - show process detail when cloning (now only show"Cloning...")
 - improve ChangeList load performance
 - multi cherry-pick
