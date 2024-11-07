@@ -43,4 +43,42 @@ class TagDto (
 
         return targetShortOidStr ?: ""
     }
+
+    override fun equals(other: Any?): Boolean {
+        if (this === other) return true
+        if (javaClass != other?.javaClass) return false
+
+        other as TagDto
+
+        if (name != other.name) return false
+        if (shortName != other.shortName) return false
+        if (fullOidStr != other.fullOidStr) return false
+        if (targetFullOidStr != other.targetFullOidStr) return false
+        if (isAnnotated != other.isAnnotated) return false
+        if (taggerName != other.taggerName) return false
+        if (taggerEmail != other.taggerEmail) return false
+        if (date != other.date) return false
+        if (msg != other.msg) return false
+
+        return true
+    }
+
+    override fun hashCode(): Int {
+        var result = name.hashCode()
+        result = 31 * result + shortName.hashCode()
+        result = 31 * result + fullOidStr.hashCode()
+        result = 31 * result + targetFullOidStr.hashCode()
+        result = 31 * result + isAnnotated.hashCode()
+        result = 31 * result + taggerName.hashCode()
+        result = 31 * result + taggerEmail.hashCode()
+        result = 31 * result + (date?.hashCode() ?: 0)
+        result = 31 * result + msg.hashCode()
+        return result
+    }
+
+    override fun toString(): String {
+        return "TagDto(name='$name', shortName='$shortName', fullOidStr='$fullOidStr', targetFullOidStr='$targetFullOidStr', isAnnotated=$isAnnotated, taggerName='$taggerName', taggerEmail='$taggerEmail', date=$date, msg='$msg')"
+    }
+
+
 }

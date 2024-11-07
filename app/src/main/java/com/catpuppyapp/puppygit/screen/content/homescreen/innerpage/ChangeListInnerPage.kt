@@ -3853,12 +3853,12 @@ private fun changeListInit(
             //如果是选择模式，检查当前选中条目是否依然有效，如果不是，直接清空选中条目
             if(isFileSelectionMode.value) {
                 //移除选中但已经不在列表中的元素
-                val effectionSelectedList = mutableListOf<StatusTypeEntrySaver>()
+                val stillSelectedList = mutableListOf<StatusTypeEntrySaver>()
                 //只有仓库不变刷新页面，才会执行此检查，若切换仓库，会先清空选中条目列表
-                selectedItemList.value.toList().forEach {
+                itemList.value.forEach {
                     //如果选中条目仍在条目列表存在，则视为有效选中项
-                    if(itemList.value.contains(it)) {
-                        effectionSelectedList.add(it)
+                    if(selectedItemList.value.contains(it)) {
+                        stillSelectedList.add(it)
                     }
                 }
 
@@ -3869,7 +3869,7 @@ private fun changeListInit(
                 //这个操作不兼容SnapshotList，而且，我不太确定这样会不会影响页面刷新，所以不这么写了
 //            selectedItemList.value = effectionSelectedList
                 selectedItemList.value.clear()
-                selectedItemList.value.addAll(effectionSelectedList)
+                selectedItemList.value.addAll(stillSelectedList)
 
                 //如果选中条目为空，退出选择模式
                 if(selectedItemList.value.isEmpty()) {

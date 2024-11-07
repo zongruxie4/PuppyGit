@@ -4,7 +4,6 @@ import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.combinedClickable
-import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -39,7 +38,6 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
-import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.platform.LocalClipboardManager
 import androidx.compose.ui.platform.LocalHapticFeedback
@@ -825,7 +823,7 @@ fun TagListScreen(
                 loadingOff = loadingOff,
                 loadingText = appContext.getString(R.string.loading),
             ) {
-                selectedItemList.value.clear()  //清下已选中条目列表
+//                selectedItemList.value.clear()  //清下已选中条目列表
                 list.value.clear()  //先清一下list，然后可能添加也可能不添加
 
                 if(!repoId.isNullOrBlank()) {
@@ -837,6 +835,22 @@ fun TagListScreen(
                             val tags = Libgit2Helper.getAllTags(repo);
                             list.value.clear()
                             list.value.addAll(tags)
+
+                            val stillSelectedList = mutableListOf<TagDto>()
+                            tags.forEach {
+                                if(selectedItemList.value.contains(it)) {
+                                    stillSelectedList.add(it)
+                                }
+                            }
+
+                            selectedItemList.value.clear()
+                            selectedItemList.value.addAll(stillSelectedList)
+
+                            if(stillSelectedList.isEmpty()) {
+                                quitSelectionMode()
+                            }
+
+
 
                             //查询remotes，fetch/push/del用
                             val remotes = Libgit2Helper.getRemoteList(repo)
@@ -861,7 +875,7 @@ fun TagListScreen(
 
             }
         } catch (e: Exception) {
-            MyLog.e(TAG, "$TAG#LaunchedEffect() err:"+e.stackTraceToString())
+            MyLog.e(TAG, "#LaunchedEffect() err:"+e.stackTraceToString())
 //            ("LaunchedEffect: job cancelled")
         }
     }

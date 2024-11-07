@@ -96,6 +96,7 @@ class StatusTypeEntrySaver {
         if (canonicalPath != other.canonicalPath) return false
         if (fileSizeInBytes != other.fileSizeInBytes) return false
         if (itemType != other.itemType) return false
+        if (dirty != other.dirty) return false
 
         return true
     }
@@ -107,6 +108,7 @@ class StatusTypeEntrySaver {
         result = 31 * result + (changeType?.hashCode() ?: 0)
         result = 31 * result + canonicalPath.hashCode()
         result = 31 * result + fileSizeInBytes.hashCode()
+        result = 31 * result + dirty.hashCode()
         result = 31 * result + itemType
         return result
     }
