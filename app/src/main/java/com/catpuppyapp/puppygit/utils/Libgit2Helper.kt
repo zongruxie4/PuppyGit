@@ -3726,12 +3726,13 @@ class Libgit2Helper {
                         val c = createCommitDto(next, allBranchList, allTagList, commit, repoId, repoIsShallow, shallowOidList)
                         //添加元素
                         retList.add(c)
+                        count++
                     }else {
                         MyLog.e(TAG, "#getCommitList(): resolve commit failed, target=$nextStr")
                     }
 
 
-                    if(++count >= pageSize) {
+                    if(count >= pageSize) {
                         break
                     }
 
