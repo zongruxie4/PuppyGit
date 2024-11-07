@@ -939,8 +939,11 @@ fun FileHistoryScreen(
                             || it.msg.lowercase().contains(k)
 
 
-                    filterIdxList.value.add(idx)
-                    filterList.value.add(it)
+                    if(found) {
+                        filterIdxList.value.add(idx)
+                        filterList.value.add(it)
+                    }
+
                     found
                 }
 
