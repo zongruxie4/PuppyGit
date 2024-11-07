@@ -6,7 +6,9 @@ import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.material.icons.Icons
@@ -25,20 +27,23 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.catpuppyapp.puppygit.compose.ConfirmDialog2
+import com.catpuppyapp.puppygit.compose.MySelectionContainer
+import com.catpuppyapp.puppygit.compose.ScrollableColumn
+import com.catpuppyapp.puppygit.constants.Cons
 import com.catpuppyapp.puppygit.data.entity.RepoEntity
 import com.catpuppyapp.puppygit.play.pro.R
 import com.catpuppyapp.puppygit.style.MyStyleKt
 import com.catpuppyapp.puppygit.ui.theme.Theme
 import com.catpuppyapp.puppygit.utils.AppModel
 import com.catpuppyapp.puppygit.utils.Libgit2Helper
-import com.catpuppyapp.puppygit.utils.Msg
 import com.catpuppyapp.puppygit.utils.UIHelper
 import com.catpuppyapp.puppygit.utils.addPrefix
 import com.catpuppyapp.puppygit.utils.changeStateTriggerRefreshPage
@@ -46,7 +51,6 @@ import com.catpuppyapp.puppygit.utils.dbIntToBool
 import com.catpuppyapp.puppygit.utils.doJobThenOffLoading
 import com.catpuppyapp.puppygit.utils.state.CustomStateListSaveable
 import com.catpuppyapp.puppygit.utils.state.CustomStateSaveable
-import com.github.git24j.core.Repository
 import kotlinx.coroutines.CoroutineScope
 
 //private val stateKeyTag = "ChangeListTitle"
@@ -71,6 +75,48 @@ fun ChangeListTitle(
     val inDarkTheme = Theme.inDarkTheme
 
     val dropDownMenuExpendState = rememberSaveable { mutableStateOf(false)}
+
+    val showTitleInfoDialog = rememberSaveable { mutableStateOf(false)}
+    if(showTitleInfoDialog.value) {
+        ConfirmDialog2(
+            title = stringResource(R.string.info),
+            requireShowTextCompose = true,
+            textCompose = {
+                MySelectionContainer {
+                    ScrollableColumn {
+                        Row {
+                            Text(stringResource(R.string.repo)+": "+changeListCurRepo.value.repoName)
+                        }
+                        Spacer(Modifier.height(10.dp))
+
+                        if(dbIntToBool(changeListCurRepo.value.isDetached)) {
+                            Row {
+                                Text(stringResource(R.string.branch)+": "+ Cons.gitDetachedHead)
+                            }
+                        }else {
+                            Row {
+                                Text(stringResource(R.string.branch)+": "+(changeListCurRepo.value.branch))
+                            }
+
+                            if(changeListCurRepo.value.upstreamBranch.isNotBlank()) {
+                                Spacer(Modifier.height(10.dp))
+
+                                Row {
+                                    Text(stringResource(R.string.upstream)+": "+(changeListCurRepo.value.upstreamBranch))
+                                }
+                            }
+                        }
+
+
+                    }
+
+                }
+            },
+            onCancel = {showTitleInfoDialog.value = false},
+            cancelBtnText = stringResource(R.string.close),
+            showOk = false
+        ) { }
+    }
 
 
     val needShowRepoState = rememberSaveable { mutableStateOf(false)}
@@ -120,7 +166,8 @@ fun ChangeListTitle(
                     onLongClick = {  //长按显示仓库名和分支名
                         haptic.performHapticFeedback(HapticFeedbackType.LongPress)
 
-                        Msg.requireShowLongDuration("'${changeListCurRepo.value.repoName}' on branch '${changeListCurRepo.value.branch}'")
+//                        Msg.requireShowLongDuration("'${changeListCurRepo.value.repoName}' on branch '${changeListCurRepo.value.branch}'")
+                        showTitleInfoDialog.value = true
                     }
                 ) { // onClick
                     switchDropDownMenu()  //切换下拉菜单显示隐藏
