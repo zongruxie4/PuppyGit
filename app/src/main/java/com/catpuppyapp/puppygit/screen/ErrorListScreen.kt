@@ -45,6 +45,8 @@ import com.catpuppyapp.puppygit.compose.FilterTextField
 import com.catpuppyapp.puppygit.compose.GoToTopAndGoToBottomFab
 import com.catpuppyapp.puppygit.compose.LongPressAbleIconBtn
 import com.catpuppyapp.puppygit.compose.MyLazyColumn
+import com.catpuppyapp.puppygit.compose.RepoInfoDialog
+import com.catpuppyapp.puppygit.compose.ScrollableRow
 import com.catpuppyapp.puppygit.constants.Cons
 import com.catpuppyapp.puppygit.data.entity.ErrorEntity
 import com.catpuppyapp.puppygit.data.entity.RepoEntity
@@ -162,6 +164,13 @@ fun ErrorListScreen(
 //    }.value
     // 向下滚动监听，结束
 
+
+    val showTitleInfoDialog = remember { mutableStateOf(false) }
+    if(showTitleInfoDialog.value) {
+        RepoInfoDialog(curRepo.value, showTitleInfoDialog)
+    }
+
+
     Scaffold(
         modifier = Modifier.nestedScroll(homeTopBarScrollBehavior.nestedScrollConnection),
         topBar = {
@@ -176,9 +185,13 @@ fun ErrorListScreen(
                             filterKeyword,
                         )
                     }else {
-                        Column {
-
-                            Row (modifier = Modifier.combinedClickable(onDoubleClick = { UIHelper.scrollToItem(scope, lazyListState, 0) }) {}){
+                        Column(modifier = Modifier.combinedClickable(onDoubleClick = {
+                            UIHelper.scrollToItem(scope, lazyListState, 0)
+                        }) {
+                            // onClick
+                            showTitleInfoDialog.value=true
+                        }) {
+                            ScrollableRow {
                                 Text(
                                     text= stringResource(R.string.error),
                                     maxLines = 1,
@@ -187,7 +200,7 @@ fun ErrorListScreen(
 
                             }
 
-                            Row(modifier = Modifier.horizontalScroll(rememberScrollState())) {
+                            ScrollableRow {
                                 Text(
                                     text= "[${curRepo.value.repoName}]",
                                     maxLines = 1,

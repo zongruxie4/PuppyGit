@@ -72,7 +72,7 @@ import com.catpuppyapp.puppygit.compose.LoadingDialog
 import com.catpuppyapp.puppygit.compose.LongPressAbleIconBtn
 import com.catpuppyapp.puppygit.compose.MyCheckBox
 import com.catpuppyapp.puppygit.compose.MyLazyColumn
-import com.catpuppyapp.puppygit.compose.MySelectionContainer
+import com.catpuppyapp.puppygit.compose.RepoInfoDialog
 import com.catpuppyapp.puppygit.compose.ScrollableColumn
 import com.catpuppyapp.puppygit.constants.Cons
 import com.catpuppyapp.puppygit.data.entity.RepoEntity
@@ -588,21 +588,7 @@ fun FileHistoryScreen(
     val showTitleInfoDialog = remember { mutableStateOf(false) }
     val titleInfo = rememberSaveable { mutableStateOf(fileRelativePath) }
     if(showTitleInfoDialog.value) {
-        ConfirmDialog2(
-            title = stringResource(R.string.info),
-            requireShowTextCompose = true,
-            textCompose = {
-                ScrollableColumn {
-                    MySelectionContainer {
-                        Text(titleInfo.value)
-                    }
-
-                }
-            },
-            onCancel = {showTitleInfoDialog.value = false},
-            cancelBtnText = stringResource(R.string.close),
-            showOk = false
-        ) { }
+        RepoInfoDialog(curRepo.value, showTitleInfoDialog)
     }
 
     val getActuallyList = {

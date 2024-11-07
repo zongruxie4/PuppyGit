@@ -12,25 +12,22 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.MutableIntState
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.catpuppyapp.puppygit.play.pro.R
+import com.catpuppyapp.puppygit.compose.RepoInfoDialog
 import com.catpuppyapp.puppygit.data.entity.RepoEntity
+import com.catpuppyapp.puppygit.play.pro.R
 import com.catpuppyapp.puppygit.style.MyStyleKt
 import com.catpuppyapp.puppygit.utils.Libgit2Helper
-import com.catpuppyapp.puppygit.utils.Msg
 import com.catpuppyapp.puppygit.utils.UIHelper
 import com.catpuppyapp.puppygit.utils.state.CustomStateSaveable
-import com.catpuppyapp.puppygit.utils.state.StateUtil
-import com.github.git24j.core.Repository
 import kotlinx.coroutines.CoroutineScope
 
 @OptIn(ExperimentalFoundationApi::class)
@@ -43,6 +40,11 @@ fun IndexScreenTitle(
 ) {
     val haptic = LocalHapticFeedback.current
     val appContext = LocalContext.current
+
+    val showTitleInfoDialog = remember { mutableStateOf(false) }
+    if(showTitleInfoDialog.value) {
+        RepoInfoDialog(curRepo.value, showTitleInfoDialog)
+    }
 
     val needShowRepoState = rememberSaveable { mutableStateOf(false)}
     val repoStateText = rememberSaveable { mutableStateOf("")}
@@ -58,12 +60,12 @@ fun IndexScreenTitle(
         .widthIn(min = MyStyleKt.Title.clickableTitleMinWidth)
         .combinedClickable(
             onDoubleClick = { UIHelper.scrollToItem(scope, changeListPageItemListState, 0) },
-            onLongClick = {  //长按显示仓库名
-                haptic.performHapticFeedback(HapticFeedbackType.LongPress)
-                Msg.requireShow("'${curRepo.value.repoName}'")
-            }
+            onLongClick = null
+//            {  //长按显示仓库名
+////                haptic.performHapticFeedback(HapticFeedbackType.LongPress)
+//            }
         ) { // onClick
-            //点按暂无操作
+            showTitleInfoDialog.value = true
         }
         //外面的标题宽180.dp，这里的比外面的宽点，因为这个页面顶栏actions少
         .widthIn(max = 200.dp)

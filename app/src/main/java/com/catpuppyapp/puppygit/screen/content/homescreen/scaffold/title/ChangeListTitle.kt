@@ -6,9 +6,7 @@ import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.material.icons.Icons
@@ -32,12 +30,8 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextOverflow
-import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.catpuppyapp.puppygit.compose.ConfirmDialog2
-import com.catpuppyapp.puppygit.compose.MySelectionContainer
-import com.catpuppyapp.puppygit.compose.ScrollableColumn
-import com.catpuppyapp.puppygit.constants.Cons
+import com.catpuppyapp.puppygit.compose.RepoInfoDialog
 import com.catpuppyapp.puppygit.data.entity.RepoEntity
 import com.catpuppyapp.puppygit.play.pro.R
 import com.catpuppyapp.puppygit.style.MyStyleKt
@@ -78,44 +72,7 @@ fun ChangeListTitle(
 
     val showTitleInfoDialog = rememberSaveable { mutableStateOf(false)}
     if(showTitleInfoDialog.value) {
-        ConfirmDialog2(
-            title = stringResource(R.string.info),
-            requireShowTextCompose = true,
-            textCompose = {
-                MySelectionContainer {
-                    ScrollableColumn {
-                        Row {
-                            Text(stringResource(R.string.repo)+": "+changeListCurRepo.value.repoName)
-                        }
-                        Spacer(Modifier.height(10.dp))
-
-                        if(dbIntToBool(changeListCurRepo.value.isDetached)) {
-                            Row {
-                                Text(stringResource(R.string.branch)+": "+ Cons.gitDetachedHead)
-                            }
-                        }else {
-                            Row {
-                                Text(stringResource(R.string.branch)+": "+(changeListCurRepo.value.branch))
-                            }
-
-                            if(changeListCurRepo.value.upstreamBranch.isNotBlank()) {
-                                Spacer(Modifier.height(10.dp))
-
-                                Row {
-                                    Text(stringResource(R.string.upstream)+": "+(changeListCurRepo.value.upstreamBranch))
-                                }
-                            }
-                        }
-
-
-                    }
-
-                }
-            },
-            onCancel = {showTitleInfoDialog.value = false},
-            cancelBtnText = stringResource(R.string.close),
-            showOk = false
-        ) { }
+        RepoInfoDialog(changeListCurRepo.value, showTitleInfoDialog)
     }
 
 

@@ -87,7 +87,7 @@ import com.catpuppyapp.puppygit.compose.LoadingDialog
 import com.catpuppyapp.puppygit.compose.LongPressAbleIconBtn
 import com.catpuppyapp.puppygit.compose.MyCheckBox
 import com.catpuppyapp.puppygit.compose.MyLazyColumn
-import com.catpuppyapp.puppygit.compose.MySelectionContainer
+import com.catpuppyapp.puppygit.compose.RepoInfoDialog
 import com.catpuppyapp.puppygit.compose.ResetDialog
 import com.catpuppyapp.puppygit.compose.ScrollableColumn
 import com.catpuppyapp.puppygit.compose.SingleSelectList
@@ -1396,21 +1396,7 @@ fun CommitListScreen(
 
     val showTitleInfoDialog = remember { mutableStateOf(false) }
     if(showTitleInfoDialog.value) {
-        ConfirmDialog2(
-            title = stringResource(R.string.info),
-            requireShowTextCompose = true,
-            textCompose = {
-                ScrollableColumn {
-                    MySelectionContainer {
-                        Text(if(useFullOid) branchShortNameOrShortHashByFullOidForShowOnTitle.value else repoOnBranchOrDetachedHash.value)
-                    }
-
-                }
-            },
-            onCancel = {showTitleInfoDialog.value = false},
-            cancelBtnText = stringResource(R.string.close),
-            showOk = false
-        ) { }
+        RepoInfoDialog(curRepo.value, showTitleInfoDialog)
     }
 
     Scaffold(

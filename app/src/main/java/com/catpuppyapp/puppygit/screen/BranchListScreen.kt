@@ -13,7 +13,6 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.text.selection.SelectionContainer
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
@@ -42,7 +41,6 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.platform.LocalClipboardManager
 import androidx.compose.ui.platform.LocalHapticFeedback
@@ -67,6 +65,8 @@ import com.catpuppyapp.puppygit.compose.LoadingDialog
 import com.catpuppyapp.puppygit.compose.LongPressAbleIconBtn
 import com.catpuppyapp.puppygit.compose.MyCheckBox
 import com.catpuppyapp.puppygit.compose.MyLazyColumn
+import com.catpuppyapp.puppygit.compose.MySelectionContainer
+import com.catpuppyapp.puppygit.compose.RepoInfoDialog
 import com.catpuppyapp.puppygit.compose.ResetDialog
 import com.catpuppyapp.puppygit.compose.ScrollableColumn
 import com.catpuppyapp.puppygit.compose.SetUpstreamDialog
@@ -185,6 +185,12 @@ fun BranchListScreen(
 
 
     val requireShowToast:(String)->Unit = Msg.requireShowLongDuration
+
+
+    val showTitleInfoDialog = rememberSaveable { mutableStateOf(false)}
+    if(showTitleInfoDialog.value) {
+        RepoInfoDialog(curRepo.value, showTitleInfoDialog)
+    }
 
 
 
@@ -706,7 +712,7 @@ fun BranchListScreen(
                     }
 
                     //可选，方便复制remote名
-                    SelectionContainer {
+                    MySelectionContainer {
                         Row(
                             modifier = Modifier.fillMaxWidth(),
                             horizontalArrangement = Arrangement.Center,
@@ -1133,12 +1139,14 @@ fun BranchListScreen(
                         val repoAndBranch = Libgit2Helper.getRepoOnBranchOrOnDetachedHash(curRepo.value)
                         Column (modifier = Modifier.combinedClickable (
                                     onDoubleClick = {UIHelper.scrollToItem(scope, listState,0)},  // go to top
-                                    onLongClick = {
-                                        haptic.performHapticFeedback(HapticFeedbackType.LongPress)
-                                        Msg.requireShow(repoAndBranch)
-                                    }
+                                    onLongClick = null
+//                                    { // onLongClick
+////                                        haptic.performHapticFeedback(HapticFeedbackType.LongPress)
+////                                        Msg.requireShow(repoAndBranch)
+//                                    }
                                 ){  //onClick
     //                        Msg.requireShow(repoAndBranch)
+                                    showTitleInfoDialog.value=true
                                 }
                         ){
                             Row(modifier = Modifier.horizontalScroll(rememberScrollState())) {

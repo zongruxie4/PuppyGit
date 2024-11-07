@@ -4,6 +4,8 @@ import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material.icons.Icons
@@ -37,7 +39,9 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.catpuppyapp.puppygit.compose.FilterTextField
 import com.catpuppyapp.puppygit.compose.GoToTopAndGoToBottomFab
+import com.catpuppyapp.puppygit.compose.InfoDialog
 import com.catpuppyapp.puppygit.compose.LongPressAbleIconBtn
+import com.catpuppyapp.puppygit.compose.ScrollableColumn
 import com.catpuppyapp.puppygit.constants.Cons
 import com.catpuppyapp.puppygit.data.entity.RepoEntity
 import com.catpuppyapp.puppygit.dev.commitsTreeToTreeDiffReverseTestPassed
@@ -55,6 +59,7 @@ import com.catpuppyapp.puppygit.utils.UIHelper
 import com.catpuppyapp.puppygit.utils.addPrefix
 import com.catpuppyapp.puppygit.utils.cache.Cache
 import com.catpuppyapp.puppygit.utils.changeStateTriggerRefreshPage
+import com.catpuppyapp.puppygit.utils.dbIntToBool
 import com.catpuppyapp.puppygit.utils.state.mutableCustomStateListOf
 import com.catpuppyapp.puppygit.utils.state.mutableCustomStateOf
 import com.github.git24j.core.Repository
@@ -183,6 +188,46 @@ fun TreeToTreeChangeListScreen(
 
     val showParentListDropDownMenu = rememberSaveable { mutableStateOf(false) }
 
+    val showInfoDialog = rememberSaveable { mutableStateOf(false) }
+    if(showInfoDialog.value) {
+        val curRepo = changeListCurRepo.value
+        InfoDialog(showInfoDialog) {
+            ScrollableColumn {
+                Row {
+                    Text(
+                        stringResource(id = R.string.comparing) + ": " +Libgit2Helper.getLeftToRightDiffCommitsText(commit1OidStr, commit2OidStr, swap.value)
+                    )
+                }
+                Spacer(Modifier.height(10.dp))
+
+                Row {
+                    Text(stringResource(id = R.string.repo) + ": " + curRepo.repoName)
+                }
+                Spacer(Modifier.height(10.dp))
+
+                if (dbIntToBool(curRepo.isDetached)) {
+                    Row {
+                        Text(stringResource(R.string.branch) + ": " + Cons.gitDetachedHead)
+                    }
+                } else {
+                    Row {
+                        Text(stringResource(R.string.branch) + ": " + (curRepo.branch))
+                    }
+
+                    if (curRepo.upstreamBranch.isNotBlank()) {
+                        Spacer(Modifier.height(10.dp))
+
+                        Row {
+                            Text(stringResource(R.string.upstream) + ": " + (curRepo.upstreamBranch))
+                        }
+                    }
+                }
+
+
+            }
+        }
+    }
+
     Scaffold(
         modifier = Modifier.nestedScroll(homeTopBarScrollBehavior.nestedScrollConnection),
         topBar = {
@@ -197,13 +242,13 @@ fun TreeToTreeChangeListScreen(
                             changeListPageFilterKeyWord,
                         )
                     }else{
-                        val titleText = Libgit2Helper.getShortOidStrByFull(commit1OidStrState.value)+".."+Libgit2Helper.getShortOidStrByFull(commit2OidStr)
+                        val titleText = Libgit2Helper.getLeftToRightDiffCommitsText(commit1OidStr, commit2OidStr, swap.value)
                         Column(modifier = Modifier
                             //外面的标题宽180.dp，这里的比外面的宽点，因为这个页面顶栏actions少
                             .widthIn(max = 200.dp)
                             .combinedClickable(onLongClick = {
                                 haptic.performHapticFeedback(HapticFeedbackType.LongPress)
-                                Msg.requireShow(titleText)
+                                showInfoDialog.value = true
                             }) { //onClick
 
 //                                当比较模式为比较指定的两个提交时(无parents)，点击不会展开下拉菜单(和parents比较才会展开)

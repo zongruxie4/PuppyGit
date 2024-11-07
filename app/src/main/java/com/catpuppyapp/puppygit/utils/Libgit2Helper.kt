@@ -5864,7 +5864,13 @@ class Libgit2Helper {
             return false
         }
 
-
+        fun getLeftToRightDiffCommitsText(left:String, right:String, swap:Boolean):String{
+            return if (swap) {
+                Libgit2Helper.getShortOidStrByFull(right) + ".." + Libgit2Helper.getShortOidStrByFull(left)
+            } else {
+                Libgit2Helper.getShortOidStrByFull(left) + ".." + Libgit2Helper.getShortOidStrByFull(right)
+            }
+        }
     }
 
 }
