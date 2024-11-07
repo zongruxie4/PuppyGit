@@ -12,14 +12,14 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.MutableState
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
-import com.catpuppyapp.puppygit.play.pro.R
 import com.catpuppyapp.puppygit.data.entity.RepoEntity
-import com.catpuppyapp.puppygit.utils.AppModel
-import com.catpuppyapp.puppygit.utils.state.CustomStateSaveable
+import com.catpuppyapp.puppygit.play.pro.R
 import com.catpuppyapp.puppygit.utils.Libgit2Helper
 import com.catpuppyapp.puppygit.utils.doJobThenOffLoading
+import com.catpuppyapp.puppygit.utils.state.CustomStateSaveable
 import com.github.git24j.core.Repository
 
 
@@ -36,7 +36,7 @@ fun AskGitUsernameAndEmailDialog(
     enableOk: () -> Boolean,
 ) {
 
-    val appContext = AppModel.singleInstanceHolder.appContext
+    val appContext = LocalContext.current
 
     AlertDialog(
         title = {

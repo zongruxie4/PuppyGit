@@ -112,7 +112,7 @@ fun RepoPageActions(
             }
 
             DropdownMenuItem(
-                text = { Text(stringResource(R.string.username_and_email)) },
+                text = { Text(stringResource(R.string.user_info)) },
                 onClick = {
                     closeMenu()
                     showGlobalUsernameAndEmailDialog.value=true

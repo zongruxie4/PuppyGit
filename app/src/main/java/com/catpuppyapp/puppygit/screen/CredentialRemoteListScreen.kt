@@ -3,11 +3,11 @@ package com.catpuppyapp.puppygit.screen
 import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.combinedClickable
-import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.lazy.rememberLazyListState
-import androidx.compose.foundation.rememberScrollState
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.AddLink
@@ -22,7 +22,6 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
-import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
@@ -35,14 +34,18 @@ import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.catpuppyapp.puppygit.compose.ConfirmDialog
 import com.catpuppyapp.puppygit.compose.FilterTextField
 import com.catpuppyapp.puppygit.compose.GoToTopAndGoToBottomFab
+import com.catpuppyapp.puppygit.compose.InfoDialog
 import com.catpuppyapp.puppygit.compose.LinkOrUnLinkCredentialAndRemoteDialog
 import com.catpuppyapp.puppygit.compose.LongPressAbleIconBtn
 import com.catpuppyapp.puppygit.compose.MyLazyColumn
 import com.catpuppyapp.puppygit.compose.RemoteItemForCredential
+import com.catpuppyapp.puppygit.compose.ScrollableColumn
+import com.catpuppyapp.puppygit.compose.ScrollableRow
 import com.catpuppyapp.puppygit.constants.Cons
 import com.catpuppyapp.puppygit.data.entity.CredentialEntity
 import com.catpuppyapp.puppygit.dto.RemoteDtoForCredential
@@ -81,11 +84,11 @@ fun CredentialRemoteListScreen(
     //这个页面的滚动状态不用记住，每次点开重置也无所谓
     val listState = rememberLazyListState()
     //如果再多几个"mode"，就改用字符串判断，直接把mode含义写成常量
-    val isSearchingMode = rememberSaveable { mutableStateOf(false)}
-    val isShowSearchResultMode = rememberSaveable { mutableStateOf(false)}
-    val searchKeyword = rememberSaveable { mutableStateOf("")}
-    val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = MyStyleKt.BottomSheet.skipPartiallyExpanded)
-    val showBottomSheet = rememberSaveable { mutableStateOf(false)}
+//    val isSearchingMode = rememberSaveable { mutableStateOf(false)}
+//    val isShowSearchResultMode = rememberSaveable { mutableStateOf(false)}
+//    val searchKeyword = rememberSaveable { mutableStateOf("")}
+//    val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = MyStyleKt.BottomSheet.skipPartiallyExpanded)
+//    val showBottomSheet = rememberSaveable { mutableStateOf(false)}
     val showUnLinkAllDialog = rememberSaveable { mutableStateOf(false)}
 //    val curCommit = rememberSaveable{ mutableStateOf(CommitDto()) }
     val curItemInPage = mutableCustomStateOf(keyTag = stateKeyTag, keyName = "curItemInPage", initValue = CredentialEntity())
@@ -109,13 +112,13 @@ fun CredentialRemoteListScreen(
 
         }
     }
-    val doUnLink={ remoteId:String ->
-        doJobThenOffLoading {
-            val remoteDb = AppModel.singleInstanceHolder.dbContainer.remoteRepository
-            remoteDb.unlinkCredentialIdByRemoteId(remoteId)
-            changeStateTriggerRefreshPage(needRefresh)
-        }
-    }
+//    val doUnLink={ remoteId:String ->
+//        doJobThenOffLoading {
+//            val remoteDb = AppModel.singleInstanceHolder.dbContainer.remoteRepository
+//            remoteDb.unlinkCredentialIdByRemoteId(remoteId)
+//            changeStateTriggerRefreshPage(needRefresh)
+//        }
+//    }
 
     val doUnLinkAll = {
         //确认后执行此方法
@@ -227,6 +230,26 @@ fun CredentialRemoteListScreen(
 //    }.value
     // 向下滚动监听，结束
 
+
+    val titleString = rememberSaveable { mutableStateOf("")}
+    val titleSecondaryString = rememberSaveable { mutableStateOf("")}  // title secondary line string
+    val showTitleInfoDialog = rememberSaveable { mutableStateOf(false)}
+    if(showTitleInfoDialog.value) {
+        InfoDialog(showTitleInfoDialog) {
+            ScrollableColumn {
+                Text(titleString.value)
+
+                if(titleSecondaryString.value.isNotBlank()) {
+                    Spacer(modifier = Modifier.height(10.dp))
+                    Text(titleSecondaryString.value)
+                }
+            }
+        }
+    }
+
+
+
+
     Scaffold(
         modifier = Modifier.nestedScroll(homeTopBarScrollBehavior.nestedScrollConnection),
         topBar = {
@@ -242,17 +265,19 @@ fun CredentialRemoteListScreen(
                         )
                     }else{
                         Column (modifier = Modifier.combinedClickable(onDoubleClick = { UIHelper.scrollToItem(scope, listState, 0) }) {}){
-                            Row(modifier = Modifier.horizontalScroll(rememberScrollState())) {
+                            ScrollableRow {
+                                titleString.value = if(isShowLink) stringResource(R.string.linked_remotes) else stringResource(R.string.unlinked_remotes)
                                 Text(
-                                    text= if(isShowLink) stringResource(R.string.linked_remotes) else stringResource(R.string.unlinked_remotes),
+                                    text= titleString.value,
                                     maxLines = 1,
                                     overflow = TextOverflow.Ellipsis
                                 )
 
                             }
-                            Row(modifier = Modifier.horizontalScroll(rememberScrollState())) {
+                            ScrollableRow {
+                                titleSecondaryString.value = "["+curItemInPage.value.name+"]"
                                 Text(
-                                    text= "["+curItemInPage.value.name+"]",
+                                    text= titleSecondaryString.value,
                                     maxLines = 1,
                                     overflow = TextOverflow.Ellipsis,
                                     fontSize = 12.sp

@@ -41,7 +41,7 @@ fun AskGitUsernameAndEmailDialogWithSelection(
 ) {
     AlertDialog(
         title = {
-            Text(stringResource(R.string.username_and_email))
+            Text(stringResource(R.string.user_info))
         },
         text = {
             Column {

@@ -1016,6 +1016,7 @@
     <string name="current_n_all_m">当前: ph_a3f241dc_1, 总共: ph_a3f241dc_2</string>
     <string name="comparing">正在比较</string>
     <string name="loaded_n">已加载: ph_a3f241dc_1</string>
+    <string name="user_info">用户信息</string>
 
 
 </resources>

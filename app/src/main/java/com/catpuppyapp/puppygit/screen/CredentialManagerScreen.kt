@@ -3,11 +3,11 @@ package com.catpuppyapp.puppygit.screen
 import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.combinedClickable
-import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.lazy.rememberLazyListState
-import androidx.compose.foundation.rememberScrollState
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Add
@@ -35,16 +35,20 @@ import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.unit.dp
 import com.catpuppyapp.puppygit.compose.BottomSheet
 import com.catpuppyapp.puppygit.compose.BottomSheetItem
 import com.catpuppyapp.puppygit.compose.ConfirmDialog
 import com.catpuppyapp.puppygit.compose.CredentialItem
 import com.catpuppyapp.puppygit.compose.FilterTextField
 import com.catpuppyapp.puppygit.compose.GoToTopAndGoToBottomFab
+import com.catpuppyapp.puppygit.compose.InfoDialog
 import com.catpuppyapp.puppygit.compose.LinkOrUnLinkCredentialAndRemoteDialog
 import com.catpuppyapp.puppygit.compose.LoadingText
 import com.catpuppyapp.puppygit.compose.LongPressAbleIconBtn
 import com.catpuppyapp.puppygit.compose.MyLazyColumn
+import com.catpuppyapp.puppygit.compose.ScrollableColumn
+import com.catpuppyapp.puppygit.compose.ScrollableRow
 import com.catpuppyapp.puppygit.constants.Cons
 import com.catpuppyapp.puppygit.data.entity.CredentialEntity
 import com.catpuppyapp.puppygit.data.entity.RemoteEntity
@@ -227,6 +231,23 @@ fun CredentialManagerScreen(
     val filterModeOn = rememberSaveable { mutableStateOf(false)}
     //filter相关，结束
 
+
+    val titleString = rememberSaveable { mutableStateOf("")}
+    val titleSecondaryString = rememberSaveable { mutableStateOf("")}  // title secondary line string
+    val showTitleInfoDialog = rememberSaveable { mutableStateOf(false)}
+    if(showTitleInfoDialog.value) {
+        InfoDialog(showTitleInfoDialog) {
+            ScrollableColumn {
+                Text(titleString.value)
+
+                if(titleSecondaryString.value.isNotBlank()) {
+                    Spacer(modifier = Modifier.height(10.dp))
+                    Text(titleSecondaryString.value)
+                }
+            }
+        }
+    }
+
     Scaffold(
         modifier = Modifier.nestedScroll(homeTopBarScrollBehavior.nestedScrollConnection),
         topBar = {
@@ -241,19 +262,25 @@ fun CredentialManagerScreen(
                             filterKeyword,
                         )
                     }else{
-                        Column(modifier = Modifier.combinedClickable(onDoubleClick = { UIHelper.scrollToItem(scope, listState, 0) }) {}) {
-                            Row(modifier = Modifier.horizontalScroll(rememberScrollState())) {
+                        Column(modifier = Modifier.combinedClickable(onDoubleClick = { UIHelper.scrollToItem(scope, listState, 0) }) {
+                            showTitleInfoDialog.value = true
+                        }) {
+                            titleString.value = stringResource(id = R.string.credential_manager)
+
+                            ScrollableRow {
                                 Text(
-                                    text = stringResource(id = R.string.credential_manager),
+                                    text = titleString.value,
                                     maxLines = 1,
                                     overflow = TextOverflow.Ellipsis
                                 )
 
                             }
                             if(remote.value.id.isNotEmpty()) {  //隐含 remoteId.isNotEmpty() 为 true
-                                Row(modifier = Modifier.horizontalScroll(rememberScrollState())) {
+                                titleSecondaryString.value = stringResource(id = R.string.link_mode)+": ["+remote.value.remoteName+":${curRepo.value.repoName}]"
+
+                                ScrollableRow  {
                                     Text(
-                                        text= stringResource(id = R.string.link_mode)+": ["+remote.value.remoteName+":${curRepo.value.repoName}]",
+                                        text= titleSecondaryString.value,
                                         maxLines = 1,
                                         overflow = TextOverflow.Ellipsis,
                                         fontSize = MyStyleKt.Title.secondLineFontSize

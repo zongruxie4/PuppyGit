@@ -26,13 +26,13 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.catpuppyapp.puppygit.compose.FilterTextField
+import com.catpuppyapp.puppygit.compose.ScrollableRow
 import com.catpuppyapp.puppygit.constants.PageRequest
 import com.catpuppyapp.puppygit.play.pro.R
 import com.catpuppyapp.puppygit.style.MyStyleKt
 import com.catpuppyapp.puppygit.utils.FsUtils
 import com.catpuppyapp.puppygit.utils.getFileNameFromCanonicalPath
 import com.catpuppyapp.puppygit.utils.state.CustomStateSaveable
-import com.catpuppyapp.puppygit.utils.state.StateUtil
 import java.io.File
 
 @OptIn(ExperimentalFoundationApi::class)
@@ -112,7 +112,7 @@ fun EditorTitle(editorPageShowingFilePath: MutableState<String>,
                         color = if(editorPageMergeMode) MyStyleKt.TextColor.danger() else Color.Unspecified
                     )
                 }
-                Row(modifier = Modifier.horizontalScroll(rememberScrollState())) {
+                ScrollableRow  {
                     Text(
                         text = filePathNoFileNameNoEndSlash,
                         fontSize = 11.sp,

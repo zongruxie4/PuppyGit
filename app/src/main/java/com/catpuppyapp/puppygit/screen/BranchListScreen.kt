@@ -69,6 +69,7 @@ import com.catpuppyapp.puppygit.compose.MySelectionContainer
 import com.catpuppyapp.puppygit.compose.RepoInfoDialog
 import com.catpuppyapp.puppygit.compose.ResetDialog
 import com.catpuppyapp.puppygit.compose.ScrollableColumn
+import com.catpuppyapp.puppygit.compose.ScrollableRow
 import com.catpuppyapp.puppygit.compose.SetUpstreamDialog
 import com.catpuppyapp.puppygit.constants.Cons
 import com.catpuppyapp.puppygit.data.entity.CredentialEntity
@@ -1149,14 +1150,14 @@ fun BranchListScreen(
                                     showTitleInfoDialog.value=true
                                 }
                         ){
-                            Row(modifier = Modifier.horizontalScroll(rememberScrollState())) {
+                            ScrollableRow  {
                                 Text(
                                     text= stringResource(R.string.branches),
                                     maxLines = 1,
                                     overflow = TextOverflow.Ellipsis
                                 )
                             }
-                            Row(modifier = Modifier.horizontalScroll(rememberScrollState())) {
+                            ScrollableRow  {
                                 Text(
                                     text= repoAndBranch,
                                     maxLines = 1,

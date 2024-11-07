@@ -49,10 +49,12 @@ import com.catpuppyapp.puppygit.compose.CredentialSelector
 import com.catpuppyapp.puppygit.compose.DomainCredItem
 import com.catpuppyapp.puppygit.compose.FilterTextField
 import com.catpuppyapp.puppygit.compose.GoToTopAndGoToBottomFab
+import com.catpuppyapp.puppygit.compose.InfoDialog
 import com.catpuppyapp.puppygit.compose.LoadingDialog
 import com.catpuppyapp.puppygit.compose.LongPressAbleIconBtn
 import com.catpuppyapp.puppygit.compose.MyLazyColumn
 import com.catpuppyapp.puppygit.compose.ScrollableColumn
+import com.catpuppyapp.puppygit.compose.ScrollableRow
 import com.catpuppyapp.puppygit.data.entity.CredentialEntity
 import com.catpuppyapp.puppygit.data.entity.DomainCredentialEntity
 import com.catpuppyapp.puppygit.data.entity.RemoteEntity
@@ -298,6 +300,23 @@ fun DomainCredentialListScreen(
     val filterModeOn = rememberSaveable { mutableStateOf(false)}
     //filter相关，结束
 
+
+    val titleString = rememberSaveable { mutableStateOf("")}
+    val titleSecondaryString = rememberSaveable { mutableStateOf("")}
+    val showTitleInfoDialog = rememberSaveable { mutableStateOf(false)}
+    if(showTitleInfoDialog.value) {
+        InfoDialog(showTitleInfoDialog) {
+            ScrollableColumn {
+                Text(titleString.value)
+
+                if(titleSecondaryString.value.isNotBlank()) {
+                    Spacer(modifier = Modifier.height(10.dp))
+                    Text(titleSecondaryString.value)
+                }
+            }
+        }
+    }
+
     Scaffold(
         modifier = Modifier.nestedScroll(homeTopBarScrollBehavior.nestedScrollConnection),
         topBar = {
@@ -312,20 +331,26 @@ fun DomainCredentialListScreen(
                             filterKeyword,
                         )
                     }else{
-                        Column {
-                            Row(modifier = Modifier.combinedClickable(onDoubleClick = { UIHelper.scrollToItem(scope, listState, 0) }) {}
-                            ) {
+                        Column(modifier = Modifier.combinedClickable(onDoubleClick = {
+                            UIHelper.scrollToItem(scope, listState, 0)
+                        }) {    // onClick
+                            showTitleInfoDialog.value = true
+                        }
+                        ) {
+                            ScrollableRow {
+                                titleString.value = stringResource(id = R.string.domains)
                                 Text(
-                                    text = stringResource(id = R.string.domains),
+                                    text = titleString.value,
                                     maxLines = 1,
                                     overflow = TextOverflow.Ellipsis
                                 )
 
                             }
-                            if(remote.value.id.isNotEmpty()) {  //隐含 remoteId.isNotEmpty() 为 true
-                                Row(modifier = Modifier.horizontalScroll(rememberScrollState())) {
+                            if (remote.value.id.isNotEmpty()) {  //隐含 remoteId.isNotEmpty() 为 true
+                                titleSecondaryString.value = stringResource(id = R.string.link_mode) + ": [" + remote.value.remoteName + ":${curRepo.value.repoName}]"
+                                ScrollableRow {
                                     Text(
-                                        text= stringResource(id = R.string.link_mode)+": ["+remote.value.remoteName+":${curRepo.value.repoName}]",
+                                        text = titleSecondaryString.value,
                                         maxLines = 1,
                                         overflow = TextOverflow.Ellipsis,
                                         fontSize = MyStyleKt.Title.secondLineFontSize

@@ -215,7 +215,7 @@ fun RepoInnerPage(
     // global username and email dialog
     if(showSetGlobalGitUsernameAndEmailDialog.value) {
         AskGitUsernameAndEmailDialog(
-            title = stringResource(R.string.username_and_email),
+            title = stringResource(R.string.user_info),
             text=setGlobalGitUsernameAndEmailStrRes,
             username=globalUsername,
             email=globalEmail,
@@ -251,7 +251,6 @@ fun RepoInnerPage(
     }
 
 
-    val setCurRepoGitUsernameAndEmailStrRes = stringResource(R.string.set_username_and_email_for_repo)
 
     val showSetCurRepoGitUsernameAndEmailDialog = rememberSaveable { mutableStateOf( false)}
     val curRepoUsername = rememberSaveable { mutableStateOf("")}
@@ -260,7 +259,7 @@ fun RepoInnerPage(
     if(showSetCurRepoGitUsernameAndEmailDialog.value) {
         AskGitUsernameAndEmailDialog(
             title=curRepo.value.repoName,
-            text=setCurRepoGitUsernameAndEmailStrRes,
+            text=stringResource(R.string.set_username_and_email_for_repo),
             username=curRepoUsername,
             email=curRepoEmail,
             isForGlobal=false,
@@ -1139,7 +1138,7 @@ fun RepoInnerPage(
     //            BottomSheetItem(sheetState, showBottomSheet, stringResource(R.string.settings)) {
     //              日后实现
     //            }
-                BottomSheetItem(sheetState, showBottomSheet, stringResource(R.string.username_and_email)) {
+                BottomSheetItem(sheetState, showBottomSheet, stringResource(R.string.user_info)) {
                     showSetCurRepoGitUsernameAndEmailDialog.value = true
                 }
                 //对shallow(克隆时设置了depth)的仓库提供一个unshallow选项

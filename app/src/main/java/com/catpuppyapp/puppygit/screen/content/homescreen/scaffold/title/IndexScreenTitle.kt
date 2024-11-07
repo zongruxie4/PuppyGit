@@ -22,6 +22,7 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.catpuppyapp.puppygit.compose.RepoInfoDialog
+import com.catpuppyapp.puppygit.compose.ScrollableRow
 import com.catpuppyapp.puppygit.data.entity.RepoEntity
 import com.catpuppyapp.puppygit.play.pro.R
 import com.catpuppyapp.puppygit.style.MyStyleKt
@@ -70,7 +71,7 @@ fun IndexScreenTitle(
         //外面的标题宽180.dp，这里的比外面的宽点，因为这个页面顶栏actions少
         .widthIn(max = 200.dp)
     ) {
-        Row(modifier = Modifier.horizontalScroll(rememberScrollState())) {
+        ScrollableRow {
 
             Text(
                 text = curRepo.value.repoName,
@@ -80,7 +81,7 @@ fun IndexScreenTitle(
                 color = getTitleColor()
             )
         }
-        Row(modifier = Modifier.horizontalScroll(rememberScrollState())) {
+        ScrollableRow  {
             //"[Index]|Merging" or "[Index]"
             Text(text = "["+stringResource(id = R.string.index)+"]" + (if(needShowRepoState.value) "|"+repoStateText.value else ""),
                 maxLines = 1,

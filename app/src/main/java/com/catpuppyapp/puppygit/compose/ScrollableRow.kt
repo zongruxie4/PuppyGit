@@ -7,8 +7,8 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 
 @Composable
-fun ScrollableRow(content:@Composable ()->Unit) {
-    Row(modifier = Modifier.horizontalScroll(rememberScrollState())) {
+fun ScrollableRow(modifier: Modifier=Modifier,content:@Composable ()->Unit) {
+    Row(modifier = modifier.horizontalScroll(rememberScrollState())) {
         content()
     }
 }

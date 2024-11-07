@@ -58,7 +58,9 @@ import com.catpuppyapp.puppygit.compose.GoToTopAndGoToBottomFab
 import com.catpuppyapp.puppygit.compose.LoadingDialog
 import com.catpuppyapp.puppygit.compose.LongPressAbleIconBtn
 import com.catpuppyapp.puppygit.compose.MyLazyColumn
+import com.catpuppyapp.puppygit.compose.RepoInfoDialog
 import com.catpuppyapp.puppygit.compose.ResetDialog
+import com.catpuppyapp.puppygit.compose.ScrollableRow
 import com.catpuppyapp.puppygit.compose.TagFetchPushDialog
 import com.catpuppyapp.puppygit.compose.TagItem
 import com.catpuppyapp.puppygit.constants.Cons
@@ -536,6 +538,11 @@ fun TagListScreen(
         showSelectedItemsShortDetailsDialog.value = true
     }
 
+    val showTitleInfoDialog = rememberSaveable { mutableStateOf(false)}
+    if(showTitleInfoDialog.value) {
+        RepoInfoDialog(curRepo.value, showTitleInfoDialog)
+    }
+
     Scaffold(
         modifier = Modifier.nestedScroll(homeTopBarScrollBehavior.nestedScrollConnection),
         topBar = {
@@ -553,21 +560,17 @@ fun TagListScreen(
                         val repoAndBranch = Libgit2Helper.getRepoOnBranchOrOnDetachedHash(curRepo.value)
                         Column (modifier = Modifier.combinedClickable (
                             onDoubleClick = {UIHelper.scrollToItem(scope, listState,0)},  // go to top
-                            onLongClick = {
-                                haptic.performHapticFeedback(HapticFeedbackType.LongPress)
-                                Msg.requireShow(repoAndBranch)
-                            }
                         ){  //onClick
-    //                        Msg.requireShow(repoAndBranch)
+                            showTitleInfoDialog.value = true
                         }){
-                            Row(modifier = Modifier.horizontalScroll(rememberScrollState())) {
+                            ScrollableRow  {
                                 Text(
                                     text= stringResource(R.string.tags),
                                     maxLines = 1,
                                     overflow = TextOverflow.Ellipsis
                                 )
                             }
-                            Row(modifier = Modifier.horizontalScroll(rememberScrollState())) {
+                            ScrollableRow  {
                                 Text(
                                     text= repoAndBranch,
                                     maxLines = 1,

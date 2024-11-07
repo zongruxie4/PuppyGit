@@ -51,6 +51,8 @@ import com.catpuppyapp.puppygit.compose.GoToTopAndGoToBottomFab
 import com.catpuppyapp.puppygit.compose.LoadingDialog
 import com.catpuppyapp.puppygit.compose.LongPressAbleIconBtn
 import com.catpuppyapp.puppygit.compose.MyLazyColumn
+import com.catpuppyapp.puppygit.compose.RepoInfoDialog
+import com.catpuppyapp.puppygit.compose.ScrollableRow
 import com.catpuppyapp.puppygit.compose.StashItem
 import com.catpuppyapp.puppygit.data.entity.RepoEntity
 import com.catpuppyapp.puppygit.git.StashDto
@@ -338,6 +340,11 @@ fun StashListScreen(
         }
     }
 
+    val showTitleInfoDialog = rememberSaveable { mutableStateOf(false)}
+    if(showTitleInfoDialog.value) {
+        RepoInfoDialog(curRepo.value, showTitleInfoDialog)
+    }
+
     Scaffold(
         modifier = Modifier.nestedScroll(homeTopBarScrollBehavior.nestedScrollConnection),
         topBar = {
@@ -355,21 +362,17 @@ fun StashListScreen(
                         val repoAndBranch = Libgit2Helper.getRepoOnBranchOrOnDetachedHash(curRepo.value)
                         Column (modifier = Modifier.combinedClickable (
                             onDoubleClick = {UIHelper.scrollToItem(scope, listState,0)},  // go to top
-                            onLongClick = {
-                                haptic.performHapticFeedback(HapticFeedbackType.LongPress)
-                                Msg.requireShow(repoAndBranch)
-                            }
                         ){  //onClick
-    //                        Msg.requireShow(repoAndBranch)
+                            showTitleInfoDialog.value = true
                         }){
-                            Row(modifier = Modifier.horizontalScroll(rememberScrollState())) {
+                            ScrollableRow {
                                 Text(
                                     text= stringResource(R.string.stash),
                                     maxLines = 1,
                                     overflow = TextOverflow.Ellipsis
                                 )
                             }
-                            Row(modifier = Modifier.horizontalScroll(rememberScrollState())) {
+                            ScrollableRow {
                                 Text(
                                     text= repoAndBranch,
                                     maxLines = 1,

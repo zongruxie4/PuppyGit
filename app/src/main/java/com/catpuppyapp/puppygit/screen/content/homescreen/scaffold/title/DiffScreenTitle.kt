@@ -16,6 +16,7 @@ import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.sp
+import com.catpuppyapp.puppygit.compose.ScrollableRow
 import com.catpuppyapp.puppygit.constants.PageRequest
 import com.catpuppyapp.puppygit.play.pro.R
 import com.catpuppyapp.puppygit.style.MyStyleKt
@@ -44,14 +45,14 @@ fun DiffScreenTitle(
                 request.value = PageRequest.showDetails
             }
         ) {
-            Row(modifier = Modifier.horizontalScroll(rememberScrollState())) {
+            ScrollableRow  {
                 Text(fileName,
                     fontSize = 15.sp,
                     maxLines=1,
                     overflow = TextOverflow.Ellipsis
                 )
             }
-            Row(modifier = Modifier.horizontalScroll(rememberScrollState())) {
+            ScrollableRow  {
                 Text(
                     text = filePath,
                     fontSize = 11.sp,
