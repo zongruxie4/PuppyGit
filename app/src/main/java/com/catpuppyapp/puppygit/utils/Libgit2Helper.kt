@@ -3550,8 +3550,17 @@ class Libgit2Helper {
             }
         }
 
-        //revspec可以是长或短分支名或长或短hash
-        //输入revspec，返回 Tree ，可以用来diff，或者从树上找某个问题之类的
+        fun resolveTreeByTreeId(repo:Repository, treeId:Oid):Tree? {
+            try {
+                return Tree.lookup(repo, treeId)
+            }catch (e:Exception) {
+                MyLog.e(TAG, "#resolveTreeByTreeId err: ${e.stackTraceToString()}")
+                return null
+            }
+        }
+
+        //revspec可以是长、短分支名或长、短oid，提交oid、树oid皆可
+        //输入revspec，返回 Tree ，可以用来diff，或者从树上找某个文件之类的
         fun resolveTree(repo: Repository, revspec:String):Tree? {
             try {
                 val tree = Tree.lookup(repo, Revparse.lookup(repo, "$revspec^{tree}").getFrom().id(), GitObject.Type.TREE) as? Tree
@@ -3818,7 +3827,7 @@ class Libgit2Helper {
                     if(commit!=null) {
                         val tree = commit.tree()
                         if(tree != null) {
-                            val entry =getEntryByPathOrNull(tree, fileRelativePathUnderRepo)
+                            val entry =getEntryOrNullByPath(tree, fileRelativePathUnderRepo)
                             if(entry!=null) {
                                 val entryOid = entry.id()
                                 if(!entryOid.isNullOrEmptyOrZero) {
@@ -3859,7 +3868,10 @@ class Libgit2Helper {
             return lastVersionEntryOid
         }
 
-        fun getEntryByPathOrNull(tree:Tree, path:String):Tree.Entry? {
+        fun getEntryOrNullByPath(tree:Tree, path:String):Tree.Entry? {
+            if(path.isEmpty()) {
+                return null
+            }
             try {
                 return tree.entryByPath(path)
             }catch (e:Exception) {
@@ -5849,14 +5861,9 @@ class Libgit2Helper {
 
         }
 
-        fun isCommitIncludePaths(repo:Repository, commitFullOid: String, paths: List<String>): Boolean {
-            val tree = resolveTree(repo, commitFullOid)
-            if(tree==null) {
-                 return false
-            }
-
+        fun isTreeIncludedPaths(tree:Tree, paths: List<String>): Boolean {
             for(i in paths.indices) {
-                if(tree.entryByPath(paths[i]) != null) {
+                if(getEntryOrNullByPath(tree, paths[i]) != null) {
                     return true
                 }
             }

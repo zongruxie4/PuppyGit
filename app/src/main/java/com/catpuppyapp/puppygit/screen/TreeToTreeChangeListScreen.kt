@@ -195,7 +195,7 @@ fun TreeToTreeChangeListScreen(
             ScrollableColumn {
                 Row {
                     Text(
-                        stringResource(id = R.string.comparing) + ": " +Libgit2Helper.getLeftToRightDiffCommitsText(commit1OidStr, commit2OidStr, swap.value)
+                        stringResource(id = R.string.comparing) + ": " +Libgit2Helper.getLeftToRightDiffCommitsText(commit1OidStrState.value, commit2OidStr, swap.value)
                     )
                 }
                 Spacer(Modifier.height(10.dp))
@@ -242,7 +242,7 @@ fun TreeToTreeChangeListScreen(
                             changeListPageFilterKeyWord,
                         )
                     }else{
-                        val titleText = Libgit2Helper.getLeftToRightDiffCommitsText(commit1OidStr, commit2OidStr, swap.value)
+                        val titleText = Libgit2Helper.getLeftToRightDiffCommitsText(commit1OidStrState.value, commit2OidStr, swap.value)
                         Column(modifier = Modifier
                             //外面的标题宽180.dp，这里的比外面的宽点，因为这个页面顶栏actions少
                             .widthIn(max = 200.dp)
@@ -284,13 +284,15 @@ fun TreeToTreeChangeListScreen(
                                 val itemText = if(it == commit1OidStrState.value) addPrefix(Libgit2Helper.getShortOidStrByFull(it)) else Libgit2Helper.getShortOidStrByFull(it)
                                 DropdownMenuItem(text = { Text(text = itemText)},
                                     onClick = {
+                                        // close menu
+                                        showParentListDropDownMenu.value=false
+
                                         //切换父提交则退出选择模式(现在20240420没用，但日后可能在TreeToTree页面也添加多选功能，比如可选择文件checkout or hard reset到worktree之类的，所以这里先把需要退出选择模式的逻辑写上)(20240818有用了)
                                         if(commit1OidStrState.value != it) {
                                             changeListIsFileSelectionMode.value=false  //退出选择模式
                                             changeListPageSelectedItemList.value.clear() //清空已选条目
                                         }
 
-                                        showParentListDropDownMenu.value=false
                                         commit1OidStrState.value=it
 
                                         changeStateTriggerRefreshPage(changeListRefreshRequiredByParentPage)

@@ -1853,7 +1853,7 @@ fun CommitListScreen(
 
                 val repo = if(needFilterByPath) {
                     try{
-                        paths = pathsForFilter.value.lines()
+                        paths = pathsForFilter.value.lines().filter { it.isNotEmpty() }
                         Repository.open(curRepo.value.fullSavePath)
                     }catch (_:Exception) {
                         null
@@ -1879,7 +1879,10 @@ fun CommitListScreen(
                     // for "show in list"
                     if(found) {
                         if(needFilterByPath && repo!=null && paths?.isNotEmpty() == true) {
-                            found = Libgit2Helper.isCommitIncludePaths(repo, commitFullOid = it.oidStr, paths=paths)
+                            val tree = Libgit2Helper.resolveTreeByTreeId(repo, Oid.of(it.treeOidStr))
+                            if(tree != null) {
+                                found = Libgit2Helper.isTreeIncludedPaths(tree, paths)
+                            }
                         }
 
                         if(found) {
