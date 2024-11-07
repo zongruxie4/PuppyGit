@@ -28,10 +28,6 @@ import java.nio.charset.Charset
 import java.util.Locale
 
 
-/**
- * Created by sheimi on 8/8/13.
- * source: https://github.com/maks/MGit/blob/66ec88b8a9873ba3334d2b6b213801a9e8d9d3c7/app/src/main/java/me/sheimi/android/utils/FsUtils.java
- */
 object FsUtils {
     /**
      * internal and external storage path prefix
@@ -153,6 +149,9 @@ object FsUtils {
         return uri
     }
 
+    /**
+     * This function origin version(by sheimi maybe) from: https://github.com/maks/MGit/blob/66ec88b8a9873ba3334d2b6b213801a9e8d9d3c7/app/src/main/java/me/sheimi/android/utils/FsUtils.java#L119C24-L119C32
+     */
     fun openFileEditFirstIfFailedThenTryView(context: Context, file: File): Ret<String?> {
         val uri = getUriForFile(context, file)
         val mimeType = getMimeType(uri.toString())

@@ -16,7 +16,7 @@ import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
 
 
-//网上拷来的，来源: https://www.cnblogs.com/changyiqiang/p/11225350.html
+//origin of this class: https://www.cnblogs.com/changyiqiang/p/11225350.html
 object MyLog {
     private val TAG = "MyLog"  //debug TAG
 
