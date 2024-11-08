@@ -2286,13 +2286,15 @@ fun ChangeListInnerPage(
     )else if(fromTo == Cons.gitDiffFromTreeToTree) {
         listOf(  //tree to tree页面的底栏选项
             checkout@{
-                val target = getCommitRight()
+                // when diff a commit to local (commit..local), if I clicked the checkout, actually I expect checkout the left version,
+                //  in other cases, I expect checkout the right version
+                val target = if(localAtDiffRight.value) getCommitLeft() else getCommitRight()
 
-                //如果target是local，不需要checkout
-                if(target == Cons.gitLocalWorktreeCommitHash) {
-                    Msg.requireShow("canceled: target is local")
-                    return@checkout
-                }
+                //x 废弃) 如果target是local，不需要checkout
+//                if(target == Cons.gitLocalWorktreeCommitHash) {
+//                    Msg.requireShow("canceled: target is local")
+//                    return@checkout
+//                }
 
                 initCheckoutDialog(target)
             },
