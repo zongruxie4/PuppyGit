@@ -51,15 +51,7 @@ fun goToFileHistory(fileFullPath:String, appContext: Context){
                     return@job
                 }
 
-
-                withMainContext {
-                    //go to file history page
-                    AppModel.singleInstanceHolder.navController
-                        .navigate(
-                            Cons.nav_FileHistoryScreen + "/" + repoFromDb.id +"/" + Cache.setThenReturnKey(relativePath)
-                        )
-                }
-
+                goToFileHistoryByRelativePathWithMainContext(repoFromDb.id, relativePath)
             }
 
         }catch (e:Exception) {
@@ -69,6 +61,20 @@ fun goToFileHistory(fileFullPath:String, appContext: Context){
     }
 }
 
+suspend fun goToFileHistoryByRelativePathWithMainContext(repoId:String, relativePathUnderRepo:String) {
+    withMainContext {
+        //go to file history page
+        naviToFileHistoryByRelativePath(repoId, relativePathUnderRepo)
+    }
+}
+
+fun naviToFileHistoryByRelativePath(repoId:String, relativePathUnderRepo:String) {
+    //go to file history page
+    AppModel.singleInstanceHolder.navController
+        .navigate(
+            Cons.nav_FileHistoryScreen + "/" + repoId +"/" + Cache.setThenReturnKey(relativePathUnderRepo)
+        )
+}
 
 fun getLoadText(loadedCount:Int, actuallyEnabledFilterMode:Boolean, appContext:Context):String?{
     return if(loadedCount < 1){

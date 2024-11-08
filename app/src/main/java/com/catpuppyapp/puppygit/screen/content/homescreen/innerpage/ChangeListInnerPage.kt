@@ -96,6 +96,7 @@ import com.catpuppyapp.puppygit.git.StatusTypeEntrySaver
 import com.catpuppyapp.puppygit.git.Upstream
 import com.catpuppyapp.puppygit.play.pro.R
 import com.catpuppyapp.puppygit.screen.functions.ChangeListFunctions
+import com.catpuppyapp.puppygit.screen.functions.naviToFileHistoryByRelativePath
 import com.catpuppyapp.puppygit.settings.SettingsUtil
 import com.catpuppyapp.puppygit.style.MyStyleKt
 import com.catpuppyapp.puppygit.user.UserUtil
@@ -206,7 +207,7 @@ fun ChangeListInnerPage(
 
     val haptic = LocalHapticFeedback.current
 
-    val allRepoParentDir = AppModel.singleInstanceHolder.allRepoParentDir;
+//    val allRepoParentDir = AppModel.singleInstanceHolder.allRepoParentDir;
     val appContext = LocalContext.current
     val exitApp = AppModel.singleInstanceHolder.exitApp
     val dbContainer = AppModel.singleInstanceHolder.dbContainer
@@ -2618,6 +2619,7 @@ fun ChangeListInnerPage(
         stringResource(R.string.open),
         stringResource(R.string.open_as),
         stringResource(R.string.show_in_files),
+        stringResource(R.string.file_history),
         stringResource(R.string.copy_path),
         stringResource(R.string.copy_full_path),
         stringResource(R.string.import_as_repo),
@@ -2655,6 +2657,9 @@ fun ChangeListInnerPage(
 
             goToFilesPage(item.canonicalPath)
         },
+        fileHistory@{item:StatusTypeEntrySaver ->
+            naviToFileHistoryByRelativePath(repoId, item.relativePathUnderRepo)
+        },
         copyPath@{item:StatusTypeEntrySaver ->
             clipboardManager.setText(AnnotatedString(item.relativePathUnderRepo))
             Msg.requireShow(appContext.getString(R.string.copied))
@@ -2678,6 +2683,7 @@ fun ChangeListInnerPage(
 
         //只有worktree的cl页面支持在Files页面显示文件，index页面由于是二级页面，跳转不了，干脆禁用了
         showInFilesEnabled@{fromTo == Cons.gitDiffFromIndexToWorktree},  //对所有条目都启用showInFiles，不过会在点击后检查文件是否存在，若不存在不会跳转
+        fileHistoryEnabled@{it.toFile().isFile},
         copyPath@{true},
         copyRealPath@{true},
         importAsRepo@{ (fromTo == Cons.gitDiffFromIndexToWorktree || fromTo == Cons.gitDiffFromHeadToIndex) && it.toFile().isDirectory }, //only dir can be import as repo
