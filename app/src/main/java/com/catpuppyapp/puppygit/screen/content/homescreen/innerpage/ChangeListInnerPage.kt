@@ -3038,7 +3038,8 @@ fun ChangeListInnerPage(
                                     }
 
                                     val syncText = stringResource(if(upstreamNotSet) R.string.set_upstream_and_sync else R.string.sync)
-                                    val syncIcon = if(upstreamNotSet) Icons.Filled.CloudSync else Icons.Filled.Sync
+//                                    val syncIcon = if(upstreamNotSet) Icons.Filled.CloudSync else Icons.Filled.Sync
+                                    val syncIcon = if(upstreamNotSet) Icons.Filled.CloudSync else ImageVector.vectorResource(R.drawable.two_way_sync)
                                     LongPressAbleIconBtn(
                                         iconModifier = iconModifier,
                                         tooltipText = syncText,
