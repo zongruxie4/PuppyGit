@@ -12,10 +12,15 @@ import androidx.compose.material3.TextButton
 import androidx.compose.material3.TextField
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.MutableState
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.platform.LocalView
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
@@ -49,6 +54,31 @@ fun RequireCommitMsgDialog(
     //勾选amend时用此变量替代commitMsg
     val amendMsg = rememberSaveable { mutableStateOf(commitMsg.value)}
 
+
+
+    val view = LocalView.current
+    val density = LocalDensity.current
+
+    val isKeyboardVisible = remember { mutableStateOf(false) }
+    //indicate keyboard covered component
+    val isKeyboardCoveredComponent = remember { mutableStateOf(false) }
+    // which component expect adjust heghit or padding when softkeyboard shown
+    val componentHeight = remember { mutableIntStateOf(0) }
+    // the padding value when softkeyboard shown
+    val keyboardPaddingDp = remember { mutableStateOf(0.dp) }
+
+    SoftkeyboardVisibleListener(
+        view = view,
+        isKeyboardVisible = isKeyboardVisible,
+        isKeyboardCoveredComponent = isKeyboardCoveredComponent,
+        componentHeight = componentHeight,
+        keyboardPaddingDp = keyboardPaddingDp,
+        density = density,
+        paddingAdjustValue = 180.dp,
+        skipCondition = { false }
+    )
+
+
     AlertDialog(
         title = {
             Text(stringResource(R.string.commit_message))
@@ -62,7 +92,17 @@ fun RequireCommitMsgDialog(
                 }
 
                 TextField(
-                    modifier = Modifier.fillMaxWidth(),
+                    modifier = Modifier.fillMaxWidth()
+                        .onGloballyPositioned { layoutCoordinates ->
+//                                println("layoutCoordinates.size.height:${layoutCoordinates.size.height}")
+                            // 获取组件的高度
+                            // unit is px ( i am not very sure)
+                            componentHeight.intValue = layoutCoordinates.size.height
+                        }
+                        .then(
+                            if (isKeyboardCoveredComponent.value) Modifier.padding(bottom = keyboardPaddingDp.value) else Modifier
+                        )
+                    ,
 
                     value = if(amend.value) amendMsg.value else commitMsg.value,
                     onValueChange = {

@@ -91,6 +91,7 @@ import com.catpuppyapp.puppygit.compose.RepoInfoDialog
 import com.catpuppyapp.puppygit.compose.ResetDialog
 import com.catpuppyapp.puppygit.compose.ScrollableColumn
 import com.catpuppyapp.puppygit.compose.SingleSelectList
+import com.catpuppyapp.puppygit.compose.SoftkeyboardVisibleListener
 import com.catpuppyapp.puppygit.constants.Cons
 import com.catpuppyapp.puppygit.data.entity.RepoEntity
 import com.catpuppyapp.puppygit.dev.cherrypickTestPassed
@@ -2142,39 +2143,19 @@ fun CommitListScreen(
         }
     }
 
-    // this code gen by chat-gpt, wow
-    // except: this code may not work when use use a float keyboard or softkeyboard with single-hand mode
-    // 监听键盘的弹出和隐藏 (listening keyboard visible/hidden)
-    DisposableEffect(view) {
-        val callback = ViewTreeObserver.OnGlobalLayoutListener cb@{
-            // this check only for add bottom padding when use filter paths dialog,
-            // if used for other cases, uncomment this if block
-            if(showFilterByPathsDialog.value.not()) {
-                return@cb
-            }
 
-            val insets = ViewCompat.getRootWindowInsets(view)
-            isKeyboardVisible.value = insets?.isVisible(WindowInsetsCompat.Type.ime()) == true
-
-            // 获取软键盘的高度 (get soft keyboard height)
-            val keyboardHeightPx = insets?.getInsets(WindowInsetsCompat.Type.ime())?.bottom ?: 0
-
-            // 判断组件是否被遮盖 (check component whether got covered)
-            isKeyboardCoveredComponent.value = (componentHeight.intValue > 0) && (view.height - keyboardHeightPx < componentHeight.intValue)
-
-            keyboardPaddingDp.value = if(isKeyboardCoveredComponent.value) {
-                with(density) { keyboardHeightPx.toDp()-120.dp }
-            }else {
-                0.dp
-            }
+    SoftkeyboardVisibleListener(
+        view = view,
+        isKeyboardVisible = isKeyboardVisible,
+        isKeyboardCoveredComponent = isKeyboardCoveredComponent,
+        componentHeight = componentHeight,
+        keyboardPaddingDp = keyboardPaddingDp,
+        density = density,
+        skipCondition = {
+            showFilterByPathsDialog.value.not()
         }
+    )
 
-        view.viewTreeObserver.addOnGlobalLayoutListener(callback)
-
-        onDispose {
-            view.viewTreeObserver.removeOnGlobalLayoutListener(callback)
-        }
-    }
 
 }
 

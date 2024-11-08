@@ -1,6 +1,5 @@
 package com.catpuppyapp.puppygit.compose
 
-import android.view.ViewTreeObserver
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Column
@@ -15,7 +14,6 @@ import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -35,8 +33,6 @@ import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.DpOffset
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.core.view.ViewCompat
-import androidx.core.view.WindowInsetsCompat
 import com.catpuppyapp.puppygit.constants.Cons
 import com.catpuppyapp.puppygit.constants.LineNum
 import com.catpuppyapp.puppygit.git.PuppyLine
@@ -92,33 +88,17 @@ fun DiffRow (
     // this code gen by chat-gpt, wow
     // except: this code may not work when use use a float keyboard or softkeyboard with single-hand mode
     // 监听键盘的弹出和隐藏 (listening keyboard visible/hidden)
-    DisposableEffect(view) {
-        val callback = ViewTreeObserver.OnGlobalLayoutListener cb@{
-            if(!(showEditLineDialog.value || showRestoreLineDialog.value)) {
-                return@cb
-            }
-
-            val insets = ViewCompat.getRootWindowInsets(view)
-            isKeyboardVisible.value = insets?.isVisible(WindowInsetsCompat.Type.ime()) == true
-
-            // 获取软键盘的高度 (get soft keyboard height)
-            val keyboardHeightPx = insets?.getInsets(WindowInsetsCompat.Type.ime())?.bottom ?: 0
-
-            // 判断组件是否被遮盖 (check component whether got covered)
-            isKeyboardCoveredComponent.value = (componentHeight.intValue > 0) && (view.height - keyboardHeightPx < componentHeight.intValue)
-
-            keyboardPaddingDp.value = if(isKeyboardCoveredComponent.value) {
-                with(density) { keyboardHeightPx.toDp()-120.dp }
-            }else {
-                0.dp
-            }
+    SoftkeyboardVisibleListener(
+        view = view,
+        isKeyboardVisible = isKeyboardVisible,
+        isKeyboardCoveredComponent = isKeyboardCoveredComponent,
+        componentHeight = componentHeight,
+        keyboardPaddingDp = keyboardPaddingDp,
+        density = density,
+        skipCondition = {
+            !(showEditLineDialog.value || showRestoreLineDialog.value)
         }
-
-        view.viewTreeObserver.addOnGlobalLayoutListener(callback)
-        onDispose {
-            view.viewTreeObserver.removeOnGlobalLayoutListener(callback)
-        }
-    }
+    )
 
 
 
