@@ -1021,6 +1021,7 @@
     <string name="local_behind">本地落后</string>
     <string name="i_input_file_names">我输入的是文件名</string>
     <string name="will_filter_by_file_name_not_by_path">将根据文件名过滤而不是路径</string>
+    <string name="file_path">文件路径</string>
 
 
 </resources>

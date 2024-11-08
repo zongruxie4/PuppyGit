@@ -588,7 +588,13 @@ fun FileHistoryScreen(
     val showTitleInfoDialog = remember { mutableStateOf(false) }
     val titleInfo = rememberSaveable { mutableStateOf(fileRelativePath) }
     if(showTitleInfoDialog.value) {
-        RepoInfoDialog(curRepo.value, showTitleInfoDialog)
+        RepoInfoDialog(
+            curRepo = curRepo.value,
+            showTitleInfoDialog = showTitleInfoDialog,
+            appendContent = {
+                Text(stringResource(R.string.file_path)+": "+fileRelativePath)
+            }
+        )
     }
 
     val getActuallyList = {

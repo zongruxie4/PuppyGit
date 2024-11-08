@@ -17,7 +17,8 @@ import com.catpuppyapp.puppygit.utils.dbIntToBool
 @Composable
 fun RepoInfoDialog(
     curRepo: RepoEntity,
-    showTitleInfoDialog: MutableState<Boolean>
+    showTitleInfoDialog: MutableState<Boolean>,
+    appendContent:@Composable (()->Unit)? = null
 ) {
     InfoDialog(showTitleInfoDialog) {
         ScrollableColumn {
@@ -44,6 +45,10 @@ fun RepoInfoDialog(
                 }
             }
 
+            if(appendContent != null) {
+                Spacer(Modifier.height(10.dp))
+                appendContent()
+            }
 
         }
     }
