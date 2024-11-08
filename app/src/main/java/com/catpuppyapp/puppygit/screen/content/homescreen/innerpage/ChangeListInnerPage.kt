@@ -3234,7 +3234,7 @@ fun ChangeListInnerPage(
                         Text(text = stringResource(id = R.string.index_clean))
 
                     }else {  //fromTo == Cons.gitDiffFromTreeToTree and other
-                        Text(text = stringResource(id = R.string.no_items_for_shown))
+                        Text(text = stringResource(id = R.string.no_difference_found))
                     }
                 }
 

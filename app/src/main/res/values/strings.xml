@@ -1039,5 +1039,6 @@
     <string name="i_input_file_names">I input file name(s)</string>
     <string name="will_filter_by_file_name_not_by_path">will filter by file name, not by path</string>
     <string name="file_path">File path</string>
+    <string name="no_difference_found">No difference found</string>
 
 </resources>
