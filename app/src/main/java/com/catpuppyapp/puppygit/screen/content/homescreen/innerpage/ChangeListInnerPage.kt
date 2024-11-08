@@ -2859,13 +2859,13 @@ fun ChangeListInnerPage(
                                     //查询下仓库是否领先或落后于上游
                                     if (curRepoFromParentPage.value.ahead != 0) {
                                         Row {
-                                            Text(text = stringResource(R.string.local_ahead) + ":" + curRepoFromParentPage.value.ahead)
+                                            Text(text = stringResource(R.string.local_ahead) + ": " + curRepoFromParentPage.value.ahead)
 
                                         }
                                     }
                                     if (curRepoFromParentPage.value.behind != 0) {
                                         Row {  //换行
-                                            Text(text = stringResource(R.string.local_behind) + ":" + curRepoFromParentPage.value.behind)
+                                            Text(text = stringResource(R.string.local_behind) + ": " + curRepoFromParentPage.value.behind)
                                         }
                                     }
 
