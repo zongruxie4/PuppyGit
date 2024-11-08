@@ -31,6 +31,7 @@ import com.catpuppyapp.puppygit.git.StatusTypeEntrySaver
 import com.catpuppyapp.puppygit.git.SubmoduleDto
 import com.catpuppyapp.puppygit.git.TagDto
 import com.catpuppyapp.puppygit.git.Upstream
+import com.catpuppyapp.puppygit.jni.LibgitTwo
 import com.catpuppyapp.puppygit.play.pro.R
 import com.catpuppyapp.puppygit.settings.SettingsUtil
 import com.catpuppyapp.puppygit.style.MyStyleKt
@@ -3827,7 +3828,7 @@ class Libgit2Helper {
                     if(commit!=null) {
                         val tree = commit.tree()
                         if(tree != null) {
-                            val entry =getEntryOrNullByPath(tree, fileRelativePathUnderRepo)
+                            val entry =getEntryOrNullByPathOrName(tree, fileRelativePathUnderRepo, byName = false)
                             if(entry!=null) {
                                 val entryOid = entry.id()
                                 if(!entryOid.isNullOrEmptyOrZero) {
@@ -3868,14 +3869,23 @@ class Libgit2Helper {
             return lastVersionEntryOid
         }
 
-        fun getEntryOrNullByPath(tree:Tree, path:String):Tree.Entry? {
+        /**
+         * @bug libgit 1.7.2, byName not work
+         * @param byName if true, find entry by name, else by path
+         */
+        fun getEntryOrNullByPathOrName(tree:Tree, path:String, byName:Boolean):Tree.Entry? {
             if(path.isEmpty()) {
                 return null
             }
             try {
-                return tree.entryByPath(path)
+                val entry =  if(byName) tree.entryByName(path) else tree.entryByPath(path)
+//              //  val entryPtr = LibgitTwo.jniEntryByName(tree.rawPointer, path)
+//              //  println("entryPtr: $entryPtr")
+//                println("path or name:$path")
+//                println("entry: $entry")
+                return entry
             }catch (e:Exception) {
-                MyLog.e(TAG, "#getEntryByPathOrNull: err: ${e.stackTraceToString()}")
+                MyLog.e(TAG, "#getEntryOrNullByPathOrName err: path=$path, byName=$byName, err=${e.stackTraceToString()}")
                 return null
             }
         }
@@ -5861,9 +5871,9 @@ class Libgit2Helper {
 
         }
 
-        fun isTreeIncludedPaths(tree:Tree, paths: List<String>): Boolean {
+        fun isTreeIncludedPaths(tree:Tree, paths: List<String>, byName:Boolean): Boolean {
             for(i in paths.indices) {
-                if(getEntryOrNullByPath(tree, paths[i]) != null) {
+                if(getEntryOrNullByPathOrName(tree, paths[i], byName) != null) {
                     return true
                 }
             }

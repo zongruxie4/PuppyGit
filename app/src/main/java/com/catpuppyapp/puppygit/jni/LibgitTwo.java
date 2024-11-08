@@ -50,6 +50,14 @@ public class LibgitTwo {
     public static native String jniLineGetContent(long linePtr);
     public static native void jniTestAccessExternalStorage();
 
+    /**
+    *
+     * @param treePtr
+     * @param filename
+     * @return entry ptr
+    */
+    public static native Long jniEntryByName(long treePtr, String filename);
+
     public static String getContent(int contentLen, String content) {
         // content.length() is "chars count", not "bytes count"!
         // so this code is wrong in some cases! sometimes it will give you more lines than you wanted.

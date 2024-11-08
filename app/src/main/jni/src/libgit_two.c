@@ -298,3 +298,15 @@ JNIEXPORT void JNICALL J_MAKE_METHOD(LibgitTwo_jniTestAccessExternalStorage)(JNI
 
     ALOGD("ccode: LibgitTwo_jniTestAccessExternalStorage() end\n");
 }
+
+JNIEXPORT jobject JNICALL J_MAKE_METHOD(LibgitTwo_jniEntryByName)(JNIEnv *env, jclass callerJavaClass, jlong treePtr, jstring filename)
+{
+    char *c_filename = j_copy_of_jstring(env, filename, true);
+//    char *c_filename = "settings.cpp";
+//    ALOGD("filename in c: %s", c_filename);
+    const git_tree_entry *r = git_tree_entry_byname((git_tree *)treePtr, c_filename);
+//    ALOGD("tree ptr in c: %p", (void *)treePtr);
+//    ALOGD("entry ptr in c: %p", r);
+    free(c_filename);
+    return (jobject)r;
+}

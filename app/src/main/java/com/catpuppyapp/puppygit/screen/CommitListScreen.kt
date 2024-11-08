@@ -276,8 +276,11 @@ fun CommitListScreen(
 
     val showFilterByPathsDialog = rememberSaveable { mutableStateOf(false) }
 //    val pathsForFilterByPathsDialog = mutableCustomStateListOf(stateKeyTag, "pathsForFilterByPathsDialog") { listOf<String>() }
-    val pathsCacheForFilterByPathsDialog = rememberSaveable { mutableStateOf("") }  // cache the paths until user clicked the ok, then assign the value to `pathsForFilter`
+    val pathsForFilterBuffer = rememberSaveable { mutableStateOf("") }  // cache the paths until user clicked the ok, then assign the value to `pathsForFilter`
     val pathsForFilter = rememberSaveable { mutableStateOf("") }
+    val pathsListForFilter = mutableCustomStateListOf(stateKeyTag, "pathsListForFilter") { listOf<String>() }
+    val filterByEntryName = rememberSaveable { mutableStateOf(false) }
+    val filterByEntryNameBuffer = rememberSaveable { mutableStateOf(false) }
 
     if(showFilterByPathsDialog.value) {
         ConfirmDialog2(
@@ -306,9 +309,9 @@ fun CommitListScreen(
                             .then(
                                 if (isKeyboardCoveredComponent.value) Modifier.padding(bottom = keyboardPaddingDp.value) else Modifier
                             ),
-                        value = pathsCacheForFilterByPathsDialog.value,
+                        value = pathsForFilterBuffer.value,
                         onValueChange = {
-                            pathsCacheForFilterByPathsDialog.value = it
+                            pathsForFilterBuffer.value = it
                         },
                         label = {
                             Text(stringResource(R.string.paths))
@@ -329,7 +332,7 @@ fun CommitListScreen(
                             style = MyStyleKt.ClickableText.style,
                             color = MyStyleKt.ClickableText.color,
                             modifier = MyStyleKt.ClickableText.modifier.clickable {
-                                pathsCacheForFilterByPathsDialog.value = ""
+                                pathsForFilterBuffer.value = ""
                             },
                             fontWeight = FontWeight.Light
                         )
@@ -337,13 +340,30 @@ fun CommitListScreen(
                         Spacer(Modifier.height(10.dp))
 
                     }
+
+                    //@bug TODO libgit2 1.7.2 Tree.entryByName() has bug, it always return null, when fixed in futrue, can uncomment this code
+//                    MyCheckBox(stringResource(R.string.i_input_file_names), filterByEntryNameBuffer)
+//                    if(filterByEntryNameBuffer.value) {
+//                        Text(stringResource(R.string.will_filter_by_file_name_not_by_path), fontWeight = FontWeight.Light)
+//                    }
                 }
             },
             onCancel = {showFilterByPathsDialog.value = false}
         ) {
             showFilterByPathsDialog.value = false
 
-            pathsForFilter.value = pathsCacheForFilterByPathsDialog.value
+            doJobThenOffLoading {
+                // assigning new value
+                filterByEntryName.value = filterByEntryNameBuffer.value
+                pathsForFilter.value = pathsForFilterBuffer.value
+                pathsListForFilter.value.clear()
+                pathsForFilter.value.lines().forEach {
+                    if(it.isNotEmpty()) {
+                        pathsListForFilter.value.add(it)
+                    }
+                }
+
+            }
         }
     }
 
@@ -1416,8 +1436,10 @@ fun CommitListScreen(
                             trailingIconColor = UIHelper.getIconEnableColorOrNull(pathsForFilter.value.isNotEmpty()) ?: Color.Unspecified,
                             trailingIconDesc = stringResource(R.string.a_list_icon_lor_filter_commits_by_paths),
                             trailingIconOnClick = {
-                                // show filte by path dialog
-                                pathsCacheForFilterByPathsDialog.value = pathsForFilter.value  // assign current working filter paths to paths cache for accept user input
+                                // show filter by path dialog
+                                pathsForFilterBuffer.value = pathsForFilter.value  // assign current working filter paths to paths cache for accept user input
+                                filterByEntryNameBuffer.value = filterByEntryName.value
+
                                 showFilterByPathsDialog.value = true
                             }
                         )
@@ -1845,15 +1867,14 @@ fun CommitListScreen(
 
             //根据关键字过滤条目
             val k = filterKeyword.value.text.lowercase()  //关键字
-            val needFilterByPath = pathsForFilter.value.isNotEmpty()
-            var paths:List<String>? = null
+            val pathList = pathsListForFilter.value
+            val needFilterByPath = pathList.isNotEmpty()
             val enableFilter = filterModeOn_dontUseThisCheckFilterModeReallyEnabledOrNot.value && (k.isNotEmpty() || needFilterByPath)
             val list = if(enableFilter){
                 filterIdxList.value.clear()
 
                 val repo = if(needFilterByPath) {
                     try{
-                        paths = pathsForFilter.value.lines().filter { it.isNotEmpty() }
                         Repository.open(curRepo.value.fullSavePath)
                     }catch (_:Exception) {
                         null
@@ -1878,10 +1899,10 @@ fun CommitListScreen(
 
                     // for "show in list"
                     if(found) {
-                        if(needFilterByPath && repo!=null && paths?.isNotEmpty() == true) {
+                        if(needFilterByPath && repo!=null && pathList.isNotEmpty()) {
                             val tree = Libgit2Helper.resolveTreeByTreeId(repo, Oid.of(it.treeOidStr))
                             if(tree != null) {
-                                found = Libgit2Helper.isTreeIncludedPaths(tree, paths)
+                                found = Libgit2Helper.isTreeIncludedPaths(tree, pathList, filterByEntryName.value)
                             }
                         }
 

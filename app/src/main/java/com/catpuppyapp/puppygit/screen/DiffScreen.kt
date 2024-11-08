@@ -179,6 +179,7 @@ fun DiffScreen(
         f.exists() && f.isFile
     } }
 
+    // now is "read-only" mode
     val copyModeSwitchable = remember(localAtDiffRight, fileFullPath.value) { derivedStateOf {
         localAtDiffRight && isFileAndExist.value
     }}
