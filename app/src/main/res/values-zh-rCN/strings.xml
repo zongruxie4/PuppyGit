@@ -1017,6 +1017,8 @@
     <string name="comparing">正在比较</string>
     <string name="loaded_n">已加载: ph_a3f241dc_1</string>
     <string name="user_info">用户信息</string>
+    <string name="local_ahead">本地领先</string>
+    <string name="local_behind">本地落后</string>
 
 
 </resources>

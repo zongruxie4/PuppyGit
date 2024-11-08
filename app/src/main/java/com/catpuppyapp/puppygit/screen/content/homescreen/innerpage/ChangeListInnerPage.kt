@@ -18,6 +18,7 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.Label
 import androidx.compose.material.icons.filled.CloudDone
+import androidx.compose.material.icons.filled.CloudSync
 import androidx.compose.material.icons.filled.DoneAll
 import androidx.compose.material.icons.filled.Download
 import androidx.compose.material.icons.filled.Folder
@@ -2858,13 +2859,13 @@ fun ChangeListInnerPage(
                                     //查询下仓库是否领先或落后于上游
                                     if (curRepoFromParentPage.value.ahead != 0) {
                                         Row {
-                                            Text(text = stringResource(R.string.local_ahead_upstream) + ":" + curRepoFromParentPage.value.ahead)
+                                            Text(text = stringResource(R.string.local_ahead) + ":" + curRepoFromParentPage.value.ahead)
 
                                         }
                                     }
                                     if (curRepoFromParentPage.value.behind != 0) {
                                         Row {  //换行
-                                            Text(text = stringResource(R.string.local_behind_upstream) + ":" + curRepoFromParentPage.value.behind)
+                                            Text(text = stringResource(R.string.local_behind) + ":" + curRepoFromParentPage.value.behind)
                                         }
                                     }
 
@@ -2883,57 +2884,54 @@ fun ChangeListInnerPage(
                                         }
                                     }
 
-                                    Column (
-                                        modifier = Modifier.padding(horizontal = 10.dp),
-                                        verticalArrangement = Arrangement.Center,
-                                        horizontalAlignment = Alignment.CenterHorizontally
-                                    ){
-                                        if(curRepoFromParentPage.value.behind != 0) {
-                                            Row {
-                                                Text(text = stringResource(R.string.merge),
-                                                    fontSize = fontSizeOfPullPushSync,
-                                                    color = MyStyleKt.ClickableText.color,
-                                                    style = MyStyleKt.ClickableText.style,
-                                                    modifier = MyStyleKt.ClickableText.modifierNoPadding.clickable {
-                                                        doJobThenOffLoading(loadingOn, loadingOff, appContext.getString(R.string.merging)) {
-                                                            ChangeListFunctions.doMerge(
-                                                                requireCloseBottomBar = true,
-                                                                upstreamParam = null,
-                                                                showMsgIfHasConflicts = true,
-                                                                trueMergeFalseRebase = true,
-                                                                curRepoFromParentPage = curRepoFromParentPage,
-                                                                requireShowToast = requireShowToast,
-                                                                appContext = appContext,
-                                                                loadingText = loadingText,
-                                                                bottomBarActDoneCallback = bottomBarActDoneCallback
-                                                            )
-                                                        }
+                                    if(curRepoFromParentPage.value.behind != 0) {
+                                        Row(
+                                            verticalAlignment = Alignment.CenterVertically,
+                                            horizontalArrangement = Arrangement.Center
+                                        ) {
+                                            Text(text = stringResource(R.string.merge),
+                                                fontSize = fontSizeOfPullPushSync,
+                                                color = MyStyleKt.ClickableText.color,
+                                                style = MyStyleKt.ClickableText.style,
+                                                modifier = MyStyleKt.ClickableText.modifierNoPadding.clickable {
+                                                    doJobThenOffLoading(loadingOn, loadingOff, appContext.getString(R.string.merging)) {
+                                                        ChangeListFunctions.doMerge(
+                                                            requireCloseBottomBar = true,
+                                                            upstreamParam = null,
+                                                            showMsgIfHasConflicts = true,
+                                                            trueMergeFalseRebase = true,
+                                                            curRepoFromParentPage = curRepoFromParentPage,
+                                                            requireShowToast = requireShowToast,
+                                                            appContext = appContext,
+                                                            loadingText = loadingText,
+                                                            bottomBarActDoneCallback = bottomBarActDoneCallback
+                                                        )
                                                     }
-                                                )
+                                                }
+                                            )
 
-                                                Text(text = splitSign, modifier = Modifier.padding(horizontal = splitHorizonPadding))
+                                            Text(text = splitSign, modifier = Modifier.padding(horizontal = splitHorizonPadding))
 
-                                                Text(text = stringResource(R.string.rebase),
-                                                    fontSize = fontSizeOfPullPushSync,
-                                                    color = MyStyleKt.ClickableText.color,
-                                                    style = MyStyleKt.ClickableText.style,
-                                                    modifier = MyStyleKt.ClickableText.modifierNoPadding.clickable {
-                                                        doJobThenOffLoading(loadingOn, loadingOff, appContext.getString(R.string.rebasing)) {
-                                                            ChangeListFunctions.doMerge(
-                                                                requireCloseBottomBar = true,
-                                                                upstreamParam = null,
-                                                                showMsgIfHasConflicts = true,
-                                                                trueMergeFalseRebase = false,
-                                                                curRepoFromParentPage = curRepoFromParentPage,
-                                                                requireShowToast = requireShowToast,
-                                                                appContext = appContext,
-                                                                loadingText = loadingText,
-                                                                bottomBarActDoneCallback = bottomBarActDoneCallback
-                                                            )
-                                                        }
+                                            Text(text = stringResource(R.string.rebase),
+                                                fontSize = fontSizeOfPullPushSync,
+                                                color = MyStyleKt.ClickableText.color,
+                                                style = MyStyleKt.ClickableText.style,
+                                                modifier = MyStyleKt.ClickableText.modifierNoPadding.clickable {
+                                                    doJobThenOffLoading(loadingOn, loadingOff, appContext.getString(R.string.rebasing)) {
+                                                        ChangeListFunctions.doMerge(
+                                                            requireCloseBottomBar = true,
+                                                            upstreamParam = null,
+                                                            showMsgIfHasConflicts = true,
+                                                            trueMergeFalseRebase = false,
+                                                            curRepoFromParentPage = curRepoFromParentPage,
+                                                            requireShowToast = requireShowToast,
+                                                            appContext = appContext,
+                                                            loadingText = loadingText,
+                                                            bottomBarActDoneCallback = bottomBarActDoneCallback
+                                                        )
                                                     }
-                                                )
-                                            }
+                                                }
+                                            )
                                         }
                                     }
 
@@ -2943,7 +2941,10 @@ fun ChangeListInnerPage(
                                 }
 
 
-                                Row {
+                                Row(
+                                    verticalAlignment = Alignment.CenterVertically,
+                                    horizontalArrangement = Arrangement.Center
+                                ) {
                                     //如果设置了上游，显示pull/push
                                     if(!upstreamNotSet) {
                                         LongPressAbleIconBtn(
@@ -2953,13 +2954,7 @@ fun ChangeListInnerPage(
                                             iconContentDesc = stringResource(id = R.string.pull),
 
                                         ) {
-                                            doJobThenOffLoading(
-                                                loadingOn,
-                                                loadingOff,
-                                                appContext.getString(
-                                                    R.string.pulling
-                                                )
-                                            ) {
+                                            doJobThenOffLoading(loadingOn, loadingOff, appContext.getString(R.string.pulling)) {
                                                 doPull()
                                             }
 
@@ -3035,20 +3030,18 @@ fun ChangeListInnerPage(
                                     }
 
                                     val syncText = stringResource(if(upstreamNotSet) R.string.set_upstream_and_sync else R.string.sync)
+                                    val syncIcon = if(upstreamNotSet) Icons.Filled.CloudSync else Icons.Filled.Sync
                                     LongPressAbleIconBtn(
                                         iconModifier = iconModifier,
                                         tooltipText = syncText,
-                                        icon =  Icons.Filled.Sync,
+                                        icon = syncIcon ,
                                         iconContentDesc = syncText,
 
                                     ) {
 
-                                        doJobThenOffLoading(
-                                            loadingOn, loadingOff,
-                                            appContext.getString(R.string.syncing)
-                                        ) {
+                                        doJobThenOffLoading(loadingOn, loadingOff, appContext.getString(R.string.syncing)) {
                                             try {
-//                                                        doSync(true)
+//                                                   //     doSync(true)
                                                 ChangeListFunctions.doSync(
                                                     requireCloseBottomBar = true,
                                                     trueMergeFalseRebase = true,
@@ -3094,7 +3087,7 @@ fun ChangeListInnerPage(
                             }
                         }
 
-                        //只有非detache 且 设置了上游（没发布也行） 才显示检查更新
+                        //只有非detached HEAD 且 设置了上游（没发布也行） 才显示检查更新
                         if(!dbIntToBool(curRepoFromParentPage.value.isDetached) && curRepoUpstream.value.branchRefsHeadsFullRefSpec.isNotBlank()) {
                             Row (
 //                                modifier=Modifier.padding(top=18.dp)

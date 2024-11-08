@@ -1034,5 +1034,7 @@
     <string name="comparing">Comparing</string>
     <string name="loaded_n">loaded: ph_a3f241dc_1</string>
     <string name="user_info">User Info</string>
+    <string name="local_ahead">Local ahead</string>
+    <string name="local_behind">Local behind</string>
 
 </resources>
