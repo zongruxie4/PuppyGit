@@ -2872,7 +2872,7 @@ fun ChangeListInnerPage(
                                     if(curRepoUpstream.value.branchRefsHeadsFullRefSpec.isBlank()) {
                                         upstreamNotSet = true
                                         Row {  //换行
-                                            Text(text = stringResource(R.string.no_upstream_set_for_local_branch))
+                                            Text(text = stringResource(R.string.no_upstream))
                                         }
                                     }
 
