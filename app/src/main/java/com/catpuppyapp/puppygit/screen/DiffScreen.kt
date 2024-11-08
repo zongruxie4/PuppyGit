@@ -70,7 +70,7 @@ fun DiffScreen(
     treeOid1Str:String,
     treeOid2Str:String,
     isSubmodule:Boolean,
-    isDiffToLocal:Boolean,
+    isDiffToLocal:Boolean,  // actually is diff with local, whether local at left or right, this gonna be true
     diffableItemListKey:String, //可预览diff的条目集合
     curItemIndexAtDiffableItemList:Int,
     localAtDiffRight:Boolean,

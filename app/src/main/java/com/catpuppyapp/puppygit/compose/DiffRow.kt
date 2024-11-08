@@ -67,7 +67,7 @@ fun DiffRow (
     clipboardManager: ClipboardManager,
     loadingOn:(String)->Unit,
     loadingOff:()->Unit,
-    refreshPageIfIsWorkTree:()->Unit,
+    refreshPage:()->Unit,
     repoId:String,
     showLineNum:Boolean,
     showOriginType:Boolean,
@@ -275,7 +275,7 @@ fun DiffRow (
 
                     Msg.requireShow(appContext.getString(R.string.success))
 
-                    refreshPageIfIsWorkTree()
+                    refreshPage()
                 }catch (e:Exception) {
                     val errMsg = e.localizedMessage ?:"err"
                     Msg.requireShowLongDuration(errMsg)
@@ -325,7 +325,7 @@ fun DiffRow (
 
                     Msg.requireShow(appContext.getString(R.string.success))
 
-                    refreshPageIfIsWorkTree()
+                    refreshPage()
 
                 }catch (e:Exception) {
                     val errMsg = e.localizedMessage ?:"err"
@@ -412,7 +412,7 @@ fun DiffRow (
 
                     Msg.requireShow(appContext.getString(R.string.success))
 
-                    refreshPageIfIsWorkTree()
+                    refreshPage()
 
                 }catch (e:Exception) {
                     val errMsg = e.localizedMessage ?:"err"
