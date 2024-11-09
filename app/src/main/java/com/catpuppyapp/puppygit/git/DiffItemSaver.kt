@@ -209,4 +209,36 @@ data class PuppyLine (
         }
         return contentNoBreak ?: content.removeSuffix(Cons.lineBreak)
     }
+
+
+
+    override fun equals(other: Any?): Boolean {
+        if (this === other) return true
+        if (javaClass != other?.javaClass) return false
+
+        other as PuppyLine
+
+        if (originType != other.originType) return false
+        if (oldLineNum != other.oldLineNum) return false
+        if (newLineNum != other.newLineNum) return false
+        if (contentLen != other.contentLen) return false
+        if (content != other.content) return false
+        if (lineNum != other.lineNum) return false
+        if (howManyLines != other.howManyLines) return false
+
+        return true
+    }
+
+    override fun hashCode(): Int {
+        var result = originType.hashCode()
+        result = 31 * result + oldLineNum
+        result = 31 * result + newLineNum
+        result = 31 * result + contentLen
+        result = 31 * result + content.hashCode()
+        result = 31 * result + lineNum
+        result = 31 * result + howManyLines
+        return result
+    }
+
+
 }

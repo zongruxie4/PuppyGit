@@ -539,14 +539,14 @@ fun DiffRow (
                     )
                     DropdownMenuItem(text = { Text(stringResource(R.string.insert))},
                         onClick = {
-                            initEditLineDialog(line.getContentNoLineBreak(), line.lineNum, true)
+                            initEditLineDialog("", line.lineNum, true)
 
                             expandedMenu.value = false
                         }
                     )
                     DropdownMenuItem(text = { Text(stringResource(R.string.append))},
                         onClick = {
-                            initEditLineDialog(line.getContentNoLineBreak(), line.lineNum, false)
+                            initEditLineDialog("", line.lineNum, false)
 
                             expandedMenu.value = false
                         }
