@@ -113,4 +113,11 @@ class StatusTypeEntrySaver {
         return result
     }
 
+    fun maybeIsFileAndExist():Boolean {
+        return itemType == Cons.gitItemTypeFile || (itemType != Cons.gitItemTypeDir && itemType != Cons.gitItemTypeSubmodule)
+    }
+
+    fun maybeIsDirAndExist():Boolean {
+        return itemType == Cons.gitItemTypeDir || itemType == Cons.gitItemTypeSubmodule || itemType != Cons.gitItemTypeFile
+    }
 }

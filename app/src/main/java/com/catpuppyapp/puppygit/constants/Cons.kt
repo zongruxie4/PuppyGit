@@ -256,12 +256,17 @@ class Cons {
         val gitItemTypeFileStr = "File";
         val gitItemTypeDirStr = "Folder";  // use 'Folder' instead 'Dir' for distinguish with 'Dirty', else if input 'dir' as filter text, will show dirty sub and dirs
         val gitItemTypeSubmoduleStr = "Subm";
+
         val gitSubmoduleDirtyStr="Dirty"  // for item type submodule, when dirty, show this at ChangeList item
+
+
+        // git diff from commit to commit start
         val gitDiffFromIndexToWorktree = "1";
         val gitDiffFromHeadToIndex = "2";
         val gitDiffFromHeadToWorktree = "3";
         val gitDiffFromTreeToTree = "4";  //例如：一个提交和另一个提交比较，就属于这个类型
 //        val gitDiffFromTreeToWorktree = "5"
+        // git diff file history start
         val gitDiffFileHistoryFromTreeToLocal = "20"
         val gitDiffFileHistoryFromTreeToTree = "21"
 
