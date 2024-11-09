@@ -52,6 +52,7 @@ fun DiffPageActions(
     adjustFontSizeModeOn:MutableState<Boolean>,
     adjustLineNumSizeModeOn:MutableState<Boolean>,
     groupDiffContentByLineNum:MutableState<Boolean>,
+    enableSelectCompare:MutableState<Boolean>
 ) {
 
     val navController = AppModel.singleInstanceHolder.navController
@@ -293,6 +294,27 @@ fun DiffPageActions(
             },
             onClick = {
                 copyModeOn.value = !copyModeOn.value
+
+                dropDownMenuExpendState.value = false
+            }
+
+        )
+
+        DropdownMenuItem(
+            enabled = fileChangeTypeIsModified,
+            text = { Text(stringResource(R.string.select_compare)) },
+            trailingIcon = {
+                Icon(
+                    imageVector = if(enableSelectCompare.value) Icons.Filled.CheckBox else Icons.Filled.CheckBoxOutlineBlank,
+                    contentDescription = null
+                )
+            },
+            onClick = {
+                enableSelectCompare.value = !enableSelectCompare.value
+
+                SettingsUtil.update {
+                    it.diff.enableSelectCompare = enableSelectCompare.value
+                }
 
                 dropDownMenuExpendState.value = false
             }

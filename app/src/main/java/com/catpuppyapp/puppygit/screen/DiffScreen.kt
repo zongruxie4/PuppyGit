@@ -135,6 +135,7 @@ fun DiffScreen(
     val fileSize = rememberSaveable { mutableLongStateOf(fileSize) }
     val isSubmodule = rememberSaveable { mutableStateOf(isSubmodule) }
 
+    val enableSelectCompare = rememberSaveable { mutableStateOf(changeType.value == Cons.gitStatusModified && settings.diff.enableSelectCompare) }
 
 
 //    val curRepo = rememberSaveable { mutableStateOf(RepoEntity()) }
@@ -180,16 +181,18 @@ fun DiffScreen(
     } }
 
     // now is "read-only" mode
-    val copyModeSwitchable = remember(localAtDiffRight, fileFullPath.value) { derivedStateOf {
+    val readOnlySwitchable = remember(localAtDiffRight, fileFullPath.value) { derivedStateOf {
         localAtDiffRight && isFileAndExist.value
     }}
 
-    val copyModeOn = rememberSaveable(copyModeSwitchable.value) { mutableStateOf(copyModeSwitchable.value.not()) }
+    // cant switch = force readonly, else init value set to off
+    // 不能切换等于强制只读，否则初始值设为关闭只读模式
+    val readOnlyModeOn = rememberSaveable(readOnlySwitchable.value) { mutableStateOf(readOnlySwitchable.value.not()) }
 
-    val enableLineTapMenu = remember(isSubmodule.value, changeType.value, fileFullPath.value, localAtDiffRight, copyModeOn.value) {
+    val enableLineTapMenu = remember(isSubmodule.value, changeType.value, fileFullPath.value, localAtDiffRight, readOnlyModeOn.value) {
         derivedStateOf {
             // only check when local as diff right(xxx..local)
-            if(localAtDiffRight.not() || copyModeOn.value || isSubmodule.value || (changeType.value != Cons.gitStatusNew && changeType.value != Cons.gitStatusModified)){
+            if(localAtDiffRight.not() || readOnlyModeOn.value || isSubmodule.value || (changeType.value != Cons.gitStatusNew && changeType.value != Cons.gitStatusModified)){
                 false
             }else{
                 val f= File(fileFullPath.value)
@@ -422,7 +425,8 @@ fun DiffScreen(
                         fileRelativePathUnderRepoState = relativePathUnderRepoState,
                         listState,
                         scope,
-                        request
+                        request,
+                        changeType.value
                     )
                 },
                 navigationIcon = {
@@ -465,13 +469,14 @@ fun DiffScreen(
                             request = request,
                             fileFullPath = fileFullPath.value,
                             requireBetterMatchingForCompare = requireBetterMatchingForCompare,
-                            copyModeOn = copyModeOn,
-                            copyModeSwitchable = copyModeSwitchable.value,
+                            copyModeOn = readOnlyModeOn,
+                            copyModeSwitchable = readOnlySwitchable.value,
                             showLineNum=showLineNum,
                             showOriginType=showOriginType,
                             adjustFontSizeModeOn = adjustFontSizeModeOn,
                             adjustLineNumSizeModeOn = adjustLineNumSizeModeOn,
-                            groupDiffContentByLineNum=groupDiffContentByLineNum
+                            groupDiffContentByLineNum=groupDiffContentByLineNum,
+                            enableSelectCompare=enableSelectCompare
                         )
 
                     }
@@ -514,7 +519,7 @@ fun DiffScreen(
         //改成统一在DiffContent里检查实际diff需要获取的内容的大小了，和文件大小有所不同，有时候文件大小很大，但需要diff的内容大小实际很小，这时其实可以diff，性能不会太差
 
         // if diff to local, enable edit menu and disable copy(because may cause app crashed), else disable edit menu but enable copy(no complex layout enable copy is ok)
-        if(localAtDiffRight && copyModeOn.value.not()){
+        if(localAtDiffRight && readOnlyModeOn.value.not() && enableSelectCompare.value.not()){
             DiffContent(repoId=repoId,relativePathUnderRepoDecoded=relativePathUnderRepoState.value,
                 fromTo=fromTo,changeType=changeType.value,fileSize=fileSize.longValue, naviUp=naviUp, dbContainer=dbContainer,
                 contentPadding = contentPadding, treeOid1Str = treeOid1Str.value, treeOid2Str = treeOid2Str.value,
@@ -526,7 +531,8 @@ fun DiffScreen(
                 loadingOnParent=loadingOn, loadingOffParent=loadingOff,isFileAndExist=enableLineTapMenu,
                 showLineNum=showLineNum.value, showOriginType=showOriginType.value,
                 fontSize=fontSize.intValue, lineNumSize=lineNumFontSize.intValue,
-                groupDiffContentByLineNum=groupDiffContentByLineNum.value,switchItemForFileHistory=switchItemForFileHistory
+                groupDiffContentByLineNum=groupDiffContentByLineNum.value,switchItemForFileHistory=switchItemForFileHistory,
+                enableSelectCompare = enableSelectCompare.value
             )
         }else {
             MySelectionContainer {
@@ -541,7 +547,9 @@ fun DiffScreen(
                     loadingOnParent=loadingOn, loadingOffParent=loadingOff, isFileAndExist=enableLineTapMenu,
                     showLineNum=showLineNum.value, showOriginType=showOriginType.value,
                     fontSize=fontSize.intValue, lineNumSize=lineNumFontSize.intValue,
-                    groupDiffContentByLineNum=groupDiffContentByLineNum.value,switchItemForFileHistory=switchItemForFileHistory
+                    groupDiffContentByLineNum=groupDiffContentByLineNum.value,switchItemForFileHistory=switchItemForFileHistory,
+                    enableSelectCompare = enableSelectCompare.value
+
 
 
                 )

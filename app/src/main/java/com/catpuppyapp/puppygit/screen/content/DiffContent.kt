@@ -103,7 +103,9 @@ fun DiffContent(
     fontSize:Int,
     lineNumSize:Int,
     groupDiffContentByLineNum:Boolean,
-    switchItemForFileHistory:(FileHistoryDto, index:Int)->Unit
+    switchItemForFileHistory:(FileHistoryDto, index:Int)->Unit,
+    enableSelectCompare:Boolean
+
 ) {
 
     val isDiffFileHistoryFromTreeToTree = fromTo == Cons.gitDiffFileHistoryFromTreeToTree
@@ -338,7 +340,8 @@ fun DiffContent(
                                             comparePairBuffer = comparePairBuffer,
                                             betterCompare = requireBetterMatchingForCompare.value,
                                             reForEachDiffContent=reForEachDiffContent,
-                                            indexStringPartListMap = indexStringPartListMapForComparePair
+                                            indexStringPartListMap = indexStringPartListMapForComparePair,
+                                            enableSelectCompare=enableSelectCompare
                                         )
 
                                     }
@@ -366,7 +369,8 @@ fun DiffContent(
                                         comparePairBuffer = comparePairBuffer,
                                         betterCompare = requireBetterMatchingForCompare.value,
                                         reForEachDiffContent=reForEachDiffContent,
-                                        indexStringPartListMap = indexStringPartListMapForComparePair
+                                        indexStringPartListMap = indexStringPartListMapForComparePair,
+                                        enableSelectCompare=enableSelectCompare
                                     )
                                 }
                             }else {  // add or del
@@ -403,7 +407,8 @@ fun DiffContent(
                                             comparePairBuffer = comparePairBuffer,
                                             betterCompare = requireBetterMatchingForCompare.value,
                                             reForEachDiffContent=reForEachDiffContent,
-                                            indexStringPartListMap = indexStringPartListMapForComparePair
+                                            indexStringPartListMap = indexStringPartListMapForComparePair,
+                                            enableSelectCompare=enableSelectCompare
                                         )
                                     }
                                 }else {
@@ -428,7 +433,8 @@ fun DiffContent(
                                                     comparePairBuffer = comparePairBuffer,
                                                     betterCompare = requireBetterMatchingForCompare.value,
                                                     reForEachDiffContent=reForEachDiffContent,
-                                                    indexStringPartListMap = indexStringPartListMapForComparePair
+                                                    indexStringPartListMap = indexStringPartListMapForComparePair,
+                                                    enableSelectCompare=enableSelectCompare
                                                 )
                                             }
                                         } else {  // matched
@@ -450,7 +456,8 @@ fun DiffContent(
                                                     comparePairBuffer = comparePairBuffer,
                                                     betterCompare = requireBetterMatchingForCompare.value,
                                                     reForEachDiffContent=reForEachDiffContent,
-                                                    indexStringPartListMap = indexStringPartListMapForComparePair
+                                                    indexStringPartListMap = indexStringPartListMapForComparePair,
+                                                    enableSelectCompare=enableSelectCompare
                                                 )
                                             }
                                         }
@@ -493,7 +500,8 @@ fun DiffContent(
                                         comparePairBuffer = comparePairBuffer,
                                         betterCompare = requireBetterMatchingForCompare.value,
                                         reForEachDiffContent=reForEachDiffContent,
-                                        indexStringPartListMap = indexStringPartListMapForComparePair
+                                        indexStringPartListMap = indexStringPartListMapForComparePair,
+                                        enableSelectCompare=enableSelectCompare
                                     )
                                 }
                             }
@@ -524,7 +532,8 @@ fun DiffContent(
                                         comparePairBuffer = comparePairBuffer,
                                         betterCompare = requireBetterMatchingForCompare.value,
                                         reForEachDiffContent = reForEachDiffContent,
-                                        indexStringPartListMap = indexStringPartListMapForComparePair
+                                        indexStringPartListMap = indexStringPartListMapForComparePair,
+                                        enableSelectCompare=enableSelectCompare
 
                                     )
                                 }
@@ -550,7 +559,8 @@ fun DiffContent(
                                         comparePairBuffer = comparePairBuffer,
                                         betterCompare = requireBetterMatchingForCompare.value,
                                         reForEachDiffContent = reForEachDiffContent,
-                                        indexStringPartListMap = indexStringPartListMapForComparePair
+                                        indexStringPartListMap = indexStringPartListMapForComparePair,
+                                        enableSelectCompare=enableSelectCompare
 
                                     )
                                 }
@@ -582,7 +592,8 @@ fun DiffContent(
                                             comparePairBuffer = comparePairBuffer,
                                             betterCompare = requireBetterMatchingForCompare.value,
                                             reForEachDiffContent=reForEachDiffContent,
-                                            indexStringPartListMap = indexStringPartListMapForComparePair
+                                            indexStringPartListMap = indexStringPartListMapForComparePair,
+                                            enableSelectCompare=enableSelectCompare
                                         )
 
                                     }
@@ -617,7 +628,8 @@ fun DiffContent(
                                                 comparePairBuffer = comparePairBuffer,
                                                 betterCompare = requireBetterMatchingForCompare.value,
                                                 reForEachDiffContent=reForEachDiffContent,
-                                                indexStringPartListMap = indexStringPartListMapForComparePair
+                                                indexStringPartListMap = indexStringPartListMapForComparePair,
+                                                enableSelectCompare=enableSelectCompare
 
                                             )
                                         }
@@ -640,7 +652,8 @@ fun DiffContent(
                                                 comparePairBuffer = comparePairBuffer,
                                                 betterCompare = requireBetterMatchingForCompare.value,
                                                 reForEachDiffContent=reForEachDiffContent,
-                                                indexStringPartListMap = indexStringPartListMapForComparePair
+                                                indexStringPartListMap = indexStringPartListMapForComparePair,
+                                                enableSelectCompare=enableSelectCompare
 
                                             )
                                         }
@@ -664,7 +677,8 @@ fun DiffContent(
                                                 comparePairBuffer = comparePairBuffer,
                                                 betterCompare = requireBetterMatchingForCompare.value,
                                                 reForEachDiffContent=reForEachDiffContent,
-                                                indexStringPartListMap = indexStringPartListMapForComparePair
+                                                indexStringPartListMap = indexStringPartListMapForComparePair,
+                                                enableSelectCompare=enableSelectCompare
                                             )
                                         }
                                         item {
@@ -684,7 +698,8 @@ fun DiffContent(
                                                 comparePairBuffer = comparePairBuffer,
                                                 betterCompare = requireBetterMatchingForCompare.value,
                                                 reForEachDiffContent=reForEachDiffContent,
-                                                indexStringPartListMap = indexStringPartListMapForComparePair
+                                                indexStringPartListMap = indexStringPartListMapForComparePair,
+                                                enableSelectCompare=enableSelectCompare
                                             )
                                         }
                                     }
@@ -708,7 +723,8 @@ fun DiffContent(
                                             comparePairBuffer = comparePairBuffer,
                                             betterCompare = requireBetterMatchingForCompare.value,
                                             reForEachDiffContent=reForEachDiffContent,
-                                            indexStringPartListMap = indexStringPartListMapForComparePair
+                                            indexStringPartListMap = indexStringPartListMapForComparePair,
+                                            enableSelectCompare=enableSelectCompare
                                         )
                                     }
                                 }
@@ -730,7 +746,8 @@ fun DiffContent(
                                             comparePairBuffer = comparePairBuffer,
                                             betterCompare = requireBetterMatchingForCompare.value,
                                             reForEachDiffContent=reForEachDiffContent,
-                                            indexStringPartListMap = indexStringPartListMapForComparePair
+                                            indexStringPartListMap = indexStringPartListMapForComparePair,
+                                            enableSelectCompare=enableSelectCompare
                                         )
                                     }
                                 }
@@ -792,7 +809,8 @@ fun DiffContent(
                                     comparePairBuffer = comparePairBuffer,
                                     betterCompare = requireBetterMatchingForCompare.value,
                                     reForEachDiffContent=reForEachDiffContent,
-                                    indexStringPartListMap = indexStringPartListMapForComparePair
+                                    indexStringPartListMap = indexStringPartListMapForComparePair,
+                                    enableSelectCompare=enableSelectCompare
                                 )
                             }
                         }
@@ -823,7 +841,8 @@ fun DiffContent(
                                 comparePairBuffer = comparePairBuffer,
                                 betterCompare = requireBetterMatchingForCompare.value,
                                 reForEachDiffContent=reForEachDiffContent,
-                                indexStringPartListMap = indexStringPartListMapForComparePair
+                                indexStringPartListMap = indexStringPartListMapForComparePair,
+                                enableSelectCompare=enableSelectCompare
                             )
                         }
                     }

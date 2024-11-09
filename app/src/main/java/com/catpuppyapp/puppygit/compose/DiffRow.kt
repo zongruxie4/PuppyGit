@@ -81,6 +81,8 @@ fun DiffRow (
     betterCompare:Boolean,
     reForEachDiffContent:()->Unit,
     indexStringPartListMap:CustomStateMapSaveable<String, List<IndexStringPart>>,
+    enableSelectCompare: Boolean
+
 ) {
     val showEditLineDialog = rememberSaveable { mutableStateOf(false) }
     val showRestoreLineDialog = rememberSaveable { mutableStateOf(false) }
@@ -432,6 +434,7 @@ fun DiffRow (
     // disable for EOF, the EOF showing sometimes false-added
     // 禁用EOF点击菜单，EOF有时候假添加，就是明明没有eof，但显示新增了eof，可能是libgit2 bug
     val enableLineActions = isFileAndExist && line.lineNum != LineNum.EOF.LINE_NUM
+    val lineClickable = enableLineActions || enableSelectCompare
 
     //因为下面用Row换行了，所以不需要内容以换行符结尾
 //    prefix = prefix.removeSuffix(Cons.lineBreak)
@@ -499,7 +502,7 @@ fun DiffRow (
                 modifier= Modifier
                     .fillMaxWidth()
                     .then(
-                        if (enableLineActions) {
+                        if (lineClickable) {
                             Modifier.clickable { expandedMenu.value = true }
                         } else {
                             Modifier
@@ -517,7 +520,7 @@ fun DiffRow (
                 modifier= Modifier
                     .fillMaxWidth()
                     .then(
-                        if (enableLineActions) {
+                        if (lineClickable) {
                             Modifier.clickable { expandedMenu.value = true }
                         } else {
                             Modifier
@@ -528,182 +531,188 @@ fun DiffRow (
         }
 
 
-        if(enableLineActions) {
+        if(lineClickable) {
             DropdownMenu(
                 expanded = expandedMenu.value,
                 onDismissRequest = { expandedMenu.value = false },
                 offset = DpOffset(x=150.dp, y=0.dp)
             ) {
-                DropdownMenuItem(text = { Text(line.originType+lineNum)},
-                    enabled = false,
-                    onClick ={}
-                )
+                if(enableLineActions) {
+                    DropdownMenuItem(text = { Text(line.originType+lineNum)},
+                        enabled = false,
+                        onClick ={}
+                    )
 
-                // EOFNL status maybe wrong, before Edit or Del, must check it actually exists or is not, when edit line num is EOF and EOFNL is not exists, then prepend a LineBreak before users input
-                //编辑或删除前，如果行号是EOF，必须检查EOF NL是否实际存在，如果EOFNL不存在，则先添加一个空行，再写入用户的实际内容，如果执行删除EOF且文件末尾无空行，则不执行任何删除；
-                // 如果EOF为删除，则不用检查，点击恢复后直接在文件末尾添加一个空行即可
-                if(line.originType == Line.OriginType.ADDITION.toString() || line.originType == Line.OriginType.CONTEXT.toString()){
-                    DropdownMenuItem(text = { Text(stringResource(R.string.edit))},
-                        onClick = {
-                            initEditLineDialog(line.getContentNoLineBreak(), line.lineNum, null)
+                    // EOFNL status maybe wrong, before Edit or Del, must check it actually exists or is not, when edit line num is EOF and EOFNL is not exists, then prepend a LineBreak before users input
+                    //编辑或删除前，如果行号是EOF，必须检查EOF NL是否实际存在，如果EOFNL不存在，则先添加一个空行，再写入用户的实际内容，如果执行删除EOF且文件末尾无空行，则不执行任何删除；
+                    // 如果EOF为删除，则不用检查，点击恢复后直接在文件末尾添加一个空行即可
+                    if(line.originType == Line.OriginType.ADDITION.toString() || line.originType == Line.OriginType.CONTEXT.toString()){
+                        DropdownMenuItem(text = { Text(stringResource(R.string.edit))},
+                            onClick = {
+                                initEditLineDialog(line.getContentNoLineBreak(), line.lineNum, null)
 
-                            expandedMenu.value = false
-                        }
-                    )
-                    DropdownMenuItem(text = { Text(stringResource(R.string.insert))},
-                        onClick = {
-                            initEditLineDialog("", line.lineNum, true)
+                                expandedMenu.value = false
+                            }
+                        )
+                        DropdownMenuItem(text = { Text(stringResource(R.string.insert))},
+                            onClick = {
+                                initEditLineDialog("", line.lineNum, true)
 
-                            expandedMenu.value = false
-                        }
-                    )
-                    DropdownMenuItem(text = { Text(stringResource(R.string.append))},
-                        onClick = {
-                            initEditLineDialog("", line.lineNum, false)
+                                expandedMenu.value = false
+                            }
+                        )
+                        DropdownMenuItem(text = { Text(stringResource(R.string.append))},
+                            onClick = {
+                                initEditLineDialog("", line.lineNum, false)
 
-                            expandedMenu.value = false
-                        }
-                    )
-                    DropdownMenuItem(text = { Text(stringResource(R.string.del))},
-                        onClick = {
-                            initDelLineDialog(line.lineNum)
-                            expandedMenu.value = false
-                        }
-                    )
-                }else if(line.originType == Line.OriginType.DELETION.toString()) {
-                    // prepend(insert)
-                    DropdownMenuItem(text = { Text(stringResource(R.string.restore))},
-                        onClick = {
-                            initRestoreLineDialog(line.getContentNoLineBreak(), line.lineNum, true)
-                            expandedMenu.value = false
-                        }
-                    )
-                    DropdownMenuItem(text = { Text(stringResource(R.string.replace))},
-                        onClick = {
-                            initRestoreLineDialog(line.getContentNoLineBreak(), line.lineNum, false)
-                            expandedMenu.value = false
-                        }
-                    )
+                                expandedMenu.value = false
+                            }
+                        )
+                        DropdownMenuItem(text = { Text(stringResource(R.string.del))},
+                            onClick = {
+                                initDelLineDialog(line.lineNum)
+                                expandedMenu.value = false
+                            }
+                        )
+                    }else if(line.originType == Line.OriginType.DELETION.toString()) {
+                        // prepend(insert)
+                        DropdownMenuItem(text = { Text(stringResource(R.string.restore))},
+                            onClick = {
+                                initRestoreLineDialog(line.getContentNoLineBreak(), line.lineNum, true)
+                                expandedMenu.value = false
+                            }
+                        )
+                        DropdownMenuItem(text = { Text(stringResource(R.string.replace))},
+                            onClick = {
+                                initRestoreLineDialog(line.getContentNoLineBreak(), line.lineNum, false)
+                                expandedMenu.value = false
+                            }
+                        )
+                    }
+
                 }
 
-                if(content.isNotEmpty()) {
-                    val cp = comparePairBuffer.value
-                    val line1ready = cp.line1ReadyForCompare()
-                    DropdownMenuItem(
-                        // disable compare for same line number
-                        enabled = content.isNotEmpty() && line.key != cp.line1Key,
-                        text = { Text(
-                        if(line1ready) replaceStringResList(stringResource(R.string.compare_to_origintype_linenum), listOf(cp.line1OriginType + cp.line1Num))
-                        else { stringResource(R.string.select_compare) }
-                        )},
-                        onClick = label@{
-                            expandedMenu.value = false
 
-                            if(content.isEmpty()) {
-                                Msg.requireShow(appContext.getString(R.string.can_t_compare_empty_line))
-                                return@label
+                if(enableSelectCompare) {
+                    if(content.isNotEmpty()) {
+                        val cp = comparePairBuffer.value
+                        val line1ready = cp.line1ReadyForCompare()
+                        DropdownMenuItem(
+                            // disable compare for same line number
+                            enabled = content.isNotEmpty() && line.key != cp.line1Key,
+                            text = { Text(
+                                if(line1ready) replaceStringResList(stringResource(R.string.compare_to_origintype_linenum), listOf(cp.line1OriginType + cp.line1Num))
+                                else { stringResource(R.string.select_compare) }
+                            )},
+                            onClick = label@{
+                                expandedMenu.value = false
+
+                                if(content.isEmpty()) {
+                                    Msg.requireShow(appContext.getString(R.string.can_t_compare_empty_line))
+                                    return@label
+                                }
+
+                                if(line1ready) {
+                                    // same line num already compared in normal procudure
+                                    if(line.lineNum == cp.line1Num && (
+                                                (line.originType == OriginType.ADDITION.toString() && cp.line1OriginType == OriginType.DELETION.toString())
+                                                        ||  (line.originType == OriginType.DELETION.toString() && cp.line1OriginType == OriginType.ADDITION.toString())
+                                                )) {
+                                        Msg.requireShow(appContext.getString(R.string.selected_lines_already_compared))
+                                        return@label
+                                    }
+
+                                    // both are CONTEXT
+                                    if(line.originType == OriginType.CONTEXT.toString() && cp.line1OriginType == line.originType) {
+                                        Msg.requireShow(appContext.getString(R.string.can_t_compare_both_context_type_lines))
+                                        return@label
+                                    }
+
+                                    cp.line2 = content
+                                    cp.line2Num = line.lineNum
+                                    cp.line2OriginType = line.originType
+                                    cp.line2Key = line.key
+
+                                    Msg.requireShow(appContext.getString(R.string.comparing))
+
+                                    doJobThenOffLoading {
+                                        cp.compare(betterCompare, indexStringPartListMap.value)
+
+                                        // clear buffer
+                                        comparePairBuffer.value = CompareLinePair()
+
+                                        // re-render view
+                                        reForEachDiffContent()
+                                    }
+
+                                }else {
+                                    cp.line1 = content
+                                    cp.line1Num = line.lineNum
+                                    cp.line1OriginType = line.originType
+                                    cp.line1Key = line.key
+                                    Msg.requireShow(replaceStringResList(appContext.getString(R.string.added_line_for_compare), listOf(line.originType+lineNum)) )
+                                }
+
                             }
+                        )
 
-                            if(line1ready) {
-                                // same line num already compared in normal procudure
-                                if(line.lineNum == cp.line1Num && (
-                                            (line.originType == OriginType.ADDITION.toString() && cp.line1OriginType == OriginType.DELETION.toString())
-                                        ||  (line.originType == OriginType.DELETION.toString() && cp.line1OriginType == OriginType.ADDITION.toString())
-                                )) {
-                                    Msg.requireShow(appContext.getString(R.string.selected_lines_already_compared))
+
+                        DropdownMenuItem(text = { Text(stringResource(R.string.compare_to_clipboard))},
+                            onClick = label@{
+                                expandedMenu.value = false
+
+                                if(content.isEmpty()) {
+                                    Msg.requireShow(appContext.getString(R.string.can_t_compare_empty_line))
+                                    return@label
+                                }
+                                if(line.originType == Diff.Line.OriginType.CONTEXT.toString()) {
+                                    // context line no color, compare clipboard to it show nothing, nonsense
+                                    Msg.requireShow(appContext.getString(R.string.can_t_compare_clipboard_to_context_line))
                                     return@label
                                 }
 
-                                // both are CONTEXT
-                                if(line.originType == OriginType.CONTEXT.toString() && cp.line1OriginType == line.originType) {
-                                    Msg.requireShow(appContext.getString(R.string.can_t_compare_both_context_type_lines))
+                                val clipboardText = getClipboardText(clipboardManager)
+                                if(clipboardText.isNullOrEmpty()) {
+                                    Msg.requireShow(appContext.getString(R.string.clipboard_is_empty))
                                     return@label
                                 }
-
-                                cp.line2 = content
-                                cp.line2Num = line.lineNum
-                                cp.line2OriginType = line.originType
-                                cp.line2Key = line.key
 
                                 Msg.requireShow(appContext.getString(R.string.comparing))
 
                                 doJobThenOffLoading {
-                                    cp.compare(betterCompare, indexStringPartListMap.value)
+                                    val newcp = CompareLinePair(
+                                        line1Num = CompareLinePairHelper.clipboardLineNum,
+                                        line1OriginType = CompareLinePairHelper.clipboardLineOriginType,
+                                        line1 = clipboardText,
+                                        line1Key = CompareLinePairHelper.clipboardLineKey,
 
-                                    // clear buffer
+                                        line2 = content,
+                                        line2OriginType = line.originType,
+                                        line2Num = line.lineNum,
+                                        line2Key = line.key
+                                    )
+
+                                    newcp.compare(betterCompare, indexStringPartListMap.value)
+
                                     comparePairBuffer.value = CompareLinePair()
 
-                                    // re-render view
                                     reForEachDiffContent()
                                 }
 
-                            }else {
-                                cp.line1 = content
-                                cp.line1Num = line.lineNum
-                                cp.line1OriginType = line.originType
-                                cp.line1Key = line.key
-                                Msg.requireShow(replaceStringResList(appContext.getString(R.string.added_line_for_compare), listOf(line.originType+lineNum)) )
                             }
+                        )
+                    }
 
-                        }
-                    )
 
-
-                    DropdownMenuItem(text = { Text(stringResource(R.string.compare_to_clipboard))},
-                        onClick = label@{
-                            expandedMenu.value = false
-
-                            if(content.isEmpty()) {
-                                Msg.requireShow(appContext.getString(R.string.can_t_compare_empty_line))
-                                return@label
-                            }
-                            if(line.originType == Diff.Line.OriginType.CONTEXT.toString()) {
-                                // context line no color, compare clipboard to it show nothing, nonsense
-                                Msg.requireShow(appContext.getString(R.string.can_t_compare_clipboard_to_context_line))
-                                return@label
-                            }
-                            
-                            val clipboardText = getClipboardText(clipboardManager)
-                            if(clipboardText.isNullOrEmpty()) {
-                                Msg.requireShow(appContext.getString(R.string.clipboard_is_empty))
-                                return@label
-                            }
-
-                            Msg.requireShow(appContext.getString(R.string.comparing))
-
-                            doJobThenOffLoading {
-                                val newcp = CompareLinePair(
-                                    line1Num = CompareLinePairHelper.clipboardLineNum,
-                                    line1OriginType = CompareLinePairHelper.clipboardLineOriginType,
-                                    line1 = clipboardText,
-                                    line1Key = CompareLinePairHelper.clipboardLineKey,
-
-                                    line2 = content,
-                                    line2OriginType = line.originType,
-                                    line2Num = line.lineNum,
-                                    line2Key = line.key
-                                )
-
-                                newcp.compare(betterCompare, indexStringPartListMap.value)
+                    if(comparePairBuffer.value.isEmpty().not()) {
+                        DropdownMenuItem(text = { Text(stringResource(R.string.clear_compare))},
+                            onClick = {
+                                expandedMenu.value = false
 
                                 comparePairBuffer.value = CompareLinePair()
-
-                                reForEachDiffContent()
                             }
-
-                        }
-                    )
-                }
-
-
-                if(comparePairBuffer.value.isEmpty().not()) {
-                    DropdownMenuItem(text = { Text(stringResource(R.string.clear_compare))},
-                        onClick = {
-                            expandedMenu.value = false
-
-                            comparePairBuffer.value = CompareLinePair()
-                        }
-                    )
+                        )
+                    }
                 }
 
                 DropdownMenuItem(text = { Text(stringResource(R.string.copy))},
