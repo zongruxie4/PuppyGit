@@ -1014,7 +1014,7 @@
     <string name="commit_history_is_empty">提交历史为空</string>
     <string name="item_count_n">条目数: ph_a3f241dc_1</string>
     <string name="current_n_all_m">当前: ph_a3f241dc_1, 总共: ph_a3f241dc_2</string>
-    <string name="comparing">正在比较</string>
+    <string name="comparing_label">正在比较</string>
     <string name="loaded_n">已加载: ph_a3f241dc_1</string>
     <string name="user_info">用户信息</string>
     <string name="local_ahead">本地领先</string>
@@ -1023,6 +1023,19 @@
     <string name="will_filter_by_file_name_not_by_path">将根据文件名过滤而不是路径</string>
     <string name="file_path">文件路径</string>
     <string name="no_difference_found">未发现差异</string>
+    <string name="select_compare">选择以比较</string>
+    <string name="compare">比较</string>
+    <string name="can_t_compare_same_type_lines">不能比较相同类型的行</string>
+    <string name="compare_to_clipboard">和剪贴板比较</string>
+    <string name="clipboard_is_empty">剪贴板为空</string>
+    <string name="can_t_compare_empty_line">不能比较空行</string>
+    <string name="can_t_compare_clipboard_to_context_line">不能比较剪贴板和Context行</string>
+    <string name="selected_lines_already_compared">选择的行已经比较过了</string>
+    <string name="added_line_for_compare">已添加 ph_a3f241dc_1 为待比较</string>
+    <string name="compare_to_origintype_linenum">和 ph_a3f241dc_1 比较</string>
+    <string name="comparing">正在比较…</string>
+    <string name="can_t_compare_both_context_type_lines">不能比较两个Context行</string>
+    <string name="clear_compare">清除比较</string>
 
 
 </resources>

@@ -1031,7 +1031,7 @@
     <string name="item_count_n">item count: ph_a3f241dc_1</string>
     <!--    e.g. current: 10, all:30 -->
     <string name="current_n_all_m">current: ph_a3f241dc_1, all: ph_a3f241dc_2</string>
-    <string name="comparing">Comparing</string>
+    <string name="comparing_label">Comparing</string>
     <string name="loaded_n">loaded: ph_a3f241dc_1</string>
     <string name="user_info">User Info</string>
     <string name="local_ahead">Local ahead</string>
@@ -1040,5 +1040,20 @@
     <string name="will_filter_by_file_name_not_by_path">will filter by file name, not by path</string>
     <string name="file_path">File path</string>
     <string name="no_difference_found">No difference found</string>
+    <string name="select_compare">Select Compare</string>
+    <string name="compare">Compare</string>
+    <string name="can_t_compare_same_type_lines">Can\'t compare same type lines</string>
+    <string name="compare_to_clipboard">Compare to clipboard</string>
+    <string name="clipboard_is_empty">Clipboard is empty</string>
+    <string name="can_t_compare_empty_line">Can\'t compare empty line</string>
+    <string name="can_t_compare_clipboard_to_context_line">Can\'t compare clipboard to Context line</string>
+    <string name="selected_lines_already_compared">Selected lines already compared</string>
+<!--    ph1 is origin type+line number e.g. add line +12 to compare-->
+    <string name="added_line_for_compare">added line ph_a3f241dc_1 for compare</string>
+<!--    ph1 is origin type + line number, e.g. Compare to +12-->
+    <string name="compare_to_origintype_linenum">Compare to ph_a3f241dc_1</string>
+    <string name="comparing">Comparing…</string>
+    <string name="can_t_compare_both_context_type_lines">Can\'t compare both Context type lines</string>
+    <string name="clear_compare">Clear Compare</string>
 
 </resources>

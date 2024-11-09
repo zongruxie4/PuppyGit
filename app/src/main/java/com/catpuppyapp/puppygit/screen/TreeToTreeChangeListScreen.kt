@@ -195,7 +195,7 @@ fun TreeToTreeChangeListScreen(
             ScrollableColumn {
                 Row {
                     Text(
-                        stringResource(id = R.string.comparing) + ": " +Libgit2Helper.getLeftToRightDiffCommitsText(commit1OidStrState.value, commit2OidStr, swap.value)
+                        stringResource(id = R.string.comparing_label) + ": " +Libgit2Helper.getLeftToRightDiffCommitsText(commit1OidStrState.value, commit2OidStr, swap.value)
                     )
                 }
                 Spacer(Modifier.height(10.dp))

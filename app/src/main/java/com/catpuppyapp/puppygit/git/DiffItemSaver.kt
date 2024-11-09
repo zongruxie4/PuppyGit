@@ -4,26 +4,28 @@ import com.catpuppyapp.puppygit.constants.Cons
 import com.catpuppyapp.puppygit.utils.compare.SimilarCompare
 import com.catpuppyapp.puppygit.utils.compare.param.StringCompareParam
 import com.catpuppyapp.puppygit.utils.compare.result.IndexModifyResult
+import com.catpuppyapp.puppygit.utils.getShortUUID
 import com.github.git24j.core.Diff
 import java.util.EnumSet
 import java.util.TreeMap
 
-class DiffItemSaver {
-    var from:String= Cons.gitDiffFromIndexToWorktree
+data class DiffItemSaver (
+    var keyForRefresh:String= getShortUUID(),
+    var from:String= Cons.gitDiffFromIndexToWorktree,
 //    var fileHeader:String="";  // file好像没有header
-    var oldFileOid:String=""
-    var newFileOid:String=""
-    var newFileSize=0L
-    var oldFileSize=0L
+    var oldFileOid:String="",
+    var newFileOid:String="",
+    var newFileSize:Long=0L,
+    var oldFileSize:Long=0L,
     //diff 所有 line.content总和有无超过限制大小
-    var isContentSizeOverLimit=false
+    var isContentSizeOverLimit:Boolean=false,
 //    var efficientFileSize=0L
-    var flags: EnumSet<Diff.FlagT> = EnumSet.of(Diff.FlagT.NOT_BINARY);
-    var hunks:MutableList<PuppyHunkAndLines> = mutableListOf()  //key是hunk的指针地址
+    var flags: EnumSet<Diff.FlagT> = EnumSet.of(Diff.FlagT.NOT_BINARY),
+    var hunks:MutableList<PuppyHunkAndLines> = mutableListOf(),  //key是hunk的指针地址
 
     //指示文件是否修改过，因为有时候会错误的diff没修改过的文件，所以需要判断下
-    var isFileModified:Boolean=false
-
+    var isFileModified:Boolean=false,
+){
 
     //获取实际生效的文件大小
     //ps:如果想判断文件大小有无超过限制，用此方法返回值作为 isFileSizeOverLimit() 的入参做判断即可
@@ -150,6 +152,7 @@ class PuppyHunk {
 }
 
 data class PuppyLine (
+    var key:String = getShortUUID(),
     var originType:String="",  //这个当初实现的时候考虑不周，既然原始类型是char我为什么要用String存呢？
     var oldLineNum:Int=-1,
     var newLineNum:Int=-1,

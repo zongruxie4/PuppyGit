@@ -40,6 +40,7 @@ import com.catpuppyapp.puppygit.data.entity.RepoEntity
 import com.catpuppyapp.puppygit.dev.FlagFileName
 import com.catpuppyapp.puppygit.dev.detailsDiffTestPassed
 import com.catpuppyapp.puppygit.dev.proFeatureEnabled
+import com.catpuppyapp.puppygit.git.CompareLinePair
 import com.catpuppyapp.puppygit.git.DiffItemSaver
 import com.catpuppyapp.puppygit.git.FileHistoryDto
 import com.catpuppyapp.puppygit.git.PuppyHunkAndLines
@@ -54,11 +55,14 @@ import com.catpuppyapp.puppygit.utils.UIHelper
 import com.catpuppyapp.puppygit.utils.changeStateTriggerRefreshPage
 import com.catpuppyapp.puppygit.utils.compare.SimilarCompare
 import com.catpuppyapp.puppygit.utils.compare.param.StringCompareParam
+import com.catpuppyapp.puppygit.utils.compare.result.IndexStringPart
 import com.catpuppyapp.puppygit.utils.createAndInsertError
 import com.catpuppyapp.puppygit.utils.doJobThenOffLoading
 import com.catpuppyapp.puppygit.utils.getHumanReadableSizeStr
+import com.catpuppyapp.puppygit.utils.getShortUUID
 import com.catpuppyapp.puppygit.utils.replaceStringResList
 import com.catpuppyapp.puppygit.utils.state.CustomStateSaveable
+import com.catpuppyapp.puppygit.utils.state.mutableCustomStateMapOf
 import com.catpuppyapp.puppygit.utils.state.mutableCustomStateOf
 import com.github.git24j.core.Diff
 import com.github.git24j.core.Repository
@@ -191,6 +195,15 @@ fun DiffContent(
     val isBinary = diffItem.value.flags.contains(Diff.FlagT.BINARY)
     val fileNoChange = !diffItem.value.isFileModified
 
+    // {key: line.key, value:ComparePair}
+    val indexStringPartListMapForComparePair = mutableCustomStateMapOf(stateKeyTag, "indexStringPartListMapForComparePair") { mapOf<String, List<IndexStringPart>>() }
+//    val comparePair = mutableCustomStateOf(stateKeyTag, "comparePair") {CompareLinePair()}
+    val comparePairBuffer = mutableCustomStateOf(stateKeyTag, "comparePairBuffer") {CompareLinePair()}
+    val reForEachDiffContent = {
+        diffItem.value = diffItem.value.copy(keyForRefresh = getShortUUID())
+    }
+
+
     //不支持预览二进制文件、超出限制大小、文件未修改
     if (loadingFinishedButHasErr || unsupportedChangeType || loading.value || isBinary || diffItem.value.isContentSizeOverLimit || fileNoChange) {
         Column(
@@ -321,7 +334,11 @@ fun DiffContent(
                                             showOriginType = showOriginType,
                                             showLineNum = showLineNum,
                                             fontSize = fontSize,
-                                            lineNumSize = lineNumSize
+                                            lineNumSize = lineNumSize,
+                                            comparePairBuffer = comparePairBuffer,
+                                            betterCompare = requireBetterMatchingForCompare.value,
+                                            reForEachDiffContent=reForEachDiffContent,
+                                            indexStringPartListMap = indexStringPartListMapForComparePair
                                         )
 
                                     }
@@ -345,49 +362,100 @@ fun DiffContent(
                                         showOriginType = showOriginType,
                                         showLineNum = showLineNum,
                                         fontSize = fontSize,
-                                        lineNumSize = lineNumSize
+                                        lineNumSize = lineNumSize,
+                                        comparePairBuffer = comparePairBuffer,
+                                        betterCompare = requireBetterMatchingForCompare.value,
+                                        reForEachDiffContent=reForEachDiffContent,
+                                        indexStringPartListMap = indexStringPartListMapForComparePair
                                     )
                                 }
                             }else {  // add or del
-                                val modifyResult = hunkAndLines.getModifyResult(line.lineNum, requireBetterMatchingForCompare.value)
-                                if(modifyResult == null || !modifyResult.matched) {
+
+//                                val pair = comparePair.value
+                                // use pair
+                                val compareResult = indexStringPartListMapForComparePair.value[line.key]
+                                if (compareResult != null) {
+
                                     item {
+//                                        val pair = pair.consume()
+
+                                        // if line1 is logic add, only has 2 possible: 1. line 1 is really add type, or is context type, but context already except by upside if check, so, now if line1isLogicAdd is true, is 100% is really add type
+//                                        val (addStringPartList, delStringPartList) = if (pair.line1OriginType == line.originType && line.lineNum == pair.line1Num && line.originType == OriginType.ADDITION.toString()) {
+//                                            Pair(compareResult.add, compareResult.del)
+//                                        } else {
+//                                            Pair(compareResult.del, compareResult.add)
+//                                        }
+
                                         DiffRow(
                                             line = line,
-                                            fileFullPath=fileFullPath,
+                                            fileFullPath = fileFullPath,
+                                            stringPartList = compareResult,
                                             isFileAndExist = isFileAndExist.value,
-                                            clipboardManager=clipboardManager,
-                                            loadingOn=loadingOnParent,
-                                            loadingOff=loadingOffParent,
-                                            refreshPage=refreshPageIfComparingWithLocal,
-                                            repoId=repoId,
+                                            clipboardManager = clipboardManager,
+                                            loadingOn = loadingOnParent,
+                                            loadingOff = loadingOffParent,
+                                            refreshPage = refreshPageIfComparingWithLocal,
+                                            repoId = repoId,
                                             showOriginType = showOriginType,
                                             showLineNum = showLineNum,
                                             fontSize = fontSize,
-                                            lineNumSize = lineNumSize
+                                            lineNumSize = lineNumSize,
+                                            comparePairBuffer = comparePairBuffer,
+                                            betterCompare = requireBetterMatchingForCompare.value,
+                                            reForEachDiffContent=reForEachDiffContent,
+                                            indexStringPartListMap = indexStringPartListMapForComparePair
                                         )
                                     }
-                                }else{  // matched
-                                    item {
-                                        DiffRow(
-                                            line = line,
-                                            fileFullPath=fileFullPath,
-                                            stringPartList = if(line.originType == Diff.Line.OriginType.ADDITION.toString()) modifyResult.add else modifyResult.del,
-                                            isFileAndExist = isFileAndExist.value,
-                                            clipboardManager=clipboardManager,
-                                            loadingOn=loadingOnParent,
-                                            loadingOff=loadingOffParent,
-                                            refreshPage=refreshPageIfComparingWithLocal,
-                                            repoId=repoId,
-                                            showOriginType = showOriginType,
-                                            showLineNum = showLineNum,
-                                            fontSize = fontSize,
-                                            lineNumSize = lineNumSize
-                                        )
-                                    }
+                                }else {
+
+                                        val modifyResult = hunkAndLines.getModifyResult(line.lineNum, requireBetterMatchingForCompare.value)
+
+                                        if (modifyResult == null || !modifyResult.matched) {
+                                            item {
+                                                DiffRow(
+                                                    line = line,
+                                                    fileFullPath = fileFullPath,
+                                                    isFileAndExist = isFileAndExist.value,
+                                                    clipboardManager = clipboardManager,
+                                                    loadingOn = loadingOnParent,
+                                                    loadingOff = loadingOffParent,
+                                                    refreshPage = refreshPageIfComparingWithLocal,
+                                                    repoId = repoId,
+                                                    showOriginType = showOriginType,
+                                                    showLineNum = showLineNum,
+                                                    fontSize = fontSize,
+                                                    lineNumSize = lineNumSize,
+                                                    comparePairBuffer = comparePairBuffer,
+                                                    betterCompare = requireBetterMatchingForCompare.value,
+                                                    reForEachDiffContent=reForEachDiffContent,
+                                                    indexStringPartListMap = indexStringPartListMapForComparePair
+                                                )
+                                            }
+                                        } else {  // matched
+                                            item {
+                                                DiffRow(
+                                                    line = line,
+                                                    fileFullPath = fileFullPath,
+                                                    stringPartList = if (line.originType == Diff.Line.OriginType.ADDITION.toString()) modifyResult.add else modifyResult.del,
+                                                    isFileAndExist = isFileAndExist.value,
+                                                    clipboardManager = clipboardManager,
+                                                    loadingOn = loadingOnParent,
+                                                    loadingOff = loadingOffParent,
+                                                    refreshPage = refreshPageIfComparingWithLocal,
+                                                    repoId = repoId,
+                                                    showOriginType = showOriginType,
+                                                    showLineNum = showLineNum,
+                                                    fontSize = fontSize,
+                                                    lineNumSize = lineNumSize,
+                                                    comparePairBuffer = comparePairBuffer,
+                                                    betterCompare = requireBetterMatchingForCompare.value,
+                                                    reForEachDiffContent=reForEachDiffContent,
+                                                    indexStringPartListMap = indexStringPartListMapForComparePair
+                                                )
+                                            }
+                                        }
                                 }
                             }
-
                         }
                     }else {  // grouped lines by line num
 
@@ -404,7 +472,6 @@ fun DiffContent(
                             val add = lines.get(Diff.Line.OriginType.ADDITION.toString())
                             val del = lines.get(Diff.Line.OriginType.DELETION.toString())
                             val context = lines.get(Diff.Line.OriginType.CONTEXT.toString())
-
                             //若 context del add同时存在，打印顺序为 context/del/add，不过不太可能3个同时存在，顶多两个同时存在
 
                             if(context!=null) {
@@ -422,12 +489,79 @@ fun DiffContent(
                                         showOriginType = showOriginType,
                                         showLineNum = showLineNum,
                                         fontSize = fontSize,
-                                        lineNumSize = lineNumSize
+                                        lineNumSize = lineNumSize,
+                                        comparePairBuffer = comparePairBuffer,
+                                        betterCompare = requireBetterMatchingForCompare.value,
+                                        reForEachDiffContent=reForEachDiffContent,
+                                        indexStringPartListMap = indexStringPartListMapForComparePair
                                     )
                                 }
                             }
 
-                            if(add!=null && del!=null) {  //同样行号，同时存在删除和新增，执行增量diff
+//                            val pair = comparePair.value
+                            val addStringPartList = indexStringPartListMapForComparePair.value.get(add?.key?:"nonexist keyadd")
+                            val delStringPartList = indexStringPartListMapForComparePair.value.get(del?.key?:"nonexist keydel")
+                            var addUsedPair = false
+                            var delUsedPair = false
+
+                            if(delStringPartList !=null && del!=null){
+                                delUsedPair = true
+                                item {
+                                    DiffRow(
+                                        line = del,
+                                        stringPartList = delStringPartList,
+                                        fileFullPath = fileFullPath,
+                                        isFileAndExist = isFileAndExist.value,
+                                        clipboardManager = clipboardManager,
+                                        loadingOn = loadingOnParent,
+                                        loadingOff = loadingOffParent,
+                                        refreshPage = refreshPageIfComparingWithLocal,
+                                        repoId = repoId,
+                                        showOriginType = showOriginType,
+                                        showLineNum = showLineNum,
+                                        fontSize = fontSize,
+                                        lineNumSize = lineNumSize,
+                                        comparePairBuffer = comparePairBuffer,
+                                        betterCompare = requireBetterMatchingForCompare.value,
+                                        reForEachDiffContent = reForEachDiffContent,
+                                        indexStringPartListMap = indexStringPartListMapForComparePair
+
+                                    )
+                                }
+
+                            }
+                            if(addStringPartList!=null && add!=null) {
+                                addUsedPair = true
+                                item {
+                                    DiffRow(
+                                        line = add,
+                                        stringPartList = addStringPartList,
+                                        fileFullPath = fileFullPath,
+                                        isFileAndExist = isFileAndExist.value,
+                                        clipboardManager = clipboardManager,
+                                        loadingOn = loadingOnParent,
+                                        loadingOff = loadingOffParent,
+                                        refreshPage = refreshPageIfComparingWithLocal,
+                                        repoId = repoId,
+                                        showOriginType = showOriginType,
+                                        showLineNum = showLineNum,
+                                        fontSize = fontSize,
+                                        lineNumSize = lineNumSize,
+                                        comparePairBuffer = comparePairBuffer,
+                                        betterCompare = requireBetterMatchingForCompare.value,
+                                        reForEachDiffContent = reForEachDiffContent,
+                                        indexStringPartListMap = indexStringPartListMapForComparePair
+
+                                    )
+                                }
+
+                            }
+
+
+
+
+
+                            if(add!=null && del!=null && addUsedPair.not() && delUsedPair.not()) {  //同样行号，同时存在删除和新增，执行增量diff
                                 //解决：两行除了末尾换行符没任何区别的情况仍显示diff的bug（有红有绿但没区别，令人迷惑）
                                 if(add.content.removeSuffix("\n").equals(del.content.removeSuffix("\n"))){
                                     item {
@@ -444,7 +578,11 @@ fun DiffContent(
                                             showOriginType = showOriginType,
                                             showLineNum = showLineNum,
                                             fontSize = fontSize,
-                                            lineNumSize = lineNumSize
+                                            lineNumSize = lineNumSize,
+                                            comparePairBuffer = comparePairBuffer,
+                                            betterCompare = requireBetterMatchingForCompare.value,
+                                            reForEachDiffContent=reForEachDiffContent,
+                                            indexStringPartListMap = indexStringPartListMapForComparePair
                                         )
 
                                     }
@@ -475,7 +613,11 @@ fun DiffContent(
                                                 showOriginType = showOriginType,
                                                 showLineNum = showLineNum,
                                                 fontSize = fontSize,
-                                                lineNumSize = lineNumSize
+                                                lineNumSize = lineNumSize,
+                                                comparePairBuffer = comparePairBuffer,
+                                                betterCompare = requireBetterMatchingForCompare.value,
+                                                reForEachDiffContent=reForEachDiffContent,
+                                                indexStringPartListMap = indexStringPartListMapForComparePair
 
                                             )
                                         }
@@ -494,7 +636,11 @@ fun DiffContent(
                                                 showOriginType = showOriginType,
                                                 showLineNum = showLineNum,
                                                 fontSize = fontSize,
-                                                lineNumSize = lineNumSize
+                                                lineNumSize = lineNumSize,
+                                                comparePairBuffer = comparePairBuffer,
+                                                betterCompare = requireBetterMatchingForCompare.value,
+                                                reForEachDiffContent=reForEachDiffContent,
+                                                indexStringPartListMap = indexStringPartListMapForComparePair
 
                                             )
                                         }
@@ -514,7 +660,11 @@ fun DiffContent(
                                                 showOriginType = showOriginType,
                                                 showLineNum = showLineNum,
                                                 fontSize = fontSize,
-                                                lineNumSize = lineNumSize
+                                                lineNumSize = lineNumSize,
+                                                comparePairBuffer = comparePairBuffer,
+                                                betterCompare = requireBetterMatchingForCompare.value,
+                                                reForEachDiffContent=reForEachDiffContent,
+                                                indexStringPartListMap = indexStringPartListMapForComparePair
                                             )
                                         }
                                         item {
@@ -530,13 +680,17 @@ fun DiffContent(
                                                 showOriginType = showOriginType,
                                                 showLineNum = showLineNum,
                                                 fontSize = fontSize,
-                                                lineNumSize = lineNumSize
+                                                lineNumSize = lineNumSize,
+                                                comparePairBuffer = comparePairBuffer,
+                                                betterCompare = requireBetterMatchingForCompare.value,
+                                                reForEachDiffContent=reForEachDiffContent,
+                                                indexStringPartListMap = indexStringPartListMapForComparePair
                                             )
                                         }
                                     }
                                 }
                             }else{ //有一个为null，不用对比
-                                if(del!=null) {
+                                if(del!=null && delUsedPair.not()) {
                                     item {
                                         DiffRow(
                                             line = del,
@@ -550,11 +704,15 @@ fun DiffContent(
                                             showOriginType = showOriginType,
                                             showLineNum = showLineNum,
                                             fontSize = fontSize,
-                                            lineNumSize = lineNumSize
+                                            lineNumSize = lineNumSize,
+                                            comparePairBuffer = comparePairBuffer,
+                                            betterCompare = requireBetterMatchingForCompare.value,
+                                            reForEachDiffContent=reForEachDiffContent,
+                                            indexStringPartListMap = indexStringPartListMapForComparePair
                                         )
                                     }
                                 }
-                                if(add!=null) {
+                                if(add!=null && addUsedPair.not()) {
                                     item {
                                         DiffRow(
                                             line = add,
@@ -568,11 +726,17 @@ fun DiffContent(
                                             showOriginType = showOriginType,
                                             showLineNum = showLineNum,
                                             fontSize = fontSize,
-                                            lineNumSize = lineNumSize
+                                            lineNumSize = lineNumSize,
+                                            comparePairBuffer = comparePairBuffer,
+                                            betterCompare = requireBetterMatchingForCompare.value,
+                                            reForEachDiffContent=reForEachDiffContent,
+                                            indexStringPartListMap = indexStringPartListMapForComparePair
                                         )
                                     }
                                 }
                             }
+
+
                         }
 
                     }
@@ -624,7 +788,11 @@ fun DiffContent(
                                     showOriginType = showOriginType,
                                     showLineNum = showLineNum,
                                     fontSize = fontSize,
-                                    lineNumSize = lineNumSize
+                                    lineNumSize = lineNumSize,
+                                    comparePairBuffer = comparePairBuffer,
+                                    betterCompare = requireBetterMatchingForCompare.value,
+                                    reForEachDiffContent=reForEachDiffContent,
+                                    indexStringPartListMap = indexStringPartListMapForComparePair
                                 )
                             }
                         }
@@ -651,7 +819,11 @@ fun DiffContent(
                                 showOriginType = showOriginType,
                                 showLineNum = showLineNum,
                                 fontSize = fontSize,
-                                lineNumSize = lineNumSize
+                                lineNumSize = lineNumSize,
+                                comparePairBuffer = comparePairBuffer,
+                                betterCompare = requireBetterMatchingForCompare.value,
+                                reForEachDiffContent=reForEachDiffContent,
+                                indexStringPartListMap = indexStringPartListMapForComparePair
                             )
                         }
                     }
@@ -709,6 +881,8 @@ fun DiffContent(
 
                     try {
                         // init
+                        indexStringPartListMapForComparePair.value.clear()
+                        comparePairBuffer.value = CompareLinePair()
                         submoduleIsDirty.value = false
                         errMsgState.value = ""
                         loading.value=true

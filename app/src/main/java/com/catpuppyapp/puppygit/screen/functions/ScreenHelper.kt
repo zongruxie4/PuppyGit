@@ -1,5 +1,6 @@
 package com.catpuppyapp.puppygit.screen.functions
 
+import androidx.compose.ui.platform.ClipboardManager
 import android.content.Context
 import com.catpuppyapp.puppygit.constants.Cons
 import com.catpuppyapp.puppygit.play.pro.R
@@ -83,5 +84,15 @@ fun getLoadText(loadedCount:Int, actuallyEnabledFilterMode:Boolean, appContext:C
         replaceStringResList(appContext.getString(R.string.item_count_n), listOf(""+loadedCount))
     }else {
         replaceStringResList(appContext.getString(R.string.loaded_n), listOf(""+loadedCount))
+    }
+}
+
+fun getClipboardText(clipboardManager:ClipboardManager):String? {
+    return try {
+//       // or `clipboardManager.getText()?.toString()`
+        clipboardManager.getText()?.text
+    }catch (e:Exception) {
+        MyLog.e(TAG, "#getClipboardText err: ${e.localizedMessage}")
+        null
     }
 }
