@@ -114,13 +114,14 @@ class AppModel {
             //test access external storage, passed
 //            appModel.allRepoParentDir = createDirIfNonexists(File("/sdcard"), "puppygit-repos")
 
-            Lg2Utils.init(appModel.allRepoParentDir)
 
             StorageDirCons.DefaultStorageDir.puppyGitRepos.fullPath = appModel.allRepoParentDir.canonicalPath
 
             //设置对用户可见的app工作目录
             appModel.appDataUnderAllReposDir = createDirIfNonexists(appModel.allRepoParentDir, Cons.defalutPuppyGitDataUnderAllReposDirName)
             //与sd相关代码互斥，结束
+
+            Lg2Utils.init(appModel.appDataUnderAllReposDir)
 
             //存放app内置证书的路径
             appModel.certBundleDir = createDirIfNonexists(appModel.appDataUnderAllReposDir, CertMan.defaultCertBundleDirName)
