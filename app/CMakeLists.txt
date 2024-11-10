@@ -43,15 +43,15 @@ set_target_properties(crypto
 )
 
 ## 要引用的lib
-#add_library(ssh2
-#        SHARED
-#        IMPORTED
-#        )
-#
-#set_target_properties(ssh2
-#        PROPERTIES IMPORTED_LOCATION
-#        ${my_lib_path}/${ANDROID_ABI}/libssh2.so
-#)
+add_library(ssh2
+        SHARED
+        IMPORTED
+        )
+
+set_target_properties(ssh2
+        PROPERTIES IMPORTED_LOCATION
+        ${my_lib_path}/${ANDROID_ABI}/libssh2.so
+)
 
 ## 要引用的lib
 add_library(ssl
@@ -93,7 +93,7 @@ target_link_libraries(
         ${CMAKE_PROJECT_NAME}
         git24j
         git2
-#        ssh2
+        ssh2
         crypto
         ssl
         ${LOG-LIB}
