@@ -31,7 +31,6 @@ import com.catpuppyapp.puppygit.git.StatusTypeEntrySaver
 import com.catpuppyapp.puppygit.git.SubmoduleDto
 import com.catpuppyapp.puppygit.git.TagDto
 import com.catpuppyapp.puppygit.git.Upstream
-import com.catpuppyapp.puppygit.jni.LibgitTwo
 import com.catpuppyapp.puppygit.play.pro.R
 import com.catpuppyapp.puppygit.settings.SettingsUtil
 import com.catpuppyapp.puppygit.style.MyStyleKt
@@ -242,6 +241,7 @@ class Libgit2Helper {
     }
 
     companion object {
+        //TODO change this "credentialType" set by url
         private val getCredentialCb = { credentialType:Int, usernameOrPrivateKey:String, passOrPassphrase:String ->
 
             //凭据认证回调函数的文档：https://libgit2.org/libgit2/#HEAD/group/callback/git_credential_acquire_cb
@@ -2481,7 +2481,7 @@ class Libgit2Helper {
 //                LibgitTwo.jniSetCredentialCbTest(fetchOpts.callbacks.rawPointer)
                 //TEST
                 if(credential!=null) {  //如果不是null，设置下验证凭据的回调
-                    setCredentialCbForRemoteCallbacks(fetchOpts.callbacks, credential.type, credential.value, credential.pass)
+                    setCredentialCbForRemoteCallbacks(fetchOpts.callbacks, getCredentialTypeByUrl(getRemoteFetchUrlByName(repo, remoteName)), credential.value, credential.pass)
                 }
                 val remote = Remote.lookup(repo, remoteName)
                 //这里不要用?，有错直接报错
@@ -2504,6 +2504,26 @@ class Libgit2Helper {
                     }
                 }
 //                }
+            }
+        }
+
+        fun getRemoteFetchUrlByName(repo:Repository, remoteName: String):String {
+            return try {
+                Remote.lookup(repo, remoteName)!!.url().toString()
+            }catch (e:Exception) {
+                ""
+            }
+        }
+
+        fun getRemotePushUrlByName(repo:Repository, remoteName: String):String {
+            try {
+                val pushUrl = Remote.lookup(repo, remoteName)?.pushurl()?.toString()
+                if(pushUrl.isNullOrEmpty()) {
+                    return getRemoteFetchUrlByName(repo, remoteName)
+                }
+                return pushUrl
+            }catch (e:Exception) {
+                return ""
             }
         }
 
@@ -3041,7 +3061,7 @@ class Libgit2Helper {
 
             //如果凭据不为空，设置一下
             if(credential!=null) {
-                setCredentialCbForRemoteCallbacks(pushOptions.callbacks!!, credential.type, credential.value, credential.pass)
+                setCredentialCbForRemoteCallbacks(pushOptions.callbacks!!, getCredentialTypeByUrl(getRemotePushUrlByName(repo, remoteName)), credential.value, credential.pass)
             }
 
             //找remote
@@ -3077,7 +3097,7 @@ class Libgit2Helper {
 
                 //如果凭据不为空，设置一下
                 if(credential!=null) {
-                    setCredentialCbForRemoteCallbacks(pushOptions.callbacks!!, credential.type, credential.value, credential.pass)
+                    setCredentialCbForRemoteCallbacks(pushOptions.callbacks!!, getCredentialTypeByUrl(getRemotePushUrlByName(repo, rc.remoteName)), credential.value, credential.pass)
                 }
 
                 //找remote
@@ -5288,6 +5308,14 @@ class Libgit2Helper {
             }
         }
 
+        fun getCredentialTypeByUrl(url:String):Int {
+            if(url.startsWith("https://") || url.startsWith("http://")) {
+                return Cons.dbCredentialTypeHttp
+            }else {
+                return Cons.dbCredentialTypeSsh
+            }
+        }
+
 
         /**
          * should make sure when expect NONE credential, set `specifiedCredential` to null; if want to match by domain, set it to match by domain credential entity;
@@ -5335,14 +5363,15 @@ class Libgit2Helper {
                 try {
                     // at here, null means NONE credential will be used
                     if(specifiedCredential!=null) {
+                        val smUrl = sm.url()?.toString() ?: ""
                         // only 2 cases possible in this block, credential is match by domain or a specified credential
                         if(SpecialCredential.MatchByDomain.credentialId == specifiedCredential.id) {  // match by domain, need query
-                            val credentialByDomain = credentialDb.getByIdWithDecryptAndMatchByDomain(specifiedCredential.id, sm.url()?.toString() ?: "")
+                            val credentialByDomain = credentialDb.getByIdWithDecryptAndMatchByDomain(specifiedCredential.id, smUrl)
                             if(credentialByDomain!=null) {
-                                updateOpts.fetchOpts.callbacks.setCredAcquireCb(getCredentialCb(credentialByDomain.type, credentialByDomain.name, credentialByDomain.pass))
+                                updateOpts.fetchOpts.callbacks.setCredAcquireCb(getCredentialCb(getCredentialTypeByUrl(smUrl), credentialByDomain.name, credentialByDomain.pass))
                             }
-                        }else {  // specified domain, no query need
-                            updateOpts.fetchOpts.callbacks.setCredAcquireCb(getCredentialCb(specifiedCredential.type, specifiedCredential.name, specifiedCredential.pass))
+                        }else {  // specified credential, no query need
+                            updateOpts.fetchOpts.callbacks.setCredAcquireCb(getCredentialCb(getCredentialTypeByUrl(smUrl), specifiedCredential.name, specifiedCredential.pass))
                         }
                     }
 
@@ -5468,14 +5497,15 @@ class Libgit2Helper {
                     try {
                         // at here, null means NONE credential will be used
                         if(specifiedCredential!=null) {
+                            val smUrl = sm.url()?.toString() ?: ""
                             // only 2 cases possible in this block, credential is match by domain or a specified credential
                             if(SpecialCredential.MatchByDomain.credentialId == specifiedCredential.id) {  // match by domain, need query
-                                val credentialByDomain = credentialDb.getByIdWithDecryptAndMatchByDomain(specifiedCredential.id, sm.url()?.toString() ?: "")
+                                val credentialByDomain = credentialDb.getByIdWithDecryptAndMatchByDomain(specifiedCredential.id, smUrl)
                                 if(credentialByDomain!=null) {
-                                    updateOpts.fetchOpts.callbacks.setCredAcquireCb(getCredentialCb(credentialByDomain.type, credentialByDomain.name, credentialByDomain.pass))
+                                    updateOpts.fetchOpts.callbacks.setCredAcquireCb(getCredentialCb(getCredentialTypeByUrl(smUrl), credentialByDomain.name, credentialByDomain.pass))
                                 }
                             }else {  // specified domain, no query need
-                                updateOpts.fetchOpts.callbacks.setCredAcquireCb(getCredentialCb(specifiedCredential.type, specifiedCredential.name, specifiedCredential.pass))
+                                updateOpts.fetchOpts.callbacks.setCredAcquireCb(getCredentialCb(getCredentialTypeByUrl(smUrl), specifiedCredential.name, specifiedCredential.pass))
                             }
                         }
                     }catch (e:Exception) {

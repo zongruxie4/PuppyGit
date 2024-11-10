@@ -1538,7 +1538,7 @@ private fun doInit(
 //                                val credentialFromDb = credentialDb.getByIdWithDecrypt(credentialId)
                                 val credentialFromDb = credentialDb.getByIdWithDecryptAndMatchByDomain(id = credentialId, url = repo2ndQuery.cloneUrl)
                                 if (credentialFromDb != null) {
-                                    val credentialType = credentialFromDb.type
+                                    val credentialType = Libgit2Helper.getCredentialTypeByUrl(cloneUrl)
                                     val usernameOrPrivateKey = credentialFromDb.value;
                                     val passOrPassphrase = credentialFromDb.pass;
                                     //设置验证凭据的回调
