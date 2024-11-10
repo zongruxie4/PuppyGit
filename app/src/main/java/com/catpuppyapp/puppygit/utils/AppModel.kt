@@ -114,6 +114,7 @@ class AppModel {
             //test access external storage, passed
 //            appModel.allRepoParentDir = createDirIfNonexists(File("/sdcard"), "puppygit-repos")
 
+            Lg2Utils.init(appModel.allRepoParentDir)
 
             StorageDirCons.DefaultStorageDir.puppyGitRepos.fullPath = appModel.allRepoParentDir.canonicalPath
 
