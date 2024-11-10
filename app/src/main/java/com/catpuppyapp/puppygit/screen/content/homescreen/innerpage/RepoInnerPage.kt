@@ -32,7 +32,6 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.MutableIntState
 import androidx.compose.runtime.MutableState
-import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -40,7 +39,6 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalClipboardManager
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.Role
@@ -1530,6 +1528,9 @@ private fun doInit(
 //                            LibgitTwo.jniSetCredentialCbTest(options.fetchOpts.callbacks.rawPointer)
                             //TEST
 
+
+
+                            val callbacks = options.fetchOpts.callbacks
                             val credentialId = repo2ndQuery.credentialIdForClone
                             //do clone
                             if (credentialId.isNotBlank()) {
@@ -1542,7 +1543,9 @@ private fun doInit(
                                     val usernameOrPrivateKey = credentialFromDb.value;
                                     val passOrPassphrase = credentialFromDb.pass;
                                     //设置验证凭据的回调
-                                    Libgit2Helper.setCredentialCbForRemoteCallbacks(options.fetchOpts.callbacks, credentialType, usernameOrPrivateKey, passOrPassphrase)
+                                    Libgit2Helper.setCredentialCbForRemoteCallbacks(callbacks, credentialType, usernameOrPrivateKey, passOrPassphrase)
+
+
 
 
 
@@ -1582,6 +1585,15 @@ private fun doInit(
 //                                    LibgitTwo.jniSetCertCheck(options.fetchOpts.callbacks.rawPointer)
 //                                }
                                 //test
+                            }
+ttttttttttttesttttttttttttest
+                            // check the public key from remote
+                            callbacks.setCertificateCheckCb { cert, valid, host ->
+                                MyLog.d(TAG, "cert:"+ cert.toString())
+
+                                MyLog.d(TAG, "valid111111111:$valid")
+                                MyLog.d(TAG, "host:$host")
+                                0
                             }
 
                             //开始克隆
