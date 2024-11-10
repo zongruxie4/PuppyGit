@@ -60,10 +60,10 @@ export libgit2src=$build_src/libgit2
 export git24jsrc=$build_src/git24j
 export git24j_c_src=$git24jsrc/src/main/c/git24j
 
-
-cd $libgit2src
-# replace the c standard, else maybe got err
-find . -name 'CMakeLists.txt' -exec sed -i 's|C_STANDARD 90|C_STANDARD 99|' {} \;
+# moved to `2_downloadsrc.sh`
+#cd $libgit2src
+## replace the c standard, else maybe got err
+#find . -name 'CMakeLists.txt' -exec sed -i 's|C_STANDARD 90|C_STANDARD 99|' {} \;
 
 
 
@@ -75,15 +75,16 @@ export ANDROID_TOOLCHAIN_ROOT=$ANDROID_NDK_ROOT/toolchains/llvm/prebuilt/linux-x
 export PATH=$ANDROID_TOOLCHAIN_ROOT/bin:$PATH
 export prefix=$ANDROID_TOOLCHAIN_ROOT/sysroot/usr/local
 
+# moved to `2.5_buildjarlibs.sh`
+## build git24j jar
+#echo "start build git24j jar"
+#cd $git24jsrc
+#mvn clean compile package "-Dmaven.test.skip=true"
+#cp target/git24j-$git24j_jar_version.jar $build_out/git24j-$git24j_jar_version.jar
+## clean
+#rm -rf target
+#echo "end build git24j jar"
 
-# build git24j jar
-echo "start build git24j jar"
-cd $git24jsrc
-mvn clean compile package "-Dmaven.test.skip=true"
-cp target/git24j-$git24j_jar_version.jar $build_out/git24j-$git24j_jar_version.jar
-# clean
-rm -rf target
-echo "end build git24j jar"
 
 # set archs
 default_archs="x86 x8664 arm32 arm64"
