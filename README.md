@@ -76,7 +76,7 @@ see:<br>
 
 
 ## About ssh
-Idk how support ssh on Android, so PuppyGit only support https for now, if you know how support ssh, please make a pr or give me some hints for that
+will support ssh in future 
 
 
 ## Build
