@@ -99,6 +99,7 @@ import com.catpuppyapp.puppygit.utils.state.CustomStateSaveable
 import com.catpuppyapp.puppygit.utils.state.mutableCustomStateListOf
 import com.catpuppyapp.puppygit.utils.state.mutableCustomStateOf
 import com.catpuppyapp.puppygit.utils.strHasIllegalChars
+import com.github.git24j.core.Cert
 import com.github.git24j.core.Clone
 import com.github.git24j.core.Remote
 import com.github.git24j.core.Repository
@@ -1586,14 +1587,16 @@ private fun doInit(
 //                                }
                                 //test
                             }
-ttttttttttttesttttttttttttest
+
                             // check the public key from remote
                             callbacks.setCertificateCheckCb { cert, valid, host ->
+//                                val hostKey = cert as Cert.HostKey can't
                                 MyLog.d(TAG, "cert:"+ cert.toString())
-
+//                                测试：在这打印证书指纹
+//                                正式版：展示指纹给用户，询问是否接受连接
                                 MyLog.d(TAG, "valid111111111:$valid")
                                 MyLog.d(TAG, "host:$host")
-                                0
+                                -1
                             }
 
                             //开始克隆
