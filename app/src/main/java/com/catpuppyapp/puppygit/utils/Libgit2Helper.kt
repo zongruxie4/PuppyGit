@@ -32,6 +32,7 @@ import com.catpuppyapp.puppygit.git.SubmoduleDto
 import com.catpuppyapp.puppygit.git.TagDto
 import com.catpuppyapp.puppygit.git.Upstream
 import com.catpuppyapp.puppygit.play.pro.R
+import com.catpuppyapp.puppygit.settings.AppSettings
 import com.catpuppyapp.puppygit.settings.SettingsUtil
 import com.catpuppyapp.puppygit.style.MyStyleKt
 import com.github.git24j.core.AnnotatedCommit
@@ -2489,9 +2490,8 @@ class Libgit2Helper {
                         setCredentialCbForRemoteCallbacks(callbacks, getCredentialTypeByUrl(remoteFetchUrl), credential.value, credential.pass)
                     }
 
-                    if(getGitUrlType(remoteFetchUrl) == Cons.gitUrlTypeSsh && SettingsUtil.getSettingsSnapshot().sshSetting.allowUnknownHosts) {
-                        setAllowUnknownHostsForCertificatesCheck(callbacks)
-                    }
+                    setCredCheckCallback(remoteFetchUrl, callbacks)
+
 
                     remote.fetch(refspecs, fetchOpts, "fetch: $remoteName")
 
@@ -2516,6 +2516,12 @@ class Libgit2Helper {
                     MyLog.e(TAG, "fetchRemoteListForRepo err: remoteName=${remoteAndCredentials.remoteName}, err=${e.stackTraceToString()}")
                 }
             }
+        }
+
+        fun setCredCheckCallback(url:String, callbacks:Remote.Callbacks, settings: AppSettings=SettingsUtil.getSettingsSnapshot()){
+            if(isSshUrl(url) && settings.sshSetting.allowUnknownHosts) {
+                setAllowUnknownHostsForCertificatesCheck(callbacks)
+            }//else verify host key
         }
 
         fun getRemoteFetchUrlByName(repo:Repository, remoteName: String):String {
@@ -3111,9 +3117,8 @@ class Libgit2Helper {
                 setCredentialCbForRemoteCallbacks(callbacks, getCredentialTypeByUrl(pushUrl), credential.value, credential.pass)
             }
 
-            if(isSshUrl(pushUrl) && SettingsUtil.getSettingsSnapshot().sshSetting.allowUnknownHosts) {
-                setAllowUnknownHostsForCertificatesCheck(callbacks)
-            }
+            setCredCheckCallback(pushUrl, callbacks)
+
 
             //要push的refspec (要push哪些分支)
             // push RefSpec 形如：refs/heads/main:refs/heads/main
@@ -3172,9 +3177,8 @@ class Libgit2Helper {
 
                     MyLog.d(TAG, "#$funName: will push: remoteName=${rc.remoteName}, refspecs=$refspecs")
 
-                    if(isSshUrl(pushUrl) && SettingsUtil.getSettingsSnapshot().sshSetting.allowUnknownHosts) {
-                        setAllowUnknownHostsForCertificatesCheck(callbacks)
-                    }
+                    setCredCheckCallback(pushUrl, callbacks)
+
 
                     //推送
                     remote.push(refspecs, pushOptions)
@@ -5443,10 +5447,7 @@ class Libgit2Helper {
                     MyLog.e(TAG, "#cloneSubmodules: set credential for submodule '$name' err: ${e.localizedMessage}")
                 }
 
-                if(isSshUrl(smUrl) && SettingsUtil.getSettingsSnapshot().sshSetting.allowUnknownHosts) {
-                    setAllowUnknownHostsForCertificatesCheck(callbacks)
-                }
-
+                setCredCheckCallback(smUrl, callbacks)
 
 
 
@@ -5583,9 +5584,8 @@ class Libgit2Helper {
                         MyLog.e(TAG, "#updateSubmodule: set credential for submodule '$submoduleName' err: ${e.localizedMessage}")
                     }
 
-                    if(isSshUrl(smUrl) && SettingsUtil.getSettingsSnapshot().sshSetting.allowUnknownHosts) {
-                        setAllowUnknownHostsForCertificatesCheck(callbacks)
-                    }
+                    setCredCheckCallback(smUrl, callbacks)
+
 
                     MyLog.d(TAG,"#updateSubmodule: will update submodule '$submoduleName'")
 

@@ -1597,13 +1597,9 @@ private fun doInit(
                             // warn: if don't check tje url type, actually this the certificate callback affect https(tls) too,
                             //  https no need set this, if want to allow unknown host for https(e.g. user used a self-signed cert),
                             //  can copy the cert into the user-cert folder, then can connect self-signed cert with https
-                            if(
-                                Libgit2Helper.getGitUrlType(cloneUrl) == Cons.gitUrlTypeSsh
-                                &&
-                                settings.sshSetting.allowUnknownHosts
-                            ) {
-                                Libgit2Helper.setAllowUnknownHostsForCertificatesCheck(callbacks)
-                            }
+
+                            Libgit2Helper.setCredCheckCallback(cloneUrl, callbacks, settings)
+
 
                             //开始克隆
                             try {
