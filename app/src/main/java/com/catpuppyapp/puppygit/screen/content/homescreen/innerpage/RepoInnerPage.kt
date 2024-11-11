@@ -71,6 +71,7 @@ import com.catpuppyapp.puppygit.dev.tagsTestPassed
 import com.catpuppyapp.puppygit.etc.Ret
 import com.catpuppyapp.puppygit.git.Upstream
 import com.catpuppyapp.puppygit.play.pro.R
+import com.catpuppyapp.puppygit.settings.AppSettings
 import com.catpuppyapp.puppygit.settings.SettingsUtil
 import com.catpuppyapp.puppygit.style.MyStyleKt
 import com.catpuppyapp.puppygit.ui.theme.Theme
@@ -1424,7 +1425,8 @@ fun RepoInnerPage(
                 loadingOff = loadingOff,
                 appContext = appContext,
                 goToThisRepoId = goToThisRepoId,
-                goToThisRepoAndHighlightingIt = goToThisRepoAndHighlightingIt
+                goToThisRepoAndHighlightingIt = goToThisRepoAndHighlightingIt,
+                settings=settings
             )
 
         } catch (cancel: Exception) {
@@ -1442,7 +1444,8 @@ private fun doInit(
     loadingOff:()->Unit,
     appContext:Context,
     goToThisRepoId: MutableState<String>,
-    goToThisRepoAndHighlightingIt:(id:String) ->Unit
+    goToThisRepoAndHighlightingIt:(id:String) ->Unit,
+    settings:AppSettings
 ){
     doJobThenOffLoading(loadingOn, loadingOff, appContext.getString(R.string.loading)) {
         //执行仓库页面的初始化操作
@@ -1588,15 +1591,18 @@ private fun doInit(
                                 //test
                             }
 
-                            // check the public key from remote
-                            callbacks.setCertificateCheckCb { cert, valid, host ->
-//                                val hostKey = cert as Cert.HostKey can't
-                                MyLog.d(TAG, "cert:"+ cert.toString())
-//                                测试：在这打印证书指纹
-//                                正式版：展示指纹给用户，询问是否接受连接
-                                MyLog.d(TAG, "valid111111111:$valid")
-                                MyLog.d(TAG, "host:$host")
-                                -1
+
+                            // if not set, only trust hosts in `known_hosts` for ssh
+                            //如果不设置：对于ssh，仅信任在known_hosts文件里有记录的主机（域名或ip或者他们的hash）
+                            // warn: if don't check tje url type, actually this the certificate callback affect https(tls) too,
+                            //  https no need set this, if want to allow unknown host for https(e.g. user used a self-signed cert),
+                            //  can copy the cert into the user-cert folder, then can connect self-signed cert with https
+                            if(
+                                Libgit2Helper.getGitUrlType(cloneUrl) == Cons.gitUrlTypeSsh
+                                &&
+                                settings.sshSetting.allowUnknownHosts
+                            ) {
+                                Libgit2Helper.setAllowUnknownHostsForCertificatesCheck(callbacks)
                             }
 
                             //开始克隆

@@ -24,8 +24,8 @@ object CertMan {
 
     const val certBundleFileName = "cacertpem"
     const val certBundleVersionFileName = "cacertpem-version"
-    lateinit var certBundleFile:File;
-    lateinit var certBundleVersionFile:File;
+    private lateinit var certBundleFile:File;
+    private lateinit var certBundleVersionFile:File;
 
     val sysCertList = listOf<CertSaver>(
         //android version <14 system cert path

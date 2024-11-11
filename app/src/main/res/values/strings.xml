@@ -1055,5 +1055,9 @@
     <string name="comparing">Comparing…</string>
     <string name="can_t_compare_both_context_type_lines">Can\'t compare both Context type lines</string>
     <string name="clear_compare">Clear Compare</string>
+    <string name="username_or_private_key">Username/Private Key</string>
+    <string name="password_or_passphrase">Password/Passphrase</string>
+    <string name="http_https_ssh">http/https/ssh</string>
+    <string name="ssh_credential">ssh Credential</string>
 
 </resources>

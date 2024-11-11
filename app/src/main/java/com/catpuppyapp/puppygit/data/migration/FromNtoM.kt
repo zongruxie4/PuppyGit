@@ -57,3 +57,9 @@ val MIGRATION_22_23 = object : Migration(22, 23) {
         db.execSQL(createTableSql)
     }
 }
+
+val MIGRATION_23_24 = object : Migration(23, 24) {
+    override fun migrate(db: SupportSQLiteDatabase) {
+        db.execSQL("ALTER TABLE domain_credential ADD COLUMN sshCredentialId TEXT NOT NULL DEFAULT ''")
+    }
+}

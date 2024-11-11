@@ -14,10 +14,12 @@ class DomainCredentialDto {
      * credential name
      */
     var credName:String?=""
+    var sshCredName:String?=""
 
     /**
      * credential Id
      */
     var credId:String?=""
+    var sshCredId:String?=""
 
 }

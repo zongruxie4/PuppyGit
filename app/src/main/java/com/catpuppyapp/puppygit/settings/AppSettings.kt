@@ -88,4 +88,5 @@ data class AppSettings(
      */
     var fileHistoryPageSize:Int = 10,
 
+    val sshSetting:SshSettings=SshSettings()
 )

@@ -32,7 +32,7 @@ interface DomainCredentialDao {
     @Query("SELECT * from domain_credential order by baseCreateTime DESC")
     suspend fun getAll(): List<DomainCredentialEntity>
 
-    @Query("SELECT d.id as domainCredId, d.domain as domain, c.name as credName, c.id as credId from domain_credential d left join credential c on c.id= d.credentialId order by d.baseCreateTime DESC")
+    @Query("SELECT d.id as domainCredId, d.domain as domain, c.name as credName, c.id as credId, sshc.name as sshCredName, sshc.id as sshCredId from domain_credential d left join credential c on c.id= d.credentialId left join credential sshc on sshc.id=d.sshCredentialId order by d.baseCreateTime DESC")
     suspend fun getAllDto(): List<DomainCredentialDto>
 
     @Query("select * from domain_credential where domain=:domain LIMIT 1")

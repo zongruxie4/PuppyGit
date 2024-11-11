@@ -2617,6 +2617,17 @@ class Libgit2Helper {
             remoteCallbacks.setCredAcquireCb(getCredentialCb(credentialType, usernameOrPrivateKey, passOrPassphrase))
         }
 
+        fun setAllowUnknownHostsForCertificatesCheck(remoteCallbacks: Remote.Callbacks) {
+            remoteCallbacks.setCertificateCheckCb { cert, valid, hostname ->
+                // the `cert` idk the details, it should can help get the cert sha-256 or other hash for fingerprints
+                // if host in the know_hosts, `valid` should be true, else false
+                // the "hostname" like "github.com" or "1.2.3.4"
+                //0 allow, -1 reject, 1 make libgit2 decide(I guess simple use the param 'valid', if true, allow, else reject)
+                // if no set this callback, the libgit2 will allow hosts in the known_hosts, and reject others(same as return 1 at here)
+                0
+            }
+        }
+
         suspend fun getRemoteCredential(remoteDb:RemoteRepository, credentialDb:CredentialRepository, repoId:String, remoteName:String, trueFetchFalsePush:Boolean):CredentialEntity? {
             val remote = remoteDb.getByRepoIdAndRemoteName(repoId, remoteName)
 

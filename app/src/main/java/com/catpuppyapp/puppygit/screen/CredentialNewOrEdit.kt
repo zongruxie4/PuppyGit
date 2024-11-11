@@ -1,13 +1,11 @@
 package com.catpuppyapp.puppygit.screen
 
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.selection.selectable
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
@@ -20,7 +18,6 @@ import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.RadioButton
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
@@ -32,14 +29,12 @@ import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.text.TextRange
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
@@ -312,39 +307,39 @@ fun CredentialNewOrEdit(
 //            Row (modifier = Modifier.padding(10.dp)){
 //                Text(text = stringResource(id = R.string.type)+":")
 //            }
-            for ((k, optext) in radioOptions.toList().withIndex()) {
-                Row(
-                    Modifier
-                        .fillMaxWidth()
-                        .heightIn(min = MyStyleKt.RadioOptions.minHeight)
-
-                        .selectable(
-                            selected = credentialSelectedOption.intValue == k,
-                            onClick = {
-                                //更新选择值
-                                credentialSelectedOption.intValue = k
-                                if (k == optNumHttp) {
-                                    credentialType.intValue = Cons.dbCredentialTypeHttp
-                                } else {
-                                    credentialType.intValue = Cons.dbCredentialTypeSsh
-                                }
-                            },
-                            role = Role.RadioButton
-                        )
-                        .padding(horizontal = 10.dp),
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    RadioButton(
-                        selected = credentialSelectedOption.intValue == k,
-                        onClick = null // null recommended for accessibility with screenreaders
-                    )
-                    Text(
-                        text = optext,
-                        style = MaterialTheme.typography.bodyLarge,
-                        modifier = Modifier.padding(start = 10.dp)
-                    )
-                }
-            }
+//            for ((k, optext) in radioOptions.toList().withIndex()) {
+//                Row(
+//                    Modifier
+//                        .fillMaxWidth()
+//                        .heightIn(min = MyStyleKt.RadioOptions.minHeight)
+//
+//                        .selectable(
+//                            selected = credentialSelectedOption.intValue == k,
+//                            onClick = {
+//                                //更新选择值
+//                                credentialSelectedOption.intValue = k
+//                                if (k == optNumHttp) {
+//                                    credentialType.intValue = Cons.dbCredentialTypeHttp
+//                                } else {
+//                                    credentialType.intValue = Cons.dbCredentialTypeSsh
+//                                }
+//                            },
+//                            role = Role.RadioButton
+//                        )
+//                        .padding(horizontal = 10.dp),
+//                    verticalAlignment = Alignment.CenterVertically
+//                ) {
+//                    RadioButton(
+//                        selected = credentialSelectedOption.intValue == k,
+//                        onClick = null // null recommended for accessibility with screenreaders
+//                    )
+//                    Text(
+//                        text = optext,
+//                        style = MaterialTheme.typography.bodyLarge,
+//                        modifier = Modifier.padding(start = 10.dp)
+//                    )
+//                }
+//            }
 
             TextField(
                     modifier =
@@ -362,7 +357,7 @@ fun CredentialNewOrEdit(
                     }
                     ,
                     //如果是http的密码框，整成单行即可
-                    singleLine = credentialType.intValue != Cons.dbCredentialTypeSsh,
+//                    singleLine = credentialType.intValue != Cons.dbCredentialTypeSsh,
 
                     value = credentialVal.value,
                     onValueChange = {
@@ -370,42 +365,44 @@ fun CredentialNewOrEdit(
                     },
                     label = {
                         if(credentialType.intValue == Cons.dbCredentialTypeHttp) {
-                            Text(stringResource(R.string.username))
+                            Text(stringResource(R.string.username_or_private_key))
+//                            Text(stringResource(R.string.username))
                         }else{
                             Text(stringResource(R.string.private_key))
                         }
                     },
-                    placeholder = {
-                        if(credentialType.intValue == Cons.dbCredentialTypeHttp) {
-                            Text(stringResource(R.string.username))
-                        }else{
-                            Text(stringResource(R.string.paste_your_private_key_here))
-                        }
-                    }
+//                    placeholder = {
+//                        if(credentialType.intValue == Cons.dbCredentialTypeHttp) {
+//                            Text(stringResource(R.string.username))
+//                        }else{
+//                            Text(stringResource(R.string.paste_your_private_key_here))
+//                        }
+//                    }
                 )
                 TextField(
                     modifier = Modifier
                         .fillMaxWidth()
                         .padding(10.dp),
-                    singleLine = true,
+//                    singleLine = true,
                     value = credentialPass.value,
                     onValueChange = {
                         credentialPass.value=it
                     },
                     label = {
                         if(credentialType.intValue == Cons.dbCredentialTypeHttp) {
-                            Text(stringResource(R.string.password))
+                            Text(stringResource(R.string.password_or_passphrase))
+//                            Text(stringResource(R.string.password))
                         }else{
                             Text(stringResource(R.string.passphrase_if_have))
                         }
                     },
-                    placeholder = {
-                        if(credentialType.intValue == Cons.dbCredentialTypeHttp) {
-                            Text(stringResource(R.string.password))
-                        }else{
-                            Text(stringResource(R.string.input_passphrase_if_have))
-                        }
-                    },
+//                    placeholder = {
+//                        if(credentialType.intValue == Cons.dbCredentialTypeHttp) {
+//                            Text(stringResource(R.string.password))
+//                        }else{
+//                            Text(stringResource(R.string.input_passphrase_if_have))
+//                        }
+//                    },
                     visualTransformation = if (passwordVisible.value) VisualTransformation.None else PasswordVisualTransformation(),
                     keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password),
                     trailingIcon = {
@@ -472,7 +469,8 @@ fun CredentialNewOrEdit(
     isReadyForSave.value = (
             (!showCredentialNameAlreadyExistsErr.value)
            && (credentialName.value.text.isNotBlank())
-           && ((credentialType.intValue==Cons.dbCredentialTypeSsh && credentialVal.value.isNotBlank()) || (credentialType.intValue==Cons.dbCredentialTypeHttp && credentialPass.value.isNotBlank())))
+//           && ((credentialType.intValue==Cons.dbCredentialTypeSsh && credentialVal.value.isNotBlank()) || (credentialType.intValue==Cons.dbCredentialTypeHttp && credentialPass.value.isNotBlank()))
+            )
 
 }
 

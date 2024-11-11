@@ -601,7 +601,7 @@ fun CloneScreen(
                 label = {
                     Row {
                         Text(stringResource(R.string.git_url))
-                        Text(text = " ("+stringResource(id = R.string.only_https_supported)+")",
+                        Text(text = " ("+stringResource(id = R.string.http_https_ssh)+")",
 //                            modifier = Modifier.padding(start = 10.dp, bottom = 10.dp, end = 10.dp),
 //                            fontSize = 11.sp
 
@@ -1137,7 +1137,7 @@ fun CloneScreen(
         ((credentialSelectedOption==optNumNoCredential || credentialSelectedOption==optNumMatchCredentialByDomain)  //新凭据的情况
                 || ((credentialSelectedOption==optNumNewCredential && credentialName.value.text.isNotBlank())  //必填字段
                     //要么是http且填了密码字段，要么是ssh且填了privatekey字段
-                    && (curCredentialType.intValue==Cons.dbCredentialTypeHttp && credentialPass.value.isNotBlank()) || (curCredentialType.intValue==Cons.dbCredentialTypeSsh && credentialVal.value.isNotBlank())
+//                    && (curCredentialType.intValue==Cons.dbCredentialTypeHttp && credentialPass.value.isNotBlank()) || (curCredentialType.intValue==Cons.dbCredentialTypeSsh && credentialVal.value.isNotBlank())
                    )
                 || (credentialSelectedOption==optNumSelectCredential && selectedCredentialId.value.isNotBlank() && selectedCredentialName.value.isNotBlank()))
         && !showRepoNameAlreadyExistsErr.value && !showRepoNameHasIllegalCharsOrTooLongErr.value && !showCredentialNameAlreadyExistsErr.value

@@ -1036,6 +1036,10 @@
     <string name="comparing">正在比较…</string>
     <string name="can_t_compare_both_context_type_lines">不能比较两个Context行</string>
     <string name="clear_compare">清除比较</string>
+    <string name="username_or_private_key">用户名/私钥</string>
+    <string name="password_or_passphrase">密码/密码短语</string>
+    <string name="http_https_ssh">http/https/ssh</string>
+    <string name="ssh_credential">ssh凭据</string>
 
 
 </resources>

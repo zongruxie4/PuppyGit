@@ -80,19 +80,20 @@ fun CredentialItem(
 
             )
         }
-        Row (
-            verticalAlignment = Alignment.CenterVertically,
-
-        ){
-
-            Text(text = stringResource(R.string.type) +":")
-            Text(text = thisItem.getTypeStr(),
-                maxLines = 1,
-                overflow = TextOverflow.Ellipsis,
-                fontWeight = FontWeight.Light
-
-            )
-        }
+//
+//        Row (
+//            verticalAlignment = Alignment.CenterVertically,
+//
+//        ){
+//
+//            Text(text = stringResource(R.string.type) +":")
+//            Text(text = thisItem.getTypeStr(),
+//                maxLines = 1,
+//                overflow = TextOverflow.Ellipsis,
+//                fontWeight = FontWeight.Light
+//
+//            )
+//        }
 
         if(isMatchByDoMain) {
             Row (

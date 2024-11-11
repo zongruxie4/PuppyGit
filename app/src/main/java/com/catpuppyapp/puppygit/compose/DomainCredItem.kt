@@ -91,6 +91,18 @@ fun DomainCredItem(
 
             )
         }
+        Row (
+            verticalAlignment = Alignment.CenterVertically,
+
+        ){
+            Text(text = stringResource(R.string.ssh_credential) +":")
+            Text(text = thisItem.sshCredName ?: none,
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis,
+                fontWeight = FontWeight.Light
+
+            )
+        }
 
     }
 }

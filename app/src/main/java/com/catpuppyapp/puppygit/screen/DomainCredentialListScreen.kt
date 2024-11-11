@@ -133,6 +133,7 @@ fun DomainCredentialListScreen(
 
     val credentialList = mutableCustomStateListOf(stateKeyTag, "credentialList", listOf<CredentialEntity>())
     val selectedCredentialIdx = rememberSaveable{mutableIntStateOf(0)}
+    val selectedSshCredentialIdx = rememberSaveable{mutableIntStateOf(0)}
 
 
     val showCreateOrEditDialog = rememberSaveable { mutableStateOf( false)}
@@ -194,7 +195,8 @@ fun DomainCredentialListScreen(
 
                     Spacer(Modifier.height(15.dp))
 
-                    CredentialSelector(credentialList.value, selectedCredentialIdx)
+                    CredentialSelector(credentialList.value, selectedCredentialIdx, stringResource(R.string.http_https))
+                    CredentialSelector(credentialList.value, selectedSshCredentialIdx, stringResource(R.string.ssh))
 
                 }
             },
@@ -206,18 +208,21 @@ fun DomainCredentialListScreen(
                 try {
                     val newDomain = curDomainName.value
                     val newCredentialId = credentialList.value[selectedCredentialIdx.intValue].id
+                    val newSshCredentialId = credentialList.value[selectedSshCredentialIdx.intValue].id
                     val dcDb = AppModel.singleInstanceHolder.dbContainer.domainCredentialRepository
                     if(isCreate.value) {
                         dcDb.insert(
                             DomainCredentialEntity(
                                 domain = newDomain,
-                                credentialId = newCredentialId
+                                credentialId = newCredentialId,
+                                sshCredentialId = newSshCredentialId
                             )
                         )
                     }else {
                         val old = dcDb.getById(curId.value) ?: throw RuntimeException("invalid id for update")
                         old.domain = newDomain
                         old.credentialId =newCredentialId
+                        old.sshCredentialId = newSshCredentialId
 
                         dcDb.update(old)
                     }

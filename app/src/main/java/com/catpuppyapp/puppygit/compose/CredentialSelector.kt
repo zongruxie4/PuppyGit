@@ -21,14 +21,15 @@ import com.catpuppyapp.puppygit.utils.state.StateUtil
 @Composable
 fun CredentialSelector(
     credentialList:List<CredentialEntity>,
-    selectedCredentialIdx:MutableIntState
+    selectedCredentialIdx:MutableIntState,
+    title:String = stringResource(R.string.select_credential),
 ) {
 
     val appContext = AppModel.singleInstanceHolder.appContext
 
     val note = rememberSaveable { mutableStateOf("")}
 
-    Text(stringResource(R.string.select_credential) + ": ")
+    Text("$title: ")
 
     SingleSelectList(
         optionsList = credentialList,

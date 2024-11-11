@@ -12,7 +12,8 @@ data class DomainCredentialEntity (
         var id: String= getShortUUID(),
 
         var domain:String="",
-        var credentialId:String="",
+        var credentialId:String="",  // credential id used to http/https url
+        var sshCredentialId:String="",  // credential id used to ssh url
 
 
         @Embedded
