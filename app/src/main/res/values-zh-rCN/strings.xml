@@ -1045,6 +1045,9 @@
     <string name="allow_unknown_hosts">允许未知主机</string>
     <string name="confirm">确认</string>
     <string name="will_reset_the_unknown_hosts_file">将重置 \'unknown_hosts\' 文件</string>
+    <string name="forget_hostkeys">忘记主机密钥</string>
+    <string name="if_enable_will_allow_unknown_hosts_as_default_else_will_ask">如果启用，默认将允许未知主机，否则将会询问</string>
+    <string name="after_forgetting_the_host_keys_may_ask_confirm_again">忘记主机密钥后，当你再次使用ssh连接主机，可能会需要重新确认</string>
 
 
 </resources>

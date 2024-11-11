@@ -38,7 +38,6 @@ import com.catpuppyapp.puppygit.compose.PaddingRow
 import com.catpuppyapp.puppygit.compose.ScrollableColumn
 import com.catpuppyapp.puppygit.compose.SingleSelectList
 import com.catpuppyapp.puppygit.play.pro.R
-import com.catpuppyapp.puppygit.screen.functions.openFileWithInnerSubPageEditor
 import com.catpuppyapp.puppygit.settings.SettingsUtil
 import com.catpuppyapp.puppygit.style.MyStyleKt
 import com.catpuppyapp.puppygit.ui.theme.Theme
@@ -100,6 +99,34 @@ fun SettingsInnerPage(
 
     val allowUnknownHosts = rememberSaveable { mutableStateOf(settingsState.value.sshSetting.allowUnknownHosts) }
     val showResetKnownHostsDialog = rememberSaveable { mutableStateOf(false) }
+    val showForgetHostKeysDialog = rememberSaveable { mutableStateOf(false) }
+    if(showForgetHostKeysDialog.value) {
+        ConfirmDialog2(
+            title = stringResource(R.string.confirm),
+            requireShowTextCompose = true,
+            textCompose = {
+                ScrollableColumn {
+                    Text(stringResource(R.string.after_forgetting_the_host_keys_may_ask_confirm_again))
+                }
+            },
+            okBtnText = stringResource(R.string.reset),
+            okTextColor = MyStyleKt.TextColor.danger(),
+            onCancel = {showForgetHostKeysDialog.value = false}
+        ) {
+            showForgetHostKeysDialog.value = false
+            doJobThenOffLoading {
+                try {
+//                    执行操作，清空记住的主机指纹
+                    TODO()
+                    Msg.requireShow(appContext.getString(R.string.success))
+                }catch (e:Exception) {
+                    Msg.requireShowLongDuration(e.localizedMessage ?:"err")
+                    MyLog.e(TAG, "ForgetHostKeysDialog err: ${e.stackTraceToString()}")
+                }
+            }
+        }
+    }
+
     if(showResetKnownHostsDialog.value) {
         ConfirmDialog2(
             title = stringResource(R.string.confirm),
@@ -468,7 +495,8 @@ fun SettingsInnerPage(
         ) {
             Column(modifier = Modifier.fillMaxWidth(itemLeftWidthForSwitcher)) {
                 Text(stringResource(R.string.allow_unknown_hosts), fontSize = itemFontSize)
-                Text("If enable, can connect host not in the 'known_hosts' file, else will reject, if you want to more safe, add trusted hosts info into the 'known_hosts' and disable this feature", fontSize = itemDescFontSize, fontWeight = FontWeight.Light)
+//                Text("If enable, can connect host not in the 'known_hosts' file, else will reject, if you want to more safe, add trusted hosts info into the 'known_hosts' and disable this feature", fontSize = itemDescFontSize, fontWeight = FontWeight.Light)
+                Text(stringResource(R.string.if_enable_will_allow_unknown_hosts_as_default_else_will_ask), fontSize = itemDescFontSize, fontWeight = FontWeight.Light)
 
             }
 
@@ -480,22 +508,30 @@ fun SettingsInnerPage(
 
                 )
         }
+//
+//        SettingsContent(onClick = {
+//            openFileWithInnerSubPageEditor(
+//                filePath = Lg2Utils.getKnownHostsFile(appContext).canonicalPath,
+//                mergeMode = false,
+//                readOnly = false
+//            )
+//        }) {
+//            Column {
+//                Text(stringResource(R.string.edit_known_hosts_file), fontSize = itemFontSize)
+//            }
+//        }
+//        SettingsContent(onClick = {
+//            showResetKnownHostsDialog.value =true
+//        }) {
+//            Column {
+//                Text(stringResource(R.string.reset_known_hosts), fontSize = itemFontSize)
+//            }
+//        }
         SettingsContent(onClick = {
-            openFileWithInnerSubPageEditor(
-                filePath = Lg2Utils.getKnownHostsFile(appContext).canonicalPath,
-                mergeMode = false,
-                readOnly = false
-            )
+            showForgetHostKeysDialog.value =true
         }) {
             Column {
-                Text(stringResource(R.string.edit_known_hosts_file), fontSize = itemFontSize)
-            }
-        }
-        SettingsContent(onClick = {
-            showResetKnownHostsDialog.value =true
-        }) {
-            Column {
-                Text(stringResource(R.string.reset_known_hosts), fontSize = itemFontSize)
+                Text(stringResource(R.string.forget_hostkeys), fontSize = itemFontSize)
             }
         }
 

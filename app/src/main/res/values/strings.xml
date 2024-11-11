@@ -1064,5 +1064,8 @@
     <string name="allow_unknown_hosts">Allow Unknown Hosts</string>
     <string name="confirm">Confirm</string>
     <string name="will_reset_the_unknown_hosts_file">will reset the \'known_hosts\' file</string>
+    <string name="forget_hostkeys">Forget Hostkeys</string>
+    <string name="if_enable_will_allow_unknown_hosts_as_default_else_will_ask">If enable, will allow unknown hosts as default, else will ask</string>
+    <string name="after_forgetting_the_host_keys_may_ask_confirm_again">After forgetting the host keys, when you connect to a host with ssh again, it may ask you to confirm again.</string>
 
 </resources>

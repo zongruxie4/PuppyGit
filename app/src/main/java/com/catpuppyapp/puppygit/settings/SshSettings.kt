@@ -6,7 +6,9 @@ import kotlinx.serialization.Serializable
 data class SshSettings(
     /**
      * if enable, will allow when ssh connect to a host doesn't exists in the `known_hosts` file;
-     * if disable, only allow hosts in the `known_hosts`
+     * else will ask
+     *
+     * <del>if disable, only allow hosts in the `known_hosts`</del>
      */
-    var allowUnknownHosts:Boolean = true
+    var allowUnknownHosts:Boolean = false
 )
