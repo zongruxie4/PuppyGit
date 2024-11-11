@@ -31,6 +31,7 @@ import com.catpuppyapp.puppygit.git.StatusTypeEntrySaver
 import com.catpuppyapp.puppygit.git.SubmoduleDto
 import com.catpuppyapp.puppygit.git.TagDto
 import com.catpuppyapp.puppygit.git.Upstream
+import com.catpuppyapp.puppygit.jni.LibgitTwo
 import com.catpuppyapp.puppygit.play.pro.R
 import com.catpuppyapp.puppygit.settings.AppSettings
 import com.catpuppyapp.puppygit.settings.SettingsUtil
@@ -2521,10 +2522,35 @@ class Libgit2Helper {
             }
         }
 
-        fun setCredCheckCallback(url:String, callbacks:Remote.Callbacks, settings: AppSettings=SettingsUtil.getSettingsSnapshot()){
+        fun setCredCheckCallback(
+            url:String,
+            callbacks:Remote.Callbacks,
+            settings: AppSettings=SettingsUtil.getSettingsSnapshot(),
+            allowCallback:()->Unit,
+            rejectCallback:()->Unit
+        ){
             if(isSshUrl(url) && settings.sshSetting.allowUnknownHosts) {
                 setAllowUnknownHostsForCertificatesCheck(callbacks)
-            }//else verify host key
+            }else {
+                // 1 let libgit2 decide, 0 allow, -1 reject
+                callbacks.setCertificateCheckCb cb@{ cert, valid, hostname ->
+                    // libgit2 think is valid, usually is hostkey in the known_hosts file
+                    // just ignore, hornor libgit2 decided
+                    if(valid) {
+                        return@cb 1
+                    }
+
+                    // if libgit2 think cert is invalid, ask user
+                    val certData = LibgitTwo.jniGetDataOfSshCert(cert.rawPointer)
+                    if(certData.isNotBlank()) {
+                        add certData and allow and reject callbacks to the popup dialog list, it will show to user, then do act which user choosen
+                        the popup dialog should wait 5s then can do allow for avoid mistake touched
+                    }
+
+                    // reject at here, do action after user made response
+                    return@cb -1
+                }
+            }
         }
 
         fun getRemoteFetchUrlByName(repo:Repository, remoteName: String):String {
