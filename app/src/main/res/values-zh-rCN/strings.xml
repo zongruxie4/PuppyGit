@@ -1040,6 +1040,11 @@
     <string name="password_or_passphrase">密码/密码短语</string>
     <string name="http_https_ssh">http/https/ssh</string>
     <string name="ssh_credential">ssh凭据</string>
+    <string name="edit_known_hosts_file">编辑 \'known_hosts\' 文件</string>
+    <string name="reset_known_hosts">重置 \'known_hosts\'</string>
+    <string name="allow_unknown_hosts">允许未知主机</string>
+    <string name="confirm">确认</string>
+    <string name="will_reset_the_unknown_hosts_file">将重置 \'unknown_hosts\' 文件</string>
 
 
 </resources>

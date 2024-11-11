@@ -6,15 +6,20 @@ import com.github.git24j.core.Libgit2
 import java.io.File
 
 object Lg2Utils {
-    const val libgit2HomeDirName = "lg2home"
-    const val sshKnownHostsPath = ".ssh/known_hosts"
+    private const val libgit2HomeDirName = "lg2home"
+    private const val sshDirName = ".ssh"
+    private const val sshKnownHostsFileName = "known_hosts"
     private val known_hostsRawId = R.raw.known_hosts
 
     private lateinit var lg2Home: File
+    private lateinit var sshDir: File
     private lateinit var knownHostsFile:File
     
     fun init(homeBaseDirPath:File, appContext: Context) {
-        createLg2Home(homeBaseDirPath)
+        lg2Home=createDirIfNonexists(homeBaseDirPath, libgit2HomeDirName)
+        sshDir=createDirIfNonexists(lg2Home, sshDirName)
+        knownHostsFile = File(sshDir.canonicalPath, sshKnownHostsFileName)
+
         createKnownHostsIfNonExists(appContext)
 
         // make ssh can find the known_hosts file
@@ -22,19 +27,15 @@ object Lg2Utils {
     }
     
     fun getLg2Home():File {
-        if(lg2Home.exists()) {
+        if(lg2Home.exists().not()) {
             lg2Home.mkdirs()
         }
 
         return lg2Home
     }
 
-    fun createLg2Home(baseDir:File) {
-        lg2Home=createDirIfNonexists(baseDir, libgit2HomeDirName)
-    }    
     
     fun createKnownHostsIfNonExists(appContext: Context) {
-        knownHostsFile = File(lg2Home.canonicalPath+"/"+sshKnownHostsPath)
         if(knownHostsFile.exists()) {
             return
         }
@@ -61,11 +62,13 @@ object Lg2Utils {
         createKnownHostsIfNonExists(appContext)
     }
     
-    fun getKnownHostsFile():File {
+    fun getKnownHostsFile(appContext: Context):File {
+        createKnownHostsIfNonExists(appContext)
+
         return knownHostsFile
     }
     
-    fun addRulesToKnowHosts(rules:StringBuilder) {
-        //TODO()
-    }
+//    fun addRulesToKnowHosts(rules:StringBuilder) {
+//        //TODO()
+//    }
 }

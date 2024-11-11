@@ -1059,5 +1059,10 @@
     <string name="password_or_passphrase">Password/Passphrase</string>
     <string name="http_https_ssh">http/https/ssh</string>
     <string name="ssh_credential">ssh Credential</string>
+    <string name="edit_known_hosts_file">Edit \'known_hosts\' file</string>
+    <string name="reset_known_hosts">Reset \'known_hosts\'</string>
+    <string name="allow_unknown_hosts">Allow Unknown Hosts</string>
+    <string name="confirm">Confirm</string>
+    <string name="will_reset_the_unknown_hosts_file">will reset the \'known_hosts\' file</string>
 
 </resources>

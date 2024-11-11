@@ -875,14 +875,14 @@ fun HomeScreen(
                     requireImportUriList=filesPageRequireImportUriList,
                     filesPageGetFilterMode=filesPageGetFilterMode,
                     filesPageFilterKeyword=filesPageFilterKeyword,
-                    filesPageFilterOff,
-                    filesPageCurrentPathFileList,
-                    filesPageRequestFromParent,
-                    requireInnerEditorOpenFile,
-                    filesPageSimpleFilterOn,
-                    filesPageSimpleFilterKeyWord,
-                    filesPageScrolled,
-                    filesPageListState,
+                    filesPageFilterModeOff = filesPageFilterOff,
+                    currentPathFileList = filesPageCurrentPathFileList,
+                    filesPageRequestFromParent = filesPageRequestFromParent,
+                    requireInnerEditorOpenFile = requireInnerEditorOpenFile,
+                    filesPageSimpleFilterOn = filesPageSimpleFilterOn,
+                    filesPageSimpleFilterKeyWord = filesPageSimpleFilterKeyWord,
+                    filesPageScrolled = filesPageScrolled,
+                    curListState = filesPageListState,
                     filterListState = filesFilterListState,
                     openDrawer = openDrawer,
                     isFileSelectionMode= filesPageIsFileSelectionMode,
@@ -1008,7 +1008,8 @@ fun HomeScreen(
 //                    appContext = appContext,
                     openDrawer = openDrawer,
                     exitApp = exitApp,
-                    listState = settingsListState
+                    listState = settingsListState,
+                    openInEditor = requireInnerEditorOpenFile
                 )
             }else if(currentHomeScreen.intValue == Cons.selectedItem_About) {
                 //About页面是静态的，无需刷新
