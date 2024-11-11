@@ -310,3 +310,25 @@ JNIEXPORT jobject JNICALL J_MAKE_METHOD(LibgitTwo_jniEntryByName)(JNIEnv *env, j
     free(c_filename);
     return (jobject)r;
 }
+
+
+
+JNIEXPORT jstring JNICALL J_MAKE_METHOD(LibgitTwo_jniGetDataOfSshCert)(JNIEnv *env, jclass callerJavaClass, jlong cretprt)
+{
+    git_cert_t type = ((git_cert*)cretprt)->cert_type;
+    if(type == GIT_CERT_HOSTKEY_LIBSSH2) {
+        git_cert_hostkey *sshcert = (git_cert_hostkey *)cretprt;
+        if(sshcert->type&GIT_CERT_SSH_MD5) {
+        }
+        if(sshcert->type&GIT_CERT_SSH_SHA1) {
+        }
+        if(sshcert->type&GIT_CERT_SSH_SHA256) {
+        }
+        if(sshcert->type&GIT_CERT_SSH_RAW) {
+            sshcert->hostkey
+        }
+    }else {
+        ALOGW("unknown cert type: %d", type);
+    }
+
+}

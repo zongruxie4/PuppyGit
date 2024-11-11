@@ -57,6 +57,7 @@ public class LibgitTwo {
      * @return entry ptr
     */
     public static native Long jniEntryByName(long treePtr, String filename);
+    public static native String jniGetDataOfSshCert(long certPtr);
 
     public static String getContent(int contentLen, String content) {
         // content.length() is "chars count", not "bytes count"!
