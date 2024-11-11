@@ -38,6 +38,7 @@ import com.catpuppyapp.puppygit.compose.PaddingRow
 import com.catpuppyapp.puppygit.compose.ScrollableColumn
 import com.catpuppyapp.puppygit.compose.SingleSelectList
 import com.catpuppyapp.puppygit.play.pro.R
+import com.catpuppyapp.puppygit.screen.functions.openFileWithInnerSubPageEditor
 import com.catpuppyapp.puppygit.settings.SettingsUtil
 import com.catpuppyapp.puppygit.style.MyStyleKt
 import com.catpuppyapp.puppygit.ui.theme.Theme
@@ -65,8 +66,7 @@ fun SettingsInnerPage(
 //    appContext:Context,
     openDrawer:()->Unit,
     exitApp:()->Unit,
-    listState:ScrollState,
-    openInEditor:(String, readOnly:Boolean)->Unit
+    listState:ScrollState
 ){
 
     val appContext = LocalContext.current
@@ -481,7 +481,11 @@ fun SettingsInnerPage(
                 )
         }
         SettingsContent(onClick = {
-            openInEditor(Lg2Utils.getKnownHostsFile(appContext).canonicalPath, false)
+            openFileWithInnerSubPageEditor(
+                filePath = Lg2Utils.getKnownHostsFile(appContext).canonicalPath,
+                mergeMode = false,
+                readOnly = false
+            )
         }) {
             Column {
                 Text(stringResource(R.string.edit_known_hosts_file), fontSize = itemFontSize)

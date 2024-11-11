@@ -3,6 +3,7 @@ package com.catpuppyapp.puppygit.screen.functions
 import androidx.compose.ui.platform.ClipboardManager
 import android.content.Context
 import com.catpuppyapp.puppygit.constants.Cons
+import com.catpuppyapp.puppygit.constants.LineNum
 import com.catpuppyapp.puppygit.play.pro.R
 import com.catpuppyapp.puppygit.utils.AppModel
 import com.catpuppyapp.puppygit.utils.Libgit2Helper
@@ -95,4 +96,14 @@ fun getClipboardText(clipboardManager:ClipboardManager):String? {
         MyLog.e(TAG, "#getClipboardText err: ${e.localizedMessage}")
         null
     }
+}
+
+fun openFileWithInnerSubPageEditor(filePath:String, mergeMode:Boolean, readOnly:Boolean) {
+    val filePathKey = Cache.setThenReturnKey(filePath)
+    val goToLine = LineNum.lastPosition
+    val initMergeMode = if(mergeMode) "1" else "0"
+    val initReadOnly = if(readOnly) "1" else "0"
+
+    AppModel.singleInstanceHolder.navController
+        .navigate(Cons.nav_SubPageEditor + "/$filePathKey" + "/$goToLine" + "/$initMergeMode" +"/$initReadOnly")
 }

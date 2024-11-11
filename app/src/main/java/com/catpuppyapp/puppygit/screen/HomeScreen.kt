@@ -1009,7 +1009,6 @@ fun HomeScreen(
                     openDrawer = openDrawer,
                     exitApp = exitApp,
                     listState = settingsListState,
-                    openInEditor = requireInnerEditorOpenFile
                 )
             }else if(currentHomeScreen.intValue == Cons.selectedItem_About) {
                 //About页面是静态的，无需刷新

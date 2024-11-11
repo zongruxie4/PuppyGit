@@ -25,7 +25,6 @@ import androidx.compose.material.icons.filled.Folder
 import androidx.compose.material.icons.filled.History
 import androidx.compose.material.icons.filled.LibraryAdd
 import androidx.compose.material.icons.filled.SelectAll
-import androidx.compose.material.icons.filled.Sync
 import androidx.compose.material.icons.filled.Upload
 import androidx.compose.material.icons.outlined.Check
 import androidx.compose.material.icons.outlined.CloudDone
@@ -97,6 +96,7 @@ import com.catpuppyapp.puppygit.git.Upstream
 import com.catpuppyapp.puppygit.play.pro.R
 import com.catpuppyapp.puppygit.screen.functions.ChangeListFunctions
 import com.catpuppyapp.puppygit.screen.functions.naviToFileHistoryByRelativePath
+import com.catpuppyapp.puppygit.screen.functions.openFileWithInnerSubPageEditor
 import com.catpuppyapp.puppygit.settings.SettingsUtil
 import com.catpuppyapp.puppygit.style.MyStyleKt
 import com.catpuppyapp.puppygit.user.UserUtil
@@ -842,12 +842,13 @@ fun ChangeListInnerPage(
 
 
     val openFileWithInnerEditor = { filePath:String, initMergeMode:Boolean ->
-        val filePathKey = Cache.setThenReturnKey(filePath)
-        val goToLine = LineNum.lastPosition
-        val initMergeMode = if(initMergeMode) "1" else "0"
-        val initReadOnly = "0"  //cl页面不可能打开app内置目录下的文件，所以read only初始化为关闭即可
+        openFileWithInnerSubPageEditor(
+            filePath = filePath,
+            mergeMode = initMergeMode,
 
-        navController.navigate(Cons.nav_SubPageEditor + "/$filePathKey" + "/$goToLine" + "/$initMergeMode" +"/$initReadOnly")
+            //cl页面不可能打开app内置目录下的文件，所以read only初始化为关闭即可
+            readOnly = false,
+        )
     }
 
     val goParentChangeList = {
