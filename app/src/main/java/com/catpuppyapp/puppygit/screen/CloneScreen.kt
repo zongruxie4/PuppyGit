@@ -147,8 +147,9 @@ fun CloneScreen(
     val curCredentialType = rememberSaveable{mutableIntStateOf(Cons.dbCredentialTypeHttp)}
 //    val credentialListHttp = MockData.getAllCredentialList(type = Cons.dbCredentialTypeHttp)
 //    val credentialListSsh = MockData.getAllCredentialList(type = Cons.dbCredentialTypeSsh)
-    val credentialHttpList = mutableCustomStateListOf(keyTag=stateKeyTag, keyName = "credentialHttpList", initValue = listOf<CredentialEntity>())
-    val credentialSshList = mutableCustomStateListOf(keyTag=stateKeyTag, keyName = "credentialSshList", initValue = listOf<CredentialEntity>())
+    val allCredentialList = mutableCustomStateListOf(keyTag=stateKeyTag, keyName = "allCredentialList", initValue = listOf<CredentialEntity>())
+//    val credentialHttpList = mutableCustomStateListOf(keyTag=stateKeyTag, keyName = "credentialHttpList", initValue = listOf<CredentialEntity>())
+//    val credentialSshList = mutableCustomStateListOf(keyTag=stateKeyTag, keyName = "credentialSshList", initValue = listOf<CredentialEntity>())
     //这个用我写的自定义状态存储器没意义，因为如果屏幕旋转（手机的显示设置改变），本质上就会重新创建组件，重新加载列表，除非改成如果列表不为空，就不查询，但那样意义不大
 //    val curCredentialList:SnapshotStateList<CredentialEntity> = remember { mutableStateListOf() }  //切换http和ssh后里面存对应的列表
 
@@ -838,7 +839,8 @@ fun CloneScreen(
             Column(modifier = Modifier.selectableGroup(),
             ) {
                 //如果对应类型的集合为空，就不显示“选择凭据”选项了
-                val skipSelect = (curCredentialType.intValue == Cons.dbCredentialTypeHttp && credentialHttpList.value.isEmpty()) || (curCredentialType.intValue==Cons.dbCredentialTypeSsh && credentialSshList.value.isEmpty())
+//                val skipSelect = (curCredentialType.intValue == Cons.dbCredentialTypeHttp && credentialHttpList.value.isEmpty()) || (curCredentialType.intValue==Cons.dbCredentialTypeSsh && credentialSshList.value.isEmpty())
+                val skipSelect = allCredentialList.value.isEmpty()
 
 
                 //如果设置了有效gitUrl，显示新建和选择凭据，否则只显示无凭据
@@ -1008,7 +1010,8 @@ fun CloneScreen(
                             expanded = dropDownMenuExpendState.value,
                             onDismissRequest = { dropDownMenuExpendState.value = false }
                         ) {
-                            val curList = if(curCredentialType.intValue == Cons.dbCredentialTypeHttp) credentialHttpList else credentialSshList
+//                            val curList = if(curCredentialType.intValue == Cons.dbCredentialTypeHttp) credentialHttpList else credentialSshList
+                            val curList = allCredentialList
                             for(item in curList.value.toList()) {
                                 val itemText = if(item.id == selectedCredentialId.value) addPrefix(item.name) else item.name
                                 DropdownMenuItem(
@@ -1115,16 +1118,18 @@ fun CloneScreen(
 
             //查询credential列表，无论新增还是编辑都需要查credential列表
             val credentialDb = AppModel.singleInstanceHolder.dbContainer.credentialRepository
-            credentialHttpList.value.clear()
-            credentialSshList.value.clear()
+//            credentialHttpList.value.clear()
+//            credentialSshList.value.clear()
+            allCredentialList.value.clear()
 
             //注：这里不需要显示密码，只是列出已保存的凭据供用户选择，顶多需要个凭据名和凭据id，所以查询的是未解密密码的list
-            credentialHttpList.value.addAll(credentialDb.getHttpList())
-            credentialSshList.value.addAll(credentialDb.getSshList())
+//            credentialHttpList.value.addAll(credentialDb.getHttpList())
+//            credentialSshList.value.addAll(credentialDb.getSshList())
+            allCredentialList.value.addAll(credentialDb.getAll())
 
 //            credentialHttpList.requireRefreshView()
 //            credentialSshList.requireRefreshView()
-            MyLog.d(TAG, "#LaunchedEffect:credentialHttpList.size=" + credentialHttpList.value.size + ", credentialSshList.size=" + credentialSshList.value.size)
+//            MyLog.d(TAG, "#LaunchedEffect:credentialHttpList.size=" + credentialHttpList.value.size + ", credentialSshList.size=" + credentialSshList.value.size)
 
         }
     }

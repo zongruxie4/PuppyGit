@@ -2445,82 +2445,110 @@ class Libgit2Helper {
             val shallowFile = File(repoGitDirPath, "shallow")
 
             for(remoteAndCredentials in remoteList) {
+                try {
 //                if(dev_ProModeOn || (isShallowAndSingleBranchPassed && UserInfo.isPro())) {
 //                    //目前20240509，libgit2有bug，如果fetch，有可能会删除本地shallow仓库的shallow文件
 //                    //恢复shallow文件(这里不用恢复啊！如果repoIsShallow为true，则必然有shallow文件，即使如果fetch多个remote，且fetch当前就会因bug删除shallow文件，那我在末尾也又重新创建了shallow文件，
-                //所以到下次循环，shallow文件还是必然存在，所以，其实只要在末尾恢复shallow文件就够了
+                    //所以到下次循环，shallow文件还是必然存在，所以，其实只要在末尾恢复shallow文件就够了
 //                    if(repoIsShallow && !shallowFile.exists()) {
 //                        ShallowManage.restoreShallowByBak1(repoGitDirPath)
 //                    }
 //
 //                }
 
-                val fetchOpts = FetchOptions.createDefault()
-                //设置depth值，实现将一个shallowed仓库改成unshallow的时候，和这部分代码有关
-                //TODO searchKey(多remote相关待测试) :目前的机制是多remote的情况下只有第一次unshallow成功会删除 shallow和shallow.1.bak文件，后续不会再删除。但是，对每个remote执行fetch都会用DepthT.UNSHALLOW，【我不太确定unshallow的时候如果shallow文件不存在，是否会报错，等以后实现了多remote，测试一下】
-                if(requireUnshallow) {//请求unshallow
-                    fetchOpts.depth = FetchOptions.DepthT.UNSHALLOW
-                }else {
-                    fetchOpts.depth = FetchOptions.DepthT.FULL  //默认值
+                    val fetchOpts = FetchOptions.createDefault()
+                    //设置depth值，实现将一个shallowed仓库改成unshallow的时候，和这部分代码有关
+                    //TODO searchKey(多remote相关待测试) :目前的机制是多remote的情况下只有第一次unshallow成功会删除 shallow和shallow.1.bak文件，后续不会再删除。但是，对每个remote执行fetch都会用DepthT.UNSHALLOW，【我不太确定unshallow的时候如果shallow文件不存在，是否会报错，等以后实现了多remote，测试一下】
+                    if(requireUnshallow) {//请求unshallow
+                        fetchOpts.depth = FetchOptions.DepthT.UNSHALLOW
+                    }else {
+                        fetchOpts.depth = FetchOptions.DepthT.FULL  //默认值
 
-                      //不需要判断是否is shallow，克隆成功后再fetch直接用默认值full即可，如果再设shallow，又会找不到object id，而且unshallow都救不回来！但如果不设，报找不到object id，unshallow还能抢救一下
+                        //不需要判断是否is shallow，克隆成功后再fetch直接用默认值full即可，如果再设shallow，又会找不到object id，而且unshallow都救不回来！但如果不设，报找不到object id，unshallow还能抢救一下
 //                    if(dbIntToBool(repoFromDb.isShallow)) {  //仓库状态是shallow，取出depth
 //                        fetchOpts.depth = repoFromDb.depth
 //                    }else {  //仓库状态不是shallow，用默认值
 //                        fetchOpts.depth = FetchOptions.DepthT.FULL  //默认值
 //                    }
-                }
+                    }
 
-                fetchOpts.downloadTags = downloadTags
-                fetchOpts.prune = pruneType  //prune会删除本地存在但远程已经不存在的分支以及tag，fetch tag时最好关了这个，不然会把本地有远程没有的tag删掉
+                    fetchOpts.downloadTags = downloadTags
+                    fetchOpts.prune = pruneType  //prune会删除本地存在但远程已经不存在的分支以及tag，fetch tag时最好关了这个，不然会把本地有远程没有的tag删掉
 
 //                val (remoteName, credential) = pair
-                val remoteName = remoteAndCredentials.remoteName
-                val credential = remoteAndCredentials.fetchCredential
-                //TEST
+                    val remoteName = remoteAndCredentials.remoteName
+                    val credential = remoteAndCredentials.fetchCredential
+                    //TEST
 //                LibgitTwo.jniSetCredentialCbTest(fetchOpts.callbacks.rawPointer)
-                //TEST
-                if(credential!=null) {  //如果不是null，设置下验证凭据的回调
-                    setCredentialCbForRemoteCallbacks(fetchOpts.callbacks, getCredentialTypeByUrl(getRemoteFetchUrlByName(repo, remoteName)), credential.value, credential.pass)
-                }
-                val remote = Remote.lookup(repo, remoteName)
-                //这里不要用?，有错直接报错
-                remote!!.fetch(refspecs, fetchOpts, "fetch: $remoteName")
+                    //TEST
+                    val remote = Remote.lookup(repo, remoteName)!!
 
-                //判断是否需要恢复shallow文件
-//                if(dev_ProModeOn || (isShallowAndSingleBranchPassed && UserInfo.isPro())) {
-                //恢复shallow文件
-                //如果请求unshallow 且 shallow文件不再存在，则说明unshallow成功，这时删除备份的shallow文件
-                //只有shallow file不存在才有可能需要恢复，若shallow file存在，则百分百不需要恢复
-                if(repoIsShallow && !shallowFile.exists()) {
-                    if (requireUnshallow) {  //执行到这，说明仓库原本是shallow且请求unshallow，且fetch完后shallow文件不存在了，说明unshallow成功，所以可以删除bak1了
-                        ShallowManage.deleteBak1(repoGitDirPath)  //unshallow会删除shallow文件，我这再删除下 shallow.1.bak， 之后，就不会再恢复shallow文件了
-                        repoIsShallow=false  //更新shallow值，避免fetch多个remote时发生不必要的重入
-                        MyLog.d(TAG, "deleted '${ShallowManage.bak1}' for repo '${repoFromDb.repoName}'")
-                    //如果仓库最初是shallow，且没请求unshallow或请求了unshallow但操作失败，则恢复shallow文件
-                    } else { //  实际条件为：仓库原本是shallow，且现在shallow文件没了，且没请求unshallow，说明fetch错误删除了shallow文件，恢复下
-                        ShallowManage.restoreShallowFile(repoGitDirPath)
-                        //注：这里不需要把repoIsShallow设为true，因为如果是false，根本不可能执行这个代码块
+                    val remoteFetchUrl = getRemoteFetchUrl(remote)
+                    val callbacks = fetchOpts.callbacks
+                    if(credential!=null) {  //如果不是null，设置下验证凭据的回调
+                        setCredentialCbForRemoteCallbacks(callbacks, getCredentialTypeByUrl(remoteFetchUrl), credential.value, credential.pass)
                     }
-                }
+
+                    if(getGitUrlType(remoteFetchUrl) == Cons.gitUrlTypeSsh && SettingsUtil.getSettingsSnapshot().sshSetting.allowUnknownHosts) {
+                        setAllowUnknownHostsForCertificatesCheck(callbacks)
+                    }
+
+                    remote.fetch(refspecs, fetchOpts, "fetch: $remoteName")
+
+                    //判断是否需要恢复shallow文件
+//                if(dev_ProModeOn || (isShallowAndSingleBranchPassed && UserInfo.isPro())) {
+                    //恢复shallow文件
+                    //如果请求unshallow 且 shallow文件不再存在，则说明unshallow成功，这时删除备份的shallow文件
+                    //只有shallow file不存在才有可能需要恢复，若shallow file存在，则百分百不需要恢复
+                    if(repoIsShallow && !shallowFile.exists()) {
+                        if (requireUnshallow) {  //执行到这，说明仓库原本是shallow且请求unshallow，且fetch完后shallow文件不存在了，说明unshallow成功，所以可以删除bak1了
+                            ShallowManage.deleteBak1(repoGitDirPath)  //unshallow会删除shallow文件，我这再删除下 shallow.1.bak， 之后，就不会再恢复shallow文件了
+                            repoIsShallow=false  //更新shallow值，避免fetch多个remote时发生不必要的重入
+                            MyLog.d(TAG, "deleted '${ShallowManage.bak1}' for repo '${repoFromDb.repoName}'")
+                            //如果仓库最初是shallow，且没请求unshallow或请求了unshallow但操作失败，则恢复shallow文件
+                        } else { //  实际条件为：仓库原本是shallow，且现在shallow文件没了，且没请求unshallow，说明fetch错误删除了shallow文件，恢复下
+                            ShallowManage.restoreShallowFile(repoGitDirPath)
+                            //注：这里不需要把repoIsShallow设为true，因为如果是false，根本不可能执行这个代码块
+                        }
+                    }
 //                }
+                }catch (e:Exception) {
+                    MyLog.e(TAG, "fetchRemoteListForRepo err: remoteName=${remoteAndCredentials.remoteName}, err=${e.stackTraceToString()}")
+                }
             }
         }
 
         fun getRemoteFetchUrlByName(repo:Repository, remoteName: String):String {
+            try {
+                return getRemoteFetchUrl(Remote.lookup(repo, remoteName)!!)
+            }catch (e:Exception) {
+                return ""
+            }
+        }
+
+        fun getRemoteActuallyUsedPushUrlByName(repo:Repository, remoteName: String):String {
+            try {
+                return getRemoteActuallyUsedPushUrl(Remote.lookup(repo, remoteName)!!)
+            }catch (e:Exception) {
+                return ""
+            }
+        }
+
+        fun getRemoteFetchUrl(remote:Remote):String {
             return try {
-                Remote.lookup(repo, remoteName)!!.url().toString()
+                remote.url()?.toString()?:""
             }catch (e:Exception) {
                 ""
             }
         }
 
-        fun getRemotePushUrlByName(repo:Repository, remoteName: String):String {
+        fun getRemoteActuallyUsedPushUrl(remote:Remote):String {
             try {
-                val pushUrl = Remote.lookup(repo, remoteName)?.pushurl()?.toString()
+                val pushUrl = remote.pushurl()?.toString()
                 if(pushUrl.isNullOrEmpty()) {
-                    return getRemoteFetchUrlByName(repo, remoteName)
+                    return getRemoteFetchUrl(remote)
                 }
+
                 return pushUrl
             }catch (e:Exception) {
                 return ""
@@ -3069,17 +3097,24 @@ class Libgit2Helper {
             val pushRefSpec = if(force && !pushRefSpec.startsWith("+")) "+$pushRefSpec" else pushRefSpec
 
             val pushOptions = PushOptions.createDefault()
+            val callbacks = pushOptions.callbacks!!
 
-            //如果凭据不为空，设置一下
-            if(credential!=null) {
-                setCredentialCbForRemoteCallbacks(pushOptions.callbacks!!, getCredentialTypeByUrl(getRemotePushUrlByName(repo, remoteName)), credential.value, credential.pass)
-            }
 
             //找remote
             val remote = resolveRemote(repo, remoteName)
             if(remote==null) {
                 return Ret.createError(null, "resolve remote failed!", Ret.ErrCode.resolveRemoteFailed)
             }
+            val pushUrl = getRemoteActuallyUsedPushUrl(remote)
+            //如果凭据不为空，设置一下
+            if(credential!=null) {
+                setCredentialCbForRemoteCallbacks(callbacks, getCredentialTypeByUrl(pushUrl), credential.value, credential.pass)
+            }
+
+            if(isSshUrl(pushUrl) && SettingsUtil.getSettingsSnapshot().sshSetting.allowUnknownHosts) {
+                setAllowUnknownHostsForCertificatesCheck(callbacks)
+            }
+
             //要push的refspec (要push哪些分支)
             // push RefSpec 形如：refs/heads/main:refs/heads/main
             val refspecList = mutableListOf(pushRefSpec)
@@ -3103,40 +3138,57 @@ class Libgit2Helper {
             val funName = "pushMulti"
 
             for (rc in remotes) {
-                val credential = rc.pushCredential
-                val pushOptions = PushOptions.createDefault()
+                try {
 
-                //如果凭据不为空，设置一下
-                if(credential!=null) {
-                    setCredentialCbForRemoteCallbacks(pushOptions.callbacks!!, getCredentialTypeByUrl(getRemotePushUrlByName(repo, rc.remoteName)), credential.value, credential.pass)
-                }
+                    val credential = rc.pushCredential
+                    val pushOptions = PushOptions.createDefault()
 
-                //找remote
-                val remote = resolveRemote(repo, rc.remoteName)
-                if(remote==null) {
-                    val errMsg = "resolve remote failed! remoteName=${rc.remoteName}"
+                    //找remote
+                    val remote = resolveRemote(repo, rc.remoteName)
+                    if(remote==null) {
+                        val errMsg = "resolve remote failed! remoteName=${rc.remoteName}"
 
-                    if(returnIfAnyRemotePushFailed) {
-                        return Ret.createError(null, errMsg, Ret.ErrCode.resolveRemoteFailed)
-                    }else {
-                        MyLog.e(TAG, "#$funName: $errMsg")
-                        continue
+                        if(returnIfAnyRemotePushFailed) {
+                            return Ret.createError(null, errMsg, Ret.ErrCode.resolveRemoteFailed)
+                        }else {
+                            MyLog.e(TAG, "#$funName: $errMsg")
+                            continue
+                        }
                     }
-                }
-                //要push的refspec (要push哪些分支)
-                // push RefSpec 形如：refs/heads/main:refs/heads/main
+
+
+                    val pushUrl = getRemoteActuallyUsedPushUrl(remote)
+                    val callbacks = pushOptions.callbacks!!
+                    //如果凭据不为空，设置一下
+                    if(credential!=null) {
+                        setCredentialCbForRemoteCallbacks(callbacks, getCredentialTypeByUrl(pushUrl), credential.value, credential.pass)
+                    }
+
+                    //要push的refspec (要push哪些分支)
+                    // push RefSpec 形如：refs/heads/main:refs/heads/main
 //                val refspecList = mutableListOf(pushRefSpec)
 //            val refspecList = mutableListOf("refs/heads/bb6:refs/heads/bb6up")
 //            val refspecList = mutableListOf<String>()  //传空列表，将使用配置文件中的设置，但实际上有点问题，测试了下没把我想推送的分支推上去，所以还是不要传空列表了
 
-                MyLog.d(TAG, "#$funName: will push: remoteName=${rc.remoteName}, refspecs=$refspecs")
+                    MyLog.d(TAG, "#$funName: will push: remoteName=${rc.remoteName}, refspecs=$refspecs")
 
-                //推送
-                remote.push(refspecs, pushOptions)
+                    if(isSshUrl(pushUrl) && SettingsUtil.getSettingsSnapshot().sshSetting.allowUnknownHosts) {
+                        setAllowUnknownHostsForCertificatesCheck(callbacks)
+                    }
 
+                    //推送
+                    remote.push(refspecs, pushOptions)
+
+                }catch (e:Exception) {
+                    MyLog.e(TAG, "$funName err: remoteName=${rc.remoteName}, err=${e.stackTraceToString()}")
+                }
             }
 
             return Ret.createSuccess(null, "push success")
+        }
+
+        fun isSshUrl(url:String):Boolean {
+            return getGitUrlType(url) == Cons.gitUrlTypeSsh
         }
 
         //remote,例如：origin；branchFullRefSpec，例如：refs/heads/master
@@ -5320,10 +5372,10 @@ class Libgit2Helper {
         }
 
         fun getCredentialTypeByUrl(url:String):Int {
-            if(url.startsWith("https://") || url.startsWith("http://")) {
-                return Cons.dbCredentialTypeHttp
-            }else {
+            if(isSshUrl(url)) {
                 return Cons.dbCredentialTypeSsh
+            }else {
+                return Cons.dbCredentialTypeHttp
             }
         }
 
@@ -5369,26 +5421,33 @@ class Libgit2Helper {
                 }
 
                 val updateOpts = Submodule.UpdateOptions.createDefault()
+                val callbacks = updateOpts.fetchOpts.callbacks
+                val smUrl = sm.url()?.toString() ?: ""
 
                 //set credential
                 try {
                     // at here, null means NONE credential will be used
                     if(specifiedCredential!=null) {
-                        val smUrl = sm.url()?.toString() ?: ""
                         // only 2 cases possible in this block, credential is match by domain or a specified credential
                         if(SpecialCredential.MatchByDomain.credentialId == specifiedCredential.id) {  // match by domain, need query
                             val credentialByDomain = credentialDb.getByIdWithDecryptAndMatchByDomain(specifiedCredential.id, smUrl)
                             if(credentialByDomain!=null) {
-                                updateOpts.fetchOpts.callbacks.setCredAcquireCb(getCredentialCb(getCredentialTypeByUrl(smUrl), credentialByDomain.name, credentialByDomain.pass))
+                                callbacks.setCredAcquireCb(getCredentialCb(getCredentialTypeByUrl(smUrl), credentialByDomain.name, credentialByDomain.pass))
                             }
                         }else {  // specified credential, no query need
-                            updateOpts.fetchOpts.callbacks.setCredAcquireCb(getCredentialCb(getCredentialTypeByUrl(smUrl), specifiedCredential.name, specifiedCredential.pass))
+                            callbacks.setCredAcquireCb(getCredentialCb(getCredentialTypeByUrl(smUrl), specifiedCredential.name, specifiedCredential.pass))
                         }
                     }
 
                 }catch (e:Exception) {
                     MyLog.e(TAG, "#cloneSubmodules: set credential for submodule '$name' err: ${e.localizedMessage}")
                 }
+
+                if(isSshUrl(smUrl) && SettingsUtil.getSettingsSnapshot().sshSetting.allowUnknownHosts) {
+                    setAllowUnknownHostsForCertificatesCheck(callbacks)
+                }
+
+
 
 
                 // may delete .git file if sm.clone() failed, so try restore it
@@ -5503,26 +5562,30 @@ class Libgit2Helper {
                     SubmoduleDotGitFileMan.restoreDotGitFileForSubmodule(repoFullPathNoSlashSuffix, submodulePath)
 
                     val updateOpts = Submodule.UpdateOptions.createDefault()
+                    val callbacks = updateOpts.fetchOpts.callbacks
+                    val smUrl = sm.url()?.toString() ?: ""
 
                     //set credential
                     try {
                         // at here, null means NONE credential will be used
                         if(specifiedCredential!=null) {
-                            val smUrl = sm.url()?.toString() ?: ""
                             // only 2 cases possible in this block, credential is match by domain or a specified credential
                             if(SpecialCredential.MatchByDomain.credentialId == specifiedCredential.id) {  // match by domain, need query
                                 val credentialByDomain = credentialDb.getByIdWithDecryptAndMatchByDomain(specifiedCredential.id, smUrl)
                                 if(credentialByDomain!=null) {
-                                    updateOpts.fetchOpts.callbacks.setCredAcquireCb(getCredentialCb(getCredentialTypeByUrl(smUrl), credentialByDomain.name, credentialByDomain.pass))
+                                    callbacks.setCredAcquireCb(getCredentialCb(getCredentialTypeByUrl(smUrl), credentialByDomain.name, credentialByDomain.pass))
                                 }
                             }else {  // specified domain, no query need
-                                updateOpts.fetchOpts.callbacks.setCredAcquireCb(getCredentialCb(getCredentialTypeByUrl(smUrl), specifiedCredential.name, specifiedCredential.pass))
+                                callbacks.setCredAcquireCb(getCredentialCb(getCredentialTypeByUrl(smUrl), specifiedCredential.name, specifiedCredential.pass))
                             }
                         }
                     }catch (e:Exception) {
                         MyLog.e(TAG, "#updateSubmodule: set credential for submodule '$submoduleName' err: ${e.localizedMessage}")
                     }
 
+                    if(isSshUrl(smUrl) && SettingsUtil.getSettingsSnapshot().sshSetting.allowUnknownHosts) {
+                        setAllowUnknownHostsForCertificatesCheck(callbacks)
+                    }
 
                     MyLog.d(TAG,"#updateSubmodule: will update submodule '$submoduleName'")
 

@@ -81,8 +81,8 @@ interface CredentialRepository {
     //20241003 disabled, because only support https, get by type is nonsense for now
 //    suspend fun getListByType(type:Int): List<CredentialEntity>
 
-    suspend fun getSshList(): List<CredentialEntity>
-    suspend fun getHttpList(includeNone:Boolean = false, includeMatchByDomain:Boolean = false): List<CredentialEntity>
+//    suspend fun getSshList(): List<CredentialEntity>
+//    suspend fun getHttpList(includeNone:Boolean = false, includeMatchByDomain:Boolean = false): List<CredentialEntity>
 
     suspend fun deleteAndUnlink(item:CredentialEntity)
 

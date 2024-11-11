@@ -172,7 +172,12 @@ object SettingsUtil {
     }
 
     //为settings实例创建快照，实际就是返回一份对象的拷贝，如果指定对象，则返回指定对象的拷贝，如果不指定则返回SettingsUtil类持有的settings对象的拷贝（不一定和硬盘上的一致，但一般都是最新）
-    fun getSettingsSnapshot(src:AppSettings = appSettings):AppSettings {
+//    fun getSettingsSnapshot(src:AppSettings = appSettings):AppSettings {
+    fun getSettingsSnapshot():AppSettings {
+        return appSettings.copy()
+    }
+
+    fun getSettingsSnapshotFromSrc(src:AppSettings):AppSettings {
         return src.copy()
     }
 
@@ -204,7 +209,7 @@ object SettingsUtil {
 
         //返回的时候要创建拷贝，避免和update用同一个变量，不然外部一修改返回值里的数据，即将写入的状态也会被影响，就乱套了
         //这里获取刚被修改过的实例的拷贝，相对更新一些，但可能和硬盘上的数据不一致，但正常来说，最终修改写入硬盘后，内容会一致
-        return if(requireReturnSnapshotOfUpdatedSettings) getSettingsSnapshot(settingsForUpdate) else null  //返回最新的设置项，如果需要的话(否则的话，你的设置项可能已经过期，某些设置不是最新，但是，如果你需要用到的变量很少，并且就算不是最新也问题不大，就没必要获取最新设置项的拷贝了)
+        return if(requireReturnSnapshotOfUpdatedSettings) getSettingsSnapshotFromSrc(settingsForUpdate) else null  //返回最新的设置项，如果需要的话(否则的话，你的设置项可能已经过期，某些设置不是最新，但是，如果你需要用到的变量很少，并且就算不是最新也问题不大，就没必要获取最新设置项的拷贝了)
     }
 
     fun updateSettingsIfNotEqualsWithOld(newSettings: AppSettings) {  //供外部调用的更新配置文件的方法

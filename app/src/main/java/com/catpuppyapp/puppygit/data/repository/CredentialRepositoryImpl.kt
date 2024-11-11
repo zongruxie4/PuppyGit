@@ -6,6 +6,7 @@ import com.catpuppyapp.puppygit.constants.SpecialCredential
 import com.catpuppyapp.puppygit.data.dao.CredentialDao
 import com.catpuppyapp.puppygit.data.entity.CredentialEntity
 import com.catpuppyapp.puppygit.utils.AppModel
+import com.catpuppyapp.puppygit.utils.Libgit2Helper
 import com.catpuppyapp.puppygit.utils.MyLog
 import com.catpuppyapp.puppygit.utils.encrypt.PassEncryptHelper
 import com.catpuppyapp.puppygit.utils.getDomainByUrl
@@ -133,7 +134,7 @@ class CredentialRepositoryImpl(private val dao: CredentialDao) : CredentialRepos
             val domain = getDomainByUrl(url)
             if(domain.isNotBlank()) {
                 val domainCred = dcDb.getByDomain(domain) ?: return null
-                val credId = domainCred.credentialId
+                val credId = if(Libgit2Helper.isSshUrl(url)) domainCred.sshCredentialId else domainCred.credentialId
                 return getByIdWithDecrypt(credId)
             }else {
                 return null
@@ -154,18 +155,18 @@ class CredentialRepositoryImpl(private val dao: CredentialDao) : CredentialRepos
 //    override suspend fun getListByType(type: Int): List<CredentialEntity> {
 //        return dao.getListByType(type)
 //    }
-
-    override suspend fun getSshList(): List<CredentialEntity> {
-        return dao.getListByType(Cons.dbCredentialTypeSsh)
-    }
-
-    override suspend fun getHttpList(includeNone:Boolean, includeMatchByDomain:Boolean): List<CredentialEntity> {
-        val list = dao.getListByType(Cons.dbCredentialTypeHttp).toMutableList()
-
-        prependSpecialItemIfNeed(list = list, includeNone = includeNone, includeMatchByDomain = includeMatchByDomain)
-
-        return list
-    }
+//
+//    override suspend fun getSshList(): List<CredentialEntity> {
+//        return dao.getListByType(Cons.dbCredentialTypeSsh)
+//    }
+//
+//    override suspend fun getHttpList(includeNone:Boolean, includeMatchByDomain:Boolean): List<CredentialEntity> {
+//        val list = dao.getListByType(Cons.dbCredentialTypeHttp).toMutableList()
+//
+//        prependSpecialItemIfNeed(list = list, includeNone = includeNone, includeMatchByDomain = includeMatchByDomain)
+//
+//        return list
+//    }
 
     override suspend fun deleteAndUnlink(item:CredentialEntity) {
         val db = AppModel.singleInstanceHolder.dbContainer.db
