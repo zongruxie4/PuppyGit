@@ -220,7 +220,7 @@ fun SettingsInnerPage(
     //back handler block end
 
     val itemFontSize = 20.sp
-    val itemDescFontSize = 12.sp
+    val itemDescFontSize = 15.sp
     val switcherIconSize = 60.dp
     val selectorWidth = 120.dp
 
