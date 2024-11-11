@@ -124,6 +124,7 @@ The Git Logo in PuppyGit logo is created by Jason Long, is licensed under the Cr
 
 ### Libs
 The `libgit2.so` built from <a href=https://github.com/libgit2/libgit2/releases/tag/v1.7.2>libgit2 1.7.2</a>(<a href=https://raw.githubusercontent.com/libgit2/libgit2/main/COPYING>LICENSE</a>)<br>
+The `libssh2.so` built from <a href=https://github.com/libssh2/libssh2/releases/tag/libssh2-1.11.0>libssh2 1.11.0</a>(<a href=https://github.com/libssh2/libssh2/blob/master/COPYING>LICENSE</a>)<br>
 The `libgit24j.so` and `git24j-1.0.2.20241022.jar`  built from a fork of <a href=https://github.com/git24j/git24j>Git24j</a>, the fork link is <a href=https://github.com/Frank997/git24j/tree/1.0.3.20241022-ready-pr>Here</a>(<a href=https://raw.githubusercontent.com/git24j/git24j/master/LICENSE>LICENSE</a>)<br>
 The `libcrypto.so` and `libssl.so` built from <a href=https://github.com/openssl/openssl/releases/tag/openssl-3.3.0>openssl 3.3.0</a>(<a href=https://raw.githubusercontent.com/openssl/openssl/master/LICENSE.txt>LICENSE</a>)<br>
 The Editor of PuppyGit is modified from kaleidot725's <a href=https://github.com/kaleidot725/text-editor-compose>text-editor-compose</a>(<a href=https://raw.githubusercontent.com/kaleidot725/text-editor-compose/main/LICENSE>LICENSE</a>)
