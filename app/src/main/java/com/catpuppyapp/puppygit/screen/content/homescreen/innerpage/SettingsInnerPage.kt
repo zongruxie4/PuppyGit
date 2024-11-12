@@ -44,7 +44,7 @@ import com.catpuppyapp.puppygit.ui.theme.Theme
 import com.catpuppyapp.puppygit.utils.AppModel
 import com.catpuppyapp.puppygit.utils.ComposeHelper
 import com.catpuppyapp.puppygit.utils.LanguageUtil
-import com.catpuppyapp.puppygit.utils.Lg2Utils
+import com.catpuppyapp.puppygit.utils.Lg2HomeUtils
 import com.catpuppyapp.puppygit.utils.Msg
 import com.catpuppyapp.puppygit.utils.MyLog
 import com.catpuppyapp.puppygit.utils.PrefMan
@@ -109,15 +109,14 @@ fun SettingsInnerPage(
                     Text(stringResource(R.string.after_forgetting_the_host_keys_may_ask_confirm_again))
                 }
             },
-            okBtnText = stringResource(R.string.reset),
+            okBtnText = stringResource(R.string.forget),
             okTextColor = MyStyleKt.TextColor.danger(),
             onCancel = {showForgetHostKeysDialog.value = false}
         ) {
             showForgetHostKeysDialog.value = false
             doJobThenOffLoading {
                 try {
-//                    执行操作，清空记住的主机指纹
-                    TODO()
+                    Lg2HomeUtils.resetUserKnownHostFile()
                     Msg.requireShow(appContext.getString(R.string.success))
                 }catch (e:Exception) {
                     Msg.requireShowLongDuration(e.localizedMessage ?:"err")
@@ -127,31 +126,31 @@ fun SettingsInnerPage(
         }
     }
 
-    if(showResetKnownHostsDialog.value) {
-        ConfirmDialog2(
-            title = stringResource(R.string.confirm),
-            requireShowTextCompose = true,
-            textCompose = {
-                ScrollableColumn {
-                    Text(stringResource(R.string.will_reset_the_unknown_hosts_file))
-                }
-            },
-            okBtnText = stringResource(R.string.reset),
-            okTextColor = MyStyleKt.TextColor.danger(),
-            onCancel = {showResetKnownHostsDialog.value = false}
-        ) {
-            showResetKnownHostsDialog.value = false
-            doJobThenOffLoading {
-                try {
-                    Lg2Utils.resetKnownHostFile(appContext)
-                    Msg.requireShow(appContext.getString(R.string.success))
-                }catch (e:Exception) {
-                    Msg.requireShowLongDuration(e.localizedMessage ?:"err")
-                    MyLog.e(TAG, "ResetKnownHostsDialog err: ${e.stackTraceToString()}")
-                }
-            }
-        }
-    }
+//    if(showResetKnownHostsDialog.value) {
+//        ConfirmDialog2(
+//            title = stringResource(R.string.confirm),
+//            requireShowTextCompose = true,
+//            textCompose = {
+//                ScrollableColumn {
+//                    Text(stringResource(R.string.will_reset_the_unknown_hosts_file))
+//                }
+//            },
+//            okBtnText = stringResource(R.string.reset),
+//            okTextColor = MyStyleKt.TextColor.danger(),
+//            onCancel = {showResetKnownHostsDialog.value = false}
+//        ) {
+//            showResetKnownHostsDialog.value = false
+//            doJobThenOffLoading {
+//                try {
+//                    Lg2HomeUtils.resetKnownHostFile(appContext)
+//                    Msg.requireShow(appContext.getString(R.string.success))
+//                }catch (e:Exception) {
+//                    Msg.requireShowLongDuration(e.localizedMessage ?:"err")
+//                    MyLog.e(TAG, "ResetKnownHostsDialog err: ${e.stackTraceToString()}")
+//                }
+//            }
+//        }
+//    }
 
     if(showCleanDialog.value) {
         ConfirmDialog2(

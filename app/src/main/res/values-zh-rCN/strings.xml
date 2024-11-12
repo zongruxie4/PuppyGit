@@ -1048,6 +1048,14 @@
     <string name="forget_hostkeys">忘记主机密钥</string>
     <string name="if_enable_will_allow_unknown_hosts_as_default_else_will_ask">如果启用，默认将允许未知主机，否则将会询问</string>
     <string name="after_forgetting_the_host_keys_may_ask_confirm_again">忘记主机密钥后，当你再次使用ssh连接主机，可能会需要重新确认</string>
+    <string name="unknown_host">未知主机</string>
+    <string name="allow">允许</string>
+    <string name="reject">拒绝</string>
+    <string name="trying_connect_unknown_host_only_allow_if_trust">尝试连接到未知主机，请检查指纹，仅在你信任此主机时才允许。</string>
+    <string name="i_trust_the_host">我信任这个主机</string>
+    <string name="aborted_unknown_host">已中止: 未知主机</string>
+    <string name="operation_aborted_after_allowing_maybe_retry">你的操作已经中止，接受主机之后，你可能需要重新执行操作</string>
+    <string name="forget">忘记</string>
 
 
 </resources>

@@ -714,3 +714,12 @@ fun getDomainByUrl(url:String):String {
 fun getFormattedLastModifiedTimeOfFile(file:File):String{
     return getFormatTimeFromSec(sec=file.lastModified()/1000, offset = getSystemDefaultTimeZoneOffset())
 }
+
+
+fun<T> getFirstOrNullThenRemove(list:MutableList<T>):T? {
+    try {
+        return list.removeAt(0)
+    }catch (e:Exception) {
+        return null
+    }
+}

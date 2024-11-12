@@ -121,7 +121,7 @@ class AppModel {
             appModel.appDataUnderAllReposDir = createDirIfNonexists(appModel.allRepoParentDir, Cons.defalutPuppyGitDataUnderAllReposDirName)
             //与sd相关代码互斥，结束
 
-            Lg2Utils.init(appModel.appDataUnderAllReposDir, applicationContext)
+            Lg2HomeUtils.init(appModel.appDataUnderAllReposDir, applicationContext)
 
             //存放app内置证书的路径
             appModel.certBundleDir = createDirIfNonexists(appModel.appDataUnderAllReposDir, CertMan.defaultCertBundleDirName)

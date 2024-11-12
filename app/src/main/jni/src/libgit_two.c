@@ -323,12 +323,12 @@ void bytesToHexString(const unsigned char *bytes, size_t length, char *hexString
 /**
  * see: https://libgit2.org/libgit2/#v1.7.2/type/git_cert_hostkey
  */
-jobject createSshCert(git_cert_hostkey *certHostKey, jboolean libgit2ThinkIsValid, jstring domain, JNIEnv *env) {
+jobject createSshCert(git_cert_hostkey *certHostKey, jstring hostname, JNIEnv *env) {
     // 获取 SshCert 类
     jclass sshCertClass = (*env)->FindClass(env, J_CLZ_PREFIX "SshCert");
 
     // 获取构造函数
-    jmethodID constructor = (*env)->GetMethodID(env, sshCertClass, "<init>", "(ZLjava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;)V");
+    jmethodID constructor = (*env)->GetMethodID(env, sshCertClass, "<init>", "(Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;)V");
 
     // 每个字节需要2个字符 + 1 个 null 终止符('\0')
     char *md5Str[16*2+1];
@@ -363,8 +363,7 @@ jobject createSshCert(git_cert_hostkey *certHostKey, jboolean libgit2ThinkIsVali
             sshCertClass,
             constructor,
 
-            libgit2ThinkIsValid,
-            domain,
+            hostname,
             (*env)->NewStringUTF(env, (const char *) md5Str),
             (*env)->NewStringUTF(env, (const char *) sha1Str),
             (*env)->NewStringUTF(env, (const char *) sha256Str),
@@ -377,13 +376,13 @@ jobject createSshCert(git_cert_hostkey *certHostKey, jboolean libgit2ThinkIsVali
 
 
 
-JNIEXPORT jobject JNICALL J_MAKE_METHOD(LibgitTwo_jniGetDataOfSshCert)(JNIEnv *env, jclass callerJavaClass, jlong cretprt, jboolean libgit2ThinkIsValid, jstring domain)
+JNIEXPORT jobject JNICALL J_MAKE_METHOD(LibgitTwo_jniGetDataOfSshCert)(JNIEnv *env, jclass callerJavaClass, jlong cretprt, jstring hostname)
 {
     git_cert_t type = ((git_cert*)cretprt)->cert_type;
     if(type == GIT_CERT_HOSTKEY_LIBSSH2) {
-        return createSshCert((git_cert_hostkey *)cretprt, libgit2ThinkIsValid, domain, env);
+        return createSshCert((git_cert_hostkey *)cretprt, hostname, env);
     }else {
-        ALOGW("unknown cert type: %d", type);
+        ALOGW("is not a ssh cert, type=%d", type);
         return NULL;
     }
 

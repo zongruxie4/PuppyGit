@@ -22,7 +22,12 @@ c. The public key data itself encoded to stay within the ASCII range.
 
 `AAAAC3NzaC1lZDI1NTE5AAAAIOMqqnkVzrm0SdG6UOoqKLsabgH5C9okWi0dh2l9GKJl`
 
-combined them, then you got a known_hosts line
+d. An optional comment
+
+`hostkeyOfGithub.com`
+
+combined them, then you got a known_hosts line:
+```github.com ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIOMqqnkVzrm0SdG6UOoqKLsabgH5C9okWi0dh2l9GKJl hostkeyOfGithub.com```
 
 ---
 #### see: https://stackoverflow.com/a/33243564

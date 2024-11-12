@@ -6,28 +6,48 @@ import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.compose.foundation.isSystemInDarkTheme
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.height
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.ExperimentalComposeUiApi
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.compositionContext
 import androidx.compose.ui.platform.createLifecycleAwareWindowRecomposer
+import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.unit.dp
 import androidx.core.view.WindowCompat
+import com.catpuppyapp.puppygit.compose.ConfirmDialog2
+import com.catpuppyapp.puppygit.compose.CopyScrollableColumn
 import com.catpuppyapp.puppygit.compose.LoadingText
+import com.catpuppyapp.puppygit.compose.MyCheckBox
+import com.catpuppyapp.puppygit.jni.SshAskUserUnknownHostRequest
 import com.catpuppyapp.puppygit.screen.AppScreenNavigator
+import com.catpuppyapp.puppygit.screen.functions.KnownHostRequestStateMan
+import com.catpuppyapp.puppygit.style.MyStyleKt
 import com.catpuppyapp.puppygit.ui.theme.PuppyGitAndroidTheme
 import com.catpuppyapp.puppygit.ui.theme.Theme
 import com.catpuppyapp.puppygit.user.UserUtil
 import com.catpuppyapp.puppygit.utils.AppModel
 import com.catpuppyapp.puppygit.utils.LanguageUtil
+import com.catpuppyapp.puppygit.utils.Lg2HomeUtils
+import com.catpuppyapp.puppygit.utils.Msg
 import com.catpuppyapp.puppygit.utils.MyLog
 import com.catpuppyapp.puppygit.utils.PrefMan
 import com.catpuppyapp.puppygit.utils.doJobThenOffLoading
 import com.catpuppyapp.puppygit.utils.showToast
+import com.catpuppyapp.puppygit.utils.state.mutableCustomStateListOf
+import com.catpuppyapp.puppygit.utils.state.mutableCustomStateOf
 import kotlinx.coroutines.CoroutineExceptionHandler
+import kotlinx.coroutines.delay
 import java.util.Locale
 
 
@@ -212,6 +232,108 @@ fun MainCompose() {
 
     //end: init user and billing state
 
+    val sshAskUserUnknownHostRequestList = mutableCustomStateListOf(stateKeyTag, "sshAskUserUnknownHostRequestList", listOf<SshAskUserUnknownHostRequest>())
+    val currentSshAskUserUnknownHostRequest = mutableCustomStateOf<SshAskUserUnknownHostRequest?>(stateKeyTag, "currentSshAskUserUnknownHostRequest", null)
+
+    val iTrustTheHost = rememberSaveable { mutableStateOf(false) }
+    val showSshDialog = rememberSaveable { mutableStateOf(false) }
+    val closeSshDialog ={
+        showSshDialog.value=false
+    }
+    val allowOrRejectSshDialogCallback={
+        currentSshAskUserUnknownHostRequest.value = null
+        iTrustTheHost.value = false
+    }
+    if(showSshDialog.value) {
+        val item = currentSshAskUserUnknownHostRequest.value
+        val spacerHeight = 10.dp
+        ConfirmDialog2(
+            title = stringResource(R.string.unknown_host),
+            requireShowTextCompose = true,
+            textCompose = {
+                CopyScrollableColumn {
+                    Text(
+                        stringResource(R.string.trying_connect_unknown_host_only_allow_if_trust),
+                        fontWeight = FontWeight.Bold,
+                        color = MyStyleKt.TextColor.danger()
+                    )
+                    Spacer(Modifier.height(spacerHeight+5.dp))
+
+                    Row {
+                        Text("hostname: ")
+                        Text(item?.sshCert?.hostname?:"", fontWeight = FontWeight.Bold)
+                    }
+
+                    Spacer(Modifier.height(spacerHeight))
+
+                    val formattedMd5 = item?.sshCert?.formattedMd5()
+                    if(formattedMd5?.isNotBlank() == true) {
+                        Row {
+                            Text("md5: ")
+                            Text(formattedMd5, fontWeight = FontWeight.Bold)
+                        }
+                        Spacer(Modifier.height(spacerHeight))
+                    }
+
+                    val formattedSha1 = item?.sshCert?.formattedSha1()
+                    if(formattedSha1?.isNotBlank() == true) {
+                        Row {
+                            Text("sha1: ")
+                            Text(formattedSha1, fontWeight = FontWeight.Bold)
+                        }
+                        Spacer(Modifier.height(spacerHeight))
+                    }
+
+                    val formattedSha256 = item?.sshCert?.formattedSha256()
+                    if(formattedSha256?.isNotBlank() == true) {
+                        Row {
+                            Text("sha256: ")
+                            Text(formattedSha256, fontWeight = FontWeight.Bold)
+
+                        }
+                        Spacer(Modifier.height(spacerHeight))
+                    }
+
+                    if(item?.sshCert?.hostKey?.isNotBlank() == true) {
+                        Row {
+                            Text("host key: ")
+                            Text(item.sshCert.hostKey, fontWeight = FontWeight.Bold)
+                        }
+
+                        Spacer(Modifier.height(spacerHeight))
+                    }
+
+                    MyCheckBox(stringResource(R.string.i_trust_the_host), iTrustTheHost)
+                    if(iTrustTheHost.value) {
+                        Text(stringResource(R.string.operation_aborted_after_allowing_maybe_retry), fontWeight = FontWeight.Light)
+                    }
+                    Spacer(Modifier.height(spacerHeight))
+
+                }
+            },
+            okBtnEnabled = iTrustTheHost.value,
+            okTextColor = if(iTrustTheHost.value) MyStyleKt.TextColor.danger() else Color.Unspecified,
+            okBtnText = stringResource(R.string.allow),
+            cancelBtnText = stringResource(R.string.reject),
+            onCancel = {
+                closeSshDialog()
+                allowOrRejectSshDialogCallback()
+            }
+        ) {
+            closeSshDialog()
+
+            doJobThenOffLoading {
+                Lg2HomeUtils.addItemToUserKnownHostsFile(currentSshAskUserUnknownHostRequest.value!!.sshCert)
+
+                Msg.requireShow(appContext.getString(R.string.success))
+
+                allowOrRejectSshDialogCallback()
+            }
+        }
+    }
+
+
+
 
     //初始化完成显示app界面，否则显示loading界面
     if(isInitDone.value) {
@@ -248,6 +370,26 @@ fun MainCompose() {
                 //test
 
                 isInitDone.value = true
+
+            }
+
+            KnownHostRequestStateMan.init(sshAskUserUnknownHostRequestList.value)
+
+            doJobThenOffLoading {
+                while (true) {
+                    if(showSshDialog.value.not() && currentSshAskUserUnknownHostRequest.value==null) {
+                        val item = KnownHostRequestStateMan.getFirstThenRemove()
+                        if(item != null) {
+                            if(Lg2HomeUtils.itemInUserKnownHostsFile(item.sshCert).not()) {
+                                currentSshAskUserUnknownHostRequest.value = item
+                                iTrustTheHost.value = false
+                                showSshDialog.value = true
+                            }
+                        }
+                    }
+
+                    delay(1000)
+                }
             }
 
         } catch (e: Exception) {

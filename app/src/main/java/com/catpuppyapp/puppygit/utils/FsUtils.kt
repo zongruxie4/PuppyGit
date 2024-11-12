@@ -24,6 +24,8 @@ import com.catpuppyapp.puppygit.utils.state.CustomStateSaveable
 import java.io.File
 import java.io.FileInputStream
 import java.io.FileOutputStream
+import java.io.InputStream
+import java.io.OutputStream
 import java.nio.charset.Charset
 import java.util.Locale
 
@@ -994,5 +996,20 @@ object FsUtils {
 
     fun createTempFile(prefix:String, suffix:String=".tmp"):File{
         return File(AppModel.singleInstanceHolder.getOrCreateExternalCacheDir().canonicalPath, "$prefix-${generateRandomString()}$suffix")
+    }
+
+    fun copy(input:InputStream, output:OutputStream) {
+        val inputStream = input.bufferedReader()
+        val outputStream = output.bufferedWriter()
+
+        inputStream.use { i ->
+            outputStream.use { o->
+                var b = i.read()
+                while(b != -1) {
+                    o.write(b)
+                    b = i.read()
+                }
+            }
+        }
     }
 }

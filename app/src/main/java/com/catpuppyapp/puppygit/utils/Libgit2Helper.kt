@@ -32,7 +32,9 @@ import com.catpuppyapp.puppygit.git.SubmoduleDto
 import com.catpuppyapp.puppygit.git.TagDto
 import com.catpuppyapp.puppygit.git.Upstream
 import com.catpuppyapp.puppygit.jni.LibgitTwo
+import com.catpuppyapp.puppygit.jni.SshAskUserUnknownHostRequest
 import com.catpuppyapp.puppygit.play.pro.R
+import com.catpuppyapp.puppygit.screen.functions.KnownHostRequestStateMan
 import com.catpuppyapp.puppygit.settings.AppSettings
 import com.catpuppyapp.puppygit.settings.SettingsUtil
 import com.catpuppyapp.puppygit.style.MyStyleKt
@@ -2548,15 +2550,44 @@ class Libgit2Helper {
                         }
 
                         // if libgit2 think cert is invalid, ask user
-                        val sshCert = LibgitTwo.jniGetDataOfSshCert(cert.rawPointer, valid, hostname)
+                        val sshCert = LibgitTwo.jniGetDataOfSshCert(cert.rawPointer, hostname)
 //                        if(certData.isNotBlank()) {
 //                            check db, if in the allow list, allow, else reject and ask user
 //                            add certData and allow and reject callbacks to the popup dialog list, it will show to user, then do act which user choosen
 //                            the popup dialog should wait 5s then can do allow for avoid mistake touched
 //                        }
 
-                        MyLog.d(TAG, "sshCert: $sshCert")
-                        // reject at here, do action after user made response
+                        // invalid
+                        if(sshCert == null) {
+                            return@cb -1
+                        }
+                        // invalid
+                        if(sshCert.isEmpty()) {
+                            Msg.requireShowLongDuration("err: empty host fingerprint, hostname=$hostname")
+                            MyLog.w(TAG, "empty ssh cert: hostname=$hostname")
+
+                            return@cb -1
+                        }
+
+                        // trusted, user already allowed this host
+                        if(Lg2HomeUtils.itemInUserKnownHostsFile(sshCert)) {
+                            return@cb 0
+                        }
+
+                        // valid cert but not trusted by user, send a request, show a dialog
+                        MyLog.d(TAG, "unknown `SshCert` request review: $sshCert")
+
+                        doJobThenOffLoading {
+                            KnownHostRequestStateMan.addToList(
+                                SshAskUserUnknownHostRequest(
+                                    sshCert
+                                )
+                            )
+                        }
+
+                        Msg.requireShow(AppModel.singleInstanceHolder.appContext.getString(R.string.aborted_unknown_host))
+
+                        // reject at here, wait user response, then user need re-try the action before requested, add allow and reject callbacks to the request too complex, and maybe can't refresh view, so, let use do the action again by self, better
                         return@cb -1
                     }
                 }

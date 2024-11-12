@@ -3,9 +3,11 @@ package com.catpuppyapp.puppygit.utils.cert
 import android.content.Context
 import com.catpuppyapp.puppygit.etc.CertSaver
 import com.catpuppyapp.puppygit.play.pro.R
-import com.catpuppyapp.puppygit.utils.AppModel
+import com.catpuppyapp.puppygit.utils.FsUtils
 import com.catpuppyapp.puppygit.utils.Msg
 import com.catpuppyapp.puppygit.utils.MyLog
+import com.catpuppyapp.puppygit.utils.readIntVersionFromFile
+import com.catpuppyapp.puppygit.utils.writeIntVersionToFile
 import com.github.git24j.core.Libgit2
 import java.io.File
 
@@ -76,15 +78,7 @@ object CertMan {
         //检查版本号，如果
         certBundleVersionFile = File(certBundleDir, certBundleVersionFileName)
         //读取已经存在的版本号
-        val verInFile = try{
-            if(certBundleVersionFile.exists()) {
-                certBundleVersionFile.inputStream().bufferedReader().readLine().toInt()
-            }else {
-                -1
-            }
-        }catch (e:Exception) {
-            -1
-        }
+        val verInFile = readIntVersionFromFile(certBundleVersionFile)
 
         // out put file
         certBundleFile = File(certBundleDir, certBundleFileName)
@@ -107,22 +101,10 @@ object CertMan {
 //        println("要读取证书了")
 
         //从app res读取证书内容到文件
-        val certResInput = appContext.resources.openRawResource(certRawId)
-        val certBundleOutput = certBundleFile.outputStream()
-        certResInput.use { input ->
-            certBundleOutput.use { output->
-                var b = input.read()
-                while(b!=-1) {
-                    output.write(b)
-                    b = input.read()
-                }
-            }
-        }
+        FsUtils.copy(appContext.resources.openRawResource(certRawId), certBundleFile.outputStream())
 
         //更新版本号（注：要确保读取成功后再更新版本号
-        certBundleVersionFile.outputStream().writer().use {
-            it.write(currentVersion.toString())
-        }
+        writeIntVersionToFile(certBundleVersionFile, currentVersion)
 //        println("读取证书成功")
     }
 

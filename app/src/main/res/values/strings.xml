@@ -1067,5 +1067,13 @@
     <string name="forget_hostkeys">Forget Hostkeys</string>
     <string name="if_enable_will_allow_unknown_hosts_as_default_else_will_ask">If enable, will allow unknown hosts as default, else will ask</string>
     <string name="after_forgetting_the_host_keys_may_ask_confirm_again">After forgetting the host keys, when you connect to a host with ssh again, it may ask you to confirm again.</string>
+    <string name="unknown_host">Unknown Host</string>
+    <string name="allow">Allow</string>
+    <string name="reject">Reject</string>
+    <string name="trying_connect_unknown_host_only_allow_if_trust">Trying to connect to an unknown host. Please review the fingerprints and only allow if you trust the host.</string>
+    <string name="i_trust_the_host">I trust the host</string>
+    <string name="aborted_unknown_host">aborted: unknown host</string>
+    <string name="operation_aborted_after_allowing_maybe_retry">Your operation was aborted, after allowing the host, you maybe want to re-try it.</string>
+    <string name="forget">Forget</string>
 
 </resources>

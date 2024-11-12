@@ -59,7 +59,7 @@ object LibgitTwo {
      * @return entry ptr
      */
     external fun jniEntryByName(treePtr: Long, filename: String?): Long?
-    external fun jniGetDataOfSshCert(certPtr: Long, libgit2ThinkIsValid:Boolean, domain:String): SshCert?
+    external fun jniGetDataOfSshCert(certPtr: Long, hostname:String): SshCert?
 
     fun getContent(contentLen: Int, content: String): String {
         // content.length() is "chars count", not "bytes count"!
