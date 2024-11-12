@@ -76,10 +76,11 @@ see:<br>
 
 
 ## About ssh
-PuppyGit don't show the popup dialoug require you allow connect to a unknown host, instead, you can allow unknown hosts by default, or add your known hosts to the `known_hosts` file, you can find the settings from the Settings Screen's ssh part.
-<br>
-about the `known_hosts` format, see: <a href=https://github.com/catpuppyapp/PuppyGit/blob/main/known_hosts_format.md>known_hosts_format.md</a>
+when first time connect to an unkown host, PuppyGit will ask you allow/reject as default, its more safty, also, if you want, you can allow unknown hosts by default, just checkout the Settings page.
 
+
+## About sign commit/tag
+see
 
 ## Build
 import project to Android Studio, then build, that's all. (android NDK is required)
