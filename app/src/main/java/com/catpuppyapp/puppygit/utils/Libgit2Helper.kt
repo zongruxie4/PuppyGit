@@ -2548,14 +2548,14 @@ class Libgit2Helper {
                         }
 
                         // if libgit2 think cert is invalid, ask user
-                        val certData = LibgitTwo.jniGetDataOfSshCert(cert.rawPointer, valid, hostname)
+                        val sshCert = LibgitTwo.jniGetDataOfSshCert(cert.rawPointer, valid, hostname)
 //                        if(certData.isNotBlank()) {
 //                            check db, if in the allow list, allow, else reject and ask user
 //                            add certData and allow and reject callbacks to the popup dialog list, it will show to user, then do act which user choosen
 //                            the popup dialog should wait 5s then can do allow for avoid mistake touched
 //                        }
 
-                        MyLog.d(TAG, "certData: $certData")
+                        MyLog.d(TAG, "sshCert: $sshCert")
                         // reject at here, do action after user made response
                         return@cb -1
                     }

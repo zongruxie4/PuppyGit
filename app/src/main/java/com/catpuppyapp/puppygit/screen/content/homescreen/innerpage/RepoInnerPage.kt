@@ -175,7 +175,9 @@ fun RepoInnerPage(
     val loadingText = rememberSaveable { mutableStateOf(appContext.getString(R.string.loading))}
     val loadingOn = {text:String->
         loadingText.value = text
-        isLoading.value=true
+
+        // disable this feel better, else screen will blank then restore, feel sick
+//        isLoading.value=true
     }
     val loadingOff = {
         isLoading.value=false
@@ -1193,24 +1195,25 @@ fun RepoInnerPage(
         }
     }
 
-    if(isLoading.value) {
-
-//        Column(
-//            modifier = Modifier
-//                .fillMaxSize()
-//                .padding(contentPadding)
-//                .verticalScroll(StateUtil.getRememberScrollState())
-//            ,
-//            verticalArrangement = Arrangement.Center,
-//            horizontalAlignment = Alignment.CenterHorizontally,
+    // this feel sick, screen flash then return, just sick, so disbale
+//    if(isLoading.value) {
 //
-//        ) {
-//            Text(text = loadingText.value)
-//        }
-
-        LoadingDialog(loadingText.value)
-
-    }
+////        Column(
+////            modifier = Modifier
+////                .fillMaxSize()
+////                .padding(contentPadding)
+////                .verticalScroll(StateUtil.getRememberScrollState())
+////            ,
+////            verticalArrangement = Arrangement.Center,
+////            horizontalAlignment = Alignment.CenterHorizontally,
+////
+////        ) {
+////            Text(text = loadingText.value)
+////        }
+//
+//        LoadingDialog(loadingText.value)
+//
+//    }
 
     if (!isLoading.value && repoList.value.isEmpty()) {  //无仓库，显示添加按钮
         Column(
@@ -1443,8 +1446,41 @@ private fun doInit(
         val repoRepository = dbContainer.repoRepository
         //貌似如果用Flow，后续我更新数据库，不需要再次手动更新State数据就会自动刷新，也就是Flow会观测数据，如果改变，重新执行sql获取最新的数据，但最好还是手动更新，避免资源浪费
         val repoListFromDb = repoRepository.getAll();
+
         repoDtoList.value.clear()
         repoDtoList.value.addAll(repoListFromDb)
+
+        // complex code for update item and remove non-exist item, but the effect just no-difference with clear then addAll, so, disable it
+//        if(repoDtoList.value.isEmpty()) {
+//            repoDtoList.value.addAll(repoListFromDb)
+//        }else if(repoListFromDb.isEmpty()){
+//            repoDtoList.value.clear()
+//        }else {
+//            val needRemoveRepoId = mutableListOf<String>()
+//            val repoListInPageCopy = repoDtoList.value.toList()
+//            repoListInPageCopy.forEachIndexed { index, it->
+//                var stillExist = false
+//                for(repoFromDb in repoListFromDb) {
+//                    if(repoFromDb.id == it.id) {
+//                        // update repo info
+//                        repoDtoList.value[index] = repoFromDb
+//                        stillExist = true
+//                        break
+//                    }
+//                }
+//
+//                if(stillExist.not()) {
+//                    needRemoveRepoId.add(it.id)
+//                }
+//            }
+//
+//            needRemoveRepoId.forEach { removeId ->
+//                repoDtoList.value.removeIf { removeId == it.id }
+//            }
+//        }
+
+
+
 
         if(goToThisRepoId.value.isNotBlank()) {
             val target = goToThisRepoId.value
@@ -1455,7 +1491,7 @@ private fun doInit(
 
 //        repoDtoList.requireRefreshView()
 //        repoDtoList.requireRefreshView()
-        for ((idx,item) in repoListFromDb.toList().withIndex()) {
+        for ((idx,item) in repoDtoList.value.toList().withIndex()) {
             //对需要克隆的仓库执行克隆
             if (item.workStatus == Cons.dbRepoWorkStatusNotReadyNeedClone) {
                 //设置临时状态为 正在克隆...
