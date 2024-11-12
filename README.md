@@ -79,8 +79,10 @@ see:<br>
 when first time connect to an unkown host, PuppyGit will ask you allow/reject as default, its more safty, also, if you want, you can allow unknown hosts by default, just checkout the Settings page.
 
 
-## About sign commit/tag
-see
+## About signing commit/tag
+see: https://github.com/catpuppyapp/PuppyGit/issues/4
+
+
 
 ## Build
 import project to Android Studio, then build, that's all. (android NDK is required)
