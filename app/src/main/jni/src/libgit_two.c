@@ -312,23 +312,79 @@ JNIEXPORT jobject JNICALL J_MAKE_METHOD(LibgitTwo_jniEntryByName)(JNIEnv *env, j
 }
 
 
+void bytesToHexString(const unsigned char *bytes, size_t length, char *hexString) {
+    for (size_t i = 0; i < length; i++) {
+        // 使用 sprintf 将每个字节转换为两位十六进制数
+        sprintf(hexString + (i * 2), "%02x", bytes[i]);
+    }
+    hexString[length * 2] = '\0'; // 确保字符串以 null 结尾
+}
 
-JNIEXPORT jstring JNICALL J_MAKE_METHOD(LibgitTwo_jniGetDataOfSshCert)(JNIEnv *env, jclass callerJavaClass, jlong cretprt)
+/**
+ * see: https://libgit2.org/libgit2/#v1.7.2/type/git_cert_hostkey
+ */
+jobject createSshCert(git_cert_hostkey *certHostKey, jboolean libgit2ThinkIsValid, jstring domain, JNIEnv *env) {
+    // 获取 SshCert 类
+    jclass sshCertClass = (*env)->FindClass(env, J_CLZ_PREFIX "SshCert");
+
+    // 获取构造函数
+    jmethodID constructor = (*env)->GetMethodID(env, sshCertClass, "<init>", "(ZLjava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;)V");
+
+    // 每个字节需要2个字符 + 1 个 null 终止符('\0')
+    char *md5Str[16*2+1];
+    char *sha1Str[20*2+1];
+    char *sha256Str[32*2+1];
+
+    char *hostKeyStr[certHostKey->hostkey_len + 1];
+
+    // unsigned char [16]
+    if(certHostKey->type&GIT_CERT_SSH_MD5) {
+        bytesToHexString(certHostKey->hash_md5, 16, md5Str);
+    }
+    // unsigned char [20]
+    if(certHostKey->type&GIT_CERT_SSH_SHA1) {
+        bytesToHexString(certHostKey->hash_sha1, 20, sha1Str);
+    }
+    // unsigned char [32]
+    if(certHostKey->type&GIT_CERT_SSH_SHA256) {
+        bytesToHexString(certHostKey->hash_sha256, 32, sha256Str);
+    }
+
+    //const char *hostkey
+    //size_t hostkey_len
+    if(certHostKey->type&GIT_CERT_SSH_RAW) {
+        strncpy(hostKeyStr, certHostKey->hostkey, certHostKey->hostkey_len);
+        hostKeyStr[certHostKey->hostkey_len] = '\0';
+    }
+
+    // 创建 SshCert 对象
+    jobject sshCertObject = (*env)->NewObject(
+            env,
+            sshCertClass,
+            constructor,
+
+            libgit2ThinkIsValid,
+            domain,
+            (*env)->NewStringUTF(env, (const char *) md5Str),
+            (*env)->NewStringUTF(env, (const char *) sha1Str),
+            (*env)->NewStringUTF(env, (const char *) sha256Str),
+            (*env)->NewStringUTF(env, (const char *) hostKeyStr)
+    );
+
+
+    return sshCertObject;
+}
+
+
+
+JNIEXPORT jobject JNICALL J_MAKE_METHOD(LibgitTwo_jniGetDataOfSshCert)(JNIEnv *env, jclass callerJavaClass, jlong cretprt, jboolean libgit2ThinkIsValid, jstring domain)
 {
     git_cert_t type = ((git_cert*)cretprt)->cert_type;
     if(type == GIT_CERT_HOSTKEY_LIBSSH2) {
-        git_cert_hostkey *sshcert = (git_cert_hostkey *)cretprt;
-        if(sshcert->type&GIT_CERT_SSH_MD5) {
-        }
-        if(sshcert->type&GIT_CERT_SSH_SHA1) {
-        }
-        if(sshcert->type&GIT_CERT_SSH_SHA256) {
-        }
-        if(sshcert->type&GIT_CERT_SSH_RAW) {
-            sshcert->hostkey
-        }
+        return createSshCert((git_cert_hostkey *)cretprt, libgit2ThinkIsValid, domain, env);
     }else {
         ALOGW("unknown cert type: %d", type);
+        return NULL;
     }
 
 }

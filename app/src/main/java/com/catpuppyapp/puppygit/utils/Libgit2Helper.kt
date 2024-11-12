@@ -2494,7 +2494,7 @@ class Libgit2Helper {
                         setCredentialCbForRemoteCallbacks(callbacks, getCredentialTypeByUrl(remoteFetchUrl), credential.value, credential.pass)
                     }
 
-                    setCredCheckCallback(remoteFetchUrl, callbacks)
+                    setCertCheckCallback(remoteFetchUrl, callbacks)
 
 
                     remote.fetch(refspecs, fetchOpts, "fetch: $remoteName")
@@ -2518,37 +2518,47 @@ class Libgit2Helper {
 //                }
                 }catch (e:Exception) {
                     MyLog.e(TAG, "fetchRemoteListForRepo err: remoteName=${remoteAndCredentials.remoteName}, err=${e.stackTraceToString()}")
+
+                    // now just throw, maybe in future, set errCallback and successCallback, then can continue fetch next even this failed
+                    throw e
                 }
             }
         }
 
-        fun setCredCheckCallback(
+        fun setCertCheckCallback(
             url:String,
             callbacks:Remote.Callbacks,
             settings: AppSettings=SettingsUtil.getSettingsSnapshot(),
-            allowCallback:()->Unit,
-            rejectCallback:()->Unit
+//            allowCallback:()->Unit,
+//            rejectCallback:()->Unit
         ){
-            if(isSshUrl(url) && settings.sshSetting.allowUnknownHosts) {
-                setAllowUnknownHostsForCertificatesCheck(callbacks)
-            }else {
-                // 1 let libgit2 decide, 0 allow, -1 reject
-                callbacks.setCertificateCheckCb cb@{ cert, valid, hostname ->
-                    // libgit2 think is valid, usually is hostkey in the known_hosts file
-                    // just ignore, hornor libgit2 decided
-                    if(valid) {
-                        return@cb 1
-                    }
+            // only set callback for ssh, tls force reject unknown hosts,
+            // but the app already bundle a well-known hosts cert, and users can add self-signed certs
+            // to 'PuppyGitData/cert-user' dir to allow trusted hosts, so, no reason to set a custom cert check callback for tls(https)
+            if(isSshUrl(url)) {
+                if(settings.sshSetting.allowUnknownHosts) {  // allow unknown host, no check, just passed
+                    setAllowUnknownHostsForCertificatesCheck(callbacks)
+                }else { // check cert
+                    // 1 let libgit2 decide, 0 allow, -1 reject
+                    callbacks.setCertificateCheckCb cb@{ cert, valid, hostname ->
+                        // libgit2 think is valid, usually is hostkey in the known_hosts file
+                        // just ignore, hornor libgit2 decided
+                        if(valid) {
+                            return@cb 1
+                        }
 
-                    // if libgit2 think cert is invalid, ask user
-                    val certData = LibgitTwo.jniGetDataOfSshCert(cert.rawPointer)
-                    if(certData.isNotBlank()) {
-                        add certData and allow and reject callbacks to the popup dialog list, it will show to user, then do act which user choosen
-                        the popup dialog should wait 5s then can do allow for avoid mistake touched
-                    }
+                        // if libgit2 think cert is invalid, ask user
+                        val certData = LibgitTwo.jniGetDataOfSshCert(cert.rawPointer, valid, hostname)
+//                        if(certData.isNotBlank()) {
+//                            check db, if in the allow list, allow, else reject and ask user
+//                            add certData and allow and reject callbacks to the popup dialog list, it will show to user, then do act which user choosen
+//                            the popup dialog should wait 5s then can do allow for avoid mistake touched
+//                        }
 
-                    // reject at here, do action after user made response
-                    return@cb -1
+                        MyLog.d(TAG, "certData: $certData")
+                        // reject at here, do action after user made response
+                        return@cb -1
+                    }
                 }
             }
         }
@@ -3146,7 +3156,7 @@ class Libgit2Helper {
                 setCredentialCbForRemoteCallbacks(callbacks, getCredentialTypeByUrl(pushUrl), credential.value, credential.pass)
             }
 
-            setCredCheckCallback(pushUrl, callbacks)
+            setCertCheckCallback(pushUrl, callbacks)
 
 
             //要push的refspec (要push哪些分支)
@@ -3206,7 +3216,7 @@ class Libgit2Helper {
 
                     MyLog.d(TAG, "#$funName: will push: remoteName=${rc.remoteName}, refspecs=$refspecs")
 
-                    setCredCheckCallback(pushUrl, callbacks)
+                    setCertCheckCallback(pushUrl, callbacks)
 
 
                     //推送
@@ -3214,6 +3224,7 @@ class Libgit2Helper {
 
                 }catch (e:Exception) {
                     MyLog.e(TAG, "$funName err: remoteName=${rc.remoteName}, err=${e.stackTraceToString()}")
+                    throw e
                 }
             }
 
@@ -4477,13 +4488,17 @@ class Libgit2Helper {
         /**
          * tag name list必须用不包含 refs/tags/ 前缀的shortName，不然libgit2库会自动加前缀，导致删错
          */
-        fun delTags(repo:Repository, tagShortNames:List<String>) {
+        fun delTags(repoId: String, repo:Repository, tagShortNames:List<String>) {
             val funName = "delTags"
             tagShortNames.forEach {
                 try {
                     Tag.delete(repo, it)
                 }catch (e:Exception) {
-                    MyLog.e(TAG, "#$funName err: del tag '$it' err: ${e.stackTraceToString()}")
+                    Msg.requireShow("del $it err: ${e.localizedMessage}")
+                    doJobThenOffLoading {
+                        createAndInsertError(repoId, "del tag '$it' err: ${e.localizedMessage}")
+                        MyLog.e(TAG, "#$funName err: del tag '$it' err: ${e.stackTraceToString()}")
+                    }
                 }
             }
         }
@@ -5476,7 +5491,7 @@ class Libgit2Helper {
                     MyLog.e(TAG, "#cloneSubmodules: set credential for submodule '$name' err: ${e.localizedMessage}")
                 }
 
-                setCredCheckCallback(smUrl, callbacks)
+                setCertCheckCallback(smUrl, callbacks)
 
 
 
@@ -5613,7 +5628,7 @@ class Libgit2Helper {
                         MyLog.e(TAG, "#updateSubmodule: set credential for submodule '$submoduleName' err: ${e.localizedMessage}")
                     }
 
-                    setCredCheckCallback(smUrl, callbacks)
+                    setCertCheckCallback(smUrl, callbacks)
 
 
                     MyLog.d(TAG,"#updateSubmodule: will update submodule '$submoduleName'")
@@ -6152,7 +6167,7 @@ class Libgit2Helper {
                         //  https no need set this, if want to allow unknown host for https(e.g. user used a self-signed cert),
                         //  can copy the cert into the user-cert folder, then can connect self-signed cert with https
 
-                        Libgit2Helper.setCredCheckCallback(cloneUrl, callbacks, settings)
+                        Libgit2Helper.setCertCheckCallback(cloneUrl, callbacks, settings)
 
 
                         //开始克隆

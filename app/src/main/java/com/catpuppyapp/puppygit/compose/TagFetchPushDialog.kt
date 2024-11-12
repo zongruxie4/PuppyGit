@@ -68,7 +68,7 @@ fun TagFetchPushDialog(
                 Repository.open(curRepo.fullSavePath).use { repo ->
                     //删除本地tags
                     if(requireDel) {
-                        Libgit2Helper.delTags(repo, selectedTagsList.map { it.shortName })
+                        Libgit2Helper.delTags(repoId, repo, selectedTagsList.map { it.shortName })
 
                         //如果删除模式且没勾选删除远程，删完本地tags就可返回了
                         if(!requireDelRemoteChecked.value) {
