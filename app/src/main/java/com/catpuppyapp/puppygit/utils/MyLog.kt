@@ -2,6 +2,7 @@ package com.catpuppyapp.puppygit.utils
 
 import android.content.Context
 import android.util.Log
+import androidx.compose.runtime.mutableStateOf
 import com.catpuppyapp.puppygit.play.pro.R
 import kotlinx.coroutines.channels.BufferOverflow
 import kotlinx.coroutines.channels.Channel
@@ -51,8 +52,7 @@ object MyLog {
     private var logFile:File?=null
 
     //指示当前类是否完成初始化的变量，若未初始化，意味着没设置必须的参数，这时候无法记日志
-    var isInited = false
-        private set
+    private val isInited = mutableStateOf(false)
 
     private var logDir:File?=null
         get() {
@@ -81,24 +81,26 @@ object MyLog {
 
     //    public Context context;
     fun init(logKeepDays: Int= defaultLogKeepDays, logLevel: Char=defaultLogLevel, logDirPath:String) {
-        try {
-            logFilesKeepDays = logKeepDays
-            myLogLevel = logLevel
-            logDir = File(logDirPath)
-            initLogWriter()
-            startWriter()
-            isInited=true
-        }catch (e:Exception) {
-            isInited=false
+        if(isInited.value.not()) {
+            isInited.value = true
 
             try {
-                e.printStackTrace()
-                Log.e(TAG, "#init err:"+e.stackTraceToString())
-            }catch (e2:Exception) {
-                e2.printStackTrace()
-            }
+                logFilesKeepDays = logKeepDays
+                myLogLevel = logLevel
+                logDir = File(logDirPath)
+                initLogWriter()
+                startWriter()
+            }catch (e:Exception) {
+                try {
+                    e.printStackTrace()
+                    Log.e(TAG, "#init MyLog err:"+e.stackTraceToString())
+                }catch (e2:Exception) {
+                    e2.printStackTrace()
+                }
 
+            }
         }
+
     }
 
     fun setLogLevel(level:Char) {
@@ -186,7 +188,7 @@ object MyLog {
     private fun log(tag: String, msg: String, level: Char) {
         try {
             //如果未初始化MyLog，无法记日志，用安卓官方Log类打印下，然后返回
-            if(!isInited) {
+            if(isInited.value.not()) {
                 if(level == 'e') {
                     Log.e(tag, msg)
                 }else if(level == 'w') {

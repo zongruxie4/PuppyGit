@@ -6,6 +6,7 @@ import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.material3.TopAppBarScrollBehavior
 import androidx.compose.material3.rememberTopAppBarState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.graphics.ImageBitmap
 import androidx.compose.ui.graphics.asImageBitmap
@@ -37,9 +38,9 @@ class AppModel {
     companion object {
         private val TAG ="AppModel"
 
-        private var inited_1 = false
-        private var inited_2 = false
-        private var inited_3 = false
+        private val inited_1 = mutableStateOf(false)
+        private val inited_2 = mutableStateOf(false)
+        private val inited_3 = mutableStateOf(false)
         val singleInstanceHolder:AppModel = AppModel()
 
 
@@ -70,8 +71,8 @@ class AppModel {
          * 中量级，应该不会阻塞很久
          */
         fun init_1(appModel: AppModel = singleInstanceHolder, applicationContext:Context, exitApp:()->Unit) {
-            if(inited_1.not()) {
-                inited_1 = true
+            if(inited_1.value.not()) {
+                inited_1.value = true
 
                 val funName = "init_1"
 
@@ -180,8 +181,8 @@ class AppModel {
         suspend fun init_2(appModel: AppModel = singleInstanceHolder,
                            editCacheDirPath:String=appModel.editCacheDir.canonicalPath
         ) {
-            if(inited_2.not()) {
-                inited_2 = true
+            if(inited_2.value.not()) {
+                inited_2.value = true
                 val funName = "init_2"
 
                 val applicationContext = appModel.appContext
@@ -378,8 +379,8 @@ class AppModel {
         @OptIn(ExperimentalMaterial3Api::class)
         @Composable
         fun init_3(appModel: AppModel = singleInstanceHolder){
-            if(inited_3.not()) {
-                inited_3 = true
+            if(inited_3.value.not()) {
+                inited_3.value = true
 
                 appModel.navController = rememberNavController()
                 appModel.coroutineScope = rememberCoroutineScope()

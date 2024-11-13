@@ -1,6 +1,7 @@
 package com.catpuppyapp.puppygit.utils
 
 import android.content.Context
+import androidx.compose.runtime.mutableStateOf
 import com.catpuppyapp.puppygit.jni.SshCert
 import com.catpuppyapp.puppygit.play.pro.R
 import com.github.git24j.core.Libgit2
@@ -11,7 +12,7 @@ import java.io.File
 private val TAG = "Lg2HomeUtils"
 
 object Lg2HomeUtils {
-    private var inited = false
+    private val inited = mutableStateOf(false)
     private const val sshKnownHostsLatestVer = 1 // app bundle known hosts file version
 
     private const val libgit2HomeDirName = "lg2home"
@@ -34,8 +35,8 @@ object Lg2HomeUtils {
     private val userKnownHostsFileLock:Mutex = Mutex()
 
     fun init(homeBaseDirPath:File, appContext: Context) {
-        if(inited.not()) {
-            inited = true
+        if(inited.value.not()) {
+            inited.value = true
 
             lg2Home=createDirIfNonexists(homeBaseDirPath, libgit2HomeDirName)
             sshDir=createDirIfNonexists(lg2Home, sshDirName)
