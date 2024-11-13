@@ -157,6 +157,7 @@ fun FilesInnerPage(
 
     goToRepoPage:(targetIdIfHave:String)->Unit,
     goToChangeListPage:(repoWillShowInChangeListPage:RepoEntity)->Unit,
+    lastPath: MutableState<String>
 ) {
     val allRepoParentDir = AppModel.singleInstanceHolder.allRepoParentDir;
 //    val appContext = AppModel.singleInstanceHolder.appContext;
@@ -609,7 +610,8 @@ fun FilesInnerPage(
         filesPageGetFilterMode,
         filesPageFilterModeOff,
         filesPageSimpleFilterOn,
-        openDrawer
+        openDrawer,
+        lastPath
 
     )
 
@@ -1170,6 +1172,7 @@ fun FilesInnerPage(
                     // 没测试，我看其他文件管理器针对目录都没open with，所以直接隐藏了) 需要测试：能否针对目录执行openwith？如果不能，对目录移除openwith选项
                     FileListItem(
                         item = it,
+                        lastPath = lastPath.value,
                         isPasteMode = isPasteMode,
                         menuKeyTextList = if(it.isFile) fileMenuKeyTextList else dirMenuKeyTextList,
                         menuKeyActList = if(it.isFile) fileMenuKeyActList else dirMenuKeyActList,
@@ -2415,7 +2418,8 @@ private fun getBackHandler(
     getFilterMode:()->Int,
     filesPageFilterModeOff:()->Unit,
     filesPageSimpleFilterOn: MutableState<Boolean>,
-    openDrawer:()->Unit
+    openDrawer:()->Unit,
+    lastPath:MutableState<String>,
 
 ): () -> Unit {
     val backStartSec =  rememberSaveable { mutableLongStateOf(0) }
@@ -2434,6 +2438,7 @@ private fun getBackHandler(
         }else if(getFilterMode() != 0) {
             filesPageFilterModeOff()
         }else if (currentPath.value.startsWith(FsUtils.getExternalStorageRootPathNoEndsWithSeparator()+"/")) { //如果在文件管理器页面且不在仓库根目录
+            lastPath.value = currentPath.value
             //返回上级目录
             currentPath.value = currentPath.value.substring(0, currentPath.value.lastIndexOf(File.separator))
             //刷新页面

@@ -266,6 +266,7 @@ fun HomeScreen(
     )
 
     val filesPageCurrentPath = rememberSaveable { mutableStateOf("")}
+    val filesPageLastPath = rememberSaveable { mutableStateOf("")}
     val showCreateFileOrFolderDialog = rememberSaveable { mutableStateOf(false)}
 
     val showSetGlobalGitUsernameAndEmailDialog = rememberSaveable { mutableStateOf(false)}
@@ -892,6 +893,7 @@ fun HomeScreen(
                     selectedRepo = filesPageSelectedRepo,
                     goToRepoPage=goToRepoPage,
                     goToChangeListPage=goToChangeListPage,
+                    lastPath=filesPageLastPath
                 )
             }
             else if(currentHomeScreen.intValue == Cons.selectedItem_Editor) {
