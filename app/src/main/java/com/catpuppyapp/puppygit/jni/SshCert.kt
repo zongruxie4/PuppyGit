@@ -69,7 +69,7 @@ data class SshCert(
     companion object {
         fun parseDbString(dbString: String):SshCert? {
             try {
-                val arr = dbString.split(dbString)
+                val arr = dbString.split(dbStringSplitBy)
                 if(arr.size<5) {
                     return null
                 }

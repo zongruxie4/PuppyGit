@@ -2551,6 +2551,7 @@ class Libgit2Helper {
 
                         // if libgit2 think cert is invalid, ask user
                         val sshCert = LibgitTwo.jniGetDataOfSshCert(cert.rawPointer, hostname)
+                        MyLog.d(TAG, "sshCertFromJni==null: ${sshCert==null}")
 //                        if(certData.isNotBlank()) {
 //                            check db, if in the allow list, allow, else reject and ask user
 //                            add certData and allow and reject callbacks to the popup dialog list, it will show to user, then do act which user choosen

@@ -8,6 +8,8 @@ import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 import java.io.File
 
+private val TAG = "Lg2HomeUtils"
+
 object Lg2HomeUtils {
     private const val sshKnownHostsLatestVer = 1 // app bundle known hosts file version
 
@@ -92,6 +94,9 @@ object Lg2HomeUtils {
                     }
                 }
             }
+
+            MyLog.d(TAG, "read user SshCertList from file: $userKnownHostItems")
+
         }
     }
 
@@ -124,7 +129,12 @@ object Lg2HomeUtils {
     }
 
     fun itemInUserKnownHostsFile(item:SshCert):Boolean{
-        return getUserKnownHostsFileItems().contains(item)
+        val list = getUserKnownHostsFileItems()
+        val inList = list.contains(item)
+
+        MyLog.d(TAG, "sshCert in list: ${inList}, sshCert: $item, sshCertList: ${list}")
+
+        return inList
     }
 
     private fun writeItemsToUserKnownHostsFile() {
