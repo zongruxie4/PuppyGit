@@ -113,7 +113,7 @@ fun TreeToTreeChangeListScreen(
     val homeTopBarScrollBehavior = AppModel.singleInstanceHolder.homeTopBarScrollBehavior
 
     val allRepoParentDir = AppModel.singleInstanceHolder.allRepoParentDir
-    val appContext = AppModel.singleInstanceHolder.appContext
+    val appContext = AppModel.singleInstanceHolder.activityContext
     val settings = remember { SettingsUtil.getSettingsSnapshot() }
 
     //取出title desc，存到状态变量里，与页面共存亡就行

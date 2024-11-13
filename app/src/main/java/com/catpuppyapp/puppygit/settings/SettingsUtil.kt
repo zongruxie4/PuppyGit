@@ -59,13 +59,19 @@ object SettingsUtil {
         readSettingsFromFile(useBak)
     }
 
+    fun destroyer() {
+        saveChannel.close()
+        saveJobStarted.compareAndSet(true, false)
+    }
+
     private fun startSaveJob() {
         val logTag="settingsSaveJob"
 
         doJobThenOffLoading {
             var errCountLimit = 3
+            var closed = false
 
-            while (errCountLimit > 0) {
+            while (errCountLimit > 0 && closed.not()) {
                 try {
                     saveLock.withLock {
                         //接收新的配置项
@@ -94,6 +100,9 @@ object SettingsUtil {
 
                     }
                 } catch (e: Exception) {
+                    if(saveChannel.tryReceive().isClosed) {
+                        closed = true
+                    }
                     errCountLimit--
 
                     MyLog.e(TAG, "$logTag: write config to settings file err:${e.stackTraceToString()}")
@@ -101,7 +110,9 @@ object SettingsUtil {
             }
 
             //这里要不要关流？万一有多个writer协程，但其中一个失败其余不失败呢？不过目前就一个writer且没计划添加更多，所以，关了吧先
-            saveChannel.close()
+            if(saveChannel.tryReceive().isClosed.not()) {
+                saveChannel.close()
+            }
 
         }
     }

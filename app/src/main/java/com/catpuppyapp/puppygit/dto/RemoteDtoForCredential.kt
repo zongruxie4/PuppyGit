@@ -32,7 +32,7 @@ class RemoteDtoForCredential (var remoteId: String="",
     }
 
     private fun getFetchOrPushCredentialNameOrNone(isFetch:Boolean):String {
-        val appContext = AppModel.singleInstanceHolder.appContext
+        val appContext = AppModel.singleInstanceHolder.activityContext
         val name = if(isFetch) credentialName else pushCredentialName
 
         //if凭据名为null或空字符串返回 "[None]" else返回凭据名

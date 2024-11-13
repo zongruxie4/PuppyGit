@@ -20,7 +20,7 @@ data class SubmoduleDto (
 
 ) {
     private fun getClonedText():String{
-        val appContext = AppModel.singleInstanceHolder.appContext
+        val appContext = AppModel.singleInstanceHolder.activityContext
 
         return if(cloned) appContext.getString(R.string.cloned) else appContext.getString(R.string.not_clone)
 

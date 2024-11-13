@@ -14,7 +14,6 @@ import com.catpuppyapp.puppygit.play.pro.R
 import com.catpuppyapp.puppygit.utils.AppModel
 import com.catpuppyapp.puppygit.utils.doJobThenOffLoading
 import com.catpuppyapp.puppygit.utils.state.CustomStateSaveable
-import com.catpuppyapp.puppygit.utils.state.StateUtil
 
 
 @Composable
@@ -29,7 +28,7 @@ fun LinkOrUnLinkCredentialAndRemoteDialog(
     onFinallyCallback:()->Unit,
     onOkCallback:()->Unit,
 ) {
-    val appContext = AppModel.singleInstanceHolder.appContext
+    val appContext = AppModel.singleInstanceHolder.activityContext
 
     val fetchChecked = rememberSaveable { mutableStateOf(if(targetAll) true else if(requireDoLink) thisItem.credentialId!=curItemInPage.value.id else thisItem.credentialId==curItemInPage.value.id)}
     val pushChecked = rememberSaveable { mutableStateOf(if(targetAll) true else if(requireDoLink) thisItem.pushCredentialId!=curItemInPage.value.id else thisItem.pushCredentialId==curItemInPage.value.id)}

@@ -89,7 +89,7 @@ fun DomainCredentialListScreen(
 
     val homeTopBarScrollBehavior = AppModel.singleInstanceHolder.homeTopBarScrollBehavior
     val navController = AppModel.singleInstanceHolder.navController
-    val appContext = AppModel.singleInstanceHolder.appContext
+    val appContext = AppModel.singleInstanceHolder.activityContext
     val scope = rememberCoroutineScope()
 
     val settings = remember { SettingsUtil.getSettingsSnapshot() }

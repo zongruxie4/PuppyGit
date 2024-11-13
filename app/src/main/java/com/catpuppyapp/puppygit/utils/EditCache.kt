@@ -34,9 +34,7 @@ object EditCache {
 
     private var writer:BufferedWriter?=null
 
-    //指示当前类是否完成初始化的变量，若未初始化，意味着没设置必须的参数，这时候无法记日志
-    var isInited = false
-        private set
+    private var isInited = false
 
     private var cacheDir:File?=null
         get() {
@@ -73,8 +71,8 @@ object EditCache {
                 startWriter()
                 isInited=true
             }else {
-                //禁用cache的情况下，不会初始化writer，isInited应为false从而避免调用writer
-                isInited=false
+                //禁用cache的情况下，不会初始化writer，所以初始化flag应该为假
+                isInited = false
             }
         }catch (e:Exception) {
             isInited=false

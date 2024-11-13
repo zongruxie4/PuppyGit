@@ -1061,11 +1061,11 @@ private fun loadFile(
                     }
                 }
                 //抛异常
-                throw RuntimeException(AppModel.singleInstanceHolder.appContext.getString(R.string.err_file_doesnt_exist_anymore))
+                throw RuntimeException(AppModel.singleInstanceHolder.activityContext.getString(R.string.err_file_doesnt_exist_anymore))
             }
 
             if (!file.isFile) {
-                throw RuntimeException(AppModel.singleInstanceHolder.appContext.getString(R.string.err_target_is_not_a_file))
+                throw RuntimeException(AppModel.singleInstanceHolder.activityContext.getString(R.string.err_target_is_not_a_file))
             }
 
             //检查文件大小，太大了打开会有问题，要么崩溃，要么无法保存
@@ -1074,7 +1074,7 @@ private fun loadFile(
             val maxSizeLimit = settings.editor.maxFileSizeLimit
             if (isFileSizeOverLimit(file.length(), limit = maxSizeLimit)) {
 //                    editorPageSetShowingFileErrWhenLoading("Err: Doesn't support open file over "+Cons.editorFileSizeMaxLimitForHumanReadable)
-                throw RuntimeException(AppModel.singleInstanceHolder.appContext.getString(R.string.err_doesnt_support_open_file_over_limit) + "(" + getHumanReadableSizeStr(maxSizeLimit) + ")")
+                throw RuntimeException(AppModel.singleInstanceHolder.activityContext.getString(R.string.err_doesnt_support_open_file_over_limit) + "(" + getHumanReadableSizeStr(maxSizeLimit) + ")")
             }
 
 

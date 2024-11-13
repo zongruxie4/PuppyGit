@@ -30,7 +30,7 @@ class CommitDto (
 
     fun getOther():String {
         if(otherMsg==null) {
-            val appContext = AppModel.singleInstanceHolder.appContext
+            val appContext = AppModel.singleInstanceHolder.activityContext
             val sb = StringBuilder()
             val suffix = ", "
 

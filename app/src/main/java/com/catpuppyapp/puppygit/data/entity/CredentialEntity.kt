@@ -30,7 +30,7 @@ data class CredentialEntity(
 
 ){
     fun getTypeStr():String {
-        val appContext = AppModel.singleInstanceHolder.appContext
+        val appContext = AppModel.singleInstanceHolder.activityContext
         return appContext.getString(if(type == Cons.dbCredentialTypeHttp) R.string.http_https else R.string.ssh)
     }
 

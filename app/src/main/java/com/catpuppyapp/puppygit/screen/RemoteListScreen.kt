@@ -101,7 +101,7 @@ fun RemoteListScreen(
     naviUp: () -> Boolean,
 ) {
     val homeTopBarScrollBehavior = AppModel.singleInstanceHolder.homeTopBarScrollBehavior
-    val appContext = AppModel.singleInstanceHolder.appContext
+    val appContext = AppModel.singleInstanceHolder.activityContext
     val navController = AppModel.singleInstanceHolder.navController
     val dbContainer = AppModel.singleInstanceHolder.dbContainer
     val scope = rememberCoroutineScope()

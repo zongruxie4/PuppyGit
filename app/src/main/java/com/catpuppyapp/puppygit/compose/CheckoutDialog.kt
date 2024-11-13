@@ -39,7 +39,6 @@ import com.catpuppyapp.puppygit.utils.Msg
 import com.catpuppyapp.puppygit.utils.MyLog
 import com.catpuppyapp.puppygit.utils.createAndInsertError
 import com.catpuppyapp.puppygit.utils.doJobThenOffLoading
-import com.catpuppyapp.puppygit.utils.state.StateUtil
 import com.github.git24j.core.Oid
 import com.github.git24j.core.Repository
 
@@ -69,7 +68,7 @@ fun CheckoutDialog(
 ) {
     val repoId = curRepo.id
 
-    val appContext = AppModel.singleInstanceHolder.appContext
+    val appContext = AppModel.singleInstanceHolder.activityContext
 
     val checkoutOptionDontUpdateHead = 0
     val checkoutOptionDetachHead = 1

@@ -31,7 +31,7 @@ class TagDto (
     }
 
     fun getType():String {
-        val appContext = AppModel.singleInstanceHolder.appContext
+        val appContext = AppModel.singleInstanceHolder.activityContext
 
         return if(isAnnotated) appContext.getString(R.string.annotated) else appContext.getString(R.string.lightweight)
     }

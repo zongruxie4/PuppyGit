@@ -5,13 +5,11 @@ import android.widget.Toast
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.combinedClickable
-import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
 import androidx.compose.material3.LocalContentColor
 import androidx.compose.material3.minimumInteractiveComponentSize
 import androidx.compose.runtime.Composable
@@ -24,12 +22,10 @@ import androidx.compose.ui.hapticfeedback.HapticFeedback
 import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.unit.dp
-import com.catpuppyapp.puppygit.style.MyStyleKt
 import com.catpuppyapp.puppygit.ui.theme.Theme
 import com.catpuppyapp.puppygit.utils.AppModel
 import com.catpuppyapp.puppygit.utils.UIHelper
 import com.catpuppyapp.puppygit.utils.showToast
-import kotlinx.coroutines.CoroutineScope
 
 @Composable
 fun LongPressAbleIconBtn(
@@ -44,12 +40,12 @@ fun LongPressAbleIconBtn(
     onLongClick:()->Unit = {
         //震动反馈，显示tooltip提示
         AppModel.singleInstanceHolder.haptic.performHapticFeedback(HapticFeedbackType.LongPress)
-        showToast(AppModel.singleInstanceHolder.appContext, tooltipText, Toast.LENGTH_SHORT)
+        showToast(AppModel.singleInstanceHolder.activityContext, tooltipText, Toast.LENGTH_SHORT)
     },
     onClick: ()->Unit,
 ){
     val iconColor = iconColor?:LocalContentColor.current
-    val appContext = AppModel.singleInstanceHolder.appContext
+    val appContext = AppModel.singleInstanceHolder.activityContext
     val haptic = AppModel.singleInstanceHolder.haptic
 
     LongPressAbleIconBtnToastVersion(context=appContext, modifier=modifier,iconModifier=iconModifier,

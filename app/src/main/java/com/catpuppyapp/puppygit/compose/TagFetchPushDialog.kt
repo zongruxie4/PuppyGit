@@ -25,7 +25,6 @@ import com.catpuppyapp.puppygit.utils.AppModel
 import com.catpuppyapp.puppygit.utils.Libgit2Helper
 import com.catpuppyapp.puppygit.utils.Msg
 import com.catpuppyapp.puppygit.utils.doJobThenOffLoading
-import com.catpuppyapp.puppygit.utils.state.StateUtil
 import com.github.git24j.core.Repository
 
 @Composable
@@ -52,7 +51,7 @@ fun TagFetchPushDialog(
     onFinally:()->Unit, //在 try...catch...finally，finally代码块里的代码
 ) {
 
-    val appContext = AppModel.singleInstanceHolder.appContext
+    val appContext = AppModel.singleInstanceHolder.activityContext
 
     val force = rememberSaveable { mutableStateOf(false) }
 

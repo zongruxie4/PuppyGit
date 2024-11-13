@@ -12,7 +12,7 @@ import java.io.File
 private val TAG = "Lg2HomeUtils"
 
 object Lg2HomeUtils {
-    private val inited = mutableStateOf(false)
+//    private val inited = mutableStateOf(false)
     private const val sshKnownHostsLatestVer = 1 // app bundle known hosts file version
 
     private const val libgit2HomeDirName = "lg2home"
@@ -35,23 +35,25 @@ object Lg2HomeUtils {
     private val userKnownHostsFileLock:Mutex = Mutex()
 
     fun init(homeBaseDirPath:File, appContext: Context) {
-        if(inited.value.not()) {
-            inited.value = true
+//        if(inited.value.not()) {
+//            inited.value = true
 
-            lg2Home=createDirIfNonexists(homeBaseDirPath, libgit2HomeDirName)
-            sshDir=createDirIfNonexists(lg2Home, sshDirName)
-            knownHostsFile = File(sshDir.canonicalPath, sshKnownHostsFileName)
-            knownHostsVersionFile = File(sshDir.canonicalPath, sshKnownHostsVersionFileName)
-            userKnownHostsFile = File(sshDir.canonicalPath, userSshKnownHostsFileName)
+        lg2Home=createDirIfNonexists(homeBaseDirPath, libgit2HomeDirName)
+        sshDir=createDirIfNonexists(lg2Home, sshDirName)
+        knownHostsFile = File(sshDir.canonicalPath, sshKnownHostsFileName)
+        knownHostsVersionFile = File(sshDir.canonicalPath, sshKnownHostsVersionFileName)
+        userKnownHostsFile = File(sshDir.canonicalPath, userSshKnownHostsFileName)
 
-            createKnownHostsIfNonExists(appContext)
+        createKnownHostsIfNonExists(appContext)
 
-            createUserKnownHostsIfNonExists()
-            readItemFromUserKnownHostsFile()
+        // make ssh can find the known_hosts file
+        Libgit2.optsGitOptSetHomedir(lg2Home.canonicalPath)
 
-            // make ssh can find the known_hosts file
-            Libgit2.optsGitOptSetHomedir(lg2Home.canonicalPath)
-        }
+        // init user's know host file
+        createUserKnownHostsIfNonExists()
+        readItemFromUserKnownHostsFile()
+
+//        }
     }
     
     fun getLg2Home():File {
@@ -103,7 +105,7 @@ object Lg2HomeUtils {
                         }
 
                         val sshCert = SshCert.parseDbString(line)
-                        if(sshCert!=null) {
+                        if(sshCert!=null && userKnownHostItems.contains(sshCert).not()) {
                             userKnownHostItems.add(sshCert)
                         }
                     }
@@ -129,11 +131,11 @@ object Lg2HomeUtils {
         }
     }
 
-    private fun getKnownHostsFile(appContext: Context):File {
-        createKnownHostsIfNonExists(appContext)
-
-        return knownHostsFile
-    }
+//    private fun getKnownHostsFile(appContext: Context):File {
+//        createKnownHostsIfNonExists(appContext)
+//
+//        return knownHostsFile
+//    }
 
     private fun getUserKnownHostsFile():File {
         return userKnownHostsFile

@@ -6,40 +6,29 @@ import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.compose.foundation.isSystemInDarkTheme
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.height
 import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.ExperimentalComposeUiApi
-import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.compositionContext
 import androidx.compose.ui.platform.createLifecycleAwareWindowRecomposer
-import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.unit.dp
 import androidx.core.view.WindowCompat
-import com.catpuppyapp.puppygit.compose.ConfirmDialog2
-import com.catpuppyapp.puppygit.compose.CopyScrollableColumn
 import com.catpuppyapp.puppygit.compose.LoadingText
-import com.catpuppyapp.puppygit.compose.MyCheckBox
+import com.catpuppyapp.puppygit.compose.SshUnknownHostDialog
 import com.catpuppyapp.puppygit.jni.SshAskUserUnknownHostRequest
 import com.catpuppyapp.puppygit.screen.AppScreenNavigator
 import com.catpuppyapp.puppygit.screen.functions.KnownHostRequestStateMan
-import com.catpuppyapp.puppygit.style.MyStyleKt
 import com.catpuppyapp.puppygit.ui.theme.PuppyGitAndroidTheme
 import com.catpuppyapp.puppygit.ui.theme.Theme
 import com.catpuppyapp.puppygit.user.UserUtil
 import com.catpuppyapp.puppygit.utils.AppModel
 import com.catpuppyapp.puppygit.utils.LanguageUtil
 import com.catpuppyapp.puppygit.utils.Lg2HomeUtils
-import com.catpuppyapp.puppygit.utils.Msg
 import com.catpuppyapp.puppygit.utils.MyLog
 import com.catpuppyapp.puppygit.utils.PrefMan
 import com.catpuppyapp.puppygit.utils.doJobThenOffLoading
@@ -47,6 +36,7 @@ import com.catpuppyapp.puppygit.utils.showToast
 import com.catpuppyapp.puppygit.utils.state.mutableCustomStateListOf
 import com.catpuppyapp.puppygit.utils.state.mutableCustomStateOf
 import kotlinx.coroutines.CoroutineExceptionHandler
+import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.delay
 import java.util.Locale
 
@@ -108,7 +98,7 @@ class MainActivity : ComponentActivity() {
 //      //  AppModel.init_1(applicationContext = applicationContext, exitApp = {finish()})
 
         // baseContext, life time with activity, can get properly resources, but save reference to static field will increase risk of memory leak
-        AppModel.init_1(applicationContext = baseContext, exitApp = {finish()})
+        AppModel.init_1(activityContext = baseContext, realAppContext = applicationContext, exitApp = {finish()})
 
         //for make imePadding() work
         WindowCompat.setDecorFitsSystemWindows(window, false)
@@ -192,26 +182,11 @@ class MainActivity : ComponentActivity() {
         return baseContext.createConfigurationContext(config)
     }
 
+//    override fun onDestroy() {
+//        super.onDestroy()
 //
-//    fun changeLanguage(language: String) {
-//        // auto detect
-//        if(language.isBlank()) {
-//            return
-//        }
-//
-//        // specified language
-//        val locale = Locale(language)
-//        Locale.setDefault(locale)
-//        val resources: Resources = resources
-//        val config: Configuration = resources.configuration
-//        val dm = resources.displayMetrics
-//        config.setLocale(locale)
-//        config.setLayoutDirection(locale)
-//        resources.updateConfiguration(config, dm)
+////        AppModel.destroyer()
 //    }
-
-
-
 }
 
 
@@ -223,6 +198,7 @@ fun MainCompose() {
     val appContext = LocalContext.current
     val loadingText = rememberSaveable { mutableStateOf(appContext.getString(R.string.launching))}
 
+    val sshCertRequestListenerChannel = remember { Channel<Int>() }
     val isInitDone = rememberSaveable { mutableStateOf(false) };
 
 
@@ -245,93 +221,13 @@ fun MainCompose() {
         iTrustTheHost.value = false
     }
     if(showSshDialog.value) {
-        val item = currentSshAskUserUnknownHostRequest.value
-        val spacerHeight = 10.dp
-        ConfirmDialog2(
-            title = stringResource(R.string.unknown_host),
-            requireShowTextCompose = true,
-            textCompose = {
-                CopyScrollableColumn {
-                    Text(
-                        stringResource(R.string.trying_connect_unknown_host_only_allow_if_trust)+"\n",
-                        fontWeight = FontWeight.Bold,
-                        color = MyStyleKt.TextColor.danger()
-                    )
-                    Spacer(Modifier.height(spacerHeight+5.dp))
-
-                    Row {
-                        Text("hostname: ")
-                        Text((item?.sshCert?.hostname?:"")+"\n", fontWeight = FontWeight.Bold)
-                    }
-
-                    Spacer(Modifier.height(spacerHeight))
-
-                    val formattedSha256 = item?.sshCert?.formattedSha256()
-                    if(formattedSha256?.isNotBlank() == true) {
-                        Row {
-                            Text("sha256: ")
-                            Text(formattedSha256+"\n", fontWeight = FontWeight.Bold)
-
-                        }
-                        Spacer(Modifier.height(spacerHeight))
-                    }
-
-
-                    val formattedSha1 = item?.sshCert?.formattedSha1()
-                    if(formattedSha1?.isNotBlank() == true) {
-                        Row {
-                            Text("sha1: ")
-                            Text(formattedSha1+"\n", fontWeight = FontWeight.Bold)
-                        }
-                        Spacer(Modifier.height(spacerHeight))
-                    }
-
-
-                    val formattedMd5 = item?.sshCert?.formattedMd5()
-                    if(formattedMd5?.isNotBlank() == true) {
-                        Row {
-                            Text("md5: ")
-                            Text(formattedMd5+"\n", fontWeight = FontWeight.Bold)
-                        }
-                        Spacer(Modifier.height(spacerHeight))
-                    }
-
-                    if(item?.sshCert?.hostKey?.isNotBlank() == true) {
-                        Row {
-                            Text("host key: ")
-                            Text(item.sshCert.hostKey+"\n", fontWeight = FontWeight.Bold)
-                        }
-
-                        Spacer(Modifier.height(spacerHeight))
-                    }
-
-                    MyCheckBox(stringResource(R.string.i_trust_the_host), iTrustTheHost)
-                    if(iTrustTheHost.value) {
-                        Text(stringResource(R.string.operation_aborted_after_allowing_maybe_retry), color = MyStyleKt.TextColor.highlighting_green)
-                    }
-                    Spacer(Modifier.height(spacerHeight))
-
-                }
-            },
-            okBtnEnabled = iTrustTheHost.value,
-            okTextColor = if(iTrustTheHost.value) MyStyleKt.TextColor.danger() else Color.Unspecified,
-            okBtnText = stringResource(R.string.allow),
-            cancelBtnText = stringResource(R.string.reject),
-            onCancel = {
-                closeSshDialog()
-                allowOrRejectSshDialogCallback()
-            }
-        ) {
-            closeSshDialog()
-
-            doJobThenOffLoading {
-                Lg2HomeUtils.addItemToUserKnownHostsFile(currentSshAskUserUnknownHostRequest.value!!.sshCert)
-
-                Msg.requireShowLongDuration(appContext.getString(R.string.allowed_plz_re_try_clone_fetch_push))
-
-                allowOrRejectSshDialogCallback()
-            }
-        }
+        SshUnknownHostDialog(
+            currentSshAskUserUnknownHostRequest = currentSshAskUserUnknownHostRequest,
+            iTrustTheHost = iTrustTheHost,
+            closeSshDialog = closeSshDialog,
+            allowOrRejectSshDialogCallback = allowOrRejectSshDialogCallback,
+            appContext = appContext
+        )
     }
 
 
@@ -379,6 +275,10 @@ fun MainCompose() {
 
             doJobThenOffLoading {
                 while (true) {
+                    if(sshCertRequestListenerChannel.tryReceive().isClosed) {
+                        break
+                    }
+
                     if(showSshDialog.value.not() && currentSshAskUserUnknownHostRequest.value==null) {
                         val item = KnownHostRequestStateMan.getFirstThenRemove()
                         if(item != null) {
@@ -405,13 +305,15 @@ fun MainCompose() {
 //        throw RuntimeException("throw exception test")
         //test
     }
+
     //compose被销毁时执行的副作用
-//    DisposableEffect(Unit) {
-////        ("DisposableEffect: entered main")
-//        onDispose {
-////            ("DisposableEffect: exited main")
-//        }
-//    }
+    DisposableEffect(Unit) {
+//        ("DisposableEffect: entered main")
+        onDispose {
+//            ("DisposableEffect: exited main")
+            sshCertRequestListenerChannel.close()
+        }
+    }
 
 }
 

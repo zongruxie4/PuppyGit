@@ -52,7 +52,6 @@ import com.catpuppyapp.puppygit.compose.BottomSheet
 import com.catpuppyapp.puppygit.compose.BottomSheetItem
 import com.catpuppyapp.puppygit.compose.ConfirmDialog
 import com.catpuppyapp.puppygit.compose.ErrRepoCard
-import com.catpuppyapp.puppygit.compose.LoadingDialog
 import com.catpuppyapp.puppygit.compose.MyCheckBox
 import com.catpuppyapp.puppygit.compose.MyLazyColumn
 import com.catpuppyapp.puppygit.compose.RepoCard
@@ -132,7 +131,7 @@ fun RepoInnerPage(
     showImportRepoDialog:MutableState<Boolean>,
     goToThisRepoId:MutableState<String>
 ) {
-    val appContext = AppModel.singleInstanceHolder.appContext;
+    val appContext = AppModel.singleInstanceHolder.activityContext;
     val exitApp = AppModel.singleInstanceHolder.exitApp;
     val navController = AppModel.singleInstanceHolder.navController;
     val scope = rememberCoroutineScope()

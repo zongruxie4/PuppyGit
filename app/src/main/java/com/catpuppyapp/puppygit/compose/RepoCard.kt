@@ -64,7 +64,7 @@ fun RepoCard(
 ) {
     val navController = AppModel.singleInstanceHolder.navController
     val haptic = AppModel.singleInstanceHolder.haptic
-    val appContext = AppModel.singleInstanceHolder.appContext
+    val appContext = AppModel.singleInstanceHolder.activityContext
 
     val inDarkTheme = Theme.inDarkTheme
 

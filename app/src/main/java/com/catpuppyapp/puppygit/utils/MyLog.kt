@@ -2,6 +2,7 @@ package com.catpuppyapp.puppygit.utils
 
 import android.content.Context
 import android.util.Log
+import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.mutableStateOf
 import com.catpuppyapp.puppygit.play.pro.R
 import kotlinx.coroutines.channels.BufferOverflow
@@ -48,8 +49,9 @@ object MyLog {
     private val myLogSdf = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss") // 日志的输出格式
     private val logFileSdf = DateTimeFormatter.ofPattern("yyyy-MM-dd") // 日志文件格式
 
-    private var logWriter:BufferedWriter?=null
-    private var logFile:File?=null
+    // the mutable can avoid coroutine caught a field, but the field changed the the coroutine still use former value
+    private var logWriter: MutableState<BufferedWriter?> = mutableStateOf(null)
+    private var logFile:MutableState<File?> = mutableStateOf(null)
 
     //指示当前类是否完成初始化的变量，若未初始化，意味着没设置必须的参数，这时候无法记日志
     private val isInited = mutableStateOf(false)
@@ -81,26 +83,29 @@ object MyLog {
 
     //    public Context context;
     fun init(logKeepDays: Int= defaultLogKeepDays, logLevel: Char=defaultLogLevel, logDirPath:String) {
-        if(isInited.value.not()) {
+        try {
+            logFilesKeepDays = logKeepDays
+            myLogLevel = logLevel
+            logDir = File(logDirPath)
+            initLogWriter()
+            startWriter()
             isInited.value = true
-
+        }catch (e:Exception) {
+            isInited.value = false
             try {
-                logFilesKeepDays = logKeepDays
-                myLogLevel = logLevel
-                logDir = File(logDirPath)
-                initLogWriter()
-                startWriter()
-            }catch (e:Exception) {
-                try {
-                    e.printStackTrace()
-                    Log.e(TAG, "#init MyLog err:"+e.stackTraceToString())
-                }catch (e2:Exception) {
-                    e2.printStackTrace()
-                }
-
+                e.printStackTrace()
+                Log.e(TAG, "#init MyLog err:"+e.stackTraceToString())
+            }catch (e2:Exception) {
+                e2.printStackTrace()
             }
-        }
 
+        }
+    }
+
+    fun destroyer() {
+        writeChannel.close()
+
+        isInited.value = false
     }
 
     fun setLogLevel(level:Char) {
@@ -114,28 +119,33 @@ object MyLog {
     private fun startWriter() {
         doJobThenOffLoading {
             var errCountLimit = 3
-
-            while (errCountLimit > 0) {
+            var closed = false
+            while (errCountLimit > 0 && closed.not()) {
                 try {
                     //channel外面加互斥锁，这样就相当于一个公平锁了（带队列的互斥锁）,即使误开多个writer也不用担心冲突了
                     writeLock.withLock {
                         val textWillWrite = writeChannel.receive()
 
-                        if (logFile?.exists() != true) {
+                        if (logFile.value?.exists() != true) {
                             initLogWriter()
                         }
 
-                        logWriter?.write(textWillWrite + "\n")
-                        logWriter?.flush()
+                        logWriter.value?.write(textWillWrite + "\n")
+                        logWriter.value?.flush()
                     }
                 } catch (e: Exception) {
+                    if(writeChannel.tryReceive().isClosed) {
+                        closed = true
+                    }
                     errCountLimit--
 
                     Log.e(TAG, "write to file err:${e.stackTraceToString()}")
                 }
             }
 
-            writeChannel.close()
+            if(writeChannel.tryReceive().isClosed.not()) {
+                writeChannel.close()
+            }
         }
     }
 
@@ -316,7 +326,7 @@ object MyLog {
             getLogFileName()
         ) // MYLOG_PATH_SDCARD_DIR
 
-        logFile = file
+        logFile.value = file
         //debug
 //            System.out.println("file.toString():::"+file.toString());
         //debug
@@ -327,7 +337,7 @@ object MyLog {
 
         //如果writer不为null，先关流
         try {
-            logWriter?.close()
+            logWriter.value?.close()
         }catch (e:Exception) {
             Log.e(TAG, "#$funName err:${e.stackTraceToString()}")
         }
@@ -335,7 +345,7 @@ object MyLog {
         //新开一个writer
         val append = true
         val filerWriter = FileWriter(file, append) // 后面这个参数代表是不是要接上文件中原来的数据，不进行覆盖
-        logWriter = filerWriter.buffered()
+        logWriter.value = filerWriter.buffered()
     }
 
     /**

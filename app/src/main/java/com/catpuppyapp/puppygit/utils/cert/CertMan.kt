@@ -44,18 +44,18 @@ object CertMan {
      *
      */
     fun init(appContext: Context, certBundleDir:File, certUserDir:File) {
-        if(inited.value.not()) {
-            inited.value = true
+//        if(inited.value.not()) {
+//            inited.value = true
 
-            //加载app内置证书
-            loadAppCert(appContext, certBundleDir)
+        //加载app内置证书
+        loadAppCert(appContext, certBundleDir)
 
-            //加载用户证书
-            loadUserCerts(certUserDir)
+        //加载用户证书
+        loadUserCerts(certUserDir)
 
             //加载系统证书
 //        loadSysCerts()
-        }
+//        }
     }
 
     /**

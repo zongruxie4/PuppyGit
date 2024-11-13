@@ -741,7 +741,7 @@ fun FilesInnerPage(
                             if(renameSuccess) {
                                 //重命名成功，把重命名之前的旧条目从选中列表移除，然后把改名后的新条目添加到列表（要不要改成：不管执行重命名失败还是成功，都一律移除？没必要啊，如果失败，名字又没变，移除干嘛？）
                                 if(selectedItems.value.remove(renameFileItemDto.value)) {  //移除旧条目。如果返回true，说明存在，则添加重命名后的新条目进列表；如果返回false，说明旧文件不在选中列表，不执行操作
-                                    val newNameDto = FileItemDto.genFileItemDtoByFile(newFile, AppModel.singleInstanceHolder.appContext)
+                                    val newNameDto = FileItemDto.genFileItemDtoByFile(newFile, AppModel.singleInstanceHolder.activityContext)
                                     selectedItems.value.add(newNameDto)
                                 }
 //                            selectedItems.requireRefreshView()

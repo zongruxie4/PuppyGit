@@ -28,7 +28,7 @@ class BranchNameAndTypeDto {
     }
 
     fun getAheadBehind():String {
-        val appContext = AppModel.singleInstanceHolder.appContext
+        val appContext = AppModel.singleInstanceHolder.activityContext
         if(ahead==0 && 0==behind) {
             return appContext.getString(R.string.uptodate)
         }else {
@@ -68,7 +68,7 @@ class BranchNameAndTypeDto {
     }
 
     fun getOther():String {
-        val appContext = AppModel.singleInstanceHolder.appContext
+        val appContext = AppModel.singleInstanceHolder.activityContext
         val suffix = ", "
         val sb= StringBuilder()
 
@@ -96,7 +96,7 @@ class BranchNameAndTypeDto {
     }
 
     fun getTypeString():String {
-        val appContext = AppModel.singleInstanceHolder.appContext
+        val appContext = AppModel.singleInstanceHolder.activityContext
 
         return if(type == BranchType.LOCAL) appContext.getString(R.string.local) else appContext.getString(R.string.remote)
     }
@@ -108,7 +108,7 @@ class BranchNameAndTypeDto {
         }
 
         //只有local branch才有upstream
-        val appContext = AppModel.singleInstanceHolder.appContext
+        val appContext = AppModel.singleInstanceHolder.activityContext
 
         val shortUpstreamBranchName = upstream?.remoteBranchShortRefSpec ?:""
 
@@ -123,7 +123,7 @@ class BranchNameAndTypeDto {
         }
 
         //只有local branch才有upstream
-        val appContext = AppModel.singleInstanceHolder.appContext
+        val appContext = AppModel.singleInstanceHolder.activityContext
 
         val upstreamBranchName = upstream?.remoteBranchRefsRemotesFullRefSpec ?:""
 

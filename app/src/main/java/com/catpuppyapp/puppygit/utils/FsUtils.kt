@@ -41,8 +41,6 @@ object FsUtils {
     //必须和 AndroidManifest.xml 里的 provider.android:authorities 的值一样
 //    const val PROVIDER_AUTHORITY = "com.catpuppyapp.puppygit.play.pro.fileprovider"
 
-    private val appContext = AppModel.singleInstanceHolder.appContext
-
     const val textMIME = "text/plain"
     const val appExportFolderName = "PuppyGitExport"
     const val appExportFolderNameUnderDocumentsDirShowToUser = "Documents/${appExportFolderName}"  //显示给用户看的路径
@@ -97,12 +95,12 @@ object FsUtils {
             "*/*",
         )
         val textList = listOf(
-            appContext.getString(R.string.file_open_as_type_text),
-            appContext.getString(R.string.file_open_as_type_image),
-            appContext.getString(R.string.file_open_as_type_audio),
-            appContext.getString(R.string.file_open_as_type_video),
-            appContext.getString(R.string.file_open_as_type_archive),
-            appContext.getString(R.string.file_open_as_type_any),
+            AppModel.singleInstanceHolder.activityContext.getString(R.string.file_open_as_type_text),
+            AppModel.singleInstanceHolder.activityContext.getString(R.string.file_open_as_type_image),
+            AppModel.singleInstanceHolder.activityContext.getString(R.string.file_open_as_type_audio),
+            AppModel.singleInstanceHolder.activityContext.getString(R.string.file_open_as_type_video),
+            AppModel.singleInstanceHolder.activityContext.getString(R.string.file_open_as_type_archive),
+            AppModel.singleInstanceHolder.activityContext.getString(R.string.file_open_as_type_any),
         )
     }
 

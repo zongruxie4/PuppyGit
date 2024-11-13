@@ -33,10 +33,10 @@ fun CreateRemoteDialog(
     loadingOff:()->Unit,
     onCancel:()->Unit ={},
     onErr:suspend (e:Exception)->Unit,
-    onOk:()->Unit = { Msg.requireShow(AppModel.singleInstanceHolder.appContext.getString(R.string.success))},
+    onOk:()->Unit = { Msg.requireShow(AppModel.singleInstanceHolder.activityContext.getString(R.string.success))},
     onFinally:()->Unit,
 ) {
-    val appContext = AppModel.singleInstanceHolder.appContext
+    val appContext = AppModel.singleInstanceHolder.activityContext
 
     val close = {show.value = false}
 

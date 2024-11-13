@@ -1,7 +1,6 @@
 package com.catpuppyapp.puppygit.compose
 
 import androidx.compose.foundation.background
-import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -33,7 +32,7 @@ import com.catpuppyapp.puppygit.utils.AppModel
  * 注：这个放不放到Scaffold里好像无所谓，加载圆圈的背景颜色我已经根据是否darkTheme调了，大背景好像没什么好调的因为是半透明的
  */
 @Composable
-fun LoadingDialog(text:String = AppModel.singleInstanceHolder.appContext.getString(R.string.loading)) {
+fun LoadingDialog(text:String = AppModel.singleInstanceHolder.activityContext.getString(R.string.loading)) {
     val inDarkTheme = Theme.inDarkTheme
     Dialog(
         onDismissRequest = {/* showLoadingDialog.value = false */ },

@@ -1,16 +1,14 @@
 package com.catpuppyapp.puppygit.utils
 
 import android.widget.Toast
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.withContext
 
 class Msg {
     companion object {
-        val defaultErrCallback:suspend (String, String)->Unit = { msg:String, repoId:String,  ->
-            MsgQueue.addToTail(msg)
-            createAndInsertError(repoId,msg)
-            //Log就不在这记了，Log对用户不可见，所以我其实想在哪记都可以
-        }
+//        val defaultErrCallback:suspend (String, String)->Unit = { msg:String, repoId:String,  ->
+//            MsgQueue.addToTail(msg)
+//            createAndInsertError(repoId,msg)
+//            //Log就不在这记了，Log对用户不可见，所以我其实想在哪记都可以
+//        }
 
         //显示时间长短都行，就用这个，否则用具体的showLongDuration和showShortDuration
         val requireShow = { msg:String ->
@@ -24,21 +22,21 @@ class Msg {
 //            }
 
             doJobWithMainContext {
-                showToast(AppModel.singleInstanceHolder.appContext, msg)
+                showToast(AppModel.singleInstanceHolder.activityContext, msg)
             }
 
         }
 
         val requireShowShortDuration = { msg:String ->
             doJobWithMainContext {
-                showToast(AppModel.singleInstanceHolder.appContext, msg, Toast.LENGTH_SHORT)
+                showToast(AppModel.singleInstanceHolder.activityContext, msg, Toast.LENGTH_SHORT)
             }
 
         }
 
         val requireShowLongDuration = { msg:String ->
             doJobWithMainContext {
-                showToast(AppModel.singleInstanceHolder.appContext, msg, Toast.LENGTH_LONG)
+                showToast(AppModel.singleInstanceHolder.activityContext, msg, Toast.LENGTH_LONG)
             }
 
         }

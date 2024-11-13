@@ -27,7 +27,6 @@ import com.catpuppyapp.puppygit.utils.Msg
 import com.catpuppyapp.puppygit.utils.MyLog
 import com.catpuppyapp.puppygit.utils.createAndInsertError
 import com.catpuppyapp.puppygit.utils.doJobThenOffLoading
-import com.catpuppyapp.puppygit.utils.state.StateUtil
 import com.github.git24j.core.Repository
 
 
@@ -47,7 +46,7 @@ fun CreateTagDialog(showDialog:MutableState<Boolean>,
 
                     onOkDoneCallback:(newTagFullOidStr:String)->Unit
 ) {
-    val appContext = AppModel.singleInstanceHolder.appContext
+    val appContext = AppModel.singleInstanceHolder.activityContext
 
     val tagNameErrMsg = rememberSaveable { mutableStateOf("")}
     val commitHashShortOrLongErrMsg = rememberSaveable { mutableStateOf("")}

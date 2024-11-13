@@ -16,7 +16,6 @@ import com.catpuppyapp.puppygit.play.pro.R
 import com.catpuppyapp.puppygit.style.MyStyleKt
 import com.catpuppyapp.puppygit.utils.AppModel
 import com.catpuppyapp.puppygit.utils.doActIfIndexGood
-import com.catpuppyapp.puppygit.utils.state.StateUtil
 
 @Composable
 fun CredentialSelector(
@@ -25,7 +24,7 @@ fun CredentialSelector(
     title:String = stringResource(R.string.select_credential),
 ) {
 
-    val appContext = AppModel.singleInstanceHolder.appContext
+    val appContext = AppModel.singleInstanceHolder.activityContext
 
     val note = rememberSaveable { mutableStateOf("")}
 

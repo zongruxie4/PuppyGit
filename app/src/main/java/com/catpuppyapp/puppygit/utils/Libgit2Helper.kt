@@ -892,7 +892,7 @@ class Libgit2Helper {
 
         //返回 success 就是就绪了，否则就是没就绪
         fun readyForContinueMerge(repo: Repository):Ret<String?> {
-            val appContext = AppModel.singleInstanceHolder.appContext
+            val appContext = AppModel.singleInstanceHolder.activityContext
 
             try {
                 if(repo.state() != Repository.StateT.MERGE) {
@@ -915,7 +915,7 @@ class Libgit2Helper {
         //不会返回oid，只是和continue rebase的返回值一致，方便返回
         fun readyForContinueRebase(repo: Repository):Ret<Oid?> {
             val funName = "readyForContinueRebase"
-            val appContext = AppModel.singleInstanceHolder.appContext
+            val appContext = AppModel.singleInstanceHolder.activityContext
 
             try {
                 //20240814:目前libgit2只支持REBASE_MERGE，不支持 git默认的 REBASE_INTERACTIVE
@@ -2016,7 +2016,7 @@ class Libgit2Helper {
         }
 
         fun isReadyCreateCommit(repo: Repository):Ret<Oid?> {
-            val appContext = AppModel.singleInstanceHolder.appContext
+            val appContext = AppModel.singleInstanceHolder.activityContext
 
             //检查是否存在未stage的冲突，若有则不能创建提交
             if(hasConflictItemInRepo(repo)) {
@@ -2587,7 +2587,7 @@ class Libgit2Helper {
                             )
                         }
 
-                        Msg.requireShow(AppModel.singleInstanceHolder.appContext.getString(R.string.aborted_unknown_host))
+                        Msg.requireShow(AppModel.singleInstanceHolder.activityContext.getString(R.string.aborted_unknown_host))
 
                         // reject at here, wait user response, then user need re-try the action before requested, add allow and reject callbacks to the request too complex, and maybe can't refresh view, so, let use do the action again by self, better
                         return@cb -1
@@ -4110,7 +4110,7 @@ class Libgit2Helper {
                 //因为切换了分支，所以需要更新db
                 //先根据id查出最新的db数据
                 val repoDb = AppModel.singleInstanceHolder.dbContainer.repoRepository
-                val appContext = AppModel.singleInstanceHolder.appContext
+                val appContext = AppModel.singleInstanceHolder.activityContext
 //            val repoFromDb = repoDb.getById(repoId)
 //            if (repoFromDb == null) {
 //                requireShowToast(appContext.getString(R.string.err_when_querying_repo_info))
@@ -4183,7 +4183,7 @@ class Libgit2Helper {
             overwriteIfExisted:Boolean
         ):Ret<Triple<String, String, String>?>  //返回: 分支长名，短名，完整hash
         {
-            val appContext = AppModel.singleInstanceHolder.appContext
+            val appContext = AppModel.singleInstanceHolder.activityContext
 
             //这个如果检查，不会发生本地和远程分支同名的情况，例如同时存在 refs/remotes/origin/abc 和 refs/heads/origin/abc，好处是不容易混淆，坏处是增加了限制；
             //如果不检查，则可创建和远程分支同名分支，虽然全名处于不同命名空间（refs/remotes和refs/heads），但很多地方是通过短名解析的，所以实际上会混淆解析失败或者原本想
@@ -4752,7 +4752,7 @@ class Libgit2Helper {
         //不会返回oid，只是和continue rebase的返回值一致，方便返回
         fun readyForContinueCherrypick(repo: Repository):Ret<Oid?> {
             val funName = "readyForContinueCherrypick"
-            val appContext = AppModel.singleInstanceHolder.appContext
+            val appContext = AppModel.singleInstanceHolder.activityContext
 
             try {
                 //20240814:目前libgit2只支持REBASE_MERGE，不支持 git默认的 REBASE_INTERACTIVE
@@ -5305,7 +5305,7 @@ class Libgit2Helper {
             val parentWorkdirPathNoSlashSuffix = getRepoWorkdirNoEndsWithSlash(repo)
             val parentDotGitModuleFile = File(parentWorkdirPathNoSlashSuffix, Cons.gitDotModules)
             val list = mutableListOf<SubmoduleDto>()
-            val appContext = AppModel.singleInstanceHolder.appContext
+            val appContext = AppModel.singleInstanceHolder.activityContext
             val invalidUrlAlertText = appContext.getString(R.string.submodule_invalid_url_err)
 
             Submodule.foreach(repo) { sm, name ->
