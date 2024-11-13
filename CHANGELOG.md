@@ -1,3 +1,7 @@
+1.0.6.2v38 - 20241113:
+- support ssh
+
+
 1.0.6.1v37 - 20241111:
 - support view file history
 - support direct item line in diff screen
