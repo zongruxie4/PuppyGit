@@ -98,7 +98,8 @@ class MainActivity : ComponentActivity() {
 //      //  AppModel.init_1(applicationContext = applicationContext, exitApp = {finish()})
 
         // baseContext, life time with activity, can get properly resources, but save reference to static field will increase risk of memory leak
-        AppModel.init_1(activityContext = baseContext, realAppContext = applicationContext, exitApp = {finish()})
+//        AppModel.init_1(activityContext = baseContext, realAppContext = applicationContext, exitApp = {finish()})
+        AppModel.init_1(activityContext = this, realAppContext = applicationContext, exitApp = {finish()})
 
         //for make imePadding() work
         WindowCompat.setDecorFitsSystemWindows(window, false)
