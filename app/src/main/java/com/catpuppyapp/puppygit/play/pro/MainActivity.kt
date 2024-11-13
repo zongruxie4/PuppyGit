@@ -253,7 +253,7 @@ fun MainCompose() {
             textCompose = {
                 CopyScrollableColumn {
                     Text(
-                        stringResource(R.string.trying_connect_unknown_host_only_allow_if_trust),
+                        stringResource(R.string.trying_connect_unknown_host_only_allow_if_trust)+"\n",
                         fontWeight = FontWeight.Bold,
                         color = MyStyleKt.TextColor.danger()
                     )
@@ -261,35 +261,37 @@ fun MainCompose() {
 
                     Row {
                         Text("hostname: ")
-                        Text(item?.sshCert?.hostname?:"", fontWeight = FontWeight.Bold)
+                        Text((item?.sshCert?.hostname?:"")+"\n", fontWeight = FontWeight.Bold)
                     }
 
                     Spacer(Modifier.height(spacerHeight))
-
-                    val formattedMd5 = item?.sshCert?.formattedMd5()
-                    if(formattedMd5?.isNotBlank() == true) {
-                        Row {
-                            Text("md5: ")
-                            Text(formattedMd5, fontWeight = FontWeight.Bold)
-                        }
-                        Spacer(Modifier.height(spacerHeight))
-                    }
-
-                    val formattedSha1 = item?.sshCert?.formattedSha1()
-                    if(formattedSha1?.isNotBlank() == true) {
-                        Row {
-                            Text("sha1: ")
-                            Text(formattedSha1, fontWeight = FontWeight.Bold)
-                        }
-                        Spacer(Modifier.height(spacerHeight))
-                    }
 
                     val formattedSha256 = item?.sshCert?.formattedSha256()
                     if(formattedSha256?.isNotBlank() == true) {
                         Row {
                             Text("sha256: ")
-                            Text(formattedSha256, fontWeight = FontWeight.Bold)
+                            Text(formattedSha256+"\n", fontWeight = FontWeight.Bold)
 
+                        }
+                        Spacer(Modifier.height(spacerHeight))
+                    }
+
+
+                    val formattedSha1 = item?.sshCert?.formattedSha1()
+                    if(formattedSha1?.isNotBlank() == true) {
+                        Row {
+                            Text("sha1: ")
+                            Text(formattedSha1+"\n", fontWeight = FontWeight.Bold)
+                        }
+                        Spacer(Modifier.height(spacerHeight))
+                    }
+
+
+                    val formattedMd5 = item?.sshCert?.formattedMd5()
+                    if(formattedMd5?.isNotBlank() == true) {
+                        Row {
+                            Text("md5: ")
+                            Text(formattedMd5+"\n", fontWeight = FontWeight.Bold)
                         }
                         Spacer(Modifier.height(spacerHeight))
                     }
@@ -297,7 +299,7 @@ fun MainCompose() {
                     if(item?.sshCert?.hostKey?.isNotBlank() == true) {
                         Row {
                             Text("host key: ")
-                            Text(item.sshCert.hostKey, fontWeight = FontWeight.Bold)
+                            Text(item.sshCert.hostKey+"\n", fontWeight = FontWeight.Bold)
                         }
 
                         Spacer(Modifier.height(spacerHeight))
@@ -305,7 +307,7 @@ fun MainCompose() {
 
                     MyCheckBox(stringResource(R.string.i_trust_the_host), iTrustTheHost)
                     if(iTrustTheHost.value) {
-                        Text(stringResource(R.string.operation_aborted_after_allowing_maybe_retry), fontWeight = FontWeight.Light)
+                        Text(stringResource(R.string.operation_aborted_after_allowing_maybe_retry), color = MyStyleKt.TextColor.highlighting_green)
                     }
                     Spacer(Modifier.height(spacerHeight))
 
@@ -325,7 +327,7 @@ fun MainCompose() {
             doJobThenOffLoading {
                 Lg2HomeUtils.addItemToUserKnownHostsFile(currentSshAskUserUnknownHostRequest.value!!.sshCert)
 
-                Msg.requireShow(appContext.getString(R.string.success))
+                Msg.requireShowLongDuration(appContext.getString(R.string.allowed_plz_re_try_clone_fetch_push))
 
                 allowOrRejectSshDialogCallback()
             }

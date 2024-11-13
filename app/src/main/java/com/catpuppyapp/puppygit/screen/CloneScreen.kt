@@ -85,7 +85,6 @@ import com.catpuppyapp.puppygit.utils.AppModel
 import com.catpuppyapp.puppygit.utils.FsUtils
 import com.catpuppyapp.puppygit.utils.Libgit2Helper.Companion.getGitUrlType
 import com.catpuppyapp.puppygit.utils.Msg
-import com.catpuppyapp.puppygit.utils.MyLog
 import com.catpuppyapp.puppygit.utils.addPrefix
 import com.catpuppyapp.puppygit.utils.boolToDbInt
 import com.catpuppyapp.puppygit.utils.checkFileOrFolderNameAndTryCreateFile

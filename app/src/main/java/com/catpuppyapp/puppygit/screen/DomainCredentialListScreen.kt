@@ -3,14 +3,12 @@ package com.catpuppyapp.puppygit.screen
 import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.combinedClickable
-import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.lazy.rememberLazyListState
-import androidx.compose.foundation.rememberScrollState
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Add
@@ -195,8 +193,8 @@ fun DomainCredentialListScreen(
 
                     Spacer(Modifier.height(15.dp))
 
-                    CredentialSelector(credentialList.value, selectedCredentialIdx, stringResource(R.string.http_https))
-                    CredentialSelector(credentialList.value, selectedSshCredentialIdx, stringResource(R.string.ssh))
+                    CredentialSelector(credentialList.value, selectedCredentialIdx, stringResource(R.string.http_s_credential))
+                    CredentialSelector(credentialList.value, selectedSshCredentialIdx, stringResource(R.string.ssh_credential))
 
                 }
             },

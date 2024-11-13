@@ -1075,5 +1075,9 @@
     <string name="aborted_unknown_host">aborted: unknown host</string>
     <string name="operation_aborted_after_allowing_maybe_retry">Your operation was aborted, after allowing the host, you maybe want to re-try it.</string>
     <string name="forget">Forget</string>
+    <string name="allowed_plz_re_try_clone_fetch_push">Allowed, plz re-try Clone/Fetch/Push</string>
+    <string name="http_s_credential">http(s) Credential</string>
+    <string name="http_s">http(s)</string>
+    <string name="if_unable_choose_a_path_just_copy_paste_instead">If unable to choose a path, may be your system removed the file picker. Just copy the path you wised and paste it instead.</string>
 
 </resources>

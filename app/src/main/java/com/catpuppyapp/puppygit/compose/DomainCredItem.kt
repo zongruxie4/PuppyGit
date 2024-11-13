@@ -83,7 +83,7 @@ fun DomainCredItem(
             verticalAlignment = Alignment.CenterVertically,
 
         ){
-            Text(text = stringResource(R.string.credential) +":")
+            Text(text = stringResource(R.string.http_s) +":")
             Text(text = thisItem.credName ?: none,
                 maxLines = 1,
                 overflow = TextOverflow.Ellipsis,
@@ -95,7 +95,7 @@ fun DomainCredItem(
             verticalAlignment = Alignment.CenterVertically,
 
         ){
-            Text(text = stringResource(R.string.ssh_credential) +":")
+            Text(text = stringResource(R.string.ssh) +":")
             Text(text = thisItem.sshCredName ?: none,
                 maxLines = 1,
                 overflow = TextOverflow.Ellipsis,

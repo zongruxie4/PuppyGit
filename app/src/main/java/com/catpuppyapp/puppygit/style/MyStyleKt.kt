@@ -58,7 +58,7 @@ class MyStyleKt{
         val enable = Color.Unspecified
         val disable = Color.LightGray
         val disable_DarkTheme = Color(0xFF505050)
-        val highlighting_green =Color(0xFF4CAF50)
+        val highlighting_green =Color(0xFF1FAB26)
 
         //Editor font color
         val lineNum_forEditorInLightTheme = Color.DarkGray
