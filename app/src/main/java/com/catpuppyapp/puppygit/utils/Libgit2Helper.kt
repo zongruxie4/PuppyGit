@@ -2546,6 +2546,7 @@ class Libgit2Helper {
                         // libgit2 think is valid, usually is hostkey in the known_hosts file
                         // just ignore, hornor libgit2 decided
                         if(valid) {
+                            MyLog.d(TAG, "libgit2 think cert of '$hostname' is valid, the cert maybe in the 'known_hosts' file, certCb will return 1 to honor libgit2's decide, then the connection should allow")
                             return@cb 1
                         }
 

@@ -147,7 +147,7 @@ object Lg2HomeUtils {
         val list = getUserKnownHostsFileItems()
         val inList = list.contains(item)
 
-        MyLog.d(TAG, "sshCert in list: ${inList}, sshCert: $item, sshCertList: ${list}")
+        MyLog.d(TAG, "sshCert in list: $inList, list.size=${list.size}, sshCert=$item, sshCertList=$list")
 
         return inList
     }
