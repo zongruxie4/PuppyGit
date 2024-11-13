@@ -36,7 +36,12 @@ import java.io.File
 class AppModel {
     companion object {
         private val TAG ="AppModel"
+
+        private var inited_1 = false
+        private var inited_2 = false
+        private var inited_3 = false
         val singleInstanceHolder:AppModel = AppModel()
+
 
 
 //        /**
@@ -65,102 +70,107 @@ class AppModel {
          * 中量级，应该不会阻塞很久
          */
         fun init_1(appModel: AppModel = singleInstanceHolder, applicationContext:Context, exitApp:()->Unit) {
-            val funName = "init_1"
+            if(inited_1.not()) {
+                inited_1 = true
 
-            //加载libgit2等库
-            LibLoader.load()
+                val funName = "init_1"
 
-            //必须先初始化libgit2，不然会报segment错误
-            Libgit2.init();
+                //加载libgit2等库
+                LibLoader.load()
 
-//            LibgitTwo.jniTestAccessExternalStorage()
+                //必须先初始化libgit2，不然会报segment错误
+                Libgit2.init();
 
-            //disable dirs owner validation for libgit2, make it support access external storage path like /sdcard or /storage/emulated/storage
-            Libgit2.optsGitOptSetOwnerValidation(false)
+    //            LibgitTwo.jniTestAccessExternalStorage()
 
-            appModel.appContext = applicationContext;
-//            appModel.mainActivity = mainActivity  //忘了这个干嘛的了，后来反正没用了，IDE提示什么Activity内存泄漏之类的，所以就注释了
+                //disable dirs owner validation for libgit2, make it support access external storage path like /sdcard or /storage/emulated/storage
+                Libgit2.optsGitOptSetOwnerValidation(false)
 
-            //set dbHolder ，如果以后使用依赖注入框架，这个需要修改
-            appModel.dbContainer = AppDataContainer(applicationContext)
+                appModel.appContext = applicationContext;
+    //            appModel.mainActivity = mainActivity  //忘了这个干嘛的了，后来反正没用了，IDE提示什么Activity内存泄漏之类的，所以就注释了
 
-            //设置app工作目录，如果获取不到目录，app无法工作，会在这抛出异常
-            val externalFilesDir = getExternalFilesDirOrThrowException(applicationContext)
-            val externalCacheDir = getExternalCacheDirOrThrowException(applicationContext)
-            val innerDataDir = getInnerDataDirOrThrowException(applicationContext)
-            appModel.externalFilesDir = externalFilesDir
-            appModel.externalCacheDir = externalCacheDir
-            appModel.innerDataDir = innerDataDir
+                //set dbHolder ，如果以后使用依赖注入框架，这个需要修改
+                appModel.dbContainer = AppDataContainer(applicationContext)
 
-
-//            AppModel.singleInstanceHolder.logDir = createLogDirIfNonexists(externalCacheDir, Cons.defaultLogDirName);
-
-            //20240527：禁用，sd相关 ，开始
-//            appModel.internalStorageDirsParentDir = createDirIfNonexists(externalFilesDir, Cons.defaultInternalStorageDirsParentDirName)
-
-            //设置repodir
-//            appModel.allRepoParentDir = createDirIfNonexists(appModel.internalStorageDirsParentDir, StorageDirCons.DefaultStorageDir.repoStorage1.name)
-//            StorageDirCons.DefaultStorageDir.repoStorage1.fullPath = appModel.allRepoParentDir.canonicalPath
-//
-//            //设置对用户可见的app工作目录
-//            appModel.appDataUnderAllReposDir = createDirIfNonexists(appModel.internalStorageDirsParentDir, StorageDirCons.DefaultStorageDir.puppyGitDataDir.name)
-//            StorageDirCons.DefaultStorageDir.puppyGitDataDir.fullPath = appModel.appDataUnderAllReposDir.canonicalPath
-            //20240527：禁用，sd相关 ，结束
+                //设置app工作目录，如果获取不到目录，app无法工作，会在这抛出异常
+                val externalFilesDir = getExternalFilesDirOrThrowException(applicationContext)
+                val externalCacheDir = getExternalCacheDirOrThrowException(applicationContext)
+                val innerDataDir = getInnerDataDirOrThrowException(applicationContext)
+                appModel.externalFilesDir = externalFilesDir
+                appModel.externalCacheDir = externalCacheDir
+                appModel.innerDataDir = innerDataDir
 
 
-            //与sd相关代码互斥，开始
-            //设置repodir
-            appModel.allRepoParentDir = createDirIfNonexists(externalFilesDir, Cons.defaultAllRepoParentDirName)
-            //test access external storage, passed
-//            appModel.allRepoParentDir = createDirIfNonexists(File("/sdcard"), "puppygit-repos")
+    //            AppModel.singleInstanceHolder.logDir = createLogDirIfNonexists(externalCacheDir, Cons.defaultLogDirName);
+
+                //20240527：禁用，sd相关 ，开始
+    //            appModel.internalStorageDirsParentDir = createDirIfNonexists(externalFilesDir, Cons.defaultInternalStorageDirsParentDirName)
+
+                //设置repodir
+    //            appModel.allRepoParentDir = createDirIfNonexists(appModel.internalStorageDirsParentDir, StorageDirCons.DefaultStorageDir.repoStorage1.name)
+    //            StorageDirCons.DefaultStorageDir.repoStorage1.fullPath = appModel.allRepoParentDir.canonicalPath
+    //
+    //            //设置对用户可见的app工作目录
+    //            appModel.appDataUnderAllReposDir = createDirIfNonexists(appModel.internalStorageDirsParentDir, StorageDirCons.DefaultStorageDir.puppyGitDataDir.name)
+    //            StorageDirCons.DefaultStorageDir.puppyGitDataDir.fullPath = appModel.appDataUnderAllReposDir.canonicalPath
+                //20240527：禁用，sd相关 ，结束
 
 
-            StorageDirCons.DefaultStorageDir.puppyGitRepos.fullPath = appModel.allRepoParentDir.canonicalPath
-
-            //设置对用户可见的app工作目录
-            appModel.appDataUnderAllReposDir = createDirIfNonexists(appModel.allRepoParentDir, Cons.defalutPuppyGitDataUnderAllReposDirName)
-            //与sd相关代码互斥，结束
-
-            Lg2HomeUtils.init(appModel.appDataUnderAllReposDir, applicationContext)
-
-            //存放app内置证书的路径
-            appModel.certBundleDir = createDirIfNonexists(appModel.appDataUnderAllReposDir, CertMan.defaultCertBundleDirName)
-            appModel.certUserDir = createDirIfNonexists(appModel.appDataUnderAllReposDir, CertMan.defaultCertUserDirName)
+                //与sd相关代码互斥，开始
+                //设置repodir
+                appModel.allRepoParentDir = createDirIfNonexists(externalFilesDir, Cons.defaultAllRepoParentDirName)
+                //test access external storage, passed
+    //            appModel.allRepoParentDir = createDirIfNonexists(File("/sdcard"), "puppygit-repos")
 
 
-            appModel.fileSnapshotDir = createDirIfNonexists(appModel.appDataUnderAllReposDir, Cons.defaultFileSnapshotDirName)
-            //创建editor cache目录
-            appModel.editCacheDir = createDirIfNonexists(appModel.appDataUnderAllReposDir, Cons.defaultEditCacheDirName)
+                StorageDirCons.DefaultStorageDir.puppyGitRepos.fullPath = appModel.allRepoParentDir.canonicalPath
 
-            //创建git pathch 导出目录
-            appModel.patchDir = createDirIfNonexists(appModel.appDataUnderAllReposDir, Cons.defaultPatchDirName)
+                //设置对用户可见的app工作目录
+                appModel.appDataUnderAllReposDir = createDirIfNonexists(appModel.allRepoParentDir, Cons.defalutPuppyGitDataUnderAllReposDirName)
+                //与sd相关代码互斥，结束
 
-            //create settings folder
-            appModel.settingsDir = createDirIfNonexists(appModel.appDataUnderAllReposDir, Cons.defaultSettingsDirName)
+                Lg2HomeUtils.init(appModel.appDataUnderAllReposDir, applicationContext)
 
-            // log dir，必须在初始化log前初始化这个变量
-            appModel.logDir = createDirIfNonexists(appModel.appDataUnderAllReposDir, Cons.defaultLogDirName)
-            appModel.submoduleDotGitBackupDir = createDirIfNonexists(appModel.appDataUnderAllReposDir, Cons.defaultSubmoduleDotGitFileBakDirName)
-
-            //设置文件快照目录
-//            AppModel.singleInstanceHolder.fileSnapshotDir = createFileSnapshotDirIfNonexists(AppModel.singleInstanceHolder.allRepoParentDir, Cons.defaultFileSnapshotDirName)
-
-            //设置退出app的函数
-            appModel.exitApp = exitApp
-
-            //debug mode相关变量
-            //必须先初始化此变量再去查询isDebugModeOn()
-            appModel.debugModeFlagFile = File(appModel.appDataUnderAllReposDir, DebugModeManager.debugModeFlagFileName)  //debugMode检测模式是如果在特定目录下存在名为`debugModeFlagFileName`变量值的文件，则debugModeOn，否则off
-            //初始化debugModeOn。注：app运行期间若需修改此变量，应通过DebugModeManager来修改；获取则直接通过AppModel.singleInstanceHolder.debugModeOn来获取即可
-            appModel.debugModeOn = appModel.isDebugModeFlagFileExists()  //TODO 在设置页面添加相关选项“开启调试模式”，开启则在上面的目录创建debugModeOn文件，否则删除文件，这样每次启动app就能通过检查文件是否存在来判断是否开了debugMode了。(btw: 因为要在Settings初始化之前就读取到这个变量，所以不能放到Settings里)
+                //存放app内置证书的路径
+                appModel.certBundleDir = createDirIfNonexists(appModel.appDataUnderAllReposDir, CertMan.defaultCertBundleDirName)
+                appModel.certUserDir = createDirIfNonexists(appModel.appDataUnderAllReposDir, CertMan.defaultCertUserDirName)
 
 
-            //for test unstable features
-            dev_EnableUnTestedFeature = try {
-                File(appModel.appDataUnderAllReposDir, FlagFileName.enableUnTestedFeature).exists()
-            }catch (_:Exception) {
-                false
+                appModel.fileSnapshotDir = createDirIfNonexists(appModel.appDataUnderAllReposDir, Cons.defaultFileSnapshotDirName)
+                //创建editor cache目录
+                appModel.editCacheDir = createDirIfNonexists(appModel.appDataUnderAllReposDir, Cons.defaultEditCacheDirName)
+
+                //创建git pathch 导出目录
+                appModel.patchDir = createDirIfNonexists(appModel.appDataUnderAllReposDir, Cons.defaultPatchDirName)
+
+                //create settings folder
+                appModel.settingsDir = createDirIfNonexists(appModel.appDataUnderAllReposDir, Cons.defaultSettingsDirName)
+
+                // log dir，必须在初始化log前初始化这个变量
+                appModel.logDir = createDirIfNonexists(appModel.appDataUnderAllReposDir, Cons.defaultLogDirName)
+                appModel.submoduleDotGitBackupDir = createDirIfNonexists(appModel.appDataUnderAllReposDir, Cons.defaultSubmoduleDotGitFileBakDirName)
+
+                //设置文件快照目录
+    //            AppModel.singleInstanceHolder.fileSnapshotDir = createFileSnapshotDirIfNonexists(AppModel.singleInstanceHolder.allRepoParentDir, Cons.defaultFileSnapshotDirName)
+
+                //设置退出app的函数
+                appModel.exitApp = exitApp
+
+                //debug mode相关变量
+                //必须先初始化此变量再去查询isDebugModeOn()
+                appModel.debugModeFlagFile = File(appModel.appDataUnderAllReposDir, DebugModeManager.debugModeFlagFileName)  //debugMode检测模式是如果在特定目录下存在名为`debugModeFlagFileName`变量值的文件，则debugModeOn，否则off
+                //初始化debugModeOn。注：app运行期间若需修改此变量，应通过DebugModeManager来修改；获取则直接通过AppModel.singleInstanceHolder.debugModeOn来获取即可
+                appModel.debugModeOn = appModel.isDebugModeFlagFileExists()  //TODO 在设置页面添加相关选项“开启调试模式”，开启则在上面的目录创建debugModeOn文件，否则删除文件，这样每次启动app就能通过检查文件是否存在来判断是否开了debugMode了。(btw: 因为要在Settings初始化之前就读取到这个变量，所以不能放到Settings里)
+
+
+                //for test unstable features
+                dev_EnableUnTestedFeature = try {
+                    File(appModel.appDataUnderAllReposDir, FlagFileName.enableUnTestedFeature).exists()
+                }catch (_:Exception) {
+                    false
+                }
             }
+
         }
 
         /**
@@ -170,191 +180,194 @@ class AppModel {
         suspend fun init_2(appModel: AppModel = singleInstanceHolder,
                            editCacheDirPath:String=appModel.editCacheDir.canonicalPath
         ) {
-            val funName = "init_2"
+            if(inited_2.not()) {
+                inited_2 = true
+                val funName = "init_2"
 
-            val applicationContext = appModel.appContext
-            /*
-                init log
-             */
-            //初始化日志
-            //设置 日志保存时间和日志等级，(考虑：以后把这个改成从配置文件读取相关设置项的值，另外，用runBlocking可以实现阻塞调用suspend方法查db，但不推荐)
-//            MyLog.init(saveDays=3, logLevel='w', logDirPath=appModel.logDir.canonicalPath);
-            MyLog.init(
-                logKeepDays=PrefMan.getInt(applicationContext, PrefMan.Key.logKeepDays, MyLog.defaultLogKeepDays),
-                logLevel=PrefMan.getChar(applicationContext, PrefMan.Key.logLevel, MyLog.defaultLogLevel),
-                logDirPath=appModel.logDir.canonicalPath
-            )
+                val applicationContext = appModel.appContext
+                /*
+                    init log
+                 */
+                //初始化日志
+                //设置 日志保存时间和日志等级，(考虑：以后把这个改成从配置文件读取相关设置项的值，另外，用runBlocking可以实现阻塞调用suspend方法查db，但不推荐)
+    //            MyLog.init(saveDays=3, logLevel='w', logDirPath=appModel.logDir.canonicalPath);
+                MyLog.init(
+                    logKeepDays=PrefMan.getInt(applicationContext, PrefMan.Key.logKeepDays, MyLog.defaultLogKeepDays),
+                    logLevel=PrefMan.getChar(applicationContext, PrefMan.Key.logLevel, MyLog.defaultLogLevel),
+                    logDirPath=appModel.logDir.canonicalPath
+                )
 
-            /*
-               init settings
-             */
-//            val settingsSaveDir = appModel.innerDataDir  // deprecated, move to use-visible puppygit-data folder
-            val settingsSaveDir = appModel.getOrCreateSettingsDir()
+                /*
+                   init settings
+                 */
+    //            val settingsSaveDir = appModel.innerDataDir  // deprecated, move to use-visible puppygit-data folder
+                val settingsSaveDir = appModel.getOrCreateSettingsDir()
 
-            /*
-             * init settings
-             * step: try origin settings file first, if failed, try backup file, if failed, remove settings file, create a new settings, it will lost all settings
-             */
-            //初始化设置项
-            try {
-                //init settings, it shouldn't blocking long time
-                SettingsUtil.init(settingsSaveDir, useBak = false)
-            }catch (e:Exception) {
-                //用原始设置文件初始化异常
+                /*
+                 * init settings
+                 * step: try origin settings file first, if failed, try backup file, if failed, remove settings file, create a new settings, it will lost all settings
+                 */
+                //初始化设置项
                 try {
-                    //初始化设置，用备用设置文件，若成功则恢复备用到原始设置文件
-                    MyLog.e(TAG, "#$funName init settings err:"+e.stackTraceToString())
-                    MyLog.w(TAG, "#$funName init origin settings err, will try use backup")
-
-                    SettingsUtil.init(settingsSaveDir, useBak = true)
-
-                    MyLog.w(TAG, "#$funName init bak settings success, will restore it to origin")
-
-                    SettingsUtil.copyBakToOrigin()  //init成功，所以这里肯定初始化了原始和备用配置文件的File对象，因此不用传参数
-
-                    MyLog.w(TAG, "#$funName restore bak settings to origin success")
-                }catch (e2:Exception) {
-                    //用备用文件初始化设置也异常，尝试重建设置项，用户设置会丢失
-                    MyLog.e(TAG, "#$funName init settings with bak err:"+e2.stackTraceToString())
-                    MyLog.w(TAG, "#$funName init bak settings err, will clear origin settings, user settings will lost!")
-
-                    // delete settings files
-                    SettingsUtil.delSettingsFile(settingsSaveDir)
-
-                    MyLog.w(TAG, "#$funName del settings success, will reInit settings, if failed, app will not work...")
-
-                    // re init
+                    //init settings, it shouldn't blocking long time
                     SettingsUtil.init(settingsSaveDir, useBak = false)
+                }catch (e:Exception) {
+                    //用原始设置文件初始化异常
+                    try {
+                        //初始化设置，用备用设置文件，若成功则恢复备用到原始设置文件
+                        MyLog.e(TAG, "#$funName init settings err:"+e.stackTraceToString())
+                        MyLog.w(TAG, "#$funName init origin settings err, will try use backup")
 
-                    MyLog.w(TAG, "#$funName reInit settings success")
+                        SettingsUtil.init(settingsSaveDir, useBak = true)
+
+                        MyLog.w(TAG, "#$funName init bak settings success, will restore it to origin")
+
+                        SettingsUtil.copyBakToOrigin()  //init成功，所以这里肯定初始化了原始和备用配置文件的File对象，因此不用传参数
+
+                        MyLog.w(TAG, "#$funName restore bak settings to origin success")
+                    }catch (e2:Exception) {
+                        //用备用文件初始化设置也异常，尝试重建设置项，用户设置会丢失
+                        MyLog.e(TAG, "#$funName init settings with bak err:"+e2.stackTraceToString())
+                        MyLog.w(TAG, "#$funName init bak settings err, will clear origin settings, user settings will lost!")
+
+                        // delete settings files
+                        SettingsUtil.delSettingsFile(settingsSaveDir)
+
+                        MyLog.w(TAG, "#$funName del settings success, will reInit settings, if failed, app will not work...")
+
+                        // re init
+                        SettingsUtil.init(settingsSaveDir, useBak = false)
+
+                        MyLog.w(TAG, "#$funName reInit settings success")
+                    }
                 }
-            }
 
 
-            //加载证书 for TLS (https
-            CertMan.init(appModel.appContext, appModel.certBundleDir, appModel.certUserDir)  //加载app 内嵌证书捆绑包(app cert bundle)
-            //加载系统证书，不然jni里c直接访问网络，openssl不知道证书在哪，导致访问https时报ssl verify错误
-//            CertMan.loadSysCerts()  //加载系统证书(改用app内嵌证书了，这个默认不用了，会导致启动很慢
+                //加载证书 for TLS (https
+                CertMan.init(appModel.appContext, appModel.certBundleDir, appModel.certUserDir)  //加载app 内嵌证书捆绑包(app cert bundle)
+                //加载系统证书，不然jni里c直接访问网络，openssl不知道证书在哪，导致访问https时报ssl verify错误
+    //            CertMan.loadSysCerts()  //加载系统证书(改用app内嵌证书了，这个默认不用了，会导致启动很慢
 
-            //根据App版本号执行迁移，如果有必要的话
-            AppVersionMan.init migrate@{ oldVer ->
-                //如果文件不存在或解析失败或已经是当前最新版本，直接返回true
-                if(oldVer == AppVersionMan.err_fileNonExists || oldVer == AppVersionMan.err_parseVersionFailed
-                    || oldVer==AppVersionMan.currentVersion
-                ) {
+                //根据App版本号执行迁移，如果有必要的话
+                AppVersionMan.init migrate@{ oldVer ->
+                    //如果文件不存在或解析失败或已经是当前最新版本，直接返回true
+                    if(oldVer == AppVersionMan.err_fileNonExists || oldVer == AppVersionMan.err_parseVersionFailed
+                        || oldVer==AppVersionMan.currentVersion
+                    ) {
+                        return@migrate true
+                    }
+
+                    //不是最新版本，执行迁移, if ver==1 do sth, else if ==2, do sth else ... 最好用try...catch包裹，并且将迁移代码设置为幂等的，这样出错可再次重新调用
+
+                    //迁移成功后返回true
                     return@migrate true
                 }
 
-                //不是最新版本，执行迁移, if ver==1 do sth, else if ==2, do sth else ... 最好用try...catch包裹，并且将迁移代码设置为幂等的，这样出错可再次重新调用
-
-                //迁移成功后返回true
-                return@migrate true
-            }
-
-            //执行会suspend的初始化操作
-            //检查是否需要迁移密码
-            try {
-                appModel.dbContainer.passEncryptRepository.migrateIfNeed(appModel.dbContainer.credentialRepository)
-            }catch (e:Exception) {
-                MyLog.e(TAG, "#$funName migrate password err:"+e.stackTraceToString())
-                MyLog.w(TAG, "#$funName migrate password err, user's password may will be invalid :(")
-            }
-
-//           // val settingsSaveDir = appModel.getOrCreateSettingsDir()
-            val settings = SettingsUtil.getSettingsSnapshot()
-
-
-            //初始化EditCache
-            try {
-                val editCacheKeepInDays = settings.editor.editCacheKeepInDays
-                //当设置项中启用功能时，进一步检查是否存在disable文件，不存在则启用，否则禁用，这样做是为了方便在实现设置页面前进行测试，直接把功能设为开启，然后通过创建删除disable文件控制实际是否开启，测试很方便
-                val editCacheEnable = settings.editor.editCacheEnable || File(appModel.appDataUnderAllReposDir, FlagFileName.enableEditCache).exists()
-
-                EditCache.init(keepInDays = editCacheKeepInDays, cacheDirPath = editCacheDirPath, enableCache = editCacheEnable)
-            }catch (e:Exception) {
-                MyLog.e(TAG, "#$funName init EditCache err:"+e.stackTraceToString())
-            }
-
-
-
-            //初始化SnapshotUtil，例如是否启用文件快照和内容快照之类的
-            try {
-                SnapshotUtil.init(
-                    enableContentSnapshotInitValue = settings.editor.enableContentSnapshot || File(appModel.appDataUnderAllReposDir, FlagFileName.enableContentSnapshot).exists(),
-                    enableFileSnapshotInitValue = settings.editor.enableFileSnapshot || File(appModel.appDataUnderAllReposDir, FlagFileName.enableFileSnapshot).exists(),
-                )
-            }catch (e:Exception) {
-                MyLog.e(TAG, "#$funName init SnapshotUtil err:"+e.stackTraceToString())
-            }
-
-            try {
-                //clear old settings
-//                val limit = settings.editor.fileOpenHistoryLimit
-//                val requireClearSettingsEditedHistory = settings.editor.filesLastEditPosition.isNotEmpty()
-//                FileOpenHistoryMan.init(limit, requireClearSettingsEditedHistory)
-
-                // no migrate, because settings will move to user-visible puppygit-data dir
-                FileOpenHistoryMan.init(
-                    saveDir = settingsSaveDir,
-                    limit = settings.editor.fileOpenHistoryLimit,
-                    requireClearOldSettingsEditedHistory = false
-                )
-            }catch (e:Exception) {
-                MyLog.e(TAG, "#$funName init FileOpenHistoryMan err:"+e.stackTraceToString())
-            }
-
-            try {
-                //migrate old settings
-//                val oldPaths = settings.storagePaths.ifEmpty { null }
-//                val oldSelectedPath = settings.storagePathLastSelected.ifBlank { null }
-//                StoragePathsMan.init(oldPaths, oldSelectedPath)
-
-                // no migrate, because setting moved
-                StoragePathsMan.init(
-                    saveDir = settingsSaveDir,
-                    oldSettingsStoragePaths = null,
-                    oldSettingsLastSelectedPath = null
-                )
-            }catch (e:Exception) {
-                MyLog.e(TAG, "#$funName init StoragePathsMan err:"+e.stackTraceToString())
-            }
-
-
-
-            doJobThenOffLoading {
+                //执行会suspend的初始化操作
+                //检查是否需要迁移密码
                 try {
-                    //删除过期日志文件
-                    MyLog.delExpiredLogs()
+                    appModel.dbContainer.passEncryptRepository.migrateIfNeed(appModel.dbContainer.credentialRepository)
                 }catch (e:Exception) {
-                    MyLog.e(TAG, "#$funName del expired log files err:"+e.stackTraceToString())
+                    MyLog.e(TAG, "#$funName migrate password err:"+e.stackTraceToString())
+                    MyLog.w(TAG, "#$funName migrate password err, user's password may will be invalid :(")
                 }
 
-                //删除过期的编辑缓存文件
+    //           // val settingsSaveDir = appModel.getOrCreateSettingsDir()
+                val settings = SettingsUtil.getSettingsSnapshot()
+
+
+                //初始化EditCache
                 try {
-                    EditCache.delExpiredFiles()
+                    val editCacheKeepInDays = settings.editor.editCacheKeepInDays
+                    //当设置项中启用功能时，进一步检查是否存在disable文件，不存在则启用，否则禁用，这样做是为了方便在实现设置页面前进行测试，直接把功能设为开启，然后通过创建删除disable文件控制实际是否开启，测试很方便
+                    val editCacheEnable = settings.editor.editCacheEnable || File(appModel.appDataUnderAllReposDir, FlagFileName.enableEditCache).exists()
+
+                    EditCache.init(keepInDays = editCacheKeepInDays, cacheDirPath = editCacheDirPath, enableCache = editCacheEnable)
                 }catch (e:Exception) {
-                    MyLog.e(TAG, "#$funName del expired edit cache files err:"+e.stackTraceToString())
+                    MyLog.e(TAG, "#$funName init EditCache err:"+e.stackTraceToString())
                 }
 
-                //删除过期的快照文件
-                try {
-                    val snapshotKeepInDays = settings.snapshotKeepInDays
-                    val snapshotSaveFolder = appModel.getOrCreateFileSnapshotDir()
-                    FsUtils.delFilesOverKeepInDays(snapshotKeepInDays, snapshotSaveFolder, "snapshot folder")
 
-//                 //   appModel.getOrCreateFileSnapshotDir()  // is delete expired files, is not del the folder, so no need call this make sure folder exist
+
+                //初始化SnapshotUtil，例如是否启用文件快照和内容快照之类的
+                try {
+                    SnapshotUtil.init(
+                        enableContentSnapshotInitValue = settings.editor.enableContentSnapshot || File(appModel.appDataUnderAllReposDir, FlagFileName.enableContentSnapshot).exists(),
+                        enableFileSnapshotInitValue = settings.editor.enableFileSnapshot || File(appModel.appDataUnderAllReposDir, FlagFileName.enableFileSnapshot).exists(),
+                    )
                 }catch (e:Exception) {
-                    MyLog.e(TAG, "#$funName del expired snapshot files err:"+e.stackTraceToString())
+                    MyLog.e(TAG, "#$funName init SnapshotUtil err:"+e.stackTraceToString())
                 }
+
+                try {
+                    //clear old settings
+    //                val limit = settings.editor.fileOpenHistoryLimit
+    //                val requireClearSettingsEditedHistory = settings.editor.filesLastEditPosition.isNotEmpty()
+    //                FileOpenHistoryMan.init(limit, requireClearSettingsEditedHistory)
+
+                    // no migrate, because settings will move to user-visible puppygit-data dir
+                    FileOpenHistoryMan.init(
+                        saveDir = settingsSaveDir,
+                        limit = settings.editor.fileOpenHistoryLimit,
+                        requireClearOldSettingsEditedHistory = false
+                    )
+                }catch (e:Exception) {
+                    MyLog.e(TAG, "#$funName init FileOpenHistoryMan err:"+e.stackTraceToString())
+                }
+
+                try {
+                    //migrate old settings
+    //                val oldPaths = settings.storagePaths.ifEmpty { null }
+    //                val oldSelectedPath = settings.storagePathLastSelected.ifBlank { null }
+    //                StoragePathsMan.init(oldPaths, oldSelectedPath)
+
+                    // no migrate, because setting moved
+                    StoragePathsMan.init(
+                        saveDir = settingsSaveDir,
+                        oldSettingsStoragePaths = null,
+                        oldSettingsLastSelectedPath = null
+                    )
+                }catch (e:Exception) {
+                    MyLog.e(TAG, "#$funName init StoragePathsMan err:"+e.stackTraceToString())
+                }
+
+
+
+                doJobThenOffLoading {
+                    try {
+                        //删除过期日志文件
+                        MyLog.delExpiredLogs()
+                    }catch (e:Exception) {
+                        MyLog.e(TAG, "#$funName del expired log files err:"+e.stackTraceToString())
+                    }
+
+                    //删除过期的编辑缓存文件
+                    try {
+                        EditCache.delExpiredFiles()
+                    }catch (e:Exception) {
+                        MyLog.e(TAG, "#$funName del expired edit cache files err:"+e.stackTraceToString())
+                    }
+
+                    //删除过期的快照文件
+                    try {
+                        val snapshotKeepInDays = settings.snapshotKeepInDays
+                        val snapshotSaveFolder = appModel.getOrCreateFileSnapshotDir()
+                        FsUtils.delFilesOverKeepInDays(snapshotKeepInDays, snapshotSaveFolder, "snapshot folder")
+
+    //                 //   appModel.getOrCreateFileSnapshotDir()  // is delete expired files, is not del the folder, so no need call this make sure folder exist
+                    }catch (e:Exception) {
+                        MyLog.e(TAG, "#$funName del expired snapshot files err:"+e.stackTraceToString())
+                    }
+                }
+
+
+
+                //初始化与谷歌play的连接，查询支付信息之类的
+    //            Billing.init(appModel.appContext)
+
+                //20240527：禁用，sd相关
+    //            StorageDirUtil.init()
             }
-
-
-
-            //初始化与谷歌play的连接，查询支付信息之类的
-//            Billing.init(appModel.appContext)
-
-            //20240527：禁用，sd相关
-//            StorageDirUtil.init()
 
         }
 
@@ -365,15 +378,19 @@ class AppModel {
         @OptIn(ExperimentalMaterial3Api::class)
         @Composable
         fun init_3(appModel: AppModel = singleInstanceHolder){
-            appModel.navController = rememberNavController()
-            appModel.coroutineScope = rememberCoroutineScope()
+            if(inited_3.not()) {
+                inited_3 = true
+
+                appModel.navController = rememberNavController()
+                appModel.coroutineScope = rememberCoroutineScope()
 
 //            TopAppBarDefaults.enterAlwaysScrollBehavior(rememberTopAppBarState())  //上推隐藏，下拉出现，TopAppBarState 可放到外部以保存状态，如果需要的话
-            //TopAppBarDefaults.pinnedScrollBehavior(rememberTopAppBarState())  //常驻TopBar，固定显示，不会隐藏
+                //TopAppBarDefaults.pinnedScrollBehavior(rememberTopAppBarState())  //常驻TopBar，固定显示，不会隐藏
 //            appModel.homeTopBarScrollBehavior = TopAppBarDefaults.pinnedScrollBehavior(rememberTopAppBarState())
-            appModel.homeTopBarScrollBehavior = TopAppBarDefaults.enterAlwaysScrollBehavior(rememberTopAppBarState())
+                appModel.homeTopBarScrollBehavior = TopAppBarDefaults.enterAlwaysScrollBehavior(rememberTopAppBarState())
 
-            appModel.haptic = LocalHapticFeedback.current
+                appModel.haptic = LocalHapticFeedback.current
+            }
         }
 
         fun getAppPackageName(context: Context):String {

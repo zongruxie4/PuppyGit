@@ -3581,7 +3581,7 @@ class Libgit2Helper {
 
         fun resolveRefByName(repo:Repository, refNameShortOrFull:String, trueUseDwimFalseUseLookup:Boolean=true):Reference? {
             try {
-                MyLog.d(TAG, "#resolveRefName(refNameShortOrFull=$refNameShortOrFull, trueUseDwimFalseUseLookup=$trueUseDwimFalseUseLookup)")
+                MyLog.v(TAG, "#resolveRefName(refNameShortOrFull=$refNameShortOrFull, trueUseDwimFalseUseLookup=$trueUseDwimFalseUseLookup)")
 
                 //注：如果使用lookup必须全名查找，例如refs/heads/main 或 refs/remotes/origin/main，而且lookup不会解引用对象，如果ref是个符号引用(symbolic reference)，就会返回一个符号引用
                 val ref = if(trueUseDwimFalseUseLookup) Reference.dwim(repo, refNameShortOrFull) else Reference.lookup(repo, refNameShortOrFull)

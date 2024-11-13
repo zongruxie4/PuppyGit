@@ -19,6 +19,7 @@ object CertMan {
 
     private val certRawId = R.raw.cert_bundle_pem
 
+    private var inited = false
 
     const val defaultCertBundleDirName = "cert-bundle"
     const val defaultCertUserDirName = "cert-user"  //存放用户证书的目录，自签证书之类的可以放这里，app会自动加载，自签证书并不是在加密上有问题，只是不被公众信任，用户如果自签，也并非一定不安全，另外：这块功能我没测试
@@ -42,14 +43,18 @@ object CertMan {
      *
      */
     fun init(appContext: Context, certBundleDir:File, certUserDir:File) {
-        //加载app内置证书
-        loadAppCert(appContext, certBundleDir)
+        if(inited.not()) {
+            inited = true
 
-        //加载用户证书
-        loadUserCerts(certUserDir)
+            //加载app内置证书
+            loadAppCert(appContext, certBundleDir)
 
-        //加载系统证书
+            //加载用户证书
+            loadUserCerts(certUserDir)
+
+            //加载系统证书
 //        loadSysCerts()
+        }
     }
 
     /**

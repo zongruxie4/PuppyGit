@@ -929,7 +929,9 @@ object FsUtils {
         file.bufferedReader().use { reader ->
             tempFile.bufferedWriter().use { writer ->
                 var currentLine = 1
-                reader.forEachLine readerForEach@{ line ->
+
+                while(true) {
+                    val line = reader.readLine() ?:break
                     // note: if target line num is EOF, this if never execute, but will append content to the EOF of target file after looped
                     // 注意：如果目标行号是EOF，if里的代码永远不会被执行，然后会追加内容到目标文件的末尾
                     if (currentLine++ == startLineNum) {
@@ -937,7 +939,7 @@ object FsUtils {
 
                         // delete line
                         if(trueInsertFalseReplaceNullDelete == null) {
-                            return@readerForEach
+                            continue
                         }
 
                         for(i in newLines.indices) {

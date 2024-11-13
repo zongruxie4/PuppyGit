@@ -11,6 +11,7 @@ import java.io.File
 private val TAG = "Lg2HomeUtils"
 
 object Lg2HomeUtils {
+    private var inited = false
     private const val sshKnownHostsLatestVer = 1 // app bundle known hosts file version
 
     private const val libgit2HomeDirName = "lg2home"
@@ -33,19 +34,23 @@ object Lg2HomeUtils {
     private val userKnownHostsFileLock:Mutex = Mutex()
 
     fun init(homeBaseDirPath:File, appContext: Context) {
-        lg2Home=createDirIfNonexists(homeBaseDirPath, libgit2HomeDirName)
-        sshDir=createDirIfNonexists(lg2Home, sshDirName)
-        knownHostsFile = File(sshDir.canonicalPath, sshKnownHostsFileName)
-        knownHostsVersionFile = File(sshDir.canonicalPath, sshKnownHostsVersionFileName)
-        userKnownHostsFile = File(sshDir.canonicalPath, userSshKnownHostsFileName)
+        if(inited.not()) {
+            inited = true
 
-        createKnownHostsIfNonExists(appContext)
+            lg2Home=createDirIfNonexists(homeBaseDirPath, libgit2HomeDirName)
+            sshDir=createDirIfNonexists(lg2Home, sshDirName)
+            knownHostsFile = File(sshDir.canonicalPath, sshKnownHostsFileName)
+            knownHostsVersionFile = File(sshDir.canonicalPath, sshKnownHostsVersionFileName)
+            userKnownHostsFile = File(sshDir.canonicalPath, userSshKnownHostsFileName)
 
-        createUserKnownHostsIfNonExists()
-        readItemFromUserKnownHostsFile()
+            createKnownHostsIfNonExists(appContext)
 
-        // make ssh can find the known_hosts file
-        Libgit2.optsGitOptSetHomedir(lg2Home.canonicalPath)
+            createUserKnownHostsIfNonExists()
+            readItemFromUserKnownHostsFile()
+
+            // make ssh can find the known_hosts file
+            Libgit2.optsGitOptSetHomedir(lg2Home.canonicalPath)
+        }
     }
     
     fun getLg2Home():File {
@@ -86,16 +91,25 @@ object Lg2HomeUtils {
     private fun readItemFromUserKnownHostsFile(){
         doJobThenOffLoading {
             userKnownHostsFileLock.withLock {
+                userKnownHostItems.clear()
+
                 val f = getUserKnownHostsFile()
-                f.bufferedReader().forEachLine {
-                    val sshCert = SshCert.parseDbString(it)
-                    if(sshCert!=null) {
-                        userKnownHostItems.add(sshCert)
+                f.bufferedReader().use {
+                    while(true) {
+                        val line = it.readLine() ?: break
+                        if(line.isBlank()) {
+                            continue
+                        }
+
+                        val sshCert = SshCert.parseDbString(line)
+                        if(sshCert!=null) {
+                            userKnownHostItems.add(sshCert)
+                        }
                     }
                 }
             }
 
-            MyLog.d(TAG, "read user SshCertList from file: $userKnownHostItems")
+            MyLog.d(TAG, "read user SshCertList from file: size=${userKnownHostItems.size} items=$userKnownHostItems")
 
         }
     }
