@@ -132,7 +132,7 @@ fun FileHistoryScreen(
 //    println("fullOidKey="+fullOidKey)  //expect true when nav from repoCard
 
     val homeTopBarScrollBehavior = AppModel.singleInstanceHolder.homeTopBarScrollBehavior
-    val appContext = LocalContext.current
+    val activityContext = LocalContext.current
     val navController = AppModel.singleInstanceHolder.navController
     val scope = rememberCoroutineScope()
     val haptic = LocalHapticFeedback.current
@@ -274,7 +274,7 @@ fun FileHistoryScreen(
         doJobThenOffLoading job@{
             loadLock.value.withLock {
                 loadMoreLoading.value = true
-                loadMoreText.value = appContext.getString(R.string.loading)
+                loadMoreText.value = activityContext.getString(R.string.loading)
 
                 try {
                     if (firstLoad || forceReload || repositoryForRevWalk.value==null || revwalk.value==null) {
@@ -294,7 +294,7 @@ fun FileHistoryScreen(
                         val newRevwalk = Libgit2Helper.createRevwalk(repo, oid)
                         if(newRevwalk == null) {
                             val oidStr = oid.toString()
-                            Msg.requireShowLongDuration(replaceStringResList(appContext.getString(R.string.create_revwalk_failed_oid), listOf(Libgit2Helper.getShortOidStrByFull(oidStr))))
+                            Msg.requireShowLongDuration(replaceStringResList(activityContext.getString(R.string.create_revwalk_failed_oid), listOf(Libgit2Helper.getShortOidStrByFull(oidStr))))
                             createAndInsertError(repoId, "create Revwalk failed, oid=$oidStr")
                             return@job
                         }
@@ -317,7 +317,7 @@ fun FileHistoryScreen(
                     if(nextCommitOid.value.isNullOrEmptyOrZero) {
                         //更新变量
                         hasMore.value = false
-                        loadMoreText.value = appContext.getString(R.string.end_of_the_list)
+                        loadMoreText.value = activityContext.getString(R.string.end_of_the_list)
                     }else {
                         //start travel commit history
                         lastVersionEntryOid.value = Libgit2Helper.getFileHistoryList(
@@ -336,7 +336,7 @@ fun FileHistoryScreen(
                         //update state
                         nextCommitOid.value = revwalk.value!!.next() ?: Cons.allZeroOid
                         hasMore.value = !nextCommitOid.value.isNullOrEmptyOrZero
-                        loadMoreText.value = if (hasMore.value) appContext.getString(R.string.load_more) else appContext.getString(R.string.end_of_the_list)
+                        loadMoreText.value = if (hasMore.value) activityContext.getString(R.string.load_more) else activityContext.getString(R.string.end_of_the_list)
 
                     }
 
@@ -363,7 +363,7 @@ fun FileHistoryScreen(
             showRestoreDialog = showRestoreDialog,
             loadingOn = loadingOn,
             loadingOff = loadingOff,
-            appContext = appContext,
+            activityContext = activityContext,
             curRepo = curRepo,
             fileRelativePath = fileRelativePath,
             repoId = repoId
@@ -458,7 +458,7 @@ fun FileHistoryScreen(
         ) {
             showDetailsDialog.value = false
             clipboardManager.setText(AnnotatedString(detailsString.value))
-            Msg.requireShow(appContext.getString(R.string.copied))
+            Msg.requireShow(activityContext.getString(R.string.copied))
         }
     }
 
@@ -498,7 +498,7 @@ fun FileHistoryScreen(
             showSavePatchSuccessDialog.value = false
 
             clipboardManager.setText(AnnotatedString(path))
-            Msg.requireShow(appContext.getString(R.string.copied))
+            Msg.requireShow(activityContext.getString(R.string.copied))
         }
     }
 
@@ -565,7 +565,7 @@ fun FileHistoryScreen(
                 val newPageSize = try {
                     pageSizeForDialog.value.toInt()
                 }catch (_:Exception) {
-                    Msg.requireShow(appContext.getString(R.string.invalid_number))
+                    Msg.requireShow(activityContext.getString(R.string.invalid_number))
                     invalidPageSize
                 }
 
@@ -640,7 +640,7 @@ fun FileHistoryScreen(
 
                                     val count = if(enableFilterState.value) filterIdxList.value.size else list.value.size
                                     // show loaded how many items
-                                    Msg.requireShow(replaceStringResList(appContext.getString(R.string.item_count_n), listOf(""+count)))
+                                    Msg.requireShow(replaceStringResList(activityContext.getString(R.string.item_count_n), listOf(""+count)))
                                 }
                             ) { // onClick
                                 showTitleInfoDialog.value = true
@@ -812,9 +812,9 @@ fun FileHistoryScreen(
                         val previousIndex = indexAtDiffableList +1
                         if(!isGoodIndexForList(previousIndex, list)) {
                             if(hasMore.value) {
-                                Msg.requireShowLongDuration(appContext.getString(R.string.plz_lode_more_then_try_again))
+                                Msg.requireShowLongDuration(activityContext.getString(R.string.plz_lode_more_then_try_again))
                             }else {
-                                Msg.requireShowLongDuration(appContext.getString(R.string.no_prev_to_compare))
+                                Msg.requireShowLongDuration(activityContext.getString(R.string.no_prev_to_compare))
                             }
 
                             return@label
@@ -861,16 +861,16 @@ fun FileHistoryScreen(
                         // onClick()
 //                    requireShowViewDialog(appContext.getString(R.string.view_hash), curCommit.value.oidStr)
                         val sb = StringBuilder()
-                        sb.appendLine("${appContext.getString(R.string.path)}: "+curObj.value.filePathUnderRepo).appendLine()
-                        sb.appendLine("${appContext.getString(R.string.commit_id)}: "+curObj.value.commitOidStr).appendLine()
-                        sb.appendLine("${appContext.getString(R.string.entry_id)}: "+curObj.value.treeEntryOidStr).appendLine()
-                        sb.appendLine("${appContext.getString(R.string.author)}: "+ Libgit2Helper.getFormattedUsernameAndEmail(curObj.value.authorUsername, curObj.value.authorEmail))
+                        sb.appendLine("${activityContext.getString(R.string.path)}: "+curObj.value.filePathUnderRepo).appendLine()
+                        sb.appendLine("${activityContext.getString(R.string.commit_id)}: "+curObj.value.commitOidStr).appendLine()
+                        sb.appendLine("${activityContext.getString(R.string.entry_id)}: "+curObj.value.treeEntryOidStr).appendLine()
+                        sb.appendLine("${activityContext.getString(R.string.author)}: "+ Libgit2Helper.getFormattedUsernameAndEmail(curObj.value.authorUsername, curObj.value.authorEmail))
                         sb.appendLine()
-                        sb.appendLine("${appContext.getString(R.string.committer)}: "+ Libgit2Helper.getFormattedUsernameAndEmail(curObj.value.committerUsername, curObj.value.committerEmail))
+                        sb.appendLine("${activityContext.getString(R.string.committer)}: "+ Libgit2Helper.getFormattedUsernameAndEmail(curObj.value.committerUsername, curObj.value.committerEmail))
                         sb.appendLine()
-                        sb.appendLine("${appContext.getString(R.string.date)}: "+curObj.value.dateTime)
+                        sb.appendLine("${activityContext.getString(R.string.date)}: "+curObj.value.dateTime)
                         sb.appendLine()
-                        sb.appendLine("${appContext.getString(R.string.msg)}: "+curObj.value.msg)
+                        sb.appendLine("${activityContext.getString(R.string.msg)}: "+curObj.value.msg)
                         sb.appendLine()
 
 
@@ -970,7 +970,7 @@ fun FileHistoryScreen(
                         showSetPageSizeDialog=showSetPageSizeDialog,
                         pageSizeForDialog=pageSizeForDialog,
                         text = loadMoreText.value,
-                        btnUpsideText = getLoadText(list.size, enableFilter, appContext),
+                        btnUpsideText = getLoadText(list.size, enableFilter, activityContext),
                         enableLoadMore = !loadMoreLoading.value && hasMore.value, enableAndShowLoadToEnd = !loadMoreLoading.value && hasMore.value,
                         loadToEndOnClick = {
                             val firstLoad = false
@@ -1012,7 +1012,7 @@ fun FileHistoryScreen(
                     val isDiffToLocal = 1
                     val localAtDiffRight = 1
 
-                    Msg.requireShow(appContext.getString(R.string.diff_to_local))
+                    Msg.requireShow(activityContext.getString(R.string.diff_to_local))
 
                     //导航到diffScreen
                     navController.navigate(
@@ -1057,7 +1057,7 @@ fun FileHistoryScreen(
                         showSetPageSizeDialog=showSetPageSizeDialog,
                         pageSizeForDialog=pageSizeForDialog,
                         text = loadMoreText.value,
-                        btnUpsideText = getLoadText(list.size, enableFilter, appContext),
+                        btnUpsideText = getLoadText(list.size, enableFilter, activityContext),
                         enableLoadMore = !loadMoreLoading.value && hasMore.value, enableAndShowLoadToEnd = !loadMoreLoading.value && hasMore.value,
                         loadToEndOnClick = {
                             val firstLoad = false

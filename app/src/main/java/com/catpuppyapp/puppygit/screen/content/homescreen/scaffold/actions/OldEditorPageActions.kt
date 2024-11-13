@@ -38,7 +38,6 @@ fun OldEditorPageActions(
      */
 
 
-    val appContext = LocalContext.current
 
     //改成统一在EditorInnerPage关闭了
 //    val closeFile = {

@@ -46,7 +46,7 @@ fun CreateTagDialog(showDialog:MutableState<Boolean>,
 
                     onOkDoneCallback:(newTagFullOidStr:String)->Unit
 ) {
-    val appContext = AppModel.singleInstanceHolder.activityContext
+    val activityContext = AppModel.singleInstanceHolder.activityContext
 
     val tagNameErrMsg = rememberSaveable { mutableStateOf("")}
     val commitHashShortOrLongErrMsg = rememberSaveable { mutableStateOf("")}
@@ -54,7 +54,7 @@ fun CreateTagDialog(showDialog:MutableState<Boolean>,
     val gitConfigUsername = rememberSaveable { mutableStateOf( "")}
     val gitConfigEmail = rememberSaveable { mutableStateOf( "")}
 
-    ConfirmDialog(title = appContext.getString(R.string.new_tag),
+    ConfirmDialog(title = activityContext.getString(R.string.new_tag),
         requireShowTextCompose = true,
         textCompose = {
             //只能有一个节点，因为这个东西会在lambda后返回，而lambda只能有一个返回值，弄两个布局就乱了，和react组件只能有一个root div一个道理 。
@@ -200,12 +200,12 @@ fun CreateTagDialog(showDialog:MutableState<Boolean>,
     ) onOk@{
         //检查
         if(tagName.value.isBlank()) {
-            tagNameErrMsg.value = appContext.getString(R.string.tag_name_is_empty)
+            tagNameErrMsg.value = activityContext.getString(R.string.tag_name_is_empty)
             return@onOk
         }
 
         if(commitHashShortOrLong.value.isBlank()) {
-            commitHashShortOrLongErrMsg.value = appContext.getString(R.string.commit_hash_is_empty)
+            commitHashShortOrLongErrMsg.value = activityContext.getString(R.string.commit_hash_is_empty)
             return@onOk
         }
 
@@ -213,13 +213,13 @@ fun CreateTagDialog(showDialog:MutableState<Boolean>,
             //annotate需要用到git config用户名和邮箱，检查下是否为空，其实本应由调用者检查，但这里也检查下
             //这里提示下即可，不需要设置红色的错误信息，因为当username或email为空且勾选了annotate时，已经在弹窗显示红色错误信息了
             if(gitConfigUsername.value.isEmpty() || gitConfigEmail.value.isEmpty()) {
-                Msg.requireShowLongDuration(appContext.getString(R.string.plz_set_git_username_and_email_first))
+                Msg.requireShowLongDuration(activityContext.getString(R.string.plz_set_git_username_and_email_first))
 //                showDialog.value=false
                 return@onOk
             }
 
             if(tagMsg.value.isBlank()) {
-                tagMsgErrMsg.value = appContext.getString(R.string.tag_msg_is_empty)
+                tagMsgErrMsg.value = activityContext.getString(R.string.tag_msg_is_empty)
                 return@onOk
             }
         }
@@ -231,7 +231,7 @@ fun CreateTagDialog(showDialog:MutableState<Boolean>,
 
                     //无效commit
                     if(commit==null) {
-                        commitHashShortOrLongErrMsg.value = appContext.getString(R.string.invalid_commit_hash)
+                        commitHashShortOrLongErrMsg.value = activityContext.getString(R.string.invalid_commit_hash)
                         return@job
                     }
 
@@ -257,7 +257,7 @@ fun CreateTagDialog(showDialog:MutableState<Boolean>,
                         )
                     }
 
-                    Msg.requireShowLongDuration(appContext.getString(R.string.success))
+                    Msg.requireShowLongDuration(activityContext.getString(R.string.success))
                     onOkDoneCallback(commit?.id()?.toString() ?: "")  //执行完成onOk后的回调，一般是刷新页面或刷新条目列表之类的
 
                 }

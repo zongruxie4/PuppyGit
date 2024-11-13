@@ -64,7 +64,7 @@ fun ChangeListTitle(
 )
 {
     val haptic = LocalHapticFeedback.current
-    val appContext = LocalContext.current
+    val activityContext = LocalContext.current
 
     val inDarkTheme = Theme.inDarkTheme
 
@@ -80,7 +80,7 @@ fun ChangeListTitle(
     val repoStateText = rememberSaveable { mutableStateOf("")}
 
     //设置仓库状态，主要是为了显示merge
-    Libgit2Helper.setRepoStateText(repoState.intValue, needShowRepoState, repoStateText, appContext)
+    Libgit2Helper.setRepoStateText(repoState.intValue, needShowRepoState, repoStateText, activityContext)
 
     val closeDropDownMenu={
         dropDownMenuExpendState.value=false

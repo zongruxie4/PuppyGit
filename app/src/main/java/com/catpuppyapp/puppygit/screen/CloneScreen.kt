@@ -100,6 +100,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import java.io.File
 
+private val TAG = "CloneScreen"
 private val stateKeyTag = "CloneScreen"
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -109,9 +110,8 @@ fun CloneScreen(
     naviUp: () -> Boolean,
 ) {
 
-    val TAG = "CloneScreen"
 
-    val appContext = LocalContext.current
+    val activityContext = LocalContext.current
     val inDarkTheme = Theme.inDarkTheme
     val activity = ActivityUtil.getCurrentActivity()
 
@@ -295,7 +295,7 @@ fun CloneScreen(
                             modifier = MyStyleKt.ClickableText.modifier.clickable {
                                 // grant permission for read/write external storage
                                 if (activity == null) {
-                                    Msg.requireShowLongDuration(appContext.getString(R.string.please_go_to_system_settings_allow_manage_storage))
+                                    Msg.requireShowLongDuration(activityContext.getString(R.string.please_go_to_system_settings_allow_manage_storage))
                                 }else {
                                     activity.getStoragePermission()
                                 }
@@ -373,7 +373,7 @@ fun CloneScreen(
 
             val repoNameText = repoName.value.text
             //检查是否存在非法字符，例如路径分隔符\:之类的
-            val repoNameCheckRet = checkFileOrFolderNameAndTryCreateFile(repoNameText, appContext)
+            val repoNameCheckRet = checkFileOrFolderNameAndTryCreateFile(repoNameText, activityContext)
             if(repoNameCheckRet.hasError()) {
                 Msg.requireShowLongDuration(repoNameCheckRet.msg)
 
@@ -501,7 +501,7 @@ fun CloneScreen(
     }
 
 
-    val loadingText = rememberSaveable { mutableStateOf(appContext.getString(R.string.loading))}
+    val loadingText = rememberSaveable { mutableStateOf(activityContext.getString(R.string.loading))}
 
     val spacerPadding = 2.dp
     Scaffold(
@@ -686,7 +686,7 @@ fun CloneScreen(
                     },
                     menuItemTrailIconOnClick = {index, value->
                         if(index==0) {
-                            Msg.requireShow(appContext.getString(R.string.cant_delete_internal_storage))
+                            Msg.requireShow(activityContext.getString(R.string.cant_delete_internal_storage))
                         }else {
                             storagePathList.value.removeAt(index)
                             val removedCurrent = index == storagePathSelectedIndex.intValue

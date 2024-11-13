@@ -24,28 +24,27 @@ import com.catpuppyapp.puppygit.utils.AppModel
 import com.catpuppyapp.puppygit.utils.ComposeHelper
 import com.catpuppyapp.puppygit.utils.Msg
 import com.catpuppyapp.puppygit.utils.MyLog
-import com.catpuppyapp.puppygit.utils.state.StateUtil
 
 private val TAG = "SubscriptionPage"
 
 @Composable
 fun SubscriptionPage(contentPadding: PaddingValues, needRefresh: MutableState<String>, openDrawer: ()->Unit){
 
-    val appContext = LocalContext.current
+    val activityContext = LocalContext.current
     val exitApp = AppModel.singleInstanceHolder.exitApp;
 
-    val appIcon = AppModel.getAppIcon(appContext)
+    val appIcon = AppModel.getAppIcon(activityContext)
 
     val clipboardManager = LocalClipboardManager.current
 
     val copy={text:String ->
         clipboardManager.setText(AnnotatedString(text))
-        Msg.requireShow(appContext.getString(R.string.copied))
+        Msg.requireShow(activityContext.getString(R.string.copied))
     }
 
     //back handler block start
     val isBackHandlerEnable = rememberSaveable { mutableStateOf(true) }
-    val backHandlerOnBack = ComposeHelper.getDoubleClickBackHandler(appContext = appContext, openDrawer=openDrawer, exitApp= exitApp)
+    val backHandlerOnBack = ComposeHelper.getDoubleClickBackHandler(context = activityContext, openDrawer=openDrawer, exitApp= exitApp)
     //注册BackHandler，拦截返回键，实现双击返回和返回上级目录
     BackHandler(enabled = isBackHandlerEnable.value, onBack = {backHandlerOnBack()})
     //back handler block end

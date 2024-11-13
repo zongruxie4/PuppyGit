@@ -81,7 +81,7 @@ fun StashListScreen(
 ) {
     val homeTopBarScrollBehavior = AppModel.singleInstanceHolder.homeTopBarScrollBehavior
     val navController = AppModel.singleInstanceHolder.navController
-    val appContext = AppModel.singleInstanceHolder.activityContext
+    val activityContext = AppModel.singleInstanceHolder.activityContext
     val haptic = LocalHapticFeedback.current
     val scope = rememberCoroutineScope()
     val settings = remember { SettingsUtil.getSettingsSnapshot() }
@@ -111,7 +111,7 @@ fun StashListScreen(
         loading.value=true
     }
     val loadingOff = {
-        loadingText.value = appContext.getString(R.string.loading)
+        loadingText.value = activityContext.getString(R.string.loading)
         loading.value=false
     }
 
@@ -179,7 +179,7 @@ fun StashListScreen(
         ) {
             showDetailsDialog.value = false
             clipboardManager.setText(AnnotatedString(detailsString.value))
-            Msg.requireShow(appContext.getString(R.string.copied))
+            Msg.requireShow(activityContext.getString(R.string.copied))
         }
     }
     //Details弹窗，结束
@@ -203,12 +203,12 @@ fun StashListScreen(
         ) {
             showPopDialog.value=false
 
-            doJobThenOffLoading(loadingOn, loadingOff, appContext.getString(R.string.loading)) {
+            doJobThenOffLoading(loadingOn, loadingOff, activityContext.getString(R.string.loading)) {
                 try {
                     Repository.open(curRepo.value.fullSavePath).use { repo->
                         Libgit2Helper.stashPop(repo, curObjInPage.value.index)
                     }
-                    Msg.requireShow(appContext.getString(R.string.success))
+                    Msg.requireShow(activityContext.getString(R.string.success))
                 }catch (e:Exception) {
                     val errPrefix = "pop stash err: index=${curObjInPage.value.index}, stashId=${curObjInPage.value.stashId}, err="
                     Msg.requireShowLongDuration(e.localizedMessage?:"err")
@@ -231,12 +231,12 @@ fun StashListScreen(
         ) {
             showApplyDialog.value=false
 
-            doJobThenOffLoading(loadingOn, loadingOff, appContext.getString(R.string.loading)) {
+            doJobThenOffLoading(loadingOn, loadingOff, activityContext.getString(R.string.loading)) {
                 try {
                     Repository.open(curRepo.value.fullSavePath).use { repo->
                         Libgit2Helper.stashApply(repo, curObjInPage.value.index)
                     }
-                    Msg.requireShow(appContext.getString(R.string.success))
+                    Msg.requireShow(activityContext.getString(R.string.success))
                 }catch (e:Exception) {
                     val errPrefix = "apply stash err: index=${curObjInPage.value.index}, stashId=${curObjInPage.value.stashId}, err="
                     Msg.requireShowLongDuration(e.localizedMessage?:"err")
@@ -259,12 +259,12 @@ fun StashListScreen(
         ) {
             showDelDialog.value=false
 
-            doJobThenOffLoading(loadingOn, loadingOff, appContext.getString(R.string.loading)) {
+            doJobThenOffLoading(loadingOn, loadingOff, activityContext.getString(R.string.loading)) {
                 try {
                     Repository.open(curRepo.value.fullSavePath).use { repo->
                         Libgit2Helper.stashDrop(repo, curObjInPage.value.index)
                     }
-                    Msg.requireShow(appContext.getString(R.string.success))
+                    Msg.requireShow(activityContext.getString(R.string.success))
                 }catch (e:Exception) {
                     val errPrefix = "delete stash err: index=${curObjInPage.value.index}, stashId=${curObjInPage.value.stashId}, err="
                     Msg.requireShowLongDuration(e.localizedMessage?:"err")
@@ -300,7 +300,7 @@ fun StashListScreen(
                     )
                     Spacer(modifier = Modifier.height(10.dp))
                     Row {
-                        Text(text = "(" + appContext.getString(R.string.you_can_leave_msg_empty_will_auto_gen_one) + ")",
+                        Text(text = "(" + activityContext.getString(R.string.you_can_leave_msg_empty_will_auto_gen_one) + ")",
                             color = MyStyleKt.TextColor.highlighting_green
                             )
                     }
@@ -313,17 +313,17 @@ fun StashListScreen(
             val username = gitUsername.value
             val email = gitEmail.value
             if(username.isBlank() || email.isBlank()) {
-                Msg.requireShowLongDuration(appContext.getString(R.string.plz_set_git_username_and_email_first))
+                Msg.requireShowLongDuration(activityContext.getString(R.string.plz_set_git_username_and_email_first))
                 return@onOk
             }
 
-            doJobThenOffLoading(loadingOn, loadingOff, appContext.getString(R.string.loading)) {
+            doJobThenOffLoading(loadingOn, loadingOff, activityContext.getString(R.string.loading)) {
                 try {
                     val msg = stashMsgForCreateDialog.value.ifEmpty { Libgit2Helper.stashGenMsg() }
                     Repository.open(curRepo.value.fullSavePath).use { repo->
                         Libgit2Helper.stashSave(repo, stasher = Signature.create(username, email), msg=msg)
                     }
-                    Msg.requireShow(appContext.getString(R.string.success))
+                    Msg.requireShow(activityContext.getString(R.string.success))
                 }catch (e:Exception) {
                     val errPrefix = "create stash err: "
                     Msg.requireShowLongDuration(e.localizedMessage?:"err")
@@ -429,7 +429,7 @@ fun StashListScreen(
                             iconContentDesc = stringResource(R.string.create),
                         ) {
                             if(gitEmail.value.isBlank() || gitUsername.value.isBlank()) {
-                                Msg.requireShowLongDuration(appContext.getString(R.string.plz_set_git_username_and_email_first))
+                                Msg.requireShowLongDuration(activityContext.getString(R.string.plz_set_git_username_and_email_first))
                             }else{
                                 showCreateDialog.value=true
                             }
@@ -515,9 +515,9 @@ fun StashListScreen(
             //长按会更新curObjInPage为被长按的条目
             StashItem(showBottomSheet, curObjInPage, idx, it) {  //onClick
                 val sb = StringBuilder()
-                sb.append(appContext.getString(R.string.index)).append(": ").append(it.index).appendLine().appendLine()
-                sb.append(appContext.getString(R.string.stash_id)).append(": ").append(it.stashId).appendLine().appendLine()
-                sb.append(appContext.getString(R.string.msg)).append(": ").append(it.msg).appendLine().appendLine()
+                sb.append(activityContext.getString(R.string.index)).append(": ").append(it.index).appendLine().appendLine()
+                sb.append(activityContext.getString(R.string.stash_id)).append(": ").append(it.stashId).appendLine().appendLine()
+                sb.append(activityContext.getString(R.string.msg)).append(": ").append(it.msg).appendLine().appendLine()
 
 
                 detailsString.value = sb.toString()
@@ -543,7 +543,7 @@ fun StashListScreen(
             doJobThenOffLoading(
                 loadingOn = loadingOn,
                 loadingOff = loadingOff,
-                loadingText = appContext.getString(R.string.loading),
+                loadingText = activityContext.getString(R.string.loading),
             ) {
                 list.value.clear()  //先清一下list，然后可能添加也可能不添加
 

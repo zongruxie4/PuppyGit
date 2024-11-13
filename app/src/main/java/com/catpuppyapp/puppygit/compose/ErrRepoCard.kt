@@ -59,7 +59,6 @@ fun ErrRepoCard(
     val navController = AppModel.singleInstanceHolder.navController
     val haptic = AppModel.singleInstanceHolder.haptic
 
-    val appContext = LocalContext.current
     val inDarkTheme = Theme.inDarkTheme
 
     val cardColor = UIHelper.defaultCardColor()

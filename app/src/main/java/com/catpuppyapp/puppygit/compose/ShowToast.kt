@@ -10,11 +10,11 @@ fun ShowToast(
     showToast:MutableState<Boolean>,
     msg:MutableState<String>,
 ) {
-    val appContext = AppModel.singleInstanceHolder.activityContext
+    val activityContext = AppModel.singleInstanceHolder.activityContext
 
     if(showToast.value) {
         //显示提示信息：
-        showToast(appContext, msg.value)
+        showToast(activityContext, msg.value)
 
 
         //reset msg

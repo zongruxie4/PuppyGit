@@ -113,7 +113,7 @@ fun TreeToTreeChangeListScreen(
     val homeTopBarScrollBehavior = AppModel.singleInstanceHolder.homeTopBarScrollBehavior
 
     val allRepoParentDir = AppModel.singleInstanceHolder.allRepoParentDir
-    val appContext = AppModel.singleInstanceHolder.activityContext
+    val activityContext = AppModel.singleInstanceHolder.activityContext
     val settings = remember { SettingsUtil.getSettingsSnapshot() }
 
     //取出title desc，存到状态变量里，与页面共存亡就行
@@ -368,7 +368,7 @@ fun TreeToTreeChangeListScreen(
                                 ) {
 //                                作用是交换比较的和被比较的提交号(交换左右提交)
                                     swap.value = !swap.value
-                                    Msg.requireShow(appContext.getString(if (swap.value) R.string.swap_commits_on else R.string.swap_commits_off))
+                                    Msg.requireShow(activityContext.getString(if (swap.value) R.string.swap_commits_on else R.string.swap_commits_off))
 
                                     //swap值不在cl页面的LaunchedEffects key中，所以得刷新下
                                     changeListRequireRefreshFromParentPage()

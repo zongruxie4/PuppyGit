@@ -36,7 +36,7 @@ fun CreateRemoteDialog(
     onOk:()->Unit = { Msg.requireShow(AppModel.singleInstanceHolder.activityContext.getString(R.string.success))},
     onFinally:()->Unit,
 ) {
-    val appContext = AppModel.singleInstanceHolder.activityContext
+    val activityContext = AppModel.singleInstanceHolder.activityContext
 
     val close = {show.value = false}
 
@@ -89,7 +89,7 @@ fun CreateRemoteDialog(
                 onClick = {
                     close()
 
-                    doJobThenOffLoading(loadingOn, loadingOff, appContext.getString(R.string.creating)) {
+                    doJobThenOffLoading(loadingOn, loadingOff, activityContext.getString(R.string.creating)) {
                         try {
                             val remoteName = remoteName.value
                             val remoteUrl = remoteUrl.value

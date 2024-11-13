@@ -76,7 +76,6 @@ import com.catpuppyapp.puppygit.compose.RequireCommitMsgDialog
 import com.catpuppyapp.puppygit.compose.ScrollableColumn
 import com.catpuppyapp.puppygit.compose.SetUpstreamDialog
 import com.catpuppyapp.puppygit.constants.Cons
-import com.catpuppyapp.puppygit.constants.LineNum
 import com.catpuppyapp.puppygit.constants.PageRequest
 import com.catpuppyapp.puppygit.data.AppContainer
 import com.catpuppyapp.puppygit.data.entity.CredentialEntity
@@ -208,7 +207,7 @@ fun ChangeListInnerPage(
     val haptic = LocalHapticFeedback.current
 
 //    val allRepoParentDir = AppModel.singleInstanceHolder.allRepoParentDir;
-    val appContext = LocalContext.current
+    val activityContext = LocalContext.current
     val exitApp = AppModel.singleInstanceHolder.exitApp
     val dbContainer = AppModel.singleInstanceHolder.dbContainer
     val navController = AppModel.singleInstanceHolder.navController
@@ -447,7 +446,7 @@ fun ChangeListInnerPage(
     val errWhenQuerySettingsFromDbStrRes = stringResource(R.string.err_when_querying_settings_from_db)
 
     val isLoading = rememberSaveable { mutableStateOf(true)}
-    val loadingText = rememberSaveable { mutableStateOf(appContext.getString(R.string.loading))}
+    val loadingText = rememberSaveable { mutableStateOf(activityContext.getString(R.string.loading))}
     val loadingOn = {text:String->
         //Loading的时候禁用顶栏按钮
         enableActionFromParent.value=false
@@ -520,13 +519,13 @@ fun ChangeListInnerPage(
 
             //如果请求使用参数传来的列表，则检查列表是否为null或空
             if(userParamList && paramList.isNullOrEmpty()) {
-                requireShowToast(appContext.getString(R.string.item_list_is_empty))
+                requireShowToast(activityContext.getString(R.string.item_list_is_empty))
                 return@doStage false
             }
 
             val actuallyStageList = if(userParamList) paramList!! else selectedItemList.value
 
-            loadingText.value = appContext.getString(R.string.staging)
+            loadingText.value = activityContext.getString(R.string.staging)
             //执行到这，要么请求使用参数列表，要么有选中条目
             //添加选中条目到index
             //打开仓库
@@ -677,7 +676,7 @@ fun ChangeListInnerPage(
     }
 
     val doAbortMerge:suspend ()->Unit = {  //调用者记得刷新页面
-        loadingText.value = appContext.getString(R.string.aborting_merge)
+        loadingText.value = activityContext.getString(R.string.aborting_merge)
 
         // Abort Merge
         Repository.open(curRepoFromParentPage.value.fullSavePath).use { repo ->
@@ -686,18 +685,18 @@ fun ChangeListInnerPage(
                 requireShowToast(ret.msg)
                 createAndInsertError(curRepoFromParentPage.value.id, ret.msg)
             }else {
-                requireShowToast(appContext.getString(R.string.success))
+                requireShowToast(activityContext.getString(R.string.success))
             }
 //            changeStateTriggerRefreshPage(needRefreshChangeListPage)  //改成由调用者负责刷新页面了
         }
     }
 
     val doAccept:suspend (acceptTheirs:Boolean)->Unit = {acceptTheirs:Boolean ->
-        loadingText.value = if(acceptTheirs) appContext.getString(R.string.accept_theirs) else appContext.getString(R.string.accept_ours)
+        loadingText.value = if(acceptTheirs) activityContext.getString(R.string.accept_theirs) else activityContext.getString(R.string.accept_ours)
 
         val repoFullPath = curRepoFromParentPage.value.fullSavePath
         if(!hasConflictItemsSelected()) {
-            requireShowToast(appContext.getString(R.string.err_no_conflict_item_selected))
+            requireShowToast(activityContext.getString(R.string.err_no_conflict_item_selected))
         }
 
         val conflictList = selectedItemList.value.toList().filter { it.changeType == Cons.gitStatusConflict }
@@ -731,9 +730,9 @@ fun ChangeListInnerPage(
                 }
 
                 if(stageSuccess) {  //stage成功
-                    requireShowToast(appContext.getString(R.string.success))
+                    requireShowToast(activityContext.getString(R.string.success))
                 }else{  //当初设计的时候没在这返回错误信息，懒得改了，提示下stage失败即可
-                    requireShowToast(appContext.getString(R.string.stage_failed))
+                    requireShowToast(activityContext.getString(R.string.stage_failed))
                 }
             }
 
@@ -764,7 +763,7 @@ fun ChangeListInnerPage(
             doJobThenOffLoading(
                 loadingOn,  //注：这函数内会自动禁用顶栏按钮，无需手动 `enableActionFromParent.value=false`
                 loadingOff,
-                appContext.getString(R.string.force_pushing)
+                activityContext.getString(R.string.force_pushing)
             ) {
                 try {
 //                    val success = doPush(true, null, force=true)
@@ -774,20 +773,20 @@ fun ChangeListInnerPage(
                         force = true,
                         curRepoFromParentPage = curRepoFromParentPage,
                         requireShowToast = requireShowToast,
-                        appContext = appContext,
+                        appContext = activityContext,
                         loadingText = loadingText,
                         bottomBarActDoneCallback = bottomBarActDoneCallback,
                         dbContainer = dbContainer
                     )
 
                     if(!success) {
-                        requireShowToast(appContext.getString(R.string.push_force_failed))
+                        requireShowToast(activityContext.getString(R.string.push_force_failed))
                     }else {
-                        requireShowToast(appContext.getString(R.string.push_force_success))
+                        requireShowToast(activityContext.getString(R.string.push_force_success))
                     }
 
                 }catch (e:Exception){
-                    showErrAndSaveLog(TAG,"require Push(Force) error:"+e.stackTraceToString(), appContext.getString(R.string.push_force_failed)+":"+e.localizedMessage, requireShowToast,curRepoFromParentPage.value.id)
+                    showErrAndSaveLog(TAG,"require Push(Force) error:"+e.stackTraceToString(), activityContext.getString(R.string.push_force_failed)+":"+e.localizedMessage, requireShowToast,curRepoFromParentPage.value.id)
                 }finally {
 //                    RepoStatusUtil.clearRepoStatus(repoId)
 
@@ -807,12 +806,12 @@ fun ChangeListInnerPage(
                 remoteNameParam = null,
                 curRepoFromParentPage = curRepoFromParentPage,
                 requireShowToast = requireShowToast,
-                appContext = appContext,
+                appContext = activityContext,
                 loadingText = loadingText,
                 dbContainer = dbContainer
             )
             if(!fetchSuccess) {
-                requireShowToast(appContext.getString(R.string.fetch_failed))
+                requireShowToast(activityContext.getString(R.string.fetch_failed))
             }else {
 //                val mergeSuccess = doMerge(true, null, true)
                 val mergeSuccess = ChangeListFunctions.doMerge(
@@ -822,18 +821,18 @@ fun ChangeListInnerPage(
                     trueMergeFalseRebase = true,
                     curRepoFromParentPage = curRepoFromParentPage,
                     requireShowToast = requireShowToast,
-                    appContext = appContext,
+                    appContext = activityContext,
                     loadingText = loadingText,
                     bottomBarActDoneCallback = bottomBarActDoneCallback
                 )
                 if(!mergeSuccess){
-                    requireShowToast(appContext.getString(R.string.merge_failed))
+                    requireShowToast(activityContext.getString(R.string.merge_failed))
                 }else {
-                    requireShowToast(appContext.getString(R.string.pull_success))
+                    requireShowToast(activityContext.getString(R.string.pull_success))
                 }
             }
         }catch (e:Exception){
-            showErrAndSaveLog(TAG,"require pull error:"+e.stackTraceToString(), appContext.getString(R.string.pull_failed)+":"+e.localizedMessage, requireShowToast,curRepoFromParentPage.value.id)
+            showErrAndSaveLog(TAG,"require pull error:"+e.stackTraceToString(), activityContext.getString(R.string.pull_failed)+":"+e.localizedMessage, requireShowToast,curRepoFromParentPage.value.id)
         }finally {
             //刷新页面
             changeStateTriggerRefreshPage(refreshRequiredByParentPage)
@@ -854,11 +853,11 @@ fun ChangeListInnerPage(
     val goParentChangeList = {
         val parentId = curRepoFromParentPage.value.parentRepoId
         if(parentId.isBlank()) {
-            Msg.requireShow(appContext.getString(R.string.not_found))
+            Msg.requireShow(activityContext.getString(R.string.not_found))
         }else {
             val target = changeListRepoList?.value?.find { it.id == parentId }
             if(target == null) {
-                Msg.requireShow(appContext.getString(R.string.not_found))
+                Msg.requireShow(activityContext.getString(R.string.not_found))
             }else {
                 goToChangeListPage(target)
             }
@@ -919,17 +918,17 @@ fun ChangeListInnerPage(
                         remoteNameParam = null,
                         curRepoFromParentPage = curRepoFromParentPage,
                         requireShowToast = requireShowToast,
-                        appContext = appContext,
+                        appContext = activityContext,
                         loadingText = loadingText,
                         dbContainer = dbContainer
                     )
                     if(!fetchSuccess) {
-                        requireShowToast(appContext.getString(R.string.fetch_failed))
+                        requireShowToast(activityContext.getString(R.string.fetch_failed))
                     }else {
-                        requireShowToast(appContext.getString(R.string.fetch_success))
+                        requireShowToast(activityContext.getString(R.string.fetch_success))
                     }
                 }catch (e:Exception){
-                    showErrAndSaveLog(TAG,"require fetch error:"+e.stackTraceToString(), appContext.getString(R.string.fetch_failed)+":"+e.localizedMessage, requireShowToast,curRepoFromParentPage.value.id)
+                    showErrAndSaveLog(TAG,"require fetch error:"+e.stackTraceToString(), activityContext.getString(R.string.fetch_failed)+":"+e.localizedMessage, requireShowToast,curRepoFromParentPage.value.id)
                 }finally {
                     //清除缓存中的仓库状态
 //                    RepoStatusUtil.clearRepoStatus(repoId)
@@ -949,7 +948,7 @@ fun ChangeListInnerPage(
                         remoteNameParam = null,
                         curRepoFromParentPage = curRepoFromParentPage,
                         requireShowToast = requireShowToast,
-                        appContext = appContext,
+                        appContext = activityContext,
                         loadingText = loadingText,
                         dbContainer = dbContainer
                     )
@@ -957,7 +956,7 @@ fun ChangeListInnerPage(
                         //刷新页面
 //                        changeStateTriggerRefreshPage(needRefreshChangeListPage)
 
-                        requireShowToast(appContext.getString(R.string.fetch_failed))
+                        requireShowToast(activityContext.getString(R.string.fetch_failed))
                     }else {
 //                        val mergeSuccess = doMerge(true, null, true, trueMergeFalseRebase = false)
                         val mergeSuccess = ChangeListFunctions.doMerge(
@@ -967,18 +966,18 @@ fun ChangeListInnerPage(
                             trueMergeFalseRebase = false,
                             curRepoFromParentPage = curRepoFromParentPage,
                             requireShowToast = requireShowToast,
-                            appContext = appContext,
+                            appContext = activityContext,
                             loadingText = loadingText,
                             bottomBarActDoneCallback = bottomBarActDoneCallback
                         )
                         if(!mergeSuccess){
-                            requireShowToast(appContext.getString(R.string.rebase_failed))
+                            requireShowToast(activityContext.getString(R.string.rebase_failed))
                         }else {
-                            requireShowToast(appContext.getString(R.string.pull_rebase_success))
+                            requireShowToast(activityContext.getString(R.string.pull_rebase_success))
                         }
                     }
                 }catch (e:Exception){
-                    showErrAndSaveLog(TAG,"require Pull(Rebase) error:"+e.stackTraceToString(), appContext.getString(R.string.pull_rebase_failed)+":"+e.localizedMessage, requireShowToast,curRepoFromParentPage.value.id)
+                    showErrAndSaveLog(TAG,"require Pull(Rebase) error:"+e.stackTraceToString(), activityContext.getString(R.string.pull_rebase_failed)+":"+e.localizedMessage, requireShowToast,curRepoFromParentPage.value.id)
                 }finally {
                     //清除缓存中的仓库状态
 //                    RepoStatusUtil.clearRepoStatus(repoId)
@@ -1000,19 +999,19 @@ fun ChangeListInnerPage(
                         force = false,
                         curRepoFromParentPage = curRepoFromParentPage,
                         requireShowToast = requireShowToast,
-                        appContext = appContext,
+                        appContext = activityContext,
                         loadingText = loadingText,
                         bottomBarActDoneCallback = bottomBarActDoneCallback,
                         dbContainer = dbContainer
                     )
                     if(!success) {
-                        requireShowToast(appContext.getString(R.string.push_failed))
+                        requireShowToast(activityContext.getString(R.string.push_failed))
                     }else {
-                        requireShowToast(appContext.getString(R.string.push_success))
+                        requireShowToast(activityContext.getString(R.string.push_success))
                     }
 
                 }catch (e:Exception){
-                    showErrAndSaveLog(TAG,"require push error:"+e.stackTraceToString(), appContext.getString(R.string.push_failed)+":"+e.localizedMessage, requireShowToast,curRepoFromParentPage.value.id)
+                    showErrAndSaveLog(TAG,"require push error:"+e.stackTraceToString(), activityContext.getString(R.string.push_failed)+":"+e.localizedMessage, requireShowToast,curRepoFromParentPage.value.id)
                 }finally {
 //                    RepoStatusUtil.clearRepoStatus(repoId)
 
@@ -1040,7 +1039,7 @@ fun ChangeListInnerPage(
                         trueMergeFalseRebase = true,
                         curRepoFromParentPage = curRepoFromParentPage,
                         requireShowToast = requireShowToast,
-                        appContext = appContext,
+                        appContext = activityContext,
                         bottomBarActDoneCallback = bottomBarActDoneCallback,
                         plzSetUpStreamForCurBranch = plzSetUpStreamForCurBranch,
                         upstreamRemoteOptionsList = upstreamRemoteOptionsList,
@@ -1054,7 +1053,7 @@ fun ChangeListInnerPage(
                         dbContainer = dbContainer
                     )
                 }catch (e:Exception){
-                    showErrAndSaveLog(TAG,"require sync error:"+e.stackTraceToString(), appContext.getString(R.string.sync_failed)+":"+e.localizedMessage, requireShowToast,curRepoFromParentPage.value.id)
+                    showErrAndSaveLog(TAG,"require sync error:"+e.stackTraceToString(), activityContext.getString(R.string.sync_failed)+":"+e.localizedMessage, requireShowToast,curRepoFromParentPage.value.id)
                 }finally {
 //                    RepoStatusUtil.clearRepoStatus(repoId)
 
@@ -1072,7 +1071,7 @@ fun ChangeListInnerPage(
                         trueMergeFalseRebase = false,
                         curRepoFromParentPage = curRepoFromParentPage,
                         requireShowToast = requireShowToast,
-                        appContext = appContext,
+                        appContext = activityContext,
                         bottomBarActDoneCallback = bottomBarActDoneCallback,
                         plzSetUpStreamForCurBranch = plzSetUpStreamForCurBranch,
                         upstreamRemoteOptionsList = upstreamRemoteOptionsList,
@@ -1086,7 +1085,7 @@ fun ChangeListInnerPage(
                         dbContainer = dbContainer
                     )
                 }catch (e:Exception){
-                    showErrAndSaveLog(TAG,"require Sync(Rebase) error:"+e.stackTraceToString(), appContext.getString(R.string.sync_rebase_failed)+":"+e.localizedMessage, requireShowToast,curRepoFromParentPage.value.id)
+                    showErrAndSaveLog(TAG,"require Sync(Rebase) error:"+e.stackTraceToString(), activityContext.getString(R.string.sync_rebase_failed)+":"+e.localizedMessage, requireShowToast,curRepoFromParentPage.value.id)
                 }finally {
 //                    RepoStatusUtil.clearRepoStatus(repoId)
 
@@ -1102,7 +1101,7 @@ fun ChangeListInnerPage(
 
                     doStageAll()
                 }catch (e:Exception){
-                    showErrAndSaveLog(TAG,"require stage_all error:"+e.stackTraceToString(), appContext.getString(R.string.stage_all_failed)+":"+e.localizedMessage, requireShowToast,curRepoFromParentPage.value.id)
+                    showErrAndSaveLog(TAG,"require stage_all error:"+e.stackTraceToString(), activityContext.getString(R.string.stage_all_failed)+":"+e.localizedMessage, requireShowToast,curRepoFromParentPage.value.id)
                 }finally {
 //                    RepoStatusUtil.clearRepoStatus(repoId)
 
@@ -1131,7 +1130,7 @@ fun ChangeListInnerPage(
                         overwriteAuthor = overwriteAuthor,
                         showCommitMsgDialog = showCommitMsgDialog,
                         repoState = repoState,
-                        appContext = appContext,
+                        appContext = activityContext,
                         loadingText = loadingText,
                         repoId = repoId,
                         bottomBarActDoneCallback = bottomBarActDoneCallback,
@@ -1141,7 +1140,7 @@ fun ChangeListInnerPage(
                         indexIsEmptyForCommitDialog=indexIsEmptyForCommitDialog
                     )
                 }catch (e:Exception){
-                    showErrAndSaveLog(TAG,"require commit error:"+e.stackTraceToString(), appContext.getString(R.string.commit_failed)+":"+e.localizedMessage, requireShowToast,curRepoFromParentPage.value.id)
+                    showErrAndSaveLog(TAG,"require commit error:"+e.stackTraceToString(), activityContext.getString(R.string.commit_failed)+":"+e.localizedMessage, requireShowToast,curRepoFromParentPage.value.id)
                 }finally {
 //                    RepoStatusUtil.clearRepoStatus(repoId)
 
@@ -1160,7 +1159,7 @@ fun ChangeListInnerPage(
                             Msg.requireShowLongDuration(readyRet.msg)
 
                             //显示的时候只显示简短错误信息，例如"请先解决冲突！"，存的时候存详细点，存上什么操作导致的错误，例如：“merge continue err:请先解决冲突”
-                            val errPrefix= appContext.getString(R.string.merge_continue_err)
+                            val errPrefix= activityContext.getString(R.string.merge_continue_err)
                             createAndInsertError(repoId, "$errPrefix:${readyRet.msg}")
                         }else {
 //                            doCommit(true, "", true, false)
@@ -1180,7 +1179,7 @@ fun ChangeListInnerPage(
                                 overwriteAuthor = overwriteAuthor,
                                 showCommitMsgDialog = showCommitMsgDialog,
                                 repoState = repoState,
-                                appContext = appContext,
+                                appContext = activityContext,
                                 loadingText = loadingText,
                                 repoId = repoId,
                                 bottomBarActDoneCallback = bottomBarActDoneCallback,
@@ -1193,7 +1192,7 @@ fun ChangeListInnerPage(
 
                     }
                 }catch (e:Exception){
-                    showErrAndSaveLog(TAG,"require Continue Merge error:"+e.stackTraceToString(), appContext.getString(R.string.continue_merge_err)+":"+e.localizedMessage, requireShowToast,repoId)
+                    showErrAndSaveLog(TAG,"require Continue Merge error:"+e.stackTraceToString(), activityContext.getString(R.string.continue_merge_err)+":"+e.localizedMessage, requireShowToast,repoId)
                 }finally {
 //                    RepoStatusUtil.clearRepoStatus(repoId)
 
@@ -1220,7 +1219,7 @@ fun ChangeListInnerPage(
                         overwriteAuthor = overwriteAuthor,
                         showCommitMsgDialog = showCommitMsgDialog,
                         repoState = repoState,
-                        appContext = appContext,
+                        appContext = activityContext,
                         loadingText = loadingText,
                         repoId = repoId,
                         bottomBarActDoneCallback = bottomBarActDoneCallback,
@@ -1230,7 +1229,7 @@ fun ChangeListInnerPage(
                         indexIsEmptyForCommitDialog=indexIsEmptyForCommitDialog
                     )
                 }catch (e:Exception){
-                    showErrAndSaveLog(TAG,"require Rebase Continue error:"+e.stackTraceToString(), appContext.getString(R.string.rebase_continue_err)+":"+e.localizedMessage, requireShowToast,repoId)
+                    showErrAndSaveLog(TAG,"require Rebase Continue error:"+e.stackTraceToString(), activityContext.getString(R.string.rebase_continue_err)+":"+e.localizedMessage, requireShowToast,repoId)
                 }finally {
 //                    RepoStatusUtil.clearRepoStatus(repoId)
 
@@ -1245,17 +1244,17 @@ fun ChangeListInnerPage(
                         val (usernameFromConfig, emailFromConfig) = Libgit2Helper.getGitUsernameAndEmail(repo)
 
                         if (usernameFromConfig.isBlank() || emailFromConfig.isBlank()) {
-                            Msg.requireShowLongDuration(appContext.getString(R.string.plz_set_email_and_username_then_try_again))
+                            Msg.requireShowLongDuration(activityContext.getString(R.string.plz_set_email_and_username_then_try_again))
                         } else {
                             val readyRet = Libgit2Helper.rebaseSkip(repo, usernameFromConfig, emailFromConfig)
                             if (readyRet.hasError()) {
                                 Msg.requireShowLongDuration(readyRet.msg)
 
                                 //显示的时候只显示简短错误信息，例如"请先解决冲突！"，存的时候存详细点，存上什么操作导致的错误，例如：“merge continue err:请先解决冲突”
-                                val errPrefix = appContext.getString(R.string.rebase_skip_err)
+                                val errPrefix = activityContext.getString(R.string.rebase_skip_err)
                                 createAndInsertError(repoId, "$errPrefix:${readyRet.msg}")
                             } else {
-                                Msg.requireShow(appContext.getString(R.string.rebase_success))
+                                Msg.requireShow(activityContext.getString(R.string.rebase_success))
                             }
                         }
                     }
@@ -1263,7 +1262,7 @@ fun ChangeListInnerPage(
                     showErrAndSaveLog(
                         TAG,
                         "require Rebase Skip error:" + e.stackTraceToString(),
-                        appContext.getString(R.string.rebase_skip_err) + ":" + e.localizedMessage,
+                        activityContext.getString(R.string.rebase_skip_err) + ":" + e.localizedMessage,
                         requireShowToast,
                         repoId
                     )
@@ -1283,17 +1282,17 @@ fun ChangeListInnerPage(
                             Msg.requireShowLongDuration(readyRet.msg)
 
                             //显示的时候只显示简短错误信息，例如"请先解决冲突！"，存的时候存详细点，存上什么操作导致的错误，例如：“merge continue err:请先解决冲突”
-                            val errPrefix = appContext.getString(R.string.rebase_abort_err)
+                            val errPrefix = activityContext.getString(R.string.rebase_abort_err)
                             createAndInsertError(repoId, "$errPrefix:${readyRet.msg}")
                         } else {
-                            Msg.requireShow(appContext.getString(R.string.rebase_aborted))
+                            Msg.requireShow(activityContext.getString(R.string.rebase_aborted))
                         }
                     }
                 } catch (e: Exception) {
                     showErrAndSaveLog(
                         TAG,
                         "require Rebase Abort error:" + e.stackTraceToString(),
-                        appContext.getString(R.string.rebase_abort_err) + ":" + e.localizedMessage,
+                        activityContext.getString(R.string.rebase_abort_err) + ":" + e.localizedMessage,
                         requireShowToast,
                         repoId
                     )
@@ -1323,7 +1322,7 @@ fun ChangeListInnerPage(
                         overwriteAuthor = overwriteAuthor,
                         showCommitMsgDialog = showCommitMsgDialog,
                         repoState = repoState,
-                        appContext = appContext,
+                        appContext = activityContext,
                         loadingText = loadingText,
                         repoId = repoId,
                         bottomBarActDoneCallback = bottomBarActDoneCallback,
@@ -1333,7 +1332,7 @@ fun ChangeListInnerPage(
                         indexIsEmptyForCommitDialog=indexIsEmptyForCommitDialog
                     )
                 }catch (e:Exception){
-                    showErrAndSaveLog(TAG,"require Cherrypick Continue error:"+e.stackTraceToString(), appContext.getString(R.string.cherrypick_continue_err)+":"+e.localizedMessage, requireShowToast,repoId)
+                    showErrAndSaveLog(TAG,"require Cherrypick Continue error:"+e.stackTraceToString(), activityContext.getString(R.string.cherrypick_continue_err)+":"+e.localizedMessage, requireShowToast,repoId)
                 }finally {
 //                    RepoStatusUtil.clearRepoStatus(repoId)
 
@@ -1350,17 +1349,17 @@ fun ChangeListInnerPage(
                             Msg.requireShowLongDuration(readyRet.msg)
 
                             //显示的时候只显示简短错误信息，例如"请先解决冲突！"，存的时候存详细点，存上什么操作导致的错误，例如：“merge continue err:请先解决冲突”
-                            val errPrefix = appContext.getString(R.string.cherrypick_abort_err)
+                            val errPrefix = activityContext.getString(R.string.cherrypick_abort_err)
                             createAndInsertError(repoId, "$errPrefix:${readyRet.msg}")
                         } else {
-                            Msg.requireShow(appContext.getString(R.string.cherrypick_aborted))
+                            Msg.requireShow(activityContext.getString(R.string.cherrypick_aborted))
                         }
                     }
                 } catch (e: Exception) {
                     showErrAndSaveLog(
                         TAG,
                         "require Cherrypick Abort error:" + e.stackTraceToString(),
-                        appContext.getString(R.string.cherrypick_abort_err) + ":" + e.localizedMessage,
+                        activityContext.getString(R.string.cherrypick_abort_err) + ":" + e.localizedMessage,
                         requireShowToast,
                         repoId
                     )
@@ -1408,7 +1407,7 @@ fun ChangeListInnerPage(
             doJobThenOffLoading(
                 loadingOn = loadingOn,
                 loadingOff = loadingOff,
-                loadingText = appContext.getString(R.string.aborting_merge)
+                loadingText = activityContext.getString(R.string.aborting_merge)
             ) {
                 try {
 //                    RepoStatusUtil.setRepoStatus(repoId, appContext.getString(R.string.aborting_merge))
@@ -1416,7 +1415,7 @@ fun ChangeListInnerPage(
                     doAbortMerge()
 
                 }catch (e:Exception){
-                    showErrAndSaveLog(TAG,"require abort_merge error:"+e.stackTraceToString(), appContext.getString(R.string.abort_merge_failed)+":"+e.localizedMessage, requireShowToast,curRepoFromParentPage.value.id)
+                    showErrAndSaveLog(TAG,"require abort_merge error:"+e.stackTraceToString(), activityContext.getString(R.string.abort_merge_failed)+":"+e.localizedMessage, requireShowToast,curRepoFromParentPage.value.id)
                 }finally {
 //                    RepoStatusUtil.clearRepoStatus(repoId)
 
@@ -1444,7 +1443,7 @@ fun ChangeListInnerPage(
             doJobThenOffLoading(
                 loadingOn = loadingOn,
                 loadingOff = loadingOff,
-                loadingText = appContext.getString(R.string.loading)
+                loadingText = activityContext.getString(R.string.loading)
             ) {
                 doAccept(acceptTheirs)
             }
@@ -1464,7 +1463,7 @@ fun ChangeListInnerPage(
                 upstreamDialogOnOkText.value=""
 
                 // update git config
-                doJobThenOffLoading(loadingOn,loadingOff, appContext.getString(R.string.setting_upstream)) {
+                doJobThenOffLoading(loadingOn,loadingOff, activityContext.getString(R.string.setting_upstream)) {
                     //直接索引取值即可
                     val remote = upstreamRemoteOptionsList.value[upstreamSelectedRemote.intValue]
 
@@ -1487,9 +1486,9 @@ fun ChangeListInnerPage(
 
                         if(setUpstreamSuccess) {
                             //提示用户：上游已保存
-                            requireShowToast(appContext.getString(R.string.upstream_saved))
+                            requireShowToast(activityContext.getString(R.string.upstream_saved))
                             //把loading信息改成正在同步
-                            loadingOn(appContext.getString(R.string.syncing))
+                            loadingOn(activityContext.getString(R.string.syncing))
 
                             //重新执行doSync()
 //                            doSync(true)
@@ -1498,7 +1497,7 @@ fun ChangeListInnerPage(
                                 trueMergeFalseRebase = true,
                                 curRepoFromParentPage = curRepoFromParentPage,
                                 requireShowToast = requireShowToast,
-                                appContext = appContext,
+                                appContext = activityContext,
                                 bottomBarActDoneCallback = bottomBarActDoneCallback,
                                 plzSetUpStreamForCurBranch = plzSetUpStreamForCurBranch,
                                 upstreamRemoteOptionsList = upstreamRemoteOptionsList,
@@ -1512,7 +1511,7 @@ fun ChangeListInnerPage(
                                 dbContainer = dbContainer
                             )
                         }else {
-                            requireShowToast(appContext.getString(R.string.set_upstream_error))
+                            requireShowToast(activityContext.getString(R.string.set_upstream_error))
                         }
                     }
                 }
@@ -1543,7 +1542,7 @@ fun ChangeListInnerPage(
                 val cmtMsg = msgOrAmendMsg  //存上实际的提交信息，若勾选Amend实际值就是amendMsg的值否则是commitMsg的值
                 commitMsg.value = "" //清空提交信息状态
 
-                doJobThenOffLoading(loadingOn, loadingOff,appContext.getString(R.string.committing)) {
+                doJobThenOffLoading(loadingOn, loadingOff,activityContext.getString(R.string.committing)) {
                     try {
 //                        // do stage, then do commit
 //                        if(!doStage(false)) {  //如果stage失败，提示错误并返回，或许该记日志？
@@ -1570,7 +1569,7 @@ fun ChangeListInnerPage(
                             overwriteAuthor = overwriteAuthor,
                             showCommitMsgDialog = showCommitMsgDialog,
                             repoState = repoState,
-                            appContext = appContext,
+                            appContext = activityContext,
                             loadingText = loadingText,
                             repoId = repoId,
                             bottomBarActDoneCallback = bottomBarActDoneCallback,
@@ -1582,7 +1581,7 @@ fun ChangeListInnerPage(
                         if(requireDoSync) {
                             if(commitSuccess){
                                 //更新loading提示文案
-                                loadingText.value = appContext.getString(R.string.syncing)
+                                loadingText.value = activityContext.getString(R.string.syncing)
 
 //                                doSync(true)
                                 ChangeListFunctions.doSync(
@@ -1590,7 +1589,7 @@ fun ChangeListInnerPage(
                                     trueMergeFalseRebase = true,
                                     curRepoFromParentPage = curRepoFromParentPage,
                                     requireShowToast = requireShowToast,
-                                    appContext = appContext,
+                                    appContext = activityContext,
                                     bottomBarActDoneCallback = bottomBarActDoneCallback,
                                     plzSetUpStreamForCurBranch = plzSetUpStreamForCurBranch,
                                     upstreamRemoteOptionsList = upstreamRemoteOptionsList,
@@ -1604,7 +1603,7 @@ fun ChangeListInnerPage(
                                     dbContainer = dbContainer
                                 )
                             }else {
-                                requireShowToast(appContext.getString(R.string.sync_abort_by_commit_failed))
+                                requireShowToast(activityContext.getString(R.string.sync_abort_by_commit_failed))
                             }
                         }
 
@@ -1708,7 +1707,7 @@ fun ChangeListInnerPage(
                             overwriteAuthor = overwriteAuthor,
                             showCommitMsgDialog = showCommitMsgDialog,
                             repoState = repoState,
-                            appContext = appContext,
+                            appContext = activityContext,
                             loadingText = loadingText,
                             repoId = repoId,
                             bottomBarActDoneCallback = bottomBarActDoneCallback,
@@ -1811,7 +1810,7 @@ fun ChangeListInnerPage(
             doJobThenOffLoading(
                 loadingOn,
                 loadingOff,
-                appContext.getString(R.string.cherrypicking)
+                activityContext.getString(R.string.cherrypicking)
             ) {
                 val pathSpecs = selectedItemList.value.map{it.relativePathUnderRepo}
                 Repository.open(curRepoFromParentPage.value.fullSavePath).use { repo->
@@ -1831,7 +1830,7 @@ fun ChangeListInnerPage(
                             createAndInsertError(repoId, "cherrypick files changes of '$shortParent..$shortTarget' err:"+ret.msg)
                         }
                     }else {
-                        Msg.requireShow(appContext.getString(R.string.success))
+                        Msg.requireShow(activityContext.getString(R.string.success))
                     }
                 }
             }
@@ -1846,14 +1845,14 @@ fun ChangeListInnerPage(
             onCancel = { showIgnoreDialog.value = false }
         ) {
             showIgnoreDialog.value=false
-            doJobThenOffLoading(loadingOn, loadingOff, appContext.getString(R.string.loading)) {
+            doJobThenOffLoading(loadingOn, loadingOff, activityContext.getString(R.string.loading)) {
                 try {
                     Repository.open(curRepoFromParentPage.value.fullSavePath).use { repo ->
                         val repoDotGitPath = Libgit2Helper.getRepoGitDirPathNoEndsWithSlash(repo)
                         val linesWillIgnore = selectedItemList.value.map { it.relativePathUnderRepo }
                         IgnoreMan.appendLinesToIgnoreFile(repoDotGitPath, linesWillIgnore)
                     }
-                    Msg.requireShow(appContext.getString(R.string.success))
+                    Msg.requireShow(activityContext.getString(R.string.success))
                 }catch (e:Exception) {
                     val errMsg = e.localizedMessage
                     Msg.requireShowLongDuration(errMsg ?: "err")
@@ -1887,7 +1886,7 @@ fun ChangeListInnerPage(
             showSavePatchSuccessDialog.value = false
 
             clipboardManager.setText(AnnotatedString(path))
-            Msg.requireShow(appContext.getString(R.string.copied))
+            Msg.requireShow(activityContext.getString(R.string.copied))
         }
     }
 
@@ -1905,7 +1904,7 @@ fun ChangeListInnerPage(
         ){
             showCreatePatchDialog.value=false
 
-            doJobThenOffLoading(loadingOn,loadingOff, appContext.getString(R.string.creating_patch)) job@{
+            doJobThenOffLoading(loadingOn,loadingOff, activityContext.getString(R.string.creating_patch)) job@{
                 try {
                     Repository.open(curRepoFromParentPage.value.fullSavePath).use { repo->
                         val leftCommit = getCommitLeft()  //逻辑上在左边的commit
@@ -2069,7 +2068,7 @@ fun ChangeListInnerPage(
             doJobThenOffLoading(
                 loadingOn,
                 loadingOff,
-                appContext.getString(R.string.checking_out)
+                activityContext.getString(R.string.checking_out)
             ) {
                 val pathSpecs = selectedItemList.value.map{it.relativePathUnderRepo}
                 Repository.open(curRepoFromParentPage.value.fullSavePath).use { repo->
@@ -2078,7 +2077,7 @@ fun ChangeListInnerPage(
                         Msg.requireShowLongDuration(ret.msg)
                         createAndInsertError(repoId, "checkout files err:"+ret.msg)
                     }else {
-                        Msg.requireShow(appContext.getString(R.string.success))
+                        Msg.requireShow(activityContext.getString(R.string.success))
                     }
                 }
             }
@@ -2135,10 +2134,10 @@ fun ChangeListInnerPage(
     val iconOnClickList:List<()->Unit> = if(fromTo == Cons.gitDiffFromIndexToWorktree) listOf(  // ChangeList页面的底栏选项 ( worktree页面 )
             commitThenSync@{
                 // commit then sync(pull then push)
-                doJobThenOffLoading(loadingOn=loadingOn,loadingOff=loadingOff, loadingText=appContext.getString(R.string.executing_commit_then_sync)) {
+                doJobThenOffLoading(loadingOn=loadingOn,loadingOff=loadingOff, loadingText=activityContext.getString(R.string.executing_commit_then_sync)) {
                     val stageSuccess = doStage(false, false, null)
                     if(!stageSuccess){
-                        bottomBarActDoneCallback(appContext.getString(R.string.stage_failed))
+                        bottomBarActDoneCallback(activityContext.getString(R.string.stage_failed))
                     }else {
                         //显示commit弹窗，之后在其确认回调函数里执行后续操作
                         //最后一个参数代表执行完提交后是否执行sync
@@ -2159,7 +2158,7 @@ fun ChangeListInnerPage(
                             overwriteAuthor = overwriteAuthor,
                             showCommitMsgDialog = showCommitMsgDialog,
                             repoState = repoState,
-                            appContext = appContext,
+                            appContext = activityContext,
                             loadingText = loadingText,
                             repoId = repoId,
                             bottomBarActDoneCallback = bottomBarActDoneCallback,
@@ -2173,10 +2172,10 @@ fun ChangeListInnerPage(
             },
 
             commit@{
-                doJobThenOffLoading(loadingOn=loadingOn,loadingOff=loadingOff, loadingText=appContext.getString(R.string.committing)) {
+                doJobThenOffLoading(loadingOn=loadingOn,loadingOff=loadingOff, loadingText=activityContext.getString(R.string.committing)) {
                     val stageSuccess = doStage(false, false, null)
                     if(!stageSuccess){
-                        bottomBarActDoneCallback(appContext.getString(R.string.stage_failed))
+                        bottomBarActDoneCallback(activityContext.getString(R.string.stage_failed))
                     }else {
                         //显示commit弹窗，之后在其确认回调函数里执行后续操作
 //                        doCommit(true,"", true, false)
@@ -2196,7 +2195,7 @@ fun ChangeListInnerPage(
                             overwriteAuthor = overwriteAuthor,
                             showCommitMsgDialog = showCommitMsgDialog,
                             repoState = repoState,
-                            appContext = appContext,
+                            appContext = activityContext,
                             loadingText = loadingText,
                             repoId = repoId,
                             bottomBarActDoneCallback = bottomBarActDoneCallback,
@@ -2217,7 +2216,7 @@ fun ChangeListInnerPage(
         ) else if(fromTo == Cons.gitDiffFromHeadToIndex) listOf(  //index页面的底栏选项
         commitThenSync@{
             // commit then sync(pull then push)
-            doJobThenOffLoading(loadingOn=loadingOn,loadingOff=loadingOff, loadingText=appContext.getString(R.string.executing_commit_then_sync)) {
+            doJobThenOffLoading(loadingOn=loadingOn,loadingOff=loadingOff, loadingText=activityContext.getString(R.string.executing_commit_then_sync)) {
                 //显示commit弹窗，之后在其确认回调函数里执行后续操作
                 //最后一个参数代表执行完提交后是否执行sync
 //                doCommit(true, "", true, true)
@@ -2237,7 +2236,7 @@ fun ChangeListInnerPage(
                     overwriteAuthor = overwriteAuthor,
                     showCommitMsgDialog = showCommitMsgDialog,
                     repoState = repoState,
-                    appContext = appContext,
+                    appContext = activityContext,
                     loadingText = loadingText,
                     repoId = repoId,
                     bottomBarActDoneCallback = bottomBarActDoneCallback,
@@ -2250,7 +2249,7 @@ fun ChangeListInnerPage(
         },
 
         commit@{
-            doJobThenOffLoading(loadingOn=loadingOn,loadingOff=loadingOff, loadingText=appContext.getString(R.string.committing)) {
+            doJobThenOffLoading(loadingOn=loadingOn,loadingOff=loadingOff, loadingText=activityContext.getString(R.string.committing)) {
                 //显示commit弹窗，之后在其确认回调函数里执行后续操作
 //                doCommit(true,"", true, false)
                 ChangeListFunctions.doCommit(
@@ -2269,7 +2268,7 @@ fun ChangeListInnerPage(
                     overwriteAuthor = overwriteAuthor,
                     showCommitMsgDialog = showCommitMsgDialog,
                     repoState = repoState,
-                    appContext = appContext,
+                    appContext = activityContext,
                     loadingText = loadingText,
                     repoId = repoId,
                     bottomBarActDoneCallback = bottomBarActDoneCallback,
@@ -2306,7 +2305,7 @@ fun ChangeListInnerPage(
                 if(commitParentList.value.isNotEmpty()) {
                     initCherrypickDialog()
                 }else {
-                    Msg.requireShowLongDuration(appContext.getString(R.string.cherrypick_only_work_for_diff_to_parents))
+                    Msg.requireShowLongDuration(activityContext.getString(R.string.cherrypick_only_work_for_diff_to_parents))
                 }
 
             },
@@ -2360,7 +2359,7 @@ fun ChangeListInnerPage(
                 if(selectedListIsEmpty()) {  //因为无选中项时按钮禁用，所以一般不会执行这块，只是以防万一
                     requireShowToast(noItemSelectedStrRes)
                 }else{
-                    loadingText.value = appContext.getString(R.string.reverting)
+                    loadingText.value = activityContext.getString(R.string.reverting)
 
                     //取出数据库路径
                     Repository.open(curRepoFromParentPage.value.fullSavePath).use { repo ->
@@ -2394,7 +2393,7 @@ fun ChangeListInnerPage(
         }
 
     val doUnstage = doUnstage@{
-        loadingText.value = appContext.getString(R.string.unstaging)
+        loadingText.value = activityContext.getString(R.string.unstaging)
 
         //menu action: unstage
         Repository.open(curRepoFromParentPage.value.fullSavePath).use {repo ->
@@ -2410,7 +2409,7 @@ fun ChangeListInnerPage(
         }
 
         //关闭底栏，刷新页面
-        bottomBarActDoneCallback(appContext.getString(R.string.unstage_success))
+        bottomBarActDoneCallback(activityContext.getString(R.string.unstage_success))
     }
     val showUnstageConfirmDialog = rememberSaveable { mutableStateOf(false)}
     if(showUnstageConfirmDialog.value) {
@@ -2420,7 +2419,7 @@ fun ChangeListInnerPage(
             onCancel = { showUnstageConfirmDialog.value = false }
         ) {
             showUnstageConfirmDialog.value = false
-            doJobThenOffLoading(loadingOn, loadingOff, loadingText=appContext.getString(R.string.unstaging)) {
+            doJobThenOffLoading(loadingOn, loadingOff, loadingText=activityContext.getString(R.string.unstaging)) {
                 doUnstage()
             }
         }
@@ -2436,7 +2435,7 @@ fun ChangeListInnerPage(
     val showImportToReposDialog = rememberSaveable { mutableStateOf(false)}
     if(showImportToReposDialog.value){
         ConfirmDialog2(
-            title = appContext.getString(R.string.import_as_repo),
+            title = activityContext.getString(R.string.import_as_repo),
             requireShowTextCompose = true,
             textCompose = {
                 ScrollableColumn {
@@ -2456,7 +2455,7 @@ fun ChangeListInnerPage(
             showImportToReposDialog.value = false
 
             val curRepo = curRepoFromParentPage
-            doJobThenOffLoading(loadingOn, loadingOff, appContext.getString(R.string.importing)) {
+            doJobThenOffLoading(loadingOn, loadingOff, activityContext.getString(R.string.importing)) {
                 val repoNameSuffix = "_of_${curRepo.value.repoName}"
                 val parentRepoId = curRepo.value.id
 //                val importList = selectedItemList.value.toList().filter { it.cloned }
@@ -2475,7 +2474,7 @@ fun ChangeListInnerPage(
                         importRepoResult.existed += result.existed
                     }
 
-                    Msg.requireShowLongDuration(replaceStringResList(appContext.getString(R.string.n_imported), listOf(""+importRepoResult.success)))
+                    Msg.requireShowLongDuration(replaceStringResList(activityContext.getString(R.string.n_imported), listOf(""+importRepoResult.success)))
                 }catch (e:Exception) {
                     //出错的时候，importRepoResult的计数不一定准，有可能比实际成功和失败的少，不过不可能多
                     val errMsg = e.localizedMessage
@@ -2507,7 +2506,7 @@ fun ChangeListInnerPage(
     val initImportAsRepo = {
         val tmplist = selectedItemList.value.filter { it.toFile().isDirectory }
         if(tmplist.isEmpty()) {
-            Msg.requireShow(appContext.getString(R.string.no_dir_selected))
+            Msg.requireShow(activityContext.getString(R.string.no_dir_selected))
         }else {
             importList.value.clear()
             importList.value.addAll(tmplist)
@@ -2518,7 +2517,7 @@ fun ChangeListInnerPage(
     val moreItemOnClickList:List<()->Unit> = if(fromTo == Cons.gitDiffFromIndexToWorktree) listOf(
         acceptOurs@{
             if(!UserUtil.isPro()) {
-                Msg.requireShowLongDuration(appContext.getString(R.string.this_feature_is_pro_only))
+                Msg.requireShowLongDuration(activityContext.getString(R.string.this_feature_is_pro_only))
                 return@acceptOurs
             }
 
@@ -2527,7 +2526,7 @@ fun ChangeListInnerPage(
         },
         acceptTheirs@{
             if(!UserUtil.isPro()) {
-                Msg.requireShowLongDuration(appContext.getString(R.string.this_feature_is_pro_only))
+                Msg.requireShowLongDuration(activityContext.getString(R.string.this_feature_is_pro_only))
                 return@acceptTheirs
             }
 
@@ -2539,7 +2538,7 @@ fun ChangeListInnerPage(
             doJobThenOffLoading(
                 loadingOn = loadingOn,
                 loadingOff = loadingOff,
-                loadingText=appContext.getString(R.string.staging)
+                loadingText=activityContext.getString(R.string.staging)
             ) {
                 doStage(true ,false, null)
             }
@@ -2608,7 +2607,7 @@ fun ChangeListInnerPage(
     val goToSub = { item:StatusTypeEntrySaver ->
         val target = changeListRepoList?.value?.find { item.toFile().canonicalPath == it.fullSavePath }
         if(target==null) {
-            Msg.requireShow(appContext.getString(R.string.dir_not_imported))
+            Msg.requireShow(activityContext.getString(R.string.dir_not_imported))
         }else {
             goToChangeListPage(target)
         }
@@ -2630,7 +2629,7 @@ fun ChangeListInnerPage(
     val menuKeyActList = listOf(
         open@{ item:StatusTypeEntrySaver ->
             if(!item.toFile().exists()) {
-                requireShowToast(appContext.getString(R.string.file_doesnt_exist))
+                requireShowToast(activityContext.getString(R.string.file_doesnt_exist))
                 return@open
             }
 
@@ -2642,7 +2641,7 @@ fun ChangeListInnerPage(
         },
         openAs@{item:StatusTypeEntrySaver ->
             if(!item.toFile().exists()) {
-                requireShowToast(appContext.getString(R.string.file_doesnt_exist))
+                requireShowToast(activityContext.getString(R.string.file_doesnt_exist))
                 return@openAs
             }
 
@@ -2652,7 +2651,7 @@ fun ChangeListInnerPage(
         },
         showInFiles@{item:StatusTypeEntrySaver ->
             if(!item.toFile().exists()) {
-                requireShowToast(appContext.getString(R.string.file_doesnt_exist))
+                requireShowToast(activityContext.getString(R.string.file_doesnt_exist))
                 return@showInFiles
             }
 
@@ -2663,11 +2662,11 @@ fun ChangeListInnerPage(
         },
         copyPath@{item:StatusTypeEntrySaver ->
             clipboardManager.setText(AnnotatedString(item.relativePathUnderRepo))
-            Msg.requireShow(appContext.getString(R.string.copied))
+            Msg.requireShow(activityContext.getString(R.string.copied))
         },
         copyRealPath@{item:StatusTypeEntrySaver ->
             clipboardManager.setText(AnnotatedString(item.canonicalPath))
-            Msg.requireShow(appContext.getString(R.string.copied))
+            Msg.requireShow(activityContext.getString(R.string.copied))
         },
         importAsRepo@{
             importList.value.clear()
@@ -2725,7 +2724,7 @@ fun ChangeListInnerPage(
     //换句话说：ChangeList页面需要注册双击返回；Index页面不需要
     val isBackHandlerEnable = rememberSaveable { mutableStateOf(true)}
     val backHandlerOnBack = getBackHandler(
-        appContext,
+        activityContext,
         exitApp,
         isFileSelectionMode,
         quitSelectionMode,
@@ -2749,7 +2748,7 @@ fun ChangeListInnerPage(
         ) {
             showSelectedItemsShortDetailsDialog.value = false
             clipboardManager.setText(AnnotatedString(selectedItemsShortDetailsStr.value))
-            Msg.requireShow(appContext.getString(R.string.copied))
+            Msg.requireShow(activityContext.getString(R.string.copied))
         }
     }
 
@@ -2775,7 +2774,7 @@ fun ChangeListInnerPage(
             doJobThenOffLoading(
                 loadingOn = loadingOn,
                 loadingOff = loadingOff,
-                loadingText = appContext.getString(R.string.reverting)
+                loadingText = activityContext.getString(R.string.reverting)
             ) {
                 doRevert()
             }
@@ -2903,7 +2902,7 @@ fun ChangeListInnerPage(
                                                 color = MyStyleKt.ClickableText.color,
                                                 style = MyStyleKt.ClickableText.style,
                                                 modifier = MyStyleKt.ClickableText.modifierNoPadding.clickable {
-                                                    doJobThenOffLoading(loadingOn, loadingOff, appContext.getString(R.string.merging)) {
+                                                    doJobThenOffLoading(loadingOn, loadingOff, activityContext.getString(R.string.merging)) {
                                                         ChangeListFunctions.doMerge(
                                                             requireCloseBottomBar = true,
                                                             upstreamParam = null,
@@ -2911,7 +2910,7 @@ fun ChangeListInnerPage(
                                                             trueMergeFalseRebase = true,
                                                             curRepoFromParentPage = curRepoFromParentPage,
                                                             requireShowToast = requireShowToast,
-                                                            appContext = appContext,
+                                                            appContext = activityContext,
                                                             loadingText = loadingText,
                                                             bottomBarActDoneCallback = bottomBarActDoneCallback
                                                         )
@@ -2926,7 +2925,7 @@ fun ChangeListInnerPage(
                                                 color = MyStyleKt.ClickableText.color,
                                                 style = MyStyleKt.ClickableText.style,
                                                 modifier = MyStyleKt.ClickableText.modifierNoPadding.clickable {
-                                                    doJobThenOffLoading(loadingOn, loadingOff, appContext.getString(R.string.rebasing)) {
+                                                    doJobThenOffLoading(loadingOn, loadingOff, activityContext.getString(R.string.rebasing)) {
                                                         ChangeListFunctions.doMerge(
                                                             requireCloseBottomBar = true,
                                                             upstreamParam = null,
@@ -2934,7 +2933,7 @@ fun ChangeListInnerPage(
                                                             trueMergeFalseRebase = false,
                                                             curRepoFromParentPage = curRepoFromParentPage,
                                                             requireShowToast = requireShowToast,
-                                                            appContext = appContext,
+                                                            appContext = activityContext,
                                                             loadingText = loadingText,
                                                             bottomBarActDoneCallback = bottomBarActDoneCallback
                                                         )
@@ -2963,7 +2962,7 @@ fun ChangeListInnerPage(
                                             iconContentDesc = stringResource(id = R.string.pull),
 
                                         ) {
-                                            doJobThenOffLoading(loadingOn, loadingOff, appContext.getString(R.string.pulling)) {
+                                            doJobThenOffLoading(loadingOn, loadingOff, activityContext.getString(R.string.pulling)) {
                                                 doPull()
                                             }
 
@@ -2994,7 +2993,7 @@ fun ChangeListInnerPage(
                                             iconContentDesc = stringResource(id = R.string.push),
 
                                         ) {
-                                            doJobThenOffLoading(loadingOn, loadingOff, appContext.getString(R.string.pushing)) {
+                                            doJobThenOffLoading(loadingOn, loadingOff, activityContext.getString(R.string.pushing)) {
                                                 try {
 //                                                            val success = doPush(true, null)
                                                     val success = ChangeListFunctions.doPush(
@@ -3003,21 +3002,21 @@ fun ChangeListInnerPage(
                                                         force = false,
                                                         curRepoFromParentPage = curRepoFromParentPage,
                                                         requireShowToast = requireShowToast,
-                                                        appContext = appContext,
+                                                        appContext = activityContext,
                                                         loadingText = loadingText,
                                                         bottomBarActDoneCallback = bottomBarActDoneCallback,
                                                         dbContainer = dbContainer
                                                     )
                                                     if (!success) {
-                                                        requireShowToast(appContext.getString(R.string.push_failed))
+                                                        requireShowToast(activityContext.getString(R.string.push_failed))
                                                     } else {
-                                                        requireShowToast(appContext.getString(R.string.push_success))
+                                                        requireShowToast(activityContext.getString(R.string.push_success))
                                                     }
                                                 } catch (e: Exception) {
                                                     showErrAndSaveLog(
                                                         TAG,
                                                         "require push error:" + e.stackTraceToString(),
-                                                        appContext.getString(R.string.push_failed) + ":" + e.localizedMessage,
+                                                        activityContext.getString(R.string.push_failed) + ":" + e.localizedMessage,
                                                         requireShowToast,
                                                         curRepoFromParentPage.value.id
                                                     )
@@ -3049,7 +3048,7 @@ fun ChangeListInnerPage(
 
                                     ) {
 
-                                        doJobThenOffLoading(loadingOn, loadingOff, appContext.getString(R.string.syncing)) {
+                                        doJobThenOffLoading(loadingOn, loadingOff, activityContext.getString(R.string.syncing)) {
                                             try {
 //                                                   //     doSync(true)
                                                 ChangeListFunctions.doSync(
@@ -3057,7 +3056,7 @@ fun ChangeListInnerPage(
                                                     trueMergeFalseRebase = true,
                                                     curRepoFromParentPage = curRepoFromParentPage,
                                                     requireShowToast = requireShowToast,
-                                                    appContext = appContext,
+                                                    appContext = activityContext,
                                                     bottomBarActDoneCallback = bottomBarActDoneCallback,
                                                     plzSetUpStreamForCurBranch = plzSetUpStreamForCurBranch,
                                                     upstreamRemoteOptionsList = upstreamRemoteOptionsList,
@@ -3074,7 +3073,7 @@ fun ChangeListInnerPage(
                                                 showErrAndSaveLog(
                                                     TAG,
                                                     "sync error:" + e.stackTraceToString(),
-                                                    appContext.getString(
+                                                    activityContext.getString(
                                                         R.string.sync_failed
                                                     ) + ":" + e.localizedMessage,
                                                     requireShowToast,
@@ -3120,7 +3119,7 @@ fun ChangeListInnerPage(
                                             doJobThenOffLoading(
                                                 loadingOn,
                                                 loadingOff,
-                                                appContext.getString(R.string.fetching)
+                                                activityContext.getString(R.string.fetching)
                                             ) {
                                                 try {
 //                                                    val fetchSuccess = doFetch(null)
@@ -3128,19 +3127,19 @@ fun ChangeListInnerPage(
                                                         remoteNameParam = null,
                                                         curRepoFromParentPage = curRepoFromParentPage,
                                                         requireShowToast = requireShowToast,
-                                                        appContext = appContext,
+                                                        appContext = activityContext,
                                                         loadingText = loadingText,
                                                         dbContainer = dbContainer
                                                     )
                                                     if (fetchSuccess) {
                                                         requireShowToast(
-                                                            appContext.getString(
+                                                            activityContext.getString(
                                                                 R.string.fetch_success
                                                             )
                                                         )
                                                     } else {
                                                         requireShowToast(
-                                                            appContext.getString(
+                                                            activityContext.getString(
                                                                 R.string.fetch_failed
                                                             )
                                                         )
@@ -3149,7 +3148,7 @@ fun ChangeListInnerPage(
                                                     showErrAndSaveLog(
                                                         TAG,
                                                         "fetch error:" + e.stackTraceToString(),
-                                                        appContext.getString(
+                                                        activityContext.getString(
                                                             R.string.fetch_failed
                                                         ) + ":" + e.localizedMessage,
                                                         requireShowToast,
@@ -3433,7 +3432,7 @@ fun ChangeListInnerPage(
 
             changeListInit(
                 dbContainer = dbContainer,
-                appContext = appContext,
+                appContext = activityContext,
 //        needRefresh = needRefreshChangeListPage,
 //        needRefreshParent = refreshRequiredByParentPage,
                 curRepoUpstream=curRepoUpstream,

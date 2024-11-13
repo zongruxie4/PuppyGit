@@ -35,7 +35,7 @@ fun RemoteItem(
     onClick:()->Unit
 ) {
     val haptic = LocalHapticFeedback.current
-    val appContext = LocalContext.current
+    val activityContext = LocalContext.current
 
     val noneCredentialStr = "["+stringResource(id = R.string.none)+"]"
 
@@ -137,7 +137,7 @@ fun RemoteItem(
 
             ){
             Text(text = stringResource(R.string.branch_mode) +": ")
-            Text(text = if(curObj.branchMode == Cons.dbRemote_Fetch_BranchMode_All) appContext.getString(R.string.all) else appContext.getString(R.string.custom),
+            Text(text = if(curObj.branchMode == Cons.dbRemote_Fetch_BranchMode_All) activityContext.getString(R.string.all) else activityContext.getString(R.string.custom),
                 maxLines = 1,
                 overflow = TextOverflow.Ellipsis,
                 fontWeight = FontWeight.Light

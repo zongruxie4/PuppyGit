@@ -119,7 +119,6 @@ fun EditorPageActions(
         return
     }
 
-    val appContext = LocalContext.current
 
     val dropDownMenuExpendState = rememberSaveable { mutableStateOf(false)}
 

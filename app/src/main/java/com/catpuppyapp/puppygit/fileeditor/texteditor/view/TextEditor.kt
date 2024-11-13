@@ -164,7 +164,7 @@ fun TextEditor(
     decorationBox: DecorationBoxComposable = { _, _, innerTextField -> innerTextField(Modifier) },
 ) {
     val haptic = AppModel.singleInstanceHolder.haptic
-    val appContext = AppModel.singleInstanceHolder.activityContext
+    val activityContext = AppModel.singleInstanceHolder.activityContext
 
     val scope = rememberCoroutineScope()
     val keyboardController = LocalSoftwareKeyboardController.current
@@ -242,9 +242,9 @@ fun TextEditor(
         val foundPos = posResult.foundPos
         if(foundPos == SearchPos.NotFound) {
             if(!searchMode.value && mergeMode) {
-                Msg.requireShow(appContext.getString(R.string.no_conflict_found))
+                Msg.requireShow(activityContext.getString(R.string.no_conflict_found))
             }else {
-                Msg.requireShow(appContext.getString(R.string.not_found))
+                Msg.requireShow(activityContext.getString(R.string.not_found))
             }
         }else {  //查找到了关键字
 
@@ -298,7 +298,7 @@ fun TextEditor(
         ) {
             showDetailsDialog.value = false
             clipboardManager.setText(AnnotatedString(detailsStr.value))
-            Msg.requireShow(appContext.getString(R.string.copied))
+            Msg.requireShow(activityContext.getString(R.string.copied))
         }
     }
 
@@ -343,7 +343,7 @@ fun TextEditor(
         PageRequest.clearStateThenDoAct(requestFromParent) {
             doJobThenOffLoading {
                 val allCount = editableController.getKeywordCount(searchKeyword)
-                Msg.requireShow(replaceStringResList(appContext.getString(R.string.find_next_all_count), listOf(allCount.toString())))
+                Msg.requireShow(replaceStringResList(activityContext.getString(R.string.find_next_all_count), listOf(allCount.toString())))
             }
         }
     }
@@ -396,7 +396,7 @@ fun TextEditor(
             doJobThenOffLoading {
 //                val allCount = editableController.getKeywordCount(conflictKeyword.value)  // this keyword is dynamic change when press next or previous, used for count conflict is ok though, but use conflict start str count can be better
                 val allCount = editableController.getKeywordCount(settings.editor.conflictStartStr)
-                Msg.requireShow(replaceStringResList(appContext.getString(R.string.next_conflict_all_count), listOf(allCount.toString())))
+                Msg.requireShow(replaceStringResList(activityContext.getString(R.string.next_conflict_all_count), listOf(allCount.toString())))
             }
         }
     }
@@ -434,14 +434,14 @@ fun TextEditor(
             val lastModifiedTimeStr = getFormattedLastModifiedTimeOfFile(file)
             val sb = StringBuilder()
 
-            sb.appendLine(appContext.getString(R.string.file_name)+": "+file.name).appendLine()
+            sb.appendLine(activityContext.getString(R.string.file_name)+": "+file.name).appendLine()
 //            .appendLine(appContext.getString(R.string.path)+": "+ getFilePathStrBasedRepoDir(fileFullPath, returnResultStartsWithSeparator=true)).appendLine()
-                .appendLine(appContext.getString(R.string.path)+": "+ fileFullPath).appendLine()
-                .appendLine(appContext.getString(R.string.chars)+": "+charsCount).appendLine()
-                .appendLine(appContext.getString(R.string.lines) +": "+linesCount).appendLine()
+                .appendLine(activityContext.getString(R.string.path)+": "+ fileFullPath).appendLine()
+                .appendLine(activityContext.getString(R.string.chars)+": "+charsCount).appendLine()
+                .appendLine(activityContext.getString(R.string.lines) +": "+linesCount).appendLine()
 
-                .appendLine(appContext.getString(R.string.file_size)+": "+fileSize).appendLine()
-                .appendLine(appContext.getString(R.string.last_modified)+": "+lastModifiedTimeStr)
+                .appendLine(activityContext.getString(R.string.file_size)+": "+fileSize).appendLine()
+                .appendLine(activityContext.getString(R.string.last_modified)+": "+lastModifiedTimeStr)
 
 
 
@@ -593,7 +593,7 @@ fun TextEditor(
         val curStartsWithSplit = curLineText.startsWith(settings.editor.conflictSplitStr)
         val curStartsWithEnd = curLineText.startsWith(settings.editor.conflictEndStr)
         if(!(curStartsWithStart || curStartsWithSplit || curStartsWithEnd)) {
-            Msg.requireShow(appContext.getString(R.string.invalid_conflict_block))
+            Msg.requireShow(activityContext.getString(R.string.invalid_conflict_block))
             return@label
         }
 
@@ -616,7 +616,7 @@ fun TextEditor(
         val (firstIndex, _) = editableController.indexAndValueOf(startIndex=index, direction=firstFindDirection, predicate={it.startsWith(firstExpectStr)}, includeStartIndex = false)
 
         if(firstIndex == -1) {
-            Msg.requireShow(appContext.getString(R.string.invalid_conflict_block))
+            Msg.requireShow(activityContext.getString(R.string.invalid_conflict_block))
             return@label
         }
 
@@ -640,7 +640,7 @@ fun TextEditor(
         val (secondIndex, _) = editableController.indexAndValueOf(startIndex=secondStartFindIndexAt, direction=secondFindDirection, predicate={it.startsWith(secondExpectStr)}, includeStartIndex = false)
 
         if(secondIndex==-1) {
-            Msg.requireShow(appContext.getString(R.string.invalid_conflict_block))
+            Msg.requireShow(activityContext.getString(R.string.invalid_conflict_block))
             return@label
         }
 

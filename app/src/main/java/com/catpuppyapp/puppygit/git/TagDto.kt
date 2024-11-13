@@ -31,9 +31,9 @@ class TagDto (
     }
 
     fun getType():String {
-        val appContext = AppModel.singleInstanceHolder.activityContext
+        val activityContext = AppModel.singleInstanceHolder.activityContext
 
-        return if(isAnnotated) appContext.getString(R.string.annotated) else appContext.getString(R.string.lightweight)
+        return if(isAnnotated) activityContext.getString(R.string.annotated) else activityContext.getString(R.string.lightweight)
     }
 
     fun getCachedTargetShortOidStr():String {

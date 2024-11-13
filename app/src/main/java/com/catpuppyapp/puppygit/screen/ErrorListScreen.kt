@@ -75,7 +75,7 @@ fun ErrorListScreen(
     naviUp: () -> Boolean,
 ) {
     val homeTopBarScrollBehavior = AppModel.singleInstanceHolder.homeTopBarScrollBehavior
-    val appContext = AppModel.singleInstanceHolder.activityContext
+    val activityContext = AppModel.singleInstanceHolder.activityContext
     val scope = rememberCoroutineScope()
     val settings = remember { SettingsUtil.getSettingsSnapshot() }
 
@@ -324,7 +324,7 @@ fun ErrorListScreen(
             ) { //复制到剪贴板
                 showViewDialog.value=false
                 clipboardManager.setText(AnnotatedString(viewDialogText.value))
-                requireShowToast(appContext.getString(R.string.copied))
+                requireShowToast(activityContext.getString(R.string.copied))
 
             }
         }
@@ -359,9 +359,9 @@ fun ErrorListScreen(
             //在这个组件里更新了 state curObj，所以长按后直接用curObj就能获取到当前对象了
             ErrorItem(showBottomSheet,curObjInState,idx,it) {
                 val sb = StringBuilder()
-                sb.append(appContext.getString(R.string.id)).append(": ").appendLine(it.id).appendLine()
-                    .append(appContext.getString(R.string.date)).append(": ").appendLine(it.date).appendLine()
-                    .append(appContext.getString(R.string.msg)).append(": ").appendLine(it.msg)
+                sb.append(activityContext.getString(R.string.id)).append(": ").appendLine(it.id).appendLine()
+                    .append(activityContext.getString(R.string.date)).append(": ").appendLine(it.date).appendLine()
+                    .append(activityContext.getString(R.string.msg)).append(": ").appendLine(it.msg)
 
                 viewDialogText.value = sb.toString()
                 showViewDialog.value = true

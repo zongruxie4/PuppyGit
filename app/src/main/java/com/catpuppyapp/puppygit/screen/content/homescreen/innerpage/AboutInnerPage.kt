@@ -72,21 +72,21 @@ fun AboutInnerPage(contentPadding: PaddingValues,
                    openDrawer:() -> Unit,
 ){
 
-    val appContext = LocalContext.current
+    val activityContext = LocalContext.current
     val exitApp = AppModel.singleInstanceHolder.exitApp;
 
-    val appIcon = AppModel.getAppIcon(appContext)
+    val appIcon = AppModel.getAppIcon(activityContext)
 
     val clipboardManager = LocalClipboardManager.current
 
     val copy={text:String ->
         clipboardManager.setText(AnnotatedString(text))
-        Msg.requireShow(appContext.getString(R.string.copied))
+        Msg.requireShow(activityContext.getString(R.string.copied))
     }
 
     //back handler block start
     val isBackHandlerEnable = rememberSaveable { mutableStateOf(true)}
-    val backHandlerOnBack = ComposeHelper.getDoubleClickBackHandler(appContext = appContext, openDrawer = openDrawer, exitApp= exitApp)
+    val backHandlerOnBack = ComposeHelper.getDoubleClickBackHandler(context = activityContext, openDrawer = openDrawer, exitApp= exitApp)
     //注册BackHandler，拦截返回键，实现双击返回和返回上级目录
     BackHandler(enabled = isBackHandlerEnable.value, onBack = {backHandlerOnBack()})
     //back handler block end
@@ -120,7 +120,7 @@ fun AboutInnerPage(contentPadding: PaddingValues,
         ) {
             TextButton(
                 onClick = {
-                    ActivityUtil.openUrl(appContext, madeByLink)
+                    ActivityUtil.openUrl(activityContext, madeByLink)
                 }
             ) {
                 Text(
@@ -158,7 +158,7 @@ fun AboutInnerPage(contentPadding: PaddingValues,
                 style = MyStyleKt.ClickableText.style,
                 color = MyStyleKt.ClickableText.color,
                 modifier = MyStyleKt.ClickableText.modifierNoPadding.clickable {
-                    ActivityUtil.openUrl(appContext, sourceCodeLink)
+                    ActivityUtil.openUrl(activityContext, sourceCodeLink)
                 },
 
             )
@@ -176,7 +176,7 @@ fun AboutInnerPage(contentPadding: PaddingValues,
                 color = MyStyleKt.ClickableText.color,
                 modifier = MyStyleKt.ClickableText.modifierNoPadding.clickable {
                     //                    copy(authorMail)
-                    ActivityUtil.openUrl(appContext, discussionLink)
+                    ActivityUtil.openUrl(activityContext, discussionLink)
                 },
 
                 )
@@ -193,7 +193,7 @@ fun AboutInnerPage(contentPadding: PaddingValues,
                 style = MyStyleKt.ClickableText.style,
                 color = MyStyleKt.ClickableText.color,
                 modifier = MyStyleKt.ClickableText.modifierNoPadding.clickable {
-                    ActivityUtil.openUrl(appContext, reportBugsLink)
+                    ActivityUtil.openUrl(activityContext, reportBugsLink)
                 },
 
             )
@@ -211,7 +211,7 @@ fun AboutInnerPage(contentPadding: PaddingValues,
                 color = MyStyleKt.ClickableText.color,
                 modifier = MyStyleKt.ClickableText.modifierNoPadding.clickable {
 //                    copy(authorMail)
-                    ActivityUtil.openUrl(appContext, authorMailLink)
+                    ActivityUtil.openUrl(activityContext, authorMailLink)
                 },
 
             )
@@ -230,7 +230,7 @@ fun AboutInnerPage(contentPadding: PaddingValues,
                 color = MyStyleKt.ClickableText.color,
                 modifier = MyStyleKt.ClickableText.modifierNoPadding.clickable {
 //                    copy(authorMail)
-                    ActivityUtil.openUrl(appContext, donateLink)
+                    ActivityUtil.openUrl(activityContext, donateLink)
                 },
 
             )
@@ -247,7 +247,7 @@ fun AboutInnerPage(contentPadding: PaddingValues,
                 color = MyStyleKt.ClickableText.color,
                 modifier = MyStyleKt.ClickableText.modifierNoPadding.clickable {
 //                    copy(authorMail)
-                    ActivityUtil.openUrl(appContext, privacyPolicyLink)
+                    ActivityUtil.openUrl(activityContext, privacyPolicyLink)
                 },
 
                 )
@@ -269,7 +269,7 @@ fun AboutInnerPage(contentPadding: PaddingValues,
                     color = MyStyleKt.ClickableText.color,
                     modifier = MyStyleKt.ClickableText.modifierNoPadding.clickable {
                         //                        copy(it.projectLink)
-                        ActivityUtil.openUrl(appContext, it.projectLink)
+                        ActivityUtil.openUrl(activityContext, it.projectLink)
                     },
                 )
                 Spacer(Modifier.height(2.dp))
@@ -280,7 +280,7 @@ fun AboutInnerPage(contentPadding: PaddingValues,
                     color = MyStyleKt.ClickableText.color,
                     modifier = MyStyleKt.ClickableText.modifierNoPadding.clickable {
                         //                        copy(it.projectLink)
-                        ActivityUtil.openUrl(appContext, it.licenseLink)
+                        ActivityUtil.openUrl(activityContext, it.licenseLink)
                     },
                 )
 

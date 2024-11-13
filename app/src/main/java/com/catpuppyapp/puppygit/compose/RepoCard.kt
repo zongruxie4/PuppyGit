@@ -64,7 +64,7 @@ fun RepoCard(
 ) {
     val navController = AppModel.singleInstanceHolder.navController
     val haptic = AppModel.singleInstanceHolder.haptic
-    val appContext = AppModel.singleInstanceHolder.activityContext
+    val activityContext = AppModel.singleInstanceHolder.activityContext
 
     val inDarkTheme = Theme.inDarkTheme
 
@@ -92,7 +92,7 @@ fun RepoCard(
         ) { //复制到剪贴板
             showViewDialog.value=false
             clipboardManager.setText(AnnotatedString(viewDialogText.value))
-            Msg.requireShow(appContext.getString(R.string.copied))
+            Msg.requireShow(activityContext.getString(R.string.copied))
         }
     }
 
@@ -482,7 +482,7 @@ fun RepoCard(
                             onLongClick = { // long press will copy path
                                 haptic.performHapticFeedback(HapticFeedbackType.LongPress)
                                 clipboardManager.setText(AnnotatedString(repoDto.fullSavePath))
-                                Msg.requireShow(appContext.getString(R.string.copied))
+                                Msg.requireShow(activityContext.getString(R.string.copied))
                             }
                         ) {  // on click
                             goToFilesPage(repoDto.fullSavePath)

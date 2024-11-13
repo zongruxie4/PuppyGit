@@ -30,12 +30,12 @@ class CommitDto (
 
     fun getOther():String {
         if(otherMsg==null) {
-            val appContext = AppModel.singleInstanceHolder.activityContext
+            val activityContext = AppModel.singleInstanceHolder.activityContext
             val sb = StringBuilder()
             val suffix = ", "
 
-            sb.append(if(isMerged()) appContext.getString(R.string.is_merged) else appContext.getString(R.string.not_merged)).append(suffix)
-            sb.append(if(isGrafted) appContext.getString(R.string.is_grafted) else appContext.getString(R.string.not_grafted)).append(suffix)
+            sb.append(if(isMerged()) activityContext.getString(R.string.is_merged) else activityContext.getString(R.string.not_merged)).append(suffix)
+            sb.append(if(isGrafted) activityContext.getString(R.string.is_grafted) else activityContext.getString(R.string.not_grafted)).append(suffix)
 
             otherMsg = sb.toString().removeSuffix(suffix)
         }

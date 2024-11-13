@@ -120,7 +120,7 @@ fun DiffRow (
     val useStringPartList = !stringPartList.isNullOrEmpty()
 
     val navController = AppModel.singleInstanceHolder.navController
-    val appContext = AppModel.singleInstanceHolder.activityContext
+    val activityContext = AppModel.singleInstanceHolder.activityContext
 
     val inDarkTheme = Theme.inDarkTheme
     //libgit2会把连续行整合到一起，这里用getLines()获取拆分后的行
@@ -168,7 +168,7 @@ fun DiffRow (
 
     val initEditLineDialog = {content:String, lineNum:Int, prependOrApendOrReplace:Boolean? ->
         if(lineNum == LineNum.invalidButNotEof){
-            Msg.requireShowLongDuration(appContext.getString(R.string.invalid_line_number))
+            Msg.requireShowLongDuration(activityContext.getString(R.string.invalid_line_number))
         }else {
             truePrependFalseAppendNullReplace.value = prependOrApendOrReplace
             lineContentOfEditLineDialog.value = content
@@ -178,7 +178,7 @@ fun DiffRow (
     }
     val initDelLineDialog = {lineNum:Int ->
         if(lineNum == LineNum.invalidButNotEof){
-            Msg.requireShowLongDuration(appContext.getString(R.string.invalid_line_number))
+            Msg.requireShowLongDuration(activityContext.getString(R.string.invalid_line_number))
         }else {
             lineNumOfEditLineDialog.value = lineNum
             showDelLineDialog.value = true
@@ -186,7 +186,7 @@ fun DiffRow (
     }
     val initRestoreLineDialog = {content:String, lineNum:Int, trueRestoreFalseReplace_param:Boolean ->
         if(lineNum == LineNum.invalidButNotEof){
-            Msg.requireShowLongDuration(appContext.getString(R.string.invalid_line_number))
+            Msg.requireShowLongDuration(activityContext.getString(R.string.invalid_line_number))
         }else {
             lineContentOfEditLineDialog.value = content
             lineNumOfEditLineDialog.value = lineNum
@@ -250,11 +250,11 @@ fun DiffRow (
             onCancel = {showEditLineDialog.value = false}
         ) {
             showEditLineDialog.value = false
-            doJobThenOffLoading(loadingOn, loadingOff, appContext.getString(R.string.saving)) job@{
+            doJobThenOffLoading(loadingOn, loadingOff, activityContext.getString(R.string.saving)) job@{
                 try {
                     val lineNum = lineNumOfEditLineDialog.value
                     if(lineNum<1 && lineNum!=LineNum.EOF.LINE_NUM) {
-                        Msg.requireShowLongDuration(appContext.getString(R.string.invalid_line_number))
+                        Msg.requireShowLongDuration(activityContext.getString(R.string.invalid_line_number))
                         return@job
                     }
 
@@ -268,7 +268,7 @@ fun DiffRow (
                         FsUtils.replaceLinesToFile(file, lineNum, lines)
                     }
 
-                    Msg.requireShow(appContext.getString(R.string.success))
+                    Msg.requireShow(activityContext.getString(R.string.success))
 
                     refreshPage()
                 }catch (e:Exception) {
@@ -307,18 +307,18 @@ fun DiffRow (
         ) {
             showDelLineDialog.value = false
 
-            doJobThenOffLoading(loadingOn, loadingOff, appContext.getString(R.string.deleting)) job@{
+            doJobThenOffLoading(loadingOn, loadingOff, activityContext.getString(R.string.deleting)) job@{
                 try {
                     val lineNum = lineNumOfEditLineDialog.value
                     if(lineNum<1 && lineNum!=LineNum.EOF.LINE_NUM) {
-                        Msg.requireShowLongDuration(appContext.getString(R.string.invalid_line_number))
+                        Msg.requireShowLongDuration(activityContext.getString(R.string.invalid_line_number))
                         return@job
                     }
 
                     val file = File(fileFullPath)
                     FsUtils.deleteLineToFile(file, lineNum)
 
-                    Msg.requireShow(appContext.getString(R.string.success))
+                    Msg.requireShow(activityContext.getString(R.string.success))
 
                     refreshPage()
 
@@ -384,7 +384,7 @@ fun DiffRow (
         ) {
             showRestoreLineDialog.value = false
 
-            doJobThenOffLoading(loadingOn, loadingOff, appContext.getString(R.string.restoring)) job@{
+            doJobThenOffLoading(loadingOn, loadingOff, activityContext.getString(R.string.restoring)) job@{
                 try {
                     var lineNum = try {
                         lineNumStrOfEditLineDialog.value.toInt()
@@ -405,7 +405,7 @@ fun DiffRow (
                         FsUtils.replaceLinesToFile(file, lineNum, lines)
                     }
 
-                    Msg.requireShow(appContext.getString(R.string.success))
+                    Msg.requireShow(activityContext.getString(R.string.success))
 
                     refreshPage()
 
@@ -608,7 +608,7 @@ fun DiffRow (
                                 expandedMenu.value = false
 
                                 if(content.isEmpty()) {
-                                    Msg.requireShow(appContext.getString(R.string.can_t_compare_empty_line))
+                                    Msg.requireShow(activityContext.getString(R.string.can_t_compare_empty_line))
                                     return@label
                                 }
 
@@ -618,13 +618,13 @@ fun DiffRow (
                                                 (line.originType == OriginType.ADDITION.toString() && cp.line1OriginType == OriginType.DELETION.toString())
                                                         ||  (line.originType == OriginType.DELETION.toString() && cp.line1OriginType == OriginType.ADDITION.toString())
                                                 )) {
-                                        Msg.requireShow(appContext.getString(R.string.selected_lines_already_compared))
+                                        Msg.requireShow(activityContext.getString(R.string.selected_lines_already_compared))
                                         return@label
                                     }
 
                                     // both are CONTEXT
                                     if(line.originType == OriginType.CONTEXT.toString() && cp.line1OriginType == line.originType) {
-                                        Msg.requireShow(appContext.getString(R.string.can_t_compare_both_context_type_lines))
+                                        Msg.requireShow(activityContext.getString(R.string.can_t_compare_both_context_type_lines))
                                         return@label
                                     }
 
@@ -633,7 +633,7 @@ fun DiffRow (
                                     cp.line2OriginType = line.originType
                                     cp.line2Key = line.key
 
-                                    Msg.requireShow(appContext.getString(R.string.comparing))
+                                    Msg.requireShow(activityContext.getString(R.string.comparing))
 
                                     doJobThenOffLoading {
                                         cp.compare(betterCompare, indexStringPartListMap.value)
@@ -650,7 +650,7 @@ fun DiffRow (
                                     cp.line1Num = line.lineNum
                                     cp.line1OriginType = line.originType
                                     cp.line1Key = line.key
-                                    Msg.requireShow(replaceStringResList(appContext.getString(R.string.added_line_for_compare), listOf(line.originType+lineNum)) )
+                                    Msg.requireShow(replaceStringResList(activityContext.getString(R.string.added_line_for_compare), listOf(line.originType+lineNum)) )
                                 }
 
                             }
@@ -662,22 +662,22 @@ fun DiffRow (
                                 expandedMenu.value = false
 
                                 if(content.isEmpty()) {
-                                    Msg.requireShow(appContext.getString(R.string.can_t_compare_empty_line))
+                                    Msg.requireShow(activityContext.getString(R.string.can_t_compare_empty_line))
                                     return@label
                                 }
                                 if(line.originType == Diff.Line.OriginType.CONTEXT.toString()) {
                                     // context line no color, compare clipboard to it show nothing, nonsense
-                                    Msg.requireShow(appContext.getString(R.string.can_t_compare_clipboard_to_context_line))
+                                    Msg.requireShow(activityContext.getString(R.string.can_t_compare_clipboard_to_context_line))
                                     return@label
                                 }
 
                                 val clipboardText = getClipboardText(clipboardManager)
                                 if(clipboardText.isNullOrEmpty()) {
-                                    Msg.requireShow(appContext.getString(R.string.clipboard_is_empty))
+                                    Msg.requireShow(activityContext.getString(R.string.clipboard_is_empty))
                                     return@label
                                 }
 
-                                Msg.requireShow(appContext.getString(R.string.comparing))
+                                Msg.requireShow(activityContext.getString(R.string.comparing))
 
                                 doJobThenOffLoading {
                                     val newcp = CompareLinePair(
@@ -718,7 +718,7 @@ fun DiffRow (
                 DropdownMenuItem(text = { Text(stringResource(R.string.copy))},
                     onClick = {
                         clipboardManager.setText(AnnotatedString(content))
-                        Msg.requireShow(appContext.getString(R.string.copied))
+                        Msg.requireShow(activityContext.getString(R.string.copied))
 
                         expandedMenu.value = false
                     }

@@ -89,7 +89,7 @@ fun CredentialManagerScreen(
 
     val homeTopBarScrollBehavior = AppModel.singleInstanceHolder.homeTopBarScrollBehavior
     val navController = AppModel.singleInstanceHolder.navController
-    val appContext = AppModel.singleInstanceHolder.activityContext
+    val activityContext = AppModel.singleInstanceHolder.activityContext
     val scope = rememberCoroutineScope()
 
     // for link credential to remote
@@ -145,7 +145,7 @@ fun CredentialManagerScreen(
                 MyLog.e(TAG, "#LinkOrUnLinkCredentialAndRemoteDialog err: $errMsgPrefix${e.stackTraceToString()}")
             },
             onOkCallback = {
-                Msg.requireShow(appContext.getString(R.string.success))
+                Msg.requireShow(activityContext.getString(R.string.success))
             }
 
         )
@@ -442,7 +442,7 @@ fun CredentialManagerScreen(
                         //remoteDtoForCredential.remoteId 改成在初始化时赋值了，remoteId是常量，初始化一次即可，不需每次都赋值
 //                        remoteDtoForCredential.value = RemoteDtoForCredential(remoteId=remoteId)
 //                        remoteDtoForCredential.value.remoteId = remoteId  //由于remoteDtoForCredential修改后并不需要刷新页面，所以不用重新赋值，一个对象反复用，把需要使用的字段更新下就行
-                        linkOrUnLinkDialogTitle.value = appContext.getString(R.string.link)+" '${it.name}'"
+                        linkOrUnLinkDialogTitle.value = activityContext.getString(R.string.link)+" '${it.name}'"
                         //显示弹窗
                         showLinkOrUnLinkDialog.value=true
                     }
@@ -469,7 +469,7 @@ fun CredentialManagerScreen(
         // don't use this way to track screen disappearance
         // DisposableEffect is better for this
         try {
-            doJobThenOffLoading(loadingOn = loadingOn, loadingOff = loadingOff, loadingText = appContext.getString(R.string.loading)) job@{
+            doJobThenOffLoading(loadingOn = loadingOn, loadingOff = loadingOff, loadingText = activityContext.getString(R.string.loading)) job@{
                 val credentialDb = AppModel.singleInstanceHolder.dbContainer.credentialRepository
                 list.value.clear()
                 list.value.addAll(credentialDb.getAll(includeMatchByDomain = isLinkMode))

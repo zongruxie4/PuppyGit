@@ -127,7 +127,7 @@ fun HomeScreen(
     val scope = rememberCoroutineScope()
     val homeTopBarScrollBehavior = AppModel.singleInstanceHolder.homeTopBarScrollBehavior
 //    val appContext = AppModel.singleInstanceHolder.appContext  //这个获取不了Activity!
-    val appContext = LocalContext.current  //这个能获取到
+    val activityContext = LocalContext.current  //这个能获取到
     val activity = ActivityUtil.getCurrentActivity()
 
 //    val settingsTmp = remember { SettingsUtil.getSettingsSnapshot() }   //避免状态变量里的设置项过旧，重新获取一个
@@ -240,7 +240,7 @@ fun HomeScreen(
         if(key.isEmpty()) {  //注意是empty，不要用blank，不然不能搜索空格，但文件名可能包含空格
             key = filesPageFilterKeyword.value.text
             if(key.isEmpty()) {
-                Msg.requireShow(appContext.getString(R.string.keyword_is_empty))
+                Msg.requireShow(activityContext.getString(R.string.keyword_is_empty))
                 return@doFilter
             }
 
@@ -336,7 +336,7 @@ fun HomeScreen(
         keyName = "editorPageCloseDialogCallback",
         initValue = { requireSave:Boolean -> }
     )
-    val initLoadingText = appContext.getString(R.string.loading)
+    val initLoadingText = activityContext.getString(R.string.loading)
     val loadingText = rememberSaveable { mutableStateOf(initLoadingText)}
 
     val editorPageIsLoading = rememberSaveable { mutableStateOf(false)}
@@ -399,7 +399,7 @@ fun HomeScreen(
         editorPageShowingFilePath = editorPageShowingFilePath,
         editorPageLoadingOn = editorPageLoadingOn,
         editorPageLoadingOff = editorPageLoadingOff,
-        appContext = appContext,
+        appContext = activityContext,
         editorPageIsSaving = editorPageIsSaving,
         needRefreshEditorPage = needRefreshEditorPage,
         editorPageTextEditorState = editorPageTextEditorState,

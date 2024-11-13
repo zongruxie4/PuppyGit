@@ -1,6 +1,5 @@
 package com.catpuppyapp.puppygit.screen
 
-import android.view.ViewTreeObserver
 import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.clickable
@@ -68,8 +67,6 @@ import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.dp
-import androidx.core.view.ViewCompat
-import androidx.core.view.WindowInsetsCompat
 import com.catpuppyapp.puppygit.compose.BottomSheet
 import com.catpuppyapp.puppygit.compose.BottomSheetItem
 import com.catpuppyapp.puppygit.compose.CheckoutDialog
@@ -192,7 +189,7 @@ fun CommitListScreen(
 //    println("fullOidKey="+fullOidKey)  //expect true when nav from repoCard
 
     val homeTopBarScrollBehavior = AppModel.singleInstanceHolder.homeTopBarScrollBehavior
-    val appContext = LocalContext.current
+    val activityContext = LocalContext.current
     val navController = AppModel.singleInstanceHolder.navController
     val scope = rememberCoroutineScope()
     val haptic = LocalHapticFeedback.current
@@ -441,7 +438,7 @@ fun CommitListScreen(
         doJobThenOffLoading job@{
             loadLock.value.withLock {
                 loadMoreLoading.value = true
-                loadMoreText.value = appContext.getString(R.string.loading)
+                loadMoreText.value = activityContext.getString(R.string.loading)
 
                 try {
                     if (firstLoad || forceReload || repositoryForRevWalk.value==null || revwalk.value==null) {
@@ -461,7 +458,7 @@ fun CommitListScreen(
                         val newRevwalk = Libgit2Helper.createRevwalk(repo, oid)
                         if(newRevwalk == null) {
                             val oidStr = oid.toString()
-                            Msg.requireShowLongDuration(replaceStringResList(appContext.getString(R.string.create_revwalk_failed_oid), listOf(Libgit2Helper.getShortOidStrByFull(oidStr))))
+                            Msg.requireShowLongDuration(replaceStringResList(activityContext.getString(R.string.create_revwalk_failed_oid), listOf(Libgit2Helper.getShortOidStrByFull(oidStr))))
                             createAndInsertError(repoId, "create Revwalk failed, oid=$oidStr")
                             return@job
                         }
@@ -484,7 +481,7 @@ fun CommitListScreen(
                     if(nextCommitOid.value.isNullOrEmptyOrZero) {
                         //更新变量
                         hasMore.value = false
-                        loadMoreText.value = appContext.getString(R.string.end_of_the_list)
+                        loadMoreText.value = activityContext.getString(R.string.end_of_the_list)
                     }else {
                         //start travel commit history
                         Libgit2Helper.getCommitList(
@@ -501,7 +498,7 @@ fun CommitListScreen(
                         //update state
                         nextCommitOid.value = revwalk.value!!.next() ?: Cons.allZeroOid
                         hasMore.value = !nextCommitOid.value.isNullOrEmptyOrZero
-                        loadMoreText.value = if (hasMore.value) appContext.getString(R.string.load_more) else appContext.getString(R.string.end_of_the_list)
+                        loadMoreText.value = if (hasMore.value) activityContext.getString(R.string.load_more) else activityContext.getString(R.string.end_of_the_list)
 
                     }
 
@@ -617,7 +614,7 @@ fun CommitListScreen(
 
 //            println("ffffffffffffffff-headFullName = $headFullName")  // same with expect: when detached show "HEAD", else show current branche name
 
-            doJobThenOffLoading(loadingOn, loadingOff, appContext.getString(R.string.loading)) job@{
+            doJobThenOffLoading(loadingOn, loadingOff, activityContext.getString(R.string.loading)) job@{
                 try {
                     Repository.open(curRepo.value.fullSavePath).use { repo->
                         val checkRet = Libgit2Helper.squashCommitsCheckBeforeExecute(repo, forceSquash.value)
@@ -642,7 +639,7 @@ fun CommitListScreen(
                         fullOid.value = ret.data!!.toString()
                     }
 
-                    Msg.requireShow(appContext.getString(R.string.success))
+                    Msg.requireShow(activityContext.getString(R.string.success))
 
                     changeStateTriggerRefreshPage(needRefresh, StateRequestType.forceReload)
                 }catch (e:Exception) {
@@ -814,7 +811,7 @@ fun CommitListScreen(
             force = overwriteIfNameExistOfNewTag,
         ) success@{newTagOidStr ->
             if(newTagOidStr.isBlank()) {  //should never into here
-                Msg.requireShowLongDuration(appContext.getString(R.string.tag_oid_invalid))
+                Msg.requireShowLongDuration(activityContext.getString(R.string.tag_oid_invalid))
                 return@success
             }
 
@@ -979,7 +976,7 @@ fun CommitListScreen(
         ) {
             showDetailsDialog.value = false
             clipboardManager.setText(AnnotatedString(detailsString.value))
-            Msg.requireShow(appContext.getString(R.string.copied))
+            Msg.requireShow(activityContext.getString(R.string.copied))
         }
     }
 
@@ -1052,7 +1049,7 @@ fun CommitListScreen(
             showSavePatchSuccessDialog.value = false
 
             clipboardManager.setText(AnnotatedString(path))
-            Msg.requireShow(appContext.getString(R.string.copied))
+            Msg.requireShow(activityContext.getString(R.string.copied))
         }
     }
 
@@ -1161,7 +1158,7 @@ fun CommitListScreen(
             doJobThenOffLoading(
                 loadingOn,
                 loadingOff,
-                appContext.getString(R.string.creating_patch)
+                activityContext.getString(R.string.creating_patch)
             ) {
                 try {
                     val left = createPatchParentHash.value
@@ -1324,7 +1321,7 @@ fun CommitListScreen(
             doJobThenOffLoading(
                 loadingOn,
                 loadingOff,
-                appContext.getString(R.string.cherrypicking)
+                activityContext.getString(R.string.cherrypicking)
             ) {
                 Repository.open(curRepo.value.fullSavePath).use { repo->
                     val ret = Libgit2Helper.cherrypick(
@@ -1342,7 +1339,7 @@ fun CommitListScreen(
                             createAndInsertError(repoId, "cherrypick commit changes of '$shortParent..$shortTarget' err:"+ret.msg)
                         }
                     }else {
-                        Msg.requireShow(appContext.getString(R.string.success))
+                        Msg.requireShow(activityContext.getString(R.string.success))
                     }
                 }
             }
@@ -1395,7 +1392,7 @@ fun CommitListScreen(
                 val newPageSize = try {
                     pageSizeForDialog.value.toInt()
                 }catch (_:Exception) {
-                    Msg.requireShow(appContext.getString(R.string.invalid_number))
+                    Msg.requireShow(activityContext.getString(R.string.invalid_number))
                     invalidPageSize
                 }
 
@@ -1458,7 +1455,7 @@ fun CommitListScreen(
 //                                    Msg.requireShow(repoAndBranchText)
                                     val count = if(enableFilterState.value) filterIdxList.value.size else list.value.size
                                     // show loaded how many items
-                                    Msg.requireShow(replaceStringResList(appContext.getString(R.string.item_count_n), listOf(""+count)))
+                                    Msg.requireShow(replaceStringResList(activityContext.getString(R.string.item_count_n), listOf(""+count)))
                                 }
                             ) { // onClick
                                 showTitleInfoDialog.value = true
@@ -1712,31 +1709,31 @@ fun CommitListScreen(
                         // onClick()
 //                    requireShowViewDialog(appContext.getString(R.string.view_hash), curCommit.value.oidStr)
                         val sb = StringBuilder()
-                        sb.appendLine("${appContext.getString(R.string.hash)}: "+curCommit.value.oidStr)
+                        sb.appendLine("${activityContext.getString(R.string.hash)}: "+curCommit.value.oidStr)
                         sb.appendLine()
-                        sb.appendLine("${appContext.getString(R.string.author)}: "+ Libgit2Helper.getFormattedUsernameAndEmail(curCommit.value.author, curCommit.value.email))
+                        sb.appendLine("${activityContext.getString(R.string.author)}: "+ Libgit2Helper.getFormattedUsernameAndEmail(curCommit.value.author, curCommit.value.email))
                         sb.appendLine()
-                        sb.appendLine("${appContext.getString(R.string.committer)}: "+ Libgit2Helper.getFormattedUsernameAndEmail(curCommit.value.committerUsername, curCommit.value.committerEmail))
+                        sb.appendLine("${activityContext.getString(R.string.committer)}: "+ Libgit2Helper.getFormattedUsernameAndEmail(curCommit.value.committerUsername, curCommit.value.committerEmail))
                         sb.appendLine()
-                        sb.appendLine("${appContext.getString(R.string.date)}: "+curCommit.value.dateTime)
+                        sb.appendLine("${activityContext.getString(R.string.date)}: "+curCommit.value.dateTime)
                         sb.appendLine()
-                        sb.appendLine("${appContext.getString(R.string.msg)}: "+curCommit.value.msg)
+                        sb.appendLine("${activityContext.getString(R.string.msg)}: "+curCommit.value.msg)
                         sb.appendLine()
                         if(curCommit.value.branchShortNameList.isNotEmpty()){
-                            sb.appendLine((if(curCommit.value.branchShortNameList.size > 1) appContext.getString(R.string.branches) else appContext.getString(R.string.branch)) +": "+curCommit.value.branchShortNameList.toString())
+                            sb.appendLine((if(curCommit.value.branchShortNameList.size > 1) activityContext.getString(R.string.branches) else activityContext.getString(R.string.branch)) +": "+curCommit.value.branchShortNameList.toString())
                             sb.appendLine()
                         }
                         if(curCommit.value.tagShortNameList.isNotEmpty()) {
-                            sb.appendLine((if(curCommit.value.tagShortNameList.size > 1) appContext.getString(R.string.tags) else appContext.getString(R.string.tag)) +": "+curCommit.value.tagShortNameList.toString())
+                            sb.appendLine((if(curCommit.value.tagShortNameList.size > 1) activityContext.getString(R.string.tags) else activityContext.getString(R.string.tag)) +": "+curCommit.value.tagShortNameList.toString())
                             sb.appendLine()
                         }
                         if(curCommit.value.parentOidStrList.isNotEmpty()) {
-                            sb.appendLine((if(curCommit.value.parentOidStrList.size > 1) appContext.getString(R.string.parents) else appContext.getString(R.string.parent)) +": "+curCommit.value.parentOidStrList.toString())
+                            sb.appendLine((if(curCommit.value.parentOidStrList.size > 1) activityContext.getString(R.string.parents) else activityContext.getString(R.string.parent)) +": "+curCommit.value.parentOidStrList.toString())
                             sb.appendLine()
                         }
 
                         if(curCommit.value.hasOther()) {
-                            sb.appendLine("${appContext.getString(R.string.other)}: ${curCommit.value.getOther()}")
+                            sb.appendLine("${activityContext.getString(R.string.other)}: ${curCommit.value.getOther()}")
                             sb.appendLine()
                         }
 
@@ -1748,7 +1745,7 @@ fun CommitListScreen(
                         BottomSheetItem(sheetState, showBottomSheet, stringResource(R.string.diff_to_local)) {
                             //                    diff to local，点击跳转到tree to tree页面，然后diff
                             //当前比较的描述信息的key，用来在界面显示这是在比较啥，值例如“和父提交比较”或者“比较两个提交”之类的
-                            val descKey = Cache.setThenReturnKey(appContext.getString(R.string.compare_to_local))
+                            val descKey = Cache.setThenReturnKey(activityContext.getString(R.string.compare_to_local))
                             //这里需要传当前commit，然后cl页面会用当前commit查出当前commit的parents
                             val commit2 = Cons.gitLocalWorktreeCommitHash
                             val commitForQueryParents = Cons.allZeroOidStr
@@ -1774,12 +1771,12 @@ fun CommitListScreen(
                                     val commit2 = commit2Ret.data!!.id().toString()
                                     val commit1 = curCommit.value.oidStr
                                     if(commit2 == commit1) {  //避免 Compare HEAD to HEAD
-                                        Msg.requireShowLongDuration(appContext.getString(R.string.num2_commits_same))
+                                        Msg.requireShowLongDuration(activityContext.getString(R.string.num2_commits_same))
                                         return@job
                                     }
 
                                     //当前比较的描述信息的key，用来在界面显示这是在比较啥，值例如“和父提交比较”或者“比较两个提交”之类的
-                                    val descKey = Cache.setThenReturnKey(appContext.getString(R.string.compare_to_head))
+                                    val descKey = Cache.setThenReturnKey(activityContext.getString(R.string.compare_to_head))
                                     val commitForQueryParents = Cons.allZeroOidStr
 
                                     withMainContext {
@@ -1800,7 +1797,7 @@ fun CommitListScreen(
                         BottomSheetItem(sheetState, showBottomSheet, stringResource(R.string.cherrypick)) {
                             //弹窗，让选parent，默认选中第一个
                             if(curCommit.value.parentOidStrList.isEmpty()) {
-                                Msg.requireShowLongDuration(appContext.getString(R.string.no_parent_for_find_changes_for_cherrypick))
+                                Msg.requireShowLongDuration(activityContext.getString(R.string.no_parent_for_find_changes_for_cherrypick))
                             }else {
                                 //默认选中第一个parent
                                 initCherrypickDialog(curCommit.value.oidStr, curCommit.value.parentOidStrList[0], curCommit.value.parentOidStrList)
@@ -1812,7 +1809,7 @@ fun CommitListScreen(
                         BottomSheetItem(sheetState, showBottomSheet, stringResource(R.string.create_patch)) {
                             //弹窗，让选parent，默认选中第一个
                             if(curCommit.value.parentOidStrList.isEmpty()) {
-                                Msg.requireShowLongDuration(appContext.getString(R.string.no_parent_for_find_changes_for_create_patch))
+                                Msg.requireShowLongDuration(activityContext.getString(R.string.no_parent_for_find_changes_for_create_patch))
                             }else {
                                 //默认选中第一个parent
                                 initCreatePatchDialog(curCommit.value.oidStr, curCommit.value.parentOidStrList[0], curCommit.value.parentOidStrList)
@@ -1947,7 +1944,7 @@ fun CommitListScreen(
                         pageSizeForDialog=pageSizeForDialog,
                         text = loadMoreText.value,
                         enableLoadMore = !loadMoreLoading.value && hasMore.value, enableAndShowLoadToEnd = !loadMoreLoading.value && hasMore.value,
-                        btnUpsideText = getLoadText(list.size, enableFilter, appContext),
+                        btnUpsideText = getLoadText(list.size, enableFilter, activityContext),
                         loadToEndOnClick = {
                             val firstLoad = false
                             val forceReload = false
@@ -1979,11 +1976,11 @@ fun CommitListScreen(
                     val parents = thisObj.parentOidStrList
                     if (parents.isEmpty()) {  // 如果没父提交，例如最初的提交就没父提交，提示没parent可比较
                         //TODO 改成没父提交时列出当前提交的所有文件
-                        requireShowToast(appContext.getString(R.string.no_parent_for_compare))
+                        requireShowToast(activityContext.getString(R.string.no_parent_for_compare))
                     } else {  //有父提交，取出第一个父提交和当前提交进行比较
                         //当前比较的描述信息的key，用来在界面显示这是在比较啥，值例如“和父提交比较”或者“比较两个提交”之类的
                         val descKey =
-                            Cache.setThenReturnKey(appContext.getString(R.string.compare_to_parent))
+                            Cache.setThenReturnKey(activityContext.getString(R.string.compare_to_parent))
                         //这里需要传当前commit，然后cl页面会用当前commit查出当前commit的parents
                         val commit1 = parents[0]
                         val commit2 = thisObj.oidStr
@@ -2019,7 +2016,7 @@ fun CommitListScreen(
                         showSetPageSizeDialog=showSetPageSizeDialog,
                         pageSizeForDialog=pageSizeForDialog,
                         text = loadMoreText.value,
-                        btnUpsideText = getLoadText(list.size, enableFilter, appContext),
+                        btnUpsideText = getLoadText(list.size, enableFilter, activityContext),
                         enableLoadMore = !loadMoreLoading.value && hasMore.value, enableAndShowLoadToEnd = !loadMoreLoading.value && hasMore.value,
                         loadToEndOnClick = {
                             val firstLoad = false

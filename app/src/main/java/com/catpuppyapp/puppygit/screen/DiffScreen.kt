@@ -83,7 +83,7 @@ fun DiffScreen(
     val dbContainer = AppModel.singleInstanceHolder.dbContainer
     val homeTopBarScrollBehavior = AppModel.singleInstanceHolder.homeTopBarScrollBehavior
 
-    val appContext = AppModel.singleInstanceHolder.activityContext
+    val activityContext = AppModel.singleInstanceHolder.activityContext
 
     val isFileHistoryTreeToLocal = fromTo == Cons.gitDiffFileHistoryFromTreeToLocal
     val isFileHistoryTreeToTree = fromTo == Cons.gitDiffFileHistoryFromTreeToTree
@@ -246,7 +246,7 @@ fun DiffScreen(
         ) {
             showDetailsDialog.value = false
             clipboardManager.setText(AnnotatedString(detailsString.value))
-            Msg.requireShow(appContext.getString(R.string.copied))
+            Msg.requireShow(activityContext.getString(R.string.copied))
         }
     }
 
@@ -262,7 +262,7 @@ fun DiffScreen(
             showRestoreDialog = showRestoreDialog,
             loadingOn = loadingOn,
             loadingOff = loadingOff,
-            appContext = appContext,
+            activityContext = activityContext,
             curRepo = curRepo,
             fileRelativePath = relativePathUnderRepoState.value,
             repoId = repoId,
@@ -292,33 +292,33 @@ fun DiffScreen(
         PageRequest.clearStateThenDoAct(request) {
             val sb = StringBuilder()
             if(treeOid1Str.value != Cons.allZeroOidStr || treeOid2Str.value!=Cons.allZeroOidStr){
-                sb.append(appContext.getString(R.string.comparing_label)+": ").appendLine("${Libgit2Helper.getShortOidStrByFull(treeOid1Str.value)}..${Libgit2Helper.getShortOidStrByFull(treeOid2Str.value)}").appendLine()
+                sb.append(activityContext.getString(R.string.comparing_label)+": ").appendLine("${Libgit2Helper.getShortOidStrByFull(treeOid1Str.value)}..${Libgit2Helper.getShortOidStrByFull(treeOid2Str.value)}").appendLine()
             }
-            sb.append(appContext.getString(R.string.name)+": ").appendLine(fileNameOnly.value).appendLine()
+            sb.append(activityContext.getString(R.string.name)+": ").appendLine(fileNameOnly.value).appendLine()
             if(isFileHistoryTreeToLocal){
-                sb.append(appContext.getString(R.string.commit_id)+": ").appendLine(treeOid1Str.value).appendLine()
+                sb.append(activityContext.getString(R.string.commit_id)+": ").appendLine(treeOid1Str.value).appendLine()
                 // at here: curItemIndex is on FileHistory, which item got clicked
-                sb.append(appContext.getString(R.string.entry_id)+": ").appendLine(diffableItemListForFileHistory.value[curItemIndex.intValue].treeEntryOidStr).appendLine()
+                sb.append(activityContext.getString(R.string.entry_id)+": ").appendLine(diffableItemListForFileHistory.value[curItemIndex.intValue].treeEntryOidStr).appendLine()
             }else if(isFileHistoryTreeToTree){
-                sb.append(appContext.getString(R.string.commit_id)+": ").appendLine(treeOid2Str.value).appendLine()
+                sb.append(activityContext.getString(R.string.commit_id)+": ").appendLine(treeOid2Str.value).appendLine()
                 // at here: curItemIndex is on FileHistory, which item got long pressed
-                sb.append(appContext.getString(R.string.entry_id)+": ").appendLine(diffableItemListForFileHistory.value[curItemIndex.intValue].treeEntryOidStr).appendLine()
+                sb.append(activityContext.getString(R.string.entry_id)+": ").appendLine(diffableItemListForFileHistory.value[curItemIndex.intValue].treeEntryOidStr).appendLine()
             }else {
-                sb.append(appContext.getString(R.string.change_type)+": ").appendLine(changeType.value).appendLine()
+                sb.append(activityContext.getString(R.string.change_type)+": ").appendLine(changeType.value).appendLine()
             }
 
 
-            sb.append(appContext.getString(R.string.path)+": ").appendLine(relativePathUnderRepoState.value).appendLine()
+            sb.append(activityContext.getString(R.string.path)+": ").appendLine(relativePathUnderRepoState.value).appendLine()
 
-            sb.append(appContext.getString(R.string.full_path)+": ").appendLine(fileFullPath.value)
+            sb.append(activityContext.getString(R.string.full_path)+": ").appendLine(fileFullPath.value)
 
             val file = File(fileFullPath.value)
             if(file.exists()) {
                 sb.appendLine()
                 if(file.isFile) {
-                    sb.append(appContext.getString(R.string.size)+": ").appendLine(getHumanReadableSizeStr(file.length())).appendLine()
+                    sb.append(activityContext.getString(R.string.size)+": ").appendLine(getHumanReadableSizeStr(file.length())).appendLine()
                 }
-                sb.append(appContext.getString(R.string.last_modified)+": ").appendLine(getFormattedLastModifiedTimeOfFile(file))
+                sb.append(activityContext.getString(R.string.last_modified)+": ").appendLine(getFormattedLastModifiedTimeOfFile(file))
             }
 
             detailsString.value = sb.toString()

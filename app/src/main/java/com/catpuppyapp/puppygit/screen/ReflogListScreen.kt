@@ -83,7 +83,7 @@ fun ReflogListScreen(
 ) {
     val homeTopBarScrollBehavior = AppModel.singleInstanceHolder.homeTopBarScrollBehavior
     val navController = AppModel.singleInstanceHolder.navController
-    val appContext = AppModel.singleInstanceHolder.activityContext
+    val activityContext = AppModel.singleInstanceHolder.activityContext
     val haptic = LocalHapticFeedback.current
     val scope = rememberCoroutineScope()
 
@@ -112,7 +112,7 @@ fun ReflogListScreen(
         loading.value=true
     }
     val loadingOff = {
-        loadingText.value = appContext.getString(R.string.loading)
+        loadingText.value = activityContext.getString(R.string.loading)
         loading.value=false
     }
 
@@ -128,7 +128,7 @@ fun ReflogListScreen(
         ) {
             showDetailsDialog.value = false
             clipboardManager.setText(AnnotatedString(detailsString.value))
-            Msg.requireShow(appContext.getString(R.string.copied))
+            Msg.requireShow(activityContext.getString(R.string.copied))
         }
     }
     val filterKeyword = mutableCustomStateOf(
@@ -445,11 +445,11 @@ fun ReflogListScreen(
             ReflogItem(showBottomSheet, curLongClickItem,it,
             ) {  //onClick
                 val sb = StringBuilder()
-                sb.append(appContext.getString(R.string.new_oid)).append(": ").append(it.idNew).appendLine().appendLine()
-                sb.append(appContext.getString(R.string.old_oid)).append(": ").append(it.idOld).appendLine().appendLine()
-                sb.append(appContext.getString(R.string.date)).append(": ").append(it.date).appendLine().appendLine()
-                sb.append(appContext.getString(R.string.author)).append(": ").append(Libgit2Helper.getFormattedUsernameAndEmail(it.username, it.email)).appendLine().appendLine()
-                sb.append(appContext.getString(R.string.msg)).append(": ").append(it.msg).appendLine().appendLine()
+                sb.append(activityContext.getString(R.string.new_oid)).append(": ").append(it.idNew).appendLine().appendLine()
+                sb.append(activityContext.getString(R.string.old_oid)).append(": ").append(it.idOld).appendLine().appendLine()
+                sb.append(activityContext.getString(R.string.date)).append(": ").append(it.date).appendLine().appendLine()
+                sb.append(activityContext.getString(R.string.author)).append(": ").append(Libgit2Helper.getFormattedUsernameAndEmail(it.username, it.email)).appendLine().appendLine()
+                sb.append(activityContext.getString(R.string.msg)).append(": ").append(it.msg).appendLine().appendLine()
 
 
                 detailsString.value = sb.toString()
@@ -480,7 +480,7 @@ fun ReflogListScreen(
             doJobThenOffLoading(
                 loadingOn = loadingOn,
                 loadingOff = loadingOff,
-                loadingText = appContext.getString(R.string.loading),
+                loadingText = activityContext.getString(R.string.loading),
             ) {
                 list.value.clear()  //先清一下list，然后可能添加也可能不添加
 

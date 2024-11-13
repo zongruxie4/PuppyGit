@@ -11,8 +11,6 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.DisposableEffect
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
@@ -42,7 +40,6 @@ import com.catpuppyapp.puppygit.utils.AppModel
 import com.catpuppyapp.puppygit.utils.FsUtils
 import com.catpuppyapp.puppygit.utils.cache.Cache
 import com.catpuppyapp.puppygit.utils.doJobThenOffLoading
-import com.catpuppyapp.puppygit.utils.state.StateUtil
 import com.catpuppyapp.puppygit.utils.state.mutableCustomStateOf
 import com.catpuppyapp.puppygit.fileeditor.texteditor.state.TextEditorState
 import com.catpuppyapp.puppygit.fileeditor.texteditor.view.ScrollEvent
@@ -84,7 +81,7 @@ fun SubPageEditor(
     val navController = AppModel.singleInstanceHolder.navController
     val homeTopBarScrollBehavior = AppModel.singleInstanceHolder.homeTopBarScrollBehavior
 //    val appContext = AppModel.singleInstanceHolder.appContext  //这个获取不了Activity!
-    val appContext = LocalContext.current  //这个能获取到
+    val activityContext = LocalContext.current  //这个能获取到
 
     val allRepoParentDir = AppModel.singleInstanceHolder.allRepoParentDir
 
@@ -148,7 +145,7 @@ fun SubPageEditor(
         initValue = { requireSave:Boolean -> Unit}
     )
 
-    val initLoadingText = appContext.getString(R.string.loading)
+    val initLoadingText = activityContext.getString(R.string.loading)
     val loadingText = rememberSaveable { mutableStateOf(initLoadingText)}
     val isLoading = rememberSaveable { mutableStateOf(false)}
 
@@ -172,7 +169,7 @@ fun SubPageEditor(
         editorPageShowingFilePath = editorPageShowingFilePath,
         editorPageLoadingOn = loadingOn,
         editorPageLoadingOff = loadingOff,
-        appContext = appContext,
+        appContext = activityContext,
         editorPageIsSaving = editorPageIsSaving,
         needRefreshEditorPage = needRefreshEditorPage,
         editorPageTextEditorState = editorPageTextEditorState,

@@ -131,7 +131,7 @@ fun RepoInnerPage(
     showImportRepoDialog:MutableState<Boolean>,
     goToThisRepoId:MutableState<String>
 ) {
-    val appContext = AppModel.singleInstanceHolder.activityContext;
+    val activityContext = AppModel.singleInstanceHolder.activityContext;
     val exitApp = AppModel.singleInstanceHolder.exitApp;
     val navController = AppModel.singleInstanceHolder.navController;
     val scope = rememberCoroutineScope()
@@ -155,7 +155,7 @@ fun RepoInnerPage(
 
     //back handler block start
     val isBackHandlerEnable = rememberSaveable { mutableStateOf(true)}
-    val backHandlerOnBack = ComposeHelper.getDoubleClickBackHandler(appContext = appContext, openDrawer = openDrawer, exitApp = exitApp)
+    val backHandlerOnBack = ComposeHelper.getDoubleClickBackHandler(context = activityContext, openDrawer = openDrawer, exitApp = exitApp)
     //注册BackHandler，拦截返回键，实现双击返回和返回上级目录
     BackHandler(enabled = isBackHandlerEnable.value, onBack = {
         if(repoPageFilterModeOn.value) {
@@ -171,7 +171,7 @@ fun RepoInnerPage(
     val requireBlinkIdx = rememberSaveable{mutableIntStateOf(-1)}
 
     val isLoading = rememberSaveable { mutableStateOf(true)}
-    val loadingText = rememberSaveable { mutableStateOf(appContext.getString(R.string.loading))}
+    val loadingText = rememberSaveable { mutableStateOf(activityContext.getString(R.string.loading))}
     val loadingOn = {text:String->
         loadingText.value = text
 
@@ -312,7 +312,7 @@ fun RepoInnerPage(
                             modifier = MyStyleKt.ClickableText.modifier.clickable {
                                 // grant permission for read/write external storage
                                 if (activity == null) {
-                                    Msg.requireShowLongDuration(appContext.getString(R.string.please_go_to_system_settings_allow_manage_storage))
+                                    Msg.requireShowLongDuration(activityContext.getString(R.string.please_go_to_system_settings_allow_manage_storage))
                                 } else {
                                     activity.getStoragePermission()
                                 }
@@ -340,7 +340,7 @@ fun RepoInnerPage(
             onCancel = { showImportRepoDialog.value = false },
         ) {
 
-            doJobThenOffLoading(loadingOn, loadingOff, appContext.getString(R.string.importing)) {
+            doJobThenOffLoading(loadingOn, loadingOff, activityContext.getString(R.string.importing)) {
                 try {
                     val newPath = importRepoPath.value
 
@@ -348,12 +348,12 @@ fun RepoInnerPage(
                         val f = File(newPath)
 
                         if(!f.canRead()) {
-                            Msg.requireShowLongDuration(appContext.getString(R.string.cant_read_path))
+                            Msg.requireShowLongDuration(activityContext.getString(R.string.cant_read_path))
                             return@doJobThenOffLoading
                         }
 
                         if(!f.isDirectory) {
-                            Msg.requireShowLongDuration(appContext.getString(R.string.path_is_not_a_dir))
+                            Msg.requireShowLongDuration(activityContext.getString(R.string.path_is_not_a_dir))
                             return@doJobThenOffLoading
                         }
 
@@ -364,10 +364,10 @@ fun RepoInnerPage(
 
                         // show a result dialog may better?
 
-                        Msg.requireShowLongDuration(replaceStringResList(appContext.getString(R.string.n_imported), listOf(""+importRepoResult.success)))
+                        Msg.requireShowLongDuration(replaceStringResList(activityContext.getString(R.string.n_imported), listOf(""+importRepoResult.success)))
 
                     }else {
-                        Msg.requireShow(appContext.getString(R.string.invalid_path))
+                        Msg.requireShow(activityContext.getString(R.string.invalid_path))
                     }
                 }catch (e:Exception) {
                     MyLog.e(TAG, "import repo from ReposPage err: "+e.stackTraceToString())
@@ -402,7 +402,7 @@ fun RepoInnerPage(
                     val upstream = Libgit2Helper.getUpstreamOfBranch(repo, shortBranchName)
                     remoteName = upstream.remote
                     if(remoteName == null || remoteName.isBlank()) {  //fetch不需合并，只需remote有效即可，所以只检查remote
-                        throw RuntimeException(appContext.getString(R.string.err_upstream_invalid_plz_go_branches_page_set_it_then_try_again))
+                        throw RuntimeException(activityContext.getString(R.string.err_upstream_invalid_plz_go_branches_page_set_it_then_try_again))
 //                        return@doFetch false
                     }
                 }
@@ -449,7 +449,7 @@ fun RepoInnerPage(
                     upstream = Libgit2Helper.getUpstreamOfBranch(repo, shortBranchName)  //获取当前分支的上游，例如 remote=origin 和 merge=refs/heads/main，参见配置文件 branch.yourbranchname.remote 和 .merge 字段
                     //如果查出的upstream还是无效，终止操作
                     if(Libgit2Helper.isUpstreamInvalid(upstream)) {
-                        throw RuntimeException(appContext.getString(R.string.err_upstream_invalid_plz_go_branches_page_set_it_then_try_again))
+                        throw RuntimeException(activityContext.getString(R.string.err_upstream_invalid_plz_go_branches_page_set_it_then_try_again))
 //                        return@doMerge false
                     }
                 }
@@ -464,7 +464,7 @@ fun RepoInnerPage(
 
                 //如果用户名或邮箱无效，无法创建commit，merge无法完成，所以，直接终止操作
                 if(Libgit2Helper.isUsernameAndEmailInvalid(usernameFromConfig,emailFromConfig)) {
-                    throw RuntimeException(appContext.getString(R.string.plz_set_username_and_email_first))
+                    throw RuntimeException(activityContext.getString(R.string.plz_set_username_and_email_first))
 //                    return@doMerge false
                 }
 
@@ -491,7 +491,7 @@ fun RepoInnerPage(
                     //检查是否存在冲突条目
                     //如果调用者想自己判断是否有冲突，可传showMsgIfHasConflicts为false
                     if (mergeResult.code == Ret.ErrCode.mergeFailedByAfterMergeHasConfilts) {
-                        throw RuntimeException(appContext.getString(R.string.has_conflicts))
+                        throw RuntimeException(activityContext.getString(R.string.has_conflicts))
 
 //                        if(trueMergeFalseRebase) {
 //                            throw RuntimeException(appContext.getString(R.string.merge_has_conflicts))
@@ -515,7 +515,7 @@ fun RepoInnerPage(
                 Libgit2Helper.cleanRepoState(repo)
 
                 //更新db显示通知
-                Libgit2Helper.updateDbAfterMergeSuccess(mergeResult, appContext, curRepo.id, {}, trueMergeFalseRebase)  //最后一个参数是合并成功或者不需要合并(uptodate)的信息提示函数，这个页面就不要在成功时提示了，合并完刷新下页面显示在仓库卡片上就行了
+                Libgit2Helper.updateDbAfterMergeSuccess(mergeResult, activityContext, curRepo.id, {}, trueMergeFalseRebase)  //最后一个参数是合并成功或者不需要合并(uptodate)的信息提示函数，这个页面就不要在成功时提示了，合并完刷新下页面显示在仓库卡片上就行了
 
                 return true
             }
@@ -542,7 +542,7 @@ fun RepoInnerPage(
             Repository.open(curRepo.fullSavePath).use { repo ->
 
                 if(repo.headDetached()) {
-                    throw RuntimeException(appContext.getString(R.string.push_failed_by_detached_head))
+                    throw RuntimeException(activityContext.getString(R.string.push_failed_by_detached_head))
 //                    return@doPush false
                 }
 
@@ -553,7 +553,7 @@ fun RepoInnerPage(
                     upstream = Libgit2Helper.getUpstreamOfBranch(repo, shortBranchName)  //获取当前分支的上游，例如 remote=origin 和 merge=refs/heads/main，参见配置文件 branch.yourbranchname.remote 和 .merge 字段
                     //如果查出的upstream还是无效，终止操作
                     if(Libgit2Helper.isUpstreamInvalid(upstream)) {
-                        throw RuntimeException(appContext.getString(R.string.err_upstream_invalid_plz_go_branches_page_set_it_then_try_again))
+                        throw RuntimeException(activityContext.getString(R.string.err_upstream_invalid_plz_go_branches_page_set_it_then_try_again))
 //                        return@doPush false
                     }
                 }
@@ -598,7 +598,7 @@ fun RepoInnerPage(
     val doSync:suspend (RepoEntity)->Unit = doSync@{curRepo:RepoEntity ->
         Repository.open(curRepo.fullSavePath).use { repo ->
             if(repo.headDetached()) {
-                throw RuntimeException(appContext.getString(R.string.sync_failed_by_detached_head))
+                throw RuntimeException(activityContext.getString(R.string.sync_failed_by_detached_head))
 //                return@doSync
             }
 
@@ -607,7 +607,7 @@ fun RepoInnerPage(
             val hasUpstream = Libgit2Helper.isBranchHasUpstream(repo)
             val shortBranchName = Libgit2Helper.getRepoCurBranchShortRefSpec(repo)
             if (!hasUpstream) {  //不存在上游，提示先去设置
-                throw RuntimeException(appContext.getString(R.string.err_upstream_invalid_plz_go_branches_page_set_it_then_try_again))
+                throw RuntimeException(activityContext.getString(R.string.err_upstream_invalid_plz_go_branches_page_set_it_then_try_again))
 //                return@doSync
 
             }
@@ -618,7 +618,7 @@ fun RepoInnerPage(
                 val upstream = Libgit2Helper.getUpstreamOfBranch(repo, shortBranchName)
                 val fetchSuccess = doFetch(upstream.remote, curRepo)
                 if(!fetchSuccess) {
-                    throw RuntimeException(appContext.getString(R.string.fetch_failed))
+                    throw RuntimeException(activityContext.getString(R.string.fetch_failed))
 //                    return@doSync
                 }
 
@@ -638,10 +638,10 @@ fun RepoInnerPage(
                     if(!mergeSuccess) {  //merge 失败，终止操作
                         //如果merge完存在冲突条目，就不要执行push了
                         if(Libgit2Helper.hasConflictItemInRepo(repo)) {  //检查失败原因是否是存在冲突，若是则显示提示
-                            throw RuntimeException(appContext.getString(R.string.has_conflicts_abort_sync))
+                            throw RuntimeException(activityContext.getString(R.string.has_conflicts_abort_sync))
                         }
 
-                        throw RuntimeException(appContext.getString(R.string.merge_failed))
+                        throw RuntimeException(activityContext.getString(R.string.merge_failed))
 //                        return@doSync
                     }
                 }
@@ -650,7 +650,7 @@ fun RepoInnerPage(
                 //doPush
                 val pushSuccess = doPush(upstream, curRepo)
                 if(!pushSuccess) {
-                    throw RuntimeException(appContext.getString(R.string.push_failed))
+                    throw RuntimeException(activityContext.getString(R.string.push_failed))
                 }
 //                    requireShowToast(appContext.getString(R.string.sync_success))  //这个页面如果成功就不要提示了
             }catch (e:Exception) {
@@ -670,15 +670,15 @@ fun RepoInnerPage(
             val fetchSuccess = doFetch(null,thisRepo)
             if(!fetchSuccess) {
 
-                throw RuntimeException(appContext.getString(R.string.fetch_failed))
+                throw RuntimeException(activityContext.getString(R.string.fetch_failed))
             }else {
                 val mergeSuccess = doMerge(null,thisRepo)
                 if(!mergeSuccess){
-                    throw RuntimeException(appContext.getString(R.string.merge_failed))
+                    throw RuntimeException(activityContext.getString(R.string.merge_failed))
                 }
             }
         }catch (e:Exception){
-            showErrAndSaveLog(TAG,"require pull error:"+e.stackTraceToString(), appContext.getString(R.string.pull_err)+":"+e.localizedMessage, requireShowToast,curRepo.value.id)
+            showErrAndSaveLog(TAG,"require pull error:"+e.stackTraceToString(), activityContext.getString(R.string.pull_err)+":"+e.localizedMessage, requireShowToast,curRepo.value.id)
         }
 
     }
@@ -826,7 +826,7 @@ fun RepoInnerPage(
                         requireTransaction = requireTransaction
                     )
 
-                    Msg.requireShow(appContext.getString(R.string.success))
+                    Msg.requireShow(activityContext.getString(R.string.success))
                 }catch (e:Exception){
                     Msg.requireShowLongDuration(e.localizedMessage ?:"err")
                     MyLog.e(TAG, "del repo in ReposPage err: ${e.stackTraceToString()}")
@@ -897,12 +897,12 @@ fun RepoInnerPage(
                 try {
                     val repoDb = AppModel.singleInstanceHolder.dbContainer.repoRepository
                     if(strHasIllegalChars(newName)) {
-                        errMsgForRenameDialog.value = appContext.getString(R.string.name_has_illegal_chars)
+                        errMsgForRenameDialog.value = activityContext.getString(R.string.name_has_illegal_chars)
                         return@doJobThenOffLoading
                     }
 
                     if(repoDb.isRepoNameExist(newName)) {
-                        errMsgForRenameDialog.value = appContext.getString(R.string.name_already_exists)
+                        errMsgForRenameDialog.value = activityContext.getString(R.string.name_already_exists)
                         return@doJobThenOffLoading
                     }
 
@@ -910,7 +910,7 @@ fun RepoInnerPage(
 
                     repoDb.updateRepoName(repoId, newName)
 
-                    Msg.requireShow(appContext.getString(R.string.success))
+                    Msg.requireShow(activityContext.getString(R.string.success))
 
                     changeStateTriggerRefreshPage(needRefreshRepoPage)
                 }catch (e:Exception) {
@@ -967,7 +967,7 @@ fun RepoInnerPage(
                 val curRepoIdx = curRepoIndex.intValue
                 val curRepoFullPath = curRepo.value.fullSavePath
                 val curRepoVal =  curRepo.value
-                doActAndSetRepoStatus(curRepoIdx, curRepoId, appContext.getString(R.string.Unshallowing)) {
+                doActAndSetRepoStatus(curRepoIdx, curRepoId, activityContext.getString(R.string.Unshallowing)) {
                     Repository.open(curRepoFullPath).use { repo->
                         val ret = Libgit2Helper.unshallowRepo(repo, curRepoVal,
                             AppModel.singleInstanceHolder.dbContainer.repoRepository,
@@ -1044,10 +1044,10 @@ fun RepoInnerPage(
                         UIHelper.scrollToItem(scope, repoPageListState, indexInOriginList)
                         requireBlinkIdx.intValue = indexInOriginList  //设置条目闪烁以便用户发现
                     }else {
-                        Msg.requireShow(appContext.getString(R.string.not_found))
+                        Msg.requireShow(activityContext.getString(R.string.not_found))
                     }
                 }else {
-                    Msg.requireShow(appContext.getString(R.string.not_found))
+                    Msg.requireShow(activityContext.getString(R.string.not_found))
                 }
             }
         }catch (_:Exception) {
@@ -1069,21 +1069,21 @@ fun RepoInnerPage(
                 BottomSheetItem(sheetState, showBottomSheet, stringResource(R.string.fetch), textDesc = stringResource(R.string.check_update), enabled = actionEnabled) {
                     //fetch 当前仓库上游的remote
                     doJobThenOffLoading {
-                        doActAndSetRepoStatus(curRepoIndex.intValue, curRepo.value.id, appContext.getString(R.string.fetching)) {
+                        doActAndSetRepoStatus(curRepoIndex.intValue, curRepo.value.id, activityContext.getString(R.string.fetching)) {
                             doFetch(null, curRepo.value)
                         }
                     }
                 }
                 BottomSheetItem(sheetState, showBottomSheet, stringResource(R.string.pull), enabled = actionEnabled) {
                     doJobThenOffLoading {
-                        doActAndSetRepoStatus(curRepoIndex.intValue, curRepo.value.id, appContext.getString(R.string.pulling)) {
+                        doActAndSetRepoStatus(curRepoIndex.intValue, curRepo.value.id, activityContext.getString(R.string.pulling)) {
                             doPull()
                         }
                     }
                 }
                 BottomSheetItem(sheetState, showBottomSheet, stringResource(R.string.push), enabled = actionEnabled) {
                     doJobThenOffLoading {
-                        doActAndSetRepoStatus(curRepoIndex.intValue, curRepo.value.id, appContext.getString(R.string.pushing)) {
+                        doActAndSetRepoStatus(curRepoIndex.intValue, curRepo.value.id, activityContext.getString(R.string.pushing)) {
                             doPush(null, curRepo.value)
                         }
                     }
@@ -1361,7 +1361,7 @@ fun RepoInnerPage(
                     } else if (status == Cons.dbRepoWorkStatusNeedSync) {
                         // do sync
                         doJobThenOffLoading {
-                            doActAndSetRepoStatus(idx, clickedRepo.id, appContext.getString(R.string.syncing)) {
+                            doActAndSetRepoStatus(idx, clickedRepo.id, activityContext.getString(R.string.syncing)) {
                                 doSync(clickedRepo)
                             }
                         }
@@ -1380,7 +1380,7 @@ fun RepoInnerPage(
                     requireBlinkIdx = requireBlinkIdx,
                     copyErrMsg = {msg->
                         clipboardManager.setText(AnnotatedString(msg))
-                        Msg.requireShow(appContext.getString(R.string.copied))
+                        Msg.requireShow(activityContext.getString(R.string.copied))
                     }
 
                 )
@@ -1416,7 +1416,7 @@ fun RepoInnerPage(
                 unknownErrWhenCloning = unknownErrWhenCloning,
                 loadingOn = loadingOn,
                 loadingOff = loadingOff,
-                appContext = appContext,
+                activityContext = activityContext,
                 goToThisRepoId = goToThisRepoId,
                 goToThisRepoAndHighlightingIt = goToThisRepoAndHighlightingIt,
                 settings=settings
@@ -1435,12 +1435,12 @@ private fun doInit(
     unknownErrWhenCloning: String,
     loadingOn:(String)->Unit,
     loadingOff:()->Unit,
-    appContext:Context,
+    activityContext:Context,
     goToThisRepoId: MutableState<String>,
     goToThisRepoAndHighlightingIt:(id:String) ->Unit,
     settings:AppSettings
 ){
-    doJobThenOffLoading(loadingOn, loadingOff, appContext.getString(R.string.loading)) {
+    doJobThenOffLoading(loadingOn, loadingOff, activityContext.getString(R.string.loading)) {
         //执行仓库页面的初始化操作
         val repoRepository = dbContainer.repoRepository
         //貌似如果用Flow，后续我更新数据库，不需要再次手动更新State数据就会自动刷新，也就是Flow会观测数据，如果改变，重新执行sql获取最新的数据，但最好还是手动更新，避免资源浪费

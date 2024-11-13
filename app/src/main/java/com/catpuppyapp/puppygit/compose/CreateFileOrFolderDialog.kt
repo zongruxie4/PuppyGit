@@ -47,7 +47,6 @@ fun CreateFileOrFolderDialog(
     onCancel: () -> Unit,
     onOk: (String, Int) -> Boolean,
 ) {
-    val appContext = LocalContext.current
     val fileName = rememberSaveable { mutableStateOf("")}
     val fileTypeOptions =
         listOf(stringResource(R.string.file), stringResource(R.string.folder))  // idx: 0 1

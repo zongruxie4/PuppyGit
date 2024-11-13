@@ -28,7 +28,6 @@ fun LinkOrUnLinkCredentialAndRemoteDialog(
     onFinallyCallback:()->Unit,
     onOkCallback:()->Unit,
 ) {
-    val appContext = AppModel.singleInstanceHolder.activityContext
 
     val fetchChecked = rememberSaveable { mutableStateOf(if(targetAll) true else if(requireDoLink) thisItem.credentialId!=curItemInPage.value.id else thisItem.credentialId==curItemInPage.value.id)}
     val pushChecked = rememberSaveable { mutableStateOf(if(targetAll) true else if(requireDoLink) thisItem.pushCredentialId!=curItemInPage.value.id else thisItem.pushCredentialId==curItemInPage.value.id)}

@@ -26,7 +26,6 @@ fun UnLinkCredentialAndRemoteDialogForRemoteListPage(
     onCancel: () -> Unit,
     onOkCallback:()->Unit,
 ) {
-    val appContext = AppModel.singleInstanceHolder.activityContext
 
     val fetchChecked = rememberSaveable { mutableStateOf(true) }
     val pushChecked = rememberSaveable { mutableStateOf(true) }

@@ -44,16 +44,16 @@ fun ResetDialog(
     refreshPage: (oldHeadCommitOid:String, isDetached:Boolean)->Unit,  //入参为Hard Reset之前HEAD指向的commit id和仓库是否detached。这个detached在这只是顺手判断，commitList页面要用到这个参数，但那个页面的curRepo若是从分支页面进入，则很少更新，所以，在这顺便更新下detached状态以尽量确保那个对象能持有准确的状态
 ) {
 
-    val appContext = AppModel.singleInstanceHolder.activityContext
+    val activityContext = AppModel.singleInstanceHolder.activityContext
 
     val optSoft = 0  // only HEAD
     val optMixed = 1  // HEAD+Index
     val optHard = 2  // HEAD+Index+Worktree
     val optDefault = optSoft  //默认选中创建分支，detach head如果没reflog，有可能丢数据
     val optList = listOf(
-        appContext.getString(R.string.soft),
-        appContext.getString(R.string.mixed),
-        appContext.getString(R.string.hard),
+        activityContext.getString(R.string.soft),
+        activityContext.getString(R.string.mixed),
+        activityContext.getString(R.string.hard),
 
     )
 
@@ -175,7 +175,7 @@ fun ResetDialog(
                                     //如果操作成功，刷新页面
                                     refreshPage(oldHeadCommitOid, repo.headDetached())
 
-                                    Msg.requireShow(appContext.getString(R.string.reset_success))
+                                    Msg.requireShow(activityContext.getString(R.string.reset_success))
                                 }
                             }
                         }

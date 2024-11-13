@@ -68,15 +68,15 @@ fun SettingsInnerPage(
     listState:ScrollState
 ){
 
-    val appContext = LocalContext.current
+    val activityContext = LocalContext.current
 
     val settingsState = mutableCustomStateOf(stateKeyTag, "settingsState", SettingsUtil.getSettingsSnapshot())
 
     val themeList = Theme.themeList
-    val selectedTheme = rememberSaveable { mutableIntStateOf(PrefMan.getInt(appContext, PrefMan.Key.theme, Theme.defaultThemeValue)) }
+    val selectedTheme = rememberSaveable { mutableIntStateOf(PrefMan.getInt(activityContext, PrefMan.Key.theme, Theme.defaultThemeValue)) }
 
     val languageList = LanguageUtil.languageCodeList
-    val selectedLanguage = rememberSaveable { mutableStateOf(LanguageUtil.getLangCode(appContext)) }
+    val selectedLanguage = rememberSaveable { mutableStateOf(LanguageUtil.getLangCode(activityContext)) }
 
     val logLevelList = MyLog.logLevelList
     val selectedLogLevel = rememberSaveable { mutableStateOf(MyLog.getCurrentLogLevel()) }
@@ -117,7 +117,7 @@ fun SettingsInnerPage(
             doJobThenOffLoading {
                 try {
                     Lg2HomeUtils.resetUserKnownHostFile()
-                    Msg.requireShow(appContext.getString(R.string.success))
+                    Msg.requireShow(activityContext.getString(R.string.success))
                 }catch (e:Exception) {
                     Msg.requireShowLongDuration(e.localizedMessage ?:"err")
                     MyLog.e(TAG, "ForgetHostKeysDialog err: ${e.stackTraceToString()}")
@@ -177,7 +177,7 @@ fun SettingsInnerPage(
             showCleanDialog.value=false
 
             doJobThenOffLoading {
-                Msg.requireShow(appContext.getString(R.string.cleaning))
+                Msg.requireShow(activityContext.getString(R.string.cleaning))
 
                 if(cleanLog.value) {
                     try {
@@ -232,7 +232,7 @@ fun SettingsInnerPage(
                     }
                 }
 
-                Msg.requireShow(appContext.getString(R.string.success))
+                Msg.requireShow(activityContext.getString(R.string.success))
             }
         }
     }
@@ -240,7 +240,7 @@ fun SettingsInnerPage(
 
     //back handler block start
     val isBackHandlerEnable = rememberSaveable { mutableStateOf(true)}
-    val backHandlerOnBack = ComposeHelper.getDoubleClickBackHandler(appContext = appContext, openDrawer = openDrawer, exitApp= exitApp)
+    val backHandlerOnBack = ComposeHelper.getDoubleClickBackHandler(context = activityContext, openDrawer = openDrawer, exitApp= exitApp)
     //注册BackHandler，拦截返回键，实现双击返回和返回上级目录
     BackHandler(enabled = isBackHandlerEnable.value, onBack = {backHandlerOnBack()})
     //back handler block end
@@ -273,12 +273,12 @@ fun SettingsInnerPage(
                     selectedOptionIndex = null,
                     selectedOptionValue = selectedTheme.intValue,
                     menuItemSelected = {_, value -> value == selectedTheme.intValue },
-                    menuItemFormatter = {_, value -> Theme.getThemeTextByCode(value, appContext)},
+                    menuItemFormatter = {_, value -> Theme.getThemeTextByCode(value, activityContext)},
                     menuItemOnClick = { _, value ->
                         selectedTheme.intValue = value
 
-                        if(value != PrefMan.getInt(appContext, PrefMan.Key.theme, Theme.defaultThemeValue)) {
-                            PrefMan.set(appContext, PrefMan.Key.theme, ""+value)
+                        if(value != PrefMan.getInt(activityContext, PrefMan.Key.theme, Theme.defaultThemeValue)) {
+                            PrefMan.set(activityContext, PrefMan.Key.theme, ""+value)
                         }
                     }
                 )
@@ -300,15 +300,15 @@ fun SettingsInnerPage(
                     menuItemOnClick = { index, value ->
                         selectedLanguage.value = value
 
-                        if(value != LanguageUtil.getLangCode(appContext)) {
-                            LanguageUtil.setLangCode(appContext, value)
+                        if(value != LanguageUtil.getLangCode(activityContext)) {
+                            LanguageUtil.setLangCode(activityContext, value)
                         }
                     },
                     menuItemSelected = {index, value ->
                         value == selectedLanguage.value
                     },
                     menuItemFormatter = { index, value ->
-                        LanguageUtil.getLanguageTextByCode(value?:"", appContext)
+                        LanguageUtil.getLanguageTextByCode(value?:"", activityContext)
                     }
                 )
             }
@@ -332,14 +332,14 @@ fun SettingsInnerPage(
                             MyLog.setLogLevel(value.get(0))
 
                             // save to disk
-                            PrefMan.set(appContext, PrefMan.Key.logLevel, value)
+                            PrefMan.set(activityContext, PrefMan.Key.logLevel, value)
                         }
                     },
                     menuItemSelected = {index, value ->
                         value == selectedLogLevel.value
                     },
                     menuItemFormatter = { index, value ->
-                        MyLog.getTextByLogLevel(value?:"", appContext)
+                        MyLog.getTextByLogLevel(value?:"", activityContext)
                     }
                 )
             }
@@ -537,9 +537,9 @@ fun SettingsInnerPage(
         SettingsTitle(stringResource(R.string.permissions))
         SettingsContent(onClick = {
             // grant permission for read/write external storage
-            val activity = appContext as? Activity
+            val activity = activityContext as? Activity
             if (activity == null) {
-                Msg.requireShowLongDuration(appContext.getString(R.string.please_go_to_system_settings_allow_manage_storage))
+                Msg.requireShowLongDuration(activityContext.getString(R.string.please_go_to_system_settings_allow_manage_storage))
             }else {
                 activity.getStoragePermission()
             }

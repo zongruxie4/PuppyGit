@@ -101,7 +101,7 @@ fun RemoteListScreen(
     naviUp: () -> Boolean,
 ) {
     val homeTopBarScrollBehavior = AppModel.singleInstanceHolder.homeTopBarScrollBehavior
-    val appContext = AppModel.singleInstanceHolder.activityContext
+    val activityContext = AppModel.singleInstanceHolder.activityContext
     val navController = AppModel.singleInstanceHolder.navController
     val dbContainer = AppModel.singleInstanceHolder.dbContainer
     val scope = rememberCoroutineScope()
@@ -192,7 +192,7 @@ fun RemoteListScreen(
         ) {
             showDelRemoteDialog.value = false
 
-            doJobThenOffLoading(loadingOn, loadingOff, appContext.getString(R.string.deleting)) {
+            doJobThenOffLoading(loadingOn, loadingOff, activityContext.getString(R.string.deleting)) {
                 try {
                     Repository.open(curRepo.value.fullSavePath).use { repo->
                         //删git仓库中的remote
@@ -211,7 +211,7 @@ fun RemoteListScreen(
                         if(noExist){  //remote在git仓库不存在，但同时悄悄删除了db中的remote
                             Msg.requireShowLongDuration(ret.msg)
                         }else{ //成功
-                            Msg.requireShow(appContext.getString(R.string.success))
+                            Msg.requireShow(activityContext.getString(R.string.success))
                         }
                     }
 
@@ -241,7 +241,7 @@ fun RemoteListScreen(
         ) { //复制到剪贴板
             showViewDialog.value=false
             clipboardManager.setText(AnnotatedString(viewDialogText.value))
-            Msg.requireShow(appContext.getString(R.string.copied))
+            Msg.requireShow(activityContext.getString(R.string.copied))
 
         }
     }
@@ -265,7 +265,7 @@ fun RemoteListScreen(
                             remote = remoteName,
                             branchOrBranches = Cons.gitFetchAllBranchSign,
                             branchListSeparator = Cons.stringListSeparator,
-                            appContext = appContext
+                            appContext = activityContext
                             )
                     }else {
                         Libgit2Helper.setRemoteFetchRefSpecToGitConfig(
@@ -274,7 +274,7 @@ fun RemoteListScreen(
                             remote = remoteName,
                             branchOrBranches = branchCsvStr,
                             branchListSeparator = Cons.stringListSeparator,
-                            appContext = appContext
+                            appContext = activityContext
                         )
 
                     }
@@ -282,7 +282,7 @@ fun RemoteListScreen(
                     if(ret.hasError()) {
                         Msg.requireShowLongDuration(ret.msg)
                     }else{
-                        Msg.requireShow(appContext.getString(R.string.saved))
+                        Msg.requireShow(activityContext.getString(R.string.saved))
                     }
 
                     changeStateTriggerRefreshPage(needRefresh)
@@ -300,7 +300,7 @@ fun RemoteListScreen(
             onCancel = { showFetchAllDialog.value = false }
         ) {
             showFetchAllDialog.value=false
-            doJobThenOffLoading(loadingOn, loadingOff, appContext.getString(R.string.fetching_all)) {
+            doJobThenOffLoading(loadingOn, loadingOff, activityContext.getString(R.string.fetching_all)) {
                 try {
                     if(list.value.isNotEmpty()) {  //remote列表如果是空就不用fetch all了
                         //remote名和凭据组合的列表
@@ -311,10 +311,10 @@ fun RemoteListScreen(
                             //fetch all
                             Libgit2Helper.fetchRemoteListForRepo(repo, remoteCredentialList, curRepo.value)
                             //显示成功通知
-                            Msg.requireShow(appContext.getString(R.string.fetch_all_success))
+                            Msg.requireShow(activityContext.getString(R.string.fetch_all_success))
                         }
                     }else {  // remotes列表为空，无需执行操作
-                        Msg.requireShowLongDuration(appContext.getString(R.string.err_remote_list_is_empty))
+                        Msg.requireShowLongDuration(activityContext.getString(R.string.err_remote_list_is_empty))
                     }
 
                 }catch (e:Exception){
@@ -400,13 +400,13 @@ fun RemoteListScreen(
             try {
                 //pushUrl可为空，代表使用url；但如果非pushUrl，则强制不可为空
                 if(!isPushUrl.value && newUrl.isBlank()) {
-                    urlErrMsg.value = appContext.getString(R.string.err_url_is_empty)
+                    urlErrMsg.value = activityContext.getString(R.string.err_url_is_empty)
                     return@onOk
                 }
 
                 //新旧url相同，直接不保存就行了，但也不用报错
                 if(newUrl == oldUrl) {
-                    Msg.requireShowLongDuration(appContext.getString(R.string.url_not_changed))
+                    Msg.requireShowLongDuration(activityContext.getString(R.string.url_not_changed))
                     urlErrMsg.value=""
                     showSetUrlDialog.value=false
                     return@onOk
@@ -433,10 +433,10 @@ fun RemoteListScreen(
                             //操作完成
 
                             //提示成功
-                            Msg.requireShow(appContext.getString(R.string.success))
+                            Msg.requireShow(activityContext.getString(R.string.success))
 
                         }catch (e:Exception) {
-                            val err1 = e.localizedMessage ?: appContext.getString(R.string.unknown_err)
+                            val err1 = e.localizedMessage ?: activityContext.getString(R.string.unknown_err)
                             Msg.requireShowLongDuration(err1)
                             val errWillSave = "$setUrlPrefix for remote '$remoteName' err (delete pushUrl): $err1"
                             createAndInsertError(repoId, errWillSave)
@@ -462,14 +462,14 @@ fun RemoteListScreen(
                     newUrlUriStr = newUrlUri.toString()
 
                 }catch (uriException:Exception) {
-                    urlErrMsg.value = appContext.getString(R.string.err_invalid_url)
+                    urlErrMsg.value = activityContext.getString(R.string.err_invalid_url)
                     MyLog.e(TAG, "$setUrlPrefix in RemoteList err: parse url err, url=$newUrl, err is: ${uriException.localizedMessage}")
                     return@onOk
                 }
 
                 //正常来说应该不会进入这个代码块，这里只是以防万一
                 if(newUrlUri==null || newUrlUriStr.isBlank()) {
-                    urlErrMsg.value = appContext.getString(R.string.err_invalid_url)+", errcode=17049037"  //后面的errcode是为了方便我定位错误发生在哪部分代码，我一看到errcode，我就知道“啊，是在这发生的错误”
+                    urlErrMsg.value = activityContext.getString(R.string.err_invalid_url)+", errcode=17049037"  //后面的errcode是为了方便我定位错误发生在哪部分代码，我一看到errcode，我就知道“啊，是在这发生的错误”
                     return@onOk
                 }
 
@@ -506,10 +506,10 @@ fun RemoteListScreen(
                         //操作完成
 
                         //提示成功
-                        Msg.requireShow(appContext.getString(R.string.success))
+                        Msg.requireShow(activityContext.getString(R.string.success))
 
                     }catch (e:Exception) {
-                        val err1 = (e.localizedMessage ?: appContext.getString(R.string.unknown_err))
+                        val err1 = (e.localizedMessage ?: activityContext.getString(R.string.unknown_err))
                         Msg.requireShowLongDuration(err1)
                         val errWillSave = "$setUrlPrefix for remote '$remoteName' err: $err1"
                         createAndInsertError(repoId, errWillSave)
@@ -520,7 +520,7 @@ fun RemoteListScreen(
                 }
             }catch (e:Exception) {
                 MyLog.e(TAG, "$setUrlPrefix in RemoteList err: remoteName=${remoteName}, newUrl=$newUrl, oldUrl=$oldUrl, err is:\n${e.stackTraceToString()}")
-                val err1 = e.localizedMessage ?: appContext.getString(R.string.unknown_err)
+                val err1 = e.localizedMessage ?: activityContext.getString(R.string.unknown_err)
 
                 //如果弹窗没关，在弹窗显示错误，如果关了，记到数据库
                 if(showSetUrlDialog.value) {  //弹窗开着，直接在弹窗显示错误信息
@@ -563,7 +563,7 @@ fun RemoteListScreen(
                 //fetch成功返回true，否则返回false
                 val remoteName = remoteNameParam
                 if (remoteName.isNullOrBlank()) {
-                    throw RuntimeException(appContext.getString(R.string.remote_name_is_invalid))
+                    throw RuntimeException(activityContext.getString(R.string.remote_name_is_invalid))
                 }
 
                 //执行到这，upstream的remote有效，执行fetch
@@ -583,7 +583,7 @@ fun RemoteListScreen(
             val repoDb = AppModel.singleInstanceHolder.dbContainer.repoRepository
             repoDb.updateLastUpdateTime(curRepo.id, getSecFromTime())
 
-            Msg.requireShow(appContext.getString(R.string.success))
+            Msg.requireShow(activityContext.getString(R.string.success))
 
             fetchSuccessRetVal = true
         } catch (e: Exception) {
@@ -785,7 +785,7 @@ fun RemoteListScreen(
             BottomSheet(showBottomSheet, sheetState, curObjInState.value.remoteName) {
                 BottomSheetItem(sheetState=sheetState, showBottomSheet=showBottomSheet, text= stringResource(R.string.fetch)){
                     //e.g. "fetching origin..."
-                    val fetchingxxxLoadingText = appContext.getString(R.string.fetching_no_dots)+" "+curObjInState.value.remoteName+"..."
+                    val fetchingxxxLoadingText = activityContext.getString(R.string.fetching_no_dots)+" "+curObjInState.value.remoteName+"..."
                     //执行fetch
                     doJobThenOffLoading(loadingOn, loadingOff, fetchingxxxLoadingText) {
                         doFetch(curObjInState.value.remoteName, curRepo.value)
@@ -889,30 +889,30 @@ fun RemoteListScreen(
                 RemoteItem(showBottomSheet,curObjInState,idx,it){ //onClick
                     //生成要显示的字符串
                     val sb = StringBuilder()
-                    sb.append(appContext.getString(R.string.name)+": "+it.remoteName)
+                    sb.append(activityContext.getString(R.string.name)+": "+it.remoteName)
                     sb.appendLine()
                     sb.appendLine()
-                    sb.append(appContext.getString(R.string.url)+": "+it.remoteUrl)
+                    sb.append(activityContext.getString(R.string.url)+": "+it.remoteUrl)
                     sb.appendLine()
                     sb.appendLine()
 
 //                    sb.append(appContext.getString(R.string.push_url)+": "+(it.pushUrl.ifEmpty { it.remoteUrl }))  // no more check pushUrl empty need after 20241007
                     // after 20241007, if need, pushUrl will replaced to fetch url when querying, so reached here, directly show pushUrl is ok
-                    sb.append(appContext.getString(R.string.push_url)+": "+it.pushUrl)
+                    sb.append(activityContext.getString(R.string.push_url)+": "+it.pushUrl)
 
                     sb.appendLine()
                     sb.appendLine()
-                    sb.append(appContext.getString(R.string.fetch_credential)+": "+(if(it.credentialId== SpecialCredential.MatchByDomain.credentialId) SpecialCredential.MatchByDomain.name else (it.credentialName?:"")))
+                    sb.append(activityContext.getString(R.string.fetch_credential)+": "+(if(it.credentialId== SpecialCredential.MatchByDomain.credentialId) SpecialCredential.MatchByDomain.name else (it.credentialName?:"")))
                     sb.appendLine()
                     sb.appendLine()
-                    sb.append(appContext.getString(R.string.push_credential)+": "+(if(it.pushCredentialId== SpecialCredential.MatchByDomain.credentialId) SpecialCredential.MatchByDomain.name else (it.pushCredentialName?:"")))
+                    sb.append(activityContext.getString(R.string.push_credential)+": "+(if(it.pushCredentialId== SpecialCredential.MatchByDomain.credentialId) SpecialCredential.MatchByDomain.name else (it.pushCredentialName?:"")))
                     sb.appendLine()
                     sb.appendLine()
-                    sb.append(appContext.getString(R.string.branch_mode)+": "+(if(it.branchMode == Cons.dbRemote_Fetch_BranchMode_All) appContext.getString(R.string.all) else appContext.getString(R.string.custom)))
+                    sb.append(activityContext.getString(R.string.branch_mode)+": "+(if(it.branchMode == Cons.dbRemote_Fetch_BranchMode_All) activityContext.getString(R.string.all) else activityContext.getString(R.string.custom)))
                     if(it.branchMode != Cons.dbRemote_Fetch_BranchMode_All) {
                         sb.appendLine()
                         sb.appendLine()
-                        sb.append((if(it.branchListForFetch.size > 1) appContext.getString(R.string.branches) else appContext.getString(R.string.branch)) +": ${it.branchListForFetch}")
+                        sb.append((if(it.branchListForFetch.size > 1) activityContext.getString(R.string.branches) else activityContext.getString(R.string.branch)) +": ${it.branchListForFetch}")
                     }
 
 

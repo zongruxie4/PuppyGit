@@ -77,7 +77,7 @@ fun CredentialRemoteListScreen(
 
     val homeTopBarScrollBehavior = AppModel.singleInstanceHolder.homeTopBarScrollBehavior
     val navController = AppModel.singleInstanceHolder.navController
-    val appContext = AppModel.singleInstanceHolder.activityContext
+    val activityContext = AppModel.singleInstanceHolder.activityContext
     val scope = rememberCoroutineScope()
     val settings = remember { SettingsUtil.getSettingsSnapshot() }
 
@@ -171,7 +171,7 @@ fun CredentialRemoteListScreen(
                 MyLog.e(TAG, "#LinkOrUnLinkCredentialAndRemoteDialog err: $errMsgPrefix${e.stackTraceToString()}")
             },
             onOkCallback = {
-                Msg.requireShow(appContext.getString(R.string.success))
+                Msg.requireShow(activityContext.getString(R.string.success))
             }
         )
     }
@@ -344,7 +344,7 @@ fun CredentialRemoteListScreen(
 
                                     requireDoLink.value = false
                                     targetAll.value = true
-                                    linkOrUnlinkDialogTitle.value = appContext.getString(R.string.unlink_all)
+                                    linkOrUnlinkDialogTitle.value = activityContext.getString(R.string.unlink_all)
                                     showLinkOrUnLinkDialog.value = true
                                 }
 
@@ -416,7 +416,7 @@ fun CredentialRemoteListScreen(
                 curItem.value = it
                 requireDoLink.value = !isShowLink
                 targetAll.value = false
-                linkOrUnlinkDialogTitle.value=if(requireDoLink.value) appContext.getString(R.string.link) else appContext.getString(R.string.unlink)  // (不建议，不方便记Err)若空字符串，将会自动根据requireDoLink的值决定使用link还是unlink作为title
+                linkOrUnlinkDialogTitle.value=if(requireDoLink.value) activityContext.getString(R.string.link) else activityContext.getString(R.string.unlink)  // (不建议，不方便记Err)若空字符串，将会自动根据requireDoLink的值决定使用link还是unlink作为title
                 showLinkOrUnLinkDialog.value=true
 
 //                if(isShowLink) {  //如果是显示已关联条目的页面，点击取关直接执行

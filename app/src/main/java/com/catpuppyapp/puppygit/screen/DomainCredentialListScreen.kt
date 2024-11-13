@@ -89,7 +89,7 @@ fun DomainCredentialListScreen(
 
     val homeTopBarScrollBehavior = AppModel.singleInstanceHolder.homeTopBarScrollBehavior
     val navController = AppModel.singleInstanceHolder.navController
-    val appContext = AppModel.singleInstanceHolder.activityContext
+    val activityContext = AppModel.singleInstanceHolder.activityContext
     val scope = rememberCoroutineScope()
 
     val settings = remember { SettingsUtil.getSettingsSnapshot() }
@@ -227,7 +227,7 @@ fun DomainCredentialListScreen(
 
                     showCreateOrEditDialog.value=false
 
-                    Msg.requireShow(appContext.getString(R.string.success))
+                    Msg.requireShow(activityContext.getString(R.string.success))
 
                     changeStateTriggerRefreshPage(needRefresh)
                 }catch (e:Exception) {
@@ -507,7 +507,7 @@ fun DomainCredentialListScreen(
         // don't use this way to track screen disappearance
         // DisposableEffect is better for this
         try {
-            doJobThenOffLoading(loadingOn = loadingOn, loadingOff = loadingOff, loadingText=appContext.getString(R.string.loading)) job@{
+            doJobThenOffLoading(loadingOn = loadingOn, loadingOff = loadingOff, loadingText=activityContext.getString(R.string.loading)) job@{
                 list.value.clear()
                 credentialList.value.clear()
 

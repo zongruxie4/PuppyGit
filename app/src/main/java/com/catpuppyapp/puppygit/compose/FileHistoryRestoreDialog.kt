@@ -1,7 +1,6 @@
 package com.catpuppyapp.puppygit.compose
 
 import android.content.Context
-import androidx.compose.foundation.layout.Column
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.MutableState
@@ -22,7 +21,7 @@ fun FileHistoryRestoreDialog(
     showRestoreDialog: MutableState<Boolean>,
     loadingOn: (String) -> Unit,
     loadingOff: () -> Unit,
-    appContext: Context,
+    activityContext: Context,
     curRepo: CustomStateSaveable<RepoEntity>,
     fileRelativePath: String,
     repoId: String,
@@ -44,7 +43,7 @@ fun FileHistoryRestoreDialog(
         okBtnText = stringResource(R.string.restore)
     ) {
         showRestoreDialog.value = false
-        doJobThenOffLoading(loadingOn, loadingOff, appContext.getString(R.string.restoring)) {
+        doJobThenOffLoading(loadingOn, loadingOff, activityContext.getString(R.string.restoring)) {
             try {
                 Repository.open(curRepo.value.fullSavePath).use { repo ->
                     //fun checkoutFiles(repo: Repository, targetCommitHash:String, pathSpecs: List<String>, force: Boolean, checkoutOptions: Checkout.Options?=null): Ret<Unit?> {
@@ -52,7 +51,7 @@ fun FileHistoryRestoreDialog(
 
                 }
 
-                Msg.requireShow(appContext.getString(R.string.success))
+                Msg.requireShow(activityContext.getString(R.string.success))
 
                 onSuccess()
             } catch (e: Exception) {

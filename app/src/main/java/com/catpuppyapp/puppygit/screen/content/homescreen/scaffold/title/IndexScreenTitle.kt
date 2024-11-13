@@ -2,12 +2,9 @@ package com.catpuppyapp.puppygit.screen.content.homescreen.scaffold.title
 
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.combinedClickable
-import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.lazy.LazyListState
-import androidx.compose.foundation.rememberScrollState
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.MutableIntState
@@ -40,7 +37,7 @@ fun IndexScreenTitle(
     changeListPageItemListState: LazyListState
 ) {
     val haptic = LocalHapticFeedback.current
-    val appContext = LocalContext.current
+    val activityContext = LocalContext.current
 
     val showTitleInfoDialog = remember { mutableStateOf(false) }
     if(showTitleInfoDialog.value) {
@@ -51,7 +48,7 @@ fun IndexScreenTitle(
     val repoStateText = rememberSaveable { mutableStateOf("")}
 
     //设置仓库状态，主要是为了显示merge
-    Libgit2Helper.setRepoStateText(repoState.intValue, needShowRepoState, repoStateText, appContext)
+    Libgit2Helper.setRepoStateText(repoState.intValue, needShowRepoState, repoStateText, activityContext)
 
     val getTitleColor = {
         UIHelper.getChangeListTitleColor(repoState.intValue)

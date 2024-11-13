@@ -36,7 +36,7 @@ fun AskGitUsernameAndEmailDialog(
     enableOk: () -> Boolean,
 ) {
 
-    val appContext = LocalContext.current
+    val activityContext = LocalContext.current
 
     AlertDialog(
         title = {
@@ -112,7 +112,7 @@ fun AskGitUsernameAndEmailDialog(
         doJobThenOffLoading(
             loadingOn = {},
             loadingOff = {},
-            loadingText=appContext.getString(R.string.loading)
+            loadingText=activityContext.getString(R.string.loading)
         ) {
             //如果是全局就读取全局的email和username，否则读取仓库的
             if (isForGlobal) {

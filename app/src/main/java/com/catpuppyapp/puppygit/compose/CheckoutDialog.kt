@@ -68,7 +68,7 @@ fun CheckoutDialog(
 ) {
     val repoId = curRepo.id
 
-    val appContext = AppModel.singleInstanceHolder.activityContext
+    val activityContext = AppModel.singleInstanceHolder.activityContext
 
     val checkoutOptionDontUpdateHead = 0
     val checkoutOptionDetachHead = 1
@@ -76,9 +76,9 @@ fun CheckoutDialog(
     val checkoutOptionJustCheckoutForLocalBranch = 3
     val checkoutOptionDefault = if(showJustCheckout) checkoutOptionJustCheckoutForLocalBranch else checkoutOptionCreateBranch  //默认选中创建分支，detach head如果没reflog，有可能丢数据
     val checkoutRemoteOptions = listOf(
-        appContext.getString(R.string.dont_update_head),
-        appContext.getString(R.string.detach_head),
-        appContext.getString(R.string.new_branch) + "(" + appContext.getString(R.string.recommend) + ")",
+        activityContext.getString(R.string.dont_update_head),
+        activityContext.getString(R.string.detach_head),
+        activityContext.getString(R.string.new_branch) + "(" + activityContext.getString(R.string.recommend) + ")",
         stringResource(R.string.just_checkout)
     )
 
@@ -143,7 +143,7 @@ fun CheckoutDialog(
         }
 
 
-    ConfirmDialog(title = appContext.getString(R.string.checkout),
+    ConfirmDialog(title = activityContext.getString(R.string.checkout),
         requireShowTextCompose = true,
         textCompose = {
             //只能有一个节点，因为这个东西会在lambda后返回，而lambda只能有一个返回值，弄两个布局就乱了，和react组件只能有一个root div一个道理 。
@@ -159,7 +159,7 @@ fun CheckoutDialog(
                 }
                 Row {
                     Text(
-                        text = appContext.getString(R.string.checkout_to) + ": ",
+                        text = activityContext.getString(R.string.checkout_to) + ": ",
                         overflow = TextOverflow.Visible
                     )
                 }
@@ -200,7 +200,7 @@ fun CheckoutDialog(
                     // spacer
                 }
                 Row {
-                    Text(text = appContext.getString(R.string.plz_choose_a_checkout_type) + ":")
+                    Text(text = activityContext.getString(R.string.plz_choose_a_checkout_type) + ":")
                 }
 
                 for ((k, optext) in checkoutRemoteOptions.withIndex()) {
@@ -357,7 +357,7 @@ fun CheckoutDialog(
         val onlyUpdateCurItem = onlyUpdateCurItem || (checkoutSelectedOption.intValue == checkoutOptionCreateBranch && dontCheckout && from!=CheckoutDialogFrom.BRANCH_LIST)
 
         //执行checkout
-        doJobThenOffLoading(loadingOn, loadingOff, appContext.getString(R.string.checking_out)) {
+        doJobThenOffLoading(loadingOn, loadingOff, activityContext.getString(R.string.checking_out)) {
             try {
 
                 //如果使用用户输入值，一律解析成hash
@@ -369,7 +369,7 @@ fun CheckoutDialog(
                         if(ret.success() && ret.data != null) {  //如果查询成功，取下查出的commit id，如果查询失败，还用原来的值就行，当然，后面很可能会执行失败，不过无所谓
                             r = ret.data!!.id().toString()
                         }else {  //解析用户输入失败，后面没法进行，直接抛异常
-                            throw RuntimeException(appContext.getString(R.string.failed_resolve_commit_by_user_input))
+                            throw RuntimeException(activityContext.getString(R.string.failed_resolve_commit_by_user_input))
                         }
                     }
 
@@ -396,9 +396,9 @@ fun CheckoutDialog(
 //                            fullOid.value = commitOid
 //                            branchShortNameOrShortHashByFullOid.value = Libgit2Helper.getShortOidStrByFull(commitOid)  //这里加不加detached都行，因为这个是点击分支条目显示的分支列表，含义上来说，不一定与repo HEAD关联，以后可能实现成可基于某个提交为头查看其后的提交历史，所以虽然是checkout了提交号，但在含义上来说，这里显示的未必就是detached head，所以不必加Detached标识
                         curRepo.isDetached = Cons.dbCommonTrue
-                        Msg.requireShow(appContext.getString(R.string.checkout_success))
+                        Msg.requireShow(activityContext.getString(R.string.checkout_success))
                     }else {  //checkout失败
-                        val checkoutErrMsg = appContext.getString(R.string.checkout_error)+": "+checkoutRet.msg
+                        val checkoutErrMsg = activityContext.getString(R.string.checkout_error)+": "+checkoutRet.msg
                         Msg.requireShowLongDuration(checkoutErrMsg)
                         createAndInsertError(repoId, checkoutErrMsg)
                         return@doJobThenOffLoading
@@ -430,7 +430,7 @@ fun CheckoutDialog(
                             updateCurItem(commitIndexNeedUpdate, branchHeadFullHash)
                         }
 
-                        Msg.requireShow(appContext.getString(R.string.create_branch_success))
+                        Msg.requireShow(activityContext.getString(R.string.create_branch_success))
 
                         if(dontCheckout) {
                             //如果不需要checkout，在这就能返回了，返回前检查下是否需要刷新页面（ps：如果是仅更新当前条目，创建分支后的代码已经处理，这里不用判断）
@@ -441,7 +441,7 @@ fun CheckoutDialog(
                             return@doJobThenOffLoading
                         }
 
-                        Msg.requireShow(appContext.getString(R.string.checking_out))
+                        Msg.requireShow(activityContext.getString(R.string.checking_out))
 
                         //检出新创建的本地分支
                         val checkoutRet = doCheckoutBranch(branchShortName, fullBranchRefspec, upstreamBranchShortNameParam, forceCheckout.value, updateHead, checkoutType)
@@ -449,15 +449,15 @@ fun CheckoutDialog(
 //                                fullOid.value = branchHeadFullHash
 //                                branchShortNameOrShortHashByFullOid.value = branchShortName
                             curRepo.isDetached = Cons.dbCommonFalse
-                            Msg.requireShow(appContext.getString(R.string.checkout_success))
+                            Msg.requireShow(activityContext.getString(R.string.checkout_success))
                         }else {  //checkout失败
-                            val checkoutErrMsg = appContext.getString(R.string.checkout_error)+": "+checkoutRet.msg
+                            val checkoutErrMsg = activityContext.getString(R.string.checkout_error)+": "+checkoutRet.msg
                             Msg.requireShowLongDuration(checkoutErrMsg)
                             createAndInsertError(repoId, checkoutErrMsg)
                             return@doJobThenOffLoading
                         }
                     }else {  //创建分支失败
-                        val createBranchErrMsg = appContext.getString(R.string.create_branch_err)+": "+createBranchRet.msg
+                        val createBranchErrMsg = activityContext.getString(R.string.create_branch_err)+": "+createBranchRet.msg
                         Msg.requireShowLongDuration(createBranchErrMsg)
                         createAndInsertError(repoId, createBranchErrMsg)
                         return@doJobThenOffLoading
@@ -473,9 +473,9 @@ fun CheckoutDialog(
                     //这种情况是直接检出本地分支，只有在分支列表长按分支一种处发方式，直接使用传进来的引用名fullName执行checkout即可
                     val checkoutRet = doCheckoutBranch(shortName, fullName, upstreamRefspec, forceCheckout.value, updateHead, checkoutType)
                     if(checkoutRet.success()) {
-                        Msg.requireShow(appContext.getString(R.string.checkout_success))
+                        Msg.requireShow(activityContext.getString(R.string.checkout_success))
                     }else {  //checkout失败
-                        val checkoutErrMsg = appContext.getString(R.string.checkout_error)+": "+checkoutRet.msg
+                        val checkoutErrMsg = activityContext.getString(R.string.checkout_error)+": "+checkoutRet.msg
                         Msg.requireShowLongDuration(checkoutErrMsg)
                         createAndInsertError(repoId, checkoutErrMsg)
                         return@doJobThenOffLoading

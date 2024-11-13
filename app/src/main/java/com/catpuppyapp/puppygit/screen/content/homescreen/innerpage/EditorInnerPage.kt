@@ -127,7 +127,7 @@ fun EditorInnerPage(
 ) {
     val allRepoParentDir = AppModel.singleInstanceHolder.allRepoParentDir;
 //    val appContext = AppModel.singleInstanceHolder.appContext;
-    val appContext = LocalContext.current
+    val activityContext = LocalContext.current
     val exitApp = AppModel.singleInstanceHolder.exitApp
 
     val saveLock = Cache.getOrDefaultByType(Cache.Key.editorPageSaveLockPrefix+ Cache.keySeparator+editorPageShowingFilePath.value, default= Mutex())
@@ -270,7 +270,7 @@ fun EditorInnerPage(
                             isEdited.value=false
                             MyLog.d(TAG, "#doSimpleSafeFastSaveInCoroutine: file saved")
                             if(requireShowMsgToUser){
-                                Msg.requireShow(appContext.getString(R.string.file_saved))
+                                Msg.requireShow(activityContext.getString(R.string.file_saved))
                             }
                         }else {
                             isEdited.value=true
@@ -296,7 +296,7 @@ fun EditorInnerPage(
     val isBackHandlerEnable = rememberSaveable { mutableStateOf(true) }
 
     val backHandlerOnBack = getBackHandler(
-        appContext = appContext,
+        activityContext = activityContext,
         textEditorState = editorPageTextEditorState,
         isSubPage = isSubPageMode,
         isEdited = isEdited,
@@ -470,11 +470,11 @@ fun EditorInnerPage(
     val checkPathThenGoToFilesPage = {
         val path = editorPageShowingFilePath.value
         if(path.isBlank()) {
-            Msg.requireShow(appContext.getString(R.string.invalid_path))
+            Msg.requireShow(activityContext.getString(R.string.invalid_path))
         }else {
             //如果文件不存在，显示个提示，然后跳转到file页面但不选中任何条目，否则会选中当前editor打开的文件
             if(!File(path).exists()) {
-                Msg.requireShow(appContext.getString(R.string.file_doesnt_exist))
+                Msg.requireShow(activityContext.getString(R.string.file_doesnt_exist))
             }
 
             goToFilesPage(path)
@@ -534,7 +534,7 @@ fun EditorInnerPage(
                 }
 
             }else{
-                Msg.requireShow(appContext.getString(R.string.file_path_invalid))
+                Msg.requireShow(activityContext.getString(R.string.file_path_invalid))
             }
         }
     }
@@ -547,7 +547,7 @@ fun EditorInnerPage(
 
     if(requestFromParent.value == PageRequest.requireGoToFileHistory) {
         PageRequest.clearStateThenDoAct(requestFromParent) {
-            goToFileHistory(editorPageShowingFilePath.value, appContext)
+            goToFileHistory(editorPageShowingFilePath.value, activityContext)
         }
     }
 
@@ -778,7 +778,7 @@ fun EditorInnerPage(
                                 ifLastPathOkThenDoOkActElseDoNoOkAct(okAct@{ last ->
                                     goToFilesPage(last)
                                 }) noOkAct@{
-                                    Msg.requireShowLongDuration(appContext.getString(R.string.file_not_found))
+                                    Msg.requireShowLongDuration(activityContext.getString(R.string.file_not_found))
                                 }
                             },
                             style = MyStyleKt.ClickableText.style,
@@ -807,7 +807,7 @@ fun EditorInnerPage(
                                 editorPageShowingFilePath.value = last
                                 reloadFile()
                             }) noOkAct@{
-                                Msg.requireShowLongDuration(appContext.getString(R.string.file_not_found))
+                                Msg.requireShowLongDuration(activityContext.getString(R.string.file_not_found))
                             }
                         },
                         style = MyStyleKt.ClickableText.style,
@@ -904,7 +904,7 @@ fun EditorInnerPage(
                 editorPageSetShowingFileErrWhenLoading,
                 loadingOn,
                 loadingOff,
-                appContext,
+                activityContext,
                 requestFromParent,
                 editorPageShowingFileDto = editorPageShowingFileDto,
                 isSubPageMode,
@@ -1175,7 +1175,7 @@ private fun loadFile(
 
 @Composable
 private fun getBackHandler(
-    appContext: Context,
+    activityContext: Context,
     textEditorState: CustomStateSaveable<TextEditorState>,
     isSubPage: Boolean,
     isEdited: MutableState<Boolean>,
@@ -1197,7 +1197,7 @@ private fun getBackHandler(
     val pressBackAgainForExitText = stringResource(R.string.press_back_again_to_exit);
     val showTextAndUpdateTimeForPressBackBtn = {
         openDrawer()
-        showToast(appContext, pressBackAgainForExitText, Toast.LENGTH_SHORT)
+        showToast(activityContext, pressBackAgainForExitText, Toast.LENGTH_SHORT)
         backStartSec.longValue = getSecFromTime() + Cons.pressBackDoubleTimesInThisSecWillExit
     }
 

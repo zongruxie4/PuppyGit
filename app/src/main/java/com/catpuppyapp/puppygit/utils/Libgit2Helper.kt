@@ -892,17 +892,17 @@ class Libgit2Helper {
 
         //返回 success 就是就绪了，否则就是没就绪
         fun readyForContinueMerge(repo: Repository):Ret<String?> {
-            val appContext = AppModel.singleInstanceHolder.activityContext
+            val activityContext = AppModel.singleInstanceHolder.activityContext
 
             try {
                 if(repo.state() != Repository.StateT.MERGE) {
-                    return Ret.createError(null, appContext.getString(R.string.repo_not_in_merging))
+                    return Ret.createError(null, activityContext.getString(R.string.repo_not_in_merging))
                 }
                 if(repo.index().hasConflicts()) {
-                    return Ret.createError(null, appContext.getString(R.string.plz_resolve_conflicts_first))
+                    return Ret.createError(null, activityContext.getString(R.string.plz_resolve_conflicts_first))
                 }
                 if(getMergeHeads(repo).isEmpty()) {
-                    return Ret.createError(null, appContext.getString(R.string.no_merge_head_found))
+                    return Ret.createError(null, activityContext.getString(R.string.no_merge_head_found))
                 }
 
                 return Ret.createSuccess(null)
@@ -915,15 +915,15 @@ class Libgit2Helper {
         //不会返回oid，只是和continue rebase的返回值一致，方便返回
         fun readyForContinueRebase(repo: Repository):Ret<Oid?> {
             val funName = "readyForContinueRebase"
-            val appContext = AppModel.singleInstanceHolder.activityContext
+            val activityContext = AppModel.singleInstanceHolder.activityContext
 
             try {
                 //20240814:目前libgit2只支持REBASE_MERGE，不支持 git默认的 REBASE_INTERACTIVE
                 if(repo.state() != Repository.StateT.REBASE_MERGE) {
-                    return Ret.createError(null, appContext.getString(R.string.repo_not_in_rebasing))
+                    return Ret.createError(null, activityContext.getString(R.string.repo_not_in_rebasing))
                 }
                 if(repo.index().hasConflicts()) {
-                    return Ret.createError(null, appContext.getString(R.string.plz_resolve_conflicts_first))
+                    return Ret.createError(null, activityContext.getString(R.string.plz_resolve_conflicts_first))
                 }
 //                if(getMergeHeads(repo).isEmpty()) {
 //                    return Ret.createError(null, appContext.getString(R.string.no_merge_head_found))
@@ -2016,25 +2016,25 @@ class Libgit2Helper {
         }
 
         fun isReadyCreateCommit(repo: Repository):Ret<Oid?> {
-            val appContext = AppModel.singleInstanceHolder.activityContext
+            val activityContext = AppModel.singleInstanceHolder.activityContext
 
             //检查是否存在未stage的冲突，若有则不能创建提交
             if(hasConflictItemInRepo(repo)) {
-                return Ret.createError(null, appContext.getString(R.string.plz_resolve_conflicts_first), Ret.ErrCode.hasConflictsNotStaged)
+                return Ret.createError(null, activityContext.getString(R.string.plz_resolve_conflicts_first), Ret.ErrCode.hasConflictsNotStaged)
             }
 
             //检查仓库的index是否为空，为空就不用提交了，注意，如果仓库状态是merging，其实可创建空提交，例如：你合并分支，冲突，然后接受我方文件，这时就没冲突条目，worktree和index也为空了，因为worktree和index都是根据HEAD比较的，所以无法判断是否合并分支，因此，如果在合并状态下，允许创建空提交，实际上不是空提交，因为还会和另一个提交树合并，只是对当前分支来说是空提交罢了
             val repoState = repo.state()
             val indexIsEmpty1 = indexIsEmpty(repo)
             if(repoState==Repository.StateT.MERGE && getMergeHeads(repo).isEmpty()) {
-                return Ret.createError(null, appContext.getString(R.string.repo_state_is_merge_but_no_merge_head_found_plz_use_abort_merge_to_clean_state))
+                return Ret.createError(null, activityContext.getString(R.string.repo_state_is_merge_but_no_merge_head_found_plz_use_abort_merge_to_clean_state))
             }else if(repoState==Repository.StateT.REBASE_MERGE) {
                 if(rebaseGetCurCommit(repo) == null) {
-                    return Ret.createError(null, appContext.getString(R.string.repo_state_is_rebase_but_no_rebase_head_found_plz_use_abort_rebase_to_clean_state))
+                    return Ret.createError(null, activityContext.getString(R.string.repo_state_is_rebase_but_no_rebase_head_found_plz_use_abort_rebase_to_clean_state))
                 }
             }else if(repoState==Repository.StateT.CHERRYPICK) {
                 if(getCherryPickHeadCommit(repo).data == null) {
-                    return Ret.createError(null, appContext.getString(R.string.repo_state_is_cherrypick_but_no_cherrypick_head_found_plz_use_abort_cherrypick_to_clean_state))
+                    return Ret.createError(null, activityContext.getString(R.string.repo_state_is_cherrypick_but_no_cherrypick_head_found_plz_use_abort_cherrypick_to_clean_state))
                 }
             }
 
@@ -2042,7 +2042,7 @@ class Libgit2Helper {
             if(repoState!=Repository.StateT.MERGE && repoState!=Repository.StateT.REBASE_MERGE && repoState!=Repository.StateT.CHERRYPICK
                 && indexIsEmpty1
             ) {
-                return Ret.createError(null, appContext.getString(R.string.index_is_empty), Ret.ErrCode.indexIsEmpty)
+                return Ret.createError(null, activityContext.getString(R.string.index_is_empty), Ret.ErrCode.indexIsEmpty)
             }
 
             // is ready for commit
@@ -4110,7 +4110,6 @@ class Libgit2Helper {
                 //因为切换了分支，所以需要更新db
                 //先根据id查出最新的db数据
                 val repoDb = AppModel.singleInstanceHolder.dbContainer.repoRepository
-                val appContext = AppModel.singleInstanceHolder.activityContext
 //            val repoFromDb = repoDb.getById(repoId)
 //            if (repoFromDb == null) {
 //                requireShowToast(appContext.getString(R.string.err_when_querying_repo_info))
@@ -4183,7 +4182,7 @@ class Libgit2Helper {
             overwriteIfExisted:Boolean
         ):Ret<Triple<String, String, String>?>  //返回: 分支长名，短名，完整hash
         {
-            val appContext = AppModel.singleInstanceHolder.activityContext
+            val activityContext = AppModel.singleInstanceHolder.activityContext
 
             //这个如果检查，不会发生本地和远程分支同名的情况，例如同时存在 refs/remotes/origin/abc 和 refs/heads/origin/abc，好处是不容易混淆，坏处是增加了限制；
             //如果不检查，则可创建和远程分支同名分支，虽然全名处于不同命名空间（refs/remotes和refs/heads），但很多地方是通过短名解析的，所以实际上会混淆解析失败或者原本想
@@ -4210,7 +4209,7 @@ class Libgit2Helper {
                     val baseRef = resolveRefByName(repo, baseRefSpec)
                     if(baseRef == null) {
 //                        errCallback(appContext.getString(R.string.resolve_reference_failed))
-                        return Ret.createError(null,appContext.getString(R.string.resolve_reference_failed), Ret.ErrCode.refIsNull)
+                        return Ret.createError(null,activityContext.getString(R.string.resolve_reference_failed), Ret.ErrCode.refIsNull)
                     }
                     refOidStr = baseRef.peel(GitObject.Type.COMMIT).id().toString()  // peel出commit id
                 }
@@ -4219,7 +4218,7 @@ class Libgit2Helper {
 
             if(result.hasError()) {  //应该不会出错，但有可能出异常，呵呵
                 if(result.code == Ret.ErrCode.headIsNull) {
-                    result.msg = appContext.getString(R.string.resolve_repo_head_failed)
+                    result.msg = activityContext.getString(R.string.resolve_repo_head_failed)
                 }
                 //失败result
                 return result
@@ -4752,18 +4751,18 @@ class Libgit2Helper {
         //不会返回oid，只是和continue rebase的返回值一致，方便返回
         fun readyForContinueCherrypick(repo: Repository):Ret<Oid?> {
             val funName = "readyForContinueCherrypick"
-            val appContext = AppModel.singleInstanceHolder.activityContext
+            val activityContext = AppModel.singleInstanceHolder.activityContext
 
             try {
                 //20240814:目前libgit2只支持REBASE_MERGE，不支持 git默认的 REBASE_INTERACTIVE
                 if(repo.state() != Repository.StateT.CHERRYPICK) {
-                    return Ret.createError(null, appContext.getString(R.string.repo_not_in_cherrypick))
+                    return Ret.createError(null, activityContext.getString(R.string.repo_not_in_cherrypick))
                 }
                 if(repo.index().hasConflicts()) {
-                    return Ret.createError(null, appContext.getString(R.string.plz_resolve_conflicts_first))
+                    return Ret.createError(null, activityContext.getString(R.string.plz_resolve_conflicts_first))
                 }
                 if(getCherryPickHeadHash(repo).isBlank()) {
-                    return Ret.createError(null, appContext.getString(R.string.no_cherrypick_head_found))
+                    return Ret.createError(null, activityContext.getString(R.string.no_cherrypick_head_found))
                 }
 
                 return Ret.createSuccess(null)
@@ -5305,8 +5304,8 @@ class Libgit2Helper {
             val parentWorkdirPathNoSlashSuffix = getRepoWorkdirNoEndsWithSlash(repo)
             val parentDotGitModuleFile = File(parentWorkdirPathNoSlashSuffix, Cons.gitDotModules)
             val list = mutableListOf<SubmoduleDto>()
-            val appContext = AppModel.singleInstanceHolder.activityContext
-            val invalidUrlAlertText = appContext.getString(R.string.submodule_invalid_url_err)
+            val activityContext = AppModel.singleInstanceHolder.activityContext
+            val invalidUrlAlertText = activityContext.getString(R.string.submodule_invalid_url_err)
 
             Submodule.foreach(repo) { sm, name ->
                 try {

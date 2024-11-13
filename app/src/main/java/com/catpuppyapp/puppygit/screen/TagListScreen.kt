@@ -99,7 +99,7 @@ fun TagListScreen(
 ) {
     val homeTopBarScrollBehavior = AppModel.singleInstanceHolder.homeTopBarScrollBehavior
     val navController = AppModel.singleInstanceHolder.navController
-    val appContext = AppModel.singleInstanceHolder.activityContext
+    val activityContext = AppModel.singleInstanceHolder.activityContext
     val haptic = LocalHapticFeedback.current
     val scope = rememberCoroutineScope()
     val settings = remember { SettingsUtil.getSettingsSnapshot() }
@@ -124,7 +124,7 @@ fun TagListScreen(
         loading.value=true
     }
     val loadingOff = {
-        loadingText.value = appContext.getString(R.string.loading)
+        loadingText.value = activityContext.getString(R.string.loading)
         loading.value=false
     }
 
@@ -304,7 +304,7 @@ fun TagListScreen(
         ) {
             showDetailsDialog.value = false
             clipboardManager.setText(AnnotatedString(detailsString.value))
-            Msg.requireShow(appContext.getString(R.string.copied))
+            Msg.requireShow(activityContext.getString(R.string.copied))
         }
     }
 
@@ -320,15 +320,15 @@ fun TagListScreen(
         details@{
             val sb = StringBuilder()
             selectedItemList.value.forEach {
-                sb.append(appContext.getString(R.string.name)).append(": ").append(it.shortName).appendLine().appendLine()
-                sb.append(appContext.getString(R.string.full_name)).append(": ").append(it.name).appendLine().appendLine()
-                sb.append(appContext.getString(R.string.target)).append(": ").append(it.targetFullOidStr).appendLine().appendLine()
-                sb.append(appContext.getString(R.string.type)).append(": ").append(it.getType()).appendLine().appendLine()
+                sb.append(activityContext.getString(R.string.name)).append(": ").append(it.shortName).appendLine().appendLine()
+                sb.append(activityContext.getString(R.string.full_name)).append(": ").append(it.name).appendLine().appendLine()
+                sb.append(activityContext.getString(R.string.target)).append(": ").append(it.targetFullOidStr).appendLine().appendLine()
+                sb.append(activityContext.getString(R.string.type)).append(": ").append(it.getType()).appendLine().appendLine()
                 if(it.isAnnotated) {
-                    sb.append(appContext.getString(R.string.tag_oid)).append(": ").append(it.fullOidStr).appendLine().appendLine()
-                    sb.append(appContext.getString(R.string.author)).append(": ").append(it.getFormattedTaggerNameAndEmail()).appendLine().appendLine()
-                    sb.append(appContext.getString(R.string.date)).append(": ").append(it.getFormattedDate()).appendLine().appendLine()
-                    sb.append(appContext.getString(R.string.msg)).append(": ").append(it.msg).appendLine().appendLine()
+                    sb.append(activityContext.getString(R.string.tag_oid)).append(": ").append(it.fullOidStr).appendLine().appendLine()
+                    sb.append(activityContext.getString(R.string.author)).append(": ").append(it.getFormattedTaggerNameAndEmail()).appendLine().appendLine()
+                    sb.append(activityContext.getString(R.string.date)).append(": ").append(it.getFormattedDate()).appendLine().appendLine()
+                    sb.append(activityContext.getString(R.string.msg)).append(": ").append(it.msg).appendLine().appendLine()
                 }
 
                 sb.append("------------------------------").appendLine().appendLine()
@@ -395,7 +395,7 @@ fun TagListScreen(
             allTagsList= list.value,
             onCancel = { showTagFetchPushDialog.value=false },
             onSuccess = {
-                Msg.requireShow(appContext.getString(R.string.success))
+                Msg.requireShow(activityContext.getString(R.string.success))
             },
             onErr = { e->
                 val errMsgPrefix = "${fetchPushDialogTitle.value} err: "
@@ -413,10 +413,10 @@ fun TagListScreen(
         requireDel.value = true
         requireDelRemoteChecked.value = false  //默认不要勾选同时删除远程分支，要不然容易误删
         trueFetchFalsePush.value = false
-        fetchPushDialogTitle.value = appContext.getString(R.string.delete_tags)
+        fetchPushDialogTitle.value = activityContext.getString(R.string.delete_tags)
         showForce.value = false
 
-        loadingTextForFetchPushDialog.value = appContext.getString(R.string.deleting)
+        loadingTextForFetchPushDialog.value = activityContext.getString(R.string.deleting)
 
         showTagFetchPushDialog.value = true
 
@@ -425,10 +425,10 @@ fun TagListScreen(
     val initPushTagDialog= {
         requireDel.value = false
         trueFetchFalsePush.value = false
-        fetchPushDialogTitle.value = appContext.getString(R.string.push_tags)
+        fetchPushDialogTitle.value = activityContext.getString(R.string.push_tags)
         showForce.value = true
 
-        loadingTextForFetchPushDialog.value = appContext.getString(R.string.pushing)
+        loadingTextForFetchPushDialog.value = activityContext.getString(R.string.pushing)
 
         showTagFetchPushDialog.value = true
     }
@@ -436,10 +436,10 @@ fun TagListScreen(
     val initFetchTagDialog = {
         requireDel.value = false
         trueFetchFalsePush.value = true
-        fetchPushDialogTitle.value = appContext.getString(R.string.fetch_tags)
+        fetchPushDialogTitle.value = activityContext.getString(R.string.fetch_tags)
         showForce.value = true
 
-        loadingTextForFetchPushDialog.value = appContext.getString(R.string.fetching)
+        loadingTextForFetchPushDialog.value = activityContext.getString(R.string.fetching)
 
         showTagFetchPushDialog.value = true
 
@@ -522,7 +522,7 @@ fun TagListScreen(
         ) {
             showSelectedItemsShortDetailsDialog.value = false
             clipboardManager.setText(AnnotatedString(selectedItemsShortDetailsStr.value))
-            Msg.requireShow(appContext.getString(R.string.copied))
+            Msg.requireShow(activityContext.getString(R.string.copied))
         }
     }
 
@@ -821,7 +821,7 @@ fun TagListScreen(
             doJobThenOffLoading(
                 loadingOn = loadingOn,
                 loadingOff = loadingOff,
-                loadingText = appContext.getString(R.string.loading),
+                loadingText = activityContext.getString(R.string.loading),
             ) {
 //                selectedItemList.value.clear()  //清下已选中条目列表
                 list.value.clear()  //先清一下list，然后可能添加也可能不添加

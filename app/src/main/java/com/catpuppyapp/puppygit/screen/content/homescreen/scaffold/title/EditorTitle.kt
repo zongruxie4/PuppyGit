@@ -46,7 +46,6 @@ fun EditorTitle(editorPageShowingFilePath: MutableState<String>,
                 editorOpenFileErr:Boolean
                 ) {
     val haptic = LocalHapticFeedback.current
-    val appContext = LocalContext.current
 
     if(editorPageShowingFilePath.value.isNotBlank()) {
         val fileName = getFileNameFromCanonicalPath(editorPageShowingFilePath.value)

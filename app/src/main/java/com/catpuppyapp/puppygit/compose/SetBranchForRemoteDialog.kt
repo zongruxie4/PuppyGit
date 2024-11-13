@@ -1,6 +1,5 @@
 package com.catpuppyapp.puppygit.compose
 
-import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -48,7 +47,7 @@ fun SetBranchForRemoteDialog(
     onCancel: () -> Unit,
     onOk: (remoteName:String, isAll: Boolean, branchCsvStr: String) -> Unit
 ) {
-    val appContext = LocalContext.current
+    val activityContext = LocalContext.current
     val isAll = rememberSaveable { mutableStateOf(isAllInitValue)}
 //    val branchList = StateUtil.getCustomSaveableStateList(keyTag = stateKeyTag, keyName = "branchList") {
 //        listOf<String>()
@@ -58,7 +57,7 @@ fun SetBranchForRemoteDialog(
 
     AlertDialog(
         title = {
-            Text(text = appContext.getString(R.string.set_branch_mode))
+            Text(text = activityContext.getString(R.string.set_branch_mode))
         },
         text = {
             ScrollableColumn {
@@ -69,7 +68,7 @@ fun SetBranchForRemoteDialog(
 
 
                 Row {
-                    Text(text = appContext.getString(R.string.remote) + ": ")
+                    Text(text = activityContext.getString(R.string.remote) + ": ")
                     Text(text = remoteName,
                         fontWeight = FontWeight.ExtraBold
                     )
@@ -97,7 +96,7 @@ fun SetBranchForRemoteDialog(
                         onClick = null // null recommended for accessibility with screenreaders
                     )
                     Text(
-                        text = appContext.getString(R.string.all),
+                        text = activityContext.getString(R.string.all),
                         style = MaterialTheme.typography.bodyLarge,
                         modifier = Modifier.padding(start = 10.dp)
                     )
@@ -122,7 +121,7 @@ fun SetBranchForRemoteDialog(
                         onClick = null // null recommended for accessibility with screenreaders
                     )
                     Text(
-                        text = appContext.getString(R.string.custom),
+                        text = activityContext.getString(R.string.custom),
                         style = MaterialTheme.typography.bodyLarge,
                         modifier = Modifier.padding(start = 10.dp)
                     )
@@ -148,14 +147,14 @@ fun SetBranchForRemoteDialog(
         onDismissRequest = { onCancel() },
         dismissButton = {
             TextButton(onClick = { onCancel() }) {
-                Text(text = appContext.getString(R.string.cancel))
+                Text(text = activityContext.getString(R.string.cancel))
             }
         },
         confirmButton = {
             TextButton(
                 enabled = isAll.value || branchCsvStr.value.isNotBlank(),
                 onClick = { onOk(remoteName, isAll.value, branchCsvStr.value) }) {
-                Text(text = appContext.getString(R.string.save))
+                Text(text = activityContext.getString(R.string.save))
             }
         }
     )
@@ -167,7 +166,7 @@ fun SetBranchForRemoteDialog(
                 Repository.open(curRepo.fullSavePath).use { repo ->
                     val remote = Libgit2Helper.resolveRemote(repo, remoteName)
                     if (remote == null) {
-                        Msg.requireShowLongDuration(appContext.getString(R.string.err_resolve_remote_failed))
+                        Msg.requireShowLongDuration(activityContext.getString(R.string.err_resolve_remote_failed))
                         return@doJobThenOffLoading
                     }
 

@@ -161,7 +161,7 @@ fun FilesInnerPage(
 ) {
     val allRepoParentDir = AppModel.singleInstanceHolder.allRepoParentDir;
 //    val appContext = AppModel.singleInstanceHolder.appContext;
-    val appContext = LocalContext.current;
+    val activityContext = LocalContext.current;
     val exitApp = AppModel.singleInstanceHolder.exitApp
     val haptic = AppModel.singleInstanceHolder.haptic
 
@@ -331,7 +331,7 @@ fun FilesInnerPage(
                 if(f.canRead()) {
                     goToPath(finallyPath)
                 }else { // can't read path: usually by path non-exists or no permission to read
-                    Msg.requireShow(appContext.getString(R.string.cant_read_path))
+                    Msg.requireShow(activityContext.getString(R.string.cant_read_path))
                 }
 
             }
@@ -349,7 +349,7 @@ fun FilesInnerPage(
             val listFromDb = repoDb.getReadyRepoList(requireSyncRepoInfoWithGit = false)
 
             if(listFromDb.isEmpty()) {
-                Msg.requireShowLongDuration(appContext.getString(R.string.repo_list_is_empty))
+                Msg.requireShowLongDuration(activityContext.getString(R.string.repo_list_is_empty))
                 return@job
             }
 
@@ -384,7 +384,7 @@ fun FilesInnerPage(
                 changeStateTriggerRefreshPage(needRefreshFilesPage)
             },
             onOkCallback={
-                Msg.requireShow(appContext.getString(R.string.success))
+                Msg.requireShow(activityContext.getString(R.string.success))
             }
         )
     }
@@ -444,7 +444,7 @@ fun FilesInnerPage(
     // 复制真实路径到剪贴板，显示提示copied
     val copyThenShowCopied = { text:String ->
         clipboardManager.setText(AnnotatedString(text))
-        Msg.requireShow(appContext.getString(R.string.copied))
+        Msg.requireShow(activityContext.getString(R.string.copied))
     }
 
     // 复制app内路径到剪贴板，显示提示copied
@@ -456,14 +456,14 @@ fun FilesInnerPage(
         try {
             val repo = Libgit2Helper.findRepoByPath(realFullPath)
             if(repo == null) {
-                Msg.requireShow(appContext.getString(R.string.no_repo_found))
+                Msg.requireShow(activityContext.getString(R.string.no_repo_found))
             }else {
                 repo.use {
                     val realtivePath = Libgit2Helper.getRelativePathUnderRepo(Libgit2Helper.getRepoWorkdirNoEndsWithSlash(it), realFullPath)
 
                     // well, the repo already found, but the path got null, usually it happens when trying to copy a repo-relative-path from a repo folder
                     if(realtivePath == null) {
-                        Msg.requireShow(appContext.getString(R.string.path_not_under_repo))
+                        Msg.requireShow(activityContext.getString(R.string.path_not_under_repo))
                     }else {
                         copyThenShowCopied(realtivePath)
                     }
@@ -525,7 +525,7 @@ fun FilesInnerPage(
 //            copyPath(it.fullPath)
 //        },
         fileHistory@{
-            goToFileHistory(it.fullPath, appContext)
+            goToFileHistory(it.fullPath, activityContext)
         },
         copyRepoRelativePath@{
             copyRepoRelativePath(it.fullPath)
@@ -568,7 +568,7 @@ fun FilesInnerPage(
     val successImportCount = rememberSaveable{mutableIntStateOf(0)}
     val failedImportCount = rememberSaveable{mutableIntStateOf(0)}
 
-    val defaultLoadingText = appContext.getString(R.string.loading)
+    val defaultLoadingText = activityContext.getString(R.string.loading)
     val isLoading = rememberSaveable { mutableStateOf(false)}
     val loadingText = rememberSaveable { mutableStateOf(defaultLoadingText)}
     val loadingOn = { msg:String ->
@@ -600,7 +600,7 @@ fun FilesInnerPage(
     val isBackHandlerEnable = rememberSaveable { mutableStateOf(true)}
 
     val backHandlerOnBack = getBackHandler(
-        appContext,
+        activityContext,
         isFileSelectionMode,
         filesPageQuitSelectionMode,
         currentPath,
@@ -638,7 +638,7 @@ fun FilesInnerPage(
                     }
                     Row (modifier = Modifier.clickable {
                         clipboardManager.setText(AnnotatedString(failedImportListStr.value))
-                        Msg.requireShow(appContext.getString(R.string.copied))  //这里如果用 Msg.requierShow() 还得刷新页面才能看到信息，这个操作没必要刷新页面，不如直接用Toast，不过Toast怎么实现的？不用刷新页面吗？
+                        Msg.requireShow(activityContext.getString(R.string.copied))  //这里如果用 Msg.requierShow() 还得刷新页面才能看到信息，这个操作没必要刷新页面，不如直接用Toast，不过Toast怎么实现的？不用刷新页面吗？
                         //test x能) 测试下刷新页面是否就能看到信息且不影响弹窗（当然不会影响，因为显示弹窗的状态变量还是真啊！只要状态没变，页面还是一样）
 //                        Msg.requireShow(appContext.getString(R.string.copied))  //这里如果用 Msg.requierShow() 还得刷新页面才能看到信息，不如直接用Toast
 //                        changeStateTriggerRefreshPage(needRefreshFilesPage)
@@ -721,7 +721,7 @@ fun FilesInnerPage(
         ) {
             try {
                 val newFileName = renameFileName.value.text
-                val fileOrFolderNameCheckRet = checkFileOrFolderNameAndTryCreateFile(newFileName, appContext)
+                val fileOrFolderNameCheckRet = checkFileOrFolderNameAndTryCreateFile(newFileName, activityContext)
                 if(fileOrFolderNameCheckRet.hasError()) {  // 检测是否有坏字符，例如路径分隔符
                     renameHasErr.value = true
                     renameErrText.value = fileOrFolderNameCheckRet.msg
@@ -729,7 +729,7 @@ fun FilesInnerPage(
                     //检测新旧文件名是否相同 以及 新文件名是否已经存在，两者都视为文件已存在
                 }else if( newFileName == renameFileItemDto.value.name || isPathExists(File(renameFileItemDto.value.fullPath).parent, newFileName)) {
                     renameHasErr.value=true
-                    renameErrText.value = appContext.getString(R.string.file_already_exists)
+                    renameErrText.value = activityContext.getString(R.string.file_already_exists)
                 }else {  //执行重命名文件
                     showRenameDialog.value = false  //关闭弹窗
                     //执行重命名
@@ -745,9 +745,9 @@ fun FilesInnerPage(
                                     selectedItems.value.add(newNameDto)
                                 }
 //                            selectedItems.requireRefreshView()
-                                Msg.requireShow(appContext.getString(R.string.success))
+                                Msg.requireShow(activityContext.getString(R.string.success))
                             }else {
-                                Msg.requireShow(appContext.getString(R.string.error))
+                                Msg.requireShow(activityContext.getString(R.string.error))
                             }
                         }catch (e:Exception) {
                             Msg.requireShowLongDuration("rename failed:"+e.localizedMessage)
@@ -776,10 +776,10 @@ fun FilesInnerPage(
                 try {
                     // if current path already deleted, then show err and abort create
                     if(!File(currentPath.value).exists()) {
-                        throw RuntimeException(appContext.getString(R.string.current_dir_doesnt_exist_anymore))
+                        throw RuntimeException(activityContext.getString(R.string.current_dir_doesnt_exist_anymore))
                     }
 
-                    val fileOrFolderNameCheckRet = checkFileOrFolderNameAndTryCreateFile(fileOrFolderName, appContext)
+                    val fileOrFolderNameCheckRet = checkFileOrFolderNameAndTryCreateFile(fileOrFolderName, activityContext)
                     if(fileOrFolderNameCheckRet.hasError()){
 //                        Msg.requireShowLongDuration(pathCheckRet.msg)
                         createFileOrFolderErrMsg.value = fileOrFolderNameCheckRet.msg
@@ -935,7 +935,7 @@ fun FilesInnerPage(
             try {
                 val repo = Libgit2Helper.findRepoByPath(fullPath)
                 if(repo==null) {
-                    Msg.requireShow(appContext.getString(R.string.not_found))
+                    Msg.requireShow(activityContext.getString(R.string.not_found))
                 }else{
                     val repoWorkDir = Libgit2Helper.getRepoWorkdirNoEndsWithSlash(repo)
                     val onlyReturnReadyRepo = !trueGoToReposFalseGoToChangeList  // if go to repos page, no need require repo ready; if go to changelist, require a ready repo
@@ -945,7 +945,7 @@ fun FilesInnerPage(
                         requireSyncRepoInfoWithGit = false
                     )
                     if(target==null) {
-                        Msg.requireShow(appContext.getString(R.string.not_found))
+                        Msg.requireShow(activityContext.getString(R.string.not_found))
                     }else {
                         if(trueGoToReposFalseGoToChangeList) {
                             goToRepoPage(target.id)
@@ -1282,7 +1282,7 @@ fun FilesInnerPage(
             //执行删除
             doJobThenOffLoading (loadingOn = loadingOn, loadingOff=loadingOff) {
                 if(selectedItems.value.isEmpty()) {  //例如，我选择了文件，然后对文件执行了重命名，导致已选中条目被移除，就会发生选中条目列表为空或缺少了条目的情况
-                    Msg.requireShow(appContext.getString(R.string.no_item_selected))
+                    Msg.requireShow(activityContext.getString(R.string.no_item_selected))
                     //退出选择模式和刷新页面
                     filesPageQuitSelectionMode()
                     changeStateTriggerRefreshPage(needRefreshFilesPage)
@@ -1291,7 +1291,7 @@ fun FilesInnerPage(
 
                 var repoWillUse = Libgit2Helper.findRepoByPath(selectedItems.value[0].fullPath)
                 if(repoWillUse == null) {
-                    Msg.requireShow(appContext.getString(R.string.err_dir_is_not_a_git_repo))
+                    Msg.requireShow(activityContext.getString(R.string.err_dir_is_not_a_git_repo))
                     //退出选择模式和刷新页面
                     filesPageQuitSelectionMode()
                     changeStateTriggerRefreshPage(needRefreshFilesPage)
@@ -1326,7 +1326,7 @@ fun FilesInnerPage(
 
                 }
 
-                Msg.requireShow(appContext.getString(R.string.success))
+                Msg.requireShow(activityContext.getString(R.string.success))
 
                 //退出选择模式并刷新目录
                 filesPageQuitSelectionMode()
@@ -1362,7 +1362,7 @@ fun FilesInnerPage(
             //执行删除
             doJobThenOffLoading (loadingOn = loadingOn, loadingOff=loadingOff) {
                 if(selectedItems.value.isEmpty()) {  //例如，我选择了文件，然后对文件执行了重命名，导致已选中条目被移除，就会发生选中条目列表为空或缺少了条目的情况
-                    Msg.requireShow(appContext.getString(R.string.no_item_selected))
+                    Msg.requireShow(activityContext.getString(R.string.no_item_selected))
                     //退出选择模式和刷新页面
                     filesPageQuitSelectionMode()
                     changeStateTriggerRefreshPage(needRefreshFilesPage)
@@ -1382,7 +1382,7 @@ fun FilesInnerPage(
                 }
 
 
-                Msg.requireShow(appContext.getString(R.string.success))
+                Msg.requireShow(activityContext.getString(R.string.success))
                 //退出选择模式并刷新目录
                 filesPageQuitSelectionMode()
                 changeStateTriggerRefreshPage(needRefreshFilesPage)
@@ -1402,9 +1402,9 @@ fun FilesInnerPage(
             val ret = FsUtils.copyOrMoveOrExportFile(srcList.map { it.toFile() }, File(targetFullPath), requireDeleteSrc)
             if(ret.hasError()) {
                 if(ret.code == Ret.ErrCode.srcListIsEmpty) {
-                    Msg.requireShow(appContext.getString(R.string.no_item_selected))
+                    Msg.requireShow(activityContext.getString(R.string.no_item_selected))
                 }else if(ret.code == Ret.ErrCode.targetIsFileButExpectDir) {
-                    Msg.requireShow(appContext.getString(R.string.err_target_is_file_but_expect_dir))
+                    Msg.requireShow(activityContext.getString(R.string.err_target_is_file_but_expect_dir))
                 }
 
                 //退出选择模式和刷新页面
@@ -1415,7 +1415,7 @@ fun FilesInnerPage(
 
             //执行到这就说明操作成功完成了
             //显示成功提示
-            Msg.requireShow(appContext.getString(R.string.success))
+            Msg.requireShow(activityContext.getString(R.string.success))
 
             //退出选择模式和刷新页面
             filesPageQuitSelectionMode()
@@ -1443,20 +1443,20 @@ fun FilesInnerPage(
     val chooseDirLauncher = rememberLauncherForActivityResult(ActivityResultContracts.OpenDocumentTree()) exportSaf@{ uri ->
         //执行导出
         if(uri!=null) {
-            doJobThenOffLoading(loadingOn, loadingOff, appContext.getString(R.string.exporting)) {
-                val chosenDir = DocumentFile.fromTreeUri(appContext, uri)
+            doJobThenOffLoading(loadingOn, loadingOff, activityContext.getString(R.string.exporting)) {
+                val chosenDir = DocumentFile.fromTreeUri(activityContext, uri)
                 if(chosenDir==null) {
-                    Msg.requireShow(appContext.getString(R.string.err_get_export_dir_failed))
+                    Msg.requireShow(activityContext.getString(R.string.err_get_export_dir_failed))
                     return@doJobThenOffLoading
                 }
 //            appContext.contentResolver.openOutputStream(chosenDir?.createFile("*/*", "test.txt")?.uri!!)
                 try {
-                    FsUtils.recursiveExportFiles_Saf(appContext.contentResolver, chosenDir, selectedItems.value.map<FileItemDto, File> { it.toFile() })
+                    FsUtils.recursiveExportFiles_Saf(activityContext.contentResolver, chosenDir, selectedItems.value.map<FileItemDto, File> { it.toFile() })
                     // throw RuntimeException("测试异常！")  passed
-                    Msg.requireShow(appContext.getString(R.string.export_success))
+                    Msg.requireShow(activityContext.getString(R.string.export_success))
                 }catch (e:Exception) {
                     MyLog.e(TAG, "#exportSaf@ err:"+e.stackTraceToString())
-                    val exportErrStrRes = appContext.getString(R.string.export_err)
+                    val exportErrStrRes = activityContext.getString(R.string.export_err)
                     Msg.requireShow(exportErrStrRes)
                     exportErrorMsg.value = "$exportErrStrRes: "+e.localizedMessage
                     showExportErrorDialog.value = true
@@ -1464,7 +1464,7 @@ fun FilesInnerPage(
             }
 
         }else {  //用户如果没选目录，uri就会等于null
-            Msg.requireShow(appContext.getString(R.string.export_canceled))
+            Msg.requireShow(activityContext.getString(R.string.export_canceled))
         }
     }
 
@@ -1482,7 +1482,7 @@ fun FilesInnerPage(
                 onCancel = { showInitRepoDialog.value = false}
             ) {
                 showInitRepoDialog.value=false
-                doJobThenOffLoading(loadingOn, loadingOff, appContext.getString(R.string.loading)) {
+                doJobThenOffLoading(loadingOn, loadingOff, activityContext.getString(R.string.loading)) {
                     try {
                         var successCnt = 0
                         selctedDirs.forEach { dirPath ->
@@ -1495,7 +1495,7 @@ fun FilesInnerPage(
                             }
                         }
 
-                        Msg.requireShowLongDuration(replaceStringResList(appContext.getString(R.string.n_inited), listOf(""+successCnt)))
+                        Msg.requireShowLongDuration(replaceStringResList(activityContext.getString(R.string.n_inited), listOf(""+successCnt)))
                     }finally {
                         changeStateTriggerRefreshPage(needRefreshFilesPage)
                     }
@@ -1532,7 +1532,7 @@ fun FilesInnerPage(
                                 modifier = MyStyleKt.ClickableText.modifier.clickable {
                                     // grant permission for read/write external storage
                                     if (activity == null) {
-                                        Msg.requireShowLongDuration(appContext.getString(R.string.please_go_to_system_settings_allow_manage_storage))
+                                        Msg.requireShowLongDuration(activityContext.getString(R.string.please_go_to_system_settings_allow_manage_storage))
                                     } else {
                                         activity.getStoragePermission()
                                     }
@@ -1557,7 +1557,7 @@ fun FilesInnerPage(
                 okBtnEnabled = selctedDirs.isNotEmpty(),
                 onCancel = { showImportAsRepoDialog.value = false },
             ) {
-                doJobThenOffLoading(loadingOn, loadingOff, appContext.getString(R.string.importing)) {
+                doJobThenOffLoading(loadingOn, loadingOff, activityContext.getString(R.string.importing)) {
                     val importRepoResult = ImportRepoResult()
                     try {
                         selctedDirs.forEach { dirPath ->
@@ -1570,7 +1570,7 @@ fun FilesInnerPage(
 
                         showImportAsRepoDialog.value = false
 
-                        Msg.requireShowLongDuration(replaceStringResList(appContext.getString(R.string.n_imported), listOf(""+importRepoResult.success)))
+                        Msg.requireShowLongDuration(replaceStringResList(activityContext.getString(R.string.n_imported), listOf(""+importRepoResult.success)))
                     }catch (e:Exception) {
                         //出错的时候，importRepoResult的计数不一定准，有可能比实际成功和失败的少，不过不可能多
                         MyLog.e(TAG, "import repo from FilesPage err: importRepoResult=$importRepoResult, err="+e.stackTraceToString())
@@ -1657,7 +1657,7 @@ fun FilesInnerPage(
         ) {
             showSelectedItemsShortDetailsDialog.value = false
             clipboardManager.setText(AnnotatedString(selectedItemsShortDetailsStr.value))
-            Msg.requireShow(appContext.getString(R.string.copied))
+            Msg.requireShow(activityContext.getString(R.string.copied))
         }
     }
 
@@ -1789,7 +1789,7 @@ fun FilesInnerPage(
         )
         val selectionModeIconOnClickList = listOf(
             importFiles@{
-                doJobThenOffLoading (loadingOn = loadingOn, loadingOff=loadingOff, loadingText=appContext.getString(R.string.importing)) {
+                doJobThenOffLoading (loadingOn = loadingOn, loadingOff=loadingOff, loadingText=activityContext.getString(R.string.importing)) {
 //                    val successList = mutableListOf<String>()
 //                    val failedList = mutableListOf<String>()
                     val sb = StringBuilder()
@@ -1825,7 +1825,7 @@ fun FilesInnerPage(
                                 //x 作废)执行到这有可能获取srcDocumentFile失败，其值为null；也有可能成功，且判断其是文件，下面不再做判断，直接拷贝，反正有异常捕获兜底
 
                                 //尝试获取真实文件名
-                                var srcFileName = FsUtils.getFileRealNameFromUri(appContext, it)
+                                var srcFileName = FsUtils.getFileRealNameFromUri(activityContext, it)
                                 if(srcFileName==null) {  //获取真实文件名失败
                                     //尝试获取uri中的文件名，可能和真实文件名不符
                                     srcFileName = src.name
@@ -1843,7 +1843,7 @@ fun FilesInnerPage(
                                 //从这里到操作成功，curTarget和previousFilePath都应该不同，操作成功后，两者相同
                                 curTarget = File(target.canonicalPath)  //获得target后，立刻创建一个拷贝，用来在异常时判断是否更新了target来决定是否删除target
 //                                println("target.canonicalPath:::"+target.canonicalPath)
-                                val inputStream = appContext.contentResolver.openInputStream(it)
+                                val inputStream = activityContext.contentResolver.openInputStream(it)
                                 if(inputStream==null) {
                                     failedCnt++
                                     sb.appendLine("'${it.path}'"+": can't read!")
@@ -1891,7 +1891,7 @@ fun FilesInnerPage(
                     failedImportListStr.value = sb.toString()
 
                     if(failedCnt<1) {  //成功显示提示信息
-                        Msg.requireShow(appContext.getString(R.string.import_success))
+                        Msg.requireShow(activityContext.getString(R.string.import_success))
                     }else {  //失败显示弹窗，可复制失败结果
 //                        successImportList.clear()
 //                        successImportList.addAll(successList)
@@ -1955,7 +1955,7 @@ fun FilesInnerPage(
                 //onOk
                 showExportErrorDialog.value=false
                 clipboardManager.setText(AnnotatedString(exportErrorMsg.value))
-                Msg.requireShow(appContext.getString(R.string.copied))
+                Msg.requireShow(activityContext.getString(R.string.copied))
                 exportErrorMsg.value=""  //清空错误信息，节省内存？其实清不清都行，不过不清对用户也不可见了，索性清了吧
         }
     }
@@ -1991,7 +1991,7 @@ fun FilesInnerPage(
             showExportDialog.value=false
             val ret = FsUtils.getExportDirUnderPublicDocument()
             if(ret.hasError() || ret.data==null || !ret.data!!.exists()) {
-                Msg.requireShowLongDuration(appContext.getString(R.string.get_default_export_folder_failed_plz_choose_one))
+                Msg.requireShowLongDuration(activityContext.getString(R.string.get_default_export_folder_failed_plz_choose_one))
                 //如果获取默认export目录失败，弹出文件选择器，让用户选个目录
                 chooseDirLauncher.launch(null)  //这里传的null是弹出的界面的起始文件夹
                 return@onOk
@@ -2164,7 +2164,7 @@ fun FilesInnerPage(
                 getListState,
                 loadingOn,
                 loadingOff,
-                appContext,
+                activityContext,
                 requireImportFile=requireImportFile,
                 requireImportUriList = requireImportUriList,
                 filesPageQuitSelectionMode = filesPageQuitSelectionMode,

@@ -41,14 +41,14 @@ fun RequireCommitMsgDialog(
     onOk: (msg:String) -> Unit,
     onCancel: () -> Unit,
 ) {
-    val appContext = LocalContext.current
+    val activityContext = LocalContext.current
 
     val repoStateIsRebase= repoState == Repository.StateT.REBASE_MERGE.bit
 
     val repoStateIsCherrypick = repoState == Repository.StateT.CHERRYPICK.bit
 
     fun getMsgEmptyNote():String {
-        return appContext.getString(if(repoStateIsRebase || repoStateIsCherrypick) R.string.leave_msg_empty_will_use_origin_commit_s_msg  else R.string.you_can_leave_msg_empty_will_auto_gen_one)
+        return activityContext.getString(if(repoStateIsRebase || repoStateIsCherrypick) R.string.leave_msg_empty_will_use_origin_commit_s_msg  else R.string.you_can_leave_msg_empty_will_auto_gen_one)
     }
 
     //勾选amend时用此变量替代commitMsg

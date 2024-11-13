@@ -58,7 +58,7 @@ fun CreateBranchDialog(
     onFinally:()->Unit, //在 try...catch...finally，finally代码块里的代码
 //    onOk: (branchName:String, baseRefSpec:String, basedHead:Boolean, createByRef:Boolean, needCheckout:Boolean, forceCheckout:Boolean, overwriteIfExist:Boolean) -> Unit,
 ) {
-    val appContext = AppModel.singleInstanceHolder.activityContext
+    val activityContext = AppModel.singleInstanceHolder.activityContext
 
     val repoId=curRepo.id
     //文案提示是“基于当前分支xxx（分支名）创建新分支(btw：如果想基于某个提交创建分支，可以去commit记录页面)”，以及强调“如果勾选checkout将立即检出分支，但如果有未提交数据，可能会丢失”
@@ -70,7 +70,7 @@ fun CreateBranchDialog(
     val optHEAD = 0;
     val optCommit = 1;
     val selectedOption = rememberSaveable{mutableIntStateOf(optHEAD)}
-    val createMethodList = listOf(appContext.getString(R.string.head), appContext.getString(R.string.commit))
+    val createMethodList = listOf(activityContext.getString(R.string.head), activityContext.getString(R.string.commit))
     val userInputHash = rememberSaveable { mutableStateOf("")}
 
 
@@ -265,16 +265,16 @@ fun CreateBranchDialog(
                             val createBranchRet = doCreateBranch(branchName, basedHead, actuallyBaseRefSpecCommitHash, createByRef, overwriteIfExist.value)
 
                             if(createBranchRet.hasError()) {  //创建分支失败
-                                throw RuntimeException(appContext.getString(R.string.create_branch_err)+": "+createBranchRet.msg)
+                                throw RuntimeException(activityContext.getString(R.string.create_branch_err)+": "+createBranchRet.msg)
                             }
 
                             //执行到这，分支创建成功，接下来检查是否勾选了checkout，若勾选了则执行checkout
-                            Msg.requireShow(appContext.getString(R.string.create_branch_success))
+                            Msg.requireShow(activityContext.getString(R.string.create_branch_success))
 
 
 
                             if(needCheckout) {
-                                Msg.requireShow(appContext.getString(R.string.checking_out))
+                                Msg.requireShow(activityContext.getString(R.string.checking_out))
                                 //执行checkout
                                 //createBranchRet.data 是创建成功后的分支的完整引用和短引用pair，只要创建分支返回成功，肯定不是null
                                 //第3个参数是当前分支的上游，因为是刚创建的分支，所以上游肯定是空
@@ -284,11 +284,11 @@ fun CreateBranchDialog(
                                 val checkoutRet = doCheckoutBranch(branchName, branchFullRefspec, upstreamBranchShortNameParam, forceCheckout.value)
 
                                 if(checkoutRet.hasError()) {
-                                    throw RuntimeException(appContext.getString(R.string.checkout_error)+": "+checkoutRet.msg)
+                                    throw RuntimeException(activityContext.getString(R.string.checkout_error)+": "+checkoutRet.msg)
                                 }
 
                                 //checkout成功
-                                Msg.requireShow(appContext.getString(R.string.checkout_success))
+                                Msg.requireShow(activityContext.getString(R.string.checkout_success))
 
                             }
 

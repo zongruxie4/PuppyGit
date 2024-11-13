@@ -83,7 +83,7 @@ fun FileEditor(requestFromParent:MutableState<String>,
                lineNumFontSize:MutableIntState,
                fontSize:MutableIntState,
 ) {
-    val appContext = LocalContext.current
+    val activityContext = LocalContext.current
     val haptic = AppModel.singleInstanceHolder.haptic
 
     val inDarkTheme = Theme.inDarkTheme
@@ -150,7 +150,7 @@ fun FileEditor(requestFromParent:MutableState<String>,
             isContentChanged.value=true
             editorPageIsContentSnapshoted.value=false
             //显示通知
-            Msg.requireShow(appContext.getString(R.string.deleted))
+            Msg.requireShow(activityContext.getString(R.string.deleted))
         }
     }
 
@@ -270,13 +270,13 @@ fun FileEditor(requestFromParent:MutableState<String>,
                 selectedLinesCount = textEditorState.value.getSelectedCount(),
                 onDelete = onDelete@{
                     if (readOnlyMode) {
-                        Msg.requireShow(appContext.getString(R.string.readonly_cant_edit))
+                        Msg.requireShow(activityContext.getString(R.string.readonly_cant_edit))
                         return@onDelete
                     }
 
                     val selectedLinesNum = textEditorState.value.getSelectedCount();
                     if (selectedLinesNum < 1) {
-                        Msg.requireShow(appContext.getString(R.string.no_line_selected))
+                        Msg.requireShow(activityContext.getString(R.string.no_line_selected))
                         return@onDelete
                     }
 
@@ -285,12 +285,12 @@ fun FileEditor(requestFromParent:MutableState<String>,
                 onCopy = onCopy@{
                     val selectedLinesNum = textEditorState.value.getSelectedCount();
                     if (selectedLinesNum < 1) {
-                        Msg.requireShow(appContext.getString(R.string.no_line_selected))
+                        Msg.requireShow(activityContext.getString(R.string.no_line_selected))
                         return@onCopy
                     }
 
                     clipboardManager.setText(AnnotatedString(textEditorState.value.getSelectedText()))
-                    Msg.requireShow(replaceStringResList(appContext.getString(R.string.n_lines_copied), listOf(selectedLinesNum.toString())), )
+                    Msg.requireShow(replaceStringResList(activityContext.getString(R.string.n_lines_copied), listOf(selectedLinesNum.toString())), )
                     textEditorState.value = textEditorState.value.createCopiedState()
                 },
 

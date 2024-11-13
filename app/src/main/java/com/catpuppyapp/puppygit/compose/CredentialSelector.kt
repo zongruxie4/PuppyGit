@@ -24,7 +24,7 @@ fun CredentialSelector(
     title:String = stringResource(R.string.select_credential),
 ) {
 
-    val appContext = AppModel.singleInstanceHolder.activityContext
+    val activityContext = AppModel.singleInstanceHolder.activityContext
 
     val note = rememberSaveable { mutableStateOf("")}
 
@@ -38,9 +38,9 @@ fun CredentialSelector(
 
     doActIfIndexGood(selectedCredentialIdx.intValue, credentialList) {
         if(SpecialCredential.NONE.equals_to(it)) {
-            note.value = appContext.getString(R.string.no_credential_will_be_used)
+            note.value = activityContext.getString(R.string.no_credential_will_be_used)
         }else if(SpecialCredential.MatchByDomain.equals_to(it)) {
-            note.value = appContext.getString(R.string.credential_match_by_domain_note)
+            note.value = activityContext.getString(R.string.credential_match_by_domain_note)
         }else{
             note.value = ""
         }

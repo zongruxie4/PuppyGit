@@ -64,7 +64,7 @@ fun CredentialNewOrEdit(
     naviUp: () -> Unit,
 ) {
 
-    val appContext = LocalContext.current
+    val activityContext = LocalContext.current
 
     val isEditMode = rememberSaveable { mutableStateOf(false)}
     val repoFromDb = mutableCustomStateOf(keyTag = stateKeyTag, keyName = "repoFromDb", initValue = RepoEntity(id = ""))
@@ -211,7 +211,7 @@ fun CredentialNewOrEdit(
             }
         }
     }
-    val loadingText = rememberSaveable { mutableStateOf(appContext.getString(R.string.loading))}
+    val loadingText = rememberSaveable { mutableStateOf(activityContext.getString(R.string.loading))}
 
     val spacerPadding = 2.dp
     Scaffold(

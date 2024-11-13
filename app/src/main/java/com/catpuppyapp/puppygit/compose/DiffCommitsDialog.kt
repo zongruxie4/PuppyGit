@@ -33,10 +33,10 @@ fun DiffCommitsDialog(
 ) {
     val repoId = curRepo.id
 
-    val appContext = AppModel.singleInstanceHolder.activityContext
+    val activityContext = AppModel.singleInstanceHolder.activityContext
     val navController = AppModel.singleInstanceHolder.navController
 
-    ConfirmDialog(title = appContext.getString(R.string.diff_commits),
+    ConfirmDialog(title = activityContext.getString(R.string.diff_commits),
         requireShowTextCompose = true,
         textCompose = {
             //只能有一个节点，因为这个东西会在lambda后返回，而lambda只能有一个返回值，弄两个布局就乱了，和react组件只能有一个root div一个道理 。
@@ -98,14 +98,14 @@ fun DiffCommitsDialog(
         val commit2 = commit2.value.ifBlank { Cons.gitLocalWorktreeCommitHash }
 
         if(Libgit2Helper.CommitUtil.isSameCommitHash(commit1, commit2)) {
-            Msg.requireShow(appContext.getString(R.string.num2_commits_same))
+            Msg.requireShow(activityContext.getString(R.string.num2_commits_same))
             return@ok
         }
 
         showDialog.value = false
 
         //当前比较的描述信息的key，用来在界面显示这是在比较啥，值例如“和父提交比较”或者“比较两个提交”之类的
-        val descKey = Cache.setThenReturnKey(appContext.getString(R.string.diff_commits))
+        val descKey = Cache.setThenReturnKey(activityContext.getString(R.string.diff_commits))
         //不用parent，传无效的zero oid即可
         val commitForQueryParents = Cons.allZeroOidStr
         // url 参数： 页面导航id/repoId/treeoid1/treeoid2/desckey

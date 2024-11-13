@@ -28,11 +28,11 @@ class BranchNameAndTypeDto {
     }
 
     fun getAheadBehind():String {
-        val appContext = AppModel.singleInstanceHolder.activityContext
+        val activityContext = AppModel.singleInstanceHolder.activityContext
         if(ahead==0 && 0==behind) {
-            return appContext.getString(R.string.uptodate)
+            return activityContext.getString(R.string.uptodate)
         }else {
-            return replaceStringResList(appContext.getString(R.string.ahead_n_behind_m), listOf(""+ahead, ""+behind))
+            return replaceStringResList(activityContext.getString(R.string.ahead_n_behind_m), listOf(""+ahead, ""+behind))
         }
     }
 
@@ -68,18 +68,18 @@ class BranchNameAndTypeDto {
     }
 
     fun getOther():String {
-        val appContext = AppModel.singleInstanceHolder.activityContext
+        val activityContext = AppModel.singleInstanceHolder.activityContext
         val suffix = ", "
         val sb= StringBuilder()
 
         //local独有字段
         if(type == BranchType.LOCAL) {
-            sb.append(if(isCurrent) appContext.getString(R.string.is_current) else appContext.getString(R.string.not_current)).append(suffix)
+            sb.append(if(isCurrent) activityContext.getString(R.string.is_current) else activityContext.getString(R.string.not_current)).append(suffix)
 
-            sb.append(if(isUpstreamAlreadySet()) appContext.getString(R.string.has_upstream) else appContext.getString(R.string.no_upstream)).append(suffix)
+            sb.append(if(isUpstreamAlreadySet()) activityContext.getString(R.string.has_upstream) else activityContext.getString(R.string.no_upstream)).append(suffix)
 
             //检查上游是否发布，没有上游一定是未发布，有上游也不一定是已发布，只有上游fetch下载的本地分支存在才当作已发布
-            sb.append(if(isPublished()) appContext.getString(R.string.is_published) else appContext.getString(R.string.not_published)).append(suffix)
+            sb.append(if(isPublished()) activityContext.getString(R.string.is_published) else activityContext.getString(R.string.not_published)).append(suffix)
         }
 
         //remote独有字段
@@ -88,7 +88,7 @@ class BranchNameAndTypeDto {
         }
 
         // local/remote 共有
-        sb.append(if(isSymbolic) appContext.getString(R.string.is_symbolic) else appContext.getString(R.string.not_symbolic)).append(suffix)
+        sb.append(if(isSymbolic) activityContext.getString(R.string.is_symbolic) else activityContext.getString(R.string.not_symbolic)).append(suffix)
 
 
         //如果最后一个条目不可在写代码时指定，改成sb.removeSuffix().toString，不过上面都是写死的代码，所以直接最后一个没加后缀，自然也不需要移除
@@ -96,9 +96,9 @@ class BranchNameAndTypeDto {
     }
 
     fun getTypeString():String {
-        val appContext = AppModel.singleInstanceHolder.activityContext
+        val activityContext = AppModel.singleInstanceHolder.activityContext
 
-        return if(type == BranchType.LOCAL) appContext.getString(R.string.local) else appContext.getString(R.string.remote)
+        return if(type == BranchType.LOCAL) activityContext.getString(R.string.local) else activityContext.getString(R.string.remote)
     }
 
     fun getUpstreamShortName():String {
@@ -108,11 +108,11 @@ class BranchNameAndTypeDto {
         }
 
         //只有local branch才有upstream
-        val appContext = AppModel.singleInstanceHolder.activityContext
+        val activityContext = AppModel.singleInstanceHolder.activityContext
 
         val shortUpstreamBranchName = upstream?.remoteBranchShortRefSpec ?:""
 
-        return shortUpstreamBranchName.ifBlank { "[" + appContext.getString(R.string.none) + "]" }
+        return shortUpstreamBranchName.ifBlank { "[" + activityContext.getString(R.string.none) + "]" }
     }
 
     fun getUpstreamFullName(): String {
@@ -123,11 +123,11 @@ class BranchNameAndTypeDto {
         }
 
         //只有local branch才有upstream
-        val appContext = AppModel.singleInstanceHolder.activityContext
+        val activityContext = AppModel.singleInstanceHolder.activityContext
 
         val upstreamBranchName = upstream?.remoteBranchRefsRemotesFullRefSpec ?:""
 
-        return upstreamBranchName.ifBlank { "[" + appContext.getString(R.string.none) + "]" }
+        return upstreamBranchName.ifBlank { "[" + activityContext.getString(R.string.none) + "]" }
 
     }
 }

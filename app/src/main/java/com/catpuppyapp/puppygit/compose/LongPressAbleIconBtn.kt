@@ -45,10 +45,10 @@ fun LongPressAbleIconBtn(
     onClick: ()->Unit,
 ){
     val iconColor = iconColor?:LocalContentColor.current
-    val appContext = AppModel.singleInstanceHolder.activityContext
+    val activityContext = AppModel.singleInstanceHolder.activityContext
     val haptic = AppModel.singleInstanceHolder.haptic
 
-    LongPressAbleIconBtnToastVersion(context=appContext, modifier=modifier,iconModifier=iconModifier,
+    LongPressAbleIconBtnToastVersion(context=activityContext, modifier=modifier,iconModifier=iconModifier,
         tooltipText=tooltipText,icon=icon,iconContentDesc=iconContentDesc,haptic=haptic,
         enabled=enabled, iconColor=iconColor, isInDarkTheme=isInDarkTheme, onLongClick=onLongClick, onClick=onClick)
 }

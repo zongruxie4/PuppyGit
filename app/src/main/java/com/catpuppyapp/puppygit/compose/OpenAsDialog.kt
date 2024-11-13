@@ -37,7 +37,6 @@ import com.catpuppyapp.puppygit.utils.Msg
 import com.catpuppyapp.puppygit.utils.mime.MimeType
 import com.catpuppyapp.puppygit.utils.mime.guessFromFileName
 import com.catpuppyapp.puppygit.utils.mime.intentType
-import com.catpuppyapp.puppygit.utils.state.StateUtil
 import java.io.File
 
 
@@ -52,7 +51,7 @@ import java.io.File
 @Composable
 fun OpenAsDialog(fileName:String, filePath:String, showOpenInEditor:Boolean=false, openInEditor:(expectReadOnly:Boolean)->Unit={}, openSuccessCallback:()->Unit={}, close:()->Unit) {
 
-    val appContext = LocalContext.current
+    val activityContext = LocalContext.current
 
     val mimeTypeList = FsUtils.FileMimeTypes.typeList.toMutableList()
     val mimeTextList = FsUtils.FileMimeTypes.textList.toMutableList()
@@ -142,7 +141,7 @@ fun OpenAsDialog(fileName:String, filePath:String, showOpenInEditor:Boolean=fals
                             .fillMaxWidth()
                             .clickable {
                                 val openSuccess = FsUtils.openFile(
-                                    appContext,
+                                    activityContext,
                                     File(filePath),
                                     mimeType,
                                     readOnly.value
@@ -151,7 +150,7 @@ fun OpenAsDialog(fileName:String, filePath:String, showOpenInEditor:Boolean=fals
                                 if (openSuccess) {
                                     openSuccessCallback()
                                 } else {
-                                    Msg.requireShow(appContext.getString(R.string.open_failed))
+                                    Msg.requireShow(activityContext.getString(R.string.open_failed))
                                 }
 
                                 close()

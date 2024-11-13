@@ -51,7 +51,7 @@ fun TagFetchPushDialog(
     onFinally:()->Unit, //在 try...catch...finally，finally代码块里的代码
 ) {
 
-    val appContext = AppModel.singleInstanceHolder.activityContext
+    val activityContext = AppModel.singleInstanceHolder.activityContext
 
     val force = rememberSaveable { mutableStateOf(false) }
 
@@ -71,7 +71,7 @@ fun TagFetchPushDialog(
 
                         //如果删除模式且没勾选删除远程，删完本地tags就可返回了
                         if(!requireDelRemoteChecked.value) {
-                            Msg.requireShowLongDuration(appContext.getString(R.string.success))
+                            Msg.requireShowLongDuration(activityContext.getString(R.string.success))
                             return@doJobThenOffLoading
                         }
                     }
@@ -112,7 +112,7 @@ fun TagFetchPushDialog(
 
                         //修改下loading text
                         if(delRemote) {
-                            loadingTextForFetchPushDialog.value = appContext.getString(R.string.deleting_remote_tags)
+                            loadingTextForFetchPushDialog.value = activityContext.getString(R.string.deleting_remote_tags)
                         }
 
                         val force = if(delRemote) false else force  // del mode 没必要使用force，所以设为假

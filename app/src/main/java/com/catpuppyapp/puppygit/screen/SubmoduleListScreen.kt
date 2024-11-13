@@ -100,7 +100,7 @@ fun SubmoduleListScreen(
 ) {
     val homeTopBarScrollBehavior = AppModel.singleInstanceHolder.homeTopBarScrollBehavior
     val navController = AppModel.singleInstanceHolder.navController
-    val appContext = AppModel.singleInstanceHolder.activityContext
+    val activityContext = AppModel.singleInstanceHolder.activityContext
     val haptic = LocalHapticFeedback.current
     val scope = rememberCoroutineScope()
     val settings = remember { SettingsUtil.getSettingsSnapshot() }
@@ -125,7 +125,7 @@ fun SubmoduleListScreen(
         loading.value=true
     }
     val loadingOff = {
-        loadingText.value = appContext.getString(R.string.loading)
+        loadingText.value = activityContext.getString(R.string.loading)
         loading.value=false
     }
 
@@ -183,7 +183,7 @@ fun SubmoduleListScreen(
             onCancel = {showCreateDialog.value = false}
         ) {
             showCreateDialog.value = false
-            doJobThenOffLoading(loadingOn, loadingOff, appContext.getString(R.string.creating)) {
+            doJobThenOffLoading(loadingOn, loadingOff, activityContext.getString(R.string.creating)) {
                 try {
                     Repository.open(curRepo.value.fullSavePath).use { repo->
                         Libgit2Helper.addSubmodule(
@@ -193,7 +193,7 @@ fun SubmoduleListScreen(
                         )
                     }
 
-                    Msg.requireShow(appContext.getString(R.string.success))
+                    Msg.requireShow(activityContext.getString(R.string.success))
                 }catch (e:Exception) {
                     val errPrefix = "create submodule '${pathForCreate.value}' err: "
                     val errMsg = e.localizedMessage
@@ -264,13 +264,13 @@ fun SubmoduleListScreen(
 
     val getDetail = { item:SubmoduleDto ->
         val sb = StringBuilder()
-        sb.appendLine(appContext.getString(R.string.name)+": "+item.name).appendLine()
-            .appendLine(appContext.getString(R.string.url)+": "+item.remoteUrl).appendLine()
-            .appendLine(appContext.getString(R.string.target)+": "+item.targetHash).appendLine()
-            .appendLine(appContext.getString(R.string.location)+": "+item.location.toString()).appendLine()
-            .appendLine(appContext.getString(R.string.path)+": "+item.relativePathUnderParent).appendLine()
-            .appendLine(appContext.getString(R.string.full_path)+": "+item.fullPath).appendLine()
-            .appendLine(appContext.getString(R.string.status)+": "+item.getStatus())
+        sb.appendLine(activityContext.getString(R.string.name)+": "+item.name).appendLine()
+            .appendLine(activityContext.getString(R.string.url)+": "+item.remoteUrl).appendLine()
+            .appendLine(activityContext.getString(R.string.target)+": "+item.targetHash).appendLine()
+            .appendLine(activityContext.getString(R.string.location)+": "+item.location.toString()).appendLine()
+            .appendLine(activityContext.getString(R.string.path)+": "+item.relativePathUnderParent).appendLine()
+            .appendLine(activityContext.getString(R.string.full_path)+": "+item.fullPath).appendLine()
+            .appendLine(activityContext.getString(R.string.status)+": "+item.getStatus())
 
         sb.toString()
 
@@ -288,7 +288,7 @@ fun SubmoduleListScreen(
         ) {
             showDetailsDialog.value = false
             clipboardManager.setText(AnnotatedString(detailsString.value))
-            Msg.requireShow(appContext.getString(R.string.copied))
+            Msg.requireShow(activityContext.getString(R.string.copied))
         }
     }
 
@@ -296,7 +296,7 @@ fun SubmoduleListScreen(
     val urlForSetUrlDialog = rememberSaveable { mutableStateOf( "")}
     val nameForSetUrlDialog = rememberSaveable { mutableStateOf( "")}
     if(showSetUrlDialog.value) {
-        ConfirmDialog2(title = appContext.getString(R.string.set_url),
+        ConfirmDialog2(title = activityContext.getString(R.string.set_url),
             requireShowTextCompose = true,
             textCompose = {
                 ScrollableColumn {
@@ -319,19 +319,19 @@ fun SubmoduleListScreen(
         ) {
             showSetUrlDialog.value = false
 
-            doJobThenOffLoading(loadingOn, loadingOff, appContext.getString(R.string.updating)) act@{
+            doJobThenOffLoading(loadingOn, loadingOff, activityContext.getString(R.string.updating)) act@{
                 try {
                     Repository.open(curRepo.value.fullSavePath).use { repo->
                         val sm = Libgit2Helper.resolveSubmodule(repo, nameForSetUrlDialog.value)
                         if(sm==null) {
-                            Msg.requireShowLongDuration(appContext.getString(R.string.resolve_submodule_failed))
+                            Msg.requireShowLongDuration(activityContext.getString(R.string.resolve_submodule_failed))
                             return@act
                         }
 
                         Libgit2Helper.updateSubmoduleUrl(repo, sm, urlForSetUrlDialog.value)
                     }
 
-                    Msg.requireShow(appContext.getString(R.string.success))
+                    Msg.requireShow(activityContext.getString(R.string.success))
 
                 }catch (e:Exception) {
                     Msg.requireShowLongDuration(e.localizedMessage ?: " err")
@@ -347,7 +347,7 @@ fun SubmoduleListScreen(
     val syncParentConfig = rememberSaveable { mutableStateOf(false)}
     val syncSubmoduleConfig = rememberSaveable { mutableStateOf(false)}
     if(showSyncConfigDialog.value) {
-        ConfirmDialog2(title = appContext.getString(R.string.sync_configs),
+        ConfirmDialog2(title = activityContext.getString(R.string.sync_configs),
             requireShowTextCompose = true,
             textCompose = {
                 ScrollableColumn {
@@ -363,7 +363,7 @@ fun SubmoduleListScreen(
         ) {
             showSyncConfigDialog.value=false
 
-            doJobThenOffLoading(loadingOn, loadingOff, appContext.getString(R.string.updating)) {
+            doJobThenOffLoading(loadingOn, loadingOff, activityContext.getString(R.string.updating)) {
                 try {
                     Repository.open(curRepo.value.fullSavePath).use { repo->
                         selectedItemList.value.toList().forEach {
@@ -387,7 +387,7 @@ fun SubmoduleListScreen(
                         }
                     }
 
-                    Msg.requireShow(appContext.getString(R.string.success))
+                    Msg.requireShow(activityContext.getString(R.string.success))
                 }catch (e:Exception) {
                     Msg.requireShowLongDuration(e.localizedMessage ?: "err")
                 }finally {
@@ -400,7 +400,7 @@ fun SubmoduleListScreen(
 
     val showInitRepoDialog = rememberSaveable { mutableStateOf(false)}
     if(showInitRepoDialog.value) {
-        ConfirmDialog2(title = appContext.getString(R.string.init_repo),
+        ConfirmDialog2(title = activityContext.getString(R.string.init_repo),
             requireShowTextCompose = true,
             textCompose = {
                 ScrollableColumn {
@@ -413,7 +413,7 @@ fun SubmoduleListScreen(
         ) {
             showInitRepoDialog.value=false
 
-            doJobThenOffLoading(loadingOn, loadingOff, appContext.getString(R.string.loading)) {
+            doJobThenOffLoading(loadingOn, loadingOff, activityContext.getString(R.string.loading)) {
                 try {
                     Repository.open(curRepo.value.fullSavePath).use { repo ->
                         val repoWorkDirFullPath = Libgit2Helper.getRepoWorkdirNoEndsWithSlash(repo)
@@ -430,7 +430,7 @@ fun SubmoduleListScreen(
                         }
                     }
 
-                    Msg.requireShow(appContext.getString(R.string.done))
+                    Msg.requireShow(activityContext.getString(R.string.done))
                 }catch (e:Exception) {
                     Msg.requireShowLongDuration(e.localizedMessage ?: "err")
                 }finally {
@@ -443,7 +443,7 @@ fun SubmoduleListScreen(
     val showRestoreDotGitFileDialog = rememberSaveable { mutableStateOf(false)}
     if(showRestoreDotGitFileDialog.value) {
         ConfirmDialog2(
-            title = appContext.getString(R.string.restore_dot_git_file),
+            title = activityContext.getString(R.string.restore_dot_git_file),
             requireShowTextCompose = true,
             textCompose = {
                 ScrollableColumn {
@@ -456,7 +456,7 @@ fun SubmoduleListScreen(
 
         ) {
             showRestoreDotGitFileDialog.value = false
-            doJobThenOffLoading(loadingOn, loadingOff, appContext.getString(R.string.restoring)) {
+            doJobThenOffLoading(loadingOn, loadingOff, activityContext.getString(R.string.restoring)) {
                 try {
                     Repository.open(curRepo.value.fullSavePath).use { repo ->
                         val repoWorkDirFullPath = Libgit2Helper.getRepoWorkdirNoEndsWithSlash(repo)
@@ -471,7 +471,7 @@ fun SubmoduleListScreen(
                         }
                     }
 
-                    Msg.requireShow(appContext.getString(R.string.done))
+                    Msg.requireShow(activityContext.getString(R.string.done))
 
                 }catch (e:Exception) {
                     Msg.requireShowLongDuration(e.localizedMessage ?:"err")
@@ -501,7 +501,7 @@ fun SubmoduleListScreen(
 
             val force = forceReload.value
 
-            doJobThenOffLoading(loadingOn, loadingOff, appContext.getString(R.string.reloading)) {
+            doJobThenOffLoading(loadingOn, loadingOff, activityContext.getString(R.string.reloading)) {
                 try {
                     Repository.open(curRepo.value.fullSavePath).use { parentRepo ->
                         selectedItemList.value.toList().forEach {
@@ -517,7 +517,7 @@ fun SubmoduleListScreen(
                         }
                     }
 
-                    Msg.requireShow(appContext.getString(R.string.done))
+                    Msg.requireShow(activityContext.getString(R.string.done))
                 }finally {
                     // refresh list for get newest data after reload
                     changeStateTriggerRefreshPage(needRefresh)
@@ -540,7 +540,7 @@ fun SubmoduleListScreen(
             onOk = { resetType->
                 closeResetDialog()
 
-                doJobThenOffLoading(loadingOn, loadingOff, appContext.getString(R.string.resetting)) {
+                doJobThenOffLoading(loadingOn, loadingOff, activityContext.getString(R.string.resetting)) {
                     try {
                         selectedItemList.value.toList().forEach {
                             if (it.targetHash.isNotBlank()) {
@@ -558,7 +558,7 @@ fun SubmoduleListScreen(
                         }
 
                         // its done, not means success, may failed, actually.
-                        Msg.requireShow(appContext.getString(R.string.done))
+                        Msg.requireShow(activityContext.getString(R.string.done))
                     }finally {
                         changeStateTriggerRefreshPage(needRefresh)
                     }
@@ -572,7 +572,7 @@ fun SubmoduleListScreen(
     val showImportToReposDialog = rememberSaveable { mutableStateOf(false)}
     if(showImportToReposDialog.value){
         ConfirmDialog2(
-            title = appContext.getString(R.string.import_to_repos),
+            title = activityContext.getString(R.string.import_to_repos),
             requireShowTextCompose = true,
             textCompose = {
                 ScrollableColumn {
@@ -588,7 +588,7 @@ fun SubmoduleListScreen(
         ) {
             showImportToReposDialog.value = false
 
-            doJobThenOffLoading(loadingOn, loadingOff, appContext.getString(R.string.importing)) {
+            doJobThenOffLoading(loadingOn, loadingOff, activityContext.getString(R.string.importing)) {
                 val repoNameSuffix = "_of_${curRepo.value.repoName}"
                 val parentRepoId = curRepo.value.id
 //                val importList = selectedItemList.value.toList().filter { it.cloned }
@@ -608,7 +608,7 @@ fun SubmoduleListScreen(
                         importRepoResult.existed += result.existed
                     }
 
-                    Msg.requireShowLongDuration(replaceStringResList(appContext.getString(R.string.n_imported), listOf(""+importRepoResult.success)))
+                    Msg.requireShowLongDuration(replaceStringResList(activityContext.getString(R.string.n_imported), listOf(""+importRepoResult.success)))
                 }catch (e:Exception) {
                     //出错的时候，importRepoResult的计数不一定准，有可能比实际成功和失败的少，不过不可能多
                     val errMsg = e.localizedMessage
@@ -678,7 +678,7 @@ fun SubmoduleListScreen(
                     nameForSetUrlDialog.value = curItem.name
                     showSetUrlDialog.value = true
                 }else {
-                    Msg.requireShow(appContext.getString(R.string.no_item_selected))
+                    Msg.requireShow(activityContext.getString(R.string.no_item_selected))
                 }
             }catch (e:Exception){
                 Msg.requireShow(e.localizedMessage ?: "err")
@@ -689,9 +689,9 @@ fun SubmoduleListScreen(
             try {
                 if(selectedItemList.value.isNotEmpty()) {
                     clipboardManager.setText(AnnotatedString(selectedItemList.value[0].fullPath))
-                    Msg.requireShow(appContext.getString(R.string.success))
+                    Msg.requireShow(activityContext.getString(R.string.success))
                 }else {
-                    Msg.requireShow(appContext.getString(R.string.no_item_selected))
+                    Msg.requireShow(activityContext.getString(R.string.no_item_selected))
                 }
             }catch (e:Exception){
                 Msg.requireShow(e.localizedMessage ?: "err")
@@ -764,7 +764,7 @@ fun SubmoduleListScreen(
     }
 
     if(showDeleteDialog.value) {
-        ConfirmDialog2(title = appContext.getString(R.string.delete),
+        ConfirmDialog2(title = activityContext.getString(R.string.delete),
             requireShowTextCompose = true,
             textCompose = {
                 ScrollableColumn {
@@ -786,7 +786,7 @@ fun SubmoduleListScreen(
 
         ) {
             showDeleteDialog.value=false
-            doJobThenOffLoading(loadingOn, loadingOff, appContext.getString(R.string.deleting)) {
+            doJobThenOffLoading(loadingOn, loadingOff, activityContext.getString(R.string.deleting)) {
                 try {
                     Repository.open(curRepo.value.fullSavePath).use { repo->
                         val repoWorkDirPath = Libgit2Helper.getRepoWorkdirNoEndsWithSlash(repo)
@@ -814,7 +814,7 @@ fun SubmoduleListScreen(
 
                     }
 
-                    Msg.requireShow(appContext.getString(R.string.done))
+                    Msg.requireShow(activityContext.getString(R.string.done))
                 }finally {
                     changeStateTriggerRefreshPage(needRefresh)
                 }
@@ -836,7 +836,7 @@ fun SubmoduleListScreen(
     }
 
     if(showCloneDialog.value) {
-        ConfirmDialog2(title = appContext.getString(R.string.clone),
+        ConfirmDialog2(title = activityContext.getString(R.string.clone),
             requireShowTextCompose = true,
             textCompose = {
                 ScrollableColumn {
@@ -859,7 +859,7 @@ fun SubmoduleListScreen(
         ) {
             showCloneDialog.value=false
 
-            doJobThenOffLoading(loadingOn, loadingOff, appContext.getString(R.string.cloning)) {
+            doJobThenOffLoading(loadingOn, loadingOff, activityContext.getString(R.string.cloning)) {
                 try {
 
                     val recursive = recursiveClone.value
@@ -931,7 +931,7 @@ fun SubmoduleListScreen(
                         }
                     }
 
-                    Msg.requireShow(appContext.getString(R.string.done))
+                    Msg.requireShow(activityContext.getString(R.string.done))
                 }finally {
                     changeStateTriggerRefreshPage(needRefresh)
                 }
@@ -943,7 +943,7 @@ fun SubmoduleListScreen(
     }
 
     if(showUpdateDialog.value) {
-        ConfirmDialog2(title = appContext.getString(R.string.update),
+        ConfirmDialog2(title = activityContext.getString(R.string.update),
             requireShowTextCompose = true,
             textCompose = {
                 ScrollableColumn {
@@ -966,7 +966,7 @@ fun SubmoduleListScreen(
         ) {
             showUpdateDialog.value=false
 
-            doJobThenOffLoading(loadingOn, loadingOff, appContext.getString(R.string.updating)) {
+            doJobThenOffLoading(loadingOn, loadingOff, activityContext.getString(R.string.updating)) {
                 try {
                     val selectedCredential = credentialList.value[selectedCredentialIdx.intValue]
 
@@ -987,7 +987,7 @@ fun SubmoduleListScreen(
                         }
                     }
 
-                    Msg.requireShow(appContext.getString(R.string.done))
+                    Msg.requireShow(activityContext.getString(R.string.done))
 
                 }finally {
                     changeStateTriggerRefreshPage(needRefresh)
@@ -1072,7 +1072,7 @@ fun SubmoduleListScreen(
         ) {
             showSelectedItemsShortDetailsDialog.value = false
             clipboardManager.setText(AnnotatedString(selectedItemsShortDetailsStr.value))
-            Msg.requireShow(appContext.getString(R.string.copied))
+            Msg.requireShow(activityContext.getString(R.string.copied))
         }
     }
 
@@ -1347,7 +1347,7 @@ fun SubmoduleListScreen(
             doJobThenOffLoading(
                 loadingOn = loadingOn,
                 loadingOff = loadingOff,
-                loadingText = appContext.getString(R.string.loading),
+                loadingText = activityContext.getString(R.string.loading),
             ) {
                 list.value.clear()  //先清一下list，然后可能添加也可能不添加
                 credentialList.value.clear()

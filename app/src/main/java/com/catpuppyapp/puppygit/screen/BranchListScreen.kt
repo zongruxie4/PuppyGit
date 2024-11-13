@@ -122,7 +122,7 @@ fun BranchListScreen(
 ) {
     val homeTopBarScrollBehavior = AppModel.singleInstanceHolder.homeTopBarScrollBehavior
     val navController = AppModel.singleInstanceHolder.navController
-    val appContext = AppModel.singleInstanceHolder.activityContext
+    val activityContext = AppModel.singleInstanceHolder.activityContext
     val haptic = LocalHapticFeedback.current
     val scope = rememberCoroutineScope()
 
@@ -179,7 +179,7 @@ fun BranchListScreen(
         loading.value=true
     }
     val loadingOff = {
-        loadingText.value = appContext.getString(R.string.loading)
+        loadingText.value = activityContext.getString(R.string.loading)
         loading.value=false
     }
 
@@ -200,7 +200,7 @@ fun BranchListScreen(
         //如果选中条目和仓库当前活跃分支一样，则不用合并
         if(curObjInPage.value.oidStr == repoCurrentActiveBranchOrDetachedHeadFullHashForDoAct.value) {
 //            requireShowToast(appContext.getString(R.string.merge_failed_src_and_target_same))
-            requireShowToast(appContext.getString(R.string.already_up_to_date))
+            requireShowToast(activityContext.getString(R.string.already_up_to_date))
             return Ret.createSuccess(null)  //源和目标一样不算错误，返回true
         }
 
@@ -209,7 +209,7 @@ fun BranchListScreen(
 
             //如果用户名或邮箱无效，无法创建commit，merge无法完成，所以，直接终止操作
             if(Libgit2Helper.isUsernameAndEmailInvalid(usernameFromConfig,emailFromConfig)) {
-                return Ret.createError(null, appContext.getString(R.string.plz_set_username_and_email_first))
+                return Ret.createError(null, activityContext.getString(R.string.plz_set_username_and_email_first))
             }
 
 
@@ -244,7 +244,7 @@ fun BranchListScreen(
                 //检查是否存在冲突条目
                 //如果调用者想自己判断是否有冲突，可传showMsgIfHasConflicts为false
                 val errMsg = if (mergeResult.code == Ret.ErrCode.mergeFailedByAfterMergeHasConfilts) {
-                    appContext.getString(R.string.has_conflicts)
+                    activityContext.getString(R.string.has_conflicts)
 //                    if(trueMergeFalseRebase) {
 //                        appContext.getString(R.string.merge_has_conflicts)
 //                    }else {
@@ -286,7 +286,7 @@ fun BranchListScreen(
             //合并成功清下仓库状态，要不然可能停留在Merging
             Libgit2Helper.cleanRepoState(repo)
             //合并完成后更新db，显示通知
-            Libgit2Helper.updateDbAfterMergeSuccess(mergeResult,appContext,curRepo.value.id, requireShowToast, trueMergeFalseRebase)
+            Libgit2Helper.updateDbAfterMergeSuccess(mergeResult,activityContext,curRepo.value.id, requireShowToast, trueMergeFalseRebase)
         }
 
 
@@ -389,7 +389,7 @@ fun BranchListScreen(
                     remoteList[selectedRemoteIndex]
                 } catch (e: Exception) {
                     MyLog.e(TAG,"err when get remote by index from remote list: remoteIndex=$selectedRemoteIndex, remoteList=$remoteList\nerr info:${e.stackTraceToString()}")
-                    Msg.requireShowLongDuration(appContext.getString(R.string.err_selected_remote_is_invalid))
+                    Msg.requireShowLongDuration(activityContext.getString(R.string.err_selected_remote_is_invalid))
                     return@onOk
                 }
 
@@ -398,7 +398,7 @@ fun BranchListScreen(
                 doJobThenOffLoading(
                     loadingOn,
                     loadingOff,
-                    appContext.getString(R.string.setting_upstream)
+                    activityContext.getString(R.string.setting_upstream)
                 ) {
                     try {
 
@@ -446,9 +446,9 @@ fun BranchListScreen(
                             }
 
                             if (setUpstreamSuccess) {
-                                requireShowToast(appContext.getString(R.string.set_upstream_success))
+                                requireShowToast(activityContext.getString(R.string.set_upstream_success))
                             } else {
-                                requireShowToast(appContext.getString(R.string.set_upstream_error))
+                                requireShowToast(activityContext.getString(R.string.set_upstream_error))
                             }
                         }
                     } catch (e: Exception) {
@@ -526,7 +526,7 @@ fun BranchListScreen(
             doJobThenOffLoading(
                 loadingOn = loadingOn,
                 loadingOff = loadingOff,
-                loadingText = if(requireRebase.value) appContext.getString(R.string.rebasing) else appContext.getString(R.string.merging),
+                loadingText = if(requireRebase.value) activityContext.getString(R.string.rebasing) else activityContext.getString(R.string.merging),
             )  job@{
                 try {
                     val mergeRet = doMerge(trueMergeFalseRebase = !requireRebase.value)
@@ -578,7 +578,7 @@ fun BranchListScreen(
                               )
                           }
                           Row{
-                              Text(text = appContext.getString(R.string.are_you_sure))
+                              Text(text = activityContext.getString(R.string.are_you_sure))
                           }
 
                           //若已设置上游且已发布，则可删除远程，否则不可
@@ -606,7 +606,7 @@ fun BranchListScreen(
             doJobThenOffLoading(
                 loadingOn = loadingOn,
                 loadingOff = loadingOff,
-                loadingText = appContext.getString(R.string.deleting_branch),
+                loadingText = activityContext.getString(R.string.deleting_branch),
             )  job@{
                 try {
                     //删除本地分支
@@ -614,16 +614,16 @@ fun BranchListScreen(
 
                         val deleteBranchRet = Libgit2Helper.deleteBranch(repo, curObjInPage.value.fullName);
                         if(deleteBranchRet.hasError()) {
-                            requireShowToast(appContext.getString(R.string.del_branch_err_operation_abort))
+                            requireShowToast(activityContext.getString(R.string.del_branch_err_operation_abort))
                             return@job
                         }
-                        requireShowToast(appContext.getString(R.string.del_local_branch_success))
+                        requireShowToast(activityContext.getString(R.string.del_local_branch_success))
 
                         //检查当前选中对象是否有上游，如果有，检查用户是否勾选了删除上游，如果是执行删除上游
                         if (delUpstreamToo.value) {  //用户勾选了删除远程分支，检查下有没有有效的远程分支可以删
                             if (curObjInPage.value.isUpstreamValid()) {
                                 //进入到这说明用户勾选了一并删除上游并且存在有效上游，提示正在删除远程分支
-                                requireShowToast(appContext.getString(R.string.deleting_upstream))
+                                requireShowToast(activityContext.getString(R.string.deleting_upstream))
 
                                 //通过上面的判断，upstream不可能是null
                                 val upstream = curObjInPage.value.upstream!!
@@ -648,7 +648,7 @@ fun BranchListScreen(
                                         upstream.remote
                                     )
                                     if (remoteFromDb == null) {
-                                        requireShowToast(appContext.getString(R.string.query_remote_error))
+                                        requireShowToast(activityContext.getString(R.string.query_remote_error))
                                         return@job
                                     }
                                     var credential: CredentialEntity? = null
@@ -673,9 +673,9 @@ fun BranchListScreen(
                                 }
 
                                 //执行到这，本地分支和其上游都已经删除并推送到服务器（未勾选push则不会推送）了
-                                requireShowToast(appContext.getString(R.string.del_upstream_success))
+                                requireShowToast(activityContext.getString(R.string.del_upstream_success))
                             }else {  //进入这里说明没有有效的上游，提示下，不用执行删除
-                                requireShowToast(appContext.getString(R.string.del_upstream_failed_upstream_is_invalid))
+                                requireShowToast(activityContext.getString(R.string.del_upstream_failed_upstream_is_invalid))
                             }
                         }
 
@@ -728,13 +728,13 @@ fun BranchListScreen(
 
                     }
                     Row{
-                        Text(text = appContext.getString(R.string.are_you_sure))
+                        Text(text = activityContext.getString(R.string.are_you_sure))
                     }
                     Row(modifier = Modifier.padding(5.dp)) {
 
                     }
 
-                    MyCheckBox(text = appContext.getString(R.string.push), value = pushCheckBoxForRemoteBranchDelDialog)
+                    MyCheckBox(text = activityContext.getString(R.string.push), value = pushCheckBoxForRemoteBranchDelDialog)
 
                     //若勾选push，则删除远程分支，删除远程分支时有可能无法从分支名中取出remote，这时需要用户输入
                     if (pushCheckBoxForRemoteBranchDelDialog.value) {
@@ -779,7 +779,7 @@ fun BranchListScreen(
             doJobThenOffLoading(
                 loadingOn = loadingOn,
                 loadingOff = loadingOff,
-                loadingText = appContext.getString(R.string.deleting_branch),
+                loadingText = activityContext.getString(R.string.deleting_branch),
             )  job@{
                 try {
                     Repository.open(curRepo.value.fullSavePath).use { repo ->
@@ -789,7 +789,7 @@ fun BranchListScreen(
                             curObjInPage.value.fullName
                         )
                         if (delBranchRet.hasError()) {
-                            requireShowToast(appContext.getString(R.string.del_remote_branch_err_operation_abort))
+                            requireShowToast(activityContext.getString(R.string.del_remote_branch_err_operation_abort))
                             return@job
                         }
 
@@ -800,7 +800,7 @@ fun BranchListScreen(
 
                             //如果remote无效，返回
                             if(remote.isNullOrBlank()) {
-                                requireShowToast(appContext.getString(R.string.remote_name_is_invalid))
+                                requireShowToast(activityContext.getString(R.string.remote_name_is_invalid))
                                 return@job
                             }
 
@@ -812,7 +812,7 @@ fun BranchListScreen(
                                 remote
                             )
                             if (remoteFromDb == null) {
-                                requireShowToast(appContext.getString(R.string.query_remote_error))
+                                requireShowToast(activityContext.getString(R.string.query_remote_error))
                                 return@job
                             }
                             var credential: CredentialEntity? = null
@@ -828,14 +828,14 @@ fun BranchListScreen(
                             //执行删除
                             val delRemotePushRet = Libgit2Helper.deleteRemoteBranchByRemoteAndRefsHeadsBranchRefSpec(repo, remote, branchRefsHeadsFullRefSpec, credential)
                             if (delRemotePushRet.hasError()) {
-                                requireShowToast(appContext.getString(R.string.push_del_remote_branch_failed))
+                                requireShowToast(activityContext.getString(R.string.push_del_remote_branch_failed))
                                 return@job
                             }
                         }
 
 
                         //执行到这，本地远程分支删除了，且远程服务器上的分支也删除了(push到服务器了)
-                        requireShowToast(appContext.getString(R.string.del_remote_branch_success))
+                        requireShowToast(activityContext.getString(R.string.del_remote_branch_success))
 
                     }
 
@@ -887,7 +887,7 @@ fun BranchListScreen(
         ) {
             showDetailsDialog.value = false
             clipboardManager.setText(AnnotatedString(detailsString.value))
-            Msg.requireShow(appContext.getString(R.string.copied))
+            Msg.requireShow(activityContext.getString(R.string.copied))
         }
     }
 
@@ -950,7 +950,7 @@ fun BranchListScreen(
         ) {
             val newName = nameForRenameDialog.value
             val branchShortName = curItem.shortName
-            doJobThenOffLoading(loadingOn, loadingOff, appContext.getString(R.string.renaming)) {
+            doJobThenOffLoading(loadingOn, loadingOff, activityContext.getString(R.string.renaming)) {
                 try {
                     Repository.open(curRepo.value.fullSavePath).use { repo->
                         val renameRet = Libgit2Helper.renameBranch(repo, branchShortName, newName, forceForRenameDialog.value)
@@ -962,7 +962,7 @@ fun BranchListScreen(
                         showRenameDialog.value=false
                     }
 
-                    Msg.requireShow(appContext.getString(R.string.success))
+                    Msg.requireShow(activityContext.getString(R.string.success))
                 }catch (e:Exception) {
                     val errmsg = e.localizedMessage ?: "rename branch err"
                     Msg.requireShowLongDuration(errmsg)
@@ -1073,7 +1073,7 @@ fun BranchListScreen(
                 showPublishDialog.value=false
                 val force = forcePublish.value
 
-                doJobThenOffLoading(loadingOn, loadingOff, appContext.getString(R.string.pushing)) {
+                doJobThenOffLoading(loadingOn, loadingOff, activityContext.getString(R.string.pushing)) {
                     try {
 
                         val dbContainer = AppModel.singleInstanceHolder.dbContainer
@@ -1095,7 +1095,7 @@ fun BranchListScreen(
                             val repoDb = AppModel.singleInstanceHolder.dbContainer.repoRepository
                             repoDb.updateLastUpdateTime(curRepo.value.id, getSecFromTime())
 
-                            Msg.requireShow(appContext.getString(R.string.success))
+                            Msg.requireShow(activityContext.getString(R.string.success))
                         }
                     }catch (e:Exception) {
                         showErrAndSaveLog(TAG, "#PublishBranchDialog(force=$force) err:"+e.stackTraceToString(), "Publish branch error:"+e.localizedMessage, requireShowToast, curRepo.value.id)
@@ -1200,13 +1200,13 @@ fun BranchListScreen(
                             //非detached HEAD 则启用（注：detached HEAD无当前分支（活跃分支），所以没必要启用）
                             enabled = !dbIntToBool(curRepo.value.isDetached)
                         ) {
-                            doJobThenOffLoading(loadingOn, loadingOff, appContext.getString(R.string.loading)) {
+                            doJobThenOffLoading(loadingOn, loadingOff, activityContext.getString(R.string.loading)) {
                                 val indexOfCurrent = list.value.toList().indexOfFirst {
                                     it.isCurrent
                                 }
 
                                 if(indexOfCurrent == -1) {
-                                    Msg.requireShow(appContext.getString(R.string.not_found))
+                                    Msg.requireShow(activityContext.getString(R.string.not_found))
                                 }else {  // found
                                     // 注：直接在源list的list state跳转即可，不需要考虑filter模式是否开启，因为只有当filter模式关闭时才显示此按钮，显示此按钮才有可能被用户按，所以，正常情况下仅能在filter模式关闭时才能用此功能
 
@@ -1308,7 +1308,7 @@ fun BranchListScreen(
                         // onClick()
                         // 弹出确认框，为分支设置上游
                         if(curObjInPage.value.type == Branch.BranchType.REMOTE) {  // remote分支不能设置上游
-                            requireShowToast(appContext.getString(R.string.cant_set_upstream_for_remote_branch))
+                            requireShowToast(activityContext.getString(R.string.cant_set_upstream_for_remote_branch))
                         }else { //为本地分支设置上游
                             //设置默认值
                             var remoteIdx = 0   //默认选中第一个元素
@@ -1368,19 +1368,19 @@ fun BranchListScreen(
                         val curObj = curObjInPage.value
 
                         if(!curObj.isUpstreamValid()) {  // invalid upstream
-                            Msg.requireShowLongDuration(appContext.getString(R.string.upstream_not_set_or_not_published))
+                            Msg.requireShowLongDuration(activityContext.getString(R.string.upstream_not_set_or_not_published))
                         }else {
                             val upOid = curObj.upstream?.remoteOid ?: ""
                             if(upOid.isBlank()) {  // invalid upstream oid
-                                Msg.requireShowLongDuration(appContext.getString(R.string.upstream_oid_is_invalid))
+                                Msg.requireShowLongDuration(activityContext.getString(R.string.upstream_oid_is_invalid))
                             }else {
                                 val commit1 = curObj.oidStr
                                 val commit2 = upOid
 
                                 if(commit1 == commit2) {  // local and upstream are the same, no need compare
-                                    Msg.requireShow(appContext.getString(R.string.both_are_the_same))
+                                    Msg.requireShow(activityContext.getString(R.string.both_are_the_same))
                                 }else {   // necessary things are ready and local vs upstream ain't same, then , should go to diff page
-                                    val descKey = Cache.setThenReturnKey(appContext.getString(R.string.compare_to_upstream))
+                                    val descKey = Cache.setThenReturnKey(activityContext.getString(R.string.compare_to_upstream))
                                     val commitForQueryParents = Cons.allZeroOidStr
 
                                     // url 参数： 页面导航id/repoId/treeoid1/treeoid2/desckey
@@ -1399,9 +1399,9 @@ fun BranchListScreen(
                     ){
                         val curObj = curObjInPage.value
 
-                        doJobThenOffLoading(loadingOn, loadingOff, appContext.getString(R.string.loading)) {
+                        doJobThenOffLoading(loadingOn, loadingOff, activityContext.getString(R.string.loading)) {
                             if(!curObj.isUpstreamValid()) {
-                                Msg.requireShowLongDuration(appContext.getString(R.string.upstream_not_set_or_not_published))
+                                Msg.requireShowLongDuration(activityContext.getString(R.string.upstream_not_set_or_not_published))
                             }else {
                                 val upstreamFullName = curObj.getUpstreamFullName()
                                 val actuallyList = getActuallyList()
@@ -1421,10 +1421,10 @@ fun BranchListScreen(
                                             UIHelper.scrollToItem(scope, listState, indexInOriginList)
                                             requireBlinkIdx.intValue = indexInOriginList  //设置条目闪烁以便用户发现
                                         }else {
-                                            Msg.requireShow(appContext.getString(R.string.upstream_not_found))
+                                            Msg.requireShow(activityContext.getString(R.string.upstream_not_found))
                                         }
                                     }else {  //非filter mode且没找到，说明源列表根本没有，直接提示没找到
-                                        Msg.requireShow(appContext.getString(R.string.upstream_not_found))
+                                        Msg.requireShow(activityContext.getString(R.string.upstream_not_found))
                                     }
 
                                 }else {  //在当前实际展示的列表（filter或源列表）找到了，直接跳转
@@ -1450,25 +1450,25 @@ fun BranchListScreen(
                 BottomSheetItem(sheetState, showBottomSheet, stringResource(R.string.details)){
                     val sb = StringBuilder()
                     val it = curObjInPage.value
-                    sb.append(appContext.getString(R.string.name)).append(": ").append(it.shortName).appendLine().appendLine()
-                    sb.append(appContext.getString(R.string.full_name)).append(": ").append(it.fullName).appendLine().appendLine()
-                    sb.append(appContext.getString(R.string.last_commit)).append(": ").append(it.shortOidStr).appendLine().appendLine()
-                    sb.append(appContext.getString(R.string.last_commit_full_oid)).append(": ").append(it.oidStr).appendLine().appendLine()
-                    sb.append(appContext.getString(R.string.type)).append(": ").append(it.getTypeString()).appendLine().appendLine()
+                    sb.append(activityContext.getString(R.string.name)).append(": ").append(it.shortName).appendLine().appendLine()
+                    sb.append(activityContext.getString(R.string.full_name)).append(": ").append(it.fullName).appendLine().appendLine()
+                    sb.append(activityContext.getString(R.string.last_commit)).append(": ").append(it.shortOidStr).appendLine().appendLine()
+                    sb.append(activityContext.getString(R.string.last_commit_full_oid)).append(": ").append(it.oidStr).appendLine().appendLine()
+                    sb.append(activityContext.getString(R.string.type)).append(": ").append(it.getTypeString()).appendLine().appendLine()
                     if(it.type==Branch.BranchType.LOCAL) {
-                        sb.append(appContext.getString(R.string.upstream)).append(": ").append(it.getUpstreamShortName()).appendLine().appendLine()
+                        sb.append(activityContext.getString(R.string.upstream)).append(": ").append(it.getUpstreamShortName()).appendLine().appendLine()
                         if(it.isUpstreamValid()) {
-                            sb.append(appContext.getString(R.string.upstream_full_name)).append(": ").append(it.getUpstreamFullName()).appendLine().appendLine()
-                            sb.append(appContext.getString(R.string.status)).append(": ").append(it.getAheadBehind()).appendLine().appendLine()
+                            sb.append(activityContext.getString(R.string.upstream_full_name)).append(": ").append(it.getUpstreamFullName()).appendLine().appendLine()
+                            sb.append(activityContext.getString(R.string.status)).append(": ").append(it.getAheadBehind()).appendLine().appendLine()
                         }
                     }
 
                     if(it.isSymbolic) {
-                        sb.append(appContext.getString(R.string.symbolic_target)).append(": ").append(it.symbolicTargetShortName).appendLine().appendLine()
-                        sb.append(appContext.getString(R.string.symbolic_target_full_name)).append(": ").append(it.symbolicTargetFullName).appendLine().appendLine()
+                        sb.append(activityContext.getString(R.string.symbolic_target)).append(": ").append(it.symbolicTargetShortName).appendLine().appendLine()
+                        sb.append(activityContext.getString(R.string.symbolic_target_full_name)).append(": ").append(it.symbolicTargetFullName).appendLine().appendLine()
                     }
 
-                    sb.append(appContext.getString(R.string.other)).append(": ").append(it.getOther()).appendLine().appendLine()
+                    sb.append(activityContext.getString(R.string.other)).append(": ").append(it.getOther()).appendLine().appendLine()
 
                     detailsString.value = sb.toString()
 
@@ -1580,7 +1580,7 @@ fun BranchListScreen(
             doJobThenOffLoading(
                 loadingOn = loadingOn,
                 loadingOff = loadingOff,
-                loadingText = appContext.getString(R.string.loading),
+                loadingText = activityContext.getString(R.string.loading),
             ) {
                 list.value.clear()  //先清一下list，然后可能添加也可能不添加
 
