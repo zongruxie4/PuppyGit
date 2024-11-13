@@ -36,4 +36,4 @@ the "3_buildlibs.sh" can build specified arch e.g.:
 # build all with all available archs
 ./3_buildlibs.sh "x86 x8664 arm32 arm64"
 
-the clean.sh can do clean manullay when scripts faild, and the `archs` worked for `clean.sh` too
+the `clean_build_cache.sh` can do clean manullay when build scripts faild, and the `archs` worked for it too
