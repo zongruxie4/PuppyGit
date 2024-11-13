@@ -41,10 +41,10 @@ class Msg {
 
         }
 
-        @Deprecated("no more need this")
-        val msgNotifyHost = {
-            MsgQueue.showAndClearAllMsg()
-        }
+//        @Deprecated("no more need this")
+//        val msgNotifyHost = {
+//            MsgQueue.showAndClearAllMsg()
+//        }
     }
 }
 
