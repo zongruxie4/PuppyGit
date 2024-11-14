@@ -18,16 +18,17 @@ mkdir -p $JAVA_HOME
 
 echo "Extracting: jdk"
 tar -xzf "${build_root}/$jdk_filename" -C "$build_root"
-mv jdk8u432-b06 jdk
+mv jdk8u432-b06/* $JAVA_HOME
 
 export ndk_filename="android-ndk-r26d-linux"
 echo "Downloading: ndk"
 curl -L -o "${build_root}/$ndk_filename.zip" "https://dl.google.com/android/repository/${ndk_filename}.zip"
 export ANDROID_NDK_ROOT=$build_root/android-ndk
+mkdir -p $ANDROID_NDK_ROOT
 echo "Extracting: ndk"
 # -q : only show msg when err
 unzip -q "$ndk_filename.zip"
-mv android-ndk-r26d $ANDROID_NDK_ROOT
+mv android-ndk-r26d/* $ANDROID_NDK_ROOT
 
 
 echo "Installation complete."

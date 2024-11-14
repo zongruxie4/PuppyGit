@@ -38,28 +38,27 @@ curl -L -o "$build_src/git24j-${GIT24J_VERSION}.tar.gz" "$GIT24J_URL"
 echo "Extracting libssh2..."
 tar -xzf "$build_src/libssh2-${LIBSSH2_VERSION}.tar.gz" -C "$build_src"
 mkdir -p libssh2
-mv libssh2-${LIBSSH2_VERSION} libssh2
+mv libssh2-${LIBSSH2_VERSION}/* libssh2
 
 
 echo "Extracting openssl..."
 tar -xzf "$build_src/openssl-${OPENSSL_VERSION}.tar.gz" -C "$build_src"
 mkdir -p openssl
-mv openssl-${OPENSSL_VERSION} openssl
+mv openssl-${OPENSSL_VERSION}/* openssl
 
 
 
 echo "Extracting git24j..."
 tar -xzf "$build_src/git24j-${GIT24J_VERSION}.tar.gz" -C "$build_src"
 mkdir -p git24j
-mv git24j-${GIT24J_VERSION} git24j
-
+mv git24j-${GIT24J_VERSION}/* git24j
 
 
 
 echo "Extracting libgit2..."
 tar -xzf "$build_src/libgit2-${LIBGIT2_VERSION}.tar.gz" -C "$build_src"
 mkdir -p libgit2
-mv libgit2-${LIBGIT2_VERSION} libgit2
+mv libgit2-${LIBGIT2_VERSION}/* libgit2
 
 # replace the c standard 90 to c99, else maybe will get err when build the lib
 cd libgit2
