@@ -1,11 +1,13 @@
 package com.catpuppyapp.puppygit.dto
 
 import com.catpuppyapp.puppygit.constants.Cons
+import com.catpuppyapp.puppygit.constants.SpecialCredential
 import com.catpuppyapp.puppygit.git.BranchNameAndTypeDto
 import com.catpuppyapp.puppygit.git.CommitDto
 import com.catpuppyapp.puppygit.git.FileHistoryDto
 import com.catpuppyapp.puppygit.git.SubmoduleDto
 import com.catpuppyapp.puppygit.git.TagDto
+import com.catpuppyapp.puppygit.utils.AppModel
 import com.catpuppyapp.puppygit.utils.Libgit2Helper
 import com.catpuppyapp.puppygit.utils.Libgit2Helper.Companion.getParentRecordedTargetHashForSubmodule
 import com.catpuppyapp.puppygit.utils.Libgit2Helper.Companion.isValidGitRepo
@@ -86,10 +88,35 @@ fun createCommitDto(
 }
 
 
-fun updateRemoteDtoList(repo: Repository, remoteDtoList: List<RemoteDto>, onErr:(errRemote: RemoteDto, e:Exception)->Unit={r,e->}) {
+suspend fun updateRemoteDtoList(repo: Repository, remoteDtoList: List<RemoteDto>, onErr:(errRemote: RemoteDto, e:Exception)->Unit={r,e->}) {
     remoteDtoList.forEach {
         try {
             updateRemoteDto(repo, it)
+
+            val credDb = AppModel.singleInstanceHolder.dbContainer.credentialRepository
+            val matchByDomainId = SpecialCredential.MatchByDomain.credentialId
+            if(it.credentialId == matchByDomainId) {
+                val actuallyCred = credDb.getByIdAndMatchByDomain(matchByDomainId, it.remoteUrl)
+                if(actuallyCred!=null) {
+                    it.actuallyCredentialIdWhenCredentialIdIsMatchByDomain = actuallyCred.id
+                    it.credentialName = actuallyCred.name
+                    it.credentialVal = actuallyCred.value
+                    it.credentialPass = actuallyCred.pass
+                    it.credentialType = actuallyCred.type
+                }
+            }
+
+            if(it.pushCredentialId == matchByDomainId) {
+                // when reached here, the pushUrl is set to actually using url by `updateRemoteDto()`
+                val actuallyCred = credDb.getByIdAndMatchByDomain(matchByDomainId, it.pushUrl)
+                if(actuallyCred!=null) {
+                    it.actuallyPushCredentialIdWhenCredentialIdIsMatchByDomain = actuallyCred.id
+                    it.credentialName = actuallyCred.name
+                    it.credentialVal = actuallyCred.value
+                    it.credentialPass = actuallyCred.pass
+                    it.credentialType = actuallyCred.type
+                }
+            }
         }catch (e:Exception) {
             onErr(it, e)
         }

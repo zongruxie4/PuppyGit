@@ -72,6 +72,7 @@ interface CredentialRepository {
      *  if you are sure id is not match by domain id, just simple passing empty str as url
      */
     suspend fun getByIdWithDecryptAndMatchByDomain(id: String, url:String): CredentialEntity?
+    suspend fun getByIdAndMatchByDomain(id: String, url:String): CredentialEntity?
 
     /**
      * 不加密也不解密 密码字段，把查出的数据简单返回

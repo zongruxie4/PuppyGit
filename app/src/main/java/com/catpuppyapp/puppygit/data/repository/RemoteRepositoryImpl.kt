@@ -195,7 +195,7 @@ class RemoteRepositoryImpl(private val dao: RemoteDao) : RemoteRepository {
         }
     }
 
-    private fun syncRemoteDtoInfoWithGit(repo:Repository, remotes:List<RemoteDto>) {
+    private suspend fun syncRemoteDtoInfoWithGit(repo:Repository, remotes:List<RemoteDto>) {
         updateRemoteDtoList(repo, remotes)
     }
 

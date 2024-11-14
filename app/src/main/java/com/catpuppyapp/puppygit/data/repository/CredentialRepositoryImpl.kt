@@ -128,19 +128,27 @@ class CredentialRepositoryImpl(private val dao: CredentialDao) : CredentialRepos
         return item
     }
 
+    override suspend fun getByIdAndMatchByDomain(id: String, url: String): CredentialEntity? {
+        return getByIdAndMatchByDomainAndDecryptOrNoDecrypt(id, url, decryptPass = false)
+    }
+
     override suspend fun getByIdWithDecryptAndMatchByDomain(id: String, url: String): CredentialEntity? {
+        return getByIdAndMatchByDomainAndDecryptOrNoDecrypt(id, url, decryptPass = true)
+    }
+
+    private suspend fun getByIdAndMatchByDomainAndDecryptOrNoDecrypt(id: String, url: String, decryptPass:Boolean): CredentialEntity? {
         if(id==SpecialCredential.MatchByDomain.credentialId) {
             val dcDb = AppModel.singleInstanceHolder.dbContainer.domainCredentialRepository
             val domain = getDomainByUrl(url)
             if(domain.isNotBlank()) {
                 val domainCred = dcDb.getByDomain(domain) ?: return null
                 val credId = if(Libgit2Helper.isSshUrl(url)) domainCred.sshCredentialId else domainCred.credentialId
-                return getByIdWithDecrypt(credId)
+                return if(decryptPass) getByIdWithDecrypt(credId) else getById(credId)
             }else {
                 return null
             }
         }else {
-            return getByIdWithDecrypt(id)
+            return if(decryptPass) getByIdWithDecrypt(id) else getById(id)
         }
     }
 

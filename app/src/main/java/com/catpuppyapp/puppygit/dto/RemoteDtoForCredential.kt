@@ -2,6 +2,7 @@ package com.catpuppyapp.puppygit.dto
 
 import androidx.room.Ignore
 import com.catpuppyapp.puppygit.constants.Cons
+import com.catpuppyapp.puppygit.constants.SpecialCredential
 import com.catpuppyapp.puppygit.play.pro.R
 import com.catpuppyapp.puppygit.utils.AppModel
 
@@ -45,7 +46,19 @@ class RemoteDtoForCredential (var remoteId: String="",
 
     private fun getFetchOrPushCredentialNameOrNone(isFetch:Boolean):String {
         val activityContext = AppModel.singleInstanceHolder.activityContext
-        val name = if(isFetch) credentialName else pushCredentialName
+        val name = if(isFetch) {
+            if(credentialId == SpecialCredential.MatchByDomain.credentialId) {
+                SpecialCredential.MatchByDomain.name
+            }else {
+                credentialName
+            }
+        } else {
+            if(pushCredentialId == SpecialCredential.MatchByDomain.credentialId) {
+                SpecialCredential.MatchByDomain.name
+            }else {
+                pushCredentialName
+            }
+        }
 
         //if凭据名为null或空字符串返回 "[None]" else返回凭据名
         return if(name.isNullOrBlank()) "[${activityContext.getString(R.string.none)}]" else (""+name)
