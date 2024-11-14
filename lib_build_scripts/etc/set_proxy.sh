@@ -1,3 +1,5 @@
+host=$1
+port=$2
 proxy_url="http://$host:$port"
 
 export http_proxy=$proxy_url
