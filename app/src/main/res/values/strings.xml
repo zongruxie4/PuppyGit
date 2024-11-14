@@ -1080,5 +1080,7 @@
     <string name="http_s">http(s)</string>
     <string name="if_unable_choose_a_path_just_copy_paste_instead">If unable to choose a path, may be your system removed the file picker. Just copy the path you wised and paste it instead.</string>
     <string name="fetch_url">Fetch Url</string>
+<!--  the placeholder is remote name,   e.g. Fetching origin...-->
+    <string name="fetching_remotename">Fetching ph_a3f241dc_1…</string>
 
 </resources>

@@ -79,6 +79,7 @@ import com.catpuppyapp.puppygit.utils.changeStateTriggerRefreshPage
 import com.catpuppyapp.puppygit.utils.createAndInsertError
 import com.catpuppyapp.puppygit.utils.doJobThenOffLoading
 import com.catpuppyapp.puppygit.utils.getSecFromTime
+import com.catpuppyapp.puppygit.utils.replaceStringResList
 import com.catpuppyapp.puppygit.utils.showErrAndSaveLog
 import com.catpuppyapp.puppygit.utils.state.mutableCustomStateListOf
 import com.catpuppyapp.puppygit.utils.state.mutableCustomStateOf
@@ -766,9 +767,9 @@ fun RemoteListScreen(
             BottomSheet(showBottomSheet, sheetState, curObjInState.value.remoteName) {
                 BottomSheetItem(sheetState=sheetState, showBottomSheet=showBottomSheet, text= stringResource(R.string.fetch)){
                     //e.g. "fetching origin..."
-                    val fetchingxxxLoadingText = activityContext.getString(R.string.fetching_no_dots)+" "+curObjInState.value.remoteName+"..."
+                    val fetchingRemoteLoadingText = replaceStringResList(activityContext.getString(R.string.fetching_remotename), listOf(curObjInState.value.remoteName))
                     //执行fetch
-                    doJobThenOffLoading(loadingOn, loadingOff, fetchingxxxLoadingText) {
+                    doJobThenOffLoading(loadingOn, loadingOff, fetchingRemoteLoadingText) {
                         doFetch(curObjInState.value.remoteName, curRepo.value)
                         //刷新页面
                         changeStateTriggerRefreshPage(needRefresh)

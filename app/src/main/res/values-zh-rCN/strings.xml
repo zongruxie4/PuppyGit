@@ -1061,6 +1061,7 @@
     <string name="http_s">http(s)</string>
     <string name="if_unable_choose_a_path_just_copy_paste_instead">如果无法选择路径，可能你的系统精简了文件选择器，可以复制你希望的路径然后粘贴到这里来替代。</string>
     <string name="fetch_url">下载地址</string>
+    <string name="fetching_remotename">正在下载 ph_a3f241dc_1…</string>
 
 
 </resources>
