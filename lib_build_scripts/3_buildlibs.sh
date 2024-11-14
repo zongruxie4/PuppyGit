@@ -219,7 +219,8 @@ for arch in $archs; do
 done
 
 echo "copy all libs to: '$build_success_out'"
-cp -rf $build_out $build_success_out
+mkdir -p $build_success_out
+cp -rf $build_out/* $build_success_out
 echo "finshed"
 
 
