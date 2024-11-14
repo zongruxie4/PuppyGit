@@ -84,7 +84,6 @@ import com.catpuppyapp.puppygit.utils.state.mutableCustomStateListOf
 import com.catpuppyapp.puppygit.utils.state.mutableCustomStateOf
 import com.github.git24j.core.Remote
 import com.github.git24j.core.Repository
-import java.net.URI
 
 private val TAG = "RemoteListScreen"
 private val stateKeyTag = "RemoteListScreen"
@@ -454,24 +453,6 @@ fun RemoteListScreen(
 
                 //设置非空的url或pushUrl
                 //解析url，捎带检测url是否是有效uri
-                var newUrlUri:URI? = null
-                var newUrlUriStr = ""
-                try {
-                    //准备url，若url格式有问题，会在URI.create()时报错
-                    newUrlUri = URI.create(newUrl)  // 如果url无效，在这会抛异常，数据库和配置文件都不会更新
-                    newUrlUriStr = newUrlUri.toString()
-
-                }catch (uriException:Exception) {
-                    urlErrMsg.value = activityContext.getString(R.string.err_invalid_url)
-                    MyLog.e(TAG, "$setUrlPrefix in RemoteList err: parse url err, url=$newUrl, err is: ${uriException.localizedMessage}")
-                    return@onOk
-                }
-
-                //正常来说应该不会进入这个代码块，这里只是以防万一
-                if(newUrlUri==null || newUrlUriStr.isBlank()) {
-                    urlErrMsg.value = activityContext.getString(R.string.err_invalid_url)+", errcode=17049037"  //后面的errcode是为了方便我定位错误发生在哪部分代码，我一看到errcode，我就知道“啊，是在这发生的错误”
-                    return@onOk
-                }
 
                 //执行到这里，解析url成功且url不为空
 
@@ -485,9 +466,9 @@ fun RemoteListScreen(
                         //先更新配置文件，然后再更新db，因为在这里db相当于缓存，而配置文件是正式数据，应确保正式数据成功更新后再更新缓存
                         Repository.open(repoFullPath).use { repo ->
                             if(isPushUrl.value){
-                                Remote.setPushurl(repo, remoteName, newUrlUri)
+                                Remote.setPushurl(repo, remoteName, newUrl)
                             }else{
-                                Remote.setUrl(repo, remoteName, newUrlUri)
+                                Remote.setUrl(repo, remoteName, newUrl)
                             }
                         }
 
@@ -496,11 +477,11 @@ fun RemoteListScreen(
                         // 更新数据库
                         val remoteDb = AppModel.singleInstanceHolder.dbContainer.remoteRepository
                         if(isPushUrl.value){
-                            remoteDb.updatePushUrlById(remoteId, newUrlUriStr)
+                            remoteDb.updatePushUrlById(remoteId, newUrl)
                         }else {
                             //这里不用开事务，因为里面就一个dao操作而那个dao已经开了事务，只有多个db操作弄到一起时才有必要在外部开事务
                             //为了和配置文件一致，数据库保存的是 用户输入转成的url再转成的uri再转成的字符串，可能包含需编码的内容时这么转有意义？
-                            remoteDb.updateRemoteUrlById(remoteId, newUrlUriStr, requireTransaction=false)
+                            remoteDb.updateRemoteUrlById(remoteId, newUrl, requireTransaction=false)
                         }
 
                         //操作完成

@@ -77,7 +77,6 @@ import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 import java.io.File
-import java.net.URI
 import java.nio.charset.Charset
 import java.time.ZoneOffset
 import java.util.EnumSet
@@ -4377,7 +4376,7 @@ class Libgit2Helper {
         }
 
         fun setRemoteUrlForRepo(repo: Repository, remote:String, url:String) {
-            Remote.setUrl(repo,remote, URI.create(url));
+            Remote.setUrl(repo,remote, url);
 
         }
 
@@ -4541,7 +4540,7 @@ class Libgit2Helper {
                 val remote = Remote.create(
                     repo,
                     remoteName,
-                    URI.create(url)
+                    url
                 )
                 Ret.createSuccess(remote)
             }catch (e:Exception) {
@@ -5295,7 +5294,7 @@ class Libgit2Helper {
         fun addSubmodule(repo: Repository, remoteUrl: String, relativePathUnderParentRepo:String) {
 //            if true, will create .git file under submodule, else will create .git folder, pc git default create .git file, so recommend set it to true
             val useGitlink=true
-            Submodule.addSetup(repo, URI.create(remoteUrl), relativePathUnderParentRepo, useGitlink)
+            Submodule.addSetup(repo, remoteUrl, relativePathUnderParentRepo, useGitlink)
 
             // if add success, backup .git file
             SubmoduleDotGitFileMan.backupDotGitFileForSubmodule(getRepoWorkdirNoEndsWithSlash(repo), relativePathUnderParentRepo)
@@ -5435,7 +5434,7 @@ class Libgit2Helper {
 
         fun updateSubmoduleUrl(parentRepo:Repository, sm:Submodule, remoteUrl:String) {
             //update url
-            Submodule.setUrl(parentRepo, sm.name(), URI.create(remoteUrl))
+            Submodule.setUrl(parentRepo, sm.name(), remoteUrl)
 
             //after update, do init and sync for update parent repos config and submodules git config
             val overwrite = true
@@ -6115,7 +6114,7 @@ class Libgit2Helper {
                                     Remote.createWithFetchspec(
                                         repo,
                                         name,
-                                        URI.create(url),
+                                        url,
                                         singleBranchRefSpec
                                     )
                                 }
