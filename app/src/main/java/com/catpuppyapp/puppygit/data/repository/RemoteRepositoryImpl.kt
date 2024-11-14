@@ -73,11 +73,42 @@ class RemoteRepositoryImpl(private val dao: RemoteDao) : RemoteRepository {
     }
 
     override suspend fun getLinkedRemoteDtoForCredentialList(credentialId: String): List<RemoteDtoForCredential> {
-        return dao.getLinkedRemoteDtoForCredentialList(credentialId)
+        val ret = dao.getLinkedRemoteDtoForCredentialList(credentialId)
+        setRemoteInfoForDtoList(ret)
+        return ret
     }
 
     override suspend fun getUnlinkedRemoteDtoForCredentialList(credentialId: String): List<RemoteDtoForCredential> {
-        return dao.getUnlinkedRemoteDtoForCredentialList(credentialId)
+        val ret = dao.getUnlinkedRemoteDtoForCredentialList(credentialId)
+        setRemoteInfoForDtoList(ret)
+        return ret
+    }
+
+    private suspend fun setRemoteInfoForDtoList(dtoList:List<RemoteDtoForCredential>) {
+        if(dtoList.isEmpty()) {
+            return
+        }
+
+        val repoDb = AppModel.singleInstanceHolder.dbContainer.repoRepository
+
+        for(it in dtoList){
+            try {
+                val repoFromDb = repoDb.getById(it.repoId)
+                if (repoFromDb == null) {
+                    MyLog.w(TAG, "#setRemoteInfoForDtoList warn: an invalid repo id '${it.repoId}' related by remote '${it.remoteName}', remote id =${it.remoteId}")
+                    continue
+                }
+
+                Repository.open(repoFromDb.fullSavePath).use { repo ->
+                    val remote = Libgit2Helper.resolveRemote(repo, it.remoteName)!!
+                    it.remoteFetchUrl = Libgit2Helper.getRemoteFetchUrl(remote)
+                    it.remotePushUrl = Libgit2Helper.getRemoteActuallyUsedPushUrl(remote)
+                }
+
+            } catch (e: Exception) {
+                MyLog.e(TAG, "#setRemoteInfoForDtoList err: update info for remote '${it.remoteName}' err, remoteId=${it.remoteId}, err=${e.stackTraceToString()}")
+            }
+        }
     }
 
     override suspend fun updateCredentialIdByRemoteId(remoteId: String, credentialId: String) {

@@ -1,5 +1,6 @@
 package com.catpuppyapp.puppygit.dto
 
+import androidx.room.Ignore
 import com.catpuppyapp.puppygit.constants.Cons
 import com.catpuppyapp.puppygit.play.pro.R
 import com.catpuppyapp.puppygit.utils.AppModel
@@ -21,8 +22,19 @@ class RemoteDtoForCredential (var remoteId: String="",
                               var pushCredentialId:String?="",
                               var pushCredentialName:String?="",
                               var pushCredentialType:Int= Cons.dbCredentialTypeHttp,
-)
-{
+) {
+    /**
+      fetch url,  is the Remote.url()
+     */
+    @Ignore
+    var remoteFetchUrl:String=""
+
+    /**
+     * remote actually using push url
+     */
+    @Ignore
+    var remotePushUrl:String=""
+
     fun getCredentialNameOrNone():String {
         return getFetchOrPushCredentialNameOrNone(isFetch = true)
     }
