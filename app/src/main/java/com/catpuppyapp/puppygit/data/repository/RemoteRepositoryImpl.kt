@@ -126,8 +126,8 @@ class RemoteRepositoryImpl(private val dao: RemoteDao) : RemoteRepository {
                         val remoteWillInsert = RemoteEntity(
                             repoId = repoId,
                             remoteName = it,
-                            remoteUrl = remote.url().toString(),
-                            pushUrl = remote.pushurl()?.toString()?:""
+                            remoteUrl = remote.url(),
+                            pushUrl = remote.pushurl()?:""
                         )
 
                         insert(remoteWillInsert)
@@ -153,8 +153,8 @@ class RemoteRepositoryImpl(private val dao: RemoteDao) : RemoteRepository {
         Repository.open(repoFromDb.fullSavePath).use { repo->
             val remoteFromGit = Libgit2Helper.resolveRemote(repo, remoteFromDb.remoteName)?:throw RuntimeException("resolve remote '${remoteFromDb.remoteName}' from git failed")
             //查RemoteEntity一般都是为了凭据，需要更新的字段其实很少
-            remoteFromDb.remoteUrl = remoteFromGit.url().toString()
-            remoteFromDb.pushUrl = remoteFromGit.pushurl()?.toString()?:""
+            remoteFromDb.remoteUrl = remoteFromGit.url()
+            remoteFromDb.pushUrl = remoteFromGit.pushurl()?:""
 
             // if push url invalid, actually will use fetch url(remoteUrl), so set it to fetch url
             if(remoteFromDb.pushUrl.isBlank()) {

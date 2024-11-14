@@ -248,7 +248,7 @@ class Libgit2Helper {
     }
 
     companion object {
-        //TODO change this "credentialType" set by url
+        //x DONE at 20241114) change this "credentialType" set by url
         private val getCredentialCb = { credentialType:Int, usernameOrPrivateKey:String, passOrPassphrase:String ->
 
             //凭据认证回调函数的文档：https://libgit2.org/libgit2/#HEAD/group/callback/git_credential_acquire_cb
@@ -2614,7 +2614,7 @@ class Libgit2Helper {
 
         fun getRemoteFetchUrl(remote:Remote):String {
             return try {
-                remote.url()?.toString()?:""
+                remote.url()
             }catch (e:Exception) {
                 ""
             }
@@ -2622,8 +2622,8 @@ class Libgit2Helper {
 
         fun getRemoteActuallyUsedPushUrl(remote:Remote):String {
             try {
-                val pushUrl = remote.pushurl()?.toString()
-                if(pushUrl.isNullOrEmpty()) {
+                val pushUrl = remote.pushurl() ?:""
+                if(pushUrl.isBlank()) {
                     return getRemoteFetchUrl(remote)
                 }
 
@@ -5502,7 +5502,7 @@ class Libgit2Helper {
 
                 val updateOpts = Submodule.UpdateOptions.createDefault()
                 val callbacks = updateOpts.fetchOpts.callbacks
-                val smUrl = sm.url()?.toString() ?: ""
+                val smUrl = sm.url() ?: ""
 
                 //set credential
                 try {
@@ -5640,7 +5640,7 @@ class Libgit2Helper {
 
                     val updateOpts = Submodule.UpdateOptions.createDefault()
                     val callbacks = updateOpts.fetchOpts.callbacks
-                    val smUrl = sm.url()?.toString() ?: ""
+                    val smUrl = sm.url() ?: ""
 
                     //set credential
                     try {

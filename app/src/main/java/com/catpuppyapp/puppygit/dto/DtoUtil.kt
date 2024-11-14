@@ -101,8 +101,8 @@ fun updateRemoteDto(repo: Repository, remoteDto: RemoteDto) {
     val remote = Libgit2Helper.resolveRemote(repo, remoteName) ?: return
 
     //更新remoteUrl(即git config文件中的url)、pushUrl
-    remoteDto.remoteUrl = remote.url().toString()
-    remoteDto.pushUrl = remote.pushurl()?.toString()?:""
+    remoteDto.remoteUrl = remote.url()
+    remoteDto.pushUrl = remote.pushurl()?:""
 
     // if push url not set, use same as fetch url(remoteUrl)
     if(remoteDto.pushUrl.isBlank()) {
@@ -132,7 +132,7 @@ fun createSubmoduleDto(
     val smFullPath = parentWorkdirPathNoSlashSuffix + Cons.slash + smRelativePath.removePrefix(Cons.slash)
 
     // [fixed, the reason was pass NULL to jni StringUTF method in c codes] if call submodule.url() it will crashed when url invalid
-    val smUrl = sm.url()?.toString() ?: ""
+    val smUrl = sm.url() ?: ""
     //another way to get url from .gitsubmodules, is read info by kotlin, 100% safe
     //                val smUrl = getValueFromGitConfig(parentDotGitModuleFile, "submodule.$name.url")
     val smDto = SubmoduleDto(
