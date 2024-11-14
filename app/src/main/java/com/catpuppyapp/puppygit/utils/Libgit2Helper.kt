@@ -253,7 +253,7 @@ class Libgit2Helper {
 
             //凭据认证回调函数的文档：https://libgit2.org/libgit2/#HEAD/group/callback/git_credential_acquire_cb
             { url: String?, usernameFromUrl: String?, allowedTypes: Int? ->
-                //TODO 这个不知道会不会报错，如果报错的话，改用allowedType判断决定返回什么类型的Credential ，可参考：libgit2 src/examples/common.c 函数 int cred_acquire_cb()
+                //也可用allowedType判断决定返回什么类型的Credential，allowedTypes是个bitmask值，参考：libgit2 src/examples/common.c 函数 int cred_acquire_cb()
                 if (credentialType == Cons.dbCredentialTypeHttp) {  //type http
                     Credential.userpassPlaintextNew(
                         usernameOrPrivateKey,
@@ -266,7 +266,8 @@ class Libgit2Helper {
                     if(usernameFromUrl != null && usernameFromUrl.isNotBlank()) {
                         usernameForSsh = usernameFromUrl
                     }
-                    val passphraseOrNull = passOrPassphrase.ifBlank { null }  // pass?pass:null
+
+                    val passphraseOrNull = passOrPassphrase.ifEmpty { null }
 
                     //params: username, publickey, privatekey, passphrase。其中username和privatekey必须有，passphrase如果设置了就有，否则没有，publickey在客户端不需要。
                     Credential.sshKeyMemoryNew(
