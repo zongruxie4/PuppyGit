@@ -499,7 +499,7 @@
     <string name="branch_mode">分支模式</string>
     <string name="branch_mode_note">下载全部分支或指定一个列表</string>
     <string name="set_branch_mode">设置分支模式</string>
-    <string name="fetching_all">下载所有中…</string>
+    <string name="fetching_all">正在下载全部…</string>
     <string name="pull_err">拉取出错</string>
     <string name="explorer_files">浏览文件</string>
     <string name="accept_theirs_pro_only">接受对方(专业版)</string>
