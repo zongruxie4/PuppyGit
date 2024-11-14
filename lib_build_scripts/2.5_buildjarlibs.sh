@@ -42,16 +42,6 @@ mkdir -p $x8664inst
 mkdir -p $arm32inst
 mkdir -p $x86inst
 
-export arm64_toolchain_file=$build_root/libgit2-arm64-toolchain.cmake
-export x8664_toolchain_file=$build_root/libgit2-x8664-toolchain.cmake
-export arm32_toolchain_file=$build_root/libgit2-armv7-toolchain.cmake
-export x86_toolchain_file=$build_root/libgit2-x86-toolchain.cmake
-
-cp libgit2-arm64-toolchain.cmake $arm64_toolchain_file
-cp libgit2-x8664-toolchain.cmake $x8664_toolchain_file
-cp libgit2-armv7-toolchain.cmake $arm32_toolchain_file
-cp libgit2-x86-toolchain.cmake $x86_toolchain_file
-
 
 # set src folder
 export opensslsrc=$build_src/openssl
