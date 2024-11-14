@@ -19,7 +19,6 @@ import androidx.compose.ui.unit.dp
 import com.catpuppyapp.puppygit.dto.RemoteDtoForCredential
 import com.catpuppyapp.puppygit.play.pro.R
 import com.catpuppyapp.puppygit.style.MyStyleKt
-import com.catpuppyapp.puppygit.utils.AppModel
 
 
 @Composable
@@ -28,9 +27,11 @@ fun RemoteItemForCredential(
     idx:Int,
     thisItem:RemoteDtoForCredential,
     actText:String,
+    showUrlDialog:(title:String, url:String) -> Unit,
     actAction:()->Unit,
 ) {
-    val haptic = AppModel.singleInstanceHolder.haptic
+//    val haptic = AppModel.singleInstanceHolder.haptic
+
 //    println("IDX::::::::::"+idx)
     Row(
         //0.9f 占父元素宽度的百分之90
@@ -72,29 +73,42 @@ fun RemoteItemForCredential(
                 )
             }
 
+            val fetchUrlTitle = stringResource(R.string.fetch_url)
             Row (
-                modifier = Modifier.horizontalScroll(rememberScrollState()),
                 verticalAlignment = Alignment.CenterVertically,
             ){
-                Text(text = stringResource(R.string.fetch_url) +":")
-                Text(text = thisItem.remoteFetchUrl,
-                    maxLines = 1,
-                    overflow = TextOverflow.Ellipsis,
-                    fontWeight = FontWeight.Light
-
-                )
+                Text(text = fetchUrlTitle+":")
+                Row(
+                    modifier = Modifier.horizontalScroll(rememberScrollState())
+                        .clickable {
+                           showUrlDialog(fetchUrlTitle, thisItem.remoteFetchUrl)
+                        }
+                ) {
+                    Text(text = thisItem.remoteFetchUrl,
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis,
+                        fontWeight = FontWeight.Light
+                    )
+                }
             }
+
+            val pushUrlTitle = stringResource(R.string.push_url)
             Row (
-                modifier = Modifier.horizontalScroll(rememberScrollState()),
                 verticalAlignment = Alignment.CenterVertically,
             ){
-                Text(text = stringResource(R.string.push_url) +":")
-                Text(text = thisItem.remotePushUrl,
-                    maxLines = 1,
-                    overflow = TextOverflow.Ellipsis,
-                    fontWeight = FontWeight.Light
-
-                )
+                Text(text = pushUrlTitle+":")
+                Row(
+                    modifier = Modifier.horizontalScroll(rememberScrollState())
+                        .clickable {
+                           showUrlDialog(pushUrlTitle, thisItem.remotePushUrl)
+                        }
+                ){
+                    Text(text = thisItem.remotePushUrl,
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis,
+                        fontWeight = FontWeight.Light
+                    )
+                }
             }
 
             Row (

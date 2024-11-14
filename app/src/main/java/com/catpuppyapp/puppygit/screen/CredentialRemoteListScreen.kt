@@ -37,6 +37,8 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.catpuppyapp.puppygit.compose.ConfirmDialog
+import com.catpuppyapp.puppygit.compose.ConfirmDialog2
+import com.catpuppyapp.puppygit.compose.CopyScrollableColumn
 import com.catpuppyapp.puppygit.compose.FilterTextField
 import com.catpuppyapp.puppygit.compose.GoToTopAndGoToBottomFab
 import com.catpuppyapp.puppygit.compose.InfoDialog
@@ -247,8 +249,28 @@ fun CredentialRemoteListScreen(
         }
     }
 
-
-
+    val urlForShow = rememberSaveable { mutableStateOf("")}
+    val titleForShow = rememberSaveable { mutableStateOf("")}
+    val showUrlDialogState = rememberSaveable { mutableStateOf(false)}
+    val showUrlDialog = { title:String, url:String ->
+        titleForShow.value = title
+        urlForShow.value = url
+        showUrlDialogState.value = true
+    }
+    if(showUrlDialogState.value) {
+        ConfirmDialog2(
+            title = titleForShow.value,
+            requireShowTextCompose = true,
+            textCompose = {
+                CopyScrollableColumn {
+                   Text(urlForShow.value)
+                }
+            },
+            onCancel = {showUrlDialogState.value=false},
+            cancelBtnText = stringResource(R.string.close),
+            showOk = false
+        ) { }
+    }
 
     Scaffold(
         modifier = Modifier.nestedScroll(homeTopBarScrollBehavior.nestedScrollConnection),
@@ -411,6 +433,7 @@ fun CredentialRemoteListScreen(
             RemoteItemForCredential(
                 isShowLink=isShowLink,
                 idx = idx, thisItem = it,
+                showUrlDialog = showUrlDialog,
                 actText = if(isShowLink)stringResource(R.string.unlink) else stringResource(R.string.link),
             ){
                 curItem.value = it

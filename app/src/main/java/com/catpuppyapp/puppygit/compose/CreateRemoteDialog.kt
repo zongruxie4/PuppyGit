@@ -105,7 +105,7 @@ fun CreateRemoteDialog(
                                 if(ret.success() || exists) {
                                     val remoteUrl = if(exists){  //若remote存在，读取配置文件中的url，否则使用用户输入的url
                                         val r = Remote.lookup(repo, remoteName)
-                                        r?.url()
+                                        r?.url() ?: ""
                                     } else remoteUrl
 
                                     //需确保insert前检查 repoId和remoteName是否存在，若存在就不插入
