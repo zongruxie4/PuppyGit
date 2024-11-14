@@ -1,9 +1,9 @@
 #!/bin/bash
 # set version and download link, make sure download file is tar.gz, else need edit the uncompress command
-LIBSSH2_VERSION="1.11.0"
-OPENSSL_VERSION="3.3.0"
-LIBGIT2_VERSION="1.7.2"
-GIT24J_VERSION="1.0.3.20241022"
+LIBSSH2_VERSION="1.11.1"
+OPENSSL_VERSION="3.4.0"
+LIBGIT2_VERSION="1.8.4"
+GIT24J_VERSION="1.0.4.20241114"
 
 
 

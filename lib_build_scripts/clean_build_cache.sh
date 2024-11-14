@@ -9,8 +9,6 @@
 # before run this script block, start: you must set below vars to expect value
 # set ndk target abi
 export android_target_abi=21
-# used for gen jar name like: git24j-1.0.3.20241022.jar
-export git24j_jar_version="1.0.3.20241022"
 
 
 # before run this script block, end
