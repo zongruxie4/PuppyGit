@@ -613,14 +613,17 @@ fun DiffRow (
                                 }
 
                                 if(line1ready) {
+
+                                    // (20241114 change to no check, force re-compare, cause sometimes, maybe "a compare to b" has difference result with "b compare to a")
                                     // same line num already compared in normal procudure
-                                    if(line.lineNum == cp.line1Num && (
-                                                (line.originType == OriginType.ADDITION.toString() && cp.line1OriginType == OriginType.DELETION.toString())
-                                                        ||  (line.originType == OriginType.DELETION.toString() && cp.line1OriginType == OriginType.ADDITION.toString())
-                                                )) {
-                                        Msg.requireShow(activityContext.getString(R.string.selected_lines_already_compared))
-                                        return@label
-                                    }
+//                                    if(line.lineNum == cp.line1Num && (
+//                                                (line.originType == OriginType.ADDITION.toString() && cp.line1OriginType == OriginType.DELETION.toString())
+//                                                        ||  (line.originType == OriginType.DELETION.toString() && cp.line1OriginType == OriginType.ADDITION.toString())
+//                                                  )
+//                                    ) {
+//                                        Msg.requireShow(activityContext.getString(R.string.selected_lines_already_compared))
+//                                        return@label
+//                                    }
 
                                     // both are CONTEXT
                                     if(line.originType == OriginType.CONTEXT.toString() && cp.line1OriginType == line.originType) {
