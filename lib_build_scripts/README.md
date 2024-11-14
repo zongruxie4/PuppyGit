@@ -1,25 +1,25 @@
 step by step build the libs:
-install vargant: 
+install vagrant: 
 https://www.vagrantup.com/
 
 install virtualbox:
 https://www.virtualbox.org/
 
-create a dir e.g. "vargant_workdir", cd to it, then run:
+create a dir e.g. "vagrant_workdir", cd to it, then run:
 vagrant init
 
-then copy all files from here to the "vargant_workdir", then run:
-vargant up
+then copy all files from here to the "vagrant_workdir", then run:
+vagrant up
 
 then, run:
-vargant ssh
+vagrant ssh
 
 after into virtual machine, then run:
 cd /vagrant
 
 then run the scripts by order
 
-when build finished, you can find all libs at the path 'vargant_workdir/builts' on you host machine
+when build finished, you can find all libs at the path 'vagrant_workdir/build_out' on you host machine
 
 ---
 others info:

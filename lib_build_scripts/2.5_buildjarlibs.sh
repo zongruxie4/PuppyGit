@@ -13,8 +13,6 @@ export android_target_abi=21
 # used for find jar name like: git24j-1.0.3.20241022.jar
 export git24j_jar_version="1.0.4.20241114"
 
-# if all build success, will copy libs to here
-export build_success_out=/vagrant/builts
 
 # before run this script block, end
 
