@@ -19,6 +19,15 @@ room {
     schemaDirectory(dbSchemaLocation)
 }
 android {
+    // quit include google signature block in the built apk file, these info using google public key encrypted, if don't publish app to google play, is nonsense
+    // see: https://developer.android.com/build/dependencies?hl=zh-cn#dependency-info-play
+    dependenciesInfo {
+        // Disables dependency metadata when building APKs.
+        includeInApk = false
+        // Disables dependency metadata when building Android App Bundles.
+        includeInBundle = false
+    }
+
     val packageName = "com.catpuppyapp.puppygit.play.pro"
 
     namespace = packageName  // 这个值和包名有所不同，但是最好把这个值和包名设成一样的 或 让此值在系统中唯一，绝对不要不同或相同包名的app拥有相同namespace！如果包名不同但此值相同，会删除已安装的app！或者冲突，安装失败。（R.string 那个R需要在这个作用域下运行）
