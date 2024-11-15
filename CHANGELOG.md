@@ -1,11 +1,19 @@
 1.0.6.4v40 - 20241115:
 - if url is not http or https url, will show private key and passphrase instead username and password for the "New Credential"
 
+
 1.0.6.3v39 - 20241115:
-- fix some minor bugs 
+- fix some minor bugs
+- update dependency libs
+    - libgit2 from 1.7.2 to 1.8.4
+    - openssl from 3.3.0 to 3.4.0
+    - libssh2 from 1.11.0 to 1.11.1
+    - git24j from 1.0.3 to 1.0.4
+
 
 1.0.6.2v38 - 20241113:
 - support ssh
+
 
 1.0.6.1v37 - 20241111:
 - support view file history
@@ -16,6 +24,7 @@
 
 1.0.6.0v36 - 20241101:
 - fix Difference Screen crash
+
 
 1.0.5.9v35 - 20241031:
 - update git24j libs
