@@ -1,5 +1,8 @@
 #!/bin/bash
 
+# usage:
+# . ./set_proxy_.sh <host> <port>
+
 # WARN!
 # You MUST . or source this script for make it work for outer shell, e.g.
 # `. set_proxy.sh host port`
