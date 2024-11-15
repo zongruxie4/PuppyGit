@@ -138,16 +138,33 @@ fun DomainCredentialListScreen(
     val isCreate = rememberSaveable { mutableStateOf(false)}
     val curDomainNameErr = rememberSaveable { mutableStateOf("")}
     val curDomainName = rememberSaveable { mutableStateOf("")}
-    val curId = rememberSaveable { mutableStateOf("")}  // current edit item id
+    val curDomainCredItemId = rememberSaveable { mutableStateOf("")}  // current edit item id
 
-    fun initCreateOrEditDialog(isCreateParam:Boolean, curDomainParam:String, curIdParam:String, curCredentialId:String){
+    fun initCreateOrEditDialog(isCreateParam:Boolean, curDomainNameParam:String, curDomainCredItemIdParam:String, curCredentialId:String, curSshCredentialId:String){
         isCreate.value = isCreateParam
-        curDomainName.value = curDomainParam
+        curDomainName.value = curDomainNameParam
         curDomainNameErr.value=""
-        curId.value = curIdParam
+        // domain credential item id in db
+        curDomainCredItemId.value = curDomainCredItemIdParam
 
-        val indexOf = credentialList.value.indexOfFirst { it.id == curCredentialId }
-        selectedCredentialIdx.intValue = indexOf.coerceAtLeast(0)  // if not found, set to 0, else use found index
+        var indexOfHttp = -1
+        var indexOfSsh = -1
+        for ((i,v) in credentialList.value.withIndex()) {
+            if(indexOfHttp==-1 && v.id==curCredentialId) {
+                indexOfHttp = i
+            }
+
+            if(indexOfSsh==-1 && v.id==curSshCredentialId) {
+                indexOfSsh = i
+            }
+
+            if(indexOfHttp!=-1 && indexOfSsh!=-1) {
+                break
+            }
+        }
+
+        selectedCredentialIdx.intValue = indexOfHttp.coerceAtLeast(0)  // if not found, set to 0, else use found index
+        selectedSshCredentialIdx.intValue = indexOfSsh.coerceAtLeast(0)  // if not found, set to 0, else use found index
 
         showCreateOrEditDialog.value = true
     }
@@ -217,7 +234,7 @@ fun DomainCredentialListScreen(
                             )
                         )
                     }else {
-                        val old = dcDb.getById(curId.value) ?: throw RuntimeException("invalid id for update")
+                        val old = dcDb.getById(curDomainCredItemId.value) ?: throw RuntimeException("invalid id for update")
                         old.domain = newDomain
                         old.credentialId =newCredentialId
                         old.sshCredentialId = newSshCredentialId
@@ -413,7 +430,13 @@ fun DomainCredentialListScreen(
                                 icon =  Icons.Filled.Add,
                                 iconContentDesc = stringResource(id = R.string.create_new_credential),
                             ) {
-                                initCreateOrEditDialog(isCreateParam = true, curDomainParam = "", curIdParam = "", curCredentialId="")
+                                initCreateOrEditDialog(
+                                    isCreateParam = true,
+                                    curDomainNameParam = "",
+                                    curDomainCredItemIdParam = "",
+                                    curCredentialId="",
+                                    curSshCredentialId = ""
+                                )
                             }
                         }
 
@@ -483,7 +506,13 @@ fun DomainCredentialListScreen(
                 requirePaddingAtBottom = true
             ) {idx, value->
                 DomainCredItem (showBottomSheet = showBottomSheet, curCredentialState = curCredential, idx = idx, thisItem = value) {
-                    initCreateOrEditDialog(isCreateParam = false, curDomainParam = value.domain, curIdParam = value.domainCredId, curCredentialId=value.credId?:"")
+                    initCreateOrEditDialog(
+                        isCreateParam = false,
+                        curDomainNameParam = value.domain,
+                        curDomainCredItemIdParam = value.domainCredId,
+                        curCredentialId=value.credId?:"",
+                        curSshCredentialId=value.sshCredId?:""
+                    )
                 }
 
                 HorizontalDivider()

@@ -20,6 +20,7 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import com.catpuppyapp.puppygit.git.SubmoduleDto
 import com.catpuppyapp.puppygit.play.pro.R
+import com.catpuppyapp.puppygit.utils.Libgit2Helper
 
 
 @OptIn(ExperimentalFoundationApi::class)
@@ -109,7 +110,7 @@ fun SubmoduleItem(
 
         ){
             Text(text = stringResource(R.string.target) +":")
-            Text(text = thisObj.targetHash,
+            Text(text = Libgit2Helper.getShortOidStrByFull(thisObj.targetHash),
                 maxLines = 1,
                 overflow = TextOverflow.Ellipsis,
                 fontWeight = FontWeight.Light
