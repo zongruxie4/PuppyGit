@@ -1,3 +1,6 @@
+1.0.6.4v40 - 20241115:
+- if url is not http or https url, will show private key and passphrase instead username and password for the "New Credential"
+
 1.0.6.3v39 - 20241115:
 - fix some minor bugs 
 
