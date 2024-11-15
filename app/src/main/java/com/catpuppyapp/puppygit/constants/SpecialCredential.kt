@@ -19,6 +19,10 @@ object SpecialCredential {
         fun equals_to(other:CredentialEntity):Boolean {
             return SpecialCredential.equals_to(entity, other)
         }
+
+        fun id_equals_to(otherId:String):Boolean {
+            return otherId == credentialId
+        }
     }
 
     /**
@@ -36,6 +40,10 @@ object SpecialCredential {
 
         fun equals_to(other:CredentialEntity):Boolean {
             return SpecialCredential.equals_to(entity, other)
+        }
+
+        fun id_equals_to(otherId:String):Boolean {
+            return otherId == credentialId
         }
 
     }

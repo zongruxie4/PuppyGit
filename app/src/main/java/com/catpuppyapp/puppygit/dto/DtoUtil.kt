@@ -111,10 +111,10 @@ suspend fun updateRemoteDtoList(repo: Repository, remoteDtoList: List<RemoteDto>
                 val actuallyCred = credDb.getByIdAndMatchByDomain(matchByDomainId, it.pushUrl)
                 if(actuallyCred!=null) {
                     it.actuallyPushCredentialIdWhenCredentialIdIsMatchByDomain = actuallyCred.id
-                    it.credentialName = actuallyCred.name
-                    it.credentialVal = actuallyCred.value
-                    it.credentialPass = actuallyCred.pass
-                    it.credentialType = actuallyCred.type
+                    it.pushCredentialName = actuallyCred.name
+                    it.pushCredentialVal = actuallyCred.value
+                    it.pushCredentialPass = actuallyCred.pass
+                    it.pushCredentialType = actuallyCred.type
                 }
             }
         }catch (e:Exception) {
@@ -132,6 +132,7 @@ fun updateRemoteDto(repo: Repository, remoteDto: RemoteDto) {
     remoteDto.pushUrl = remote.pushurl()?:""
 
     // if push url not set, use same as fetch url(remoteUrl)
+    // use isBlank() check the pushUrl is fine, if pushurl exists but has blank value, still will using fetch url
     if(remoteDto.pushUrl.isBlank()) {
         remoteDto.pushUrl = remoteDto.remoteUrl
         remoteDto.pushUrlTrackFetchUrl = true
