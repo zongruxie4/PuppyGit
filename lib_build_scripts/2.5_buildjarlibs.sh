@@ -63,7 +63,7 @@ export prefix=$ANDROID_TOOLCHAIN_ROOT/sysroot/usr/local
 # build git24j jar
 echo "start build git24j jar"
 cd $git24jsrc
-mvn clean compile package "-Dmaven.test.skip=true"
+mvn clean compile package "-Dmaven.test.skip=true" "-Dmaven.javadoc.skip=true"
 cp target/git24j-$git24j_jar_version.jar $build_out/git24j-$git24j_jar_version.jar
 # clean
 rm -rf target
