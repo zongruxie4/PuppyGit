@@ -1,6 +1,8 @@
+1.0.6.3v39 - 20241115:
+- fix some minor bugs 
+
 1.0.6.2v38 - 20241113:
 - support ssh
-
 
 1.0.6.1v37 - 20241111:
 - support view file history
