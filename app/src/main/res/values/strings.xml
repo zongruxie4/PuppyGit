@@ -85,8 +85,8 @@
     <string name="password">Password</string>
     <string name="private_key">Private Key</string>
     <string name="paste_your_private_key_here">Paste your private-key here</string>
-    <string name="passphrase_if_have">Passphrase(if have)</string>
-    <string name="input_passphrase_if_have">Input passphrase if have</string>
+    <string name="passphrase_if_have">Passphrase (if have)</string>
+    <string name="input_passphrase_if_have">Input passphrase (if have)</string>
     <string name="tap_for_select_credential">Tap for select credential</string>
     <string name="selected_credential">Selected credential:</string>
     <string name="credential_name_exists_err">Credential name already Exists, please change it</string>
