@@ -83,6 +83,7 @@ import com.catpuppyapp.puppygit.user.UserUtil
 import com.catpuppyapp.puppygit.utils.ActivityUtil
 import com.catpuppyapp.puppygit.utils.AppModel
 import com.catpuppyapp.puppygit.utils.FsUtils
+import com.catpuppyapp.puppygit.utils.Libgit2Helper
 import com.catpuppyapp.puppygit.utils.Libgit2Helper.Companion.getGitUrlType
 import com.catpuppyapp.puppygit.utils.Msg
 import com.catpuppyapp.puppygit.utils.addPrefix
@@ -571,8 +572,8 @@ fun CloneScreen(
                     val newGitUrlType = getGitUrlType(it)  //获取当前url类型（http or ssh）
 
                     // 20240414 废弃ssh支持，修改开始
-//                    val newCredentialType = getCredentialTypeByGitUrlType(newGitUrlType)  //根据url类型获取credential类型（http or ssh）  //ssh
-                    val newCredentialType = Cons.dbCredentialTypeHttp  //nossh
+                    val newCredentialType = Libgit2Helper.getCredentialTypeByGitUrlType(newGitUrlType)  //根据url类型获取credential类型（http or ssh）  //ssh
+//                    val newCredentialType = Cons.dbCredentialTypeHttp  //nossh
                     // 20240414 废弃ssh支持，修改结束
 
                     val oldCredentialType = curCredentialType.intValue

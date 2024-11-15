@@ -113,8 +113,8 @@ fun CredentialNewOrEdit(
     val optNumSsh = 1
 
     // 20240414 废弃ssh支持，修改开始
-//    val radioOptions = listOf(httpOrHttps, ssh)  // 编号: 文本  // ssh
-    val radioOptions = listOf(httpOrHttps)  // nossh
+    val radioOptions = listOf(httpOrHttps, ssh)  // 编号: 文本  // ssh
+//    val radioOptions = listOf(httpOrHttps)  // nossh
     // 20240414 废弃ssh支持，修改结束
 
     val credentialSelectedOption = rememberSaveable{mutableIntStateOf(optNumHttp)}
