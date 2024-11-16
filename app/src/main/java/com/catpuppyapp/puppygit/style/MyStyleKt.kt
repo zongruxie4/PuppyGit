@@ -36,6 +36,21 @@ class MyStyleKt{
     }
 
     object ChangeListItemColor {
+        /**
+         * item change type color
+         */
+        val changeTypeAdded = Color(0xFF117C21)
+        val changeTypeAdded_darkTheme = Color(0xFF78ab78)
+        val changeTypeModified = Color(0xFF2B6FC2)
+        val changeTypeModified_darkTheme = Color(0xFF5A9AD9)
+        val changeTypeDeleted = Color(0xFF414141)
+        val changeTypeDeleted_darkTheme = Color(0xFF8A8A8A)
+        val changeTypeConflict = Color(0xFFBE4040)
+        val changeTypeConflict_darkTheme = Color(0xFFBE4040)
+
+        /**
+         * DiffScreen background color
+         */
         val added = Color(0xFF78ab78)
         val added_darkTheme = Color(0xFF204820)
         val modified = Color(0xFF5A9AD9)

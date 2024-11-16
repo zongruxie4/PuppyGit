@@ -30,13 +30,12 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.catpuppyapp.puppygit.play.pro.R
 import com.catpuppyapp.puppygit.constants.Cons
 import com.catpuppyapp.puppygit.dev.proFeatureEnabled
 import com.catpuppyapp.puppygit.dev.treeToTreeBottomBarActAtLeastOneTestPassed
 import com.catpuppyapp.puppygit.git.StatusTypeEntrySaver
-import com.catpuppyapp.puppygit.utils.AppModel
-import com.catpuppyapp.puppygit.utils.Libgit2Helper
+import com.catpuppyapp.puppygit.play.pro.R
+import com.catpuppyapp.puppygit.utils.UIHelper
 import com.catpuppyapp.puppygit.utils.mime.iconRes
 
 
@@ -138,7 +137,7 @@ fun ChangeListItem(
                             fontSize = 20.sp,
                     )
                 }
-                val changeTypeColor = Libgit2Helper.getChangeTypeColor(item.changeType ?: "")
+                val changeTypeColor = UIHelper.getChangeTypeColor(item.changeType ?: "")
                 val fontSize = 12.sp
                 Row{
 //                    Text((item.changeType?:"") + (if(item.itemType==Cons.gitItemTypeSubmodule) ", ${Cons.gitItemTypeSubmoduleStr+(if(isDiffToLocal && item.dirty) ", ${Cons.gitSubmoduleDirtyStr}" else "")}" else ""), fontSize = fontSize, color = changeTypeColor)

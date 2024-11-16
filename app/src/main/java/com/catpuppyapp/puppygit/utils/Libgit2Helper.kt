@@ -1737,22 +1737,6 @@ class Libgit2Helper {
             return Pair<String,String>(config.getString(Cons.gitConfigKeyUserName).orElse(""), config.getString(Cons.gitConfigKeyUserEmail).orElse(""))
         }
 
-        fun getChangeTypeColor(type: String):Color {
-            if(type == Cons.gitStatusNew) {
-                return MyStyleKt.ChangeListItemColor.added
-            }
-            if(type == Cons.gitStatusDeleted) {
-                return MyStyleKt.ChangeListItemColor.deleted
-            }
-            if(type == Cons.gitStatusModified) {
-                return MyStyleKt.ChangeListItemColor.modified
-            }
-            if(type == Cons.gitStatusConflict) {
-                return MyStyleKt.ChangeListItemColor.conflict
-            }
-            return Color.Unspecified
-        }
-
         //把worktree的文件恢复为index中的版本。
         fun revertFilesToIndexVersion(repo:Repository, pathSpecList:List<String>) {
             val checkoutOptions = Checkout.Options.defaultOptions()

@@ -16,7 +16,6 @@ import com.catpuppyapp.puppygit.compose.ScrollableRow
 import com.catpuppyapp.puppygit.constants.PageRequest
 import com.catpuppyapp.puppygit.play.pro.R
 import com.catpuppyapp.puppygit.style.MyStyleKt
-import com.catpuppyapp.puppygit.utils.Libgit2Helper
 import com.catpuppyapp.puppygit.utils.UIHelper
 import kotlinx.coroutines.CoroutineScope
 
@@ -48,7 +47,7 @@ fun DiffScreenTitle(
                     fontSize = 15.sp,
                     maxLines=1,
                     overflow = TextOverflow.Ellipsis,
-                    color = Libgit2Helper.getChangeTypeColor(changeType)
+                    color = UIHelper.getChangeTypeColor(changeType)
                 )
             }
 

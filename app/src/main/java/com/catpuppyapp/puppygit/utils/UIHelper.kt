@@ -15,6 +15,7 @@ import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
+import com.catpuppyapp.puppygit.constants.Cons
 import com.catpuppyapp.puppygit.fileeditor.texteditor.view.ExpectConflictStrDto
 import com.catpuppyapp.puppygit.settings.AppSettings
 import com.catpuppyapp.puppygit.style.MyStyleKt
@@ -290,6 +291,24 @@ object UIHelper {
 
     fun getChangeListTitleColor(repoStateValue: Int):Color {
         return if(repoStateValue == Repository.StateT.MERGE.bit || repoStateValue == Repository.StateT.REBASE_MERGE.bit || repoStateValue == Repository.StateT.CHERRYPICK.bit) MyStyleKt.TextColor.danger() else Color.Unspecified
+    }
+
+
+    fun getChangeTypeColor(type: String):Color {
+        if(type == Cons.gitStatusNew) {
+            return if(Theme.inDarkTheme) MyStyleKt.ChangeListItemColor.changeTypeAdded_darkTheme else MyStyleKt.ChangeListItemColor.changeTypeAdded
+        }
+        if(type == Cons.gitStatusDeleted) {
+            return if(Theme.inDarkTheme) MyStyleKt.ChangeListItemColor.changeTypeDeleted_darkTheme else MyStyleKt.ChangeListItemColor.changeTypeDeleted
+        }
+        if(type == Cons.gitStatusModified) {
+            return if(Theme.inDarkTheme) MyStyleKt.ChangeListItemColor.changeTypeModified_darkTheme else MyStyleKt.ChangeListItemColor.changeTypeModified
+        }
+        if(type == Cons.gitStatusConflict) {
+            return if(Theme.inDarkTheme) MyStyleKt.ChangeListItemColor.changeTypeConflict_darkTheme else MyStyleKt.ChangeListItemColor.changeTypeConflict
+        }
+
+        return Color.Unspecified
     }
 
 }
