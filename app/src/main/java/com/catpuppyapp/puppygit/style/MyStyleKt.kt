@@ -38,7 +38,7 @@ class MyStyleKt{
     object ChangeListItemColor {
         val added = Color(0xFF78ab78)
         val added_darkTheme = Color(0xFF204820)
-        val modified = Color(0xFF426c95)
+        val modified = Color(0xFF5A9AD9)
         val modified_darkTheme = Color(0xFF183653)
         val deleted = Color(0xFFbc6767)
         val deleted_darkTheme = Color(0xFF592A2A)
