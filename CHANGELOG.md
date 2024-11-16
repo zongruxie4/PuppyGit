@@ -17,7 +17,7 @@
 
 1.0.6.1v37 - 20241111:
 - support view file history
-- support direct item line in diff screen
+- support direct edit line in diff screen
 - commit list support filter commits by paths
 - support select lines to compare at diff screen, it's useful when similar lines has difference line number
 
