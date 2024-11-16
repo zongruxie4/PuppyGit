@@ -10,6 +10,7 @@ import com.catpuppyapp.puppygit.utils.Libgit2Helper
 import com.catpuppyapp.puppygit.utils.MyLog
 import com.catpuppyapp.puppygit.utils.encrypt.PassEncryptHelper
 import com.catpuppyapp.puppygit.utils.getDomainByUrl
+import com.catpuppyapp.puppygit.utils.getSecFromTime
 import kotlinx.coroutines.sync.withLock
 
 private val TAG = "CredentialRepositoryImpl"
@@ -91,6 +92,8 @@ class CredentialRepositoryImpl(private val dao: CredentialDao) : CredentialRepos
         //如果密码不为空，加密密码。
         encryptPassIfNeed(item)
 
+        item.baseFields.baseUpdateTime = getSecFromTime()
+
         dao.update(item)
     }
 
@@ -98,6 +101,8 @@ class CredentialRepositoryImpl(private val dao: CredentialDao) : CredentialRepos
         if(SpecialCredential.isAllowedCredentialName(item.name).not()) {
             throw RuntimeException("credential name disallowed")
         }
+
+        item.baseFields.baseUpdateTime = getSecFromTime()
 
         dao.update(item)
     }

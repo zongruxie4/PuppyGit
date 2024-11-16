@@ -1063,6 +1063,7 @@
     <string name="fetch_url">下载地址</string>
     <string name="fetching_remotename">正在下载 ph_a3f241dc_1…</string>
     <string name="repo_state">仓库状态</string>
+    <string name="edited">编辑</string>
 
 
 </resources>

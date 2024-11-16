@@ -20,6 +20,7 @@ import com.catpuppyapp.puppygit.constants.SpecialCredential
 import com.catpuppyapp.puppygit.data.entity.CredentialEntity
 import com.catpuppyapp.puppygit.play.pro.R
 import com.catpuppyapp.puppygit.utils.AppModel
+import com.catpuppyapp.puppygit.utils.getFormatTimeFromSec
 import com.catpuppyapp.puppygit.utils.state.CustomStateSaveable
 
 
@@ -34,7 +35,7 @@ fun CredentialItem(
 ) {
     val haptic = AppModel.singleInstanceHolder.haptic
 
-    val isMatchByDoMain = SpecialCredential.MatchByDomain.equals_to(thisItem)
+    val isMatchByDomain = SpecialCredential.MatchByDomain.equals_to(thisItem)
 
 //    println("IDX::::::::::"+idx)
     Column(
@@ -95,7 +96,7 @@ fun CredentialItem(
 //            )
 //        }
 
-        if(isMatchByDoMain) {
+        if(isMatchByDomain) {
             Row (
                 verticalAlignment = Alignment.CenterVertically,
 
@@ -106,6 +107,22 @@ fun CredentialItem(
                     fontWeight = FontWeight.Light
 
                 )
+            }
+        }
+
+        if(isMatchByDomain.not()) {
+            Row (
+                verticalAlignment = Alignment.CenterVertically,
+            ){
+                Text(text = stringResource(R.string.edited) +":")
+                ScrollableRow {
+                    Text(text = getFormatTimeFromSec(thisItem.baseFields.baseUpdateTime),
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis,
+                        fontWeight = FontWeight.Light
+
+                    )
+                }
             }
         }
 
