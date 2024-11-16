@@ -40,10 +40,12 @@ class MyStyleKt{
         val added_darkTheme = Color(0xFF204820)
         val modified = Color(0xFF5A9AD9)
         val modified_darkTheme = Color(0xFF183653)
-        val deleted = Color(0xFFbc6767)
-        val deleted_darkTheme = Color(0xFF592A2A)
-        val conflict = Color(0xFF913FA8)
-        val conflict_darkTheme = Color(0xFF621E75)
+        val deleted = Color(0xFF8A8A8A)
+        val deleted_darkTheme = Color(0xFF4F4F4F)
+        val conflict = Color(0xFFBE4040)
+        val conflict_darkTheme = Color(0xFF692525)
+//        val conflict = Color(0xFF913FA8)
+//        val conflict_darkTheme = Color(0xFF621E75)
 
     }
 
