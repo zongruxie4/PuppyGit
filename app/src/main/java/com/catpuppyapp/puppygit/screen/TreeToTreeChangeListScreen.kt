@@ -4,8 +4,6 @@ import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material.icons.Icons
@@ -39,9 +37,8 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.catpuppyapp.puppygit.compose.FilterTextField
 import com.catpuppyapp.puppygit.compose.GoToTopAndGoToBottomFab
-import com.catpuppyapp.puppygit.compose.InfoDialog
 import com.catpuppyapp.puppygit.compose.LongPressAbleIconBtn
-import com.catpuppyapp.puppygit.compose.ScrollableColumn
+import com.catpuppyapp.puppygit.compose.RepoInfoDialog
 import com.catpuppyapp.puppygit.constants.Cons
 import com.catpuppyapp.puppygit.data.entity.RepoEntity
 import com.catpuppyapp.puppygit.dev.commitsTreeToTreeDiffReverseTestPassed
@@ -59,7 +56,6 @@ import com.catpuppyapp.puppygit.utils.UIHelper
 import com.catpuppyapp.puppygit.utils.addPrefix
 import com.catpuppyapp.puppygit.utils.cache.Cache
 import com.catpuppyapp.puppygit.utils.changeStateTriggerRefreshPage
-import com.catpuppyapp.puppygit.utils.dbIntToBool
 import com.catpuppyapp.puppygit.utils.state.mutableCustomStateListOf
 import com.catpuppyapp.puppygit.utils.state.mutableCustomStateOf
 import com.github.git24j.core.Repository
@@ -190,42 +186,13 @@ fun TreeToTreeChangeListScreen(
 
     val showInfoDialog = rememberSaveable { mutableStateOf(false) }
     if(showInfoDialog.value) {
-        val curRepo = changeListCurRepo.value
-        InfoDialog(showInfoDialog) {
-            ScrollableColumn {
-                Row {
-                    Text(
-                        stringResource(id = R.string.comparing_label) + ": " +Libgit2Helper.getLeftToRightDiffCommitsText(commit1OidStrState.value, commit2OidStr, swap.value)
-                    )
-                }
-                Spacer(Modifier.height(10.dp))
-
-                Row {
-                    Text(stringResource(id = R.string.repo) + ": " + curRepo.repoName)
-                }
-                Spacer(Modifier.height(10.dp))
-
-                if (dbIntToBool(curRepo.isDetached)) {
-                    Row {
-                        Text(stringResource(R.string.branch) + ": " + Cons.gitDetachedHead)
-                    }
-                } else {
-                    Row {
-                        Text(stringResource(R.string.branch) + ": " + (curRepo.branch))
-                    }
-
-                    if (curRepo.upstreamBranch.isNotBlank()) {
-                        Spacer(Modifier.height(10.dp))
-
-                        Row {
-                            Text(stringResource(R.string.upstream) + ": " + (curRepo.upstreamBranch))
-                        }
-                    }
-                }
-
-
+        RepoInfoDialog(changeListCurRepo.value, showInfoDialog, prependContent = {
+            Row {
+                Text(
+                    stringResource(id = R.string.comparing_label) + ": " +Libgit2Helper.getLeftToRightDiffCommitsText(commit1OidStrState.value, commit2OidStr, swap.value)
+                )
             }
-        }
+        })
     }
 
     Scaffold(

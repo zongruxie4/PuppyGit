@@ -18,10 +18,16 @@ import com.catpuppyapp.puppygit.utils.dbIntToBool
 fun RepoInfoDialog(
     curRepo: RepoEntity,
     showTitleInfoDialog: MutableState<Boolean>,
+    prependContent:@Composable (()->Unit)? = null,
     appendContent:@Composable (()->Unit)? = null
 ) {
     InfoDialog(showTitleInfoDialog) {
         ScrollableColumn {
+            if(prependContent != null) {
+                prependContent()
+                Spacer(Modifier.height(10.dp))
+            }
+
             Row {
                 Text(stringResource(id = R.string.repo) + ": " + curRepo.repoName)
             }
@@ -43,6 +49,11 @@ fun RepoInfoDialog(
                         Text(stringResource(R.string.upstream) + ": " + (curRepo.upstreamBranch))
                     }
                 }
+            }
+
+            Spacer(Modifier.height(10.dp))
+            Row {
+                Text(stringResource(R.string.repo_state) + ": " + (curRepo.gitRepoState?.name?:""))
             }
 
             if(appendContent != null) {

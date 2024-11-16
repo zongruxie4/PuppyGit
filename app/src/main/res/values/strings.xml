@@ -1082,5 +1082,6 @@
     <string name="fetch_url">Fetch Url</string>
 <!--  the placeholder is remote name,   e.g. Fetching origin...-->
     <string name="fetching_remotename">Fetching ph_a3f241dc_1…</string>
+    <string name="repo_state">Repo State</string>
 
 </resources>
