@@ -88,7 +88,7 @@ see: https://github.com/catpuppyapp/PuppyGit/issues/4
 import project to Android Studio, then build, that's all. (android NDK is required)
 <br><br>
 ### if you want to build libs by your self
-see: The <a href=https://github.com/catpuppyapp/PuppyGit/blob/main/lib_build_scripts>lib_build_scripts</a> folder, and it's <a href=https://github.com/catpuppyapp/PuppyGit/blob/main/lib_build_scripts/README.md>README</a>
+see: The <a href=https://github.com/catpuppyapp/PuppyGit/blob/main/lib_build_scripts>lib_build_scripts</a> folder, and it's <a href=https://github.com/catpuppyapp/PuppyGit/blob/main/lib_build_scripts/README.txt>README</a>
 <br>
 
 
