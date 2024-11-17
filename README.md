@@ -88,14 +88,9 @@ see: https://github.com/catpuppyapp/PuppyGit/issues/4
 import project to Android Studio, then build, that's all. (android NDK is required)
 <br><br>
 ### if you want to build libs by your self
-require:<br>
-- jdk 1.8 or later (oracle or openjdk or adoptjdk, should all worked as expect)
-- <a href=https://github.com/android/ndk/wiki/Changelog-r26#r26b>android ndk r26b</a>, and target abi is 'android21'
+see: The <a href=https://github.com/catpuppyapp/PuppyGit/blob/main/lib_build_scripts>lib_build_scripts</a> folder, and it's <a href=https://github.com/catpuppyapp/PuppyGit/blob/main/lib_build_scripts/README.md>README</a>
 <br>
-Then you can build every lib from source code, the source code of the libs, see <a href=https://github.com/catpuppyapp/PuppyGit?tab=readme-ov-file#libs>Libs</a>
 
-<br><br>
-I'll create some scripts for build the c libs in future. if you want to build them now, only way is do it by your hands🤗
 
 
 ## Security
