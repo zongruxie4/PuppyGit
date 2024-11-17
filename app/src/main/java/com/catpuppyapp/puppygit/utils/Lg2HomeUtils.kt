@@ -13,7 +13,7 @@ private val TAG = "Lg2HomeUtils"
 
 object Lg2HomeUtils {
 //    private val inited = mutableStateOf(false)
-    private const val sshKnownHostsLatestVer = 1 // app bundle known hosts file version
+    private const val sshKnownHostsLatestVer = 2 // app bundle known hosts file version
 
     private const val libgit2HomeDirName = "lg2home"
     private const val sshDirName = ".ssh"
