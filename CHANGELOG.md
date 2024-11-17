@@ -1,3 +1,6 @@
+1.0.6.5v41 - 20241117:
+- DiffScreen: change deleted content color from red to gray
+
 1.0.6.4v40 - 20241115:
 - CloneScreen: if the git url is not http or https url, will show private key and passphrase instead username and password for the "New Credential"
 
