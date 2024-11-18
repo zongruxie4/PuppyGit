@@ -162,22 +162,25 @@ fun BottomSheetItem(
 
 @Composable
 private fun BottomSheetTitle(title:String) {
-    Row(
-        modifier = Modifier
-            .fillMaxWidth()
-            .height(30.dp),
-        verticalAlignment = Alignment.CenterVertically,
-        horizontalArrangement = Arrangement.Center
-    ) {
-        Text(
-            text = title,
-            textAlign = TextAlign.Center,
+    MySelectionContainer {
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(30.dp),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.Center
+        ) {
+            Text(
+                text = title,
+                textAlign = TextAlign.Center,
 
-            fontSize = 15.sp,
-            color = Color.Gray,
+                fontSize = 15.sp,
+                color = Color.Gray,
 
-            )
+                )
+        }
     }
+
     HorizontalDivider()
 }
 
