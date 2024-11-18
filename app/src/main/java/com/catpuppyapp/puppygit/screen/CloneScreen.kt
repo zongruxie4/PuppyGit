@@ -845,6 +845,10 @@ fun CloneScreen(
 
                 //如果设置了有效gitUrl，显示新建和选择凭据，否则只显示无凭据
                 for(k in credentialRadioOptions.indices){
+                    // make sure show private key/passphrase for ssh url
+                    if(k == optNumNewCredential) {
+                        curCredentialType.intValue = Libgit2Helper.getCredentialTypeByUrl(gitUrl.value)
+                    }
 
                     if(skipSelect && k == optNumSelectCredential) {
                         continue
@@ -1106,8 +1110,8 @@ fun CloneScreen(
                             onCredentialOptionSelected(optNumSelectCredential)  //选中“select credential”单选项
                             selectedCredentialName.value = credential.name  //选中项的名字，显示给用户看的
                             selectedCredentialId.value = credential.id  //选中项的id，保存时用的，不给用户看
-
-                            curCredentialType.intValue = credential.type  //设置当前credential类型
+//                            curCredentialType.intValue = credential.type  // deprecated
+                            curCredentialType.intValue = Libgit2Helper.getCredentialTypeByUrl(repo.cloneUrl)  //设置当前credential类型
                         }
                     }
                 }
