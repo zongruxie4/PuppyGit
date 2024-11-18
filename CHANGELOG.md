@@ -1,5 +1,6 @@
-next version:
-- fixed: after deleting submodule still show item in Submodules Screen
+1.0.6.6v42 - 20241118:
+- fixed: after deleting submodule still show it in Submodules Screen
+- fixed: on RepoScreen, repo status not update when do act under filter mode
 
 
 1.0.6.5v41 - 20241117:
