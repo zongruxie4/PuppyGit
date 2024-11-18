@@ -26,7 +26,9 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.res.vectorResource
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -125,8 +127,8 @@ fun ChangeListItem(
             ) {
                 Icon(
 //                    imageVector = Icons.Outlined.InsertDriveFile,
-                    imageVector = if(itemIsDir) Icons.Filled.Folder else item.getMime().iconRes,
-                    contentDescription = if(itemIsDir) stringResource(R.string.folder_icon) else stringResource(R.string.file_icon)
+                    imageVector = if(item.changeType == Cons.gitStatusDeleted) ImageVector.vectorResource(R.drawable.outline_unknown_document_24) else if(itemIsDir) Icons.Filled.Folder else item.getMime().iconRes,
+                    contentDescription = if(item.changeType == Cons.gitStatusDeleted) null else if(itemIsDir) stringResource(R.string.folder_icon) else stringResource(R.string.file_icon)
                 )
             }
             Spacer(modifier = Modifier.padding(10.dp))
