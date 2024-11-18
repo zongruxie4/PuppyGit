@@ -683,12 +683,28 @@ fun RepoInnerPage(
 
     }
 
-    val doActAndSetRepoStatus:suspend (Int, String, String, suspend ()->Unit) -> Unit = {idx:Int, repoId:String, status:String, act: suspend ()->Unit ->
+    val enableFilterState = rememberSaveable { mutableStateOf(false)}
+
+    val getCurActiveList = {
+        if(enableFilterState.value) filterList.value else repoList.value
+    }
+
+    val getCurActiveListState = {
+        if(enableFilterState.value) filterListState else repoPageListState
+    }
+
+    // the `_idx` was `idx`, but then changed to find idx by repoId, so deprecated it
+    val doActAndSetRepoStatus:suspend (Int, String, String, suspend ()->Unit) -> Unit = {_idx:Int, repoId:String, status:String, act: suspend ()->Unit ->
+        // should update repoList ever, the filtered list will follow the repoList
+        //应该总是更新repoList，过滤后的列表变化总是跟随repoList变化而变化
+        val repoList = repoList.value
+        // find idx by id, instead param idx
+        val idx = repoList.indexOfFirst { it.id == repoId }
         //设置数组中元素的临时状态(重新查列表后消失，但因为上面设置状态到缓存了，所以重查时可通过缓存恢复)，但无需重新加载页面，轻量级操作，就能让用户看到临时状态
-        doActIfIndexGood(idx,repoList.value) {
+        doActIfIndexGood(idx,repoList) {
 //            it.tmpStatus = status
             //必须copy一下，要不然还得刷新页面才能显示状态（ps：刷新页面显示状态是通过map存临时状态实现的，比这个操作重量级，应能避免则避免）
-            repoList.value[idx]=it.copy(tmpStatus = status)
+            repoList[idx]=it.copy(tmpStatus = status)
 //            repoList.requireRefreshView()
         }
         //设置仓库临时状态(把临时状态设置到缓存里，不退出app都有效，目的是为了使重新查列表后临时状态亦可见)，这样重新加载页面时依然能看到临时状态
@@ -705,7 +721,7 @@ fun RepoInnerPage(
         //清除缓存中的仓库状态
         RepoStatusUtil.clearRepoStatus(repoId)
         //重查下repo数据
-        doActIfIndexGood(idx,repoList.value) {
+        doActIfIndexGood(idx,repoList) {
             //无法确定执行什么操作，也无法确定会影响到什么，所以无法精准更新某字段，干脆在操作成功时，重查下数据，拿到最新状态就行了
             doJobThenOffLoading {
                 //重查数据
@@ -713,7 +729,7 @@ fun RepoInnerPage(
                 val reQueriedRepoInfo = repoDb.getById(it.id)?:return@doJobThenOffLoading
 
                 //更新卡片条目
-                repoList.value[idx] = reQueriedRepoInfo
+                repoList[idx] = reQueriedRepoInfo
 
                 //检查下如果当前长按菜单显示的是当前仓库，更新下和菜单项相关的字段。（这里不要赋值curRepo.value，以免并发冲突覆盖用户长按的仓库）
                 val curRepoInMenu = curRepo.value  //这样修改的话，即使在下面赋值时用户长按了其他仓库也能正常工作，只是下面的赋值操作失去意义而已，但不会并发冲突，也不会显示或执行错误，但如果直接给curRepo.value赋值，则就有可能出错了，比如可能覆盖用户长按的仓库，发生用户长按了仓库a，但显示的却是仓库b的状态的情况
@@ -1009,14 +1025,6 @@ fun RepoInnerPage(
         }
     }
 
-    val getCurActiveList = {
-        if(repoPageFilterModeOn.value) filterList.value else repoList.value
-    }
-
-    val getCurActiveListState = {
-        if(repoPageFilterModeOn.value) filterListState else repoPageListState
-    }
-
 
 
     val goToThisRepoAndHighlightingIt = goTo@{ targetId:String ->
@@ -1254,7 +1262,6 @@ fun RepoInnerPage(
 
 
     // 向下滚动监听，开始
-    val enableFilterState = rememberSaveable { mutableStateOf(false)}
 //    val firstVisible = remember { derivedStateOf { if(enableFilterState.value) filterListState.value.firstVisibleItemIndex else repoPageListState.firstVisibleItemIndex } }
 //    ScrollListener(
 //        nowAt = firstVisible.value,
