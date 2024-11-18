@@ -1,0 +1,11 @@
+A modern git client for android
+
+features：
+- pull/push
+- resolve conflict
+- files explorer
+- text editor
+- rebase/tags/reflog
+- and more...
+
+https://github.com/catpuppyapp/PuppyGit

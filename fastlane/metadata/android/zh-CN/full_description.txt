@@ -1,0 +1,11 @@
+现代安卓git客户端
+
+特性：
+- 拉取/推送
+- 合并冲突
+- 文件管理
+- 文件编辑
+- 变基/标签/reflog
+- 等等...
+
+https://github.com/catpuppyapp/PuppyGit
