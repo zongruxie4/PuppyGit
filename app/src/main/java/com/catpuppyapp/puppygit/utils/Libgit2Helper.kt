@@ -5385,9 +5385,13 @@ class Libgit2Helper {
                     MyLog.d(TAG, "will delete submodule workdir files at: ${smWorkdir.canonicalPath}")
                     smWorkdir.deleteRecursively()
 
-                    // re-create the submodule folder for avoid show submdules deleted in git status
+                    // if not delete the config, re-create the submodule folder for avoid show submdules deleted in git status
                     // smWorkdir.mkdir() should be fine too, but mkdirs() more reliable
-                    smWorkdir.mkdirs()
+                    //如果没删配置文件，重新创建submodule文件夹不然会在git status(ChangeList)显示submodule已经被删除；
+                    // 如果连配置文件中的submodule条目一起删除，就不必保留目录了，不然就算提交了删除还是会在submodule页面有对应条目
+                    if(deleteConfigs.not()) {
+                        smWorkdir.mkdirs()
+                    }
                 }
             }
 

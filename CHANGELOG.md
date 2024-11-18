@@ -1,3 +1,7 @@
+next version:
+- fixed: after deleting submodule still show item in Submodules Screen
+
+
 1.0.6.5v41 - 20241117:
 - DiffScreen: change deleted content color from red to gray
 
