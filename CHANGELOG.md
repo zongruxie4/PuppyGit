@@ -1,3 +1,7 @@
+1.0.6.7v43 - 20241119:
+- fixed when edit repo and don't change the url, the new credential will show username/password even is ssh url(issue https://github.com/catpuppyapp/PuppyGit/issues/5)
+
+
 1.0.6.6v42 - 20241118:
 - fixed: after deleting submodule still show it in Submodules Screen
 - fixed: on RepoScreen, repo status not update when do act under filter mode
