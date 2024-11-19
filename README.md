@@ -77,7 +77,7 @@ see:<br>
 
 ## About ssh
 when first time connect to an unkown host, PuppyGit will ask you allow/reject as default, its more safty, also, if you want, you can allow unknown hosts by default, just checkout the Settings page.
-
+#### note: PuppyGit only require private key and passphrase for connect to remote repo by ssh, it doesn't support generate ssh keys, if you want to generate ssh keys on android, try another app of mine: <a href=https://github.com/catpuppyapp/PuppySshKeyMan/releases>Ssh Key Man</a>
 
 ## About signing commit/tag
 see: https://github.com/catpuppyapp/PuppyGit/issues/4
