@@ -28,8 +28,8 @@ cd PuppyGit/lib_build_scripts/
 ./2.5_buildjarlibs_fdroid.sh PuppyGit/app/libs
 
 
-8. run "3_buildlibs.sh" and specify the out dir to jni libs dir, after run the script, the libs will overrider the files under jniLibs:
-./3_buildlibs.sh PuppyGit/app/src/main/jniLibs/
+8. run "3_buildlibs_fdroid.sh" and specify the out dir to jni libs dir, after run the script, the libs will overrider the files under jniLibs:
+./3_buildlibs_fdroid.sh PuppyGit/app/src/main/jniLibs/
 
 
 9. almost there, now cd to the PuppyGit dir, and run gradle and specify your signature:

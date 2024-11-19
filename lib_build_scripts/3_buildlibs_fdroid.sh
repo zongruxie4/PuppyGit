@@ -2,7 +2,7 @@
 # require cmake and make
 
 # usage:
-# this_script "archs"
+# this_script "outputdir" "archs"
 
 # stop if has err
 set -e
@@ -21,7 +21,7 @@ export build_success_out=/vagrant/build_out
 
 # before run this script block, end
 
-# build_success_out=${1:-$build_success_out}
+build_success_out=${1:-$build_success_out}
 
 
 
@@ -94,7 +94,7 @@ export prefix=$ANDROID_TOOLCHAIN_ROOT/sysroot/usr/local
 # set archs
 default_archs="x86 x8664 arm32 arm64"
 # if no params passed in, build for all archs
-archs=${1:-$default_archs}
+archs=${2:-$default_archs}
 
 
 
