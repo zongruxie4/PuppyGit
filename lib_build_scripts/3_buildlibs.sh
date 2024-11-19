@@ -1,6 +1,9 @@
 #!/bin/bash
 # require cmake and make
 
+# usage:
+# this_script "outputdir"
+
 # stop if has err
 set -e
 
@@ -17,6 +20,8 @@ export android_target_abi=21
 export build_success_out=/vagrant/build_out
 
 # before run this script block, end
+
+build_success_out=${1:-$build_success_out}
 
 
 
