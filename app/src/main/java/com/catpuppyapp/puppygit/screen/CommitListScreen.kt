@@ -339,6 +339,7 @@ fun CommitListScreen(
 
                     }
 
+                    // libgit2 1.8.4, still has this bug
                     //@bug TODO libgit2 1.7.2 Tree.entryByName() has bug, it always return null, when fixed in futrue, can uncomment this code
 //                    MyCheckBox(stringResource(R.string.i_input_file_names), filterByEntryNameBuffer)
 //                    if(filterByEntryNameBuffer.value) {
