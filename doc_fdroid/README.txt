@@ -32,7 +32,9 @@ cd PuppyGit/lib_build_scripts/
 ./3_buildlibs_fdroid.sh PuppyGit/app/src/main/jniLibs/
 
 
-9. almost there, now cd to the PuppyGit dir, and run gradle and specify your signature:
-./gradlew assembleRelease -DANDROID_NDK_HOME=/path/to/your/ndk and specify your signature
+9. almost there, now cd to the PuppyGit dir and set ndk path then run gradle with your signature:
+cd PuppyGit
+echo "sdk.dir=path/to/ndk" > local.properties
+./gradlew assembleRelease -Pandroid.injected.signing.store.file=path/to/your/key_store_file -Pandroid.injected.signing.store.password=password_of_key_store_file -Pandroid.injected.signing.key.alias=your_key_alias -Pandroid.injected.signing.key.password=password_of_your_key_alias
 
-all done, now the app should exist in the output dir: PuppyGit/app/build/outputs/apk/release/app-release.apk
+All done, now the app should exist in the output dir: PuppyGit/app/build/outputs/apk/release/app-release.apk
