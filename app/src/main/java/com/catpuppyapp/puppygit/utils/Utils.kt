@@ -27,7 +27,7 @@ import java.time.format.DateTimeFormatter
 import java.util.UUID
 import kotlin.io.path.exists
 
-private val TAG = "Utils"
+private const val TAG = "Utils"
 
 
 fun showToast(context: Context, text:String, duration:Int=Toast.LENGTH_SHORT) {
@@ -198,9 +198,15 @@ fun getTimeFromSec(sec:Long, offset:ZoneOffset=Cons.dbUsedTimeZoneOffset):LocalD
 }
 
 fun getFormatTimeFromSec(sec:Long, formatter:DateTimeFormatter = Cons.defaultDateTimeFormatter, offset: ZoneOffset=Cons.dbUsedTimeZoneOffset):String {
-    val timeFromSec = getTimeFromSec(sec, offset)
-//    val zonedDateTime = ZonedDateTime.from(localDateTimeFromSec)
-    return formatter.format(timeFromSec)
+    try {
+        val timeFromSec = getTimeFromSec(sec, offset)
+        //    val zonedDateTime = ZonedDateTime.from(localDateTimeFromSec)
+        return formatter.format(timeFromSec)
+
+    }catch (e:Exception) {
+        MyLog.e(TAG, "#getFormatTimeFromSec: format datetime failed: ${e.stackTraceToString()}")
+        return ""
+    }
 }
 
 fun getNowInSecFormatted(formatter:DateTimeFormatter = Cons.defaultDateTimeFormatter):String {
