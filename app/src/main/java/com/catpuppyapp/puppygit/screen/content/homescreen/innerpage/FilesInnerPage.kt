@@ -2409,7 +2409,8 @@ private fun doInit(
         val sortMethod = viewAndSort.sortMethod
         val ascend = viewAndSort.ascend
 
-        //按时间降序
+        //排序
+        //注意：文件夹大小不是0，可能是4096字节，所以按大小排序会在某些大小非0的文件上面！
         val comparator = { o1:FileItemDto, o2:FileItemDto ->  //不能让比较器返回0，不然就等于“去重”了，就会少文件
             var compareResult = if(sortMethod == SortMethod.NAME.code){
                 o1.name.compareTo(o2.name, ignoreCase = true)
