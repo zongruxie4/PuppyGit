@@ -2233,8 +2233,7 @@ private fun doInit(
 
         //无论对应文件是否存在，只要currentDir不是文件夹（其实也可能不是文件），都尝试取出其上级目录作为即将打开的目录
         // 之所以不判断文件是否存在是想在文件不存在时也尽量定位到其所在目录，不过只尝试定位一层上级目录，不会递归查找存在的上级目录，一层不存在就直接返回app根目录了
-        if(!currentDir.isDirectory) {  //注：若文件不存在 isDirectory和isFile 都为假，所以这个判断并不能确定目标路径就一定是个存在的文件
-
+        if(currentDir.canRead() && currentDir.isFile) {  //注：若文件不存在 isDirectory和isFile 都为假，所以这个判断并不能确定目标路径就一定是个存在的文件
             //当curpath不是文件夹时，尝试取出其上级，若是目录，则定位并有可能选中对应文件，若不是目录，则忽略，然后在后面的代码中会定位到app根目录
             val parent = currentDir.parentFile
             if(parent!=null && parent.exists() && parent.isDirectory) {
@@ -2250,7 +2249,10 @@ private fun doInit(
 //        if(!currentDir.exists() || !currentDir.isDirectory || !currentDir.canonicalPath.startsWith(repoBaseDirPath)) {  //如果当前目录不存在，将路径设置为仓库根目录
 
         //because now(2024-09-23) support external path, so doesn't check startsWith repoBaseDirPath anymore
-        if(!currentDir.exists() || !currentDir.isDirectory) {  //如果当前目录不存在，将路径设置为仓库根目录
+//        if(currentDir.canRead() && (!currentDir.exists() || !currentDir.isDirectory)) {  //如果当前目录不存在，将路径设置为仓库根目录
+        //若可读，路径必然存在，所以不用再检查是否存在路径
+        //其实这个和上面的canRead() && isFile 差不多，约等于又做了一次同样的检测
+        if(currentDir.canRead() && !currentDir.isDirectory) {  //如果当前目录不存在，将路径设置为仓库根目录
 //            Msg.requireShow(appContext.getString(R.string.invalid_path))  一边自己跳转到主页，一边提示无效path，产生一种主页是无效path的错觉，另人迷惑，故废弃
 
             currentFile=null  // 如果进入这个判断，currentFile已无意义，设为null，方便后面判断快速得到结果而不用继续比较path
@@ -2397,11 +2399,8 @@ private fun doInit(
 
 
         // set err if has
-        if(!File(currentPath.value).canRead()) {  // can't read dir, usually no permission for dir or dir doesn't exist
-            openDirErr.value = appContext.getString(R.string.err_read_folder_failed)
-        }else {
-            openDirErr.value = ""
-        }
+//        if(!File(currentPath.value).canRead()) {  // can't read dir, usually no permission for dir or dir doesn't exist
+        openDirErr.value = if(currentDir.canRead() && currentDir.isDirectory) "" else appContext.getString(R.string.err_read_path_failed)
     }
 
 }

@@ -1064,6 +1064,7 @@
     <string name="fetching_remotename">正在下载 ph_a3f241dc_1…</string>
     <string name="repo_state">仓库状态</string>
     <string name="edited">编辑</string>
+    <string name="err_read_path_failed">错误：读取路径失败</string>
 
 
 </resources>

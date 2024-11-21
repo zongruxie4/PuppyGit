@@ -1084,5 +1084,6 @@
     <string name="fetching_remotename">Fetching ph_a3f241dc_1…</string>
     <string name="repo_state">Repo State</string>
     <string name="edited">Edited</string>
+    <string name="err_read_path_failed">err: read path failed</string>
 
 </resources>
