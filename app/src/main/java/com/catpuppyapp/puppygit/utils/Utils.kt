@@ -744,8 +744,17 @@ fun<T> getFirstOrNullThenRemove(list:MutableList<T>):T? {
     }
 }
 
-fun getViewAndSortForPath(path:String, settings:AppSettings) :DirViewAndSort {
-    return settings.files.dirAndViewSort_Map[path] ?: settings.files.defaultViewAndSort
+/**
+ * return pair: onlyforthisfolder and viewAndSort
+ */
+fun getViewAndSortForPath(path:String, settings:AppSettings) :Pair<Boolean, DirViewAndSort> {
+    val folderViewSort = settings.files.dirAndViewSort_Map[path]
+
+    return if(folderViewSort == null) {
+        Pair(false,  settings.files.defaultViewAndSort)
+    }else {
+        Pair(true, folderViewSort)
+    }
 }
 
 fun tryGetFileExtIfFailedReturnFileName(filename:String):String {

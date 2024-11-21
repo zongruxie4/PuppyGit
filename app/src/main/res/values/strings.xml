@@ -1085,5 +1085,9 @@
     <string name="repo_state">Repo State</string>
     <string name="edited">Edited</string>
     <string name="err_read_path_failed">err: read path failed</string>
+    <string name="view_and_sort">View And Sort</string>
+    <string name="ascend">Ascend</string>
+    <string name="folder_first">Folder First</string>
+    <string name="only_for_this_folder">Only For This Folder</string>
 
 </resources>

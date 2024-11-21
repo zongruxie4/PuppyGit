@@ -9,7 +9,6 @@ import androidx.compose.material3.Checkbox
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.MutableState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -21,12 +20,12 @@ import com.catpuppyapp.puppygit.ui.theme.Theme
 
 
 @Composable
-fun MyCheckBox(
+fun MyCheckBox2(
     text: String,
-    value: MutableState<Boolean>,
+    value: Boolean,
     enabled: Boolean = true,
     height: Dp = MyStyleKt.CheckoutBox.height,
-    onValueChange: (newValue:Boolean)->Unit = {value.value = it}
+    onValueChange: (newValue:Boolean)->Unit
 ) {
     val inDarkTheme = Theme.inDarkTheme
 
@@ -36,7 +35,7 @@ fun MyCheckBox(
             .height(height)
             .toggleable(
                 enabled = enabled,
-                value = value.value,
+                value = value,
                 onValueChange = { onValueChange(it) },  //话说这个it是不是新值，所以不反转原始值直接 value = it，不就行了？
                 role = Role.Checkbox
             )
@@ -45,7 +44,7 @@ fun MyCheckBox(
     ) {
         Checkbox(
             enabled=enabled,
-            checked = value.value,
+            checked = value,
             onCheckedChange = null // null recommended for accessibility with screenreaders
         )
 

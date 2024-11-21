@@ -1065,6 +1065,10 @@
     <string name="repo_state">仓库状态</string>
     <string name="edited">编辑</string>
     <string name="err_read_path_failed">错误：读取路径失败</string>
+    <string name="view_and_sort">视图和排序</string>
+    <string name="ascend">升序</string>
+    <string name="folder_first">文件夹优先</string>
+    <string name="only_for_this_folder">仅用于此文件夹</string>
 
 
 </resources>

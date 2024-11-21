@@ -18,11 +18,13 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.selection.selectable
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ContentCopy
@@ -37,6 +39,7 @@ import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.RadioButton
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
 import androidx.compose.runtime.Composable
@@ -56,6 +59,7 @@ import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.platform.LocalClipboardManager
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.TextFieldValue
@@ -72,9 +76,11 @@ import com.catpuppyapp.puppygit.compose.CreateFileOrFolderDialog
 import com.catpuppyapp.puppygit.compose.FileListItem
 import com.catpuppyapp.puppygit.compose.LoadingText
 import com.catpuppyapp.puppygit.compose.MyCheckBox
+import com.catpuppyapp.puppygit.compose.MyCheckBox2
 import com.catpuppyapp.puppygit.compose.MyLazyColumn
 import com.catpuppyapp.puppygit.compose.MySelectionContainer
 import com.catpuppyapp.puppygit.compose.OpenAsDialog
+import com.catpuppyapp.puppygit.compose.ScrollableColumn
 import com.catpuppyapp.puppygit.constants.Cons
 import com.catpuppyapp.puppygit.constants.PageRequest
 import com.catpuppyapp.puppygit.data.entity.RepoEntity
@@ -88,6 +94,7 @@ import com.catpuppyapp.puppygit.git.ImportRepoResult
 import com.catpuppyapp.puppygit.play.pro.R
 import com.catpuppyapp.puppygit.screen.functions.goToFileHistory
 import com.catpuppyapp.puppygit.settings.AppSettings
+import com.catpuppyapp.puppygit.settings.DirViewAndSort
 import com.catpuppyapp.puppygit.settings.SettingsUtil
 import com.catpuppyapp.puppygit.settings.enums.dirviewandsort.SortMethod
 import com.catpuppyapp.puppygit.style.MyStyleKt
@@ -973,6 +980,91 @@ fun FilesInnerPage(
     val showInChangeList = { fullPath:String ->
         findRepoThenGoToReposOrChangList(fullPath, false)
     }
+
+
+    val showViewAndSortDialog = rememberSaveable { mutableStateOf(false) }
+    val viewAndSortState = mutableCustomStateOf(stateKeyTag, "viewAndSortState") { settingsSnapshot.value.files.defaultViewAndSort }
+    val viewAndSortStateBuf = mutableCustomStateOf(stateKeyTag, "viewAndSortStateBuf") { settingsSnapshot.value.files.defaultViewAndSort }
+    val onlyForThisFolderState = rememberSaveable { mutableStateOf(false) }
+    val sortMethods = remember {SortMethod.entries}
+    if(showViewAndSortDialog.value) {
+        val height = 10.dp
+        ConfirmDialog2(
+            title = stringResource(R.string.view_and_sort),
+            requireShowTextCompose = true,
+            textCompose = {
+                ScrollableColumn {
+                    for ((k, optext) in sortMethods.withIndex()) {
+                        val optext = SortMethod.getText(optext, activityContext)
+                        Row(
+                            Modifier
+                                .fillMaxWidth()
+                                .heightIn(min = MyStyleKt.RadioOptions.middleHeight)
+
+                                .selectable(
+                                    selected = viewAndSortStateBuf.value.sortMethod == k,
+                                    onClick = {
+                                        //更新选择值
+                                        // should acceptable for performance
+                                        viewAndSortStateBuf.value = viewAndSortStateBuf.value.copy(sortMethod = k)
+                                    },
+                                    role = Role.RadioButton
+                                )
+                                .padding(horizontal = 10.dp),
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            RadioButton(
+                                selected = viewAndSortStateBuf.value.sortMethod == k,
+                                onClick = null // null recommended for accessibility with screenreaders
+                            )
+                            Text(
+                                text = optext,
+                                style = MaterialTheme.typography.bodyLarge,
+                                modifier = Modifier.padding(start = 10.dp)
+                            )
+                        }
+                    }
+
+                    Spacer(Modifier.height(height))
+                    MyCheckBox2(stringResource(R.string.ascend), viewAndSortStateBuf.value.ascend) { newValue ->
+                        viewAndSortStateBuf.value = viewAndSortStateBuf.value.copy(ascend = newValue)
+                    }
+
+                    MyCheckBox2(stringResource(R.string.folder_first), viewAndSortStateBuf.value.folderFirst) {newValue->
+                        viewAndSortStateBuf.value = viewAndSortStateBuf.value.copy(folderFirst = newValue)
+                    }
+                    Spacer(Modifier.height(height))
+
+                    HorizontalDivider()
+                    Spacer(Modifier.height(height))
+
+                    MyCheckBox(stringResource(R.string.only_for_this_folder), onlyForThisFolderState)
+
+                }
+
+            },
+            onCancel = {showViewAndSortDialog.value = false}
+        ) {
+            showViewAndSortDialog.value = false
+
+            doJobThenOffLoading {
+                val newViewAndSort = viewAndSortStateBuf.value.copy()
+                //update state
+                viewAndSortState.value = newViewAndSort.copy()
+                //update settings
+                settingsSnapshot.value = SettingsUtil.update(requireReturnSnapshotOfUpdatedSettings = true) {
+                    if(onlyForThisFolderState.value) {
+                        it.files.dirAndViewSort_Map.set(currentPath.value, newViewAndSort)
+                    }else {
+                        it.files.defaultViewAndSort = newViewAndSort
+                    }
+                }!!
+
+                changeStateTriggerRefreshPage(needRefreshFilesPage)
+            }
+        }
+    }
+
 
 
     if(isLoading.value) {
@@ -2112,6 +2204,13 @@ fun FilesInnerPage(
         }
     }
 
+    if(filesPageRequestFromParent.value==PageRequest.showViewAndSortMenu) {
+        PageRequest.clearStateThenDoAct(filesPageRequestFromParent) {
+            viewAndSortStateBuf.value = viewAndSortState.value.copy()
+            showViewAndSortDialog.value = true
+        }
+    }
+
     //注：匹配带数据的request应该用startsWith
 //    if(filesPageRequestFromParent.value.startsWith(PageRequest.DataRequest.goToIndexWithDataSplit)) {
     if(PageRequest.DataRequest.isDataRequest(filesPageRequestFromParent.value, PageRequest.goToIndex)) {
@@ -2175,6 +2274,8 @@ fun FilesInnerPage(
                 selecteItem=selecteItem,
                 filesPageRequestFromParent = filesPageRequestFromParent,
                 openDirErr=openDirErr,
+                viewAndSortState=viewAndSortState,
+                viewAndSortOnlyForThisFolderState=onlyForThisFolderState,
 //                repoList=repoList,
             )
 
@@ -2207,6 +2308,8 @@ private fun doInit(
     selecteItem:(FileItemDto) ->Unit,
     filesPageRequestFromParent:MutableState<String>,
     openDirErr:MutableState<String>,
+    viewAndSortState:CustomStateSaveable<DirViewAndSort>,
+    viewAndSortOnlyForThisFolderState:MutableState<Boolean>
 //    repoList:CustomStateListSaveable<RepoEntity>,
 //    currentPathBreadCrumbList: MutableIntState,
 //    currentPathBreadCrumbList1: SnapshotStateList<FileItemDto>,
@@ -2270,15 +2373,19 @@ private fun doInit(
             it.files.lastOpenedPath = currentPath.value
         }
 
-        val viewAndSort = getViewAndSortForPath(currentPath.value, settingsSnapshot.value)
+        val (viewAndSortOnlyForThisFolder, viewAndSort) = getViewAndSortForPath(currentPath.value, settingsSnapshot.value)
+        viewAndSortState.value = viewAndSort
+        viewAndSortOnlyForThisFolderState.value = viewAndSortOnlyForThisFolder
+
         val sortMethod = viewAndSort.sortMethod
         val ascend = viewAndSort.ascend
+
         //按时间降序
         val comparator = { o1:FileItemDto, o2:FileItemDto ->  //不能让比较器返回0，不然就等于“去重”了，就会少文件
             var compareResult = if(sortMethod == SortMethod.NAME.code){
-                o1.name.compareTo(o2.name)
+                o1.name.compareTo(o2.name, ignoreCase = true)
             }else if(sortMethod == SortMethod.TYPE.code){
-                tryGetFileExtIfFailedReturnFileName(o1.name).compareTo(tryGetFileExtIfFailedReturnFileName(o2.name))
+                tryGetFileExtIfFailedReturnFileName(o1.name).compareTo(tryGetFileExtIfFailedReturnFileName(o2.name), ignoreCase = true)
             } else if(sortMethod == SortMethod.SIZE.code) {
                 o1.sizeInBytes.compareTo(o2.sizeInBytes)
             } else { //sortMethod == SortMethod.LAST_MODIFIED
@@ -2287,7 +2394,7 @@ private fun doInit(
 
             //if equals and is not sort by name, try sort by name
             if(compareResult==0 && sortMethod!=SortMethod.NAME.code) {
-                compareResult = o1.name.compareTo(o2.name)
+                compareResult = o1.name.compareTo(o2.name, ignoreCase = true)
             }
 
             if(compareResult > 0){
