@@ -1069,7 +1069,8 @@
     <string name="ascend">升序</string>
     <string name="folder_first">文件夹优先</string>
     <string name="only_for_this_folder">仅用于此文件夹</string>
-    <string name="folder_n_file_m">文件夹：ph_a3f241dc_1，文件：ph_a3f241dc_2</string>
+<!--    例如：3文件夹，2文件 -->
+    <string name="folder_n_file_m">ph_a3f241dc_1文件夹, ph_a3f241dc_2文件</string>
 
 
 </resources>
