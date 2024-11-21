@@ -62,9 +62,12 @@ class Cons {
         const val selectedItem_Subscription = 7;
         const val selectedItem_Exit = 8;  //仅遵循旧代码规范而加的这个变量，实际上点这个直接退出，不会切换页面，也不会记住最后退出页面
 
-        const val errorCantGetExternalDir = "Error: Can't Get App's External Dir"
-        const val errorCantGetExternalCacheDir = "Error: Can't Get App's External Cache Dir"
-        const val errorCantGetInnerDataDir = "Error: Can't Get App's Inner Data Dir"
+        // get app dir err
+        const val errorCantGetExternalFilesDir = "Err: Can't get External files Dir"
+        const val errorCantGetExternalCacheDir = "Err: Can't get External cache Dir"
+        const val errorCantGetInnerDataDir = "Err: Can't get Inner data Dir"
+        const val errorCantGetInnerCacheDir = "Err: Can't get Inner cache dir"
+        const val errorCantGetInnerFilesDir = "Err: Can't get Inner files dir"
 
         //尝试创建文件夹来检测仓库名称是否合法，统一加这个前缀
         const val createDirTestNamePrefix = "test-create_"  //含义为测试创建

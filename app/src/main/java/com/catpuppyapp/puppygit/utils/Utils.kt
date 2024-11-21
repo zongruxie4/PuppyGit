@@ -236,18 +236,30 @@ private fun getDirIfNullThenShowToastAndThrowException(context:Context, dir:File
     }
 }
 
-fun getExternalFilesDirOrThrowException(context:Context):File {
-    val dir = context.getExternalFilesDir(null)
-    return getDirIfNullThenShowToastAndThrowException(context, dir, Cons.errorCantGetExternalDir)
+/**
+ * if get external files err, will return inner files dir, if still got err, app cant work, throw exception, done
+ */
+fun getExternalFilesIfErrGetInnerIfStillErrThrowException(context:Context):File {
+    return try {
+        getDirIfNullThenShowToastAndThrowException(context, context.getExternalFilesDir(null), Cons.errorCantGetExternalFilesDir)
+    }catch (e:Exception) {
+        getDirIfNullThenShowToastAndThrowException(context, context.filesDir, Cons.errorCantGetInnerFilesDir)
+    }
 }
 
-fun getExternalCacheDirOrThrowException(context:Context):File {
-    val dir = context.externalCacheDir
-    return getDirIfNullThenShowToastAndThrowException(context, dir, Cons.errorCantGetExternalCacheDir)
+/**
+ * if get external cache err, will return inner cache dir, if still got err, app cant work, throw exception, done
+ */
+fun getExternalCacheDirIfErrGetInnerIfStillErrThrowException(context:Context):File {
+    return try{
+        getDirIfNullThenShowToastAndThrowException(context, context.externalCacheDir, Cons.errorCantGetExternalCacheDir)
+    }catch (e:Exception) {
+        getDirIfNullThenShowToastAndThrowException(context, context.cacheDir, Cons.errorCantGetInnerCacheDir)
+    }
 }
+
 fun getInnerDataDirOrThrowException(context:Context):File {
-    val dir = context.dataDir
-    return getDirIfNullThenShowToastAndThrowException(context, dir, Cons.errorCantGetInnerDataDir)
+    return getDirIfNullThenShowToastAndThrowException(context, context.dataDir, Cons.errorCantGetInnerDataDir)
 }
 
 //fun createAllRepoParentDirIfNonexists(baseDir:File, allRepoParentDir:String=Cons.defaultAllRepoParentDirName):File {
