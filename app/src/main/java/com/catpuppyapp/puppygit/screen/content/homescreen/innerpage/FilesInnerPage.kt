@@ -1000,8 +1000,8 @@ fun FilesInnerPage(
             requireShowTextCompose = true,
             textCompose = {
                 ScrollableColumn {
-                    for ((idx, sortMethodEnumType) in sortMethods.withIndex()) {
-                        val code = sortMethods[idx].code
+                    for (sortMethodEnumType in sortMethods) {
+                        val code = sortMethodEnumType.code
                         Row(
                             Modifier
                                 .fillMaxWidth()
