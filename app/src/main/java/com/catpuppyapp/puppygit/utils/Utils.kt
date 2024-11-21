@@ -757,16 +757,14 @@ fun getViewAndSortForPath(path:String, settings:AppSettings) :Pair<Boolean, DirV
     }
 }
 
-fun tryGetFileExtIfFailedReturnFileName(filename:String):String {
-    if(filename.isBlank()) {
-        return filename
-    }
-
-
+/**
+ * 获取文件扩展名或空字符串
+ */
+fun getFileExtOrEmpty(filename:String):String {
     val extIndex = filename.lastIndexOf('.')
 
     return if(extIndex == -1 || extIndex==filename.lastIndex){
-        filename
+        ""
     }else{
         filename.substring(extIndex, filename.length)
     }

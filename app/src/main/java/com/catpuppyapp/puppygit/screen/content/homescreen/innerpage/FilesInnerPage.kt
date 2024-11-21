@@ -127,7 +127,7 @@ import com.catpuppyapp.puppygit.utils.state.CustomStateListSaveable
 import com.catpuppyapp.puppygit.utils.state.CustomStateSaveable
 import com.catpuppyapp.puppygit.utils.state.mutableCustomStateListOf
 import com.catpuppyapp.puppygit.utils.state.mutableCustomStateOf
-import com.catpuppyapp.puppygit.utils.tryGetFileExtIfFailedReturnFileName
+import com.catpuppyapp.puppygit.utils.getFileExtOrEmpty
 import java.io.File
 
 private val TAG = "FilesInnerPage"
@@ -1006,11 +1006,11 @@ fun FilesInnerPage(
                                 .heightIn(min = MyStyleKt.RadioOptions.middleHeight)
 
                                 .selectable(
-                                    selected = viewAndSortStateBuf.value.sortMethod == k,
+                                    selected = viewAndSortStateBuf.value.sortMethod == sortMethods[k].code,
                                     onClick = {
                                         //更新选择值
                                         // should acceptable for performance
-                                        viewAndSortStateBuf.value = viewAndSortStateBuf.value.copy(sortMethod = k)
+                                        viewAndSortStateBuf.value = viewAndSortStateBuf.value.copy(sortMethod = sortMethods[k].code)
                                     },
                                     role = Role.RadioButton
                                 )
@@ -1018,7 +1018,7 @@ fun FilesInnerPage(
                             verticalAlignment = Alignment.CenterVertically
                         ) {
                             RadioButton(
-                                selected = viewAndSortStateBuf.value.sortMethod == k,
+                                selected = viewAndSortStateBuf.value.sortMethod == sortMethods[k].code,
                                 onClick = null // null recommended for accessibility with screenreaders
                             )
                             Text(
@@ -2414,7 +2414,7 @@ private fun doInit(
             var compareResult = if(sortMethod == SortMethod.NAME.code){
                 o1.name.compareTo(o2.name, ignoreCase = true)
             }else if(sortMethod == SortMethod.TYPE.code){
-                tryGetFileExtIfFailedReturnFileName(o1.name).compareTo(tryGetFileExtIfFailedReturnFileName(o2.name), ignoreCase = true)
+                getFileExtOrEmpty(o1.name).compareTo(getFileExtOrEmpty(o2.name), ignoreCase = true)
             } else if(sortMethod == SortMethod.SIZE.code) {
                 o1.sizeInBytes.compareTo(o2.sizeInBytes)
             } else { //sortMethod == SortMethod.LAST_MODIFIED
