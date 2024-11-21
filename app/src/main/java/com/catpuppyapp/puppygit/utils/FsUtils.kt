@@ -31,6 +31,8 @@ import java.util.Locale
 
 
 object FsUtils {
+
+    const val rootPath = "/"
     /**
      * internal and external storage path prefix
      */

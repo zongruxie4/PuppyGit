@@ -2437,10 +2437,12 @@ private fun getBackHandler(
             filesPageQuitSelectionMode()
         }else if(getFilterMode() != 0) {
             filesPageFilterModeOff()
-        }else if (currentPath.value.startsWith(FsUtils.getExternalStorageRootPathNoEndsWithSeparator()+"/")) { //如果在文件管理器页面且不在仓库根目录
+//        }else if (currentPath.value.startsWith(FsUtils.getExternalStorageRootPathNoEndsWithSeparator()+"/")) { //如果在文件管理器页面且不在仓库根目录
+        }else if (currentPath.value != FsUtils.rootPath) { //如果在文件管理器页面且不在仓库根目录
             lastPath.value = currentPath.value
             //返回上级目录
-            currentPath.value = currentPath.value.substring(0, currentPath.value.lastIndexOf(File.separator))
+            currentPath.value = currentPath.value.substring(0, currentPath.value.lastIndexOf(File.separator).coerceAtLeast(0)).ifEmpty { FsUtils.rootPath }
+//            currentPath.value = File(currentPath.value).parent ?: FsUtils.rootPath
             //刷新页面
             changeStateTriggerRefreshPage(needRefreshFilesPage)
         } else {
