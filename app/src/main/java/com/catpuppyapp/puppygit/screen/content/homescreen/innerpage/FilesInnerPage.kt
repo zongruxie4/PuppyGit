@@ -990,6 +990,8 @@ fun FilesInnerPage(
     val viewAndSortState = mutableCustomStateOf(stateKeyTag, "viewAndSortState") { settingsSnapshot.value.files.defaultViewAndSort }
     val viewAndSortStateBuf = mutableCustomStateOf(stateKeyTag, "viewAndSortStateBuf") { settingsSnapshot.value.files.defaultViewAndSort }
     val onlyForThisFolderState = rememberSaveable { mutableStateOf(false) }
+    val onlyForThisFolderStateBuf = rememberSaveable { mutableStateOf(false) }
+
     val sortMethods = remember {SortMethod.entries}
     if(showViewAndSortDialog.value) {
         val height = 10.dp
@@ -1042,7 +1044,7 @@ fun FilesInnerPage(
                     HorizontalDivider()
                     Spacer(Modifier.height(height))
 
-                    MyCheckBox(stringResource(R.string.only_for_this_folder), onlyForThisFolderState)
+                    MyCheckBox(stringResource(R.string.only_for_this_folder), onlyForThisFolderStateBuf)
 
                 }
 
@@ -1052,18 +1054,32 @@ fun FilesInnerPage(
             showViewAndSortDialog.value = false
 
             doJobThenOffLoading {
-                val newViewAndSort = viewAndSortStateBuf.value.copy()
-                //update state
-                viewAndSortState.value = newViewAndSort.copy()
-                //update settings
-                settingsSnapshot.value = SettingsUtil.update(requireReturnSnapshotOfUpdatedSettings = true) {
-                    if(onlyForThisFolderState.value) {
-                        it.files.dirAndViewSort_Map.set(currentPath.value, newViewAndSort)
-                    }else {
-                        it.files.defaultViewAndSort = newViewAndSort
-                    }
-                }!!
+                // only update state and settings if has change
+                // in kotlin, left != right, should call equals() too
+                if(onlyForThisFolderStateBuf.value != onlyForThisFolderState.value || viewAndSortStateBuf.value.equals(viewAndSortState.value).not()) {
 
+                    onlyForThisFolderState.value = onlyForThisFolderStateBuf.value
+
+                    val newViewAndSort = viewAndSortStateBuf.value.copy()
+
+                    //update state
+                    viewAndSortState.value = newViewAndSort.copy()
+
+
+                    //update settings
+                    settingsSnapshot.value = SettingsUtil.update(requireReturnSnapshotOfUpdatedSettings = true) {
+                        if(onlyForThisFolderStateBuf.value) {
+                            it.files.dirAndViewSort_Map.set(currentPath.value, newViewAndSort)
+                        }else {  // set global sort method
+                            // try remove, if hase dir specified sort method, if hasn't remove is ok as well, will not throw exception
+                            it.files.dirAndViewSort_Map.remove(currentPath.value)
+
+                            it.files.defaultViewAndSort = newViewAndSort
+                        }
+                    }!!
+                }
+
+                // refresh page whatever has change or no change
                 changeStateTriggerRefreshPage(needRefreshFilesPage)
             }
         }
@@ -2233,6 +2249,7 @@ fun FilesInnerPage(
 
     if(filesPageRequestFromParent.value==PageRequest.showViewAndSortMenu) {
         PageRequest.clearStateThenDoAct(filesPageRequestFromParent) {
+            onlyForThisFolderStateBuf.value = onlyForThisFolderState.value
             viewAndSortStateBuf.value = viewAndSortState.value.copy()
             showViewAndSortDialog.value = true
         }
