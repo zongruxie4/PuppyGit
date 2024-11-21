@@ -2,6 +2,7 @@ package com.catpuppyapp.puppygit.screen.content.homescreen.scaffold.title
 
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.combinedClickable
+import androidx.compose.foundation.layout.Column
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -14,9 +15,13 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.text.style.TextOverflow
 import com.catpuppyapp.puppygit.compose.FilterTextField
+import com.catpuppyapp.puppygit.compose.ScrollableRow
 import com.catpuppyapp.puppygit.constants.PageRequest
+import com.catpuppyapp.puppygit.dto.FileItemDto
 import com.catpuppyapp.puppygit.play.pro.R
+import com.catpuppyapp.puppygit.style.MyStyleKt
 import com.catpuppyapp.puppygit.utils.changeStateTriggerRefreshPage
+import com.catpuppyapp.puppygit.utils.replaceStringResList
 import com.catpuppyapp.puppygit.utils.state.CustomStateSaveable
 import java.io.File
 
@@ -34,7 +39,8 @@ fun FilesTitle(
     requestFromParent:MutableState<String>,
     filterKeywordFocusRequester: FocusRequester,
     filesPageSimpleFilterOn: Boolean,
-    filesPageSimpleFilterKeyWord:CustomStateSaveable<TextFieldValue>
+    filesPageSimpleFilterKeyWord:CustomStateSaveable<TextFieldValue>,
+    curPathItemDto: FileItemDto
 ) {
     val haptic = LocalHapticFeedback.current
 
@@ -73,29 +79,43 @@ fun FilesTitle(
         )
     } else {  //filesPageGetFilterMode()==0 , 搜索模式关闭
             //render page
-            Text(
-                modifier = Modifier
-                    .combinedClickable(
-                        onDoubleClick = {
-                            //双击标题返回列表顶部
-                            requestFromParent.value=PageRequest.goToTop
-                        },
-                        onLongClick = {
-                            haptic.performHapticFeedback(HapticFeedbackType.LongPress)
+        Column(
+            modifier = Modifier
+            .combinedClickable(
+                onDoubleClick = {
+                    //双击标题返回列表顶部
+                    requestFromParent.value=PageRequest.goToTop
+                },
+                onLongClick = {
+                    haptic.performHapticFeedback(HapticFeedbackType.LongPress)
 
-                            //长按标题回到仓库根目录
-                            currentPath.value = allRepoParentDir.canonicalPath
-                            changeStateTriggerRefreshPage(needRefreshFilesPage)
-                        }
-                    ) {  //onClick
+                    //长按标题回到仓库根目录
+                    currentPath.value = allRepoParentDir.canonicalPath
+                    changeStateTriggerRefreshPage(needRefreshFilesPage)
+                }
+            ) {  //onClick
+                requestFromParent.value = PageRequest.requireShowPathDetails
+            },
+            ) {
+            ScrollableRow {
+                Text(
+                    text = stringResource(id = R.string.files),
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis
+                )
+            }
 
-                    },
-                text = stringResource(id = R.string.files),
-                maxLines = 1,
-                overflow = TextOverflow.Ellipsis
-            )
-
+            ScrollableRow {
+                Text(
+                    replaceStringResList(stringResource(R.string.folder_n_file_m), listOf(""+curPathItemDto.folderCount, ""+curPathItemDto.fileCount))
+                ,
+                    fontSize = MyStyleKt.Title.secondLineFontSize
+                )
+            }
         }
+
+
+    }
 
     LaunchedEffect( filesPageGetFilterMode() ) {
         try {

@@ -167,7 +167,8 @@ fun FilesInnerPage(
 
     goToRepoPage:(targetIdIfHave:String)->Unit,
     goToChangeListPage:(repoWillShowInChangeListPage:RepoEntity)->Unit,
-    lastPath: MutableState<String>
+    lastPath: MutableState<String>,
+    curPathFileItemDto:CustomStateSaveable<FileItemDto>
 ) {
     val allRepoParentDir = AppModel.singleInstanceHolder.allRepoParentDir;
 //    val appContext = AppModel.singleInstanceHolder.appContext;
@@ -903,12 +904,15 @@ fun FilesInnerPage(
     val details_FilesCount = rememberSaveable{mutableIntStateOf(0)}  // files count in selected items. not recursive count
     val details_FoldersCount = rememberSaveable{mutableIntStateOf(0)}  // folders count in selected items. not recursive count
     val details_CountingItemsSize = rememberSaveable { mutableStateOf(false)}  // indicate is calculating file size or finished
+    val showCurPathDirAndFolderCount = rememberSaveable { mutableStateOf(false)}
     val details_itemList = mutableCustomStateListOf(stateKeyTag, "details_itemList", listOf<FileItemDto>())
 
     val initDetailsDialog = {list:List<FileItemDto> ->
         details_FoldersCount.intValue = list.count { it.isDir }
         details_FilesCount.intValue = list.size - details_FoldersCount.intValue
         details_AllCount.intValue = list.size
+
+        showCurPathDirAndFolderCount.value = (list.size == 1 && list.first().fullPath == currentPath.value)
 
         //count files/folders size
         doJobThenOffLoading {
@@ -1200,7 +1204,9 @@ fun FilesInnerPage(
                                             text = { Text(stringResource(R.string.details)) },
                                             onClick = {
                                                 breadCrumbDropDownMenuExpendState.value = false
-                                                initDetailsDialog(listOf(it))
+                                                // bread crumb dto lack some info for faster loading, so need requrey a new dto when show details
+                                                //面包屑的dto是缩水的，为了加载快而没查最后修改时间和大小等在面包屑用不到的信息，因此显示前需要重新查下dto
+                                                initDetailsDialog(listOf(FileItemDto.genFileItemDtoByFile(File(it.fullPath), activityContext)))
                                             }
                                         )
                                     }
@@ -1689,11 +1695,14 @@ fun FilesInnerPage(
             textCompose = {
                 MySelectionContainer {
                     Column(modifier = Modifier.verticalScroll(rememberScrollState())) {
-                        Row {
-                            Text(text = replaceStringResList(stringResource(R.string.items_n1_n2_folders_n3_files), listOf(""+details_AllCount.intValue, ""+details_FoldersCount.intValue, ""+details_FilesCount.intValue)))
-                        }
+                        //这显示的是选中条目数，如果size==1显示，会产生是文件夹内文件和文件夹数量的错觉，令人困惑
+                        if(itemList.size > 1) {
+                            Row {
+                                Text(text = replaceStringResList(stringResource(R.string.items_n1_n2_folders_n3_files), listOf(""+details_AllCount.intValue, ""+details_FoldersCount.intValue, ""+details_FilesCount.intValue)))
+                            }
 
-                        Spacer(modifier = Modifier.height(15.dp))
+                            Spacer(modifier = Modifier.height(15.dp))
+                        }
 
                         Row {
                             // if counting not finished: "123MB..." else "123MB"
@@ -1709,6 +1718,18 @@ fun FilesInnerPage(
 
                             Row {
                                 Text(text = stringResource(R.string.name)+": "+item.name)
+                            }
+
+                            if(showCurPathDirAndFolderCount.value) {
+                                Spacer(modifier = Modifier.height(15.dp))
+                                Row {
+                                    Text(text = stringResource(R.string.folder)+": "+item.folderCount)
+                                }
+
+                                Spacer(modifier = Modifier.height(15.dp))
+                                Row {
+                                    Text(text = stringResource(R.string.file)+": "+item.fileCount)
+                                }
                             }
 
                             Spacer(modifier = Modifier.height(15.dp))
@@ -2196,6 +2217,12 @@ fun FilesInnerPage(
         }
     }
 
+    if(filesPageRequestFromParent.value==PageRequest.requireShowPathDetails) {
+        PageRequest.clearStateThenDoAct(filesPageRequestFromParent) {
+            initDetailsDialog(listOf(curPathFileItemDto.value))
+        }
+    }
+
     if(filesPageRequestFromParent.value==PageRequest.createFileOrFolder) {
         PageRequest.clearStateThenDoAct(filesPageRequestFromParent) {
             //显示新建文件或文件夹的弹窗，弹窗里可选择是创建文件还是文件夹
@@ -2276,6 +2303,7 @@ fun FilesInnerPage(
                 openDirErr=openDirErr,
                 viewAndSortState=viewAndSortState,
                 viewAndSortOnlyForThisFolderState=onlyForThisFolderState,
+                curPathFileItemDto=curPathFileItemDto,
 //                repoList=repoList,
             )
 
@@ -2309,7 +2337,8 @@ private fun doInit(
     filesPageRequestFromParent:MutableState<String>,
     openDirErr:MutableState<String>,
     viewAndSortState:CustomStateSaveable<DirViewAndSort>,
-    viewAndSortOnlyForThisFolderState:MutableState<Boolean>
+    viewAndSortOnlyForThisFolderState:MutableState<Boolean>,
+    curPathFileItemDto:CustomStateSaveable<FileItemDto>,
 //    repoList:CustomStateListSaveable<RepoEntity>,
 //    currentPathBreadCrumbList: MutableIntState,
 //    currentPathBreadCrumbList1: SnapshotStateList<FileItemDto>,
@@ -2419,6 +2448,9 @@ private fun doInit(
         var curFileFromCurPathFileDto:FileItemDto? = null  //用来存匹配的dto，然后在列表查找index，然后滚动到指定位置
         // 当请求打开的curpath是个文件时会用到这几个变量 结束
 
+
+        var folderCount = 0
+        var fileCount = 0
         // 遍历文件列表
         currentDir.listFiles()?.let {
             it.forEach { file ->
@@ -2429,6 +2461,7 @@ private fun doInit(
 //                }
 
                 if(fdto.isFile) {
+                    fileCount++
                     //如果从请求打开的路径带来的文件存在，且和当前遍历的文件重合，选中
                     if(needSelectFile && !curFileFromCurPathAlreadySelected && curFilePath == fdto.fullPath) {
 //                        清空已选中条目列表
@@ -2442,6 +2475,7 @@ private fun doInit(
 
                     fileSortedSet.add(fdto)
                 }else {
+                    folderCount++
                     if(viewAndSort.folderFirst) {
                         dirSortedSet.add(fdto)
                     }else {
@@ -2450,6 +2484,12 @@ private fun doInit(
                 }
             }
         }
+
+        val curPathDtoTmp = FileItemDto.genFileItemDtoByFile(currentDir, appContext)
+        curPathDtoTmp.folderCount = folderCount
+        curPathDtoTmp.fileCount = fileCount
+        curPathFileItemDto.value = curPathDtoTmp
+
 //    println("dirSortedSet:"+dirSortedSet)
 //    println("fileSortedSet:"+fileSortedSet)
 

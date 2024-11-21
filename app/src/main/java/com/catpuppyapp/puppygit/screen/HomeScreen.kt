@@ -268,6 +268,7 @@ fun HomeScreen(
     val filesPageCurrentPath = rememberSaveable { mutableStateOf("")}
     val filesPageLastPath = rememberSaveable { mutableStateOf("")}
     val showCreateFileOrFolderDialog = rememberSaveable { mutableStateOf(false)}
+    val filesPageCurPathFileItemDto = mutableCustomStateOf(stateKeyTag, "filesPageCurPathFileItemDto") { FileItemDto() }
 
     val showSetGlobalGitUsernameAndEmailDialog = rememberSaveable { mutableStateOf(false)}
 
@@ -612,7 +613,8 @@ fun HomeScreen(
                         } else if(currentHomeScreen.intValue == Cons.selectedItem_Files){
                             FilesTitle(filesPageCurrentPath, allRepoParentDir, needRefreshFilesPage, filesPageGetFilterMode,
                                 filesPageFilterKeyword, filesPageFilterOn,filesPageDoFilter, filesPageRequestFromParent,
-                                filesPageFilterTextFieldFocusRequester, filesPageSimpleFilterOn.value, filesPageSimpleFilterKeyWord
+                                filesPageFilterTextFieldFocusRequester, filesPageSimpleFilterOn.value, filesPageSimpleFilterKeyWord,
+                                filesPageCurPathFileItemDto.value
                             )
                         } else if (currentHomeScreen.intValue == Cons.selectedItem_Editor) {
                             EditorTitle(editorPageShowingFilePath,editorPageRequestFromParent, editorPageSearchMode.value, editorPageSearchKeyword, editorPageMergeMode.value, editorReadOnlyMode.value, editorOpenFileErr.value)
@@ -893,7 +895,8 @@ fun HomeScreen(
                     selectedRepo = filesPageSelectedRepo,
                     goToRepoPage=goToRepoPage,
                     goToChangeListPage=goToChangeListPage,
-                    lastPath=filesPageLastPath
+                    lastPath=filesPageLastPath,
+                    curPathFileItemDto=filesPageCurPathFileItemDto
                 )
             }
             else if(currentHomeScreen.intValue == Cons.selectedItem_Editor) {

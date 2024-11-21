@@ -1089,5 +1089,7 @@
     <string name="ascend">Ascend</string>
     <string name="folder_first">Folder First</string>
     <string name="only_for_this_folder">Only For This Folder</string>
+<!--    e.g. Folder: 5, File: 3 -->
+    <string name="folder_n_file_m">Folder: ph_a3f241dc_1, File: ph_a3f241dc_2</string>
 
 </resources>

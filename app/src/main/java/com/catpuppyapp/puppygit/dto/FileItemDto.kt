@@ -12,22 +12,24 @@ import com.catpuppyapp.puppygit.utils.mime.guessFromFile
 import java.io.File
 import java.util.concurrent.TimeUnit
 
-private val TAG = "FileItemDto"
+private const val TAG = "FileItemDto"
 
-class FileItemDto {
-    var name=""
-    var createTime=""
-    var createTimeInSec=0L
-    var lastModifiedTime=""
-    var lastModifiedTimeInSec=0L
-    var sizeInBytes =0L
-    var sizeInHumanReadable =""
-    var isFile = false
-    var isDir = false
-    var fullPath = ""
-    var mime=MimeType.TEXT_PLAIN
-    var isHidden = false
-
+data class FileItemDto (
+    var name:String="",
+    var createTime:String="",
+    var createTimeInSec:Long=0L,
+    var lastModifiedTime:String="",
+    var lastModifiedTimeInSec:Long=0L,
+    var sizeInBytes:Long =0L,
+    var sizeInHumanReadable:String ="",
+    var isFile:Boolean = false,
+    var isDir:Boolean = false,
+    var fullPath:String = "",
+    var mime:MimeType=MimeType.TEXT_PLAIN,
+    var isHidden:Boolean = false,
+    var folderCount:Int=0,
+    var fileCount:Int=0
+){
     fun toFile():File {
         return File(fullPath)
     }
