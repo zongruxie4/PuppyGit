@@ -998,19 +998,19 @@ fun FilesInnerPage(
             requireShowTextCompose = true,
             textCompose = {
                 ScrollableColumn {
-                    for ((k, optext) in sortMethods.withIndex()) {
-                        val optext = SortMethod.getText(optext, activityContext)
+                    for ((idx, sortMethodEnumType) in sortMethods.withIndex()) {
+                        val code = sortMethods[idx].code
                         Row(
                             Modifier
                                 .fillMaxWidth()
                                 .heightIn(min = MyStyleKt.RadioOptions.middleHeight)
 
                                 .selectable(
-                                    selected = viewAndSortStateBuf.value.sortMethod == sortMethods[k].code,
+                                    selected = viewAndSortStateBuf.value.sortMethod == code,
                                     onClick = {
                                         //更新选择值
                                         // should acceptable for performance
-                                        viewAndSortStateBuf.value = viewAndSortStateBuf.value.copy(sortMethod = sortMethods[k].code)
+                                        viewAndSortStateBuf.value = viewAndSortStateBuf.value.copy(sortMethod = code)
                                     },
                                     role = Role.RadioButton
                                 )
@@ -1018,11 +1018,11 @@ fun FilesInnerPage(
                             verticalAlignment = Alignment.CenterVertically
                         ) {
                             RadioButton(
-                                selected = viewAndSortStateBuf.value.sortMethod == sortMethods[k].code,
+                                selected = viewAndSortStateBuf.value.sortMethod == code,
                                 onClick = null // null recommended for accessibility with screenreaders
                             )
                             Text(
-                                text = optext,
+                                text = SortMethod.getText(sortMethodEnumType, activityContext),
                                 style = MaterialTheme.typography.bodyLarge,
                                 modifier = Modifier.padding(start = 10.dp)
                             )
