@@ -1,3 +1,8 @@
+next version:
+- if try get external app dir failed will try get inner instead
+- support sort for Files
+
+
 1.0.6.7v43 - 20241119:
 - fixed when edit repo and don't change the url, the new credential will show username/password even is ssh url(issue https://github.com/catpuppyapp/PuppyGit/issues/5)
 

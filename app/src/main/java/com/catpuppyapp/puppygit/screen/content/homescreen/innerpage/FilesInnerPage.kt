@@ -89,6 +89,7 @@ import com.catpuppyapp.puppygit.play.pro.R
 import com.catpuppyapp.puppygit.screen.functions.goToFileHistory
 import com.catpuppyapp.puppygit.settings.AppSettings
 import com.catpuppyapp.puppygit.settings.SettingsUtil
+import com.catpuppyapp.puppygit.settings.enums.dirviewandsort.SortMethod
 import com.catpuppyapp.puppygit.style.MyStyleKt
 import com.catpuppyapp.puppygit.utils.ActivityUtil
 import com.catpuppyapp.puppygit.utils.AppModel
@@ -109,6 +110,7 @@ import com.catpuppyapp.puppygit.utils.getHumanReadableSizeStr
 import com.catpuppyapp.puppygit.utils.getSecFromTime
 import com.catpuppyapp.puppygit.utils.getShortUUID
 import com.catpuppyapp.puppygit.utils.getStoragePermission
+import com.catpuppyapp.puppygit.utils.getViewAndSortForPath
 import com.catpuppyapp.puppygit.utils.isPathExists
 import com.catpuppyapp.puppygit.utils.mime.MimeType
 import com.catpuppyapp.puppygit.utils.mime.guessFromFileName
@@ -118,6 +120,7 @@ import com.catpuppyapp.puppygit.utils.state.CustomStateListSaveable
 import com.catpuppyapp.puppygit.utils.state.CustomStateSaveable
 import com.catpuppyapp.puppygit.utils.state.mutableCustomStateListOf
 import com.catpuppyapp.puppygit.utils.state.mutableCustomStateOf
+import com.catpuppyapp.puppygit.utils.tryGetFileExtIfFailedReturnFileName
 import java.io.File
 
 private val TAG = "FilesInnerPage"
@@ -2267,8 +2270,33 @@ private fun doInit(
             it.files.lastOpenedPath = currentPath.value
         }
 
+        val viewAndSort = getViewAndSortForPath(currentPath.value, settingsSnapshot.value)
+        val sortMethod = viewAndSort.sortMethod
+        val ascend = viewAndSort.ascend
         //按时间降序
-        val comparator = { o1:FileItemDto, o2:FileItemDto -> if((o1.lastModifiedTimeInSec - o2.lastModifiedTimeInSec).toInt() > 0)  -1 else 1 }  //不能让比较器返回0，不然就等于“去重”了，就会少文件
+        val comparator = { o1:FileItemDto, o2:FileItemDto ->  //不能让比较器返回0，不然就等于“去重”了，就会少文件
+            var compareResult = if(sortMethod == SortMethod.NAME.code){
+                o1.name.compareTo(o2.name)
+            }else if(sortMethod == SortMethod.TYPE.code){
+                tryGetFileExtIfFailedReturnFileName(o1.name).compareTo(tryGetFileExtIfFailedReturnFileName(o2.name))
+            } else if(sortMethod == SortMethod.SIZE.code) {
+                o1.sizeInBytes.compareTo(o2.sizeInBytes)
+            } else { //sortMethod == SortMethod.LAST_MODIFIED
+                o1.lastModifiedTimeInSec.compareTo(o2.lastModifiedTimeInSec)
+            }
+
+            //if equals and is not sort by name, try sort by name
+            if(compareResult==0 && sortMethod!=SortMethod.NAME.code) {
+                compareResult = o1.name.compareTo(o2.name)
+            }
+
+            if(compareResult > 0){
+                if(ascend) 1 else -1
+            } else {
+                if(ascend) -1 else 1
+            }
+        }
+
         val fileSortedSet = sortedSetOf<FileItemDto>(comparator)
         val dirSortedSet = sortedSetOf<FileItemDto>(comparator)
 
@@ -2307,7 +2335,11 @@ private fun doInit(
 
                     fileSortedSet.add(fdto)
                 }else {
-                    dirSortedSet.add(fdto)
+                    if(viewAndSort.folderFirst) {
+                        dirSortedSet.add(fdto)
+                    }else {
+                        fileSortedSet.add(fdto)
+                    }
                 }
             }
         }

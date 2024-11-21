@@ -8,6 +8,8 @@ import com.catpuppyapp.puppygit.data.entity.ErrorEntity
 import com.catpuppyapp.puppygit.data.entity.RepoEntity
 import com.catpuppyapp.puppygit.etc.Ret
 import com.catpuppyapp.puppygit.play.pro.R
+import com.catpuppyapp.puppygit.settings.AppSettings
+import com.catpuppyapp.puppygit.settings.DirViewAndSort
 import com.catpuppyapp.puppygit.settings.SettingsUtil
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.CoroutineScope
@@ -739,5 +741,24 @@ fun<T> getFirstOrNullThenRemove(list:MutableList<T>):T? {
         return list.removeAt(0)
     }catch (e:Exception) {
         return null
+    }
+}
+
+fun getViewAndSortForPath(path:String, settings:AppSettings) :DirViewAndSort {
+    return settings.files.dirAndViewSort_Map[path] ?: settings.files.defaultViewAndSort
+}
+
+fun tryGetFileExtIfFailedReturnFileName(filename:String):String {
+    if(filename.isBlank()) {
+        return filename
+    }
+
+
+    val extIndex = filename.lastIndexOf('.')
+
+    return if(extIndex == -1 || extIndex==filename.lastIndex){
+        filename
+    }else{
+        filename.substring(extIndex, filename.length)
     }
 }

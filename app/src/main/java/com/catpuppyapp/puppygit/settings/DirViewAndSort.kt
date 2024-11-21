@@ -7,7 +7,7 @@ import kotlinx.serialization.Serializable
 @Serializable
 data class DirViewAndSort (
     var viewType:Int = ViewType.LIST.code,
-    var sortType:Int = SortMethod.NAME.code,
+    var sortMethod:Int = SortMethod.NAME.code,
     var ascend:Boolean=true,
     var folderFirst:Boolean = true,
 )

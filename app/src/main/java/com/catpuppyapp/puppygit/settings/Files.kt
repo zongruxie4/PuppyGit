@@ -13,5 +13,5 @@ data class Files (
      * struct: {path: viewAndSort}
      * if can find rule for path in this map, it will used, else, will use the `defaultViewAndSort`
      */
-    var dirAndViewSortMap:MutableMap<String, DirViewAndSort> = mutableMapOf()
+    var dirAndViewSort_Map:MutableMap<String, DirViewAndSort> = mutableMapOf()
 )
