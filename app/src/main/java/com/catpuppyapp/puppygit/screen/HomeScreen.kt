@@ -269,6 +269,7 @@ fun HomeScreen(
     val filesPageLastPathByPressBack = rememberSaveable { mutableStateOf("")}
     val showCreateFileOrFolderDialog = rememberSaveable { mutableStateOf(false)}
     val filesPageCurPathFileItemDto = mutableCustomStateOf(stateKeyTag, "filesPageCurPathFileItemDto") { FileItemDto() }
+    val filesPageCurrentPathBreadCrumbList = mutableCustomStateListOf(keyTag = stateKeyTag, keyName = "filesPageCurrentPathBreadCrumbList", initValue = listOf<FileItemDto>())
 
     val showSetGlobalGitUsernameAndEmailDialog = rememberSaveable { mutableStateOf(false)}
 
@@ -896,7 +897,8 @@ fun HomeScreen(
                     goToRepoPage=goToRepoPage,
                     goToChangeListPage=goToChangeListPage,
                     lastPathByPressBack=filesPageLastPathByPressBack,
-                    curPathFileItemDto=filesPageCurPathFileItemDto
+                    curPathFileItemDto=filesPageCurPathFileItemDto,
+                    currentPathBreadCrumbList=filesPageCurrentPathBreadCrumbList
                 )
             }
             else if(currentHomeScreen.intValue == Cons.selectedItem_Editor) {

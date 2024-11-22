@@ -169,7 +169,8 @@ fun FilesInnerPage(
     goToRepoPage:(targetIdIfHave:String)->Unit,
     goToChangeListPage:(repoWillShowInChangeListPage:RepoEntity)->Unit,
     lastPathByPressBack: MutableState<String>,
-    curPathFileItemDto:CustomStateSaveable<FileItemDto>
+    curPathFileItemDto:CustomStateSaveable<FileItemDto>,
+    currentPathBreadCrumbList:CustomStateListSaveable<FileItemDto>,
 ) {
     val allRepoParentDir = AppModel.singleInstanceHolder.allRepoParentDir;
 //    val appContext = AppModel.singleInstanceHolder.appContext;
@@ -218,7 +219,6 @@ fun FilesInnerPage(
 
 
 //    val currentPathBreadCrumbList = remember{ mutableStateListOf<FileItemDto>() }
-    val currentPathBreadCrumbList = mutableCustomStateListOf(keyTag = stateKeyTag, keyName = "currentPathBreadCrumbList", initValue = listOf<FileItemDto>())
 
     //实现了点击更新list并且避免并发修改异常，但我发现，只要每次在切换路径后重新生成一下面包屑就行了，虽然代码执行起来可能有点麻烦，效率可能差一点点，但是逻辑更简单而且，总之没必要整这么麻烦，废弃这个方案了
 //    val currentPathBreadCrumbList = remember{ mutableIntStateOf(1) }  //为0时刚进页面，初始化，后续为1时读取list1修改list2，为2时读取list2修改list1，避免并发修改异常
