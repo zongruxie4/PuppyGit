@@ -2534,7 +2534,7 @@ private fun doInit(
             }
         }
 
-        val lastUsedPath = curPathFileItemDto.value.fullPath
+//        val lastUsedPath = curPathFileItemDto.value.fullPath
 
         val curPathDtoTmp = FileItemDto.genFileItemDtoByFile(currentDir, appContext)
         curPathDtoTmp.folderCount = folderCount
@@ -2583,18 +2583,22 @@ private fun doInit(
 //        val willUpdateList = if(currentPathBreadCrumbList.intValue==1) currentPathBreadCrumbList1 else currentPathBreadCrumbList2  //初始化时更新列表1，列表2由后续点击面包屑后的onClick函数更新
 
         val curDirPath = currentDir.canonicalPath
+        val curBreadCrumbList = currentPathBreadCrumbList.value
         //重新生成面包屑的条件：上次路径为空 或 面包屑列表为空 或 上次路径非startsWith当前路径
 //        if(lastUsedPath.isBlank() || curDirPath==FsUtils.rootPath || currentPathBreadCrumbList.value.isEmpty() || lastUsedPath.startsWith(curDirPath).not()) {
-        if(lastUsedPath.isBlank() || currentPathBreadCrumbList.value.isEmpty() || lastUsedPath.startsWith(curDirPath).not()) {
+
+        //if breadCrumblist empty or last item full path not starts with current path, recreate the breadcrumblist
+        //如果面包屑不为空或最后一个元素不是当前路径的子目录，重新创建面包屑列表
+        if(curBreadCrumbList.isEmpty() || curBreadCrumbList[curBreadCrumbList.size-1].fullPath.startsWith(curDirPath).not()) {
 //        val isInternalStoragePath = curDirPath.startsWith(repoBaseDirPath)
 //        val splitPath = (if(isInternalStoragePath) getFilePathStrBasedRepoDir(curDirPath) else curDirPath.removePrefix("/")).split(File.separator)  //获得一个分割后的目录列表
 //        val root = if(isInternalStoragePath) repoBaseDirPath else "/"
             val separator = Cons.slash
             val splitPath = curDirPath.removePrefix(separator).split(separator)  //获得一个分割后的目录列表
             val root = separator
-            currentPathBreadCrumbList.value.clear()  //避免和之前的路径拼接在一起，先清空下列表
+            curBreadCrumbList.clear()  //避免和之前的路径拼接在一起，先清空下列表
 //        if(splitPath.isNotEmpty()) {  //啥也没分割出来的话，就没必要填东西了，不过应该不会出现这种情况
-            var lastPathName=StringBuilder()
+            var lastPathName=StringBuilder(40)  // most time the path should more than 30 "/storage/emulated/0" , so set it to 40 I think is better than StringBuilder default size 16
             for(s in splitPath) {  //更新面包屑
                 lastPathName.append(s).append(separator)  //拼接列表路径为仓库下的 完整相对路径
                 val pathDto = FileItemDto()  //这里其实只需要 fullPath 和 name两个参数
@@ -2604,9 +2608,12 @@ private fun doInit(
                 pathDto.isFile=false
                 pathDto.isDir=true
 
-                pathDto.fullPath = File(root, lastPathName.toString()).canonicalPath  //把仓库下完整相对路径和仓库路径拼接，得到一个绝对路径
+//                pathDto.fullPath = File(root, lastPathName.toString()).canonicalPath  //把仓库下完整相对路径和仓库路径拼接，得到一个绝对路径
+//                println("f1: ${pathDto.fullPath}")  // "/abc/def"
+//                println("f2: ${root+lastPathName.toString()}")  // "/abc/def/"
+                pathDto.fullPath = "$root${lastPathName.removeSuffix(separator)}"  // this will output path like "/abc/def" and should faster than `File(root, lastPathName).canonicalPath`
                 pathDto.name = s
-                currentPathBreadCrumbList.value.add(pathDto)
+                curBreadCrumbList.add(pathDto)
             }
 
         }
