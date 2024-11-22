@@ -838,8 +838,16 @@ fun FilesInnerPage(
 
 
     val createFileOrFolderErrMsg = rememberSaveable { mutableStateOf("")}
+
+    val fileNameForCreateDialog = rememberSaveable { mutableStateOf("")}
+    val fileTypeOptionsForCreateDialog = remember {listOf(activityContext.getString(R.string.file), activityContext.getString(R.string.folder))}  // idx: 0 1
+    val selectedFileTypeOptionForCreateDialog = rememberSaveable{mutableIntStateOf(0)}
+
     if (showCreateFileOrFolderDialog.value) {
         CreateFileOrFolderDialog(
+            fileName = fileNameForCreateDialog,
+            fileTypeOptions = fileTypeOptionsForCreateDialog,
+            selectedFileTypeOption = selectedFileTypeOptionForCreateDialog,
             errMsg = createFileOrFolderErrMsg,
             onOk = f@{ fileOrFolderName: String, type: Int ->
                 //do create file or folder
@@ -871,6 +879,7 @@ fun FilesInnerPage(
                             if (isCreateSuccess) {  //创建成功
                                 Msg.requireShow(successStrRes)  //提示成功
                                 createFileOrFolderErrMsg.value=""  //清空错误信息
+                                fileNameForCreateDialog.value=""  //清空文件名
                                 //刷新Files页面
                                 changeStateTriggerRefreshPage(needRefreshFilesPage)
                                 return@f true

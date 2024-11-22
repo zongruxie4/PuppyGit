@@ -19,14 +19,11 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.TextField
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.MutableIntState
 import androidx.compose.runtime.MutableState
-import androidx.compose.runtime.mutableIntStateOf
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.text.input.ImeAction
@@ -34,7 +31,6 @@ import androidx.compose.ui.unit.dp
 import com.catpuppyapp.puppygit.constants.Cons
 import com.catpuppyapp.puppygit.play.pro.R
 import com.catpuppyapp.puppygit.style.MyStyleKt
-import com.catpuppyapp.puppygit.utils.state.StateUtil
 
 
 @Composable
@@ -44,16 +40,14 @@ fun CreateFileOrFolderDialog(
     cancelTextColor: Color = Color.Unspecified,
     okTextColor: Color = Color.Unspecified,
     errMsg: MutableState<String>,
+    fileName:MutableState<String>,
+    fileTypeOptions:List<String>,
+    selectedFileTypeOption:MutableIntState,
     onCancel: () -> Unit,
     onOk: (String, Int) -> Boolean,
 ) {
-    val fileName = rememberSaveable { mutableStateOf("")}
-    val fileTypeOptions =
-        listOf(stringResource(R.string.file), stringResource(R.string.folder))  // idx: 0 1
-    val (selectedFileTypeOption, onFileTypeOptionSelected) = rememberSaveable{mutableIntStateOf(0)}
-
     val doCreate = doCreate@{
-        val fileType = if (selectedFileTypeOption == 0) Cons.fileTypeFile else Cons.fileTypeFolder
+        val fileType = if (selectedFileTypeOption.intValue == 0) Cons.fileTypeFile else Cons.fileTypeFolder
         //执行用户传入的callback
         val createSuccess = onOk(fileName.value, fileType)
         if(createSuccess) {
@@ -121,10 +115,10 @@ fun CreateFileOrFolderDialog(
                             .heightIn(min = MyStyleKt.RadioOptions.minHeight)
 
                             .selectable(
-                                selected = (selectedFileTypeOption == idx),
+                                selected = (selectedFileTypeOption.intValue == idx),
                                 onClick = {
                                     //更新选择值
-                                    onFileTypeOptionSelected(idx)
+                                    selectedFileTypeOption.intValue = idx
                                 },
                                 role = Role.RadioButton
                             )
@@ -132,7 +126,7 @@ fun CreateFileOrFolderDialog(
                         verticalAlignment = Alignment.CenterVertically
                     ) {
                         RadioButton(
-                            selected = (selectedFileTypeOption == idx),
+                            selected = (selectedFileTypeOption.intValue == idx),
                             onClick = null // null recommended for accessibility with screenreaders
                         )
                         Text(
