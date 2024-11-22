@@ -266,7 +266,7 @@ fun HomeScreen(
     )
 
     val filesPageCurrentPath = rememberSaveable { mutableStateOf("")}
-    val filesPageLastPath = rememberSaveable { mutableStateOf("")}
+    val filesPageLastPathByPressBack = rememberSaveable { mutableStateOf("")}
     val showCreateFileOrFolderDialog = rememberSaveable { mutableStateOf(false)}
     val filesPageCurPathFileItemDto = mutableCustomStateOf(stateKeyTag, "filesPageCurPathFileItemDto") { FileItemDto() }
 
@@ -895,7 +895,7 @@ fun HomeScreen(
                     selectedRepo = filesPageSelectedRepo,
                     goToRepoPage=goToRepoPage,
                     goToChangeListPage=goToChangeListPage,
-                    lastPath=filesPageLastPath,
+                    lastPathByPressBack=filesPageLastPathByPressBack,
                     curPathFileItemDto=filesPageCurPathFileItemDto
                 )
             }

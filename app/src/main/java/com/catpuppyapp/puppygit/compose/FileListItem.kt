@@ -41,7 +41,7 @@ import com.catpuppyapp.puppygit.utils.mime.iconRes
 @Composable
 fun FileListItem(
     item: FileItemDto,
-    lastPath:String,
+    lastPathByPressBack:String,
     isPasteMode: MutableState<Boolean>,
     menuKeyTextList: List<String>,
     menuKeyActList: List<(FileItemDto)->Unit>,
@@ -73,7 +73,7 @@ fun FileListItem(
                     Modifier.background(
                         MaterialTheme.colorScheme.primaryContainer
                     )
-                }else if(lastPath == item.fullPath){  // show light background for last clicked path
+                }else if(lastPathByPressBack == item.fullPath){  // show light background for last clicked path
                     Modifier.background(
                         if(inDarkTheme) Color.DarkGray.copy(alpha = .3f) else Color.LightGray.copy(alpha=.3f)
                     )

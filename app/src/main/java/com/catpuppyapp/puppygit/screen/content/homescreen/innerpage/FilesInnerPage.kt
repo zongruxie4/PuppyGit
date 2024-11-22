@@ -167,7 +167,7 @@ fun FilesInnerPage(
 
     goToRepoPage:(targetIdIfHave:String)->Unit,
     goToChangeListPage:(repoWillShowInChangeListPage:RepoEntity)->Unit,
-    lastPath: MutableState<String>,
+    lastPathByPressBack: MutableState<String>,
     curPathFileItemDto:CustomStateSaveable<FileItemDto>
 ) {
     val allRepoParentDir = AppModel.singleInstanceHolder.allRepoParentDir;
@@ -669,18 +669,18 @@ fun FilesInnerPage(
     val isBackHandlerEnable = rememberSaveable { mutableStateOf(true)}
 
     val backHandlerOnBack = getBackHandler(
-        activityContext,
-        isFileSelectionMode,
-        filesPageQuitSelectionMode,
-        currentPath,
-        allRepoParentDir,
-        needRefreshFilesPage,
-        exitApp,
-        filesPageGetFilterMode,
-        filesPageFilterModeOff,
-        filesPageSimpleFilterOn,
-        openDrawer,
-        lastPath
+        appContext = activityContext,
+        isFileSelectionMode = isFileSelectionMode,
+        filesPageQuitSelectionMode = filesPageQuitSelectionMode,
+        currentPath = currentPath,
+        allRepoParentDir = allRepoParentDir,
+        needRefreshFilesPage = needRefreshFilesPage,
+        exitApp = exitApp,
+        getFilterMode = filesPageGetFilterMode,
+        filesPageFilterModeOff = filesPageFilterModeOff,
+        filesPageSimpleFilterOn = filesPageSimpleFilterOn,
+        openDrawer = openDrawer,
+        lastPathByPressBack = lastPathByPressBack
 
     )
 
@@ -1300,7 +1300,7 @@ fun FilesInnerPage(
                     // 没测试，我看其他文件管理器针对目录都没open with，所以直接隐藏了) 需要测试：能否针对目录执行openwith？如果不能，对目录移除openwith选项
                     FileListItem(
                         item = it,
-                        lastPath = lastPath.value,
+                        lastPathByPressBack = lastPathByPressBack.value,
                         isPasteMode = isPasteMode,
                         menuKeyTextList = if(it.isFile) fileMenuKeyTextList else dirMenuKeyTextList,
                         menuKeyActList = if(it.isFile) fileMenuKeyActList else dirMenuKeyActList,
@@ -2626,7 +2626,7 @@ private fun getBackHandler(
     filesPageFilterModeOff:()->Unit,
     filesPageSimpleFilterOn: MutableState<Boolean>,
     openDrawer:()->Unit,
-    lastPath:MutableState<String>,
+    lastPathByPressBack:MutableState<String>,
 
 ): () -> Unit {
     val backStartSec =  rememberSaveable { mutableLongStateOf(0) }
@@ -2646,7 +2646,7 @@ private fun getBackHandler(
             filesPageFilterModeOff()
 //        }else if (currentPath.value.startsWith(FsUtils.getExternalStorageRootPathNoEndsWithSeparator()+"/")) { //如果在文件管理器页面且不在仓库根目录
         }else if (currentPath.value != FsUtils.rootPath) { //如果在文件管理器页面且不在仓库根目录
-            lastPath.value = currentPath.value
+            lastPathByPressBack.value = currentPath.value
             //返回上级目录
             currentPath.value = currentPath.value.substring(0, currentPath.value.lastIndexOf(File.separator).coerceAtLeast(0)).ifEmpty { FsUtils.rootPath }
 //            currentPath.value = File(currentPath.value).parent ?: FsUtils.rootPath
