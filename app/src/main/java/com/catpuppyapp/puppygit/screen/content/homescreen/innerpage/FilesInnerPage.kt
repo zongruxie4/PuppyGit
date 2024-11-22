@@ -434,6 +434,7 @@ fun FilesInnerPage(
         stringResource(R.string.file_history),
         stringResource(R.string.copy_repo_relative_path),
         stringResource(R.string.copy_full_path),
+        stringResource(R.string.details),
 
 //        stringResource(R.string.export),  //改到批量操作里了
 //        stringResource(id = R.string.delete)  //改用长按菜单的删除功能了
@@ -446,6 +447,8 @@ fun FilesInnerPage(
         stringResource(R.string.copy_repo_relative_path),
 
         stringResource(R.string.copy_full_path),
+        stringResource(R.string.details),
+
 //        stringResource(id = R.string.delete)  //改用长按菜单的删除功能了
     )
 
@@ -485,6 +488,55 @@ fun FilesInnerPage(
             MyLog.e(TAG, "#copyRepoRelativePath err: ${e.stackTraceToString()}")
         }
     }
+
+
+    // details variables block start
+    val showDetailsDialog = rememberSaveable { mutableStateOf(false)}
+    val details_ItemsSize = rememberSaveable { mutableLongStateOf(0L) }  // this is not items count, is file size. this size is a recursive count
+    val details_AllCount = rememberSaveable{mutableIntStateOf(0)}  // selected items count(folder + files). note: this is not a recursive count
+    val details_FilesCount = rememberSaveable{mutableIntStateOf(0)}  // files count in selected items. not recursive count
+    val details_FoldersCount = rememberSaveable{mutableIntStateOf(0)}  // folders count in selected items. not recursive count
+    val details_CountingItemsSize = rememberSaveable { mutableStateOf(false)}  // indicate is calculating file size or finished
+    val showCurPathDirAndFolderCount = rememberSaveable { mutableStateOf(false)}
+    val details_itemList = mutableCustomStateListOf(stateKeyTag, "details_itemList", listOf<FileItemDto>())
+
+    val initDetailsDialog = {list:List<FileItemDto> ->
+        details_FoldersCount.intValue = list.count { it.isDir }
+        details_FilesCount.intValue = list.size - details_FoldersCount.intValue
+        details_AllCount.intValue = list.size
+
+        showCurPathDirAndFolderCount.value = (list.size == 1 && list.first().fullPath == currentPath.value)
+
+        //count files/folders size
+        doJobThenOffLoading {
+            //prepare
+            details_CountingItemsSize.value = true
+            details_ItemsSize.longValue = 0
+
+            //count
+            list.forEach {
+                //ps: 因为已经在函数中追加了size，所以if(it.isDir)的代码块返回0即可
+                if(it.isDir) {
+                    FsUtils.calculateFolderSize(it.toFile(), details_ItemsSize)
+                } else {
+                    details_ItemsSize.longValue += it.sizeInBytes
+                }
+            }
+
+            //done
+            details_CountingItemsSize.value = false
+        }
+
+
+        details_itemList.value.clear()
+        details_itemList.value.addAll(list)
+
+        showDetailsDialog.value=true
+    }
+
+    // details variables block end
+
+
 
 
     val renameFile = {item:FileItemDto ->
@@ -543,6 +595,9 @@ fun FilesInnerPage(
         },
         copyRealPath@{
             copyThenShowCopied(it.fullPath)
+        },
+        details@{
+            initDetailsDialog(listOf(it))
         }
 //        export@{ item:FileItemDto ->
 //            val ret = FsUtils.getAppDirUnderPublicDocument()
@@ -568,6 +623,9 @@ fun FilesInnerPage(
         },
         copyRealPath@{
             copyThenShowCopied(it.fullPath)
+        },
+        details@{
+            initDetailsDialog(listOf(it))
         }
     )
 
@@ -895,53 +953,6 @@ fun FilesInnerPage(
         showInitRepoDialog.value = true
     }
     // init repo dialog variables block end
-
-
-    // details variables block start
-    val showDetailsDialog = rememberSaveable { mutableStateOf(false)}
-    val details_ItemsSize = rememberSaveable { mutableLongStateOf(0L) }  // this is not items count, is file size. this size is a recursive count
-    val details_AllCount = rememberSaveable{mutableIntStateOf(0)}  // selected items count(folder + files). note: this is not a recursive count
-    val details_FilesCount = rememberSaveable{mutableIntStateOf(0)}  // files count in selected items. not recursive count
-    val details_FoldersCount = rememberSaveable{mutableIntStateOf(0)}  // folders count in selected items. not recursive count
-    val details_CountingItemsSize = rememberSaveable { mutableStateOf(false)}  // indicate is calculating file size or finished
-    val showCurPathDirAndFolderCount = rememberSaveable { mutableStateOf(false)}
-    val details_itemList = mutableCustomStateListOf(stateKeyTag, "details_itemList", listOf<FileItemDto>())
-
-    val initDetailsDialog = {list:List<FileItemDto> ->
-        details_FoldersCount.intValue = list.count { it.isDir }
-        details_FilesCount.intValue = list.size - details_FoldersCount.intValue
-        details_AllCount.intValue = list.size
-
-        showCurPathDirAndFolderCount.value = (list.size == 1 && list.first().fullPath == currentPath.value)
-
-        //count files/folders size
-        doJobThenOffLoading {
-            //prepare
-            details_CountingItemsSize.value = true
-            details_ItemsSize.longValue = 0
-
-            //count
-            list.forEach {
-                //ps: 因为已经在函数中追加了size，所以if(it.isDir)的代码块返回0即可
-                if(it.isDir) {
-                    FsUtils.calculateFolderSize(it.toFile(), details_ItemsSize)
-                } else {
-                    details_ItemsSize.longValue += it.sizeInBytes
-                }
-            }
-
-            //done
-            details_CountingItemsSize.value = false
-        }
-
-
-        details_itemList.value.clear()
-        details_itemList.value.addAll(list)
-
-        showDetailsDialog.value=true
-    }
-
-    // details variables block end
 
 
     val findRepoThenGoToReposOrChangList = { fullPath:String, trueGoToReposFalseGoToChangeList:Boolean ->
