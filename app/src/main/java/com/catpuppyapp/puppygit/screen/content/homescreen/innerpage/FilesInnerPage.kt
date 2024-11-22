@@ -55,6 +55,7 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.platform.LocalClipboardManager
 import androidx.compose.ui.platform.LocalContext
@@ -1127,15 +1128,19 @@ fun FilesInnerPage(
 //            }
                     //面包屑 (breadcrumb)
                     val breadList = currentPathBreadCrumbList.value.toList()
-                    val lastIndex = breadList.size - 1
+//                    val lastIndex = breadList.size - 1
                     breadList.forEachIndexed { idx, it ->
                         item {
+                            val separator = Cons.slash
                             val breadCrumbDropDownMenuExpendState = rememberSaveable { mutableStateOf(false)}
-
+                            val curPathIsRoot = currentPath.value == separator
+                            val curPathIsRootAndCurItemIsRoot = curPathIsRoot && idx==0
+                            val textColor = if(curPathIsRoot || it.fullPath.startsWith(currentPath.value+separator)) Color.Gray else Color.Unspecified
                             //如果是所有仓库的根目录，返回 "/"，否则返回 "路径+/"
-                            Text(text = File.separator)
+                            Text(text = separator, color = if(curPathIsRootAndCurItemIsRoot) Color.Unspecified else textColor, fontWeight = if(curPathIsRootAndCurItemIsRoot) FontWeight.Bold else FontWeight.Normal)
                             Text(text =it.name,
-                                fontWeight = if(idx==lastIndex) FontWeight.Bold else FontWeight.Normal,
+                                color = textColor,
+                                fontWeight = if(it.fullPath == currentPath.value) FontWeight.Bold else FontWeight.Normal,
                                 modifier = Modifier.combinedClickable (
                                     onLongClick = {  //long press will show menu for pressed path
                                         haptic.performHapticFeedback(HapticFeedbackType.LongPress)
@@ -1247,7 +1252,10 @@ fun FilesInnerPage(
                 //make breadCrumb always scroll to end for show current path
                 val scrollToLast = remember{
                     derivedStateOf {
-                        UIHelper.scrollToItem(scope, breadCrumbListState, currentPathBreadCrumbList.value.size-1)
+                        val indexOfCurPath = currentPathBreadCrumbList.value.indexOfFirst { it.fullPath == currentPath.value }
+                        if(indexOfCurPath != -1) {
+                            UIHelper.scrollToItem(scope, breadCrumbListState, indexOfCurPath)
+                        }
                     }
                 }.value
             }
@@ -2514,6 +2522,8 @@ private fun doInit(
             }
         }
 
+        val lastUsedPath = curPathFileItemDto.value.fullPath
+
         val curPathDtoTmp = FileItemDto.genFileItemDtoByFile(currentDir, appContext)
         curPathDtoTmp.folderCount = folderCount
         curPathDtoTmp.fileCount = fileCount
@@ -2559,29 +2569,35 @@ private fun doInit(
 //    if(currentPathBreadCrumbList.intValue==0) {  //刚创建页面的时候，面包屑列表为空，需要初始化一下，后续由点击目录的onClick函数维护面包屑状态
 
 //        val willUpdateList = if(currentPathBreadCrumbList.intValue==1) currentPathBreadCrumbList1 else currentPathBreadCrumbList2  //初始化时更新列表1，列表2由后续点击面包屑后的onClick函数更新
+
         val curDirPath = currentDir.canonicalPath
+        //重新生成面包屑的条件：上次路径为空 或 面包屑列表为空 或 上次路径非startsWith当前路径
+//        if(lastUsedPath.isBlank() || curDirPath==FsUtils.rootPath || currentPathBreadCrumbList.value.isEmpty() || lastUsedPath.startsWith(curDirPath).not()) {
+        if(lastUsedPath.isBlank() || currentPathBreadCrumbList.value.isEmpty() || lastUsedPath.startsWith(curDirPath).not()) {
 //        val isInternalStoragePath = curDirPath.startsWith(repoBaseDirPath)
 //        val splitPath = (if(isInternalStoragePath) getFilePathStrBasedRepoDir(curDirPath) else curDirPath.removePrefix("/")).split(File.separator)  //获得一个分割后的目录列表
 //        val root = if(isInternalStoragePath) repoBaseDirPath else "/"
-        val splitPath = curDirPath.removePrefix("/").split(File.separator)  //获得一个分割后的目录列表
-        val root = "/"
-        currentPathBreadCrumbList.value.clear()  //避免和之前的路径拼接在一起，先清空下列表
+            val separator = Cons.slash
+            val splitPath = curDirPath.removePrefix(separator).split(separator)  //获得一个分割后的目录列表
+            val root = separator
+            currentPathBreadCrumbList.value.clear()  //避免和之前的路径拼接在一起，先清空下列表
 //        if(splitPath.isNotEmpty()) {  //啥也没分割出来的话，就没必要填东西了，不过应该不会出现这种情况
-        var lastPathName=StringBuilder()
-        for(s in splitPath) {  //更新面包屑
-            lastPathName.append(s).append(File.separator)  //拼接列表路径为仓库下的 完整相对路径
-            val pathDto = FileItemDto()  //这里其实只需要 fullPath 和 name两个参数
+            var lastPathName=StringBuilder()
+            for(s in splitPath) {  //更新面包屑
+                lastPathName.append(s).append(separator)  //拼接列表路径为仓库下的 完整相对路径
+                val pathDto = FileItemDto()  //这里其实只需要 fullPath 和 name两个参数
 
-            //breadCrumb must dir, if is file, will replace at up code
-            //面包屑肯定是目录，如果是文件，在上面的代码中会被替换成目录
-            pathDto.isFile=false
-            pathDto.isDir=true
+                //breadCrumb must dir, if is file, will replace at up code
+                //面包屑肯定是目录，如果是文件，在上面的代码中会被替换成目录
+                pathDto.isFile=false
+                pathDto.isDir=true
 
-            pathDto.fullPath = File(root, lastPathName.toString()).canonicalPath  //把仓库下完整相对路径和仓库路径拼接，得到一个绝对路径
-            pathDto.name = s
-            currentPathBreadCrumbList.value.add(pathDto)
+                pathDto.fullPath = File(root, lastPathName.toString()).canonicalPath  //把仓库下完整相对路径和仓库路径拼接，得到一个绝对路径
+                pathDto.name = s
+                currentPathBreadCrumbList.value.add(pathDto)
+            }
+
         }
-
 //        currentPathBreadCrumbList.requireRefreshView()
 //        }
 
@@ -2630,6 +2646,8 @@ private fun getBackHandler(
 
 ): () -> Unit {
     val backStartSec =  rememberSaveable { mutableLongStateOf(0) }
+    val ceilingPaths = remember { FsUtils.getAppCeilingPaths() }
+
     val pressBackAgainForExitText = stringResource(R.string.press_back_again_to_exit);
     val showTextAndUpdateTimeForPressBackBtn = {
         openDrawer()
@@ -2645,7 +2663,7 @@ private fun getBackHandler(
         }else if(getFilterMode() != 0) {
             filesPageFilterModeOff()
 //        }else if (currentPath.value.startsWith(FsUtils.getExternalStorageRootPathNoEndsWithSeparator()+"/")) { //如果在文件管理器页面且不在仓库根目录
-        }else if (currentPath.value != FsUtils.rootPath) { //如果在文件管理器页面且不在仓库根目录
+        }else if (ceilingPaths.contains(currentPath.value).not()) { //如果在文件管理器页面且未抵达任一天花板目录，则打开上级目录，否则显示“再按返回则退出”的提示
             lastPathByPressBack.value = currentPath.value
             //返回上级目录
             currentPath.value = currentPath.value.substring(0, currentPath.value.lastIndexOf(File.separator).coerceAtLeast(0)).ifEmpty { FsUtils.rootPath }

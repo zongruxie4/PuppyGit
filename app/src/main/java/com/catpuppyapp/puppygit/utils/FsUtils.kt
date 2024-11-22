@@ -836,6 +836,23 @@ object FsUtils {
     }
 
     /**
+     * ceiling path of app, if reached those path in Files explorer, should show 'press back again to exit' rather than go to parent dir
+     *
+     * note: the externalFilesDir "/storage/emulated/0/Android/data/your_package_name" should not in this list,
+     *   cause it actually is subdir of external storage dir "/storage/emulated/0", 不加进列表的话，切换目录方便，可直接从App的外部data目录返回到外部存储目录
+     */
+    fun getAppCeilingPaths():List<String> {
+        return listOf(
+            // usually is "/storage/emulated/0"
+            getExternalStorageRootPathNoEndsWithSeparator(),
+            // "/data/data/app.package.name"
+            AppModel.singleInstanceHolder.innerDataDir.canonicalPath,
+            // "/"，兜底
+            rootPath
+        )
+    }
+
+    /**
      * @return root path of app internal storage
      */
     fun getInternalStorageRootPathNoEndsWithSeparator():String {
@@ -874,14 +891,15 @@ object FsUtils {
     /**
      * eg: fullPath = /storage/emulated/0/repos/abc, return External:/abc
      * eg: fullPath = /storage/emulated/0/Android/path-to-app-internal-repos-folder/abc, return Internal:/abc
+     * eg: fullPath = /data/data/app.package.name/files/abc, return origin path
      */
     fun getPathWithInternalOrExternalPrefix(fullPath:String, internalStorageRoot:String=FsUtils.getInternalStorageRootPathNoEndsWithSeparator(), externalStorageRoot:String=FsUtils.getExternalStorageRootPathNoEndsWithSeparator()) :String {
-        return if(fullPath.isBlank()){
-            ""
-        }else if(fullPath.startsWith(internalStorageRoot)) {  // internal storage must before external storage, because internal storage actually under external storage (eg: internal is "/storage/emulated/0/Android/data/packagename/xxx/xxxx/x", external is "/storage/emulated/0")
+        return if(fullPath.startsWith(internalStorageRoot)) {  // internal storage must before external storage, because internal storage actually under external storage (eg: internal is "/storage/emulated/0/Android/data/packagename/xxx/xxxx/x", external is "/storage/emulated/0")
             internalPathPrefix+((getPathAfterParent(parent= internalStorageRoot, fullPath=fullPath)).removePrefix("/"))
-        }else {
+        }else if(fullPath.startsWith(externalStorageRoot)) {
             externalPathPrefix+((getPathAfterParent(parent= externalStorageRoot, fullPath=fullPath)).removePrefix("/"))
+        }else { //原样返回, no matched, return origin path
+            fullPath
         }
     }
 
