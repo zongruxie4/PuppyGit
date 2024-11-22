@@ -111,6 +111,7 @@ import com.catpuppyapp.puppygit.utils.changeStateTriggerRefreshPage
 import com.catpuppyapp.puppygit.utils.checkFileOrFolderNameAndTryCreateFile
 import com.catpuppyapp.puppygit.utils.createAndInsertError
 import com.catpuppyapp.puppygit.utils.doJobThenOffLoading
+import com.catpuppyapp.puppygit.utils.getFileExtOrEmpty
 import com.catpuppyapp.puppygit.utils.getFileNameFromCanonicalPath
 import com.catpuppyapp.puppygit.utils.getFilePathStrBasedRepoDir
 import com.catpuppyapp.puppygit.utils.getFilePathUnderParent
@@ -128,7 +129,6 @@ import com.catpuppyapp.puppygit.utils.state.CustomStateListSaveable
 import com.catpuppyapp.puppygit.utils.state.CustomStateSaveable
 import com.catpuppyapp.puppygit.utils.state.mutableCustomStateListOf
 import com.catpuppyapp.puppygit.utils.state.mutableCustomStateOf
-import com.catpuppyapp.puppygit.utils.getFileExtOrEmpty
 import java.io.File
 
 private val TAG = "FilesInnerPage"
@@ -1142,35 +1142,36 @@ fun FilesInnerPage(
                                 color = textColor,
                                 fontWeight = if(it.fullPath == currentPath.value) FontWeight.Bold else FontWeight.Normal,
                                 modifier = Modifier.combinedClickable (
-                                    onLongClick = {  //long press will show menu for pressed path
-                                        haptic.performHapticFeedback(HapticFeedbackType.LongPress)
-                                        breadCrumbDropDownMenuExpendState.value = true
+                                        onLongClick = {  //long press will show menu for pressed path
+                                            haptic.performHapticFeedback(HapticFeedbackType.LongPress)
+                                            breadCrumbDropDownMenuExpendState.value = true
 
 //                                        // copy full path
 //                                        clipboardManager.setText(AnnotatedString(it.fullPath))
 //                                        Msg.requireShow(appContext.getString(R.string.path_copied))
+                                        }
+                                    ) { //onClick
+
+                                        //                        //点击面包屑跳转路径
+                                        //返回没在使用的列表
+                                        //                        val willUpdateList = if(currentPathBreadCrumbList.intValue==1) currentPathBreadCrumbList2 else currentPathBreadCrumbList1
+                                        //                        val clickedItemIndex = willUpdateList.indexOf(it)
+                                        //                        val subListEndIndex = clickedItemIndex+1
+                                        //                        if(subListEndIndex < willUpdateList.size) {  //避免越界
+                                        //                            val subList = willUpdateList.subList(0, subListEndIndex)  //返回起始地址到点击位置的子列表
+                                        //                            willUpdateList.clear()
+                                        //                            willUpdateList.addAll(subList)
+                                        //                            currentPathBreadCrumbList.intValue = if(currentPathBreadCrumbList.intValue==1) 2 else 1
+                                        //                        }
+
+                                        //更新当前路径
+                                        currentPath.value = it.fullPath
+                                        filesPageSimpleFilterKeyWord.value = TextFieldValue("")  //清空过滤关键字
+                                        //刷新页面（然后面包屑也会重新生成）
+                                        changeStateTriggerRefreshPage(needRefreshFilesPage)
+
                                     }
-                                ){ //onClick
-
-                                    //                        //点击面包屑跳转路径
-                                    //返回没在使用的列表
-                                    //                        val willUpdateList = if(currentPathBreadCrumbList.intValue==1) currentPathBreadCrumbList2 else currentPathBreadCrumbList1
-                                    //                        val clickedItemIndex = willUpdateList.indexOf(it)
-                                    //                        val subListEndIndex = clickedItemIndex+1
-                                    //                        if(subListEndIndex < willUpdateList.size) {  //避免越界
-                                    //                            val subList = willUpdateList.subList(0, subListEndIndex)  //返回起始地址到点击位置的子列表
-                                    //                            willUpdateList.clear()
-                                    //                            willUpdateList.addAll(subList)
-                                    //                            currentPathBreadCrumbList.intValue = if(currentPathBreadCrumbList.intValue==1) 2 else 1
-                                    //                        }
-
-                                    //更新当前路径
-                                    currentPath.value = it.fullPath
-                                    filesPageSimpleFilterKeyWord.value = TextFieldValue("")  //清空过滤关键字
-                                    //刷新页面（然后面包屑也会重新生成）
-                                    changeStateTriggerRefreshPage(needRefreshFilesPage)
-
-                                })
+                            )
 
 
                             if(breadCrumbDropDownMenuExpendState.value){
@@ -1252,9 +1253,11 @@ fun FilesInnerPage(
                 //make breadCrumb always scroll to end for show current path
                 val scrollToLast = remember{
                     derivedStateOf {
+                        //若当前目录在面包屑中的条目不可见，滚动使其可见
                         val indexOfCurPath = currentPathBreadCrumbList.value.indexOfFirst { it.fullPath == currentPath.value }
                         if(indexOfCurPath != -1) {
-                            UIHelper.scrollToItem(scope, breadCrumbListState, indexOfCurPath)
+                            //滚动到当前条目前两个位置，不然当前条目在屏幕最左边，难受，当然，如果用户的文件夹名非常长的话，这样滚动就看不见了，不过一般不会那么长的
+                            UIHelper.scrollToItem(scope, breadCrumbListState, indexOfCurPath-2)
                         }
                     }
                 }.value
