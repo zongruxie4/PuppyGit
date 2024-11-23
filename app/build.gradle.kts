@@ -31,13 +31,13 @@ android {
     val packageName = "com.catpuppyapp.puppygit.play.pro"
 
     namespace = packageName  // 这个值和包名有所不同，但是最好把这个值和包名设成一样的 或 让此值在系统中唯一，绝对不要不同或相同包名的app拥有相同namespace！如果包名不同但此值相同，会删除已安装的app！或者冲突，安装失败。（R.string 那个R需要在这个作用域下运行）
-    compileSdk = 34
+    compileSdk = 35
 
     defaultConfig {
         applicationId = packageName
         //ndk编译的库不能大于minSdk值，否则会不支持
         minSdk = 26 //26，安卓8(Oreo, O)
-        targetSdk = 34
+        targetSdk = 35
         versionCode = 43
         versionName = "1.0.6.7"
 
@@ -127,7 +127,7 @@ dependencies {
 
 
     implementation("androidx.documentfile:documentfile:1.0.1")
-    implementation("androidx.lifecycle:lifecycle-runtime-compose:2.8.6")
+    implementation("androidx.lifecycle:lifecycle-runtime-compose:2.8.7")
     //implementation("androidx.appcompat:appcompat-resources:1.6.1")
     //    val work_version = "2.9.0"
 //    // Kotlin + coroutines
@@ -167,7 +167,7 @@ dependencies {
 // 不过不知道里面的类是否能直接用？比如我想用clone命令，可不可以直接调用这里的Clone类？
 //    implementation("org.eclipse.jgit:org.eclipse.jgit.pgm:6.8.0.202311291450-r")
     implementation(files("libs/git24j-1.0.4.20241114.jar"))
-    implementation("androidx.navigation:navigation-compose:2.8.2")
+    implementation("androidx.navigation:navigation-compose:2.8.4")
 
     //查询支付状态的api，如果前端取消订单后不久就过期，就不需要这个了，否则需要
 //    implementation("com.google.auth:google-auth-library-oauth2-http:1.23.0")
@@ -178,11 +178,11 @@ dependencies {
 //    implementation("org.danilopianini:khttp:1.6.2")
 
 //    implementation("androidx.compose.material3:material3-android:1.2.0-beta02")
-    coreLibraryDesugaring("com.android.tools:desugar_jdk_libs:2.1.2")
-    implementation("androidx.core:core-ktx:1.13.1")
-    implementation("androidx.lifecycle:lifecycle-runtime-ktx:2.8.6")
-    implementation("androidx.activity:activity-compose:1.9.2")
-    implementation(platform("androidx.compose:compose-bom:2024.09.03"))
+    coreLibraryDesugaring("com.android.tools:desugar_jdk_libs:2.1.3")
+    implementation("androidx.core:core-ktx:1.15.0")
+    implementation("androidx.lifecycle:lifecycle-runtime-ktx:2.8.7")
+    implementation("androidx.activity:activity-compose:1.9.3")
+    implementation(platform("androidx.compose:compose-bom:2024.11.00"))
     implementation("androidx.compose.ui:ui")
     implementation("androidx.compose.ui:ui-graphics")
     implementation("androidx.compose.ui:ui-tooling-preview")
@@ -190,14 +190,14 @@ dependencies {
 //    implementation("androidx.compose.compiler:compiler:1.5.12")
 //    implementation("androidx.compose.compiler:compiler-hosted:1.5.12")
 
-    implementation("androidx.compose.material3:material3:1.3.0")
-    implementation ("androidx.compose.material:material-icons-extended:1.7.3")
+    implementation("androidx.compose.material3:material3:1.3.1")
+    implementation ("androidx.compose.material:material-icons-extended:1.7.5")
 
 
     testImplementation("junit:junit:4.13.2")
     androidTestImplementation("androidx.test.ext:junit:1.2.1")
     androidTestImplementation("androidx.test.espresso:espresso-core:3.6.1")
-    androidTestImplementation(platform("androidx.compose:compose-bom:2024.09.03"))
+    androidTestImplementation(platform("androidx.compose:compose-bom:2024.11.00"))
     androidTestImplementation("androidx.compose.ui:ui-test-junit4")
     debugImplementation("androidx.compose.ui:ui-tooling")
     debugImplementation("androidx.compose.ui:ui-test-manifest")
