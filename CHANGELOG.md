@@ -3,7 +3,8 @@ next version:
 - adjust Files explorer breadcrumb style
 - add fallback mechanism for get external app dir: if try get external app dir failed will try get inner instead
 - change android targetSdk to 35
-- update UI dependencies
+- update UI libs version
+- change app chinese name to "小狗Git"(former name "狗狗Git"）
 
 
 1.0.6.7v43 - 20241119:
