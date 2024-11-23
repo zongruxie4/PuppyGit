@@ -1260,7 +1260,7 @@ fun FilesInnerPage(
                 }
 
                 //make breadCrumb always scroll to end for show current path
-                val scrollToLast = remember{
+                val scrollToCurPath = remember{
                     derivedStateOf {
                         //若当前目录在面包屑中的条目不可见，滚动使其可见
                         val indexOfCurPath = currentPathBreadCrumbList.value.indexOfFirst { it.fullPath == currentPath.value }
@@ -2593,26 +2593,28 @@ private fun doInit(
 //        val isInternalStoragePath = curDirPath.startsWith(repoBaseDirPath)
 //        val splitPath = (if(isInternalStoragePath) getFilePathStrBasedRepoDir(curDirPath) else curDirPath.removePrefix("/")).split(File.separator)  //获得一个分割后的目录列表
 //        val root = if(isInternalStoragePath) repoBaseDirPath else "/"
-            val separator = Cons.slash
-            val splitPath = curDirPath.removePrefix(separator).split(separator)  //获得一个分割后的目录列表
-            val root = separator
+            val separator = Cons.slashChar
+            val splitPath = curDirPath.trim(separator).split(separator)  //获得一个分割后的目录列表
+//            val root = separator
             curBreadCrumbList.clear()  //避免和之前的路径拼接在一起，先清空下列表
 //        if(splitPath.isNotEmpty()) {  //啥也没分割出来的话，就没必要填东西了，不过应该不会出现这种情况
+//            var lastPathName=StringBuilder(40).append(rootPath)  // if not starts with root path "/", use this instead create a empty StringBuilder, the rootPath should is a canonical path, which starts with '/' and no ends with '/'
             var lastPathName=StringBuilder(40)  // most time the path should more than 30 "/storage/emulated/0" , so set it to 40 I think is better than StringBuilder default size 16
-            for(s in splitPath) {  //更新面包屑
-                lastPathName.append(s).append(separator)  //拼接列表路径为仓库下的 完整相对路径
+            for(pathName in splitPath) {  //更新面包屑
+                lastPathName.append(separator).append(pathName)  //拼接列表路径为仓库下的 完整相对路径
                 val pathDto = FileItemDto()  //这里其实只需要 fullPath 和 name两个参数
 
                 //breadCrumb must dir, if is file, will replace at up code
                 //面包屑肯定是目录，如果是文件，在上面的代码中会被替换成目录
-                pathDto.isFile=false
+//                pathDto.isFile=false
                 pathDto.isDir=true
 
 //                pathDto.fullPath = File(root, lastPathName.toString()).canonicalPath  //把仓库下完整相对路径和仓库路径拼接，得到一个绝对路径
+                pathDto.fullPath = lastPathName.toString()  // this will output path like "/abc/def" and should faster than `File(root, lastPathName).canonicalPath`
+
 //                println("f1: ${pathDto.fullPath}")  // "/abc/def"
-//                println("f2: ${root+lastPathName.toString()}")  // "/abc/def/"
-                pathDto.fullPath = "$root${lastPathName.removeSuffix(separator)}"  // this will output path like "/abc/def" and should faster than `File(root, lastPathName).canonicalPath`
-                pathDto.name = s
+
+                pathDto.name = pathName
                 curBreadCrumbList.add(pathDto)
             }
 
