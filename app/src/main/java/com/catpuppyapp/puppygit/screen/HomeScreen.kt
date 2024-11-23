@@ -102,6 +102,10 @@ import com.github.git24j.core.Repository.StateT
 import kotlinx.coroutines.launch
 
 
+private const val TAG = "HomeScreen"
+private const val stateKeyTag = "HomeScreen"
+
+
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun HomeScreen(
@@ -117,10 +121,6 @@ fun HomeScreen(
 //    filePageListState: LazyListState,
 //    haptic: HapticFeedback,
 ) {
-    //for debug
-    val TAG = "HomeScreen"
-    val stateKeyTag = "HomeScreen"
-
 
     val exitApp = AppModel.singleInstanceHolder.exitApp
     val navController = AppModel.singleInstanceHolder.navController
@@ -1137,14 +1137,14 @@ fun HomeScreen(
         }
     }
 
-
-    //compose被销毁时执行的副作用
-    DisposableEffect(Unit) {
-//        ("DisposableEffect: entered main")
-        onDispose {
-//            ("DisposableEffect: exited main")
-        }
-    }
+//
+//    //compose被销毁时执行的副作用
+//    DisposableEffect(Unit) {
+////        ("DisposableEffect: entered main")
+//        onDispose {
+////            ("DisposableEffect: exited main")
+//        }
+//    }
 
 }
 
