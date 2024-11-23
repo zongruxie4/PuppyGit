@@ -2602,7 +2602,8 @@ private fun doInit(
             var lastPathName=StringBuilder(40)  // most time the path should more than 30 "/storage/emulated/0" , so set it to 40 I think is better than StringBuilder default size 16
             for(pathName in splitPath) {  //更新面包屑
                 lastPathName.append(separator).append(pathName)  //拼接列表路径为仓库下的 完整相对路径
-                val pathDto = FileItemDto()  //这里其实只需要 fullPath 和 name两个参数
+                // bread crumb为了生成快速创建的是阉割板的对象，只有少数必要参数，如果想获取path的完整dto，需要重新生成， 调用genFileItemDtoByFile(dto.toFile())即可
+                val pathDto = FileItemDto()
 
                 //breadCrumb must dir, if is file, will replace at up code
                 //面包屑肯定是目录，如果是文件，在上面的代码中会被替换成目录
