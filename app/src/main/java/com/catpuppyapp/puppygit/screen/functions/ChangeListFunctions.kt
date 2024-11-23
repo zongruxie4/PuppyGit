@@ -23,7 +23,7 @@ import com.catpuppyapp.puppygit.utils.state.CustomStateListSaveable
 import com.catpuppyapp.puppygit.utils.state.CustomStateSaveable
 import com.github.git24j.core.Repository
 
-private val TAG = "ChangeListFunctions"
+private const val TAG = "ChangeListFunctions"
 
 object ChangeListFunctions {
 
