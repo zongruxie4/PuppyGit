@@ -170,20 +170,10 @@ fun RepoCard(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.SpaceBetween
             ) {
-                Row(modifier = Modifier.fillMaxWidth(.6F)) {
-                    Text(
-                        text = repoDto.repoName,
-                        fontSize = 15.sp,
-                        modifier = Modifier.padding(
-                            start = 10.dp,
-                            top = 5.dp,
-                            bottom = 0.dp,
-                            end = 1.dp
-                        ),
-                        textAlign = TextAlign.Center,
-                        maxLines = 1,
-                        overflow = TextOverflow.Ellipsis,
-                    )
+                Row(modifier = Modifier.fillMaxWidth(.6F),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    RepoCardTitleText(repoDto.repoName)
 
 //                Text(text = repoDto.remoteName,
 //                    textAlign = MyStyleKt.clickableText.textAlign,
