@@ -17,8 +17,11 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.List
+import androidx.compose.material.icons.automirrored.filled.OpenInNew
+import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.DocumentScanner
 import androidx.compose.material.icons.filled.Folder
+import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material3.DrawerState
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
@@ -755,6 +758,7 @@ fun EditorInnerPage(
             //下面的判断其实可用if else，但为了确保状态改变能刷新对应分支，全用的if
             // open file err
             if (editorOpenFileErr.value) {  //如果文件未加载就绪，加载出错显示错误，否则显示Loading...
+                // err text
                 MySelectionContainer {
                     Row {
                         Text(
@@ -769,74 +773,54 @@ fun EditorInnerPage(
                 }
                 Spacer(modifier = Modifier.height(15.dp))
 
+                // actions
                 Row {
-                    Text(
-                        text = stringResource(R.string.open_as),
-                        modifier = MyStyleKt.ClickableText.modifierNoPadding.clickable {
-                            //点击用外部程序打开文件
-                            requestFromParent.value = PageRequest.requireOpenAs
-                        },
-                        style = MyStyleKt.ClickableText.style,
-                        color = MyStyleKt.ClickableText.color,
-//                            fontWeight = FontWeight.Light,
-                        fontSize = fontSize
+                    LongPressAbleIconBtn(
+                        enabled = true,
+                        iconModifier = iconModifier,
+                        tooltipText = stringResource(R.string.open_as),
+                        icon =  Icons.AutoMirrored.Filled.OpenInNew,
+                        iconContentDesc = stringResource(id = R.string.open_as),
+                    ) {
+                        //点击用外部程序打开文件
+                        requestFromParent.value = PageRequest.requireOpenAs
+                    }
 
-                    )
-                }
+                    LongPressAbleIconBtn(
+                        enabled = true,
+                        iconModifier = iconModifier,
+                        tooltipText = stringResource(R.string.reload),
+                        icon =  Icons.Filled.Refresh,
+                        iconContentDesc = stringResource(id = R.string.reload),
+                    ) {
+                        reloadFile()
+                    }
 
+                    //只有顶级页面的editor才显示show in files
+                    if(!isSubPageMode){
+                        LongPressAbleIconBtn(
+                            enabled = true,
+                            iconModifier = iconModifier,
+                            tooltipText = stringResource(R.string.show_in_files),
+                            icon =  Icons.Filled.DocumentScanner,
+                            iconContentDesc = stringResource(id = R.string.show_in_files),
+                        ) {
+                            checkPathThenGoToFilesPage()
+                        }
 
-                Spacer(modifier = Modifier.height(15.dp))
+                    }
 
-                Row {
-                    Text(
-                        text = stringResource(R.string.reload),
-                        modifier = MyStyleKt.ClickableText.modifierNoPadding.clickable {
-                            reloadFile()
-                        },
-                        style = MyStyleKt.ClickableText.style,
-                        color = MyStyleKt.ClickableText.color,
-//                            fontWeight = FontWeight.Light,
-                        fontSize = fontSize
-
-                    )
-                }
-
-
-                //只有顶级页面的editor才显示show in files
-                if(!isSubPageMode){
-                    Spacer(modifier = Modifier.height(15.dp))
-
-                    Row {
-                        Text(
-                            text = stringResource(R.string.show_in_files),
-                            modifier = MyStyleKt.ClickableText.modifierNoPadding.clickable {
-                                checkPathThenGoToFilesPage()
-                            },
-                            style = MyStyleKt.ClickableText.style,
-                            color = MyStyleKt.ClickableText.color,
-//                            fontWeight = FontWeight.Light,
-                            fontSize = fontSize
-
-                        )
+                    LongPressAbleIconBtn(
+                        enabled = true,
+                        iconModifier = iconModifier,
+                        tooltipText = stringResource(R.string.close),
+                        icon =  Icons.Filled.Close,
+                        iconContentDesc = stringResource(id = R.string.close),
+                    ) {
+                        closeFile()
                     }
                 }
 
-
-                Spacer(modifier = Modifier.height(15.dp))
-
-                Row {
-                    Text(
-                        text = stringResource(R.string.close),
-                        modifier = MyStyleKt.ClickableText.modifierNoPadding.clickable {
-                            closeFile()
-                        },
-                        style = MyStyleKt.ClickableText.style,
-                        color = MyStyleKt.ClickableText.color,
-//                            fontWeight = FontWeight.Light,
-                        fontSize = fontSize
-
-                    )
-                }
             }
 
             //not open file (and no err)
