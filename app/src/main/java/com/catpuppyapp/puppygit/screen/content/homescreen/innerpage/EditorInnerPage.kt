@@ -15,6 +15,10 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.List
+import androidx.compose.material.icons.filled.DocumentScanner
+import androidx.compose.material.icons.filled.Folder
 import androidx.compose.material3.DrawerState
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
@@ -33,8 +37,10 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.res.vectorResource
 import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.unit.DpOffset
 import androidx.compose.ui.unit.dp
@@ -42,6 +48,7 @@ import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.compose.LifecycleEventEffect
 import com.catpuppyapp.puppygit.compose.ConfirmDialog
 import com.catpuppyapp.puppygit.compose.ConfirmDialog2
+import com.catpuppyapp.puppygit.compose.LongPressAbleIconBtn
 import com.catpuppyapp.puppygit.compose.MySelectionContainer
 import com.catpuppyapp.puppygit.compose.OpenAsDialog
 import com.catpuppyapp.puppygit.constants.Cons
@@ -430,6 +437,7 @@ fun EditorInnerPage(
         ConfirmDialog2(
             title = stringResource(R.string.confirm),
             text = stringResource(R.string.will_clear_recent_files_history_and_last_edited_positions_of_them),
+            okTextColor = MyStyleKt.TextColor.danger(),
             onCancel = {showClearRecentFilesDialog.value = false}
         ) {
             showClearRecentFilesDialog.value = false
@@ -740,6 +748,8 @@ fun EditorInnerPage(
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
             val fontSize = MyStyleKt.TextSize.default
+            val iconModifier = MyStyleKt.Icon.modifier
+
             //20240429: 这里必须把判断用到的状态变量写全，不然目前的Compose的刷新机制可能有bug，当if的第一个判断条件值没变时，可能会忽略后面的判断，有待验证
 //        if((""+editorPageShowingFileHasErr.value+editorPageShowingFileIsReady.value+editorPageShowingFilePath.value).isNotEmpty()) {
             //下面的判断其实可用if else，但为了确保状态改变能刷新对应分支，全用的if
@@ -831,112 +841,90 @@ fun EditorInnerPage(
 
             //not open file (and no err)
             if (notOpenFile) {  //文件未就绪且无正在显示的文件且没错误
-                val spacerHeight=15.dp
-                if(!isSubPageMode) {  //仅在主页导航来的情况下才显示选择文件，否则显示了也不好使，因为显示子页面的时候，主页可能被销毁了，或者被覆盖了，改状态跳转页面不行，除非导航，但没必要导航，直接隐藏即可
-                    Row {
-                        Text(
-                            text = stringResource(R.string.select_file),
-                            modifier = MyStyleKt.ClickableText.modifierNoPadding.clickable {
-                                currentHomeScreen.intValue = Cons.selectedItem_Files
-                            },
-                            style = MyStyleKt.ClickableText.style,
-                            color = MyStyleKt.ClickableText.color,
-//                            fontWeight = FontWeight.Light,
-                            fontSize = fontSize
-                        )
-
-                    }
-                    Spacer(modifier = Modifier.height(spacerHeight))
-
-                    Row {
-                        Text(
-                            //如果是子页面必然带着路径来的，但也可关闭文件而不退出编辑器，关闭文件后显示“重新打开”；如果是主页导航来的，则显示“打开上一个文件”
-                            text = stringResource(R.string.show_last_in_files),
-                            modifier = MyStyleKt.ClickableText.modifierNoPadding.clickable {
-                                ifLastPathOkThenDoOkActElseDoNoOkAct(okAct@{ last ->
-                                    goToFilesPage(last)
-                                }) noOkAct@{
-                                    Msg.requireShowLongDuration(activityContext.getString(R.string.file_not_found))
-                                }
-                            },
-                            style = MyStyleKt.ClickableText.style,
-                            color = MyStyleKt.ClickableText.color,
-//                        fontWeight = FontWeight.Light,
-                            fontSize = fontSize
-
-                        )
-
-                    }
-                    Spacer(modifier = Modifier.height(spacerHeight))
-                }
-
-                //打开上个文件，常驻条目，但显示文案根据是否子页面有所不同
                 Row {
-                    Text(
-                        //如果是子页面必然带着路径来的，但也可关闭文件而不退出编辑器，关闭文件后显示“重新打开”；如果是主页导航来的，则显示“打开上一个文件”
-                        text = if(isSubPageMode) stringResource(R.string.reopen) else stringResource(R.string.open_last),
-                        modifier = MyStyleKt.ClickableText.modifierNoPadding.clickable {
+//                    val spacerHeight=15.dp
+
+                    if(!isSubPageMode) {  //仅在主页导航来的情况下才显示选择文件，否则显示了也不好使，因为显示子页面的时候，主页可能被销毁了，或者被覆盖了，改状态跳转页面不行，除非导航，但没必要导航，直接隐藏即可
+                        LongPressAbleIconBtn(
+                            enabled = true,
+                            iconModifier = iconModifier,
+                            tooltipText = stringResource(R.string.select_file),
+                            icon =  Icons.Filled.Folder,
+                            iconContentDesc = stringResource(id = R.string.select_file),
+                        ) {
+                            currentHomeScreen.intValue = Cons.selectedItem_Files
+                        }
+
+                        LongPressAbleIconBtn(
+                            enabled = true,
+                            iconModifier = iconModifier,
+                            tooltipText = stringResource(R.string.show_last_in_files),
+                            icon =  Icons.Filled.DocumentScanner,
+                            iconContentDesc = stringResource(id = R.string.show_last_in_files),
+                        ) {
                             ifLastPathOkThenDoOkActElseDoNoOkAct(okAct@{ last ->
-                                //只读关闭时，检查是否需要开启。（因为仅存在需要自动打开只读的情况（打开不允许编辑的目录下文件时），不存在需要自动关闭只读的情况，所以，仅在只读关闭时检查是否需要开启只读，若只读开启，用户想关可打开文件后关（当然，不允许编辑的文件除外，这种文件只读选项将保持开启并禁止关闭））
-                                if (!readOnlyMode.value) {
-                                    readOnlyMode.value = FsUtils.isReadOnlyDir(last)  //避免打开文件，退出app，直接从editor点击 open last然后可编辑本不应该允许编辑的app内置目录下的文件
-                                }
-//                                editorMergeMode.value = false  //此值在这无需重置
-                                editorPageShowingFilePath.value = last
-                                reloadFile()
+                                goToFilesPage(last)
                             }) noOkAct@{
                                 Msg.requireShowLongDuration(activityContext.getString(R.string.file_not_found))
                             }
-                        },
-                        style = MyStyleKt.ClickableText.style,
-                        color = MyStyleKt.ClickableText.color,
-//                        fontWeight = FontWeight.Light,
-                        fontSize = fontSize
+                        }
 
-                    )
+                    }
 
-                }
-                Spacer(modifier = Modifier.height(spacerHeight))
-
-                Row {
-                    Text(
-                        //如果是子页面必然带着路径来的，但也可关闭文件而不退出编辑器，关闭文件后显示“重新打开”；如果是主页导航来的，则显示“打开上一个文件”
-                        text = stringResource(R.string.recent_files),
-                        modifier = MyStyleKt.ClickableText.modifierNoPadding.clickable onclick@{
-                            val historyMap = FileOpenHistoryMan.getHistory().storage
-                            if (historyMap.isEmpty()) {
-                                Msg.requireShowLongDuration(activityContext.getString(R.string.recent_files_is_empty))
-                                return@onclick
+                    //打开上个文件，常驻条目，但显示文案根据是否子页面有所不同
+                    val reopenOrOpenLastText = if(isSubPageMode) stringResource(R.string.reopen) else stringResource(R.string.open_last)
+                    LongPressAbleIconBtn(
+                        enabled = true,
+                        iconModifier = iconModifier,
+                        tooltipText = reopenOrOpenLastText,
+                        icon = ImageVector.vectorResource(R.drawable.outline_reopen_window_24),
+                        iconContentDesc = reopenOrOpenLastText,
+                    ) {
+                        ifLastPathOkThenDoOkActElseDoNoOkAct(okAct@{ last ->
+                            //只读关闭时，检查是否需要开启。（因为仅存在需要自动打开只读的情况（打开不允许编辑的目录下文件时），不存在需要自动关闭只读的情况，所以，仅在只读关闭时检查是否需要开启只读，若只读开启，用户想关可打开文件后关（当然，不允许编辑的文件除外，这种文件只读选项将保持开启并禁止关闭））
+                            if (!readOnlyMode.value) {
+                                readOnlyMode.value = FsUtils.isReadOnlyDir(last)  //避免打开文件，退出app，直接从editor点击 open last然后可编辑本不应该允许编辑的app内置目录下的文件
                             }
+//                                editorMergeMode.value = false  //此值在这无需重置
+                            editorPageShowingFilePath.value = last
+                            reloadFile()
+                        }) noOkAct@{
+                            Msg.requireShowLongDuration(activityContext.getString(R.string.file_not_found))
+                        }
+                    }
 
-                            val recentFiles = historyMap
-                                .toSortedMap({ k1, k2 ->
-                                    val v1 = historyMap.get(k1)!!
-                                    val v2 = historyMap.get(k2)!!
-                                    // lastUsedTime descend sort
-                                    if (v1.lastUsedTime > v2.lastUsedTime) -1 else 1
-                                })
-                                .map { (k, v) ->
-                                    // Pair(fileName, fileFullPath)
-                                    Pair(getFileNameFromCanonicalPath(k), k)
-                                }
-                                .subList(0, 10)  // I think, recent file list, show 10 is good, if more, feels bad, to much files = no files, just make headache
+                    LongPressAbleIconBtn(
+                        enabled = true,
+                        iconModifier = iconModifier,
+                        tooltipText = stringResource(R.string.recent_files),
+                        icon = Icons.AutoMirrored.Filled.List,
+                        iconContentDesc = stringResource(id = R.string.recent_files),
+                    ) onclick@{
+                        val historyMap = FileOpenHistoryMan.getHistory().storage
+                        if (historyMap.isEmpty()) {
+                            Msg.requireShowLongDuration(activityContext.getString(R.string.recent_files_is_empty))
+                            return@onclick
+                        }
 
-                            recentFileList.clear()
-                            recentFileList.addAll(recentFiles)
+                        val recentFiles = historyMap
+                            .toSortedMap({ k1, k2 ->
+                                val v1 = historyMap.get(k1)!!
+                                val v2 = historyMap.get(k2)!!
+                                // lastUsedTime descend sort
+                                if (v1.lastUsedTime > v2.lastUsedTime) -1 else 1
+                            })
+                            .map { (k, v) ->
+                                // Pair(fileName, fileFullPath)
+                                Pair(getFileNameFromCanonicalPath(k), k)
+                            }
+                            .subList(0, 10)  // I think, recent file list, show 10 is good, if more, feels bad, to much files = no files, just make headache
 
-                            showRecentFilesList.value = true
-                        },
-                        style = MyStyleKt.ClickableText.style,
-                        color = MyStyleKt.ClickableText.color,
-//                        fontWeight = FontWeight.Light,
-                        fontSize = fontSize
+                        recentFileList.clear()
+                        recentFileList.addAll(recentFiles)
 
-                    )
-
+                        showRecentFilesList.value = true
+                    }
                 }
-                Spacer(modifier = Modifier.height(spacerHeight))
-
             }
 
             // loading file
