@@ -195,6 +195,8 @@ class SimilarCompareImpl: SimilarCompare {
                                 w.word.append(afterMatched)
                                 addStillNotMatchedList.add(w)
                             }
+
+                            break
                         }
                     }else {
                         val indexOf = delStr.indexOf(addStr)
@@ -234,6 +236,8 @@ class SimilarCompareImpl: SimilarCompare {
                                 w.word.append(afterMatched)
                                 delStillNotMatchedList.add(w)
                             }
+
+                            break
                         }
                     }
                 }
