@@ -887,25 +887,31 @@ fun EditorInnerPage(
                         val historyMap = FileOpenHistoryMan.getHistory().storage
                         if (historyMap.isEmpty()) {
                             Msg.requireShowLongDuration(activityContext.getString(R.string.recent_files_is_empty))
+                            recentFileList.clear()
                             return@onclick
                         }
 
                         val recentFiles = historyMap
+                            // sort
                             .toSortedMap({ k1, k2 ->
                                 val v1 = historyMap.get(k1)!!
                                 val v2 = historyMap.get(k2)!!
                                 // lastUsedTime descend sort
                                 if (v1.lastUsedTime > v2.lastUsedTime) -1 else 1
                             })
+                            // map to list
                             .map { (k, v) ->
                                 // Pair(fileName, fileFullPath)
                                 Pair(getFileNameFromCanonicalPath(k), k)
                             }
+                            // limit list size to 10
                             .subList(0, 10)  // I think, recent file list, show 10 is good, if more, feels bad, to much files = no files, just make headache
 
+                        // add sorted list to page state variable
                         recentFileList.clear()
                         recentFileList.addAll(recentFiles)
 
+                        // show list
                         showRecentFilesList.value = true
                     }
                 }
