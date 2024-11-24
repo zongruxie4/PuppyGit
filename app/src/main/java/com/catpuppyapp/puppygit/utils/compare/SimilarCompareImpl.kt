@@ -36,6 +36,7 @@ class SimilarCompareImpl: SimilarCompare {
             }
         }
 
+        // if match by words not enabled or not matched, try match by chars
 
         // match by chars
         val reverse = searchDirection == SearchDirection.REVERSE || searchDirection == SearchDirection.REVERSE_FIRST
@@ -79,6 +80,9 @@ class SimilarCompareImpl: SimilarCompare {
         addNotMatchedList.addAll(addWordAndIndexList)
         delNotMatchedList.addAll(delWordAndIndexList)
 
+        // index equals this, will remove
+        val removeMark = -1
+
         for((addIndex, addWord) in addWordAndIndexList.withIndex()) {
             val addStr = addWord.getWordStr()
             for((delIndex, delWord) in delWordAndIndexList.withIndex()) {
@@ -94,6 +98,7 @@ class SimilarCompareImpl: SimilarCompare {
                     addWord.matched = true
                     delWord.matched = true
 
+                    // because is addStr equals delStr, so the addStr.length should equals delStr.length
                     addIndexResultList.add(
                         IndexStringPart(
                             start = addWord.index,
@@ -110,13 +115,33 @@ class SimilarCompareImpl: SimilarCompare {
                         )
                     )
 
-                    addNotMatchedList.removeAt(addIndex)
-                    delNotMatchedList.removeAt(delIndex)
+                    // mark, will remove them later
+                    // if remove at here, the list will change, then the remove by index will not match with origin list,
+                    //  although can create id for items and remove by id, but generate id still waste time, if not generate id, simple use count, maybe will repeat...
+                    //  so, just simple marked as remove, then remove later, should not very slow and make bug no chance sneak in
+                    addNotMatchedList.set(addIndex, addWord.copy(index = removeMark))
+                    delNotMatchedList.set(delIndex, delWord.copy(index = removeMark))
 
                     break
                 }
             }
         }
+
+        // remove marked as "will remove" items
+        val ai = addNotMatchedList.iterator()
+        while (ai.hasNext()) {
+            if(ai.next().index == removeMark) {
+                ai.remove()
+            }
+        }
+
+        val di = delNotMatchedList.iterator()
+        while (di.hasNext()) {
+            if(di.next().index == removeMark) {
+                di.remove()
+            }
+        }
+
 
         //if requireBetterMatching is true, try use indexOf matching the not-matched items
         var addStillNotMatchedList = mutableListOf<WordAndIndex>()
@@ -130,9 +155,11 @@ class SimilarCompareImpl: SimilarCompare {
                     }
 
                     val delStr = d.getWordStr()
+                    // should try `bigLengthStr.indexOf(smallLengthStr)`
+                    // 应该用长的indexOf短的，所以这里有的大于判断
                     if(addStr.length > delStr.length) {
                         val indexOf = addStr.indexOf(delStr)
-                        if(indexOf >= 0) {
+                        if(indexOf != -1) {
                             matched = true
 
                             a.matched = true
@@ -171,7 +198,7 @@ class SimilarCompareImpl: SimilarCompare {
                         }
                     }else {
                         val indexOf = delStr.indexOf(addStr)
-                        if(indexOf >= 0) {
+                        if(indexOf != -1) {
                             matched = true
 
                             a.matched = true
@@ -211,10 +238,27 @@ class SimilarCompareImpl: SimilarCompare {
                     }
                 }
             }
+
+            // add not matched items, these items not matched by equals nor by indexOf, they are really `modified` items
+            for(a in addNotMatchedList) {
+                if(a.matched.not()) {
+                    addStillNotMatchedList.add(a)
+                }
+            }
+            for(d in delNotMatchedList) {
+                if(d.matched.not()) {
+                    delStillNotMatchedList.add(d)
+                }
+            }
         }else {  // not require better matching
             addStillNotMatchedList = addNotMatchedList
             delStillNotMatchedList = delNotMatchedList
         }
+
+
+        // when reached here, all matched items already added in the `addIndexResultList` and `delIndexResultList`,
+        //  and not-matched items in the `addStillNotMatchedList` and `delStillNotMatchedList`
+        //  and the order is not sorted yet
 
         // at last, may still have not matched items, they are `modified`
         for(item in addStillNotMatchedList) {
@@ -239,6 +283,7 @@ class SimilarCompareImpl: SimilarCompare {
 
 
         // create comparator for sort list by index
+        // p.s. list compare will not remove same elements
         val comparator = { o1:IndexStringPart, o2:IndexStringPart ->
             o1.start.compareTo(o2.start)
         }
