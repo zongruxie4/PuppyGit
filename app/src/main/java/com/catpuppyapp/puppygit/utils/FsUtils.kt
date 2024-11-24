@@ -811,6 +811,7 @@ object FsUtils {
                     || path.startsWith(AppModel.singleInstanceHolder.certBundleDir.canonicalPath)
                     || path.startsWith(AppModel.singleInstanceHolder.getOrCreateSettingsDir().canonicalPath)
                     || path.startsWith(AppModel.singleInstanceHolder.getOrCreateSubmoduleDotGitBackupDir().canonicalPath)
+                    || path.startsWith(Lg2HomeUtils.getLg2Home().canonicalPath)
         }catch (e:Exception) {
             MyLog.e(TAG, "#isReadOnlyDir err:${e.stackTraceToString()}")
             false

@@ -763,7 +763,9 @@ fun getViewAndSortForPath(path:String, settings:AppSettings) :Pair<Boolean, DirV
 fun getFileExtOrEmpty(filename:String):String {
     val extIndex = filename.lastIndexOf('.')
 
-    return if(extIndex == -1 || extIndex==filename.lastIndex){
+    // <=0 is right, cause if extIndex==0, the . is first char, meaning it is a hidden file, not represent a ext name
+    // 小于等于0是对的，因为如果extIndex等于0， . 是第一个字符，代表隐藏文件而不是扩展名
+    return if(extIndex <= 0 || extIndex == filename.lastIndex){
         ""
     }else{
         filename.substring(extIndex, filename.length)
