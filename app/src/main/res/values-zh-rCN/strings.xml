@@ -1071,6 +1071,10 @@
     <string name="only_for_this_folder">仅用于此文件夹</string>
 <!--    例如：3文件夹，2文件 -->
     <string name="folder_n_file_m">ph_a3f241dc_1文件夹, ph_a3f241dc_2文件</string>
+    <string name="recent_files">最近文件</string>
+    <string name="recent_files_is_empty">最近文件列表为空!</string>
+    <string name="cleared">已清空</string>
+    <string name="will_clear_recent_files_history_and_last_edited_positions_of_them">将会清空最近文件列表以及它们的最后编辑位置</string>
 
 
 </resources>

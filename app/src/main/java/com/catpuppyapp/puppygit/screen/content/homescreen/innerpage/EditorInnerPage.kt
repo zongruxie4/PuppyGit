@@ -16,6 +16,9 @@ import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.DrawerState
+import androidx.compose.material3.DropdownMenu
+import androidx.compose.material3.DropdownMenuItem
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
@@ -24,26 +27,33 @@ import androidx.compose.runtime.MutableIntState
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.mutableLongStateOf
+import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.TextFieldValue
+import androidx.compose.ui.unit.DpOffset
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.compose.LifecycleEventEffect
 import com.catpuppyapp.puppygit.compose.ConfirmDialog
+import com.catpuppyapp.puppygit.compose.ConfirmDialog2
 import com.catpuppyapp.puppygit.compose.MySelectionContainer
 import com.catpuppyapp.puppygit.compose.OpenAsDialog
 import com.catpuppyapp.puppygit.constants.Cons
 import com.catpuppyapp.puppygit.constants.LineNum
 import com.catpuppyapp.puppygit.constants.PageRequest
 import com.catpuppyapp.puppygit.dto.FileSimpleDto
+import com.catpuppyapp.puppygit.fileeditor.texteditor.state.TextEditorState
+import com.catpuppyapp.puppygit.fileeditor.texteditor.view.ScrollEvent
+import com.catpuppyapp.puppygit.fileeditor.ui.composable.FileEditor
+import com.catpuppyapp.puppygit.fileeditor.ui.extension.createCancelledState
 import com.catpuppyapp.puppygit.play.pro.R
+import com.catpuppyapp.puppygit.screen.functions.goToFileHistory
 import com.catpuppyapp.puppygit.settings.SettingsUtil
 import com.catpuppyapp.puppygit.style.MyStyleKt
 import com.catpuppyapp.puppygit.utils.AppModel
@@ -64,11 +74,6 @@ import com.catpuppyapp.puppygit.utils.snapshot.SnapshotFileFlag
 import com.catpuppyapp.puppygit.utils.snapshot.SnapshotUtil
 import com.catpuppyapp.puppygit.utils.state.CustomStateSaveable
 import com.catpuppyapp.puppygit.utils.withMainContext
-import com.catpuppyapp.puppygit.fileeditor.ui.composable.FileEditor
-import com.catpuppyapp.puppygit.fileeditor.ui.extension.createCancelledState
-import com.catpuppyapp.puppygit.fileeditor.texteditor.state.TextEditorState
-import com.catpuppyapp.puppygit.fileeditor.texteditor.view.ScrollEvent
-import com.catpuppyapp.puppygit.screen.functions.goToFileHistory
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 import java.io.File
@@ -146,7 +151,7 @@ fun EditorInnerPage(
     val unknownErrStrRes = stringResource(R.string.unknown_err)
 
     //在编辑器弹出键盘用的，不过后来用simple editor库了，就不需要这个了
-    val keyboardCtl = LocalSoftwareKeyboardController.current
+//    val keyboardCtl = LocalSoftwareKeyboardController.current
 
 //    val editorPageOpenedFileMap = rememberSaveable{ mutableStateOf("{}") } //{canonicalPath:fileName}
 
@@ -418,6 +423,77 @@ fun EditorInnerPage(
             }
         }
     }
+
+
+    val showClearRecentFilesDialog = remember { mutableStateOf(false) }
+    if(showClearRecentFilesDialog.value) {
+        ConfirmDialog2(
+            title = stringResource(R.string.confirm),
+            text = stringResource(R.string.will_clear_recent_files_history_and_last_edited_positions_of_them),
+            onCancel = {showClearRecentFilesDialog.value = false}
+        ) {
+            showClearRecentFilesDialog.value = false
+            doJobThenOffLoading {
+                try {
+                    FileOpenHistoryMan.reset()
+                    Msg.requireShow(activityContext.getString(R.string.cleared))
+                }catch (e:Exception) {
+                    Msg.requireShowLongDuration("err: ${e.localizedMessage}")
+                    MyLog.e(TAG, "#ClearRecentFilesListFromEditor err: ${e.stackTraceToString()}")
+                }
+
+            }
+        }
+    }
+
+
+    val showRecentFilesList = remember { mutableStateOf(false) }
+    // Pair(first: file name, second: file full path)
+    val recentFileList = remember { mutableStateListOf<Pair<String, String>>() }
+    if(showRecentFilesList.value) {
+        DropdownMenu(
+            expanded = showRecentFilesList.value,
+            offset = DpOffset(x=180.dp, y=0.dp),
+            onDismissRequest = { showRecentFilesList.value = false }
+        ) {
+            for((fileName, filePath) in recentFileList) {
+                DropdownMenuItem(
+                    text = { Text(fileName) },
+                    onClick = {
+                        // close dropdown menu
+                        showRecentFilesList.value=false
+
+                        //open file
+                        //只读关闭时，检查是否需要开启。（因为仅存在需要自动打开只读的情况（打开不允许编辑的目录下文件时），不存在需要自动关闭只读的情况，所以，仅在只读关闭时检查是否需要开启只读，若只读开启，用户想关可打开文件后关（当然，不允许编辑的文件除外，这种文件只读选项将保持开启并禁止关闭））
+                        if (!readOnlyMode.value) {
+                            readOnlyMode.value = FsUtils.isReadOnlyDir(filePath)  //避免打开文件，退出app，直接从editor点击 open last然后可编辑本不应该允许编辑的app内置目录下的文件
+                        }
+//                                editorMergeMode.value = false  //此值在这无需重置
+                        editorPageShowingFilePath.value = filePath
+                        reloadFile()
+
+                    }
+                )
+
+            }
+
+            HorizontalDivider()
+            DropdownMenuItem(
+                text = { Text(stringResource(R.string.clear)) },
+                onClick = {
+                    // close dropdown menu
+                    showRecentFilesList.value=false
+
+                    showClearRecentFilesDialog.value = true
+                }
+            )
+
+        }
+
+    }
+
+
+
 
     val showBackFromExternalAppAskReloadDialog = rememberSaveable { mutableStateOf(false) }
     if(showBackFromExternalAppAskReloadDialog.value) {
@@ -800,7 +876,7 @@ fun EditorInnerPage(
                         modifier = MyStyleKt.ClickableText.modifierNoPadding.clickable {
                             ifLastPathOkThenDoOkActElseDoNoOkAct(okAct@{ last ->
                                 //只读关闭时，检查是否需要开启。（因为仅存在需要自动打开只读的情况（打开不允许编辑的目录下文件时），不存在需要自动关闭只读的情况，所以，仅在只读关闭时检查是否需要开启只读，若只读开启，用户想关可打开文件后关（当然，不允许编辑的文件除外，这种文件只读选项将保持开启并禁止关闭））
-                                if(!readOnlyMode.value){
+                                if (!readOnlyMode.value) {
                                     readOnlyMode.value = FsUtils.isReadOnlyDir(last)  //避免打开文件，退出app，直接从editor点击 open last然后可编辑本不应该允许编辑的app内置目录下的文件
                                 }
 //                                editorMergeMode.value = false  //此值在这无需重置
@@ -809,6 +885,45 @@ fun EditorInnerPage(
                             }) noOkAct@{
                                 Msg.requireShowLongDuration(activityContext.getString(R.string.file_not_found))
                             }
+                        },
+                        style = MyStyleKt.ClickableText.style,
+                        color = MyStyleKt.ClickableText.color,
+//                        fontWeight = FontWeight.Light,
+                        fontSize = fontSize
+
+                    )
+
+                }
+                Spacer(modifier = Modifier.height(spacerHeight))
+
+                Row {
+                    Text(
+                        //如果是子页面必然带着路径来的，但也可关闭文件而不退出编辑器，关闭文件后显示“重新打开”；如果是主页导航来的，则显示“打开上一个文件”
+                        text = stringResource(R.string.recent_files),
+                        modifier = MyStyleKt.ClickableText.modifierNoPadding.clickable onclick@{
+                            val historyMap = FileOpenHistoryMan.getHistory().storage
+                            if (historyMap.isEmpty()) {
+                                Msg.requireShowLongDuration(activityContext.getString(R.string.recent_files_is_empty))
+                                return@onclick
+                            }
+
+                            val recentFiles = historyMap
+                                .toSortedMap({ k1, k2 ->
+                                    val v1 = historyMap.get(k1)!!
+                                    val v2 = historyMap.get(k2)!!
+                                    // lastUsedTime descend sort
+                                    if (v1.lastUsedTime > v2.lastUsedTime) -1 else 1
+                                })
+                                .map { (k, v) ->
+                                    // Pair(fileName, fileFullPath)
+                                    Pair(getFileNameFromCanonicalPath(k), k)
+                                }
+                                .subList(0, 10)  // I think, recent file list, show 10 is good, if more, feels bad, to much files = no files, just make headache
+
+                            recentFileList.clear()
+                            recentFileList.addAll(recentFiles)
+
+                            showRecentFilesList.value = true
                         },
                         style = MyStyleKt.ClickableText.style,
                         color = MyStyleKt.ClickableText.color,

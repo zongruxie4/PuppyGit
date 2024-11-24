@@ -98,7 +98,7 @@ fun SettingsInnerPage(
     val cleanFileOpenHistory = rememberSaveable { mutableStateOf(false) }
 
     val allowUnknownHosts = rememberSaveable { mutableStateOf(settingsState.value.sshSetting.allowUnknownHosts) }
-    val showResetKnownHostsDialog = rememberSaveable { mutableStateOf(false) }
+//    val showResetKnownHostsDialog = rememberSaveable { mutableStateOf(false) }
     val showForgetHostKeysDialog = rememberSaveable { mutableStateOf(false) }
     if(showForgetHostKeysDialog.value) {
         ConfirmDialog2(
