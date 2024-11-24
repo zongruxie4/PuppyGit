@@ -41,6 +41,12 @@ data class DiffSettings (
     var enableBetterButSlowCompare:Boolean=false,
 
     /**
+     * matching lines by words
+     * 按单词比较行
+     */
+    var matchByWords:Boolean=false,
+
+    /**
      * enable select line for compare
      * 启用选择行以比较，可以自定义比较两个行号不同的行，显示它们的区别
      */

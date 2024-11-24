@@ -23,6 +23,8 @@ interface SimilarCompare {
      * in most case, when `requireBetterMatching` is true, means bad performance and good matching, in other word, when it is false, good performance and bad matching
      *
      * if `reverseMatchIfNeed`, maybe will try reverse matching when forward matching failed, if do reverse matching, the time complex may x2
+     *
+     * @param matchByWords if true, will try compare text by words, the text should split by blank char like space/tab/lineBreak etc
      */
     fun doCompare(
         add: CompareParam,
@@ -33,7 +35,8 @@ interface SimilarCompare {
         searchDirection: SearchDirection = SearchDirection.FORWARD_FIRST,
         requireBetterMatching: Boolean = false,
         search: Search = Search.INSTANCE,
-        betterSearch: Search = Search.INSTANCE_BETTER_MATCH_BUT_SLOW
+        betterSearch: Search = Search.INSTANCE_BETTER_MATCH_BUT_SLOW,
+        matchByWords:Boolean
     ): IndexModifyResult
 
 }

@@ -116,7 +116,7 @@ class PuppyHunkAndLines {
         return add!=null && del!=null && add.content.removeSuffix("\n").equals(del.content.removeSuffix("\n"))
     }
 
-    fun getModifyResult(lineNum: Int, requireBetterMatchingForCompare:Boolean):IndexModifyResult? {
+    fun getModifyResult(lineNum: Int, requireBetterMatchingForCompare:Boolean, matchByWords:Boolean):IndexModifyResult? {
         val r = modifyResultMap.get(lineNum)
 
         if(r!=null) {
@@ -135,8 +135,9 @@ class PuppyHunkAndLines {
                     StringCompareParam(del.content),
 
                     //为true则对比更精细，但是，时间复杂度乘积式增加，不开 O(n)， 开了 O(nm)
-                    requireBetterMatching = requireBetterMatchingForCompare
-                )
+                    requireBetterMatching = requireBetterMatchingForCompare,
+                    matchByWords = matchByWords
+            )
 
             modifyResultMap.put(lineNum, modifyResult2)
             return modifyResult2

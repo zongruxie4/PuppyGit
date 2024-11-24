@@ -87,6 +87,7 @@ fun DiffContent(
     listState: LazyListState,
     curRepo:CustomStateSaveable<RepoEntity>,
     requireBetterMatchingForCompare:MutableState<Boolean>,
+    matchByWords:MutableState<Boolean>,
     fileFullPath:String,
     isSubmodule:Boolean,
     isDiffToLocal:Boolean,
@@ -341,7 +342,8 @@ fun DiffContent(
                                             betterCompare = requireBetterMatchingForCompare.value,
                                             reForEachDiffContent=reForEachDiffContent,
                                             indexStringPartListMap = indexStringPartListMapForComparePair,
-                                            enableSelectCompare=enableSelectCompare
+                                            enableSelectCompare=enableSelectCompare,
+                                            matchByWords = matchByWords.value
                                         )
 
                                     }
@@ -370,7 +372,8 @@ fun DiffContent(
                                         betterCompare = requireBetterMatchingForCompare.value,
                                         reForEachDiffContent=reForEachDiffContent,
                                         indexStringPartListMap = indexStringPartListMapForComparePair,
-                                        enableSelectCompare=enableSelectCompare
+                                        enableSelectCompare=enableSelectCompare,
+                                        matchByWords = matchByWords.value
                                     )
                                 }
                             }else {  // add or del
@@ -408,12 +411,17 @@ fun DiffContent(
                                             betterCompare = requireBetterMatchingForCompare.value,
                                             reForEachDiffContent=reForEachDiffContent,
                                             indexStringPartListMap = indexStringPartListMapForComparePair,
-                                            enableSelectCompare=enableSelectCompare
+                                            enableSelectCompare=enableSelectCompare,
+                                            matchByWords = matchByWords.value
                                         )
                                     }
                                 }else {
 
-                                        val modifyResult = hunkAndLines.getModifyResult(line.lineNum, requireBetterMatchingForCompare.value)
+                                        val modifyResult = hunkAndLines.getModifyResult(
+                                            lineNum = line.lineNum,
+                                            requireBetterMatchingForCompare = requireBetterMatchingForCompare.value,
+                                            matchByWords = matchByWords.value
+                                        )
 
                                         if (modifyResult == null || !modifyResult.matched) {
                                             item {
@@ -434,7 +442,8 @@ fun DiffContent(
                                                     betterCompare = requireBetterMatchingForCompare.value,
                                                     reForEachDiffContent=reForEachDiffContent,
                                                     indexStringPartListMap = indexStringPartListMapForComparePair,
-                                                    enableSelectCompare=enableSelectCompare
+                                                    enableSelectCompare=enableSelectCompare,
+                                                    matchByWords = matchByWords.value
                                                 )
                                             }
                                         } else {  // matched
@@ -457,7 +466,8 @@ fun DiffContent(
                                                     betterCompare = requireBetterMatchingForCompare.value,
                                                     reForEachDiffContent=reForEachDiffContent,
                                                     indexStringPartListMap = indexStringPartListMapForComparePair,
-                                                    enableSelectCompare=enableSelectCompare
+                                                    enableSelectCompare=enableSelectCompare,
+                                                    matchByWords = matchByWords.value
                                                 )
                                             }
                                         }
@@ -501,7 +511,8 @@ fun DiffContent(
                                         betterCompare = requireBetterMatchingForCompare.value,
                                         reForEachDiffContent=reForEachDiffContent,
                                         indexStringPartListMap = indexStringPartListMapForComparePair,
-                                        enableSelectCompare=enableSelectCompare
+                                        enableSelectCompare=enableSelectCompare,
+                                        matchByWords = matchByWords.value
                                     )
                                 }
                             }
@@ -533,7 +544,8 @@ fun DiffContent(
                                         betterCompare = requireBetterMatchingForCompare.value,
                                         reForEachDiffContent = reForEachDiffContent,
                                         indexStringPartListMap = indexStringPartListMapForComparePair,
-                                        enableSelectCompare=enableSelectCompare
+                                        enableSelectCompare=enableSelectCompare,
+                                        matchByWords = matchByWords.value
 
                                     )
                                 }
@@ -560,7 +572,8 @@ fun DiffContent(
                                         betterCompare = requireBetterMatchingForCompare.value,
                                         reForEachDiffContent = reForEachDiffContent,
                                         indexStringPartListMap = indexStringPartListMapForComparePair,
-                                        enableSelectCompare=enableSelectCompare
+                                        enableSelectCompare=enableSelectCompare,
+                                        matchByWords = matchByWords.value
 
                                     )
                                 }
@@ -593,7 +606,8 @@ fun DiffContent(
                                             betterCompare = requireBetterMatchingForCompare.value,
                                             reForEachDiffContent=reForEachDiffContent,
                                             indexStringPartListMap = indexStringPartListMapForComparePair,
-                                            enableSelectCompare=enableSelectCompare
+                                            enableSelectCompare=enableSelectCompare,
+                                            matchByWords = matchByWords.value
                                         )
 
                                     }
@@ -606,7 +620,8 @@ fun DiffContent(
                                             StringCompareParam(del.content),
 
                                             //为true则对比更精细，但是，时间复杂度乘积式增加，不开 O(n)， 开了 O(nm)
-                                            requireBetterMatching = requireBetterMatchingForCompare.value
+                                            requireBetterMatching = requireBetterMatchingForCompare.value,
+                                            matchByWords = matchByWords.value
                                         )
 
                                     if(modifyResult2.matched) {
@@ -629,7 +644,8 @@ fun DiffContent(
                                                 betterCompare = requireBetterMatchingForCompare.value,
                                                 reForEachDiffContent=reForEachDiffContent,
                                                 indexStringPartListMap = indexStringPartListMapForComparePair,
-                                                enableSelectCompare=enableSelectCompare
+                                                enableSelectCompare=enableSelectCompare,
+                                                matchByWords = matchByWords.value
 
                                             )
                                         }
@@ -653,7 +669,8 @@ fun DiffContent(
                                                 betterCompare = requireBetterMatchingForCompare.value,
                                                 reForEachDiffContent=reForEachDiffContent,
                                                 indexStringPartListMap = indexStringPartListMapForComparePair,
-                                                enableSelectCompare=enableSelectCompare
+                                                enableSelectCompare=enableSelectCompare,
+                                                matchByWords = matchByWords.value
 
                                             )
                                         }
@@ -678,7 +695,8 @@ fun DiffContent(
                                                 betterCompare = requireBetterMatchingForCompare.value,
                                                 reForEachDiffContent=reForEachDiffContent,
                                                 indexStringPartListMap = indexStringPartListMapForComparePair,
-                                                enableSelectCompare=enableSelectCompare
+                                                enableSelectCompare=enableSelectCompare,
+                                                matchByWords = matchByWords.value
                                             )
                                         }
                                         item {
@@ -699,7 +717,8 @@ fun DiffContent(
                                                 betterCompare = requireBetterMatchingForCompare.value,
                                                 reForEachDiffContent=reForEachDiffContent,
                                                 indexStringPartListMap = indexStringPartListMapForComparePair,
-                                                enableSelectCompare=enableSelectCompare
+                                                enableSelectCompare=enableSelectCompare,
+                                                matchByWords = matchByWords.value
                                             )
                                         }
                                     }
@@ -724,7 +743,8 @@ fun DiffContent(
                                             betterCompare = requireBetterMatchingForCompare.value,
                                             reForEachDiffContent=reForEachDiffContent,
                                             indexStringPartListMap = indexStringPartListMapForComparePair,
-                                            enableSelectCompare=enableSelectCompare
+                                            enableSelectCompare=enableSelectCompare,
+                                            matchByWords = matchByWords.value
                                         )
                                     }
                                 }
@@ -747,7 +767,8 @@ fun DiffContent(
                                             betterCompare = requireBetterMatchingForCompare.value,
                                             reForEachDiffContent=reForEachDiffContent,
                                             indexStringPartListMap = indexStringPartListMapForComparePair,
-                                            enableSelectCompare=enableSelectCompare
+                                            enableSelectCompare=enableSelectCompare,
+                                            matchByWords = matchByWords.value
                                         )
                                     }
                                 }
@@ -810,7 +831,8 @@ fun DiffContent(
                                     betterCompare = requireBetterMatchingForCompare.value,
                                     reForEachDiffContent=reForEachDiffContent,
                                     indexStringPartListMap = indexStringPartListMapForComparePair,
-                                    enableSelectCompare=enableSelectCompare
+                                    enableSelectCompare=enableSelectCompare,
+                                    matchByWords = matchByWords.value
                                 )
                             }
                         }
@@ -842,7 +864,8 @@ fun DiffContent(
                                 betterCompare = requireBetterMatchingForCompare.value,
                                 reForEachDiffContent=reForEachDiffContent,
                                 indexStringPartListMap = indexStringPartListMapForComparePair,
-                                enableSelectCompare=enableSelectCompare
+                                enableSelectCompare=enableSelectCompare,
+                                matchByWords = matchByWords.value
                             )
                         }
                     }

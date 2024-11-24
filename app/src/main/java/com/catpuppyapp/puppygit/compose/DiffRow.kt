@@ -81,7 +81,8 @@ fun DiffRow (
     betterCompare:Boolean,
     reForEachDiffContent:()->Unit,
     indexStringPartListMap:CustomStateMapSaveable<String, List<IndexStringPart>>,
-    enableSelectCompare: Boolean
+    enableSelectCompare: Boolean,
+    matchByWords:Boolean
 
 ) {
     val showEditLineDialog = rememberSaveable { mutableStateOf(false) }
@@ -639,7 +640,11 @@ fun DiffRow (
                                     Msg.requireShow(activityContext.getString(R.string.comparing))
 
                                     doJobThenOffLoading {
-                                        cp.compare(betterCompare, indexStringPartListMap.value)
+                                        cp.compare(
+                                            betterCompare = betterCompare,
+                                            matchByWords = matchByWords,
+                                            map = indexStringPartListMap.value
+                                        )
 
                                         // clear buffer
                                         comparePairBuffer.value = CompareLinePair()
@@ -695,7 +700,11 @@ fun DiffRow (
                                         line2Key = line.key
                                     )
 
-                                    newcp.compare(betterCompare, indexStringPartListMap.value)
+                                    newcp.compare(
+                                        betterCompare = betterCompare,
+                                        matchByWords = matchByWords,
+                                        map = indexStringPartListMap.value
+                                    )
 
                                     comparePairBuffer.value = CompareLinePair()
 

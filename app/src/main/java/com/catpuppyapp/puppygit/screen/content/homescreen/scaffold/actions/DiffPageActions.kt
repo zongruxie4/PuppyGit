@@ -25,17 +25,16 @@ import com.catpuppyapp.puppygit.constants.Cons
 import com.catpuppyapp.puppygit.constants.LineNum
 import com.catpuppyapp.puppygit.constants.PageRequest
 import com.catpuppyapp.puppygit.dev.detailsDiffTestPassed
-import com.catpuppyapp.puppygit.dev.dev_EnableUnTestedFeature
+import com.catpuppyapp.puppygit.dev.proFeatureEnabled
 import com.catpuppyapp.puppygit.play.pro.R
 import com.catpuppyapp.puppygit.settings.SettingsUtil
-import com.catpuppyapp.puppygit.user.UserUtil
 import com.catpuppyapp.puppygit.utils.AppModel
 import com.catpuppyapp.puppygit.utils.Msg
 import com.catpuppyapp.puppygit.utils.MyLog
 import com.catpuppyapp.puppygit.utils.cache.Cache
 import java.io.File
 
-private val TAG = "DiffPageActions"
+private const val TAG = "DiffPageActions"
 
 @Composable
 fun DiffPageActions(
@@ -52,7 +51,8 @@ fun DiffPageActions(
     adjustFontSizeModeOn:MutableState<Boolean>,
     adjustLineNumSizeModeOn:MutableState<Boolean>,
     groupDiffContentByLineNum:MutableState<Boolean>,
-    enableSelectCompare:MutableState<Boolean>
+    enableSelectCompare:MutableState<Boolean>,
+    matchByWords:MutableState<Boolean>,
 ) {
 
     val navController = AppModel.singleInstanceHolder.navController
@@ -259,9 +259,7 @@ fun DiffPageActions(
             }
         )
 
-        if (fileChangeTypeIsModified && UserUtil.isPro()
-            && (dev_EnableUnTestedFeature || detailsDiffTestPassed)
-        ){
+        if (fileChangeTypeIsModified && proFeatureEnabled(detailsDiffTestPassed)){
             DropdownMenuItem(
                 text = { Text(stringResource(R.string.better_compare)) },
                 trailingIcon = {
@@ -275,6 +273,25 @@ fun DiffPageActions(
 
                     SettingsUtil.update {
                         it.diff.enableBetterButSlowCompare = requireBetterMatchingForCompare.value
+                    }
+
+                    dropDownMenuExpendState.value = false
+                }
+            )
+
+            DropdownMenuItem(
+                text = { Text(stringResource(R.string.match_by_words)) },
+                trailingIcon = {
+                    Icon(
+                        imageVector = if(matchByWords.value) Icons.Filled.CheckBox else Icons.Filled.CheckBoxOutlineBlank,
+                        contentDescription = null
+                    )
+                },
+                onClick = {
+                    matchByWords.value = !matchByWords.value
+
+                    SettingsUtil.update {
+                        it.diff.matchByWords = matchByWords.value
                     }
 
                     dropDownMenuExpendState.value = false

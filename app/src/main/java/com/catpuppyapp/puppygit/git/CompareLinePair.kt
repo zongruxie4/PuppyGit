@@ -61,7 +61,7 @@ data class CompareLinePair (
     fun isCompared():Boolean {
         return compareResult != null
     }
-    fun compare(betterCompare:Boolean, map:MutableMap<String, List<IndexStringPart>>) {
+    fun compare(betterCompare:Boolean, matchByWords:Boolean, map:MutableMap<String, List<IndexStringPart>>) {
         // not ready
         if(readyForCompare().not()) {
             return
@@ -114,7 +114,8 @@ data class CompareLinePair (
             StringCompareParam(line2),
 
             //为true则对比更精细，但是，时间复杂度乘积式增加，不开 O(n)， 开了 O(nm)
-            requireBetterMatching = betterCompare
+            requireBetterMatching = betterCompare,
+            matchByWords = matchByWords
         )
 
         map.put(line1Key, cmpResult.add)
