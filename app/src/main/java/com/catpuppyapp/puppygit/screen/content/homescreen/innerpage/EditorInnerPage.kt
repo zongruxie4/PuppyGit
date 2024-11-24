@@ -472,6 +472,8 @@ fun EditorInnerPage(
                         editorPageShowingFilePath.value = filePath
                         reloadFile()
 
+                        // update file last used time
+                        FileOpenHistoryMan.touch(filePath)
                     }
                 )
 

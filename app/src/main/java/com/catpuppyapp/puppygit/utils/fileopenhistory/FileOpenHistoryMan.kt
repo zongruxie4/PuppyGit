@@ -81,7 +81,7 @@ object FileOpenHistoryMan {
     }
 
     fun set(path:String, lastEditedPos: FileEditedPos) {
-        lastEditedPos.lastUsedTime = getSecFromTime()
+        updateLastUsedTime(lastEditedPos)
 
         val h = getHistory()
         h.storage.set(path, lastEditedPos)
@@ -91,6 +91,22 @@ object FileOpenHistoryMan {
         }
 
         saveHistory(h)
+    }
+
+    /**
+     * update the file last used time
+     */
+    fun touch(path:String) {
+        set(path, updateLastUsedTime(get(path)))
+    }
+
+    /**
+     * update the `lastUsedTime` and return the original object which passed in
+     * 更新最后使用时间并返回传入的原始对象
+     */
+    private fun updateLastUsedTime(lastEditedPos: FileEditedPos):FileEditedPos {
+        lastEditedPos.lastUsedTime = getSecFromTime()
+        return lastEditedPos
     }
 
     @OptIn(ExperimentalSerializationApi::class)
