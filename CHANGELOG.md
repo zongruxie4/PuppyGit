@@ -1,4 +1,4 @@
-next version:
+1.0.6.8v44 - 20241124:
 - support sort for Files (issue: #8)
 - adjust Files explorer breadcrumb style
 - add fallback mechanism for get external app dir: if try get external app dir failed will try get inner instead
