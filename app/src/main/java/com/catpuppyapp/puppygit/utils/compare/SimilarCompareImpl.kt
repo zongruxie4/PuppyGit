@@ -83,7 +83,10 @@ class SimilarCompareImpl: SimilarCompare {
         // index equals this, will remove
         val removeMark = -1
 
-        for((addIndex, addWord) in addWordAndIndexList.withIndex()) {
+        var delMatchedCount = 0
+        val delAllCount = delWordAndIndexList.size
+
+        outer@ for((addIndex, addWord) in addWordAndIndexList.withIndex()) {
             val addStr = addWord.getWordStr()
             for((delIndex, delWord) in delWordAndIndexList.withIndex()) {
                 if(delWord.matched) {
@@ -93,6 +96,8 @@ class SimilarCompareImpl: SimilarCompare {
                 val delStr = delWord.getWordStr()
 
                 if(addStr == delStr) {
+                    delMatchedCount++
+
                     matched = true
 
                     addWord.matched = true
@@ -124,6 +129,10 @@ class SimilarCompareImpl: SimilarCompare {
 
                     break
                 }
+
+                if(delMatchedCount >= delAllCount) {
+                    break@outer
+                }
             }
         }
 
@@ -146,8 +155,10 @@ class SimilarCompareImpl: SimilarCompare {
         //if requireBetterMatching is true, try use indexOf matching the not-matched items
         var addStillNotMatchedList = mutableListOf<WordAndIndex>()
         var delStillNotMatchedList = mutableListOf<WordAndIndex>()
+        var delMatchedCount2 = 0
+        val delAllCount2 = delNotMatchedList.size
         if(requireBetterMatching && addNotMatchedList.isNotEmpty() && delNotMatchedList.isNotEmpty()) {
-            for(a in addNotMatchedList) {
+            outer2@ for(a in addNotMatchedList) {
                 val addStr = a.getWordStr()
                 for(d in delNotMatchedList) {
                     if(d.matched) {
@@ -160,6 +171,8 @@ class SimilarCompareImpl: SimilarCompare {
                     if(addStr.length > delStr.length) {
                         val indexOf = addStr.indexOf(delStr)
                         if(indexOf != -1) {
+                            delMatchedCount2++
+
                             matched = true
 
                             a.matched = true
@@ -201,6 +214,8 @@ class SimilarCompareImpl: SimilarCompare {
                     }else {
                         val indexOf = delStr.indexOf(addStr)
                         if(indexOf != -1) {
+                            delMatchedCount2++
+
                             matched = true
 
                             a.matched = true
@@ -239,6 +254,10 @@ class SimilarCompareImpl: SimilarCompare {
 
                             break
                         }
+                    }
+
+                    if(delMatchedCount2 >= delAllCount2) {
+                        break@outer2
                     }
                 }
             }
