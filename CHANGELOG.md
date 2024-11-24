@@ -1,3 +1,10 @@
+next version:
+- Diff Screen support match by words
+- Editor changes:
+  - add a recent file list
+  - use icons instead texts for actions when no file opened (long press icon will got hint of it) 
+
+
 1.0.6.8v44 - 20241124:
 - support sort for Files (issue: #8)
 - adjust Files explorer breadcrumb style
