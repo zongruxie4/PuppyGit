@@ -25,6 +25,8 @@ interface SimilarCompare {
      * if `reverseMatchIfNeed`, maybe will try reverse matching when forward matching failed, if do reverse matching, the time complex may x2
      *
      * @param matchByWords if true, will try compare text by words, the text should split by blank char like space/tab/lineBreak etc
+     *
+     * @author Bandeapart1964 of catpuppyapp
      */
     fun doCompare(
         add: CompareParam,

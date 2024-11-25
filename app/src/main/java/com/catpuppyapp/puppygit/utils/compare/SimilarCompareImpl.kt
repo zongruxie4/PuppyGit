@@ -5,6 +5,7 @@ import com.catpuppyapp.puppygit.utils.compare.result.IndexModifyResult
 import com.catpuppyapp.puppygit.utils.compare.result.IndexStringPart
 import com.catpuppyapp.puppygit.utils.compare.search.Search
 import com.catpuppyapp.puppygit.utils.compare.search.SearchDirection
+import com.catpuppyapp.puppygit.utils.iterator.NoCopyIterator
 
 class SimilarCompareImpl: SimilarCompare {
     override fun doCompare(
@@ -67,36 +68,41 @@ class SimilarCompareImpl: SimilarCompare {
         del: CompareParam,
         requireBetterMatching: Boolean
     ):IndexModifyResult {
-        val addWordAndIndexList = getWordAndIndexList(add)
-        val delWordAndIndexList = getWordAndIndexList(del)
+        val addWordAndIndexList = getWordAndIndexList(add) as MutableList
+        val delWordAndIndexList = getWordAndIndexList(del) as MutableList
+
+        val addIter = NoCopyIterator(srcList = addWordAndIndexList)
+        val delIter = NoCopyIterator(srcList = delWordAndIndexList)
 
         var matched = false
 
+        // save result which will return
         val addIndexResultList = mutableListOf<IndexStringPart>()
         val delIndexResultList = mutableListOf<IndexStringPart>()
 
-        val addNotMatchedList = mutableListOf<WordAndIndex>()
-        val delNotMatchedList = mutableListOf<WordAndIndex>()
-        addNotMatchedList.addAll(addWordAndIndexList)
-        delNotMatchedList.addAll(delWordAndIndexList)
+//        val addNotMatchedList = mutableListOf<WordAndIndex>()
+//        val delNotMatchedList = mutableListOf<WordAndIndex>()
+//        addNotMatchedList.addAll(addWordAndIndexList)
+//        delNotMatchedList.addAll(delWordAndIndexList)
 
         // index equals this, will remove
-        val removeMark = -1
+//        val removeMark = -1
 
-        var delMatchedCount = 0
-        val delAllCount = delWordAndIndexList.size
+//        var delMatchedCount = 0
+//        val delAllCount = delWordAndIndexList.size
 
-        outer@ for((addIndex, addWord) in addWordAndIndexList.withIndex()) {
+        while(addIter.hasNext()) {
+            val addWord = addIter.next()
             val addStr = addWord.getWordStr()
-            for((delIndex, delWord) in delWordAndIndexList.withIndex()) {
-                if(delWord.matched) {
-                    continue
-                }
 
+            delIter.reset()
+            while(delIter.hasNext()) {
+                val delWord = delIter.next()
                 val delStr = delWord.getWordStr()
 
                 if(addStr == delStr) {
-                    delMatchedCount++
+                    addIter.remove()
+                    delIter.remove()
 
                     matched = true
 
@@ -120,58 +126,35 @@ class SimilarCompareImpl: SimilarCompare {
                         )
                     )
 
-                    // mark, will remove them later
-                    // if remove at here, the list will change, then the remove by index will not match with origin list,
-                    //  although can create id for items and remove by id, but generate id still waste time, if not generate id, simple use count, maybe will repeat...
-                    //  so, just simple marked as remove, then remove later, should not very slow and make bug no chance sneak in
-                    addNotMatchedList.set(addIndex, addWord.copy(index = removeMark))
-                    delNotMatchedList.set(delIndex, delWord.copy(index = removeMark))
-
                     break
                 }
-
-                if(delMatchedCount >= delAllCount) {
-                    break@outer
-                }
             }
-        }
 
-        // remove marked as "will remove" items
-        val ai = addNotMatchedList.iterator()
-        while (ai.hasNext()) {
-            if(ai.next().index == removeMark) {
-                ai.remove()
+            if(delIter.srcIsEmpty()) {
+                break
             }
-        }
 
-        val di = delNotMatchedList.iterator()
-        while (di.hasNext()) {
-            if(di.next().index == removeMark) {
-                di.remove()
-            }
         }
-
 
         //if requireBetterMatching is true, try use indexOf matching the not-matched items
-        var addStillNotMatchedList = mutableListOf<WordAndIndex>()
-        var delStillNotMatchedList = mutableListOf<WordAndIndex>()
-        var delMatchedCount2 = 0
-        val delAllCount2 = delNotMatchedList.size
-        if(requireBetterMatching && addNotMatchedList.isNotEmpty() && delNotMatchedList.isNotEmpty()) {
-            outer2@ for(a in addNotMatchedList) {
+        if(requireBetterMatching && addIter.srcIsEmpty().not() && delIter.srcIsEmpty().not()) {
+            addIter.reset()
+            while(addIter.hasNext()) {
+                val a = addIter.next()
                 val addStr = a.getWordStr()
-                for(d in delNotMatchedList) {
-                    if(d.matched) {
-                        continue
-                    }
 
+                delIter.reset()
+                while(delIter.hasNext()) {
+                    val d = delIter.next()
                     val delStr = d.getWordStr()
+
                     // should try `bigLengthStr.indexOf(smallLengthStr)`
                     // 应该用长的indexOf短的，所以这里有的大于判断
                     if(addStr.length > delStr.length) {
                         val indexOf = addStr.indexOf(delStr)
                         if(indexOf != -1) {
-                            delMatchedCount2++
+                            addIter.remove()
+                            delIter.remove()
 
                             matched = true
 
@@ -199,14 +182,22 @@ class SimilarCompareImpl: SimilarCompare {
                             val beforeMatched = addStr.substring(0, indexOf)
                             val afterMatched = addStr.substring(indexOf+delStr.length)
                             if(beforeMatched.isNotEmpty()) {
-                                val w = WordAndIndex(index = a.index)
-                                w.word.append(beforeMatched)
-                                addStillNotMatchedList.add(w)
+                                addIndexResultList.add(
+                                    IndexStringPart(
+                                        start = a.index,
+                                        end = a.index + beforeMatched.length,
+                                        modified = true
+                                    )
+                                )
                             }
                             if(afterMatched.isNotEmpty()) {
-                                val w = WordAndIndex(index = aEndIndex)
-                                w.word.append(afterMatched)
-                                addStillNotMatchedList.add(w)
+                                addIndexResultList.add(
+                                    IndexStringPart(
+                                        start = aEndIndex,
+                                        end = aEndIndex + afterMatched.length,
+                                        modified = true
+                                    )
+                                )
                             }
 
                             break
@@ -214,15 +205,14 @@ class SimilarCompareImpl: SimilarCompare {
                     }else {
                         val indexOf = delStr.indexOf(addStr)
                         if(indexOf != -1) {
-                            delMatchedCount2++
+                            addIter.remove()
+                            delIter.remove()
 
                             matched = true
 
                             a.matched = true
                             d.matched = true
 
-                            val dStartIndex = d.index+indexOf
-                            val dEndIndex = dStartIndex+addStr.length
                             addIndexResultList.add(
                                 IndexStringPart(
                                     start = a.index,
@@ -231,6 +221,8 @@ class SimilarCompareImpl: SimilarCompare {
                                 )
                             )
 
+                            val dStartIndex = d.index+indexOf
+                            val dEndIndex = dStartIndex+addStr.length
                             delIndexResultList.add(
                                 IndexStringPart(
                                     start = dStartIndex,
@@ -242,49 +234,51 @@ class SimilarCompareImpl: SimilarCompare {
                             val beforeMatched = delStr.substring(0, indexOf)
                             val afterMatched = delStr.substring(indexOf+addStr.length)
                             if(beforeMatched.isNotEmpty()) {
-                                val w = WordAndIndex(index = d.index)
-                                w.word.append(beforeMatched)
-                                delStillNotMatchedList.add(w)
+                                delIndexResultList.add(
+                                    IndexStringPart(
+                                        start = d.index,
+                                        end = d.index + beforeMatched.length,
+                                        modified = true
+                                    )
+                                )
                             }
                             if(afterMatched.isNotEmpty()) {
-                                val w = WordAndIndex(index = dEndIndex)
-                                w.word.append(afterMatched)
-                                delStillNotMatchedList.add(w)
+                                delIndexResultList.add(
+                                    IndexStringPart(
+                                        start = dEndIndex,
+                                        end = dEndIndex + afterMatched.length,
+                                        modified = true
+                                    )
+                                )
                             }
 
                             break
                         }
                     }
 
-                    if(delMatchedCount2 >= delAllCount2) {
-                        break@outer2
-                    }
                 }
+
+
+                if(delIter.srcIsEmpty()) {
+                    break
+                }
+
             }
 
-            // add not matched items, these items not matched by equals nor by indexOf, they are really `modified` items
-            for(a in addNotMatchedList) {
-                if(a.matched.not()) {
-                    addStillNotMatchedList.add(a)
-                }
-            }
-            for(d in delNotMatchedList) {
-                if(d.matched.not()) {
-                    delStillNotMatchedList.add(d)
-                }
-            }
-        }else {  // not require better matching
-            addStillNotMatchedList = addNotMatchedList
-            delStillNotMatchedList = delNotMatchedList
         }
+
 
 
         // when reached here, all matched items already added in the `addIndexResultList` and `delIndexResultList`,
         //  and not-matched items in the `addStillNotMatchedList` and `delStillNotMatchedList`
         //  and the order is not sorted yet
 
+        // add not matched items, these items not matched by equals nor by indexOf, they are really `modified` items
+
         // at last, may still have not matched items, they are `modified`
-        for(item in addStillNotMatchedList) {
+        addIter.reset()
+        while (addIter.hasNext()) {
+            val item = addIter.next()
             addIndexResultList.add(
                 IndexStringPart(
                     start = item.index,
@@ -294,7 +288,9 @@ class SimilarCompareImpl: SimilarCompare {
             )
         }
 
-        for(item in delStillNotMatchedList) {
+        delIter.reset()
+        while (delIter.hasNext()) {
+            val item = delIter.next()
             delIndexResultList.add(
                 IndexStringPart(
                     start = item.index,
@@ -304,12 +300,6 @@ class SimilarCompareImpl: SimilarCompare {
             )
         }
 
-
-        // create comparator for sort list by index
-        // p.s. list compare will not remove same elements
-        val comparator = { o1:IndexStringPart, o2:IndexStringPart ->
-            o1.start.compareTo(o2.start)
-        }
 
         // sortedWith return new List and keep origin list unchanged, sortWith sort in place, here no need new list, so using sortWith
         addIndexResultList.sortWith(comparator)
@@ -387,4 +377,10 @@ private data class WordAndIndex(
         return wordStrCached!!
     }
 
+}
+
+// create comparator for sort list by index
+// p.s. list compare will not remove same elements
+private val comparator = { o1:IndexStringPart, o2:IndexStringPart ->
+    o1.start.compareTo(o2.start)
 }
