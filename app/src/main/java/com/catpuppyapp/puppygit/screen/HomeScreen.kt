@@ -1,6 +1,5 @@
 package com.catpuppyapp.puppygit.screen
 
-import SettingsInnerPage
 import android.content.Intent
 import android.net.Uri
 import androidx.compose.foundation.layout.Column
@@ -35,7 +34,6 @@ import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.MutableIntState
 import androidx.compose.runtime.MutableState
@@ -73,6 +71,7 @@ import com.catpuppyapp.puppygit.screen.content.homescreen.innerpage.ChangeListIn
 import com.catpuppyapp.puppygit.screen.content.homescreen.innerpage.EditorInnerPage
 import com.catpuppyapp.puppygit.screen.content.homescreen.innerpage.FilesInnerPage
 import com.catpuppyapp.puppygit.screen.content.homescreen.innerpage.RepoInnerPage
+import com.catpuppyapp.puppygit.screen.content.homescreen.innerpage.SettingsInnerPage
 import com.catpuppyapp.puppygit.screen.content.homescreen.innerpage.SubscriptionPage
 import com.catpuppyapp.puppygit.screen.content.homescreen.scaffold.actions.ChangeListPageActions
 import com.catpuppyapp.puppygit.screen.content.homescreen.scaffold.actions.EditorPageActions
