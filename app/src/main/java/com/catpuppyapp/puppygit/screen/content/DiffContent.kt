@@ -41,6 +41,7 @@ import com.catpuppyapp.puppygit.dev.FlagFileName
 import com.catpuppyapp.puppygit.dev.detailsDiffTestPassed
 import com.catpuppyapp.puppygit.dev.proFeatureEnabled
 import com.catpuppyapp.puppygit.git.CompareLinePair
+import com.catpuppyapp.puppygit.git.CompareLinePairResult
 import com.catpuppyapp.puppygit.git.DiffItemSaver
 import com.catpuppyapp.puppygit.git.FileHistoryDto
 import com.catpuppyapp.puppygit.git.PuppyHunkAndLines
@@ -55,7 +56,6 @@ import com.catpuppyapp.puppygit.utils.UIHelper
 import com.catpuppyapp.puppygit.utils.changeStateTriggerRefreshPage
 import com.catpuppyapp.puppygit.utils.compare.SimilarCompare
 import com.catpuppyapp.puppygit.utils.compare.param.StringCompareParam
-import com.catpuppyapp.puppygit.utils.compare.result.IndexStringPart
 import com.catpuppyapp.puppygit.utils.createAndInsertError
 import com.catpuppyapp.puppygit.utils.doJobThenOffLoading
 import com.catpuppyapp.puppygit.utils.getHumanReadableSizeStr
@@ -198,8 +198,9 @@ fun DiffContent(
     val isBinary = diffItem.value.flags.contains(Diff.FlagT.BINARY)
     val fileNoChange = !diffItem.value.isFileModified
 
-    // {key: line.key, value:ComparePair}
-    val indexStringPartListMapForComparePair = mutableCustomStateMapOf(stateKeyTag, "indexStringPartListMapForComparePair") { mapOf<String, List<IndexStringPart>>() }
+    // {key: line.key, value:CompareLinePairResult}
+    //只要比较过，就一定有 CompareLinePairResult 这个对象，但不代表匹配成功，若 CompareLinePairResult 存的stringpartlist不为null，则匹配成功，否则匹配失败
+    val indexStringPartListMapForComparePair = mutableCustomStateMapOf(stateKeyTag, "indexStringPartListMapForComparePair") { mapOf<String, CompareLinePairResult>() }
 //    val comparePair = mutableCustomStateOf(stateKeyTag, "comparePair") {CompareLinePair()}
     val comparePairBuffer = mutableCustomStateOf(stateKeyTag, "comparePairBuffer") {CompareLinePair()}
     val reForEachDiffContent = {
@@ -396,7 +397,7 @@ fun DiffContent(
                                         DiffRow(
                                             line = line,
                                             fileFullPath = fileFullPath,
-                                            stringPartList = compareResult,
+                                            stringPartList = compareResult.stringPartList,
                                             isFileAndExist = isFileAndExist.value,
                                             clipboardManager = clipboardManager,
                                             loadingOn = loadingOnParent,
@@ -518,17 +519,18 @@ fun DiffContent(
                             }
 
 //                            val pair = comparePair.value
-                            val addStringPartList = indexStringPartListMapForComparePair.value.get(add?.key?:"nonexist keyadd")
-                            val delStringPartList = indexStringPartListMapForComparePair.value.get(del?.key?:"nonexist keydel")
+                            //不存在的key是为了使返回值为null
+                            val addCompareLinePairResult = indexStringPartListMapForComparePair.value.get(add?.key?:"nonexist keyadd")
+                            val delCompareLinePairResult = indexStringPartListMapForComparePair.value.get(del?.key?:"nonexist keydel")
                             var addUsedPair = false
                             var delUsedPair = false
 
-                            if(delStringPartList !=null && del!=null){
+                            if(delCompareLinePairResult != null && del != null){
                                 delUsedPair = true
                                 item {
                                     DiffRow(
                                         line = del,
-                                        stringPartList = delStringPartList,
+                                        stringPartList = delCompareLinePairResult.stringPartList,
                                         fileFullPath = fileFullPath,
                                         isFileAndExist = isFileAndExist.value,
                                         clipboardManager = clipboardManager,
@@ -551,12 +553,13 @@ fun DiffContent(
                                 }
 
                             }
-                            if(addStringPartList!=null && add!=null) {
+
+                            if(addCompareLinePairResult != null && add != null) {
                                 addUsedPair = true
                                 item {
                                     DiffRow(
                                         line = add,
-                                        stringPartList = addStringPartList,
+                                        stringPartList = addCompareLinePairResult.stringPartList,
                                         fileFullPath = fileFullPath,
                                         isFileAndExist = isFileAndExist.value,
                                         clipboardManager = clipboardManager,

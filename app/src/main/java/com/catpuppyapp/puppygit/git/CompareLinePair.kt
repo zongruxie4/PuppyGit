@@ -8,7 +8,7 @@ import com.catpuppyapp.puppygit.utils.compare.result.IndexStringPart
 import com.catpuppyapp.puppygit.utils.getShortUUID
 import com.github.git24j.core.Diff.Line.OriginType
 
-private val TAG = "CompareLinePair"
+private const val TAG = "CompareLinePair"
 
 object CompareLinePairHelper {
     val clipboardLineNum:Int = -10
@@ -61,7 +61,7 @@ data class CompareLinePair (
     fun isCompared():Boolean {
         return compareResult != null
     }
-    fun compare(betterCompare:Boolean, matchByWords:Boolean, map:MutableMap<String, List<IndexStringPart>>) {
+    fun compare(betterCompare:Boolean, matchByWords:Boolean, map:MutableMap<String, CompareLinePairResult>) {
         // not ready
         if(readyForCompare().not()) {
             return
@@ -118,8 +118,15 @@ data class CompareLinePair (
             matchByWords = matchByWords
         )
 
-        map.put(line1Key, cmpResult.add)
-        map.put(line2Key, cmpResult.del)
+        if(cmpResult.matched) {
+            //有匹配，添加string part list
+            map.put(line1Key, CompareLinePairResult(cmpResult.add))
+            map.put(line2Key, CompareLinePairResult(cmpResult.del))
+        }else {
+            //无匹配，存null，使显示结果为无匹配的单纯颜色而不是深、浅颜色
+            map.put(line1Key, CompareLinePairResult(null))
+            map.put(line2Key, CompareLinePairResult(null))
+        }
 
         compareResult = cmpResult
     }
@@ -158,3 +165,10 @@ data class CompareLinePair (
 //        return c
 //    }
 }
+
+/**
+ * 存储选择行比较的结果，只要比较过，对应的line.key就一定有这个对象，但只有stringPartList不为null才代表有匹配，否则代表无匹配
+ */
+data class CompareLinePairResult (
+    val stringPartList:List<IndexStringPart>?=null
+)

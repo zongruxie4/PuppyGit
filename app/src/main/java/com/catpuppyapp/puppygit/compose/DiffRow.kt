@@ -37,6 +37,7 @@ import com.catpuppyapp.puppygit.constants.Cons
 import com.catpuppyapp.puppygit.constants.LineNum
 import com.catpuppyapp.puppygit.git.CompareLinePair
 import com.catpuppyapp.puppygit.git.CompareLinePairHelper
+import com.catpuppyapp.puppygit.git.CompareLinePairResult
 import com.catpuppyapp.puppygit.git.PuppyLine
 import com.catpuppyapp.puppygit.play.pro.R
 import com.catpuppyapp.puppygit.screen.functions.getClipboardText
@@ -80,7 +81,7 @@ fun DiffRow (
 //    comparePair:CustomStateSaveable<CompareLinePair>,
     betterCompare:Boolean,
     reForEachDiffContent:()->Unit,
-    indexStringPartListMap:CustomStateMapSaveable<String, List<IndexStringPart>>,
+    indexStringPartListMap:CustomStateMapSaveable<String, CompareLinePairResult>,
     enableSelectCompare: Boolean,
     matchByWords:Boolean
 
