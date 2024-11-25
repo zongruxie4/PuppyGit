@@ -2,6 +2,7 @@ package com.catpuppyapp.puppygit.utils.snapshot
 
 import com.catpuppyapp.puppygit.constants.Cons
 import com.catpuppyapp.puppygit.etc.Ret
+import com.catpuppyapp.puppygit.fileeditor.texteditor.state.TextEditorState
 import com.catpuppyapp.puppygit.utils.AppModel
 import com.catpuppyapp.puppygit.utils.FsUtils
 import com.catpuppyapp.puppygit.utils.MyLog
@@ -31,16 +32,27 @@ object SnapshotUtil:SnapshotCreator {
     }
 
 
-    override fun createSnapshotByContentAndGetResult(srcFileName:String, fileContent:String, flag:String): Ret<Pair<String, String>?> {
+    override fun createSnapshotByContentAndGetResult(
+        srcFileName:String,
+        fileContent:String?,
+        editorState: TextEditorState?,
+        trueUseContentFalseUseEditorState: Boolean,
+        flag:String
+    ): Ret<Pair<String, String>?> {
         if(!enableContentSnapshot) {
             return Ret.createSuccess(Pair(contentSnapshotDisable_FileNamePlaceHolder, contentSnapshotDisable_FilePathPlaceHolder))
         }
 
         try {
-            if(fileContent.isNotEmpty()) {
+            if((trueUseContentFalseUseEditorState && fileContent!!.isNotEmpty()) || (trueUseContentFalseUseEditorState.not() && editorState!!.contentIsEmpty().not())) {
                 val (snapshotFileName, snapFileFullPath, snapFile) = getSnapshotFileNameAndFullPathAndFile(srcFileName, flag)
                 MyLog.w(TAG, "#createSnapshotByContentAndGetResult: will save snapFile to:" + snapFileFullPath)
-                val snapRet = FsUtils.saveFileAndGetResult(fileFullPath = snapFileFullPath, text = fileContent)
+                val snapRet = if(trueUseContentFalseUseEditorState) {
+                    FsUtils.saveFileAndGetResult(fileFullPath = snapFileFullPath, text = fileContent!!)
+                } else {
+                    editorState!!.dumpLinesAndGetRet(File(snapFileFullPath).outputStream())
+                }
+
                 if(snapRet.hasError()) {
                     MyLog.e(TAG, "#createSnapshotByContentAndGetResult: save snapFile '$snapshotFileName' failed:" + snapRet.msg)
                     return Ret.createError(null, snapRet.msg)
@@ -92,8 +104,19 @@ object SnapshotUtil:SnapshotCreator {
         }
     }
 
-    fun createSnapshotByContentWithRandomFileName(fileContent:String, flag:String): Ret<Pair<String, String>?> {
-        return createSnapshotByContentAndGetResult(srcFileName = getShortUUID(10), fileContent=fileContent, flag = flag)
+    fun createSnapshotByContentWithRandomFileName(
+        fileContent: String?,
+        editorState: TextEditorState?,
+        trueUseContentFalseUseEditorState: Boolean,
+        flag:String
+    ): Ret<Pair<String, String>?> {
+        return createSnapshotByContentAndGetResult(
+            srcFileName = getShortUUID(10),
+            fileContent = fileContent,
+            editorState = editorState,
+            trueUseContentFalseUseEditorState = trueUseContentFalseUseEditorState,
+            flag = flag
+        )
     }
 
     private fun getSnapshotFileNameAndFullPathAndFile(

@@ -445,14 +445,29 @@ object FsUtils {
     //注：只有所有操作都成功才会返回成功，若返回成功但内容或文件的快照路径为空字符串，说明没请求备份对应的内容
     //如果两个请求创建备份的变量都传假，则此方法等同于单纯保存内容到targetFilePath对应的文件
     //返回值：1 保存内容到目标文件是否成功， 2 内容快照路径，若创建快照成功则非空字符串值，否则为空字符串， 3 文件快照路径，创建成功则非空字符串
-    fun simpleSafeFastSave(content:String, targetFilePath: String, requireBackupContent:Boolean, requireBackupFile:Boolean, contentSnapshotFlag:String, fileSnapshotFlag:String):Ret<Triple<Boolean, String,String>> {
+    fun simpleSafeFastSave(
+        content: String?,
+        editorState: TextEditorState?,
+        trueUseContentFalseUseEditorState: Boolean,
+        targetFilePath: String,
+        requireBackupContent: Boolean,
+        requireBackupFile: Boolean,
+        contentSnapshotFlag: String,
+        fileSnapshotFlag: String
+    ): Ret<Triple<Boolean, String, String>> {
         var contentAndFileSnapshotPathPair = Pair("","")
 
         try {
             val targetFile = File(targetFilePath)
             //为内容创建快照
             val contentRet = if(requireBackupContent) {
-                SnapshotUtil.createSnapshotByContentAndGetResult(targetFile.name, content, contentSnapshotFlag)
+                SnapshotUtil.createSnapshotByContentAndGetResult(
+                    srcFileName = targetFile.name,
+                    fileContent = content,
+                    editorState = editorState,
+                    trueUseContentFalseUseEditorState = trueUseContentFalseUseEditorState,
+                    flag = contentSnapshotFlag
+                )
             }else {
                 Ret.createSuccess(null, "no require backup content yet")
             }
@@ -488,10 +503,14 @@ object FsUtils {
 
 
             //将内容写入到目标文件
-            content.byteInputStream().use { input ->
-                targetFile.outputStream().use { output ->
-                    input.copyTo(output)
+            if(trueUseContentFalseUseEditorState) {
+                content!!.byteInputStream().use { input ->
+                    targetFile.outputStream().use { output ->
+                        input.copyTo(output)
+                    }
                 }
+            }else {
+                editorState!!.dumpLines(targetFile.outputStream())
             }
 
             //若请求备份content或file，则返回成功时有对应的快照路径，否则为空字符串。
@@ -536,14 +555,19 @@ object FsUtils {
             try {
                 // 先把filePath和content取出来
                 val filePath = editorPageShowingFilePath.value
-                val fileContent = editorPageTextEditorState.value.getAllText()
+//                val fileContent = editorPageTextEditorState.value.getAllText()
 
                 if (filePath.isEmpty()) {
                     //path为空content不为空的可能性不大，几乎没有
-                    if(fileContent.isNotEmpty() && !isContentSnapshoted.value ) {
+                    if(editorPageTextEditorState.value.contentIsEmpty().not() && !isContentSnapshoted.value ) {
                         MyLog.w(pageTag, "#$funName: filePath is empty, but content is not empty, will create content snapshot with a random filename...")
                         val flag = SnapshotFileFlag.content_FilePathEmptyWhenSave_Backup
-                        val contentSnapRet = SnapshotUtil.createSnapshotByContentWithRandomFileName(fileContent, flag)
+                        val contentSnapRet = SnapshotUtil.createSnapshotByContentWithRandomFileName(
+                            fileContent = null,
+                            editorState = editorPageTextEditorState.value,
+                            trueUseContentFalseUseEditorState = false,
+                            flag = flag
+                        )
                         if (contentSnapRet.hasError()) {
                             MyLog.e(pageTag, "#$funName: create content snapshot for empty path failed:" + contentSnapRet.msg)
 
@@ -591,8 +615,14 @@ object FsUtils {
                                 MyLog.e(pageTag, "#$funName: create file snapshot for '$filePath' failed:" + snapRet.msg)
 
                                 //虽然为源文件创建快照失败了，但如果没有为当前内容创建快照，则为当前用户编辑的内容(content)创建个快照
-                                if(fileContent.isNotEmpty() && !isContentSnapshoted.value) {
-                                    val contentSnapRet = SnapshotUtil.createSnapshotByContentAndGetResult(File(filePath).name, fileContent, SnapshotFileFlag.content_CreateSnapshotForExternalModifiedFileErrFallback)
+                                if(editorPageTextEditorState.value.contentIsEmpty().not() && !isContentSnapshoted.value) {
+                                    val contentSnapRet = SnapshotUtil.createSnapshotByContentAndGetResult(
+                                        srcFileName = getFileNameFromCanonicalPath(filePath),
+                                        fileContent = null,
+                                        editorState = editorPageTextEditorState.value,
+                                        trueUseContentFalseUseEditorState = false,
+                                        flag = SnapshotFileFlag.content_CreateSnapshotForExternalModifiedFileErrFallback
+                                    )
                                     if (contentSnapRet.hasError()) {
                                         MyLog.e(pageTag, "#$funName: create content snapshot for '$filePath' failed:" + contentSnapRet.msg)
 
@@ -627,7 +657,9 @@ object FsUtils {
 
                 // 保存文件。
                 val ret = FsUtils.simpleSafeFastSave(
-                    content = fileContent,
+                    content = null,
+                    editorState = editorPageTextEditorState.value,
+                    trueUseContentFalseUseEditorState = false,
                     targetFilePath = filePath,
                     requireBackupContent = true,
                     requireBackupFile = true,
@@ -651,8 +683,14 @@ object FsUtils {
                     MyLog.e(pageTag, "#$funName: save file '$filePath' failed:" + ret.msg)
 
                     //保存失败但content不为空且之前没创建过这个content的快照，则创建content快照 (ps: content就是编辑器中的未保存的内容)
-                    if (fileContent.isNotEmpty() && !isContentSnapshoted.value) {
-                        val snapRet = SnapshotUtil.createSnapshotByContentAndGetResult(File(filePath).name, fileContent, SnapshotFileFlag.content_SaveErrFallback)
+                    if (editorPageTextEditorState.value.contentIsEmpty().not() && !isContentSnapshoted.value) {
+                        val snapRet = SnapshotUtil.createSnapshotByContentAndGetResult(
+                            srcFileName = getFileNameFromCanonicalPath(filePath),
+                            fileContent = null,
+                            editorState = editorPageTextEditorState.value,
+                            trueUseContentFalseUseEditorState = false,
+                            flag = SnapshotFileFlag.content_SaveErrFallback
+                        )
                         if (snapRet.hasError()) {
                             MyLog.e(pageTag, "#$funName: save content snapshot for '$filePath' failed:" + snapRet.msg)
 

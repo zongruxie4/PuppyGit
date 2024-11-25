@@ -317,20 +317,29 @@ fun isSizeOverLimit(size:Long, limitMax:Long):Boolean {
  *          input "abc//" or other bad path, return origin path;
  *          if err, return origin path
  */
-fun getFileNameFromCanonicalPath(path:String, separator:String=File.separator):String {
+fun getFileNameFromCanonicalPath(path:String, separator:Char=Cons.slashChar) : String {
     try {
-        val pathRemovedSuffix = path.removeSuffix(separator)  //为目录移除末尾的/，如果有的话
+        val pathRemovedSuffix = path.trim(separator)  //为目录移除末尾的/，如果有的话
 
         val lastSeparatorIndex = pathRemovedSuffix.lastIndexOf(separator)  //找出最后一个/的位置
 
-        //无法取出文件名则返回原字符串
-        //没找到/ 或 无效路径格式(上面去了个/，末尾还有个/，说明原字符串末尾至少两个/，所以是无效路径)
-        if(lastSeparatorIndex == -1 || lastSeparatorIndex == pathRemovedSuffix.length-1) {
-            return path
+        if(lastSeparatorIndex == -1) {
+            return pathRemovedSuffix
         }
 
+        //因为先trim过separator，所以再lastIndexOf separator，结果不可能是开头或结尾，
+        // 所以这里不用判断index是否在末尾，
+        // trim一个字符在lastIndexOf或indexOf那个字符，结果只有两种：要么就找到了，在中间，要么就没找到，-1，而上面已经判断了-1，
+        // 所以后面再调用substring(lastIndexOf+1)是绝对安全不会越界的
+
+        //无法取出文件名则返回原字符串
+        //没找到/ 或 无效路径格式(上面去了个/，末尾还有个/，说明原字符串末尾至少两个/，所以是无效路径)
+//        if(lastSeparatorIndex == pathRemovedSuffix.length-1) {  // separator在末尾
+//            return path
+//        }
+
         //有效路径，返回目录或文件名
-        return pathRemovedSuffix.substring(lastSeparatorIndex+1, pathRemovedSuffix.length)
+        return pathRemovedSuffix.substring(lastSeparatorIndex+1)
     }catch (e:Exception) {
         MyLog.e(TAG, "#getFileNameFromCanonicalPath err: path=$path, separator=$separator, err=${e.localizedMessage}")
         return path

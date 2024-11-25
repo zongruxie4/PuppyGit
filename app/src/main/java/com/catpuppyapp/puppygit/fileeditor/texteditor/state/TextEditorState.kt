@@ -1,6 +1,7 @@
 package com.catpuppyapp.puppygit.fileeditor.texteditor.state
 
 import androidx.compose.runtime.Immutable
+import com.catpuppyapp.puppygit.etc.Ret
 import com.catpuppyapp.puppygit.fileeditor.texteditor.controller.EditorController.Companion.createInitTextFieldStates
 import com.catpuppyapp.puppygit.utils.doActIfIndexGood
 import java.io.OutputStream
@@ -11,7 +12,8 @@ data class TextEditorState(
     val selectedIndices: List<Int>,
     val isMultipleSelectionMode: Boolean,
 ) {
-    fun getAllText(): String {
+    @Deprecated("if you want to save lines to file, use `dumpLines` instead")
+    fun deprecated_getAllText(): String {
         val sb = StringBuilder()
         fields.forEach { sb.append(it.value.text).append("\n") }
         return sb.removeSuffix("\n").toString()
@@ -22,14 +24,23 @@ data class TextEditorState(
 //        }
     }
 
+    fun dumpLinesAndGetRet(output: OutputStream, lineBreak:String="\n"): Ret<Unit?> {
+        try {
+            dumpLines(output, lineBreak)
+            return Ret.createSuccess(null)
+        }catch (e:Exception) {
+            return Ret.createError(null, e.localizedMessage ?: "dump lines err", exception = e)
+        }
+    }
+
     fun dumpLines(output: OutputStream, lineBreak:String="\n") {
-        val lastIndex = fields.size-1
+        val lastIndex = fields.size - 1
         output.bufferedWriter().use { out ->
             for(i in fields.indices) {
-                if(i==lastIndex) {
-                    out.append(fields[i].value.text)
-                }else {
-                    out.append(fields[i].value.text).append(lineBreak)
+                out.write(fields[i].value.text)
+
+                if(i != lastIndex) {
+                    out.write(lineBreak)
                 }
             }
         }
@@ -62,6 +73,10 @@ data class TextEditorState(
     //获取选择行记数（获取选择了多少行）
     fun getSelectedCount():Int{
         return selectedIndices.toSet().filter{ it>=0 }.size  //toSet()是为了去重，我不确定是否一定没重复，去下保险；filter {it>=0} 是为了避免里面有-1，我记得初始值好像是往selectedIndices里塞个-1。
+    }
+
+    fun contentIsEmpty(): Boolean {
+        return fields.isEmpty() || (fields.size == 1 && fields[0].value.text.isEmpty())
     }
 
     companion object {

@@ -1,6 +1,7 @@
 package com.catpuppyapp.puppygit.utils.snapshot
 
 import com.catpuppyapp.puppygit.etc.Ret
+import com.catpuppyapp.puppygit.fileeditor.texteditor.state.TextEditorState
 import java.io.File
 
 /**
@@ -13,7 +14,13 @@ interface SnapshotCreator{
      *
      * @return Ret<Pair<fileName, fileFullPath>>
      */
-    fun createSnapshotByContentAndGetResult(srcFileName:String, fileContent:String, flag:String): Ret<Pair<String, String>?>
+    fun createSnapshotByContentAndGetResult(
+        srcFileName: String,
+        fileContent: String?,
+        editorState: TextEditorState?,
+        trueUseContentFalseUseEditorState: Boolean,
+        flag: String
+    ): Ret<Pair<String, String>?>
 
 
     /**
