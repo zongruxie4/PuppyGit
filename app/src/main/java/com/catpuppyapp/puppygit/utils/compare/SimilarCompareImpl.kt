@@ -8,9 +8,9 @@ import com.catpuppyapp.puppygit.utils.compare.search.SearchDirection
 import com.catpuppyapp.puppygit.utils.iterator.NoCopyIterator
 
 class SimilarCompareImpl: SimilarCompare {
-    override fun doCompare(
-        add: CompareParam,
-        del: CompareParam,
+    override fun<T> doCompare(
+        add: CompareParam<T>,
+        del: CompareParam<T>,
         emptyAsMatch:Boolean,
         emptyAsModified:Boolean,
         onlyLineSeparatorAsEmpty:Boolean,
@@ -18,42 +18,82 @@ class SimilarCompareImpl: SimilarCompare {
         requireBetterMatching: Boolean,
         search: Search,
         betterSearch: Search,
-        matchByWords:Boolean
+        matchByWords:Boolean,
+        ignoreEndOfNewLine:Boolean
     ): IndexModifyResult {
         // empty check
-        if(add.isEmpty() || del.isEmpty() || (onlyLineSeparatorAsEmpty && (add.isOnlyLineSeparator() || del.isOnlyLineSeparator()))){ //其中一个为空或只有换行符，不比较，直接返回结果，当作无匹配
+        if(add.isEmpty() || del.isEmpty() || ((onlyLineSeparatorAsEmpty || ignoreEndOfNewLine) && (add.isOnlyLineSeparator() || del.isOnlyLineSeparator()))){ //其中一个为空或只有换行符，不比较，直接返回结果，当作无匹配
             return IndexModifyResult(matched = emptyAsMatch, matchedByReverseSearch = false,
                 listOf(IndexStringPart(0, add.getLen(), emptyAsModified)),
                 listOf(IndexStringPart(0, del.getLen(), emptyAsModified)))
         }
 
+        //忽略末尾 \n
+        val addWillUse = if(ignoreEndOfNewLine) {
+            add.getTextNoEndOfNewLine(false)
+        }else {
+            add
+        }
 
-        // match by words
+        val delWillUse = if(ignoreEndOfNewLine) {
+            del.getTextNoEndOfNewLine(false)
+        }else {
+            del
+        }
+
+        var result:IndexModifyResult? = null
+
+            // match by words
         if(matchByWords) {
             //如果按单词比较为真，尝试以单词比较，如果有匹配，直接返回，如果无匹配，则继续往下执行普通比较
-            val matchByWordsResult = doMatchByWords(add, del, requireBetterMatching)
-            if(matchByWordsResult.matched) {
-                return matchByWordsResult
-            }
+            result = doMatchByWords(addWillUse, delWillUse, requireBetterMatching)
         }
 
         // if match by words not enabled or not matched, try match by chars
+        if(result == null || result.matched.not()) {
+            // match by chars
+            val reverse = searchDirection == SearchDirection.REVERSE || searchDirection == SearchDirection.REVERSE_FIRST
 
-        // match by chars
-        val reverse = searchDirection == SearchDirection.REVERSE || searchDirection == SearchDirection.REVERSE_FIRST
+            val reverseMatchIfNeed = searchDirection == SearchDirection.REVERSE_FIRST || searchDirection == SearchDirection.FORWARD_FIRST
 
-        val reverseMatchIfNeed = searchDirection == SearchDirection.REVERSE_FIRST || searchDirection == SearchDirection.FORWARD_FIRST
+            //用On算法最坏的情况是正向匹配一次，然后逆向匹配一次，时间复杂度为 O(2n)，正常情况时间复杂度为O(n)，O(nm)若匹配两次，也会翻倍，最坏时间复杂度变成O(2nm)
+            result = if(requireBetterMatching) {
+                betterSearch.doSearch(addWillUse, delWillUse, reverse)
+            }else {
+                search.doSearch(addWillUse, delWillUse, reverse)
+            }
 
-        //用On算法最坏的情况是正向匹配一次，然后逆向匹配一次，时间复杂度为 O(2n)，正常情况时间复杂度为O(n)，O(nm)若匹配两次，也会翻倍，最坏时间复杂度变成O(2nm)
-        var result = if(requireBetterMatching) {
-            betterSearch.doSearch(add, del, reverse)
-        }else {
-            search.doSearch(add, del, reverse)
+            //反向查找，如果需要的话。判断条件是：如果 “允许反向匹配 且 正向没匹配到”
+            if(reverseMatchIfNeed && !result.matched) {
+                result = if(requireBetterMatching) betterSearch.doSearch(addWillUse, delWillUse, !reverse) else search.doSearch(addWillUse, delWillUse, !reverse)
+            }
+
         }
 
-        //反向查找，如果需要的话。判断条件是：如果 “允许反向匹配 且 正向没匹配到”
-        if(reverseMatchIfNeed && !result.matched) {
-            result = if(requireBetterMatching) betterSearch.doSearch(add, del, !reverse) else search.doSearch(add, del, !reverse)
+        // add newline back to result
+        if(ignoreEndOfNewLine) {
+            if (add.hasEndOfNewLine()) {
+                val addList = result.add as MutableList
+                addList.add(
+                    IndexStringPart(
+                        start = add.getLen()-1,
+                        end = add.getLen(),
+                        modified = del.hasEndOfNewLine().not()
+                    )
+                )
+            }
+
+            if (del.hasEndOfNewLine()) {
+                val delList = result.del as MutableList
+                delList.add(
+                    IndexStringPart(
+                        start = del.getLen()-1,
+                        end = del.getLen(),
+                        modified = add.hasEndOfNewLine().not()
+                    )
+                )
+
+            }
         }
 
         return result
@@ -63,9 +103,9 @@ class SimilarCompareImpl: SimilarCompare {
     /**
      * @param requireBetterMatching if true, will try index of for not-matched words
      */
-    private fun doMatchByWords(
-        add: CompareParam,
-        del: CompareParam,
+    private fun<T> doMatchByWords(
+        add: CompareParam<T>,
+        del: CompareParam<T>,
         requireBetterMatching: Boolean
     ):IndexModifyResult {
         val addWordAndIndexList = getWordAndIndexList(add) as MutableList
@@ -314,7 +354,7 @@ class SimilarCompareImpl: SimilarCompare {
         )
     }
 
-    private fun getWordAndIndexList(compareParam:CompareParam):List<WordAndIndex> {
+    private fun<T> getWordAndIndexList(compareParam:CompareParam<T>):List<WordAndIndex> {
         var wordMatching = false
         var spaceMatching = false
         var wordAndIndex:WordAndIndex? = null

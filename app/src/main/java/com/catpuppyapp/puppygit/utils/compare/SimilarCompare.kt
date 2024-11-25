@@ -25,12 +25,14 @@ interface SimilarCompare {
      * if `reverseMatchIfNeed`, maybe will try reverse matching when forward matching failed, if do reverse matching, the time complex may x2
      *
      * @param matchByWords if true, will try compare text by words, the text should split by blank char like space/tab/lineBreak etc
-     *
+     * @param ignoreEndOfNewLine if true, will ignore end of line break '\n', only ignore '\n'
+     *          and only ignore when '\n' at end of line, if both has '\n', will treat '\n' as no-modified, else modified,
+     *          but it will not effect the `matched` of `IndexModifyResult`, so, modified or no-modified, maybe not effect for view (因为新行的匹配状态不会影响结果是否匹配，所以显示上可能没差)
      * @author Bandeapart1964 of catpuppyapp
      */
-    fun doCompare(
-        add: CompareParam,
-        del: CompareParam,
+    fun<T> doCompare(
+        add: CompareParam<T>,
+        del: CompareParam<T>,
         emptyAsMatch: Boolean = false,
         emptyAsModified: Boolean = true,
         onlyLineSeparatorAsEmpty: Boolean = true,
@@ -38,7 +40,8 @@ interface SimilarCompare {
         requireBetterMatching: Boolean = false,
         search: Search = Search.INSTANCE,
         betterSearch: Search = Search.INSTANCE_BETTER_MATCH_BUT_SLOW,
-        matchByWords:Boolean
+        matchByWords:Boolean,
+        ignoreEndOfNewLine:Boolean = true
     ): IndexModifyResult
 
 }
