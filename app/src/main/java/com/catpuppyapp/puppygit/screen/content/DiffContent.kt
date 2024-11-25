@@ -56,6 +56,7 @@ import com.catpuppyapp.puppygit.utils.UIHelper
 import com.catpuppyapp.puppygit.utils.changeStateTriggerRefreshPage
 import com.catpuppyapp.puppygit.utils.compare.SimilarCompare
 import com.catpuppyapp.puppygit.utils.compare.param.StringCompareParam
+import com.catpuppyapp.puppygit.utils.compare.result.IndexStringPart
 import com.catpuppyapp.puppygit.utils.createAndInsertError
 import com.catpuppyapp.puppygit.utils.doJobThenOffLoading
 import com.catpuppyapp.puppygit.utils.getHumanReadableSizeStr
@@ -525,258 +526,143 @@ fun DiffContent(
                             var addUsedPair = false
                             var delUsedPair = false
 
+                            var delStringPartListWillUse:List<IndexStringPart>? = null
+                            var addStringPartListWillUse:List<IndexStringPart>? = null
+
                             if(delCompareLinePairResult != null && del != null){
                                 delUsedPair = true
-                                item {
-                                    DiffRow(
-                                        line = del,
-                                        stringPartList = delCompareLinePairResult.stringPartList,
-                                        fileFullPath = fileFullPath,
-                                        isFileAndExist = isFileAndExist.value,
-                                        clipboardManager = clipboardManager,
-                                        loadingOn = loadingOnParent,
-                                        loadingOff = loadingOffParent,
-                                        refreshPage = refreshPageIfComparingWithLocal,
-                                        repoId = repoId,
-                                        showOriginType = showOriginType,
-                                        showLineNum = showLineNum,
-                                        fontSize = fontSize,
-                                        lineNumSize = lineNumSize,
-                                        comparePairBuffer = comparePairBuffer,
-                                        betterCompare = requireBetterMatchingForCompare.value,
-                                        reForEachDiffContent = reForEachDiffContent,
-                                        indexStringPartListMap = indexStringPartListMapForComparePair,
-                                        enableSelectCompare=enableSelectCompare,
-                                        matchByWords = matchByWords.value
-
-                                    )
-                                }
-
+                                delStringPartListWillUse = delCompareLinePairResult.stringPartList
                             }
 
                             if(addCompareLinePairResult != null && add != null) {
                                 addUsedPair = true
+                                addStringPartListWillUse = addCompareLinePairResult.stringPartList
+                            }
+
+
+
+
+
+                            //只有在第一次执行比较时才执行此检查，且一旦转换，add和del行将消失，变成相同行号的上下文行
+                            //潜在bug：如果存在一个行号，同时有add/del/context 3种类型的行号且 add和del 仅末尾行号不同，而和context内容上有不同，就会有bug，会少显示add del行的内容，不过，应该不会存在这种情况
+                            if(add!=null && del!=null && addUsedPair.not() && delUsedPair.not() && add.getContentNoLineBreak().equals(del.getContentNoLineBreak())) {  //同样行号，同时存在删除和新增，执行增量diff
+                                //解决：两行除了末尾换行符没任何区别的情况仍显示diff的bug（有红有绿但没区别，令人迷惑）
+                                //如果转换成context，其实就不能触发select compare了，不过并没bug，因为如果转换为context，一开始就转换了，后面就不会再有选择行比较了？不对，有bug，必须得把原先的添加和删除类型的行删掉，换成一个上下文行，这样才能在之后选择比较行时无bug，我已经处理了
+
+                                //添加和删除行仅一个有换行符，另一个没有，当作没区别，移除添加和删除类型，并添加一个新的上下文行
+                                //转换后的行有无换行符无所谓，DiffRow显示前会先移除末尾的换行符
+                                lines.remove(Diff.Line.OriginType.ADDITION.toString())
+                                lines.remove(Diff.Line.OriginType.DELETION.toString())
+
+                                //如果已经存在context，不覆盖它，否则用add或del行创建一个新的context，存进集合并显示
+                                if(context==null) {
+                                    val newContextLineFromAddAndDelOnlyLineBreakDifference = del.copy(originType = Diff.Line.OriginType.CONTEXT.toString())
+                                    lines.put(Diff.Line.OriginType.CONTEXT.toString(), newContextLineFromAddAndDelOnlyLineBreakDifference)
+
+                                    item {
+                                        DiffRow(
+                                            //随便拷贝下del或add（不拷贝只改类型也行但不推荐以免有坏影响）把类型改成context，就行了
+                                            line = newContextLineFromAddAndDelOnlyLineBreakDifference,
+                                            fileFullPath=fileFullPath,
+                                            isFileAndExist = isFileAndExist.value,
+                                            clipboardManager=clipboardManager,
+                                            loadingOn=loadingOnParent,
+                                            loadingOff=loadingOffParent,
+                                            refreshPage=refreshPageIfComparingWithLocal,
+                                            repoId=repoId,
+                                            showOriginType = showOriginType,
+                                            showLineNum = showLineNum,
+                                            fontSize = fontSize,
+                                            lineNumSize = lineNumSize,
+                                            comparePairBuffer = comparePairBuffer,
+                                            betterCompare = requireBetterMatchingForCompare.value,
+                                            reForEachDiffContent=reForEachDiffContent,
+                                            indexStringPartListMap = indexStringPartListMapForComparePair,
+                                            enableSelectCompare=enableSelectCompare,
+                                            matchByWords = matchByWords.value
+                                        )
+
+                                    }
+                                }
+
+                                return@printLine
+                            }
+
+
+                            if(del!=null && add!=null && (delUsedPair.not() || addUsedPair.not())) {
+                                val modifyResult2 = SimilarCompare.INSTANCE.doCompare(
+                                    StringCompareParam(add.content),
+                                    StringCompareParam(del.content),
+
+                                    //为true则对比更精细，但是，时间复杂度乘积式增加，不开 O(n)， 开了 O(nm)
+                                    requireBetterMatching = requireBetterMatchingForCompare.value,
+                                    matchByWords = matchByWords.value
+                                )
+
+                                if(modifyResult2.matched) {
+                                    if(delUsedPair.not()) {
+                                        delStringPartListWillUse = modifyResult2.del
+                                    }
+
+                                    if(addUsedPair.not()) {
+                                        addStringPartListWillUse = modifyResult2.add
+                                    }
+
+                                }
+                            }
+
+
+                            if(del!=null) {
                                 item {
                                     DiffRow(
-                                        line = add,
-                                        stringPartList = addCompareLinePairResult.stringPartList,
-                                        fileFullPath = fileFullPath,
+                                        line = del,
+                                        stringPartList = delStringPartListWillUse,
+                                        fileFullPath=fileFullPath,
                                         isFileAndExist = isFileAndExist.value,
-                                        clipboardManager = clipboardManager,
-                                        loadingOn = loadingOnParent,
-                                        loadingOff = loadingOffParent,
-                                        refreshPage = refreshPageIfComparingWithLocal,
-                                        repoId = repoId,
+                                        clipboardManager=clipboardManager,
+                                        loadingOn=loadingOnParent,
+                                        loadingOff=loadingOffParent,
+                                        refreshPage=refreshPageIfComparingWithLocal,
+                                        repoId=repoId,
                                         showOriginType = showOriginType,
                                         showLineNum = showLineNum,
                                         fontSize = fontSize,
                                         lineNumSize = lineNumSize,
                                         comparePairBuffer = comparePairBuffer,
                                         betterCompare = requireBetterMatchingForCompare.value,
-                                        reForEachDiffContent = reForEachDiffContent,
+                                        reForEachDiffContent=reForEachDiffContent,
                                         indexStringPartListMap = indexStringPartListMapForComparePair,
                                         enableSelectCompare=enableSelectCompare,
                                         matchByWords = matchByWords.value
-
                                     )
                                 }
-
                             }
 
-
-
-
-
-                            if(add!=null && del!=null && addUsedPair.not() && delUsedPair.not()) {  //同样行号，同时存在删除和新增，执行增量diff
-                                //解决：两行除了末尾换行符没任何区别的情况仍显示diff的bug（有红有绿但没区别，令人迷惑）
-                                if(add.content.removeSuffix("\n").equals(del.content.removeSuffix("\n"))){
-                                    item {
-                                        DiffRow(
-                                            //随便拷贝下del或add（不拷贝只改类型也行但不推荐以免有坏影响）把类型改成context，就行了
-                                            line = del.copy(originType = Diff.Line.OriginType.CONTEXT.toString()),
-                                            fileFullPath=fileFullPath,
-                                            isFileAndExist = isFileAndExist.value,
-                                            clipboardManager=clipboardManager,
-                                            loadingOn=loadingOnParent,
-                                            loadingOff=loadingOffParent,
-                                            refreshPage=refreshPageIfComparingWithLocal,
-                                            repoId=repoId,
-                                            showOriginType = showOriginType,
-                                            showLineNum = showLineNum,
-                                            fontSize = fontSize,
-                                            lineNumSize = lineNumSize,
-                                            comparePairBuffer = comparePairBuffer,
-                                            betterCompare = requireBetterMatchingForCompare.value,
-                                            reForEachDiffContent=reForEachDiffContent,
-                                            indexStringPartListMap = indexStringPartListMapForComparePair,
-                                            enableSelectCompare=enableSelectCompare,
-                                            matchByWords = matchByWords.value
-                                        )
-
-                                    }
-
-                                }else {
-
-                                    val modifyResult2 =
-                                        SimilarCompare.INSTANCE.doCompare(
-                                            StringCompareParam(add.content),
-                                            StringCompareParam(del.content),
-
-                                            //为true则对比更精细，但是，时间复杂度乘积式增加，不开 O(n)， 开了 O(nm)
-                                            requireBetterMatching = requireBetterMatchingForCompare.value,
-                                            matchByWords = matchByWords.value
-                                        )
-
-                                    if(modifyResult2.matched) {
-                                        item {
-                                            DiffRow(
-                                                line = del,
-                                                stringPartList = modifyResult2.del,
-                                                fileFullPath=fileFullPath,
-                                                isFileAndExist = isFileAndExist.value,
-                                                clipboardManager=clipboardManager,
-                                                loadingOn=loadingOnParent,
-                                                loadingOff=loadingOffParent,
-                                                refreshPage=refreshPageIfComparingWithLocal,
-                                                repoId=repoId,
-                                                showOriginType = showOriginType,
-                                                showLineNum = showLineNum,
-                                                fontSize = fontSize,
-                                                lineNumSize = lineNumSize,
-                                                comparePairBuffer = comparePairBuffer,
-                                                betterCompare = requireBetterMatchingForCompare.value,
-                                                reForEachDiffContent=reForEachDiffContent,
-                                                indexStringPartListMap = indexStringPartListMapForComparePair,
-                                                enableSelectCompare=enableSelectCompare,
-                                                matchByWords = matchByWords.value
-
-                                            )
-                                        }
-
-                                        item {
-                                            DiffRow(
-                                                line = add,
-                                                stringPartList = modifyResult2.add,
-                                                fileFullPath=fileFullPath,
-                                                isFileAndExist = isFileAndExist.value,
-                                                clipboardManager=clipboardManager,
-                                                loadingOn=loadingOnParent,
-                                                loadingOff=loadingOffParent,
-                                                refreshPage=refreshPageIfComparingWithLocal,
-                                                repoId=repoId,
-                                                showOriginType = showOriginType,
-                                                showLineNum = showLineNum,
-                                                fontSize = fontSize,
-                                                lineNumSize = lineNumSize,
-                                                comparePairBuffer = comparePairBuffer,
-                                                betterCompare = requireBetterMatchingForCompare.value,
-                                                reForEachDiffContent=reForEachDiffContent,
-                                                indexStringPartListMap = indexStringPartListMapForComparePair,
-                                                enableSelectCompare=enableSelectCompare,
-                                                matchByWords = matchByWords.value
-
-                                            )
-                                        }
-
-                                    }else {
-                                        // 直接使用addContent和delContent即可，不用遍历数组，虽然遍历数组也行，但直接使用字符串性能会稍微好一丢丢
-                                        item {
-                                            DiffRow(
-                                                line = del,
-                                                fileFullPath=fileFullPath,
-                                                isFileAndExist = isFileAndExist.value,
-                                                clipboardManager=clipboardManager,
-                                                loadingOn=loadingOnParent,
-                                                loadingOff=loadingOffParent,
-                                                refreshPage=refreshPageIfComparingWithLocal,
-                                                repoId=repoId,
-                                                showOriginType = showOriginType,
-                                                showLineNum = showLineNum,
-                                                fontSize = fontSize,
-                                                lineNumSize = lineNumSize,
-                                                comparePairBuffer = comparePairBuffer,
-                                                betterCompare = requireBetterMatchingForCompare.value,
-                                                reForEachDiffContent=reForEachDiffContent,
-                                                indexStringPartListMap = indexStringPartListMapForComparePair,
-                                                enableSelectCompare=enableSelectCompare,
-                                                matchByWords = matchByWords.value
-                                            )
-                                        }
-                                        item {
-                                            DiffRow(
-                                                line = add,
-                                                fileFullPath=fileFullPath,
-                                                isFileAndExist = isFileAndExist.value,
-                                                clipboardManager=clipboardManager,
-                                                loadingOn=loadingOnParent,
-                                                loadingOff=loadingOffParent,
-                                                refreshPage=refreshPageIfComparingWithLocal,
-                                                repoId=repoId,
-                                                showOriginType = showOriginType,
-                                                showLineNum = showLineNum,
-                                                fontSize = fontSize,
-                                                lineNumSize = lineNumSize,
-                                                comparePairBuffer = comparePairBuffer,
-                                                betterCompare = requireBetterMatchingForCompare.value,
-                                                reForEachDiffContent=reForEachDiffContent,
-                                                indexStringPartListMap = indexStringPartListMapForComparePair,
-                                                enableSelectCompare=enableSelectCompare,
-                                                matchByWords = matchByWords.value
-                                            )
-                                        }
-                                    }
-                                }
-                            }else{ //有一个为null，不用对比
-                                if(del!=null && delUsedPair.not()) {
-                                    item {
-                                        DiffRow(
-                                            line = del,
-                                            fileFullPath=fileFullPath,
-                                            isFileAndExist = isFileAndExist.value,
-                                            clipboardManager=clipboardManager,
-                                            loadingOn=loadingOnParent,
-                                            loadingOff=loadingOffParent,
-                                            refreshPage=refreshPageIfComparingWithLocal,
-                                            repoId=repoId,
-                                            showOriginType = showOriginType,
-                                            showLineNum = showLineNum,
-                                            fontSize = fontSize,
-                                            lineNumSize = lineNumSize,
-                                            comparePairBuffer = comparePairBuffer,
-                                            betterCompare = requireBetterMatchingForCompare.value,
-                                            reForEachDiffContent=reForEachDiffContent,
-                                            indexStringPartListMap = indexStringPartListMapForComparePair,
-                                            enableSelectCompare=enableSelectCompare,
-                                            matchByWords = matchByWords.value
-                                        )
-                                    }
-                                }
-                                if(add!=null && addUsedPair.not()) {
-                                    item {
-                                        DiffRow(
-                                            line = add,
-                                            fileFullPath=fileFullPath,
-                                            isFileAndExist = isFileAndExist.value,
-                                            clipboardManager=clipboardManager,
-                                            loadingOn=loadingOnParent,
-                                            loadingOff=loadingOffParent,
-                                            refreshPage=refreshPageIfComparingWithLocal,
-                                            repoId=repoId,
-                                            showOriginType = showOriginType,
-                                            showLineNum = showLineNum,
-                                            fontSize = fontSize,
-                                            lineNumSize = lineNumSize,
-                                            comparePairBuffer = comparePairBuffer,
-                                            betterCompare = requireBetterMatchingForCompare.value,
-                                            reForEachDiffContent=reForEachDiffContent,
-                                            indexStringPartListMap = indexStringPartListMapForComparePair,
-                                            enableSelectCompare=enableSelectCompare,
-                                            matchByWords = matchByWords.value
-                                        )
-                                    }
+                            if(add!=null) {
+                                item {
+                                    DiffRow(
+                                        line = add,
+                                        stringPartList = addStringPartListWillUse,
+                                        fileFullPath=fileFullPath,
+                                        isFileAndExist = isFileAndExist.value,
+                                        clipboardManager=clipboardManager,
+                                        loadingOn=loadingOnParent,
+                                        loadingOff=loadingOffParent,
+                                        refreshPage=refreshPageIfComparingWithLocal,
+                                        repoId=repoId,
+                                        showOriginType = showOriginType,
+                                        showLineNum = showLineNum,
+                                        fontSize = fontSize,
+                                        lineNumSize = lineNumSize,
+                                        comparePairBuffer = comparePairBuffer,
+                                        betterCompare = requireBetterMatchingForCompare.value,
+                                        reForEachDiffContent=reForEachDiffContent,
+                                        indexStringPartListMap = indexStringPartListMapForComparePair,
+                                        enableSelectCompare=enableSelectCompare,
+                                        matchByWords = matchByWords.value
+                                    )
                                 }
                             }
-
 
                         }
 
