@@ -30,13 +30,13 @@ class SimilarCompareImpl: SimilarCompare {
 
         //忽略末尾 \n
         val addWillUse = if(ignoreEndOfNewLine) {
-            add.getTextNoEndOfNewLine(false)
+            add.getTextNoEndOfNewLine()
         }else {
             add
         }
 
         val delWillUse = if(ignoreEndOfNewLine) {
-            del.getTextNoEndOfNewLine(false)
+            del.getTextNoEndOfNewLine()
         }else {
             del
         }

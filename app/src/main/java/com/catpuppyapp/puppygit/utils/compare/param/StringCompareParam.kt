@@ -27,7 +27,7 @@ class StringCompareParam(
         return if(hasEndOfNewLine()) {
             StringCompareParam(chars.substring(0, getLen()-1))
         }else {
-            StringCompareParam(if(copyEvenNoNewLine) String(chars.toByteArray()) else chars)
+            if(copyEvenNoNewLine) StringCompareParam(String(chars.toByteArray())) else this
         }
     }
 }

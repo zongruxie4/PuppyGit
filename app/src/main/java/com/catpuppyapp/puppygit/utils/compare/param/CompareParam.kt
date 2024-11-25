@@ -11,5 +11,8 @@ interface CompareParam<T> {
      */
     fun hasEndOfNewLine():Boolean
 
-    fun getTextNoEndOfNewLine(copyEvenNoNewLine:Boolean):CompareParam<T>
+    /**
+     * @param copyEvenNoNewLine if true, even text no '\n' at the end, till return a copy, else, return this
+     */
+    fun getTextNoEndOfNewLine(copyEvenNoNewLine:Boolean=false):CompareParam<T>
 }

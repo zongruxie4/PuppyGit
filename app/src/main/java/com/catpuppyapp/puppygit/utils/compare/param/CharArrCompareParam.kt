@@ -27,7 +27,7 @@ class CharArrCompareParam(
         return if(hasEndOfNewLine()) {
             CharArrCompareParam(chars.copyOf(getLen()-1))
         }else {
-            CharArrCompareParam(if(copyEvenNoNewLine) chars.copyOf() else chars)
+            if(copyEvenNoNewLine) CharArrCompareParam(chars.copyOf()) else this
         }
     }
 }
