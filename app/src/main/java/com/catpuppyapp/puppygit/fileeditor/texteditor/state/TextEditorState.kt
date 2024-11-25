@@ -1,8 +1,9 @@
 package com.catpuppyapp.puppygit.fileeditor.texteditor.state
 
 import androidx.compose.runtime.Immutable
-import com.catpuppyapp.puppygit.utils.doActIfIndexGood
 import com.catpuppyapp.puppygit.fileeditor.texteditor.controller.EditorController.Companion.createInitTextFieldStates
+import com.catpuppyapp.puppygit.utils.doActIfIndexGood
+import java.io.OutputStream
 
 @Immutable
 data class TextEditorState(
@@ -19,6 +20,19 @@ data class TextEditorState(
 //        return fields.map { it.value.text }.foldIndexed("") { index, acc, s ->
 //            if (index == 0) acc + s else acc + "\n" + s
 //        }
+    }
+
+    fun dumpLines(output: OutputStream, lineBreak:String="\n") {
+        val lastIndex = fields.size-1
+        output.bufferedWriter().use { out ->
+            for(i in fields.indices) {
+                if(i==lastIndex) {
+                    out.append(fields[i].value.text)
+                }else {
+                    out.append(fields[i].value.text).append(lineBreak)
+                }
+            }
+        }
     }
 
     fun getSelectedText(): String {
