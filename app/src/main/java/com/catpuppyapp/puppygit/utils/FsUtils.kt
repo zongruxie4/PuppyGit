@@ -1071,4 +1071,25 @@ object FsUtils {
             }
         }
     }
+
+    fun readLinesFromFile(filePath: String): List<String> {
+//        val lines = ArrayList<String>(30)  //不确定用户打开的文件到底多少行啊，算了，用默认吧
+        //readLines() api 说不能用于 huge files?我看源代码好像也是用readLine一行行读的，我自己写好像差不多，不过不会创建迭代器之类的，可能稍微快一点点，但应该也不能用于huge files吧？大概
+//        File(filePath).bufferedReader().readLines()
+
+        val lines = mutableListOf<String>()  //默认是ArrayList，容量10
+        File(filePath).bufferedReader().use {
+            while (true) {
+                val aline = it.readLine() ?: break
+                lines.add(aline)
+            }
+        }
+
+        //因为用 空字符串.lines() 会返回size 1的集合，所以，若文件内容为空，也应如此
+        if(lines.isEmpty()) {
+            lines.add("")
+        }
+
+        return lines
+    }
 }
