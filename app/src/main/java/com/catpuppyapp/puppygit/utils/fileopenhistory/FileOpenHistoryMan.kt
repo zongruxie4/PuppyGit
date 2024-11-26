@@ -126,36 +126,32 @@ object FileOpenHistoryMan {
 
     private fun removeOldHistory(history: FileOpenHistory) {
         val copy:Map<String, FileEditedPos> = history.storage.toMap()
-        val copy2 = copy.toMap()
-        val sorted = copy2.toSortedMap {k1, k2 ->
-            try {
-                val v1 = copy[k1]
-                val v2 = copy[k2]
+        val sortedKeys = copy.keys.toSortedSet {k1, k2 ->
+            val v1 = copy[k1]
+            val v2 = copy[k2]
 
-                // make bigger number before smaller number, is a DESC order
-                if(v1==null) {
-                    1
-                }else if(v2== null) {
-                    -1
-                }else {
-                    -(v1.lastUsedTime.compareTo(v2.lastUsedTime))
-                }
-            }catch (_:Exception) {
-                0
+            // make bigger number before smaller number, is a DESC order
+            if(v1 == null) {
+                1
+            }else if(v2 == null) {
+                -1
+            }else {
+                //desc
+                v2.lastUsedTime.compareTo(v1.lastUsedTime)
             }
-
         }
 
         var count = 0
         val newStorage = mutableMapOf<String, FileEditedPos>()
-        for(k in sorted.keys) {
-            if(++count > _limit) {
+        for(k in sortedKeys) {
+            if(count >= _limit) {
                 break
             }
 
             val v = copy[k]
             if(v!=null) {
                 newStorage.set(k, v)
+                count++
             }
         }
 

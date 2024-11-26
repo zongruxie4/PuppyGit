@@ -13,8 +13,10 @@ data class Editor (
     @Deprecated("after app 1.0.5v26, use `FileOpenHistory.history` instead")
     val filesLastEditPosition:MutableMap<String,FileEditedPos> = mutableMapOf(),
 
-    // how much file opened history and last edit position will remembered
-    // if set this value, require restart app for affect
+    /**
+      * how much file opened history and last edit position will remembered
+      * if change this value, require restart app for affect
+      */
     val fileOpenHistoryLimit:Int = 50,
 
     //打开文件时是否定位到上次编辑列（或者说恢复光标位置到上次编辑的列）
