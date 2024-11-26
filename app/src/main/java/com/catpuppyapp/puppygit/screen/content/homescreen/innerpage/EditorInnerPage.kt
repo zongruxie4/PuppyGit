@@ -487,15 +487,15 @@ fun EditorInnerPage(
 
                         //open file
                         //只读关闭时，检查是否需要开启。（因为仅存在需要自动打开只读的情况（打开不允许编辑的目录下文件时），不存在需要自动关闭只读的情况，所以，仅在只读关闭时检查是否需要开启只读，若只读开启，用户想关可打开文件后关（当然，不允许编辑的文件除外，这种文件只读选项将保持开启并禁止关闭））
-                        if (!readOnlyMode.value) {
-                            readOnlyMode.value = FsUtils.isReadOnlyDir(filePath)  //避免打开文件，退出app，直接从editor点击 open last然后可编辑本不应该允许编辑的app内置目录下的文件
-                        }
+//                        if (!readOnlyMode.value) {
+//                            readOnlyMode.value = FsUtils.isReadOnlyDir(filePath)  //避免打开文件，退出app，直接从editor点击 open last然后可编辑本不应该允许编辑的app内置目录下的文件
+//                        }
 //                                editorMergeMode.value = false  //此值在这无需重置
+                        readOnlyMode.value = FsUtils.isReadOnlyDir(filePath)  //避免打开文件，退出app，直接从editor点击 open last然后可编辑本不应该允许编辑的app内置目录下的文件
+
                         editorPageShowingFilePath.value = filePath
                         reloadFile()
 
-                        // update file last used time
-                        FileOpenHistoryMan.touch(filePath)
                     }
                 )
 
@@ -558,11 +558,12 @@ fun EditorInnerPage(
     }
 
     val showOpenAsDialog = rememberSaveable { mutableStateOf(false)}
+    val readOnlyForOpenAsDialog = rememberSaveable { mutableStateOf(false)}
     val openAsDialogFilePath = rememberSaveable { mutableStateOf("")}
     val fileName = remember{ derivedStateOf { getFileNameFromCanonicalPath(openAsDialogFilePath.value) }}
 //    val showOpenInEditor = StateUtil.getRememberSaveableState(initValue = false)
     if(showOpenAsDialog.value) {
-        OpenAsDialog(fileName = fileName.value, filePath = openAsDialogFilePath.value,
+        OpenAsDialog(readOnly = readOnlyForOpenAsDialog, fileName = fileName.value, filePath = openAsDialogFilePath.value,
             openSuccessCallback = {
                 //x 废弃，废案，万一用户就想保留陈旧内容呢？还是询问用户吧) 如果成功请求外部打开文件，把文件就绪设为假，下次返回就会重新加载文件，避免显示陈旧内容
                 //如果请求外部打开成功，不管用户有无选择app（想实现成选择才询问是否重新加载，但无法判断）都询问是否重载文件
@@ -635,6 +636,7 @@ fun EditorInnerPage(
                     doSaveNoCoroutine()
 
                     //请求外部程序打开文件
+                    readOnlyForOpenAsDialog.value = FsUtils.isReadOnlyDir(editorPageShowingFilePath.value)
                     openAsDialogFilePath.value = editorPageShowingFilePath.value
                     showOpenAsDialog.value=true
 
@@ -883,11 +885,13 @@ fun EditorInnerPage(
                         iconContentDesc = reopenOrOpenLastText,
                     ) {
                         ifLastPathOkThenDoOkActElseDoNoOkAct(okAct@{ last ->
-                            //只读关闭时，检查是否需要开启。（因为仅存在需要自动打开只读的情况（打开不允许编辑的目录下文件时），不存在需要自动关闭只读的情况，所以，仅在只读关闭时检查是否需要开启只读，若只读开启，用户想关可打开文件后关（当然，不允许编辑的文件除外，这种文件只读选项将保持开启并禁止关闭））
-                            if (!readOnlyMode.value) {
-                                readOnlyMode.value = FsUtils.isReadOnlyDir(last)  //避免打开文件，退出app，直接从editor点击 open last然后可编辑本不应该允许编辑的app内置目录下的文件
-                            }
+                            //x 废弃，如果用户在主编辑器打开一个只读文件，后在子编辑器打开一个非只读文件，再切换回主编辑器，用open last，那么就会以只读打开一个不需要只读的文件，既然无法正确维护，不如每次都重置) 只读关闭时，检查是否需要开启。（因为仅存在需要自动打开只读的情况（打开不允许编辑的目录下文件时），不存在需要自动关闭只读的情况，所以，仅在只读关闭时检查是否需要开启只读，若只读开启，用户想关可打开文件后关（当然，不允许编辑的文件除外，这种文件只读选项将保持开启并禁止关闭））
+//                            if (!readOnlyMode.value) {
+//                                readOnlyMode.value = FsUtils.isReadOnlyDir(last)  //避免打开文件，退出app，直接从editor点击 open last然后可编辑本不应该允许编辑的app内置目录下的文件
+//                            }
 //                                editorMergeMode.value = false  //此值在这无需重置
+                            readOnlyMode.value = FsUtils.isReadOnlyDir(last)  //避免打开文件，退出app，直接从editor点击 open last然后可编辑本不应该允许编辑的app内置目录下的文件
+
                             editorPageShowingFilePath.value = last
                             reloadFile()
                         }) noOkAct@{
@@ -1257,6 +1261,8 @@ private fun loadFile(
             //20240823: 改成关闭文件或销毁组件时保存了，打开时没必要保存了
 //            saveLastOpenPath(requireOpenFilePath)
 
+            // update file last used time
+            FileOpenHistoryMan.touch(requireOpenFilePath)
         } catch (e: Exception) {
             editorPageShowingFileIsReady.value = false
             //设置错误信息

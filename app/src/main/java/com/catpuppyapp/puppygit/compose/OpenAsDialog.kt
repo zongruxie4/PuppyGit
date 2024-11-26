@@ -19,8 +19,7 @@ import androidx.compose.material3.Checkbox
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.MutableState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -49,7 +48,7 @@ import java.io.File
  * close: 关闭弹窗
  */
 @Composable
-fun OpenAsDialog(fileName:String, filePath:String, showOpenInEditor:Boolean=false, openInEditor:(expectReadOnly:Boolean)->Unit={}, openSuccessCallback:()->Unit={}, close:()->Unit) {
+fun OpenAsDialog(readOnly: MutableState<Boolean>, fileName:String, filePath:String, showOpenInEditor:Boolean=false, openInEditor:(expectReadOnly:Boolean)->Unit={}, openSuccessCallback:()->Unit={}, close:()->Unit) {
 
     val activityContext = LocalContext.current
 
@@ -62,10 +61,9 @@ fun OpenAsDialog(fileName:String, filePath:String, showOpenInEditor:Boolean=fals
     mimeTextList.add(stringResource(R.string.file_open_as_by_extension))
 
 
-    val readOnly = rememberSaveable { mutableStateOf(false)}
-    val inDarkTheme = Theme.inDarkTheme
+//    val inDarkTheme = Theme.inDarkTheme
 
-    val color = if(inDarkTheme) Color.LightGray else Color.DarkGray
+//    val color = if(inDarkTheme) Color.LightGray else Color.DarkGray
 
     val itemHeight = 50.dp
 

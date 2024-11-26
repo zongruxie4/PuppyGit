@@ -403,12 +403,13 @@ fun FilesInnerPage(
 
 
     val showOpenAsDialog = rememberSaveable { mutableStateOf( false)}
+    val readOnlyForOpenAsDialog = rememberSaveable { mutableStateOf( false)}
     val openAsDialogFilePath = rememberSaveable { mutableStateOf( "")}
     val showOpenInEditor = rememberSaveable { mutableStateOf(false)}
     val fileNameForOpenAsDialog = remember{ derivedStateOf { getFileNameFromCanonicalPath(openAsDialogFilePath.value) } }
 
     if(showOpenAsDialog.value) {
-        OpenAsDialog(fileName = fileNameForOpenAsDialog.value, filePath = openAsDialogFilePath.value, showOpenInEditor = showOpenInEditor.value,
+        OpenAsDialog(readOnly = readOnlyForOpenAsDialog, fileName = fileNameForOpenAsDialog.value, filePath = openAsDialogFilePath.value, showOpenInEditor = showOpenInEditor.value,
             openInEditor = {expectReadOnly:Boolean ->
                 requireInnerEditorOpenFile(openAsDialogFilePath.value, expectReadOnly)
             }
@@ -557,6 +558,7 @@ fun FilesInnerPage(
         },
 
         openAs@{ item:FileItemDto ->
+            readOnlyForOpenAsDialog.value = FsUtils.isReadOnlyDir(item.fullPath)
             openAsDialogFilePath.value = item.fullPath
             showOpenInEditor.value=false
             showOpenAsDialog.value=true
@@ -1375,6 +1377,7 @@ fun FilesInnerPage(
                                     val expectReadOnly = false
                                     requireInnerEditorOpenFile(it.fullPath, expectReadOnly)
                                 }else {  //非文本类型，尝试用外部软件打开
+                                    readOnlyForOpenAsDialog.value = FsUtils.isReadOnlyDir(it.fullPath)
                                     openAsDialogFilePath.value = it.fullPath
                                     showOpenInEditor.value=true
                                     showOpenAsDialog.value=true

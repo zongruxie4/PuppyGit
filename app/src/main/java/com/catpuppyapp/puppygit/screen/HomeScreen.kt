@@ -390,7 +390,8 @@ fun HomeScreen(
 
         editorPageMergeMode.value = false  //这个页面不负责打开ChangeList页面的diff条目，所以MergeMode状态直接初始化为关即可，用户需要用的时候打开文件后再手动开即可
         //如果路径是app内置禁止修改的目录，则强制开启readonly，否则使用入参值
-        editorReadOnlyMode.value = if(FsUtils.isReadOnlyDir(fullPath)) true else expectReadOnly
+//        editorReadOnlyMode.value = if(FsUtils.isReadOnlyDir(fullPath)) true else expectReadOnly
+        editorReadOnlyMode.value = expectReadOnly
 
         changeStateTriggerRefreshPage(needRefreshEditorPage)  //这个其实可有可无，因为一切换页面，组件会重建，必然会执行一次LaunchedEffect，也就起到了刷新的作用
     }

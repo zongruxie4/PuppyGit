@@ -45,6 +45,7 @@ import com.catpuppyapp.puppygit.screen.content.homescreen.scaffold.title.DiffScr
 import com.catpuppyapp.puppygit.settings.SettingsCons
 import com.catpuppyapp.puppygit.settings.SettingsUtil
 import com.catpuppyapp.puppygit.utils.AppModel
+import com.catpuppyapp.puppygit.utils.FsUtils
 import com.catpuppyapp.puppygit.utils.Libgit2Helper
 import com.catpuppyapp.puppygit.utils.Msg
 import com.catpuppyapp.puppygit.utils.cache.Cache
@@ -220,10 +221,11 @@ fun DiffScreen(
 
 
     val showOpenAsDialog = rememberSaveable { mutableStateOf(false)}
+    val readOnlyForOpenAsDialog = rememberSaveable { mutableStateOf(false)}
     val openAsDialogFilePath = rememberSaveable { mutableStateOf("")}
 //    val showOpenInEditor = StateUtil.getRememberSaveableState(initValue = false)
     if(showOpenAsDialog.value) {
-        OpenAsDialog(fileName=fileNameOnly.value, filePath = openAsDialogFilePath.value,
+        OpenAsDialog(readOnly=readOnlyForOpenAsDialog,fileName=fileNameOnly.value, filePath = openAsDialogFilePath.value,
             openSuccessCallback = {
                 //只有在worktree的diff页面才有必要显示弹窗，在index页面没必要显示，在diff commit的页面更没必要显示，因为若修改，肯定是修改worktree的文件，你在index页面就算重载也看不到修改后的内容，所以没必要提示
                 if(fromTo == Cons.gitDiffFromIndexToWorktree) {
@@ -278,6 +280,7 @@ fun DiffScreen(
 
     if(request.value == PageRequest.showOpenAsDialog) {
         PageRequest.clearStateThenDoAct(request) {
+            readOnlyForOpenAsDialog.value = FsUtils.isReadOnlyDir(fileFullPath.value)
             openAsDialogFilePath.value = fileFullPath.value
             showOpenAsDialog.value=true
         }

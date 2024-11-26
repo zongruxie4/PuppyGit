@@ -2590,12 +2590,13 @@ fun ChangeListInnerPage(
     }
 
     val showOpenAsDialog = rememberSaveable { mutableStateOf(false)}
+    val readOnlyForOpenAsDialog = rememberSaveable { mutableStateOf(false)}
     val openAsDialogFilePath = rememberSaveable { mutableStateOf("")}
     val openAsDialogFileName = rememberSaveable { mutableStateOf("")}
 //    val showOpenInEditor = rememberSaveable { mutableStateOf(false)}
 
     if(showOpenAsDialog.value) {
-        OpenAsDialog(fileName = openAsDialogFileName.value, filePath = openAsDialogFilePath.value) {
+        OpenAsDialog(readOnly = readOnlyForOpenAsDialog,fileName = openAsDialogFileName.value, filePath = openAsDialogFilePath.value) {
             //onClose
             showOpenAsDialog.value=false
         }
@@ -2645,6 +2646,7 @@ fun ChangeListInnerPage(
                 return@openAs
             }
 
+            readOnlyForOpenAsDialog.value = FsUtils.isReadOnlyDir(item.canonicalPath)
             openAsDialogFilePath.value = item.canonicalPath
             openAsDialogFileName.value=item.fileName
             showOpenAsDialog.value=true
