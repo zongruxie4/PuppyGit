@@ -1094,7 +1094,7 @@
     <string name="recent_files">Recent Files</string>
     <string name="recent_files_is_empty">Recent files is empty!</string>
     <string name="cleared">Cleared</string>
-    <string name="will_clear_recent_files_history_and_last_edited_positions_of_them">Will clear recent files history and last edited positions of them</string>
+    <string name="clear_recent_files_confirm_text">Will clear the recent files list and forget their last edited positions</string>
     <string name="match_by_words">Match By Words</string>
     <string name="cache_your_input_into_editcache_dir_path">Cache your input into \'ph_a3f241dc_1\'</string>
 

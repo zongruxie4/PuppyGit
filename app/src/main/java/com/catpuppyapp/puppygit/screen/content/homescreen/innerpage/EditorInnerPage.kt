@@ -3,7 +3,6 @@ package com.catpuppyapp.puppygit.screen.content.homescreen.innerpage
 import android.content.Context
 import android.widget.Toast
 import androidx.activity.compose.BackHandler
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
@@ -34,7 +33,6 @@ import androidx.compose.runtime.MutableIntState
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.mutableLongStateOf
-import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
@@ -451,7 +449,7 @@ fun EditorInnerPage(
     if(showClearRecentFilesDialog.value) {
         ConfirmDialog2(
             title = stringResource(R.string.confirm),
-            text = stringResource(R.string.will_clear_recent_files_history_and_last_edited_positions_of_them),
+            text = stringResource(R.string.clear_recent_files_confirm_text),
             okTextColor = MyStyleKt.TextColor.danger(),
             onCancel = {showClearRecentFilesDialog.value = false}
         ) {

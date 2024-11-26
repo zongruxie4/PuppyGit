@@ -1074,7 +1074,7 @@
     <string name="recent_files">最近文件</string>
     <string name="recent_files_is_empty">最近文件列表为空!</string>
     <string name="cleared">已清空</string>
-    <string name="will_clear_recent_files_history_and_last_edited_positions_of_them">将会清空最近文件列表以及它们的最后编辑位置</string>
+    <string name="clear_recent_files_confirm_text">将清空最近文件列表，并忘记它们的最后编辑位置</string>
     <string name="match_by_words">按单词匹配</string>
     <string name="cache_your_input_into_editcache_dir_path">缓存你的输入到 \'ph_a3f241dc_1\'</string>
 
