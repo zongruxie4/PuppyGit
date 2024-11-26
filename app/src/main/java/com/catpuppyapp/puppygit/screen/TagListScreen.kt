@@ -448,7 +448,7 @@ fun TagListScreen(
 
 
     // 向下滚动监听，开始
-    val pageScrolled = remember { mutableStateOf(settings.showNaviButtons) }
+    val pageScrolled = rememberSaveable { mutableStateOf(settings.showNaviButtons) }
 
     val filterListState = rememberLazyListState()
 //    val filterListState = mutableCustomStateOf(

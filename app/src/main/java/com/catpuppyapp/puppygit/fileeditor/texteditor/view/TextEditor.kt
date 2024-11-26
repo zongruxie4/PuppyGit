@@ -28,13 +28,12 @@ import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.MutableIntState
 import androidx.compose.runtime.MutableState
-import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateMapOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
-import androidx.compose.runtime.setValue
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusRequester
@@ -75,6 +74,7 @@ import com.catpuppyapp.puppygit.utils.fileopenhistory.FileOpenHistoryMan
 import com.catpuppyapp.puppygit.utils.getFormattedLastModifiedTimeOfFile
 import com.catpuppyapp.puppygit.utils.getHumanReadableSizeStr
 import com.catpuppyapp.puppygit.utils.replaceStringResList
+import com.catpuppyapp.puppygit.utils.state.CustomStateSaveable
 import com.catpuppyapp.puppygit.utils.state.mutableCustomStateOf
 import java.io.File
 import java.util.Date
@@ -151,8 +151,8 @@ fun TextEditor(
     onChanged: (TextEditorState) -> Unit,
     modifier: Modifier = Modifier,
     contentPaddingValues: PaddingValues = PaddingValues(),
-    editorLastScrollEvent:MutableState<ScrollEvent?>,
-    editorListState: LazyListState,
+    lastScrollEvent: CustomStateSaveable<ScrollEvent?>,
+    listState: LazyListState,
     editorPageIsInitDone:MutableState<Boolean>,
     goToLine:Int,  // is line number, not line index
     readOnlyMode:Boolean,
@@ -172,8 +172,6 @@ fun TextEditor(
 //    val textEditorState by rememberUpdatedState(newValue = textEditorState)
     val (virtualWidth, virtualHeight) = UIHelper.Size.editorVirtualSpace()
 
-    var lastScrollEvent by editorLastScrollEvent
-    val lazyColumnState = editorListState
     val focusRequesters = remember { mutableStateMapOf<Int, FocusRequester>() }
 //    val focusRequesters = remember { mutableStateListOf<FocusRequester>() }  //不能用list，滚动两下页面就会报错
 
@@ -186,19 +184,19 @@ fun TextEditor(
     //最后显示屏幕范围的第一行的索引
 //    var lastFirstVisibleLineIndexState  by remember { mutableIntStateOf(lastEditedPos.firstVisibleLineIndex) }
 
-    val showGoToLineDialog  = remember { mutableStateOf(false) }
-    val goToLineValue  = remember { mutableStateOf("") }
+    val showGoToLineDialog  = rememberSaveable { mutableStateOf(false) }
+    val goToLineValue  = rememberSaveable { mutableStateOf("") }
 
     //是否显示光标拖手(cursor handle
-    val needShowCursorHandle = remember { mutableStateOf(false) }
+    val needShowCursorHandle = rememberSaveable { mutableStateOf(false) }
 
     //这俩值会在组件销毁时写入配置文件以记录滚动位置(当前画面第一个可见行)和最后编辑位置
-    val lastEditedLineIndexState  = remember { mutableIntStateOf(lastEditedPos.lineIndex) }
-    val lastEditedColumnIndexState = remember { mutableIntStateOf(lastEditedPos.columnIndex) }
+    val lastEditedLineIndexState  = rememberSaveable { mutableIntStateOf(lastEditedPos.lineIndex) }
+    val lastEditedColumnIndexState = rememberSaveable { mutableIntStateOf(lastEditedPos.columnIndex) }
 
     //此值为假或readOnly为真则不显示键盘
     //没找到合适的方法手动启用，因此默认启用，暂时没更改的场景
-    val allowKeyboard = remember { mutableStateOf(true) }
+    val allowKeyboard = rememberSaveable { mutableStateOf(true) }
 
     val expectConflictStrDto = mutableCustomStateOf(stateKeyTag, "expectConflict", ExpectConflictStrDto(settings=settings))
 
@@ -231,7 +229,7 @@ fun TextEditor(
     }
 
     fun jumpToLineIndex(lineIndex:Int, goColumn: Boolean=false, columnStartIndex:Int=0, columnEndIndexExclusive:Int=columnStartIndex){
-        lastScrollEvent = ScrollEvent(lineIndex, forceGo = true,
+        lastScrollEvent.value = ScrollEvent(lineIndex, forceGo = true,
             goColumn = goColumn, columnStartIndexInclusive = columnStartIndex, columnEndIndexExclusive = columnEndIndexExclusive)
     }
 
@@ -287,8 +285,8 @@ fun TextEditor(
 
     val clipboardManager = LocalClipboardManager.current
 
-    val showDetailsDialog = remember { mutableStateOf(false) }
-    val detailsStr = remember { mutableStateOf("") }
+    val showDetailsDialog = rememberSaveable { mutableStateOf(false) }
+    val detailsStr = rememberSaveable { mutableStateOf("") }
 
     if(showDetailsDialog.value) {
         CopyableDialog(
@@ -306,7 +304,7 @@ fun TextEditor(
     //20240507: 这个其实已经没用了，改用在第一行和最后编辑位置切换了，不过，暂且先留着这代码
     if(requestFromParent.value==PageRequest.goToTop) {
         PageRequest.clearStateThenDoAct(requestFromParent) {
-            lastScrollEvent = ScrollEvent(0, forceGo = true)
+            lastScrollEvent.value = ScrollEvent(0, forceGo = true)
         }
     }
     if(requestFromParent.value==PageRequest.goToLine) {
@@ -417,10 +415,10 @@ fun TextEditor(
 //            println("firstline:"+firstLineIndexState.value)
 //            println("lastEditedLineIndexState:"+lastEditedLineIndexState)
 
-            val notAtTop = lazyColumnState.firstVisibleItemIndex != 0
+            val notAtTop = listState.firstVisibleItemIndex != 0
             // if 不在顶部，go to 顶部 else go to 上次编辑位置
             val position = if(notAtTop) 0 else lastEditedLineIndexState.intValue
-            lastScrollEvent = ScrollEvent(position, forceGo = true)
+            lastScrollEvent.value = ScrollEvent(position, forceGo = true)
         }
     }
 
@@ -471,7 +469,7 @@ fun TextEditor(
 //        val lineIntVal = -1
         val lineIntVal = getLineVal(goToLineValue.value)
         //行号减1即要定位行的索引
-        lastScrollEvent = ScrollEvent(index = lineIntVal-1, forceGo=true)
+        lastScrollEvent.value = ScrollEvent(index = lineIntVal-1, forceGo=true)
     }
 
     if(showGoToLineDialog.value) {
@@ -572,12 +570,12 @@ fun TextEditor(
 //    val keepStartIndex = remember { mutableStateOf(-1) }
 //    val keepEndIndex = remember { mutableStateOf(-1) }
 
-    val delStartIndex = remember { mutableStateOf(-1) }
-    val delEndIndex = remember { mutableStateOf(-1) }
-    val delSingleIndex = remember { mutableStateOf(-1) }
-    val acceptOursState = remember { mutableStateOf(false) }
-    val acceptTheirsState = remember { mutableStateOf(false) }
-    val showAcceptConfirmDialog = remember { mutableStateOf(false) }
+    val delStartIndex = rememberSaveable { mutableIntStateOf(-1) }
+    val delEndIndex = rememberSaveable { mutableIntStateOf(-1) }
+    val delSingleIndex = rememberSaveable { mutableIntStateOf(-1) }
+    val acceptOursState = rememberSaveable { mutableStateOf(false) }
+    val acceptTheirsState = rememberSaveable { mutableStateOf(false) }
+    val showAcceptConfirmDialog = rememberSaveable { mutableStateOf(false) }
 
     /**
      * find accept block indecies,
@@ -730,7 +728,7 @@ fun TextEditor(
     }
 
 
-    LaunchedEffect(lastScrollEvent) TextEditorLaunchedEffect@{
+    LaunchedEffect(lastScrollEvent.value) TextEditorLaunchedEffect@{
         try {
 //        if(debugModeOn) {
             //还行不是很长
@@ -752,7 +750,7 @@ fun TextEditor(
 //        }
 
             //刚打开文件，定位到上次记录的行，这个滚动只在初始化时执行一次
-            if(lastScrollEvent==null && !isInitDone.value) {
+            if(lastScrollEvent.value==null && !isInitDone.value) {
                 //放到第一行是为了避免重入
                 isInitDone.value=true
 
@@ -764,7 +762,7 @@ fun TextEditor(
                 //如果goToLine大于0，把行号减1换成索引；否则跳转到上次退出前的第一可见行
                 UIHelper.scrollToItem(
                     coroutineScope = scope,
-                    listState = lazyColumnState,
+                    listState = listState,
                     index = if(useLastEditPos) lastEditedPos.firstVisibleLineIndex else if(goToLine==LineNum.EOF.LINE_NUM) textEditorState.fields.size-1 else goToLine-1
                 )
 
@@ -791,13 +789,13 @@ fun TextEditor(
 
 
                 //只有当滚动事件不为null且isConsumed为假时，才执行下面的代码块
-            }else if(lastScrollEvent?.isConsumed == false) {  //编辑了文件，行号有更新，更新配置文件记录的行并定位到对应的行
+            }else if(lastScrollEvent.value?.isConsumed == false) {  //编辑了文件，行号有更新，更新配置文件记录的行并定位到对应的行
                 //消费以避免重复执行（设置isConsumed为true）
-                lastScrollEvent?.consume()
+                lastScrollEvent.value?.consume()
 
                 //检查是否不检查行是否可见，直接强制跳转
-                val forceGo = lastScrollEvent?.forceGo == true
-                lastScrollEvent?.index?.let { index ->
+                val forceGo = lastScrollEvent.value?.forceGo == true
+                lastScrollEvent.value?.index?.let { index ->
 //                val safeIndex = Math.max(0, index)
 //                maybeWillSaveEditedLineIndex = safeIndex
 
@@ -811,18 +809,18 @@ fun TextEditor(
                         //强制跳转的话，第一个可见行就是跳转的那行
 //                    lastFirstVisibleLineIndexState = index
                         //定位行
-                        UIHelper.scrollToItem(scope, lazyColumnState, index)
+                        UIHelper.scrollToItem(scope, listState, index)
 
 //                        println("lastScrollEvent!!.columnStartIndexInclusive:${lastScrollEvent!!.columnStartIndexInclusive}")  //test1791022120240812
                         //定位列，如果请求定位列的话
-                        if(lastScrollEvent?.goColumn==true) {
+                        if(lastScrollEvent.value?.goColumn==true) {
                             //选中关键字
                             editableController.selectField(
                                 targetIndex = index,
                                 option = EditorController.SelectionOption.CUSTOM,
-                                columnStartIndexInclusive = lastScrollEvent!!.columnStartIndexInclusive,
+                                columnStartIndexInclusive = lastScrollEvent.value!!.columnStartIndexInclusive,
                                 //如果选中某行子字符串的功能修复了，就使用正常的endIndex；否则使用startIndex，定位光标到关键字出现的位置但不选中关键字
-                                columnEndIndexExclusive = if(bug_Editor_SelectColumnRangeOfLine_Fixed) lastScrollEvent!!.columnEndIndexExclusive else lastScrollEvent!!.columnStartIndexInclusive,
+                                columnEndIndexExclusive = if(bug_Editor_SelectColumnRangeOfLine_Fixed) lastScrollEvent.value!!.columnEndIndexExclusive else lastScrollEvent.value!!.columnStartIndexInclusive,
                                 requireSelectLine = false
                             )
                         }
@@ -835,15 +833,15 @@ fun TextEditor(
 //                    val first = lazyColumnState.layoutInfo.visibleItemsInfo.minBy { it.index }.index
 //                    lastFirstVisibleLineIndexState = first
 
-                        val first = lazyColumnState.firstVisibleItemIndex
+                        val first = listState.firstVisibleItemIndex
 //                    if(debugModeOn) { //期望 true，结果 true，测试通过
 //                        println("firstLineIndexState.value == first:"+(firstLineIndexState.value == first))
 //                    }
-                        val end = lazyColumnState.layoutInfo.visibleItemsInfo.maxBy { it.index }.index
+                        val end = listState.layoutInfo.visibleItemsInfo.maxBy { it.index }.index
                         //如果指定行不在可见范围内，滚动到指定行以使其可见
                         if (index < first || index > end) {
                             //滚动到指定行
-                            UIHelper.scrollToItem(scope, lazyColumnState, index)
+                            UIHelper.scrollToItem(scope, listState, index)
                         }
                     }
                 }
@@ -871,7 +869,7 @@ fun TextEditor(
                 //先比较一下，Settings对象从内存取不用读文件，很快，如果没变化，就不用更新配置文件了，省了磁盘IO，所以有必要检查下
                 val oldLinePos = FileOpenHistoryMan.get(fileFullPath)
                 val needUpdateLastEditedLineIndex = oldLinePos?.lineIndex != lastEditedLineIndexState.intValue
-                val currentFirstVisibleIndex = lazyColumnState.firstVisibleItemIndex
+                val currentFirstVisibleIndex = listState.firstVisibleItemIndex
                 val needUpdateFirstVisibleLineIndex = oldLinePos?.firstVisibleLineIndex != currentFirstVisibleIndex
 
                 //记住最后编辑列
@@ -925,7 +923,7 @@ fun TextEditor(
             expectConflictStrDto.value.reset()
 
             LazyColumn(
-                state = lazyColumnState,
+                state = listState,
                 //fillMaxSize是为了点哪都能触发滚动，这样点哪都能隐藏顶栏
                 modifier = modifier.fillMaxSize(),
                 contentPadding = contentPaddingValues
@@ -964,7 +962,7 @@ fun TextEditor(
                     }
 
                     item(key = textFieldState.id) {
-                        val focusRequester by remember { mutableStateOf(FocusRequester()) }
+                        val focusRequester = remember { FocusRequester() }
 
                         DisposableEffect(Unit) {
                             focusRequesters[index] = focusRequester
@@ -1037,49 +1035,51 @@ fun TextEditor(
                                             MyLog.e(TAG, "#onUpdateText err: "+e.stackTraceToString())
                                         }
                                     },
-                                    onContainNewLine = { newText ->
+                                    onContainNewLine = cb@{ newText ->
                                         try {
                                             //写入编辑缓存
                                             doJobThenOffLoading {
                                                 EditCache.writeToFile(newText.text)
                                             }
 
-                                            if (lastScrollEvent != null && lastScrollEvent?.isConsumed != true) return@TextField
+                                            if (lastScrollEvent.value?.isConsumed == false) return@cb
+
                                             editableController.splitNewLine(
                                                 targetIndex = index,
                                                 textFieldValue = newText
                                             )
-                                            lastScrollEvent = ScrollEvent(index + 1)
+                                            lastScrollEvent.value = ScrollEvent(index + 1)
                                         }catch (e:Exception) {
                                             Msg.requireShowLongDuration("#onContainNewLine err: "+e.localizedMessage)
                                             MyLog.e(TAG, "#onContainNewLine err: "+e.stackTraceToString())
                                         }
 
                                     },
-                                    onAddNewLine = { newText ->
+                                    onAddNewLine = cb@{ newText ->
                                         try {
                                             //写入编辑缓存
                                             doJobThenOffLoading {
                                                 EditCache.writeToFile(newText.text)
                                             }
 
-                                            if (lastScrollEvent != null && lastScrollEvent?.isConsumed != true) return@TextField
+                                            if (lastScrollEvent.value?.isConsumed == false) return@cb
+
                                             editableController.splitAtCursor(
                                                 targetIndex = index,
                                                 textFieldValue = newText
                                             )
-                                            lastScrollEvent = ScrollEvent(index + 1)
+                                            lastScrollEvent.value = ScrollEvent(index + 1)
                                         }catch (e:Exception) {
                                             Msg.requireShowLongDuration("#onAddNewLine err: "+e.localizedMessage)
                                             MyLog.e(TAG, "#onAddNewLine err: "+e.stackTraceToString())
                                         }
 
                                     },
-                                    onDeleteNewLine = {
+                                    onDeleteNewLine = cb@{
                                         try {
-                                            if (lastScrollEvent != null && lastScrollEvent?.isConsumed != true) return@TextField
+                                            if (lastScrollEvent.value?.isConsumed == false) return@cb
                                             editableController.deleteField(targetIndex = index)
-                                            if (index != 0) lastScrollEvent = ScrollEvent(index - 1)
+                                            if (index != 0) lastScrollEvent.value = ScrollEvent(index - 1)
                                         }catch (e:Exception) {
                                             Msg.requireShowLongDuration("#onDeleteNewLine err: "+e.localizedMessage)
                                             MyLog.e(TAG, "#onDeleteNewLine err: "+e.stackTraceToString())
@@ -1091,29 +1091,28 @@ fun TextEditor(
                                             editableController.selectField(index)
 
                                             //更新最后聚焦行(最后编辑行)
-                                            lastScrollEvent = ScrollEvent(index)
+                                            lastScrollEvent.value = ScrollEvent(index)
                                         }catch (e:Exception) {
                                             Msg.requireShowLongDuration("#onFocus err: "+e.localizedMessage)
                                             MyLog.e(TAG, "#onFocus err: "+e.stackTraceToString())
                                         }
                                     },
-                                    onUpFocus = {
+                                    onUpFocus = cb@{
                                         try {
-                                            if (lastScrollEvent != null && lastScrollEvent?.isConsumed != true) return@TextField
+                                            if (lastScrollEvent.value?.isConsumed == false) return@cb
                                             editableController.selectPreviousField()
-                                            if (index != 0) lastScrollEvent = ScrollEvent(index - 1)
+                                            if (index != 0) lastScrollEvent.value = ScrollEvent(index - 1)
                                         }catch (e:Exception) {
                                             Msg.requireShowLongDuration("#onUpFocus err: "+e.localizedMessage)
                                             MyLog.e(TAG, "#onUpFocus err: "+e.stackTraceToString())
                                         }
 
                                     },
-                                    onDownFocus = {
+                                    onDownFocus = cb@{
                                         try {
-                                            if (lastScrollEvent != null && lastScrollEvent?.isConsumed != true) return@TextField
+                                            if (lastScrollEvent.value?.isConsumed == false) return@cb
                                             editableController.selectNextField()
-                                            if (index != textEditorState.fields.lastIndex) lastScrollEvent =
-                                                ScrollEvent(index + 1)
+                                            if (index != textEditorState.fields.lastIndex) lastScrollEvent.value = ScrollEvent(index + 1)
                                         }catch (e:Exception) {
                                             Msg.requireShowLongDuration("#onDownFocus err: "+e.localizedMessage)
                                             MyLog.e(TAG, "#onDownFocus err: "+e.stackTraceToString())

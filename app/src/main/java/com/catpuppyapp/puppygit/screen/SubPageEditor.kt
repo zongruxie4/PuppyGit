@@ -113,27 +113,27 @@ fun SubPageEditor(
     val editorPageShowingFileDto = mutableCustomStateOf(keyTag = stateKeyTag, keyName = "editorPageShowingFileDto",FileSimpleDto() )
     val editorPageSnapshotedFileInfo = mutableCustomStateOf(keyTag = stateKeyTag, keyName = "editorPageSnapshotedFileInfo",FileSimpleDto() )
 
-    val editorPageLastScrollEvent = remember{ mutableStateOf<ScrollEvent?>(null)}  //这个用remember就行，没必要在显示配置改变时还保留这个滚动状态，如果显示配置改变，直接设为null，从配置文件读取滚动位置重定位更好
+    val editorPageLastScrollEvent = mutableCustomStateOf<ScrollEvent?>(stateKeyTag, "editorPageLastScrollEvent") { null }  //这个用remember就行，没必要在显示配置改变时还保留这个滚动状态，如果显示配置改变，直接设为null，从配置文件读取滚动位置重定位更好
     val editorPageLazyListState = rememberLazyListState()
-    val editorPageIsInitDone = remember{mutableStateOf(false)}  //这个也用remember就行，无需在配置改变时保存此状态，直接重置成false就行
-    val editorPageIsContentSnapshoted = remember{mutableStateOf(false)}  //是否已对当前内容创建了快照
-    val editorPageSearchMode = remember{mutableStateOf(false)}
+    val editorPageIsInitDone = rememberSaveable{mutableStateOf(false)}  //这个也用remember就行，无需在配置改变时保存此状态，直接重置成false就行
+    val editorPageIsContentSnapshoted = rememberSaveable{mutableStateOf(false)}  //是否已对当前内容创建了快照
+    val editorPageSearchMode = rememberSaveable{mutableStateOf(false)}
     val editorPageSearchKeyword = mutableCustomStateOf(keyTag = stateKeyTag, keyName = "editorPageSearchKeyword", TextFieldValue("") )
-    val editorReadOnlyMode = remember{mutableStateOf(initReadOnly)}
+    val editorReadOnlyMode = rememberSaveable{mutableStateOf(initReadOnly)}
 
     //如果用户pro且功能测试通过，允许使用url传来的初始值，否则一律false
-    val editorPageMergeMode = remember{mutableStateOf(if(UserUtil.isPro() && (dev_EnableUnTestedFeature || editorMergeModeTestPassed)) initMergeMode else false)}
+    val editorPageMergeMode = rememberSaveable{mutableStateOf(initMergeMode)}
 
 
     val settingsTmp = remember { SettingsUtil.getSettingsSnapshot() }  //避免状态变量里的设置项过旧，重新获取一个
-    val editorShowLineNum = remember{mutableStateOf(settingsTmp.editor.showLineNum)}
-    val editorLineNumFontSize = remember { mutableIntStateOf(settingsTmp.editor.lineNumFontSize)}
-    val editorFontSize = remember { mutableIntStateOf(settingsTmp.editor.fontSize)}
-    val editorAdjustFontSizeMode = remember{mutableStateOf(false)}
-    val editorAdjustLineNumFontSizeMode = remember{mutableStateOf(false)}
-    val editorLastSavedLineNumFontSize = remember { mutableIntStateOf(editorLineNumFontSize.intValue) } //用来检查，如果没变，就不执行保存，避免写入硬盘
-    val editorLastSavedFontSize = remember { mutableIntStateOf(editorFontSize.intValue)}
-    val editorOpenFileErr = remember{mutableStateOf(false)}
+    val editorShowLineNum = rememberSaveable{mutableStateOf(settingsTmp.editor.showLineNum)}
+    val editorLineNumFontSize = rememberSaveable { mutableIntStateOf(settingsTmp.editor.lineNumFontSize)}
+    val editorFontSize = rememberSaveable { mutableIntStateOf(settingsTmp.editor.fontSize)}
+    val editorAdjustFontSizeMode = rememberSaveable{mutableStateOf(false)}
+    val editorAdjustLineNumFontSizeMode = rememberSaveable{mutableStateOf(false)}
+    val editorLastSavedLineNumFontSize = rememberSaveable { mutableIntStateOf(editorLineNumFontSize.intValue) } //用来检查，如果没变，就不执行保存，避免写入硬盘
+    val editorLastSavedFontSize = rememberSaveable { mutableIntStateOf(editorFontSize.intValue)}
+    val editorOpenFileErr = rememberSaveable{mutableStateOf(false)}
 
 
     val showCloseDialog = rememberSaveable { mutableStateOf(false)}

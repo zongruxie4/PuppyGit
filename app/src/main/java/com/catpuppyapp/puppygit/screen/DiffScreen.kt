@@ -334,7 +334,7 @@ fun DiffScreen(
 
 
     // 向下滚动监听，开始
-    val pageScrolled = remember { mutableStateOf(settings.showNaviButtons) }
+    val pageScrolled = rememberSaveable { mutableStateOf(settings.showNaviButtons) }
 //    val firstVisible = remember { derivedStateOf { listState.value } }
 //    ScrollListener(
 //        nowAt = firstVisible.value,

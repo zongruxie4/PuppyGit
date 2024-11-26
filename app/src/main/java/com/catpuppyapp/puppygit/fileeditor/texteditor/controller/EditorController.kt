@@ -15,11 +15,14 @@ import com.catpuppyapp.puppygit.fileeditor.texteditor.state.TextEditorState
 import com.catpuppyapp.puppygit.fileeditor.texteditor.state.TextFieldState
 import com.catpuppyapp.puppygit.fileeditor.texteditor.view.SearchPos
 import com.catpuppyapp.puppygit.fileeditor.texteditor.view.SearchPosResult
+import com.catpuppyapp.puppygit.utils.state.mutableCustomStateOf
 import java.security.InvalidParameterException
 import java.util.concurrent.locks.ReentrantLock
 import kotlin.concurrent.withLock
 
-private val TAG = "EditorController"
+private const val TAG = "EditorController"
+private const val stateKeyTag = "EditorController"
+
 class EditorController(
     textEditorState: TextEditorState
 ) {
@@ -700,18 +703,4 @@ class EditorController(
 enum class FindDirection {
     UP,
     DOWN
-}
-
-@Composable
-internal fun rememberTextEditorController(
-    state: TextEditorState,
-    onChanged: (editorState: TextEditorState) -> Unit,
-    isContentChanged:MutableState<Boolean>,
-    editorPageIsContentSnapshoted:MutableState<Boolean>,
-) = remember {
-    mutableStateOf(
-        EditorController(state).apply {
-            setOnChangedTextListener(isContentChanged, editorPageIsContentSnapshoted) { onChanged(it) }
-        }
-    )
 }

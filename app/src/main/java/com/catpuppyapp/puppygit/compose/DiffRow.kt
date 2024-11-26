@@ -94,13 +94,13 @@ fun DiffRow (
     val view = LocalView.current
     val density = LocalDensity.current
 
-    val isKeyboardVisible = remember { mutableStateOf(false) }
+    val isKeyboardVisible = rememberSaveable { mutableStateOf(false) }
     //indicate keyboard covered component
-    val isKeyboardCoveredComponent = remember { mutableStateOf(false) }
+    val isKeyboardCoveredComponent = rememberSaveable { mutableStateOf(false) }
     // which component expect adjust heghit or padding when softkeyboard shown
-    val componentHeight = remember { mutableIntStateOf(0) }
+    val componentHeight = rememberSaveable { mutableIntStateOf(0) }
     // the padding value when softkeyboard shown
-    val keyboardPaddingDp = remember { mutableStateOf(0.dp) }
+    val keyboardPaddingDp = rememberSaveable { mutableIntStateOf(0) }
 
     // this code gen by chat-gpt, wow
     // except: this code may not work when use use a float keyboard or softkeyboard with single-hand mode
@@ -236,7 +236,7 @@ fun DiffRow (
                         modifier = Modifier
                             .fillMaxWidth()
                             .then(
-                                if (isKeyboardCoveredComponent.value) Modifier.padding(bottom = keyboardPaddingDp.value) else Modifier
+                                if (isKeyboardCoveredComponent.value) Modifier.padding(bottom = keyboardPaddingDp.intValue.dp) else Modifier
                             ),
                         value = lineContentOfEditLineDialog.value,
                         onValueChange = {
@@ -369,7 +369,7 @@ fun DiffRow (
                         modifier = Modifier
                             .fillMaxWidth()
                             .then(
-                                if (isKeyboardCoveredComponent.value) Modifier.padding(bottom = keyboardPaddingDp.value) else Modifier
+                                if (isKeyboardCoveredComponent.value) Modifier.padding(bottom = keyboardPaddingDp.intValue.dp) else Modifier
                             ),
                         value = lineContentOfEditLineDialog.value,
                         onValueChange = {
@@ -420,7 +420,7 @@ fun DiffRow (
         }
     }
 
-    val expandedMenu = remember { mutableStateOf(false) }
+    val expandedMenu = rememberSaveable { mutableStateOf(false) }
 
 
     // this check include `originType` check, it is redundant actually, because when into this page, the line originType always one of CONTEXT or ADDITION or DELETION,

@@ -167,7 +167,7 @@ fun TreeToTreeChangeListScreen(
     val changeListPageItemList = mutableCustomStateListOf(keyTag = stateKeyTag, keyName = "changeListPageItemList", initValue = listOf<StatusTypeEntrySaver>())
     val changeListPageItemListState = rememberLazyListState()
     val changeListPageSelectedItemList = mutableCustomStateListOf(keyTag = stateKeyTag, keyName = "changeListPageSelectedItemList", initValue = listOf<StatusTypeEntrySaver>())
-    val changelistPageScrolled = remember { mutableStateOf(settings.showNaviButtons) }
+    val changelistPageScrolled = rememberSaveable { mutableStateOf(settings.showNaviButtons) }
     val changelistNewestPageId = rememberSaveable { mutableStateOf("") }
     val changeListNaviTarget = rememberSaveable { mutableStateOf(Cons.ChangeListNaviTarget_InitValue)}
 

@@ -986,7 +986,7 @@ fun BranchListScreen(
     //filter相关，结束
 
     // 向下滚动监听，开始
-    val pageScrolled = remember { mutableStateOf(settings.showNaviButtons) }
+    val pageScrolled = rememberSaveable { mutableStateOf(settings.showNaviButtons) }
 
 //    val filterListState = mutableCustomStateOf(keyTag = stateKeyTag, keyName = "filterListState", LazyListState(0,0))
     val filterListState = rememberLazyListState()

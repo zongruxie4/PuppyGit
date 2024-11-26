@@ -142,7 +142,7 @@ fun HomeScreen(
 //    val curRepo = rememberSaveable{ mutableStateOf(RepoEntity()) }
     val repoPageCurRepo = mutableCustomStateOf(keyTag = stateKeyTag, keyName = "repoPageCurRepo", initValue = RepoEntity(id=""))  //id=空，表示无效仓库
     //使用前检查，大于等于0才是有效索引
-    val repoPageCurRepoIndex = remember { mutableIntStateOf(-1)}
+    val repoPageCurRepoIndex = rememberSaveable { mutableIntStateOf(-1)}
 
 //    val repoPageRepoList = StateUtil.getCustomSaveableState(
 //        keyTag = stateKeyTag,
@@ -361,23 +361,23 @@ fun HomeScreen(
     val editorPageRequestFromParent = rememberSaveable { mutableStateOf("")}
     val editorPageShowingFileDto = mutableCustomStateOf(keyTag = stateKeyTag, keyName = "editorPageShowingFileDto",FileSimpleDto() )
     val editorPageSnapshotedFileInfo = mutableCustomStateOf(keyTag = stateKeyTag, keyName = "editorPageSnapshotedFileInfo",FileSimpleDto())
-    val editorPageLastScrollEvent = remember{mutableStateOf<ScrollEvent?>(null)}  //这个用remember就行，没必要在显示配置改变时还保留这个滚动状态，如果显示配置改变，直接设为null，从配置文件读取滚动位置重定位更好
+    val editorPageLastScrollEvent = mutableCustomStateOf<ScrollEvent?>(keyTag = stateKeyTag, keyName = "editorPageLastScrollEvent") { null }  //这个用remember就行，没必要在显示配置改变时还保留这个滚动状态，如果显示配置改变，直接设为null，从配置文件读取滚动位置重定位更好
     val editorPageLazyListState = rememberLazyListState()
-    val editorPageIsInitDone = remember{mutableStateOf(false)}  //这个也用remember就行，无需在配置改变时保存此状态，直接重置成false就行
-    val editorPageIsContentSnapshoted = remember{mutableStateOf(false)}  //是否已对当前内容创建了快照
-    val editorPageSearchMode = remember{mutableStateOf(false)}
-    val editorPageSearchKeyword = mutableCustomStateOf(keyTag = stateKeyTag, keyName = "editorPageSearchKeyword",TextFieldValue("") )
-    val editorPageMergeMode = remember{mutableStateOf(false)}
-    val editorReadOnlyMode = remember{mutableStateOf(false)}
+    val editorPageIsInitDone = rememberSaveable{mutableStateOf(false)}  //这个也用remember就行，无需在配置改变时保存此状态，直接重置成false就行
+    val editorPageIsContentSnapshoted = rememberSaveable{mutableStateOf(false)}  //是否已对当前内容创建了快照
+    val editorPageSearchMode = rememberSaveable{mutableStateOf(false)}
+    val editorPageSearchKeyword = mutableCustomStateOf(keyTag = stateKeyTag, keyName = "editorPageSearchKeyword", TextFieldValue(""))
+    val editorPageMergeMode = rememberSaveable{mutableStateOf(false)}
+    val editorReadOnlyMode = rememberSaveable{mutableStateOf(false)}
 
-    val editorShowLineNum = remember{mutableStateOf(settingsSnapshot.value.editor.showLineNum)}
-    val editorLineNumFontSize = remember { mutableIntStateOf( settingsSnapshot.value.editor.lineNumFontSize)}
-    val editorLastSavedLineNumFontSize = remember { mutableIntStateOf( editorLineNumFontSize.intValue) } //用来检查，如果没变，就不执行保存，避免写入硬盘
-    val editorFontSize = remember { mutableIntStateOf( settingsSnapshot.value.editor.fontSize)}
-    val editorLastSavedFontSize = remember { mutableIntStateOf( editorFontSize.intValue)}
-    val editorAdjustFontSizeMode = remember{mutableStateOf(false)}
-    val editorAdjustLineNumFontSizeMode = remember{mutableStateOf(false)}
-    val editorOpenFileErr = remember{mutableStateOf(false)}
+    val editorShowLineNum = rememberSaveable{mutableStateOf(settingsSnapshot.value.editor.showLineNum)}
+    val editorLineNumFontSize = rememberSaveable { mutableIntStateOf( settingsSnapshot.value.editor.lineNumFontSize)}
+    val editorLastSavedLineNumFontSize = rememberSaveable { mutableIntStateOf( editorLineNumFontSize.intValue) } //用来检查，如果没变，就不执行保存，避免写入硬盘
+    val editorFontSize = rememberSaveable { mutableIntStateOf( settingsSnapshot.value.editor.fontSize)}
+    val editorLastSavedFontSize = rememberSaveable { mutableIntStateOf(editorFontSize.intValue)}
+    val editorAdjustFontSizeMode = rememberSaveable{mutableStateOf(false)}
+    val editorAdjustLineNumFontSizeMode = rememberSaveable{mutableStateOf(false)}
+    val editorOpenFileErr = rememberSaveable{mutableStateOf(false)}
 
 
     //给Files页面点击打开文件用的
@@ -438,8 +438,8 @@ fun HomeScreen(
 
 
 
-    val changelistPageScrolled = remember { mutableStateOf(settingsSnapshot.value.showNaviButtons) }
-    val repoPageScrolled = remember { mutableStateOf(settingsSnapshot.value.showNaviButtons) }
+    val changelistPageScrolled = rememberSaveable { mutableStateOf(settingsSnapshot.value.showNaviButtons) }
+    val repoPageScrolled = rememberSaveable { mutableStateOf(settingsSnapshot.value.showNaviButtons) }
 
     // two usages: 1. re query repo list when click title;  2. after imported submodules at ChangeList page
     val needReQueryRepoListForChangeListTitle = rememberSaveable { mutableStateOf("")}

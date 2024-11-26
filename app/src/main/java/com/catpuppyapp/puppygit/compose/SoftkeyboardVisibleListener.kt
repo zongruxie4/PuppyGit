@@ -23,7 +23,7 @@ fun SoftkeyboardVisibleListener(
     isKeyboardVisible: MutableState<Boolean>,
     isKeyboardCoveredComponent: MutableState<Boolean>,
     componentHeight: MutableIntState,
-    keyboardPaddingDp: MutableState<Dp>,
+    keyboardPaddingDp: MutableIntState,
     density: Density,
     skipCondition:()->Boolean,
     paddingAdjustValue:Dp = 120.dp
@@ -43,12 +43,12 @@ fun SoftkeyboardVisibleListener(
             // 判断组件是否被遮盖 (check component whether got covered)
             isKeyboardCoveredComponent.value = (componentHeight.intValue > 0) && (view.height - keyboardHeightPx < componentHeight.intValue)
 
-            keyboardPaddingDp.value = if (isKeyboardCoveredComponent.value) {
+            keyboardPaddingDp.intValue = if (isKeyboardCoveredComponent.value) {
                 val p = with(density) { keyboardHeightPx.toDp() - paddingAdjustValue }
                 // avoid negative padding value cause app crash
-                if (p > 0.dp) p else 0.dp
+                if (p > 0.dp) p.value.toInt() else 0
             } else {
-                0.dp
+                0
             }
         }
 

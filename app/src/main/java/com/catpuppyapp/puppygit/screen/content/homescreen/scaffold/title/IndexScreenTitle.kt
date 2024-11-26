@@ -39,7 +39,7 @@ fun IndexScreenTitle(
     val haptic = LocalHapticFeedback.current
     val activityContext = LocalContext.current
 
-    val showTitleInfoDialog = remember { mutableStateOf(false) }
+    val showTitleInfoDialog = rememberSaveable { mutableStateOf(false) }
     if(showTitleInfoDialog.value) {
         RepoInfoDialog(curRepo.value, showTitleInfoDialog)
     }

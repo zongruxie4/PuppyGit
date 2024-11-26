@@ -20,9 +20,8 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.MutableIntState
 import androidx.compose.runtime.MutableState
-import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.composed
@@ -41,6 +40,17 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.catpuppyapp.puppygit.compose.ConfirmDialog
 import com.catpuppyapp.puppygit.constants.PageRequest
+import com.catpuppyapp.puppygit.fileeditor.texteditor.controller.EditorController
+import com.catpuppyapp.puppygit.fileeditor.texteditor.state.TextEditorState
+import com.catpuppyapp.puppygit.fileeditor.texteditor.view.ScrollEvent
+import com.catpuppyapp.puppygit.fileeditor.texteditor.view.TextEditor
+import com.catpuppyapp.puppygit.fileeditor.ui.composable.editor.EditorMenus
+import com.catpuppyapp.puppygit.fileeditor.ui.composable.editor.FieldIcon
+import com.catpuppyapp.puppygit.fileeditor.ui.extension.createCancelledState
+import com.catpuppyapp.puppygit.fileeditor.ui.extension.createCopiedState
+import com.catpuppyapp.puppygit.fileeditor.ui.extension.createDeletedState
+import com.catpuppyapp.puppygit.fileeditor.ui.extension.createMultipleSelectionModeState
+import com.catpuppyapp.puppygit.fileeditor.ui.extension.createSelectAllState
 import com.catpuppyapp.puppygit.play.pro.R
 import com.catpuppyapp.puppygit.settings.FileEditedPos
 import com.catpuppyapp.puppygit.style.MyStyleKt
@@ -49,17 +59,10 @@ import com.catpuppyapp.puppygit.utils.AppModel
 import com.catpuppyapp.puppygit.utils.Msg
 import com.catpuppyapp.puppygit.utils.replaceStringResList
 import com.catpuppyapp.puppygit.utils.state.CustomStateSaveable
-import com.catpuppyapp.puppygit.fileeditor.ui.composable.editor.EditorMenus
-import com.catpuppyapp.puppygit.fileeditor.ui.composable.editor.FieldIcon
-import com.catpuppyapp.puppygit.fileeditor.ui.extension.createCancelledState
-import com.catpuppyapp.puppygit.fileeditor.ui.extension.createCopiedState
-import com.catpuppyapp.puppygit.fileeditor.ui.extension.createDeletedState
-import com.catpuppyapp.puppygit.fileeditor.ui.extension.createMultipleSelectionModeState
-import com.catpuppyapp.puppygit.fileeditor.ui.extension.createSelectAllState
-import com.catpuppyapp.puppygit.fileeditor.texteditor.controller.rememberTextEditorController
-import com.catpuppyapp.puppygit.fileeditor.texteditor.state.TextEditorState
-import com.catpuppyapp.puppygit.fileeditor.texteditor.view.ScrollEvent
-import com.catpuppyapp.puppygit.fileeditor.texteditor.view.TextEditor
+import com.catpuppyapp.puppygit.utils.state.mutableCustomStateOf
+
+private const val TAG = "FileEditor"
+private const val stateKeyTag = "FileEditor"
 
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
@@ -70,7 +73,7 @@ fun FileEditor(requestFromParent:MutableState<String>,
                onChanged:(TextEditorState)->Unit,
                contentPadding:PaddingValues,
                isContentChanged:MutableState<Boolean>,
-               editorLastScrollEvent:MutableState<ScrollEvent?>,
+               editorLastScrollEvent:CustomStateSaveable<ScrollEvent?>,
                editorListState: LazyListState,
                editorPageIsInitDone:MutableState<Boolean>,
                editorPageIsContentSnapshoted:MutableState<Boolean>,
@@ -91,8 +94,14 @@ fun FileEditor(requestFromParent:MutableState<String>,
     val clipboardManager = LocalClipboardManager.current
     val keyboardController = LocalSoftwareKeyboardController.current
 
-    val showDeleteDialog = remember { mutableStateOf(false) }
-    val editableController by rememberTextEditorController(textEditorState.value, onChanged = { onChanged(it) }, isContentChanged, editorPageIsContentSnapshoted)
+    val showDeleteDialog = rememberSaveable { mutableStateOf(false) }
+//    val editableController by rememberTextEditorController(textEditorState.value, onChanged = { onChanged(it) }, isContentChanged, editorPageIsContentSnapshoted)
+    val editableController = mutableCustomStateOf(stateKeyTag, "editableController") {
+        EditorController(textEditorState.value).apply {
+            setOnChangedTextListener(isContentChanged, editorPageIsContentSnapshoted) { onChanged(it) }
+        }
+    }
+
 
 //    val bottomPadding = if (textEditorState.value.isMultipleSelectionMode) 100.dp else 0.dp  //如果使用这个padding，开启选择模式时底栏会有背景，否则没有，没有的时候就像直接浮在编辑器上
 //    val bottomPadding = 0.dp
@@ -165,11 +174,11 @@ fun FileEditor(requestFromParent:MutableState<String>,
             fileFullPath,
             lastEditedPos = lastEditedPos,
             textEditorState = textEditorState.value,
-            editableController = editableController,
+            editableController = editableController.value,
             onChanged = { onChanged(it) },
             contentPaddingValues = contentPaddingValues,
-            editorLastScrollEvent =editorLastScrollEvent,
-            editorListState =editorListState,
+            lastScrollEvent =editorLastScrollEvent,
+            listState =editorListState,
             editorPageIsInitDone = editorPageIsInitDone,
             goToLine=goToLine,
             readOnlyMode=readOnlyMode,
@@ -226,14 +235,14 @@ fun FileEditor(requestFromParent:MutableState<String>,
                                         if (textEditorState.value.isMultipleSelectionMode) {
                                             haptic.performHapticFeedback(HapticFeedbackType.LongPress)
 
-                                            editableController.selectFieldSpan(targetIndex = index)
+                                            editableController.value.selectFieldSpan(targetIndex = index)
                                         }
                                     }
                                 ) {
                                     //如果是行选择模式，选中当前点击的行如果不是行选择模式；进入行选择模式
                                     if (textEditorState.value.isMultipleSelectionMode) {
                                         //选中/取消选中 当前点击的行
-                                        editableController.selectField(targetIndex = index)
+                                        editableController.value.selectField(targetIndex = index)
 
                                     } else { // 非行选择模式，启动行选择模式 (multiple selection mode on)
                                         enableSelectMode(index)

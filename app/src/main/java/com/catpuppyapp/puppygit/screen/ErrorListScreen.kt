@@ -119,7 +119,7 @@ fun ErrorListScreen(
     val filterModeOn = rememberSaveable { mutableStateOf(false)}
 
     // 向下滚动监听，开始
-    val pageScrolled = remember { mutableStateOf(settings.showNaviButtons) }
+    val pageScrolled = rememberSaveable { mutableStateOf(settings.showNaviButtons) }
 
     val filterListState = rememberLazyListState()
 //    val filterListState = mutableCustomStateOf(
@@ -162,7 +162,7 @@ fun ErrorListScreen(
     // 向下滚动监听，结束
 
 
-    val showTitleInfoDialog = remember { mutableStateOf(false) }
+    val showTitleInfoDialog = rememberSaveable { mutableStateOf(false) }
     if(showTitleInfoDialog.value) {
         RepoInfoDialog(curRepo.value, showTitleInfoDialog)
     }

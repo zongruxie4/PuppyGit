@@ -83,13 +83,14 @@ import com.catpuppyapp.puppygit.utils.showToast
 import com.catpuppyapp.puppygit.utils.snapshot.SnapshotFileFlag
 import com.catpuppyapp.puppygit.utils.snapshot.SnapshotUtil
 import com.catpuppyapp.puppygit.utils.state.CustomStateSaveable
+import com.catpuppyapp.puppygit.utils.state.mutableCustomStateListOf
 import com.catpuppyapp.puppygit.utils.withMainContext
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 import java.io.File
 
-private val TAG = "EditorInnerPage"
-private val stateKeyTag = "EditorInnerPage"
+private const val TAG = "EditorInnerPage"
+private const val stateKeyTag = "EditorInnerPage"
 
 private var justForSaveFileWhenDrawerOpen = getShortUUID()
 
@@ -117,7 +118,7 @@ fun EditorInnerPage(
     requestFromParent:MutableState<String>,
     editorPageShowingFileDto:CustomStateSaveable<FileSimpleDto>,
     lastFilePath:MutableState<String>,
-    editorLastScrollEvent:MutableState<ScrollEvent?>,
+    editorLastScrollEvent:CustomStateSaveable<ScrollEvent?>,
     editorListState:LazyListState,
     editorPageIsInitDone:MutableState<Boolean>,
     editorPageIsContentSnapshoted:MutableState<Boolean>,
@@ -446,7 +447,7 @@ fun EditorInnerPage(
     }
 
 
-    val showClearRecentFilesDialog = remember { mutableStateOf(false) }
+    val showClearRecentFilesDialog = rememberSaveable { mutableStateOf(false) }
     if(showClearRecentFilesDialog.value) {
         ConfirmDialog2(
             title = stringResource(R.string.confirm),
@@ -469,16 +470,16 @@ fun EditorInnerPage(
     }
 
 
-    val showRecentFilesList = remember { mutableStateOf(false) }
-    // Pair(first: file name, second: file full path)
-    val recentFileList = remember { mutableStateListOf<Pair<String, String>>() }
+    val showRecentFilesList = rememberSaveable { mutableStateOf(false) }
+    // Pair(fileName, fileFullPath)
+    val recentFileList = mutableCustomStateListOf(stateKeyTag, "recentFileList") { listOf<Pair<String, String>>() }
     if(showRecentFilesList.value) {
         DropdownMenu(
             expanded = showRecentFilesList.value,
             offset = DpOffset(x=180.dp, y=0.dp),
             onDismissRequest = { showRecentFilesList.value = false }
         ) {
-            for((fileName, filePath) in recentFileList) {
+            for((fileName, filePath) in recentFileList.value) {
                 DropdownMenuItem(
                     text = { Text(fileName) },
                     onClick = {
@@ -909,7 +910,7 @@ fun EditorInnerPage(
                         val historyMap = FileOpenHistoryMan.getHistory().storage
                         if (historyMap.isEmpty()) {
                             Msg.requireShowLongDuration(activityContext.getString(R.string.recent_files_is_empty))
-                            recentFileList.clear()
+                            recentFileList.value.clear()
                             return@onclick
                         }
 
@@ -930,8 +931,8 @@ fun EditorInnerPage(
                             .subList(0, 10)  // I think, recent file list, show 10 is good, if more, feels bad, to much files = no files, just make headache
 
                         // add sorted list to page state variable
-                        recentFileList.clear()
-                        recentFileList.addAll(recentFiles)
+                        recentFileList.value.clear()
+                        recentFileList.value.addAll(recentFiles)
 
                         // show list
                         showRecentFilesList.value = true
@@ -1080,7 +1081,7 @@ private fun doInit(
     pageRequest:MutableState<String>,
     editorPageShowingFileDto: CustomStateSaveable<FileSimpleDto>,
     isSubPage: Boolean,
-    editorLastScrollEvent:MutableState<ScrollEvent?>,
+    editorLastScrollEvent:CustomStateSaveable<ScrollEvent?>,
     editorPageIsInitDone:MutableState<Boolean>,
     isEdited:MutableState<Boolean>,
     isSaving:MutableState<Boolean>,
@@ -1090,10 +1091,15 @@ private fun doInit(
     saveLastOpenPath:(path:String)->Unit
 
 ) {
+
+    //目前这个函数只有加载文件的逻辑，所以判断下，如果已加载，就直接返回，以后如果添加其他逻辑，把这行注释即可，其他不用改，因为加载文件前又做了一次此判断
+    if (editorPageShowingFileIsReady.value) return;
+
+
     //异步读取文件内容
     //这里不需要loadingOn和loadingOff，靠editorPageShowingFileIsReady来判断是否加载完毕文件，历史遗留问题，这个页面的loading有点混乱
 //    doJobThenOffLoading(loadingOn, loadingOff, appContext.getString(R.string.loading)){
-    doJobThenOffLoading {
+    doJobThenOffLoading job@{
         //保存后不改变needrefresh就行了，没必要传这个变量
         //保存文件时会设置这个变量，因为保存的内容本来就是最新的，不需要重新加载
 //        if(pageRequest.value ==PageRequest.needNotReloadFile) {
@@ -1105,180 +1111,142 @@ private fun doInit(
         //告知组件文件还未就绪（例如 未加载完毕）(20240326:尝试解决加载文件内容未更新的bug，把这行挪到了上面)
 //        editorPageShowingFileIsReady.value = false  //20240429:文件未就绪应归调用者设置
         //如果存在待打开的文件，则打开，文件可能来自从文件管理器的点击
-        loadFile(
-            editorPageShowingFileIsReady,
-            editorPageShowingFilePath,
-            editorPageClearShowingFileErrWhenLoading,
-            editorPageShowingFileDto,
-            editorPageTextEditorState,
-            editorPageSetShowingFileErrWhenLoading,
-            unknownErrStrRes,
-            isSubPage,
-            editorLastScrollEvent,
-            editorPageIsInitDone,
-            isEdited,
-            isSaving,
-            isContentSnapshoted,
-            readOnlyMode,
-            mergeMode,
-            saveLastOpenPath
-        )
 
-    }
-}
+        // 加载文件 (load file)
+        if (!editorPageShowingFileIsReady.value) {  //从文件管理器跳转到editor 或 打开文件后从其他页面跳转到editor
+            if (editorPageShowingFilePath.value.isBlank()) {
+                //这时页面会显示选择文件和打开上次文件，这里无需处理
+                return@job
+            }
 
-private fun loadFile(
-    editorPageShowingFileIsReady: MutableState<Boolean>,
-    editorPageShowingFilePath: MutableState<String>,
-    editorPageClearShowingFileErrWhenLoading: () -> Unit,
-    editorPageShowingFileDto: CustomStateSaveable<FileSimpleDto>,
-    editorPageTextEditorState: CustomStateSaveable<TextEditorState>,
-    editorPageSetShowingFileErrWhenLoading: (errMsg: String) -> Unit,
-    unknownErrStrRes: String,
-    isSubPage: Boolean,
-    editorLastScrollEvent:MutableState<ScrollEvent?>,
-    editorPageIsInitDone:MutableState<Boolean>,
-    isEdited:MutableState<Boolean>,
-    isSaving:MutableState<Boolean>,
-    isContentSnapshoted:MutableState<Boolean>,
-    readOnlyMode: MutableState<Boolean>,
-    mergeMode: MutableState<Boolean>,
-    saveLastOpenPath:(path:String)->Unit
+            //优先打开从文件管理器跳转来的文件，如果不是跳转来的，打开之前显示的文件
+            val requireOpenFilePath = editorPageShowingFilePath.value
 
-) {
-    if (!editorPageShowingFileIsReady.value) {  //从文件管理器跳转到editor 或 打开文件后从其他页面跳转到editor
-        if (editorPageShowingFilePath.value.isBlank()) {
-            //这时页面会显示选择文件和打开上次文件，这里无需处理
-            return
-        }
-        //优先打开从文件管理器跳转来的文件，如果不是跳转来的，打开之前显示的文件
-        val requireOpenFilePath = editorPageShowingFilePath.value
-
-        //清除错误信息，如果打开文件时出错，会重新设置错误信息
-        editorPageClearShowingFileErrWhenLoading()
-        //读取文件内容
-        try {
-            val file = File(requireOpenFilePath)
-            //如果文件不存在，抛异常，然后会显示错误信息给用户
-            if (!file.exists()) {
-                //如果当前显示的内容不为空，为当前显示的内容创建个快照，然后抛异常
+            //清除错误信息，如果打开文件时出错，会重新设置错误信息
+            editorPageClearShowingFileErrWhenLoading()
+            //读取文件内容
+            try {
+                val file = File(requireOpenFilePath)
+                //如果文件不存在，抛异常，然后会显示错误信息给用户
+                if (!file.exists()) {
+                    //如果当前显示的内容不为空，为当前显示的内容创建个快照，然后抛异常
 //                val content = editorPageTextEditorState.value.getAllText()
 //                val content = null
-                if(editorPageTextEditorState.value.contentIsEmpty().not() && !isContentSnapshoted.value) {
-                    MyLog.w(TAG, "#loadFile: file doesn't exist anymore, but content is not empty, will create snapshot for content")
-                    doJobThenOffLoading {
-                        val fileName = File(requireOpenFilePath).name
-                        val snapRet = SnapshotUtil.createSnapshotByContentAndGetResult(
-                            srcFileName = fileName,
-                            fileContent = null,
-                            editorState = editorPageTextEditorState.value,
-                            trueUseContentFalseUseEditorState = false,
-                            flag = SnapshotFileFlag.content_FileNonExists_Backup
-                        )
-                        if (snapRet.hasError()) {
-                            MyLog.e(TAG, "#loadFile: create content snapshot for '$requireOpenFilePath' err: ${snapRet.msg}")
+                    if(editorPageTextEditorState.value.contentIsEmpty().not() && !isContentSnapshoted.value) {
+                        MyLog.w(TAG, "#loadFile: file doesn't exist anymore, but content is not empty, will create snapshot for content")
+                        doJobThenOffLoading {
+                            val fileName = File(requireOpenFilePath).name
+                            val snapRet = SnapshotUtil.createSnapshotByContentAndGetResult(
+                                srcFileName = fileName,
+                                fileContent = null,
+                                editorState = editorPageTextEditorState.value,
+                                trueUseContentFalseUseEditorState = false,
+                                flag = SnapshotFileFlag.content_FileNonExists_Backup
+                            )
+                            if (snapRet.hasError()) {
+                                MyLog.e(TAG, "#loadFile: create content snapshot for '$requireOpenFilePath' err: ${snapRet.msg}")
 
-                            Msg.requireShowLongDuration("save content snapshot for '$fileName' err:" + snapRet.msg)
-                        }else {
-                            isContentSnapshoted.value=true
+                                Msg.requireShowLongDuration("save content snapshot for '$fileName' err:" + snapRet.msg)
+                            }else {
+                                isContentSnapshoted.value=true
+                            }
                         }
                     }
+                    //抛异常
+                    throw RuntimeException(AppModel.singleInstanceHolder.activityContext.getString(R.string.err_file_doesnt_exist_anymore))
                 }
-                //抛异常
-                throw RuntimeException(AppModel.singleInstanceHolder.activityContext.getString(R.string.err_file_doesnt_exist_anymore))
-            }
 
-            if (!file.isFile) {
-                throw RuntimeException(AppModel.singleInstanceHolder.activityContext.getString(R.string.err_target_is_not_a_file))
-            }
+                if (!file.isFile) {
+                    throw RuntimeException(AppModel.singleInstanceHolder.activityContext.getString(R.string.err_target_is_not_a_file))
+                }
 
-            //检查文件大小，太大了打开会有问题，要么崩溃，要么无法保存
-            //如果文件大小超出app支持的最大限制，提示错误
-            val settings = SettingsUtil.getSettingsSnapshot()
-            val maxSizeLimit = settings.editor.maxFileSizeLimit
-            if (isFileSizeOverLimit(file.length(), limit = maxSizeLimit)) {
+                //检查文件大小，太大了打开会有问题，要么崩溃，要么无法保存
+                //如果文件大小超出app支持的最大限制，提示错误
+                val settings = SettingsUtil.getSettingsSnapshot()
+                val maxSizeLimit = settings.editor.maxFileSizeLimit
+                if (isFileSizeOverLimit(file.length(), limit = maxSizeLimit)) {
 //                    editorPageSetShowingFileErrWhenLoading("Err: Doesn't support open file over "+Cons.editorFileSizeMaxLimitForHumanReadable)
-                throw RuntimeException(AppModel.singleInstanceHolder.activityContext.getString(R.string.err_doesnt_support_open_file_over_limit) + "(" + getHumanReadableSizeStr(maxSizeLimit) + ")")
-            }
+                    throw RuntimeException(AppModel.singleInstanceHolder.activityContext.getString(R.string.err_doesnt_support_open_file_over_limit) + "(" + getHumanReadableSizeStr(maxSizeLimit) + ")")
+                }
 
 
 //            if(debugModeOn) {
 //                println("editorPageShowingFileDto.value.fullPath: "+editorPageShowingFileDto.value.fullPath)
 //            }
 
-            //如果文件修改时间和大小没变，不重新加载文件
-            //x 废弃 20240503 subPage为什么要百分百重载呢？再说subPage本来就是百分百重载啊，因为一关页面再开不就重载了吗？没必要在这特意区分是否subPage！) subPage百分百重载文件；
-            // 注：从Files点击百分百重载，因为请求打开文件时清了dto
-            if (editorPageShowingFileDto.value.fullPath.isNotBlank() && editorPageShowingFileDto.value.fullPath == requireOpenFilePath) {
-                val newDto = FileSimpleDto.genByFile(file)
-                if (newDto.lastModifiedTime == editorPageShowingFileDto.value.lastModifiedTime
-                    && newDto.sizeInBytes == editorPageShowingFileDto.value.sizeInBytes
-                ) {
-                    MyLog.d(TAG,"EditorInnerPage#loadFile: file '${editorPageShowingFileDto.value.name}' not change, skip reload")
-                    //文件可能没改变，放弃加载
-                    editorPageShowingFileIsReady.value = true
-                    return
+                //如果文件修改时间和大小没变，不重新加载文件
+                //x 废弃 20240503 subPage为什么要百分百重载呢？再说subPage本来就是百分百重载啊，因为一关页面再开不就重载了吗？没必要在这特意区分是否subPage！) subPage百分百重载文件；
+                // 注：从Files点击百分百重载，因为请求打开文件时清了dto
+                if (editorPageShowingFileDto.value.fullPath.isNotBlank() && editorPageShowingFileDto.value.fullPath == requireOpenFilePath) {
+                    val newDto = FileSimpleDto.genByFile(file)
+                    if (newDto.lastModifiedTime == editorPageShowingFileDto.value.lastModifiedTime
+                        && newDto.sizeInBytes == editorPageShowingFileDto.value.sizeInBytes
+                    ) {
+                        MyLog.d(TAG,"EditorInnerPage#loadFile: file '${editorPageShowingFileDto.value.name}' not change, skip reload")
+                        //文件可能没改变，放弃加载
+                        editorPageShowingFileIsReady.value = true
+                        return@job
+                    }
                 }
-            }
 
-            //TODO 其实漏了一种情况，不过不是很重要而且发生的概率几乎为0，那就是：如果用户编辑了文件但没保存，
-            // 然后切换窗口，在外部修改文件，再切换回来，editor发现文件被修改过，这时会自动重载。
-            // 问题就在于自动重载，应该改成询问用户是否重载，或者自动重载前先创建当前未保存内容的快照。
-            // 但由于目前一切换出editor就自动保存了，
-            // 所以其实不会发生“内容没保存的状态下发现文件被修改过”的情况，只会发生文件保存了，
-            // 然后发现文件被外部修改过的情况，而这种情况直接重载就行，因为在之前保存的时候就已经创建了内容
-            // 和当时的源文件的快照，而那个内容快照就是重载前的内容(因为保存后在editor没修改过，所以当时保存的后重载前editor显示的是同一内容)。
+                //TODO 其实漏了一种情况，不过不是很重要而且发生的概率几乎为0，那就是：如果用户编辑了文件但没保存，
+                // 然后切换窗口，在外部修改文件，再切换回来，editor发现文件被修改过，这时会自动重载。
+                // 问题就在于自动重载，应该改成询问用户是否重载，或者自动重载前先创建当前未保存内容的快照。
+                // 但由于目前一切换出editor就自动保存了，
+                // 所以其实不会发生“内容没保存的状态下发现文件被修改过”的情况，只会发生文件保存了，
+                // 然后发现文件被外部修改过的情况，而这种情况直接重载就行，因为在之前保存的时候就已经创建了内容
+                // 和当时的源文件的快照，而那个内容快照就是重载前的内容(因为保存后在editor没修改过，所以当时保存的后重载前editor显示的是同一内容)。
 
-            MyLog.d(TAG,"EditorInnerPage#loadFile: will load file '${requireOpenFilePath}'")
+                MyLog.d(TAG,"EditorInnerPage#loadFile: will load file '${requireOpenFilePath}'")
 
-            //重新读取文件把滚动位置设为null以触发定位到配置文件记录的滚动位置
-            //如果打开文件报错，这几个值也该是false，所以在打开文件前就设置这几个值
-            isEdited.value=false
-            isSaving.value=false
+                //重新读取文件把滚动位置设为null以触发定位到配置文件记录的滚动位置
+                //如果打开文件报错，这几个值也该是false，所以在打开文件前就设置这几个值
+                isEdited.value=false
+                isSaving.value=false
 
-            editorPageIsInitDone.value=false
-            editorLastScrollEvent.value=null
+                editorPageIsInitDone.value=false
+                editorLastScrollEvent.value=null
 
-            //读取文件内容
+                //读取文件内容
 //            editorPageTextEditorState.value = TextEditorState.create(FsUtils.readFile(requireOpenFilePath))
-            editorPageTextEditorState.value = TextEditorState.create(FsUtils.readLinesFromFile(requireOpenFilePath))
+                editorPageTextEditorState.value = TextEditorState.create(FsUtils.readLinesFromFile(requireOpenFilePath))
 
-            isContentSnapshoted.value=false
-            //文件就绪
-            editorPageShowingFileIsReady.value = true
+                isContentSnapshoted.value=false
+                //文件就绪
+                editorPageShowingFileIsReady.value = true
 //                editorPageShowingFilePath.value = requireOpenFilePath  //左值本身就是右值，无变化，无需赋值
 
-            //更新dto，这个dto和重载有关，和视图无关，页面是否发现它修改都无所谓，所以用更新其实也可以。
+                //更新dto，这个dto和重载有关，和视图无关，页面是否发现它修改都无所谓，所以用更新其实也可以。
 //            FileSimpleDto.updateDto(editorPageShowingFileDto.value, file)
-            //这的file是只读，没改过，所以直接用file即可，若改过，我不确定是否能获取到最新修改，应该能，若没把握，可重新创建个file
-            editorPageShowingFileDto.value = FileSimpleDto.genByFile(file)
+                //这的file是只读，没改过，所以直接用file即可，若改过，我不确定是否能获取到最新修改，应该能，若没把握，可重新创建个file
+                editorPageShowingFileDto.value = FileSimpleDto.genByFile(file)
 
-            //子页面不记路径到配置文件 (20240821 废弃，原因：很多时候，我用子页面打开文件，然后我期望在首页editor用open last打开那个文件，结果没记住
+                //子页面不记路径到配置文件 (20240821 废弃，原因：很多时候，我用子页面打开文件，然后我期望在首页editor用open last打开那个文件，结果没记住
 //            if(!isSubPage) {
                 //若不想让子页面editor记住上次打开文件路径，把更新配置文件中记录最后打开文件的代码放这里即可
 //            }
 
-            //更新最后打开文件状态变量（注：重复打开同一文件不会重复更新）
-            //20240823: 改成关闭文件或销毁组件时保存了，打开时没必要保存了
+                //更新最后打开文件状态变量（注：重复打开同一文件不会重复更新）
+                //20240823: 改成关闭文件或销毁组件时保存了，打开时没必要保存了
 //            saveLastOpenPath(requireOpenFilePath)
 
-            // update file last used time
-            FileOpenHistoryMan.touch(requireOpenFilePath)
-        } catch (e: Exception) {
-            editorPageShowingFileIsReady.value = false
-            //设置错误信息
-            //显示提示
-            editorPageSetShowingFileErrWhenLoading(e.localizedMessage ?: unknownErrStrRes)
-            //清除配置文件中记录的当前文件编辑位置信息
-            //应该提供一个选项来移除保存的最后编辑位置信息而不是一出异常就移除，万一用户只是临时把文件改下名，然后又改回来呢？或者用户手动改了权限，导致无法读取文件然后又改回来了，这些情况下位置信息就没必要删，总之删除位置信息应改成手动删除，而不是一出异常就删
+                // update file last used time
+                FileOpenHistoryMan.touch(requireOpenFilePath)
+            } catch (e: Exception) {
+                editorPageShowingFileIsReady.value = false
+                //设置错误信息
+                //显示提示
+                editorPageSetShowingFileErrWhenLoading(e.localizedMessage ?: unknownErrStrRes)
+                //清除配置文件中记录的当前文件编辑位置信息
+                //应该提供一个选项来移除保存的最后编辑位置信息而不是一出异常就移除，万一用户只是临时把文件改下名，然后又改回来呢？或者用户手动改了权限，导致无法读取文件然后又改回来了，这些情况下位置信息就没必要删，总之删除位置信息应改成手动删除，而不是一出异常就删
 //            SettingsUtil.update {
 //                it.editor.filesLastEditPosition.remove(requireOpenFilePath)
 //            }
-            //记录日志
-            MyLog.e(TAG, "EditorInnerPage#loadFile(): " + e.stackTraceToString())
-        }
+                //记录日志
+                MyLog.e(TAG, "EditorInnerPage#loadFile(): " + e.stackTraceToString())
+            }
 
-        //如果文件加载成功，添加它到打开的文件列表
+            //如果文件加载成功，添加它到打开的文件列表
 //            if (editorPageShowingFileIsReady.value) {
 //                //如果当前请求打开的文件不在编辑器的已打开文件列表，则添加
 //                val openedFileMap = JSONObject(editorPageOpenedFileMap.value)
@@ -1292,13 +1260,19 @@ private fun loadFile(
 //                }
 //            }
 
-    } else {  //从抽屉菜单点击Editor项进入Editor
-        //TODO 读取文件列表，展示当前打开的文件
-        //update editorOpenedFileMap from db
-        //update editorCurShowFile from db
-        //update editorPageShowingFileIsReady to true
+        }
+
+//        else {  //从抽屉菜单点击Editor项进入Editor
+//            //读取文件列表，展示当前打开的文件
+
+//            //update editorOpenedFileMap from db
+//            //update editorCurShowFile from db
+//            //update editorPageShowingFileIsReady to true
+//        }
+
     }
 }
+
 
 @Composable
 private fun getBackHandler(

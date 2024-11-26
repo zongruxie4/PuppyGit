@@ -463,7 +463,7 @@ fun FileHistoryScreen(
     }
 
     // 向下滚动监听，开始
-    val pageScrolled = remember { mutableStateOf(settings.showNaviButtons) }
+    val pageScrolled = rememberSaveable { mutableStateOf(settings.showNaviButtons) }
 
     val requireBlinkIdx = rememberSaveable{mutableIntStateOf(-1)}
 
@@ -585,7 +585,7 @@ fun FileHistoryScreen(
         }
     }
 
-    val showTitleInfoDialog = remember { mutableStateOf(false) }
+    val showTitleInfoDialog = rememberSaveable { mutableStateOf(false) }
     val titleInfo = rememberSaveable { mutableStateOf(fileRelativePath) }
     if(showTitleInfoDialog.value) {
         RepoInfoDialog(

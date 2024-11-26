@@ -132,8 +132,8 @@ fun DiffContent(
     val diffItem = mutableCustomStateOf(keyTag = stateKeyTag, keyName = "diffItem", initValue = DiffItemSaver())
 
     val loading = rememberSaveable { mutableStateOf(true)}
-    val submoduleIsDirty = remember { mutableStateOf(false)}
-    val errMsgState = remember { mutableStateOf("")}
+    val submoduleIsDirty = rememberSaveable { mutableStateOf(false)}
+    val errMsgState = rememberSaveable { mutableStateOf("")}
 
 //    val oldLineAt = stringResource(R.string.old_line_at)
 //    val newLineAt = stringResource(R.string.new_line_at)
