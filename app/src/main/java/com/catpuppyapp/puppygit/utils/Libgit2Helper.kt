@@ -3831,7 +3831,6 @@ class Libgit2Helper {
                 return
             }
 
-            var next = initNext
 
             var count = 0
             val allBranchList = getBranchList(repo)
@@ -3844,9 +3843,31 @@ class Libgit2Helper {
 
             var checkChannelCount = 0
 
-            while (next!=null) {
+            var next = initNext
+            while (next != null) {
                 try {
-//                    try {
+                    //创建dto
+                    val nextStr = next.toString()
+                    val commit = resolveCommitByHash(repo, nextStr)
+                    if(commit!=null) {
+                        val c = createCommitDto(next, allBranchList, allTagList, commit, repoId, repoIsShallow, shallowOidList)
+                        //添加元素
+                        retList.add(c)
+                        count++
+                    }else {
+                        MyLog.e(TAG, "#getCommitList(): resolve commit failed, target=$nextStr")
+                    }
+
+
+
+                    //检查是否需要终止
+                    //检查1：页数
+                    if(count >= pageSize) {
+                        break
+                    }
+
+                    //检查2：终止信号
+                    //这个检查和检查页数差不多，必须得在创建新dto之后及调用revwalk.next()之前，不然会漏条目
                     //check channel, may received terminal signal
                     if(++checkChannelCount > checkChannelFrequency) {
                         val recv = loadChannel.tryReceive()
@@ -3864,32 +3885,7 @@ class Libgit2Helper {
                         }
                     }
 
-                    //test abort signal， passed
-//                    continue
-                    //test
-
-//                    }catch (cherr:Exception) {
-//                        MyLog.e(TAG, "#getCommitList: get channel result err: ${cherr.localizedMessage}")
-//                        break
-//                    }
-
-
-                    val nextStr = next.toString()
-                    val commit = resolveCommitByHash(repo, nextStr)
-                    if(commit!=null) {
-                        val c = createCommitDto(next, allBranchList, allTagList, commit, repoId, repoIsShallow, shallowOidList)
-                        //添加元素
-                        retList.add(c)
-                        count++
-                    }else {
-                        MyLog.e(TAG, "#getCommitList(): resolve commit failed, target=$nextStr")
-                    }
-
-
-                    if(count >= pageSize) {
-                        break
-                    }
-
+                    
                     //更新迭代器
                     next = revwalk.next()
                 }catch (e:Exception) {
