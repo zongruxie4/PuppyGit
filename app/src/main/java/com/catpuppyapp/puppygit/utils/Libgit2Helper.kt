@@ -1896,9 +1896,9 @@ class Libgit2Helper {
             val descriptions=StringBuilder(summary)
             val split = ", "
             for(item in actuallyItemList) {  //终止条件为：列表遍历完毕 或者 达到包含文件名的限制数目(上面的limit变量控制)
-                descriptions.append(item.fileName+split)
+                descriptions.append(item.fileName).append(split)
                 ++count;
-                if(descriptions.length>limitCharsLen) {
+                if(descriptions.length > limitCharsLen) {
                     descriptions.append("...omitted ${filesNum - count} file(s)")
                     break
                 }
