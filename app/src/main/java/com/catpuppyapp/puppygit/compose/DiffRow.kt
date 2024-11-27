@@ -86,6 +86,14 @@ fun DiffRow (
     matchByWords:Boolean
 
 ) {
+    // disable for EOF, the EOF showing sometimes false-added
+    // 禁用EOF点击菜单，EOF有时候假添加，就是明明没有eof，但显示新增了eof，可能是libgit2 bug
+    val isNotEof = line.lineNum != LineNum.EOF.LINE_NUM
+    val enableLineActions = isFileAndExist && isNotEof
+    val enableSelectCompare = enableSelectCompare && isNotEof
+    val lineClickable = enableLineActions || enableSelectCompare
+
+
     val showEditLineDialog = rememberSaveable { mutableStateOf(false) }
     val showRestoreLineDialog = rememberSaveable { mutableStateOf(false) }
 
@@ -433,10 +441,6 @@ fun DiffRow (
 //               )
 //    }
 
-    // disable for EOF, the EOF showing sometimes false-added
-    // 禁用EOF点击菜单，EOF有时候假添加，就是明明没有eof，但显示新增了eof，可能是libgit2 bug
-    val enableLineActions = isFileAndExist && line.lineNum != LineNum.EOF.LINE_NUM
-    val lineClickable = enableLineActions || enableSelectCompare
 
     //因为下面用Row换行了，所以不需要内容以换行符结尾
 //    prefix = prefix.removeSuffix(Cons.lineBreak)
