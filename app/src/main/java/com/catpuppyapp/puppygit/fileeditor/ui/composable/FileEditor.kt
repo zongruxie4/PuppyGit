@@ -168,63 +168,6 @@ fun FileEditor(requestFromParent:MutableState<String>,
 
 
 
-    // BottomBar params block start
-    val quitSelectionMode = remember { {
-        textEditorState.value = textEditorState.value.createCancelledState()
-    } }
-    val iconList = remember { listOf(
-        Icons.Filled.Delete,
-        Icons.Filled.ContentCopy,
-        Icons.Filled.SelectAll
-    ) }
-    val iconTextList = remember { listOf(
-        activityContext.getString(R.string.delete),
-        activityContext.getString(R.string.copy),
-        activityContext.getString(R.string.select_all),
-
-    ) }
-    val iconOnClickList = remember { listOf(
-        onDelete@{
-            if (readOnlyMode) {
-                Msg.requireShow(activityContext.getString(R.string.readonly_cant_edit))
-                return@onDelete
-            }
-
-            val selectedLinesNum = textEditorState.value.getSelectedCount();
-            if (selectedLinesNum < 1) {
-                Msg.requireShow(activityContext.getString(R.string.no_line_selected))
-                return@onDelete
-            }
-
-            showDeleteDialog.value = true
-        },
-
-        onCopy@{
-            val selectedLinesNum = textEditorState.value.getSelectedCount();
-            if (selectedLinesNum < 1) {
-                Msg.requireShow(activityContext.getString(R.string.no_line_selected))
-                return@onCopy
-            }
-
-            clipboardManager.setText(AnnotatedString(textEditorState.value.getSelectedText()))
-            Msg.requireShow(replaceStringResList(activityContext.getString(R.string.n_lines_copied), listOf(selectedLinesNum.toString())), )
-            textEditorState.value = textEditorState.value.createCopiedState()
-        },
-
-        onSelectAll@{
-            textEditorState.value = textEditorState.value.createSelectAllState()
-        }
-    ) }
-
-    val getSelectedFilesCount = remember { {textEditorState.value.getSelectedCount()} }
-    val hasLineSelected = remember { {getSelectedFilesCount() > 0} }
-    val iconEnableList = remember { listOf(
-        delete@{ readOnlyMode.not() && hasLineSelected() },  // delete
-        copy@{ hasLineSelected() },  // copy
-        selectAll@{ true },  // select all
-    ) }
-    // BottomBar params block end
-
 
 
     Box(
@@ -331,6 +274,73 @@ fun FileEditor(requestFromParent:MutableState<String>,
 
         // Multiple Selection Menu
         if (textEditorState.value.isMultipleSelectionMode) {
+            //涉及到状态变量的函数一律不要用remember，
+            // 不然状态变量改变后函数不会重新生成，
+            // 例如删除按钮的enable函数依赖只读，
+            // 期望打开关闭只读影响其启用状态，若remember，
+            // 则开关将无影响，否则有影响，
+            // 当然也可把所有相关的状态放到rememberd的括号里，
+            // 例如 remember(相关状态1，状态2，等) {你的函数}，
+            // 但这样写太麻烦了
+
+            // BottomBar params block start
+            val quitSelectionMode = {
+                textEditorState.value = textEditorState.value.createCancelledState()
+            }
+            val iconList = listOf(
+                Icons.Filled.Delete,
+                Icons.Filled.ContentCopy,
+                Icons.Filled.SelectAll
+            )
+            val iconTextList = listOf(
+                activityContext.getString(R.string.delete),
+                activityContext.getString(R.string.copy),
+                activityContext.getString(R.string.select_all),
+            )
+            val iconOnClickList = listOf(
+                onDelete@{
+                    if (readOnlyMode) {
+                        Msg.requireShow(activityContext.getString(R.string.readonly_cant_edit))
+                        return@onDelete
+                    }
+
+                    val selectedLinesNum = textEditorState.value.getSelectedCount();
+                    if (selectedLinesNum < 1) {
+                        Msg.requireShow(activityContext.getString(R.string.no_line_selected))
+                        return@onDelete
+                    }
+
+                    showDeleteDialog.value = true
+                },
+
+                onCopy@{
+                    val selectedLinesNum = textEditorState.value.getSelectedCount();
+                    if (selectedLinesNum < 1) {
+                        Msg.requireShow(activityContext.getString(R.string.no_line_selected))
+                        return@onCopy
+                    }
+
+                    clipboardManager.setText(AnnotatedString(textEditorState.value.getSelectedText()))
+                    Msg.requireShow(replaceStringResList(activityContext.getString(R.string.n_lines_copied), listOf(selectedLinesNum.toString())), )
+                    textEditorState.value = textEditorState.value.createCopiedState()
+                },
+
+                onSelectAll@{
+                    textEditorState.value = textEditorState.value.createSelectAllState()
+                }
+            )
+
+            val getSelectedFilesCount = {textEditorState.value.getSelectedCount()}
+            val hasLineSelected = {getSelectedFilesCount() > 0}
+            val iconEnableList = listOf(
+                delete@{ readOnlyMode.not() && hasLineSelected() },  // delete
+                copy@{ hasLineSelected() },  // copy
+                selectAll@{ true },  // select all
+            )
+            // BottomBar params block end
+
+
+
             BottomBar(
                 quitSelectionMode=quitSelectionMode,
                 iconList=iconList,

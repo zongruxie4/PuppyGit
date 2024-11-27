@@ -117,7 +117,7 @@ fun DiffContent(
     val settings= remember { SettingsUtil.getSettingsSnapshot() }
 
     // remember for make sure only have one instance bundle with a composable function's one life time
-    //用remember是为了确保组件生命周期内只创建一个channel实例
+    //用remember是为了确保组件生命周期内只创建一个channel实例, 用 mutableStateOf() 是因为切换文件后需要创建新Channel
     val loadChannel = remember { mutableStateOf(Channel<Int>())  }
 //    val loadChannelLock = Mutex()
     val refreshPageIfComparingWithLocal={
