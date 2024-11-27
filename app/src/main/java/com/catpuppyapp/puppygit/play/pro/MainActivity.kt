@@ -218,7 +218,9 @@ fun MainCompose() {
         showSshDialog.value=false
     }
     val allowOrRejectSshDialogCallback={
+        //设置当前条目为null以接受新条目
         currentSshAskUserUnknownHostRequest.value = null
+        // 设置“我信任此主机”勾选框为未勾选
         iTrustTheHost.value = false
     }
     if(showSshDialog.value) {

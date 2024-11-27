@@ -8,7 +8,7 @@ import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 import java.io.File
 
-private val TAG = "Lg2HomeUtils"
+private const val TAG = "Lg2HomeUtils"
 
 object Lg2HomeUtils {
 //    private val inited = mutableStateOf(false)
@@ -30,7 +30,7 @@ object Lg2HomeUtils {
     // user's known_hosts user difference format with well-known know_hosts file, each line is a `SshCert.toDbString()`
     private const val userSshKnownHostsFileName = "user_known_hosts"  // users known hosts file
     private lateinit var userKnownHostsFile:File
-    private val userKnownHostItems:MutableList<SshCert> = mutableListOf()
+    private val userKnownHostItems:MutableSet<SshCert> = mutableSetOf()
     private val userKnownHostsFileLock:Mutex = Mutex()
 
     fun init(homeBaseDirPath:File, appContext: Context) {
@@ -104,7 +104,8 @@ object Lg2HomeUtils {
                         }
 
                         val sshCert = SshCert.parseDbString(line)
-                        if(sshCert!=null && userKnownHostItems.contains(sshCert).not()) {
+//                        if(sshCert!=null && userKnownHostItems.contains(sshCert).not()) { // for list
+                        if(sshCert != null) {  // for set
                             userKnownHostItems.add(sshCert)
                         }
                     }
@@ -140,22 +141,23 @@ object Lg2HomeUtils {
         return userKnownHostsFile
     }
     
-    fun getUserKnownHostsFileItems():List<SshCert> {
-        return userKnownHostItems.toList()
+    fun getUserKnownHostsFileItems():Set<SshCert> {
+        return userKnownHostItems.toSet()
     }
 
     fun itemInUserKnownHostsFile(item:SshCert):Boolean{
-        val list = getUserKnownHostsFileItems()
-        val inList = list.contains(item)
+        val set = getUserKnownHostsFileItems()
+        val contained = set.contains(item)
 
-        MyLog.d(TAG, "sshCert in list: $inList, list.size=${list.size}, sshCert=$item, sshCertList=$list")
+        MyLog.d(TAG, "sshCert already contained: $contained, sshCertNeedCheck=$item, allCertCount=${set.size}, allCert=$set")
 
-        return inList
+        return contained
     }
 
     private fun writeItemsToUserKnownHostsFile() {
         // if you want to clear the file, use reset
         if(userKnownHostItems.isEmpty()) {
+            resetUserKnownHostFile()
             return
         }
 
@@ -163,7 +165,7 @@ object Lg2HomeUtils {
             userKnownHostsFileLock.withLock {
                 userKnownHostsFile.outputStream().bufferedWriter().use { writer->
                     userKnownHostItems.forEach {
-                        writer.appendLine(it.toDbString())
+                        writer.write("${it.toDbString()}\n")
                     }
                 }
             }
@@ -171,11 +173,10 @@ object Lg2HomeUtils {
     }
 
     fun addItemToUserKnownHostsFile(item:SshCert) {
-        if(itemInUserKnownHostsFile(item)) {
+        // for `Set`, add success, return true, else return false, if true, should write to file
+        if(userKnownHostItems.add(item).not()) {
             return
         }
-
-        userKnownHostItems.add(item)
 
         // user's rules, shouldn't over 1000, so just write all, no need randam access or append to file
         writeItemsToUserKnownHostsFile()

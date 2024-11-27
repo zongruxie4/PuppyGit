@@ -17,9 +17,11 @@ import com.catpuppyapp.puppygit.play.pro.R
 import com.catpuppyapp.puppygit.style.MyStyleKt
 import com.catpuppyapp.puppygit.utils.Lg2HomeUtils
 import com.catpuppyapp.puppygit.utils.Msg
+import com.catpuppyapp.puppygit.utils.MyLog
 import com.catpuppyapp.puppygit.utils.doJobThenOffLoading
 import com.catpuppyapp.puppygit.utils.state.CustomStateSaveable
 
+private const val TAG = "SshUnknownHostDialog"
 
 @Composable
 fun SshUnknownHostDialog(
@@ -101,19 +103,31 @@ fun SshUnknownHostDialog(
         okTextColor = if (iTrustTheHost.value) MyStyleKt.TextColor.danger() else Color.Unspecified,
         okBtnText = stringResource(R.string.allow),
         cancelBtnText = stringResource(R.string.reject),
-        onCancel = {
+        onCancel = {  // reject
             closeSshDialog()
             allowOrRejectSshDialogCallback()
         }
-    ) {
+    ) {  // allow
         closeSshDialog()
 
         doJobThenOffLoading {
-            Lg2HomeUtils.addItemToUserKnownHostsFile(currentSshAskUserUnknownHostRequest.value!!.sshCert)
+            try {
+                if(item == null) {
+                    Msg.requireShowLongDuration("err: ssh cert is `null`")
+                    return@doJobThenOffLoading
+                }
 
-            Msg.requireShowLongDuration(appContext.getString(R.string.allowed_plz_re_try_clone_fetch_push))
+                // add to file
+                Lg2HomeUtils.addItemToUserKnownHostsFile(item.sshCert)
 
-            allowOrRejectSshDialogCallback()
+                // show success msg
+                Msg.requireShowLongDuration(appContext.getString(R.string.allowed_plz_re_try_clone_fetch_push))
+            }catch (e:Exception){
+                Msg.requireShowLongDuration("err: ${e.localizedMessage}")
+                MyLog.e(TAG, "allow host key(ssh cert) failed: ${e.stackTraceToString()}")
+            }finally {
+                allowOrRejectSshDialogCallback()
+            }
         }
     }
 }
