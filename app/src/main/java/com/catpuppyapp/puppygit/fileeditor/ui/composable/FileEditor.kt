@@ -10,17 +10,20 @@ import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.systemBarsPadding
 import androidx.compose.foundation.lazy.LazyListState
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.ContentCopy
+import androidx.compose.material.icons.filled.Delete
+import androidx.compose.material.icons.filled.SelectAll
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.MutableIntState
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -38,13 +41,13 @@ import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.catpuppyapp.puppygit.compose.BottomBar
 import com.catpuppyapp.puppygit.compose.ConfirmDialog
 import com.catpuppyapp.puppygit.constants.PageRequest
 import com.catpuppyapp.puppygit.fileeditor.texteditor.controller.EditorController
 import com.catpuppyapp.puppygit.fileeditor.texteditor.state.TextEditorState
 import com.catpuppyapp.puppygit.fileeditor.texteditor.view.ScrollEvent
 import com.catpuppyapp.puppygit.fileeditor.texteditor.view.TextEditor
-import com.catpuppyapp.puppygit.fileeditor.ui.composable.editor.EditorMenus
 import com.catpuppyapp.puppygit.fileeditor.ui.composable.editor.FieldIcon
 import com.catpuppyapp.puppygit.fileeditor.ui.extension.createCancelledState
 import com.catpuppyapp.puppygit.fileeditor.ui.extension.createCopiedState
@@ -163,6 +166,67 @@ fun FileEditor(requestFromParent:MutableState<String>,
         }
     }
 
+
+
+    // BottomBar params block start
+    val quitSelectionMode = remember { {
+        textEditorState.value = textEditorState.value.createCancelledState()
+    } }
+    val iconList = remember { listOf(
+        Icons.Filled.Delete,
+        Icons.Filled.ContentCopy,
+        Icons.Filled.SelectAll
+    ) }
+    val iconTextList = remember { listOf(
+        activityContext.getString(R.string.delete),
+        activityContext.getString(R.string.copy),
+        activityContext.getString(R.string.select_all),
+
+    ) }
+    val iconOnClickList = remember { listOf(
+        onDelete@{
+            if (readOnlyMode) {
+                Msg.requireShow(activityContext.getString(R.string.readonly_cant_edit))
+                return@onDelete
+            }
+
+            val selectedLinesNum = textEditorState.value.getSelectedCount();
+            if (selectedLinesNum < 1) {
+                Msg.requireShow(activityContext.getString(R.string.no_line_selected))
+                return@onDelete
+            }
+
+            showDeleteDialog.value = true
+        },
+
+        onCopy@{
+            val selectedLinesNum = textEditorState.value.getSelectedCount();
+            if (selectedLinesNum < 1) {
+                Msg.requireShow(activityContext.getString(R.string.no_line_selected))
+                return@onCopy
+            }
+
+            clipboardManager.setText(AnnotatedString(textEditorState.value.getSelectedText()))
+            Msg.requireShow(replaceStringResList(activityContext.getString(R.string.n_lines_copied), listOf(selectedLinesNum.toString())), )
+            textEditorState.value = textEditorState.value.createCopiedState()
+        },
+
+        onSelectAll@{
+            textEditorState.value = textEditorState.value.createSelectAllState()
+        }
+    ) }
+
+    val getSelectedFilesCount = remember { {textEditorState.value.getSelectedCount()} }
+    val hasLineSelected = remember { {getSelectedFilesCount() > 0} }
+    val iconEnableList = remember { listOf(
+        delete@{ readOnlyMode.not() && hasLineSelected() },  // delete
+        copy@{ hasLineSelected() },  // copy
+        selectAll@{ true },  // select all
+    ) }
+    // BottomBar params block end
+
+
+
     Box(
         modifier = Modifier
             .fillMaxSize()
@@ -203,7 +267,7 @@ fun FileEditor(requestFromParent:MutableState<String>,
                     )
                     .bottomBorder(
                         strokeWidth = 1.dp,
-                        color = if (inDarkTheme) Color.DarkGray.copy(alpha=0.2f) else Color.LightGray.copy(alpha = 0.2f)
+                        color = if (inDarkTheme) Color.DarkGray.copy(alpha = 0.2f) else Color.LightGray.copy(alpha = 0.2f)
                     )
             ) {
                 if(showLineNum.value) {
@@ -267,49 +331,20 @@ fun FileEditor(requestFromParent:MutableState<String>,
 
         // Multiple Selection Menu
         if (textEditorState.value.isMultipleSelectionMode) {
-            EditorMenus(
-                modifier = Modifier
-                    .systemBarsPadding()
-                    .padding(8.dp)
-                    .height(MyStyleKt.Editor.bottomBarHeight)
-                    .fillMaxWidth()
-                    .align(Alignment.BottomCenter)
-                ,
-
-                selectedLinesCount = textEditorState.value.getSelectedCount(),
-                onDelete = onDelete@{
-                    if (readOnlyMode) {
-                        Msg.requireShow(activityContext.getString(R.string.readonly_cant_edit))
-                        return@onDelete
-                    }
-
-                    val selectedLinesNum = textEditorState.value.getSelectedCount();
-                    if (selectedLinesNum < 1) {
-                        Msg.requireShow(activityContext.getString(R.string.no_line_selected))
-                        return@onDelete
-                    }
-
-                    showDeleteDialog.value = true
-                },
-                onCopy = onCopy@{
-                    val selectedLinesNum = textEditorState.value.getSelectedCount();
-                    if (selectedLinesNum < 1) {
-                        Msg.requireShow(activityContext.getString(R.string.no_line_selected))
-                        return@onCopy
-                    }
-
-                    clipboardManager.setText(AnnotatedString(textEditorState.value.getSelectedText()))
-                    Msg.requireShow(replaceStringResList(activityContext.getString(R.string.n_lines_copied), listOf(selectedLinesNum.toString())), )
-                    textEditorState.value = textEditorState.value.createCopiedState()
-                },
-
-                onSelectAll = {
-                    textEditorState.value = textEditorState.value.createSelectAllState()
-                },
-                onCancel = {
-                    textEditorState.value = textEditorState.value.createCancelledState()
-                },
-
+            BottomBar(
+                quitSelectionMode=quitSelectionMode,
+                iconList=iconList,
+                iconTextList=iconTextList,
+                iconDescTextList=iconTextList,
+                iconOnClickList=iconOnClickList,
+                iconEnableList=iconEnableList,
+                enableMoreIcon=false,
+                moreItemTextList= listOf(),
+                moreItemOnClickList= listOf(),
+                moreItemEnableList = listOf(),
+                getSelectedFilesCount = getSelectedFilesCount,
+                countNumOnClickEnabled = false,
+                countNumOnClick = {}
             )
         }
 //        SmallFab(modifier = Modifier.align(Alignment.BottomEnd), icon = Icons.Filled.Save, iconDesc = stringResource(id = R.string.save)) {
