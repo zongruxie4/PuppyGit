@@ -1892,7 +1892,7 @@ class Libgit2Helper {
 
             //生成提交信息
             val filesNum = actuallyItemList.size
-            val summary = (if(repoState==Repository.StateT.MERGE) "Conclude Merge, " else "") + ("Updated $filesNum file(s) by PuppyGit:\n")
+            val summary = (if(repoState==Repository.StateT.MERGE) "Conclude Merge" else if(repoState==Repository.StateT.REBASE_MERGE) "Rebase" else if(repoState==Repository.StateT.CHERRYPICK) "Cherrypick" else "Update $filesNum ${if(filesNum>1) "files" else "file"} by PuppyGit") + (":\n")
             val descriptions=StringBuilder(summary)
             val split = ", "
             for(item in actuallyItemList) {  //终止条件为：列表遍历完毕 或者 达到包含文件名的限制数目(上面的limit变量控制)
@@ -1910,35 +1910,35 @@ class Libgit2Helper {
             return Ret.createSuccess(commitMsg)
         }
 
-        @Deprecated("限制文件名数量的版本，在20240425弃用了")
-        fun genCommitMsg_deprecated_at_20240425(repo:Repository, itemList: List<StatusTypeEntrySaver>?=null): Ret<String?> {
-            var actuallyItemList = itemList
-            if(actuallyItemList == null) { //如果itemList为null，查询一下实际的index列表
-                val (isIndexEmpty, indexItemList) = checkIndexIsEmptyAndGetIndexList(repo, "", onlyCheckEmpty = false)  //这里期望获得列表，所以仅检查空传假
-                if(isIndexEmpty || indexItemList.isNullOrEmpty()) {
-                    MyLog.d(TAG, "#genCommitMsg() error! isIndexEmpty = "+isIndexEmpty+", indexItemList.isNullOrEmpty() = "+indexItemList.isNullOrEmpty())
-                    return Ret.createError(null, "index is Empty!",Ret.ErrCode.indexIsEmpty)
-                }
-
-                actuallyItemList = indexItemList
-            }
-
-            val limit = 5;  //提交信息包含几个文件名
-            var start = 0;
-
-            //生成提交信息
-            val sb=StringBuilder()
-            val suffix = ", "
-            for(item in actuallyItemList) {  //终止条件为：列表遍历完毕 或者 达到包含文件名的限制数目(上面的limit变量控制)
-                sb.append(item.fileName+suffix)
-                if(++start > limit) {  //达到包含文件名的限制数目则break(上面的limit变量控制)
-                    break
-                }
-            }
-            val fileListStr = sb.removeSuffix(suffix).toString()  //移除最后的 “, ”
-            val commitMsg = "Updated " + actuallyItemList.size +" files:" +fileListStr+"...and more. -- by PuppyGit"
-            return Ret.createSuccess(commitMsg)
-        }
+//        @Deprecated("限制文件名数量的版本，在20240425弃用了")
+//        fun genCommitMsg_deprecated_at_20240425(repo:Repository, itemList: List<StatusTypeEntrySaver>?=null): Ret<String?> {
+//            var actuallyItemList = itemList
+//            if(actuallyItemList == null) { //如果itemList为null，查询一下实际的index列表
+//                val (isIndexEmpty, indexItemList) = checkIndexIsEmptyAndGetIndexList(repo, "", onlyCheckEmpty = false)  //这里期望获得列表，所以仅检查空传假
+//                if(isIndexEmpty || indexItemList.isNullOrEmpty()) {
+//                    MyLog.d(TAG, "#genCommitMsg() error! isIndexEmpty = "+isIndexEmpty+", indexItemList.isNullOrEmpty() = "+indexItemList.isNullOrEmpty())
+//                    return Ret.createError(null, "index is Empty!",Ret.ErrCode.indexIsEmpty)
+//                }
+//
+//                actuallyItemList = indexItemList
+//            }
+//
+//            val limit = 5;  //提交信息包含几个文件名
+//            var start = 0;
+//
+//            //生成提交信息
+//            val sb=StringBuilder()
+//            val suffix = ", "
+//            for(item in actuallyItemList) {  //终止条件为：列表遍历完毕 或者 达到包含文件名的限制数目(上面的limit变量控制)
+//                sb.append(item.fileName+suffix)
+//                if(++start > limit) {  //达到包含文件名的限制数目则break(上面的limit变量控制)
+//                    break
+//                }
+//            }
+//            val fileListStr = sb.removeSuffix(suffix).toString()  //移除最后的 “, ”
+//            val commitMsg = "Updated " + actuallyItemList.size +" files:" +fileListStr+"...and more. -- by PuppyGit"
+//            return Ret.createSuccess(commitMsg)
+//        }
 
         private fun doCreateCommit(repo: Repository, msg: String, username: String, email: String, curBranchFullRefSpec:String, parentList:List<Commit>, amend: Boolean, overwriteAuthorWhenAmend:Boolean, cleanRepoStateIfSuccess:Boolean):Ret<Oid?> {
             if(username.isBlank()) {
@@ -2997,24 +2997,27 @@ class Libgit2Helper {
             if(repo.index().hasConflicts()) {
                 //调用者可在返回error后检查repo.index.hasConflicts()来确认是否因为有冲突所以合并失败，不过一般不用检查，返回error直接显示提示并终止后续操作就行了
                 return Ret.createError(null, "merge failed:has conflicts", Ret.ErrCode.mergeFailedByAfterMergeHasConfilts)  //merge完了，存在冲突
-            }else {  //创建提交
+            }else {  //合并完无冲突，创建提交
                 // merge成功后创建的提交应该有两个父提交： HEAD 和 targetBranch.
+                val headName = "HEAD"
                 val parent = mutableListOf<Commit>()
-                val headRef = resolveRefByName(repo, "HEAD")
+                val headRef = resolveRefByName(repo, headName)
                 if(headRef==null) {
                     return Ret.createError(null, "resolve HEAD error!", Ret.ErrCode.headIsNull)
                 }
-                val headCommit = headRef?.id()?.let { Commit.lookup(repo, it) }
+                val headCommit = resolveCommitByRef(repo, headName)
                 //第一个父提交必须得是直系的HEAD
                 //添加直接父commit:HEAD
-                if (headCommit != null) {
-                    parent.add(headCommit)
-                }else {
+                if (headCommit == null) {
                     return Ret.createError(null, "get current HEAD latest commit failed", Ret.ErrCode.mergeFailedByGetRepoHeadCommitFaild)
                 }
+
+                parent.add(headCommit)
+
                 //添加其他父提交
-                val sb = StringBuilder(headRef.shorthand()+" merged with:")
+                val branchNames = StringBuilder()
                 val suffix = ", "
+                //产生字符串 "merge 'a,b,c,d"
                 for(ac in theirHeads) {
                     val c = Commit.lookup(repo, ac.id())
                     //生成merge commit msg，首先尝试取出ac.ref()中分支名部分。
@@ -3030,12 +3033,16 @@ class Libgit2Helper {
                             branchNameOrRefShortHash = c.shortId().toString()  //默认是commit hash的前7个字符
                         }
                     }
-                    sb.append(branchNameOrRefShortHash+suffix)  //拼接字符串，形如："分支名, "
+
+                    branchNames.append(branchNameOrRefShortHash).append(suffix)  //拼接字符串，形如："分支名, "
+
                     //添加提交节点到父节点列表
                     parent.add(c)
                 }
 
-                val msg = sb.removeSuffix(suffix).toString()  //移除最后一个 ", "
+
+                //产生字符串： "merge 'branch1, branch2, c, d' into 'main' "
+                val msg = "merge '${branchNames.removeSuffix(suffix)}' into '${headRef.shorthand()}'"  //移除最后一个 ", "
                 val branchFullRefName: String = headRef.name()
 
                 //创建提交
