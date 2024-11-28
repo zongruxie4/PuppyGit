@@ -484,6 +484,7 @@ fun DiffContent(
 //                                lines.remove(Diff.Line.OriginType.DELETION.toString())
 
                                 //如果已经存在真context，就不显示这个假context了，否则显示
+                                //这里可以假设 add 和 context 是一样的，所以如果add和del一样，其实隐含了add == del == context，因此若context已经显示，就不需要再显示了
                                 if(context == null) {
 //                                    val newContextLineFromAddAndDelOnlyLineBreakDifference = del.copy(originType = Diff.Line.OriginType.CONTEXT.toString())
 //                                    lines.put(Diff.Line.OriginType.CONTEXT.toString(), newContextLineFromAddAndDelOnlyLineBreakDifference)
