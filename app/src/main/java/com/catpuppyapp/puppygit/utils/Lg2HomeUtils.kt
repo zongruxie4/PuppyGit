@@ -174,11 +174,9 @@ object Lg2HomeUtils {
 
     fun addItemToUserKnownHostsFile(item:SshCert) {
         // for `Set`, add success, return true, else return false, if true, should write to file
-        if(userKnownHostItems.add(item).not()) {
-            return
+        if(userKnownHostItems.add(item)) {
+            // user's rules, shouldn't over 1000, so just write all, no need randam access or append to file
+            writeItemsToUserKnownHostsFile()
         }
-
-        // user's rules, shouldn't over 1000, so just write all, no need randam access or append to file
-        writeItemsToUserKnownHostsFile()
     }
 }

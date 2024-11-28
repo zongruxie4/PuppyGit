@@ -320,41 +320,7 @@ fun DiffContent(
                                 return@printLine
                             }
 
-                            val mergeAddDelLineResult = hunkAndLines.needShowAddOrDelLineAsContext(line.lineNum)
-                            // ignore which lines has ADD and DEL 2 types, but only difference at has '\n' or has not
-                            if(mergeAddDelLineResult.needShowAsContext) {
-                                // 合并只有末尾是否有换行符的添加和删除行为context等于显示一个没修改的行，既然没修改，直接不显示不就行了？反正本来就自带context，顶多差一行
-                                if(mergeAddDelLineResult.data!=null) {  // now showed this line before, show it
-                                    item {
-                                        DiffRow(
-                                            //随便拷贝下del或add（不拷贝只改类型也行但不推荐以免有坏影响）把类型改成context，就行了
-                                            line = mergeAddDelLineResult.data,
-                                            fileFullPath=fileFullPath,
-                                            isFileAndExist = isFileAndExist.value,
-                                            clipboardManager=clipboardManager,
-                                            loadingOn=loadingOnParent,
-                                            loadingOff=loadingOffParent,
-                                            refreshPage=refreshPageIfComparingWithLocal,
-                                            repoId=repoId,
-                                            showOriginType = showOriginType,
-                                            showLineNum = showLineNum,
-                                            fontSize = fontSize,
-                                            lineNumSize = lineNumSize,
-                                            comparePairBuffer = comparePairBuffer,
-                                            betterCompare = requireBetterMatchingForCompare.value,
-                                            reForEachDiffContent=reForEachDiffContent,
-                                            indexStringPartListMap = indexStringPartListMapForComparePair,
-                                            enableSelectCompare=enableSelectCompare,
-                                            matchByWords = matchByWords.value
-                                        )
-
-                                    }
-                                }
-
-                                return@printLine
-                            }
-
-
+                            // true or fake context
                             if(line.originType == Diff.Line.OriginType.CONTEXT.toString()) {
                                 item {
                                     DiffRow(
@@ -380,31 +346,24 @@ fun DiffContent(
                                 }
                             }else {  // add or del
 
-//                                val pair = comparePair.value
-                                // use pair
-                                val compareResult = indexStringPartListMapForComparePair.value[line.key]
-                                if (compareResult != null) {
-
+                                // fake context
+                                // ignore which lines has ADD and DEL 2 types, but only difference at has '\n' or has not
+                                // 合并只有末尾是否有换行符的添加和删除行为context等于显示一个没修改的行，既然没修改，直接不显示不就行了？反正本来就自带context，顶多差一行
+                                //随便拷贝下del或add（不拷贝只改类型也行但不推荐以免有坏影响）把类型改成context，就行了
+                                //如果已经显示过，第2次获取result.data会是null，这时就不用再显示了
+                                val mergeAddDelLineResult = hunkAndLines.needShowAddOrDelLineAsContext(line.lineNum)
+                                //需要把add和del行转换为上下文行，这种情况发生在 add和del行仅一个有末尾换行符另一个没有时
+                                if(mergeAddDelLineResult.needShowAsContext && mergeAddDelLineResult.line != null) {
                                     item {
-//                                        val pair = pair.consume()
-
-                                        // if line1 is logic add, only has 2 possible: 1. line 1 is really add type, or is context type, but context already except by upside if check, so, now if line1isLogicAdd is true, is 100% is really add type
-//                                        val (addStringPartList, delStringPartList) = if (pair.line1OriginType == line.originType && line.lineNum == pair.line1Num && line.originType == OriginType.ADDITION.toString()) {
-//                                            Pair(compareResult.add, compareResult.del)
-//                                        } else {
-//                                            Pair(compareResult.del, compareResult.add)
-//                                        }
-
                                         DiffRow(
-                                            line = line,
-                                            fileFullPath = fileFullPath,
-                                            stringPartList = compareResult.stringPartList,
+                                            line = mergeAddDelLineResult.line,
+                                            fileFullPath=fileFullPath,
                                             isFileAndExist = isFileAndExist.value,
-                                            clipboardManager = clipboardManager,
-                                            loadingOn = loadingOnParent,
-                                            loadingOff = loadingOffParent,
-                                            refreshPage = refreshPageIfComparingWithLocal,
-                                            repoId = repoId,
+                                            clipboardManager=clipboardManager,
+                                            loadingOn=loadingOnParent,
+                                            loadingOff=loadingOffParent,
+                                            refreshPage=refreshPageIfComparingWithLocal,
+                                            repoId=repoId,
                                             showOriginType = showOriginType,
                                             showLineNum = showLineNum,
                                             fontSize = fontSize,
@@ -417,68 +376,59 @@ fun DiffContent(
                                             matchByWords = matchByWords.value
                                         )
                                     }
-                                }else {
 
-                                        val modifyResult = hunkAndLines.getModifyResult(
-                                            lineNum = line.lineNum,
-                                            requireBetterMatchingForCompare = requireBetterMatchingForCompare.value,
-                                            matchByWords = matchByWords.value
-                                        )
+                                    return@printLine
+                                }
 
-                                        if (modifyResult == null || !modifyResult.matched) {
-                                            item {
-                                                DiffRow(
-                                                    line = line,
-                                                    fileFullPath = fileFullPath,
-                                                    isFileAndExist = isFileAndExist.value,
-                                                    clipboardManager = clipboardManager,
-                                                    loadingOn = loadingOnParent,
-                                                    loadingOff = loadingOffParent,
-                                                    refreshPage = refreshPageIfComparingWithLocal,
-                                                    repoId = repoId,
-                                                    showOriginType = showOriginType,
-                                                    showLineNum = showLineNum,
-                                                    fontSize = fontSize,
-                                                    lineNumSize = lineNumSize,
-                                                    comparePairBuffer = comparePairBuffer,
-                                                    betterCompare = requireBetterMatchingForCompare.value,
-                                                    reForEachDiffContent=reForEachDiffContent,
-                                                    indexStringPartListMap = indexStringPartListMapForComparePair,
-                                                    enableSelectCompare=enableSelectCompare,
-                                                    matchByWords = matchByWords.value
-                                                )
-                                            }
-                                        } else {  // matched
-                                            item {
-                                                DiffRow(
-                                                    line = line,
-                                                    fileFullPath = fileFullPath,
-                                                    stringPartList = if (line.originType == Diff.Line.OriginType.ADDITION.toString()) modifyResult.add else modifyResult.del,
-                                                    isFileAndExist = isFileAndExist.value,
-                                                    clipboardManager = clipboardManager,
-                                                    loadingOn = loadingOnParent,
-                                                    loadingOff = loadingOffParent,
-                                                    refreshPage = refreshPageIfComparingWithLocal,
-                                                    repoId = repoId,
-                                                    showOriginType = showOriginType,
-                                                    showLineNum = showLineNum,
-                                                    fontSize = fontSize,
-                                                    lineNumSize = lineNumSize,
-                                                    comparePairBuffer = comparePairBuffer,
-                                                    betterCompare = requireBetterMatchingForCompare.value,
-                                                    reForEachDiffContent=reForEachDiffContent,
-                                                    indexStringPartListMap = indexStringPartListMapForComparePair,
-                                                    enableSelectCompare=enableSelectCompare,
-                                                    matchByWords = matchByWords.value
-                                                )
-                                            }
-                                        }
+
+
+
+//                                val pair = comparePair.value
+                                // use pair
+                                val compareResult = indexStringPartListMapForComparePair.value[line.key]
+                                var stringPartListWillUse = compareResult?.stringPartList
+
+                                if(stringPartListWillUse == null) {
+                                    //没发现选择比较的结果，比较下实际相同行号不同类型（add、del）的行
+                                    val modifyResult = hunkAndLines.getModifyResult(
+                                        lineNum = line.lineNum,
+                                        requireBetterMatchingForCompare = requireBetterMatchingForCompare.value,
+                                        matchByWords = matchByWords.value
+                                    )
+
+                                    if(modifyResult?.matched == true) {
+                                        stringPartListWillUse = if (line.originType == Diff.Line.OriginType.ADDITION.toString()) modifyResult.add else modifyResult.del
+                                    }
+
+                                }
+
+                                item {
+                                    DiffRow(
+                                        line = line,
+                                        fileFullPath = fileFullPath,
+                                        stringPartList = stringPartListWillUse,
+                                        isFileAndExist = isFileAndExist.value,
+                                        clipboardManager = clipboardManager,
+                                        loadingOn = loadingOnParent,
+                                        loadingOff = loadingOffParent,
+                                        refreshPage = refreshPageIfComparingWithLocal,
+                                        repoId = repoId,
+                                        showOriginType = showOriginType,
+                                        showLineNum = showLineNum,
+                                        fontSize = fontSize,
+                                        lineNumSize = lineNumSize,
+                                        comparePairBuffer = comparePairBuffer,
+                                        betterCompare = requireBetterMatchingForCompare.value,
+                                        reForEachDiffContent=reForEachDiffContent,
+                                        indexStringPartListMap = indexStringPartListMapForComparePair,
+                                        enableSelectCompare=enableSelectCompare,
+                                        matchByWords = matchByWords.value
+                                    )
                                 }
                             }
                         }
                     }else {  // grouped lines by line num
-
-                        hunkAndLines.groupedLines.forEach printLine@{ (_lineNum:Int, lines:HashMap<String, PuppyLine>) ->
+                        hunkAndLines.groupedLines.forEach printLine@{ (_lineNum:Int, lines:Map<String, PuppyLine>) ->
                             //若非 新增行、删除行、上下文 ，不显示
                             if (!(lines.contains(Diff.Line.OriginType.ADDITION.toString())
                                   || lines.contains(Diff.Line.OriginType.DELETION.toString())
@@ -488,11 +438,11 @@ fun DiffContent(
                                 return@printLine
                             }
 
+
                             val add = lines.get(Diff.Line.OriginType.ADDITION.toString())
                             val del = lines.get(Diff.Line.OriginType.DELETION.toString())
                             val context = lines.get(Diff.Line.OriginType.CONTEXT.toString())
                             //若 context del add同时存在，打印顺序为 context/del/add，不过不太可能3个同时存在，顶多两个同时存在
-
                             if(context!=null) {
                                 item {
                                     //打印context
@@ -519,50 +469,29 @@ fun DiffContent(
                                 }
                             }
 
-//                            val pair = comparePair.value
-                            //不存在的key是为了使返回值为null
-                            val addCompareLinePairResult = indexStringPartListMapForComparePair.value.get(add?.key?:"nonexist keyadd")
-                            val delCompareLinePairResult = indexStringPartListMapForComparePair.value.get(del?.key?:"nonexist keydel")
-                            var addUsedPair = false
-                            var delUsedPair = false
-
-                            var delStringPartListWillUse:List<IndexStringPart>? = null
-                            var addStringPartListWillUse:List<IndexStringPart>? = null
-
-                            if(delCompareLinePairResult != null && del != null){
-                                delUsedPair = true
-                                delStringPartListWillUse = delCompareLinePairResult.stringPartList
-                            }
-
-                            if(addCompareLinePairResult != null && add != null) {
-                                addUsedPair = true
-                                addStringPartListWillUse = addCompareLinePairResult.stringPartList
-                            }
-
-
-
 
 
                             //只有在第一次执行比较时才执行此检查，且一旦转换，add和del行将消失，变成相同行号的上下文行
                             //潜在bug：如果存在一个行号，同时有add/del/context 3种类型的行号且 add和del 仅末尾行号不同，而和context内容上有不同，就会有bug，会少显示add del行的内容，不过，应该不会存在这种情况
-                            if(add!=null && del!=null && addUsedPair.not() && delUsedPair.not() && add.getContentNoLineBreak().equals(del.getContentNoLineBreak())) {  //同样行号，同时存在删除和新增，执行增量diff
+                            if(add!=null && del!=null && add.getContentNoLineBreak().equals(del.getContentNoLineBreak())) {  //同样行号，同时存在删除和新增，执行增量diff
                                 //解决：两行除了末尾换行符没任何区别的情况仍显示diff的bug（有红有绿但没区别，令人迷惑）
                                 //如果转换成context，其实就不能触发select compare了，不过并没bug，因为如果转换为context，一开始就转换了，后面就不会再有选择行比较了？不对，有bug，必须得把原先的添加和删除类型的行删掉，换成一个上下文行，这样才能在之后选择比较行时无bug，我已经处理了
 
                                 //添加和删除行仅一个有换行符，另一个没有，当作没区别，移除添加和删除类型，并添加一个新的上下文行
                                 //转换后的行有无换行符无所谓，DiffRow显示前会先移除末尾的换行符
-                                lines.remove(Diff.Line.OriginType.ADDITION.toString())
-                                lines.remove(Diff.Line.OriginType.DELETION.toString())
+                                //不能remove，不然切换group by line后，会有问题
+//                                lines.remove(Diff.Line.OriginType.ADDITION.toString())
+//                                lines.remove(Diff.Line.OriginType.DELETION.toString())
 
-                                //如果已经存在context，不覆盖它，否则用add或del行创建一个新的context，存进集合并显示
-                                if(context==null) {
-                                    val newContextLineFromAddAndDelOnlyLineBreakDifference = del.copy(originType = Diff.Line.OriginType.CONTEXT.toString())
-                                    lines.put(Diff.Line.OriginType.CONTEXT.toString(), newContextLineFromAddAndDelOnlyLineBreakDifference)
+                                //如果已经存在真context，就不显示这个假context了，否则显示
+                                if(context == null) {
+//                                    val newContextLineFromAddAndDelOnlyLineBreakDifference = del.copy(originType = Diff.Line.OriginType.CONTEXT.toString())
+//                                    lines.put(Diff.Line.OriginType.CONTEXT.toString(), newContextLineFromAddAndDelOnlyLineBreakDifference)
 
                                     item {
                                         DiffRow(
                                             //随便拷贝下del或add（不拷贝只改类型也行但不推荐以免有坏影响）把类型改成context，就行了
-                                            line = newContextLineFromAddAndDelOnlyLineBreakDifference,
+                                            line = del.copy(originType = Diff.Line.OriginType.CONTEXT.toString()),
                                             fileFullPath=fileFullPath,
                                             isFileAndExist = isFileAndExist.value,
                                             clipboardManager=clipboardManager,
@@ -585,7 +514,30 @@ fun DiffContent(
                                     }
                                 }
 
+                                //已经显示了一个真的或假的context行，执行到这里，就可以下一行了
                                 return@printLine
+                            }
+
+
+
+//                            val pair = comparePair.value
+                            //不存在的key是为了使返回值为null
+                            val addCompareLinePairResult = indexStringPartListMapForComparePair.value.get(add?.key?:"nonexist keyadd")
+                            val delCompareLinePairResult = indexStringPartListMapForComparePair.value.get(del?.key?:"nonexist keydel")
+                            var addUsedPair = false
+                            var delUsedPair = false
+
+                            var delStringPartListWillUse:List<IndexStringPart>? = null
+                            var addStringPartListWillUse:List<IndexStringPart>? = null
+
+                            if(delCompareLinePairResult != null && del != null){
+                                delUsedPair = true
+                                delStringPartListWillUse = delCompareLinePairResult.stringPartList
+                            }
+
+                            if(addCompareLinePairResult != null && add != null) {
+                                addUsedPair = true
+                                addStringPartListWillUse = addCompareLinePairResult.stringPartList
                             }
 
 
