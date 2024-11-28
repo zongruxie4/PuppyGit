@@ -1078,12 +1078,50 @@ object FsUtils {
 //        File(filePath).bufferedReader().readLines()
 
         val lines = mutableListOf<String>()  //默认是ArrayList，容量10
-        File(filePath).bufferedReader().use {
+        val arrBuf = CharArray(4096)
+        val aline = StringBuilder(100)
+        var lastChar:Char? = null
+        File(filePath).bufferedReader().use { reader ->
             while (true) {
-                val aline = it.readLine() ?: break
-                lines.add(aline)
+                val readSize = reader.read(arrBuf)
+                if(readSize == -1) {
+                    break
+                }
+
+                for (i in 0 until readSize) {
+                    val char = arrBuf[i]
+                    // handle the '\n' or '\r' or "\r\n"
+                    if (char == '\n'){
+                        if(lastChar != '\r') {
+                            lines.add(aline.toString())
+                            aline.clear()
+                        }
+                    } else if(char == '\r') {
+                        lines.add(aline.toString())
+                        aline.clear()
+                    } else {
+                        aline.append(char)
+                    }
+
+                    lastChar = char
+                }
             }
         }
+
+        if(aline.isNotEmpty()) {
+            // last line no line break, means end of the file no new line(文件末尾没换行符）
+            lines.add(aline.toString())
+
+        // aline若为空有两种情况，1文件为空，压根没读；2读了，末尾是换行符，所以aline被清空。而lastChar若不等于null，说明至少读了一个字符，所以文件不为空，因此，aline为空且lastChar不为null就隐含文件末尾是换行符
+        //其实这里用lastChar != null或判断lastChar==\n或\r都行，
+        // 因为 这里隐含条件aline为空，而 `aline.isEmpty() && lastChar!=null` ，
+        // 意味着文件非空(所以lastChar!=null)且最后一个字符为换行符(所以aline被清空)，但这样写不太直观，一看代码容易困惑
+//        }else if(lastChar == '\n' || lastChar == '\r') { // or else if(lastChar != null)
+        }else if(lastChar != null) {
+            // last line, has line break
+            lines.add("")
+        }
+
 
         //因为用 空字符串.lines() 会返回size 1的集合，所以，若文件内容为空，也应如此
         if(lines.isEmpty()) {
