@@ -1072,12 +1072,16 @@ object FsUtils {
         }
     }
 
+    fun readLinesFromFile(filePath: String): List<String> {
+        return readLinesFromFile(File(filePath))
+    }
+
     /**
      * 读取文件中的行到list，
      * 支持 \r 或 \n 或 \r\n 分割的文件，
      * 正常情况下，一个文件只有一种类型的换行符，用这个函数没问题，如果是个混用各种换行符的奇葩文件，行数会乱。
      */
-    fun readLinesFromFile(filePath: String): List<String> {
+    fun readLinesFromFile(file: File): List<String> {
 //        val lines = ArrayList<String>(30)  //不确定用户打开的文件到底多少行啊，算了，用默认吧
         //readLines() api 说不能用于 huge files?我看源代码好像也是用readLine一行行读的，我自己写好像差不多，不过不会创建迭代器之类的，可能稍微快一点点，但应该也不能用于huge files吧？大概
 //        File(filePath).bufferedReader().readLines()
@@ -1086,7 +1090,7 @@ object FsUtils {
         val arrBuf = CharArray(4096)
         val aline = StringBuilder(100)
         var lastChar:Char? = null
-        File(filePath).bufferedReader().use { reader ->
+        file.bufferedReader().use { reader ->
             while (true) {
                 val readSize = reader.read(arrBuf)
                 if(readSize == -1) {
