@@ -1295,8 +1295,13 @@ fun FilesInnerPage(
                 val enableFilter = filesPageSimpleFilterOn.value && k.isNotEmpty()
                 val currentPathFileList = if(enableFilter){
                     val fl = currentPathFileList.value.filter {
-                        it.name.lowercase().contains(k) || it.lastModifiedTime.lowercase().contains(k) || it.createTime.lowercase().contains(k)
+                        it.name.lowercase().contains(k)
+                                || it.lastModifiedTime.lowercase().contains(k)
+//                                || it.createTime.lowercase().contains(k)  // linux好像没有创建时间
+                                || it.sizeInHumanReadable.lowercase().contains(k)
+                                || it.mime.value.lowercase().contains(k)  // mime.value，类似 "text/plain"
                     }
+
                     filterList.value.clear()
                     filterList.value.addAll(fl)
                     fl

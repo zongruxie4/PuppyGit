@@ -16,7 +16,6 @@ import androidx.compose.material3.TextField
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.layout.onGloballyPositioned
@@ -450,7 +449,8 @@ fun DiffRow (
         modifier = Modifier
             .fillMaxWidth()
             //如果是经过compare的添加或删除行，背景半透明，然后真修改的内容用不透明，这样就能突出真修改的内容
-            .background(if (useStringPartList) color.copy(alpha = 0.6f) else color)
+            //alpha值越大越不透明
+            .background(if (useStringPartList) color.copy(alpha = 0.3f) else color)
 //            .background(color)
 //                            .clickable {
 //

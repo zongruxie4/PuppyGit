@@ -1086,7 +1086,11 @@ object FsUtils {
         //readLines() api 说不能用于 huge files?我看源代码好像也是用readLine一行行读的，我自己写好像差不多，不过不会创建迭代器之类的，可能稍微快一点点，但应该也不能用于huge files吧？大概
 //        File(filePath).bufferedReader().readLines()
 
-        val lines = mutableListOf<String>()  //默认是ArrayList，容量10
+        //根据文件大小估算一下行数，没任何考证，我随便打开了几个文件，感觉file.length / 1000 * 7差不多就是行数，而直接右移7位和/1000*7结果差不多，所以就这么写了，shr是有符号右移，如果是负数，移完还是负数，不看符号的话，值如果不超Int最大值，无符号和有符号右移的区别就在于符号不同，值一般是一样的
+        val estimateLineCount = (file.length() shr 7).toInt().coerceAtLeast(10).coerceAtMost(10000) // chatgpt说10000个空Object对象大概470k，不会超过1mb，可以接受，不过java创建的数组默认值不是null吗？所以可能连470k都占不了
+//        val estimateLineCount = (file.length() / 1000 * 7).toInt().coerceAtLeast(10).coerceAtMost(10000)
+
+        val lines = ArrayList<String>(estimateLineCount)  //默认是ArrayList，容量10
         val arrBuf = CharArray(4096)
         val aline = StringBuilder(100)
         var lastChar:Char? = null
