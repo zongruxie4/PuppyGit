@@ -1,6 +1,6 @@
 package com.catpuppyapp.puppygit.screen.content.homescreen.scaffold.actions
 
-import FontSizeAdjuster
+import com.catpuppyapp.puppygit.compose.FontSizeAdjuster
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons

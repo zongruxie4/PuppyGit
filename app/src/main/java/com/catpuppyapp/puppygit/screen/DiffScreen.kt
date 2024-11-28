@@ -1,6 +1,6 @@
 package com.catpuppyapp.puppygit.screen
 
-import FontSizeAdjuster
+import com.catpuppyapp.puppygit.compose.FontSizeAdjuster
 import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material.icons.Icons
@@ -25,13 +25,13 @@ import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.platform.LocalClipboardManager
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.AnnotatedString
-import com.catpuppyapp.puppygit.compose.ConfirmDialog
 import com.catpuppyapp.puppygit.compose.CopyableDialog
 import com.catpuppyapp.puppygit.compose.FileHistoryRestoreDialog
 import com.catpuppyapp.puppygit.compose.GoToTopAndGoToBottomFab
 import com.catpuppyapp.puppygit.compose.LoadingDialog
 import com.catpuppyapp.puppygit.compose.LongPressAbleIconBtn
 import com.catpuppyapp.puppygit.compose.MySelectionContainer
+import com.catpuppyapp.puppygit.compose.OpenAsAskReloadDialog
 import com.catpuppyapp.puppygit.compose.OpenAsDialog
 import com.catpuppyapp.puppygit.constants.Cons
 import com.catpuppyapp.puppygit.constants.PageRequest
@@ -207,13 +207,9 @@ fun DiffScreen(
 
     val showBackFromExternalAppAskReloadDialog = rememberSaveable { mutableStateOf(false)}
     if(showBackFromExternalAppAskReloadDialog.value) {
-        ConfirmDialog(
-            title = stringResource(id = R.string.reload_file),
-            text = stringResource(R.string.back_editor_from_external_app_ask_reload),
-            okBtnText = stringResource(id = R.string.reload),
+        OpenAsAskReloadDialog(
             onCancel = { showBackFromExternalAppAskReloadDialog.value=false }
-        ) {
-            //onOk
+        ) { // doReload
             showBackFromExternalAppAskReloadDialog.value=false
             changeStateTriggerRefreshPage(needRefresh)
         }

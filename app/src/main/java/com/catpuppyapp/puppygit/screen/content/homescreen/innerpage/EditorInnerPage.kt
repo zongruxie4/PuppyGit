@@ -51,6 +51,7 @@ import com.catpuppyapp.puppygit.compose.ConfirmDialog
 import com.catpuppyapp.puppygit.compose.ConfirmDialog2
 import com.catpuppyapp.puppygit.compose.LongPressAbleIconBtn
 import com.catpuppyapp.puppygit.compose.MySelectionContainer
+import com.catpuppyapp.puppygit.compose.OpenAsAskReloadDialog
 import com.catpuppyapp.puppygit.compose.OpenAsDialog
 import com.catpuppyapp.puppygit.constants.Cons
 import com.catpuppyapp.puppygit.constants.LineNum
@@ -520,12 +521,9 @@ fun EditorInnerPage(
 
     val showBackFromExternalAppAskReloadDialog = rememberSaveable { mutableStateOf(false) }
     if(showBackFromExternalAppAskReloadDialog.value) {
-        ConfirmDialog(
-            title = stringResource(id = R.string.reload_file),
-            text = stringResource(R.string.back_editor_from_external_app_ask_reload),
-            okBtnText = stringResource(id = R.string.reload),
+        OpenAsAskReloadDialog(
             onCancel = { showBackFromExternalAppAskReloadDialog.value=false }
-        ) {
+        ) {  // doReload
             //检查源文件是否被外部修改过，若修改过，创建快照，然后再重载
             val newDto = FileSimpleDto.genByFile(File(editorPageShowingFilePath.value))
 

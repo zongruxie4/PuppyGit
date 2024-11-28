@@ -447,7 +447,7 @@
     <string name="error_invalid_commit_hash">错误: 无效提交哈希</string>
     <string name="add">添加</string>
     <string name="add_a_repo">添加仓库</string>
-    <string name="back_editor_from_external_app_ask_reload">如果你在外部编辑文件，或许你想重载以显示修改后的内容，若想重载请点确定，否则请点取消。</string>
+    <string name="back_editor_from_external_app_ask_reload">如果你使用外部程序编辑过文件，或许你想重载以显示修改后的内容</string>
     <string name="reload">重载</string>
     <string name="go">转到</string>
     <string name="range">范围</string>

@@ -447,7 +447,7 @@
     <string name="error_invalid_commit_hash">error: invalid commit hash</string>
     <string name="add">Add</string>
     <string name="add_a_repo">Add a repo</string>
-    <string name="back_editor_from_external_app_ask_reload">If you edited file with external app, maybe you want to reload file for show modified content, click \'Reload\' for it, or \'No\' if you want to keep current content.</string>
+    <string name="back_editor_from_external_app_ask_reload">If you edited the file with external app, you might want to reload it to show modified content</string>
     <string name="reload">Reload</string>
     <string name="go">Go</string>
     <string name="range">Range</string>
