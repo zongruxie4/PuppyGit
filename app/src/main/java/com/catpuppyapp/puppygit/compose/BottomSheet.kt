@@ -78,12 +78,11 @@ fun BottomSheet(
                         onCancel()
                     }
                 }
+
+                //这个footer的作用主要是让菜单比底部导航栏高
+                BottomSheetPaddingFooter(footerPaddingSize)
             }
 
-
-
-            //这个footer的作用主要是让菜单比底部导航栏高
-            BottomSheetPaddingFooter(footerPaddingSize)
 //                    Divider()
         }
 }
