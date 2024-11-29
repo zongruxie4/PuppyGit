@@ -1,5 +1,7 @@
 package com.catpuppyapp.puppygit.utils
 
+import android.content.Context
+import android.util.DisplayMetrics
 import androidx.compose.foundation.ScrollState
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.ime
@@ -16,6 +18,7 @@ import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import com.catpuppyapp.puppygit.constants.Cons
+import com.catpuppyapp.puppygit.dto.DeviceWidthHeight
 import com.catpuppyapp.puppygit.fileeditor.texteditor.view.ExpectConflictStrDto
 import com.catpuppyapp.puppygit.settings.AppSettings
 import com.catpuppyapp.puppygit.style.MyStyleKt
@@ -311,4 +314,11 @@ object UIHelper {
         return Color.Unspecified
     }
 
+
+    fun getDeviceDimensionsInDp(context: Context): DeviceWidthHeight {
+        val metrics: DisplayMetrics = context.resources.displayMetrics
+        val widthInDp = metrics.widthPixels / metrics.density
+        val heightInDp = metrics.heightPixels / metrics.density
+        return DeviceWidthHeight(widthInDp, heightInDp)
+    }
 }

@@ -21,6 +21,7 @@ import com.catpuppyapp.puppygit.data.AppContainer
 import com.catpuppyapp.puppygit.data.AppDataContainer
 import com.catpuppyapp.puppygit.dev.FlagFileName
 import com.catpuppyapp.puppygit.dev.dev_EnableUnTestedFeature
+import com.catpuppyapp.puppygit.dto.DeviceWidthHeight
 import com.catpuppyapp.puppygit.jni.LibLoader
 import com.catpuppyapp.puppygit.play.pro.BuildConfig
 import com.catpuppyapp.puppygit.settings.SettingsUtil
@@ -93,6 +94,8 @@ class AppModel {
                 appModel.dbContainer = AppDataContainer(realAppContext)
 
             }
+
+            appModel.deviceWidthHeight = UIHelper.getDeviceDimensionsInDp(activityContext)
 
             appModel.realAppContext = realAppContext
 
@@ -480,6 +483,8 @@ class AppModel {
             return puppyGitUnderGit
         }
     }
+
+    lateinit var deviceWidthHeight: DeviceWidthHeight
 
     /**
      * long long ago, this is applicationContext get from Activity, but now, this maybe is baseContext of Activity,
