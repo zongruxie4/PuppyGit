@@ -195,6 +195,10 @@ fun TreeToTreeChangeListScreen(
         })
     }
 
+    val changeListPageEnableFilterState = rememberSaveable { mutableStateOf(false)}
+    val changeListFilterList = mutableCustomStateListOf(keyTag = stateKeyTag, keyName = "changeListFilterList", initValue = listOf<StatusTypeEntrySaver>())
+
+
     Scaffold(
         modifier = Modifier.nestedScroll(homeTopBarScrollBehavior.nestedScrollConnection),
         topBar = {
@@ -392,7 +396,10 @@ fun TreeToTreeChangeListScreen(
             commitForQueryParents = commitForQueryParents,
             openDrawer = {}, //非顶级页面按返回键不需要打开抽屉
             newestPageId = changelistNewestPageId,
-            naviTarget = changeListNaviTarget
+            naviTarget = changeListNaviTarget,
+            enableFilterState = changeListPageEnableFilterState,
+            filterList = changeListFilterList
+
 
 
 //            isDiffToHead=isDiffToHead

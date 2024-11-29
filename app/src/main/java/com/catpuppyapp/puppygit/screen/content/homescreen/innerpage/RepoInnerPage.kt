@@ -14,6 +14,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.selection.toggleable
@@ -94,7 +95,6 @@ import com.catpuppyapp.puppygit.utils.replaceStringResList
 import com.catpuppyapp.puppygit.utils.showErrAndSaveLog
 import com.catpuppyapp.puppygit.utils.state.CustomStateListSaveable
 import com.catpuppyapp.puppygit.utils.state.CustomStateSaveable
-import com.catpuppyapp.puppygit.utils.state.mutableCustomStateListOf
 import com.catpuppyapp.puppygit.utils.state.mutableCustomStateOf
 import com.catpuppyapp.puppygit.utils.strHasIllegalChars
 import com.github.git24j.core.Repository
@@ -129,7 +129,9 @@ fun RepoInnerPage(
     filterListState:LazyListState,
     openDrawer:()->Unit,
     showImportRepoDialog:MutableState<Boolean>,
-    goToThisRepoId:MutableState<String>
+    goToThisRepoId:MutableState<String>,
+    enableFilterState:MutableState<Boolean>,
+    filterList:CustomStateListSaveable<RepoEntity>
 ) {
     val activityContext = AppModel.singleInstanceHolder.activityContext;
     val exitApp = AppModel.singleInstanceHolder.exitApp;
@@ -141,6 +143,10 @@ fun RepoInnerPage(
         repoPageScrolled.value = s.showNaviButtons
         s
     }
+
+    // 这两个变量不用 rememberSaveable，如果设备配置改变，就希望这两个值重新计算
+    val itemWidth = remember { UIHelper.getRepoItemWidth() }
+    val repoCountEachRow = remember { UIHelper.getRepoItemsCountEachRow() }
 
 
     val clipboardManager = LocalClipboardManager.current
@@ -191,7 +197,6 @@ fun RepoInnerPage(
 //    ShowToast(showToast, toastMsg)
     val requireShowToast:(String)->Unit = Msg.requireShowLongDuration
 
-    val filterList = mutableCustomStateListOf( stateKeyTag, "filterList", listOf<RepoEntity>() )
 
     val errWhenQuerySettingsFromDbStrRes = stringResource(R.string.err_when_querying_settings_from_db)
     val saved = stringResource(R.string.saved)
@@ -683,7 +688,6 @@ fun RepoInnerPage(
 
     }
 
-    val enableFilterState = rememberSaveable { mutableStateOf(false)}
 
     val getCurActiveList = {
         if(enableFilterState.value) filterList.value else repoList.value
@@ -1037,8 +1041,9 @@ fun RepoInnerPage(
             val listState = getCurActiveListState()
             val targetIndex = list.toList().indexOfFirst { it.id == targetId }
             if(targetIndex != -1) {  // found in current active list
+                // index / perRowCount 即条目所在的chunked后的索引行
+                UIHelper.scrollToItem(scope, listState, targetIndex / repoCountEachRow)
                 requireBlinkIdx.intValue = targetIndex
-                UIHelper.scrollToItem(scope, listState, targetIndex)
             }else{
                 if(repoPageFilterModeOn.value) {
                     //从源列表找
@@ -1049,7 +1054,7 @@ fun RepoInnerPage(
                         showBottomSheet.value = false  //关闭菜单
 
                         //定位条目
-                        UIHelper.scrollToItem(scope, repoPageListState, indexInOriginList)
+                        UIHelper.scrollToItem(scope, repoPageListState, indexInOriginList / repoCountEachRow)
                         requireBlinkIdx.intValue = indexInOriginList  //设置条目闪烁以便用户发现
                     }else {
                         Msg.requireShow(activityContext.getString(R.string.not_found))
@@ -1303,7 +1308,7 @@ fun RepoInnerPage(
         //根据关键字过滤条目
         val k = repoPageFilterKeyWord.value.text.lowercase()  //关键字
         val enableFilter = repoPageFilterModeOn.value && k.isNotEmpty()
-        val filteredList = if(enableFilter){
+        val filteredListTmp = if(enableFilter){
             val tmpList = repoList.value.filter {
                 it.repoName.lowercase().contains(k)
                         || it.branch.lowercase().contains(k)
@@ -1329,6 +1334,17 @@ fun RepoInnerPage(
             repoList.value
         }
 
+
+        //若一行只有一个条目，fillMaxWidth()
+        val requireFillMaxWidth = repoCountEachRow == 1
+        //如果repoCountEachRow==1，永远不需要padding，因为list.size是整数，而任何整数以1取模结果都为0
+        val paddingItemCount = filteredListTmp.size % repoCountEachRow
+        val needPaddingItems = paddingItemCount != 0
+
+        val filteredList =  filteredListTmp.chunked(repoCountEachRow)
+        val lastChunkListIndex = filteredList.lastIndex
+
+
         val listState = if(enableFilter) filterListState else repoPageListState
 
         //更新是否启用filter
@@ -1340,61 +1356,83 @@ fun RepoInnerPage(
             listState = listState,
             requireForEachWithIndex = true,
             requirePaddingAtBottom = true
-        ) {idx, element ->
-            //状态小于errValStart意味着一切正常；状态大于等于errValStart，意味着出错，禁用长按功能，直接把可以执行的操作例如删除仓库和编辑仓库之类的显示在卡片上，方便用户处置出错的仓库
-            // 如果有必要细分状态，可以改成这样: if(it.workStatus==cloningStatus) go cloningCard, else if other status, go other card, else go normal RepoCard
-            if (Libgit2Helper.isRepoStatusNoErr(element)) {
-                //未出错的仓库
-                RepoCard(
-                    showBottomSheet,
-                    curRepo,
-                    curRepoIndex,
-                    repoDto = element,
-                    repoDtoIndex = idx,
-                    goToFilesPage = goToFilesPage,
-                    requireBlinkIdx = requireBlinkIdx,
-                    pageRequest = pageRequest,
-                ) workStatusOnclick@{ clickedRepo, status ->  //这个是点击status的callback，这个status其实可以不传，因为这里的lambda能捕获到数组的元素，就是当前仓库
+        ) {chunkedListIdx, chunkedList ->
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.SpaceEvenly
+            ) {
+                chunkedList.forEachIndexed { subListIdx, element ->
+                    val idx = chunkedListIdx * repoCountEachRow + subListIdx
+                    //状态小于errValStart意味着一切正常；状态大于等于errValStart，意味着出错，禁用长按功能，直接把可以执行的操作例如删除仓库和编辑仓库之类的显示在卡片上，方便用户处置出错的仓库
+                    // 如果有必要细分状态，可以改成这样: if(it.workStatus==cloningStatus) go cloningCard, else if other status, go other card, else go normal RepoCard
+                    if (Libgit2Helper.isRepoStatusNoErr(element)) {
+                        //未出错的仓库
+                        RepoCard(
+                            itemWidth = itemWidth,
+                            requireFillMaxWidth = requireFillMaxWidth,
+                            showBottomSheet,
+                            curRepo,
+                            curRepoIndex,
+                            repoDto = element,
+                            repoDtoIndex = idx,
+                            goToFilesPage = goToFilesPage,
+                            requireBlinkIdx = requireBlinkIdx,
+                            pageRequest = pageRequest,
+                        ) workStatusOnclick@{ clickedRepo, status ->  //这个是点击status的callback，这个status其实可以不传，因为这里的lambda能捕获到数组的元素，就是当前仓库
 
-                    //把点击状态的仓库存下来
-                    statusClickedRepo.value = clickedRepo  //其实这个clickedRepo直接用这里element替代也可，但用回调里参数感觉更合理
+                            //把点击状态的仓库存下来
+                            statusClickedRepo.value = clickedRepo  //其实这个clickedRepo直接用这里element替代也可，但用回调里参数感觉更合理
 
-                    //目前status就三种状态：up-to-date/has conflicts/need sync，第1种不用处理
-                    if (status == Cons.dbRepoWorkStatusHasConflicts) {
-                        //导航到changelist并定位到当前仓库
-                        goToChangeListPage(clickedRepo)
-                    }else if(status == Cons.dbRepoWorkStatusMerging || status==Cons.dbRepoWorkStatusRebasing || status==Cons.dbRepoWorkStatusCherrypicking){ //merge/rebase/cherrypick弹窗提示需要continue或abort
-                        showRequireActionsDialog.value = true
-                    } else if (status == Cons.dbRepoWorkStatusNeedSync) {
-                        // do sync
-                        doJobThenOffLoading {
-                            doActAndSetRepoStatus(idx, clickedRepo.id, activityContext.getString(R.string.syncing)) {
-                                doSync(clickedRepo)
+                            //目前status就三种状态：up-to-date/has conflicts/need sync，第1种不用处理
+                            if (status == Cons.dbRepoWorkStatusHasConflicts) {
+                                //导航到changelist并定位到当前仓库
+                                goToChangeListPage(clickedRepo)
+                            }else if(status == Cons.dbRepoWorkStatusMerging || status==Cons.dbRepoWorkStatusRebasing || status==Cons.dbRepoWorkStatusCherrypicking){ //merge/rebase/cherrypick弹窗提示需要continue或abort
+                                showRequireActionsDialog.value = true
+                            } else if (status == Cons.dbRepoWorkStatusNeedSync) {
+                                // do sync
+                                doJobThenOffLoading {
+                                    doActAndSetRepoStatus(idx, clickedRepo.id, activityContext.getString(R.string.syncing)) {
+                                        doSync(clickedRepo)
+                                    }
+                                }
                             }
                         }
-                    }
-                }
-            } else {
-                //show Clone error repo card，显示克隆错误，有重试和编辑按钮，编辑可重新进入克隆页面编辑当前仓库的信息，然后重新克隆
-                ErrRepoCard(
+                    } else {
+                        //show Clone error repo card，显示克隆错误，有重试和编辑按钮，编辑可重新进入克隆页面编辑当前仓库的信息，然后重新克隆
+                        ErrRepoCard(
+                            itemWidth = itemWidth,
+                            requireFillMaxWidth = requireFillMaxWidth,
 //                        showBottomSheet = showBottomSheet,
 //                        curRepo = curRepo,
-                    repoDto = element,
-                    repoDtoList = repoList.value,
-                    idx = idx,
-                    needRefreshList = needRefreshRepoPage,
-                    requireDelRepo = requireDelRepo,
-                    requireBlinkIdx = requireBlinkIdx,
-                    copyErrMsg = {msg->
-                        clipboardManager.setText(AnnotatedString(msg))
-                        Msg.requireShow(activityContext.getString(R.string.copied))
+                            repoDto = element,
+                            repoDtoList = repoList.value,
+                            idx = idx,
+                            needRefreshList = needRefreshRepoPage,
+                            requireDelRepo = requireDelRepo,
+                            requireBlinkIdx = requireBlinkIdx,
+                            copyErrMsg = {msg->
+                                clipboardManager.setText(AnnotatedString(msg))
+                                Msg.requireShow(activityContext.getString(R.string.copied))
+                            }
+
+                        )
+                        //                            if(it.workStatus == Cons.dbRepoWorkStatusCloneErr){  //克隆错误
+                        //                            } // else if(other type err happened) ，显示其他类型的ErrRepoCard ,这里还能细分不同的错误显示不同的界面，例如克隆错误和初始化错误可以显示不同界面，后面加else if 即可
                     }
 
-                )
-                //                            if(it.workStatus == Cons.dbRepoWorkStatusCloneErr){  //克隆错误
-                //                            } // else if(other type err happened) ，显示其他类型的ErrRepoCard ,这里还能细分不同的错误显示不同的界面，例如克隆错误和初始化错误可以显示不同界面，后面加else if 即可
-            }
 
+                }
+
+                // padding for make item alight to start(left or right)
+                // repoCountEachRow为1时，永远不需要padding，因为needPaddingItems在其为1时肯定为假
+                if(needPaddingItems && chunkedListIdx == lastChunkListIndex) {
+                    for(i in 0 until (repoCountEachRow - chunkedList.size)) {
+                        Column(modifier = Modifier.width(itemWidth.dp)) {}
+                    }
+                }
+            }
         }
 
 
@@ -1430,7 +1468,7 @@ fun RepoInnerPage(
             )
 
         } catch (cancel: Exception) {
-//            println("LaunchedEffect: job cancelled")
+//            LaunchedEffect job cancelled
         }
     }
 }

@@ -10,6 +10,7 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.width
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.HorizontalDivider
@@ -45,6 +46,8 @@ import kotlinx.coroutines.sync.withLock
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun ErrRepoCard(
+    itemWidth:Float,
+    requireFillMaxWidth:Boolean,
 //    showBottomSheet: MutableState<Boolean>,
 //    curRepo: CustomStateSaveable<RepoEntity>,  //当前仓库 stage
     repoDto: RepoEntity,  //当前卡片使用的仓库
@@ -66,7 +69,9 @@ fun ErrRepoCard(
 
     val dbContainer = AppModel.singleInstanceHolder.dbContainer
     val lineHeight = 30
-    Column (modifier = Modifier.fillMaxWidth(),
+    Column (
+//        modifier = Modifier.fillMaxWidth(),
+        modifier = if(requireFillMaxWidth) Modifier.fillMaxWidth() else Modifier.width(itemWidth.dp),
         horizontalAlignment = Alignment.CenterHorizontally,
     ){
 

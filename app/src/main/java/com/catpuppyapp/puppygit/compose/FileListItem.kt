@@ -75,7 +75,7 @@ fun FileListItem(
                     )
                 }else if(lastPathByPressBack == item.fullPath){  // show light background for last clicked path
                     Modifier.background(
-                        if(inDarkTheme) Color.DarkGray.copy(alpha = .3f) else Color.LightGray.copy(alpha=.3f)
+                        if(inDarkTheme) Color.DarkGray.copy(alpha = .2f) else Color.LightGray.copy(alpha=.2f)
                     )
                 } else Modifier
             )

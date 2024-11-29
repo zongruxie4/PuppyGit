@@ -27,6 +27,7 @@ import com.github.git24j.core.Repository
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
 
+private const val TAG = "UIHelper"
 
 object UIHelper {
 
@@ -315,10 +316,20 @@ object UIHelper {
     }
 
 
-    fun getDeviceDimensionsInDp(context: Context): DeviceWidthHeight {
+    fun getDeviceWidthHeightInDp(context: Context): DeviceWidthHeight {
         val metrics: DisplayMetrics = context.resources.displayMetrics
         val widthInDp = metrics.widthPixels / metrics.density
         val heightInDp = metrics.heightPixels / metrics.density
+        MyLog.d(TAG, "#getDeviceWidthHeightInDp: widthInDp=$widthInDp, heightInDp=$heightInDp")
         return DeviceWidthHeight(widthInDp, heightInDp)
+    }
+
+    fun getRepoItemWidth(): Float {
+        return 392f
+    }
+
+    fun getRepoItemsCountEachRow():Int {
+        val count = AppModel.singleInstanceHolder.deviceWidthHeight.width / getRepoItemWidth()
+        return count.toInt().coerceAtLeast(1)
     }
 }

@@ -178,7 +178,10 @@ fun ChangeListInnerPage(
     newestPageId:MutableState<String>,  // for check if switched page （用来检测页面是否切换过，有时候有的仓库查询慢，切换仓库，切换后查出来了，会覆盖条目列表，出现仓库b显示了仓库a的条目的问题，更新列表前检测下此值是否有变化能避免此bug）
     //这组件再多一个参数就崩溃了，不要再加了，会报verifyError错误，升级gradle或许可以解决，具体原因不明（缓存问题，删除项目根目录下的.gradle目录重新构建即可），后来发现是compose变异器本身的bug，编译太复杂的组件就可能报错
 //    isDiffToHead:MutableState<Boolean> = mutableStateOf(false),  //仅 treeTotree页面需要此参数，用来判断是否在和headdiff
-    naviTarget:MutableState<String>
+    naviTarget:MutableState<String>,
+    enableFilterState:MutableState<Boolean>,
+    filterList:CustomStateListSaveable<StatusTypeEntrySaver>
+
 ) {
 
     // for detect page changed, avoid loading repo1, swiched repo2, repo2 loaded, then repo1 loaded, page show wrong items of repo1
@@ -220,11 +223,6 @@ fun ChangeListInnerPage(
 
 //    val headCommitHash = rememberSaveable { mutableStateOf("")   //只有tree to tree页面需要查这个
 
-    val filterList = mutableCustomStateListOf(
-        keyTag = stateKeyTag,
-        keyName = "filterList",
-        initValue = listOf<StatusTypeEntrySaver>()
-    )
 
 //    val scope = rememberCoroutineScope()
 //    val changeListPageCurRepo = rememberSaveable { mutableStateOf(RepoEntity()) }
@@ -2085,7 +2083,7 @@ fun ChangeListInnerPage(
     }
 
     // 向下滚动监听，开始
-    val enableFilterState = rememberSaveable { mutableStateOf(false)}
+//    val enableFilterState = rememberSaveable { mutableStateOf(false)}
 //    val firstVisible = remember {derivedStateOf { if(enableFilterState.value) filterListState.value.firstVisibleItemIndex else itemListState.firstVisibleItemIndex }}
 //    ScrollListener(
 //        nowAt = firstVisible.value,

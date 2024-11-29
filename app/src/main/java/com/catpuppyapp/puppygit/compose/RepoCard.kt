@@ -8,6 +8,7 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.width
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.HorizontalDivider
@@ -52,6 +53,8 @@ import kotlinx.coroutines.delay
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun RepoCard(
+    itemWidth:Float,
+    requireFillMaxWidth:Boolean,
     showBottomSheet: MutableState<Boolean>,
     curRepo: CustomStateSaveable<RepoEntity>,
     curRepoIndex: MutableIntState,
@@ -118,7 +121,9 @@ fun RepoCard(
         curRepoIndex.intValue = repoDtoIndex
     }
 
-    Column (modifier = Modifier.fillMaxWidth(),
+    Column (
+//        modifier = Modifier.fillMaxWidth(),
+        modifier = if(requireFillMaxWidth) Modifier.fillMaxWidth() else Modifier.width(itemWidth.dp),
         horizontalAlignment = Alignment.CenterHorizontally,
     ){
         Card(

@@ -95,7 +95,7 @@ class AppModel {
 
             }
 
-            appModel.deviceWidthHeight = UIHelper.getDeviceDimensionsInDp(activityContext)
+            appModel.deviceWidthHeight = UIHelper.getDeviceWidthHeightInDp(activityContext)
 
             appModel.realAppContext = realAppContext
 

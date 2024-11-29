@@ -125,6 +125,9 @@ fun IndexScreen(
     val changeListPageSelectedItemList = mutableCustomStateListOf(keyTag = stateKeyTag, keyName = "changeListPageSelectedItemList", initValue = listOf<StatusTypeEntrySaver>())
     val changelistPageScrolled = rememberSaveable { mutableStateOf(settings.showNaviButtons) }
     val changelistNewestPageId = rememberSaveable { mutableStateOf("") }
+    val changeListPageEnableFilterState = rememberSaveable { mutableStateOf(false)}
+    val changeListFilterList = mutableCustomStateListOf(keyTag = stateKeyTag, keyName = "changeListFilterList", initValue = listOf<StatusTypeEntrySaver>())
+
 
     Scaffold(
         modifier = Modifier.nestedScroll(homeTopBarScrollBehavior.nestedScrollConnection),
@@ -237,7 +240,10 @@ fun IndexScreen(
             rebaseCurOfAll = changeListPageRebaseCurOfAll,
             openDrawer = {}, //非顶级页面按返回键不需要打开抽屉
             newestPageId = changelistNewestPageId,
-            naviTarget = changeListNaviTarget
+            naviTarget = changeListNaviTarget,
+            enableFilterState = changeListPageEnableFilterState,
+            filterList = changeListFilterList
+
 
 //            commit1OidStr=commit1OidStr,
 //            commitParentList=commitParentList

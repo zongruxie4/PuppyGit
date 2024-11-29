@@ -185,4 +185,10 @@ class MyStyleKt{
     object BottomSheet{
         val skipPartiallyExpanded = true
     }
+
+     object DropDownMenu {
+         // unit is dp, but for more flexibility
+         // 单位是dp，但为了灵活性，这里就不写dp了，只写数字
+         const val minWidth = 160
+    }
 }

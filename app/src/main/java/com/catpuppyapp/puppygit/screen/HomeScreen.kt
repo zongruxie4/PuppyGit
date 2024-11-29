@@ -272,6 +272,14 @@ fun HomeScreen(
 
     val showSetGlobalGitUsernameAndEmailDialog = rememberSaveable { mutableStateOf(false)}
 
+    //判定过滤模式是否真开启的状态变量，例如虽然filterModeOn为真，但是，如果没输入任何关键字，过滤模式其实还是没开，这时这个变量会为假，但filterModeOn为真
+    val repoPageEnableFilterState = rememberSaveable { mutableStateOf(false)}
+    val filesPageEnableFilterState = rememberSaveable { mutableStateOf(false)}
+    val changeListPageEnableFilterState = rememberSaveable { mutableStateOf(false)}
+    val reposPageFilterList = mutableCustomStateListOf(stateKeyTag, "reposPageFilterList", listOf<RepoEntity>() )
+    val filesPageFilterList = mutableCustomStateListOf(stateKeyTag, "filesPageFilterList", listOf<FileItemDto>())
+    val changeListFilterList = mutableCustomStateListOf(stateKeyTag,"changeListFilterList", listOf<StatusTypeEntrySaver>())
+
 
 //    val changelistFilterListState = mutableCustomStateOf(keyTag = stateKeyTag, keyName = "changelistFilterListState", LazyListState(0,0))
     val changelistFilterListState = rememberLazyListState()
@@ -416,21 +424,45 @@ fun HomeScreen(
 
 
     val goToRepoPage = { targetIdIfHave:String ->
-        repoPageGoToId.value = targetIdIfHave
-        currentHomeScreen.intValue = Cons.selectedItem_Repos
+        //跳转到Repos页面不用关过滤模式，因为做了额外处理，
+        // 会根据是否开过滤模式决定查哪个列表，并且如果过滤后的列表无条目，
+        // 会强制从原始列表查询，如果查询到，将退出过滤模式并显示条目
+        // 如果后续发现bug，也强制关过滤模式，
+        // 理论上来说是这样，但是，强制关过滤模式似乎也没什么问题，
+        // 而且和其他页面的跳转逻辑一致，所以还是关
+        repoPageFilterModeOn.value = false  //过滤输入框是否显示
+        repoPageEnableFilterState.value = false  //过滤模式是否真的被应用（显示输入框并且有关键字）
 
+        //目标仓库id，如果有的话
+        repoPageGoToId.value = targetIdIfHave
+        //跳转页面
+        currentHomeScreen.intValue = Cons.selectedItem_Repos
+        //可有可无的刷新
         changeStateTriggerRefreshPage(needRefreshRepoPage)
     }
 
     val goToFilesPage = {path:String ->
+        //先把过滤模式关球了
+        filesPageSimpleFilterOn.value = false  //过滤输入框是否显示
+        filesPageEnableFilterState.value = false  //过滤模式是否真的被应用（显示输入框并且有关键字）
+
+        //设置路径
         filesPageCurrentPath.value = path
+        //跳转页面
         currentHomeScreen.intValue = Cons.selectedItem_Files
 
+        //可有可无的刷新，因为如果从其他页面跳转，不管needRefreshFilesPage值为什么，都肯定执行一次FilesInnerPage的LaunchedEffect
         changeStateTriggerRefreshPage(needRefreshFilesPage)
     }
 
     val goToChangeListPage = { repoWillShowInChangeListPage: RepoEntity ->
+        //先关过滤模式
+        changeListPageFilterModeOn.value = false  //过滤输入框是否显示
+        changeListPageEnableFilterState.value = false  //过滤模式是否真的被应用（显示输入框并且有关键字）
+
+        //设置目标仓库
         changeListCurRepo.value = repoWillShowInChangeListPage
+        //跳转页面
         currentHomeScreen.intValue = Cons.selectedItem_ChangeList
 
         changeStateTriggerRefreshPage(changeListRefreshRequiredByParentPage)
@@ -860,7 +892,9 @@ fun HomeScreen(
                     filterListState = repoFilterListState,
                     openDrawer = openDrawer,
                     showImportRepoDialog = repoPageShowImportRepoDialog,
-                    goToThisRepoId = repoPageGoToId
+                    goToThisRepoId = repoPageGoToId,
+                    enableFilterState = repoPageEnableFilterState,
+                    filterList = reposPageFilterList
                 )
 
             }
@@ -898,7 +932,9 @@ fun HomeScreen(
                     goToChangeListPage=goToChangeListPage,
                     lastPathByPressBack=filesPageLastPathByPressBack,
                     curPathFileItemDto=filesPageCurPathFileItemDto,
-                    currentPathBreadCrumbList=filesPageCurrentPathBreadCrumbList
+                    currentPathBreadCrumbList=filesPageCurrentPathBreadCrumbList,
+                    enableFilterState = filesPageEnableFilterState,
+                    filterList = filesPageFilterList
                 )
             }
             else if(currentHomeScreen.intValue == Cons.selectedItem_Editor) {
@@ -993,7 +1029,9 @@ fun HomeScreen(
                     goToChangeListPage=goToChangeListPage,
                     needReQueryRepoList = needReQueryRepoListForChangeListTitle,
                     newestPageId = changelistNewestPageId,
-                    naviTarget = changeListNaviTarget
+                    naviTarget = changeListNaviTarget,
+                    enableFilterState = changeListPageEnableFilterState,
+                    filterList = changeListFilterList
                     // index..worktree, need not pass params, because `fromTo` already implicit `indexToWorktree` or `headToIndex`
 //                    commit1OidStr = Cons.gitIndexCommitHash,
 //                    commit2OidStr = Cons.gitLocalWorktreeCommitHash

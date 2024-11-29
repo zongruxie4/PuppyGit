@@ -252,7 +252,7 @@ fun SettingsInnerPage(
     val itemFontSize = 20.sp
     val itemDescFontSize = 15.sp
     val switcherIconSize = 60.dp
-    val selectorWidth = 120.dp
+    val selectorWidth = MyStyleKt.DropDownMenu.minWidth.dp
 
     val itemLeftWidthForSwitcher = .8f
     val itemLeftWidthForSelector = .6f

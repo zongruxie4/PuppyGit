@@ -171,6 +171,8 @@ fun FilesInnerPage(
     lastPathByPressBack: MutableState<String>,
     curPathFileItemDto:CustomStateSaveable<FileItemDto>,
     currentPathBreadCrumbList:CustomStateListSaveable<FileItemDto>,
+    enableFilterState:MutableState<Boolean>,
+    filterList:CustomStateListSaveable<FileItemDto>
 ) {
     val allRepoParentDir = AppModel.singleInstanceHolder.allRepoParentDir;
 //    val appContext = AppModel.singleInstanceHolder.appContext;
@@ -202,7 +204,6 @@ fun FilesInnerPage(
 //    val filesPageSelectionBarHeight = 60.dp
 //    val filesPageSelectionBarBackgroundColor = MaterialTheme.colorScheme.primaryContainer
 
-    val filterList = mutableCustomStateListOf(keyTag = stateKeyTag, keyName = "filterList", listOf<FileItemDto>())
 
 //    val selFilePathListJsonObjStr = rememberSaveable{ mutableStateOf("{}") }  //key是文件名，所以这个列表只能存储相同目录下的文件，不同目录有可能名称冲突，但由于选择模式只能在当前目录选择，所以这个缺陷可以接受。json格式:{fileName:canonicalPath}
 //    val opType = remember{ mutableStateOf("") }
@@ -907,7 +908,7 @@ fun FilesInnerPage(
     }
 
     // 向下滚动监听，开始
-    val enableFilterState = rememberSaveable { mutableStateOf(false)}
+//    val enableFilterState = rememberSaveable { mutableStateOf(false)}
 //    val firstVisible = remember { derivedStateOf { if(enableFilterState.value) filterListState.value.firstVisibleItemIndex else curListState.value.firstVisibleItemIndex } }
 //    ScrollListener(
 //        nowAt = firstVisible.value,

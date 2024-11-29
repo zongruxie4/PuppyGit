@@ -21,7 +21,6 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.MutableIntState
 import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -29,9 +28,9 @@ import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.layout.onSizeChanged
 import androidx.compose.ui.unit.IntSize
 import androidx.compose.ui.unit.dp
+import com.catpuppyapp.puppygit.style.MyStyleKt
 import com.catpuppyapp.puppygit.utils.UIHelper
 import com.catpuppyapp.puppygit.utils.isGoodIndexForList
-import com.catpuppyapp.puppygit.utils.state.StateUtil
 import com.catpuppyapp.puppygit.utils.state.mutableCustomStateOf
 
 private const val stateKeyTag = "SingleSelectList"
@@ -110,7 +109,8 @@ fun<T> SingleSelectList(
 
 
         DropdownMenu(
-            modifier = dropDownMenuModifier.width((containerSize.value.width/2).dp),
+            //限制最小宽度153dp，不然有时候真的太小连“Verbose”都显示不全，不知道为什么
+            modifier = dropDownMenuModifier.width((containerSize.value.width/2).coerceAtLeast(MyStyleKt.DropDownMenu.minWidth).dp),
 
             expanded = expandDropdownMenu.value,
             onDismissRequest = { expandDropdownMenu.value=false }
