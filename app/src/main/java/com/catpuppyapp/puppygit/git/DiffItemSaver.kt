@@ -111,7 +111,7 @@ class PuppyHunkAndLines {
         val groupedLine = groupedLines.get(lineNum)
         val add = groupedLine?.get(Diff.Line.OriginType.ADDITION.toString())
         val del = groupedLine?.get(Diff.Line.OriginType.DELETION.toString())
-        return add!=null && del!=null && add.content.removeSuffix("\n").equals(del.content.removeSuffix("\n"))
+        return add!=null && del!=null && add.getContentNoLineBreak().equals(del.getContentNoLineBreak())
     }
 
     fun getModifyResult(lineNum: Int, requireBetterMatchingForCompare:Boolean, matchByWords:Boolean):IndexModifyResult? {
