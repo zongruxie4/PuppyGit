@@ -494,7 +494,7 @@ fun DiffRow (
                             withStyle(style = SpanStyle(background = color)) {
                                 append(textNoLineSeparator)
                             }
-                        }else {  //没修改的内容不用设置颜色
+                        }else {  //没修改的内容不用设置颜色，直接用默认的背景色即可
                             append(textNoLineSeparator)
                         }
                     }
