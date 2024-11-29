@@ -3,6 +3,7 @@ next version:
 - Editor changes:
   - add a recent file list
   - use icons instead texts for actions when no file opened (long press icon will got hint of it) 
+- Repos Page layout adjusted for Tablet: now each row repos count will calculating by screen width (each row repos count = screen width / a repo item width) 
 
 
 1.0.6.8v44 - 20241124:
