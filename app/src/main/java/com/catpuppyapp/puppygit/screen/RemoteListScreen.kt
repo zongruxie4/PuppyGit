@@ -820,10 +820,11 @@ fun RemoteListScreen(
                     }
                 }
 
-                BottomSheetItem(sheetState=sheetState, showBottomSheet=showBottomSheet, text=stringResource(R.string.unlink_credential)){
-                    //解除关联凭据
-                    showUnlinkCredentialDialog.value=true
-                }
+//              //20241130: 改成前往凭据关联页面绑定None实现解绑凭据了
+//                BottomSheetItem(sheetState=sheetState, showBottomSheet=showBottomSheet, text=stringResource(R.string.unlink_credential)){
+//                    //解除关联凭据
+//                    showUnlinkCredentialDialog.value=true
+//                }
 
                 //添加remote和删除remote配套，都是pro feature，不能只开放其中一个，不然会有问题，想像一下，你就一个remote，而你删了它，但没法创建，是不是很不合理？所以删除和添加应该配套，一个是pro feature另一个也必须是
                 if(proFeatureEnabled(createRemoteTestPassed)) {

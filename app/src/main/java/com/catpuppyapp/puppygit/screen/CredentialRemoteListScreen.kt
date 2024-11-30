@@ -64,9 +64,7 @@ import com.catpuppyapp.puppygit.utils.doJobThenOffLoading
 import com.catpuppyapp.puppygit.utils.state.mutableCustomStateListOf
 import com.catpuppyapp.puppygit.utils.state.mutableCustomStateOf
 
-//private val TAG = "CredentialLinkedOrUnLinkedListScreen"
 private val TAG = "CredentialRemoteListScreen"
-
 private val stateKeyTag = "CredentialRemoteListScreen"
 
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalFoundationApi::class)
