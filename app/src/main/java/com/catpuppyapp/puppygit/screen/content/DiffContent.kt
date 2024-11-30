@@ -353,28 +353,31 @@ fun DiffContent(
                                 //如果已经显示过，第2次获取result.data会是null，这时就不用再显示了
                                 val mergeAddDelLineResult = hunkAndLines.needShowAddOrDelLineAsContext(line.lineNum)
                                 //需要把add和del行转换为上下文行，这种情况发生在 add和del行仅一个有末尾换行符另一个没有时
-                                if(mergeAddDelLineResult.needShowAsContext && mergeAddDelLineResult.line != null) {
-                                    item {
-                                        DiffRow(
-                                            line = mergeAddDelLineResult.line,
-                                            fileFullPath=fileFullPath,
-                                            isFileAndExist = isFileAndExist.value,
-                                            clipboardManager=clipboardManager,
-                                            loadingOn=loadingOnParent,
-                                            loadingOff=loadingOffParent,
-                                            refreshPage=refreshPageIfComparingWithLocal,
-                                            repoId=repoId,
-                                            showOriginType = showOriginType,
-                                            showLineNum = showLineNum,
-                                            fontSize = fontSize,
-                                            lineNumSize = lineNumSize,
-                                            comparePairBuffer = comparePairBuffer,
-                                            betterCompare = requireBetterMatchingForCompare.value,
-                                            reForEachDiffContent=reForEachDiffContent,
-                                            indexStringPartListMap = indexStringPartListMapForComparePair,
-                                            enableSelectCompare=enableSelectCompare,
-                                            matchByWords = matchByWords.value
-                                        )
+                                if(mergeAddDelLineResult.needShowAsContext) {
+                                    //若已经显示过，第2次再执行到这这个值就会是null，无需再显示，例如 add/del除了末尾换行符其他都一样，就会被转化为上下文，del先转换为上下文并显示了，等后面遍历到add时就无需再显示了
+                                    if(mergeAddDelLineResult.line != null) {
+                                        item {
+                                            DiffRow(
+                                                line = mergeAddDelLineResult.line,
+                                                fileFullPath=fileFullPath,
+                                                isFileAndExist = isFileAndExist.value,
+                                                clipboardManager=clipboardManager,
+                                                loadingOn=loadingOnParent,
+                                                loadingOff=loadingOffParent,
+                                                refreshPage=refreshPageIfComparingWithLocal,
+                                                repoId=repoId,
+                                                showOriginType = showOriginType,
+                                                showLineNum = showLineNum,
+                                                fontSize = fontSize,
+                                                lineNumSize = lineNumSize,
+                                                comparePairBuffer = comparePairBuffer,
+                                                betterCompare = requireBetterMatchingForCompare.value,
+                                                reForEachDiffContent=reForEachDiffContent,
+                                                indexStringPartListMap = indexStringPartListMapForComparePair,
+                                                enableSelectCompare=enableSelectCompare,
+                                                matchByWords = matchByWords.value
+                                            )
+                                        }
                                     }
 
                                     return@printLine
