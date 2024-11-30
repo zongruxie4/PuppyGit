@@ -37,6 +37,7 @@ fun BranchItem(
     idx:Int,
     thisObj:BranchNameAndTypeDto,
     requireBlinkIdx: MutableIntState,  //请求闪烁的索引，会闪一下对应条目，然后把此值设为无效
+    lastClickedItemKey:MutableState<String>,
     onClick:()->Unit
 ) {
 
@@ -50,9 +51,12 @@ fun BranchItem(
             .combinedClickable(
                 enabled = true,
                 onClick = {
+                    lastClickedItemKey.value = thisObj.fullName
                     onClick()
                 },
                 onLongClick = {
+                    lastClickedItemKey.value = thisObj.fullName
+
                     //震动反馈
                     haptic.performHapticFeedback(HapticFeedbackType.LongPress)
 
@@ -77,7 +81,9 @@ fun BranchItem(
                         requireBlinkIdx.intValue = -1  //解除高亮
                     }
                     highlightColor
-                } else {
+                } else if(thisObj.fullName == lastClickedItemKey.value){
+                    Modifier.background(UIHelper.getLastClickedColor())
+                }else {
                     Modifier
                 }
             )

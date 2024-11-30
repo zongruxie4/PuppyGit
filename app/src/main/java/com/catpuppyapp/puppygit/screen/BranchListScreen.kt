@@ -135,6 +135,7 @@ fun BranchListScreen(
 
     //请求闪烁的条目，用来在定位某条目时，闪烁一下以便用户发现
     val requireBlinkIdx = rememberSaveable{mutableIntStateOf(-1)}
+    val lastClickedItemKey = rememberSaveable{mutableStateOf(Cons.init_last_clicked_item_key)}
 
     //这个页面的滚动状态不用记住，每次点开重置也无所谓
     val listState = rememberLazyListState()
@@ -1552,7 +1553,7 @@ fun BranchListScreen(
             forEachCb = {},
         ){idx, it->
             //长按会更新curObjInPage为被长按的条目
-            BranchItem(showBottomSheet, curObjInPage, idx, it, requireBlinkIdx) {  //onClick
+            BranchItem(showBottomSheet, curObjInPage, idx, it, requireBlinkIdx, lastClickedItemKey) {  //onClick
                 //点击条目跳转到分支的提交历史记录页面
                 val fullOidKey:String = Cache.setThenReturnKey(it.oidStr)
                 val shortBranchNameKey:String = Cache.setThenReturnKey(it.shortName)

@@ -1,6 +1,7 @@
 package com.catpuppyapp.puppygit.git
 
 import com.catpuppyapp.puppygit.constants.Cons
+import com.catpuppyapp.puppygit.utils.generateRandomString
 import com.catpuppyapp.puppygit.utils.getParentPathEndsWithSeparator
 import com.catpuppyapp.puppygit.utils.getHumanReadableSizeStr
 import com.catpuppyapp.puppygit.utils.mime.MimeType
@@ -111,6 +112,10 @@ class StatusTypeEntrySaver {
         result = 31 * result + dirty.hashCode()
         result = 31 * result + itemType
         return result
+    }
+
+    fun getItemKey():String {
+        return ""+hashCode()
     }
 
     fun maybeIsFileAndExist():Boolean {

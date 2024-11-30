@@ -1,6 +1,7 @@
 package com.catpuppyapp.puppygit.compose
 
 import androidx.compose.foundation.ExperimentalFoundationApi
+import androidx.compose.foundation.background
 import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -25,6 +26,7 @@ import com.catpuppyapp.puppygit.constants.SpecialCredential
 import com.catpuppyapp.puppygit.data.entity.CredentialEntity
 import com.catpuppyapp.puppygit.play.pro.R
 import com.catpuppyapp.puppygit.utils.AppModel
+import com.catpuppyapp.puppygit.utils.UIHelper
 import com.catpuppyapp.puppygit.utils.getFormatTimeFromSec
 import com.catpuppyapp.puppygit.utils.state.CustomStateSaveable
 
@@ -39,6 +41,7 @@ fun CredentialItem(
     isLinkMode:Boolean,
     linkedFetchId:String,
     linkedPushId:String,
+    lastClickedItemKey:MutableState<String>,
     onClick:(CredentialEntity)->Unit
 ) {
     val haptic = AppModel.singleInstanceHolder.haptic
@@ -56,10 +59,13 @@ fun CredentialItem(
             .combinedClickable(
                 enabled = true,
                 onClick = {
+                    lastClickedItemKey.value = thisItem.id
                     onClick(thisItem)
                 },
                 onLongClick = {
                     if(isNotMatchByDomainOrNone) {
+                        lastClickedItemKey.value = thisItem.id
+
                         //震动反馈
                         haptic.performHapticFeedback(HapticFeedbackType.LongPress)
 
@@ -75,6 +81,11 @@ fun CredentialItem(
             )
             //padding要放到 combinedClickable后面，不然点按区域也会padding
 //            .background(if (idx % 2 == 0) Color.Transparent else CommitListSwitchColor)
+            .then(
+                if(lastClickedItemKey.value == thisItem.id) {
+                    Modifier.background(UIHelper.getLastClickedColor())
+                }else Modifier
+            )
             .padding(10.dp)
 
         ,

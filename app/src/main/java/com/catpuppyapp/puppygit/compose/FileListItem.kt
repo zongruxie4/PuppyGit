@@ -34,6 +34,7 @@ import androidx.compose.ui.unit.sp
 import com.catpuppyapp.puppygit.play.pro.R
 import com.catpuppyapp.puppygit.dto.FileItemDto
 import com.catpuppyapp.puppygit.ui.theme.Theme
+import com.catpuppyapp.puppygit.utils.UIHelper
 import com.catpuppyapp.puppygit.utils.mime.iconRes
 
 
@@ -75,7 +76,7 @@ fun FileListItem(
                     )
                 }else if(lastPathByPressBack == item.fullPath){  // show light background for last clicked path
                     Modifier.background(
-                        if(inDarkTheme) Color.DarkGray.copy(alpha = .2f) else Color.LightGray.copy(alpha=.2f)
+                        UIHelper.getLastClickedColor()
                     )
                 } else Modifier
             )

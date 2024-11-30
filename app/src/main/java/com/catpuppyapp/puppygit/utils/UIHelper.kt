@@ -332,4 +332,8 @@ object UIHelper {
         val count = AppModel.singleInstanceHolder.deviceWidthHeight.width / getRepoItemWidth()
         return count.toInt().coerceAtLeast(1)
     }
+
+    fun getLastClickedColor(): Color {
+        return if(Theme.inDarkTheme) Color.DarkGray.copy(alpha = .2f) else Color.LightGray.copy(alpha=.2f)
+    }
 }

@@ -37,6 +37,7 @@ fun FileHistoryItem(
     idx:Int,
     dto:FileHistoryDto,
     requireBlinkIdx:MutableIntState,  //请求闪烁的索引，会闪一下对应条目，然后把此值设为无效
+    lastClickedItemKey:MutableState<String>,
     onClick:(FileHistoryDto)->Unit={}
 ) {
     val haptic = AppModel.singleInstanceHolder.haptic
@@ -48,8 +49,13 @@ fun FileHistoryItem(
 //            .defaultMinSize(minHeight = 100.dp)
             .combinedClickable(
                 enabled = true,
-                onClick = { onClick(dto) },
+                onClick = {
+                    lastClickedItemKey.value = dto.commitOidStr
+                    onClick(dto)
+                },
                 onLongClick = {  // x 算了)TODO 把长按也改成短按那样，在调用者那里实现，这里只负责把dto传过去，不过好像没必要，因为调用者那里还是要写同样的代码，不然弹窗不知道操作的是哪个对象
+                    lastClickedItemKey.value = dto.commitOidStr
+
                     //震动反馈
                     haptic.performHapticFeedback(HapticFeedbackType.LongPress)
 
@@ -76,6 +82,8 @@ fun FileHistoryItem(
                         requireBlinkIdx.intValue = -1  //解除高亮
                     }
                     highlightColor
+                } else if(dto.commitOidStr == lastClickedItemKey.value){
+                    Modifier.background(UIHelper.getLastClickedColor())
                 }else {
                     Modifier
                 }

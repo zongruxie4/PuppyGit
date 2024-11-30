@@ -10,6 +10,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.MutableState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.hapticfeedback.HapticFeedbackType
@@ -21,12 +22,15 @@ import androidx.compose.ui.unit.dp
 import com.catpuppyapp.puppygit.git.SubmoduleDto
 import com.catpuppyapp.puppygit.play.pro.R
 import com.catpuppyapp.puppygit.utils.Libgit2Helper
+import com.catpuppyapp.puppygit.utils.UIHelper
 
 
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun SubmoduleItem(
     thisObj:SubmoduleDto,
+    lastClickedItemKey: MutableState<String>,
+
     isItemInSelected:(SubmoduleDto) -> Boolean,
     onLongClick:(SubmoduleDto)->Unit,
     onClick:(SubmoduleDto)->Unit
@@ -42,9 +46,13 @@ fun SubmoduleItem(
             .combinedClickable(
                 enabled = true,
                 onClick = {
+                    lastClickedItemKey.value = thisObj.name
+
                     onClick(thisObj)
                 },
                 onLongClick = {
+                    lastClickedItemKey.value = thisObj.name
+
                     //震动反馈
                     haptic.performHapticFeedback(HapticFeedbackType.LongPress)
 
@@ -57,7 +65,9 @@ fun SubmoduleItem(
                     MaterialTheme.colorScheme.primaryContainer
 
                     //then 里传 Modifier不会有任何副作用，还是当前的Modifier(即调用者自己：this)，相当于什么都没改，后面可继续链式调用其他方法
-                ) else Modifier
+                ) else if(thisObj.name == lastClickedItemKey.value){
+                    Modifier.background(UIHelper.getLastClickedColor())
+                } else Modifier
             )
             //padding要放到 combinedClickable后面，不然点按区域也会padding；
             // padding要放到背景颜色后面，不然padding的区域不会着色

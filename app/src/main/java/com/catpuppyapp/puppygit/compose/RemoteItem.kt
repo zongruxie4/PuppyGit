@@ -1,6 +1,7 @@
 package com.catpuppyapp.puppygit.compose
 
 import androidx.compose.foundation.ExperimentalFoundationApi
+import androidx.compose.foundation.background
 import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -22,6 +23,7 @@ import com.catpuppyapp.puppygit.play.pro.R
 import com.catpuppyapp.puppygit.constants.Cons
 import com.catpuppyapp.puppygit.constants.SpecialCredential
 import com.catpuppyapp.puppygit.dto.RemoteDto
+import com.catpuppyapp.puppygit.utils.UIHelper
 import com.catpuppyapp.puppygit.utils.state.CustomStateSaveable
 
 
@@ -32,6 +34,8 @@ fun RemoteItem(
     curObjInState: CustomStateSaveable<RemoteDto>,
     idx:Int,
     curObj: RemoteDto,
+    lastClickedItemKey:MutableState<String>,
+
     onClick:()->Unit
 ) {
     val haptic = LocalHapticFeedback.current
@@ -47,9 +51,12 @@ fun RemoteItem(
             .combinedClickable(
                 enabled = true,
                 onClick = {
+                    lastClickedItemKey.value = curObj.remoteId
                     onClick()
                 },
                 onLongClick = {
+                    lastClickedItemKey.value = curObj.remoteId
+
                     //震动反馈
                     haptic.performHapticFeedback(HapticFeedbackType.LongPress)
 
@@ -64,8 +71,15 @@ fun RemoteItem(
             )
             //padding要放到 combinedClickable后面，不然点按区域也会padding
 //            .background(if(idx%2==0)  Color.Transparent else CommitListSwitchColor)
-            .padding(10.dp)
 
+            .then(
+                if(curObj.remoteId == lastClickedItemKey.value){
+                    Modifier.background(UIHelper.getLastClickedColor())
+                }else {
+                    Modifier
+                }
+            )
+            .padding(10.dp)
 
 
     ) {

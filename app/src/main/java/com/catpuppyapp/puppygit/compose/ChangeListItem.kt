@@ -55,6 +55,7 @@ fun ChangeListItem(
     fromTo:String,
     //此参数用来确认是否diff to local，因为from为tree to tree时有可能和local diff也可能不是，所以无法单凭from to 判断
     isDiffToLocal:Boolean,  // fromTo are treeToTree or indexToWorkdir all maybe diff to local, but tree to tree maybe is not diff to local, so make sure is diff to local or not, by this param
+    lastClickedItemKey:MutableState<String>,
     switchItemSelected:(StatusTypeEntrySaver)->Unit,
     isItemInSelected:(StatusTypeEntrySaver)->Boolean,
 //    treeOid1Str:String,
@@ -74,9 +75,13 @@ fun ChangeListItem(
             .fillMaxWidth()
             .combinedClickable(
                 onLongClick = {
+                    lastClickedItemKey.value = item.getItemKey()
+
                     onLongClick(item)
                 }
             ){  //onClick
+                lastClickedItemKey.value = item.getItemKey()
+
                 onClick(item)
             }
             .then(
@@ -85,7 +90,9 @@ fun ChangeListItem(
                     MaterialTheme.colorScheme.primaryContainer
 
                     //then 里传 Modifier不会有任何副作用，还是当前的Modifier(即调用者自己：this)，相当于什么都没改，后面可继续链式调用其他方法
-                ) else Modifier
+                ) else if(item.getItemKey() == lastClickedItemKey.value){
+                    Modifier.background(UIHelper.getLastClickedColor())
+                } else Modifier
             )
             ,
         verticalAlignment = Alignment.CenterVertically,

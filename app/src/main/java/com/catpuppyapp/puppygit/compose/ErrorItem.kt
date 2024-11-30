@@ -22,6 +22,7 @@ import com.catpuppyapp.puppygit.play.pro.R
 import com.catpuppyapp.puppygit.data.entity.ErrorEntity
 import com.catpuppyapp.puppygit.ui.theme.CommitListSwitchColor
 import com.catpuppyapp.puppygit.utils.AppModel
+import com.catpuppyapp.puppygit.utils.UIHelper
 import com.catpuppyapp.puppygit.utils.state.CustomStateSaveable
 
 
@@ -31,6 +32,7 @@ fun ErrorItem(
     showBottomSheet: MutableState<Boolean>,
     curObjInState: CustomStateSaveable<ErrorEntity>,
     idx:Int,
+    lastClickedItemKey:MutableState<String>,
     curObj: ErrorEntity,
     onClick:()->Unit
 ) {
@@ -44,9 +46,12 @@ fun ErrorItem(
             .combinedClickable (
                 enabled = true,
                 onClick = {
-                          onClick()
+                    lastClickedItemKey.value = curObj.id
+                    onClick()
                 },
                 onLongClick = {
+                    lastClickedItemKey.value = curObj.id
+
                     //震动反馈
                     haptic.performHapticFeedback(HapticFeedbackType.LongPress)
 
@@ -61,8 +66,12 @@ fun ErrorItem(
             )
             //padding要放到 combinedClickable后面，不然点按区域也会padding
 //            .background(if(idx%2==0)  Color.Transparent else CommitListSwitchColor)
+            .then(
+                if(lastClickedItemKey.value == curObj.id) {
+                    Modifier.background(UIHelper.getLastClickedColor())
+                }else Modifier
+            )
             .padding(10.dp)
-
 
 
     ) {

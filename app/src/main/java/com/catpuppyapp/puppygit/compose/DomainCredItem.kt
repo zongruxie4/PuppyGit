@@ -1,6 +1,7 @@
 package com.catpuppyapp.puppygit.compose
 
 import androidx.compose.foundation.ExperimentalFoundationApi
+import androidx.compose.foundation.background
 import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -19,6 +20,7 @@ import androidx.compose.ui.unit.dp
 import com.catpuppyapp.puppygit.dto.DomainCredentialDto
 import com.catpuppyapp.puppygit.play.pro.R
 import com.catpuppyapp.puppygit.utils.AppModel
+import com.catpuppyapp.puppygit.utils.UIHelper
 import com.catpuppyapp.puppygit.utils.state.CustomStateSaveable
 
 
@@ -28,6 +30,7 @@ fun DomainCredItem(
     showBottomSheet: MutableState<Boolean>,
     curCredentialState: CustomStateSaveable<DomainCredentialDto>,
     idx:Int,
+    lastClickedItemKey:MutableState<String>,
     thisItem:DomainCredentialDto,
     onClick:(DomainCredentialDto)->Unit
 ) {
@@ -44,9 +47,12 @@ fun DomainCredItem(
             .combinedClickable(
                 enabled = true,
                 onClick = {
+                    lastClickedItemKey.value = thisItem.domainCredId
                     onClick(thisItem)
                 },
                 onLongClick = {
+                    lastClickedItemKey.value = thisItem.domainCredId
+
                     //震动反馈
                     haptic.performHapticFeedback(HapticFeedbackType.LongPress)
 
@@ -61,6 +67,11 @@ fun DomainCredItem(
             )
             //padding要放到 combinedClickable后面，不然点按区域也会padding
 //            .background(if (idx % 2 == 0) Color.Transparent else CommitListSwitchColor)
+            .then(
+                if(lastClickedItemKey.value == thisItem.domainCredId) {
+                    Modifier.background(UIHelper.getLastClickedColor())
+                }else Modifier
+            )
             .padding(10.dp)
 
 
