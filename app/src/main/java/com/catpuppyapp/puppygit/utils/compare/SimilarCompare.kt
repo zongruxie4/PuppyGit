@@ -30,7 +30,7 @@ interface SimilarCompare {
      *          but it will not effect the `matched` of `IndexModifyResult`, so, modified or no-modified, maybe not effect for view (因为新行的匹配状态不会影响结果是否匹配，所以显示上可能没差)
      * @author Bandeapart1964 of catpuppyapp
      */
-    fun<T> doCompare(
+    fun<T:CharSequence> doCompare(
         add: CompareParam<T>,
         del: CompareParam<T>,
         emptyAsMatch: Boolean = false,

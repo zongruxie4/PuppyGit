@@ -549,8 +549,8 @@ fun DiffContent(
 
                             if(del!=null && add!=null && (delUsedPair.not() || addUsedPair.not())) {
                                 val modifyResult2 = SimilarCompare.INSTANCE.doCompare(
-                                    StringCompareParam(add.content),
-                                    StringCompareParam(del.content),
+                                    StringCompareParam(add.content, add.content.length),
+                                    StringCompareParam(del.content, del.content.length),
 
                                     //为true则对比更精细，但是，时间复杂度乘积式增加，不开 O(n)， 开了 O(nm)
                                     requireBetterMatching = requireBetterMatchingForCompare.value,

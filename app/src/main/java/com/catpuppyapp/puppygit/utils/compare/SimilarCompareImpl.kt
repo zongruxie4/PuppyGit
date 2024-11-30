@@ -7,8 +7,10 @@ import com.catpuppyapp.puppygit.utils.compare.search.Search
 import com.catpuppyapp.puppygit.utils.compare.search.SearchDirection
 import com.catpuppyapp.puppygit.utils.iterator.NoCopyIterator
 
+
+// 这里不要把泛型写到class上，除非class里有字段是泛型的类型，否则还是写到函数上更好，这样可以用一个类实例处理不同类型的参数，若写类上，得为不同参数创建不同的类实例，麻烦。
 class SimilarCompareImpl: SimilarCompare {
-    override fun<T> doCompare(
+    override fun<T:CharSequence> doCompare(
         add: CompareParam<T>,
         del: CompareParam<T>,
         emptyAsMatch:Boolean,
@@ -103,7 +105,7 @@ class SimilarCompareImpl: SimilarCompare {
     /**
      * @param requireBetterMatching if true, will try index of for not-matched words
      */
-    private fun<T> doMatchByWords(
+    private fun<T:CharSequence> doMatchByWords(
         add: CompareParam<T>,
         del: CompareParam<T>,
         requireBetterMatching: Boolean
@@ -354,7 +356,7 @@ class SimilarCompareImpl: SimilarCompare {
         )
     }
 
-    private fun<T> getWordAndIndexList(compareParam:CompareParam<T>):List<WordAndIndex> {
+    private fun<T:CharSequence> getWordAndIndexList(compareParam:CompareParam<T>):List<WordAndIndex> {
         var wordMatching = false
         var spaceMatching = false
         var wordAndIndex:WordAndIndex? = null

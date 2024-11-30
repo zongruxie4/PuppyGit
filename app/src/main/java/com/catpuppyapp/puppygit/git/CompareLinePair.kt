@@ -110,8 +110,8 @@ data class CompareLinePair (
 //        }
 
         val cmpResult = SimilarCompare.INSTANCE.doCompare(
-            StringCompareParam(line1),
-            StringCompareParam(line2),
+            StringCompareParam(line1, line1.length),
+            StringCompareParam(line2, line2.length),
 
             //为true则对比更精细，但是，时间复杂度乘积式增加，不开 O(n)， 开了 O(nm)
             requireBetterMatching = betterCompare,
