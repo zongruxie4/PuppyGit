@@ -342,19 +342,19 @@ fun CredentialNewOrEdit(
 //            }
 
             TextField(
-                    modifier =
+                    modifier = Modifier.fillMaxWidth().padding(10.dp)
                     //如果type是ssh，让private-key输入框高点
-                    if(credentialType.intValue == Cons.dbCredentialTypeSsh) {
-                        Modifier
-                            .fillMaxWidth()
-                            .heightIn(min = 300.dp, max = 300.dp)
-                            .padding(10.dp)
-
-                    }else{
-                        Modifier
-                            .fillMaxWidth()
-                            .padding(10.dp)
-                    }
+//                    if(credentialType.intValue == Cons.dbCredentialTypeSsh) {
+//                        Modifier
+//                            .fillMaxWidth()
+//                            .heightIn(min = 300.dp, max = 300.dp)
+//                            .padding(10.dp)
+//
+//                    }else{
+//                        Modifier
+//                            .fillMaxWidth()
+//                            .padding(10.dp)
+//                    }
                     ,
                     //如果是http的密码框，整成单行即可
 //                    singleLine = credentialType.intValue != Cons.dbCredentialTypeSsh,
@@ -364,12 +364,13 @@ fun CredentialNewOrEdit(
                         credentialVal.value=it
                     },
                     label = {
-                        if(credentialType.intValue == Cons.dbCredentialTypeHttp) {
-                            Text(stringResource(R.string.username_or_private_key))
+                        Text(stringResource(R.string.username_or_private_key))
+//                        if(credentialType.intValue == Cons.dbCredentialTypeHttp) {
+//                            Text(stringResource(R.string.username_or_private_key))
 //                            Text(stringResource(R.string.username))
-                        }else{
-                            Text(stringResource(R.string.private_key))
-                        }
+//                        }else{
+//                            Text(stringResource(R.string.private_key))
+//                        }
                     },
 //                    placeholder = {
 //                        if(credentialType.intValue == Cons.dbCredentialTypeHttp) {
@@ -389,12 +390,14 @@ fun CredentialNewOrEdit(
                         credentialPass.value=it
                     },
                     label = {
-                        if(credentialType.intValue == Cons.dbCredentialTypeHttp) {
-                            Text(stringResource(R.string.password_or_passphrase))
-//                            Text(stringResource(R.string.password))
-                        }else{
-                            Text(stringResource(R.string.passphrase_if_have))
-                        }
+                        Text(stringResource(R.string.password_or_passphrase))
+//
+//                        if(credentialType.intValue == Cons.dbCredentialTypeHttp) {
+//                            Text(stringResource(R.string.password_or_passphrase))
+////                            Text(stringResource(R.string.password))
+//                        }else{
+//                            Text(stringResource(R.string.passphrase_if_have))
+//                        }
                     },
 //                    placeholder = {
 //                        if(credentialType.intValue == Cons.dbCredentialTypeHttp) {
