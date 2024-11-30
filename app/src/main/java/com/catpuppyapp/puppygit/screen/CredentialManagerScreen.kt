@@ -472,7 +472,7 @@ fun CredentialManagerScreen(
             doJobThenOffLoading(loadingOn = loadingOn, loadingOff = loadingOff, loadingText = activityContext.getString(R.string.loading)) job@{
                 val credentialDb = AppModel.singleInstanceHolder.dbContainer.credentialRepository
                 list.value.clear()
-                list.value.addAll(credentialDb.getAll(includeMatchByDomain = isLinkMode))
+                list.value.addAll(credentialDb.getAll(includeMatchByDomain = isLinkMode, includeNone = isLinkMode))
 
                 if(isLinkMode) {
                     val remoteFromDb = AppModel.singleInstanceHolder.dbContainer.remoteRepository.getById(remoteId)
