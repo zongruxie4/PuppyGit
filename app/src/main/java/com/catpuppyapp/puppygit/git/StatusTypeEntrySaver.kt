@@ -1,14 +1,14 @@
 package com.catpuppyapp.puppygit.git
 
 import com.catpuppyapp.puppygit.constants.Cons
-import com.catpuppyapp.puppygit.utils.generateRandomString
-import com.catpuppyapp.puppygit.utils.getParentPathEndsWithSeparator
+import com.catpuppyapp.puppygit.dto.ItemKey
 import com.catpuppyapp.puppygit.utils.getHumanReadableSizeStr
+import com.catpuppyapp.puppygit.utils.getParentPathEndsWithSeparator
 import com.catpuppyapp.puppygit.utils.mime.MimeType
 import com.catpuppyapp.puppygit.utils.mime.guessFromFileName
 import java.io.File
 
-class StatusTypeEntrySaver {
+class StatusTypeEntrySaver: ItemKey {
     var repoIdFromDb:String="";
     var fileName:String="";
     var relativePathUnderRepo:String="";  //仓库下的相对路径，包含文件名
@@ -114,7 +114,7 @@ class StatusTypeEntrySaver {
         return result
     }
 
-    fun getItemKey():String {
+    override fun getItemKey():String {
         return repoIdFromDb+ relativePathUnderRepo+changeType+itemType
     }
 

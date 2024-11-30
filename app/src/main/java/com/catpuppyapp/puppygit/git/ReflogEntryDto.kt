@@ -1,5 +1,6 @@
 package com.catpuppyapp.puppygit.git
 
+import com.catpuppyapp.puppygit.dto.ItemKey
 import com.github.git24j.core.Oid
 
 data class ReflogEntryDto(
@@ -9,8 +10,8 @@ data class ReflogEntryDto(
     var idNew: Oid?=null,
     var idOld:Oid?=null,
     var msg:String=""
-) {
-    fun getItemKey():String {
+) : ItemKey {
+    override fun getItemKey():String {
         return username+email+date+idNew+idOld+msg
     }
 }
