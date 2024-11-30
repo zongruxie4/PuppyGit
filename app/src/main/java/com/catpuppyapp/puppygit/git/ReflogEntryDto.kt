@@ -11,6 +11,6 @@ data class ReflogEntryDto(
     var msg:String=""
 ) {
     fun getItemKey():String {
-        return ""+hashCode()
+        return username+email+date+idNew+idOld+msg
     }
 }

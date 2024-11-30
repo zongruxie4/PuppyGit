@@ -8,6 +8,6 @@ data class StashDto(
     var stashId: Oid? = null
 ) {
     fun getItemKey():String {
-        return "" +hashCode()
+        return msg+stashId?.id.toString()+index
     }
 }

@@ -115,7 +115,7 @@ class StatusTypeEntrySaver {
     }
 
     fun getItemKey():String {
-        return ""+hashCode()
+        return repoIdFromDb+ relativePathUnderRepo+changeType+itemType
     }
 
     fun maybeIsFileAndExist():Boolean {
