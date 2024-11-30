@@ -86,6 +86,7 @@ import com.catpuppyapp.puppygit.screen.content.homescreen.scaffold.title.FilesTi
 import com.catpuppyapp.puppygit.screen.content.homescreen.scaffold.title.ReposTitle
 import com.catpuppyapp.puppygit.screen.content.homescreen.scaffold.title.SettingsTitle
 import com.catpuppyapp.puppygit.screen.content.homescreen.scaffold.title.SimpleTitle
+import com.catpuppyapp.puppygit.screen.shared.SharedState
 import com.catpuppyapp.puppygit.settings.SettingsCons
 import com.catpuppyapp.puppygit.settings.SettingsUtil
 import com.catpuppyapp.puppygit.style.MyStyleKt
@@ -280,6 +281,7 @@ fun HomeScreen(
     val filesPageFilterList = mutableCustomStateListOf(stateKeyTag, "filesPageFilterList", listOf<FileItemDto>())
     val changeListFilterList = mutableCustomStateListOf(stateKeyTag,"changeListFilterList", listOf<StatusTypeEntrySaver>())
 
+    val changeListLastClickedItemKey = rememberSaveable{ SharedState.homeChangeList_LastClickedItemKey }
 
 //    val changelistFilterListState = mutableCustomStateOf(keyTag = stateKeyTag, keyName = "changelistFilterListState", LazyListState(0,0))
     val changelistFilterListState = rememberLazyListState()
@@ -1031,12 +1033,14 @@ fun HomeScreen(
                     newestPageId = changelistNewestPageId,
                     naviTarget = changeListNaviTarget,
                     enableFilterState = changeListPageEnableFilterState,
-                    filterList = changeListFilterList
+                    filterList = changeListFilterList,
+                    lastClickedItemKey = changeListLastClickedItemKey
                     // index..worktree, need not pass params, because `fromTo` already implicit `indexToWorktree` or `headToIndex`
 //                    commit1OidStr = Cons.gitIndexCommitHash,
 //                    commit2OidStr = Cons.gitLocalWorktreeCommitHash
 //                    refreshRepoPage = { changeStateTriggerRefreshPage(needRefreshRepoPage) }
                 )
+
                 //改用dropdwonmenu了
 //                if(changeListIsShowRepoList.value) {
 //                    RepoListDialog(curSelectedRepo = changeListCurRepo,

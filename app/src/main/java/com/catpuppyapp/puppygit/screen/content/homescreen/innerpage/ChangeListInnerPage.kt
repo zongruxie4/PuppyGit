@@ -96,6 +96,7 @@ import com.catpuppyapp.puppygit.play.pro.R
 import com.catpuppyapp.puppygit.screen.functions.ChangeListFunctions
 import com.catpuppyapp.puppygit.screen.functions.naviToFileHistoryByRelativePath
 import com.catpuppyapp.puppygit.screen.functions.openFileWithInnerSubPageEditor
+import com.catpuppyapp.puppygit.screen.shared.DiffFromScreen
 import com.catpuppyapp.puppygit.settings.SettingsUtil
 import com.catpuppyapp.puppygit.style.MyStyleKt
 import com.catpuppyapp.puppygit.user.UserUtil
@@ -180,7 +181,8 @@ fun ChangeListInnerPage(
 //    isDiffToHead:MutableState<Boolean> = mutableStateOf(false),  //仅 treeTotree页面需要此参数，用来判断是否在和headdiff
     naviTarget:MutableState<String>,
     enableFilterState:MutableState<Boolean>,
-    filterList:CustomStateListSaveable<StatusTypeEntrySaver>
+    filterList:CustomStateListSaveable<StatusTypeEntrySaver>,
+    lastClickedItemKey:MutableState<String>
 
 ) {
 
@@ -2587,7 +2589,6 @@ fun ChangeListInnerPage(
         selectedItemList.value.contains(item)
     }
 
-    val lastClickedItemKey = rememberSaveable{mutableStateOf(Cons.init_last_clicked_item_key)}
 
 
     val showOpenAsDialog = rememberSaveable { mutableStateOf(false)}
@@ -3378,6 +3379,10 @@ fun ChangeListInnerPage(
                                             + "/" + diffableListKey
                                             + "/" + indexAtDiffableList
                                             +"/" + (if(localAtDiffRight.value) 1 else 0)
+
+                                            +"/" + (if(fromTo == Cons.gitDiffFromIndexToWorktree) DiffFromScreen.HOME_CHANGELIST.code
+                                            else if(fromTo == Cons.gitDiffFromHeadToIndex) DiffFromScreen.INDEX.code
+                                            else DiffFromScreen.TREE_TO_TREE.code)
                                 )
 
                             }

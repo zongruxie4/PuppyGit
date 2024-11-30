@@ -11,6 +11,7 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import com.catpuppyapp.puppygit.constants.Cons
 import com.catpuppyapp.puppygit.constants.LineNum
+import com.catpuppyapp.puppygit.screen.shared.DiffFromScreen
 import com.catpuppyapp.puppygit.utils.AppModel
 
 @Composable
@@ -114,7 +115,7 @@ fun AppScreenNavigator() {
             )
         }
 //        composable(Cons.nav_DiffScreen + "/{repoId}/{relativePathUnderRepoEncoded}/{fromTo}/{changeType}") {
-        composable(Cons.nav_DiffScreen + "/{repoId}/{fromTo}/{changeType}/{fileSize}/{underRepoPathKey}/{treeOid1Str}/{treeOid2Str}/{isSubmodule}/{isDiffToLocal}/{diffableListKey}/{curItemIndexAtDiffableList}/{localAtDiffRight}") {
+        composable(Cons.nav_DiffScreen + "/{repoId}/{fromTo}/{changeType}/{fileSize}/{underRepoPathKey}/{treeOid1Str}/{treeOid2Str}/{isSubmodule}/{isDiffToLocal}/{diffableListKey}/{curItemIndexAtDiffableList}/{localAtDiffRight}/{fromScreen}") {
             DiffScreen(
                 repoId = it.arguments?.getString("repoId") ?: "",
                 fromTo = it.arguments?.getString("fromTo") ?: "",
@@ -128,6 +129,7 @@ fun AppScreenNavigator() {
                 localAtDiffRight = (it.arguments?.getString("localAtDiffRight")?.toInt() ?: 0) != 0,
                 isDiffToLocal = (it.arguments?.getString("isDiffToLocal")?.toInt() ?: 0) != 0,
                 diffableItemListKey = it.arguments?.getString("diffableListKey") ?: "",
+                fromScreen = DiffFromScreen.fromCode(it.arguments?.getString("fromScreen")!!)!!,
                 curItemIndexAtDiffableItemList = try {
                     (it.arguments?.getString("curItemIndexAtDiffableList") ?: "").toInt()
                 }catch (_:Exception) {

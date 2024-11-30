@@ -106,7 +106,8 @@ fun DiffContent(
     lineNumSize:Int,
     groupDiffContentByLineNum:Boolean,
     switchItemForFileHistory:(FileHistoryDto, index:Int)->Unit,
-    enableSelectCompare:Boolean
+    enableSelectCompare:Boolean,
+    lastClickedItemKey:MutableState<String>
 
 ) {
 
@@ -252,6 +253,7 @@ fun DiffContent(
                     switchItem = closeChannelThenSwitchItem,
                     switchItemForFileHistory = closeChannelThenSwitchItem,
                     fromTo = fromTo,
+                    lastClickedItemKey = lastClickedItemKey,
                     diffableItemListForFileHistory = diffableItemListForFileHistory
                 )
                 Spacer(Modifier.height(100.dp))
@@ -735,6 +737,7 @@ fun DiffContent(
                         switchItem = closeChannelThenSwitchItem,
                         switchItemForFileHistory = closeChannelThenSwitchItem,
                         fromTo = fromTo,
+                        lastClickedItemKey = lastClickedItemKey,
                         diffableItemListForFileHistory = diffableItemListForFileHistory
                     )
                 }
@@ -899,6 +902,7 @@ private fun NaviButton(
     diffableItemList: List<StatusTypeEntrySaver>,
     diffableItemListForFileHistory:List<FileHistoryDto>,
     curItemIndex: MutableIntState,
+    lastClickedItemKey: MutableState<String>,
     switchItem: (StatusTypeEntrySaver, index: Int) -> Unit,
     switchItemForFileHistory: (FileHistoryDto, index: Int) -> Unit,
 ) {
@@ -935,9 +939,13 @@ private fun NaviButton(
             enabled = hasPrevious
         ) {
             if(isFileHistoryTreeToLocalOrTree) {
-                switchItemForFileHistory(diffableItemListForFileHistory[previousIndex], previousIndex)
+                val item = diffableItemListForFileHistory[previousIndex]
+                lastClickedItemKey.value = item.getItemKey()
+                switchItemForFileHistory(item, previousIndex)
             }else{
-                switchItem(diffableItemList[previousIndex], previousIndex)
+                val item = diffableItemList[previousIndex]
+                lastClickedItemKey.value = item.getItemKey()
+                switchItem(item, previousIndex)
             }
         }
         Spacer(Modifier.height(10.dp))
@@ -948,9 +956,13 @@ private fun NaviButton(
             enabled = hasNext
         ) {
             if(isFileHistoryTreeToLocalOrTree) {
-                switchItemForFileHistory(diffableItemListForFileHistory[nextIndex], nextIndex)
+                val item = diffableItemListForFileHistory[nextIndex]
+                lastClickedItemKey.value = item.getItemKey()
+                switchItemForFileHistory(item, nextIndex)
             }else{
-                switchItem(diffableItemList[nextIndex], nextIndex)
+                val item = diffableItemList[nextIndex]
+                lastClickedItemKey.value = item.getItemKey()
+                switchItem(item, nextIndex)
             }
         }
 

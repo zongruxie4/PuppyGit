@@ -83,6 +83,8 @@ import com.catpuppyapp.puppygit.git.CommitDto
 import com.catpuppyapp.puppygit.git.FileHistoryDto
 import com.catpuppyapp.puppygit.play.pro.R
 import com.catpuppyapp.puppygit.screen.functions.getLoadText
+import com.catpuppyapp.puppygit.screen.shared.DiffFromScreen
+import com.catpuppyapp.puppygit.screen.shared.SharedState
 import com.catpuppyapp.puppygit.settings.SettingsUtil
 import com.catpuppyapp.puppygit.style.MyStyleKt
 import com.catpuppyapp.puppygit.utils.AppModel
@@ -466,7 +468,7 @@ fun FileHistoryScreen(
     val pageScrolled = rememberSaveable { mutableStateOf(settings.showNaviButtons) }
 
     val requireBlinkIdx = rememberSaveable{mutableIntStateOf(-1)}
-    val lastClickedItemKey = rememberSaveable{mutableStateOf(Cons.init_last_clicked_item_key)}
+    val lastClickedItemKey = rememberSaveable{ SharedState.fileHistory_LastClickedItemKey }
 
 //    val filterListState =mutableCustomStateOf(keyTag = stateKeyTag, keyName = "filterListState", LazyListState(0,0))
     val filterListState = rememberLazyListState()
@@ -854,6 +856,7 @@ fun FileHistoryScreen(
                                     + "/" + diffableListKey
                                     + "/" + indexAtDiffableList
                                     +"/" + localAtDiffRight
+                                    + "/" + DiffFromScreen.FILE_HISTORY.code
                         )
                     }
 
@@ -1031,6 +1034,8 @@ fun FileHistoryScreen(
                                 + "/" + diffableListKey
                                 + "/" + indexAtDiffableList
                                 +"/" + localAtDiffRight
+                                +"/"+ DiffFromScreen.FILE_HISTORY.code
+
                     )
 
                 }

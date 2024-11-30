@@ -50,11 +50,11 @@ fun FileHistoryItem(
             .combinedClickable(
                 enabled = true,
                 onClick = {
-                    lastClickedItemKey.value = dto.commitOidStr
+                    lastClickedItemKey.value = dto.getItemKey()
                     onClick(dto)
                 },
                 onLongClick = {  // x 算了)TODO 把长按也改成短按那样，在调用者那里实现，这里只负责把dto传过去，不过好像没必要，因为调用者那里还是要写同样的代码，不然弹窗不知道操作的是哪个对象
-                    lastClickedItemKey.value = dto.commitOidStr
+                    lastClickedItemKey.value = dto.getItemKey()
 
                     //震动反馈
                     haptic.performHapticFeedback(HapticFeedbackType.LongPress)
@@ -82,7 +82,7 @@ fun FileHistoryItem(
                         requireBlinkIdx.intValue = -1  //解除高亮
                     }
                     highlightColor
-                } else if(dto.commitOidStr == lastClickedItemKey.value){
+                } else if(dto.getItemKey() == lastClickedItemKey.value){
                     Modifier.background(UIHelper.getLastClickedColor())
                 }else {
                     Modifier

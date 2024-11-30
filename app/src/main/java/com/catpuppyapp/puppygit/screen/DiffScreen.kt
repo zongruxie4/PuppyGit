@@ -42,6 +42,8 @@ import com.catpuppyapp.puppygit.play.pro.R
 import com.catpuppyapp.puppygit.screen.content.DiffContent
 import com.catpuppyapp.puppygit.screen.content.homescreen.scaffold.actions.DiffPageActions
 import com.catpuppyapp.puppygit.screen.content.homescreen.scaffold.title.DiffScreenTitle
+import com.catpuppyapp.puppygit.screen.shared.DiffFromScreen
+import com.catpuppyapp.puppygit.screen.shared.SharedState
 import com.catpuppyapp.puppygit.settings.SettingsCons
 import com.catpuppyapp.puppygit.settings.SettingsUtil
 import com.catpuppyapp.puppygit.utils.AppModel
@@ -58,7 +60,7 @@ import com.catpuppyapp.puppygit.utils.state.mutableCustomStateListOf
 import com.catpuppyapp.puppygit.utils.state.mutableCustomStateOf
 import java.io.File
 
-private val stateKeyTag = "DiffScreen"
+private const val stateKeyTag = "DiffScreen"
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -75,6 +77,7 @@ fun DiffScreen(
     diffableItemListKey:String, //可预览diff的条目集合
     curItemIndexAtDiffableItemList:Int,
     localAtDiffRight:Boolean,
+    fromScreen: DiffFromScreen, // from which screen
     naviUp: () -> Boolean,
 ) {
 
@@ -91,6 +94,18 @@ fun DiffScreen(
 
     val scope = rememberCoroutineScope()
     val settings = remember { SettingsUtil.getSettingsSnapshot() }
+
+    val lastClickedItemKey = rememberSaveable {
+        if(fromScreen == DiffFromScreen.HOME_CHANGELIST) {
+            SharedState.homeChangeList_LastClickedItemKey
+        }else if(fromScreen == DiffFromScreen.INDEX) {
+            SharedState.index_LastClickedItemKey
+        }else if(fromScreen == DiffFromScreen.TREE_TO_TREE) {
+            SharedState.treeToTree_LastClickedItemKey
+        }else { // file history
+            SharedState.fileHistory_LastClickedItemKey
+        }
+    }
 
     val clipboardManager = LocalClipboardManager.current
 
@@ -533,7 +548,7 @@ fun DiffScreen(
                 showLineNum=showLineNum.value, showOriginType=showOriginType.value,
                 fontSize=fontSize.intValue, lineNumSize=lineNumFontSize.intValue,
                 groupDiffContentByLineNum=groupDiffContentByLineNum.value,switchItemForFileHistory=switchItemForFileHistory,
-                enableSelectCompare = enableSelectCompare.value
+                enableSelectCompare = enableSelectCompare.value, lastClickedItemKey=lastClickedItemKey
             )
         }else {
             MySelectionContainer {
@@ -549,7 +564,7 @@ fun DiffScreen(
                     showLineNum=showLineNum.value, showOriginType=showOriginType.value,
                     fontSize=fontSize.intValue, lineNumSize=lineNumFontSize.intValue,
                     groupDiffContentByLineNum=groupDiffContentByLineNum.value,switchItemForFileHistory=switchItemForFileHistory,
-                    enableSelectCompare = enableSelectCompare.value
+                    enableSelectCompare = enableSelectCompare.value, lastClickedItemKey=lastClickedItemKey
 
 
 

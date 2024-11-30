@@ -46,6 +46,7 @@ import com.catpuppyapp.puppygit.dev.dev_EnableUnTestedFeature
 import com.catpuppyapp.puppygit.git.StatusTypeEntrySaver
 import com.catpuppyapp.puppygit.play.pro.R
 import com.catpuppyapp.puppygit.screen.content.homescreen.innerpage.ChangeListInnerPage
+import com.catpuppyapp.puppygit.screen.shared.SharedState
 import com.catpuppyapp.puppygit.settings.SettingsUtil
 import com.catpuppyapp.puppygit.style.MyStyleKt
 import com.catpuppyapp.puppygit.user.UserUtil
@@ -197,6 +198,7 @@ fun TreeToTreeChangeListScreen(
 
     val changeListPageEnableFilterState = rememberSaveable { mutableStateOf(false)}
     val changeListFilterList = mutableCustomStateListOf(keyTag = stateKeyTag, keyName = "changeListFilterList", initValue = listOf<StatusTypeEntrySaver>())
+    val changeListLastClickedItemKey = rememberSaveable{ SharedState.treeToTree_LastClickedItemKey }
 
 
     Scaffold(
@@ -398,7 +400,8 @@ fun TreeToTreeChangeListScreen(
             newestPageId = changelistNewestPageId,
             naviTarget = changeListNaviTarget,
             enableFilterState = changeListPageEnableFilterState,
-            filterList = changeListFilterList
+            filterList = changeListFilterList,
+            lastClickedItemKey = changeListLastClickedItemKey
 
 
 

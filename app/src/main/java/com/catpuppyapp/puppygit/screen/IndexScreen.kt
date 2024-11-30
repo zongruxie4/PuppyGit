@@ -29,6 +29,7 @@ import com.catpuppyapp.puppygit.play.pro.R
 import com.catpuppyapp.puppygit.screen.content.homescreen.innerpage.ChangeListInnerPage
 import com.catpuppyapp.puppygit.screen.content.homescreen.scaffold.actions.ChangeListPageActions
 import com.catpuppyapp.puppygit.screen.content.homescreen.scaffold.title.IndexScreenTitle
+import com.catpuppyapp.puppygit.screen.shared.SharedState
 import com.catpuppyapp.puppygit.settings.SettingsUtil
 import com.catpuppyapp.puppygit.utils.AppModel
 import com.catpuppyapp.puppygit.utils.changeStateTriggerRefreshPage
@@ -127,6 +128,7 @@ fun IndexScreen(
     val changelistNewestPageId = rememberSaveable { mutableStateOf("") }
     val changeListPageEnableFilterState = rememberSaveable { mutableStateOf(false)}
     val changeListFilterList = mutableCustomStateListOf(keyTag = stateKeyTag, keyName = "changeListFilterList", initValue = listOf<StatusTypeEntrySaver>())
+    val changeListLastClickedItemKey = rememberSaveable{ SharedState.index_LastClickedItemKey }
 
 
     Scaffold(
@@ -242,7 +244,8 @@ fun IndexScreen(
             newestPageId = changelistNewestPageId,
             naviTarget = changeListNaviTarget,
             enableFilterState = changeListPageEnableFilterState,
-            filterList = changeListFilterList
+            filterList = changeListFilterList,
+            lastClickedItemKey = changeListLastClickedItemKey
 
 
 //            commit1OidStr=commit1OidStr,

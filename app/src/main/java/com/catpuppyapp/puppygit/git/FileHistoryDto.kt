@@ -37,4 +37,8 @@ class FileHistoryDto (
         }
         return treeEntryShortOidStr ?:""
     }
+
+    fun getItemKey():String {
+        return commitOidStr
+    }
 }
