@@ -641,7 +641,7 @@ fun HomeScreen(
                                     repoPageFilterKeyWord,
                                 )
                             }else {
-                                ReposTitle(repoPageListState, scope)
+                                ReposTitle(repoPageListState, scope, repoPageRepoList.value.size)
                             }
                         } else if(currentHomeScreen.intValue == Cons.selectedItem_Files){
                             FilesTitle(filesPageCurrentPath, allRepoParentDir, needRefreshFilesPage, filesPageGetFilterMode,

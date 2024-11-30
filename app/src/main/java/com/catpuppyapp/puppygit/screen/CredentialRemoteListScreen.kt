@@ -302,7 +302,7 @@ fun CredentialRemoteListScreen(
                                     text= titleSecondaryString.value,
                                     maxLines = 1,
                                     overflow = TextOverflow.Ellipsis,
-                                    fontSize = 12.sp
+                                    fontSize = MyStyleKt.Title.secondLineFontSize
                                 )
 
                             }
