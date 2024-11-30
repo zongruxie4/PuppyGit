@@ -104,19 +104,20 @@ class SimilarCompareImpl: SimilarCompare {
 
     /**
      * @param requireBetterMatching if true, will try index of for not-matched words
+     * @param treatNoWordMatchAsNoMatched if true, will return no match when only spaces matched ( no any non-space word matched )
      */
     private fun<T:CharSequence> doMatchByWords(
         add: CompareParam<T>,
         del: CompareParam<T>,
-        requireBetterMatching: Boolean
+        requireBetterMatching: Boolean,
+        treatNoWordMatchAsNoMatched:Boolean = true, //如果只有空格匹配，没单词匹配，当作无匹配
     ):IndexModifyResult {
-        val addWordAndIndexList = getWordAndIndexList(add) as MutableList
-        val delWordAndIndexList = getWordAndIndexList(del) as MutableList
+        val addWordSpacePair = getWordAndIndexList(add)
+        val delWordSpacePair = getWordAndIndexList(del)
 
-        val addIter = NoCopyIterator(srcList = addWordAndIndexList)
-        val delIter = NoCopyIterator(srcList = delWordAndIndexList)
+        val addIter = NoCopyIterator(srcList = addWordSpacePair.words as MutableList)
+        val delIter = NoCopyIterator(srcList = delWordSpacePair.words as MutableList)
 
-        var matched = false
 
         // save result which will return
         val addIndexResultList = mutableListOf<IndexStringPart>()
@@ -133,180 +134,38 @@ class SimilarCompareImpl: SimilarCompare {
 //        var delMatchedCount = 0
 //        val delAllCount = delWordAndIndexList.size
 
-        while(addIter.hasNext()) {
-            val addWord = addIter.next()
-            val addStr = addWord.getWordStr()
+        // match words by equals
+        var matched = doEqualsMatchWordsOrSpaces(addIter, delIter, addIndexResultList, delIndexResultList)
 
-            delIter.reset()
-            while(delIter.hasNext()) {
-                val delWord = delIter.next()
-                val delStr = delWord.getWordStr()
-
-                if(addStr == delStr) {
-                    addIter.remove()
-                    delIter.remove()
-
-                    matched = true
-
-                    addWord.matched = true
-                    delWord.matched = true
-
-                    // because is addStr equals delStr, so the addStr.length should equals delStr.length
-                    addIndexResultList.add(
-                        IndexStringPart(
-                            start = addWord.index,
-                            end = addWord.index+addStr.length,
-                            modified = false
-                        )
-                    )
-
-                    delIndexResultList.add(
-                        IndexStringPart(
-                            start = delWord.index,
-                            end = delWord.index+delStr.length,
-                            modified = false
-                        )
-                    )
-
-                    break
-                }
-            }
-
-            if(delIter.srcIsEmpty()) {
-                break
-            }
-
+        if(treatNoWordMatchAsNoMatched && !matched) {
+            return IndexModifyResult(
+                matched = false,
+                matchedByReverseSearch = false,
+                add = addIndexResultList,
+                del = delIndexResultList
+            )
         }
 
+
+        val addSpaceIter = NoCopyIterator(srcList = addWordSpacePair.spaces as MutableList)
+        val delSpaceIter = NoCopyIterator(srcList = delWordSpacePair.spaces as MutableList)
+
+        // match spaces by equals
+        matched = matched || doEqualsMatchWordsOrSpaces(addSpaceIter, delSpaceIter, addIndexResultList, delIndexResultList)
+
+
+        //add or del, 没有一个被完全匹配完（为空）
+        val wordsNotAllMatched = !(addIter.srcIsEmpty() || delIter.srcIsEmpty())
+        val spacesNotAllMatched = !(addSpaceIter.srcIsEmpty() || delSpaceIter.srcIsEmpty())
         //if requireBetterMatching is true, try use indexOf matching the not-matched items
-        if(requireBetterMatching && addIter.srcIsEmpty().not() && delIter.srcIsEmpty().not()) {
-            addIter.reset()
-            while(addIter.hasNext()) {
-                val a = addIter.next()
-                val addStr = a.getWordStr()
-
-                delIter.reset()
-                while(delIter.hasNext()) {
-                    val d = delIter.next()
-                    val delStr = d.getWordStr()
-
-                    // should try `bigLengthStr.indexOf(smallLengthStr)`
-                    // 应该用长的indexOf短的，所以这里有的大于判断
-                    if(addStr.length > delStr.length) {
-                        val indexOf = addStr.indexOf(delStr)
-                        if(indexOf != -1) {
-                            addIter.remove()
-                            delIter.remove()
-
-                            matched = true
-
-                            a.matched = true
-                            d.matched = true
-
-                            val aStartIndex = a.index+indexOf
-                            val aEndIndex = aStartIndex+delStr.length
-                            addIndexResultList.add(
-                                IndexStringPart(
-                                    start = aStartIndex,
-                                    end = aEndIndex,
-                                    modified = false
-                                )
-                            )
-
-                            delIndexResultList.add(
-                                IndexStringPart(
-                                    start = d.index,
-                                    end = d.index+delStr.length,
-                                    modified = false
-                                )
-                            )
-
-                            val beforeMatched = addStr.substring(0, indexOf)
-                            val afterMatched = addStr.substring(indexOf+delStr.length)
-                            if(beforeMatched.isNotEmpty()) {
-                                addIndexResultList.add(
-                                    IndexStringPart(
-                                        start = a.index,
-                                        end = a.index + beforeMatched.length,
-                                        modified = true
-                                    )
-                                )
-                            }
-                            if(afterMatched.isNotEmpty()) {
-                                addIndexResultList.add(
-                                    IndexStringPart(
-                                        start = aEndIndex,
-                                        end = aEndIndex + afterMatched.length,
-                                        modified = true
-                                    )
-                                )
-                            }
-
-                            break
-                        }
-                    }else {
-                        val indexOf = delStr.indexOf(addStr)
-                        if(indexOf != -1) {
-                            addIter.remove()
-                            delIter.remove()
-
-                            matched = true
-
-                            a.matched = true
-                            d.matched = true
-
-                            addIndexResultList.add(
-                                IndexStringPart(
-                                    start = a.index,
-                                    end = a.index+addStr.length,
-                                    modified = false
-                                )
-                            )
-
-                            val dStartIndex = d.index+indexOf
-                            val dEndIndex = dStartIndex+addStr.length
-                            delIndexResultList.add(
-                                IndexStringPart(
-                                    start = dStartIndex,
-                                    end = dEndIndex,
-                                    modified = false
-                                )
-                            )
-
-                            val beforeMatched = delStr.substring(0, indexOf)
-                            val afterMatched = delStr.substring(indexOf+addStr.length)
-                            if(beforeMatched.isNotEmpty()) {
-                                delIndexResultList.add(
-                                    IndexStringPart(
-                                        start = d.index,
-                                        end = d.index + beforeMatched.length,
-                                        modified = true
-                                    )
-                                )
-                            }
-                            if(afterMatched.isNotEmpty()) {
-                                delIndexResultList.add(
-                                    IndexStringPart(
-                                        start = dEndIndex,
-                                        end = dEndIndex + afterMatched.length,
-                                        modified = true
-                                    )
-                                )
-                            }
-
-                            break
-                        }
-                    }
-
-                }
-
-
-                if(delIter.srcIsEmpty()) {
-                    break
-                }
-
+        if(requireBetterMatching && (wordsNotAllMatched || spacesNotAllMatched)) {
+            if(wordsNotAllMatched) {
+                matched = matched || doIndexOfMatchWordsOrSpaces(addIter, delIter, addIndexResultList, delIndexResultList)
             }
 
+            if(spacesNotAllMatched) {
+                matched = matched || doIndexOfMatchWordsOrSpaces(addSpaceIter, delSpaceIter, addIndexResultList, delIndexResultList)
+            }
         }
 
 
@@ -318,6 +177,30 @@ class SimilarCompareImpl: SimilarCompare {
         // add not matched items, these items not matched by equals nor by indexOf, they are really `modified` items
 
         // at last, may still have not matched items, they are `modified`
+        addAllToIndexResultList(addIter, delIter, addIndexResultList, delIndexResultList)
+        addAllToIndexResultList(addSpaceIter, delSpaceIter, addIndexResultList, delIndexResultList)
+
+
+        // sortedWith return new List and keep origin list unchanged, sortWith sort in place, here no need new list, so using sortWith
+        //根据索引从小到大，原地排序
+        addIndexResultList.sortWith(comparator)
+        delIndexResultList.sortWith(comparator)
+
+
+        return IndexModifyResult(
+            matched = matched,
+            matchedByReverseSearch = false,
+            add = addIndexResultList,
+            del = delIndexResultList
+        )
+    }
+
+    private fun addAllToIndexResultList(
+        addIter: NoCopyIterator<WordAndIndex>,
+        delIter: NoCopyIterator<WordAndIndex>,
+        addIndexResultList: MutableList<IndexStringPart>,
+        delIndexResultList: MutableList<IndexStringPart>
+    ) {
         addIter.reset()
         while (addIter.hasNext()) {
             val item = addIter.next()
@@ -341,22 +224,201 @@ class SimilarCompareImpl: SimilarCompare {
                 )
             )
         }
-
-
-        // sortedWith return new List and keep origin list unchanged, sortWith sort in place, here no need new list, so using sortWith
-        addIndexResultList.sortWith(comparator)
-        delIndexResultList.sortWith(comparator)
-
-
-        return IndexModifyResult(
-            matched = matched,
-            matchedByReverseSearch = false,
-            add = addIndexResultList,
-            del = delIndexResultList
-        )
     }
 
-    private fun<T:CharSequence> getWordAndIndexList(compareParam:CompareParam<T>):List<WordAndIndex> {
+    private fun doIndexOfMatchWordsOrSpaces(
+        addIter: NoCopyIterator<WordAndIndex>,
+        delIter: NoCopyIterator<WordAndIndex>,
+        addIndexResultList: MutableList<IndexStringPart>,
+        delIndexResultList: MutableList<IndexStringPart>
+    ): Boolean {
+        var matched = false
+        addIter.reset()
+        while (addIter.hasNext()) {
+            val a = addIter.next()
+            val addStr = a.getWordStr()
+
+            delIter.reset()
+            while (delIter.hasNext()) {
+                val d = delIter.next()
+                val delStr = d.getWordStr()
+
+                // should try `bigLengthStr.indexOf(smallLengthStr)`
+                // 应该用长的indexOf短的，所以这里有的大于判断
+                if (addStr.length > delStr.length) {
+                    val indexOf = addStr.indexOf(delStr)
+                    if (indexOf != -1) {
+                        addIter.remove()
+                        delIter.remove()
+
+                        matched = true
+
+                        a.matched = true
+                        d.matched = true
+
+                        val aStartIndex = a.index + indexOf
+                        val aEndIndex = aStartIndex + delStr.length
+                        addIndexResultList.add(
+                            IndexStringPart(
+                                start = aStartIndex,
+                                end = aEndIndex,
+                                modified = false
+                            )
+                        )
+
+                        delIndexResultList.add(
+                            IndexStringPart(
+                                start = d.index,
+                                end = d.index + delStr.length,
+                                modified = false
+                            )
+                        )
+
+                        val beforeMatched = addStr.substring(0, indexOf)
+                        val afterMatched = addStr.substring(indexOf + delStr.length)
+                        if (beforeMatched.isNotEmpty()) {
+                            addIndexResultList.add(
+                                IndexStringPart(
+                                    start = a.index,
+                                    end = a.index + beforeMatched.length,
+                                    modified = true
+                                )
+                            )
+                        }
+                        if (afterMatched.isNotEmpty()) {
+                            addIndexResultList.add(
+                                IndexStringPart(
+                                    start = aEndIndex,
+                                    end = aEndIndex + afterMatched.length,
+                                    modified = true
+                                )
+                            )
+                        }
+
+                        break
+                    }
+                } else {
+                    val indexOf = delStr.indexOf(addStr)
+                    if (indexOf != -1) {
+                        addIter.remove()
+                        delIter.remove()
+
+                        matched = true
+
+                        a.matched = true
+                        d.matched = true
+
+                        addIndexResultList.add(
+                            IndexStringPart(
+                                start = a.index,
+                                end = a.index + addStr.length,
+                                modified = false
+                            )
+                        )
+
+                        val dStartIndex = d.index + indexOf
+                        val dEndIndex = dStartIndex + addStr.length
+                        delIndexResultList.add(
+                            IndexStringPart(
+                                start = dStartIndex,
+                                end = dEndIndex,
+                                modified = false
+                            )
+                        )
+
+                        val beforeMatched = delStr.substring(0, indexOf)
+                        val afterMatched = delStr.substring(indexOf + addStr.length)
+                        if (beforeMatched.isNotEmpty()) {
+                            delIndexResultList.add(
+                                IndexStringPart(
+                                    start = d.index,
+                                    end = d.index + beforeMatched.length,
+                                    modified = true
+                                )
+                            )
+                        }
+                        if (afterMatched.isNotEmpty()) {
+                            delIndexResultList.add(
+                                IndexStringPart(
+                                    start = dEndIndex,
+                                    end = dEndIndex + afterMatched.length,
+                                    modified = true
+                                )
+                            )
+                        }
+
+                        break
+                    }
+                }
+
+            }
+
+
+            if (delIter.srcIsEmpty()) {
+                break
+            }
+
+        }
+
+        return matched
+    }
+
+    private fun doEqualsMatchWordsOrSpaces(
+        addIter: NoCopyIterator<WordAndIndex>,
+        delIter: NoCopyIterator<WordAndIndex>,
+        addIndexResultList: MutableList<IndexStringPart>,
+        delIndexResultList: MutableList<IndexStringPart>
+    ): Boolean {
+        var matched = false
+        while (addIter.hasNext()) {
+            val addWord = addIter.next()
+            val addStr = addWord.getWordStr()
+
+            delIter.reset()
+            while (delIter.hasNext()) {
+                val delWord = delIter.next()
+                val delStr = delWord.getWordStr()
+
+                if (addStr == delStr) {
+                    addIter.remove()
+                    delIter.remove()
+
+                    matched = true
+
+                    addWord.matched = true
+                    delWord.matched = true
+
+                    // because is addStr equals delStr, so the addStr.length should equals delStr.length
+                    addIndexResultList.add(
+                        IndexStringPart(
+                            start = addWord.index,
+                            end = addWord.index + addStr.length,
+                            modified = false
+                        )
+                    )
+
+                    delIndexResultList.add(
+                        IndexStringPart(
+                            start = delWord.index,
+                            end = delWord.index + delStr.length,
+                            modified = false
+                        )
+                    )
+
+                    break
+                }
+            }
+
+            if (delIter.srcIsEmpty()) {
+                break
+            }
+
+        }
+
+        return matched
+    }
+
+    private fun<T:CharSequence> getWordAndIndexList(compareParam:CompareParam<T>):WordIndexPair {
         var wordMatching = false
         var spaceMatching = false
         var wordAndIndex:WordAndIndex? = null
@@ -393,9 +455,9 @@ class SimilarCompareImpl: SimilarCompare {
             }
         }
 
-        wordAndIndexList.addAll(spaceAndIndexList)
+//        wordAndIndexList.addAll(spaceAndIndexList)
 
-        return wordAndIndexList
+        return WordIndexPair(words = wordAndIndexList, spaces = spaceAndIndexList)
     }
 
 
@@ -420,6 +482,11 @@ private data class WordAndIndex(
     }
 
 }
+
+private data class WordIndexPair(
+    val words:List<WordAndIndex>,
+    val spaces:List<WordAndIndex>
+)
 
 // create comparator for sort list by index
 // p.s. list compare will not remove same elements
