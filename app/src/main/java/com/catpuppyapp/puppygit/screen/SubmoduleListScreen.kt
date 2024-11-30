@@ -67,6 +67,7 @@ import com.catpuppyapp.puppygit.compose.ResetDialog
 import com.catpuppyapp.puppygit.compose.ScrollableColumn
 import com.catpuppyapp.puppygit.compose.ScrollableRow
 import com.catpuppyapp.puppygit.compose.SubmoduleItem
+import com.catpuppyapp.puppygit.constants.Cons
 import com.catpuppyapp.puppygit.constants.SpecialCredential
 import com.catpuppyapp.puppygit.data.entity.CredentialEntity
 import com.catpuppyapp.puppygit.data.entity.RepoEntity
@@ -261,6 +262,7 @@ fun SubmoduleListScreen(
     }
     // 多选模式相关函数，结束
 
+    val lastClickedItemKey = rememberSaveable{mutableStateOf(Cons.init_last_clicked_item_key)}
 
     val getDetail = { item:SubmoduleDto ->
         val sb = StringBuilder()
@@ -1281,7 +1283,7 @@ fun SubmoduleListScreen(
                 forEachCb = {},
             ){idx, it->
                 //长按会更新curObjInPage为被长按的条目
-                SubmoduleItem(it, isItemInSelected, onLongClick = {
+                SubmoduleItem(it, lastClickedItemKey, isItemInSelected, onLongClick = {
                     if(multiSelectionMode.value) {  //多选模式
                         //在选择模式下长按条目，执行区域选择（连续选择一个范围）
                         UIHelper.doSelectSpan(

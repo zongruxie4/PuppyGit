@@ -2587,6 +2587,9 @@ fun ChangeListInnerPage(
         selectedItemList.value.contains(item)
     }
 
+    val lastClickedItemKey = rememberSaveable{mutableStateOf(Cons.init_last_clicked_item_key)}
+
+
     val showOpenAsDialog = rememberSaveable { mutableStateOf(false)}
     val readOnlyForOpenAsDialog = rememberSaveable { mutableStateOf(false)}
     val openAsDialogFilePath = rememberSaveable { mutableStateOf("")}
@@ -3288,6 +3291,7 @@ fun ChangeListInnerPage(
                         menuKeyVisibleList=menuKeyVisibleList,
                         fromTo=fromTo,
                         isDiffToLocal = isDiffToLocal,
+                        lastClickedItemKey = lastClickedItemKey,
                         switchItemSelected=switchItemSelected,
                         isItemInSelected=isItemInSelected,
                         onLongClick= lc@{

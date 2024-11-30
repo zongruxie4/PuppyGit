@@ -129,6 +129,7 @@ fun RemoteListScreen(
     val curObjInState = mutableCustomStateOf(keyTag = stateKeyTag, keyName = "curObjInState", initValue = RemoteDto())
 //    val showClearAllConfirmDialog = StateUtil.getRememberSaveableState(initValue = false)
 //    val userIsPro = UserInfo.isPro()
+    val lastClickedItemKey = rememberSaveable{mutableStateOf(Cons.init_last_clicked_item_key)}
 
 
     val needRefresh = rememberSaveable { mutableStateOf("")}
@@ -869,7 +870,7 @@ fun RemoteListScreen(
                 requirePaddingAtBottom = true
             ) {idx,it->
                 //在这个组件里更新了 state curObj，所以长按后直接用curObj就能获取到当前对象了
-                RemoteItem(showBottomSheet,curObjInState,idx,it){ //onClick
+                RemoteItem(showBottomSheet,curObjInState,idx,it, lastClickedItemKey){ //onClick
                     //生成要显示的字符串
                     val sb = StringBuilder()
                     sb.append(activityContext.getString(R.string.name)+": "+it.remoteName)

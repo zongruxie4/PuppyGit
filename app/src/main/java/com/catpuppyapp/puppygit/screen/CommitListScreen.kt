@@ -1418,6 +1418,9 @@ fun CommitListScreen(
         RepoInfoDialog(curRepo.value, showTitleInfoDialog)
     }
 
+    val lastClickedItemKey = rememberSaveable{mutableStateOf(Cons.init_last_clicked_item_key)}
+
+
     Scaffold(
         modifier = Modifier.nestedScroll(homeTopBarScrollBehavior.nestedScrollConnection),
         topBar = {
@@ -1973,7 +1976,7 @@ fun CommitListScreen(
                     }
                 }
             ) { idx, it ->
-                CommitItem(showBottomSheet, curCommit, curCommitIndex, idx, it, requireBlinkIdx) { thisObj ->
+                CommitItem(showBottomSheet, curCommit, curCommitIndex, idx, it, requireBlinkIdx, lastClickedItemKey = lastClickedItemKey) { thisObj ->
                     val parents = thisObj.parentOidStrList
                     if (parents.isEmpty()) {  // 如果没父提交，例如最初的提交就没父提交，提示没parent可比较
                         //TODO 改成没父提交时列出当前提交的所有文件

@@ -94,6 +94,7 @@ fun CredentialManagerScreen(
 
     // for link credential to remote
     val isLinkMode = remoteId.isNotBlank()
+    val lastClickedItemKey = rememberSaveable{mutableStateOf(Cons.init_last_clicked_item_key)}
 
     val settings = remember { SettingsUtil.getSettingsSnapshot() }
 
@@ -444,7 +445,8 @@ fun CredentialManagerScreen(
                     thisItem = value,
                     isLinkMode = isLinkMode,
                     linkedFetchId = remote.value.credentialId,
-                    linkedPushId = remote.value.pushCredentialId
+                    linkedPushId = remote.value.pushCredentialId,
+                    lastClickedItemKey = lastClickedItemKey
                 ) {
 
                     //这里value和it和传给CredentialItem的thisItem值都一样，只是参数传来传去而已

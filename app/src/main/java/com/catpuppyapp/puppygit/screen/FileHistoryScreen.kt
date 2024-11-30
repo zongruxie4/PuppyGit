@@ -466,6 +466,7 @@ fun FileHistoryScreen(
     val pageScrolled = rememberSaveable { mutableStateOf(settings.showNaviButtons) }
 
     val requireBlinkIdx = rememberSaveable{mutableIntStateOf(-1)}
+    val lastClickedItemKey = rememberSaveable{mutableStateOf(Cons.init_last_clicked_item_key)}
 
 //    val filterListState =mutableCustomStateOf(keyTag = stateKeyTag, keyName = "filterListState", LazyListState(0,0))
     val filterListState = rememberLazyListState()
@@ -999,7 +1000,7 @@ fun FileHistoryScreen(
                     }
                 }
             ) { idx, it ->
-                FileHistoryItem(showBottomSheet, curObj, curObjIndex, idx, it, requireBlinkIdx) { thisObj ->
+                FileHistoryItem(showBottomSheet, curObj, curObjIndex, idx, it, requireBlinkIdx, lastClickedItemKey) { thisObj ->
                     val underRepoPathKey = Cache.setThenReturnKey(fileRelativePath)
                     val indexAtDiffableList = idx
                     val diffableListKey = Cache.setThenReturnKey(list.toList())

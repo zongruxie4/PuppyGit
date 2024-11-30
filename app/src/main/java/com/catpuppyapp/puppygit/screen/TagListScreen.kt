@@ -215,6 +215,7 @@ fun TagListScreen(
     // 多选模式相关函数，结束
 
 
+    val lastClickedItemKey = rememberSaveable{mutableStateOf(Cons.init_last_clicked_item_key)}
 
 
     // hardReset start
@@ -754,7 +755,7 @@ fun TagListScreen(
                 forEachCb = {},
             ){idx, it->
                 //长按会更新curObjInPage为被长按的条目
-                TagItem(it, isItemInSelected, onLongClick = {
+                TagItem(it, lastClickedItemKey, isItemInSelected, onLongClick = {
                     if(multiSelectionMode.value) {  //多选模式
                         //在选择模式下长按条目，执行区域选择（连续选择一个范围）
                         UIHelper.doSelectSpan(idx, it,

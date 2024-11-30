@@ -53,6 +53,7 @@ import com.catpuppyapp.puppygit.compose.LongPressAbleIconBtn
 import com.catpuppyapp.puppygit.compose.MyLazyColumn
 import com.catpuppyapp.puppygit.compose.ScrollableColumn
 import com.catpuppyapp.puppygit.compose.ScrollableRow
+import com.catpuppyapp.puppygit.constants.Cons
 import com.catpuppyapp.puppygit.data.entity.CredentialEntity
 import com.catpuppyapp.puppygit.data.entity.DomainCredentialEntity
 import com.catpuppyapp.puppygit.data.entity.RemoteEntity
@@ -114,6 +115,8 @@ fun DomainCredentialListScreen(
     val remote =mutableCustomStateOf(keyTag = stateKeyTag, keyName = "remote", initValue = RemoteEntity(id=""))
     val curRepo =mutableCustomStateOf(keyTag = stateKeyTag, keyName = "curRepo", initValue = RepoEntity(id=""))
 
+    val lastClickedItemKey = rememberSaveable{mutableStateOf(Cons.init_last_clicked_item_key)}
+    
 
     val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = MyStyleKt.BottomSheet.skipPartiallyExpanded)
     val showBottomSheet = rememberSaveable { mutableStateOf(false)}
@@ -505,7 +508,7 @@ fun DomainCredentialListScreen(
                 requireForEachWithIndex = true,
                 requirePaddingAtBottom = true
             ) {idx, value->
-                DomainCredItem (showBottomSheet = showBottomSheet, curCredentialState = curCredential, idx = idx, thisItem = value) {
+                DomainCredItem (showBottomSheet = showBottomSheet, curCredentialState = curCredential, idx = idx, thisItem = value, lastClickedItemKey = lastClickedItemKey) {
                     initCreateOrEditDialog(
                         isCreateParam = false,
                         curDomainNameParam = value.domain,

@@ -167,6 +167,7 @@ fun ErrorListScreen(
         RepoInfoDialog(curRepo.value, showTitleInfoDialog)
     }
 
+    val lastClickedItemKey = rememberSaveable{mutableStateOf(Cons.init_last_clicked_item_key)}
 
     Scaffold(
         modifier = Modifier.nestedScroll(homeTopBarScrollBehavior.nestedScrollConnection),
@@ -357,7 +358,7 @@ fun ErrorListScreen(
             requirePaddingAtBottom = true
         ) { idx, it ->
             //在这个组件里更新了 state curObj，所以长按后直接用curObj就能获取到当前对象了
-            ErrorItem(showBottomSheet,curObjInState,idx,it) {
+            ErrorItem(showBottomSheet,curObjInState,idx, lastClickedItemKey, it) {
                 val sb = StringBuilder()
                 sb.append(activityContext.getString(R.string.id)).append(": ").appendLine(it.id).appendLine()
                     .append(activityContext.getString(R.string.date)).append(": ").appendLine(it.date).appendLine()

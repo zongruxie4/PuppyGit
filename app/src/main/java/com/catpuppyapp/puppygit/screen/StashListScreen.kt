@@ -51,6 +51,7 @@ import com.catpuppyapp.puppygit.compose.MyLazyColumn
 import com.catpuppyapp.puppygit.compose.RepoInfoDialog
 import com.catpuppyapp.puppygit.compose.ScrollableRow
 import com.catpuppyapp.puppygit.compose.StashItem
+import com.catpuppyapp.puppygit.constants.Cons
 import com.catpuppyapp.puppygit.data.entity.RepoEntity
 import com.catpuppyapp.puppygit.git.StashDto
 import com.catpuppyapp.puppygit.play.pro.R
@@ -96,6 +97,7 @@ fun StashListScreen(
     val listState = rememberLazyListState()
     val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = MyStyleKt.BottomSheet.skipPartiallyExpanded)
     val showBottomSheet = rememberSaveable { mutableStateOf(false)}
+    val lastClickedItemKey = rememberSaveable{mutableStateOf(Cons.init_last_clicked_item_key)}
 
     val needRefresh = rememberSaveable { mutableStateOf("")}
 
@@ -513,7 +515,7 @@ fun StashListScreen(
             forEachCb = {},
         ){idx, it->
             //长按会更新curObjInPage为被长按的条目
-            StashItem(showBottomSheet, curObjInPage, idx, it) {  //onClick
+            StashItem(showBottomSheet, curObjInPage, idx, lastClickedItemKey, it) {  //onClick
                 val sb = StringBuilder()
                 sb.append(activityContext.getString(R.string.index)).append(": ").append(it.index).appendLine().appendLine()
                 sb.append(activityContext.getString(R.string.stash_id)).append(": ").append(it.stashId).appendLine().appendLine()

@@ -185,6 +185,7 @@ fun ReflogListScreen(
 
     val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = MyStyleKt.BottomSheet.skipPartiallyExpanded)
     val showBottomSheet = rememberSaveable { mutableStateOf(false)}
+    val lastClickedItemKey = rememberSaveable{mutableStateOf(Cons.init_last_clicked_item_key)}
 
     val checkoutNew = rememberSaveable { mutableStateOf( false)}
     val requireUserInputCommitHash = rememberSaveable { mutableStateOf(false)}
@@ -442,8 +443,7 @@ fun ReflogListScreen(
             forEachCb = {},
         ){idx, it->
             //长按会更新curObjInPage为被长按的条目
-            ReflogItem(showBottomSheet, curLongClickItem,it,
-            ) {  //onClick
+            ReflogItem(showBottomSheet, curLongClickItem, lastClickedItemKey, it) {  //onClick
                 val sb = StringBuilder()
                 sb.append(activityContext.getString(R.string.new_oid)).append(": ").append(it.idNew).appendLine().appendLine()
                 sb.append(activityContext.getString(R.string.old_oid)).append(": ").append(it.idOld).appendLine().appendLine()
