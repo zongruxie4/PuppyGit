@@ -36,6 +36,9 @@ fun CredentialItem(
     curCredentialState: CustomStateSaveable<CredentialEntity>,
     idx:Int,
     thisItem:CredentialEntity,
+    isLinkMode:Boolean,
+    linkedFetchId:String,
+    linkedPushId:String,
     onClick:(CredentialEntity)->Unit
 ) {
     val haptic = AppModel.singleInstanceHolder.haptic
@@ -92,8 +95,9 @@ fun CredentialItem(
 
                 ){
 
-                Text(text = stringResource(R.string.name) +":")
-                Text(text = thisItem.name,
+                //如果关联模式，对已绑定的前面加个*
+                Text(text = stringResource(R.string.name) + ":")
+                Text(text = (if(isLinkMode && (linkedFetchId==thisItem.id || linkedPushId==thisItem.id)) "*" else "") + thisItem.name,
                     maxLines = 1,
                     overflow = TextOverflow.Ellipsis,
                     fontWeight = FontWeight.Light

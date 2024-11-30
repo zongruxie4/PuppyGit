@@ -77,7 +77,7 @@ interface CredentialRepository {
     /**
      * 不加密也不解密 密码字段，把查出的数据简单返回
      */
-    suspend fun getById(id: String): CredentialEntity?
+    suspend fun getById(id: String, includeNone:Boolean = false, includeMatchByDomain:Boolean = false): CredentialEntity?
 
     //20241003 disabled, because only support https, get by type is nonsense for now
 //    suspend fun getListByType(type:Int): List<CredentialEntity>

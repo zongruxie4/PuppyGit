@@ -284,7 +284,9 @@ fun CredentialRemoteListScreen(
                             filterKeyword,
                         )
                     }else{
-                        Column (modifier = Modifier.combinedClickable(onDoubleClick = { UIHelper.scrollToItem(scope, listState, 0) }) {}){
+                        Column (modifier = Modifier.combinedClickable(onDoubleClick = { UIHelper.scrollToItem(scope, listState, 0) }) {
+                            showTitleInfoDialog.value = true
+                        }){
                             ScrollableRow {
                                 titleString.value = if(isShowLink) stringResource(R.string.linked_remotes) else stringResource(R.string.unlinked_remotes)
                                 Text(
@@ -474,7 +476,7 @@ fun CredentialRemoteListScreen(
                 val remoteDb = AppModel.singleInstanceHolder.dbContainer.remoteRepository
                 val credentialDb = AppModel.singleInstanceHolder.dbContainer.credentialRepository
                 //这个页面用不到密码，所以查询的是加密后的密码，没解密
-                curItemInPage.value = credentialDb.getById(credentialId)?:CredentialEntity(id="")
+                curItemInPage.value = credentialDb.getById(credentialId, includeNone = true, includeMatchByDomain = true) ?: CredentialEntity(id="")
                 val listFromDb = if (isShowLink) {
                     remoteDb.getLinkedRemoteDtoForCredentialList(credentialId)
                 }else {

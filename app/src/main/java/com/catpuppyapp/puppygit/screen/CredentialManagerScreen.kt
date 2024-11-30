@@ -160,6 +160,7 @@ fun CredentialManagerScreen(
             try{
                 val credentialDb = AppModel.singleInstanceHolder.dbContainer.credentialRepository
                 credentialDb.deleteAndUnlink(curCredential.value)
+                Msg.requireShow(activityContext.getString(R.string.success))
             }finally{
                 changeStateTriggerRefreshPage(needRefresh)
             }
@@ -243,6 +244,16 @@ fun CredentialManagerScreen(
                 if(titleSecondaryString.value.isNotBlank()) {
                     Spacer(modifier = Modifier.height(10.dp))
                     Text(titleSecondaryString.value)
+                }
+
+                if(isLinkMode) {
+                    Spacer(modifier = Modifier.height(10.dp))
+                    Text(stringResource(R.string.repo)+": "+curRepo.value.repoName)
+                    Text(stringResource(R.string.remote)+": "+remote.value.remoteName)
+                    val fetchCredential = list.value.find { remote.value.credentialId == it.id }
+                    val pushCredential = list.value.find { remote.value.pushCredentialId == it.id }
+                    Text(stringResource(R.string.fetch_credential)+": "+fetchCredential?.name)
+                    Text(stringResource(R.string.push_credential)+": "+pushCredential?.name)
                 }
             }
         }
@@ -426,7 +437,15 @@ fun CredentialManagerScreen(
                 requireForEachWithIndex = true,
                 requirePaddingAtBottom = true
             ) {idx, value->
-                CredentialItem(showBottomSheet = showBottomSheet, curCredentialState = curCredential, idx = idx, thisItem = value) {
+                CredentialItem(
+                    showBottomSheet = showBottomSheet,
+                    curCredentialState = curCredential,
+                    idx = idx,
+                    thisItem = value,
+                    isLinkMode = isLinkMode,
+                    linkedFetchId = remote.value.credentialId,
+                    linkedPushId = remote.value.pushCredentialId
+                ) {
 
                     //这里value和it和传给CredentialItem的thisItem值都一样，只是参数传来传去而已
 
@@ -439,9 +458,12 @@ fun CredentialManagerScreen(
                         requireDoLink.value = true
                         targetAll.value=false
 
-                        //remoteDtoForCredential.remoteId 改成在初始化时赋值了，remoteId是常量，初始化一次即可，不需每次都赋值
-//                        remoteDtoForCredential.value = RemoteDtoForCredential(remoteId=remoteId)
-//                        remoteDtoForCredential.value.remoteId = remoteId  //由于remoteDtoForCredential修改后并不需要刷新页面，所以不用重新赋值，一个对象反复用，把需要使用的字段更新下就行
+                        remoteDtoForCredential.value = RemoteDtoForCredential(
+                            remoteId = remoteId,
+                            credentialId = remote.value.credentialId,
+                            pushCredentialId = remote.value.pushCredentialId
+                        )
+
                         linkOrUnLinkDialogTitle.value = activityContext.getString(R.string.link)+" '${it.name}'"
                         //显示弹窗
                         showLinkOrUnLinkDialog.value=true
@@ -472,7 +494,8 @@ fun CredentialManagerScreen(
             doJobThenOffLoading(loadingOn = loadingOn, loadingOff = loadingOff, loadingText = activityContext.getString(R.string.loading)) job@{
                 val credentialDb = AppModel.singleInstanceHolder.dbContainer.credentialRepository
                 list.value.clear()
-                list.value.addAll(credentialDb.getAll(includeMatchByDomain = isLinkMode, includeNone = isLinkMode))
+//                list.value.addAll(credentialDb.getAll(includeMatchByDomain = isLinkMode, includeNone = isLinkMode))
+                list.value.addAll(credentialDb.getAll(includeMatchByDomain = true, includeNone = true))
 
                 if(isLinkMode) {
                     val remoteFromDb = AppModel.singleInstanceHolder.dbContainer.remoteRepository.getById(remoteId)
@@ -492,10 +515,10 @@ fun CredentialManagerScreen(
         }
     }
     //compose被销毁时执行的副作用
-    DisposableEffect(Unit) {
-//        println("DisposableEffect: entered main")
-        onDispose {
-//            println("DisposableEffect: exited main")
-        }
-    }
+//    DisposableEffect(Unit) {
+////        println("DisposableEffect: entered main")
+//        onDispose {
+////            println("DisposableEffect: exited main")
+//        }
+//    }
 }

@@ -157,8 +157,12 @@ class CredentialRepositoryImpl(private val dao: CredentialDao) : CredentialRepos
         }
     }
 
-    override suspend fun getById(id: String): CredentialEntity? {
-        if(id.isBlank() || id==SpecialCredential.NONE.credentialId) {
+    override suspend fun getById(id: String, includeNone:Boolean, includeMatchByDomain:Boolean): CredentialEntity? {
+        if(includeNone && id==SpecialCredential.NONE.credentialId) {
+            return SpecialCredential.NONE.getEntityCopy()
+        }else if(includeMatchByDomain && id == SpecialCredential.MatchByDomain.credentialId) {
+            return SpecialCredential.MatchByDomain.getEntityCopy()
+        }else if(id.isBlank()) {
             return null
         }
 
