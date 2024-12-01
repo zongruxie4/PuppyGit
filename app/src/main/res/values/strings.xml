@@ -1099,5 +1099,7 @@
     <string name="cache_your_input_into_editcache_dir_path">Cache your input into \'ph_a3f241dc_1\'</string>
     <string name="switch_reference">Switch Reference</string>
     <string name="switch_item">Switch Item</string>
+<!--    e.g. Count: 10-->
+    <string name="count_n">Count: ph_a3f241dc_1</string>
 
 </resources>

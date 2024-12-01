@@ -13,6 +13,7 @@ import com.catpuppyapp.puppygit.compose.ScrollableRow
 import com.catpuppyapp.puppygit.play.pro.R
 import com.catpuppyapp.puppygit.style.MyStyleKt
 import com.catpuppyapp.puppygit.utils.UIHelper
+import com.catpuppyapp.puppygit.utils.replaceStringResList
 import kotlinx.coroutines.CoroutineScope
 
 @OptIn(ExperimentalFoundationApi::class)
@@ -33,7 +34,7 @@ fun ReposTitle(listState: LazyListState, scope:CoroutineScope, allRepoCount:Int)
         if(allRepoCount > 0) {
             ScrollableRow {
                 Text(
-                    text= ""+allRepoCount,
+                    text= replaceStringResList(stringResource(R.string.count_n), listOf(""+allRepoCount)),
                     maxLines = 1,
                     overflow = TextOverflow.Ellipsis,
                     fontSize = MyStyleKt.Title.secondLineFontSize

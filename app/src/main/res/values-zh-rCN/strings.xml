@@ -1079,6 +1079,7 @@
     <string name="cache_your_input_into_editcache_dir_path">缓存你的输入到 \'ph_a3f241dc_1\'</string>
     <string name="switch_reference">切换引用</string>
     <string name="switch_item">切换条目</string>
+    <string name="count_n">数量: ph_a3f241dc_1</string>
 
 
 </resources>
