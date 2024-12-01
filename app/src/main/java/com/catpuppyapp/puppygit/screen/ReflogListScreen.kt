@@ -2,8 +2,6 @@ package com.catpuppyapp.puppygit.screen
 
 import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.ExperimentalFoundationApi
-import androidx.compose.foundation.combinedClickable
-import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
@@ -14,7 +12,6 @@ import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.material3.rememberModalBottomSheetState
@@ -31,7 +28,6 @@ import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.input.TextFieldValue
-import androidx.compose.ui.text.style.TextOverflow
 import com.catpuppyapp.puppygit.compose.BottomSheet
 import com.catpuppyapp.puppygit.compose.BottomSheetItem
 import com.catpuppyapp.puppygit.compose.CheckoutDialog
@@ -45,7 +41,7 @@ import com.catpuppyapp.puppygit.compose.MyLazyColumn
 import com.catpuppyapp.puppygit.compose.ReflogItem
 import com.catpuppyapp.puppygit.compose.RepoInfoDialog
 import com.catpuppyapp.puppygit.compose.ResetDialog
-import com.catpuppyapp.puppygit.compose.ScrollableRow
+import com.catpuppyapp.puppygit.compose.TitleDropDownMenu
 import com.catpuppyapp.puppygit.constants.Cons
 import com.catpuppyapp.puppygit.data.entity.RepoEntity
 import com.catpuppyapp.puppygit.dev.proFeatureEnabled
@@ -59,7 +55,7 @@ import com.catpuppyapp.puppygit.utils.AppModel
 import com.catpuppyapp.puppygit.utils.Libgit2Helper
 import com.catpuppyapp.puppygit.utils.Msg
 import com.catpuppyapp.puppygit.utils.MyLog
-import com.catpuppyapp.puppygit.utils.UIHelper
+import com.catpuppyapp.puppygit.utils.addPrefix
 import com.catpuppyapp.puppygit.utils.changeStateTriggerRefreshPage
 import com.catpuppyapp.puppygit.utils.doJobThenOffLoading
 import com.catpuppyapp.puppygit.utils.state.mutableCustomStateListOf
@@ -91,11 +87,14 @@ fun ReflogListScreen(
 
     val settings = remember { SettingsUtil.getSettingsSnapshot() }
 
+    val refName = rememberSaveable { mutableStateOf(Cons.gitHeadStr) }
+
     //获取假数据
     val curClickItem = mutableCustomStateOf(keyTag = stateKeyTag, keyName = "curClickItem", initValue = ReflogEntryDto())
     val curLongClickItem = mutableCustomStateOf(keyTag = stateKeyTag, keyName = "curLongClickItem", initValue = ReflogEntryDto())
 
     val list = mutableCustomStateListOf(keyTag = stateKeyTag, keyName = "list", initValue = listOf<ReflogEntryDto>())
+    val allRefList = mutableCustomStateListOf(keyTag = stateKeyTag, keyName = "allRefList", initValue = listOf<String>())
 
     val filterList = mutableCustomStateListOf(keyTag = stateKeyTag, keyName = "filterList", initValue = listOf<ReflogEntryDto>())
 
@@ -265,6 +264,12 @@ fun ReflogListScreen(
         RepoInfoDialog(curRepo.value, showTitleInfoDialog)
     }
 
+    val dropDownMenuExpendState = rememberSaveable { mutableStateOf(false)}
+    val switchRef = { newRef: String ->
+        refName.value = newRef
+        changeStateTriggerRefreshPage(needRefresh)
+    }
+
     Scaffold(
         modifier = Modifier.nestedScroll(homeTopBarScrollBehavior.nestedScrollConnection),
         topBar = {
@@ -279,28 +284,17 @@ fun ReflogListScreen(
                             filterKeyword,
                         )
                     }else {
-                        val repoAndBranch = Libgit2Helper.getRepoOnBranchOrOnDetachedHash(curRepo.value)
-                        Column (modifier = Modifier.combinedClickable (
-                            onDoubleClick = {UIHelper.scrollToItem(scope, listState,0)},  // go to top
-                        ){  //onClick
-                            showTitleInfoDialog.value = true
-                        }){
-                            ScrollableRow {
-                                Text(
-                                    text= stringResource(R.string.reflog),
-                                    maxLines = 1,
-                                    overflow = TextOverflow.Ellipsis
-                                )
-                            }
-                            ScrollableRow {
-                                Text(
-                                    text= repoAndBranch,
-                                    maxLines = 1,
-                                    overflow = TextOverflow.Ellipsis,
-                                    fontSize = MyStyleKt.Title.secondLineFontSize
-                                )
-                            }
-                        }
+                        TitleDropDownMenu(
+                            dropDownMenuExpendState = dropDownMenuExpendState,
+                            curSelectItem = refName.value,
+                            contentDescription = stringResource(R.string.switch_reference),
+                            menuItemFormatter= { if (it == refName.value) addPrefix(it) else it },
+                            titleFirstLineFormatter = { it },
+                            titleSecondLineFormatter = { Libgit2Helper.getRepoOnBranchOrOnDetachedHash(curRepo.value) },
+                            itemList = allRefList.value,
+                            onLongClick = { showTitleInfoDialog.value = true },
+                            itemClick = { switchRef(it) }
+                        )
                     }
                 },
                 navigationIcon = {
@@ -483,23 +477,27 @@ fun ReflogListScreen(
                 loadingText = activityContext.getString(R.string.loading),
             ) {
                 list.value.clear()  //先清一下list，然后可能添加也可能不添加
+                allRefList.value.clear()
 
                 if(!repoId.isNullOrBlank()) {
                     val repoDb = AppModel.singleInstanceHolder.dbContainer.repoRepository
                     val repoFromDb = repoDb.getById(repoId)
-                    if(repoFromDb!=null) {
+                    if(repoFromDb != null) {
                         curRepo.value = repoFromDb
                         Repository.open(repoFromDb.fullSavePath).use {repo ->
-                            Libgit2Helper.getReflogList(repo, out=list.value);
+                            Libgit2Helper.getReflogList(repo, refName.value, out = list.value)
+                            allRefList.value.addAll(Libgit2Helper.getAllRefs(repo, includeHEAD = true))
                         }
+                    }else {
+                        Msg.requireShowLongDuration("err: invalid repo id")
                     }
                 }
 
 
             }
         } catch (e: Exception) {
-            MyLog.e(TAG, "$TAG#LaunchedEffect() err:"+e.stackTraceToString())
-//            ("LaunchedEffect: job cancelled")
+            MyLog.e(TAG, "#LaunchedEffect() err:"+e.stackTraceToString())
+//            LaunchedEffect: job cancelled
         }
     }
 

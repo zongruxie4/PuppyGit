@@ -74,7 +74,7 @@ fun IndexScreenTitle(
                 text = curRepo.value.repoName,
                 maxLines = 1,
                 overflow = TextOverflow.Ellipsis,
-                fontSize = 18.sp,
+                fontSize = MyStyleKt.Title.firstLineFontSize,
                 color = getTitleColor()
             )
         }

@@ -1077,6 +1077,8 @@
     <string name="clear_recent_files_confirm_text">将清空最近文件列表，并忘记它们的最后编辑位置</string>
     <string name="match_by_words">按单词匹配</string>
     <string name="cache_your_input_into_editcache_dir_path">缓存你的输入到 \'ph_a3f241dc_1\'</string>
+    <string name="switch_reference">切换引用</string>
+    <string name="switch_item">切换条目</string>
 
 
 </resources>

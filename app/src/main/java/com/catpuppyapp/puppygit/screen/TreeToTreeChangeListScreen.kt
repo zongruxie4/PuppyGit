@@ -236,7 +236,7 @@ fun TreeToTreeChangeListScreen(
                                     text = titleText,
                                     maxLines = 1,
                                     overflow = TextOverflow.Ellipsis,
-                                    fontSize = 18.sp
+                                    fontSize = MyStyleKt.Title.firstLineFontSize
                                 )
                             }
                             Row {

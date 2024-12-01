@@ -1097,5 +1097,7 @@
     <string name="clear_recent_files_confirm_text">Will clear the recent files list and forget their last edited positions</string>
     <string name="match_by_words">Match By Words</string>
     <string name="cache_your_input_into_editcache_dir_path">Cache your input into \'ph_a3f241dc_1\'</string>
+    <string name="switch_reference">Switch Reference</string>
+    <string name="switch_item">Switch Item</string>
 
 </resources>

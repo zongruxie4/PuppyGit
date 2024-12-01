@@ -138,6 +138,7 @@ class MyStyleKt{
     object Title {
         val lineHeight = 20.dp
 
+        val firstLineFontSize = 18.sp
         //标题大字下面那行小字的字体大小
         val secondLineFontSize = 12.sp
 

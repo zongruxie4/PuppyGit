@@ -4600,7 +4600,7 @@ class Libgit2Helper {
             return "stash@"+ getNowInSecFormatted(Cons.dateTimeFormatterCompact)+"#"+getShortUUID()
         }
 
-        fun getReflogList(repo:Repository, name:String="HEAD", out: MutableList<ReflogEntryDto>):List<ReflogEntryDto> {
+        fun getReflogList(repo:Repository, name:String, out: MutableList<ReflogEntryDto>):List<ReflogEntryDto> {
             val reflog = Reflog.read(repo, name)
             val count = reflog.entryCount()
             if(count>0) {
@@ -6378,6 +6378,27 @@ class Libgit2Helper {
 
                 }
 
+            }
+        }
+
+        fun getAllRefs(repo: Repository, includeHEAD: Boolean = true): List<String> {
+            val refs = Reference.list(repo)
+
+            return if (refs.contains(Cons.gitHeadStr)) {
+                if(includeHEAD) {
+                    refs
+                } else {
+                    refs.remove(Cons.gitHeadStr)
+                    refs
+                }
+            } else {
+                if(includeHEAD) {
+                    val refs2 = mutableListOf(Cons.gitHeadStr)
+                    refs2.addAll(refs)
+                    refs2
+                }else {
+                    refs
+                }
             }
         }
 

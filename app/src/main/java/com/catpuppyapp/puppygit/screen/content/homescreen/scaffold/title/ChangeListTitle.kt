@@ -30,7 +30,6 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextOverflow
-import androidx.compose.ui.unit.sp
 import com.catpuppyapp.puppygit.compose.RepoInfoDialog
 import com.catpuppyapp.puppygit.data.entity.RepoEntity
 import com.catpuppyapp.puppygit.play.pro.R
@@ -149,7 +148,7 @@ fun ChangeListTitle(
 //                    style=MyStyleKt.clickableText.style,
                         maxLines = 1,
                         overflow = TextOverflow.Ellipsis,
-                        fontSize = 18.sp,
+                        fontSize = MyStyleKt.Title.firstLineFontSize,
                         //如果是在合并（或者有冲突），仓库名变成红色，否则变成默认颜色
                         color = getTitleColor()
                     )
