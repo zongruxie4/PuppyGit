@@ -558,49 +558,55 @@ fun BranchListScreen(
     val curRequireDelRemoteNameIsAmbiguous = rememberSaveable { mutableStateOf(false)}
 
     if(showLocalBranchDelDialog.value) {
-        ConfirmDialog(title = stringResource(R.string.delete_branch),
-        requireShowTextCompose = true,
-        textCompose = {
-                      Column {
-                          Row {
-                              Text(text = stringResource(id = R.string.del_branch)+":")
-                          }
-                          Row(modifier = Modifier.padding(5.dp)){
-                              // spacer
-                          }
-                          Row(
-                              modifier = Modifier.fillMaxWidth(),
-                              horizontalArrangement = Arrangement.Center,
-                              verticalAlignment = Alignment.CenterVertically
-                          ) {
-                              Text(text = curObjInPage.value.shortName,
-                                  fontWeight = FontWeight.ExtraBold,
-                                  overflow = TextOverflow.Visible
-                              )
-                          }
-                          Row{
-                              Text(text = activityContext.getString(R.string.are_you_sure))
-                          }
+        ConfirmDialog(
+            title = stringResource(R.string.delete_branch),
+            requireShowTextCompose = true,
+            textCompose = {
+                ScrollableColumn {
+                    Row {
+                        Text(text = stringResource(id = R.string.del_branch) + ":")
+                    }
+                    Row(modifier = Modifier.padding(5.dp)) {
+                        // spacer
+                    }
+                    MySelectionContainer {
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.Center,
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Text(
+                                text = curObjInPage.value.shortName,
+                                fontWeight = FontWeight.ExtraBold,
+                                overflow = TextOverflow.Visible
+                            )
+                        }
+                    }
 
-                          //若已设置上游且已发布，则可删除远程，否则不可
-                          if(curObjInPage.value.isUpstreamValid()) {
-                              Row(modifier = Modifier.padding(5.dp)) {
+                    Row {
+                        Text(text = activityContext.getString(R.string.are_you_sure))
+                    }
 
-                              }
-                              MyCheckBox(text = stringResource(R.string.del_upstream_too), value = delUpstreamToo)
-                              if(delUpstreamToo.value) {  //如果能勾选这个选项其实基本就可以断定存在有效上游了
-                                  Row (modifier = Modifier.padding(horizontal = 16.dp)){
-                                      Text(text = stringResource(id = R.string.upstream)+": ")
-                                      Text(text = curObjInPage.value.upstream?.remoteBranchShortRefSpec?:"",  //其实如果通过上面的判断，基本就能断定存在有效上游了，这里的?:空值判断只是以防万一
-                                          fontWeight = FontWeight.ExtraBold
-                                      )
-                                  }
+                    //若已设置上游且已发布，则可删除远程，否则不可
+                    if (curObjInPage.value.isUpstreamValid()) {
+                        Row(modifier = Modifier.padding(5.dp)) {
 
-                                  MyCheckBox(text = stringResource(R.string.push), value = delUpstreamPush)
-                              }
-                          }
-                      }
-        },
+                        }
+                        MyCheckBox(text = stringResource(R.string.del_upstream_too), value = delUpstreamToo)
+                        if (delUpstreamToo.value) {  //如果能勾选这个选项其实基本就可以断定存在有效上游了
+                            Row(modifier = Modifier.padding(horizontal = 16.dp)) {
+                                Text(text = stringResource(id = R.string.upstream) + ": ")
+                                Text(
+                                    text = curObjInPage.value.upstream?.remoteBranchShortRefSpec ?: "",  //其实如果通过上面的判断，基本就能断定存在有效上游了，这里的?:空值判断只是以防万一
+                                    fontWeight = FontWeight.ExtraBold
+                                )
+                            }
+
+                            MyCheckBox(text = stringResource(R.string.push), value = delUpstreamPush)
+                        }
+                    }
+                }
+            },
             onCancel = {showLocalBranchDelDialog.value=false}
         ) {
             showLocalBranchDelDialog.value=false
@@ -700,11 +706,12 @@ fun BranchListScreen(
 
     val pushCheckBoxForRemoteBranchDelDialog = rememberSaveable { mutableStateOf(false)}
     if(showRemoteBranchDelDialog.value) {
-        ConfirmDialog(title = stringResource(R.string.delete_branch),
+        ConfirmDialog(
+            title = stringResource(R.string.delete_branch),
             okBtnEnabled = !pushCheckBoxForRemoteBranchDelDialog.value || !curRequireDelRemoteNameIsAmbiguous.value || userSpecifyRemoteName.value.isNotBlank(),
             requireShowTextCompose = true,
             textCompose = {
-                Column {
+                ScrollableColumn {
                     Row {
                         Text(text = stringResource(id = R.string.del_remote_branch)+":")
                     }

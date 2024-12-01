@@ -44,7 +44,7 @@ fun AskGitUsernameAndEmailDialogWithSelection(
             Text(stringResource(R.string.user_info))
         },
         text = {
-            Column {
+            ScrollableColumn {
                 Row(modifier = Modifier.padding(10.dp)) {
                     Text(text = text)
                 }

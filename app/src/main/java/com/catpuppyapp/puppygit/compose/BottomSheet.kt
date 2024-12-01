@@ -1,6 +1,7 @@
 package com.catpuppyapp.puppygit.compose
 
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ExperimentalLayoutApi
@@ -165,7 +166,10 @@ private fun BottomSheetTitle(title:String) {
         Row(
             modifier = Modifier
                 .fillMaxWidth()
-                .height(30.dp),
+                .height(30.dp)
+                .padding(horizontal = 10.dp)
+                .horizontalScroll(rememberScrollState())
+            ,
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.Center
         ) {

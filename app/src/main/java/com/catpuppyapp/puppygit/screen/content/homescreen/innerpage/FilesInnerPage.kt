@@ -298,7 +298,7 @@ fun FilesInnerPage(
         ConfirmDialog(
             requireShowTextCompose = true,
             textCompose = {
-                Column {
+                ScrollableColumn {
                     TextField(
                         modifier = Modifier.fillMaxWidth(),
                         value = pathToGo.value,
@@ -702,7 +702,7 @@ fun FilesInnerPage(
             title = stringResource(R.string.import_has_err),
             requireShowTextCompose = true,
             textCompose = {
-                Column {
+                ScrollableColumn {
                     Row {
                         Text(text = stringResource(R.string.import_success)+":"+successImportCount.value)
                     }
@@ -753,7 +753,7 @@ fun FilesInnerPage(
             title = stringResource(R.string.rename),
             requireShowTextCompose = true,
             textCompose = {
-                  Column {
+                ScrollableColumn {
                       TextField(
                           modifier = Modifier
                               .fillMaxWidth()
@@ -2137,7 +2137,7 @@ fun FilesInnerPage(
         ConfirmDialog(title= stringResource(id = R.string.export),
             requireShowTextCompose = true,
             textCompose = {
-                          Column {
+                ScrollableColumn {
                               Row {
                                 Text(text = stringResource(id = R.string.will_export_files_to)+":")
 

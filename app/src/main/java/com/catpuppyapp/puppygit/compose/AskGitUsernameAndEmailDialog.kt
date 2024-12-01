@@ -43,7 +43,7 @@ fun AskGitUsernameAndEmailDialog(
             Text(title)
         },
         text = {
-            Column {
+            ScrollableColumn {
                 Row(modifier = Modifier.padding(10.dp)) {
                     Text(text = text)
                 }

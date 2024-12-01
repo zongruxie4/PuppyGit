@@ -40,7 +40,7 @@ fun DiffCommitsDialog(
         requireShowTextCompose = true,
         textCompose = {
             //只能有一个节点，因为这个东西会在lambda后返回，而lambda只能有一个返回值，弄两个布局就乱了，和react组件只能有一个root div一个道理 。
-            Column {
+            ScrollableColumn {
 
                 Text(text = stringResource(R.string.compare_left_to_right))
 

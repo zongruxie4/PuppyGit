@@ -747,7 +747,7 @@ fun ChangeListInnerPage(
             title = stringResource(id = R.string.push_force),
             requireShowTextCompose = true,
             textCompose = {
-                Column {
+                ScrollableColumn {
                     Text(stringResource(id = R.string.will_force_overwrite_remote_branch_even_it_is_ahead_to_local),
                         color = MyStyleKt.TextColor.danger()
                     )

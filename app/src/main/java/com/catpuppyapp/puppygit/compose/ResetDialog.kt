@@ -64,7 +64,7 @@ fun ResetDialog(
             Text(text = stringResource(id = R.string.reset))
         },
         text = {
-            Column {
+            ScrollableColumn {
                 if(fullOidOrBranchOrTag!=null) {
                     TextField(
                         modifier = Modifier.fillMaxWidth(),

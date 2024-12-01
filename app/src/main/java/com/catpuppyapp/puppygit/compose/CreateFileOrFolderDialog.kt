@@ -66,7 +66,7 @@ fun CreateFileOrFolderDialog(
             Text(stringResource(R.string.create))
         },
         text = {
-            Column {
+            ScrollableColumn {
                 TextField(
                     modifier = Modifier.fillMaxWidth(),
 

@@ -55,7 +55,9 @@ import com.catpuppyapp.puppygit.compose.ConfirmDialog
 import com.catpuppyapp.puppygit.compose.ErrRepoCard
 import com.catpuppyapp.puppygit.compose.MyCheckBox
 import com.catpuppyapp.puppygit.compose.MyLazyColumn
+import com.catpuppyapp.puppygit.compose.MySelectionContainer
 import com.catpuppyapp.puppygit.compose.RepoCard
+import com.catpuppyapp.puppygit.compose.ScrollableColumn
 import com.catpuppyapp.puppygit.compose.SystemFolderChooser
 import com.catpuppyapp.puppygit.constants.Cons
 import com.catpuppyapp.puppygit.constants.PageRequest
@@ -763,23 +765,26 @@ fun RepoInnerPage(
 //            text = stringResource(id = R.string.are_you_sure_to_delete)+": '"+willDeleteRepo.value.repoName+"' ?"+"\n"+ stringResource(R.string.will_delete_repo_and_all_its_files_on_disk),
             requireShowTextCompose = true,
             textCompose = {
-                Column {
+                ScrollableColumn {
                     Row {
                         Text(text = stringResource(id = R.string.delete_repo)+":")
                     }
-                    Row(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(bottom = 10.dp),
-                        horizontalArrangement = Arrangement.Center,
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        Text(
-                            text = willDeleteRepo.value.repoName,
-                            fontWeight = FontWeight.ExtraBold,
-                            modifier = Modifier.padding(start = 16.dp),
-                            //                                color = Color.Unspecified
-                        )
+                    MySelectionContainer {
+                        Row(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(bottom = 10.dp),
+                            horizontalArrangement = Arrangement.Center,
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Text(
+                                text = willDeleteRepo.value.repoName,
+                                fontWeight = FontWeight.ExtraBold,
+                                modifier = Modifier.padding(start = 16.dp),
+                                //                                color = Color.Unspecified
+                            )
+
+                        }
 
                     }
 
@@ -951,34 +956,39 @@ fun RepoInnerPage(
             title = stringResource(id = R.string.unshallow),
             requireShowTextCompose = true,
             textCompose = {
-                          Column {
-                              Row {
-                                  Text(text = stringResource(R.string.will_do_unshallow_for_repo)+":")
-                              }
-                              Row(
-                                  modifier = Modifier
-                                      .fillMaxWidth()
-                                      .padding(vertical = 10.dp),
-                                  horizontalArrangement = Arrangement.Center,
-                                  verticalAlignment = Alignment.CenterVertically
-                              ) {
-                                  Text(
-                                      text = curRepo.value.repoName,
-                                      fontWeight = FontWeight.ExtraBold,
-                                      modifier = Modifier.padding(start = 16.dp),
-                                      //                                color = Color.Unspecified
-                                  )
+                ScrollableColumn {
+                    Row {
+                        Text(text = stringResource(R.string.will_do_unshallow_for_repo) + ":")
+                    }
+                    MySelectionContainer {
+                        Row(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(vertical = 10.dp),
+                            horizontalArrangement = Arrangement.Center,
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Text(
+                                text = curRepo.value.repoName,
+                                fontWeight = FontWeight.ExtraBold,
+                                modifier = Modifier.padding(start = 16.dp),
+                                //                                color = Color.Unspecified
+                            )
 
-                              }
+                        }
 
-                              Column {
-                                  Text(text = stringResource(R.string.are_you_sure),
-                                  )
-                                  Text(text = "("+stringResource(R.string.unshallow_success_cant_back)+")",
-                                      color = MyStyleKt.TextColor.danger()
-                                  )
-                              }
-                          }
+                    }
+
+                    Column {
+                        Text(
+                            text = stringResource(R.string.are_you_sure),
+                        )
+                        Text(
+                            text = "(" + stringResource(R.string.unshallow_success_cant_back) + ")",
+                            color = MyStyleKt.TextColor.danger()
+                        )
+                    }
+                }
             },
             onCancel = { showUnshallowDialog.value=false}) {
             showUnshallowDialog.value=false

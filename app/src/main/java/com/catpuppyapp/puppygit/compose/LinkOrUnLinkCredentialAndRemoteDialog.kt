@@ -38,7 +38,7 @@ fun LinkOrUnLinkCredentialAndRemoteDialog(
             Text(if(title.isEmpty()) { if(requireDoLink) stringResource(R.string.link) else stringResource(R.string.unlink)} else {title})
         },
         text = {
-            Column {
+            ScrollableColumn {
                 MyCheckBox(text = stringResource(R.string.fetch), value = fetchChecked)
                 MyCheckBox(text = stringResource(R.string.push), value = pushChecked)
             }

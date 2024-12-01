@@ -56,6 +56,7 @@ import com.catpuppyapp.puppygit.compose.FilterTextField
 import com.catpuppyapp.puppygit.compose.GoToTopAndGoToBottomFab
 import com.catpuppyapp.puppygit.compose.LoadingDialog
 import com.catpuppyapp.puppygit.compose.LongPressAbleIconBtn
+import com.catpuppyapp.puppygit.compose.ScrollableColumn
 import com.catpuppyapp.puppygit.compose.SmallFab
 import com.catpuppyapp.puppygit.constants.Cons
 import com.catpuppyapp.puppygit.constants.PageRequest
@@ -515,7 +516,7 @@ fun HomeScreen(
                 Text(stringResource(id = R.string.welcome))
             },
             text = {
-                Column {
+                ScrollableColumn {
                     Row {
                         Text(text = stringResource(id = R.string.welcome)+"!")
                     }

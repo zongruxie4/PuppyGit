@@ -295,7 +295,7 @@ fun DiffRow (
             title = stringResource(R.string.delete),
             requireShowTextCompose = true,
             textCompose = {
-                Column {
+                ScrollableColumn {
                     Text(
                         replaceStringResList(
                             stringResource(R.string.line_at_n),

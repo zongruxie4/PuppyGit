@@ -147,7 +147,7 @@ fun CheckoutDialog(
         requireShowTextCompose = true,
         textCompose = {
             //只能有一个节点，因为这个东西会在lambda后返回，而lambda只能有一个返回值，弄两个布局就乱了，和react组件只能有一个root div一个道理 。
-            Column {
+            ScrollableColumn {
 //                    Row {
 //                        Text(
 //                            text = appContext.getString(R.string.warn_please_commit_your_change_before_checkout_or_merge),
@@ -183,19 +183,23 @@ fun CheckoutDialog(
                         },
                     )
                 }else {  //long press commit
-                    Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.Center,
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        Text(
-                            text = shortName,
-                            fontWeight = FontWeight.ExtraBold,
-                            overflow = TextOverflow.Visible
-                        )
-                    }
+                    MySelectionContainer {
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.Center,
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Text(
+                                text = shortName,
+                                fontWeight = FontWeight.ExtraBold,
+                                overflow = TextOverflow.Visible
+                            )
+                        }
 
+                    }
                 }
+
+
                 Row(modifier = Modifier.padding(5.dp)) {
                     // spacer
                 }

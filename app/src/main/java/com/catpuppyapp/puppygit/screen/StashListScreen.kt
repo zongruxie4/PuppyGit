@@ -49,6 +49,7 @@ import com.catpuppyapp.puppygit.compose.LoadingDialog
 import com.catpuppyapp.puppygit.compose.LongPressAbleIconBtn
 import com.catpuppyapp.puppygit.compose.MyLazyColumn
 import com.catpuppyapp.puppygit.compose.RepoInfoDialog
+import com.catpuppyapp.puppygit.compose.ScrollableColumn
 import com.catpuppyapp.puppygit.compose.ScrollableRow
 import com.catpuppyapp.puppygit.compose.StashItem
 import com.catpuppyapp.puppygit.constants.Cons
@@ -286,7 +287,7 @@ fun StashListScreen(
             okBtnText = stringResource(R.string.ok),
             requireShowTextCompose = true,
             textCompose = {
-                Column {
+                ScrollableColumn {
                     TextField(
                         modifier = Modifier.fillMaxWidth(),
 

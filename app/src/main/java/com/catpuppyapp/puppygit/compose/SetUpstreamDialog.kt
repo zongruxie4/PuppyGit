@@ -2,19 +2,15 @@ package com.catpuppyapp.puppygit.compose
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.selection.selectable
 import androidx.compose.foundation.selection.toggleable
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Checkbox
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.RadioButton
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.TextField
@@ -29,7 +25,6 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import com.catpuppyapp.puppygit.play.pro.R
 import com.catpuppyapp.puppygit.style.MyStyleKt
-import com.catpuppyapp.puppygit.utils.state.StateUtil
 
 
 @Composable
@@ -49,15 +44,17 @@ fun SetUpstreamDialog(
             Text(stringResource(R.string.set_upstream_title))
         },
         text = {
-            Column {
+            ScrollableColumn {
                 Row(modifier = Modifier.padding(10.dp)) {
                     Text(text = stringResource(R.string.set_upstream_for_branch)+":")
                 }
-                Row(modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.Center
-                ) {
-                    Text(text = curBranch,
-                        fontWeight = FontWeight.ExtraBold)
+                MySelectionContainer {
+                    Row(modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.Center
+                    ) {
+                        Text(text = curBranch,
+                            fontWeight = FontWeight.ExtraBold)
+                    }
                 }
                 Spacer(modifier = Modifier.height(15.dp))
                 //这个文案感觉没太大必要，不显示了，省点空间
