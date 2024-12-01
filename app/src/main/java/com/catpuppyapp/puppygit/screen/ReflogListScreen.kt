@@ -111,8 +111,8 @@ fun ReflogListScreen(
         loading.value=true
     }
     val loadingOff = {
-        loadingText.value = activityContext.getString(R.string.loading)
         loading.value=false
+        loadingText.value = defaultLoadingText
     }
 
 
@@ -472,15 +472,13 @@ fun ReflogListScreen(
     //compose创建时的副作用
     LaunchedEffect(needRefresh.value) {
         try {
-            doJobThenOffLoading(
-                loadingOn = loadingOn,
-                loadingOff = loadingOff,
-                loadingText = activityContext.getString(R.string.loading),
-            ) {
+            //这个加载很快，没必要显示loading
+//            doJobThenOffLoading(loadingOn = loadingOn, loadingOff = loadingOff, loadingText = defaultLoadingText) {
+            doJobThenOffLoading {
                 list.value.clear()  //先清一下list，然后可能添加也可能不添加
                 allRefList.value.clear()
 
-                if(!repoId.isNullOrBlank()) {
+                if(repoId.isNotBlank()) {
                     val repoDb = AppModel.singleInstanceHolder.dbContainer.repoRepository
                     val repoFromDb = repoDb.getById(repoId)
                     if(repoFromDb != null) {
@@ -490,11 +488,11 @@ fun ReflogListScreen(
                             allRefList.value.addAll(Libgit2Helper.getAllRefs(repo, includeHEAD = true))
                         }
                     }else {
-                        Msg.requireShowLongDuration("err: invalid repo id")
+                        Msg.requireShowLongDuration("err: query repo failed")
                     }
+                }else {
+                    Msg.requireShowLongDuration("err: invalid repo id")
                 }
-
-
             }
         } catch (e: Exception) {
             MyLog.e(TAG, "#LaunchedEffect() err:"+e.stackTraceToString())
