@@ -30,14 +30,14 @@ import com.catpuppyapp.puppygit.style.MyStyleKt
 @Composable
 fun <T> TitleDropDownMenu(
     dropDownMenuExpendState: MutableState<Boolean>,
-    curSelectItem:T,
+    curSelectedItem:T,
     contentDescription:String = stringResource(R.string.switch_item),
     menuItemFormatter:(T)->String,
     titleFirstLineFormatter:(T)->String,
     titleSecondLineFormatter:(T)->String,
     itemList: List<T>,
-    onLongClick:(T)->Unit,
-    itemClick: (T) -> Unit
+    titleOnLongClick:(T)->Unit,
+    itemOnClick: (T)->Unit
 ) {
     val haptic = LocalHapticFeedback.current
 
@@ -56,7 +56,7 @@ fun <T> TitleDropDownMenu(
                 onLongClick = {  //长按显示仓库名和分支名
                     haptic.performHapticFeedback(HapticFeedbackType.LongPress)
 
-                    onLongClick(curSelectItem)
+                    titleOnLongClick(curSelectedItem)
                 }
             ) { // onClick
                 switchDropDownMenuShowHide()  //切换下拉菜单显示隐藏
@@ -73,7 +73,7 @@ fun <T> TitleDropDownMenu(
                 //限制下宽度，不然仓库名太长就看不到箭头按钮了，用户可能就不知道能点击仓库名切换仓库了
             ) {
                 Text(
-                    text = titleFirstLineFormatter(curSelectItem),
+                    text = titleFirstLineFormatter(curSelectedItem),
                     maxLines = 1,
                     overflow = TextOverflow.Ellipsis,
                     fontSize = MyStyleKt.Title.firstLineFontSize,
@@ -88,7 +88,7 @@ fun <T> TitleDropDownMenu(
                 Text(
                     //  判断仓库是否处于detached，然后显示在这里(例如： "abc1234(detached)" )
                     // "main|StateT" or "main", eg, when merging show: "main|Merging", when 仓库状态正常时 show: "main"；如果是detached HEAD状态，则显示“提交号(Detached)|状态“，例如：abc2344(Detached) 或 abc2344(Detached)|Merging
-                    text = titleSecondLineFormatter(curSelectItem),
+                    text = titleSecondLineFormatter(curSelectedItem),
                     maxLines = 1,
                     overflow = TextOverflow.Ellipsis,
                     fontSize = MyStyleKt.Title.secondLineFontSize,
@@ -116,7 +116,7 @@ fun <T> TitleDropDownMenu(
             DropdownMenuItem(
                 text = { Text(menuItemFormatter(i)) },
                 onClick = {
-                    itemClick(i)
+                    itemOnClick(i)
                     closeDropDownMenu()
                 }
             )

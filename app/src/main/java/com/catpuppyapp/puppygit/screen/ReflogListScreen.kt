@@ -286,14 +286,14 @@ fun ReflogListScreen(
                     }else {
                         TitleDropDownMenu(
                             dropDownMenuExpendState = dropDownMenuExpendState,
-                            curSelectItem = refName.value,
+                            curSelectedItem = refName.value,
                             contentDescription = stringResource(R.string.switch_reference),
                             menuItemFormatter= { if (it == refName.value) addPrefix(it) else it },
                             titleFirstLineFormatter = { it },
                             titleSecondLineFormatter = { Libgit2Helper.getRepoOnBranchOrOnDetachedHash(curRepo.value) },
                             itemList = allRefList.value,
-                            onLongClick = { showTitleInfoDialog.value = true },
-                            itemClick = { switchRef(it) }
+                            titleOnLongClick = { showTitleInfoDialog.value = true },
+                            itemOnClick = { switchRef(it) }
                         )
                     }
                 },
