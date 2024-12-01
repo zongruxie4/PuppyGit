@@ -491,7 +491,7 @@ fun EditorInnerPage(
 //                            readOnlyMode.value = FsUtils.isReadOnlyDir(filePath)  //避免打开文件，退出app，直接从editor点击 open last然后可编辑本不应该允许编辑的app内置目录下的文件
 //                        }
 //                                editorMergeMode.value = false  //此值在这无需重置
-                        readOnlyMode.value = FsUtils.isReadOnlyDir(filePath)  //避免打开文件，退出app，直接从editor点击 open last然后可编辑本不应该允许编辑的app内置目录下的文件
+//                        readOnlyMode.value = FsUtils.isReadOnlyDir(filePath)  //避免打开文件，退出app，直接从editor点击 open last然后可编辑本不应该允许编辑的app内置目录下的文件
 
                         editorPageShowingFilePath.value = filePath
                         reloadFile()
@@ -633,7 +633,7 @@ fun EditorInnerPage(
                     doSaveNoCoroutine()
 
                     //请求外部程序打开文件
-                    readOnlyForOpenAsDialog.value = FsUtils.isReadOnlyDir(editorPageShowingFilePath.value)
+//                    readOnlyForOpenAsDialog.value = FsUtils.isReadOnlyDir(editorPageShowingFilePath.value)
                     openAsDialogFilePath.value = editorPageShowingFilePath.value
                     showOpenAsDialog.value=true
 
@@ -887,7 +887,7 @@ fun EditorInnerPage(
 //                                readOnlyMode.value = FsUtils.isReadOnlyDir(last)  //避免打开文件，退出app，直接从editor点击 open last然后可编辑本不应该允许编辑的app内置目录下的文件
 //                            }
 //                                editorMergeMode.value = false  //此值在这无需重置
-                            readOnlyMode.value = FsUtils.isReadOnlyDir(last)  //避免打开文件，退出app，直接从editor点击 open last然后可编辑本不应该允许编辑的app内置目录下的文件
+//                            readOnlyMode.value = FsUtils.isReadOnlyDir(last)  //避免打开文件，退出app，直接从editor点击 open last然后可编辑本不应该允许编辑的app内置目录下的文件
 
                             editorPageShowingFilePath.value = last
                             reloadFile()

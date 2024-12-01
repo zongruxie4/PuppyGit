@@ -291,7 +291,7 @@ fun DiffScreen(
 
     if(request.value == PageRequest.showOpenAsDialog) {
         PageRequest.clearStateThenDoAct(request) {
-            readOnlyForOpenAsDialog.value = FsUtils.isReadOnlyDir(fileFullPath.value)
+//            readOnlyForOpenAsDialog.value = FsUtils.isReadOnlyDir(fileFullPath.value)
             openAsDialogFilePath.value = fileFullPath.value
             showOpenAsDialog.value=true
         }

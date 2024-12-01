@@ -2648,7 +2648,7 @@ fun ChangeListInnerPage(
                 return@openAs
             }
 
-            readOnlyForOpenAsDialog.value = FsUtils.isReadOnlyDir(item.canonicalPath)
+//            readOnlyForOpenAsDialog.value = FsUtils.isReadOnlyDir(item.canonicalPath)
             openAsDialogFilePath.value = item.canonicalPath
             openAsDialogFileName.value=item.fileName
             showOpenAsDialog.value=true

@@ -840,7 +840,8 @@ object FsUtils {
      * 判断路径是否处于app内置的禁止编辑的文件夹中
      * 考虑：要不要在设置页面添加一个开关允许编辑这些路径下的文件？必要性不大，如果非编辑，可在内置editor手动关闭read-only或通过外部编辑器编辑，不过需要注意：如果用内部编辑器编辑有可能和app隐式更新这些文件发生冲突导致文件被错误覆盖。
      */
-    fun isReadOnlyDir(path: String): Boolean {
+    @Deprecated("没必要检查是否只读，无所谓，用户编辑这些目录下的文件也不是不行，而且每次我打开这些目录下的文件，第一件事就是取消只读，不然光标无法显示，搜索后因为jetpackcompose限制难以同时实现关键字高亮和文字可编辑，搞得查找文字后就算找到了我也不知道关键字在哪，而且也没法用光标辅助定位上次我查看的位置，总之就是很恶心")
+    fun deprecated_isReadOnlyDir(path: String): Boolean {
         return try {
             //app内置某些文件默认不允许编辑，因为app会在运行时编辑这些文件，有可能冲突或覆盖app自动生成的内容
             path.startsWith(AppModel.singleInstanceHolder.getOrCreateFileSnapshotDir().canonicalPath)
