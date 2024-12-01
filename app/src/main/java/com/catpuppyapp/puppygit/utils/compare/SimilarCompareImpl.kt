@@ -418,7 +418,7 @@ class SimilarCompareImpl: SimilarCompare {
         return matched
     }
 
-    private fun<T:CharSequence> getWordAndIndexList(compareParam:CompareParam<T>):WordIndexPair {
+    private fun<T:CharSequence> getWordAndIndexList(compareParam:CompareParam<T>):WordsSpacesPair {
         var wordMatching = false
         var spaceMatching = false
         var wordAndIndex:WordAndIndex? = null
@@ -457,7 +457,7 @@ class SimilarCompareImpl: SimilarCompare {
 
 //        wordAndIndexList.addAll(spaceAndIndexList)
 
-        return WordIndexPair(words = wordAndIndexList, spaces = spaceAndIndexList)
+        return WordsSpacesPair(words = wordAndIndexList, spaces = spaceAndIndexList)
     }
 
 
@@ -483,7 +483,7 @@ private data class WordAndIndex(
 
 }
 
-private data class WordIndexPair(
+private data class WordsSpacesPair(
     val words:List<WordAndIndex>,
     val spaces:List<WordAndIndex>
 )
