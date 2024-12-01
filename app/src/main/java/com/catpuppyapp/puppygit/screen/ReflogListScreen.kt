@@ -287,7 +287,7 @@ fun ReflogListScreen(
                         TitleDropDownMenu(
                             dropDownMenuExpendState = dropDownMenuExpendState,
                             curSelectedItem = refName.value,
-                            contentDescription = stringResource(R.string.switch_reference),
+                            showHideMenuIconContentDescription = stringResource(R.string.switch_reference),
                             menuItemFormatter= { if (it == refName.value) addPrefix(it) else it },
                             titleFirstLineFormatter = { it },
                             titleSecondLineFormatter = { Libgit2Helper.getRepoOnBranchOrOnDetachedHash(curRepo.value) },

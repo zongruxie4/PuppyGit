@@ -26,15 +26,60 @@ import androidx.compose.ui.text.style.TextOverflow
 import com.catpuppyapp.puppygit.play.pro.R
 import com.catpuppyapp.puppygit.style.MyStyleKt
 
+@Composable
+fun <T> TitleDropDownMenu(
+    dropDownMenuExpendState: MutableState<Boolean>,
+    curSelectedItem:T,
+    showHideMenuIconContentDescription:String,  // 这个可能是为视力不好的人设置的语音提示文字
+    menuItemFormatter:(T)->String,
+    titleFirstLineFormatter:(T)->String,
+    titleSecondLineFormatter:(T)->String,
+    itemList: List<T>,
+    titleOnLongClick:(T)->Unit,
+    itemOnClick: (T)->Unit
+) {
+    TitleDropDownMenu(
+        dropDownMenuExpendState,
+        curSelectedItem,
+        showHideMenuIconContentDescription,
+        menuItem = {
+            Text(menuItemFormatter(it))
+        },
+        titleFirstLine={
+            Text(
+                text = titleFirstLineFormatter(curSelectedItem),
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis,
+                fontSize = MyStyleKt.Title.firstLineFontSize,
+            )
+        },
+        titleSecondLine={
+            Text(
+                //  判断仓库是否处于detached，然后显示在这里(例如： "abc1234(detached)" )
+                // "main|StateT" or "main", eg, when merging show: "main|Merging", when 仓库状态正常时 show: "main"；如果是detached HEAD状态，则显示“提交号(Detached)|状态“，例如：abc2344(Detached) 或 abc2344(Detached)|Merging
+                text = titleSecondLineFormatter(curSelectedItem),
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis,
+                fontSize = MyStyleKt.Title.secondLineFontSize,
+            )
+        },
+        itemList,
+        titleOnLongClick,
+        itemOnClick,
+    )
+}
+
+
+
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun <T> TitleDropDownMenu(
     dropDownMenuExpendState: MutableState<Boolean>,
     curSelectedItem:T,
     contentDescription:String = stringResource(R.string.switch_item),
-    menuItemFormatter:(T)->String,
-    titleFirstLineFormatter:(T)->String,
-    titleSecondLineFormatter:(T)->String,
+    menuItem:@Composable (T)->Unit,
+    titleFirstLine:@Composable (T)->Unit,
+    titleSecondLine:@Composable (T)->Unit,
     itemList: List<T>,
     titleOnLongClick:(T)->Unit,
     itemOnClick: (T)->Unit
@@ -72,27 +117,14 @@ fun <T> TitleDropDownMenu(
                     .horizontalScroll(rememberScrollState()),
                 //限制下宽度，不然仓库名太长就看不到箭头按钮了，用户可能就不知道能点击仓库名切换仓库了
             ) {
-                Text(
-                    text = titleFirstLineFormatter(curSelectedItem),
-                    maxLines = 1,
-                    overflow = TextOverflow.Ellipsis,
-                    fontSize = MyStyleKt.Title.firstLineFontSize,
-                )
-
+                titleFirstLine(curSelectedItem)
             }
+
             Row(
                 modifier = Modifier
                     .horizontalScroll(rememberScrollState()),
             ) {
-
-                Text(
-                    //  判断仓库是否处于detached，然后显示在这里(例如： "abc1234(detached)" )
-                    // "main|StateT" or "main", eg, when merging show: "main|Merging", when 仓库状态正常时 show: "main"；如果是detached HEAD状态，则显示“提交号(Detached)|状态“，例如：abc2344(Detached) 或 abc2344(Detached)|Merging
-                    text = titleSecondLineFormatter(curSelectedItem),
-                    maxLines = 1,
-                    overflow = TextOverflow.Ellipsis,
-                    fontSize = MyStyleKt.Title.secondLineFontSize,
-                )
+                titleSecondLine(curSelectedItem)
             }
         }
 
@@ -114,7 +146,7 @@ fun <T> TitleDropDownMenu(
         for (i in itemList.toList()) {
             //列出条目
             DropdownMenuItem(
-                text = { Text(menuItemFormatter(i)) },
+                text = { menuItem(i) },
                 onClick = {
                     itemOnClick(i)
                     closeDropDownMenu()
