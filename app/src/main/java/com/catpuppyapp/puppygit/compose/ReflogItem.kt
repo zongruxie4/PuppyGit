@@ -85,7 +85,7 @@ fun ReflogItem(
         ){
 
             Text(text = stringResource(R.string.new_oid) +":")
-            Text(text = thisObj.idNew.toString(),
+            Text(text = Libgit2Helper.getShortOidStrByFull(thisObj.idNew.toString()),
                 maxLines = 1,
                 overflow = TextOverflow.Ellipsis,
                 fontWeight = FontWeight.Light
@@ -98,7 +98,7 @@ fun ReflogItem(
         ){
 
             Text(text = stringResource(R.string.old_oid) +":")
-            Text(text = thisObj.idOld.toString(),
+            Text(text = Libgit2Helper.getShortOidStrByFull(thisObj.idOld.toString()),
                 maxLines = 1,
                 overflow = TextOverflow.Ellipsis,
                 fontWeight = FontWeight.Light
