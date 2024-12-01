@@ -21,30 +21,27 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.platform.LocalHapticFeedback
-import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextOverflow
-import com.catpuppyapp.puppygit.play.pro.R
 import com.catpuppyapp.puppygit.style.MyStyleKt
 
 @Composable
 fun <T> TitleDropDownMenu(
     dropDownMenuExpendState: MutableState<Boolean>,
     curSelectedItem:T,
+    itemList: List<T>,
+    titleClickEnabled:Boolean,
     showHideMenuIconContentDescription:String,  // 这个可能是为视力不好的人设置的语音提示文字
     menuItemFormatter:(T)->String,
     titleFirstLineFormatter:(T)->String,
     titleSecondLineFormatter:(T)->String,
-    itemList: List<T>,
     titleOnLongClick:(T)->Unit,
     itemOnClick: (T)->Unit
 ) {
     TitleDropDownMenu(
-        dropDownMenuExpendState,
-        curSelectedItem,
-        showHideMenuIconContentDescription,
-        menuItem = {
-            Text(menuItemFormatter(it))
-        },
+        dropDownMenuExpendState = dropDownMenuExpendState,
+        curSelectedItem = curSelectedItem,
+        itemList = itemList,
+        titleClickEnabled = titleClickEnabled,
         titleFirstLine={
             Text(
                 text = titleFirstLineFormatter(curSelectedItem),
@@ -63,9 +60,17 @@ fun <T> TitleDropDownMenu(
                 fontSize = MyStyleKt.Title.secondLineFontSize,
             )
         },
-        itemList,
-        titleOnLongClick,
-        itemOnClick,
+        titleRightIcon = {
+            Icon(
+                imageVector = if (dropDownMenuExpendState.value) Icons.Filled.ArrowDropDown else Icons.AutoMirrored.Filled.ArrowLeft,
+                contentDescription = showHideMenuIconContentDescription,
+            )
+        },
+        menuItem = {
+            Text(menuItemFormatter(it))
+        },
+        titleOnLongClick = titleOnLongClick,
+        itemOnClick = itemOnClick,
     )
 }
 
@@ -76,28 +81,28 @@ fun <T> TitleDropDownMenu(
 fun <T> TitleDropDownMenu(
     dropDownMenuExpendState: MutableState<Boolean>,
     curSelectedItem:T,
-    contentDescription:String = stringResource(R.string.switch_item),
-    menuItem:@Composable (T)->Unit,
+    itemList: List<T>,
+    titleClickEnabled:Boolean,
+    switchDropDownMenuShowHide:()->Unit = {
+        dropDownMenuExpendState.value = !dropDownMenuExpendState.value
+    },
+    closeDropDownMenu:()->Unit  = {
+        dropDownMenuExpendState.value = false
+    },
     titleFirstLine:@Composable (T)->Unit,
     titleSecondLine:@Composable (T)->Unit,
-    itemList: List<T>,
+    titleRightIcon:@Composable (T)->Unit,  // icon at the title text right
+    menuItem:@Composable (T)->Unit,
     titleOnLongClick:(T)->Unit,
     itemOnClick: (T)->Unit
 ) {
     val haptic = LocalHapticFeedback.current
 
-    val closeDropDownMenu = {
-        dropDownMenuExpendState.value = false
-    }
-
-    val switchDropDownMenuShowHide = {
-        dropDownMenuExpendState.value = !dropDownMenuExpendState.value
-    }
-
     Box(
         modifier = Modifier
             .fillMaxWidth()
             .combinedClickable(
+                enabled = titleClickEnabled,
                 onLongClick = {  //长按显示仓库名和分支名
                     haptic.performHapticFeedback(HapticFeedbackType.LongPress)
 
@@ -133,10 +138,7 @@ fun <T> TitleDropDownMenu(
                 .fillMaxWidth(.2f)
                 .align(Alignment.CenterEnd)
         ) {
-            Icon(
-                imageVector = if (dropDownMenuExpendState.value) Icons.Filled.ArrowDropDown else Icons.AutoMirrored.Filled.ArrowLeft,
-                contentDescription = contentDescription,
-            )
+            titleRightIcon(curSelectedItem)
         }
     }
     DropdownMenu(
