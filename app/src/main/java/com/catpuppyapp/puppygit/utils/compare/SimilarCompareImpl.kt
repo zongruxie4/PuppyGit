@@ -151,7 +151,7 @@ class SimilarCompareImpl: SimilarCompare {
         val delSpaceIter = NoCopyIterator(srcList = delWordSpacePair.spaces as MutableList)
 
         // match spaces by equals
-        matched = matched || doEqualsMatchWordsOrSpaces(addSpaceIter, delSpaceIter, addIndexResultList, delIndexResultList)
+        matched = doEqualsMatchWordsOrSpaces(addSpaceIter, delSpaceIter, addIndexResultList, delIndexResultList) || matched
 
 
         //add or del, 没有一个被完全匹配完（为空）
@@ -160,11 +160,11 @@ class SimilarCompareImpl: SimilarCompare {
         //if requireBetterMatching is true, try use indexOf matching the not-matched items
         if(requireBetterMatching && (wordsNotAllMatched || spacesNotAllMatched)) {
             if(wordsNotAllMatched) {
-                matched = matched || doIndexOfMatchWordsOrSpaces(addIter, delIter, addIndexResultList, delIndexResultList)
+                matched = doIndexOfMatchWordsOrSpaces(addIter, delIter, addIndexResultList, delIndexResultList) || matched
             }
 
             if(spacesNotAllMatched) {
-                matched = matched || doIndexOfMatchWordsOrSpaces(addSpaceIter, delSpaceIter, addIndexResultList, delIndexResultList)
+                matched = doIndexOfMatchWordsOrSpaces(addSpaceIter, delSpaceIter, addIndexResultList, delIndexResultList) || matched
             }
         }
 
