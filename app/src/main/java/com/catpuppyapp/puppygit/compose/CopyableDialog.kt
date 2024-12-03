@@ -1,18 +1,13 @@
 package com.catpuppyapp.puppygit.compose
 
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
-import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
 import com.catpuppyapp.puppygit.play.pro.R
 import com.catpuppyapp.puppygit.utils.doJobThenOffLoading
-import com.catpuppyapp.puppygit.utils.state.StateUtil
 
 
 @Composable
@@ -50,12 +45,10 @@ fun CopyableDialog(
         },
         text = {
             MySelectionContainer {
-                Column(modifier = Modifier
-                    .verticalScroll(rememberScrollState())
-                ) {
-                    if(requireShowTextCompose) {
-                        textCompose()
-                    }else {
+                if(requireShowTextCompose) {
+                    textCompose()
+                }else {
+                    ScrollableColumn {
                         Text(text)
                     }
                 }

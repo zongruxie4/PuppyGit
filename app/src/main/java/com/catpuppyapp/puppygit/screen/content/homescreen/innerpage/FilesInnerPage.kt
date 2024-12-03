@@ -696,46 +696,50 @@ fun FilesInnerPage(
 
     //导入失败则显示这个对话框，可以复制错误信息
     if(showImportResultDialog.value) {
-        CopyableDialog(
-            cancelBtnText = stringResource(id = R.string.close),
-            okBtnText = stringResource(id = R.string.ok),
+        ConfirmDialog2 (
             title = stringResource(R.string.import_has_err),
+            cancelBtnText = stringResource(R.string.close),
+            showOk = false,
             requireShowTextCompose = true,
             textCompose = {
-                ScrollableColumn {
-                    Row {
-                        Text(text = stringResource(R.string.import_success)+":"+successImportCount.value)
-                    }
-                    Row {
-                        Text(text = stringResource(R.string.import_failed)+":"+failedImportCount.value)
-                    }
-                    Row (modifier = Modifier.clickable {
-                        clipboardManager.setText(AnnotatedString(failedImportListStr.value))
-                        Msg.requireShow(activityContext.getString(R.string.copied))  //这里如果用 Msg.requierShow() 还得刷新页面才能看到信息，这个操作没必要刷新页面，不如直接用Toast，不过Toast怎么实现的？不用刷新页面吗？
-                        //test x能) 测试下刷新页面是否就能看到信息且不影响弹窗（当然不会影响，因为显示弹窗的状态变量还是真啊！只要状态没变，页面还是一样）
+                MySelectionContainer {
+                    ScrollableColumn {
+                        Row {
+                            Text(text = stringResource(R.string.import_success)+":"+successImportCount.value)
+                        }
+                        Row {
+                            Text(text = stringResource(R.string.import_failed)+":"+failedImportCount.value)
+                        }
+                        Spacer(modifier = Modifier.height(20.dp))
+
+                        Row (modifier = Modifier.clickable {
+                            clipboardManager.setText(AnnotatedString(failedImportListStr.value))
+                            Msg.requireShow(activityContext.getString(R.string.copied))  //这里如果用 Msg.requierShow() 还得刷新页面才能看到信息，这个操作没必要刷新页面，不如直接用Toast，不过Toast怎么实现的？不用刷新页面吗？
+                            //test x能) 测试下刷新页面是否就能看到信息且不影响弹窗（当然不会影响，因为显示弹窗的状态变量还是真啊！只要状态没变，页面还是一样）
 //                        Msg.requireShow(appContext.getString(R.string.copied))  //这里如果用 Msg.requierShow() 还得刷新页面才能看到信息，不如直接用Toast
 //                        changeStateTriggerRefreshPage(needRefreshFilesPage)
-                        //test
-                    }
-                    ){
-                        Text(text = stringResource(R.string.you_can_click_here_copy_err_msg),
-                            style = MyStyleKt.ClickableText.style,
-                            color = MyStyleKt.ClickableText.color,
+                            //test
+                        }
+                        ){
+                            Text(text = stringResource(R.string.you_can_click_here_copy_err_msg),
+                                style = MyStyleKt.ClickableText.style,
+                                color = MyStyleKt.ClickableText.color,
                             )
-                    }
-                    Spacer(modifier = Modifier.height(10.dp))
-                    Row {
-                        Text(text = stringResource(R.string.err_msg)+":")
-                    }
-                    Row {
-                        Text(text = failedImportListStr.value)
-                    }
+                        }
+                        Spacer(modifier = Modifier.height(10.dp))
+                        Row {
+                            Text(text = stringResource(R.string.err_msg)+":")
+                        }
+                        Row {
+                            Text(text = failedImportListStr.value, color = MyStyleKt.TextColor.error())
+                        }
 
 //                    Column(modifier = Modifier
 //                        .heightIn(max = 300.dp)
 //                        .verticalScroll(rememberScrollState())) {
 //                        Text(text = failedImportListStr.value)
 //                    }
+                    }
                 }
             },
             onCancel = { showImportResultDialog.value = false }
