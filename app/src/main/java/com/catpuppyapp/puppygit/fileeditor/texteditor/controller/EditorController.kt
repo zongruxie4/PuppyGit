@@ -98,13 +98,14 @@ class EditorController(
             var charOfKeyword = keyword[curIndexOfKeyword]
             var looped = false
 
+            val invalidIndex = -1
+
             // last value of matched a char
-            var lastCharIsMatched = false
+            var resetIndex = invalidIndex
             while(true) {
 //                println("在搜索:lineIndex=${curPos.lineIndex}, columnIndex=${curPos.columnIndex}")  //test1791022120240812
                 //matched 1 char
                 if(char != null && char == charOfKeyword) {
-                    lastCharIsMatched = true
 //                    println(curPos) //test1791022120240812
                     if(toNext){
                         curIndexOfKeyword++
@@ -135,34 +136,47 @@ class EditorController(
                         )
                     }
 
+
+                    //更新被搜索的字符串索引
+                    if(toNext) {
+                        curPos.columnIndex++
+                    }else {
+                        curPos.columnIndex--
+                    }
+
+                    // 第一次匹配，若匹配关键字失败，重置到当前字符的下一个字符(若反向查找，则是上一个字符)
+                    if(resetIndex == invalidIndex) {
+                        resetIndex = curPos.columnIndex
+                    }
+
+
                 }else {  // not matched!
                     // reset index of keyword
                     curIndexOfKeyword= if(toNext) 0 else keyword.length-1
 
                     // if last is matched, keep target text index at same place for matching to head or tail of keyword
-//                    如果上次是匹配，这次变成了不匹配，让索引停留在原地，然后再和关键字的开头或末尾重新匹配，不然会漏字符串（即使存在的关键字也会匹配失败）
-                    if(lastCharIsMatched) {
-                        //这里的加和减是和正常逻辑反着来的，这样做是为了和下面的增加/减少索引抵消
+
+                    //如果上次未匹配到，正常往前推进，否则重置索引指向上次匹配到的字符串之后的第一个字符
+                    if(resetIndex == invalidIndex) {  //上次未匹配到
+                        //更新被搜索的字符串索引
                         if(toNext) {
-                            curPos.columnIndex--
-                        }else {
                             curPos.columnIndex++
+                        }else {
+                            curPos.columnIndex--
                         }
+                    }else {  //上次匹配到过部分字符
+                        //匹配过，将索引重置为下一个索引，例如：被搜索字符串：abbbbcd，关键字bbc，若在索引1开始匹配到，索引3匹配失败，那下一个被搜索的索引应该是2
+                        curPos.columnIndex = resetIndex
+                        //重置索引每次使用一次后，需将其置为无效索引
+                        resetIndex = invalidIndex
                     }
 
-                    lastCharIsMatched = false
                 }
 
                 //这里取出的字符有两种情况，要么是关键字中的下一个字符，要么是重置后的开头或末尾字符
                 // 情况1： 索引仍有效，说明只匹配了部分关键字，需要继续查找
                 // 情况2： 无匹配，索引已重置到关键字开头或末尾
                 charOfKeyword = keyword[curIndexOfKeyword]
-
-                if(toNext) {
-                    curPos.columnIndex++
-                }else {
-                    curPos.columnIndex--
-                }
 
                 //查找到当前行开头或末尾了，该换行了
                 if(!isGoodIndexForStr(curPos.columnIndex, curText)) {  //需要换行
@@ -177,7 +191,10 @@ class EditorController(
 
                     }
 
-                    //执行到这，looped必定为假
+                    //执行到这，looped必定为假，意味着还没查找到起点，还得继续找
+
+                    //换行后将重置索引重新设为无效
+                    resetIndex = invalidIndex
 
                     //换行，需要reset index of keyword，不然搜索时行末尾和下行开头会被认为是连续的而导致结果出错
                     curIndexOfKeyword= if(toNext) 0 else keyword.length-1
