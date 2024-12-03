@@ -1,21 +1,17 @@
 package com.catpuppyapp.puppygit.fileeditor.texteditor.controller
 
-import androidx.compose.runtime.Composable
 import androidx.compose.runtime.MutableState
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
 import androidx.compose.ui.text.TextRange
 import androidx.compose.ui.text.input.TextFieldValue
+import com.catpuppyapp.puppygit.fileeditor.texteditor.state.TextEditorState
+import com.catpuppyapp.puppygit.fileeditor.texteditor.state.TextFieldState
+import com.catpuppyapp.puppygit.fileeditor.texteditor.view.SearchPos
+import com.catpuppyapp.puppygit.fileeditor.texteditor.view.SearchPosResult
 import com.catpuppyapp.puppygit.utils.Msg
 import com.catpuppyapp.puppygit.utils.MyLog
 import com.catpuppyapp.puppygit.utils.doActIfIndexGood
 import com.catpuppyapp.puppygit.utils.isGoodIndexForList
 import com.catpuppyapp.puppygit.utils.isGoodIndexForStr
-import com.catpuppyapp.puppygit.fileeditor.texteditor.state.TextEditorState
-import com.catpuppyapp.puppygit.fileeditor.texteditor.state.TextFieldState
-import com.catpuppyapp.puppygit.fileeditor.texteditor.view.SearchPos
-import com.catpuppyapp.puppygit.fileeditor.texteditor.view.SearchPosResult
-import com.catpuppyapp.puppygit.utils.state.mutableCustomStateOf
 import java.security.InvalidParameterException
 import java.util.concurrent.locks.ReentrantLock
 import kotlin.concurrent.withLock
@@ -60,6 +56,7 @@ class EditorController(
     }
 
     /**
+     * x 已修复） 20241203: 发现有bug，无法找到 " w " 这样字符，已经修复，在无匹配时将被查找的文件中的字符串索引保留在当前位置，下一轮重新和关键字的开头或末尾重新匹配即可
         @param toNext : if `toNext` is false, will search to previous
          缺陷：不支持查找包含换行符的关键字
      * @return SearchPos : if not found, will return SearchPos(-1,-1)
@@ -100,10 +97,14 @@ class EditorController(
             var char = if(curText.isEmpty()) null else curText[curPos.columnIndex]
             var charOfKeyword = keyword[curIndexOfKeyword]
             var looped = false
+
+            // last value of matched a char
+            var lastCharIsMatched = false
             while(true) {
 //                println("在搜索:lineIndex=${curPos.lineIndex}, columnIndex=${curPos.columnIndex}")  //test1791022120240812
                 //matched 1 char
-                if(char!=null && char == charOfKeyword){
+                if(char != null && char == charOfKeyword) {
+                    lastCharIsMatched = true
 //                    println(curPos) //test1791022120240812
                     if(toNext){
                         curIndexOfKeyword++
@@ -134,12 +135,28 @@ class EditorController(
                         )
                     }
 
-                    //索引仍有效，说明只匹配了部分关键字，需要继续查找
-                    charOfKeyword = keyword[curIndexOfKeyword]
-                }else {  // not matched! reset index of keyword
+                }else {  // not matched!
+                    // reset index of keyword
                     curIndexOfKeyword= if(toNext) 0 else keyword.length-1
-                    charOfKeyword = keyword[curIndexOfKeyword]
+
+                    // if last is matched, keep target text index at same place for matching to head or tail of keyword
+//                    如果上次是匹配，这次变成了不匹配，让索引停留在原地，然后再和关键字的开头或末尾重新匹配，不然会漏字符串（即使存在的关键字也会匹配失败）
+                    if(lastCharIsMatched) {
+                        //这里的加和减是和正常逻辑反着来的，这样做是为了和下面的增加/减少索引抵消
+                        if(toNext) {
+                            curPos.columnIndex--
+                        }else {
+                            curPos.columnIndex++
+                        }
+                    }
+
+                    lastCharIsMatched = false
                 }
+
+                //这里取出的字符有两种情况，要么是关键字中的下一个字符，要么是重置后的开头或末尾字符
+                // 情况1： 索引仍有效，说明只匹配了部分关键字，需要继续查找
+                // 情况2： 无匹配，索引已重置到关键字开头或末尾
+                charOfKeyword = keyword[curIndexOfKeyword]
 
                 if(toNext) {
                     curPos.columnIndex++
@@ -197,6 +214,7 @@ class EditorController(
 //                    }
 //                }
 
+                //把空行当作null，无匹配即可
                 char = if(curText.isEmpty()) null else curText[curPos.columnIndex]
             }
 
