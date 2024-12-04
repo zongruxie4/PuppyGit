@@ -84,6 +84,8 @@ when first time connect to an unkown host, PuppyGit will ask you allow/reject as
 ## About signing commit/tag
 see: https://github.com/catpuppyapp/PuppyGit/issues/4
 
+## About PC version
+see: https://github.com/catpuppyapp/PuppyGit/issues/11
 
 
 ## Build
