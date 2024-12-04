@@ -56,7 +56,7 @@ class EditorController(
     }
 
     /**
-     * x 已修复） 20241203: 发现有bug，无法找到 " w " 这样字符，已经修复，在无匹配时将被查找的文件中的字符串索引保留在当前位置，下一轮重新和关键字的开头或末尾重新匹配即可
+     * x 已修复） 20241203: 发现有bug，无法找到 " w " 这样字符，已经修复，在无匹配时将被查找的文件中的字符串索引向后移一位再和关键字从头匹配即可（反向查找时是向前移一位然后和关键字末尾匹配）
         @param toNext : if `toNext` is false, will search to previous
          缺陷：不支持查找包含换行符的关键字
      * @return SearchPos : if not found, will return SearchPos(-1,-1)
