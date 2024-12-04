@@ -8,3 +8,9 @@ https://www.patreon.com/c/catpuppyapp
 
 #### PayPal:
 https://paypal.me/catpuppyapp
+
+
+#### wechat
+<img src="image-assets/donate/wechat_rec_money.png" width=300px />
+
+
