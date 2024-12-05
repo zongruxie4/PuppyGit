@@ -98,11 +98,7 @@ see: The <a href=https://github.com/catpuppyapp/PuppyGit/blob/main/lib_build_scr
 
 
 ## Security
-For reduce risk of password leak, Your passwords of git repos(e.g. github) are encrypted saved in PuppyGit's database on your device, the password of password encryptor is not in this open source repo for security reason, if you want build PuppyGit by yourself, you better update the password and version to yours and dont share it for more safe:
-- update `EncryptorImpl.kt`, set your password encryptor, or simple use default encryptor
-- set your encryptor version and password in `PassEncryptHelper.kt`, the password must enough to long and better don't make it be public
-
-note: you should not change the passwords of old versions of password encryptors, if changed, when you upgrade app will can't decrypt the passwords encrypted by encryptor with old passwords, then all saved passwords on user device will be invalid, users must delete all credentials, then restart app, then re create credentials again.
+I recommend every user set a master password, it will used to encrypt password/passphrase of your credentials, you can set it on Settings screen. If you don't set master password, will use a public default password encrypt your credential, it is not enough safe cause it is public and actually no way hidden it.
 
 
 ## Help translate
