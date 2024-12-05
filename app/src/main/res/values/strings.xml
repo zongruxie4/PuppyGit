@@ -1102,5 +1102,6 @@
 <!--    e.g. Count: 10-->
     <string name="count_n">Count: ph_a3f241dc_1</string>
     <string name="reference">Reference</string>
+    <string name="faq">FAQ</string>
 
 </resources>

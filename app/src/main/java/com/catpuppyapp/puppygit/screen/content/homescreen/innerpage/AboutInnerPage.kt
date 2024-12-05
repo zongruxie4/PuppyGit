@@ -244,7 +244,7 @@ fun AboutInnerPage(contentPadding: PaddingValues,
             verticalAlignment = Alignment.CenterVertically
         ) {
             Text(
-                text = "FAQ",
+                text = stringResource(R.string.faq),
                 style = MyStyleKt.ClickableText.style,
                 color = MyStyleKt.ClickableText.color,
                 modifier = MyStyleKt.ClickableText.modifierNoPadding.clickable {
