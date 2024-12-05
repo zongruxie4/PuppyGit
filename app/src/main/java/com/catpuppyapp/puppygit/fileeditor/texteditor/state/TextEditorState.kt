@@ -3,7 +3,9 @@ package com.catpuppyapp.puppygit.fileeditor.texteditor.state
 import androidx.compose.runtime.Immutable
 import com.catpuppyapp.puppygit.etc.Ret
 import com.catpuppyapp.puppygit.fileeditor.texteditor.controller.EditorController.Companion.createInitTextFieldStates
+import com.catpuppyapp.puppygit.utils.FsUtils
 import com.catpuppyapp.puppygit.utils.doActIfIndexGood
+import java.io.File
 import java.io.OutputStream
 
 @Immutable
@@ -96,6 +98,10 @@ data class TextEditorState(
                 selectedIndices = listOf(-1),
                 isMultipleSelectionMode = isMultipleSelectionMode
             )
+        }
+
+        fun create(file: File, isMultipleSelectionMode:Boolean = false): TextEditorState {
+            return create(FsUtils.readLinesFromFile(file), isMultipleSelectionMode)
         }
 
         fun create(fields: List<TextFieldState>, selectedIndices: List<Int>, isMultipleSelectionMode: Boolean): TextEditorState {

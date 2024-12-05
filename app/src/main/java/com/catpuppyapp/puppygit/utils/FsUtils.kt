@@ -1073,16 +1073,20 @@ object FsUtils {
         }
     }
 
-    fun readLinesFromFile(filePath: String): List<String> {
-        return readLinesFromFile(File(filePath))
+    fun readLinesFromFile(filePath: String, addNewLineIfFileEmpty:Boolean = true): List<String> {
+        return readLinesFromFile(File(filePath), addNewLineIfFileEmpty)
     }
 
     /**
      * 读取文件中的行到list，
      * 支持 \r 或 \n 或 \r\n 分割的文件，
      * 正常情况下，一个文件只有一种类型的换行符，用这个函数没问题，如果是个混用各种换行符的奇葩文件，行数会乱。
+     *
+     * @param addNewLineIfFileEmpty if true, when file is empty, will add a empty str as element to list,
+     *  else will return an empty list. set it to true, if you expect this function has same behavior with `String.lines()`
+     *  (如果为true，文件为空时返回只有一个空字符串元素的list，否则返回空list。如果期望此函数和`String.lines()`行为一致（空字符串返回元素1的list），此值应传true。)
      */
-    fun readLinesFromFile(file: File): List<String> {
+    fun readLinesFromFile(file: File, addNewLineIfFileEmpty:Boolean = true): List<String> {
 //        val lines = ArrayList<String>(30)  //不确定用户打开的文件到底多少行啊，算了，用默认吧
         //readLines() api 说不能用于 huge files?我看源代码好像也是用readLine一行行读的，我自己写好像差不多，不过不会创建迭代器之类的，可能稍微快一点点，但应该也不能用于huge files吧？大概
 //        File(filePath).bufferedReader().readLines()
@@ -1138,7 +1142,7 @@ object FsUtils {
 
 
         //因为用 空字符串.lines() 会返回size 1的集合，所以，若文件内容为空，也应如此
-        if(lines.isEmpty()) {
+        if (addNewLineIfFileEmpty && lines.isEmpty()) {
             lines.add("")
         }
 

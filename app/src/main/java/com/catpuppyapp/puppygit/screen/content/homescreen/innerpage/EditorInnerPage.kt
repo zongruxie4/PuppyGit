@@ -1205,7 +1205,8 @@ private fun doInit(
 
                 //读取文件内容
 //            editorPageTextEditorState.value = TextEditorState.create(FsUtils.readFile(requireOpenFilePath))
-                editorPageTextEditorState.value = TextEditorState.create(FsUtils.readLinesFromFile(requireOpenFilePath))
+//                editorPageTextEditorState.value = TextEditorState.create(FsUtils.readLinesFromFile(requireOpenFilePath))
+                editorPageTextEditorState.value = TextEditorState.create(File(requireOpenFilePath))
 
                 isContentSnapshoted.value=false
                 //文件就绪
