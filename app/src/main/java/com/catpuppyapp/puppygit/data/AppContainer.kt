@@ -44,7 +44,10 @@ interface AppContainer {
     val credentialRepository: CredentialRepository
     val remoteRepository: RemoteRepository
     val settingsRepository: SettingsRepository
+
+    @Deprecated("20241205 之后，采用主密码，此类已不再维护，但保留类并仍在启动时检查是否需要迁移密码以兼容旧版本app")
     val passEncryptRepository: PassEncryptRepository
+
     val storageDirRepository: StorageDirRepository
     val domainCredentialRepository: DomainCredentialRepository
     // other repository write here

@@ -22,6 +22,7 @@ import com.catpuppyapp.puppygit.compose.LoadingText
 import com.catpuppyapp.puppygit.compose.SshUnknownHostDialog
 import com.catpuppyapp.puppygit.jni.SshAskUserUnknownHostRequest
 import com.catpuppyapp.puppygit.screen.AppScreenNavigator
+import com.catpuppyapp.puppygit.screen.RequireMasterPasswordScreen
 import com.catpuppyapp.puppygit.screen.functions.KnownHostRequestStateMan
 import com.catpuppyapp.puppygit.ui.theme.PuppyGitAndroidTheme
 import com.catpuppyapp.puppygit.ui.theme.Theme
@@ -201,6 +202,7 @@ fun MainCompose() {
 
     val sshCertRequestListenerChannel = remember { Channel<Int>() }
     val isInitDone = rememberSaveable { mutableStateOf(false) };
+    val requireMasterPassword = rememberSaveable { mutableStateOf(false) };
 
 
     //start: init user and billing state, 这代码位置别随便挪，必须早于调用Billing.init()，不然相关的集合无法得到更新
@@ -238,7 +240,11 @@ fun MainCompose() {
 
     //初始化完成显示app界面，否则显示loading界面
     if(isInitDone.value) {
-        AppScreenNavigator()
+        if(requireMasterPassword.value) {
+            RequireMasterPasswordScreen(requireMasterPassword)
+        }else {
+            AppScreenNavigator()
+        }
     }else {
         //这个东西太阴间了，除非是真的需要确保阻止用户操作，例如保存文件，否则尽量别用这个
 //        LoadingDialog(loadingText.value)
@@ -265,6 +271,8 @@ fun MainCompose() {
                 //test
 
                 AppModel.init_2()
+
+                requireMasterPassword.value = AppModel.singleInstanceHolder.requireMasterPassword()
 
                 //test passed
 //                assert(MyLog.isInited)

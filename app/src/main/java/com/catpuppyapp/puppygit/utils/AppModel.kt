@@ -6,6 +6,7 @@ import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.material3.TopAppBarScrollBehavior
 import androidx.compose.material3.rememberTopAppBarState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.graphics.ImageBitmap
@@ -24,6 +25,7 @@ import com.catpuppyapp.puppygit.dev.dev_EnableUnTestedFeature
 import com.catpuppyapp.puppygit.dto.DeviceWidthHeight
 import com.catpuppyapp.puppygit.jni.LibLoader
 import com.catpuppyapp.puppygit.play.pro.BuildConfig
+import com.catpuppyapp.puppygit.settings.AppSettings
 import com.catpuppyapp.puppygit.settings.SettingsUtil
 import com.catpuppyapp.puppygit.utils.app.upgrade.migrator.AppVersionMan
 import com.catpuppyapp.puppygit.utils.cert.CertMan
@@ -277,6 +279,7 @@ class AppModel {
                     return@migrate true
                 }
 
+                //实际上，在20241205之后发布的版本都不会再执行此函数了，改成用主密码了，以后默认密码就写死了，不会再改，版本号也不会再变，自然也不再需要迁移
                 //执行会suspend的初始化操作
                 //检查是否需要迁移密码
                 try {
@@ -485,6 +488,12 @@ class AppModel {
         }
     }
 
+
+    /**
+     * 加密凭据用到的主密码，若为空且设置项中的主密码hash不为空，将弹窗请求用户输入主密码，若用户拒绝，将无法使用凭据
+     */
+    var masterPassword:MutableState<String> = mutableStateOf("")
+
     lateinit var deviceWidthHeight: DeviceWidthHeight
 
     /**
@@ -628,6 +637,15 @@ class AppModel {
         }
 
         return externalCacheDir
+    }
+
+    fun requireMasterPassword(settings: AppSettings = SettingsUtil.getSettingsSnapshot()):Boolean {
+        return (
+                //设置了主密码，但没输入
+                (settings.masterPasswordHash.isNotEmpty() && masterPassword.value.isEmpty())
+                // 用户输入的主密码和密码hash不匹配
+            || (settings.masterPasswordHash.isNotEmpty() && masterPassword.value.isNotEmpty() && !HashUtil.verify(masterPassword.value, settings.masterPasswordHash))
+                )
     }
 
 }

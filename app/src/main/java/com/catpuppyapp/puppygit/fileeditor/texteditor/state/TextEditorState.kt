@@ -101,7 +101,8 @@ data class TextEditorState(
         }
 
         fun create(file: File, isMultipleSelectionMode:Boolean = false): TextEditorState {
-            return create(FsUtils.readLinesFromFile(file), isMultipleSelectionMode)
+            //这里`addNewLineIfFileEmpty`必须传true，以确保和String.lines()行为一致，不然若文件末尾有空行，读取出来会少一行
+            return create(FsUtils.readLinesFromFile(file, addNewLineIfFileEmpty = true), isMultipleSelectionMode)
         }
 
         fun create(fields: List<TextFieldState>, selectedIndices: List<Int>, isMultipleSelectionMode: Boolean): TextEditorState {

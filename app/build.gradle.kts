@@ -117,6 +117,7 @@ android {
 }
 
 dependencies {
+    implementation("at.favre.lib:bcrypt:0.10.2")
     //billing
 //    implementation ("com.android.billingclient:billing-ktx:7.0.0")
 

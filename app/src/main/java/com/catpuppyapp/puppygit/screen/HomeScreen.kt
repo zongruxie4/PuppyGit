@@ -2,7 +2,6 @@ package com.catpuppyapp.puppygit.screen
 
 import android.content.Intent
 import android.net.Uri
-import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.padding
@@ -524,6 +523,10 @@ fun HomeScreen(
                     Row (modifier = Modifier.padding(top = 10.dp)){
                         Text(text = stringResource(id = R.string.tips)+":"+ stringResource(R.string.try_long_press_icon_get_hints))
                     }
+
+                    Row (modifier = Modifier.padding(top = 15.dp)){
+                        Text(text = stringResource(R.string.recommend_go_to_settings_screen_set_a_master_password), color = MyStyleKt.TextColor.danger())
+                    }
                 }
             },
             //点击弹框外区域的时候触发此方法，一般设为和OnCancel一样的行为即可
@@ -835,7 +838,7 @@ fun HomeScreen(
             },
             floatingActionButton = {
                 if(currentHomeScreen.intValue == Cons.selectedItem_Editor && (editorPageShowingFileIsReady.value && editorPageShowingFilePath.value.isNotBlank() && editorPageIsEdited.value && !editorPageIsSaving.value && !editorReadOnlyMode.value)) {
-                    SmallFab(modifier=MyStyleKt.Fab.getFabModifierForEditor(editorPageTextEditorState.value.isMultipleSelectionMode),
+                    SmallFab(modifier = MyStyleKt.Fab.getFabModifierForEditor(editorPageTextEditorState.value.isMultipleSelectionMode),
                         icon = Icons.Filled.Save, iconDesc = stringResource(id = R.string.save)
                     ) {
                         editorPageRequestFromParent.value = PageRequest.requireSave

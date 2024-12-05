@@ -88,5 +88,11 @@ data class AppSettings(
      */
     var fileHistoryPageSize:Int = 10,
 
-    val sshSetting:SshSettings=SshSettings()
+    val sshSetting:SshSettings=SshSettings(),
+
+    /**
+     * 主密码的hash，用来校验用户输入的主密码是否正确，若为空，则代表禁用主密码，将使用源代码中的公开密码加密用户密码
+     */
+    var masterPasswordHash:String = "",
+
 )

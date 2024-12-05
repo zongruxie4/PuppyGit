@@ -53,6 +53,7 @@ class PassEncryptRepositoryImpl(private val dao: PassEncryptDao) : PassEncryptRe
     }
 
 
+    @Deprecated("20241205 之后，采用主密码，此类已不再维护，但保留类并仍在启动时检查是否需要迁移密码以兼容旧版本app")
     override suspend fun migrateIfNeed(credentialDb:CredentialRepository) {
         val passEncryptEntity = getOrInsertIdOne()
 
@@ -74,7 +75,8 @@ class PassEncryptRepositoryImpl(private val dao: PassEncryptDao) : PassEncryptRe
                         continue
                     }
                     val raw = oldEncryptor.decrypt(c.pass, oldKey)  //解密密码
-                    c.pass = PassEncryptHelper.encryptWithCurrentEncryptor(raw)  //用新加密器加密密码
+                    //这是使用主密码之前的加密机制，以前根本没主密码，所以直接把主密码设空即可
+                    c.pass = PassEncryptHelper.encryptWithCurrentEncryptor(raw, masterPassword = "")  //用新加密器加密密码
                     credentialDb.update(c)  //更新db
                 }
 

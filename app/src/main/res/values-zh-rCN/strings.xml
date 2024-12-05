@@ -1082,6 +1082,22 @@
     <string name="count_n">数量: ph_a3f241dc_1</string>
     <string name="reference">引用</string>
     <string name="faq">常见问题</string>
+    <string name="master_password">主密码</string>
+    <string name="set_master_password">设置主密码</string>
+    <string name="i_forgot_my_master_password">我忘记了我的主密码</string>
+    <string name="recommend_go_to_settings_screen_set_a_master_password">注意：我建议每位用户都前往设置页面设置一个主密码，主密码将用来加密你凭据中的密码和密码短语，如果你不设置，将使用公开密码加密你的凭据，那样不够安全</string>
+    <string name="old_password">旧密码</string>
+    <string name="new_password">新密码</string>
+    <string name="clear_master_password_confirm">如果清除主密码，你将无法再使用你曾使用旧的主密码加密过的凭据密码和密码短语，直到你更新它们</string>
+    <string name="wrong_password">密码有误</string>
+    <string name="require_old_password">需要旧密码</string>
+    <string name="leave_new_password_empty_if_dont_want_to_use_master_password">如果你不再想使用主密码，请清空新密码输入框</string>
+    <string name="result">结果</string>
+    <string name="below_credential_password_update_failed">为下列凭据更新密码或密码短语失败，你需用重新设置它们的密码或密码短语，否则这些凭据将无法使用:</string>
+    <string name="old_and_new_passwords_are_the_same">新旧密码一样</string>
+    <string name="clear_master_password">清除主密码</string>
+    <string name="if_set_will_require_master_password_when_launching_app">主密码用来保护你凭据中的密码或密码短语。如果设置，将会在启动app时请求输入主密码</string>
+    <string name="please_make_sure_you_can_remember_your_master_password">请确保你能记住你的主密码!!!</string>
 
 
 </resources>

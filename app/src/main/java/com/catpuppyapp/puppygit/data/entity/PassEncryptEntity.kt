@@ -12,4 +12,4 @@ data class PassEncryptEntity (
     var ver: Int= PassEncryptHelper.passEncryptCurrentVer,
     var reserve1:String="",  //保留字段1
     var reserve2:String="",  //保留字段2
-    )
+)

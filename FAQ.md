@@ -18,3 +18,9 @@
 
 ## Q: How I use self-signed cert for https?
 ## A: put your cert into `PuppyGit-Data/cert-user` and restart app(kill the process by slip it out from the task manager or 'force stop' app in the app information screen)
+
+## Q: What the `master password` used for?
+## A: It used to encrypt your credentials, if you forgot it, can reset it, but all password/passphrase of your credentials will be invalid, you must re-set the `password/passphrase` filed for your credentials, else, it still can't decrypt by new master password, so, ofc, the encrypted password can't used for connect remote git repository as well.
+
+## Q: If I don't use the `master password`, is dangerous?
+## A: Nah, actually, is not really very dangerous, but I can't promise, even your `password/passphrase` still will encrypted by default password, but if a hacker steal database from your phone, then, he can easy get the default password if he is a good hacker, and when he got the default password, he ofc can decrypt your `password/passphrase`.

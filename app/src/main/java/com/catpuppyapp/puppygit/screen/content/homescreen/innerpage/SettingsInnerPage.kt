@@ -9,9 +9,11 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.defaultMinSize
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
@@ -28,15 +30,19 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalClipboardManager
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.catpuppyapp.puppygit.compose.ConfirmDialog2
+import com.catpuppyapp.puppygit.compose.CopyableDialog
 import com.catpuppyapp.puppygit.compose.MyCheckBox
 import com.catpuppyapp.puppygit.compose.PaddingRow
+import com.catpuppyapp.puppygit.compose.PasswordTextFiled
 import com.catpuppyapp.puppygit.compose.ScrollableColumn
 import com.catpuppyapp.puppygit.compose.SingleSelectList
 import com.catpuppyapp.puppygit.constants.Cons
@@ -46,6 +52,7 @@ import com.catpuppyapp.puppygit.style.MyStyleKt
 import com.catpuppyapp.puppygit.ui.theme.Theme
 import com.catpuppyapp.puppygit.utils.AppModel
 import com.catpuppyapp.puppygit.utils.ComposeHelper
+import com.catpuppyapp.puppygit.utils.HashUtil
 import com.catpuppyapp.puppygit.utils.LanguageUtil
 import com.catpuppyapp.puppygit.utils.Lg2HomeUtils
 import com.catpuppyapp.puppygit.utils.Msg
@@ -73,6 +80,7 @@ fun SettingsInnerPage(
 ){
 
     val activityContext = LocalContext.current
+    val clipboardManager = LocalClipboardManager.current
 
     val settingsState = mutableCustomStateOf(stateKeyTag, "settingsState", SettingsUtil.getSettingsSnapshot())
 
@@ -130,6 +138,141 @@ fun SettingsInnerPage(
             }
         }
     }
+
+//    val updateMasterPassFailedList = mutableCustomStateOf(stateKeyTag, "updateMasterPassFailedList", listOf<String>())
+    val updateMasterPassFailedListStr = rememberSaveable { mutableStateOf("") }
+    val showFailedUpdateMasterPasswordsCredentialList = rememberSaveable { mutableStateOf(false) }
+    if(showFailedUpdateMasterPasswordsCredentialList.value) {
+        CopyableDialog(
+            title = stringResource(R.string.warn),
+            requireShowTextCompose = true,
+            textCompose = {
+                ScrollableColumn {
+                    Text(stringResource(R.string.below_credential_password_update_failed))
+                    Spacer(Modifier.height(10.dp))
+                    Text(updateMasterPassFailedListStr.value)
+                }
+            },
+            onCancel = { showFailedUpdateMasterPasswordsCredentialList.value = false }
+        ) {
+            showFailedUpdateMasterPasswordsCredentialList.value = false
+
+            doJobThenOffLoading {
+                clipboardManager.setText(AnnotatedString(updateMasterPassFailedListStr.value))
+                Msg.requireShow(activityContext.getString(R.string.copied))
+            }
+        }
+    }
+
+    val oldMasterPassword = rememberSaveable { mutableStateOf("") }
+    val newMasterPassword = rememberSaveable { mutableStateOf("") }
+    val oldMasterPasswordErrMsg = rememberSaveable { mutableStateOf("") }
+    val newMasterPasswordErrMsg = rememberSaveable { mutableStateOf("") }
+    val oldMasterPasswordVisible = rememberSaveable { mutableStateOf(false) }
+    val newMasterPasswordVisible = rememberSaveable { mutableStateOf(false) }
+    val showSetMasterPasswordDialog = rememberSaveable { mutableStateOf(false) }
+    if (showSetMasterPasswordDialog.value)  {
+        ConfirmDialog2(
+            title = stringResource(R.string.set_master_password),
+            requireShowTextCompose = true,
+            textCompose = {
+                ScrollableColumn {
+                    // require old master password if exist
+                    if(AppModel.singleInstanceHolder.requireMasterPassword()) {
+                        PasswordTextFiled(oldMasterPassword, oldMasterPasswordVisible, stringResource(R.string.old_password), errMsg = oldMasterPasswordErrMsg)
+                    }
+
+                    Spacer(Modifier.height(15.dp))
+
+                    // new password
+                    PasswordTextFiled(newMasterPassword, newMasterPasswordVisible, stringResource(R.string.new_password), errMsg = newMasterPasswordErrMsg, paddingValues = PaddingValues(start = 10.dp, end = 10.dp, top = 10.dp, bottom = 2.dp))
+                    Row(modifier = Modifier.padding(horizontal = 10.dp)) {
+                        Text(stringResource(R.string.leave_new_password_empty_if_dont_want_to_use_master_password), color = MyStyleKt.TextColor.highlighting_green)
+                    }
+
+                    if(newMasterPassword.value.isNotEmpty()) {
+                        Spacer(Modifier.height(10.dp))
+                        Row(modifier = Modifier.padding(horizontal = 10.dp)) {
+                            Text(stringResource(R.string.please_make_sure_you_can_remember_your_master_password), color = MyStyleKt.TextColor.danger())
+                        }
+                    }
+                }
+            },
+            okBtnText = stringResource(R.string.save),
+            onCancel = {showSetMasterPasswordDialog.value = false}
+        ) {
+            doJobThenOffLoading job@{
+                try {
+                    val requireOldPass = AppModel.singleInstanceHolder.requireMasterPassword()
+                    val oldPass  = if(requireOldPass) {
+                        if(oldMasterPassword.value.isEmpty()){
+                            oldMasterPasswordErrMsg.value = activityContext.getString(R.string.require_old_password)
+                            return@job
+                        }
+
+                        if(HashUtil.verify(oldMasterPassword.value, settingsState.value.masterPasswordHash).not()) {
+                            oldMasterPasswordErrMsg.value = activityContext.getString(R.string.wrong_password)
+                            return@job
+                        }
+
+                        oldMasterPassword.value
+                    }else {
+                        AppModel.singleInstanceHolder.masterPassword.value
+                    }
+
+                    //验证旧密码成功就可关闭弹窗了
+                    showSetMasterPasswordDialog.value = false
+
+                    Msg.requireShow(activityContext.getString(R.string.updating))
+
+                    //新密码可以为空，不验证，若空等于清除凭据
+                    val newPass = newMasterPassword.value
+                    //密码一样，啥也不用干
+                    if(newPass == oldPass) {
+                        Msg.requireShow(activityContext.getString(R.string.old_and_new_passwords_are_the_same))
+                        return@job
+                    }
+
+                    val credentialDb = AppModel.singleInstanceHolder.dbContainer.credentialRepository
+                    val failedList = credentialDb.updateMasterPassword(oldPass, newPass)
+
+                    // update master password hash
+                    SettingsUtil.update {
+                        if(newPass.isEmpty()) { // 空字符串不必算hash
+                            it.masterPasswordHash = newPass
+                        }else {  // 非空字符串，计算hash
+                            it.masterPasswordHash = HashUtil.hash(newPass)
+                        }
+                    }
+                    // update in-memory master password
+                    AppModel.singleInstanceHolder.masterPassword.value = newPass
+
+                    if(failedList.isEmpty()) { //全部解密然后加密成功
+                        Msg.requireShow(activityContext.getString(R.string.success))
+                    }else {  //有解密失败的
+                        val suffix = ", "
+                        val sb = StringBuilder()
+                        for (i in failedList) {
+                            sb.append(i).append(suffix)
+                        }
+
+                        //显示弹窗，让用户知道哪些解密失败
+                        updateMasterPassFailedListStr.value = sb.removeSuffix(suffix).toString()
+                        showFailedUpdateMasterPasswordsCredentialList.value = true
+                    }
+                }catch (e:Exception) {
+                    Msg.requireShowLongDuration(e.localizedMessage ?:"err")
+                    MyLog.e(TAG, "SetMasterPasswordDialog err: ${e.stackTraceToString()}")
+                }
+            }
+        }
+    }
+
+
+//    val showForgetMasterPasswordDialog = rememberSaveable { mutableStateOf(false) }
+
+
+
 
 //    if(showResetKnownHostsDialog.value) {
 //        ConfirmDialog2(
@@ -565,6 +708,38 @@ fun SettingsInnerPage(
                 Text(stringResource(R.string.forget_hostkeys), fontSize = itemFontSize)
             }
         }
+
+        SettingsTitle(stringResource(R.string.master_password))
+
+        SettingsContent(onClick = {
+            //初始化变量
+            oldMasterPassword.value = ""
+            newMasterPassword.value = ""
+            oldMasterPasswordErrMsg.value = ""
+            newMasterPasswordErrMsg.value = ""
+            oldMasterPasswordVisible.value = false
+            newMasterPasswordVisible.value = false
+
+            //显示弹窗
+            showSetMasterPasswordDialog.value = true
+        }) {
+            Column {
+                Text(stringResource(R.string.set_master_password), fontSize = itemFontSize)
+                Text(stringResource(R.string.if_set_will_require_master_password_when_launching_app), fontSize = itemDescFontSize, fontWeight = FontWeight.Light)
+
+            }
+        }
+
+//        SettingsContent(onClick = {
+//            oldMasterPassword.value = ""
+//            newMasterPassword.value = ""
+//            showForgetMasterPasswordDialog.value = true
+//        }) {
+//            Column {
+//                Text(stringResource(R.string.i_forgot_my_master_password), fontSize = itemFontSize)
+//            }
+//        }
+
 
         SettingsTitle(stringResource(R.string.permissions))
         SettingsContent(onClick = {

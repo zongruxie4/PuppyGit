@@ -19,7 +19,7 @@ class PassEncryptHelper {
             Pair(2, "ffHuzkprZY9b5PbYxaHPgHZ5UJxsqsL5MjqvCn7rQH3q7p7shz"),
             Pair(3, "qaWxActsnqiD2D5CmYroUcMRjYr4KDAiiNYHPs2RVs7DLTcU3y"),
             Pair(4, "C8mNzgW5Pwq3bFcaHP2WrwtZXA9bWniKgz9SeKRHxDbTyJ9LnZ"),
-            Pair(5, "yAqg9o9K4vz7ALujvp3eczhJhYwvFZtMswvXn3MHj7TP5zPcj_Yq2KGK"),
+            Pair(5, "Sy7JW_S4N3Fq5xFPzSK7tNvfXeUFRqUJaC4hmyjNm_XtfbK4dW"),
             // other...
         )
         //key = ver, value = 加密解密器
@@ -35,11 +35,20 @@ class PassEncryptHelper {
         val currentVerKey:String = keyMap[passEncryptCurrentVer]!!
         val currentVerEncryptor:Encryptor = encryptorMap[passEncryptCurrentVer]!!
 
-        fun encryptWithCurrentEncryptor(raw:String):String {
-            return currentVerEncryptor.encrypt(raw, currentVerKey)
+        private fun combineMasterPasswordAndDefaultPass(masterPassword: String, defaultPass:String):String {
+            return if(masterPassword.isEmpty()) {
+                defaultPass
+            }else {
+                masterPassword + (defaultPass.substring(10, 30))
+            }
         }
-        fun decryptWithCurrentEncryptor(encryptedStr:String):String {
-            return currentVerEncryptor.decrypt(encryptedStr, currentVerKey)
+
+        fun encryptWithCurrentEncryptor(raw:String, masterPassword:String):String {
+            return currentVerEncryptor.encrypt(raw, combineMasterPasswordAndDefaultPass(masterPassword, currentVerKey))
+        }
+
+        fun decryptWithCurrentEncryptor(encryptedStr:String, masterPassword: String):String {
+            return currentVerEncryptor.decrypt(encryptedStr, combineMasterPasswordAndDefaultPass(masterPassword, currentVerKey))
         }
     }
 }

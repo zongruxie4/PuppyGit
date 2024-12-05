@@ -17,6 +17,7 @@
 package com.catpuppyapp.puppygit.data.repository
 
 import com.catpuppyapp.puppygit.data.entity.CredentialEntity
+import com.catpuppyapp.puppygit.utils.AppModel
 
 /**
  * Repository that provides insert, update, delete, and retrieve of [Item] from a given data source.
@@ -87,6 +88,11 @@ interface CredentialRepository {
 
     suspend fun deleteAndUnlink(item:CredentialEntity)
 
-    fun encryptPassIfNeed(item:CredentialEntity?)
-    fun decryptPassIfNeed(item:CredentialEntity?)
+    fun encryptPassIfNeed(item:CredentialEntity?, masterPassword:String = AppModel.singleInstanceHolder.masterPassword.value)
+    fun decryptPassIfNeed(item:CredentialEntity?, masterPassword:String = AppModel.singleInstanceHolder.masterPassword.value)
+
+    /**
+     * @return 更新失败的凭据名单
+     */
+    suspend fun updateMasterPassword(oldMasterPassword:String, newMasterPassword:String):List<String>
 }

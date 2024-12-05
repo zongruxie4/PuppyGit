@@ -197,16 +197,54 @@ class CredentialRepositoryImpl(private val dao: CredentialDao) : CredentialRepos
         }
     }
 
-    override fun encryptPassIfNeed(item:CredentialEntity?) {
+    override fun encryptPassIfNeed(item:CredentialEntity?, masterPassword:String) {
         //用户名不用加密，不过私钥呢？感觉也用不着加密，暂时只加密密码吧。
         if(item!=null && !item.pass.isNullOrEmpty()) {
-            item.pass = PassEncryptHelper.encryptWithCurrentEncryptor(item.pass)
+            item.pass = PassEncryptHelper.encryptWithCurrentEncryptor(item.pass, masterPassword)
         }
     }
-    override fun decryptPassIfNeed(item:CredentialEntity?) {
+    override fun decryptPassIfNeed(item:CredentialEntity?, masterPassword: String) {
         if (item != null && !item.pass.isNullOrEmpty()) {
             //如果密码不为空，解密密码。
-            item.pass = PassEncryptHelper.decryptWithCurrentEncryptor(item.pass)
+            item.pass = PassEncryptHelper.decryptWithCurrentEncryptor(item.pass, masterPassword)
         }
+    }
+
+    override suspend fun updateMasterPassword(oldMasterPassword:String, newMasterPassword:String): List<String> {
+        if(oldMasterPassword == newMasterPassword) {
+            MyLog.w(TAG, "old and new master passwords are the same, cancel update")
+            return emptyList()
+        }
+
+        val decryptFailedList = mutableListOf<String>()
+
+        val allCredentialList = getAll()
+
+        //开事务，避免部分成功部分失误导致密码乱套，如果乱套只能把credential全删了重建了
+        AppModel.singleInstanceHolder.dbContainer.db.withTransaction {
+            //迁移密码
+            for(c in allCredentialList) {
+                //忽略空字符串
+                if(c.pass.isEmpty()) {
+                    continue
+                }
+
+                try {
+                    //如果解密失败会抛异常
+                    decryptPassIfNeed(c, oldMasterPassword)  //解密密码
+
+                }catch (e:Exception) {
+                    MyLog.w(TAG, "decrypt password failed, credentialName=${c.name}, err=${e.localizedMessage}")
+                    decryptFailedList.add(c.name)
+                    continue
+                }
+
+                encryptPassIfNeed(c, newMasterPassword)  //用新加密器加密密码
+                update(c)  //更新db
+            }
+
+        }
+
+        return decryptFailedList
     }
 }

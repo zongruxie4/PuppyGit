@@ -1103,5 +1103,21 @@
     <string name="count_n">Count: ph_a3f241dc_1</string>
     <string name="reference">Reference</string>
     <string name="faq">FAQ</string>
+    <string name="master_password">Master Password</string>
+    <string name="set_master_password">Set Master Password</string>
+    <string name="i_forgot_my_master_password">I forgot my master password</string>
+    <string name="recommend_go_to_settings_screen_set_a_master_password">NOTE: I recommend every user go to Settings screen set a master password, it will used to encrypt your credentials, if you don\'t set it, password/passphrase of your credentials will encrypt by a public password, is not enough safe.</string>
+    <string name="old_password">Old Password</string>
+    <string name="new_password">New Password</string>
+    <string name="clear_master_password_confirm">If clear your master password, you will not be able to access password/passphrase of your credentials before you encrypted with old master password, until you update them</string>
+    <string name="wrong_password">Wrong Password</string>
+    <string name="require_old_password">require old password</string>
+    <string name="leave_new_password_empty_if_dont_want_to_use_master_password">leave new password empty if you don\'t want to use master password anymore</string>
+    <string name="result">Result</string>
+    <string name="below_credential_password_update_failed">Update password/passphrase for below credentials failed, you should re-input password/passphrase for them, else these credentials will not be able to use:</string>
+    <string name="old_and_new_passwords_are_the_same">old and new passwords are the same</string>
+    <string name="clear_master_password">Clear Master Password</string>
+    <string name="if_set_will_require_master_password_when_launching_app">Master password used to protect password/passphrase of your credentials. If set, will require input master password when launching app</string>
+    <string name="please_make_sure_you_can_remember_your_master_password">Please make sure you can remember your master password!!!</string>
 
 </resources>
