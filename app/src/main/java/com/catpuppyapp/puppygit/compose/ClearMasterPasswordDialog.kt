@@ -24,7 +24,7 @@ fun ClearMasterPasswordDialog(
                 }
             }
         },
-        okBtnText = stringResource(R.string.clear),
+        okBtnText = stringResource(R.string.clear_master_password_ok_text),
         okTextColor = MyStyleKt.TextColor.danger(),
         onCancel = onCancel
     ) {

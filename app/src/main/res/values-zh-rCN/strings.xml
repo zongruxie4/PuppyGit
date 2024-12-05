@@ -1089,6 +1089,7 @@
     <string name="old_password">旧密码</string>
     <string name="new_password">新密码</string>
     <string name="clear_master_password_confirm">如果清除主密码，你将无法再使用你曾使用旧的主密码加密过的凭据密码和密码短语，直到你更新它们</string>
+    <string name="clear_master_password_ok_text">清除</string>
     <string name="wrong_password">密码有误</string>
     <string name="require_old_password">需要旧密码</string>
     <string name="leave_new_password_empty_if_dont_want_to_use_master_password">如果你不再想使用主密码，请清空新密码输入框</string>
