@@ -23,12 +23,14 @@ object SnapshotUtil:SnapshotCreator {
     private val contentSnapshotDisable_FilePathPlaceHolder = "ContentSnapshotDisable-path"  //内容快照禁用时，一律返回此路径
 
 
-    private var enableFileSnapshot = true
-    private var enableContentSnapshot = true
+    private var enableFileSnapshotForEditor = true
+    private var enableContentSnapshotForEditor = true
+    private var enableFileSnapshotForDiff = true
 
-    fun init(enableFileSnapshotInitValue:Boolean, enableContentSnapshotInitValue:Boolean) {
-        enableFileSnapshot = enableFileSnapshotInitValue
-        enableContentSnapshot = enableContentSnapshotInitValue
+    fun init(enableFileSnapshotForEditorInitValue:Boolean, enableContentSnapshotForEditorInitValue:Boolean, enableFileSnapshotForDiffInitValue:Boolean) {
+        enableFileSnapshotForEditor = enableFileSnapshotForEditorInitValue
+        enableContentSnapshotForEditor = enableContentSnapshotForEditorInitValue
+        enableFileSnapshotForDiff = enableFileSnapshotForDiffInitValue
     }
 
 
@@ -37,9 +39,9 @@ object SnapshotUtil:SnapshotCreator {
         fileContent:String?,
         editorState: TextEditorState?,
         trueUseContentFalseUseEditorState: Boolean,
-        flag:String
+        flag:SnapshotFileFlag
     ): Ret<Pair<String, String>?> {
-        if(!enableContentSnapshot) {
+        if(!enableContentSnapshotForEditor) {
             return Ret.createSuccess(Pair(contentSnapshotDisable_FileNamePlaceHolder, contentSnapshotDisable_FilePathPlaceHolder))
         }
 
@@ -72,9 +74,12 @@ object SnapshotUtil:SnapshotCreator {
     }
 
 
-    override fun createSnapshotByFileAndGetResult(srcFile:File, flag:String):Ret<Pair<String,String>?>{
-        //如果未开启文件快照功能，直接返回成功
-        if(!enableFileSnapshot) {
+    override fun createSnapshotByFileAndGetResult(srcFile:File, flag:SnapshotFileFlag):Ret<Pair<String,String>?>{
+        //如果未开启文件快照功能 或 开启了diff文件但flag不是diff文件快照 或 开启了editor文件快照但flag不是editor文件快照 则 直接返回成功
+        if((!enableFileSnapshotForEditor && !enableFileSnapshotForDiff)
+            || (!enableFileSnapshotForEditor && enableFileSnapshotForDiff && !flag.isDiffFileSnapShot())
+            || (enableFileSnapshotForEditor && !enableFileSnapshotForDiff && !flag.isEditorFileSnapShot())
+        ) {
             return Ret.createSuccess(Pair(fileSnapshotDisable_FileNamePlaceHolder, fileSnapshotDisable_FilePathPlaceHolder))  // 1是file name，2是file path
         }
 
@@ -108,7 +113,7 @@ object SnapshotUtil:SnapshotCreator {
         fileContent: String?,
         editorState: TextEditorState?,
         trueUseContentFalseUseEditorState: Boolean,
-        flag:String
+        flag:SnapshotFileFlag
     ): Ret<Pair<String, String>?> {
         return createSnapshotByContentAndGetResult(
             srcFileName = getShortUUID(10),
@@ -121,9 +126,9 @@ object SnapshotUtil:SnapshotCreator {
 
     private fun getSnapshotFileNameAndFullPathAndFile(
         srcFileName: String,
-        flag: String
+        flag: SnapshotFileFlag
     ): Triple<String, String, File> {
-        val snapshotFileName = getANonexistsSnapshotFileName(srcFileName, flag)
+        val snapshotFileName = getANonexistsSnapshotFileName(srcFileName, flag.flag)
         val snapDir = AppModel.singleInstanceHolder.getOrCreateFileSnapshotDir()
         val snapFile = File(snapDir.canonicalPath, snapshotFileName)
         //返回 filename, fileFullPath, file
@@ -132,10 +137,17 @@ object SnapshotUtil:SnapshotCreator {
 
 
     fun getANonexistsSnapshotFileName(srcFileName:String, flag: String):String {
+        var count = 0
+        val limit = 30
+
         while(true) {
+            if(count++ > limit) {
+                throw RuntimeException("err: generate snapshot filename failed")
+            }
+
             val fileName = genSnapshotFileName(srcFileName, flag)
-            val file = File(fileName)
-            if(!file.exists()) {
+            //如果file.canRead()为假，file.exists()我记得也会返回假，所以就算没读取文件的权限，应该也不会卡循环
+            if(!File(fileName).exists()) {
                 return fileName
             }
         }

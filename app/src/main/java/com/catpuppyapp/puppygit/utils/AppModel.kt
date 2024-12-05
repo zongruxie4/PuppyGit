@@ -308,8 +308,9 @@ class AppModel {
                 //初始化SnapshotUtil，例如是否启用文件快照和内容快照之类的
                 try {
                     SnapshotUtil.init(
-                        enableContentSnapshotInitValue = settings.editor.enableContentSnapshot || File(appModel.appDataUnderAllReposDir, FlagFileName.enableContentSnapshot).exists(),
-                        enableFileSnapshotInitValue = settings.editor.enableFileSnapshot || File(appModel.appDataUnderAllReposDir, FlagFileName.enableFileSnapshot).exists(),
+                        enableContentSnapshotForEditorInitValue = settings.editor.enableContentSnapshot || File(appModel.appDataUnderAllReposDir, FlagFileName.enableContentSnapshot).exists(),
+                        enableFileSnapshotForEditorInitValue = settings.editor.enableFileSnapshot || File(appModel.appDataUnderAllReposDir, FlagFileName.enableFileSnapshot).exists(),
+                        enableFileSnapshotForDiffInitValue = settings.diff.createSnapShotForOriginFileBeforeSave
                     )
                 }catch (e:Exception) {
                     MyLog.e(TAG, "#$funName init SnapshotUtil err:"+e.stackTraceToString())

@@ -289,9 +289,9 @@ object UIHelper {
 
     }
 
-    fun getIconForSwitcher(state: MutableState<Boolean>) = if (state.value) Icons.Filled.ToggleOn else Icons.Filled.ToggleOff
+    fun getIconForSwitcher(state: Boolean) = if (state) Icons.Filled.ToggleOn else Icons.Filled.ToggleOff
 
-    fun getColorForSwitcher(state: MutableState<Boolean>) = if (state.value) Color(0xFF0090FF) else if(Theme.inDarkTheme) Color.LightGray else Color.Gray
+    fun getColorForSwitcher(state: Boolean) = if (state) Color(0xFF0090FF) else if(Theme.inDarkTheme) Color.LightGray else Color.Gray
 
     fun getChangeListTitleColor(repoStateValue: Int):Color {
         return if(repoStateValue == Repository.StateT.MERGE.bit || repoStateValue == Repository.StateT.REBASE_MERGE.bit || repoStateValue == Repository.StateT.CHERRYPICK.bit) MyStyleKt.TextColor.danger() else Color.Unspecified

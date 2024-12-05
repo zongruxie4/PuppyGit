@@ -260,7 +260,7 @@ fun EditorInnerPage(
     }
 
     //requireShowMsgToUser这个变量是为后台静默自动保存做铺垫
-    val doSimpleSafeFastSaveInCoroutine = { requireShowMsgToUser:Boolean, requireBackupContent:Boolean, requireBackupFile:Boolean, contentSnapshotFlag:String, fileSnapshotFlag:String ->
+    val doSimpleSafeFastSaveInCoroutine = { requireShowMsgToUser:Boolean, requireBackupContent:Boolean, requireBackupFile:Boolean, contentSnapshotFlag:SnapshotFileFlag, fileSnapshotFlag:SnapshotFileFlag ->
 //        if(readyForSave.value) {  //不做检查，别人有可能存，但万一存失败了呢？他失败了，我发现他在存，于是我也没存，那数据不就丢了？快速检查必然损失准确性。所以不如先拿锁，再做检查
             //离开页面时，保存文件
         doJobThenOffLoading {
@@ -422,7 +422,7 @@ fun EditorInnerPage(
                         fileContent = null,
                         editorState = editorPageTextEditorState.value,
                         trueUseContentFalseUseEditorState = false,
-                        flag = SnapshotFileFlag.content_BeforeReloadFoundSrcFileChanged
+                        flag = SnapshotFileFlag.editor_content_BeforeReloadFoundSrcFileChanged
                     )
                     if(snapRet.hasError()) {
                         MyLog.e(TAG, "#showReloadDialog: save content snapshot before reload, err: "+snapRet.msg)
@@ -540,7 +540,7 @@ fun EditorInnerPage(
                         fileContent = null,
                         editorState = editorPageTextEditorState.value,
                         trueUseContentFalseUseEditorState = false,
-                        flag = SnapshotFileFlag.content_BeforeReloadFoundSrcFileChanged_ReloadByBackFromExternalDialog
+                        flag = SnapshotFileFlag.editor_content_BeforeReloadFoundSrcFileChanged_ReloadByBackFromExternalDialog
                     )
                     if(snapRet.hasError()) {
                         MyLog.e(TAG, "#showBackFromExternalAppAskReloadDialog: save content snapshot before reload, err: "+snapRet.msg)
@@ -994,8 +994,8 @@ fun EditorInnerPage(
 
         val requireBackupContent = true
         val requireBackupFile = true
-        val contentSnapshotFlag = SnapshotFileFlag.content_OnPause
-        val fileSnapshotFlag = SnapshotFileFlag.file_OnPause
+        val contentSnapshotFlag = SnapshotFileFlag.editor_content_OnPause
+        val fileSnapshotFlag = SnapshotFileFlag.editor_file_OnPause
 
         doSimpleSafeFastSaveInCoroutine(
             requireShowMsgToUser,
@@ -1137,7 +1137,7 @@ private fun doInit(
                                 fileContent = null,
                                 editorState = editorPageTextEditorState.value,
                                 trueUseContentFalseUseEditorState = false,
-                                flag = SnapshotFileFlag.content_FileNonExists_Backup
+                                flag = SnapshotFileFlag.editor_content_FileNonExists_Backup
                             )
                             if (snapRet.hasError()) {
                                 MyLog.e(TAG, "#loadFile: create content snapshot for '$requireOpenFilePath' err: ${snapRet.msg}")

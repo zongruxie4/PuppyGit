@@ -89,8 +89,9 @@ fun SettingsInnerPage(
     val showNaviButtons = rememberSaveable { mutableStateOf(settingsState.value.showNaviButtons) }
     val enableSnapshot_File = rememberSaveable { mutableStateOf(settingsState.value.editor.enableFileSnapshot) }
     val enableSnapshot_Content = rememberSaveable { mutableStateOf(settingsState.value.editor.enableContentSnapshot) }
+    val diff_CreateSnapShotForOriginFileBeforeSave = rememberSaveable { mutableStateOf(settingsState.value.diff.createSnapShotForOriginFileBeforeSave) }
 
-    val groupContentByLineNum = rememberSaveable { mutableStateOf(settingsState.value.diff.groupDiffContentByLineNum) }
+//    val groupContentByLineNum = rememberSaveable { mutableStateOf(settingsState.value.diff.groupDiffContentByLineNum) }
 
     val showCleanDialog = rememberSaveable { mutableStateOf(false) }
     val cleanCacheFolder = rememberSaveable { mutableStateOf(true) }
@@ -367,9 +368,9 @@ fun SettingsInnerPage(
 
             Icon(
                 modifier = Modifier.size(switcherIconSize),
-                imageVector = UIHelper.getIconForSwitcher(showNaviButtons),
+                imageVector = UIHelper.getIconForSwitcher(showNaviButtons.value),
                 contentDescription = if(showNaviButtons.value) stringResource(R.string.enable) else stringResource(R.string.disable),
-                tint = UIHelper.getColorForSwitcher(showNaviButtons),
+                tint = UIHelper.getColorForSwitcher(showNaviButtons.value),
             )
         }
 
@@ -399,9 +400,9 @@ fun SettingsInnerPage(
 
             Icon(
                 modifier = Modifier.size(switcherIconSize),
-                imageVector = UIHelper.getIconForSwitcher(enableEditCache),
+                imageVector = UIHelper.getIconForSwitcher(enableEditCache.value),
                 contentDescription = if(enableEditCache.value) stringResource(R.string.enable) else stringResource(R.string.disable),
-                tint = UIHelper.getColorForSwitcher(enableEditCache),
+                tint = UIHelper.getColorForSwitcher(enableEditCache.value),
             )
         }
 
@@ -423,9 +424,9 @@ fun SettingsInnerPage(
 
             Icon(
                 modifier = Modifier.size(switcherIconSize),
-                imageVector = UIHelper.getIconForSwitcher(enableSnapshot_File),
+                imageVector = UIHelper.getIconForSwitcher(enableSnapshot_File.value),
                 contentDescription = if(enableSnapshot_File.value) stringResource(R.string.enable) else stringResource(R.string.disable),
-                tint = UIHelper.getColorForSwitcher(enableSnapshot_File),
+                tint = UIHelper.getColorForSwitcher(enableSnapshot_File.value),
 
             )
         }
@@ -447,16 +448,42 @@ fun SettingsInnerPage(
 
             Icon(
                 modifier = Modifier.size(switcherIconSize),
-                imageVector = UIHelper.getIconForSwitcher(enableSnapshot_Content),
+                imageVector = UIHelper.getIconForSwitcher(enableSnapshot_Content.value),
                 contentDescription = if(enableSnapshot_Content.value) stringResource(R.string.enable) else stringResource(R.string.disable),
-                tint = UIHelper.getColorForSwitcher(enableSnapshot_Content),
+                tint = UIHelper.getColorForSwitcher(enableSnapshot_Content.value),
 
             )
         }
 
         // diff settings block start
 //
-//        SettingsTitle(stringResource(R.string.diff))
+        SettingsTitle(stringResource(R.string.diff))
+
+        SettingsContent(
+            onClick = {
+                val newValue = !diff_CreateSnapShotForOriginFileBeforeSave.value
+                diff_CreateSnapShotForOriginFileBeforeSave.value = newValue
+                SettingsUtil.update {
+                    it.diff.createSnapShotForOriginFileBeforeSave = newValue
+                }
+            }
+        ) {
+            Column(modifier = Modifier.fillMaxWidth(itemLeftWidthForSwitcher)) {
+                Text(stringResource(R.string.file_snapshot), fontSize = itemFontSize)
+                Text(stringResource(R.string.file_snapshot_desc), fontSize = itemDescFontSize, fontWeight = FontWeight.Light)
+                Text(stringResource(R.string.require_restart_app), fontSize = itemDescFontSize, fontWeight = FontWeight.Light, fontStyle = FontStyle.Italic)
+
+            }
+
+            Icon(
+                modifier = Modifier.size(switcherIconSize),
+                imageVector = UIHelper.getIconForSwitcher(diff_CreateSnapShotForOriginFileBeforeSave.value),
+                contentDescription = if(diff_CreateSnapShotForOriginFileBeforeSave.value) stringResource(R.string.enable) else stringResource(R.string.disable),
+                tint = UIHelper.getColorForSwitcher(diff_CreateSnapShotForOriginFileBeforeSave.value),
+
+            )
+        }
+
 //
 //        SettingsContent(onClick = {
 //            val newValue = !groupContentByLineNum.value
@@ -506,9 +533,9 @@ fun SettingsInnerPage(
 
             Icon(
                 modifier = Modifier.size(switcherIconSize),
-                imageVector = UIHelper.getIconForSwitcher(allowUnknownHosts),
+                imageVector = UIHelper.getIconForSwitcher(allowUnknownHosts.value),
                 contentDescription = if(allowUnknownHosts.value) stringResource(R.string.enable) else stringResource(R.string.disable),
-                tint = UIHelper.getColorForSwitcher(allowUnknownHosts),
+                tint = UIHelper.getColorForSwitcher(allowUnknownHosts.value),
 
                 )
         }

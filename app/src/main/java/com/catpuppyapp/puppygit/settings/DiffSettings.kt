@@ -52,4 +52,10 @@ data class DiffSettings (
      */
     var enableSelectCompare:Boolean = true,
 
+
+    /**
+     * if enable, when edit line, before saving, will create snapshot for origin file first
+     * 若启用，编辑行后，保存之前，会先为原始文件创建快照
+     */
+    var createSnapShotForOriginFileBeforeSave:Boolean = false
 )

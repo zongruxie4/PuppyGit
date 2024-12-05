@@ -18,9 +18,11 @@ import com.catpuppyapp.puppygit.dto.FileSimpleDto
 import com.catpuppyapp.puppygit.etc.Ret
 import com.catpuppyapp.puppygit.fileeditor.texteditor.state.TextEditorState
 import com.catpuppyapp.puppygit.play.pro.R
+import com.catpuppyapp.puppygit.settings.AppSettings
 import com.catpuppyapp.puppygit.utils.snapshot.SnapshotFileFlag
 import com.catpuppyapp.puppygit.utils.snapshot.SnapshotUtil
 import com.catpuppyapp.puppygit.utils.state.CustomStateSaveable
+import com.catpuppyapp.puppygit.utils.temp.TempFileFlag
 import java.io.File
 import java.io.FileInputStream
 import java.io.FileOutputStream
@@ -452,8 +454,8 @@ object FsUtils {
         targetFilePath: String,
         requireBackupContent: Boolean,
         requireBackupFile: Boolean,
-        contentSnapshotFlag: String,
-        fileSnapshotFlag: String
+        contentSnapshotFlag: SnapshotFileFlag,
+        fileSnapshotFlag: SnapshotFileFlag
     ): Ret<Triple<Boolean, String, String>> {
         var contentAndFileSnapshotPathPair = Pair("","")
 
@@ -561,7 +563,7 @@ object FsUtils {
                     //path为空content不为空的可能性不大，几乎没有
                     if(editorPageTextEditorState.value.contentIsEmpty().not() && !isContentSnapshoted.value ) {
                         MyLog.w(pageTag, "#$funName: filePath is empty, but content is not empty, will create content snapshot with a random filename...")
-                        val flag = SnapshotFileFlag.content_FilePathEmptyWhenSave_Backup
+                        val flag = SnapshotFileFlag.editor_content_FilePathEmptyWhenSave_Backup
                         val contentSnapRet = SnapshotUtil.createSnapshotByContentWithRandomFileName(
                             fileContent = null,
                             editorState = editorPageTextEditorState.value,
@@ -605,7 +607,7 @@ object FsUtils {
                         //判断已创建快照的文件信息是否和目前硬盘上的文件信息一致，注意最后一个条件判断fullPath不相同也创建快照，在这判断的话就无需在外部更新dto信息了，直接路径不一样，创建快照，更新文件信息（包含路径）就行了，而且当路径不匹配时newDto所代表的文件是save to 的对象，其内容将被覆盖，理应创建快照
                         if(snapshotedFileInfo.value.sizeInBytes != newDto.sizeInBytes || snapshotedFileInfo.value.lastModifiedTime!=newDto.lastModifiedTime || snapshotedFileInfo.value.fullPath!=newDto.fullPath) {
                             MyLog.w(pageTag, "#$funName: warn! file maybe modified by external! will create a snapshot before save...")
-                            val snapRet = SnapshotUtil.createSnapshotByFileAndGetResult(targetFile, SnapshotFileFlag.file_BeforeSave)
+                            val snapRet = SnapshotUtil.createSnapshotByFileAndGetResult(targetFile, SnapshotFileFlag.editor_file_BeforeSave)
                             //连读取文件都不行，直接不保存，用户爱怎么办怎么办吧
                             //如果出错，保存content到快照，然后返回
                             //创建源文件快照出错不覆盖文件的原因：如果里面有东西，而且由于正常的原因不能创建快照，那就先不动那个文件，这样的话里面的数据不会丢，加上我在下面为content创建了快照，这样两份内容就都不会丢，比覆盖强，万一一覆盖，成功了但导致数据损失就不好了
@@ -621,7 +623,7 @@ object FsUtils {
                                         fileContent = null,
                                         editorState = editorPageTextEditorState.value,
                                         trueUseContentFalseUseEditorState = false,
-                                        flag = SnapshotFileFlag.content_CreateSnapshotForExternalModifiedFileErrFallback
+                                        flag = SnapshotFileFlag.editor_content_CreateSnapshotForExternalModifiedFileErrFallback
                                     )
                                     if (contentSnapRet.hasError()) {
                                         MyLog.e(pageTag, "#$funName: create content snapshot for '$filePath' failed:" + contentSnapRet.msg)
@@ -663,8 +665,8 @@ object FsUtils {
                     targetFilePath = filePath,
                     requireBackupContent = true,
                     requireBackupFile = true,
-                    contentSnapshotFlag = SnapshotFileFlag.content_NormalDoSave,
-                    fileSnapshotFlag = SnapshotFileFlag.file_NormalDoSave
+                    contentSnapshotFlag = SnapshotFileFlag.editor_content_NormalDoSave,
+                    fileSnapshotFlag = SnapshotFileFlag.editor_file_NormalDoSave
                     )
 //            println("after save:"+ getSecFromTime())
 
@@ -689,7 +691,7 @@ object FsUtils {
                             fileContent = null,
                             editorState = editorPageTextEditorState.value,
                             trueUseContentFalseUseEditorState = false,
-                            flag = SnapshotFileFlag.content_SaveErrFallback
+                            flag = SnapshotFileFlag.editor_content_SaveErrFallback
                         )
                         if (snapRet.hasError()) {
                             MyLog.e(pageTag, "#$funName: save content snapshot for '$filePath' failed:" + snapRet.msg)
@@ -956,8 +958,8 @@ object FsUtils {
     }
 
     /**
-     * 替换多个行到指定行号
-     * replace lines to specified line number
+     * 替换多个行到指定行号，若源文件无EOFNL，执行完此函数后，会添加
+     * replace lines to specified line number, if origin file no EOFNL, after this function, will add it
      *
      * note: if target line doesn't exist, will append content to the EOF, and delete/append content is not available for EOF
      *
@@ -967,7 +969,7 @@ object FsUtils {
      * @param newLines the lines will replace
      * @param trueInsertFalseReplaceNullDelete true insert , false replace, null delete
      */
-    private fun replaceOrInsertOrDeleteLinesToFile(file: File, startLineNum: Int, newLines: List<String>, trueInsertFalseReplaceNullDelete:Boolean?) {
+    private suspend fun replaceOrInsertOrDeleteLinesToFile(file: File, startLineNum: Int, newLines: List<String>, trueInsertFalseReplaceNullDelete:Boolean?, settings: AppSettings) {
         if(trueInsertFalseReplaceNullDelete != null && newLines.isEmpty()) {
             return
         }
@@ -980,8 +982,16 @@ object FsUtils {
             throw RuntimeException("target file doesn't exist")
         }
 
-        //RLTF =  acronym of the "Replace-Lines-To-File" (RLTF=函数名首字母缩写)
-        val tempFile = FsUtils.createTempFile("RLTF")
+        if(settings.diff.createSnapShotForOriginFileBeforeSave) {
+            val snapRet = SnapshotUtil.createSnapshotByFileAndGetResult(file, SnapshotFileFlag.diff_file_BeforeSave)
+            if(snapRet.hasError()) {
+                //其实加不加括号都行 ?: 优先级高于throw
+                throw (snapRet.exception ?: RuntimeException(snapRet.msg.ifBlank { "err: create snapshot failed" }))
+            }
+        }
+
+
+        val tempFile = FsUtils.createTempFile("${TempFileFlag.FROM_DIFF_SCREEN_REPLACE_LINES_TO_FILE.flag}-${file.name}")
         var found = false
 
         file.bufferedReader().use { reader ->
@@ -1034,24 +1044,24 @@ object FsUtils {
         }
     }
 
-    fun replaceLinesToFile(file: File, startLineNum: Int, newLines: List<String>) {
-        replaceOrInsertOrDeleteLinesToFile(file, startLineNum, newLines, trueInsertFalseReplaceNullDelete = false)
+    suspend fun replaceLinesToFile(file: File, startLineNum: Int, newLines: List<String>, settings: AppSettings) {
+        replaceOrInsertOrDeleteLinesToFile(file, startLineNum, newLines, trueInsertFalseReplaceNullDelete = false, settings)
     }
 
-    fun insertLinesToFile(file: File, startLineNum: Int, newLines: List<String>) {
-        prependLinesToFile(file, startLineNum, newLines)
+    suspend fun insertLinesToFile(file: File, startLineNum: Int, newLines: List<String>, settings: AppSettings) {
+        prependLinesToFile(file, startLineNum, newLines, settings)
     }
 
-    fun prependLinesToFile(file: File, startLineNum: Int, newLines: List<String>) {
-        replaceOrInsertOrDeleteLinesToFile(file, startLineNum, newLines, trueInsertFalseReplaceNullDelete = true)
+    suspend fun prependLinesToFile(file: File, startLineNum: Int, newLines: List<String>, settings: AppSettings) {
+        replaceOrInsertOrDeleteLinesToFile(file, startLineNum, newLines, trueInsertFalseReplaceNullDelete = true, settings)
     }
 
-    fun appendLinesToFile(file: File, startLineNum: Int, newLines: List<String>) {
-        replaceOrInsertOrDeleteLinesToFile(file, startLineNum+1, newLines, trueInsertFalseReplaceNullDelete = true)
+    suspend fun appendLinesToFile(file: File, startLineNum: Int, newLines: List<String>, settings: AppSettings) {
+        replaceOrInsertOrDeleteLinesToFile(file, startLineNum+1, newLines, trueInsertFalseReplaceNullDelete = true, settings)
     }
 
-    fun deleteLineToFile(file: File, lineNum: Int) {
-        replaceOrInsertOrDeleteLinesToFile(file, lineNum, newLines=listOf(), trueInsertFalseReplaceNullDelete = null)
+    suspend fun deleteLineToFile(file: File, lineNum: Int, settings: AppSettings) {
+        replaceOrInsertOrDeleteLinesToFile(file, lineNum, newLines=listOf(), trueInsertFalseReplaceNullDelete = null, settings)
     }
 
     fun createTempFile(prefix:String, suffix:String=".tmp"):File{

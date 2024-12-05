@@ -19,7 +19,7 @@ interface SnapshotCreator{
         fileContent: String?,
         editorState: TextEditorState?,
         trueUseContentFalseUseEditorState: Boolean,
-        flag: String
+        flag: SnapshotFileFlag
     ): Ret<Pair<String, String>?>
 
 
@@ -31,5 +31,5 @@ interface SnapshotCreator{
      *
      * @return Ret<Pair<fileName, fileFullPath>>
      */
-    fun createSnapshotByFileAndGetResult(srcFile: File, flag:String):Ret<Pair<String,String>?>
+    fun createSnapshotByFileAndGetResult(srcFile: File, flag:SnapshotFileFlag):Ret<Pair<String,String>?>
 }

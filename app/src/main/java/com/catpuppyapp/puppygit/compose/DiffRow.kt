@@ -40,6 +40,7 @@ import com.catpuppyapp.puppygit.git.CompareLinePairResult
 import com.catpuppyapp.puppygit.git.PuppyLine
 import com.catpuppyapp.puppygit.play.pro.R
 import com.catpuppyapp.puppygit.screen.functions.getClipboardText
+import com.catpuppyapp.puppygit.settings.AppSettings
 import com.catpuppyapp.puppygit.style.MyStyleKt
 import com.catpuppyapp.puppygit.ui.theme.Theme
 import com.catpuppyapp.puppygit.utils.AppModel
@@ -82,7 +83,8 @@ fun DiffRow (
     reForEachDiffContent:()->Unit,
     indexStringPartListMap:CustomStateMapSaveable<String, CompareLinePairResult>,
     enableSelectCompare: Boolean,
-    matchByWords:Boolean
+    matchByWords:Boolean,
+    settings:AppSettings
 
 ) {
     // disable for EOF, the EOF showing sometimes false-added
@@ -270,11 +272,11 @@ fun DiffRow (
                     val lines = FsUtils.stringToLines(lineContentOfEditLineDialog.value)
                     val file = File(fileFullPath)
                     if(truePrependFalseAppendNullReplace.value == true) {
-                        FsUtils.prependLinesToFile(file, lineNum, lines)
+                        FsUtils.prependLinesToFile(file, lineNum, lines, settings)
                     }else if (truePrependFalseAppendNullReplace.value == false) {
-                        FsUtils.appendLinesToFile(file, lineNum, lines)
+                        FsUtils.appendLinesToFile(file, lineNum, lines, settings)
                     }else {
-                        FsUtils.replaceLinesToFile(file, lineNum, lines)
+                        FsUtils.replaceLinesToFile(file, lineNum, lines, settings)
                     }
 
                     Msg.requireShow(activityContext.getString(R.string.success))
@@ -325,7 +327,7 @@ fun DiffRow (
                     }
 
                     val file = File(fileFullPath)
-                    FsUtils.deleteLineToFile(file, lineNum)
+                    FsUtils.deleteLineToFile(file, lineNum, settings)
 
                     Msg.requireShow(activityContext.getString(R.string.success))
 
@@ -409,9 +411,9 @@ fun DiffRow (
                     val lines = FsUtils.stringToLines(lineContentOfEditLineDialog.value)
                     val file = File(fileFullPath)
                     if(trueRestoreFalseReplace.value) {
-                        FsUtils.prependLinesToFile(file, lineNum, lines)
+                        FsUtils.prependLinesToFile(file, lineNum, lines, settings)
                     }else {
-                        FsUtils.replaceLinesToFile(file, lineNum, lines)
+                        FsUtils.replaceLinesToFile(file, lineNum, lines, settings)
                     }
 
                     Msg.requireShow(activityContext.getString(R.string.success))

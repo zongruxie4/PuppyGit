@@ -10,6 +10,9 @@
 ## Q: I enabled snapshot feature for Editor and Diff, How I found the snapshot files?
 ## A: go to the path `PuppyGit-Data/FileSnapshot`, then you can filter you files by name, and the file name include a timestamp indicate when the file created
 
+## Q: If I disabled the snapshot feature for Diff, and app crashed when I edit lines on the Diff screen, and my origin file got broken, how I restore it?
+## A: If your origin file broken, it means app crashing when try overwrite your origin file, so don't worry, it should has a tmp file include the content you was edited in the Diff screen, you can go to the Files screen, then go to `Internal Storage`, press back twice, then you see a `cache` folder, open it, you should see a file name like "diff__RLTF-YourFileName-some_random_str.tmp", then open the file, check the content, if good, you can use it replace your broken file.
+
 ## Q: I saw the `EditCache` in Settings Screen, what is used for?
 ## A: if enable, it will cache your input text into the `PuppyGit-Data/EditCache` folder.
 

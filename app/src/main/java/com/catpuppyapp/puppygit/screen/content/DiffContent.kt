@@ -343,7 +343,8 @@ fun DiffContent(
                                         reForEachDiffContent=reForEachDiffContent,
                                         indexStringPartListMap = indexStringPartListMapForComparePair,
                                         enableSelectCompare=enableSelectCompare,
-                                        matchByWords = matchByWords.value
+                                        matchByWords = matchByWords.value,
+                                        settings = settings
                                     )
                                 }
                             }else {  // add or del
@@ -377,7 +378,8 @@ fun DiffContent(
                                                 reForEachDiffContent=reForEachDiffContent,
                                                 indexStringPartListMap = indexStringPartListMapForComparePair,
                                                 enableSelectCompare=enableSelectCompare,
-                                                matchByWords = matchByWords.value
+                                                matchByWords = matchByWords.value,
+                                                settings = settings
                                             )
                                         }
                                     }
@@ -427,7 +429,8 @@ fun DiffContent(
                                         reForEachDiffContent=reForEachDiffContent,
                                         indexStringPartListMap = indexStringPartListMapForComparePair,
                                         enableSelectCompare=enableSelectCompare,
-                                        matchByWords = matchByWords.value
+                                        matchByWords = matchByWords.value,
+                                        settings = settings
                                     )
                                 }
                             }
@@ -469,7 +472,8 @@ fun DiffContent(
                                         reForEachDiffContent=reForEachDiffContent,
                                         indexStringPartListMap = indexStringPartListMapForComparePair,
                                         enableSelectCompare=enableSelectCompare,
-                                        matchByWords = matchByWords.value
+                                        matchByWords = matchByWords.value,
+                                        settings = settings
                                     )
                                 }
                             }
@@ -514,7 +518,8 @@ fun DiffContent(
                                             reForEachDiffContent=reForEachDiffContent,
                                             indexStringPartListMap = indexStringPartListMapForComparePair,
                                             enableSelectCompare=enableSelectCompare,
-                                            matchByWords = matchByWords.value
+                                            matchByWords = matchByWords.value,
+                                            settings = settings
                                         )
 
                                     }
@@ -591,7 +596,8 @@ fun DiffContent(
                                         reForEachDiffContent=reForEachDiffContent,
                                         indexStringPartListMap = indexStringPartListMapForComparePair,
                                         enableSelectCompare=enableSelectCompare,
-                                        matchByWords = matchByWords.value
+                                        matchByWords = matchByWords.value,
+                                        settings = settings
                                     )
                                 }
                             }
@@ -617,7 +623,8 @@ fun DiffContent(
                                         reForEachDiffContent=reForEachDiffContent,
                                         indexStringPartListMap = indexStringPartListMapForComparePair,
                                         enableSelectCompare=enableSelectCompare,
-                                        matchByWords = matchByWords.value
+                                        matchByWords = matchByWords.value,
+                                        settings = settings
                                     )
                                 }
                             }
@@ -679,7 +686,8 @@ fun DiffContent(
                                     reForEachDiffContent=reForEachDiffContent,
                                     indexStringPartListMap = indexStringPartListMapForComparePair,
                                     enableSelectCompare=enableSelectCompare,
-                                    matchByWords = matchByWords.value
+                                    matchByWords = matchByWords.value,
+                                    settings = settings
                                 )
                             }
                         }
@@ -712,7 +720,8 @@ fun DiffContent(
                                 reForEachDiffContent=reForEachDiffContent,
                                 indexStringPartListMap = indexStringPartListMapForComparePair,
                                 enableSelectCompare=enableSelectCompare,
-                                matchByWords = matchByWords.value
+                                matchByWords = matchByWords.value,
+                                settings = settings
                             )
                         }
                     }
