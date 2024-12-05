@@ -13,4 +13,5 @@
 ## Q: I saw the `EditCache` in Settings Screen, what is used for?
 ## A: if enable, it will cache your input text into the `PuppyGit-Data/EditCache` folder.
 
-
+## Q: How I use self-signed cert for https?
+## A: put your cert into `PuppyGit-Data/cert-user` and restart app(kill the process by slip it out from the task manager or 'force stop' app in the app information screen)
