@@ -49,6 +49,7 @@ const val privacyPolicyLink = "$sourceCodeLink/blob/main/PrivacyPolicy.md"
 const val discussionLink = "$sourceCodeLink/discussions"
 const val reportBugsLink = "$sourceCodeLink/issues/new"
 const val donateLink = "$sourceCodeLink/blob/main/donate.md"
+const val faqLink = "$sourceCodeLink/blob/main/FAQ.md"
 
 
 var versionCode: Int = AppModel.getAppVersionCode()
@@ -237,6 +238,21 @@ fun AboutInnerPage(contentPadding: PaddingValues,
             )
         }
 
+        Spacer(modifier = Modifier.height(20.dp))
+        Row(
+            horizontalArrangement = Arrangement.Center,
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Text(
+                text = "FAQ",
+                style = MyStyleKt.ClickableText.style,
+                color = MyStyleKt.ClickableText.color,
+                modifier = MyStyleKt.ClickableText.modifierNoPadding.clickable {
+                    ActivityUtil.openUrl(activityContext, faqLink)
+                },
+
+            )
+        }
         Spacer(modifier = Modifier.height(20.dp))
         Row(
             horizontalArrangement = Arrangement.Center,
