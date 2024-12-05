@@ -35,11 +35,13 @@ class PassEncryptHelper {
         val currentVerKey:String = keyMap[passEncryptCurrentVer]!!
         val currentVerEncryptor:Encryptor = encryptorMap[passEncryptCurrentVer]!!
 
+        private val masterPassSuffix = "P0ZwCyhWFbJcXO83Es_5e"
+
         private fun combineMasterPasswordAndDefaultPass(masterPassword: String, defaultPass:String):String {
             return if(masterPassword.isEmpty()) {
                 defaultPass
             }else {
-                masterPassword + (defaultPass.substring(10, 30))
+                masterPassword + masterPassSuffix
             }
         }
 
