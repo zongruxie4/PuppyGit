@@ -53,6 +53,7 @@ import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import com.catpuppyapp.puppygit.compose.BottomBar
+import com.catpuppyapp.puppygit.compose.CheckBoxNoteText
 import com.catpuppyapp.puppygit.compose.ConfirmDialog2
 import com.catpuppyapp.puppygit.compose.CopyableDialog
 import com.catpuppyapp.puppygit.compose.CredentialSelector
@@ -772,14 +773,14 @@ fun SubmoduleListScreen(
                 ScrollableColumn {
                     MyCheckBox(text = stringResource(R.string.del_config), value = deleteConfigForDeleteDialog)
                     if(deleteConfigForDeleteDialog.value) {
-                        Text(stringResource(R.string.submodule_del_config_info_note), fontWeight = FontWeight.Light)
+                        CheckBoxNoteText(stringResource(R.string.submodule_del_config_info_note))
                     }
 
                     Spacer(Modifier.height(15.dp))
 
                     MyCheckBox(text = stringResource(R.string.del_files), value = deleteFilesForDeleteDialog)
                     if(deleteFilesForDeleteDialog.value) {
-                        Text(stringResource(R.string.submodule_del_files_on_disk_note), fontWeight = FontWeight.Light)
+                        CheckBoxNoteText(stringResource(R.string.submodule_del_files_on_disk_note))
                     }
                 }
             },
@@ -850,7 +851,7 @@ fun SubmoduleListScreen(
 
                     MyCheckBox(text = stringResource(R.string.recursive), value = recursiveClone)
                     if(recursiveClone.value) {
-                        Text(stringResource(R.string.recursive_clone_submodule_nested_loop_warn), color = MyStyleKt.TextColor.danger())
+                        CheckBoxNoteText(stringResource(R.string.recursive_clone_submodule_nested_loop_warn), color = MyStyleKt.TextColor.danger())
                     }
                     Spacer(Modifier.height(10.dp))
 
@@ -957,7 +958,7 @@ fun SubmoduleListScreen(
 
                     MyCheckBox(text = stringResource(R.string.recursive), value = recursiveUpdate)
                     if(recursiveUpdate.value) {
-                        Text(stringResource(R.string.recursive_update_submodule_nested_loop_warn), color = MyStyleKt.TextColor.danger())
+                        CheckBoxNoteText(stringResource(R.string.recursive_update_submodule_nested_loop_warn), color = MyStyleKt.TextColor.danger())
                     }
                     Spacer(Modifier.height(10.dp))
 

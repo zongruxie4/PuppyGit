@@ -161,10 +161,7 @@ fun RequireCommitMsgDialog(
                 }
 
                 if(overwriteAuthor.value){
-                    Text(text = stringResource(R.string.will_use_your_username_and_email_overwrite_original_commits_author_info),
-                        fontWeight = FontWeight.Light,
-                        modifier = Modifier.padding(horizontal = MyStyleKt.CheckoutBox.horizontalPadding)
-                        )
+                    CheckBoxNoteText(text = stringResource(R.string.will_use_your_username_and_email_overwrite_original_commits_author_info))
                 }
 
             }

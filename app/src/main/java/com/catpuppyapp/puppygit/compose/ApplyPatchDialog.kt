@@ -56,7 +56,7 @@ fun ApplyPatchDialog(
 
                 MyCheckBox(stringResource(R.string.check_only), checkOnly)
                 if(checkOnly.value) {
-                    Text(stringResource(R.string.apply_patch_check_note), fontWeight = FontWeight.Light)
+                    CheckBoxNoteText(stringResource(R.string.apply_patch_check_note))
                 }
                 Spacer(modifier = Modifier.height(10.dp))
 

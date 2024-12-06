@@ -69,6 +69,7 @@ import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.dp
 import com.catpuppyapp.puppygit.compose.BottomSheet
 import com.catpuppyapp.puppygit.compose.BottomSheetItem
+import com.catpuppyapp.puppygit.compose.CheckBoxNoteText
 import com.catpuppyapp.puppygit.compose.CheckoutDialog
 import com.catpuppyapp.puppygit.compose.CheckoutDialogFrom
 import com.catpuppyapp.puppygit.compose.CommitItem
@@ -594,9 +595,9 @@ fun CommitListScreen(
                     MyCheckBox(stringResource(R.string.force), forceSquash)
 
                     if(forceSquash.value) {
-                        Text(
-                            stringResource(R.string.if_index_contains_uncommitted_changes_will_commit_as_well),
-                            color = MyStyleKt.TextColor.danger()
+                        CheckBoxNoteText(
+                            text = stringResource(R.string.if_index_contains_uncommitted_changes_will_commit_as_well),
+                            color = MyStyleKt.TextColor.danger(),
                         )
                     }
 

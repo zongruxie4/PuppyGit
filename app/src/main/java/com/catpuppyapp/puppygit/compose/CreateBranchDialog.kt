@@ -192,7 +192,7 @@ fun CreateBranchDialog(
                     MyCheckBox(text = stringResource(R.string.overwrite_if_exist), value = overwriteIfExist)
                     if(overwriteIfExist.value) {
                         Row {
-                            Text(
+                            CheckBoxNoteText(
                                 text = stringResource(R.string.will_overwrite_if_branch_already_exists),
                             )
                         }
@@ -212,7 +212,8 @@ fun CreateBranchDialog(
                         //如果勾选了force checkout，警告没提交的内容可能会丢失
                         if(forceCheckout.value) {
                             Row {
-                                Text(text = stringResource(R.string.warn_force_checkout_will_overwrite_uncommitted_changes),
+                                CheckBoxNoteText(
+                                    text = stringResource(R.string.warn_force_checkout_will_overwrite_uncommitted_changes),
                                     color = MyStyleKt.TextColor.danger()
                                 )
                             }

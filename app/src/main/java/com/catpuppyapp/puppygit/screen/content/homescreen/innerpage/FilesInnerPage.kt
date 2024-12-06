@@ -70,6 +70,7 @@ import androidx.compose.ui.unit.dp
 import androidx.documentfile.provider.DocumentFile
 import com.catpuppyapp.puppygit.compose.ApplyPatchDialog
 import com.catpuppyapp.puppygit.compose.BottomBar
+import com.catpuppyapp.puppygit.compose.CheckBoxNoteText
 import com.catpuppyapp.puppygit.compose.ConfirmDialog
 import com.catpuppyapp.puppygit.compose.ConfirmDialog2
 import com.catpuppyapp.puppygit.compose.CopyableDialog
@@ -1709,7 +1710,7 @@ fun FilesInnerPage(
                         Spacer(Modifier.height(5.dp))
 
                         if(isReposParentFolderForImport.value) {
-                            Text(stringResource(R.string.will_scan_repos_under_folders), fontWeight = FontWeight.Light)
+                            CheckBoxNoteText(stringResource(R.string.will_scan_repos_under_folders))
                         }
                     }
                 },

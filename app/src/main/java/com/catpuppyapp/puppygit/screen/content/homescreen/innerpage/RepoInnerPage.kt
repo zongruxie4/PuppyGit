@@ -51,6 +51,7 @@ import androidx.compose.ui.unit.dp
 import com.catpuppyapp.puppygit.compose.AskGitUsernameAndEmailDialog
 import com.catpuppyapp.puppygit.compose.BottomSheet
 import com.catpuppyapp.puppygit.compose.BottomSheetItem
+import com.catpuppyapp.puppygit.compose.CheckBoxNoteText
 import com.catpuppyapp.puppygit.compose.ConfirmDialog
 import com.catpuppyapp.puppygit.compose.ErrRepoCard
 import com.catpuppyapp.puppygit.compose.MyCheckBox
@@ -338,7 +339,7 @@ fun RepoInnerPage(
                         Spacer(Modifier.height(5.dp))
 
                         if(isReposParentFolderForImport.value) {
-                            Text(stringResource(R.string.will_scan_repos_under_this_folder), fontWeight = FontWeight.Light)
+                            CheckBoxNoteText(stringResource(R.string.will_scan_repos_under_this_folder))
                         }
                     }
                 }

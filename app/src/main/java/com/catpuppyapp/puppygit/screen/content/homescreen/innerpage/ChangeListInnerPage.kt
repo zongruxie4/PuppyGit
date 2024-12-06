@@ -62,6 +62,7 @@ import androidx.compose.ui.unit.sp
 import com.catpuppyapp.puppygit.compose.AskGitUsernameAndEmailDialogWithSelection
 import com.catpuppyapp.puppygit.compose.BottomBar
 import com.catpuppyapp.puppygit.compose.ChangeListItem
+import com.catpuppyapp.puppygit.compose.CheckBoxNoteText
 import com.catpuppyapp.puppygit.compose.ConfirmDialog
 import com.catpuppyapp.puppygit.compose.ConfirmDialog2
 import com.catpuppyapp.puppygit.compose.CopyableDialog
@@ -2052,10 +2053,9 @@ fun ChangeListInnerPage(
                         )
                     MyCheckBox(text = stringResource(R.string.force), value = checkoutForce)
                     if(checkoutForce.value) {
-                        Text(text = stringResource(R.string.if_local_has_uncommitted_changes_will_overwrite),
-                            fontWeight = FontWeight.Light,
+                        CheckBoxNoteText(
+                            text = stringResource(R.string.if_local_has_uncommitted_changes_will_overwrite),
                             color = MyStyleKt.TextColor.danger(),
-                            modifier=Modifier.padding(horizontal = MyStyleKt.CheckoutBox.horizontalPadding)
                         )
                     }
                 }
