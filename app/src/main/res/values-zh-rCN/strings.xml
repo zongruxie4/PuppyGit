@@ -1092,7 +1092,7 @@
     <string name="clear_master_password_ok_text">清除</string>
     <string name="wrong_password">密码有误</string>
     <string name="require_old_password">需要旧密码</string>
-    <string name="leave_new_password_empty_if_dont_want_to_use_master_password">如果你不再想使用主密码，请清空新密码输入框</string>
+    <string name="leave_new_password_empty_if_dont_want_to_use_master_password">如果你不想再使用主密码，请清空新密码输入框并保存</string>
     <string name="result">结果</string>
     <string name="below_credential_password_update_failed">为下列凭据更新密码或密码短语失败，你需用重新设置它们的密码或密码短语，否则这些凭据将无法使用:</string>
     <string name="old_and_new_passwords_are_the_same">新旧密码一样</string>

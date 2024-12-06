@@ -1113,7 +1113,7 @@
     <string name="clear_master_password_ok_text">Clear</string>
     <string name="wrong_password">Wrong Password</string>
     <string name="require_old_password">require old password</string>
-    <string name="leave_new_password_empty_if_dont_want_to_use_master_password">leave new password empty if you don\'t want to use master password anymore</string>
+    <string name="leave_new_password_empty_if_dont_want_to_use_master_password">leave new password empty and save if you don\'t want to use master password anymore</string>
     <string name="result">Result</string>
     <string name="below_credential_password_update_failed">Update password/passphrase for below credentials failed, you should re-input password/passphrase for them, else these credentials will not be able to use:</string>
     <string name="old_and_new_passwords_are_the_same">old and new passwords are the same</string>
