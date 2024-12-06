@@ -1099,6 +1099,10 @@
     <string name="clear_master_password">清除主密码</string>
     <string name="if_set_will_require_master_password_when_launching_app">主密码用来保护你凭据中的密码或密码短语。如果设置，将会在启动app时请求输入主密码</string>
     <string name="please_make_sure_you_can_remember_your_master_password">请确保你能记住你的主密码!!!</string>
+    <string name="checking_creds_migration">检查凭据迁移…</string>
+    <string name="updating_master_password">更新主密码…</string>
+    <string name="verifying">正在验证…</string>
+    <string name="input_your_master_password">输入你的主密码</string>
 
 
 </resources>

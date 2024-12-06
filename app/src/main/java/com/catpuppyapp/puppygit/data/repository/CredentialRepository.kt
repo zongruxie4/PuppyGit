@@ -58,11 +58,11 @@ interface CredentialRepository {
     /**
      * Update item in the data source
      */
-    suspend fun updateWithEncrypt(item: CredentialEntity)
+    suspend fun updateWithEncrypt(item: CredentialEntity, touchTime: Boolean = true)
     /**
      * 不加密也不解密 密码字段，把传入的数据简单更新到数据库
      */
-    suspend fun update(item: CredentialEntity)
+    suspend fun update(item: CredentialEntity, touchTime: Boolean = true)
 
     suspend fun isCredentialNameExist(name: String): Boolean
 
@@ -95,4 +95,15 @@ interface CredentialRepository {
      * @return 更新失败的凭据名单
      */
     suspend fun updateMasterPassword(oldMasterPassword:String, newMasterPassword:String):List<String>
+
+
+    /**
+     * 调用此方法检查是否需要升级加密器版本，若需要，会用旧加密器解密密码并用新加密器重新加密
+     */
+    suspend fun migrateEncryptVerIfNeed(masterPassword: String)
+
+    /**
+     * 返回加密器版本与传入参数不符的列表，用来在迁移密码时获取需要迁移的凭据列表
+     */
+    suspend fun getByEncryptVerNotEqualsTo(encryptVer:Int):List<CredentialEntity>
 }

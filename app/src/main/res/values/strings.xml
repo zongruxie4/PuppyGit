@@ -1120,5 +1120,11 @@
     <string name="clear_master_password">Clear Master Password</string>
     <string name="if_set_will_require_master_password_when_launching_app">Master password used to protect password/passphrase of your credentials. If set, will require input master password when launching app</string>
     <string name="please_make_sure_you_can_remember_your_master_password">Please make sure you can remember your master password!!!</string>
+<!--    检查凭据是否需要迁移-->
+<!--    checking credentials need migration or needn't-->
+    <string name="checking_creds_migration">Checking creds migration…</string>
+    <string name="updating_master_password">Updating master password…</string>
+    <string name="verifying">Verifying…</string>
+    <string name="input_your_master_password">Input Your Master Password</string>
 
 </resources>

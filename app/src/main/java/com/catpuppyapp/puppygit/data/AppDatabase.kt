@@ -44,6 +44,7 @@ import com.catpuppyapp.puppygit.data.migration.MIGRATION_20_21
 import com.catpuppyapp.puppygit.data.migration.MIGRATION_21_22
 import com.catpuppyapp.puppygit.data.migration.MIGRATION_22_23
 import com.catpuppyapp.puppygit.data.migration.MIGRATION_23_24
+import com.catpuppyapp.puppygit.data.migration.MIGRATION_24_25
 
 /**
  * Database class with a singleton Instance object.
@@ -59,7 +60,7 @@ import com.catpuppyapp.puppygit.data.migration.MIGRATION_23_24
                         StorageDirEntity::class,
                         DomainCredentialEntity::class
                      ],
-    version = 24,
+    version = 25,
     //如果支持生成迁移sql，必须设置exportSchema为true，不然就得自己写sql了
     //自动迁移是根据导出的方案生成sql的
     exportSchema = true,
@@ -110,6 +111,7 @@ abstract class AppDatabase : RoomDatabase() {
                         MIGRATION_21_22,
                         MIGRATION_22_23,
                         MIGRATION_23_24,
+                        MIGRATION_24_25
                         //more migration if have
                         )
                     .build()

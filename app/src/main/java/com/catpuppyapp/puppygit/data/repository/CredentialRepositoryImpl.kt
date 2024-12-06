@@ -84,7 +84,7 @@ class CredentialRepositoryImpl(private val dao: CredentialDao) : CredentialRepos
 
     override suspend fun delete(item: CredentialEntity) = dao.delete(item)
 
-    override suspend fun updateWithEncrypt(item: CredentialEntity) {
+    override suspend fun updateWithEncrypt(item: CredentialEntity, touchTime:Boolean) {
         if(SpecialCredential.isAllowedCredentialName(item.name).not()) {
             throw RuntimeException("credential name disallowed")
         }
@@ -92,17 +92,21 @@ class CredentialRepositoryImpl(private val dao: CredentialDao) : CredentialRepos
         //如果密码不为空，加密密码。
         encryptPassIfNeed(item)
 
-        item.baseFields.baseUpdateTime = getSecFromTime()
+        if(touchTime) {
+            item.baseFields.baseUpdateTime = getSecFromTime()
+        }
 
         dao.update(item)
     }
 
-    override suspend fun update(item: CredentialEntity) {
+    override suspend fun update(item: CredentialEntity, touchTime:Boolean) {
         if(SpecialCredential.isAllowedCredentialName(item.name).not()) {
             throw RuntimeException("credential name disallowed")
         }
 
-        item.baseFields.baseUpdateTime = getSecFromTime()
+        if(touchTime) {
+            item.baseFields.baseUpdateTime = getSecFromTime()
+        }
 
         dao.update(item)
     }
@@ -199,14 +203,16 @@ class CredentialRepositoryImpl(private val dao: CredentialDao) : CredentialRepos
 
     override fun encryptPassIfNeed(item:CredentialEntity?, masterPassword:String) {
         //用户名不用加密，不过私钥呢？感觉也用不着加密，暂时只加密密码吧。
-        if(item!=null && !item.pass.isNullOrEmpty()) {
-            item.pass = PassEncryptHelper.encryptWithCurrentEncryptor(item.pass, masterPassword)
+        if(item!=null && item.pass.isNotEmpty()) {
+//            item.pass = PassEncryptHelper.encryptWithCurrentEncryptor(item.pass, masterPassword)
+            item.pass = PassEncryptHelper.encryptWithSpecifyEncryptorVersion(item.encryptVer, item.pass, masterPassword)
         }
     }
     override fun decryptPassIfNeed(item:CredentialEntity?, masterPassword: String) {
-        if (item != null && !item.pass.isNullOrEmpty()) {
+        if (item != null && item.pass.isNotEmpty()) {
             //如果密码不为空，解密密码。
-            item.pass = PassEncryptHelper.decryptWithCurrentEncryptor(item.pass, masterPassword)
+//            item.pass = PassEncryptHelper.decryptWithCurrentEncryptor(item.pass, masterPassword)
+            item.pass = PassEncryptHelper.decryptWithSpecifyEncryptorVersion(item.encryptVer, item.pass, masterPassword)
         }
     }
 
@@ -221,11 +227,39 @@ class CredentialRepositoryImpl(private val dao: CredentialDao) : CredentialRepos
         val allCredentialList = getAll()
 
         //开事务，避免部分成功部分失误导致密码乱套，如果乱套只能把credential全删了重建了
+        reEncryptCredentials(
+            credentialList = allCredentialList,
+            oldMasterPassword = oldMasterPassword,
+            newMasterPassword = newMasterPassword,
+            decryptFailedCallback = { cred, exception ->
+                decryptFailedList.add(cred.name)
+            }
+        )
+
+        return decryptFailedList
+    }
+
+    /**
+     * 此函数用来更新主密码或者在加密器版本更新后执行迁移操作。
+     *
+     * 迁移密码本质上只有一个主密码，但为了兼容更新主密码的函数，所以添加了old和new两个主密码参数，但内部实际不对新旧主密码是否相同做检测，
+     *   如果只是想升级加密器版本，old和new master password传一样即可
+     *
+     *
+     * Actually migrate only has one master password, no old or new, but for compatible `updateMasterPassword()`, it has 2 params represents old and new password,
+     *  if just want to upgrade encryptor by version, just passing same value for old and new master passwords
+     */
+    private suspend fun reEncryptCredentials(
+        credentialList: List<CredentialEntity>,
+        oldMasterPassword: String,
+        newMasterPassword: String,
+        decryptFailedCallback: (failedCredential:CredentialEntity, exception:Exception) -> Unit,
+    ) {
         AppModel.singleInstanceHolder.dbContainer.db.withTransaction {
             //迁移密码
-            for(c in allCredentialList) {
+            for (c in credentialList) {
                 //忽略空字符串
-                if(c.pass.isEmpty()) {
+                if (c.pass.isEmpty()) {
                     continue
                 }
 
@@ -233,18 +267,52 @@ class CredentialRepositoryImpl(private val dao: CredentialDao) : CredentialRepos
                     //如果解密失败会抛异常
                     decryptPassIfNeed(c, oldMasterPassword)  //解密密码
 
-                }catch (e:Exception) {
+                } catch (e: Exception) {
                     MyLog.w(TAG, "decrypt password failed, credentialName=${c.name}, err=${e.localizedMessage}")
-                    decryptFailedList.add(c.name)
+                    decryptFailedCallback(c, e)
                     continue
                 }
 
-                encryptPassIfNeed(c, newMasterPassword)  //用新加密器加密密码
-                update(c)  //更新db
+                //一般加密不会失败，就不try...catch了
+                //加密时更新加密器版本为最新版本
+                c.encryptVer = PassEncryptHelper.passEncryptCurrentVer
+                encryptPassIfNeed(c, newMasterPassword)  //用新加密器和新主密码加密密码
+                update(c, touchTime = false)  //更新db，但不更新update time，因为不是用户操作的，是代码自动更新的，不用动那个时间
             }
 
         }
+    }
 
-        return decryptFailedList
+    override suspend fun migrateEncryptVerIfNeed(masterPassword: String) {
+        val needUpdateEncryptVerCredList = getByEncryptVerNotEqualsTo(PassEncryptHelper.passEncryptCurrentVer)
+        if(needUpdateEncryptVerCredList.isEmpty()) {
+            return
+        }
+
+        val failedList = mutableListOf<CredentialEntity>()
+        reEncryptCredentials(
+            needUpdateEncryptVerCredList,
+            masterPassword,
+            masterPassword,
+            decryptFailedCallback = { c, e ->
+                failedList.add(c)
+            }
+        )
+
+        if(failedList.isNotEmpty()) {
+            //把失败列表记到log
+            val split = ", "
+            val sb = StringBuilder()
+            for(i in failedList) {
+                // "(name=c1, encryptVer=5), (name=c2, encryptVer=4)"
+                sb.append("(").append("name=${i.name}, ").append("encryptVer=${i.encryptVer}").append(")").append(split)
+            }
+
+            MyLog.e(TAG, "#migrateEncryptVerIfNeed: these credentials migrate failed: ${sb.removeSuffix(split)}")
+        }
+    }
+
+    override suspend fun getByEncryptVerNotEqualsTo(encryptVer:Int): List<CredentialEntity> {
+        return dao.getByEncryptVerNotEqualsTo(encryptVer)
     }
 }

@@ -60,4 +60,7 @@ interface CredentialDao {
     @Query("SELECT * from credential WHERE type = :type order by baseCreateTime DESC")
     suspend fun getListByType(type:Int): List<CredentialEntity>
 
+    @Query("SELECT * from credential WHERE encryptVer != :encryptVer")
+    suspend fun getByEncryptVerNotEqualsTo(encryptVer:Int): List<CredentialEntity>
+
 }

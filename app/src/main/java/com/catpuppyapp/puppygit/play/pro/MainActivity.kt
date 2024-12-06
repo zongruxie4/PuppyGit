@@ -195,10 +195,10 @@ class MainActivity : ComponentActivity() {
 @Composable
 fun MainCompose() {
     val stateKeyTag = "MainCompose"
-
     val funName = "MainCompose"
-    val appContext = LocalContext.current
-    val loadingText = rememberSaveable { mutableStateOf(appContext.getString(R.string.launching))}
+
+    val activityContext = LocalContext.current
+    val loadingText = rememberSaveable { mutableStateOf(activityContext.getString(R.string.launching))}
 
     val sshCertRequestListenerChannel = remember { Channel<Int>() }
     val isInitDone = rememberSaveable { mutableStateOf(false) };
@@ -231,7 +231,7 @@ fun MainCompose() {
             iTrustTheHost = iTrustTheHost,
             closeSshDialog = closeSshDialog,
             allowOrRejectSshDialogCallback = allowOrRejectSshDialogCallback,
-            appContext = appContext
+            appContext = activityContext
         )
     }
 
@@ -273,6 +273,12 @@ fun MainCompose() {
                 AppModel.init_2()
 
                 requireMasterPassword.value = AppModel.singleInstanceHolder.requireMasterPassword()
+
+                //如果无需主密码，直接在这检查是否需要迁移密码，一般迁移密码发生在加密解密器升级之后，可能换了实现，之类的
+                if(requireMasterPassword.value.not()) {
+                    loadingText.value = activityContext.getString(R.string.checking_creds_migration)
+                    AppModel.singleInstanceHolder.dbContainer.credentialRepository.migrateEncryptVerIfNeed(AppModel.singleInstanceHolder.masterPassword.value)
+                }
 
                 //test passed
 //                assert(MyLog.isInited)

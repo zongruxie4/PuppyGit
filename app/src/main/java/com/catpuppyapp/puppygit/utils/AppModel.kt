@@ -282,12 +282,13 @@ class AppModel {
                 //实际上，在20241205之后发布的版本都不会再执行此函数了，改成用主密码了，以后默认密码就写死了，不会再改，版本号也不会再变，自然也不再需要迁移
                 //执行会suspend的初始化操作
                 //检查是否需要迁移密码
-                try {
-                    appModel.dbContainer.passEncryptRepository.migrateIfNeed(appModel.dbContainer.credentialRepository)
-                }catch (e:Exception) {
-                    MyLog.e(TAG, "#$funName migrate password err:"+e.stackTraceToString())
-                    MyLog.w(TAG, "#$funName migrate password err, user's password may will be invalid :(")
-                }
+                // 20241206: 添加主密码后，废弃了，只有最初公开发布的前3个版本可能会用到这段代码，没必要留着了，那几个版本估计都没人用，就算有人用，让他们升级新版就完了
+//                try {
+//                    appModel.dbContainer.passEncryptRepository.migrateIfNeed(appModel.dbContainer.credentialRepository)
+//                }catch (e:Exception) {
+//                    MyLog.e(TAG, "#$funName migrate password err:"+e.stackTraceToString())
+//                    MyLog.w(TAG, "#$funName migrate password err, user's password may will be invalid :(")
+//                }
 
 
                 //           // val settingsSaveDir = appModel.getOrCreateSettingsDir()

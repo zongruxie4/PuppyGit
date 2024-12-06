@@ -35,11 +35,13 @@ fun PasswordTextFiled(
     singleLine:Boolean = true,
     focusRequest:FocusRequester? = null,
     errMsg:MutableState<String>,
+    enabled:Boolean = true,
     paddingValues:PaddingValues = PaddingValues(10.dp),
     keyboardOptions: KeyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password),
     keyboardActions: KeyboardActions = KeyboardActions.Default,
 ) {
     TextField(
+        enabled = enabled,
         modifier = Modifier
             .fillMaxWidth()
             .padding(paddingValues)

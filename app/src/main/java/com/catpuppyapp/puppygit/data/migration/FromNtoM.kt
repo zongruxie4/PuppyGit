@@ -63,3 +63,10 @@ val MIGRATION_23_24 = object : Migration(23, 24) {
         db.execSQL("ALTER TABLE domain_credential ADD COLUMN sshCredentialId TEXT NOT NULL DEFAULT ''")
     }
 }
+
+val MIGRATION_24_25 = object : Migration(24, 25) {
+    override fun migrate(db: SupportSQLiteDatabase) {
+        // default 5是因为是在加密器为5的版本添加的encryptVer字段
+        db.execSQL("ALTER TABLE credential ADD COLUMN encryptVer INTEGER NOT NULL DEFAULT 5")
+    }
+}
