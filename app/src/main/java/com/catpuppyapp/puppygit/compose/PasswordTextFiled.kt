@@ -79,7 +79,12 @@ fun PasswordTextFiled(
         visualTransformation = if (passwordVisible.value) VisualTransformation.None else PasswordVisualTransformation(),
         keyboardOptions = keyboardOptions,
         keyboardActions = keyboardActions,
-        trailingIcon = {
+        trailingIcon = trailIcon@{
+            //若输入框未启用则不允许切换是否显示密码
+            if(enabled.not()) {
+                return@trailIcon
+            }
+
             val image = if (passwordVisible.value) Icons.Filled.Visibility else Icons.Filled.VisibilityOff
 
             // Please provide localized description for accessibility services
