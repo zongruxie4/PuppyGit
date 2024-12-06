@@ -68,6 +68,7 @@ import androidx.compose.ui.unit.dp
 import com.catpuppyapp.puppygit.compose.ConfirmDialog
 import com.catpuppyapp.puppygit.compose.LoadingDialog
 import com.catpuppyapp.puppygit.compose.LongPressAbleIconBtn
+import com.catpuppyapp.puppygit.compose.MySelectionContainer
 import com.catpuppyapp.puppygit.compose.SingleSelectList
 import com.catpuppyapp.puppygit.compose.SystemFolderChooser
 import com.catpuppyapp.puppygit.constants.Cons
@@ -281,31 +282,33 @@ fun CloneScreen(
             title = stringResource(R.string.add_storage_path),
             requireShowTextCompose = true,
             textCompose = {
-                Column(modifier = Modifier
-                    .verticalScroll(rememberScrollState())
-                    .fillMaxWidth()
-                    .padding(5.dp)
-                ) {
-                    Row(modifier = Modifier.padding(bottom = 15.dp)) {
-                        Text(
-                            text = stringResource(R.string.please_grant_permission_before_you_add_a_storage_path),
-                            style = MyStyleKt.ClickableText.style,
-                            color = MyStyleKt.ClickableText.color,
-                            overflow = TextOverflow.Visible,
-                            fontWeight = FontWeight.Light,
-                            modifier = MyStyleKt.ClickableText.modifier.clickable {
-                                // grant permission for read/write external storage
-                                if (activity == null) {
-                                    Msg.requireShowLongDuration(activityContext.getString(R.string.please_go_to_system_settings_allow_manage_storage))
-                                }else {
-                                    activity.getStoragePermission()
-                                }
-                            },
-                        )
+                MySelectionContainer {
+                    Column(modifier = Modifier
+                        .verticalScroll(rememberScrollState())
+                        .fillMaxWidth()
+                        .padding(5.dp)
+                    ) {
+                        Row(modifier = Modifier.padding(bottom = 15.dp)) {
+                            Text(
+                                text = stringResource(R.string.please_grant_permission_before_you_add_a_storage_path),
+                                style = MyStyleKt.ClickableText.style,
+                                color = MyStyleKt.ClickableText.color,
+                                overflow = TextOverflow.Visible,
+                                fontWeight = FontWeight.Light,
+                                modifier = MyStyleKt.ClickableText.modifier.clickable {
+                                    // grant permission for read/write external storage
+                                    if (activity == null) {
+                                        Msg.requireShowLongDuration(activityContext.getString(R.string.please_go_to_system_settings_allow_manage_storage))
+                                    }else {
+                                        activity.getStoragePermission()
+                                    }
+                                },
+                            )
+                        }
+
+                        SystemFolderChooser(path = storagePathForAdd)
+
                     }
-
-                    SystemFolderChooser(path = storagePathForAdd)
-
                 }
             },
             okBtnText = stringResource(R.string.ok),

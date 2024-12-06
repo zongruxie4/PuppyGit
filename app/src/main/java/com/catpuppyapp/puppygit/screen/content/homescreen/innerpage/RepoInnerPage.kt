@@ -304,40 +304,42 @@ fun RepoInnerPage(
             title = stringResource(R.string.import_repo),
             requireShowTextCompose = true,
             textCompose = {
-                Column(modifier = Modifier
-                    .verticalScroll(rememberScrollState())
-                    .fillMaxWidth()
-                    .padding(5.dp)
-                ) {
-                    Row(modifier = Modifier.padding(bottom = 15.dp)) {
-                        Text(
-                            text = stringResource(R.string.please_grant_permission_before_import_repo),
-                            style = MyStyleKt.ClickableText.style,
-                            color = MyStyleKt.ClickableText.color,
-                            overflow = TextOverflow.Visible,
-                            fontWeight = FontWeight.Light,
-                            modifier = MyStyleKt.ClickableText.modifier.clickable {
-                                // grant permission for read/write external storage
-                                if (activity == null) {
-                                    Msg.requireShowLongDuration(activityContext.getString(R.string.please_go_to_system_settings_allow_manage_storage))
-                                } else {
-                                    activity.getStoragePermission()
-                                }
-                            },
-                        )
+                MySelectionContainer {
+                    Column(modifier = Modifier
+                        .verticalScroll(rememberScrollState())
+                        .fillMaxWidth()
+                        .padding(5.dp)
+                    ) {
+                        Row(modifier = Modifier.padding(bottom = 15.dp)) {
+                            Text(
+                                text = stringResource(R.string.please_grant_permission_before_import_repo),
+                                style = MyStyleKt.ClickableText.style,
+                                color = MyStyleKt.ClickableText.color,
+                                overflow = TextOverflow.Visible,
+                                fontWeight = FontWeight.Light,
+                                modifier = MyStyleKt.ClickableText.modifier.clickable {
+                                    // grant permission for read/write external storage
+                                    if (activity == null) {
+                                        Msg.requireShowLongDuration(activityContext.getString(R.string.please_go_to_system_settings_allow_manage_storage))
+                                    } else {
+                                        activity.getStoragePermission()
+                                    }
+                                },
+                            )
 
-                    }
+                        }
 
-                    SystemFolderChooser(path = importRepoPath)
+                        SystemFolderChooser(path = importRepoPath)
 
-                    Spacer(Modifier.height(15.dp))
+                        Spacer(Modifier.height(15.dp))
 
-                    MyCheckBox(text = stringResource(R.string.the_path_is_a_repos_parent_dir), value = isReposParentFolderForImport)
+                        MyCheckBox(text = stringResource(R.string.the_path_is_a_repos_parent_dir), value = isReposParentFolderForImport)
 
-                    Spacer(Modifier.height(5.dp))
+                        Spacer(Modifier.height(5.dp))
 
-                    if(isReposParentFolderForImport.value) {
-                        Text(stringResource(R.string.will_scan_repos_under_this_folder), fontWeight = FontWeight.Light)
+                        if(isReposParentFolderForImport.value) {
+                            Text(stringResource(R.string.will_scan_repos_under_this_folder), fontWeight = FontWeight.Light)
+                        }
                     }
                 }
             },

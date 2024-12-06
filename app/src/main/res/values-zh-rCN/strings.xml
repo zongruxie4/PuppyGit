@@ -801,7 +801,7 @@
     <string name="eg_storage_emulate_0_repos">例如: /storage/emulated/0/repos</string>
     <string name="choose">选择</string>
     <string name="grant_permission">授权</string>
-    <string name="please_grant_permission_before_you_add_a_storage_path">前在添加存储路径前先授权</string>
+    <string name="please_grant_permission_before_you_add_a_storage_path">请在添加存储路径前先授权</string>
     <string name="cross_icon_for_choose_folder">代表选择文件夹的十字图标</string>
     <string name="please_go_to_system_settings_allow_manage_storage">请前往系统设置页面允许管理存储空间</string>
     <string name="storage">存储</string>
