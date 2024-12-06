@@ -79,20 +79,13 @@ fun PasswordTextFiled(
         visualTransformation = if (passwordVisible.value) VisualTransformation.None else PasswordVisualTransformation(),
         keyboardOptions = keyboardOptions,
         keyboardActions = keyboardActions,
-        trailingIcon = trailIcon@{
-            //若输入框未启用则不允许切换是否显示密码
-            if(enabled.not()) {
-                return@trailIcon
-            }
-
-            val image = if (passwordVisible.value) Icons.Filled.Visibility else Icons.Filled.VisibilityOff
-
-            // Please provide localized description for accessibility services
-            val description = if (passwordVisible.value) stringResource(R.string.hide_password) else stringResource(R.string.show_password)
-
+        trailingIcon = {
             IconButton(onClick = { passwordVisible.value = !passwordVisible.value }) {
                 // contentDescription is for accessibility
-                Icon(imageVector = image, contentDescription = description)
+                Icon(
+                    imageVector = if (passwordVisible.value) Icons.Filled.Visibility else Icons.Filled.VisibilityOff,
+                    contentDescription = if (passwordVisible.value) stringResource(R.string.an_opened_eye) else stringResource(R.string.an_closed_eye)
+                )
             }
         }
 

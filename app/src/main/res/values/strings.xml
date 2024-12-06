@@ -1130,5 +1130,7 @@
     <string name="disabled">Disabled</string>
     <string name="updated">Updated</string>
     <string name="don_t_touch_the_password_passphrase_if_you_don_t_want_to_update_it">Don\'t touch the password/passphrase if you don\'t want to update it</string>
+    <string name="an_opened_eye">An opened eye</string>
+    <string name="an_closed_eye">An closed eye</string>
 
 </resources>
