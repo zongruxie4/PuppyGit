@@ -24,10 +24,10 @@ class CredentialRepositoryImpl(private val dao: CredentialDao) : CredentialRepos
 //    override fun getStream(id: String): Flow<CredentialEntity?> = dao.getStream(id)
 
 
-    override suspend fun getAllWithDecrypt(includeNone:Boolean, includeMatchByDomain:Boolean): List<CredentialEntity> {
+    override suspend fun getAllWithDecrypt(includeNone:Boolean, includeMatchByDomain:Boolean, masterPassword: String): List<CredentialEntity> {
         val all = dao.getAll().toMutableList()
         for(item in all) {
-            decryptPassIfNeed(item)
+            decryptPassIfNeed(item, masterPassword)
         }
 
         prependSpecialItemIfNeed(list = all, includeNone = includeNone, includeMatchByDomain = includeMatchByDomain)
@@ -53,7 +53,7 @@ class CredentialRepositoryImpl(private val dao: CredentialDao) : CredentialRepos
         }
     }
 
-    override suspend fun insertWithEncrypt(item: CredentialEntity) {
+    override suspend fun insertWithEncrypt(item: CredentialEntity, masterPassword: String) {
         val funName = "insertWithEncrypt"
         Cons.credentialInsertLock.withLock {
             //如果名称已经存在则不保存
@@ -63,7 +63,7 @@ class CredentialRepositoryImpl(private val dao: CredentialDao) : CredentialRepos
 
             }
 
-            encryptPassIfNeed(item)
+            encryptPassIfNeed(item, masterPassword)
 
             dao.insert(item)
         }
@@ -84,13 +84,13 @@ class CredentialRepositoryImpl(private val dao: CredentialDao) : CredentialRepos
 
     override suspend fun delete(item: CredentialEntity) = dao.delete(item)
 
-    override suspend fun updateWithEncrypt(item: CredentialEntity, touchTime:Boolean) {
+    override suspend fun updateWithEncrypt(item: CredentialEntity, touchTime:Boolean, masterPassword: String) {
         if(SpecialCredential.isAllowedCredentialName(item.name).not()) {
-            throw RuntimeException("credential name disallowed")
+            throw RuntimeException("credential name disallowed (#updateWithEncrypt)")
         }
 
         //如果密码不为空，加密密码。
-        encryptPassIfNeed(item)
+        encryptPassIfNeed(item, masterPassword)
 
         if(touchTime) {
             item.baseFields.baseUpdateTime = getSecFromTime()
@@ -101,7 +101,7 @@ class CredentialRepositoryImpl(private val dao: CredentialDao) : CredentialRepos
 
     override suspend fun update(item: CredentialEntity, touchTime:Boolean) {
         if(SpecialCredential.isAllowedCredentialName(item.name).not()) {
-            throw RuntimeException("credential name disallowed")
+            throw RuntimeException("credential name disallowed (#update)")
         }
 
         if(touchTime) {
@@ -122,7 +122,7 @@ class CredentialRepositoryImpl(private val dao: CredentialDao) : CredentialRepos
         return id != null
     }
 
-    override suspend fun getByIdWithDecrypt(id: String): CredentialEntity? {
+    override suspend fun getByIdWithDecrypt(id: String, masterPassword: String): CredentialEntity? {
         if(id.isBlank() || id==SpecialCredential.NONE.credentialId) {
             return null
         }
@@ -132,32 +132,33 @@ class CredentialRepositoryImpl(private val dao: CredentialDao) : CredentialRepos
             return null
         }
 
-        decryptPassIfNeed(item)
+        decryptPassIfNeed(item, masterPassword)
 
         return item
     }
 
     override suspend fun getByIdAndMatchByDomain(id: String, url: String): CredentialEntity? {
-        return getByIdAndMatchByDomainAndDecryptOrNoDecrypt(id, url, decryptPass = false)
+        // decryptPass若是false，并不会使用masterPassword，所以传空字符串即可
+        return getByIdAndMatchByDomainAndDecryptOrNoDecrypt(id, url, decryptPass = false, masterPassword = "")
     }
 
-    override suspend fun getByIdWithDecryptAndMatchByDomain(id: String, url: String): CredentialEntity? {
-        return getByIdAndMatchByDomainAndDecryptOrNoDecrypt(id, url, decryptPass = true)
+    override suspend fun getByIdWithDecryptAndMatchByDomain(id: String, url: String, masterPassword: String): CredentialEntity? {
+        return getByIdAndMatchByDomainAndDecryptOrNoDecrypt(id, url, decryptPass = true, masterPassword)
     }
 
-    private suspend fun getByIdAndMatchByDomainAndDecryptOrNoDecrypt(id: String, url: String, decryptPass:Boolean): CredentialEntity? {
+    private suspend fun getByIdAndMatchByDomainAndDecryptOrNoDecrypt(id: String, url: String, decryptPass:Boolean, masterPassword: String): CredentialEntity? {
         if(id==SpecialCredential.MatchByDomain.credentialId) {
             val dcDb = AppModel.singleInstanceHolder.dbContainer.domainCredentialRepository
             val domain = getDomainByUrl(url)
             if(domain.isNotBlank()) {
                 val domainCred = dcDb.getByDomain(domain) ?: return null
                 val credId = if(Libgit2Helper.isSshUrl(url)) domainCred.sshCredentialId else domainCred.credentialId
-                return if(decryptPass) getByIdWithDecrypt(credId) else getById(credId)
+                return if(decryptPass) getByIdWithDecrypt(credId, masterPassword) else getById(credId)
             }else {
                 return null
             }
         }else {
-            return if(decryptPass) getByIdWithDecrypt(id) else getById(id)
+            return if(decryptPass) getByIdWithDecrypt(id, masterPassword) else getById(id)
         }
     }
 
@@ -203,11 +204,18 @@ class CredentialRepositoryImpl(private val dao: CredentialDao) : CredentialRepos
 
     override fun encryptPassIfNeed(item:CredentialEntity?, masterPassword:String) {
         //用户名不用加密，不过私钥呢？感觉也用不着加密，暂时只加密密码吧。
-        if(item!=null && item.pass.isNotEmpty()) {
-//            item.pass = PassEncryptHelper.encryptWithCurrentEncryptor(item.pass, masterPassword)
-            item.pass = PassEncryptHelper.encryptWithSpecifyEncryptorVersion(item.encryptVer, item.pass, masterPassword)
+        if(item != null) {
+            //加密的时候一律使用最新版本加密器加密并更新凭据中加密器版本号为最新
+            val curEncryptorVersion = PassEncryptHelper.passEncryptCurrentVer
+            if(item.pass.isNotEmpty()) {
+    //            item.pass = PassEncryptHelper.encryptWithCurrentEncryptor(item.pass, masterPassword)
+                item.pass = PassEncryptHelper.encryptWithSpecifyEncryptorVersion(curEncryptorVersion, item.pass, masterPassword)
+            }
+
+            item.encryptVer = curEncryptorVersion
         }
     }
+
     override fun decryptPassIfNeed(item:CredentialEntity?, masterPassword: String) {
         if (item != null && item.pass.isNotEmpty()) {
             //如果密码不为空，解密密码。
@@ -278,9 +286,7 @@ class CredentialRepositoryImpl(private val dao: CredentialDao) : CredentialRepos
 
                 //一般加密不会失败，就不try...catch了
                 //加密时更新加密器版本为最新版本
-                c.encryptVer = PassEncryptHelper.passEncryptCurrentVer
-                encryptPassIfNeed(c, newMasterPassword)  //用新加密器和新主密码加密密码
-                update(c, touchTime = false)  //更新db，但不更新update time，因为不是用户操作的，是代码自动更新的，不用动那个时间
+                updateWithEncrypt(c, touchTime = false, masterPassword = newMasterPassword)
             }
 
         }

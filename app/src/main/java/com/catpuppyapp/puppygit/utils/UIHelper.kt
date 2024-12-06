@@ -78,6 +78,10 @@ object UIHelper {
         return if(inDarkTheme) MyStyleKt.IconColor.disable_DarkTheme else MyStyleKt.IconColor.disable
     }
 
+    fun getDisableTextColor(inDarkTheme: Boolean=Theme.inDarkTheme):Color {
+        return if(inDarkTheme) MyStyleKt.TextColor.disable_DarkTheme else MyStyleKt.TextColor.disable
+    }
+
     //不太重要的字体颜色
     fun getSecondaryFontColor(inDarkTheme:Boolean=Theme.inDarkTheme): Color {
         return if(inDarkTheme) MyStyleKt.TextColor.darkThemeSecondaryFontColor else MyStyleKt.TextColor.secondaryFontColor

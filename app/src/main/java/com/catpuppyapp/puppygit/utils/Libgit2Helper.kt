@@ -2652,6 +2652,7 @@ class Libgit2Helper {
         fun genRemoteCredentialPairList(list:List<RemoteDto>, credentialDb: CredentialRepository, requireFetchCredential:Boolean, requirePushCredential:Boolean):List<RemoteAndCredentials> {
             //remote名和凭据组合的列表
             val remoteCredentialList = mutableListOf<RemoteAndCredentials>()
+            val masterPassword = AppModel.singleInstanceHolder.masterPassword.value
 //            val credentialDb = AppModel.singleInstanceHolder.dbContainer.credentialRepository
             list.forEach {  //添加remote名和凭据进列表
                 val rac = RemoteAndCredentials()
@@ -2666,7 +2667,7 @@ class Libgit2Helper {
                         credential.pass = it.credentialPass ?: ""
                         credential.type = it.credentialType
                         //解密下密码
-                        credentialDb.decryptPassIfNeed(credential)
+                        credentialDb.decryptPassIfNeed(credential, masterPassword)
                         rac.fetchCredential = credential
                     }
                 }
@@ -2679,7 +2680,7 @@ class Libgit2Helper {
                         credential.pass = it.pushCredentialPass ?: ""
                         credential.type = it.pushCredentialType
                         //解密下密码
-                        credentialDb.decryptPassIfNeed(credential)
+                        credentialDb.decryptPassIfNeed(credential, masterPassword)
                         rac.pushCredential = credential
                     }
                 }

@@ -1,12 +1,15 @@
 package com.catpuppyapp.puppygit.screen
 
 import androidx.compose.foundation.Image
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.systemBarsPadding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.text.KeyboardActions
@@ -14,7 +17,6 @@ import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Button
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.MutableState
@@ -35,9 +37,11 @@ import com.catpuppyapp.puppygit.compose.MySelectionContainer
 import com.catpuppyapp.puppygit.compose.PasswordTextFiled
 import com.catpuppyapp.puppygit.play.pro.R
 import com.catpuppyapp.puppygit.settings.SettingsUtil
+import com.catpuppyapp.puppygit.style.MyStyleKt
 import com.catpuppyapp.puppygit.utils.AppModel
 import com.catpuppyapp.puppygit.utils.HashUtil
 import com.catpuppyapp.puppygit.utils.MyLog
+import com.catpuppyapp.puppygit.utils.UIHelper
 import com.catpuppyapp.puppygit.utils.doJobThenOffLoading
 
 private const val stateKeyTag = "RequireMasterPasswordScreen"
@@ -120,9 +124,15 @@ fun RequireMasterPasswordScreen(
         verticalArrangement = Arrangement.Center,
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        Image(bitmap = AppModel.getAppIcon(activityContext), contentDescription = stringResource(R.string.app_icon))
+        Image(bitmap = AppModel.getAppIcon(activityContext), contentDescription = stringResource(R.string.app_icon),
+            modifier = Modifier.size(100.dp)
+            )
 
-        Spacer(modifier = Modifier.height(15.dp))
+        Spacer(modifier = Modifier.height(30.dp))
+
+//        Row { Text(stringResource(R.string.master_password), fontSize = 30.sp) }
+//        Spacer(modifier = Modifier.height(60.dp))
+
 
         PasswordTextFiled(
             password = password,
@@ -130,6 +140,7 @@ fun RequireMasterPasswordScreen(
             label = stringResource(R.string.master_password),
             placeholder = stringResource(R.string.input_your_master_password),
             focusRequest = focusRequest,
+            paddingValues = PaddingValues(start = 10.dp, end = 10.dp, top = 10.dp),
             errMsg = errMsg,
             enabled = loading.value.not(),
             keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password, imeAction = ImeAction.Go),
@@ -138,14 +149,18 @@ fun RequireMasterPasswordScreen(
             })
         )
 
-        TextButton(
-            enabled = loading.value.not(),
-            onClick = {
-                showClearMasterPasswordDialog.value = true
-            }
-        ) {
-            Text(stringResource(R.string.i_forgot_my_master_password))
-        }
+        Spacer(Modifier.height(10.dp))
+
+        Text(
+            text = stringResource(R.string.i_forgot_my_master_password),
+            style = MyStyleKt.ClickableText.style,
+            color = if(loading.value) UIHelper.getDisableTextColor() else MyStyleKt.ClickableText.color,
+            fontWeight = FontWeight.Light,
+            modifier = MyStyleKt.ClickableText.modifier.clickable(
+                enabled = loading.value.not(),
+                onClick = { showClearMasterPasswordDialog.value = true }
+            ),
+        )
 
         Spacer(Modifier.height(20.dp))
         // ok btn
@@ -162,7 +177,7 @@ fun RequireMasterPasswordScreen(
 
         if(loading.value) {
             MySelectionContainer {
-                Text(loadingText.value, fontWeight = FontWeight.Light)
+                Text(loadingText.value, fontWeight = FontWeight.Light, color = MyStyleKt.TextColor.highlighting_green)
             }
         }
     }

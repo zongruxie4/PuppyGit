@@ -33,7 +33,7 @@ interface CredentialRepository {
 //    fun getStream(id: String): Flow<CredentialEntity?>
 
 
-    suspend fun getAllWithDecrypt(includeNone:Boolean = false, includeMatchByDomain:Boolean = false): List<CredentialEntity>
+    suspend fun getAllWithDecrypt(includeNone:Boolean = false, includeMatchByDomain:Boolean = false, masterPassword: String = AppModel.singleInstanceHolder.masterPassword.value): List<CredentialEntity>
 
     /**
      * 不加密也不解密 密码字段，把查出的数据简单返回
@@ -44,7 +44,7 @@ interface CredentialRepository {
     /**
      * Insert item in the data source
      */
-    suspend fun insertWithEncrypt(item: CredentialEntity)
+    suspend fun insertWithEncrypt(item: CredentialEntity, masterPassword: String = AppModel.singleInstanceHolder.masterPassword.value)
     /**
      * 不加密也不解密 密码字段，把传入的数据简单插入数据库
      */
@@ -58,7 +58,7 @@ interface CredentialRepository {
     /**
      * Update item in the data source
      */
-    suspend fun updateWithEncrypt(item: CredentialEntity, touchTime: Boolean = true)
+    suspend fun updateWithEncrypt(item: CredentialEntity, touchTime: Boolean = true, masterPassword: String = AppModel.singleInstanceHolder.masterPassword.value)
     /**
      * 不加密也不解密 密码字段，把传入的数据简单更新到数据库
      */
@@ -66,13 +66,13 @@ interface CredentialRepository {
 
     suspend fun isCredentialNameExist(name: String): Boolean
 
-    suspend fun getByIdWithDecrypt(id: String): CredentialEntity?
+    suspend fun getByIdWithDecrypt(id: String, masterPassword: String = AppModel.singleInstanceHolder.masterPassword.value): CredentialEntity?
 
     /**
      * if id is `SpecialCredential.MatchByDomain.credentialId` will try match credential by url's domain
      *  if you are sure id is not match by domain id, just simple passing empty str as url
      */
-    suspend fun getByIdWithDecryptAndMatchByDomain(id: String, url:String): CredentialEntity?
+    suspend fun getByIdWithDecryptAndMatchByDomain(id: String, url:String, masterPassword: String = AppModel.singleInstanceHolder.masterPassword.value): CredentialEntity?
     suspend fun getByIdAndMatchByDomain(id: String, url:String): CredentialEntity?
 
     /**
@@ -88,8 +88,15 @@ interface CredentialRepository {
 
     suspend fun deleteAndUnlink(item:CredentialEntity)
 
-    fun encryptPassIfNeed(item:CredentialEntity?, masterPassword:String = AppModel.singleInstanceHolder.masterPassword.value)
-    fun decryptPassIfNeed(item:CredentialEntity?, masterPassword:String = AppModel.singleInstanceHolder.masterPassword.value)
+    /**
+     * 加密凭据，一律使用最新版本的加密器，并更新凭据中相关字段
+     */
+    fun encryptPassIfNeed(item:CredentialEntity?, masterPassword:String)
+
+    /**
+     * 使用凭据对应的加密器版本解密凭据
+     */
+    fun decryptPassIfNeed(item:CredentialEntity?, masterPassword:String)
 
     /**
      * @return 更新失败的凭据名单

@@ -1,6 +1,7 @@
 package com.catpuppyapp.puppygit.screen
 
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
@@ -35,6 +36,7 @@ import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.TextRange
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.TextFieldValue
@@ -194,7 +196,7 @@ fun CredentialNewOrEdit(
                 val oldPass = oldCredential.value.pass
                 val newPass = credentialForSave.pass
                 if(oldPass != newPass) {  //新旧密码如果不一样，说明用户编辑了密码，这时候需要重新加密；如果一样，说明依然是编辑前的加密过的密码，则不需要加密；（不太可能发生的极特殊情况：用户输入的新密码原文和加密后的密码字符串完全一样！这样就会出问题，连接时会使用“解密”后的错误密码）
-                    credentialDb.encryptPassIfNeed(credentialForSave)
+                    credentialDb.encryptPassIfNeed(credentialForSave, AppModel.singleInstanceHolder.masterPassword.value)
                 }
                 credentialDb.update(credentialForSave)
             }else{  //新建的百分百加密
@@ -341,7 +343,9 @@ fun CredentialNewOrEdit(
 //            }
 
             TextField(
-                    modifier = Modifier.fillMaxWidth().padding(10.dp)
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(10.dp)
                     //如果type是ssh，让private-key输入框高点
 //                    if(credentialType.intValue == Cons.dbCredentialTypeSsh) {
 //                        Modifier
@@ -426,6 +430,17 @@ fun CredentialNewOrEdit(
                     }
 
                 )
+
+            if(isEditMode.value) {
+                Row(modifier = Modifier.padding(horizontal = 10.dp)) {
+                    Text(
+                        text = stringResource(R.string.don_t_touch_the_password_passphrase_if_you_don_t_want_to_update_it),
+                        fontWeight = FontWeight.Light,
+                        color = MyStyleKt.TextColor.highlighting_green
+                    )
+                }
+            }
+
         }
     }
 

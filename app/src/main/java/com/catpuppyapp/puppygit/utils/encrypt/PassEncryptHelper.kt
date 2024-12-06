@@ -15,7 +15,7 @@ class PassEncryptHelper {
         //新版本的app包含旧版的所有密钥和加密器
         //key = ver, value = 密钥
         //注：20241206 之后增加了主密码机制，若有主密码，则使用主密码，否则将使用此处的默认密钥，默认密钥是公开的，因此并不够安全
-        val keyMap:Map<Int,String> = mutableMapOf(
+        val keyMap:Map<Int,String> = mapOf(
             Pair(1, "3LHLpwTQ9uEyP9MCqgYNqncKxmQJsww9L4A7T7wK"),
             Pair(2, "ffHuzkprZY9b5PbYxaHPgHZ5UJxsqsL5MjqvCn7rQH3q7p7shz"),
             Pair(3, "qaWxActsnqiD2D5CmYroUcMRjYr4KDAiiNYHPs2RVs7DLTcU3y"),
@@ -25,7 +25,7 @@ class PassEncryptHelper {
         )
 
         //key = ver, value = 加密解密器
-        val encryptorMap:Map<Int,Encryptor> = mutableMapOf(
+        val encryptorMap:Map<Int,Encryptor> = mapOf(
             Pair(1, encryptor_ver_1),
             Pair(2, encryptor_ver_2),
             Pair(3, encryptor_ver_3),
