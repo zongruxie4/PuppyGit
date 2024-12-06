@@ -22,7 +22,6 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.MutableState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.Role
@@ -30,7 +29,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
 import com.catpuppyapp.puppygit.play.pro.R
-import com.catpuppyapp.puppygit.ui.theme.Theme
+import com.catpuppyapp.puppygit.style.MyStyleKt
 import com.catpuppyapp.puppygit.utils.FsUtils
 import com.catpuppyapp.puppygit.utils.Msg
 import com.catpuppyapp.puppygit.utils.mime.MimeType
@@ -175,7 +174,7 @@ fun OpenAsDialog(readOnly: MutableState<Boolean>, fileName:String, filePath:Stri
                             onValueChange = { readOnly.value = !readOnly.value },
                             role = Role.Checkbox
                         )
-                        .padding(horizontal = 16.dp),
+                        .padding(horizontal = MyStyleKt.CheckoutBox.horizontalPadding),
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     Checkbox(

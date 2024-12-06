@@ -133,6 +133,7 @@ fun SetUpstreamDialog(
                         Text(stringResource(R.string.upstream_branch_name))
                     }
                 )
+
                 Row(
                     Modifier
                         .fillMaxWidth()
@@ -145,7 +146,7 @@ fun SetUpstreamDialog(
                             },
                             role = Role.Checkbox
                         )
-                        .padding(horizontal = 16.dp),
+                        .padding(horizontal = MyStyleKt.CheckoutBox.horizontalPadding),
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     Checkbox(

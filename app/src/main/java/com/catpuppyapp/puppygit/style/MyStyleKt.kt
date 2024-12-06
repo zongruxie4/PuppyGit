@@ -176,7 +176,8 @@ class MyStyleKt{
 //        val height = 56.dp
         val height = 40.dp
 
-        val horizontalPadding = 16.dp
+//        val horizontalPadding = 16.dp
+        val horizontalPadding = 10.dp
     }
 
     object TopBar {
