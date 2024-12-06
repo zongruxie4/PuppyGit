@@ -170,15 +170,20 @@ fun SettingsInnerPage(
     val newMasterPasswordErrMsg = rememberSaveable { mutableStateOf("") }
     val oldMasterPasswordVisible = rememberSaveable { mutableStateOf(false) }
     val newMasterPasswordVisible = rememberSaveable { mutableStateOf(false) }
+
+    val masterPassEnabled = rememberSaveable { mutableStateOf(AppModel.singleInstanceHolder.masterPasswordEnabled()) }
+    val masterPassStatus = rememberSaveable { mutableStateOf(if(masterPassEnabled.value) activityContext.getString(R.string.enabled) else activityContext.getString(R.string.disabled)) }
+
     val showSetMasterPasswordDialog = rememberSaveable { mutableStateOf(false) }
     if (showSetMasterPasswordDialog.value)  {
+        val requireOldPass = AppModel.singleInstanceHolder.requireMasterPassword()
         ConfirmDialog2(
             title = stringResource(R.string.set_master_password),
             requireShowTextCompose = true,
             textCompose = {
                 ScrollableColumn {
                     // require old master password if exist
-                    if(AppModel.singleInstanceHolder.requireMasterPassword()) {
+                    if(requireOldPass) {
                         PasswordTextFiled(oldMasterPassword, oldMasterPasswordVisible, stringResource(R.string.old_password), errMsg = oldMasterPasswordErrMsg)
                     }
 
@@ -203,7 +208,7 @@ fun SettingsInnerPage(
         ) {
             doJobThenOffLoading job@{
                 try {
-                    val requireOldPass = AppModel.singleInstanceHolder.requireMasterPassword()
+                    //一般来说不会需要用户在这输入密码的，在启动app的时候就输过了
                     val oldPass  = if(requireOldPass) {
                         if(oldMasterPassword.value.isEmpty()){
                             oldMasterPasswordErrMsg.value = activityContext.getString(R.string.require_old_password)
@@ -223,7 +228,8 @@ fun SettingsInnerPage(
                     //验证旧密码成功就可关闭弹窗了
                     showSetMasterPasswordDialog.value = false
 
-                    Msg.requireShow(activityContext.getString(R.string.updating))
+                    val updatingStr = activityContext.getString(R.string.updating)
+                    Msg.requireShow(updatingStr)
 
                     //新密码可以为空，不验证，若空等于清除凭据
                     val newPass = newMasterPassword.value
@@ -232,6 +238,9 @@ fun SettingsInnerPage(
                         Msg.requireShow(activityContext.getString(R.string.old_and_new_passwords_are_the_same))
                         return@job
                     }
+
+                    masterPassStatus.value = updatingStr
+
 
                     val credentialDb = AppModel.singleInstanceHolder.dbContainer.credentialRepository
                     val failedList = credentialDb.updateMasterPassword(oldPass, newPass)
@@ -260,6 +269,13 @@ fun SettingsInnerPage(
                         updateMasterPassFailedListStr.value = sb.removeSuffix(suffix).toString()
                         showFailedUpdateMasterPasswordsCredentialList.value = true
                     }
+
+                    //只要执行到这，不管是否有解密失败的凭据，主密码都已经更新了
+
+                    //更新下主密码状态，让用户知道更新成功了
+                    masterPassEnabled.value = AppModel.singleInstanceHolder.masterPasswordEnabled()
+                    masterPassStatus.value = if(masterPassEnabled.value) activityContext.getString(R.string.updated) else activityContext.getString(R.string.disabled)
+
                 }catch (e:Exception) {
                     Msg.requireShowLongDuration(e.localizedMessage ?:"err")
                     MyLog.e(TAG, "SetMasterPasswordDialog err: ${e.stackTraceToString()}")
@@ -725,6 +741,7 @@ fun SettingsInnerPage(
         }) {
             Column {
                 Text(stringResource(R.string.set_master_password), fontSize = itemFontSize)
+                Text(masterPassStatus.value, fontSize = itemDescFontSize, fontWeight = FontWeight.Light, color = if(masterPassEnabled.value) MyStyleKt.TextColor.highlighting_green else MyStyleKt.TextColor.danger())
                 Text(stringResource(R.string.if_set_will_require_master_password_when_launching_app), fontSize = itemDescFontSize, fontWeight = FontWeight.Light)
 
             }

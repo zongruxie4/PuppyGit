@@ -258,11 +258,14 @@ class CredentialRepositoryImpl(private val dao: CredentialDao) : CredentialRepos
         AppModel.singleInstanceHolder.dbContainer.db.withTransaction {
             //迁移密码
             for (c in credentialList) {
-                //忽略空字符串
+                //若密码为空，更新下加密器版本即可
                 if (c.pass.isEmpty()) {
+                    c.encryptVer = PassEncryptHelper.passEncryptCurrentVer
+                    update(c, touchTime = false)
                     continue
                 }
 
+                //密码不为空，解密密码并重新加密
                 try {
                     //如果解密失败会抛异常
                     decryptPassIfNeed(c, oldMasterPassword)  //解密密码

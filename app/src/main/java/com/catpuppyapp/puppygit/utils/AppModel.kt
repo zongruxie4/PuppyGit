@@ -646,7 +646,11 @@ class AppModel {
                 (settings.masterPasswordHash.isNotEmpty() && masterPassword.value.isEmpty())
                 // 用户输入的主密码和密码hash不匹配
             || (settings.masterPasswordHash.isNotEmpty() && masterPassword.value.isNotEmpty() && !HashUtil.verify(masterPassword.value, settings.masterPasswordHash))
-                )
+        )
+    }
+
+    fun masterPasswordEnabled(): Boolean {
+        return masterPassword.value.isNotEmpty()
     }
 
 }

@@ -1103,6 +1103,9 @@
     <string name="updating_master_password">更新主密码…</string>
     <string name="verifying">正在验证…</string>
     <string name="input_your_master_password">输入你的主密码</string>
+    <string name="enabled">已启用</string>
+    <string name="disabled">已禁用</string>
+    <string name="updated">已更新</string>
 
 
 </resources>

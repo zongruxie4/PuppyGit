@@ -1126,5 +1126,8 @@
     <string name="updating_master_password">Updating master password…</string>
     <string name="verifying">Verifying…</string>
     <string name="input_your_master_password">Input Your Master Password</string>
+    <string name="enabled">Enabled</string>
+    <string name="disabled">Disabled</string>
+    <string name="updated">Updated</string>
 
 </resources>
