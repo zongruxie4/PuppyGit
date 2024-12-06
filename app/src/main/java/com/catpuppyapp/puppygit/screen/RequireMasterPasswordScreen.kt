@@ -128,6 +128,8 @@ fun RequireMasterPasswordScreen(
         verticalArrangement = Arrangement.Center,
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
+        Spacer(modifier = Modifier.height(30.dp))
+
         Image(bitmap = AppModel.getAppIcon(activityContext), contentDescription = stringResource(R.string.app_icon),
             modifier = Modifier.size(100.dp)
             )
