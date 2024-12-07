@@ -84,7 +84,7 @@ fun PasswordTextFiled(
                 // contentDescription is for accessibility
                 Icon(
                     imageVector = if (passwordVisible.value) Icons.Filled.Visibility else Icons.Filled.VisibilityOff,
-                    contentDescription = if (passwordVisible.value) stringResource(R.string.an_opened_eye) else stringResource(R.string.an_closed_eye)
+                    contentDescription = if (passwordVisible.value) stringResource(R.string.an_opened_eye) else stringResource(R.string.a_closed_eye)
                 )
             }
         }

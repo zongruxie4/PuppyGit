@@ -95,6 +95,7 @@ fun CredentialNewOrEdit(
     val credentialType = rememberSaveable{mutableIntStateOf(Cons.dbCredentialTypeHttp)}
     val credentialInThisPage = mutableCustomStateOf(keyTag = stateKeyTag, keyName = "credentialInThisPage", initValue = CredentialEntity(id = ""))
     val oldCredential = mutableCustomStateOf(keyTag = stateKeyTag, keyName = "oldCredential", initValue = CredentialEntity(id = ""))
+    val oldPassIsEmpty = rememberSaveable { mutableStateOf(false) }
 
     //获取输入焦点，弹出键盘
 //    val focusRequesterGitUrl = remember{ FocusRequester() }  // 1
@@ -412,26 +413,20 @@ fun CredentialNewOrEdit(
                     visualTransformation = if (passwordVisible.value) VisualTransformation.None else PasswordVisualTransformation(),
                     keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password),
                     trailingIcon = {
-                        if(!isEditMode.value) {  //只有新建模式能查看密码，编辑模式不许看，避免被人偷看已保存的密码
-                            val image = if (passwordVisible.value) Icons.Filled.Visibility
-                            else Icons.Filled.VisibilityOff
-
-                            // Please provide localized description for accessibility services
-                            val description =
-                                if (passwordVisible.value) stringResource(R.string.hide_password) else stringResource(
-                                    R.string.show_password
-                                )
-
+                        if(!isEditMode.value || oldPassIsEmpty.value) {  //只有新建模式能查看密码，编辑模式不许看，避免被人偷看已保存的密码
                             IconButton(onClick = { passwordVisible.value = !passwordVisible.value }) {
-                                // contentDescription is for accessibility
-                                Icon(imageVector = image, contentDescription = description)
+                                Icon(
+                                    imageVector = if (passwordVisible.value) Icons.Filled.Visibility else Icons.Filled.VisibilityOff,
+                                    contentDescription = if (passwordVisible.value) stringResource(R.string.an_opened_eye) else stringResource(R.string.a_closed_eye)
+                                )
                             }
                         }
                     }
 
                 )
 
-            if(isEditMode.value) {
+            //编辑模式且密码不为空会显示加密后的密码，用户看了那个长度可能会傻眼，所以给个提示
+            if(isEditMode.value && oldPassIsEmpty.value.not()) {
                 Row(modifier = Modifier.padding(horizontal = 10.dp)) {
                     Text(
                         text = stringResource(R.string.don_t_touch_the_password_passphrase_if_you_don_t_want_to_update_it),
@@ -459,6 +454,9 @@ fun CredentialNewOrEdit(
             loadingOn = { showLoadingDialog.value = true },
             loadingOff = { showLoadingDialog.value = false }
         ) job@{
+            // 废弃，没必要重置，只重置这个状态，其他状态不重置，万一按钮隐藏了但密码状态为显示？怎么办？根本没必要重置，让这个变量个其他变量生命周期和初始状态都一致即可）重置此变量，避免错误显示查看密码按钮。
+//         //   oldPassIsEmpty.value = false
+
             if (credentialId != null && credentialId.isNotBlank() && credentialId != "null") {  //如果是编辑模式，查询仓库信息
                 isEditMode.value = true
                 val credentialDb = AppModel.singleInstanceHolder.dbContainer.credentialRepository
@@ -466,6 +464,7 @@ fun CredentialNewOrEdit(
                 //注意，查出的是加密的密码
                 credentialInThisPage.value = credentialDb.getById(credentialId)?:return@job
                 oldCredential.value = credentialInThisPage.value.copy()  //存个旧的信息，用来检查是否要跳过部分重名检测和是否需要加密密码
+                oldPassIsEmpty.value = oldCredential.value.pass.isEmpty()
                 credentialType.intValue=credentialInThisPage.value.type
                 credentialSelectedOption.intValue = if(credentialType.intValue == Cons.dbCredentialTypeHttp) optNumHttp else optNumSsh  //设置凭据类型选中项为数据库中的类型
                 credentialName.value = TextFieldValue(credentialInThisPage.value.name)
