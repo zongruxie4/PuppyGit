@@ -1536,7 +1536,7 @@ fun ChangeListInnerPage(
             overwriteAuthor=overwriteAuthor,
             amend=amendCommit,
             commitMsg=commitMsg,
-            onOk={msgOrAmendMsg->
+            onOk={msgOrAmendMsg, requirePushAfterCommit->
                 //把弹窗相关的状态变量设置回初始状态，不然只能提交一次，下次就不弹窗了(ps:这个放coroutine里修改会报状态异常，提示不能并发修改状态，之前记得能修改，不明所以)
                 showCommitMsgDialog.value = false  //关闭弹窗
 
@@ -1557,7 +1557,7 @@ fun ChangeListInnerPage(
                         val commitSuccess = ChangeListFunctions.doCommit(
                             requireShowCommitMsgDialog = false,
                             cmtMsg = cmtMsg,
-                            requireCloseBottomBar = !requireDoSync,
+                            requireCloseBottomBar = !requireDoSync && !requirePushAfterCommit,
                             requireDoSync = requireDoSync,
                             curRepoFromParentPage = curRepoFromParentPage,
                             refreshRequiredByParentPage = refreshRequiredByParentPage,
@@ -1579,6 +1579,7 @@ fun ChangeListInnerPage(
                             successCommitStrRes = successCommitStrRes,
                             indexIsEmptyForCommitDialog=indexIsEmptyForCommitDialog
                         )
+
                         if(requireDoSync) {
                             if(commitSuccess){
                                 //更新loading提示文案
@@ -1604,7 +1605,31 @@ fun ChangeListInnerPage(
                                     dbContainer = dbContainer
                                 )
                             }else {
-                                requireShowToast(activityContext.getString(R.string.sync_abort_by_commit_failed))
+                                requireShowToast(activityContext.getString(R.string.sync_canceled_by_commit_failed))
+                            }
+                        }else if(requirePushAfterCommit) {
+                            if(commitSuccess) {
+                                loadingText.value = activityContext.getString(R.string.pushing)
+
+                                val success = ChangeListFunctions.doPush(
+                                    requireCloseBottomBar = true,
+                                    upstreamParam = null,
+                                    force = false,
+                                    curRepoFromParentPage = curRepoFromParentPage,
+                                    requireShowToast = requireShowToast,
+                                    appContext = activityContext,
+                                    loadingText = loadingText,
+                                    bottomBarActDoneCallback = bottomBarActDoneCallback,
+                                    dbContainer = dbContainer
+                                )
+
+                                if (!success) {
+                                    requireShowToast(activityContext.getString(R.string.push_failed))
+                                } else {
+                                    requireShowToast(activityContext.getString(R.string.push_success))
+                                }
+                            }else {
+                                requireShowToast(activityContext.getString(R.string.push_canceled_by_commit_failed))
                             }
                         }
 

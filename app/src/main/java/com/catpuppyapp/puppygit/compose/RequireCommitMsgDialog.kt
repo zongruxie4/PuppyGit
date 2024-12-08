@@ -38,7 +38,7 @@ fun RequireCommitMsgDialog(
     amend:MutableState<Boolean>,
     commitMsg: MutableState<String>,
     indexIsEmptyForCommitDialog:MutableState<Boolean>,
-    onOk: (msg:String) -> Unit,
+    onOk: (msg:String, requirePushAfterCommit:Boolean) -> Unit,
     onCancel: () -> Unit,
 ) {
     val activityContext = LocalContext.current
@@ -53,7 +53,9 @@ fun RequireCommitMsgDialog(
 
     //勾选amend时用此变量替代commitMsg
     val amendMsg = rememberSaveable { mutableStateOf(commitMsg.value)}
-
+    val getCommitMsg = {
+        if(amend.value) amendMsg.value else commitMsg.value
+    }
 
 
     val view = LocalView.current
@@ -173,21 +175,33 @@ fun RequireCommitMsgDialog(
         confirmButton = {
             TextButton(
                 onClick = {
-                    onOk(if(amend.value) amendMsg.value else commitMsg.value)
+                    val requirePush = false
+                    onOk(getCommitMsg(), requirePush)
                 },
                 enabled = true
             ) {
-                Text(stringResource(id = R.string.ok))
+                Text(stringResource(id = R.string.commit))
             }
         },
         dismissButton = {
-            TextButton(
-                onClick = {
-                    onCancel()
+            Row {
+                TextButton(
+                    onClick = {
+                        val requirePush = true
+                        onOk(getCommitMsg(), requirePush)
+                    }
+                ) {
+                    Text(stringResource(id = R.string.push))
                 }
-            ) {
-                Text(stringResource(id = R.string.cancel))
+                TextButton(
+                    onClick = {
+                        onCancel()
+                    }
+                ) {
+                    Text(stringResource(id = R.string.cancel))
+                }
             }
+
         }
     )
 }

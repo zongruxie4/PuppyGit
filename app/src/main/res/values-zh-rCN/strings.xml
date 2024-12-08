@@ -1109,6 +1109,8 @@
     <string name="don_t_touch_the_password_passphrase_if_you_don_t_want_to_update_it">如果你不想更新 密码/密码短语，别编辑它即可</string>
     <string name="an_opened_eye">一个睁开的眼睛</string>
     <string name="a_closed_eye">一个闭上的眼睛</string>
+    <string name="push_canceled_by_commit_failed">提交失败，已取消推送</string>
+    <string name="sync_canceled_by_commit_failed">提交失败，已取消同步</string>
 
 
 </resources>

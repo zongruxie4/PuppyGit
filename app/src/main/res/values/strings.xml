@@ -1132,5 +1132,7 @@
     <string name="don_t_touch_the_password_passphrase_if_you_don_t_want_to_update_it">Don\'t touch the password/passphrase if you don\'t want to update it</string>
     <string name="an_opened_eye">An opened eye</string>
     <string name="a_closed_eye">A closed eye</string>
+    <string name="push_canceled_by_commit_failed">Push canceled by commit failed</string>
+    <string name="sync_canceled_by_commit_failed">Sync canceled by commit failed</string>
 
 </resources>

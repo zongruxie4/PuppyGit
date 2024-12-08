@@ -2974,7 +2974,11 @@ class Libgit2Helper {
             }
 
             //合并
-            if(analySet.contains(Merge.AnalysisT.NORMAL)){
+            if(analySet.contains(Merge.AnalysisT.NORMAL)) {  // 可以且需要合并
+                if(preferenceSet.contains(Merge.PreferenceT.FASTFORWARD_ONLY)) {
+                    return Ret.createError(null, "config is fast-forward only, but need merge", Ret.ErrCode.mergeFailedByConfigIsFfOnlyButCantFfMustMerge)
+                }
+
                 val mergeOpts = Merge.Options.create()
                 mergeOpts.flags = 0  // 0代表一个flag都不设。另外：flag可设多个，重命名检测和有冲突不合并立即退出等，参见: https://libgit2.org/libgit2/#HEAD/type/git_merge_flag_t
                 mergeOpts.fileFlags = Merge.FileFlagT.STYLE_DIFF3.bit //GIT_MERGE_FILE_STYLE_DIFF3, 1<<1
@@ -2985,12 +2989,8 @@ class Libgit2Helper {
                 //不会覆盖本地未提交的文件（推荐）
                 checkoutOpts.strategy = EnumSet.of(Checkout.StrategyT.SAFE, Checkout.StrategyT.ALLOW_CONFLICTS)
 
-                if(preferenceSet.contains(Merge.PreferenceT.FASTFORWARD_ONLY)) {
-                    return Ret.createError(null, "config is fast-forward only, but need merge", Ret.ErrCode.mergeFailedByConfigIsFfOnlyButCantFfMustMerge)
-                }
-
                 //do merge
-                Merge.merge(repo,theirHeads, mergeOpts, checkoutOpts)
+                Merge.merge(repo, theirHeads, mergeOpts, checkoutOpts)
             }
 
             /* If we get here, we actually performed the merge above */
