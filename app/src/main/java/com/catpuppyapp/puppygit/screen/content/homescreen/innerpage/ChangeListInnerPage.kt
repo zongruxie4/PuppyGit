@@ -558,6 +558,8 @@ fun ChangeListInnerPage(
     val overwriteAuthor = rememberSaveable { mutableStateOf(false)}
     val commitMsg = rememberSaveable { mutableStateOf("")}
     val indexIsEmptyForCommitDialog = rememberSaveable { mutableStateOf(false)}
+    val commitBtnTextForCommitDialog = rememberSaveable { mutableStateOf("") }
+    val showPushForCommitDialog = rememberSaveable { mutableStateOf(false)}
 
     //upstream
 //    val upstreamRemoteOptionsList = mutableCustomStateOf(value = mutableListOf<String>())
@@ -1138,7 +1140,9 @@ fun ChangeListInnerPage(
                         fromTo = fromTo,
                         itemList = itemList,
                         successCommitStrRes = successCommitStrRes,
-                        indexIsEmptyForCommitDialog=indexIsEmptyForCommitDialog
+                        indexIsEmptyForCommitDialog=indexIsEmptyForCommitDialog,
+                        commitBtnTextForCommitDialog=commitBtnTextForCommitDialog,
+                        showPushForCommitDialog=showPushForCommitDialog
                     )
                 }catch (e:Exception){
                     showErrAndSaveLog(TAG,"require commit error:"+e.stackTraceToString(), activityContext.getString(R.string.commit_failed)+":"+e.localizedMessage, requireShowToast,curRepoFromParentPage.value.id)
@@ -1187,7 +1191,9 @@ fun ChangeListInnerPage(
                                 fromTo = fromTo,
                                 itemList = itemList,
                                 successCommitStrRes = successCommitStrRes,
-                                indexIsEmptyForCommitDialog=indexIsEmptyForCommitDialog
+                                indexIsEmptyForCommitDialog=indexIsEmptyForCommitDialog,
+                                commitBtnTextForCommitDialog=commitBtnTextForCommitDialog,
+                                showPushForCommitDialog=showPushForCommitDialog
                             )
                         }
 
@@ -1227,7 +1233,9 @@ fun ChangeListInnerPage(
                         fromTo = fromTo,
                         itemList = itemList,
                         successCommitStrRes = successCommitStrRes,
-                        indexIsEmptyForCommitDialog=indexIsEmptyForCommitDialog
+                        indexIsEmptyForCommitDialog=indexIsEmptyForCommitDialog,
+                        commitBtnTextForCommitDialog=commitBtnTextForCommitDialog,
+                        showPushForCommitDialog=showPushForCommitDialog
                     )
                 }catch (e:Exception){
                     showErrAndSaveLog(TAG,"require Rebase Continue error:"+e.stackTraceToString(), activityContext.getString(R.string.rebase_continue_err)+":"+e.localizedMessage, requireShowToast,repoId)
@@ -1330,7 +1338,9 @@ fun ChangeListInnerPage(
                         fromTo = fromTo,
                         itemList = itemList,
                         successCommitStrRes = successCommitStrRes,
-                        indexIsEmptyForCommitDialog=indexIsEmptyForCommitDialog
+                        indexIsEmptyForCommitDialog=indexIsEmptyForCommitDialog,
+                        commitBtnTextForCommitDialog=commitBtnTextForCommitDialog,
+                        showPushForCommitDialog=showPushForCommitDialog
                     )
                 }catch (e:Exception){
                     showErrAndSaveLog(TAG,"require Cherrypick Continue error:"+e.stackTraceToString(), activityContext.getString(R.string.cherrypick_continue_err)+":"+e.localizedMessage, requireShowToast,repoId)
@@ -1536,6 +1546,8 @@ fun ChangeListInnerPage(
             overwriteAuthor=overwriteAuthor,
             amend=amendCommit,
             commitMsg=commitMsg,
+            commitBtnText = commitBtnTextForCommitDialog.value,
+            showPush = showPushForCommitDialog.value,
             onOk={msgOrAmendMsg, requirePushAfterCommit->
                 //把弹窗相关的状态变量设置回初始状态，不然只能提交一次，下次就不弹窗了(ps:这个放coroutine里修改会报状态异常，提示不能并发修改状态，之前记得能修改，不明所以)
                 showCommitMsgDialog.value = false  //关闭弹窗
@@ -1577,7 +1589,9 @@ fun ChangeListInnerPage(
                             fromTo = fromTo,
                             itemList = itemList,
                             successCommitStrRes = successCommitStrRes,
-                            indexIsEmptyForCommitDialog=indexIsEmptyForCommitDialog
+                            indexIsEmptyForCommitDialog=indexIsEmptyForCommitDialog,
+                            commitBtnTextForCommitDialog=commitBtnTextForCommitDialog,
+                            showPushForCommitDialog=showPushForCommitDialog
                         )
 
                         if(requireDoSync) {
@@ -1740,7 +1754,9 @@ fun ChangeListInnerPage(
                             fromTo = fromTo,
                             itemList = itemList,
                             successCommitStrRes = successCommitStrRes,
-                            indexIsEmptyForCommitDialog = indexIsEmptyForCommitDialog
+                            indexIsEmptyForCommitDialog = indexIsEmptyForCommitDialog,
+                            commitBtnTextForCommitDialog=commitBtnTextForCommitDialog,
+                            showPushForCommitDialog=showPushForCommitDialog
                         )
                     } else {
                         requireShowToast(invalidUsernameOrEmail)
@@ -2190,7 +2206,9 @@ fun ChangeListInnerPage(
                             fromTo = fromTo,
                             itemList = itemList,
                             successCommitStrRes = successCommitStrRes,
-                            indexIsEmptyForCommitDialog=indexIsEmptyForCommitDialog
+                            indexIsEmptyForCommitDialog=indexIsEmptyForCommitDialog,
+                            commitBtnTextForCommitDialog=commitBtnTextForCommitDialog,
+                            showPushForCommitDialog=showPushForCommitDialog
                         )
                     }
                 }
@@ -2227,7 +2245,9 @@ fun ChangeListInnerPage(
                             fromTo = fromTo,
                             itemList = itemList,
                             successCommitStrRes = successCommitStrRes,
-                            indexIsEmptyForCommitDialog=indexIsEmptyForCommitDialog
+                            indexIsEmptyForCommitDialog=indexIsEmptyForCommitDialog,
+                            commitBtnTextForCommitDialog=commitBtnTextForCommitDialog,
+                            showPushForCommitDialog=showPushForCommitDialog
                         )
                     }
                 }
@@ -2268,7 +2288,9 @@ fun ChangeListInnerPage(
                     fromTo = fromTo,
                     itemList = itemList,
                     successCommitStrRes = successCommitStrRes,
-                    indexIsEmptyForCommitDialog=indexIsEmptyForCommitDialog
+                    indexIsEmptyForCommitDialog=indexIsEmptyForCommitDialog,
+                    commitBtnTextForCommitDialog=commitBtnTextForCommitDialog,
+                    showPushForCommitDialog=showPushForCommitDialog
                 )
             }
         },
@@ -2300,7 +2322,9 @@ fun ChangeListInnerPage(
                     fromTo = fromTo,
                     itemList = itemList,
                     successCommitStrRes = successCommitStrRes,
-                    indexIsEmptyForCommitDialog=indexIsEmptyForCommitDialog
+                    indexIsEmptyForCommitDialog=indexIsEmptyForCommitDialog,
+                    commitBtnTextForCommitDialog=commitBtnTextForCommitDialog,
+                    showPushForCommitDialog=showPushForCommitDialog
                 )
             }
 

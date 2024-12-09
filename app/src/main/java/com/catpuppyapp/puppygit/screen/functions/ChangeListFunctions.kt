@@ -50,8 +50,14 @@ object ChangeListFunctions {
         fromTo:String,
         itemList:CustomStateListSaveable<StatusTypeEntrySaver>,
         successCommitStrRes:String,
-        indexIsEmptyForCommitDialog:MutableState<Boolean>
+        indexIsEmptyForCommitDialog:MutableState<Boolean>,
+        commitBtnTextForCommitDialog:MutableState<String>,
+        showPushForCommitDialog:MutableState<Boolean>
     ):Boolean{
+        commitBtnTextForCommitDialog.value = appContext.getString(if(requireDoSync) R.string.sync else R.string.commit)
+        showPushForCommitDialog.value = !requireDoSync
+
+
         indexIsEmptyForCommitDialog.value = false // will update this after check
         //可以用context获取string resource
 //        requireShowToast("test context getsTring:"+appContext.getString(R.string.n_files_staged))
