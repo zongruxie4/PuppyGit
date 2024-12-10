@@ -1,4 +1,4 @@
-next version:
+1.0.6.9v45 - 20241210:
 - Diff Screen support match by words
 - Editor changes:
   - add a recent file list
