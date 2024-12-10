@@ -12,7 +12,10 @@ object LanguageUtil {
 
     val languageCodeList = listOf(
         LangCode.auto,
+
+        // order by a-z
         LangCode.en,
+        LangCode.ru,
         LangCode.zh_cn,
         // other language...
     )
@@ -48,8 +51,13 @@ object LanguageUtil {
             return appContext.getString(R.string.auto)
         }
 
+        // order by a-z
         if(languageCode == LangCode.en) {
             return appContext.getString(R.string.lang_name_english)
+        }
+
+        if(languageCode == LangCode.ru) {
+            return appContext.getString(R.string.lang_name_russian)
         }
 
         if(languageCode == LangCode.zh_cn) {

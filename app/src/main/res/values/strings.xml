@@ -923,9 +923,13 @@
 
 
 
-<!--    translatable or no need translate(such as language name text) -->
+<!--    non-translatable or no need translate(such as language name text) -->
+<!--    order by language code a-z-->
     <string name="lang_name_english" translatable="false">English</string>
+    <string name="lang_name_russian" translatable="false">русский</string>
     <string name="lang_name_chinese_simplified" translatable="false">中文(简体)</string>
+
+
     <string name="log_level">Log Level</string>
     <string name="warn">Warn</string>
     <string name="debug">Debug</string>

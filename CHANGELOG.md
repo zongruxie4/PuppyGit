@@ -7,6 +7,7 @@ next version:
 - Repos Page layout adjusted for Tablet: now each row repos count will calculating by screen width (each row repos count = screen width / a repo item width) 
 - support set a master password instead default password encrypt password/passphrase of your credentials
 - support push at commit msg dialog
+- support russian (translate by github user @triksterr)
 
 
 1.0.6.8v44 - 20241124:
