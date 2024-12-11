@@ -182,8 +182,7 @@ for arch in $archs; do
     cd $git24j_c_src
     mkdir -p $build_out_tmp
     cd $build_out_tmp
-    cmake .. -DCMAKE_TOOLCHAIN_FILE=$toolchainfile -DCMAKE_INSTALL_PREFIX=$liboutdir -DCMAKE_BUILD_TYPE=Release -DJAVA_INCLUDE_PATH2=$JAVA_HOME/include/linux -DJAVA_AWT_INCLUDE_PATH=$JAVA_HOME/include -DJAVA_AWT_LIBRARY=$JAVA_HOME/lib/libjawt.so -DJAVA_JVM_LIBRARY=$JAVA_HOME/lib/server/libjvm.so -DINCLUDE_LIBGIT2=$libgit2src/include -DLINK_LIBGIT2=$liboutdir
-
+    cmake .. -DCMAKE_TOOLCHAIN_FILE=$toolchainfile -DCMAKE_INSTALL_PREFIX=$liboutdir -DCMAKE_BUILD_TYPE=Release -DJAVA_INCLUDE_PATH2=$JAVA_HOME/include/linux -DJAVA_AWT_INCLUDE_PATH=$JAVA_HOME/include -DJAVA_AWT_LIBRARY=$JAVA_HOME/jre/lib/amd64/libawt.so -DJAVA_JVM_LIBRARY=$JAVA_HOME/jre/lib/amd64/server/libjvm.so -DINCLUDE_LIBGIT2=$libgit2src/include -DLINK_LIBGIT2=$liboutdir
     cmake --build .
 
     cp libgit24j.so $liboutdir/libgit24j.so
