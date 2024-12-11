@@ -1,4 +1,4 @@
-name: Build Unsigned APK
+name: test download cmake
 
 on:
 #  push:
