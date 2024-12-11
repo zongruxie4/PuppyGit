@@ -25,8 +25,8 @@ jobs:
 
       - name: Install dependencies
         run: |
-          apt-get update
-          apt-get install -y \
+          sudo apt update
+          sudo apt install -y \
             curl \
             make \
             tar \
@@ -47,10 +47,10 @@ jobs:
 
       - name: Download cmake
         run: |
-            apt remove -y cmake
+            sudo apt remove -y cmake
             wget https://cmake.org/files/v3.16/cmake-3.16.3-Linux-x86_64.tar.gz
             tar -xzf cmake-3.16.3-Linux-x86_64.tar.gz
-            ln -s cmake-3.16.3-Linux-x86_64/bin/cmake /usr/bin/cmake
+            sudo ln -s cmake-3.16.3-Linux-x86_64/bin/cmake /usr/bin/cmake
             echo "cmake installed: $(cmake --version)"
 
       - name: Build APK
