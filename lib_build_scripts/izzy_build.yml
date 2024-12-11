@@ -26,7 +26,7 @@ versions:
         provisioning:
           android_home: /opt/sdk
           build_tools:
-          cmake: '3.22.1'
+          cmake: '3.16.3'
           cmdline_tools:
             version: '12.0'
             url: https://dl.google.com/android/repository/commandlinetools-linux-11076708_latest.zip

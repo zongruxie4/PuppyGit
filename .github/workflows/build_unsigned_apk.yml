@@ -25,7 +25,6 @@ jobs:
           sudo apt-get update
           sudo apt-get install -y \
             curl \
-            cmake \
             make \
             tar \
             libssl-dev \
@@ -42,6 +41,13 @@ jobs:
           curl -L -o cmdline-tools.zip https://dl.google.com/android/repository/commandlinetools-linux-11076708_latest.zip
           unzip cmdline-tools.zip -d $ANDROID_HOME/cmdline-tools
           rm cmdline-tools.zip
+
+      - name: Download cmake
+        run: |
+            wget https://cmake.org/files/v3.16/cmake-3.16.3-Linux-x86_64.tar.gz
+            tar -xzf cmake-3.16.3-Linux-x86_64.tar.gz
+            sudo ln -s cmake-3.16.3-Linux-x86_64/bin/cmake /usr/bin/cmake
+            echo "cmake installed: $(cmake --version)"
 
       - name: Build APK
         run: |
