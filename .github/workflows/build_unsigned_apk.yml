@@ -51,6 +51,7 @@ jobs:
 
       - name: Build APK
         run: |
+          echo "Building libs"
           cd ~
           git clone -b main --depth=1 https://github.com/catpuppyapp/PuppyGit.git PuppyGit
           cd PuppyGit
@@ -61,20 +62,12 @@ jobs:
           bash 2.5_buildjarlibs_fdroid.sh ~/PuppyGit/app/libs
           bash 3_buildlibs_fdroid.sh ~/PuppyGit/app/src/main/jniLibs/
           popd
+          echo "Build apk"
           chmod +x gradlew
           ./gradlew assembleRelease
-          
-          # 确保 APK 文件存在
-          OUT="app/build/outputs/apk/release/app-release-unsigned.apk"
-          if [ -f "$OUT" ]; then
-            mv "$OUT" ./outputs/unsigned.apk
-          else
-            echo "APK file not found: $OUT"
-            exit 1
-          fi
 
       - name: Upload APK
         uses: actions/upload-artifact@v3
         with:
           name: unsigned-apk
-          path: ./outputs/unsigned.apk
+          path: ~/PuppyGit/app/build/outputs/apk/release/app-release-unsigned.apk
