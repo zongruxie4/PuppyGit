@@ -1,0 +1,52 @@
+---
+repository: https://github.com/catpuppyapp/PuppyGit.git
+updates: releases
+versions:
+  - tag: 1.0.6.9v45
+    apks:
+      - apk_pattern: PuppyGit_.*_release\.apk
+        apk_url: https://github.com/catpuppyapp/PuppyGit/releases/download/$$TAG$$/PuppyGit_$$TAG$$_release.apk
+        build:
+          - pushd lib_build_scripts
+          - bash 1_installrequire_no_sudo_and_apt.sh
+          - bash 2_downloadsrc.sh
+          - bash 2.5_buildjarlibs_fdroid.sh ../app/libs
+          - bash 3_buildlibs_fdroid.sh ../app/src/main/jniLibs/
+          - popd
+          - chmod +x gradlew
+          - ./gradlew assembleRelease
+          - find . -name '*.apk'
+          - git clone -b v0.3.0 https://github.com/obfusk/reproducible-apk-tools.git
+          - OUT="app/build/outputs/apk/release/app-release-unsigned.apk"
+          - reproducible-apk-tools/inplace-fix.py --internal --page-size 16 fix-newlines "$OUT" 'META-INF/services/*'
+          - mv "$OUT" /outputs/unsigned.apk
+        build_cpus:
+        build_home_dir: /vagrant
+        build_repo_dir: /vagrant/repo
+        build_timeout: 50
+        build_user: build
+        provisioning:
+          android_home: /opt/sdk
+          build_tools:
+          cmake: '3.22.1'
+          cmdline_tools:
+            version: '12.0'
+            url: https://dl.google.com/android/repository/commandlinetools-linux-11076708_latest.zip
+            sha256: 2d2d50857e4eb553af5a6dc3ad507a17adf43d115264b1afc116f95c92e5e258
+          extra_packages:
+            - curl
+            - cmake
+            - make
+            - tar
+            - libssl-dev
+            - maven
+            - unzip
+            - openjdk-11-jdk-headless
+            - python3
+          image: debian:bullseye-slim
+          jdk: openjdk-17-jdk-headless
+          ndk:
+          platform:
+          platform_tools:
+          tools:
+          verify_gradle_wrapper: true
