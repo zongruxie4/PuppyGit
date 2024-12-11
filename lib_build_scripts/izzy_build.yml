@@ -16,9 +16,7 @@ versions:
           - chmod +x gradlew
           - ./gradlew assembleRelease
           - find . -name '*.apk'
-          - git clone -b v0.3.0 https://github.com/obfusk/reproducible-apk-tools.git
           - OUT="app/build/outputs/apk/release/app-release-unsigned.apk"
-          - reproducible-apk-tools/inplace-fix.py --internal --page-size 16 fix-newlines "$OUT" 'META-INF/services/*'
           - mv "$OUT" /outputs/unsigned.apk
         build_cpus:
         build_home_dir: /vagrant
