@@ -46,10 +46,10 @@ jobs:
 
       - name: Download cmake
         run: |
+            cd ~
             wget https://cmake.org/files/v3.16/cmake-3.16.3-Linux-x86_64.tar.gz
             sudo mv /usr/local/bin/cmake /usr/local/bin/cmake_os_bundled
             tar -xzf cmake-3.16.3-Linux-x86_64.tar.gz
             ls -l cmake-3.16.3-Linux-x86_64/bin/
-            chmod +x cmake-3.16.3-Linux-x86_64/bin/*
             sudo ln -s cmake-3.16.3-Linux-x86_64/bin/cmake /usr/local/bin/cmake
             echo "cmake installed: $(cmake --version)"
