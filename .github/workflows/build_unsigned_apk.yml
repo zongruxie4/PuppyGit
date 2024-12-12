@@ -64,8 +64,8 @@ jobs:
           # clean lib out dir, this is unnecessary actually, cause will overide the old libs after build done
           rm -rf $ppgitjarlibout/*
           rm -rf $ppgitclibout/*
-          bash 2.5_buildjarlibs_fdroid.sh $ppgitjarlibout
-          bash 3_buildlibs_fdroid.sh $ppgitclibout
+          bash 2.5_buildjarlibs.sh $ppgitjarlibout
+          bash 3_buildlibs.sh $ppgitclibout
           echo "list libs"
           ls -R $ppgitjarlibout
           ls -R $ppgitclibout

@@ -2,7 +2,7 @@
 # require cmake and make
 
 # usage:
-# this_script "outputdir" "archs"
+# this_script "archs"
 
 # stop if has err
 set -e
@@ -21,7 +21,7 @@ export build_success_out=/vagrant/build_out
 
 # before run this script block, end
 
-build_success_out=${1:-$build_success_out}
+# build_success_out=${1:-$build_success_out}
 
 
 
@@ -94,7 +94,7 @@ export prefix=$ANDROID_TOOLCHAIN_ROOT/sysroot/usr/local
 # set archs
 default_archs="x86 x8664 arm32 arm64"
 # if no params passed in, build for all archs
-archs=${2:-$default_archs}
+archs=${1:-$default_archs}
 
 
 
@@ -182,7 +182,6 @@ for arch in $archs; do
     cd $git24j_c_src
     mkdir -p $build_out_tmp
     cd $build_out_tmp
-    # should use cmake 3.16.3, idk why the 3.22.1 or after, tell me can't found the jni_md.h even I set include path on the command
     cmake .. -DCMAKE_TOOLCHAIN_FILE=$toolchainfile -DCMAKE_INSTALL_PREFIX=$liboutdir -DCMAKE_BUILD_TYPE=Release -DJAVA_INCLUDE_PATH2=$JAVA_HOME/include/linux -DJAVA_AWT_INCLUDE_PATH=$JAVA_HOME/include -DJAVA_AWT_LIBRARY=$JAVA_HOME/jre/lib/amd64/libawt.so -DJAVA_JVM_LIBRARY=$JAVA_HOME/jre/lib/amd64/server/libjvm.so -DINCLUDE_LIBGIT2=$libgit2src/include -DLINK_LIBGIT2=$liboutdir
     cmake --build .
 
