@@ -92,7 +92,7 @@ jobs:
           path: ${{ github.workspace }}/app/src/main/jniLibs
           retention-days: 15
 
-      - name: Build APK
+      - name: Build Release APK
         run: |
           cd $GITHUB_WORKSPACE
           chmod +x gradlew
