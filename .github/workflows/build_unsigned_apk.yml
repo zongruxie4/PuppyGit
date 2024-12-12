@@ -59,8 +59,16 @@ jobs:
           pushd lib_build_scripts
           bash 1_installrequire_no_sudo_and_apt.sh
           bash 2_downloadsrc.sh
-          bash 2.5_buildjarlibs_fdroid.sh ~/PuppyGit/app/libs
-          bash 3_buildlibs_fdroid.sh ~/PuppyGit/app/src/main/jniLibs
+          export ppgitjarlibout=~/PuppyGit/app/libs
+          export ppgitclibout=~/PuppyGit/app/src/main/jniLibs
+          # clean lib out dir, this is unnecessary actually, cause will overide the old libs after build done
+          rm -rf $ppgitjarlibout/*
+          rm -rf $ppgitclibout/*
+          bash 2.5_buildjarlibs_fdroid.sh $ppgitjarlibout
+          bash 3_buildlibs_fdroid.sh $ppgitclibout
+          echo "list libs"
+          ls -R $ppgitjarlibout
+          ls -R $ppgitclibout
           popd
           echo "Build apk"
           chmod +x gradlew
