@@ -72,7 +72,7 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: java_libs
-          path: $GITHUB_WORKSPACE/app/libs
+          path: ${{ github.workspace }}/app/libs
           retention-days: 15
             
       - name: Build C Libs
@@ -89,7 +89,7 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: c_libs
-          path: $GITHUB_WORKSPACE/app/src/main/jniLibs
+          path: ${{ github.workspace }}/app/src/main/jniLibs
           retention-days: 15
 
       - name: Build APK
@@ -103,7 +103,7 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: app-release-unsigned.apk
-          path: $GITHUB_WORKSPACE/app/build/outputs/apk/release/app-release-unsigned.apk
+          path: ${{ github.workspace }}/app/build/outputs/apk/release/app-release-unsigned.apk
           retention-days: 15
           
       - name: Build Debug APK
@@ -117,7 +117,7 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: app-debug-unsigned.apk
-          path: $GITHUB_WORKSPACE/app/build/outputs/apk/debug/app-debug-unsigned.apk
+          path: ${{ github.workspace }}/app/build/outputs/apk/debug/app-debug-unsigned.apk
           retention-days: 15
         
         
