@@ -60,7 +60,7 @@ jobs:
           bash 1_installrequire_no_sudo_and_apt.sh
           bash 2_downloadsrc.sh
           bash 2.5_buildjarlibs_fdroid.sh ~/PuppyGit/app/libs
-          bash 3_buildlibs_fdroid.sh ~/PuppyGit/app/src/main/jniLibs/
+          bash 3_buildlibs_fdroid.sh ~/PuppyGit/app/src/main/jniLibs
           popd
           echo "Build apk"
           chmod +x gradlew
