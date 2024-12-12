@@ -72,7 +72,7 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: java_libs
-          path: ${{ github.workspace }}/app/libs
+          path: ${{ github.workspace }}/app/libs/  # no end with '/' is ok though, but '/' can indicate it's a folder
           retention-days: 15
             
       - name: Build C Libs
@@ -89,7 +89,7 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: c_libs
-          path: ${{ github.workspace }}/app/src/main/jniLibs
+          path: ${{ github.workspace }}/app/src/main/jniLibs/
           retention-days: 15
 
       - name: Build Release APK
