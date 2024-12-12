@@ -69,6 +69,7 @@ jobs:
           
       - name: Upload JAVA Libs
         uses: actions/upload-artifact@v4
+        run: ls -R $GITHUB_WORKSPACE/app/libs
         with:
           name: java_libs
           path: $GITHUB_WORKSPACE/app/libs/
@@ -111,7 +112,7 @@ jobs:
           ./gradlew clean
           ./gradlew assembleDebug
 
-      - name: Upload APK
+      - name: Upload Debug APK
         uses: actions/upload-artifact@v4
         with:
           name: app-debug-unsigned.apk
