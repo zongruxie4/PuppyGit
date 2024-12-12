@@ -1,4 +1,4 @@
-name: Build Unsigned APK
+name: Build Libs And Unsigned APK
 
 on:
 #  push:
@@ -8,13 +8,17 @@ on:
 
 jobs:
   build:
-    runs-on: ubuntu-22.04  # 使用最新的 Ubuntu 运行环境
+    runs-on: ubuntu-22.04  # 使用 Ubuntu 运行环境
 
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
-#        with:
-#          submodules: true
+        with:
+          # submodules: true
+          # repository: catpuppyapp/PuppyGit
+          # fetch-depth: 1
+          ref: main
+          # path: PuppyGit  # if set, must use `$GITHUB_WORKSPACE/PuppyGit` to access the dir, else can simple use `$GITHUB_WORKSPACE`
 
 
       - name: Set up JDK
@@ -30,55 +34,88 @@ jobs:
             curl \
             make \
             tar \
-            libssl-dev \
             maven \
             unzip \
-            python3 \
             git
 
-      - name: Download Android Command Line Tools
-        run: |
-          export ANDROID_HOME=$HOME/android-sdk
-          mkdir -p $ANDROID_HOME/cmdline-tools
-          curl -L -o cmdline-tools.zip https://dl.google.com/android/repository/commandlinetools-linux-11076708_latest.zip
-          unzip cmdline-tools.zip -d $ANDROID_HOME/cmdline-tools
-          rm cmdline-tools.zip
+      # - name: Download Android Command Line Tools
+      #   run: |
+      #     export ANDROID_HOME=$HOME/android-sdk
+      #     mkdir -p $ANDROID_HOME/cmdline-tools
+      #     curl -L -o cmdline-tools.zip https://dl.google.com/android/repository/commandlinetools-linux-11076708_latest.zip
+      #     unzip cmdline-tools.zip -d $ANDROID_HOME/cmdline-tools
+      #     rm cmdline-tools.zip
 
       - name: Setup cmake
         uses: jwlawson/actions-setup-cmake@v2
         with:
           cmake-version: '3.16.3'
 
+      - name: Install Require Software
+        run: bash $GITHUB_WORKSPACE/lib_build_scripts/1_installrequire_no_sudo_and_apt.sh
+      
+      - name: Download Src
+        run: bash $GITHUB_WORKSPACE/lib_build_scripts/2_downloadsrc.sh
+
+      - name: Build JAVA Libs
+        run: |
+          export ppgit_jar_lib_out=$GITHUB_WORKSPACE/app/libs
+          cd $GITHUB_WORKSPACE/lib_build_scripts
+          # clean lib out dir, actually this is unnecessary, cause will overide the old libs after built, run this for promise if lib build faild, then the apk will failed as well
+          rm -rf $ppgit_jar_lib_out/*
+          bash 2.5_buildjarlibs.sh $ppgit_jar_lib_out
+          echo "list java libs"
+          ls -R $ppgit_jar_lib_out
+          
+      - name: Upload JAVA Libs
+        uses: actions/upload-artifact@v4
+        with:
+          name: java_libs
+          path: $GITHUB_WORKSPACE/app/libs/
+          retention-days: 15
+            
+      - name: Build C Libs
+        run: |
+          export ppgit_c_lib_out=$GITHUB_WORKSPACE/app/src/main/jniLibs
+          cd $GITHUB_WORKSPACE/lib_build_scripts
+          rm -rf $ppgit_c_lib_out/*
+          bash 3_buildlibs.sh $ppgit_c_lib_out
+          echo "list c libs"
+          ls -R $ppgit_c_lib_out
+       
+      - name: Upload C Libs
+        uses: actions/upload-artifact@v4
+        with:
+          name: c_libs
+          path: $GITHUB_WORKSPACE/app/src/main/jniLibs/
+          retention-days: 15
+
       - name: Build APK
         run: |
-          echo "Building libs"
-          cd ~
-          git clone -b main --depth=1 https://github.com/catpuppyapp/PuppyGit.git PuppyGit
-          cd PuppyGit
-          # 进入 lib_build_scripts 目录并执行构建脚本
-          pushd lib_build_scripts
-          bash 1_installrequire_no_sudo_and_apt.sh
-          bash 2_downloadsrc.sh
-          export ppgitjarlibout=~/PuppyGit/app/libs
-          export ppgitclibout=~/PuppyGit/app/src/main/jniLibs
-          # clean lib out dir, this is unnecessary actually, cause will overide the old libs after build done
-          rm -rf $ppgitjarlibout/*
-          rm -rf $ppgitclibout/*
-          bash 2.5_buildjarlibs.sh $ppgitjarlibout
-          bash 3_buildlibs.sh $ppgitclibout
-          echo "list libs"
-          ls -R $ppgitjarlibout
-          ls -R $ppgitclibout
-          popd
-          echo "Build apk"
+          cd $GITHUB_WORKSPACE
           chmod +x gradlew
+          ./gradlew clean
           ./gradlew assembleRelease
+
+      - name: Upload Release APK
+        uses: actions/upload-artifact@v4
+        with:
+          name: app-release-unsigned.apk
+          path: $GITHUB_WORKSPACE/app/build/outputs/apk/release/app-release-unsigned.apk
+          retention-days: 15
+          
+      - name: Build Debug APK
+        run: |
+          cd $GITHUB_WORKSPACE
+          chmod +x gradlew
+          ./gradlew clean
+          ./gradlew assembleDebug
 
       - name: Upload APK
         uses: actions/upload-artifact@v4
         with:
-          name: app-release-unsigned.apk
-          path: ~/PuppyGit/app/build/outputs/apk/release/app-release-unsigned.apk
+          name: app-debug-unsigned.apk
+          path: $GITHUB_WORKSPACE/app/build/outputs/apk/debug/app-debug-unsigned.apk
           retention-days: 15
-          
-          
+        
+        
