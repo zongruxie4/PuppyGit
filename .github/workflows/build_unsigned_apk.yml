@@ -64,15 +64,15 @@ jobs:
           # clean lib out dir, actually this is unnecessary, cause will overide the old libs after built, run this for promise if lib build faild, then the apk will failed as well
           rm -rf $ppgit_jar_lib_out/*
           bash 2.5_buildjarlibs.sh $ppgit_jar_lib_out
-          echo "list java libs"
-          ls -R $ppgit_jar_lib_out
+
+      - name: "List JAVA Libs"
+        run: ls -R $GITHUB_WORKSPACE/app/libs
           
       - name: Upload JAVA Libs
         uses: actions/upload-artifact@v4
-        run: ls -R $GITHUB_WORKSPACE/app/libs
         with:
           name: java_libs
-          path: $GITHUB_WORKSPACE/app/libs/
+          path: $GITHUB_WORKSPACE/app/libs
           retention-days: 15
             
       - name: Build C Libs
@@ -81,14 +81,15 @@ jobs:
           cd $GITHUB_WORKSPACE/lib_build_scripts
           rm -rf $ppgit_c_lib_out/*
           bash 3_buildlibs.sh $ppgit_c_lib_out
-          echo "list c libs"
-          ls -R $ppgit_c_lib_out
-       
+      
+      - name: "List C Libs"
+        run: ls -R $GITHUB_WORKSPACE/app/src/main/jniLibs
+             
       - name: Upload C Libs
         uses: actions/upload-artifact@v4
         with:
           name: c_libs
-          path: $GITHUB_WORKSPACE/app/src/main/jniLibs/
+          path: $GITHUB_WORKSPACE/app/src/main/jniLibs
           retention-days: 15
 
       - name: Build APK
