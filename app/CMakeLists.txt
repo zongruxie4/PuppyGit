@@ -3,8 +3,9 @@ cmake_minimum_required(VERSION 3.22.1)
 project(puppygit C)
 
 set(my_lib_path ${CMAKE_SOURCE_DIR}/src/main/jniLibs)
-set(my_include_path ${CMAKE_SOURCE_DIR}/src/main/jni/include)
-set(my_c_src_path ${CMAKE_SOURCE_DIR}/src/main/jni/src)
+set(my_jni_path ${CMAKE_SOURCE_DIR}/src/main/jni)
+set(my_include_path ${my_jni_path}/include)
+set(my_c_src_path ${my_jni_path}/src)
 
 # -fvisibility=hidden 不将函数名输出到动态符号表中，但JNIEXPORT修饰的函数仍会输出，因为JNIEXPORT这个宏展开就是设置visibility为default的语句。
 add_compile_options(-fvisibility=hidden)
@@ -64,12 +65,12 @@ set_target_properties(ssl
         ${my_lib_path}/${ANDROID_ABI}/libssl.so
 )
 
+file(GLOB_RECURSE SRC_FILES "${my_c_src_path}/*.c")  # 递归查找所有 .c 文件
 
 #你的c代码
 add_library(${CMAKE_PROJECT_NAME}
         SHARED
-        ${my_c_src_path}/test.c
-        ${my_c_src_path}/libgit_two.c
+        ${SRC_FILES}
         )
 
 # android 自带
@@ -80,6 +81,7 @@ find_library(LOG-LIB log)
 #include_directories(${my_include_path})
 # or
 target_include_directories(${CMAKE_PROJECT_NAME} PRIVATE ${my_include_path})
+target_include_directories(${CMAKE_PROJECT_NAME} PRIVATE ${my_jni_path/src/git24j})
 
 # avoid generate buildid, it'll cause Reproducible Build(RB) verify failed, see: https://gitlab.com/IzzyOnDroid/repo/-/wikis/Reproducible-Builds#no-funny-build-time-generated-ids
 add_link_options("-Wl,--build-id=none")
