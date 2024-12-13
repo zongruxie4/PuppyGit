@@ -4,7 +4,7 @@ import android.util.Log;
 
 
 public class LibLoader {
-    private static String TAG="LibLoader";
+    private static final String TAG="LibLoader";
 
     static {
         Log.d(TAG, "loading c libs...");
