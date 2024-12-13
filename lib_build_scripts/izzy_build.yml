@@ -10,7 +10,6 @@ versions:
           - pushd lib_build_scripts
           - bash 1_installrequire_no_sudo_and_apt.sh
           - bash 2_downloadsrc.sh
-          - bash 2.5_buildjarlibs.sh ${BUILD_REPO_DIR}/app/libs
           - bash 3_buildlibs.sh ${BUILD_REPO_DIR}/app/src/main/jniLibs
           - popd
           - chmod +x gradlew
