@@ -3,7 +3,7 @@
 #include <assert.h>
 #include <git2.h>
 
-JNIEXPORT jobject JNICALL J_MAKE_METHOD(Error_jniLast)(JNIEnv *env, jclass obj)
+JNIEXPORT jthrowable JNICALL J_MAKE_METHOD(Error_jniLast)(JNIEnv *env, jclass obj)
 {
     const git_error *error = git_error_last();
     if (error == NULL)

@@ -28,8 +28,7 @@ public class Remote extends CAutoReleasable {
 
     static native int jniCallbacksNew(AtomicLong outCb, int version);
 
-    static native void jniCallbacksSetCallbackObject(
-            long cbsPtr, Callbacks cbsObject, int callbackType);
+    static native void jniCallbacksSetCallbackObject(long cbsPtr, Callbacks cbsObject, int callbackType);
 
     static native void jniCallbacksTest(long cbsPtr, Callbacks callbacks);
 
@@ -63,7 +62,7 @@ public class Remote extends CAutoReleasable {
     /** int git_remote_create_detached(git_remote **out, const char *url); */
     static native int jniCreateDetached(AtomicLong out, String url);
 
-    static native int jniCreateOptionsFree(long optsPtr);
+    static native void jniCreateOptionsFree(long optsPtr);
 
     /** const char *fetchspec */
     static native String jniCreateOptionsGetFetchspec(long create_optionsPtr);
@@ -134,7 +133,7 @@ public class Remote extends CAutoReleasable {
      */
     static native int jniFetch(long remote, String[] refspecs, long opts, String reflogMessage);
 
-    static native int jniFetchOptionsFree(long ptr);
+    static native void jniFetchOptionsFree(long ptr);
 
     /** git_remote_callbacks callbacks */
     static native long jniFetchOptionsGetCallbacks(long fetch_optionsPtr);
@@ -264,7 +263,7 @@ public class Remote extends CAutoReleasable {
     /** unsigned int version */
     static native void jniPushOptionsSetVersion(long push_optionsPtr, int version);
 
-    static native char jniPushUpdateFree(long push_updatePtr);
+    static native void jniPushUpdateFree(long push_updatePtr);
 
     /** git_oid dst */
     static native byte[] jniPushUpdateGetDst(long push_updatePtr);

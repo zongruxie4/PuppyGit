@@ -278,7 +278,7 @@ public class Diff extends CAutoReleasable {
     /** int git_diff_patchid_init_options(git_diff_patchid_options *opts, unsigned int version); */
     static native int jniPatchidInitOptions(long opts, int version);
 
-    static native int jniPatchidOptionsFree(long opts);
+    static native void jniPatchidOptionsFree(long opts);
 
     static native int jniPatchidOptionsNew(AtomicLong outOpts, int version);
 

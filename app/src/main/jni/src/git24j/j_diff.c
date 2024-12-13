@@ -497,7 +497,7 @@ JNIEXPORT jint JNICALL J_MAKE_METHOD(Diff_jniCommitAsEmail)(JNIEnv *env, jclass 
     return r;
 }
 /** new and init git_diff_format_email_options */
-JNIEXPORT jint JNICALL J_MAKE_METHOD(Diff_jniFormatEmailNewOptions)(JNIEnv *env, jclass obj, jlong optsPtr, jobject outPtr, jint version)
+JNIEXPORT jint JNICALL J_MAKE_METHOD(Diff_jniFormatEmailNewOptions)(JNIEnv *env, jclass obj, jobject outPtr, jint version)
 {
     git_diff_format_email_options *out = (git_diff_format_email_options *)malloc(sizeof(git_diff_format_email_options));
     int r = git_diff_format_email_init_options(out, version);

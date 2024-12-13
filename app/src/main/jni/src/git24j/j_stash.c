@@ -82,7 +82,7 @@ JNIEXPORT jint JNICALL J_MAKE_METHOD(Stash_jniPop)(JNIEnv *env, jclass obj, jlon
 
 /** -------- git_stash_apply_options ---------- */
 /** git_stash_apply_options */
-JNIEXPORT jint JNICALL J_MAKE_METHOD(Stash_jniApplyFlagsNew)(JNIEnv *env, jclass obj, jobject outPtr, jint version)
+JNIEXPORT jint JNICALL J_MAKE_METHOD(Stash_jniApplyOptionsNew)(JNIEnv *env, jclass obj, jobject outPtr, jint version)
 {
     git_stash_apply_options *opts = (git_stash_apply_options *)malloc(sizeof(git_stash_apply_options));
     opts->progress_payload = NULL;

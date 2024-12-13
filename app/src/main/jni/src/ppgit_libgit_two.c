@@ -1,5 +1,5 @@
 #include "git2.h"
-#include "common.h"
+#include "ppgit_common.h"
 #include <errno.h>
 #include <android/log.h>
 #include <jni.h>

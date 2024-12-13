@@ -492,14 +492,14 @@ JNIEXPORT void JNICALL J_MAKE_METHOD(Remote_jniCallbacksTest)(JNIEnv *env, jclas
     cb->resolve_url(NULL, "resolve_url.url", 1, payload);
 }
 
-JNIEXPORT void JNICALL J_MAKE_METHOD(Remote_jniCallbacksSetCallbackObject)(JNIEnv *env, jclass obj, jlong cbsPtr, jobject cbsObject, j_callback_type_t cbt)
+JNIEXPORT void JNICALL J_MAKE_METHOD(Remote_jniCallbacksSetCallbackObject)(JNIEnv *env, jclass obj, jlong cbsPtr, jobject cbsObject, jint cbt)
 {
     git_remote_callbacks *cb = (git_remote_callbacks *)cbsPtr;
     if (cb->payload == NULL)
     {
         cb->payload = (*env)->NewGlobalRef(env, cbsObject);
     }
-    assert(cbt <= J_REMOTE_CALLBACK_URL_RESOLVE && "unrecognized callbacks type");
+    assert((cbt >= J_REMOTE_CALLBACK_CRED && cbt <= J_REMOTE_CALLBACK_URL_RESOLVE) && "unrecognized callbacks type");
     switch (cbt)
     {
     case J_REMOTE_CALLBACK_CRED:
@@ -782,7 +782,7 @@ JNIEXPORT jint JNICALL J_MAKE_METHOD(Remote_jniFetchOptionsNew)(JNIEnv *env, jcl
     (*env)->CallVoidMethod(env, outPtr, jniConstants->midAtomicLongSet, (jlong)opts);
     return r;
 }
-JNIEXPORT void JNICALL J_MAKE_METHOD(Remote_jniFetchOptionsFree)(JNIEnv *env, jclass obj, jobject optsPtr)
+JNIEXPORT void JNICALL J_MAKE_METHOD(Remote_jniFetchOptionsFree)(JNIEnv *env, jclass obj, jlong optsPtr)
 {
     git_fetch_options *opts = (git_fetch_options *)optsPtr;
     if (opts->callbacks.payload != NULL)
@@ -891,7 +891,7 @@ JNIEXPORT jint JNICALL J_MAKE_METHOD(Remote_jniPushOptionsNew)(JNIEnv *env, jcla
     (*env)->CallVoidMethod(env, outPtr, jniConstants->midAtomicLongSet, (jlong)opts);
     return r;
 }
-JNIEXPORT void JNICALL J_MAKE_METHOD(Remote_jniPushOptionsFree)(JNIEnv *env, jclass obj, jobject optsPtr)
+JNIEXPORT void JNICALL J_MAKE_METHOD(Remote_jniPushOptionsFree)(JNIEnv *env, jclass obj, jlong optsPtr)
 {
     git_push_options *opts = (git_push_options *)optsPtr;
     if (opts->callbacks.payload != NULL)

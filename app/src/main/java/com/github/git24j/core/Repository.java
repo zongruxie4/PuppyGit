@@ -25,7 +25,7 @@ public class Repository extends CAutoCloseable {
 
     static native int jniFetchheadForeach(long repoPtr, FetchHeadForeachCb cb);
 
-    static native int jniFree(long repoPtr);
+    static native void jniFree(long repoPtr);
 
     static native String jniGetNamespace(long repoPtr);
 

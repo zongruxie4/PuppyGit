@@ -253,9 +253,9 @@ JNIEXPORT jint JNICALL J_MAKE_METHOD(Tree_jniBuilderNew)(JNIEnv *env, jclass obj
 }
 
 /** int git_treebuilder_clear(git_tree_builder *bld); */
-JNIEXPORT void JNICALL J_MAKE_METHOD(Tree_jniBuilderClear)(JNIEnv *env, jclass obj, jlong bldPtr)
+JNIEXPORT jint JNICALL J_MAKE_METHOD(Tree_jniBuilderClear)(JNIEnv *env, jclass obj, jlong bldPtr)
 {
-    git_treebuilder_clear((git_treebuilder *)bldPtr);
+    return git_treebuilder_clear((git_treebuilder *)bldPtr);
 }
 
 /** size_t git_treebuilder_entrycount(git_tree_builder *bld); */
