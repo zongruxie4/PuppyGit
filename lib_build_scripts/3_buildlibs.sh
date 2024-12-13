@@ -144,7 +144,7 @@ for arch in $archs; do
     mkdir -p $build_out_tmp
     cd $build_out_tmp
     # cmake .. --preset android
-    cmake .. -DCMAKE_TOOLCHAIN_FILE=$toolchainfile -DANDROID_ABI="$cur_android_abi" -DANDROID_PLATFORM="android-$android_target_abi" -DCMAKE_INSTALL_PREFIX=$prefix -DOPENSSL_TARGET_PLATFORM=$opensslarch -DOPENSSL_CONFIGURE_OPTIONS="-D__ANDROID_API__=$android_target_abi;--openssldir=$prefix/ssl;--prefix=$prefix" -DOPENSSL_INSTALL=TRUE -DOPENSSL_PATCH="$opensslsrc/patch/android.patch" -DBUILD_SHARED_LIBS=ON -DOPENSSL_SOURCE=$opensslsrc
+    cmake .. -DCMAKE_TOOLCHAIN_FILE=$toolchainfile -DANDROID_ABI=$cur_android_abi -DANDROID_PLATFORM="android-$android_target_abi" -DCMAKE_INSTALL_PREFIX=$prefix -DOPENSSL_TARGET_PLATFORM=$opensslarch -DOPENSSL_CONFIGURE_OPTIONS="-D__ANDROID_API__=$android_target_abi;--openssldir=$prefix/ssl;--prefix=$prefix" -DOPENSSL_INSTALL=TRUE -DOPENSSL_PATCH="$openssl_cmake/patch/android.patch" -DBUILD_SHARED_LIBS=ON -DOPENSSL_SOURCE=$opensslsrc
 
     cmake --build . --target install
 
@@ -189,14 +189,15 @@ for arch in $archs; do
 
 
 
-    echo "all build finshed, do clean"
+    echo "all build finished, do clean"
     # clean
 
     # must clean openssl src folder, else can't build for other architecture
     echo "start clean for openssl src"
-    cd $opensslsrc
+    # cd $opensslsrc
     # 用cmake构建执行这个会报错，妈的
     # make clean
+
     rm -rf $openssl_cmake/$build_out_tmp
     echo "end clean for openssl src"
     
