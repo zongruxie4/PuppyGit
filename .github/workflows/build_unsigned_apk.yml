@@ -17,7 +17,7 @@ jobs:
           # submodules: true
           # repository: catpuppyapp/PuppyGit
           # fetch-depth: 1
-          ref: main
+          # ref: main
           # path: PuppyGit  # if set, must use `$GITHUB_WORKSPACE/PuppyGit` to access the dir, else can simple use `$GITHUB_WORKSPACE`
 
 
