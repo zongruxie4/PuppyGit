@@ -13,7 +13,7 @@ public class LibLoader {
         System.loadLibrary("ssl");
         System.loadLibrary("ssh2");
         System.loadLibrary("git2");
-        System.loadLibrary("git24j");
+//        System.loadLibrary("git24j");
         System.loadLibrary("puppygit");
 
         Log.d(TAG, "c libs loaded");

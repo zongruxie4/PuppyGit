@@ -27,11 +27,11 @@ add_library(git24j
         SHARED
         IMPORTED
         )
-
-set_target_properties(git24j
-        PROPERTIES IMPORTED_LOCATION
-        ${my_lib_path}/${ANDROID_ABI}/libgit24j.so
-)
+#
+#set_target_properties(git24j
+#        PROPERTIES IMPORTED_LOCATION
+#        ${my_lib_path}/${ANDROID_ABI}/libgit24j.so
+#)
 
 ## 要引用的lib
 add_library(crypto
@@ -97,7 +97,7 @@ target_compile_options(${CMAKE_PROJECT_NAME}
 target_link_libraries(
         #你的库必须在第一个，否则编译会报错
         ${CMAKE_PROJECT_NAME}
-        git24j
+#        git24j
         git2
         ssh2
         crypto
