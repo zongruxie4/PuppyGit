@@ -81,6 +81,9 @@ find_library(LOG-LIB log)
 # or
 target_include_directories(${CMAKE_PROJECT_NAME} PRIVATE ${my_include_path})
 
+# avoid generate buildid, it'll cause Reproducible Build(RB) verify failed, see: https://gitlab.com/IzzyOnDroid/repo/-/wikis/Reproducible-Builds#no-funny-build-time-generated-ids
+add_link_options("-Wl,--build-id=none")
+
 target_compile_options(${CMAKE_PROJECT_NAME}
         PRIVATE
         -Wall    #启用所有警告，但并不真是所有
