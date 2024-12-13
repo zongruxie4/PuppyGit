@@ -62,6 +62,8 @@ cp libgit2-x86-toolchain.cmake $x86_toolchain_file
 export opensslsrc=$build_src/openssl
 export libssh2src=$build_src/libssh2
 export libgit2src=$build_src/libgit2
+export git24jsrc=$build_src/git24j
+export git24j_c_src=$git24jsrc/src/main/c/git24j
 
 # moved to `2_downloadsrc.sh`
 #cd $libgit2src
@@ -77,6 +79,16 @@ export ANDROID_NDK_ROOT=$build_root/android-ndk
 export ANDROID_TOOLCHAIN_ROOT=$ANDROID_NDK_ROOT/toolchains/llvm/prebuilt/linux-x86_64
 export PATH=$ANDROID_TOOLCHAIN_ROOT/bin:$PATH
 export prefix=$ANDROID_TOOLCHAIN_ROOT/sysroot/usr/local
+
+# moved to `2.5_buildjarlibs.sh`
+## build git24j jar
+#echo "start build git24j jar"
+#cd $git24jsrc
+#mvn clean compile package "-Dmaven.test.skip=true"
+#cp target/git24j-$git24j_jar_version.jar $build_out/git24j-$git24j_jar_version.jar
+## clean
+#rm -rf target
+#echo "end build git24j jar"
 
 
 # set archs
@@ -164,6 +176,21 @@ for arch in $archs; do
     echo "end build libgit2"
 
 
+    echo "start build git24j"
+
+    # git24j c lib
+    cd $git24j_c_src
+    mkdir -p $build_out_tmp
+    cd $build_out_tmp
+    # should use cmake 3.16.3 or 3.22.1, if newer, may can't found the jni_md.h even I set include path on the command, 一开始以为是cmaketoolchain限制使用外部目录的库，但我尝试把jdk放到ndk sysroot目录下再设置环境变量也没用，不知道原因，算了，放弃
+    cmake .. -DCMAKE_TOOLCHAIN_FILE=$toolchainfile -DCMAKE_INSTALL_PREFIX=$liboutdir -DCMAKE_BUILD_TYPE=Release -DJAVA_INCLUDE_PATH2=$JAVA_HOME/include/linux -DJAVA_AWT_INCLUDE_PATH=$JAVA_HOME/include -DJAVA_AWT_LIBRARY=$JAVA_HOME/jre/lib/amd64/libawt.so -DJAVA_JVM_LIBRARY=$JAVA_HOME/jre/lib/amd64/server/libjvm.so -DINCLUDE_LIBGIT2=$libgit2src/include -DLINK_LIBGIT2=$liboutdir
+    cmake --build .
+
+    cp libgit24j.so $liboutdir/libgit24j.so
+    # git24j done
+
+    echo "end build git24j"
+
 
 
     echo "all build finshed, do clean"
@@ -182,7 +209,11 @@ for arch in $archs; do
     echo "start clean for libgit2 src"
     rm -rf $libgit2src/$build_out_tmp
     echo "end clean for libgit2 src"
-
+    
+    echo "start clean for git24j src"
+    rm -rf $git24j_c_src/$build_out_tmp
+    echo "end clean for git24j src"
+    
     
     echo "all clean done"
     # clean done
@@ -195,6 +226,6 @@ done
 echo "copy all libs to: '$build_success_out'"
 mkdir -p $build_success_out
 cp -rf $build_out/* $build_success_out
-echo "finished"
+echo "finshed"
 
 
