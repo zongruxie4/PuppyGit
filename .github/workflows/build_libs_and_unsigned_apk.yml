@@ -52,7 +52,7 @@ jobs:
           cmake-version: '3.31.1'
 
       - name: Install Require Software
-        run: bash $GITHUB_WORKSPACE/lib_build_scripts/1_installrequire_no_sudo_and_apt.sh
+        run: bash $GITHUB_WORKSPACE/lib_build_scripts/1_installrequire.sh
       
       - name: Download Src
         run: bash $GITHUB_WORKSPACE/lib_build_scripts/2_downloadsrc.sh
