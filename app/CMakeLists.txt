@@ -23,10 +23,10 @@ set_target_properties(git2
 )
 
 ## 要引用的lib
-add_library(git24j
-        SHARED
-        IMPORTED
-        )
+#add_library(git24j
+#        SHARED
+#        IMPORTED
+#        )
 #
 #set_target_properties(git24j
 #        PROPERTIES IMPORTED_LOCATION
