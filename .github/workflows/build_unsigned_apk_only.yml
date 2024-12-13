@@ -1,5 +1,5 @@
-# 构建 apk，不构建c libs(使用之前编译好的c libs)
-name: Build Unsigned APK No Build C Lib
+# 仅构建 apk，不构建libs(使用预编译的库)
+name: Build Unsigned APK Only
 
 on:
 #  push:
