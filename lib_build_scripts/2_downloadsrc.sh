@@ -14,7 +14,7 @@ cd $build_src
 OPENSSL_URL="https://github.com/openssl/openssl/releases/download/openssl-${OPENSSL_VERSION}/openssl-${OPENSSL_VERSION}.tar.gz"
 LIBGIT2_URL="https://github.com/libgit2/libgit2/archive/refs/tags/v${LIBGIT2_VERSION}.tar.gz"
 LIBSSH2_URL="https://github.com/libssh2/libssh2/releases/download/libssh2-${LIBSSH2_VERSION}/libssh2-${LIBSSH2_VERSION}.tar.gz"
-
+OPENSSL_CMAKE_URL="https://github.com/jimmy-park/openssl-cmake/archive/refs/tags/${OPENSSL_VERSION}.tar.gz"
 
 
 
@@ -29,6 +29,9 @@ curl -L -o "$build_src/openssl-${OPENSSL_VERSION}.tar.gz" "$OPENSSL_URL"
 echo "Downloading libgit2..."
 curl -L -o "$build_src/libgit2-${LIBGIT2_VERSION}.tar.gz" "$LIBGIT2_URL"
 
+echo "Downloading openssl cmake..."
+curl -L -o "$build_src/openssl-cmake-${OPENSSL_VERSION}.tar.gz" "$OPENSSL_CMAKE_URL"
+
 # extract
 echo "Extracting libssh2..."
 tar -xzf "$build_src/libssh2-${LIBSSH2_VERSION}.tar.gz" -C "$build_src"
@@ -40,6 +43,12 @@ echo "Extracting openssl..."
 tar -xzf "$build_src/openssl-${OPENSSL_VERSION}.tar.gz" -C "$build_src"
 mkdir -p openssl
 mv openssl-${OPENSSL_VERSION}/* openssl
+
+
+echo "Extracting openssl cmake..."
+tar -xzf "$build_src/openssl-cmake-${OPENSSL_VERSION}.tar.gz" -C "$build_src"
+mkdir -p openssl-cmake
+mv openssl-cmake-${OPENSSL_VERSION}/* openssl-cmake
 
 
 echo "Extracting libgit2..."

@@ -37,10 +37,15 @@ mkdir -p $build_src
 
 export JAVA_HOME=$build_root/jdk
 
-export arm64inst=$build_out/arm64-v8a
-export x8664inst=$build_out/x86_64
-export arm32inst=$build_out/armeabi-v7a
-export x86inst=$build_out/x86
+export android_abi_arm64=arm64-v8a
+export android_abi_x8664=x86_64
+export android_abi_arm32=armeabi-v7a
+export android_abi_x86=x86
+
+export arm64inst=$build_out/$android_abi_arm64
+export x8664inst=$build_out/$android_abi_x8664
+export arm32inst=$build_out/$android_abi_arm32
+export x86inst=$build_out/$android_abi_x86
 
 mkdir -p $arm64inst
 mkdir -p $x8664inst
@@ -62,6 +67,7 @@ cp libgit2-x86-toolchain.cmake $x86_toolchain_file
 export opensslsrc=$build_src/openssl
 export libssh2src=$build_src/libssh2
 export libgit2src=$build_src/libgit2
+export openssl_cmake=$build_src/openssl-cmake
 
 # moved to `2_downloadsrc.sh`
 #cd $libgit2src
@@ -88,7 +94,7 @@ archs=${2:-$default_archs}
 
 for arch in $archs; do
     echo "Current architecture: $arch"
-    
+
     if [ "$arch" == "x86" ]; then
         echo "build libs for x86..."
         liboutdir=$x86inst
@@ -99,38 +105,52 @@ for arch in $archs; do
         #`android-mip64`, `android-x86`, `android-x86_64` and `android-riscv64`
         #(`*MIPS` targets are no longer supported with NDK R20+)
         opensslarch=android-x86
+        cur_android_abi=$android_abi_x86
     elif [ "$arch" == "x8664" ]; then
         echo "build libs for x8664..."
         liboutdir=$x8664inst
         toolchainfile=$x8664_toolchain_file
         build_out_tmp=build_x8664
         opensslarch=android-x86_64
+        cur_android_abi=$android_abi_x8664
     elif [ "$arch" == "arm32" ]; then
         echo "build libs for arm32..."
         liboutdir=$arm32inst
         toolchainfile=$arm32_toolchain_file
         build_out_tmp=build_arm32
         opensslarch=android-arm
-        
+        cur_android_abi=$android_abi_arm32
     elif [ "$arch" == "arm64" ]; then
         echo "build libs for arm64..."
         liboutdir=$arm64inst
         toolchainfile=$arm64_toolchain_file
         build_out_tmp=build_arm64
         opensslarch=android-arm64
+        cur_android_abi=$android_abi_arm64
     fi
-    
-        
-    echo "start build opessl"
-    cd $opensslsrc
-    ./Configure no-tests $opensslarch -D__ANDROID_API__=$android_target_abi --prefix=$prefix --openssldir=$prefix/ssl
 
-    make install
+
+    echo "start build openssl"
+    cd $openssl_cmake
+    # use make, very slow, build 1 target need 8min maybe
+    # ./Configure no-tests $opensslarch -D__ANDROID_API__=$android_target_abi --prefix=$prefix --openssldir=$prefix/ssl
+    # make install
+
+    # use cmake
+    # android patch的作用是使openssl能兼容安卓系统内置证书目录里的证书，好像格式有点旧，所以openssl默认已经不兼容了，这补丁打不打无所谓，我bundled了curl整理的Mozilla证书，不用系统的，系统的太旧
+    mkdir -p $build_out_tmp
+    cd $build_out_tmp
+    # cmake .. --preset android
+    cmake .. -DCMAKE_TOOLCHAIN_FILE=$toolchainfile -DANDROID_ABI="$cur_android_abi" -DANDROID_PLATFORM="android-$android_target_abi" -DCMAKE_INSTALL_PREFIX=$prefix -DOPENSSL_TARGET_PLATFORM=$opensslarch -DOPENSSL_CONFIGURE_OPTIONS="-D__ANDROID_API__=$android_target_abi;--openssldir=$prefix/ssl;--prefix=$prefix" -DOPENSSL_INSTALL=TRUE -DOPENSSL_PATCH="$opensslsrc/patch/android.patch" -DBUILD_SHARED_LIBS=ON -DOPENSSL_SOURCE=$opensslsrc
+
+    cmake --build . --target install
 
     cp $prefix/lib/libssl.so $liboutdir/libssl.so
     cp $prefix/lib/libcrypto.so $liboutdir/libcrypto.so
     # openssl done
-    echo "end build opessl"
+    echo "end build openssl"
+
+
 
     echo "start build libssh2"
     # libssh2
@@ -172,7 +192,9 @@ for arch in $archs; do
     # must clean openssl src folder, else can't build for other architecture
     echo "start clean for openssl src"
     cd $opensslsrc
-    make clean
+    # 用cmake构建执行这个会报错，妈的
+    # make clean
+    rm -rf $openssl_cmake/$build_out_tmp
     echo "end clean for openssl src"
     
     echo "start clean for libssh2 src"
