@@ -1,5 +1,13 @@
 #!/bin/bash
 
+#####################
+# usage: ./thisscript.sh [repo_path]
+# the repo path used for locate the `local.properties` file,
+#  this script will append cmake.dir into it,
+#  if not specify, will use $GITHUB_WORKSPACE,
+#  if $GITHUB_WORKSPACE is empty, will use `/home/runner/work/PuppyGit/PuppyGit`, it is the actually value of $GITHUB_WORKSPACE
+#####################
+
 #echo "Updating package list..."
 #sudo apt update
 #
@@ -41,7 +49,10 @@ echo "set cmake.dir to local.properties for gradle"
 # -e是为了能输出换行符\n
 # 由于izzydroid 用的gitlab，里面没有$GITHUB_WORKSPACE这个变量，所以用实际变量值替换了，不然路径找不到，会有bug
 # echo -e "\ncmake.dir=$CMAKE_DIR" >> $GITHUB_WORKSPACE/local.properties
-echo -e "\ncmake.dir=$CMAKE_DIR" >> /home/runner/work/PuppyGit/PuppyGit/local.properties
+# if specified repo path, use it, else try use $GITHUB_WORKSPACE, if it doesn't exist, will use a literal path
+REPO_PATH=${1:-$GITHUB_WORKSPACE}
+REPO_PATH=${REPO_PATH:-/home/runner/work/PuppyGit/PuppyGit}
+echo -e "\ncmake.dir=$CMAKE_DIR" >> $REPO_PATH/local.properties
 echo "print cmake version"
 $CMAKE_PATH --version
 
