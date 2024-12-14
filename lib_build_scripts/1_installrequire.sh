@@ -52,7 +52,12 @@ echo "set cmake.dir to local.properties for gradle"
 # if specified repo path, use it, else try use $GITHUB_WORKSPACE, if it doesn't exist, will use a literal path
 REPO_PATH=${1:-$GITHUB_WORKSPACE}
 REPO_PATH=${REPO_PATH:-/home/runner/work/PuppyGit/PuppyGit}
-echo -e "\ncmake.dir=$CMAKE_DIR" >> $REPO_PATH/local.properties
+LOCAL_PROPERTIES_PATH=$REPO_PATH/local.properties
+echo -e "\ncmake.dir=$CMAKE_DIR" >> $LOCAL_PROPERTIES_PATH
+echo "local.properties at: $LOCAL_PROPERTIES_PATH"
+echo "cat local.properties:"
+cat $LOCAL_PROPERTIES_PATH
+
 echo "print cmake version"
 $CMAKE_PATH --version
 
