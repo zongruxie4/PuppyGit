@@ -1,4 +1,4 @@
-name: test download cmake
+name: test - setup cmake
 
 on:
 #  push:
