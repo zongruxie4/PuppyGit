@@ -39,10 +39,14 @@ jobs:
             unzip \
             git
 
-      - name: Setup cmake
-        uses: jwlawson/actions-setup-cmake@v2
-        with:
-          cmake-version: '3.31.1'
+#      - name: Setup cmake
+#        uses: jwlawson/actions-setup-cmake@v2
+#        with:
+#          cmake-version: '3.31.1'
+
+
+      - name: Install Require Software
+        run: bash $GITHUB_WORKSPACE/lib_build_scripts/1_installrequire_only_cmake.sh
 
       - name: Build Release APK
         run: |
