@@ -85,6 +85,14 @@ export PATH=$ANDROID_TOOLCHAIN_ROOT/bin:$PATH
 export prefix=$ANDROID_TOOLCHAIN_ROOT/sysroot/usr/local
 
 
+# ANDROID_HOME is android sdk root, is sdk root, not ndk root
+export ANDROID_HOME=$build_root/android-sdk
+export CMAKE_VERSION=3.31.1
+export CMAKE_PATH=$ANDROID_HOME/cmake/$CMAKE_VERSION/bin/cmake
+$CMAKE_PATH --version
+
+
+
 # set archs
 default_archs="x86 x8664 arm32 arm64"
 # if no params passed in, build for all archs
@@ -144,9 +152,9 @@ for arch in $archs; do
     mkdir -p $build_out_tmp
     cd $build_out_tmp
     # cmake .. --preset android
-    cmake .. -DCMAKE_TOOLCHAIN_FILE=$toolchainfile -DANDROID_ABI=$cur_android_abi -DANDROID_PLATFORM="android-$android_target_abi" -DCMAKE_INSTALL_PREFIX=$prefix -DOPENSSL_TARGET_PLATFORM=$opensslarch -DOPENSSL_CONFIGURE_OPTIONS="-D__ANDROID_API__=$android_target_abi;--openssldir=$prefix/ssl;--prefix=$prefix" -DOPENSSL_INSTALL=TRUE -DOPENSSL_PATCH="$openssl_cmake/patch/android.patch" -DBUILD_SHARED_LIBS=ON -DOPENSSL_SOURCE=$opensslsrc
+    $CMAKE_PATH .. -DCMAKE_TOOLCHAIN_FILE=$toolchainfile -DANDROID_ABI=$cur_android_abi -DANDROID_PLATFORM="android-$android_target_abi" -DCMAKE_INSTALL_PREFIX=$prefix -DOPENSSL_TARGET_PLATFORM=$opensslarch -DOPENSSL_CONFIGURE_OPTIONS="-D__ANDROID_API__=$android_target_abi;--openssldir=$prefix/ssl;--prefix=$prefix" -DOPENSSL_INSTALL=TRUE -DOPENSSL_PATCH="$openssl_cmake/patch/android.patch" -DBUILD_SHARED_LIBS=ON -DOPENSSL_SOURCE=$opensslsrc
 
-    cmake --build . --target install
+    $CMAKE_PATH --build . --target install
 
     cp $prefix/lib/libssl.so $liboutdir/libssl.so
     cp $prefix/lib/libcrypto.so $liboutdir/libcrypto.so
@@ -160,9 +168,9 @@ for arch in $archs; do
     cd $libssh2src
     mkdir -p $build_out_tmp
     cd $build_out_tmp
-    cmake .. -DCMAKE_TOOLCHAIN_FILE=$toolchainfile -DCMAKE_INSTALL_PREFIX=$prefix -DCMAKE_BUILD_TYPE=Release
+    $CMAKE_PATH .. -DCMAKE_TOOLCHAIN_FILE=$toolchainfile -DCMAKE_INSTALL_PREFIX=$prefix -DCMAKE_BUILD_TYPE=Release
 
-    cmake --build . --target install
+    $CMAKE_PATH --build . --target install
 
     cp $prefix/lib/libssh2.so $liboutdir/libssh2.so
 
@@ -178,9 +186,9 @@ for arch in $archs; do
     cd $libgit2src
     mkdir -p $build_out_tmp
     cd $build_out_tmp
-    cmake .. -DCMAKE_TOOLCHAIN_FILE=$toolchainfile -DCMAKE_INSTALL_PREFIX=$prefix -DCMAKE_BUILD_TYPE=Release -DUSE_SSH=ON -DBUILD_TESTS=OFF -DBUILD_CLI=OFF -DBUILD_EXAMPLES=OFF -DBUILD_FUZZERS=OFF -DBUILD_SHARED_LIBS=ON
+    $CMAKE_PATH .. -DCMAKE_TOOLCHAIN_FILE=$toolchainfile -DCMAKE_INSTALL_PREFIX=$prefix -DCMAKE_BUILD_TYPE=Release -DUSE_SSH=ON -DBUILD_TESTS=OFF -DBUILD_CLI=OFF -DBUILD_EXAMPLES=OFF -DBUILD_FUZZERS=OFF -DBUILD_SHARED_LIBS=ON
 
-    cmake --build . --target install
+    $CMAKE_PATH --build . --target install
 
     cp $prefix/lib/libgit2.so $liboutdir/libgit2.so
     # libgit2 done
