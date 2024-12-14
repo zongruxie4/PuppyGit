@@ -1,4 +1,4 @@
-name: Build Libs And Unsigned APK
+name: Use Android Sdkmanager cmake
 
 on:
 #  push:
