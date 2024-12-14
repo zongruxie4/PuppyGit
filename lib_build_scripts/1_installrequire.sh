@@ -39,7 +39,9 @@ export CMAKE_PATH=$CMAKE_DIR/bin/cmake
 echo "set cmake.dir to local.properties for gradle"
 # 设置 cmake.dir 以使 github workflow 使用gradle构建apk的时候能找到我们指定版本的cmake
 # -e是为了能输出换行符\n
-echo -e "\ncmake.dir=$CMAKE_DIR" >> $GITHUB_WORKSPACE/local.properties
+# 由于izzydroid 用的gitlab，里面没有$GITHUB_WORKSPACE这个变量，所以用实际变量值替换了，不然路径找不到，会有bug
+# echo -e "\ncmake.dir=$CMAKE_DIR" >> $GITHUB_WORKSPACE/local.properties
+echo -e "\ncmake.dir=$CMAKE_DIR" >> /home/runner/work/PuppyGit/PuppyGit/local.properties
 echo "print cmake version"
 $CMAKE_PATH --version
 
