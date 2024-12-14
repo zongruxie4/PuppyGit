@@ -42,11 +42,11 @@ jobs:
         run: |
            export ANDROID_HOME=$HOME/android-sdk
            mkdir -p $ANDROID_HOME/cmdline-tools
-           export ANDROID_SDK_ROOT=$ANDROID_HOME/cmdline-tools
            curl -L -o cmdline-tools.zip https://dl.google.com/android/repository/commandlinetools-linux-11076708_latest.zip
            unzip cmdline-tools.zip -d $ANDROID_HOME/
            rm -f cmdline-tools.zip
-           $ANDROID_SDK_ROOT/bin/sdkmanager --sdk_root=$ANDROID_SDK_ROOT -y "cmake;3.31.1"
+           $ANDROID_HOME/cmdline-tools/bin/sdkmanager --sdk_root=$ANDROID_HOME -y "cmake;3.31.1"
+           $ANDROID_HOME/cmdline-tools/bin/sdkmanager --list
            cmake --version
            exit 1
 
