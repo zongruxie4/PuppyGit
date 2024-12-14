@@ -41,11 +41,12 @@ jobs:
       - name: Download Android Command Line Tools
         run: |
            export ANDROID_HOME=$HOME/android-sdk
+           export ANDROID_SDK_ROOT=$ANDROID_HOME
            mkdir -p $ANDROID_HOME/cmdline-tools
            curl -L -o cmdline-tools.zip https://dl.google.com/android/repository/commandlinetools-linux-11076708_latest.zip
            unzip cmdline-tools.zip -d $ANDROID_HOME/
            rm -f cmdline-tools.zip
-           yes | $ANDROID_HOME/cmdline-tools/bin/sdkmanager --install "cmake;3.31.1" --sdk_root=$ANDROID_HOME
+           yes | $ANDROID_HOME/cmdline-tools/bin/sdkmanager --install "cmake;3.31.1" 
            $ANDROID_HOME/cmdline-tools/bin/sdkmanager --list
            cmake --version
            exit 1
