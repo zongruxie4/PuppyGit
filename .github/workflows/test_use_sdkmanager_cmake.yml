@@ -48,7 +48,7 @@ jobs:
            rm -f cmdline-tools.zip
            yes | $ANDROID_HOME/cmdline-tools/bin/sdkmanager --install "cmake;3.31.1"  --sdk_root=$ANDROID_SDK_ROOT
            $ANDROID_HOME/cmdline-tools/bin/sdkmanager --list --sdk_root=$ANDROID_SDK_ROOT
-           cmake --version
+           $ANDROID_SDK_ROOT/cmake/3.31.1/bin/cmake --version
            exit 1
 
       - name: Install Require Software
