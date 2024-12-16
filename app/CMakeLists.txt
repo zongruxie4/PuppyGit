@@ -11,6 +11,10 @@ set(my_c_src_path ${my_jni_path}/src)
 # -fvisibility=hidden 不将函数名输出到动态符号表中，但JNIEXPORT修饰的函数仍会输出，因为JNIEXPORT这个宏展开就是设置visibility为default的语句。
 add_compile_options(-fvisibility=hidden)
 
+# avoid generate buildid, it'll cause Reproducible Build(RB) verify failed, see: https://gitlab.com/IzzyOnDroid/repo/-/wikis/Reproducible-Builds#no-funny-build-time-generated-ids
+add_link_options("-Wl,--build-id=none")
+
+
 ## 要引用的lib
 add_library(git2
         SHARED
@@ -83,9 +87,6 @@ find_library(LOG-LIB log)
 # or
 target_include_directories(${CMAKE_PROJECT_NAME} PRIVATE ${my_include_path})
 target_include_directories(${CMAKE_PROJECT_NAME} PRIVATE ${my_jni_path/src/git24j})
-
-# avoid generate buildid, it'll cause Reproducible Build(RB) verify failed, see: https://gitlab.com/IzzyOnDroid/repo/-/wikis/Reproducible-Builds#no-funny-build-time-generated-ids
-add_link_options("-Wl,--build-id=none")
 
 target_compile_options(${CMAKE_PROJECT_NAME}
         PRIVATE
