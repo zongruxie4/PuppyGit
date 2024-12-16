@@ -27,7 +27,7 @@ build_success_out=${1:-$build_success_out}
 
 
 # download src and create necessary dirs by `downloadsrc.sh`
-export build_root=~/puppylibsbuild
+export build_root=$HOME/puppylibsbuild
 
 
 export build_out=$build_root/out

@@ -7,7 +7,7 @@ LIBGIT2_VERSION="1.8.4"
 
 
 
-export build_src=~/puppylibsbuild/src
+export build_src=$HOME/puppylibsbuild/src
 mkdir -p $build_src
 cd $build_src
 

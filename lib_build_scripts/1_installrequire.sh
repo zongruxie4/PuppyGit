@@ -16,7 +16,7 @@
 
 
 
-export build_root=~/puppylibsbuild
+export build_root=$HOME/puppylibsbuild
 mkdir -p $build_root
 cd $build_root
 
