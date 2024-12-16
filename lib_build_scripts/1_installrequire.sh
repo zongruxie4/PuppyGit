@@ -60,6 +60,7 @@ echo "print cmake version"
 $CMAKE_PATH --version
 
 echo "downloading android ndk..."
+# channel 0 代表stable渠道, 1 beta, 3 canary, see: https://github.com/android/ndk-samples/wiki/Configure-NDK-Path#the-sdkmanager-command-line-tool
 yes | $ANDROID_SDKMANAGER --channel=0 --install "ndk;$NDK_VERSION" --sdk_root=$ANDROID_HOME
 
 echo "set sdk.dir to local.properties for gradle"

@@ -35,26 +35,26 @@ curl -L -o "$build_src/openssl-cmake-${OPENSSL_VERSION}.tar.gz" "$OPENSSL_CMAKE_
 # extract
 echo "Extracting libssh2..."
 tar -xzf "$build_src/libssh2-${LIBSSH2_VERSION}.tar.gz" -C "$build_src"
-mkdir -p libssh2
-mv libssh2-${LIBSSH2_VERSION}/* libssh2
+rm -rf libssh2
+mv libssh2-${LIBSSH2_VERSION} libssh2
 
 
 echo "Extracting openssl..."
 tar -xzf "$build_src/openssl-${OPENSSL_VERSION}.tar.gz" -C "$build_src"
-mkdir -p openssl
-mv openssl-${OPENSSL_VERSION}/* openssl
+rm -rf openssl
+mv openssl-${OPENSSL_VERSION} openssl
 
 
 echo "Extracting openssl cmake..."
 tar -xzf "$build_src/openssl-cmake-${OPENSSL_VERSION}.tar.gz" -C "$build_src"
-mkdir -p openssl-cmake
-mv openssl-cmake-${OPENSSL_VERSION}/* openssl-cmake
+rm -rf openssl-cmake
+mv openssl-cmake-${OPENSSL_VERSION} openssl-cmake
 
 
 echo "Extracting libgit2..."
 tar -xzf "$build_src/libgit2-${LIBGIT2_VERSION}.tar.gz" -C "$build_src"
-mkdir -p libgit2
-mv libgit2-${LIBGIT2_VERSION}/* libgit2
+rm -rf libgit2
+mv libgit2-${LIBGIT2_VERSION} libgit2
 
 # replace the c standard 90 to c99, else maybe will get err when build the lib
 cd libgit2

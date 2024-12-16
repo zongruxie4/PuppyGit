@@ -57,10 +57,10 @@ export x8664_toolchain_file=$build_root/libgit2-x8664-toolchain.cmake
 export arm32_toolchain_file=$build_root/libgit2-armv7-toolchain.cmake
 export x86_toolchain_file=$build_root/libgit2-x86-toolchain.cmake
 
-cp libgit2-arm64-toolchain.cmake $arm64_toolchain_file
-cp libgit2-x8664-toolchain.cmake $x8664_toolchain_file
-cp libgit2-armv7-toolchain.cmake $arm32_toolchain_file
-cp libgit2-x86-toolchain.cmake $x86_toolchain_file
+cp -f libgit2-arm64-toolchain.cmake $arm64_toolchain_file
+cp -f libgit2-x8664-toolchain.cmake $x8664_toolchain_file
+cp -f libgit2-armv7-toolchain.cmake $arm32_toolchain_file
+cp -f libgit2-x86-toolchain.cmake $x86_toolchain_file
 
 
 # set src folder
@@ -155,8 +155,8 @@ for arch in $archs; do
 
     $CMAKE_PATH --build . --target install
 
-    cp $prefix/lib/libssl.so $liboutdir/libssl.so
-    cp $prefix/lib/libcrypto.so $liboutdir/libcrypto.so
+    cp -f $prefix/lib/libssl.so $liboutdir/libssl.so
+    cp -f $prefix/lib/libcrypto.so $liboutdir/libcrypto.so
     # openssl done
     echo "end build openssl"
 
@@ -171,7 +171,7 @@ for arch in $archs; do
 
     $CMAKE_PATH --build . --target install
 
-    cp $prefix/lib/libssh2.so $liboutdir/libssh2.so
+    cp -f $prefix/lib/libssh2.so $liboutdir/libssh2.so
 
     echo "end build libssh2"
 
@@ -189,7 +189,7 @@ for arch in $archs; do
 
     $CMAKE_PATH --build . --target install
 
-    cp $prefix/lib/libgit2.so $liboutdir/libgit2.so
+    cp -f $prefix/lib/libgit2.so $liboutdir/libgit2.so
     # libgit2 done
     echo "end build libgit2"
 
