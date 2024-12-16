@@ -37,11 +37,14 @@ export ANDROID_CMD_TOOLS=$TOOLS/android-cmdline-tools
 export ANDROID_HOME=$build_root/android-sdk
 export CMAKE_VERSION=3.31.1
 export NDK_VERSION=26.3.11579264
+# 创建目标目录以及依赖目录，虽然后面会删一下cmd tools目录，但这个创建依然是有意义的，意义在于创建依赖目录，所以即使后面会删除cmd tools目录，这条命令也依然应该保留
 mkdir -p $ANDROID_CMD_TOOLS
 mkdir -p $ANDROID_HOME
 curl -L -o cmdline-tools.zip https://dl.google.com/android/repository/commandlinetools-linux-11076708_latest.zip
-unzip cmdline-tools.zip -d $TOOLS/
+# 删一下，确保mv后目录结构不变
 rm -rf $ANDROID_CMD_TOOLS
+# 解压然后移动，确保先删后解压移动，以免当解压后的目录和移动的目标目录同名时误删
+unzip cmdline-tools.zip -d $TOOLS/
 mv $TOOLS/cmdline-tools $ANDROID_CMD_TOOLS
 export ANDROID_SDKMANAGER=$ANDROID_CMD_TOOLS/bin/sdkmanager
 chmod +x $ANDROID_SDKMANAGER
