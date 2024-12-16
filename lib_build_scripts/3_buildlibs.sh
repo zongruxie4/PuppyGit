@@ -76,13 +76,7 @@ export openssl_cmake=$build_src/openssl-cmake
 
 
 
-# build x86 libs
 
-# openssl
-export ANDROID_NDK_ROOT=$build_root/android-ndk
-export ANDROID_TOOLCHAIN_ROOT=$ANDROID_NDK_ROOT/toolchains/llvm/prebuilt/linux-x86_64
-export PATH=$ANDROID_TOOLCHAIN_ROOT/bin:$PATH
-export prefix=$ANDROID_TOOLCHAIN_ROOT/sysroot/usr/local
 
 
 # ANDROID_HOME is android sdk root, is sdk root, not ndk root
@@ -90,6 +84,11 @@ export ANDROID_HOME=$build_root/android-sdk
 export CMAKE_VERSION=3.31.1
 export CMAKE_PATH=$ANDROID_HOME/cmake/$CMAKE_VERSION/bin/cmake
 $CMAKE_PATH --version
+export NDK_VERSION=26.3.11579264
+export ANDROID_NDK_ROOT=$ANDROID_HOMR/ndk/$NDK_VERSION
+export ANDROID_TOOLCHAIN_ROOT=$ANDROID_NDK_ROOT/toolchains/llvm/prebuilt/linux-x86_64
+export PATH=$ANDROID_TOOLCHAIN_ROOT/bin:$PATH
+export prefix=$ANDROID_TOOLCHAIN_ROOT/sysroot/usr/local
 
 
 

@@ -20,26 +20,33 @@ export build_root=~/puppylibsbuild
 mkdir -p $build_root
 cd $build_root
 
-export ndk_filename="android-ndk-r26d-linux"
-echo "Downloading: ndk"
-curl -L -o "${build_root}/$ndk_filename.zip" "https://dl.google.com/android/repository/${ndk_filename}.zip"
-export ANDROID_NDK_ROOT=$build_root/android-ndk
-mkdir -p $ANDROID_NDK_ROOT
-echo "Extracting: ndk"
+# export ndk_filename="android-ndk-r26d-linux"
+# echo "Downloading: ndk"
+# curl -L -o "${build_root}/$ndk_filename.zip" "https://dl.google.com/android/repository/${ndk_filename}.zip"
+# export ANDROID_NDK_ROOT=$build_root/android-ndk
+# mkdir -p $ANDROID_NDK_ROOT
+# echo "Extracting: ndk"
 # -q : only show msg when err
-unzip -q "$ndk_filename.zip"
-mv android-ndk-r26d/* $ANDROID_NDK_ROOT
+# unzip -q "$ndk_filename.zip"
+# mv android-ndk-r26d/* $ANDROID_NDK_ROOT
 
 echo "Downloading: Android SDK"
 # ANDROID_HOME is android sdk root, is sdk root, not ndk root
+export TOOLS=$build_root/tools
+export ANDROID_CMD_TOOLS=$TOOLS/android-cmdline-tools
 export ANDROID_HOME=$build_root/android-sdk
 export CMAKE_VERSION=3.31.1
 export NDK_VERSION=26.3.11579264
-mkdir -p $ANDROID_HOME/cmdline-tools
+mkdir -p $ANDROID_CMD_TOOLS
+mkdir -p $ANDROID_HOME
 curl -L -o cmdline-tools.zip https://dl.google.com/android/repository/commandlinetools-linux-11076708_latest.zip
-unzip cmdline-tools.zip -d $ANDROID_HOME/
+unzip cmdline-tools.zip -d $TOOLS/
+rm -rf $ANDROID_CMD_TOOLS
+mv $TOOLS/cmdline-tools $ANDROID_CMD_TOOLS
+export ANDROID_SDKMANAGER=$ANDROID_CMD_TOOLS/bin/sdkmanager
+chmod +x $ANDROID_SDKMANAGER
 echo "install cmake by Android sdkmanager"
-yes | $ANDROID_HOME/cmdline-tools/bin/sdkmanager --install "cmake;$CMAKE_VERSION" --sdk_root=$ANDROID_HOME
+yes | $ANDROID_SDKMANAGER --install "cmake;$CMAKE_VERSION" --sdk_root=$ANDROID_HOME
 # $ANDROID_HOME/cmdline-tools/bin/sdkmanager --list --sdk_root=$ANDROID_HOME
 # cmake root dir
 export CMAKE_DIR=$ANDROID_HOME/cmake/$CMAKE_VERSION
@@ -50,7 +57,7 @@ echo "print cmake version"
 $CMAKE_PATH --version
 
 echo "downloading android ndk..."
-yes | $ANDROID_HOME/cmdline-tools/bin/sdkmanager --channel=0 --install "ndk;$NDK_VERSION" --sdk_root=$ANDROID_HOME
+yes | $ANDROID_SDKMANAGER --channel=0 --install "ndk;$NDK_VERSION" --sdk_root=$ANDROID_HOME
 
 echo "set sdk.dir to local.properties for gradle"
 # 设置 sdk.dir 以使 github workflow 使用gradle构建apk的时候能找到我们指定版本的cmake和ndk
