@@ -32,10 +32,8 @@ versions:
             - curl
             - make
             - tar
-            - libssl-dev
             - maven
             - unzip
-            - openjdk-11-jdk-headless
           image: debian:bullseye-slim
           jdk: openjdk-17-jdk-headless
           ndk:
