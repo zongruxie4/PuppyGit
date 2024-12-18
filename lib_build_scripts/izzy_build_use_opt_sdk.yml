@@ -17,7 +17,7 @@ versions:
           - mv app/build/outputs/apk/release/app-release-unsigned.apk /outputs/unsigned.apk
         build_cpus:
         build_home_dir: /home/runner
-        build_repo_dir: /home/runner/PuppyGit/PuppyGit
+        build_repo_dir: /home/runner/work/PuppyGit/PuppyGit
         build_timeout: 50
         build_user: build
         provisioning:
