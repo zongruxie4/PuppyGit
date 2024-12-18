@@ -14,7 +14,8 @@ versions:
           - popd
           - chmod +x gradlew
           - ./gradlew assembleRelease
-          - mv app/build/outputs/apk/release/app-release-unsigned.apk /outputs/unsigned.apk
+          - git clone -b v0.3.0 https://github.com/obfusk/reproducible-apk-tools.git
+          - reproducible-apk-tools/zipalign.py --page-size 16 --pad-like-apksigner --replace app/build/outputs/apk/release/app-release-unsigned.apk /outputs/unsigned.apk
         build_cpus:
         build_home_dir: /home/runner
         build_repo_dir: /home/runner/work/PuppyGit/PuppyGit
@@ -34,6 +35,7 @@ versions:
             - tar
             - maven
             - unzip
+            - python3
           image: ubuntu:jammy
           jdk: openjdk-17-jdk-headless
           ndk:
