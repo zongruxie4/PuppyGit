@@ -1,3 +1,9 @@
+1.0.7.1v47 - 20241218:
+- make app pass the Reproducible Build check, it used for verify the apk 100% built from open source (issue #13, thx @IzzySoft)
+- set jvmTarget from 11 to 17
+- bundled git24j src code and fix some bugs
+
+
 1.0.7.0v46 - 20241212:
 - update bundled cert
 
