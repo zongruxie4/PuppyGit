@@ -46,7 +46,7 @@ jobs:
 
 
       - name: Install Require Software
-        run: bash $GITHUB_WORKSPACE/lib_build_scripts/1_installrequire_only_cmake.sh
+        run: bash $GITHUB_WORKSPACE/lib_build_scripts/1_installrequire.sh
 
       - name: Build Release APK
         run: |
