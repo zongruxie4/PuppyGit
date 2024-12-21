@@ -1,4 +1,14 @@
-## TODO (welcome pr)
+## TODO 20241221
+- support gif-lfs(should compitable .gitconfig settings)
+- sign commit and tag(include rebase/merge/cherrypick generated commits, and can enable or disable respectively)(at least support gpg sign, better ssh as well)(should compitable .gitconfig settings)
+- ChangeList/Index/TreeToTree support view by folder and support more sort method(sort by name/modified time, asc/desc just like Files screen)
+- syntax  highlighting in Editor and Diff screen
+
+
+---
+
+
+## TODO (early, maybe some features already implemented)
 - show translation and web search and share etc context menu when text selected (may need filter the apps which supportted PROCESS_TEXT intent)
 - show process detail when cloning (now only show"Cloning...")
 - improve ChangeList load performance
