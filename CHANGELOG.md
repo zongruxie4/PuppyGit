@@ -1,3 +1,8 @@
+next version:
+- 切换主题不需要重启app了
+- 修复 Diff Screen 选择比较 bug: 当按行分组关闭时，选择比较两个行（或 某行和剪贴板）后若无匹配则目标行状态不会更新
+
+
 1.0.7.1v47 - 20241218:
 - make app pass the Reproducible Build check, it used for verify the apk 100% built from open source (issue #13, thx @IzzySoft)
 - set jvmTarget from 11 to 17
