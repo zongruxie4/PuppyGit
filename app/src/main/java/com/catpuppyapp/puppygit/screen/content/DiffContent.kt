@@ -27,6 +27,7 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.ClipboardManager
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.font.FontWeight
@@ -50,6 +51,7 @@ import com.catpuppyapp.puppygit.git.StatusTypeEntrySaver
 import com.catpuppyapp.puppygit.play.pro.R
 import com.catpuppyapp.puppygit.settings.SettingsUtil
 import com.catpuppyapp.puppygit.style.MyStyleKt
+import com.catpuppyapp.puppygit.utils.AppModel
 import com.catpuppyapp.puppygit.utils.Libgit2Helper
 import com.catpuppyapp.puppygit.utils.MyLog
 import com.catpuppyapp.puppygit.utils.UIHelper
@@ -110,6 +112,9 @@ fun DiffContent(
     lastClickedItemKey:MutableState<String>
 
 ) {
+
+    val navController = AppModel.singleInstanceHolder.navController
+    val activityContext = LocalContext.current
 
     val isDiffFileHistoryFromTreeToTree = fromTo == Cons.gitDiffFileHistoryFromTreeToTree
     //废弃，改用获取diffItem时动态计算实际需要显示的contentLen总和了
@@ -344,7 +349,9 @@ fun DiffContent(
                                         indexStringPartListMap = indexStringPartListMapForComparePair,
                                         enableSelectCompare=enableSelectCompare,
                                         matchByWords = matchByWords.value,
-                                        settings = settings
+                                        settings = settings,
+                                        navController = navController,
+                                        activityContext = activityContext
                                     )
                                 }
                             }else {  // add or del
@@ -379,7 +386,9 @@ fun DiffContent(
                                                 indexStringPartListMap = indexStringPartListMapForComparePair,
                                                 enableSelectCompare=enableSelectCompare,
                                                 matchByWords = matchByWords.value,
-                                                settings = settings
+                                                settings = settings,
+                                                navController = navController,
+                                                activityContext = activityContext
                                             )
                                         }
                                     }
@@ -393,9 +402,7 @@ fun DiffContent(
 //                                val pair = comparePair.value
                                 // use pair
                                 val compareResult = indexStringPartListMapForComparePair.value[line.key]
-                                var stringPartListWillUse = compareResult?.stringPartList
-
-                                if(stringPartListWillUse == null) {
+                                val stringPartListWillUse = if(compareResult == null) {
                                     //没发现选择比较的结果，比较下实际相同行号不同类型（add、del）的行
                                     val modifyResult = hunkAndLines.getModifyResult(
                                         lineNum = line.lineNum,
@@ -404,9 +411,13 @@ fun DiffContent(
                                     )
 
                                     if(modifyResult?.matched == true) {
-                                        stringPartListWillUse = if (line.originType == Diff.Line.OriginType.ADDITION.toString()) modifyResult.add else modifyResult.del
+                                        if (line.originType == Diff.Line.OriginType.ADDITION.toString()) modifyResult.add else modifyResult.del
+                                    }else {
+                                        null
                                     }
 
+                                }else {
+                                    compareResult.stringPartList
                                 }
 
                                 item {
@@ -430,7 +441,9 @@ fun DiffContent(
                                         indexStringPartListMap = indexStringPartListMapForComparePair,
                                         enableSelectCompare=enableSelectCompare,
                                         matchByWords = matchByWords.value,
-                                        settings = settings
+                                        settings = settings,
+                                        navController = navController,
+                                        activityContext = activityContext
                                     )
                                 }
                             }
@@ -473,7 +486,9 @@ fun DiffContent(
                                         indexStringPartListMap = indexStringPartListMapForComparePair,
                                         enableSelectCompare=enableSelectCompare,
                                         matchByWords = matchByWords.value,
-                                        settings = settings
+                                        settings = settings,
+                                        navController = navController,
+                                        activityContext = activityContext
                                     )
                                 }
                             }
@@ -519,7 +534,9 @@ fun DiffContent(
                                             indexStringPartListMap = indexStringPartListMapForComparePair,
                                             enableSelectCompare=enableSelectCompare,
                                             matchByWords = matchByWords.value,
-                                            settings = settings
+                                            settings = settings,
+                                            navController = navController,
+                                            activityContext = activityContext
                                         )
 
                                     }
@@ -597,7 +614,9 @@ fun DiffContent(
                                         indexStringPartListMap = indexStringPartListMapForComparePair,
                                         enableSelectCompare=enableSelectCompare,
                                         matchByWords = matchByWords.value,
-                                        settings = settings
+                                        settings = settings,
+                                        navController = navController,
+                                        activityContext = activityContext
                                     )
                                 }
                             }
@@ -624,7 +643,9 @@ fun DiffContent(
                                         indexStringPartListMap = indexStringPartListMapForComparePair,
                                         enableSelectCompare=enableSelectCompare,
                                         matchByWords = matchByWords.value,
-                                        settings = settings
+                                        settings = settings,
+                                        navController = navController,
+                                        activityContext = activityContext
                                     )
                                 }
                             }
@@ -687,7 +708,9 @@ fun DiffContent(
                                     indexStringPartListMap = indexStringPartListMapForComparePair,
                                     enableSelectCompare=enableSelectCompare,
                                     matchByWords = matchByWords.value,
-                                    settings = settings
+                                    settings = settings,
+                                    navController = navController,
+                                    activityContext = activityContext
                                 )
                             }
                         }
@@ -721,7 +744,9 @@ fun DiffContent(
                                 indexStringPartListMap = indexStringPartListMapForComparePair,
                                 enableSelectCompare=enableSelectCompare,
                                 matchByWords = matchByWords.value,
-                                settings = settings
+                                settings = settings,
+                                navController = navController,
+                                activityContext = activityContext
                             )
                         }
                     }

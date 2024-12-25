@@ -1,5 +1,6 @@
 package com.catpuppyapp.puppygit.compose
 
+import android.content.Context
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Column
@@ -32,6 +33,7 @@ import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.DpOffset
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.navigation.NavController
 import com.catpuppyapp.puppygit.constants.Cons
 import com.catpuppyapp.puppygit.constants.LineNum
 import com.catpuppyapp.puppygit.git.CompareLinePair
@@ -43,7 +45,6 @@ import com.catpuppyapp.puppygit.screen.functions.getClipboardText
 import com.catpuppyapp.puppygit.settings.AppSettings
 import com.catpuppyapp.puppygit.style.MyStyleKt
 import com.catpuppyapp.puppygit.ui.theme.Theme
-import com.catpuppyapp.puppygit.utils.AppModel
 import com.catpuppyapp.puppygit.utils.FsUtils
 import com.catpuppyapp.puppygit.utils.Libgit2Helper
 import com.catpuppyapp.puppygit.utils.Msg
@@ -84,7 +85,9 @@ fun DiffRow (
     indexStringPartListMap:CustomStateMapSaveable<String, CompareLinePairResult>,
     enableSelectCompare: Boolean,
     matchByWords:Boolean,
-    settings:AppSettings
+    settings:AppSettings,
+    navController:NavController,
+    activityContext:Context
 
 ) {
     // disable for EOF, the EOF showing sometimes false-added
@@ -128,10 +131,11 @@ fun DiffRow (
 
 
 
-    val useStringPartList = !stringPartList.isNullOrEmpty()
+//    val useStringPartList = !stringPartList.isNullOrEmpty()
+    // 如果为null或空 或者 所有元素都是modified，则不使用string part，否则使用
+    val useStringPartList = !(stringPartList.isNullOrEmpty() || (stringPartList.indexOfFirst { it.modified.not() } == -1))
 
-    val navController = AppModel.singleInstanceHolder.navController
-    val activityContext = AppModel.singleInstanceHolder.activityContext
+
 
     val inDarkTheme = Theme.inDarkTheme
     //libgit2会把连续行整合到一起，这里用getLines()获取拆分后的行
@@ -452,7 +456,7 @@ fun DiffRow (
             .fillMaxWidth()
             //如果是经过compare的添加或删除行，背景半透明，然后真修改的内容用不透明，这样就能突出真修改的内容
             //alpha值越大越不透明
-            .background(if (useStringPartList) color.copy(alpha = 0.3f) else color)
+            .background(if (useStringPartList) color.copy(alpha = 0.4f) else color)
 //            .background(color)
 //                            .clickable {
 //
