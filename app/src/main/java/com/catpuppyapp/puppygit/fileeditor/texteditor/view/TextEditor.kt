@@ -79,8 +79,8 @@ import com.catpuppyapp.puppygit.utils.state.mutableCustomStateOf
 import java.io.File
 import java.util.Date
 
-private val TAG ="TextEditor"
-private val stateKeyTag ="TextEditor"
+private const val TAG ="TextEditor"
+private const val stateKeyTag ="TextEditor"
 
 class ExpectConflictStrDto(
     var settings: AppSettings = SettingsUtil.getSettingsSnapshot()
@@ -132,12 +132,6 @@ private val customTextSelectionColors_darkMode = MyStyleKt.TextSelectionColor.cu
 private val customTextSelectionColors_hideCursorHandle = MyStyleKt.TextSelectionColor.customTextSelectionColors_hideCursorHandle
 
 
-private val conflictOursBlockBgColor = UIHelper.getConflictOursBlockBgColor()
-private val conflictTheirsBlockBgColor = UIHelper.getConflictTheirsBlockBgColor()
-private val conflictStartLineBgColor = UIHelper.getConflictStartLineBgColor()
-private val conflictSplitLineBgColor = UIHelper.getConflictSplitLineBgColor()
-private val conflictEndLineBgColor = UIHelper.getConflictEndLineBgColor()
-
 
 
 @OptIn(ExperimentalFoundationApi::class)
@@ -163,6 +157,14 @@ fun TextEditor(
 
     decorationBox: DecorationBoxComposable = { _, _, innerTextField -> innerTextField(Modifier) },
 ) {
+
+    val conflictOursBlockBgColor = UIHelper.getConflictOursBlockBgColor()
+    val conflictTheirsBlockBgColor = UIHelper.getConflictTheirsBlockBgColor()
+    val conflictStartLineBgColor = UIHelper.getConflictStartLineBgColor()
+    val conflictSplitLineBgColor = UIHelper.getConflictSplitLineBgColor()
+    val conflictEndLineBgColor = UIHelper.getConflictEndLineBgColor()
+
+
     val haptic = AppModel.singleInstanceHolder.haptic
     val activityContext = AppModel.singleInstanceHolder.activityContext
 

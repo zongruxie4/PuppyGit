@@ -41,7 +41,7 @@ object Theme {
     )
 
     fun getThemeTextByCode(themeCode:Int?, appContext: Context):String {
-        if(themeCode== auto) {
+        if(themeCode == auto) {
             return appContext.getString(R.string.auto)
         }else if(themeCode == light) {
             return appContext.getString(R.string.light)
@@ -78,12 +78,13 @@ private val LightColorScheme = lightColorScheme(
 
 @Composable
 fun PuppyGitAndroidTheme(
-    darkTheme: Boolean = isSystemInDarkTheme(),
+    theme:String,
     // Dynamic color is available on Android 12+
     dynamicColor: Boolean = true,
     content: @Composable () -> Unit
 ) {
-    //TODO 实现手动切换是否暗黑主题，改下这里即可
+    val darkTheme = if(theme == Theme.auto.toString()) isSystemInDarkTheme() else (theme == Theme.dark.toString())
+
     val colorScheme = when {
         dynamicColor && Build.VERSION.SDK_INT >= Build.VERSION_CODES.S -> {
             val context = LocalContext.current

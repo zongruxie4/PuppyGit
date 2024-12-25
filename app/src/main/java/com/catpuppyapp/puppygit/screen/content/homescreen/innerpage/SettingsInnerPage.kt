@@ -429,7 +429,7 @@ fun SettingsInnerPage(
         SettingsContent {
             Column(modifier = Modifier.fillMaxWidth(itemLeftWidthForSelector)) {
                 Text(stringResource(R.string.theme), fontSize = itemFontSize)
-                Text(stringResource(R.string.require_restart_app), fontSize = itemDescFontSize, fontWeight = FontWeight.Light, fontStyle = FontStyle.Italic)
+//                Text(stringResource(R.string.require_restart_app), fontSize = itemDescFontSize, fontWeight = FontWeight.Light, fontStyle = FontStyle.Italic)
             }
 
             Column(modifier = Modifier.width(selectorWidth)) {
@@ -443,7 +443,9 @@ fun SettingsInnerPage(
                         selectedTheme.intValue = value
 
                         if(value != PrefMan.getInt(activityContext, PrefMan.Key.theme, Theme.defaultThemeValue)) {
-                            PrefMan.set(activityContext, PrefMan.Key.theme, ""+value)
+                            val valueStr = ""+value
+                            PrefMan.set(activityContext, PrefMan.Key.theme, valueStr)
+                            AppModel.singleInstanceHolder.theme?.value = valueStr
                         }
                     }
                 )

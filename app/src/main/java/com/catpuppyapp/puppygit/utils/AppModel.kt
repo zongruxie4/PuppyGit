@@ -558,6 +558,8 @@ class AppModel {
     private lateinit var logDir: File
     private lateinit var submoduleDotGitBackupDir: File
 
+    var theme:MutableState<String>? = null
+
     //外部不应该直接获取此文件，此文件应通过DebugModeManager的setOn/Off方法维护
     private lateinit var debugModeFlagFile:File
     //外部应通过获取此文件来判断是否开启debug模式并通过DebugModeManager的set方法维护此变量和debugModeFlagFile

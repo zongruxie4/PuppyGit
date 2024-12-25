@@ -5,7 +5,6 @@ import android.os.Bundle
 import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
-import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
@@ -135,11 +134,12 @@ class MainActivity : ComponentActivity() {
 
 //        // val settings = SettingsUtil.getSettingsSnapshot()
 
-        val theme = PrefMan.getInt(applicationContext, PrefMan.Key.theme, Theme.defaultThemeValue)
 
         setContent {
+            val theme = rememberSaveable { mutableStateOf(""+PrefMan.getInt(applicationContext, PrefMan.Key.theme, Theme.defaultThemeValue)) }
+            AppModel.singleInstanceHolder.theme = theme
             PuppyGitAndroidTheme(
-                darkTheme = if(theme == Theme.auto) isSystemInDarkTheme() else (theme == Theme.dark)
+                theme = theme.value,
             ) {
                 MainCompose()
                 //                Greeting(baseContext)
