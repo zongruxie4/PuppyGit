@@ -164,6 +164,10 @@ fun TextEditor(
     val conflictSplitLineBgColor = UIHelper.getConflictSplitLineBgColor()
     val conflictEndLineBgColor = UIHelper.getConflictEndLineBgColor()
 
+    val acceptOursBtnColor = UIHelper.getAcceptOursIconColor()
+    val acceptTheirsBtnColor = UIHelper.getAcceptTheirsIconColor()
+    val acceptBothBtnColor = UIHelper.getAcceptBothIconColor()
+    val rejectBothBtnColor = UIHelper.getRejectBothIconColor()
 
     val haptic = AppModel.singleInstanceHolder.haptic
     val activityContext = AppModel.singleInstanceHolder.activityContext
@@ -955,10 +959,11 @@ fun TextEditor(
                             AcceptButtons(
                                 lineIndex = index,
                                 lineText = curLineText,
+                                acceptOursColor = acceptOursBtnColor,
+                                acceptTheirsColor = acceptTheirsBtnColor,
+                                acceptBothColor = acceptBothBtnColor,
+                                rejectBothColor = rejectBothBtnColor,
                                 prepareAcceptBlock = prepareAcceptBlock,
-//                                conflictOursBlockBgColor = conflictOursBlockBgColor,
-//                                conflictTheirsBlockBgColor = conflictTheirsBlockBgColor,
-//                                conflictSplitLineBgColor = conflictSplitLineBgColor
                             )
                         }
                     }
@@ -1131,10 +1136,11 @@ fun TextEditor(
                             AcceptButtons(
                                 lineIndex = index,
                                 lineText = curLineText,
+                                acceptOursColor = acceptOursBtnColor,
+                                acceptTheirsColor = acceptTheirsBtnColor,
+                                acceptBothColor = acceptBothBtnColor,
+                                rejectBothColor = rejectBothBtnColor,
                                 prepareAcceptBlock = prepareAcceptBlock,
-//                                conflictOursBlockBgColor = conflictOursBlockBgColor,
-//                                conflictTheirsBlockBgColor = conflictTheirsBlockBgColor,
-//                                conflictSplitLineBgColor = conflictSplitLineBgColor
                             )
                         }
                     }

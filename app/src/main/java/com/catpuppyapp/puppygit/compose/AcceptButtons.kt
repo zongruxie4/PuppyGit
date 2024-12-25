@@ -8,59 +8,38 @@ import androidx.compose.material.icons.filled.ChevronLeft
 import androidx.compose.material.icons.filled.ChevronRight
 import androidx.compose.material.icons.filled.Code
 import androidx.compose.material.icons.filled.CodeOff
-import androidx.compose.material3.ButtonDefaults
-import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import com.catpuppyapp.puppygit.play.pro.R
-import com.catpuppyapp.puppygit.style.MyStyleKt
-import com.catpuppyapp.puppygit.utils.UIHelper
 
 
 private val iconShape = RoundedCornerShape(8.dp)
 private val borderWidth = 2.dp
 
-private val oursColor = UIHelper.getAcceptOursIconColor()
-private val theirsColor = UIHelper.getAcceptTheirsIconColor()
-private val acceptBothColor = UIHelper.getAcceptBothIconColor()
-private val rejectBothColor = UIHelper.getRejectBothIconColor()
 
 
 @Composable
 fun AcceptButtons(
     lineIndex: Int,
     lineText: String,
+    acceptOursColor:Color,
+    acceptTheirsColor:Color,
+    acceptBothColor:Color,
+    rejectBothColor:Color,
     prepareAcceptBlock: (Boolean, Boolean, Int, String) -> Unit,
-//    conflictOursBlockBgColor: Color,
-//    conflictTheirsBlockBgColor: Color,
-//    conflictSplitLineBgColor: Color,
-//    useLongPressedIconVersion:Boolean = true,
 ) {
     AcceptButtons_LongPressedIcon(
         lineIndex = lineIndex,
         lineText = lineText,
+        acceptOursColor = acceptOursColor,
+        acceptTheirsColor = acceptTheirsColor,
+        acceptBothColor = acceptBothColor,
+        rejectBothColor = rejectBothColor,
         prepareAcceptBlock = prepareAcceptBlock,
     )
-//    if(useLongPressedIconVersion) {
-//        AcceptButtons_LongPressedIcon(
-//            lineIndex = lineIndex,
-//            lineText = lineText,
-//            prepareAcceptBlock = prepareAcceptBlock,
-//        )
-//    }else {
-//        AcceptButtons_TextButton(
-//            lineIndex = lineIndex,
-//            lineText = lineText,
-//            prepareAcceptBlock = prepareAcceptBlock,
-//            conflictOursBlockBgColor = conflictOursBlockBgColor,
-//            conflictTheirsBlockBgColor = conflictTheirsBlockBgColor,
-//            conflictSplitLineBgColor = conflictSplitLineBgColor
-//        )
-//    }
 }
 
 
@@ -71,6 +50,10 @@ fun AcceptButtons(
 private fun AcceptButtons_LongPressedIcon(
     lineIndex: Int,
     lineText: String,
+    acceptOursColor:Color,
+    acceptTheirsColor:Color,
+    acceptBothColor:Color,
+    rejectBothColor:Color,
     prepareAcceptBlock: (Boolean, Boolean, Int, String) -> Unit,
 ) {
     Row {
@@ -78,8 +61,8 @@ private fun AcceptButtons_LongPressedIcon(
             tooltipText = stringResource(R.string.accept_ours),
             icon = Icons.Filled.ChevronLeft,
             iconContentDesc = stringResource(R.string.accept_ours),
-            iconColor = oursColor,
-            iconModifier = Modifier.border(width = borderWidth, color = oursColor, shape = iconShape)
+            iconColor = acceptOursColor,
+            iconModifier = Modifier.border(width = borderWidth, color = acceptOursColor, shape = iconShape)
         ) {
             prepareAcceptBlock(true, false, lineIndex, lineText)
         }
@@ -89,8 +72,8 @@ private fun AcceptButtons_LongPressedIcon(
             tooltipText = stringResource(R.string.accept_theirs),
             icon = Icons.Filled.ChevronRight,
             iconContentDesc = stringResource(R.string.accept_theirs),
-            iconColor = theirsColor,
-            iconModifier = Modifier.border(width = borderWidth, color = theirsColor, shape = iconShape)
+            iconColor = acceptTheirsColor,
+            iconModifier = Modifier.border(width = borderWidth, color = acceptTheirsColor, shape = iconShape)
         ) {
             prepareAcceptBlock(false, true, lineIndex, lineText)
         }
@@ -119,53 +102,3 @@ private fun AcceptButtons_LongPressedIcon(
 
     }
 }
-
-//
-///**
-// * if text long, this may over-sized
-// */
-//@Composable
-//private fun AcceptButtons_TextButton(
-//    lineIndex: Int,
-//    lineText: String,
-//    prepareAcceptBlock: (Boolean, Boolean, Int, String) -> Unit,
-//    conflictOursBlockBgColor: Color,
-//    conflictTheirsBlockBgColor: Color,
-//    conflictSplitLineBgColor: Color
-//) {
-//    Row {
-//        TextButton(
-//            colors = ButtonDefaults.textButtonColors().copy(containerColor = conflictOursBlockBgColor),
-//            onClick = {
-//                prepareAcceptBlock(true, false, lineIndex, lineText)
-//            },
-//        ) {
-//            Text(stringResource(R.string.accept_ours))
-//        }
-//        TextButton(
-//            colors = ButtonDefaults.textButtonColors().copy(containerColor = conflictTheirsBlockBgColor),
-//            onClick = {
-//                prepareAcceptBlock(false, true, lineIndex, lineText)
-//            }
-//        ) {
-//            Text(stringResource(R.string.accept_theirs))
-//        }
-//        TextButton(
-//            colors = ButtonDefaults.textButtonColors().copy(containerColor = conflictSplitLineBgColor.copy(alpha = .5f)),
-//            onClick = {
-//                prepareAcceptBlock(true, true, lineIndex, lineText)
-//            }
-//        ) {
-//            Text(stringResource(R.string.accept_both))
-//        }
-//        TextButton(
-//            colors = ButtonDefaults.textButtonColors().copy(containerColor = MyStyleKt.TextColor.danger()),
-//            onClick = {
-//                prepareAcceptBlock(false, false, lineIndex, lineText)
-//            }
-//        ) {
-//            Text(stringResource(R.string.reject_both))
-//        }
-//    }
-//}
-//
