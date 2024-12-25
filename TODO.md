@@ -1,5 +1,5 @@
 ## TODO 20241221
-- restore Screen after rotated phone (旋转屏幕后恢复导航目标页面以及整个导航栈)
+- restore Screen after rotated phone (旋转屏幕后恢复导航目标页面以及整个导航栈) (use this replace jetpack shit navigator: https://github.com/adrielcafe/voyager)
 - support gif-lfs(should compitable .gitconfig settings)
 - sign commit and tag(include rebase/merge/cherrypick generated commits, and can enable or disable respectively)(at least support gpg sign, better ssh as well)(should compitable .gitconfig settings)
 - ChangeList/Index/TreeToTree support view by folder and support more sort method(sort by name/modified time, asc/desc just like Files screen)
