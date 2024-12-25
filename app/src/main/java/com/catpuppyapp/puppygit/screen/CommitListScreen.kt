@@ -195,8 +195,8 @@ fun CommitListScreen(
     val scope = rememberCoroutineScope()
     val haptic = LocalHapticFeedback.current
 
-    val fullOidValue =  Cache.getByTypeThenDel(fullOidKey) ?: ""
-    val shortBranchName = Cache.getByTypeThenDel(shortBranchNameKey) ?: ""
+    val fullOidValue =  rememberSaveable { Cache.getByTypeThenDel(fullOidKey) ?: "" }
+    val shortBranchName = rememberSaveable { Cache.getByTypeThenDel(shortBranchNameKey) ?: "" }
 
     //"main" or "origin/main", get by ref#shorthand(), don't use full branchName, such as "refs/remotes/origin/main", will cause resolve branch failed
     val fullOid = rememberSaveable { mutableStateOf(fullOidValue)}  //这个值需要更新，但最终是否使用，取决于常量 useFullOidParam
