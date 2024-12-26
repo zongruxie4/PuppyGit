@@ -184,11 +184,11 @@ class MainActivity : ComponentActivity() {
         return baseContext.createConfigurationContext(config)
     }
 
-//    override fun onDestroy() {
-//        super.onDestroy()
-//
-////        AppModel.destroyer()
-//    }
+    override fun onDestroy() {
+        super.onDestroy()
+
+        AppModel.destroyer()
+    }
 }
 
 

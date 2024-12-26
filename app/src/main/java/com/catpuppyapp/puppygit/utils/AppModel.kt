@@ -1,6 +1,7 @@
 package com.catpuppyapp.puppygit.utils
 
 import android.content.Context
+import android.os.Bundle
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.material3.TopAppBarScrollBehavior
@@ -400,6 +401,11 @@ class AppModel {
         fun init_3(appModel: AppModel = singleInstanceHolder){
 
             appModel.navController = rememberNavController()
+            //恢复上次导航状态，如果有的话，不然一旋转屏幕就强制回到顶级页面了，用户体验差
+            if(appModel.lastNavState != null) {
+                appModel.navController.restoreState(appModel.lastNavState)
+            }
+
             appModel.coroutineScope = rememberCoroutineScope()
 
 //            TopAppBarDefaults.enterAlwaysScrollBehavior(rememberTopAppBarState())  //上推隐藏，下拉出现，TopAppBarState 可放到外部以保存状态，如果需要的话
@@ -442,14 +448,13 @@ class AppModel {
             }
         }
 
-//        fun destroyer() {
-//
-//
-//
+        fun destroyer() {
 //            inited_3.value = false
 //            inited_2.value = false
 //            inited_1.value = false
-//        }
+
+            AppModel.singleInstanceHolder.lastNavState = AppModel.singleInstanceHolder.navController.saveState()
+        }
 
 
     }
@@ -527,6 +532,16 @@ class AppModel {
     lateinit var coroutineScope:CoroutineScope  //这个scope是全局的，生命周期几乎等于app的生命周期(？有待验证，不过因为是在根Compose创建的所以多半差不多是这样)，如果要执行和当前compose生命周期一致的任务，应该用 rememberCoroutineScope() 在对应compose重新获取一个scope
 
     lateinit var navController:NavHostController
+
+    /**
+     * 保存导航状态，在旋转屏幕后恢复目标页面
+     */
+    var lastNavState:Bundle? = null
+
+    /**
+     * 保存最后编辑文件，在旋转屏幕后恢复
+     */
+    var lastEditFile:String = ""
 
     @OptIn(ExperimentalMaterial3Api::class)
     lateinit var homeTopBarScrollBehavior: TopAppBarScrollBehavior
