@@ -69,12 +69,10 @@ fun DiffScreen(
     fromTo:String,
     changeType:String,  //modification, new, del，之类的只有modification需要diff
     fileSize:Long,
-    underRepoPathKey:String,
     treeOid1Str:String,
     treeOid2Str:String,
     isSubmodule:Boolean,
     isDiffToLocal:Boolean,  // actually is diff with local, whether local at left or right, this gonna be true
-    diffableItemListKey:String, //可预览diff的条目集合
     curItemIndexAtDiffableItemList:Int,
     localAtDiffRight:Boolean,
     fromScreen: DiffFromScreen, // from which screen
@@ -130,18 +128,18 @@ fun DiffScreen(
 
     //这个值存到状态变量里之后就不用管了，与页面共存亡即可，如果旋转屏幕也没事，返回rememberSaveable可恢复
 //    val relativePathUnderRepoDecoded = (Cache.Map.getThenDel(Cache.Map.Key.diffScreen_UnderRepoPath) as? String)?:""
-    val relativePathUnderRepoState = rememberSaveable { mutableStateOf((Cache.getByTypeThenDel<String>(underRepoPathKey)) ?: "")}
+    val relativePathUnderRepoState = rememberSaveable { mutableStateOf((Cache.getByType<String>(Cache.Key.diffScreen_underRepoPathKey)) ?: "")}
 
     val diffableItemList = mutableCustomStateListOf(stateKeyTag, "diffableItemList") {
         if(isFileHistoryTreeToLocal || isFileHistoryTreeToTree) {
             listOf()
         } else {
-            (Cache.getByTypeThenDel<List<StatusTypeEntrySaver>>(diffableItemListKey)) ?: listOf()
+            (Cache.getByType<List<StatusTypeEntrySaver>>(Cache.Key.diffScreen_diffableItemListKey)) ?: listOf()
         }
     }
     val diffableItemListForFileHistory = mutableCustomStateListOf(stateKeyTag, "diffableItemListForFileHistory") {
         if(isFileHistoryTreeToLocal || isFileHistoryTreeToTree) {
-            (Cache.getByTypeThenDel<List<FileHistoryDto>>(diffableItemListKey)) ?: listOf()
+            (Cache.getByType<List<FileHistoryDto>>(Cache.Key.diffScreen_diffableItemListKey)) ?: listOf()
         }else {
             listOf()
         }

@@ -1392,13 +1392,13 @@ fun BranchListScreen(
                                 if(commit1 == commit2) {  // local and upstream are the same, no need compare
                                     Msg.requireShow(activityContext.getString(R.string.both_are_the_same))
                                 }else {   // necessary things are ready and local vs upstream ain't same, then , should go to diff page
-                                    val descKey = Cache.setThenReturnKey(activityContext.getString(R.string.compare_to_upstream))
+                                    Cache.set(Cache.Key.treeToTreeChangeList_titleDescKey, activityContext.getString(R.string.compare_to_upstream))
                                     val commitForQueryParents = Cons.allZeroOidStr
 
                                     // url 参数： 页面导航id/repoId/treeoid1/treeoid2/desckey
                                     navController.navigate(
                                         //注意是 parentTreeOid to thisObj.treeOid，也就是 旧提交to新提交，相当于 git diff abc...def，比较的是旧版到新版，新增或删除或修改了什么，反过来的话，新增删除之类的也就反了
-                                        "${Cons.nav_TreeToTreeChangeListScreen}/${curRepo.value.id}/$commit1/$commit2/$descKey/$commitForQueryParents"
+                                        "${Cons.nav_TreeToTreeChangeListScreen}/${curRepo.value.id}/$commit1/$commit2/$commitForQueryParents"
                                     )
                                 }
 
@@ -1566,11 +1566,11 @@ fun BranchListScreen(
             //长按会更新curObjInPage为被长按的条目
             BranchItem(showBottomSheet, curObjInPage, idx, it, requireBlinkIdx, lastClickedItemKey) {  //onClick
                 //点击条目跳转到分支的提交历史记录页面
-                val fullOidKey:String = Cache.setThenReturnKey(it.oidStr)
-                val shortBranchNameKey:String = Cache.setThenReturnKey(it.shortName)
+                Cache.set(Cache.Key.commitList_fullOidKey, it.oidStr)
+                Cache.set(Cache.Key.commitList_shortBranchNameKey, it.shortName)
                 val useFullOid = "1"
                 val isHEAD = if(it.isCurrent) "1" else "0"
-                navController.navigate(Cons.nav_CommitListScreen + "/" + repoId +"/" +useFullOid + "/" + fullOidKey +"/" +shortBranchNameKey + "/" + isHEAD)
+                navController.navigate(Cons.nav_CommitListScreen + "/" + repoId +"/" +useFullOid + "/" + isHEAD)
             }
 
             HorizontalDivider()

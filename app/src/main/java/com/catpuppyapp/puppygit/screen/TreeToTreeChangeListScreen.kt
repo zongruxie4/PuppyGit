@@ -4,6 +4,8 @@ import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material.icons.Icons
@@ -31,10 +33,10 @@ import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import com.catpuppyapp.puppygit.compose.FilterTextField
 import com.catpuppyapp.puppygit.compose.GoToTopAndGoToBottomFab
 import com.catpuppyapp.puppygit.compose.LongPressAbleIconBtn
@@ -62,8 +64,8 @@ import com.catpuppyapp.puppygit.utils.state.mutableCustomStateOf
 import com.github.git24j.core.Repository
 
 //for debug
-private val TAG = "TreeToTreeChangeListScreen"
-private val stateKeyTag = "TreeToTreeChangeListScreen"
+private const val TAG = "TreeToTreeChangeListScreen"
+private const val stateKeyTag = "TreeToTreeChangeListScreen"
 
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalFoundationApi::class)
 @Composable
@@ -81,7 +83,6 @@ fun TreeToTreeChangeListScreen(
     commit1OidStr:String,  // left
     commit2OidStr:String,  // right
 
-    titleDescKey:String,
     commitForQueryParents:String,  // commit for query parents, if empty ,will not query parents for commits. ps: only need this param when compare to parents, other cases, should pass empty string
     naviUp: () -> Unit
 ) {
@@ -114,7 +115,7 @@ fun TreeToTreeChangeListScreen(
     val settings = remember { SettingsUtil.getSettingsSnapshot() }
 
     //取出title desc，存到状态变量里，与页面共存亡就行
-    val titleDesc = rememberSaveable { mutableStateOf((Cache.getByTypeThenDel<String>(titleDescKey))?:"") }
+    val titleDesc = rememberSaveable { mutableStateOf((Cache.getByType<String>(Cache.Key.treeToTreeChangeList_titleDescKey))?:"") }
 
     //替换成我的cusntomstateSaver，然后把所有实现parcellzier的类都取消实现parcellzier，改成用我的saver
 //    val curRepo = rememberSaveable{ mutableStateOf(RepoEntity()) }
@@ -188,6 +189,12 @@ fun TreeToTreeChangeListScreen(
     val showInfoDialog = rememberSaveable { mutableStateOf(false) }
     if(showInfoDialog.value) {
         RepoInfoDialog(changeListCurRepo.value, showInfoDialog, prependContent = {
+            Row {
+                Text(titleDesc.value, fontWeight = FontWeight.ExtraBold)
+            }
+
+            Spacer(Modifier.height(15.dp))
+
             Row {
                 Text(
                     stringResource(id = R.string.comparing_label) + ": " +Libgit2Helper.getLeftToRightDiffCommitsText(commit1OidStrState.value, commit2OidStr, swap.value)

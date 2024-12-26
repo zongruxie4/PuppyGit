@@ -773,11 +773,11 @@ fun TagListScreen(
                         UIHelper.selectIfNotInSelectedListElseRemove(it, selectedItemList.value)
                     }else {  //非选择模式
                         //点击条目跳转到分支的提交历史记录页面
-                        val fullOidKey:String = Cache.setThenReturnKey(it.targetFullOidStr)
-                        val shortBranchNameKey:String = Cache.setThenReturnKey(it.shortName)  //actually is "tag name" at here
+                        Cache.set(Cache.Key.commitList_fullOidKey, it.targetFullOidStr)
+                        Cache.set(Cache.Key.commitList_shortBranchNameKey, it.shortName)  //actually is "tag name" at here
                         val useFullOid = "1"
                         val isHEAD = "0"
-                        navController.navigate(Cons.nav_CommitListScreen + "/" + repoId +"/" +useFullOid + "/" + fullOidKey +"/" +shortBranchNameKey +"/"+ isHEAD)
+                        navController.navigate(Cons.nav_CommitListScreen + "/" + repoId + "/" +useFullOid  + "/" + isHEAD)
                     }
                 }
 

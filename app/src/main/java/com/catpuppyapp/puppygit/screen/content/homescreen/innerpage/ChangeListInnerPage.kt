@@ -3258,12 +3258,12 @@ fun ChangeListInnerPage(
                                 ) {  // go to commit history (git log) page
 
                                     //打开当前仓库的提交记录页面，话说，那个树形怎么搞？可以先不搞树形，以后再弄
-                                    val fullOidKey:String = Cache.setThenReturnKey("")  //这里不需要传分支名，会通过HEAD解析当前分支
-                                    val shortBranchNameKey = fullOidKey  //这里用不到这个值，所以没必要创建那么多key，都用一个关联无效value的key就行了
+                                    Cache.set(Cache.Key.commitList_fullOidKey, "")  //这里不需要传分支名，会通过HEAD解析当前分支
+                                    Cache.set(Cache.Key.commitList_shortBranchNameKey, "")  //这里用不到这个值，所以没必要创建那么多key，都用一个关联无效value的key就行了
                                     val useFullOid = "0"
                                     val isHEAD = "1"
                                     //注：如果fullOidKey传null，会变成字符串 "null"，然后查不出东西，返回空字符串，与其在导航组件取值时做处理，不如直接传空字符串，不做处理其实也行，只要“null“作为cache key取不出东西就行，但要是不做处理万一字符串"null"作为cache key能查出东西，就歇菜了，总之，走正常流程取得有效cache key，cache value传空字符串，即可
-                                    navController.navigate(Cons.nav_CommitListScreen + "/" + curRepoFromParentPage.value.id + "/" + useFullOid + "/" + fullOidKey +"/"+shortBranchNameKey +"/" +isHEAD)
+                                    navController.navigate(Cons.nav_CommitListScreen + "/" + curRepoFromParentPage.value.id + "/" + useFullOid +"/" +isHEAD)
 
                                 }
 
@@ -3389,7 +3389,7 @@ fun ChangeListInnerPage(
 //                                openFileWithInnerEditor(it.canonicalPath, initMergeMode)
 //                            }
                             else {  //非冲突条目，预览diff
-                                val underRepoPathKey = Cache.setThenReturnKey(it.relativePathUnderRepo)
+                                Cache.set(Cache.Key.diffScreen_underRepoPathKey, it.relativePathUnderRepo)
 //                                val diffableList = itemList.filter {item -> item.changeType == Cons.gitStatusModified || item.changeType == Cons.gitStatusNew || item.changeType == Cons.gitStatusDeleted}
                                 var indexAtDiffableList = -1
 
@@ -3408,7 +3408,7 @@ fun ChangeListInnerPage(
                                     }
                                 }
 
-                                val diffableListKey = Cache.setThenReturnKey(diffableList)
+                                Cache.set(Cache.Key.diffScreen_diffableItemListKey, diffableList)
 
                                 naviTarget.value = Cons.ChangeListNaviTarget_NoNeedReload
 
@@ -3420,12 +3420,10 @@ fun ChangeListInnerPage(
                                             "/" + fromTo +
                                             "/" + it.changeType +
                                             "/" + it.fileSizeInBytes +
-                                            "/" + underRepoPathKey +
                                             "/" + (if(swap) commit2OidStr else commit1OidStr) +
                                             "/" + (if(swap) commit1OidStr else commit2OidStr) +
                                             "/" + (if(it.itemType==Cons.gitItemTypeSubmodule) 1 else 0) +
                                             "/" + (if(isDiffToLocal) 1 else 0)
-                                            + "/" + diffableListKey
                                             + "/" + indexAtDiffableList
                                             +"/" + (if(localAtDiffRight.value) 1 else 0)
 

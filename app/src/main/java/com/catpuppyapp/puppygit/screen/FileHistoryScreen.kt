@@ -124,7 +124,6 @@ fun FileHistoryScreen(
 //    haptic:HapticFeedback,
 //    homeTopBarScrollBehavior: TopAppBarScrollBehavior,
     repoId: String,
-    fileRelativePathKey:String,  // relative path under repo
     naviUp: () -> Boolean,
 ) {
 
@@ -141,7 +140,7 @@ fun FileHistoryScreen(
 
     val loadChannel = remember { Channel<Int>() }
 
-    val fileRelativePath = rememberSaveable { Cache.getByTypeThenDel<String>(fileRelativePathKey) ?:"" }
+    val fileRelativePath = rememberSaveable { Cache.getByType<String>(Cache.Key.fileHistory_fileRelativePathKey) ?:"" }
     val lastVersionEntryOid = rememberSaveable { mutableStateOf<String?>(null) }
 
 
@@ -824,8 +823,8 @@ fun FileHistoryScreen(
                         }
 
 
-                        val underRepoPathKey = Cache.setThenReturnKey(fileRelativePath)
-                        val diffableListKey = Cache.setThenReturnKey(list)
+                        Cache.set(Cache.Key.diffScreen_underRepoPathKey, fileRelativePath)
+                        Cache.set(Cache.Key.diffScreen_diffableItemListKey, list)
 
                         val previous = list[previousIndex]
                         val commit1 = previous.commitOidStr
@@ -848,12 +847,10 @@ fun FileHistoryScreen(
                                     "/" + Cons.gitDiffFileHistoryFromTreeToTree +
                                     "/" + Cons.gitStatusModified +
                                     "/" + fileSize +
-                                    "/" + underRepoPathKey +
                                     "/" + commit1 +
                                     "/" + commit2 +
                                     "/" + isSubm +
                                     "/" + isDiffToLocal
-                                    + "/" + diffableListKey
                                     + "/" + indexAtDiffableList
                                     +"/" + localAtDiffRight
                                     + "/" + DiffFromScreen.FILE_HISTORY.code
@@ -886,14 +883,14 @@ fun FileHistoryScreen(
 //                    BottomSheetItem(sheetState, showBottomSheet, stringResource(R.string.diff_to_local)) {
 //    //                    diff to local，点击跳转到tree to tree页面，然后diff
 //                        //当前比较的描述信息的key，用来在界面显示这是在比较啥，值例如“和父提交比较”或者“比较两个提交”之类的
-//                        val descKey = Cache.setThenReturnKey(appContext.getString(R.string.compare_to_local))
+//                        Cache.set(Cache.Key.treeToTreeChangeList_titleDescKey, appContext.getString(R.string.compare_to_local))
 //                        //这里需要传当前commit，然后cl页面会用当前commit查出当前commit的parents
 //                        val commit2 = Cons.gitLocalWorktreeCommitHash
 //                        val commitForQueryParents = Cons.allZeroOidStr
 //                        // url 参数： 页面导航id/repoId/treeoid1/treeoid2/desckey
 //                        navController.navigate(
 //                            //注意是 parentTreeOid to thisObj.treeOid，也就是 旧提交to新提交，相当于 git diff abc...def，比较的是旧版到新版，新增或删除或修改了什么，反过来的话，新增删除之类的也就反了
-//                            "${Cons.nav_TreeToTreeChangeListScreen}/${curRepo.value.id}/${curObj.value.oidStr}/$commit2/$descKey/$commitForQueryParents"
+//                            "${Cons.nav_TreeToTreeChangeListScreen}/${curRepo.value.id}/${curObj.value.oidStr}/$commit2/$commitForQueryParents"
 //                        )
 //                    }
 //                }
@@ -1004,9 +1001,9 @@ fun FileHistoryScreen(
                 }
             ) { idx, it ->
                 FileHistoryItem(showBottomSheet, curObj, curObjIndex, idx, it, requireBlinkIdx, lastClickedItemKey) { thisObj ->
-                    val underRepoPathKey = Cache.setThenReturnKey(fileRelativePath)
+                    Cache.set(Cache.Key.diffScreen_underRepoPathKey, fileRelativePath)
                     val indexAtDiffableList = idx
-                    val diffableListKey = Cache.setThenReturnKey(list.toList())
+                    Cache.set(Cache.Key.diffScreen_diffableItemListKey, list.toList())
 
                     val commit1 = it.commitOidStr
                     val commit2 = Cons.gitLocalWorktreeCommitHash
@@ -1026,12 +1023,10 @@ fun FileHistoryScreen(
                                 "/" + Cons.gitDiffFileHistoryFromTreeToLocal +
                                 "/" + Cons.gitStatusModified +
                                 "/" + fileSize +
-                                "/" + underRepoPathKey +
                                 "/" + commit1 +
                                 "/" + commit2 +
                                 "/" + isSubm +
                                 "/" + isDiffToLocal
-                                + "/" + diffableListKey
                                 + "/" + indexAtDiffableList
                                 +"/" + localAtDiffRight
                                 +"/"+ DiffFromScreen.FILE_HISTORY.code

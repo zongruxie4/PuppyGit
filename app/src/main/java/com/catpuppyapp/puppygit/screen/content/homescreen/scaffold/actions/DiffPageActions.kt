@@ -122,12 +122,12 @@ fun DiffPageActions(
             }
 
             //跳转到SubEditor页面
-            val filePathKey = Cache.setThenReturnKey(fileFullPath)
+            Cache.set(Cache.Key.subPageEditor_filePathKey, fileFullPath)
             val goToLine = LineNum.lastPosition
             val initMergeMode = "0"  //冲突条目无法进入diff页面，所以能预览diff定不是冲突条目，因此跳转到editor时应将mergemode初始化为假
             val initReadOnly = "0"  //diff页面不可能显示app内置目录下的文件，所以一率可编辑
 
-            navController.navigate(Cons.nav_SubPageEditor + "/$filePathKey"+"/$goToLine"+"/$initMergeMode"+"/$initReadOnly")
+            navController.navigate(Cons.nav_SubPageEditor + "/$goToLine"+"/$initMergeMode"+"/$initReadOnly")
 
         }catch (e:Exception) {
             Msg.requireShowLongDuration("err:"+e.localizedMessage)

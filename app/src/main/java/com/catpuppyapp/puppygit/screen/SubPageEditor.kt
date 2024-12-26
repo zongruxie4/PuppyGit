@@ -46,6 +46,10 @@ import com.catpuppyapp.puppygit.fileeditor.texteditor.view.ScrollEvent
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 
+//for debug
+private const val TAG = "SubPageEditor"
+private const val stateKeyTag = "SubPageEditor"
+
 
 //子页面版本editor
 @OptIn(ExperimentalMaterial3Api::class)
@@ -60,17 +64,12 @@ fun SubPageEditor(
 //    repoPageListState: LazyListState,
 //    filePageListState: LazyListState,
 //    haptic: HapticFeedback,
-    filePathKey:String,
     goToLine:Int,  //大于0，打开文件定位到对应行，小于0，打开文件定位上次编辑行（之前的逻辑不变
     initMergeMode:Boolean,
     initReadOnly:Boolean,
     editorPageLastFilePath:MutableState<String>,
     naviUp:()->Unit
 ) {
-    //for debug
-    val TAG = "SubPageEditor"
-    val stateKeyTag = "SubPageEditor"
-
 //    val isTimeNaviUp = rememberSaveable { mutableStateOf(false) }
 //    if(isTimeNaviUp.value) {
 //        naviUp()
@@ -95,10 +94,10 @@ fun SubPageEditor(
 
 
     // canonicalPath
-//    val editorPageRequireOpenFilePath = StateUtil.getRememberSaveableState(initValue = (Cache.getByTypeThenDel<String>(filePathKey))?:"")
+//    val editorPageRequireOpenFilePath = StateUtil.getRememberSaveableState(initValue = (Cache.getByType<String>(filePathKey))?:"")
 //    val needRefreshFilesPage = rememberSaveable { mutableStateOf(false) }
 
-    val editorPageShowingFilePath = rememberSaveable { mutableStateOf((Cache.getByTypeThenDel<String>(filePathKey))?:"")} //当前展示的文件的canonicalPath
+    val editorPageShowingFilePath = rememberSaveable { mutableStateOf((Cache.getByType<String>(Cache.Key.subPageEditor_filePathKey))?:"")} //当前展示的文件的canonicalPath
     val editorPageShowingFileIsReady = rememberSaveable { mutableStateOf(false)} //当前展示的文件是否已经加载完毕
     //TextEditor用的变量
     val editorPageTextEditorState = mutableCustomStateOf(

@@ -16,6 +16,16 @@ object Cache:CacheStoreImpl(){
         val repoTmpStatusPrefix = "repo_tmp_status"  // prefix+keyseparator+repoId，例如 "repo_tmp_status:a29388d9988"
 
         val editorPageSaveLockPrefix = "editor_save_lock"
+
+        val commitList_fullOidKey = "commitList_fullOidKey"
+        val commitList_shortBranchNameKey = "commitList_shortBranchNameKey"
+
+        val diffScreen_underRepoPathKey = "diffScreen_underRepoPathKey"
+        val diffScreen_diffableItemListKey = "diffScreen_diffableItemListKey"
+
+        val fileHistory_fileRelativePathKey = "fileHistory_fileRelativePathKey"
+        val subPageEditor_filePathKey = "subPageEditor_filePathKey"
+        val treeToTreeChangeList_titleDescKey = "treeToTreeChangeList_titleDescKey"
     }
 
 }

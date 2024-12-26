@@ -154,8 +154,6 @@ fun CommitListScreen(
 
 
     useFullOid:Boolean,
-    fullOidKey:String,
-    shortBranchNameKey:String,
 //    isCurrent:Boolean, // HEAD是否指向当前分支
 
     /*
@@ -195,8 +193,8 @@ fun CommitListScreen(
     val scope = rememberCoroutineScope()
     val haptic = LocalHapticFeedback.current
 
-    val fullOidValue =  rememberSaveable { Cache.getByTypeThenDel(fullOidKey) ?: "" }
-    val shortBranchName = rememberSaveable { Cache.getByTypeThenDel(shortBranchNameKey) ?: "" }
+    val fullOidValue =  rememberSaveable { Cache.getByType(Cache.Key.commitList_fullOidKey) ?: "" }
+    val shortBranchName = rememberSaveable { Cache.getByType(Cache.Key.commitList_shortBranchNameKey) ?: "" }
 
     //"main" or "origin/main", get by ref#shorthand(), don't use full branchName, such as "refs/remotes/origin/main", will cause resolve branch failed
     val fullOid = rememberSaveable { mutableStateOf(fullOidValue)}  //这个值需要更新，但最终是否使用，取决于常量 useFullOidParam
@@ -1750,14 +1748,14 @@ fun CommitListScreen(
                         BottomSheetItem(sheetState, showBottomSheet, stringResource(R.string.diff_to_local)) {
                             //                    diff to local，点击跳转到tree to tree页面，然后diff
                             //当前比较的描述信息的key，用来在界面显示这是在比较啥，值例如“和父提交比较”或者“比较两个提交”之类的
-                            val descKey = Cache.setThenReturnKey(activityContext.getString(R.string.compare_to_local))
+                            Cache.set(Cache.Key.treeToTreeChangeList_titleDescKey, activityContext.getString(R.string.compare_to_local))
                             //这里需要传当前commit，然后cl页面会用当前commit查出当前commit的parents
                             val commit2 = Cons.gitLocalWorktreeCommitHash
                             val commitForQueryParents = Cons.allZeroOidStr
                             // url 参数： 页面导航id/repoId/treeoid1/treeoid2/desckey
                             navController.navigate(
                                 //注意是 parentTreeOid to thisObj.treeOid，也就是 旧提交to新提交，相当于 git diff abc...def，比较的是旧版到新版，新增或删除或修改了什么，反过来的话，新增删除之类的也就反了
-                                "${Cons.nav_TreeToTreeChangeListScreen}/${curRepo.value.id}/${curCommit.value.oidStr}/$commit2/$descKey/$commitForQueryParents"
+                                "${Cons.nav_TreeToTreeChangeListScreen}/${curRepo.value.id}/${curCommit.value.oidStr}/$commit2/$commitForQueryParents"
                             )
                         }
                     }
@@ -1781,14 +1779,14 @@ fun CommitListScreen(
                                     }
 
                                     //当前比较的描述信息的key，用来在界面显示这是在比较啥，值例如“和父提交比较”或者“比较两个提交”之类的
-                                    val descKey = Cache.setThenReturnKey(activityContext.getString(R.string.compare_to_head))
+                                    Cache.set(Cache.Key.treeToTreeChangeList_titleDescKey, activityContext.getString(R.string.compare_to_head))
                                     val commitForQueryParents = Cons.allZeroOidStr
 
                                     withMainContext {
                                         // url 参数： 页面导航id/repoId/treeoid1/treeoid2/desckey
                                         navController.navigate(
                                             //注意是 parentTreeOid to thisObj.treeOid，也就是 旧提交to新提交，相当于 git diff abc...def，比较的是旧版到新版，新增或删除或修改了什么，反过来的话，新增删除之类的也就反了
-                                            "${Cons.nav_TreeToTreeChangeListScreen}/${curRepo.value.id}/$commit1/$commit2/$descKey/$commitForQueryParents"
+                                            "${Cons.nav_TreeToTreeChangeListScreen}/${curRepo.value.id}/$commit1/$commit2/$commitForQueryParents"
                                         )
                                     }
 
@@ -1984,8 +1982,7 @@ fun CommitListScreen(
                         requireShowToast(activityContext.getString(R.string.no_parent_for_compare))
                     } else {  //有父提交，取出第一个父提交和当前提交进行比较
                         //当前比较的描述信息的key，用来在界面显示这是在比较啥，值例如“和父提交比较”或者“比较两个提交”之类的
-                        val descKey =
-                            Cache.setThenReturnKey(activityContext.getString(R.string.compare_to_parent))
+                        Cache.set(Cache.Key.treeToTreeChangeList_titleDescKey, activityContext.getString(R.string.compare_to_parent))
                         //这里需要传当前commit，然后cl页面会用当前commit查出当前commit的parents
                         val commit1 = parents[0]
                         val commit2 = thisObj.oidStr
@@ -1993,7 +1990,7 @@ fun CommitListScreen(
                         // url 参数： 页面导航id/repoId/treeoid1/treeoid2/desckey
                         navController.navigate(
                             //注意是 parentTreeOid to thisObj.treeOid，也就是 旧提交to新提交，相当于 git diff abc...def，比较的是旧版到新版，新增或删除或修改了什么，反过来的话，新增删除之类的也就反了
-                            "${Cons.nav_TreeToTreeChangeListScreen}/${curRepo.value.id}/$commit1/$commit2/$descKey/$commitForQueryParents"
+                            "${Cons.nav_TreeToTreeChangeListScreen}/${curRepo.value.id}/$commit1/$commit2/$commitForQueryParents"
                         )
 
                     }

@@ -475,12 +475,12 @@ fun DiffRow (
             color = lineNumColor,
             fontSize = lineNumSize.sp,
             modifier = Modifier.clickable {
-                val filePathKey = Cache.setThenReturnKey(fileFullPath)
+                Cache.set(Cache.Key.subPageEditor_filePathKey, fileFullPath)
                 //if jump line is EOF, should go to last line of file, but didn't know the line num, so set line num to a enough big number
                 val goToLine = if(lineNum == LineNum.EOF.TEXT) LineNum.EOF.LINE_NUM else lineNum
                 val initMergeMode = "0"  //能进diff页面说明没冲突，所以mergemode设为0
                 val initReadOnly = "0"  //app内置目录下的文件不可能在diff页面显示，所以在这把readonly设为0即可
-                navController.navigate(Cons.nav_SubPageEditor + "/$filePathKey"+"/$goToLine"+"/$initMergeMode"+"/$initReadOnly")
+                navController.navigate(Cons.nav_SubPageEditor +"/$goToLine"+"/$initMergeMode"+"/$initReadOnly")
             }
         )
 

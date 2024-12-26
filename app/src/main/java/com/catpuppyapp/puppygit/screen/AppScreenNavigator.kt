@@ -92,12 +92,10 @@ fun AppScreenNavigator() {
             Profile(navController, backStackEntry.arguments?.getString("userId"))
             }
          */
-        composable(Cons.nav_CommitListScreen + "/{repoId}/{useFullOid}/{fullOidKey}/{shortBranchNameKey}/{isHEAD}") {
+        composable(Cons.nav_CommitListScreen + "/{repoId}/{useFullOid}/{isHEAD}") {
             CommitListScreen(
                 repoId = it.arguments?.getString("repoId")?:"",
                 useFullOid = it.arguments?.getString("useFullOid") != "0",  //非0就为真
-                fullOidKey = it.arguments?.getString("fullOidKey")?:"",
-                shortBranchNameKey = it.arguments?.getString("shortBranchNameKey")?:"",
                 isHEAD = it.arguments?.getString("isHEAD") != "0",
                 naviUp = { navController.navigateUp() },
             )
@@ -115,20 +113,18 @@ fun AppScreenNavigator() {
             )
         }
 //        composable(Cons.nav_DiffScreen + "/{repoId}/{relativePathUnderRepoEncoded}/{fromTo}/{changeType}") {
-        composable(Cons.nav_DiffScreen + "/{repoId}/{fromTo}/{changeType}/{fileSize}/{underRepoPathKey}/{treeOid1Str}/{treeOid2Str}/{isSubmodule}/{isDiffToLocal}/{diffableListKey}/{curItemIndexAtDiffableList}/{localAtDiffRight}/{fromScreen}") {
+        composable(Cons.nav_DiffScreen + "/{repoId}/{fromTo}/{changeType}/{fileSize}/{treeOid1Str}/{treeOid2Str}/{isSubmodule}/{isDiffToLocal}/{curItemIndexAtDiffableList}/{localAtDiffRight}/{fromScreen}") {
             DiffScreen(
                 repoId = it.arguments?.getString("repoId") ?: "",
                 fromTo = it.arguments?.getString("fromTo") ?: "",
                 changeType = it.arguments?.getString("changeType") ?: "",
                 fileSize= it.arguments?.getString("fileSize")?.toLong() ?: 0L,
-                underRepoPathKey = it.arguments?.getString("underRepoPathKey") ?: "",
                 treeOid1Str = it.arguments?.getString("treeOid1Str") ?: "",
                 treeOid2Str = it.arguments?.getString("treeOid2Str") ?: "",
                 naviUp = { navController.navigateUp() },
                 isSubmodule = (it.arguments?.getString("isSubmodule")?.toInt() ?: 0) != 0,
                 localAtDiffRight = (it.arguments?.getString("localAtDiffRight")?.toInt() ?: 0) != 0,
                 isDiffToLocal = (it.arguments?.getString("isDiffToLocal")?.toInt() ?: 0) != 0,
-                diffableItemListKey = it.arguments?.getString("diffableListKey") ?: "",
                 fromScreen = DiffFromScreen.fromCode(it.arguments?.getString("fromScreen")!!)!!,
                 curItemIndexAtDiffableItemList = try {
                     (it.arguments?.getString("curItemIndexAtDiffableList") ?: "").toInt()
@@ -174,14 +170,13 @@ fun AppScreenNavigator() {
                 },
             )
         }
-        composable(Cons.nav_TreeToTreeChangeListScreen+"/{repoId}/{commit1OidStr}/{commit2OidStr}/{titleDescKey}/{commitForQueryParents}") {
+        composable(Cons.nav_TreeToTreeChangeListScreen+"/{repoId}/{commit1OidStr}/{commit2OidStr}/{commitForQueryParents}") {
 //            val commitForQueryParents = it.arguments?.getString("commitForQueryParents") ?: ""
 
             TreeToTreeChangeListScreen(
                 repoId = it.arguments?.getString("repoId") ?: "",
                 commit1OidStr=it.arguments?.getString("commit1OidStr") ?: "",
                 commit2OidStr=it.arguments?.getString("commit2OidStr") ?: "",
-                titleDescKey=it.arguments?.getString("titleDescKey") ?: "",
 
                 //若不需要查parents，则传all zero oid在url中占位即可。
                 commitForQueryParents = it.arguments?.getString("commitForQueryParents") ?: "",
@@ -199,9 +194,8 @@ fun AppScreenNavigator() {
                 },
             )
         }
-        composable(Cons.nav_SubPageEditor+"/{filePathKey}/{goToLine}/{initMergeMode}/{initReadOnly}") {
+        composable(Cons.nav_SubPageEditor+"/{goToLine}/{initMergeMode}/{initReadOnly}") {
             SubPageEditor(
-                filePathKey = it.arguments?.getString("filePathKey") ?: "",
 
                 goToLine = try {
                     val l = it.arguments?.getString("goToLine") ?: ""
@@ -250,10 +244,9 @@ fun AppScreenNavigator() {
             )
         }
 
-        composable(Cons.nav_FileHistoryScreen+"/{repoId}/{fileRelativePathKey}") {
+        composable(Cons.nav_FileHistoryScreen+"/{repoId}") {
             FileHistoryScreen(
                 repoId = it.arguments?.getString("repoId") ?: "",
-                fileRelativePathKey = it.arguments?.getString("fileRelativePathKey") ?: "",
                 naviUp = {
                     navController.navigateUp()
                 },
