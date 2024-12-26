@@ -404,6 +404,7 @@ class AppModel {
             //恢复上次导航状态，如果有的话，不然一旋转屏幕就强制回到顶级页面了，用户体验差
             if(appModel.lastNavState != null) {
                 appModel.navController.restoreState(appModel.lastNavState)
+                appModel.lastNavState = null
             }
 
             appModel.coroutineScope = rememberCoroutineScope()

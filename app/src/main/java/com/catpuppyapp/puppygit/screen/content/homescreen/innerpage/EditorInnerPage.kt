@@ -1121,6 +1121,7 @@ private fun doInit(
             //优先打开从文件管理器跳转来的文件，如果不是跳转来的，打开之前显示的文件
             if(editorPageShowingFilePath.value.isBlank()) {
                 editorPageShowingFilePath.value = AppModel.singleInstanceHolder.lastEditFile
+                AppModel.singleInstanceHolder.lastEditFile = ""
             }
 
             val requireOpenFilePath = editorPageShowingFilePath.value
