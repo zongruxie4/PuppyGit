@@ -458,6 +458,7 @@ class AppModel {
 //            inited_2.value = false
 //            inited_1.value = false
 
+            //改成在创建完后恢复并保存导航器状态了
 //            AppModel.singleInstanceHolder.lastNavState = AppModel.singleInstanceHolder.navController.saveState()
         }
 

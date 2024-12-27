@@ -1052,7 +1052,8 @@ fun EditorInnerPage(
             // 由于存在 fileIsReady或openFileErr还没更新但文件路径不为空就销毁组件的情况，
             //  所以，这里不检查文件是否成功打开，直接赋值，理论上来说，只要在关闭文件的逻辑清空路径就可确保这里不会出现反直觉的用户体验，而我已在关闭文件时清空了路径，但我不确定效果如何，
             //  测试一下，若没问题就这样，否则改成先检测文件ready或err，再保存路径
-            AppModel.singleInstanceHolder.lastEditFile = editorPageShowingFilePath.value
+            //改成在读取完后保存此路径了
+//            AppModel.singleInstanceHolder.lastEditFile = editorPageShowingFilePath.value
 
             //20240327:尝试解决加载文件内容未更新的bug
             editorPageShowingFileIsReady.value = false
@@ -1121,11 +1122,11 @@ private fun doInit(
             //优先打开从文件管理器跳转来的文件，如果不是跳转来的，打开之前显示的文件
             if(editorPageShowingFilePath.value.isBlank()) {
                 editorPageShowingFilePath.value = AppModel.singleInstanceHolder.lastEditFile
-                //in logical, should clear after consumed, but actually no difference
-                //逻辑上消费后应该清，但实际没区别，按理来说不清应该无法正常关闭文件，但实际好像没问题，保险起见，此行保留
-                AppModel.singleInstanceHolder.lastEditFile = ""
             }
+            //保存上次打开文件路径
+            AppModel.singleInstanceHolder.lastEditFile = editorPageShowingFilePath.value
 
+            //到这，文件路径就确定了
             val requireOpenFilePath = editorPageShowingFilePath.value
             if (requireOpenFilePath.isBlank()) {
                 //这时页面会显示选择文件和打开上次文件，这里无需处理
@@ -1133,6 +1134,7 @@ private fun doInit(
             }
             //准备文件路径，结束
 
+            //执行到这里，一定有一个非空的文件路径
 
             //清除错误信息，如果打开文件时出错，会重新设置错误信息
             editorPageClearShowingFileErrWhenLoading()
