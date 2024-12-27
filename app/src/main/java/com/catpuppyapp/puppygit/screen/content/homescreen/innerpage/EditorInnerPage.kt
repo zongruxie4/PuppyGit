@@ -1121,6 +1121,8 @@ private fun doInit(
             //优先打开从文件管理器跳转来的文件，如果不是跳转来的，打开之前显示的文件
             if(editorPageShowingFilePath.value.isBlank()) {
                 editorPageShowingFilePath.value = AppModel.singleInstanceHolder.lastEditFile
+                //in logical, should clear after consumed, but actually no difference
+                //逻辑上消费后应该清，但实际没区别，按理来说不清应该无法正常关闭文件，但实际好像没问题，保险起见，此行保留
                 AppModel.singleInstanceHolder.lastEditFile = ""
             }
 

@@ -400,12 +400,16 @@ class AppModel {
         @Composable
         fun init_3(appModel: AppModel = singleInstanceHolder){
 
+            // nav controller, start
             appModel.navController = rememberNavController()
+            //restore nav controller state
             //恢复上次导航状态，如果有的话，不然一旋转屏幕就强制回到顶级页面了，用户体验差
-            if(appModel.lastNavState != null) {
-                appModel.navController.restoreState(appModel.lastNavState)
-                appModel.lastNavState = null
+            if(appModel.lastNavController != null) {
+                appModel.navController.restoreState(appModel.lastNavController!!.saveState())
             }
+
+            appModel.lastNavController = appModel.navController
+            // nav controller, end
 
             appModel.coroutineScope = rememberCoroutineScope()
 
@@ -454,7 +458,7 @@ class AppModel {
 //            inited_2.value = false
 //            inited_1.value = false
 
-            AppModel.singleInstanceHolder.lastNavState = AppModel.singleInstanceHolder.navController.saveState()
+//            AppModel.singleInstanceHolder.lastNavState = AppModel.singleInstanceHolder.navController.saveState()
         }
 
 
@@ -534,10 +538,15 @@ class AppModel {
 
     lateinit var navController:NavHostController
 
+
     /**
-     * 保存导航状态，在旋转屏幕后恢复目标页面
+     * 用来保存导航状态，在旋转屏幕后恢复目标页面
      */
-    var lastNavState:Bundle? = null
+    var lastNavController:NavHostController? = null
+
+
+    // 废弃
+//    var lastNavState:Bundle? = null
 
     /**
      * 保存最后编辑文件，在旋转屏幕后恢复
