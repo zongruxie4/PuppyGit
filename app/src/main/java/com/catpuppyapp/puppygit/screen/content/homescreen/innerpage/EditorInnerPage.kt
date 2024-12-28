@@ -143,7 +143,14 @@ fun EditorInnerPage(
     val allRepoParentDir = AppModel.singleInstanceHolder.allRepoParentDir;
 //    val appContext = AppModel.singleInstanceHolder.appContext;
     val activityContext = LocalContext.current
-    val exitApp = AppModel.singleInstanceHolder.exitApp
+    val exitApp = {
+        AppModel.singleInstanceHolder.lastEditFile = ""
+        AppModel.singleInstanceHolder.lastEditFileWhenDestroy = ""
+
+        AppModel.singleInstanceHolder.exitApp()
+
+        Unit
+    }
 
     val saveLock = Cache.getOrDefaultByType(Cache.Key.editorPageSaveLockPrefix+ Cache.keySeparator+editorPageShowingFilePath.value, default= Mutex())
 //    val saveLock = Mutex()  //其实这样也行，不过根据路径创建锁更严谨，跨页面也适用，比如如果首页的Editor正在保存，然后打开子页面，这时子页面必须等首页保存完成，但如果用这个和页面生命周期一样的锁，就无法实现那种效果了，但和页面生命周期一样的锁其实也够用
@@ -352,6 +359,12 @@ fun EditorInnerPage(
 //    }
     val closeFile = {
 //        showCloseDialog.value=false
+
+
+        AppModel.singleInstanceHolder.lastEditFile = ""
+        AppModel.singleInstanceHolder.lastEditFileWhenDestroy = ""
+
+
 
         isEdited.value = false
         isSaving.value=false
@@ -1121,7 +1134,7 @@ private fun doInit(
             //准备文件路径，开始
             //优先打开从文件管理器跳转来的文件，如果不是跳转来的，打开之前显示的文件
             if(editorPageShowingFilePath.value.isBlank()) {
-                editorPageShowingFilePath.value = AppModel.singleInstanceHolder.lastEditFile
+                editorPageShowingFilePath.value = AppModel.singleInstanceHolder.lastEditFileWhenDestroy
             }
             //保存上次打开文件路径
             AppModel.singleInstanceHolder.lastEditFile = editorPageShowingFilePath.value

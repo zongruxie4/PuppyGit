@@ -75,6 +75,14 @@ fun SubPageEditor(
 //        naviUp()
 //    }
 
+    val naviUp = {
+        AppModel.singleInstanceHolder.lastEditFile = ""
+        AppModel.singleInstanceHolder.lastEditFileWhenDestroy = ""
+
+        naviUp()
+
+        Unit
+    }
 
 
     val navController = AppModel.singleInstanceHolder.navController

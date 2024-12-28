@@ -460,6 +460,8 @@ class AppModel {
 
             //改成在创建完后恢复并保存导航器状态了
 //            AppModel.singleInstanceHolder.lastNavState = AppModel.singleInstanceHolder.navController.saveState()
+
+            AppModel.singleInstanceHolder.lastEditFileWhenDestroy = AppModel.singleInstanceHolder.lastEditFile
         }
 
 
@@ -550,9 +552,14 @@ class AppModel {
 //    var lastNavState:Bundle? = null
 
     /**
-     * 保存最后编辑文件，在旋转屏幕后恢复
+     * 编辑器最后编辑的文件
      */
     var lastEditFile:String = ""
+
+    /**
+     * Activity销毁时最后编辑的文件，用来在旋转屏幕后恢复
+     */
+    var lastEditFileWhenDestroy:String = ""
 
     @OptIn(ExperimentalMaterial3Api::class)
     lateinit var homeTopBarScrollBehavior: TopAppBarScrollBehavior
