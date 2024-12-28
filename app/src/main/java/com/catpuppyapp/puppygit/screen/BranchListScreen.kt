@@ -230,6 +230,7 @@ fun BranchListScreen(
                     email = email,
                     requireMergeByRevspec = requireMergeByRevspec,
                     revspec = revspec,
+                    settings = settings
                 )
             } else {
                 Libgit2Helper.mergeOrRebase(
@@ -239,7 +240,8 @@ fun BranchListScreen(
                     email = email,
                     requireMergeByRevspec = requireMergeByRevspec,
                     revspec = revspec,
-                    trueMergeFalseRebase = false
+                    trueMergeFalseRebase = false,
+                    settings=settings
                 )
             }
 

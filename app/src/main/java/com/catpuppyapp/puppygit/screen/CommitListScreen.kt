@@ -630,7 +630,8 @@ fun CommitListScreen(
                             commitMsg = commitMsg,
                             username = username,
                             email = email,
-                            currentBranchFullNameOrHEAD = headFullName
+                            currentBranchFullNameOrHEAD = headFullName,
+                            settings = settings
                         )
 
                         if(ret.hasError()) {
@@ -1330,7 +1331,8 @@ fun CommitListScreen(
                         repo,
                         targetCommitFullHash = cherrypickTargetHash.value,
                         parentCommitFullHash = cherrypickParentHash.value,
-                        autoCommit = cherrypickAutoCommit.value
+                        autoCommit = cherrypickAutoCommit.value,
+                        settings = settings
                     )
 
                     if(ret.hasError()) {

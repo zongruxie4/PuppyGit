@@ -244,7 +244,7 @@ fun SettingsInnerPage(
                         MySelectionContainer {
                             Column(modifier= Modifier.fillMaxWidth()) {
                                 Row(modifier = Modifier.padding(start = 10.dp, end = 10.dp, bottom = 10.dp)) {
-                                    Text(stringResource(R.string.leave_empty_to_use_default_timezone_offset_from_commits), color = MyStyleKt.TextColor.highlighting_green)
+                                    Text(stringResource(R.string.set_timezone_leave_empty_note), color = MyStyleKt.TextColor.highlighting_green)
                                 }
 
                                 Row(modifier = Modifier.padding(top = 5.dp, start = 10.dp, end = 10.dp, bottom = 10.dp)) {

@@ -324,7 +324,7 @@ fun StashListScreen(
                 try {
                     val msg = stashMsgForCreateDialog.value.ifEmpty { Libgit2Helper.stashGenMsg() }
                     Repository.open(curRepo.value.fullSavePath).use { repo->
-                        Libgit2Helper.stashSave(repo, stasher = Signature.create(username, email), msg=msg)
+                        Libgit2Helper.stashSave(repo, stasher = Libgit2Helper.createSignature(username, email, settings), msg=msg)
                     }
                     Msg.requireShow(activityContext.getString(R.string.success))
                 }catch (e:Exception) {

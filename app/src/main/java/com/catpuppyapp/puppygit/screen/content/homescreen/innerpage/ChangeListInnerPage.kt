@@ -1255,7 +1255,7 @@ fun ChangeListInnerPage(
                         if (usernameFromConfig.isBlank() || emailFromConfig.isBlank()) {
                             Msg.requireShowLongDuration(activityContext.getString(R.string.plz_set_email_and_username_then_try_again))
                         } else {
-                            val readyRet = Libgit2Helper.rebaseSkip(repo, usernameFromConfig, emailFromConfig)
+                            val readyRet = Libgit2Helper.rebaseSkip(repo, usernameFromConfig, emailFromConfig, settings = settings)
                             if (readyRet.hasError()) {
                                 Msg.requireShowLongDuration(readyRet.msg)
 
@@ -1861,7 +1861,8 @@ fun ChangeListInnerPage(
                         targetCommitFullHash = cherrypickTargetHash.value,
                         parentCommitFullHash = cherrypickParentHash.value,
                         pathSpecList = pathSpecs,
-                        autoCommit = cherrypickAutoCommit.value
+                        autoCommit = cherrypickAutoCommit.value,
+                        settings = settings
                     )
 
                     if(ret.hasError()) {

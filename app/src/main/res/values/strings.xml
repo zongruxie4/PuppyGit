@@ -1151,5 +1151,6 @@
     <string name="follow_system">Follow System</string>
     <string name="use_offset_from_commits">Use offset from commits</string>
     <string name="timezone_when_viewing_commits">TimeZone when viewing commits</string>
+    <string name="set_timezone_leave_empty_note">You can leave it empty, then: when viewing GitObject(commits/tags/reflogs/etc), will use timezone from them; when creating GitObject, will use system timezone</string>
 
 </resources>

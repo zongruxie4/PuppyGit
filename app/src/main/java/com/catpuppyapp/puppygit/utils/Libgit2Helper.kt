@@ -82,7 +82,7 @@ import java.time.ZoneOffset
 import java.util.EnumSet
 
 
-private val TAG = "Libgit2Helper"
+private const val TAG = "Libgit2Helper"
 
 class Libgit2Helper {
     object CommitUtil{
@@ -977,7 +977,7 @@ class Libgit2Helper {
          * @param overwriteAuthorForFirstCommit 执行continue时覆盖提交的作者用户名和邮箱，只针对continue的对象也就是rebase的当前commit有效，仅当skipFirst为假时有效
          * @param skipFirst 为true时将强制不提交当前rebase的目标commit，直接执行next
          */
-        fun rebaseContinue(repo:Repository, username: String, email: String, overwriteAuthorForFirstCommit:Boolean=false, commitMsgForFirstCommit: String="", skipFirst:Boolean= false):Ret<Oid?>{
+        fun rebaseContinue(repo:Repository, username: String, email: String, overwriteAuthorForFirstCommit:Boolean=false, commitMsgForFirstCommit: String="", skipFirst:Boolean= false, settings: AppSettings):Ret<Oid?>{
             val readyCheck = readyForContinueRebase(repo)
             if (readyCheck.hasError()) {
                 return readyCheck
@@ -987,7 +987,7 @@ class Libgit2Helper {
             initRebaseOptions(rebaseOptions)
 
             val rebase = Rebase.open(repo, rebaseOptions)
-            val rebaseCommitter = Signature.create(username, email)
+            val rebaseCommitter = Libgit2Helper.createSignature(username, email, settings)
 
             //注意：若继续rebase但index为空，会跳过当前pick的提交而不是创建空提交
             //提交上次中断的 pick
@@ -1032,7 +1032,7 @@ class Libgit2Helper {
             return Ret.createSuccess(headId)
         }
 
-        fun rebaseSkip(repo: Repository, username: String, email: String):Ret<Oid?> {
+        fun rebaseSkip(repo: Repository, username: String, email: String, settings: AppSettings):Ret<Oid?> {
             //reset HEAD，直接丢弃上次 rebase.next() 造成的修改
             //不能用reset，这个会把状态清掉！就不能继续rebase了！
 //            val resetRet = resetHardToHead(repo)
@@ -1046,7 +1046,7 @@ class Libgit2Helper {
             Checkout.head(repo, checkoutOptions)
 
             //然后执行 rebase.next() 就跳过当前提交了，这里直接执行rebaseContinue，skipFirst传true会跳过当前提交，并直接执行rebase.next()
-            return rebaseContinue(repo, username, email, skipFirst = true)
+            return rebaseContinue(repo, username, email, skipFirst = true, settings = settings)
         }
 
         fun rebaseAbort(repo:Repository):Ret<Unit?> {
@@ -1940,7 +1940,7 @@ class Libgit2Helper {
 //            return Ret.createSuccess(commitMsg)
 //        }
 
-        private fun doCreateCommit(repo: Repository, msg: String, username: String, email: String, curBranchFullRefSpec:String, parentList:List<Commit>, amend: Boolean, overwriteAuthorWhenAmend:Boolean, cleanRepoStateIfSuccess:Boolean):Ret<Oid?> {
+        private fun doCreateCommit(repo: Repository, msg: String, username: String, email: String, curBranchFullRefSpec:String, parentList:List<Commit>, amend: Boolean, overwriteAuthorWhenAmend:Boolean, cleanRepoStateIfSuccess:Boolean, settings: AppSettings):Ret<Oid?> {
             if(username.isBlank()) {
                 return Ret.createError(null, "username is blank", Ret.ErrCode.usernameIsBlank)
             }
@@ -1948,7 +1948,7 @@ class Libgit2Helper {
                 return Ret.createError(null, "email is blank",Ret.ErrCode.emailIsBlank)
             }
 
-            val sign: Signature = Signature.create(username, email)
+            val sign: Signature = Libgit2Helper.createSignature(username, email, settings)
 
             //write repo's index as a tree
             val tree = Tree.lookup(repo, repo.index().writeTree())
@@ -2034,7 +2034,7 @@ class Libgit2Helper {
         }
 
         //通过检查才创建提交
-        fun createCommitIfPassedCheck(repo: Repository, msg: String, username: String, email: String):Ret<Oid?> {
+        fun createCommitIfPassedCheck(repo: Repository, msg: String, username: String, email: String, settings: AppSettings):Ret<Oid?> {
             val isReady = isReadyCreateCommit(repo)
             if(isReady.hasError()) {  //如果有错，说明没准备就绪，直接返回
                 return isReady
@@ -2042,7 +2042,7 @@ class Libgit2Helper {
 
             //没错则说明准备就绪，创建提交
             //create commit
-            return createCommit(repo, msg,username,email)
+            return createCommit(repo, msg, username, email, settings=settings)
         }
 
         /**
@@ -2060,7 +2060,8 @@ class Libgit2Helper {
             parents:List<Commit>? = null,
             amend:Boolean = false,
             overwriteAuthorWhenAmend:Boolean = false,
-            cleanRepoStateIfSuccess:Boolean=false
+            cleanRepoStateIfSuccess:Boolean=false,
+            settings: AppSettings
         ):Ret<Oid?> {
             val funName = "createCommit"
 
@@ -2145,7 +2146,7 @@ class Libgit2Helper {
                 branchFullRefName = "HEAD"
             }
 
-            return doCreateCommit(repo,msg,username,email,branchFullRefName,parents, amend, overwriteAuthorWhenAmend, cleanRepoStateIfSuccess)
+            return doCreateCommit(repo,msg,username,email,branchFullRefName,parents, amend, overwriteAuthorWhenAmend, cleanRepoStateIfSuccess, settings)
         }
 
         //param eg: main; ret eg: refs/heads/main
@@ -2734,15 +2735,16 @@ class Libgit2Helper {
             return credential
         }
 
-        fun mergeOneHead(repo: Repository, targetRefName: String, username: String, email: String, requireMergeByRevspec:Boolean=false, revspec: String=""):Ret<Oid?> {
-            return mergeOrRebase(repo, targetRefName, username, email, requireMergeByRevspec, revspec, trueMergeFalseRebase = true)
+        fun mergeOneHead(repo: Repository, targetRefName: String, username: String, email: String, requireMergeByRevspec:Boolean=false, revspec: String="", settings: AppSettings):Ret<Oid?> {
+            return mergeOrRebase(repo, targetRefName, username, email, requireMergeByRevspec, revspec, trueMergeFalseRebase = true, settings = settings)
         }
 
         private fun startRebase(
             repo: Repository,
             theirHeads: List<AnnotatedCommit>,
             username: String,
-            email: String
+            email: String,
+            settings: AppSettings
         ):Ret<Oid?> {
             val funName = "startRebase"
 
@@ -2816,7 +2818,7 @@ class Libgit2Helper {
                 val rebase = Rebase.init(repo, srcAnnotatedCommit, theirHeads[0], onto, rebaseOptions)
                 val allOpCount = rebase.operationEntrycount()
 //                var didOpCount = 0
-                val rebaseCommiter = Signature.create(username, email)
+                val rebaseCommiter = Libgit2Helper.createSignature(username, email, settings)
                 val originCommitAuthor:Signature? = null // null to use originCommit author
                 val originCommitMsgEncoding:Charset? = null // null to use origin commit msg encoding
                 val originCommitMsg:String? = null // null to use origin commit msg
@@ -2879,7 +2881,7 @@ class Libgit2Helper {
         }
 
         //即使targetRefName传长引用名在冲突文件里显示的依然是短引用名，所以，若想提高dwim找到引用的机率，建议这个值传长引用名（例如 refs/heads/abc），不过，其实合并冲突的文件里显示的是长引用名还是短引用名无所谓，都比hash好，所以就算不为了在冲突文件里显示得更友好，也建议这个传长引用名。
-        fun mergeOrRebase(repo: Repository, targetRefName: String, username: String, email: String, requireMergeByRevspec:Boolean=false, revspec: String="", trueMergeFalseRebase:Boolean=true):Ret<Oid?> {
+        fun mergeOrRebase(repo: Repository, targetRefName: String, username: String, email: String, requireMergeByRevspec:Boolean=false, revspec: String="", trueMergeFalseRebase:Boolean=true, settings: AppSettings):Ret<Oid?> {
             val funName = "mergeOrRebase"
 
             //创建父提交列表，然后执行分析
@@ -2913,9 +2915,9 @@ class Libgit2Helper {
 
             return if(trueMergeFalseRebase) {
                 //调用这个方法执行merge
-                mergeManyHeads(repo, parents, username, email)
+                mergeManyHeads(repo, parents, username, email, settings=settings)
             }else{
-                startRebase(repo, parents, username, email)
+                startRebase(repo, parents, username, email, settings)
             }
 
         }
@@ -2926,7 +2928,8 @@ class Libgit2Helper {
             repo: Repository,
             theirHeads: List<AnnotatedCommit>,
             username: String,
-            email: String
+            email: String,
+            settings: AppSettings
         ):Ret<Oid?> {
             //分析仓库状态
             val state = repo.state()
@@ -3048,7 +3051,7 @@ class Libgit2Helper {
 
                 //创建提交
 //                val commitResult = doCreateCommit(repo, msg, username, email, branchFullRefName, parent)
-                val commitResult = createCommit(repo, msg, username, email, branchFullRefName, indexItemList = null, parent)
+                val commitResult = createCommit(repo, msg, username, email, branchFullRefName, indexItemList = null, parent, settings = settings)
                 if(commitResult.hasError()) {
                     return Ret.createError(null, "merge failed:"+commitResult.msg, Ret.ErrCode.mergeFailedByCreateCommitFaild)
                 }
@@ -4426,12 +4429,12 @@ class Libgit2Helper {
                 force);
         }
 
-        fun createTagAnnotated(repo: Repository, tagName:String, commit: Commit, tagMsg: String, gitUserName:String, gitEmail:String, force: Boolean):Oid {
+        fun createTagAnnotated(repo: Repository, tagName:String, commit: Commit, tagMsg: String, gitUserName:String, gitEmail:String, force: Boolean, settings: AppSettings):Oid {
             return Tag.create(
                 repo,
                 tagName,
                 commit,
-                Signature.create(gitUserName, gitEmail),
+                Libgit2Helper.createSignature(gitUserName, gitEmail, settings),
                 tagMsg,
                 force
             )
@@ -4669,7 +4672,7 @@ class Libgit2Helper {
          *
          * @return 注意：操作成功也有可能oid为null，因为只有当autoCommit为true才会创建提交才会有oid，否则只会执行cherrypick不提交也没oid
          */
-        fun cherrypick(repo:Repository, targetCommitFullHash:String, parentCommitFullHash:String="", pathSpecList: List<String>?=null, cherrypickOpts:Cherrypick.Options? = null, autoCommit:Boolean = true):Ret<Oid?> {
+        fun cherrypick(repo:Repository, targetCommitFullHash:String, parentCommitFullHash:String="", pathSpecList: List<String>?=null, cherrypickOpts:Cherrypick.Options? = null, autoCommit:Boolean = true, settings: AppSettings):Ret<Oid?> {
             val state = repo.state()
             if(state == null || (state != Repository.StateT.NONE)) {
                 return Ret.createError(null, "err:repo state is not 'NONE'")
@@ -4739,7 +4742,7 @@ class Libgit2Helper {
                 //无冲突则创建提交
                 val author = target.author()
                 //创建commit并返回oid
-                return createCommit(repo, target.message(), author.name, author.email, cleanRepoStateIfSuccess = true)
+                return createCommit(repo, target.message(), author.name, author.email, cleanRepoStateIfSuccess = true, settings = settings)
             }
 
             return Ret.createSuccess(null)
@@ -4811,7 +4814,7 @@ class Libgit2Helper {
          *
          * @param msg 如果为空，将会使用原提交的msg
          */
-        fun cherrypickContinue(repo: Repository, msg: String="", username: String, email: String, autoClearState:Boolean=true, overwriteAuthor: Boolean):Ret<Oid?> {
+        fun cherrypickContinue(repo: Repository, msg: String="", username: String, email: String, autoClearState:Boolean=true, overwriteAuthor: Boolean, settings: AppSettings):Ret<Oid?> {
             val readyCheckRet = readyForContinueCherrypick(repo)
             if(readyCheckRet.hasError()) {
                 return readyCheckRet
@@ -4842,7 +4845,7 @@ class Libgit2Helper {
             }
 
             //创建提交
-            val ret = createCommit(repo, msg, username, email, overwriteAuthorWhenAmend = overwriteAuthor, cleanRepoStateIfSuccess = autoClearState)
+            val ret = createCommit(repo, msg, username, email, overwriteAuthorWhenAmend = overwriteAuthor, cleanRepoStateIfSuccess = autoClearState, settings = settings)
 
             //改成在创建commit的函数里清了
             //如果创建提交成功，清除仓库状态
@@ -6038,7 +6041,8 @@ class Libgit2Helper {
             commitMsg: String,
             username: String,
             email: String,
-            currentBranchFullNameOrHEAD: String // current branch name, or "HEAD"(when detached or first commit)
+            currentBranchFullNameOrHEAD: String, // current branch name, or "HEAD"(when detached or first commit)
+            settings: AppSettings,
         ):Ret<Oid?> {
             try {
                 if(commitMsg.isBlank()) {
@@ -6062,6 +6066,7 @@ class Libgit2Helper {
                     username=username,
                     email=email,
                     branchFullRefName=currentBranchFullNameOrHEAD,
+                    settings = settings
                 )
 
             }catch (e:Exception) {
@@ -6430,6 +6435,20 @@ class Libgit2Helper {
             }
         }
 
+        fun createSignature(name: String, email: String, settings: AppSettings):Signature {
+            val offsetMinutes = try {
+                readTimeZoneOffsetInMinutesFromSettings(settings)
+            }catch (_:Exception) {
+                //如果获取时间偏移量出错，使用系统默认时区，如果还出错，使用0，即UTC+0
+                try {
+                    AppModel.systemTimeZoneOffsetInMinutes.intValue
+                }catch (_:Exception) {
+                    0
+                }
+            }
+
+            return Signature(name, email, getSecFromTime(), offsetMinutes)
+        }
 
     }
 

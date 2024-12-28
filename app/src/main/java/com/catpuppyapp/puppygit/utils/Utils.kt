@@ -181,6 +181,9 @@ fun boolToDbInt(b:Boolean):Int {
     return if(b) Cons.dbCommonTrue else Cons.dbCommonFalse
 }
 
+/**
+ * 默认返回utc时间代表的秒数，若想使用其他时区，可传对应offset
+ */
 //测试了下，这个time参数默认值会在每次调用时函数时重新调用LocalDateTime.now()，和预期一样，无bug
 fun getSecFromTime(time:LocalDateTime=LocalDateTime.now(), offset:ZoneOffset=Cons.dbUsedTimeZoneOffset):Long {
 //    return Instant.now().epochSecond

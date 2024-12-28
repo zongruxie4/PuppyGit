@@ -14,12 +14,14 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import com.catpuppyapp.puppygit.data.entity.RepoEntity
 import com.catpuppyapp.puppygit.play.pro.R
+import com.catpuppyapp.puppygit.settings.SettingsUtil
 import com.catpuppyapp.puppygit.style.MyStyleKt
 import com.catpuppyapp.puppygit.utils.AppModel
 import com.catpuppyapp.puppygit.utils.Libgit2Helper
@@ -30,7 +32,7 @@ import com.catpuppyapp.puppygit.utils.doJobThenOffLoading
 import com.github.git24j.core.Repository
 
 
-private val TAG = "CreateTagDialog"
+private const val TAG = "CreateTagDialog"
 
 @Composable
 fun CreateTagDialog(showDialog:MutableState<Boolean>,
@@ -53,6 +55,8 @@ fun CreateTagDialog(showDialog:MutableState<Boolean>,
     val tagMsgErrMsg = rememberSaveable { mutableStateOf("")}
     val gitConfigUsername = rememberSaveable { mutableStateOf( "")}
     val gitConfigEmail = rememberSaveable { mutableStateOf( "")}
+
+    val settings = remember { SettingsUtil.getSettingsSnapshot() }
 
     ConfirmDialog(title = activityContext.getString(R.string.new_tag),
         requireShowTextCompose = true,
@@ -248,7 +252,8 @@ fun CreateTagDialog(showDialog:MutableState<Boolean>,
                             tagMsg.value,
                             gitConfigUsername.value,
                             gitConfigEmail.value,
-                            force.value
+                            force.value,
+                            settings
                         )
                     }else {
                         Libgit2Helper.createTagLight(

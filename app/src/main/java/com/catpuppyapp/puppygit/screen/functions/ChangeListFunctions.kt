@@ -10,6 +10,7 @@ import com.catpuppyapp.puppygit.etc.Ret
 import com.catpuppyapp.puppygit.git.StatusTypeEntrySaver
 import com.catpuppyapp.puppygit.git.Upstream
 import com.catpuppyapp.puppygit.play.pro.R
+import com.catpuppyapp.puppygit.settings.SettingsUtil
 import com.catpuppyapp.puppygit.utils.AppModel
 import com.catpuppyapp.puppygit.utils.Libgit2Helper
 import com.catpuppyapp.puppygit.utils.Msg
@@ -54,6 +55,8 @@ object ChangeListFunctions {
         commitBtnTextForCommitDialog:MutableState<String>,
         showPushForCommitDialog:MutableState<Boolean>
     ):Boolean{
+        val settings = SettingsUtil.getSettingsSnapshot()
+
         commitBtnTextForCommitDialog.value = appContext.getString(if(requireDoSync) R.string.sync else R.string.commit)
         showPushForCommitDialog.value = !requireDoSync
 
@@ -175,7 +178,8 @@ object ChangeListFunctions {
                     usernameFromConfig,
                     emailFromConfig,
                     commitMsgForFirstCommit = tmpCommitMsg,
-                    overwriteAuthorForFirstCommit = overwriteAuthor.value
+                    overwriteAuthorForFirstCommit = overwriteAuthor.value,
+                    settings = settings
                 )
 
             }else if(repoState.intValue == Repository.StateT.CHERRYPICK.bit) {
@@ -186,7 +190,8 @@ object ChangeListFunctions {
                     username = usernameFromConfig,
                     email=emailFromConfig,
                     autoClearState = false,  //这里后续会检查若操作成功会清状态，所以此处传false，不然会清两次状态
-                    overwriteAuthor = overwriteAuthor.value
+                    overwriteAuthor = overwriteAuthor.value,
+                    settings=settings
                 )
             }else {
                 loadingText.value = appContext.getString(R.string.committing)
@@ -198,7 +203,8 @@ object ChangeListFunctions {
                     email = email.value,
                     indexItemList = if(fromTo == Cons.gitDiffFromHeadToIndex) itemList.value else null,
                     amend = amendCommit.value,
-                    overwriteAuthorWhenAmend = overwriteAuthor.value
+                    overwriteAuthorWhenAmend = overwriteAuthor.value,
+                    settings = settings
                 )
 
             }
@@ -328,6 +334,7 @@ object ChangeListFunctions {
                         bottomBarActDoneCallback:(String)->Unit,
     ):Boolean {
         try {
+            val settings = SettingsUtil.getSettingsSnapshot()
             //这的repo不能共享，不然一释放就要完蛋了，这repo不是rc是box单指针
             Repository.open(curRepoFromParentPage.value.fullSavePath).use { repo ->
                 var upstream = upstreamParam
@@ -362,7 +369,8 @@ object ChangeListFunctions {
                         repo,
                         remoteRefSpec,
                         usernameFromConfig,
-                        emailFromConfig
+                        emailFromConfig,
+                        settings = settings
                     )
                 }else {
                     loadingText.value = appContext.getString(R.string.rebasing)
@@ -374,7 +382,8 @@ object ChangeListFunctions {
                         email = emailFromConfig,
                         requireMergeByRevspec = false,
                         revspec = "",
-                        trueMergeFalseRebase = false
+                        trueMergeFalseRebase = false,
+                        settings = settings
                     )
                 }
 

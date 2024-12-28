@@ -483,7 +483,8 @@ fun RepoInnerPage(
                         repo,
                         remoteRefSpec,
                         usernameFromConfig,
-                        emailFromConfig
+                        emailFromConfig,
+                        settings = settings
                     )
                 }else {
                     Libgit2Helper.mergeOrRebase(
@@ -493,7 +494,8 @@ fun RepoInnerPage(
                         email = emailFromConfig,
                         requireMergeByRevspec = false,
                         revspec = "",
-                        trueMergeFalseRebase = false
+                        trueMergeFalseRebase = false,
+                        settings = settings
                     )
                 }
 
