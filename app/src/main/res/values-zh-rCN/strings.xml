@@ -1113,4 +1113,13 @@
     <string name="sync_canceled_by_commit_failed">提交失败，已取消同步</string>
 
 
+    <string name="timezone">时区</string>
+    <string name="timezone_offset_in_minutes_when_viewing_commits">预览提交时使用的时区偏移量(分钟)</string>
+    <string name="default_str">默认</string>
+    <string name="offset_in_minutes">偏移量(分钟)</string>
+    <string name="get_system_timezone_offset">获取系统时区偏移量</string>
+    <string name="leave_empty_to_use_default_timezone_offset_in_commits">留空以使用提交中的默认时区偏移量</string>
+    <string name="commits">提交</string>
+
+
 </resources>

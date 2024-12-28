@@ -1134,5 +1134,16 @@
     <string name="a_closed_eye">Закрытый глаз</string>
     <string name="push_canceled_by_commit_failed">Отправка отменена из-за ошибки фиксации</string>
     <string name="sync_canceled_by_commit_failed">Синхронизация отменена из-за ошибки фиксации</string>
-    
+
+
+
+<!--    added at 20241228 -->
+    <string name="timezone">TimeZone</string>
+    <string name="timezone_offset_in_minutes_when_viewing_commits">TimeZone offset in minutes when viewing commits</string>
+    <string name="default_str">Default</string>
+    <string name="offset_in_minutes">offset in minutes</string>
+    <string name="get_system_timezone_offset">Get system timezone offset</string>
+    <string name="leave_empty_to_use_default_timezone_offset_in_commits">Leave empty to use default timezone offset in commits</string>
+    <string name="commits">Commits</string>
+
 </resources>

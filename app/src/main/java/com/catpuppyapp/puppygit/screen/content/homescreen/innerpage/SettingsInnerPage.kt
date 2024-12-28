@@ -17,10 +17,12 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextField
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.MutableState
@@ -63,6 +65,7 @@ import com.catpuppyapp.puppygit.utils.UIHelper
 import com.catpuppyapp.puppygit.utils.doJobThenOffLoading
 import com.catpuppyapp.puppygit.utils.fileopenhistory.FileOpenHistoryMan
 import com.catpuppyapp.puppygit.utils.getStoragePermission
+import com.catpuppyapp.puppygit.utils.getSystemDefaultTimeZoneOffset
 import com.catpuppyapp.puppygit.utils.replaceStringResList
 import com.catpuppyapp.puppygit.utils.state.mutableCustomStateOf
 import com.catpuppyapp.puppygit.utils.storagepaths.StoragePathsMan
@@ -164,6 +167,129 @@ fun SettingsInnerPage(
             }
         }
     }
+
+    val showSetCommitTimeZoneDialog = rememberSaveable { mutableStateOf(false) }
+    val commitTimeZone = rememberSaveable { mutableStateOf(settingsState.value.commitTimeZoneInMinutes) }
+    val commitTimeZoneBuf = rememberSaveable { mutableStateOf(commitTimeZone.value) }
+    val getTimeZoneStr = {
+        try {
+            val offset = commitTimeZone.value.toInt().toString()
+
+            //如果有符号，直接返回，否则添加+号
+            if(offset.startsWith("-") || offset.startsWith("+")) {
+                offset
+            }else {
+                "+$offset"
+            }
+        }catch (_:Exception) {
+            activityContext.getString(R.string.default_str)
+        }
+    }
+
+    val initSetCommitTimeZoneDialog = {
+        commitTimeZoneBuf.value = commitTimeZone.value
+
+        showSetCommitTimeZoneDialog.value = true
+    }
+
+
+    if(showSetCommitTimeZoneDialog.value) {
+        ConfirmDialog2(title = stringResource(R.string.timezone),
+            requireShowTextCompose = true,
+            textCompose = {
+                Column(
+                    modifier= Modifier
+                        .fillMaxWidth()
+                        .verticalScroll(rememberScrollState())
+                    ,
+                ) {
+
+                    TextField(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(10.dp)
+                        ,
+                        singleLine = true,
+
+                        value = commitTimeZoneBuf.value,
+                        onValueChange = {
+                            commitTimeZoneBuf.value=it
+                        },
+                        label = {
+                            Text(stringResource(R.string.offset_in_minutes))
+                        },
+//                        placeholder = {}
+                    )
+
+                    Row(modifier = Modifier.padding(10.dp)) {
+                        Text(stringResource(R.string.leave_empty_to_use_default_timezone_offset_in_commits), color = MyStyleKt.TextColor.highlighting_green)
+
+                    }
+
+                    Column(
+                        modifier= Modifier
+                            .fillMaxWidth()
+                            .padding(end = 10.dp)
+                        ,
+                        horizontalAlignment = Alignment.End
+                    ) {
+
+                        Text(
+                            text = stringResource(R.string.get_system_timezone_offset),
+                            style = MyStyleKt.ClickableText.style,
+                            color = MyStyleKt.ClickableText.color,
+                            modifier = MyStyleKt.ClickableText.modifier.clickable {
+                                try {
+                                    commitTimeZoneBuf.value = (getSystemDefaultTimeZoneOffset().totalSeconds / 60).toString()
+                                } catch (e: Exception) {
+                                    Msg.requireShowLongDuration("err: ${e.localizedMessage}")
+                                    MyLog.e(TAG, "#SetCommitTimeZoneOffsetDialog: get system time zone offset err: ${e.stackTraceToString()}")
+                                }
+                            },
+                            fontWeight = FontWeight.Light
+                        )
+
+                        Spacer(Modifier.height(15.dp))
+
+                        Text(
+                            text = stringResource(R.string.clear),
+                            style = MyStyleKt.ClickableText.style,
+                            color = MyStyleKt.ClickableText.color,
+                            modifier = MyStyleKt.ClickableText.modifier.clickable {
+                                commitTimeZoneBuf.value = ""
+                            },
+                            fontWeight = FontWeight.Light
+                        )
+
+                        Spacer(Modifier.height(10.dp))
+
+                    }
+                }
+
+
+            },
+            okBtnText = stringResource(id = R.string.save),
+            cancelBtnText = stringResource(id = R.string.cancel),
+            onCancel = { showSetCommitTimeZoneDialog.value = false }
+        ) {
+            showSetCommitTimeZoneDialog.value = false
+            doJobThenOffLoading {
+                val newValue = try {
+                    commitTimeZoneBuf.value.toInt().toString()
+                }catch (_:Exception) {
+                    ""
+                }
+
+                if(newValue != commitTimeZone.value) {
+                    commitTimeZone.value = newValue
+                    SettingsUtil.update {
+                        it.commitTimeZoneInMinutes = newValue
+                    }
+                }
+            }
+        }
+    }
+
 
     val oldMasterPassword = rememberSaveable { mutableStateOf("") }
     val newMasterPassword = rememberSaveable { mutableStateOf("") }
@@ -541,6 +667,22 @@ fun SettingsInnerPage(
         }) {
             Text(stringResource(R.string.clean), fontSize = itemFontSize)
         }
+
+
+        SettingsTitle(stringResource(R.string.commits))
+
+
+        SettingsContent(onClick = {
+            initSetCommitTimeZoneDialog()
+        }) {
+            Column {
+                Text(stringResource(R.string.timezone), fontSize = itemFontSize)
+                Text(getTimeZoneStr(), fontSize = itemDescFontSize, fontWeight = FontWeight.Light, color = MyStyleKt.TextColor.highlighting_green)
+                Text(stringResource(R.string.timezone_offset_in_minutes_when_viewing_commits), fontSize = itemDescFontSize, fontWeight = FontWeight.Light)
+
+            }
+        }
+
 
 
         SettingsTitle(stringResource(R.string.editor))
