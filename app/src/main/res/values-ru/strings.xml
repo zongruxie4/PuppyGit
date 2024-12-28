@@ -120,7 +120,7 @@
     <string name="loading">Загрузка…</string>
     <string name="unknown_err">Неизвестная ошибка</string>
     <string name="err_repo_name_has_illegal_chars_or_too_long">Ошибка: имя репозитория содержит недопустимые символы или слишком длинное</string>
-<!--    <string name="query_repo_for_changelist_err">ChangeList Error When Querying Repo</string>-->
+    <!--    <string name="query_repo_for_changelist_err">ChangeList Error When Querying Repo</string>-->
 
     <!--    diff时，不知道文件是modification还是new还是delete-->
     <string name="unknown_change_type">Неизвестный тип изменения</string>
@@ -143,7 +143,7 @@
     <string name="doesnt_support_view_binary_file">Просмотр бинарных файлов не поддерживается</string>
     <string name="switch_repo">Переключить репозиторий</string>
     <string name="refresh">Обновить</string>
-<!--    <string name="go_to_index_page">Go to Index page</string>-->
+    <!--    <string name="go_to_index_page">Go to Index page</string>-->
     <string name="no_repo_for_shown">Нет репозиториев для отображения</string>
     <string name="end_of_the_list">--- Конец списка ---</string>
     <string name="commit_selected_and_index_items_then_sync">Закоммитить выбранные и индексированные элементы, затем синхронизировать с удаленным репозиторием</string>
@@ -152,7 +152,7 @@
     <string name="stage">Индексировать</string>
     <string name="no_item_selected">Ничего не выбрано</string>
 
-<!--    will replace "ph_a3f241dc_1" to a number of files count ,the final str will shown looks like: "5 files staged" -->
+    <!--    will replace "ph_a3f241dc_1" to a number of files count ,the final str will shown looks like: "5 files staged" -->
     <string name="n_files_staged">Проиндексировано ph_a3f241dc_1 файл(ов)</string>
     <string name="revert_n_and_del_m_files">Отменено ph_a3f241dc_1 и удалено ph_a3f241dc_2 файл(ов)</string>
     <string name="will_revert_modified_or_deleted_and_rm_new_files_are_you_sure">Будут отменены изменения \'Modified\' или \'Deleted\' и [УДАЛЕНЫ] новые файлы. Вы уверены? (\'Conflict\' элементы будут проигнорированы)</string>
@@ -245,8 +245,8 @@
     <string name="error_cant_resolve_repo_head">Ошибка: не удалось определить HEAD репозитория</string>
     <string name="switch_branch">Переключить ветку</string>
     <string name="merge_into_current">Слить с текущей</string>
-<!--    ph_a3f241dc_N 是占位符，会被替换为实际的分支名-->
-<!--    ph_a3f241dc_N are placehodlers, will replaced by real branches name-->
+    <!--    ph_a3f241dc_N 是占位符，会被替换为实际的分支名-->
+    <!--    ph_a3f241dc_N are placehodlers, will replaced by real branches name-->
     <string name="merge_branch1_into_branch2">Слить ph_a3f241dc_1 с ph_a3f241dc_2</string>
     <string name="set_upstream">Установить Upstream</string>
     <string name="set_upstream_error">Ошибка установки Upstream!</string>
@@ -276,7 +276,7 @@
     <string name="checkout_remote_branch">Переключить на удаленную ветку</string>
     <string name="create_local_branch">Создать локальную ветку</string>
     <!-- 翻成中文：“将会和以下分支合并” ，冒号，后面接分支名 -->
-<!--    <string name="will_merge">Will merge</string>-->
+    <!--    <string name="will_merge">Will merge</string>-->
     <string name="merge_failed_src_and_target_same">Ошибка слияния: исходная и целевая ветки совпадают!</string>
     <string name="merge_success">Слияние успешно</string>
     <string name="already_up_to_date">Уже актуально</string>
@@ -326,7 +326,7 @@
     <string name="will_reload_file_are_u_sure">Файл будет перезагружен, несохраненное содержимое будет потеряно. Вы уверены?</string>
     <string name="will_close_file_are_u_sure">Файл будет закрыт, несохраненное содержимое будет потеряно. Вы уверены?</string>
     <string name="copied">Скопировано!</string>
-<!--    ph_a3f241dc_1 is a placeholder for selected lines count-->
+    <!--    ph_a3f241dc_1 is a placeholder for selected lines count-->
     <string name="n_lines_copied">Скопировано строк: ph_a3f241dc_1</string>
     <string name="view_hash">Просмотреть хэш</string>
     <string name="resolve_reference_failed">Не удалось разрешить ссылку!</string>
@@ -423,7 +423,7 @@
     <string name="line_selected">Строка выбрана</string>
     <string name="deleted">Удалено</string>
     <string name="delete_lines">Удалить строки</string>
-<!--    ph_a3f241dc_1 is placeholder for selected lines count-->
+    <!--    ph_a3f241dc_1 is placeholder for selected lines count-->
     <string name="will_delete_n_lines_ask">Будут удалены ph_a3f241dc_1 строк(и). Вы уверены?</string>
     <string name="about">О программе</string>
     <string name="app_icon">Иконка приложения</string>
@@ -488,7 +488,7 @@
     <string name="err_resolve_remote_failed">Ошибка: не удалось определить удаленный репозиторий</string>
     <string name="all">Все</string>
     <string name="specify">Указать</string>
-<!--    e.g. branch split by ','-->
+    <!--    e.g. branch split by ','-->
     <string name="branches_split_by_sign">Ветки разделены знаком \'ph_a3f241dc_1\'</string>
     <string name="branches_placeholder">ветка1,ветка2 и т.д.</string>
     <string name="err_branch_list_is_empty">Ошибка: список веток пуст!</string>
@@ -515,16 +515,16 @@
     <string name="err_init_billing_service_failed">Ошибка: инициализация сервиса оплаты не удалась!</string>
     <string name="err_query_product_details_failed">Ошибка: запрос деталей продукта не удался!</string>
 
-<!--    products benefits-->
+    <!--    products benefits-->
     <string name="pro_benefits">Без рекламы\nОткрытие всех функций</string>
 
-<!--    products desc-->
+    <!--    products desc-->
     <string name="pro_per_month_subs_desc"> </string>
     <string name="pro_per_3_months_subs_desc"> </string>
     <string name="pro_per_6_months_subs_desc"> </string>
     <string name="pro_per_year_subs_desc"> </string>
 
-<!--products subscription period-->
+    <!--products subscription period-->
     <string name="per_month">за 1 месяц</string>
     <string name="per_3_months">за 3 месяца</string>
     <string name="per_6_months">за 6 месяцев</string>
@@ -617,7 +617,7 @@
     <string name="other">Другое</string>
     <string name="lightweight">Легковесный</string>
 
-<!-- is_xxx and not_xxx should be difference string for filterable -->
+    <!-- is_xxx and not_xxx should be difference string for filterable -->
     <string name="is_current">Текущий</string>
     <string name="not_current">Не текущий</string>
     <string name="is_published">Опубликован</string>
@@ -645,7 +645,7 @@
     <string name="readonly_cant_edit">Только для чтения, редактирование невозможно</string>
     <string name="not_found">Не найдено!</string>
 
-<!--    example: "FindNext(all:10)" , this str used for editor searching keyword, when long press find next, will show this string-->
+    <!--    example: "FindNext(all:10)" , this str used for editor searching keyword, when long press find next, will show this string-->
     <string name="find_next_all_count">Найти cледующее(всего:ph_a3f241dc_1)</string>
     <string name="next_conflict_all_count">Следующий конфликт(всего:ph_a3f241dc_1)</string>
     <string name="no_conflict_found">Конфликты не найдены</string>
@@ -655,7 +655,7 @@
     <string name="rebase_current_onto">Перебазировать текущий на</string>
     <string name="rebase_branch1_onto_branch2">Перебазировать ph_a3f241dc_1 на ph_a3f241dc_2</string>
     <string name="rebase">Перебазировать</string>
-<!--    <string name="will_rebase">Will Rebase</string>-->
+    <!--    <string name="will_rebase">Will Rebase</string>-->
     <string name="rebasing">Перебазирование…</string>
     <string name="rebase_success">Перебазирование успешно</string>
     <string name="merge_continue">Продолжить слияние</string>
@@ -753,7 +753,7 @@
     <string name="status">Статус</string>
     <string name="uptodate">актуально</string>
 
-<!--    eg: ahead 3, behind 5-->
+    <!--    eg: ahead 3, behind 5-->
     <string name="ahead_n_behind_m">впереди ph_a3f241dc_1, позади ph_a3f241dc_2</string>
     <string name="publish">Опубликовать</string>
     <string name="plz_set_upstream_first">сначала укажите Upstream</string>
@@ -785,10 +785,10 @@
     <string name="lines">Строки</string>
     <string name="file_size">Размер файла</string>
 
-<!--    eg: "Items: 10 (8 folders, 2 files)"-->
+    <!--    eg: "Items: 10 (8 folders, 2 files)"-->
     <string name="items_n1_n2_folders_n3_files">Элементы: ph_a3f241dc_1 (ph_a3f241dc_2 папок, ph_a3f241dc_3 файлов)</string>
 
-<!--    eg: "Size: 2MB" -->
+    <!--    eg: "Size: 2MB" -->
     <string name="size_n">Размер: ph_a3f241dc_1</string>
     <string name="report_bugs">Сообщить об ошибках</string>
     <string name="source_code">Исходный код</string>
@@ -811,7 +811,7 @@
     <string name="the_path_is_a_repos_parent_dir">Путь является родительской папкой репозиториев</string>
     <string name="will_scan_repos_under_this_folder">будут сканироваться репозитории в этой папке</string>
     <string name="path_is_not_a_dir">путь не является папкой</string>
-<!--    eg: 10 imported-->
+    <!--    eg: 10 imported-->
     <string name="n_imported">ph_a3f241dc_1 импортировано</string>
     <string name="three_dots_icon_for_choose_folder">Иконка с тремя точками для выбора папки</string>
     <string name="rename_repo">Переименовать репозиторий</string>
@@ -830,7 +830,7 @@
     <string name="last_line">Последняя строка</string>
     <string name="compare_left_to_right">Сравнить \'Слева\' и \'Справа\'</string>
 
- <!--    the suffix "_str" for avoid conflict with android reserved keyword-->
+    <!--    the suffix "_str" for avoid conflict with android reserved keyword-->
     <string name="selected_str">Выбрано</string>
     <string name="path_under_repo">Путь внутри репозитория</string>
     <string name="submodules">Субмодули</string>
@@ -923,7 +923,7 @@
 
 
 
-<!--    translatable or no need translate(such as language name text) -->
+    <!--    translatable or no need translate(such as language name text) -->
     <string name="lang_name_english" translatable="false">English</string>
     <string name="lang_name_chinese_simplified" translatable="false">中文(简体)</string>
     <string name="log_level">Уровень логов</string>
@@ -1048,9 +1048,9 @@
     <string name="can_t_compare_empty_line">Невозможно сравнить пустую строку</string>
     <string name="can_t_compare_clipboard_to_context_line">Невозможно сравнить буфер обмена с контекстной строкой</string>
     <string name="selected_lines_already_compared">Выбранные строки уже были сравнены</string>
-<!--    ph1 is origin type+line number e.g. add line +12 to compare-->
+    <!--    ph1 is origin type+line number e.g. add line +12 to compare-->
     <string name="added_line_for_compare">добавлена строка ph_a3f241dc_1 для сравнения</string>
-<!--    ph1 is origin type + line number, e.g. Compare to +12-->
+    <!--    ph1 is origin type + line number, e.g. Compare to +12-->
     <string name="compare_to_origintype_linenum">Сравнить с ph_a3f241dc_1</string>
     <string name="comparing">Сравнение…</string>
     <string name="can_t_compare_both_context_type_lines">Невозможно сравнить обе строки типа Context</string>
@@ -1080,7 +1080,7 @@
     <string name="http_s">http(s)</string>
     <string name="if_unable_choose_a_path_just_copy_paste_instead">Если не удается выбрать путь, возможно, ваша система удаляет средство выбора файлов. Просто скопируйте нужный путь и вставьте его вместо этого.</string>
     <string name="fetch_url">URL для получения</string>
-<!--  the placeholder is remote name,   e.g. Fetching origin...-->
+    <!--  the placeholder is remote name,   e.g. Fetching origin...-->
     <string name="fetching_remotename">Получение ph_a3f241dc_1…</string>
     <string name="repo_state">Состояние репозитория</string>
     <string name="edited">Изменено</string>
@@ -1089,7 +1089,7 @@
     <string name="ascend">По возрастанию</string>
     <string name="folder_first">Сначала папки</string>
     <string name="only_for_this_folder">Только для этой папки</string>
-<!--    e.g. Folder: 5, File: 3 -->
+    <!--    e.g. Folder: 5, File: 3 -->
     <string name="folder_n_file_m">Папок: ph_a3f241dc_1, Файлов: ph_a3f241dc_2</string>
     <string name="recent_files">Последние файлы</string>
     <string name="recent_files_is_empty">Список последних файлов пуст!</string>
@@ -1099,7 +1099,7 @@
     <string name="cache_your_input_into_editcache_dir_path">Кэшировать ваш ввод в \'ph_a3f241dc_1\'</string>
     <string name="switch_reference">Переключить ссылку</string>
     <string name="switch_item">Переключить элемент</string>
- <!--    e.g. Count: 10-->
+    <!--    e.g. Count: 10-->
     <string name="count_n">Количество: ph_a3f241dc_1</string>
     <string name="reference">Ссылка</string>
     <string name="faq">Часто задаваемые вопросы</string>
@@ -1120,8 +1120,8 @@
     <string name="clear_master_password">Удалить мастер-пароль</string>
     <string name="if_set_will_require_master_password_when_launching_app">Мастер-пароль используется для защиты паролей/парольных фраз ваших данных. Если он установлен, потребуется вводить мастер-пароль при запуске приложения.</string>
     <string name="please_make_sure_you_can_remember_your_master_password">Пожалуйста, убедитесь, что вы сможете запомнить ваш мастер-пароль!!!</string>
-<!--    检查凭据是否需要迁移-->
-<!--    checking credentials need migration or needn't-->
+    <!--    检查凭据是否需要迁移-->
+    <!--    checking credentials need migration or needn't-->
     <string name="checking_creds_migration">Проверка миграции данных…</string>
     <string name="updating_master_password">Обновление мастер-пароля…</string>
     <string name="verifying">Проверка…</string>
@@ -1137,19 +1137,19 @@
 
 
 
-<!--    added at 20241228 -->
-    <string name="timezone">TimeZone</string>
-    <string name="timezone_offset_in_minutes_when_viewing_commits">TimeZone offset in minutes when viewing commits</string>
-    <string name="default_str">Default</string>
-    <string name="offset_in_minutes">offset in minutes</string>
-    <string name="get_system_timezone_offset">Get system timezone offset</string>
-    <string name="leave_empty_to_use_default_timezone_offset_from_commits">Leave empty to use default timezone offset from commits</string>
-    <string name="commits">Commits</string>
-    <string name="timezone_offset_example">e.g. -480 is UTC-8, +480 or 480 is UTC+8, +330 or 330 is UTC+5:30</string>
-    <string name="follow_system">Follow System</string>
-    <string name="use_offset_from_commits">Use offset from commits</string>
-    <string name="timezone_when_viewing_commits">TimeZone when viewing commits</string>
-    <string name="set_timezone_leave_empty_note">You can leave the offset empty, then: when viewing GitObject(commits/tags/reflogs/etc), will read timezone from them; when creating GitObject, will save system timezone into them</string>
-    <string name="default_timezone_rule_description">When viewing GitObject, read timezone from it; when creating GitObject, save system timezone into it</string>
+    <!--    added at 20241228 -->
+    <string name="timezone">Часовой пояс</string>
+    <string name="timezone_offset_in_minutes_when_viewing_commits">Сдвиг часового пояса в минутах при просмотре коммитов</string>
+    <string name="default_str">По умолчанию</string>
+    <string name="offset_in_minutes">сдвиг в минутах</string>
+    <string name="get_system_timezone_offset">Получить сдвиг часового пояса системы</string>
+    <string name="leave_empty_to_use_default_timezone_offset_from_commits">Оставить пустым для использования сдвига часового пояса по умолчанию из данных коммитов</string>
+    <string name="commits">Коммиты</string>
+    <string name="timezone_offset_example">например, -480 это UTC-8, +480 или 480 это UTC+8, +330 или 330 это UTC+5:30</string>
+    <string name="follow_system">Соответствие системе</string>
+    <string name="use_offset_from_commits">Использовать сдвиг из коммитов</string>
+    <string name="timezone_when_viewing_commits">Часовой пояс при просмотре коммитов</string>
+    <string name="set_timezone_leave_empty_note">Вы можете оставить сдвиг часового пояса пустым тогда при просмотре объектов Git(коммиты, метки и т.п) будет использоваться их часовой пояс. А при создании объектов Git в них будет сохраняться системный часовой пояс.</string>
+    <string name="default_timezone_rule_description">При просмотре объекта Git считывать из него часовой пояс. При создании объекта Git сохранять в нем системный часовой пояс</string>
 
 </resources>
