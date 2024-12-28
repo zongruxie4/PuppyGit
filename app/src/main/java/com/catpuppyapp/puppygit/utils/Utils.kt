@@ -182,6 +182,11 @@ fun boolToDbInt(b:Boolean):Int {
     return if(b) Cons.dbCommonTrue else Cons.dbCommonFalse
 }
 
+/**
+ * 转换系统时间到秒。
+ *
+ * 解释：LocalDateTime.now()获取的时间是加了偏移量的系统时间，而offset默认传的UTC+0，所以效果等于将系统时间转换为秒数（和获取UTC时间再加上offset秒数的结果一致）。
+ */
 //测试了下，这个time参数默认值会在每次调用时函数时重新调用LocalDateTime.now()，和预期一样，无bug
 fun getSecFromTime(time:LocalDateTime=LocalDateTime.now(), offset:ZoneOffset=Cons.dbUsedTimeZoneOffset):Long {
 //    return Instant.now().epochSecond
