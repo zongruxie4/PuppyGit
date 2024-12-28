@@ -96,8 +96,12 @@ data class AppSettings(
     var masterPasswordHash:String = "",
 
     /**
-     * 留空使用默认，否则为分钟数
+     * 时区偏移量，正数或负数或0，留空使用默认，否则为分钟数
      */
-    var commitTimeZoneInMinutes:String="",
+    var commitTimeZone_OffsetInMinutes:String="",
 
+    /**
+     * 为true则预览提交时间时跟随系统时区，否则使用 `commitTimeZoneInMinutes` 指定的偏移量，由于github默认显示提交时间时跟随用户时区，所以我这默认值也设成true，为true应该比较符合直觉
+     */
+    var commitTimeZone_FollowSystem:Boolean = true
 )

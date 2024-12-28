@@ -6,7 +6,9 @@ import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.material3.TopAppBarScrollBehavior
 import androidx.compose.material3.rememberTopAppBarState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.MutableIntState
 import androidx.compose.runtime.MutableState
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.graphics.ImageBitmap
@@ -94,6 +96,12 @@ object AppModel {
             //set dbHolder ，如果以后使用依赖注入框架，这个需要修改
             AppModel.dbContainer = AppDataContainer(realAppContext)
 
+        }
+
+        try {
+            AppModel.systemTimeZoneOffsetInMinutes.intValue = getSystemDefaultTimeZoneOffset().totalSeconds / 60
+        }catch (e:Exception) {
+            MyLog.e(TAG, "#$funName: get system time zone offset err: ${e.stackTraceToString()}")
         }
 
         AppModel.deviceWidthHeight = UIHelper.getDeviceWidthHeightInDp(activityContext)
@@ -556,6 +564,9 @@ object AppModel {
      * 此变量应确保仅消费一次，不然可能会在不应该打开文件的时候打开文件
      */
     val lastEditFileWhenDestroy:MutableState<String> = mutableStateOf("")
+
+    val systemTimeZoneOffsetInMinutes:MutableIntState = mutableIntStateOf(0)
+
 
     @OptIn(ExperimentalMaterial3Api::class)
     lateinit var homeTopBarScrollBehavior: TopAppBarScrollBehavior

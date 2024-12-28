@@ -1121,6 +1121,8 @@
     <string name="leave_empty_to_use_default_timezone_offset_in_commits">留空以使用提交中的默认时区偏移量</string>
     <string name="commits">提交</string>
     <string name="timezone_offset_example">示例: -480 代表 UTC-8, +480或480 代表 UTC+8, +330或330 代表 UTC+5:30</string>
+    <string name="follow_system">跟随系统</string>
+    <string name="use_offset_in_commits">使用提交中的偏移量</string>
 
 
 </resources>

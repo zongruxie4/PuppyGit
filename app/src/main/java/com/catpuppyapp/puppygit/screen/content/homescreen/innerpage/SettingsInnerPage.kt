@@ -67,7 +67,6 @@ import com.catpuppyapp.puppygit.utils.doJobThenOffLoading
 import com.catpuppyapp.puppygit.utils.fileopenhistory.FileOpenHistoryMan
 import com.catpuppyapp.puppygit.utils.formatMinutesToUtc
 import com.catpuppyapp.puppygit.utils.getStoragePermission
-import com.catpuppyapp.puppygit.utils.getSystemDefaultTimeZoneOffset
 import com.catpuppyapp.puppygit.utils.replaceStringResList
 import com.catpuppyapp.puppygit.utils.state.mutableCustomStateOf
 import com.catpuppyapp.puppygit.utils.storagepaths.StoragePathsMan
@@ -171,31 +170,36 @@ fun SettingsInnerPage(
     }
 
     val showSetCommitTimeZoneDialog = rememberSaveable { mutableStateOf(false) }
-    val commitTimeZone = rememberSaveable { mutableStateOf(settingsState.value.commitTimeZoneInMinutes) }
-    val commitTimeZoneBuf = rememberSaveable { mutableStateOf(commitTimeZone.value) }
+    val commitTimeZoneFollowSystem = rememberSaveable { mutableStateOf(settingsState.value.commitTimeZone_FollowSystem) }
+    val commitTimeZoneFollowSystemBuf = rememberSaveable { mutableStateOf(commitTimeZoneFollowSystem.value) }
+    val commitTimeZoneOffset = rememberSaveable { mutableStateOf(settingsState.value.commitTimeZone_OffsetInMinutes) }
+    val commitTimeZoneOffsetBuf = rememberSaveable { mutableStateOf(commitTimeZoneOffset.value) }
     val getTimeZoneStr = {
         try {
-            val offsetInMinutes = commitTimeZone.value.toInt()
-
-            //如果有符号，直接返回，否则添加+号
-            val offsetInMinutesStr = if(offsetInMinutes < 0) {
-                "$offsetInMinutes"
-            }else {
-                //大于等于0
-                "+$offsetInMinutes"
-            }
-
+            val offsetInMinutes = if(commitTimeZoneFollowSystem.value) AppModel.systemTimeZoneOffsetInMinutes.intValue else commitTimeZoneOffset.value.toInt()
             val offsetInUtcFormat = formatMinutesToUtc(offsetInMinutes)
 
-            "$offsetInMinutesStr ($offsetInUtcFormat)"
+            val prefix = if(commitTimeZoneFollowSystem.value) {
+                activityContext.getString(R.string.follow_system)
+            }else {
+                //如果有符号，直接返回，否则添加+号
+                if(offsetInMinutes < 0) {
+                    "$offsetInMinutes"
+                }else {
+                    //大于等于0
+                    "+$offsetInMinutes"
+                }
+            }
+
+            "$prefix ($offsetInUtcFormat)"
         }catch (_:Exception) {
-            activityContext.getString(R.string.default_str)
+            activityContext.getString(R.string.use_offset_in_commits)
         }
     }
 
     val initSetCommitTimeZoneDialog = {
-        commitTimeZoneBuf.value = commitTimeZone.value
-
+        commitTimeZoneOffsetBuf.value = commitTimeZoneOffset.value
+        commitTimeZoneFollowSystemBuf.value = commitTimeZoneFollowSystem.value
         showSetCommitTimeZoneDialog.value = true
     }
 
@@ -210,73 +214,77 @@ fun SettingsInnerPage(
                         .verticalScroll(rememberScrollState())
                     ,
                 ) {
+                    MyCheckBox(stringResource(R.string.follow_system), commitTimeZoneFollowSystemBuf)
 
-                    TextField(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(10.dp)
-                        ,
-                        singleLine = true,
+                    if(commitTimeZoneFollowSystemBuf.value.not()) {
+                        TextField(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(10.dp)
+                            ,
+                            singleLine = true,
 
-                        value = commitTimeZoneBuf.value,
-                        onValueChange = {
-                            commitTimeZoneBuf.value=it
-                        },
-                        label = {
-                            Text(stringResource(R.string.offset_in_minutes))
-                        },
+                            value = commitTimeZoneOffsetBuf.value,
+                            onValueChange = {
+                                commitTimeZoneOffsetBuf.value=it
+                            },
+                            label = {
+                                Text(stringResource(R.string.offset_in_minutes))
+                            },
 //                        placeholder = {}
-                    )
+                        )
 
-                    MySelectionContainer {
-                        Column(modifier= Modifier.fillMaxWidth()) {
-                            Row(modifier = Modifier.padding(start = 10.dp, end = 10.dp, bottom = 10.dp)) {
-                                Text(stringResource(R.string.leave_empty_to_use_default_timezone_offset_in_commits), color = MyStyleKt.TextColor.highlighting_green)
-                            }
+                        MySelectionContainer {
+                            Column(modifier= Modifier.fillMaxWidth()) {
+                                Row(modifier = Modifier.padding(start = 10.dp, end = 10.dp, bottom = 10.dp)) {
+                                    Text(stringResource(R.string.leave_empty_to_use_default_timezone_offset_in_commits), color = MyStyleKt.TextColor.highlighting_green)
+                                }
 
-                            Row(modifier = Modifier.padding(top = 5.dp, start = 10.dp, end = 10.dp, bottom = 10.dp)) {
-                                Text(stringResource(R.string.timezone_offset_example), fontWeight = FontWeight.Light)
+                                Row(modifier = Modifier.padding(top = 5.dp, start = 10.dp, end = 10.dp, bottom = 10.dp)) {
+                                    Text(stringResource(R.string.timezone_offset_example), fontWeight = FontWeight.Light)
+                                }
+
                             }
+                        }
+
+                        Column(
+                            modifier= Modifier
+                                .fillMaxWidth()
+                                .padding(end = 10.dp)
+                            ,
+                            horizontalAlignment = Alignment.End
+                        ) {
+
+                            Text(
+                                text = stringResource(R.string.get_system_timezone_offset),
+                                style = MyStyleKt.ClickableText.style,
+                                color = MyStyleKt.ClickableText.color,
+                                modifier = MyStyleKt.ClickableText.modifier.clickable {
+                                    try {
+                                        commitTimeZoneOffsetBuf.value = AppModel.systemTimeZoneOffsetInMinutes.intValue.toString()
+                                    } catch (e: Exception) {
+                                        Msg.requireShowLongDuration("err: ${e.localizedMessage}")
+                                        MyLog.e(TAG, "#SetCommitTimeZoneOffsetDialog: get system time zone offset err: ${e.stackTraceToString()}")
+                                    }
+                                },
+                                fontWeight = FontWeight.Light
+                            )
+
+                            Spacer(Modifier.height(15.dp))
+
+                            Text(
+                                text = stringResource(R.string.clear),
+                                style = MyStyleKt.ClickableText.style,
+                                color = MyStyleKt.ClickableText.color,
+                                modifier = MyStyleKt.ClickableText.modifier.clickable {
+                                    commitTimeZoneOffsetBuf.value = ""
+                                },
+                                fontWeight = FontWeight.Light
+                            )
+
+                            Spacer(Modifier.height(10.dp))
 
                         }
-                    }
-
-                    Column(
-                        modifier= Modifier
-                            .fillMaxWidth()
-                            .padding(end = 10.dp)
-                        ,
-                        horizontalAlignment = Alignment.End
-                    ) {
-
-                        Text(
-                            text = stringResource(R.string.get_system_timezone_offset),
-                            style = MyStyleKt.ClickableText.style,
-                            color = MyStyleKt.ClickableText.color,
-                            modifier = MyStyleKt.ClickableText.modifier.clickable {
-                                try {
-                                    commitTimeZoneBuf.value = (getSystemDefaultTimeZoneOffset().totalSeconds / 60).toString()
-                                } catch (e: Exception) {
-                                    Msg.requireShowLongDuration("err: ${e.localizedMessage}")
-                                    MyLog.e(TAG, "#SetCommitTimeZoneOffsetDialog: get system time zone offset err: ${e.stackTraceToString()}")
-                                }
-                            },
-                            fontWeight = FontWeight.Light
-                        )
-
-                        Spacer(Modifier.height(15.dp))
-
-                        Text(
-                            text = stringResource(R.string.clear),
-                            style = MyStyleKt.ClickableText.style,
-                            color = MyStyleKt.ClickableText.color,
-                            modifier = MyStyleKt.ClickableText.modifier.clickable {
-                                commitTimeZoneBuf.value = ""
-                            },
-                            fontWeight = FontWeight.Light
-                        )
-
-                        Spacer(Modifier.height(10.dp))
 
                     }
                 }
@@ -289,16 +297,22 @@ fun SettingsInnerPage(
         ) {
             showSetCommitTimeZoneDialog.value = false
             doJobThenOffLoading {
-                val newValue = try {
-                    commitTimeZoneBuf.value.toInt().toString()
+                val newOffset = try {
+                    commitTimeZoneOffsetBuf.value.toInt().toString()
                 }catch (_:Exception) {
                     ""
                 }
 
-                if(newValue != commitTimeZone.value) {
-                    commitTimeZone.value = newValue
+                val newFollowSystem = commitTimeZoneFollowSystemBuf.value
+
+                // update if need
+                if(newOffset != commitTimeZoneOffset.value || newFollowSystem != commitTimeZoneFollowSystem.value) {
+                    commitTimeZoneOffset.value = newOffset
+                    commitTimeZoneFollowSystem.value = newFollowSystem
+
                     SettingsUtil.update {
-                        it.commitTimeZoneInMinutes = newValue
+                        it.commitTimeZone_OffsetInMinutes = newOffset
+                        it.commitTimeZone_FollowSystem = newFollowSystem
                     }
                 }
             }

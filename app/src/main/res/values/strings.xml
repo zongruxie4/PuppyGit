@@ -1148,5 +1148,7 @@
     <string name="leave_empty_to_use_default_timezone_offset_in_commits">Leave empty to use default timezone offset in commits</string>
     <string name="commits">Commits</string>
     <string name="timezone_offset_example">e.g. -480 is UTC-8, +480 or 480 is UTC+8, +330 or 330 is UTC+5:30</string>
+    <string name="follow_system">Follow System</string>
+    <string name="use_offset_in_commits">Use offset in commits</string>
 
 </resources>

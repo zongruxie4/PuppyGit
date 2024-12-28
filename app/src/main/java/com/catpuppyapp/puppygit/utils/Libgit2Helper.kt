@@ -4066,7 +4066,11 @@ class Libgit2Helper {
 
             //若设置项里有有效时区，使用；否则使用提交中携带的时区（一般是系统时区）
             val minuteOffset = try {
-                settings.commitTimeZoneInMinutes.toInt()
+                if(settings.commitTimeZone_FollowSystem) {
+                    AppModel.systemTimeZoneOffsetInMinutes.intValue
+                }else {
+                    settings.commitTimeZone_OffsetInMinutes.toInt()
+                }
             }catch (_:Exception) {
                 commit.timeOffset()
             }
