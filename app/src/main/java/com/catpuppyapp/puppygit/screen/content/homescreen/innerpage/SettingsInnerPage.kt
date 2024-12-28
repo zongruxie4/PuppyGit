@@ -199,7 +199,9 @@ fun SettingsInnerPage(
 //
 //            "$prefix ($offsetInUtcFormat)"
         }catch (_:Exception) {
-            activityContext.getString(R.string.use_offset_from_commits)
+
+            activityContext.getString(R.string.default_timezone_rule_description)
+//            activityContext.getString(R.string.use_offset_from_commits)
         }
     }
 
@@ -698,14 +700,6 @@ fun SettingsInnerPage(
             )
         }
 
-        SettingsContent(onClick = {
-            showCleanDialog.value = true
-        }) {
-            Text(stringResource(R.string.clean), fontSize = itemFontSize)
-        }
-
-
-        SettingsTitle(stringResource(R.string.commits))
 
 
         SettingsContent(onClick = {
@@ -714,10 +708,20 @@ fun SettingsInnerPage(
             Column {
                 Text(stringResource(R.string.timezone), fontSize = itemFontSize)
                 Text(getTimeZoneStr(), fontSize = itemDescFontSize, fontWeight = FontWeight.Light, color = MyStyleKt.TextColor.highlighting_green)
-                Text(stringResource(R.string.timezone_when_viewing_commits), fontSize = itemDescFontSize, fontWeight = FontWeight.Light)
+//                Text(stringResource(R.string.timezone_when_viewing_commits), fontSize = itemDescFontSize, fontWeight = FontWeight.Light)
 
             }
         }
+
+
+        SettingsContent(onClick = {
+            showCleanDialog.value = true
+        }) {
+            Text(stringResource(R.string.clean), fontSize = itemFontSize)
+        }
+
+
+//        SettingsTitle(stringResource(R.string.commits))
 
 
 

@@ -1124,7 +1124,8 @@
     <string name="follow_system">跟随系统</string>
     <string name="use_offset_from_commits">使用提交中的偏移量</string>
     <string name="timezone_when_viewing_commits">预览提交时使用的时区</string>
-    <string name="set_timezone_leave_empty_note">若将输入框留空，那么：当创建GitObject时(提交/标签/引用记录/等)，将使用它们携带的时区信息；当创建GitObject时，将使用系统时区</string>
+    <string name="set_timezone_leave_empty_note">若将输入框留空，那么：当预览GitObject时(提交/标签/引用记录/等)，将使用它们携带的时区信息；当创建GitObject时，将使用系统时区</string>
+    <string name="default_timezone_rule_description">预览GitObject时，读取它的时区信息；创建GitObject时，使用系统时区</string>
 
 
 </resources>
