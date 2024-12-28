@@ -65,6 +65,7 @@ import com.catpuppyapp.puppygit.utils.PrefMan
 import com.catpuppyapp.puppygit.utils.UIHelper
 import com.catpuppyapp.puppygit.utils.doJobThenOffLoading
 import com.catpuppyapp.puppygit.utils.fileopenhistory.FileOpenHistoryMan
+import com.catpuppyapp.puppygit.utils.formatMinutesToUtc
 import com.catpuppyapp.puppygit.utils.getStoragePermission
 import com.catpuppyapp.puppygit.utils.getSystemDefaultTimeZoneOffset
 import com.catpuppyapp.puppygit.utils.replaceStringResList
@@ -174,14 +175,19 @@ fun SettingsInnerPage(
     val commitTimeZoneBuf = rememberSaveable { mutableStateOf(commitTimeZone.value) }
     val getTimeZoneStr = {
         try {
-            val offset = commitTimeZone.value.toInt().toString()
+            val offsetInMinutes = commitTimeZone.value.toInt()
 
             //如果有符号，直接返回，否则添加+号
-            if(offset.startsWith("-") || offset.startsWith("+")) {
-                offset
+            val offsetInMinutesStr = if(offsetInMinutes < 0) {
+                "$offsetInMinutes"
             }else {
-                "+$offset"
+                //大于等于0
+                "+$offsetInMinutes"
             }
+
+            val offsetInUtcFormat = formatMinutesToUtc(offsetInMinutes)
+
+            "$offsetInMinutesStr ($offsetInUtcFormat)"
         }catch (_:Exception) {
             activityContext.getString(R.string.default_str)
         }

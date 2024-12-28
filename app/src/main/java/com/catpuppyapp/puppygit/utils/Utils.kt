@@ -28,6 +28,7 @@ import java.time.ZoneOffset
 import java.time.format.DateTimeFormatter
 import java.util.UUID
 import kotlin.io.path.exists
+import kotlin.math.absoluteValue
 
 private const val TAG = "Utils"
 
@@ -218,6 +219,47 @@ fun getNowInSecFormatted(formatter:DateTimeFormatter = Cons.defaultDateTimeForma
 fun getSystemDefaultTimeZoneOffset() :ZoneOffset{
 //    return ZoneOffset.of(ZoneOffset.systemDefault().id)
     return OffsetDateTime.now().offset
+}
+
+/**
+ * format minutes to UTC format (format: "UTC", + or -, hours, :minutes)
+ *
+ * e.g. input 480, return "UTC+8"; input 330, return "UTC+5:30"; input 303, return "UTC+5:03"
+ */
+fun formatMinutesToUtc(minutes:Int):String {
+    try {
+        val hours = minutes / 60
+        val resetOfMinutes = (minutes % 60).absoluteValue  // [0, 59]
+
+        val hoursStr = if(hours >= 0) {
+            //正数没符号，加个加号
+            "+$hours"
+        }else {
+            //负数，自带符号，无需处理
+            "$hours"
+        }
+
+        val resetOfMinutesStr = if(resetOfMinutes > 0) {
+            val tmp = if(resetOfMinutes > 9) {
+                //两位数，直接返回
+                "$resetOfMinutes"
+            }else {
+                //一位数，补0
+                "0$resetOfMinutes"
+            }
+
+            ":$tmp"
+        }else {
+            //取了绝对值，所以不可能小于0，如果等于0，无需显示，返回空字符串即可
+            ""
+        }
+
+        return "UTC$hoursStr$resetOfMinutesStr"
+    }catch (e:Exception) {
+        MyLog.e(TAG, "#formatMinutesToUtc() err: ${e.stackTraceToString()}")
+
+        return ""
+    }
 }
 
 //转换天数到秒数
