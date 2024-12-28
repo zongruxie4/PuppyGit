@@ -45,7 +45,7 @@ class RemoteDtoForCredential (var remoteId: String="",
     }
 
     private fun getFetchOrPushCredentialNameOrNone(isFetch:Boolean):String {
-        val activityContext = AppModel.singleInstanceHolder.activityContext
+        val activityContext = AppModel.activityContext
         val name = if(isFetch) {
             if(credentialId == SpecialCredential.MatchByDomain.credentialId) {
                 SpecialCredential.MatchByDomain.name

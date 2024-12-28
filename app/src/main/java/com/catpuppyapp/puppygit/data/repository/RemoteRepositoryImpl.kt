@@ -89,7 +89,7 @@ class RemoteRepositoryImpl(private val dao: RemoteDao) : RemoteRepository {
             return
         }
 
-        val repoDb = AppModel.singleInstanceHolder.dbContainer.repoRepository
+        val repoDb = AppModel.dbContainer.repoRepository
 
         for(it in dtoList){
             try {
@@ -133,7 +133,7 @@ class RemoteRepositoryImpl(private val dao: RemoteDao) : RemoteRepository {
 
     override suspend fun getRemoteDtoListByRepoId(repoId: String): List<RemoteDto> {
         val listFromDb =  dao.getRemoteDtoListByRepoId(repoId)
-        val repoDb = AppModel.singleInstanceHolder.dbContainer.repoRepository
+        val repoDb = AppModel.dbContainer.repoRepository
         val repoFromDb = repoDb.getById(repoId)?:throw RuntimeException("no repo found by repoId '$repoId'")
         Repository.open(repoFromDb.fullSavePath).use { repo->
             val listFromGit = Libgit2Helper.getRemoteList(repo)
@@ -179,7 +179,7 @@ class RemoteRepositoryImpl(private val dao: RemoteDao) : RemoteRepository {
     }
 
     private suspend fun syncRemoteInfoWithGit(remoteFromDb:RemoteEntity) {
-        val repoDb = AppModel.singleInstanceHolder.dbContainer.repoRepository
+        val repoDb = AppModel.dbContainer.repoRepository
         val repoFromDb = repoDb.getById(remoteFromDb.repoId)?:throw RuntimeException("no repo found by remoteFromDb.repoId '${remoteFromDb.repoId}'")
         Repository.open(repoFromDb.fullSavePath).use { repo->
             val remoteFromGit = Libgit2Helper.resolveRemote(repo, remoteFromDb.remoteName)?:throw RuntimeException("resolve remote '${remoteFromDb.remoteName}' from git failed")
@@ -206,7 +206,7 @@ class RemoteRepositoryImpl(private val dao: RemoteDao) : RemoteRepository {
         }
 
         if(requireTransaction) {
-            AppModel.singleInstanceHolder.dbContainer.db.withTransaction {
+            AppModel.dbContainer.db.withTransaction {
                 act()
             }
         }else {
@@ -237,7 +237,7 @@ class RemoteRepositoryImpl(private val dao: RemoteDao) : RemoteRepository {
         fetchCredentialId: String,
         pushCredentialId: String
     ) {
-        AppModel.singleInstanceHolder.dbContainer.db.withTransaction {
+        AppModel.dbContainer.db.withTransaction {
             dao.updateCredentialIdByRemoteId(remoteId, fetchCredentialId)
             dao.updatePushCredentialIdByRemoteId(remoteId, pushCredentialId)
         }
@@ -249,7 +249,7 @@ class RemoteRepositoryImpl(private val dao: RemoteDao) : RemoteRepository {
         newFetchCredentialId: String,
         newPushCredentialId: String
     ) {
-        AppModel.singleInstanceHolder.dbContainer.db.withTransaction {
+        AppModel.dbContainer.db.withTransaction {
             dao.updateCredentialIdByCredentialId(oldFetchCredentialId, newFetchCredentialId)
             dao.updatePushCredentialIdByCredentialId(oldPushCredentialId, newPushCredentialId)
         }

@@ -107,11 +107,11 @@ fun TreeToTreeChangeListScreen(
 //        Msg.msgNotifyHost()
 //    }
 
-    val navController = AppModel.singleInstanceHolder.navController
-    val homeTopBarScrollBehavior = AppModel.singleInstanceHolder.homeTopBarScrollBehavior
+    val navController = AppModel.navController
+    val homeTopBarScrollBehavior = AppModel.homeTopBarScrollBehavior
 
-    val allRepoParentDir = AppModel.singleInstanceHolder.allRepoParentDir
-    val activityContext = AppModel.singleInstanceHolder.activityContext
+    val allRepoParentDir = AppModel.allRepoParentDir
+    val activityContext = AppModel.activityContext
     val settings = remember { SettingsUtil.getSettingsSnapshot() }
 
     //取出title desc，存到状态变量里，与页面共存亡就行

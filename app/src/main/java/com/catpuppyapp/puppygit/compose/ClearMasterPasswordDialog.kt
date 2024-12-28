@@ -33,7 +33,7 @@ fun ClearMasterPasswordDialog(
                 it.masterPasswordHash = ""
             }
 
-            AppModel.singleInstanceHolder.masterPassword.value = ""
+            AppModel.masterPassword.value = ""
 
             onOk()
         }

@@ -59,15 +59,15 @@ fun ErrRepoCard(
     requireBlinkIdx: MutableIntState,
     copyErrMsg:(String)->Unit,
 ) {
-    val navController = AppModel.singleInstanceHolder.navController
-    val haptic = AppModel.singleInstanceHolder.haptic
+    val navController = AppModel.navController
+    val haptic = AppModel.haptic
 
     val inDarkTheme = Theme.inDarkTheme
 
     val cardColor = UIHelper.defaultCardColor()
     val highlightColor = if(inDarkTheme) Color(0xFF9D9C9C) else Color(0xFFFFFFFF)
 
-    val dbContainer = AppModel.singleInstanceHolder.dbContainer
+    val dbContainer = AppModel.dbContainer
     val lineHeight = 30
     Column (
 //        modifier = Modifier.fillMaxWidth(),

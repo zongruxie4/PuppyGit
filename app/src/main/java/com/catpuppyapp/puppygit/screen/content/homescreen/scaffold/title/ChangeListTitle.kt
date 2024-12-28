@@ -149,7 +149,7 @@ fun ChangeListTitle(
     LaunchedEffect(needReQueryRepoList.value) {
         try {
             doJobThenOffLoading {
-                val repoDb = AppModel.singleInstanceHolder.dbContainer.repoRepository
+                val repoDb = AppModel.dbContainer.repoRepository
                 val readyRepoListFromDb = repoDb.getReadyRepoList(requireSyncRepoInfoWithGit = false)
                 repoList.value.clear()
                 repoList.value.addAll(readyRepoListFromDb)

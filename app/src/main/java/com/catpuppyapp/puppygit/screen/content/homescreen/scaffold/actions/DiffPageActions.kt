@@ -55,7 +55,7 @@ fun DiffPageActions(
     matchByWords:MutableState<Boolean>,
 ) {
 
-    val navController = AppModel.singleInstanceHolder.navController
+    val navController = AppModel.navController
     val appContext= LocalContext.current
 
     val fileChangeTypeIsModified = changeType == Cons.gitStatusModified

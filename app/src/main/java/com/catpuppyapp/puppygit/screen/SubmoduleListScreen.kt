@@ -100,9 +100,9 @@ fun SubmoduleListScreen(
     repoId:String,
     naviUp: () -> Boolean,
 ) {
-    val homeTopBarScrollBehavior = AppModel.singleInstanceHolder.homeTopBarScrollBehavior
-    val navController = AppModel.singleInstanceHolder.navController
-    val activityContext = AppModel.singleInstanceHolder.activityContext
+    val homeTopBarScrollBehavior = AppModel.homeTopBarScrollBehavior
+    val navController = AppModel.navController
+    val activityContext = AppModel.activityContext
     val haptic = LocalHapticFeedback.current
     val scope = rememberCoroutineScope()
     val settings = remember { SettingsUtil.getSettingsSnapshot() }
@@ -599,7 +599,7 @@ fun SubmoduleListScreen(
 
                 val selectedCredentialId = credentialList.value[selectedCredentialIdx.intValue].id
 
-                val repoDb = AppModel.singleInstanceHolder.dbContainer.repoRepository
+                val repoDb = AppModel.dbContainer.repoRepository
                 val importRepoResult = ImportRepoResult()
 
                 try {
@@ -870,7 +870,7 @@ fun SubmoduleListScreen(
 //                val allItems = list.value
 //                val cloningStr = appContext.getString(R.string.cloning)
 
-                    val credentialDb = AppModel.singleInstanceHolder.dbContainer.credentialRepository
+                    val credentialDb = AppModel.dbContainer.credentialRepository
                     val selectedCredential = credentialList.value[selectedCredentialIdx.intValue]
                     // NONE will query from db then got null, so only need handle match by domain
                     val credential = if(SpecialCredential.MatchByDomain.credentialId == selectedCredential.id) selectedCredential.copy() else credentialDb.getByIdWithDecrypt(selectedCredential.id)
@@ -973,7 +973,7 @@ fun SubmoduleListScreen(
                 try {
                     val selectedCredential = credentialList.value[selectedCredentialIdx.intValue]
 
-                    val credentialDb = AppModel.singleInstanceHolder.dbContainer.credentialRepository
+                    val credentialDb = AppModel.dbContainer.credentialRepository
                     val credential = if(SpecialCredential.MatchByDomain.credentialId == selectedCredential.id) selectedCredential.copy() else credentialDb.getByIdWithDecrypt(selectedCredential.id)
 
                     Repository.open(curRepo.value.fullSavePath).use { repo->
@@ -1356,7 +1356,7 @@ fun SubmoduleListScreen(
                 credentialList.value.clear()
 
                 if(!repoId.isNullOrBlank()) {
-                    val repoDb = AppModel.singleInstanceHolder.dbContainer.repoRepository
+                    val repoDb = AppModel.dbContainer.repoRepository
                     val repoFromDb = repoDb.getById(repoId)
                     if(repoFromDb!=null) {
                         curRepo.value = repoFromDb
@@ -1366,7 +1366,7 @@ fun SubmoduleListScreen(
                         }
                     }
 
-                    val credentialDb = AppModel.singleInstanceHolder.dbContainer.credentialRepository
+                    val credentialDb = AppModel.dbContainer.credentialRepository
                     val credentialListFromDb = credentialDb.getAll(includeNone = true, includeMatchByDomain = true)
                     if(credentialListFromDb.isNotEmpty()) {
                         credentialList.value.addAll(credentialListFromDb)

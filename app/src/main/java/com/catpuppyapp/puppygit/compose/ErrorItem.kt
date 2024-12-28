@@ -36,7 +36,7 @@ fun ErrorItem(
     curObj: ErrorEntity,
     onClick:()->Unit
 ) {
-    val haptic = AppModel.singleInstanceHolder.haptic
+    val haptic = AppModel.haptic
 //    println("IDX::::::::::"+idx)
     Column(
         //0.9f 占父元素宽度的百分之90

@@ -74,8 +74,8 @@ fun ErrorListScreen(
     repoId:String,
     naviUp: () -> Boolean,
 ) {
-    val homeTopBarScrollBehavior = AppModel.singleInstanceHolder.homeTopBarScrollBehavior
-    val activityContext = AppModel.singleInstanceHolder.activityContext
+    val homeTopBarScrollBehavior = AppModel.homeTopBarScrollBehavior
+    val activityContext = AppModel.activityContext
     val scope = rememberCoroutineScope()
     val settings = remember { SettingsUtil.getSettingsSnapshot() }
 
@@ -102,7 +102,7 @@ fun ErrorListScreen(
 
     val doClearAll={
         doJobThenOffLoading {
-            val errDb = AppModel.singleInstanceHolder.dbContainer.errorRepository
+            val errDb = AppModel.dbContainer.errorRepository
             errDb.deleteByRepoId(repoId)
 
 //            list.clear()
@@ -304,7 +304,7 @@ fun ErrorListScreen(
                     //在这里可以直接用state curObj取到当前选中条目，curObjInState在长按条目后会被更新为当前被长按的条目
                     // 不用确认，直接删除，可以有撤销的snackbar，但非必须
                     doJobThenOffLoading {
-                        val errDb = AppModel.singleInstanceHolder.dbContainer.errorRepository
+                        val errDb = AppModel.dbContainer.errorRepository
                         errDb.delete(curObjInState.value)
                         changeStateTriggerRefreshPage(needRefresh)
                     }
@@ -389,17 +389,17 @@ fun ErrorListScreen(
                     list.value.clear()
 
                     // here only need repo name, no need sync repo info with under git, and if query failed, return a repo with empty id and empty name, but it shouldn't happen though
-                    curRepo.value = AppModel.singleInstanceHolder.dbContainer.repoRepository.getByIdNoSyncWithGit(repoId) ?: RepoEntity(id="")
+                    curRepo.value = AppModel.dbContainer.repoRepository.getByIdNoSyncWithGit(repoId) ?: RepoEntity(id="")
 
                     //查询错误列表
-                    val errDb = AppModel.singleInstanceHolder.dbContainer.errorRepository
+                    val errDb = AppModel.dbContainer.errorRepository
                     val errList = errDb.getListByRepoId(repoId)
                     //添加到页面状态列表
                     list.value.addAll(errList)
 //                    list.requireRefreshView()
 
                     //更新数据库
-                    val repoDb = AppModel.singleInstanceHolder.dbContainer.repoRepository
+                    val repoDb = AppModel.dbContainer.repoRepository
                     if (errList.isNotEmpty()) { //如果记录不为空: 清空仓库表的错误信息; 把当前仓库关联的所有错误记录标记成已读
                         repoDb.checkedAllErrById(repoId)
                     }else {  // 如果err list为空，仅清空仓库表的错误信息

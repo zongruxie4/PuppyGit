@@ -136,9 +136,9 @@ fun RepoInnerPage(
     enableFilterState:MutableState<Boolean>,
     filterList:CustomStateListSaveable<RepoEntity>
 ) {
-    val activityContext = AppModel.singleInstanceHolder.activityContext;
-    val exitApp = AppModel.singleInstanceHolder.exitApp;
-    val navController = AppModel.singleInstanceHolder.navController;
+    val activityContext = AppModel.activityContext;
+    val exitApp = AppModel.exitApp;
+    val navController = AppModel.navController;
     val scope = rememberCoroutineScope()
 
     val settings = remember {
@@ -157,7 +157,7 @@ fun RepoInnerPage(
     val cloningText = stringResource(R.string.cloning)
     val unknownErrWhenCloning = stringResource(R.string.unknown_err_when_cloning)
 
-    val dbContainer = AppModel.singleInstanceHolder.dbContainer;
+    val dbContainer = AppModel.dbContainer;
 //    val repoDtoList = remember { mutableStateListOf<RepoEntity>() }
 
     val activity = ActivityUtil.getCurrentActivity()
@@ -370,7 +370,7 @@ fun RepoInnerPage(
 
                         showImportRepoDialog.value = false
 
-                        val importRepoResult = AppModel.singleInstanceHolder.dbContainer.repoRepository.importRepos(dir=newPath, isReposParent=isReposParentFolderForImport.value)
+                        val importRepoResult = AppModel.dbContainer.repoRepository.importRepos(dir=newPath, isReposParent=isReposParentFolderForImport.value)
 
                         // show a result dialog may better?
 
@@ -433,7 +433,7 @@ fun RepoInnerPage(
             }
 
             // 更新修改workstatus的时间，只更新时间就行，状态会在查询repo时更新
-            val repoDb = AppModel.singleInstanceHolder.dbContainer.repoRepository
+            val repoDb = AppModel.dbContainer.repoRepository
             repoDb.updateLastUpdateTime(curRepo.id, getSecFromTime())
 
             retVal = true
@@ -584,7 +584,7 @@ fun RepoInnerPage(
                 }
 
                 // 更新修改workstatus的时间，只更新时间就行，状态会在查询repo时更新
-                val repoDb = AppModel.singleInstanceHolder.dbContainer.repoRepository
+                val repoDb = AppModel.dbContainer.repoRepository
                 repoDb.updateLastUpdateTime(curRepo.id, getSecFromTime())
 
                 retVal =  true
@@ -846,7 +846,7 @@ fun RepoInnerPage(
             //执行删除
             doJobThenOffLoading {
                 try {
-                    val repoDb = AppModel.singleInstanceHolder.dbContainer.repoRepository
+                    val repoDb = AppModel.dbContainer.repoRepository
                     //删除仓库
                     repoDb.delete(
                         item = willDeleteRepo,
@@ -923,7 +923,7 @@ fun RepoInnerPage(
 
             doJobThenOffLoading {
                 try {
-                    val repoDb = AppModel.singleInstanceHolder.dbContainer.repoRepository
+                    val repoDb = AppModel.dbContainer.repoRepository
                     if(strHasIllegalChars(newName)) {
                         errMsgForRenameDialog.value = activityContext.getString(R.string.name_has_illegal_chars)
                         return@doJobThenOffLoading
@@ -1003,9 +1003,9 @@ fun RepoInnerPage(
                 doActAndSetRepoStatus(curRepoIdx, curRepoId, activityContext.getString(R.string.Unshallowing)) {
                     Repository.open(curRepoFullPath).use { repo->
                         val ret = Libgit2Helper.unshallowRepo(repo, curRepoVal,
-                            AppModel.singleInstanceHolder.dbContainer.repoRepository,
-                            AppModel.singleInstanceHolder.dbContainer.remoteRepository,
-                            AppModel.singleInstanceHolder.dbContainer.credentialRepository
+                            AppModel.dbContainer.repoRepository,
+                            AppModel.dbContainer.remoteRepository,
+                            AppModel.dbContainer.credentialRepository
                         )
                         if(ret.hasError()) {
                             Msg.requireShow(ret.msg)

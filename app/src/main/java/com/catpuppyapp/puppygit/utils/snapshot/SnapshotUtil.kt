@@ -129,7 +129,7 @@ object SnapshotUtil:SnapshotCreator {
         flag: SnapshotFileFlag
     ): Triple<String, String, File> {
         val snapshotFileName = getANonexistsSnapshotFileName(srcFileName, flag.flag)
-        val snapDir = AppModel.singleInstanceHolder.getOrCreateFileSnapshotDir()
+        val snapDir = AppModel.getOrCreateFileSnapshotDir()
         val snapFile = File(snapDir.canonicalPath, snapshotFileName)
         //返回 filename, fileFullPath, file
         return Triple(snapshotFileName, snapFile.canonicalPath, snapFile)

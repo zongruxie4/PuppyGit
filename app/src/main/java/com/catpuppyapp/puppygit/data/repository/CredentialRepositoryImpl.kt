@@ -148,7 +148,7 @@ class CredentialRepositoryImpl(private val dao: CredentialDao) : CredentialRepos
 
     private suspend fun getByIdAndMatchByDomainAndDecryptOrNoDecrypt(id: String, url: String, decryptPass:Boolean, masterPassword: String): CredentialEntity? {
         if(id==SpecialCredential.MatchByDomain.credentialId) {
-            val dcDb = AppModel.singleInstanceHolder.dbContainer.domainCredentialRepository
+            val dcDb = AppModel.dbContainer.domainCredentialRepository
             val domain = getDomainByUrl(url)
             if(domain.isNotBlank()) {
                 val domainCred = dcDb.getByDomain(domain) ?: return null
@@ -191,9 +191,9 @@ class CredentialRepositoryImpl(private val dao: CredentialDao) : CredentialRepos
 //    }
 
     override suspend fun deleteAndUnlink(item:CredentialEntity) {
-        val db = AppModel.singleInstanceHolder.dbContainer.db
-        val repoDb = AppModel.singleInstanceHolder.dbContainer.repoRepository
-        val remoteDb = AppModel.singleInstanceHolder.dbContainer.remoteRepository
+        val db = AppModel.dbContainer.db
+        val repoDb = AppModel.dbContainer.repoRepository
+        val remoteDb = AppModel.dbContainer.remoteRepository
         db.withTransaction {
             //删除凭据需要：删除凭据、解除关联remote、解除关联仓库（未克隆的那种，简单用credentialId匹配下仓库所有条目credentialId字段即可，因为不管克隆成功与否，反正这凭据要删除了，就该解除关联）
             remoteDb.updateFetchAndPushCredentialIdByCredentialId(item.id, item.id, "", "")  //解除关联remote
@@ -263,7 +263,7 @@ class CredentialRepositoryImpl(private val dao: CredentialDao) : CredentialRepos
         newMasterPassword: String,
         decryptFailedCallback: (failedCredential:CredentialEntity, exception:Exception) -> Unit,
     ) {
-        AppModel.singleInstanceHolder.dbContainer.db.withTransaction {
+        AppModel.dbContainer.db.withTransaction {
             //迁移密码
             for (c in credentialList) {
                 //若密码为空，更新下加密器版本即可

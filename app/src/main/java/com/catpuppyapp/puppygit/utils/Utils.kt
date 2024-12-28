@@ -106,7 +106,7 @@ fun checkFileOrFolderNameAndTryCreateFile(nameWillCheck:String, appContext: Cont
         }
 
         //获取缓存目录
-        val cacheDir = AppModel.singleInstanceHolder.getOrCreateExternalCacheDir()
+        val cacheDir = AppModel.getOrCreateExternalCacheDir()
 //        val fileNameNeedTest = Cons.createDirTestNamePrefix + str +"_"+ getRandomUUID()  //e.g. prefix_yourreponame_uuid，uuid是为了避免文件夹存在
 
         //拼接文件名
@@ -351,7 +351,7 @@ fun getFileNameFromCanonicalPath(path:String, separator:Char=Cons.slashChar) : S
 fun getFilePathStrBasedAllRepoDir(path:String):String {
     var ret = ""
 
-    val allRepoBaseDirParentFullPath = AppModel.singleInstanceHolder.allRepoParentDir.parent?:""  //不知道parent是否以/结尾，如果是，后面解析出的内容会是 非/开头，直接返回即可，否则会是/开头，需要删除开头的/再返回
+    val allRepoBaseDirParentFullPath = AppModel.allRepoParentDir.parent?:""  //不知道parent是否以/结尾，如果是，后面解析出的内容会是 非/开头，直接返回即可，否则会是/开头，需要删除开头的/再返回
     val allRepoBaseIndexOf = path.indexOf(allRepoBaseDirParentFullPath)
     if(allRepoBaseIndexOf!=-1) {
         val underAllRepoBaseDirPathStartAt = allRepoBaseIndexOf + allRepoBaseDirParentFullPath.length
@@ -391,7 +391,7 @@ fun getFilePathStrUnderRepoByFullPath(fullPath:String):Pair<String,String> {
             val finallyStrIndex = repoPathUnderAllRepoBase.indexOf(File.separator)+1  //计算 dir/etc 在 Repo/dir/etc 中的起始索引
             if(finallyStrIndex!=0 && finallyStrIndex < repoPathUnderAllRepoBase.length) {
                 val repoNameEndsWithSeparator = repoPathUnderAllRepoBase.substring(0, finallyStrIndex)  //取出 Repo/
-                repoFullPath = File(AppModel.singleInstanceHolder.allRepoParentDir.canonicalPath, repoNameEndsWithSeparator).canonicalPath  //canonicalPath 返回的结果末尾就没 / 了，结果应为 Repo
+                repoFullPath = File(AppModel.allRepoParentDir.canonicalPath, repoNameEndsWithSeparator).canonicalPath  //canonicalPath 返回的结果末尾就没 / 了，结果应为 Repo
                 relativePathUnderRepo = repoPathUnderAllRepoBase.substring(finallyStrIndex).removePrefix(File.separator).removeSuffix(File.separator)  //返回 dir/etc
             }
         }
@@ -601,7 +601,7 @@ suspend fun createAndInsertError(repoId:String, errMsg: String) {
         return
     }
 
-    val errDb = AppModel.singleInstanceHolder.dbContainer.errorRepository
+    val errDb = AppModel.dbContainer.errorRepository
     errDb.insert(
         ErrorEntity(
             msg=errMsg,
@@ -611,7 +611,7 @@ suspend fun createAndInsertError(repoId:String, errMsg: String) {
     )
 
     //更新repo表相关字段
-    val repoDb = AppModel.singleInstanceHolder.dbContainer.repoRepository
+    val repoDb = AppModel.dbContainer.repoRepository
     repoDb.setNewErrMsg(repoId, errMsg)
 }
 

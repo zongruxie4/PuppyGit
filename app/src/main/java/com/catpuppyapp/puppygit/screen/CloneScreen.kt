@@ -129,9 +129,9 @@ fun CloneScreen(
 
 //    val userIsPro = UserInfo.isPro()
 
-    val homeTopBarScrollBehavior = AppModel.singleInstanceHolder.homeTopBarScrollBehavior
+    val homeTopBarScrollBehavior = AppModel.homeTopBarScrollBehavior
 
-    val allRepoParentDir = AppModel.singleInstanceHolder.allRepoParentDir
+    val allRepoParentDir = AppModel.allRepoParentDir
 
     val gitUrl = rememberSaveable { mutableStateOf("")}
 //    val repoName = remember { mutableStateOf(TextFieldValue("")) }
@@ -387,8 +387,8 @@ fun CloneScreen(
                 return@launch
             }
 
-            val repoDb = AppModel.singleInstanceHolder.dbContainer.repoRepository
-            val credentialDb = AppModel.singleInstanceHolder.dbContainer.credentialRepository
+            val repoDb = AppModel.dbContainer.repoRepository
+            val credentialDb = AppModel.dbContainer.credentialRepository
 
 //            val fullSavePath = if(storagePathSelectedIndex.intValue == 0) { // internal storage
 //                allRepoParentDir.canonicalPath+ File.separator +repoNameText
@@ -1072,8 +1072,8 @@ fun CloneScreen(
             loadingOff = { showLoadingDialog.value = false }
         ) job@{
             if (isEditMode) {  //如果是编辑模式，查询仓库信息
-                val repoDb = AppModel.singleInstanceHolder.dbContainer.repoRepository
-                val credentialDb = AppModel.singleInstanceHolder.dbContainer.credentialRepository
+                val repoDb = AppModel.dbContainer.repoRepository
+                val credentialDb = AppModel.dbContainer.credentialRepository
                 val repo = repoDb.getById(repoId!!) ?: return@job
                 gitUrlType.intValue = getGitUrlType(repo.cloneUrl)  //更新下giturl type
                 gitUrl.value = repo.cloneUrl
@@ -1124,7 +1124,7 @@ fun CloneScreen(
             }
 
             //查询credential列表，无论新增还是编辑都需要查credential列表
-            val credentialDb = AppModel.singleInstanceHolder.dbContainer.credentialRepository
+            val credentialDb = AppModel.dbContainer.credentialRepository
 //            credentialHttpList.value.clear()
 //            credentialSshList.value.clear()
             allCredentialList.value.clear()

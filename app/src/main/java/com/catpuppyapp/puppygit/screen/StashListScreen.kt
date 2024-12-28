@@ -81,9 +81,9 @@ fun StashListScreen(
     repoId:String,
     naviUp: () -> Boolean,
 ) {
-    val homeTopBarScrollBehavior = AppModel.singleInstanceHolder.homeTopBarScrollBehavior
-    val navController = AppModel.singleInstanceHolder.navController
-    val activityContext = AppModel.singleInstanceHolder.activityContext
+    val homeTopBarScrollBehavior = AppModel.homeTopBarScrollBehavior
+    val navController = AppModel.navController
+    val activityContext = AppModel.activityContext
     val haptic = LocalHapticFeedback.current
     val scope = rememberCoroutineScope()
     val settings = remember { SettingsUtil.getSettingsSnapshot() }
@@ -551,7 +551,7 @@ fun StashListScreen(
                 list.value.clear()  //先清一下list，然后可能添加也可能不添加
 
                 if(!repoId.isNullOrBlank()) {
-                    val repoDb = AppModel.singleInstanceHolder.dbContainer.repoRepository
+                    val repoDb = AppModel.dbContainer.repoRepository
                     val repoFromDb = repoDb.getById(repoId)
                     if(repoFromDb!=null) {
                         curRepo.value = repoFromDb

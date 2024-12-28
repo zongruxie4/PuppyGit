@@ -75,9 +75,9 @@ fun CredentialRemoteListScreen(
     naviUp: () -> Unit,
 ) {
 
-    val homeTopBarScrollBehavior = AppModel.singleInstanceHolder.homeTopBarScrollBehavior
-    val navController = AppModel.singleInstanceHolder.navController
-    val activityContext = AppModel.singleInstanceHolder.activityContext
+    val homeTopBarScrollBehavior = AppModel.homeTopBarScrollBehavior
+    val navController = AppModel.navController
+    val activityContext = AppModel.activityContext
     val scope = rememberCoroutineScope()
     val settings = remember { SettingsUtil.getSettingsSnapshot() }
 
@@ -106,7 +106,7 @@ fun CredentialRemoteListScreen(
 
     val doLink= { remoteId: String ->
         doJobThenOffLoading {
-            val remoteDb = AppModel.singleInstanceHolder.dbContainer.remoteRepository
+            val remoteDb = AppModel.dbContainer.remoteRepository
             remoteDb.linkCredentialIdByRemoteId(remoteId, curItemInPage.value.id)
             changeStateTriggerRefreshPage(needRefresh)
 
@@ -114,7 +114,7 @@ fun CredentialRemoteListScreen(
     }
 //    val doUnLink={ remoteId:String ->
 //        doJobThenOffLoading {
-//            val remoteDb = AppModel.singleInstanceHolder.dbContainer.remoteRepository
+//            val remoteDb = AppModel.dbContainer.remoteRepository
 //            remoteDb.unlinkCredentialIdByRemoteId(remoteId)
 //            changeStateTriggerRefreshPage(needRefresh)
 //        }
@@ -123,7 +123,7 @@ fun CredentialRemoteListScreen(
     val doUnLinkAll = {
         //确认后执行此方法
         doJobThenOffLoading {
-            val remoteDb = AppModel.singleInstanceHolder.dbContainer.remoteRepository
+            val remoteDb = AppModel.dbContainer.remoteRepository
             remoteDb.unlinkAllCredentialIdByCredentialId(curItemInPage.value.id)
             changeStateTriggerRefreshPage(needRefresh)
         }
@@ -473,8 +473,8 @@ fun CredentialRemoteListScreen(
     LaunchedEffect(needRefresh.value) {
         try {
             doJobThenOffLoading {
-                val remoteDb = AppModel.singleInstanceHolder.dbContainer.remoteRepository
-                val credentialDb = AppModel.singleInstanceHolder.dbContainer.credentialRepository
+                val remoteDb = AppModel.dbContainer.remoteRepository
+                val credentialDb = AppModel.dbContainer.credentialRepository
                 //这个页面用不到密码，所以查询的是加密后的密码，没解密
                 curItemInPage.value = credentialDb.getById(credentialId, includeNone = true, includeMatchByDomain = true) ?: CredentialEntity(id="")
                 val listFromDb = if (isShowLink) {

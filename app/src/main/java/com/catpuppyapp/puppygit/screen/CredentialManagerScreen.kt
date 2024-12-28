@@ -87,9 +87,9 @@ fun CredentialManagerScreen(
 //        Msg.msgNotifyHost()
 //    }
 
-    val homeTopBarScrollBehavior = AppModel.singleInstanceHolder.homeTopBarScrollBehavior
-    val navController = AppModel.singleInstanceHolder.navController
-    val activityContext = AppModel.singleInstanceHolder.activityContext
+    val homeTopBarScrollBehavior = AppModel.homeTopBarScrollBehavior
+    val navController = AppModel.navController
+    val activityContext = AppModel.activityContext
     val scope = rememberCoroutineScope()
 
     // for link credential to remote
@@ -159,7 +159,7 @@ fun CredentialManagerScreen(
     val doDelete = {
         doJobThenOffLoading {
             try{
-                val credentialDb = AppModel.singleInstanceHolder.dbContainer.credentialRepository
+                val credentialDb = AppModel.dbContainer.credentialRepository
                 credentialDb.deleteAndUnlink(curCredential.value)
                 Msg.requireShow(activityContext.getString(R.string.success))
             }finally{
@@ -494,16 +494,16 @@ fun CredentialManagerScreen(
         // DisposableEffect is better for this
         try {
             doJobThenOffLoading(loadingOn = loadingOn, loadingOff = loadingOff, loadingText = activityContext.getString(R.string.loading)) job@{
-                val credentialDb = AppModel.singleInstanceHolder.dbContainer.credentialRepository
+                val credentialDb = AppModel.dbContainer.credentialRepository
                 list.value.clear()
 //                list.value.addAll(credentialDb.getAll(includeMatchByDomain = isLinkMode, includeNone = isLinkMode))
                 list.value.addAll(credentialDb.getAll(includeMatchByDomain = true, includeNone = true))
 
                 if(isLinkMode) {
-                    val remoteFromDb = AppModel.singleInstanceHolder.dbContainer.remoteRepository.getById(remoteId)
+                    val remoteFromDb = AppModel.dbContainer.remoteRepository.getById(remoteId)
                     if(remoteFromDb!=null){
                         remote.value=remoteFromDb
-                        val repoFromDb = AppModel.singleInstanceHolder.dbContainer.repoRepository.getById(remoteFromDb.repoId)
+                        val repoFromDb = AppModel.dbContainer.repoRepository.getById(remoteFromDb.repoId)
                         if(repoFromDb!=null) {
                             curRepo.value = repoFromDb
                         }

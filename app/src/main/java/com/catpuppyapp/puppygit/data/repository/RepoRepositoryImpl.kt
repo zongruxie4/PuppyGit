@@ -84,8 +84,8 @@ class RepoRepositoryImpl(private val dao: RepoDao) : RepoRepository {
         val repoFullPath = item.fullSavePath  //其实不用在这保存，但我有点担心下面的函数太傻逼会修改item，所以先存上路径
 
         //删除数据库记录
-        val errDb = AppModel.singleInstanceHolder.dbContainer.errorRepository
-        val remoteDb = AppModel.singleInstanceHolder.dbContainer.remoteRepository
+        val errDb = AppModel.dbContainer.errorRepository
+        val remoteDb = AppModel.dbContainer.remoteRepository
         val act = suspend {
             //其实NotReady的仓库应该没remote和error记录，不过这里不做检测，反正就算执行了也不会误删
             errDb.deleteByRepoId(item.id)  //删除仓库所有错误记录
@@ -94,7 +94,7 @@ class RepoRepositoryImpl(private val dao: RepoDao) : RepoRepository {
 
         }
         if(requireTransaction) {
-            AppModel.singleInstanceHolder.dbContainer.db.withTransaction {
+            AppModel.dbContainer.db.withTransaction {
                 act()
     //            throw RuntimeException("测试抛异常是否会“回滚”以及“不执行异常后位于本代码块外的代码”，结论：1会回滚，2不会执行异常后的代码无论是在本代码块内还是外。两者都符合直觉，很好。")
             }
@@ -186,8 +186,8 @@ class RepoRepositoryImpl(private val dao: RepoDao) : RepoRepository {
     }
 
     override suspend fun cloneDoneUpdateRepoAndCreateRemote(item: RepoEntity) {
-        val remoteRepository = AppModel.singleInstanceHolder.dbContainer.remoteRepository
-        val db = AppModel.singleInstanceHolder.dbContainer.db
+        val remoteRepository = AppModel.dbContainer.remoteRepository
+        val db = AppModel.dbContainer.db
 
         val remoteForSave = RemoteEntity(
                                         remoteName = item.pullRemoteName,
@@ -281,7 +281,7 @@ class RepoRepositoryImpl(private val dao: RepoDao) : RepoRepository {
         updateErrFieldsById(repoId, Cons.dbCommonFalse, "")
 
         //更新error表
-        val errDb = AppModel.singleInstanceHolder.dbContainer.errorRepository
+        val errDb = AppModel.dbContainer.errorRepository
         //更新error表所有匹配repoId的条目的isChecked状态为true
         errDb.updateIsCheckedByRepoId(repoId, Cons.dbCommonTrue)
     }
@@ -481,8 +481,8 @@ class RepoRepositoryImpl(private val dao: RepoDao) : RepoRepository {
                 remoteEntityList.add(remoteEntity)
             }
 
-            val remoteDb = AppModel.singleInstanceHolder.dbContainer.remoteRepository
-            AppModel.singleInstanceHolder.dbContainer.db.withTransaction {
+            val remoteDb = AppModel.dbContainer.remoteRepository
+            AppModel.dbContainer.db.withTransaction {
                 // insert repo
                 insert(repoEntity)
 
@@ -519,12 +519,12 @@ class RepoRepositoryImpl(private val dao: RepoDao) : RepoRepository {
     /*
         suspend fun exampleWithTransaction(){
             //get other dao
-            val otherDao = AppModel.singleInstanceHolder.dbContainer.db.credentialDao()
+            val otherDao = AppModel.dbContainer.db.credentialDao()
             //get other repository
-            val otherRepository = AppModel.singleInstanceHolder.dbContainer.credentialRepository
+            val otherRepository = AppModel.dbContainer.credentialRepository
 
             // do transaction
-            AppModel.singleInstanceHolder.dbContainer.db.withTransaction {
+            AppModel.dbContainer.db.withTransaction {
                 //use dao
                 dao.insert(RepoEntity())
                 otherDao.delete(CredentialEntity())

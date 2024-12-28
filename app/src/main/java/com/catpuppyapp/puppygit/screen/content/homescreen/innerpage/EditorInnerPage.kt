@@ -140,14 +140,14 @@ fun EditorInnerPage(
     editorOpenFileErr:MutableState<Boolean>
 
 ) {
-    val allRepoParentDir = AppModel.singleInstanceHolder.allRepoParentDir;
-//    val appContext = AppModel.singleInstanceHolder.appContext;
+    val allRepoParentDir = AppModel.allRepoParentDir;
+//    val appContext = AppModel.appContext;
     val activityContext = LocalContext.current
     val exitApp = {
-        AppModel.singleInstanceHolder.lastEditFile = ""
-        AppModel.singleInstanceHolder.lastEditFileWhenDestroy = ""
+        AppModel.lastEditFile = ""
+        AppModel.lastEditFileWhenDestroy = ""
 
-        AppModel.singleInstanceHolder.exitApp()
+        AppModel.exitApp()
 
         Unit
     }
@@ -361,8 +361,8 @@ fun EditorInnerPage(
 //        showCloseDialog.value=false
 
 
-        AppModel.singleInstanceHolder.lastEditFile = ""
-        AppModel.singleInstanceHolder.lastEditFileWhenDestroy = ""
+        AppModel.lastEditFile = ""
+        AppModel.lastEditFileWhenDestroy = ""
 
 
 
@@ -1052,7 +1052,7 @@ fun EditorInnerPage(
 
         //test passed
 //        delay(10*1000)
-//        AppModel.singleInstanceHolder.exitApp()  // 测试正常退出能否保存，结果：能
+//        AppModel.exitApp()  // 测试正常退出能否保存，结果：能
 //        appContext.findActivity()?.recreate()
 //        throw RuntimeException("throw exception test")  // 测试发生异常能否保存，结果：能
         //test
@@ -1066,7 +1066,7 @@ fun EditorInnerPage(
             //  所以，这里不检查文件是否成功打开，直接赋值，理论上来说，只要在关闭文件的逻辑清空路径就可确保这里不会出现反直觉的用户体验，而我已在关闭文件时清空了路径，但我不确定效果如何，
             //  测试一下，若没问题就这样，否则改成先检测文件ready或err，再保存路径
             //改成在读取完后保存此路径了
-//            AppModel.singleInstanceHolder.lastEditFile = editorPageShowingFilePath.value
+//            AppModel.lastEditFile = editorPageShowingFilePath.value
 
             //20240327:尝试解决加载文件内容未更新的bug
             editorPageShowingFileIsReady.value = false
@@ -1134,10 +1134,11 @@ private fun doInit(
             //准备文件路径，开始
             //优先打开从文件管理器跳转来的文件，如果不是跳转来的，打开之前显示的文件
             if(editorPageShowingFilePath.value.isBlank()) {
-                editorPageShowingFilePath.value = AppModel.singleInstanceHolder.lastEditFileWhenDestroy
+                editorPageShowingFilePath.value = AppModel.lastEditFileWhenDestroy
+                AppModel.lastEditFileWhenDestroy = ""
             }
             //保存上次打开文件路径
-            AppModel.singleInstanceHolder.lastEditFile = editorPageShowingFilePath.value
+            AppModel.lastEditFile = editorPageShowingFilePath.value
 
             //到这，文件路径就确定了
             val requireOpenFilePath = editorPageShowingFilePath.value
@@ -1180,11 +1181,11 @@ private fun doInit(
                         }
                     }
                     //抛异常
-                    throw RuntimeException(AppModel.singleInstanceHolder.activityContext.getString(R.string.err_file_doesnt_exist_anymore))
+                    throw RuntimeException(AppModel.activityContext.getString(R.string.err_file_doesnt_exist_anymore))
                 }
 
                 if (!file.isFile) {
-                    throw RuntimeException(AppModel.singleInstanceHolder.activityContext.getString(R.string.err_target_is_not_a_file))
+                    throw RuntimeException(AppModel.activityContext.getString(R.string.err_target_is_not_a_file))
                 }
 
                 //检查文件大小，太大了打开会有问题，要么崩溃，要么无法保存
@@ -1193,7 +1194,7 @@ private fun doInit(
                 val maxSizeLimit = settings.editor.maxFileSizeLimit
                 if (isFileSizeOverLimit(file.length(), limit = maxSizeLimit)) {
 //                    editorPageSetShowingFileErrWhenLoading("Err: Doesn't support open file over "+Cons.editorFileSizeMaxLimitForHumanReadable)
-                    throw RuntimeException(AppModel.singleInstanceHolder.activityContext.getString(R.string.err_doesnt_support_open_file_over_limit) + "(" + getHumanReadableSizeStr(maxSizeLimit) + ")")
+                    throw RuntimeException(AppModel.activityContext.getString(R.string.err_doesnt_support_open_file_over_limit) + "(" + getHumanReadableSizeStr(maxSizeLimit) + ")")
                 }
 
 

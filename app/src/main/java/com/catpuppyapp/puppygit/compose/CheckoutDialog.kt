@@ -68,7 +68,7 @@ fun CheckoutDialog(
 ) {
     val repoId = curRepo.id
 
-    val activityContext = AppModel.singleInstanceHolder.activityContext
+    val activityContext = AppModel.activityContext
 
     val checkoutOptionDontUpdateHead = 0
     val checkoutOptionDetachHead = 1

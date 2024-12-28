@@ -93,7 +93,7 @@ class StorageDirRepositoryImpl(private val dao: StorageDirDao) : StorageDirRepos
             }
         }
         //检查是否有关联仓库
-        val repoDb = AppModel.singleInstanceHolder.dbContainer.repoRepository
+        val repoDb = AppModel.dbContainer.repoRepository
         val repos = repoDb.getByStorageDirId(item.id)
         if(repos.isNotEmpty()) {
             MyLog.w(TAG, "#$funName: warn: item has related repos, delete failed")
@@ -112,7 +112,7 @@ class StorageDirRepositoryImpl(private val dao: StorageDirDao) : StorageDirRepos
 //            repoDb.deleteByStorageDirId(item.id)
 
             //删除storageDir关联的所有仓库
-            val repoDb = AppModel.singleInstanceHolder.dbContainer.repoRepository
+            val repoDb = AppModel.dbContainer.repoRepository
             val repos = repoDb.getByStorageDirId(item.id)
             repos.forEach {
                 repoDb.delete(it, requireDelFilesOnDisk, requireInnerTransaction)
@@ -123,7 +123,7 @@ class StorageDirRepositoryImpl(private val dao: StorageDirDao) : StorageDirRepos
         }
 
         if(requireTransaction) {
-            AppModel.singleInstanceHolder.dbContainer.db.withTransaction {
+            AppModel.dbContainer.db.withTransaction {
                 act()
             }
 
@@ -316,7 +316,7 @@ class StorageDirRepositoryImpl(private val dao: StorageDirDao) : StorageDirRepos
         val allNoDefault = getAllNoDefault()  //这个是不包含默认条目的，只有这些条目的virtualpath会被更新
 
         //开事务，更新db
-        AppModel.singleInstanceHolder.dbContainer.db.withTransaction {
+        AppModel.dbContainer.db.withTransaction {
             for(it in allNoDefault) {
                 try {
                     it.virtualPath = StorageDirUtil.genVirtualPathByParentsName(it, allMap, root)

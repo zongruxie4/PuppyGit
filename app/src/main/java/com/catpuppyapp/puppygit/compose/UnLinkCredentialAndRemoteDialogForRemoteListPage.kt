@@ -61,7 +61,7 @@ fun UnLinkCredentialAndRemoteDialogForRemoteListPage(
                         return@onOk
                     }
 
-                    val remoteDb = AppModel.singleInstanceHolder.dbContainer.remoteRepository
+                    val remoteDb = AppModel.dbContainer.remoteRepository
                     val emptyId = ""
 
                     doJobThenOffLoading {

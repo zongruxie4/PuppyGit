@@ -31,7 +31,7 @@ private val TAG = "SubscriptionPage"
 fun SubscriptionPage(contentPadding: PaddingValues, needRefresh: MutableState<String>, openDrawer: ()->Unit){
 
     val activityContext = LocalContext.current
-    val exitApp = AppModel.singleInstanceHolder.exitApp;
+    val exitApp = AppModel.exitApp;
 
     val appIcon = AppModel.getAppIcon(activityContext)
 

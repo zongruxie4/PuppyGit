@@ -54,10 +54,10 @@ fun IndexScreen(
 ) {
 
 
-    val navController = AppModel.singleInstanceHolder.navController
-    val homeTopBarScrollBehavior = AppModel.singleInstanceHolder.homeTopBarScrollBehavior
+    val navController = AppModel.navController
+    val homeTopBarScrollBehavior = AppModel.homeTopBarScrollBehavior
 
-    val allRepoParentDir = AppModel.singleInstanceHolder.allRepoParentDir
+    val allRepoParentDir = AppModel.allRepoParentDir
     val scope = rememberCoroutineScope()
 
     val settings = remember {SettingsUtil.getSettingsSnapshot()}

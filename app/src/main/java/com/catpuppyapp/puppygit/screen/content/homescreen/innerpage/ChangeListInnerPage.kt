@@ -212,11 +212,11 @@ fun ChangeListInnerPage(
 
     val haptic = LocalHapticFeedback.current
 
-//    val allRepoParentDir = AppModel.singleInstanceHolder.allRepoParentDir;
+//    val allRepoParentDir = AppModel.allRepoParentDir;
     val activityContext = LocalContext.current
-    val exitApp = AppModel.singleInstanceHolder.exitApp
-    val dbContainer = AppModel.singleInstanceHolder.dbContainer
-    val navController = AppModel.singleInstanceHolder.navController
+    val exitApp = AppModel.exitApp
+    val dbContainer = AppModel.dbContainer
+    val navController = AppModel.navController
 
     val settings = remember {
         val s = SettingsUtil.getSettingsSnapshot()
@@ -2511,7 +2511,7 @@ fun ChangeListInnerPage(
 
                 val selectedCredentialId = credentialList.value[selectedCredentialIdx.intValue].id
 
-                val repoDb = AppModel.singleInstanceHolder.dbContainer.repoRepository
+                val repoDb = AppModel.dbContainer.repoRepository
                 val importRepoResult = ImportRepoResult()
 
                 try {
@@ -3889,7 +3889,7 @@ private fun changeListInit(
 
 
 
-                val credentialDb = AppModel.singleInstanceHolder.dbContainer.credentialRepository
+                val credentialDb = AppModel.dbContainer.credentialRepository
                 val credentialListFromDb = credentialDb.getAll(includeNone = true, includeMatchByDomain = true)
                 if(credentialListFromDb.isNotEmpty()) {
 

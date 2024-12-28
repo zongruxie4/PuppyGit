@@ -85,7 +85,7 @@ fun EditorTitle(editorPageShowingFilePath: MutableState<String>,
                     //显示文件详情（大小、路径、字数，等）
                     editorPageRequestFromParent.value = PageRequest.showDetails
                     //点按显示文件名
-    //                showToast(AppModel.singleInstanceHolder.appContext, fileName)
+    //                showToast(AppModel.appContext, fileName)
                 }
         ) {
             if(editorSearchMode) {

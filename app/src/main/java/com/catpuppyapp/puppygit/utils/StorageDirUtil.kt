@@ -22,7 +22,7 @@ object StorageDirUtil {
             //channel外面加互斥锁，这样就相当于一个公平锁了（带队列的互斥锁）,即使误开多个writer也不用担心冲突了
             writeLock.withLock {
 
-                val sddb = AppModel.singleInstanceHolder.dbContainer.storageDirRepository
+                val sddb = AppModel.dbContainer.storageDirRepository
                 cachedAllSds.clear()
                 cachedAllSds.addAll(sddb.getAll())
 

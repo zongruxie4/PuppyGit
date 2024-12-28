@@ -44,7 +44,7 @@ fun CredentialItem(
     lastClickedItemKey:MutableState<String>,
     onClick:(CredentialEntity)->Unit
 ) {
-    val haptic = AppModel.singleInstanceHolder.haptic
+    val haptic = AppModel.haptic
 
     val isMatchByDomain = SpecialCredential.MatchByDomain.equals_to(thisItem)
     val isNone = SpecialCredential.NONE.equals_to(thisItem)
@@ -176,7 +176,7 @@ fun CredentialItem(
                     icon = Icons.Filled.Edit,
                     iconContentDesc = stringResource(R.string.edit),
                 ) {
-                    AppModel.singleInstanceHolder.navController.navigate(Cons.nav_CredentialNewOrEditScreen+"/"+thisItem.id)
+                    AppModel.navController.navigate(Cons.nav_CredentialNewOrEditScreen+"/"+thisItem.id)
                 }
             }
         }

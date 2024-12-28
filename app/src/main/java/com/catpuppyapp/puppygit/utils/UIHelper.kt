@@ -333,7 +333,7 @@ object UIHelper {
     }
 
     fun getRepoItemsCountEachRow():Int {
-        val count = AppModel.singleInstanceHolder.deviceWidthHeight.width / getRepoItemWidth()
+        val count = AppModel.deviceWidthHeight.width / getRepoItemWidth()
         return count.toInt().coerceAtLeast(1)
     }
 

@@ -100,10 +100,10 @@ fun RemoteListScreen(
     repoId:String,
     naviUp: () -> Boolean,
 ) {
-    val homeTopBarScrollBehavior = AppModel.singleInstanceHolder.homeTopBarScrollBehavior
-    val activityContext = AppModel.singleInstanceHolder.activityContext
-    val navController = AppModel.singleInstanceHolder.navController
-    val dbContainer = AppModel.singleInstanceHolder.dbContainer
+    val homeTopBarScrollBehavior = AppModel.homeTopBarScrollBehavior
+    val activityContext = AppModel.activityContext
+    val navController = AppModel.navController
+    val dbContainer = AppModel.dbContainer
     val scope = rememberCoroutineScope()
     val settings = remember { SettingsUtil.getSettingsSnapshot() }
 
@@ -203,7 +203,7 @@ fun RemoteListScreen(
                         //如果从git仓库删除remote成功或者错误信息是 “remote 'xxx' does not exist”，则删除db中的remote
                         if(ret.success() || noExist) {
                             //删db中的remote
-                            val remoteDb = AppModel.singleInstanceHolder.dbContainer.remoteRepository
+                            val remoteDb = AppModel.dbContainer.remoteRepository
                             remoteDb.delete(RemoteEntity(id=remoteWillDel.remoteId))  // delete其实是根据id删除的，所以只设id即可
                         }else{
                             throw ret.exception ?: Exception(ret.msg)
@@ -305,7 +305,7 @@ fun RemoteListScreen(
                 try {
                     if(list.value.isNotEmpty()) {  //remote列表如果是空就不用fetch all了
                         //remote名和凭据组合的列表
-                        val remoteCredentialList = Libgit2Helper.genRemoteCredentialPairList(list.value, AppModel.singleInstanceHolder.dbContainer.credentialRepository,
+                        val remoteCredentialList = Libgit2Helper.genRemoteCredentialPairList(list.value, AppModel.dbContainer.credentialRepository,
                             requireFetchCredential = true, requirePushCredential = false)
 
                         Repository.open(curRepo.value.fullSavePath).use { repo ->
@@ -428,7 +428,7 @@ fun RemoteListScreen(
                             }
 
                             // 更新数据库
-                            val remoteDb = AppModel.singleInstanceHolder.dbContainer.remoteRepository
+                            val remoteDb = AppModel.dbContainer.remoteRepository
                             remoteDb.updatePushUrlById(remoteId, "")  //清空pushUrl
 
                             //操作完成
@@ -477,7 +477,7 @@ fun RemoteListScreen(
                         //如果上面配置文件的代码抛异常，会抛异常，也就不会更新数据库了
 
                         // 更新数据库
-                        val remoteDb = AppModel.singleInstanceHolder.dbContainer.remoteRepository
+                        val remoteDb = AppModel.dbContainer.remoteRepository
                         if(isPushUrl.value){
                             remoteDb.updatePushUrlById(remoteId, newUrl)
                         }else {
@@ -563,7 +563,7 @@ fun RemoteListScreen(
             }
 
             // 更新修改workstatus的时间，只更新时间就行，状态会在查询repo时更新
-            val repoDb = AppModel.singleInstanceHolder.dbContainer.repoRepository
+            val repoDb = AppModel.dbContainer.repoRepository
             repoDb.updateLastUpdateTime(curRepo.id, getSecFromTime())
 
             Msg.requireShow(activityContext.getString(R.string.success))
@@ -925,14 +925,14 @@ fun RemoteListScreen(
             if(repoId.isNotBlank()) {
                 doJobThenOffLoading {
                     list.value.clear()
-                    val repoDb = AppModel.singleInstanceHolder.dbContainer.repoRepository
+                    val repoDb = AppModel.dbContainer.repoRepository
                     val repoFromDb = repoDb.getById(repoId)
                     if(repoFromDb==null) {
                         return@doJobThenOffLoading
                     }
                     curRepo.value = repoFromDb
 
-                    val remoteDb = AppModel.singleInstanceHolder.dbContainer.remoteRepository
+                    val remoteDb = AppModel.dbContainer.remoteRepository
                     val listFromDb = remoteDb.getRemoteDtoListByRepoId(repoId)
 
                     //改成在数据库查询函数里更新了

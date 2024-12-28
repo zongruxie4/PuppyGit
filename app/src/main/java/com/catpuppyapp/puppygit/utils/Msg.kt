@@ -16,27 +16,27 @@ class Msg {
 //            doJobThenOffLoading {
 //                //toast 必须在主线程才能正常显示
 //                withContext(Dispatchers.Main) {
-//                    showToast(AppModel.singleInstanceHolder.appContext, msg)
+//                    showToast(AppModel.appContext, msg)
 //                }
 //
 //            }
 
             doJobWithMainContext {
-                showToast(AppModel.singleInstanceHolder.activityContext, msg)
+                showToast(AppModel.activityContext, msg)
             }
 
         }
 
         val requireShowShortDuration = { msg:String ->
             doJobWithMainContext {
-                showToast(AppModel.singleInstanceHolder.activityContext, msg, Toast.LENGTH_SHORT)
+                showToast(AppModel.activityContext, msg, Toast.LENGTH_SHORT)
             }
 
         }
 
         val requireShowLongDuration = { msg:String ->
             doJobWithMainContext {
-                showToast(AppModel.singleInstanceHolder.activityContext, msg, Toast.LENGTH_LONG)
+                showToast(AppModel.activityContext, msg, Toast.LENGTH_LONG)
             }
 
         }

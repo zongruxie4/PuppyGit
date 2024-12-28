@@ -33,10 +33,10 @@ fun CreateRemoteDialog(
     loadingOff:()->Unit,
     onCancel:()->Unit ={},
     onErr:suspend (e:Exception)->Unit,
-    onOk:()->Unit = { Msg.requireShow(AppModel.singleInstanceHolder.activityContext.getString(R.string.success))},
+    onOk:()->Unit = { Msg.requireShow(AppModel.activityContext.getString(R.string.success))},
     onFinally:()->Unit,
 ) {
-    val activityContext = AppModel.singleInstanceHolder.activityContext
+    val activityContext = AppModel.activityContext
 
     val close = {show.value = false}
 
@@ -99,7 +99,7 @@ fun CreateRemoteDialog(
                                 //在git创建
                                 val ret = Libgit2Helper.createRemote(repo, remoteName, remoteUrl)
 
-                                val remoteDb = AppModel.singleInstanceHolder.dbContainer.remoteRepository
+                                val remoteDb = AppModel.dbContainer.remoteRepository
                                 val exists=ret.msg.startsWith("remote") && ret.msg.endsWith("already exists")  // remote 'xxxx' already exists
                                 //如果在git仓库创建remote成功，或者提示remote已经存在(避免remote存在但db无记录的问题，这个问题类似源数据和缓存出现分歧的状况)，则尝试插入，插入时检查，若repoId+remoteName不存在则插入，否则什么都不做
                                 if(ret.success() || exists) {

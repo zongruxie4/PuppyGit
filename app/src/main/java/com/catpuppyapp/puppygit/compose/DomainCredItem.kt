@@ -34,7 +34,7 @@ fun DomainCredItem(
     thisItem:DomainCredentialDto,
     onClick:(DomainCredentialDto)->Unit
 ) {
-    val haptic = AppModel.singleInstanceHolder.haptic
+    val haptic = AppModel.haptic
 
     val none = "[${stringResource(R.string.none)}]"
 

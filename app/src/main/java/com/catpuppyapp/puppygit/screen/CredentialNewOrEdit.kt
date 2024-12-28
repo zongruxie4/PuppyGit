@@ -76,9 +76,9 @@ fun CredentialNewOrEdit(
 //        naviUp()
 //    }
 
-    val homeTopBarScrollBehavior = AppModel.singleInstanceHolder.homeTopBarScrollBehavior
+    val homeTopBarScrollBehavior = AppModel.homeTopBarScrollBehavior
 
-//    val allRepoParentDir = AppModel.singleInstanceHolder.allRepoParentDir
+//    val allRepoParentDir = AppModel.allRepoParentDir
 
 //    val gitUrl = rememberSaveable { mutableStateOf("") }
 //    val repoName = remember { mutableStateOf(TextFieldValue("")) }
@@ -169,7 +169,7 @@ fun CredentialNewOrEdit(
         doJobThenOffLoading launch@{
             showLoadingDialog.value=true
 
-            val credentialDb = AppModel.singleInstanceHolder.dbContainer.credentialRepository
+            val credentialDb = AppModel.dbContainer.credentialRepository
 
             //如果选择的是新建Credential，则新建
             val credentialNameText = credentialName.value.text
@@ -197,7 +197,7 @@ fun CredentialNewOrEdit(
                 val oldPass = oldCredential.value.pass
                 val newPass = credentialForSave.pass
                 if(oldPass != newPass) {  //新旧密码如果不一样，说明用户编辑了密码，这时候需要重新加密；如果一样，说明依然是编辑前的加密过的密码，则不需要加密；（不太可能发生的极特殊情况：用户输入的新密码原文和加密后的密码字符串完全一样！这样就会出问题，连接时会使用“解密”后的错误密码）
-                    credentialDb.encryptPassIfNeed(credentialForSave, AppModel.singleInstanceHolder.masterPassword.value)
+                    credentialDb.encryptPassIfNeed(credentialForSave, AppModel.masterPassword.value)
                 }
                 credentialDb.update(credentialForSave)
             }else{  //新建的百分百加密
@@ -459,7 +459,7 @@ fun CredentialNewOrEdit(
 
             if (credentialId != null && credentialId.isNotBlank() && credentialId != "null") {  //如果是编辑模式，查询仓库信息
                 isEditMode.value = true
-                val credentialDb = AppModel.singleInstanceHolder.dbContainer.credentialRepository
+                val credentialDb = AppModel.dbContainer.credentialRepository
 
                 //注意，查出的是加密的密码
                 credentialInThisPage.value = credentialDb.getById(credentialId)?:return@job

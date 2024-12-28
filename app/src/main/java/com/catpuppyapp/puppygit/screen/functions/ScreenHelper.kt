@@ -41,7 +41,7 @@ fun goToFileHistory(fileFullPath:String, appContext: Context){
                     return@job
                 }
 
-                val repoDb = AppModel.singleInstanceHolder.dbContainer.repoRepository
+                val repoDb = AppModel.dbContainer.repoRepository
                 val repoFromDb = repoDb.getByFullSavePath(
                     repoWorkDirPath,
                     onlyReturnReadyRepo = false,  // if not ready, cant open at upside code, so reached here, no need more check about ready, is 100% ready
@@ -73,7 +73,7 @@ suspend fun goToFileHistoryByRelativePathWithMainContext(repoId:String, relative
 fun naviToFileHistoryByRelativePath(repoId:String, relativePathUnderRepo:String) {
     Cache.set(Cache.Key.fileHistory_fileRelativePathKey, relativePathUnderRepo)
     //go to file history page
-    AppModel.singleInstanceHolder.navController
+    AppModel.navController
         .navigate(
             Cons.nav_FileHistoryScreen + "/" + repoId
         )
@@ -105,6 +105,6 @@ fun openFileWithInnerSubPageEditor(filePath:String, mergeMode:Boolean, readOnly:
     val initMergeMode = if(mergeMode) "1" else "0"
     val initReadOnly = if(readOnly) "1" else "0"
 
-    AppModel.singleInstanceHolder.navController
+    AppModel.navController
         .navigate(Cons.nav_SubPageEditor + "/$goToLine/$initMergeMode/$initReadOnly")
 }

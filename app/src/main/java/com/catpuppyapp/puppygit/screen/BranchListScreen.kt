@@ -122,9 +122,9 @@ fun BranchListScreen(
 //    branch:String?,
     naviUp: () -> Boolean,
 ) {
-    val homeTopBarScrollBehavior = AppModel.singleInstanceHolder.homeTopBarScrollBehavior
-    val navController = AppModel.singleInstanceHolder.navController
-    val activityContext = AppModel.singleInstanceHolder.activityContext
+    val homeTopBarScrollBehavior = AppModel.homeTopBarScrollBehavior
+    val navController = AppModel.navController
+    val activityContext = AppModel.activityContext
     val haptic = LocalHapticFeedback.current
     val scope = rememberCoroutineScope()
 
@@ -274,7 +274,7 @@ fun BranchListScreen(
 //                requireShowToast(appContext.getString(R.string.already_up_to_date))
 //            }else {  //合并成功且创建了新提交
 //                //合并完了，创建了新提交，需要更新db
-//                val repoDB = AppModel.singleInstanceHolder.dbContainer.repoRepository
+//                val repoDB = AppModel.dbContainer.repoRepository
 //                val shortNewCommitHash = mergeResult.data.toString().substring(Cons.gitShortCommitHashRange)
 //                //更新db
 //                repoDB.updateCommitHash(
@@ -435,7 +435,7 @@ fun BranchListScreen(
                             if (isCurrentBranchOfRepo) {
                                 //更新数据库
                                 val repoDb =
-                                    AppModel.singleInstanceHolder.dbContainer.repoRepository
+                                    AppModel.dbContainer.repoRepository
                                 val upstreamBranchShortName =
                                     Libgit2Helper.getUpstreamRemoteBranchShortNameByRemoteAndBranchRefsHeadsRefSpec(
                                         remote,
@@ -651,7 +651,7 @@ fun BranchListScreen(
                                 //后删除服务器的远程分支
                                 if(delUpstreamPush.value) {  //若勾选push，删除远程的分支
                                     //查询凭据
-                                    val remoteDb = AppModel.singleInstanceHolder.dbContainer.remoteRepository
+                                    val remoteDb = AppModel.dbContainer.remoteRepository
                                     val remoteFromDb = remoteDb.getByRepoIdAndRemoteName(
                                         curRepo.value.id,
                                         upstream.remote
@@ -662,7 +662,7 @@ fun BranchListScreen(
                                     }
                                     var credential: CredentialEntity? = null
                                     if (!remoteFromDb.pushCredentialId.isNullOrBlank()) {
-                                        val credentialDb = AppModel.singleInstanceHolder.dbContainer.credentialRepository
+                                        val credentialDb = AppModel.dbContainer.credentialRepository
 //                                        credential = credentialDb.getByIdWithDecrypt(remoteFromDb.pushCredentialId)
                                         credential = credentialDb.getByIdWithDecryptAndMatchByDomain(id = remoteFromDb.pushCredentialId, url = remoteFromDb.pushUrl)
                                     }
@@ -816,7 +816,7 @@ fun BranchListScreen(
 
                             //再删除服务器的远程分支
                             //查询凭据
-                            val remoteDb = AppModel.singleInstanceHolder.dbContainer.remoteRepository
+                            val remoteDb = AppModel.dbContainer.remoteRepository
                             val remoteFromDb = remoteDb.getByRepoIdAndRemoteName(
                                 curRepo.value.id,
                                 remote
@@ -827,7 +827,7 @@ fun BranchListScreen(
                             }
                             var credential: CredentialEntity? = null
                             if (!remoteFromDb.pushCredentialId.isNullOrBlank()) {
-                                val credentialDb = AppModel.singleInstanceHolder.dbContainer.credentialRepository
+                                val credentialDb = AppModel.dbContainer.credentialRepository
 //                                credential = credentialDb.getByIdWithDecrypt(remoteFromDb.pushCredentialId)
                                 credential = credentialDb.getByIdWithDecryptAndMatchByDomain(id = remoteFromDb.pushCredentialId, url = remoteFromDb.pushUrl)
                             }
@@ -1088,7 +1088,7 @@ fun BranchListScreen(
                 doJobThenOffLoading(loadingOn, loadingOff, activityContext.getString(R.string.pushing)) {
                     try {
 
-                        val dbContainer = AppModel.singleInstanceHolder.dbContainer
+                        val dbContainer = AppModel.dbContainer
                         Repository.open(curRepo.value.fullSavePath).use { repo->
                             val credential = Libgit2Helper.getRemoteCredential(
                                 dbContainer.remoteRepository,
@@ -1104,7 +1104,7 @@ fun BranchListScreen(
                             }
 
                             // 更新修改workstatus的时间，只更新时间就行，状态会在查询repo时更新
-                            val repoDb = AppModel.singleInstanceHolder.dbContainer.repoRepository
+                            val repoDb = AppModel.dbContainer.repoRepository
                             repoDb.updateLastUpdateTime(curRepo.value.id, getSecFromTime())
 
                             Msg.requireShow(activityContext.getString(R.string.success))
@@ -1597,7 +1597,7 @@ fun BranchListScreen(
                 list.value.clear()  //先清一下list，然后可能添加也可能不添加
 
                 if(!repoId.isNullOrBlank()) {
-                    val repoDb = AppModel.singleInstanceHolder.dbContainer.repoRepository
+                    val repoDb = AppModel.dbContainer.repoRepository
                     val repoFromDb = repoDb.getById(repoId)
                     if(repoFromDb!=null) {
                         curRepo.value = repoFromDb

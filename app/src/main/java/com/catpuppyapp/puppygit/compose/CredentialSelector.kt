@@ -24,7 +24,7 @@ fun CredentialSelector(
     title:String = stringResource(R.string.select_credential),
 ) {
 
-    val activityContext = AppModel.singleInstanceHolder.activityContext
+    val activityContext = AppModel.activityContext
 
     val note = rememberSaveable { mutableStateOf("")}
 

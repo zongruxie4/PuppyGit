@@ -98,10 +98,10 @@ fun RequireMasterPasswordScreen(
                 if(verified) {
                     loadingText.value = activityContext.getString(R.string.checking_creds_migration)
                     //一般不会迁移失败，这里不try...catch了，就算迁移失败，用户还能清主密码，不包了
-                    AppModel.singleInstanceHolder.dbContainer.credentialRepository.migrateEncryptVerIfNeed(pass)
+                    AppModel.dbContainer.credentialRepository.migrateEncryptVerIfNeed(pass)
 
                     loadingText.value = activityContext.getString(R.string.updating_master_password)
-                    AppModel.singleInstanceHolder.masterPassword.value = pass
+                    AppModel.masterPassword.value = pass
 
                     //完了！可以进入app了
                     requireMasterPassword.value = false

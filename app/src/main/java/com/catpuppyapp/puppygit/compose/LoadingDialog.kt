@@ -32,7 +32,7 @@ import com.catpuppyapp.puppygit.utils.AppModel
  * 注：这个放不放到Scaffold里好像无所谓，加载圆圈的背景颜色我已经根据是否darkTheme调了，大背景好像没什么好调的因为是半透明的
  */
 @Composable
-fun LoadingDialog(text:String = AppModel.singleInstanceHolder.activityContext.getString(R.string.loading)) {
+fun LoadingDialog(text:String = AppModel.activityContext.getString(R.string.loading)) {
     val inDarkTheme = Theme.inDarkTheme
     Dialog(
         onDismissRequest = {/* showLoadingDialog.value = false */ },

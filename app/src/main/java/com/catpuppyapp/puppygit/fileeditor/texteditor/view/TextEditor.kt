@@ -169,8 +169,8 @@ fun TextEditor(
     val acceptBothBtnColor = UIHelper.getAcceptBothIconColor()
     val rejectBothBtnColor = UIHelper.getRejectBothIconColor()
 
-    val haptic = AppModel.singleInstanceHolder.haptic
-    val activityContext = AppModel.singleInstanceHolder.activityContext
+    val haptic = AppModel.haptic
+    val activityContext = AppModel.activityContext
 
     val scope = rememberCoroutineScope()
     val keyboardController = LocalSoftwareKeyboardController.current

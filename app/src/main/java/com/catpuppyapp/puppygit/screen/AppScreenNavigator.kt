@@ -20,7 +20,7 @@ fun AppScreenNavigator() {
     AppModel.init_3()
 
     //上面初始化成功，这里才能获取到navController
-    val navController =AppModel.singleInstanceHolder.navController
+    val navController =AppModel.navController
 
 //    val startScreen = Cons.selectedItem_Repos
     //初始启动页面的子页面（Repos/Files之类的）
@@ -29,7 +29,7 @@ fun AppScreenNavigator() {
 
 //    val scope = ComposeHelper.getCoroutineScope()
 
-//    val homeTopBarScrollBehavior = AppModel.singleInstanceHolder.homeTopBarScrollBehavior
+//    val homeTopBarScrollBehavior = AppModel.homeTopBarScrollBehavior
     val editorPageLastFilePath = rememberSaveable { mutableStateOf("")}
 
     val repoPageListState = rememberLazyListState()

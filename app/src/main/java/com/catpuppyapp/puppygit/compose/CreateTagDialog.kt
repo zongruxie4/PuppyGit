@@ -46,7 +46,7 @@ fun CreateTagDialog(showDialog:MutableState<Boolean>,
 
                     onOkDoneCallback:(newTagFullOidStr:String)->Unit
 ) {
-    val activityContext = AppModel.singleInstanceHolder.activityContext
+    val activityContext = AppModel.activityContext
 
     val tagNameErrMsg = rememberSaveable { mutableStateOf("")}
     val commitHashShortOrLongErrMsg = rememberSaveable { mutableStateOf("")}

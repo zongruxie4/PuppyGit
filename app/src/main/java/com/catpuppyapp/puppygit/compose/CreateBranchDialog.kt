@@ -58,7 +58,7 @@ fun CreateBranchDialog(
     onFinally:()->Unit, //在 try...catch...finally，finally代码块里的代码
 //    onOk: (branchName:String, baseRefSpec:String, basedHead:Boolean, createByRef:Boolean, needCheckout:Boolean, forceCheckout:Boolean, overwriteIfExist:Boolean) -> Unit,
 ) {
-    val activityContext = AppModel.singleInstanceHolder.activityContext
+    val activityContext = AppModel.activityContext
 
     val repoId=curRepo.id
     //文案提示是“基于当前分支xxx（分支名）创建新分支(btw：如果想基于某个提交创建分支，可以去commit记录页面)”，以及强调“如果勾选checkout将立即检出分支，但如果有未提交数据，可能会丢失”

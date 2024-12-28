@@ -93,7 +93,7 @@ suspend fun updateRemoteDtoList(repo: Repository, remoteDtoList: List<RemoteDto>
         try {
             updateRemoteDto(repo, it)
 
-            val credDb = AppModel.singleInstanceHolder.dbContainer.credentialRepository
+            val credDb = AppModel.dbContainer.credentialRepository
             val matchByDomainId = SpecialCredential.MatchByDomain.credentialId
             if(it.credentialId == matchByDomainId) {
                 val actuallyCred = credDb.getByIdAndMatchByDomain(matchByDomainId, it.remoteUrl)

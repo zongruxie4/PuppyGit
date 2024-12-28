@@ -75,7 +75,7 @@ fun AboutInnerPage(contentPadding: PaddingValues,
 ){
 
     val activityContext = LocalContext.current
-    val exitApp = AppModel.singleInstanceHolder.exitApp;
+    val exitApp = AppModel.exitApp;
 
     val appIcon = AppModel.getAppIcon(activityContext)
 

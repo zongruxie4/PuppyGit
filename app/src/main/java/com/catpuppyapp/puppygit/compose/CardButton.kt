@@ -33,7 +33,7 @@ fun CardButton(
 ) {
     val inDarkTheme = Theme.inDarkTheme
 
-//    val appContext = AppModel.singleInstanceHolder.appContext
+//    val appContext = AppModel.appContext
 
     val cardColor = UIHelper.defaultCardColor()
 

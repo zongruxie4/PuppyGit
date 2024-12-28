@@ -63,9 +63,9 @@ fun ChangeListItem(
     onLongClick:(StatusTypeEntrySaver)->Unit,
     onClick:(StatusTypeEntrySaver) -> Unit
 ){
-//    val navController = AppModel.singleInstanceHolder.navController
-//    val appContext = AppModel.singleInstanceHolder.appContext
-//    val haptic = AppModel.singleInstanceHolder.haptic
+//    val navController = AppModel.navController
+//    val appContext = AppModel.appContext
+//    val haptic = AppModel.haptic
 
     val itemIsDir = item.itemType == Cons.gitItemTypeDir || item.itemType == Cons.gitItemTypeSubmodule
 

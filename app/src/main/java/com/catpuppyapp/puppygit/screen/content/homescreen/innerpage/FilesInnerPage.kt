@@ -175,11 +175,11 @@ fun FilesInnerPage(
     enableFilterState:MutableState<Boolean>,
     filterList:CustomStateListSaveable<FileItemDto>
 ) {
-    val allRepoParentDir = AppModel.singleInstanceHolder.allRepoParentDir;
-//    val appContext = AppModel.singleInstanceHolder.appContext;
+    val allRepoParentDir = AppModel.allRepoParentDir;
+//    val appContext = AppModel.appContext;
     val activityContext = LocalContext.current;
-    val exitApp = AppModel.singleInstanceHolder.exitApp
-    val haptic = AppModel.singleInstanceHolder.haptic
+    val exitApp = AppModel.exitApp
+    val haptic = AppModel.haptic
 
     val scope = rememberCoroutineScope()
     val activity = ActivityUtil.getCurrentActivity()
@@ -323,7 +323,7 @@ fun FilesInnerPage(
 
             doJobThenOffLoading {
 //                val slash = File.separator
-//                val repoBaseDirPath = AppModel.singleInstanceHolder.allRepoParentDir.canonicalPath
+//                val repoBaseDirPath = AppModel.allRepoParentDir.canonicalPath
 
 //                val finallyPath = if(pathGoTo.value.removePrefix(slash).startsWith(repoBaseDirPath.removePrefix(slash))) { // real path，直接跳转
 //                    pathGoTo.value  //如果用户输入真实路径但没以 / 开头，后面会报无效路径，问题不大且合理，不处理
@@ -359,7 +359,7 @@ fun FilesInnerPage(
     val allRepoList = mutableCustomStateListOf(stateKeyTag, "allRepoList", listOf<RepoEntity>())
     val initApplyAsPatchDialog = {patchFileFullPath:String ->
         doJobThenOffLoading job@{
-            val repoDb = AppModel.singleInstanceHolder.dbContainer.repoRepository
+            val repoDb = AppModel.dbContainer.repoRepository
             val listFromDb = repoDb.getReadyRepoList(requireSyncRepoInfoWithGit = false)
 
             if(listFromDb.isEmpty()) {
@@ -819,7 +819,7 @@ fun FilesInnerPage(
                             if(renameSuccess) {
                                 //重命名成功，把重命名之前的旧条目从选中列表移除，然后把改名后的新条目添加到列表（要不要改成：不管执行重命名失败还是成功，都一律移除？没必要啊，如果失败，名字又没变，移除干嘛？）
                                 if(selectedItems.value.remove(renameFileItemDto.value)) {  //移除旧条目。如果返回true，说明存在，则添加重命名后的新条目进列表；如果返回false，说明旧文件不在选中列表，不执行操作
-                                    val newNameDto = FileItemDto.genFileItemDtoByFile(newFile, AppModel.singleInstanceHolder.activityContext)
+                                    val newNameDto = FileItemDto.genFileItemDtoByFile(newFile, AppModel.activityContext)
                                     selectedItems.value.add(newNameDto)
                                 }
 //                            selectedItems.requireRefreshView()
@@ -982,7 +982,7 @@ fun FilesInnerPage(
                 }else{
                     val repoWorkDir = Libgit2Helper.getRepoWorkdirNoEndsWithSlash(repo)
                     val onlyReturnReadyRepo = !trueGoToReposFalseGoToChangeList  // if go to repos page, no need require repo ready; if go to changelist, require a ready repo
-                    val target = AppModel.singleInstanceHolder.dbContainer.repoRepository.getByFullSavePath(
+                    val target = AppModel.dbContainer.repoRepository.getByFullSavePath(
                         repoWorkDir,
                         onlyReturnReadyRepo=onlyReturnReadyRepo,
                         requireSyncRepoInfoWithGit = false
@@ -1723,7 +1723,7 @@ fun FilesInnerPage(
                     val importRepoResult = ImportRepoResult()
                     try {
                         selctedDirs.forEach { dirPath ->
-                            val result = AppModel.singleInstanceHolder.dbContainer.repoRepository.importRepos(dir=dirPath, isReposParent=isReposParentFolderForImport.value)
+                            val result = AppModel.dbContainer.repoRepository.importRepos(dir=dirPath, isReposParent=isReposParentFolderForImport.value)
                             importRepoResult.all += result.all
                             importRepoResult.success += result.success
                             importRepoResult.failed += result.failed
@@ -2415,7 +2415,7 @@ private fun doInit(
         //先清下列表，感觉在开头清比较好，如果加载慢，先白屏，然后出东西；放后面清的话，如果加载慢，会依然显示旧条目列表，感觉没变化，像卡了一样，用户可能重复点击
         currentPathFileList.value.clear()
 
-        val repoBaseDirPath = AppModel.singleInstanceHolder.allRepoParentDir.canonicalPath
+        val repoBaseDirPath = AppModel.allRepoParentDir.canonicalPath
 
         currentPath.value = if(currentPath.value.isBlank()) {
             repoBaseDirPath

@@ -187,9 +187,9 @@ fun CommitListScreen(
 //    println("fullOidKey.isEmpty()="+fullOidKey.isEmpty())  //expect true when nav from repoCard, result: is not empty yet
 //    println("fullOidKey="+fullOidKey)  //expect true when nav from repoCard
 
-    val homeTopBarScrollBehavior = AppModel.singleInstanceHolder.homeTopBarScrollBehavior
+    val homeTopBarScrollBehavior = AppModel.homeTopBarScrollBehavior
     val activityContext = LocalContext.current
-    val navController = AppModel.singleInstanceHolder.navController
+    val navController = AppModel.navController
     val scope = rememberCoroutineScope()
     val haptic = LocalHapticFeedback.current
 
@@ -2071,7 +2071,7 @@ fun CommitListScreen(
 
             if(forceReload || curRepo.value.id.isBlank() || headOidOfThisScreen.value.isNullOrEmptyOrZero) {
                 //从db查数据
-                val repoDb = AppModel.singleInstanceHolder.dbContainer.repoRepository
+                val repoDb = AppModel.dbContainer.repoRepository
                 val repoFromDb = repoDb.getById(repoId)
                 if (repoFromDb == null) {
                     MyLog.w(TAG, "#LaunchedEffect: query repo info from db error! repoId=$repoId}")

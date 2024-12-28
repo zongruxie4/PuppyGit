@@ -229,7 +229,7 @@ object ChangeListFunctions {
                 repoState.intValue = repo.state()?.bit?: Cons.gitRepoStateInvalid  //如果state是null，返回一个无效值
 
                 // 更新db
-                val repoDb = AppModel.singleInstanceHolder.dbContainer.repoRepository
+                val repoDb = AppModel.dbContainer.repoRepository
                 val shortNewCommitHash = ret.data.toString().substring(Cons.gitShortCommitHashRange)
                 //更新db
                 repoDb.updateCommitHash(
@@ -301,7 +301,7 @@ object ChangeListFunctions {
                 Libgit2Helper.fetchRemoteForRepo(repo, remoteName, credential, curRepoFromParentPage.value)
 
                 // 更新修改workstatus的时间，只更新时间就行，状态会在查询repo时更新
-                val repoDb = AppModel.singleInstanceHolder.dbContainer.repoRepository
+                val repoDb = AppModel.dbContainer.repoRepository
                 repoDb.updateLastUpdateTime(curRepoFromParentPage.value.id, getSecFromTime())
 
 
@@ -487,7 +487,7 @@ object ChangeListFunctions {
                 }
 
                 // 更新修改workstatus的时间，只更新时间就行，状态会在查询repo时更新
-                val repoDb = AppModel.singleInstanceHolder.dbContainer.repoRepository
+                val repoDb = AppModel.dbContainer.repoRepository
                 repoDb.updateLastUpdateTime(curRepoFromParentPage.value.id, getSecFromTime())
 
 

@@ -26,7 +26,7 @@ fun isReleaseMode():Boolean {  //检查当前是否处于生产环境，因为�
 
 fun isDebugModeOn():Boolean {
     //开发者设置了debugModeOn 或 用户设置了debugModeOn，则debugMode is on
-//    return dev_debugModeOn || AppModel.singleInstanceHolder.debugModeOn
+//    return dev_debugModeOn || AppModel.debugModeOn
 
 //    return settings.logLevel == 'd'
 
@@ -147,6 +147,6 @@ object FlagFileName {
     const val disableGroupDiffContentByLineNum = "disableGroupDiffContentByLineNum"
 
     fun flagFileExist(flagFileName:String):Boolean {
-        return File(AppModel.singleInstanceHolder.getOrCreatePuppyGitDataUnderAllReposDir().canonicalPath, flagFileName).exists()
+        return File(AppModel.getOrCreatePuppyGitDataUnderAllReposDir().canonicalPath, flagFileName).exists()
     }
 }

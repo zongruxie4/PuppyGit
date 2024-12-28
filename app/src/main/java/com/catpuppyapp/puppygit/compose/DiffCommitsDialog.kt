@@ -33,8 +33,8 @@ fun DiffCommitsDialog(
 ) {
     val repoId = curRepo.id
 
-    val activityContext = AppModel.singleInstanceHolder.activityContext
-    val navController = AppModel.singleInstanceHolder.navController
+    val activityContext = AppModel.activityContext
+    val navController = AppModel.navController
 
     ConfirmDialog(title = activityContext.getString(R.string.diff_commits),
         requireShowTextCompose = true,

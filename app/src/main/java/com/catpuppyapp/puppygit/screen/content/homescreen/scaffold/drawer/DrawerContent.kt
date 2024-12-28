@@ -51,7 +51,7 @@ fun drawerContent(
             (drawTextList as MutableList).add(stringResource(R.string.exit))
             (drawIdList as MutableList).add(Cons.selectedItem_Exit)
             (drawIconList as MutableList).add(Icons.AutoMirrored.Filled.ExitToApp)
-            (refreshPageList as MutableList).add(AppModel.singleInstanceHolder.exitApp)
+            (refreshPageList as MutableList).add(AppModel.exitApp)
         }
 
         val m = Modifier.padding(5.dp)

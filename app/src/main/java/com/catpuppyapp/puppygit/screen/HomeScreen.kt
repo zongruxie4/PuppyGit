@@ -122,17 +122,17 @@ fun HomeScreen(
 //    haptic: HapticFeedback,
 ) {
 
-    val exitApp = AppModel.singleInstanceHolder.exitApp
-    val navController = AppModel.singleInstanceHolder.navController
+    val exitApp = AppModel.exitApp
+    val navController = AppModel.navController
     val scope = rememberCoroutineScope()
-    val homeTopBarScrollBehavior = AppModel.singleInstanceHolder.homeTopBarScrollBehavior
-//    val appContext = AppModel.singleInstanceHolder.appContext  //这个获取不了Activity!
+    val homeTopBarScrollBehavior = AppModel.homeTopBarScrollBehavior
+//    val appContext = AppModel.appContext  //这个获取不了Activity!
     val activityContext = LocalContext.current  //这个能获取到
     val activity = ActivityUtil.getCurrentActivity()
 
 //    val settingsTmp = remember { SettingsUtil.getSettingsSnapshot() }   //避免状态变量里的设置项过旧，重新获取一个
 
-    val allRepoParentDir = AppModel.singleInstanceHolder.allRepoParentDir
+    val allRepoParentDir = AppModel.allRepoParentDir
 
     val settingsSnapshot = mutableCustomStateOf(keyTag = stateKeyTag, keyName = "settingsSnapshot", initValue = SettingsUtil.getSettingsSnapshot())
     val showWelcomeToNewUser = rememberSaveable { mutableStateOf(false)}

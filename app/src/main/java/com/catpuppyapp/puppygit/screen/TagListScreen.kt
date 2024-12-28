@@ -97,9 +97,9 @@ fun TagListScreen(
 //    branch:String?,
     naviUp: () -> Boolean,
 ) {
-    val homeTopBarScrollBehavior = AppModel.singleInstanceHolder.homeTopBarScrollBehavior
-    val navController = AppModel.singleInstanceHolder.navController
-    val activityContext = AppModel.singleInstanceHolder.activityContext
+    val homeTopBarScrollBehavior = AppModel.homeTopBarScrollBehavior
+    val navController = AppModel.navController
+    val activityContext = AppModel.activityContext
     val haptic = LocalHapticFeedback.current
     val scope = rememberCoroutineScope()
     val settings = remember { SettingsUtil.getSettingsSnapshot() }
@@ -282,7 +282,7 @@ fun TagListScreen(
             refreshPage = {
                //更新当前仓库信息即可，目的是在title显示出最新的分支或提交信息
                 doJobThenOffLoading job@{
-                    curRepo.value = AppModel.singleInstanceHolder.dbContainer.repoRepository.getById(repoId) ?: return@job
+                    curRepo.value = AppModel.dbContainer.repoRepository.getById(repoId) ?: return@job
                 }
             },
             curCommitIndex = invalidCurItemIndex,  //不需要更新条目，自然不需要有效索引
@@ -828,7 +828,7 @@ fun TagListScreen(
                 list.value.clear()  //先清一下list，然后可能添加也可能不添加
 
                 if(!repoId.isNullOrBlank()) {
-                    val repoDb = AppModel.singleInstanceHolder.dbContainer.repoRepository
+                    val repoDb = AppModel.dbContainer.repoRepository
                     val repoFromDb = repoDb.getById(repoId)
                     if(repoFromDb!=null) {
                         curRepo.value = repoFromDb

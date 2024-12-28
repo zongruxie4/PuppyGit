@@ -64,8 +64,8 @@ fun ChangeListPageActions(
     naviTarget:MutableState<String>,
 ) {
     val isWorktreePage = fromTo == Cons.gitDiffFromIndexToWorktree
-    val navController = AppModel.singleInstanceHolder.navController
-    val activityContext = AppModel.singleInstanceHolder.activityContext
+    val navController = AppModel.navController
+    val activityContext = AppModel.activityContext
     val dropDownMenuExpendState = rememberSaveable { mutableStateOf(false) }
 
     val repoIsDetached = dbIntToBool(changeListCurRepo.value.isDetached)

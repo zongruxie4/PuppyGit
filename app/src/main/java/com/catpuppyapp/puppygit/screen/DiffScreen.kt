@@ -82,10 +82,10 @@ fun DiffScreen(
 //    val isWorkTree = fromTo == Cons.gitDiffFromIndexToWorktree
     //废弃，改用diffContent里获取diffItem时动态计算了
 //    val fileSizeOverLimit = isFileSizeOverLimit(fileSize)
-    val dbContainer = AppModel.singleInstanceHolder.dbContainer
-    val homeTopBarScrollBehavior = AppModel.singleInstanceHolder.homeTopBarScrollBehavior
+    val dbContainer = AppModel.dbContainer
+    val homeTopBarScrollBehavior = AppModel.homeTopBarScrollBehavior
 
-    val activityContext = AppModel.singleInstanceHolder.activityContext
+    val activityContext = AppModel.activityContext
 
     val isFileHistoryTreeToLocal = fromTo == Cons.gitDiffFileHistoryFromTreeToLocal
     val isFileHistoryTreeToTree = fromTo == Cons.gitDiffFileHistoryFromTreeToTree

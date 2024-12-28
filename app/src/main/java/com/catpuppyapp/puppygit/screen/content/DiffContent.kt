@@ -113,7 +113,7 @@ fun DiffContent(
 
 ) {
 
-    val navController = AppModel.singleInstanceHolder.navController
+    val navController = AppModel.navController
     val activityContext = LocalContext.current
 
     val isDiffFileHistoryFromTreeToTree = fromTo == Cons.gitDiffFileHistoryFromTreeToTree
@@ -132,7 +132,7 @@ fun DiffContent(
         }
     }
 
-//    val appContext = AppModel.singleInstanceHolder.appContext
+//    val appContext = AppModel.appContext
 //    val inDarkTheme = Theme.inDarkTheme
 
     val diffItem = mutableCustomStateOf(keyTag = stateKeyTag, keyName = "diffItem", initValue = DiffItemSaver())
@@ -197,7 +197,7 @@ fun DiffContent(
 //    val hasError = StateUtil.getRememberSaveableState(initValue = false)
 //    val errMsg = StateUtil.getRememberSaveableState(initValue = "")
 //    if(hasError.value) {
-//        showToast(AppModel.singleInstanceHolder.appContext, errOpenFileFailed+":"+errMsg.value)
+//        showToast(AppModel.appContext, errOpenFileFailed+":"+errMsg.value)
 //        return
 //    }
     val loadingFinishedButHasErr = (loading.value.not() && errMsgState.value.isNotBlank())

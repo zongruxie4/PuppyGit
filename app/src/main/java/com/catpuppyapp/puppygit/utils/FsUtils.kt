@@ -54,7 +54,7 @@ object FsUtils {
         const val suffix = ".patch"
 
         fun getPatchDir():File{
-            return AppModel.singleInstanceHolder.getOrCreatePatchDir()
+            return AppModel.getOrCreatePatchDir()
         }
 
         fun newPatchFile(repoName:String, commitLeft:String, commitRight:String):File {
@@ -99,12 +99,12 @@ object FsUtils {
             "*/*",
         )
         val textList = listOf(
-            AppModel.singleInstanceHolder.activityContext.getString(R.string.file_open_as_type_text),
-            AppModel.singleInstanceHolder.activityContext.getString(R.string.file_open_as_type_image),
-            AppModel.singleInstanceHolder.activityContext.getString(R.string.file_open_as_type_audio),
-            AppModel.singleInstanceHolder.activityContext.getString(R.string.file_open_as_type_video),
-            AppModel.singleInstanceHolder.activityContext.getString(R.string.file_open_as_type_archive),
-            AppModel.singleInstanceHolder.activityContext.getString(R.string.file_open_as_type_any),
+            AppModel.activityContext.getString(R.string.file_open_as_type_text),
+            AppModel.activityContext.getString(R.string.file_open_as_type_image),
+            AppModel.activityContext.getString(R.string.file_open_as_type_audio),
+            AppModel.activityContext.getString(R.string.file_open_as_type_video),
+            AppModel.activityContext.getString(R.string.file_open_as_type_archive),
+            AppModel.activityContext.getString(R.string.file_open_as_type_any),
         )
     }
 
@@ -846,12 +846,12 @@ object FsUtils {
     fun deprecated_isReadOnlyDir(path: String): Boolean {
         return try {
             //app内置某些文件默认不允许编辑，因为app会在运行时编辑这些文件，有可能冲突或覆盖app自动生成的内容
-            path.startsWith(AppModel.singleInstanceHolder.getOrCreateFileSnapshotDir().canonicalPath)
-                    || path.startsWith(AppModel.singleInstanceHolder.getOrCreateEditCacheDir().canonicalPath)
-                    || path.startsWith(AppModel.singleInstanceHolder.getOrCreateLogDir().canonicalPath)
-                    || path.startsWith(AppModel.singleInstanceHolder.certBundleDir.canonicalPath)
-                    || path.startsWith(AppModel.singleInstanceHolder.getOrCreateSettingsDir().canonicalPath)
-                    || path.startsWith(AppModel.singleInstanceHolder.getOrCreateSubmoduleDotGitBackupDir().canonicalPath)
+            path.startsWith(AppModel.getOrCreateFileSnapshotDir().canonicalPath)
+                    || path.startsWith(AppModel.getOrCreateEditCacheDir().canonicalPath)
+                    || path.startsWith(AppModel.getOrCreateLogDir().canonicalPath)
+                    || path.startsWith(AppModel.certBundleDir.canonicalPath)
+                    || path.startsWith(AppModel.getOrCreateSettingsDir().canonicalPath)
+                    || path.startsWith(AppModel.getOrCreateSubmoduleDotGitBackupDir().canonicalPath)
                     || path.startsWith(Lg2HomeUtils.getLg2Home().canonicalPath)
         }catch (e:Exception) {
             MyLog.e(TAG, "#isReadOnlyDir err:${e.stackTraceToString()}")
@@ -888,7 +888,7 @@ object FsUtils {
             // usually is "/storage/emulated/0"
             getExternalStorageRootPathNoEndsWithSeparator(),
             // "/data/data/app.package.name"
-            AppModel.singleInstanceHolder.innerDataDir.canonicalPath,
+            AppModel.innerDataDir.canonicalPath,
             // "/"，兜底
             rootPath
         )
@@ -898,7 +898,7 @@ object FsUtils {
      * @return root path of app internal storage
      */
     fun getInternalStorageRootPathNoEndsWithSeparator():String {
-        return AppModel.singleInstanceHolder.allRepoParentDir.canonicalPath
+        return AppModel.allRepoParentDir.canonicalPath
     }
 
     /**
@@ -1065,7 +1065,7 @@ object FsUtils {
     }
 
     fun createTempFile(prefix:String, suffix:String=".tmp"):File{
-        return File(AppModel.singleInstanceHolder.getOrCreateExternalCacheDir().canonicalPath, "$prefix-${generateRandomString()}$suffix")
+        return File(AppModel.getOrCreateExternalCacheDir().canonicalPath, "$prefix-${generateRandomString()}$suffix")
     }
 
     fun copy(input:InputStream, output:OutputStream) {

@@ -13,7 +13,7 @@ fun ShowErrorIfNeed(
     errMsg:MutableState<String>,
     useErrorPrefix:Boolean=true
 ) {
-    val activityContext = AppModel.singleInstanceHolder.activityContext
+    val activityContext = AppModel.activityContext
 
     if(hasErr.value) {
         //显示提示信息：

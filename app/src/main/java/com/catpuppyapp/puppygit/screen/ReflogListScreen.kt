@@ -79,9 +79,9 @@ fun ReflogListScreen(
 //    branch:String?,
     naviUp: () -> Boolean,
 ) {
-    val homeTopBarScrollBehavior = AppModel.singleInstanceHolder.homeTopBarScrollBehavior
-    val navController = AppModel.singleInstanceHolder.navController
-    val activityContext = AppModel.singleInstanceHolder.activityContext
+    val homeTopBarScrollBehavior = AppModel.homeTopBarScrollBehavior
+    val navController = AppModel.navController
+    val activityContext = AppModel.activityContext
     val haptic = LocalHapticFeedback.current
     val scope = rememberCoroutineScope()
 
@@ -489,7 +489,7 @@ fun ReflogListScreen(
                 allRefList.value.clear()
 
                 if(repoId.isNotBlank()) {
-                    val repoDb = AppModel.singleInstanceHolder.dbContainer.repoRepository
+                    val repoDb = AppModel.dbContainer.repoRepository
                     val repoFromDb = repoDb.getById(repoId)
                     if(repoFromDb != null) {
                         curRepo.value = repoFromDb

@@ -88,9 +88,9 @@ fun DomainCredentialListScreen(
     naviUp: () -> Boolean
 ) {
 
-    val homeTopBarScrollBehavior = AppModel.singleInstanceHolder.homeTopBarScrollBehavior
-    val navController = AppModel.singleInstanceHolder.navController
-    val activityContext = AppModel.singleInstanceHolder.activityContext
+    val homeTopBarScrollBehavior = AppModel.homeTopBarScrollBehavior
+    val navController = AppModel.navController
+    val activityContext = AppModel.activityContext
     val scope = rememberCoroutineScope()
 
     val settings = remember { SettingsUtil.getSettingsSnapshot() }
@@ -123,7 +123,7 @@ fun DomainCredentialListScreen(
     val doDelete = {
         doJobThenOffLoading {
             try{
-                val dcDb = AppModel.singleInstanceHolder.dbContainer.domainCredentialRepository
+                val dcDb = AppModel.dbContainer.domainCredentialRepository
                 dcDb.delete(DomainCredentialEntity(id=curCredential.value.domainCredId))
             }finally{
                 changeStateTriggerRefreshPage(needRefresh)
@@ -227,7 +227,7 @@ fun DomainCredentialListScreen(
                     val newDomain = curDomainName.value
                     val newCredentialId = credentialList.value[selectedCredentialIdx.intValue].id
                     val newSshCredentialId = credentialList.value[selectedSshCredentialIdx.intValue].id
-                    val dcDb = AppModel.singleInstanceHolder.dbContainer.domainCredentialRepository
+                    val dcDb = AppModel.dbContainer.domainCredentialRepository
                     if(isCreate.value) {
                         dcDb.insert(
                             DomainCredentialEntity(
@@ -543,10 +543,10 @@ fun DomainCredentialListScreen(
                 list.value.clear()
                 credentialList.value.clear()
 
-                val dcDb = AppModel.singleInstanceHolder.dbContainer.domainCredentialRepository
+                val dcDb = AppModel.dbContainer.domainCredentialRepository
                 list.value.addAll(dcDb.getAllDto())
 
-                val credentialDb = AppModel.singleInstanceHolder.dbContainer.credentialRepository
+                val credentialDb = AppModel.dbContainer.credentialRepository
                 // link to none = no link
                 val credentialListFromDb = credentialDb.getAll(includeNone = true, includeMatchByDomain = false)
                 if(credentialListFromDb.isNotEmpty()) {

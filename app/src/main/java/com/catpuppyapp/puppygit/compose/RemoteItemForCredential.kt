@@ -30,7 +30,7 @@ fun RemoteItemForCredential(
     showUrlDialog:(title:String, url:String) -> Unit,
     actAction:()->Unit,
 ) {
-//    val haptic = AppModel.singleInstanceHolder.haptic
+//    val haptic = AppModel.haptic
 
 //    println("IDX::::::::::"+idx)
     Row(

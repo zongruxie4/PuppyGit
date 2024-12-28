@@ -58,7 +58,7 @@ fun LinkOrUnLinkCredentialAndRemoteDialog(
 
                     val remoteId = thisItem.remoteId
                     val curCredentialId = curItemInPage.value.id
-                    val remoteDb = AppModel.singleInstanceHolder.dbContainer.remoteRepository
+                    val remoteDb = AppModel.dbContainer.remoteRepository
                     doJobThenOffLoading {
                         try {
                             if(requireDoLink) {  //link

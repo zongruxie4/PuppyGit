@@ -76,8 +76,8 @@ fun SubPageEditor(
 //    }
 
     val naviUp = {
-        AppModel.singleInstanceHolder.lastEditFile = ""
-        AppModel.singleInstanceHolder.lastEditFileWhenDestroy = ""
+        AppModel.lastEditFile = ""
+        AppModel.lastEditFileWhenDestroy = ""
 
         naviUp()
 
@@ -85,12 +85,12 @@ fun SubPageEditor(
     }
 
 
-    val navController = AppModel.singleInstanceHolder.navController
-    val homeTopBarScrollBehavior = AppModel.singleInstanceHolder.homeTopBarScrollBehavior
-//    val appContext = AppModel.singleInstanceHolder.appContext  //这个获取不了Activity!
+    val navController = AppModel.navController
+    val homeTopBarScrollBehavior = AppModel.homeTopBarScrollBehavior
+//    val appContext = AppModel.appContext  //这个获取不了Activity!
     val activityContext = LocalContext.current  //这个能获取到
 
-    val allRepoParentDir = AppModel.singleInstanceHolder.allRepoParentDir
+    val allRepoParentDir = AppModel.allRepoParentDir
 
 
 //    val changeListRefreshRequiredByParentPage= StateUtil.getRememberSaveableState(initValue = "")

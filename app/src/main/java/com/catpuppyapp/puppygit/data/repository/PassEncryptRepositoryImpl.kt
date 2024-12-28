@@ -67,7 +67,7 @@ class PassEncryptRepositoryImpl(private val dao: PassEncryptDao) : PassEncryptRe
             val allCredentialList = credentialDb.getAll()
 
             //开事务，避免部分成功部分失误导致密码乱套，如果乱套只能把credential全删了重建了
-            AppModel.singleInstanceHolder.dbContainer.db.withTransaction {
+            AppModel.dbContainer.db.withTransaction {
                 //迁移密码
                 for(c in allCredentialList) {
                     //忽略空字符串

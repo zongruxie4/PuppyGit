@@ -7,7 +7,7 @@ package com.catpuppyapp.puppygit.utils
 //        //这个代码需要放到SideEffect里，这样每次重组时才会执行
 //        fun showAndClearAllMsg() {
 ////            println("msgqueue size:"+storage.size)
-//            val appContext = AppModel.singleInstanceHolder.activityContext
+//            val appContext = AppModel.activityContext
 //
 //            while (true) {
 ////            println("msgqueue value:"+storage.peek())

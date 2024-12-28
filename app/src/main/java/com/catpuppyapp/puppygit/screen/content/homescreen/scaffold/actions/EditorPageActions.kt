@@ -75,7 +75,7 @@ fun EditorPageActions(
         注意：如果以后需要同一个EditorInnerPage配合多个title，就不要在这执行操作了，把这里的action逻辑放到EditorInnerPage执行，在这只发request，类似ChangeList页面请求执行pull/push那样
      */
 
-    val haptic = AppModel.singleInstanceHolder.haptic
+    val haptic = AppModel.haptic
 
     val hasGoodKeyword = editorSearchKeyword.isNotEmpty()
 

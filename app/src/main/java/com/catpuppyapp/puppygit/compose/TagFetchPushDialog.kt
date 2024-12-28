@@ -51,7 +51,7 @@ fun TagFetchPushDialog(
     onFinally:()->Unit, //在 try...catch...finally，finally代码块里的代码
 ) {
 
-    val activityContext = AppModel.singleInstanceHolder.activityContext
+    val activityContext = AppModel.activityContext
 
     val force = rememberSaveable { mutableStateOf(false) }
 
@@ -79,8 +79,8 @@ fun TagFetchPushDialog(
 
                     // fetch/push(and del remote tags)
                     val remoteAndCredentials = mutableListOf<RemoteAndCredentials>()
-                    val remoteDb = AppModel.singleInstanceHolder.dbContainer.remoteRepository
-                    val credentialDb = AppModel.singleInstanceHolder.dbContainer.credentialRepository
+                    val remoteDb = AppModel.dbContainer.remoteRepository
+                    val credentialDb = AppModel.dbContainer.credentialRepository
 
                     selectedRemoteList.forEach {
                         val remote = remoteDb.getByRepoIdAndRemoteName(repoId, it)  //无条目不跳过，只是不查凭据了

@@ -39,14 +39,14 @@ fun LongPressAbleIconBtn(
     isInDarkTheme:Boolean = Theme.inDarkTheme,
     onLongClick:()->Unit = {
         //震动反馈，显示tooltip提示
-        AppModel.singleInstanceHolder.haptic.performHapticFeedback(HapticFeedbackType.LongPress)
-        showToast(AppModel.singleInstanceHolder.activityContext, tooltipText, Toast.LENGTH_SHORT)
+        AppModel.haptic.performHapticFeedback(HapticFeedbackType.LongPress)
+        showToast(AppModel.activityContext, tooltipText, Toast.LENGTH_SHORT)
     },
     onClick: ()->Unit,
 ){
     val iconColor = iconColor?:LocalContentColor.current
-    val activityContext = AppModel.singleInstanceHolder.activityContext
-    val haptic = AppModel.singleInstanceHolder.haptic
+    val activityContext = AppModel.activityContext
+    val haptic = AppModel.haptic
 
     LongPressAbleIconBtnToastVersion(context=activityContext, modifier=modifier,iconModifier=iconModifier,
         tooltipText=tooltipText,icon=icon,iconContentDesc=iconContentDesc,haptic=haptic,
@@ -70,8 +70,8 @@ fun LongPressAbleIconBtn(
 //    onClick: ()->Unit,
 //){
 //    val iconColor = iconColor()?:LocalContentColor.current
-//    val appContext = AppModel.singleInstanceHolder.appContext
-//    val haptic = AppModel.singleInstanceHolder.haptic
+//    val appContext = AppModel.appContext
+//    val haptic = AppModel.haptic
 //
 //    LongPressAbleIconBtnToastVersion(context=appContext, modifier=modifier,iconModifier=iconModifier,
 //        tooltipText=tooltipText(),icon=icon(),iconContentDesc=iconContentDesc(),haptic=haptic,

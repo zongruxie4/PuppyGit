@@ -65,9 +65,9 @@ fun RepoCard(
     pageRequest:MutableState<String>,
     workStatusOnclick:(clickedRepo:RepoEntity, status:Int)->Unit
 ) {
-    val navController = AppModel.singleInstanceHolder.navController
-    val haptic = AppModel.singleInstanceHolder.haptic
-    val activityContext = AppModel.singleInstanceHolder.activityContext
+    val navController = AppModel.navController
+    val haptic = AppModel.haptic
+    val activityContext = AppModel.activityContext
 
     val inDarkTheme = Theme.inDarkTheme
 
@@ -106,7 +106,7 @@ fun RepoCard(
             showViewDialog.value = true
 
             //清掉错误信息
-            val repoDb = AppModel.singleInstanceHolder.dbContainer.repoRepository
+            val repoDb = AppModel.dbContainer.repoRepository
             repoDb.updateErrFieldsById(repoId, Cons.dbCommonFalse, "")
 
             //这里就不刷新仓库了，暂时仍显示错误信息，除非手动刷新页面，这么设计是为了缓解用户偶然点开错误没看完就关了，再想点开发现错误信息已被清的问题

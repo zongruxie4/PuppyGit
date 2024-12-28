@@ -172,12 +172,12 @@ fun SettingsInnerPage(
     val oldMasterPasswordVisible = rememberSaveable { mutableStateOf(false) }
     val newMasterPasswordVisible = rememberSaveable { mutableStateOf(false) }
 
-    val masterPassEnabled = rememberSaveable { mutableStateOf(AppModel.singleInstanceHolder.masterPasswordEnabled()) }
+    val masterPassEnabled = rememberSaveable { mutableStateOf(AppModel.masterPasswordEnabled()) }
     val masterPassStatus = rememberSaveable { mutableStateOf(if(masterPassEnabled.value) activityContext.getString(R.string.enabled) else activityContext.getString(R.string.disabled)) }
 
     val showSetMasterPasswordDialog = rememberSaveable { mutableStateOf(false) }
     if (showSetMasterPasswordDialog.value)  {
-        val requireOldPass = AppModel.singleInstanceHolder.requireMasterPassword()
+        val requireOldPass = AppModel.requireMasterPassword()
         ConfirmDialog2(
             title = stringResource(R.string.set_master_password),
             requireShowTextCompose = true,
@@ -223,7 +223,7 @@ fun SettingsInnerPage(
 
                         oldMasterPassword.value
                     }else {
-                        AppModel.singleInstanceHolder.masterPassword.value
+                        AppModel.masterPassword.value
                     }
 
                     //验证旧密码成功就可关闭弹窗了
@@ -243,7 +243,7 @@ fun SettingsInnerPage(
                     masterPassStatus.value = updatingStr
 
 
-                    val credentialDb = AppModel.singleInstanceHolder.dbContainer.credentialRepository
+                    val credentialDb = AppModel.dbContainer.credentialRepository
                     val failedList = credentialDb.updateMasterPassword(oldPass, newPass)
 
                     // update master password hash
@@ -255,7 +255,7 @@ fun SettingsInnerPage(
                         }
                     }
                     // update in-memory master password
-                    AppModel.singleInstanceHolder.masterPassword.value = newPass
+                    AppModel.masterPassword.value = newPass
 
                     if(failedList.isEmpty()) { //全部解密然后加密成功
                         Msg.requireShow(activityContext.getString(R.string.success))
@@ -274,7 +274,7 @@ fun SettingsInnerPage(
                     //只要执行到这，不管是否有解密失败的凭据，主密码都已经更新了
 
                     //更新下主密码状态，让用户知道更新成功了
-                    masterPassEnabled.value = AppModel.singleInstanceHolder.masterPasswordEnabled()
+                    masterPassEnabled.value = AppModel.masterPasswordEnabled()
                     masterPassStatus.value = if(masterPassEnabled.value) activityContext.getString(R.string.updated) else activityContext.getString(R.string.disabled)
 
                 }catch (e:Exception) {
@@ -346,8 +346,8 @@ fun SettingsInnerPage(
 
                 if(cleanLog.value) {
                     try {
-                        AppModel.singleInstanceHolder.getOrCreateLogDir().deleteRecursively()
-                        AppModel.singleInstanceHolder.getOrCreateLogDir()
+                        AppModel.getOrCreateLogDir().deleteRecursively()
+                        AppModel.getOrCreateLogDir()
                     }catch (e:Exception) {
                         MyLog.e(TAG, "clean log err: ${e.localizedMessage}")
                     }
@@ -355,8 +355,8 @@ fun SettingsInnerPage(
 
                 if(cleanCacheFolder.value) {
                     try {
-                        AppModel.singleInstanceHolder.externalCacheDir.deleteRecursively()
-                        AppModel.singleInstanceHolder.externalCacheDir.mkdirs()
+                        AppModel.externalCacheDir.deleteRecursively()
+                        AppModel.externalCacheDir.mkdirs()
                     }catch (e:Exception) {
                         MyLog.e(TAG, "clean cache folder err: ${e.localizedMessage}")
                     }
@@ -364,8 +364,8 @@ fun SettingsInnerPage(
 
                 if(cleanEditCache.value) {
                     try {
-                        AppModel.singleInstanceHolder.getOrCreateEditCacheDir().deleteRecursively()
-                        AppModel.singleInstanceHolder.getOrCreateEditCacheDir()
+                        AppModel.getOrCreateEditCacheDir().deleteRecursively()
+                        AppModel.getOrCreateEditCacheDir()
                     }catch (e:Exception) {
                         MyLog.e(TAG, "clean edit cache err: ${e.localizedMessage}")
                     }
@@ -373,8 +373,8 @@ fun SettingsInnerPage(
 
                 if(cleanSnapshot.value) {
                     try {
-                        AppModel.singleInstanceHolder.getOrCreateFileSnapshotDir().deleteRecursively()
-                        AppModel.singleInstanceHolder.getOrCreateFileSnapshotDir()
+                        AppModel.getOrCreateFileSnapshotDir().deleteRecursively()
+                        AppModel.getOrCreateFileSnapshotDir()
                     }catch (e:Exception) {
                         MyLog.e(TAG, "clean file and content snapshot err: ${e.localizedMessage}")
                     }
@@ -445,7 +445,7 @@ fun SettingsInnerPage(
                         if(value != PrefMan.getInt(activityContext, PrefMan.Key.theme, Theme.defaultThemeValue)) {
                             val valueStr = ""+value
                             PrefMan.set(activityContext, PrefMan.Key.theme, valueStr)
-                            AppModel.singleInstanceHolder.theme?.value = valueStr
+                            AppModel.theme?.value = valueStr
                         }
                     }
                 )

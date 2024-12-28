@@ -90,7 +90,7 @@ fun FileEditor(requestFromParent:MutableState<String>,
                fontSize:MutableIntState,
 ) {
     val activityContext = LocalContext.current
-    val haptic = AppModel.singleInstanceHolder.haptic
+    val haptic = AppModel.haptic
 
     val inDarkTheme = Theme.inDarkTheme
 

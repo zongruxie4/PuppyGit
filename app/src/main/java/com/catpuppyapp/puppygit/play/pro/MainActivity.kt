@@ -137,7 +137,7 @@ class MainActivity : ComponentActivity() {
 
         setContent {
             val theme = rememberSaveable { mutableStateOf(""+PrefMan.getInt(applicationContext, PrefMan.Key.theme, Theme.defaultThemeValue)) }
-            AppModel.singleInstanceHolder.theme = theme
+            AppModel.theme = theme
             PuppyGitAndroidTheme(
                 theme = theme.value,
             ) {
@@ -272,12 +272,12 @@ fun MainCompose() {
 
                 AppModel.init_2()
 
-                requireMasterPassword.value = AppModel.singleInstanceHolder.requireMasterPassword()
+                requireMasterPassword.value = AppModel.requireMasterPassword()
 
                 //如果无需主密码，直接在这检查是否需要迁移密码，一般迁移密码发生在加密解密器升级之后，可能换了实现，之类的
                 if(requireMasterPassword.value.not()) {
                     loadingText.value = activityContext.getString(R.string.checking_creds_migration)
-                    AppModel.singleInstanceHolder.dbContainer.credentialRepository.migrateEncryptVerIfNeed(AppModel.singleInstanceHolder.masterPassword.value)
+                    AppModel.dbContainer.credentialRepository.migrateEncryptVerIfNeed(AppModel.masterPassword.value)
                 }
 
                 //test passed
@@ -317,7 +317,7 @@ fun MainCompose() {
 
         //test passed
 //        delay(30*1000)
-//        AppModel.singleInstanceHolder.exitApp()  //测试exitApp()，Editor未保存的数据是否会保存，结论：会
+//        AppModel.exitApp()  //测试exitApp()，Editor未保存的数据是否会保存，结论：会
 //        appContext.findActivity()?.recreate()  // 测试重建是否会保存数据，结论：会
 //        throw RuntimeException("throw exception test")
         //test
