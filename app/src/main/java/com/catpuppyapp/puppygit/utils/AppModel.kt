@@ -457,7 +457,7 @@ object AppModel {
         //改成在创建完后恢复并保存导航器状态了
 //            AppModel.lastNavState = AppModel.navController.saveState()
 
-        AppModel.lastEditFileWhenDestroy = AppModel.lastEditFile
+        AppModel.lastEditFileWhenDestroy.value = AppModel.lastEditFile.value
     }
 
 
@@ -549,13 +549,13 @@ object AppModel {
     /**
      * 编辑器最后编辑的文件，在Activity销毁时使用此变量更新`lastEditFileWhenDestroy`的值
      */
-    var lastEditFile:String = ""
+    val lastEditFile:MutableState<String> = mutableStateOf("")
 
     /**
      * Activity销毁时最后编辑的文件，用来在旋转屏幕后恢复
      * 此变量应确保仅消费一次，不然可能会在不应该打开文件的时候打开文件
      */
-    var lastEditFileWhenDestroy:String = ""
+    val lastEditFileWhenDestroy:MutableState<String> = mutableStateOf("")
 
     @OptIn(ExperimentalMaterial3Api::class)
     lateinit var homeTopBarScrollBehavior: TopAppBarScrollBehavior

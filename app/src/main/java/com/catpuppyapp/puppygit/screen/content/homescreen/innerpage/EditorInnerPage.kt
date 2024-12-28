@@ -144,8 +144,8 @@ fun EditorInnerPage(
 //    val appContext = AppModel.appContext;
     val activityContext = LocalContext.current
     val exitApp = {
-        AppModel.lastEditFile = ""
-        AppModel.lastEditFileWhenDestroy = ""
+        AppModel.lastEditFile.value = ""
+        AppModel.lastEditFileWhenDestroy.value = ""
 
         AppModel.exitApp()
 
@@ -361,8 +361,8 @@ fun EditorInnerPage(
 //        showCloseDialog.value=false
 
 
-        AppModel.lastEditFile = ""
-        AppModel.lastEditFileWhenDestroy = ""
+        AppModel.lastEditFile.value = ""
+        AppModel.lastEditFileWhenDestroy.value = ""
 
 
 
@@ -1134,11 +1134,11 @@ private fun doInit(
             //准备文件路径，开始
             //优先打开从文件管理器跳转来的文件，如果不是跳转来的，打开之前显示的文件
             if(editorPageShowingFilePath.value.isBlank()) {
-                editorPageShowingFilePath.value = AppModel.lastEditFileWhenDestroy
-                AppModel.lastEditFileWhenDestroy = ""
+                editorPageShowingFilePath.value = AppModel.lastEditFileWhenDestroy.value
+                AppModel.lastEditFileWhenDestroy.value = ""
             }
             //保存上次打开文件路径
-            AppModel.lastEditFile = editorPageShowingFilePath.value
+            AppModel.lastEditFile.value = editorPageShowingFilePath.value
 
             //到这，文件路径就确定了
             val requireOpenFilePath = editorPageShowingFilePath.value

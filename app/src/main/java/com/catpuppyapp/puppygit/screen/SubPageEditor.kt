@@ -76,8 +76,8 @@ fun SubPageEditor(
 //    }
 
     val naviUp = {
-        AppModel.lastEditFile = ""
-        AppModel.lastEditFileWhenDestroy = ""
+        AppModel.lastEditFile.value = ""
+        AppModel.lastEditFileWhenDestroy.value = ""
 
         naviUp()
 
