@@ -7,6 +7,7 @@ import com.catpuppyapp.puppygit.git.CommitDto
 import com.catpuppyapp.puppygit.git.FileHistoryDto
 import com.catpuppyapp.puppygit.git.SubmoduleDto
 import com.catpuppyapp.puppygit.git.TagDto
+import com.catpuppyapp.puppygit.settings.AppSettings
 import com.catpuppyapp.puppygit.utils.AppModel
 import com.catpuppyapp.puppygit.utils.Libgit2Helper
 import com.catpuppyapp.puppygit.utils.Libgit2Helper.Companion.getParentRecordedTargetHashForSubmodule
@@ -23,7 +24,8 @@ fun createCommitDto(
     commit: Commit,
     repoId: String,
     repoIsShallow:Boolean,
-    shallowOidList:List<String>
+    shallowOidList:List<String>,
+    settings:AppSettings
 ): CommitDto {
     val c = CommitDto()
     /*
@@ -65,7 +67,7 @@ fun createCommitDto(
             pc++
         }
     }
-    c.dateTime = Libgit2Helper.getDateTimeStrOfCommit(commit)
+    c.dateTime = Libgit2Helper.getDateTimeStrOfCommit(commit, settings)
 
     val commitSignature = commit.author()  // git log 命令默认输出的author
     c.author = commitSignature.name
@@ -185,13 +187,14 @@ fun createFileHistoryDto(
     commit: Commit,
     repoId: String,
     fileRelativePathUnderRepo:String,
+    settings: AppSettings
 ): FileHistoryDto {
     val obj = FileHistoryDto()
 
     obj.filePathUnderRepo = fileRelativePathUnderRepo
     obj.treeEntryOidStr = treeEntryOidStr
     obj.commitOidStr = commitOidStr
-    obj.dateTime = Libgit2Helper.getDateTimeStrOfCommit(commit)
+    obj.dateTime = Libgit2Helper.getDateTimeStrOfCommit(commit, settings)
 
     val commitSignature = commit.author()  // git log 命令默认输出的author
     obj.authorUsername = commitSignature.name

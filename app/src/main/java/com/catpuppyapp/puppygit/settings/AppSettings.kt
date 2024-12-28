@@ -95,4 +95,9 @@ data class AppSettings(
      */
     var masterPasswordHash:String = "",
 
+    /**
+     * 留空使用默认，否则为分钟数
+     */
+    var commitTimeZoneInMinutes:String="",
+
 )

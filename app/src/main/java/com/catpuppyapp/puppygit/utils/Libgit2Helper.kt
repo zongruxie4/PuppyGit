@@ -3782,7 +3782,7 @@ class Libgit2Helper {
             }
         }
 
-        fun getSingleCommit(repo: Repository, repoId: String, commitOidStr: String) :CommitDto{
+        fun getSingleCommit(repo: Repository, repoId: String, commitOidStr: String, settings: AppSettings) :CommitDto{
             if(commitOidStr.isBlank()) {
                 return CommitDto()
             }
@@ -3799,7 +3799,7 @@ class Libgit2Helper {
             val shallowOidList = ShallowManage.getShallowOidList(getRepoGitDirPathNoEndsWithSlash(repo))
 
             val allTagList = getAllTags(repo)
-            return createCommitDto(commitOid, allBranchList, allTagList, commit, repoId, repoIsShallow, shallowOidList)
+            return createCommitDto(commitOid, allBranchList, allTagList, commit, repoId, repoIsShallow, shallowOidList, settings)
         }
 
         fun createRevwalk(
@@ -3830,6 +3830,7 @@ class Libgit2Helper {
             loadChannel:Channel<Int>,
             // load to this count, check once channel
             checkChannelFrequency:Int,
+            settings:AppSettings
         ) {
 //            if(debugModeOn) {
 //                MyLog.d(TAG, "#getCommitList: startOid="+startOid.toString())
@@ -3858,7 +3859,7 @@ class Libgit2Helper {
                     val nextStr = next.toString()
                     val commit = resolveCommitByHash(repo, nextStr)
                     if(commit!=null) {
-                        val c = createCommitDto(next, allBranchList, allTagList, commit, repoId, repoIsShallow, shallowOidList)
+                        val c = createCommitDto(next, allBranchList, allTagList, commit, repoId, repoIsShallow, shallowOidList, settings)
                         //添加元素
                         retList.add(c)
                         count++
@@ -3922,6 +3923,7 @@ class Libgit2Helper {
             checkChannelFrequency:Int,
             lastVersionEntryOid:String?,
             fileRelativePathUnderRepo:String, // file pathspec
+            settings: AppSettings
         ): String? {
 //            if(debugModeOn) {
 //                MyLog.d(TAG, "#getCommitList: startOid="+startOid.toString())
@@ -3988,6 +3990,7 @@ class Libgit2Helper {
                                             commit=commit,
                                             repoId=repoId,
                                             fileRelativePathUnderRepo=fileRelativePathUnderRepo,
+                                            settings = settings
                                         ))
 
                                         lastVersionEntryOid = entryOidStr
@@ -4058,11 +4061,19 @@ class Libgit2Helper {
             return parentList
         }
 
-        fun getDateTimeStrOfCommit(commit: Commit):String {
+        fun getDateTimeStrOfCommit(commit: Commit, settings: AppSettings):String {
             val time = commit.time()
-            val secOffset = commit.timeOffset() * 60  // commit.timeOffset() 返回的是分钟偏移量，需要转换成秒给java的对象使用
-            val formattedTimeStr = time.atOffset(ZoneOffset.ofTotalSeconds(secOffset))
-                .format(Cons.defaultDateTimeFormatter)
+
+            //若设置项里有有效时区，使用；否则使用提交中携带的时区（一般是系统时区）
+            val minuteOffset = try {
+                settings.commitTimeZoneInMinutes.toInt()
+            }catch (_:Exception) {
+                commit.timeOffset()
+            }
+
+            val secOffset = minuteOffset * 60  // commit.timeOffset() 返回的是分钟偏移量，需要转换成秒给java的对象使用
+            val formattedTimeStr = time.atOffset(ZoneOffset.ofTotalSeconds(secOffset)).format(Cons.defaultDateTimeFormatter)
+
             return formattedTimeStr
         }
 

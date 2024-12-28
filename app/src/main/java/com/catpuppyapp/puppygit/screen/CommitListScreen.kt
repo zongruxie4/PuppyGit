@@ -492,7 +492,8 @@ fun CommitListScreen(
                             if(loadToEnd) Int.MAX_VALUE else pageSize.value,
                             retList = list.value,  //直接赋值给状态列表了，若性能差，可实现一个批量添加机制，比如查出50个条目添加一次，之类的
                             loadChannel = loadChannel,
-                            checkChannelFrequency = settings.commitHistoryLoadMoreCheckAbortSignalFrequency
+                            checkChannelFrequency = settings.commitHistoryLoadMoreCheckAbortSignalFrequency,
+                            settings
                         )
 
                         //update state
@@ -758,7 +759,7 @@ fun CommitListScreen(
     val updateCurCommitInfo = {repoFullPath:String, curCommitIdx:Int, commitOid:String, list:MutableList<CommitDto> ->
         doActIfIndexGood(curCommitIdx, list) {
             Repository.open(repoFullPath).use { repo ->
-                val reQueriedCommitInfo = Libgit2Helper.getSingleCommit(repo, repoId, commitOid)
+                val reQueriedCommitInfo = Libgit2Helper.getSingleCommit(repo, repoId, commitOid, settings)
                 list[curCommitIdx] = reQueriedCommitInfo
             }
         }

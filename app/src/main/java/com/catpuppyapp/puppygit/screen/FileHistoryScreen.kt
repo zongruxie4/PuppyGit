@@ -331,7 +331,8 @@ fun FileHistoryScreen(
                             loadChannel = loadChannel,
                             checkChannelFrequency = settings.commitHistoryLoadMoreCheckAbortSignalFrequency,
                             lastVersionEntryOid = lastVersionEntryOid.value,
-                            fileRelativePathUnderRepo = fileRelativePath
+                            fileRelativePathUnderRepo = fileRelativePath,
+                            settings
                         )
 
                         //update state
@@ -383,16 +384,16 @@ fun FileHistoryScreen(
 //        showCheckoutDialog.value = true
 //    }
 
-
-    val updateCurCommitInfo = {repoFullPath:String, curCommitIdx:Int, commitOid:String, list:MutableList<CommitDto> ->
-        doActIfIndexGood(curCommitIdx, list) {
-            Repository.open(repoFullPath).use { repo ->
-                val reQueriedCommitInfo = Libgit2Helper.getSingleCommit(repo, repoId, commitOid)
-                list[curCommitIdx] = reQueriedCommitInfo
-            }
-        }
-
-    }
+//
+//    val updateCurCommitInfo = {repoFullPath:String, curCommitIdx:Int, commitOid:String, list:MutableList<CommitDto> ->
+//        doActIfIndexGood(curCommitIdx, list) {
+//            Repository.open(repoFullPath).use { repo ->
+//                val reQueriedCommitInfo = Libgit2Helper.getSingleCommit(repo, repoId, commitOid, settings)
+//                list[curCommitIdx] = reQueriedCommitInfo
+//            }
+//        }
+//
+//    }
 
 
     //filter相关，开始
