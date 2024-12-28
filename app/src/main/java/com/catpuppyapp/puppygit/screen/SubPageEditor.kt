@@ -105,7 +105,10 @@ fun SubPageEditor(
 //    val editorPageRequireOpenFilePath = StateUtil.getRememberSaveableState(initValue = (Cache.getByType<String>(filePathKey))?:"")
 //    val needRefreshFilesPage = rememberSaveable { mutableStateOf(false) }
 
-    val editorPageShowingFilePath = rememberSaveable { mutableStateOf((Cache.getByType<String>(Cache.Key.subPageEditor_filePathKey))?:"")} //当前展示的文件的canonicalPath
+    //这个变量有在Activity销毁时保存其值的机制，所以仅需从Cache获取一次，后续不管恢复成功还是失败都无所谓，成功就用它的值，失败就用Activity销毁时保存的值。
+    // 注意：这里用getByTypeThenDel()是对的，因为此变量有特殊处理，在Activity销毁时会保存其值，其他页面state变量，如果没特殊处理，应该使用get而不是getThenDel以避免rememberSaveable发生恢复状态变量失败的bug时app报错
+    // 注意：虽然rememberSaveable有bug(有时无法在旋转屏幕或其他显示配置改变后正常恢复页面的state变量值)，但就算就算此值在文件打开时恢复失败变成空字符串也无所谓，因为在Activity销毁时保存其值的变量仍会存储最后打开文件路径。
+    val editorPageShowingFilePath = rememberSaveable { mutableStateOf((Cache.getByTypeThenDel<String>(Cache.Key.subPageEditor_filePathKey))?:"")} //当前展示的文件的canonicalPath
     val editorPageShowingFileIsReady = rememberSaveable { mutableStateOf(false)} //当前展示的文件是否已经加载完毕
     //TextEditor用的变量
     val editorPageTextEditorState = mutableCustomStateOf(
