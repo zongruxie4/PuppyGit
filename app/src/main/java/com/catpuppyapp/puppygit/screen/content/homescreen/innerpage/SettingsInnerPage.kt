@@ -44,6 +44,7 @@ import com.catpuppyapp.puppygit.compose.CheckBoxNoteText
 import com.catpuppyapp.puppygit.compose.ConfirmDialog2
 import com.catpuppyapp.puppygit.compose.CopyableDialog
 import com.catpuppyapp.puppygit.compose.MyCheckBox
+import com.catpuppyapp.puppygit.compose.MySelectionContainer
 import com.catpuppyapp.puppygit.compose.PaddingRow
 import com.catpuppyapp.puppygit.compose.PasswordTextFiled
 import com.catpuppyapp.puppygit.compose.ScrollableColumn
@@ -221,9 +222,17 @@ fun SettingsInnerPage(
 //                        placeholder = {}
                     )
 
-                    Row(modifier = Modifier.padding(10.dp)) {
-                        Text(stringResource(R.string.leave_empty_to_use_default_timezone_offset_in_commits), color = MyStyleKt.TextColor.highlighting_green)
+                    MySelectionContainer {
+                        Column(modifier= Modifier.fillMaxWidth()) {
+                            Row(modifier = Modifier.padding(start = 10.dp, end = 10.dp, bottom = 10.dp)) {
+                                Text(stringResource(R.string.leave_empty_to_use_default_timezone_offset_in_commits), color = MyStyleKt.TextColor.highlighting_green)
+                            }
 
+                            Row(modifier = Modifier.padding(top = 5.dp, start = 10.dp, end = 10.dp, bottom = 10.dp)) {
+                                Text(stringResource(R.string.timezone_offset_example), fontWeight = FontWeight.Light)
+                            }
+
+                        }
                     }
 
                     Column(

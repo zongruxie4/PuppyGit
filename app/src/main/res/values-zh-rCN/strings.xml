@@ -1120,6 +1120,7 @@
     <string name="get_system_timezone_offset">获取系统时区偏移量</string>
     <string name="leave_empty_to_use_default_timezone_offset_in_commits">留空以使用提交中的默认时区偏移量</string>
     <string name="commits">提交</string>
+    <string name="timezone_offset_example">例如: -480 代表 UTC-8, +480 代表 UTC+8, +330 代表 UTC+5:30</string>
 
 
 </resources>
