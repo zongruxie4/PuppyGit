@@ -25,6 +25,7 @@ import java.nio.file.attribute.BasicFileAttributes
 import java.time.LocalDateTime
 import java.time.OffsetDateTime
 import java.time.ZoneOffset
+import java.time.ZonedDateTime
 import java.time.format.DateTimeFormatter
 import java.util.UUID
 import kotlin.io.path.exists
@@ -830,4 +831,8 @@ fun readTimeZoneOffsetInMinutesFromSettings(settings: AppSettings):Int {
     }else {
         settings.commitTimeZone_OffsetInMinutes.trim().toInt()
     }
+}
+
+fun getUtcTimeInSec():Long {
+    return ZonedDateTime.now(ZoneOffset.UTC).toEpochSecond()
 }

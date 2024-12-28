@@ -6443,11 +6443,12 @@ class Libgit2Helper {
                 try {
                     AppModel.systemTimeZoneOffsetInMinutes.intValue
                 }catch (_:Exception) {
+                    // UTC兜底
                     0
                 }
             }
 
-            return Signature(name, email, getSecFromTime(), offsetMinutes)
+            return Signature(name, email, getUtcTimeInSec(), offsetMinutes)
         }
 
     }
