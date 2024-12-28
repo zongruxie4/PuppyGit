@@ -2,6 +2,7 @@ package com.catpuppyapp.puppygit.compose
 
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -13,13 +14,19 @@ import androidx.compose.runtime.MutableState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.hapticfeedback.HapticFeedbackType
+import androidx.compose.ui.platform.LocalClipboardManager
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import com.catpuppyapp.puppygit.git.StashDto
 import com.catpuppyapp.puppygit.play.pro.R
+import com.catpuppyapp.puppygit.style.MyStyleKt
+import com.catpuppyapp.puppygit.utils.Msg
 import com.catpuppyapp.puppygit.utils.UIHelper
 import com.catpuppyapp.puppygit.utils.state.CustomStateSaveable
 
@@ -35,6 +42,9 @@ fun StashItem(
     thisObj:StashDto,
     onClick:()->Unit
 ) {
+
+    val clipboardManager = LocalClipboardManager.current
+    val activityContext = LocalContext.current
 
     val haptic = LocalHapticFeedback.current
 
@@ -93,13 +103,20 @@ fun StashItem(
             verticalAlignment = Alignment.CenterVertically,
         ) {
 
+            // stash id 本质上是提交号，应该也能和其他提交对比或checkout、reset等，不过这个功能一般是临时用下，所以没添加复杂功能
             Text(text = stringResource(R.string.stash_id) + ":")
             Text(
                 text = thisObj.getCachedShortStashId(),
                 maxLines = 1,
                 overflow = TextOverflow.Ellipsis,
-                fontWeight = FontWeight.Light
-
+                fontWeight = FontWeight.Light,
+                style = MyStyleKt.ClickableText.style,
+                color = MyStyleKt.ClickableText.color,
+                fontSize = 16.sp,
+                modifier = MyStyleKt.ClickableText.modifierNoPadding.clickable {
+                    clipboardManager.setText(AnnotatedString(thisObj.stashId.toString()))
+                    Msg.requireShow(activityContext.getString(R.string.copied))
+                },
             )
         }
 
