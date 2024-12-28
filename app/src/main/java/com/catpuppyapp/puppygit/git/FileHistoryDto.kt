@@ -1,7 +1,10 @@
 package com.catpuppyapp.puppygit.git
 
 import com.catpuppyapp.puppygit.dto.ItemKey
+import com.catpuppyapp.puppygit.settings.AppSettings
 import com.catpuppyapp.puppygit.utils.Libgit2Helper
+import com.catpuppyapp.puppygit.utils.formatMinutesToUtc
+import com.catpuppyapp.puppygit.utils.readTimeZoneOffsetInMinutesFromSettings
 
 class FileHistoryDto (
 //    var fileName:String="",
@@ -10,6 +13,7 @@ class FileHistoryDto (
     var treeEntryOidStr:String="",
     var commitOidStr: String="",
     var dateTime: String="",
+    var timezoneOffsetFromCommit:Int = 0,
     var authorUsername: String="",  // username
     var authorEmail: String="",
     var committerUsername:String="",
@@ -38,6 +42,18 @@ class FileHistoryDto (
         }
         return treeEntryShortOidStr ?:""
     }
+
+
+    fun getActuallyUsingTimeZoneUtcFormat(settings: AppSettings): String {
+        val minuteOffset = try {
+            readTimeZoneOffsetInMinutesFromSettings(settings)
+        }catch (_:Exception) {
+            timezoneOffsetFromCommit
+        }
+
+        return formatMinutesToUtc(minuteOffset)
+    }
+
 
     override fun getItemKey():String {
         return commitOidStr

@@ -2,6 +2,7 @@ package com.catpuppyapp.puppygit.compose
 
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -14,14 +15,20 @@ import androidx.compose.runtime.MutableState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.hapticfeedback.HapticFeedbackType
+import androidx.compose.ui.platform.LocalClipboardManager
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import com.catpuppyapp.puppygit.git.CommitDto
 import com.catpuppyapp.puppygit.play.pro.R
+import com.catpuppyapp.puppygit.style.MyStyleKt
 import com.catpuppyapp.puppygit.utils.AppModel
 import com.catpuppyapp.puppygit.utils.Libgit2Helper
+import com.catpuppyapp.puppygit.utils.Msg
 import com.catpuppyapp.puppygit.utils.UIHelper
 import com.catpuppyapp.puppygit.utils.doJobThenOffLoading
 import com.catpuppyapp.puppygit.utils.state.CustomStateSaveable
@@ -40,6 +47,9 @@ fun CommitItem(
     lastClickedItemKey:MutableState<String>,
     onClick:(CommitDto)->Unit={}
 ) {
+    val clipboardManager = LocalClipboardManager.current
+    val activityContext = LocalContext.current
+
     val haptic = AppModel.haptic
 //    println("IDX::::::::::"+idx)
     Column(
@@ -100,11 +110,18 @@ fun CommitItem(
         ){
 
             Text(text = stringResource(R.string.hash) +":")
-            Text(text = commitDto.shortOidStr,
+            Text(
+                text = commitDto.shortOidStr,
                 maxLines = 1,
                 overflow = TextOverflow.Ellipsis,
-                fontWeight = FontWeight.Light
-
+                fontWeight = FontWeight.Light,
+                style = MyStyleKt.ClickableText.style,
+                color = MyStyleKt.ClickableText.color,
+                fontSize = 16.sp,
+                modifier = MyStyleKt.ClickableText.modifierNoPadding.clickable {
+                    clipboardManager.setText(AnnotatedString(commitDto.oidStr))
+                    Msg.requireShow(activityContext.getString(R.string.copied))
+                },
             )
         }
 //        Row (

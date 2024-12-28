@@ -14,7 +14,7 @@ import com.catpuppyapp.puppygit.utils.doJobThenOffLoading
 import com.catpuppyapp.puppygit.utils.replaceStringResList
 import com.catpuppyapp.puppygit.utils.withMainContext
 
-private val TAG = "ScreenHelper"
+private const val TAG = "ScreenHelper"
 
 fun goToFileHistory(fileFullPath:String, appContext: Context){
     doJobThenOffLoading job@{

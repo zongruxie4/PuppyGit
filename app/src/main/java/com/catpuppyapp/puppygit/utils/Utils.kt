@@ -822,3 +822,12 @@ fun getFileExtOrEmpty(filename:String):String {
         filename.substring(extIndex, filename.length)
     }
 }
+
+
+fun readTimeZoneOffsetInMinutesFromSettings(settings: AppSettings):Int {
+    return if(settings.commitTimeZone_FollowSystem) {
+        AppModel.systemTimeZoneOffsetInMinutes.intValue
+    }else {
+        settings.commitTimeZone_OffsetInMinutes.trim().toInt()
+    }
+}

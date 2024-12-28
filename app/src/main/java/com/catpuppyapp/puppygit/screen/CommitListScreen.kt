@@ -121,6 +121,7 @@ import com.catpuppyapp.puppygit.utils.changeStateTriggerRefreshPage
 import com.catpuppyapp.puppygit.utils.createAndInsertError
 import com.catpuppyapp.puppygit.utils.doActIfIndexGood
 import com.catpuppyapp.puppygit.utils.doJobThenOffLoading
+import com.catpuppyapp.puppygit.utils.formatMinutesToUtc
 import com.catpuppyapp.puppygit.utils.getRequestDataByState
 import com.catpuppyapp.puppygit.utils.isGoodIndexForList
 import com.catpuppyapp.puppygit.utils.replaceStringResList
@@ -1719,7 +1720,11 @@ fun CommitListScreen(
                         sb.appendLine()
                         sb.appendLine("${activityContext.getString(R.string.committer)}: "+ Libgit2Helper.getFormattedUsernameAndEmail(curCommit.value.committerUsername, curCommit.value.committerEmail))
                         sb.appendLine()
-                        sb.appendLine("${activityContext.getString(R.string.date)}: "+curCommit.value.dateTime)
+                        //实际使用的时区偏移量
+                        sb.appendLine("${activityContext.getString(R.string.date)}: "+curCommit.value.dateTime +" (${curCommit.value.getActuallyUsingTimeZoneUtcFormat(settings)})")
+                        sb.appendLine()
+                        // commit中携带的时区偏移量
+                        sb.appendLine("${activityContext.getString(R.string.timezone)}: "+(formatMinutesToUtc(curCommit.value.timezoneOffsetFromCommit)))
                         sb.appendLine()
                         sb.appendLine("${activityContext.getString(R.string.msg)}: "+curCommit.value.msg)
                         sb.appendLine()

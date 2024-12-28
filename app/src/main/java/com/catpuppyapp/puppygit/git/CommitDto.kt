@@ -1,7 +1,10 @@
 package com.catpuppyapp.puppygit.git
 
 import com.catpuppyapp.puppygit.play.pro.R
+import com.catpuppyapp.puppygit.settings.AppSettings
 import com.catpuppyapp.puppygit.utils.AppModel
+import com.catpuppyapp.puppygit.utils.formatMinutesToUtc
+import com.catpuppyapp.puppygit.utils.readTimeZoneOffsetInMinutesFromSettings
 
 class CommitDto (
                  var oidStr: String="",
@@ -10,6 +13,7 @@ class CommitDto (
                  var parentOidStrList: MutableList<String> = mutableListOf(),  //父提交id列表，需要的时候可以根据这个oid取出父提交，然后可以取出父提交的树，用来diff
                  var parentShortOidStrList: MutableList<String> = mutableListOf(),  //父提交短id列表
                  var dateTime: String="",
+                 var timezoneOffsetFromCommit:Int=0,
                  var author: String="",  // username
                  var email: String="",
                  var committerUsername:String="",
@@ -50,4 +54,15 @@ class CommitDto (
     fun authorAndCommitterAreSame():Boolean {
         return author==committerUsername && email==committerEmail
     }
+
+    fun getActuallyUsingTimeZoneUtcFormat(settings: AppSettings): String {
+        val minuteOffset = try {
+            readTimeZoneOffsetInMinutesFromSettings(settings)
+        }catch (_:Exception) {
+            timezoneOffsetFromCommit
+        }
+
+        return formatMinutesToUtc(minuteOffset)
+    }
+
 }

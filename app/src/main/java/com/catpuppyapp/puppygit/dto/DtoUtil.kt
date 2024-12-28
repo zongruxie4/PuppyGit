@@ -68,6 +68,7 @@ fun createCommitDto(
         }
     }
     c.dateTime = Libgit2Helper.getDateTimeStrOfCommit(commit, settings)
+    c.timezoneOffsetFromCommit = commit.timeOffset()
 
     val commitSignature = commit.author()  // git log 命令默认输出的author
     c.author = commitSignature.name
@@ -195,6 +196,7 @@ fun createFileHistoryDto(
     obj.treeEntryOidStr = treeEntryOidStr
     obj.commitOidStr = commitOidStr
     obj.dateTime = Libgit2Helper.getDateTimeStrOfCommit(commit, settings)
+    obj.timezoneOffsetFromCommit = commit.timeOffset()
 
     val commitSignature = commit.author()  // git log 命令默认输出的author
     obj.authorUsername = commitSignature.name
