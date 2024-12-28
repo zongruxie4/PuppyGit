@@ -4069,7 +4069,7 @@ class Libgit2Helper {
                 if(settings.commitTimeZone_FollowSystem) {
                     AppModel.systemTimeZoneOffsetInMinutes.intValue
                 }else {
-                    settings.commitTimeZone_OffsetInMinutes.toInt()
+                    settings.commitTimeZone_OffsetInMinutes.trim().toInt()
                 }
             }catch (_:Exception) {
                 commit.timeOffset()

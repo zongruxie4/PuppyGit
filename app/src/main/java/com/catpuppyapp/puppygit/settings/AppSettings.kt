@@ -96,7 +96,7 @@ data class AppSettings(
     var masterPasswordHash:String = "",
 
     /**
-     * 时区偏移量，正数或负数或0，留空使用默认，否则为分钟数
+     * 时区偏移量，正数或负数或0，留空以使用提交中携带的时区偏移量，非空使用其指定的分钟数
      */
     var commitTimeZone_OffsetInMinutes:String="",
 

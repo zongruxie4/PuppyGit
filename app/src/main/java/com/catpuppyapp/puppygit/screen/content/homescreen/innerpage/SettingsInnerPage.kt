@@ -172,11 +172,11 @@ fun SettingsInnerPage(
     val showSetCommitTimeZoneDialog = rememberSaveable { mutableStateOf(false) }
     val commitTimeZoneFollowSystem = rememberSaveable { mutableStateOf(settingsState.value.commitTimeZone_FollowSystem) }
     val commitTimeZoneFollowSystemBuf = rememberSaveable { mutableStateOf(commitTimeZoneFollowSystem.value) }
-    val commitTimeZoneOffset = rememberSaveable { mutableStateOf(settingsState.value.commitTimeZone_OffsetInMinutes) }
+    val commitTimeZoneOffset = rememberSaveable { mutableStateOf(settingsState.value.commitTimeZone_OffsetInMinutes.trim()) }
     val commitTimeZoneOffsetBuf = rememberSaveable { mutableStateOf(commitTimeZoneOffset.value) }
     val getTimeZoneStr = {
         try {
-            val offsetInMinutes = if(commitTimeZoneFollowSystem.value) AppModel.systemTimeZoneOffsetInMinutes.intValue else commitTimeZoneOffset.value.toInt()
+            val offsetInMinutes = if(commitTimeZoneFollowSystem.value) AppModel.systemTimeZoneOffsetInMinutes.intValue else commitTimeZoneOffset.value.trim().toInt()
             val offsetInUtcFormat = formatMinutesToUtc(offsetInMinutes)
 
             val prefix = if(commitTimeZoneFollowSystem.value) {
@@ -200,6 +200,7 @@ fun SettingsInnerPage(
     val initSetCommitTimeZoneDialog = {
         commitTimeZoneOffsetBuf.value = commitTimeZoneOffset.value
         commitTimeZoneFollowSystemBuf.value = commitTimeZoneFollowSystem.value
+
         showSetCommitTimeZoneDialog.value = true
     }
 
@@ -298,7 +299,7 @@ fun SettingsInnerPage(
             showSetCommitTimeZoneDialog.value = false
             doJobThenOffLoading {
                 val newOffset = try {
-                    commitTimeZoneOffsetBuf.value.toInt().toString()
+                    commitTimeZoneOffsetBuf.value.trim().toInt().toString()
                 }catch (_:Exception) {
                     ""
                 }
