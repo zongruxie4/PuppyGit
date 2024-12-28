@@ -494,7 +494,7 @@ fun ReflogListScreen(
                     if(repoFromDb != null) {
                         curRepo.value = repoFromDb
                         Repository.open(repoFromDb.fullSavePath).use {repo ->
-                            Libgit2Helper.getReflogList(repo, refName.value, out = list.value)
+                            Libgit2Helper.getReflogList(repo, refName.value, out = list.value, settings)
                             allRefList.value.addAll(Libgit2Helper.getAllRefs(repo, includeHEAD = true))
                         }
                     }else {

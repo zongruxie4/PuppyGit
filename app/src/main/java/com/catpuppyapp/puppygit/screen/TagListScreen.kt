@@ -833,7 +833,7 @@ fun TagListScreen(
                     if(repoFromDb!=null) {
                         curRepo.value = repoFromDb
                         Repository.open(repoFromDb.fullSavePath).use {repo ->
-                            val tags = Libgit2Helper.getAllTags(repo);
+                            val tags = Libgit2Helper.getAllTags(repo, settings);
                             list.value.clear()
                             list.value.addAll(tags)
 

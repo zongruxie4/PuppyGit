@@ -4,6 +4,7 @@ import com.catpuppyapp.puppygit.constants.Cons
 import com.catpuppyapp.puppygit.play.pro.R
 import com.catpuppyapp.puppygit.utils.AppModel
 import com.catpuppyapp.puppygit.utils.Libgit2Helper
+import com.catpuppyapp.puppygit.utils.formatMinutesToUtc
 import java.time.OffsetDateTime
 
 class TagDto (
@@ -17,6 +18,7 @@ class TagDto (
     var taggerName:String="",
     var taggerEmail:String="",
     var date:OffsetDateTime?=null,
+    var originTimeOffsetInMinutes:Int=0,
     var msg:String=""
 ) {
 
@@ -28,6 +30,14 @@ class TagDto (
 
     fun getFormattedDate():String {
         return date?.format(Cons.defaultDateTimeFormatter) ?: ""
+    }
+
+    fun getActuallyUsingTimeOffsetInUtcFormat():String {
+        if(date == null) {
+            return  ""
+        }
+
+        return formatMinutesToUtc(date!!.offset.totalSeconds / 60)
     }
 
     fun getType():String {
@@ -57,6 +67,7 @@ class TagDto (
         if (isAnnotated != other.isAnnotated) return false
         if (taggerName != other.taggerName) return false
         if (taggerEmail != other.taggerEmail) return false
+        if (originTimeOffsetInMinutes != other.originTimeOffsetInMinutes) return false
         if (date != other.date) return false
         if (msg != other.msg) return false
 
@@ -71,13 +82,14 @@ class TagDto (
         result = 31 * result + isAnnotated.hashCode()
         result = 31 * result + taggerName.hashCode()
         result = 31 * result + taggerEmail.hashCode()
+        result = 31 * result + originTimeOffsetInMinutes.hashCode()
         result = 31 * result + (date?.hashCode() ?: 0)
         result = 31 * result + msg.hashCode()
         return result
     }
 
     override fun toString(): String {
-        return "TagDto(name='$name', shortName='$shortName', fullOidStr='$fullOidStr', targetFullOidStr='$targetFullOidStr', isAnnotated=$isAnnotated, taggerName='$taggerName', taggerEmail='$taggerEmail', date=$date, msg='$msg')"
+        return "TagDto(name='$name', shortName='$shortName', fullOidStr='$fullOidStr', targetFullOidStr='$targetFullOidStr', isAnnotated=$isAnnotated, taggerName='$taggerName', taggerEmail='$taggerEmail', date=$date, msg='$msg', originTimeOffsetInMinutes='$originTimeOffsetInMinutes')"
     }
 
 

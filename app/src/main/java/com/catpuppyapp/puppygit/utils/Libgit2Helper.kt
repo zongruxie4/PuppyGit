@@ -3798,7 +3798,7 @@ class Libgit2Helper {
 //            val shallowOidList = ShallowManage.getShallowOidList(repo.workdir().toString()+File.separator+".git")
             val shallowOidList = ShallowManage.getShallowOidList(getRepoGitDirPathNoEndsWithSlash(repo))
 
-            val allTagList = getAllTags(repo)
+            val allTagList = getAllTags(repo, settings)
             return createCommitDto(commitOid, allBranchList, allTagList, commit, repoId, repoIsShallow, shallowOidList, settings)
         }
 
@@ -3848,7 +3848,7 @@ class Libgit2Helper {
 //            val shallowOidList = ShallowManage.getShallowOidList(repo.workdir().toString()+File.separator+".git")
             val shallowOidList = ShallowManage.getShallowOidList(getRepoGitDirPathNoEndsWithSlash(repo))
 
-            val allTagList = getAllTags(repo)
+            val allTagList = getAllTags(repo, settings)
 
             var checkChannelCount = 0
 
@@ -4437,7 +4437,13 @@ class Libgit2Helper {
             )
         }
 
-        fun getAllTags(repo: Repository): List<TagDto> {
+        fun getAllTags(repo: Repository, settings: AppSettings): List<TagDto> {
+            val timeOffsetInMins = try {
+                readTimeZoneOffsetInMinutesFromSettings(settings)
+            }catch (e:Exception) {
+                null
+            }
+
             val tags = mutableListOf<TagDto>()
             Tag.foreach(repo) { name, oidStr ->
                 try {
@@ -4453,7 +4459,8 @@ class Libgit2Helper {
                             isAnnotated = true,
                             taggerName = tagger?.name ?:"",
                             taggerEmail = tagger?.email ?:"",
-                            date = tagger?.getWhen(),
+                            date = tagger?.getWhen(timeOffsetInMins),
+                            originTimeOffsetInMinutes = tagger?.timeOffsetInMinutes() ?: 0,
                             msg = tag.message(),
                         )
                     )
@@ -4612,18 +4619,27 @@ class Libgit2Helper {
             return "stash@"+ getNowInSecFormatted(Cons.dateTimeFormatterCompact)+"#"+getShortUUID()
         }
 
-        fun getReflogList(repo:Repository, name:String, out: MutableList<ReflogEntryDto>):List<ReflogEntryDto> {
+        fun getReflogList(repo:Repository, name:String, out: MutableList<ReflogEntryDto>, settings: AppSettings):List<ReflogEntryDto> {
+            val timeZoneOffsetMins = try {
+                readTimeZoneOffsetInMinutesFromSettings(settings)
+            }catch (e:Exception) {
+                null
+            }
+
+
             val reflog = Reflog.read(repo, name)
             val count = reflog.entryCount()
             if(count>0) {
                 for(i in 0 ..< count) {
                     val e = reflog.entryByIndex(i)
                     val commiter = e.committer()
-
+                    val whentime = commiter.getWhen(timeZoneOffsetMins)
                     out.add(ReflogEntryDto(
                         username = commiter.name,
                         email = commiter.email,
-                        date = commiter.`when`.format(Cons.defaultDateTimeFormatter),
+                        date = whentime.format(Cons.defaultDateTimeFormatter),
+                        actuallyUsingTimeZoneOffsetInMinutes = whentime.offset.totalSeconds / 60,
+                        originTimeZoneOffsetInMinutes = commiter.timeOffsetInMinutes(),
                         idNew = e.idNew(),
                         idOld = e.idOld(),
                         msg = e.message()?:""
