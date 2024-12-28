@@ -179,21 +179,27 @@ fun SettingsInnerPage(
             val offsetInMinutes = if(commitTimeZoneFollowSystem.value) AppModel.systemTimeZoneOffsetInMinutes.intValue else commitTimeZoneOffset.value.trim().toInt()
             val offsetInUtcFormat = formatMinutesToUtc(offsetInMinutes)
 
-            val prefix = if(commitTimeZoneFollowSystem.value) {
-                activityContext.getString(R.string.follow_system)
+            if(commitTimeZoneFollowSystem.value) {
+                "${activityContext.getString(R.string.follow_system)} ($offsetInUtcFormat)"
             }else {
-                //如果有符号，直接返回，否则添加+号
-                if(offsetInMinutes < 0) {
-                    "$offsetInMinutes"
-                }else {
-                    //大于等于0
-                    "+$offsetInMinutes"
-                }
+                offsetInUtcFormat
             }
 
-            "$prefix ($offsetInUtcFormat)"
+//            val prefix = if(commitTimeZoneFollowSystem.value) {
+//                activityContext.getString(R.string.follow_system)
+//            }else {
+//                //如果有符号，直接返回，否则添加+号
+//                if(offsetInMinutes < 0) {
+//                    "$offsetInMinutes"
+//                }else {
+//                    //大于等于0
+//                    "+$offsetInMinutes"
+//                }
+//            }
+//
+//            "$prefix ($offsetInUtcFormat)"
         }catch (_:Exception) {
-            activityContext.getString(R.string.use_offset_in_commits)
+            activityContext.getString(R.string.use_offset_from_commits)
         }
     }
 
@@ -238,7 +244,7 @@ fun SettingsInnerPage(
                         MySelectionContainer {
                             Column(modifier= Modifier.fillMaxWidth()) {
                                 Row(modifier = Modifier.padding(start = 10.dp, end = 10.dp, bottom = 10.dp)) {
-                                    Text(stringResource(R.string.leave_empty_to_use_default_timezone_offset_in_commits), color = MyStyleKt.TextColor.highlighting_green)
+                                    Text(stringResource(R.string.leave_empty_to_use_default_timezone_offset_from_commits), color = MyStyleKt.TextColor.highlighting_green)
                                 }
 
                                 Row(modifier = Modifier.padding(top = 5.dp, start = 10.dp, end = 10.dp, bottom = 10.dp)) {
@@ -708,7 +714,7 @@ fun SettingsInnerPage(
             Column {
                 Text(stringResource(R.string.timezone), fontSize = itemFontSize)
                 Text(getTimeZoneStr(), fontSize = itemDescFontSize, fontWeight = FontWeight.Light, color = MyStyleKt.TextColor.highlighting_green)
-                Text(stringResource(R.string.timezone_offset_in_minutes_when_viewing_commits), fontSize = itemDescFontSize, fontWeight = FontWeight.Light)
+                Text(stringResource(R.string.timezone_when_viewing_commits), fontSize = itemDescFontSize, fontWeight = FontWeight.Light)
 
             }
         }
