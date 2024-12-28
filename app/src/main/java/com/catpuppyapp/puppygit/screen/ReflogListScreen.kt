@@ -60,6 +60,7 @@ import com.catpuppyapp.puppygit.utils.MyLog
 import com.catpuppyapp.puppygit.utils.addPrefix
 import com.catpuppyapp.puppygit.utils.changeStateTriggerRefreshPage
 import com.catpuppyapp.puppygit.utils.doJobThenOffLoading
+import com.catpuppyapp.puppygit.utils.formatMinutesToUtc
 import com.catpuppyapp.puppygit.utils.state.mutableCustomStateListOf
 import com.catpuppyapp.puppygit.utils.state.mutableCustomStateOf
 import com.github.git24j.core.Repository
@@ -452,7 +453,8 @@ fun ReflogListScreen(
                 val sb = StringBuilder()
                 sb.append(activityContext.getString(R.string.new_oid)).append(": ").append(it.idNew).appendLine().appendLine()
                 sb.append(activityContext.getString(R.string.old_oid)).append(": ").append(it.idOld).appendLine().appendLine()
-                sb.append(activityContext.getString(R.string.date)).append(": ").append(it.date).appendLine().appendLine()
+                sb.append(activityContext.getString(R.string.date)).append(": ").append(it.date+" (${formatMinutesToUtc(it.actuallyUsingTimeZoneOffsetInMinutes)})").appendLine().appendLine()
+                sb.append(activityContext.getString(R.string.timezone)).append(": ").append(formatMinutesToUtc(it.originTimeZoneOffsetInMinutes)).appendLine().appendLine()
                 sb.append(activityContext.getString(R.string.author)).append(": ").append(Libgit2Helper.getFormattedUsernameAndEmail(it.username, it.email)).appendLine().appendLine()
                 sb.append(activityContext.getString(R.string.msg)).append(": ").append(it.msg).appendLine().appendLine()
 

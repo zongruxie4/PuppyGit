@@ -78,6 +78,7 @@ import com.catpuppyapp.puppygit.utils.changeStateTriggerRefreshPage
 import com.catpuppyapp.puppygit.utils.createAndInsertError
 import com.catpuppyapp.puppygit.utils.doActIfIndexGood
 import com.catpuppyapp.puppygit.utils.doJobThenOffLoading
+import com.catpuppyapp.puppygit.utils.formatMinutesToUtc
 import com.catpuppyapp.puppygit.utils.state.mutableCustomStateListOf
 import com.catpuppyapp.puppygit.utils.state.mutableCustomStateOf
 import com.github.git24j.core.Repository
@@ -328,7 +329,8 @@ fun TagListScreen(
                 if(it.isAnnotated) {
                     sb.append(activityContext.getString(R.string.tag_oid)).append(": ").append(it.fullOidStr).appendLine().appendLine()
                     sb.append(activityContext.getString(R.string.author)).append(": ").append(it.getFormattedTaggerNameAndEmail()).appendLine().appendLine()
-                    sb.append(activityContext.getString(R.string.date)).append(": ").append(it.getFormattedDate()).appendLine().appendLine()
+                    sb.append(activityContext.getString(R.string.date)).append(": ").append(it.getFormattedDate()+" (${it.getActuallyUsingTimeOffsetInUtcFormat()})").appendLine().appendLine()
+                    sb.append(activityContext.getString(R.string.timezone)).append(": ").append(formatMinutesToUtc(it.originTimeOffsetInMinutes)).appendLine().appendLine()
                     sb.append(activityContext.getString(R.string.msg)).append(": ").append(it.msg).appendLine().appendLine()
                 }
 
