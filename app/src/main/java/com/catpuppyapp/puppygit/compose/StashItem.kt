@@ -95,7 +95,7 @@ fun StashItem(
 
             Text(text = stringResource(R.string.stash_id) + ":")
             Text(
-                text = thisObj.stashId.toString(),
+                text = thisObj.getCachedShortStashId(),
                 maxLines = 1,
                 overflow = TextOverflow.Ellipsis,
                 fontWeight = FontWeight.Light
