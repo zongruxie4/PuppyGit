@@ -19,6 +19,7 @@ import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Download
 import androidx.compose.material.icons.filled.FilterAlt
+import androidx.compose.material.icons.filled.Info
 import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material.icons.filled.SelectAll
 import androidx.compose.material.icons.filled.Upload
@@ -169,23 +170,26 @@ fun TagListScreen(
     val iconList:List<ImageVector> = listOf(
         Icons.Filled.Delete,  //删除
         Icons.Filled.Upload,  //上传（push）
+        Icons.Filled.Info,  //详情
         Icons.Filled.SelectAll,  //全选
     )
     val iconTextList:List<String> = listOf(
         stringResource(id = R.string.delete),
         stringResource(id = R.string.push),
+        stringResource(id = R.string.details),
         stringResource(id = R.string.select_all),
     )
     val iconEnableList:List<()->Boolean> = listOf(
         {selectedItemList.value.isNotEmpty()},  // delete
         {selectedItemList.value.isNotEmpty()},  // push
+        {selectedItemList.value.isNotEmpty()},  // details
         {true} // select all
     )
 
     val moreItemTextList = listOf(
         stringResource(R.string.checkout),
         stringResource(R.string.reset),  //日后改成reset并可选模式 soft/mixed/hard
-        stringResource(R.string.details),  //可针对单个或多个条目查看details，多个时，用分割线分割多个条目的信息
+//        stringResource(R.string.details),  //可针对单个或多个条目查看details，多个时，用分割线分割多个条目的信息
     )
 
     val getSelectedFilesCount = {
@@ -319,28 +323,7 @@ fun TagListScreen(
                 initResetDialog(item.targetFullOidStr)
             }
         },
-        details@{
-            val sb = StringBuilder()
-            selectedItemList.value.forEach {
-                sb.append(activityContext.getString(R.string.name)).append(": ").append(it.shortName).appendLine().appendLine()
-                sb.append(activityContext.getString(R.string.full_name)).append(": ").append(it.name).appendLine().appendLine()
-                sb.append(activityContext.getString(R.string.target)).append(": ").append(it.targetFullOidStr).appendLine().appendLine()
-                sb.append(activityContext.getString(R.string.type)).append(": ").append(it.getType()).appendLine().appendLine()
-                if(it.isAnnotated) {
-                    sb.append(activityContext.getString(R.string.tag_oid)).append(": ").append(it.fullOidStr).appendLine().appendLine()
-                    sb.append(activityContext.getString(R.string.author)).append(": ").append(it.getFormattedTaggerNameAndEmail()).appendLine().appendLine()
-                    sb.append(activityContext.getString(R.string.date)).append(": ").append(it.getFormattedDate()+" (${it.getActuallyUsingTimeOffsetInUtcFormat()})").appendLine().appendLine()
-                    sb.append(activityContext.getString(R.string.timezone)).append(": ").append(formatMinutesToUtc(it.originTimeOffsetInMinutes)).appendLine().appendLine()
-                    sb.append(activityContext.getString(R.string.msg)).append(": ").append(it.msg).appendLine().appendLine()
-                }
 
-                sb.append("------------------------------").appendLine().appendLine()
-            }
-
-            detailsString.value = sb.toString()
-
-            showDetailsDialog.value = true
-        },
     )
 
     val filterKeyword = mutableCustomStateOf(
@@ -501,6 +484,28 @@ fun TagListScreen(
 
         push@{
             initPushTagDialog()
+        },
+        details@{
+            val sb = StringBuilder()
+            selectedItemList.value.forEach {
+                sb.append(activityContext.getString(R.string.name)).append(": ").append(it.shortName).appendLine().appendLine()
+                sb.append(activityContext.getString(R.string.full_name)).append(": ").append(it.name).appendLine().appendLine()
+                sb.append(activityContext.getString(R.string.target)).append(": ").append(it.targetFullOidStr).appendLine().appendLine()
+                sb.append(activityContext.getString(R.string.type)).append(": ").append(it.getType()).appendLine().appendLine()
+                if(it.isAnnotated) {
+                    sb.append(activityContext.getString(R.string.tag_oid)).append(": ").append(it.fullOidStr).appendLine().appendLine()
+                    sb.append(activityContext.getString(R.string.author)).append(": ").append(it.getFormattedTaggerNameAndEmail()).appendLine().appendLine()
+                    sb.append(activityContext.getString(R.string.date)).append(": ").append(it.getFormattedDate()+" (${it.getActuallyUsingTimeOffsetInUtcFormat()})").appendLine().appendLine()
+                    sb.append(activityContext.getString(R.string.timezone)).append(": ").append(formatMinutesToUtc(it.originTimeOffsetInMinutes)).appendLine().appendLine()
+                    sb.append(activityContext.getString(R.string.msg)).append(": ").append(it.msg).appendLine().appendLine()
+                }
+
+                sb.append("------------------------------").appendLine().appendLine()
+            }
+
+            detailsString.value = sb.toString()
+
+            showDetailsDialog.value = true
         },
         selectAll@{
             //impl select all
