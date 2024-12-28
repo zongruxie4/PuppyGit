@@ -1,5 +1,5 @@
 ## TODO 20241221
-- restore Screen after rotated phone (旋转屏幕后恢复导航目标页面以及整个导航栈) (use this replace jetpack shit navigator: https://github.com/adrielcafe/voyager)
+- 支持以 isMerged NotMerged hasUpstream noUpstream等附加条件过滤提交、分支，或者强制把这些东西改成可搜索的英语和供查看的指定语言？例如可通过IsMerged/NotMerged过滤条目，但显示的时候显示为合并而来和非合并而来
 - support gif-lfs(should compitable .gitconfig settings)
 - sign commit and tag(include rebase/merge/cherrypick generated commits, and can enable or disable respectively)(at least support gpg sign, better ssh as well)(should compitable .gitconfig settings)
 - ChangeList/Index/TreeToTree support view by folder and support more sort method(sort by name/modified time, asc/desc just like Files screen)
