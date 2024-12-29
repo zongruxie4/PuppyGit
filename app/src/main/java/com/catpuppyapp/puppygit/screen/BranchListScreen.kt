@@ -1484,6 +1484,10 @@ fun BranchListScreen(
 
                     sb.append(activityContext.getString(R.string.other)).append(": ").append(it.getOther(false)).appendLine().appendLine()
 
+
+
+                    sb.append("flag").append(": ").append(it.getTypeString(true)).append("; ${it.getAheadBehind(true)}").append("; ${it.getOther(true)}").appendLine().appendLine()
+
                     detailsString.value = sb.toString()
 
                     showDetailsDialog.value = true

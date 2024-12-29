@@ -500,6 +500,8 @@ fun TagListScreen(
                     sb.append(activityContext.getString(R.string.msg)).append(": ").append(it.msg).appendLine().appendLine()
                 }
 
+                sb.append("flag").append(": ").append(it.getType(true)).appendLine().appendLine()
+
                 sb.append("------------------------------").appendLine().appendLine()
             }
 
@@ -737,9 +739,9 @@ fun TagListScreen(
                             || it.taggerName.lowercase().contains(k)
                             || it.taggerEmail.lowercase().contains(k)
                             || it.fullOidStr.lowercase().contains(k)  // annotated tag对象的oid；非annotated tag此值和targetFullOidStr一样
-                            || formatMinutesToUtc(it.originTimeOffsetInMinutes).lowercase().contains(k)
                             || it.getType(false).lowercase().contains(k)
                             || it.getType(true).lowercase().contains(k)
+                            || formatMinutesToUtc(it.originTimeOffsetInMinutes).lowercase().contains(k)
                 }
 
                 filterList.value.clear()
