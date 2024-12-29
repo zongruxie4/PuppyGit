@@ -143,7 +143,7 @@ fun BranchItem(
             ){
 
             Text(text = stringResource(R.string.type) +":")
-            Text(text = thisObj.getTypeString(),
+            Text(text = thisObj.getTypeString(false),
                 maxLines = 1,
                 overflow = TextOverflow.Ellipsis,
                 fontWeight = FontWeight.Light
@@ -194,7 +194,7 @@ fun BranchItem(
                 ) {
                     Text(text = stringResource(R.string.status) + ":")
                     Text(
-                        text = thisObj.getAheadBehind(),
+                        text = thisObj.getAheadBehind(false),
                         maxLines = 1,
                         overflow = TextOverflow.Ellipsis,
                         fontWeight = FontWeight.Light
@@ -225,7 +225,7 @@ fun BranchItem(
         ){
 
             Text(text = stringResource(R.string.other) +":")
-            Text(text = thisObj.getOther(),
+            Text(text = thisObj.getOther(false),
                 maxLines = 1,
                 overflow = TextOverflow.Ellipsis,
                 fontWeight = FontWeight.Light

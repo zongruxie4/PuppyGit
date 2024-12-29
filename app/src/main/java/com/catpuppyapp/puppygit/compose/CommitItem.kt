@@ -246,7 +246,7 @@ fun CommitItem(
                 verticalAlignment = Alignment.CenterVertically,
             ){
                 Text(text = stringResource(R.string.other)+":")
-                Text(text = commitDto.getOther(),
+                Text(text = commitDto.getOther(false),
                     maxLines = 1,
                     overflow = TextOverflow.Ellipsis,
                     fontWeight = FontWeight.Light

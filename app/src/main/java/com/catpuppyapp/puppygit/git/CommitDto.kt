@@ -27,24 +27,60 @@ class CommitDto (
 ) {
 
     private var otherMsg:String?=null
+    private var otherMsgSearchableText:String?=null
 
     fun hasOther():Boolean {
         return isGrafted || isMerged()
     }
 
-    fun getOther():String {
-        if(otherMsg==null) {
+    fun getOther(searchable:Boolean):String {
+        val noCache = if(searchable) {
+            otherMsgSearchableText == null
+        }else {
+            otherMsg == null
+        }
+
+        if(noCache) {
             val activityContext = AppModel.activityContext
             val sb = StringBuilder()
             val suffix = ", "
 
-            sb.append(if(isMerged()) activityContext.getString(R.string.is_merged) else activityContext.getString(R.string.not_merged)).append(suffix)
-            sb.append(if(isGrafted) activityContext.getString(R.string.is_grafted) else activityContext.getString(R.string.not_grafted)).append(suffix)
+            sb.append(if(isMerged()) {
+                if(searchable) {
+                    CommitDtoSearchableText.isMerged
+                }else {
+                    activityContext.getString(R.string.is_merged)
+                }
+            } else {
+                if(searchable) {
+                    CommitDtoSearchableText.notMerged
+                }else {
+                    activityContext.getString(R.string.not_merged)
+                }
+            }).append(suffix)
+            sb.append(if(isGrafted) {
+                if(searchable) {
+                    CommitDtoSearchableText.isGrafted
+                }else {
+                    activityContext.getString(R.string.is_grafted)
+                }
+            } else {
+                if(searchable) {
+                    CommitDtoSearchableText.notGrafted
+                }else {
+                    activityContext.getString(R.string.not_grafted)
+                }
+            }).append(suffix)
 
-            otherMsg = sb.toString().removeSuffix(suffix)
+            val text = sb.toString().removeSuffix(suffix)
+            if(searchable) {
+                otherMsgSearchableText = text
+            }else {
+                otherMsg = text
+            }
         }
 
-        return otherMsg?:""
+        return (if(searchable) otherMsgSearchableText else otherMsg) ?: ""
     }
 
     fun isMerged():Boolean {
@@ -65,4 +101,11 @@ class CommitDto (
         return formatMinutesToUtc(minuteOffset)
     }
 
+}
+
+private object CommitDtoSearchableText {
+    const val isMerged = "IsMerged"
+    const val notMerged = "NotMerged"
+    const val isGrafted = "IsGrafted"
+    const val notGrafted = "NotGrafted"
 }

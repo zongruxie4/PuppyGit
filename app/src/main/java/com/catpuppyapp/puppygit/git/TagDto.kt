@@ -40,10 +40,22 @@ class TagDto (
         return formatMinutesToUtc(date!!.offset.totalSeconds / 60)
     }
 
-    fun getType():String {
+    fun getType(searchable:Boolean):String {
         val activityContext = AppModel.activityContext
 
-        return if(isAnnotated) activityContext.getString(R.string.annotated) else activityContext.getString(R.string.lightweight)
+        return if(isAnnotated) {
+            if(searchable) {
+                TagDtoSearchableText.annotated
+            }else {
+                activityContext.getString(R.string.annotated)
+            }
+        } else {
+            if(searchable) {
+                TagDtoSearchableText.lightweight
+            }else {
+                activityContext.getString(R.string.lightweight)
+            }
+        }
     }
 
     fun getCachedTargetShortOidStr():String {
@@ -93,4 +105,9 @@ class TagDto (
     }
 
 
+}
+
+private object TagDtoSearchableText {
+    const val annotated = "Annotated"
+    const val lightweight = "Lightweight"
 }

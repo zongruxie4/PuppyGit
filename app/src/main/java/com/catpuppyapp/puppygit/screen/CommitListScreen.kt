@@ -1744,7 +1744,7 @@ fun CommitListScreen(
                         }
 
                         if(curCommit.value.hasOther()) {
-                            sb.appendLine("${activityContext.getString(R.string.other)}: ${curCommit.value.getOther()}")
+                            sb.appendLine("${activityContext.getString(R.string.other)}: ${curCommit.value.getOther(false)}")
                             sb.appendLine()
                         }
 
@@ -1904,8 +1904,9 @@ fun CommitListScreen(
                             || it.parentOidStrList.toString().lowercase().contains(k)
                             || it.treeOidStr.lowercase().contains(k)
                             || it.msg.lowercase().contains(k)
+                            || it.getOther(false).lowercase().contains(k)
+                            || it.getOther(true).lowercase().contains(k)
                             || formatMinutesToUtc(it.originTimeOffsetInMinutes).lowercase().contains(k)
-                            || it.getOther().lowercase().contains(k)
 
                     // for "show in list"
                     if(found) {

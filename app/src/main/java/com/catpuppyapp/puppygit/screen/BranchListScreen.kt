@@ -1468,12 +1468,12 @@ fun BranchListScreen(
                     sb.append(activityContext.getString(R.string.full_name)).append(": ").append(it.fullName).appendLine().appendLine()
                     sb.append(activityContext.getString(R.string.last_commit)).append(": ").append(it.shortOidStr).appendLine().appendLine()
                     sb.append(activityContext.getString(R.string.last_commit_full_oid)).append(": ").append(it.oidStr).appendLine().appendLine()
-                    sb.append(activityContext.getString(R.string.type)).append(": ").append(it.getTypeString()).appendLine().appendLine()
+                    sb.append(activityContext.getString(R.string.type)).append(": ").append(it.getTypeString(false)).appendLine().appendLine()
                     if(it.type==Branch.BranchType.LOCAL) {
                         sb.append(activityContext.getString(R.string.upstream)).append(": ").append(it.getUpstreamShortName()).appendLine().appendLine()
                         if(it.isUpstreamValid()) {
                             sb.append(activityContext.getString(R.string.upstream_full_name)).append(": ").append(it.getUpstreamFullName()).appendLine().appendLine()
-                            sb.append(activityContext.getString(R.string.status)).append(": ").append(it.getAheadBehind()).appendLine().appendLine()
+                            sb.append(activityContext.getString(R.string.status)).append(": ").append(it.getAheadBehind(false)).appendLine().appendLine()
                         }
                     }
 
@@ -1482,7 +1482,7 @@ fun BranchListScreen(
                         sb.append(activityContext.getString(R.string.symbolic_target_full_name)).append(": ").append(it.symbolicTargetFullName).appendLine().appendLine()
                     }
 
-                    sb.append(activityContext.getString(R.string.other)).append(": ").append(it.getOther()).appendLine().appendLine()
+                    sb.append(activityContext.getString(R.string.other)).append(": ").append(it.getOther(false)).appendLine().appendLine()
 
                     detailsString.value = sb.toString()
 
@@ -1533,9 +1533,12 @@ fun BranchListScreen(
                         || it.symbolicTargetFullName.lowercase().contains(k)
                         || it.getUpstreamShortName().lowercase().contains(k)
                         || it.getUpstreamFullName().lowercase().contains(k)
-                        || it.getOther().lowercase().contains(k)
-                        || it.getTypeString().lowercase().contains(k)
-                        || it.getAheadBehind().lowercase().contains(k)
+                        || it.getOther(false).lowercase().contains(k)
+                        || it.getOther(true).lowercase().contains(k)
+                        || it.getTypeString(false).lowercase().contains(k)
+                        || it.getTypeString(true).lowercase().contains(k)
+                        || it.getAheadBehind(false).lowercase().contains(k)
+                        || it.getAheadBehind(true).lowercase().contains(k)
             }
 
             //更新filterList
