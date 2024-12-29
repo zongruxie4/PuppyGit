@@ -737,6 +737,7 @@ fun TagListScreen(
                             || it.taggerName.lowercase().contains(k)
                             || it.taggerEmail.lowercase().contains(k)
                             || it.fullOidStr.lowercase().contains(k)  // annotated tag对象的oid；非annotated tag此值和targetFullOidStr一样
+                            || formatMinutesToUtc(it.originTimeOffsetInMinutes).lowercase().contains(k)
                             || it.getType().lowercase().contains(k)
                 }
                 filterList.value.clear()

@@ -13,7 +13,7 @@ class FileHistoryDto (
     var treeEntryOidStr:String="",
     var commitOidStr: String="",
     var dateTime: String="",
-    var timezoneOffsetFromCommit:Int = 0,
+    var originTimeOffsetInMinutes:Int = 0,  // commit的时间偏移量，单位分钟 (btw 实际上是 commit使用的是commit对象中的committer signature中的时间和偏移量)
     var authorUsername: String="",  // username
     var authorEmail: String="",
     var committerUsername:String="",
@@ -48,7 +48,7 @@ class FileHistoryDto (
         val minuteOffset = try {
             readTimeZoneOffsetInMinutesFromSettings(settings)
         }catch (_:Exception) {
-            timezoneOffsetFromCommit
+            originTimeOffsetInMinutes
         }
 
         return formatMinutesToUtc(minuteOffset)

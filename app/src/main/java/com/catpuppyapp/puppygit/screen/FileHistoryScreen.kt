@@ -79,7 +79,6 @@ import com.catpuppyapp.puppygit.data.entity.RepoEntity
 import com.catpuppyapp.puppygit.dev.commitsDiffCommitsTestPassed
 import com.catpuppyapp.puppygit.dev.proFeatureEnabled
 import com.catpuppyapp.puppygit.dev.resetByHashTestPassed
-import com.catpuppyapp.puppygit.git.CommitDto
 import com.catpuppyapp.puppygit.git.FileHistoryDto
 import com.catpuppyapp.puppygit.play.pro.R
 import com.catpuppyapp.puppygit.screen.functions.getLoadText
@@ -875,7 +874,7 @@ fun FileHistoryScreen(
                         sb.appendLine("${activityContext.getString(R.string.date)}: "+curObj.value.dateTime +" (${curObj.value.getActuallyUsingTimeZoneUtcFormat(settings)})")
                         sb.appendLine()
                         // commit中携带的时区偏移量
-                        sb.appendLine("${activityContext.getString(R.string.timezone)}: "+(formatMinutesToUtc(curObj.value.timezoneOffsetFromCommit)))
+                        sb.appendLine("${activityContext.getString(R.string.timezone)}: "+(formatMinutesToUtc(curObj.value.originTimeOffsetInMinutes)))
                         sb.appendLine()
                         sb.appendLine("${activityContext.getString(R.string.msg)}: "+curObj.value.msg)
                         sb.appendLine()
@@ -940,6 +939,7 @@ fun FileHistoryScreen(
                             || it.dateTime.lowercase().contains(k)
                             || it.commitOidStr.lowercase().contains(k)
                             || it.msg.lowercase().contains(k)
+                            || formatMinutesToUtc(it.originTimeOffsetInMinutes).lowercase().contains(k)
 
 
                     if(found) {

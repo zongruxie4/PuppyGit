@@ -425,6 +425,7 @@ fun ReflogListScreen(
                         || it.msg.lowercase().contains(k)
                         || it.idNew.toString().lowercase().contains(k)
                         || it.idOld.toString().lowercase().contains(k)
+                        || formatMinutesToUtc(it.originTimeZoneOffsetInMinutes).lowercase().contains(k)
             }
             filterList.value.clear()
             filterList.value.addAll(fl)

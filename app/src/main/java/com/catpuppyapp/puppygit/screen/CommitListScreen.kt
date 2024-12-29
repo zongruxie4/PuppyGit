@@ -1726,7 +1726,7 @@ fun CommitListScreen(
                         sb.appendLine("${activityContext.getString(R.string.date)}: "+curCommit.value.dateTime +" (${curCommit.value.getActuallyUsingTimeZoneUtcFormat(settings)})")
                         sb.appendLine()
                         // commit中携带的时区偏移量
-                        sb.appendLine("${activityContext.getString(R.string.timezone)}: "+(formatMinutesToUtc(curCommit.value.timezoneOffsetFromCommit)))
+                        sb.appendLine("${activityContext.getString(R.string.timezone)}: "+(formatMinutesToUtc(curCommit.value.originTimeOffsetInMinutes)))
                         sb.appendLine()
                         sb.appendLine("${activityContext.getString(R.string.msg)}: "+curCommit.value.msg)
                         sb.appendLine()
@@ -1904,6 +1904,7 @@ fun CommitListScreen(
                             || it.parentOidStrList.toString().lowercase().contains(k)
                             || it.treeOidStr.lowercase().contains(k)
                             || it.msg.lowercase().contains(k)
+                            || formatMinutesToUtc(it.originTimeOffsetInMinutes).lowercase().contains(k)
                             || it.getOther().lowercase().contains(k)
 
                     // for "show in list"
