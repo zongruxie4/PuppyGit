@@ -158,16 +158,21 @@ public class Signature extends CAutoReleasable {
         return jniGetEmail(getRawPointer());
     }
 
+    @Nonnull
+    public OffsetDateTime getWhen() {
+        return getWhenWithOffset(null);
+    }
+
     /**
      *
      * @param timezoneOffsetInMinutes if null, will use offset from signature
      * @return
     */
     @Nonnull
-    public OffsetDateTime getWhen(@Nullable Integer timezoneOffsetInMinutes) {
-        int minutes = timezoneOffsetInMinutes==null ? jniGetOffsetMinutes(getRawPointer()) : timezoneOffsetInMinutes;
+    public OffsetDateTime getWhenWithOffset(@Nullable Integer timezoneOffsetInMinutes) {
+        int minutes = timezoneOffsetInMinutes==null ? timeOffsetInMinutes() : timezoneOffsetInMinutes;
         ZoneOffset offset = ZoneOffset.ofTotalSeconds(minutes * 60);
-        return Instant.ofEpochSecond(jniGetEpocSeconds(getRawPointer())).atOffset(offset);
+        return Instant.ofEpochSecond(timeInUtcSeconds()).atOffset(offset);
     }
 
     public Integer timeOffsetInMinutes() {
@@ -185,11 +190,13 @@ public class Signature extends CAutoReleasable {
         Signature signature = (Signature) o;
         return Objects.equals(getName(), signature.getName())
                 && Objects.equals(getEmail(), signature.getEmail())
-                && Objects.equals(getWhen(null), signature.getWhen(null));
+                && Objects.equals(timeOffsetInMinutes(), signature.timeOffsetInMinutes())
+                && Objects.equals(timeInUtcSeconds(), signature.timeInUtcSeconds())
+                ;
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(getName(), getEmail(), getWhen(null));
+        return Objects.hash(getName(), getEmail(), timeOffsetInMinutes(),timeInUtcSeconds());
     }
 }

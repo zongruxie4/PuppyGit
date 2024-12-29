@@ -4462,7 +4462,7 @@ class Libgit2Helper {
                             isAnnotated = true,
                             taggerName = tagger?.name ?:"",
                             taggerEmail = tagger?.email ?:"",
-                            date = tagger?.getWhen(timeOffsetInMins),
+                            date = tagger?.getWhenWithOffset(timeOffsetInMins),
                             originTimeOffsetInMinutes = tagger?.timeOffsetInMinutes() ?: 0,
                             msg = tag.message(),
                         )
@@ -4636,7 +4636,7 @@ class Libgit2Helper {
                 for(i in 0 ..< count) {
                     val e = reflog.entryByIndex(i)
                     val commiter = e.committer()
-                    val whentime = commiter.getWhen(timeZoneOffsetMins)
+                    val whentime = commiter.getWhenWithOffset(timeZoneOffsetMins)
                     out.add(ReflogEntryDto(
                         username = commiter.name,
                         email = commiter.email,
