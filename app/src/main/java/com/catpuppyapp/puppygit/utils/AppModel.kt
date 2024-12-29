@@ -49,7 +49,153 @@ object AppModel {
 //        private val inited_3 = mutableStateOf(false)
 
 
+    /**
+     * 加密凭据用到的主密码，若为空且设置项中的主密码hash不为空，将弹窗请求用户输入主密码，若用户拒绝，将无法使用凭据
+     */
+    var masterPassword:MutableState<String> = mutableStateOf("")
 
+    lateinit var deviceWidthHeight: DeviceWidthHeight
+
+    /**
+     * long long ago, this is applicationContext get from Activity, but now, this maybe is baseContext of Activity,
+     * baseContext bundled with Activity, save it's reference may cause memory leak;
+     * applicationContext bundled with App (process maybe?), save it's reference more time is safe, but it can't get properly resources in some cases,
+     * e.g. when call context.getString(), baseContext can get string resource with correct language, but applicationContext maybe can't,
+     * that's why I save baseContext rather than applicationContext
+     *
+     * update this reference in Activity#onCreate can reduce risk of mem leak, but maybe still will make mem clean delay than usual
+     *
+     * now , actually this is Activity's Context, not the App
+     */
+    @Deprecated("use `LocalContext.current` instead, but this already many usages, so, keep it for now")
+    lateinit var activityContext:Context
+
+    /**
+     * real the App context, not activity, this may not be get strings resource with expect language, but for show Toast or load raw resource stream, is fine
+     */
+    lateinit var realAppContext:Context
+    //mainActivity
+//    lateinit var mainActivity:Activity
+
+    lateinit var dbContainer: AppContainer
+
+    @Deprecated("用 `LocalHapticFeedback.current` 替代")
+    lateinit var haptic:HapticFeedback
+
+    @Deprecated("用 `rememberCoroutineScope()` 替代，remember的貌似会随页面创建，随页面释放")
+    lateinit var coroutineScope:CoroutineScope  //这个scope是全局的，生命周期几乎等于app的生命周期(？有待验证，不过因为是在根Compose创建的所以多半差不多是这样)，如果要执行和当前compose生命周期一致的任务，应该用 rememberCoroutineScope() 在对应compose重新获取一个scope
+
+    lateinit var navController:NavHostController
+
+
+    /**
+     * 用来保存导航状态，在旋转屏幕后恢复目标页面
+     */
+    var lastNavController:NavHostController? = null
+
+
+    // 废弃
+//    var lastNavState:Bundle? = null
+
+    /**
+     * 编辑器最后编辑的文件，在Activity销毁时使用此变量更新`lastEditFileWhenDestroy`的值
+     */
+    val lastEditFile:MutableState<String> = mutableStateOf("")
+
+    /**
+     * Activity销毁时最后编辑的文件，用来在旋转屏幕后恢复
+     * 此变量应确保仅消费一次，不然可能会在不应该打开文件的时候打开文件
+     */
+    val lastEditFileWhenDestroy:MutableState<String> = mutableStateOf("")
+
+    val systemTimeZoneOffsetInMinutes:MutableIntState = mutableIntStateOf(0)
+
+    /**
+     * key 分钟数
+     * value UTC时区例如：UTC+8 UTC-7:30 UTC+0
+     */
+    val timezoneCacheMap:MutableMap<Int, String> = ConcurrentHashMap()
+
+
+    @OptIn(ExperimentalMaterial3Api::class)
+    lateinit var homeTopBarScrollBehavior: TopAppBarScrollBehavior
+
+    lateinit var allRepoParentDir: File  // this is internal storage, early version doesn't support clone repo to external path, so this name not indicate this path is internal path, but actually it is
+    lateinit var exitApp: ()->Unit
+    lateinit var externalFilesDir: File
+    lateinit var externalCacheDir: File
+
+    // app 的内部目录， /data/data/app包名 或者 /data/user/0/app包名，这俩目录好像其中一个是另一个的符号链接
+    lateinit var innerDataDir: File
+    //存储app内置证书的目录
+    lateinit var certBundleDir: File
+    //存储用户证书的目录（例如自签证书
+    lateinit var certUserDir: File
+
+    //内部StorageDir存储目录，所有类型为“内部”的StorageDir都存储在这个路径下，默认在用户空间 Android/data/xxxxxx包名/files/StorageDirs 路径。里面默认有之前的 allRepoParentDir 和 LogData 目录，且这两个目录不能删除
+    //废弃，直接存到 Android/包名/files目录即， 不必再新建一层目录，存files没什么缺点，而且还能兼容旧版，何乐而不为？
+    //    lateinit var internalStorageDirsParentDir:File  //20240527：禁用，sd相关
+
+    //对用户可见的app工作目录，存储在allRepos目录下
+    private lateinit var appDataUnderAllReposDir: File
+    private lateinit var fileSnapshotDir: File  //改用：AppModel.getFileSnapshotDir()
+    private lateinit var editCacheDir: File
+    private lateinit var patchDir: File
+    private lateinit var settingsDir: File
+
+    //20240505:这个变量实际上，半废弃了，只在初始化的时候用一下，然后把路径传给MyLog之后，MyLog就自己维护自己的logDir对象了，就不再使用这个变量了
+    private lateinit var logDir: File
+    private lateinit var submoduleDotGitBackupDir: File
+
+    /**
+     * 存储App当前主题，自动，明亮，暗黑，不过这变量好像实际没用到？
+     */
+    var theme:MutableState<String>? = null
+
+    //外部不应该直接获取此文件，此文件应通过DebugModeManager的setOn/Off方法维护
+    private lateinit var debugModeFlagFile:File
+    //外部应通过获取此文件来判断是否开启debug模式并通过DebugModeManager的set方法维护此变量和debugModeFlagFile
+    //此变量为true，则设置页面的debug模式状态为开启；false则为关闭。注：设置页面的debug模式开启或关闭仅与此变量有关，与debug flag文件是否存在无关。例如：用户打开了debug模式，app创建了debug flag文件，但随后，用户手动删除了flag文件，这时设置页面debug模式仍为开启，直到下次启动app时才会更新为关闭
+    @Deprecated("use `DevFlag.isDebugModeOn` instead")
+    var debugModeOn = false  //这个变量改成让用户可配置，所以弄成变量，放到init_1里初始化，然后后面的日志之类的会用到它
+        private set  //应通过AppModel.DebugModeManager修改debugModeOn的值，那个方法可持久化debug模式开启或关闭，也可临时设置此变量，一举两得
+
+
+
+    object DebugModeManager {
+        const val debugModeFlagFileName = FlagFileName.enableDebugMode
+
+        //用户在设置页面开启debug模式时，调用此方法，创建flag文件，下次app启动检测到flag文件存在，就会自动开启debug模式了（不过模式开启关闭可直接改AppModel相关变量，并不需要重启app就能立即生效，直接改变量相当于本次有效，创建flag文件相当于把修改持久化了）
+        fun setDebugModeOn(requirePersist:Boolean){
+            AppModel.debugModeOn = true
+
+            //如果请求持久化，则创建相关文件，否则修改仅针对本次会话有效，一重启app就根据flag文件是否存在重置debugModeOn变量了
+            if(requirePersist && !AppModel.isDebugModeFlagFileExists()) {
+                AppModel.debugModeFlagFile.createNewFile()
+            }
+        }
+
+        //用户在设置页面关闭debug模式时，调用此方法，删除flag文件，下次启动就会自动关闭debug模式
+        fun setDebugModeOff(requirePersist: Boolean) {
+            AppModel.debugModeOn = false
+
+            if(requirePersist && AppModel.isDebugModeFlagFileExists()){
+                AppModel.debugModeFlagFile.delete()
+            }
+        }
+    }
+
+    object PuppyGitUnderGitDirManager {
+        const val dirName = "PuppyGit"
+
+        fun getDir(gitRepoDotGitDir:String):File {
+            val puppyGitUnderGit = File(gitRepoDotGitDir, dirName)
+            if(!puppyGitUnderGit.exists()) {
+                puppyGitUnderGit.mkdirs()
+            }
+            return puppyGitUnderGit
+        }
+    }
 
 //        /**
 //         * run before onCreate called, this method do below steps:
@@ -471,152 +617,6 @@ object AppModel {
 
 
 
-    object DebugModeManager {
-        const val debugModeFlagFileName = FlagFileName.enableDebugMode
-
-        //用户在设置页面开启debug模式时，调用此方法，创建flag文件，下次app启动检测到flag文件存在，就会自动开启debug模式了（不过模式开启关闭可直接改AppModel相关变量，并不需要重启app就能立即生效，直接改变量相当于本次有效，创建flag文件相当于把修改持久化了）
-        fun setDebugModeOn(requirePersist:Boolean){
-            AppModel.debugModeOn = true
-
-            //如果请求持久化，则创建相关文件，否则修改仅针对本次会话有效，一重启app就根据flag文件是否存在重置debugModeOn变量了
-            if(requirePersist && !AppModel.isDebugModeFlagFileExists()) {
-                AppModel.debugModeFlagFile.createNewFile()
-            }
-        }
-
-        //用户在设置页面关闭debug模式时，调用此方法，删除flag文件，下次启动就会自动关闭debug模式
-        fun setDebugModeOff(requirePersist: Boolean) {
-            AppModel.debugModeOn = false
-
-            if(requirePersist && AppModel.isDebugModeFlagFileExists()){
-                AppModel.debugModeFlagFile.delete()
-            }
-        }
-    }
-
-    object PuppyGitUnderGitDirManager {
-        const val dirName = "PuppyGit"
-
-        fun getDir(gitRepoDotGitDir:String):File {
-            val puppyGitUnderGit = File(gitRepoDotGitDir, dirName)
-            if(!puppyGitUnderGit.exists()) {
-                puppyGitUnderGit.mkdirs()
-            }
-            return puppyGitUnderGit
-        }
-    }
-
-
-    /**
-     * 加密凭据用到的主密码，若为空且设置项中的主密码hash不为空，将弹窗请求用户输入主密码，若用户拒绝，将无法使用凭据
-     */
-    var masterPassword:MutableState<String> = mutableStateOf("")
-
-    lateinit var deviceWidthHeight: DeviceWidthHeight
-
-    /**
-     * long long ago, this is applicationContext get from Activity, but now, this maybe is baseContext of Activity,
-     * baseContext bundled with Activity, save it's reference may cause memory leak;
-     * applicationContext bundled with App (process maybe?), save it's reference more time is safe, but it can't get properly resources in some cases,
-     * e.g. when call context.getString(), baseContext can get string resource with correct language, but applicationContext maybe can't,
-     * that's why I save baseContext rather than applicationContext
-     *
-     * update this reference in Activity#onCreate can reduce risk of mem leak, but maybe still will make mem clean delay than usual
-     *
-     * now , actually this is Activity's Context, not the App
-     */
-    @Deprecated("use `LocalContext.current` instead, but this already many usages, so, keep it for now")
-    lateinit var activityContext:Context
-
-    /**
-     * real the App context, not activity, this may not be get strings resource with expect language, but for show Toast or load raw resource stream, is fine
-     */
-    lateinit var realAppContext:Context
-    //mainActivity
-//    lateinit var mainActivity:Activity
-
-    lateinit var dbContainer: AppContainer
-
-    @Deprecated("用 `LocalHapticFeedback.current` 替代")
-    lateinit var haptic:HapticFeedback
-
-    @Deprecated("用 `rememberCoroutineScope()` 替代，remember的貌似会随页面创建，随页面释放")
-    lateinit var coroutineScope:CoroutineScope  //这个scope是全局的，生命周期几乎等于app的生命周期(？有待验证，不过因为是在根Compose创建的所以多半差不多是这样)，如果要执行和当前compose生命周期一致的任务，应该用 rememberCoroutineScope() 在对应compose重新获取一个scope
-
-    lateinit var navController:NavHostController
-
-
-    /**
-     * 用来保存导航状态，在旋转屏幕后恢复目标页面
-     */
-    var lastNavController:NavHostController? = null
-
-
-    // 废弃
-//    var lastNavState:Bundle? = null
-
-    /**
-     * 编辑器最后编辑的文件，在Activity销毁时使用此变量更新`lastEditFileWhenDestroy`的值
-     */
-    val lastEditFile:MutableState<String> = mutableStateOf("")
-
-    /**
-     * Activity销毁时最后编辑的文件，用来在旋转屏幕后恢复
-     * 此变量应确保仅消费一次，不然可能会在不应该打开文件的时候打开文件
-     */
-    val lastEditFileWhenDestroy:MutableState<String> = mutableStateOf("")
-
-    val systemTimeZoneOffsetInMinutes:MutableIntState = mutableIntStateOf(0)
-
-    /**
-     * key 分钟数
-     * value UTC时区例如：UTC+8 UTC-7:30 UTC+0
-     */
-    val timezoneCacheMap:MutableMap<Int, String> = ConcurrentHashMap()
-
-
-    @OptIn(ExperimentalMaterial3Api::class)
-    lateinit var homeTopBarScrollBehavior: TopAppBarScrollBehavior
-
-    lateinit var allRepoParentDir: File  // this is internal storage, early version doesn't support clone repo to external path, so this name not indicate this path is internal path, but actually it is
-    lateinit var exitApp: ()->Unit
-    lateinit var externalFilesDir: File
-    lateinit var externalCacheDir: File
-
-    // app 的内部目录， /data/data/app包名 或者 /data/user/0/app包名，这俩目录好像其中一个是另一个的符号链接
-    lateinit var innerDataDir: File
-    //存储app内置证书的目录
-    lateinit var certBundleDir: File
-    //存储用户证书的目录（例如自签证书
-    lateinit var certUserDir: File
-
-    //内部StorageDir存储目录，所有类型为“内部”的StorageDir都存储在这个路径下，默认在用户空间 Android/data/xxxxxx包名/files/StorageDirs 路径。里面默认有之前的 allRepoParentDir 和 LogData 目录，且这两个目录不能删除
-    //废弃，直接存到 Android/包名/files目录即， 不必再新建一层目录，存files没什么缺点，而且还能兼容旧版，何乐而不为？
-    //    lateinit var internalStorageDirsParentDir:File  //20240527：禁用，sd相关
-
-    //对用户可见的app工作目录，存储在allRepos目录下
-    private lateinit var appDataUnderAllReposDir: File
-    private lateinit var fileSnapshotDir: File  //改用：AppModel.getFileSnapshotDir()
-    private lateinit var editCacheDir: File
-    private lateinit var patchDir: File
-    private lateinit var settingsDir: File
-
-    //20240505:这个变量实际上，半废弃了，只在初始化的时候用一下，然后把路径传给MyLog之后，MyLog就自己维护自己的logDir对象了，就不再使用这个变量了
-    private lateinit var logDir: File
-    private lateinit var submoduleDotGitBackupDir: File
-
-    /**
-     * 存储App当前主题，自动，明亮，暗黑，不过这变量好像实际没用到？
-     */
-    var theme:MutableState<String>? = null
-
-    //外部不应该直接获取此文件，此文件应通过DebugModeManager的setOn/Off方法维护
-    private lateinit var debugModeFlagFile:File
-    //外部应通过获取此文件来判断是否开启debug模式并通过DebugModeManager的set方法维护此变量和debugModeFlagFile
-    //此变量为true，则设置页面的debug模式状态为开启；false则为关闭。注：设置页面的debug模式开启或关闭仅与此变量有关，与debug flag文件是否存在无关。例如：用户打开了debug模式，app创建了debug flag文件，但随后，用户手动删除了flag文件，这时设置页面debug模式仍为开启，直到下次启动app时才会更新为关闭
-    @Deprecated("use `DevFlag.isDebugModeOn` instead")
-    var debugModeOn = false  //这个变量改成让用户可配置，所以弄成变量，放到init_1里初始化，然后后面的日志之类的会用到它
-        private set  //应通过AppModel.DebugModeManager修改debugModeOn的值，那个方法可持久化debug模式开启或关闭，也可临时设置此变量，一举两得
 
     // allRepoDir/PuppyGit-Data
     //这个目录虽然是app内部使用的目录，但对用户可见，里面存用户文件快照和日志之类的东西，作用类似电脑上的 user/AppData/Roaming 目录
