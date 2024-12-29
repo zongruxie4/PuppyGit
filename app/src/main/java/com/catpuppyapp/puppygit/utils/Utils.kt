@@ -234,6 +234,13 @@ fun getSystemDefaultTimeZoneOffset() :ZoneOffset{
  */
 fun formatMinutesToUtc(minutes:Int):String {
     try {
+        // try get utc string from cache by minutes
+        val cachedValue = AppModel.timezoneCacheMap.get(minutes)
+        if(cachedValue != null) {
+            return cachedValue
+        }
+
+        // no cache, calculate
         val hours = minutes / 60
         val resetOfMinutes = (minutes % 60).absoluteValue  // [0, 59]
 
@@ -260,7 +267,12 @@ fun formatMinutesToUtc(minutes:Int):String {
             ""
         }
 
-        return "UTC$hoursStr$resetOfMinutesStr"
+        val result = "UTC$hoursStr$resetOfMinutesStr"
+
+        // update cache
+        AppModel.timezoneCacheMap.put(minutes, result)
+
+        return result
     }catch (e:Exception) {
         MyLog.e(TAG, "#formatMinutesToUtc() err: ${e.stackTraceToString()}")
 

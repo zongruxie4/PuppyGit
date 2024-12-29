@@ -37,6 +37,7 @@ import com.catpuppyapp.puppygit.utils.storagepaths.StoragePathsMan
 import com.github.git24j.core.Libgit2
 import kotlinx.coroutines.CoroutineScope
 import java.io.File
+import java.util.concurrent.ConcurrentHashMap
 
 private const val TAG ="AppModel"
 
@@ -567,6 +568,12 @@ object AppModel {
 
     val systemTimeZoneOffsetInMinutes:MutableIntState = mutableIntStateOf(0)
 
+    /**
+     * key 分钟数
+     * value UTC时区例如：UTC+8 UTC-7:30 UTC+0
+     */
+    val timezoneCacheMap:MutableMap<Int, String> = ConcurrentHashMap()
+
 
     @OptIn(ExperimentalMaterial3Api::class)
     lateinit var homeTopBarScrollBehavior: TopAppBarScrollBehavior
@@ -598,6 +605,9 @@ object AppModel {
     private lateinit var logDir: File
     private lateinit var submoduleDotGitBackupDir: File
 
+    /**
+     * 存储App当前主题，自动，明亮，暗黑，不过这变量好像实际没用到？
+     */
     var theme:MutableState<String>? = null
 
     //外部不应该直接获取此文件，此文件应通过DebugModeManager的setOn/Off方法维护
