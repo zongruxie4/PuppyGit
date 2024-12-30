@@ -114,7 +114,8 @@ object AppModel {
     /**
      * 系统时区偏移量，单位: 分钟
      */
-    val systemTimeZoneOffsetInMinutes:MutableIntState = mutableIntStateOf(0)
+应该只有4处访问了这个变量，两处赋值时，两处get时
+    private var systemTimeZoneOffsetInMinutes:Int? = null
 
     /**
      * App使用的时区偏移量对象
@@ -764,7 +765,7 @@ object AppModel {
     fun reloadTimeZone(settings: AppSettings) {
         // 必须先更新系统时区分钟数再更新App时区对象，否则可能会获取到错误的分钟数
         //更新系统时区分钟数
-        AppModel.systemTimeZoneOffsetInMinutes.intValue = try {
+        AppModel.systemTimeZoneOffsetInMinutes = try {
             // 这个是有可能负数的，如果是 UTC-7 之类的，就会负数
             getSystemDefaultTimeZoneOffset().totalSeconds / 60
         }catch (e:Exception) {
@@ -774,6 +775,14 @@ object AppModel {
         }
 
         //更新App实际使用的时区对象
-        timeZoneOffset = ZoneOffset.ofTotalSeconds(readTimeZoneOffsetInMinutesFromSettingsOrDefault(settings, AppModel.systemTimeZoneOffsetInMinutes.intValue) * 60)
+        timeZoneOffset = ZoneOffset.ofTotalSeconds(readTimeZoneOffsetInMinutesFromSettingsOrDefault(settings, AppModel.systemTimeZoneOffsetInMinutes) * 60)
     }
+
+  fun AppModel.getSystemDefaultTimeZoneOffsetInMinutes():Int {
+  if(AppModel.systemTimeZoneOffsetInMinutes == null) {
+    reloadTimeZone（SettingsUtil.getSettingsSnapshot())
+  }
+
+  return AppModel.systemTimeZoneOffsetInMinutes!!
+  }
 }
