@@ -186,12 +186,8 @@ object FileOpenHistoryMan {
     fun subtractTimeOffset(offsetInSec:Long) {
         val newStorage = mutableMapOf<String, FileEditedPos>()
         val oldHistory = getHistory()
-        oldHistory.storage.forEach { k, v ->
-            val newItem  = v.copy(
-                lastUsedTime = v.lastUsedTime - (offsetInSec)
-            )
-
-            newStorage.put(k, newItem)
+        oldHistory.storage.forEach { (k, v) ->
+            newStorage[k] = v.copy(lastUsedTime = v.lastUsedTime - (offsetInSec))
         }
 
         update(FileOpenHistory(newStorage))
