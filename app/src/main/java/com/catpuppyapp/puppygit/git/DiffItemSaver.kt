@@ -129,8 +129,9 @@ class PuppyHunkAndLines {
 
         if(add!=null && del!=null) {
             val modifyResult2 = SimilarCompare.INSTANCE.doCompare(
-                    StringCompareParam(add.content, add.content.length),
+                    //我发现del在前面add在后面比较匹配率更高，所以调换了下位置
                     StringCompareParam(del.content, del.content.length),
+                    StringCompareParam(add.content, add.content.length),
 
                     //为true则对比更精细，但是，时间复杂度乘积式增加，不开 O(n)， 开了 O(nm)
                     requireBetterMatching = requireBetterMatchingForCompare,

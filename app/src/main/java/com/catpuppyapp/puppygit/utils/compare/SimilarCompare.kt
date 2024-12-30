@@ -12,6 +12,7 @@ interface SimilarCompare {
 
     /**
      * try find `del` in `add`, if you want to find `add` in `del` just simple swap params order when calling.
+     * 虽然参数add在前del在后，但我在实际使用过一段时间后发现del先add后的匹配率更高，所以后来我改成了先传del后传add
      *
      * must match:
      * add:12345, del: 1245, matched: 12, 45
