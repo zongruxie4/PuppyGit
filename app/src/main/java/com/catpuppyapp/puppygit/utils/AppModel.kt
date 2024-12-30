@@ -415,11 +415,7 @@ object AppModel {
 
             val settings = SettingsUtil.getSettingsSnapshot()
 
-            //更新系统时区
-            reloadSystemTimeZoneOffsetMinutes()
-            //更新app实际使用的时区
-            reloadAppTimeZoneOffset(settings)
-
+            reloadTimeZone(settings)
 
             //加载证书 for TLS (https
             CertMan.init(applicationContext, AppModel.certBundleDir, AppModel.certUserDir)  //加载app 内嵌证书捆绑包(app cert bundle)
@@ -562,8 +558,7 @@ object AppModel {
         }else {
             //这里放第一次启动app进程会执行，后续再重建Activity依然需要重新执行的代码，
             // 注意：如果并不紧急，可放到if else外面，不过有些操作，例如时区，依赖盘根错节，我不确定都哪里用到了，所以需要在上面的代码准备好相关变量后立即初始化，但重启app后依然需要初始化，于是，为了避免在第一次启动时初始化两次，就写了这个else代码块
-            reloadSystemTimeZoneOffsetMinutes()
-            reloadAppTimeZoneOffset(SettingsUtil.getSettingsSnapshot())
+            reloadTimeZone(SettingsUtil.getSettingsSnapshot())
         }
 
         //这里放只要app Activity创建就需要执行的代码
@@ -749,30 +744,26 @@ object AppModel {
      * 注意，这个是App实际使用的时区对象，并不是系统时区对象，若在设置页面为App指定了时区，系统和App使用的时区可能会不同
      *
      * 依赖：此方法应在 `AppModel.systemTimeZoneOffsetInMinutes` 和 `AppSettings` 初始化完毕后再调用，否则可能出错
+     *
+     * @param settings 一般不用传此参数，只有当更新过AppSettings但不确定SettingsUtil.getSettingsSnapshot()能否立刻获取到最新值时，才有必要传，传的一般是SettingsUtil.update(requireReturnUpdatedSettings=true)的返回值
      */
-    fun getAppTimeZoneOffset() : ZoneOffset{
-        return timeZoneOffset ?: reloadAppTimeZoneOffset(SettingsUtil.getSettingsSnapshot())
+    fun getAppTimeZoneOffset(settings: AppSettings? = null) : ZoneOffset {
+        if(timeZoneOffset == null) {
+            reloadTimeZone(settings ?: SettingsUtil.getSettingsSnapshot())
+        }
+
+        return timeZoneOffset!!
     }
 
-    /**
-     * 更新并返回新的ZoneOffset对象
-     */
-    fun reloadAppTimeZoneOffset(settings: AppSettings):ZoneOffset {
-        val newValue = getAppTimeZoneOffsetNoCache(settings)
-        timeZoneOffset = newValue
-        return newValue
-    }
+
 
     /**
+     * 更新App时区相关变量
      * 依赖：此方法应在 `AppModel.systemTimeZoneOffsetInMinutes` 和 `AppSettings` 初始化完毕后再调用，否则可能出错
      */
-    private fun getAppTimeZoneOffsetNoCache(settings: AppSettings):ZoneOffset {
-        val timeOffsetInMinutes = readTimeZoneOffsetInMinutesFromSettingsOrDefault(settings, AppModel.systemTimeZoneOffsetInMinutes.intValue)
-
-        return ZoneOffset.ofTotalSeconds(timeOffsetInMinutes * 60)
-    }
-
-    fun reloadSystemTimeZoneOffsetMinutes() {
+    fun reloadTimeZone(settings: AppSettings) {
+        // 必须先更新系统时区分钟数再更新App时区对象，否则可能会获取到错误的分钟数
+        //更新系统时区分钟数
         AppModel.systemTimeZoneOffsetInMinutes.intValue = try {
             // 这个是有可能负数的，如果是 UTC-7 之类的，就会负数
             getSystemDefaultTimeZoneOffset().totalSeconds / 60
@@ -781,6 +772,8 @@ object AppModel {
             // offset = 0, 即 UTC+0
             0
         }
-    }
 
+        //更新App实际使用的时区对象
+        timeZoneOffset = ZoneOffset.ofTotalSeconds(readTimeZoneOffsetInMinutesFromSettingsOrDefault(settings, AppModel.systemTimeZoneOffsetInMinutes.intValue) * 60)
+    }
 }

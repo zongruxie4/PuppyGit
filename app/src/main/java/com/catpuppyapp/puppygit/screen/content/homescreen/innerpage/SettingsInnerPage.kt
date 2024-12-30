@@ -340,8 +340,7 @@ fun SettingsInnerPage(
                     }!!
 
                     //更新下全局变量，不然还要重启app
-                    AppModel.reloadSystemTimeZoneOffsetMinutes()
-                    AppModel.reloadAppTimeZoneOffset(settingsUpdated)
+                    AppModel.reloadTimeZone(settingsUpdated)
                 }
             }
         }
