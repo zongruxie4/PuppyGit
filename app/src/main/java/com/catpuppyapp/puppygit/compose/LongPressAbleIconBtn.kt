@@ -21,6 +21,7 @@ import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.hapticfeedback.HapticFeedback
 import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.platform.LocalHapticFeedback
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import com.catpuppyapp.puppygit.ui.theme.Theme
 import com.catpuppyapp.puppygit.utils.AppModel
@@ -37,6 +38,7 @@ fun LongPressAbleIconBtn(
     enabled:Boolean=true,
     iconColor:Color? = null,
     isInDarkTheme:Boolean = Theme.inDarkTheme,
+    pressedCircleSize:Dp = 40.0.dp,
     onLongClick:()->Unit = {
         //震动反馈，显示tooltip提示
         AppModel.haptic.performHapticFeedback(HapticFeedbackType.LongPress)
@@ -50,7 +52,9 @@ fun LongPressAbleIconBtn(
 
     LongPressAbleIconBtnToastVersion(context=activityContext, modifier=modifier,iconModifier=iconModifier,
         tooltipText=tooltipText,icon=icon,iconContentDesc=iconContentDesc,haptic=haptic,
-        enabled=enabled, iconColor=iconColor, isInDarkTheme=isInDarkTheme, onLongClick=onLongClick, onClick=onClick)
+        enabled=enabled, iconColor=iconColor, isInDarkTheme=isInDarkTheme, pressedCircleSize=pressedCircleSize,
+        onLongClick=onLongClick, onClick=onClick
+    )
 }
 //
     //没意义，废弃了
@@ -93,15 +97,18 @@ private fun LongPressAbleIconBtnToastVersion(
     enabled:Boolean=true,
     iconColor: Color = LocalContentColor.current,
     isInDarkTheme:Boolean = Theme.inDarkTheme,
+    pressedCircleSize: Dp,
     onLongClick:()->Unit,
     onClick: ()->Unit,
 ) {
 
     Box(
         modifier = modifier
-            .minimumInteractiveComponentSize()
+            // inline的时候如果加这个最小可交互size，会带padding，间距会过大，不好
+//            .minimumInteractiveComponentSize()
+
             //圆角
-            .size(40.0.dp)  //参见 IconButton 的Box的size
+            .size(pressedCircleSize)  //参见 IconButton 的Box的size
             .background(color = Color.Transparent)
             .graphicsLayer {
                 clip = true

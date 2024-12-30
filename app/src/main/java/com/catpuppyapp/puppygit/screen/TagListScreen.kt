@@ -66,6 +66,7 @@ import com.catpuppyapp.puppygit.constants.Cons
 import com.catpuppyapp.puppygit.data.entity.RepoEntity
 import com.catpuppyapp.puppygit.git.TagDto
 import com.catpuppyapp.puppygit.play.pro.R
+import com.catpuppyapp.puppygit.screen.functions.fromTagToCommitHistory
 import com.catpuppyapp.puppygit.settings.SettingsUtil
 import com.catpuppyapp.puppygit.style.MyStyleKt
 import com.catpuppyapp.puppygit.ui.theme.Theme
@@ -785,11 +786,11 @@ fun TagListScreen(
                         UIHelper.selectIfNotInSelectedListElseRemove(it, selectedItemList.value)
                     }else {  //非选择模式
                         //点击条目跳转到分支的提交历史记录页面
-                        Cache.set(Cache.Key.commitList_fullOidKey, it.targetFullOidStr)
-                        Cache.set(Cache.Key.commitList_shortBranchNameKey, it.shortName)  //actually is "tag name" at here
-                        val useFullOid = "1"
-                        val isHEAD = "0"
-                        navController.navigate(Cons.nav_CommitListScreen + "/" + repoId + "/" +useFullOid  + "/" + isHEAD)
+                        fromTagToCommitHistory(
+                            fullOid = it.targetFullOidStr,
+                            shortName = it.shortName,
+                            repoId = repoId
+                        )
                     }
                 }
 

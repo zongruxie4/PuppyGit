@@ -108,3 +108,13 @@ fun openFileWithInnerSubPageEditor(filePath:String, mergeMode:Boolean, readOnly:
     AppModel.navController
         .navigate(Cons.nav_SubPageEditor + "/$goToLine/$initMergeMode/$initReadOnly")
 }
+
+
+fun fromTagToCommitHistory(fullOid:String, shortName:String, repoId:String){
+    //点击条目跳转到分支的提交历史记录页面
+    Cache.set(Cache.Key.commitList_fullOidKey, fullOid)
+    Cache.set(Cache.Key.commitList_shortBranchNameKey, shortName)  //short hash or tag name or branch name
+    val useFullOid = "1"
+    val isHEAD = "0"
+    AppModel.navController.navigate(Cons.nav_CommitListScreen + "/" + repoId + "/" +useFullOid  + "/" + isHEAD)
+}

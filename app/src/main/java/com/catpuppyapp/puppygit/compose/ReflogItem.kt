@@ -2,7 +2,6 @@ package com.catpuppyapp.puppygit.compose
 
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -22,10 +21,9 @@ import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import com.catpuppyapp.puppygit.git.ReflogEntryDto
 import com.catpuppyapp.puppygit.play.pro.R
-import com.catpuppyapp.puppygit.style.MyStyleKt
+import com.catpuppyapp.puppygit.screen.functions.fromTagToCommitHistory
 import com.catpuppyapp.puppygit.utils.Libgit2Helper
 import com.catpuppyapp.puppygit.utils.Msg
 import com.catpuppyapp.puppygit.utils.UIHelper
@@ -35,6 +33,7 @@ import com.catpuppyapp.puppygit.utils.state.CustomStateSaveable
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun ReflogItem(
+    repoId:String,
     showBottomSheet: MutableState<Boolean>,
     curObjFromParent: CustomStateSaveable<ReflogEntryDto>,
 //    idx:Int,
@@ -48,6 +47,7 @@ fun ReflogItem(
     val activityContext = LocalContext.current
 
     val haptic = LocalHapticFeedback.current
+
 
     Column(
         //0.9f 占父元素宽度的百分之90
@@ -99,7 +99,16 @@ fun ReflogItem(
                 clipboardManager.setText(AnnotatedString(thisObj.idNew.toString()))
                 Msg.requireShow(activityContext.getString(R.string.copied))
             }
+
+            InLineCommitHistoryIcon {
+                fromTagToCommitHistory(
+                    fullOid = thisObj.idNew.toString(),
+                    shortName = thisObj.getShortNewId(),
+                    repoId = repoId
+                )
+            }
         }
+
         Row (
             verticalAlignment = Alignment.CenterVertically,
 
@@ -110,7 +119,16 @@ fun ReflogItem(
                 clipboardManager.setText(AnnotatedString(thisObj.idOld.toString()))
                 Msg.requireShow(activityContext.getString(R.string.copied))
             }
+
+            InLineCommitHistoryIcon {
+                fromTagToCommitHistory(
+                    fullOid = thisObj.idOld.toString(),
+                    shortName = thisObj.getShortOldId(),
+                    repoId = repoId
+                )
+            }
         }
+
         Row (
             verticalAlignment = Alignment.CenterVertically,
 

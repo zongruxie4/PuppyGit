@@ -132,7 +132,7 @@
     <string name="old_line_at">旧行号</string>
     <string name="new_line_at">新行号</string>
     <string name="no_new_line_at_end">\\ 文件末尾没有新行</string>
-    <string name="diff_screen_default_title">差异</string>
+    <string name="diff_screen_default_title">比较</string>
     <string name="open_repo_failed">错误: 打开仓库失败!</string>
     <string name="error_has_illegal_chars">错误: 有非法字符</string>
     <string name="error_cant_create_file_with_this_name">错误: 无法使用此名称创建文件</string>
@@ -932,7 +932,7 @@
     <string name="file_snapshot_desc">保存文件前先为原始文件创建快照</string>
     <string name="content_snapshot_desc">保存文件前先为编辑器中的内容创建快照</string>
     <string name="content_snapshot">内容快照</string>
-    <string name="diff">差异</string>
+    <string name="diff">比较</string>
     <string name="group_content_by_line_num">将内容按行号分组</string>
     <string name="clear">清空</string>
     <string name="clear_cache">清空缓存</string>

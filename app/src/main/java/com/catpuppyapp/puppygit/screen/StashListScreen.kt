@@ -516,7 +516,7 @@ fun StashListScreen(
             forEachCb = {},
         ){idx, it->
             //长按会更新curObjInPage为被长按的条目
-            StashItem(showBottomSheet, curObjInPage, idx, lastClickedItemKey, it) {  //onClick
+            StashItem(repoId, showBottomSheet, curObjInPage, idx, lastClickedItemKey, it) {  //onClick
                 val sb = StringBuilder()
                 sb.append(activityContext.getString(R.string.index)).append(": ").append(it.index).appendLine().appendLine()
                 sb.append(activityContext.getString(R.string.stash_id)).append(": ").append(it.stashId).appendLine().appendLine()

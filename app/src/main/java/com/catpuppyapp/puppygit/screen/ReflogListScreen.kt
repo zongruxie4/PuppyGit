@@ -450,7 +450,7 @@ fun ReflogListScreen(
             forEachCb = {},
         ){idx, it->
             //长按会更新curObjInPage为被长按的条目
-            ReflogItem(showBottomSheet, curLongClickItem, lastClickedItemKey, it) {  //onClick
+            ReflogItem(repoId, showBottomSheet, curLongClickItem, lastClickedItemKey, it) {  //onClick
                 val sb = StringBuilder()
                 sb.append(activityContext.getString(R.string.new_oid)).append(": ").append(it.idNew).appendLine().appendLine()
                 sb.append(activityContext.getString(R.string.old_oid)).append(": ").append(it.idOld).appendLine().appendLine()
