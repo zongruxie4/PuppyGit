@@ -4,7 +4,7 @@ import com.catpuppyapp.puppygit.play.pro.R
 import com.catpuppyapp.puppygit.settings.AppSettings
 import com.catpuppyapp.puppygit.utils.AppModel
 import com.catpuppyapp.puppygit.utils.formatMinutesToUtc
-import com.catpuppyapp.puppygit.utils.readTimeZoneOffsetInMinutesFromSettings
+import com.catpuppyapp.puppygit.utils.readTimeZoneOffsetInMinutesFromSettingsOrDefault
 
 class CommitDto (
     var oidStr: String="",
@@ -92,11 +92,7 @@ class CommitDto (
     }
 
     fun getActuallyUsingTimeZoneUtcFormat(settings: AppSettings): String {
-        val minuteOffset = try {
-            readTimeZoneOffsetInMinutesFromSettings(settings)
-        }catch (_:Exception) {
-            originTimeOffsetInMinutes
-        }
+        val minuteOffset = readTimeZoneOffsetInMinutesFromSettingsOrDefault(settings, originTimeOffsetInMinutes)
 
         return formatMinutesToUtc(minuteOffset)
     }

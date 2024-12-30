@@ -4068,11 +4068,7 @@ class Libgit2Helper {
             val time = commit.time()
 
             //若设置项里有有效时区，使用；否则使用提交中携带的时区（一般是系统时区）
-            val minuteOffset = try {
-                readTimeZoneOffsetInMinutesFromSettings(settings)
-            }catch (_:Exception) {
-                commit.timeOffset()
-            }
+            val minuteOffset = readTimeZoneOffsetInMinutesFromSettingsOrDefault(settings, commit.timeOffset())
 
             val secOffset = minuteOffset * 60  // commit.timeOffset() 返回的是分钟偏移量，需要转换成秒给java的对象使用
             val formattedTimeStr = time.atOffset(ZoneOffset.ofTotalSeconds(secOffset)).format(Cons.defaultDateTimeFormatter)
@@ -4441,11 +4437,7 @@ class Libgit2Helper {
         }
 
         fun getAllTags(repo: Repository, settings: AppSettings): List<TagDto> {
-            val timeOffsetInMins = try {
-                readTimeZoneOffsetInMinutesFromSettings(settings)
-            }catch (e:Exception) {
-                null
-            }
+            val timeOffsetInMins = readTimeZoneOffsetInMinutesFromSettingsOrDefaultNullable(settings, null)
 
             val tags = mutableListOf<TagDto>()
             Tag.foreach(repo) { name, oidStr ->
@@ -4623,12 +4615,7 @@ class Libgit2Helper {
         }
 
         fun getReflogList(repo:Repository, name:String, out: MutableList<ReflogEntryDto>, settings: AppSettings):List<ReflogEntryDto> {
-            val timeZoneOffsetMins = try {
-                readTimeZoneOffsetInMinutesFromSettings(settings)
-            }catch (e:Exception) {
-                null
-            }
-
+            val timeZoneOffsetMins = readTimeZoneOffsetInMinutesFromSettingsOrDefaultNullable(settings, null)
 
             val reflog = Reflog.read(repo, name)
             val count = reflog.entryCount()
@@ -6436,17 +6423,7 @@ class Libgit2Helper {
         }
 
         fun createSignature(name: String, email: String, settings: AppSettings):Signature {
-            val offsetMinutes = try {
-                readTimeZoneOffsetInMinutesFromSettings(settings)
-            }catch (_:Exception) {
-                //如果获取时间偏移量出错，使用系统默认时区，如果还出错，使用0，即UTC+0
-                try {
-                    AppModel.systemTimeZoneOffsetInMinutes.intValue
-                }catch (_:Exception) {
-                    // UTC兜底
-                    0
-                }
-            }
+            val offsetMinutes = readTimeZoneOffsetInMinutesFromSettingsOrDefault(settings, AppModel.systemTimeZoneOffsetInMinutes.intValue)
 
             return Signature(name, email, getUtcTimeInSec(), offsetMinutes)
         }

@@ -842,13 +842,22 @@ fun getFileExtOrEmpty(filename:String):String {
 }
 
 
-fun readTimeZoneOffsetInMinutesFromSettings(settings: AppSettings):Int {
-    return if(settings.commitTimeZone_FollowSystem) {
-        AppModel.systemTimeZoneOffsetInMinutes.intValue
-    }else {
-        settings.commitTimeZone_OffsetInMinutes.trim().toInt()
+fun readTimeZoneOffsetInMinutesFromSettingsOrDefault(settings: AppSettings, defaultTimeOffsetInMinutes:Int):Int {
+    return readTimeZoneOffsetInMinutesFromSettingsOrDefaultNullable(settings, defaultTimeOffsetInMinutes)!!
+}
+
+fun readTimeZoneOffsetInMinutesFromSettingsOrDefaultNullable(settings: AppSettings, defaultTimeOffsetInMinutes:Int?):Int? {
+    return try{
+        if(settings.commitTimeZone_FollowSystem) {
+            AppModel.systemTimeZoneOffsetInMinutes.intValue
+        }else {
+            settings.commitTimeZone_OffsetInMinutes.trim().toInt()
+        }
+    }catch (_:Exception) {
+        defaultTimeOffsetInMinutes
     }
 }
+
 
 fun getUtcTimeInSec():Long {
     return ZonedDateTime.now(ZoneOffset.UTC).toEpochSecond()

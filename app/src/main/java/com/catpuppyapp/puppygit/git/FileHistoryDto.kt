@@ -4,7 +4,7 @@ import com.catpuppyapp.puppygit.dto.ItemKey
 import com.catpuppyapp.puppygit.settings.AppSettings
 import com.catpuppyapp.puppygit.utils.Libgit2Helper
 import com.catpuppyapp.puppygit.utils.formatMinutesToUtc
-import com.catpuppyapp.puppygit.utils.readTimeZoneOffsetInMinutesFromSettings
+import com.catpuppyapp.puppygit.utils.readTimeZoneOffsetInMinutesFromSettingsOrDefault
 
 class FileHistoryDto (
 //    var fileName:String="",
@@ -45,11 +45,7 @@ class FileHistoryDto (
 
 
     fun getActuallyUsingTimeZoneUtcFormat(settings: AppSettings): String {
-        val minuteOffset = try {
-            readTimeZoneOffsetInMinutesFromSettings(settings)
-        }catch (_:Exception) {
-            originTimeOffsetInMinutes
-        }
+        val minuteOffset = readTimeZoneOffsetInMinutesFromSettingsOrDefault(settings, originTimeOffsetInMinutes)
 
         return formatMinutesToUtc(minuteOffset)
     }
