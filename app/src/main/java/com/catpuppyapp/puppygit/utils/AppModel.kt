@@ -551,6 +551,8 @@ object AppModel {
                     }
                 }
 
+                //这里不应该用else，应该用多个if，而且迁移器应有序执行，越旧版本的越先执行，例如先从47到48，再从48到50，分别执行两个迁移器，若从47升到50，则两个都需要执行
+
                 //如果迁移失败，应在上面的if 里返回 false，但必须确保迁移操作幂等，否则不要轻易返回false
 
                 //迁移成功后返回true
@@ -772,6 +774,7 @@ object AppModel {
 
     fun reloadSystemTimeZoneOffsetMinutes() {
         AppModel.systemTimeZoneOffsetInMinutes.intValue = try {
+            // 这个是有可能负数的，如果是 UTC-7 之类的，就会负数
             getSystemDefaultTimeZoneOffset().totalSeconds / 60
         }catch (e:Exception) {
             MyLog.e(TAG, "reloadSystemTimeZoneOffsetMinutes err: ${e.stackTraceToString()}, will use UTC+0")

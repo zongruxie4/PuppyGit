@@ -8,6 +8,7 @@ import java.io.File
 fun readVersionFromFile(file: File):String{
     try{
         if(file.exists()) {
+            //只读第一行
             return file.inputStream().bufferedReader().readLine().trim()
         }else {
             return ""
@@ -19,7 +20,10 @@ fun readVersionFromFile(file: File):String{
 
 fun writeVersionToFile(file:File, version:String) {
     file.outputStream().writer().use {
-        it.appendLine(version)
+        //没必要追加换行符，只记版本号即可
+//        it.appendLine(version)
+
+        it.write(version)
     }
 }
 

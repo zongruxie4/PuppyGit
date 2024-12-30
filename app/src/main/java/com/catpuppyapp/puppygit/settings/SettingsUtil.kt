@@ -15,9 +15,9 @@ import java.io.File
 import java.util.concurrent.atomic.AtomicBoolean
 
 object SettingsUtil {
-    private val TAG = "SettingsUtil"
-    private val settingsFileName= "PuppyGitSettings.json"
-    private val settingsBakFileName= "PuppyGitSettings-bak.json"
+    private const val TAG = "SettingsUtil"
+    private const val settingsFileName= "PuppyGitSettings.json"
+    private const val settingsBakFileName= "PuppyGitSettings-bak.json"
 //    private lateinit var settingsSaveDir:File
     private val createFileLock = Mutex()
 

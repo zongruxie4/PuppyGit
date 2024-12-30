@@ -29,8 +29,9 @@ import com.catpuppyapp.puppygit.utils.createAndInsertError
 import com.github.git24j.core.Remote
 import com.github.git24j.core.Repository
 
+private const val TAG = "RemoteRepositoryImpl"
+
 class RemoteRepositoryImpl(private val dao: RemoteDao) : RemoteRepository {
-    private val TAG = "RemoteRepositoryImpl"
 
     override suspend fun getById(id: String): RemoteEntity? {
         val remoteFromDb = dao.getById(id)?:return null

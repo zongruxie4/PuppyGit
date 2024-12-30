@@ -27,6 +27,7 @@ import com.catpuppyapp.puppygit.utils.StorageDirUtil
 import com.catpuppyapp.puppygit.utils.getSecFromTime
 
 private const val TAG = "StorageDirRepositoryImpl"
+
 class StorageDirRepositoryImpl(private val dao: StorageDirDao) : StorageDirRepository {
 //    override suspend fun insert(item: StorageDirEntity) {
 //        val funName = "insert"
@@ -326,15 +327,15 @@ class StorageDirRepositoryImpl(private val dao: StorageDirDao) : StorageDirRepos
 //                    MyLog.e(TAG, "#$funName err: reGen virtual path for '${it.name}' failed!")
 //                    //考虑：如果一个path失败，其他成功，行不行？还是要么都更新成功，要么都失败？
 //                    // 考虑下，如果允许部分成功，就不用抛异常，否则抛异常，并且在外部开一个事务
-//                    // 拿不准注意，暂时先抛异常吧，话说这会回滚吗？
+//                    // 拿不准主意，暂时先抛异常吧，话说这会回滚吗？
 //                    throw e  //如果某个条目更新失败，抛异常回滚
 //                }
 //            }
 //
 //        }
 //    }
-//
-//
+
+
     override suspend fun subtractTimeOffset(offsetInSec:Long) {
         dao.subtractTimeOffset(offsetInSec)
     }

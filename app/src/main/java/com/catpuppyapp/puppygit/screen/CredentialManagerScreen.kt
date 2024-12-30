@@ -417,8 +417,8 @@ fun CredentialManagerScreen(
             val enableFilter = filterModeOn.value && k.isNotEmpty()
             val list = if(enableFilter){
                 list.value.filter {
-                    it.name.lowercase().contains(k)
-                            || it.value.lowercase().contains(k)
+                    it.name.lowercase().contains(k) || it.value.lowercase().contains(k)
+
                     // type已弃用，所以没必要使用type过滤了
 //                            || it.getTypeStr().lowercase().contains(k)
                 }

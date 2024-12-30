@@ -81,6 +81,7 @@ data class RepoEntity(
     var behind:Int=0,
 
     //storageDirId,若不指定，用内部默认目录，若指定，可是内部也可是外部，取决于你指定哪个
+    @Deprecated("已废弃")
     var storageDirId:String=StorageDirCons.DefaultStorageDir.puppyGitRepos.id,
 
     @Embedded
@@ -121,7 +122,7 @@ data class RepoEntity(
     fun getOther(): String {
         if(otherText == null) {
             // for better filterable, these text should not localize
-            otherText = if(dbIntToBool(isShallow)) "is_shallow" else "not_shallow"
+            otherText = if(dbIntToBool(isShallow)) Cons.isShallowStr else Cons.notShallowStr
         }
 
         return otherText ?: ""

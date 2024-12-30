@@ -34,7 +34,8 @@ import com.catpuppyapp.puppygit.utils.strHasIllegalChars
 import com.github.git24j.core.Repository
 import kotlinx.coroutines.flow.Flow
 import java.io.File
-private val TAG = "RepoRepositoryImpl"
+
+private const val TAG = "RepoRepositoryImpl"
 
 class RepoRepositoryImpl(private val dao: RepoDao) : RepoRepository {
     @Deprecated("不用这个")

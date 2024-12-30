@@ -2,14 +2,18 @@ package com.catpuppyapp.puppygit.constants
 
 import com.github.git24j.core.Oid
 import kotlinx.coroutines.sync.Mutex
-import java.time.ZoneOffset
 import java.time.format.DateTimeFormatter
 import java.util.concurrent.ConcurrentHashMap
 
 object Cons {
-    const val httpStr = "http"
-    const val sshStr = "ssh"
-    const val flagStr =  "flag"
+    const val isShallowStr = "IsShallow"
+    const val notShallowStr = "NotShallow"
+    const val httpStr = "Http"
+    const val sshStr = "Ssh"
+    const val flagStr =  "Flag"
+
+
+
 
     const val init_last_clicked_item_key =  "nexist_last_clicked_item_key_1899_1253RBCZ" // this is an item key, which never exist, just used for none matched with last clicked item when init value not changed
     const val ChangeListNaviTarget_InitValue = "cl_navi_init_value"

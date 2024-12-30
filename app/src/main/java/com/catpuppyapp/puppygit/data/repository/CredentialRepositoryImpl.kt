@@ -13,7 +13,7 @@ import com.catpuppyapp.puppygit.utils.getDomainByUrl
 import com.catpuppyapp.puppygit.utils.getSecFromTime
 import kotlinx.coroutines.sync.withLock
 
-private val TAG = "CredentialRepositoryImpl"
+private const val TAG = "CredentialRepositoryImpl"
 
 //注： 不带decrypt和encrypt的查出的都是数据库中的原始数据
 class CredentialRepositoryImpl(private val dao: CredentialDao) : CredentialRepository {
