@@ -138,8 +138,12 @@ class PuppyHunkAndLines {
                     matchByWords = matchByWords
             )
 
-            modifyResultMap.put(lineNum, modifyResult2)
-            return modifyResult2
+            //因为上面调换了，所以这也得调换，del在前匹配率更高，所以调换
+            val swappedResult = modifyResult2.copy(add = modifyResult2.del, del = modifyResult2.add)
+
+            modifyResultMap.put(lineNum, swappedResult)
+
+            return swappedResult
         }else {
             return null
         }

@@ -581,11 +581,11 @@ fun DiffContent(
 
                                 if(modifyResult2.matched) {
                                     if(delUsedPair.not()) {
-                                        delStringPartListWillUse = modifyResult2.del
+                                        delStringPartListWillUse = modifyResult2.add
                                     }
 
                                     if(addUsedPair.not()) {
-                                        addStringPartListWillUse = modifyResult2.add
+                                        addStringPartListWillUse = modifyResult2.del
                                     }
 
                                 }
