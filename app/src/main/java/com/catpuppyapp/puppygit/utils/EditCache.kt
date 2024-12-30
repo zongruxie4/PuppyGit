@@ -14,7 +14,7 @@ import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
 
 object EditCache {
-    private val TAG = "EditCache"  //debug TAG
+    private const val TAG = "EditCache"  //debug TAG
 
     private var enable = true  //是否启用EditCache。（这的赋值只是初始值，实际会在init方法里更新此值，那个值才是真正有效的，而init的值与设置项对应条目关联）
 

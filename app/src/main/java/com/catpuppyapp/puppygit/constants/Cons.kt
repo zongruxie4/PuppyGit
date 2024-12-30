@@ -110,7 +110,8 @@ object Cons {
 
     //db相关常量开始
 
-    val dbUsedTimeZoneOffset: ZoneOffset = ZoneOffset.UTC
+    // 20241230废弃，改成统一使用UTC秒数了，显示时会获取App指定时区或系统时区，无需此变量了
+//    val dbUsedTimeZoneOffset: ZoneOffset = ZoneOffset.UTC
     //值大于等于50表示错误或者其他不正常的情况，例如仓库正在克隆，url类型无效，之类的，总之只要值大于等于50，就有问题
     const val dbCommonErrValStart = 50
 

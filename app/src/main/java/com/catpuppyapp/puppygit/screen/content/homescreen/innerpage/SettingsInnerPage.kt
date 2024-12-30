@@ -66,7 +66,10 @@ import com.catpuppyapp.puppygit.utils.UIHelper
 import com.catpuppyapp.puppygit.utils.doJobThenOffLoading
 import com.catpuppyapp.puppygit.utils.fileopenhistory.FileOpenHistoryMan
 import com.catpuppyapp.puppygit.utils.formatMinutesToUtc
+import com.catpuppyapp.puppygit.utils.getInvalidTimeZoneOffsetErrMsg
 import com.catpuppyapp.puppygit.utils.getStoragePermission
+import com.catpuppyapp.puppygit.utils.getValidTimeZoneOffsetRangeInMinutes
+import com.catpuppyapp.puppygit.utils.isValidOffsetInMinutes
 import com.catpuppyapp.puppygit.utils.replaceStringResList
 import com.catpuppyapp.puppygit.utils.state.mutableCustomStateOf
 import com.catpuppyapp.puppygit.utils.storagepaths.StoragePathsMan
@@ -307,7 +310,19 @@ fun SettingsInnerPage(
             showSetCommitTimeZoneDialog.value = false
             doJobThenOffLoading {
                 val newOffset = try {
-                    commitTimeZoneOffsetBuf.value.trim().toInt().toString()
+                    val offsetMinutes = commitTimeZoneOffsetBuf.value.trim().toInt()
+                    if(isValidOffsetInMinutes(offsetMinutes)) {
+                        offsetMinutes.toString()
+                    }else {
+                        //显示给用户看的错误信息，尽量短
+                        Msg.requireShowLongDuration("invalid offset, should in ${getValidTimeZoneOffsetRangeInMinutes()}")
+
+
+                        //记日志的错误信息，尽量详细
+                        val errMsg = getInvalidTimeZoneOffsetErrMsg(offsetMinutes)
+                        MyLog.e(TAG, "user input invalid timezone offset: $errMsg")
+                        throw RuntimeException(errMsg)
+                    }
                 }catch (_:Exception) {
                     ""
                 }
@@ -319,10 +334,14 @@ fun SettingsInnerPage(
                     commitTimeZoneOffset.value = newOffset
                     commitTimeZoneFollowSystem.value = newFollowSystem
 
-                    SettingsUtil.update {
+                    val settingsUpdated = SettingsUtil.update(requireReturnSnapshotOfUpdatedSettings = true) {
                         it.commitTimeZone_OffsetInMinutes = newOffset
                         it.commitTimeZone_FollowSystem = newFollowSystem
-                    }
+                    }!!
+
+                    //更新下全局变量，不然还要重启app
+                    AppModel.reloadSystemTimeZoneOffsetMinutes()
+                    AppModel.reloadAppTimeZoneOffset(settingsUpdated)
                 }
             }
         }

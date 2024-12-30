@@ -115,8 +115,8 @@ data class FileItemDto (
                 fdto.lastModifiedTimeInSec = fileAttributes?.lastModifiedTime()?.to(TimeUnit.SECONDS) ?: 0
 //            println("fdto.lastModifiedTimeInSec == file.lastModified()/1000:"+(fdto.lastModifiedTimeInSec ==(file.lastModified()/1000) ))  // true
                 fdto.createTimeInSec = fileAttributes?.creationTime()?.to(TimeUnit.SECONDS) ?: 0
-                fdto.lastModifiedTime = getFormatTimeFromSec(fdto.lastModifiedTimeInSec, offset = getSystemDefaultTimeZoneOffset())
-                fdto.createTime = getFormatTimeFromSec(fdto.createTimeInSec, offset = getSystemDefaultTimeZoneOffset())
+                fdto.lastModifiedTime = getFormatTimeFromSec(fdto.lastModifiedTimeInSec)
+                fdto.createTime = getFormatTimeFromSec(fdto.createTimeInSec)
 
             }catch (e:Exception) {
                 MyLog.e(TAG, "#updateFileItemDto err: ${e.localizedMessage}")

@@ -37,6 +37,7 @@ import com.catpuppyapp.puppygit.utils.storagepaths.StoragePathsMan
 import com.github.git24j.core.Libgit2
 import kotlinx.coroutines.CoroutineScope
 import java.io.File
+import java.time.ZoneOffset
 import java.util.concurrent.ConcurrentHashMap
 
 private const val TAG ="AppModel"
@@ -109,6 +110,11 @@ object AppModel {
     val lastEditFileWhenDestroy:MutableState<String> = mutableStateOf("")
 
     val systemTimeZoneOffsetInMinutes:MutableIntState = mutableIntStateOf(0)
+
+    /**
+     * App使用的时区偏移量对象
+     */
+    private var timeZoneOffset:ZoneOffset?=null
 
     /**
      * key 分钟数
@@ -245,11 +251,6 @@ object AppModel {
 
         }
 
-        try {
-            AppModel.systemTimeZoneOffsetInMinutes.intValue = getSystemDefaultTimeZoneOffset().totalSeconds / 60
-        }catch (e:Exception) {
-            MyLog.e(TAG, "#$funName: get system time zone offset err: ${e.stackTraceToString()}")
-        }
 
         AppModel.deviceWidthHeight = UIHelper.getDeviceWidthHeightInDp(activityContext)
 
@@ -407,6 +408,13 @@ object AppModel {
                 }
             }
 
+            val settings = SettingsUtil.getSettingsSnapshot()
+
+            //更新系统时区
+            reloadSystemTimeZoneOffsetMinutes()
+            //更新app实际使用的时区
+            reloadAppTimeZoneOffset(settings)
+
 
             //加载证书 for TLS (https
             CertMan.init(applicationContext, AppModel.certBundleDir, AppModel.certUserDir)  //加载app 内嵌证书捆绑包(app cert bundle)
@@ -444,7 +452,6 @@ object AppModel {
 
 
             //           // val settingsSaveDir = AppModel.getOrCreateSettingsDir()
-            val settings = SettingsUtil.getSettingsSnapshot()
 
 
 
@@ -532,7 +539,16 @@ object AppModel {
                 }
             }
 
+        }else {
+            //这里放第一次启动app进程会执行，后续再重建Activity依然需要重新执行的代码，
+            // 注意：如果并不紧急，可放到if else外面，不过有些操作，例如时区，依赖盘根错节，我不确定都哪里用到了，所以需要在上面的代码准备好相关变量后立即初始化，但重启app后依然需要初始化，于是，为了避免在第一次启动时初始化两次，就写了这个else代码块
+            reloadSystemTimeZoneOffsetMinutes()
+            reloadAppTimeZoneOffset(SettingsUtil.getSettingsSnapshot())
         }
+
+        //这里放只要app Activity创建就需要执行的代码
+
+
 
         //初始化与谷歌play的连接，查询支付信息之类的
         //            Billing.init(AppModel.appContext)
@@ -613,6 +629,7 @@ object AppModel {
 //            AppModel.lastNavState = AppModel.navController.saveState()
 
         AppModel.lastEditFileWhenDestroy.value = AppModel.lastEditFile.value
+
     }
 
 
@@ -703,6 +720,46 @@ object AppModel {
 
     fun masterPasswordEnabled(): Boolean {
         return masterPassword.value.isNotEmpty()
+    }
+
+
+
+    /**
+     * 获取App使用的时区ZoneOffset对象。
+     * 注意，这个是App实际使用的时区对象，并不是系统时区对象，若在设置页面为App指定了时区，系统和App使用的时区可能会不同
+     *
+     * 依赖：此方法应在 `AppModel.systemTimeZoneOffsetInMinutes` 和 `AppSettings` 初始化完毕后再调用，否则可能出错
+     */
+    fun getAppTimeZoneOffset() : ZoneOffset{
+        return timeZoneOffset ?: reloadAppTimeZoneOffset(SettingsUtil.getSettingsSnapshot())
+    }
+
+    /**
+     * 更新并返回新的ZoneOffset对象
+     */
+    fun reloadAppTimeZoneOffset(settings: AppSettings):ZoneOffset {
+        val newValue = getAppTimeZoneOffsetNoCache(settings)
+        timeZoneOffset = newValue
+        return newValue
+    }
+
+    /**
+     * 依赖：此方法应在 `AppModel.systemTimeZoneOffsetInMinutes` 和 `AppSettings` 初始化完毕后再调用，否则可能出错
+     */
+    private fun getAppTimeZoneOffsetNoCache(settings: AppSettings):ZoneOffset {
+        val timeOffsetInMinutes = readTimeZoneOffsetInMinutesFromSettingsOrDefault(settings, AppModel.systemTimeZoneOffsetInMinutes.intValue)
+
+        return ZoneOffset.ofTotalSeconds(timeOffsetInMinutes * 60)
+    }
+
+    fun reloadSystemTimeZoneOffsetMinutes() {
+        AppModel.systemTimeZoneOffsetInMinutes.intValue = try {
+            getSystemDefaultTimeZoneOffset().totalSeconds / 60
+        }catch (e:Exception) {
+            MyLog.e(TAG, "reloadSystemTimeZoneOffsetMinutes err: ${e.stackTraceToString()}, will use UTC+0")
+            // offset = 0, 即 UTC+0
+            0
+        }
     }
 
 }

@@ -22,8 +22,7 @@ import java.net.URI
 import java.nio.file.Files
 import java.nio.file.Paths
 import java.nio.file.attribute.BasicFileAttributes
-import java.time.LocalDateTime
-import java.time.OffsetDateTime
+import java.time.Instant
 import java.time.ZoneOffset
 import java.time.ZonedDateTime
 import java.time.format.DateTimeFormatter
@@ -182,33 +181,35 @@ fun boolToDbInt(b:Boolean):Int {
     return if(b) Cons.dbCommonTrue else Cons.dbCommonFalse
 }
 
+
 /**
- * 转换系统时间到秒。
- *
- * 解释：LocalDateTime.now()获取的时间是加了偏移量的系统时间，而offset默认传的UTC+0，所以效果等于将系统时间转换为秒数（和获取UTC时间再加上offset秒数的结果一致）。
+ * @return secs from utc
  */
-//测试了下，这个time参数默认值会在每次调用时函数时重新调用LocalDateTime.now()，和预期一样，无bug
-fun getSecFromTime(time:LocalDateTime=LocalDateTime.now(), offset:ZoneOffset=Cons.dbUsedTimeZoneOffset):Long {
-//    return Instant.now().epochSecond
-//    return ZonedDateTime.now().toEpochSecond()
-//    LocalDateTime没有时区，单纯存的时间，存储和读取使用相同的time offset就行
-    //20240408：这里统一用的UTC时区，不太确定能不能在所有设备上正确显示时间，
-    // 如果不能，在settings表加个时区字段(settings表不用迁移db，而且如果想显示在设置页面让用户能设置，这个表也正合适)，
-    // 默认获取用户设备的默认时区（最好用户也可手动设置），然后把getTimeFromSec()函数改下，
-    // 改成获取时间时加上时区对应的偏移量，比如 UTC+8，就加上8个小时的偏移量(可能需要把小时转换成分钟或秒)
-    return time.toEpochSecond(offset)
+fun getSecFromTime():Long {
+    return getUtcTimeInSec()
 }
 
-fun getTimeFromSec(sec:Long, offset:ZoneOffset=Cons.dbUsedTimeZoneOffset):LocalDateTime {
+/**
+ * @param sec the sec should is unix epoch UTC+0 seconds
+ */
+fun getTimeFromSec(sec:Long):ZonedDateTime {
 
-//    return ZonedDateTime.ofInstant(Instant.ofEpochSecond(sec),ZoneId.systemDefault())
-//    return LocalDateTime.ofInstant(Instant.ofEpochSecond(sec),ZoneId.systemDefault())
-    return LocalDateTime.ofEpochSecond(sec, 0, offset)
+    //这个输出必须不带时区信息，否则报错，不好
+//    return LocalDateTime.ofInstant(Instant.ofEpochSecond(sec), AppModel.getAppTimeZoneOffset())
+
+    //这个输出可带时区信息也可不带，好
+    return ZonedDateTime.ofInstant(Instant.ofEpochSecond(sec), AppModel.getAppTimeZoneOffset())
+
+//    return LocalDateTime.ofEpochSecond(sec, 0, AppModel.getAppTimeZoneOffset())
 }
 
-fun getFormatTimeFromSec(sec:Long, formatter:DateTimeFormatter = Cons.defaultDateTimeFormatter, offset: ZoneOffset=Cons.dbUsedTimeZoneOffset):String {
+
+/**
+ * @param sec the sec should is unix epoch UTC+0 seconds
+ */
+fun getFormatTimeFromSec(sec:Long, formatter:DateTimeFormatter = Cons.defaultDateTimeFormatter):String {
     try {
-        val timeFromSec = getTimeFromSec(sec, offset)
+        val timeFromSec = getTimeFromSec(sec)
         //    val zonedDateTime = ZonedDateTime.from(localDateTimeFromSec)
         return formatter.format(timeFromSec)
 
@@ -223,8 +224,11 @@ fun getNowInSecFormatted(formatter:DateTimeFormatter = Cons.defaultDateTimeForma
 }
 
 fun getSystemDefaultTimeZoneOffset() :ZoneOffset{
-//    return ZoneOffset.of(ZoneOffset.systemDefault().id)
-    return OffsetDateTime.now().offset
+    // tested
+    return ZoneOffset.systemDefault().rules.getOffset(Instant.now())
+
+    // tested
+    // return OffsetDateTime.now().offset
 }
 
 /**
@@ -801,7 +805,7 @@ fun getDomainByUrl(url:String):String {
 }
 
 fun getFormattedLastModifiedTimeOfFile(file:File):String{
-    return getFormatTimeFromSec(sec=file.lastModified()/1000, offset = getSystemDefaultTimeZoneOffset())
+    return getFormatTimeFromSec(sec = file.lastModified() / 1000)
 }
 
 
@@ -851,14 +855,40 @@ fun readTimeZoneOffsetInMinutesFromSettingsOrDefaultNullable(settings: AppSettin
         if(settings.commitTimeZone_FollowSystem) {
             AppModel.systemTimeZoneOffsetInMinutes.intValue
         }else {
-            settings.commitTimeZone_OffsetInMinutes.trim().toInt()
+            val offsetMinutes = settings.commitTimeZone_OffsetInMinutes.trim().toInt()
+            if(isValidOffsetInMinutes(offsetMinutes)){
+                offsetMinutes
+            }else {
+                val errMsg = getInvalidTimeZoneOffsetErrMsg(offsetMinutes)
+                MyLog.e(TAG, "readTimeZoneFromSettings err: $errMsg")
+                throw RuntimeException(errMsg)
+            }
         }
     }catch (_:Exception) {
         defaultTimeOffsetInMinutes
     }
 }
 
+fun getInvalidTimeZoneOffsetErrMsg(offsetInMinutes:Int):String {
+    return "invalid timezone offset: $offsetInMinutes minutes, expect in ${getValidTimeZoneOffsetRangeInMinutes()}"
+}
+
+fun getValidTimeZoneOffsetRangeInMinutes():String {
+    return "[-1080, 1080] minutes"
+}
+
+/**
+ * 有效的时区应该在 -18小时到+18小时之间，换算成分钟是1080，秒是64800
+ */
+fun isValidOffsetInMinutes(offsetInMinutes:Int):Boolean {
+    return offsetInMinutes >= -1080 && offsetInMinutes <= 1080
+}
 
 fun getUtcTimeInSec():Long {
-    return ZonedDateTime.now(ZoneOffset.UTC).toEpochSecond()
+    //tested
+//    return ZonedDateTime.now(ZoneOffset.UTC).toEpochSecond()
+
+    //tested
+    return Instant.now().epochSecond
 }
+

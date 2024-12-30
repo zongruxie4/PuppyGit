@@ -37,7 +37,7 @@ object SettingsUtil {
 //    }
 
     /**
-     * this method may do over once,so need a machine to promise only start 1 save job
+     * this method may do over once,so need a mechanism to promise only start 1 save job
      */
     suspend fun init(settingsSaveDir:File, useBak:Boolean=false) {  //入参是保存settings的目录
         // settings files save dir
@@ -185,10 +185,10 @@ object SettingsUtil {
     //为settings实例创建快照，实际就是返回一份对象的拷贝，如果指定对象，则返回指定对象的拷贝，如果不指定则返回SettingsUtil类持有的settings对象的拷贝（不一定和硬盘上的一致，但一般都是最新）
 //    fun getSettingsSnapshot(src:AppSettings = appSettings):AppSettings {
     fun getSettingsSnapshot():AppSettings {
-        return appSettings.copy()
+        return getSettingsSnapshotFromSrc(appSettings)
     }
 
-    fun getSettingsSnapshotFromSrc(src:AppSettings):AppSettings {
+    private fun getSettingsSnapshotFromSrc(src:AppSettings):AppSettings {
         return src.copy()
     }
 
