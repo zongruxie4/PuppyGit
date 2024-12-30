@@ -110,19 +110,10 @@ fun CommitItem(
         ){
 
             Text(text = stringResource(R.string.hash) +":")
-            Text(
-                text = commitDto.shortOidStr,
-                maxLines = 1,
-                overflow = TextOverflow.Ellipsis,
-                fontWeight = FontWeight.Light,
-                style = MyStyleKt.ClickableText.style,
-                color = MyStyleKt.ClickableText.color,
-                fontSize = 16.sp,
-                modifier = MyStyleKt.ClickableText.modifierNoPadding.clickable {
-                    clipboardManager.setText(AnnotatedString(commitDto.oidStr))
-                    Msg.requireShow(activityContext.getString(R.string.copied))
-                },
-            )
+            ClickableText(commitDto.shortOidStr) {
+                clipboardManager.setText(AnnotatedString(commitDto.oidStr))
+                Msg.requireShow(activityContext.getString(R.string.copied))
+            }
         }
 //        Row (
 //            verticalAlignment = Alignment.CenterVertically,

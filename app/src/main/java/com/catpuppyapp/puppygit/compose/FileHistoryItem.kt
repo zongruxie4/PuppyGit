@@ -112,19 +112,10 @@ fun FileHistoryItem(
             ) {
 
             Text(text = stringResource(R.string.commit_id) + ":")
-            Text(
-                text = dto.getCachedCommitShortOidStr(),
-                maxLines = 1,
-                overflow = TextOverflow.Ellipsis,
-                fontWeight = FontWeight.Light,
-                style = MyStyleKt.ClickableText.style,
-                color = MyStyleKt.ClickableText.color,
-                fontSize = 16.sp,
-                modifier = MyStyleKt.ClickableText.modifierNoPadding.clickable {
-                    clipboardManager.setText(AnnotatedString(dto.commitOidStr))
-                    Msg.requireShow(activityContext.getString(R.string.copied))
-                },
-            )
+            ClickableText(dto.getCachedCommitShortOidStr()){
+                clipboardManager.setText(AnnotatedString(dto.commitOidStr))
+                Msg.requireShow(activityContext.getString(R.string.copied))
+            }
         }
 
         Row(

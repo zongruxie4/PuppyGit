@@ -104,19 +104,10 @@ fun TagItem(
         ){
 
             Text(text = stringResource(R.string.target) +":")
-            Text(
-                text = thisObj.getCachedTargetShortOidStr(),
-                maxLines = 1,
-                overflow = TextOverflow.Ellipsis,
-                fontWeight = FontWeight.Light,
-                style = MyStyleKt.ClickableText.style,
-                color = MyStyleKt.ClickableText.color,
-                fontSize = 16.sp,
-                modifier = MyStyleKt.ClickableText.modifierNoPadding.clickable {
-                    clipboardManager.setText(AnnotatedString(thisObj.targetFullOidStr))
-                    Msg.requireShow(activityContext.getString(R.string.copied))
-                },
-            )
+            ClickableText(thisObj.getCachedTargetShortOidStr()) {
+                clipboardManager.setText(AnnotatedString(thisObj.targetFullOidStr))
+                Msg.requireShow(activityContext.getString(R.string.copied))
+            }
         }
         Row (
             verticalAlignment = Alignment.CenterVertically,

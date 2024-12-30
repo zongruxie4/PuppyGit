@@ -95,19 +95,10 @@ fun ReflogItem(
         ){
 
             Text(text = stringResource(R.string.new_oid) +":")
-            Text(
-                text = Libgit2Helper.getShortOidStrByFull(thisObj.idNew.toString()),
-                maxLines = 1,
-                overflow = TextOverflow.Ellipsis,
-                fontWeight = FontWeight.Light,
-                style = MyStyleKt.ClickableText.style,
-                color = MyStyleKt.ClickableText.color,
-                fontSize = 16.sp,
-                modifier = MyStyleKt.ClickableText.modifierNoPadding.clickable {
-                    clipboardManager.setText(AnnotatedString(thisObj.idNew.toString()))
-                    Msg.requireShow(activityContext.getString(R.string.copied))
-                },
-            )
+            ClickableText(Libgit2Helper.getShortOidStrByFull(thisObj.idNew.toString())) {
+                clipboardManager.setText(AnnotatedString(thisObj.idNew.toString()))
+                Msg.requireShow(activityContext.getString(R.string.copied))
+            }
         }
         Row (
             verticalAlignment = Alignment.CenterVertically,
@@ -115,19 +106,10 @@ fun ReflogItem(
         ){
 
             Text(text = stringResource(R.string.old_oid) +":")
-            Text(
-                text = Libgit2Helper.getShortOidStrByFull(thisObj.idOld.toString()),
-                maxLines = 1,
-                overflow = TextOverflow.Ellipsis,
-                fontWeight = FontWeight.Light,
-                style = MyStyleKt.ClickableText.style,
-                color = MyStyleKt.ClickableText.color,
-                fontSize = 16.sp,
-                modifier = MyStyleKt.ClickableText.modifierNoPadding.clickable {
-                    clipboardManager.setText(AnnotatedString(thisObj.idOld.toString()))
-                    Msg.requireShow(activityContext.getString(R.string.copied))
-                },
-            )
+            ClickableText(Libgit2Helper.getShortOidStrByFull(thisObj.idOld.toString())){
+                clipboardManager.setText(AnnotatedString(thisObj.idOld.toString()))
+                Msg.requireShow(activityContext.getString(R.string.copied))
+            }
         }
         Row (
             verticalAlignment = Alignment.CenterVertically,

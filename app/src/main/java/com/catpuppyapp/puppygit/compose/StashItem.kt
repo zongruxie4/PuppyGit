@@ -105,19 +105,10 @@ fun StashItem(
 
             // stash id 本质上是提交号，应该也能和其他提交对比或checkout、reset等，不过这个功能一般是临时用下，所以没添加复杂功能
             Text(text = stringResource(R.string.stash_id) + ":")
-            Text(
-                text = thisObj.getCachedShortStashId(),
-                maxLines = 1,
-                overflow = TextOverflow.Ellipsis,
-                fontWeight = FontWeight.Light,
-                style = MyStyleKt.ClickableText.style,
-                color = MyStyleKt.ClickableText.color,
-                fontSize = 16.sp,
-                modifier = MyStyleKt.ClickableText.modifierNoPadding.clickable {
-                    clipboardManager.setText(AnnotatedString(thisObj.stashId.toString()))
-                    Msg.requireShow(activityContext.getString(R.string.copied))
-                },
-            )
+            ClickableText(thisObj.getCachedShortStashId()) {
+                clipboardManager.setText(AnnotatedString(thisObj.stashId.toString()))
+                Msg.requireShow(activityContext.getString(R.string.copied))
+            }
         }
 
         Row(

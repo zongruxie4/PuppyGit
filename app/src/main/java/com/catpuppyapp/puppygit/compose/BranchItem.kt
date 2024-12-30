@@ -122,19 +122,10 @@ fun BranchItem(
         ){
 
             Text(text = stringResource(R.string.last_commit) +":")
-            Text(
-                text = thisObj.shortOidStr,
-                maxLines = 1,
-                overflow = TextOverflow.Ellipsis,
-                fontWeight = FontWeight.Light,
-                style = MyStyleKt.ClickableText.style,
-                color = MyStyleKt.ClickableText.color,
-                fontSize = 16.sp,
-                modifier = MyStyleKt.ClickableText.modifierNoPadding.clickable {
-                    clipboardManager.setText(AnnotatedString(thisObj.oidStr))
-                    Msg.requireShow(activityContext.getString(R.string.copied))
-                },
-            )
+            ClickableText(thisObj.shortOidStr) {
+                clipboardManager.setText(AnnotatedString(thisObj.oidStr))
+                Msg.requireShow(activityContext.getString(R.string.copied))
+            }
         }
 
         //如果是本地分支，检查是否是当前活跃的分支。（远程分支就不需要检查了，因为远程分支一checkout就变成detached了，根本不可能是current活跃分支
