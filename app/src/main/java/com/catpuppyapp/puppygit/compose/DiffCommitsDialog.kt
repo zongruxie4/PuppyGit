@@ -1,14 +1,25 @@
 package com.catpuppyapp.puppygit.compose
 
-import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.ExperimentalFoundationApi
+import androidx.compose.foundation.combinedClickable
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.SwapVert
+import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.MutableState
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.hapticfeedback.HapticFeedbackType
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
@@ -20,10 +31,11 @@ import com.catpuppyapp.puppygit.utils.Libgit2Helper
 import com.catpuppyapp.puppygit.utils.Msg
 import com.catpuppyapp.puppygit.utils.cache.Cache
 
-private val TAG = "DiffCommitsDialog"
-private val stateKeyTag = "DiffCommitsDialog"
+private const val TAG = "DiffCommitsDialog"
+private const val stateKeyTag = "DiffCommitsDialog"
 
 
+@OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun DiffCommitsDialog(
     showDialog:MutableState<Boolean>,
@@ -33,8 +45,9 @@ fun DiffCommitsDialog(
 ) {
     val repoId = curRepo.id
 
-    val activityContext = AppModel.activityContext
+    val activityContext = LocalContext.current
     val navController = AppModel.navController
+    val haptic = LocalHapticFeedback.current
 
     ConfirmDialog(title = activityContext.getString(R.string.diff_commits),
         requireShowTextCompose = true,
@@ -65,8 +78,38 @@ fun DiffCommitsDialog(
                         Text(stringResource(R.string.hash_branch_tag))
                     },
                 )
-                
-                Spacer(modifier = Modifier.height(10.dp))
+
+                // swap button
+                Row(
+                    modifier = Modifier
+                        //外部padding (margin，外边距)
+                        .padding(vertical = 5.dp)
+
+                        .fillMaxWidth()
+
+                        .combinedClickable(
+                        onLongClick = {
+                            haptic.performHapticFeedback(HapticFeedbackType.LongPress)
+                            Msg.requireShow(activityContext.getString(R.string.swap))
+                        }
+                    ) { // onClick
+                        val tmp = commit1.value
+                        commit1.value = commit2.value
+                        commit2.value = tmp
+                    }
+                        //内部padding (内边距)
+                        .padding(vertical = 5.dp)
+
+                    ,
+
+                    horizontalArrangement = Arrangement.Center,
+                    verticalAlignment = Alignment.CenterVertically,
+                ) {
+                    Icon(
+                        imageVector = Icons.Filled.SwapVert,
+                        contentDescription = stringResource(R.string.swap),
+                    )
+                }
 
                 TextField(
                     modifier = Modifier.fillMaxWidth(),
