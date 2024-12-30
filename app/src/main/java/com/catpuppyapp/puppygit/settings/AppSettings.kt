@@ -43,6 +43,8 @@ data class AppSettings(
     var files:Files = Files(),
     var editor:Editor = Editor(),
     var changeList:ChangeList = ChangeList(),
+
+    @Deprecated("废弃了")
     var storageDir:StorageDir = StorageDir(),  //将来会出一个StorageDir页面，用来管理存储仓库的目录，有内部，有外部，还有ProgramData(puppygitdata，这个类型不一定展示，感觉没必要展示给用户，但实际在代码里存在)
     // var settings ? Settings页面的设置？叫这个名字好像不太好，再考虑下吧
 

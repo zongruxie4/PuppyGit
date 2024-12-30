@@ -53,4 +53,8 @@ class DomainCredentialRepositoryImpl(private val dao: DomainCredentialDao) : Dom
 
     override fun getById(id: String): DomainCredentialEntity? = dao.getById(id)
 
+    override suspend fun subtractTimeOffset(offsetInSec:Long) {
+        dao.subtractTimeOffset(offsetInSec)
+    }
+
 }

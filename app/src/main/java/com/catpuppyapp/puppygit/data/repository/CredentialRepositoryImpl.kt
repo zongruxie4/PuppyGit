@@ -324,4 +324,10 @@ class CredentialRepositoryImpl(private val dao: CredentialDao) : CredentialRepos
     override suspend fun getByEncryptVerNotEqualsTo(encryptVer:Int): List<CredentialEntity> {
         return dao.getByEncryptVerNotEqualsTo(encryptVer)
     }
+
+
+    override suspend fun subtractTimeOffset(offsetInSec:Long) {
+        dao.subtractTimeOffset(offsetInSec)
+    }
+
 }

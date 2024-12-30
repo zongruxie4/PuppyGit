@@ -97,4 +97,6 @@ interface RepoRepository {
     suspend fun updateRepoName(repoId:String, name: String)
 
 
+    suspend fun subtractTimeOffset(offsetInSec:Long)
+
 }

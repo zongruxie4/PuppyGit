@@ -50,4 +50,7 @@ interface DomainCredentialDao {
 
     @Query("SELECT * from domain_credential WHERE id = :id")
     fun getById(id: String): DomainCredentialEntity?
+
+    @Query("UPDATE domain_credential set baseCreateTime = baseCreateTime-(:offsetInSec), baseUpdateTime = baseUpdateTime-(:offsetInSec)")
+    suspend fun subtractTimeOffset(offsetInSec:Long)
 }

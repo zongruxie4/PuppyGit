@@ -98,4 +98,8 @@ interface RemoteDao {
     @Query("update remote set pushUrl = :url where id = :id")
     suspend fun updatePushUrlById(id:String, url:String)
 
+
+    @Query("UPDATE remote set baseCreateTime = baseCreateTime-(:offsetInSec), baseUpdateTime = baseUpdateTime-(:offsetInSec)")
+    suspend fun subtractTimeOffset(offsetInSec:Long)
+
 }

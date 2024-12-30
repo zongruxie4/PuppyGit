@@ -113,4 +113,7 @@ interface CredentialRepository {
      * 返回加密器版本与传入参数不符的列表，用来在迁移密码时获取需要迁移的凭据列表
      */
     suspend fun getByEncryptVerNotEqualsTo(encryptVer:Int):List<CredentialEntity>
+
+    suspend fun subtractTimeOffset(offsetInSec:Long)
+
 }

@@ -51,4 +51,6 @@ interface DomainCredentialRepository {
 
     fun getById(id: String): DomainCredentialEntity?
 
+    suspend fun subtractTimeOffset(offsetInSec:Long)
+
 }

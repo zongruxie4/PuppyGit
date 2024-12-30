@@ -14,10 +14,10 @@ import java.io.File
 
 
 object FileOpenHistoryMan {
-    private val TAG = "FileOpenHistoryMan"
+    private const val TAG = "FileOpenHistoryMan"
 
     private var _limit = 50  // will update by settings value
-    private val fileName = "file_open_history.json"
+    private const val fileName = "file_open_history.json"
 
     private lateinit var _file: File
     private lateinit var _saveDir: File
@@ -171,8 +171,30 @@ object FileOpenHistoryMan {
         }
     }
 
+    /**
+     * 重置文件历史记录，实际上就是简单清空
+     */
     fun reset() {
-        curHistory = FileOpenHistory()
-        saveHistory(curHistory)  // when read from file failed, save a new history to file
+        update(FileOpenHistory())
     }
+
+    private fun update(newHistory: FileOpenHistory) {
+        curHistory = newHistory
+        saveHistory(newHistory)
+    }
+
+    fun subtractTimeOffset(offsetInSec:Long) {
+        val newStorage = mutableMapOf<String, FileEditedPos>()
+        val oldHistory = getHistory()
+        oldHistory.storage.forEach { k, v ->
+            val newItem  = v.copy(
+                lastUsedTime = v.lastUsedTime - (offsetInSec)
+            )
+
+            newStorage.put(k, newItem)
+        }
+
+        update(FileOpenHistory(newStorage))
+    }
+
 }

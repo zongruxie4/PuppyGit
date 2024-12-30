@@ -543,4 +543,10 @@ class RepoRepositoryImpl(private val dao: RepoDao) : RepoRepository {
     override suspend fun isRepoNameAlreadyUsedByOtherItem(repoName: String, excludeId: String): Boolean {
         return getIdByRepoNameAndExcludeId(repoName, excludeId) != null
     }
+
+
+    override suspend fun subtractTimeOffset(offsetInSec:Long) {
+        dao.subtractTimeOffset(offsetInSec)
+    }
+
 }

@@ -33,9 +33,14 @@ data class CredentialEntity(
     var baseFields: BaseFields = BaseFields(),
 
 ){
-    fun getTypeStr():String {
-        val activityContext = AppModel.activityContext
-        return activityContext.getString(if(type == Cons.dbCredentialTypeHttp) R.string.http_https else R.string.ssh)
-    }
+
+//    fun getTypeStr(searchable:Boolean):String {
+//        return if(searchable){
+//            if(type == Cons.dbCredentialTypeHttp) Cons.httpStr else Cons.sshStr
+//        } else {
+//            val activityContext = AppModel.activityContext
+//            activityContext.getString(if(type == Cons.dbCredentialTypeHttp) R.string.http_https else R.string.ssh)
+//        }
+//    }
 
 }

@@ -106,4 +106,6 @@ interface RepoDao {
     @Query("update repo set repoName = :name where id = :repoId")
     suspend fun updateRepoName(repoId:String, name: String)
 
+    @Query("UPDATE repo set baseCreateTime = baseCreateTime-(:offsetInSec), baseUpdateTime = baseUpdateTime-(:offsetInSec), lastUpdateTime = lastUpdateTime-(:offsetInSec)")
+    suspend fun subtractTimeOffset(offsetInSec:Long)
 }

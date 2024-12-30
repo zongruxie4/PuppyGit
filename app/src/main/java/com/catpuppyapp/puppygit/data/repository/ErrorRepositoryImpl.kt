@@ -70,4 +70,9 @@ class ErrorRepositoryImpl(private val dao: ErrorDao) : ErrorRepository {
     override fun deleteByRepoId(repoId: String) {
         dao.deleteByRepoId(repoId)
     }
+
+    override suspend fun subtractTimeOffset(offsetInSec:Long) {
+        dao.subtractTimeOffset(offsetInSec)
+    }
+
 }

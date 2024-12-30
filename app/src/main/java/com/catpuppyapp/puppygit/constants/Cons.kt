@@ -7,6 +7,8 @@ import java.time.format.DateTimeFormatter
 import java.util.concurrent.ConcurrentHashMap
 
 object Cons {
+    const val httpStr = "http"
+    const val sshStr = "ssh"
     const val flagStr =  "flag"
 
     const val init_last_clicked_item_key =  "nexist_last_clicked_item_key_1899_1253RBCZ" // this is an item key, which never exist, just used for none matched with last clicked item when init value not changed

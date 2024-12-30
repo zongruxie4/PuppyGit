@@ -18,6 +18,7 @@ import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.core.graphics.drawable.toBitmap
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.rememberNavController
+import androidx.room.withTransaction
 import com.catpuppyapp.puppygit.constants.Cons
 import com.catpuppyapp.puppygit.constants.StorageDirCons
 import com.catpuppyapp.puppygit.data.AppContainer
@@ -29,6 +30,7 @@ import com.catpuppyapp.puppygit.jni.LibLoader
 import com.catpuppyapp.puppygit.play.pro.BuildConfig
 import com.catpuppyapp.puppygit.settings.AppSettings
 import com.catpuppyapp.puppygit.settings.SettingsUtil
+import com.catpuppyapp.puppygit.utils.app.upgrade.migrator.AppMigrator
 import com.catpuppyapp.puppygit.utils.app.upgrade.migrator.AppVersionMan
 import com.catpuppyapp.puppygit.utils.cert.CertMan
 import com.catpuppyapp.puppygit.utils.fileopenhistory.FileOpenHistoryMan
@@ -109,6 +111,9 @@ object AppModel {
      */
     val lastEditFileWhenDestroy:MutableState<String> = mutableStateOf("")
 
+    /**
+     * 系统时区偏移量，单位: 分钟
+     */
     val systemTimeZoneOffsetInMinutes:MutableIntState = mutableIntStateOf(0)
 
     /**
@@ -424,20 +429,6 @@ object AppModel {
             // now this only for init "know_hosts" for ssh
             Lg2HomeUtils.init(AppModel.appDataUnderAllReposDir, applicationContext)
 
-            //根据App版本号执行迁移，如果有必要的话
-            AppVersionMan.init migrate@{ oldVer ->
-                //如果文件不存在或解析失败或已经是当前最新版本，直接返回true
-                if(oldVer == AppVersionMan.err_fileNonExists || oldVer == AppVersionMan.err_parseVersionFailed
-                    || oldVer==AppVersionMan.currentVersion
-                ) {
-                    return@migrate true
-                }
-
-                //不是最新版本，执行迁移, if ver==1 do sth, else if ==2, do sth else ... 最好用try...catch包裹，并且将迁移代码设置为幂等的，这样出错可再次重新调用
-
-                //迁移成功后返回true
-                return@migrate true
-            }
 
             //实际上，在20241205之后发布的版本都不会再执行此函数了，改成用主密码了，以后默认密码就写死了，不会再改，版本号也不会再变，自然也不再需要迁移
             //执行会suspend的初始化操作
@@ -537,6 +528,30 @@ object AppModel {
                 }catch (e:Exception) {
                     MyLog.e(TAG, "#$funName del expired snapshot files err:"+e.stackTraceToString())
                 }
+            }
+
+
+
+
+            //根据App版本号执行迁移代码
+            AppVersionMan.init migrate@{ oldVer ->
+                //如果文件不存在或解析失败或已经是当前最新版本，直接返回true
+                if(oldVer == AppVersionMan.err_fileNonExists || oldVer == AppVersionMan.err_parseVersionFailed
+                    || oldVer==AppVersionMan.currentVersion
+                ) {
+                    return@migrate true
+                }
+
+                //不是最新版本，执行迁移, if ver==1 do sth, else if ==2, do sth else ... 最好用try...catch包裹，并且将迁移代码设置为幂等的，这样出错可再次重新调用
+
+                if(oldVer == 47) {
+                    return@migrate AppMigrator.fromVer47()
+                }
+
+                //如果迁移失败，应在上面的if else里返回 false，但必须确保迁移操作幂等，否则不要轻易返回false
+
+                //迁移成功后返回true
+                return@migrate true
             }
 
         }else {
