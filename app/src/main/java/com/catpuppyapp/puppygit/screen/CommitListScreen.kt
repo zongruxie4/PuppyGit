@@ -1758,6 +1758,12 @@ fun CommitListScreen(
                         showDetailsDialog.value = true
                     }
 
+                    BottomSheetItem(sheetState, showBottomSheet, stringResource(R.string.diff)) {
+                        diffCommitsDialogCommit1.value = curCommit.value.oidStr
+
+                        showDiffCommitDialog.value = true
+                    }
+
                     if(UserUtil.isPro() && (dev_EnableUnTestedFeature || commitsDiffToLocalTestPassed)) {
                         BottomSheetItem(sheetState, showBottomSheet, stringResource(R.string.diff_to_local)) {
                             //                    diff to local，点击跳转到tree to tree页面，然后diff
