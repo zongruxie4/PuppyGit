@@ -95,7 +95,7 @@ fun ReflogItem(
         ){
 
             Text(text = stringResource(R.string.new_oid) +":")
-            ClickableText(Libgit2Helper.getShortOidStrByFull(thisObj.idNew.toString())) {
+            ClickableText(thisObj.getShortNewId()) {
                 clipboardManager.setText(AnnotatedString(thisObj.idNew.toString()))
                 Msg.requireShow(activityContext.getString(R.string.copied))
             }
@@ -106,7 +106,7 @@ fun ReflogItem(
         ){
 
             Text(text = stringResource(R.string.old_oid) +":")
-            ClickableText(Libgit2Helper.getShortOidStrByFull(thisObj.idOld.toString())){
+            ClickableText(thisObj.getShortOldId()){
                 clipboardManager.setText(AnnotatedString(thisObj.idOld.toString()))
                 Msg.requireShow(activityContext.getString(R.string.copied))
             }

@@ -1,6 +1,7 @@
 package com.catpuppyapp.puppygit.git
 
 import com.catpuppyapp.puppygit.dto.ItemKey
+import com.catpuppyapp.puppygit.utils.Libgit2Helper
 import com.github.git24j.core.Oid
 
 data class ReflogEntryDto(
@@ -14,7 +15,26 @@ data class ReflogEntryDto(
     var msg:String=""
 ) : ItemKey {
 
+    private var shortNewIdCached:String? = null
+    private var shortOldIdCached:String? = null
+
     override fun getItemKey():String {
         return username+email+date+idNew+idOld+msg
+    }
+
+    fun getShortNewId():String {
+        if(shortNewIdCached == null) {
+            shortNewIdCached = Libgit2Helper.getShortOidStrByFull(idNew.toString())
+        }
+
+        return shortNewIdCached ?: ""
+    }
+
+    fun getShortOldId():String {
+        if(shortOldIdCached == null) {
+            shortOldIdCached = Libgit2Helper.getShortOidStrByFull(idOld.toString())
+        }
+
+        return shortOldIdCached ?: ""
     }
 }
