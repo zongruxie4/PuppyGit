@@ -1751,7 +1751,7 @@ fun CommitListScreen(
 
 
                         //追加可过滤的flag
-                        sb.appendLine("flag: ${curCommit.value.getOther(true)}")
+                        sb.appendLine("${Cons.flagStr}: ${curCommit.value.getOther(true)}")
                         sb.appendLine()
 
                         detailsString.value = sb.toString()

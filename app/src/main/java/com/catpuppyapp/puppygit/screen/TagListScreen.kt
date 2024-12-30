@@ -500,7 +500,7 @@ fun TagListScreen(
                     sb.append(activityContext.getString(R.string.msg)).append(": ").append(it.msg).appendLine().appendLine()
                 }
 
-                sb.append("flag").append(": ").append(it.getType(true)).appendLine().appendLine()
+                sb.append(Cons.flagStr).append(": ").append(it.getType(true)).appendLine().appendLine()
 
                 sb.append("------------------------------").appendLine().appendLine()
             }
