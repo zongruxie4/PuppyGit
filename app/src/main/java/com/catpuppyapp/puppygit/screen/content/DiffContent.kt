@@ -56,7 +56,7 @@ import com.catpuppyapp.puppygit.utils.Libgit2Helper
 import com.catpuppyapp.puppygit.utils.MyLog
 import com.catpuppyapp.puppygit.utils.UIHelper
 import com.catpuppyapp.puppygit.utils.changeStateTriggerRefreshPage
-import com.catpuppyapp.puppygit.utils.compare.SimilarCompare
+import com.catpuppyapp.puppygit.utils.compare.CmpUtil
 import com.catpuppyapp.puppygit.utils.compare.param.StringCompareParam
 import com.catpuppyapp.puppygit.utils.compare.result.IndexStringPart
 import com.catpuppyapp.puppygit.utils.createAndInsertError
@@ -570,13 +570,15 @@ fun DiffContent(
 
 
                             if(del!=null && add!=null && (delUsedPair.not() || addUsedPair.not())) {
-                                val modifyResult2 = SimilarCompare.INSTANCE.doCompare(
-                                    StringCompareParam(add.content, add.content.length),
-                                    StringCompareParam(del.content, del.content.length),
+                                val modifyResult2 = CmpUtil.compare(
+                                    add = StringCompareParam(add.content, add.content.length),
+                                    del = StringCompareParam(del.content, del.content.length),
 
                                     //为true则对比更精细，但是，时间复杂度乘积式增加，不开 O(n)， 开了 O(nm)
                                     requireBetterMatching = requireBetterMatchingForCompare.value,
-                                    matchByWords = matchByWords.value
+                                    matchByWords = matchByWords.value,
+
+                                    swap = true
                                 )
 
                                 if(modifyResult2.matched) {

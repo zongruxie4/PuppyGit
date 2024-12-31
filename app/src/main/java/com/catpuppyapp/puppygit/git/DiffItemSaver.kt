@@ -1,7 +1,7 @@
 package com.catpuppyapp.puppygit.git
 
 import com.catpuppyapp.puppygit.constants.Cons
-import com.catpuppyapp.puppygit.utils.compare.SimilarCompare
+import com.catpuppyapp.puppygit.utils.compare.CmpUtil
 import com.catpuppyapp.puppygit.utils.compare.param.StringCompareParam
 import com.catpuppyapp.puppygit.utils.compare.result.IndexModifyResult
 import com.catpuppyapp.puppygit.utils.getShortUUID
@@ -128,14 +128,16 @@ class PuppyHunkAndLines {
         val del = groupedLine?.get(Diff.Line.OriginType.DELETION.toString())
 
         if(add!=null && del!=null) {
-            val modifyResult2 = SimilarCompare.INSTANCE.doCompare(
-                    //我发现del在前面add在后面匹配率更高，所以swap传true
-                    StringCompareParam(add.content, add.content.length),
-                    StringCompareParam(del.content, del.content.length),
+            val modifyResult2 = CmpUtil.compare(
+                add = StringCompareParam(add.content, add.content.length),
+                del = StringCompareParam(del.content, del.content.length),
 
-                    //为true则对比更精细，但是，时间复杂度乘积式增加，不开 O(n)， 开了 O(nm)
-                    requireBetterMatching = requireBetterMatchingForCompare,
-                    matchByWords = matchByWords
+                //为true则对比更精细，但是，时间复杂度乘积式增加，不开 O(n)， 开了 O(nm)
+                requireBetterMatching = requireBetterMatchingForCompare,
+                matchByWords = matchByWords,
+
+                //我发现del在前面add在后面匹配率更高，所以swap传true
+                swap = true
             )
 
             modifyResultMap.put(lineNum, modifyResult2)
