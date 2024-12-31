@@ -537,8 +537,8 @@ object AppModel {
 
                 //不是最新版本，执行迁移, if ver==1 do sth, else if ==2, do sth else ... 最好用try...catch包裹，并且将迁移代码设置为幂等的，这样出错可再次重新调用
 
-                if(oldVer <= 47 && AppVersionMan.currentVersion >= 48) {
-                    val success = AppMigrator.sinceVer47()
+                if(oldVer < 48 && AppVersionMan.currentVersion >= 48) {
+                    val success = AppMigrator.sinceVer48()
                     if(!success) {
                         return@migrate false
                     }

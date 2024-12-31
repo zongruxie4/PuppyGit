@@ -17,8 +17,8 @@ object AppMigrator {
      *
      * @return 本方法总是返回成功，即使操作失败 (只是本方法特殊而已，并非所有迁移方法都只返回成功，其他迁移方法有可能返回失败也有可能成功，需要看代码)
      */
-    suspend fun sinceVer47():Boolean {
-        val funName = "sinceVer47"
+    suspend fun sinceVer48():Boolean {
+        val funName = "sinceVer48"
 
 
         // 更新FileOpenHistory内所有日期字段为UTC时间
