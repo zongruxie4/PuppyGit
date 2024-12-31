@@ -129,21 +129,17 @@ class PuppyHunkAndLines {
 
         if(add!=null && del!=null) {
             val modifyResult2 = SimilarCompare.INSTANCE.doCompare(
-                    //我发现del在前面add在后面比较匹配率更高，所以调换了下位置
-                    StringCompareParam(del.content, del.content.length),
+                    //我发现del在前面add在后面匹配率更高，所以swap传true
                     StringCompareParam(add.content, add.content.length),
+                    StringCompareParam(del.content, del.content.length),
 
                     //为true则对比更精细，但是，时间复杂度乘积式增加，不开 O(n)， 开了 O(nm)
                     requireBetterMatching = requireBetterMatchingForCompare,
                     matchByWords = matchByWords
             )
 
-            //因为上面调换了，所以这也得调换，del在前匹配率更高，所以调换
-            val swappedResult = modifyResult2.copy(add = modifyResult2.del, del = modifyResult2.add)
-
-            modifyResultMap.put(lineNum, swappedResult)
-
-            return swappedResult
+            modifyResultMap.put(lineNum, modifyResult2)
+            return modifyResult2
         }else {
             return null
         }
