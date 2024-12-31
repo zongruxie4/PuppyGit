@@ -852,10 +852,10 @@ fun readTimeZoneOffsetInMinutesFromSettingsOrDefault(settings: AppSettings, defa
 
 fun readTimeZoneOffsetInMinutesFromSettingsOrDefaultNullable(settings: AppSettings, defaultTimeOffsetInMinutes:Int?):Int? {
     return try{
-        if(settings.commitTimeZone_FollowSystem) {
+        if(settings.timeZone.followSystem) {
             AppModel.getSystemTimeZoneOffsetInMinutesCached()
         }else {
-            val offsetMinutes = settings.commitTimeZone_OffsetInMinutes.trim().toInt()
+            val offsetMinutes = settings.timeZone.offsetInMinutes.trim().toInt()
             if(isValidOffsetInMinutes(offsetMinutes)){
                 offsetMinutes
             }else {

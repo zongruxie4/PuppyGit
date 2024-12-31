@@ -173,9 +173,9 @@ fun SettingsInnerPage(
     }
 
     val showSetCommitTimeZoneDialog = rememberSaveable { mutableStateOf(false) }
-    val commitTimeZoneFollowSystem = rememberSaveable { mutableStateOf(settingsState.value.commitTimeZone_FollowSystem) }
+    val commitTimeZoneFollowSystem = rememberSaveable { mutableStateOf(settingsState.value.timeZone.followSystem) }
     val commitTimeZoneFollowSystemBuf = rememberSaveable { mutableStateOf(commitTimeZoneFollowSystem.value) }
-    val commitTimeZoneOffsetInMinute = rememberSaveable { mutableStateOf(settingsState.value.commitTimeZone_OffsetInMinutes.trim()) }
+    val commitTimeZoneOffsetInMinute = rememberSaveable { mutableStateOf(settingsState.value.timeZone.offsetInMinutes.trim()) }
     val commitTimeZoneOffsetInMinuteBuf = rememberSaveable { mutableStateOf(commitTimeZoneOffsetInMinute.value) }
     val getTimeZoneStr = {
         try {
@@ -190,7 +190,7 @@ fun SettingsInnerPage(
                     //存储的时区偏移量无效，重置下
                     commitTimeZoneOffsetInMinute.value = ""
                     SettingsUtil.update {
-                        it.commitTimeZone_OffsetInMinutes = ""
+                        it.timeZone.offsetInMinutes = ""
                     }
 
                     val errMsg = getInvalidTimeZoneOffsetErrMsg(offsetInMinuteFromSettings)
@@ -353,8 +353,8 @@ fun SettingsInnerPage(
                     commitTimeZoneFollowSystem.value = newFollowSystem
 
                     val settingsUpdated = SettingsUtil.update(requireReturnSnapshotOfUpdatedSettings = true) {
-                        it.commitTimeZone_OffsetInMinutes = newOffset
-                        it.commitTimeZone_FollowSystem = newFollowSystem
+                        it.timeZone.offsetInMinutes = newOffset
+                        it.timeZone.followSystem = newFollowSystem
                     }!!
 
                     //更新下全局变量，不然还要重启app才能获取到app最新时区
