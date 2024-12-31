@@ -175,7 +175,7 @@ fun SettingsInnerPage(
     val showSetTimeZoneDialog = rememberSaveable { mutableStateOf(false) }
     val timeZone_followSystem = rememberSaveable { mutableStateOf(settingsState.value.timeZone.followSystem) }
     val timeZone_followSystemBuf = rememberSaveable { mutableStateOf(timeZone_followSystem.value) }
-    val timeZone_offsetInMinute = rememberSaveable { mutableStateOf(settingsState.value.timeZone.offsetInMinutes.trim()) }
+    val timeZone_offsetInMinute = rememberSaveable { mutableStateOf(settingsState.value.timeZone.offsetInMinutes) }
     val timeZone_offsetInMinuteBuf = rememberSaveable { mutableStateOf(timeZone_offsetInMinute.value) }
     val getTimeZoneStr = {
         try {
