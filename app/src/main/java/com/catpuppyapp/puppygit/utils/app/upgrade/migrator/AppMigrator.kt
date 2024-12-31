@@ -22,7 +22,7 @@ object AppMigrator {
 
 
         // 更新FileOpenHistory内所有日期字段为UTC时间
-        val systemDefaultTimeOffsetInSec = (AppModel.systemTimeZoneOffsetInMinutes.intValue * 60).toLong()
+        val systemDefaultTimeOffsetInSec = (AppModel.getSystemTimeZoneOffsetInMinutesCached() * 60).toLong()
 
         try {
             FileOpenHistoryMan.subtractTimeOffset(systemDefaultTimeOffsetInSec)

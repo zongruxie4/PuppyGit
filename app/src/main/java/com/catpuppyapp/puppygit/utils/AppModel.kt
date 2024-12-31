@@ -6,9 +6,7 @@ import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.material3.TopAppBarScrollBehavior
 import androidx.compose.material3.rememberTopAppBarState
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.MutableIntState
 import androidx.compose.runtime.MutableState
-import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.graphics.ImageBitmap
@@ -18,7 +16,6 @@ import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.core.graphics.drawable.toBitmap
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.rememberNavController
-import androidx.room.withTransaction
 import com.catpuppyapp.puppygit.constants.Cons
 import com.catpuppyapp.puppygit.constants.StorageDirCons
 import com.catpuppyapp.puppygit.data.AppContainer
@@ -26,6 +23,7 @@ import com.catpuppyapp.puppygit.data.AppDataContainer
 import com.catpuppyapp.puppygit.dev.FlagFileName
 import com.catpuppyapp.puppygit.dev.dev_EnableUnTestedFeature
 import com.catpuppyapp.puppygit.dto.DeviceWidthHeight
+import com.catpuppyapp.puppygit.dto.TimeZoneOffsetDto
 import com.catpuppyapp.puppygit.jni.LibLoader
 import com.catpuppyapp.puppygit.play.pro.BuildConfig
 import com.catpuppyapp.puppygit.settings.AppSettings
@@ -114,7 +112,6 @@ object AppModel {
     /**
      * 系统时区偏移量，单位: 分钟
      */
-应该只有4处访问了这个变量，两处赋值时，两处get时
     private var systemTimeZoneOffsetInMinutes:Int? = null
 
     /**
@@ -744,45 +741,61 @@ object AppModel {
      * 获取App使用的时区ZoneOffset对象。
      * 注意，这个是App实际使用的时区对象，并不是系统时区对象，若在设置页面为App指定了时区，系统和App使用的时区可能会不同
      *
-     * 依赖：此方法应在 `AppModel.systemTimeZoneOffsetInMinutes` 和 `AppSettings` 初始化完毕后再调用，否则可能出错
-     *
      * @param settings 一般不用传此参数，只有当更新过AppSettings但不确定SettingsUtil.getSettingsSnapshot()能否立刻获取到最新值时，才有必要传，传的一般是SettingsUtil.update(requireReturnUpdatedSettings=true)的返回值
      */
     fun getAppTimeZoneOffset(settings: AppSettings? = null) : ZoneOffset {
-        if(timeZoneOffset == null) {
-            reloadTimeZone(settings ?: SettingsUtil.getSettingsSnapshot())
-        }
-
-        return timeZoneOffset!!
+        return timeZoneOffset ?: reloadTimeZone(settings ?: SettingsUtil.getSettingsSnapshot()).zoneOffset
     }
 
 
 
     /**
-     * 更新App时区相关变量
-     * 依赖：此方法应在 `AppModel.systemTimeZoneOffsetInMinutes` 和 `AppSettings` 初始化完毕后再调用，否则可能出错
+     * 更新App时区相关变量，然后返回一个包含新偏移量的对象
+     *
+     * @return a [TimeZoneOffsetDto] include latest timezone offset info
      */
-    fun reloadTimeZone(settings: AppSettings) {
-        // 必须先更新系统时区分钟数再更新App时区对象，否则可能会获取到错误的分钟数
-        //更新系统时区分钟数
-        AppModel.systemTimeZoneOffsetInMinutes = try {
+    fun reloadTimeZone(settings: AppSettings): TimeZoneOffsetDto {
+        var new_offsetInSec = 0
+
+        //获取系统时区分钟数
+        val new_SysTimeOffsetMins = try {
             // 这个是有可能负数的，如果是 UTC-7 之类的，就会负数
-            getSystemDefaultTimeZoneOffset().totalSeconds / 60
+            new_offsetInSec = getSystemDefaultTimeZoneOffset().totalSeconds
+
+            new_offsetInSec / 60
         }catch (e:Exception) {
-            MyLog.e(TAG, "reloadSystemTimeZoneOffsetMinutes err: ${e.stackTraceToString()}, will use UTC+0")
+            MyLog.e(TAG, "#reloadTimeZone() get system timezone offset in minutes err, will use UTC+0, err is: ${e.stackTraceToString()}")
             // offset = 0, 即 UTC+0
             0
         }
 
+        //更新系统时区分钟数
+        systemTimeZoneOffsetInMinutes = new_SysTimeOffsetMins
+
+        MyLog.d(TAG, "#reloadTimeZone(): new_offsetInSec=$new_offsetInSec, new_SysTimeOffsetMins=$new_SysTimeOffsetMins")
+
+
+        //注：这里不能调用getSystemTimeZoneOffsetInMinutesCached，因为如果那个方法如果无结果时会调用此方法查询，若出bug，就死循环了
+        val new_timezoneOffset = ZoneOffset.ofTotalSeconds(readTimeZoneOffsetInMinutesFromSettingsOrDefault(settings, new_SysTimeOffsetMins) * 60)
+
         //更新App实际使用的时区对象
-        timeZoneOffset = ZoneOffset.ofTotalSeconds(readTimeZoneOffsetInMinutesFromSettingsOrDefault(settings, AppModel.systemTimeZoneOffsetInMinutes) * 60)
+        timeZoneOffset = new_timezoneOffset
+
+        //打印偏移量，格式："+08:00"
+        MyLog.d(TAG, "#reloadTimeZone(): new_timezoneOffset=$new_timezoneOffset")
+
+
+        return TimeZoneOffsetDto(
+            zoneOffset = new_timezoneOffset,
+            offsetInMinute = new_SysTimeOffsetMins,
+            offsetInSec = new_offsetInSec
+        )
     }
 
-  fun AppModel.getSystemDefaultTimeZoneOffsetInMinutes():Int {
-  if(AppModel.systemTimeZoneOffsetInMinutes == null) {
-    reloadTimeZone（SettingsUtil.getSettingsSnapshot())
-  }
-
-  return AppModel.systemTimeZoneOffsetInMinutes!!
+    /**
+     * 获取系统时区偏移量，单位分钟，结果会缓存以提高性能
+     */
+  fun getSystemTimeZoneOffsetInMinutesCached():Int {
+      return systemTimeZoneOffsetInMinutes ?: reloadTimeZone(SettingsUtil.getSettingsSnapshot()).offsetInMinute
   }
 }

@@ -179,7 +179,7 @@ fun SettingsInnerPage(
     val commitTimeZoneOffsetBuf = rememberSaveable { mutableStateOf(commitTimeZoneOffset.value) }
     val getTimeZoneStr = {
         try {
-            val offsetInMinutes = if(commitTimeZoneFollowSystem.value) AppModel.systemTimeZoneOffsetInMinutes.intValue else commitTimeZoneOffset.value.trim().toInt()
+            val offsetInMinutes = if(commitTimeZoneFollowSystem.value) AppModel.getSystemTimeZoneOffsetInMinutesCached() else commitTimeZoneOffset.value.trim().toInt()
             val offsetInUtcFormat = formatMinutesToUtc(offsetInMinutes)
 
             if(commitTimeZoneFollowSystem.value) {
@@ -249,13 +249,12 @@ fun SettingsInnerPage(
                         MySelectionContainer {
                             Column(modifier= Modifier.fillMaxWidth()) {
                                 Row(modifier = Modifier.padding(start = 10.dp, end = 10.dp, bottom = 10.dp)) {
-                                    Text(stringResource(R.string.set_timezone_leave_empty_note), color = MyStyleKt.TextColor.highlighting_green)
-                                }
-
-                                Row(modifier = Modifier.padding(top = 5.dp, start = 10.dp, end = 10.dp, bottom = 10.dp)) {
                                     Text(stringResource(R.string.timezone_offset_example), fontWeight = FontWeight.Light)
                                 }
 
+                                Row(modifier = Modifier.padding(top = 5.dp, start = 10.dp, end = 10.dp, bottom = 10.dp)) {
+                                    Text(stringResource(R.string.set_timezone_leave_empty_note), color = MyStyleKt.TextColor.highlighting_green)
+                                }
                             }
                         }
 
@@ -273,7 +272,7 @@ fun SettingsInnerPage(
                                 color = MyStyleKt.ClickableText.color,
                                 modifier = MyStyleKt.ClickableText.modifier.clickable {
                                     try {
-                                        commitTimeZoneOffsetBuf.value = AppModel.systemTimeZoneOffsetInMinutes.intValue.toString()
+                                        commitTimeZoneOffsetBuf.value = AppModel.getSystemTimeZoneOffsetInMinutesCached().toString()
                                     } catch (e: Exception) {
                                         Msg.requireShowLongDuration("err: ${e.localizedMessage}")
                                         MyLog.e(TAG, "#SetCommitTimeZoneOffsetDialog: get system time zone offset err: ${e.stackTraceToString()}")
@@ -339,7 +338,7 @@ fun SettingsInnerPage(
                         it.commitTimeZone_FollowSystem = newFollowSystem
                     }!!
 
-                    //更新下全局变量，不然还要重启app
+                    //更新下全局变量，不然还要重启app才能获取到app最新时区
                     AppModel.reloadTimeZone(settingsUpdated)
                 }
             }

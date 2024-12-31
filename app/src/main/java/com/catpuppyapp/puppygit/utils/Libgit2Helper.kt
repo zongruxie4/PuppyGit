@@ -6423,7 +6423,7 @@ class Libgit2Helper {
         }
 
         fun createSignature(name: String, email: String, settings: AppSettings):Signature {
-            val offsetMinutes = readTimeZoneOffsetInMinutesFromSettingsOrDefault(settings, AppModel.systemTimeZoneOffsetInMinutes.intValue)
+            val offsetMinutes = readTimeZoneOffsetInMinutesFromSettingsOrDefault(settings, AppModel.getSystemTimeZoneOffsetInMinutesCached())
 
             return Signature(name, email, getUtcTimeInSec(), offsetMinutes)
         }
