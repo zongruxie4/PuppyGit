@@ -175,11 +175,30 @@ fun SettingsInnerPage(
     val showSetCommitTimeZoneDialog = rememberSaveable { mutableStateOf(false) }
     val commitTimeZoneFollowSystem = rememberSaveable { mutableStateOf(settingsState.value.commitTimeZone_FollowSystem) }
     val commitTimeZoneFollowSystemBuf = rememberSaveable { mutableStateOf(commitTimeZoneFollowSystem.value) }
-    val commitTimeZoneOffset = rememberSaveable { mutableStateOf(settingsState.value.commitTimeZone_OffsetInMinutes.trim()) }
-    val commitTimeZoneOffsetBuf = rememberSaveable { mutableStateOf(commitTimeZoneOffset.value) }
+    val commitTimeZoneOffsetInMinute = rememberSaveable { mutableStateOf(settingsState.value.commitTimeZone_OffsetInMinutes.trim()) }
+    val commitTimeZoneOffsetInMinuteBuf = rememberSaveable { mutableStateOf(commitTimeZoneOffsetInMinute.value) }
     val getTimeZoneStr = {
         try {
-            val offsetInMinutes = if(commitTimeZoneFollowSystem.value) AppModel.getSystemTimeZoneOffsetInMinutesCached() else commitTimeZoneOffset.value.trim().toInt()
+            val offsetInMinutes = if(commitTimeZoneFollowSystem.value) {
+                AppModel.getSystemTimeZoneOffsetInMinutesCached()
+            } else {
+                val offsetInMinuteFromSettings = commitTimeZoneOffsetInMinute.value.trim().toInt()
+
+                if(isValidOffsetInMinutes(offsetInMinuteFromSettings)){
+                    offsetInMinuteFromSettings
+                } else{
+                    //存储的时区偏移量无效，重置下
+                    commitTimeZoneOffsetInMinute.value = ""
+                    SettingsUtil.update {
+                        it.commitTimeZone_OffsetInMinutes = ""
+                    }
+
+                    val errMsg = getInvalidTimeZoneOffsetErrMsg(offsetInMinuteFromSettings)
+                    MyLog.e(TAG, "#getTimeZoneStr err: $errMsg")
+                    throw RuntimeException(errMsg)
+                }
+            }
+
             val offsetInUtcFormat = formatMinutesToUtc(offsetInMinutes)
 
             if(commitTimeZoneFollowSystem.value) {
@@ -209,7 +228,7 @@ fun SettingsInnerPage(
     }
 
     val initSetCommitTimeZoneDialog = {
-        commitTimeZoneOffsetBuf.value = commitTimeZoneOffset.value
+        commitTimeZoneOffsetInMinuteBuf.value = commitTimeZoneOffsetInMinute.value
         commitTimeZoneFollowSystemBuf.value = commitTimeZoneFollowSystem.value
 
         showSetCommitTimeZoneDialog.value = true
@@ -236,9 +255,9 @@ fun SettingsInnerPage(
                             ,
                             singleLine = true,
 
-                            value = commitTimeZoneOffsetBuf.value,
+                            value = commitTimeZoneOffsetInMinuteBuf.value,
                             onValueChange = {
-                                commitTimeZoneOffsetBuf.value=it
+                                commitTimeZoneOffsetInMinuteBuf.value=it
                             },
                             label = {
                                 Text(stringResource(R.string.offset_in_minutes))
@@ -272,7 +291,7 @@ fun SettingsInnerPage(
                                 color = MyStyleKt.ClickableText.color,
                                 modifier = MyStyleKt.ClickableText.modifier.clickable {
                                     try {
-                                        commitTimeZoneOffsetBuf.value = AppModel.getSystemTimeZoneOffsetInMinutesCached().toString()
+                                        commitTimeZoneOffsetInMinuteBuf.value = AppModel.getSystemTimeZoneOffsetInMinutesCached().toString()
                                     } catch (e: Exception) {
                                         Msg.requireShowLongDuration("err: ${e.localizedMessage}")
                                         MyLog.e(TAG, "#SetCommitTimeZoneOffsetDialog: get system time zone offset err: ${e.stackTraceToString()}")
@@ -288,7 +307,7 @@ fun SettingsInnerPage(
                                 style = MyStyleKt.ClickableText.style,
                                 color = MyStyleKt.ClickableText.color,
                                 modifier = MyStyleKt.ClickableText.modifier.clickable {
-                                    commitTimeZoneOffsetBuf.value = ""
+                                    commitTimeZoneOffsetInMinuteBuf.value = ""
                                 },
                                 fontWeight = FontWeight.Light
                             )
@@ -309,7 +328,7 @@ fun SettingsInnerPage(
             showSetCommitTimeZoneDialog.value = false
             doJobThenOffLoading {
                 val newOffset = try {
-                    val offsetMinutes = commitTimeZoneOffsetBuf.value.trim().toInt()
+                    val offsetMinutes = commitTimeZoneOffsetInMinuteBuf.value.trim().toInt()
                     if(isValidOffsetInMinutes(offsetMinutes)) {
                         offsetMinutes.toString()
                     }else {
@@ -329,8 +348,8 @@ fun SettingsInnerPage(
                 val newFollowSystem = commitTimeZoneFollowSystemBuf.value
 
                 // update if need
-                if(newOffset != commitTimeZoneOffset.value || newFollowSystem != commitTimeZoneFollowSystem.value) {
-                    commitTimeZoneOffset.value = newOffset
+                if(newOffset != commitTimeZoneOffsetInMinute.value || newFollowSystem != commitTimeZoneFollowSystem.value) {
+                    commitTimeZoneOffsetInMinute.value = newOffset
                     commitTimeZoneFollowSystem.value = newFollowSystem
 
                     val settingsUpdated = SettingsUtil.update(requireReturnSnapshotOfUpdatedSettings = true) {

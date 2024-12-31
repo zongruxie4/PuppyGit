@@ -860,7 +860,7 @@ fun readTimeZoneOffsetInMinutesFromSettingsOrDefaultNullable(settings: AppSettin
                 offsetMinutes
             }else {
                 val errMsg = getInvalidTimeZoneOffsetErrMsg(offsetMinutes)
-                MyLog.e(TAG, "readTimeZoneFromSettings err: $errMsg")
+                MyLog.e(TAG, "#readTimeZoneOffsetInMinutesFromSettingsOrDefaultNullable err: $errMsg")
                 throw RuntimeException(errMsg)
             }
         }
