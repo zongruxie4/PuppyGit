@@ -172,23 +172,23 @@ fun SettingsInnerPage(
         }
     }
 
-    val showSetCommitTimeZoneDialog = rememberSaveable { mutableStateOf(false) }
-    val commitTimeZoneFollowSystem = rememberSaveable { mutableStateOf(settingsState.value.timeZone.followSystem) }
-    val commitTimeZoneFollowSystemBuf = rememberSaveable { mutableStateOf(commitTimeZoneFollowSystem.value) }
-    val commitTimeZoneOffsetInMinute = rememberSaveable { mutableStateOf(settingsState.value.timeZone.offsetInMinutes.trim()) }
-    val commitTimeZoneOffsetInMinuteBuf = rememberSaveable { mutableStateOf(commitTimeZoneOffsetInMinute.value) }
+    val showSetTimeZoneDialog = rememberSaveable { mutableStateOf(false) }
+    val timeZone_followSystem = rememberSaveable { mutableStateOf(settingsState.value.timeZone.followSystem) }
+    val timeZone_followSystemBuf = rememberSaveable { mutableStateOf(timeZone_followSystem.value) }
+    val timeZone_offsetInMinute = rememberSaveable { mutableStateOf(settingsState.value.timeZone.offsetInMinutes.trim()) }
+    val timeZone_offsetInMinuteBuf = rememberSaveable { mutableStateOf(timeZone_offsetInMinute.value) }
     val getTimeZoneStr = {
         try {
-            val offsetInMinutes = if(commitTimeZoneFollowSystem.value) {
+            val offsetInMinutes = if(timeZone_followSystem.value) {
                 AppModel.getSystemTimeZoneOffsetInMinutesCached()
             } else {
-                val offsetInMinuteFromSettings = commitTimeZoneOffsetInMinute.value.trim().toInt()
+                val offsetInMinuteFromSettings = timeZone_offsetInMinute.value.trim().toInt()
 
                 if(isValidOffsetInMinutes(offsetInMinuteFromSettings)){
                     offsetInMinuteFromSettings
                 } else{
                     //存储的时区偏移量无效，重置下
-                    commitTimeZoneOffsetInMinute.value = ""
+                    timeZone_offsetInMinute.value = ""
                     SettingsUtil.update {
                         it.timeZone.offsetInMinutes = ""
                     }
@@ -201,13 +201,13 @@ fun SettingsInnerPage(
 
             val offsetInUtcFormat = formatMinutesToUtc(offsetInMinutes)
 
-            if(commitTimeZoneFollowSystem.value) {
+            if(timeZone_followSystem.value) {
                 "${activityContext.getString(R.string.follow_system)} ($offsetInUtcFormat)"
             }else {
                 offsetInUtcFormat
             }
 
-//            val prefix = if(commitTimeZoneFollowSystem.value) {
+//            val prefix = if(timeZone_followSystem.value) {
 //                activityContext.getString(R.string.follow_system)
 //            }else {
 //                //如果有符号，直接返回，否则添加+号
@@ -227,15 +227,15 @@ fun SettingsInnerPage(
         }
     }
 
-    val initSetCommitTimeZoneDialog = {
-        commitTimeZoneOffsetInMinuteBuf.value = commitTimeZoneOffsetInMinute.value
-        commitTimeZoneFollowSystemBuf.value = commitTimeZoneFollowSystem.value
+    val initSetTimeZoneDialog = {
+        timeZone_offsetInMinuteBuf.value = timeZone_offsetInMinute.value
+        timeZone_followSystemBuf.value = timeZone_followSystem.value
 
-        showSetCommitTimeZoneDialog.value = true
+        showSetTimeZoneDialog.value = true
     }
 
 
-    if(showSetCommitTimeZoneDialog.value) {
+    if(showSetTimeZoneDialog.value) {
         ConfirmDialog2(title = stringResource(R.string.timezone),
             requireShowTextCompose = true,
             textCompose = {
@@ -245,9 +245,9 @@ fun SettingsInnerPage(
                         .verticalScroll(rememberScrollState())
                     ,
                 ) {
-                    MyCheckBox(stringResource(R.string.follow_system), commitTimeZoneFollowSystemBuf)
+                    MyCheckBox(stringResource(R.string.follow_system), timeZone_followSystemBuf)
 
-                    if(commitTimeZoneFollowSystemBuf.value.not()) {
+                    if(timeZone_followSystemBuf.value.not()) {
                         TextField(
                             modifier = Modifier
                                 .fillMaxWidth()
@@ -255,9 +255,9 @@ fun SettingsInnerPage(
                             ,
                             singleLine = true,
 
-                            value = commitTimeZoneOffsetInMinuteBuf.value,
+                            value = timeZone_offsetInMinuteBuf.value,
                             onValueChange = {
-                                commitTimeZoneOffsetInMinuteBuf.value=it
+                                timeZone_offsetInMinuteBuf.value=it
                             },
                             label = {
                                 Text(stringResource(R.string.offset_in_minutes))
@@ -291,10 +291,10 @@ fun SettingsInnerPage(
                                 color = MyStyleKt.ClickableText.color,
                                 modifier = MyStyleKt.ClickableText.modifier.clickable {
                                     try {
-                                        commitTimeZoneOffsetInMinuteBuf.value = AppModel.getSystemTimeZoneOffsetInMinutesCached().toString()
+                                        timeZone_offsetInMinuteBuf.value = AppModel.getSystemTimeZoneOffsetInMinutesCached().toString()
                                     } catch (e: Exception) {
                                         Msg.requireShowLongDuration("err: ${e.localizedMessage}")
-                                        MyLog.e(TAG, "#SetCommitTimeZoneOffsetDialog: get system time zone offset err: ${e.stackTraceToString()}")
+                                        MyLog.e(TAG, "#SetTimeZoneOffsetDialog: get system time zone offset err: ${e.stackTraceToString()}")
                                     }
                                 },
                                 fontWeight = FontWeight.Light
@@ -307,7 +307,7 @@ fun SettingsInnerPage(
                                 style = MyStyleKt.ClickableText.style,
                                 color = MyStyleKt.ClickableText.color,
                                 modifier = MyStyleKt.ClickableText.modifier.clickable {
-                                    commitTimeZoneOffsetInMinuteBuf.value = ""
+                                    timeZone_offsetInMinuteBuf.value = ""
                                 },
                                 fontWeight = FontWeight.Light
                             )
@@ -323,12 +323,12 @@ fun SettingsInnerPage(
             },
             okBtnText = stringResource(id = R.string.save),
             cancelBtnText = stringResource(id = R.string.cancel),
-            onCancel = { showSetCommitTimeZoneDialog.value = false }
+            onCancel = { showSetTimeZoneDialog.value = false }
         ) {
-            showSetCommitTimeZoneDialog.value = false
+            showSetTimeZoneDialog.value = false
             doJobThenOffLoading {
                 val newOffset = try {
-                    val offsetMinutes = commitTimeZoneOffsetInMinuteBuf.value.trim().toInt()
+                    val offsetMinutes = timeZone_offsetInMinuteBuf.value.trim().toInt()
                     if(isValidOffsetInMinutes(offsetMinutes)) {
                         offsetMinutes.toString()
                     }else {
@@ -345,12 +345,12 @@ fun SettingsInnerPage(
                     ""
                 }
 
-                val newFollowSystem = commitTimeZoneFollowSystemBuf.value
+                val newFollowSystem = timeZone_followSystemBuf.value
 
                 // update if need
-                if(newOffset != commitTimeZoneOffsetInMinute.value || newFollowSystem != commitTimeZoneFollowSystem.value) {
-                    commitTimeZoneOffsetInMinute.value = newOffset
-                    commitTimeZoneFollowSystem.value = newFollowSystem
+                if(newOffset != timeZone_offsetInMinute.value || newFollowSystem != timeZone_followSystem.value) {
+                    timeZone_offsetInMinute.value = newOffset
+                    timeZone_followSystem.value = newFollowSystem
 
                     val settingsUpdated = SettingsUtil.update(requireReturnSnapshotOfUpdatedSettings = true) {
                         it.timeZone.offsetInMinutes = newOffset
@@ -739,7 +739,7 @@ fun SettingsInnerPage(
 
 
         SettingsContent(onClick = {
-            initSetCommitTimeZoneDialog()
+            initSetTimeZoneDialog()
         }) {
             Column {
                 Text(stringResource(R.string.timezone), fontSize = itemFontSize)
