@@ -40,12 +40,12 @@ data class AppSettings(
     var globalGitConfig:GlobalGitConfig = GlobalGitConfig(),  //充当公用git配置文件，相当于电脑上的 ~/.gitconfig
 
     //各个页面的设置
-    var files:Files = Files(),
-    var editor:Editor = Editor(),
+    val files:Files = Files(),
+    val editor:Editor = Editor(),
     var changeList:ChangeList = ChangeList(),
 
     @Deprecated("废弃了")
-    var storageDir:StorageDir = StorageDir(),  //将来会出一个StorageDir页面，用来管理存储仓库的目录，有内部，有外部，还有ProgramData(puppygitdata，这个类型不一定展示，感觉没必要展示给用户，但实际在代码里存在)
+    val storageDir:StorageDir = StorageDir(),  //将来会出一个StorageDir页面，用来管理存储仓库的目录，有内部，有外部，还有ProgramData(puppygitdata，这个类型不一定展示，感觉没必要展示给用户，但实际在代码里存在)
     // var settings ? Settings页面的设置？叫这个名字好像不太好，再考虑下吧
 
     // storagePaths for clone
@@ -58,7 +58,7 @@ data class AppSettings(
     @Deprecated("instead by `DiffSettings` same name field")
     var groupDiffContentByLineNum:Boolean = true,
 
-    var diff:DiffSettings = DiffSettings(),
+    val diff:DiffSettings = DiffSettings(),
 
     /**
      * commit history page, tap load more, load how many items
