@@ -187,6 +187,8 @@ fun FilesInnerPage(
 
     val settingsSnapshot = mutableCustomStateOf(keyTag = stateKeyTag, keyName = "settingsSnapshot") {
         val s = SettingsUtil.getSettingsSnapshot()
+
+        //实际上filesPageScrolled已经是是否显示navi buttons的开关了，变量名是历史遗留问题，因为最初是只有滚动屏幕才显示导航按钮
         filesPageScrolled.value = s.showNaviButtons
         s
     }
@@ -2407,9 +2409,11 @@ private fun doInit(
 //    currentPathBreadCrumbList2: SnapshotStateList<FileItemDto>
 ){
     doJobThenOffLoading(loadingOn, loadingOff, appContext.getString(R.string.loading)) {
+        val lastOpenedPathFromSettings = settingsSnapshot.value.files.lastOpenedPath
+
         //如果路径为空，从配置文件读取上次打开的路径
         if(currentPath.value.isBlank()) {
-            currentPath.value = settingsSnapshot.value.files.lastOpenedPath
+            currentPath.value = lastOpenedPathFromSettings
         }
 
         //先清下列表，感觉在开头清比较好，如果加载慢，先白屏，然后出东西；放后面清的话，如果加载慢，会依然显示旧条目列表，感觉没变化，像卡了一样，用户可能重复点击
@@ -2459,11 +2463,20 @@ private fun doInit(
 
 
         //执行到这，路径一定存在（要么路径存在，要么不存在被替换成了所有仓库的父目录，然后路径存在）
-        //更新配置文件，避免卡顿，可开个协程，但其实没必要，因为最有可能造成卡顿的io操作其实已经放到协程里执行了
-        SettingsUtil.update {  //这里并不是把页面的settingsSnapshot状态变量完全写入到配置文件，而是获取一份当下最新设置项的拷贝，然后修改我在这个代码块里修改的变量，再写入文件，所以，在这修改的设置项其实和页面的设置项可能会有出入，但我只需要currentPath关联的一个值而已，所以有差异也无所谓
-            it.files.lastOpenedPath = currentPath.value
+
+        //更新配置文件中记录的最后打开路径，如果需要
+        if(lastOpenedPathFromSettings != currentPath.value) {
+            //更新页面变量
+            settingsSnapshot.value.files.lastOpenedPath = currentPath.value
+
+            //更新配置文件，避免卡顿，可开个协程，但其实没必要，因为最有可能造成卡顿的io操作其实已经放到协程里执行了
+            SettingsUtil.update {  //这里并不是把页面的settingsSnapshot状态变量完全写入到配置文件，而是获取一份当下最新设置项的拷贝，然后修改我在这个代码块里修改的变量，再写入文件，所以，在这修改的设置项其实和页面的设置项可能会有出入，但我只需要currentPath关联的一个值而已，所以有差异也无所谓
+                it.files.lastOpenedPath = currentPath.value
+            }
         }
 
+
+        //文件列表排序算法
         val (viewAndSortOnlyForThisFolder, viewAndSort) = getViewAndSortForPath(currentPath.value, settingsSnapshot.value)
         viewAndSortState.value = viewAndSort
         viewAndSortOnlyForThisFolderState.value = viewAndSortOnlyForThisFolder
@@ -2501,8 +2514,8 @@ private fun doInit(
 
         //注意，如果keyword为empty，正常来说不会进入搜索模式，不过如果进入，也会显示所有文件，因为任何字符串都包含空字符串
         //注意：只有当filterMode==2，也就是“显示根据关键字过滤的结果”的时候，才执行过滤，如果只是打开输入框，不会执行过滤。这个值不要改成不等于0，不然，打开输入框，输入内容，然后执行会触发刷新页面的操作（例如新建文件），就会执行过滤了，那样就会没点确定就开始过滤，会感觉有点混乱。比较好的交互逻辑是：要么就需要确认才过滤，要么就不需要确认边输入边过滤，不要两者混合。
-        val isFilterModeOn = filesPageGetFilterModeOn() == 2
-        val filterKeywordText = filesPageFilterKeyword.value.text
+//        val isFilterModeOn = filesPageGetFilterModeOn() == 2
+//        val filterKeywordText = filesPageFilterKeyword.value.text
 
         // 当请求打开的curpath是个文件时会用到这几个变量 开始
         val needSelectFile = currentFile!=null && currentFile.exists()
@@ -2511,6 +2524,7 @@ private fun doInit(
         var curFileFromCurPathFileDto:FileItemDto? = null  //用来存匹配的dto，然后在列表查找index，然后滚动到指定位置
         // 当请求打开的curpath是个文件时会用到这几个变量 结束
 
+        //获取文件列表之类的
 
         var folderCount = 0
         var fileCount = 0
