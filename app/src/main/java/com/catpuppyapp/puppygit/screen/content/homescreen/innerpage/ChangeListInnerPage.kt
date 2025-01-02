@@ -285,7 +285,8 @@ fun ChangeListInnerPage(
 //    val selFilePathListJsonObjStr = remember{ mutableStateOf("{}") }  //key是文件名，所以这个列表只能存储相同目录下的文件，不同目录有可能名称冲突，但由于选择模式只能在当前目录选择，所以这个缺陷可以接受。json格式:{fileName:canonicalPath}
 
     val quitSelectionMode = {
-        selectedItemList.value.clear()  //清空选中文件列表
+//        selectedItemList.value.clear()  //清空选中文件列表
+
 //        selectedItemList.requireRefreshView()
 //        selectedItemList.requireRefreshView()  //请求视图刷新，可选，因为后面有个变量改变会触发视图刷新
         isFileSelectionMode.value=false  //关闭选择模式
@@ -323,11 +324,11 @@ fun ChangeListInnerPage(
 
     //这种常量型的state用remember就行，反正也不会改，更提不上恢复
     val iconList:List<ImageVector> = if(fromTo == Cons.gitDiffFromIndexToWorktree) listOf(  //changelist page
-            Icons.Filled.CloudDone,  //提交选中文件并推送
+//            Icons.Filled.CloudDone,  //提交选中文件并推送
             Icons.Filled.DoneAll,  //提交选中文件
             Icons.Filled.SelectAll,  //全选
         )else if(fromTo==Cons.gitDiffFromHeadToIndex) listOf(  //index page
-            Icons.Outlined.CloudDone,  //提交index所有条目并推送
+//            Icons.Outlined.CloudDone,  //提交index所有条目并推送
             Icons.Outlined.Check,  //提交index所有条目
             Icons.Outlined.SelectAll
         )else if(fromTo == Cons.gitDiffFromTreeToTree) listOf(
@@ -339,11 +340,11 @@ fun ChangeListInnerPage(
         ) else listOf()
 
     val iconTextList:List<String> = if(fromTo == Cons.gitDiffFromIndexToWorktree) listOf(  //changelist page
-        stringResource(id = R.string.commit_selected_and_index_items_then_sync),
+//        stringResource(id = R.string.commit_selected_and_index_items_then_sync),
         stringResource(id = R.string.commit_selected_and_index_items),
         stringResource(id = R.string.select_all),
         )else if(fromTo == Cons.gitDiffFromHeadToIndex) listOf(  //index page
-            stringResource(id = R.string.commit_all_index_items_then_sync),
+//            stringResource(id = R.string.commit_all_index_items_then_sync),
             stringResource(id = R.string.commit_all_index_items),
             stringResource(id = R.string.select_all),
         ) else if(fromTo == Cons.gitDiffFromTreeToTree) listOf(
@@ -374,13 +375,13 @@ fun ChangeListInnerPage(
 
     val iconEnableList:List<()->Boolean> = if(fromTo == Cons.gitDiffFromIndexToWorktree) listOf( //worktree页面
             //只有仓库非detached HEAD状态时，commitThenSync才可用
-            {selectedListIsNotEmpty() && !dbIntToBool(curRepoFromParentPage.value.isDetached) },  //提交并同步
+//            {selectedListIsNotEmpty() && !dbIntToBool(curRepoFromParentPage.value.isDetached) },  //提交并同步
 
             selectedListIsNotEmpty,  //提交
             {true},  //select all 总是启用
         ) else if(fromTo==Cons.gitDiffFromHeadToIndex) listOf( //index页面
             //只有仓库非detached HEAD状态时，commitThenSync才可用
-            {changeListPageHasIndexItem.value && !dbIntToBool(curRepoFromParentPage.value.isDetached) },  //提交并同步，只有当存在index条目时才启用，changeListPageHasIndexItem 在index和worktree页面都会更新，所以用这个值来判断是否存在index条目是可靠的，或者改用itemList也行，因为在index页面，itemList代表的就是index页面的所有条目，再或者直接填true也行，因为底栏只有选择模式才打开，而只有存在条目才能进入选择模式，所以，如果你能看到底栏，那就肯定能执行提交和推送，反之你看不到底栏，就算提交和推送按钮启用，你也执行不了
+//            {changeListPageHasIndexItem.value && !dbIntToBool(curRepoFromParentPage.value.isDetached) },  //提交并同步，只有当存在index条目时才启用，changeListPageHasIndexItem 在index和worktree页面都会更新，所以用这个值来判断是否存在index条目是可靠的，或者改用itemList也行，因为在index页面，itemList代表的就是index页面的所有条目，再或者直接填true也行，因为底栏只有选择模式才打开，而只有存在条目才能进入选择模式，所以，如果你能看到底栏，那就肯定能执行提交和推送，反之你看不到底栏，就算提交和推送按钮启用，你也执行不了
 
             {changeListPageHasIndexItem.value},  //提交，只有当存在index条目时才启用
             {true} // select all
@@ -559,7 +560,7 @@ fun ChangeListInnerPage(
     val commitMsg = rememberSaveable { mutableStateOf("")}
     val indexIsEmptyForCommitDialog = rememberSaveable { mutableStateOf(false)}
     val commitBtnTextForCommitDialog = rememberSaveable { mutableStateOf("") }
-    val showPushForCommitDialog = rememberSaveable { mutableStateOf(false)}
+//    val showPushForCommitDialog = rememberSaveable { mutableStateOf(false)}
 
     //upstream
 //    val upstreamRemoteOptionsList = mutableCustomStateOf(value = mutableListOf<String>())
@@ -1142,7 +1143,7 @@ fun ChangeListInnerPage(
                         successCommitStrRes = successCommitStrRes,
                         indexIsEmptyForCommitDialog=indexIsEmptyForCommitDialog,
                         commitBtnTextForCommitDialog=commitBtnTextForCommitDialog,
-                        showPushForCommitDialog=showPushForCommitDialog
+//                        showPushForCommitDialog=showPushForCommitDialog
                     )
                 }catch (e:Exception){
                     showErrAndSaveLog(TAG,"require commit error:"+e.stackTraceToString(), activityContext.getString(R.string.commit_failed)+":"+e.localizedMessage, requireShowToast,curRepoFromParentPage.value.id)
@@ -1193,7 +1194,7 @@ fun ChangeListInnerPage(
                                 successCommitStrRes = successCommitStrRes,
                                 indexIsEmptyForCommitDialog=indexIsEmptyForCommitDialog,
                                 commitBtnTextForCommitDialog=commitBtnTextForCommitDialog,
-                                showPushForCommitDialog=showPushForCommitDialog
+//                                showPushForCommitDialog=showPushForCommitDialog
                             )
                         }
 
@@ -1235,7 +1236,7 @@ fun ChangeListInnerPage(
                         successCommitStrRes = successCommitStrRes,
                         indexIsEmptyForCommitDialog=indexIsEmptyForCommitDialog,
                         commitBtnTextForCommitDialog=commitBtnTextForCommitDialog,
-                        showPushForCommitDialog=showPushForCommitDialog
+//                        showPushForCommitDialog=showPushForCommitDialog
                     )
                 }catch (e:Exception){
                     showErrAndSaveLog(TAG,"require Rebase Continue error:"+e.stackTraceToString(), activityContext.getString(R.string.rebase_continue_err)+":"+e.localizedMessage, requireShowToast,repoId)
@@ -1340,7 +1341,7 @@ fun ChangeListInnerPage(
                         successCommitStrRes = successCommitStrRes,
                         indexIsEmptyForCommitDialog=indexIsEmptyForCommitDialog,
                         commitBtnTextForCommitDialog=commitBtnTextForCommitDialog,
-                        showPushForCommitDialog=showPushForCommitDialog
+//                        showPushForCommitDialog=showPushForCommitDialog
                     )
                 }catch (e:Exception){
                     showErrAndSaveLog(TAG,"require Cherrypick Continue error:"+e.stackTraceToString(), activityContext.getString(R.string.cherrypick_continue_err)+":"+e.localizedMessage, requireShowToast,repoId)
@@ -1540,6 +1541,7 @@ fun ChangeListInnerPage(
     }
 
     if(showCommitMsgDialog.value) {
+        val repoIsNotDetached = !dbIntToBool(curRepoFromParentPage.value.isDetached)
         RequireCommitMsgDialog(
             repoPath = curRepoFromParentPage.value.fullSavePath,
             repoState=repoState.intValue,
@@ -1547,8 +1549,9 @@ fun ChangeListInnerPage(
             amend=amendCommit,
             commitMsg=commitMsg,
             commitBtnText = commitBtnTextForCommitDialog.value,
-            showPush = showPushForCommitDialog.value,
-            onOk={msgOrAmendMsg, requirePushAfterCommit, requireDoSync->
+            showPush = repoIsNotDetached,
+            showSync = repoIsNotDetached,
+            onOk={msgOrAmendMsg, requirePush, requireSync->
                 //把弹窗相关的状态变量设置回初始状态，不然只能提交一次，下次就不弹窗了(ps:这个放coroutine里修改会报状态异常，提示不能并发修改状态，之前记得能修改，不明所以)
                 showCommitMsgDialog.value = false  //关闭弹窗
 
@@ -1569,7 +1572,7 @@ fun ChangeListInnerPage(
                         val commitSuccess = ChangeListFunctions.doCommit(
                             requireShowCommitMsgDialog = false,
                             cmtMsg = cmtMsg,
-                            requireCloseBottomBar = !requireDoSync && !requirePushAfterCommit,
+                            requireCloseBottomBar = !(requireSync || requirePush),
 //                            requireDoSync = requireDoSync,
                             curRepoFromParentPage = curRepoFromParentPage,
                             refreshRequiredByParentPage = refreshRequiredByParentPage,
@@ -1591,10 +1594,10 @@ fun ChangeListInnerPage(
                             successCommitStrRes = successCommitStrRes,
                             indexIsEmptyForCommitDialog=indexIsEmptyForCommitDialog,
                             commitBtnTextForCommitDialog=commitBtnTextForCommitDialog,
-                            showPushForCommitDialog=showPushForCommitDialog
+//                            showPushForCommitDialog=showPushForCommitDialog
                         )
 
-                        if(requireDoSync) {
+                        if(requireSync) {
                             if(commitSuccess){
                                 //更新loading提示文案
                                 loadingText.value = activityContext.getString(R.string.syncing)
@@ -1621,7 +1624,7 @@ fun ChangeListInnerPage(
                             }else {
                                 requireShowToast(activityContext.getString(R.string.sync_canceled_by_commit_failed))
                             }
-                        }else if(requirePushAfterCommit) {
+                        }else if(requirePush) {
                             if(commitSuccess) {
                                 loadingText.value = activityContext.getString(R.string.pushing)
 
@@ -1677,7 +1680,7 @@ fun ChangeListInnerPage(
             selectedOption = usernameAndEmailDialogSelectedOption,
             username = username,
             email = email,
-            onOk = { requireDoSync:Boolean ->
+            onOk = {
                 doJobThenOffLoading(
                     loadingOn = loadingOn,
                     loadingOff = loadingOff,
@@ -1734,7 +1737,8 @@ fun ChangeListInnerPage(
                         ChangeListFunctions.doCommit(
                             requireShowCommitMsgDialog = true,
                             cmtMsg = "",
-                            requireCloseBottomBar = !requireDoSync,
+//                            requireCloseBottomBar = !requireDoSync,
+                            requireCloseBottomBar = true,
 //                            requireDoSync = requireDoSync,
                             curRepoFromParentPage = curRepoFromParentPage,
                             refreshRequiredByParentPage = refreshRequiredByParentPage,
@@ -1756,7 +1760,7 @@ fun ChangeListInnerPage(
                             successCommitStrRes = successCommitStrRes,
                             indexIsEmptyForCommitDialog = indexIsEmptyForCommitDialog,
                             commitBtnTextForCommitDialog=commitBtnTextForCommitDialog,
-                            showPushForCommitDialog=showPushForCommitDialog
+//                            showPushForCommitDialog=showPushForCommitDialog
                         )
                     } else {
                         requireShowToast(invalidUsernameOrEmail)
@@ -2174,46 +2178,46 @@ fun ChangeListInnerPage(
 
     //BottomBar选项
     val iconOnClickList:List<()->Unit> = if(fromTo == Cons.gitDiffFromIndexToWorktree) listOf(  // ChangeList页面的底栏选项 ( worktree页面 )
-            commitThenSync@{
-                // commit then sync(pull then push)
-                doJobThenOffLoading(loadingOn=loadingOn,loadingOff=loadingOff, loadingText=activityContext.getString(R.string.executing_commit_then_sync)) {
-                    val stageSuccess = doStage(false, false, null)
-                    if(!stageSuccess){
-                        bottomBarActDoneCallback(activityContext.getString(R.string.stage_failed))
-                    }else {
-                        //显示commit弹窗，之后在其确认回调函数里执行后续操作
-                        //最后一个参数代表执行完提交后是否执行sync
-//                        doCommit(true, "", true, true)
-                        ChangeListFunctions.doCommit(
-                            requireShowCommitMsgDialog = true,
-                            cmtMsg = "",
-                            requireCloseBottomBar = true,
-//                            requireDoSync = true,
-                            curRepoFromParentPage = curRepoFromParentPage,
-                            refreshRequiredByParentPage = refreshRequiredByParentPage,
-                            username = username,
-                            email = email,
-                            requireShowToast = requireShowToast,
-                            pleaseSetUsernameAndEmailBeforeCommit = pleaseSetUsernameAndEmailBeforeCommit,
-                            showUserAndEmailDialog = showUserAndEmailDialog,
-                            amendCommit = amendCommit,
-                            overwriteAuthor = overwriteAuthor,
-                            showCommitMsgDialog = showCommitMsgDialog,
-                            repoState = repoState,
-                            appContext = activityContext,
-                            loadingText = loadingText,
-                            repoId = repoId,
-                            bottomBarActDoneCallback = bottomBarActDoneCallback,
-                            fromTo = fromTo,
-                            itemList = itemList,
-                            successCommitStrRes = successCommitStrRes,
-                            indexIsEmptyForCommitDialog=indexIsEmptyForCommitDialog,
-                            commitBtnTextForCommitDialog=commitBtnTextForCommitDialog,
-                            showPushForCommitDialog=showPushForCommitDialog
-                        )
-                    }
-                }
-            },
+//            commitThenSync@{
+//                // commit then sync(pull then push)
+//                doJobThenOffLoading(loadingOn=loadingOn,loadingOff=loadingOff, loadingText=activityContext.getString(R.string.executing_commit_then_sync)) {
+//                    val stageSuccess = doStage(false, false, null)
+//                    if(!stageSuccess){
+//                        bottomBarActDoneCallback(activityContext.getString(R.string.stage_failed))
+//                    }else {
+//                        //显示commit弹窗，之后在其确认回调函数里执行后续操作
+//                        //最后一个参数代表执行完提交后是否执行sync
+////                        doCommit(true, "", true, true)
+//                        ChangeListFunctions.doCommit(
+//                            requireShowCommitMsgDialog = true,
+//                            cmtMsg = "",
+//                            requireCloseBottomBar = true,
+////                            requireDoSync = true,
+//                            curRepoFromParentPage = curRepoFromParentPage,
+//                            refreshRequiredByParentPage = refreshRequiredByParentPage,
+//                            username = username,
+//                            email = email,
+//                            requireShowToast = requireShowToast,
+//                            pleaseSetUsernameAndEmailBeforeCommit = pleaseSetUsernameAndEmailBeforeCommit,
+//                            showUserAndEmailDialog = showUserAndEmailDialog,
+//                            amendCommit = amendCommit,
+//                            overwriteAuthor = overwriteAuthor,
+//                            showCommitMsgDialog = showCommitMsgDialog,
+//                            repoState = repoState,
+//                            appContext = activityContext,
+//                            loadingText = loadingText,
+//                            repoId = repoId,
+//                            bottomBarActDoneCallback = bottomBarActDoneCallback,
+//                            fromTo = fromTo,
+//                            itemList = itemList,
+//                            successCommitStrRes = successCommitStrRes,
+//                            indexIsEmptyForCommitDialog=indexIsEmptyForCommitDialog,
+//                            commitBtnTextForCommitDialog=commitBtnTextForCommitDialog,
+//                            showPushForCommitDialog=showPushForCommitDialog
+//                        )
+//                    }
+//                }
+//            },
 
             commit@{
                 doJobThenOffLoading(loadingOn=loadingOn,loadingOff=loadingOff, loadingText=activityContext.getString(R.string.committing)) {
@@ -2248,7 +2252,7 @@ fun ChangeListInnerPage(
                             successCommitStrRes = successCommitStrRes,
                             indexIsEmptyForCommitDialog=indexIsEmptyForCommitDialog,
                             commitBtnTextForCommitDialog=commitBtnTextForCommitDialog,
-                            showPushForCommitDialog=showPushForCommitDialog
+//                            showPushForCommitDialog=showPushForCommitDialog
                         )
                     }
                 }
@@ -2260,41 +2264,41 @@ fun ChangeListInnerPage(
                 selectAll()
             },
         ) else if(fromTo == Cons.gitDiffFromHeadToIndex) listOf(  //index页面的底栏选项
-        commitThenSync@{
-            // commit then sync(pull then push)
-            doJobThenOffLoading(loadingOn=loadingOn,loadingOff=loadingOff, loadingText=activityContext.getString(R.string.executing_commit_then_sync)) {
-                //显示commit弹窗，之后在其确认回调函数里执行后续操作
-                //最后一个参数代表执行完提交后是否执行sync
-//                doCommit(true, "", true, true)
-                ChangeListFunctions.doCommit(
-                    requireShowCommitMsgDialog = true,
-                    cmtMsg = "",
-                    requireCloseBottomBar = true,
-//                    requireDoSync = true,
-                    curRepoFromParentPage = curRepoFromParentPage,
-                    refreshRequiredByParentPage = refreshRequiredByParentPage,
-                    username = username,
-                    email = email,
-                    requireShowToast = requireShowToast,
-                    pleaseSetUsernameAndEmailBeforeCommit = pleaseSetUsernameAndEmailBeforeCommit,
-                    showUserAndEmailDialog = showUserAndEmailDialog,
-                    amendCommit = amendCommit,
-                    overwriteAuthor = overwriteAuthor,
-                    showCommitMsgDialog = showCommitMsgDialog,
-                    repoState = repoState,
-                    appContext = activityContext,
-                    loadingText = loadingText,
-                    repoId = repoId,
-                    bottomBarActDoneCallback = bottomBarActDoneCallback,
-                    fromTo = fromTo,
-                    itemList = itemList,
-                    successCommitStrRes = successCommitStrRes,
-                    indexIsEmptyForCommitDialog=indexIsEmptyForCommitDialog,
-                    commitBtnTextForCommitDialog=commitBtnTextForCommitDialog,
-                    showPushForCommitDialog=showPushForCommitDialog
-                )
-            }
-        },
+//        commitThenSync@{
+//            // commit then sync(pull then push)
+//            doJobThenOffLoading(loadingOn=loadingOn,loadingOff=loadingOff, loadingText=activityContext.getString(R.string.executing_commit_then_sync)) {
+//                //显示commit弹窗，之后在其确认回调函数里执行后续操作
+//                //最后一个参数代表执行完提交后是否执行sync
+////                doCommit(true, "", true, true)
+//                ChangeListFunctions.doCommit(
+//                    requireShowCommitMsgDialog = true,
+//                    cmtMsg = "",
+//                    requireCloseBottomBar = true,
+////                    requireDoSync = true,
+//                    curRepoFromParentPage = curRepoFromParentPage,
+//                    refreshRequiredByParentPage = refreshRequiredByParentPage,
+//                    username = username,
+//                    email = email,
+//                    requireShowToast = requireShowToast,
+//                    pleaseSetUsernameAndEmailBeforeCommit = pleaseSetUsernameAndEmailBeforeCommit,
+//                    showUserAndEmailDialog = showUserAndEmailDialog,
+//                    amendCommit = amendCommit,
+//                    overwriteAuthor = overwriteAuthor,
+//                    showCommitMsgDialog = showCommitMsgDialog,
+//                    repoState = repoState,
+//                    appContext = activityContext,
+//                    loadingText = loadingText,
+//                    repoId = repoId,
+//                    bottomBarActDoneCallback = bottomBarActDoneCallback,
+//                    fromTo = fromTo,
+//                    itemList = itemList,
+//                    successCommitStrRes = successCommitStrRes,
+//                    indexIsEmptyForCommitDialog=indexIsEmptyForCommitDialog,
+//                    commitBtnTextForCommitDialog=commitBtnTextForCommitDialog,
+//                    showPushForCommitDialog=showPushForCommitDialog
+//                )
+//            }
+//        },
 
         commit@{
             doJobThenOffLoading(loadingOn=loadingOn,loadingOff=loadingOff, loadingText=activityContext.getString(R.string.committing)) {
@@ -2325,7 +2329,7 @@ fun ChangeListInnerPage(
                     successCommitStrRes = successCommitStrRes,
                     indexIsEmptyForCommitDialog=indexIsEmptyForCommitDialog,
                     commitBtnTextForCommitDialog=commitBtnTextForCommitDialog,
-                    showPushForCommitDialog=showPushForCommitDialog
+//                    showPushForCommitDialog=showPushForCommitDialog
                 )
             }
 
@@ -2620,8 +2624,13 @@ fun ChangeListInnerPage(
     ) else listOf()  // fromTo == Cons.gitDiffFromTreeToTree
 
     val switchItemSelected = { item:StatusTypeEntrySaver ->
-        //开启选择模式
-        isFileSelectionMode.value = true
+        if(isFileSelectionMode.value.not()) {
+            //清空选中文件列表
+            selectedItemList.value.clear()
+            //开启选择模式
+            isFileSelectionMode.value = true
+        }
+
         //如果元素不在已选择条目列表则添加
         filesPageAddFileToSelectedListIfAbsentElseRemove(item)
     }

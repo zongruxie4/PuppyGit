@@ -39,8 +39,9 @@ fun RequireCommitMsgDialog(
     commitMsg: MutableState<String>,
     indexIsEmptyForCommitDialog:MutableState<Boolean>,
     showPush:Boolean,
+    showSync:Boolean,
     commitBtnText:String = stringResource(R.string.commit),
-    onOk: (msg:String, requirePushAfterCommit:Boolean) -> Unit,
+    onOk: (msg:String, requirePush:Boolean, requireSync:Boolean) -> Unit,
     onCancel: () -> Unit,
 ) {
     val activityContext = LocalContext.current
@@ -178,7 +179,8 @@ fun RequireCommitMsgDialog(
             TextButton(
                 onClick = {
                     val requirePush = false
-                    onOk(getCommitMsg(), requirePush)
+                    val requireSync = false
+                    onOk(getCommitMsg(), requirePush, requireSync)
                 },
                 enabled = true
             ) {
@@ -186,12 +188,26 @@ fun RequireCommitMsgDialog(
             }
         },
         dismissButton = {
-            Row {
+            ScrollableRow {
+                if(showSync) {
+                    TextButton(
+                        onClick = {
+                            val requirePush = false
+                            val requireSync = true
+                            onOk(getCommitMsg(), requirePush, requireSync)
+                        }
+                    ) {
+                        Text(stringResource(id = R.string.sync))
+                    }
+                }
+
+
                 if(showPush) {
                     TextButton(
                         onClick = {
                             val requirePush = true
-                            onOk(getCommitMsg(), requirePush)
+                            val requireSync = false
+                            onOk(getCommitMsg(), requirePush, requireSync)
                         }
                     ) {
                         Text(stringResource(id = R.string.push))

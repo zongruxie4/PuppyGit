@@ -53,7 +53,7 @@ object ChangeListFunctions {
         successCommitStrRes:String,
         indexIsEmptyForCommitDialog:MutableState<Boolean>,
         commitBtnTextForCommitDialog:MutableState<String>,
-        showPushForCommitDialog:MutableState<Boolean>
+//        showPushForCommitDialog:MutableState<Boolean>
     ):Boolean{
         val settings = SettingsUtil.getSettingsSnapshot()
 
@@ -61,7 +61,7 @@ object ChangeListFunctions {
 //        showPushForCommitDialog.value = !requireDoSync
 
         commitBtnTextForCommitDialog.value = appContext.getString(R.string.commit)
-        showPushForCommitDialog.value = true
+//        showPushForCommitDialog.value = true
 
 
         indexIsEmptyForCommitDialog.value = false // will update this after check
