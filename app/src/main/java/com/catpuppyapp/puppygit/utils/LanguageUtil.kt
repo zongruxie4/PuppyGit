@@ -48,7 +48,8 @@ object LanguageUtil {
 
     fun getLanguageTextByCode(languageCode:String, appContext: Context):String {
         if(languageCode.isBlank()) {
-            return appContext.getString(R.string.auto)
+//            return appContext.getString(R.string.auto)
+            return appContext.getString(R.string.follow_system)
         }
 
         // order by a-z

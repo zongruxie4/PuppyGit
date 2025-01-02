@@ -923,9 +923,6 @@
 
 
 
-    <!--    translatable or no need translate(such as language name text) -->
-    <string name="lang_name_english" translatable="false">English</string>
-    <string name="lang_name_chinese_simplified" translatable="false">中文(简体)</string>
     <string name="log_level">Уровень логов</string>
     <string name="warn">Предупреждение</string>
     <string name="debug">Отладка</string>
