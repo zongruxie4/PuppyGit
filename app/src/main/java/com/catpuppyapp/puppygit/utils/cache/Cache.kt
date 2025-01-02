@@ -7,8 +7,8 @@ object Cache:CacheStoreImpl(){
     const val keySeparator = ":"
 
     object Key {
-        val changeListInnerPage_SavePatchPath = "cl_patchsavepath"
-        val changeListInnerPage_RequireDoSyncAfterCommit = "cliprdsac"  //这个其实改用状态变量能达到同样的效果
+//        val changeListInnerPage_SavePatchPath = "cl_patchsavepath"
+//        val changeListInnerPage_RequireDoSyncAfterCommit = "cliprdsac"  //这个其实改用状态变量能达到同样的效果
         //            val changeListInnerPage_RequirePull = "cliprpul";
 //            val changeListInnerPage_RequirePush = "cliprpus";
 //            val changeListInnerPage_RequireSync = "cliprsyn";

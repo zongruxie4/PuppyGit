@@ -1121,7 +1121,7 @@ fun ChangeListInnerPage(
                         requireShowCommitMsgDialog = true,
                         cmtMsg = "",
                         requireCloseBottomBar = true,
-                        requireDoSync = false,
+//                        requireDoSync = false,
                         curRepoFromParentPage = curRepoFromParentPage,
                         refreshRequiredByParentPage = refreshRequiredByParentPage,
                         username = username,
@@ -1172,7 +1172,7 @@ fun ChangeListInnerPage(
                                 requireShowCommitMsgDialog = true,
                                 cmtMsg = "",
                                 requireCloseBottomBar = true,
-                                requireDoSync = false,
+//                                requireDoSync = false,
                                 curRepoFromParentPage = curRepoFromParentPage,
                                 refreshRequiredByParentPage = refreshRequiredByParentPage,
                                 username = username,
@@ -1214,7 +1214,7 @@ fun ChangeListInnerPage(
                         requireShowCommitMsgDialog = true,
                         cmtMsg = "",
                         requireCloseBottomBar = true,
-                        requireDoSync = false,
+//                        requireDoSync = false,
                         curRepoFromParentPage = curRepoFromParentPage,
                         refreshRequiredByParentPage = refreshRequiredByParentPage,
                         username = username,
@@ -1319,7 +1319,7 @@ fun ChangeListInnerPage(
                         requireShowCommitMsgDialog = true,
                         cmtMsg = "",
                         requireCloseBottomBar = true,
-                        requireDoSync = false,
+//                        requireDoSync = false,
                         curRepoFromParentPage = curRepoFromParentPage,
                         refreshRequiredByParentPage = refreshRequiredByParentPage,
                         username = username,
@@ -1548,7 +1548,7 @@ fun ChangeListInnerPage(
             commitMsg=commitMsg,
             commitBtnText = commitBtnTextForCommitDialog.value,
             showPush = showPushForCommitDialog.value,
-            onOk={msgOrAmendMsg, requirePushAfterCommit->
+            onOk={msgOrAmendMsg, requirePushAfterCommit, requireDoSync->
                 //把弹窗相关的状态变量设置回初始状态，不然只能提交一次，下次就不弹窗了(ps:这个放coroutine里修改会报状态异常，提示不能并发修改状态，之前记得能修改，不明所以)
                 showCommitMsgDialog.value = false  //关闭弹窗
 
@@ -1562,7 +1562,7 @@ fun ChangeListInnerPage(
 //                            requireShowToast(stageFailedStrRes)
 //                            return@launch
 //                        }
-                        val requireDoSync:Boolean = Cache.getByType<Boolean>(Cache.Key.changeListInnerPage_RequireDoSyncAfterCommit)?:false
+//                        val requireDoSync:Boolean = Cache.getByType<Boolean>(Cache.Key.changeListInnerPage_RequireDoSyncAfterCommit)?:false
 
                         //执行commit
 //                        val commitSuccess = doCommit(false, cmtMsg, !requireDoSync, requireDoSync)
@@ -1570,7 +1570,7 @@ fun ChangeListInnerPage(
                             requireShowCommitMsgDialog = false,
                             cmtMsg = cmtMsg,
                             requireCloseBottomBar = !requireDoSync && !requirePushAfterCommit,
-                            requireDoSync = requireDoSync,
+//                            requireDoSync = requireDoSync,
                             curRepoFromParentPage = curRepoFromParentPage,
                             refreshRequiredByParentPage = refreshRequiredByParentPage,
                             username = username,
@@ -1677,7 +1677,7 @@ fun ChangeListInnerPage(
             selectedOption = usernameAndEmailDialogSelectedOption,
             username = username,
             email = email,
-            onOk = {
+            onOk = { requireDoSync:Boolean ->
                 doJobThenOffLoading(
                     loadingOn = loadingOn,
                     loadingOff = loadingOff,
@@ -1727,7 +1727,7 @@ fun ChangeListInnerPage(
 
                         //显示"已保存"提示信息
                         requireShowToast(savedStrRes)
-                        val requireDoSync:Boolean = Cache.getByType<Boolean>(Cache.Key.changeListInnerPage_RequireDoSyncAfterCommit)?:false
+//                        val requireDoSync:Boolean = Cache.getByType<Boolean>(Cache.Key.changeListInnerPage_RequireDoSyncAfterCommit)?:false
 
                         //重新执行commit，这次会从状态里取出用户名和邮箱，不对，因为上面已经存到配置文件里了，所以其实直接从配置文件就能取到
 //                        doCommit(true, "", !requireDoSync, requireDoSync)
@@ -1735,7 +1735,7 @@ fun ChangeListInnerPage(
                             requireShowCommitMsgDialog = true,
                             cmtMsg = "",
                             requireCloseBottomBar = !requireDoSync,
-                            requireDoSync = requireDoSync,
+//                            requireDoSync = requireDoSync,
                             curRepoFromParentPage = curRepoFromParentPage,
                             refreshRequiredByParentPage = refreshRequiredByParentPage,
                             username = username,
@@ -2188,7 +2188,7 @@ fun ChangeListInnerPage(
                             requireShowCommitMsgDialog = true,
                             cmtMsg = "",
                             requireCloseBottomBar = true,
-                            requireDoSync = true,
+//                            requireDoSync = true,
                             curRepoFromParentPage = curRepoFromParentPage,
                             refreshRequiredByParentPage = refreshRequiredByParentPage,
                             username = username,
@@ -2227,7 +2227,7 @@ fun ChangeListInnerPage(
                             requireShowCommitMsgDialog = true,
                             cmtMsg = "",
                             requireCloseBottomBar = true,
-                            requireDoSync = false,
+//                            requireDoSync = false,
                             curRepoFromParentPage = curRepoFromParentPage,
                             refreshRequiredByParentPage = refreshRequiredByParentPage,
                             username = username,
@@ -2270,7 +2270,7 @@ fun ChangeListInnerPage(
                     requireShowCommitMsgDialog = true,
                     cmtMsg = "",
                     requireCloseBottomBar = true,
-                    requireDoSync = true,
+//                    requireDoSync = true,
                     curRepoFromParentPage = curRepoFromParentPage,
                     refreshRequiredByParentPage = refreshRequiredByParentPage,
                     username = username,
@@ -2304,7 +2304,7 @@ fun ChangeListInnerPage(
                     requireShowCommitMsgDialog = true,
                     cmtMsg = "",
                     requireCloseBottomBar = true,
-                    requireDoSync = false,
+//                    requireDoSync = false,
                     curRepoFromParentPage = curRepoFromParentPage,
                     refreshRequiredByParentPage = refreshRequiredByParentPage,
                     username = username,

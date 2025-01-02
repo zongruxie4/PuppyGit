@@ -32,7 +32,7 @@ object ChangeListFunctions {
         requireShowCommitMsgDialog:Boolean,
         cmtMsg:String,
         requireCloseBottomBar:Boolean,
-        requireDoSync:Boolean,
+//        requireDoSync:Boolean,
         curRepoFromParentPage:CustomStateSaveable<RepoEntity>,
         refreshRequiredByParentPage:MutableState<String>,
         username:MutableState<String>,
@@ -57,8 +57,11 @@ object ChangeListFunctions {
     ):Boolean{
         val settings = SettingsUtil.getSettingsSnapshot()
 
-        commitBtnTextForCommitDialog.value = appContext.getString(if(requireDoSync) R.string.sync else R.string.commit)
-        showPushForCommitDialog.value = !requireDoSync
+//        commitBtnTextForCommitDialog.value = appContext.getString(if(requireDoSync) R.string.sync else R.string.commit)
+//        showPushForCommitDialog.value = !requireDoSync
+
+        commitBtnTextForCommitDialog.value = appContext.getString(R.string.commit)
+        showPushForCommitDialog.value = true
 
 
         indexIsEmptyForCommitDialog.value = false // will update this after check
@@ -75,7 +78,7 @@ object ChangeListFunctions {
 //            }
 
         //更新这个变量，供输入提交信息后的回调用来判断接下来执行提交还是sync
-        Cache.set(Cache.Key.changeListInnerPage_RequireDoSyncAfterCommit, requireDoSync)
+//        Cache.set(Cache.Key.changeListInnerPage_RequireDoSyncAfterCommit, requireDoSync)
 
         //执行commit
         Repository.open(curRepoFromParentPage.value.fullSavePath).use { repo ->
