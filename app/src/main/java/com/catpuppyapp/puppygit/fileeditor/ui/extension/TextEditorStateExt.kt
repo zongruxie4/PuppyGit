@@ -1,5 +1,6 @@
 package com.catpuppyapp.puppygit.fileeditor.ui.extension
 
+import com.catpuppyapp.puppygit.dto.UndoStack
 import com.catpuppyapp.puppygit.utils.isGoodIndexForList
 import com.catpuppyapp.puppygit.fileeditor.texteditor.state.TextEditorState
 import com.catpuppyapp.puppygit.fileeditor.texteditor.state.TextFieldState
@@ -22,10 +23,22 @@ fun TextEditorState.createMultipleSelectionModeState(index:Int): TextEditorState
 //    newFieldsList.forEach{ println(it.isSelected)}
     //debug
 
+    /**
+     *
+     *             fields: List<TextFieldState>,
+     *             selectedIndices: List<Int>,
+     *             isMultipleSelectionMode: Boolean,
+     *             lastState:TextEditorState?,
+     *             undoStack: UndoStack,
+     *             trueRedoFalseUndo:Boolean = true
+     */
     return TextEditorState.create(
+        fieldsId = fieldsId,
         fields = newFieldsList,  //把当前点击而开启选择行模式的那行的选中状态设为真了
         selectedIndices = if(isGoodIndexForList(index, newFieldsList)) listOf(index) else listOf(),  //默认选中的索引包含当前选中行即可，因为肯定是点击某一行开启选中模式的，所以只会有一个索引
         isMultipleSelectionMode = true,
+        lastState = null,
+        undoStack = null
     )
 }
 
@@ -33,10 +46,12 @@ fun TextEditorState.createCopiedState(): TextEditorState {
     return TextEditorState.create(
 //        fields = fields.map { TextFieldState(it.id, it.value, isSelected = false)},  //对所有选中行解除选中
 //        isMultipleSelectionMode = false,  //退出选择模式
-
+        fieldsId = fieldsId,
         fields = fields,
         selectedIndices = selectedIndices,
         isMultipleSelectionMode = isMultipleSelectionMode,  //拷贝和删除不要退出选择模式(准确来说是不要改变是否处于选择模式，若以后以非多选模式创建CopiedState，也不会自动进入选择模式)，这样用户可间接实现剪切功能，因为选择很多行有时候很废力，所以除非用户明确按取消，否则不要自动解除选择模式
+        lastState = null,
+        undoStack = null
     )
 }
 
@@ -50,13 +65,18 @@ fun TextEditorState.createSelectAllState(): TextEditorState {
     }
     //我不太确定 data类的copy是深还是浅，但我可以确定这里不需要深拷贝，所以用下面创建浅拷贝的方法创建对象
     return TextEditorState.create(
+        fieldsId = fieldsId,
         fields = selectedFieldList,
         selectedIndices = selectedIndexList,
         isMultipleSelectionMode = true,
+        lastState = null,
+        undoStack = null
     )
 }
 
-fun TextEditorState.createDeletedState(): TextEditorState {
+fun TextEditorState.createDeletedState(undoStack: UndoStack?): TextEditorState {
+    val lastState = this.copy()
+
     //把没选中的行取出来，作为新的文件内容
     val newFields = fields.filterIndexed { index, _ ->
         !selectedIndices.contains(index)
@@ -71,15 +91,35 @@ fun TextEditorState.createDeletedState(): TextEditorState {
     val isDeletedAll = newFields.isEmpty()
 
     //如果是删除所有，创建一个空状态；否则创建删除选中行后的状态
-    return if(isDeletedAll) TextEditorState.create("", isMultipleSelectionMode)  //即使全删了，完全创建新状态，也不要影响选择模式，要不然有的情况自动退选择模式，有的不退，容易让人感到混乱
-           else TextEditorState.create(fields = newFields, selectedIndices= emptyList(), isMultipleSelectionMode = isMultipleSelectionMode  //一般来说此值在这会是true，不过，这里的语义是“不修改是否选择模式”，所以把这个字段传过去比直接设为true要合适
-    )
+    return if(isDeletedAll) {
+        TextEditorState.create(
+            fieldsId = TextEditorState.newId(),
+            text = "",
+            isMultipleSelectionMode = isMultipleSelectionMode,
+            lastState = lastState,
+            undoStack = undoStack
+        )
+    }else {
+        //即使全删了，完全创建新状态，也不要影响选择模式，要不然有的情况自动退选择模式，有的不退，容易让人感到混乱
+        TextEditorState.create(
+            fieldsId = TextEditorState.newId(),
+            fields = newFields,
+            selectedIndices = emptyList(),
+            isMultipleSelectionMode = isMultipleSelectionMode,  //一般来说此值在这会是true，不过，这里的语义是“不修改是否选择模式”，所以把这个字段传过去比直接设为true要合适
+            lastState = lastState,
+            undoStack = undoStack,
+            trueUndoFalseRedo = true
+        )
+    }
 }
 
 fun TextEditorState.createCancelledState(): TextEditorState {
     return TextEditorState.create(
-        fields = fields.map { TextFieldState(it.id, it.value, isSelected = false) },
+        fieldsId = fieldsId,
+        fields = fields.map { TextFieldState(id = it.id, value = it.value, isSelected = false) },
         selectedIndices = emptyList(),
         isMultipleSelectionMode = false,
+        lastState = null,
+        undoStack = null
     )
 }

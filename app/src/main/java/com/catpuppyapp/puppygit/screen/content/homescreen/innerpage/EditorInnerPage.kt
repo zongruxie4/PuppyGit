@@ -57,6 +57,7 @@ import com.catpuppyapp.puppygit.constants.Cons
 import com.catpuppyapp.puppygit.constants.LineNum
 import com.catpuppyapp.puppygit.constants.PageRequest
 import com.catpuppyapp.puppygit.dto.FileSimpleDto
+import com.catpuppyapp.puppygit.dto.UndoStack
 import com.catpuppyapp.puppygit.fileeditor.texteditor.state.TextEditorState
 import com.catpuppyapp.puppygit.fileeditor.texteditor.view.ScrollEvent
 import com.catpuppyapp.puppygit.fileeditor.ui.composable.FileEditor
@@ -137,7 +138,8 @@ fun EditorInnerPage(
     editorLastSavedFontSize:MutableIntState,
 
     openDrawer:()->Unit,
-    editorOpenFileErr:MutableState<Boolean>
+    editorOpenFileErr:MutableState<Boolean>,
+    undoStack:CustomStateSaveable<UndoStack?>,
 
 ) {
     val allRepoParentDir = AppModel.allRepoParentDir;
@@ -376,6 +378,8 @@ fun EditorInnerPage(
         editorPageShowingFileDto.value.fullPath=""
         editorPageClearShowingFileErrWhenLoading()  //关闭文件清除错误，不然文件标题变了，错误还在显示
         editorPageShowingFileIsReady.value = false
+
+        undoStack.value=null
 //        changeStateTriggerRefreshPage(needRefreshEditorPage)
     }
 
@@ -411,9 +415,11 @@ fun EditorInnerPage(
 //        editorPageRequireOpenFilePath.value = editorPageShowingFilePath.value
         editorPageShowingFileIsReady.value = false  //设置文件状态为未就绪，显示loading界面，好像有bug，TODO 需要测试能不能正常显示loading，整个大文件，测试一下
 
-        changeStateTriggerRefreshPage(needRefreshEditorPage)
+        undoStack.value = null
 
+        changeStateTriggerRefreshPage(needRefreshEditorPage)
     }
+
     //重新加载文件确认弹窗
     if(showReloadDialog.value) {
         if(!isEdited.value) {
@@ -997,6 +1003,7 @@ fun EditorInnerPage(
             showLineNum=editorShowLineNum,
             lineNumFontSize=editorLineNumFontSize,
             fontSize=editorFontSize,
+            undoStack = undoStack.value
         )
     }
 //    }
@@ -1042,7 +1049,8 @@ fun EditorInnerPage(
                 editorPageIsContentSnapshoted,
                 readOnlyMode,
                 editorMergeMode,
-                saveLastOpenPath
+                saveLastOpenPath,
+                undoStack
 //        editorPageOpenedFileMap,
             )
 
@@ -1105,7 +1113,8 @@ private fun doInit(
     isContentSnapshoted:MutableState<Boolean>,
     readOnlyMode: MutableState<Boolean>,
     mergeMode: MutableState<Boolean>,
-    saveLastOpenPath:(path:String)->Unit
+    saveLastOpenPath:(path:String)->Unit,
+    undoStack: CustomStateSaveable<UndoStack?>
 
 ) {
 
@@ -1149,6 +1158,11 @@ private fun doInit(
             //准备文件路径，结束
 
             //执行到这里，一定有一个非空的文件路径
+
+            // 之前为null或打开了另一个文件，创建个新UndoStack
+            if(undoStack.value==null || undoStack.value?.filePath != requireOpenFilePath) {
+                undoStack.value = UndoStack(requireOpenFilePath)
+            }
 
             //清除错误信息，如果打开文件时出错，会重新设置错误信息
             editorPageClearShowingFileErrWhenLoading()
@@ -1238,7 +1252,7 @@ private fun doInit(
                 //读取文件内容
 //            editorPageTextEditorState.value = TextEditorState.create(FsUtils.readFile(requireOpenFilePath))
 //                editorPageTextEditorState.value = TextEditorState.create(FsUtils.readLinesFromFile(requireOpenFilePath))
-                editorPageTextEditorState.value = TextEditorState.create(File(requireOpenFilePath))
+                editorPageTextEditorState.value = TextEditorState.create(file = File(requireOpenFilePath), fieldsId = TextEditorState.newId(), lastState = null, undoStack = undoStack.value)
 
                 isContentSnapshoted.value=false
                 //文件就绪

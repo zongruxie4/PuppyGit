@@ -1,16 +1,24 @@
 package com.catpuppyapp.puppygit.fileeditor.texteditor.state
 
 import androidx.compose.runtime.Immutable
+import com.catpuppyapp.puppygit.dto.UndoStack
 import com.catpuppyapp.puppygit.etc.Ret
 import com.catpuppyapp.puppygit.fileeditor.texteditor.controller.EditorController.Companion.createInitTextFieldStates
 import com.catpuppyapp.puppygit.utils.FsUtils
 import com.catpuppyapp.puppygit.utils.doActIfIndexGood
+import com.catpuppyapp.puppygit.utils.generateRandomString
 import java.io.File
 import java.io.OutputStream
 
 @Immutable
 data class TextEditorState(
+
+    /**
+     the filedsId only about fields, same fieldsId should has same fields
+     */
+    val fieldsId: String,
     val fields: List<TextFieldState>,
+
     val selectedIndices: List<Int>,
     val isMultipleSelectionMode: Boolean,
 ) {
@@ -82,8 +90,15 @@ data class TextEditorState(
     }
 
     companion object {
-        fun create(text: String, isMultipleSelectionMode:Boolean = false): TextEditorState {
-            return create(text.lines(), isMultipleSelectionMode)
+        fun create(text: String, fieldsId: String,isMultipleSelectionMode:Boolean = false, lastState:TextEditorState?, undoStack: UndoStack?): TextEditorState {
+            return create(
+                lines = text.lines(),
+                fieldsId= fieldsId,
+                isMultipleSelectionMode = isMultipleSelectionMode,
+                lastState = lastState,
+                undoStack = undoStack,
+
+            )
 
 //            return TextEditorState(
 //                fields = text.lines().createInitTextFieldStates(),
@@ -92,25 +107,65 @@ data class TextEditorState(
 //            )
         }
 
-        fun create(lines: List<String>, isMultipleSelectionMode:Boolean = false): TextEditorState {
-            return TextEditorState(
+        fun create(lines: List<String>, fieldsId: String,isMultipleSelectionMode:Boolean = false, lastState:TextEditorState?, undoStack: UndoStack?): TextEditorState {
+            return create(
                 fields = lines.createInitTextFieldStates(),
+                fieldsId= fieldsId,
                 selectedIndices = listOf(-1),
-                isMultipleSelectionMode = isMultipleSelectionMode
+                isMultipleSelectionMode = isMultipleSelectionMode,
+                lastState = lastState,
+                undoStack = undoStack,
+
             )
         }
 
-        fun create(file: File, isMultipleSelectionMode:Boolean = false): TextEditorState {
+        fun create(file: File, fieldsId: String, isMultipleSelectionMode:Boolean = false, lastState:TextEditorState?, undoStack: UndoStack?): TextEditorState {
             //这里`addNewLineIfFileEmpty`必须传true，以确保和String.lines()行为一致，不然若文件末尾有空行，读取出来会少一行
-            return create(FsUtils.readLinesFromFile(file, addNewLineIfFileEmpty = true), isMultipleSelectionMode)
+            return create(
+                lines = FsUtils.readLinesFromFile(file, addNewLineIfFileEmpty = true),
+                fieldsId= fieldsId,
+                isMultipleSelectionMode = isMultipleSelectionMode,
+                lastState = lastState,
+                undoStack = undoStack,
+
+            )
         }
 
-        fun create(fields: List<TextFieldState>, selectedIndices: List<Int>, isMultipleSelectionMode: Boolean): TextEditorState {
+        fun create(
+            fields: List<TextFieldState>,
+            fieldsId: String,
+            selectedIndices: List<Int>,
+            isMultipleSelectionMode: Boolean,
+            lastState:TextEditorState?,
+            undoStack: UndoStack?,
+            trueUndoFalseRedo:Boolean = true,
+
+            /**
+             * redo还原到undo时不用清，其余情况，若push to undo，则需要清redo
+             */
+            clearRedoStack:Boolean = true
+        ): TextEditorState {
+            if(lastState != null && undoStack != null) {
+                if(trueUndoFalseRedo) {
+                    undoStack.undoStackPush(lastState)
+                    if(clearRedoStack) {
+                        undoStack.redoStackClear()
+                    }
+                }else {
+                    undoStack.redoStackPush(lastState)
+                }
+            }
+
             return TextEditorState(
+                fieldsId= fieldsId,
                 fields = fields,
                 selectedIndices = selectedIndices,
-                isMultipleSelectionMode = isMultipleSelectionMode
+                isMultipleSelectionMode = isMultipleSelectionMode,
             )
+        }
+
+        fun newId():String {
+            return generateRandomString(20)
         }
     }
 }

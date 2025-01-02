@@ -1,9 +1,10 @@
 package com.catpuppyapp.puppygit.screen.content.homescreen.scaffold.actions
 
-import com.catpuppyapp.puppygit.compose.FontSizeAdjuster
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.Redo
+import androidx.compose.material.icons.automirrored.filled.Undo
 import androidx.compose.material.icons.filled.ArrowDownward
 import androidx.compose.material.icons.filled.ArrowUpward
 import androidx.compose.material.icons.filled.CheckBox
@@ -20,8 +21,8 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.hapticfeedback.HapticFeedbackType
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
+import com.catpuppyapp.puppygit.compose.FontSizeAdjuster
 import com.catpuppyapp.puppygit.compose.LongPressAbleIconBtn
 import com.catpuppyapp.puppygit.constants.PageRequest
 import com.catpuppyapp.puppygit.dev.dev_EnableUnTestedFeature
@@ -32,16 +33,15 @@ import com.catpuppyapp.puppygit.dev.editorLineNumFontSizeTestPassed
 import com.catpuppyapp.puppygit.dev.editorMergeModeTestPassed
 import com.catpuppyapp.puppygit.dev.editorSearchTestPassed
 import com.catpuppyapp.puppygit.dev.proFeatureEnabled
+import com.catpuppyapp.puppygit.dto.UndoStack
+import com.catpuppyapp.puppygit.fileeditor.texteditor.state.TextEditorState
 import com.catpuppyapp.puppygit.play.pro.R
 import com.catpuppyapp.puppygit.settings.SettingsCons
 import com.catpuppyapp.puppygit.settings.SettingsUtil
 import com.catpuppyapp.puppygit.style.MyStyleKt
 import com.catpuppyapp.puppygit.user.UserUtil
 import com.catpuppyapp.puppygit.utils.AppModel
-import com.catpuppyapp.puppygit.utils.FsUtils
 import com.catpuppyapp.puppygit.utils.state.CustomStateSaveable
-import com.catpuppyapp.puppygit.utils.state.StateUtil
-import com.catpuppyapp.puppygit.fileeditor.texteditor.state.TextEditorState
 
 @Composable
 fun EditorPageActions(
@@ -69,7 +69,9 @@ fun EditorPageActions(
     lineNumFontSize:MutableIntState,
     adjustFontSizeMode:MutableState<Boolean>,
     adjustLineNumFontSizeMode:MutableState<Boolean>,
-    showLineNum:MutableState<Boolean>
+    showLineNum:MutableState<Boolean>,
+    showUndoRedo:MutableState<Boolean>,
+    undoStack:UndoStack?
 ) {
     /*
         注意：如果以后需要同一个EditorInnerPage配合多个title，就不要在这执行操作了，把这里的action逻辑放到EditorInnerPage执行，在这只发request，类似ChangeList页面请求执行pull/push那样
@@ -129,30 +131,78 @@ fun EditorPageActions(
     //是否显示三点菜单图标，以后可能会增加其他判断因素，所以单独弄个变量
     val showMenuIcon = enableMenuItem
 
-    if(enableMenuItem && editorPageMergeMode.value) {
-        LongPressAbleIconBtn(
-            tooltipText = stringResource(R.string.previous_conflict),
-            icon = Icons.Filled.ArrowUpward,
-            iconContentDesc = stringResource(R.string.previous_conflict),
-        ) {
-            editorPageRequest.value = PageRequest.previousConflict
-        }
-
-        LongPressAbleIconBtn(
-            tooltipText = stringResource(R.string.next_conflict),
-            icon = Icons.Filled.ArrowDownward,
-            iconContentDesc = stringResource(R.string.next_conflict),
-
-            onLongClick = {
-                //震动反馈
-                haptic.performHapticFeedback(HapticFeedbackType.LongPress)
-
-                //显示功能提示和所有记数“NextConflict(all:40)”，其中40是全文查找到的所有冲突数量，文案尽量紧凑，避免toast显示不全
-                editorPageRequest.value = PageRequest.showNextConflictAndAllConflictsCount
+    if(enableMenuItem) {
+        if(showUndoRedo.value) {
+            LongPressAbleIconBtn(
+                enabled = undoStack?.undoStackIsEmpty()?.not() ?: false,
+                tooltipText = stringResource(R.string.undo),
+                icon = Icons.AutoMirrored.Filled.Undo,
+                iconContentDesc = stringResource(R.string.undo),
+            ) {
+                val lastState = undoStack?.undoStackPop()
+                val curState = editorPageTextEditorState.value
+                if(lastState != null) {
+                    editorPageTextEditorState.value = TextEditorState.create(
+                        fieldsId = lastState.fieldsId,
+                        fields = lastState.fields,
+                        selectedIndices = curState.selectedIndices,
+                        isMultipleSelectionMode = curState.isMultipleSelectionMode,
+                        lastState = curState,
+                        undoStack = undoStack,
+                        trueUndoFalseRedo = false,
+                    )
+                }
 
             }
-        ) {
-            editorPageRequest.value = PageRequest.nextConflict
+
+            LongPressAbleIconBtn(
+                enabled = undoStack?.redoStackIsEmpty()?.not() ?: false,
+                tooltipText = stringResource(R.string.redo),
+                icon = Icons.AutoMirrored.Filled.Redo,
+                iconContentDesc = stringResource(R.string.redo),
+            ) {
+                val lastState = undoStack?.redoStackPop()
+                val curState = editorPageTextEditorState.value
+                if(lastState != null) {
+                    editorPageTextEditorState.value = TextEditorState.create(
+                        fieldsId = lastState.fieldsId,
+                        fields = lastState.fields,
+                        selectedIndices = curState.selectedIndices,
+                        isMultipleSelectionMode = curState.isMultipleSelectionMode,
+                        lastState = curState,
+                        undoStack = undoStack,
+                        trueUndoFalseRedo = true,
+                        clearRedoStack = false
+                    )
+                }
+            }
+        }
+
+        if(editorPageMergeMode.value) {
+            LongPressAbleIconBtn(
+                tooltipText = stringResource(R.string.previous_conflict),
+                icon = Icons.Filled.ArrowUpward,
+                iconContentDesc = stringResource(R.string.previous_conflict),
+            ) {
+                editorPageRequest.value = PageRequest.previousConflict
+            }
+
+            LongPressAbleIconBtn(
+                tooltipText = stringResource(R.string.next_conflict),
+                icon = Icons.Filled.ArrowDownward,
+                iconContentDesc = stringResource(R.string.next_conflict),
+
+                onLongClick = {
+                    //震动反馈
+                    haptic.performHapticFeedback(HapticFeedbackType.LongPress)
+
+                    //显示功能提示和所有记数“NextConflict(all:40)”，其中40是全文查找到的所有冲突数量，文案尽量紧凑，避免toast显示不全
+                    editorPageRequest.value = PageRequest.showNextConflictAndAllConflictsCount
+
+                }
+            ) {
+                editorPageRequest.value = PageRequest.nextConflict
+            }
         }
     }
 
@@ -293,6 +343,34 @@ fun EditorPageActions(
                     //如果是从非readonly mode切换到readonly mode，则执行一次保存，然后再切换readonly mode
                     editorPageRequest.value = PageRequest.doSaveIfNeedThenSwitchReadOnly
 
+                    closeMenu()
+                }
+
+            )
+
+            DropdownMenuItem(
+                //非readOnly目录才允许开启或关闭readonly状态，否则强制启用readonly状态且不允许关闭
+//                enabled = enableMenuItem && !FsUtils.isReadOnlyDir(editorPageShowingFilePath.value),
+                enabled = enableMenuItem,
+                text = { Text(stringResource(R.string.show_undo_redo)) },
+                trailingIcon = {
+                    Icon(
+                        imageVector = if(showUndoRedo.value) Icons.Filled.CheckBox else Icons.Filled.CheckBoxOutlineBlank,
+                        contentDescription = null
+                    )
+                },
+                onClick = {
+                    val newValue = !showUndoRedo.value
+
+                    // 更新页面变量
+                    showUndoRedo.value = newValue
+
+                    //更新配置文件
+                    SettingsUtil.update {
+                        it.editor.showUndoRedo = newValue
+                    }
+
+                    //关闭菜单
                     closeMenu()
                 }
 

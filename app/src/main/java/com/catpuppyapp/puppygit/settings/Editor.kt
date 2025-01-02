@@ -41,4 +41,8 @@ data class Editor (
 
     // over this limit, can't open by internal editor
     var maxFileSizeLimit:Long = 0L,  // 0=no limit, Unit is Byte, e.g. 2MB should set to 2000000L
+
+
+    var showUndoRedo:Boolean = false,
+
 )

@@ -3,6 +3,7 @@ package com.catpuppyapp.puppygit.fileeditor.texteditor.controller
 import androidx.compose.runtime.MutableState
 import androidx.compose.ui.text.TextRange
 import androidx.compose.ui.text.input.TextFieldValue
+import com.catpuppyapp.puppygit.dto.UndoStack
 import com.catpuppyapp.puppygit.fileeditor.texteditor.state.TextEditorState
 import com.catpuppyapp.puppygit.fileeditor.texteditor.state.TextFieldState
 import com.catpuppyapp.puppygit.fileeditor.texteditor.view.SearchPos
@@ -20,13 +21,17 @@ private const val TAG = "EditorController"
 private const val stateKeyTag = "EditorController"
 
 class EditorController(
-    textEditorState: TextEditorState
+    textEditorState: TextEditorState,
+    undoStack: UndoStack?
 ) {
+    var lastState = textEditorState
+    val _undoStack = undoStack
     private var isContentChanged:MutableState<Boolean>? = null
     private var editorPageIsContentSnapshoted:MutableState<Boolean>? = null
     private var onChanged: (TextEditorState) -> Unit = {}
 
     private var _isMultipleSelectionMode = textEditorState.isMultipleSelectionMode
+    private var _fieldsId = textEditorState.fieldsId
     val isMultipleSelectionMode get() = _isMultipleSelectionMode
 
     private val _fields = (textEditorState.fields).toMutableList()
@@ -35,8 +40,6 @@ class EditorController(
     private val _selectedIndices = (textEditorState.selectedIndices).toMutableList()
     val selectedIndices get() = _selectedIndices.toList()
 
-    private val state: TextEditorState
-        get() = TextEditorState(fields, selectedIndices, isMultipleSelectionMode)
 
     private val lock = ReentrantLock()
 
@@ -44,8 +47,43 @@ class EditorController(
         selectFieldInternal(0)
     }
 
+    fun genNewState():TextEditorState {
+
+        /**
+         *            fields: List<TextFieldState>,
+         *             fieldsId: String,
+         *             selectedIndices: List<Int>,
+         *             isMultipleSelectionMode: Boolean,
+         *             lastState:TextEditorState?,
+         *             undoStack: UndoStack?,
+         *             trueUndoFalseRedo:Boolean = true,
+         *
+         *             /**
+         *              * redo还原到undo时不用清，其余情况，若push to undo，则需要清redo
+         *              */
+         *             clearRedoStack:Boolean = true
+         */
+
+
+        val newState = TextEditorState.create(
+            fields = fields,
+            fieldsId = _fieldsId,
+            selectedIndices = selectedIndices,
+            isMultipleSelectionMode = isMultipleSelectionMode,
+            lastState = lastState.copy(),
+            undoStack = _undoStack,
+            trueUndoFalseRedo = true,
+        )
+
+        lastState = newState
+
+        return newState
+    }
+
     fun syncState(state: TextEditorState) {
         lock.withLock {
+            _fieldsId = state.fieldsId
+
             _isMultipleSelectionMode = state.isMultipleSelectionMode
             _selectedIndices.clear()
             _selectedIndices.addAll(state.selectedIndices)
@@ -253,7 +291,7 @@ class EditorController(
                 )
                 _fields[lineIndex] = copyTarget
 
-                onChanged(state)
+                onChanged(genNewState())
             }
         }
     }
@@ -281,7 +319,8 @@ class EditorController(
 
             isContentChanged?.value=true
             editorPageIsContentSnapshoted?.value=false
-            onChanged(state)
+            _fieldsId = TextEditorState.newId()
+            onChanged(genNewState())
         }
     }
 
@@ -316,8 +355,9 @@ class EditorController(
 
             isContentChanged?.value=true
             editorPageIsContentSnapshoted?.value=false
+            _fieldsId = TextEditorState.newId()
 
-            onChanged(state)
+            onChanged(genNewState())
         }
     }
 
@@ -338,10 +378,12 @@ class EditorController(
 
             if(isContentChanged?.value == true) {
                 editorPageIsContentSnapshoted?.value= false
+
+                _fieldsId = TextEditorState.newId()
             }
 
             _fields[targetIndex] = _fields[targetIndex].copy(value = textFieldValue)
-            onChanged(state)
+            onChanged(genNewState())
         }
     }
 
@@ -373,8 +415,9 @@ class EditorController(
 
             isContentChanged?.value=true
             editorPageIsContentSnapshoted?.value= false
+            _fieldsId = TextEditorState.newId()
 
-            onChanged(state)
+            onChanged(genNewState())
         }
     }
 
@@ -396,7 +439,7 @@ class EditorController(
                 requireSelectLine = requireSelectLine
             )
 
-            onChanged(state)
+            onChanged(genNewState())
         }
     }
 
@@ -422,7 +465,7 @@ class EditorController(
                 }
             }
 
-            onChanged(state)
+            onChanged(genNewState())
         }
     }
 
@@ -434,7 +477,7 @@ class EditorController(
 
             val previousIndex = selectedIndex - 1
             selectFieldInternal(previousIndex, SelectionOption.LAST_POSITION)
-            onChanged(state)
+            onChanged(genNewState())
         }
     }
 
@@ -446,38 +489,38 @@ class EditorController(
 
             val nextIndex = selectedIndex + 1
             selectFieldInternal(nextIndex, SelectionOption.FIRST_POSITION)
-            onChanged(state)
+            onChanged(genNewState())
         }
     }
+//
+//    fun clearSelectedIndex(targetIndex: Int) {
+//        lock.withLock {
+//            if (targetIndex < 0 || fields.count() <= targetIndex) {
+//                return@withLock
+//            }
+//
+//            _fields[targetIndex] = _fields[targetIndex].copy(isSelected = false)
+//            _selectedIndices.remove(targetIndex)
+//            onChanged(state)
+//        }
+//    }
+//
+//    fun clearSelectedIndices() {
+//        lock.withLock {
+//            this.clearSelectedIndicesInternal()
+//            onChanged(state)
+//        }
+//    }
 
-    fun clearSelectedIndex(targetIndex: Int) {
-        lock.withLock {
-            if (targetIndex < 0 || fields.count() <= targetIndex) {
-                return@withLock
-            }
-
-            _fields[targetIndex] = _fields[targetIndex].copy(isSelected = false)
-            _selectedIndices.remove(targetIndex)
-            onChanged(state)
-        }
-    }
-
-    fun clearSelectedIndices() {
-        lock.withLock {
-            this.clearSelectedIndicesInternal()
-            onChanged(state)
-        }
-    }
-
-    fun setMultipleSelectionMode(value: Boolean) {
-        lock.withLock {
-            if (isMultipleSelectionMode && !value) {
-                this.clearSelectedIndicesInternal()
-            }
-            _isMultipleSelectionMode = value
-            onChanged(state)
-        }
-    }
+//    fun setMultipleSelectionMode(value: Boolean) {
+//        lock.withLock {
+//            if (isMultipleSelectionMode && !value) {
+//                this.clearSelectedIndicesInternal()
+//            }
+//            _isMultipleSelectionMode = value
+//            onChanged(state)
+//        }
+//    }
 
     fun setOnChangedTextListener(isContentChanged: MutableState<Boolean>,editorPageIsContentSnapshoted: MutableState<Boolean>, onChanged: (TextEditorState) -> Unit) {
         this.onChanged = onChanged
@@ -498,8 +541,9 @@ class EditorController(
 
             isContentChanged?.value=true
             editorPageIsContentSnapshoted?.value= false
+            _fieldsId = TextEditorState.newId()
 
-            onChanged(state)
+            onChanged(genNewState())
         }
     }
 
@@ -511,8 +555,9 @@ class EditorController(
 
             isContentChanged?.value=true
             editorPageIsContentSnapshoted?.value= false
+            _fieldsId = TextEditorState.newId()
 
-            onChanged(state)
+            onChanged(genNewState())
         }
     }
 
@@ -710,8 +755,9 @@ class EditorController(
 
             isContentChanged?.value=true
             editorPageIsContentSnapshoted?.value= false
+            _fieldsId = TextEditorState.newId()
 
-            onChanged(state)
+            onChanged(genNewState())
         }
     }
 

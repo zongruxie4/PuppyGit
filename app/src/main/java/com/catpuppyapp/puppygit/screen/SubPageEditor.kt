@@ -26,23 +26,21 @@ import com.catpuppyapp.puppygit.compose.LongPressAbleIconBtn
 import com.catpuppyapp.puppygit.compose.SmallFab
 import com.catpuppyapp.puppygit.constants.Cons
 import com.catpuppyapp.puppygit.constants.PageRequest
-import com.catpuppyapp.puppygit.dev.dev_EnableUnTestedFeature
-import com.catpuppyapp.puppygit.dev.editorMergeModeTestPassed
 import com.catpuppyapp.puppygit.dto.FileSimpleDto
+import com.catpuppyapp.puppygit.dto.UndoStack
+import com.catpuppyapp.puppygit.fileeditor.texteditor.state.TextEditorState
+import com.catpuppyapp.puppygit.fileeditor.texteditor.view.ScrollEvent
 import com.catpuppyapp.puppygit.play.pro.R
 import com.catpuppyapp.puppygit.screen.content.homescreen.innerpage.EditorInnerPage
 import com.catpuppyapp.puppygit.screen.content.homescreen.scaffold.actions.EditorPageActions
 import com.catpuppyapp.puppygit.screen.content.homescreen.scaffold.title.EditorTitle
 import com.catpuppyapp.puppygit.settings.SettingsUtil
 import com.catpuppyapp.puppygit.style.MyStyleKt
-import com.catpuppyapp.puppygit.user.UserUtil
 import com.catpuppyapp.puppygit.utils.AppModel
 import com.catpuppyapp.puppygit.utils.FsUtils
 import com.catpuppyapp.puppygit.utils.cache.Cache
 import com.catpuppyapp.puppygit.utils.doJobThenOffLoading
 import com.catpuppyapp.puppygit.utils.state.mutableCustomStateOf
-import com.catpuppyapp.puppygit.fileeditor.texteditor.state.TextEditorState
-import com.catpuppyapp.puppygit.fileeditor.texteditor.view.ScrollEvent
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 
@@ -114,7 +112,7 @@ fun SubPageEditor(
     val editorPageTextEditorState = mutableCustomStateOf(
         keyTag = stateKeyTag,
         keyName = "editorPageTextEditorState",
-        initValue = TextEditorState.create("")
+        initValue = TextEditorState.create(text = "", fieldsId = "", lastState = null, undoStack = null)
     )
     val needRefreshEditorPage = rememberSaveable { mutableStateOf("")}
     val editorPageIsSaving = rememberSaveable { mutableStateOf(false)}
@@ -145,6 +143,8 @@ fun SubPageEditor(
     val editorLastSavedFontSize = rememberSaveable { mutableIntStateOf(editorFontSize.intValue)}
     val editorOpenFileErr = rememberSaveable{mutableStateOf(false)}
 
+    val editorShowUndoRedo = rememberSaveable{mutableStateOf(settingsTmp.editor.showUndoRedo)}
+    val editorUndoStack = mutableCustomStateOf<UndoStack?>(stateKeyTag, "editorUndoStack") { null }
 
     val showCloseDialog = rememberSaveable { mutableStateOf(false)}
     val editorPageRequestFromParent = rememberSaveable { mutableStateOf("")}
@@ -277,7 +277,9 @@ fun SubPageEditor(
                             lineNumFontSize=editorLineNumFontSize,
                             adjustFontSizeMode=editorAdjustFontSizeMode,
                             adjustLineNumFontSizeMode=editorAdjustLineNumFontSizeMode,
-                            showLineNum = editorShowLineNum
+                            showLineNum = editorShowLineNum,
+                            undoStack = editorUndoStack.value,
+                            showUndoRedo = editorShowUndoRedo
                         )
                     }
                 },
@@ -343,7 +345,8 @@ fun SubPageEditor(
             editorLastSavedLineNumFontSize = editorLastSavedLineNumFontSize,
             editorLastSavedFontSize = editorLastSavedFontSize,
             openDrawer = {}, //非顶级页面按返回键不需要打开抽屉
-            editorOpenFileErr = editorOpenFileErr
+            editorOpenFileErr = editorOpenFileErr,
+            undoStack = editorUndoStack
 
         )
     }

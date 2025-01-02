@@ -1154,4 +1154,10 @@
     <string name="set_timezone_leave_empty_note">You can leave the offset empty, then: when viewing GitObject(commits/tags/reflogs/etc), will read timezone from them; when creating GitObject, will save system timezone into them</string>
     <string name="default_timezone_rule_description">When viewing GitObject, read timezone from it; when creating GitObject, save system timezone into it</string>
 
+
+<!--    new at 20250102-->
+    <string name="undo">Undo</string>
+    <string name="redo">Redo</string>
+    <string name="show_undo_redo">Show Undo/Redo</string>
+
 </resources>

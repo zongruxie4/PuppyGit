@@ -62,6 +62,7 @@ import com.catpuppyapp.puppygit.constants.PageRequest
 import com.catpuppyapp.puppygit.data.entity.RepoEntity
 import com.catpuppyapp.puppygit.dto.FileItemDto
 import com.catpuppyapp.puppygit.dto.FileSimpleDto
+import com.catpuppyapp.puppygit.dto.UndoStack
 import com.catpuppyapp.puppygit.fileeditor.texteditor.state.TextEditorState
 import com.catpuppyapp.puppygit.fileeditor.texteditor.view.ScrollEvent
 import com.catpuppyapp.puppygit.git.StatusTypeEntrySaver
@@ -299,7 +300,7 @@ fun HomeScreen(
     val editorPageTextEditorState = mutableCustomStateOf(
         keyTag = stateKeyTag,
         keyName = "editorPageTextEditorState",
-        initValue = TextEditorState.create("")
+        initValue = TextEditorState.create(text = "", fieldsId = "", lastState = null, undoStack = null)
     )
 //    val editorPageShowSaveDoneToast = rememberSaveable { mutableStateOf(false)}
 //    val needRefreshEditorPage = rememberSaveable { mutableStateOf(false) }
@@ -388,6 +389,8 @@ fun HomeScreen(
     val editorAdjustFontSizeMode = rememberSaveable{mutableStateOf(false)}
     val editorAdjustLineNumFontSizeMode = rememberSaveable{mutableStateOf(false)}
     val editorOpenFileErr = rememberSaveable{mutableStateOf(false)}
+    val editorShowUndoRedo = rememberSaveable{mutableStateOf(settingsSnapshot.value.editor.showUndoRedo)}
+    val editorUndoStack = mutableCustomStateOf<UndoStack?>(stateKeyTag, "editorUndoStack") { null }
 
 
     //给Files页面点击打开文件用的
@@ -799,7 +802,9 @@ fun HomeScreen(
                                 lineNumFontSize=editorLineNumFontSize,
                                 adjustFontSizeMode=editorAdjustFontSizeMode,
                                 adjustLineNumFontSizeMode=editorAdjustLineNumFontSizeMode,
-                                showLineNum = editorShowLineNum
+                                showLineNum = editorShowLineNum,
+                                undoStack = editorUndoStack.value,
+                                showUndoRedo = editorShowUndoRedo
                             )
                         }else if(currentHomeScreen.intValue == Cons.selectedItem_ChangeList) {
                             if(!changeListPageFilterModeOn.value){
@@ -988,7 +993,8 @@ fun HomeScreen(
                     editorLastSavedLineNumFontSize = editorLastSavedLineNumFontSize,
                     editorLastSavedFontSize = editorLastSavedFontSize,
                     openDrawer = openDrawer,
-                    editorOpenFileErr = editorOpenFileErr
+                    editorOpenFileErr = editorOpenFileErr,
+                    undoStack = editorUndoStack
 
                 )
 

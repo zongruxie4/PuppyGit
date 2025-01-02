@@ -44,6 +44,7 @@ import androidx.compose.ui.unit.sp
 import com.catpuppyapp.puppygit.compose.BottomBar
 import com.catpuppyapp.puppygit.compose.ConfirmDialog
 import com.catpuppyapp.puppygit.constants.PageRequest
+import com.catpuppyapp.puppygit.dto.UndoStack
 import com.catpuppyapp.puppygit.fileeditor.texteditor.controller.EditorController
 import com.catpuppyapp.puppygit.fileeditor.texteditor.state.TextEditorState
 import com.catpuppyapp.puppygit.fileeditor.texteditor.view.ScrollEvent
@@ -88,6 +89,7 @@ fun FileEditor(requestFromParent:MutableState<String>,
                showLineNum:MutableState<Boolean>,
                lineNumFontSize:MutableIntState,
                fontSize:MutableIntState,
+               undoStack: UndoStack?
 ) {
     val activityContext = LocalContext.current
     val haptic = AppModel.haptic
@@ -100,7 +102,7 @@ fun FileEditor(requestFromParent:MutableState<String>,
     val showDeleteDialog = rememberSaveable { mutableStateOf(false) }
 //    val editableController by rememberTextEditorController(textEditorState.value, onChanged = { onChanged(it) }, isContentChanged, editorPageIsContentSnapshoted)
     val editableController = mutableCustomStateOf(stateKeyTag, "editableController") {
-        EditorController(textEditorState.value).apply {
+        EditorController(textEditorState.value, undoStack).apply {
             setOnChangedTextListener(isContentChanged, editorPageIsContentSnapshoted) { onChanged(it) }
         }
     }
@@ -156,7 +158,7 @@ fun FileEditor(requestFromParent:MutableState<String>,
             showDeleteDialog.value=false
 
             //删除选中行
-            textEditorState.value = textEditorState.value.createDeletedState()
+            textEditorState.value = textEditorState.value.createDeletedState(undoStack = undoStack)
 
             //删除行，改变内容flag设为真
             isContentChanged.value=true
