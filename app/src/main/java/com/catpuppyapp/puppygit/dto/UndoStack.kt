@@ -21,13 +21,14 @@ data class UndoStack(
     /**
      * 记多少步
      */
-    val sizeLimit: Int = 50,
+    val sizeLimit: Int = 100,
 
     /**
      * 保存间隔，秒数，为0则不限只要状态变化就立即存一版
      */
-    val undoSaveIntervalInSec:Int = 5,
-//    val undoSaveIntervalInSec:Int = 0,
+//    val undoSaveIntervalInSec:Int = 5,
+    //5秒的用户体验并不好，有可能漏选，用0秒了
+    val undoSaveIntervalInSec:Int = 0,
 
     /**
      * utc秒数，上次保存时间，用来和时间间隔配合实现在几秒内只保存一次，若为0，无视时间间隔，立即存一版本，然后更新时间为当前秒数
@@ -74,7 +75,10 @@ data class UndoStack(
         return redoStack.isEmpty()
     }
 
-    fun undoStackPush(state: TextEditorState) {
+    /**
+     * @return true saved, false not saved
+     */
+    fun undoStackPush(state: TextEditorState):Boolean {
         undoLock.withLock {
             val now = getSecFromTime()
             val snapshotLastSaveAt = undoLastSaveAt.longValue
@@ -82,7 +86,11 @@ data class UndoStack(
             if(undoSaveIntervalInSec == 0 || snapshotLastSaveAt == 0L || (now - snapshotLastSaveAt) > undoSaveIntervalInSec) {
                 push(undoStack, state)
                 undoLastSaveAt.longValue = now
+
+                return true
             }
+
+            return false
         }
     }
 
@@ -92,9 +100,13 @@ data class UndoStack(
         }
     }
 
-    fun redoStackPush(state: TextEditorState) {
+    /**
+     * @return true saved, false not saved
+     */
+    fun redoStackPush(state: TextEditorState):Boolean {
         redoLock.withLock {
             push(redoStack, state)
+            return true
         }
     }
 

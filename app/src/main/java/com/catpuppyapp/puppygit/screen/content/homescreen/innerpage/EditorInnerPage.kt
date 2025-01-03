@@ -994,8 +994,7 @@ fun EditorInnerPage(
                 if(lastState.maybeNotEquals(newState)) {
 //                    if(lastTextEditorState.value?.fields != newState.fields) {
                     //true或null，存undo; false存redo。null本来是在选择行之类的场景的，没改内容，可以不存，但我后来感觉存上比较好
-                    if(trueSaveToUndoFalseRedoNullNoSave != false) {  // null or true
-                        undoStack.value?.undoStackPush(lastState)
+                    val saved = if(trueSaveToUndoFalseRedoNullNoSave != false) {  // null or true
                         // redo的时候，添加状态到undo，不清redo stack，平时编辑文件的时候更新undo stack需清空redo stack
                         // trueSaveToUndoFalseRedoNullNoSave为null时是选择某行之类的不修改内容的状态变化，因此不用清redoStack
 //                        if(trueSaveToUndoFalseRedoNullNoSave!=null && clearRedoStack) {
@@ -1003,11 +1002,15 @@ fun EditorInnerPage(
                         if(clearRedoStack) {
                             undoStack.value?.redoStackClear()
                         }
+
+                        undoStack.value?.undoStackPush(lastState) ?: false
                     }else {  // false
-                        undoStack.value?.redoStackPush(lastState)
+                        undoStack.value?.redoStackPush(lastState) ?: false
                     }
 
-                    lastTextEditorState.value = newState
+                    if(saved) {
+                        lastTextEditorState.value = newState
+                    }
                 }
 
 //                isEdited.value=true
