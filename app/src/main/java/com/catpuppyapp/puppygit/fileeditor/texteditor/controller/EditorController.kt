@@ -376,19 +376,25 @@ class EditorController(
                 throw InvalidParameterException("textFieldValue contains newline")
             }
 
+            //检查字段内容是否改变，由于没改变也会调用此方法，所以必须判断下才能知道内容是否改变
+            val contentChanged = _fields[targetIndex].value.text != textFieldValue.text  // 旧值 != 新值
+
+            //如果等于 true，不要赋值，以免错误将修改过没保存的状态当作已保存
             if(isContentChanged?.value == false) {
                 //这里不会发生npe，如果左值为null，等号右边的表达式不会被执行
-                isContentChanged?.value = _fields[targetIndex].value.text != textFieldValue.text  // 旧值 != 新值
+                isContentChanged?.value = contentChanged
             }
 
-            if(isContentChanged?.value == true) {
-                editorPageIsContentSnapshoted?.value= false
+            if(contentChanged) {
+                editorPageIsContentSnapshoted?.value = false
 
                 _fieldsId = TextEditorState.newId()
             }
 
+            //更新字段
             _fields[targetIndex] = _fields[targetIndex].copy(value = textFieldValue)
-            onChanged(genNewState(), true, true)
+
+            onChanged(genNewState(), if(contentChanged) true else null, contentChanged)
         }
     }
 
