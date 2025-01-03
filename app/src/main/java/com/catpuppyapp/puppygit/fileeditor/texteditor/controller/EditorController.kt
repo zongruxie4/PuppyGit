@@ -10,7 +10,6 @@ import com.catpuppyapp.puppygit.fileeditor.texteditor.view.SearchPos
 import com.catpuppyapp.puppygit.fileeditor.texteditor.view.SearchPosResult
 import com.catpuppyapp.puppygit.utils.Msg
 import com.catpuppyapp.puppygit.utils.MyLog
-import com.catpuppyapp.puppygit.utils.doActIfIndexGood
 import com.catpuppyapp.puppygit.utils.isGoodIndexForList
 import com.catpuppyapp.puppygit.utils.isGoodIndexForStr
 import java.security.InvalidParameterException
@@ -24,11 +23,11 @@ class EditorController(
     textEditorState: TextEditorState,
     undoStack: UndoStack?
 ) {
-    var lastState = textEditorState
     val _undoStack = undoStack
     private var isContentChanged:MutableState<Boolean>? = null
     private var editorPageIsContentSnapshoted:MutableState<Boolean>? = null
-    private var onChanged: (TextEditorState) -> Unit = {}
+    private var onChanged: (newState:TextEditorState, trueSaveToUndoFalseRedoNullNoSave:Boolean?, clearRedoStack:Boolean) -> Unit = {newState, trueSaveToUndoFalseRedoNullNoSave, clearRedoStack ->  }
+
 
     private var _isMultipleSelectionMode = textEditorState.isMultipleSelectionMode
     private var _fieldsId = textEditorState.fieldsId
@@ -47,37 +46,37 @@ class EditorController(
         selectFieldInternal(0)
     }
 
-    fun genNewState():TextEditorState {
-
-        /**
-         *            fields: List<TextFieldState>,
-         *             fieldsId: String,
-         *             selectedIndices: List<Int>,
-         *             isMultipleSelectionMode: Boolean,
-         *             lastState:TextEditorState?,
-         *             undoStack: UndoStack?,
-         *             trueUndoFalseRedo:Boolean = true,
-         *
-         *             /**
-         *              * redo还原到undo时不用清，其余情况，若push to undo，则需要清redo
-         *              */
-         *             clearRedoStack:Boolean = true
-         */
-
-
+    private fun genNewState():TextEditorState {
+//        println("_isMultipleSelectionMode:${_isMultipleSelectionMode}")
+//        println("_selectedIndices:${_selectedIndices}")
         val newState = TextEditorState.create(
-            fields = fields,
+            fields = _fields.toList(),
             fieldsId = _fieldsId,
-            selectedIndices = selectedIndices,
-            isMultipleSelectionMode = isMultipleSelectionMode,
-            lastState = lastState.copy(),
-            undoStack = _undoStack,
-            trueUndoFalseRedo = true,
+            selectedIndices = _selectedIndices.toList(),
+            isMultipleSelectionMode = _isMultipleSelectionMode,
         )
 
-        lastState = newState
-
         return newState
+    }
+
+    fun undo() {
+        undoOrRedo(true)
+    }
+
+    fun redo() {
+        undoOrRedo(false)
+    }
+
+    private fun undoOrRedo(trueUndoFalseRedo:Boolean) {
+        lock.withLock {
+            val lastState = if(trueUndoFalseRedo) _undoStack?.undoStackPop() else _undoStack?.redoStackPop()
+            if(lastState != null) {
+                syncState(lastState)
+                val clearRedoStack = false
+                // 第2个值需要取反，因为执行redo的时候期望更新undostack，执行undo的时候期望更新redostack
+                onChanged(genNewState(), !trueUndoFalseRedo, clearRedoStack)
+            }
+        }
     }
 
     fun syncState(state: TextEditorState) {
@@ -85,6 +84,7 @@ class EditorController(
             _fieldsId = state.fieldsId
 
             _isMultipleSelectionMode = state.isMultipleSelectionMode
+
             _selectedIndices.clear()
             _selectedIndices.addAll(state.selectedIndices)
 
@@ -282,19 +282,19 @@ class EditorController(
 
     }
 
-    @Deprecated("有缺陷，无法显示光标，做不到点按某行某列的效果，所以改用 `selectField()` 了")
-    fun selectTextInLine(lineIndex:Int, textStartIndexInclusive:Int, textEndIndexExclusive:Int) {
-        doActIfIndexGood(lineIndex, _fields) { target ->
-            lock.withLock {
-                val copyTarget = target.copy(
-                    value = target.value.copy(selection = TextRange(textStartIndexInclusive, textEndIndexExclusive))
-                )
-                _fields[lineIndex] = copyTarget
-
-                onChanged(genNewState())
-            }
-        }
-    }
+//    @Deprecated("有缺陷，无法显示光标，做不到点按某行某列的效果，所以改用 `selectField()` 了")
+//    fun selectTextInLine(lineIndex:Int, textStartIndexInclusive:Int, textEndIndexExclusive:Int) {
+//        doActIfIndexGood(lineIndex, _fields) { target ->
+//            lock.withLock {
+//                val copyTarget = target.copy(
+//                    value = target.value.copy(selection = TextRange(textStartIndexInclusive, textEndIndexExclusive))
+//                )
+//                _fields[lineIndex] = copyTarget
+//
+//                onChanged(genNewState(), null)
+//            }
+//        }
+//    }
 
     fun splitNewLine(targetIndex: Int, textFieldValue: TextFieldValue) {
         lock.withLock {
@@ -320,7 +320,7 @@ class EditorController(
             isContentChanged?.value=true
             editorPageIsContentSnapshoted?.value=false
             _fieldsId = TextEditorState.newId()
-            onChanged(genNewState())
+            onChanged(genNewState(), true, true)
         }
     }
 
@@ -357,7 +357,7 @@ class EditorController(
             editorPageIsContentSnapshoted?.value=false
             _fieldsId = TextEditorState.newId()
 
-            onChanged(genNewState())
+            onChanged(genNewState(), true, true)
         }
     }
 
@@ -383,7 +383,7 @@ class EditorController(
             }
 
             _fields[targetIndex] = _fields[targetIndex].copy(value = textFieldValue)
-            onChanged(genNewState())
+            onChanged(genNewState(), true, true)
         }
     }
 
@@ -417,7 +417,7 @@ class EditorController(
             editorPageIsContentSnapshoted?.value= false
             _fieldsId = TextEditorState.newId()
 
-            onChanged(genNewState())
+            onChanged(genNewState(), true, true)
         }
     }
 
@@ -439,7 +439,7 @@ class EditorController(
                 requireSelectLine = requireSelectLine
             )
 
-            onChanged(genNewState())
+            onChanged(genNewState(), null, true)
         }
     }
 
@@ -465,7 +465,7 @@ class EditorController(
                 }
             }
 
-            onChanged(genNewState())
+            onChanged(genNewState(), null, true)
         }
     }
 
@@ -477,7 +477,7 @@ class EditorController(
 
             val previousIndex = selectedIndex - 1
             selectFieldInternal(previousIndex, SelectionOption.LAST_POSITION)
-            onChanged(genNewState())
+            onChanged(genNewState(), null, true)
         }
     }
 
@@ -489,7 +489,7 @@ class EditorController(
 
             val nextIndex = selectedIndex + 1
             selectFieldInternal(nextIndex, SelectionOption.FIRST_POSITION)
-            onChanged(genNewState())
+            onChanged(genNewState(), null, true)
         }
     }
 //
@@ -522,44 +522,44 @@ class EditorController(
 //        }
 //    }
 
-    fun setOnChangedTextListener(isContentChanged: MutableState<Boolean>,editorPageIsContentSnapshoted: MutableState<Boolean>, onChanged: (TextEditorState) -> Unit) {
+    fun setOnChangedTextListener(isContentChanged: MutableState<Boolean>,editorPageIsContentSnapshoted: MutableState<Boolean>, onChanged: (newState:TextEditorState, trueSaveToUndoFalseRedoNullNoSave:Boolean?, clearRedoStack:Boolean) -> Unit) {
         this.onChanged = onChanged
         this.isContentChanged = isContentChanged
         this.editorPageIsContentSnapshoted = editorPageIsContentSnapshoted
 
     }
 
-    fun deleteAllLine() {
-        lock.withLock {
-            _fields.clear()
-            _fields.addAll(emptyList<String>().createInitTextFieldStates())
-            _selectedIndices.clear()
-
-            // I am not sure, this should needn't call it, if call when select mode on, maybe will selected first line
-            //我不确定这个是否应该调用，应该不需要，如果 调用 且 选择模式状态为开启，则会在删除所有内容后选中第1行
-//            selectFieldInternal(0)
-
-            isContentChanged?.value=true
-            editorPageIsContentSnapshoted?.value= false
-            _fieldsId = TextEditorState.newId()
-
-            onChanged(genNewState())
-        }
-    }
-
-    fun deleteSelectedLines() {
-        lock.withLock {
-            val targets = selectedIndices.mapNotNull { _fields.getOrNull(it) }
-            _fields.removeAll(targets)
-            _selectedIndices.clear()
-
-            isContentChanged?.value=true
-            editorPageIsContentSnapshoted?.value= false
-            _fieldsId = TextEditorState.newId()
-
-            onChanged(genNewState())
-        }
-    }
+//    fun deleteAllLine() {
+//        lock.withLock {
+//            _fields.clear()
+//            _fields.addAll(emptyList<String>().createInitTextFieldStates())
+//            _selectedIndices.clear()
+//
+//            // I am not sure, this should needn't call it, if call when select mode on, maybe will selected first line
+//            //我不确定这个是否应该调用，应该不需要，如果 调用 且 选择模式状态为开启，则会在删除所有内容后选中第1行
+////            selectFieldInternal(0)
+//
+//            isContentChanged?.value=true
+//            editorPageIsContentSnapshoted?.value= false
+//            _fieldsId = TextEditorState.newId()
+//
+//            onChanged(genNewState())
+//        }
+//    }
+//
+//    fun deleteSelectedLines() {
+//        lock.withLock {
+//            val targets = selectedIndices.mapNotNull { _fields.getOrNull(it) }
+//            _fields.removeAll(targets)
+//            _selectedIndices.clear()
+//
+//            isContentChanged?.value=true
+//            editorPageIsContentSnapshoted?.value= false
+//            _fieldsId = TextEditorState.newId()
+//
+//            onChanged(genNewState())
+//        }
+//    }
 
     private fun clearSelectedIndicesInternal() {
         val copyFields = _fields.toList().map { it.copy(isSelected = false) }
@@ -757,9 +757,133 @@ class EditorController(
             editorPageIsContentSnapshoted?.value= false
             _fieldsId = TextEditorState.newId()
 
-            onChanged(genNewState())
+            onChanged(genNewState(), true, true)
         }
     }
+
+
+    /**
+     * 注：若index为无效索引，初始不会选择任何行
+     */
+    fun createMultipleSelectionModeState(index:Int) {
+        lock.withLock {
+            //用14431行的近2mb文件简单测试了下，性能还行
+            //进入选择模式，数据不变，只是 MultipleSelectionMode 设为true且对应行的isSelected设为true
+
+            //关闭所有条目的选中状态
+            val newFieldsList = fields.mapIndexed{idx,it ->
+                it.copy(isSelected = idx==index)  //为当前点击的条目开启选中状态。注：若index为-1或其他无效索引值，则不会选中任何行。
+            }
+
+            val newState = TextEditorState.create(
+                fieldsId = _fieldsId,
+                fields = newFieldsList,  //把当前点击而开启选择行模式的那行的选中状态设为真了
+                selectedIndices = if(isGoodIndexForList(index, newFieldsList)) listOf(index) else listOf(),  //默认选中的索引包含当前选中行即可，因为肯定是点击某一行开启选中模式的，所以只会有一个索引
+                isMultipleSelectionMode = true,
+            )
+
+            syncState(newState)
+            onChanged(newState, true, true)
+        }
+
+    }
+
+
+    fun createCopiedState() {
+        lock.withLock {
+            val newState = TextEditorState.create(
+    //        fields = fields.map { TextFieldState(it.id, it.value, isSelected = false)},  //对所有选中行解除选中
+    //        isMultipleSelectionMode = false,  //退出选择模式
+                    fieldsId = _fieldsId,
+                    fields = fields,
+                    selectedIndices = selectedIndices,
+                    isMultipleSelectionMode = isMultipleSelectionMode,  //拷贝和删除不要退出选择模式(准确来说是不要改变是否处于选择模式，若以后以非多选模式创建CopiedState，也不会自动进入选择模式)，这样用户可间接实现剪切功能，因为选择很多行有时候很废力，所以除非用户明确按取消，否则不要自动解除选择模式
+            )
+
+            syncState(newState)
+            onChanged(newState, true, true)
+        }
+
+    }
+
+
+    fun createSelectAllState() {
+        lock.withLock {
+            //TODO 这里应该可以避免拷贝吧？不过这里是引用拷贝，问题不大
+            val selectedIndexList = mutableListOf<Int>()
+            val selectedFieldList = mutableListOf<TextFieldState>()
+            for((idx, f) in fields.withIndex()) {
+                selectedIndexList.add(idx)
+                selectedFieldList.add(TextFieldState(f.id,f.value, isSelected = true))
+            }
+            //我不太确定 data类的copy是深还是浅，但我可以确定这里不需要深拷贝，所以用下面创建浅拷贝的方法创建对象
+            val newState = TextEditorState.create(
+                fieldsId = _fieldsId,
+                fields = selectedFieldList,
+                selectedIndices = selectedIndexList,
+                isMultipleSelectionMode = true,
+            )
+
+            syncState(newState)
+            onChanged(newState, true, true)
+        }
+    }
+
+
+    fun createDeletedState(){
+        lock.withLock {
+
+            //把没选中的行取出来，作为新的文件内容
+            val newFields = fields.filterIndexed { index, _ ->
+                !selectedIndices.contains(index)
+            }
+
+            //如果选中行列表selectedIndices无重复索引且不可能有错误索引的话，
+            // 可简单对比已选中行selectedIndices.size和fields.size来判断有无选中所有行，
+            // 但我不确定selectedIndices是否会有重复索引和是否会有无效索引，
+            // 所以这里暂时不用size判断是否选中了所有行
+
+            //判断是否删除了所有行，如果新的文件内容列表newFields一个元素都没有，则说明全删了
+            val isDeletedAll = newFields.isEmpty()
+
+            //如果是删除所有，创建一个空状态；否则创建删除选中行后的状态
+            val newState = if(isDeletedAll) {
+                TextEditorState.create(
+                    fieldsId = TextEditorState.newId(),
+                    text = "",
+                    isMultipleSelectionMode = isMultipleSelectionMode,
+                )
+            }else {
+                //即使全删了，完全创建新状态，也不要影响选择模式，要不然有的情况自动退选择模式，有的不退，容易让人感到混乱
+                TextEditorState.create(
+                    fieldsId = TextEditorState.newId(),
+                    fields = newFields,
+                    selectedIndices = emptyList(),
+                    isMultipleSelectionMode = isMultipleSelectionMode,  //一般来说此值在这会是true，不过，这里的语义是“不修改是否选择模式”，所以把这个字段传过去比直接设为true要合适
+                )
+            }
+
+
+            syncState(newState)
+            onChanged(newState, true, true)
+        }
+    }
+
+    fun createCancelledState(){
+        lock.withLock {
+            val newState = TextEditorState.create(
+                fieldsId = _fieldsId,
+                fields = fields.map { TextFieldState(id = it.id, value = it.value, isSelected = false) },
+                selectedIndices = emptyList(),
+                isMultipleSelectionMode = false,
+            )
+
+            syncState(newState)
+            onChanged(newState, true, true)
+        }
+    }
+
+
 
     enum class SelectionOption {
         FIRST_POSITION,

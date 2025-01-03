@@ -50,11 +50,6 @@ import com.catpuppyapp.puppygit.fileeditor.texteditor.state.TextEditorState
 import com.catpuppyapp.puppygit.fileeditor.texteditor.view.ScrollEvent
 import com.catpuppyapp.puppygit.fileeditor.texteditor.view.TextEditor
 import com.catpuppyapp.puppygit.fileeditor.ui.composable.editor.FieldIcon
-import com.catpuppyapp.puppygit.fileeditor.ui.extension.createCancelledState
-import com.catpuppyapp.puppygit.fileeditor.ui.extension.createCopiedState
-import com.catpuppyapp.puppygit.fileeditor.ui.extension.createDeletedState
-import com.catpuppyapp.puppygit.fileeditor.ui.extension.createMultipleSelectionModeState
-import com.catpuppyapp.puppygit.fileeditor.ui.extension.createSelectAllState
 import com.catpuppyapp.puppygit.play.pro.R
 import com.catpuppyapp.puppygit.settings.FileEditedPos
 import com.catpuppyapp.puppygit.style.MyStyleKt
@@ -74,7 +69,7 @@ fun FileEditor(requestFromParent:MutableState<String>,
                fileFullPath:String,
                lastEditedPos:FileEditedPos,
                textEditorState:CustomStateSaveable<TextEditorState>,
-               onChanged:(TextEditorState)->Unit,
+               onChanged:(newState:TextEditorState, trueSaveToUndoFalseRedoNullNoSave:Boolean?, clearRedoStack:Boolean)->Unit,
                contentPadding:PaddingValues,
                isContentChanged:MutableState<Boolean>,
                editorLastScrollEvent:CustomStateSaveable<ScrollEvent?>,
@@ -103,7 +98,7 @@ fun FileEditor(requestFromParent:MutableState<String>,
 //    val editableController by rememberTextEditorController(textEditorState.value, onChanged = { onChanged(it) }, isContentChanged, editorPageIsContentSnapshoted)
     val editableController = mutableCustomStateOf(stateKeyTag, "editableController") {
         EditorController(textEditorState.value, undoStack).apply {
-            setOnChangedTextListener(isContentChanged, editorPageIsContentSnapshoted) { onChanged(it) }
+            setOnChangedTextListener(isContentChanged, editorPageIsContentSnapshoted, onChanged)
         }
     }
 
@@ -129,7 +124,7 @@ fun FileEditor(requestFromParent:MutableState<String>,
 
         // 非行选择模式，启动行选择模式 (multiple selection mode on)
         //注：索引传-1或其他无效索引即可在不选中任何行的情况下启动选择模式，从顶栏菜单开启选择模式默认不选中任何行，所以这里传-1
-        textEditorState.value = textEditorState.value.createMultipleSelectionModeState(index)
+        editableController.value.createMultipleSelectionModeState(index)
     }
 
     //切换行选择模式
@@ -137,7 +132,7 @@ fun FileEditor(requestFromParent:MutableState<String>,
         PageRequest.clearStateThenDoAct(requestFromParent) {
             //如果已经是选择模式，退出；否则开启选择模式
             if(textEditorState.value.isMultipleSelectionMode) {  //退出选择模式
-                textEditorState.value = textEditorState.value.createCancelledState()
+                editableController.value.createCancelledState()
             }else {  //开启选择模式
                 enableSelectMode(-1)
             }
@@ -158,7 +153,7 @@ fun FileEditor(requestFromParent:MutableState<String>,
             showDeleteDialog.value=false
 
             //删除选中行
-            textEditorState.value = textEditorState.value.createDeletedState(undoStack = undoStack)
+            editableController.value.createDeletedState()
 
             //删除行，改变内容flag设为真
             isContentChanged.value=true
@@ -184,7 +179,7 @@ fun FileEditor(requestFromParent:MutableState<String>,
             lastEditedPos = lastEditedPos,
             textEditorState = textEditorState.value,
             editableController = editableController.value,
-            onChanged = { onChanged(it) },
+//            onChanged = onChanged,
             contentPaddingValues = contentPaddingValues,
             lastScrollEvent =editorLastScrollEvent,
             listState =editorListState,
@@ -287,7 +282,7 @@ fun FileEditor(requestFromParent:MutableState<String>,
 
             // BottomBar params block start
             val quitSelectionMode = {
-                textEditorState.value = textEditorState.value.createCancelledState()
+                editableController.value.createCancelledState()
             }
             val iconList = listOf(
                 Icons.Filled.Delete,
@@ -324,11 +319,11 @@ fun FileEditor(requestFromParent:MutableState<String>,
 
                     clipboardManager.setText(AnnotatedString(textEditorState.value.getSelectedText()))
                     Msg.requireShow(replaceStringResList(activityContext.getString(R.string.n_lines_copied), listOf(selectedLinesNum.toString())), )
-                    textEditorState.value = textEditorState.value.createCopiedState()
+                    editableController.value.createCopiedState()
                 },
 
                 onSelectAll@{
-                    textEditorState.value = textEditorState.value.createSelectAllState()
+                    editableController.value.createSelectAllState()
                 }
             )
 

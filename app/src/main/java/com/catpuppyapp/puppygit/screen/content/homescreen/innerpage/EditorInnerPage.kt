@@ -61,7 +61,6 @@ import com.catpuppyapp.puppygit.dto.UndoStack
 import com.catpuppyapp.puppygit.fileeditor.texteditor.state.TextEditorState
 import com.catpuppyapp.puppygit.fileeditor.texteditor.view.ScrollEvent
 import com.catpuppyapp.puppygit.fileeditor.ui.composable.FileEditor
-import com.catpuppyapp.puppygit.fileeditor.ui.extension.createCancelledState
 import com.catpuppyapp.puppygit.play.pro.R
 import com.catpuppyapp.puppygit.screen.functions.goToFileHistory
 import com.catpuppyapp.puppygit.settings.SettingsUtil
@@ -102,6 +101,10 @@ fun EditorInnerPage(
     editorPageShowingFilePath:MutableState<String>,
     editorPageShowingFileIsReady:MutableState<Boolean>,
     editorPageTextEditorState:CustomStateSaveable<TextEditorState>,
+    /**
+     * 此变量严格来说并不是Editor的上个状态，而是最后一个记录到Undo/Redo stack的状态
+     */
+    lastTextEditorState:CustomStateSaveable<TextEditorState>,
 //    editorPageShowSaveDoneToast:MutableState<Boolean>,
     needRefreshEditorPage:MutableState<String>,
     isSaving:MutableState<Boolean>,  //这个变量只是用来判断是否可用保存按钮的
@@ -339,7 +342,8 @@ fun EditorInnerPage(
         saveFontSizeAndQuitAdjust = saveFontSizeAndQuitAdjust,
         saveLineNumFontSizeAndQuitAdjust = saveLineNumFontSizeAndQuitAdjust,
         exitApp = exitApp,
-        openDrawer=openDrawer
+        openDrawer=openDrawer,
+        requestFromParent = requestFromParent
 
     )
 
@@ -981,8 +985,29 @@ fun EditorInnerPage(
             fileFullPath,
             fileEditedPos,
             editorPageTextEditorState,
-            onChanged = {
-                editorPageTextEditorState.value = it
+            onChanged = {newState:TextEditorState, trueSaveToUndoFalseRedoNullNoSave:Boolean?, clearRedoStack:Boolean ->
+                editorPageTextEditorState.value = newState
+
+                if(trueSaveToUndoFalseRedoNullNoSave != null) {
+                    val lastState = lastTextEditorState.value
+                    // last state == null || 不等于新state的filesId，则入栈
+                    //这个fieldsId只是个粗略判断，即使一样也不能保证fields完全一样
+                    if(lastState.maybeNotEquals(newState)) {
+//                    if(lastTextEditorState.value?.fields != newState.fields) {
+                        if(trueSaveToUndoFalseRedoNullNoSave) {
+                            undoStack.value?.undoStackPush(lastState)
+                            // redo的时候，添加状态到undo，不清redo stack，平时编辑文件的时候更新undo stack需清空redo stack
+                            if(clearRedoStack) {
+                                undoStack.value?.redoStackClear()
+                            }
+                        }else {
+                            undoStack.value?.redoStackPush(lastState)
+                        }
+
+                        lastTextEditorState.value = newState
+                    }
+                }
+
 //                isEdited.value=true
             },
 
@@ -1050,7 +1075,8 @@ fun EditorInnerPage(
                 readOnlyMode,
                 editorMergeMode,
                 saveLastOpenPath,
-                undoStack
+                undoStack,
+                lastTextEditorState
 //        editorPageOpenedFileMap,
             )
 
@@ -1114,7 +1140,8 @@ private fun doInit(
     readOnlyMode: MutableState<Boolean>,
     mergeMode: MutableState<Boolean>,
     saveLastOpenPath:(path:String)->Unit,
-    undoStack: CustomStateSaveable<UndoStack?>
+    undoStack: CustomStateSaveable<UndoStack?>,
+    lastTextEditorState: CustomStateSaveable<TextEditorState>,
 
 ) {
 
@@ -1252,7 +1279,9 @@ private fun doInit(
                 //读取文件内容
 //            editorPageTextEditorState.value = TextEditorState.create(FsUtils.readFile(requireOpenFilePath))
 //                editorPageTextEditorState.value = TextEditorState.create(FsUtils.readLinesFromFile(requireOpenFilePath))
-                editorPageTextEditorState.value = TextEditorState.create(file = File(requireOpenFilePath), fieldsId = TextEditorState.newId(), lastState = null, undoStack = undoStack.value)
+                editorPageTextEditorState.value = TextEditorState.create(file = File(requireOpenFilePath), fieldsId = TextEditorState.newId())
+                lastTextEditorState.value = editorPageTextEditorState.value
+//                lastTextEditorState.value = editorPageTextEditorState.value
 
                 isContentSnapshoted.value=false
                 //文件就绪
@@ -1334,7 +1363,8 @@ private fun getBackHandler(
     saveFontSizeAndQuitAdjust:()->Unit,
     saveLineNumFontSizeAndQuitAdjust:()->Unit,
     exitApp: () -> Unit,
-    openDrawer:()->Unit
+    openDrawer:()->Unit,
+    requestFromParent: MutableState<String>
 
 ): () -> Unit {
     val backStartSec = rememberSaveable { mutableLongStateOf( 0) }
@@ -1348,7 +1378,7 @@ private fun getBackHandler(
     val backHandlerOnBack = {
         //是多选模式则退出多选，否则检查是否编辑过文件，若编辑过则保存，然后判断是否子页面，是子页面则返回上级页面，否则显示再按返回退出的提示
         if(textEditorState.value.isMultipleSelectionMode) {  //退出编辑器多选模式
-            textEditorState.value = textEditorState.value.createCancelledState()
+            requestFromParent.value = PageRequest.editorCreateCancelledState
         }else if(searchMode.value){
             searchMode.value = false
         }else if(adjustFontSizeMode.value){

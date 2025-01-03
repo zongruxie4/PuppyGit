@@ -300,7 +300,12 @@ fun HomeScreen(
     val editorPageTextEditorState = mutableCustomStateOf(
         keyTag = stateKeyTag,
         keyName = "editorPageTextEditorState",
-        initValue = TextEditorState.create(text = "", fieldsId = "", lastState = null, undoStack = null)
+        initValue = TextEditorState.create(text = "", fieldsId = "")
+    )
+    val editorPageLastTextEditorState = mutableCustomStateOf(
+        keyTag = stateKeyTag,
+        keyName = "editorPageLastTextEditorState",
+        initValue = TextEditorState.create(text = "", fieldsId = "")
     )
 //    val editorPageShowSaveDoneToast = rememberSaveable { mutableStateOf(false)}
 //    val needRefreshEditorPage = rememberSaveable { mutableStateOf(false) }
@@ -958,6 +963,7 @@ fun HomeScreen(
                     editorPageShowingFilePath=editorPageShowingFilePath,
                     editorPageShowingFileIsReady=editorPageShowingFileIsReady,
                     editorPageTextEditorState=editorPageTextEditorState,
+                    lastTextEditorState = editorPageLastTextEditorState,
 //                    editorPageShowSaveDoneToast=editorPageShowSaveDoneToast,
                     needRefreshEditorPage=needRefreshEditorPage,
                     isSaving = editorPageIsSaving,

@@ -19,6 +19,9 @@ object PageRequest {
     const val goToIndex ="goToIndex"  //goToIndex#Index，#后面是要goto的index
 
 
+    const val editorCreateCancelledState = "editorCreateCancelledState"
+    const val requestUndo = "requestUndo"
+    const val requestRedo = "requestRedo"
     const val requireShowPathDetails = "requireShowPathDetails"
     const val showViewAndSortMenu = "showViewAndSortMenu"
     const val requireGoToFileHistory = "requireGoToFileHistory"

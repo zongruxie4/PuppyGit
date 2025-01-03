@@ -142,7 +142,7 @@ fun TextEditor(
     lastEditedPos: FileEditedPos,
     textEditorState: TextEditorState,
     editableController: EditorController,
-    onChanged: (TextEditorState) -> Unit,
+//    onChanged:(newState:TextEditorState, trueSaveToUndoFalseRedoNullNoSave:Boolean?, clearRedoStack:Boolean)->Unit,
     modifier: Modifier = Modifier,
     contentPaddingValues: PaddingValues = PaddingValues(),
     lastScrollEvent: CustomStateSaveable<ScrollEvent?>,
@@ -308,6 +308,21 @@ fun TextEditor(
 
     //上级页面发来的request，请求执行某些操作
     //20240507: 这个其实已经没用了，改用在第一行和最后编辑位置切换了，不过，暂且先留着这代码
+    if(requestFromParent.value==PageRequest.editorCreateCancelledState) {
+        PageRequest.clearStateThenDoAct(requestFromParent) {
+            editableController.createCancelledState()
+        }
+    }
+    if(requestFromParent.value==PageRequest.requestUndo) {
+        PageRequest.clearStateThenDoAct(requestFromParent) {
+            editableController.undo()
+        }
+    }
+    if(requestFromParent.value==PageRequest.requestRedo) {
+        PageRequest.clearStateThenDoAct(requestFromParent) {
+            editableController.redo()
+        }
+    }
     if(requestFromParent.value==PageRequest.goToTop) {
         PageRequest.clearStateThenDoAct(requestFromParent) {
             lastScrollEvent.value = ScrollEvent(0, forceGo = true)
@@ -1038,7 +1053,10 @@ fun TextEditor(
 //                                            lastScrollEvent = ScrollEvent(index)
 
                                         }catch (e:Exception) {
-                                            Msg.requireShowLongDuration("#onUpdateText err: "+e.localizedMessage)
+                                            // Undo/Redo后可能 出现 索引错误，没必要显示给用户，无视即可
+//                                            Msg.requireShowLongDuration("#onUpdateText err: "+e.localizedMessage)
+
+                                            //不过日志还是要记下的
                                             MyLog.e(TAG, "#onUpdateText err: "+e.stackTraceToString())
                                         }
                                     },
@@ -1058,6 +1076,7 @@ fun TextEditor(
                                             lastScrollEvent.value = ScrollEvent(index + 1)
                                         }catch (e:Exception) {
                                             Msg.requireShowLongDuration("#onContainNewLine err: "+e.localizedMessage)
+
                                             MyLog.e(TAG, "#onContainNewLine err: "+e.stackTraceToString())
                                         }
 

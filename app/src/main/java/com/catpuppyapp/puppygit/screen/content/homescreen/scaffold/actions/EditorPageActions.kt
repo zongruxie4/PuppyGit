@@ -139,20 +139,7 @@ fun EditorPageActions(
                 icon = Icons.AutoMirrored.Filled.Undo,
                 iconContentDesc = stringResource(R.string.undo),
             ) {
-                val lastState = undoStack?.undoStackPop()
-                val curState = editorPageTextEditorState.value
-                if(lastState != null) {
-                    editorPageTextEditorState.value = TextEditorState.create(
-                        fieldsId = lastState.fieldsId,
-                        fields = lastState.fields,
-                        selectedIndices = curState.selectedIndices,
-                        isMultipleSelectionMode = curState.isMultipleSelectionMode,
-                        lastState = curState,
-                        undoStack = undoStack,
-                        trueUndoFalseRedo = false,
-                    )
-                }
-
+                editorPageRequest.value = PageRequest.requestUndo
             }
 
             LongPressAbleIconBtn(
@@ -161,20 +148,7 @@ fun EditorPageActions(
                 icon = Icons.AutoMirrored.Filled.Redo,
                 iconContentDesc = stringResource(R.string.redo),
             ) {
-                val lastState = undoStack?.redoStackPop()
-                val curState = editorPageTextEditorState.value
-                if(lastState != null) {
-                    editorPageTextEditorState.value = TextEditorState.create(
-                        fieldsId = lastState.fieldsId,
-                        fields = lastState.fields,
-                        selectedIndices = curState.selectedIndices,
-                        isMultipleSelectionMode = curState.isMultipleSelectionMode,
-                        lastState = curState,
-                        undoStack = undoStack,
-                        trueUndoFalseRedo = true,
-                        clearRedoStack = false
-                    )
-                }
+                editorPageRequest.value = PageRequest.requestRedo
             }
         }
 
