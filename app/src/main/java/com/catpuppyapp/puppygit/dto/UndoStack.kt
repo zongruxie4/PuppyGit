@@ -78,24 +78,11 @@ data class UndoStack(
         undoLock.withLock {
             val now = getSecFromTime()
             val snapshotLastSaveAt = undoLastSaveAt.longValue
+            //在时间间隔内只存一版
             if(undoSaveIntervalInSec == 0 || snapshotLastSaveAt == 0L || (now - snapshotLastSaveAt) > undoSaveIntervalInSec) {
                 push(undoStack, state)
                 undoLastSaveAt.longValue = now
-            }else {
-                doJobThenOffLoading {
-                    //等待延迟时间减去当前时间剩下的时间，单位秒
-                    delay(((undoSaveIntervalInSec - (now - snapshotLastSaveAt)) * 1000L).coerceAtLeast(1))
-
-                    //如果当前状态超过时间间隔后依然没被新状态取代，入栈
-                    if(undoLastSaveAt.longValue == snapshotLastSaveAt) {
-                        undoLock.withLock {
-                            push(undoStack, state)
-                            undoLastSaveAt.longValue = getSecFromTime()
-                        }
-                    }
-                }
             }
-
         }
     }
 

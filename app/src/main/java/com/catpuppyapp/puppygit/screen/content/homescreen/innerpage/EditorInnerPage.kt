@@ -988,24 +988,26 @@ fun EditorInnerPage(
             onChanged = {newState:TextEditorState, trueSaveToUndoFalseRedoNullNoSave:Boolean?, clearRedoStack:Boolean ->
                 editorPageTextEditorState.value = newState
 
-                if(trueSaveToUndoFalseRedoNullNoSave != null) {
-                    val lastState = lastTextEditorState.value
-                    // last state == null || 不等于新state的filesId，则入栈
-                    //这个fieldsId只是个粗略判断，即使一样也不能保证fields完全一样
-                    if(lastState.maybeNotEquals(newState)) {
+                val lastState = lastTextEditorState.value
+                // last state == null || 不等于新state的filesId，则入栈
+                //这个fieldsId只是个粗略判断，即使一样也不能保证fields完全一样
+                if(lastState.maybeNotEquals(newState)) {
 //                    if(lastTextEditorState.value?.fields != newState.fields) {
-                        if(trueSaveToUndoFalseRedoNullNoSave) {
-                            undoStack.value?.undoStackPush(lastState)
-                            // redo的时候，添加状态到undo，不清redo stack，平时编辑文件的时候更新undo stack需清空redo stack
-                            if(clearRedoStack) {
-                                undoStack.value?.redoStackClear()
-                            }
-                        }else {
-                            undoStack.value?.redoStackPush(lastState)
+                    //true或null，存undo; false存redo。null本来是在选择行之类的场景的，没改内容，可以不存，但我后来感觉存上比较好
+                    if(trueSaveToUndoFalseRedoNullNoSave != false) {  // null or true
+                        undoStack.value?.undoStackPush(lastState)
+                        // redo的时候，添加状态到undo，不清redo stack，平时编辑文件的时候更新undo stack需清空redo stack
+                        // trueSaveToUndoFalseRedoNullNoSave为null时是选择某行之类的不修改内容的状态变化，因此不用清redoStack
+//                        if(trueSaveToUndoFalseRedoNullNoSave!=null && clearRedoStack) {
+                        //改了下调用函数时传的这个值，在不修改内容时更新状态清除clearReadStack传了false，所以不需要额外判断trueSaveToUndoFalseRedoNullNoSave是否为null了
+                        if(clearRedoStack) {
+                            undoStack.value?.redoStackClear()
                         }
-
-                        lastTextEditorState.value = newState
+                    }else {  // false
+                        undoStack.value?.redoStackPush(lastState)
                     }
+
+                    lastTextEditorState.value = newState
                 }
 
 //                isEdited.value=true

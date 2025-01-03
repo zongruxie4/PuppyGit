@@ -9,11 +9,12 @@ import com.catpuppyapp.puppygit.utils.generateRandomString
 import java.io.File
 import java.io.OutputStream
 
+//不实现equals，直接比较指针地址，反而性能可能更好，不过状态更新可能并不准确，例如fields没更改的情况也会触发页面刷新
 @Immutable
-data class TextEditorState(
+class TextEditorState private constructor(
 
     /**
-     the filedsId only about fields, same fieldsId should has same fields
+     the `fieldsId` only about fields, same fieldsId should has same fields，但不强制要求
      */
     val fieldsId: String,
     val fields: List<TextFieldState>,
@@ -88,6 +89,9 @@ data class TextEditorState(
         return fields.isEmpty() || (fields.size == 1 && fields[0].value.text.isEmpty())
     }
 
+    /**
+     * 此函数不比较fields数组，缺点是返回结果并不准确(真或假都不靠谱)，优点是快
+     */
     fun maybeNotEquals(other: TextEditorState):Boolean {
         return this.fieldsId != other.fieldsId || this.isMultipleSelectionMode != other.isMultipleSelectionMode || this.selectedIndices != other.selectedIndices
     }

@@ -72,8 +72,9 @@ class EditorController(
             val lastState = if(trueUndoFalseRedo) _undoStack?.undoStackPop() else _undoStack?.redoStackPop()
             if(lastState != null) {
                 syncState(lastState)
+                //无论执行redo还是undo，都不需要清redoStack，所以这里此值传false
                 val clearRedoStack = false
-                // 第2个值需要取反，因为执行redo的时候期望更新undostack，执行undo的时候期望更新redostack
+                // 第2个值需要取反，因为执行redo的时候期望更新undoStack，执行undo的时候期望更新redoStack
                 onChanged(genNewState(), !trueUndoFalseRedo, clearRedoStack)
             }
         }
@@ -306,7 +307,7 @@ class EditorController(
                 throw InvalidParameterException("textFieldValue doesn't contains newline")
             }
 
-            val splitFieldValues = textFieldValue.splitTextsByNL()
+            val splitFieldValues = splitTextsByNL(textFieldValue)
             val firstSplitFieldValue = splitFieldValues.first()
             _fields[targetIndex] = _fields[targetIndex].copy(value = firstSplitFieldValue, isSelected = false)
 
@@ -439,7 +440,7 @@ class EditorController(
                 requireSelectLine = requireSelectLine
             )
 
-            onChanged(genNewState(), null, true)
+            onChanged(genNewState(), null, false)
         }
     }
 
@@ -465,7 +466,7 @@ class EditorController(
                 }
             }
 
-            onChanged(genNewState(), null, true)
+            onChanged(genNewState(), null, false)
         }
     }
 
@@ -477,7 +478,7 @@ class EditorController(
 
             val previousIndex = selectedIndex - 1
             selectFieldInternal(previousIndex, SelectionOption.LAST_POSITION)
-            onChanged(genNewState(), null, true)
+            onChanged(genNewState(), null, false)
         }
     }
 
@@ -489,7 +490,7 @@ class EditorController(
 
             val nextIndex = selectedIndex + 1
             selectFieldInternal(nextIndex, SelectionOption.FIRST_POSITION)
-            onChanged(genNewState(), null, true)
+            onChanged(genNewState(), null, false)
         }
     }
 //
@@ -639,9 +640,9 @@ class EditorController(
         }
     }
 
-    private fun TextFieldValue.splitTextsByNL(): List<TextFieldValue> {
+    private fun splitTextsByNL(textFieldValue: TextFieldValue): List<TextFieldValue> {
         var position = 0
-        val splitTexts = this.text.split("\n").map {
+        val splitTexts = textFieldValue.text.split("\n").map {
             position += it.count()
             it to position
         }
@@ -783,7 +784,7 @@ class EditorController(
             )
 
             syncState(newState)
-            onChanged(newState, true, true)
+            onChanged(newState, null, false)
         }
 
     }
@@ -801,7 +802,7 @@ class EditorController(
             )
 
             syncState(newState)
-            onChanged(newState, true, true)
+            onChanged(newState, null, false)
         }
 
     }
@@ -825,7 +826,7 @@ class EditorController(
             )
 
             syncState(newState)
-            onChanged(newState, true, true)
+            onChanged(newState, null, false)
         }
     }
 
@@ -863,6 +864,9 @@ class EditorController(
                 )
             }
 
+            isContentChanged?.value=true
+            editorPageIsContentSnapshoted?.value=false
+            _fieldsId = TextEditorState.newId()
 
             syncState(newState)
             onChanged(newState, true, true)
@@ -879,7 +883,7 @@ class EditorController(
             )
 
             syncState(newState)
-            onChanged(newState, true, true)
+            onChanged(newState, null, false)
         }
     }
 
