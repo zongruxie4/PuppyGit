@@ -71,6 +71,10 @@ class EditorController(
         lock.withLock {
             val lastState = if(trueUndoFalseRedo) _undoStack?.undoStackPop() else _undoStack?.redoStackPop()
             if(lastState != null) {
+                isContentChanged?.value=true
+                editorPageIsContentSnapshoted?.value=false
+//                _fieldsId = TextEditorState.newId()
+
                 syncState(lastState)
                 //无论执行redo还是undo，都不需要清redoStack，所以这里此值传false
                 val clearRedoStack = false
