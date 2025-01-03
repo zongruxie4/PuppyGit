@@ -1,5 +1,6 @@
 next version:
-
+- add Sync button on to commit msg dialog
+- support undo/redo for Editor
 
 ---
 
