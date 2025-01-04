@@ -41,7 +41,7 @@ import kotlinx.coroutines.CoroutineScope
 @Composable
 fun ChangeListPageActions(
     changeListCurRepo: CustomStateSaveable<RepoEntity>,
-    changeListRequireRefreshFromParentPage: () -> Unit,
+    changeListRequireRefreshFromParentPage: (RepoEntity) -> Unit,
     changeListHasIndexItems:MutableState<Boolean>,
 //    requirePull:MutableState<Boolean>,
 //    requirePush:MutableState<Boolean>,
@@ -114,7 +114,7 @@ fun ChangeListPageActions(
         icon = Icons.Filled.Refresh,
         iconContentDesc = stringResource(R.string.refresh),
     ) {
-        changeListRequireRefreshFromParentPage()
+        changeListRequireRefreshFromParentPage(changeListCurRepo.value)
     }
 
     //菜单图标

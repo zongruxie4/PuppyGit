@@ -43,7 +43,7 @@ fun RequireCommitMsgDialog(
     showSync:Boolean,
     commitBtnText:String = stringResource(R.string.commit),
     onOk: (curRepo: RepoEntity, msg:String, requirePush:Boolean, requireSync:Boolean) -> Unit,
-    onCancel: () -> Unit,
+    onCancel: (curRepo: RepoEntity) -> Unit,
 ) {
     val activityContext = LocalContext.current
 
@@ -174,7 +174,7 @@ fun RequireCommitMsgDialog(
 
         },
         onDismissRequest = {
-            onCancel()
+            onCancel(curRepo)
         },
         confirmButton = {
             TextButton(
@@ -217,7 +217,7 @@ fun RequireCommitMsgDialog(
 
                 TextButton(
                     onClick = {
-                        onCancel()
+                        onCancel(curRepo)
                     }
                 ) {
                     Text(stringResource(id = R.string.cancel))

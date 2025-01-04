@@ -134,15 +134,16 @@ fun ChangeListTitle(
             },
             menuItem = { r ->
                 //如果是当前条目，名字前加个星号
-                Text(if(r.repoName == changeListCurRepo.value.repoName) addPrefix(r.repoName) else r.repoName)
+                Text(if(r.id == changeListCurRepo.value.id) addPrefix(r.repoName) else r.repoName)
             },
             titleOnLongClick = { showTitleInfoDialog.value = true },
             itemOnClick = { r ->
                 //如果点击其他仓库(切换仓库)，则退出选择模式
-                if(changeListCurRepo.value.repoName != r.repoName) {
+                if(changeListCurRepo.value.id != r.id) {
                     isSelectionMode.value=false
                 }
 
+                //这个函数里会清空选中条目列表，和上面的退出选择模式互补了
                 dropDownMenuItemOnClick(r)
             },
         )

@@ -105,13 +105,14 @@ import com.catpuppyapp.puppygit.utils.IgnoreMan
 import com.catpuppyapp.puppygit.utils.Libgit2Helper
 import com.catpuppyapp.puppygit.utils.Msg
 import com.catpuppyapp.puppygit.utils.MyLog
+import com.catpuppyapp.puppygit.utils.StateRequestType
 import com.catpuppyapp.puppygit.utils.UIHelper
 import com.catpuppyapp.puppygit.utils.cache.Cache
-import com.catpuppyapp.puppygit.utils.changeStateTriggerRefreshPage
 import com.catpuppyapp.puppygit.utils.createAndInsertError
 import com.catpuppyapp.puppygit.utils.dbIntToBool
 import com.catpuppyapp.puppygit.utils.doJobThenOffLoading
 import com.catpuppyapp.puppygit.utils.doJobWithMainContext
+import com.catpuppyapp.puppygit.utils.getRequestDataByState
 import com.catpuppyapp.puppygit.utils.getSecFromTime
 import com.catpuppyapp.puppygit.utils.isRepoReadyAndPathExist
 import com.catpuppyapp.puppygit.utils.replaceStringResList
@@ -125,8 +126,8 @@ import com.catpuppyapp.puppygit.utils.withMainContext
 import com.github.git24j.core.Repository
 import com.github.git24j.core.Tree
 
-private val TAG = "ChangeListInnerPage"
-private val stateKeyTag = "ChangeListInnerPage"
+private const val TAG = "ChangeListInnerPage"
+private const val stateKeyTag = "ChangeListInnerPage"
 
 @Composable
 fun ChangeListInnerPage(
@@ -134,7 +135,8 @@ fun ChangeListInnerPage(
     fromTo: String,
     curRepoFromParentPage: CustomStateSaveable<RepoEntity>,
     isFileSelectionMode:MutableState<Boolean>,
-    refreshRequiredByParentPage: MutableState<String>,
+    refreshRequiredByParentPage: String,
+    changeListRequireRefreshFromParentPage:(whichRepoRequestRefresh:RepoEntity) -> Unit,
     changeListPageHasIndexItem: MutableState<Boolean>,
 //    requirePullFromParentPage:MutableState<Boolean>,
 //    requirePushFromParentPage:MutableState<Boolean>,
@@ -194,7 +196,7 @@ fun ChangeListInnerPage(
     //避免导航的时候出现 “//” 导致导航失败
     val commit1OidStr = commit1OidStr.ifBlank { Cons.allZeroOid.toString() }
     val commit2OidStr = commit2OidStr.ifBlank { Cons.allZeroOid.toString() }
-    val repoId = remember(repoId) { derivedStateOf { if(repoId.isBlank()) curRepoFromParentPage.value.id else repoId } }.value  // must call .value, else derived block may not executing
+    val repoId = remember(repoId, curRepoFromParentPage.value.id, curRepoFromParentPage.value.fullSavePath) { derivedStateOf { if(repoId.isBlank()) curRepoFromParentPage.value.id else repoId } }.value  // must call .value, else derived block may not executing
 
 
     val isDiffToLocal = fromTo == Cons.gitDiffFromIndexToWorktree || commit1OidStr==Cons.gitLocalWorktreeCommitHash || commit2OidStr==Cons.gitLocalWorktreeCommitHash
@@ -268,10 +270,10 @@ fun ChangeListInnerPage(
     val noItemSelectedStrRes = stringResource(R.string.no_item_selected)
 
     //TODO 列表条目三个点的菜单项，open(原地，不要跳转到HomeScreen的Editor)/open with
-    val menuKeyRename = "rename"
-    val menuValueRename = stringResource(R.string.rename)
-    val menuKeyInfo = "info"
-    val menuValueInfo = stringResource(R.string.info)
+//    val menuKeyRename = "rename"
+//    val menuValueRename = stringResource(R.string.rename)
+//    val menuKeyInfo = "info"
+//    val menuValueInfo = stringResource(R.string.info)
 //    val fileMenuMap = remember{ mutableMapOf<String, String>(
 //        menuKeyRename to menuValueRename,
 //        menuKeyInfo to menuValueInfo,
@@ -488,7 +490,7 @@ fun ChangeListInnerPage(
 //    val bottomBarCloseBySync = "3"
 //    val whoCloseBottomBar = rememberSaveable { mutableStateOf(bottomBarCloseInitValueNobody) }
 
-    val bottomBarActDoneCallback= {msg:String ->
+    val bottomBarActDoneCallback= {msg:String, curRepo:RepoEntity ->
         //显示通知
         if(msg.isNotBlank()) {
             requireShowToast(msg)
@@ -496,8 +498,9 @@ fun ChangeListInnerPage(
 
         //退出选择模式，执行关闭底栏等操作
         quitSelectionMode()
+
         //刷新页面
-        changeStateTriggerRefreshPage(refreshRequiredByParentPage)
+        changeListRequireRefreshFromParentPage(curRepo)
     }
 
     // commit msg
@@ -660,7 +663,7 @@ fun ChangeListInnerPage(
         }
     }
 
-    val doAccept:suspend (RepoEntity, acceptTheirs:Boolean)->Unit = {curRepo, acceptTheirs:Boolean ->
+    val doAccept:suspend (curRepo:RepoEntity, acceptTheirs:Boolean)->Unit = {curRepo, acceptTheirs:Boolean ->
         loadingText.value = if(acceptTheirs) activityContext.getString(R.string.accept_theirs) else activityContext.getString(R.string.accept_ours)
 
         val repoFullPath = curRepo.fullSavePath
@@ -716,7 +719,7 @@ fun ChangeListInnerPage(
                 }
             }
 
-            changeStateTriggerRefreshPage(refreshRequiredByParentPage)
+            changeListRequireRefreshFromParentPage(curRepo)
         }
 
     }
@@ -771,7 +774,7 @@ fun ChangeListInnerPage(
                 }finally {
 //                    RepoStatusUtil.clearRepoStatus(repoId)
 
-                    changeStateTriggerRefreshPage(refreshRequiredByParentPage)
+                    changeListRequireRefreshFromParentPage(curRepo)
 //                    refreshRepoPage()
 
                 }
@@ -816,7 +819,7 @@ fun ChangeListInnerPage(
             showErrAndSaveLog(TAG,"require pull error:"+e.stackTraceToString(), activityContext.getString(R.string.pull_failed)+":"+e.localizedMessage, requireShowToast,curRepo.id)
         }finally {
             //刷新页面
-            changeStateTriggerRefreshPage(refreshRequiredByParentPage)
+            changeListRequireRefreshFromParentPage(curRepo)
         }
     }
 
@@ -914,7 +917,7 @@ fun ChangeListInnerPage(
                     //清除缓存中的仓库状态
 //                    RepoStatusUtil.clearRepoStatus(repoId)
                     //刷新页面
-                    changeStateTriggerRefreshPage(refreshRequiredByParentPage)
+                    changeListRequireRefreshFromParentPage(curRepo)
 //                    refreshRepoPage()
                 }
 
@@ -963,7 +966,7 @@ fun ChangeListInnerPage(
                     //清除缓存中的仓库状态
 //                    RepoStatusUtil.clearRepoStatus(repoId)
                     //刷新页面
-                    changeStateTriggerRefreshPage(refreshRequiredByParentPage)
+                    changeListRequireRefreshFromParentPage(curRepo)
 //                    refreshRepoPage()
                 }
 
@@ -996,7 +999,7 @@ fun ChangeListInnerPage(
                 }finally {
 //                    RepoStatusUtil.clearRepoStatus(repoId)
 
-                    changeStateTriggerRefreshPage(refreshRequiredByParentPage)
+                    changeListRequireRefreshFromParentPage(curRepo)
 //                    refreshRepoPage()
 
                 }
@@ -1037,7 +1040,7 @@ fun ChangeListInnerPage(
                 }finally {
 //                    RepoStatusUtil.clearRepoStatus(repoId)
 
-                    changeStateTriggerRefreshPage(refreshRequiredByParentPage)
+                    changeListRequireRefreshFromParentPage(curRepo)
 //                    refreshRepoPage()
 
                 }
@@ -1068,7 +1071,7 @@ fun ChangeListInnerPage(
                 }finally {
 //                    RepoStatusUtil.clearRepoStatus(repoId)
 
-                    changeStateTriggerRefreshPage(refreshRequiredByParentPage)
+                    changeListRequireRefreshFromParentPage(curRepo)
 //                    refreshRepoPage()
 
                 }
@@ -1084,7 +1087,7 @@ fun ChangeListInnerPage(
                 }finally {
 //                    RepoStatusUtil.clearRepoStatus(repoId)
 
-                    changeStateTriggerRefreshPage(refreshRequiredByParentPage)
+                    changeListRequireRefreshFromParentPage(curRepo)
 //                    refreshRepoPage()
 
                 }
@@ -1098,7 +1101,7 @@ fun ChangeListInnerPage(
                         requireCloseBottomBar = true,
 //                        requireDoSync = false,
                         curRepoFromParentPage = curRepo,
-                        refreshRequiredByParentPage = refreshRequiredByParentPage,
+                        refreshChangeList = changeListRequireRefreshFromParentPage,
                         username = username,
                         email = email,
                         requireShowToast = requireShowToast,
@@ -1124,7 +1127,7 @@ fun ChangeListInnerPage(
                 }finally {
 //                    RepoStatusUtil.clearRepoStatus(repoId)
 
-                    changeStateTriggerRefreshPage(refreshRequiredByParentPage)
+                    changeListRequireRefreshFromParentPage(curRepo)
 //                    refreshRepoPage()
 
                 }
@@ -1149,7 +1152,7 @@ fun ChangeListInnerPage(
                                 requireCloseBottomBar = true,
 //                                requireDoSync = false,
                                 curRepoFromParentPage = curRepo,
-                                refreshRequiredByParentPage = refreshRequiredByParentPage,
+                                refreshChangeList = changeListRequireRefreshFromParentPage,
                                 username = username,
                                 email = email,
                                 requireShowToast = requireShowToast,
@@ -1178,7 +1181,7 @@ fun ChangeListInnerPage(
                 }finally {
 //                    RepoStatusUtil.clearRepoStatus(repoId)
 
-                    changeStateTriggerRefreshPage(refreshRequiredByParentPage)
+                    changeListRequireRefreshFromParentPage(curRepo)
 //                    refreshRepoPage()
 
                 }
@@ -1191,7 +1194,7 @@ fun ChangeListInnerPage(
                         requireCloseBottomBar = true,
 //                        requireDoSync = false,
                         curRepoFromParentPage = curRepo,
-                        refreshRequiredByParentPage = refreshRequiredByParentPage,
+                        refreshChangeList = changeListRequireRefreshFromParentPage,
                         username = username,
                         email = email,
                         requireShowToast = requireShowToast,
@@ -1217,7 +1220,7 @@ fun ChangeListInnerPage(
                 }finally {
 //                    RepoStatusUtil.clearRepoStatus(repoId)
 
-                    changeStateTriggerRefreshPage(refreshRequiredByParentPage)
+                    changeListRequireRefreshFromParentPage(curRepo)
 //                    refreshRepoPage()
 
                 }
@@ -1253,7 +1256,7 @@ fun ChangeListInnerPage(
                 } finally {
 //                    RepoStatusUtil.clearRepoStatus(repoId)
 
-                    changeStateTriggerRefreshPage(refreshRequiredByParentPage)
+                    changeListRequireRefreshFromParentPage(curRepo)
 //                    refreshRepoPage()
 
                 }
@@ -1283,7 +1286,7 @@ fun ChangeListInnerPage(
                 } finally {
 //                    RepoStatusUtil.clearRepoStatus(repoId)
 
-                    changeStateTriggerRefreshPage(refreshRequiredByParentPage)
+                    changeListRequireRefreshFromParentPage(curRepo)
 //                    refreshRepoPage()
 
                 }
@@ -1296,7 +1299,7 @@ fun ChangeListInnerPage(
                         requireCloseBottomBar = true,
 //                        requireDoSync = false,
                         curRepoFromParentPage = curRepo,
-                        refreshRequiredByParentPage = refreshRequiredByParentPage,
+                        refreshChangeList = changeListRequireRefreshFromParentPage,
                         username = username,
                         email = email,
                         requireShowToast = requireShowToast,
@@ -1322,7 +1325,7 @@ fun ChangeListInnerPage(
                 }finally {
 //                    RepoStatusUtil.clearRepoStatus(repoId)
 
-                    changeStateTriggerRefreshPage(refreshRequiredByParentPage)
+                    changeListRequireRefreshFromParentPage(curRepo)
 //                    refreshRepoPage()
 
                 }
@@ -1352,7 +1355,7 @@ fun ChangeListInnerPage(
                 } finally {
 //                    RepoStatusUtil.clearRepoStatus(repoId)
 
-                    changeStateTriggerRefreshPage(refreshRequiredByParentPage)
+                    changeListRequireRefreshFromParentPage(curRepo)
 //                    refreshRepoPage()
 
                 }
@@ -1405,7 +1408,7 @@ fun ChangeListInnerPage(
                 }finally {
 //                    RepoStatusUtil.clearRepoStatus(repoId)
 
-                    changeStateTriggerRefreshPage(refreshRequiredByParentPage)
+                    changeListRequireRefreshFromParentPage(curRepo)
 //                    refreshRepoPage()
 
                 }
@@ -1510,8 +1513,9 @@ fun ChangeListInnerPage(
                 //隐藏弹窗就行，相关状态变量会在下次弹窗前初始化
                 showSetUpstreamDialog.value = false
                 upstreamDialogOnOkText.value=""  //有必要重置下这个字段，虽然实际上没必要，但逻辑上还是重置下好，不然如果忘了设置，就会显示错误的ok信息
+                val curRepo = curRepoFromParentPage.value
 
-                changeStateTriggerRefreshPage(refreshRequiredByParentPage)
+                changeListRequireRefreshFromParentPage(curRepo)
             },
         )
     }
@@ -1553,7 +1557,7 @@ fun ChangeListInnerPage(
                             requireCloseBottomBar = !(requireSync || requirePush),
 //                            requireDoSync = requireDoSync,
                             curRepoFromParentPage = curRepo,
-                            refreshRequiredByParentPage = refreshRequiredByParentPage,
+                            refreshChangeList = changeListRequireRefreshFromParentPage,
                             username = username,
                             email = email,
                             requireShowToast = requireShowToast,
@@ -1638,9 +1642,10 @@ fun ChangeListInnerPage(
                 }
             },
             indexIsEmptyForCommitDialog = indexIsEmptyForCommitDialog,
-            onCancel={
+            onCancel={curRepo ->
                 showCommitMsgDialog.value = false
-                changeStateTriggerRefreshPage(refreshRequiredByParentPage)
+
+                changeListRequireRefreshFromParentPage(curRepo)
             },
         )
     }
@@ -1720,7 +1725,7 @@ fun ChangeListInnerPage(
                             requireCloseBottomBar = true,
 //                            requireDoSync = requireDoSync,
                             curRepoFromParentPage = curRepo,
-                            refreshRequiredByParentPage = refreshRequiredByParentPage,
+                            refreshChangeList = changeListRequireRefreshFromParentPage,
                             username = username,
                             email = email,
                             requireShowToast = requireShowToast,
@@ -1747,12 +1752,13 @@ fun ChangeListInnerPage(
                 }
 
             },
-            onCancel = {
+            onCancel = {curRepo ->
                 showUserAndEmailDialog.value = false
                 email.value = ""
                 username.value = ""
                 requireShowToast(canceledStrRes)
-                changeStateTriggerRefreshPage(refreshRequiredByParentPage)
+
+                changeListRequireRefreshFromParentPage(curRepo)
             },
 
             enableOk = {
@@ -1872,13 +1878,15 @@ fun ChangeListInnerPage(
             onCancel = { showIgnoreDialog.value = false }
         ) {
             showIgnoreDialog.value=false
+
             val curRepo = curRepoFromParentPage.value
+            val selectedItemList = selectedItemList.value.toList()
 
             doJobThenOffLoading(loadingOn, loadingOff, activityContext.getString(R.string.loading)) {
                 try {
                     Repository.open(curRepo.fullSavePath).use { repo ->
                         val repoDotGitPath = Libgit2Helper.getRepoGitDirPathNoEndsWithSlash(repo)
-                        val linesWillIgnore = selectedItemList.value.map { it.relativePathUnderRepo }
+                        val linesWillIgnore = selectedItemList.map { it.relativePathUnderRepo }
                         IgnoreMan.appendLinesToIgnoreFile(repoDotGitPath, linesWillIgnore)
                     }
                     Msg.requireShow(activityContext.getString(R.string.success))
@@ -1887,7 +1895,7 @@ fun ChangeListInnerPage(
                     Msg.requireShowLongDuration(errMsg ?: "err")
                     createAndInsertError(curRepo.id, "ignore files err: $errMsg")
                 }finally {
-                    changeStateTriggerRefreshPage(refreshRequiredByParentPage)
+                    changeListRequireRefreshFromParentPage(curRepo)
                 }
 
             }
@@ -1933,6 +1941,8 @@ fun ChangeListInnerPage(
         ){
             showCreatePatchDialog.value=false
             val curRepo = curRepoFromParentPage.value
+            val selectedItemList = selectedItemList.value.toList()
+
             doJobThenOffLoading(loadingOn,loadingOff, activityContext.getString(R.string.creating_patch)) job@{
                 try {
                     Repository.open(curRepo.fullSavePath).use { repo->
@@ -2002,7 +2012,7 @@ fun ChangeListInnerPage(
 
                         val savePatchRet = Libgit2Helper.savePatchToFileAndGetContent(
                             outFile=outFile,
-                            pathSpecList = selectedItemList.value.map { it.relativePathUnderRepo },
+                            pathSpecList = selectedItemList.map { it.relativePathUnderRepo },
                             repo = repo,
                             tree1 = tree1,
                             tree2 = tree2,
@@ -2093,13 +2103,14 @@ fun ChangeListInnerPage(
         ) {
             showCheckoutFilesDialog.value = false
             val curRepo = curRepoFromParentPage.value
+            val selectedItemList = selectedItemList.value.toList()
 
             doJobThenOffLoading(
                 loadingOn,
                 loadingOff,
                 activityContext.getString(R.string.checking_out)
             ) {
-                val pathSpecs = selectedItemList.value.map{it.relativePathUnderRepo}
+                val pathSpecs = selectedItemList.map{it.relativePathUnderRepo}
                 Repository.open(curRepo.fullSavePath).use { repo->
                     val ret = Libgit2Helper.checkoutFiles(repo, checkoutTargetHash.value, pathSpecs, force=checkoutForce.value)
                     if(ret.hasError()) {
@@ -2222,7 +2233,7 @@ fun ChangeListInnerPage(
                         bottomBarActDoneCallback = bottomBarActDoneCallback
                     )
                     if(!stageSuccess){
-                        bottomBarActDoneCallback(activityContext.getString(R.string.stage_failed))
+                        bottomBarActDoneCallback(activityContext.getString(R.string.stage_failed), curRepo)
                     }else {
                         //显示commit弹窗，之后在其确认回调函数里执行后续操作
 //                        doCommit(true,"", true, false)
@@ -2232,7 +2243,7 @@ fun ChangeListInnerPage(
                             requireCloseBottomBar = true,
 //                            requireDoSync = false,
                             curRepoFromParentPage = curRepo,
-                            refreshRequiredByParentPage = refreshRequiredByParentPage,
+                            refreshChangeList = changeListRequireRefreshFromParentPage,
                             username = username,
                             email = email,
                             requireShowToast = requireShowToast,
@@ -2310,7 +2321,7 @@ fun ChangeListInnerPage(
                     requireCloseBottomBar = true,
 //                    requireDoSync = false,
                     curRepoFromParentPage = curRepo,
-                    refreshRequiredByParentPage = refreshRequiredByParentPage,
+                    refreshChangeList = changeListRequireRefreshFromParentPage,
                     username = username,
                     email = email,
                     requireShowToast = requireShowToast,
@@ -2407,7 +2418,7 @@ fun ChangeListInnerPage(
     ) else listOf()  // empty list, always visible
 
     val showRevertAlert = rememberSaveable { mutableStateOf(false)}
-    val doRevert = { curRepo:RepoEntity ->
+    val doRevert = { curRepo:RepoEntity, selectedItemList:List<StatusTypeEntrySaver> ->
             // impl Revert selected files
             //  需要弹窗确认，确认后loading，执行完操作后toast提示
             //  revert文件为index中的数据，注意是index，不是head
@@ -2421,7 +2432,7 @@ fun ChangeListInnerPage(
                     Repository.open(curRepo.fullSavePath).use { repo ->
                         val untrakcedFileList = mutableListOf<String>()  // untracked list，在我的app里这种修改类型显示为 "New"
                         val pathspecList = mutableListOf<String>()  // modified、deleted 列表
-                        selectedItemList.value.toList().forEach {
+                        selectedItemList.forEach {
                             //新文件(Untracked)在index里不存在，若revert，只能删除文件，所以单独加到另一个列表
                             if(it.changeType == Cons.gitStatusNew) {
                                 untrakcedFileList.add(it.canonicalPath)  //删除文件，添加全路径（但其实用仓库内相对路径也行，只是需要把仓库路径和仓库下相对路径拼接一下，而这个全路径是我在查询status list的时候拼好的，所以直接用就行）
@@ -2443,19 +2454,19 @@ fun ChangeListInnerPage(
                         val msg = replaceStringResList(revertStrRes,
                             listOf(pathspecList.size.toString(),untrakcedFileList.size.toString()))
                         //关闭底栏，revert是个独立操作，不会和其他操作组合，所以一定需要关底栏
-                        bottomBarActDoneCallback(msg)
+                        bottomBarActDoneCallback(msg, curRepo)
                     }
                 }
         }
 
-    val doUnstage = doUnstage@{ curRepo:RepoEntity ->
+    val doUnstage = doUnstage@{ curRepo:RepoEntity, selectedItemList:List<StatusTypeEntrySaver> ->
         loadingText.value = activityContext.getString(R.string.unstaging)
 
         //menu action: unstage
         Repository.open(curRepo.fullSavePath).use {repo ->
             val refspecList = mutableListOf<String>()
 //                准备refspecList
-            selectedItemList.value.toList().forEach {
+            selectedItemList.forEach {
                 //不要用index.removeByPath()，remote是停止追踪，不是unstage！！！
                 refspecList.add(it.relativePathUnderRepo)
             }
@@ -2465,7 +2476,7 @@ fun ChangeListInnerPage(
         }
 
         //关闭底栏，刷新页面
-        bottomBarActDoneCallback(activityContext.getString(R.string.unstage_success))
+        bottomBarActDoneCallback(activityContext.getString(R.string.unstage_success), curRepo)
     }
     val showUnstageConfirmDialog = rememberSaveable { mutableStateOf(false)}
     if(showUnstageConfirmDialog.value) {
@@ -2477,7 +2488,7 @@ fun ChangeListInnerPage(
             showUnstageConfirmDialog.value = false
             val curRepo = curRepoFromParentPage.value
             doJobThenOffLoading(loadingOn, loadingOff, loadingText=activityContext.getString(R.string.unstaging)) {
-                doUnstage(curRepo)
+                doUnstage(curRepo, selectedItemList.value.toList())
             }
         }
     }
@@ -2542,7 +2553,7 @@ fun ChangeListInnerPage(
                     //require refresh repo list for go to submodule after import
                     // since only worktree(ChangeList) can go to sub, so only need pass this param to ChangeList page, index and treeToTree page no need yet
                     if(needReQueryRepoList != null) {
-                        changeStateTriggerRefreshPage(needReQueryRepoList)
+                        changeListRequireRefreshFromParentPage(curRepo)
                     }
 
                     // refresh ChangeList page is unnecessary yet
@@ -2859,7 +2870,7 @@ fun ChangeListInnerPage(
                 loadingOff = loadingOff,
                 loadingText = activityContext.getString(R.string.reverting)
             ) {
-                doRevert(curRepo)
+                doRevert(curRepo, selectedItemList.value.toList())
             }
         }
     }
@@ -3113,7 +3124,7 @@ fun ChangeListInnerPage(
                                                         curRepo.id
                                                     )
                                                 } finally {
-                                                    changeStateTriggerRefreshPage(refreshRequiredByParentPage)
+                                                    changeListRequireRefreshFromParentPage(curRepo)
                                                 }
 
                                             }
@@ -3172,7 +3183,7 @@ fun ChangeListInnerPage(
                                                     curRepo.id
                                                 )
                                             } finally {
-                                                changeStateTriggerRefreshPage(refreshRequiredByParentPage)
+                                                changeListRequireRefreshFromParentPage(curRepo)
                                             }
 
                                         }
@@ -3247,7 +3258,7 @@ fun ChangeListInnerPage(
                                                         curRepo.id
                                                     )
                                                 } finally {
-                                                    changeStateTriggerRefreshPage(refreshRequiredByParentPage)
+                                                    changeListRequireRefreshFromParentPage(curRepo)
                                                 }
                                             }
 
@@ -3509,13 +3520,29 @@ fun ChangeListInnerPage(
 //    if(lastRequireRefreshValue.value != refreshRequiredByParentPage.value) {
 //        lastRequireRefreshValue.value = refreshRequiredByParentPage.value
 
-    LaunchedEffect(refreshRequiredByParentPage.value) {
+    LaunchedEffect(refreshRequiredByParentPage) {
         //if navi to Difference page or internal Editor then navi back, actually most time no need reload page
         if(naviTarget.value == Cons.ChangeListNaviTarget_NoNeedReload){
             // if navi back from Index, need refresh
             naviTarget.value = Cons.ChangeListNaviTarget_InitValue
             return@LaunchedEffect
         }
+
+        val (requestType, payloadRepoId) = getRequestDataByState<String?>(
+            refreshRequiredByParentPage,
+            getThenDel = true
+        )
+
+        if(requestType == StateRequestType.withRepoId && payloadRepoId != null) {
+            // 请求刷新页面的仓库的repoId
+            val curRepo = curRepoFromParentPage.value
+            val repoMaybeValid = curRepo.fullSavePath.isNotBlank() && curRepo.id.isNotBlank()
+            if(repoMaybeValid && payloadRepoId != curRepo.id) {
+                //请求刷新页面的仓库和当前仓库不一致，可能某个仓库执行任务的过程中切换了仓库，直接返回，不刷新
+                return@LaunchedEffect
+            }
+        }
+
 
 
         // do reload
@@ -3526,7 +3553,7 @@ fun ChangeListInnerPage(
             // on the other hand, assigned is fine though
 //            val newPageId = generateRandomString()
             //直接用refresh变量的值即可，省得重新生成了
-            val currentPageId = refreshRequiredByParentPage.value
+            val currentPageId = refreshRequiredByParentPage
             //这个最新pageId似乎可省略啊？虽然不省略逻辑上更清晰
             newestPageId.value = currentPageId
 

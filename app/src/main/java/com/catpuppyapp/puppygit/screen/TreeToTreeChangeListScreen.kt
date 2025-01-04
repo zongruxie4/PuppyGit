@@ -48,6 +48,7 @@ import com.catpuppyapp.puppygit.dev.dev_EnableUnTestedFeature
 import com.catpuppyapp.puppygit.git.StatusTypeEntrySaver
 import com.catpuppyapp.puppygit.play.pro.R
 import com.catpuppyapp.puppygit.screen.content.homescreen.innerpage.ChangeListInnerPage
+import com.catpuppyapp.puppygit.screen.functions.ChangeListFunctions
 import com.catpuppyapp.puppygit.screen.shared.SharedState
 import com.catpuppyapp.puppygit.settings.SettingsUtil
 import com.catpuppyapp.puppygit.style.MyStyleKt
@@ -122,8 +123,8 @@ fun TreeToTreeChangeListScreen(
 //    val curRepo = mutableCustomStateOf(value = RepoEntity())
 
     val changeListRefreshRequiredByParentPage = rememberSaveable { mutableStateOf("") }
-    val changeListRequireRefreshFromParentPage = {
-        changeStateTriggerRefreshPage(changeListRefreshRequiredByParentPage)
+    val changeListRequireRefreshFromParentPage = { whichRepoRequestRefresh:RepoEntity ->
+        ChangeListFunctions.changeListDoRefresh(changeListRefreshRequiredByParentPage, whichRepoRequestRefresh)
     }
 //    val changeListCurRepo = rememberSaveable{ mutableStateOf(RepoEntity()) }
     val changeListCurRepo = mutableCustomStateOf(
@@ -264,8 +265,11 @@ fun TreeToTreeChangeListScreen(
                                 val itemText = if(it == commit1OidStrState.value) addPrefix(Libgit2Helper.getShortOidStrByFull(it)) else Libgit2Helper.getShortOidStrByFull(it)
                                 DropdownMenuItem(text = { Text(text = itemText)},
                                     onClick = {
+
                                         // close menu
                                         showParentListDropDownMenu.value=false
+
+                                        val curRepo = changeListCurRepo.value
 
                                         //切换父提交则退出选择模式(现在20240420没用，但日后可能在TreeToTree页面也添加多选功能，比如可选择文件checkout or hard reset到worktree之类的，所以这里先把需要退出选择模式的逻辑写上)(20240818有用了)
                                         if(commit1OidStrState.value != it) {
@@ -275,7 +279,7 @@ fun TreeToTreeChangeListScreen(
 
                                         commit1OidStrState.value=it
 
-                                        changeStateTriggerRefreshPage(changeListRefreshRequiredByParentPage)
+                                        changeListRequireRefreshFromParentPage(curRepo)
                                     }
                                 )
                             }
@@ -336,7 +340,7 @@ fun TreeToTreeChangeListScreen(
                                 icon = Icons.Filled.Refresh,
                                 iconContentDesc = stringResource(R.string.refresh),
                             ) {
-                                changeStateTriggerRefreshPage(changeListRefreshRequiredByParentPage)
+                                changeListRequireRefreshFromParentPage(changeListCurRepo.value)
                             }
 
                             if(UserUtil.isPro() && (dev_EnableUnTestedFeature || commitsTreeToTreeDiffReverseTestPassed)) {
@@ -350,8 +354,9 @@ fun TreeToTreeChangeListScreen(
                                     swap.value = !swap.value
                                     Msg.requireShow(activityContext.getString(if (swap.value) R.string.swap_commits_on else R.string.swap_commits_off))
 
+                                    val curRepo = changeListCurRepo.value
                                     //swap值不在cl页面的LaunchedEffects key中，所以得刷新下
-                                    changeListRequireRefreshFromParentPage()
+                                    changeListRequireRefreshFromParentPage(curRepo)
                                 }
                             }
                         }
@@ -379,7 +384,8 @@ fun TreeToTreeChangeListScreen(
             fromTo,
             changeListCurRepo,
             changeListIsFileSelectionMode,
-            changeListRefreshRequiredByParentPage,
+            changeListRefreshRequiredByParentPage.value,
+            changeListRequireRefreshFromParentPage,
             changeListPageHasIndexItem,
 //                requirePullFromParentPage = changeListRequirePull,
 //                requirePushFromParentPage = changeListRequirePush,

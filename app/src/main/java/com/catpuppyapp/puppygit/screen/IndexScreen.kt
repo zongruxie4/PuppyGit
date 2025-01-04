@@ -29,10 +29,10 @@ import com.catpuppyapp.puppygit.play.pro.R
 import com.catpuppyapp.puppygit.screen.content.homescreen.innerpage.ChangeListInnerPage
 import com.catpuppyapp.puppygit.screen.content.homescreen.scaffold.actions.ChangeListPageActions
 import com.catpuppyapp.puppygit.screen.content.homescreen.scaffold.title.IndexScreenTitle
+import com.catpuppyapp.puppygit.screen.functions.ChangeListFunctions
 import com.catpuppyapp.puppygit.screen.shared.SharedState
 import com.catpuppyapp.puppygit.settings.SettingsUtil
 import com.catpuppyapp.puppygit.utils.AppModel
-import com.catpuppyapp.puppygit.utils.changeStateTriggerRefreshPage
 import com.catpuppyapp.puppygit.utils.state.mutableCustomStateListOf
 import com.catpuppyapp.puppygit.utils.state.mutableCustomStateOf
 import com.github.git24j.core.Repository
@@ -67,9 +67,8 @@ fun IndexScreen(
 //    val curRepo = mutableCustomStateOf(value = RepoEntity())
 
     val changeListRefreshRequiredByParentPage = rememberSaveable { mutableStateOf("") }
-    val changeListRequireRefreshFromParentPage = {
-        //TODO 显示个loading遮罩啥的
-        changeStateTriggerRefreshPage(changeListRefreshRequiredByParentPage)
+    val changeListRequireRefreshFromParentPage = { whichRepoRequestRefresh:RepoEntity ->
+        ChangeListFunctions.changeListDoRefresh(changeListRefreshRequiredByParentPage, whichRepoRequestRefresh)
     }
 //    val changeListCurRepo = rememberSaveable{ mutableStateOf(RepoEntity()) }
     val changeListCurRepo = mutableCustomStateOf(keyTag = stateKeyTag, keyName = "changeListCurRepo", initValue = RepoEntity(id=""))
@@ -219,7 +218,8 @@ fun IndexScreen(
             changeListCurRepo,
             changeListIsFileSelectionMode,
 
-            changeListRefreshRequiredByParentPage,
+            changeListRefreshRequiredByParentPage.value,
+            changeListRequireRefreshFromParentPage,
             changeListPageHasIndexItem,
 //                requirePullFromParentPage = changeListRequirePull,
 //                requirePushFromParentPage = changeListRequirePush,

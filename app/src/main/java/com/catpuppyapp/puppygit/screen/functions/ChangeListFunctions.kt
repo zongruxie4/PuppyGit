@@ -15,6 +15,7 @@ import com.catpuppyapp.puppygit.utils.AppModel
 import com.catpuppyapp.puppygit.utils.Libgit2Helper
 import com.catpuppyapp.puppygit.utils.Msg
 import com.catpuppyapp.puppygit.utils.MyLog
+import com.catpuppyapp.puppygit.utils.StateRequestType
 import com.catpuppyapp.puppygit.utils.changeStateTriggerRefreshPage
 import com.catpuppyapp.puppygit.utils.createAndInsertError
 import com.catpuppyapp.puppygit.utils.getSecFromTime
@@ -33,7 +34,7 @@ object ChangeListFunctions {
         requireCloseBottomBar:Boolean,
 //        requireDoSync:Boolean,
         curRepoFromParentPage:RepoEntity,
-        refreshRequiredByParentPage:MutableState<String>,
+        refreshChangeList:(RepoEntity) -> Unit,
         username:MutableState<String>,
         email:MutableState<String>,
         requireShowToast:(String)->Unit,
@@ -46,7 +47,7 @@ object ChangeListFunctions {
         appContext:Context,
         loadingText:MutableState<String>,
         repoId:String,
-        bottomBarActDoneCallback:(String)->Unit,
+        bottomBarActDoneCallback:(String, RepoEntity)->Unit,
         fromTo:String,
         itemList:CustomStateListSaveable<StatusTypeEntrySaver>,
         successCommitStrRes:String,
@@ -89,7 +90,7 @@ object ChangeListFunctions {
                     //显示错误信息
                     Msg.requireShowLongDuration(readyCreateCommit.msg)
                     //若有错，必刷新页面
-                    changeStateTriggerRefreshPage(refreshRequiredByParentPage)
+                    refreshChangeList(curRepoFromParentPage)
                     return@doCommit false
                 }else {
                     // allow create empty commit, but show a warning
@@ -222,10 +223,10 @@ object ChangeListFunctions {
 
                 //若出错，必刷新页面
                 if(requireCloseBottomBar) {
-                    bottomBarActDoneCallback("")
+                    bottomBarActDoneCallback("", curRepoFromParentPage)
                 }else {
                     //刷新页面，之所以放到else里是因为如果请求关闭底栏，关闭时会自动刷新，如果不放else里就重复刷新了，无意义
-                    changeStateTriggerRefreshPage(refreshRequiredByParentPage)
+                    refreshChangeList(curRepoFromParentPage)
                 }
                 return@doCommit false
             }else {  //创建成功
@@ -251,7 +252,7 @@ object ChangeListFunctions {
                 requireShowToast(successCommitStrRes)
                 //操作成功不一定刷新页面，因为可能commit和其他操作组合，一般在最后一个操作完成后才刷新页面，例如commit then sync，应由最后的sync负责关底栏和刷新页面
                 if(requireCloseBottomBar) {
-                    bottomBarActDoneCallback("")
+                    bottomBarActDoneCallback("", curRepoFromParentPage)
                 }
                 return@doCommit true
             }
@@ -333,7 +334,7 @@ object ChangeListFunctions {
                         requireShowToast:(String)->Unit,
                         appContext:Context,
                         loadingText:MutableState<String>,
-                        bottomBarActDoneCallback:(String)->Unit,
+                        bottomBarActDoneCallback:(String, RepoEntity)->Unit,
     ):Boolean {
         try {
             val settings = SettingsUtil.getSettingsSnapshot()
@@ -412,7 +413,7 @@ object ChangeListFunctions {
                     createAndInsertError(curRepoFromParentPage.id, mergeResult.msg)
                     //关闭底栏，如果需要的话
                     if (requireCloseBottomBar) {
-                        bottomBarActDoneCallback("")
+                        bottomBarActDoneCallback("", curRepoFromParentPage)
                     }
                     return false
                 }
@@ -427,7 +428,7 @@ object ChangeListFunctions {
 
                 //关闭底栏，如果需要的话
                 if (requireCloseBottomBar) {
-                    bottomBarActDoneCallback("")
+                    bottomBarActDoneCallback("", curRepoFromParentPage)
                 }
                 return true
             }
@@ -444,7 +445,7 @@ object ChangeListFunctions {
 
             //关闭底栏，如果需要的话
             if (requireCloseBottomBar) {
-                bottomBarActDoneCallback("")
+                bottomBarActDoneCallback("", curRepoFromParentPage)
             }
             return false
         }
@@ -458,7 +459,7 @@ object ChangeListFunctions {
                        requireShowToast:(String)->Unit,
                        appContext:Context,
                        loadingText:MutableState<String>,
-                       bottomBarActDoneCallback:(String)->Unit,
+                       bottomBarActDoneCallback:(String, RepoEntity)->Unit,
                        dbContainer: AppContainer
     ) : Boolean {
         try {
@@ -504,7 +505,7 @@ object ChangeListFunctions {
 
                 //关闭底栏，如果需要的话
                 if (requireCloseBottomBar) {
-                    bottomBarActDoneCallback("")
+                    bottomBarActDoneCallback("", curRepoFromParentPage)
                 }
                 return@doPush true
             }
@@ -514,7 +515,7 @@ object ChangeListFunctions {
 
             //关闭底栏，如果需要的话
             if (requireCloseBottomBar) {
-                bottomBarActDoneCallback("")
+                bottomBarActDoneCallback("", curRepoFromParentPage)
             }
             return@doPush false
         }
@@ -527,7 +528,7 @@ object ChangeListFunctions {
         curRepoFromParentPage:RepoEntity,
         requireShowToast:(String)->Unit,
         appContext:Context,
-        bottomBarActDoneCallback:(String)->Unit,
+        bottomBarActDoneCallback:(String, RepoEntity)->Unit,
         plzSetUpStreamForCurBranch:String,
         upstreamRemoteOptionsList:CustomStateListSaveable<String>,
         upstreamSelectedRemote:MutableIntState,
@@ -587,7 +588,7 @@ object ChangeListFunctions {
                     if(!fetchSuccess) {
                         requireShowToast(appContext.getString(R.string.fetch_failed))
                         if(requireCloseBottomBar) {
-                            bottomBarActDoneCallback("")
+                            bottomBarActDoneCallback("", curRepoFromParentPage)
                         }
                         return@doSync
                     }
@@ -617,7 +618,7 @@ object ChangeListFunctions {
                             if(Libgit2Helper.hasConflictItemInRepo(repo)) {  //检查失败原因是否是存在冲突，若是则显示提示
                                 requireShowToast(appContext.getString(R.string.has_conflicts_abort_sync))
                                 if(requireCloseBottomBar) {
-                                    bottomBarActDoneCallback("")
+                                    bottomBarActDoneCallback("", curRepoFromParentPage)
                                 }
                             }
 
@@ -645,7 +646,7 @@ object ChangeListFunctions {
                     }
 
                     if(requireCloseBottomBar) {
-                        bottomBarActDoneCallback("")
+                        bottomBarActDoneCallback("", curRepoFromParentPage)
                     }
                 }catch (e:Exception) {
                     //log
@@ -653,7 +654,7 @@ object ChangeListFunctions {
 
                     //close if require
                     if(requireCloseBottomBar) {
-                        bottomBarActDoneCallback("")
+                        bottomBarActDoneCallback("", curRepoFromParentPage)
                     }
                 }
 
@@ -677,7 +678,7 @@ object ChangeListFunctions {
         selectedItemList:List<StatusTypeEntrySaver>,
         loadingText:MutableState<String>,
         nFilesStagedStrRes:String,
-        bottomBarActDoneCallback:(String)->Unit
+        bottomBarActDoneCallback:(String, RepoEntity)->Unit
     ):Boolean{
         //在index页面是不需要stage的，只有在首页抽屉那个代表worktree的changelist页面才需要stage，但为了简化逻辑，少改代码，直接在这加个非worktree就返回true的判断，这样调用此函数的地方就都不用改了，当作stage成功，然后继续执行后续操作即可
         if(fromTo != Cons.gitDiffFromIndexToWorktree) {
@@ -715,11 +716,14 @@ object ChangeListFunctions {
 
         //关闭底栏，显示提示
         if(requireCloseBottomBar) {
-            bottomBarActDoneCallback(msg)
+            bottomBarActDoneCallback(msg, curRepo)
         }
 
         return true
     }
 
+    fun changeListDoRefresh(stateForRefresh:MutableState<String>, whichRepoRequestRefresh:RepoEntity) {
+        changeStateTriggerRefreshPage(stateForRefresh, requestType= StateRequestType.withRepoId, data = whichRepoRequestRefresh.id)
+    }
 
 }

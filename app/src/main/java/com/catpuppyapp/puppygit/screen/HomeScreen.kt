@@ -87,6 +87,7 @@ import com.catpuppyapp.puppygit.screen.content.homescreen.scaffold.title.FilesTi
 import com.catpuppyapp.puppygit.screen.content.homescreen.scaffold.title.ReposTitle
 import com.catpuppyapp.puppygit.screen.content.homescreen.scaffold.title.SettingsTitle
 import com.catpuppyapp.puppygit.screen.content.homescreen.scaffold.title.SimpleTitle
+import com.catpuppyapp.puppygit.screen.functions.ChangeListFunctions
 import com.catpuppyapp.puppygit.screen.shared.SharedState
 import com.catpuppyapp.puppygit.settings.SettingsCons
 import com.catpuppyapp.puppygit.settings.SettingsUtil
@@ -155,8 +156,10 @@ fun HomeScreen(
     val repoPageRepoList = mutableCustomStateListOf(stateKeyTag, "repoPageRepoList", listOf<RepoEntity>())
 
     val changeListRefreshRequiredByParentPage= rememberSaveable { mutableStateOf( "")}
-    val changeListRequireRefreshFromParentPage = {
-        changeStateTriggerRefreshPage(changeListRefreshRequiredByParentPage)
+
+    //参数repoId用来实现如果在仓库a执行操作，然后切换了仓库，则仓库a的仓库执行完后不会刷新页面
+    val changeListRequireRefreshFromParentPage = { whichRepoRequestRefresh:RepoEntity ->
+        ChangeListFunctions.changeListDoRefresh(changeListRefreshRequiredByParentPage, whichRepoRequestRefresh)
     }
 //    val changeListCurRepo = rememberSaveable{ mutableStateOf(RepoEntity()) }
     val changeListCurRepo = mutableCustomStateOf(keyTag = stateKeyTag, keyName = "changeListCurRepo", initValue = RepoEntity(id=""))  //id=空，表示无效仓库
@@ -334,7 +337,7 @@ fun HomeScreen(
 //            changeListPageSelectedItemList.requireRefreshView()
         }
         changeListCurRepo.value=item
-        changeListRequireRefreshFromParentPage()
+        changeListRequireRefreshFromParentPage(item)
     }
 
     val filesPageRequireImportFile = rememberSaveable { mutableStateOf( false)}
@@ -475,7 +478,7 @@ fun HomeScreen(
         //跳转页面
         currentHomeScreen.intValue = Cons.selectedItem_ChangeList
 
-        changeStateTriggerRefreshPage(changeListRefreshRequiredByParentPage)
+        changeListRequireRefreshFromParentPage(repoWillShowInChangeListPage)
     }
 
 
@@ -593,7 +596,7 @@ fun HomeScreen(
         refreshRepoPage@{ changeStateTriggerRefreshPage(needRefreshRepoPage) },
         refreshFilesPage@{ changeStateTriggerRefreshPage(needRefreshFilesPage) },
         refreshEditorPage@{ editorPageShowingFileIsReady.value=false; changeStateTriggerRefreshPage(needRefreshEditorPage) },
-        refreshChangeListPage@{changeListRequireRefreshFromParentPage()},
+        refreshChangeListPage@{changeListRequireRefreshFromParentPage(changeListCurRepo.value)},
         refreshSettingsPage@{ refreshSettingsPage() },
         refreshAboutPage@{}, //About页面静态的，不需要刷新
 //        {},  //Subscription页面
@@ -886,20 +889,20 @@ fun HomeScreen(
             if(currentHomeScreen.intValue == Cons.selectedItem_Repos) {
 //                changeStateTriggerRefreshPage(needRefreshRepoPage)
                 RepoInnerPage(
-                    showBottomSheet,
-                    sheetState,
-                    repoPageCurRepo,
-                    repoPageCurRepoIndex,
-                    contentPadding,
-                    repoPageListState,
-                    showSetGlobalGitUsernameAndEmailDialog,
-                    needRefreshRepoPage,
-                    changeListCurRepo=changeListCurRepo,
-                    currentHomeScreen=currentHomeScreen,
-                    changeListNeedRefresh=changeListRefreshRequiredByParentPage,
-                    repoPageRepoList,
-                    filesPageCurrentPath=filesPageCurrentPath,
-                    filesPageNeedRefresh=needRefreshFilesPage,
+                    showBottomSheet = showBottomSheet,
+                    sheetState = sheetState,
+                    curRepo = repoPageCurRepo,
+                    curRepoIndex = repoPageCurRepoIndex,
+                    contentPadding = contentPadding,
+                    repoPageListState = repoPageListState,
+                    showSetGlobalGitUsernameAndEmailDialog = showSetGlobalGitUsernameAndEmailDialog,
+                    needRefreshRepoPage = needRefreshRepoPage,
+//                    changeListCurRepo=changeListCurRepo,
+//                    currentHomeScreen=currentHomeScreen,
+//                    changeListNeedRefresh=changeListRefreshRequiredByParentPage,
+                    repoList = repoPageRepoList,
+//                    filesPageCurrentPath=filesPageCurrentPath,
+//                    filesPageNeedRefresh=needRefreshFilesPage,
                     goToFilesPage = goToFilesPage,
                     goToChangeListPage = goToChangeListPage,
                     repoPageScrolled=repoPageScrolled,
@@ -1017,7 +1020,8 @@ fun HomeScreen(
                     changeListCurRepo,
                     changeListIsFileSelectionMode,
 
-                    changeListRefreshRequiredByParentPage,
+                    changeListRefreshRequiredByParentPage.value,
+                    changeListRequireRefreshFromParentPage,
                     changeListHasIndexItems,
 //                    requirePullFromParentPage = changeListRequirePull,
 //                    requirePushFromParentPage = changeListRequirePush,

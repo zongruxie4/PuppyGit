@@ -37,7 +37,7 @@ fun AskGitUsernameAndEmailDialogWithSelection(
     username: MutableState<String>,
     email: MutableState<String>,
     onOk: (curRepo: RepoEntity) -> Unit,
-    onCancel: () -> Unit,
+    onCancel: (curRepo: RepoEntity) -> Unit,
     enableOk: (curRepo: RepoEntity) -> Boolean,
 ) {
     AlertDialog(
@@ -126,7 +126,7 @@ fun AskGitUsernameAndEmailDialogWithSelection(
 
         },
         onDismissRequest = {
-            onCancel()
+            onCancel(curRepo)
         },
         confirmButton = {
             TextButton(
@@ -141,7 +141,7 @@ fun AskGitUsernameAndEmailDialogWithSelection(
         dismissButton = {
             TextButton(
                 onClick = {
-                    onCancel()
+                    onCancel(curRepo)
                 }
             ) {
                 Text(stringResource(id = R.string.cancel))
