@@ -4059,15 +4059,16 @@ private fun changeListInit(
 
 
         }catch (e:Exception) {
+            val curRepo = curRepoFromParentPage.value
 //            setErrMsgForTriggerNotify(hasErr, errMsg, e.localizedMessage?:"")
 
-            setErrMsg(e.localizedMessage ?: "err")
+            setErrMsg(e.localizedMessage ?: "ChangeList init err, code=182u45c945")
 
             showErrAndSaveLog(TAG,
-                "#$funName() err, params are:fromTo=${fromTo}, commit1OidStr=${commit1OidStr}, commit2OidStr=${commit2OidStr},\nerr is:"+e.stackTraceToString(),
+                "#$funName() err, params are: fromTo=${fromTo}, commit1OidStr=${commit1OidStr}, commit2OidStr=${commit2OidStr}, curRepo=${curRepo}\nerr is: "+e.stackTraceToString(),
                 "ChangeList init err:"+e.localizedMessage,
                 requireShowToast,
-                curRepoFromParentPage.value.id
+                curRepo.id
             )
         }
     }
