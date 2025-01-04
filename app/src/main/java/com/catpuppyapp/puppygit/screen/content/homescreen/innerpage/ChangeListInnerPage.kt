@@ -17,7 +17,6 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.Label
-import androidx.compose.material.icons.filled.CloudDone
 import androidx.compose.material.icons.filled.CloudSync
 import androidx.compose.material.icons.filled.DoneAll
 import androidx.compose.material.icons.filled.Download
@@ -27,7 +26,6 @@ import androidx.compose.material.icons.filled.LibraryAdd
 import androidx.compose.material.icons.filled.SelectAll
 import androidx.compose.material.icons.filled.Upload
 import androidx.compose.material.icons.outlined.Check
-import androidx.compose.material.icons.outlined.CloudDone
 import androidx.compose.material.icons.outlined.SelectAll
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Text
@@ -115,7 +113,6 @@ import com.catpuppyapp.puppygit.utils.dbIntToBool
 import com.catpuppyapp.puppygit.utils.doJobThenOffLoading
 import com.catpuppyapp.puppygit.utils.doJobWithMainContext
 import com.catpuppyapp.puppygit.utils.getSecFromTime
-import com.catpuppyapp.puppygit.utils.getShortUUID
 import com.catpuppyapp.puppygit.utils.isRepoReadyAndPathExist
 import com.catpuppyapp.puppygit.utils.replaceStringResList
 import com.catpuppyapp.puppygit.utils.showErrAndSaveLog
@@ -187,12 +184,12 @@ fun ChangeListInnerPage(
 
 ) {
 
-    // for detect page changed, avoid loading repo1, swiched repo2, repo2 loaded, then repo1 loaded, page show wrong items of repo1
-    val pageId = remember {
-        val newId = getShortUUID()
-        newestPageId.value = newId
-        newId
-    }
+    // for detect page changed, avoid loading repo1, switched repo2, repo2 loaded, then repo1 loaded, page show wrong items of repo1
+//    val pageId = remember {
+//        val newId = getShortUUID()
+//        newestPageId.value = newId
+//        newId
+//    }
 
     //避免导航的时候出现 “//” 导致导航失败
     val commit1OidStr = commit1OidStr.ifBlank { Cons.allZeroOid.toString() }
@@ -3491,7 +3488,11 @@ fun ChangeListInnerPage(
             // because remember haven't hold a mutableState value,
             // so it just a simple variable, should catchable as constant by lambda
             // on the other hand, assigned is fine though
-            val pageIdSnapshot = pageId
+//            val newPageId = generateRandomString()
+            //直接用refresh变量的值即可，省得重新生成了
+            val currentPageId = refreshRequiredByParentPage.value
+            //这个最新pageId似乎可省略啊？虽然不省略逻辑上更清晰
+            newestPageId.value = currentPageId
 
             changeListInit(
                 dbContainer = dbContainer,
@@ -3523,18 +3524,14 @@ fun ChangeListInnerPage(
                 rebaseCurOfAll=rebaseCurOfAll,
                 credentialList=credentialList,
                 repoChanged = {
-                    // debug start (test passed)
-//                    val repoChanged = repoId != repoIdState.value
-//                    if(repoChanged) {
-//                        println("仓库变了！old:$repoId, new: ${repoIdState.value}")
-//                    }
-//                    repoChanged
-                    // debug end
-
-                    // production
+                    // 检测原理是currentPageId捕获的是常量(或值拷贝)，state变量每次调用都重新查最新的值，因此若变化，可检测到
+                    val repoChanged = currentPageId != newestPageId.value
+                    if(repoChanged) {
+                        MyLog.d(TAG, "Repo Changed!")
+                    }
 
                     // if true, page changed
-                    pageIdSnapshot != newestPageId.value
+                    repoChanged
                 }
 
 //        isDiffToHead=isDiffToHead,
@@ -3720,6 +3717,11 @@ private fun changeListInit(
     //                    if(debugModeOn) {
     //                        println("parentList="+parentList)
     //                    }
+
+                            if(repoChanged()) {
+                                return@launch
+                            }
+
                             commitParentList.value.clear()
                             commitParentList.value.addAll(parentList)
                         }
@@ -3765,9 +3767,18 @@ private fun changeListInit(
                     }
                 }
 
+                if(repoChanged()) {
+                    return@launch
+                }
+
                 //如果上面的id查出的仓库无效，从数据库重新获取一个就绪且路径存在的仓库
                 if (needQueryRepoFromDb) {  //没有效仓库，从数据库随便挑一个能用的
                     val repoFromDb = dbContainer.repoRepository.getAReadyRepo()
+
+                    if(repoChanged()) {
+                        return@launch
+                    }
+
                     if (repoFromDb == null) {  //没就绪的仓库，直接结束
                         changeListPageNoRepo.value = true
                         setErrMsg(appContext.getString(R.string.no_repo_for_shown))
@@ -3778,12 +3789,22 @@ private fun changeListInit(
                     }
                 }
 
+
+                if(repoChanged()) {
+                    return@launch
+                }
+
+
                 //检测是否查询出了有效仓库
                 if (!isRepoReadyAndPathExist(curRepoFromParentPage.value)) {
                     //            setErrMsgForTriggerNotify(hasErr, errMsg, queryRepoForChangeListErrStrRes)
                     //如果执行到这，还没查询到仓库也没出任何错误，那很可能是因为数据库里根本没有仓库
                     changeListPageNoRepo.value=true
                     setErrMsg(appContext.getString(R.string.no_repo_for_shown))
+                    return@launch
+                }
+
+                if(repoChanged()) {
                     return@launch
                 }
 
@@ -3816,6 +3837,12 @@ private fun changeListInit(
                     if(fromTo == Cons.gitDiffFromIndexToWorktree) {  //查询worktree页面条目，就是从首页抽屉打开的changelist
                         //查询status页面的条目
                         val wtStatusList = Libgit2Helper.getWorkdirStatusList(gitRepository)
+
+                        // 这个可以说是最重要的一处检测，因为重新执行git status最费时间的
+                        if(repoChanged()) {
+                            return@launch
+                        }
+
                         changeListPageHasWorktreeItem.value = wtStatusList.entryCount() > 0
                         if (changeListPageHasWorktreeItem.value) {
                             //转成index/worktree/conflict三个元素的map，每个key对应一个列表
