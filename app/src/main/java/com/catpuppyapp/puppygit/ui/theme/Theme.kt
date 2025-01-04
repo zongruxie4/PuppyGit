@@ -42,8 +42,8 @@ object Theme {
 
     fun getThemeTextByCode(themeCode:Int?, appContext: Context):String {
         if(themeCode == auto) {
-//            return appContext.getString(R.string.auto)
-            return appContext.getString(R.string.follow_system)
+            return appContext.getString(R.string.auto)
+//            return appContext.getString(R.string.follow_system)
         }else if(themeCode == light) {
             return appContext.getString(R.string.light)
         }else if(themeCode == dark) {

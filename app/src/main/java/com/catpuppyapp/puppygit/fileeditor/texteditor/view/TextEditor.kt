@@ -1052,11 +1052,14 @@ fun TextEditor(
                                             //改用onFocus定位最后编辑行了，这里不需要了，实际上现在的最后编辑行就是光标最后所在行
 //                                            lastScrollEvent = ScrollEvent(index)
 
+                                        }catch (e:IndexOutOfBoundsException) {
+                                            // Undo/Redo后可能 出现 索引错误，没必要显示给用户，只记下日志就行
+                                            MyLog.e(TAG, "#onUpdateText err: "+e.localizedMessage)
                                         }catch (e:Exception) {
-                                            // Undo/Redo后可能 出现 索引错误，没必要显示给用户，无视即可
-//                                            Msg.requireShowLongDuration("#onUpdateText err: "+e.localizedMessage)
+                                            // 其他错误，显示给用户
+                                            Msg.requireShowLongDuration("#onUpdateText err: "+e.localizedMessage)
 
-                                            //不过日志还是要记下的
+                                            //log
                                             MyLog.e(TAG, "#onUpdateText err: "+e.stackTraceToString())
                                         }
                                     },

@@ -369,7 +369,7 @@ class EditorController(
     fun updateField(targetIndex: Int, textFieldValue: TextFieldValue) {
         lock.withLock {
             if (targetIndex < 0 || fields.count() <= targetIndex) {
-                throw InvalidParameterException("targetIndex out of range($targetIndex)")
+                throw IndexOutOfBoundsException("targetIndex out of range($targetIndex)")
             }
 
             if (textFieldValue.text.contains('\n')) {
