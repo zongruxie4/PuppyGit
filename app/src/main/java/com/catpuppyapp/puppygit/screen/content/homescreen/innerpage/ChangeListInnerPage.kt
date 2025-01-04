@@ -124,6 +124,7 @@ import com.catpuppyapp.puppygit.utils.state.mutableCustomStateListOf
 import com.catpuppyapp.puppygit.utils.state.mutableCustomStateOf
 import com.catpuppyapp.puppygit.utils.withMainContext
 import com.github.git24j.core.Repository
+import com.github.git24j.core.Repository.StateT
 import com.github.git24j.core.Tree
 
 private const val TAG = "ChangeListInnerPage"
@@ -3663,6 +3664,12 @@ private fun changeListInit(
             //先设置无仓库为假，后面如果查了发现确实没会改成真
             changeListPageNoRepo.value=false
             changeListPageHasIndexItem.value=false
+            //设置仓库状态为初始值
+            repoState.intValue = StateT.NONE.bit
+            //设置仓库为无效仓库（后面会查询然后更新为有效仓库，如果存在有效仓库的话）
+            //仓库名之所以保留是为了在标题栏尽可能快的让用户看到切换后的仓库标题；id和fullSavePath是为了确保后面的检测能判断出来这是个无效仓库以执行更新
+            curRepoFromParentPage.value = RepoEntity(id = "", fullSavePath = "", repoName = curRepoFromParentPage.value.repoName)
+
             //先清空列表
             //TODO 这里实现恢复的逻辑，如果列表不为空，就直接恢复数据，不清空列表，也不重新查询，如果刷新，加个flag，强制重新查询
             itemList.value.clear()
