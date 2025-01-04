@@ -15,13 +15,11 @@ import com.catpuppyapp.puppygit.utils.AppModel
 import com.catpuppyapp.puppygit.utils.Libgit2Helper
 import com.catpuppyapp.puppygit.utils.Msg
 import com.catpuppyapp.puppygit.utils.MyLog
-import com.catpuppyapp.puppygit.utils.cache.Cache
 import com.catpuppyapp.puppygit.utils.changeStateTriggerRefreshPage
 import com.catpuppyapp.puppygit.utils.createAndInsertError
 import com.catpuppyapp.puppygit.utils.getSecFromTime
 import com.catpuppyapp.puppygit.utils.showErrAndSaveLog
 import com.catpuppyapp.puppygit.utils.state.CustomStateListSaveable
-import com.catpuppyapp.puppygit.utils.state.CustomStateSaveable
 import com.github.git24j.core.Repository
 
 private const val TAG = "ChangeListFunctions"
@@ -33,7 +31,7 @@ object ChangeListFunctions {
         cmtMsg:String,
         requireCloseBottomBar:Boolean,
 //        requireDoSync:Boolean,
-        curRepoFromParentPage:CustomStateSaveable<RepoEntity>,
+        curRepoFromParentPage:RepoEntity,
         refreshRequiredByParentPage:MutableState<String>,
         username:MutableState<String>,
         email:MutableState<String>,
@@ -81,7 +79,7 @@ object ChangeListFunctions {
 //        Cache.set(Cache.Key.changeListInnerPage_RequireDoSyncAfterCommit, requireDoSync)
 
         //执行commit
-        Repository.open(curRepoFromParentPage.value.fullSavePath).use { repo ->
+        Repository.open(curRepoFromParentPage.fullSavePath).use { repo ->
             //检查是否存在冲突条目，有可能已经stage了，就不存在了，就能提交，否则，不能提交
             val readyCreateCommit = Libgit2Helper.isReadyCreateCommit(repo)
             if(readyCreateCommit.hasError()) {
@@ -242,11 +240,11 @@ object ChangeListFunctions {
                 val shortNewCommitHash = ret.data.toString().substring(Cons.gitShortCommitHashRange)
                 //更新db
                 repoDb.updateCommitHash(
-                    repoId=curRepoFromParentPage.value.id,
+                    repoId=curRepoFromParentPage.id,
                     lastCommitHash = shortNewCommitHash,
                 )
                 // 更新修改workstatus的时间，只更新时间就行，状态会在查询repo时更新
-                repoDb.updateLastUpdateTime(curRepoFromParentPage.value.id, getSecFromTime())
+                repoDb.updateLastUpdateTime(curRepoFromParentPage.id, getSecFromTime())
 
 
                 requireShowToast(successCommitStrRes)
@@ -274,7 +272,7 @@ object ChangeListFunctions {
 
     suspend fun doFetch(
         remoteNameParam:String?,
-        curRepoFromParentPage:CustomStateSaveable<RepoEntity>,
+        curRepoFromParentPage:RepoEntity,
         requireShowToast:(String)->Unit,
         appContext:Context,
         loadingText:MutableState<String>,
@@ -282,7 +280,7 @@ object ChangeListFunctions {
 
     ):Boolean{   //参数的remoteNameParam如果有效就用参数的，否则自己查当前head分支对应的remote
         //x 废弃，逻辑已经改了) 执行isReadyDoSync检查之前要先do fetch，想象一下，如果远程创建了一个分支，正好和本地的关联，但如果我没先fetch，那我检查时就get不到那个远程分支是否存在，然后就会先执行push，但可能远程仓库已经领先本地了，所以push也可能失败，但如果先fetch，就不会有这种问题了
-        Repository.open(curRepoFromParentPage.value.fullSavePath).use { repo ->
+        Repository.open(curRepoFromParentPage.fullSavePath).use { repo ->
             //fetch成功返回true，否则返回false
             try {
                 var remoteName = remoteNameParam
@@ -303,15 +301,15 @@ object ChangeListFunctions {
                 val credential = Libgit2Helper.getRemoteCredential(
                     dbContainer.remoteRepository,
                     dbContainer.credentialRepository,
-                    curRepoFromParentPage.value.id,
+                    curRepoFromParentPage.id,
                     remoteName,
                     trueFetchFalsePush = true
                 )
-                Libgit2Helper.fetchRemoteForRepo(repo, remoteName, credential, curRepoFromParentPage.value)
+                Libgit2Helper.fetchRemoteForRepo(repo, remoteName, credential, curRepoFromParentPage)
 
                 // 更新修改workstatus的时间，只更新时间就行，状态会在查询repo时更新
                 val repoDb = AppModel.dbContainer.repoRepository
-                repoDb.updateLastUpdateTime(curRepoFromParentPage.value.id, getSecFromTime())
+                repoDb.updateLastUpdateTime(curRepoFromParentPage.id, getSecFromTime())
 
 
                 return@doFetch true
@@ -319,7 +317,7 @@ object ChangeListFunctions {
                 //记录到日志
                 //显示提示
                 //保存数据库(给用户看的，消息尽量简单些)
-                showErrAndSaveLog(TAG, "#doFetch() err:"+e.stackTraceToString(), "fetch err:"+e.localizedMessage, requireShowToast, curRepoFromParentPage.value.id)
+                showErrAndSaveLog(TAG, "#doFetch() err:"+e.stackTraceToString(), "fetch err:"+e.localizedMessage, requireShowToast, curRepoFromParentPage.id)
 
                 return@doFetch false
             }
@@ -330,7 +328,7 @@ object ChangeListFunctions {
                         upstreamParam: Upstream?,
                         showMsgIfHasConflicts:Boolean,
                         trueMergeFalseRebase:Boolean=true,
-                        curRepoFromParentPage:CustomStateSaveable<RepoEntity>,
+                        curRepoFromParentPage:RepoEntity,
                         requireShowToast:(String)->Unit,
                         appContext:Context,
                         loadingText:MutableState<String>,
@@ -339,7 +337,7 @@ object ChangeListFunctions {
         try {
             val settings = SettingsUtil.getSettingsSnapshot()
             //这的repo不能共享，不然一释放就要完蛋了，这repo不是rc是box单指针
-            Repository.open(curRepoFromParentPage.value.fullSavePath).use { repo ->
+            Repository.open(curRepoFromParentPage.fullSavePath).use { repo ->
                 var upstream = upstreamParam
                 if(Libgit2Helper.isUpstreamInvalid(upstream)) {  //如果调用者没传有效的upstream，查一下
                     val shortBranchName = Libgit2Helper.getRepoCurBranchShortRefSpec(repo)  //获取当前分支短名，例如 main
@@ -410,7 +408,7 @@ object ChangeListFunctions {
                     }
 
                     //记到数据库error日志
-                    createAndInsertError(curRepoFromParentPage.value.id, mergeResult.msg)
+                    createAndInsertError(curRepoFromParentPage.id, mergeResult.msg)
                     //关闭底栏，如果需要的话
                     if (requireCloseBottomBar) {
                         bottomBarActDoneCallback("")
@@ -424,7 +422,7 @@ object ChangeListFunctions {
                 Libgit2Helper.cleanRepoState(repo)
 
                 //更新db显示成功通知
-                Libgit2Helper.updateDbAfterMergeSuccess(mergeResult, appContext, curRepoFromParentPage.value.id, requireShowToast, trueMergeFalseRebase)
+                Libgit2Helper.updateDbAfterMergeSuccess(mergeResult, appContext, curRepoFromParentPage.id, requireShowToast, trueMergeFalseRebase)
 
                 //关闭底栏，如果需要的话
                 if (requireCloseBottomBar) {
@@ -439,7 +437,7 @@ object ChangeListFunctions {
                 logMsg = "#doMerge(trueMergeFalseRebase=$trueMergeFalseRebase) err:"+e.stackTraceToString(),
                 showMsg = e.localizedMessage ?: "err",
                 showMsgMethod = requireShowToast,
-                repoId = curRepoFromParentPage.value.id,
+                repoId = curRepoFromParentPage.id,
                 errMsgForErrDb = "${if(trueMergeFalseRebase) "merge" else "rebase"} err: "+e.localizedMessage
             )
 
@@ -455,7 +453,7 @@ object ChangeListFunctions {
     suspend fun doPush(requireCloseBottomBar:Boolean,
                        upstreamParam:Upstream?,
                        force:Boolean=false,
-                       curRepoFromParentPage:CustomStateSaveable<RepoEntity>,
+                       curRepoFromParentPage:RepoEntity,
                        requireShowToast:(String)->Unit,
                        appContext:Context,
                        loadingText:MutableState<String>,
@@ -464,7 +462,7 @@ object ChangeListFunctions {
     ) : Boolean {
         try {
 //            MyLog.d(TAG, "#doPush: start")
-            Repository.open(curRepoFromParentPage.value.fullSavePath).use { repo ->
+            Repository.open(curRepoFromParentPage.fullSavePath).use { repo ->
                 if(repo.headDetached()) {
                     requireShowToast(appContext.getString(R.string.push_failed_by_detached_head))
                     return@doPush false
@@ -488,7 +486,7 @@ object ChangeListFunctions {
                 val credential = Libgit2Helper.getRemoteCredential(
                     dbContainer.remoteRepository,
                     dbContainer.credentialRepository,
-                    curRepoFromParentPage.value.id,
+                    curRepoFromParentPage.id,
                     upstream!!.remote,
                     trueFetchFalsePush = false
                 )
@@ -500,7 +498,7 @@ object ChangeListFunctions {
 
                 // 更新修改workstatus的时间，只更新时间就行，状态会在查询repo时更新
                 val repoDb = AppModel.dbContainer.repoRepository
-                repoDb.updateLastUpdateTime(curRepoFromParentPage.value.id, getSecFromTime())
+                repoDb.updateLastUpdateTime(curRepoFromParentPage.id, getSecFromTime())
 
 
                 //关闭底栏，如果需要的话
@@ -511,7 +509,7 @@ object ChangeListFunctions {
             }
         }catch (e:Exception) {
             //log
-            showErrAndSaveLog(TAG, "#doPush(force=$force) err:"+e.stackTraceToString(), "${if(force) "Push(Force)" else "Push"} error:"+e.localizedMessage, requireShowToast, curRepoFromParentPage.value.id)
+            showErrAndSaveLog(TAG, "#doPush(force=$force) err:"+e.stackTraceToString(), "${if(force) "Push(Force)" else "Push"} error:"+e.localizedMessage, requireShowToast, curRepoFromParentPage.id)
 
             //关闭底栏，如果需要的话
             if (requireCloseBottomBar) {
@@ -525,7 +523,7 @@ object ChangeListFunctions {
     suspend fun doSync(
         requireCloseBottomBar:Boolean,
         trueMergeFalseRebase:Boolean=true,
-        curRepoFromParentPage:CustomStateSaveable<RepoEntity>,
+        curRepoFromParentPage:RepoEntity,
         requireShowToast:(String)->Unit,
         appContext:Context,
         bottomBarActDoneCallback:(String)->Unit,
@@ -540,7 +538,7 @@ object ChangeListFunctions {
         loadingText:MutableState<String>,
         dbContainer:AppContainer,
     ) {
-        Repository.open(curRepoFromParentPage.value.fullSavePath).use { repo ->
+        Repository.open(curRepoFromParentPage.fullSavePath).use { repo ->
             if(repo.headDetached()) {
                 requireShowToast(appContext.getString(R.string.sync_failed_by_detached_head))
                 return@doSync
@@ -650,7 +648,7 @@ object ChangeListFunctions {
                     }
                 }catch (e:Exception) {
                     //log
-                    showErrAndSaveLog(TAG, "#doSync() err:"+e.stackTraceToString(), "sync err:"+e.localizedMessage, requireShowToast, curRepoFromParentPage.value.id)
+                    showErrAndSaveLog(TAG, "#doSync() err:"+e.stackTraceToString(), "sync err:"+e.localizedMessage, requireShowToast, curRepoFromParentPage.id)
 
                     //close if require
                     if(requireCloseBottomBar) {

@@ -3,7 +3,6 @@ package com.catpuppyapp.puppygit.compose
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.selection.selectable
@@ -22,22 +21,24 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.unit.dp
+import com.catpuppyapp.puppygit.data.entity.RepoEntity
 import com.catpuppyapp.puppygit.play.pro.R
 import com.catpuppyapp.puppygit.style.MyStyleKt
 import com.catpuppyapp.puppygit.utils.MyLog
 
-private val TAG = "AskGitUsernameAndEmailDialogWithSelection"
+private const val TAG = "AskGitUsernameAndEmailDialogWithSelection"
 
 @Composable
 fun AskGitUsernameAndEmailDialogWithSelection(
+    curRepo: RepoEntity,
     text: String,
     optionsList: List<String>,  //这个列表两个条目，一个代表为全局设置用户名和邮箱，另一个代表为当前仓库设置用户名和邮箱
     selectedOption: MutableIntState,  //代表选中了optionsList中的哪个条目
     username: MutableState<String>,
     email: MutableState<String>,
-    onOk: () -> Unit,
+    onOk: (curRepo: RepoEntity) -> Unit,
     onCancel: () -> Unit,
-    enableOk: () -> Boolean,
+    enableOk: (curRepo: RepoEntity) -> Boolean,
 ) {
     AlertDialog(
         title = {
@@ -65,7 +66,7 @@ fun AskGitUsernameAndEmailDialogWithSelection(
                                 .selectable(
                                     selected = selectedOption.intValue==k,
                                     onClick = {
-                                        MyLog.d(TAG, "#onClick(), selected option, k="+k +", optext="+optext)
+                                        MyLog.d(TAG, "#onClick(), selected option, k=$k, optext=$optext")
                                         //更新选择值
                                         selectedOption.intValue = k
                                     },
@@ -130,9 +131,9 @@ fun AskGitUsernameAndEmailDialogWithSelection(
         confirmButton = {
             TextButton(
                 onClick = {
-                    onOk()
+                    onOk(curRepo)
                 },
-                enabled = enableOk()
+                enabled = enableOk(curRepo)
             ) {
                 Text(stringResource(id = R.string.save))
             }

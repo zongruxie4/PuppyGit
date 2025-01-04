@@ -14,7 +14,6 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.layout.onGloballyPositioned
@@ -24,6 +23,7 @@ import androidx.compose.ui.platform.LocalView
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import com.catpuppyapp.puppygit.data.entity.RepoEntity
 import com.catpuppyapp.puppygit.play.pro.R
 import com.catpuppyapp.puppygit.style.MyStyleKt
 import com.catpuppyapp.puppygit.utils.Libgit2Helper
@@ -32,6 +32,7 @@ import com.github.git24j.core.Repository
 
 @Composable
 fun RequireCommitMsgDialog(
+    curRepo:RepoEntity,
     repoPath:String,
     repoState:Int,
     overwriteAuthor:MutableState<Boolean>,
@@ -41,7 +42,7 @@ fun RequireCommitMsgDialog(
     showPush:Boolean,
     showSync:Boolean,
     commitBtnText:String = stringResource(R.string.commit),
-    onOk: (msg:String, requirePush:Boolean, requireSync:Boolean) -> Unit,
+    onOk: (curRepo: RepoEntity, msg:String, requirePush:Boolean, requireSync:Boolean) -> Unit,
     onCancel: () -> Unit,
 ) {
     val activityContext = LocalContext.current
@@ -180,7 +181,7 @@ fun RequireCommitMsgDialog(
                 onClick = {
                     val requirePush = false
                     val requireSync = false
-                    onOk(getCommitMsg(), requirePush, requireSync)
+                    onOk(curRepo, getCommitMsg(), requirePush, requireSync)
                 },
                 enabled = true
             ) {
@@ -194,7 +195,7 @@ fun RequireCommitMsgDialog(
                         onClick = {
                             val requirePush = false
                             val requireSync = true
-                            onOk(getCommitMsg(), requirePush, requireSync)
+                            onOk(curRepo, getCommitMsg(), requirePush, requireSync)
                         }
                     ) {
                         Text(stringResource(id = R.string.sync))
@@ -207,7 +208,7 @@ fun RequireCommitMsgDialog(
                         onClick = {
                             val requirePush = true
                             val requireSync = false
-                            onOk(getCommitMsg(), requirePush, requireSync)
+                            onOk(curRepo, getCommitMsg(), requirePush, requireSync)
                         }
                     ) {
                         Text(stringResource(id = R.string.push))
