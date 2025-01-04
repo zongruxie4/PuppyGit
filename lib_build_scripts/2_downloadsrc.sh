@@ -61,6 +61,7 @@ mv libgit2-${LIBGIT2_VERSION} libgit2
 # method 2(tested, good): set `CMAKE_C_STANDARD` to "C99" when build libgit2, if no set, default is C90。(实际操作很简单，追加"-DCMAKE_C_STANDARD=99"到构建libgit2的cmake命令即可)
 
 # replace the c standard 90 to c99, else maybe will get err when build the lib
+# 替换这招从 libgit2 1.9.0 开始不好使了，可能有其他字符指定了C90，后来在源代码搜索了下关键字，发现可以在cmake参数指定编译器版本，而且就写在README里，我以前都没注意到....所以其实从一开始就没必要手动替换！
 #cd libgit2
 #find . -name 'CMakeLists.txt' -exec sed -i 's|C_STANDARD 90|C_STANDARD 99|' {} \;
 
