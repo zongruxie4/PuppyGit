@@ -1,6 +1,5 @@
 package com.catpuppyapp.puppygit.screen.content.homescreen.scaffold.title
 
-import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowLeft
@@ -36,7 +35,6 @@ import kotlinx.coroutines.CoroutineScope
 
 //private val stateKeyTag = "ChangeListTitle"
 
-@OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun ChangeListTitle(
     changeListCurRepo: CustomStateSaveable<RepoEntity>,
@@ -48,8 +46,13 @@ fun ChangeListTitle(
     enableAction:Boolean,
     repoList:CustomStateListSaveable<RepoEntity>,
     needReQueryRepoList:MutableState<String>
-)
-{
+) {
+
+    // 测试下，不禁用点击title是否会出错，不出错就永远启用，不然有时候一点某个仓库文件很多，加载等半天，然后我想切换到别的仓库也切换不了，恶心
+    //如果有bug，直接注释此行即可，不需要改其他地方
+    val enableAction = true
+
+
 //    val haptic = LocalHapticFeedback.current
     val activityContext = LocalContext.current
 
@@ -119,7 +122,6 @@ fun ChangeListTitle(
                     maxLines = 1,
                     overflow = TextOverflow.Ellipsis,
                     fontSize = MyStyleKt.Title.secondLineFontSize,
-//                        color = if(enableAction) Color.Unspecified else UIHelper.getDisableBtnColor(inDarkTheme)
                     color = getTitleColor()
                 )
             },
