@@ -1,4 +1,4 @@
-SET(CMAKE_SYSTEM_NAME Linux)
+SET(CMAKE_SYSTEM_NAME Android)
 SET(CMAKE_SYSTEM_VERSION Android)
 
 SET(CMAKE_C_COMPILER   $ENV{ANDROID_TOOLCHAIN_ROOT}/bin/x86_64-linux-android$ENV{android_target_abi}-clang)

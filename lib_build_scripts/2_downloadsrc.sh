@@ -56,9 +56,14 @@ tar -xzf "$build_src/libgit2-${LIBGIT2_VERSION}.tar.gz" -C "$build_src"
 rm -rf libgit2
 mv libgit2-${LIBGIT2_VERSION} libgit2
 
+# no more replace needed, try other ways to make libgit2 use c99 when build for Android:
+# method 1: set `CMAKE_SYSTEM_NAME` to "Android", then the libgit2 will use C99 for android
+# method 2: set `CMAKE_C_STANDARD` to "C99", if no set, default is C90
+# can set in to the toolchain.cmake file(tested), or append to the cmake command, both should be fine
+
 # replace the c standard 90 to c99, else maybe will get err when build the lib
-cd libgit2
-find . -name 'CMakeLists.txt' -exec sed -i 's|C_STANDARD 90|C_STANDARD 99|' {} \;
+#cd libgit2
+#find . -name 'CMakeLists.txt' -exec sed -i 's|C_STANDARD 90|C_STANDARD 99|' {} \;
 
 
 # Optional: remove downloaded archive
