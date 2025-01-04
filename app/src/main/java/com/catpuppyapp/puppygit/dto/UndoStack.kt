@@ -95,6 +95,11 @@ data class UndoStack(
                 push(undoStack, state)
                 undoLastSaveAt.longValue = now
 
+                //若超过数量限制移除第一个
+                if(undoStack.size > sizeLimit) {
+                    undoStack.removeAt(0)
+                }
+
                 return true
             }
 
@@ -145,11 +150,6 @@ data class UndoStack(
         try {
             // add to tail
             stack.add(state)
-
-            //超过限制移除head first
-            if(stack.size > sizeLimit) {
-                stack.removeAt(0)
-            }
         }catch (e:Exception) {
             MyLog.e(TAG, "#push, err: ${e.stackTraceToString()}")
         }
