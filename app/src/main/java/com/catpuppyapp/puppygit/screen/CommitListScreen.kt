@@ -384,7 +384,7 @@ fun CommitListScreen(
     val hasMore = rememberSaveable { mutableStateOf(false)}
 
 
-    val needRefresh = rememberSaveable { mutableStateOf("")}
+    val needRefresh = rememberSaveable { mutableStateOf("CommitList_refresh_init_value")}
 
 
     val loadingStrRes = stringResource(R.string.loading)

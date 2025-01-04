@@ -122,7 +122,7 @@ fun TreeToTreeChangeListScreen(
 //    val curRepo = rememberSaveable{ mutableStateOf(RepoEntity()) }
 //    val curRepo = mutableCustomStateOf(value = RepoEntity())
 
-    val changeListRefreshRequiredByParentPage = rememberSaveable { mutableStateOf("") }
+    val changeListRefreshRequiredByParentPage = rememberSaveable { mutableStateOf("TreeToTree_ChangeList_refresh_init_value") }
     val changeListRequireRefreshFromParentPage = { whichRepoRequestRefresh:RepoEntity ->
         ChangeListFunctions.changeListDoRefresh(changeListRefreshRequiredByParentPage, whichRepoRequestRefresh)
     }

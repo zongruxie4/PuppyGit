@@ -155,7 +155,7 @@ fun HomeScreen(
 
     val repoPageRepoList = mutableCustomStateListOf(stateKeyTag, "repoPageRepoList", listOf<RepoEntity>())
 
-    val changeListRefreshRequiredByParentPage= rememberSaveable { mutableStateOf( "")}
+    val changeListRefreshRequiredByParentPage= rememberSaveable { mutableStateOf("WorktreeToIndex_ChangeList_refresh_init_value")}
 
     //参数repoId用来实现如果在仓库a执行操作，然后切换了仓库，则仓库a的仓库执行完后不会刷新页面
     val changeListRequireRefreshFromParentPage = { whichRepoRequestRefresh:RepoEntity ->
