@@ -500,50 +500,6 @@ fun ChangeListInnerPage(
         changeStateTriggerRefreshPage(refreshRequiredByParentPage)
     }
 
-    //impl Stage selected files
-    fun doStage(curRepo:RepoEntity, requireCloseBottomBar:Boolean, userParamList:Boolean, paramList:List<StatusTypeEntrySaver>?):Boolean{
-            //在index页面是不需要stage的，只有在首页抽屉那个代表worktree的changelist页面才需要stage，但为了简化逻辑，少改代码，直接在这加个非worktree就返回true的判断，这样调用此函数的地方就都不用改了，当作stage成功，然后继续执行后续操作即可
-            if(fromTo != Cons.gitDiffFromIndexToWorktree) {
-                return@doStage true
-            }
-
-            //如果不使用参数列表，检查下选中条目，没有选中条目则显示提示，否则添加条目
-            if (!userParamList && selectedListIsEmpty()) {  //因为无选中项时按钮禁用，所以一般不会执行这块，只是以防万一
-                requireShowToast(noItemSelectedStrRes)
-                return@doStage false
-            }
-
-            //如果请求使用参数传来的列表，则检查列表是否为null或空
-            if(userParamList && paramList.isNullOrEmpty()) {
-                requireShowToast(activityContext.getString(R.string.item_list_is_empty))
-                return@doStage false
-            }
-
-            val actuallyStageList = if(userParamList) paramList!! else selectedItemList.value
-
-            loadingText.value = activityContext.getString(R.string.staging)
-            //执行到这，要么请求使用参数列表，要么有选中条目
-            //添加选中条目到index
-            //打开仓库
-            Repository.open(curRepo.fullSavePath).use { repo ->
-                Libgit2Helper.stageStatusEntryAndWriteToDisk(repo, actuallyStageList)
-            }
-
-            //准备提示信息
-            //替换资源字符串的占位符1为选中条目数，生成诸如：“已 staged 5 个文件“ 这样的字符串
-            val msg = replaceStringResList(
-                nFilesStagedStrRes,
-                listOf(actuallyStageList.size.toString())
-            )
-
-            //关闭底栏，显示提示
-            if(requireCloseBottomBar) {
-                bottomBarActDoneCallback(msg)
-            }
-
-            return true
-    }
-
     // commit msg
 //    val commitMsgNeedAsk = "1"
 //    val commitMsgShowAskDialog = "2"
@@ -670,7 +626,21 @@ fun ChangeListInnerPage(
 
     val doStageAll = { curRepo:RepoEntity ->
         //第2个参数代表使用参数提供的列表，第3个参数是当前仓库所有的changelist列表，这样就实现了stage all
-        doStage(curRepo, true, true, itemList.value)
+        ChangeListFunctions.doStage(
+            curRepo = curRepo,
+            requireCloseBottomBar = true,
+            userParamList = true,
+            paramList = itemList.value,
+            fromTo = fromTo,
+            selectedListIsEmpty = selectedListIsEmpty,
+            requireShowToast = requireShowToast,
+            noItemSelectedStrRes = noItemSelectedStrRes,
+            activityContext = activityContext,
+            selectedItemList = selectedItemList.value,
+            loadingText = loadingText,
+            nFilesStagedStrRes = nFilesStagedStrRes,
+            bottomBarActDoneCallback = bottomBarActDoneCallback
+        )
     }
 
     //调用者记得刷新页面
@@ -721,11 +691,21 @@ fun ChangeListInnerPage(
                 val stageSuccess = if(existConflictItems.isEmpty()) { //列表为空，无需stage，直接返回true即可
                     true
                 }else {  //列表有条目，执行stage
-                    doStage(
-                        curRepo,
+                    ChangeListFunctions.doStage(
+                        curRepo=curRepo,
                         requireCloseBottomBar = false,
                         userParamList = true,
-                        paramList = existConflictItems
+                        paramList = existConflictItems,
+
+                        fromTo = fromTo,
+                        selectedListIsEmpty = selectedListIsEmpty,
+                        requireShowToast = requireShowToast,
+                        noItemSelectedStrRes = noItemSelectedStrRes,
+                        activityContext = activityContext,
+                        selectedItemList = selectedItemList.value,
+                        loadingText = loadingText,
+                        nFilesStagedStrRes = nFilesStagedStrRes,
+                        bottomBarActDoneCallback = bottomBarActDoneCallback
                     )
                 }
 
@@ -2225,7 +2205,22 @@ fun ChangeListInnerPage(
             commit@{
                 val curRepo = curRepoFromParentPage.value
                 doJobThenOffLoading(loadingOn=loadingOn,loadingOff=loadingOff, loadingText=activityContext.getString(R.string.committing)) {
-                    val stageSuccess = doStage(curRepo, false, false, null)
+                    val stageSuccess = ChangeListFunctions.doStage(
+                        curRepo = curRepo,
+                        requireCloseBottomBar = false,
+                        userParamList = false,
+                        paramList = null,
+
+                        fromTo = fromTo,
+                        selectedListIsEmpty = selectedListIsEmpty,
+                        requireShowToast = requireShowToast,
+                        noItemSelectedStrRes = noItemSelectedStrRes,
+                        activityContext = activityContext,
+                        selectedItemList = selectedItemList.value,
+                        loadingText = loadingText,
+                        nFilesStagedStrRes = nFilesStagedStrRes,
+                        bottomBarActDoneCallback = bottomBarActDoneCallback
+                    )
                     if(!stageSuccess){
                         bottomBarActDoneCallback(activityContext.getString(R.string.stage_failed))
                     }else {
@@ -2603,7 +2598,22 @@ fun ChangeListInnerPage(
                 loadingText=activityContext.getString(R.string.staging)
             ) {
                 val curRepo = curRepoFromParentPage.value
-                doStage(curRepo, true ,false, null)
+                ChangeListFunctions.doStage(
+                    curRepo = curRepo,
+                    requireCloseBottomBar = true,
+                    userParamList = false,
+                    paramList = null,
+
+                    fromTo = fromTo,
+                    selectedListIsEmpty = selectedListIsEmpty,
+                    requireShowToast = requireShowToast,
+                    noItemSelectedStrRes = noItemSelectedStrRes,
+                    activityContext = activityContext,
+                    selectedItemList = selectedItemList.value,
+                    loadingText = loadingText,
+                    nFilesStagedStrRes = nFilesStagedStrRes,
+                    bottomBarActDoneCallback = bottomBarActDoneCallback
+                )
             }
         },
         //menu action: Revert

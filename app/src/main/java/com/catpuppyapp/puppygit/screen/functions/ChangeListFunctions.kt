@@ -18,6 +18,7 @@ import com.catpuppyapp.puppygit.utils.MyLog
 import com.catpuppyapp.puppygit.utils.changeStateTriggerRefreshPage
 import com.catpuppyapp.puppygit.utils.createAndInsertError
 import com.catpuppyapp.puppygit.utils.getSecFromTime
+import com.catpuppyapp.puppygit.utils.replaceStringResList
 import com.catpuppyapp.puppygit.utils.showErrAndSaveLog
 import com.catpuppyapp.puppygit.utils.state.CustomStateListSaveable
 import com.github.git24j.core.Repository
@@ -659,6 +660,65 @@ object ChangeListFunctions {
             }
         }
 
+    }
+
+
+    //impl Stage selected files
+    fun doStage(
+        curRepo:RepoEntity,
+        requireCloseBottomBar:Boolean,
+        userParamList:Boolean,
+        paramList:List<StatusTypeEntrySaver>?,
+        fromTo: String,
+        selectedListIsEmpty:()->Boolean,
+        requireShowToast:(String)->Unit,
+        noItemSelectedStrRes:String,
+        activityContext:Context,
+        selectedItemList:List<StatusTypeEntrySaver>,
+        loadingText:MutableState<String>,
+        nFilesStagedStrRes:String,
+        bottomBarActDoneCallback:(String)->Unit
+    ):Boolean{
+        //在index页面是不需要stage的，只有在首页抽屉那个代表worktree的changelist页面才需要stage，但为了简化逻辑，少改代码，直接在这加个非worktree就返回true的判断，这样调用此函数的地方就都不用改了，当作stage成功，然后继续执行后续操作即可
+        if(fromTo != Cons.gitDiffFromIndexToWorktree) {
+            return true
+        }
+
+        //如果不使用参数列表，检查下选中条目，没有选中条目则显示提示，否则添加条目
+        if (!userParamList && selectedListIsEmpty()) {  //因为无选中项时按钮禁用，所以一般不会执行这块，只是以防万一
+            requireShowToast(noItemSelectedStrRes)
+            return false
+        }
+
+        //如果请求使用参数传来的列表，则检查列表是否为null或空
+        if(userParamList && paramList.isNullOrEmpty()) {
+            requireShowToast(activityContext.getString(R.string.item_list_is_empty))
+            return false
+        }
+
+        val actuallyStageList = if(userParamList) paramList!! else selectedItemList
+
+        loadingText.value = activityContext.getString(R.string.staging)
+        //执行到这，要么请求使用参数列表，要么有选中条目
+        //添加选中条目到index
+        //打开仓库
+        Repository.open(curRepo.fullSavePath).use { repo ->
+            Libgit2Helper.stageStatusEntryAndWriteToDisk(repo, actuallyStageList)
+        }
+
+        //准备提示信息
+        //替换资源字符串的占位符1为选中条目数，生成诸如：“已 staged 5 个文件“ 这样的字符串
+        val msg = replaceStringResList(
+            nFilesStagedStrRes,
+            listOf(actuallyStageList.size.toString())
+        )
+
+        //关闭底栏，显示提示
+        if(requireCloseBottomBar) {
+            bottomBarActDoneCallback(msg)
+        }
+
+        return true
     }
 
 
