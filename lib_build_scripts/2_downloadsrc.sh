@@ -58,7 +58,7 @@ mv libgit2-${LIBGIT2_VERSION} libgit2
 
 # no more replace needed, try other ways to make libgit2 use c99 when build for Android:
 # method 1(bad，设置这个变量还要设置别的最后引发连锁错误，openssl构建失败): set `CMAKE_SYSTEM_NAME` to "Android", then the libgit2 will use C99 for android
-# method 2: set `CMAKE_C_STANDARD` to "C99" when build libgit2, if no set, default is C90
+# method 2(tested, good): set `CMAKE_C_STANDARD` to "C99" when build libgit2, if no set, default is C90。(实际操作很简单，追加"-DCMAKE_C_STANDARD=99"到构建libgit2的cmake命令即可)
 
 # replace the c standard 90 to c99, else maybe will get err when build the lib
 #cd libgit2
