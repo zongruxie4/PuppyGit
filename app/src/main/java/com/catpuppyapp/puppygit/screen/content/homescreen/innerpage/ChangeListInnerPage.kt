@@ -2880,8 +2880,9 @@ fun ChangeListInnerPage(
                 }
             }
         }else {  //有仓库，但条目列表为空，可能没修改的东西，这时显示仓库是否clean是否和远程同步等信息
-            val curRepo = curRepoFromParentPage.value
-            val curRepoUpstream = curRepoUpstream.value
+            // onUi是为了和在callback里区分，callback函数应该通过状态变量获取最新值
+            val curRepoOnUi = curRepoFromParentPage.value
+            val curRepoUpstreamOnUi = curRepoUpstream.value
 
             if(itemList.value.isEmpty()) {  //列表为空
                 Column(
@@ -2919,7 +2920,7 @@ fun ChangeListInnerPage(
                         }
 
                         //如果仓库状态不是detached HEAD，检查是否和上游同步
-                        if (!dbIntToBool(curRepo.isDetached)) {
+                        if (!dbIntToBool(curRepoOnUi.isDetached)) {
                             var upstreamNotSet = false
 
                             val fontSizeOfPullPushSync = 16.sp
@@ -2934,27 +2935,27 @@ fun ChangeListInnerPage(
                                 verticalArrangement = Arrangement.Center
                             ) {
                                 //领先或落后或上游无效，显示 "click here to sync" (ps: 上游无效也显示是因为worktree页面的sync可创建上游)
-                                if (curRepo.ahead != 0 || curRepo.behind != 0
+                                if (curRepoOnUi.ahead != 0 || curRepoOnUi.behind != 0
                                     //上游为空，显示sync
-                                    || curRepoUpstream.branchRefsHeadsFullRefSpec.isBlank()
+                                    || curRepoUpstreamOnUi.branchRefsHeadsFullRefSpec.isBlank()
                                     //上游不为空，但未发布，显示sync
-                                    || (curRepoUpstream.branchRefsHeadsFullRefSpec.isNotBlank() && !curRepoUpstream.isPublished)
+                                    || (curRepoUpstreamOnUi.branchRefsHeadsFullRefSpec.isNotBlank() && !curRepoUpstreamOnUi.isPublished)
                                 ) {
                                     //查询下仓库是否领先或落后于上游
-                                    if (curRepo.ahead != 0) {
+                                    if (curRepoOnUi.ahead != 0) {
                                         Row {
-                                            Text(text = stringResource(R.string.local_ahead) + ": " + curRepo.ahead)
+                                            Text(text = stringResource(R.string.local_ahead) + ": " + curRepoOnUi.ahead)
 
                                         }
                                     }
-                                    if (curRepo.behind != 0) {
+                                    if (curRepoOnUi.behind != 0) {
                                         Row {  //换行
-                                            Text(text = stringResource(R.string.local_behind) + ": " + curRepo.behind)
+                                            Text(text = stringResource(R.string.local_behind) + ": " + curRepoOnUi.behind)
                                         }
                                     }
 
                                     //没设置上游
-                                    if(curRepoUpstream.branchRefsHeadsFullRefSpec.isBlank()) {
+                                    if(curRepoUpstreamOnUi.branchRefsHeadsFullRefSpec.isBlank()) {
                                         upstreamNotSet = true
                                         Row {  //换行
                                             Text(text = stringResource(R.string.no_upstream))
@@ -2962,13 +2963,13 @@ fun ChangeListInnerPage(
                                     }
 
                                     //设置了上游但没推送到远程
-                                    if(curRepoUpstream.branchRefsHeadsFullRefSpec.isNotBlank() && !curRepoUpstream.isPublished) {
+                                    if(curRepoUpstreamOnUi.branchRefsHeadsFullRefSpec.isNotBlank() && !curRepoUpstreamOnUi.isPublished) {
                                         Row {  //换行
                                             Text(text = stringResource(R.string.upstream_not_published))
                                         }
                                     }
 
-                                    if(curRepo.behind != 0) {
+                                    if(curRepoOnUi.behind != 0) {
                                         Row(
                                             verticalAlignment = Alignment.CenterVertically,
                                             horizontalArrangement = Arrangement.Center
@@ -3178,7 +3179,7 @@ fun ChangeListInnerPage(
                         }
 
                         //只有非detached HEAD 且 设置了上游（没发布也行） 才显示检查更新
-                        if(!dbIntToBool(curRepo.isDetached) && curRepoUpstream.branchRefsHeadsFullRefSpec.isNotBlank()) {
+                        if(!dbIntToBool(curRepoOnUi.isDetached) && curRepoUpstreamOnUi.branchRefsHeadsFullRefSpec.isNotBlank()) {
                             Row (
 //                                modifier=Modifier.padding(top=18.dp)
 
