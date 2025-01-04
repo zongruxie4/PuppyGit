@@ -2,7 +2,7 @@
 # set version and download link, make sure download file is tar.gz, else need edit the uncompress command
 LIBSSH2_VERSION="1.11.1"
 OPENSSL_VERSION="3.4.0"
-LIBGIT2_VERSION="1.8.4"
+LIBGIT2_VERSION="1.9.0"
 
 
 

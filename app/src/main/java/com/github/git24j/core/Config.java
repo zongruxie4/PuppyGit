@@ -799,7 +799,10 @@ public class Config extends CAutoReleasable {
 
         @Override
         protected void freeOnce(long cPtr) {
-            jniEntryFree(cPtr);
+
+            // libgit2 1.9.0 say: "end-users should not try to free that structure"
+            // see: https://github.com/libgit2/libgit2/releases/tag/v1.9.0 , section "Breaking changes", sub section "Configuration entry member removal (ABI breaking change)"
+            // jniEntryFree(cPtr);
         }
 
         public String getName() {

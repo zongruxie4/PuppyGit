@@ -10,10 +10,24 @@ extern j_constants_t *jniConstants;
 
 /** -------- Wrapper Body ---------- */
 /** int git_blame_init_options(git_blame_options *opts, unsigned int version); */
-JNIEXPORT jint JNICALL J_MAKE_METHOD(Blame_jniInitOptions)(JNIEnv *env, jclass obj, jlong optsPtr, jint version)
+//JNIEXPORT jint JNICALL J_MAKE_METHOD(Blame_jniInitOptions)(JNIEnv *env, jclass obj, jlong optsPtr, jint version)
+//{
+//    int r = git_blame_init_options((git_blame_options *)optsPtr, version);
+//    return r;
+//}
+
+JNIEXPORT jint JNICALL J_MAKE_METHOD(Blame_jniOptionsNew)(JNIEnv *env, jclass obj, jobject outPtr, jint version)
 {
-    int r = git_blame_init_options((git_blame_options *)optsPtr, version);
-    return r;
+    git_blame_options *opts = (git_blame_options *)malloc(sizeof(git_blame_options));
+
+    //value of `err`: Zero on success; -1 on failure.
+    // I am not sure it can get this err msg from git_last_err(), if version bad, maybe can get, if mem alloc err, maybe can't
+    int initErr = git_blame_init_options(opts, (unsigned int)version);
+
+    // this set no check the initErr, even initErr, still set the ptr to java pointer, it make java be able free the mallocated memory
+    (*env)->CallVoidMethod(env, outPtr, jniConstants->midAtomicLongSet, (jlong)opts);
+
+    return initErr;
 }
 
 /** size_t git_blame_get_hunk_count(git_blame *blame); */

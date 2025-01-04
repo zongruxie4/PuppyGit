@@ -1,6 +1,7 @@
 next version:
 - add Sync button on to commit msg dialog
 - support undo/redo for Editor
+- update libgit2 to 1.9.0 (fix ssh shallow clone err)
 
 ---
 
