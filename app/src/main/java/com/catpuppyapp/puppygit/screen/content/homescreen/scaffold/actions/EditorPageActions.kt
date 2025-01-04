@@ -41,6 +41,7 @@ import com.catpuppyapp.puppygit.settings.SettingsUtil
 import com.catpuppyapp.puppygit.style.MyStyleKt
 import com.catpuppyapp.puppygit.user.UserUtil
 import com.catpuppyapp.puppygit.utils.AppModel
+import com.catpuppyapp.puppygit.utils.Msg
 import com.catpuppyapp.puppygit.utils.state.CustomStateSaveable
 
 @Composable
@@ -133,20 +134,36 @@ fun EditorPageActions(
 
     if(enableMenuItem) {
         if(showUndoRedo.value) {
+            val undoStr = stringResource(R.string.undo)
             LongPressAbleIconBtn(
                 enabled = undoStack?.undoStackIsEmpty()?.not() ?: false,
-                tooltipText = stringResource(R.string.undo),
+                tooltipText = undoStr,
                 icon = Icons.AutoMirrored.Filled.Undo,
-                iconContentDesc = stringResource(R.string.undo),
+                iconContentDesc = undoStr,
+                onLongClick = {
+                    //震动反馈
+                    haptic.performHapticFeedback(HapticFeedbackType.LongPress)
+
+                    // 显示 "Undo(saved steps count)"
+                    Msg.requireShow("$undoStr(${undoStack?.undoStackSize() ?: 0})")
+                }
             ) {
                 editorPageRequest.value = PageRequest.requestUndo
             }
 
+            val redoStr = stringResource(R.string.redo)
             LongPressAbleIconBtn(
                 enabled = undoStack?.redoStackIsEmpty()?.not() ?: false,
-                tooltipText = stringResource(R.string.redo),
+                tooltipText = redoStr,
                 icon = Icons.AutoMirrored.Filled.Redo,
-                iconContentDesc = stringResource(R.string.redo),
+                iconContentDesc = redoStr,
+                onLongClick = {
+                    //震动反馈
+                    haptic.performHapticFeedback(HapticFeedbackType.LongPress)
+
+                    // 显示 "Undo(saved steps count)"
+                    Msg.requireShow("$redoStr(${undoStack?.redoStackSize() ?: 0})")
+                }
             ) {
                 editorPageRequest.value = PageRequest.requestRedo
             }

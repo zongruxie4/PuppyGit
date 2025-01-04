@@ -75,6 +75,14 @@ data class UndoStack(
         return redoStack.isEmpty()
     }
 
+    fun undoStackSize():Int {
+        return undoStack.size
+    }
+
+    fun redoStackSize():Int {
+        return redoStack.size
+    }
+
     /**
      * @return true saved, false not saved
      */
