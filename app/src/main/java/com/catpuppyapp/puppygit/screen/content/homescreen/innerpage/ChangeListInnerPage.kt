@@ -3666,9 +3666,21 @@ private fun changeListInit(
             changeListPageHasIndexItem.value=false
             //设置仓库状态为初始值
             repoState.intValue = StateT.NONE.bit
+
             //设置仓库为无效仓库（后面会查询然后更新为有效仓库，如果存在有效仓库的话）
             //仓库名之所以保留是为了在标题栏尽可能快的让用户看到切换后的仓库标题；id和fullSavePath是为了确保后面的检测能判断出来这是个无效仓库以执行更新
-            curRepoFromParentPage.value = RepoEntity(id = "", fullSavePath = "", repoName = curRepoFromParentPage.value.repoName)
+            //没必要给整个变量重新赋值
+//            curRepoFromParentPage.value = RepoEntity(id = "", fullSavePath = "", repoName = curRepoFromParentPage.value.repoName)
+
+            //不能清id或fullSavePath，会导致误判仓库无效，然后重新查一个
+//            tmpCurRepo.id=""
+//            tmpCurRepo.fullSavePath=""
+            //重置下信息，后面会重新从db查询
+            val tmpCurRepo = curRepoFromParentPage.value
+            tmpCurRepo.lastCommitHash=""
+            tmpCurRepo.branch=""
+            tmpCurRepo.upstreamBranch=""
+
 
             //先清空列表
             //TODO 这里实现恢复的逻辑，如果列表不为空，就直接恢复数据，不清空列表，也不重新查询，如果刷新，加个flag，强制重新查询
