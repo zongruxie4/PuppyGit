@@ -177,6 +177,8 @@ fun CommitItem(
         ){
             Text(text = stringResource(R.string.msg) +":")
             ClickableText(commitDto.msg) {
+                lastClickedItemKey.value = commitDto.oidStr
+
                 updateCurObjState()
                 showItemDetails(commitDto)
             }

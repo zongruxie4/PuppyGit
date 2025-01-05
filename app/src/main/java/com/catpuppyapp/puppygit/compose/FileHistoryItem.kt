@@ -198,6 +198,8 @@ fun FileHistoryItem(
 
             Text(text = stringResource(R.string.msg) + ":")
             ClickableText(dto.msg) {
+                lastClickedItemKey.value = dto.getItemKey()
+
                 updateCurObjState()
                 showItemDetails(dto)
             }
