@@ -1,5 +1,6 @@
 package com.catpuppyapp.puppygit.screen.content
 
+import android.content.Context
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
@@ -50,10 +51,12 @@ import com.catpuppyapp.puppygit.git.PuppyHunkAndLines
 import com.catpuppyapp.puppygit.git.PuppyLine
 import com.catpuppyapp.puppygit.git.StatusTypeEntrySaver
 import com.catpuppyapp.puppygit.play.pro.R
+import com.catpuppyapp.puppygit.screen.shared.SharedState
 import com.catpuppyapp.puppygit.settings.SettingsUtil
 import com.catpuppyapp.puppygit.style.MyStyleKt
 import com.catpuppyapp.puppygit.utils.AppModel
 import com.catpuppyapp.puppygit.utils.Libgit2Helper
+import com.catpuppyapp.puppygit.utils.Msg
 import com.catpuppyapp.puppygit.utils.MyLog
 import com.catpuppyapp.puppygit.utils.StateRequestType
 import com.catpuppyapp.puppygit.utils.UIHelper
@@ -97,7 +100,7 @@ fun DiffContent(
     fileFullPath:String,
     isSubmodule:Boolean,
     isDiffToLocal:Boolean,
-    diffableItemList:List<StatusTypeEntrySaver>,
+    diffableItemList:MutableList<StatusTypeEntrySaver>,
     diffableItemListForFileHistory:List<FileHistoryDto>,
     curItemIndex:MutableIntState,
     switchItem:(StatusTypeEntrySaver, index:Int) -> Unit,
@@ -258,6 +261,8 @@ fun DiffContent(
 
             if(isDiffFileHistoryFromTreeToTree.not()) {
                 NaviButton(
+                    activityContext = activityContext,
+                    curRepo = curRepo.value,
                     diffableItemList = diffableItemList,
                     curItemIndex = curItemIndex,
                     switchItem = closeChannelThenSwitchItem,
@@ -773,6 +778,8 @@ fun DiffContent(
 
                 if(isDiffFileHistoryFromTreeToTree.not()) {
                     NaviButton(
+                        activityContext = activityContext,
+                        curRepo = curRepo.value,
                         diffableItemList = diffableItemList,
                         curItemIndex = curItemIndex,
                         switchItem = closeChannelThenSwitchItem,
@@ -949,8 +956,10 @@ fun DiffContent(
 
 @Composable
 private fun NaviButton(
+    activityContext:Context,
+    curRepo:RepoEntity,
     fromTo: String,
-    diffableItemList: List<StatusTypeEntrySaver>,
+    diffableItemList: MutableList<StatusTypeEntrySaver>,
     diffableItemListForFileHistory:List<FileHistoryDto>,
     curItemIndex: MutableIntState,
     lastClickedItemKey: MutableState<String>,
@@ -969,6 +978,52 @@ private fun NaviButton(
         val hasNext = nextIndex >= 0 && nextIndex < size
 
         if(size>0) {
+            // if is index to work tree, show stage button
+            if(fromTo == Cons.gitDiffFromIndexToWorktree) {
+                CardButton(
+                    text =  stringResource(R.string.stage),
+                    enabled = true
+                ) {
+                    doJobThenOffLoading {
+                        try {
+                            val targetIndex = curItemIndex.intValue
+                            val targetItem = diffableItemList[targetIndex]
+                            // stage 条目
+                            Repository.open(curRepo.fullSavePath).use { repo ->
+                                Libgit2Helper.stageStatusEntryAndWriteToDisk(repo, listOf(targetItem))
+                            }
+
+                            //从cl页面的列表移除条目
+                            SharedState.homeChangeList_itemList.remove(targetItem)
+                            //cl页面设置索引有条目，因为上面添加成功了，所以大概率index至少有一个条目
+                            SharedState.homeChangeList_indexHasItem.value = true
+
+                            //如果存在下个条目或上个条目，跳转；否则留在当前页面。
+                            val nextOrPreviousIndex = if(hasNext) (nextIndex - 1) else previousIndex
+                            if(nextOrPreviousIndex >= 0 && nextOrPreviousIndex < diffableItemList.size) {
+                                //从列表移除当前条目
+                                diffableItemList.removeAt(targetIndex)
+
+                                //切换条目
+                                val item = diffableItemList[nextOrPreviousIndex]
+                                lastClickedItemKey.value = item.getItemKey()
+                                switchItem(item, nextOrPreviousIndex)
+                            }
+
+                            Msg.requireShow(activityContext.getString(R.string.success))
+                        }catch (e:Exception) {
+                            val errMsg = "err: ${e.localizedMessage}"
+                            Msg.requireShowLongDuration(errMsg)
+                            createAndInsertError(curRepo.id, errMsg)
+
+                            MyLog.e(TAG, "stage item for repo '${curRepo.repoName}' err: ${e.stackTraceToString()}")
+                        }
+                    }
+                }
+
+                Spacer(Modifier.height(20.dp))
+            }
+
             Row (
                 modifier = Modifier.fillMaxWidth(),
                 verticalAlignment = Alignment.CenterVertically,

@@ -96,6 +96,7 @@ import com.catpuppyapp.puppygit.screen.functions.ChangeListFunctions
 import com.catpuppyapp.puppygit.screen.functions.naviToFileHistoryByRelativePath
 import com.catpuppyapp.puppygit.screen.functions.openFileWithInnerSubPageEditor
 import com.catpuppyapp.puppygit.screen.shared.DiffFromScreen
+import com.catpuppyapp.puppygit.screen.shared.SharedState
 import com.catpuppyapp.puppygit.settings.SettingsUtil
 import com.catpuppyapp.puppygit.style.MyStyleKt
 import com.catpuppyapp.puppygit.user.UserUtil
@@ -3348,7 +3349,7 @@ fun ChangeListInnerPage(
                 //根据关键字过滤条目
                 val k = changeListPageFilterKeyWord.value.text.lowercase()  //关键字
                 val enableFilter = changeListPageFilterModeOn.value && k.isNotEmpty()
-                val itemList = if(enableFilter){
+                val itemListOrFilterList = if(enableFilter){
                     val fl = itemList.value.filter {
                         it.fileName.lowercase().contains(k)
                                 || it.relativePathUnderRepo.lowercase().contains(k)
@@ -3376,7 +3377,7 @@ fun ChangeListInnerPage(
 
                 MyLazyColumn(
                     contentPadding = contentPadding,
-                    list = itemList,
+                    list = itemListOrFilterList,
                     listState = listState,
                     requireForEachWithIndex = true,
                     requirePaddingAtBottom = true,
@@ -3414,7 +3415,7 @@ fun ChangeListInnerPage(
                             }else {
                                 //在选择模式下长按条目，执行区域选择（连续选择一个范围）
                                 UIHelper.doSelectSpan(index, it,
-                                    selectedItemList.value, itemList,
+                                    selectedItemList.value, itemListOrFilterList,
                                     switchItemSelected,
                                     selecteItem
                                 )
@@ -3441,6 +3442,12 @@ fun ChangeListInnerPage(
 //                                openFileWithInnerEditor(it.canonicalPath, initMergeMode)
 //                            }
                             else {  //非冲突条目，预览diff
+
+                                //用来实现在diff页面stage条目后将其从cl页面移除
+                                SharedState.homeChangeList_itemList = if(enableFilter) filterList.value else itemList.value
+                                SharedState.homeChangeList_indexHasItem = changeListPageHasIndexItem
+
+                                //准备导航到diff页面的参数
                                 Cache.set(Cache.Key.diffScreen_underRepoPathKey, it.relativePathUnderRepo)
 //                                val diffableList = itemList.filter {item -> item.changeType == Cons.gitStatusModified || item.changeType == Cons.gitStatusNew || item.changeType == Cons.gitStatusDeleted}
                                 var indexAtDiffableList = -1
@@ -3448,9 +3455,10 @@ fun ChangeListInnerPage(
                                 val diffableList = mutableListOf<StatusTypeEntrySaver>()
                                 // if filter mode on, this item list is filter list, logically, no changed required
                                 // 如果开启过滤模式，这个列表会是过滤后的列表，符合逻辑，不用修改
-                                val itemCopy = itemList.toList()
+                                val itemCopy = itemListOrFilterList.toList()
                                 for(idx in itemCopy.indices) {
                                     val item = itemCopy[idx]
+                                    //非冲突类型的条目一律添加，包括submodules
                                     if(item.changeType != Cons.gitStatusConflict) {
                                         diffableList.add(item)
 
