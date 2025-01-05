@@ -21,6 +21,6 @@ data class StashDto(
     }
 
     override fun getItemKey():String {
-        return msg+stashId?.id.toString()+index
+        return "$index: $stashId"
     }
 }
