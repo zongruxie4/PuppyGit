@@ -464,6 +464,31 @@ fun FileHistoryScreen(
         }
     }
 
+    val showItemDetails = { curObj:FileHistoryDto ->
+        // onClick()
+//                    requireShowViewDialog(appContext.getString(R.string.view_hash), curCommit.value.oidStr)
+        val sb = StringBuilder()
+        sb.appendLine("${activityContext.getString(R.string.path)}: "+curObj.filePathUnderRepo).appendLine()
+        sb.appendLine("${activityContext.getString(R.string.commit_id)}: "+curObj.commitOidStr).appendLine()
+        sb.appendLine("${activityContext.getString(R.string.entry_id)}: "+curObj.treeEntryOidStr).appendLine()
+        sb.appendLine("${activityContext.getString(R.string.author)}: "+ Libgit2Helper.getFormattedUsernameAndEmail(curObj.authorUsername, curObj.authorEmail))
+        sb.appendLine()
+        sb.appendLine("${activityContext.getString(R.string.committer)}: "+ Libgit2Helper.getFormattedUsernameAndEmail(curObj.committerUsername, curObj.committerEmail))
+        sb.appendLine()
+        //实际使用的时区偏移量
+        sb.appendLine("${activityContext.getString(R.string.date)}: "+curObj.dateTime +" (${curObj.getActuallyUsingTimeZoneUtcFormat(settings)})")
+        sb.appendLine()
+        // commit中携带的时区偏移量
+        sb.appendLine("${activityContext.getString(R.string.timezone)}: "+(formatMinutesToUtc(curObj.originTimeOffsetInMinutes)))
+        sb.appendLine()
+        sb.appendLine("${activityContext.getString(R.string.msg)}: "+curObj.msg)
+        sb.appendLine()
+
+
+        detailsString.value = sb.toString()
+        showDetailsDialog.value = true
+    }
+
     // 向下滚动监听，开始
     val pageScrolled = rememberSaveable { mutableStateOf(settings.showNaviButtons) }
 
@@ -860,28 +885,7 @@ fun FileHistoryScreen(
 
 
                     BottomSheetItem(sheetState, showBottomSheet, stringResource(R.string.details)) {
-                        // onClick()
-//                    requireShowViewDialog(appContext.getString(R.string.view_hash), curCommit.value.oidStr)
-                        val sb = StringBuilder()
-                        sb.appendLine("${activityContext.getString(R.string.path)}: "+curObj.value.filePathUnderRepo).appendLine()
-                        sb.appendLine("${activityContext.getString(R.string.commit_id)}: "+curObj.value.commitOidStr).appendLine()
-                        sb.appendLine("${activityContext.getString(R.string.entry_id)}: "+curObj.value.treeEntryOidStr).appendLine()
-                        sb.appendLine("${activityContext.getString(R.string.author)}: "+ Libgit2Helper.getFormattedUsernameAndEmail(curObj.value.authorUsername, curObj.value.authorEmail))
-                        sb.appendLine()
-                        sb.appendLine("${activityContext.getString(R.string.committer)}: "+ Libgit2Helper.getFormattedUsernameAndEmail(curObj.value.committerUsername, curObj.value.committerEmail))
-                        sb.appendLine()
-                        //实际使用的时区偏移量
-                        sb.appendLine("${activityContext.getString(R.string.date)}: "+curObj.value.dateTime +" (${curObj.value.getActuallyUsingTimeZoneUtcFormat(settings)})")
-                        sb.appendLine()
-                        // commit中携带的时区偏移量
-                        sb.appendLine("${activityContext.getString(R.string.timezone)}: "+(formatMinutesToUtc(curObj.value.originTimeOffsetInMinutes)))
-                        sb.appendLine()
-                        sb.appendLine("${activityContext.getString(R.string.msg)}: "+curObj.value.msg)
-                        sb.appendLine()
-
-
-                        detailsString.value = sb.toString()
-                        showDetailsDialog.value = true
+                        showItemDetails(curObj.value)
                     }
 //
 //                if(UserUtil.isPro() && (dev_EnableUnTestedFeature || commitsDiffToLocalTestPassed)) {
@@ -1006,7 +1010,7 @@ fun FileHistoryScreen(
                     }
                 }
             ) { idx, it ->
-                FileHistoryItem(showBottomSheet, curObj, curObjIndex, idx, it, requireBlinkIdx, lastClickedItemKey) { thisObj ->
+                FileHistoryItem(showBottomSheet, curObj, curObjIndex, idx, it, requireBlinkIdx, lastClickedItemKey, showItemDetails) { thisObj ->
                     Cache.set(Cache.Key.diffScreen_underRepoPathKey, fileRelativePath)
                     val indexAtDiffableList = idx
                     Cache.set(Cache.Key.diffScreen_diffableItemListKey, list.toList())

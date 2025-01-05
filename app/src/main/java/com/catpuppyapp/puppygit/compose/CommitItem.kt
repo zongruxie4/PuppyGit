@@ -16,6 +16,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.platform.LocalClipboardManager
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.font.FontWeight
@@ -23,7 +24,6 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import com.catpuppyapp.puppygit.git.CommitDto
 import com.catpuppyapp.puppygit.play.pro.R
-import com.catpuppyapp.puppygit.utils.AppModel
 import com.catpuppyapp.puppygit.utils.Libgit2Helper
 import com.catpuppyapp.puppygit.utils.Msg
 import com.catpuppyapp.puppygit.utils.UIHelper
@@ -42,12 +42,23 @@ fun CommitItem(
     commitDto:CommitDto,
     requireBlinkIdx:MutableIntState,  //请求闪烁的索引，会闪一下对应条目，然后把此值设为无效
     lastClickedItemKey:MutableState<String>,
+    showItemDetails:(CommitDto)->Unit,
     onClick:(CommitDto)->Unit={}
 ) {
     val clipboardManager = LocalClipboardManager.current
     val activityContext = LocalContext.current
 
-    val haptic = AppModel.haptic
+    val haptic = LocalHapticFeedback.current
+
+    val updateCurObjState = {
+        curCommit.value = CommitDto()
+        curCommitIdx.intValue = -1
+
+        //设置当前条目
+        curCommit.value = commitDto
+        curCommitIdx.intValue = idx
+    }
+
 //    println("IDX::::::::::"+idx)
     Column(
         //0.9f 占父元素宽度的百分之90
@@ -66,12 +77,7 @@ fun CommitItem(
                     //震动反馈
                     haptic.performHapticFeedback(HapticFeedbackType.LongPress)
 
-                    curCommit.value = CommitDto()
-                    curCommitIdx.intValue = -1
-
-                    //设置当前条目
-                    curCommit.value = commitDto
-                    curCommitIdx.intValue = idx
+                    updateCurObjState()
 
                     //显示底部菜单
                     showBottomSheet.value = true
@@ -169,14 +175,11 @@ fun CommitItem(
         Row (
             verticalAlignment = Alignment.CenterVertically,
         ){
-
             Text(text = stringResource(R.string.msg) +":")
-            Text(text = commitDto.msg,
-                maxLines = 1,
-                overflow = TextOverflow.Ellipsis,
-                fontWeight = FontWeight.Light
-
-            )
+            ClickableText(commitDto.msg) {
+                updateCurObjState()
+                showItemDetails(commitDto)
+            }
         }
         if(commitDto.branchShortNameList.isNotEmpty()) {
             Row (

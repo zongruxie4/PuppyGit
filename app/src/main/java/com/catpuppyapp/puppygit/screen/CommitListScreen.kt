@@ -983,6 +983,52 @@ fun CommitListScreen(
         }
     }
 
+    val showItemDetails = { curCommit:CommitDto ->
+        // onClick()
+//                    requireShowViewDialog(appContext.getString(R.string.view_hash), curCommit.value.oidStr)
+        val sb = StringBuilder()
+        sb.appendLine("${activityContext.getString(R.string.hash)}: "+curCommit.oidStr)
+        sb.appendLine()
+        sb.appendLine("${activityContext.getString(R.string.author)}: "+ Libgit2Helper.getFormattedUsernameAndEmail(curCommit.author, curCommit.email))
+        sb.appendLine()
+        sb.appendLine("${activityContext.getString(R.string.committer)}: "+ Libgit2Helper.getFormattedUsernameAndEmail(curCommit.committerUsername, curCommit.committerEmail))
+        sb.appendLine()
+        //实际使用的时区偏移量
+        sb.appendLine("${activityContext.getString(R.string.date)}: "+curCommit.dateTime +" (${curCommit.getActuallyUsingTimeZoneUtcFormat(settings)})")
+        sb.appendLine()
+        // commit中携带的时区偏移量
+        sb.appendLine("${activityContext.getString(R.string.timezone)}: "+(formatMinutesToUtc(curCommit.originTimeOffsetInMinutes)))
+        sb.appendLine()
+        sb.appendLine("${activityContext.getString(R.string.msg)}: "+curCommit.msg)
+        sb.appendLine()
+        if(curCommit.branchShortNameList.isNotEmpty()){
+            sb.appendLine((if(curCommit.branchShortNameList.size > 1) activityContext.getString(R.string.branches) else activityContext.getString(R.string.branch)) +": "+curCommit.branchShortNameList.toString())
+            sb.appendLine()
+        }
+        if(curCommit.tagShortNameList.isNotEmpty()) {
+            sb.appendLine((if(curCommit.tagShortNameList.size > 1) activityContext.getString(R.string.tags) else activityContext.getString(R.string.tag)) +": "+curCommit.tagShortNameList.toString())
+            sb.appendLine()
+        }
+        if(curCommit.parentOidStrList.isNotEmpty()) {
+            sb.appendLine((if(curCommit.parentOidStrList.size > 1) activityContext.getString(R.string.parents) else activityContext.getString(R.string.parent)) +": "+curCommit.parentOidStrList.toString())
+            sb.appendLine()
+        }
+
+        if(curCommit.hasOther()) {
+            sb.appendLine("${activityContext.getString(R.string.other)}: ${curCommit.getOther(false)}")
+            sb.appendLine()
+        }
+
+
+
+        //追加可过滤的flag
+        sb.appendLine("${Cons.flagStr}: ${curCommit.getOther(true)}")
+        sb.appendLine()
+
+        detailsString.value = sb.toString()
+        showDetailsDialog.value = true
+    }
+
     // 向下滚动监听，开始
     val pageScrolled = rememberSaveable { mutableStateOf(settings.showNaviButtons) }
 
@@ -1712,50 +1758,8 @@ fun CommitListScreen(
                         }
                     }
 
-                    BottomSheetItem(sheetState, showBottomSheet, stringResource(R.string.details)) {
-                        // onClick()
-//                    requireShowViewDialog(appContext.getString(R.string.view_hash), curCommit.value.oidStr)
-                        val sb = StringBuilder()
-                        sb.appendLine("${activityContext.getString(R.string.hash)}: "+curCommit.value.oidStr)
-                        sb.appendLine()
-                        sb.appendLine("${activityContext.getString(R.string.author)}: "+ Libgit2Helper.getFormattedUsernameAndEmail(curCommit.value.author, curCommit.value.email))
-                        sb.appendLine()
-                        sb.appendLine("${activityContext.getString(R.string.committer)}: "+ Libgit2Helper.getFormattedUsernameAndEmail(curCommit.value.committerUsername, curCommit.value.committerEmail))
-                        sb.appendLine()
-                        //实际使用的时区偏移量
-                        sb.appendLine("${activityContext.getString(R.string.date)}: "+curCommit.value.dateTime +" (${curCommit.value.getActuallyUsingTimeZoneUtcFormat(settings)})")
-                        sb.appendLine()
-                        // commit中携带的时区偏移量
-                        sb.appendLine("${activityContext.getString(R.string.timezone)}: "+(formatMinutesToUtc(curCommit.value.originTimeOffsetInMinutes)))
-                        sb.appendLine()
-                        sb.appendLine("${activityContext.getString(R.string.msg)}: "+curCommit.value.msg)
-                        sb.appendLine()
-                        if(curCommit.value.branchShortNameList.isNotEmpty()){
-                            sb.appendLine((if(curCommit.value.branchShortNameList.size > 1) activityContext.getString(R.string.branches) else activityContext.getString(R.string.branch)) +": "+curCommit.value.branchShortNameList.toString())
-                            sb.appendLine()
-                        }
-                        if(curCommit.value.tagShortNameList.isNotEmpty()) {
-                            sb.appendLine((if(curCommit.value.tagShortNameList.size > 1) activityContext.getString(R.string.tags) else activityContext.getString(R.string.tag)) +": "+curCommit.value.tagShortNameList.toString())
-                            sb.appendLine()
-                        }
-                        if(curCommit.value.parentOidStrList.isNotEmpty()) {
-                            sb.appendLine((if(curCommit.value.parentOidStrList.size > 1) activityContext.getString(R.string.parents) else activityContext.getString(R.string.parent)) +": "+curCommit.value.parentOidStrList.toString())
-                            sb.appendLine()
-                        }
-
-                        if(curCommit.value.hasOther()) {
-                            sb.appendLine("${activityContext.getString(R.string.other)}: ${curCommit.value.getOther(false)}")
-                            sb.appendLine()
-                        }
-
-
-
-                        //追加可过滤的flag
-                        sb.appendLine("${Cons.flagStr}: ${curCommit.value.getOther(true)}")
-                        sb.appendLine()
-
-                        detailsString.value = sb.toString()
-                        showDetailsDialog.value = true
+                    BottomSheetItem(sheetState, showBottomSheet, stringResource(R.string.details)){
+                        showItemDetails(curCommit.value)
                     }
 
                     BottomSheetItem(sheetState, showBottomSheet, stringResource(R.string.diff)) {
@@ -1997,7 +2001,7 @@ fun CommitListScreen(
                     }
                 }
             ) { idx, it ->
-                CommitItem(showBottomSheet, curCommit, curCommitIndex, idx, it, requireBlinkIdx, lastClickedItemKey = lastClickedItemKey) { thisObj ->
+                CommitItem(showBottomSheet, curCommit, curCommitIndex, idx, it, requireBlinkIdx, lastClickedItemKey = lastClickedItemKey, showItemDetails = showItemDetails) { thisObj ->
                     val parents = thisObj.parentOidStrList
                     if (parents.isEmpty()) {  // 如果没父提交，例如最初的提交就没父提交，提示没parent可比较
                         //TODO 改成没父提交时列出当前提交的所有文件
