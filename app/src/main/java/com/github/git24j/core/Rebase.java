@@ -8,6 +8,9 @@ import javax.annotation.Nullable;
 
 public class Rebase extends CAutoReleasable {
 
+        /** void *payload */
+    static native void jniOptionsSetPayload(long optionsPtr, long payload);
+
     /** int git_rebase_abort(git_rebase *rebase); */
     static native int jniAbort(long rebase);
 
@@ -394,9 +397,6 @@ public class Rebase extends CAutoReleasable {
      */
     public static class Options extends CAutoReleasable {
         public static final int VERSION = 1;
-
-        /** void *payload */
-        static native void jniOptionsSetPayload(long optionsPtr, long payload);
 
         protected Options(boolean isWeak, long rawPtr) {
             super(isWeak, rawPtr);

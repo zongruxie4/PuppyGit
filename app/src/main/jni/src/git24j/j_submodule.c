@@ -258,9 +258,9 @@ JNIEXPORT jint JNICALL J_MAKE_METHOD(Submodule_jniUpdate)(JNIEnv *env, jclass ob
 }
 
 /** int git_submodule_update_init_options(git_submodule_update_options *opts, unsigned int version); */
-JNIEXPORT jint JNICALL J_MAKE_METHOD(Submodule_jniUpdateInitOptions)(JNIEnv *env, jclass obj, jlong optsPtr, jint version)
+JNIEXPORT jint JNICALL J_MAKE_METHOD(Submodule_jniUpdateInitOptions)(JNIEnv *env, jclass obj, jlong updateOptionsPtr, jint version)
 {
-    int r = git_submodule_update_init_options((git_submodule_update_options *)optsPtr, version);
+    int r = git_submodule_update_init_options((git_submodule_update_options *)updateOptionsPtr, version);
     return r;
 }
 

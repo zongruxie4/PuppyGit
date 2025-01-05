@@ -443,9 +443,9 @@ JNIEXPORT jlong JNICALL J_MAKE_METHOD(Remote_jniGetRefspec)(JNIEnv *env, jclass 
 }
 
 /** int git_remote_init_callbacks(git_remote_callbacks *opts, unsigned int version); */
-JNIEXPORT jint JNICALL J_MAKE_METHOD(Remote_jniInitCallbacks)(JNIEnv *env, jclass obj, jlong optsPtr, jint version)
+JNIEXPORT jint JNICALL J_MAKE_METHOD(Remote_jniInitCallbacks)(JNIEnv *env, jclass obj, jlong remoteCallbacksPtr, jint version)
 {
-    int r = git_remote_init_callbacks((git_remote_callbacks *)optsPtr, version);
+    int r = git_remote_init_callbacks((git_remote_callbacks *)remoteCallbacksPtr, version);
     return r;
 }
 

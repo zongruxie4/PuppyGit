@@ -168,7 +168,10 @@ public class Remote extends CAutoReleasable {
     static native int jniFetchOptionsNew(AtomicLong outPtr, int version);
 
     /** git_remote_callbacks callbacks */
-    static native void jniFetchOptionsSetCallbacks(long fetch_optionsPtr, Callbacks callbacks);
+//    static native void jniFetchOptionsSetCallbacks(long fetch_optionsPtr, Callbacks callbacks);
+
+    /** git_remote_init_callbacks */
+    static native int jniInitCallbacks(long remoteCallbacksPtr, int version);
 
     /** git_strarray custom_headers */
     static native void jniFetchOptionsSetCustomHeaders(

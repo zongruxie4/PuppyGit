@@ -143,7 +143,10 @@ public class Submodule extends CAutoReleasable {
     static native void jniUpdateOptionsSetAllowFetch(long update_optionsPtr, int allowFetch);
 
     /** git_checkout_options *checkout_opts */
-    static native void jniUpdateOptionsSetCheckoutOpts(long update_optionsPtr, long checkoutOpts);
+//    static native void jniUpdateOptionsSetCheckoutOpts(long update_optionsPtr, long checkoutOpts);
+
+    /** git_submodule_update_init_options */
+    static native int jniUpdateInitOptions(long updateOptionsPtr, int version);
 
     /** git_submodule_update_t git_submodule_update_strategy(git_submodule *submodule); */
     static native int jniUpdateStrategy(long submodule);
