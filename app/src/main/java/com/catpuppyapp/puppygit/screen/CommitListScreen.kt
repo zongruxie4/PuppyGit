@@ -973,7 +973,7 @@ fun CommitListScreen(
     val detailsString = rememberSaveable { mutableStateOf( "")}
     if(showDetailsDialog.value) {
         CopyableDialog(
-            title = "'${curCommit.value.shortOidStr}'"+ " " +stringResource(id = R.string.details),
+            title = stringResource(R.string.details),
             text = detailsString.value,
             onCancel = { showDetailsDialog.value = false }
         ) {
