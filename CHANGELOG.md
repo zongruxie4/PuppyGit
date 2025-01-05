@@ -1,7 +1,18 @@
 next version:
-- add Sync button on to commit msg dialog
-- support undo/redo for Editor
-- update libgit2 to 1.9.0 (fix ssh shallow clone err)
+
+---
+1.0.7.3v49 - 20250105:
+- ChangeList: move "Sync" button from BottomBar to commit msg dialog
+- support Undo/Redo for Editor
+- support stage item on DiffScreen
+- update libgit2 to 1.9.0 (fix ssh shallow clone err, issue #10)
+
+
+中文更新日志：
+- 修改列表页面: 把 "同步按钮"从BottomBar挪到了提交信息弹窗
+- 文本编辑器支持撤销和重做
+- 支持在比较页面(DiffScreen)暂存条目
+- 更新 libgit2 版本 1.9.0 (修复ssh浅克隆错误, issue #10)
 
 ---
 
@@ -11,6 +22,7 @@ english:
 - fix bug of Diff Screen select compare: when group by line off, select two lines no match will not update target line, but it should update to no match
 - fix after rotated screen force back to Home screen (issue #19)
 - add timezone settings, default is follow system (issue #20)
+
 
 chinese:
 - 切换主题不需要重启app了
