@@ -101,6 +101,8 @@ fun ReflogItem(
             }
 
             InLineCommitHistoryIcon {
+                lastClickedItemKey.value = thisObj.getItemKey()
+
                 fromTagToCommitHistory(
                     fullOid = thisObj.idNew.toString(),
                     shortName = thisObj.getShortNewId(),
@@ -121,6 +123,8 @@ fun ReflogItem(
             }
 
             InLineCommitHistoryIcon {
+                lastClickedItemKey.value = thisObj.getItemKey()
+
                 fromTagToCommitHistory(
                     fullOid = thisObj.idOld.toString(),
                     shortName = thisObj.getShortOldId(),

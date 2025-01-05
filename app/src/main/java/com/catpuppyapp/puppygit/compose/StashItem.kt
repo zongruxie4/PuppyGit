@@ -110,6 +110,8 @@ fun StashItem(
             }
 
             InLineCommitHistoryIcon {
+                lastClickedItemKey.value = thisObj.getItemKey()
+
                 fromTagToCommitHistory(
                     fullOid = thisObj.stashId.toString(),
                     shortName = thisObj.getCachedShortStashId(),
