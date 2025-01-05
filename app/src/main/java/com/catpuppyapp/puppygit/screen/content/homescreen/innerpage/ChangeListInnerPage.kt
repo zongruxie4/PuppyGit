@@ -3443,8 +3443,9 @@ fun ChangeListInnerPage(
 //                            }
                             else {  //非冲突条目，预览diff
 
-                                //用来实现在diff页面stage条目后将其从cl页面移除
-                                SharedState.homeChangeList_itemList = if(enableFilter) filterList.value else itemList.value
+                                //用来实现在diff页面stage条目后将其从cl页面移除。ps 由于filterList是由itemList产生的，所以，这里这里直接操作itemList才对，否则，无法显示最新的修改
+//                                SharedState.homeChangeList_itemList = if(enableFilter) filterList.value else itemList.value
+                                SharedState.homeChangeList_itemList = itemList.value
                                 SharedState.homeChangeList_indexHasItem = changeListPageHasIndexItem
 
                                 //准备导航到diff页面的参数
