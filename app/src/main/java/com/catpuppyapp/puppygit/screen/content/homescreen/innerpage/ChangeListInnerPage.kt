@@ -197,7 +197,7 @@ fun ChangeListInnerPage(
     //避免导航的时候出现 “//” 导致导航失败
     val commit1OidStr = commit1OidStr.ifBlank { Cons.allZeroOid.toString() }
     val commit2OidStr = commit2OidStr.ifBlank { Cons.allZeroOid.toString() }
-    val repoId = remember(repoId, curRepoFromParentPage.value.id, curRepoFromParentPage.value.fullSavePath) { derivedStateOf { if(repoId.isBlank()) curRepoFromParentPage.value.id else repoId } }.value  // must call .value, else derived block may not executing
+    val repoId = remember(repoId, curRepoFromParentPage.value.id) { derivedStateOf { if(repoId.isBlank()) curRepoFromParentPage.value.id else repoId } }.value  // must call .value, else derived block may not executing
 
 
     val isDiffToLocal = fromTo == Cons.gitDiffFromIndexToWorktree || commit1OidStr==Cons.gitLocalWorktreeCommitHash || commit2OidStr==Cons.gitLocalWorktreeCommitHash

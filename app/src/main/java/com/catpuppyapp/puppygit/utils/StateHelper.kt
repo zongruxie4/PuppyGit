@@ -33,7 +33,7 @@ fun setStateWithRequestData(state: MutableState<String>, requestType:Int = State
 
 
 /**
- * 注意：携带数据的refresh state变量，初始值最好不要为空，避免覆盖其他页面的请求参数，最好设置个唯一的初始值常量，之后更新的时候再生成随机值即可
+ * 注意：携带数据的refresh state变量，初始值建议使用非空随机常量，避免覆盖其他页面的请求参数或cache里同名key（一般不会发生，因为只有改变量值时才有可能携带数据然后往cache里存东西，初始值不存）
  */
 fun<T> getRequestDataByState(stateValue:String, getThenDel:Boolean=false):Pair<Int,T?> {
     //这样不行，不能保证每个请求只执行一次

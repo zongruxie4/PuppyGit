@@ -220,7 +220,7 @@ fun FileHistoryScreen(
     val hasMore = rememberSaveable { mutableStateOf(false)}
 
 
-    val needRefresh = rememberSaveable { mutableStateOf("FileHistory_refresh_init_value")}
+    val needRefresh = rememberSaveable { mutableStateOf("FileHistory_refresh_init_value_c2k8")}
 
 
     val loadingStrRes = stringResource(R.string.loading)
