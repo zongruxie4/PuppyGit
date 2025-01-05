@@ -23,6 +23,7 @@ import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.State
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -54,6 +55,7 @@ import com.catpuppyapp.puppygit.style.MyStyleKt
 import com.catpuppyapp.puppygit.utils.AppModel
 import com.catpuppyapp.puppygit.utils.Libgit2Helper
 import com.catpuppyapp.puppygit.utils.MyLog
+import com.catpuppyapp.puppygit.utils.StateRequestType
 import com.catpuppyapp.puppygit.utils.UIHelper
 import com.catpuppyapp.puppygit.utils.changeStateTriggerRefreshPage
 import com.catpuppyapp.puppygit.utils.compare.CmpUtil
@@ -62,6 +64,7 @@ import com.catpuppyapp.puppygit.utils.compare.result.IndexStringPart
 import com.catpuppyapp.puppygit.utils.createAndInsertError
 import com.catpuppyapp.puppygit.utils.doJobThenOffLoading
 import com.catpuppyapp.puppygit.utils.getHumanReadableSizeStr
+import com.catpuppyapp.puppygit.utils.getRequestDataByState
 import com.catpuppyapp.puppygit.utils.getShortUUID
 import com.catpuppyapp.puppygit.utils.replaceStringResList
 import com.catpuppyapp.puppygit.utils.state.CustomStateSaveable
@@ -71,8 +74,8 @@ import com.github.git24j.core.Diff
 import com.github.git24j.core.Repository
 import kotlinx.coroutines.channels.Channel
 
-private val TAG = "DiffContent"
-private val stateKeyTag = "DiffContent"
+private const val TAG = "DiffContent"
+private const val stateKeyTag = "DiffContent"
 
 @Composable
 fun DiffContent(
@@ -115,6 +118,8 @@ fun DiffContent(
 
     val navController = AppModel.navController
     val activityContext = LocalContext.current
+
+    val scope = rememberCoroutineScope()
 
     val isDiffFileHistoryFromTreeToTree = fromTo == Cons.gitDiffFileHistoryFromTreeToTree
     //废弃，改用获取diffItem时动态计算实际需要显示的contentLen总和了
@@ -789,6 +794,16 @@ fun DiffContent(
     LaunchedEffect(needRefresh.value) {
 //        if(!fileSizeOverLimit) {  //这里其实没必要，上级页面已经判断了，但我还是不放心，所以在这里再加个判断以防文件过大时误加载这个代码块导致app卡死
             if (repoId.isNotBlank() && relativePathUnderRepoDecoded.isNotBlank()) {
+                val (requestType, requestData) = getRequestDataByState<Any?>(
+                    needRefresh.value,
+                    getThenDel = true
+                )
+
+                //切换条目后回到列表顶部
+                if(requestType == StateRequestType.requireGoToTop) {
+                    UIHelper.scrollToItem(scope, listState, 0)
+                }
+
 //                MyLog.d(TAG, "#LauncedEffect: job==null: ${job.value == null}")
 //                if(job.value!=null) {
 //                    MyLog.d(TAG, "#LauncedEffect: job is not null, will cancel it")

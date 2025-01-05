@@ -1,6 +1,5 @@
 package com.catpuppyapp.puppygit.screen
 
-import com.catpuppyapp.puppygit.compose.FontSizeAdjuster
 import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material.icons.Icons
@@ -27,6 +26,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.AnnotatedString
 import com.catpuppyapp.puppygit.compose.CopyableDialog
 import com.catpuppyapp.puppygit.compose.FileHistoryRestoreDialog
+import com.catpuppyapp.puppygit.compose.FontSizeAdjuster
 import com.catpuppyapp.puppygit.compose.GoToTopAndGoToBottomFab
 import com.catpuppyapp.puppygit.compose.LoadingDialog
 import com.catpuppyapp.puppygit.compose.LongPressAbleIconBtn
@@ -47,9 +47,9 @@ import com.catpuppyapp.puppygit.screen.shared.SharedState
 import com.catpuppyapp.puppygit.settings.SettingsCons
 import com.catpuppyapp.puppygit.settings.SettingsUtil
 import com.catpuppyapp.puppygit.utils.AppModel
-import com.catpuppyapp.puppygit.utils.FsUtils
 import com.catpuppyapp.puppygit.utils.Libgit2Helper
 import com.catpuppyapp.puppygit.utils.Msg
+import com.catpuppyapp.puppygit.utils.StateRequestType
 import com.catpuppyapp.puppygit.utils.cache.Cache
 import com.catpuppyapp.puppygit.utils.changeStateTriggerRefreshPage
 import com.catpuppyapp.puppygit.utils.getFileNameFromCanonicalPath
@@ -183,7 +183,7 @@ fun DiffScreen(
         loadingText.value = ""
     }
 
-    val needRefresh = rememberSaveable { mutableStateOf("")}
+    val needRefresh = rememberSaveable { mutableStateOf("DiffScreen_refresh_init_value_4kc9")}
 
     val request = rememberSaveable { mutableStateOf("")}
 
@@ -382,13 +382,14 @@ fun DiffScreen(
 
         curItemIndex.intValue = newItemIndex
 
-        changeStateTriggerRefreshPage(needRefresh)
+        changeStateTriggerRefreshPage(needRefresh, requestType = StateRequestType.requireGoToTop)
     }
 
     val switchItemForFileHistory = {newItem:FileHistoryDto, newItemIndex:Int->
         curItemIndex.intValue = newItemIndex
         treeOid1Str.value = newItem.commitOidStr
-        changeStateTriggerRefreshPage(needRefresh)
+
+        changeStateTriggerRefreshPage(needRefresh, requestType = StateRequestType.requireGoToTop)
     }
 
     val saveFontSizeAndQuitAdjust = {

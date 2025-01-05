@@ -16,6 +16,9 @@ object StateRequestType {
 
     //cl页面，刷新页面携带了仓库id，以检查当前仓库和请求刷新页面的仓库是不是同一个仓库，若切换过页面，就可能不同
     val withRepoId = 2
+
+    //diff页面切换条目后跳转到列表顶部
+    val requireGoToTop = 3
 }
 
 //改变值触发执行刷新页面的代码
