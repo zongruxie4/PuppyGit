@@ -69,6 +69,7 @@ import com.catpuppyapp.puppygit.utils.doJobThenOffLoading
 import com.catpuppyapp.puppygit.utils.getHumanReadableSizeStr
 import com.catpuppyapp.puppygit.utils.getRequestDataByState
 import com.catpuppyapp.puppygit.utils.getShortUUID
+import com.catpuppyapp.puppygit.utils.isGoodIndexForList
 import com.catpuppyapp.puppygit.utils.replaceStringResList
 import com.catpuppyapp.puppygit.utils.state.CustomStateSaveable
 import com.catpuppyapp.puppygit.utils.state.mutableCustomStateMapOf
@@ -983,11 +984,17 @@ private fun NaviButton(
                 CardButton(
                     text =  stringResource(R.string.stage),
                     enabled = true
-                ) {
+                ) doStage@{
+                    val targetIndex = curItemIndex.intValue
+                    val targetItem = if(isGoodIndexForList(targetIndex, diffableItemList)) diffableItemList[targetIndex] else null
+
+                    if(targetItem == null) {
+                        Msg.requireShow("err: bad index $targetIndex")
+                        return@doStage
+                    }
+
                     doJobThenOffLoading {
                         try {
-                            val targetIndex = curItemIndex.intValue
-                            val targetItem = diffableItemList[targetIndex]
                             // stage 条目
                             Repository.open(curRepo.fullSavePath).use { repo ->
                                 Libgit2Helper.stageStatusEntryAndWriteToDisk(repo, listOf(targetItem))
@@ -1016,7 +1023,7 @@ private fun NaviButton(
                             Msg.requireShowLongDuration(errMsg)
                             createAndInsertError(curRepo.id, errMsg)
 
-                            MyLog.e(TAG, "stage item for repo '${curRepo.repoName}' err: ${e.stackTraceToString()}")
+                            MyLog.e(TAG, "stage item '${targetItem.relativePathUnderRepo}' for repo '${curRepo.repoName}' err: ${e.stackTraceToString()}")
                         }
                     }
                 }
