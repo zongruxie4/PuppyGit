@@ -103,6 +103,7 @@ import com.catpuppyapp.puppygit.utils.isGoodIndexForList
 import com.catpuppyapp.puppygit.utils.replaceStringResList
 import com.catpuppyapp.puppygit.utils.state.mutableCustomStateListOf
 import com.catpuppyapp.puppygit.utils.state.mutableCustomStateOf
+import com.catpuppyapp.puppygit.utils.time.TimeZoneUtil
 import com.github.git24j.core.GitObject
 import com.github.git24j.core.Oid
 import com.github.git24j.core.Repository
@@ -159,6 +160,8 @@ fun FileHistoryScreen(
 //        mutableStateOf(getHolder(stateKeyTag, "list",  mutableListOf<CommitDto>()))
 //    }
     val settings = remember { SettingsUtil.getSettingsSnapshot() }
+    val shouldShowTimeZoneInfo = remember { TimeZoneUtil.shouldShowTimeZoneInfo(settings) }
+
     //page size for load more
     val pageSize = rememberSaveable{ mutableStateOf(settings.fileHistoryPageSize) }
     val rememberPageSize = rememberSaveable { mutableStateOf(false) }
@@ -1010,7 +1013,7 @@ fun FileHistoryScreen(
                     }
                 }
             ) { idx, it ->
-                FileHistoryItem(showBottomSheet, curObj, curObjIndex, idx, it, requireBlinkIdx, lastClickedItemKey, showItemDetails) { thisObj ->
+                FileHistoryItem(showBottomSheet, curObj, curObjIndex, idx, it, requireBlinkIdx, lastClickedItemKey, shouldShowTimeZoneInfo, showItemDetails) { thisObj ->
                     Cache.set(Cache.Key.diffScreen_underRepoPathKey, fileRelativePath)
                     val indexAtDiffableList = idx
                     Cache.set(Cache.Key.diffScreen_diffableItemListKey, list.toList())

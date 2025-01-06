@@ -26,6 +26,7 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.platform.LocalClipboardManager
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.AnnotatedString
@@ -63,6 +64,7 @@ import com.catpuppyapp.puppygit.utils.doJobThenOffLoading
 import com.catpuppyapp.puppygit.utils.formatMinutesToUtc
 import com.catpuppyapp.puppygit.utils.state.mutableCustomStateListOf
 import com.catpuppyapp.puppygit.utils.state.mutableCustomStateOf
+import com.catpuppyapp.puppygit.utils.time.TimeZoneUtil
 import com.github.git24j.core.Repository
 
 private val TAG = "ReflogListScreen"
@@ -82,13 +84,14 @@ fun ReflogListScreen(
 ) {
     val homeTopBarScrollBehavior = AppModel.homeTopBarScrollBehavior
     val navController = AppModel.navController
-    val activityContext = AppModel.activityContext
+    val activityContext = LocalContext.current
     val haptic = LocalHapticFeedback.current
     val scope = rememberCoroutineScope()
 
     val inDarkTheme = Theme.inDarkTheme
 
     val settings = remember { SettingsUtil.getSettingsSnapshot() }
+    val shouldShowTimeZoneInfo = remember { TimeZoneUtil.shouldShowTimeZoneInfo(settings) }
 
     val refName = rememberSaveable { mutableStateOf(Cons.gitHeadStr) }
 
@@ -450,7 +453,7 @@ fun ReflogListScreen(
             forEachCb = {},
         ){idx, it->
             //长按会更新curObjInPage为被长按的条目
-            ReflogItem(repoId, showBottomSheet, curLongClickItem, lastClickedItemKey, it) {  //onClick
+            ReflogItem(repoId, showBottomSheet, curLongClickItem, lastClickedItemKey, shouldShowTimeZoneInfo, it) {  //onClick
                 val sb = StringBuilder()
                 sb.append(activityContext.getString(R.string.new_oid)).append(": ").append(it.idNew).appendLine().appendLine()
                 sb.append(activityContext.getString(R.string.old_oid)).append(": ").append(it.idOld).appendLine().appendLine()

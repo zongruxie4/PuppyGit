@@ -28,6 +28,7 @@ import com.catpuppyapp.puppygit.utils.Libgit2Helper
 import com.catpuppyapp.puppygit.utils.Msg
 import com.catpuppyapp.puppygit.utils.UIHelper
 import com.catpuppyapp.puppygit.utils.state.CustomStateSaveable
+import com.catpuppyapp.puppygit.utils.time.TimeZoneUtil
 
 
 @OptIn(ExperimentalFoundationApi::class)
@@ -38,6 +39,7 @@ fun ReflogItem(
     curObjFromParent: CustomStateSaveable<ReflogEntryDto>,
 //    idx:Int,
     lastClickedItemKey:MutableState<String>,
+    shouldShowTimeZoneInfo:Boolean,
 
     thisObj:ReflogEntryDto,
     onClick:()->Unit
@@ -139,7 +141,7 @@ fun ReflogItem(
         ){
 
             Text(text = stringResource(R.string.date) +":")
-            Text(text = thisObj.date,
+            Text(text = if(shouldShowTimeZoneInfo) TimeZoneUtil.appendUtcTimeZoneText(thisObj.date, thisObj.originTimeZoneOffsetInMinutes) else thisObj.date,
                 maxLines = 1,
                 overflow = TextOverflow.Ellipsis,
                 fontWeight = FontWeight.Light

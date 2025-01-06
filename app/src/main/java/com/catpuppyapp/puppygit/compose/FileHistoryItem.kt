@@ -29,6 +29,7 @@ import com.catpuppyapp.puppygit.utils.Msg
 import com.catpuppyapp.puppygit.utils.UIHelper
 import com.catpuppyapp.puppygit.utils.doJobThenOffLoading
 import com.catpuppyapp.puppygit.utils.state.CustomStateSaveable
+import com.catpuppyapp.puppygit.utils.time.TimeZoneUtil
 import kotlinx.coroutines.delay
 
 
@@ -42,6 +43,8 @@ fun FileHistoryItem(
     dto:FileHistoryDto,
     requireBlinkIdx:MutableIntState,  //请求闪烁的索引，会闪一下对应条目，然后把此值设为无效
     lastClickedItemKey:MutableState<String>,
+    shouldShowTimeZoneInfo:Boolean,
+
     showItemDetails:(FileHistoryDto)->Unit,
     onClick:(FileHistoryDto)->Unit={}
 ) {
@@ -185,7 +188,7 @@ fun FileHistoryItem(
 
             Text(text = stringResource(R.string.date) + ":")
             Text(
-                text = dto.dateTime,
+                text = if(shouldShowTimeZoneInfo) TimeZoneUtil.appendUtcTimeZoneText(dto.dateTime, dto.originTimeOffsetInMinutes) else dto.dateTime,
                 maxLines = 1,
                 overflow = TextOverflow.Ellipsis,
                 fontWeight = FontWeight.Light

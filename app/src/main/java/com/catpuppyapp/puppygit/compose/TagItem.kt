@@ -2,7 +2,6 @@ package com.catpuppyapp.puppygit.compose
 
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -23,12 +22,11 @@ import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import com.catpuppyapp.puppygit.git.TagDto
 import com.catpuppyapp.puppygit.play.pro.R
-import com.catpuppyapp.puppygit.style.MyStyleKt
 import com.catpuppyapp.puppygit.utils.Msg
 import com.catpuppyapp.puppygit.utils.UIHelper
+import com.catpuppyapp.puppygit.utils.time.TimeZoneUtil
 
 
 @OptIn(ExperimentalFoundationApi::class)
@@ -36,6 +34,8 @@ import com.catpuppyapp.puppygit.utils.UIHelper
 fun TagItem(
     thisObj:TagDto,
     lastClickedItemKey:MutableState<String>,
+    shouldShowTimeZoneInfo:Boolean,
+
     isItemInSelected:(TagDto) -> Boolean,
     onLongClick:(TagDto)->Unit,
     onClick:(TagDto)->Unit
@@ -141,7 +141,7 @@ fun TagItem(
             ){
 
                 Text(text = stringResource(R.string.date) +":")
-                Text(text = thisObj.getFormattedDate(),
+                Text(text = if(shouldShowTimeZoneInfo) TimeZoneUtil.appendUtcTimeZoneText(thisObj.getFormattedDate(), thisObj.originTimeOffsetInMinutes) else thisObj.getFormattedDate(),
                     maxLines = 1,
                     overflow = TextOverflow.Ellipsis,
                     fontWeight = FontWeight.Light

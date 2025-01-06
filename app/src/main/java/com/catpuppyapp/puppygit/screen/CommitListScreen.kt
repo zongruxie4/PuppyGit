@@ -127,6 +127,7 @@ import com.catpuppyapp.puppygit.utils.isGoodIndexForList
 import com.catpuppyapp.puppygit.utils.replaceStringResList
 import com.catpuppyapp.puppygit.utils.state.mutableCustomStateListOf
 import com.catpuppyapp.puppygit.utils.state.mutableCustomStateOf
+import com.catpuppyapp.puppygit.utils.time.TimeZoneUtil
 import com.catpuppyapp.puppygit.utils.withMainContext
 import com.github.git24j.core.GitObject
 import com.github.git24j.core.Oid
@@ -224,6 +225,8 @@ fun CommitListScreen(
 //        mutableStateOf(getHolder(stateKeyTag, "list",  mutableListOf<CommitDto>()))
 //    }
     val settings = remember { SettingsUtil.getSettingsSnapshot() }
+    val shouldShowTimeZoneInfo = remember { TimeZoneUtil.shouldShowTimeZoneInfo(settings) }
+
     //page size for load more
     val pageSize = rememberSaveable{ mutableStateOf(settings.commitHistoryPageSize) }
     val rememberPageSize = rememberSaveable { mutableStateOf(false) }
@@ -2001,7 +2004,7 @@ fun CommitListScreen(
                     }
                 }
             ) { idx, it ->
-                CommitItem(showBottomSheet, curCommit, curCommitIndex, idx, it, requireBlinkIdx, lastClickedItemKey = lastClickedItemKey, showItemDetails = showItemDetails) { thisObj ->
+                CommitItem(showBottomSheet, curCommit, curCommitIndex, idx, it, requireBlinkIdx, lastClickedItemKey, shouldShowTimeZoneInfo, showItemDetails) { thisObj ->
                     val parents = thisObj.parentOidStrList
                     if (parents.isEmpty()) {  // 如果没父提交，例如最初的提交就没父提交，提示没parent可比较
                         //TODO 改成没父提交时列出当前提交的所有文件

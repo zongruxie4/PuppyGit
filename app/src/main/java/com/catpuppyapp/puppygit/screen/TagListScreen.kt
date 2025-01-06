@@ -41,6 +41,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.platform.LocalClipboardManager
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.AnnotatedString
@@ -75,7 +76,6 @@ import com.catpuppyapp.puppygit.utils.Libgit2Helper
 import com.catpuppyapp.puppygit.utils.Msg
 import com.catpuppyapp.puppygit.utils.MyLog
 import com.catpuppyapp.puppygit.utils.UIHelper
-import com.catpuppyapp.puppygit.utils.cache.Cache
 import com.catpuppyapp.puppygit.utils.changeStateTriggerRefreshPage
 import com.catpuppyapp.puppygit.utils.createAndInsertError
 import com.catpuppyapp.puppygit.utils.doActIfIndexGood
@@ -83,10 +83,11 @@ import com.catpuppyapp.puppygit.utils.doJobThenOffLoading
 import com.catpuppyapp.puppygit.utils.formatMinutesToUtc
 import com.catpuppyapp.puppygit.utils.state.mutableCustomStateListOf
 import com.catpuppyapp.puppygit.utils.state.mutableCustomStateOf
+import com.catpuppyapp.puppygit.utils.time.TimeZoneUtil
 import com.github.git24j.core.Repository
 
-private val TAG = "TagListScreen"
-private val stateKeyTag = "TagListScreen"
+private const val TAG = "TagListScreen"
+private const val stateKeyTag = "TagListScreen"
 
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalFoundationApi::class)
 @Composable
@@ -102,10 +103,11 @@ fun TagListScreen(
 ) {
     val homeTopBarScrollBehavior = AppModel.homeTopBarScrollBehavior
     val navController = AppModel.navController
-    val activityContext = AppModel.activityContext
+    val activityContext = LocalContext.current
     val haptic = LocalHapticFeedback.current
     val scope = rememberCoroutineScope()
     val settings = remember { SettingsUtil.getSettingsSnapshot() }
+    val shouldShowTimeZoneInfo = remember { TimeZoneUtil.shouldShowTimeZoneInfo(settings) }
 
     val inDarkTheme = Theme.inDarkTheme
 
@@ -768,7 +770,7 @@ fun TagListScreen(
                 forEachCb = {},
             ){idx, it->
                 //长按会更新curObjInPage为被长按的条目
-                TagItem(it, lastClickedItemKey, isItemInSelected, onLongClick = {
+                TagItem(it, lastClickedItemKey, shouldShowTimeZoneInfo, isItemInSelected, onLongClick = {
                     if(multiSelectionMode.value) {  //多选模式
                         //在选择模式下长按条目，执行区域选择（连续选择一个范围）
                         UIHelper.doSelectSpan(idx, it,

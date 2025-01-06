@@ -29,6 +29,7 @@ import com.catpuppyapp.puppygit.utils.Msg
 import com.catpuppyapp.puppygit.utils.UIHelper
 import com.catpuppyapp.puppygit.utils.doJobThenOffLoading
 import com.catpuppyapp.puppygit.utils.state.CustomStateSaveable
+import com.catpuppyapp.puppygit.utils.time.TimeZoneUtil
 import kotlinx.coroutines.delay
 
 
@@ -42,6 +43,8 @@ fun CommitItem(
     commitDto:CommitDto,
     requireBlinkIdx:MutableIntState,  //请求闪烁的索引，会闪一下对应条目，然后把此值设为无效
     lastClickedItemKey:MutableState<String>,
+    shouldShowTimeZoneInfo:Boolean,
+
     showItemDetails:(CommitDto)->Unit,
     onClick:(CommitDto)->Unit={}
 ) {
@@ -165,7 +168,7 @@ fun CommitItem(
             ){
 
             Text(text = stringResource(R.string.date) +":")
-            Text(text = commitDto.dateTime,
+            Text(text = if(shouldShowTimeZoneInfo) TimeZoneUtil.appendUtcTimeZoneText(commitDto.dateTime, commitDto.originTimeOffsetInMinutes) else commitDto.dateTime,
                 maxLines = 1,
                 overflow = TextOverflow.Ellipsis,
                 fontWeight = FontWeight.Light
