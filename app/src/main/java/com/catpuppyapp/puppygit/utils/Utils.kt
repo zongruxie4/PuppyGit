@@ -198,7 +198,7 @@ fun getTimeFromSec(sec:Long):ZonedDateTime {
 //    return LocalDateTime.ofInstant(Instant.ofEpochSecond(sec), AppModel.getAppTimeZoneOffset())
 
     //这个输出可带时区信息也可不带，好
-    return ZonedDateTime.ofInstant(Instant.ofEpochSecond(sec), AppModel.getAppTimeZoneOffset())
+    return ZonedDateTime.ofInstant(Instant.ofEpochSecond(sec), AppModel.getAppTimeZoneOffsetCached())
 
 //    return LocalDateTime.ofEpochSecond(sec, 0, AppModel.getAppTimeZoneOffset())
 }

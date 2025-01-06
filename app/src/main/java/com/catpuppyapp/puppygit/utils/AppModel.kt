@@ -110,13 +110,19 @@ object AppModel {
 
     /**
      * 系统时区偏移量，单位: 分钟
+     * 注意这是系统偏移量，不一定等于App实际使用的时区偏移量！
      */
     private var systemTimeZoneOffsetInMinutes:Int? = null
 
     /**
-     * App使用的时区偏移量对象
+     * App实际使用的时区偏移量对象
      */
     private var timeZoneOffset:ZoneOffset?=null
+
+    /**
+     * App 实际使用的时区偏移分钟数，和 `timeZoneOffset` 对应
+     */
+    private var timeZoneOffsetInMinutes:Int?=null
 
     /**
      * key 分钟数
@@ -742,12 +748,20 @@ object AppModel {
      *
      * @param settings 一般不用传此参数，只有当更新过AppSettings但不确定SettingsUtil.getSettingsSnapshot()能否立刻获取到最新值时，才有必要传，传的一般是SettingsUtil.update(requireReturnUpdatedSettings=true)的返回值
      */
-    fun getAppTimeZoneOffset(settings: AppSettings? = null) : ZoneOffset {
+    fun getAppTimeZoneOffsetCached(settings: AppSettings? = null) : ZoneOffset {
         if(timeZoneOffset == null) {
             reloadTimeZone(settings ?: SettingsUtil.getSettingsSnapshot())
         }
 
         return timeZoneOffset!!
+    }
+
+    fun getAppTimeZoneOffsetInMinutesCached(settings: AppSettings? = null) : Int {
+        if(timeZoneOffsetInMinutes == null) {
+            reloadTimeZone(settings ?: SettingsUtil.getSettingsSnapshot())
+        }
+
+        return timeZoneOffsetInMinutes!!
     }
 
 
@@ -772,10 +786,11 @@ object AppModel {
 
         //注：这里不能调用getSystemTimeZoneOffsetInMinutesCached，因为如果那个方法如果无结果时会调用此方法查询，若出bug，就死循环了
         //更新App实际使用的时区对象
-        timeZoneOffset = ZoneOffset.ofTotalSeconds(readTimeZoneOffsetInMinutesFromSettingsOrDefault(settings, systemTimeZoneOffsetInMinutes!!) * 60)
+        timeZoneOffsetInMinutes = readTimeZoneOffsetInMinutesFromSettingsOrDefault(settings, systemTimeZoneOffsetInMinutes!!)
+        timeZoneOffset = ZoneOffset.ofTotalSeconds(timeZoneOffsetInMinutes!! * 60)
 
         //打印偏移量，格式："+08:00"
-        MyLog.d(TAG, "#reloadTimeZone(): new value of App's timeZoneOffset=$timeZoneOffset")
+        MyLog.d(TAG, "#reloadTimeZone(): new value of App TimeZone: timeZoneOffsetInMinutes=$timeZoneOffsetInMinutes, timeZoneOffset=$timeZoneOffset")
 
     }
 

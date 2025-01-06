@@ -6423,7 +6423,10 @@ class Libgit2Helper {
         }
 
         fun createSignature(name: String, email: String, settings: AppSettings):Signature {
-            val offsetMinutes = readTimeZoneOffsetInMinutesFromSettingsOrDefault(settings, AppModel.getSystemTimeZoneOffsetInMinutesCached())
+            val offsetMinutes = AppModel.getAppTimeZoneOffsetInMinutesCached(settings)
+
+            // 这种方式也行，实际这里获取的就是app实际使用的偏移量，所以用AppModel里缓存的值即可
+            // val offsetMinutes = readTimeZoneOffsetInMinutesFromSettingsOrDefault(settings, AppModel.getSystemTimeZoneOffsetInMinutesCached())
 
             return Signature(name, email, getUtcTimeInSec(), offsetMinutes)
         }
