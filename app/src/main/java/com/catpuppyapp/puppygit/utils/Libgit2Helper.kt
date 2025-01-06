@@ -1892,7 +1892,10 @@ class Libgit2Helper {
 
             //生成提交信息
             val filesNum = actuallyItemList.size
-            val summary = (if(repoState==Repository.StateT.MERGE) "Conclude Merge" else if(repoState==Repository.StateT.REBASE_MERGE) "Rebase" else if(repoState==Repository.StateT.CHERRYPICK) "Cherrypick" else "Update $filesNum ${if(filesNum>1) "files" else "file"} by PuppyGit") + (":\n")
+            // inclue "PuppyGit"
+//            val summary = (if(repoState==Repository.StateT.MERGE) "Conclude Merge" else if(repoState==Repository.StateT.REBASE_MERGE) "Rebase" else if(repoState==Repository.StateT.CHERRYPICK) "Cherrypick" else "Update $filesNum ${if(filesNum>1) "files" else "file"} by PuppyGit") + (":\n")
+            // no "PuppyGit"
+            val summary = (if(repoState==Repository.StateT.MERGE) "Conclude Merge" else if(repoState==Repository.StateT.REBASE_MERGE) "Rebase" else if(repoState==Repository.StateT.CHERRYPICK) "Cherrypick" else "Update $filesNum ${if(filesNum>1) "files" else "file"}") + (":\n")
             val descriptions=StringBuilder(summary)
             val split = ", "
             for(item in actuallyItemList) {  //终止条件为：列表遍历完毕 或者 达到包含文件名的限制数目(上面的limit变量控制)
