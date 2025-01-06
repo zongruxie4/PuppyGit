@@ -2,7 +2,7 @@
 - 支持以 isMerged NotMerged hasUpstream noUpstream等附加条件过滤提交、分支，或者强制把这些东西改成可搜索的英语和供查看的指定语言？例如可通过IsMerged/NotMerged过滤条目，但显示的时候显示为合并而来和非合并而来
 - support gif-lfs(should compitable .gitconfig settings)
 - sign commit and tag(include rebase/merge/cherrypick generated commits, and can enable or disable respectively)(at least support gpg sign, better ssh as well)(should compitable .gitconfig settings)
-- ChangeList/Index/TreeToTree support view by folder and support more sort method(sort by name/modified time, asc/desc just like Files screen)
+- ChangeList/Index/TreeToTree support view by folder and support more sort method(sort by name/modified time, asc/desc just like Files screen)（submodule虽是folder但实际处理起来类似file，普通folder点击可展开/隐藏，点击file前往diff页面，选择模式下点folder自动选择其下所有文件，长按folder也可开启选择模式）
 - syntax  highlighting in Editor and Diff screen
 
 
