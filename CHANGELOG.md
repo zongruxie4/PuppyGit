@@ -1,4 +1,10 @@
-next version:
+1.0.7.4v50 - 20250106:
+- show TimeZone info at Commits/Tags/Reflogs/FileHistory if unset timezone for app
+- remove "PuppyGit" from auto generated commit msg
+
+
+- 如果未设置时区则在 提交/标签/引用日志/文件历史 页面显示时区信息
+- 从自动生成的提交信息中移除 "PuppyGit"
 
 ---
 1.0.7.3v49 - 20250105:
