@@ -33,6 +33,8 @@ import com.catpuppyapp.puppygit.utils.cert.CertMan
 import com.catpuppyapp.puppygit.utils.fileopenhistory.FileOpenHistoryMan
 import com.catpuppyapp.puppygit.utils.snapshot.SnapshotUtil
 import com.catpuppyapp.puppygit.utils.storagepaths.StoragePathsMan
+import com.catpuppyapp.puppygit.utils.time.TimeZoneMode
+import com.catpuppyapp.puppygit.utils.time.TimeZoneUtil
 import com.github.git24j.core.Libgit2
 import kotlinx.coroutines.CoroutineScope
 import java.io.File
@@ -123,6 +125,7 @@ object AppModel {
      * App 实际使用的时区偏移分钟数，和 `timeZoneOffset` 对应
      */
     private var timeZoneOffsetInMinutes:Int?=null
+    private var timeZoneMode:TimeZoneMode?=null
 
     /**
      * key 分钟数
@@ -764,6 +767,14 @@ object AppModel {
         return timeZoneOffsetInMinutes!!
     }
 
+    fun getAppTimeZoneModeCached(settings: AppSettings? = null) : TimeZoneMode {
+        if(timeZoneMode == null) {
+            reloadTimeZone(settings ?: SettingsUtil.getSettingsSnapshot())
+        }
+
+        return timeZoneMode!!
+    }
+
 
 
     /**
@@ -788,9 +799,10 @@ object AppModel {
         //更新App实际使用的时区对象
         timeZoneOffsetInMinutes = readTimeZoneOffsetInMinutesFromSettingsOrDefault(settings, systemTimeZoneOffsetInMinutes!!)
         timeZoneOffset = ZoneOffset.ofTotalSeconds(timeZoneOffsetInMinutes!! * 60)
+        timeZoneMode = TimeZoneUtil.getAppTimeZoneMode(settings)
 
         //打印偏移量，格式："+08:00"
-        MyLog.d(TAG, "#reloadTimeZone(): new value of App TimeZone: timeZoneOffsetInMinutes=$timeZoneOffsetInMinutes, timeZoneOffset=$timeZoneOffset")
+        MyLog.d(TAG, "#reloadTimeZone(): new value of App TimeZone: timeZoneMode=$timeZoneMode, timeZoneOffsetInMinutes=$timeZoneOffsetInMinutes, timeZoneOffset=$timeZoneOffset")
 
     }
 
