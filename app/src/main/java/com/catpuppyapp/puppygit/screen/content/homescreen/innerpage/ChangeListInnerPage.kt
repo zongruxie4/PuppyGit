@@ -4105,11 +4105,11 @@ private fun getBackHandler(
     }
 
     val backHandlerOnBack:()->Unit = {
-        if(changeListPageFilterModeOn.value){
-            changeListPageFilterModeOn.value = false
-        } else if(isFileSelectionMode.value) {
+        if(isFileSelectionMode.value) {
             quitSelectionMode()
-        }else {
+        }else if(changeListPageFilterModeOn.value){
+            changeListPageFilterModeOn.value = false
+        } else {
             if(fromTo != Cons.gitDiffFromIndexToWorktree) { // TreeToTree or Index，非WorkTree页面，非顶级页面，点击返回上级页面
                 doJobWithMainContext{
                     naviUp()

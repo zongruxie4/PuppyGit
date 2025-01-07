@@ -2709,11 +2709,12 @@ private fun getBackHandler(
     }
 
     val backHandlerOnBack:()->Unit = {
-        if(filesPageSimpleFilterOn.value) {
-          filesPageSimpleFilterOn.value = false
-        } else if (isFileSelectionMode.value) {
+        if (isFileSelectionMode.value) {
             filesPageQuitSelectionMode()
+        } else if(filesPageSimpleFilterOn.value) {
+            filesPageSimpleFilterOn.value = false
         }else if(getFilterMode() != 0) {
+            // 20250107: 这个过滤模式好像已经废弃了？？？
             filesPageFilterModeOff()
 //        }else if (currentPath.value.startsWith(FsUtils.getExternalStorageRootPathNoEndsWithSeparator()+"/")) { //如果在文件管理器页面且不在仓库根目录
         }else if (ceilingPaths.contains(currentPath.value).not()) { //如果在文件管理器页面且未抵达任一天花板目录，则打开上级目录，否则显示“再按返回则退出”的提示

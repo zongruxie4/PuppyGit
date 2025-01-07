@@ -1334,10 +1334,10 @@ fun SubmoduleListScreen(
     }
 
     BackHandler {
-        if(filterModeOn.value) {
-          filterModeOn.value = false
-        } else if(multiSelectionMode.value) {
+        if(multiSelectionMode.value) {
             quitSelectionMode()
+        } else if(filterModeOn.value) {
+            filterModeOn.value = false
         } else {
             naviUp()
         }
