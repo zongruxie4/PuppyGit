@@ -1307,7 +1307,10 @@ fun FilesInnerPage(
                                 || it.lastModifiedTime.lowercase().contains(k)
 //                                || it.createTime.lowercase().contains(k)  // linux好像没有创建时间
                                 || it.sizeInHumanReadable.lowercase().contains(k)
-                                || it.mime.value.lowercase().contains(k)  // mime.value，类似 "text/plain"
+
+                                    // disabled by "document" will match all dirs
+                                    // 禁用了，不然搜document会因为mimetype而匹配所有目录
+//                                || it.mime.value.lowercase().contains(k)  // mime.value，类似 "text/plain"
                     }
 
                     filterList.value.clear()
