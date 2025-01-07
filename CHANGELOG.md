@@ -1,3 +1,13 @@
+1.0.7.5v51 - 20250107:
+- fix bug: Files filter by keyword "document" will match all folders
+- change BackHandler logic: press back button when filter and selection mode both are enabled, will quit selection first
+
+
+- 修复文件管理器过滤关键字为"document"时将匹配所有文件夹的bug
+- 修改返回键处理逻辑：当过滤模式和选择模式同时开启时，按返回键先退出选择模式
+
+---
+
 1.0.7.4v50 - 20250106:
 - show TimeZone info at Commits/Tags/Reflogs/FileHistory if unset timezone for app
 - remove "PuppyGit" from auto generated commit msg
