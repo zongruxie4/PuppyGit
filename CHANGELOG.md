@@ -1,3 +1,8 @@
+1.0.7.6v52 - 20250112:
+- support clear upstream for branch
+
+---
+
 1.0.7.5v51 - 20250107:
 - fix bug: Files filter by keyword "document" will match all folders
 - change BackHandler logic: press back button when filter and selection mode both are enabled, will quit selection first
