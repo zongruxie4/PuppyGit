@@ -144,7 +144,8 @@ fun BranchListScreen(
     val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = MyStyleKt.BottomSheet.skipPartiallyExpanded)
     val showBottomSheet = rememberSaveable { mutableStateOf(false)}
     val showCreateBranchDialog = rememberSaveable { mutableStateOf(false)}
-    val requireCheckout = rememberSaveable { mutableStateOf(false)}
+    // 创建分支，默认勾选checkout
+    val requireCheckout = rememberSaveable { mutableStateOf(true)}
     val showCheckoutBranchDialog = rememberSaveable { mutableStateOf(false)}
     val forceCheckoutForCreateBranch = rememberSaveable { mutableStateOf(false)}
 //    val showCheckoutRemoteBranchDialog = StateUtil.getRememberSaveableState(initValue = false)
@@ -373,6 +374,43 @@ fun BranchListScreen(
             selectedOption = upstreamSelectedRemote,
             branch = upstreamBranchShortRefSpec,
             branchSameWithLocal = upstreamBranchSameWithLocal,
+            onClear = {
+                showSetUpstreamForLocalBranchDialog.value = false
+
+                val repoName = curRepo.value.repoName
+                val repoFullPath = curRepo.value.fullSavePath
+//                val curBranchFullName = curObjInPage.value.fullName
+                val curBranchShortName = curObjInPage.value.shortName
+                doJobThenOffLoading(
+                    loadingOn,
+                    loadingOff,
+                    activityContext.getString(R.string.loading)
+                ) {
+                    try {
+                        Repository.open(repoFullPath).use { repo ->
+                            Libgit2Helper.clearUpstreamForBranch(repo, curBranchShortName)
+                        }
+
+                        Msg.requireShow(activityContext.getString(R.string.success))
+                    } catch (e: Exception) {
+                        //显示通知
+                        requireShowToast("clear upstream err:" + e.localizedMessage)
+                        //给用户看到错误
+                        createAndInsertError(
+                            repoId,
+                            "clear upstream for '$curBranchShortName' err:" + e.localizedMessage
+                        )
+                        //给开发者debug看的错误
+                        MyLog.e(
+                            TAG,
+                            "clear upstream for '$curBranchShortName' of '$repoName' err: " + e.stackTraceToString()
+                        )
+
+                    } finally {
+                        changeStateTriggerRefreshPage(needRefresh)
+                    }
+                }
+            },
             onCancel = {
                 //隐藏弹窗就行，相关状态变量会在下次弹窗前初始化
                 showSetUpstreamForLocalBranchDialog.value = false
@@ -380,6 +418,8 @@ fun BranchListScreen(
             },
             onOk = onOk@{
                 showSetUpstreamForLocalBranchDialog.value = false
+
+                val repoName = curRepo.value.repoName
                 val curBranchFullName = curObjInPage.value.fullName
                 val curBranchShortName = curObjInPage.value.shortName
                 val repoFullPath = curRepo.value.fullSavePath
@@ -393,7 +433,7 @@ fun BranchListScreen(
                 val remote = try {
                     remoteList[selectedRemoteIndex]
                 } catch (e: Exception) {
-                    MyLog.e(TAG,"err when get remote by index from remote list: remoteIndex=$selectedRemoteIndex, remoteList=$remoteList\nerr info:${e.stackTraceToString()}")
+                    MyLog.e(TAG,"err when get remote by index from remote list of '$repoName': remoteIndex=$selectedRemoteIndex, remoteList=$remoteList\nerr info:${e.stackTraceToString()}")
                     Msg.requireShowLongDuration(activityContext.getString(R.string.err_selected_remote_is_invalid))
                     return@onOk
                 }
@@ -421,7 +461,7 @@ fun BranchListScreen(
                             }
                             MyLog.d(
                                 TAG,
-                                "set upstream dialog #onOk(): will write to git config: remote=$remote, branch=$branch"
+                                "set upstream dialog #onOk(): repo is '$repoName', will write to git config: remote=$remote, branch=$branch"
                             )
 
                             //把分支的upstream信息写入配置文件
@@ -467,7 +507,7 @@ fun BranchListScreen(
                         //给开发者debug看的错误
                         MyLog.e(
                             TAG,
-                            "set upstream for '$curBranchShortName' err! user input branch is '$upstreamShortName', selected remote is $remote, user checked use same name with local is '$upstreamSameWithLocal'\nerr:" + e.stackTraceToString()
+                            "set upstream for '$curBranchShortName' of '$repoName' err! user input branch is '$upstreamShortName', selected remote is $remote, user checked use same name with local is '$upstreamSameWithLocal'\nerr:" + e.stackTraceToString()
                         )
 
                     } finally {

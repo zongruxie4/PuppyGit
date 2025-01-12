@@ -35,6 +35,7 @@ fun SetUpstreamDialog(
     branch: MutableState<String>,
     branchSameWithLocal: MutableState<Boolean>,
     onOkText:String="",
+    onClear: (() -> Unit)? = null,
     onOk: () -> Unit,
     onCancel: () -> Unit,
 ) {
@@ -182,12 +183,25 @@ fun SetUpstreamDialog(
             }
         },
         dismissButton = {
-            TextButton(
-                onClick = {
-                    onCancel()
+            ScrollableRow {
+                if(onClear != null) {
+                    TextButton(
+                        onClick = {
+                            onClear()
+                        }
+                    ) {
+                        Text(stringResource(id = R.string.clear), color = MyStyleKt.TextColor.danger())
+                    }
                 }
-            ) {
-                Text(stringResource(id = R.string.cancel))
+
+
+                TextButton(
+                    onClick = {
+                        onCancel()
+                    }
+                ) {
+                    Text(stringResource(id = R.string.cancel))
+                }
             }
         }
     )

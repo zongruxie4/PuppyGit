@@ -2163,8 +2163,19 @@ class Libgit2Helper {
             val headRef = repo.head()
             return headRef?.name() ?: ""
         }
-        //ret, eg: abc/def
+
+        /**
+         *
+         *  @return, eg: abc/def, if head detached, return empty string
+         */
         fun getRepoCurBranchShortRefSpec(repo: Repository):String {
+            // when detached head call `headRef.shorthand()` will return "HEAD",
+            //   but this is not expected branch name, so,
+            //   if detached just simple return empty string
+            if(repo.headDetached()) {
+                return ""
+            }
+
 //            val headRef = Reference.dwim(repo, "HEAD")
             val headRef = repo.head()
             return headRef?.shorthand() ?: ""
@@ -2250,6 +2261,14 @@ class Libgit2Helper {
                 //发生异常，返回一个空upstream
                 return Upstream()  //确保出异常返回空上游，所以这里新创建一个
             }
+        }
+
+        fun clearUpstreamForBranch(repo: Repository, targetBranchShortName:String) {
+            val c = getRepoConfigForWrite(repo)
+
+            //其实用删除单个条目的 c.deleteEntry() 比较合适，但如果配置文件错误设置了多个条目，那个api会报错，所以这里用删除多个条目的api
+            c.deleteMultivar("branch."+targetBranchShortName+".remote", Cons.regexMatchAll)
+            c.deleteMultivar("branch."+targetBranchShortName+".merge", Cons.regexMatchAll)
         }
 
         fun setUpstreamForBranch(repo: Repository, upstream: Upstream, setForBranchName:String="") {
@@ -2908,7 +2927,7 @@ class Libgit2Helper {
                 val targetRef = resolveRefByName(repo, targetRefName)  //targetRefName一般是分支名
                 MyLog.d(TAG, "#$funName(): targetRef==null: "+(targetRef==null)+", targetRefName: "+targetRefName)
                 if(targetRef==null) {
-                    return Ret.createError(null, "resolve targetRefName to Reference failed!",Ret.ErrCode.resolveReferenceError)
+                    return Ret.createError(null, "resolve targetRefName '$targetRefName' to Reference failed!", Ret.ErrCode.resolveReferenceError)
                 }
                 AnnotatedCommit.fromRef(repo, targetRef)  //targetRef一般是分支名查询出的引用对象
             }

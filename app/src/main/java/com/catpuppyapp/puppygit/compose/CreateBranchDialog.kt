@@ -1,6 +1,5 @@
 package com.catpuppyapp.puppygit.compose
 
-import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -40,7 +39,7 @@ import com.catpuppyapp.puppygit.utils.doJobThenOffLoading
 import com.github.git24j.core.Oid
 import com.github.git24j.core.Repository
 
-private val TAG = "CreateBranchDialog"
+private const val TAG = "CreateBranchDialog"
 
 @Composable
 fun CreateBranchDialog(
