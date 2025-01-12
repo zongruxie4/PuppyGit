@@ -103,8 +103,8 @@ import com.catpuppyapp.puppygit.utils.strHasIllegalChars
 import com.github.git24j.core.Repository
 import java.io.File
 
-private val TAG = "RepoInnerPage"
-private val stateKeyTag = "RepoInnerPage"
+private const val TAG = "RepoInnerPage"
+private const val stateKeyTag = "RepoInnerPage"
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable

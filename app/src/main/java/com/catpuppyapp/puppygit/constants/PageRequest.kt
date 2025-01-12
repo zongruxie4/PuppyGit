@@ -17,8 +17,10 @@ object PageRequest {
 //    const val requireDelLine = "requireDelLine"  // request#cacheKeyOfData
 //    const val requireRestoreLine = "requireRestoreLine"  // request#cacheKeyOfData
     const val goToIndex ="goToIndex"  //goToIndex#Index，#后面是要goto的index
+//    const val goToBranch ="goToBranch"  //goToBranch#branchName，#后面是要goto的分支名
 
 
+    const val goToUpstream ="goToUpstream"
     const val editorCreateCancelledState = "editorCreateCancelledState"
     const val requestUndo = "requestUndo"
     const val requestRedo = "requestRedo"
@@ -119,7 +121,7 @@ object PageRequest {
 //        }
 
         /**
-         * 返回request中的data
+         * 返回request中的data，只支持携带一个data
          */
         fun getDataFromRequest(request:String):String {
             val splitIndex = request.indexOf(dataSplitBy)

@@ -73,6 +73,7 @@ import com.catpuppyapp.puppygit.compose.ScrollableColumn
 import com.catpuppyapp.puppygit.compose.ScrollableRow
 import com.catpuppyapp.puppygit.compose.SetUpstreamDialog
 import com.catpuppyapp.puppygit.constants.Cons
+import com.catpuppyapp.puppygit.constants.PageRequest
 import com.catpuppyapp.puppygit.data.entity.CredentialEntity
 import com.catpuppyapp.puppygit.data.entity.RepoEntity
 import com.catpuppyapp.puppygit.dev.branchListPagePublishBranchTestPassed
@@ -138,6 +139,7 @@ fun BranchListScreen(
     //请求闪烁的条目，用来在定位某条目时，闪烁一下以便用户发现
     val requireBlinkIdx = rememberSaveable{mutableIntStateOf(-1)}
     val lastClickedItemKey = rememberSaveable{mutableStateOf(Cons.init_last_clicked_item_key)}
+    val pageRequest = rememberSaveable{mutableStateOf("")}
 
     //这个页面的滚动状态不用记住，每次点开重置也无所谓
     val listState = rememberLazyListState()
@@ -1175,6 +1177,50 @@ fun BranchListScreen(
         if(enableFilterState.value) filterList.value else list.value
     }
 
+    val goToUpstream = { curObj:BranchNameAndTypeDto ->
+        doJobThenOffLoading(loadingOn, loadingOff, activityContext.getString(R.string.loading)) {
+            if(!curObj.isUpstreamValid()) {
+                Msg.requireShowLongDuration(activityContext.getString(R.string.upstream_not_set_or_not_published))
+            }else {
+                val upstreamFullName = curObj.getUpstreamFullName()
+                val actuallyList = getActuallyList()
+                val actuallyListState = getActuallyListState()
+                val targetIdx = actuallyList.toList().indexOfFirst { it.fullName ==  upstreamFullName }
+                if(targetIdx == -1) {  //未在当前实际展示的列表找到条目，尝试在源列表查找
+                    //如果开启过滤模式且未在过滤列表找到，尝试在源列表查找
+                    if(filterModeOn.value) {
+                        //从源列表找
+                        val indexInOriginList = list.value.toList().indexOfFirst { it.fullName ==  upstreamFullName }
+
+                        if(indexInOriginList != -1){  // found in origin list
+                            filterModeOn.value = false  //关闭过滤模式
+                            showBottomSheet.value = false  //关闭菜单
+
+                            //定位条目
+                            UIHelper.scrollToItem(scope, listState, indexInOriginList)
+                            requireBlinkIdx.intValue = indexInOriginList  //设置条目闪烁以便用户发现
+                        }else {
+                            Msg.requireShow(activityContext.getString(R.string.upstream_not_found))
+                        }
+                    }else {  //非filter mode且没找到，说明源列表根本没有，直接提示没找到
+                        Msg.requireShow(activityContext.getString(R.string.upstream_not_found))
+                    }
+
+                }else {  //在当前实际展示的列表（filter或源列表）找到了，直接跳转
+                    UIHelper.scrollToItem(scope, actuallyListState, targetIdx)
+                    requireBlinkIdx.intValue = targetIdx  //设置条目闪烁以便用户发现
+                }
+            }
+        }
+    }
+
+    // page requests
+    if(pageRequest.value==PageRequest.goToUpstream) {
+        PageRequest.clearStateThenDoAct(pageRequest) {
+            goToUpstream(curObjInPage.value)
+        }
+    }
+
 
     Scaffold(
         modifier = Modifier.nestedScroll(homeTopBarScrollBehavior.nestedScrollConnection),
@@ -1451,44 +1497,8 @@ fun BranchListScreen(
                     BottomSheetItem(sheetState, showBottomSheet, stringResource(R.string.go_upstream),
                         enabled = curObjInPage.value.type == Branch.BranchType.LOCAL
                     ){
-                        val curObj = curObjInPage.value
-
-                        doJobThenOffLoading(loadingOn, loadingOff, activityContext.getString(R.string.loading)) {
-                            if(!curObj.isUpstreamValid()) {
-                                Msg.requireShowLongDuration(activityContext.getString(R.string.upstream_not_set_or_not_published))
-                            }else {
-                                val upstreamFullName = curObj.getUpstreamFullName()
-                                val actuallyList = getActuallyList()
-                                val actuallyListState = getActuallyListState()
-                                val targetIdx = actuallyList.toList().indexOfFirst { it.fullName ==  upstreamFullName }
-                                if(targetIdx == -1) {  //未在当前实际展示的列表找到条目，尝试在源列表查找
-                                    //如果开启过滤模式且未在过滤列表找到，尝试在源列表查找
-                                    if(filterModeOn.value) {
-                                        //从源列表找
-                                        val indexInOriginList = list.value.toList().indexOfFirst { it.fullName ==  upstreamFullName }
-
-                                        if(indexInOriginList != -1){  // found in origin list
-                                            filterModeOn.value = false  //关闭过滤模式
-                                            showBottomSheet.value = false  //关闭菜单
-
-                                            //定位条目
-                                            UIHelper.scrollToItem(scope, listState, indexInOriginList)
-                                            requireBlinkIdx.intValue = indexInOriginList  //设置条目闪烁以便用户发现
-                                        }else {
-                                            Msg.requireShow(activityContext.getString(R.string.upstream_not_found))
-                                        }
-                                    }else {  //非filter mode且没找到，说明源列表根本没有，直接提示没找到
-                                        Msg.requireShow(activityContext.getString(R.string.upstream_not_found))
-                                    }
-
-                                }else {  //在当前实际展示的列表（filter或源列表）找到了，直接跳转
-                                    UIHelper.scrollToItem(scope, actuallyListState, targetIdx)
-                                    requireBlinkIdx.intValue = targetIdx  //设置条目闪烁以便用户发现
-                                }
-                            }
-                        }
+                        goToUpstream(curObjInPage.value)
                     }
-
                 }
 
                 if(proFeatureEnabled(resetByHashTestPassed)) {
@@ -1613,7 +1623,15 @@ fun BranchListScreen(
             forEachCb = {},
         ){idx, it->
             //长按会更新curObjInPage为被长按的条目
-            BranchItem(showBottomSheet, curObjInPage, idx, it, requireBlinkIdx, lastClickedItemKey) {  //onClick
+            BranchItem(
+                showBottomSheet = showBottomSheet,
+                curObjFromParent = curObjInPage,
+                idx = idx,
+                thisObj = it,
+                requireBlinkIdx = requireBlinkIdx,
+                lastClickedItemKey = lastClickedItemKey,
+                pageRequest = pageRequest
+            ) {  //onClick
                 //点击条目跳转到分支的提交历史记录页面
                 Cache.set(Cache.Key.commitList_fullOidKey, it.oidStr)
                 Cache.set(Cache.Key.commitList_shortBranchNameKey, it.shortName)

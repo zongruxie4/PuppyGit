@@ -2,7 +2,6 @@ package com.catpuppyapp.puppygit.compose
 
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -24,7 +23,7 @@ import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
+import com.catpuppyapp.puppygit.constants.PageRequest
 import com.catpuppyapp.puppygit.git.BranchNameAndTypeDto
 import com.catpuppyapp.puppygit.play.pro.R
 import com.catpuppyapp.puppygit.style.MyStyleKt
@@ -45,6 +44,7 @@ fun BranchItem(
     thisObj:BranchNameAndTypeDto,
     requireBlinkIdx: MutableIntState,  //请求闪烁的索引，会闪一下对应条目，然后把此值设为无效
     lastClickedItemKey:MutableState<String>,
+    pageRequest:MutableState<String>,
     onClick:()->Unit
 ) {
 
@@ -52,6 +52,13 @@ fun BranchItem(
     val activityContext = LocalContext.current
 
     val haptic = LocalHapticFeedback.current
+
+    val setCurObj = {
+        curObjFromParent.value = BranchNameAndTypeDto()
+
+        //设置当前条目
+        curObjFromParent.value = thisObj
+    }
 
     Column(
         //0.9f 占父元素宽度的百分之90
@@ -70,10 +77,7 @@ fun BranchItem(
                     //震动反馈
                     haptic.performHapticFeedback(HapticFeedbackType.LongPress)
 
-                    curObjFromParent.value = BranchNameAndTypeDto()
-
-                    //设置当前条目
-                    curObjFromParent.value = thisObj
+                    setCurObj()
 
                     //显示底部菜单
                     showBottomSheet.value = true
@@ -185,13 +189,12 @@ fun BranchItem(
                     verticalAlignment = Alignment.CenterVertically,
                 ) {
                     Text(text = stringResource(R.string.upstream) + ":")
-                    Text(
-                        text = thisObj.getUpstreamShortName(),
-                        maxLines = 1,
-                        overflow = TextOverflow.Ellipsis,
-                        fontWeight = FontWeight.Light
+                    ClickableText(thisObj.getUpstreamShortName()) {
+                        lastClickedItemKey.value = thisObj.fullName
 
-                    )
+                        setCurObj()
+                        pageRequest.value = PageRequest.goToUpstream
+                    }
                 }
             }
             //只有有效且发布的分支才会显示状态
