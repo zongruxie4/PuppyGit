@@ -1,3 +1,11 @@
+1.0.7.7v53 - 20250113:
+- update Editor: reload file will not clear undo stack
+
+
+- 更新文本编辑器: 重载文件将不会清空撤销记录
+
+---
+
 1.0.7.6v52 - 20250112:
 - support clear upstream for branch
 
