@@ -419,13 +419,15 @@ fun EditorInnerPage(
 //        editorPageRequireOpenFilePath.value = editorPageShowingFilePath.value
         editorPageShowingFileIsReady.value = false  //设置文件状态为未就绪，显示loading界面，好像有bug，TODO 需要测试能不能正常显示loading，整个大文件，测试一下
 
-        undoStack.value = null
+        //重载文件没必要清undo stack
+//        undoStack.value = null
 
         changeStateTriggerRefreshPage(needRefreshEditorPage)
     }
 
     //重新加载文件确认弹窗
     if(showReloadDialog.value) {
+        //未编辑过文件，直接重载
         if(!isEdited.value) {
             showReloadDialog.value=false  //立即关弹窗避免重入
 
@@ -456,6 +458,7 @@ fun EditorInnerPage(
             //重载文件
             reloadFile()
         }else {
+            // 编辑过文件，弹窗询问是否确认重载
             ConfirmDialog(
                 title = stringResource(id = R.string.reload_file),
                 text = stringResource(id = R.string.will_reload_file_are_u_sure),
