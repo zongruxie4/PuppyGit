@@ -157,7 +157,7 @@ fun EditorInnerPage(
         Unit
     }
 
-    val saveLock = Cache.getOrDefaultByType(Cache.Key.editorPageSaveLockPrefix+ Cache.keySeparator+editorPageShowingFilePath.value, default= Mutex())
+    val saveLock = remember(editorPageShowingFilePath.value) { Cache.getOrDefaultByType(generateKeyForSaveLock(editorPageShowingFilePath.value), default = Mutex(), saveDefaultWhenNoKey = true) }
 //    val saveLock = Mutex()  //其实这样也行，不过根据路径创建锁更严谨，跨页面也适用，比如如果首页的Editor正在保存，然后打开子页面，这时子页面必须等首页保存完成，但如果用这个和页面生命周期一样的锁，就无法实现那种效果了，但和页面生命周期一样的锁其实也够用
 
 //    val isEdited = rememberSaveable{ mutableStateOf(false) }
@@ -1443,4 +1443,12 @@ private fun getBackHandler(
 //    }
 
     return backHandlerOnBack
+}
+
+/**
+ * generate cache key for save lock, you can use this key get lock obj from Cache for saving file
+ * @return a cache key, e.g. "editor_save_lock:/path/to/file"
+ */
+private fun generateKeyForSaveLock(filePath:String):String {
+    return Cache.Key.editorPageSaveLockPrefix + Cache.keySeparator + filePath
 }

@@ -11,10 +11,10 @@ interface CacheStore { // TODO定时删除
     fun set(key:String, value:Any):Any?
     fun get(key:String):Any?
 
-    fun getOrDefault(key:String, default:Any, saveDefaultWhenNoKey:Boolean = true):Any
+    fun getOrDefault(key:String, default:Any, saveDefaultWhenNoKey:Boolean):Any
 
     fun<T> getByType(key:String):T?
-    fun<T:Any> getOrDefaultByType(key:String, default:T, saveDefaultWhenNoKey:Boolean = true):T
+    fun<T:Any> getOrDefaultByType(key:String, default:T, saveDefaultWhenNoKey:Boolean):T
 
     fun<T> getByTypeThenDel(key:String):T?
 
@@ -23,7 +23,7 @@ interface CacheStore { // TODO定时删除
     fun getThenDel(key:String):Any?
 
     //让newKey指向oldKey的数据，然后从map删除oldKey
-    fun updateKey(oldKey:String, newKey:String, requireDelOldKey:Boolean=false)
+    fun updateKey(oldKey:String, newKey:String, requireDelOldKey:Boolean)
 
     //清空缓存
     fun clear()

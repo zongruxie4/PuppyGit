@@ -818,7 +818,7 @@ fun<T> getFirstOrNullThenRemove(list:MutableList<T>):T? {
 }
 
 /**
- * return pair: onlyforthisfolder and viewAndSort
+ * return pair: onlyForThisFolder and viewAndSort
  */
 fun getViewAndSortForPath(path:String, settings:AppSettings) :Pair<Boolean, DirViewAndSort> {
     val folderViewSort = settings.files.dirAndViewSort_Map[path]

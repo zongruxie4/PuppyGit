@@ -12,20 +12,20 @@ object Cache:CacheStoreImpl(){
         //            val changeListInnerPage_RequirePull = "cliprpul";
 //            val changeListInnerPage_RequirePush = "cliprpus";
 //            val changeListInnerPage_RequireSync = "cliprsyn";
-        val changeListInnerPage_requireDoActFromParent = "cliprdafp";
-        val repoTmpStatusPrefix = "repo_tmp_status"  // prefix+keyseparator+repoId，例如 "repo_tmp_status:a29388d9988"
+        const val changeListInnerPage_requireDoActFromParent = "cliprdafp";
+        const val repoTmpStatusPrefix = "repo_tmp_status"  // prefix+keyseparator+repoId，例如 "repo_tmp_status:a29388d9988"
 
-        val editorPageSaveLockPrefix = "editor_save_lock"
+        const val editorPageSaveLockPrefix = "editor_save_lock"
 
-        val commitList_fullOidKey = "commitList_fullOidKey"
-        val commitList_shortBranchNameKey = "commitList_shortBranchNameKey"
+        const val commitList_fullOidKey = "commitList_fullOidKey"
+        const val commitList_shortBranchNameKey = "commitList_shortBranchNameKey"
 
-        val diffScreen_underRepoPathKey = "diffScreen_underRepoPathKey"
-        val diffScreen_diffableItemListKey = "diffScreen_diffableItemListKey"
+        const val diffScreen_underRepoPathKey = "diffScreen_underRepoPathKey"
+        const val diffScreen_diffableItemListKey = "diffScreen_diffableItemListKey"
 
-        val fileHistory_fileRelativePathKey = "fileHistory_fileRelativePathKey"
-        val subPageEditor_filePathKey = "subPageEditor_filePathKey"
-        val treeToTreeChangeList_titleDescKey = "treeToTreeChangeList_titleDescKey"
+        const val fileHistory_fileRelativePathKey = "fileHistory_fileRelativePathKey"
+        const val subPageEditor_filePathKey = "subPageEditor_filePathKey"
+        const val treeToTreeChangeList_titleDescKey = "treeToTreeChangeList_titleDescKey"
     }
 
 }
