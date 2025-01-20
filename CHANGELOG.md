@@ -1,3 +1,11 @@
+next version:
+- indicate repo has uncommitted changes on RepoCard
+
+
+- 在仓库卡片显示仓库是否有未提交修改
+
+---
+
 1.0.7.7v53 - 20250113:
 - update Editor: reload file will not clear undo stack
 
