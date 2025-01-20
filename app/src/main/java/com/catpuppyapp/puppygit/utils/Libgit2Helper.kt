@@ -4348,9 +4348,11 @@ class Libgit2Helper {
                     //更新workstatus
                     val repoState = repo.state()
                     //仓库NONE无需处理，就显示up-to-date之类的就行
-                    if(repoState!=Repository.StateT.NONE) {
+                    if(repoState != Repository.StateT.NONE) {
                         if(hasConflictItemInRepo(repo)) {  //有冲突条目
                             repoFromDb.workStatus = Cons.dbRepoWorkStatusHasConflicts
+                        }else if(hasUncommittedChanges(repo)) {  //本地有未提交修改 index or worktree dirty
+                            repoFromDb.workStatus = Cons.dbRepoWorkStatusNeedCommit
                         }else if(repoState == Repository.StateT.MERGE) {  //不一定有冲突条目，但仓库处于merge状态，这个必须处理，不然changelist能看出来在merge状态，仓库页面卡片还显示错误的up-to-date，之前遇到过几次，容易让人迷惑
                             repoFromDb.workStatus = Cons.dbRepoWorkStatusMerging
                         }else if(repoState==Repository.StateT.REBASE_MERGE) {
@@ -6453,14 +6455,16 @@ class Libgit2Helper {
             return Signature(name, email, getUtcTimeInSec(), offsetMinutes)
         }
 
-    }
 
-    /**
-     * check if local has uncommitted changes
-     */
-    fun hasUncommittedChanges(repo:Repository):Boolean {
-        //先检查Index，这个查起来性能比work to index快
-        return (!indexIsEmpty(repo)) || (getWorkdirStatusList(repo).entryCount() > 0)
+        /**
+         * check if local has uncommitted changes
+         */
+        fun hasUncommittedChanges(repo:Repository):Boolean {
+            //先检查Index，这个查起来性能比work to index快
+            // index非空 或 worktree有条目
+            return (!indexIsEmpty(repo)) || (getWorkdirStatusList(repo).entryCount() > 0)
+        }
+
     }
 
 }

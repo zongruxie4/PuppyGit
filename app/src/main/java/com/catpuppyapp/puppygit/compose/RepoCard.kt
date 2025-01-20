@@ -438,6 +438,8 @@ fun RepoCard(
                             text = (
                                     if (repoDto.workStatus == Cons.dbRepoWorkStatusHasConflicts) {
                                         stringResource(R.string.repo_status_has_conflict)
+                                    } else if(repoDto.workStatus == Cons.dbRepoWorkStatusNeedCommit){
+                                        stringResource(R.string.repo_status_need_commit)
                                     } else if (repoDto.workStatus == Cons.dbRepoWorkStatusMerging || repoDto.workStatus==Cons.dbRepoWorkStatusRebasing || repoDto.workStatus==Cons.dbRepoWorkStatusCherrypicking) {
                                         stringResource(R.string.require_actions)
                                     } else if (repoDto.workStatus == Cons.dbRepoWorkStatusNeedSync) {
@@ -445,7 +447,7 @@ fun RepoCard(
                                     } else {
                                         ""  // 未克隆仓库可能会抵达这里
                                     }
-                                    ),
+                            ),
                             maxLines = 1,
                             overflow = TextOverflow.Ellipsis,
                             modifier = MyStyleKt.ClickableText.modifier.clickable(enabled = repoStatusGood) {
