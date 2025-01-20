@@ -4347,18 +4347,21 @@ class Libgit2Helper {
 
                     //更新workstatus
                     val repoState = repo.state()
-                    //仓库NONE无需处理，就显示up-to-date之类的就行
-                    if(repoState != Repository.StateT.NONE) {
+                    //仓库状态正常(NONE)，检查是否有未提交修改；否则检查仓库状态
+                    if(repoState == Repository.StateT.NONE) {
+                        if(hasConflictItemInRepo(repo)) {  //有冲突条目
+                            repoFromDb.workStatus = Cons.dbRepoWorkStatusHasConflicts
+                        }else if(hasUncommittedChanges(repo)) {  //本地有未提交修改 index or worktree dirty
+                            repoFromDb.workStatus = Cons.dbRepoWorkStatusNeedCommit
+                        }
+
+                    }else { // repoState != NONE
                         if(repoState == Repository.StateT.MERGE) {  //不一定有冲突条目，但仓库处于merge状态，这个必须处理，不然changelist能看出来在merge状态，仓库页面卡片还显示错误的up-to-date，之前遇到过几次，容易让人迷惑
                             repoFromDb.workStatus = Cons.dbRepoWorkStatusMerging
                         }else if(repoState==Repository.StateT.REBASE_MERGE) {
                             repoFromDb.workStatus = Cons.dbRepoWorkStatusRebasing
                         }else if(repoState==Repository.StateT.CHERRYPICK) {
                             repoFromDb.workStatus = Cons.dbRepoWorkStatusCherrypicking
-                        }else if(hasConflictItemInRepo(repo)) {  //有冲突条目
-                            repoFromDb.workStatus = Cons.dbRepoWorkStatusHasConflicts
-                        }else if(hasUncommittedChanges(repo)) {  //本地有未提交修改 index or worktree dirty
-                            repoFromDb.workStatus = Cons.dbRepoWorkStatusNeedCommit
                         }
 
 //                     else if(state == StateT.BISECT){} //暂时不用处理其他状态
@@ -4371,6 +4374,7 @@ class Libgit2Helper {
 
 
                 }
+
                 //检查是否有临时状态，syncing之类的，如果有存上，临时状态的设置和清除都由操作执行者承担，比如syncing状态，谁doSync谁设这个状态和清这个状态
                 repoFromDb.tmpStatus = RepoStatusUtil.getRepoStatus(repoFromDb.id)
 
