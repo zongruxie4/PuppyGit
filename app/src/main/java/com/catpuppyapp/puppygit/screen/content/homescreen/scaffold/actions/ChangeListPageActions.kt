@@ -74,7 +74,10 @@ fun ChangeListPageActions(
 
     if(isWorktreePage) {
         LongPressAbleIconBtn(
-            enabled = enableAction.value && !changeListPageNoRepo.value,
+//            enabled = enableAction.value && !changeListPageNoRepo.value,
+            // if has a ready repo, anytime can go Index page, even loading
+            //如果有就绪仓库，即使正在执行操作也可前往index页面，不然workTreeToIndex加载时间太长但又不能前往Index页面，有时候会很不合理
+            enabled = !changeListPageNoRepo.value,
             tooltipText = stringResource(R.string.index),
             icon = if(changeListHasIndexItems.value) Icons.Filled.AllInbox else Icons.Filled.Inbox,
             iconContentDesc = stringResource(R.string.index),
