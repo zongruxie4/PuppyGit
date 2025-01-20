@@ -184,10 +184,8 @@ fun ErrRepoCard(
                     modifier = Modifier.height(lineHeight.dp),
 
                 ) {
-                    Text(
+                    ClickableText (
                         text = stringResource(R.string.retry),
-                        style = MyStyleKt.ClickableText.style,
-                        color = MyStyleKt.ClickableText.color,
                         fontWeight = FontWeight.Light,
                         modifier = MyStyleKt.ClickableText.modifier.clickable(onClick = {
 //                        repoDtoList[idx].tmpStatus=""  //err状态，tmpStatus本来就没值，不用设
@@ -222,9 +220,8 @@ fun ErrRepoCard(
                     modifier = Modifier.height(lineHeight.dp),
 
                 ) {
-                    Text(text=stringResource(R.string.edit_repo),
-                        style = MyStyleKt.ClickableText.style,
-                        color = MyStyleKt.ClickableText.color,
+                    ClickableText (
+                        text=stringResource(R.string.edit_repo),
                         fontWeight = FontWeight.Light,
                         modifier = MyStyleKt.ClickableText.modifier.clickable(onClick = {
                             navController.navigate(Cons.nav_CloneScreen+"/"+repoDto.id)
@@ -235,9 +232,8 @@ fun ErrRepoCard(
                     modifier = Modifier.height(lineHeight.dp),
 
                 ) {
-                    Text(text=stringResource(R.string.del_repo),
-                        style = MyStyleKt.ClickableText.style,
-                        color = MyStyleKt.ClickableText.color,
+                    ClickableText (
+                        text=stringResource(R.string.del_repo),
                         fontWeight = FontWeight.Light,
                         modifier = MyStyleKt.ClickableText.modifier.clickable(onClick = {
                             requireDelRepo(repoDto)

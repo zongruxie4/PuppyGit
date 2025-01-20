@@ -41,6 +41,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.catpuppyapp.puppygit.compose.CheckBoxNoteText
+import com.catpuppyapp.puppygit.compose.ClickableText
 import com.catpuppyapp.puppygit.compose.ConfirmDialog2
 import com.catpuppyapp.puppygit.compose.CopyableDialog
 import com.catpuppyapp.puppygit.compose.MyCheckBox
@@ -285,10 +286,8 @@ fun SettingsInnerPage(
                             horizontalAlignment = Alignment.End
                         ) {
 
-                            Text(
+                            ClickableText(
                                 text = stringResource(R.string.get_system_timezone_offset),
-                                style = MyStyleKt.ClickableText.style,
-                                color = MyStyleKt.ClickableText.color,
                                 modifier = MyStyleKt.ClickableText.modifier.clickable {
                                     try {
                                         timeZone_offsetInMinuteBuf.value = AppModel.getSystemTimeZoneOffsetInMinutesCached().toString()
@@ -302,10 +301,8 @@ fun SettingsInnerPage(
 
                             Spacer(Modifier.height(15.dp))
 
-                            Text(
+                            ClickableText(
                                 text = stringResource(R.string.clear),
-                                style = MyStyleKt.ClickableText.style,
-                                color = MyStyleKt.ClickableText.color,
                                 modifier = MyStyleKt.ClickableText.modifier.clickable {
                                     timeZone_offsetInMinuteBuf.value = ""
                                 },

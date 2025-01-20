@@ -52,6 +52,7 @@ import com.catpuppyapp.puppygit.compose.AskGitUsernameAndEmailDialog
 import com.catpuppyapp.puppygit.compose.BottomSheet
 import com.catpuppyapp.puppygit.compose.BottomSheetItem
 import com.catpuppyapp.puppygit.compose.CheckBoxNoteText
+import com.catpuppyapp.puppygit.compose.ClickableText
 import com.catpuppyapp.puppygit.compose.ConfirmDialog
 import com.catpuppyapp.puppygit.compose.ErrRepoCard
 import com.catpuppyapp.puppygit.compose.MyCheckBox
@@ -312,10 +313,8 @@ fun RepoInnerPage(
                         .padding(5.dp)
                     ) {
                         Row(modifier = Modifier.padding(bottom = 15.dp)) {
-                            Text(
+                            ClickableText(
                                 text = stringResource(R.string.please_grant_permission_before_import_repo),
-                                style = MyStyleKt.ClickableText.style,
-                                color = MyStyleKt.ClickableText.color,
                                 overflow = TextOverflow.Visible,
                                 fontWeight = FontWeight.Light,
                                 modifier = MyStyleKt.ClickableText.modifier.clickable {

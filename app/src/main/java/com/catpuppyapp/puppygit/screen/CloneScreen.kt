@@ -65,6 +65,7 @@ import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
+import com.catpuppyapp.puppygit.compose.ClickableText
 import com.catpuppyapp.puppygit.compose.ConfirmDialog
 import com.catpuppyapp.puppygit.compose.LoadingDialog
 import com.catpuppyapp.puppygit.compose.LongPressAbleIconBtn
@@ -289,10 +290,8 @@ fun CloneScreen(
                         .padding(5.dp)
                     ) {
                         Row(modifier = Modifier.padding(bottom = 15.dp)) {
-                            Text(
+                            ClickableText (
                                 text = stringResource(R.string.please_grant_permission_before_you_add_a_storage_path),
-                                style = MyStyleKt.ClickableText.style,
-                                color = MyStyleKt.ClickableText.color,
                                 overflow = TextOverflow.Visible,
                                 fontWeight = FontWeight.Light,
                                 modifier = MyStyleKt.ClickableText.modifier.clickable {

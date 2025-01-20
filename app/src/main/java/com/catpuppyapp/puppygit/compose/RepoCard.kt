@@ -262,11 +262,9 @@ fun RepoCard(
                         verticalAlignment = Alignment.CenterVertically
                     ) {
                         Text(text = stringResource(R.string.repo_label_branch) + ":")
-                        Text(
+                        ClickableText (
                             //如果是detached，显示分支号，否则显示“本地分支:远程分支”
                             text = if(repoStatusGood) {if(dbIntToBool(repoDto.isDetached)) repoDto.lastCommitHash+"("+ stringResource(R.string.detached)+")" else repoDto.branch+":"+repoDto.upstreamBranch} else "",
-                            style = MyStyleKt.ClickableText.style,
-                            color = MyStyleKt.ClickableText.color,
                             maxLines = 1,
                             overflow = TextOverflow.Ellipsis,
                             fontWeight = FontWeight.Light,
@@ -396,12 +394,10 @@ fun RepoCard(
                         verticalAlignment = Alignment.CenterVertically
                     ) {
                         Text(text = stringResource(R.string.repo_label_last_commit) + ":")
-                        Text(
+                        ClickableText (
                             text = if(repoStatusGood) repoDto.lastCommitHash else "",
                             maxLines = 1,
                             overflow = TextOverflow.Ellipsis,
-                            style = MyStyleKt.ClickableText.style,
-                            color = MyStyleKt.ClickableText.color,
                             modifier = MyStyleKt.ClickableText.modifier.clickable(enabled = repoStatusGood) {
                                 //打开当前仓库的提交记录页面，话说，那个树形怎么搞？可以先不搞树形，以后再弄
                                 Cache.set(Cache.Key.commitList_fullOidKey, "")  //这里不需要传分支名，会通过HEAD解析当前分支
@@ -438,7 +434,7 @@ fun RepoCard(
 
                         )
                     } else {  //可点击的状态
-                        Text(
+                        ClickableText (
                             text = (
                                     if (repoDto.workStatus == Cons.dbRepoWorkStatusHasConflicts) {
                                         stringResource(R.string.repo_status_has_conflict)
@@ -452,8 +448,6 @@ fun RepoCard(
                                     ),
                             maxLines = 1,
                             overflow = TextOverflow.Ellipsis,
-                            style = MyStyleKt.ClickableText.style,
-                            color = MyStyleKt.ClickableText.color,
                             modifier = MyStyleKt.ClickableText.modifier.clickable(enabled = repoStatusGood) {
                                 workStatusOnclick(repoDto, repoDto.workStatus)  //让父级页面自己写callback吧，省得传参
                             },
@@ -467,12 +461,10 @@ fun RepoCard(
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     Text(text = stringResource(R.string.storage) + ":")
-                    Text(
+                    ClickableText (
                         text = FsUtils.getPathWithInternalOrExternalPrefix(fullPath = repoDto.fullSavePath),
                         maxLines = 1,
                         overflow = TextOverflow.Ellipsis,
-                        style = MyStyleKt.ClickableText.style,
-                        color = MyStyleKt.ClickableText.color,
                         modifier = MyStyleKt.ClickableText.modifier.combinedClickable(
                             onLongClick = { // long press will copy path
                                 haptic.performHapticFeedback(HapticFeedbackType.LongPress)
@@ -497,11 +489,9 @@ fun RepoCard(
                         val hasUncheckedErr = repoDto.latestUncheckedErrMsg.isNotBlank()
 
                         Text(text = stringResource(R.string.repo_label_error) + ":")
-                        Text(
+                        ClickableText (
                             text = if (hasUncheckedErr) repoDto.latestUncheckedErrMsg else stringResource(R.string.repo_err_no_err_or_all_checked),
                             maxLines = 1,
-                            overflow = TextOverflow.Ellipsis,
-                            style = MyStyleKt.ClickableText.style,
                             color = if (hasUncheckedErr) MyStyleKt.ClickableText.errColor else MyStyleKt.ClickableText.color,
                             fontWeight = FontWeight.Light,
                             modifier = MyStyleKt.ClickableText.modifier.combinedClickable(
@@ -570,12 +560,9 @@ fun RepoCard(
                         verticalAlignment = Alignment.CenterVertically
                     ) {
                         Text(text = stringResource(R.string.parent_repo) + ":")
-                        Text(
+                        ClickableText(
                             text = repoDto.parentRepoName,
                             maxLines = 1,
-                            overflow = TextOverflow.Ellipsis,
-                            style = MyStyleKt.ClickableText.style,
-                            color = MyStyleKt.ClickableText.color,
                             modifier = MyStyleKt.ClickableText.modifier.clickable {  // on click
                                 setCurRepo()
                                 pageRequest.value = PageRequest.goParent

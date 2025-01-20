@@ -72,6 +72,7 @@ import com.catpuppyapp.puppygit.compose.BottomSheetItem
 import com.catpuppyapp.puppygit.compose.CheckBoxNoteText
 import com.catpuppyapp.puppygit.compose.CheckoutDialog
 import com.catpuppyapp.puppygit.compose.CheckoutDialogFrom
+import com.catpuppyapp.puppygit.compose.ClickableText
 import com.catpuppyapp.puppygit.compose.CommitItem
 import com.catpuppyapp.puppygit.compose.ConfirmDialog
 import com.catpuppyapp.puppygit.compose.ConfirmDialog2
@@ -328,10 +329,8 @@ fun CommitListScreen(
                         ,
                         horizontalAlignment = Alignment.End
                     ) {
-                        Text(
+                        ClickableText (
                             text = stringResource(R.string.clear),
-                            style = MyStyleKt.ClickableText.style,
-                            color = MyStyleKt.ClickableText.color,
                             modifier = MyStyleKt.ClickableText.modifier.clickable {
                                 pathsForFilterBuffer.value = ""
                             },

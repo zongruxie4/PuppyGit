@@ -71,6 +71,7 @@ import androidx.documentfile.provider.DocumentFile
 import com.catpuppyapp.puppygit.compose.ApplyPatchDialog
 import com.catpuppyapp.puppygit.compose.BottomBar
 import com.catpuppyapp.puppygit.compose.CheckBoxNoteText
+import com.catpuppyapp.puppygit.compose.ClickableText
 import com.catpuppyapp.puppygit.compose.ConfirmDialog
 import com.catpuppyapp.puppygit.compose.ConfirmDialog2
 import com.catpuppyapp.puppygit.compose.CopyableDialog
@@ -1690,10 +1691,8 @@ fun FilesInnerPage(
                         .padding(5.dp)
                     ) {
                         Row(modifier = Modifier.padding(bottom = 15.dp)) {
-                            Text(
+                            ClickableText (
                                 text = stringResource(R.string.please_grant_permission_before_import_repo),
-                                style = MyStyleKt.ClickableText.style,
-                                color = MyStyleKt.ClickableText.color,
                                 overflow = TextOverflow.Visible,
                                 fontWeight = FontWeight.Light,
                                 modifier = MyStyleKt.ClickableText.modifier.clickable {

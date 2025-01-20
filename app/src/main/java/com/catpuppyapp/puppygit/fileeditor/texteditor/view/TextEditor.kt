@@ -48,6 +48,7 @@ import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import com.catpuppyapp.puppygit.compose.AcceptButtons
+import com.catpuppyapp.puppygit.compose.ClickableText
 import com.catpuppyapp.puppygit.compose.ConfirmDialog
 import com.catpuppyapp.puppygit.compose.ConfirmDialog2
 import com.catpuppyapp.puppygit.compose.CopyableDialog
@@ -540,10 +541,8 @@ fun TextEditor(
                         horizontalAlignment = Alignment.End
                     ) {
 
-                        Text(
+                        ClickableText(
                             text = stringResource(R.string.first_line),
-                            style = MyStyleKt.ClickableText.style,
-                            color = MyStyleKt.ClickableText.color,
                             modifier = MyStyleKt.ClickableText.modifier.clickable {
                                 goToLineValue.value = firstLine
                             },
@@ -552,10 +551,8 @@ fun TextEditor(
 
                         Spacer(Modifier.height(15.dp))
 
-                        Text(
+                        ClickableText(
                             text = stringResource(R.string.last_line),
-                            style = MyStyleKt.ClickableText.style,
-                            color = MyStyleKt.ClickableText.color,
                             modifier = MyStyleKt.ClickableText.modifier.clickable {
                                 goToLineValue.value = lastLine
                             },

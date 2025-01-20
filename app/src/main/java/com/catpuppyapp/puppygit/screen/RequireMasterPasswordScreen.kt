@@ -34,6 +34,7 @@ import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import com.catpuppyapp.puppygit.compose.ClearMasterPasswordDialog
+import com.catpuppyapp.puppygit.compose.ClickableText
 import com.catpuppyapp.puppygit.compose.MySelectionContainer
 import com.catpuppyapp.puppygit.compose.PasswordTextFiled
 import com.catpuppyapp.puppygit.play.pro.R
@@ -157,9 +158,8 @@ fun RequireMasterPasswordScreen(
 
         Spacer(Modifier.height(10.dp))
 
-        Text(
+        ClickableText(
             text = stringResource(R.string.i_forgot_my_master_password),
-            style = MyStyleKt.ClickableText.style,
             color = if(loading.value) UIHelper.getDisableTextColor() else MyStyleKt.ClickableText.color,
             fontWeight = FontWeight.Light,
             modifier = MyStyleKt.ClickableText.modifier.clickable(

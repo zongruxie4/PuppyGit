@@ -135,10 +135,8 @@ fun RemoteItemForCredential(
 
         }
         Column {
-            Text(
+            ClickableText (
                 text = actText,
-                style = MyStyleKt.ClickableText.style,
-                color = MyStyleKt.ClickableText.color,
                 modifier = MyStyleKt.ClickableText.modifier.clickable(onClick = {
                     actAction()
                 }),
