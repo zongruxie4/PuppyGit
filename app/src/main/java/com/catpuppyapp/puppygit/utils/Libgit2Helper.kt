@@ -4349,16 +4349,16 @@ class Libgit2Helper {
                     val repoState = repo.state()
                     //仓库NONE无需处理，就显示up-to-date之类的就行
                     if(repoState != Repository.StateT.NONE) {
-                        if(hasConflictItemInRepo(repo)) {  //有冲突条目
-                            repoFromDb.workStatus = Cons.dbRepoWorkStatusHasConflicts
-                        }else if(hasUncommittedChanges(repo)) {  //本地有未提交修改 index or worktree dirty
-                            repoFromDb.workStatus = Cons.dbRepoWorkStatusNeedCommit
-                        }else if(repoState == Repository.StateT.MERGE) {  //不一定有冲突条目，但仓库处于merge状态，这个必须处理，不然changelist能看出来在merge状态，仓库页面卡片还显示错误的up-to-date，之前遇到过几次，容易让人迷惑
+                        if(repoState == Repository.StateT.MERGE) {  //不一定有冲突条目，但仓库处于merge状态，这个必须处理，不然changelist能看出来在merge状态，仓库页面卡片还显示错误的up-to-date，之前遇到过几次，容易让人迷惑
                             repoFromDb.workStatus = Cons.dbRepoWorkStatusMerging
                         }else if(repoState==Repository.StateT.REBASE_MERGE) {
                             repoFromDb.workStatus = Cons.dbRepoWorkStatusRebasing
                         }else if(repoState==Repository.StateT.CHERRYPICK) {
                             repoFromDb.workStatus = Cons.dbRepoWorkStatusCherrypicking
+                        }else if(hasConflictItemInRepo(repo)) {  //有冲突条目
+                            repoFromDb.workStatus = Cons.dbRepoWorkStatusHasConflicts
+                        }else if(hasUncommittedChanges(repo)) {  //本地有未提交修改 index or worktree dirty
+                            repoFromDb.workStatus = Cons.dbRepoWorkStatusNeedCommit
                         }
 
 //                     else if(state == StateT.BISECT){} //暂时不用处理其他状态

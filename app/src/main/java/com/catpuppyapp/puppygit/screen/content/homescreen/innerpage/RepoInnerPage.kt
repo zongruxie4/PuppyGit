@@ -1402,11 +1402,17 @@ fun RepoInnerPage(
                             statusClickedRepo.value = clickedRepo  //其实这个clickedRepo直接用这里element替代也可，但用回调里参数感觉更合理
 
                             //目前status就三种状态：up-to-date/has conflicts/need sync，第1种不用处理
-                            if (status == Cons.dbRepoWorkStatusHasConflicts || status == Cons.dbRepoWorkStatusNeedCommit) {
+                            if(status == Cons.dbRepoWorkStatusMerging
+                                || status == Cons.dbRepoWorkStatusRebasing
+                                || status == Cons.dbRepoWorkStatusCherrypicking
+                            ){ //merge/rebase/cherrypick弹窗提示需要continue或abort
+                                showRequireActionsDialog.value = true
+                            } else if (
+                                status == Cons.dbRepoWorkStatusHasConflicts
+                                || status == Cons.dbRepoWorkStatusNeedCommit
+                            ) {
                                 //导航到changelist并定位到当前仓库
                                 goToChangeListPage(clickedRepo)
-                            }else if(status == Cons.dbRepoWorkStatusMerging || status==Cons.dbRepoWorkStatusRebasing || status==Cons.dbRepoWorkStatusCherrypicking){ //merge/rebase/cherrypick弹窗提示需要continue或abort
-                                showRequireActionsDialog.value = true
                             } else if (status == Cons.dbRepoWorkStatusNeedSync) {
                                 // do sync
                                 doJobThenOffLoading {

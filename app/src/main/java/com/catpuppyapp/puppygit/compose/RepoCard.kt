@@ -436,12 +436,15 @@ fun RepoCard(
                     } else {  //可点击的状态
                         ClickableText (
                             text = (
-                                    if (repoDto.workStatus == Cons.dbRepoWorkStatusHasConflicts) {
+                                    if (repoDto.workStatus == Cons.dbRepoWorkStatusMerging
+                                        || repoDto.workStatus==Cons.dbRepoWorkStatusRebasing
+                                        || repoDto.workStatus==Cons.dbRepoWorkStatusCherrypicking
+                                    ) {
+                                        stringResource(R.string.require_actions)
+                                    } else if (repoDto.workStatus == Cons.dbRepoWorkStatusHasConflicts) {
                                         stringResource(R.string.repo_status_has_conflict)
                                     } else if(repoDto.workStatus == Cons.dbRepoWorkStatusNeedCommit) {
                                         stringResource(R.string.repo_status_need_commit)
-                                    } else if (repoDto.workStatus == Cons.dbRepoWorkStatusMerging || repoDto.workStatus==Cons.dbRepoWorkStatusRebasing || repoDto.workStatus==Cons.dbRepoWorkStatusCherrypicking) {
-                                        stringResource(R.string.require_actions)
                                     } else if (repoDto.workStatus == Cons.dbRepoWorkStatusNeedSync) {
                                         stringResource(R.string.repo_status_need_sync)
                                     } else {
