@@ -449,7 +449,7 @@
     <string name="add_a_repo">添加仓库</string>
     <string name="back_editor_from_external_app_ask_reload">如果你使用外部程序编辑过文件，或许你想重载以显示修改后的内容</string>
     <string name="reload">重载</string>
-    <string name="go">转到</string>
+    <string name="go">Go</string>
     <string name="range">范围</string>
     <string name="no_line_selected">未选中任何行!</string>
     <string name="err_target_is_not_a_file">错误: 目标不是文件</string>

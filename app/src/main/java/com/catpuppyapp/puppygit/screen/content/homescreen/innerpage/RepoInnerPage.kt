@@ -1026,13 +1026,16 @@ fun RepoInnerPage(
     if(showRequireActionsDialog.value) {
         val targetRepo = statusClickedRepo.value
 
+        // invalid id
         if(targetRepo.id.isBlank()) {
+            showRequireActionsDialog.value = false
             Msg.requireShow(stringResource(R.string.repo_id_invalid))
-        }else {
-            ConfirmDialog(title = stringResource(R.string.require_actions),
+        }else {  // good repo id, show dialog
+            ConfirmDialog(
+                title = stringResource(R.string.require_actions),
                 text = stringResource(R.string.will_go_to_changelist_then_you_can_continue_or_abort_your_merge_rebase_cherrpick),
                 okBtnText = stringResource(id = R.string.ok),
-                cancelBtnText = stringResource(id = R.string.no),
+                cancelBtnText = stringResource(id = R.string.cancel),
                 onCancel = { showRequireActionsDialog.value = false }
             ) {
                 showRequireActionsDialog.value = false
@@ -1399,7 +1402,7 @@ fun RepoInnerPage(
                             statusClickedRepo.value = clickedRepo  //其实这个clickedRepo直接用这里element替代也可，但用回调里参数感觉更合理
 
                             //目前status就三种状态：up-to-date/has conflicts/need sync，第1种不用处理
-                            if (status == Cons.dbRepoWorkStatusHasConflicts) {
+                            if (status == Cons.dbRepoWorkStatusHasConflicts || status == Cons.dbRepoWorkStatusNeedCommit) {
                                 //导航到changelist并定位到当前仓库
                                 goToChangeListPage(clickedRepo)
                             }else if(status == Cons.dbRepoWorkStatusMerging || status==Cons.dbRepoWorkStatusRebasing || status==Cons.dbRepoWorkStatusCherrypicking){ //merge/rebase/cherrypick弹窗提示需要continue或abort
