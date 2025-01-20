@@ -4,8 +4,11 @@ import androidx.compose.foundation.clickable
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.sp
 import com.catpuppyapp.puppygit.style.MyStyleKt
 
@@ -32,6 +35,9 @@ fun ClickableText(
     maxLines:Int = Int.MAX_VALUE,
     overflow: TextOverflow = TextOverflow.Ellipsis,
     fontWeight: FontWeight? = null,
+    style:TextStyle = MyStyleKt.ClickableText.style,
+    color:Color = MyStyleKt.ClickableText.color,
+    fontSize:TextUnit = 16.sp,
     modifier: Modifier
 ) {
     Text(
@@ -39,9 +45,9 @@ fun ClickableText(
         maxLines = maxLines,
         overflow = overflow,
         fontWeight = fontWeight,
-        style = MyStyleKt.ClickableText.style,
-        color = MyStyleKt.ClickableText.color,
-        fontSize = 16.sp,
+        style = style,
+        color = color,
+        fontSize = fontSize,
         modifier = modifier,
     )
 }
