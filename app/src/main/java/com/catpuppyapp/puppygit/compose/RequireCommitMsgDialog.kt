@@ -140,9 +140,8 @@ fun RequireCommitMsgDialog(
 
                 //正常来说这两个不会同时为真
                 if(amend.value || repoStateIsRebase || repoStateIsCherrypick) {
-                    Text(text=if(repoStateIsRebase || repoStateIsCherrypick) stringResource(R.string.origin_commit_msg) else stringResource(R.string.last_commit_msg),
-                        style = MyStyleKt.ClickableText.style,
-                        color = MyStyleKt.ClickableText.color,
+                    ClickableText(
+                        text=if(repoStateIsRebase || repoStateIsCherrypick) stringResource(R.string.origin_commit_msg) else stringResource(R.string.last_commit_msg),
                         fontWeight = FontWeight.Light,
                         modifier = MyStyleKt.ClickableText.modifierNoPadding
                             .padding(horizontal = MyStyleKt.CheckoutBox.horizontalPadding)

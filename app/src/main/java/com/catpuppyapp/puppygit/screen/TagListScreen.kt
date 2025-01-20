@@ -51,6 +51,7 @@ import androidx.compose.ui.unit.dp
 import com.catpuppyapp.puppygit.compose.BottomBar
 import com.catpuppyapp.puppygit.compose.CheckoutDialog
 import com.catpuppyapp.puppygit.compose.CheckoutDialogFrom
+import com.catpuppyapp.puppygit.compose.ClickableText
 import com.catpuppyapp.puppygit.compose.CopyableDialog
 import com.catpuppyapp.puppygit.compose.CreateTagDialog
 import com.catpuppyapp.puppygit.compose.FilterTextField
@@ -703,10 +704,8 @@ fun TagListScreen(
                     horizontalArrangement = Arrangement.Center,
                     verticalAlignment = Alignment.CenterVertically
                 ) {
-                    Text(
+                    ClickableText(
                         text = stringResource(R.string.fetch),
-                        color = MyStyleKt.ClickableText.color,
-                        style = MyStyleKt.ClickableText.style,
                         modifier = MyStyleKt.ClickableText.modifierNoPadding
                             .clickable {
                                 initFetchTagDialog()
@@ -715,10 +714,8 @@ fun TagListScreen(
                     Text(
                         text =  " "+stringResource(R.string.or_str)+" ",
                     )
-                    Text(
+                    ClickableText(
                         text =  stringResource(R.string.create),
-                        color = MyStyleKt.ClickableText.color,
-                        style = MyStyleKt.ClickableText.style,
                         modifier = MyStyleKt.ClickableText.modifierNoPadding
                             .clickable {
                                 val hash = ""

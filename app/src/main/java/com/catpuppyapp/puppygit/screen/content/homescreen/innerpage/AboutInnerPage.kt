@@ -29,6 +29,7 @@ import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.catpuppyapp.puppygit.compose.ClickableText
 import com.catpuppyapp.puppygit.compose.PaddingRow
 import com.catpuppyapp.puppygit.play.pro.R
 import com.catpuppyapp.puppygit.style.MyStyleKt
@@ -155,10 +156,8 @@ fun AboutInnerPage(contentPadding: PaddingValues,
             horizontalArrangement = Arrangement.Center,
             verticalAlignment = Alignment.CenterVertically
         ) {
-            Text(
+            ClickableText(
                 text = stringResource(R.string.source_code),
-                style = MyStyleKt.ClickableText.style,
-                color = MyStyleKt.ClickableText.color,
                 modifier = MyStyleKt.ClickableText.modifierNoPadding.clickable {
                     ActivityUtil.openUrl(activityContext, sourceCodeLink)
                 },
@@ -172,16 +171,14 @@ fun AboutInnerPage(contentPadding: PaddingValues,
             horizontalArrangement = Arrangement.Center,
             verticalAlignment = Alignment.CenterVertically
         ) {
-            Text(
+            ClickableText(
                 text = stringResource(R.string.discussions),
-                style = MyStyleKt.ClickableText.style,
-                color = MyStyleKt.ClickableText.color,
                 modifier = MyStyleKt.ClickableText.modifierNoPadding.clickable {
                     //                    copy(authorMail)
                     ActivityUtil.openUrl(activityContext, discussionLink)
                 },
 
-                )
+            )
         }
 
         Spacer(modifier = Modifier.height(20.dp))
@@ -190,10 +187,8 @@ fun AboutInnerPage(contentPadding: PaddingValues,
             horizontalArrangement = Arrangement.Center,
             verticalAlignment = Alignment.CenterVertically
         ) {
-            Text(
+            ClickableText(
                 text = stringResource(R.string.report_bugs),
-                style = MyStyleKt.ClickableText.style,
-                color = MyStyleKt.ClickableText.color,
                 modifier = MyStyleKt.ClickableText.modifierNoPadding.clickable {
                     ActivityUtil.openUrl(activityContext, reportBugsLink)
                 },
@@ -207,10 +202,8 @@ fun AboutInnerPage(contentPadding: PaddingValues,
             verticalAlignment = Alignment.CenterVertically
         ) {
 //            Text(text = stringResource(R.string.contact_author)+":")
-            Text(
+            ClickableText(
                 text = stringResource(R.string.contact_author),
-                style = MyStyleKt.ClickableText.style,
-                color = MyStyleKt.ClickableText.color,
                 modifier = MyStyleKt.ClickableText.modifierNoPadding.clickable {
 //                    copy(authorMail)
                     ActivityUtil.openUrl(activityContext, authorMailLink)
@@ -226,10 +219,8 @@ fun AboutInnerPage(contentPadding: PaddingValues,
             verticalAlignment = Alignment.CenterVertically
         ) {
 //            Text(text = stringResource(R.string.contact_author)+":")
-            Text(
+            ClickableText(
                 text = stringResource(R.string.donate),
-                style = MyStyleKt.ClickableText.style,
-                color = MyStyleKt.ClickableText.color,
                 modifier = MyStyleKt.ClickableText.modifierNoPadding.clickable {
 //                    copy(authorMail)
                     ActivityUtil.openUrl(activityContext, donateLink)
@@ -243,10 +234,8 @@ fun AboutInnerPage(contentPadding: PaddingValues,
             horizontalArrangement = Arrangement.Center,
             verticalAlignment = Alignment.CenterVertically
         ) {
-            Text(
+            ClickableText(
                 text = stringResource(R.string.faq),
-                style = MyStyleKt.ClickableText.style,
-                color = MyStyleKt.ClickableText.color,
                 modifier = MyStyleKt.ClickableText.modifierNoPadding.clickable {
                     ActivityUtil.openUrl(activityContext, faqLink)
                 },
@@ -258,16 +247,14 @@ fun AboutInnerPage(contentPadding: PaddingValues,
             horizontalArrangement = Arrangement.Center,
             verticalAlignment = Alignment.CenterVertically
         ) {
-            Text(
+            ClickableText(
                 text = stringResource(R.string.privacy_policy),
-                style = MyStyleKt.ClickableText.style,
-                color = MyStyleKt.ClickableText.color,
                 modifier = MyStyleKt.ClickableText.modifierNoPadding.clickable {
 //                    copy(authorMail)
                     ActivityUtil.openUrl(activityContext, privacyPolicyLink)
                 },
 
-                )
+            )
         }
         HorizontalDivider(modifier = Modifier.padding(10.dp))
         //开源项目列表
@@ -279,22 +266,18 @@ fun AboutInnerPage(contentPadding: PaddingValues,
                 modifier = Modifier.padding(5.dp),
                 horizontalAlignment = Alignment.CenterHorizontally,
             ){
-                Text(
+                ClickableText(
                     text = it.projectName,
 //                    fontSize = 14.sp,
-                    style = MyStyleKt.ClickableText.style,
-                    color = MyStyleKt.ClickableText.color,
                     modifier = MyStyleKt.ClickableText.modifierNoPadding.clickable {
                         //                        copy(it.projectLink)
                         ActivityUtil.openUrl(activityContext, it.projectLink)
                     },
                 )
                 Spacer(Modifier.height(2.dp))
-                Text(
+                ClickableText(
                     text = "("+stringResource(R.string.license)+")",
                     fontSize = 12.sp,
-                    style = MyStyleKt.ClickableText.style,
-                    color = MyStyleKt.ClickableText.color,
                     modifier = MyStyleKt.ClickableText.modifierNoPadding.clickable {
                         //                        copy(it.projectLink)
                         ActivityUtil.openUrl(activityContext, it.licenseLink)

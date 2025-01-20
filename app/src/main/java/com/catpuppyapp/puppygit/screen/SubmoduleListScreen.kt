@@ -54,6 +54,7 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import com.catpuppyapp.puppygit.compose.BottomBar
 import com.catpuppyapp.puppygit.compose.CheckBoxNoteText
+import com.catpuppyapp.puppygit.compose.ClickableText
 import com.catpuppyapp.puppygit.compose.ConfirmDialog2
 import com.catpuppyapp.puppygit.compose.CopyableDialog
 import com.catpuppyapp.puppygit.compose.CredentialSelector
@@ -1235,10 +1236,8 @@ fun SubmoduleListScreen(
                     horizontalArrangement = Arrangement.Center,
                     verticalAlignment = Alignment.CenterVertically
                 ) {
-                    Text(
+                    ClickableText(
                         text =  stringResource(R.string.create),
-                        color = MyStyleKt.ClickableText.color,
-                        style = MyStyleKt.ClickableText.style,
                         modifier = MyStyleKt.ClickableText.modifierNoPadding
                             .clickable {
                                 initCreateDialog()

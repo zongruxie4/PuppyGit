@@ -61,6 +61,7 @@ import com.catpuppyapp.puppygit.compose.AskGitUsernameAndEmailDialogWithSelectio
 import com.catpuppyapp.puppygit.compose.BottomBar
 import com.catpuppyapp.puppygit.compose.ChangeListItem
 import com.catpuppyapp.puppygit.compose.CheckBoxNoteText
+import com.catpuppyapp.puppygit.compose.ClickableText
 import com.catpuppyapp.puppygit.compose.ConfirmDialog
 import com.catpuppyapp.puppygit.compose.ConfirmDialog2
 import com.catpuppyapp.puppygit.compose.CopyableDialog
@@ -2927,10 +2928,8 @@ fun ChangeListInnerPage(
                             ,
                         ) {
                             if (changeListPageHasIndexItem.value){  //index不为空
-                                Text(
+                                ClickableText(
                                     text =  stringResource(R.string.index_dirty),
-                                    color = MyStyleKt.ClickableText.color,
-                                    style = MyStyleKt.ClickableText.style,
                                     modifier = MyStyleKt.ClickableText.modifierNoPadding
                                         .clickable {  //导航到Index页面
                                             navController.navigate(Cons.nav_IndexScreen)
@@ -2997,10 +2996,9 @@ fun ChangeListInnerPage(
                                             verticalAlignment = Alignment.CenterVertically,
                                             horizontalArrangement = Arrangement.Center
                                         ) {
-                                            Text(text = stringResource(R.string.merge),
+                                            ClickableText(
+                                                text = stringResource(R.string.merge),
                                                 fontSize = fontSizeOfPullPushSync,
-                                                color = MyStyleKt.ClickableText.color,
-                                                style = MyStyleKt.ClickableText.style,
                                                 modifier = MyStyleKt.ClickableText.modifierNoPadding.clickable {
                                                     val curRepo = curRepoFromParentPage.value
                                                     doJobThenOffLoading(loadingOn, loadingOff, activityContext.getString(R.string.merging)) {
@@ -3021,10 +3019,9 @@ fun ChangeListInnerPage(
 
                                             Text(text = splitSign, modifier = Modifier.padding(horizontal = splitHorizonPadding))
 
-                                            Text(text = stringResource(R.string.rebase),
+                                            ClickableText(
+                                                text = stringResource(R.string.rebase),
                                                 fontSize = fontSizeOfPullPushSync,
-                                                color = MyStyleKt.ClickableText.color,
-                                                style = MyStyleKt.ClickableText.style,
                                                 modifier = MyStyleKt.ClickableText.modifierNoPadding.clickable {
                                                     val curRepo = curRepoFromParentPage.value
                                                     doJobThenOffLoading(loadingOn, loadingOff, activityContext.getString(R.string.rebasing)) {
@@ -3214,10 +3211,8 @@ fun ChangeListInnerPage(
 //                                    iconContentDesc = stringResource(id = R.string.check_update),
 //
 //                                ) {}
-                                Text(
+                                ClickableText(
                                     text = stringResource(id = R.string.check_update),
-                                    color = MyStyleKt.ClickableText.color,
-                                    style = MyStyleKt.ClickableText.style,
                                     modifier = MyStyleKt.ClickableText.modifierNoPadding.clickable {
                                             val curRepo = curRepoFromParentPage.value
                                             // fetch
