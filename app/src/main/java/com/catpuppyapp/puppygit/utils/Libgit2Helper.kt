@@ -6455,4 +6455,12 @@ class Libgit2Helper {
 
     }
 
+    /**
+     * check if local has uncommitted changes
+     */
+    fun hasUncommittedChanges(repo:Repository):Boolean {
+        //先检查Index，这个查起来性能比work to index快
+        return (!indexIsEmpty(repo)) || (getWorkdirStatusList(repo).entryCount() > 0)
+    }
+
 }

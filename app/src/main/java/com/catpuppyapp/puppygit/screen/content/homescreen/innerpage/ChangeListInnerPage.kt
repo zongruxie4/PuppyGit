@@ -3918,7 +3918,7 @@ private fun changeListInit(
 //                }
 
                     //20240504: 先查worktree，再查index是否为空，因为worktree有可能更改index
-                    //TODO 确认实现这的逻辑： 检测index是否为空，如果不为空，会在图标有红点提示，如果worktree status为空(包含conflict条目) 且 index不为空，则会提示用户可去index区查看status
+                    // 检测index是否为空，如果不为空，会在图标有红点提示(最好红点，高亮图标也行)，如果worktree status为空(包含conflict条目) 且 index不为空，则会提示用户可去index区查看status
 
                     if(fromTo == Cons.gitDiffFromIndexToWorktree) {  //查询worktree页面条目，就是从首页抽屉打开的changelist
                         //查询status页面的条目
