@@ -164,6 +164,8 @@ object Cons {
     const val dbRepoWorkStatusRebasing=8  // need rebase continue or abort
     const val dbRepoWorkStatusCherrypicking=9  // need cherrypick continue or abort
 
+    const val dbRepoWorkStatusNeedCheckUncommittedChanges=10  //这是个临时状态，提醒调用者需要检查仓库是否有未提交的修改，调用者可根据需要进行检查，因为执行worktreeToIndex太耗时了，所以Libgit2Helper.updateRepoInfo()默认不会自动执行
+
     //            注意，workStatus超过50就代表错误了
 
 

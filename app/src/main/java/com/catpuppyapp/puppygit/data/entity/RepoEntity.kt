@@ -114,6 +114,23 @@ data class RepoEntity(
     @Ignore
     var otherText:String?=null
 
+    /**
+     * 避免workStatus被覆盖，单独存个ahead behind status
+     */
+    @Ignore
+    var aheadBehindStatus:Int?=null
+
+    /**
+     * 拷贝不在data class copy() 函数里的字段（构造器外的字段）
+     * use other update this
+     */
+    fun copyFieldsFrom(other:RepoEntity) {
+        gitRepoState = other.gitRepoState
+        parentRepoName = other.parentRepoName
+        parentRepoValid = other.parentRepoValid
+        otherText = other.otherText
+        aheadBehindStatus = other.aheadBehindStatus
+    }
 
     fun hasOther():Boolean {
         return dbIntToBool(isShallow)

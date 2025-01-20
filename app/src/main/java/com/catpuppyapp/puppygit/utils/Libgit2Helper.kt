@@ -4302,6 +4302,10 @@ class Libgit2Helper {
                 }
 
 
+                //如果在这设置临时状态，则这个变量有值
+//                var tmpStatusIfHave:String? = null  //废弃
+
+
                 Repository.open(repoFromDb.fullSavePath).use { repo ->
                     //算了，不捕获了，查状态出错后面应该也没法正常进行，直接走正常流程抛异常记log即可
 //                    repoFromDb.gitRepoState = try {
@@ -4333,8 +4337,11 @@ class Libgit2Helper {
                                 repoFromDb.ahead = ahead
                                 repoFromDb.behind = behind
                                 if(repoFromDb.ahead==0 && repoFromDb.behind ==0) {  //本地不领先也不落后上游，最新
+                                    //避免workStatus被覆盖，单独存个ahead behind status
+                                    repoFromDb.aheadBehindStatus = Cons.dbRepoWorkStatusUpToDate
                                     repoFromDb.workStatus = Cons.dbRepoWorkStatusUpToDate
                                 }else {
+                                    repoFromDb.aheadBehindStatus = Cons.dbRepoWorkStatusNeedSync
                                     //这里并不是最终的workStatus值，后面还会检查是否有冲突，如果有会再更新
                                     repoFromDb.workStatus = Cons.dbRepoWorkStatusNeedSync
                                 }
@@ -4349,10 +4356,15 @@ class Libgit2Helper {
                     val repoState = repo.state()
                     //仓库状态正常(NONE)，检查是否有未提交修改；否则检查仓库状态
                     if(repoState == Repository.StateT.NONE) {
-                        if(hasConflictItemInRepo(repo)) {  //有冲突条目
+
+                        if(hasConflictItemInRepo(repo)) {  //有冲突条目，这个检查起来很快，所以就在这直接查了
                             repoFromDb.workStatus = Cons.dbRepoWorkStatusHasConflicts
-                        }else if(hasUncommittedChanges(repo)) {  //本地有未提交修改 index or worktree dirty
-                            repoFromDb.workStatus = Cons.dbRepoWorkStatusNeedCommit
+                        }else {  //检查workTreeToIndex，可能会很慢，需要调用者自己开协程检查本地是否有未提交修改 (index or worktree dirty)
+                            //更新临时状态为loading，因为下面查询仓库是否有未提交修改可能会耗费很多时间
+                            //废弃：不需要在这里设置，调用者自己决定检查git status时由它自己设置tmp status，我这不用管
+//                            tmpStatusIfHave = AppModel.activityContext.getString(R.string.loading)
+
+                            repoFromDb.workStatus = Cons.dbRepoWorkStatusNeedCheckUncommittedChanges
                         }
 
                     }else { // repoState != NONE
@@ -4372,11 +4384,14 @@ class Libgit2Helper {
 
                     }
 
+                    //在末尾返回个东西，要不然上面的ifelse在use代码块最后，ide提示表达式if缺else返回值有问题之类的
+//                    Unit
 
                 }
 
                 //检查是否有临时状态，syncing之类的，如果有存上，临时状态的设置和清除都由操作执行者承担，比如syncing状态，谁doSync谁设这个状态和清这个状态
-                repoFromDb.tmpStatus = RepoStatusUtil.getRepoStatus(repoFromDb.id)
+//                repoFromDb.tmpStatus = RepoStatusUtil.getRepoStatus(repoFromDb.id) ?: tmpStatusIfHave ?: ""
+                repoFromDb.tmpStatus = RepoStatusUtil.getRepoStatus(repoFromDb.id) ?: ""
 
             }catch (e:Exception) {
                 //TODO 这里可设个特殊的仓库状态，卡片显示查询仓库信息出错，可选操作为 刷新、删除，和克隆错误的区别在于无法编辑仓库信息，或者也可支持重新编辑克隆信息并克隆（需要提醒用户会删除之前克隆时创建的本地仓库目录）

@@ -738,8 +738,17 @@ fun RepoInnerPage(
                 val repoDb = dbContainer.repoRepository
                 val reQueriedRepoInfo = repoDb.getById(it.id)?:return@doJobThenOffLoading
 
-                //更新卡片条目
-                repoList[idx] = reQueriedRepoInfo
+                //检查仓库是否有未提交的修改
+                if(reQueriedRepoInfo.workStatus == Cons.dbRepoWorkStatusNeedCheckUncommittedChanges) {
+                    //捕获当前页面刷新状态值，相当于session id
+                    val curRefreshValue = needRefreshRepoPage.value
+                    checkGitStatusAndUpdateItemInList(reQueriedRepoInfo, idx, repoList, activityContext.getString(R.string.loading), pageChanged = {
+                        needRefreshRepoPage.value != curRefreshValue
+                    })
+                }else { //不需要检查git status，直接更新卡片条目
+                    repoList[idx] = reQueriedRepoInfo
+                }
+
 
                 //检查下如果当前长按菜单显示的是当前仓库，更新下和菜单项相关的字段。（这里不要赋值curRepo.value，以免并发冲突覆盖用户长按的仓库）
                 val curRepoInMenu = curRepo.value  //这样修改的话，即使在下面赋值时用户长按了其他仓库也能正常工作，只是下面的赋值操作失去意义而已，但不会并发冲突，也不会显示或执行错误，但如果直接给curRepo.value赋值，则就有可能出错了，比如可能覆盖用户长按的仓库，发生用户长按了仓库a，但显示的却是仓库b的状态的情况
@@ -1487,7 +1496,9 @@ fun RepoInnerPage(
                 activityContext = activityContext,
                 goToThisRepoId = goToThisRepoId,
                 goToThisRepoAndHighlightingIt = goToThisRepoAndHighlightingIt,
-                settings=settings
+                settings=settings,
+                refreshId=needRefreshRepoPage.value,
+                latestRefreshId = needRefreshRepoPage
             )
 
         } catch (cancel: Exception) {
@@ -1506,9 +1517,17 @@ private fun doInit(
     activityContext:Context,
     goToThisRepoId: MutableState<String>,
     goToThisRepoAndHighlightingIt:(id:String) ->Unit,
-    settings:AppSettings
+    settings:AppSettings,
+    refreshId:String,
+    latestRefreshId:MutableState<String>,
 ){
-    doJobThenOffLoading(loadingOn, loadingOff, activityContext.getString(R.string.loading)) {
+    val pageChanged = {
+        refreshId != latestRefreshId.value
+    }
+
+    val loadingText = activityContext.getString(R.string.loading)
+
+    doJobThenOffLoading(loadingOn, loadingOff, loadingText) {
         //执行仓库页面的初始化操作
         val repoRepository = dbContainer.repoRepository
         //貌似如果用Flow，后续我更新数据库，不需要再次手动更新State数据就会自动刷新，也就是Flow会观测数据，如果改变，重新执行sql获取最新的数据，但最好还是手动更新，避免资源浪费
@@ -1567,6 +1586,10 @@ private fun doInit(
 //                repoDtoList.requireRefreshView()
 
                 Libgit2Helper.cloneSingleRepo(item, repoRepository, settings, unknownErrWhenCloning, repoDtoList.value, idx)
+
+
+            }else if(item.workStatus == Cons.dbRepoWorkStatusNeedCheckUncommittedChanges) {
+                checkGitStatusAndUpdateItemInList(item, idx, repoDtoList.value, loadingText, pageChanged)
             } else {
                 //TODO: check git status with lock of every repo, get lock then query repo info from db,
                 // if updatetime field changed, then update item in repodtolist, else do git status,
@@ -1578,5 +1601,51 @@ private fun doInit(
         //在这clear()很可能不管用，因为上面的闭包捕获了repoDtoList当时的值，而当时是有数据的，也就是数据在这被清，然后在上面的闭包被回调的时候，又被填充上了闭包创建时的数据，同时加上了闭包执行后的数据，所以，在这清这个list就“不管用”了，实际不是不管用，只是清了又被填充了
 //                repoDtoList.clear()
     }
+}
+
+/**
+ * 检查仓库是否有未提交修改并在检查完毕且页面没刷新时更新list中的对应条目
+ */
+private fun checkGitStatusAndUpdateItemInList(item:RepoEntity, idx:Int, repoList:MutableList<RepoEntity>, loadingText:String, pageChanged:()->Boolean) {
+    val needUpdateTmpStatus = item.tmpStatus.isBlank()
+
+    if(needUpdateTmpStatus) {
+        repoList[idx].tmpStatus = loadingText
+    }
+
+    doJobThenOffLoading {
+        Repository.open(item.fullSavePath).use { repo ->
+            MyLog.d(TAG, "#checkRepoGitStatus: checking git status for repo '${item.repoName}'")
+
+            val needCommit = Libgit2Helper.hasUncommittedChanges(repo)
+
+            MyLog.d(TAG, "#checkRepoGitStatus: repoName=${item.repoName}, repoId=${item.id}, needCommit=$needCommit, pageChanged=${pageChanged()}")
+
+            //如果页面没改变（没重新刷新），更新列表
+            if(!pageChanged()) {
+                val newRepo = item.copy()
+                //拷贝data class copy()函数不会拷贝的构造器外的字段
+                newRepo.copyFieldsFrom(item)
+
+                //清空临时状态
+                if(needUpdateTmpStatus) {
+                    newRepo.tmpStatus = ""
+                }
+
+                //如果需要提交，则更新状态为需要提交；否则检查ahead和behind状态，可能是up to date也可能需要sync
+                newRepo.workStatus = if(needCommit) {
+                    Cons.dbRepoWorkStatusNeedCommit
+                }else {
+                    // ahead behind status若为null则当作up to date，这逻辑应该问题不大，若感觉异常再改
+                    item.aheadBehindStatus ?: Cons.dbRepoWorkStatusUpToDate
+                }
+
+                repoList[idx] = newRepo
+            }
+
+        }
+    }
+
+
 }
 
