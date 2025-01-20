@@ -1,8 +1,8 @@
 next version:
-- indicate repo has uncommitted changes on RepoCard
+- indicate repo has uncommitted changes on RepoCard (issue #26)
 
 
-- 在仓库卡片显示仓库是否有未提交修改
+- 在仓库卡片显示仓库是否有未提交修改 (issue #26)
 
 ---
 
