@@ -1603,14 +1603,34 @@ private fun doInit(
     }
 }
 
+private fun updateRepoListByIndexOrId(newItem:RepoEntity, idx: Int, list:MutableList<RepoEntity>, expectListSize:Int) {
+    if(list.size == expectListSize) { //列表很可能没改变，直接赋值，若出错，刷新页面即可解决
+        list[idx] = newItem
+    }else {  //列表一定改变了，根据id查找仓库，若找到，更新，否则忽略
+        val targetIdx = list.indexOfFirst { it.id == newItem.id }
+        if(targetIdx != -1) {  // found
+            list[targetIdx] = newItem
+        }
+    }
+}
+
 /**
  * 检查仓库是否有未提交修改并在检查完毕且页面没刷新时更新list中的对应条目
  */
 private fun checkGitStatusAndUpdateItemInList(item:RepoEntity, idx:Int, repoList:MutableList<RepoEntity>, loadingText:String, pageChanged:()->Boolean) {
+    //用来粗略检查仓库是否已经改变
+    val repoListSizeSnapshot = repoList.size
+
     val needUpdateTmpStatus = item.tmpStatus.isBlank()
 
     if(needUpdateTmpStatus) {
-        repoList[idx].tmpStatus = loadingText
+        val newRepo = item.copyAllFields()
+
+        //更新临时状态
+        newRepo.tmpStatus = loadingText
+
+        //列表列表条目
+        updateRepoListByIndexOrId(newRepo, idx, repoList, repoListSizeSnapshot)
     }
 
     doJobThenOffLoading {
@@ -1623,9 +1643,7 @@ private fun checkGitStatusAndUpdateItemInList(item:RepoEntity, idx:Int, repoList
 
             //如果页面没改变（没重新刷新），更新列表
             if(!pageChanged()) {
-                val newRepo = item.copy()
-                //拷贝data class copy()函数不会拷贝的构造器外的字段
-                newRepo.copyFieldsFrom(item)
+                val newRepo = item.copyAllFields()
 
                 //清空临时状态
                 if(needUpdateTmpStatus) {
@@ -1640,7 +1658,7 @@ private fun checkGitStatusAndUpdateItemInList(item:RepoEntity, idx:Int, repoList
                     item.aheadBehindStatus ?: Cons.dbRepoWorkStatusUpToDate
                 }
 
-                repoList[idx] = newRepo
+                updateRepoListByIndexOrId(newRepo, idx, repoList, repoListSizeSnapshot)
             }
 
         }

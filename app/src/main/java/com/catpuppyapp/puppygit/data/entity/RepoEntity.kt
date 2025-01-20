@@ -121,15 +121,18 @@ data class RepoEntity(
     var aheadBehindStatus:Int?=null
 
     /**
-     * 拷贝不在data class copy() 函数里的字段（构造器外的字段）
-     * use other update this
+     * 拷贝所有字段，包括不在data class构造器的字段
      */
-    fun copyFieldsFrom(other:RepoEntity) {
-        gitRepoState = other.gitRepoState
-        parentRepoName = other.parentRepoName
-        parentRepoValid = other.parentRepoValid
-        otherText = other.otherText
-        aheadBehindStatus = other.aheadBehindStatus
+    fun copyAllFields():RepoEntity {
+        val other = copy()
+
+        other.gitRepoState = gitRepoState
+        other.parentRepoName = parentRepoName
+        other.parentRepoValid = parentRepoValid
+        other.otherText = otherText
+        other.aheadBehindStatus = aheadBehindStatus
+
+        return other
     }
 
     fun hasOther():Boolean {
