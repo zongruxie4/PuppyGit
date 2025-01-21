@@ -27,6 +27,7 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.hapticfeedback.HapticFeedback
 import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.platform.LocalClipboardManager
 import androidx.compose.ui.platform.LocalContext
@@ -190,10 +191,12 @@ fun RepoCard(
             ),
         ) {
             RepoTitle(
+                haptic = haptic,
                 repoDto = repoDto,
                 isSelectionMode = isSelectionMode,
                 itemSelected = itemSelected,
-                titleOnClick = titleOnClick
+                titleOnClick = titleOnClick,
+                titleOnLongClick = onLongClick
             )
 
             HorizontalDivider()
@@ -534,18 +537,29 @@ fun RepoCard(
 }
 
 
+@OptIn(ExperimentalFoundationApi::class)
 @Composable
 private fun RepoTitle(
+    haptic: HapticFeedback,
     repoDto: RepoEntity,
     isSelectionMode:Boolean,
     itemSelected: Boolean,
-    titleOnClick: (RepoEntity) -> Unit
+    // title的onClick和卡片主体的onClick区别在于卡片的onClick仅在启用选择模式时才可切换选择；title的即使没启用选择模式也可单击选择仓库并启用选择模式。
+    titleOnClick: (RepoEntity) -> Unit,
+    //title的onLongClick和卡片主体的没区别，都是长按启用选择模式，若选择模式已启用则执行区域选择
+    titleOnLongClick:(RepoEntity) -> Unit,
 ) {
     Row(
         modifier = Modifier
             .fillMaxWidth()
             .height(30.dp)
-            .clickable {
+            .combinedClickable(onLongClick = {
+                //震动反馈
+                haptic.performHapticFeedback(HapticFeedbackType.LongPress)
+
+                //显示底部菜单
+                titleOnLongClick(repoDto)
+            }) {
                 titleOnClick(repoDto)
             }
             .then(
