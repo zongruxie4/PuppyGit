@@ -47,6 +47,7 @@ fun BottomBar(
     iconOnClickList:List<()->Unit>,
     iconEnableList:List<()->Boolean>,
     enableMoreIcon:Boolean,
+    visibleMoreIcon:Boolean = enableMoreIcon,  //默认情况启用即显示三点more图标，禁用即隐藏，不过也可分别控制显示和启用禁用。
     moreItemTextList:List<String>,
     moreItemOnClickList:List<()->Unit>,
     moreItemEnableList:List<()->Boolean>,
@@ -143,7 +144,7 @@ fun BottomBar(
 //                x 废弃，没必要，随列表滚动足矣）把more改成固定在右边不要随列表滚动怎么样？
                 //题外话：当时设计这个组件的时候没想到，其实用列表是否不为空来决定是否显示菜单图标就够了，不需要多一个开关变量
                 //menu
-                if (enableMoreIcon && moreItemTextList.isNotEmpty()) {
+                if (visibleMoreIcon && moreItemTextList.isNotEmpty()) {
                     //菜单得单独开一行，不然DropdownMenu就定位到外部菜单的最左边了，就偏离菜单图标了，单独开一行就可以定位到菜单图标那里，完美
                     Row(
                         verticalAlignment = Alignment.CenterVertically
@@ -151,6 +152,7 @@ fun BottomBar(
 
                         //菜单图标
                         LongPressAbleIconBtn(
+                            enabled = enableMoreIcon,
                             tooltipText = stringResource(R.string.menu),
                             icon = Icons.Filled.MoreVert,
                             iconContentDesc = stringResource(R.string.menu),

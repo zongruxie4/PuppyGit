@@ -112,6 +112,7 @@ import com.catpuppyapp.puppygit.utils.state.CustomStateSaveable
 import com.catpuppyapp.puppygit.utils.state.mutableCustomStateOf
 import com.catpuppyapp.puppygit.utils.strHasIllegalChars
 import com.github.git24j.core.Repository
+import kotlinx.coroutines.sync.withLock
 import java.io.File
 
 private const val TAG = "RepoInnerPage"
@@ -607,24 +608,24 @@ fun RepoInnerPage(
 
     //sync之前，先执行stage，然后执行提交，如果成功，执行fetch/merge/push (= pull/push = sync)
     val doSync:suspend (RepoEntity)->Unit = doSync@{curRepo:RepoEntity ->
-        Repository.open(curRepo.fullSavePath).use { repo ->
-            if(repo.headDetached()) {
-                throw RuntimeException(activityContext.getString(R.string.sync_failed_by_detached_head))
-//                return@doSync
-            }
+        try {
+            Repository.open(curRepo.fullSavePath).use { repo ->
+                if(repo.headDetached()) {
+                    throw RuntimeException(activityContext.getString(R.string.sync_failed_by_detached_head))
+                }
 
 
-            //检查是否有upstream，如果有，do fetch do merge，然后do push,如果没有，请求设置upstream，然后do push
-            val hasUpstream = Libgit2Helper.isBranchHasUpstream(repo)
-            val shortBranchName = Libgit2Helper.getRepoCurBranchShortRefSpec(repo)
-            if (!hasUpstream) {  //不存在上游，提示先去设置
-                throw RuntimeException(activityContext.getString(R.string.err_upstream_invalid_plz_go_branches_page_set_it_then_try_again))
-//                return@doSync
+                //检查是否有upstream，如果有，do fetch do merge，然后do push,如果没有，请求设置upstream，然后do push
+                val hasUpstream = Libgit2Helper.isBranchHasUpstream(repo)
+                val shortBranchName = Libgit2Helper.getRepoCurBranchShortRefSpec(repo)
+                if (!hasUpstream) {  //不存在上游，提示先去分支页面设置
+                    //应该支持在仓库页面设置
+                    throw RuntimeException(activityContext.getString(R.string.err_upstream_invalid_plz_go_branches_page_set_it_then_try_again))
+                }
 
-            }
 
-            //存在上游
-            try {
+                //存在上游
+
                 //取出上游
                 val upstream = Libgit2Helper.getUpstreamOfBranch(repo, shortBranchName)
                 val fetchSuccess = doFetch(upstream.remote, curRepo)
@@ -664,34 +665,29 @@ fun RepoInnerPage(
                     throw RuntimeException(activityContext.getString(R.string.push_failed))
                 }
 //                    requireShowToast(appContext.getString(R.string.sync_success))  //这个页面如果成功就不要提示了
-            }catch (e:Exception) {
-                //log
-                showErrAndSaveLog(TAG, "#doSync() err:"+e.stackTraceToString(), "sync err:"+e.localizedMessage, requireShowToast, curRepo.id)
-
             }
-
+        }catch (e:Exception) {
+            //log
+            showErrAndSaveLog(TAG, "#doSync() err:"+e.stackTraceToString(), "sync err:"+e.localizedMessage, requireShowToast, curRepo.id)
 
         }
 
     }
 
-    val doPull:suspend ()->Unit = {
+    val doPull:suspend (RepoEntity)->Unit = {curRepo ->
         try {
-            val thisRepo = curRepo.value
-            val fetchSuccess = doFetch(null,thisRepo)
+            val fetchSuccess = doFetch(null, curRepo)
             if(!fetchSuccess) {
-
                 throw RuntimeException(activityContext.getString(R.string.fetch_failed))
             }else {
-                val mergeSuccess = doMerge(null,thisRepo)
+                val mergeSuccess = doMerge(null, curRepo)
                 if(!mergeSuccess){
                     throw RuntimeException(activityContext.getString(R.string.merge_failed))
                 }
             }
         }catch (e:Exception){
-            showErrAndSaveLog(TAG,"require pull error:"+e.stackTraceToString(), activityContext.getString(R.string.pull_err)+":"+e.localizedMessage, requireShowToast,curRepo.value.id)
+            showErrAndSaveLog(TAG,"require pull error:"+e.stackTraceToString(), activityContext.getString(R.string.pull_err)+":"+e.localizedMessage, requireShowToast, curRepo.id)
         }
-
     }
 
 
@@ -703,7 +699,9 @@ fun RepoInnerPage(
         if(enableFilterState.value) filterListState else repoPageListState
     }
 
-    // the `_idx` was `idx`, but then changed to find idx by repoId, so deprecated it
+    /**
+     * the `_idx` was `idx`, but then changed to find idx by repoId, so deprecated it, kept for backward compatible
+    */
     val doActAndSetRepoStatus:suspend (Int, String, String, suspend ()->Unit) -> Unit = {_idx:Int, repoId:String, status:String, act: suspend ()->Unit ->
         // should update repoList ever, the filtered list will follow the repoList
         //应该总是更新repoList，过滤后的列表变化总是跟随repoList变化而变化
@@ -1144,21 +1142,69 @@ fun RepoInnerPage(
         stringResource(R.string.sync),
         stringResource(R.string.select_all),
     )
+
+    val doActIfRepoGood = { curRepo:RepoEntity, act: suspend ()->Unit ->
+        val repoStatusGood = curRepo.gitRepoState!=null && !Libgit2Helper.isRepoStatusNotReadyOrErr(curRepo)
+
+        val isDetached = dbIntToBool(curRepo.isDetached)
+        val hasTmpStatus = curRepo.tmpStatus.isNotBlank()  //如果有设临时状态，说明在执行某个操作，比如正在fetching，所以这时应该不允许再执行fetch或pull之类的操作，我做了处理，即使用户去cl页面执行，也无法绕过此限制
+        val actionEnabled = !isDetached && !hasTmpStatus
+
+        if(repoStatusGood && actionEnabled) {
+            doJobThenOffLoading {
+                val lock = Libgit2Helper.getRepoLock(curRepo.id)
+                //maybe do other jobs
+                if(lock.isLocked) {
+                    return@doJobThenOffLoading
+                }
+
+                lock.withLock {
+                    act()
+                }
+            }
+        }
+    }
+
+    val invalidIdx = remember { -1 }
+
     val selectionModeIconOnClickList = listOf<()->Unit>(
         fetch@{
-            TODO()
+            selectedItems.value.toList().forEach { curRepo ->
+                doActIfRepoGood(curRepo) {
+                    //fetch 当前仓库上游的remote
+                    doActAndSetRepoStatus(invalidIdx, curRepo.id, activityContext.getString(R.string.fetching)) {
+                        doFetch(null, curRepo)
+                    }
+                }
+            }
         },
         pull@{
-            TODO()
-
+            selectedItems.value.toList().forEach { curRepo ->
+                doActIfRepoGood(curRepo) {
+                    doActAndSetRepoStatus(invalidIdx, curRepo.id, activityContext.getString(R.string.pulling)) {
+                        doPull(curRepo)
+                    }
+                }
+            }
         },
         push@{
-            TODO()
+            selectedItems.value.toList().forEach { curRepo ->
+                doActIfRepoGood(curRepo) {
+                    doActAndSetRepoStatus(invalidIdx, curRepo.id, activityContext.getString(R.string.pushing)) {
+                        doPush(null, curRepo)
+                    }
+                }
+            }
 
         },
         sync@{
-            TODO()
-
+            selectedItems.value.toList().forEach { curRepo ->
+                doActIfRepoGood(curRepo) {
+                    doActAndSetRepoStatus(invalidIdx, curRepo.id, activityContext.getString(R.string.syncing)) {
+                        doSync(curRepo)
+                    }
+                }
+            }
         },
         selectAll@{
             val list = if(enableFilterState.value) filterList.value else repoList.value
@@ -1171,10 +1217,10 @@ fun RepoInnerPage(
 
     val selectionModeIconEnableList = listOf(
         // 点击后再检查取出可执行fetch的仓库
-        fetchEnable@{ true },
-        pullEnable@{ true },
-        pushEnable@{ true },
-        syncEnable@{ true },
+        fetchEnable@{ hasSelectedItems() },
+        pullEnable@{ hasSelectedItems() },
+        pushEnable@{ hasSelectedItems() },
+        syncEnable@{ hasSelectedItems() },
         selectAllEnable@{ true },
     )
 
@@ -1318,28 +1364,7 @@ fun RepoInnerPage(
         val actionEnabled = !isDetached && !hasTmpStatus
         BottomSheet(showBottomSheet, sheetState, curRepo.value.repoName) {
             if(repoStatusGood) {
-                BottomSheetItem(sheetState, showBottomSheet, stringResource(R.string.fetch), textDesc = stringResource(R.string.check_update), enabled = actionEnabled) {
-                    //fetch 当前仓库上游的remote
-                    doJobThenOffLoading {
-                        doActAndSetRepoStatus(curRepoIndex.intValue, curRepo.value.id, activityContext.getString(R.string.fetching)) {
-                            doFetch(null, curRepo.value)
-                        }
-                    }
-                }
-                BottomSheetItem(sheetState, showBottomSheet, stringResource(R.string.pull), enabled = actionEnabled) {
-                    doJobThenOffLoading {
-                        doActAndSetRepoStatus(curRepoIndex.intValue, curRepo.value.id, activityContext.getString(R.string.pulling)) {
-                            doPull()
-                        }
-                    }
-                }
-                BottomSheetItem(sheetState, showBottomSheet, stringResource(R.string.push), enabled = actionEnabled) {
-                    doJobThenOffLoading {
-                        doActAndSetRepoStatus(curRepoIndex.intValue, curRepo.value.id, activityContext.getString(R.string.pushing)) {
-                            doPush(null, curRepo.value)
-                        }
-                    }
-                }
+
     //            BottomSheetItem(sheetState, showBottomSheet, stringResource(R.string.sync), enabled = actionEnabled) {
     //                doJobThenOffLoading {
     //                    try {
@@ -1708,11 +1733,13 @@ fun RepoInnerPage(
             iconDescTextList=selectionModeIconTextList,
             iconOnClickList=selectionModeIconOnClickList,
             iconEnableList=selectionModeIconEnableList,
-            enableMoreIcon=true,
+            enableMoreIcon=hasSelectedItems(),
+            visibleMoreIcon=true,
             moreItemTextList=selectionModeMoreItemTextList,
             moreItemOnClickList=selectionModeMoreItemOnClickList,
             getSelectedFilesCount = getSelectedFilesCount,
             moreItemEnableList = selectionModeMoreItemEnableList,
+            moreItemVisibleList = selectionModeMoreItemEnableList,  //禁用即隐藏
             countNumOnClickEnabled = true,
             countNumOnClick = showSelectedItems,
         )
