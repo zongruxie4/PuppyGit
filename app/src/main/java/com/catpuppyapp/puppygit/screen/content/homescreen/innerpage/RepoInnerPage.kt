@@ -1462,35 +1462,35 @@ fun RepoInnerPage(
     val selectionModeMoreItemEnableList = listOf(
         clone@{
             //至少选中一个需要克隆的仓库才显示此按钮
-            hasSelectedItems() && selectedItems.value.find { it.workStatus == Cons.dbRepoWorkStatusCloneErr } != null
+            hasSelectedItems() && selectedItems.value.any { it.workStatus == Cons.dbRepoWorkStatusCloneErr }
         },
         remotes@{
-            selectedSingle()
+            selectedSingle() && isRepoGood(selectedItems.value.first())
         },
         tags@{
-            selectedSingle()
+            selectedSingle() && isRepoGood(selectedItems.value.first())
         },
         submodules@{
-            selectedSingle()
+            selectedSingle() && isRepoGood(selectedItems.value.first())
         },
 
         userInfo@{
-            hasSelectedItems()
+            hasSelectedItems() && selectedItems.value.any { isRepoGood(it) }
         },
         unshallow@{
-            hasSelectedItems()
+            hasSelectedItems() && selectedItems.value.any { dbIntToBool(it.isShallow) }
         },
         setUpstream@{
-            selectedSingle()
+            selectedSingle() && !dbIntToBool(selectedItems.value.first().isDetached)
         },
         changelist@{
-            selectedSingle()
+            selectedSingle() && isRepoGood(selectedItems.value.first())
         },
         stash@{
-            selectedSingle()
+            selectedSingle()&& isRepoGood(selectedItems.value.first())
         },
         reflog@{
-            selectedSingle()
+            selectedSingle()&& isRepoGood(selectedItems.value.first())
         },
         rename@{
             selectedSingle()
