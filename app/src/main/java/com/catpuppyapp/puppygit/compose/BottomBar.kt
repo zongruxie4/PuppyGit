@@ -29,10 +29,10 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.Dp
+import androidx.compose.ui.unit.DpOffset
 import androidx.compose.ui.unit.dp
 import com.catpuppyapp.puppygit.play.pro.R
 import com.catpuppyapp.puppygit.style.MyStyleKt
-import com.catpuppyapp.puppygit.utils.state.StateUtil
 
 @Composable
 fun BottomBar(
@@ -162,6 +162,8 @@ fun BottomBar(
                         )
                         //菜单列表
                         DropdownMenu(
+                            offset = DpOffset(x=(-5).dp, y=0.dp),
+
                             expanded = dropDownMenuExpendState.value,
                             onDismissRequest = { closeDropDownMenu() }
                         ) {
