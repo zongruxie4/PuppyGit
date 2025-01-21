@@ -1350,10 +1350,10 @@ fun RepoInnerPage(
 
     val selectionModeIconEnableList = listOf(
         // 点击后再检查取出可执行fetch的仓库
-        fetchEnable@{ hasSelectedItems() },
-        pullEnable@{ hasSelectedItems() },
-        pushEnable@{ hasSelectedItems() },
-        syncEnable@{ hasSelectedItems() },
+        fetchEnable@{ hasSelectedItems() && selectedItems.value.any { it.upstreamBranch.isNotBlank() } },
+        pullEnable@{ hasSelectedItems() && selectedItems.value.any { it.upstreamBranch.isNotBlank() } },
+        pushEnable@{ hasSelectedItems() && selectedItems.value.any { it.upstreamBranch.isNotBlank() } },
+        syncEnable@{ hasSelectedItems() && selectedItems.value.any { it.upstreamBranch.isNotBlank() } },
         selectAllEnable@{ true },
     )
 
