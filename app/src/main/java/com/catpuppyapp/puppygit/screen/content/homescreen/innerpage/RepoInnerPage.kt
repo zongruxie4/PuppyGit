@@ -1231,6 +1231,7 @@ fun RepoInnerPage(
         stringResource(R.string.submodules), // single
         stringResource(R.string.user_info), // multi
         stringResource(R.string.unshallow), // multi
+        stringResource(R.string.set_upstream), // single
         stringResource(R.string.changelist), // single
         stringResource(R.string.stash), // single
         stringResource(R.string.reflog), // single
@@ -1257,6 +1258,9 @@ fun RepoInnerPage(
 
         },
         unshallow@{
+
+        },
+        setUpstream@{
 
         },
         changelist@{
@@ -1295,6 +1299,9 @@ fun RepoInnerPage(
         },
         unshallow@{
             hasSelectedItems()
+        },
+        setUpStream@{
+            selectedSingle()
         },
         changelist@{
             selectedSingle()
