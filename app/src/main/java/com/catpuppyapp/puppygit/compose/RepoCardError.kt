@@ -22,13 +22,11 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.hapticfeedback.HapticFeedbackType
-import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import com.catpuppyapp.puppygit.constants.Cons
 import com.catpuppyapp.puppygit.data.entity.RepoEntity
 import com.catpuppyapp.puppygit.play.pro.R
@@ -45,7 +43,7 @@ import kotlinx.coroutines.sync.withLock
 //克隆错误卡片，显示编辑仓库和删除仓库和重试克隆按钮
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
-fun ErrRepoCard(
+fun RepoCardError(
     itemWidth:Float,
     requireFillMaxWidth:Boolean,
 //    showBottomSheet: MutableState<Boolean>,
@@ -60,7 +58,7 @@ fun ErrRepoCard(
     copyErrMsg:(String)->Unit,
 ) {
     val navController = AppModel.navController
-    val haptic = AppModel.haptic
+    val haptic = LocalHapticFeedback.current
 
     val inDarkTheme = Theme.inDarkTheme
 

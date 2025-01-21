@@ -54,7 +54,7 @@ import com.catpuppyapp.puppygit.compose.BottomSheetItem
 import com.catpuppyapp.puppygit.compose.CheckBoxNoteText
 import com.catpuppyapp.puppygit.compose.ClickableText
 import com.catpuppyapp.puppygit.compose.ConfirmDialog
-import com.catpuppyapp.puppygit.compose.ErrRepoCard
+import com.catpuppyapp.puppygit.compose.RepoCardError
 import com.catpuppyapp.puppygit.compose.MyCheckBox
 import com.catpuppyapp.puppygit.compose.MyLazyColumn
 import com.catpuppyapp.puppygit.compose.MySelectionContainer
@@ -1434,7 +1434,7 @@ fun RepoInnerPage(
                         }
                     } else {
                         //show Clone error repo card，显示克隆错误，有重试和编辑按钮，编辑可重新进入克隆页面编辑当前仓库的信息，然后重新克隆
-                        ErrRepoCard(
+                        RepoCardError(
                             itemWidth = itemWidth,
                             requireFillMaxWidth = requireFillMaxWidth,
 //                        showBottomSheet = showBottomSheet,
