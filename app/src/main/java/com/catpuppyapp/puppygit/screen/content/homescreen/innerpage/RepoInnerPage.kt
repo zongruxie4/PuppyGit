@@ -2235,7 +2235,15 @@ private fun doInit(
                 repoDtoList.value[idx].tmpStatus = cloningText
 //                repoDtoList.requireRefreshView()
 
-                Libgit2Helper.cloneSingleRepo(item, repoRepository, settings, unknownErrWhenCloning, repoDtoList.value, idx)
+                Libgit2Helper.cloneSingleRepo(
+                    targetRepo = item,
+                    repoDb = repoRepository,
+                    settings = settings,
+                    unknownErrWhenCloning = unknownErrWhenCloning,
+                    repoDtoList = repoDtoList.value,
+                    repoCurrentIndexInRepoDtoList = idx,
+                    selectedItems = selectedItems
+                )
 
 
             }else if(item.requireAction == RepoAction.NEED_CHECK_UNCOMMITED_CHANGES) {
