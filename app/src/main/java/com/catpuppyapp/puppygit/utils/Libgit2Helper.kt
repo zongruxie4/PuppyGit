@@ -6147,7 +6147,7 @@ class Libgit2Helper {
             settings: AppSettings,
             unknownErrWhenCloning: String,
             repoDtoList: MutableList<RepoEntity>?,
-            repoCurrentIndexInRepoDtoList: Int,
+            repoCurrentIndexInRepoDtoList: Int,  //根据索引更新条目有可能越界，不如用repo id查
             selectedItems: MutableList<RepoEntity>?,
         ) {
             doJobThenOffLoading {
@@ -6442,24 +6442,18 @@ class Libgit2Helper {
                         //更新仓库列表
                         //更新state
                         //这里的repo是从数据库重查的，直接赋值即可看到最新状态，不用拷贝
-                        // the current repo maybe changed, if users add/del other repos, so need a simple check
                         // if repo list is not null, update the item with newest repo info
                         if(repoDtoList!=null && repoDtoList.isNotEmpty()) {
-                            val maybeCurRepo = repoDtoList[repoCurrentIndexInRepoDtoList]
-                            if(maybeCurRepo.id == repo2ndQuery.id) {  // no change
-                                repoDtoList[repoCurrentIndexInRepoDtoList] = repo2ndQuery
-                            }else {  // changed
-                                val indexOfRepo = repoDtoList.indexOfFirst { it.id == repo2ndQuery.id }
-                                if(indexOfRepo != -1) { // changed, but found
-                                    repoDtoList[indexOfRepo] = repo2ndQuery
-                                }
+                            val indexOfRepo = repoDtoList.indexOfFirst { it.id == repo2ndQuery.id }
+                            if(indexOfRepo != -1) { // found
+                                repoDtoList[indexOfRepo] = repo2ndQuery
                             }
                         }
 
                         //更新选中条目列表
                         if(selectedItems!=null && selectedItems.isNotEmpty()) {
                             val indexOfRepo = selectedItems.indexOfFirst { it.id == repo2ndQuery.id }
-                            if(indexOfRepo != -1) { // changed, but found
+                            if(indexOfRepo != -1) { // found
                                 selectedItems[indexOfRepo] = repo2ndQuery
                             }
                         }
