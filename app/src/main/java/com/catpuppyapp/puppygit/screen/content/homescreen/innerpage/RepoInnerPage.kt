@@ -1462,7 +1462,7 @@ fun RepoInnerPage(
     val selectionModeMoreItemEnableList = listOf(
         clone@{
             //至少选中一个需要克隆的仓库才显示此按钮
-            hasSelectedItems() && selectedItems.value.find { it.workStatus == Cons.dbRepoWorkStatusNotReadyNeedClone } != null
+            hasSelectedItems() && selectedItems.value.find { it.workStatus == Cons.dbRepoWorkStatusCloneErr } != null
         },
         remotes@{
             selectedSingle()
