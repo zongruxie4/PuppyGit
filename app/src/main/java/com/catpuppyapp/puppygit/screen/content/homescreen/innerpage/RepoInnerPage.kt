@@ -1348,13 +1348,20 @@ fun RepoInnerPage(
         }
     )
 
-    val bottomBarIconDefaultEnable =  {hasSelectedItems() && selectedItems.value.any { it.upstreamBranch.isNotBlank() && !dbIntToBool(it.isDetached) } }
+    val bottomBarIconDefaultEnable =  { hasSelectedItems() && selectedItems.value.any { it.upstreamBranch.isNotBlank() && !dbIntToBool(it.isDetached) } }
     val selectionModeIconEnableList = listOf(
         // 点击后再检查取出可执行fetch的仓库
         fetchEnable@{ bottomBarIconDefaultEnable() },
         pullEnable@{ bottomBarIconDefaultEnable() },
         pushEnable@{ bottomBarIconDefaultEnable() },
-        syncEnable@{ bottomBarIconDefaultEnable() },
+        syncEnable@{
+            val list = selectedItems.value
+            if(list.size == 1) {  //若只选中一个条目，仅判断是否detached，若无上游，弹窗设置并同步
+                !dbIntToBool(list.first().isDetached)
+            }else { //若选中多个条目，不会弹出设置上游的弹窗，必须有至少一个存在上游的仓库才启用同步按钮
+                bottomBarIconDefaultEnable()
+            }
+        },
         selectAllEnable@{ true },
     )
 
