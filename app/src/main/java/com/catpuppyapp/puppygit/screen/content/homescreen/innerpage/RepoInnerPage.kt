@@ -66,6 +66,7 @@ import com.catpuppyapp.puppygit.compose.MyLazyColumn
 import com.catpuppyapp.puppygit.compose.MySelectionContainer
 import com.catpuppyapp.puppygit.compose.RepoCard
 import com.catpuppyapp.puppygit.compose.ScrollableColumn
+import com.catpuppyapp.puppygit.compose.SetUpstreamDialog
 import com.catpuppyapp.puppygit.compose.SystemFolderChooser
 import com.catpuppyapp.puppygit.constants.Cons
 import com.catpuppyapp.puppygit.constants.PageRequest
@@ -141,6 +142,7 @@ fun RepoInnerPage(
     unshallowList:CustomStateListSaveable<RepoEntity>,
     deleteList:CustomStateListSaveable<RepoEntity>,
     userInfoRepoList:CustomStateListSaveable<RepoEntity>,
+    upstreamRemoteOptionsList:CustomStateListSaveable<String>,
 
 ) {
     val activityContext = LocalContext.current
@@ -1175,6 +1177,248 @@ fun RepoInnerPage(
         }
     }
 
+
+    val showSetUpstreamForLocalBranchDialog = rememberSaveable { mutableStateOf(false)}
+    val upstreamSelectedRemote = rememberSaveable{mutableIntStateOf(0)}  //默认选中第一个remote，每个仓库至少有一个origin remote，应该不会出错
+    //默认选中为上游设置和本地分支相同名
+    val upstreamBranchSameWithLocal =rememberSaveable { mutableStateOf(true)}
+    //把远程分支名设成当前分支的完整名
+    val upstreamBranchShortRefSpec = rememberSaveable { mutableStateOf("")}
+
+    val doActAfterSetUpstreamSuccess = remember { mutableStateOf({}) }
+    val showClearForSetUpstreamDialog = rememberSaveable { mutableStateOf(false) }
+
+    val initSetUpstreamDialog = {targetRepo:RepoEntity, actAfterSuccess:()->Unit ->
+        //设置成功后的callback，可在设置完上游执行sync之类的
+        doActAfterSetUpstreamSuccess.value = actAfterSuccess
+
+        //为本地分支设置上游
+        //设置默认值
+        var remoteIdx = 0   //默认选中第一个元素
+        var shortBranch = targetRepo.branch  //默认分支名为当前选中的分支短名
+        var sameWithLocal = true  //默认勾选和本地分支同名，除非用户的上游不为空且有值
+
+//                            查询旧值，如果有的话
+        Repository.open(targetRepo.fullSavePath).use { repo->
+            //更新remote列表，设置upstream时用
+            val remoteList = Libgit2Helper.getRemoteList(repo)
+            upstreamRemoteOptionsList.value.clear()
+            upstreamRemoteOptionsList.value.addAll(remoteList)
+
+
+            val upstream = Libgit2Helper.getUpstreamOfBranch(repo, shortBranch)
+            //若配置文件存在上游则显示清除按钮
+            showClearForSetUpstreamDialog.value = upstream.remote.isNotBlank() && upstream.branchRefsHeadsFullRefSpec.isNotBlank()
+
+
+            MyLog.d(TAG,"set upstream menu item #onClick(): upstream is not null, old remote in config is: ${upstream.remote}, old branch in config is:${upstream.branchRefsHeadsFullRefSpec}")
+
+            val oldRemote = upstream.remote
+            //查询之前的remote
+            if(oldRemote.isNotBlank()) {
+                //检查 remote 是否在列表里，万一remote被删或者无效，就依然默认选中第一个remote
+                for((idx, value) in upstreamRemoteOptionsList.value.toList().withIndex()) {
+                    if(value == oldRemote) {
+                        MyLog.d(TAG,"set upstream menu item #onClick(): found old remote: ${value}, idx in remote list is: $idx")
+                        remoteIdx = idx
+                        break
+                    }
+                }
+            }
+            val oldUpstreamShortBranchNameNoPrefix = upstream.remoteBranchShortRefSpecNoPrefix
+            //查询之前的分支
+            if(oldUpstreamShortBranchNameNoPrefix.isNotBlank()) {
+                MyLog.d(TAG,"set upstream menu item #onClick(): found old branch full refspec: ${upstream.branchRefsHeadsFullRefSpec}, short refspec: $oldUpstreamShortBranchNameNoPrefix")
+                shortBranch = oldUpstreamShortBranchNameNoPrefix
+                sameWithLocal = false  //有有效的分支值，就不勾选 same with local 了
+            }
+
+
+        }
+
+
+        upstreamSelectedRemote.intValue = remoteIdx
+        upstreamBranchShortRefSpec.value = shortBranch
+        upstreamBranchSameWithLocal.value = sameWithLocal
+
+        MyLog.d(TAG, "set upstream menu item #onClick(): after read old settings, finally, default select remote idx is:${upstreamSelectedRemote.intValue}, branch name is:${upstreamBranchShortRefSpec.value}, check 'same with local branch` is:${upstreamBranchSameWithLocal.value}")
+
+        //显示弹窗
+        showSetUpstreamForLocalBranchDialog.value = true
+
+    }
+
+    if(showSetUpstreamForLocalBranchDialog.value) {
+        val curRepo = curRepo.value
+        SetUpstreamDialog(
+            remoteList = upstreamRemoteOptionsList.value,
+            curBranch = curRepo.branch,  //供显示的，让用户知道在为哪个分支设置上游
+            selectedOption = upstreamSelectedRemote,
+            branch = upstreamBranchShortRefSpec,
+            branchSameWithLocal = upstreamBranchSameWithLocal,
+            //如果仓库存在有效上游，显示“清除”，否则不需要显示
+            onClear = if(showClearForSetUpstreamDialog.value) ({
+                showSetUpstreamForLocalBranchDialog.value = false
+
+                val repoId = curRepo.id
+                val repoName = curRepo.repoName
+                val repoFullPath = curRepo.fullSavePath
+//                val curBranchFullName = curObjInPage.value.fullName
+                val curBranchShortName = curRepo.branch
+                doJobThenOffLoading(
+                    loadingOn,
+                    loadingOff,
+                    activityContext.getString(R.string.loading)
+                ) {
+                    try {
+                        Repository.open(repoFullPath).use { repo ->
+                            Libgit2Helper.clearUpstreamForBranch(repo, curBranchShortName)
+                        }
+
+                        Msg.requireShow(activityContext.getString(R.string.success))
+                    } catch (e: Exception) {
+                        //显示通知
+                        requireShowToast("clear upstream err:" + e.localizedMessage)
+                        //给用户看到错误
+                        createAndInsertError(
+                            repoId,
+                            "clear upstream for '$curBranchShortName' err:" + e.localizedMessage
+                        )
+                        //给开发者debug看的错误
+                        MyLog.e(
+                            TAG,
+                            "clear upstream for '$curBranchShortName' of '$repoName' err: " + e.stackTraceToString()
+                        )
+
+                    } finally {
+                        changeStateTriggerRefreshPage(needRefreshRepoPage)
+                    }
+                }
+            }) else null,
+            onCancel = {
+                //隐藏弹窗就行，相关状态变量会在下次弹窗前初始化
+                showSetUpstreamForLocalBranchDialog.value = false
+//                changeStateTriggerRefreshPage(needRefresh)  //取消操作，没必要刷新页面
+            },
+            onOk = onOk@{
+                showSetUpstreamForLocalBranchDialog.value = false
+                val doActAfterSuccess = doActAfterSetUpstreamSuccess.value
+                doActAfterSetUpstreamSuccess.value = {}  //清一下，这里不清其实也行，只要每次显示弹窗前记得清就行
+
+                val repoId = curRepo.id
+
+                val repoName = curRepo.repoName
+                val repoFullPath = curRepo.fullSavePath
+                val upstreamSameWithLocal = upstreamBranchSameWithLocal.value
+                val remoteList = upstreamRemoteOptionsList.value
+                val selectedRemoteIndex = upstreamSelectedRemote.intValue
+                val upstreamShortName = upstreamBranchShortRefSpec.value
+
+                //直接索引取值即可
+                val remote = try {
+                    remoteList[selectedRemoteIndex]
+                } catch (e: Exception) {
+                    MyLog.e(TAG,"err when get remote by index from remote list of '$repoName': remoteIndex=$selectedRemoteIndex, remoteList=$remoteList\nerr info:${e.stackTraceToString()}")
+                    Msg.requireShowLongDuration(activityContext.getString(R.string.err_selected_remote_is_invalid))
+                    return@onOk
+                }
+
+
+                // update git config
+                doJobThenOffLoading(
+                    loadingOn,
+                    loadingOff,
+                    activityContext.getString(R.string.setting_upstream)
+                ) {
+
+                    var curBranchShortNameForLog = ""
+                    try {
+                        Repository.open(repoFullPath).use { repo ->
+                            val headRef = Libgit2Helper.resolveHEAD(repo) ?: throw RuntimeException("resolve HEAD failed")
+
+                            val curBranchFullName = headRef.name()
+                            val curBranchShortName = headRef.shorthand()
+                            curBranchShortNameForLog = curBranchShortName
+
+                            //在仓库页面设置的必然是HEAD指向的分支，所以这里一定是true
+                            val isCurrentBranchOfRepo = true
+
+                            var branch = ""
+                            if (upstreamSameWithLocal) {  //勾选了使用和本地同名的分支，创建本地同名远程分支
+                                //取出repo的当前选中的分支
+                                branch = curBranchFullName
+                            } else {  //否则取出用户输入的远程分支短名，然后生成长名
+                                branch =
+                                    Libgit2Helper.getRefsHeadsBranchFullRefSpecFromShortRefSpec(
+                                        upstreamShortName
+                                    )
+                            }
+                            MyLog.d(
+                                TAG,
+                                "set upstream dialog #onOk(): repo is '$repoName', will write to git config: remote=$remote, branch=$branch"
+                            )
+
+                            //把分支的upstream信息写入配置文件
+                            val setUpstreamSuccess =
+                                Libgit2Helper.setUpstreamForBranchByRemoteAndRefspec(
+                                    repo,
+                                    remote,
+                                    branch,
+                                    targetBranchShortName = curBranchShortName
+                                )
+
+                            //如果是当前活跃分支，更新下db，否则不用更新
+                            if (isCurrentBranchOfRepo) {
+                                //更新数据库
+                                val repoDb =
+                                    AppModel.dbContainer.repoRepository
+                                val upstreamBranchShortName =
+                                    Libgit2Helper.getUpstreamRemoteBranchShortNameByRemoteAndBranchRefsHeadsRefSpec(
+                                        remote,
+                                        branch
+                                    )
+                                MyLog.d(
+                                    TAG,
+                                    "set upstream dialog #onOk(): upstreamBranchShortName=$upstreamBranchShortName"
+                                )
+                                repoDb.updateUpstream(repoId, upstreamBranchShortName)
+                            }
+
+                            if (setUpstreamSuccess) {
+                                requireShowToast(activityContext.getString(R.string.set_upstream_success))
+                                //例如你设置完之后要执行同步啊之类的，就设置到这
+                                doActAfterSuccess()
+                            } else {
+                                requireShowToast(activityContext.getString(R.string.set_upstream_error))
+                            }
+                        }
+                    } catch (e: Exception) {
+                        //显示通知
+                        requireShowToast("set upstream err:" + e.localizedMessage)
+                        //给用户看到错误
+                        createAndInsertError(
+                            repoId,
+                            "set upstream for '$curBranchShortNameForLog' err:" + e.localizedMessage
+                        )
+                        //给开发者debug看的错误
+                        MyLog.e(
+                            TAG,
+                            "set upstream for '$curBranchShortNameForLog' of '$repoName' err! user input branch is '$upstreamShortName', selected remote is $remote, user checked use same name with local is '$upstreamSameWithLocal'\nerr:" + e.stackTraceToString()
+                        )
+
+                    } finally {
+                        changeStateTriggerRefreshPage(needRefreshRepoPage)
+                    }
+
+                }
+
+
+            },
+        )
+    }
+
+
+
     // bottom bar block start
     val quitSelectionMode = {
         isSelectionMode.value = false
@@ -1432,7 +1676,7 @@ fun RepoInnerPage(
             }
         },
         setUpstream@{
-
+            initSetUpstreamDialog(selectedItems.value.first(), {})
         },
         changelist@{
             val curRepo = selectedItems.value.first()

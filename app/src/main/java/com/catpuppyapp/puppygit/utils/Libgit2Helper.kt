@@ -3607,7 +3607,7 @@ class Libgit2Helper {
 
                 //注：如果使用lookup必须全名查找，例如refs/heads/main 或 refs/remotes/origin/main，而且lookup不会解引用对象，如果ref是个符号引用(symbolic reference)，就会返回一个符号引用
                 val ref = if(trueUseDwimFalseUseLookup) Reference.dwim(repo, refNameShortOrFull) else Reference.lookup(repo, refNameShortOrFull)
-                return ref?.resolve()  //resolve reference to direct ref, direct ref is point to commit, no symbolicTarget
+                return ref?.resolve()  //resolve reference to direct ref, direct ref is point to commit, not symbolicTarget
             }catch (e:Exception) {
                 MyLog.e(TAG, "#resolveRefName(): resolve refname err! refname="+refNameShortOrFull+", trueUseDwimFalseUseLookup=$trueUseDwimFalseUseLookup, err is:"+e.stackTraceToString())
                 return null
