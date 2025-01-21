@@ -1878,8 +1878,10 @@ fun FilesInnerPage(
             selectAll@{
                 val list = if(enableFilterState.value) filterList.value else currentPathFileList.value
 
-                selectedItems.value.clear()
-                selectedItems.value.addAll(list)
+                list.toList().forEach {
+                    selectItem(it)
+                }
+
                 Unit
             }
         )

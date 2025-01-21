@@ -2163,10 +2163,24 @@ fun ChangeListInnerPage(
 //    }.value
     // 向下滚动监听，结束
 
+    val selectItem = { item: StatusTypeEntrySaver ->
+        isFileSelectionMode.value = true
+        UIHelper.selectIfNotInSelectedListElseNoop(item, selectedItemList.value)
+
+        //只刷新选中列表即可
+//        selectedItemList.requireRefreshView()
+
+        //这个刷新太彻底，画面会闪，不要用
+//        changeStateTriggerRefreshPage(needRefreshChangeListPage)
+    }
+
     val selectAll = {
         val list = if(enableFilterState.value) filterList.value else itemList.value
-        selectedItemList.value.clear()
-        selectedItemList.value.addAll(list)
+
+        list.toList().forEach {
+            selectItem(it)
+        }
+
         Unit
 //        list.forEach {
 //            UIHelper.selectIfNotInSelectedListElseNoop(it, selectedItemList.value)
@@ -2805,15 +2819,6 @@ fun ChangeListInnerPage(
 //        initChangeListPage()
 //        needRefreshChangeListPage.value = false
 //    }
-    val selectItem = { item: StatusTypeEntrySaver ->
-        UIHelper.selectIfNotInSelectedListElseNoop(item, selectedItemList.value)
-
-        //只刷新选中列表即可
-//        selectedItemList.requireRefreshView()
-
-        //这个刷新太彻底，画面会闪，不要用
-//        changeStateTriggerRefreshPage(needRefreshChangeListPage)
-    }
 
     //back handler block start
     //如果是从主页创建的此组件，按返回键应双击退出，需要注册个BackHandler，作为2级页面时则不用

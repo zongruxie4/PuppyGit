@@ -256,6 +256,7 @@ fun SubmoduleListScreen(
     }
 
     val selectItem = { item:SubmoduleDto ->
+        multiSelectionMode.value = true
         UIHelper.selectIfNotInSelectedListElseNoop(item, selectedItemList.value, contains = containsForSelectedItems)
     }
 
@@ -1059,8 +1060,9 @@ fun SubmoduleListScreen(
         selectAll@{
             //impl select all
             val list = if(enableFilterState.value) filterList.value else list.value
-            selectedItemList.value.clear()
-            selectedItemList.value.addAll(list)
+            list.toList().forEach {
+                selectItem(it)
+            }
             Unit
         },
     )

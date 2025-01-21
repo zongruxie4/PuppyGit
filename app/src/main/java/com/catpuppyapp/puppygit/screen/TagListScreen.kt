@@ -215,6 +215,7 @@ fun TagListScreen(
     }
 
     val selectItem = { item:TagDto ->
+        multiSelectionMode.value = true
         UIHelper.selectIfNotInSelectedListElseNoop(item, selectedItemList.value)
     }
 
@@ -516,8 +517,10 @@ fun TagListScreen(
         selectAll@{
             //impl select all
             val list = if(enableFilterState.value) filterList.value else list.value
-            selectedItemList.value.clear()
-            selectedItemList.value.addAll(list)
+            list.toList().forEach {
+                selectItem(it)
+            }
+
             Unit
 //            list.forEach {
 //                UIHelper.selectIfNotInSelectedListElseNoop(it, selectedItemList.value)
