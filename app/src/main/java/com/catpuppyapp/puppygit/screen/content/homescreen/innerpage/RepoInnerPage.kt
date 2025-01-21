@@ -63,11 +63,11 @@ import com.catpuppyapp.puppygit.compose.CheckBoxNoteText
 import com.catpuppyapp.puppygit.compose.ClickableText
 import com.catpuppyapp.puppygit.compose.ConfirmDialog
 import com.catpuppyapp.puppygit.compose.CopyableDialog
-import com.catpuppyapp.puppygit.compose.RepoCardError
 import com.catpuppyapp.puppygit.compose.MyCheckBox
 import com.catpuppyapp.puppygit.compose.MyLazyColumn
 import com.catpuppyapp.puppygit.compose.MySelectionContainer
 import com.catpuppyapp.puppygit.compose.RepoCard
+import com.catpuppyapp.puppygit.compose.RepoCardError
 import com.catpuppyapp.puppygit.compose.ScrollableColumn
 import com.catpuppyapp.puppygit.compose.SystemFolderChooser
 import com.catpuppyapp.puppygit.constants.Cons
@@ -79,8 +79,6 @@ import com.catpuppyapp.puppygit.dev.proFeatureEnabled
 import com.catpuppyapp.puppygit.dev.reflogTestPassed
 import com.catpuppyapp.puppygit.dev.repoRenameTestPassed
 import com.catpuppyapp.puppygit.dev.stashTestPassed
-import com.catpuppyapp.puppygit.dev.submoduleTestPassed
-import com.catpuppyapp.puppygit.dev.tagsTestPassed
 import com.catpuppyapp.puppygit.etc.RepoAction
 import com.catpuppyapp.puppygit.etc.Ret
 import com.catpuppyapp.puppygit.git.Upstream
@@ -149,6 +147,8 @@ fun RepoInnerPage(
     filterList:CustomStateListSaveable<RepoEntity>,
     isSelectionMode:MutableState<Boolean>,
     selectedItems:CustomStateListSaveable<RepoEntity>,
+    unshallowList:CustomStateListSaveable<RepoEntity>,
+    deleteList:CustomStateListSaveable<RepoEntity>,
 
 ) {
     val activityContext = LocalContext.current
@@ -216,6 +216,8 @@ fun RepoInnerPage(
 
     // global username and email dialog
     if(showSetGlobalGitUsernameAndEmailDialog.value) {
+        val curRepo = curRepo.value
+
         AskGitUsernameAndEmailDialog(
             title = stringResource(R.string.user_info),
             text=setGlobalGitUsernameAndEmailStrRes,
@@ -259,8 +261,9 @@ fun RepoInnerPage(
     val curRepoEmail = rememberSaveable { mutableStateOf( "")}
     // repo username and email dialog
     if(showSetCurRepoGitUsernameAndEmailDialog.value) {
+        val curRepo = curRepo.value
         AskGitUsernameAndEmailDialog(
-            title=curRepo.value.repoName,
+            title=curRepo.repoName,
             text=stringResource(R.string.set_username_and_email_for_repo),
             username=curRepoUsername,
             email=curRepoEmail,
@@ -273,7 +276,7 @@ fun RepoInnerPage(
 //                    loadingText=appContext.getString(R.string.saving)
                 ){
 //                    MyLog.d(TAG, "curRepo.value.fullSavePath::"+curRepo.value.fullSavePath)
-                    Repository.open(curRepo.value.fullSavePath).use { repo ->
+                    Repository.open(curRepo.fullSavePath).use { repo ->
                         //save email and username
                         Libgit2Helper.saveGitUsernameAndEmailForRepo(
                             repo = repo,
@@ -802,22 +805,35 @@ fun RepoInnerPage(
     }
 
     val showDelRepoDialog = rememberSaveable { mutableStateOf(false)}
-    val willDeleteRepo = mutableCustomStateOf(keyTag = stateKeyTag, keyName = "willDeleteRepo", initValue = RepoEntity(id=""))
+    val willDeleteRepoNames = rememberSaveable { mutableStateOf("") }
     val requireDelFilesOnDisk = rememberSaveable { mutableStateOf(false)}
-    val requireDelRepo = {expectDelRepo:RepoEntity ->
-        willDeleteRepo.value = expectDelRepo
+    val requireDelRepo = {expectDelRepos:List<RepoEntity> ->
+        //仓库名
+        val suffix = ", "
+        val sb = StringBuilder()
+        expectDelRepos.forEach { sb.append(it).append(suffix) }
+        willDeleteRepoNames.value = sb.removeSuffix(suffix).toString()
+
+        //添加到待删除列表
+        deleteList.value.clear()
+        deleteList.value.addAll(expectDelRepos)
+
+        //初始化删除硬盘文件为假
         requireDelFilesOnDisk.value = false
+
+        //显示弹窗
         showDelRepoDialog.value = true
     }
+
     if(showDelRepoDialog.value) {
         ConfirmDialog(
-            title = stringResource(id = R.string.del_repo),
+            title = stringResource(id = R.string.delete),
 //            text = stringResource(id = R.string.are_you_sure_to_delete)+": '"+willDeleteRepo.value.repoName+"' ?"+"\n"+ stringResource(R.string.will_delete_repo_and_all_its_files_on_disk),
             requireShowTextCompose = true,
             textCompose = {
                 ScrollableColumn {
                     Row {
-                        Text(text = stringResource(id = R.string.delete_repo)+":")
+                        Text(text = stringResource(id = R.string.delete_repos)+":")
                     }
                     MySelectionContainer {
                         Row(
@@ -828,7 +844,7 @@ fun RepoInnerPage(
                             verticalAlignment = Alignment.CenterVertically
                         ) {
                             Text(
-                                text = willDeleteRepo.value.repoName,
+                                text = willDeleteRepoNames.value,
                                 fontWeight = FontWeight.ExtraBold,
                                 modifier = Modifier.padding(start = 16.dp),
                                 //                                color = Color.Unspecified
@@ -885,31 +901,36 @@ fun RepoInnerPage(
         ) {
             //关闭弹窗
             showDelRepoDialog.value=false
-
-            val willDeleteRepo = willDeleteRepo.value
             val requireDelFilesOnDisk = requireDelFilesOnDisk.value
             val requireTransaction = true
 
             //执行删除
             doJobThenOffLoading {
+                var curRepo:RepoEntity? = null
                 try {
-                    val repoDb = AppModel.dbContainer.repoRepository
-                    //删除仓库
-                    repoDb.delete(
-                        item = willDeleteRepo,
-                        requireDelFilesOnDisk = requireDelFilesOnDisk,
-                        requireTransaction = requireTransaction
-                    )
+                    deleteList.value.toList().forEach { willDeleteRepo ->
+                        curRepo = willDeleteRepo
+
+                        val repoDb = AppModel.dbContainer.repoRepository
+                        //删除仓库
+                        repoDb.delete(
+                            item = willDeleteRepo,
+                            requireDelFilesOnDisk = requireDelFilesOnDisk,
+                            requireTransaction = requireTransaction
+                        )
+                    }
 
                     Msg.requireShow(activityContext.getString(R.string.success))
-                }catch (e:Exception){
-                    Msg.requireShowLongDuration(e.localizedMessage ?:"err")
-                    MyLog.e(TAG, "del repo in ReposPage err: ${e.stackTraceToString()}")
-                }finally {
+
+                } catch (e: Exception) {
+                    Msg.requireShowLongDuration(e.localizedMessage ?: "err")
+                    MyLog.e(TAG, "del repo '${curRepo?.repoName ?: "::curRepo is null::"}' in ReposPage err: ${e.stackTraceToString()}")
+                } finally {
                     //请求刷新列表
                     changeStateTriggerRefreshPage(needRefreshRepoPage)
                 }
             }
+
         }
 
     }
@@ -1001,6 +1022,7 @@ fun RepoInnerPage(
 
 
     val showUnshallowDialog = rememberSaveable { mutableStateOf(false)}
+    val unshallowRepoNames = rememberSaveable { mutableStateOf("")}
     if(showUnshallowDialog.value) {
         ConfirmDialog(
             title = stringResource(id = R.string.unshallow),
@@ -1008,7 +1030,7 @@ fun RepoInnerPage(
             textCompose = {
                 ScrollableColumn {
                     Row {
-                        Text(text = stringResource(R.string.will_do_unshallow_for_repo) + ":")
+                        Text(text = stringResource(R.string.will_do_unshallow_for_repos) + ":")
                     }
                     MySelectionContainer {
                         Row(
@@ -1019,7 +1041,7 @@ fun RepoInnerPage(
                             verticalAlignment = Alignment.CenterVertically
                         ) {
                             Text(
-                                text = curRepo.value.repoName,
+                                text = unshallowRepoNames.value,
                                 fontWeight = FontWeight.ExtraBold,
                                 modifier = Modifier.padding(start = 16.dp),
                                 //                                color = Color.Unspecified
@@ -1040,28 +1062,44 @@ fun RepoInnerPage(
                     }
                 }
             },
-            onCancel = { showUnshallowDialog.value=false}) {
-            showUnshallowDialog.value=false
-            doJobThenOffLoading {
-                val curRepoId = curRepo.value.id
-                val curRepoIdx = curRepoIndex.intValue
-                val curRepoFullPath = curRepo.value.fullSavePath
-                val curRepoVal =  curRepo.value
-                doActAndSetRepoStatus(curRepoIdx, curRepoId, activityContext.getString(R.string.Unshallowing)) {
-                    Repository.open(curRepoFullPath).use { repo->
-                        val ret = Libgit2Helper.unshallowRepo(repo, curRepoVal,
-                            AppModel.dbContainer.repoRepository,
-                            AppModel.dbContainer.remoteRepository,
-                            AppModel.dbContainer.credentialRepository
-                        )
-                        if(ret.hasError()) {
-                            Msg.requireShow(ret.msg)
-                        }
+            onCancel = { showUnshallowDialog.value=false}
+        ) {
+            showUnshallowDialog.value = false
 
+            val unshallowingText = activityContext.getString(R.string.unshallowing)
+
+            unshallowList.value.toList().forEach { curRepo ->
+                doJobThenOffLoading {
+                    val curRepoId = curRepo.id
+                    val curRepoIdx = -1  //这个index不使用了，改用repoid更新仓库了
+                    val curRepoFullPath = curRepo.fullSavePath
+                    val curRepoVal =  curRepo
+
+                    val lock = Libgit2Helper.getRepoLock(curRepoId)
+                    if(lock.isLocked) {
+                        return@doJobThenOffLoading
                     }
+
+                    lock.withLock {
+                        doActAndSetRepoStatus(curRepoIdx, curRepoId, unshallowingText) {
+                            Repository.open(curRepoFullPath).use { repo->
+                                val ret = Libgit2Helper.unshallowRepo(
+                                    repo,
+                                    curRepoVal,
+                                    AppModel.dbContainer.repoRepository,
+                                    AppModel.dbContainer.remoteRepository,
+                                    AppModel.dbContainer.credentialRepository
+                                )
+                                if(ret.hasError()) {
+                                    Msg.requireShow(ret.msg)
+                                }
+
+                            }
+                        }
+                    }
+
                 }
             }
-
         }
     }
 
@@ -1096,6 +1134,7 @@ fun RepoInnerPage(
 
     val goToThisRepoAndHighlightingIt = goTo@{ targetId:String ->
         if(targetId.isBlank()) {
+            Msg.requireShow(activityContext.getString(R.string.not_found))
             return@goTo
         }
 
@@ -1204,12 +1243,35 @@ fun RepoInnerPage(
         }
     }
 
-    val doActIfRepoGood = { curRepo:RepoEntity, act:()->Unit ->
+    val doActIfRepoGoodOrElse = { curRepo:RepoEntity, act:()->Unit, elseAct:()->Unit ->
         val repoStatusGood = curRepo.gitRepoState!=null && !Libgit2Helper.isRepoStatusNotReadyOrErr(curRepo)
         if(repoStatusGood) {
             act()
+        }else {
+            elseAct()
         }
     }
+
+    val doActIfRepoGood = { curRepo:RepoEntity, act:()->Unit ->
+        doActIfRepoGoodOrElse(curRepo, act, {})
+    }
+
+//    val doActWithLockIfRepoGood = { curRepo:RepoEntity, act: suspend ()->Unit ->
+//        val repoStatusGood = curRepo.gitRepoState!=null && !Libgit2Helper.isRepoStatusNotReadyOrErr(curRepo)
+//        if(repoStatusGood) {
+//            doJobThenOffLoading {
+//                val lock = Libgit2Helper.getRepoLock(curRepo.id)
+//                //maybe do other jobs
+//                if(lock.isLocked) {
+//                    return@doJobThenOffLoading
+//                }
+//
+//                lock.withLock {
+//                    act()
+//                }
+//            }
+//        }
+//    }
 
     val invalidIdx = remember { -1 }
 
@@ -1298,35 +1360,82 @@ fun RepoInnerPage(
             }
         },
         tags@{
-
+            val curRepo = selectedItems.value.first()
+            doActIfRepoGood(curRepo) {
+                //跳转到tags页面
+                navController.navigate(Cons.nav_TagListScreen + "/" + curRepo.id)
+            }
         },
         submodules@{
-
+            val curRepo = selectedItems.value.first()
+            doActIfRepoGood(curRepo) {
+                navController.navigate(Cons.nav_SubmoduleListScreen + "/" + curRepo.id)
+            }
         },
 
         userInfo@{
-
+            val selectedRepo = selectedItems.value.first()
+            doActIfRepoGood(selectedRepo) {
+                //设置当前仓库（如果不将repo先设置为无效值，可能会导致页面获取旧值，显示过时信息）
+                curRepo.value = RepoEntity()  // change state to a new value, if delete this line, may cause page not refresh after changed repo
+                curRepo.value = selectedItems.value.first()  // update state to target value
+                showSetCurRepoGitUsernameAndEmailDialog.value = true
+            }
         },
         unshallow@{
+            //选出可以执行unshallow的list
+            val unshallowableList = selectedItems.value.filter { curRepo ->
+                val repoStatusGood = curRepo.gitRepoState!=null && !Libgit2Helper.isRepoStatusNotReadyOrErr(curRepo)
+                repoStatusGood && dbIntToBool(curRepo.isShallow)
+            }
 
+            //若不为空，询问，然后执行unshallow
+            if(unshallowableList.isNotEmpty()) {
+                unshallowList.value.clear()
+                unshallowList.value.addAll(unshallowableList)
+
+                //生成仓库名，用于显示
+                val sb = StringBuilder()
+                val suffix = ", "
+                unshallowableList.forEach { sb.append(it.repoName).append(suffix) }
+                unshallowRepoNames.value = sb.removeSuffix(suffix).toString()
+
+                showUnshallowDialog.value = true
+            }
         },
         setUpstream@{
-
+ddddddddddd
         },
         changelist@{
-
+            val curRepo = selectedItems.value.first()
+            doActIfRepoGood(curRepo) {
+                goToChangeListPage(curRepo)
+            }
         },
         stash@{
-
+            val curRepo = selectedItems.value.first()
+            doActIfRepoGood(curRepo) {
+                navController.navigate(Cons.nav_StashListScreen+"/"+curRepo.id)
+            }
         },
         reflog@{
-
+            val curRepo = selectedItems.value.first()
+            doActIfRepoGood(curRepo) {
+                navController.navigate(Cons.nav_ReflogListScreen+"/"+curRepo.id)
+            }
         },
         rename@{
+            // rename不需要检查仓库状态是否good，直接执行即可
+            val selectedRepo = selectedItems.value.first()
+            curRepo.value = RepoEntity()
+            curRepo.value = selectedItems.value.first()
 
+            repoNameForRenameDialog.value = selectedRepo.repoName
+            showRenameDialog.value = true
         },
-        delete@{
 
+        delete@{
+            requireDelRepo(selectedItems.value.toList())
         }
     )
 
@@ -1350,7 +1459,7 @@ fun RepoInnerPage(
         unshallow@{
             hasSelectedItems()
         },
-        setUpStream@{
+        setUpstream@{
             selectedSingle()
         },
         changelist@{
@@ -1420,99 +1529,7 @@ fun RepoInnerPage(
         val hasTmpStatus = curRepo.value.tmpStatus.isNotBlank()  //如果有设临时状态，说明在执行某个操作，比如正在fetching，所以这时应该不允许再执行fetch或pull之类的操作，我做了处理，即使用户去cl页面执行，也无法绕过此限制
         val actionEnabled = !isDetached && !hasTmpStatus
         BottomSheet(showBottomSheet, sheetState, curRepo.value.repoName) {
-            if(repoStatusGood) {
-
-    //            BottomSheetItem(sheetState, showBottomSheet, stringResource(R.string.sync), enabled = actionEnabled) {
-    //                doJobThenOffLoading {
-    //                    try {
-    //                        doSync(curRepo.value)
-    //
-    //                    }finally {
-    //                        changeStateTriggerRefreshPage(needRefreshRepoPage)
-    //                    }
-    //                }
-    //            }
-                BottomSheetItem(sheetState, showBottomSheet, stringResource(R.string.remotes)) {
-                    //管理remote，右上角有个fetch all可fetch所有remote
-                    navController.navigate(Cons.nav_RemoteListScreen+"/"+curRepo.value.id)
-                }
-
-                if(dev_EnableUnTestedFeature || tagsTestPassed) {
-                    val isPro = UserUtil.isPro()
-                    val text = if(isPro) stringResource(R.string.tags) else stringResource(R.string.tags_pro)
-
-                    //非pro用户能看到这个选项但不能用
-                    BottomSheetItem(sheetState, showBottomSheet, text, enabled = isPro) {
-                        //跳转到tags页面
-                        navController.navigate(Cons.nav_TagListScreen + "/" + curRepo.value.id)
-                    }
-
-                }
-
-                if(proFeatureEnabled(submoduleTestPassed)) {
-                    BottomSheetItem(sheetState, showBottomSheet, stringResource(R.string.submodules)) {
-                        navController.navigate(Cons.nav_SubmoduleListScreen + "/" + curRepo.value.id)
-                    }
-                }
-
-    //            BottomSheetItem(sheetState, showBottomSheet, stringResource(R.string.reflog)) {
-    //             //日后实现
-    //            }
-    //            BottomSheetItem(sheetState, showBottomSheet, stringResource(R.string.tags)) {
-    //              日后实现
-    //            }
-    //            BottomSheetItem(sheetState, showBottomSheet, stringResource(R.string.settings)) {
-    //              日后实现
-    //            }
-                BottomSheetItem(sheetState, showBottomSheet, stringResource(R.string.user_info)) {
-                    showSetCurRepoGitUsernameAndEmailDialog.value = true
-                }
-                //对shallow(克隆时设置了depth)的仓库提供一个unshallow选项
-                if(dbIntToBool(curRepo.value.isShallow)) {
-                    BottomSheetItem(sheetState, showBottomSheet, stringResource(R.string.unshallow),
-                        textDesc = stringResource(R.string.cancel_clone_depth),
-                        enabled = !hasTmpStatus  //unshallow是针对仓库的行为，会对仓库所有remote执行unshallow fetch，而不管仓库是否detached HEAD，由于仓库remotes总是可用，所以，这里不用判断是否detached
-                    ) {
-                        showUnshallowDialog.value = true
-                    }
-                }
-
-//                BottomSheetItem(sheetState, showBottomSheet, stringResource(R.string.explorer_files)) {
-//                    showBottomSheet.value=false  //不知道为什么，常规的关闭菜单不太好使，一跳转页面就废了，所以手动隐藏下菜单
-//                    goToFilesPage(curRepo.value.fullSavePath)
-//                }
-
-
-                //go to changelist，避免侧栏切换到changelist时刚好某个仓库加载很慢导致无法切换其他仓库
-                BottomSheetItem(sheetState, showBottomSheet, stringResource(R.string.changelist)) {
-                    showBottomSheet.value=false  //不知道为什么，常规的关闭菜单不太好使，一跳转页面就废了，所以手动隐藏下菜单
-                    goToChangeListPage(curRepo.value)
-                }
-
-                //非pro这两个选项直接不可见，弄成能看不能用有点麻烦，直接非pro隐藏算了
-                if(UserUtil.isPro()) {
-                    if(dev_EnableUnTestedFeature || stashTestPassed) {
-                        BottomSheetItem(sheetState, showBottomSheet, stringResource(R.string.stash)) {
-                            showBottomSheet.value=false
-                            navController.navigate(Cons.nav_StashListScreen+"/"+curRepo.value.id)
-                        }
-                    }
-
-                    if(dev_EnableUnTestedFeature || reflogTestPassed){
-                        BottomSheetItem(sheetState, showBottomSheet, stringResource(R.string.reflog)) {
-                            showBottomSheet.value=false  //不知道为什么，常规的关闭菜单不太好使，一跳转页面就废了，所以手动隐藏下菜单
-                            navController.navigate(Cons.nav_ReflogListScreen+"/"+curRepo.value.id)
-                        }
-                    }
-                }
-            }
-
-            if(proFeatureEnabled(repoRenameTestPassed)) {
-                BottomSheetItem(sheetState, showBottomSheet, stringResource(R.string.rename)) {
-                    repoNameForRenameDialog.value = curRepo.value.repoName
-                    showRenameDialog.value = true
-                }
-            }
+            ddddddddddd
 
 
             //show jump to parent repo if has parentRepoId
@@ -1522,9 +1539,6 @@ fun RepoInnerPage(
                 }
             }
 
-            BottomSheetItem(sheetState, showBottomSheet, stringResource(R.string.delete), textColor = MyStyleKt.TextColor.danger()) {
-                requireDelRepo(curRepo.value)
-            }
         }
     }
 
@@ -1745,7 +1759,7 @@ fun RepoInnerPage(
                             titleOnClick = repoCardTitleOnClick,
 
                             doCloneSingle = doCloneSingle,
-                            requireDelRepo = requireDelRepo,
+                            requireDelRepo = {curRepo -> requireDelRepo(listOf(curRepo))},
                             requireBlinkIdx = requireBlinkIdx,
                             copyErrMsg = {msg->
                                 clipboardManager.setText(AnnotatedString(msg))

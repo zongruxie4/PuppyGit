@@ -392,13 +392,13 @@
     <string name="i_am_sure_i_want_hard_reset">我确定我想硬重置</string>
     <string name="reset_success">重置成功</string>
     <string name="target">目标</string>
-    <string name="delete_repo">删除仓库</string>
+    <string name="delete_repos">删除仓库</string>
     <string name="closing">关闭中…</string>
     <string name="unshallow">解除浅克隆</string>
     <string name="cancel_clone_depth">取消克隆深度</string>
-    <string name="Unshallowing">解除浅克隆中…</string>
+    <string name="unshallowing">正在解除浅克隆…</string>
     <string name="unshallow_success_cant_back">注意: 如果解除浅克隆成功，你将不能再返回浅克隆状态！</string>
-    <string name="will_do_unshallow_for_repo">将对仓库解除浅克隆</string>
+    <string name="will_do_unshallow_for_repos">将对仓库解除浅克隆</string>
     <string name="err_file_doesnt_exist_anymore">错误: 文件已不存在!</string>
     <string name="unstaging">取消暂存中…</string>
     <string name="will_unstage_are_u_sure">将取消暂存选中条目，你确定吗？</string>

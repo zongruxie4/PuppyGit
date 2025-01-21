@@ -392,13 +392,13 @@
     <string name="i_am_sure_i_want_hard_reset">I am sure I want to hard reset</string>
     <string name="reset_success">Reset Success</string>
     <string name="target">Target</string>
-    <string name="delete_repo">Delete Repo</string>
+    <string name="delete_repos">Delete Repo(s)</string>
     <string name="closing">Closing…</string>
     <string name="unshallow">Unshallow</string>
     <string name="cancel_clone_depth">Cancel Clone Depth</string>
-    <string name="Unshallowing">Unshallowing…</string>
+    <string name="unshallowing">Unshallowing…</string>
     <string name="unshallow_success_cant_back">note: If unshallow success, You can\'t back shallowed again!</string>
-    <string name="will_do_unshallow_for_repo">Will do unshallow for repo</string>
+    <string name="will_do_unshallow_for_repos">Will do unshallow for repo(s)</string>
     <string name="err_file_doesnt_exist_anymore">Err: File doesn\'t exist anymore!</string>
     <string name="unstaging">Unstaging…</string>
     <string name="will_unstage_are_u_sure">Will Unstage selected items, are you sure?</string>

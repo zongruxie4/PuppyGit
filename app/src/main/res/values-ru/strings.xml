@@ -392,13 +392,13 @@
     <string name="i_am_sure_i_want_hard_reset">Я уверен, что хочу выполнить полный сброс</string>
     <string name="reset_success">Сброс выполнен успешно</string>
     <string name="target">Цель</string>
-    <string name="delete_repo">Удалить репозиторий</string>
+    <string name="delete_repos">Удалить репозиторий(и)</string>
     <string name="closing">Закрытие…</string>
     <string name="unshallow">Сделать полный клон</string>
     <string name="cancel_clone_depth">Отменить глубину клонирования</string>
-    <string name="Unshallowing">Расширение клона…</string>
+    <string name="unshallowing">Расширение клона…</string>
     <string name="unshallow_success_cant_back">Примечание: После успешного расширения клона вернуться к ограниченной глубине будет невозможно!</string>
-    <string name="will_do_unshallow_for_repo">Будет выполнено полное клонирование репозитория</string>
+    <string name="will_do_unshallow_for_repos">Будет выполнено полное клонирование репозитория(и)</string>
     <string name="err_file_doesnt_exist_anymore">Ошибка: файл больше не существует!</string>
     <string name="unstaging">Отмена добавления…</string>
     <string name="will_unstage_are_u_sure">Вы уверены, что хотите отменить добавление выбранных элементов?</string>

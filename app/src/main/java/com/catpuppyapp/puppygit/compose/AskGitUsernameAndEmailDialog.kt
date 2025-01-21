@@ -30,7 +30,7 @@ fun AskGitUsernameAndEmailDialog(
     username: MutableState<String>,
     email: MutableState<String>,
     isForGlobal: Boolean,
-    curRepo: CustomStateSaveable<RepoEntity>,
+    curRepo: RepoEntity,
     onOk: () -> Unit,
     onCancel: () -> Unit,
     enableOk: () -> Boolean,
@@ -120,8 +120,8 @@ fun AskGitUsernameAndEmailDialog(
                 username.value = u
                 email.value = e
 
-            } else if (curRepo.value.fullSavePath.isNotBlank()) {
-                Repository.open(curRepo.value.fullSavePath).use { repo ->
+            } else if (curRepo.fullSavePath.isNotBlank()) {
+                Repository.open(curRepo.fullSavePath).use { repo ->
                     val (u, e) = Libgit2Helper.getGitUserNameAndEmailFromRepo(repo)
                     username.value = u
                     email.value = e

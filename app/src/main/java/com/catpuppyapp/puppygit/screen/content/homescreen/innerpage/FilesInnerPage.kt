@@ -316,7 +316,7 @@ fun FilesInnerPage(
                 }
             },
             okBtnEnabled = pathToGo.value.isNotBlank(),
-            okBtnText = stringResource(id = R.string.ok),
+            okBtnText = stringResource(id = R.string.go),
             cancelBtnText = stringResource(id = R.string.cancel),
             title = stringResource(R.string.go_to),
             onCancel = { showGoToPathDialog.value = false }
