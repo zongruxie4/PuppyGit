@@ -1212,14 +1212,21 @@ fun RepoInnerPage(
         stringResource(R.string.select_all),
     )
 
-    val doActWithLockIfRepoGoodAndActEnabled = { curRepo:RepoEntity, act: suspend ()->Unit ->
+    val isRepoGoodAndActEnabled = {curRepo:RepoEntity ->
         val repoStatusGood = curRepo.gitRepoState!=null && !Libgit2Helper.isRepoStatusNotReadyOrErr(curRepo)
 
         val isDetached = dbIntToBool(curRepo.isDetached)
-        val hasTmpStatus = curRepo.tmpStatus.isNotBlank()  //如果有设临时状态，说明在执行某个操作，比如正在fetching，所以这时应该不允许再执行fetch或pull之类的操作，我做了处理，即使用户去cl页面执行，也无法绕过此限制
+        //这个tmpStatus只是粗略判断仓库是否正在执行操作，不一定准，还是得靠lock，不过libgit2底层应该有锁，所以代码里有些地方若不确定是否需要加锁，可以不加
+        //如果有设临时状态，说明在执行某个操作，比如正在fetching，所以这时应该不允许再执行fetch或pull之类的操作，我做了处理，即使用户去cl页面执行，也无法绕过此限制( ? 不确定，cl页面好像已经无视tmpStatus了，而且没加mutex，直接依靠libgit2底层的锁（好像有））
+        //仅当requireAction不等于检查本地未提交修改时，tmpStatus的值才有意义，否则可能没意义。(因为如果requireAction等于检查未提交修改，这时tmpStatus有可能不为空，但检查本地未提交修改时不与pull/push之类的操作冲突，所以，这时其实仍然可以执行操作)
+        val hasTmpStatus = curRepo.requireAction != RepoAction.NEED_CHECK_UNCOMMITED_CHANGES && curRepo.tmpStatus.isNotBlank()
         val actionEnabled = !isDetached && !hasTmpStatus
 
-        if(repoStatusGood && actionEnabled) {
+        repoStatusGood && actionEnabled
+    }
+
+    val doActWithLockIfRepoGoodAndActEnabled = { curRepo:RepoEntity, act: suspend ()->Unit ->
+        if(isRepoGoodAndActEnabled(curRepo)) {
             doJobThenOffLoading {
                 val lock = Libgit2Helper.getRepoLock(curRepo.id)
                 //maybe do other jobs
