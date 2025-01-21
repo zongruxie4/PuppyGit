@@ -1348,12 +1348,13 @@ fun RepoInnerPage(
         }
     )
 
+    val bottomBarIconDefaultEnable =  {hasSelectedItems() && selectedItems.value.any { it.upstreamBranch.isNotBlank() && !dbIntToBool(it.isDetached) } }
     val selectionModeIconEnableList = listOf(
         // 点击后再检查取出可执行fetch的仓库
-        fetchEnable@{ hasSelectedItems() && selectedItems.value.any { it.upstreamBranch.isNotBlank() } },
-        pullEnable@{ hasSelectedItems() && selectedItems.value.any { it.upstreamBranch.isNotBlank() } },
-        pushEnable@{ hasSelectedItems() && selectedItems.value.any { it.upstreamBranch.isNotBlank() } },
-        syncEnable@{ hasSelectedItems() && selectedItems.value.any { it.upstreamBranch.isNotBlank() } },
+        fetchEnable@{ bottomBarIconDefaultEnable() },
+        pullEnable@{ bottomBarIconDefaultEnable() },
+        pushEnable@{ bottomBarIconDefaultEnable() },
+        syncEnable@{ bottomBarIconDefaultEnable() },
         selectAllEnable@{ true },
     )
 
