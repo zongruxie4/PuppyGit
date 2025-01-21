@@ -140,6 +140,7 @@ fun RepoInnerPage(
     selectedItems:CustomStateListSaveable<RepoEntity>,
     unshallowList:CustomStateListSaveable<RepoEntity>,
     deleteList:CustomStateListSaveable<RepoEntity>,
+    userInfoRepoList:CustomStateListSaveable<RepoEntity>,
 
 ) {
     val activityContext = LocalContext.current
@@ -215,7 +216,7 @@ fun RepoInnerPage(
             username=globalUsername,
             email=globalEmail,
             isForGlobal=true,
-            curRepo=curRepo,
+            repos = listOf(), // global,不需要此list，传空即可
             onOk={
                 doJobThenOffLoading(
                     //loadingOn = loadingOn, loadingOff=loadingOff,
@@ -250,33 +251,46 @@ fun RepoInnerPage(
     val showSetCurRepoGitUsernameAndEmailDialog = rememberSaveable { mutableStateOf( false)}
     val curRepoUsername = rememberSaveable { mutableStateOf("")}
     val curRepoEmail = rememberSaveable { mutableStateOf( "")}
+
+    //这个不是显示global的，是针对单或多个仓库的
+    val showSetUserInfoDialog = showSetUserInfoDialog@{repos:List<RepoEntity> ->
+        if(repos.isEmpty()) {
+            return@showSetUserInfoDialog
+        }
+
+        userInfoRepoList.value.clear()
+        userInfoRepoList.value.addAll(repos)
+
+        showSetCurRepoGitUsernameAndEmailDialog.value = true
+    }
+
     // repo username and email dialog
     if(showSetCurRepoGitUsernameAndEmailDialog.value) {
-        val curRepo = curRepo.value
         AskGitUsernameAndEmailDialog(
-            title=curRepo.repoName,
+            title= stringResource(R.string.user_info),
             text=stringResource(R.string.set_username_and_email_for_repo),
             username=curRepoUsername,
             email=curRepoEmail,
             isForGlobal=false,
-            curRepo=curRepo,
+            repos=userInfoRepoList.value,
             onOk={
+                showSetCurRepoGitUsernameAndEmailDialog.value=false
+
                 // save email and username
-                doJobThenOffLoading(
-                    //loadingOn = loadingOn, loadingOff=loadingOff,
-//                    loadingText=appContext.getString(R.string.saving)
-                ){
+                doJobThenOffLoading {
+                    userInfoRepoList.value.toList().forEach { curRepo ->
 //                    MyLog.d(TAG, "curRepo.value.fullSavePath::"+curRepo.value.fullSavePath)
-                    Repository.open(curRepo.fullSavePath).use { repo ->
-                        //save email and username
-                        Libgit2Helper.saveGitUsernameAndEmailForRepo(
-                            repo = repo,
-                            requireShowErr=requireShowToast,
-                            username=curRepoUsername.value,
-                            email=curRepoEmail.value
-                        )
+                        Repository.open(curRepo.fullSavePath).use { repo ->
+                            //save email and username
+                            Libgit2Helper.saveGitUsernameAndEmailForRepo(
+                                repo = repo,
+                                requireShowErr=requireShowToast,
+                                username=curRepoUsername.value,
+                                email=curRepoEmail.value
+                            )
+                        }
                     }
-                    showSetCurRepoGitUsernameAndEmailDialog.value=false
+
                     requireShowToast(saved)
                 }
 
@@ -1241,9 +1255,12 @@ fun RepoInnerPage(
         }
     }
 
+    val isRepoGood = {curRepo:RepoEntity ->
+        curRepo.gitRepoState!=null && !Libgit2Helper.isRepoStatusNotReadyOrErr(curRepo)
+    }
+
     val doActIfRepoGoodOrElse = { curRepo:RepoEntity, act:()->Unit, elseAct:()->Unit ->
-        val repoStatusGood = curRepo.gitRepoState!=null && !Libgit2Helper.isRepoStatusNotReadyOrErr(curRepo)
-        if(repoStatusGood) {
+        if(isRepoGood(curRepo)) {
             act()
         }else {
             elseAct()
@@ -1372,13 +1389,7 @@ fun RepoInnerPage(
         },
 
         userInfo@{
-            val selectedRepo = selectedItems.value.first()
-            doActIfRepoGood(selectedRepo) {
-                //设置当前仓库（如果不将repo先设置为无效值，可能会导致页面获取旧值，显示过时信息）
-                curRepo.value = RepoEntity()  // change state to a new value, if delete this line, may cause page not refresh after changed repo
-                curRepo.value = selectedItems.value.first()  // update state to target value
-                showSetCurRepoGitUsernameAndEmailDialog.value = true
-            }
+            showSetUserInfoDialog(selectedItems.value.filter { isRepoGood(it) })
         },
         unshallow@{
             //选出可以执行unshallow的list
@@ -1440,7 +1451,8 @@ fun RepoInnerPage(
 
     val selectionModeMoreItemEnableList = listOf(
         clone@{
-            hasSelectedItems()
+            //至少选中一个需要克隆的仓库才显示此按钮
+            hasSelectedItems() && selectedItems.value.find { it.workStatus == Cons.dbRepoWorkStatusNotReadyNeedClone } != null
         },
         remotes@{
             selectedSingle()

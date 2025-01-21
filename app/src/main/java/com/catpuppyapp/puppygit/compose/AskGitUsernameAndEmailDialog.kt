@@ -1,6 +1,5 @@
 package com.catpuppyapp.puppygit.compose
 
-import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
@@ -19,7 +18,6 @@ import com.catpuppyapp.puppygit.data.entity.RepoEntity
 import com.catpuppyapp.puppygit.play.pro.R
 import com.catpuppyapp.puppygit.utils.Libgit2Helper
 import com.catpuppyapp.puppygit.utils.doJobThenOffLoading
-import com.catpuppyapp.puppygit.utils.state.CustomStateSaveable
 import com.github.git24j.core.Repository
 
 
@@ -30,7 +28,7 @@ fun AskGitUsernameAndEmailDialog(
     username: MutableState<String>,
     email: MutableState<String>,
     isForGlobal: Boolean,
-    curRepo: RepoEntity,
+    repos: List<RepoEntity>,
     onOk: () -> Unit,
     onCancel: () -> Unit,
     enableOk: () -> Boolean,
@@ -120,8 +118,8 @@ fun AskGitUsernameAndEmailDialog(
                 username.value = u
                 email.value = e
 
-            } else if (curRepo.fullSavePath.isNotBlank()) {
-                Repository.open(curRepo.fullSavePath).use { repo ->
+            } else if (repos.size == 1) {  //若只选中了一个仓库，回显此仓库的用户名和邮箱
+                Repository.open(repos.first().fullSavePath).use { repo ->
                     val (u, e) = Libgit2Helper.getGitUserNameAndEmailFromRepo(repo)
                     username.value = u
                     email.value = e

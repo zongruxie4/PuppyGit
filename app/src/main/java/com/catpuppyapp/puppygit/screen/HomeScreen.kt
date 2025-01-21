@@ -212,6 +212,7 @@ fun HomeScreen(
     val reposPageSelectedItems = mutableCustomStateListOf(keyTag = stateKeyTag, keyName = "reposPageSelectedItems", initValue = listOf<RepoEntity>())
     val reposPageUnshallowItems = mutableCustomStateListOf(keyTag = stateKeyTag, keyName = "reposPageUnshallowItems", initValue = listOf<RepoEntity>())
     val reposPageDeleteItems = mutableCustomStateListOf(keyTag = stateKeyTag, keyName = "reposPageDeleteItems", initValue = listOf<RepoEntity>())
+    val reposPageUserInfoRepoList = mutableCustomStateListOf(keyTag = stateKeyTag, keyName = "reposPageUserInfoRepoList", initValue = listOf<RepoEntity>())
 
 
     //这个filter有点重量级，比较适合做成全局搜索之类的功能
@@ -923,6 +924,7 @@ fun HomeScreen(
                     selectedItems = reposPageSelectedItems,
                     unshallowList = reposPageUnshallowItems,
                     deleteList = reposPageDeleteItems,
+                    userInfoRepoList = reposPageUserInfoRepoList,
                 )
 
             }
