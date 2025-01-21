@@ -1552,7 +1552,7 @@ fun RepoInnerPage(
 
     val selectionModeIconOnClickList = listOf<()->Unit>(
         fetch@{
-            selectedItems.value.toList().filter { it.upstreamBranch.isNotBlank() }.forEach { curRepo ->
+            selectedItems.value.toList().filter { it.upstreamBranch.isNotBlank() && !dbIntToBool(it.isDetached) }.forEach { curRepo ->
                 doActWithLockIfRepoGoodAndActEnabled(curRepo) {
                     //fetch 当前仓库上游的remote
                     doActAndSetRepoStatus(invalidIdx, curRepo.id, activityContext.getString(R.string.fetching)) {
@@ -1562,7 +1562,7 @@ fun RepoInnerPage(
             }
         },
         pull@{
-            selectedItems.value.toList().filter { it.upstreamBranch.isNotBlank() }.forEach { curRepo ->
+            selectedItems.value.toList().filter { it.upstreamBranch.isNotBlank() && !dbIntToBool(it.isDetached) }.forEach { curRepo ->
                 doActWithLockIfRepoGoodAndActEnabled(curRepo) {
                     doActAndSetRepoStatus(invalidIdx, curRepo.id, activityContext.getString(R.string.pulling)) {
                         doPull(curRepo)
@@ -1571,7 +1571,7 @@ fun RepoInnerPage(
             }
         },
         push@{
-            selectedItems.value.toList().filter { it.upstreamBranch.isNotBlank() }.forEach { curRepo ->
+            selectedItems.value.toList().filter { it.upstreamBranch.isNotBlank() && !dbIntToBool(it.isDetached) }.forEach { curRepo ->
                 doActWithLockIfRepoGoodAndActEnabled(curRepo) {
                     doActAndSetRepoStatus(invalidIdx, curRepo.id, activityContext.getString(R.string.pushing)) {
                         doPush(null, curRepo)
@@ -1582,7 +1582,8 @@ fun RepoInnerPage(
         },
         sync@{
             val list = selectedItems.value.toList()
-            if(list.size == 1) {  //若只选中一个条目，仅判断是否detached，若无上游，弹窗设置并同步
+            //若选中一个条目且未设置上游且非detached，则显示设置上游弹窗，然后执行同步
+            if(list.size == 1 && list.first().upstreamBranch.isBlank() && !dbIntToBool(list.first().isDetached)) {
                 val curRepo = list.first()
                 initSetUpstreamDialog(curRepo, activityContext.getString(R.string.save_and_sync)) {
                     doActWithLockIfRepoGoodAndActEnabled(curRepo) {
@@ -1591,8 +1592,8 @@ fun RepoInnerPage(
                         }
                     }
                 }
-            }else { //若选中多个条目，不会弹出设置上游的弹窗，必须有至少一个存在上游的仓库才启用同步按钮
-                list.filter { it.upstreamBranch.isNotBlank() }.forEach { curRepo ->
+            }else { //若选中多个条目或选中一个存在有效上游的条目，则不会弹出设置上游的弹窗，直接执行同步
+                list.filter { it.upstreamBranch.isNotBlank() && !dbIntToBool(it.isDetached) }.forEach { curRepo ->
                     doActWithLockIfRepoGoodAndActEnabled(curRepo) {
                         doActAndSetRepoStatus(invalidIdx, curRepo.id, activityContext.getString(R.string.syncing)) {
                             doSync(curRepo)
@@ -1600,8 +1601,6 @@ fun RepoInnerPage(
                     }
                 }
             }
-
-
         },
         selectAll@{
             val list = if(enableFilterState.value) filterList.value else repoList.value
@@ -2036,10 +2035,24 @@ fun RepoInnerPage(
                             //导航到changelist并定位到当前仓库
                             goToChangeListPage(clickedRepo)
                         } else if (status == Cons.dbRepoWorkStatusNeedSync) {
-                            // do sync
-                            doJobThenOffLoading {
-                                doActAndSetRepoStatus(idx, clickedRepo.id, activityContext.getString(R.string.syncing)) {
-                                    doSync(clickedRepo)
+                            val curRepo = clickedRepo
+                            if(dbIntToBool(curRepo.isDetached)){  // detached, can't sync
+                                Msg.requireShow(activityContext.getString(R.string.sync_failed_by_detached_head))
+                            }else {  // not detached HEAD
+                                if(curRepo.upstreamBranch.isBlank()) {  //无上游，先设置，再同步
+                                    initSetUpstreamDialog(curRepo, activityContext.getString(R.string.save_and_sync)) {
+                                        doActWithLockIfRepoGoodAndActEnabled(curRepo) {
+                                            doActAndSetRepoStatus(invalidIdx, curRepo.id, activityContext.getString(R.string.syncing)) {
+                                                doSync(curRepo)
+                                            }
+                                        }
+                                    }
+                                }else {  //有上游，直接同步
+                                    doActWithLockIfRepoGoodAndActEnabled(curRepo) {
+                                        doActAndSetRepoStatus(invalidIdx, curRepo.id, activityContext.getString(R.string.syncing)) {
+                                            doSync(curRepo)
+                                        }
+                                    }
                                 }
                             }
                         }
