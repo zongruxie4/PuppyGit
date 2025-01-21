@@ -57,8 +57,6 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import com.catpuppyapp.puppygit.compose.AskGitUsernameAndEmailDialog
 import com.catpuppyapp.puppygit.compose.BottomBar
-import com.catpuppyapp.puppygit.compose.BottomSheet
-import com.catpuppyapp.puppygit.compose.BottomSheetItem
 import com.catpuppyapp.puppygit.compose.CheckBoxNoteText
 import com.catpuppyapp.puppygit.compose.ClickableText
 import com.catpuppyapp.puppygit.compose.ConfirmDialog
@@ -67,18 +65,12 @@ import com.catpuppyapp.puppygit.compose.MyCheckBox
 import com.catpuppyapp.puppygit.compose.MyLazyColumn
 import com.catpuppyapp.puppygit.compose.MySelectionContainer
 import com.catpuppyapp.puppygit.compose.RepoCard
-import com.catpuppyapp.puppygit.compose.RepoCardError
 import com.catpuppyapp.puppygit.compose.ScrollableColumn
 import com.catpuppyapp.puppygit.compose.SystemFolderChooser
 import com.catpuppyapp.puppygit.constants.Cons
 import com.catpuppyapp.puppygit.constants.PageRequest
 import com.catpuppyapp.puppygit.data.AppContainer
 import com.catpuppyapp.puppygit.data.entity.RepoEntity
-import com.catpuppyapp.puppygit.dev.dev_EnableUnTestedFeature
-import com.catpuppyapp.puppygit.dev.proFeatureEnabled
-import com.catpuppyapp.puppygit.dev.reflogTestPassed
-import com.catpuppyapp.puppygit.dev.repoRenameTestPassed
-import com.catpuppyapp.puppygit.dev.stashTestPassed
 import com.catpuppyapp.puppygit.etc.RepoAction
 import com.catpuppyapp.puppygit.etc.Ret
 import com.catpuppyapp.puppygit.git.Upstream
@@ -87,7 +79,6 @@ import com.catpuppyapp.puppygit.settings.AppSettings
 import com.catpuppyapp.puppygit.settings.SettingsUtil
 import com.catpuppyapp.puppygit.style.MyStyleKt
 import com.catpuppyapp.puppygit.ui.theme.Theme
-import com.catpuppyapp.puppygit.user.UserUtil
 import com.catpuppyapp.puppygit.utils.ActivityUtil
 import com.catpuppyapp.puppygit.utils.AppModel
 import com.catpuppyapp.puppygit.utils.ComposeHelper
@@ -1404,7 +1395,7 @@ fun RepoInnerPage(
             }
         },
         setUpstream@{
-ddddddddddd
+
         },
         changelist@{
             val curRepo = selectedItems.value.first()
@@ -1521,26 +1512,6 @@ ddddddddddd
     })
     //back handler block end
 
-    if(showBottomSheet.value) {
-        val repoDto = curRepo.value
-        val repoStatusGood = repoDto.gitRepoState!=null && !Libgit2Helper.isRepoStatusNotReadyOrErr(repoDto)
-
-        val isDetached = dbIntToBool(curRepo.value.isDetached)
-        val hasTmpStatus = curRepo.value.tmpStatus.isNotBlank()  //如果有设临时状态，说明在执行某个操作，比如正在fetching，所以这时应该不允许再执行fetch或pull之类的操作，我做了处理，即使用户去cl页面执行，也无法绕过此限制
-        val actionEnabled = !isDetached && !hasTmpStatus
-        BottomSheet(showBottomSheet, sheetState, curRepo.value.repoName) {
-            ddddddddddd
-
-
-            //show jump to parent repo if has parentRepoId
-            if(curRepo.value.parentRepoId.isNotBlank()) {
-                BottomSheetItem(sheetState, showBottomSheet, stringResource(R.string.go_parent)) {
-                    goToThisRepoAndHighlightingIt(curRepo.value.parentRepoId)
-                }
-            }
-
-        }
-    }
 
     // this feel sick, screen flash then return, just sick, so disbale
 //    if(isLoading.value) {
@@ -1701,77 +1672,76 @@ ddddddddddd
                     val idx = chunkedListIdx * repoCountEachRow + subListIdx
                     //状态小于errValStart意味着一切正常；状态大于等于errValStart，意味着出错，禁用长按功能，直接把可以执行的操作例如删除仓库和编辑仓库之类的显示在卡片上，方便用户处置出错的仓库
                     // 如果有必要细分状态，可以改成这样: if(it.workStatus==cloningStatus) go cloningCard, else if other status, go other card, else go normal RepoCard
-                    if (Libgit2Helper.isRepoStatusNoErr(element)) {
-                        //未出错的仓库
-                        RepoCard(
-                            itemWidth = itemWidth,
-                            requireFillMaxWidth = requireFillMaxWidth,
-                            showBottomSheet = showBottomSheet,
-                            curRepo = curRepo,
-                            curRepoIndex = curRepoIndex,
-                            repoDto = element,
-                            repoDtoIndex = idx,
 
-                            itemSelected = containsForSelected(selectedItems.value, element),
-                            titleOnClick = repoCardTitleOnClick,
+                    //未出错的仓库
+                    RepoCard(
+                        itemWidth = itemWidth,
+                        requireFillMaxWidth = requireFillMaxWidth,
+                        showBottomSheet = showBottomSheet,
+                        curRepo = curRepo,
+                        curRepoIndex = curRepoIndex,
+                        repoDto = element,
+                        repoDtoIndex = idx,
 
-                            goToFilesPage = goToFilesPage,
-                            requireBlinkIdx = requireBlinkIdx,
-                            pageRequest = pageRequest,
+                        itemSelected = containsForSelected(selectedItems.value, element),
+                        titleOnClick = repoCardTitleOnClick,
+
+                        goToFilesPage = goToFilesPage,
+                        requireBlinkIdx = requireBlinkIdx,
+                        pageRequest = pageRequest,
+                        onClick = {
+                            if (isSelectionMode.value) {  //选择模式，切换选择
+                                switchItemSelected(it)
+                            }
+                        },
+                        onLongClick = {
+                            //如果不是选择模式，则切换为选择模式
+                            if (!isSelectionMode.value) {
+                                switchItemSelected(it)
+
+                                //如果处于选择模式，长按执行连续选择
+                            }else if(isSelectionMode.value) {
+                                UIHelper.doSelectSpan(idx, it,
+                                    //这里调用 toList() 是为了拷贝下源list，避免并发修改异常
+                                    selectedItems.value.toList(), filteredListTmp.toList(),
+                                    switchItemSelected,
+                                    selectItem
+                                )
+                            }
+                        },
+                        requireDelRepo = {curRepo -> requireDelRepo(listOf(curRepo))},
+                        copyErrMsg = {msg->
+                            clipboardManager.setText(AnnotatedString(msg))
+                            Msg.requireShow(activityContext.getString(R.string.copied))
+                        },
+                        doCloneSingle = doCloneSingle,
+
                         ) workStatusOnclick@{ clickedRepo, status ->  //这个是点击status的callback，这个status其实可以不传，因为这里的lambda能捕获到数组的元素，就是当前仓库
 
-                            //把点击状态的仓库存下来
-                            statusClickedRepo.value = clickedRepo  //其实这个clickedRepo直接用这里element替代也可，但用回调里参数感觉更合理
+                        //把点击状态的仓库存下来
+                        statusClickedRepo.value = clickedRepo  //其实这个clickedRepo直接用这里element替代也可，但用回调里参数感觉更合理
 
-                            //目前status就三种状态：up-to-date/has conflicts/need sync，第1种不用处理
-                            if(status == Cons.dbRepoWorkStatusMerging
-                                || status == Cons.dbRepoWorkStatusRebasing
-                                || status == Cons.dbRepoWorkStatusCherrypicking
-                            ){ //merge/rebase/cherrypick弹窗提示需要continue或abort
-                                showRequireActionsDialog.value = true
-                            } else if (
-                                status == Cons.dbRepoWorkStatusHasConflicts
-                                || status == Cons.dbRepoWorkStatusNeedCommit
-                            ) {
-                                //导航到changelist并定位到当前仓库
-                                goToChangeListPage(clickedRepo)
-                            } else if (status == Cons.dbRepoWorkStatusNeedSync) {
-                                // do sync
-                                doJobThenOffLoading {
-                                    doActAndSetRepoStatus(idx, clickedRepo.id, activityContext.getString(R.string.syncing)) {
-                                        doSync(clickedRepo)
-                                    }
+                        //目前status就三种状态：up-to-date/has conflicts/need sync，第1种不用处理
+                        if(status == Cons.dbRepoWorkStatusMerging
+                            || status == Cons.dbRepoWorkStatusRebasing
+                            || status == Cons.dbRepoWorkStatusCherrypicking
+                        ){ //merge/rebase/cherrypick弹窗提示需要continue或abort
+                            showRequireActionsDialog.value = true
+                        } else if (
+                            status == Cons.dbRepoWorkStatusHasConflicts
+                            || status == Cons.dbRepoWorkStatusNeedCommit
+                        ) {
+                            //导航到changelist并定位到当前仓库
+                            goToChangeListPage(clickedRepo)
+                        } else if (status == Cons.dbRepoWorkStatusNeedSync) {
+                            // do sync
+                            doJobThenOffLoading {
+                                doActAndSetRepoStatus(idx, clickedRepo.id, activityContext.getString(R.string.syncing)) {
+                                    doSync(clickedRepo)
                                 }
                             }
                         }
-                    } else {
-                        //show Clone error repo card，显示克隆错误，有重试和编辑按钮，编辑可重新进入克隆页面编辑当前仓库的信息，然后重新克隆
-                        RepoCardError(
-                            itemWidth = itemWidth,
-                            requireFillMaxWidth = requireFillMaxWidth,
-//                        showBottomSheet = showBottomSheet,
-//                        curRepo = curRepo,
-                            repoDto = element,
-                            repoDtoList = repoList.value,
-                            idx = idx,
-
-                            itemSelected = containsForSelected(selectedItems.value, element),
-                            titleOnClick = repoCardTitleOnClick,
-
-                            doCloneSingle = doCloneSingle,
-                            requireDelRepo = {curRepo -> requireDelRepo(listOf(curRepo))},
-                            requireBlinkIdx = requireBlinkIdx,
-                            copyErrMsg = {msg->
-                                clipboardManager.setText(AnnotatedString(msg))
-                                Msg.requireShow(activityContext.getString(R.string.copied))
-                            }
-
-                        )
-                        //                            if(it.workStatus == Cons.dbRepoWorkStatusCloneErr){  //克隆错误
-                        //                            } // else if(other type err happened) ，显示其他类型的ErrRepoCard ,这里还能细分不同的错误显示不同的界面，例如克隆错误和初始化错误可以显示不同界面，后面加else if 即可
                     }
-
-
                 }
 
                 // padding for make item alight to start(left or right)

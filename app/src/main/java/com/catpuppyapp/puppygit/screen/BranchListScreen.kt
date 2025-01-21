@@ -363,7 +363,7 @@ fun BranchListScreen(
         keyName = "upstreamRemoteOptionsList",
         initValue = listOf<String>()
     )  //初始化页面时更新这个列表
-    val upstreamSelectedRemote = rememberSaveable{mutableIntStateOf( 0)}  //默认选中第一个remote，每个仓库至少有一个origin remote，应该不会出错
+    val upstreamSelectedRemote = rememberSaveable{mutableIntStateOf(0)}  //默认选中第一个remote，每个仓库至少有一个origin remote，应该不会出错
     //默认选中为上游设置和本地分支相同名
     val upstreamBranchSameWithLocal =rememberSaveable { mutableStateOf(true)}
     //把远程分支名设成当前分支的完整名
