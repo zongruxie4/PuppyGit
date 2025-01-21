@@ -802,7 +802,7 @@ fun RepoInnerPage(
         //仓库名
         val suffix = ", "
         val sb = StringBuilder()
-        expectDelRepos.forEach { sb.append(it).append(suffix) }
+        expectDelRepos.forEach { sb.append(it.repoName).append(suffix) }
         willDeleteRepoNames.value = sb.removeSuffix(suffix).toString()
 
         //添加到待删除列表
