@@ -7,11 +7,12 @@ import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.ime
 import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.CheckBox
+import androidx.compose.material.icons.filled.CheckBoxOutlineBlank
 import androidx.compose.material.icons.filled.ToggleOff
 import androidx.compose.material.icons.filled.ToggleOn
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.MutableState
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalDensity
@@ -292,6 +293,8 @@ object UIHelper {
         return retColor
 
     }
+
+    fun getCheckBoxByState(state: Boolean) = if (state) Icons.Filled.CheckBox else Icons.Filled.CheckBoxOutlineBlank
 
     fun getIconForSwitcher(state: Boolean) = if (state) Icons.Filled.ToggleOn else Icons.Filled.ToggleOff
 

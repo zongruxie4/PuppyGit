@@ -1398,11 +1398,15 @@ fun RepoInnerPage(
                         RepoCard(
                             itemWidth = itemWidth,
                             requireFillMaxWidth = requireFillMaxWidth,
-                            showBottomSheet,
-                            curRepo,
-                            curRepoIndex,
+                            showBottomSheet = showBottomSheet,
+                            curRepo = curRepo,
+                            curRepoIndex = curRepoIndex,
                             repoDto = element,
                             repoDtoIndex = idx,
+
+                            itemSelected = true,
+                            titleOnClick = {},
+
                             goToFilesPage = goToFilesPage,
                             requireBlinkIdx = requireBlinkIdx,
                             pageRequest = pageRequest,
@@ -1442,6 +1446,10 @@ fun RepoInnerPage(
                             repoDto = element,
                             repoDtoList = repoList.value,
                             idx = idx,
+
+                            itemSelected = true,
+                            titleOnClick = {},
+
                             needRefreshList = needRefreshRepoPage,
                             requireDelRepo = requireDelRepo,
                             requireBlinkIdx = requireBlinkIdx,
