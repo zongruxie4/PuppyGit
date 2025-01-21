@@ -4338,6 +4338,9 @@ class Libgit2Helper {
                     repoFromDb.lastCommitHash = getShortOidStrByFull(head?.id()?.toString() ?: "")  // no commit hash will show empty str
                     repoFromDb.isDetached = boolToDbInt(repo.headDetached())
                     if(!dbIntToBool(repoFromDb.isDetached)) {  //只有非detached才有upstream
+                        //这里并不是最终的workStatus值，后面还会检查是否有冲突，如果有会再更新
+                        repoFromDb.workStatus = Cons.dbRepoWorkStatusNeedSync
+
                         val upstream = getUpstreamOfBranch(repo, repoFromDb.branch)
                         repoFromDb.upstreamBranch = upstream.remoteBranchShortRefSpec
 
@@ -4352,15 +4355,13 @@ class Libgit2Helper {
                                 repoFromDb.behind = behind
                                 if(repoFromDb.ahead==0 && repoFromDb.behind ==0) {  //本地不领先也不落后上游，最新
                                     repoFromDb.workStatus = Cons.dbRepoWorkStatusUpToDate
-                                }else {
-                                    //这里并不是最终的workStatus值，后面还会检查是否有冲突，如果有会再更新
-                                    repoFromDb.workStatus = Cons.dbRepoWorkStatusNeedSync
                                 }
 
                             }
 
                         }
                     }
+
                     repoFromDb.isShallow = boolToDbInt(isRepoShallow(repo))
 
                     //更新workstatus
