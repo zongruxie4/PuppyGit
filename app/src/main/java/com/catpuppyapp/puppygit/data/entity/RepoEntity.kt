@@ -7,6 +7,7 @@ import androidx.room.PrimaryKey
 import com.catpuppyapp.puppygit.constants.Cons
 import com.catpuppyapp.puppygit.constants.StorageDirCons
 import com.catpuppyapp.puppygit.data.entity.common.BaseFields
+import com.catpuppyapp.puppygit.etc.RepoAction
 import com.catpuppyapp.puppygit.utils.dbIntToBool
 import com.catpuppyapp.puppygit.utils.getSecFromTime
 import com.catpuppyapp.puppygit.utils.getShortUUID
@@ -114,25 +115,22 @@ data class RepoEntity(
     @Ignore
     var otherText:String?=null
 
-    /**
-     * 避免workStatus被覆盖，单独存个ahead behind status
-     */
     @Ignore
-    var aheadBehindStatus:Int?=null
+    var requireAction:RepoAction=RepoAction.NONE
 
     /**
      * 拷贝所有字段，包括不在data class构造器的字段
      */
     fun copyAllFields():RepoEntity {
-        val other = copy()
+        val newInstance = copy()
 
-        other.gitRepoState = gitRepoState
-        other.parentRepoName = parentRepoName
-        other.parentRepoValid = parentRepoValid
-        other.otherText = otherText
-        other.aheadBehindStatus = aheadBehindStatus
+        newInstance.gitRepoState = gitRepoState
+        newInstance.parentRepoName = parentRepoName
+        newInstance.parentRepoValid = parentRepoValid
+        newInstance.otherText = otherText
+        newInstance.requireAction = requireAction
 
-        return other
+        return newInstance
     }
 
     fun hasOther():Boolean {

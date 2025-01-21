@@ -16,6 +16,7 @@ import com.catpuppyapp.puppygit.dto.RemoteDto
 import com.catpuppyapp.puppygit.dto.createCommitDto
 import com.catpuppyapp.puppygit.dto.createFileHistoryDto
 import com.catpuppyapp.puppygit.dto.createSubmoduleDto
+import com.catpuppyapp.puppygit.etc.RepoAction
 import com.catpuppyapp.puppygit.etc.Ret
 import com.catpuppyapp.puppygit.git.BranchNameAndTypeDto
 import com.catpuppyapp.puppygit.git.CommitDto
@@ -4337,11 +4338,8 @@ class Libgit2Helper {
                                 repoFromDb.ahead = ahead
                                 repoFromDb.behind = behind
                                 if(repoFromDb.ahead==0 && repoFromDb.behind ==0) {  //本地不领先也不落后上游，最新
-                                    //避免workStatus被覆盖，单独存个ahead behind status
-                                    repoFromDb.aheadBehindStatus = Cons.dbRepoWorkStatusUpToDate
                                     repoFromDb.workStatus = Cons.dbRepoWorkStatusUpToDate
                                 }else {
-                                    repoFromDb.aheadBehindStatus = Cons.dbRepoWorkStatusNeedSync
                                     //这里并不是最终的workStatus值，后面还会检查是否有冲突，如果有会再更新
                                     repoFromDb.workStatus = Cons.dbRepoWorkStatusNeedSync
                                 }
@@ -4361,8 +4359,7 @@ class Libgit2Helper {
 //                            tmpStatusIfHave = AppModel.activityContext.getString(R.string.loading)
 
                         //检查workTreeToIndex，可能会很慢，需要调用者自己开协程检查本地是否有未提交修改 (index or worktree dirty)
-                        repoFromDb.workStatus = Cons.dbRepoWorkStatusNeedCheckUncommittedChanges
-
+                        repoFromDb.requireAction = RepoAction.NEED_CHECK_UNCOMMITED_CHANGES
 
                     }else { // repoState != NONE
                         if(hasConflictItemInRepo(repo)) {  //有冲突条目，这个检查起来很快，所以就在这直接查了
@@ -6480,7 +6477,7 @@ class Libgit2Helper {
         fun hasUncommittedChanges(repo:Repository):Boolean {
             //先检查Index，这个查起来性能比work to index快
             // index非空 或 worktree有条目
-            return (!indexIsEmpty(repo)) || (getWorkdirStatusList(repo).entryCount() > 0)
+            return indexIsEmpty(repo).not() || getWorkdirStatusList(repo).entryCount() > 0
         }
 
     }

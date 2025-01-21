@@ -72,6 +72,7 @@ import com.catpuppyapp.puppygit.dev.repoRenameTestPassed
 import com.catpuppyapp.puppygit.dev.stashTestPassed
 import com.catpuppyapp.puppygit.dev.submoduleTestPassed
 import com.catpuppyapp.puppygit.dev.tagsTestPassed
+import com.catpuppyapp.puppygit.etc.RepoAction
 import com.catpuppyapp.puppygit.etc.Ret
 import com.catpuppyapp.puppygit.git.Upstream
 import com.catpuppyapp.puppygit.play.pro.R
@@ -739,7 +740,7 @@ fun RepoInnerPage(
                 val reQueriedRepoInfo = repoDb.getById(it.id)?:return@doJobThenOffLoading
 
                 //检查仓库是否有未提交的修改
-                if(reQueriedRepoInfo.workStatus == Cons.dbRepoWorkStatusNeedCheckUncommittedChanges) {
+                if(reQueriedRepoInfo.requireAction == RepoAction.NEED_CHECK_UNCOMMITED_CHANGES) {
                     //捕获当前页面刷新状态值，相当于session id
                     val curRefreshValue = needRefreshRepoPage.value
                     checkGitStatusAndUpdateItemInList(reQueriedRepoInfo, idx, repoList, activityContext.getString(R.string.loading), pageChanged = {
@@ -1588,7 +1589,7 @@ private fun doInit(
                 Libgit2Helper.cloneSingleRepo(item, repoRepository, settings, unknownErrWhenCloning, repoDtoList.value, idx)
 
 
-            }else if(item.workStatus == Cons.dbRepoWorkStatusNeedCheckUncommittedChanges) {
+            }else if(item.requireAction == RepoAction.NEED_CHECK_UNCOMMITED_CHANGES) {
                 checkGitStatusAndUpdateItemInList(item, idx, repoDtoList.value, loadingText, pageChanged)
             } else {
                 //TODO: check git status with lock of every repo, get lock then query repo info from db,
@@ -1644,6 +1645,8 @@ private fun checkGitStatusAndUpdateItemInList(item:RepoEntity, idx:Int, repoList
             //如果页面没改变（没重新刷新），更新列表
             if(!pageChanged()) {
                 val newRepo = item.copyAllFields()
+                //操作已经执行完毕，清空需要执行的操作
+                newRepo.requireAction = RepoAction.NONE
 
                 //清空临时状态
                 if(needUpdateTmpStatus) {
@@ -1651,11 +1654,8 @@ private fun checkGitStatusAndUpdateItemInList(item:RepoEntity, idx:Int, repoList
                 }
 
                 //如果需要提交，则更新状态为需要提交；否则检查ahead和behind状态，可能是up to date也可能需要sync
-                newRepo.workStatus = if(needCommit) {
-                    Cons.dbRepoWorkStatusNeedCommit
-                }else {
-                    // ahead behind status若为null则当作up to date，这逻辑应该问题不大，若感觉异常再改
-                    item.aheadBehindStatus ?: Cons.dbRepoWorkStatusUpToDate
+                if(needCommit) {
+                    newRepo.workStatus = Cons.dbRepoWorkStatusNeedCommit
                 }
 
                 updateRepoListByIndexOrId(newRepo, idx, repoList, repoListSizeSnapshot)
