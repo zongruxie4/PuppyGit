@@ -1,8 +1,10 @@
 next version:
 - indicate repo has uncommitted changes on RepoCard (issue #26)
+- support multi selection on Repos page (issue #27)
 
 
 - 在仓库卡片显示仓库是否有未提交修改 (issue #26)
+- 仓库页面支持多选 (issue #27)
 
 ---
 
