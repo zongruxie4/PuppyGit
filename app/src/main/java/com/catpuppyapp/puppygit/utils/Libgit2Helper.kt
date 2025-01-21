@@ -6119,6 +6119,14 @@ class Libgit2Helper {
             }
         }
 
+        fun getRepoLock(repoId:String):Mutex {
+            return Cons.repoLockMap.getOrPut(repoId) {
+                //这锁不可重入
+                //如果get不到，put这个进去
+                Mutex()
+            }
+        }
+
         fun cloneSingleRepo(
             targetRepo: RepoEntity,
             repoDb: RepoRepository,
@@ -6128,16 +6136,18 @@ class Libgit2Helper {
             repoCurrentIndexInRepoDtoList: Int
         ) {
             doJobThenOffLoading {
-                val key = targetRepo.id
-                val repoLock = Cons.repoLockMap.getOrPut(key) {
-                    //如果get不到，put这个进去
-                    Mutex()
+                val repoLock = getRepoLock(targetRepo.id)
+
+                //可能有其他协程正在克隆
+                if(repoLock.isLocked) {
+                    return@doJobThenOffLoading
                 }
+
                 //避免多个协程同时执行克隆，所以需要lock
                 repoLock.withLock {
                     //重新查询一次数据，其他协程会在克隆成功后更新数据库，这里如果发现状态有变，就不用执行克隆了
                     // 获取到对象返回对象，如果null，结束锁定代码块
-                    val repo2ndQuery = repoDb.getById(key) ?: return@withLock
+                    val repo2ndQuery = repoDb.getById(targetRepo.id) ?: return@withLock
                     val repoDir = File(repo2ndQuery.fullSavePath)
                     if (repo2ndQuery.workStatus == Cons.dbRepoWorkStatusNotReadyNeedClone) {
                         deleteIfFileOrDirExist(repoDir)
