@@ -1182,7 +1182,7 @@ fun RepoInnerPage(
         stringResource(R.string.select_all),
     )
 
-    val doActIfRepoGood = { curRepo:RepoEntity, act: suspend ()->Unit ->
+    val doActWithLockIfRepoGoodAndActEnabled = { curRepo:RepoEntity, act: suspend ()->Unit ->
         val repoStatusGood = curRepo.gitRepoState!=null && !Libgit2Helper.isRepoStatusNotReadyOrErr(curRepo)
 
         val isDetached = dbIntToBool(curRepo.isDetached)
@@ -1204,12 +1204,19 @@ fun RepoInnerPage(
         }
     }
 
+    val doActIfRepoGood = { curRepo:RepoEntity, act:()->Unit ->
+        val repoStatusGood = curRepo.gitRepoState!=null && !Libgit2Helper.isRepoStatusNotReadyOrErr(curRepo)
+        if(repoStatusGood) {
+            act()
+        }
+    }
+
     val invalidIdx = remember { -1 }
 
     val selectionModeIconOnClickList = listOf<()->Unit>(
         fetch@{
             selectedItems.value.toList().forEach { curRepo ->
-                doActIfRepoGood(curRepo) {
+                doActWithLockIfRepoGoodAndActEnabled(curRepo) {
                     //fetch 当前仓库上游的remote
                     doActAndSetRepoStatus(invalidIdx, curRepo.id, activityContext.getString(R.string.fetching)) {
                         doFetch(null, curRepo)
@@ -1219,7 +1226,7 @@ fun RepoInnerPage(
         },
         pull@{
             selectedItems.value.toList().forEach { curRepo ->
-                doActIfRepoGood(curRepo) {
+                doActWithLockIfRepoGoodAndActEnabled(curRepo) {
                     doActAndSetRepoStatus(invalidIdx, curRepo.id, activityContext.getString(R.string.pulling)) {
                         doPull(curRepo)
                     }
@@ -1228,7 +1235,7 @@ fun RepoInnerPage(
         },
         push@{
             selectedItems.value.toList().forEach { curRepo ->
-                doActIfRepoGood(curRepo) {
+                doActWithLockIfRepoGoodAndActEnabled(curRepo) {
                     doActAndSetRepoStatus(invalidIdx, curRepo.id, activityContext.getString(R.string.pushing)) {
                         doPush(null, curRepo)
                     }
@@ -1238,7 +1245,7 @@ fun RepoInnerPage(
         },
         sync@{
             selectedItems.value.toList().forEach { curRepo ->
-                doActIfRepoGood(curRepo) {
+                doActWithLockIfRepoGoodAndActEnabled(curRepo) {
                     doActAndSetRepoStatus(invalidIdx, curRepo.id, activityContext.getString(R.string.syncing)) {
                         doSync(curRepo)
                     }
@@ -1284,10 +1291,14 @@ fun RepoInnerPage(
             doClone(selectedItems.value.filter { it.workStatus == Cons.dbRepoWorkStatusCloneErr })
         },
         remotes@{
-            TODO()
+            val curRepo = selectedItems.value.first()
+            doActIfRepoGood(curRepo) {
+                //管理remote，右上角有个fetch all可fetch所有remote
+                navController.navigate(Cons.nav_RemoteListScreen+"/"+curRepo.id)
+            }
         },
         tags@{
-            TODO()
+
         },
         submodules@{
 
@@ -1805,6 +1816,8 @@ fun RepoInnerPage(
             doInit(
                 dbContainer = dbContainer,
                 repoDtoList = repoList,
+                selectedItems = selectedItems.value,
+                quitSelectionMode = quitSelectionMode,
                 cloningText = cloningText,
                 unknownErrWhenCloning = unknownErrWhenCloning,
                 loadingOn = loadingOn,
@@ -1826,6 +1839,8 @@ fun RepoInnerPage(
 private fun doInit(
     dbContainer: AppContainer,
     repoDtoList: CustomStateListSaveable<RepoEntity>,
+    selectedItems: MutableList<RepoEntity>,
+    quitSelectionMode:()->Unit,
     cloningText: String,
     unknownErrWhenCloning: String,
     loadingOn:(String)->Unit,
@@ -1851,6 +1866,23 @@ private fun doInit(
 
         repoDtoList.value.clear()
         repoDtoList.value.addAll(repoListFromDb)
+
+        //update selected list
+        val srcList = repoListFromDb  //这个是只读list，不需要toList()拷贝
+        val tmpList = selectedItems.toList()
+        tmpList.forEachIndexed { idx, tmp->
+            val found = srcList.find {src-> tmp.id==src.id }
+            if(found == null) {  //刷新后的列表没了之前的条目
+                selectedItems.removeAt(idx)
+            }else {  //刷新后的列表还有之前的条目，更新下
+                selectedItems[idx] = found
+            }
+        }
+
+        //如果选中条目列表为空，退出选择模式
+        if(selectedItems.isEmpty()) {
+            quitSelectionMode()
+        }
 
         // complex code for update item and remove non-exist item, but the effect just no-difference with clear then addAll, so, disable it
 //        if(repoDtoList.value.isEmpty()) {
