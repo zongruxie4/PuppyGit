@@ -13,7 +13,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Close
-import androidx.compose.material.icons.filled.CloudDownload
+import androidx.compose.material.icons.filled.Downloading
 import androidx.compose.material.icons.filled.Error
 import androidx.compose.material.icons.filled.FilterAlt
 import androidx.compose.material.icons.filled.Refresh
@@ -86,8 +86,8 @@ import com.catpuppyapp.puppygit.utils.state.mutableCustomStateOf
 import com.github.git24j.core.Remote
 import com.github.git24j.core.Repository
 
-private val TAG = "RemoteListScreen"
-private val stateKeyTag = "RemoteListScreen"
+private const val TAG = "RemoteListScreen"
+private const val stateKeyTag = "RemoteListScreen"
 
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalFoundationApi::class)
 @Composable
@@ -726,7 +726,7 @@ fun RemoteListScreen(
 
                         LongPressAbleIconBtn(
                             tooltipText = stringResource(R.string.fetch_all),
-                            icon =  Icons.Filled.CloudDownload,
+                            icon =  Icons.Filled.Downloading,
                             iconContentDesc = stringResource(R.string.fetch_all),
 
                         ) {
