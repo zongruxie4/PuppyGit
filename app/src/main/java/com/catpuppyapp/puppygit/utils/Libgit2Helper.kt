@@ -2267,9 +2267,19 @@ class Libgit2Helper {
         fun clearUpstreamForBranch(repo: Repository, targetBranchShortName:String) {
             val c = getRepoConfigForWrite(repo)
 
-            //其实用删除单个条目的 c.deleteEntry() 比较合适，但如果配置文件错误设置了多个条目，那个api会报错，所以这里用删除多个条目的api
-            c.deleteMultivar("branch."+targetBranchShortName+".remote", Cons.regexMatchAll)
-            c.deleteMultivar("branch."+targetBranchShortName+".merge", Cons.regexMatchAll)
+            //理论上用删除单个条目的 c.deleteEntry() 比较合适，但如果配置文件错误设置了多个条目，那个api会报错，所以这里用删除多个条目的api
+            // key不存在会报错，所以trycatch一下
+            try {
+                c.deleteMultivar("branch."+targetBranchShortName+".remote", Cons.regexMatchAll)
+            }catch (e:Exception) {
+                MyLog.e(TAG, "#clearUpstreamForBranch err when delete 'remote': ${e.stackTraceToString()}")
+            }
+
+            try {
+                c.deleteMultivar("branch."+targetBranchShortName+".merge", Cons.regexMatchAll)
+            }catch (e:Exception) {
+                MyLog.e(TAG, "#clearUpstreamForBranch err when delete 'merge': ${e.stackTraceToString()}")
+            }
         }
 
         fun setUpstreamForBranch(repo: Repository, upstream: Upstream, setForBranchName:String="") {

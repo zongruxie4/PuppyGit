@@ -366,6 +366,8 @@ fun BranchListScreen(
     val upstreamSelectedRemote = rememberSaveable{mutableIntStateOf(0)}  //默认选中第一个remote，每个仓库至少有一个origin remote，应该不会出错
     //默认选中为上游设置和本地分支相同名
     val upstreamBranchSameWithLocal =rememberSaveable { mutableStateOf(true)}
+    //是否显示清除按钮
+    val showClearForSetUpstreamDialog =rememberSaveable { mutableStateOf(false)}
     //把远程分支名设成当前分支的完整名
     val upstreamBranchShortRefSpec = rememberSaveable { mutableStateOf("")}
 
@@ -376,7 +378,7 @@ fun BranchListScreen(
             selectedOption = upstreamSelectedRemote,
             branch = upstreamBranchShortRefSpec,
             branchSameWithLocal = upstreamBranchSameWithLocal,
-            onClear = {
+            onClear = if(showClearForSetUpstreamDialog.value) ({
                 showSetUpstreamForLocalBranchDialog.value = false
 
                 val repoName = curRepo.value.repoName
@@ -412,7 +414,7 @@ fun BranchListScreen(
                         changeStateTriggerRefreshPage(needRefresh)
                     }
                 }
-            },
+            }) else null,
             onCancel = {
                 //隐藏弹窗就行，相关状态变量会在下次弹窗前初始化
                 showSetUpstreamForLocalBranchDialog.value = false
@@ -1415,8 +1417,12 @@ fun BranchListScreen(
                             var shortBranch = curObjInPage.value.shortName  //默认分支名为当前选中的分支短名
                             var sameWithLocal = true  //默认勾选和本地分支同名，除非用户的上游不为空且有值
 
-//                            查询旧值，如果有的话
+                            // 查询旧值，如果有的话
                             val upstream = curObjInPage.value.upstream
+
+                            // show clear if upstream was configured
+                            showClearForSetUpstreamDialog.value = upstream!=null && (upstream.remote.isNotBlank() || upstream.branchRefsHeadsFullRefSpec.isNotBlank())
+
                             if(upstream!=null) {
                                 MyLog.d(TAG,"set upstream menu item #onClick(): upstream is not null, old remote in config is: ${upstream.remote}, old branch in config is:${upstream.branchRefsHeadsFullRefSpec}")
 

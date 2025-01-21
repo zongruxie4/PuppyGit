@@ -1213,7 +1213,7 @@ fun RepoInnerPage(
 
             val upstream = Libgit2Helper.getUpstreamOfBranch(repo, shortBranch)
             //若配置文件存在上游则显示清除按钮
-            showClearForSetUpstreamDialog.value = upstream.remote.isNotBlank() && upstream.branchRefsHeadsFullRefSpec.isNotBlank()
+            showClearForSetUpstreamDialog.value = upstream.remote.isNotBlank() || upstream.branchRefsHeadsFullRefSpec.isNotBlank()
 
 
             MyLog.d(TAG,"set upstream menu item #onClick(): upstream is not null, old remote in config is: ${upstream.remote}, old branch in config is:${upstream.branchRefsHeadsFullRefSpec}")
