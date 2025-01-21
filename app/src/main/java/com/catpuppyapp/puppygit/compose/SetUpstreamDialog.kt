@@ -34,7 +34,7 @@ fun SetUpstreamDialog(
     selectedOption: MutableIntState,  //选中的remote在列表中的索引
     branch: MutableState<String>,
     branchSameWithLocal: MutableState<Boolean>,
-    onOkText:String="",
+    onOkText:String=stringResource(R.string.save),
     onClear: (() -> Unit)? = null,
     onOk: () -> Unit,
     onCancel: () -> Unit,
@@ -174,12 +174,8 @@ fun SetUpstreamDialog(
                 },
                 //如果没勾选上游使用和本地同名分支且上游分支引用为空（没填或删了默认的，就会空），返回假，没设计成留空自动生成，所以，必须要填个分支
                 enabled = (!(!branchSameWithLocal.value && branch.value.isBlank())) && remoteList.isNotEmpty(),
-                ) {
-                if(onOkText.isBlank()) {
-                    Text(stringResource(R.string.save))
-                }else {
-                    Text(text = onOkText)
-                }
+            ) {
+                Text(text = onOkText)
             }
         },
         dismissButton = {

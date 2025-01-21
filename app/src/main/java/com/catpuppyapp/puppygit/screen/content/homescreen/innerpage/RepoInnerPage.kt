@@ -1184,11 +1184,16 @@ fun RepoInnerPage(
     val upstreamBranchSameWithLocal =rememberSaveable { mutableStateOf(true)}
     //把远程分支名设成当前分支的完整名
     val upstreamBranchShortRefSpec = rememberSaveable { mutableStateOf("")}
+    val upstreamDialogOnOkText  =rememberSaveable { mutableStateOf("")}
 
     val doActAfterSetUpstreamSuccess = remember { mutableStateOf({}) }
     val showClearForSetUpstreamDialog = rememberSaveable { mutableStateOf(false) }
 
-    val initSetUpstreamDialog = {targetRepo:RepoEntity, actAfterSuccess:()->Unit ->
+    val initSetUpstreamDialog = {targetRepo:RepoEntity, onOkText:String, actAfterSuccess:()->Unit ->
+        curRepo.value = targetRepo
+
+        upstreamDialogOnOkText.value = onOkText
+
         //设置成功后的callback，可在设置完上游执行sync之类的
         doActAfterSetUpstreamSuccess.value = actAfterSuccess
 
@@ -1251,6 +1256,7 @@ fun RepoInnerPage(
     if(showSetUpstreamForLocalBranchDialog.value) {
         val curRepo = curRepo.value
         SetUpstreamDialog(
+            onOkText = upstreamDialogOnOkText.value,
             remoteList = upstreamRemoteOptionsList.value,
             curBranch = curRepo.branch,  //供显示的，让用户知道在为哪个分支设置上游
             selectedOption = upstreamSelectedRemote,
@@ -1575,13 +1581,27 @@ fun RepoInnerPage(
 
         },
         sync@{
-            selectedItems.value.toList().filter { it.upstreamBranch.isNotBlank() }.forEach { curRepo ->
-                doActWithLockIfRepoGoodAndActEnabled(curRepo) {
-                    doActAndSetRepoStatus(invalidIdx, curRepo.id, activityContext.getString(R.string.syncing)) {
-                        doSync(curRepo)
+            val list = selectedItems.value.toList()
+            if(list.size == 1) {  //若只选中一个条目，仅判断是否detached，若无上游，弹窗设置并同步
+                val curRepo = list.first()
+                initSetUpstreamDialog(curRepo, activityContext.getString(R.string.save_and_sync)) {
+                    doActWithLockIfRepoGoodAndActEnabled(curRepo) {
+                        doActAndSetRepoStatus(invalidIdx, curRepo.id, activityContext.getString(R.string.syncing)) {
+                            doSync(curRepo)
+                        }
+                    }
+                }
+            }else { //若选中多个条目，不会弹出设置上游的弹窗，必须有至少一个存在上游的仓库才启用同步按钮
+                list.filter { it.upstreamBranch.isNotBlank() }.forEach { curRepo ->
+                    doActWithLockIfRepoGoodAndActEnabled(curRepo) {
+                        doActAndSetRepoStatus(invalidIdx, curRepo.id, activityContext.getString(R.string.syncing)) {
+                            doSync(curRepo)
+                        }
                     }
                 }
             }
+
+
         },
         selectAll@{
             val list = if(enableFilterState.value) filterList.value else repoList.value
@@ -1676,7 +1696,7 @@ fun RepoInnerPage(
             }
         },
         setUpstream@{
-            initSetUpstreamDialog(selectedItems.value.first(), {})
+            initSetUpstreamDialog(selectedItems.value.first(), activityContext.getString(R.string.save)) {}
         },
         changelist@{
             val curRepo = selectedItems.value.first()
