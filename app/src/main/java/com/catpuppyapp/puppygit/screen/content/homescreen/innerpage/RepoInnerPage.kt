@@ -1275,7 +1275,7 @@ fun RepoInnerPage(
 
     val selectionModeIconOnClickList = listOf<()->Unit>(
         fetch@{
-            selectedItems.value.toList().forEach { curRepo ->
+            selectedItems.value.toList().filter { it.upstreamBranch.isNotBlank() }.forEach { curRepo ->
                 doActWithLockIfRepoGoodAndActEnabled(curRepo) {
                     //fetch 当前仓库上游的remote
                     doActAndSetRepoStatus(invalidIdx, curRepo.id, activityContext.getString(R.string.fetching)) {
@@ -1285,7 +1285,7 @@ fun RepoInnerPage(
             }
         },
         pull@{
-            selectedItems.value.toList().forEach { curRepo ->
+            selectedItems.value.toList().filter { it.upstreamBranch.isNotBlank() }.forEach { curRepo ->
                 doActWithLockIfRepoGoodAndActEnabled(curRepo) {
                     doActAndSetRepoStatus(invalidIdx, curRepo.id, activityContext.getString(R.string.pulling)) {
                         doPull(curRepo)
@@ -1294,7 +1294,7 @@ fun RepoInnerPage(
             }
         },
         push@{
-            selectedItems.value.toList().forEach { curRepo ->
+            selectedItems.value.toList().filter { it.upstreamBranch.isNotBlank() }.forEach { curRepo ->
                 doActWithLockIfRepoGoodAndActEnabled(curRepo) {
                     doActAndSetRepoStatus(invalidIdx, curRepo.id, activityContext.getString(R.string.pushing)) {
                         doPush(null, curRepo)
@@ -1304,7 +1304,7 @@ fun RepoInnerPage(
 
         },
         sync@{
-            selectedItems.value.toList().forEach { curRepo ->
+            selectedItems.value.toList().filter { it.upstreamBranch.isNotBlank() }.forEach { curRepo ->
                 doActWithLockIfRepoGoodAndActEnabled(curRepo) {
                     doActAndSetRepoStatus(invalidIdx, curRepo.id, activityContext.getString(R.string.syncing)) {
                         doSync(curRepo)
@@ -1382,6 +1382,7 @@ fun RepoInnerPage(
         },
         unshallow@{
             //选出可以执行unshallow的list
+            // unshallow不需要upstream，会针对所有remotes执行unshallow
             val unshallowableList = selectedItems.value.filter { curRepo ->
                 val repoStatusGood = curRepo.gitRepoState!=null && !Libgit2Helper.isRepoStatusNotReadyOrErr(curRepo)
                 repoStatusGood && dbIntToBool(curRepo.isShallow)

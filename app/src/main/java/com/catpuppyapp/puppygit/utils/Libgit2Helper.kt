@@ -2647,7 +2647,10 @@ class Libgit2Helper {
             fetchRemoteListForRepo(repo, remoteList, repoFromDb, requireUnshallow = true)
         }
 
-        //这个方法有两部分组成：1对git仓库所有remotes执行unshallow fetch。 2更新数据库中的仓库的isShallow字段为假
+        /**
+         * 这个方法有两部分组成：1对git仓库所有remotes执行unshallow fetch。 2更新数据库中的仓库的isShallow字段为假
+         *
+         */
         suspend fun unshallowRepo(repo: Repository, repoFromDb: RepoEntity, repoDb:RepoRepository, remoteDb:RemoteRepository, credentialDb: CredentialRepository):Ret<String?> {
             try {
                 val remoteDtoListFromDb = remoteDb.getRemoteDtoListByRepoId(repoFromDb.id)
