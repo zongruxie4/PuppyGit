@@ -457,7 +457,8 @@ fun RepoCardError(
     titleOnClick:(RepoEntity)->Unit,
 
     idx: Int,
-    needRefreshList: MutableState<String>,
+    doCloneSingle:(RepoEntity)->Unit,
+
     requireDelRepo:(RepoEntity)->Unit,
     requireBlinkIdx: MutableIntState,
     copyErrMsg:(String)->Unit,
@@ -567,30 +568,7 @@ fun RepoCardError(
                     ClickableText (
                         text = stringResource(R.string.retry),
                         fontWeight = FontWeight.Light,
-                        modifier = MyStyleKt.ClickableText.modifier.clickable(onClick = {
-//                        repoDtoList[idx].tmpStatus=""  //err状态，tmpStatus本来就没值，不用设
-                            doJobThenOffLoading {
-                                val key = repoDto.id
-                                val repoLock = Cons.repoLockMap.getOrPut(key) {
-                                    Mutex()
-                                }
-                                repoLock.withLock {
-                                    val repoRepository=dbContainer.repoRepository
-                                    val repoFromDb = repoRepository.getById(key)?:return@withLock
-                                    if(repoFromDb.workStatus == Cons.dbRepoWorkStatusCloneErr) {
-                                        repoFromDb.workStatus = Cons.dbRepoWorkStatusNotReadyNeedClone
-//                                    repoFromDb.tmpStatus = appContext.getString(R.string.cloning)
-                                        repoFromDb.createErrMsg = ""
-                                        repoRepository.update(repoFromDb)
-
-                                        //这个可有可无，反正后面会刷新页面，刷新页面必须有，否则会变成cloning状态，然后就不更新了，还得手动刷新页面，麻烦
-                                        repoDtoList[idx]=repoFromDb
-//                                    repoDtoList.requireRefreshView()
-                                    }
-                                    changeStateTriggerRefreshPage(needRefreshList)
-                                }
-                            }
-                        }),
+                        modifier = MyStyleKt.ClickableText.modifier.clickable { doCloneSingle(repoDto) },
                     )
                 }
 

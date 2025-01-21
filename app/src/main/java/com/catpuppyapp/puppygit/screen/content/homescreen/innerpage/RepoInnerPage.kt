@@ -606,6 +606,45 @@ fun RepoInnerPage(
 
     }
 
+    val doClone = doClone@{repoList:List<RepoEntity> ->
+        if(repoList.isEmpty()) {
+            return@doClone
+        }
+//                        repoDtoList[idx].tmpStatus=""  //err状态，tmpStatus本来就没值，不用设
+        doJobThenOffLoading {
+            //更新仓库状态为待克隆
+            repoList.forEach { curRepo ->
+                val repoLock = Libgit2Helper.getRepoLock(curRepo.id)
+                if(repoLock.isLocked) {
+                    return@doJobThenOffLoading
+                }
+
+                repoLock.withLock {
+                    val repoRepository = dbContainer.repoRepository
+                    val repoFromDb = repoRepository.getById(curRepo.id)?:return@withLock
+                    if(repoFromDb.workStatus == Cons.dbRepoWorkStatusCloneErr) {
+                        repoFromDb.workStatus = Cons.dbRepoWorkStatusNotReadyNeedClone
+//                                    repoFromDb.tmpStatus = appContext.getString(R.string.cloning)
+                        repoFromDb.createErrMsg = ""
+                        repoRepository.update(repoFromDb)
+
+                        //这个可有可无，反正后面会刷新页面，刷新页面必须有，否则会变成cloning状态，然后就不更新了，还得手动刷新页面，麻烦
+//                    repoList[idx]=repoFromDb  //刷新页面后会重新查询
+                    }
+                }
+            }
+
+            //刷新页面，然后就会执行克隆
+            changeStateTriggerRefreshPage(needRefreshRepoPage)
+        }
+
+        Unit
+    }
+
+    val doCloneSingle = { targetRepo:RepoEntity ->
+        doClone(listOf(targetRepo))
+    }
+
     //sync之前，先执行stage，然后执行提交，如果成功，执行fetch/merge/push (= pull/push = sync)
     val doSync:suspend (RepoEntity)->Unit = doSync@{curRepo:RepoEntity ->
         try {
@@ -1242,7 +1281,7 @@ fun RepoInnerPage(
     val selectionModeMoreItemOnClickList = listOf(
         // retry clone for cloned err repos
         clone@{
-
+            doClone(selectedItems.value.filter { it.workStatus == Cons.dbRepoWorkStatusCloneErr })
         },
         remotes@{
             TODO()
@@ -1694,7 +1733,7 @@ fun RepoInnerPage(
                             itemSelected = containsForSelected(selectedItems.value, element),
                             titleOnClick = repoCardTitleOnClick,
 
-                            needRefreshList = needRefreshRepoPage,
+                            doCloneSingle = doCloneSingle,
                             requireDelRepo = requireDelRepo,
                             requireBlinkIdx = requireBlinkIdx,
                             copyErrMsg = {msg->
