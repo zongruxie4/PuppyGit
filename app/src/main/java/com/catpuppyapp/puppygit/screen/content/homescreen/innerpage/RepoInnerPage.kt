@@ -2168,15 +2168,16 @@ private fun doInit(
 
         //update selected list
         val srcList = repoListFromDb  //这个是只读list，不需要toList()拷贝
-        val tmpList = selectedItems.toList()
-        tmpList.forEachIndexed { idx, tmp->
+        val newSelectedItems = mutableListOf<RepoEntity>()
+        selectedItems.toList().forEach { tmp->
             val found = srcList.find {src-> tmp.id==src.id }
-            if(found == null) {  //刷新后的列表没了之前的条目
-                selectedItems.removeAt(idx)
-            }else {  //刷新后的列表还有之前的条目，更新下
-                selectedItems[idx] = found
+            if(found != null) {  //刷新后的列表没了之前的条目
+                newSelectedItems.add(found)
             }
         }
+
+        selectedItems.clear()
+        selectedItems.addAll(newSelectedItems)
 
         //如果选中条目列表为空，退出选择模式
         if(selectedItems.isEmpty()) {
