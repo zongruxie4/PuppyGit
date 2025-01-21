@@ -72,6 +72,7 @@ fun RepoCard(
     goToFilesPage:(path:String) -> Unit,
     requireBlinkIdx:MutableIntState,
     pageRequest:MutableState<String>,
+    isSelectionMode:Boolean,
     onClick: (RepoEntity) -> Unit,
     onLongClick:(RepoEntity)->Unit,
     copyErrMsg: (String) -> Unit,
@@ -188,7 +189,12 @@ fun RepoCard(
                 defaultElevation = 6.dp
             ),
         ) {
-            RepoTitle(repoDto, itemSelected, titleOnClick)
+            RepoTitle(
+                repoDto = repoDto,
+                isSelectionMode = isSelectionMode,
+                itemSelected = itemSelected,
+                titleOnClick = titleOnClick
+            )
 
             HorizontalDivider()
 
@@ -529,7 +535,12 @@ fun RepoCard(
 
 
 @Composable
-private fun RepoTitle(repoDto: RepoEntity, itemSelected: Boolean, titleOnClick: (RepoEntity) -> Unit) {
+private fun RepoTitle(
+    repoDto: RepoEntity,
+    isSelectionMode:Boolean,
+    itemSelected: Boolean,
+    titleOnClick: (RepoEntity) -> Unit
+) {
     Row(
         modifier = Modifier
             .fillMaxWidth()
@@ -554,19 +565,21 @@ private fun RepoTitle(repoDto: RepoEntity, itemSelected: Boolean, titleOnClick: 
             RepoCardTitleText(repoDto.repoName)
         }
 
-
-        Row(
-            modifier = Modifier
-                .fillMaxWidth(.4F)
-                .padding(end = 10.dp),
-            horizontalArrangement = Arrangement.End,
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            Icon(
-                modifier = Modifier.size(25.dp),
-                imageVector = UIHelper.getCheckBoxByState(itemSelected),
-                contentDescription = null,
-            )
+        if(isSelectionMode) {
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth(.4F)
+                    .padding(end = 10.dp),
+                horizontalArrangement = Arrangement.End,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Icon(
+                    modifier = Modifier.size(25.dp),
+                    imageVector = UIHelper.getCheckBoxByState(itemSelected),
+                    contentDescription = null,
+                )
+            }
         }
+
     }
 }

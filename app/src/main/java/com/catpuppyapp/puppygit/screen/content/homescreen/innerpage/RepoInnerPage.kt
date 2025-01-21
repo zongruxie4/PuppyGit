@@ -1983,7 +1983,7 @@ fun RepoInnerPage(
                         curRepoIndex = curRepoIndex,
                         repoDto = element,
                         repoDtoIndex = idx,
-
+                        isSelectionMode = isSelectionMode.value,
                         itemSelected = containsForSelected(selectedItems.value, element),
                         titleOnClick = repoCardTitleOnClick,
 
