@@ -165,10 +165,11 @@ object UIHelper {
     fun<T> selectIfNotInSelectedListElseRemove(
         item:T,
         selectedItems:MutableList<T>,
-        contains:(srcList:List<T>, curItem:T)->Boolean = {srcList, curItem -> srcList.contains(curItem)}
+        contains:(srcList:List<T>, curItem:T)->Boolean = {srcList, curItem -> srcList.contains(curItem)},
+        remove:(srcList:MutableList<T>, curItem:T) -> Boolean = {srcList, curItem -> srcList.remove(curItem)}
     ) {
         if(contains(selectedItems, item)) {
-            selectedItems.remove(item)
+            remove(selectedItems, item)
         }else{
             selectedItems.add(item)
         }

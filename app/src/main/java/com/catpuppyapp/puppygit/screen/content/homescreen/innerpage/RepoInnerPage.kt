@@ -1199,7 +1199,17 @@ fun RepoInnerPage(
 
     val switchItemSelected = { item: RepoEntity ->
         isSelectionMode.value = true
-        UIHelper.selectIfNotInSelectedListElseRemove(item, selectedItems.value, contains = containsForSelected)
+        UIHelper.selectIfNotInSelectedListElseRemove(item, selectedItems.value, contains = containsForSelected, remove = { srcList, curItem ->
+            val foundIdx = srcList.indexOfFirst { it.id == curItem.id }
+            if(foundIdx != -1) {
+                srcList.removeAt(foundIdx)
+                // removed
+                true
+            }else {
+                // not removed
+                false
+            }
+        })
     }
 
     val selectItem = { item:RepoEntity ->
