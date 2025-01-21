@@ -1605,8 +1605,10 @@ fun RepoInnerPage(
         selectAll@{
             val list = if(enableFilterState.value) filterList.value else repoList.value
 
-            selectedItems.value.clear()
-            selectedItems.value.addAll(list)
+            list.toList().forEach {
+                selectItem(it)
+            }
+
             Unit
         }
     )
