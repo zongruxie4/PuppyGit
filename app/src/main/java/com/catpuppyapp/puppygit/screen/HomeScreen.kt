@@ -208,6 +208,9 @@ fun HomeScreen(
     val filesPageIsPasteMode = rememberSaveable { mutableStateOf(false)}
     val filesPageSelectedItems = mutableCustomStateListOf(keyTag = stateKeyTag, keyName = "filesPageSelectedItems", initValue = listOf<FileItemDto>())
 
+    val reposPageIsSelectionMode = rememberSaveable { mutableStateOf(false)}
+    val reposPageSelectedItems = mutableCustomStateListOf(keyTag = stateKeyTag, keyName = "reposPageSelectedItems", initValue = listOf<RepoEntity>())
+
 
     //这个filter有点重量级，比较适合做成全局搜索之类的功能
     val filesPageFilterMode = rememberSaveable{mutableIntStateOf(0)}  //0关闭，1正在搜索，显示输入框，2显示搜索结果
@@ -913,7 +916,9 @@ fun HomeScreen(
                     showImportRepoDialog = repoPageShowImportRepoDialog,
                     goToThisRepoId = repoPageGoToId,
                     enableFilterState = repoPageEnableFilterState,
-                    filterList = reposPageFilterList
+                    filterList = reposPageFilterList,
+                    isSelectionMode = reposPageIsSelectionMode,
+                    selectedItems = reposPageSelectedItems,
                 )
 
             }

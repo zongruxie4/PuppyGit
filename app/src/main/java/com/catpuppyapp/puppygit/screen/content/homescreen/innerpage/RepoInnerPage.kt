@@ -21,7 +21,11 @@ import androidx.compose.foundation.selection.toggleable
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.Download
+import androidx.compose.material.icons.filled.Downloading
 import androidx.compose.material.icons.filled.Error
+import androidx.compose.material.icons.filled.Publish
+import androidx.compose.material.icons.filled.SelectAll
 import androidx.compose.material3.Checkbox
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
@@ -40,8 +44,11 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalClipboardManager
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.res.vectorResource
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.font.FontWeight
@@ -49,11 +56,13 @@ import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import com.catpuppyapp.puppygit.compose.AskGitUsernameAndEmailDialog
+import com.catpuppyapp.puppygit.compose.BottomBar
 import com.catpuppyapp.puppygit.compose.BottomSheet
 import com.catpuppyapp.puppygit.compose.BottomSheetItem
 import com.catpuppyapp.puppygit.compose.CheckBoxNoteText
 import com.catpuppyapp.puppygit.compose.ClickableText
 import com.catpuppyapp.puppygit.compose.ConfirmDialog
+import com.catpuppyapp.puppygit.compose.CopyableDialog
 import com.catpuppyapp.puppygit.compose.RepoCardError
 import com.catpuppyapp.puppygit.compose.MyCheckBox
 import com.catpuppyapp.puppygit.compose.MyLazyColumn
@@ -136,9 +145,12 @@ fun RepoInnerPage(
     showImportRepoDialog:MutableState<Boolean>,
     goToThisRepoId:MutableState<String>,
     enableFilterState:MutableState<Boolean>,
-    filterList:CustomStateListSaveable<RepoEntity>
+    filterList:CustomStateListSaveable<RepoEntity>,
+    isSelectionMode:MutableState<Boolean>,
+    selectedItems:CustomStateListSaveable<RepoEntity>,
+
 ) {
-    val activityContext = AppModel.activityContext;
+    val activityContext = LocalContext.current
     val exitApp = AppModel.exitApp;
     val navController = AppModel.navController;
     val scope = rememberCoroutineScope()
@@ -163,19 +175,6 @@ fun RepoInnerPage(
 //    val repoDtoList = remember { mutableStateListOf<RepoEntity>() }
 
     val activity = ActivityUtil.getCurrentActivity()
-
-    //back handler block start
-    val isBackHandlerEnable = rememberSaveable { mutableStateOf(true)}
-    val backHandlerOnBack = ComposeHelper.getDoubleClickBackHandler(context = activityContext, openDrawer = openDrawer, exitApp = exitApp)
-    //注册BackHandler，拦截返回键，实现双击返回和返回上级目录
-    BackHandler(enabled = isBackHandlerEnable.value, onBack = {
-        if(repoPageFilterModeOn.value) {
-            repoPageFilterModeOn.value = false
-        }else {
-            backHandlerOnBack()
-        }
-    })
-    //back handler block end
 
     val inDarkTheme = Theme.inDarkTheme
 
@@ -1095,7 +1094,220 @@ fun RepoInnerPage(
         }
     }
 
+    // bottom bar block start
+    val quitSelectionMode = {
+        isSelectionMode.value = false
+        selectedItems.value.clear()
+    }
 
+    val getSelectedFilesCount = {
+        selectedItems.value.size
+    }
+
+    val selectedSingle = {
+        getSelectedFilesCount() == 1
+    }
+
+    val hasSelectedItems = {
+        getSelectedFilesCount() > 0
+    }
+
+    val containsForSelected = { srcList:List<RepoEntity>, item:RepoEntity ->
+        srcList.indexOfFirst { it.equalsForSelected(item) } != -1
+    }
+
+    val switchItemSelected = { item: RepoEntity ->
+        isSelectionMode.value = true
+        UIHelper.selectIfNotInSelectedListElseRemove(item, selectedItems.value, contains = containsForSelected)
+    }
+
+    val selectItem = { item:RepoEntity ->
+        isSelectionMode.value = true
+        UIHelper.selectIfNotInSelectedListElseNoop(item, selectedItems.value, contains = containsForSelected)
+    }
+
+    val repoCardTitleOnClick = { item:RepoEntity ->
+        switchItemSelected(item)
+    }
+
+    val selectionModeIconList = listOf(
+        Icons.Filled.Downloading,  // fetch
+        Icons.Filled.Download,  // pull
+        Icons.Filled.Publish,  // push
+        ImageVector.vectorResource(R.drawable.two_way_sync),  //sync
+        Icons.Filled.SelectAll,  //Select All
+    )
+    val selectionModeIconTextList = listOf(
+        stringResource(R.string.fetch),
+        stringResource(R.string.pull),
+        stringResource(R.string.push),
+        stringResource(R.string.sync),
+        stringResource(R.string.select_all),
+    )
+    val selectionModeIconOnClickList = listOf<()->Unit>(
+        fetch@{
+            TODO()
+        },
+        pull@{
+            TODO()
+
+        },
+        push@{
+            TODO()
+
+        },
+        sync@{
+            TODO()
+
+        },
+        selectAll@{
+            val list = if(enableFilterState.value) filterList.value else repoList.value
+
+            selectedItems.value.clear()
+            selectedItems.value.addAll(list)
+            Unit
+        }
+    )
+
+    val selectionModeIconEnableList = listOf(
+        // 点击后再检查取出可执行fetch的仓库
+        fetchEnable@{ true },
+        pullEnable@{ true },
+        pushEnable@{ true },
+        syncEnable@{ true },
+        selectAllEnable@{ true },
+    )
+
+    val selectionModeMoreItemTextList = listOf(
+        stringResource(R.string.clone), // multi
+        stringResource(R.string.remotes), // single
+        stringResource(R.string.tags),  // single
+        stringResource(R.string.submodules), // single
+        stringResource(R.string.user_info), // multi
+        stringResource(R.string.unshallow), // multi
+        stringResource(R.string.changelist), // single
+        stringResource(R.string.stash), // single
+        stringResource(R.string.reflog), // single
+        stringResource(R.string.rename), // single
+        stringResource(R.string.delete), // multi
+    )
+
+    val selectionModeMoreItemOnClickList = listOf(
+        // retry clone for cloned err repos
+        clone@{
+
+        },
+        remotes@{
+            TODO()
+        },
+        tags@{
+            TODO()
+        },
+        submodules@{
+
+        },
+
+        userInfo@{
+
+        },
+        unshallow@{
+
+        },
+        changelist@{
+
+        },
+        stash@{
+
+        },
+        reflog@{
+
+        },
+        rename@{
+
+        },
+        delete@{
+
+        }
+    )
+
+    val selectionModeMoreItemEnableList = listOf(
+        clone@{
+            hasSelectedItems()
+        },
+        remotes@{
+            selectedSingle()
+        },
+        tags@{
+            selectedSingle()
+        },
+        submodules@{
+            selectedSingle()
+        },
+
+        userInfo@{
+            hasSelectedItems()
+        },
+        unshallow@{
+            hasSelectedItems()
+        },
+        changelist@{
+            selectedSingle()
+        },
+        stash@{
+            selectedSingle()
+        },
+        reflog@{
+            selectedSingle()
+        },
+        rename@{
+            selectedSingle()
+        },
+        delete@{
+            hasSelectedItems()
+        }
+    )
+
+    val showSelectedItemsShortDetailsDialog = rememberSaveable { mutableStateOf(false)}
+    val selectedItemsShortDetailsStr = rememberSaveable { mutableStateOf("")}
+    if(showSelectedItemsShortDetailsDialog.value) {
+        CopyableDialog(
+            title = stringResource(id = R.string.selected_str),
+            text = selectedItemsShortDetailsStr.value,
+            onCancel = { showSelectedItemsShortDetailsDialog.value = false }
+        ) {
+            showSelectedItemsShortDetailsDialog.value = false
+            clipboardManager.setText(AnnotatedString(selectedItemsShortDetailsStr.value))
+            Msg.requireShow(activityContext.getString(R.string.copied))
+        }
+    }
+
+    val showSelectedItems = {
+        val list = selectedItems.value.toList()
+        val sb = StringBuilder()
+        list.toList().forEach {
+            sb.append(it.repoName).append("\n\n")
+        }
+        selectedItemsShortDetailsStr.value = sb.removeSuffix("\n").toString()
+        showSelectedItemsShortDetailsDialog.value = true
+    }
+
+    // bottom bar block end
+
+
+    //back handler block start
+    val isBackHandlerEnable = rememberSaveable { mutableStateOf(true)}
+    val backHandlerOnBack = ComposeHelper.getDoubleClickBackHandler(context = activityContext, openDrawer = openDrawer, exitApp = exitApp)
+    //注册BackHandler，拦截返回键，实现双击返回和返回上级目录
+    BackHandler(enabled = isBackHandlerEnable.value, onBack = {
+        if(isSelectionMode.value){
+            quitSelectionMode()
+        } else if(repoPageFilterModeOn.value) {
+            repoPageFilterModeOn.value = false
+        }else {
+            backHandlerOnBack()
+        }
+    })
+    //back handler block end
 
     if(showBottomSheet.value) {
         val repoDto = curRepo.value
@@ -1404,8 +1616,8 @@ fun RepoInnerPage(
                             repoDto = element,
                             repoDtoIndex = idx,
 
-                            itemSelected = true,
-                            titleOnClick = {},
+                            itemSelected = containsForSelected(selectedItems.value, element),
+                            titleOnClick = repoCardTitleOnClick,
 
                             goToFilesPage = goToFilesPage,
                             requireBlinkIdx = requireBlinkIdx,
@@ -1447,8 +1659,8 @@ fun RepoInnerPage(
                             repoDtoList = repoList.value,
                             idx = idx,
 
-                            itemSelected = true,
-                            titleOnClick = {},
+                            itemSelected = containsForSelected(selectedItems.value, element),
+                            titleOnClick = repoCardTitleOnClick,
 
                             needRefreshList = needRefreshRepoPage,
                             requireDelRepo = requireDelRepo,
@@ -1485,6 +1697,28 @@ fun RepoInnerPage(
             goToThisRepoAndHighlightingIt(curRepo.value.parentRepoId)
         }
     }
+
+
+
+    if(isSelectionMode.value) {
+        BottomBar(
+            quitSelectionMode=quitSelectionMode,
+            iconList=selectionModeIconList,
+            iconTextList=selectionModeIconTextList,
+            iconDescTextList=selectionModeIconTextList,
+            iconOnClickList=selectionModeIconOnClickList,
+            iconEnableList=selectionModeIconEnableList,
+            enableMoreIcon=true,
+            moreItemTextList=selectionModeMoreItemTextList,
+            moreItemOnClickList=selectionModeMoreItemOnClickList,
+            getSelectedFilesCount = getSelectedFilesCount,
+            moreItemEnableList = selectionModeMoreItemEnableList,
+            countNumOnClickEnabled = true,
+            countNumOnClick = showSelectedItems,
+        )
+
+    }
+
 
     //没换页面，但需要刷新页面，这时LaunchedEffect不会执行，就靠这个变量控制刷新页面了
 //    if(needRefreshRepoPage.value) {

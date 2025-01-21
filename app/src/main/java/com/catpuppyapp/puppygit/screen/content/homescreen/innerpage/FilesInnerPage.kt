@@ -236,10 +236,9 @@ fun FilesInnerPage(
     }
 
     val filesPageQuitSelectionMode = {
-        selectedItems.value.clear()  //清空选中文件列表
-//        selectedItems.requireRefreshView()
         isFileSelectionMode.value=false  //关闭选择模式
-        isPasteMode.value=false
+        isPasteMode.value=false  //关闭粘贴模式
+        selectedItems.value.clear()  //清空选中文件列表
     }
 
     val switchItemSelected = { item: FileItemDto ->
@@ -247,7 +246,7 @@ fun FilesInnerPage(
         UIHelper.selectIfNotInSelectedListElseRemove(item, selectedItems.value, contains = containsForSelected)
     }
 
-    val selecteItem = {item:FileItemDto ->
+    val selectItem = { item:FileItemDto ->
         isFileSelectionMode.value = true
         UIHelper.selectIfNotInSelectedListElseNoop(item, selectedItems.value, contains = containsForSelected)
     }
@@ -1363,7 +1362,7 @@ fun FilesInnerPage(
                                     //这里调用 toList() 是为了拷贝下源list，避免并发修改异常
                                     selectedItems.value.toList(), currentPathFileList.toList(),
                                     switchItemSelected,
-                                    selecteItem
+                                    selectItem
                                 )
                             }
                         }
@@ -2364,7 +2363,7 @@ fun FilesInnerPage(
                 requireImportUriList = requireImportUriList,
                 filesPageQuitSelectionMode = filesPageQuitSelectionMode,
                 isImportedMode = isImportMode,
-                selecteItem=selecteItem,
+                selectItem=selectItem,
                 filesPageRequestFromParent = filesPageRequestFromParent,
                 openDirErr=openDirErr,
                 viewAndSortState=viewAndSortState,
@@ -2399,7 +2398,7 @@ private fun doInit(
     requireImportUriList: CustomStateListSaveable<Uri>,
     filesPageQuitSelectionMode:()->Unit,
     isImportedMode:MutableState<Boolean>,
-    selecteItem:(FileItemDto) ->Unit,
+    selectItem:(FileItemDto) ->Unit,
     filesPageRequestFromParent:MutableState<String>,
     openDirErr:MutableState<String>,
     viewAndSortState:CustomStateSaveable<DirViewAndSort>,
@@ -2546,7 +2545,7 @@ private fun doInit(
 //                        清空已选中条目列表
                         filesPageQuitSelectionMode()
 //                        把当前条目添加进已选中列表并开启选择模式
-                        selecteItem(fdto)
+                        selectItem(fdto)
                         curFileFromCurPathFileDto=fdto
                         //因为路径只有可能代表一个文件，所以此判断代码块只需执行一次，设置flag为已执行，这样下次就会跳过不必要的判断了
                         curFileFromCurPathAlreadySelected = true

@@ -145,4 +145,8 @@ data class RepoEntity(
 
         return otherText ?: ""
     }
+
+    fun equalsForSelected(other:RepoEntity):Boolean {
+        return id == other.id
+    }
 }

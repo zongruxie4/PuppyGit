@@ -2805,7 +2805,7 @@ fun ChangeListInnerPage(
 //        initChangeListPage()
 //        needRefreshChangeListPage.value = false
 //    }
-    val selecteItem = {item: StatusTypeEntrySaver ->
+    val selectItem = { item: StatusTypeEntrySaver ->
         UIHelper.selectIfNotInSelectedListElseNoop(item, selectedItemList.value)
 
         //只刷新选中列表即可
@@ -3412,7 +3412,7 @@ fun ChangeListInnerPage(
                                 UIHelper.doSelectSpan(index, it,
                                     selectedItemList.value, itemListOrFilterList,
                                     switchItemSelected,
-                                    selecteItem
+                                    selectItem
                                 )
                             }
                         }
