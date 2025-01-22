@@ -28,6 +28,7 @@ private const val TAG = "ChangeListFunctions"
 
 object ChangeListFunctions {
 
+    //变量1是请求显示输入提交信息的弹窗，变量2是提交信息。是否显示弹窗只受变量1控制，只要变量1为true，就会显示弹窗，为false就不会显示弹窗，无论变量2有没有值。
     suspend fun doCommit(
         requireShowCommitMsgDialog:Boolean,
         cmtMsg:String,
