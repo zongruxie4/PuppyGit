@@ -38,6 +38,7 @@ data class RepoEntity(
     var lastUpdateTime: Long = getSecFromTime(),  //本来是最后更新仓库workStatus状态的时间，后来改成最后检查更新的时间了，只有fetchpullpush这类和服务器通信更新或检查更新的操作才会更新这个时间，所以实际上这个字段成了最后与服务器通信的时间
     var workStatus: Int = Cons.dbRepoWorkStatusNotReadyNeedClone,
 
+    //分支短名
     var branch: String = "",  //如果仓库没detached HEAD，这个是分支名，如果detached，这个是短commit hash，可以通过git24j的相关函数判断仓库是否处于detached HEAD状态，或者在detached时直接使用 lastCommitHash 的值也行
     var lastCommitHash: String = "",  //最后提交的hash，短
     var isDetached:Int=Cons.dbCommonFalse,

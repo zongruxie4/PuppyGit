@@ -530,13 +530,7 @@ object ChangeListFunctions {
         appContext:Context,
         bottomBarActDoneCallback:(String, RepoEntity)->Unit,
         plzSetUpStreamForCurBranch:String,
-        upstreamRemoteOptionsList:CustomStateListSaveable<String>,
-        upstreamSelectedRemote:MutableIntState,
-        upstreamBranchSameWithLocal:MutableState<Boolean>,
-        upstreamBranchShortRefSpec:MutableState<String>,
-        upstreamCurBranchShortName:MutableState<String>,
-        upstreamDialogOnOkText:MutableState<String>,
-        showSetUpstreamDialog:MutableState<Boolean>,
+        initSetUpstreamDialog:(remoteList: List<String>, curBranchShortName: String, curBranchFullName: String, onOkText: String) -> Unit,
         loadingText:MutableState<String>,
         dbContainer:AppContainer,
     ) {
@@ -549,34 +543,19 @@ object ChangeListFunctions {
 
             //检查是否有upstream，如果有，do fetch do merge，然后do push,如果没有，请求设置upstream，然后do push
             val hasUpstream = Libgit2Helper.isBranchHasUpstream(repo)
-            val shortBranchName = Libgit2Helper.getRepoCurBranchShortRefSpec(repo)
+            val headRef = Libgit2Helper.resolveHEAD(repo) ?: throw RuntimeException("resolve HEAD failed")
+            val curBranchShortName = headRef.shorthand()
+            val curBranchFullName = headRef.name()
             if (!hasUpstream) {  //不存在上游，弹窗设置一下
                 requireShowToast(plzSetUpStreamForCurBranch)  //显示请设置上游的提示
 
-                //为弹窗设置相关属性
-                //设置远程名
-                val remoteList = Libgit2Helper.getRemoteList(repo)
-                upstreamRemoteOptionsList.value.clear()
-                upstreamRemoteOptionsList.value.addAll(remoteList)
-//                upstreamRemoteOptionsList.requireRefreshView()
+                //显示弹窗
+                initSetUpstreamDialog(Libgit2Helper.getRemoteList(repo), curBranchShortName, curBranchFullName, appContext.getString(R.string.save_and_sync))
 
-                upstreamSelectedRemote.intValue = 0  //默认选中第一个remote，每个仓库至少有一个origin remote，应该不会出错
-
-                //默认选中为上游设置和本地分支相同名
-                upstreamBranchSameWithLocal.value = true
-                //把远程分支名设成当前分支的完整名
-                upstreamBranchShortRefSpec.value = Libgit2Helper.getRepoCurBranchShortRefSpec(repo)
-
-                //设置当前分支，用来让用户知道自己在为哪个分支设置上游
-                upstreamCurBranchShortName.value = shortBranchName
-
-                upstreamDialogOnOkText.value = appContext.getString(R.string.save_and_sync)
-                //修改状态，显示弹窗，在弹窗设置完后，应该就不会进入这个判断了
-                showSetUpstreamDialog.value = true
             }else {  //存在上游
                 try {
 //取出上游
-                    val upstream = Libgit2Helper.getUpstreamOfBranch(repo, shortBranchName)
+                    val upstream = Libgit2Helper.getUpstreamOfBranch(repo, curBranchShortName)
                     val fetchSuccess = doFetch(
                         upstream.remote,
                         curRepoFromParentPage = curRepoFromParentPage,

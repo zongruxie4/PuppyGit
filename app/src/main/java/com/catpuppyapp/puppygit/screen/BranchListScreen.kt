@@ -373,65 +373,55 @@ fun BranchListScreen(
 
     if(showSetUpstreamForLocalBranchDialog.value) {
         SetUpstreamDialog(
+            callerTag = TAG,
+            curRepo = curRepo.value,
+            loadingOn = loadingOn,
+            loadingOff = loadingOff,
+            curBranchFullName = curObjInPage.value.fullName,
+            isCurrentBranchOfRepo = curObjInPage.value.isCurrent,
+            curBranchShortName = curObjInPage.value.shortName,
             remoteList = upstreamRemoteOptionsList.value,
-            curBranch = curObjInPage.value.shortName,  //供显示的，让用户知道在为哪个分支设置上游
             selectedOption = upstreamSelectedRemote,
-            branch = upstreamBranchShortRefSpec,
-            branchSameWithLocal = upstreamBranchSameWithLocal,
-            onClear = if(showClearForSetUpstreamDialog.value) ({
-                showSetUpstreamForLocalBranchDialog.value = false
-
-                val repoName = curRepo.value.repoName
-                val repoFullPath = curRepo.value.fullSavePath
-//                val curBranchFullName = curObjInPage.value.fullName
-                val curBranchShortName = curObjInPage.value.shortName
-                doJobThenOffLoading(
-                    loadingOn,
-                    loadingOff,
-                    activityContext.getString(R.string.loading)
-                ) {
-                    try {
-                        Repository.open(repoFullPath).use { repo ->
-                            Libgit2Helper.clearUpstreamForBranch(repo, curBranchShortName)
-                        }
-
-                        Msg.requireShow(activityContext.getString(R.string.success))
-                    } catch (e: Exception) {
-                        //显示通知
-                        requireShowToast("clear upstream err:" + e.localizedMessage)
-                        //给用户看到错误
-                        createAndInsertError(
-                            repoId,
-                            "clear upstream for '$curBranchShortName' err:" + e.localizedMessage
-                        )
-                        //给开发者debug看的错误
-                        MyLog.e(
-                            TAG,
-                            "clear upstream for '$curBranchShortName' of '$repoName' err: " + e.stackTraceToString()
-                        )
-
-                    } finally {
-                        changeStateTriggerRefreshPage(needRefresh)
-                    }
-                }
-            }) else null,
-            onCancel = {
+            upstreamBranchShortName = upstreamBranchShortRefSpec,
+            upstreamBranchShortNameSameWithLocal = upstreamBranchSameWithLocal,
+            showClear = showClearForSetUpstreamDialog.value,
+            closeDialog = {
                 //隐藏弹窗就行，相关状态变量会在下次弹窗前初始化
                 showSetUpstreamForLocalBranchDialog.value = false
-//                changeStateTriggerRefreshPage(needRefresh)  //取消操作，没必要刷新页面
             },
-            onOk = onOk@{
-                showSetUpstreamForLocalBranchDialog.value = false
-
+            onClearSuccessCallback = {
+                Msg.requireShow(activityContext.getString(R.string.success))
+            },
+            onClearErrorCallback = { e ->
                 val repoName = curRepo.value.repoName
-                val curBranchFullName = curObjInPage.value.fullName
                 val curBranchShortName = curObjInPage.value.shortName
-                val repoFullPath = curRepo.value.fullSavePath
+
+                //显示通知
+                requireShowToast("clear upstream err:" + e.localizedMessage)
+                //给用户看到错误
+                createAndInsertError(
+                    repoId,
+                    "clear upstream for '$curBranchShortName' err:" + e.localizedMessage
+                )
+                //给开发者debug看的错误
+                MyLog.e(
+                    TAG,
+                    "clear upstream for '$curBranchShortName' of '$repoName' err: " + e.stackTraceToString()
+                )
+            },
+            onClearFinallyCallback = {
+                changeStateTriggerRefreshPage(needRefresh)
+            },
+            onSuccessCallback = {
+                requireShowToast(activityContext.getString(R.string.set_upstream_success))
+            },
+            onErrorCallback = onErr@{ e->
+                val repoName = curRepo.value.repoName
+                val curBranchShortName = curObjInPage.value.shortName
                 val upstreamSameWithLocal = upstreamBranchSameWithLocal.value
                 val remoteList = upstreamRemoteOptionsList.value
                 val selectedRemoteIndex = upstreamSelectedRemote.intValue
                 val upstreamShortName = upstreamBranchShortRefSpec.value
-                val isCurrentBranchOfRepo = curObjInPage.value.isCurrent
 
                 //直接索引取值即可
                 val remote = try {
@@ -439,89 +429,28 @@ fun BranchListScreen(
                 } catch (e: Exception) {
                     MyLog.e(TAG,"err when get remote by index from remote list of '$repoName': remoteIndex=$selectedRemoteIndex, remoteList=$remoteList\nerr info:${e.stackTraceToString()}")
                     Msg.requireShowLongDuration(activityContext.getString(R.string.err_selected_remote_is_invalid))
-                    return@onOk
+                    return@onErr
                 }
 
-
-                // update git config
-                doJobThenOffLoading(
-                    loadingOn,
-                    loadingOff,
-                    activityContext.getString(R.string.setting_upstream)
-                ) {
-                    try {
-
-
-                        Repository.open(repoFullPath).use { repo ->
-                            var branch = ""
-                            if (upstreamSameWithLocal) {  //勾选了使用和本地同名的分支，创建本地同名远程分支
-                                //取出repo的当前选中的分支
-                                branch = curBranchFullName
-                            } else {  //否则取出用户输入的远程分支短名，然后生成长名
-                                branch =
-                                    Libgit2Helper.getRefsHeadsBranchFullRefSpecFromShortRefSpec(
-                                        upstreamShortName
-                                    )
-                            }
-                            MyLog.d(
-                                TAG,
-                                "set upstream dialog #onOk(): repo is '$repoName', will write to git config: remote=$remote, branch=$branch"
-                            )
-
-                            //把分支的upstream信息写入配置文件
-                            val setUpstreamSuccess =
-                                Libgit2Helper.setUpstreamForBranchByRemoteAndRefspec(
-                                    repo,
-                                    remote,
-                                    branch,
-                                    targetBranchShortName = curBranchShortName
-                                )
-
-                            //如果是当前活跃分支，更新下db，否则不用更新
-                            if (isCurrentBranchOfRepo) {
-                                //更新数据库
-                                val repoDb =
-                                    AppModel.dbContainer.repoRepository
-                                val upstreamBranchShortName =
-                                    Libgit2Helper.getUpstreamRemoteBranchShortNameByRemoteAndBranchRefsHeadsRefSpec(
-                                        remote,
-                                        branch
-                                    )
-                                MyLog.d(
-                                    TAG,
-                                    "set upstream dialog #onOk(): upstreamBranchShortName=$upstreamBranchShortName"
-                                )
-                                repoDb.updateUpstream(repoId, upstreamBranchShortName)
-                            }
-
-                            if (setUpstreamSuccess) {
-                                requireShowToast(activityContext.getString(R.string.set_upstream_success))
-                            } else {
-                                requireShowToast(activityContext.getString(R.string.set_upstream_error))
-                            }
-                        }
-                    } catch (e: Exception) {
-                        //显示通知
-                        requireShowToast("set upstream err:" + e.localizedMessage)
-                        //给用户看到错误
-                        createAndInsertError(
-                            repoId,
-                            "set upstream for '$curBranchShortName' err:" + e.localizedMessage
-                        )
-                        //给开发者debug看的错误
-                        MyLog.e(
-                            TAG,
-                            "set upstream for '$curBranchShortName' of '$repoName' err! user input branch is '$upstreamShortName', selected remote is $remote, user checked use same name with local is '$upstreamSameWithLocal'\nerr:" + e.stackTraceToString()
-                        )
-
-                    } finally {
-                        changeStateTriggerRefreshPage(needRefresh)
-                    }
-
-                }
+                //显示通知
+                requireShowToast("set upstream err:" + e.localizedMessage)
+                //给用户看到错误
+                createAndInsertError(
+                    repoId,
+                    "set upstream for '$curBranchShortName' err:" + e.localizedMessage
+                )
+                //给开发者debug看的错误
+                MyLog.e(
+                    TAG,
+                    "set upstream for '$curBranchShortName' of '$repoName' err! user input branch is '$upstreamShortName', selected remote is $remote, user checked use same name with local is '$upstreamSameWithLocal'\nerr:" + e.stackTraceToString()
+                )
 
 
             },
+            onFinallyCallback = {
+                changeStateTriggerRefreshPage(needRefresh)
+            },
+
         )
     }
 

@@ -524,10 +524,11 @@ fun ChangeListInnerPage(
     val upstreamSelectedRemote = rememberSaveable{mutableIntStateOf(0)} //默认选中第一个remote，每个仓库至少有一个origin remote，应该不会出错
     //默认选中为上游设置和本地分支相同名
     val upstreamBranchSameWithLocal =rememberSaveable { mutableStateOf(true)}
-    //把远程分支名设成当前分支的完整名
+    //把远程分支名设成当前分支的短名？
     val upstreamBranchShortRefSpec = rememberSaveable { mutableStateOf("")}
-    //设置当前分支，用来让用户知道自己在为哪个分支设置上游
+    //设置当前分支，用来让用户知道自己在为哪个分支设置上游，这是当前分支，不是上游的分支，他妈的这个变量名当初怎么他妈想的？
     val upstreamCurBranchShortName = rememberSaveable { mutableStateOf("")}
+    val upstreamCurBranchFullName = rememberSaveable { mutableStateOf("")}
 
     //给commit msg弹窗的回调用的，如果是true，代表需要执行sync，否则只是commit就行了
 //    val requireDoSync = rememberSaveable { mutableStateOf(false) }
@@ -535,6 +536,29 @@ fun ChangeListInnerPage(
     //修改状态，显示弹窗
     val showSetUpstreamDialog  =rememberSaveable { mutableStateOf(false)}
     val upstreamDialogOnOkText  =rememberSaveable { mutableStateOf("")}
+    val initSetUpstreamDialog:(List<String>, String, String, String) -> Unit = { remoteList, curBranchShortName, curBranchFullName, onOkText ->
+        //设置远程名
+        upstreamRemoteOptionsList.value.clear()
+        upstreamRemoteOptionsList.value.addAll(remoteList)
+//                upstreamRemoteOptionsList.requireRefreshView()
+
+        upstreamSelectedRemote.intValue = 0  //默认选中第一个remote，每个仓库至少有一个origin remote，应该不会出错
+
+        //默认选中为上游设置和本地分支相同名
+        upstreamBranchSameWithLocal.value = true
+        //把远程分支初始化为当前分支的短名
+        upstreamBranchShortRefSpec.value = curBranchShortName
+
+        //设置当前分支，用来让用户知道自己在为哪个分支设置上游
+        upstreamCurBranchShortName.value = curBranchShortName
+        upstreamCurBranchFullName.value = curBranchFullName
+
+        upstreamDialogOnOkText.value = onOkText
+        //修改状态，显示弹窗，在弹窗设置完后，应该就不会进入这个判断了
+        showSetUpstreamDialog.value = true
+    }
+
+
 //    val stageFailedStrRes = stringResource(R.string.stage_failed)
     val successCommitStrRes = stringResource(R.string.commit_success)
 
@@ -1028,13 +1052,7 @@ fun ChangeListInnerPage(
                         appContext = activityContext,
                         bottomBarActDoneCallback = bottomBarActDoneCallback,
                         plzSetUpStreamForCurBranch = plzSetUpStreamForCurBranch,
-                        upstreamRemoteOptionsList = upstreamRemoteOptionsList,
-                        upstreamSelectedRemote = upstreamSelectedRemote,
-                        upstreamBranchSameWithLocal = upstreamBranchSameWithLocal,
-                        upstreamBranchShortRefSpec = upstreamBranchShortRefSpec,
-                        upstreamCurBranchShortName = upstreamCurBranchShortName,
-                        upstreamDialogOnOkText = upstreamDialogOnOkText,
-                        showSetUpstreamDialog = showSetUpstreamDialog,
+                        initSetUpstreamDialog = initSetUpstreamDialog,
                         loadingText = loadingText,
                         dbContainer = dbContainer
                     )
@@ -1059,13 +1077,8 @@ fun ChangeListInnerPage(
                         appContext = activityContext,
                         bottomBarActDoneCallback = bottomBarActDoneCallback,
                         plzSetUpStreamForCurBranch = plzSetUpStreamForCurBranch,
-                        upstreamRemoteOptionsList = upstreamRemoteOptionsList,
-                        upstreamSelectedRemote = upstreamSelectedRemote,
-                        upstreamBranchSameWithLocal = upstreamBranchSameWithLocal,
-                        upstreamBranchShortRefSpec = upstreamBranchShortRefSpec,
-                        upstreamCurBranchShortName = upstreamCurBranchShortName,
-                        upstreamDialogOnOkText = upstreamDialogOnOkText,
-                        showSetUpstreamDialog = showSetUpstreamDialog,
+                        initSetUpstreamDialog = initSetUpstreamDialog,
+
                         loadingText = loadingText,
                         dbContainer = dbContainer
                     )
@@ -1444,82 +1457,60 @@ fun ChangeListInnerPage(
     }
 
     if(showSetUpstreamDialog.value) {
+        val curRepo = curRepoFromParentPage.value
         SetUpstreamDialog(
+            callerTag = TAG,
+            curRepo = curRepo,
+            loadingOn = loadingOn,
+            loadingOff = loadingOff,
+            showClear = false,  //这个页面肯定是没上游才会显示设置上游的弹窗，所以不需要显示clear
             remoteList = upstreamRemoteOptionsList.value,
-            curBranch = upstreamCurBranchShortName.value,  //供显示的，让用户知道在为哪个分支设置上游
+            curBranchShortName = upstreamCurBranchShortName.value,  //供显示的，让用户知道在为哪个分支设置上游
+            curBranchFullName = upstreamCurBranchFullName.value,
             selectedOption = upstreamSelectedRemote,
-            branch = upstreamBranchShortRefSpec,
-            branchSameWithLocal = upstreamBranchSameWithLocal,
+            upstreamBranchShortName = upstreamBranchShortRefSpec,
+            upstreamBranchShortNameSameWithLocal = upstreamBranchSameWithLocal,
             onOkText = upstreamDialogOnOkText.value,
-            onOk = {
-                showSetUpstreamDialog.value = false
-                upstreamDialogOnOkText.value=""
-                val curRepo = curRepoFromParentPage.value
+            isCurrentBranchOfRepo = true,
+            onSuccessCallback = {
+                //提示用户：上游已保存
+                requireShowToast(activityContext.getString(R.string.upstream_saved))
+                //把loading信息改成正在同步
+                loadingOn(activityContext.getString(R.string.syncing))
 
-                // update git config
-                doJobThenOffLoading(loadingOn,loadingOff, activityContext.getString(R.string.setting_upstream)) {
-                    //直接索引取值即可
-                    val remote = upstreamRemoteOptionsList.value[upstreamSelectedRemote.intValue]
-
-                    Repository.open(curRepo.fullSavePath).use {repo ->
-                        var branch = ""
-                        if(upstreamBranchSameWithLocal.value) {  //勾选了使用和本地同名的分支，创建本地同名远程分支
-                            //取出repo的当前分支
-                            branch = Libgit2Helper.getRepoCurBranchFullRefSpec(repo)
-                        }else {  //否则取出用户输入的远程分支短名，然后生成长名
-                            branch = Libgit2Helper.getRefsHeadsBranchFullRefSpecFromShortRefSpec(upstreamBranchShortRefSpec.value)
-                        }
-
-                        //把分支的upstream信息写入配置文件
-                        val setUpstreamSuccess =
-                            Libgit2Helper.setUpstreamForBranchByRemoteAndRefspec(
-                                repo,
-                                remote,
-                                branch
-                            )
-
-                        if(setUpstreamSuccess) {
-                            //提示用户：上游已保存
-                            requireShowToast(activityContext.getString(R.string.upstream_saved))
-                            //把loading信息改成正在同步
-                            loadingOn(activityContext.getString(R.string.syncing))
-
-                            //重新执行doSync()
+                //重新执行doSync()
 //                            doSync(true)
-                            ChangeListFunctions.doSync(
-                                requireCloseBottomBar = true,
-                                trueMergeFalseRebase = true,
-                                curRepoFromParentPage = curRepo,
-                                requireShowToast = requireShowToast,
-                                appContext = activityContext,
-                                bottomBarActDoneCallback = bottomBarActDoneCallback,
-                                plzSetUpStreamForCurBranch = plzSetUpStreamForCurBranch,
-                                upstreamRemoteOptionsList = upstreamRemoteOptionsList,
-                                upstreamSelectedRemote = upstreamSelectedRemote,
-                                upstreamBranchSameWithLocal = upstreamBranchSameWithLocal,
-                                upstreamBranchShortRefSpec = upstreamBranchShortRefSpec,
-                                upstreamCurBranchShortName = upstreamCurBranchShortName,
-                                upstreamDialogOnOkText = upstreamDialogOnOkText,
-                                showSetUpstreamDialog = showSetUpstreamDialog,
-                                loadingText = loadingText,
-                                dbContainer = dbContainer
-                            )
-                        }else {
-                            requireShowToast(activityContext.getString(R.string.set_upstream_error))
-                        }
-                    }
-                }
+                ChangeListFunctions.doSync(
+                    requireCloseBottomBar = true,
+                    trueMergeFalseRebase = true,
+                    curRepoFromParentPage = curRepo,
+                    requireShowToast = requireShowToast,
+                    appContext = activityContext,
+                    bottomBarActDoneCallback = bottomBarActDoneCallback,
+                    plzSetUpStreamForCurBranch = plzSetUpStreamForCurBranch,
+                    initSetUpstreamDialog = initSetUpstreamDialog,
 
+                    loadingText = loadingText,
+                    dbContainer = dbContainer
+                )
 
+            },
+            onErrorCallback = {
+                requireShowToast(activityContext.getString(R.string.set_upstream_error))
+            },
+            closeDialog = {
+                showSetUpstreamDialog.value = false
             },
             onCancel = {
-                //隐藏弹窗就行，相关状态变量会在下次弹窗前初始化
                 showSetUpstreamDialog.value = false
-                upstreamDialogOnOkText.value=""  //有必要重置下这个字段，虽然实际上没必要，但逻辑上还是重置下好，不然如果忘了设置，就会显示错误的ok信息
-                val curRepo = curRepoFromParentPage.value
-
+                //刷新页面是为了显示提交后或stage后的change list
                 changeListRequireRefreshFromParentPage(curRepo)
             },
+            onClearErrorCallback = {},
+            onClearFinallyCallback = {},
+            onClearSuccessCallback = {},
+            onFinallyCallback = {},  //这里不用刷新页面，因为在这个页面设置完上游还要执行其他操作，其他操作结束后会刷新页面
+
         )
     }
 
@@ -1596,13 +1587,8 @@ fun ChangeListInnerPage(
                                     appContext = activityContext,
                                     bottomBarActDoneCallback = bottomBarActDoneCallback,
                                     plzSetUpStreamForCurBranch = plzSetUpStreamForCurBranch,
-                                    upstreamRemoteOptionsList = upstreamRemoteOptionsList,
-                                    upstreamSelectedRemote = upstreamSelectedRemote,
-                                    upstreamBranchSameWithLocal = upstreamBranchSameWithLocal,
-                                    upstreamBranchShortRefSpec = upstreamBranchShortRefSpec,
-                                    upstreamCurBranchShortName = upstreamCurBranchShortName,
-                                    upstreamDialogOnOkText = upstreamDialogOnOkText,
-                                    showSetUpstreamDialog = showSetUpstreamDialog,
+                                    initSetUpstreamDialog = initSetUpstreamDialog,
+
                                     loadingText = loadingText,
                                     dbContainer = dbContainer
                                 )
@@ -3166,13 +3152,8 @@ fun ChangeListInnerPage(
                                                     appContext = activityContext,
                                                     bottomBarActDoneCallback = bottomBarActDoneCallback,
                                                     plzSetUpStreamForCurBranch = plzSetUpStreamForCurBranch,
-                                                    upstreamRemoteOptionsList = upstreamRemoteOptionsList,
-                                                    upstreamSelectedRemote = upstreamSelectedRemote,
-                                                    upstreamBranchSameWithLocal = upstreamBranchSameWithLocal,
-                                                    upstreamBranchShortRefSpec = upstreamBranchShortRefSpec,
-                                                    upstreamCurBranchShortName = upstreamCurBranchShortName,
-                                                    upstreamDialogOnOkText = upstreamDialogOnOkText,
-                                                    showSetUpstreamDialog = showSetUpstreamDialog,
+                                                    initSetUpstreamDialog = initSetUpstreamDialog,
+
                                                     loadingText = loadingText,
                                                     dbContainer = dbContainer
                                                 )
