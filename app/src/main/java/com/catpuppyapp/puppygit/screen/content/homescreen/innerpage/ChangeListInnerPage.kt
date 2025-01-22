@@ -17,7 +17,6 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.Label
-import androidx.compose.material.icons.filled.CloudSync
 import androidx.compose.material.icons.filled.DoneAll
 import androidx.compose.material.icons.filled.Download
 import androidx.compose.material.icons.filled.Folder
@@ -2975,7 +2974,8 @@ fun ChangeListInnerPage(
 
                                     val syncText = stringResource(if(upstreamNotSet) R.string.set_upstream_and_sync else R.string.sync)
 //                                    val syncIcon = if(upstreamNotSet) Icons.Filled.CloudSync else Icons.Filled.Sync
-                                    val syncIcon = if(upstreamNotSet) Icons.Filled.CloudSync else ImageVector.vectorResource(R.drawable.two_way_sync)
+//                                    val syncIcon = if(upstreamNotSet) Icons.Filled.CloudSync else ImageVector.vectorResource(R.drawable.two_way_sync)
+                                    val syncIcon = ImageVector.vectorResource(R.drawable.two_way_sync)
                                     LongPressAbleIconBtn(
                                         iconModifier = iconModifier,
                                         tooltipText = syncText,
