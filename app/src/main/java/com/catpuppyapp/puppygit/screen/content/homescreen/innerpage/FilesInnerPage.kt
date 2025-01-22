@@ -2619,14 +2619,10 @@ private fun doInit(
 //        if(lastUsedPath.isBlank() || curDirPath==FsUtils.rootPath || currentPathBreadCrumbList.value.isEmpty() || lastUsedPath.startsWith(curDirPath).not()) {
 
         val separator = Cons.slashChar
-        val breadCrumbLastItemPath = curBreadCrumbList[curBreadCrumbList.size-1].fullPath
 
-        //如果路径末尾没 / 就加个 /，避免先进入 /abc 再进入 /a 这种情况 startsWith() 误判导致面包屑不会刷新
-        val breadCrumbPathForCompare = if(breadCrumbLastItemPath.endsWith(separator)) breadCrumbLastItemPath else "$breadCrumbLastItemPath$separator"
-        val curDirPathForCompare = if(curDirPath.endsWith(separator)) curDirPath else "$curDirPath$separator"
         //if breadCrumblist empty or last item full path not starts with current path, recreate the breadcrumblist
         //如果面包屑不为空或最后一个元素不是当前路径的子目录，重新创建面包屑列表
-        if(curBreadCrumbList.isEmpty() || !breadCrumbPathForCompare.startsWith(curDirPathForCompare)) {
+        if(breadCrumbPathNotCoverdCurPath(curBreadCrumbList, curDirPath, separator)) {
 //        val isInternalStoragePath = curDirPath.startsWith(repoBaseDirPath)
 //        val splitPath = (if(isInternalStoragePath) getFilePathStrBasedRepoDir(curDirPath) else curDirPath.removePrefix("/")).split(File.separator)  //获得一个分割后的目录列表
 //        val root = if(isInternalStoragePath) repoBaseDirPath else "/"
@@ -2739,4 +2735,19 @@ private fun getBackHandler(
         }
     }
     return backHandlerOnBack
+}
+
+private fun breadCrumbPathNotCoverdCurPath(curBreadCrumbList:List<FileItemDto>, curDirPath:String, separator:Char):Boolean {
+    return if(curBreadCrumbList.isEmpty()) {
+        true
+    }else {
+        // 若curBreadCrumbList为空，会在if返回，执行到这里，必然至少有一个元素，所以获取其最后一个元素不会越界
+        val breadCrumbLastItemPath = curBreadCrumbList[curBreadCrumbList.size-1].fullPath
+
+        //如果路径末尾没 / 就加个 /，避免先进入 /abc 再进入 /a 这种情况 startsWith() 误判导致面包屑不会刷新
+        val breadCrumbPathForCompare = if(breadCrumbLastItemPath.endsWith(separator)) breadCrumbLastItemPath else "$breadCrumbLastItemPath$separator"
+        val curDirPathForCompare = if(curDirPath.endsWith(separator)) curDirPath else "$curDirPath$separator"
+
+        !breadCrumbPathForCompare.startsWith(curDirPathForCompare)
+    }
 }
