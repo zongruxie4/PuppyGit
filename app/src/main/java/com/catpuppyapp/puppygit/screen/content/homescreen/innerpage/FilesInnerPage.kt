@@ -2618,13 +2618,18 @@ private fun doInit(
         //重新生成面包屑的条件：上次路径为空 或 面包屑列表为空 或 上次路径非startsWith当前路径
 //        if(lastUsedPath.isBlank() || curDirPath==FsUtils.rootPath || currentPathBreadCrumbList.value.isEmpty() || lastUsedPath.startsWith(curDirPath).not()) {
 
+        val separator = Cons.slashChar
+        val breadCrumbLastItemPath = curBreadCrumbList[curBreadCrumbList.size-1].fullPath
+
+        //如果路径末尾没 / 就加个 /，避免先进入 /abc 再进入 /a 这种情况 startsWith() 误判导致面包屑不会刷新
+        val breadCrumbPathForCompare = if(breadCrumbLastItemPath.endsWith(separator)) breadCrumbLastItemPath else "$breadCrumbLastItemPath$separator"
+        val curDirPathForCompare = if(curDirPath.endsWith(separator)) curDirPath else "$curDirPath$separator"
         //if breadCrumblist empty or last item full path not starts with current path, recreate the breadcrumblist
         //如果面包屑不为空或最后一个元素不是当前路径的子目录，重新创建面包屑列表
-        if(curBreadCrumbList.isEmpty() || curBreadCrumbList[curBreadCrumbList.size-1].fullPath.startsWith(curDirPath).not()) {
+        if(curBreadCrumbList.isEmpty() || !breadCrumbPathForCompare.startsWith(curDirPathForCompare)) {
 //        val isInternalStoragePath = curDirPath.startsWith(repoBaseDirPath)
 //        val splitPath = (if(isInternalStoragePath) getFilePathStrBasedRepoDir(curDirPath) else curDirPath.removePrefix("/")).split(File.separator)  //获得一个分割后的目录列表
 //        val root = if(isInternalStoragePath) repoBaseDirPath else "/"
-            val separator = Cons.slashChar
             val splitPath = curDirPath.trim(separator).split(separator)  //获得一个分割后的目录列表
 //            val root = separator
             curBreadCrumbList.clear()  //避免和之前的路径拼接在一起，先清空下列表
