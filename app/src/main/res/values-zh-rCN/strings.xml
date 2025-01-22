@@ -680,7 +680,7 @@
     <string name="mixed">混合</string>
     <string name="hard">硬</string>
     <string name="hash_branch_tag">哈希/分支/标签</string>
-    <string name="reset_head">reset HEAD</string>
+    <string name="reset_head">重置 HEAD</string>
     <string name="reset_head_index">重置 HEAD+索引</string>
     <string name="reset_head_index_worktree">重置 HEAD+索引+工作目录</string>
     <string name="cherrypick_state">精选</string>
