@@ -1,4 +1,4 @@
-next version:
+1.0.7.8v54 - 20250123:
 - indicate repo has uncommitted changes on RepoCard (issue #26)
 - support multi selection on Repos page (issue #27)
 
