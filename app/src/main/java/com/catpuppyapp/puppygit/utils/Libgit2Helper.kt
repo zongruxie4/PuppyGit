@@ -3772,15 +3772,15 @@ class Libgit2Helper {
         fun deleteBranch(repo: Repository, branchNameShortOrFull: String):Ret<String?> {
             val ref = resolveRefByName(repo, branchNameShortOrFull)
             if(ref==null) {
-                return Ret.createError(null, "resolve branch name to reference failed!", Ret.ErrCode.resolveReferenceError)
+                return Ret.createError(null, "resolve branch name '$branchNameShortOrFull' to reference failed!", Ret.ErrCode.resolveReferenceError)
             }
 
             try {
                 Branch.delete(ref)
                 return Ret.createSuccess(null, "delete branch success")
             }catch (e:Exception) {
-                MyLog.e(TAG, "#deleteBranch(): delete branch error:\n"+e.stackTraceToString())
-                return Ret.createError(null, "delete branch error"+e.localizedMessage, Ret.ErrCode.deleteBranchErr)
+                MyLog.e(TAG, "#deleteBranch(): delete branch '$branchNameShortOrFull' error:\n"+e.stackTraceToString())
+                return Ret.createError(null, "delete branch '$branchNameShortOrFull' error: ${e.localizedMessage}", Ret.ErrCode.deleteBranchErr)
             }
         }
 
@@ -3817,7 +3817,7 @@ class Libgit2Helper {
                 return push(repo, remote, ":$refsHeadsRefspec", credential)
             }catch (e:Exception) {
                 MyLog.e(TAG, "#deleteRemoteBranchByRemoteAndRefsHeadsBranchRefSpec() error:params are(remote=$remote, refsHeadsRefspec=$refsHeadsRefspec), err="+e.stackTraceToString())
-                return Ret.createError(null, e.localizedMessage ?: "del remote branch err")
+                return Ret.createError(null, "del remote branch '$refsHeadsRefspec' err: ${e.localizedMessage}")
             }
         }
 

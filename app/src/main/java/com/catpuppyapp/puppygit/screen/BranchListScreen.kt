@@ -587,38 +587,41 @@ fun BranchListScreen(
             onCancel = {showLocalBranchDelDialog.value=false}
         ) {
             showLocalBranchDelDialog.value=false
+
+            val curRepo = curRepo.value
+            val curObjInPage = curObjInPage.value
+
             doJobThenOffLoading(
                 loadingOn = loadingOn,
                 loadingOff = loadingOff,
                 loadingText = activityContext.getString(R.string.deleting_branch),
-            )  job@{
+            ) {
                 try {
                     //删除本地分支
-                    Repository.open(curRepo.value.fullSavePath).use { repo ->
+                    Repository.open(curRepo.fullSavePath).use { repo ->
 
-                        val deleteBranchRet = Libgit2Helper.deleteBranch(repo, curObjInPage.value.fullName);
+                        val deleteBranchRet = Libgit2Helper.deleteBranch(repo, curObjInPage.fullName);
                         if(deleteBranchRet.hasError()) {
-                            requireShowToast(activityContext.getString(R.string.del_branch_err_operation_abort))
-                            return@job
+                            throw RuntimeException(deleteBranchRet.msg)
                         }
+
                         requireShowToast(activityContext.getString(R.string.del_local_branch_success))
 
                         //检查当前选中对象是否有上游，如果有，检查用户是否勾选了删除上游，如果是执行删除上游
                         if (delUpstreamToo.value) {  //用户勾选了删除远程分支，检查下有没有有效的远程分支可以删
-                            if (curObjInPage.value.isUpstreamValid()) {
+                            if (curObjInPage.isUpstreamValid()) {
                                 //进入到这说明用户勾选了一并删除上游并且存在有效上游，提示正在删除远程分支
                                 requireShowToast(activityContext.getString(R.string.deleting_upstream))
 
                                 //通过上面的判断，upstream不可能是null
-                                val upstream = curObjInPage.value.upstream!!
+                                val upstream = curObjInPage.upstream!!
                                 //先删除本地的远程分支
                                 val delBranchRet = Libgit2Helper.deleteBranch(
                                     repo,
                                     upstream.remoteBranchRefsRemotesFullRefSpec
                                 )
                                 if (delBranchRet.hasError()) {
-                                    requireShowToast(delBranchRet.msg)
-                                    return@job
+                                    throw RuntimeException("del upstream '${upstream.remoteBranchShortRefSpec}' for '${curObjInPage.shortName}' err: ${delBranchRet.msg}")
                                 }
 
                                 //删除本地的远程分支成功后才会push远程，若失败，不会push
@@ -628,12 +631,11 @@ fun BranchListScreen(
                                     //查询凭据
                                     val remoteDb = AppModel.dbContainer.remoteRepository
                                     val remoteFromDb = remoteDb.getByRepoIdAndRemoteName(
-                                        curRepo.value.id,
+                                        curRepo.id,
                                         upstream.remote
                                     )
                                     if (remoteFromDb == null) {
-                                        requireShowToast(activityContext.getString(R.string.query_remote_error))
-                                        return@job
+                                        throw RuntimeException("delete upstream '${upstream.remoteBranchShortRefSpec}' push err: query remote from db failed")
                                     }
                                     var credential: CredentialEntity? = null
                                     if (!remoteFromDb.pushCredentialId.isNullOrBlank()) {
@@ -650,16 +652,14 @@ fun BranchListScreen(
                                             credential
                                         )
                                     if (delRemotePushRet.hasError()) {
-//                                        requireShowToast(appContext.getString(R.string.push_del_upstream_branch_to_remote_failed))
-                                        requireShowToast(delRemotePushRet.msg)
-                                        return@job
+                                        throw RuntimeException("del upstream '${upstream.remoteBranchShortRefSpec}' push err: "+delRemotePushRet.msg)
                                     }
                                 }
 
                                 //执行到这，本地分支和其上游都已经删除并推送到服务器（未勾选push则不会推送）了
                                 requireShowToast(activityContext.getString(R.string.del_upstream_success))
-                            }else {  //进入这里说明没有有效的上游，提示下，不用执行删除
-                                requireShowToast(activityContext.getString(R.string.del_upstream_failed_upstream_is_invalid))
+                            }else {  //进入这里说明没有有效的上游但又勾选了删除上游（正常来说无有效应该勾选不了），提示下，不用执行删除
+                                throw RuntimeException(activityContext.getString(R.string.del_upstream_failed_upstream_is_invalid))
                             }
                         }
 
@@ -667,11 +667,11 @@ fun BranchListScreen(
                     }
                     //删除远程分支不一定成功，因为名字可能有歧义，这时，提示即可，不弹窗让用户输分支名，如果用户还是想删，可找到对应的远程分支手动删除，那个删除时如果发现remote名歧义就会提示用户输入一个具体的remote名
                 }catch (e:Exception) {
-                    MyLog.e(TAG, "delLocalBranchDialog err:"+e.stackTraceToString())
-
                     val errMsg = "del branch failed:"+e.localizedMessage
                     requireShowToast(errMsg)
-                    createAndInsertError(curRepo.value.id, errMsg)
+                    createAndInsertError(curRepo.id, errMsg)
+
+                    MyLog.e(TAG, "#delLocalBranchDialog err:"+e.stackTraceToString())
                 }finally {
                     //别忘了刷新页面！
                     changeStateTriggerRefreshPage(needRefresh)
@@ -761,44 +761,44 @@ fun BranchListScreen(
             onCancel = { showRemoteBranchDelDialog.value=false}
         ) {
             showRemoteBranchDelDialog.value=false
+            val curRepo = curRepo.value
+            val curObjInPage = curObjInPage.value
+
             doJobThenOffLoading(
                 loadingOn = loadingOn,
                 loadingOff = loadingOff,
                 loadingText = activityContext.getString(R.string.deleting_branch),
-            )  job@{
+            ) {
                 try {
-                    Repository.open(curRepo.value.fullSavePath).use { repo ->
+                    Repository.open(curRepo.fullSavePath).use { repo ->
                         //先删除本地的远程分支
                         val delBranchRet = Libgit2Helper.deleteBranch(
                             repo,
-                            curObjInPage.value.fullName
+                            curObjInPage.fullName
                         )
                         if (delBranchRet.hasError()) {
-                            requireShowToast(activityContext.getString(R.string.del_remote_branch_err_operation_abort))
-                            return@job
+                            throw RuntimeException(delBranchRet.msg)
                         }
 
                         //若勾选push，删除远程
                         if(pushCheckBoxForRemoteBranchDelDialog.value) {
                             //或者把逻辑改成只要用户输入了remote名，就用用户输入的？
-                            val remote = if(curRequireDelRemoteNameIsAmbiguous.value) userSpecifyRemoteName.value else curObjInPage.value.remotePrefixFromShortName
+                            val remote = if(curRequireDelRemoteNameIsAmbiguous.value) userSpecifyRemoteName.value else curObjInPage.remotePrefixFromShortName
 
                             //如果remote无效，返回
                             if(remote.isNullOrBlank()) {
-                                requireShowToast(activityContext.getString(R.string.remote_name_is_invalid))
-                                return@job
+                                throw RuntimeException("del remote branch '${curObjInPage.fullName}' err: remote name invalid")
                             }
 
                             //再删除服务器的远程分支
                             //查询凭据
                             val remoteDb = AppModel.dbContainer.remoteRepository
                             val remoteFromDb = remoteDb.getByRepoIdAndRemoteName(
-                                curRepo.value.id,
+                                curRepo.id,
                                 remote
                             )
                             if (remoteFromDb == null) {
-                                requireShowToast(activityContext.getString(R.string.query_remote_error))
-                                return@job
+                                throw RuntimeException("del remote branch '${curObjInPage.shortName}' err: query remote from db failed")
                             }
                             var credential: CredentialEntity? = null
                             if (!remoteFromDb.pushCredentialId.isNullOrBlank()) {
@@ -808,13 +808,12 @@ fun BranchListScreen(
                             }
 
                             //例如：移除 origin/main 中的 origin/，然后拼接成 refs/heads/main
-                            val branchRefsHeadsFullRefSpec = "refs/heads/"+Libgit2Helper.removeGitRefSpecPrefix(remote+"/", curObjInPage.value.shortName)  // remote值形如：origin/，shortName值形如 origin/main
+                            val branchRefsHeadsFullRefSpec = "refs/heads/"+Libgit2Helper.removeGitRefSpecPrefix("$remote/", curObjInPage.shortName)  // remote值形如：origin/，shortName值形如 origin/main
 
                             //执行删除
                             val delRemotePushRet = Libgit2Helper.deleteRemoteBranchByRemoteAndRefsHeadsBranchRefSpec(repo, remote, branchRefsHeadsFullRefSpec, credential)
                             if (delRemotePushRet.hasError()) {
-                                requireShowToast(activityContext.getString(R.string.push_del_remote_branch_failed))
-                                return@job
+                                throw RuntimeException(delRemotePushRet.msg)
                             }
                         }
 
@@ -825,11 +824,12 @@ fun BranchListScreen(
                     }
 
                 }catch (e:Exception) {
-                    MyLog.e(TAG, "delRemoteBranchDialog err:"+e.stackTraceToString())
-
-                    val errMsg = "del remote branch failed:"+e.localizedMessage
+                    val errPrefix = "del remote branch '${curObjInPage.shortName}' err: "
+                    val errMsg = errPrefix+e.localizedMessage
                     requireShowToast(errMsg)
-                    createAndInsertError(curRepo.value.id, errMsg)
+                    createAndInsertError(curRepo.id, errMsg)
+
+                    MyLog.e(TAG, errPrefix+e.stackTraceToString())
                 }finally {
                     //别忘了刷新页面！
                     changeStateTriggerRefreshPage(needRefresh)

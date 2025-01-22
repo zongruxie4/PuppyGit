@@ -201,7 +201,7 @@ fun SetUpstreamDialog(
                             Repository.open(repoFullPath).use { repo ->
                                 var branch = ""
                                 if (upstreamSameWithLocal) {  //勾选了使用和本地同名的分支，创建本地同名远程分支
-                                    //取出repo当前分支长名。注意：这里不能直接用head.name()，因为不一定是为当前分支设置上游，不过若isCurrent为true，则可以
+                                    //取出repo当前分支长名。注意：这里不能直接用head.name()，因为不一定是为当前分支设置上游，不过若正好是未当前分支设置上游，其实可以用head.name()
                                     branch = curBranchFullName
                                 } else {  //否则取出用户输入的远程分支短名，然后生成长名
                                     branch = Libgit2Helper.getRefsHeadsBranchFullRefSpecFromShortRefSpec(upstreamShortName)
@@ -250,7 +250,7 @@ fun SetUpstreamDialog(
         },
         dismissButton = {
             ScrollableRow {
-                if(onClear != null) {
+                if(showClear) {
                     TextButton(
                         onClick = {
                             onClear()
