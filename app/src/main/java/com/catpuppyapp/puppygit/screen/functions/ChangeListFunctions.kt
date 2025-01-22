@@ -706,4 +706,132 @@ object ChangeListFunctions {
         changeStateTriggerRefreshPage(stateForRefresh, requestType= StateRequestType.withRepoId, data = whichRepoRequestRefresh.id)
     }
 
+
+    suspend fun doPull(
+        curRepo:RepoEntity,
+        activityContext:Context,
+        dbContainer: AppContainer,
+        requireShowToast:(String)->Unit,
+        loadingText:MutableState<String>,
+        bottomBarActDoneCallback:(String, RepoEntity)->Unit,
+        changeListRequireRefreshFromParentPage:(RepoEntity) -> Unit,
+    ) {
+        try {
+            //执行操作
+//            val fetchSuccess = doFetch(null)
+            val fetchSuccess = ChangeListFunctions.doFetch(
+                remoteNameParam = null,
+                curRepoFromParentPage = curRepo,
+                requireShowToast = requireShowToast,
+                appContext = activityContext,
+                loadingText = loadingText,
+                dbContainer = dbContainer
+            )
+            if(!fetchSuccess) {
+                requireShowToast(activityContext.getString(R.string.fetch_failed))
+            }else {
+//                val mergeSuccess = doMerge(true, null, true)
+                val mergeSuccess = ChangeListFunctions.doMerge(
+                    requireCloseBottomBar = true,
+                    upstreamParam = null,
+                    showMsgIfHasConflicts = true,
+                    trueMergeFalseRebase = true,
+                    curRepoFromParentPage = curRepo,
+                    requireShowToast = requireShowToast,
+                    appContext = activityContext,
+                    loadingText = loadingText,
+                    bottomBarActDoneCallback = bottomBarActDoneCallback
+                )
+                if(!mergeSuccess){
+                    requireShowToast(activityContext.getString(R.string.merge_failed))
+                }else {
+                    requireShowToast(activityContext.getString(R.string.pull_success))
+                }
+            }
+        }catch (e:Exception){
+            showErrAndSaveLog(TAG,"require pull error:"+e.stackTraceToString(), activityContext.getString(R.string.pull_failed)+":"+e.localizedMessage, requireShowToast,curRepo.id)
+        }finally {
+            //刷新页面
+            changeListRequireRefreshFromParentPage(curRepo)
+        }
+    }
+
+
+    suspend fun doAccept(
+        curRepo:RepoEntity,
+        acceptTheirs:Boolean,
+        loadingText:MutableState<String>,
+        activityContext:Context,
+        hasConflictItemsSelected:()->Boolean,
+        requireShowToast:(String)->Unit,
+        selectedItemList:List<StatusTypeEntrySaver>,
+        repoState:MutableIntState,
+        repoId:String,
+        fromTo:String,
+        selectedListIsEmpty:()->Boolean,
+        noItemSelectedStrRes:String,
+        nFilesStagedStrRes:String,
+        bottomBarActDoneCallback:(String, RepoEntity)->Unit,
+        changeListRequireRefreshFromParentPage:(RepoEntity)->Unit,
+    ) {
+        loadingText.value = if(acceptTheirs) activityContext.getString(R.string.accept_theirs) else activityContext.getString(R.string.accept_ours)
+
+        val repoFullPath = curRepo.fullSavePath
+        if(!hasConflictItemsSelected()) {
+            requireShowToast(activityContext.getString(R.string.err_no_conflict_item_selected))
+        }
+
+        val conflictList = selectedItemList.toList().filter { it.changeType == Cons.gitStatusConflict }
+        val pathspecList = conflictList.map { it.relativePathUnderRepo }
+
+        Repository.open(repoFullPath).use { repo->
+            val acceptRet = if(repoState.intValue == Repository.StateT.MERGE.bit) {
+                Libgit2Helper.mergeAccept(repo, pathspecList, acceptTheirs)
+            }else if(repoState.intValue == Repository.StateT.REBASE_MERGE.bit) {
+                Libgit2Helper.rebaseAccept(repo, pathspecList, acceptTheirs)
+            }else if(repoState.intValue == Repository.StateT.CHERRYPICK.bit) {
+                Libgit2Helper.cherrypickAccept(repo, pathspecList, acceptTheirs)
+            }else {
+                Ret.createError(null, "bad repo state")
+            }
+
+            if(acceptRet.hasError()) {
+                requireShowToast(acceptRet.msg)
+                createAndInsertError(repoId, acceptRet.msg)
+            }else {  // accept成功，stage条目
+                //在这里stage不存在的路径会报错，所以过滤下，似乎checkout后会自动stage已删除文件？我不确定
+                val existConflictItems = conflictList.filter { it.toFile().exists() }
+                val stageSuccess = if(existConflictItems.isEmpty()) { //列表为空，无需stage，直接返回true即可
+                    true
+                }else {  //列表有条目，执行stage
+                    ChangeListFunctions.doStage(
+                        curRepo=curRepo,
+                        requireCloseBottomBar = false,
+                        userParamList = true,
+                        paramList = existConflictItems,
+
+                        fromTo = fromTo,
+                        selectedListIsEmpty = selectedListIsEmpty,
+                        requireShowToast = requireShowToast,
+                        noItemSelectedStrRes = noItemSelectedStrRes,
+                        activityContext = activityContext,
+                        selectedItemList = selectedItemList,
+                        loadingText = loadingText,
+                        nFilesStagedStrRes = nFilesStagedStrRes,
+                        bottomBarActDoneCallback = bottomBarActDoneCallback
+                    )
+                }
+
+                if(stageSuccess) {  //stage成功
+                    requireShowToast(activityContext.getString(R.string.success))
+                }else{  //当初设计的时候没在这返回错误信息，懒得改了，提示下stage失败即可
+                    requireShowToast(activityContext.getString(R.string.stage_failed))
+                }
+            }
+
+            changeListRequireRefreshFromParentPage(curRepo)
+        }
+    }
+
+
 }

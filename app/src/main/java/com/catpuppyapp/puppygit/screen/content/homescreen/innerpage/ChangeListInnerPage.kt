@@ -601,66 +601,6 @@ fun ChangeListInnerPage(
         }
     }
 
-    val doAccept:suspend (curRepo:RepoEntity, acceptTheirs:Boolean)->Unit = {curRepo, acceptTheirs:Boolean ->
-        loadingText.value = if(acceptTheirs) activityContext.getString(R.string.accept_theirs) else activityContext.getString(R.string.accept_ours)
-
-        val repoFullPath = curRepo.fullSavePath
-        if(!hasConflictItemsSelected()) {
-            requireShowToast(activityContext.getString(R.string.err_no_conflict_item_selected))
-        }
-
-        val conflictList = selectedItemList.value.toList().filter { it.changeType == Cons.gitStatusConflict }
-        val pathspecList = conflictList.map { it.relativePathUnderRepo }
-
-        Repository.open(repoFullPath).use { repo->
-            val acceptRet = if(repoState.intValue == Repository.StateT.MERGE.bit) {
-                Libgit2Helper.mergeAccept(repo, pathspecList, acceptTheirs)
-            }else if(repoState.intValue == Repository.StateT.REBASE_MERGE.bit) {
-                Libgit2Helper.rebaseAccept(repo, pathspecList, acceptTheirs)
-            }else if(repoState.intValue == Repository.StateT.CHERRYPICK.bit) {
-                Libgit2Helper.cherrypickAccept(repo, pathspecList, acceptTheirs)
-            }else {
-                Ret.createError(null, "bad repo state")
-            }
-
-            if(acceptRet.hasError()) {
-                requireShowToast(acceptRet.msg)
-                createAndInsertError(repoId, acceptRet.msg)
-            }else {  // accept成功，stage条目
-                //在这里stage不存在的路径会报错，所以过滤下，似乎checkout后会自动stage已删除文件？我不确定
-                val existConflictItems = conflictList.filter { it.toFile().exists() }
-                val stageSuccess = if(existConflictItems.isEmpty()) { //列表为空，无需stage，直接返回true即可
-                    true
-                }else {  //列表有条目，执行stage
-                    ChangeListFunctions.doStage(
-                        curRepo=curRepo,
-                        requireCloseBottomBar = false,
-                        userParamList = true,
-                        paramList = existConflictItems,
-
-                        fromTo = fromTo,
-                        selectedListIsEmpty = selectedListIsEmpty,
-                        requireShowToast = requireShowToast,
-                        noItemSelectedStrRes = noItemSelectedStrRes,
-                        activityContext = activityContext,
-                        selectedItemList = selectedItemList.value,
-                        loadingText = loadingText,
-                        nFilesStagedStrRes = nFilesStagedStrRes,
-                        bottomBarActDoneCallback = bottomBarActDoneCallback
-                    )
-                }
-
-                if(stageSuccess) {  //stage成功
-                    requireShowToast(activityContext.getString(R.string.success))
-                }else{  //当初设计的时候没在这返回错误信息，懒得改了，提示下stage失败即可
-                    requireShowToast(activityContext.getString(R.string.stage_failed))
-                }
-            }
-
-            changeListRequireRefreshFromParentPage(curRepo)
-        }
-
-    }
 
     val showPushForceDialog = rememberSaveable { mutableStateOf(false)}
     if(showPushForceDialog.value) {
@@ -720,46 +660,6 @@ fun ChangeListInnerPage(
         }
     }
 
-    suspend fun doPull(curRepo:RepoEntity) {
-        try {
-            //执行操作
-//            val fetchSuccess = doFetch(null)
-            val fetchSuccess = ChangeListFunctions.doFetch(
-                remoteNameParam = null,
-                curRepoFromParentPage = curRepo,
-                requireShowToast = requireShowToast,
-                appContext = activityContext,
-                loadingText = loadingText,
-                dbContainer = dbContainer
-            )
-            if(!fetchSuccess) {
-                requireShowToast(activityContext.getString(R.string.fetch_failed))
-            }else {
-//                val mergeSuccess = doMerge(true, null, true)
-                val mergeSuccess = ChangeListFunctions.doMerge(
-                    requireCloseBottomBar = true,
-                    upstreamParam = null,
-                    showMsgIfHasConflicts = true,
-                    trueMergeFalseRebase = true,
-                    curRepoFromParentPage = curRepo,
-                    requireShowToast = requireShowToast,
-                    appContext = activityContext,
-                    loadingText = loadingText,
-                    bottomBarActDoneCallback = bottomBarActDoneCallback
-                )
-                if(!mergeSuccess){
-                    requireShowToast(activityContext.getString(R.string.merge_failed))
-                }else {
-                    requireShowToast(activityContext.getString(R.string.pull_success))
-                }
-            }
-        }catch (e:Exception){
-            showErrAndSaveLog(TAG,"require pull error:"+e.stackTraceToString(), activityContext.getString(R.string.pull_failed)+":"+e.localizedMessage, requireShowToast,curRepo.id)
-        }finally {
-            //刷新页面
-            changeListRequireRefreshFromParentPage(curRepo)
-        }
-    }
 
 
     val openFileWithInnerEditor = { filePath:String, initMergeMode:Boolean ->
@@ -827,7 +727,15 @@ fun ChangeListInnerPage(
             }else if(requireAct==PageRequest.goParent) {
                 goParentChangeList(curRepo)
             }else if(requireAct==PageRequest.pull) { // pull(fetch+merge)
-                doPull(curRepo)
+                ChangeListFunctions.doPull(
+                    curRepo = curRepo,
+                    activityContext = activityContext,
+                    dbContainer = dbContainer,
+                    requireShowToast = requireShowToast,
+                    loadingText = loadingText,
+                    bottomBarActDoneCallback = bottomBarActDoneCallback,
+                    changeListRequireRefreshFromParentPage = changeListRequireRefreshFromParentPage,
+                )
 
             }else if(requireAct==PageRequest.fetch) {
                 try {
@@ -1362,7 +1270,23 @@ fun ChangeListInnerPage(
                 loadingOff = loadingOff,
                 loadingText = activityContext.getString(R.string.loading)
             ) {
-                doAccept(curRepo, acceptTheirs)
+                ChangeListFunctions.doAccept(
+                    curRepo = curRepo,
+                    acceptTheirs = acceptTheirs,
+                    loadingText = loadingText,
+                    activityContext = activityContext,
+                    hasConflictItemsSelected = hasConflictItemsSelected,
+                    requireShowToast = requireShowToast,
+                    selectedItemList = selectedItemList.value,
+                    repoState = repoState,
+                    repoId = repoId,
+                    fromTo = fromTo,
+                    selectedListIsEmpty = selectedListIsEmpty,
+                    noItemSelectedStrRes = noItemSelectedStrRes,
+                    nFilesStagedStrRes = nFilesStagedStrRes,
+                    bottomBarActDoneCallback = bottomBarActDoneCallback,
+                    changeListRequireRefreshFromParentPage = changeListRequireRefreshFromParentPage,
+                )
             }
         }
     }
@@ -2966,7 +2890,15 @@ fun ChangeListInnerPage(
                                             doJobThenOffLoading(loadingOn, loadingOff, activityContext.getString(R.string.pulling)) {
                                                 val curRepo = curRepoFromParentPage.value
 
-                                                doPull(curRepo)
+                                                ChangeListFunctions.doPull(
+                                                    curRepo = curRepo,
+                                                    activityContext = activityContext,
+                                                    dbContainer = dbContainer,
+                                                    requireShowToast = requireShowToast,
+                                                    loadingText = loadingText,
+                                                    bottomBarActDoneCallback = bottomBarActDoneCallback,
+                                                    changeListRequireRefreshFromParentPage = changeListRequireRefreshFromParentPage,
+                                                )
                                             }
 
                                         }
@@ -3111,52 +3043,52 @@ fun ChangeListInnerPage(
                                 ClickableText(
                                     text = stringResource(id = R.string.check_update),
                                     modifier = MyStyleKt.ClickableText.modifierNoPadding.clickable {
-                                            val curRepo = curRepoFromParentPage.value
-                                            // fetch
-                                            doJobThenOffLoading(
-                                                loadingOn,
-                                                loadingOff,
-                                                activityContext.getString(R.string.fetching)
-                                            ) {
-                                                try {
+                                        val curRepo = curRepoFromParentPage.value
+                                        // fetch
+                                        doJobThenOffLoading(
+                                            loadingOn,
+                                            loadingOff,
+                                            activityContext.getString(R.string.fetching)
+                                        ) {
+                                            try {
 //                                                    val fetchSuccess = doFetch(null)
-                                                    val fetchSuccess = ChangeListFunctions.doFetch(
-                                                        remoteNameParam = null,
-                                                        curRepoFromParentPage = curRepo,
-                                                        requireShowToast = requireShowToast,
-                                                        appContext = activityContext,
-                                                        loadingText = loadingText,
-                                                        dbContainer = dbContainer
+                                                val fetchSuccess = ChangeListFunctions.doFetch(
+                                                    remoteNameParam = null,
+                                                    curRepoFromParentPage = curRepo,
+                                                    requireShowToast = requireShowToast,
+                                                    appContext = activityContext,
+                                                    loadingText = loadingText,
+                                                    dbContainer = dbContainer
+                                                )
+                                                if (fetchSuccess) {
+                                                    requireShowToast(
+                                                        activityContext.getString(
+                                                            R.string.fetch_success
+                                                        )
                                                     )
-                                                    if (fetchSuccess) {
-                                                        requireShowToast(
-                                                            activityContext.getString(
-                                                                R.string.fetch_success
-                                                            )
-                                                        )
-                                                    } else {
-                                                        requireShowToast(
-                                                            activityContext.getString(
-                                                                R.string.fetch_failed
-                                                            )
-                                                        )
-                                                    }
-                                                } catch (e: Exception) {
-                                                    showErrAndSaveLog(
-                                                        TAG,
-                                                        "fetch error:" + e.stackTraceToString(),
+                                                } else {
+                                                    requireShowToast(
                                                         activityContext.getString(
                                                             R.string.fetch_failed
-                                                        ) + ":" + e.localizedMessage,
-                                                        requireShowToast,
-                                                        curRepo.id
+                                                        )
                                                     )
-                                                } finally {
-                                                    changeListRequireRefreshFromParentPage(curRepo)
                                                 }
+                                            } catch (e: Exception) {
+                                                showErrAndSaveLog(
+                                                    TAG,
+                                                    "fetch error:" + e.stackTraceToString(),
+                                                    activityContext.getString(
+                                                        R.string.fetch_failed
+                                                    ) + ":" + e.localizedMessage,
+                                                    requireShowToast,
+                                                    curRepo.id
+                                                )
+                                            } finally {
+                                                changeListRequireRefreshFromParentPage(curRepo)
                                             }
+                                        }
 
-                                        },
+                                    },
                                 )
                             }
                         }
@@ -4021,3 +3953,4 @@ private fun getBackHandler(
 
     return backHandlerOnBack
 }
+
