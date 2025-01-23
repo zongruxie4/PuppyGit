@@ -3888,11 +3888,13 @@ private fun changeListInit(
                 //移除选中但已经不在列表中的元素
                 val stillSelectedList = mutableListOf<StatusTypeEntrySaver>()
                 //只有仓库不变刷新页面，才会执行此检查，若切换仓库，会先清空选中条目列表
-                itemList.value.forEach {
+//                一般选中条目的列表元素会比所有条目列表少，所以选中条目在外部，这样有可能减少循环次数
+                selectedItemList.value.forEach { oldSelected ->
+                    val found = itemList.value.find { oldSelected.relativePathUnderRepo == it.relativePathUnderRepo }
                     //如果选中条目仍在条目列表存在，则视为有效选中项
-                    if(selectedItemList.value.contains(it)) {
+                    if(found != null) {
                         //添加新查的列表中的“相同”元素，可能会有更新，所以不一定完全相同
-                        stillSelectedList.add(it)
+                        stillSelectedList.add(found)
                     }
                 }
 
