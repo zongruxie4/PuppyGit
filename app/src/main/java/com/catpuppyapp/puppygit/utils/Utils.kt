@@ -831,7 +831,8 @@ fun getViewAndSortForPath(path:String, settings:AppSettings) :Pair<Boolean, DirV
 }
 
 /**
- * 获取文件扩展名或空字符串
+ * 获取文件扩展名或空字符串。
+ * 注：若'.'在文件名开头或末尾或没有'.'，将返回空字符串；否则返回 ".txt" 之类的后缀名
  */
 fun getFileExtOrEmpty(filename:String):String {
     val extIndex = filename.lastIndexOf('.')
@@ -841,7 +842,9 @@ fun getFileExtOrEmpty(filename:String):String {
     return if(extIndex <= 0 || extIndex == filename.lastIndex){
         ""
     }else{
-        filename.substring(extIndex, filename.length)
+        //返回示例： .txt
+//        filename.substring(extIndex, filename.length)  //没必要指定第2个参数
+        filename.substring(extIndex)
     }
 }
 
