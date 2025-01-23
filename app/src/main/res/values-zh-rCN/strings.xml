@@ -793,7 +793,7 @@
     <string name="report_bugs">报告bug</string>
     <string name="source_code">源码</string>
     <string name="internal_storage">内部存储</string>
-    <string name="trash_bin_icon_for_delete_item">代表删除条目的垃圾箱图标</string>
+    <string name="trash_bin_icon_for_delete_item">用于删除条目的垃圾箱图标</string>
     <string name="cant_delete_internal_storage">不能删除内部存储</string>
     <string name="three_dots_icon_for_add_storage_path">代表添加存储路径的三个点组成的图标</string>
     <string name="add_storage_path">添加存储路径</string>
