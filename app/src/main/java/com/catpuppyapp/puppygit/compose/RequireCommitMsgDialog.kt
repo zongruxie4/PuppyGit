@@ -52,7 +52,7 @@ fun RequireCommitMsgDialog(
     val repoStateIsCherrypick = repoState == Repository.StateT.CHERRYPICK.bit
 
     fun getMsgEmptyNote():String {
-        return activityContext.getString(if(repoStateIsRebase || repoStateIsCherrypick) R.string.leave_msg_empty_will_use_origin_commit_s_msg  else R.string.you_can_leave_msg_empty_will_auto_gen_one)
+        return activityContext.getString(if(repoStateIsRebase || repoStateIsCherrypick || amend.value) R.string.leave_msg_empty_will_use_origin_commit_s_msg  else R.string.you_can_leave_msg_empty_will_auto_gen_one)
     }
 
     //勾选amend时用此变量替代commitMsg
@@ -139,9 +139,10 @@ fun RequireCommitMsgDialog(
                 }
 
                 //正常来说这两个不会同时为真
-                if(amend.value || repoStateIsRebase || repoStateIsCherrypick) {
+                if(repoStateIsRebase || repoStateIsCherrypick || amend.value) {
                     ClickableText(
-                        text=if(repoStateIsRebase || repoStateIsCherrypick) stringResource(R.string.origin_commit_msg) else stringResource(R.string.last_commit_msg),
+//                        text = if(repoStateIsRebase || repoStateIsCherrypick || amend.value) stringResource(R.string.origin_commit_msg) else stringResource(R.string.last_commit_msg),
+                        text = stringResource(R.string.origin_commit_msg),
                         fontWeight = FontWeight.Light,
                         modifier = MyStyleKt.ClickableText.modifierNoPadding
                             .padding(horizontal = MyStyleKt.CheckoutBox.horizontalPadding)
@@ -161,7 +162,7 @@ fun RequireCommitMsgDialog(
 
 
                 // amend或rebase时可覆盖旧commit的作者信息，按钮一样，但含义不同，普通状态下commit覆盖的是上一个commit的信息，rebase状态下覆盖的是被pick的commit的信息
-                if(amend.value || repoStateIsRebase || repoStateIsCherrypick) {
+                if(repoStateIsRebase || repoStateIsCherrypick || amend.value) {
                     MyCheckBox(text = stringResource(R.string.overwrite_author), value = overwriteAuthor)
                 }
 

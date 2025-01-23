@@ -169,7 +169,7 @@
     <string name="set_username_and_email_for_repo">为仓库设置用户名和邮箱，如果你想使用全局设置，请在此处留空。</string>
     <string name="repo_status_has_conflict">有冲突</string>
     <string name="please_input_commit_msg">请输入提交信息</string>
-    <string name="you_can_leave_msg_empty_will_auto_gen_one">可留空，将自动生成</string>
+    <string name="you_can_leave_msg_empty_will_auto_gen_one">信息可留空，将自动生成</string>
     <string name="input_your_commit_message">输入提交信息</string>
     <string name="set_upstream_text">请为当前分支选择一个 \"远程仓库\" 并设置关联 \"分支\" 作为其上游</string>
     <string name="set_upstream_for_branch">为分支设置上游</string>

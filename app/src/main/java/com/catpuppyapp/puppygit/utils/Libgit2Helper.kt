@@ -1948,7 +1948,8 @@ class Libgit2Helper {
 //            return Ret.createSuccess(commitMsg)
 //        }
 
-        private fun doCreateCommit(repo: Repository, msg: String, username: String, email: String, curBranchFullRefSpec:String, parentList:List<Commit>, amend: Boolean, overwriteAuthorWhenAmend:Boolean, cleanRepoStateIfSuccess:Boolean, settings: AppSettings):Ret<Oid?> {
+        // `msg` can be null to use origin commit msg when amend
+        private fun doCreateCommit(repo: Repository, msg: String?, username: String, email: String, curBranchFullRefSpec:String, parentList:List<Commit>, amend: Boolean, overwriteAuthorWhenAmend:Boolean, cleanRepoStateIfSuccess:Boolean, settings: AppSettings):Ret<Oid?> {
             if(username.isBlank()) {
                 return Ret.createError(null, "username is blank", Ret.ErrCode.usernameIsBlank)
             }
@@ -1988,7 +1989,7 @@ class Libgit2Helper {
 
                 Commit.create(
                     repo, curBranchFullRefSpec, author, sign, messageEncoding,
-                    msg,
+                    msg ?: "Update File(s)",  //非 amend ， msg 应该不会为 null，这里?:只是以防万一
                     tree, parentList
                 )
             }
@@ -2136,15 +2137,20 @@ class Libgit2Helper {
 
             //如果msg为空，自动生成提交信息
             val msg = if(msg.isBlank()) {  //maybe empty is better? no, blank better!
-                val genCommitMsgRet = genCommitMsg(repo, indexItemList)
+                if(amend) {
+                    // amend, msg null, then use origin commit msg，如果原始提交信息也是空字符串呢？无所谓，正常来说不会，就算会，只要能提交，也没差，rebase/cherrypick时也可能有同样的问题，即使假设提交信息为空会提交失败也很好解决，只要用户手动填入一个提交信息就行了
+                    null
+                }else {  //生成提交信息
+                    val genCommitMsgRet = genCommitMsg(repo, indexItemList)
 
-                var cmtmsg = genCommitMsgRet.data
-                if(genCommitMsgRet.hasError() || cmtmsg.isNullOrBlank()) {
-                    MyLog.e(TAG, "#$funName, genCommitMsg Err!")
-                    cmtmsg = "Update files"
+                    var cmtmsg = genCommitMsgRet.data
+                    if(genCommitMsgRet.hasError() || cmtmsg.isNullOrBlank()) {
+                        MyLog.e(TAG, "#$funName: generate commit msg err! errcode=${genCommitMsgRet.code}, errmsg=${genCommitMsgRet.msg}")
+                        cmtmsg = "Update files"
+                    }
+
+                    cmtmsg
                 }
-
-                cmtmsg
             }else {
                 msg
             }
@@ -4876,7 +4882,7 @@ class Libgit2Helper {
                 }
 
                 r.data!!.message()
-            }else {  //若提交不为空则使用参数中的信息
+            }else {  //若msg不为空则直接使用
                 msg
             }
 
