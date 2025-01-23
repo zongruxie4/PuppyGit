@@ -285,13 +285,22 @@ object FsUtils {
             //原始文件名
             val originFileName = target.canonicalPath.removeSuffix(File.separator)  //canonicalPath不会包含末尾的 / ，所以其实不用removeSuffix
 
+            //拆分出文件名和后缀，生成类似 "file(1).ext" 的格式，而不是 "file.ext(1)" 那样
+            val extIndex = originFileName.lastIndexOf('.')
+            val (fileName, fileExt) = if(extIndex > 0) {  //注意这里是索引大于0，如果文件名开头是.，是隐藏文件，不将其视为后缀名，这时生成的文件名类似 ".git(1)" 而不是"(1).git"
+                // 例如输入：abc.txt, 返回 "abc" 和 ".txt"，后缀名包含"."
+                Pair(originFileName.substring(0, extIndex), originFileName.substring(extIndex))
+            }else {
+                Pair(originFileName, "")
+            }
+
             //生成文件名的最大编号，超过这个编号将会生成随机文件名
 //            val max = Int.MAX_VALUE
             val max = 1000
 
             //for循环，直到生成一个不存在的名字
             for(i in 1..max) {
-                target = File("$originFileName($i)")
+                target = File("$fileName($i)$fileExt")
                 if(!target.exists()) {
                     break
                 }
@@ -299,7 +308,7 @@ object FsUtils {
             //如果文件还存在，生成随机名
             if(target.exists()){
                 while (true) {
-                    target = File("$originFileName(${getShortUUID(len=8)})")
+                    target = File("$fileName(${getShortUUID(len=8)})$fileExt")
                     if(!target.exists()) {
                         break
                     }
