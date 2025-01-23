@@ -384,6 +384,9 @@ class Libgit2Helper {
             return repoStatusList
         }
 
+        /**
+         * 检查index是否为空 并 获取不包含冲突条目的index列表
+         */
         //如果只想检测index是否为空，repoId可随便传，如果想在页面使用条目，必须传正确的repoId，不然操作对应条目的时候不知道是哪个仓库
         //如果onlyCheckEmpty为true，则只在必要时查询statusTypeEntryList，否则会在能够确定是否为空的情况下直接返回，并把列表返回值设为null
         //返回值1代表index是否为空，为空则true，不为空false；返回值2代表index条目的列表
@@ -401,8 +404,9 @@ class Libgit2Helper {
             }
 
             //执行到这有两种可能：
-            //1 存在冲突，上面返回的列表有可能包含 conflict但是又没stage的文件，所以需要进一步检测
-            //2 不存在冲突，但onlyCheckEmpty为假，代表用户想获得不包含冲突条目的index列表
+            // 1 存在冲突条目，上面返回的index列表有可能包含 conflict但是又没stage的文件，所以需要进一步检测
+            // or
+            // 2 不存在冲突条目，但onlyCheckEmpty为假，代表用户想获得不包含冲突条目的index列表
             val (_, statusMap) = statusListToStatusMap(
                 repo,
                 repoStatusList,
@@ -6502,9 +6506,9 @@ class Libgit2Helper {
          * check if local has uncommitted changes
          */
         fun hasUncommittedChanges(repo:Repository):Boolean {
-            //先检查Index，这个查起来性能比work to index快
+            //先检查是否有冲突条目（性能最快），若有肯定包含未提交修改；然后检查Index，这个查起来性能比work to index快（性能其次）；最后检查work to index（性能最差）
             // index非空 或 worktree有条目
-            return indexIsEmpty(repo).not() || getWorkdirStatusList(repo).entryCount() > 0
+            return hasConflictItemInRepo(repo) || indexIsEmpty(repo).not() || getWorkdirStatusList(repo).entryCount() > 0
         }
 
     }
