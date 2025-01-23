@@ -25,6 +25,7 @@ import androidx.compose.material.icons.filled.Download
 import androidx.compose.material.icons.filled.Downloading
 import androidx.compose.material.icons.filled.Error
 import androidx.compose.material.icons.filled.Publish
+import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material.icons.filled.SelectAll
 import androidx.compose.material3.Checkbox
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -143,8 +144,9 @@ fun RepoInnerPage(
     deleteList:CustomStateListSaveable<RepoEntity>,
     userInfoRepoList:CustomStateListSaveable<RepoEntity>,
     upstreamRemoteOptionsList:CustomStateListSaveable<String>,
+    specifiedRefreshRepoList:CustomStateListSaveable<RepoEntity>,
 
-) {
+    ) {
     val activityContext = LocalContext.current
     val exitApp = AppModel.exitApp;
     val navController = AppModel.navController;
@@ -1409,6 +1411,7 @@ fun RepoInnerPage(
         Icons.Filled.Download,  // pull
         Icons.Filled.Publish,  // push
         ImageVector.vectorResource(R.drawable.two_way_sync),  //sync
+        Icons.Filled.Refresh,  // refresh (selected items)
         Icons.Filled.SelectAll,  //Select All
     )
     val selectionModeIconTextList = listOf(
@@ -1416,6 +1419,7 @@ fun RepoInnerPage(
         stringResource(R.string.pull),
         stringResource(R.string.push),
         stringResource(R.string.sync),
+        stringResource(R.string.refresh),
         stringResource(R.string.select_all),
     )
 
@@ -1539,6 +1543,12 @@ fun RepoInnerPage(
 
             Unit
         },
+        refresh@{
+            specifiedRefreshRepoList.value.clear()
+            specifiedRefreshRepoList.value.addAll(selectedItems.value)
+
+            changeStateTriggerRefreshPage(needRefreshRepoPage)
+        },
         selectAll@{
             val list = if(enableFilterState.value) filterList.value else repoList.value
 
@@ -1564,6 +1574,7 @@ fun RepoInnerPage(
                 bottomBarIconDefaultEnable()
             }
         },
+        refresh@{ hasSelectedItems() },
         selectAllEnable@{ true },
     )
 
@@ -2071,7 +2082,8 @@ fun RepoInnerPage(
                 goToThisRepoAndHighlightingIt = goToThisRepoAndHighlightingIt,
                 settings=settings,
                 refreshId=needRefreshRepoPage.value,
-                latestRefreshId = needRefreshRepoPage
+                latestRefreshId = needRefreshRepoPage,
+                specifiedRefreshRepoList = specifiedRefreshRepoList.value
             )
 
         } catch (cancel: Exception) {
@@ -2095,7 +2107,7 @@ private fun doInit(
     settings:AppSettings,
     refreshId:String,
     latestRefreshId:MutableState<String>,
-    specifiedRepoList:MutableList<RepoEntity>
+    specifiedRefreshRepoList:MutableList<RepoEntity>
 ){
     val pageChanged = {
         refreshId != latestRefreshId.value
@@ -2106,9 +2118,9 @@ private fun doInit(
 
 
     doJobThenOffLoading(loadingOn, loadingOff, loadingText) {
-        val specifiedRepoList:List<RepoEntity> = if(specifiedRepoList.isNotEmpty()) {
-            val copy = specifiedRepoList.toList()
-            specifiedRepoList.clear()  //清空以避免重复刷新，这样的话，即使出现无法刷新全部的bug，最多按两次顶栏的全部刷新也可变成刷新所有条目
+        val specifiedRefreshRepoList:List<RepoEntity> = if(specifiedRefreshRepoList.isNotEmpty()) {
+            val copy = specifiedRefreshRepoList.toList()
+            specifiedRefreshRepoList.clear()  //清空以避免重复刷新，这样的话，即使出现无法刷新全部的bug，最多按两次顶栏的全部刷新也可变成刷新所有条目
             copy
         }else {
             listOf()
@@ -2117,14 +2129,14 @@ private fun doInit(
         //执行仓库页面的初始化操作
         val repoRepository = dbContainer.repoRepository
         //貌似如果用Flow，后续我更新数据库，不需要再次手动更新State数据就会自动刷新，也就是Flow会观测数据，如果改变，重新执行sql获取最新的数据，但最好还是手动更新，避免资源浪费
-        val willReloadTheseRepos = specifiedRepoList.ifEmpty { repoRepository.getAll() }
+        val willReloadTheseRepos = specifiedRefreshRepoList.ifEmpty { repoRepository.getAll() }
 
-        if(specifiedRepoList.isEmpty()) {
+        if(specifiedRefreshRepoList.isEmpty()) {
             repoDtoList.value.clear()
             repoDtoList.value.addAll(willReloadTheseRepos)
         }else {
             //重查指定列表的仓库信息
-            specifiedRepoList.forEach {
+            specifiedRefreshRepoList.forEach {
                 Libgit2Helper.updateRepoInfo(it)
             }
 
@@ -2132,7 +2144,7 @@ private fun doInit(
             val newList = mutableListOf<RepoEntity>()
             //保持原始列表的顺序但替换为更新后的仓库（不过仓库地址可能并没变化，更新要靠后面的clear()和addAll()）
             repoDtoList.value.toList().forEach { i1->
-                val found = specifiedRepoList.find { i2-> i2.id == i1.id }
+                val found = specifiedRefreshRepoList.find { i2-> i2.id == i1.id }
                 if(found != null) {
                     newList.add(found)
                 }else {
@@ -2206,7 +2218,7 @@ private fun doInit(
         //这里必须遍历 repoDtoList，不能遍历will reload那个list，不然索引可能会错（即使遍历repoDtoList，其实也可能索引会错，因为没严格的并发控制，不过一般没事）
         for ((idx,item) in repoDtoList.value.toList().withIndex()) {
             //若指定了要刷新的列表，则遵循列表，忽略其他元素
-            if(specifiedRepoList.isNotEmpty() && specifiedRepoList.find { it.id == item.id } == null) {
+            if(specifiedRefreshRepoList.isNotEmpty() && specifiedRefreshRepoList.find { it.id == item.id } == null) {
                 continue
             }
 

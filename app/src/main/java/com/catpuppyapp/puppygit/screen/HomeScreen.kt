@@ -215,6 +215,10 @@ fun HomeScreen(
     val reposPageUserInfoRepoList = mutableCustomStateListOf(keyTag = stateKeyTag, keyName = "reposPageUserInfoRepoList", initValue = listOf<RepoEntity>())
     val reposPageUpstreamRemoteOptionsList = mutableCustomStateListOf(keyTag = stateKeyTag, keyName = "reposPageUpstreamRemoteOptionsList", initValue = listOf<String>())
 
+    // 指定一个待刷新的仓库列表，若为空，则刷新全部仓库
+    val reposPageSpecifiedRefreshRepoList = mutableCustomStateListOf(keyTag = stateKeyTag, keyName = "reposPageSpecifiedRefreshRepoList", initValue = listOf<RepoEntity>())
+
+
     //这个filter有点重量级，比较适合做成全局搜索之类的功能
     val filesPageFilterMode = rememberSaveable{mutableIntStateOf(0)}  //0关闭，1正在搜索，显示输入框，2显示搜索结果
     val filesPageFilterKeyword = mutableCustomStateOf(
@@ -926,6 +930,7 @@ fun HomeScreen(
                     deleteList = reposPageDeleteItems,
                     userInfoRepoList = reposPageUserInfoRepoList,
                     upstreamRemoteOptionsList = reposPageUpstreamRemoteOptionsList,
+                    specifiedRefreshRepoList = reposPageSpecifiedRefreshRepoList
                 )
 
             }
