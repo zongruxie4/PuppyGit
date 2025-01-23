@@ -5,7 +5,6 @@ import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
@@ -22,7 +21,6 @@ import androidx.compose.foundation.selection.toggleable
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
-import androidx.compose.material.icons.filled.DeleteOutline
 import androidx.compose.material.icons.filled.Download
 import androidx.compose.material.icons.filled.Downloading
 import androidx.compose.material.icons.filled.Error
@@ -31,9 +29,7 @@ import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material.icons.filled.SelectAll
 import androidx.compose.material3.Checkbox
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.SheetState
 import androidx.compose.material3.Text
@@ -65,12 +61,12 @@ import com.catpuppyapp.puppygit.compose.BottomBar
 import com.catpuppyapp.puppygit.compose.CheckBoxNoteText
 import com.catpuppyapp.puppygit.compose.ClickableText
 import com.catpuppyapp.puppygit.compose.ConfirmDialog
-import com.catpuppyapp.puppygit.compose.CopyableDialog
 import com.catpuppyapp.puppygit.compose.MyCheckBox
 import com.catpuppyapp.puppygit.compose.MyLazyColumn
 import com.catpuppyapp.puppygit.compose.MySelectionContainer
 import com.catpuppyapp.puppygit.compose.RepoCard
 import com.catpuppyapp.puppygit.compose.ScrollableColumn
+import com.catpuppyapp.puppygit.compose.SelectedItemDialog
 import com.catpuppyapp.puppygit.compose.SetUpstreamDialog
 import com.catpuppyapp.puppygit.compose.SystemFolderChooser
 import com.catpuppyapp.puppygit.constants.Cons
@@ -1732,40 +1728,13 @@ fun RepoInnerPage(
     val showSelectedItemsShortDetailsDialog = rememberSaveable { mutableStateOf(false)}
     val selectedItemsShortDetailsStr = rememberSaveable { mutableStateOf("")}
     if(showSelectedItemsShortDetailsDialog.value) {
-        CopyableDialog(
-            title = stringResource(id = R.string.selected_str),
-//            text = selectedItemsShortDetailsStr.value,
-            requireShowTextCompose = true,
-            textCompose = {
-                ScrollableColumn {
-                    selectedItems.value.forEach {
-                        Box(
-                            modifier = Modifier.fillMaxWidth(),
-                        ) {
-                            Text(text = it.repoName, modifier = Modifier.fillMaxWidth(.8f).align(Alignment.CenterStart))
-
-                            IconButton(
-                                modifier = Modifier.fillMaxWidth(.2f).align(Alignment.CenterEnd),
-                                onClick = { switchItemSelected(it) }
-                            ) {
-                                Icon(
-                                    imageVector = Icons.Filled.DeleteOutline,
-                                    contentDescription = stringResource(R.string.trash_bin_icon_for_delete_item)
-                                )
-                            }
-                        }
-
-                        HorizontalDivider()
-                    }
-
-                }
-            },
-            onCancel = { showSelectedItemsShortDetailsDialog.value = false }
-        ) {
-            showSelectedItemsShortDetailsDialog.value = false
-            clipboardManager.setText(AnnotatedString(selectedItemsShortDetailsStr.value))
-            Msg.requireShow(activityContext.getString(R.string.copied))
-        }
+        SelectedItemDialog(
+            detailStr = selectedItemsShortDetailsStr.value,
+            selectedItems = selectedItems.value,
+            formatter = {it.repoName},
+            switchItemSelected = switchItemSelected,
+            closeDialog = {showSelectedItemsShortDetailsDialog.value = false}
+        )
     }
 
     val showSelectedItems = {
@@ -2344,6 +2313,4 @@ private fun checkGitStatusAndUpdateItemInList(item:RepoEntity, idx:Int, repoList
         }
     }
 
-
 }
-
