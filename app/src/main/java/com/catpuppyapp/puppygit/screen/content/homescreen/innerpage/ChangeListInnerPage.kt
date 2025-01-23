@@ -3534,6 +3534,8 @@ private fun changeListInit(
                 }
 
                 curRepoFromParentPage.value = repoFromDb
+                //避免后续从状态变量获取值导致仓库不一致
+                val curRepoFromParentPage = curRepoFromParentPage.value
 
                 //想启动个定时检查仓库临时状态是否已清空的协程，意义不大，问题很多，后来放弃了
 //                if(repoFromDb.tmpStatus.isNotBlank()) {
@@ -3709,9 +3711,10 @@ private fun changeListInit(
                     return@launch
                 }
 
+                val curRepoFromParentPage = curRepoFromParentPage.value
 
                 //检测是否查询出了有效仓库
-                if (!isRepoReadyAndPathExist(curRepoFromParentPage.value)) {
+                if (!isRepoReadyAndPathExist(curRepoFromParentPage)) {
                     //            setErrMsgForTriggerNotify(hasErr, errMsg, queryRepoForChangeListErrStrRes)
                     //如果执行到这，还没查询到仓库也没出任何错误，那很可能是因为数据库里根本没有仓库
                     changeListPageNoRepo.value=true
@@ -3725,9 +3728,9 @@ private fun changeListInit(
 
                 //通过上面的检测，执行到这里，一定查询到了有效的仓库且赋值给了 curRepoFromParentPage
                 //如果选择的仓库改变了，则更新最后选择的仓库并保存到数据库
-                if(changeListSettings.lastUsedRepoId != curRepoFromParentPage.value.id) {
+                if(changeListSettings.lastUsedRepoId != curRepoFromParentPage.id) {
                     //更新changeListSettings，下次就不用查询repo表了(若仓库状态后续变成无效或者仓库被删除，其实还是需要查表)
-                    changeListSettings.lastUsedRepoId = curRepoFromParentPage.value.id
+                    changeListSettings.lastUsedRepoId = curRepoFromParentPage.id
 //                    settings.jsonVal=MoshiUtil.changeListSettingsJsonAdapter.toJson(changeListSettings)
 //                    settingsRepository.update(settings)
                     val settingsWillSave = SettingsUtil.getSettingsSnapshot()
@@ -3738,7 +3741,7 @@ private fun changeListInit(
 
 //            MyLog.d(TAG, "ChangeListInnerPage#Init: queryed Repo id:"+curRepoFromParentPage.value.id)
 
-                Repository.open(curRepoFromParentPage.value.fullSavePath).use { gitRepository ->
+                Repository.open(curRepoFromParentPage.fullSavePath).use { gitRepository ->
                     //废弃，新的逻辑是把冲突条目列在其他条目上面就行了：确认实现这的逻辑： 如果有冲突，会提示先去解决冲突
 //                changeListPageHasConflictItem.value = Libgit2Helper.hasConflictItemInRepo(gitRepository)
 //                //如果有冲突，后面就先不用检测了，优先解决冲突
@@ -3762,7 +3765,7 @@ private fun changeListInit(
                         if (changeListPageHasWorktreeItem.value) {
                             //转成index/worktree/conflict三个元素的map，每个key对应一个列表
                             //这里忽略第一个代表是否更新index的值，因为后面会百分百查询index，所以无需判定
-                            val (_, statusMap) = Libgit2Helper.statusListToStatusMap(gitRepository, wtStatusList, repoIdFromDb = curRepoFromParentPage.value.id, fromTo)
+                            val (_, statusMap) = Libgit2Helper.statusListToStatusMap(gitRepository, wtStatusList, repoIdFromDb = curRepoFromParentPage.id, fromTo)
 
                             //忽略，后面会百分百查index，这里无需判定
 //                            if(indexIsChanged) {
@@ -3799,13 +3802,13 @@ private fun changeListInit(
 
                         }
 
-                        curRepoUpstream.value = Libgit2Helper.getUpstreamOfBranch(gitRepository, curRepoFromParentPage.value.branch)
+                        curRepoUpstream.value = Libgit2Helper.getUpstreamOfBranch(gitRepository, curRepoFromParentPage.branch)
                     }
 
                     //注意：冲突条目实际在index和worktree都有，但是我这里只有在worktree的时候才添加冲突条目，在index是隐藏的，因为冲突条目实际上是没有stage的，所以理应出现在worktree而不是index
                     //检查是否存在staged条目，用来在worktree条目为空时，决定是否显示index有条目的提示
                     //这个列表可以考虑传给index页面，不过要在index页面设置成如果没传参就查询，有参则用参的形式，但即使有参，也可通过index的刷新按钮刷新页面状态
-                    val (indexIsEmpty, indexList) = Libgit2Helper.checkIndexIsEmptyAndGetIndexList(gitRepository, curRepoFromParentPage.value.id, onlyCheckEmpty = false)
+                    val (indexIsEmpty, indexList) = Libgit2Helper.checkIndexIsEmptyAndGetIndexList(gitRepository, curRepoFromParentPage.id, onlyCheckEmpty = false)
 
                     if(repoChanged()) {
                         return@launch
