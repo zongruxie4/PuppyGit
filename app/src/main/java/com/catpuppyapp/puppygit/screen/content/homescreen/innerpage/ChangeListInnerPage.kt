@@ -73,6 +73,7 @@ import com.catpuppyapp.puppygit.compose.MySelectionContainer
 import com.catpuppyapp.puppygit.compose.OpenAsDialog
 import com.catpuppyapp.puppygit.compose.RequireCommitMsgDialog
 import com.catpuppyapp.puppygit.compose.ScrollableColumn
+import com.catpuppyapp.puppygit.compose.SelectedItemDialog
 import com.catpuppyapp.puppygit.compose.SetUpstreamDialog
 import com.catpuppyapp.puppygit.constants.Cons
 import com.catpuppyapp.puppygit.constants.PageRequest
@@ -2664,21 +2665,18 @@ fun ChangeListInnerPage(
     val showSelectedItemsShortDetailsDialog = rememberSaveable { mutableStateOf(false)}
     val selectedItemsShortDetailsStr = rememberSaveable { mutableStateOf("")}
     if(showSelectedItemsShortDetailsDialog.value) {
-        CopyableDialog(
-            title = stringResource(id = R.string.selected_str),
-            text = selectedItemsShortDetailsStr.value,
-            onCancel = { showSelectedItemsShortDetailsDialog.value = false }
-        ) {
-            showSelectedItemsShortDetailsDialog.value = false
-            clipboardManager.setText(AnnotatedString(selectedItemsShortDetailsStr.value))
-            Msg.requireShow(activityContext.getString(R.string.copied))
-        }
+        SelectedItemDialog(
+            detailStr = selectedItemsShortDetailsStr.value,
+            selectedItems = selectedItemList.value,
+            formatter = {"${it.fileName}, ${it.relativePathUnderRepo.removeSuffix(it.fileName)}"},
+            switchItemSelected = switchItemSelected,
+            closeDialog = {showSelectedItemsShortDetailsDialog.value = false}
+        )
     }
 
     val countNumOnClickForBottomBar = {
-        val list = selectedItemList.value.toList()
         val sb = StringBuilder()
-        list.toList().forEach {
+        selectedItemList.value.forEach {
             sb.appendLine("${it.fileName}, ${it.relativePathUnderRepo.removeSuffix(it.fileName)}").appendLine()
         }
         selectedItemsShortDetailsStr.value = sb.removeSuffix("\n").toString()

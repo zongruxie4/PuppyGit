@@ -84,6 +84,7 @@ import com.catpuppyapp.puppygit.compose.MyLazyColumn
 import com.catpuppyapp.puppygit.compose.MySelectionContainer
 import com.catpuppyapp.puppygit.compose.OpenAsDialog
 import com.catpuppyapp.puppygit.compose.ScrollableColumn
+import com.catpuppyapp.puppygit.compose.SelectedItemDialog
 import com.catpuppyapp.puppygit.constants.Cons
 import com.catpuppyapp.puppygit.constants.PageRequest
 import com.catpuppyapp.puppygit.data.entity.RepoEntity
@@ -1829,22 +1830,33 @@ fun FilesInnerPage(
 
     val showSelectedItemsShortDetailsDialog = rememberSaveable { mutableStateOf(false)}
     val selectedItemsShortDetailsStr = rememberSaveable { mutableStateOf("")}
+    val showSelectedItemsShortDetailsDialogForImportMode = rememberSaveable { mutableStateOf(false)}
+    val selectedItemsShortDetailsStrForImportMode = rememberSaveable { mutableStateOf("")}
     if(showSelectedItemsShortDetailsDialog.value) {
-        CopyableDialog(
-            title = stringResource(id = R.string.selected_str),
-            text = selectedItemsShortDetailsStr.value,
-            onCancel = { showSelectedItemsShortDetailsDialog.value = false }
-        ) {
-            showSelectedItemsShortDetailsDialog.value = false
-            clipboardManager.setText(AnnotatedString(selectedItemsShortDetailsStr.value))
-            Msg.requireShow(activityContext.getString(R.string.copied))
-        }
+        SelectedItemDialog(
+            detailStr = selectedItemsShortDetailsStr.value,
+            selectedItems = selectedItems.value,
+            formatter = {"${it.name}, ${if(it.isDir) "dir" else "file"}, ${it.fullPath}"},
+            switchItemSelected = switchItemSelected,
+            closeDialog = {showSelectedItemsShortDetailsDialog.value = false}
+        )
     }
 
+    if(showSelectedItemsShortDetailsDialogForImportMode.value) {
+        SelectedItemDialog(
+            detailStr = selectedItemsShortDetailsStrForImportMode.value,
+            selectedItems = requireImportUriList.value,
+            formatter = {it.path ?: ""},
+            switchItemSelected = {requireImportUriList.value.remove(it)},
+            closeDialog = {showSelectedItemsShortDetailsDialogForImportMode.value = false}
+        )
+    }
+
+
+
     val countNumOnClickForSelectAndPasteModeBottomBar = {
-        val list = selectedItems.value.toList()
         val sb = StringBuilder()
-        list.toList().forEach {
+        selectedItems.value.forEach {
             sb.appendLine("${it.name}, ${if(it.isDir) "dir" else "file"}, ${it.fullPath}").appendLine()
         }
         selectedItemsShortDetailsStr.value = sb.removeSuffix("\n").toString()
@@ -2096,13 +2108,13 @@ fun FilesInnerPage(
         )
 
         val countNumOnClickForImportMode = {
-            val list = requireImportUriList.value.toList()
             val sb = StringBuilder()
-            list.toList().forEach {
+            requireImportUriList.value.forEach {
                 sb.appendLine(it.path).appendLine()
             }
-            selectedItemsShortDetailsStr.value = sb.removeSuffix("\n").toString()
-            showSelectedItemsShortDetailsDialog.value = true
+
+            selectedItemsShortDetailsStrForImportMode.value = sb.removeSuffix("\n").toString()
+            showSelectedItemsShortDetailsDialogForImportMode.value = true
 
         }
 

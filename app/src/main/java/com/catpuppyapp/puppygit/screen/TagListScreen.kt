@@ -62,6 +62,7 @@ import com.catpuppyapp.puppygit.compose.MyLazyColumn
 import com.catpuppyapp.puppygit.compose.RepoInfoDialog
 import com.catpuppyapp.puppygit.compose.ResetDialog
 import com.catpuppyapp.puppygit.compose.ScrollableRow
+import com.catpuppyapp.puppygit.compose.SelectedItemDialog
 import com.catpuppyapp.puppygit.compose.TagFetchPushDialog
 import com.catpuppyapp.puppygit.compose.TagItem
 import com.catpuppyapp.puppygit.constants.Cons
@@ -532,21 +533,18 @@ fun TagListScreen(
     val showSelectedItemsShortDetailsDialog = rememberSaveable { mutableStateOf(false) }
     val selectedItemsShortDetailsStr = rememberSaveable { mutableStateOf("") }
     if(showSelectedItemsShortDetailsDialog.value) {
-        CopyableDialog(
-            title = stringResource(id = R.string.selected_str),
-            text = selectedItemsShortDetailsStr.value,
-            onCancel = { showSelectedItemsShortDetailsDialog.value = false }
-        ) {
-            showSelectedItemsShortDetailsDialog.value = false
-            clipboardManager.setText(AnnotatedString(selectedItemsShortDetailsStr.value))
-            Msg.requireShow(activityContext.getString(R.string.copied))
-        }
+        SelectedItemDialog(
+            detailStr = selectedItemsShortDetailsStr.value,
+            selectedItems = selectedItemList.value,
+            formatter = {it.shortName},
+            switchItemSelected = switchItemSelected,
+            closeDialog = {showSelectedItemsShortDetailsDialog.value = false}
+        )
     }
 
     val countNumOnClickForBottomBar = {
-        val list = selectedItemList.value.toList()
         val sb = StringBuilder()
-        list.toList().forEach {
+        selectedItemList.value.forEach {
             sb.appendLine(it.shortName).appendLine()
         }
         selectedItemsShortDetailsStr.value = sb.removeSuffix("\n").toString()
