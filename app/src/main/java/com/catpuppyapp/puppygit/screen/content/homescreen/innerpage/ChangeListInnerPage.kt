@@ -570,13 +570,13 @@ fun ChangeListInnerPage(
             curRepo = curRepo,
             requireCloseBottomBar = true,
             userParamList = true,
-            paramList = itemList.value,
+            paramList = itemList.value.toList(),
             fromTo = fromTo,
             selectedListIsEmpty = selectedListIsEmpty,
             requireShowToast = requireShowToast,
             noItemSelectedStrRes = noItemSelectedStrRes,
             activityContext = activityContext,
-            selectedItemList = selectedItemList.value,
+            selectedItemList = selectedItemList.value.toList(),
             loadingText = loadingText,
             nFilesStagedStrRes = nFilesStagedStrRes,
             bottomBarActDoneCallback = bottomBarActDoneCallback
@@ -1276,7 +1276,7 @@ fun ChangeListInnerPage(
                     activityContext = activityContext,
                     hasConflictItemsSelected = hasConflictItemsSelected,
                     requireShowToast = requireShowToast,
-                    selectedItemList = selectedItemList.value,
+                    selectedItemList = selectedItemList.value.toList(),
                     repoState = repoState,
                     repoId = repoId,
                     fromTo = fromTo,
@@ -1661,13 +1661,13 @@ fun ChangeListInnerPage(
         ) {
             showCherrypickDialog.value = false
             val curRepo = curRepoFromParentPage.value
-
+            val selectedItemList = selectedItemList.value.toList()
             doJobThenOffLoading(
                 loadingOn,
                 loadingOff,
                 activityContext.getString(R.string.cherrypicking)
             ) {
-                val pathSpecs = selectedItemList.value.map{it.relativePathUnderRepo}
+                val pathSpecs = selectedItemList.map{it.relativePathUnderRepo}
                 Repository.open(curRepo.fullSavePath).use { repo->
                     val ret = Libgit2Helper.cherrypick(
                         repo,
@@ -2064,7 +2064,7 @@ fun ChangeListInnerPage(
                         requireShowToast = requireShowToast,
                         noItemSelectedStrRes = noItemSelectedStrRes,
                         activityContext = activityContext,
-                        selectedItemList = selectedItemList.value,
+                        selectedItemList = selectedItemList.value.toList(),
                         loadingText = loadingText,
                         nFilesStagedStrRes = nFilesStagedStrRes,
                         bottomBarActDoneCallback = bottomBarActDoneCallback
@@ -2348,7 +2348,7 @@ fun ChangeListInnerPage(
                     Spacer(Modifier.height(15.dp))
 
 //                    Text(stringResource(R.string.will_import_selected_submodules_to_repos))
-                    CredentialSelector(credentialList.value, selectedCredentialIdx)
+                    CredentialSelector(credentialList.value.toList(), selectedCredentialIdx)
 
                     Spacer(Modifier.height(10.dp))
                     Text(stringResource(R.string.import_repos_link_credential_note), fontWeight = FontWeight.Light)
@@ -2365,7 +2365,8 @@ fun ChangeListInnerPage(
                 val parentRepoId = curRepo.id
 //                val importList = selectedItemList.value.toList().filter { it.cloned }
 
-                val selectedCredentialId = credentialList.value[selectedCredentialIdx.intValue].id
+                val credentialList = credentialList.value.toList()
+                val selectedCredentialId = credentialList[selectedCredentialIdx.intValue].id
 
                 val repoDb = AppModel.dbContainer.repoRepository
                 val importRepoResult = ImportRepoResult()
@@ -2409,7 +2410,8 @@ fun ChangeListInnerPage(
      */
 
     val initImportAsRepo = {
-        val tmplist = selectedItemList.value.filter { it.toFile().isDirectory }
+        val selectedItemList = selectedItemList.value.toList()
+        val tmplist = selectedItemList.filter { it.toFile().isDirectory }
         if(tmplist.isEmpty()) {
             Msg.requireShow(activityContext.getString(R.string.no_dir_selected))
         }else {
@@ -2457,7 +2459,7 @@ fun ChangeListInnerPage(
                     requireShowToast = requireShowToast,
                     noItemSelectedStrRes = noItemSelectedStrRes,
                     activityContext = activityContext,
-                    selectedItemList = selectedItemList.value,
+                    selectedItemList = selectedItemList.value.toList(),
                     loadingText = loadingText,
                     nFilesStagedStrRes = nFilesStagedStrRes,
                     bottomBarActDoneCallback = bottomBarActDoneCallback
@@ -3517,8 +3519,7 @@ private fun changeListInit(
 
             //先清空列表
             //TODO 这里实现恢复的逻辑，如果列表不为空，就直接恢复数据，不清空列表，也不重新查询，如果刷新，加个flag，强制重新查询
-            itemList.value.clear()
-            credentialList.value.clear()
+//            itemList.value.clear()
 //            selectedItemList.value.clear()
 //            itemList.requireRefreshView()
 //            selectedItemList.requireRefreshView()
@@ -3602,6 +3603,7 @@ private fun changeListInit(
                             return@launch
                         }
 
+                        itemList.value.clear()
                         itemList.value.addAll(cl)
 
                         //和local比较不需要parents list
@@ -3625,6 +3627,7 @@ private fun changeListInit(
                             return@launch
                         }
 
+                        itemList.value.clear()
                         itemList.value.addAll(treeToTreeChangeList)
 
                         //只有和parents比较时才需要查询parents（目前20240807只通过点击commit item触发）；其他情况（手动输入两个commit、长按commit条目出现的diff to local）都不需要查询commit，这时把commitForQueryParents直接传空字符串就行
@@ -3739,6 +3742,22 @@ private fun changeListInit(
                     SettingsUtil.updateSettings(settingsWillSave)
                 }
 
+
+
+                //查凭据列表(20250123：忘了为什么要在这查凭据列表了)
+                val credentialDb = AppModel.dbContainer.credentialRepository
+                val credentialListFromDb = credentialDb.getAll(includeNone = true, includeMatchByDomain = true)
+                if(credentialListFromDb.isNotEmpty()) {
+
+                    if(repoChanged()) {
+                        return@launch
+                    }
+
+                    credentialList.value.clear()
+                    credentialList.value.addAll(credentialListFromDb)
+                }
+
+
 //            MyLog.d(TAG, "ChangeListInnerPage#Init: queryed Repo id:"+curRepoFromParentPage.value.id)
 
                 Repository.open(curRepoFromParentPage.fullSavePath).use { gitRepository ->
@@ -3749,7 +3768,51 @@ private fun changeListInit(
 //                    return@launch
 //                }
 
-                    //20240504: 先查worktree，再查index是否为空，因为worktree有可能更改index
+
+
+                    //先检查index是否为空，因为这个性能比检查worktree快
+                    //注意：冲突条目实际在index和worktree都有，但是我这里只有在worktree的时候才添加冲突条目，在index是隐藏的，因为冲突条目实际上是没有stage的，所以理应出现在worktree而不是index
+                    //检查是否存在staged条目，用来在worktree条目为空时，决定是否显示index有条目的提示
+                    //这个列表可以考虑传给index页面，不过要在index页面设置成如果没传参就查询，有参则用参的形式，但即使有参，也可通过index的刷新按钮刷新页面状态
+                    val (indexIsEmpty, indexList) = Libgit2Helper.checkIndexIsEmptyAndGetIndexList(gitRepository, curRepoFromParentPage.id, onlyCheckEmpty = false)
+
+                    if(repoChanged()) {
+                        return@launch
+                    }
+
+                    changeListPageHasIndexItem.value = !indexIsEmpty
+                    MyLog.d(TAG,"#$funName(): changeListPageHasIndexItem = "+changeListPageHasIndexItem.value)
+                    //只有在index页面，才需要更新条目列表，否则这个列表由worktree页面来更新
+                    if(fromTo == Cons.gitDiffFromHeadToIndex) {
+                        itemList.value.clear()
+                        indexList?.let {
+                            itemList.value.addAll(it)
+                        }
+                    }
+
+
+                    //更新下仓库状态的状态变量
+                    //这个值应该不会是null，除非libgit2添加了新状态，git24j没跟着添加
+                    repoState.intValue = gitRepository.state()?.bit?: Cons.gitRepoStateInvalid
+                    //如果状态是rebase，更新计数，仅在worktree页面和index页面需要查询此值，tree to tree不需要
+                    //TODO 日后如果实现multi commits cherrypick，也需要添加一个cherrypick计数的变量。(另外，merge因为总是只有一个合并对象，所以不需要显示计数)
+                    if(repoState.intValue == Repository.StateT.REBASE_MERGE.bit
+                        && (fromTo== Cons.gitDiffFromIndexToWorktree || fromTo== Cons.gitDiffFromHeadToIndex)
+                    ) {
+                        rebaseCurOfAll?.value = Libgit2Helper.rebaseCurOfAllFormatted(gitRepository)
+                    }
+
+                    hasNoConflictItems.value = !gitRepository.index().hasConflicts()
+                    MyLog.d(TAG, "hasNoConflictItems="+hasNoConflictItems.value)
+
+
+
+
+
+
+
+
+                    //20240504: 先查worktree，再查index是否为空，因为worktree有可能更改index。20250123：worktree修改index？用户不操作会自动修改？不可能啊，总之又改成先查index和仓库状态了，最后再查worktree列表，因为查worktree列表最慢
                     // 检测index是否为空，如果不为空，会在图标有红点提示(最好红点，高亮图标也行)，如果worktree status为空(包含conflict条目) 且 index不为空，则会提示用户可去index区查看status
 
                     if(fromTo == Cons.gitDiffFromIndexToWorktree) {  //查询worktree页面条目，就是从首页抽屉打开的changelist
@@ -3761,8 +3824,9 @@ private fun changeListInit(
                             return@launch
                         }
 
-                        changeListPageHasWorktreeItem.value = wtStatusList.entryCount() > 0
-                        if (changeListPageHasWorktreeItem.value) {
+                        val hasWorktreeItem = wtStatusList.entryCount() > 0
+                        changeListPageHasWorktreeItem.value = hasWorktreeItem
+                        if (hasWorktreeItem) {
                             //转成index/worktree/conflict三个元素的map，每个key对应一个列表
                             //这里忽略第一个代表是否更新index的值，因为后面会百分百查询index，所以无需判定
                             val (_, statusMap) = Libgit2Helper.statusListToStatusMap(gitRepository, wtStatusList, repoIdFromDb = curRepoFromParentPage.id, fromTo)
@@ -3805,52 +3869,10 @@ private fun changeListInit(
                         curRepoUpstream.value = Libgit2Helper.getUpstreamOfBranch(gitRepository, curRepoFromParentPage.branch)
                     }
 
-                    //注意：冲突条目实际在index和worktree都有，但是我这里只有在worktree的时候才添加冲突条目，在index是隐藏的，因为冲突条目实际上是没有stage的，所以理应出现在worktree而不是index
-                    //检查是否存在staged条目，用来在worktree条目为空时，决定是否显示index有条目的提示
-                    //这个列表可以考虑传给index页面，不过要在index页面设置成如果没传参就查询，有参则用参的形式，但即使有参，也可通过index的刷新按钮刷新页面状态
-                    val (indexIsEmpty, indexList) = Libgit2Helper.checkIndexIsEmptyAndGetIndexList(gitRepository, curRepoFromParentPage.id, onlyCheckEmpty = false)
 
-                    if(repoChanged()) {
-                        return@launch
-                    }
-
-                    changeListPageHasIndexItem.value = !indexIsEmpty
-                    MyLog.d(TAG,"#$funName(): changeListPageHasIndexItem = "+changeListPageHasIndexItem.value)
-                    //只有在index页面，才需要更新条目列表，否则这个列表由worktree页面来更新
-                    if(fromTo == Cons.gitDiffFromHeadToIndex) {
-                        itemList.value.clear()
-                        indexList?.let {
-                            itemList.value.addAll(it)
-                        }
-                    }
-
-                    //更新下仓库状态的状态变量
-                    //这个值应该不会是null，除非libgit2添加了新状态，git24j没跟着添加
-                    repoState.intValue = gitRepository.state()?.bit?: Cons.gitRepoStateInvalid
-                    //如果状态是rebase，更新计数，仅在worktree页面和index页面需要查询此值，tree to tree不需要
-                    //TODO 日后如果实现multi commits cherrypick，也需要添加一个cherrypick计数的变量。(另外，merge因为总是只有一个合并对象，所以不需要显示计数)
-                    if(repoState.intValue == Repository.StateT.REBASE_MERGE.bit
-                        && (fromTo== Cons.gitDiffFromIndexToWorktree || fromTo== Cons.gitDiffFromHeadToIndex)
-                    ) {
-                        rebaseCurOfAll?.value = Libgit2Helper.rebaseCurOfAllFormatted(gitRepository)
-                    }
-
-                    hasNoConflictItems.value = !gitRepository.index().hasConflicts()
-                    MyLog.d(TAG, "hasNoConflictItems="+hasNoConflictItems.value)
                 }
 
 
-
-                val credentialDb = AppModel.dbContainer.credentialRepository
-                val credentialListFromDb = credentialDb.getAll(includeNone = true, includeMatchByDomain = true)
-                if(credentialListFromDb.isNotEmpty()) {
-
-                    if(repoChanged()) {
-                        return@launch
-                    }
-
-                    credentialList.value.addAll(credentialListFromDb)
-                }
 
 
             }

@@ -440,7 +440,7 @@ class Libgit2Helper {
             return getRepoStatusList(repo,Status.ShowT.INDEX_AND_WORKDIR,flags)
         }
 
-        //改用 repo.index().hasConflicts() 了
+        @Deprecated("改用 repo.index().hasConflicts() 了")
         private fun hasConflictItemInStatusList(statusList:StatusList):Boolean {
             val entryCnt: Int = statusList.entryCount()
             //until， 左闭右开，左包含，右不包含
@@ -2865,7 +2865,7 @@ class Libgit2Helper {
 
                 for(i in 0 ..< allOpCount) {
                     rebase.next()
-                    if(!repo.index().hasConflicts()) {  //无冲突，提交，这里不检查index是否为空，强制创建提交 // 需要测试能否创建空提交？应该能
+                    if(!repo.index().hasConflicts()) {  //无冲突，提交，这里不检查index是否为空，强制创建提交 // 需要测试能否创建空提交？应该能。测试结果：正常情况下能创建空提交，rebase状态下未测试，但应该能？无所谓，能就能，不能拉倒，反正没实际影响
                         rebase.commit(originCommitAuthor, rebaseCommiter, originCommitMsgEncoding, originCommitMsg)
                     }else {  //有冲突，返回，之后可 continue或abort，不过不支持 skip
                         return Ret.createError(null, "rebase:has conflicts", Ret.ErrCode.mergeFailedByAfterMergeHasConfilts)  //和merge用同一个冲突错误代码
