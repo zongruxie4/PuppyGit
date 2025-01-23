@@ -3518,11 +3518,13 @@ private fun changeListInit(
 
 
             //先清空列表
-            //TODO 这里实现恢复的逻辑，如果列表不为空，就直接恢复数据，不清空列表，也不重新查询，如果刷新，加个flag，强制重新查询
-//            itemList.value.clear()
+            //废弃，因为恢复的有可能不是最新状态：这里实现恢复的逻辑，如果列表不为空，就直接恢复数据，不清空列表，也不重新查询，如果刷新，加个flag，强制重新查询
+            itemList.value.clear()  //这里必须清下这个列表，不然切换仓库后可能有残留，可能在此函数外修改了此列表？懒得排查了直接清下，后续查了会更新
+            credentialList.value.clear()  //这个也在添加之前清了，避免出“残留”的问题，这里也清下
+
+            //这个列表不用全清，最后会更新，若在这清，可能会出现刷新后归0，卡一下，然后出现数字的bug，因为清空和重新添加之间可能会有一段时间间隔
 //            selectedItemList.value.clear()
-//            itemList.requireRefreshView()
-//            selectedItemList.requireRefreshView()
+
 
             if(fromTo == Cons.gitDiffFromTreeToTree) {
                 val repoDb = dbContainer.repoRepository
@@ -3745,17 +3747,16 @@ private fun changeListInit(
 
 
                 //查凭据列表(20250123：忘了为什么要在这查凭据列表了)
-                val credentialDb = AppModel.dbContainer.credentialRepository
-                val credentialListFromDb = credentialDb.getAll(includeNone = true, includeMatchByDomain = true)
-                if(credentialListFromDb.isNotEmpty()) {
+                val credentialListFromDb = AppModel.dbContainer.credentialRepository.getAll(includeNone = true, includeMatchByDomain = true)
 
-                    if(repoChanged()) {
-                        return@launch
-                    }
-
-                    credentialList.value.clear()
-                    credentialList.value.addAll(credentialListFromDb)
+                if(repoChanged()) {
+                    return@launch
                 }
+
+                credentialList.value.clear()
+                credentialList.value.addAll(credentialListFromDb)
+                //查凭据列表结束
+
 
 
 //            MyLog.d(TAG, "ChangeListInnerPage#Init: queryed Repo id:"+curRepoFromParentPage.value.id)
@@ -3890,6 +3891,7 @@ private fun changeListInit(
                 itemList.value.forEach {
                     //如果选中条目仍在条目列表存在，则视为有效选中项
                     if(selectedItemList.value.contains(it)) {
+                        //添加新查的列表中的“相同”元素，可能会有更新，所以不一定完全相同
                         stillSelectedList.add(it)
                     }
                 }
