@@ -283,15 +283,16 @@ object FsUtils {
         var target = targetNeedCheck
         if(target.exists()) {
             //原始文件名
-            val originFileName = target.canonicalPath.removeSuffix(File.separator)  //canonicalPath不会包含末尾的 / ，所以其实不用removeSuffix
+            val originFileFullPath = target.canonicalPath  //canonicalPath不会包含末尾的 / ，所以不用removeSuffix('/')
 
             //拆分出文件名和后缀，生成类似 "file(1).ext" 的格式，而不是 "file.ext(1)" 那样
-            val extIndex = originFileName.lastIndexOf('.')
-            val (fileName, fileExt) = if(extIndex > 0) {  //注意这里是索引大于0，如果文件名开头是.，是隐藏文件，不将其视为后缀名，这时生成的文件名类似 ".git(1)" 而不是"(1).git"
-                // 例如输入：abc.txt, 返回 "abc" 和 ".txt"，后缀名包含"."
-                Pair(originFileName.substring(0, extIndex), originFileName.substring(extIndex))
+            val extIndex = originFileFullPath.lastIndexOf('.')
+            val slashIndexPlusOne = originFileFullPath.lastIndexOf('/') + 1  //此变量最小值是0，即 lastIndexOf()找不到返回-1，然后+1，等于0
+            val (filePathAndName, fileExt) = if(extIndex > slashIndexPlusOne) {  //注意这里是索引大于最后一个分隔符加1，即"."之前至少有一个字符，因为如果文件名开头是"."，是隐藏文件，不将其视为后缀名，这时生成的文件名类似 ".git(1)" 而不是"(1).git"
+                // 例如输入：/path/to/abc.txt, 返回 "/path/to/abc" 和 ".txt"，后缀名包含"."
+                Pair(originFileFullPath.substring(0, extIndex), originFileFullPath.substring(extIndex))
             }else {
-                Pair(originFileName, "")
+                Pair(originFileFullPath, "")
             }
 
             //生成文件名的最大编号，超过这个编号将会生成随机文件名
@@ -300,7 +301,7 @@ object FsUtils {
 
             //for循环，直到生成一个不存在的名字
             for(i in 1..max) {
-                target = File("$fileName($i)$fileExt")
+                target = File("$filePathAndName($i)$fileExt")
                 if(!target.exists()) {
                     break
                 }
@@ -308,7 +309,7 @@ object FsUtils {
             //如果文件还存在，生成随机名
             if(target.exists()){
                 while (true) {
-                    target = File("$fileName(${getShortUUID(len=8)})$fileExt")
+                    target = File("$filePathAndName(${getShortUUID(len=8)})$fileExt")
                     if(!target.exists()) {
                         break
                     }
