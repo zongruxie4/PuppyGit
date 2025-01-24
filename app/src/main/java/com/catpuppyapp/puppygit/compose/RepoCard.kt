@@ -318,10 +318,14 @@ fun RepoCard(
                                             stringResource(R.string.repo_status_need_commit)
                                         } else if (repoDto.workStatus == Cons.dbRepoWorkStatusNeedSync) {
                                             stringResource(R.string.repo_status_need_sync)
+                                        } else if (repoDto.workStatus == Cons.dbRepoWorkStatusNeedPull) {
+                                            stringResource(R.string.repo_status_need_pull)
+                                        } else if (repoDto.workStatus == Cons.dbRepoWorkStatusNeedPush) {
+                                            stringResource(R.string.repo_status_need_push)
                                         } else {
                                             ""  // 未克隆仓库可能会抵达这里
                                         }
-                                        ),
+                                ),
                                 maxLines = 1,
                                 overflow = TextOverflow.Ellipsis,
                                 modifier = MyStyleKt.ClickableText.modifier.clickable(enabled = repoStatusGood) {

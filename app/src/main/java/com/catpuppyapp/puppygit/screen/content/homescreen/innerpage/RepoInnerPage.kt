@@ -2012,6 +2012,22 @@ fun RepoInnerPage(
                                     }
                                 }
                             }
+                        }else if (status == Cons.dbRepoWorkStatusNeedPull) {
+                            val curRepo = clickedRepo
+
+                            doActWithLockIfRepoGoodAndActEnabled(curRepo) {
+                                doActAndSetRepoStatus(invalidIdx, curRepo.id, activityContext.getString(R.string.pulling)) {
+                                    doPull(curRepo)
+                                }
+                            }
+                        }else if (status == Cons.dbRepoWorkStatusNeedPush) {
+                            val curRepo = clickedRepo
+
+                            doActWithLockIfRepoGoodAndActEnabled(curRepo) {
+                                doActAndSetRepoStatus(invalidIdx, curRepo.id, activityContext.getString(R.string.pushing)) {
+                                    doPush(null, curRepo)
+                                }
+                            }
                         }
                     }
                 }

@@ -4364,9 +4364,13 @@ class Libgit2Helper {
                                 val (ahead, behind) = getAheadBehind(repo, localOid, upstreamOid)
                                 repoFromDb.ahead = ahead
                                 repoFromDb.behind = behind
-                                if(repoFromDb.ahead==0 && repoFromDb.behind ==0) {  //本地不领先也不落后上游，最新
+                                if(repoFromDb.ahead == 0 && repoFromDb.behind == 0) {  //本地不领先也不落后上游，最新。 or `ahead<1 && behind<1`
                                     repoFromDb.workStatus = Cons.dbRepoWorkStatusUpToDate
-                                }
+                                }else if(repoFromDb.ahead == 0 && repoFromDb.behind > 0) {  // ==0 or <1, all be fine
+                                    repoFromDb.workStatus = Cons.dbRepoWorkStatusNeedPull
+                                }else if(repoFromDb.ahead > 0 && repoFromDb.behind == 0) {
+                                    repoFromDb.workStatus = Cons.dbRepoWorkStatusNeedPush
+                                } // 省略了 `ahead > 0 && behind > 0`，这种情况需要sync，不过上面初始状态就是sync，所以不需要再处理一次
 
                             }
 
