@@ -124,6 +124,7 @@ import com.catpuppyapp.puppygit.utils.state.CustomStateListSaveable
 import com.catpuppyapp.puppygit.utils.state.CustomStateSaveable
 import com.catpuppyapp.puppygit.utils.state.mutableCustomStateListOf
 import com.catpuppyapp.puppygit.utils.state.mutableCustomStateOf
+import com.catpuppyapp.puppygit.utils.updateSelectedList
 import com.catpuppyapp.puppygit.utils.withMainContext
 import com.github.git24j.core.Repository
 import com.github.git24j.core.Repository.StateT
@@ -3420,6 +3421,7 @@ fun ChangeListInnerPage(
                 commitForQueryParents=commitForQueryParents,
                 rebaseCurOfAll=rebaseCurOfAll,
                 credentialList=credentialList,
+                quitSelectionMode = quitSelectionMode,
                 repoChanged = {
                     // 检测原理是currentPageId捕获的是常量(或值拷贝)，state变量每次调用都重新查最新的值，因此若变化，可检测到
                     val repoChanged = currentPageId != newestPageId.value
@@ -3480,7 +3482,8 @@ private fun changeListInit(
     commitForQueryParents:String,
     rebaseCurOfAll: MutableState<String>?,
     credentialList: CustomStateListSaveable<CredentialEntity>,
-    repoChanged:()->Boolean
+    quitSelectionMode: () -> Unit,
+    repoChanged:()->Boolean,
 //    isDiffToHead:MutableState<Boolean>?,
 //    headCommitHash:MutableState<String>
 //    scope:CoroutineScope
@@ -3882,42 +3885,17 @@ private fun changeListInit(
                 return@launch
             }
 
-            if(selectedItemList.value.isEmpty() || itemList.value.isEmpty()) {
-                isFileSelectionMode.value=false
-                selectedItemList.value.clear()
-            }else {
-                //移除选中但已经不在列表中的元素
-                val stillSelectedList = mutableListOf<StatusTypeEntrySaver>()
-                //只有仓库不变刷新页面，才会执行此检查，若切换仓库，会先清空选中条目列表
-//                一般选中条目的列表元素会比所有条目列表少，所以选中条目在外部，这样有可能减少循环次数
-                selectedItemList.value.forEach { oldSelected ->
-                    val found = itemList.value.find { oldSelected.relativePathUnderRepo == it.relativePathUnderRepo }
-                    //如果选中条目仍在条目列表存在，则视为有效选中项
-                    if(found != null) {
-                        //添加新查的列表中的“相同”元素，可能会有更新，所以不一定完全相同
-                        stillSelectedList.add(found)
-                    }
-                }
+            val pageChangedNeedAbort = updateSelectedList(
+                selectedItemList = selectedItemList.value,
+                itemList = itemList.value,
+                quitSelectionMode = quitSelectionMode,
+                match = { oldSelected, item-> oldSelected.relativePathUnderRepo == item.relativePathUnderRepo },
+                pageChanged = repoChanged
+            )
 
-                if(repoChanged()) {
-                    return@launch
-                }
+            // 这里本来就在最后，所以是否return没差别，但避免以后往下面加代码忘了return，这里还是return下吧
+            if (pageChangedNeedAbort) return@launch
 
-                //这个操作不兼容SnapshotList，而且，我不太确定这样会不会影响页面刷新，所以不这么写了
-//            selectedItemList.value = effectionSelectedList
-                selectedItemList.value.clear()
-                selectedItemList.value.addAll(stillSelectedList)
-
-                //如果选中条目为空，退出选择模式
-                if(stillSelectedList.isEmpty()) {
-                    //只关选择模式就行，若进入这里selectedItemList应该为空，所以不用清
-                    isFileSelectionMode.value=false
-                }
-            }
-
-            //触发页面刷新获取最新状态
-//            itemList.requireRefreshView()
-//            selectedItemList.requireRefreshView()
 
 
         }catch (e:Exception) {

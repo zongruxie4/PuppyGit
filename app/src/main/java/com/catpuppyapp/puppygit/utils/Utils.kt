@@ -896,3 +896,45 @@ fun getUtcTimeInSec():Long {
     return Instant.now().epochSecond
 }
 
+
+/**
+ * @return pageChanged, if true, means page changed, selectedItemList not updated; else, page not changed and selectedItemList updated
+ */
+fun <T> updateSelectedList(
+    selectedItemList: MutableList<T>,
+    itemList: List<T>,
+    match:(oldSelected:T, item:T)->Boolean,  // used for found
+    quitSelectionMode: () -> Unit,
+    pageChanged: () -> Boolean = {false}, //页面改变了，例如ChangeList页面换了仓库，这次的查询就不需要继续了，如果不需要此函数，可不传，用默认值即可
+): Boolean {
+    if (selectedItemList.isEmpty() || itemList.isEmpty()) {
+        quitSelectionMode()
+    } else {
+        //移除选中但已经不在列表中的元素
+        val stillSelectedList = mutableListOf<T>()
+
+//                一般选中条目的列表元素会比所有条目列表少，所以选中条目在外部，这样有可能减少循环次数
+        selectedItemList.forEach { oldSelected ->
+            val found = itemList.find { match(oldSelected, it) }
+            //如果选中条目仍在条目列表存在，则视为有效选中项
+            if (found != null) {
+                //添加新查的列表中的“相同”元素，可能会有更新，所以不一定完全相同
+                stillSelectedList.add(found)
+            }
+        }
+
+        if (pageChanged()) {
+            return true
+        }
+
+        selectedItemList.clear()
+        selectedItemList.addAll(stillSelectedList)
+
+        //如果选中条目为空，退出选择模式
+        if (selectedItemList.isEmpty()) {
+            quitSelectionMode()
+        }
+    }
+
+    return false
+}
