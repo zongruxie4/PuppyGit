@@ -1,8 +1,8 @@
-next version:
-- add Status Need Pull/Need Push on to Repo Card
+1.0.7.9v55 - 20250124:
+- add Status "Need Pull/Need Push" in to Repo Card
 
 
-- 添加状态 需要拉取/需要推送 到仓库卡片
+- 添加状态 "需要拉取/需要推送" 到仓库卡片
 
 ---
 
