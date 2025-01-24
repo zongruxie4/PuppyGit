@@ -103,6 +103,7 @@ import com.catpuppyapp.puppygit.utils.state.CustomStateListSaveable
 import com.catpuppyapp.puppygit.utils.state.CustomStateSaveable
 import com.catpuppyapp.puppygit.utils.state.mutableCustomStateOf
 import com.catpuppyapp.puppygit.utils.strHasIllegalChars
+import com.catpuppyapp.puppygit.utils.updateSelectedList
 import com.github.git24j.core.Repository
 import kotlinx.coroutines.sync.withLock
 import java.io.File
@@ -2183,27 +2184,18 @@ private fun doInit(
             repoDtoList.value.addAll(newList)
         }
 
-        //update selected list
-        if(selectedItems.isEmpty() || repoDtoList.value.isEmpty()) {
-            quitSelectionMode()
-        }else {
-            val srcList = repoDtoList.value.toList()
-            val newSelectedItems = mutableListOf<RepoEntity>()
-            selectedItems.toList().forEach { tmp->
-                val found = srcList.find {src-> tmp.id == src.id }
-                if(found != null) {  //刷新后的列表没了之前的条目
-                    newSelectedItems.add(found)
-                }
-            }
 
-            selectedItems.clear()
-            selectedItems.addAll(newSelectedItems)
+        val pageChangedNeedAbort = updateSelectedList(
+            selectedItemList = selectedItems,
+            itemList = repoDtoList.value,
+            quitSelectionMode = quitSelectionMode,
+            match = { oldSelected, item-> oldSelected.id == item.id },
+            pageChanged = pageChanged
+        )
 
-            //如果选中条目列表为空，退出选择模式
-            if(selectedItems.isEmpty()) {
-                quitSelectionMode()
-            }
-        }
+        // 这里本来就在最后，所以是否return没差别，但避免以后往下面加代码忘了return，这里还是return下吧
+        if (pageChangedNeedAbort) return@doJobThenOffLoading
+
 
 
 

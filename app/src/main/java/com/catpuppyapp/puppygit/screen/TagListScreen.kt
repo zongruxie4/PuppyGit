@@ -86,6 +86,7 @@ import com.catpuppyapp.puppygit.utils.formatMinutesToUtc
 import com.catpuppyapp.puppygit.utils.state.mutableCustomStateListOf
 import com.catpuppyapp.puppygit.utils.state.mutableCustomStateOf
 import com.catpuppyapp.puppygit.utils.time.TimeZoneUtil
+import com.catpuppyapp.puppygit.utils.updateSelectedList
 import com.github.git24j.core.Repository
 
 private const val TAG = "TagListScreen"
@@ -831,13 +832,18 @@ fun TagListScreen(
 
     //compose创建时的副作用
     LaunchedEffect(needRefresh.value) {
+
+        val refreshId = needRefresh.value
+        val pageChanged = {
+            refreshId != needRefresh.value
+        }
+
         try {
             doJobThenOffLoading(
                 loadingOn = loadingOn,
                 loadingOff = loadingOff,
                 loadingText = activityContext.getString(R.string.loading),
             ) {
-//                selectedItemList.value.clear()  //清下已选中条目列表
                 list.value.clear()  //先清一下list，然后可能添加也可能不添加
 
                 if(!repoId.isNullOrBlank()) {
@@ -850,25 +856,21 @@ fun TagListScreen(
                             list.value.clear()
                             list.value.addAll(tags)
 
-                            //更新已选中文件列表
-                            if(tags.isEmpty() || selectedItemList.value.isEmpty()) {
-                                quitSelectionMode()
-                            }else {
-                                val stillSelectedList = mutableListOf<TagDto>()
-                                selectedItemList.value.forEach { old ->
-                                    val found = tags.find { new -> new.name == old.name }
-                                    if(found != null) {
-                                        stillSelectedList.add(found)
-                                    }
-                                }
 
-                                selectedItemList.value.clear()
-                                selectedItemList.value.addAll(stillSelectedList)
+                            //更新已选中条目列表，将仍在列表中元素更新为新查询的数据
+                            val pageChangedNeedAbort = updateSelectedList(
+                                selectedItemList = selectedItemList.value,
+                                itemList = list.value,
+                                quitSelectionMode = quitSelectionMode,
+                                match = { oldSelected, item-> oldSelected.name == item.name },
+                                pageChanged = pageChanged
+                            )
 
-                                if(stillSelectedList.isEmpty()) {
-                                    quitSelectionMode()
-                                }
-                            }
+                            // 这里本来就在最后，所以是否return没差别，但避免以后往下面加代码忘了return，这里还是return下吧
+                            if (pageChangedNeedAbort) return@doJobThenOffLoading
+
+
+
 
 
 

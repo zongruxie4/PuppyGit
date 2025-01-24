@@ -91,6 +91,7 @@ import com.catpuppyapp.puppygit.utils.doJobThenOffLoading
 import com.catpuppyapp.puppygit.utils.replaceStringResList
 import com.catpuppyapp.puppygit.utils.state.mutableCustomStateListOf
 import com.catpuppyapp.puppygit.utils.state.mutableCustomStateOf
+import com.catpuppyapp.puppygit.utils.updateSelectedList
 import com.github.git24j.core.Repository
 
 private val TAG = "SubmoduleListScreen"
@@ -1345,6 +1346,11 @@ fun SubmoduleListScreen(
 
     //compose创建时的副作用
     LaunchedEffect(needRefresh.value) {
+        val refreshId = needRefresh.value
+        val pageChanged = {
+            refreshId != needRefresh.value
+        }
+
         try {
             doJobThenOffLoading(
                 loadingOn = loadingOn,
@@ -1373,26 +1379,22 @@ fun SubmoduleListScreen(
 
                 }
 
-                //更新已选中条目列表，将仍在列表中元素更新为新查询的数据
-                //下面的判断，if内容可删，else内容必须保留，但保留if可能在某些情况性能稍微好点，避免无意义循环
-                if(list.value.isEmpty() || selectedItemList.value.isEmpty()) {  // clear selected list if list is empty，这个if判断其实可以不加，只保留else里的代码即可，但加了的话可以避免一些无意义操作，某些情况下，性能可能稍微好一丢丢
-//                    selectedItemList.value.clear()  // quitSelectionMode() 会清空选中文件列表
-                    quitSelectionMode()
-                }else {  // hold and update selected list items which still in list
-                    val stillSelectedList = mutableListOf<SubmoduleDto>()
-                    selectedItemList.value.forEach { old->
-                        val found = list.value.find { new -> new.name == old.name}
-                        if(found != null) {
-                            stillSelectedList.add(found)
-                        }
-                    }
-                    selectedItemList.value.clear()
-                    selectedItemList.value.addAll(stillSelectedList)
 
-                    if(stillSelectedList.isEmpty()) {
-                        quitSelectionMode()
-                    }
-                }
+                //更新已选中条目列表，将仍在列表中元素更新为新查询的数据
+                val pageChangedNeedAbort = updateSelectedList(
+                    selectedItemList = selectedItemList.value,
+                    itemList = list.value,
+                    quitSelectionMode = quitSelectionMode,
+                    match = { oldSelected, item-> oldSelected.name == item.name },
+                    pageChanged = pageChanged
+                )
+
+                // 这里本来就在最后，所以是否return没差别，但避免以后往下面加代码忘了return，这里还是return下吧
+                if (pageChangedNeedAbort) return@doJobThenOffLoading
+
+
+
+
             }
         } catch (e: Exception) {
             MyLog.e(TAG, "$TAG#LaunchedEffect() err:"+e.stackTraceToString())
