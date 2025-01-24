@@ -924,6 +924,7 @@ fun <T> updateSelectedList(
         }
 
         if (pageChanged()) {
+            // page changed, and selected list not updated
             return true
         }
 
@@ -936,5 +937,7 @@ fun <T> updateSelectedList(
         }
     }
 
+
+    // page not changed, and selected item list updated
     return false
 }
