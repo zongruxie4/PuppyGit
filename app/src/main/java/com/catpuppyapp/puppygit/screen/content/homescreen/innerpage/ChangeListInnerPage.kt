@@ -3767,9 +3767,26 @@ private fun changeListInit(
 //                    return@launch
 //                }
 
+                    //更新下仓库状态的状态变量，这个最快，所以先更新它
+                    //这个值应该不会是null，除非libgit2添加了新状态，git24j没跟着添加
+                    repoState.intValue = gitRepository.state()?.bit?: Cons.gitRepoStateInvalid
+                    //如果状态是rebase，更新计数，仅在worktree页面和index页面需要查询此值，tree to tree不需要
+                    //TODO 日后如果实现multi commits cherrypick，也需要添加一个cherrypick计数的变量。(另外，merge因为总是只有一个合并对象，所以不需要显示计数)
+                    if(repoState.intValue == Repository.StateT.REBASE_MERGE.bit
+                        && (fromTo== Cons.gitDiffFromIndexToWorktree || fromTo== Cons.gitDiffFromHeadToIndex)
+                    ) {
+                        rebaseCurOfAll?.value = Libgit2Helper.rebaseCurOfAllFormatted(gitRepository)
+                    }
+
+                    hasNoConflictItems.value = !gitRepository.index().hasConflicts()
+                    MyLog.d(TAG, "hasNoConflictItems="+hasNoConflictItems.value)
 
 
-                    //先检查index是否为空，因为这个性能比检查worktree快
+
+
+
+
+                    //先检查index是否为空，因为这个性能比检查worktree快。
                     //注意：冲突条目实际在index和worktree都有，但是我这里只有在worktree的时候才添加冲突条目，在index是隐藏的，因为冲突条目实际上是没有stage的，所以理应出现在worktree而不是index
                     //检查是否存在staged条目，用来在worktree条目为空时，决定是否显示index有条目的提示
                     //这个列表可以考虑传给index页面，不过要在index页面设置成如果没传参就查询，有参则用参的形式，但即使有参，也可通过index的刷新按钮刷新页面状态
@@ -3790,27 +3807,11 @@ private fun changeListInit(
                     }
 
 
-                    //更新下仓库状态的状态变量
-                    //这个值应该不会是null，除非libgit2添加了新状态，git24j没跟着添加
-                    repoState.intValue = gitRepository.state()?.bit?: Cons.gitRepoStateInvalid
-                    //如果状态是rebase，更新计数，仅在worktree页面和index页面需要查询此值，tree to tree不需要
-                    //TODO 日后如果实现multi commits cherrypick，也需要添加一个cherrypick计数的变量。(另外，merge因为总是只有一个合并对象，所以不需要显示计数)
-                    if(repoState.intValue == Repository.StateT.REBASE_MERGE.bit
-                        && (fromTo== Cons.gitDiffFromIndexToWorktree || fromTo== Cons.gitDiffFromHeadToIndex)
-                    ) {
-                        rebaseCurOfAll?.value = Libgit2Helper.rebaseCurOfAllFormatted(gitRepository)
-                    }
-
-                    hasNoConflictItems.value = !gitRepository.index().hasConflicts()
-                    MyLog.d(TAG, "hasNoConflictItems="+hasNoConflictItems.value)
 
 
 
 
-
-
-
-
+                    //最后查worktree是否为空，这个查的最慢，放最后。
                     //20240504: 先查worktree，再查index是否为空，因为worktree有可能更改index。20250123：worktree修改index？用户不操作会自动修改？不可能啊，总之又改成先查index和仓库状态了，最后再查worktree列表，因为查worktree列表最慢
                     // 检测index是否为空，如果不为空，会在图标有红点提示(最好红点，高亮图标也行)，如果worktree status为空(包含conflict条目) 且 index不为空，则会提示用户可去index区查看status
 
