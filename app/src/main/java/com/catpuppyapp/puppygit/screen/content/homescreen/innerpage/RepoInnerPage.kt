@@ -1411,7 +1411,7 @@ fun RepoInnerPage(
         Icons.Filled.Download,  // pull
         Icons.Filled.Publish,  // push
         ImageVector.vectorResource(R.drawable.two_way_sync),  //sync
-        Icons.Filled.Refresh,  // refresh (selected items)
+//        Icons.Filled.Refresh,  // refresh (selected items)
         Icons.Filled.SelectAll,  //Select All
     )
     val selectionModeIconTextList = listOf(
@@ -1419,7 +1419,7 @@ fun RepoInnerPage(
         stringResource(R.string.pull),
         stringResource(R.string.push),
         stringResource(R.string.sync),
-        stringResource(R.string.refresh),
+//        stringResource(R.string.refresh),
         stringResource(R.string.select_all),
     )
 
@@ -1543,12 +1543,7 @@ fun RepoInnerPage(
 
             Unit
         },
-        refresh@{
-            specifiedRefreshRepoList.value.clear()
-            specifiedRefreshRepoList.value.addAll(selectedItems.value)
 
-            changeStateTriggerRefreshPage(needRefreshRepoPage)
-        },
         selectAll@{
             val list = if(enableFilterState.value) filterList.value else repoList.value
 
@@ -1574,11 +1569,11 @@ fun RepoInnerPage(
                 bottomBarIconDefaultEnable()
             }
         },
-        refresh@{ hasSelectedItems() },
         selectAllEnable@{ true },
     )
 
     val selectionModeMoreItemTextList = listOf(
+        stringResource(R.string.refresh), // multi
         stringResource(R.string.clone), // multi
         stringResource(R.string.remotes), // single
         stringResource(R.string.tags),  // single
@@ -1594,6 +1589,12 @@ fun RepoInnerPage(
     )
 
     val selectionModeMoreItemOnClickList = listOf(
+        refresh@{
+            specifiedRefreshRepoList.value.clear()
+            specifiedRefreshRepoList.value.addAll(selectedItems.value)
+
+            changeStateTriggerRefreshPage(needRefreshRepoPage)
+        },
         // retry clone for cloned err repos
         clone@{
             doClone(selectedItems.value.filter { it.workStatus == Cons.dbRepoWorkStatusCloneErr })
@@ -1685,6 +1686,8 @@ fun RepoInnerPage(
     )
 
     val selectionModeMoreItemEnableList = listOf(
+        refresh@{ hasSelectedItems() },
+
         clone@{
             //至少选中一个需要克隆的仓库才显示此按钮
             hasSelectedItems() && selectedItems.value.any { it.workStatus == Cons.dbRepoWorkStatusCloneErr }
