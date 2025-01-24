@@ -1,8 +1,10 @@
 next version:
 - update Repos Screen: disable "Sync" and "Set Upstream" for not-cloned Repo
+- fix bug: copy path like "/path/a.b.c/file" will failed
 
 
 - 仓库页面修改：对未克隆仓库禁用“同步”和“设置上游”选项
+- 修复: 拷贝类似 "/path/a.b.c/file" 的路径会出错的bug
 
 ---
 
