@@ -287,8 +287,8 @@ fun ChangeListInnerPage(
 //    val selFilePathListJsonObjStr = remember{ mutableStateOf("{}") }  //key是文件名，所以这个列表只能存储相同目录下的文件，不同目录有可能名称冲突，但由于选择模式只能在当前目录选择，所以这个缺陷可以接受。json格式:{fileName:canonicalPath}
 
     val quitSelectionMode = {
-        selectedItemList.value.clear()  //清空选中文件列表
         isFileSelectionMode.value=false  //关闭选择模式
+        selectedItemList.value.clear()  //清空选中文件列表
     }
 
     val filesPageAddFileToSelectedListIfAbsentElseRemove:(StatusTypeEntrySaver)->Unit = { item:StatusTypeEntrySaver ->
@@ -3881,8 +3881,10 @@ private fun changeListInit(
                 return@launch
             }
 
-            //如果是选择模式，检查当前选中条目是否依然有效，如果不是，直接清空选中条目
-            if(isFileSelectionMode.value) {
+            if(selectedItemList.value.isEmpty() || itemList.value.isEmpty()) {
+                isFileSelectionMode.value=false
+                selectedItemList.value.clear()
+            }else {
                 //移除选中但已经不在列表中的元素
                 val stillSelectedList = mutableListOf<StatusTypeEntrySaver>()
                 //只有仓库不变刷新页面，才会执行此检查，若切换仓库，会先清空选中条目列表
@@ -3906,11 +3908,10 @@ private fun changeListInit(
                 selectedItemList.value.addAll(stillSelectedList)
 
                 //如果选中条目为空，退出选择模式
-                if(selectedItemList.value.isEmpty()) {
+                if(stillSelectedList.isEmpty()) {
+                    //只关选择模式就行，若进入这里selectedItemList应该为空，所以不用清
                     isFileSelectionMode.value=false
                 }
-            }else {
-                selectedItemList.value.clear()
             }
 
             //触发页面刷新获取最新状态

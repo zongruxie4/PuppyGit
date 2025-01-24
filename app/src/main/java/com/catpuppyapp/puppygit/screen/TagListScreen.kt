@@ -169,8 +169,8 @@ fun TagListScreen(
     val multiSelectionMode = rememberSaveable { mutableStateOf(false) }
     val selectedItemList = mutableCustomStateListOf(keyTag = stateKeyTag, keyName = "selectedItemList", listOf<TagDto>())
     val quitSelectionMode = {
-        selectedItemList.value.clear()  //清空选中文件列表
         multiSelectionMode.value=false  //关闭选择模式
+        selectedItemList.value.clear()  //清空选中文件列表
     }
     val iconList:List<ImageVector> = listOf(
         Icons.Filled.Delete,  //删除
@@ -850,18 +850,24 @@ fun TagListScreen(
                             list.value.clear()
                             list.value.addAll(tags)
 
-                            val stillSelectedList = mutableListOf<TagDto>()
-                            tags.forEach {
-                                if(selectedItemList.value.contains(it)) {
-                                    stillSelectedList.add(it)
-                                }
-                            }
-
-                            selectedItemList.value.clear()
-                            selectedItemList.value.addAll(stillSelectedList)
-
-                            if(stillSelectedList.isEmpty()) {
+                            //更新已选中文件列表
+                            if(tags.isEmpty() || selectedItemList.value.isEmpty()) {
                                 quitSelectionMode()
+                            }else {
+                                val stillSelectedList = mutableListOf<TagDto>()
+                                selectedItemList.value.forEach { old ->
+                                    val found = tags.find { new -> new.name == old.name }
+                                    if(found != null) {
+                                        stillSelectedList.add(found)
+                                    }
+                                }
+
+                                selectedItemList.value.clear()
+                                selectedItemList.value.addAll(stillSelectedList)
+
+                                if(stillSelectedList.isEmpty()) {
+                                    quitSelectionMode()
+                                }
                             }
 
 

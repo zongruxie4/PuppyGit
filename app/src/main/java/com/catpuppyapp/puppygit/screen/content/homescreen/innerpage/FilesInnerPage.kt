@@ -1969,9 +1969,8 @@ fun FilesInnerPage(
     //导入模式
 
     val quitImportMode = {
-        requireImportUriList.value.clear();
-//        requireImportUriList.requireRefreshView()
         isImportMode.value=false
+        requireImportUriList.value.clear()
     }
     val getRequireUriFilesCount = {requireImportUriList.value.size}
     if(isImportMode.value) {

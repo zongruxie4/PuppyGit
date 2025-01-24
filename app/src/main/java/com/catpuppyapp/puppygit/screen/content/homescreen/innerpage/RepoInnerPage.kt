@@ -2155,22 +2155,28 @@ private fun doInit(
         }
 
         //update selected list
-        val srcList = repoDtoList.value.toList()
-        val newSelectedItems = mutableListOf<RepoEntity>()
-        selectedItems.toList().forEach { tmp->
-            val found = srcList.find {src-> tmp.id == src.id }
-            if(found != null) {  //刷新后的列表没了之前的条目
-                newSelectedItems.add(found)
+        if(selectedItems.isEmpty() || repoDtoList.value.isEmpty()) {
+            quitSelectionMode()
+        }else {
+            val srcList = repoDtoList.value.toList()
+            val newSelectedItems = mutableListOf<RepoEntity>()
+            selectedItems.toList().forEach { tmp->
+                val found = srcList.find {src-> tmp.id == src.id }
+                if(found != null) {  //刷新后的列表没了之前的条目
+                    newSelectedItems.add(found)
+                }
+            }
+
+            selectedItems.clear()
+            selectedItems.addAll(newSelectedItems)
+
+            //如果选中条目列表为空，退出选择模式
+            if(selectedItems.isEmpty()) {
+                quitSelectionMode()
             }
         }
 
-        selectedItems.clear()
-        selectedItems.addAll(newSelectedItems)
 
-        //如果选中条目列表为空，退出选择模式
-        if(selectedItems.isEmpty()) {
-            quitSelectionMode()
-        }
 
         // complex code for update item and remove non-exist item, but the effect just no-difference with clear then addAll, so, disable it
 //        if(repoDtoList.value.isEmpty()) {
