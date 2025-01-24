@@ -96,6 +96,7 @@ import com.catpuppyapp.puppygit.utils.doActIfIndexGood
 import com.catpuppyapp.puppygit.utils.doJobThenOffLoading
 import com.catpuppyapp.puppygit.utils.getSecFromTime
 import com.catpuppyapp.puppygit.utils.getStoragePermission
+import com.catpuppyapp.puppygit.utils.isRepoReadyAndPathExist
 import com.catpuppyapp.puppygit.utils.replaceStringResList
 import com.catpuppyapp.puppygit.utils.showErrAndSaveLog
 import com.catpuppyapp.puppygit.utils.state.CustomStateListSaveable
@@ -1564,7 +1565,11 @@ fun RepoInnerPage(
         syncEnable@{
             val list = selectedItems.value
             if(list.size == 1) {  //若只选中一个条目，仅判断是否detached，若无上游，弹窗设置并同步
-                !dbIntToBool(list.first().isDetached)
+                //只有一个条目的时候检测下仓库是否有效，避免选中未克隆仓库仍启用此按钮；
+                //  但选中多个条目时不用检测，因为执行时会过滤出存在上游且非detached仓库，会把未克隆仓库筛掉，所以这里不用处理
+                val item = list.first()
+                //先执行轻量的detached HEAD检测，如果为真，肯定克隆并且至少曾经能用，那就没必要再执行后面的检测了
+                !dbIntToBool(item.isDetached) && isRepoReadyAndPathExist(item)
             }else { //若选中多个条目，不会弹出设置上游的弹窗，必须有至少一个存在上游的仓库才启用同步按钮
                 bottomBarIconDefaultEnable()
             }
@@ -1709,7 +1714,12 @@ fun RepoInnerPage(
             hasSelectedItems() && selectedItems.value.any { dbIntToBool(it.isShallow) }
         },
         setUpstream@{
-            selectedSingle() && !dbIntToBool(selectedItems.value.first().isDetached)
+            if(selectedSingle()) {
+                val item = selectedItems.value.first()
+                !dbIntToBool(item.isDetached) && isRepoReadyAndPathExist(item)
+            }else {
+                false
+            }
         },
         changelist@{
             selectedSingle() && isRepoGood(selectedItems.value.first())

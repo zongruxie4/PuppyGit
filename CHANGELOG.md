@@ -1,3 +1,11 @@
+next version:
+- update Repos Screen: disable "Sync" and "Set Upstream" for not-cloned Repo
+
+
+- 仓库页面修改：对未克隆仓库禁用“同步”和“设置上游”选项
+
+---
+
 1.0.7.9v55 - 20250124:
 - add Status "Need Pull/Need Push" in to Repo Card
 

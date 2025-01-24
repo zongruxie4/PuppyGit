@@ -565,13 +565,14 @@ fun isRepoReadyAndPathExist(r: RepoEntity?): Boolean {
     if (r.workStatus != Cons.dbRepoWorkStatusNotReadyNeedClone
         && r.workStatus != Cons.dbRepoWorkStatusNotReadyNeedInit
         && r.isActive == Cons.dbCommonTrue
-        && (r.fullSavePath ?: "").isNotBlank()
+        && r.fullSavePath.isNotBlank()
     ) {
         val f = File(r.fullSavePath)
         if (f.exists()) {
             return true;
         }
     }
+
     return false
 }
 
