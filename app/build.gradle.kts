@@ -117,6 +117,13 @@ android {
 }
 
 dependencies {
+    val ktorVersion = "3.0.3"
+    implementation("io.ktor:ktor-server-core:$ktorVersion")
+    implementation("io.ktor:ktor-server-netty:$ktorVersion")
+    implementation("io.ktor:ktor-serialization-kotlinx-json:$ktorVersion")
+    implementation("io.ktor:ktor-server-content-negotiation:$ktorVersion")
+
+
     implementation("at.favre.lib:bcrypt:0.10.2")
     //billing
 //    implementation ("com.android.billingclient:billing-ktx:7.0.0")
