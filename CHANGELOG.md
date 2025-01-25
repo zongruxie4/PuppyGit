@@ -1,10 +1,10 @@
 next version:
 - update Repos Screen: disable "Sync" and "Set Upstream" for not-cloned Repo
-- fix: copy file when path contains '.' may failed
+- fix: copy a file which path contains '.' may failed
 
 
 - 仓库页面修改：对未克隆仓库禁用“同步”和“设置上游”选项
-- 修复拷贝路径包含'.'可能会出错的bug
+- 修复拷贝路径包含'.'的文件可能会出错的bug
 
 ---
 
