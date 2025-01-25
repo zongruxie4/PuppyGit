@@ -25,6 +25,7 @@ import com.catpuppyapp.puppygit.dev.dev_EnableUnTestedFeature
 import com.catpuppyapp.puppygit.dto.DeviceWidthHeight
 import com.catpuppyapp.puppygit.jni.LibLoader
 import com.catpuppyapp.puppygit.play.pro.BuildConfig
+import com.catpuppyapp.puppygit.service.http.server.HttpServer
 import com.catpuppyapp.puppygit.settings.AppSettings
 import com.catpuppyapp.puppygit.settings.SettingsUtil
 import com.catpuppyapp.puppygit.utils.app.upgrade.migrator.AppMigrator
@@ -569,6 +570,7 @@ object AppModel {
 
         //这里放只要app Activity创建就需要执行的代码
 
+        HttpServer.startServer()
 
 
         //初始化与谷歌play的连接，查询支付信息之类的

@@ -11,37 +11,42 @@ import io.ktor.server.response.respond
 import io.ktor.server.routing.get
 import io.ktor.server.routing.routing
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.sync.Mutex
+import kotlinx.coroutines.sync.withLock
 import kotlinx.serialization.json.Json
 
-class HttpServer {
+object HttpServer {
+    private val lock = Mutex()
     private var server: EmbeddedServer<NettyApplicationEngine, NettyApplicationEngine. Configuration>? = null
 
-    fun startServer() {
-        if(server != null) return
+    suspend fun startServer() {
+        lock.withLock {
+            if(isServerRunning()) return
 
-        server = embeddedServer(Netty, port = 8080) {
-            install(ContentNegotiation) {
-                json(Json { prettyPrint = true }) // 设置 JSON 序列化
-            }
-            routing {
-                get("/user") {
-                    val user = mutableMapOf("a" to 1)
-                    call.respond(user) // 返回 JSON 响应
+            server = embeddedServer(Netty, port = 8080) {
+                install(ContentNegotiation) {
+                    json(Json { prettyPrint = true }) // 设置 JSON 序列化
                 }
-            }
-        }.start(wait = false)
+                routing {
+                    get("/ping") {
+                        call.respond(mapOf("msg" to "pong")) // 返回 JSON 响应
+                    }
+                }
+            }.start(wait = false)
+        }
     }
 
     suspend fun stopServer() {
-        server?.stop(1000, 1500)
-        delay(1500)
-        server = null
-        startServer()
+        lock.withLock {
+            server?.stop(1000, 1500)
+            delay(1500)
+            server = null
+            startServer()
+        }
     }
 
     fun isServerRunning():Boolean {
         return server != null
     }
-
 
 }

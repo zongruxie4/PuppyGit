@@ -107,7 +107,8 @@ android {
             //别用 `excludes+=xxxxx` 语法，看着太像拼接字符串，实际上excludes是集合
             excludes.add("/META-INF/{AL2.0,LGPL2.1}")
 //            //不知道为什么，引入包含 SubscriptionPurchaseV2 的依赖 google-api-services-androidpublisher 后，会报错，排除这两个东西就不报错了，意义不明
-//            excludes.add("META-INF/INDEX.LIST")
+            excludes.add("META-INF/INDEX.LIST")
+            excludes.add("META-INF/io.netty.versions.properties")
 //            excludes.add("META-INF/DEPENDENCIES")
 
         }
