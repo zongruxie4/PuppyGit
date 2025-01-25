@@ -1,4 +1,4 @@
-next version:
+1.0.8.0v56 - 20250125:
 - update Repos Screen: disable "Sync" and "Set Upstream" for not-cloned Repo
 - fix: copy a file which path contains '.' may failed
 
