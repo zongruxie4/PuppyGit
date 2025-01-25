@@ -570,7 +570,12 @@ object AppModel {
 
         //这里放只要app Activity创建就需要执行的代码
 
-        HttpServer.startServer()
+        val settings = SettingsUtil.getSettingsSnapshot()
+        if(settings.httpService.enable) {
+            HttpServer.doActWithLock {
+                startServer(settings)
+            }
+        }
 
 
         //初始化与谷歌play的连接，查询支付信息之类的

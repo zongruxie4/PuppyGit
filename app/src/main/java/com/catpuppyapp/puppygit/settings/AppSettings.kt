@@ -99,5 +99,6 @@ data class AppSettings(
 
     val timeZone: TimeZone = TimeZone(),
 
+    var httpService:HttpServiceSettings = HttpServiceSettings()
 
 )
