@@ -9,11 +9,6 @@ data class HttpServiceSettings (
      */
     var launchOnAppStartup:Boolean = false,
 
-    /**
-     * 开机自启
-     */
-    var launchOnSystemStartup:Boolean = false,
-
     var listenHost:String = "127.0.0.1",
 
     var listenPort:Int = 52520,

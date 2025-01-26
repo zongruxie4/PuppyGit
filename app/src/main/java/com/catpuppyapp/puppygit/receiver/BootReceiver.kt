@@ -1,0 +1,19 @@
+package com.catpuppyapp.puppygit.receiver
+
+import android.content.BroadcastReceiver
+import android.content.Context
+import android.content.Intent
+import com.catpuppyapp.puppygit.service.http.server.HttpService
+import com.catpuppyapp.puppygit.utils.PrefMan
+
+
+class BootReceiver : BroadcastReceiver() {
+    override fun onReceive(context: Context, intent: Intent) {
+        if (Intent.ACTION_BOOT_COMPLETED == intent.action) {
+            //如果设置了开机自启，则启动，否则不启动
+            if(PrefMan.get(context, PrefMan.Key.launchServiceOnSystemStartup, "0") == "1") {
+                HttpService.start(context)
+            }
+        }
+    }
+}

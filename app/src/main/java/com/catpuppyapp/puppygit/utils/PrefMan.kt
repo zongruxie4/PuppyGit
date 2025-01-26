@@ -35,6 +35,11 @@ object PrefMan {
          * 这的值应该和设置页面的themeList索引匹配
          */
         const val theme = "theme"
+
+        /**
+         * launch service on system start up: 0 disable, 1 enable, default 0
+         */
+        const val launchServiceOnSystemStartup = "launch_service_on_system_startup"
     }
 
     private fun getPrefs(appContext: Context) = appContext.getSharedPreferences(fileName, MODE_PRIVATE)
