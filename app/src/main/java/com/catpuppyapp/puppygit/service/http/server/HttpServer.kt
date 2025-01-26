@@ -6,10 +6,12 @@ import com.catpuppyapp.puppygit.settings.AppSettings
 import com.catpuppyapp.puppygit.settings.SettingsUtil
 import com.catpuppyapp.puppygit.utils.AppModel
 import com.catpuppyapp.puppygit.utils.Libgit2Helper
+import com.catpuppyapp.puppygit.utils.Libgit2Helper.Companion.getAheadBehind
 import com.catpuppyapp.puppygit.utils.MyLog
 import com.catpuppyapp.puppygit.utils.createAndInsertError
 import com.catpuppyapp.puppygit.utils.dbIntToBool
 import com.catpuppyapp.puppygit.utils.getSecFromTime
+import com.github.git24j.core.Oid
 import com.github.git24j.core.Repository
 import io.ktor.serialization.kotlinx.json.json
 import io.ktor.server.application.install
@@ -148,15 +150,15 @@ object HttpServer {
                                     repoDb.updateLastUpdateTime(repoFromDb.id, getSecFromTime())
 
                                     // get git username and email for merge
-                                    val usernameFromUrl = call.request.queryParameters.get("gitUsername") ?:""
-                                    val emailFromUrl = call.request.queryParameters.get("gitEmail") ?:""
-                                    val (username, email) = if(usernameFromUrl.isNotBlank() && emailFromUrl.isNotBlank()) {
-                                        Pair(usernameFromUrl, emailFromUrl)
+                                    val gitUsernameFromUrl = call.request.queryParameters.get("gitUsername") ?:""
+                                    val gitEmailFromUrl = call.request.queryParameters.get("gitEmail") ?:""
+                                    val (username, email) = if(gitUsernameFromUrl.isNotBlank() && gitEmailFromUrl.isNotBlank()) {
+                                        Pair(gitUsernameFromUrl, gitEmailFromUrl)
                                     }else{
                                         val (gitUsernameFromConfig, gitEmailFromConfig) = Libgit2Helper.getGitUsernameAndEmail(gitRepo)
-                                        val finallyUsername = usernameFromUrl.ifBlank { gitUsernameFromConfig }
+                                        val finallyUsername = gitUsernameFromUrl.ifBlank { gitUsernameFromConfig }
 
-                                        val finallyEmail = emailFromUrl.ifBlank { gitEmailFromConfig }
+                                        val finallyEmail = gitEmailFromUrl.ifBlank { gitEmailFromConfig }
 
                                         Pair(finallyUsername, finallyEmail)
                                     }
@@ -208,11 +210,17 @@ object HttpServer {
                     /**
                      * query params:
                      *  repoNameOrId: repo name or id，优先查name，若无匹配，查id
+                     *  gitUsername: using for create commit, if null, will use PuppyGit settings
+                     *  gitEmail: using for create commit, if nul, will use PuppyGit settings
                      *  masterPass: your master password, if have
                      *  force: force push, 1 enable , 0 disable, if null, will disable (as 0)
                      *  forceUseIdMatchRepo: 1 or 0, if true, will force match repo by repo id, else will match by name first, if no match, then match by id
                      *  token: if caller ip not in white list, token is required
-
+                     *  autoCommit: 1 enable or 0 disable, default 1: if enable and no conflict items exists, will auto commit all changes,
+                     *    and will check index, if index empty, will not pushing;
+                     *    if disable, will only do push, no commit changes,
+                     *    no index empty check, no conflict items check.
+                     *
                      * e.g.
                      * request: http://127.0.0.1/push?repoNameOrId=abc&masterPass=your_master_pass_if_have
                      */
@@ -242,6 +250,9 @@ object HttpServer {
 
                         val masterPassword = masterPasswordFromUrl.ifEmpty { AppModel.masterPassword.value }
 
+                        //这个只要不明确传0，就是启用
+                        val autoCommit = call.request.queryParameters.get("autoCommit") != "0"
+
                         // force push or no
                         val force = call.request.queryParameters.get("force") == "1"
 
@@ -269,12 +280,83 @@ object HttpServer {
                                 }
 
                                 Repository.open(repoFromDb.fullSavePath).use { gitRepo ->
+                                    val repoState = gitRepo.state()
+                                    if(repoState != Repository.StateT.NONE) {
+                                        throw RuntimeException("repository state is '$repoState', expect 'NONE'")
+                                    }
+
                                     val upstream = Libgit2Helper.getUpstreamOfBranch(gitRepo, repoFromDb.branch)
                                     if(upstream.remote.isBlank() || upstream.branchRefsHeadsFullRefSpec.isBlank()) {
                                         throw RuntimeException("invalid upstream")
                                     }
 
-                                    // get fetch credential
+                                    if(autoCommit) {
+                                        // get git username and email for merge
+                                        val gitUsernameFromUrl = call.request.queryParameters.get("gitUsername") ?:""
+                                        val gitEmailFromUrl = call.request.queryParameters.get("gitEmail") ?:""
+                                        val (username, email) = if(gitUsernameFromUrl.isNotBlank() && gitEmailFromUrl.isNotBlank()) {
+                                            Pair(gitUsernameFromUrl, gitEmailFromUrl)
+                                        }else{
+                                            val (gitUsernameFromConfig, gitEmailFromConfig) = Libgit2Helper.getGitUsernameAndEmail(gitRepo)
+                                            val finallyUsername = gitUsernameFromUrl.ifBlank { gitUsernameFromConfig }
+
+                                            val finallyEmail = gitEmailFromUrl.ifBlank { gitEmailFromConfig }
+
+                                            Pair(finallyUsername, finallyEmail)
+                                        }
+
+                                        if(username == null || username.isBlank() || email == null || email.isBlank()) {
+                                            MyLog.w(TAG, "http server: api $routeName: commit abort by username or email invalid")
+                                        }else {
+                                            //检查是否存在冲突，如果存在，将不会创建提交
+                                            if(Libgit2Helper.hasConflictItemInRepo(gitRepo)) {
+                                                MyLog.w(TAG, "http server: api $routeName: conflict abort the commit")
+                                                // TODO 显示个手机通知，点击进入ChangeList并定位到对应仓库
+                                            }else {
+                                                // 有username 和 email，且无冲突
+
+                                                // stage worktree changes
+                                                Libgit2Helper.stageAll(gitRepo, repoFromDb.id)
+
+
+
+                                                //如果index不为空，则创建提交
+                                                if(!Libgit2Helper.indexIsEmpty(gitRepo)) {
+                                                    Libgit2Helper.createCommit(
+                                                        repo = gitRepo,
+                                                        msg = "",
+                                                        username = username,
+                                                        email = email,
+                                                        indexItemList = null,
+                                                        amend = false,
+                                                        overwriteAuthorWhenAmend = false,
+                                                        settings = settings
+                                                    )
+                                                }
+
+                                            }
+                                        }
+                                    }
+
+
+                                    // 检查 ahead和behind
+                                    if(!force) {  //只有非force才检查，否则强推
+                                        val (ahead, behind) = getAheadBehind(gitRepo, Oid.of(upstream.localOid), Oid.of(upstream.remoteOid))
+
+                                        if(behind > 0) {  //本地落后远程（远程领先本地）
+                                            throw RuntimeException("upstream ahead of local")
+                                        }
+
+                                        if(ahead < 1) {
+                                            //通过behind检测后，如果进入此代码块，代表本地不落后也不领先，即“up to date”
+                                            call.respond(createSuccessResult("already up-to-date"))
+                                            return@doActWithRepoLock
+                                        }
+
+                                    }
+
+
+                                    // get push credential
                                     val credential = Libgit2Helper.getRemoteCredential(
                                         db.remoteRepository,
                                         db.credentialRepository,
