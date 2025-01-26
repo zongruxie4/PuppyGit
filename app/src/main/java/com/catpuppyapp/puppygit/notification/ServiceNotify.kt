@@ -24,7 +24,7 @@ object ServiceNotify {
 
     private lateinit var appContext:Context
 
-    private const val CHANNEL_ID = "Service"
+    private const val CHANNEL_ID = "service_notify"
     private const val CHANNEL_NAME = "Service"
     private const val CHANNEL_DESCRIPTION = "Show Service Notifications"
 
@@ -52,14 +52,7 @@ object ServiceNotify {
     fun sendNotification(context: Context?, title: String?, message: String?, pendingIntent: PendingIntent?) {
         val context = context ?: appContext
 
-        val builder = NotificationCompat.Builder(context, CHANNEL_ID)
-            .setSmallIcon(R.drawable.branch) // 替换为您的图标
-            .setContentTitle(title)
-            .setContentText(message)
-            .setPriority(NotificationCompat.PRIORITY_DEFAULT)
-            .setCategory(NotificationCompat.CATEGORY_MESSAGE)
-            .setContentIntent(pendingIntent) // 设置点击通知时的意图
-            .setAutoCancel(true) // 点击后自动消失
+        val builder = getNotificationBuilder(context, title, message, pendingIntent) // 点击后自动消失
 
         NotificationManagerCompat.from(context).apply {
             if (ActivityCompat.checkSelfPermission(context, Manifest.permission.POST_NOTIFICATIONS) != PackageManager.PERMISSION_GRANTED) {
@@ -81,6 +74,18 @@ object ServiceNotify {
         // untested code, another way to send notification
 //        val notificationManager = context.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
 //        notificationManager.notify(notifyId, builder.build())
+    }
+
+    fun getNotificationBuilder(context: Context, title: String?, message: String?, pendingIntent: PendingIntent?): NotificationCompat.Builder {
+        val builder = NotificationCompat.Builder(context, CHANNEL_ID)
+            .setSmallIcon(R.drawable.branch) // 替换为您的图标
+            .setContentTitle(title)
+            .setContentText(message)
+            .setPriority(NotificationCompat.PRIORITY_DEFAULT)
+            .setCategory(NotificationCompat.CATEGORY_MESSAGE)
+            .setContentIntent(pendingIntent) // 设置点击通知时的意图
+            .setAutoCancel(true) // 点击后自动消失
+        return builder
     }
 
     fun createPendingIntent(context: Context?, extras:Map<String, String>): PendingIntent {

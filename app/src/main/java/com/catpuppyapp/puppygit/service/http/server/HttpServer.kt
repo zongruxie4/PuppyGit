@@ -46,7 +46,7 @@ object HttpServer {
         }
     }
 
-    suspend fun startServer(settings: AppSettings):Exception? {
+    fun startServer(settings: AppSettings):Exception? {
         if(isServerRunning()) return null
 
         try {
@@ -442,14 +442,13 @@ object HttpServer {
         }
     }
 
-    suspend fun stopServer():Exception? {
+    fun stopServer():Exception? {
         if(server == null) {
             return null
         }
 
         try {
-            server?.stop(1000, 1500)
-            delay(1500)
+            server?.stop(0, 0)  //立即停止服务器
             MyLog.w(TAG, "Http Server stopped")
             return null
         }catch (e:Exception) {
@@ -458,8 +457,9 @@ object HttpServer {
         }
     }
 
-    suspend fun restartServer(settings: AppSettings):Exception? {
+    fun restartServer(settings: AppSettings):Exception? {
         stopServer()
+
         server = null
         return startServer(settings)
     }

@@ -1,6 +1,7 @@
 package com.catpuppyapp.puppygit.utils
 
 import android.content.Context
+import android.content.Intent
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.material3.TopAppBarScrollBehavior
@@ -27,6 +28,7 @@ import com.catpuppyapp.puppygit.jni.LibLoader
 import com.catpuppyapp.puppygit.notification.ServiceNotify
 import com.catpuppyapp.puppygit.play.pro.BuildConfig
 import com.catpuppyapp.puppygit.service.http.server.HttpServer
+import com.catpuppyapp.puppygit.service.http.server.HttpService
 import com.catpuppyapp.puppygit.settings.AppSettings
 import com.catpuppyapp.puppygit.settings.SettingsUtil
 import com.catpuppyapp.puppygit.utils.app.upgrade.migrator.AppMigrator
@@ -241,7 +243,7 @@ object AppModel {
      * 执行必须且无法显示界面的操作。
      * 中量级，应该不会阻塞很久
      */
-    fun init_1(activityContext:Context, realAppContext:Context, exitApp:()->Unit) {
+    fun init_1(activityContext:Context, realAppContext:Context, exitApp:()->Unit, initActivity:Boolean) {
         val funName = "init_1"
 
         // run once in app process life time
@@ -273,7 +275,9 @@ object AppModel {
 
         // every time run after Activity destory and re create
 
-        AppModel.activityContext = activityContext;
+        if(initActivity) {
+            AppModel.activityContext = activityContext;
+        }
 //            AppModel.mainActivity = mainActivity  //忘了这个干嘛的了，后来反正没用了，IDE提示什么Activity内存泄漏之类的，所以就注释了
 
         //设置app工作目录，如果获取不到目录，app无法工作，会在这抛出异常
@@ -337,7 +341,9 @@ object AppModel {
 //            AppModel.fileSnapshotDir = createFileSnapshotDirIfNonexists(AppModel.allRepoParentDir, Cons.defaultFileSnapshotDirName)
 
         //设置退出app的函数
-        AppModel.exitApp = exitApp
+        if(initActivity) {
+            AppModel.exitApp = exitApp
+        }
 
         //debug mode相关变量
         //必须先初始化此变量再去查询isDebugModeOn()
@@ -575,9 +581,7 @@ object AppModel {
 
         val settings = SettingsUtil.getSettingsSnapshot()
         if(settings.httpService.launchOnAppStartup) {
-            HttpServer.doActWithLock {
-                startServer(settings)
-            }
+            HttpService.start(applicationContext)
         }
 
 
