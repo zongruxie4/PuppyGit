@@ -9,7 +9,7 @@ import com.catpuppyapp.puppygit.utils.AppModel
 import com.catpuppyapp.puppygit.utils.Libgit2Helper
 import com.catpuppyapp.puppygit.utils.Libgit2Helper.Companion.getAheadBehind
 import com.catpuppyapp.puppygit.utils.MyLog
-import com.catpuppyapp.puppygit.utils.SystemNotifyUtil
+import com.catpuppyapp.puppygit.utils.ServiceNotify
 import com.catpuppyapp.puppygit.utils.createAndInsertError
 import com.catpuppyapp.puppygit.utils.dbIntToBool
 import com.catpuppyapp.puppygit.utils.getSecFromTime
@@ -204,7 +204,7 @@ object HttpServer {
                             }
 
                             if(settings.httpService.showNotifyWhenErr) {
-                                createSystemNotify("pull err", errMsg, repoForLog?.id ?: "")
+                                sendNotification("pull err", errMsg, repoForLog?.id ?: "")
                             }
 
                             MyLog.e(TAG, "method:GET, route:$routeName, repoNameOrId=$repoNameOrIdForLog, err=${e.stackTraceToString()}")
@@ -395,7 +395,7 @@ object HttpServer {
                             }
 
                             if(settings.httpService.showNotifyWhenErr) {
-                                createSystemNotify("push err", errMsg, repoForLog?.id ?: "")
+                                sendNotification("push err", errMsg, repoForLog?.id ?: "")
                             }
 
                             MyLog.e(TAG, "method:GET, route:$routeName, repoNameOrId=$repoNameOrIdForLog, err=${e.stackTraceToString()}")
@@ -502,8 +502,8 @@ private fun tokenCheck(token:String?,ip:String, settings: AppSettings): Ret<Unit
 /**
  * 启动app并定位到ChangeList和指定仓库
  */
-private fun createSystemNotify(title:String, msg:String, startRepoId:String) {
-    SystemNotifyUtil.sendNotification(title, msg, SystemNotifyUtil.createStartAppPendingIntent(mapOf("startPage" to Cons.selectedItem_ChangeList.toString(), "startRepoId" to startRepoId)))
+private fun sendNotification(title:String, msg:String, startRepoId:String) {
+    ServiceNotify.sendNotification(null, title, msg, ServiceNotify.createPendingIntent(null, mapOf("startPage" to Cons.selectedItem_ChangeList.toString(), "startRepoId" to startRepoId)))
 }
 
 val throwRepoBusy = { _:Mutex ->

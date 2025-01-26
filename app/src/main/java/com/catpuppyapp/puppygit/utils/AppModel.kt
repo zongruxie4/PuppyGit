@@ -268,6 +268,8 @@ object AppModel {
 
         AppModel.realAppContext = realAppContext
 
+        ServiceNotify.init(realAppContext)
+
         // every time run after Activity destory and re create
 
         AppModel.activityContext = activityContext;
