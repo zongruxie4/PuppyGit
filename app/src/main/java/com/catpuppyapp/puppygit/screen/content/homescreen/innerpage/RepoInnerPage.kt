@@ -25,7 +25,6 @@ import androidx.compose.material.icons.filled.Download
 import androidx.compose.material.icons.filled.Downloading
 import androidx.compose.material.icons.filled.Error
 import androidx.compose.material.icons.filled.Publish
-import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material.icons.filled.SelectAll
 import androidx.compose.material3.Checkbox
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -1455,7 +1454,9 @@ fun RepoInnerPage(
     }
 
     val doActWithLockIfRepoGoodAndActEnabled = { curRepo:RepoEntity, act: suspend ()->Unit ->
-        Libgit2Helper.doActWithRepoLock(curRepo, isRepoGoodAndActEnabled, act)
+        doJobThenOffLoading {
+            Libgit2Helper.doActWithRepoLockIfPredicatePassed(curRepo, isRepoGoodAndActEnabled, act)
+        }
     }
 
     val isRepoGood = {curRepo:RepoEntity ->
