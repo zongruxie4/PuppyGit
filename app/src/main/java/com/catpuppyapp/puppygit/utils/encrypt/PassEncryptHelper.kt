@@ -43,8 +43,10 @@ class PassEncryptHelper {
         private fun chooseMasterPasswordOrDefaultPass(encryptorVersion:Int, masterPassword: String):String {
             //版本1到4没有主密码机制，所以强制使用默认密码，不过这几个版本基本没人用，所以这的代码实际只是为了兼容旧代码
             return if(masterPassword.isEmpty() || (encryptorVersion >= 1 && encryptorVersion <= 4)) {
+                //如果用户没设置主密码，或者用户设置了，但传的主密码有误，则尝试使用默认密码。 ps 如果用户设置了主密码但调用此函数时传的空值，那么会解密失败，然后报错。除非用户设置的密码刚好和默认密码一致....不过一般不会那么巧除非刻意为之，所以不用处理
                 keyMap[encryptorVersion]!!
             }else {  // 5以及之后的版本，若有主密码则使用主密码
+                //用指定的密码，若有误，将解密失败
                 masterPassword
             }
         }

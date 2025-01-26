@@ -2766,7 +2766,7 @@ class Libgit2Helper {
             }
         }
 
-        suspend fun getRemoteCredential(remoteDb:RemoteRepository, credentialDb:CredentialRepository, repoId:String, remoteName:String, trueFetchFalsePush:Boolean):CredentialEntity? {
+        suspend fun getRemoteCredential(remoteDb:RemoteRepository, credentialDb:CredentialRepository, repoId:String, remoteName:String, trueFetchFalsePush:Boolean, masterPassword: String = AppModel.masterPassword.value):CredentialEntity? {
             val remote = remoteDb.getByRepoIdAndRemoteName(repoId, remoteName)
 
             val credentialId = if(trueFetchFalsePush) {remote?.credentialId ?:""} else {remote?.pushCredentialId ?:""}
@@ -2776,7 +2776,7 @@ class Libgit2Helper {
                 return null
             }
 
-            val credential = credentialDb.getByIdWithDecryptAndMatchByDomain(id = credentialId, url = remoteUrl)
+            val credential = credentialDb.getByIdWithDecryptAndMatchByDomain(id = credentialId, url = remoteUrl, masterPassword = masterPassword)
 
             return credential
         }

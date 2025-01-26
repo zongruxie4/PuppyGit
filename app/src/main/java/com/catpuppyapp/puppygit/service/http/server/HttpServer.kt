@@ -62,7 +62,7 @@ object HttpServer {
                  *  gitUsername: using for create commit, if null, will use PuppyGit settings
                  *  gitEmail: using for create commit, if nul, will use PuppyGit settings
                  *  masterPass: your master password, if have
-                 *  forceUseIdMatchRepo: 1 or 0, if true, will force match repo by repo id, else will match by name first, if no match, will match by id
+                 *  forceUseIdMatchRepo: 1 or 0, if true, will force match repo by repo id, else will match by name first, if no match, then match by id
                  *  token: if caller ip not in white list, token is required
 
                  * e.g.
@@ -90,6 +90,9 @@ object HttpServer {
 
                     val forceUseIdMatchRepo = call.request.queryParameters.get("forceUseIdMatchRepo") == "1"
 
+                    val masterPasswordFromUrl = call.request.queryParameters.get("masterPass") ?: ""
+
+                    val masterPassword = masterPasswordFromUrl.ifEmpty { AppModel.masterPassword.value }
 
                     var repoForLog:RepoEntity? = null
                     // 查询仓库是否存在
@@ -126,7 +129,8 @@ object HttpServer {
                                         db.credentialRepository,
                                         repoFromDb.id,
                                         upstream.remote,
-                                        trueFetchFalsePush = true
+                                        trueFetchFalsePush = true,
+                                        masterPassword = masterPassword
                                     )
 
                                     // fetch
@@ -194,7 +198,7 @@ object HttpServer {
                             call.respond(createErrResult(errMsg))
 
                             if(repoForLog!=null) {
-                                createAndInsertError(repoForLog!!.id, "pull by api err: $errMsg")
+                                createAndInsertError(repoForLog!!.id, "$routeName by api err: $errMsg")
                             }
 
                             MyLog.e(TAG, "method:GET, route:$routeName, repoNameOrId=$repoNameOrId, err=${e.stackTraceToString()}")
@@ -208,17 +212,103 @@ object HttpServer {
                  * query params:
                  *  repoNameOrId: repo name or id，优先查name，若无匹配，查id
                  *  masterPass: your master password, if have
-                 *  force: 1 enable , 0 disable, if null, will disable (as 0)
-                 *  forceUseIdMatchRepo: 1 or 0, if true, will force match repo by repo id, else will match by name first, if no match, will match by id
+                 *  force: force push, 1 enable , 0 disable, if null, will disable (as 0)
+                 *  forceUseIdMatchRepo: 1 or 0, if true, will force match repo by repo id, else will match by name first, if no match, then match by id
                  *  token: if caller ip not in white list, token is required
 
                  * e.g.
                  * request: http://127.0.0.1/push?repoNameOrId=abc&masterPass=your_master_pass_if_have
                  */
                 get("/push") {
+                    val routeName = "'/push'"
+
+                    val callerIp = call.request.host()
+                    val token = call.request.queryParameters.get("token")
+                    val settings = SettingsUtil.getSettingsSnapshot()
+                    val tokenCheckRet = tokenCheck(token, callerIp, settings)
+                    if(tokenCheckRet.hasError()) {
+                        // log the query params maybe better?
+                        MyLog.e(TAG, "request rejected: route=$routeName, ip=$callerIp, token=$token, reason=${tokenCheckRet.msg}")
+                        call.respond(createErrResult(tokenCheckRet.msg))
+                        return@get
+                    }
+
+                    val repoNameOrId = call.request.queryParameters.get("repoNameOrId")
+                    if(repoNameOrId == null || repoNameOrId.isBlank()) {
+                        call.respond(createErrResult("invalid repo name or id"))
+                        return@get
+                    }
+
+                    val forceUseIdMatchRepo = call.request.queryParameters.get("forceUseIdMatchRepo") == "1"
+
+                    val masterPasswordFromUrl = call.request.queryParameters.get("masterPass") ?: ""
+
+                    val masterPassword = masterPasswordFromUrl.ifEmpty { AppModel.masterPassword.value }
+
+                    // force push or no
+                    val force = call.request.queryParameters.get("force") == "1"
+
+                    var repoForLog:RepoEntity? = null
                     // 查询仓库是否存在
                     // 尝试获取仓库锁，若获取失败，返回仓库正在执行其他操作
                     doJobThenOffLoading {
+                        try {
+                            val db = AppModel.dbContainer
+                            val repoRet = db.repoRepository.getByNameOrId(repoNameOrId, forceUseIdMatchRepo)
+                            if(repoRet.hasError()) {
+                                throw RuntimeException(repoRet.msg)
+                            }
+
+                            val repoFromDb = repoRet.data!!
+                            repoForLog = repoFromDb
+
+                            Libgit2Helper.doActWithRepoLock(repoFromDb) {
+                                if(dbIntToBool(repoFromDb.isDetached)) {
+                                    throw RuntimeException("repo is detached")
+                                }
+
+                                if(Libgit2Helper.isValidGitRepo(repoFromDb.fullSavePath)) {
+                                    throw RuntimeException("invalid git repo")
+                                }
+
+                                Repository.open(repoFromDb.fullSavePath).use { gitRepo ->
+                                    val upstream = Libgit2Helper.getUpstreamOfBranch(gitRepo, repoFromDb.branch)
+                                    if(upstream.remote.isBlank() || upstream.branchRefsHeadsFullRefSpec.isBlank()) {
+                                        throw RuntimeException("invalid upstream")
+                                    }
+
+                                    // get fetch credential
+                                    val credential = Libgit2Helper.getRemoteCredential(
+                                        db.remoteRepository,
+                                        db.credentialRepository,
+                                        repoFromDb.id,
+                                        upstream.remote,
+                                        trueFetchFalsePush = false,
+                                        masterPassword = masterPassword
+                                    )
+
+                                    val ret = Libgit2Helper.push(gitRepo, upstream.remote, upstream.pushRefSpec, credential, force)
+                                    if(ret.hasError()) {
+                                        throw RuntimeException(ret.msg)
+                                    }
+
+                                    // 更新修改workstatus的时间，只更新时间就行，状态会在查询repo时更新
+                                    val repoDb = AppModel.dbContainer.repoRepository
+                                    repoDb.updateLastUpdateTime(repoFromDb.id, getSecFromTime())
+                                }
+
+                                call.respond(createSuccessResult())
+                            }
+                        }catch (e:Exception) {
+                            val errMsg = e.localizedMessage ?: "unknown err"
+                            call.respond(createErrResult(errMsg))
+
+                            if(repoForLog!=null) {
+                                createAndInsertError(repoForLog!!.id, "$routeName by api err: $errMsg")
+                            }
+
+                            MyLog.e(TAG, "method:GET, route:$routeName, repoNameOrId=$repoNameOrId, err=${e.stackTraceToString()}")
+                        }
 
                     }
                 }
@@ -229,7 +319,7 @@ object HttpServer {
                  *  username: using for create commit, if null, will use PuppyGit settings
                  *  email: using for create commit, if nul, will use PuppyGit settings
                  *  masterPass: your master password, if have
-                 *  forceUseIdMatchRepo: 1 or 0, if true, will force match repo by repo id, else will match by name first, if no match, will match by id
+                 *  forceUseIdMatchRepo: 1 or 0, if true, will force match repo by repo id, else will match by name first, if no match, then match by id
                  *  token: if caller ip not in white list, token is required
 
                  * e.g.
