@@ -77,36 +77,36 @@ object HttpServer {
                      * request: http://127.0.0.1/pull?repoNameOrId=abc
                      */
                     get("/pull") {
+                        var repoNameOrIdForLog:String? = null
+                        var repoForLog:RepoEntity? = null
                         val routeName = "'/pull'"
 
-                        val callerIp = call.request.host()
-                        val token = call.request.queryParameters.get("token")
-                        val settings = SettingsUtil.getSettingsSnapshot()
-                        val tokenCheckRet = tokenCheck(token, callerIp, settings)
-                        if(tokenCheckRet.hasError()) {
-                            // log the query params maybe better?
-                            MyLog.e(TAG, "request rejected: route=$routeName, ip=$callerIp, token=$token, reason=${tokenCheckRet.msg}")
-                            call.respond(createErrResult(tokenCheckRet.msg))
-                            return@get
-                        }
-
-                        val repoNameOrId = call.request.queryParameters.get("repoNameOrId")
-                        if(repoNameOrId == null || repoNameOrId.isBlank()) {
-                            call.respond(createErrResult("invalid repo name or id"))
-                            return@get
-                        }
-
-                        val forceUseIdMatchRepo = call.request.queryParameters.get("forceUseIdMatchRepo") == "1"
-
-                        val masterPasswordFromUrl = call.request.queryParameters.get("masterPass") ?: ""
-
-                        val masterPassword = masterPasswordFromUrl.ifEmpty { AppModel.masterPassword.value }
-
-                        var repoForLog:RepoEntity? = null
-                        // 查询仓库是否存在
-                        // 尝试获取仓库锁，若获取失败，返回仓库正在执行其他操作
-
                         try {
+                            val callerIp = call.request.host()
+                            val token = call.request.queryParameters.get("token")
+                            val settings = SettingsUtil.getSettingsSnapshot()
+                            val tokenCheckRet = tokenCheck(token, callerIp, settings)
+                            if(tokenCheckRet.hasError()) {
+                                // log the query params maybe better?
+                                MyLog.e(TAG, "request rejected: route=$routeName, ip=$callerIp, token=$token, reason=${tokenCheckRet.msg}")
+                                throw RuntimeException(tokenCheckRet.msg)
+                            }
+
+                            val repoNameOrId = call.request.queryParameters.get("repoNameOrId")
+                            if(repoNameOrId == null || repoNameOrId.isBlank()) {
+                                throw RuntimeException("invalid repo name or id")
+                            }
+
+                            repoNameOrIdForLog = repoNameOrId
+
+
+                            val forceUseIdMatchRepo = call.request.queryParameters.get("forceUseIdMatchRepo") == "1"
+
+                            val masterPasswordFromUrl = call.request.queryParameters.get("masterPass") ?: ""
+
+                            val masterPassword = masterPasswordFromUrl.ifEmpty { AppModel.masterPassword.value }
+
+
                             val db = AppModel.dbContainer
                             val repoRet = db.repoRepository.getByNameOrId(repoNameOrId, forceUseIdMatchRepo)
                             if(repoRet.hasError()) {
@@ -201,7 +201,7 @@ object HttpServer {
                                 createAndInsertError(repoForLog!!.id, "$routeName by api err: $errMsg")
                             }
 
-                            MyLog.e(TAG, "method:GET, route:$routeName, repoNameOrId=$repoNameOrId, err=${e.stackTraceToString()}")
+                            MyLog.e(TAG, "method:GET, route:$routeName, repoNameOrId=$repoNameOrIdForLog, err=${e.stackTraceToString()}")
                         }
 
                     }
@@ -225,42 +225,44 @@ object HttpServer {
                      * request: http://127.0.0.1/push?repoNameOrId=abc&masterPass=your_master_pass_if_have
                      */
                     get("/push") {
+                        var repoNameOrIdForLog:String? = null
+                        var repoForLog:RepoEntity? = null
                         val routeName = "'/push'"
 
-                        val callerIp = call.request.host()
-                        val token = call.request.queryParameters.get("token")
-                        val settings = SettingsUtil.getSettingsSnapshot()
-                        val tokenCheckRet = tokenCheck(token, callerIp, settings)
-                        if(tokenCheckRet.hasError()) {
-                            // log the query params maybe better?
-                            MyLog.e(TAG, "request rejected: route=$routeName, ip=$callerIp, token=$token, reason=${tokenCheckRet.msg}")
-                            call.respond(createErrResult(tokenCheckRet.msg))
-                            return@get
-                        }
-
-                        val repoNameOrId = call.request.queryParameters.get("repoNameOrId")
-                        if(repoNameOrId == null || repoNameOrId.isBlank()) {
-                            call.respond(createErrResult("invalid repo name or id"))
-                            return@get
-                        }
-
-                        val forceUseIdMatchRepo = call.request.queryParameters.get("forceUseIdMatchRepo") == "1"
-
-                        val masterPasswordFromUrl = call.request.queryParameters.get("masterPass") ?: ""
-
-                        val masterPassword = masterPasswordFromUrl.ifEmpty { AppModel.masterPassword.value }
-
-                        //这个只要不明确传0，就是启用
-                        val autoCommit = call.request.queryParameters.get("autoCommit") != "0"
-
-                        // force push or no
-                        val force = call.request.queryParameters.get("force") == "1"
-
-                        var repoForLog:RepoEntity? = null
-                        // 查询仓库是否存在
-                        // 尝试获取仓库锁，若获取失败，返回仓库正在执行其他操作
-
                         try {
+
+                            val callerIp = call.request.host()
+                            val token = call.request.queryParameters.get("token")
+                            val settings = SettingsUtil.getSettingsSnapshot()
+                            val tokenCheckRet = tokenCheck(token, callerIp, settings)
+                            if(tokenCheckRet.hasError()) {
+                                // log the query params maybe better?
+                                MyLog.e(TAG, "request rejected: route=$routeName, ip=$callerIp, token=$token, reason=${tokenCheckRet.msg}")
+                                throw RuntimeException(tokenCheckRet.msg)
+                            }
+
+                            val repoNameOrId = call.request.queryParameters.get("repoNameOrId")
+                            if(repoNameOrId == null || repoNameOrId.isBlank()) {
+                                throw RuntimeException("invalid repo name or id")
+                            }
+
+                            repoNameOrIdForLog = repoNameOrId
+
+                            val forceUseIdMatchRepo = call.request.queryParameters.get("forceUseIdMatchRepo") == "1"
+
+                            val masterPasswordFromUrl = call.request.queryParameters.get("masterPass") ?: ""
+
+                            val masterPassword = masterPasswordFromUrl.ifEmpty { AppModel.masterPassword.value }
+
+                            //这个只要不明确传0，就是启用
+                            val autoCommit = call.request.queryParameters.get("autoCommit") != "0"
+
+                            // force push or no
+                            val force = call.request.queryParameters.get("force") == "1"
+
+                            // 查询仓库是否存在
+                            // 尝试获取仓库锁，若获取失败，返回仓库正在执行其他操作
+
                             val db = AppModel.dbContainer
                             val repoRet = db.repoRepository.getByNameOrId(repoNameOrId, forceUseIdMatchRepo)
                             if(repoRet.hasError()) {
@@ -386,7 +388,7 @@ object HttpServer {
                                 createAndInsertError(repoForLog!!.id, "$routeName by api err: $errMsg")
                             }
 
-                            MyLog.e(TAG, "method:GET, route:$routeName, repoNameOrId=$repoNameOrId, err=${e.stackTraceToString()}")
+                            MyLog.e(TAG, "method:GET, route:$routeName, repoNameOrId=$repoNameOrIdForLog, err=${e.stackTraceToString()}")
                         }
 
                     }
