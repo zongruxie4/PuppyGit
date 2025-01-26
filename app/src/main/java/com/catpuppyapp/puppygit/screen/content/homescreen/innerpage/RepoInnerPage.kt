@@ -61,6 +61,7 @@ import com.catpuppyapp.puppygit.compose.BottomBar
 import com.catpuppyapp.puppygit.compose.CheckBoxNoteText
 import com.catpuppyapp.puppygit.compose.ClickableText
 import com.catpuppyapp.puppygit.compose.ConfirmDialog
+import com.catpuppyapp.puppygit.compose.CopyableDialog
 import com.catpuppyapp.puppygit.compose.MyCheckBox
 import com.catpuppyapp.puppygit.compose.MyLazyColumn
 import com.catpuppyapp.puppygit.compose.MySelectionContainer
@@ -1362,6 +1363,21 @@ fun RepoInnerPage(
 
 
 
+    val showDetailsDialog = rememberSaveable { mutableStateOf(false) }
+    val detailsString = rememberSaveable { mutableStateOf("") }
+    if(showDetailsDialog.value) {
+        CopyableDialog(
+            title = stringResource(id = R.string.details),
+            text = detailsString.value,
+            onCancel = { showDetailsDialog.value = false }
+        ) {
+            showDetailsDialog.value = false
+            clipboardManager.setText(AnnotatedString(detailsString.value))
+            Msg.requireShow(activityContext.getString(R.string.copied))
+        }
+    }
+
+
     // bottom bar block start
     val quitSelectionMode = {
         isSelectionMode.value = false
@@ -1591,6 +1607,7 @@ fun RepoInnerPage(
         stringResource(R.string.stash), // single
         stringResource(R.string.reflog), // single
         stringResource(R.string.rename), // single
+        stringResource(R.string.details), // multi
         stringResource(R.string.delete), // multi
     )
 
@@ -1686,6 +1703,19 @@ fun RepoInnerPage(
             showRenameDialog.value = true
         },
 
+        details@{
+            val sb = StringBuilder()
+            val lb = "\n"
+            selectedItems.value.forEach {
+                sb.append(activityContext.getString(R.string.name)).append(":").append(it.repoName).append(lb)
+                sb.append(activityContext.getString(R.string.id)).append(":").append(it.id).append(lb).append(lb)
+                sb.append("--------------").append(lb).append(lb)
+            }
+
+            detailsString.value = sb.toString()
+            showDetailsDialog.value = true
+        },
+
         delete@{
             requireDelRepo(selectedItems.value.toList())
         }
@@ -1733,6 +1763,9 @@ fun RepoInnerPage(
         },
         rename@{
             selectedSingle()
+        },
+        details@{
+            hasSelectedItems()
         },
         delete@{
             hasSelectedItems()
