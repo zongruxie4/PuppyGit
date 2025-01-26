@@ -1,5 +1,6 @@
 package com.catpuppyapp.puppygit.service.http.server
 
+import com.catpuppyapp.puppygit.constants.Cons
 import com.catpuppyapp.puppygit.data.entity.RepoEntity
 import com.catpuppyapp.puppygit.etc.Ret
 import com.catpuppyapp.puppygit.settings.AppSettings
@@ -8,6 +9,7 @@ import com.catpuppyapp.puppygit.utils.AppModel
 import com.catpuppyapp.puppygit.utils.Libgit2Helper
 import com.catpuppyapp.puppygit.utils.Libgit2Helper.Companion.getAheadBehind
 import com.catpuppyapp.puppygit.utils.MyLog
+import com.catpuppyapp.puppygit.utils.SystemNotifyUtil
 import com.catpuppyapp.puppygit.utils.createAndInsertError
 import com.catpuppyapp.puppygit.utils.dbIntToBool
 import com.catpuppyapp.puppygit.utils.getSecFromTime
@@ -116,7 +118,7 @@ object HttpServer {
                             val repoFromDb = repoRet.data!!
                             repoForLog = repoFromDb
 
-                            Libgit2Helper.doActWithRepoLock(repoFromDb) {
+                            Libgit2Helper.doActWithRepoLock(repoFromDb, onLockFailed = throwRepoBusy) {
                                 if(dbIntToBool(repoFromDb.isDetached)) {
                                     throw RuntimeException("repo is detached")
                                 }
@@ -272,7 +274,7 @@ object HttpServer {
                             val repoFromDb = repoRet.data!!
                             repoForLog = repoFromDb
 
-                            Libgit2Helper.doActWithRepoLock(repoFromDb) {
+                            Libgit2Helper.doActWithRepoLock(repoFromDb, onLockFailed = throwRepoBusy) {
                                 if(dbIntToBool(repoFromDb.isDetached)) {
                                     throw RuntimeException("repo is detached")
                                 }
@@ -433,6 +435,10 @@ object HttpServer {
     }
 
     suspend fun stopServer():Exception? {
+        if(server == null) {
+            return null
+        }
+
         try {
             server?.stop(1000, 1500)
             delay(1500)
@@ -483,4 +489,15 @@ private fun tokenCheck(token:String?,ip:String, settings: AppSettings): Ret<Unit
     }
 
     return Ret.createError(null, "invalid token")
+}
+
+/**
+ * 启动app并定位到ChangeList和指定仓库
+ */
+private fun createSystemNotify(title:String, msg:String, startRepoId:String) {
+    SystemNotifyUtil.sendNotification(title, msg, SystemNotifyUtil.createStartAppPendingIntent(mapOf("startPage" to Cons.selectedItem_ChangeList.toString(), "startRepoId" to startRepoId)))
+}
+
+val throwRepoBusy = { _:Mutex ->
+    throw RuntimeException("repo busy, plz try later")
 }

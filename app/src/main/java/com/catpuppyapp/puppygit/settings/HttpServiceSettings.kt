@@ -5,13 +5,6 @@ import kotlinx.serialization.Serializable
 @Serializable
 data class HttpServiceSettings (
     /**
-     * 总开关，若禁用，手动启动、自动启动均失效
-     *
-     * 在设置页面开启此选项时应对服务器执行start；关闭此选项应执行stop
-     */
-    var enable:Boolean = false,
-
-    /**
      * App启动时自动启动服务
      */
     var launchOnAppStartup:Boolean = false,

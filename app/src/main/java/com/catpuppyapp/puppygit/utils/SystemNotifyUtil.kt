@@ -47,12 +47,15 @@ object SystemNotifyUtil {
         notificationManager.notify(1, builder.build()) // 1 是通知的 ID
     }
 
-    fun createStartAppPendingIntent(): PendingIntent {
+    fun createStartAppPendingIntent(extras:Map<String, String>): PendingIntent {
         val context = AppModel.realAppContext
 
         val intent = Intent(context, MainActivity::class.java) // 替换为您的主活动
         intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
-        intent.putExtra("startPage", "Hello, World!") // 传递字符串
+        extras.forEach { (k, v) ->
+            intent.putExtra(k, v)
+        }
+
         return PendingIntent.getActivity(context, 0, intent, PendingIntent.FLAG_UPDATE_CURRENT)
     }
 

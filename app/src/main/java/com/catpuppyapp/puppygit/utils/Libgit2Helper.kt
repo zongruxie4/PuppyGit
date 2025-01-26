@@ -6536,19 +6536,19 @@ class Libgit2Helper {
 
         suspend fun doActWithRepoLockIfPredicatePassed(curRepo:RepoEntity, predicate:(RepoEntity)->Boolean, act:suspend ()->Unit) {
             if(predicate(curRepo)) {
-                doActWithRepoLock(curRepo, act)
+                doActWithRepoLock(curRepo, act = act)
             }
         }
 
-        suspend fun doActWithRepoLock(curRepo:RepoEntity, act: suspend ()->Unit) {
+        suspend fun doActWithRepoLock(curRepo:RepoEntity, onLockFailed:(lock:Mutex)->Unit={}, act: suspend ()->Unit) {
             val lock = Libgit2Helper.getRepoLock(curRepo.id)
             //maybe do other jobs
             if(lock.isLocked) {
-                return
-            }
-
-            lock.withLock {
-                act()
+                onLockFailed(lock)
+            }else {
+                lock.withLock {
+                    act()
+                }
             }
         }
 
