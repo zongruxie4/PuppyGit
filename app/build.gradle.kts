@@ -11,6 +11,8 @@ plugins {
     id("org.jetbrains.kotlin.plugin.serialization")
     id("org.jetbrains.kotlin.plugin.compose")
 
+    // err: The 'java' plugin has been applied, but it is not compatible with the Android plugins.
+//    id("io.ktor.plugin")
 
 
 }
