@@ -1455,19 +1455,7 @@ fun RepoInnerPage(
     }
 
     val doActWithLockIfRepoGoodAndActEnabled = { curRepo:RepoEntity, act: suspend ()->Unit ->
-        if(isRepoGoodAndActEnabled(curRepo)) {
-            doJobThenOffLoading {
-                val lock = Libgit2Helper.getRepoLock(curRepo.id)
-                //maybe do other jobs
-                if(lock.isLocked) {
-                    return@doJobThenOffLoading
-                }
-
-                lock.withLock {
-                    act()
-                }
-            }
-        }
+        Libgit2Helper.doActWithRepoLock(curRepo, isRepoGoodAndActEnabled, act)
     }
 
     val isRepoGood = {curRepo:RepoEntity ->

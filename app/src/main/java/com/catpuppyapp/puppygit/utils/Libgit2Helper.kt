@@ -6521,6 +6521,22 @@ class Libgit2Helper {
             return hasConflictItemInRepo(repo) || indexIsEmpty(repo).not() || getWorkdirStatusList(repo).entryCount() > 0
         }
 
+
+        fun doActWithRepoLock(curRepo:RepoEntity, predicate: (RepoEntity)->Boolean, act: suspend ()->Unit) {
+            if(predicate(curRepo)) {
+                doJobThenOffLoading {
+                    val lock = Libgit2Helper.getRepoLock(curRepo.id)
+                    //maybe do other jobs
+                    if(lock.isLocked) {
+                        return@doJobThenOffLoading
+                    }
+
+                    lock.withLock {
+                        act()
+                    }
+                }
+            }
+        }
     }
 
 }
