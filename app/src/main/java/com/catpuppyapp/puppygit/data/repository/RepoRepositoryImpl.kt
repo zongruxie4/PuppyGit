@@ -151,6 +151,7 @@ class RepoRepositoryImpl(private val dao: RepoDao) : RepoRepository {
         val repoFromDb = dao.getById(id)?:return null
 
         Libgit2Helper.updateRepoInfo(repoFromDb)
+
         return repoFromDb
     }
 
@@ -159,7 +160,10 @@ class RepoRepositoryImpl(private val dao: RepoDao) : RepoRepository {
         return if(items.isEmpty()) {
             null
         }else {
-            items.get(0)
+            val repoFromDb = items.get(0)
+            Libgit2Helper.updateRepoInfo(repoFromDb)
+
+            repoFromDb
         }
     }
 

@@ -5257,7 +5257,17 @@ class Libgit2Helper {
 
 
         fun isValidGitRepo(repoFullPath:String):Boolean {
+            if(repoFullPath.isBlank()) {
+                return false
+            }
+
             try {
+                val dir = File(repoFullPath)
+//                if(dir.exists().not() || dir.canRead().not()) {
+                if(dir.canRead().not()) {  // canRead() include exists()
+                    return false
+                }
+
                 // should use Repository.open() check dir is or not a repo, if open success, is a repo, else not.
                 // shouldn't use check dir/.git folder exists or not for determine folder is repo or not
                 // because when a repo is a submodule, maybe it will haven't .git folder, but has .git file,

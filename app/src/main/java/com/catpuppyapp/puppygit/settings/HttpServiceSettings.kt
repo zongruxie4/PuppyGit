@@ -27,6 +27,11 @@ data class HttpServiceSettings (
 
     /**
      * token, use to verify the requester
+     *
+     * note: if token empty, will allow all request
+     *
+     * code: will only do empty check with this field, means it can be include blank char, but doesn't recommend
+     * 代码：对这个字段只执行空值检查，意味着它可包含空格，但不建议
      */
     var token:String = "default_puppygit_token",
 
