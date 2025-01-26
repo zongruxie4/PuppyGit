@@ -6524,11 +6524,13 @@ class Libgit2Helper {
 
         /**
          * check if local has uncommitted changes
+         *
+         * 注意：此方法将遵循app的 "ignore_v2.txt" 列表
          */
-        fun hasUncommittedChanges(repo:Repository):Boolean {
+        fun hasUncommittedChanges(repo:Repository, repoId: String):Boolean {
             //先检查是否有冲突条目（性能最快），若有肯定包含未提交修改；然后检查Index，这个查起来性能比work to index快（性能其次）；最后检查work to index（性能最差）
             // index非空 或 worktree有条目
-            return hasConflictItemInRepo(repo) || indexIsEmpty(repo).not() || getWorkdirStatusList(repo).entryCount() > 0
+            return hasConflictItemInRepo(repo) || indexIsEmpty(repo).not() || getWorktreeStatusTypeEntryList(repo, getWorkdirStatusList(repo), repoId).isNotEmpty()
         }
 
 
@@ -6548,6 +6550,59 @@ class Libgit2Helper {
             lock.withLock {
                 act()
             }
+        }
+
+        /**
+         * stage all changes include conflict items but left the items which in "ignore_v2.txt" unstage
+         */
+        fun stageAll(repo: Repository, repoId:String):Ret<Unit?> {
+            try {
+                val wtStatusList = getWorkdirStatusList(repo)
+                val size = wtStatusList.entryCount()
+                if(size > 0) {
+                    val statusEntryList = getWorktreeStatusTypeEntryList(repo, wtStatusList, repoId)
+
+                    //不直接用 index.addAll()是因为它不会遵循app的ignore_v2.txt
+                    stageStatusEntryAndWriteToDisk(repo, statusEntryList)
+
+                    return Ret.createSuccess(null)
+                }else {
+                    return Ret.createError(null, "no changes found")
+                }
+            }catch (e:Exception) {
+                return Ret.createError(null, e.localizedMessage ?: "stage err", exception = e)
+            }
+        }
+
+        fun getWorktreeStatusTypeEntryList(repo: Repository, rawStatusList: StatusList, repoId: String):List<StatusTypeEntrySaver> {
+            if(rawStatusList.entryCount() < 1) {
+                return listOf()
+            }
+
+            //转成index/worktree/conflict三个元素的map，每个key对应一个列表
+            //这里忽略第一个代表是否更新index的值，因为后面会百分百查询index，所以无需判定
+            val (_, statusMap) = statusListToStatusMap(repo, rawStatusList, repoIdFromDb = repoId, Cons.gitDiffFromIndexToWorktree)
+
+            val itemList = mutableListOf<StatusTypeEntrySaver>()
+
+            //a?.let{}，如果a不为null，执行函数，若不指定入参名称，默认把 a命名为it传入
+            statusMap[Cons.gitStatusKeyConflict]?.let {  //先添加冲突条目，让冲突条目显示在列表前面
+                itemList.addAll(it)
+            }
+
+            // conflicts are hold ever, but normal types file will filter by app's ignore file
+            statusMap[Cons.gitStatusKeyWorkdir]?.let {  //后添加其他条目
+                val validIgnoreRules = IgnoreMan.getAllValidPattern(getRepoGitDirPathNoEndsWithSlash(repo))
+                it.forEach { item ->
+                    // add items are not matched with ignore rules
+                    if (IgnoreMan.matchedPatternList(item.relativePathUnderRepo, validIgnoreRules).not()) {
+                        itemList.add(item)
+                    }
+                }
+
+            }
+
+            return itemList
         }
 
     }

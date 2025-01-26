@@ -3830,43 +3830,14 @@ private fun changeListInit(
                         val hasWorktreeItem = wtStatusList.entryCount() > 0
                         changeListPageHasWorktreeItem.value = hasWorktreeItem
                         if (hasWorktreeItem) {
-                            //转成index/worktree/conflict三个元素的map，每个key对应一个列表
-                            //这里忽略第一个代表是否更新index的值，因为后面会百分百查询index，所以无需判定
-                            val (_, statusMap) = Libgit2Helper.statusListToStatusMap(gitRepository, wtStatusList, repoIdFromDb = curRepoFromParentPage.id, fromTo)
-
-                            //忽略，后面会百分百查index，这里无需判定
-//                            if(indexIsChanged) {
-//                                MyLog.d(TAG,"#getInit(): repo index changed by #statusListToStatusMap, will requery index is empty or not")
-//                                //重查index条目(这是work tree的代码块，肯定不用indexList填充itemList，所以忽略
-//                                val (indexIsEmpty2, _) = Libgit2Helper.checkIndexIsEmptyAndGetIndexList(gitRepository, curRepoFromParentPage.value.id, onlyCheckEmpty = true)
-//                                changeListPageHasIndexItem.value = !indexIsEmpty2
-//                                MyLog.d(TAG,"#getInit(): requeried repo index is empty or not, now changeListPageHasIndexItem = "+changeListPageHasIndexItem.value)
-//                            }
+                            val worktreeItems = Libgit2Helper.getWorktreeStatusTypeEntryList(gitRepository, wtStatusList, curRepoFromParentPage.id)
 
                             if(repoChanged()) {
                                 return@launch
                             }
 
-                            //清空条目列表
                             itemList.value.clear()
-
-                            //a?.let{}，如果a不为null，执行函数，若不指定入参名称，默认把 a命名为it传入
-                            statusMap[Cons.gitStatusKeyConflict]?.let {  //先添加冲突条目，让冲突条目显示在列表前面
-                                itemList.value.addAll(it)
-                            }
-
-                            // conflicts are hold ever, but normal types file will filter by app's ignore file
-                            statusMap[Cons.gitStatusKeyWorkdir]?.let {  //后添加其他条目
-                                val validIgnoreRules = IgnoreMan.getAllValidPattern(Libgit2Helper.getRepoGitDirPathNoEndsWithSlash(gitRepository))
-                                it.forEach { item ->
-                                    // add items are not matched with ignore rules
-                                    if(IgnoreMan.matchedPatternList(item.relativePathUnderRepo, validIgnoreRules).not()){
-                                        itemList.value.add(item)
-                                    }
-                                }
-
-                            }
-
+                            itemList.value.addAll(worktreeItems)
                         }
 
                         curRepoUpstream.value = Libgit2Helper.getUpstreamOfBranch(gitRepository, curRepoFromParentPage.branch)
