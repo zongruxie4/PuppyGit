@@ -9,7 +9,6 @@ import com.catpuppyapp.puppygit.utils.Libgit2Helper
 import com.catpuppyapp.puppygit.utils.MyLog
 import com.catpuppyapp.puppygit.utils.createAndInsertError
 import com.catpuppyapp.puppygit.utils.dbIntToBool
-import com.catpuppyapp.puppygit.utils.doJobThenOffLoading
 import com.catpuppyapp.puppygit.utils.getSecFromTime
 import com.github.git24j.core.Repository
 import io.ktor.serialization.kotlinx.json.json
@@ -104,106 +103,105 @@ object HttpServer {
                         var repoForLog:RepoEntity? = null
                         // 查询仓库是否存在
                         // 尝试获取仓库锁，若获取失败，返回仓库正在执行其他操作
-                        doJobThenOffLoading {
-                            try {
-                                val db = AppModel.dbContainer
-                                val repoRet = db.repoRepository.getByNameOrId(repoNameOrId, forceUseIdMatchRepo)
-                                if(repoRet.hasError()) {
-                                    throw RuntimeException(repoRet.msg)
-                                }
 
-                                val repoFromDb = repoRet.data!!
-                                repoForLog = repoFromDb
-
-                                Libgit2Helper.doActWithRepoLock(repoFromDb) {
-                                    if(dbIntToBool(repoFromDb.isDetached)) {
-                                        throw RuntimeException("repo is detached")
-                                    }
-
-                                    if(!Libgit2Helper.isValidGitRepo(repoFromDb.fullSavePath)) {
-                                        throw RuntimeException("invalid git repo")
-                                    }
-
-                                    Repository.open(repoFromDb.fullSavePath).use { gitRepo ->
-                                        val upstream = Libgit2Helper.getUpstreamOfBranch(gitRepo, repoFromDb.branch)
-                                        if(upstream.remote.isBlank() || upstream.branchRefsHeadsFullRefSpec.isBlank()) {
-                                            throw RuntimeException("invalid upstream")
-                                        }
-
-                                        // get fetch credential
-                                        val credential = Libgit2Helper.getRemoteCredential(
-                                            db.remoteRepository,
-                                            db.credentialRepository,
-                                            repoFromDb.id,
-                                            upstream.remote,
-                                            trueFetchFalsePush = true,
-                                            masterPassword = masterPassword
-                                        )
-
-                                        // fetch
-                                        Libgit2Helper.fetchRemoteForRepo(gitRepo, upstream.remote, credential, repoFromDb)
-
-
-                                        // 更新修改workstatus的时间，只更新时间就行，状态会在查询repo时更新
-                                        val repoDb = AppModel.dbContainer.repoRepository
-                                        repoDb.updateLastUpdateTime(repoFromDb.id, getSecFromTime())
-
-                                        // get git username and email for merge
-                                        val usernameFromUrl = call.request.queryParameters.get("gitUsername") ?:""
-                                        val emailFromUrl = call.request.queryParameters.get("gitEmail") ?:""
-                                        val (username, email) = if(usernameFromUrl.isNotBlank() && emailFromUrl.isNotBlank()) {
-                                            Pair(usernameFromUrl, emailFromUrl)
-                                        }else{
-                                            val (gitUsernameFromConfig, gitEmailFromConfig) = Libgit2Helper.getGitUsernameAndEmail(gitRepo)
-                                            val finallyUsername = usernameFromUrl.ifBlank { gitUsernameFromConfig }
-
-                                            val finallyEmail = emailFromUrl.ifBlank { gitEmailFromConfig }
-
-                                            Pair(finallyUsername, finallyEmail)
-                                        }
-
-                                        if(username == null || username.isBlank()) {
-                                            throw RuntimeException("git username invalid")
-                                        }
-
-                                        if(email == null || email.isBlank()) {
-                                            throw RuntimeException("git email invalid")
-                                        }
-
-                                        val remoteRefSpec = Libgit2Helper.getUpstreamRemoteBranchShortNameByRemoteAndBranchRefsHeadsRefSpec(
-                                            upstream!!.remote,
-                                            upstream.branchRefsHeadsFullRefSpec
-                                        )
-
-                                        //merge
-                                        val mergeRet = Libgit2Helper.mergeOneHead(
-                                            gitRepo,
-                                            remoteRefSpec,
-                                            username,
-                                            email,
-                                            settings = settings
-                                        )
-
-                                        if(mergeRet.hasError()) {
-                                            throw RuntimeException(mergeRet.msg)
-                                        }
-
-                                    }
-
-                                    call.respond(createSuccessResult())
-                                }
-                            }catch (e:Exception) {
-                                val errMsg = e.localizedMessage ?: "unknown err"
-                                call.respond(createErrResult(errMsg))
-
-                                if(repoForLog!=null) {
-                                    createAndInsertError(repoForLog!!.id, "$routeName by api err: $errMsg")
-                                }
-
-                                MyLog.e(TAG, "method:GET, route:$routeName, repoNameOrId=$repoNameOrId, err=${e.stackTraceToString()}")
+                        try {
+                            val db = AppModel.dbContainer
+                            val repoRet = db.repoRepository.getByNameOrId(repoNameOrId, forceUseIdMatchRepo)
+                            if(repoRet.hasError()) {
+                                throw RuntimeException(repoRet.msg)
                             }
 
+                            val repoFromDb = repoRet.data!!
+                            repoForLog = repoFromDb
+
+                            Libgit2Helper.doActWithRepoLock(repoFromDb) {
+                                if(dbIntToBool(repoFromDb.isDetached)) {
+                                    throw RuntimeException("repo is detached")
+                                }
+
+                                if(!Libgit2Helper.isValidGitRepo(repoFromDb.fullSavePath)) {
+                                    throw RuntimeException("invalid git repo")
+                                }
+
+                                Repository.open(repoFromDb.fullSavePath).use { gitRepo ->
+                                    val upstream = Libgit2Helper.getUpstreamOfBranch(gitRepo, repoFromDb.branch)
+                                    if(upstream.remote.isBlank() || upstream.branchRefsHeadsFullRefSpec.isBlank()) {
+                                        throw RuntimeException("invalid upstream")
+                                    }
+
+                                    // get fetch credential
+                                    val credential = Libgit2Helper.getRemoteCredential(
+                                        db.remoteRepository,
+                                        db.credentialRepository,
+                                        repoFromDb.id,
+                                        upstream.remote,
+                                        trueFetchFalsePush = true,
+                                        masterPassword = masterPassword
+                                    )
+
+                                    // fetch
+                                    Libgit2Helper.fetchRemoteForRepo(gitRepo, upstream.remote, credential, repoFromDb)
+
+
+                                    // 更新修改workstatus的时间，只更新时间就行，状态会在查询repo时更新
+                                    val repoDb = AppModel.dbContainer.repoRepository
+                                    repoDb.updateLastUpdateTime(repoFromDb.id, getSecFromTime())
+
+                                    // get git username and email for merge
+                                    val usernameFromUrl = call.request.queryParameters.get("gitUsername") ?:""
+                                    val emailFromUrl = call.request.queryParameters.get("gitEmail") ?:""
+                                    val (username, email) = if(usernameFromUrl.isNotBlank() && emailFromUrl.isNotBlank()) {
+                                        Pair(usernameFromUrl, emailFromUrl)
+                                    }else{
+                                        val (gitUsernameFromConfig, gitEmailFromConfig) = Libgit2Helper.getGitUsernameAndEmail(gitRepo)
+                                        val finallyUsername = usernameFromUrl.ifBlank { gitUsernameFromConfig }
+
+                                        val finallyEmail = emailFromUrl.ifBlank { gitEmailFromConfig }
+
+                                        Pair(finallyUsername, finallyEmail)
+                                    }
+
+                                    if(username == null || username.isBlank()) {
+                                        throw RuntimeException("git username invalid")
+                                    }
+
+                                    if(email == null || email.isBlank()) {
+                                        throw RuntimeException("git email invalid")
+                                    }
+
+                                    val remoteRefSpec = Libgit2Helper.getUpstreamRemoteBranchShortNameByRemoteAndBranchRefsHeadsRefSpec(
+                                        upstream!!.remote,
+                                        upstream.branchRefsHeadsFullRefSpec
+                                    )
+
+                                    //merge
+                                    val mergeRet = Libgit2Helper.mergeOneHead(
+                                        gitRepo,
+                                        remoteRefSpec,
+                                        username,
+                                        email,
+                                        settings = settings
+                                    )
+
+                                    if(mergeRet.hasError()) {
+                                        throw RuntimeException(mergeRet.msg)
+                                    }
+
+                                }
+
+                                call.respond(createSuccessResult())
+                            }
+                        }catch (e:Exception) {
+                            val errMsg = e.localizedMessage ?: "unknown err"
+                            call.respond(createErrResult(errMsg))
+
+                            if(repoForLog!=null) {
+                                createAndInsertError(repoForLog!!.id, "$routeName by api err: $errMsg")
+                            }
+
+                            MyLog.e(TAG, "method:GET, route:$routeName, repoNameOrId=$repoNameOrId, err=${e.stackTraceToString()}")
                         }
+
                     }
 
 
@@ -250,66 +248,65 @@ object HttpServer {
                         var repoForLog:RepoEntity? = null
                         // 查询仓库是否存在
                         // 尝试获取仓库锁，若获取失败，返回仓库正在执行其他操作
-                        doJobThenOffLoading {
-                            try {
-                                val db = AppModel.dbContainer
-                                val repoRet = db.repoRepository.getByNameOrId(repoNameOrId, forceUseIdMatchRepo)
-                                if(repoRet.hasError()) {
-                                    throw RuntimeException(repoRet.msg)
-                                }
 
-                                val repoFromDb = repoRet.data!!
-                                repoForLog = repoFromDb
-
-                                Libgit2Helper.doActWithRepoLock(repoFromDb) {
-                                    if(dbIntToBool(repoFromDb.isDetached)) {
-                                        throw RuntimeException("repo is detached")
-                                    }
-
-                                    if(!Libgit2Helper.isValidGitRepo(repoFromDb.fullSavePath)) {
-                                        throw RuntimeException("invalid git repo")
-                                    }
-
-                                    Repository.open(repoFromDb.fullSavePath).use { gitRepo ->
-                                        val upstream = Libgit2Helper.getUpstreamOfBranch(gitRepo, repoFromDb.branch)
-                                        if(upstream.remote.isBlank() || upstream.branchRefsHeadsFullRefSpec.isBlank()) {
-                                            throw RuntimeException("invalid upstream")
-                                        }
-
-                                        // get fetch credential
-                                        val credential = Libgit2Helper.getRemoteCredential(
-                                            db.remoteRepository,
-                                            db.credentialRepository,
-                                            repoFromDb.id,
-                                            upstream.remote,
-                                            trueFetchFalsePush = false,
-                                            masterPassword = masterPassword
-                                        )
-
-                                        val ret = Libgit2Helper.push(gitRepo, upstream.remote, upstream.pushRefSpec, credential, force)
-                                        if(ret.hasError()) {
-                                            throw RuntimeException(ret.msg)
-                                        }
-
-                                        // 更新修改workstatus的时间，只更新时间就行，状态会在查询repo时更新
-                                        val repoDb = AppModel.dbContainer.repoRepository
-                                        repoDb.updateLastUpdateTime(repoFromDb.id, getSecFromTime())
-                                    }
-
-                                    call.respond(createSuccessResult())
-                                }
-                            }catch (e:Exception) {
-                                val errMsg = e.localizedMessage ?: "unknown err"
-                                call.respond(createErrResult(errMsg))
-
-                                if(repoForLog!=null) {
-                                    createAndInsertError(repoForLog!!.id, "$routeName by api err: $errMsg")
-                                }
-
-                                MyLog.e(TAG, "method:GET, route:$routeName, repoNameOrId=$repoNameOrId, err=${e.stackTraceToString()}")
+                        try {
+                            val db = AppModel.dbContainer
+                            val repoRet = db.repoRepository.getByNameOrId(repoNameOrId, forceUseIdMatchRepo)
+                            if(repoRet.hasError()) {
+                                throw RuntimeException(repoRet.msg)
                             }
 
+                            val repoFromDb = repoRet.data!!
+                            repoForLog = repoFromDb
+
+                            Libgit2Helper.doActWithRepoLock(repoFromDb) {
+                                if(dbIntToBool(repoFromDb.isDetached)) {
+                                    throw RuntimeException("repo is detached")
+                                }
+
+                                if(!Libgit2Helper.isValidGitRepo(repoFromDb.fullSavePath)) {
+                                    throw RuntimeException("invalid git repo")
+                                }
+
+                                Repository.open(repoFromDb.fullSavePath).use { gitRepo ->
+                                    val upstream = Libgit2Helper.getUpstreamOfBranch(gitRepo, repoFromDb.branch)
+                                    if(upstream.remote.isBlank() || upstream.branchRefsHeadsFullRefSpec.isBlank()) {
+                                        throw RuntimeException("invalid upstream")
+                                    }
+
+                                    // get fetch credential
+                                    val credential = Libgit2Helper.getRemoteCredential(
+                                        db.remoteRepository,
+                                        db.credentialRepository,
+                                        repoFromDb.id,
+                                        upstream.remote,
+                                        trueFetchFalsePush = false,
+                                        masterPassword = masterPassword
+                                    )
+
+                                    val ret = Libgit2Helper.push(gitRepo, upstream.remote, upstream.pushRefSpec, credential, force)
+                                    if(ret.hasError()) {
+                                        throw RuntimeException(ret.msg)
+                                    }
+
+                                    // 更新修改workstatus的时间，只更新时间就行，状态会在查询repo时更新
+                                    val repoDb = AppModel.dbContainer.repoRepository
+                                    repoDb.updateLastUpdateTime(repoFromDb.id, getSecFromTime())
+                                }
+
+                                call.respond(createSuccessResult())
+                            }
+                        }catch (e:Exception) {
+                            val errMsg = e.localizedMessage ?: "unknown err"
+                            call.respond(createErrResult(errMsg))
+
+                            if(repoForLog!=null) {
+                                createAndInsertError(repoForLog!!.id, "$routeName by api err: $errMsg")
+                            }
+
+                            MyLog.e(TAG, "method:GET, route:$routeName, repoNameOrId=$repoNameOrId, err=${e.stackTraceToString()}")
                         }
+
                     }
 
                     /**
