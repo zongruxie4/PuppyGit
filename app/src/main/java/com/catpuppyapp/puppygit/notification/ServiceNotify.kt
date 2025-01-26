@@ -1,4 +1,4 @@
-package com.catpuppyapp.puppygit.utils
+package com.catpuppyapp.puppygit.notification
 
 import android.Manifest
 import android.app.NotificationChannel
@@ -14,6 +14,7 @@ import androidx.core.app.NotificationCompat
 import androidx.core.app.NotificationManagerCompat
 import com.catpuppyapp.puppygit.play.pro.MainActivity
 import com.catpuppyapp.puppygit.play.pro.R
+import com.catpuppyapp.puppygit.utils.MyLog
 
 
 object ServiceNotify {
