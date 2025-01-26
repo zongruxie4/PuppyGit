@@ -580,7 +580,7 @@ object AppModel {
         //这里放只要app Activity创建就需要执行的代码
 
         val settings = SettingsUtil.getSettingsSnapshot()
-        if(settings.httpService.launchOnAppStartup) {
+        if(dev_EnableUnTestedFeature || settings.httpService.launchOnAppStartup) {
             HttpService.start(applicationContext)
         }
 
