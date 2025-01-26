@@ -58,6 +58,11 @@ object HttpServer {
                         call.respond(createSuccessResult("pong"))
                     }
 
+                    // for test
+                    get("/echo/{msg}") {
+                        call.respond(createSuccessResult(call.parameters.get("msg") ?: ""))
+                    }
+
                     /**
                      * query params:
                      *  repoNameOrId: repo name or id，优先查name，若无匹配，查id
