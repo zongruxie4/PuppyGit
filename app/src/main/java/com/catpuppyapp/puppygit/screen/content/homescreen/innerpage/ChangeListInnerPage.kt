@@ -3830,7 +3830,7 @@ private fun changeListInit(
                         val hasWorktreeItem = wtStatusList.entryCount() > 0
                         changeListPageHasWorktreeItem.value = hasWorktreeItem
                         if (hasWorktreeItem) {
-                            val worktreeItems = Libgit2Helper.getWorktreeStatusTypeEntryList(gitRepository, wtStatusList, curRepoFromParentPage.id)
+                            val worktreeItems = Libgit2Helper.getWorktreeChangeList(gitRepository, wtStatusList, curRepoFromParentPage.id)
 
                             if(repoChanged()) {
                                 return@launch

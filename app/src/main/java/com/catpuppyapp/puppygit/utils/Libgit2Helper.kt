@@ -6527,10 +6527,11 @@ class Libgit2Helper {
          *
          * 注意：此方法将遵循app的 "ignore_v2.txt" 列表
          */
-        fun hasUncommittedChanges(repo:Repository, repoId: String):Boolean {
+        fun hasUncommittedChanges(repo:Repository):Boolean {
             //先检查是否有冲突条目（性能最快），若有肯定包含未提交修改；然后检查Index，这个查起来性能比work to index快（性能其次）；最后检查work to index（性能最差）
             // index非空 或 worktree有条目
-            return hasConflictItemInRepo(repo) || indexIsEmpty(repo).not() || getWorktreeStatusTypeEntryList(repo, getWorkdirStatusList(repo), repoId).isNotEmpty()
+            //在这个页面 调用  getWorktreeStatusTypeEntryList()并不需要repoId，这个只是用来设置到StatusEntrySaver的，但这里仅检测是否为空，用不到此值
+            return hasConflictItemInRepo(repo) || indexIsEmpty(repo).not() || getWorktreeChangeList(repo, getWorkdirStatusList(repo), repoId = "").isNotEmpty()
         }
 
 
@@ -6560,7 +6561,7 @@ class Libgit2Helper {
                 val wtStatusList = getWorkdirStatusList(repo)
                 val size = wtStatusList.entryCount()
                 if(size > 0) {
-                    val statusEntryList = getWorktreeStatusTypeEntryList(repo, wtStatusList, repoId)
+                    val statusEntryList = getWorktreeChangeList(repo, wtStatusList, repoId)
 
                     //不直接用 index.addAll()是因为它不会遵循app的ignore_v2.txt
                     stageStatusEntryAndWriteToDisk(repo, statusEntryList)
@@ -6574,7 +6575,10 @@ class Libgit2Helper {
             }
         }
 
-        fun getWorktreeStatusTypeEntryList(repo: Repository, rawStatusList: StatusList, repoId: String):List<StatusTypeEntrySaver> {
+        /**
+         * 获取worktree修改列表，包含冲突条目
+         */
+        fun getWorktreeChangeList(repo: Repository, rawStatusList: StatusList, repoId: String):List<StatusTypeEntrySaver> {
             if(rawStatusList.entryCount() < 1) {
                 return listOf()
             }

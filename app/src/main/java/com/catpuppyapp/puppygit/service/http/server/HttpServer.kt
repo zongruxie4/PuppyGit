@@ -203,6 +203,10 @@ object HttpServer {
                                 createAndInsertError(repoForLog!!.id, "$routeName by api err: $errMsg")
                             }
 
+                            if(settings.httpService.showNotifyWhenErr) {
+                                createSystemNotify("pull err", errMsg, repoForLog?.id ?: "")
+                            }
+
                             MyLog.e(TAG, "method:GET, route:$routeName, repoNameOrId=$repoNameOrIdForLog, err=${e.stackTraceToString()}")
                         }
 
@@ -388,6 +392,10 @@ object HttpServer {
 
                             if(repoForLog!=null) {
                                 createAndInsertError(repoForLog!!.id, "$routeName by api err: $errMsg")
+                            }
+
+                            if(settings.httpService.showNotifyWhenErr) {
+                                createSystemNotify("push err", errMsg, repoForLog?.id ?: "")
                             }
 
                             MyLog.e(TAG, "method:GET, route:$routeName, repoNameOrId=$repoNameOrIdForLog, err=${e.stackTraceToString()}")
