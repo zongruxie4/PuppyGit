@@ -571,7 +571,7 @@ object AppModel {
         //这里放只要app Activity创建就需要执行的代码
 
         val settings = SettingsUtil.getSettingsSnapshot()
-        if(settings.httpService.enable) {
+        if(settings.httpService.enable && settings.httpService.launchOnAppStartup) {
             HttpServer.doActWithLock {
                 startServer(settings)
             }
