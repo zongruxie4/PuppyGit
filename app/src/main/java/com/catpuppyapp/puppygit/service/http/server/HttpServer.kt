@@ -51,8 +51,9 @@ object HttpServer {
                  *  username: using for create commit, if null, will use PuppyGit settings
                  *  email: using for create commit, if nul, will use PuppyGit settings
                  *  masterPass: your master password, if have
+                 *  all: 1 or 0, if 1 will do action to all repos and ignore repoName, else, will only do action by repoName and do nothing if repoName non-matched
                  *
-                 * request e.g. http://127.0.0.1/pull?repoName=abc&username=username&email=email&masterPass=your_master_pass_if_have
+                 * request e.g. http://127.0.0.1/pull?repoName=abc&username=username&email=email&masterPass=your_master_pass_if_have&all=0
                  */
                 get("/pull") {
                     // 查询仓库是否存在
@@ -65,8 +66,9 @@ object HttpServer {
                  *  repoName: repo name
                  *  masterPass: your master password, if have
                  *  force: 1 enable , 0 disable, if null, will disable (as 0)
+                 *  all: 1 or 0, 1 do act to all Repos, else do act to which matched the repoName
                  *
-                 * request e.g. http://127.0.0.1/push?repoName=abc&masterPass=your_master_pass_if_have&force=1_or_0_0_is_default_if_no_this_param
+                 * request e.g. http://127.0.0.1/push?repoName=abc&masterPass=your_master_pass_if_have&force=1_or_0_0_is_default_if_no_this_param&all=0
                  */
                 get("/push") {
                     // 查询仓库是否存在
