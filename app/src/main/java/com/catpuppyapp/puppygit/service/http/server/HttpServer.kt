@@ -149,23 +149,15 @@ object HttpServer {
                                         repoDb.updateLastUpdateTime(repoFromDb.id, getSecFromTime())
 
                                         // get git username and email for merge
-                                        val usernameFromUrl = call.request.queryParameters.get("gitUsername")
-                                        val emailFromUrl = call.request.queryParameters.get("gitEmail")
-                                        val (username, email) = if(usernameFromUrl?.isBlank() == false && emailFromUrl?.isBlank() == false) {
+                                        val usernameFromUrl = call.request.queryParameters.get("gitUsername") ?:""
+                                        val emailFromUrl = call.request.queryParameters.get("gitEmail") ?:""
+                                        val (username, email) = if(usernameFromUrl.isNotBlank() && emailFromUrl.isNotBlank()) {
                                             Pair(usernameFromUrl, emailFromUrl)
                                         }else{
                                             val (gitUsernameFromConfig, gitEmailFromConfig) = Libgit2Helper.getGitUsernameAndEmail(gitRepo)
-                                            val finallyUsername = if(usernameFromUrl?.isBlank() == true) {
-                                                gitUsernameFromConfig
-                                            }else {
-                                                usernameFromUrl
-                                            }
+                                            val finallyUsername = usernameFromUrl.ifBlank { gitUsernameFromConfig }
 
-                                            val finallyEmail = if(emailFromUrl?.isBlank() == true) {
-                                                gitEmailFromConfig
-                                            }else {
-                                                emailFromUrl
-                                            }
+                                            val finallyEmail = emailFromUrl.ifBlank { gitEmailFromConfig }
 
                                             Pair(finallyUsername, finallyEmail)
                                         }
