@@ -21,6 +21,7 @@ import com.catpuppyapp.puppygit.constants.Cons
 import com.catpuppyapp.puppygit.data.dao.RepoDao
 import com.catpuppyapp.puppygit.data.entity.RemoteEntity
 import com.catpuppyapp.puppygit.data.entity.RepoEntity
+import com.catpuppyapp.puppygit.etc.Ret
 import com.catpuppyapp.puppygit.git.ImportRepoResult
 import com.catpuppyapp.puppygit.utils.AppModel
 import com.catpuppyapp.puppygit.utils.Libgit2Helper
@@ -151,6 +152,39 @@ class RepoRepositoryImpl(private val dao: RepoDao) : RepoRepository {
 
         Libgit2Helper.updateRepoInfo(repoFromDb)
         return repoFromDb
+    }
+
+    override suspend fun getByName(name: String): RepoEntity? {
+        val items = dao.getByName(name)
+        return if(items.isEmpty()) {
+            null
+        }else {
+            items.get(0)
+        }
+    }
+
+    override suspend fun getByNameOrId(repoNameOrId: String, forceUseIdMatchRepo: Boolean): Ret<RepoEntity?> {
+        val repo = if (forceUseIdMatchRepo) {
+            val repo = getById(repoNameOrId)
+            if (repo == null) {
+                return Ret.createError(null, "no repo matched the id '$repoNameOrId'")
+            }
+
+            repo
+        } else {
+            // match by name first是因为我感觉多数人应该会记住仓库名，然后调用的时候传参数名而不是id
+            var repo = getByName(repoNameOrId)
+            if (repo == null) {
+                repo = getById(repoNameOrId)
+                if (repo == null) {
+                    return Ret.createError(null, "no repo matched the name or id '$repoNameOrId'")
+                }
+            }
+
+            repo
+        }
+
+        return Ret.createSuccess(repo)
     }
 
     override suspend fun getByFullSavePath(fullSavePath: String, onlyReturnReadyRepo:Boolean, requireSyncRepoInfoWithGit:Boolean): RepoEntity? {

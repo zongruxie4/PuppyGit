@@ -17,6 +17,7 @@
 package com.catpuppyapp.puppygit.data.repository
 
 import com.catpuppyapp.puppygit.data.entity.RepoEntity
+import com.catpuppyapp.puppygit.etc.Ret
 import com.catpuppyapp.puppygit.git.ImportRepoResult
 import kotlinx.coroutines.flow.Flow
 
@@ -56,6 +57,13 @@ interface RepoRepository {
     suspend fun isRepoNameExist(repoName:String): Boolean
 
     suspend fun getById(id:String): RepoEntity?
+
+    /**
+     * 正常来说一个名字只有一个仓库可匹配，若有多个返回列表第一个元素，若无匹配，返回null
+     */
+    suspend fun getByName(name:String): RepoEntity?
+
+    suspend fun getByNameOrId(repoNameOrId:String, forceUseIdMatchRepo:Boolean): Ret<RepoEntity?>
 
     suspend fun getByFullSavePath(fullSavePath:String, onlyReturnReadyRepo:Boolean=false, requireSyncRepoInfoWithGit:Boolean=true): RepoEntity?
 

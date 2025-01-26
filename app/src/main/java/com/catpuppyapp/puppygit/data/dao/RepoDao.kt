@@ -64,6 +64,12 @@ interface RepoDao {
     @Query("SELECT * from repo where id=:id")
     suspend fun getById(id:String): RepoEntity?
 
+    /**
+     * 正常来说一个名字只匹配一个仓库，但数据库无限制，所以有可能出错，避免报错，所以查询用list，调用者可自行决定存在多个同名仓库时返回哪个或者直接报错
+     */
+    @Query("SELECT * from repo where repoName=:name")
+    suspend fun getByName(name:String): List<RepoEntity>
+
     @Query("SELECT * from repo where fullSavePath=:fullSavePath LIMIT 1")
     suspend fun getByFullSavePath(fullSavePath:String): RepoEntity?
 

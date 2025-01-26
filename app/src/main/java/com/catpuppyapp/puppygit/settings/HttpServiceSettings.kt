@@ -30,8 +30,18 @@ data class HttpServiceSettings (
      */
     var token:String = "default_puppygit_token",
 
-    @Deprecated("no need this, should http requester handle response by itself")
-    var showNotify:Boolean = false,
+    /**
+     * show notify if server do act err
+     *
+     * 注意：这是系统通知，不是toast！
+     * 最好能够实现：点击可启动app并前往仓库页面，定位到发生错误的仓库卡片
+     */
+    var showNotifyWhenErr:Boolean = true,
+
+    /**
+     * show notify if server do act success
+     */
+    var showNotifyWhenSuccess:Boolean = false,
 
     /**
      * no token require if ip in the white list
