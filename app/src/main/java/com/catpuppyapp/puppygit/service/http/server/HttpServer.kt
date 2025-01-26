@@ -115,7 +115,7 @@ object HttpServer {
                                         throw RuntimeException("repo is detached")
                                     }
 
-                                    if(Libgit2Helper.isValidGitRepo(repoFromDb.fullSavePath)) {
+                                    if(!Libgit2Helper.isValidGitRepo(repoFromDb.fullSavePath)) {
                                         throw RuntimeException("invalid git repo")
                                     }
 
@@ -269,7 +269,7 @@ object HttpServer {
                                         throw RuntimeException("repo is detached")
                                     }
 
-                                    if(Libgit2Helper.isValidGitRepo(repoFromDb.fullSavePath)) {
+                                    if(!Libgit2Helper.isValidGitRepo(repoFromDb.fullSavePath)) {
                                         throw RuntimeException("invalid git repo")
                                     }
 
@@ -344,7 +344,7 @@ object HttpServer {
                         call.respond(createErrResult("not yet implemented"))
                     }
                 }
-            }.start(wait = true)
+            }.start(wait = false) // 不能传true，会block整个程序
 
             MyLog.w(TAG, "Http Server started on '${settings.httpService.listenHost}:${settings.httpService.listenPort}'")
             return null
