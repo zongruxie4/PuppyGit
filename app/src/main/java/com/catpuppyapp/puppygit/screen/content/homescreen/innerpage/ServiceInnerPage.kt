@@ -58,11 +58,11 @@ fun ServiceInnerPage(
 ){
 
     val activityContext = LocalContext.current
-    val clipboardManager = LocalClipboardManager.current
+    // val clipboardManager = LocalClipboardManager.current
 
     val settingsState = mutableCustomStateOf(stateKeyTag, "settingsState", SettingsUtil.getSettingsSnapshot())
 
-    val runningStatus = rememberSaveable { mutableStateOf(false) }
+    val runningStatus = rememberSaveable { mutableStateOf(HttpServer.isServerRunning()) }
     val launchOnAppStartup = rememberSaveable { mutableStateOf(SettingsUtil.getSettingsSnapshot().httpService.launchOnAppStartup) }
     val launchOnSystemStartUp = rememberSaveable { mutableStateOf(HttpService.launchOnSystemStartUpEnabled(activityContext)) }
     val errNotify = rememberSaveable { mutableStateOf(SettingsUtil.getSettingsSnapshot().httpService.showNotifyWhenErr) }
