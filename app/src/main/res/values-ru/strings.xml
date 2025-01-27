@@ -1158,5 +1158,6 @@
 
     <!-- new string after 20250127 -->
     <string name="encode_new_password_failed_plz_try_another_one">encode new password failed, plz try another one</string>
+    <string name="stop">Stop</string>
 
 </resources>

@@ -1135,6 +1135,7 @@
 
     <!--    new at 20250127-->
     <string name="encode_new_password_failed_plz_try_another_one">编码失败，请尝试其他密码</string>
+    <string name="stop">停止</string>
 
 
 </resources>

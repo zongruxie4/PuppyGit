@@ -24,6 +24,7 @@ open class NotifyBase(
     private val channelId:String,
     private val channelName:String,
     private val channelDesc:String,
+    private val createAction:((context:Context) -> Action)? = null
 ) {
     /**
      * 用来避免重复执行init出错
@@ -42,6 +43,8 @@ open class NotifyBase(
      * @param context 建议传 applicationContext
      */
     fun init(context: Context) {
+        MyLog.w(TAG, "initing notify channel '$channelId'...")
+
         if(inited.value) {
             return
         }
@@ -61,6 +64,9 @@ open class NotifyBase(
             val notificationManager = context.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
             notificationManager.createNotificationChannel(channel)
         }
+
+        MyLog.w(TAG, "notify channel '$channelId' inited")
+
     }
 
     // 发送通知
@@ -91,7 +97,9 @@ open class NotifyBase(
 //        notificationManager.notify(notifyId, builder.build())
     }
 
-    fun getNotificationBuilder(context: Context, title: String?, message: String?, pendingIntent: PendingIntent?): NotificationCompat.Builder {
+    fun getNotificationBuilder(context: Context?, title: String?, message: String?, pendingIntent: PendingIntent?): NotificationCompat.Builder {
+        val context = context ?: appContext!!
+
         val builder = NotificationCompat.Builder(context, channelId)
             .setSmallIcon(R.drawable.branch) // 替换为您的图标
             .setContentTitle(title)
@@ -100,6 +108,12 @@ open class NotifyBase(
             .setCategory(NotificationCompat.CATEGORY_MESSAGE)
             .setContentIntent(pendingIntent) // 设置点击通知时的意图
             .setAutoCancel(true) // 点击后通知将自动消失，除非你是foreground service启动的通知
+
+        if(createAction != null) {
+            val action = createAction.invoke(context)
+            builder.addAction(action.iconId, action.text, action.pendingIntent)
+        }
+
         return builder
     }
 

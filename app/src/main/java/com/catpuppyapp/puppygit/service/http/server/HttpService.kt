@@ -22,6 +22,8 @@ private const val serviceId = IDS.HttpService  //这id必须唯一，最好和no
 
 class HttpService : Service() {
     companion object {
+        const val command_stop = "STOP"
+
         fun start(appContext: Context) {
             if(HttpServer.isServerRunning()) {
                 MyLog.w(TAG, "HttpServer already running, start canceled")
@@ -56,23 +58,32 @@ class HttpService : Service() {
     }
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
-        val settings = SettingsUtil.getSettingsSnapshot()
+        if(intent != null && command_stop == intent.action){
+            // stop
+            stop(AppModel.realAppContext)
 
-        // 启动前台服务
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.UPSIDE_DOWN_CAKE) { // UPSIDE_DOWN_CAKE is sdk 34
-            startForeground(serviceId, getNotification(settings), FOREGROUND_SERVICE_TYPE_SPECIAL_USE)
+            MyLog.w(TAG, "http service onStartCommand() stop finished")
         }else {
-            startForeground(serviceId, getNotification(settings))
-        }
+            // start
+            val settings = SettingsUtil.getSettingsSnapshot()
 
-
-        doJobThenOffLoading {
-            HttpServer.doActWithLock {
-                startServer(settings)
+            // 启动前台服务
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.UPSIDE_DOWN_CAKE) { // UPSIDE_DOWN_CAKE is sdk 34
+                startForeground(serviceId, getNotification(settings), FOREGROUND_SERVICE_TYPE_SPECIAL_USE)
+            }else {
+                startForeground(serviceId, getNotification(settings))
             }
-        }
 
-        MyLog.w(TAG, "http service onStartCommand() finished")
+
+            doJobThenOffLoading {
+                HttpServer.doActWithLock {
+                    startServer(settings)
+                }
+            }
+
+            MyLog.w(TAG, "http service onStartCommand() start finished")
+
+        }
 
         return START_STICKY
     }
