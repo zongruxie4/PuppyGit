@@ -941,3 +941,15 @@ fun <T> updateSelectedList(
     // page not changed, and selected item list updated
     return false
 }
+
+fun splitLines(str:String):List<String> {
+    val filteredLines = mutableListOf<String>()
+    str.lines().forEach {
+        val trimed = it.trim()
+        if(trimed.isNotBlank()) {
+            filteredLines.add(trimed)
+        }
+    }
+
+    return filteredLines
+}
