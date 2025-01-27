@@ -34,6 +34,7 @@ import com.catpuppyapp.puppygit.settings.SettingsUtil
 import com.catpuppyapp.puppygit.utils.app.upgrade.migrator.AppMigrator
 import com.catpuppyapp.puppygit.utils.app.upgrade.migrator.AppVersionMan
 import com.catpuppyapp.puppygit.utils.cert.CertMan
+import com.catpuppyapp.puppygit.utils.encrypt.MasterPassUtil
 import com.catpuppyapp.puppygit.utils.fileopenhistory.FileOpenHistoryMan
 import com.catpuppyapp.puppygit.utils.snapshot.SnapshotUtil
 import com.catpuppyapp.puppygit.utils.storagepaths.StoragePathsMan
@@ -271,8 +272,12 @@ object AppModel {
 
         AppModel.realAppContext = realAppContext
 
+        //启动notify和service
         NormalNotify.init(realAppContext)
         HttpServiceHoldNotify.init(realAppContext)
+
+        //获取主密码 (若与AppSetings里记的hash不匹配，启动时会弹窗请求用户输入）
+        AppModel.masterPassword.value = MasterPassUtil.get(realAppContext)
 
         // every time run after Activity destory and re create
 

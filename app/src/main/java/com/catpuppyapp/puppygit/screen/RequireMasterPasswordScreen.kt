@@ -46,6 +46,7 @@ import com.catpuppyapp.puppygit.utils.HashUtil
 import com.catpuppyapp.puppygit.utils.MyLog
 import com.catpuppyapp.puppygit.utils.UIHelper
 import com.catpuppyapp.puppygit.utils.doJobThenOffLoading
+import com.catpuppyapp.puppygit.utils.encrypt.MasterPassUtil
 
 private const val stateKeyTag = "RequireMasterPasswordScreen"
 private const val TAG = "RequireMasterPasswordScreen"
@@ -103,6 +104,9 @@ fun RequireMasterPasswordScreen(
 
                     loadingText.value = activityContext.getString(R.string.updating_master_password)
                     AppModel.masterPassword.value = pass
+
+                    //一般不需要验证，如果需要，说明存的不对，所以这里重新存一下
+                    MasterPassUtil.save(AppModel.realAppContext, pass)
 
                     //完了！可以进入app了
                     requireMasterPassword.value = false

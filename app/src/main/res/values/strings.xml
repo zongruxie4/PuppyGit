@@ -1160,4 +1160,7 @@
     <string name="redo">Redo</string>
     <string name="show_undo_redo">Show Undo/Redo</string>
 
+<!--    new at 20250127-->
+    <string name="encode_new_password_failed_plz_try_another_one">encode new password failed, plz try another one</string>
+
 </resources>

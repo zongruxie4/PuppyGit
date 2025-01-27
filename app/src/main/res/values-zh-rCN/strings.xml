@@ -1133,5 +1133,8 @@
     <string name="redo">重做</string>
     <string name="show_undo_redo">显示 撤销/重做</string>
 
+    <!--    new at 20250127-->
+    <string name="encode_new_password_failed_plz_try_another_one">编码失败，请尝试其他密码</string>
+
 
 </resources>

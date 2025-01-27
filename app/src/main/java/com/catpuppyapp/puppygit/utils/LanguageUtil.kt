@@ -6,9 +6,9 @@ import com.catpuppyapp.puppygit.play.pro.R
 
 
 object LanguageUtil {
-    private val TAG="LanguageUtil"
+    private const val TAG="LanguageUtil"
 
-    private val key = PrefMan.Key.lang
+    private const val key = PrefMan.Key.lang
 
     val languageCodeList = listOf(
         LangCode.auto,
@@ -21,12 +21,12 @@ object LanguageUtil {
     )
 
 
-    fun getLangCode(appContext: Context):String {
-        return PrefMan.get(appContext, key, "")
+    fun getLangCode(context: Context):String {
+        return PrefMan.get(context, key, "")
     }
 
-    fun setLangCode(appContext: Context, langCode:String) {
-        PrefMan.set(appContext, key, langCode)
+    fun setLangCode(context: Context, langCode:String) {
+        PrefMan.set(context, key, langCode)
     }
 
     fun isAuto(langCode: String):Boolean {
@@ -46,23 +46,23 @@ object LanguageUtil {
     }
 
 
-    fun getLanguageTextByCode(languageCode:String, appContext: Context):String {
+    fun getLanguageTextByCode(languageCode:String, context: Context):String {
         if(languageCode.isBlank()) {
-            return appContext.getString(R.string.auto)
-//            return appContext.getString(R.string.follow_system)
+            return context.getString(R.string.auto)
+//            return context.getString(R.string.follow_system)
         }
 
         // order by a-z
         if(languageCode == LangCode.en) {
-            return appContext.getString(R.string.lang_name_english)
+            return context.getString(R.string.lang_name_english)
         }
 
         if(languageCode == LangCode.ru) {
-            return appContext.getString(R.string.lang_name_russian)
+            return context.getString(R.string.lang_name_russian)
         }
 
         if(languageCode == LangCode.zh_cn) {
-            return appContext.getString(R.string.lang_name_chinese_simplified)
+            return context.getString(R.string.lang_name_chinese_simplified)
         }
 
         // add other language here
@@ -70,7 +70,7 @@ object LanguageUtil {
 
         // should never reach here, if user got unknown, just set to a supported language will resolved
         MyLog.w(TAG, "#getLanguageTextByCode: unknown language code '$languageCode'")
-        return appContext.getString(R.string.unsupported)
+        return context.getString(R.string.unsupported)
     }
 
     /**

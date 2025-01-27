@@ -4,6 +4,9 @@ import android.app.Activity.MODE_PRIVATE
 import android.content.Context
 import android.content.SharedPreferences
 
+/**
+ * 最好用applicationContext存取变量，没特别原因，因为applicationContext生命周期比activityContext长，不过应该存取的都是同一个文件，所以问题不大
+ */
 object PrefMan {
     private val fileName = "settings"
 
@@ -40,6 +43,11 @@ object PrefMan {
          * launch service on system start up: 0 disable, 1 enable, default 0
          */
         const val launchServiceOnSystemStartup = "launch_service_on_system_startup"
+
+        /**
+         * master password，名字抽象一点，别让人一眼就看出是什么，妈的不是自欺欺人吗，呵呵
+         */
+        const val masterPass = "mpwd"
     }
 
     private fun getPrefs(appContext: Context) = appContext.getSharedPreferences(fileName, MODE_PRIVATE)

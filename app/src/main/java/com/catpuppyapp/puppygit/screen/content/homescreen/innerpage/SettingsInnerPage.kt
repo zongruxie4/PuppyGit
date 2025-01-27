@@ -65,6 +65,7 @@ import com.catpuppyapp.puppygit.utils.MyLog
 import com.catpuppyapp.puppygit.utils.PrefMan
 import com.catpuppyapp.puppygit.utils.UIHelper
 import com.catpuppyapp.puppygit.utils.doJobThenOffLoading
+import com.catpuppyapp.puppygit.utils.encrypt.MasterPassUtil
 import com.catpuppyapp.puppygit.utils.fileopenhistory.FileOpenHistoryMan
 import com.catpuppyapp.puppygit.utils.formatMinutesToUtc
 import com.catpuppyapp.puppygit.utils.getInvalidTimeZoneOffsetErrMsg
@@ -437,22 +438,23 @@ fun SettingsInnerPage(
                         return@job
                     }
 
+                    //检查密码是否能编码存储解码还原
+                    if(!MasterPassUtil.goodToSave(newPass)) {
+                        Msg.requireShow(activityContext.getString(R.string.encode_new_password_failed_plz_try_another_one))
+                        return@job
+                    }
+
+                    //设置页相关条目显示“更新中...”
                     masterPassStatus.value = updatingStr
 
 
+                    //对已有密码执行解密加密
                     val credentialDb = AppModel.dbContainer.credentialRepository
                     val failedList = credentialDb.updateMasterPassword(oldPass, newPass)
 
-                    // update master password hash
-                    SettingsUtil.update {
-                        if(newPass.isEmpty()) { // 空字符串不必算hash
-                            it.masterPasswordHash = newPass
-                        }else {  // 非空字符串，计算hash
-                            it.masterPasswordHash = HashUtil.hash(newPass)
-                        }
-                    }
-                    // update in-memory master password
-                    AppModel.masterPassword.value = newPass
+                    //解密加密结束，最起码没抛异常，再保存
+                    MasterPassUtil.save(AppModel.realAppContext, newPass)
+
 
                     if(failedList.isEmpty()) { //全部解密然后加密成功
                         Msg.requireShow(activityContext.getString(R.string.success))
