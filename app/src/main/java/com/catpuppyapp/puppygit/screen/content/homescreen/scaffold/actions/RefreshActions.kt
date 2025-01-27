@@ -9,7 +9,7 @@ import com.catpuppyapp.puppygit.play.pro.R
 
 
 @Composable
-fun SettingsActions(
+fun RefreshActions(
     refreshPage: () -> Unit,
 ) {
     LongPressAbleIconBtn(

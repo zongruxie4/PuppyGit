@@ -295,10 +295,8 @@ fun ServiceInnerPage(
     }
 
 
-    LaunchedEffect(needRefreshPage) {
-        doJobThenOffLoading {
-            settingsState.value = SettingsUtil.getSettingsSnapshot()
-            runningStatus.value =  HttpServer.isServerRunning()
-        }
+    LaunchedEffect(needRefreshPage.value) {
+        settingsState.value = SettingsUtil.getSettingsSnapshot()
+        runningStatus.value =  HttpServer.isServerRunning()
     }
 }

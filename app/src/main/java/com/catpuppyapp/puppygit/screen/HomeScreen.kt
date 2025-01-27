@@ -80,6 +80,7 @@ import com.catpuppyapp.puppygit.screen.content.homescreen.innerpage.Subscription
 import com.catpuppyapp.puppygit.screen.content.homescreen.scaffold.actions.ChangeListPageActions
 import com.catpuppyapp.puppygit.screen.content.homescreen.scaffold.actions.EditorPageActions
 import com.catpuppyapp.puppygit.screen.content.homescreen.scaffold.actions.FilesPageActions
+import com.catpuppyapp.puppygit.screen.content.homescreen.scaffold.actions.RefreshActions
 import com.catpuppyapp.puppygit.screen.content.homescreen.scaffold.actions.RepoPageActions
 import com.catpuppyapp.puppygit.screen.content.homescreen.scaffold.actions.SubscriptionActions
 import com.catpuppyapp.puppygit.screen.content.homescreen.scaffold.drawer.drawerContent
@@ -863,11 +864,13 @@ fun HomeScreen(
 
                             }
                         }else if(currentHomeScreen.intValue == Cons.selectedItem_Settings) {
-//                            SettingsActions(refreshPage=refreshSettingsPage)
+//                            RefreshActions(refreshPage=refreshSettingsPage)
                         }else if(currentHomeScreen.intValue == Cons.selectedItem_Subscription) {
                             SubscriptionActions { // refreshPage
                                 changeStateTriggerRefreshPage(subscriptionPageNeedRefresh)
                             }
+                        }else if(currentHomeScreen.intValue == Cons.selectedItem_Service) {
+                            RefreshActions(refreshServicePage)
                         }
                     },
                     scrollBehavior = homeTopBarScrollBehavior,
