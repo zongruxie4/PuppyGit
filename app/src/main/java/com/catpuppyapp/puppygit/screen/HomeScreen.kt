@@ -74,6 +74,7 @@ import com.catpuppyapp.puppygit.screen.content.homescreen.innerpage.ChangeListIn
 import com.catpuppyapp.puppygit.screen.content.homescreen.innerpage.EditorInnerPage
 import com.catpuppyapp.puppygit.screen.content.homescreen.innerpage.FilesInnerPage
 import com.catpuppyapp.puppygit.screen.content.homescreen.innerpage.RepoInnerPage
+import com.catpuppyapp.puppygit.screen.content.homescreen.innerpage.ServiceInnerPage
 import com.catpuppyapp.puppygit.screen.content.homescreen.innerpage.SettingsInnerPage
 import com.catpuppyapp.puppygit.screen.content.homescreen.innerpage.SubscriptionPage
 import com.catpuppyapp.puppygit.screen.content.homescreen.scaffold.actions.ChangeListPageActions
@@ -86,7 +87,7 @@ import com.catpuppyapp.puppygit.screen.content.homescreen.scaffold.title.ChangeL
 import com.catpuppyapp.puppygit.screen.content.homescreen.scaffold.title.EditorTitle
 import com.catpuppyapp.puppygit.screen.content.homescreen.scaffold.title.FilesTitle
 import com.catpuppyapp.puppygit.screen.content.homescreen.scaffold.title.ReposTitle
-import com.catpuppyapp.puppygit.screen.content.homescreen.scaffold.title.SettingsTitle
+import com.catpuppyapp.puppygit.screen.content.homescreen.scaffold.title.ScrollableTitle
 import com.catpuppyapp.puppygit.screen.content.homescreen.scaffold.title.SimpleTitle
 import com.catpuppyapp.puppygit.screen.functions.ChangeListFunctions
 import com.catpuppyapp.puppygit.screen.shared.SharedState
@@ -206,6 +207,7 @@ fun HomeScreen(
     val refreshServicePage = { changeStateTriggerRefreshPage(needRefreshServicePage) }
 
     val settingsListState = rememberScrollState()
+    val serviceListState = rememberScrollState()
 
 
     val filesPageIsFileSelectionMode = rememberSaveable { mutableStateOf(false)}
@@ -707,13 +709,13 @@ fun HomeScreen(
                                 )
                             }
                         } else if (currentHomeScreen.intValue == Cons.selectedItem_Settings) {
-                            SettingsTitle(listState = settingsListState)
+                            ScrollableTitle(text = stringResource(R.string.settings), listState = settingsListState)
                         } else if (currentHomeScreen.intValue == Cons.selectedItem_About) {
                             SimpleTitle(stringResource(R.string.about))
                         } else if(currentHomeScreen.intValue == Cons.selectedItem_Subscription) {
                             SimpleTitle(stringResource(R.string.subscription))
                         } else if(currentHomeScreen.intValue == Cons.selectedItem_Service){
-                            SimpleTitle(stringResource(R.string.service))
+                            ScrollableTitle(text = stringResource(R.string.service), listState = serviceListState)
                         } else {
                             SimpleTitle()
                         }
@@ -1114,7 +1116,13 @@ fun HomeScreen(
             }else if(currentHomeScreen.intValue == Cons.selectedItem_Subscription) {
                 SubscriptionPage(contentPadding = contentPadding, needRefresh = subscriptionPageNeedRefresh, openDrawer = openDrawer)
             }else if(currentHomeScreen.intValue == Cons.selectedItem_Service) {
-
+                ServiceInnerPage(
+                    contentPadding = contentPadding,
+                    needRefreshPage = needRefreshServicePage,
+                    openDrawer = openDrawer,
+                    exitApp = exitApp,
+                    listState = serviceListState,
+                )
             }
         }
     }
