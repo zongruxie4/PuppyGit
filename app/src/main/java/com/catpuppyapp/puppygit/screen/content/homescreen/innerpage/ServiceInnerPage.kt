@@ -298,10 +298,10 @@ fun ServiceInnerPage(
 
 
     LaunchedEffect(needRefreshPage) {
-        settingsState.value = SettingsUtil.getSettingsSnapshot()
         doJobThenOffLoading {
-            HttpServer.doActWithLock {
-                runningStatus.value = isServerRunning()
+            settingsState.value = SettingsUtil.getSettingsSnapshot()
+            runningStatus.value = HttpServer.doActWithLock {
+                isServerRunning()
             }
         }
     }
