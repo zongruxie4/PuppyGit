@@ -30,7 +30,7 @@ object HttpServiceHoldNotify:NotifyBase(
         intent.action = HttpService.command_stop
 
         //flag作用是如果pendingIntent已经存在，则取消之前的然后创建个新的，没验证，可能是
-        return PendingIntent.getForegroundService(context, 0, intent, PendingIntent.FLAG_UPDATE_CURRENT)
+        return PendingIntent.getForegroundService(context, 0, intent, PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE)
     }
 
 }
