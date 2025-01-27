@@ -297,6 +297,6 @@ fun ServiceInnerPage(
 
     LaunchedEffect(needRefreshPage.value) {
         settingsState.value = SettingsUtil.getSettingsSnapshot()
-        runningStatus.value =  HttpServer.isServerRunning()
+        runningStatus.value = HttpServer.isServerRunning()
     }
 }
