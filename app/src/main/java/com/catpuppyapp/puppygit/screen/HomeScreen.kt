@@ -12,6 +12,7 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Close
+import androidx.compose.material.icons.filled.Cloud
 import androidx.compose.material.icons.filled.Difference
 import androidx.compose.material.icons.filled.EditNote
 import androidx.compose.material.icons.filled.Folder
@@ -58,6 +59,7 @@ import com.catpuppyapp.puppygit.compose.LongPressAbleIconBtn
 import com.catpuppyapp.puppygit.compose.ScrollableColumn
 import com.catpuppyapp.puppygit.compose.SmallFab
 import com.catpuppyapp.puppygit.constants.Cons
+import com.catpuppyapp.puppygit.constants.IntentCons
 import com.catpuppyapp.puppygit.constants.PageRequest
 import com.catpuppyapp.puppygit.data.entity.RepoEntity
 import com.catpuppyapp.puppygit.dto.FileItemDto
@@ -201,6 +203,8 @@ fun HomeScreen(
     val needRefreshFilesPage = rememberSaveable { mutableStateOf("")}
     val needRefreshSettingsPage = rememberSaveable { mutableStateOf("")}
     val refreshSettingsPage = { changeStateTriggerRefreshPage(needRefreshSettingsPage) }
+    val needRefreshServicePage = rememberSaveable { mutableStateOf("")}
+    val refreshServicePage = { changeStateTriggerRefreshPage(needRefreshServicePage) }
 
     val settingsListState = rememberScrollState()
 
@@ -546,9 +550,10 @@ fun HomeScreen(
                         Text(text = stringResource(id = R.string.tips)+":"+ stringResource(R.string.try_long_press_icon_get_hints))
                     }
 
-                    Row (modifier = Modifier.padding(top = 15.dp)){
-                        Text(text = stringResource(R.string.recommend_go_to_settings_screen_set_a_master_password), color = MyStyleKt.TextColor.danger())
-                    }
+                    // whatever, the master password actually 没什么卵用，每次都要输麻烦，若存，就不绝对安全，而且很多时候没必要啊，数据库在用户手机本地，app空间内，一般不会泄漏，不建议设了，虽然设了还是比不设好一点点
+//                    Row (modifier = Modifier.padding(top = 15.dp)){
+//                        Text(text = stringResource(R.string.recommend_go_to_settings_screen_set_a_master_password), color = MyStyleKt.TextColor.danger())
+//                    }
                 }
             },
             //点击弹框外区域的时候触发此方法，一般设为和OnCancel一样的行为即可
@@ -590,6 +595,7 @@ fun HomeScreen(
         Cons.selectedItem_Files,
         Cons.selectedItem_Editor,
         Cons.selectedItem_ChangeList,
+        Cons.selectedItem_Service,
         Cons.selectedItem_Settings,
         Cons.selectedItem_About,
 //        Cons.selectedItem_Subscription,
@@ -599,15 +605,18 @@ fun HomeScreen(
         Icons.Filled.Folder,
         Icons.Filled.EditNote,
         Icons.Filled.Difference,
+        Icons.Filled.Cloud,
         Icons.Filled.Settings,
         Icons.Filled.Info,
 //        Icons.Filled.Subscriptions
     )
+
     val refreshPageList = listOf(
         refreshRepoPage@{ changeStateTriggerRefreshPage(needRefreshRepoPage) },
         refreshFilesPage@{ changeStateTriggerRefreshPage(needRefreshFilesPage) },
         refreshEditorPage@{ editorPageShowingFileIsReady.value=false; changeStateTriggerRefreshPage(needRefreshEditorPage) },
         refreshChangeListPage@{changeListRequireRefreshFromParentPage(changeListCurRepo.value)},
+        refreshServicePage@{ refreshServicePage() },
         refreshSettingsPage@{ refreshSettingsPage() },
         refreshAboutPage@{}, //About页面静态的，不需要刷新
 //        {},  //Subscription页面
@@ -1102,6 +1111,8 @@ fun HomeScreen(
                 AboutInnerPage(contentPadding, openDrawer = openDrawer)
             }else if(currentHomeScreen.intValue == Cons.selectedItem_Subscription) {
                 SubscriptionPage(contentPadding = contentPadding, needRefresh = subscriptionPageNeedRefresh, openDrawer = openDrawer)
+            }else if(currentHomeScreen.intValue == Cons.selectedItem_Service) {
+
             }
         }
     }
@@ -1219,17 +1230,19 @@ fun HomeScreen(
                                 //如果没有导入文件，检查是否需要跳转页面
 
                                 //如果intent携带了启动页面和仓库，使用
-                                val startPage = extras.getString("startPage") ?: ""
-                                val startRepoId = extras.getString("startRepoId") ?: ""
+                                val startPage = extras.getString(IntentCons.ExtrasKey.startPage) ?: ""
+                                val startRepoId = extras.getString(IntentCons.ExtrasKey.startRepoId) ?: ""
 
                                 if (startPage.isNotBlank()) {
                                     if (startPage == Cons.selectedItem_ChangeList.toString()) {
                                         var startRepo = changeListCurRepo.value
                                         if (startRepoId.isNotBlank()) {  //参数中携带的目标仓库id，查一下子，有就有，没就拉倒
-                                            startRepo = AppModel.dbContainer.repoRepository.getById(startRepoId) ?: startRepo
+                                            startRepo = AppModel.dbContainer.repoRepository.let { it.getById(startRepoId) ?: it.getByName(startRepoId) ?: startRepo }
                                         }
 
                                         goToChangeListPage(startRepo)
+                                    }else if(startPage == Cons.selectedItem_Repos.toString()) {
+                                        goToRepoPage(startRepoId)
                                     }
                                     // else if go to other page maybe
                                 }

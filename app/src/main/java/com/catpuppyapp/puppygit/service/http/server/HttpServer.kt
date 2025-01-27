@@ -1,6 +1,7 @@
 package com.catpuppyapp.puppygit.service.http.server
 
 import com.catpuppyapp.puppygit.constants.Cons
+import com.catpuppyapp.puppygit.constants.IntentCons
 import com.catpuppyapp.puppygit.data.entity.RepoEntity
 import com.catpuppyapp.puppygit.etc.Ret
 import com.catpuppyapp.puppygit.notification.NormalNotify
@@ -506,7 +507,18 @@ private fun tokenCheck(token:String?,ip:String, settings: AppSettings): Ret<Unit
  * 启动app并定位到ChangeList和指定仓库
  */
 private fun sendNotification(title:String, msg:String, startRepoId:String) {
-    NormalNotify.sendNotification(null, title, msg, NormalNotify.createPendingIntent(null, mapOf("startPage" to Cons.selectedItem_ChangeList.toString(), "startRepoId" to startRepoId)))
+    NormalNotify.sendNotification(
+        null,
+        title,
+        msg,
+        NormalNotify.createPendingIntent(
+            null,
+            mapOf(
+                IntentCons.ExtrasKey.startPage to Cons.selectedItem_ChangeList.toString(),
+                IntentCons.ExtrasKey.startRepoId to startRepoId
+            )
+        )
+    )
 }
 
 private fun sendSuccessNotification(title:String?, msg:String?, repoId:String?) {
