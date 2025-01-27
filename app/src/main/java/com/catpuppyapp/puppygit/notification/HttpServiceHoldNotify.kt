@@ -25,12 +25,12 @@ object HttpServiceHoldNotify:NotifyBase(
 ){
 
     fun createStopPendingIntent(context: Context): PendingIntent {
-        val intent = Intent(context, HttpServiceHoldNotify::class.java) // 替换为您的主活动
+        val intent = Intent(context, HttpService::class.java) // 替换为您的主活动
 
         intent.action = HttpService.command_stop
 
         //flag作用是如果pendingIntent已经存在，则取消之前的然后创建个新的，没验证，可能是
-        return PendingIntent.getForegroundService(context, 0, intent, PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE)
+        return PendingIntent.getService(context, 0, intent, PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE)
     }
 
 }

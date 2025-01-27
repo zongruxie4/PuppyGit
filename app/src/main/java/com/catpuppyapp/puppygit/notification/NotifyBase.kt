@@ -43,8 +43,6 @@ open class NotifyBase(
      * @param context 建议传 applicationContext
      */
     fun init(context: Context) {
-        MyLog.w(TAG, "initing notify channel '$channelId'...")
-
         if(inited.value) {
             return
         }
@@ -63,10 +61,11 @@ open class NotifyBase(
             // Register the channel with the system.
             val notificationManager = context.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
             notificationManager.createNotificationChannel(channel)
+
+            MyLog.w(TAG, "notify channel '$channelId' registered")
         }
 
-        MyLog.w(TAG, "notify channel '$channelId' inited")
-
+        MyLog.w(TAG, "notification '$notifyId' inited")
     }
 
     // 发送通知
