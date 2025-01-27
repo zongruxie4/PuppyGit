@@ -50,10 +50,15 @@ open class NotifyBase(
 
         appContext = context
 
+        // Create the NotificationChannel, but only on API 26+ because
+        // the NotificationChannel class is not in the Support Library.
+        // see: https://developer.android.com/develop/ui/views/notifications/build-notification
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             val channel = NotificationChannel(channelId, channelName, NotificationManager.IMPORTANCE_DEFAULT)
             channel.description = channelDesc
-            val notificationManager = context.getSystemService(NotificationManager::class.java)
+
+            // Register the channel with the system.
+            val notificationManager = context.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
             notificationManager.createNotificationChannel(channel)
         }
     }
@@ -94,7 +99,7 @@ open class NotifyBase(
             .setPriority(NotificationCompat.PRIORITY_DEFAULT)
             .setCategory(NotificationCompat.CATEGORY_MESSAGE)
             .setContentIntent(pendingIntent) // 设置点击通知时的意图
-            .setAutoCancel(true) // 点击后自动消失
+            .setAutoCancel(true) // 点击后通知将自动消失，除非你是foreground service启动的通知
         return builder
     }
 
@@ -102,12 +107,17 @@ open class NotifyBase(
         val context = context ?: appContext!!
 
         val intent = Intent(context, MainActivity::class.java) // 替换为您的主活动
-        intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+        //创建个新Activity并清掉之前的Activity，不然可能存在多个Activity，有点混乱
+        //这个 or 是 bitwise，相当于 '1 | 0' 的 '|'
+        intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK)
+
+        //添加参数
         extras.forEach { (k, v) ->
             intent.putExtra(k, v)
         }
 
-        return PendingIntent.getActivity(context, 0, intent, PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE)
+        //flag作用是如果pendingIntent已经存在，则取消之前的然后创建个新的，没验证，可能是
+        return PendingIntent.getActivity(context, 0, intent, PendingIntent.FLAG_CANCEL_CURRENT or PendingIntent.FLAG_IMMUTABLE)
     }
 
 }
