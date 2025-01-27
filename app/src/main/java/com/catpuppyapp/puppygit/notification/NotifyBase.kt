@@ -24,7 +24,7 @@ open class NotifyBase(
     private val channelId:String,
     private val channelName:String,
     private val channelDesc:String,
-    private val createAction:((context:Context) -> Action)? = null
+    private val actionList:((context:Context) -> List<Action>)? = null
 ) {
     /**
      * 用来避免重复执行init出错
@@ -108,8 +108,7 @@ open class NotifyBase(
             .setContentIntent(pendingIntent) // 设置点击通知时的意图
             .setAutoCancel(true) // 点击后通知将自动消失，除非你是foreground service启动的通知
 
-        if(createAction != null) {
-            val action = createAction.invoke(context)
+        actionList?.invoke(context)?.forEach { action ->
             builder.addAction(action.iconId, action.text, action.pendingIntent)
         }
 

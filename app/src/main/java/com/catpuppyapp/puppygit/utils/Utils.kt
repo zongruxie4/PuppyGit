@@ -1,5 +1,7 @@
 package com.catpuppyapp.puppygit.utils
 
+import android.content.ClipData
+import android.content.ClipboardManager
 import android.content.Context
 import android.os.Build
 import android.widget.Toast
@@ -971,3 +973,11 @@ fun receiverFlags(): Int = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRA
 } else {
     ContextCompat.RECEIVER_NOT_EXPORTED
 }
+
+fun copyTextToClipboard(context: Context, text: String, label:String="label") {
+    val clipboard = context.getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
+    val clip = ClipData.newPlainText(label, text) // 创建剪贴板数据
+    clipboard.setPrimaryClip(clip) // 设置剪贴板内容
+}
+
+fun genHttpHostPortStr(host:String, port:Int, prefix:String="http://") = "$prefix$host:$port"

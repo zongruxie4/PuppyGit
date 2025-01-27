@@ -22,21 +22,21 @@ class Msg {
 //            }
 
             doJobWithMainContext {
-                showToast(AppModel.activityContext, msg)
+                showToast(AppModel.realAppContext, msg)
             }
 
         }
 
         val requireShowShortDuration = { msg:String ->
             doJobWithMainContext {
-                showToast(AppModel.activityContext, msg, Toast.LENGTH_SHORT)
+                showToast(AppModel.realAppContext, msg, Toast.LENGTH_SHORT)
             }
 
         }
 
         val requireShowLongDuration = { msg:String ->
             doJobWithMainContext {
-                showToast(AppModel.activityContext, msg, Toast.LENGTH_LONG)
+                showToast(AppModel.realAppContext, msg, Toast.LENGTH_LONG)
             }
 
         }

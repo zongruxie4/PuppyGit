@@ -14,6 +14,7 @@ import com.catpuppyapp.puppygit.utils.MyLog
 import com.catpuppyapp.puppygit.utils.createAndInsertError
 import com.catpuppyapp.puppygit.utils.dbIntToBool
 import com.catpuppyapp.puppygit.utils.encrypt.MasterPassUtil
+import com.catpuppyapp.puppygit.utils.genHttpHostPortStr
 import com.catpuppyapp.puppygit.utils.getSecFromTime
 import com.github.git24j.core.Oid
 import com.github.git24j.core.Repository
@@ -442,7 +443,7 @@ object HttpServer {
                 }
             }.start(wait = false) // 不能传true，会block整个程序
 
-            MyLog.w(TAG, "Http Server started on '${settings.httpService.listenHost}:${settings.httpService.listenPort}'")
+            MyLog.w(TAG, "Http Server started on '${genHttpHostPortStr(settings.httpService.listenHost, settings.httpService.listenPort)}'")
             return null
         }catch (e:Exception) {
             MyLog.e(TAG, "Http Server start failed, err=${e.stackTraceToString()}")

@@ -9,11 +9,15 @@ import android.os.Build
 import android.os.IBinder
 import com.catpuppyapp.puppygit.constants.IDS
 import com.catpuppyapp.puppygit.notification.HttpServiceHoldNotify
+import com.catpuppyapp.puppygit.play.pro.R
 import com.catpuppyapp.puppygit.settings.AppSettings
 import com.catpuppyapp.puppygit.settings.SettingsUtil
 import com.catpuppyapp.puppygit.utils.AppModel
+import com.catpuppyapp.puppygit.utils.Msg
 import com.catpuppyapp.puppygit.utils.MyLog
+import com.catpuppyapp.puppygit.utils.copyTextToClipboard
 import com.catpuppyapp.puppygit.utils.doJobThenOffLoading
+import com.catpuppyapp.puppygit.utils.genHttpHostPortStr
 import kotlinx.coroutines.runBlocking
 
 
@@ -23,6 +27,7 @@ private const val serviceId = IDS.HttpService  //这id必须唯一，最好和no
 class HttpService : Service() {
     companion object {
         const val command_stop = "STOP"
+        const val command_copy_addr = "COPY_ADDR"
 
         fun start(appContext: Context) {
             if(HttpServer.isServerRunning()) {
@@ -81,11 +86,22 @@ class HttpService : Service() {
     }
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
-        if(intent != null && command_stop == intent.action){
+        val action = intent?.action
+        if(action == command_stop){
             // stop
             stop(AppModel.realAppContext)
 
             MyLog.w(TAG, "http service onStartCommand() stop finished")
+        }else if(action == command_copy_addr){
+            val settings = SettingsUtil.getSettingsSnapshot()
+            copyTextToClipboard(
+                context = applicationContext,
+                label = "PuppyGit Http Addr",
+                text = genHttpHostPortStr(settings.httpService.listenHost, settings.httpService.listenPort)
+            )
+
+            //这toast不一定显示
+            Msg.requireShow(applicationContext.getString(R.string.copied))
         }else {
             // start
             val settings = SettingsUtil.getSettingsSnapshot()
@@ -112,6 +128,7 @@ class HttpService : Service() {
         return START_STICKY
     }
 
+
     override fun onBind(intent: Intent?): IBinder? {
         return null // 不需要绑定
     }
@@ -127,7 +144,7 @@ class HttpService : Service() {
         val builder = HttpServiceHoldNotify.getNotificationBuilder(
             this,
             "PuppyGit Service",
-            "Listen on: http://${settings.httpService.listenHost}:${settings.httpService.listenPort}",
+            "Listen on: ${genHttpHostPortStr(settings.httpService.listenHost, settings.httpService.listenPort)}",
             HttpServiceHoldNotify.createPendingIntent(null, mapOf()), //启动app但不指定页面
         )
 
