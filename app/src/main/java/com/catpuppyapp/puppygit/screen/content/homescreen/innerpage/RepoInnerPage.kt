@@ -77,6 +77,7 @@ import com.catpuppyapp.puppygit.etc.RepoAction
 import com.catpuppyapp.puppygit.etc.Ret
 import com.catpuppyapp.puppygit.git.Upstream
 import com.catpuppyapp.puppygit.play.pro.R
+import com.catpuppyapp.puppygit.service.http.server.HttpServer
 import com.catpuppyapp.puppygit.settings.AppSettings
 import com.catpuppyapp.puppygit.settings.SettingsUtil
 import com.catpuppyapp.puppygit.style.MyStyleKt
@@ -1596,6 +1597,7 @@ fun RepoInnerPage(
         stringResource(R.string.stash), // single
         stringResource(R.string.reflog), // single
         stringResource(R.string.rename), // single
+        stringResource(R.string.copy_api), // single
         stringResource(R.string.details), // multi
         stringResource(R.string.delete), // multi
     )
@@ -1692,6 +1694,11 @@ fun RepoInnerPage(
             showRenameDialog.value = true
         },
 
+        copyApi@{
+            clipboardManager.setText(AnnotatedString(HttpServer.getApiJson(selectedItems.value.first(), SettingsUtil.getSettingsSnapshot())))
+            Msg.requireShow(activityContext.getString(R.string.copied))
+        },
+
         details@{
             val sb = StringBuilder()
             val lb = "\n"
@@ -1751,6 +1758,9 @@ fun RepoInnerPage(
             selectedSingle()&& isRepoGood(selectedItems.value.first())
         },
         rename@{
+            selectedSingle()
+        },
+        copyApi@{
             selectedSingle()
         },
         details@{

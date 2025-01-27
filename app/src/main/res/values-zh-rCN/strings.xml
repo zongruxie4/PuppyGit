@@ -1145,6 +1145,7 @@
     <string name="running">运行中</string>
     <string name="stopped">已停止</string>
     <string name="err_port_invalid">错误: 端口无效</string>
+    <string name="copy_api">复制 Api</string>
 
 
 </resources>

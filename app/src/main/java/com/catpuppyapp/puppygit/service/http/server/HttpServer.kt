@@ -8,6 +8,7 @@ import com.catpuppyapp.puppygit.notification.NormalNotify
 import com.catpuppyapp.puppygit.settings.AppSettings
 import com.catpuppyapp.puppygit.settings.SettingsUtil
 import com.catpuppyapp.puppygit.utils.AppModel
+import com.catpuppyapp.puppygit.utils.JsonUtil
 import com.catpuppyapp.puppygit.utils.Libgit2Helper
 import com.catpuppyapp.puppygit.utils.Libgit2Helper.Companion.getAheadBehind
 import com.catpuppyapp.puppygit.utils.MyLog
@@ -32,6 +33,7 @@ import io.ktor.server.routing.routing
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 import kotlinx.serialization.json.Json
+import kotlinx.serialization.serializer
 
 private const val TAG = "HttpServer"
 
@@ -475,6 +477,31 @@ object HttpServer {
 
     fun isServerRunning():Boolean {
         return server != null
+    }
+
+    fun getApiJson(repoEntity:RepoEntity, settings: AppSettings):String {
+        val host = settings.httpService.listenHost
+        val port = settings.httpService.listenPort
+
+
+        return JsonUtil.j2.encodeToString(
+            JsonUtil.j2.serializersModule.serializer(),
+
+            ConfigDto(
+                repoName = repoEntity.repoName,
+                repoId = repoEntity.id,
+                api = ApiDto(
+                    protocol = "http",
+                    host = host,
+                    port = port,
+                    pull = "/pull",
+                    push = "/push",
+                    //少加点参数，少写少错
+                    pull_example= "${genHttpHostPortStr(host, port)}/pull?repoNameOrId=${repoEntity.repoName}",
+                    push_example= "${genHttpHostPortStr(host, port)}/push?repoNameOrId=${repoEntity.repoName}",
+                )
+            )
+        )
     }
 
 }

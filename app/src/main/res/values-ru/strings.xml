@@ -1168,5 +1168,6 @@
     <string name="running">Running</string>
     <string name="stopped">Stopped</string>
     <string name="err_port_invalid">err: Port Invalid</string>
+    <string name="copy_api">Copy Api</string>
 
 </resources>
