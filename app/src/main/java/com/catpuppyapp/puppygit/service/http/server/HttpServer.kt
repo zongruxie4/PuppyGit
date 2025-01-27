@@ -30,6 +30,7 @@ import io.ktor.server.request.host
 import io.ktor.server.response.respond
 import io.ktor.server.routing.get
 import io.ktor.server.routing.routing
+import kotlinx.coroutines.isActive
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 import kotlinx.serialization.json.Json
@@ -44,17 +45,16 @@ object HttpServer {
     /**
      * expect do start/stop/restart server in `act`
      */
-    suspend fun doActWithLock(act:suspend HttpServer.() -> Unit) {
+    suspend fun <T> doActWithLock(act:suspend HttpServer.() -> T):T {
         lock.withLock {
-            this.act()
+            return this.act()
         }
     }
 
-    fun startServer(settings: AppSettings):Exception? {
+    suspend fun startServer(settings: AppSettings):Exception? {
         if(isServerRunning()) return null
 
         try {
-
             server = embeddedServer(Netty, host = settings.httpService.listenHost, port = settings.httpService.listenPort) {
                 install(ContentNegotiation) {
                     //忽略对象里没有的key；编码默认值；紧凑格式
@@ -453,8 +453,9 @@ object HttpServer {
         }
     }
 
-    fun stopServer():Exception? {
+    suspend fun stopServer():Exception? {
         if(server == null) {
+            MyLog.w(TAG, "server is null, stop canceled")
             return null
         }
 
@@ -470,13 +471,14 @@ object HttpServer {
         }
     }
 
-    fun restartServer(settings: AppSettings):Exception? {
+    suspend fun restartServer(settings: AppSettings):Exception? {
         stopServer()
         return startServer(settings)
     }
 
-    fun isServerRunning():Boolean {
-        return server != null
+    suspend fun isServerRunning():Boolean {
+        //这检查的是协程是否Active，协程还在运行，服务器就在运行，大概是这个逻辑吧？
+        return server?.application?.isActive == true
     }
 
     fun getApiJson(repoEntity:RepoEntity, settings: AppSettings):String {

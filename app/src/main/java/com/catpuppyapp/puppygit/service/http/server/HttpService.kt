@@ -38,10 +38,20 @@ class HttpService : Service() {
             PrefMan.set(context, PrefMan.Key.launchServiceOnSystemStartup, if(enable) "1" else "0")
         }
 
-        fun start(appContext: Context) {
-            if(HttpServer.isServerRunning()) {
-                MyLog.w(TAG, "HttpServer already running, start canceled")
-            }else {
+        /**
+         * 调这个方法不需要HttpServer.doActWithLock()，其内部会自己调用
+         */
+        suspend fun start(appContext: Context) {
+            val needStart = HttpServer.doActWithLock {
+                if(isServerRunning()) {
+                    MyLog.w(TAG, "HttpServer already running, start canceled")
+                    false
+                }else {
+                    true
+                }
+            }
+
+            if(needStart) {
                 val serviceIntent = Intent(appContext, HttpService::class.java)
                 appContext.startForegroundService(serviceIntent)
                 MyLog.d(TAG, "HttpService started")
@@ -144,7 +154,13 @@ class HttpService : Service() {
 
     override fun onDestroy() {
         super.onDestroy()
-        HttpServer.stopServer()
+
+        doJobThenOffLoading {
+            HttpServer.doActWithLock {
+                stopServer()
+            }
+        }
+
         stopForeground(STOP_FOREGROUND_REMOVE)
         MyLog.w(TAG, "http service onDestroy() finished")
     }

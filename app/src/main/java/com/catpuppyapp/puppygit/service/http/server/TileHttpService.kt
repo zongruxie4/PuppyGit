@@ -11,6 +11,7 @@ import android.service.quicksettings.TileService
 import androidx.core.content.ContextCompat
 import com.catpuppyapp.puppygit.utils.AppModel
 import com.catpuppyapp.puppygit.utils.MyLog
+import com.catpuppyapp.puppygit.utils.doJobThenOffLoading
 import com.catpuppyapp.puppygit.utils.receiverFlags
 
 private const val TAG = "TileHttpService"
@@ -45,7 +46,11 @@ class TileHttpService: TileService() {
     // Called when the user adds your tile.
     override fun onTileAdded() {
         super.onTileAdded()
-        updateState(HttpServer.isServerRunning())
+        doJobThenOffLoading {
+            HttpServer.doActWithLock {
+                updateState(isServerRunning())
+            }
+        }
     }
 
     // Called when your app can update your tile.
@@ -75,7 +80,9 @@ class TileHttpService: TileService() {
         if(qsTile.state == Tile.STATE_ACTIVE) {
             HttpService.stop(applicationContext)
         }else {
-            HttpService.start(applicationContext)
+            doJobThenOffLoading {
+                HttpService.start(applicationContext)
+            }
         }
     }
 //

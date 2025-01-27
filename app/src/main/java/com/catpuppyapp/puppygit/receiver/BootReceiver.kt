@@ -4,6 +4,7 @@ import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
 import com.catpuppyapp.puppygit.service.http.server.HttpService
+import com.catpuppyapp.puppygit.utils.doJobThenOffLoading
 
 
 class BootReceiver : BroadcastReceiver() {
@@ -12,7 +13,9 @@ class BootReceiver : BroadcastReceiver() {
             //如果设置了开机自启，则启动，否则不启动
             //开机可能会很久才启动，甚至超过5分钟
             if(HttpService.launchOnSystemStartUpEnabled(context)) {
-                HttpService.start(context)
+                doJobThenOffLoading {
+                    HttpService.start(context)
+                }
             }
         }
     }

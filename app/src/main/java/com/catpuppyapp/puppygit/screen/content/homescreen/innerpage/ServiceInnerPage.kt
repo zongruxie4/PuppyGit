@@ -62,7 +62,7 @@ fun ServiceInnerPage(
 
     val settingsState = mutableCustomStateOf(stateKeyTag, "settingsState", SettingsUtil.getSettingsSnapshot())
 
-    val runningStatus = rememberSaveable { mutableStateOf(HttpServer.isServerRunning()) }
+    val runningStatus = rememberSaveable { mutableStateOf(false) }
     val launchOnAppStartup = rememberSaveable { mutableStateOf(SettingsUtil.getSettingsSnapshot().httpService.launchOnAppStartup) }
     val launchOnSystemStartUp = rememberSaveable { mutableStateOf(HttpService.launchOnSystemStartUpEnabled(activityContext)) }
     val errNotify = rememberSaveable { mutableStateOf(SettingsUtil.getSettingsSnapshot().httpService.showNotifyWhenErr) }
@@ -163,7 +163,9 @@ fun ServiceInnerPage(
         SettingsContent(onClick = {
             val newValue = !runningStatus.value
             if(newValue) {
-                HttpService.start(AppModel.realAppContext)
+                doJobThenOffLoading {
+                    HttpService.start(AppModel.realAppContext)
+                }
             }else {
                 HttpService.stop(AppModel.realAppContext)
             }
@@ -297,5 +299,10 @@ fun ServiceInnerPage(
 
     LaunchedEffect(needRefreshPage) {
         settingsState.value = SettingsUtil.getSettingsSnapshot()
+        doJobThenOffLoading {
+            HttpServer.doActWithLock {
+                runningStatus.value = isServerRunning()
+            }
+        }
     }
 }
