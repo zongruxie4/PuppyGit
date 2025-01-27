@@ -163,9 +163,7 @@ fun ServiceInnerPage(
         SettingsContent(onClick = {
             val newValue = !runningStatus.value
             if(newValue) {
-                doJobThenOffLoading {
-                    HttpService.start(AppModel.realAppContext)
-                }
+                HttpService.start(AppModel.realAppContext)
             }else {
                 HttpService.stop(AppModel.realAppContext)
             }
@@ -300,9 +298,7 @@ fun ServiceInnerPage(
     LaunchedEffect(needRefreshPage) {
         doJobThenOffLoading {
             settingsState.value = SettingsUtil.getSettingsSnapshot()
-            runningStatus.value = HttpServer.doActWithLock {
-                isServerRunning()
-            }
+            runningStatus.value =  HttpServer.isServerRunning()
         }
     }
 }

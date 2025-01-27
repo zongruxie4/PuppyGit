@@ -46,11 +46,8 @@ class TileHttpService: TileService() {
     // Called when the user adds your tile.
     override fun onTileAdded() {
         super.onTileAdded()
-        doJobThenOffLoading {
-            HttpServer.doActWithLock {
-                updateState(isServerRunning())
-            }
-        }
+
+        updateState(HttpServer.isServerRunning())
     }
 
     // Called when your app can update your tile.
@@ -80,9 +77,7 @@ class TileHttpService: TileService() {
         if(qsTile.state == Tile.STATE_ACTIVE) {
             HttpService.stop(applicationContext)
         }else {
-            doJobThenOffLoading {
-                HttpService.start(applicationContext)
-            }
+            HttpService.start(applicationContext)
         }
     }
 //

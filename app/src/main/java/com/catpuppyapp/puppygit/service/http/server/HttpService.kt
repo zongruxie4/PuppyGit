@@ -41,17 +41,10 @@ class HttpService : Service() {
         /**
          * 调这个方法不需要HttpServer.doActWithLock()，其内部会自己调用
          */
-        suspend fun start(appContext: Context) {
-            val needStart = HttpServer.doActWithLock {
-                if(isServerRunning()) {
-                    MyLog.w(TAG, "HttpServer already running, start canceled")
-                    false
-                }else {
-                    true
-                }
-            }
-
-            if(needStart) {
+        fun start(appContext: Context) {
+            if(HttpServer.isServerRunning()) {
+                MyLog.w(TAG, "HttpServer already running, start canceled")
+            }else {
                 val serviceIntent = Intent(appContext, HttpService::class.java)
                 appContext.startForegroundService(serviceIntent)
                 MyLog.d(TAG, "HttpService started")

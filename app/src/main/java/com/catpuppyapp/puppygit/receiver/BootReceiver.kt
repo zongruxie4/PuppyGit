@@ -13,9 +13,7 @@ class BootReceiver : BroadcastReceiver() {
             //如果设置了开机自启，则启动，否则不启动
             //开机可能会很久才启动，甚至超过5分钟
             if(HttpService.launchOnSystemStartUpEnabled(context)) {
-                doJobThenOffLoading {
-                    HttpService.start(context)
-                }
+                HttpService.start(context)
             }
         }
     }

@@ -476,7 +476,7 @@ object HttpServer {
         return startServer(settings)
     }
 
-    suspend fun isServerRunning():Boolean {
+    fun isServerRunning():Boolean {
         //这检查的是协程是否Active，协程还在运行，服务器就在运行，大概是这个逻辑吧？
         return server?.application?.isActive == true
 
