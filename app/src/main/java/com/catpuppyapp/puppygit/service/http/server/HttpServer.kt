@@ -12,6 +12,7 @@ import com.catpuppyapp.puppygit.utils.Libgit2Helper.Companion.getAheadBehind
 import com.catpuppyapp.puppygit.utils.MyLog
 import com.catpuppyapp.puppygit.utils.createAndInsertError
 import com.catpuppyapp.puppygit.utils.dbIntToBool
+import com.catpuppyapp.puppygit.utils.encrypt.MasterPassUtil
 import com.catpuppyapp.puppygit.utils.getSecFromTime
 import com.github.git24j.core.Oid
 import com.github.git24j.core.Repository
@@ -70,7 +71,6 @@ object HttpServer {
                      *  repoNameOrId: repo name or id，优先查name，若无匹配，查id
                      *  gitUsername: using for create commit, if null, will use PuppyGit settings
                      *  gitEmail: using for create commit, if nul, will use PuppyGit settings
-                     *  masterPass: your master password, if have
                      *  forceUseIdMatchRepo: 1 or 0, if true, will force match repo by repo id, else will match by name first, if no match, then match by id
                      *  token: if caller ip not in white list, token is required
 
@@ -103,9 +103,7 @@ object HttpServer {
 
                             val forceUseIdMatchRepo = call.request.queryParameters.get("forceUseIdMatchRepo") == "1"
 
-                            val masterPasswordFromUrl = call.request.queryParameters.get("masterPass") ?: ""
-
-                            val masterPassword = masterPasswordFromUrl.ifEmpty { AppModel.masterPassword.value }
+                            val masterPassword = MasterPassUtil.get(AppModel.realAppContext)
 
 
                             val db = AppModel.dbContainer
@@ -217,7 +215,6 @@ object HttpServer {
                      *  repoNameOrId: repo name or id，优先查name，若无匹配，查id
                      *  gitUsername: using for create commit, if null, will use PuppyGit settings
                      *  gitEmail: using for create commit, if nul, will use PuppyGit settings
-                     *  masterPass: your master password, if have
                      *  force: force push, 1 enable , 0 disable, if null, will disable (as 0)
                      *  forceUseIdMatchRepo: 1 or 0, if true, will force match repo by repo id, else will match by name first, if no match, then match by id
                      *  token: if caller ip not in white list, token is required
@@ -255,9 +252,8 @@ object HttpServer {
 
                             val forceUseIdMatchRepo = call.request.queryParameters.get("forceUseIdMatchRepo") == "1"
 
-                            val masterPasswordFromUrl = call.request.queryParameters.get("masterPass") ?: ""
 
-                            val masterPassword = masterPasswordFromUrl.ifEmpty { AppModel.masterPassword.value }
+                            val masterPassword = MasterPassUtil.get(AppModel.realAppContext)
 
                             //这个只要不明确传0，就是启用
                             val autoCommit = call.request.queryParameters.get("autoCommit") != "0"
@@ -407,7 +403,6 @@ object HttpServer {
                      *  repoNameOrId: repo name or id，优先查name，若无匹配，查id
                      *  username: using for create commit, if null, will use PuppyGit settings
                      *  email: using for create commit, if nul, will use PuppyGit settings
-                     *  masterPass: your master password, if have
                      *  forceUseIdMatchRepo: 1 or 0, if true, will force match repo by repo id, else will match by name first, if no match, then match by id
                      *  token: if caller ip not in white list, token is required
 
@@ -420,7 +415,6 @@ object HttpServer {
 
                     /**
                      * query params:
-                     *  masterPass: your master password, if have
                      *  force: 1 enable , 0 disable, if null, will disable (as 0)
                      *  token: if caller ip not in white list, token is required
                      *
