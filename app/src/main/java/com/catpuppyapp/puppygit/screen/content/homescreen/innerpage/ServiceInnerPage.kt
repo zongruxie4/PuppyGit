@@ -96,10 +96,8 @@ fun ServiceInnerPage(
                         keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
                         value = listenPortBuf.value,
                         onValueChange = {
-                            //如果用户传非数字，不更新值
-                            parseInt(it)?.let { newValue:Int ->
-                                listenPortBuf.value = newValue.toString()
-                            }
+                            //直接更新，不管用户输入什么，点确定后再检查值是否有效
+                            listenPortBuf.value = it
                         },
                         label = {
                             Text(stringResource(R.string.port))
