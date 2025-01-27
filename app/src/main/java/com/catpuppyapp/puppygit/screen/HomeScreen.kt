@@ -82,7 +82,6 @@ import com.catpuppyapp.puppygit.screen.content.homescreen.scaffold.actions.Files
 import com.catpuppyapp.puppygit.screen.content.homescreen.scaffold.actions.RepoPageActions
 import com.catpuppyapp.puppygit.screen.content.homescreen.scaffold.actions.SubscriptionActions
 import com.catpuppyapp.puppygit.screen.content.homescreen.scaffold.drawer.drawerContent
-import com.catpuppyapp.puppygit.screen.content.homescreen.scaffold.title.AboutTitle
 import com.catpuppyapp.puppygit.screen.content.homescreen.scaffold.title.ChangeListTitle
 import com.catpuppyapp.puppygit.screen.content.homescreen.scaffold.title.EditorTitle
 import com.catpuppyapp.puppygit.screen.content.homescreen.scaffold.title.FilesTitle
@@ -586,6 +585,7 @@ fun HomeScreen(
         stringResource(id = R.string.files),
         stringResource(id = R.string.editor),
         stringResource(id = R.string.changelist),
+        stringResource(id = R.string.service),
         stringResource(id = R.string.settings),
         stringResource(id = R.string.about),
 //        stringResource(id = R.string.subscription),
@@ -709,10 +709,12 @@ fun HomeScreen(
                         } else if (currentHomeScreen.intValue == Cons.selectedItem_Settings) {
                             SettingsTitle(listState = settingsListState)
                         } else if (currentHomeScreen.intValue == Cons.selectedItem_About) {
-                            AboutTitle()
+                            SimpleTitle(stringResource(R.string.about))
                         } else if(currentHomeScreen.intValue == Cons.selectedItem_Subscription) {
                             SimpleTitle(stringResource(R.string.subscription))
-                        }else {
+                        } else if(currentHomeScreen.intValue == Cons.selectedItem_Service){
+                            SimpleTitle(stringResource(R.string.service))
+                        } else {
                             SimpleTitle()
                         }
                     },
