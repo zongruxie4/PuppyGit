@@ -1137,6 +1137,14 @@
     <string name="encode_new_password_failed_plz_try_another_one">编码失败，请尝试其他密码</string>
     <string name="stop">停止</string>
     <string name="service">服务</string>
+    <string name="launch_on_app_startup">随应用启动</string>
+    <string name="launch_on_system_startup">随系统启动</string>
+    <string name="port">端口</string>
+    <string name="err_notification">错误通知</string>
+    <string name="success_notification">成功通知</string>
+    <string name="running">运行中</string>
+    <string name="stopped">已停止</string>
+    <string name="err_port_invalid">错误: 端口无效</string>
 
 
 </resources>

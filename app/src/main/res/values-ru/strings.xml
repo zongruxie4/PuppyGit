@@ -1160,5 +1160,13 @@
     <string name="encode_new_password_failed_plz_try_another_one">encode new password failed, plz try another one</string>
     <string name="stop">Stop</string>
     <string name="service">Service</string>
+    <string name="launch_on_app_startup">Launch On App Startup</string>
+    <string name="launch_on_system_startup">Launch On System Startup</string>
+    <string name="port">Port</string>
+    <string name="err_notification">Err Notification</string>
+    <string name="success_notification">Success Notification</string>
+    <string name="running">Running</string>
+    <string name="stopped">Stopped</string>
+    <string name="err_port_invalid">err: Port Invalid</string>
 
 </resources>

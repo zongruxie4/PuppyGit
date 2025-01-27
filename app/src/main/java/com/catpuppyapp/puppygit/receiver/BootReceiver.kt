@@ -3,16 +3,15 @@ package com.catpuppyapp.puppygit.receiver
 import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
-import com.catpuppyapp.puppygit.dev.dev_EnableUnTestedFeature
 import com.catpuppyapp.puppygit.service.http.server.HttpService
-import com.catpuppyapp.puppygit.utils.PrefMan
 
 
 class BootReceiver : BroadcastReceiver() {
     override fun onReceive(context: Context, intent: Intent) {
         if (Intent.ACTION_BOOT_COMPLETED == intent.action) {
             //如果设置了开机自启，则启动，否则不启动
-            if(dev_EnableUnTestedFeature || PrefMan.get(context, PrefMan.Key.launchServiceOnSystemStartup, "0") == "1") {
+            //开机可能会很久才启动，甚至超过5分钟
+            if(HttpService.launchOnSystemStartUpEnabled(context)) {
                 HttpService.start(context)
             }
         }

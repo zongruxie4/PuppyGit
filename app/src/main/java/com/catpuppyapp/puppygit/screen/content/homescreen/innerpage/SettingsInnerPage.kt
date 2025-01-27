@@ -49,6 +49,8 @@ import com.catpuppyapp.puppygit.compose.MySelectionContainer
 import com.catpuppyapp.puppygit.compose.PaddingRow
 import com.catpuppyapp.puppygit.compose.PasswordTextFiled
 import com.catpuppyapp.puppygit.compose.ScrollableColumn
+import com.catpuppyapp.puppygit.compose.SettingsContent
+import com.catpuppyapp.puppygit.compose.SettingsTitle
 import com.catpuppyapp.puppygit.compose.SingleSelectList
 import com.catpuppyapp.puppygit.constants.Cons
 import com.catpuppyapp.puppygit.play.pro.R
@@ -1004,34 +1006,3 @@ fun SettingsInnerPage(
     }
 }
 
-
-@Composable
-private fun SettingsTitle(text:String){
-    val inDarkTheme = Theme.inDarkTheme
-    Row(modifier = Modifier
-        .background(color = if (inDarkTheme) Color.DarkGray else Color.LightGray)
-        .fillMaxWidth()
-        .padding(start = 5.dp),
-        horizontalArrangement = Arrangement.Start,
-        verticalAlignment = Alignment.CenterVertically
-    ) {
-        Text(text)
-    }
-}
-
-@Composable
-private fun SettingsContent(onClick:(()->Unit)?=null, content:@Composable ()->Unit) {
-    Row(
-        modifier = Modifier
-            .fillMaxWidth()
-            .defaultMinSize(minHeight = 60.dp)
-            .then(if (onClick != null) Modifier.clickable { onClick() } else Modifier)
-            .padding(10.dp)
-        ,
-        verticalAlignment = Alignment.CenterVertically,
-        horizontalArrangement = Arrangement.SpaceBetween
-    ) {
-        content()
-    }
-    HorizontalDivider()
-}

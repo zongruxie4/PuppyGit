@@ -15,6 +15,7 @@ import com.catpuppyapp.puppygit.settings.SettingsUtil
 import com.catpuppyapp.puppygit.utils.AppModel
 import com.catpuppyapp.puppygit.utils.Msg
 import com.catpuppyapp.puppygit.utils.MyLog
+import com.catpuppyapp.puppygit.utils.PrefMan
 import com.catpuppyapp.puppygit.utils.copyTextToClipboard
 import com.catpuppyapp.puppygit.utils.doJobThenOffLoading
 import com.catpuppyapp.puppygit.utils.genHttpHostPortStr
@@ -28,6 +29,14 @@ class HttpService : Service() {
     companion object {
         const val command_stop = "STOP"
         const val command_copy_addr = "COPY_ADDR"
+
+        fun launchOnSystemStartUpEnabled(context: Context):Boolean {
+            return PrefMan.get(context, PrefMan.Key.launchServiceOnSystemStartup, "0") == "1"
+        }
+
+        fun setLaunchOnSystemStartUp(context: Context, enable:Boolean) {
+            PrefMan.set(context, PrefMan.Key.launchServiceOnSystemStartup, if(enable) "1" else "0")
+        }
 
         fun start(appContext: Context) {
             if(HttpServer.isServerRunning()) {
