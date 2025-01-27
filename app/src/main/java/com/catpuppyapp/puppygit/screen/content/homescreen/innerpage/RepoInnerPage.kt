@@ -1696,8 +1696,8 @@ fun RepoInnerPage(
             val sb = StringBuilder()
             val lb = "\n"
             selectedItems.value.forEach {
-                sb.append(activityContext.getString(R.string.name)).append(":").append(it.repoName).append(lb)
-                sb.append(activityContext.getString(R.string.id)).append(":").append(it.id).append(lb).append(lb)
+                sb.append(activityContext.getString(R.string.name)).append(": ").append(it.repoName).append(lb)
+                sb.append(activityContext.getString(R.string.id)).append(": ").append(it.id).append(lb).append(lb)
                 sb.append("--------------").append(lb).append(lb)
             }
 

@@ -191,6 +191,10 @@ object HttpServer {
                                 }
 
                                 call.respond(createSuccessResult())
+
+                                if(settings.httpService.showNotifyWhenSuccess) {
+                                    sendSuccessNotification(repoForLog?.repoName, "pull successfully", repoForLog?.id)
+                                }
                             }
                         }catch (e:Exception) {
                             val errMsg = e.localizedMessage ?: "unknown err"
@@ -380,6 +384,12 @@ object HttpServer {
                                 }
 
                                 call.respond(createSuccessResult())
+
+
+                                if(settings.httpService.showNotifyWhenSuccess) {
+                                    sendSuccessNotification(repoForLog?.repoName, "push successfully", repoForLog?.id)
+                                }
+
                             }
                         }catch (e:Exception) {
                             val errMsg = e.localizedMessage ?: "unknown err"
@@ -442,6 +452,8 @@ object HttpServer {
 
         try {
             server?.stop(0, 0)  //立即停止服务器
+            server = null
+
             MyLog.w(TAG, "Http Server stopped")
             return null
         }catch (e:Exception) {
@@ -452,8 +464,6 @@ object HttpServer {
 
     fun restartServer(settings: AppSettings):Exception? {
         stopServer()
-
-        server = null
         return startServer(settings)
     }
 
@@ -497,6 +507,10 @@ private fun tokenCheck(token:String?,ip:String, settings: AppSettings): Ret<Unit
  */
 private fun sendNotification(title:String, msg:String, startRepoId:String) {
     NormalNotify.sendNotification(null, title, msg, NormalNotify.createPendingIntent(null, mapOf("startPage" to Cons.selectedItem_ChangeList.toString(), "startRepoId" to startRepoId)))
+}
+
+private fun sendSuccessNotification(title:String?, msg:String?, repoId:String?) {
+    sendNotification(title ?:"PuppyGit", msg ?: "Success", repoId ?: "")
 }
 
 val throwRepoBusy = { _:Mutex ->

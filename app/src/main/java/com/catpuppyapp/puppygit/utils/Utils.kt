@@ -1,8 +1,10 @@
 package com.catpuppyapp.puppygit.utils
 
 import android.content.Context
+import android.os.Build
 import android.widget.Toast
 import androidx.compose.runtime.MutableState
+import androidx.core.content.ContextCompat
 import com.catpuppyapp.puppygit.constants.Cons
 import com.catpuppyapp.puppygit.data.entity.ErrorEntity
 import com.catpuppyapp.puppygit.data.entity.RepoEntity
@@ -952,4 +954,20 @@ fun splitLines(str:String):List<String> {
     }
 
     return filteredLines
+}
+
+//我为什么要写这个函数来着？
+fun parseInt(str:String):Int? {
+    return try {
+        str.trim().toInt()
+    }catch (_:Exception){
+        null
+    }
+}
+
+//从v2rayNG 拷的
+fun receiverFlags(): Int = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+    ContextCompat.RECEIVER_EXPORTED
+} else {
+    ContextCompat.RECEIVER_NOT_EXPORTED
 }

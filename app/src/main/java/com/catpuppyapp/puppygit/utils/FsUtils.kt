@@ -137,14 +137,14 @@ object FsUtils {
      * get authority for gen uri for file
      * note: the value must same as provider.android:authorities in AndroidManifest.xml
      */
-    fun getAuthorityOfUri(context: Context):String {
-        return AppModel.getAppPackageName(context) + ".provider"
+    fun getAuthorityOfUri():String {
+        return AppModel.appPackageName + ".provider"
     }
 
     fun getUriForFile(context: Context, file: File):Uri {
         val uri = FileProvider.getUriForFile(
             context,
-            getAuthorityOfUri(context),
+            getAuthorityOfUri(),
             file
         )
 

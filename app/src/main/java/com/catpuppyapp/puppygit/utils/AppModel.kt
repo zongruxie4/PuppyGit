@@ -55,6 +55,7 @@ object AppModel {
     private val inited_2 = mutableStateOf(false)
 //        private val inited_3 = mutableStateOf(false)
 
+    const val appPackageName = BuildConfig.APPLICATION_ID
 
     /**
      * 加密凭据用到的主密码，若为空且设置项中的主密码hash不为空，将弹窗请求用户输入主密码，若用户拒绝，将无法使用凭据
@@ -630,12 +631,10 @@ object AppModel {
 
     }
 
-    fun getAppPackageName(context: Context):String {
-        return context.packageName
-    }
+
 
     fun getAppIcon(context: Context) :ImageBitmap{
-        return context.packageManager.getApplicationIcon(getAppPackageName(context)).toBitmap().asImageBitmap()
+        return context.packageManager.getApplicationIcon(appPackageName).toBitmap().asImageBitmap()
     }
 
     fun getAppVersionCode():Int {
@@ -652,7 +651,7 @@ object AppModel {
         try {
             val res = context.resources
             val resType = "string"  //TODO 需要测试是否支持多语言
-            return res.getString(res.getIdentifier(resKey, resType, getAppPackageName(context)))
+            return res.getString(res.getIdentifier(resKey, resType, appPackageName))
 
         }catch (e:Exception) {
             //可能没对应资源之类的

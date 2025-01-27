@@ -98,6 +98,7 @@ import com.catpuppyapp.puppygit.utils.FsUtils
 import com.catpuppyapp.puppygit.utils.Msg
 import com.catpuppyapp.puppygit.utils.MyLog
 import com.catpuppyapp.puppygit.utils.changeStateTriggerRefreshPage
+import com.catpuppyapp.puppygit.utils.doJobThenOffLoading
 import com.catpuppyapp.puppygit.utils.state.mutableCustomStateListOf
 import com.catpuppyapp.puppygit.utils.state.mutableCustomStateOf
 import com.github.git24j.core.Repository.StateT
@@ -351,7 +352,7 @@ fun HomeScreen(
     }
 
     val filesPageRequireImportFile = rememberSaveable { mutableStateOf( false)}
-    val importListConsumed = rememberSaveable { mutableStateOf(false)}  //此变量用来确保导入模式只启动一次，避免以导入模式进入app后，进入子页面再返回再次以导入模式进入Files页面
+    val intentConsumed = rememberSaveable { mutableStateOf(false)}  //此变量用来确保导入模式只启动一次，避免以导入模式进入app后，进入子页面再返回再次以导入模式进入Files页面
     val filesPageRequireImportUriList = mutableCustomStateListOf(keyTag = stateKeyTag, keyName = "filesPageRequireImportUriList", initValue = listOf<Uri>())
     val filesPageCurrentPathFileList = mutableCustomStateListOf(keyTag = stateKeyTag, keyName = "filesPageCurrentPathFileList", initValue = listOf<FileItemDto>()) //路径字符串，用路径分隔符分隔后的list
     val filesPageRequestFromParent = rememberSaveable { mutableStateOf("")}
@@ -1140,90 +1141,110 @@ fun HomeScreen(
 //        throw RuntimeException("test save when exception")  // passed, it can save when exception threw, even in android 8, still worked like a charm
         //test
 
-        try {
-            //检查是否初次使用，若是，显示欢迎弹窗
-            if (settingsSnapshot.value.firstUse) {
-                showWelcomeToNewUser.value = true
-            }
-            //恢复上次退出页面
-            val startPageMode = settingsSnapshot.value.startPageMode
-            if (startPageMode == SettingsCons.startPageMode_rememberLastQuit) {
-//                if (debugModeOn) {
-//                    println("startPageMode:" + startPageMode)
-//                    println("settingsSnapshot.value.lastQuitPage:" + settingsSnapshot.value.lastQuitHomeScreen)
-//                }
-
-                //从配置文件恢复上次退出页面
-                currentHomeScreen.intValue = settingsSnapshot.value.lastQuitHomeScreen
-                //设置初始化完成，之后就会通过更新页面值的代码来在页面值变化时更新配置文件中的值了
-                initDone.value = true
-            }
+        doJobThenOffLoading {
+            try {
+                //检查是否初次使用，若是，显示欢迎弹窗
+                if (settingsSnapshot.value.firstUse) {
+                    showWelcomeToNewUser.value = true
+                }
+                //恢复上次退出页面
+                val startPageMode = settingsSnapshot.value.startPageMode
+                if (startPageMode == SettingsCons.startPageMode_rememberLastQuit) {
+                    //从配置文件恢复上次退出页面
+                    currentHomeScreen.intValue = settingsSnapshot.value.lastQuitHomeScreen
+                    //设置初始化完成，之后就会通过更新页面值的代码来在页面值变化时更新配置文件中的值了
+                    initDone.value = true
+                }
 
 
-            //检查是否存在intent，如果存在，则切换到导入模式
-            if (activity != null) {
-                val intent = activity.intent
-                if (intent != null) {
-                    val extras = intent.extras
+                //检查是否存在intent，如果存在，则切换到导入模式
+                if (activity != null) {
+                    val intent = activity.intent
+                    if (intent != null) {
+                        val extras = intent.extras
 
-                    //importListConsumed 确保每个Activity的文件列表只被消费一次(20240706: 修复以导入模式启动app再进入子页面再返回会再次触发导入模式的bug)
-                    if (extras != null && !importListConsumed.value) {
-                        //20240706: fixed: if import mode in app then go to any sub page then back, will duplicate import files list
-                        //20240706: 修复以导入模式启动app后跳转到任意子页面再返回，导入文件列表重复的bug
-                        filesPageRequireImportUriList.value.clear()
+                        //importListConsumed 确保每个Activity的文件列表只被消费一次(20240706: 修复以导入模式启动app再进入子页面再返回会再次触发导入模式的bug)
+                        if (extras != null) {
+                            //if need import files, go to Files, else go to page which matched to the page id in the extras
+                            //if need import files, go to Files, else go to page which matched to the page id in the extras
 
-                        //获取单文件，对应 action SEND
-                        val uri = try {
-                            extras.getParcelable<Uri>(Intent.EXTRA_STREAM)  //如果没条目，会警告并打印异常信息，然后返回null
-                        } catch (e: Exception) {
-                            null
-                        }
-                        if (uri != null) {
-                            filesPageRequireImportUriList.value.add(uri)
-                        }
 
-                        //获取多文件，对应 action SEND_MULTIPLE
-                        val uriList = try {
-                            extras.getParcelableArrayList<Uri>(Intent.EXTRA_STREAM) ?: listOf()
-                        } catch (e: Exception) {
-                            listOf()
-                        }
-                        if (uriList.isNotEmpty()) {
-                            filesPageRequireImportUriList.value.addAll(uriList)
-                        }
+                            if (!intentConsumed.value) {  //如果列表已经消费过一次，不重新导入，有可能通过系统分享菜单启动app，然后切换到后台，然后再从后台启动app会发生这种情况，但用户有可能已经在上次进入app后点击进入其他页面，所以这时再启动导入模式是不合逻辑的
+                                //检查是否需要启动导入模式（用户可通过系统分享菜单文件到app以启动此模式）
+                                var importFiles = false  // after jump to Files, it will be set to true, else keep false
+                                //20240706: fixed: if import mode in app then go to any sub page then back, will duplicate import files list
+                                //20240706: 修复以导入模式启动app后跳转到任意子页面再返回，导入文件列表重复的bug
+                                filesPageRequireImportUriList.value.clear()
 
-                        if (filesPageRequireImportUriList.value.isNotEmpty()) {
-                            //把导入文件列表设为已消费，确保导入模式只启动一次，避免由导入模式启动的Activity离开Files页面后再返回再次显示导入栏
-                            importListConsumed.value = true
+                                //获取单文件，对应 action SEND
+                                val uri = try {
+                                    extras.getParcelable<Uri>(Intent.EXTRA_STREAM)  //如果没条目，会警告并打印异常信息，然后返回null
+                                } catch (e: Exception) {
+                                    null
+                                }
+                                if (uri != null) {
+                                    filesPageRequireImportUriList.value.add(uri)
+                                }
 
-                            //请求Files页面导入文件
-                            filesPageRequireImportFile.value = true
-                            currentHomeScreen.intValue = Cons.selectedItem_Files  //跳转到Files页面
+                                //获取多文件，对应 action SEND_MULTIPLE
+                                val uriList = try {
+                                    extras.getParcelableArrayList<Uri>(Intent.EXTRA_STREAM) ?: listOf()
+                                } catch (e: Exception) {
+                                    listOf()
+                                }
+                                if (uriList.isNotEmpty()) {
+                                    filesPageRequireImportUriList.value.addAll(uriList)
+                                }
+
+                                if (filesPageRequireImportUriList.value.isNotEmpty()) {
+                                    //把导入文件列表设为已消费，确保导入模式只启动一次，避免由导入模式启动的Activity离开Files页面后再返回再次显示导入栏
+                                    intentConsumed.value = true
+
+                                    //请求Files页面导入文件
+                                    filesPageRequireImportFile.value = true
+                                    currentHomeScreen.intValue = Cons.selectedItem_Files  //跳转到Files页面
+
+                                    importFiles = true
+                                }
+
+
+                                //导入文件完了，下面检查是否跳转页面
+
+
+                                //导入模式启动，页面已经跳转到Files，后面不用检查了
+                                if(importFiles) {
+                                    return@doJobThenOffLoading
+                                }
+
+                                //如果没有导入文件，检查是否需要跳转页面
+
+                                //如果intent携带了启动页面和仓库，使用
+                                val startPage = extras.getString("startPage") ?: ""
+                                val startRepoId = extras.getString("startRepoId") ?: ""
+
+                                if (startPage.isNotBlank()) {
+                                    if (startPage == Cons.selectedItem_ChangeList.toString()) {
+                                        var startRepo = changeListCurRepo.value
+                                        if (startRepoId.isNotBlank()) {  //参数中携带的目标仓库id，查一下子，有就有，没就拉倒
+                                            startRepo = AppModel.dbContainer.repoRepository.getById(startRepoId) ?: startRepo
+                                        }
+
+                                        goToChangeListPage(startRepo)
+                                    }
+                                    // else if go to other page maybe
+                                }
+                            }
+
                         }
                     }
                 }
+            } catch (e: Exception) {
+                MyLog.e(TAG, "#LaunchedEffect err: " + e.stackTraceToString())
+                Msg.requireShowLongDuration("init home err: " + e.localizedMessage)
             }
-//            if(currentPage.intValue == Cons.selectedItem_Repos) {
-//            }else if(currentPage.intValue == Cons.selectedItem_Files) {
-//            }else if(currentPage.intValue == Cons.selectedItem_Editor) {
-//            }else if(currentPage.intValue == Cons.selectedItem_ChangeList) {
-//
-//            }else if(currentPage.intValue == Cons.selectedItem_Settings) {
-//            }
-        } catch (e: Exception) {
-            MyLog.e(TAG, "#LaunchedEffect err: "+e.stackTraceToString())
-            Msg.requireShowLongDuration("init home err: "+e.localizedMessage)
+
         }
     }
-
-//
-//    //compose被销毁时执行的副作用
-//    DisposableEffect(Unit) {
-////        ("DisposableEffect: entered main")
-//        onDispose {
-////            ("DisposableEffect: exited main")
-//        }
-//    }
 
 }
 

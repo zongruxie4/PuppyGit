@@ -27,12 +27,13 @@ class HttpService : Service() {
         fun start(appContext: Context) {
             if(HttpServer.isServerRunning()) {
                 MyLog.w(TAG, "HttpServer already running, start canceled")
-                return
+            }else {
+                val serviceIntent = Intent(appContext, HttpService::class.java)
+                appContext.startForegroundService(serviceIntent)
+                MyLog.d(TAG, "HttpService started")
             }
 
-            val serviceIntent = Intent(appContext, HttpService::class.java)
-            appContext.startForegroundService(serviceIntent)
-            MyLog.d(TAG, "HttpService started")
+            TileHttpService.sendUpdateTileRequest(appContext, true)
         }
 
         //没运行service调用此方法应该不会报错，chatgpt说的，我没测试
@@ -40,8 +41,14 @@ class HttpService : Service() {
             val serviceIntent = Intent(appContext, HttpService::class.java)
             appContext.stopService(serviceIntent)
             MyLog.d(TAG, "HttpService stopped")
+
+            TileHttpService.sendUpdateTileRequest(appContext, false)
         }
+
+
     }
+
+
 
     override fun onCreate() {
         super.onCreate()
