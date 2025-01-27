@@ -7,7 +7,8 @@ import android.content.Intent
 import android.content.pm.ServiceInfo.FOREGROUND_SERVICE_TYPE_SPECIAL_USE
 import android.os.Build
 import android.os.IBinder
-import com.catpuppyapp.puppygit.notification.ServiceNotify
+import com.catpuppyapp.puppygit.constants.IDS
+import com.catpuppyapp.puppygit.notification.HttpServiceHoldNotify
 import com.catpuppyapp.puppygit.settings.AppSettings
 import com.catpuppyapp.puppygit.settings.SettingsUtil
 import com.catpuppyapp.puppygit.utils.AppModel
@@ -17,7 +18,7 @@ import kotlinx.coroutines.runBlocking
 
 
 private const val TAG = "HttpService"
-private const val serviceId = 10
+private const val serviceId = IDS.HttpService  //这id必须唯一，最好和notifyid也不一样
 
 class HttpService : Service() {
     companion object {
@@ -50,6 +51,8 @@ class HttpService : Service() {
             AppModel.init_2()
         }
 
+        MyLog.w(TAG, "http service onCreate() finished")
+
     }
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
@@ -69,6 +72,8 @@ class HttpService : Service() {
             }
         }
 
+        MyLog.w(TAG, "http service onStartCommand() finished")
+
         return START_STICKY
     }
 
@@ -80,14 +85,15 @@ class HttpService : Service() {
         super.onDestroy()
         HttpServer.stopServer()
         stopForeground(STOP_FOREGROUND_REMOVE)
+        MyLog.w(TAG, "http service onDestroy() finished")
     }
 
     private fun getNotification(settings: AppSettings): Notification {
-        val builder = ServiceNotify.getNotificationBuilder(
+        val builder = HttpServiceHoldNotify.getNotificationBuilder(
             this,
             "PuppyGit Service",
             "Listen on: http://${settings.httpService.listenHost}:${settings.httpService.listenPort}",
-            ServiceNotify.createPendingIntent(null, mapOf()), //启动app但不指定页面
+            HttpServiceHoldNotify.createPendingIntent(null, mapOf()), //启动app但不指定页面
         )
 
         return builder.build()

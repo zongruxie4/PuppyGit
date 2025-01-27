@@ -3,13 +3,13 @@ package com.catpuppyapp.puppygit.service.http.server
 import com.catpuppyapp.puppygit.constants.Cons
 import com.catpuppyapp.puppygit.data.entity.RepoEntity
 import com.catpuppyapp.puppygit.etc.Ret
+import com.catpuppyapp.puppygit.notification.NormalNotify
 import com.catpuppyapp.puppygit.settings.AppSettings
 import com.catpuppyapp.puppygit.settings.SettingsUtil
 import com.catpuppyapp.puppygit.utils.AppModel
 import com.catpuppyapp.puppygit.utils.Libgit2Helper
 import com.catpuppyapp.puppygit.utils.Libgit2Helper.Companion.getAheadBehind
 import com.catpuppyapp.puppygit.utils.MyLog
-import com.catpuppyapp.puppygit.notification.ServiceNotify
 import com.catpuppyapp.puppygit.utils.createAndInsertError
 import com.catpuppyapp.puppygit.utils.dbIntToBool
 import com.catpuppyapp.puppygit.utils.getSecFromTime
@@ -26,7 +26,6 @@ import io.ktor.server.request.host
 import io.ktor.server.response.respond
 import io.ktor.server.routing.get
 import io.ktor.server.routing.routing
-import kotlinx.coroutines.delay
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 import kotlinx.serialization.json.Json
@@ -503,7 +502,7 @@ private fun tokenCheck(token:String?,ip:String, settings: AppSettings): Ret<Unit
  * 启动app并定位到ChangeList和指定仓库
  */
 private fun sendNotification(title:String, msg:String, startRepoId:String) {
-    ServiceNotify.sendNotification(null, title, msg, ServiceNotify.createPendingIntent(null, mapOf("startPage" to Cons.selectedItem_ChangeList.toString(), "startRepoId" to startRepoId)))
+    NormalNotify.sendNotification(null, title, msg, NormalNotify.createPendingIntent(null, mapOf("startPage" to Cons.selectedItem_ChangeList.toString(), "startRepoId" to startRepoId)))
 }
 
 val throwRepoBusy = { _:Mutex ->

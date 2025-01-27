@@ -1,7 +1,6 @@
 package com.catpuppyapp.puppygit.utils
 
 import android.content.Context
-import android.content.Intent
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.material3.TopAppBarScrollBehavior
@@ -25,9 +24,10 @@ import com.catpuppyapp.puppygit.dev.FlagFileName
 import com.catpuppyapp.puppygit.dev.dev_EnableUnTestedFeature
 import com.catpuppyapp.puppygit.dto.DeviceWidthHeight
 import com.catpuppyapp.puppygit.jni.LibLoader
-import com.catpuppyapp.puppygit.notification.ServiceNotify
+import com.catpuppyapp.puppygit.notification.HttpServiceHoldNotify
+import com.catpuppyapp.puppygit.notification.NormalNotify
+import com.catpuppyapp.puppygit.notification.NotifyBase
 import com.catpuppyapp.puppygit.play.pro.BuildConfig
-import com.catpuppyapp.puppygit.service.http.server.HttpServer
 import com.catpuppyapp.puppygit.service.http.server.HttpService
 import com.catpuppyapp.puppygit.settings.AppSettings
 import com.catpuppyapp.puppygit.settings.SettingsUtil
@@ -271,7 +271,8 @@ object AppModel {
 
         AppModel.realAppContext = realAppContext
 
-        ServiceNotify.init(realAppContext)
+        NormalNotify.init(realAppContext)
+        HttpServiceHoldNotify.init(realAppContext)
 
         // every time run after Activity destory and re create
 

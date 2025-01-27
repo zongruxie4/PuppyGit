@@ -8,6 +8,7 @@ import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
 import android.os.Build
+import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.mutableStateOf
 import androidx.core.app.ActivityCompat
 import androidx.core.app.NotificationCompat
@@ -17,18 +18,27 @@ import com.catpuppyapp.puppygit.play.pro.R
 import com.catpuppyapp.puppygit.utils.MyLog
 
 
-object ServiceNotify {
-    private const val TAG = "ServiceNotify"
-    const val notifyId = 1  //在你app里你这个通知id，必须唯一
-    private val inited = mutableStateOf(false)
-
-    private lateinit var appContext:Context
-
-    private const val CHANNEL_ID = "service_notify"
-    private const val CHANNEL_NAME = "Service"
-    private const val CHANNEL_DESCRIPTION = "Show Service Notifications"
+open class NotifyBase(
+    private val TAG:String, // used for log
+    private val notifyId:Int,  //在你app里你这个通知id，必须唯一
+    private val channelId:String,
+    private val channelName:String,
+    private val channelDesc:String,
+) {
+    /**
+     * 用来避免重复执行init出错
+     */
+    private val inited:MutableState<Boolean> = mutableStateOf(false)
 
     /**
+     * applicationContext，不要用activityContext，
+     * init时会更新此变量为非null值
+     *
+     */
+    private var appContext:Context? = null
+
+    /**
+     * 必须先init，否则执行其他方法可能报错并且无效
      * @param context 建议传 applicationContext
      */
     fun init(context: Context) {
@@ -41,8 +51,8 @@ object ServiceNotify {
         appContext = context
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            val channel = NotificationChannel(CHANNEL_ID, CHANNEL_NAME, NotificationManager.IMPORTANCE_DEFAULT)
-            channel.description = CHANNEL_DESCRIPTION
+            val channel = NotificationChannel(channelId, channelName, NotificationManager.IMPORTANCE_DEFAULT)
+            channel.description = channelDesc
             val notificationManager = context.getSystemService(NotificationManager::class.java)
             notificationManager.createNotificationChannel(channel)
         }
@@ -50,7 +60,7 @@ object ServiceNotify {
 
     // 发送通知
     fun sendNotification(context: Context?, title: String?, message: String?, pendingIntent: PendingIntent?) {
-        val context = context ?: appContext
+        val context = context ?: appContext!!
 
         val builder = getNotificationBuilder(context, title, message, pendingIntent) // 点击后自动消失
 
@@ -77,7 +87,7 @@ object ServiceNotify {
     }
 
     fun getNotificationBuilder(context: Context, title: String?, message: String?, pendingIntent: PendingIntent?): NotificationCompat.Builder {
-        val builder = NotificationCompat.Builder(context, CHANNEL_ID)
+        val builder = NotificationCompat.Builder(context, channelId)
             .setSmallIcon(R.drawable.branch) // 替换为您的图标
             .setContentTitle(title)
             .setContentText(message)
@@ -89,7 +99,7 @@ object ServiceNotify {
     }
 
     fun createPendingIntent(context: Context?, extras:Map<String, String>): PendingIntent {
-        val context = context ?: appContext
+        val context = context ?: appContext!!
 
         val intent = Intent(context, MainActivity::class.java) // 替换为您的主活动
         intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
