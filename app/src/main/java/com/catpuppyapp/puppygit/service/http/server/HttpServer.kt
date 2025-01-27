@@ -67,6 +67,10 @@ object HttpServer {
                         call.respond(createSuccessResult(call.parameters.get("msg") ?: ""))
                     }
 
+//                    get("/launchApp") {
+//                        HttpService.launchApp()
+//                    }
+
                     /**
                      * query params:
                      *  repoNameOrId: repo name or id，优先查name，若无匹配，查id

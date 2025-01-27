@@ -46,6 +46,22 @@ class HttpService : Service() {
         }
 
 
+        //service启动Activity似乎需要弹窗权限，算了，点击通知启动也很方便
+//        fun launchApp() {
+//            val context = AppModel.realAppContext
+//
+//            val intent = Intent(context, MainActivity::class.java) // 替换为您的主活动
+//            //创建个新Activity并清掉之前的Activity，不然可能存在多个Activity，有点混乱
+//            //这个 or 是 bitwise，相当于 '1 | 0' 的 '|'
+//            intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK)
+//
+////            intent.putExtra(IntentCons.ExtrasKey.startPage, Cons.selectedItem_Repos)
+////            intent.putExtra(IntentCons.ExtrasKey.startRepoId, )
+//
+//           context.startActivity(intent)
+//        }
+
+
     }
 
 
@@ -88,6 +104,7 @@ class HttpService : Service() {
                 }
             }
 
+            //严格来说start并没finished，只是调用了，可能得等会HttpServer.isServerRunning()才能检测到true
             MyLog.w(TAG, "http service onStartCommand() start finished")
 
         }
