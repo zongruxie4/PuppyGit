@@ -75,6 +75,7 @@ import com.github.git24j.core.Submodule
 import com.github.git24j.core.Tag
 import com.github.git24j.core.Tree
 import kotlinx.coroutines.channels.Channel
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 import java.io.File
@@ -6541,11 +6542,22 @@ class Libgit2Helper {
             }
         }
 
-        suspend fun doActWithRepoLock(curRepo:RepoEntity, onLockFailed:(lock:Mutex)->Unit={}, act: suspend ()->Unit) {
+        suspend fun doActWithRepoLock(curRepo:RepoEntity, waitInMillSec:Long=0, onLockFailed:(lock:Mutex)->Unit={}, act: suspend ()->Unit) {
             val lock = Libgit2Helper.getRepoLock(curRepo.id)
             //maybe do other jobs
             if(lock.isLocked) {
-                onLockFailed(lock)
+                if(waitInMillSec > 0) {
+                    delay(waitInMillSec)
+                    if(lock.isLocked) {
+                        onLockFailed(lock)
+                    }else {
+                        lock.withLock {
+                            act()
+                        }
+                    }
+                }else {
+                    onLockFailed(lock)
+                }
             }else {
                 lock.withLock {
                     act()

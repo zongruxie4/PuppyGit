@@ -39,6 +39,8 @@ import kotlinx.serialization.json.Json
 import kotlinx.serialization.serializer
 
 private const val TAG = "HttpServer"
+private const val waitInMillSecIfApiBusy = 3000L
+
 
 object HttpServer {
     private val lock = Mutex()
@@ -470,7 +472,7 @@ private suspend fun pullRepoList(
 
     repoList.forEach { repoFromDb ->
         try {
-            Libgit2Helper.doActWithRepoLock(repoFromDb, onLockFailed = throwRepoBusy) {
+            Libgit2Helper.doActWithRepoLock(repoFromDb, waitInMillSec = waitInMillSecIfApiBusy, onLockFailed = throwRepoBusy) {
                 if(dbIntToBool(repoFromDb.isDetached)) {
                     throw RuntimeException("repo is detached")
                 }
@@ -578,7 +580,7 @@ private suspend fun pushRepoList(
 
     repoList.forEach {repoFromDb ->
         try {
-            Libgit2Helper.doActWithRepoLock(repoFromDb, onLockFailed = throwRepoBusy) {
+            Libgit2Helper.doActWithRepoLock(repoFromDb, waitInMillSec = waitInMillSecIfApiBusy, onLockFailed = throwRepoBusy) {
                 if(dbIntToBool(repoFromDb.isDetached)) {
                     throw RuntimeException("repo is detached")
                 }
@@ -628,7 +630,7 @@ private suspend fun pushRepoList(
 
                                 //如果index不为空，则创建提交
                                 if(!Libgit2Helper.indexIsEmpty(gitRepo)) {
-                                    Libgit2Helper.createCommit(
+                                    val ret = Libgit2Helper.createCommit(
                                         repo = gitRepo,
                                         msg = "",
                                         username = username,
@@ -638,6 +640,15 @@ private suspend fun pushRepoList(
                                         overwriteAuthorWhenAmend = false,
                                         settings = settings
                                     )
+
+                                    if(ret.hasError()) {
+                                        MyLog.w(TAG, "http server: api=$routeName, repoName=${repoFromDb.repoName}, create commit err: ${ret.msg}, exception=${ret.exception?.printStackTrace()}")
+                                        // 显示个手机通知，点击进入ChangeList并定位到对应仓库
+                                        sendNotification("Error", "Commit err: ${ret.msg}", Cons.selectedItem_ChangeList, repoFromDb.id)
+                                    }else {
+                                        //更新本地oid，不然后面会误认为up to date，然后不推送
+                                        upstream.localOid = ret.data!!.toString()
+                                    }
                                 }
 
                             }
