@@ -948,9 +948,11 @@ fun EditorInnerPage(
                             .map { (k, v) ->
                                 // Pair(fileName, fileFullPath)
                                 Pair(getFileNameFromCanonicalPath(k), k)
+                            }.let {
+                                // limit list size to 10
+                                it.subList(0, it.size.coerceAtMost(10))  // I think, recent file list, show 10 is good, if more, feels bad, to much files = no files, just make headache
+
                             }
-                            // limit list size to 10
-                            .subList(0, 10)  // I think, recent file list, show 10 is good, if more, feels bad, to much files = no files, just make headache
 
                         // add sorted list to page state variable
                         recentFileList.value.clear()
