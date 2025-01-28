@@ -81,7 +81,7 @@ object HttpServer {
                      * query params:
                      *  repoNameOrId: repo name or id, match by name first, if none, will match by id
                      *  gitUsername: using for create commit, if null, will use PuppyGit settings
-                     *  gitEmail: using for create commit, if nul, will use PuppyGit settings
+                     *  gitEmail: using for create commit, if null, will use PuppyGit settings
                      *  forceUseIdMatchRepo: 1 enable or 0 disable, default 0, if enable, will force match repo by repo id, else will match by name first, if no match, then match by id
                      *  token: token is required
 
@@ -148,7 +148,7 @@ object HttpServer {
                      * query params:
                      *  repoNameOrId: repo name or id，优先查name，若无匹配，查id
                      *  gitUsername: using for create commit, if null, will use PuppyGit settings
-                     *  gitEmail: using for create commit, if nul, will use PuppyGit settings
+                     *  gitEmail: using for create commit, if null, will use PuppyGit settings
                      *  force: force push, 1 enable , 0 disable, if null, will disable (as 0)
                      *  forceUseIdMatchRepo: 1 enable or 0 disable, default 0, if enable, will force match repo by repo id, else will match by name first, if no match, then match by id
                      *  token: token is required
@@ -227,12 +227,12 @@ object HttpServer {
 
                     /**
                      * query params:
-                     *  username: using for create commit, if null, will use PuppyGit settings
-                     *  email: using for create commit, if nul, will use PuppyGit settings
+                     *  gitUsername: using for create commit, if null, will use PuppyGit settings
+                     *  gitEmail: using for create commit, if null, will use PuppyGit settings
                      *  token: token is required
 
                      * e.g.
-                     * request: http://127.0.0.1/pullAll?username=username&email=email&token=your_token
+                     * request: http://127.0.0.1/pullAll?gitUsername=username&gitEmail=email&token=your_token
                      */
                     get("/pullAll") {
                         val routeName = "'/pullAll'"
@@ -267,6 +267,8 @@ object HttpServer {
 
                     /**
                      * query params:
+                     *  gitUsername: using for create commit, if null, will use PuppyGit settings
+                     *  gitEmail: using for create commit, if null, will use PuppyGit settings
                      *  autoCommit: same as '/push'
                      *  force: 1 enable , 0 disable, default 0
                      *  token: token is required
