@@ -959,6 +959,13 @@ fun splitLines(str:String):List<String> {
     return filteredLines
 }
 
+fun listToLines(list:List<String>):String {
+    val line = "\n"
+    val sb = StringBuilder()
+    list.forEach { sb.append(it).append(line) }
+    return sb.removeSuffix(line).toString()
+}
+
 //我为什么要写这个函数来着？
 fun parseInt(str:String):Int? {
     return try {

@@ -5,8 +5,10 @@ import androidx.compose.foundation.ScrollState
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.rememberScrollState
@@ -20,13 +22,17 @@ import androidx.compose.material3.TextField
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.MutableState
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.platform.LocalClipboardManager
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.platform.LocalView
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.font.FontWeight
@@ -38,11 +44,13 @@ import com.catpuppyapp.puppygit.compose.InLineIcon
 import com.catpuppyapp.puppygit.compose.PaddingRow
 import com.catpuppyapp.puppygit.compose.SettingsContent
 import com.catpuppyapp.puppygit.compose.SettingsTitle
+import com.catpuppyapp.puppygit.compose.SoftkeyboardVisibleListener
 import com.catpuppyapp.puppygit.play.pro.R
 import com.catpuppyapp.puppygit.service.http.server.HttpServer
 import com.catpuppyapp.puppygit.service.http.server.HttpService
 import com.catpuppyapp.puppygit.settings.SettingsUtil
 import com.catpuppyapp.puppygit.style.MyStyleKt
+import com.catpuppyapp.puppygit.utils.ActivityUtil
 import com.catpuppyapp.puppygit.utils.AppModel
 import com.catpuppyapp.puppygit.utils.ComposeHelper
 import com.catpuppyapp.puppygit.utils.Msg
@@ -50,7 +58,10 @@ import com.catpuppyapp.puppygit.utils.NetUtils
 import com.catpuppyapp.puppygit.utils.UIHelper
 import com.catpuppyapp.puppygit.utils.doJobThenOffLoading
 import com.catpuppyapp.puppygit.utils.genHttpHostPortStr
+import com.catpuppyapp.puppygit.utils.listToLines
 import com.catpuppyapp.puppygit.utils.parseInt
+import com.catpuppyapp.puppygit.utils.splitLines
+import com.catpuppyapp.puppygit.utils.state.mutableCustomStateListOf
 import com.catpuppyapp.puppygit.utils.state.mutableCustomStateOf
 
 private const val stateKeyTag = "ServiceInnerPage"
@@ -66,16 +77,166 @@ fun ServiceInnerPage(
     listState:ScrollState
 ){
 
+    // softkeyboard show/hidden relate start
+
+    val view = LocalView.current
+    val density = LocalDensity.current
+
+    val isKeyboardVisible = rememberSaveable { mutableStateOf(false) }
+    //indicate keyboard covered component
+    val isKeyboardCoveredComponent = rememberSaveable { mutableStateOf(false) }
+    // which component expect adjust heghit or padding when softkeyboard shown
+    val componentHeight = rememberSaveable { mutableIntStateOf(0) }
+    // the padding value when softkeyboard shown
+    val keyboardPaddingDp = rememberSaveable { mutableIntStateOf(0) }
+
+    // softkeyboard show/hidden relate end
+
     val activityContext = LocalContext.current
     val clipboardManager = LocalClipboardManager.current
 
     val settingsState = mutableCustomStateOf(stateKeyTag, "settingsState", SettingsUtil.getSettingsSnapshot())
 
     val runningStatus = rememberSaveable { mutableStateOf(HttpServer.isServerRunning()) }
-    val launchOnAppStartup = rememberSaveable { mutableStateOf(SettingsUtil.getSettingsSnapshot().httpService.launchOnAppStartup) }
+    val launchOnAppStartup = rememberSaveable { mutableStateOf(settingsState.value.httpService.launchOnAppStartup) }
     val launchOnSystemStartUp = rememberSaveable { mutableStateOf(HttpService.launchOnSystemStartUpEnabled(activityContext)) }
-    val errNotify = rememberSaveable { mutableStateOf(SettingsUtil.getSettingsSnapshot().httpService.showNotifyWhenErr) }
-    val successNotify = rememberSaveable { mutableStateOf(SettingsUtil.getSettingsSnapshot().httpService.showNotifyWhenSuccess) }
+    val errNotify = rememberSaveable { mutableStateOf(settingsState.value.httpService.showNotifyWhenErr) }
+    val successNotify = rememberSaveable { mutableStateOf(settingsState.value.httpService.showNotifyWhenSuccess) }
+
+    val ipWhitelist = mutableCustomStateListOf(stateKeyTag, "ipWhitelist") { settingsState.value.httpService.ipWhiteList }
+    val ipWhitelistBuf = rememberSaveable { mutableStateOf("") }
+    val showSetIpWhiteListDialog = rememberSaveable { mutableStateOf(false) }
+    val initSetIpWhitelistDialog = {
+        ipWhitelistBuf.value = listToLines(ipWhitelist.value)
+        showSetIpWhiteListDialog.value = true
+    }
+
+    if(showSetIpWhiteListDialog.value) {
+        ConfirmDialog2(
+            title = stringResource(R.string.ip_whitelist),
+            requireShowTextCompose = true,
+            textCompose =  {
+                Column(
+                    // get height for add bottom padding when showing softkeyboard
+                    modifier = Modifier.onGloballyPositioned { layoutCoordinates ->
+//                                println("layoutCoordinates.size.height:${layoutCoordinates.size.height}")
+                        // 获取组件的高度
+                        // unit is px ( i am not very sure)
+                        componentHeight.intValue = layoutCoordinates.size.height
+                    }
+                ) {
+                    Text(stringResource(R.string.per_line_one_ip), fontWeight = FontWeight.Light)
+                    Spacer(modifier = Modifier.height(5.dp))
+                    Text(stringResource(R.string.if_empty_will_reject_all_requests), fontWeight = FontWeight.Light)
+                    Spacer(modifier = Modifier.height(5.dp))
+                    Text(stringResource(R.string.use_asterisk_to_match_all_ips), fontWeight = FontWeight.Light)
+                    Spacer(modifier = Modifier.height(5.dp))
+                    TextField(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .then(
+                                if (isKeyboardCoveredComponent.value) Modifier.padding(bottom = keyboardPaddingDp.intValue.dp) else Modifier
+                            ),
+                        value = ipWhitelistBuf.value,
+                        onValueChange = {
+                            ipWhitelistBuf.value = it
+                        },
+                        label = {
+                            Text(stringResource(R.string.list_of_ips))
+                        },
+                    )
+
+                    Spacer(Modifier.height(10.dp))
+                }
+
+            },
+            okBtnText = stringResource(id = R.string.save),
+            cancelBtnText = stringResource(id = R.string.cancel),
+            onCancel = { showSetIpWhiteListDialog.value = false }
+        ) {
+            showSetIpWhiteListDialog.value = false
+
+            doJobThenOffLoading {
+                val newValue = ipWhitelistBuf.value
+                val newList = splitLines(newValue)
+                ipWhitelist.value.clear()
+                ipWhitelist.value.addAll(newList)
+                SettingsUtil.update {
+                    it.httpService.ipWhiteList = newList
+                }
+
+                Msg.requireShow(activityContext.getString(R.string.success))
+            }
+        }
+    }
+
+
+    val tokenList = mutableCustomStateListOf(stateKeyTag, "tokenList") { settingsState.value.httpService.tokenList }
+    val tokenListBuf = rememberSaveable { mutableStateOf("") }
+    val showSetTokenListDialog = rememberSaveable { mutableStateOf(false) }
+    val initSetTokenListDialog = {
+        tokenListBuf.value = listToLines(tokenList.value)
+        showSetTokenListDialog.value = true
+    }
+
+    if(showSetTokenListDialog.value) {
+        ConfirmDialog2(
+            title = stringResource(R.string.tokens),
+            requireShowTextCompose = true,
+            textCompose =  {
+                Column(
+                    // get height for add bottom padding when showing softkeyboard
+                    modifier = Modifier.onGloballyPositioned { layoutCoordinates ->
+//                                println("layoutCoordinates.size.height:${layoutCoordinates.size.height}")
+                        // 获取组件的高度
+                        // unit is px ( i am not very sure)
+                        componentHeight.intValue = layoutCoordinates.size.height
+                    }
+                ) {
+                    Text(stringResource(R.string.per_line_one_token), fontWeight = FontWeight.Light)
+                    Spacer(modifier = Modifier.height(5.dp))
+                    Text(stringResource(R.string.if_empty_will_reject_all_requests), fontWeight = FontWeight.Light)
+                    Spacer(modifier = Modifier.height(5.dp))
+                    TextField(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .then(
+                                if (isKeyboardCoveredComponent.value) Modifier.padding(bottom = keyboardPaddingDp.intValue.dp) else Modifier
+                            ),
+                        value = tokenListBuf.value,
+                        onValueChange = {
+                            tokenListBuf.value = it
+                        },
+                        label = {
+                            Text(stringResource(R.string.list_of_tokens))
+                        },
+                    )
+
+                    Spacer(Modifier.height(10.dp))
+                }
+
+            },
+            okBtnText = stringResource(id = R.string.save),
+            cancelBtnText = stringResource(id = R.string.cancel),
+            onCancel = { showSetTokenListDialog.value = false }
+        ) {
+            showSetTokenListDialog.value = false
+
+            doJobThenOffLoading {
+                val newValue = tokenListBuf.value
+                val newList = splitLines(newValue)
+                tokenList.value.clear()
+                tokenList.value.addAll(newList)
+                SettingsUtil.update {
+                    it.httpService.tokenList = newList
+                }
+
+                Msg.requireShow(activityContext.getString(R.string.success))
+            }
+        }
+    }
+
+
 
     val listenHost = rememberSaveable { mutableStateOf(settingsState.value.httpService.listenHost) }
     val listenHostBuf = rememberSaveable { mutableStateOf(listenHost.value) }
@@ -257,10 +418,11 @@ fun ServiceInnerPage(
 
         SettingsContent(onClick = {
             doJobThenOffLoading {
-                if(NetUtils.checkPuppyGitHttpServiceRunning(genHttpHostPortStr(listenHost.value, listenPort.value))) {
-                    Msg.requireShow(activityContext.getString(R.string.success))
+                val requestRet = NetUtils.checkPuppyGitHttpServiceRunning(genHttpHostPortStr(listenHost.value, listenPort.value))
+                if(requestRet.hasError()) {
+                    Msg.requireShow(requestRet.msg)
                 }else {
-                    Msg.requireShow(activityContext.getString(R.string.failed))
+                    Msg.requireShow(activityContext.getString(R.string.success))
                 }
             }
         }) {
@@ -281,6 +443,16 @@ fun ServiceInnerPage(
             }
         }
 
+
+        SettingsContent(onClick = {
+            ActivityUtil.openUrl(activityContext, httpServiceApiUrl)
+        }) {
+            Column {
+                Text(stringResource(R.string.document), fontSize = itemFontSize)
+            }
+        }
+
+
         SettingsTitle(stringResource(R.string.settings))
 
         SettingsContent(onClick = {
@@ -298,6 +470,22 @@ fun ServiceInnerPage(
             Column {
                 Text(stringResource(R.string.port), fontSize = itemFontSize)
                 Text(listenPort.value, fontSize = itemDescFontSize, fontWeight = FontWeight.Light)
+            }
+        }
+
+        SettingsContent(onClick = {
+            initSetTokenListDialog()
+        }) {
+            Column {
+                Text(stringResource(R.string.tokens), fontSize = itemFontSize)
+            }
+        }
+
+        SettingsContent(onClick = {
+            initSetIpWhitelistDialog()
+        }) {
+            Column {
+                Text(stringResource(R.string.ip_whitelist), fontSize = itemFontSize)
             }
         }
 
@@ -405,4 +593,18 @@ fun ServiceInnerPage(
         settingsState.value = SettingsUtil.getSettingsSnapshot()
         runningStatus.value = HttpServer.isServerRunning()
     }
+
+
+    SoftkeyboardVisibleListener(
+        view = view,
+        isKeyboardVisible = isKeyboardVisible,
+        isKeyboardCoveredComponent = isKeyboardCoveredComponent,
+        componentHeight = componentHeight,
+        keyboardPaddingDp = keyboardPaddingDp,
+        density = density,
+        skipCondition = {
+            showSetTokenListDialog.value.not() && showSetIpWhiteListDialog.value.not()
+        }
+    )
+
 }

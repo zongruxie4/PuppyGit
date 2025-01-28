@@ -1173,5 +1173,14 @@
     <string name="failed">Failed</string>
     <string name="host">Host</string>
     <string name="err_host_invalid">err: Host Invalid</string>
+    <string name="tokens">Tokens</string>
+    <string name="per_line_one_token">Per line one token</string>
+    <string name="if_empty_will_reject_all_requests">If empty, will reject all requests</string>
+    <string name="ip_whitelist">ip Whitelist</string>
+    <string name="per_line_one_ip">Per line one ip</string>
+    <string name="use_asterisk_to_match_all_ips">use \'*\' to match all ips</string>
+    <string name="document">Document</string>
+    <string name="list_of_tokens">List of tokens</string>
+    <string name="list_of_ips">List of ips</string>
 
 </resources>

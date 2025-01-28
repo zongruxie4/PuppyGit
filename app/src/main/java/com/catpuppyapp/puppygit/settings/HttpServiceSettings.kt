@@ -16,6 +16,7 @@ data class HttpServiceSettings (
     /**
      * token, use to verify the requester, a request must ip in the white list and bearer the token
      *
+     * will use first token in the list when copy api config in the Repos Screen
      * note: if token list is empty, will reject all request
      *
      */

@@ -376,24 +376,27 @@ object HttpServer {
         val port = settings.httpService.listenPort
         val token = settings.httpService.tokenList.let { if(it.isEmpty()) "" else it.first() }
 
-        return JsonUtil.j2.encodeToString(
-            JsonUtil.j2.serializersModule.serializer(),
+        return JsonUtil.j2PrettyPrint.let {
+            it.encodeToString(
+                it.serializersModule.serializer(),
 
-            ConfigDto(
-                repoName = repoEntity.repoName,
-                repoId = repoEntity.id,
-                api = ApiDto(
-                    protocol = "http",
-                    host = host,
-                    port = port,
-                    pull = "/pull",
-                    push = "/push",
-                    //少加点参数，少写少错
-                    pull_example= "${genHttpHostPortStr(host, port.toString())}/pull?token=$token&repoNameOrId=${repoEntity.repoName}",
-                    push_example= "${genHttpHostPortStr(host, port.toString())}/push?token=$token&repoNameOrId=${repoEntity.repoName}",
+                ConfigDto(
+                    repoName = repoEntity.repoName,
+                    repoId = repoEntity.id,
+                    api = ApiDto(
+                        protocol = "http",
+                        host = host,
+                        port = port,
+                        token = token,
+                        pull = "/pull",
+                        push = "/push",
+                        //少加点参数，少写少错
+                        pull_example = "${genHttpHostPortStr(host, port.toString())}/pull?token=$token&repoNameOrId=${repoEntity.repoName}",
+                        push_example = "${genHttpHostPortStr(host, port.toString())}/push?token=$token&repoNameOrId=${repoEntity.repoName}",
+                    )
                 )
             )
-        )
+        }
     }
 
 }

@@ -1150,6 +1150,15 @@
     <string name="failed">失败</string>
     <string name="host">主机</string>
     <string name="err_host_invalid">错误: 主机无效</string>
+    <string name="tokens">令牌</string>
+    <string name="per_line_one_token">每行一个令牌</string>
+    <string name="if_empty_will_reject_all_requests">若留空，将拒绝所有请求</string>
+    <string name="ip_whitelist">ip白名单</string>
+    <string name="per_line_one_ip">每行一个ip</string>
+    <string name="use_asterisk_to_match_all_ips">使用 \'*\' 匹配所有ip</string>
+    <string name="document">文档</string>
+    <string name="list_of_tokens">令牌列表</string>
+    <string name="list_of_ips">ip列表</string>
 
 
 </resources>

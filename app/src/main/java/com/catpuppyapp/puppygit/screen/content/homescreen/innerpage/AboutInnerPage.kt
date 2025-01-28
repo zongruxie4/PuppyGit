@@ -51,6 +51,7 @@ const val discussionLink = "$sourceCodeLink/discussions"
 const val reportBugsLink = "$sourceCodeLink/issues/new"
 const val donateLink = "$sourceCodeLink/blob/main/donate.md"
 const val faqLink = "$sourceCodeLink/blob/main/FAQ.md"
+const val httpServiceApiUrl = "$sourceCodeLink/blob/main/http_service_api.md"
 
 
 var versionCode: Int = AppModel.getAppVersionCode()

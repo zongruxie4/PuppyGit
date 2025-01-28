@@ -15,4 +15,8 @@ object JsonUtil {
      * 会包含默认值
      */
     val j2 = Json{ ignoreUnknownKeys = true; encodeDefaults = true }
+    /**
+     * 会包含默认值 且 格式看着顺眼
+     */
+    val j2PrettyPrint = Json{ ignoreUnknownKeys = true; encodeDefaults = true; prettyPrint = true }
 }
