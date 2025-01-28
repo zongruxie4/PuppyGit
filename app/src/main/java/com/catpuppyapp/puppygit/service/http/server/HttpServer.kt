@@ -414,17 +414,17 @@ private fun tokenPassedOrThrowException(token:String?, ip:String, settings: AppS
     val errMsg = "invalid token or ip blocked"
     val errRet:Ret<Unit?> = Ret.createError(null, errMsg)
 
-    val whiteList = settings.httpService.ipWhiteList
-    //匹配所有，或者匹配到请求者的ip
-    if(ip.isBlank() || whiteList.find { it == "*" || it == ip } == null) {
-        return errRet
-    }
-
     // check token
     val tokenList = settings.httpService.tokenList
     //全空格token不被允许，不过"a b c"这种可以允许，首尾空格将被去除，但中间的会保留
     if(token == null || tokenList.isEmpty() || token.isBlank() || tokenList.contains(token).not()) {
         // token empty will reject all requests
+        return errRet
+    }
+
+    val whiteList = settings.httpService.ipWhiteList
+    //匹配到通配符 或者 匹配到请求者的ip 则 放行
+    if(whiteList.isEmpty() || ip.isBlank() || whiteList.find { it == "*" || it == ip } == null) {
         return errRet
     }
 
