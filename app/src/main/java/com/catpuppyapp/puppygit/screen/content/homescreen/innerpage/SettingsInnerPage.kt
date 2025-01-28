@@ -1000,7 +1000,7 @@ fun SettingsInnerPage(
     }
 
 
-    LaunchedEffect(needRefreshPage) {
+    LaunchedEffect(needRefreshPage.value) {
         settingsState.value = SettingsUtil.getSettingsSnapshot()
 
     }
