@@ -107,6 +107,11 @@ object HttpServer {
                             repoNameOrIdForLog = repoNameOrId
 
 
+                            if(settings.httpService.showNotifyWhenProgress) {
+                                sendProgressNotification(repoNameOrId, "pulling...")
+                            }
+
+
                             val forceUseIdMatchRepo = call.request.queryParameters.get("forceUseIdMatchRepo") == "1"
                             // get git username and email for merge, if request doesn't contains them, will use PuppyGit app settings
                             val gitUsernameFromUrl = call.request.queryParameters.get("gitUsername") ?:""
@@ -178,6 +183,12 @@ object HttpServer {
 
                             repoNameOrIdForLog = repoNameOrId
 
+
+                            if(settings.httpService.showNotifyWhenProgress) {
+                                sendProgressNotification(repoNameOrId, "pushing...")
+                            }
+
+
                             val forceUseIdMatchRepo = call.request.queryParameters.get("forceUseIdMatchRepo") == "1"
 
 
@@ -244,6 +255,11 @@ object HttpServer {
                             tokenPassedOrThrowException(call, routeName, settings)
 
 
+                            if(settings.httpService.showNotifyWhenProgress) {
+                                sendProgressNotification("PuppyGit", "pulling all...")
+                            }
+
+
                             // get git username and email for merge, if request doesn't contains them, will use PuppyGit app settings
                             val gitUsernameFromUrl = call.request.queryParameters.get("gitUsername") ?:""
                             val gitEmailFromUrl = call.request.queryParameters.get("gitEmail") ?:""
@@ -284,6 +300,10 @@ object HttpServer {
                         try {
                             val settings = SettingsUtil.getSettingsSnapshot()
                             tokenPassedOrThrowException(call, routeName, settings)
+
+                            if(settings.httpService.showNotifyWhenProgress) {
+                                sendProgressNotification("PuppyGit", "pushing all...")
+                            }
 
                             //这个只要不明确传0，就是启用
                             val autoCommit = call.request.queryParameters.get("autoCommit") != "0"
@@ -453,6 +473,10 @@ private fun sendNotification(title:String, msg:String, startPage:Int, startRepoI
 private fun sendSuccessNotification(title:String?, msg:String?, startPage:Int?, repoId:String?) {
     //Never页面永远不会被处理，变相等于启动app时回到上次退出时的页面
     sendNotification(title ?: "PuppyGit", msg ?: "Success", startPage ?: Cons.selectedItem_Never, repoId ?: "")
+}
+
+private fun sendProgressNotification(repoNameOrId:String, progress:String) {
+    sendNotification(repoNameOrId, progress, Cons.selectedItem_Never, "")
 }
 
 val throwRepoBusy = { _:Mutex ->

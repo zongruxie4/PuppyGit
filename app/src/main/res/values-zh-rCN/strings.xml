@@ -1160,6 +1160,7 @@
     <string name="list_of_tokens">令牌列表</string>
     <string name="list_of_ips">ip列表</string>
     <string name="api">Api</string>
+    <string name="progress_notification">进度通知</string>
 
 
 </resources>

@@ -100,6 +100,7 @@ fun ServiceInnerPage(
     val runningStatus = rememberSaveable { mutableStateOf(HttpServer.isServerRunning()) }
     val launchOnAppStartup = rememberSaveable { mutableStateOf(settingsState.value.httpService.launchOnAppStartup) }
     val launchOnSystemStartUp = rememberSaveable { mutableStateOf(HttpService.launchOnSystemStartUpEnabled(activityContext)) }
+    val progressNotify = rememberSaveable { mutableStateOf(settingsState.value.httpService.showNotifyWhenProgress) }
     val errNotify = rememberSaveable { mutableStateOf(settingsState.value.httpService.showNotifyWhenErr) }
     val successNotify = rememberSaveable { mutableStateOf(settingsState.value.httpService.showNotifyWhenSuccess) }
 
@@ -538,27 +539,28 @@ fun ServiceInnerPage(
 
 
         SettingsContent(onClick = {
-            val newValue = !errNotify.value
+            val newValue = !progressNotify.value
 
             //save
-            errNotify.value = newValue
+            progressNotify.value = newValue
             SettingsUtil.update {
-                it.httpService.showNotifyWhenErr = newValue
+                it.httpService.showNotifyWhenProgress = newValue
             }
         }) {
             Column(modifier = Modifier.fillMaxWidth(itemLeftWidthForSwitcher)) {
-                Text(stringResource(R.string.err_notification), fontSize = itemFontSize)
+                Text(stringResource(R.string.progress_notification), fontSize = itemFontSize)
 //                Text(stringResource(R.string.go_to_top_bottom_buttons), fontSize = itemDescFontSize, fontWeight = FontWeight.Light)
 //                Text(stringResource(R.string.require_restart_app), fontSize = itemDescFontSize, fontWeight = FontWeight.Light, fontStyle = FontStyle.Italic)
             }
 
             Icon(
                 modifier = Modifier.size(switcherIconSize),
-                imageVector = UIHelper.getIconForSwitcher(errNotify.value),
-                contentDescription = if(errNotify.value) stringResource(R.string.enable) else stringResource(R.string.disable),
-                tint = UIHelper.getColorForSwitcher(errNotify.value),
+                imageVector = UIHelper.getIconForSwitcher(progressNotify.value),
+                contentDescription = if(progressNotify.value) stringResource(R.string.enable) else stringResource(R.string.disable),
+                tint = UIHelper.getColorForSwitcher(progressNotify.value),
             )
         }
+
 
         SettingsContent(onClick = {
             val newValue = !successNotify.value
@@ -583,6 +585,29 @@ fun ServiceInnerPage(
             )
         }
 
+
+        SettingsContent(onClick = {
+            val newValue = !errNotify.value
+
+            //save
+            errNotify.value = newValue
+            SettingsUtil.update {
+                it.httpService.showNotifyWhenErr = newValue
+            }
+        }) {
+            Column(modifier = Modifier.fillMaxWidth(itemLeftWidthForSwitcher)) {
+                Text(stringResource(R.string.err_notification), fontSize = itemFontSize)
+//                Text(stringResource(R.string.go_to_top_bottom_buttons), fontSize = itemDescFontSize, fontWeight = FontWeight.Light)
+//                Text(stringResource(R.string.require_restart_app), fontSize = itemDescFontSize, fontWeight = FontWeight.Light, fontStyle = FontStyle.Italic)
+            }
+
+            Icon(
+                modifier = Modifier.size(switcherIconSize),
+                imageVector = UIHelper.getIconForSwitcher(errNotify.value),
+                contentDescription = if(errNotify.value) stringResource(R.string.enable) else stringResource(R.string.disable),
+                tint = UIHelper.getColorForSwitcher(errNotify.value),
+            )
+        }
 
 
         PaddingRow()

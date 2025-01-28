@@ -49,4 +49,10 @@ data class HttpServiceSettings (
      */
     var showNotifyWhenSuccess:Boolean = false,
 
+    /**
+     * show notify if server acting
+     * 进度通知，例如正在推送、正在拉取之类的
+     */
+    var showNotifyWhenProgress:Boolean = true,
+
 )

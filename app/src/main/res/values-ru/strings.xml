@@ -1183,5 +1183,6 @@
     <string name="list_of_tokens">List of tokens</string>
     <string name="list_of_ips">List of ips</string>
     <string name="api">Api</string>
+    <string name="progress_notification">Progress Notification</string>
 
 </resources>
