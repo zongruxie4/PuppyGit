@@ -498,49 +498,6 @@ fun EditorInnerPage(
     val showRecentFilesList = rememberSaveable { mutableStateOf(false) }
     // Pair(fileName, fileFullPath)
     val recentFileList = mutableCustomStateListOf(stateKeyTag, "recentFileList") { listOf<Pair<String, String>>() }
-    if(showRecentFilesList.value) {
-        DropdownMenu(
-            expanded = showRecentFilesList.value,
-            offset = DpOffset(x=180.dp, y=0.dp),
-            onDismissRequest = { showRecentFilesList.value = false }
-        ) {
-            for((fileName, filePath) in recentFileList.value) {
-                DropdownMenuItem(
-                    text = { Text(fileName) },
-                    onClick = {
-                        // close dropdown menu
-                        showRecentFilesList.value=false
-
-                        //open file
-                        //只读关闭时，检查是否需要开启。（因为仅存在需要自动打开只读的情况（打开不允许编辑的目录下文件时），不存在需要自动关闭只读的情况，所以，仅在只读关闭时检查是否需要开启只读，若只读开启，用户想关可打开文件后关（当然，不允许编辑的文件除外，这种文件只读选项将保持开启并禁止关闭））
-//                        if (!readOnlyMode.value) {
-//                            readOnlyMode.value = FsUtils.isReadOnlyDir(filePath)  //避免打开文件，退出app，直接从editor点击 open last然后可编辑本不应该允许编辑的app内置目录下的文件
-//                        }
-//                                editorMergeMode.value = false  //此值在这无需重置
-//                        readOnlyMode.value = FsUtils.isReadOnlyDir(filePath)  //避免打开文件，退出app，直接从editor点击 open last然后可编辑本不应该允许编辑的app内置目录下的文件
-
-                        editorPageShowingFilePath.value = filePath
-                        reloadFile()
-
-                    }
-                )
-
-            }
-
-            HorizontalDivider()
-            DropdownMenuItem(
-                text = { Text(stringResource(R.string.clear)) },
-                onClick = {
-                    // close dropdown menu
-                    showRecentFilesList.value=false
-
-                    showClearRecentFilesDialog.value = true
-                }
-            )
-
-        }
-
-    }
 
 
 
@@ -929,38 +886,89 @@ fun EditorInnerPage(
                         icon = Icons.AutoMirrored.Filled.List,
                         iconContentDesc = stringResource(id = R.string.recent_files),
                     ) onclick@{
-                        val historyMap = FileOpenHistoryMan.getHistory().storage
-                        if (historyMap.isEmpty()) {
-                            Msg.requireShowLongDuration(activityContext.getString(R.string.recent_files_is_empty))
-                            recentFileList.value.clear()
-                            return@onclick
-                        }
+                        try {
+                            val historyMap = FileOpenHistoryMan.getHistory().storage
+                            if (historyMap.isEmpty()) {
+                                Msg.requireShowLongDuration(activityContext.getString(R.string.recent_files_is_empty))
+                                recentFileList.value.clear()
+                                return@onclick
+                            }
 
-                        val recentFiles = historyMap
-                            // sort
-                            .toSortedMap({ k1, k2 ->
-                                val v1 = historyMap.get(k1)!!
-                                val v2 = historyMap.get(k2)!!
-                                // lastUsedTime descend sort
-                                if (v1.lastUsedTime > v2.lastUsedTime) -1 else 1
-                            })
-                            // map to list
-                            .map { (k, v) ->
-                                // Pair(fileName, fileFullPath)
-                                Pair(getFileNameFromCanonicalPath(k), k)
-                            }.let {
-                                // limit list size to 10
-                                it.subList(0, it.size.coerceAtMost(10))  // I think, recent file list, show 10 is good, if more, feels bad, to much files = no files, just make headache
+                            val recentFiles = historyMap
+                                // sort
+                                .toSortedMap({ k1, k2 ->
+                                    val v1 = historyMap.get(k1)!!
+                                    val v2 = historyMap.get(k2)!!
+                                    // lastUsedTime descend sort
+                                    if (v1.lastUsedTime > v2.lastUsedTime) -1 else 1
+                                })
+                                // map to list
+                                .map { (k, v) ->
+                                    // Pair(fileName, fileFullPath)
+                                    Pair(getFileNameFromCanonicalPath(k), k)
+                                }.let {
+                                    // limit list size to 10
+                                    it.subList(0, it.size.coerceAtMost(10))  // I think, recent file list, show 10 is good, if more, feels bad, to much files = no files, just make headache
+
+                                }
+
+                            // add sorted list to page state variable
+                            recentFileList.value.clear()
+                            recentFileList.value.addAll(recentFiles)
+
+                            // show list
+                            showRecentFilesList.value = true
+                        }catch (e:Exception) {
+                            Msg.requireShowLongDuration(e.localizedMessage ?: "get recent files err")
+                            MyLog.e(TAG, "Recent Files onclick err: ${e.stackTraceToString()}")
+                        }
+                    }
+
+                    //得离按钮近点，不然菜单出现位置很偏
+                    if(showRecentFilesList.value) {
+                        DropdownMenu(
+                            expanded = showRecentFilesList.value,
+                            offset = DpOffset(x=50.dp, y=0.dp),
+                            onDismissRequest = { showRecentFilesList.value = false }
+                        ) {
+                            for((fileName, filePath) in recentFileList.value) {
+                                DropdownMenuItem(
+                                    text = { Text(fileName) },
+                                    onClick = {
+                                        // close dropdown menu
+                                        showRecentFilesList.value=false
+
+                                        //open file
+                                        //只读关闭时，检查是否需要开启。（因为仅存在需要自动打开只读的情况（打开不允许编辑的目录下文件时），不存在需要自动关闭只读的情况，所以，仅在只读关闭时检查是否需要开启只读，若只读开启，用户想关可打开文件后关（当然，不允许编辑的文件除外，这种文件只读选项将保持开启并禁止关闭））
+//                        if (!readOnlyMode.value) {
+//                            readOnlyMode.value = FsUtils.isReadOnlyDir(filePath)  //避免打开文件，退出app，直接从editor点击 open last然后可编辑本不应该允许编辑的app内置目录下的文件
+//                        }
+//                                editorMergeMode.value = false  //此值在这无需重置
+//                        readOnlyMode.value = FsUtils.isReadOnlyDir(filePath)  //避免打开文件，退出app，直接从editor点击 open last然后可编辑本不应该允许编辑的app内置目录下的文件
+
+                                        editorPageShowingFilePath.value = filePath
+                                        reloadFile()
+
+                                    }
+                                )
 
                             }
 
-                        // add sorted list to page state variable
-                        recentFileList.value.clear()
-                        recentFileList.value.addAll(recentFiles)
+                            HorizontalDivider()
+                            DropdownMenuItem(
+                                text = { Text(stringResource(R.string.clear)) },
+                                onClick = {
+                                    // close dropdown menu
+                                    showRecentFilesList.value=false
 
-                        // show list
-                        showRecentFilesList.value = true
+                                    showClearRecentFilesDialog.value = true
+                                }
+                            )
+
+                        }
+
                     }
+
                 }
             }
 
