@@ -1378,58 +1378,73 @@ fun RepoInnerPage(
             title = stringResource(R.string.api),
             requireShowTextCompose = true,
             textCompose = {
-                ScrollableColumn {
-                    apiConfigDtoList.value.forEach {
-                        val pullurl = it.api.pull_example
-                        val pushurl = it.api.push_example
-                        Row {
-                            Text(it.repoName, fontSize = 16.sp, fontWeight = FontWeight.Bold)
-                        }
-                        Spacer(Modifier.height(5.dp))
-                        Box(
-                            modifier = Modifier.fillMaxWidth(),
-                        ) {
-                            Text(text = "pull: ${pullurl}", modifier = Modifier.fillMaxWidth(.8f).align(Alignment.CenterStart))
-
-                            IconButton(
-                                modifier = Modifier.fillMaxWidth(.2f).align(Alignment.CenterEnd),
-                                onClick = {
-                                    clipboardManager.setText(AnnotatedString(pullurl))
-                                    Msg.requireShow(activityContext.getString(R.string.copied))
-                                }
-                            ) {
-                                Icon(
-                                    imageVector = Icons.Filled.ContentCopy,
-                                    contentDescription = stringResource(R.string.copy)
-                                )
+                MySelectionContainer {
+                    ScrollableColumn {
+                        apiConfigDtoList.value.forEach {
+                            val pullurl = it.api.pull_example
+                            val pushurl = it.api.push_example
+                            Row {
+                                Text(it.repoName, fontSize = 20.sp, fontWeight = FontWeight.Bold)
                             }
-                        }
-
-                        HorizontalDivider()
-
-                        Box(
-                            modifier = Modifier.fillMaxWidth(),
-                        ) {
-                            Text(text = "pull: ${pushurl}", modifier = Modifier.fillMaxWidth(.8f).align(Alignment.CenterStart))
-
-                            IconButton(
-                                modifier = Modifier.fillMaxWidth(.2f).align(Alignment.CenterEnd),
-                                onClick = {
-                                    clipboardManager.setText(AnnotatedString(pushurl))
-                                    Msg.requireShow(activityContext.getString(R.string.copied))
-                                }
+                            Spacer(Modifier.height(10.dp))
+                            Box(
+                                modifier = Modifier.fillMaxWidth(),
                             ) {
-                                Icon(
-                                    imageVector = Icons.Filled.ContentCopy,
-                                    contentDescription = stringResource(R.string.copy)
-                                )
+                                Row(
+                                    modifier = Modifier.fillMaxWidth(.8f).align(Alignment.CenterStart),
+                                    verticalAlignment = Alignment.CenterVertically
+                                ) {
+                                    Text(stringResource(R.string.pull)+": ", fontWeight = FontWeight.Bold)
+
+                                    Text(text = pullurl)
+                                }
+
+                                IconButton(
+                                    modifier = Modifier.fillMaxWidth(.2f).align(Alignment.CenterEnd),
+                                    onClick = {
+                                        clipboardManager.setText(AnnotatedString(pullurl))
+                                        Msg.requireShow(activityContext.getString(R.string.copied))
+                                    }
+                                ) {
+                                    Icon(
+                                        imageVector = Icons.Filled.ContentCopy,
+                                        contentDescription = stringResource(R.string.copy)
+                                    )
+                                }
                             }
+
+                            HorizontalDivider()
+
+                            Box(
+                                modifier = Modifier.fillMaxWidth(),
+                            ) {
+                                Row(
+                                    modifier = Modifier.fillMaxWidth(.8f).align(Alignment.CenterStart),
+                                    verticalAlignment = Alignment.CenterVertically
+                                )  {
+                                    Text(stringResource(R.string.push)+": ", fontWeight = FontWeight.Bold)
+                                    Text(text = pushurl)
+                                }
+
+                                IconButton(
+                                    modifier = Modifier.fillMaxWidth(.2f).align(Alignment.CenterEnd),
+                                    onClick = {
+                                        clipboardManager.setText(AnnotatedString(pushurl))
+                                        Msg.requireShow(activityContext.getString(R.string.copied))
+                                    }
+                                ) {
+                                    Icon(
+                                        imageVector = Icons.Filled.ContentCopy,
+                                        contentDescription = stringResource(R.string.copy)
+                                    )
+                                }
+                            }
+                            HorizontalDivider()
+                            Spacer(Modifier.height(30.dp))
+
                         }
-                        HorizontalDivider()
-                        Spacer(Modifier.height(10.dp))
 
                     }
-
                 }
             },
             onCancel = {showApiDialog.value = false},
