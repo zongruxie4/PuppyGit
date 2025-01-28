@@ -3,6 +3,7 @@ package com.catpuppyapp.puppygit.service.http.server
 import com.catpuppyapp.puppygit.constants.Cons
 import com.catpuppyapp.puppygit.constants.IntentCons
 import com.catpuppyapp.puppygit.data.entity.RepoEntity
+import com.catpuppyapp.puppygit.dto.genConfigDto
 import com.catpuppyapp.puppygit.etc.Ret
 import com.catpuppyapp.puppygit.notification.NormalNotify
 import com.catpuppyapp.puppygit.settings.AppSettings
@@ -396,32 +397,15 @@ object HttpServer {
     }
 
     fun getApiJson(repoEntity:RepoEntity, settings: AppSettings):String {
-        val host = settings.httpService.listenHost
-        val port = settings.httpService.listenPort
-        val token = settings.httpService.tokenList.let { if(it.isEmpty()) "" else it.first() }
-
         return JsonUtil.j2PrettyPrint.let {
             it.encodeToString(
                 it.serializersModule.serializer(),
 
-                ConfigDto(
-                    repoName = repoEntity.repoName,
-                    repoId = repoEntity.id,
-                    api = ApiDto(
-                        protocol = "http",
-                        host = host,
-                        port = port,
-                        token = token,
-                        pull = "/pull",
-                        push = "/push",
-                        //少加点参数，少写少错
-                        pull_example = "${genHttpHostPortStr(host, port.toString())}/pull?token=$token&repoNameOrId=${repoEntity.repoName}",
-                        push_example = "${genHttpHostPortStr(host, port.toString())}/push?token=$token&repoNameOrId=${repoEntity.repoName}",
-                    )
-                )
+                genConfigDto(repoEntity, settings)
             )
         }
     }
+
 
 }
 

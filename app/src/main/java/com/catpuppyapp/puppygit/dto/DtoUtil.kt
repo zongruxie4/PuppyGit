@@ -2,16 +2,20 @@ package com.catpuppyapp.puppygit.dto
 
 import com.catpuppyapp.puppygit.constants.Cons
 import com.catpuppyapp.puppygit.constants.SpecialCredential
+import com.catpuppyapp.puppygit.data.entity.RepoEntity
 import com.catpuppyapp.puppygit.git.BranchNameAndTypeDto
 import com.catpuppyapp.puppygit.git.CommitDto
 import com.catpuppyapp.puppygit.git.FileHistoryDto
 import com.catpuppyapp.puppygit.git.SubmoduleDto
 import com.catpuppyapp.puppygit.git.TagDto
+import com.catpuppyapp.puppygit.service.http.server.ApiDto
+import com.catpuppyapp.puppygit.service.http.server.ConfigDto
 import com.catpuppyapp.puppygit.settings.AppSettings
 import com.catpuppyapp.puppygit.utils.AppModel
 import com.catpuppyapp.puppygit.utils.Libgit2Helper
 import com.catpuppyapp.puppygit.utils.Libgit2Helper.Companion.getParentRecordedTargetHashForSubmodule
 import com.catpuppyapp.puppygit.utils.Libgit2Helper.Companion.isValidGitRepo
+import com.catpuppyapp.puppygit.utils.genHttpHostPortStr
 import com.github.git24j.core.Commit
 import com.github.git24j.core.Oid
 import com.github.git24j.core.Repository
@@ -213,3 +217,27 @@ fun createFileHistoryDto(
     return obj
 }
 
+fun genConfigDto(
+    repoEntity: RepoEntity,
+    settings: AppSettings
+):ConfigDto {
+    val host = settings.httpService.listenHost
+    val port = settings.httpService.listenPort
+    val token = settings.httpService.tokenList.let { if(it.isEmpty()) "" else it.first() }
+
+    return ConfigDto(
+        repoName = repoEntity.repoName,
+        repoId = repoEntity.id,
+        api = ApiDto(
+            protocol = "http",
+            host = host,
+            port = port,
+            token = token,
+            pull = "/pull",
+            push = "/push",
+            //少加点参数，少写少错
+            pull_example = "${genHttpHostPortStr(host, port.toString())}/pull?token=$token&repoNameOrId=${repoEntity.repoName}",
+            push_example = "${genHttpHostPortStr(host, port.toString())}/push?token=$token&repoNameOrId=${repoEntity.repoName}",
+        )
+    )
+}

@@ -5,6 +5,7 @@ import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
@@ -21,6 +22,8 @@ import androidx.compose.foundation.selection.toggleable
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.ContentCopy
+import androidx.compose.material.icons.filled.DeleteOutline
 import androidx.compose.material.icons.filled.Download
 import androidx.compose.material.icons.filled.Downloading
 import androidx.compose.material.icons.filled.Error
@@ -28,7 +31,9 @@ import androidx.compose.material.icons.filled.Publish
 import androidx.compose.material.icons.filled.SelectAll
 import androidx.compose.material3.Checkbox
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.SheetState
 import androidx.compose.material3.Text
@@ -55,11 +60,13 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import com.catpuppyapp.puppygit.compose.AskGitUsernameAndEmailDialog
 import com.catpuppyapp.puppygit.compose.BottomBar
 import com.catpuppyapp.puppygit.compose.CheckBoxNoteText
 import com.catpuppyapp.puppygit.compose.ClickableText
 import com.catpuppyapp.puppygit.compose.ConfirmDialog
+import com.catpuppyapp.puppygit.compose.ConfirmDialog2
 import com.catpuppyapp.puppygit.compose.CopyableDialog
 import com.catpuppyapp.puppygit.compose.MyCheckBox
 import com.catpuppyapp.puppygit.compose.MyLazyColumn
@@ -73,10 +80,12 @@ import com.catpuppyapp.puppygit.constants.Cons
 import com.catpuppyapp.puppygit.constants.PageRequest
 import com.catpuppyapp.puppygit.data.AppContainer
 import com.catpuppyapp.puppygit.data.entity.RepoEntity
+import com.catpuppyapp.puppygit.dto.genConfigDto
 import com.catpuppyapp.puppygit.etc.RepoAction
 import com.catpuppyapp.puppygit.etc.Ret
 import com.catpuppyapp.puppygit.git.Upstream
 import com.catpuppyapp.puppygit.play.pro.R
+import com.catpuppyapp.puppygit.service.http.server.ConfigDto
 import com.catpuppyapp.puppygit.service.http.server.HttpServer
 import com.catpuppyapp.puppygit.settings.AppSettings
 import com.catpuppyapp.puppygit.settings.SettingsUtil
@@ -102,6 +111,7 @@ import com.catpuppyapp.puppygit.utils.replaceStringResList
 import com.catpuppyapp.puppygit.utils.showErrAndSaveLog
 import com.catpuppyapp.puppygit.utils.state.CustomStateListSaveable
 import com.catpuppyapp.puppygit.utils.state.CustomStateSaveable
+import com.catpuppyapp.puppygit.utils.state.mutableCustomStateListOf
 import com.catpuppyapp.puppygit.utils.state.mutableCustomStateOf
 import com.catpuppyapp.puppygit.utils.strHasIllegalChars
 import com.catpuppyapp.puppygit.utils.updateSelectedList
@@ -1361,6 +1371,73 @@ fun RepoInnerPage(
         )
     }
 
+    val apiConfigDtoList = mutableCustomStateListOf(stateKeyTag, "apiConfigDtoList") { listOf<ConfigDto>() }
+    val showApiDialog = rememberSaveable { mutableStateOf(false) }
+    if(showApiDialog.value) {
+        ConfirmDialog2(
+            title = stringResource(R.string.api),
+            requireShowTextCompose = true,
+            textCompose = {
+                ScrollableColumn {
+                    apiConfigDtoList.value.forEach {
+                        val pullurl = it.api.pull_example
+                        val pushurl = it.api.push_example
+                        Row {
+                            Text(it.repoName, fontSize = 16.sp, fontWeight = FontWeight.Bold)
+                        }
+                        Spacer(Modifier.height(5.dp))
+                        Box(
+                            modifier = Modifier.fillMaxWidth(),
+                        ) {
+                            Text(text = "pull: ${pullurl}", modifier = Modifier.fillMaxWidth(.8f).align(Alignment.CenterStart))
+
+                            IconButton(
+                                modifier = Modifier.fillMaxWidth(.2f).align(Alignment.CenterEnd),
+                                onClick = {
+                                    clipboardManager.setText(AnnotatedString(pullurl))
+                                    Msg.requireShow(activityContext.getString(R.string.copied))
+                                }
+                            ) {
+                                Icon(
+                                    imageVector = Icons.Filled.ContentCopy,
+                                    contentDescription = stringResource(R.string.copy)
+                                )
+                            }
+                        }
+
+                        HorizontalDivider()
+
+                        Box(
+                            modifier = Modifier.fillMaxWidth(),
+                        ) {
+                            Text(text = "pull: ${pushurl}", modifier = Modifier.fillMaxWidth(.8f).align(Alignment.CenterStart))
+
+                            IconButton(
+                                modifier = Modifier.fillMaxWidth(.2f).align(Alignment.CenterEnd),
+                                onClick = {
+                                    clipboardManager.setText(AnnotatedString(pushurl))
+                                    Msg.requireShow(activityContext.getString(R.string.copied))
+                                }
+                            ) {
+                                Icon(
+                                    imageVector = Icons.Filled.ContentCopy,
+                                    contentDescription = stringResource(R.string.copy)
+                                )
+                            }
+                        }
+                        HorizontalDivider()
+                        Spacer(Modifier.height(10.dp))
+
+                    }
+
+                }
+            },
+            onCancel = {showApiDialog.value = false},
+            cancelBtnText = stringResource(R.string.close),
+            showOk = false
+        ) {}
+    }
+
 
 
     val showDetailsDialog = rememberSaveable { mutableStateOf(false) }
@@ -1701,15 +1778,25 @@ fun RepoInnerPage(
         },
 
         api@{
-            val sb = StringBuilder()
-            val suffix = "\n\n--------------\n\n"
+            apiConfigDtoList.value.clear()
+            val settings = SettingsUtil.getSettingsSnapshot()
             selectedItems.value.forEach {
-                sb.append(HttpServer.getApiJson(it, SettingsUtil.getSettingsSnapshot()))
-                sb.append(suffix)
+                apiConfigDtoList.value.add(genConfigDto(it, settings))
             }
 
-            initDetailsDialog(activityContext.getString(R.string.api), sb.removeSuffix(suffix).toString())
+            showApiDialog.value = true
         },
+//
+//        api@{
+//            val sb = StringBuilder()
+//            val suffix = "\n\n--------------\n\n"
+//            selectedItems.value.forEach {
+//                sb.append(HttpServer.getApiJson(it, SettingsUtil.getSettingsSnapshot()))
+//                sb.append(suffix)
+//            }
+//
+//            initDetailsDialog(activityContext.getString(R.string.api), sb.removeSuffix(suffix).toString())
+//        },
 
         details@{
             val sb = StringBuilder()
