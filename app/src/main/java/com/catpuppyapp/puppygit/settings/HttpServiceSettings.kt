@@ -48,4 +48,4 @@ data class HttpServiceSettings (
      */
     var showNotifyWhenSuccess:Boolean = false,
 
-    )
+)
