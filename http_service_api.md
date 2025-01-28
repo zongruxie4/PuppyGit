@@ -33,7 +33,7 @@ params:
 - forceUseIdMatchRepo: 1 enable or 0 disable, default 0, if enable, will force match repo by repo id, else will match by name first, if no match, then match by id
 - token: a valid token in your token list
 
-example:
+example:<br>
 http://127.0.0.1/pull?repoNameOrId=your_repo_name&token=your_token
 
 http://127.0.0.1/pull?repoNameOrId=your_repo_name&token=your_token&gitUsername=your_git_username&gitEmail=your_email@example.com
@@ -55,7 +55,7 @@ params:
 - token: a valid token in your token list
 - autoCommit: 1 enable or 0 disable, default 1: if enable and no conflict items exists, will auto commit all changes, and will check index, if index empty, will not pushing; if disable, will only do push, no commit changes, no index empty check, no conflict items check.
 
-example:
+example:<br>
 http://127.0.0.1/push?repoNameOrId=your_repo_name&token=your_token
 
 http://127.0.0.1/push?repoNameOrId=your_repo_name&token=your_token&gitUsername=your_git_user_name&gitEmail=your_email@example.com
@@ -74,7 +74,7 @@ params:
 - token: a valid token in your token list
 
 
-example:
+example:<br>
 http://127.0.0.1/pullAll?token=your_token
 
 http://127.0.0.1/pullAll?token=your_token&gitUsername=your_git_username&gitEmail=your_email@example.com
@@ -95,7 +95,7 @@ params:
 - token: a valid token in your token list
 
 
-example:
+example:<br>
 http://127.0.0.1/pushAll?token=your_token
 
 http://127.0.0.1/pushAll?token=your_token&gitUsername=your_git_username&gitEmail=your_email@example.com
