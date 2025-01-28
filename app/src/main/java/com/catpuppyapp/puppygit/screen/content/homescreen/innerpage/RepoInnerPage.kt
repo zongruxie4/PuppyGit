@@ -1364,10 +1364,16 @@ fun RepoInnerPage(
 
 
     val showDetailsDialog = rememberSaveable { mutableStateOf(false) }
+    val detailsTitle = rememberSaveable { mutableStateOf("") }
     val detailsString = rememberSaveable { mutableStateOf("") }
+    val initDetailsDialog = { title:String, text:String ->
+        detailsTitle.value = title
+        detailsString.value = text
+        showDetailsDialog.value = true
+    }
     if(showDetailsDialog.value) {
         CopyableDialog(
-            title = stringResource(id = R.string.details),
+            title = detailsTitle.value,
             text = detailsString.value,
             onCancel = { showDetailsDialog.value = false }
         ) {
@@ -1597,7 +1603,7 @@ fun RepoInnerPage(
         stringResource(R.string.stash), // single
         stringResource(R.string.reflog), // single
         stringResource(R.string.rename), // single
-        stringResource(R.string.copy_api), // single
+        stringResource(R.string.api), // multi
         stringResource(R.string.details), // multi
         stringResource(R.string.delete), // multi
     )
@@ -1694,22 +1700,29 @@ fun RepoInnerPage(
             showRenameDialog.value = true
         },
 
-        copyApi@{
-            clipboardManager.setText(AnnotatedString(HttpServer.getApiJson(selectedItems.value.first(), SettingsUtil.getSettingsSnapshot())))
-            Msg.requireShow(activityContext.getString(R.string.copied))
+        api@{
+            val sb = StringBuilder()
+            val suffix = "\n\n--------------\n\n"
+            selectedItems.value.forEach {
+                sb.append(HttpServer.getApiJson(it, SettingsUtil.getSettingsSnapshot()))
+                sb.append(suffix)
+            }
+
+            initDetailsDialog(activityContext.getString(R.string.api), sb.removeSuffix(suffix).toString())
         },
 
         details@{
             val sb = StringBuilder()
             val lb = "\n"
+            val suffix = "\n\n--------------\n\n"
+
             selectedItems.value.forEach {
-                sb.append(activityContext.getString(R.string.name)).append(": ").append(it.repoName).append(lb)
-                sb.append(activityContext.getString(R.string.id)).append(": ").append(it.id).append(lb).append(lb)
-                sb.append("--------------").append(lb).append(lb)
+                sb.append(activityContext.getString(R.string.name)).append(": ").append(it.repoName).append(lb).append(lb)
+                sb.append(activityContext.getString(R.string.id)).append(": ").append(it.id)
+                sb.append(suffix)
             }
 
-            detailsString.value = sb.toString()
-            showDetailsDialog.value = true
+            initDetailsDialog(activityContext.getString(R.string.details), sb.removeSuffix(suffix).toString())
         },
 
         delete@{
@@ -1760,8 +1773,8 @@ fun RepoInnerPage(
         rename@{
             selectedSingle()
         },
-        copyApi@{
-            selectedSingle()
+        api@{
+            hasSelectedItems()
         },
         details@{
             hasSelectedItems()
