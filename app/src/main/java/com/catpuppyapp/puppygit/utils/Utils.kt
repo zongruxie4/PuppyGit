@@ -950,6 +950,7 @@ fun splitLines(str:String):List<String> {
     val filteredLines = mutableListOf<String>()
     str.lines().forEach {
         val trimed = it.trim()
+        //这里用isNotEmpty检查应该也行，因为上面trim了，全空格会变空字符串; 若trim后非空，必然有非空格字符，必然 is not blank
         if(trimed.isNotBlank()) {
             filteredLines.add(trimed)
         }

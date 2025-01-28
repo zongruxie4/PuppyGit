@@ -14,6 +14,7 @@ import com.catpuppyapp.puppygit.utils.Libgit2Helper.Companion.getAheadBehind
 import com.catpuppyapp.puppygit.utils.MyLog
 import com.catpuppyapp.puppygit.utils.createAndInsertError
 import com.catpuppyapp.puppygit.utils.dbIntToBool
+import com.catpuppyapp.puppygit.utils.doJobThenOffLoading
 import com.catpuppyapp.puppygit.utils.encrypt.MasterPassUtil
 import com.catpuppyapp.puppygit.utils.genHttpHostPortStr
 import com.catpuppyapp.puppygit.utils.getSecFromTime
@@ -28,6 +29,7 @@ import io.ktor.server.netty.NettyApplicationEngine
 import io.ktor.server.plugins.contentnegotiation.ContentNegotiation
 import io.ktor.server.request.host
 import io.ktor.server.response.respond
+import io.ktor.server.routing.RoutingCall
 import io.ktor.server.routing.get
 import io.ktor.server.routing.routing
 import kotlinx.coroutines.isActive
@@ -61,8 +63,8 @@ object HttpServer {
                     json(Json{ ignoreUnknownKeys = true; encodeDefaults=true; prettyPrint = false})
                 }
                 routing {
-                    get("/ping") {
-                        call.respond(createSuccessResult("pong"))
+                    get("/status") {
+                        call.respond(createSuccessResult("online"))
                     }
 
                     // for test
@@ -70,17 +72,18 @@ object HttpServer {
                         call.respond(createSuccessResult(call.parameters.get("msg") ?: ""))
                     }
 
+                    // not work, service launch app may require float window permission
 //                    get("/launchApp") {
 //                        HttpService.launchApp()
 //                    }
 
                     /**
                      * query params:
-                     *  repoNameOrId: repo name or id，优先查name，若无匹配，查id
+                     *  repoNameOrId: repo name or id, match by name first, if none, will match by id
                      *  gitUsername: using for create commit, if null, will use PuppyGit settings
                      *  gitEmail: using for create commit, if nul, will use PuppyGit settings
-                     *  forceUseIdMatchRepo: 1 or 0, if true, will force match repo by repo id, else will match by name first, if no match, then match by id
-                     *  token: if caller ip not in white list, token is required
+                     *  forceUseIdMatchRepo: 1 enable or 0 disable, default 0, if enable, will force match repo by repo id, else will match by name first, if no match, then match by id
+                     *  token: token is required
 
                      * e.g.
                      * request: http://127.0.0.1/pull?repoNameOrId=abc
@@ -91,15 +94,8 @@ object HttpServer {
                         val routeName = "'/pull'"
 
                         try {
-                            val callerIp = call.request.host()
-                            val token = call.request.queryParameters.get("token")
                             val settings = SettingsUtil.getSettingsSnapshot()
-                            val tokenCheckRet = tokenCheck(token, callerIp, settings)
-                            if(tokenCheckRet.hasError()) {
-                                // log the query params maybe better?
-                                MyLog.e(TAG, "request rejected: route=$routeName, ip=$callerIp, token=$token, reason=${tokenCheckRet.msg}")
-                                throw RuntimeException(tokenCheckRet.msg)
-                            }
+                            tokenPassedOrThrowException(call, routeName, settings)
 
                             val repoNameOrId = call.request.queryParameters.get("repoNameOrId")
                             if(repoNameOrId == null || repoNameOrId.isBlank()) {
@@ -110,8 +106,9 @@ object HttpServer {
 
 
                             val forceUseIdMatchRepo = call.request.queryParameters.get("forceUseIdMatchRepo") == "1"
-
-                            val masterPassword = MasterPassUtil.get(AppModel.realAppContext)
+                            // get git username and email for merge, if request doesn't contains them, will use PuppyGit app settings
+                            val gitUsernameFromUrl = call.request.queryParameters.get("gitUsername") ?:""
+                            val gitEmailFromUrl = call.request.queryParameters.get("gitEmail") ?:""
 
 
                             val db = AppModel.dbContainer
@@ -123,97 +120,22 @@ object HttpServer {
                             val repoFromDb = repoRet.data!!
                             repoForLog = repoFromDb
 
-                            Libgit2Helper.doActWithRepoLock(repoFromDb, onLockFailed = throwRepoBusy) {
-                                if(dbIntToBool(repoFromDb.isDetached)) {
-                                    throw RuntimeException("repo is detached")
-                                }
-
-                                if(!Libgit2Helper.isValidGitRepo(repoFromDb.fullSavePath)) {
-                                    throw RuntimeException("invalid git repo")
-                                }
-
-                                Repository.open(repoFromDb.fullSavePath).use { gitRepo ->
-                                    val upstream = Libgit2Helper.getUpstreamOfBranch(gitRepo, repoFromDb.branch)
-                                    if(upstream.remote.isBlank() || upstream.branchRefsHeadsFullRefSpec.isBlank()) {
-                                        throw RuntimeException("invalid upstream")
-                                    }
-
-                                    // get fetch credential
-                                    val credential = Libgit2Helper.getRemoteCredential(
-                                        db.remoteRepository,
-                                        db.credentialRepository,
-                                        repoFromDb.id,
-                                        upstream.remote,
-                                        trueFetchFalsePush = true,
-                                        masterPassword = masterPassword
-                                    )
-
-                                    // fetch
-                                    Libgit2Helper.fetchRemoteForRepo(gitRepo, upstream.remote, credential, repoFromDb)
-
-
-                                    // 更新修改workstatus的时间，只更新时间就行，状态会在查询repo时更新
-                                    val repoDb = AppModel.dbContainer.repoRepository
-                                    repoDb.updateLastUpdateTime(repoFromDb.id, getSecFromTime())
-
-                                    // get git username and email for merge
-                                    val gitUsernameFromUrl = call.request.queryParameters.get("gitUsername") ?:""
-                                    val gitEmailFromUrl = call.request.queryParameters.get("gitEmail") ?:""
-                                    val (username, email) = if(gitUsernameFromUrl.isNotBlank() && gitEmailFromUrl.isNotBlank()) {
-                                        Pair(gitUsernameFromUrl, gitEmailFromUrl)
-                                    }else{
-                                        val (gitUsernameFromConfig, gitEmailFromConfig) = Libgit2Helper.getGitUsernameAndEmail(gitRepo)
-                                        val finallyUsername = gitUsernameFromUrl.ifBlank { gitUsernameFromConfig }
-
-                                        val finallyEmail = gitEmailFromUrl.ifBlank { gitEmailFromConfig }
-
-                                        Pair(finallyUsername, finallyEmail)
-                                    }
-
-                                    if(username == null || username.isBlank()) {
-                                        throw RuntimeException("git username invalid")
-                                    }
-
-                                    if(email == null || email.isBlank()) {
-                                        throw RuntimeException("git email invalid")
-                                    }
-
-                                    val remoteRefSpec = Libgit2Helper.getUpstreamRemoteBranchShortNameByRemoteAndBranchRefsHeadsRefSpec(
-                                        upstream!!.remote,
-                                        upstream.branchRefsHeadsFullRefSpec
-                                    )
-
-                                    //merge
-                                    val mergeRet = Libgit2Helper.mergeOneHead(
-                                        gitRepo,
-                                        remoteRefSpec,
-                                        username,
-                                        email,
-                                        settings = settings
-                                    )
-
-                                    if(mergeRet.hasError()) {
-                                        throw RuntimeException(mergeRet.msg)
-                                    }
-
-                                }
-
-                                call.respond(createSuccessResult())
-
-                                if(settings.httpService.showNotifyWhenSuccess) {
-                                    sendSuccessNotification(repoForLog?.repoName, "pull successfully", repoForLog?.id)
-                                }
+                            //执行请求，可能时间很长，所以开个协程，直接返回响应即可
+                            doJobThenOffLoading {
+                                pullRepoList(listOf(repoFromDb), routeName, gitUsernameFromUrl, gitEmailFromUrl)
                             }
+
+                            call.respond(createSuccessResult())
                         }catch (e:Exception) {
                             val errMsg = e.localizedMessage ?: "unknown err"
                             call.respond(createErrResult(errMsg))
 
                             if(repoForLog!=null) {
-                                createAndInsertError(repoForLog!!.id, "$routeName by api err: $errMsg")
+                                createAndInsertError(repoForLog.id, "pull by api $routeName err: $errMsg")
                             }
 
                             if(settings.httpService.showNotifyWhenErr) {
-                                sendNotification("pull err", errMsg, repoForLog?.id ?: "")
+                                sendNotification("$routeName err", errMsg, Cons.selectedItem_ChangeList, repoForLog?.id ?: "")
                             }
 
                             MyLog.e(TAG, "method:GET, route:$routeName, repoNameOrId=$repoNameOrIdForLog, err=${e.stackTraceToString()}")
@@ -228,15 +150,15 @@ object HttpServer {
                      *  gitUsername: using for create commit, if null, will use PuppyGit settings
                      *  gitEmail: using for create commit, if nul, will use PuppyGit settings
                      *  force: force push, 1 enable , 0 disable, if null, will disable (as 0)
-                     *  forceUseIdMatchRepo: 1 or 0, if true, will force match repo by repo id, else will match by name first, if no match, then match by id
-                     *  token: if caller ip not in white list, token is required
+                     *  forceUseIdMatchRepo: 1 enable or 0 disable, default 0, if enable, will force match repo by repo id, else will match by name first, if no match, then match by id
+                     *  token: token is required
                      *  autoCommit: 1 enable or 0 disable, default 1: if enable and no conflict items exists, will auto commit all changes,
                      *    and will check index, if index empty, will not pushing;
                      *    if disable, will only do push, no commit changes,
                      *    no index empty check, no conflict items check.
                      *
                      * e.g.
-                     * request: http://127.0.0.1/push?repoNameOrId=abc&masterPass=your_master_pass_if_have
+                     * request: http://127.0.0.1/push?repoNameOrId=abc
                      */
                     get("/push") {
                         var repoNameOrIdForLog:String? = null
@@ -244,16 +166,8 @@ object HttpServer {
                         val routeName = "'/push'"
 
                         try {
-
-                            val callerIp = call.request.host()
-                            val token = call.request.queryParameters.get("token")
                             val settings = SettingsUtil.getSettingsSnapshot()
-                            val tokenCheckRet = tokenCheck(token, callerIp, settings)
-                            if(tokenCheckRet.hasError()) {
-                                // log the query params maybe better?
-                                MyLog.e(TAG, "request rejected: route=$routeName, ip=$callerIp, token=$token, reason=${tokenCheckRet.msg}")
-                                throw RuntimeException(tokenCheckRet.msg)
-                            }
+                            tokenPassedOrThrowException(call, routeName, settings)
 
                             val repoNameOrId = call.request.queryParameters.get("repoNameOrId")
                             if(repoNameOrId == null || repoNameOrId.isBlank()) {
@@ -265,13 +179,16 @@ object HttpServer {
                             val forceUseIdMatchRepo = call.request.queryParameters.get("forceUseIdMatchRepo") == "1"
 
 
-                            val masterPassword = MasterPassUtil.get(AppModel.realAppContext)
-
                             //这个只要不明确传0，就是启用
                             val autoCommit = call.request.queryParameters.get("autoCommit") != "0"
 
                             // force push or no
                             val force = call.request.queryParameters.get("force") == "1"
+
+
+                            // get git username and email for merge
+                            val gitUsernameFromUrl = call.request.queryParameters.get("gitUsername") ?:""
+                            val gitEmailFromUrl = call.request.queryParameters.get("gitEmail") ?:""
 
                             // 查询仓库是否存在
                             // 尝试获取仓库锁，若获取失败，返回仓库正在执行其他操作
@@ -285,130 +202,22 @@ object HttpServer {
                             val repoFromDb = repoRet.data!!
                             repoForLog = repoFromDb
 
-                            Libgit2Helper.doActWithRepoLock(repoFromDb, onLockFailed = throwRepoBusy) {
-                                if(dbIntToBool(repoFromDb.isDetached)) {
-                                    throw RuntimeException("repo is detached")
-                                }
-
-                                if(!Libgit2Helper.isValidGitRepo(repoFromDb.fullSavePath)) {
-                                    throw RuntimeException("invalid git repo")
-                                }
-
-                                Repository.open(repoFromDb.fullSavePath).use { gitRepo ->
-                                    val repoState = gitRepo.state()
-                                    if(repoState != Repository.StateT.NONE) {
-                                        throw RuntimeException("repository state is '$repoState', expect 'NONE'")
-                                    }
-
-                                    val upstream = Libgit2Helper.getUpstreamOfBranch(gitRepo, repoFromDb.branch)
-                                    if(upstream.remote.isBlank() || upstream.branchRefsHeadsFullRefSpec.isBlank()) {
-                                        throw RuntimeException("invalid upstream")
-                                    }
-
-                                    if(autoCommit) {
-                                        // get git username and email for merge
-                                        val gitUsernameFromUrl = call.request.queryParameters.get("gitUsername") ?:""
-                                        val gitEmailFromUrl = call.request.queryParameters.get("gitEmail") ?:""
-                                        val (username, email) = if(gitUsernameFromUrl.isNotBlank() && gitEmailFromUrl.isNotBlank()) {
-                                            Pair(gitUsernameFromUrl, gitEmailFromUrl)
-                                        }else{
-                                            val (gitUsernameFromConfig, gitEmailFromConfig) = Libgit2Helper.getGitUsernameAndEmail(gitRepo)
-                                            val finallyUsername = gitUsernameFromUrl.ifBlank { gitUsernameFromConfig }
-
-                                            val finallyEmail = gitEmailFromUrl.ifBlank { gitEmailFromConfig }
-
-                                            Pair(finallyUsername, finallyEmail)
-                                        }
-
-                                        if(username == null || username.isBlank() || email == null || email.isBlank()) {
-                                            MyLog.w(TAG, "http server: api $routeName: commit abort by username or email invalid")
-                                        }else {
-                                            //检查是否存在冲突，如果存在，将不会创建提交
-                                            if(Libgit2Helper.hasConflictItemInRepo(gitRepo)) {
-                                                MyLog.w(TAG, "http server: api $routeName: conflict abort the commit")
-                                                // TODO 显示个手机通知，点击进入ChangeList并定位到对应仓库
-                                            }else {
-                                                // 有username 和 email，且无冲突
-
-                                                // stage worktree changes
-                                                Libgit2Helper.stageAll(gitRepo, repoFromDb.id)
-
-
-
-                                                //如果index不为空，则创建提交
-                                                if(!Libgit2Helper.indexIsEmpty(gitRepo)) {
-                                                    Libgit2Helper.createCommit(
-                                                        repo = gitRepo,
-                                                        msg = "",
-                                                        username = username,
-                                                        email = email,
-                                                        indexItemList = null,
-                                                        amend = false,
-                                                        overwriteAuthorWhenAmend = false,
-                                                        settings = settings
-                                                    )
-                                                }
-
-                                            }
-                                        }
-                                    }
-
-
-                                    // 检查 ahead和behind
-                                    if(!force) {  //只有非force才检查，否则强推
-                                        val (ahead, behind) = getAheadBehind(gitRepo, Oid.of(upstream.localOid), Oid.of(upstream.remoteOid))
-
-                                        if(behind > 0) {  //本地落后远程（远程领先本地）
-                                            throw RuntimeException("upstream ahead of local")
-                                        }
-
-                                        if(ahead < 1) {
-                                            //通过behind检测后，如果进入此代码块，代表本地不落后也不领先，即“up to date”
-                                            call.respond(createSuccessResult("already up-to-date"))
-                                            return@doActWithRepoLock
-                                        }
-
-                                    }
-
-
-                                    // get push credential
-                                    val credential = Libgit2Helper.getRemoteCredential(
-                                        db.remoteRepository,
-                                        db.credentialRepository,
-                                        repoFromDb.id,
-                                        upstream.remote,
-                                        trueFetchFalsePush = false,
-                                        masterPassword = masterPassword
-                                    )
-
-                                    val ret = Libgit2Helper.push(gitRepo, upstream.remote, upstream.pushRefSpec, credential, force)
-                                    if(ret.hasError()) {
-                                        throw RuntimeException(ret.msg)
-                                    }
-
-                                    // 更新修改workstatus的时间，只更新时间就行，状态会在查询repo时更新
-                                    val repoDb = AppModel.dbContainer.repoRepository
-                                    repoDb.updateLastUpdateTime(repoFromDb.id, getSecFromTime())
-                                }
-
-                                call.respond(createSuccessResult())
-
-
-                                if(settings.httpService.showNotifyWhenSuccess) {
-                                    sendSuccessNotification(repoForLog?.repoName, "push successfully", repoForLog?.id)
-                                }
-
+                            doJobThenOffLoading {
+                                pushRepoList(listOf(repoFromDb),routeName, gitUsernameFromUrl, gitEmailFromUrl, autoCommit, force)
                             }
+
+                            call.respond(createSuccessResult())
+
                         }catch (e:Exception) {
                             val errMsg = e.localizedMessage ?: "unknown err"
                             call.respond(createErrResult(errMsg))
 
                             if(repoForLog!=null) {
-                                createAndInsertError(repoForLog!!.id, "$routeName by api err: $errMsg")
+                                createAndInsertError(repoForLog!!.id, "push by api $routeName err: $errMsg")
                             }
 
                             if(settings.httpService.showNotifyWhenErr) {
-                                sendNotification("push err", errMsg, repoForLog?.id ?: "")
+                                sendNotification("$routeName err", errMsg, Cons.selectedItem_ChangeList, repoForLog?.id ?: "")
                             }
 
                             MyLog.e(TAG, "method:GET, route:$routeName, repoNameOrId=$repoNameOrIdForLog, err=${e.stackTraceToString()}")
@@ -418,29 +227,91 @@ object HttpServer {
 
                     /**
                      * query params:
-                     *  repoNameOrId: repo name or id，优先查name，若无匹配，查id
                      *  username: using for create commit, if null, will use PuppyGit settings
                      *  email: using for create commit, if nul, will use PuppyGit settings
-                     *  forceUseIdMatchRepo: 1 or 0, if true, will force match repo by repo id, else will match by name first, if no match, then match by id
-                     *  token: if caller ip not in white list, token is required
+                     *  token: token is required
 
                      * e.g.
-                     * request: http://127.0.0.1/pullAll?repoNameOrId=abc&username=username&email=email&masterPass=your_master_pass_if_have
+                     * request: http://127.0.0.1/pullAll?username=username&email=email&token=your_token
                      */
-                    get("pullAll") {
-                        call.respond(createErrResult("not yet implemented"))
+                    get("/pullAll") {
+                        val routeName = "'/pullAll'"
+
+                        try {
+                            val settings = SettingsUtil.getSettingsSnapshot()
+                            tokenPassedOrThrowException(call, routeName, settings)
+
+
+                            // get git username and email for merge, if request doesn't contains them, will use PuppyGit app settings
+                            val gitUsernameFromUrl = call.request.queryParameters.get("gitUsername") ?:""
+                            val gitEmailFromUrl = call.request.queryParameters.get("gitEmail") ?:""
+
+
+                            //执行请求，可能时间很长，所以开个协程，直接返回响应即可
+                            doJobThenOffLoading {
+                                pullRepoList(AppModel.dbContainer.repoRepository.getAll(), routeName, gitUsernameFromUrl, gitEmailFromUrl)
+                            }
+
+                            call.respond(createSuccessResult())
+                        }catch (e:Exception) {
+                            val errMsg = e.localizedMessage ?: "unknown err"
+                            call.respond(createErrResult(errMsg))
+
+                            if(settings.httpService.showNotifyWhenErr) {
+                                sendNotification("$routeName err", errMsg, Cons.selectedItem_Repos ,"")
+                            }
+
+                            MyLog.e(TAG, "method:GET, route:$routeName, err=${e.stackTraceToString()}")
+                        }
                     }
 
                     /**
                      * query params:
-                     *  force: 1 enable , 0 disable, if null, will disable (as 0)
-                     *  token: if caller ip not in white list, token is required
+                     *  autoCommit: same as '/push'
+                     *  force: 1 enable , 0 disable, default 0
+                     *  token: token is required
                      *
                      * e.g.
-                     * request: http://127.0.0.1/pushAll?masterPass=your_master_pass_if_have
+                     * request: http://127.0.0.1/pushAll?token=your_token
                      */
-                    get("pushAll") {
-                        call.respond(createErrResult("not yet implemented"))
+                    get("/pushAll") {
+                        val routeName = "'/pushAll'"
+
+                        try {
+                            val settings = SettingsUtil.getSettingsSnapshot()
+                            tokenPassedOrThrowException(call, routeName, settings)
+
+                            //这个只要不明确传0，就是启用
+                            val autoCommit = call.request.queryParameters.get("autoCommit") != "0"
+
+                            // force push or no
+                            val force = call.request.queryParameters.get("force") == "1"
+
+
+                            // get git username and email for merge
+                            val gitUsernameFromUrl = call.request.queryParameters.get("gitUsername") ?:""
+                            val gitEmailFromUrl = call.request.queryParameters.get("gitEmail") ?:""
+
+                            // 查询仓库是否存在
+                            // 尝试获取仓库锁，若获取失败，返回仓库正在执行其他操作
+                            doJobThenOffLoading {
+                                pushRepoList(AppModel.dbContainer.repoRepository.getAll(),routeName, gitUsernameFromUrl, gitEmailFromUrl, autoCommit, force)
+                            }
+
+                            call.respond(createSuccessResult())
+
+                        }catch (e:Exception) {
+                            val errMsg = e.localizedMessage ?: "unknown err"
+                            call.respond(createErrResult(errMsg))
+
+                            if(settings.httpService.showNotifyWhenErr) {
+                                sendNotification("$routeName err", errMsg, Cons.selectedItem_Repos, "")
+                            }
+
+                            MyLog.e(TAG, "method:GET, route:$routeName, err=${e.stackTraceToString()}")
+                        }
+
+
                     }
                 }
             }.start(wait = false) // 不能传true，会block整个程序
@@ -448,8 +319,23 @@ object HttpServer {
             MyLog.w(TAG, "Http Server started on '${genHttpHostPortStr(settings.httpService.listenHost, settings.httpService.listenPort)}'")
             return null
         }catch (e:Exception) {
+            //端口占用之类的能捕获到错误，看来即使非阻塞也并非一启动就立即返回，应该是成功绑定端口ip后才返回
             MyLog.e(TAG, "Http Server start failed, err=${e.stackTraceToString()}")
             return e
+        }
+    }
+
+    /**
+     * will throw exception if token bad
+     */
+    private fun tokenPassedOrThrowException(call: RoutingCall, routeName: String, settings: AppSettings) {
+        val callerIp = call.request.host()
+        val token = call.request.queryParameters.get("token")
+        val tokenCheckRet = tokenPassedOrThrowException(token, callerIp, settings)
+        if (tokenCheckRet.hasError()) {
+            // log the query params maybe better?
+            MyLog.e(TAG, "request rejected: route=$routeName, ip=$callerIp, token=$token, reason=${tokenCheckRet.msg}")
+            throw RuntimeException(tokenCheckRet.msg)
         }
     }
 
@@ -488,7 +374,7 @@ object HttpServer {
     fun getApiJson(repoEntity:RepoEntity, settings: AppSettings):String {
         val host = settings.httpService.listenHost
         val port = settings.httpService.listenPort
-
+        val token = settings.httpService.tokenList.let { if(it.isEmpty()) "" else it.first() }
 
         return JsonUtil.j2.encodeToString(
             JsonUtil.j2.serializersModule.serializer(),
@@ -503,8 +389,8 @@ object HttpServer {
                     pull = "/pull",
                     push = "/push",
                     //少加点参数，少写少错
-                    pull_example= "${genHttpHostPortStr(host, port)}/pull?repoNameOrId=${repoEntity.repoName}",
-                    push_example= "${genHttpHostPortStr(host, port)}/push?repoNameOrId=${repoEntity.repoName}",
+                    pull_example= "${genHttpHostPortStr(host, port)}/pull?token=$token&repoNameOrId=${repoEntity.repoName}",
+                    push_example= "${genHttpHostPortStr(host, port)}/push?token=$token&repoNameOrId=${repoEntity.repoName}",
                 )
             )
         )
@@ -516,35 +402,33 @@ object HttpServer {
  * 如果ip同时在白名单和黑名单，将允许连接
  * 如果设置项中的token为空字符串，将允许所有连接
  */
-private fun tokenCheck(token:String?,ip:String, settings: AppSettings): Ret<Unit?> {
-    val whiteList = settings.httpService.ipWhiteList
-    if(whiteList.contains(ip)) {
-        return Ret.createSuccess(null)
-    }
+private fun tokenPassedOrThrowException(token:String?, ip:String, settings: AppSettings): Ret<Unit?> {
+    //这个错误信息不要写太具体哪个出错，不然别人可以探测你的ip和token名单
+    val errMsg = "invalid token or ip blocked"
+    val errRet:Ret<Unit?> = Ret.createError(null, errMsg)
 
-    val blackList = settings.httpService.ipBlackList
-    if(blackList.contains(ip)) {
-        return Ret.createError(null, "ip blocked")
+    val whiteList = settings.httpService.ipWhiteList
+    //匹配所有，或者匹配到请求者的ip
+    if(ip.isBlank() || whiteList.find { it == "*" || it == ip } == null) {
+        return errRet
     }
 
     // check token
-    val expectedToken = settings.httpService.token
-    if(expectedToken.isEmpty()) {
-        // token empty will allow all requests
-        return Ret.createSuccess(null)
+    val tokenList = settings.httpService.tokenList
+    //全空格token不被允许，不过"a b c"这种可以允许，首尾空格将被去除，但中间的会保留
+    if(token == null || tokenList.isEmpty() || token.isBlank() || tokenList.contains(token).not()) {
+        // token empty will reject all requests
+        return errRet
     }
 
-    if(token!=null && token == expectedToken) {
-        return Ret.createSuccess(null)
-    }
-
-    return Ret.createError(null, "invalid token")
+    return Ret.createSuccess(null)
 }
 
 /**
  * 启动app并定位到ChangeList和指定仓库
+ * @param startPage 是页面id, `Cons.selectedItem_` 开头的那几个变量
  */
-private fun sendNotification(title:String, msg:String, startRepoId:String) {
+private fun sendNotification(title:String, msg:String, startPage:Int, startRepoId:String) {
     NormalNotify.sendNotification(
         null,
         title,
@@ -552,17 +436,267 @@ private fun sendNotification(title:String, msg:String, startRepoId:String) {
         NormalNotify.createPendingIntent(
             null,
             mapOf(
-                IntentCons.ExtrasKey.startPage to Cons.selectedItem_ChangeList.toString(),
+                IntentCons.ExtrasKey.startPage to startPage.toString(),
                 IntentCons.ExtrasKey.startRepoId to startRepoId
             )
         )
     )
 }
 
-private fun sendSuccessNotification(title:String?, msg:String?, repoId:String?) {
-    sendNotification(title ?:"PuppyGit", msg ?: "Success", repoId ?: "")
+private fun sendSuccessNotification(title:String?, msg:String?, startPage:Int?, repoId:String?) {
+    //Never页面永远不会被处理，变相等于启动app时回到上次退出时的页面
+    sendNotification(title ?: "PuppyGit", msg ?: "Success", startPage ?: Cons.selectedItem_Never, repoId ?: "")
 }
 
 val throwRepoBusy = { _:Mutex ->
     throw RuntimeException("repo busy, plz try later")
+}
+
+
+private suspend fun pullRepoList(
+    repoList:List<RepoEntity>,
+    routeName: String,
+    gitUsernameFromUrl:String,
+    gitEmailFromUrl:String
+) {
+    val db = AppModel.dbContainer
+    val settings = SettingsUtil.getSettingsSnapshot()
+    val masterPassword = MasterPassUtil.get(AppModel.realAppContext)
+
+    repoList.forEach { repoFromDb ->
+        try {
+            Libgit2Helper.doActWithRepoLock(repoFromDb, onLockFailed = throwRepoBusy) {
+                if(dbIntToBool(repoFromDb.isDetached)) {
+                    throw RuntimeException("repo is detached")
+                }
+
+                if(!Libgit2Helper.isValidGitRepo(repoFromDb.fullSavePath)) {
+                    throw RuntimeException("invalid git repo")
+                }
+
+                Repository.open(repoFromDb.fullSavePath).use { gitRepo ->
+                    val upstream = Libgit2Helper.getUpstreamOfBranch(gitRepo, repoFromDb.branch)
+                    if(upstream.remote.isBlank() || upstream.branchRefsHeadsFullRefSpec.isBlank()) {
+                        throw RuntimeException("invalid upstream")
+                    }
+
+                    // get fetch credential
+                    val credential = Libgit2Helper.getRemoteCredential(
+                        db.remoteRepository,
+                        db.credentialRepository,
+                        repoFromDb.id,
+                        upstream.remote,
+                        trueFetchFalsePush = true,
+                        masterPassword = masterPassword
+                    )
+
+                    // fetch
+                    Libgit2Helper.fetchRemoteForRepo(gitRepo, upstream.remote, credential, repoFromDb)
+
+
+                    // 更新修改workstatus的时间，只更新时间就行，状态会在查询repo时更新
+                    val repoDb = AppModel.dbContainer.repoRepository
+                    repoDb.updateLastUpdateTime(repoFromDb.id, getSecFromTime())
+
+                    // get git username and email for merge
+                    val (username, email) = if(gitUsernameFromUrl.isNotBlank() && gitEmailFromUrl.isNotBlank()) {
+                        Pair(gitUsernameFromUrl, gitEmailFromUrl)
+                    }else{
+                        val (gitUsernameFromConfig, gitEmailFromConfig) = Libgit2Helper.getGitUsernameAndEmail(gitRepo)
+                        val finallyUsername = gitUsernameFromUrl.ifBlank { gitUsernameFromConfig }
+
+                        val finallyEmail = gitEmailFromUrl.ifBlank { gitEmailFromConfig }
+
+                        Pair(finallyUsername, finallyEmail)
+                    }
+
+                    if(username == null || username.isBlank()) {
+                        throw RuntimeException("git username invalid")
+                    }
+
+                    if(email == null || email.isBlank()) {
+                        throw RuntimeException("git email invalid")
+                    }
+
+                    val remoteRefSpec = Libgit2Helper.getUpstreamRemoteBranchShortNameByRemoteAndBranchRefsHeadsRefSpec(
+                        upstream!!.remote,
+                        upstream.branchRefsHeadsFullRefSpec
+                    )
+
+                    //merge
+                    val mergeRet = Libgit2Helper.mergeOneHead(
+                        gitRepo,
+                        remoteRefSpec,
+                        username,
+                        email,
+                        settings = settings
+                    )
+
+                    if(mergeRet.hasError()) {
+                        throw RuntimeException(mergeRet.msg)
+                    }
+
+                }
+
+
+                if(settings.httpService.showNotifyWhenSuccess) {
+                    sendSuccessNotification(repoFromDb.repoName, "pull successfully", Cons.selectedItem_ChangeList, repoFromDb.id)
+                }
+            }
+        }catch (e:Exception) {
+            val errMsg = e.localizedMessage ?: "unknown err"
+
+            createAndInsertError(repoFromDb.id, "pull by api $routeName err: $errMsg")
+
+            if(settings.httpService.showNotifyWhenErr) {
+                sendNotification("pull err", errMsg, Cons.selectedItem_ChangeList, repoFromDb.id)
+            }
+
+            MyLog.e(TAG, "route:$routeName, repoName=${repoFromDb.repoName}, err=${e.stackTraceToString()}")
+        }
+
+    }
+
+}
+
+private suspend fun pushRepoList(
+    repoList:List<RepoEntity>,
+    routeName: String,
+    gitUsernameFromUrl:String,
+    gitEmailFromUrl:String,
+    autoCommit:Boolean,
+    force:Boolean,
+) {
+    val db = AppModel.dbContainer
+    val settings = SettingsUtil.getSettingsSnapshot()
+    val masterPassword = MasterPassUtil.get(AppModel.realAppContext)
+
+    repoList.forEach {repoFromDb ->
+        try {
+            Libgit2Helper.doActWithRepoLock(repoFromDb, onLockFailed = throwRepoBusy) {
+                if(dbIntToBool(repoFromDb.isDetached)) {
+                    throw RuntimeException("repo is detached")
+                }
+
+                if(!Libgit2Helper.isValidGitRepo(repoFromDb.fullSavePath)) {
+                    throw RuntimeException("invalid git repo")
+                }
+
+                Repository.open(repoFromDb.fullSavePath).use { gitRepo ->
+                    val repoState = gitRepo.state()
+                    if(repoState != Repository.StateT.NONE) {
+                        throw RuntimeException("repository state is '$repoState', expect 'NONE'")
+                    }
+
+                    val upstream = Libgit2Helper.getUpstreamOfBranch(gitRepo, repoFromDb.branch)
+                    if(upstream.remote.isBlank() || upstream.branchRefsHeadsFullRefSpec.isBlank()) {
+                        throw RuntimeException("invalid upstream")
+                    }
+
+                    if(autoCommit) {
+                        val (username, email) = if(gitUsernameFromUrl.isNotBlank() && gitEmailFromUrl.isNotBlank()) {
+                            Pair(gitUsernameFromUrl, gitEmailFromUrl)
+                        }else{
+                            val (gitUsernameFromConfig, gitEmailFromConfig) = Libgit2Helper.getGitUsernameAndEmail(gitRepo)
+                            val finallyUsername = gitUsernameFromUrl.ifBlank { gitUsernameFromConfig }
+
+                            val finallyEmail = gitEmailFromUrl.ifBlank { gitEmailFromConfig }
+
+                            Pair(finallyUsername, finallyEmail)
+                        }
+
+                        if(username == null || username.isBlank() || email == null || email.isBlank()) {
+                            MyLog.w(TAG, "http server: api $routeName: commit abort by username or email invalid")
+                        }else {
+                            //检查是否存在冲突，如果存在，将不会创建提交
+                            if(Libgit2Helper.hasConflictItemInRepo(gitRepo)) {
+                                MyLog.w(TAG, "http server: api=$routeName, repoName=${repoFromDb.repoName}, err=conflict abort the commit")
+                                // 显示个手机通知，点击进入ChangeList并定位到对应仓库
+                                sendNotification("Error", "Conflict abort the commit", Cons.selectedItem_ChangeList, repoFromDb.id)
+                            }else {
+                                // 有username 和 email，且无冲突
+
+                                // stage worktree changes
+                                Libgit2Helper.stageAll(gitRepo, repoFromDb.id)
+
+
+
+                                //如果index不为空，则创建提交
+                                if(!Libgit2Helper.indexIsEmpty(gitRepo)) {
+                                    Libgit2Helper.createCommit(
+                                        repo = gitRepo,
+                                        msg = "",
+                                        username = username,
+                                        email = email,
+                                        indexItemList = null,
+                                        amend = false,
+                                        overwriteAuthorWhenAmend = false,
+                                        settings = settings
+                                    )
+                                }
+
+                            }
+                        }
+                    }
+
+
+                    // 检查 ahead和behind
+                    if(!force) {  //只有非force才检查，否则强推
+                        val (ahead, behind) = getAheadBehind(gitRepo, Oid.of(upstream.localOid), Oid.of(upstream.remoteOid))
+
+                        if(behind > 0) {  //本地落后远程（远程领先本地）
+                            throw RuntimeException("upstream ahead of local")
+                        }
+
+                        if(ahead < 1) {
+                            //通过behind检测后，如果进入此代码块，代表本地不落后也不领先，即“up to date”，并不需要推送，可返回了
+                            if(settings.httpService.showNotifyWhenSuccess) {
+                                sendSuccessNotification(repoFromDb.repoName, "Already up-to-date", Cons.selectedItem_ChangeList, repoFromDb.id)
+                            }
+
+                            return@doActWithRepoLock
+                        }
+
+                    }
+
+
+                    // get push credential
+                    val credential = Libgit2Helper.getRemoteCredential(
+                        db.remoteRepository,
+                        db.credentialRepository,
+                        repoFromDb.id,
+                        upstream.remote,
+                        trueFetchFalsePush = false,
+                        masterPassword = masterPassword
+                    )
+
+                    val ret = Libgit2Helper.push(gitRepo, upstream.remote, upstream.pushRefSpec, credential, force)
+                    if(ret.hasError()) {
+                        throw RuntimeException(ret.msg)
+                    }
+
+                    // 更新修改workstatus的时间，只更新时间就行，状态会在查询repo时更新
+                    val repoDb = AppModel.dbContainer.repoRepository
+                    repoDb.updateLastUpdateTime(repoFromDb.id, getSecFromTime())
+                }
+
+
+                if(settings.httpService.showNotifyWhenSuccess) {
+                    sendSuccessNotification(repoFromDb.repoName, "push successfully", Cons.selectedItem_ChangeList, repoFromDb.id)
+                }
+
+            }
+        }catch (e:Exception) {
+            val errMsg = e.localizedMessage ?: "unknown err"
+
+            createAndInsertError(repoFromDb.id, "push by api $routeName err: $errMsg")
+
+            if(settings.httpService.showNotifyWhenErr) {
+                sendNotification("push err", errMsg, Cons.selectedItem_ChangeList, repoFromDb.id)
+            }
+
+            MyLog.e(TAG, "route:$routeName, repoName=${repoFromDb.repoName}, err=${e.stackTraceToString()}")
+        }
+
+    }
 }

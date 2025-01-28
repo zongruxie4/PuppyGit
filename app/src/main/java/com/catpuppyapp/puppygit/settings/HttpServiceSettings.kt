@@ -14,14 +14,26 @@ data class HttpServiceSettings (
     var listenPort:Int = 52520,
 
     /**
-     * token, use to verify the requester
+     * token, use to verify the requester, a request must ip in the white list and bearer the token
      *
-     * note: if token empty, will allow all request
+     * note: if token list is empty, will reject all request
      *
-     * code: will only do empty check with this field, means it can be include blank char, but doesn't recommend
-     * 代码：对这个字段只执行空值检查，意味着它可包含空格，但不建议
      */
-    var token:String = "default_puppygit_token",
+    var tokenList:List<String> = listOf("default_puppygit_token"),
+
+    /**
+     * only respond the request which ip in the white list and bearer the token
+     *
+     * if include "*", will match all ips, it useful if you want to allow all ips
+     */
+    var ipWhiteList:List<String> = listOf("127.0.0.1"),
+
+    /**
+     * never do nothing and never response if ip in the list
+     */
+    @Deprecated("ipWhiteList and token fair enough")
+    var ipBlackList:List<String> = listOf(),
+
 
     /**
      * show notify if server do act err
@@ -36,13 +48,4 @@ data class HttpServiceSettings (
      */
     var showNotifyWhenSuccess:Boolean = false,
 
-    /**
-     * no token require if ip in the white list
-     */
-    var ipWhiteList:List<String> = listOf("127.0.0.1"),
-
-    /**
-     * never do nothing and never response if ip in the list
-     */
-    var ipBlackList:List<String> = listOf()
-)
+    )
