@@ -1146,6 +1146,10 @@
     <string name="stopped">已停止</string>
     <string name="err_port_invalid">错误: 端口无效</string>
     <string name="copy_api">复制 Api</string>
+    <string name="test">测试</string>
+    <string name="failed">失败</string>
+    <string name="host">主机</string>
+    <string name="err_host_invalid">错误: 主机无效</string>
 
 
 </resources>

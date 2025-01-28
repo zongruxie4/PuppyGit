@@ -342,4 +342,6 @@ object Cons {
      */
     val checkoutType_checkoutCommitThenDetachHead=3
 
+    val zero000Ip = "0.0.0.0"
+    val localHostIp = "127.0.0.1"
 }

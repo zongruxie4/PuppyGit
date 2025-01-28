@@ -1169,5 +1169,9 @@
     <string name="stopped">Stopped</string>
     <string name="err_port_invalid">err: Port Invalid</string>
     <string name="copy_api">Copy Api</string>
+    <string name="test">Test</string>
+    <string name="failed">Failed</string>
+    <string name="host">Host</string>
+    <string name="err_host_invalid">err: Host Invalid</string>
 
 </resources>

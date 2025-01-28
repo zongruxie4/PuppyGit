@@ -4,6 +4,7 @@ import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.ScrollState
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
@@ -11,6 +12,8 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.ContentCopy
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
@@ -19,18 +22,22 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalClipboardManager
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.catpuppyapp.puppygit.compose.ConfirmDialog2
+import com.catpuppyapp.puppygit.compose.InLineIcon
 import com.catpuppyapp.puppygit.compose.PaddingRow
 import com.catpuppyapp.puppygit.compose.SettingsContent
+import com.catpuppyapp.puppygit.compose.SettingsTitle
 import com.catpuppyapp.puppygit.play.pro.R
 import com.catpuppyapp.puppygit.service.http.server.HttpServer
 import com.catpuppyapp.puppygit.service.http.server.HttpService
@@ -39,8 +46,10 @@ import com.catpuppyapp.puppygit.style.MyStyleKt
 import com.catpuppyapp.puppygit.utils.AppModel
 import com.catpuppyapp.puppygit.utils.ComposeHelper
 import com.catpuppyapp.puppygit.utils.Msg
+import com.catpuppyapp.puppygit.utils.NetUtils
 import com.catpuppyapp.puppygit.utils.UIHelper
 import com.catpuppyapp.puppygit.utils.doJobThenOffLoading
+import com.catpuppyapp.puppygit.utils.genHttpHostPortStr
 import com.catpuppyapp.puppygit.utils.parseInt
 import com.catpuppyapp.puppygit.utils.state.mutableCustomStateOf
 
@@ -58,7 +67,7 @@ fun ServiceInnerPage(
 ){
 
     val activityContext = LocalContext.current
-    // val clipboardManager = LocalClipboardManager.current
+    val clipboardManager = LocalClipboardManager.current
 
     val settingsState = mutableCustomStateOf(stateKeyTag, "settingsState", SettingsUtil.getSettingsSnapshot())
 
@@ -68,12 +77,76 @@ fun ServiceInnerPage(
     val errNotify = rememberSaveable { mutableStateOf(SettingsUtil.getSettingsSnapshot().httpService.showNotifyWhenErr) }
     val successNotify = rememberSaveable { mutableStateOf(SettingsUtil.getSettingsSnapshot().httpService.showNotifyWhenSuccess) }
 
-    val listenPort = rememberSaveable { mutableStateOf(settingsState.value.httpService.listenPort) }
-    val listenPortBuf = rememberSaveable { mutableStateOf(listenPort.value.toString()) }
+    val listenHost = rememberSaveable { mutableStateOf(settingsState.value.httpService.listenHost) }
+    val listenHostBuf = rememberSaveable { mutableStateOf(listenHost.value) }
+    val showSetHostDialog = rememberSaveable { mutableStateOf(false) }
+    val initSetHostDialog = {
+        listenHostBuf.value = listenHost.value
+        showSetHostDialog.value=true
+    }
+    if(showSetHostDialog.value) {
+        ConfirmDialog2(title = stringResource(R.string.host),
+            requireShowTextCompose = true,
+            textCompose = {
+                Column(
+                    modifier= Modifier
+                        .fillMaxWidth()
+                        .verticalScroll(rememberScrollState())
+                    ,
+                ) {
+                    TextField(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(10.dp),
+                        singleLine = true,
+                        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
+                        value = listenHostBuf.value,
+                        onValueChange = {
+                            //直接更新，不管用户输入什么，点确定后再检查值是否有效
+                            listenHostBuf.value = it
+                        },
+                        label = {
+                            Text(stringResource(R.string.port))
+                        },
+//                        placeholder = {}
+                    )
+
+                }
+
+
+            },
+            okBtnText = stringResource(id = R.string.save),
+            cancelBtnText = stringResource(id = R.string.cancel),
+            onCancel = { showSetHostDialog.value = false }
+        ) {
+            showSetHostDialog.value = false
+            doJobThenOffLoading {
+                //解析
+                val newValue = listenHostBuf.value
+
+                //检查
+                if(newValue.isBlank()) {
+                    Msg.requireShowLongDuration(activityContext.getString(R.string.err_host_invalid))
+                    return@doJobThenOffLoading
+                }
+
+                //保存
+                listenHost.value = newValue
+                SettingsUtil.update {
+                    it.httpService.listenHost = newValue
+                }
+
+                Msg.requireShow(activityContext.getString(R.string.saved))
+            }
+        }
+    }
+
+    val listenPort = rememberSaveable { mutableStateOf(settingsState.value.httpService.listenPort.toString()) }
+    val listenPortBuf = rememberSaveable { mutableStateOf(listenPort.value) }
     val showSetPortDialog = rememberSaveable { mutableStateOf(false) }
 
     val initSetPortDialog = {
-        listenPortBuf.value = listenPort.value.toString()
+        listenPortBuf.value = listenPort.value
 
         showSetPortDialog.value = true
     }
@@ -125,7 +198,7 @@ fun ServiceInnerPage(
                 }
 
                 //保存
-                listenPort.value = newValue
+                listenPort.value = newValue.toString()
                 SettingsUtil.update {
                     it.httpService.listenPort = newValue
                 }
@@ -182,14 +255,49 @@ fun ServiceInnerPage(
             )
         }
 
+        SettingsContent(onClick = {
+            doJobThenOffLoading {
+                if(NetUtils.checkPuppyGitHttpServiceRunning(genHttpHostPortStr(listenHost.value, listenPort.value))) {
+                    Msg.requireShow(activityContext.getString(R.string.success))
+                }else {
+                    Msg.requireShow(activityContext.getString(R.string.failed))
+                }
+            }
+        }) {
+            Column {
+                Text(stringResource(R.string.test), fontSize = itemFontSize)
+                Row(
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Text(genHttpHostPortStr(listenHost.value, listenPort.value), fontSize = itemDescFontSize, fontWeight = FontWeight.Light)
+                    InLineIcon(
+                        icon = Icons.Filled.ContentCopy,
+                        tooltipText = stringResource(R.string.copy),
+                    ){
+                        clipboardManager.setText(AnnotatedString(genHttpHostPortStr(listenHost.value, listenPort.value)))
+                        Msg.requireShow(activityContext.getString(R.string.copied))
+                    }
+                }
+            }
+        }
 
+        SettingsTitle(stringResource(R.string.settings))
+
+        SettingsContent(onClick = {
+            initSetHostDialog()
+        }) {
+            Column {
+                Text(stringResource(R.string.host), fontSize = itemFontSize)
+                Text(listenHost.value, fontSize = itemDescFontSize, fontWeight = FontWeight.Light)
+            }
+        }
 
         SettingsContent(onClick = {
             initSetPortDialog()
         }) {
             Column {
                 Text(stringResource(R.string.port), fontSize = itemFontSize)
-                Text(listenPort.value.toString(), fontSize = itemDescFontSize, fontWeight = FontWeight.Light)
+                Text(listenPort.value, fontSize = itemDescFontSize, fontWeight = FontWeight.Light)
             }
         }
 

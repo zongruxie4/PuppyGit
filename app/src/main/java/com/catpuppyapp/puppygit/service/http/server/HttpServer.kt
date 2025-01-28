@@ -316,7 +316,7 @@ object HttpServer {
                 }
             }.start(wait = false) // 不能传true，会block整个程序
 
-            MyLog.w(TAG, "Http Server started on '${genHttpHostPortStr(settings.httpService.listenHost, settings.httpService.listenPort)}'")
+            MyLog.w(TAG, "Http Server started on '${genHttpHostPortStr(settings.httpService.listenHost, settings.httpService.listenPort.toString())}'")
             return null
         }catch (e:Exception) {
             //端口占用之类的能捕获到错误，看来即使非阻塞也并非一启动就立即返回，应该是成功绑定端口ip后才返回
@@ -389,8 +389,8 @@ object HttpServer {
                     pull = "/pull",
                     push = "/push",
                     //少加点参数，少写少错
-                    pull_example= "${genHttpHostPortStr(host, port)}/pull?token=$token&repoNameOrId=${repoEntity.repoName}",
-                    push_example= "${genHttpHostPortStr(host, port)}/push?token=$token&repoNameOrId=${repoEntity.repoName}",
+                    pull_example= "${genHttpHostPortStr(host, port.toString())}/pull?token=$token&repoNameOrId=${repoEntity.repoName}",
+                    push_example= "${genHttpHostPortStr(host, port.toString())}/push?token=$token&repoNameOrId=${repoEntity.repoName}",
                 )
             )
         )

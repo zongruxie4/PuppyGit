@@ -1,7 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <network-security-config>
 <!--    cleartextTrafficPermitted 是否允许明文流量-->
-    <base-config cleartextTrafficPermitted="false">
+<!--    如果拒绝，连http to 127.0.0.1 都不能连，测试不了app的http service运行状态，所以允许-->
+    <base-config cleartextTrafficPermitted="true">
 <!--        <domain includeSubdomains="true">github.com</domain>-->
         <trust-anchors>
 <!--            <certificates src="@raw/myca"/>-->

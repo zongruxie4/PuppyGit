@@ -109,7 +109,7 @@ class HttpService : Service() {
             copyTextToClipboard(
                 context = applicationContext,
                 label = "PuppyGit Http Addr",
-                text = genHttpHostPortStr(settings.httpService.listenHost, settings.httpService.listenPort)
+                text = genHttpHostPortStr(settings.httpService.listenHost, settings.httpService.listenPort.toString())
             )
 
             //这toast不一定显示
@@ -162,7 +162,7 @@ class HttpService : Service() {
         val builder = HttpServiceHoldNotify.getNotificationBuilder(
             this,
             "PuppyGit Service",
-            "Listen on: ${genHttpHostPortStr(settings.httpService.listenHost, settings.httpService.listenPort)}",
+            "Listen on: ${genHttpHostPortStr(settings.httpService.listenHost, settings.httpService.listenPort.toString())}",
             HttpServiceHoldNotify.createPendingIntent(null, mapOf()), //启动app但不指定页面
         )
 

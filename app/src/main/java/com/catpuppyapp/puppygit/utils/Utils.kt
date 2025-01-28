@@ -981,4 +981,8 @@ fun copyTextToClipboard(context: Context, text: String, label:String="label") {
     clipboard.setPrimaryClip(clip) // 设置剪贴板内容
 }
 
-fun genHttpHostPortStr(host:String, port:Int, prefix:String="http://") = "$prefix$host:$port"
+fun genHttpHostPortStr(host:String, port:String, prefix:String="http://") : String {
+    //如果host 是 0.0.0.0 换成 127.0.0.1，否则使用原ip
+    val host = if(host == Cons.zero000Ip) Cons.localHostIp else host
+    return "$prefix$host:$port"
+}
