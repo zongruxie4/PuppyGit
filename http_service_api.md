@@ -10,8 +10,11 @@
 
 ## Quick Start:
 pull: http://127.0.0.1:52520/pull?token=replace_to_your_token&repoNameOrId=yourRepoName
+
 push: http://127.0.0.1:52520/push?token=replace_to_your_token&repoNameOrId=yourRepoName
+
 pullAll: http://127.0.0.1:52520/pullAll?token=replace_to_your_token
+
 pushAll: http://127.0.0.1:52520/pushAll?token=replace_to_your_token
 
 ---
@@ -32,6 +35,7 @@ params:
 
 example:
 http://127.0.0.1/pull?repoNameOrId=your_repo_name&token=your_token
+
 http://127.0.0.1/pull?repoNameOrId=your_repo_name&token=your_token&gitUsername=your_git_username&gitEmail=your_email@example.com
 
 
@@ -53,6 +57,7 @@ params:
 
 example:
 http://127.0.0.1/push?repoNameOrId=your_repo_name&token=your_token
+
 http://127.0.0.1/push?repoNameOrId=your_repo_name&token=your_token&gitUsername=your_git_user_name&gitEmail=your_email@example.com
 
 
@@ -71,6 +76,7 @@ params:
 
 example:
 http://127.0.0.1/pullAll?token=your_token
+
 http://127.0.0.1/pullAll?token=your_token&gitUsername=your_git_username&gitEmail=your_email@example.com
 
 
@@ -91,4 +97,5 @@ params:
 
 example:
 http://127.0.0.1/pushAll?token=your_token
+
 http://127.0.0.1/pushAll?token=your_token&gitUsername=your_git_username&gitEmail=your_email@example.com
