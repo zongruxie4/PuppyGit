@@ -159,7 +159,7 @@ fun RepoInnerPage(
     upstreamRemoteOptionsList:CustomStateListSaveable<String>,
     specifiedRefreshRepoList:CustomStateListSaveable<RepoEntity>,
 
-    ) {
+) {
     val activityContext = LocalContext.current
     val exitApp = AppModel.exitApp;
     val navController = AppModel.navController;

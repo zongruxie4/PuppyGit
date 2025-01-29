@@ -438,6 +438,7 @@ private fun tokenPassedOrThrowException(token:String?, ip:String, settings: AppS
 /**
  * 启动app并定位到ChangeList和指定仓库
  * @param startPage 是页面id, `Cons.selectedItem_` 开头的那几个变量
+ * @param startRepoId 虽然是repo id，但实际上查询的时候可能会匹配id和repoName，但是，这里还是应该尽量传id而不是repoName
  */
 private fun sendNotification(title:String, msg:String, startPage:Int, startRepoId:String) {
     NormalNotify.sendNotification(
