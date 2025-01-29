@@ -16,7 +16,7 @@ import com.catpuppyapp.puppygit.play.pro.R
  * and the default confirm text is "OK", denied text is "Cancel"
  */
 @Composable
-fun ConfirmDialog2(
+fun ConfirmDialog3(
     modifier: Modifier=Modifier,
     title: String="",
     text: String="",
@@ -31,6 +31,7 @@ fun ConfirmDialog2(
     okBtnEnabled: Boolean=true,
     showOk:Boolean = true,
     showCancel:Boolean = true,
+    customOk:(@Composable ()->Unit)? = null,
     onCancel: () -> Unit,
     onDismiss: ()->Unit = onCancel,  //点击非弹窗区域时执行的操作，若不指定则和onCancel行为一致
     onOk: () -> Unit,
@@ -69,17 +70,21 @@ fun ConfirmDialog2(
         },
         confirmButton = {
             if(showOk) {
-                TextButton(
-                    enabled = okBtnEnabled,
-                    onClick = {
-                        //执行用户传入的callback
-                        onOk()
-                    },
-                ) {
-                    Text(
-                        text = okBtnText,
-                        color = okTextColor,
-                    )
+                if(customOk != null) {
+                    customOk()
+                }else {
+                    TextButton(
+                        enabled = okBtnEnabled,
+                        onClick = {
+                            //执行用户传入的callback
+                            onOk()
+                        },
+                    ) {
+                        Text(
+                            text = okBtnText,
+                            color = okTextColor,
+                        )
+                    }
                 }
 
             }

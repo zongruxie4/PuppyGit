@@ -37,18 +37,20 @@ import java.io.File
 
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
-fun EditorTitle(editorPageShowingFilePath: MutableState<String>,
-                editorPageRequestFromParent:MutableState<String>,
-                editorSearchMode:Boolean,
-                editorSearchKeyword: CustomStateSaveable<TextFieldValue>,
-                editorPageMergeMode:Boolean,
-                readOnly:Boolean,
-                editorOpenFileErr:Boolean
-                ) {
+fun EditorTitle(
+    editorPageShowingFileName: String?,
+    editorPageShowingFilePath: MutableState<String>,
+    editorPageRequestFromParent:MutableState<String>,
+    editorSearchMode:Boolean,
+    editorSearchKeyword: CustomStateSaveable<TextFieldValue>,
+    editorPageMergeMode:Boolean,
+    readOnly:Boolean,
+    editorOpenFileErr:Boolean
+) {
     val haptic = LocalHapticFeedback.current
 
     if(editorPageShowingFilePath.value.isNotBlank()) {
-        val fileName = getFileNameFromCanonicalPath(editorPageShowingFilePath.value)
+        val fileName = editorPageShowingFileName ?: getFileNameFromCanonicalPath(editorPageShowingFilePath.value)
 //        val filePath = getFilePathStrBasedRepoDir(editorPageShowingFilePath.value, returnResultStartsWithSeparator = true)
         val filePath = FsUtils.getPathWithInternalOrExternalPrefix(editorPageShowingFilePath.value)
 

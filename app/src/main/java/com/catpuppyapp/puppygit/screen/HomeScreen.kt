@@ -52,15 +52,18 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.TextRange
 import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.unit.dp
+import com.catpuppyapp.puppygit.compose.ConfirmDialog3
 import com.catpuppyapp.puppygit.compose.FilterTextField
 import com.catpuppyapp.puppygit.compose.GoToTopAndGoToBottomFab
 import com.catpuppyapp.puppygit.compose.LoadingDialog
 import com.catpuppyapp.puppygit.compose.LongPressAbleIconBtn
 import com.catpuppyapp.puppygit.compose.ScrollableColumn
+import com.catpuppyapp.puppygit.compose.ScrollableRow
 import com.catpuppyapp.puppygit.compose.SmallFab
 import com.catpuppyapp.puppygit.constants.Cons
 import com.catpuppyapp.puppygit.constants.IntentCons
 import com.catpuppyapp.puppygit.constants.PageRequest
+import com.catpuppyapp.puppygit.constants.SingleSendHandleMethod
 import com.catpuppyapp.puppygit.data.entity.RepoEntity
 import com.catpuppyapp.puppygit.dto.FileItemDto
 import com.catpuppyapp.puppygit.dto.FileSimpleDto
@@ -182,29 +185,30 @@ fun HomeScreen(
         keyName = "changeListPageFilterKeyWord",
         initValue = TextFieldValue("")
     )
-    val changeListPageFilterModeOn = rememberSaveable { mutableStateOf( false)}
+    val changeListPageFilterModeOn = rememberSaveable { mutableStateOf(false) }
 
     val repoPageFilterKeyWord =mutableCustomStateOf(
         keyTag = stateKeyTag,
         keyName = "repoPageFilterKeyWord",
         initValue = TextFieldValue("")
     )
-    val repoPageFilterModeOn = rememberSaveable { mutableStateOf( false)}
-    val repoPageShowImportRepoDialog = rememberSaveable { mutableStateOf(false)}
-    val repoPageGoToId = rememberSaveable { mutableStateOf("")}
+    val repoPageFilterModeOn = rememberSaveable { mutableStateOf(false) }
+    val repoPageShowImportRepoDialog = rememberSaveable { mutableStateOf(false) }
+    val repoPageGoToId = rememberSaveable { mutableStateOf("") }
 
 
-    val subscriptionPageNeedRefresh = rememberSaveable { mutableStateOf("")}
+    val subscriptionPageNeedRefresh = rememberSaveable { mutableStateOf("") }
+    val needRefreshHome = rememberSaveable { mutableStateOf("") }
 
-    val swapForChangeListPage = rememberSaveable { mutableStateOf(false)}
+    val swapForChangeListPage = rememberSaveable { mutableStateOf(false) }
 
 
 //    val editorPageRequireOpenFilePath = StateUtil.getRememberSaveableState(initValue = "") // canonicalPath
 //    val needRefreshFilesPage = rememberSaveable { mutableStateOf(false) }
-    val needRefreshFilesPage = rememberSaveable { mutableStateOf("")}
-    val needRefreshSettingsPage = rememberSaveable { mutableStateOf("")}
+    val needRefreshFilesPage = rememberSaveable { mutableStateOf("") }
+    val needRefreshSettingsPage = rememberSaveable { mutableStateOf("") }
     val refreshSettingsPage = { changeStateTriggerRefreshPage(needRefreshSettingsPage) }
-    val needRefreshServicePage = rememberSaveable { mutableStateOf("")}
+    val needRefreshServicePage = rememberSaveable { mutableStateOf("") }
     val refreshServicePage = { changeStateTriggerRefreshPage(needRefreshServicePage) }
 
     val settingsListState = rememberScrollState()
@@ -357,6 +361,7 @@ fun HomeScreen(
         changeListRequireRefreshFromParentPage(item)
     }
 
+    val editorPageShowingFileName = rememberSaveable { mutableStateOf<String?>(null) }
     val filesPageRequireImportFile = rememberSaveable { mutableStateOf( false)}
     val intentConsumed = rememberSaveable { mutableStateOf(false)}  //此变量用来确保导入模式只启动一次，避免以导入模式进入app后，进入子页面再返回再次以导入模式进入Files页面
     val filesPageRequireImportUriList = mutableCustomStateListOf(keyTag = stateKeyTag, keyName = "filesPageRequireImportUriList", initValue = listOf<Uri>())
@@ -364,6 +369,49 @@ fun HomeScreen(
     val filesPageRequestFromParent = rememberSaveable { mutableStateOf("")}
     val filesPageCheckOnly = rememberSaveable { mutableStateOf(false)}
     val filesPageSelectedRepo = mutableCustomStateOf(keyTag = stateKeyTag, keyName = "filesPageSelectedRepo", RepoEntity(id="") )
+
+    val howToDealWithSingleSend = rememberSaveable { mutableStateOf(SingleSendHandleMethod.NEED_ASK.code) }
+    val showAskHandleSingleSendMethod = rememberSaveable { mutableStateOf(false)}
+    val cancelAskHandleSingleSendMethod = {
+        //设为已经消费，避免重入
+        intentConsumed.value = true
+        //关闭弹窗
+        showAskHandleSingleSendMethod.value = false
+    }
+
+    val okAskHandleSingleSendMethod = { handleMethod:SingleSendHandleMethod ->
+        howToDealWithSingleSend.value = handleMethod.code
+        showAskHandleSingleSendMethod.value = false
+        changeStateTriggerRefreshPage(needRefreshHome)
+    }
+
+    if(showAskHandleSingleSendMethod.value) {
+        ConfirmDialog3(
+            title = stringResource(R.string.ask),
+            text = stringResource(R.string.do_you_want_to_edit_the_file_or_import_it),
+            onCancel = cancelAskHandleSingleSendMethod,
+            customOk = {
+                ScrollableRow {
+                    TextButton(
+                        onClick = {
+                            okAskHandleSingleSendMethod(SingleSendHandleMethod.EDIT)
+                        }
+                    ) {
+                        Text(stringResource(id = R.string.edit))
+                    }
+
+                    TextButton(
+                        onClick = {
+                            okAskHandleSingleSendMethod(SingleSendHandleMethod.IMPORT)
+                        }
+                    ) {
+                        Text(stringResource(id = R.string.import_str))
+                    }
+                }
+            }
+        ) { }
+
+    }
 
     val initDone = rememberSaveable { mutableStateOf(false)}
     val editorPageShowCloseDialog = rememberSaveable { mutableStateOf(false)}
@@ -420,7 +468,10 @@ fun HomeScreen(
 
     //给Files页面点击打开文件用的
     //第2个参数是期望值，只有当文件路径不属于app内置禁止edit的目录时才会使用那个值，否则强制开启readonly模式
-    val requireInnerEditorOpenFile = { fullPath:String, expectReadOnly:Boolean ->
+    val requireInnerEditorOpenFileWithFileName = { fullPath:String, expectReadOnly:Boolean, fileName:String? ->
+        //文件名后来加的，用来从外部打开content uri file uri那类路径时使用提取的文件名，不然content://开头的那种uri可能会拿到错误文件名
+        editorPageShowingFileName.value = fileName
+
         editorPageShowingFileIsReady.value=false
         editorPageShowingFilePath.value = fullPath
         editorPageShowingFileDto.value.fullPath = ""
@@ -433,6 +484,13 @@ fun HomeScreen(
 
         changeStateTriggerRefreshPage(needRefreshEditorPage)  //这个其实可有可无，因为一切换页面，组件会重建，必然会执行一次LaunchedEffect，也就起到了刷新的作用
     }
+
+    val requireInnerEditorOpenFile = { fullPath:String, expectReadOnly:Boolean ->
+        val fileName:String? = null
+        //传null会从文件路径解析文件名
+        requireInnerEditorOpenFileWithFileName(fullPath, expectReadOnly, fileName)
+    }
+
 
     val needRefreshRepoPage = rememberSaveable { mutableStateOf("")}
     val doSave: suspend () -> Unit = FsUtils.getDoSaveForEditor(
@@ -690,7 +748,7 @@ fun HomeScreen(
                                 filesPageCurPathFileItemDto.value
                             )
                         } else if (currentHomeScreen.intValue == Cons.selectedItem_Editor) {
-                            EditorTitle(editorPageShowingFilePath,editorPageRequestFromParent, editorPageSearchMode.value, editorPageSearchKeyword, editorPageMergeMode.value, editorReadOnlyMode.value, editorOpenFileErr.value)
+                            EditorTitle(editorPageShowingFileName.value, editorPageShowingFilePath,editorPageRequestFromParent, editorPageSearchMode.value, editorPageSearchKeyword, editorPageMergeMode.value, editorReadOnlyMode.value, editorOpenFileErr.value)
                         } else if (currentHomeScreen.intValue == Cons.selectedItem_ChangeList) {
                             if(changeListPageFilterModeOn.value) {
                                 FilterTextField(
@@ -994,6 +1052,7 @@ fun HomeScreen(
 //                changeStateTriggerRefreshPage(needRefreshEditorPage)
 
                 EditorInnerPage(
+                    editorPageShowingFileName=editorPageShowingFileName.value,
                     contentPadding = contentPadding,
                     currentHomeScreen = currentHomeScreen,
 //                    editorPageRequireOpenFilePath=editorPageRequireOpenFilePath,
@@ -1159,7 +1218,7 @@ fun HomeScreen(
 
     //compose创建时的副作用
 //    LaunchedEffect(currentPage.intValue) {
-    LaunchedEffect(Unit) {
+    LaunchedEffect(needRefreshHome.value) {
         //test
 //        delay(30*1000)
 //        throw RuntimeException("test save when exception")  // passed, it can save when exception threw, even in android 8, still worked like a charm
@@ -1214,9 +1273,31 @@ fun HomeScreen(
                                 } catch (e: Exception) {
                                     null
                                 }
+
+                                //导入单文件，需要弹窗询问一下，用户想导入文件还是想编辑文件
                                 if (uri != null) {
-                                    filesPageRequireImportUriList.value.add(uri)
+                                    if(howToDealWithSingleSend.value == SingleSendHandleMethod.NEED_ASK.code) {
+                                        //设为假，因为肯定要再入一次这个代码块
+                                        intentConsumed.value = false
+                                        showAskHandleSingleSendMethod.value = true
+                                        return@doJobThenOffLoading
+                                    }else if(howToDealWithSingleSend.value == SingleSendHandleMethod.EDIT.code) {
+                                        val (path, filename) = FsUtils.getFilePathAndRealNameFromUriOrCanonicalPath(activityContext, uri)
+                                        if(path.isBlank()) {
+                                            //path如果为空，依然跳转到editor页面
+                                            Msg.requireShowLongDuration(activityContext.getString(R.string.file_path_invalid))
+                                        }
+
+                                        val expectReadOnly = false
+                                        requireInnerEditorOpenFileWithFileName(path, expectReadOnly, filename)
+
+                                        return@doJobThenOffLoading
+                                    }else if(howToDealWithSingleSend.value == SingleSendHandleMethod.IMPORT.code) {
+                                        //导入文件，添加到列表，然后继续执行后面的代码块就行
+                                        filesPageRequireImportUriList.value.add(uri)
+                                    }
                                 }
+
 
                                 //获取多文件，对应 action SEND_MULTIPLE
                                 val uriList = try {

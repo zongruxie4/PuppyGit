@@ -138,6 +138,7 @@ private val customTextSelectionColors_hideCursorHandle = MyStyleKt.TextSelection
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun TextEditor(
+    editorPageShowingFileName:String?,
     requestFromParent:MutableState<String>,
     fileFullPath:String,
     lastEditedPos: FileEditedPos,
@@ -448,13 +449,14 @@ fun TextEditor(
     if(requestFromParent.value==PageRequest.showDetails) {
         PageRequest.clearStateThenDoAct(requestFromParent) {
             val file = File(fileFullPath)
+            val fileName = editorPageShowingFileName ?: file.name
             val fileSize = getHumanReadableSizeStr(file.length())
             val (charsCount, linesCount) = editableController.getCharsAndLinesCount()
 //            val lastModifiedTimeStr = getFormatTimeFromSec(sec=file.lastModified()/1000, offset = getSystemDefaultTimeZoneOffset())
             val lastModifiedTimeStr = getFormattedLastModifiedTimeOfFile(file)
             val sb = StringBuilder()
 
-            sb.appendLine(activityContext.getString(R.string.file_name)+": "+file.name).appendLine()
+            sb.appendLine(activityContext.getString(R.string.file_name)+": "+fileName).appendLine()
 //            .appendLine(appContext.getString(R.string.path)+": "+ getFilePathStrBasedRepoDir(fileFullPath, returnResultStartsWithSeparator=true)).appendLine()
                 .appendLine(activityContext.getString(R.string.path)+": "+ fileFullPath).appendLine()
                 .appendLine(activityContext.getString(R.string.chars)+": "+charsCount).appendLine()

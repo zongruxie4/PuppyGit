@@ -364,7 +364,7 @@
     <string name="will_export_files_to">Файлы будут экспортированы в</string>
     <string name="err_target_is_file_but_expect_dir">Ошибка: целевой объект является файлом, но нужна папка!</string>
     <string name="require_import_files_list_is_empty">Список импортируемых файлов пуст!</string>
-    <string name="import_files">Импортировать</string>
+    <string name="import_str">Импортировать</string>
     <string name="import_has_err">Импорт завершился ошибкой</string>
     <string name="import_success">Импорт выполнен успешно</string>
     <string name="import_failed">Ошибка импорта</string>
@@ -1184,5 +1184,7 @@
     <string name="list_of_ips">List of ips</string>
     <string name="api">Api</string>
     <string name="progress_notification">Progress Notification</string>
+    <string name="do_you_want_to_edit_the_file_or_import_it">Do you want to edit the file or import it?</string>
+    <string name="ask">Ask</string>
 
 </resources>

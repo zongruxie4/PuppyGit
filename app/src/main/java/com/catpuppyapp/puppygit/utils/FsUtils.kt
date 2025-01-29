@@ -1168,4 +1168,37 @@ object FsUtils {
 
         return lines
     }
+
+
+    //这个后面跟的不是路径，得用什么玩意解析一下才能拿到真名
+    val contentUriPathPrefix = "content://"
+    //这个后面跟的是绝对路径，例如: "file:///storage/emulated/0/yourfile.txt"
+    val fileUriPathPrefix = "file://"
+
+
+    /**
+     * @return Pair(path, filename)
+     */
+    fun getFilePathAndRealNameFromUriOrCanonicalPath(context: Context, uri: Uri?): Pair<String, String> {
+        if(uri == null) {
+            return Pair("", "")
+        }
+
+        val uriPath = uri.path ?: ""
+        if(uriPath.isBlank()) {
+            return Pair("", "")
+        }
+
+
+        return if(uriPath.startsWith(contentUriPathPrefix)) {
+            //如果尝试获取uri名失败，就用File凑合下吧，虽然File获取的文件名可能乱码，不知道是乱码还是编码，反正不是给人看的
+            Pair(uriPath, getFileRealNameFromUri(context, uri) ?: File(uriPath).name)
+        }else if(uriPath.startsWith(fileUriPathPrefix)) {
+            val path = fileUriPathPrefix.removePrefix(fileUriPathPrefix)
+            Pair(path, getFileNameFromCanonicalPath(path))
+        }else { // starts with / or other cases
+            Pair(uriPath, getFileNameFromCanonicalPath(uriPath))
+        }
+
+    }
 }

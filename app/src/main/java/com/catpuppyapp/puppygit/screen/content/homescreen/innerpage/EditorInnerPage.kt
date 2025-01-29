@@ -95,6 +95,7 @@ private var justForSaveFileWhenDrawerOpen = getShortUUID()
 
 @Composable
 fun EditorInnerPage(
+    editorPageShowingFileName:String?,
     contentPadding: PaddingValues,
     currentHomeScreen: MutableIntState,
 //    editorPageRequireOpenFilePath:MutableState<String>,
@@ -994,6 +995,7 @@ fun EditorInnerPage(
 //            it.editor.filesLastEditPosition[fileFullPath] = fileEditedPos
 //        }
         FileEditor(
+            editorPageShowingFileName,
             requestFromParent,
             fileFullPath,
             fileEditedPos,

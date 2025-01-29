@@ -364,7 +364,7 @@
     <string name="will_export_files_to">Will export files to</string>
     <string name="err_target_is_file_but_expect_dir">err:target is a file but expect dir!</string>
     <string name="require_import_files_list_is_empty">Require import files list is empty!</string>
-    <string name="import_files">Import</string>
+    <string name="import_str">Import</string>
     <string name="import_has_err">Import has err</string>
     <string name="import_success">Import success</string>
     <string name="import_failed">Import failed</string>
@@ -1188,5 +1188,7 @@
     <string name="list_of_ips">List of ips</string>
     <string name="api">Api</string>
     <string name="progress_notification">Progress Notification</string>
+    <string name="do_you_want_to_edit_the_file_or_import_it">Do you want to edit the file or import it?</string>
+    <string name="ask">Ask</string>
 
 </resources>

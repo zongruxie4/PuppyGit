@@ -1978,7 +1978,7 @@ fun FilesInnerPage(
             Icons.Filled.FileDownload,
         )
         val selectionModeIconTextList = listOf(
-            stringResource(R.string.import_files),
+            stringResource(R.string.import_str),
         )
         val selectionModeIconOnClickList = listOf(
             importFiles@{

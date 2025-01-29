@@ -65,26 +65,28 @@ private const val stateKeyTag = "FileEditor"
 
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
-fun FileEditor(requestFromParent:MutableState<String>,
-               fileFullPath:String,
-               lastEditedPos:FileEditedPos,
-               textEditorState:CustomStateSaveable<TextEditorState>,
-               onChanged:(newState:TextEditorState, trueSaveToUndoFalseRedoNullNoSave:Boolean?, clearRedoStack:Boolean)->Unit,
-               contentPadding:PaddingValues,
-               isContentChanged:MutableState<Boolean>,
-               editorLastScrollEvent:CustomStateSaveable<ScrollEvent?>,
-               editorListState: LazyListState,
-               editorPageIsInitDone:MutableState<Boolean>,
-               editorPageIsContentSnapshoted:MutableState<Boolean>,
-               goToLine:Int,
-               readOnlyMode:Boolean,
-               searchMode:MutableState<Boolean>,
-               searchKeyword:String,
-               mergeMode:Boolean,
-               showLineNum:MutableState<Boolean>,
-               lineNumFontSize:MutableIntState,
-               fontSize:MutableIntState,
-               undoStack: UndoStack?
+fun FileEditor(
+    editorPageShowingFileName:String?,
+    requestFromParent:MutableState<String>,
+    fileFullPath:String,
+    lastEditedPos:FileEditedPos,
+    textEditorState:CustomStateSaveable<TextEditorState>,
+    onChanged:(newState:TextEditorState, trueSaveToUndoFalseRedoNullNoSave:Boolean?, clearRedoStack:Boolean)->Unit,
+    contentPadding:PaddingValues,
+    isContentChanged:MutableState<Boolean>,
+    editorLastScrollEvent:CustomStateSaveable<ScrollEvent?>,
+    editorListState: LazyListState,
+    editorPageIsInitDone:MutableState<Boolean>,
+    editorPageIsContentSnapshoted:MutableState<Boolean>,
+    goToLine:Int,
+    readOnlyMode:Boolean,
+    searchMode:MutableState<Boolean>,
+    searchKeyword:String,
+    mergeMode:Boolean,
+    showLineNum:MutableState<Boolean>,
+    lineNumFontSize:MutableIntState,
+    fontSize:MutableIntState,
+    undoStack: UndoStack?
 ) {
     val activityContext = LocalContext.current
     val haptic = AppModel.haptic
@@ -174,6 +176,7 @@ fun FileEditor(requestFromParent:MutableState<String>,
         ,
     ) {
         TextEditor(
+            editorPageShowingFileName,
             requestFromParent,
             fileFullPath,
             lastEditedPos = lastEditedPos,

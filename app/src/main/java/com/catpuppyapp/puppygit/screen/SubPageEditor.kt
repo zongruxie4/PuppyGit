@@ -206,7 +206,8 @@ fun SubPageEditor(
                     titleContentColor = MaterialTheme.colorScheme.primary,
                 ),
                 title = {
-                    EditorTitle(editorPageShowingFilePath, editorPageRequestFromParent, editorPageSearchMode.value, editorPageSearchKeyword, editorPageMergeMode.value, editorReadOnlyMode.value, editorOpenFileErr.value)
+                    //这页面不用来打开外部文件，正常来说不会出现file uri，不过虽然可以通过最近文件列表打开一个uri路径，但这个处理起来有点繁琐，算了，不管了，又不是不能用
+                    EditorTitle(null, editorPageShowingFilePath, editorPageRequestFromParent, editorPageSearchMode.value, editorPageSearchKeyword, editorPageMergeMode.value, editorReadOnlyMode.value, editorOpenFileErr.value)
 
                 },
                 navigationIcon = {
@@ -303,6 +304,7 @@ fun SubPageEditor(
         }
     ) { contentPadding ->
         EditorInnerPage(
+            editorPageShowingFileName = null,
             contentPadding = contentPadding,
 
             //editor作为子页面时其实不需要这个变量，只是调用的组件需要，又没默认值，所以姑且创建一个

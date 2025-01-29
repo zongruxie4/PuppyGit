@@ -364,7 +364,7 @@
     <string name="will_export_files_to">将导出文件到</string>
     <string name="err_target_is_file_but_expect_dir">错误:期望目录，但目标是文件!</string>
     <string name="require_import_files_list_is_empty">待导入文件列表为空!</string>
-    <string name="import_files">导入</string>
+    <string name="import_str">导入</string>
     <string name="import_has_err">导入出错</string>
     <string name="import_success">导入成功</string>
     <string name="import_failed">导入失败</string>
@@ -1161,6 +1161,8 @@
     <string name="list_of_ips">ip列表</string>
     <string name="api">Api</string>
     <string name="progress_notification">进度通知</string>
+    <string name="do_you_want_to_edit_the_file_or_import_it">你想编辑文件还是导入文件？</string>
+    <string name="ask">询问</string>
 
 
 </resources>
