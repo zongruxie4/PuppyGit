@@ -1194,6 +1194,14 @@ fun HomeScreen(
 
 
                             if (!intentConsumed.value) {  //如果列表已经消费过一次，不重新导入，有可能通过系统分享菜单启动app，然后切换到后台，然后再从后台启动app会发生这种情况，但用户有可能已经在上次进入app后点击进入其他页面，所以这时再启动导入模式是不合逻辑的
+
+                                //一进入代码块立即设为已消费，确保intent只被消费一次，不然你通过导入模式进来，一进二级页面，这变量没更新，
+                                // 会重新读取intent中的数据再次启动导入模式，其他使用intent的场景也有这个问题，
+                                // 比如点击service通知进入changelist页面，然后再切换到repos页面，
+                                // 再点进随便一个二级页面，再返回，又会重入此代码块，又回到changelist...
+                                intentConsumed.value = true
+
+
                                 //检查是否需要启动导入模式（用户可通过系统分享菜单文件到app以启动此模式）
                                 var importFiles = false  // after jump to Files, it will be set to true, else keep false
                                 //20240706: fixed: if import mode in app then go to any sub page then back, will duplicate import files list
@@ -1221,9 +1229,6 @@ fun HomeScreen(
                                 }
 
                                 if (filesPageRequireImportUriList.value.isNotEmpty()) {
-                                    //把导入文件列表设为已消费，确保导入模式只启动一次，避免由导入模式启动的Activity离开Files页面后再返回再次显示导入栏
-                                    intentConsumed.value = true
-
                                     //请求Files页面导入文件
                                     filesPageRequireImportFile.value = true
                                     currentHomeScreen.intValue = Cons.selectedItem_Files  //跳转到Files页面
