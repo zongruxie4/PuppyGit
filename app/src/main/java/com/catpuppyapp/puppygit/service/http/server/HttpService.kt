@@ -93,7 +93,7 @@ class HttpService : Service() {
             AppModel.init_2()
         }
 
-        MyLog.w(TAG, "http service onCreate() finished")
+        MyLog.w(TAG, "#onCreate() finished")
 
     }
 
@@ -103,7 +103,7 @@ class HttpService : Service() {
             // stop
             stop(AppModel.realAppContext)
 
-            MyLog.w(TAG, "http service onStartCommand() stop finished")
+            MyLog.w(TAG, "#onStartCommand() stop finished")
         }else if(action == command_copy_addr){
             val settings = SettingsUtil.getSettingsSnapshot()
             copyTextToClipboard(
@@ -133,7 +133,7 @@ class HttpService : Service() {
             }
 
             //严格来说start并没finished，只是调用了，可能得等会HttpServer.isServerRunning()才能检测到true
-            MyLog.w(TAG, "http service onStartCommand() start finished")
+            MyLog.w(TAG, "#onStartCommand() start finished")
 
         }
 
@@ -155,7 +155,7 @@ class HttpService : Service() {
         }
 
         stopForeground(STOP_FOREGROUND_REMOVE)
-        MyLog.w(TAG, "http service onDestroy() finished")
+        MyLog.w(TAG, "#onDestroy() finished")
     }
 
     private fun getNotification(settings: AppSettings): Notification {
