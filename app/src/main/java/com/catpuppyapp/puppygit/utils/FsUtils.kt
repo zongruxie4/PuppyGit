@@ -1189,8 +1189,25 @@ object FsUtils {
             return Pair("", "")
         }
 
+        MyLog.d(TAG, "#getFilePathAndRealNameFromUriOrCanonicalPath: before parsing, uriPath=$uriPath")
 
-        return if(uriPath.startsWith(contentUriPathPrefix)) {
+
+        val pathAndFileNamePair = if(uriPath.startsWith("/file%3A%2F%2F%2F")){  // "/file:///" 转码过的路径，处理下，质感文件分享的路径就是转码过的
+            //字符串有可能经过多次编码，所以需要循环一下，解析到无法再解析为止
+            var lastPath = Uri.decode(uriPath)
+            for(i in 1..1000) { // 1000次应该够了吧？
+                val newPath = Uri.decode(lastPath)
+                if(newPath == lastPath) {
+                    break
+                }
+
+                lastPath = newPath
+            }
+
+            // rawPath like /storage/emulated/0/filename.txt
+            val rawPath = lastPath.substring(8)
+            Pair(rawPath, getFileNameFromCanonicalPath(rawPath))
+        }else if(uriPath.startsWith(contentUriPathPrefix)) {
             //如果尝试获取uri名失败，就用File凑合下吧，虽然File获取的文件名可能乱码，不知道是乱码还是编码，反正不是给人看的
             Pair(uriPath, getFileRealNameFromUri(context, uri) ?: File(uriPath).name)
         }else if(uriPath.startsWith(fileUriPathPrefix)) {
@@ -1200,5 +1217,8 @@ object FsUtils {
             Pair(uriPath, getFileNameFromCanonicalPath(uriPath))
         }
 
+        MyLog.d(TAG, "#getFilePathAndRealNameFromUriOrCanonicalPath: after parsed, path=${pathAndFileNamePair.first}, fileName=${pathAndFileNamePair.second}")
+
+        return pathAndFileNamePair
     }
 }

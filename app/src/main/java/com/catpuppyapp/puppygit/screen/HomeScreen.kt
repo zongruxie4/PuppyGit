@@ -1351,7 +1351,7 @@ fun HomeScreen(
                     }
                 }
             } catch (e: Exception) {
-                MyLog.e(TAG, "#LaunchedEffect err: " + e.stackTraceToString())
+                MyLog.e(TAG, "#LaunchedEffect: init home err: " + e.stackTraceToString())
                 Msg.requireShowLongDuration("init home err: " + e.localizedMessage)
             }
 
