@@ -26,7 +26,7 @@ import com.catpuppyapp.puppygit.dto.DeviceWidthHeight
 import com.catpuppyapp.puppygit.jni.LibLoader
 import com.catpuppyapp.puppygit.notification.HttpServiceHoldNotify
 import com.catpuppyapp.puppygit.notification.NormalNotify
-import com.catpuppyapp.puppygit.notification.NotifyBase
+import com.catpuppyapp.puppygit.notification.util.NotifyUtil
 import com.catpuppyapp.puppygit.play.pro.BuildConfig
 import com.catpuppyapp.puppygit.service.http.server.HttpService
 import com.catpuppyapp.puppygit.settings.AppSettings
@@ -273,9 +273,8 @@ object AppModel {
 
         AppModel.realAppContext = realAppContext
 
-        //启动notify和service
-        NormalNotify.init(realAppContext)
-        HttpServiceHoldNotify.init(realAppContext)
+        //注册通知渠道
+        NotifyUtil.initAllNotify(realAppContext)
 
         //获取主密码 (若与AppSetings里记的hash不匹配，启动时会弹窗请求用户输入）
         AppModel.masterPassword.value = MasterPassUtil.get(realAppContext)

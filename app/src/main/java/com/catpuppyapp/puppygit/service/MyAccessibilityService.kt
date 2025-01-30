@@ -2,6 +2,8 @@ package com.catpuppyapp.puppygit.service
 
 import android.accessibilityservice.AccessibilityService
 import android.view.accessibility.AccessibilityEvent
+import com.catpuppyapp.puppygit.notification.AutomationNotify
+import com.catpuppyapp.puppygit.notification.base.ServiceNotify
 import com.catpuppyapp.puppygit.utils.AppModel
 import com.catpuppyapp.puppygit.utils.MyLog
 import com.catpuppyapp.puppygit.utils.doJobThenOffLoading
@@ -10,6 +12,22 @@ import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 
 private const val TAG = "MyAccessibilityService"
+
+
+
+private val sendSuccessNotification:(title:String?, msg:String?, startPage:Int?, startRepoId:String?)->Unit= {title, msg, startPage, startRepoId ->
+    MyAccessibilityService.sendSuccessNotification(title, msg, startPage, startRepoId)
+}
+
+private val sendNotification:(title:String, msg:String, startPage:Int, startRepoId:String)->Unit={title, msg, startPage, startRepoId ->
+    MyAccessibilityService.sendNotification(title, msg, startPage, startRepoId)
+}
+
+private val sendProgressNotification:(repoNameOrId:String, progress:String)->Unit={repoNameOrId, progress ->
+    MyAccessibilityService.sendProgressNotification(repoNameOrId, progress)
+}
+
+
 
 // TODO 获取用户设置的packagelist
 // test
@@ -20,6 +38,9 @@ private var lastTargetPackageName = ""
 private val lock = Mutex()
 
 class MyAccessibilityService: AccessibilityService() {
+    companion object: ServiceNotify(AutomationNotify) {
+
+    }
 
     override fun onCreate() {
         super.onCreate()

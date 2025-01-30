@@ -1,8 +1,9 @@
 package com.catpuppyapp.puppygit.notification
 
 import com.catpuppyapp.puppygit.constants.IDS
+import com.catpuppyapp.puppygit.notification.base.NotifyBase
 
-object NormalNotify:NotifyBase(
+object NormalNotify: NotifyBase(
     TAG = "NormalNotify",
     notifyId = IDS.NormalNotify,  //在你app里你这个通知id，必须唯一
     channelId="normal_notify",

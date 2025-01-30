@@ -1,4 +1,4 @@
-package com.catpuppyapp.puppygit.notification
+package com.catpuppyapp.puppygit.notification.base
 
 import android.Manifest
 import android.app.NotificationChannel
@@ -13,6 +13,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.core.app.ActivityCompat
 import androidx.core.app.NotificationCompat
 import androidx.core.app.NotificationManagerCompat
+import com.catpuppyapp.puppygit.notification.bean.Action
 import com.catpuppyapp.puppygit.play.pro.MainActivity
 import com.catpuppyapp.puppygit.play.pro.R
 import com.catpuppyapp.puppygit.utils.MyLog

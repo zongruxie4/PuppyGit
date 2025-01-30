@@ -5,10 +5,12 @@ import android.content.Context
 import android.content.Intent
 import com.catpuppyapp.puppygit.constants.IDS
 import com.catpuppyapp.puppygit.notification.HttpServiceHoldNotify.createPendingIntentWithAct
+import com.catpuppyapp.puppygit.notification.base.NotifyBase
+import com.catpuppyapp.puppygit.notification.bean.Action
 import com.catpuppyapp.puppygit.play.pro.R
 import com.catpuppyapp.puppygit.service.http.server.HttpService
 
-object HttpServiceHoldNotify:NotifyBase(
+object HttpServiceHoldNotify: NotifyBase(
     TAG = "HttpServiceHoldNotify",
     notifyId = IDS.HttpServiceHoldNotify,  //在你app里你这个通知id，必须唯一
     channelId="service_notify",

@@ -1,4 +1,4 @@
-package com.catpuppyapp.puppygit.notification
+package com.catpuppyapp.puppygit.notification.bean
 
 import android.app.PendingIntent
 
