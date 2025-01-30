@@ -24,17 +24,75 @@ import com.catpuppyapp.puppygit.utils.copyTextToClipboard
 import com.catpuppyapp.puppygit.utils.doJobThenOffLoading
 import com.catpuppyapp.puppygit.utils.genHttpHostPortStr
 import kotlinx.coroutines.runBlocking
+import kotlinx.coroutines.sync.Mutex
+import kotlinx.coroutines.sync.withLock
 import kotlinx.serialization.serializer
 
 
 private const val TAG = "HttpService"
 private const val serviceId = IDS.HttpService  //这id必须唯一，最好和notifyid也不一样
 
+
+private val sendSuccessNotification:(title:String?, msg:String?, startPage:Int?, startRepoId:String?)->Unit= {title, msg, startPage, startRepoId ->
+    HttpService.sendSuccessNotification(title, msg, startPage, startRepoId)
+}
+
+private val sendNotification:(title:String, msg:String, startPage:Int, startRepoId:String)->Unit={title, msg, startPage, startRepoId ->
+    HttpService.sendNotification(title, msg, startPage, startRepoId)
+}
+
+private val sendProgressNotification:(repoNameOrId:String, progress:String)->Unit={repoNameOrId, progress ->
+    HttpService.sendProgressNotification(repoNameOrId, progress)
+}
+
+
 class HttpService : Service() {
     companion object: ServiceNotify(HttpServiceHoldNotify) {
-        private val httpServer = HttpServer()
+        private var httpServer:HttpServer? = null
         const val command_stop = "STOP"
         const val command_copy_addr = "COPY_ADDR"
+        private val lock = Mutex()
+
+        /**
+         * expect do start/stop/restart server in `act`
+         */
+        private suspend fun doActWithLock(act:suspend () -> Unit) {
+            lock.withLock {
+                act()
+            }
+        }
+
+        /**
+         * 这操作应该在 doActWithLock 里执行
+         */
+        private suspend fun runNewHttpServer(host:String, port:Int) {
+            // 避免停止启动同一个端口的服务器冲突，所以stop和start应该同步执行，不应该并行
+
+            //停止旧的
+            stopCurrentServer()
+
+            //创建新的
+            val newServer = HttpServer(
+                host,
+                port,
+                sendSuccessNotification,
+                sendNotification,
+                sendProgressNotification
+            )
+
+            //更新类变量
+            httpServer = newServer
+
+            //启动新的
+            newServer.startServer()
+        }
+
+        /**
+         * 这操作应该在 doActWithLock 里执行
+         */
+        private suspend fun stopCurrentServer() {
+            httpServer?.stopServer()
+        }
 
         fun launchOnSystemStartUpEnabled(context: Context):Boolean {
             return PrefMan.get(context, PrefMan.Key.launchServiceOnSystemStartup, "0") == "1"
@@ -69,7 +127,7 @@ class HttpService : Service() {
         }
 
         fun isRunning() :Boolean {
-            return httpServer.isServerRunning()
+            return httpServer?.isServerRunning() == true
         }
 
 
@@ -120,12 +178,11 @@ class HttpService : Service() {
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
         val action = intent?.action
-        if(action == command_stop){
-            // stop
+        if(action == command_stop){ // stop
             stop(AppModel.realAppContext)
 
             MyLog.w(TAG, "#onStartCommand() stop finished")
-        }else if(action == command_copy_addr){
+        }else if(action == command_copy_addr){ // copy addr
             val settings = SettingsUtil.getSettingsSnapshot()
             copyTextToClipboard(
                 context = applicationContext,
@@ -133,10 +190,9 @@ class HttpService : Service() {
                 text = genHttpHostPortStr(settings.httpService.listenHost, settings.httpService.listenPort.toString())
             )
 
-            //这toast不一定显示
+            //这toast有可能被展开的通知栏挡住
             Msg.requireShow(applicationContext.getString(R.string.copied))
-        }else {
-            // start
+        }else { // start
             val settings = SettingsUtil.getSettingsSnapshot()
 
             // 启动前台服务
@@ -146,10 +202,9 @@ class HttpService : Service() {
                 startForeground(serviceId, getNotification(settings))
             }
 
-
             doJobThenOffLoading {
-                httpServer.doActWithLock {
-                    startServer(settings.httpService.listenHost, settings.httpService.listenPort)
+                doActWithLock {
+                    runNewHttpServer(settings.httpService.listenHost, settings.httpService.listenPort)
                 }
             }
 
@@ -170,8 +225,8 @@ class HttpService : Service() {
         super.onDestroy()
 
         doJobThenOffLoading {
-            httpServer.doActWithLock {
-                stopServer()
+            doActWithLock {
+                stopCurrentServer()
             }
         }
 
@@ -179,6 +234,9 @@ class HttpService : Service() {
         MyLog.w(TAG, "#onDestroy() finished")
     }
 
+    /**
+     * 在通知栏显示的常驻通知
+     */
     private fun getNotification(settings: AppSettings): Notification {
         val builder = HttpServiceHoldNotify.getNotificationBuilder(
             this,

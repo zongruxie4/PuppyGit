@@ -24,23 +24,9 @@ import io.ktor.server.routing.RoutingCall
 import io.ktor.server.routing.get
 import io.ktor.server.routing.routing
 import kotlinx.coroutines.isActive
-import kotlinx.coroutines.sync.Mutex
-import kotlinx.coroutines.sync.withLock
 import kotlinx.serialization.json.Json
 
 private const val TAG = "HttpServer"
-
-private val sendSuccessNotification:(title:String?, msg:String?, startPage:Int?, startRepoId:String?)->Unit= {title, msg, startPage, startRepoId ->
-    HttpService.sendSuccessNotification(title, msg, startPage, startRepoId)
-}
-
-private val sendNotification:(title:String, msg:String, startPage:Int, startRepoId:String)->Unit={title, msg, startPage, startRepoId ->
-    HttpService.sendNotification(title, msg, startPage, startRepoId)
-}
-
-private val sendProgressNotification:(repoNameOrId:String, progress:String)->Unit={repoNameOrId, progress ->
-    HttpService.sendProgressNotification(repoNameOrId, progress)
-}
 
 
 /**
@@ -69,60 +55,17 @@ private fun tokenPassedOrThrowException(token:String?, ip:String, settings: AppS
     return Ret.createSuccess(null)
 }
 
-private suspend fun pullRepoList(
-    repoList:List<RepoEntity>,
-    routeName: String,
-    gitUsernameFromUrl:String,
-    gitEmailFromUrl:String,
+
+internal class HttpServer(
+    val host:String,
+    val port:Int,
+    private val sendSuccessNotification:(title:String?, msg:String?, startPage:Int?, startRepoId:String?)->Unit,
+    private val sendNotification:(title:String, msg:String, startPage:Int, startRepoId:String)->Unit,
+    private val sendProgressNotification:(repoNameOrId:String, progress:String)->Unit,
 ) {
-    RepoActUtil.pullRepoList(
-        repoList,
-        routeName,
-        gitUsernameFromUrl,
-        gitEmailFromUrl,
-        sendSuccessNotification,
-        sendNotification,
-        sendProgressNotification,
-    )
-}
-
-
-suspend fun pushRepoList(
-    repoList:List<RepoEntity>,
-    routeName: String,
-    gitUsernameFromUrl:String,
-    gitEmailFromUrl:String,
-    autoCommit:Boolean,
-    force:Boolean,
-) {
-    RepoActUtil.pushRepoList(
-        repoList,
-        routeName,
-        gitUsernameFromUrl,
-        gitEmailFromUrl,
-        autoCommit,
-        force,
-        sendSuccessNotification,
-        sendNotification,
-        sendProgressNotification
-    )
-}
-
-
-internal class HttpServer {
-    private val lock = Mutex()
     private var server: EmbeddedServer<NettyApplicationEngine, NettyApplicationEngine. Configuration>? = null
 
-    /**
-     * expect do start/stop/restart server in `act`
-     */
-    suspend fun <T> doActWithLock(act:suspend HttpServer.() -> T):T {
-        lock.withLock {
-            return this.act()
-        }
-    }
-
-    suspend fun startServer(host:String, port:Int):Exception? {
+    suspend fun startServer():Exception? {
         if(isServerRunning()) return null
 
         try {
@@ -444,9 +387,9 @@ internal class HttpServer {
         }
     }
 
-    suspend fun restartServer(host: String, port: Int):Exception? {
+    suspend fun restartServer():Exception? {
         stopServer()
-        return startServer(host, port)
+        return startServer()
     }
 
     fun isServerRunning():Boolean {
@@ -456,6 +399,46 @@ internal class HttpServer {
         //这个不行，服务器正在启动，连接不通，但不久就上线了，用这个会误认为服务器不在线，误启动
 //        val settings = SettingsUtil.getSettingsSnapshot()
 //        return checkApiRunning("${genHttpHostPortStr(settings.httpService.listenHost, settings.httpService.listenPort)}/ping", 2)
+    }
+
+
+    private suspend fun pullRepoList(
+        repoList:List<RepoEntity>,
+        routeName: String,
+        gitUsernameFromUrl:String,
+        gitEmailFromUrl:String,
+    ) {
+        RepoActUtil.pullRepoList(
+            repoList,
+            routeName,
+            gitUsernameFromUrl,
+            gitEmailFromUrl,
+            sendSuccessNotification,
+            sendNotification,
+            sendProgressNotification,
+        )
+    }
+
+
+    suspend fun pushRepoList(
+        repoList:List<RepoEntity>,
+        routeName: String,
+        gitUsernameFromUrl:String,
+        gitEmailFromUrl:String,
+        autoCommit:Boolean,
+        force:Boolean,
+    ) {
+        RepoActUtil.pushRepoList(
+            repoList,
+            routeName,
+            gitUsernameFromUrl,
+            gitEmailFromUrl,
+            autoCommit,
+            force,
+            sendSuccessNotification,
+            sendNotification,
+            sendProgressNotification
+        )
     }
 
 
