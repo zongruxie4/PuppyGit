@@ -7,11 +7,13 @@ import android.content.Intent
 import android.content.pm.ServiceInfo
 import android.os.Build
 import android.os.IBinder
+import com.catpuppyapp.puppygit.constants.Cons
 import com.catpuppyapp.puppygit.constants.IDS
 import com.catpuppyapp.puppygit.data.entity.RepoEntity
 import com.catpuppyapp.puppygit.dto.genConfigDto
 import com.catpuppyapp.puppygit.notification.HttpServiceHoldNotify
 import com.catpuppyapp.puppygit.notification.base.ServiceNotify
+import com.catpuppyapp.puppygit.notification.util.NotifyUtil
 import com.catpuppyapp.puppygit.play.pro.R
 import com.catpuppyapp.puppygit.server.HttpServer
 import com.catpuppyapp.puppygit.settings.AppSettings
@@ -249,7 +251,9 @@ class HttpService : Service() {
             this,
             "PuppyGit Service",
             "Listen on: ${genHttpHostPortStr(settings.httpService.listenHost, settings.httpService.listenPort.toString())}",
-            HttpServiceHoldNotify.createPendingIntent(null, mapOf()), //启动app但不指定页面
+
+            //启动app并定位到Service页面
+            NotifyUtil.createPendingIntentGoToSpecifiedPage(applicationContext, Cons.selectedItem_Service, startRepoId = ""),
         )
 
         return builder.build()
