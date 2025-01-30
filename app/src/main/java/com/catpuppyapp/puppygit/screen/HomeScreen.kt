@@ -520,6 +520,11 @@ fun HomeScreen(
         snapshotedFileInfo = editorPageSnapshotedFileInfo
     )
 
+    val goToServicePage = {
+        //跳转页面
+        currentHomeScreen.intValue = Cons.selectedItem_Service
+        refreshServicePage()
+    }
 
     val goToRepoPage = { targetIdIfHave:String ->
         //跳转到Repos页面不用关过滤模式，因为做了额外处理，
@@ -1369,6 +1374,8 @@ fun HomeScreen(
                                         goToChangeListPage(startRepo)
                                     }else if(startPage == Cons.selectedItem_Repos.toString()) {
                                         goToRepoPage(startRepoId)
+                                    }else if(startPage == Cons.selectedItem_Service.toString()) {
+                                        goToServicePage()
                                     }
                                     // else if go to other page maybe
                                 }
