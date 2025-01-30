@@ -69,6 +69,7 @@ object Cons {
     const val selectedItem_Subscription = 7;
     const val selectedItem_Exit = 8;  //仅遵循旧代码规范而加的这个变量，实际上点这个直接退出，不会切换页面，也不会记住最后退出页面
     const val selectedItem_Service = 9
+    const val selectedItem_Automation = 10  //自动化
 
 
     // get app dir err

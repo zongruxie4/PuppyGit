@@ -1192,6 +1192,7 @@
     <string name="ask">Ask</string>
     <string name="accessibility_service_description">For auto pull/push when enter/exit specified apps</string>
     <string name="require_restart_service">Require restart service</string>
+    <string name="automation">Automation</string>
 
 
 </resources>

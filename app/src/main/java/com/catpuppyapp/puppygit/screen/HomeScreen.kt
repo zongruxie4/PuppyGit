@@ -11,6 +11,7 @@ import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.AutoFixHigh
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Cloud
 import androidx.compose.material.icons.filled.Difference
@@ -206,10 +207,17 @@ fun HomeScreen(
 //    val editorPageRequireOpenFilePath = StateUtil.getRememberSaveableState(initValue = "") // canonicalPath
 //    val needRefreshFilesPage = rememberSaveable { mutableStateOf(false) }
     val needRefreshFilesPage = rememberSaveable { mutableStateOf("") }
+
     val needRefreshSettingsPage = rememberSaveable { mutableStateOf("") }
     val refreshSettingsPage = { changeStateTriggerRefreshPage(needRefreshSettingsPage) }
+
     val needRefreshServicePage = rememberSaveable { mutableStateOf("") }
     val refreshServicePage = { changeStateTriggerRefreshPage(needRefreshServicePage) }
+
+    val needRefreshAutomationPage = rememberSaveable { mutableStateOf("") }
+    val refreshAutomationPage = { changeStateTriggerRefreshPage(needRefreshAutomationPage) }
+
+
 
     val settingsListState = rememberScrollState()
     val serviceListState = rememberScrollState()
@@ -647,6 +655,7 @@ fun HomeScreen(
         stringResource(id = R.string.editor),
         stringResource(id = R.string.changelist),
         stringResource(id = R.string.service),
+        stringResource(id = R.string.automation),
         stringResource(id = R.string.settings),
         stringResource(id = R.string.about),
 //        stringResource(id = R.string.subscription),
@@ -657,6 +666,7 @@ fun HomeScreen(
         Cons.selectedItem_Editor,
         Cons.selectedItem_ChangeList,
         Cons.selectedItem_Service,
+        Cons.selectedItem_Automation,
         Cons.selectedItem_Settings,
         Cons.selectedItem_About,
 //        Cons.selectedItem_Subscription,
@@ -667,6 +677,7 @@ fun HomeScreen(
         Icons.Filled.EditNote,
         Icons.Filled.Difference,
         Icons.Filled.Cloud,
+        Icons.Filled.AutoFixHigh,
         Icons.Filled.Settings,
         Icons.Filled.Info,
 //        Icons.Filled.Subscriptions
@@ -678,6 +689,7 @@ fun HomeScreen(
         refreshEditorPage@{ editorPageShowingFileIsReady.value=false; changeStateTriggerRefreshPage(needRefreshEditorPage) },
         refreshChangeListPage@{changeListRequireRefreshFromParentPage(changeListCurRepo.value)},
         refreshServicePage@{ refreshServicePage() },
+        refreshAutomationPage@{ refreshAutomationPage() },
         refreshSettingsPage@{ refreshSettingsPage() },
         refreshAboutPage@{}, //About页面静态的，不需要刷新
 //        {},  //Subscription页面
