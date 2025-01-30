@@ -117,7 +117,7 @@ class MyAccessibilityService: AccessibilityService() {
                 MyLog.d(TAG, "get enabledInputMethodList err: ${e.stackTraceToString()}")
             }
 
-            // notification expand maybe
+            // notification expand or gesture maybe
             if("com.android.systemui" == packageName) {
                 return
             }
