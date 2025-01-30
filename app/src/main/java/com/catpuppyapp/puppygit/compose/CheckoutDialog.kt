@@ -17,6 +17,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.text.font.FontWeight
@@ -32,7 +33,6 @@ import com.catpuppyapp.puppygit.dev.proFeatureEnabled
 import com.catpuppyapp.puppygit.etc.Ret
 import com.catpuppyapp.puppygit.play.pro.R
 import com.catpuppyapp.puppygit.style.MyStyleKt
-import com.catpuppyapp.puppygit.utils.AppModel
 import com.catpuppyapp.puppygit.utils.Libgit2Helper
 import com.catpuppyapp.puppygit.utils.Msg
 import com.catpuppyapp.puppygit.utils.MyLog
@@ -47,7 +47,7 @@ private val stateKeyTag = "CheckoutDialog"
 
 @Composable
 fun CheckoutDialog(
-    initBranchName:String="",
+    initBranchName:String="",  // if checkout remote branch, init branch name  to remote branch name
     isCheckoutRemoteBranch:Boolean=false,  // show set upstream checkbox if true
     remotePrefixMaybe:String="",
     showCheckoutDialog:MutableState<Boolean>,
@@ -68,9 +68,12 @@ fun CheckoutDialog(
     showJustCheckout:Boolean= false,  //参数原名：`checkoutLocalBranch`。 作用：显示一个just checkout选项并默认选中，一般只有checkout本地分支时才需要设此值为true
     findCurItemIdxInList:(oid:String)->Int,  //实现一个函数从list找到当前条目id，然后把id传给updateCurItem函数更新条目，若不需要更新列表条目，可返回-1
 ) {
+    // this may will be remote branch short name without remote prefix , if checking out any remote branch
+    val remoteBranchShortNameMaybe = initBranchName
+
     val repoId = curRepo.id
 
-    val activityContext = AppModel.activityContext
+    val activityContext = LocalContext.current
 
     val checkoutOptionDontUpdateHead = 0
     val checkoutOptionDetachHead = 1
@@ -270,7 +273,7 @@ fun CheckoutDialog(
 //                            }
                     )
 
-                    if(isCheckoutRemoteBranch && remotePrefixMaybe.isNotBlank()) {
+                    if(isCheckoutRemoteBranch && remotePrefixMaybe.isNotBlank() && remoteBranchShortNameMaybe.isNotBlank()) {
                         MyCheckBox(text = stringResource(R.string.set_upstream), value = setUpstream)
                     }
 
@@ -434,11 +437,20 @@ fun CheckoutDialog(
                         //检出远程分支勾选了设置上游并且存在可能有效的remote名
                         if(setUpstream.value) {
                             if(remotePrefixMaybe.isNotBlank()) {
-                                Repository.open(curRepo.fullSavePath).use { repo->
-                                    val success = Libgit2Helper.setUpstreamForBranchByRemoteAndRefspec(repo, remotePrefixMaybe, fullBranchRefspec, branchShortName)
-                                    if(!success) {
-                                        Msg.requireShowLongDuration(activityContext.getString(R.string.set_upstream_error))
-                                    }  // else set upstream 成功就不显示通知了，这个操作显示的通知已经够多了
+                                if(remoteBranchShortNameMaybe.isNotBlank()) {
+                                    //检出远程仓库时，这个值是上游分支去除remote后的短名
+                                    Repository.open(curRepo.fullSavePath).use { repo->
+                                        val success = Libgit2Helper.setUpstreamForBranchByRemoteAndRefspec(
+                                            repo,
+                                            remotePrefixMaybe,
+                                            Libgit2Helper.getRefsHeadsBranchFullRefSpecFromShortRefSpec(remoteBranchShortNameMaybe),
+                                            branchShortName
+                                        )
+
+                                        if(!success) {
+                                            Msg.requireShowLongDuration(activityContext.getString(R.string.set_upstream_error))
+                                        }  // else set upstream 成功就不显示通知了，这个操作显示的通知已经够多了
+                                    }
                                 }
                             }else { // remote is blank, can't set upstream for branch
                                 Msg.requireShowLongDuration(activityContext.getString(R.string.set_upstream_err_remote_is_invalid))
