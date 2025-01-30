@@ -43,7 +43,7 @@ private const val TAG = "HttpServer"
 private const val waitInMillSecIfApiBusy = 3000L
 
 
-object HttpServer {
+internal class HttpServer {
     private val lock = Mutex()
     private var server: EmbeddedServer<NettyApplicationEngine, NettyApplicationEngine. Configuration>? = null
 
@@ -56,11 +56,11 @@ object HttpServer {
         }
     }
 
-    suspend fun startServer(settings: AppSettings):Exception? {
+    suspend fun startServer(host:String, port:Int):Exception? {
         if(isServerRunning()) return null
 
         try {
-            server = embeddedServer(Netty, host = settings.httpService.listenHost, port = settings.httpService.listenPort) {
+            server = embeddedServer(Netty, host = host, port = port) {
                 install(ContentNegotiation) {
                     //忽略对象里没有的key；编码默认值；紧凑格式
                     json(Json{ ignoreUnknownKeys = true; encodeDefaults=true; prettyPrint = false})
@@ -95,9 +95,9 @@ object HttpServer {
                         var repoNameOrIdForLog:String? = null
                         var repoForLog:RepoEntity? = null
                         val routeName = "'/pull'"
+                        val settings = SettingsUtil.getSettingsSnapshot()
 
                         try {
-                            val settings = SettingsUtil.getSettingsSnapshot()
                             tokenPassedOrThrowException(call, routeName, settings)
 
                             val repoNameOrId = call.request.queryParameters.get("repoNameOrId")
@@ -172,9 +172,9 @@ object HttpServer {
                         var repoNameOrIdForLog:String? = null
                         var repoForLog:RepoEntity? = null
                         val routeName = "'/push'"
+                        val settings = SettingsUtil.getSettingsSnapshot()
 
                         try {
-                            val settings = SettingsUtil.getSettingsSnapshot()
                             tokenPassedOrThrowException(call, routeName, settings)
 
                             val repoNameOrId = call.request.queryParameters.get("repoNameOrId")
@@ -250,9 +250,9 @@ object HttpServer {
                      */
                     get("/pullAll") {
                         val routeName = "'/pullAll'"
+                        val settings = SettingsUtil.getSettingsSnapshot()
 
                         try {
-                            val settings = SettingsUtil.getSettingsSnapshot()
                             tokenPassedOrThrowException(call, routeName, settings)
 
 
@@ -297,9 +297,9 @@ object HttpServer {
                      */
                     get("/pushAll") {
                         val routeName = "'/pushAll'"
+                        val settings = SettingsUtil.getSettingsSnapshot()
 
                         try {
-                            val settings = SettingsUtil.getSettingsSnapshot()
                             tokenPassedOrThrowException(call, routeName, settings)
 
                             if(settings.httpService.showNotifyWhenProgress) {
@@ -341,7 +341,7 @@ object HttpServer {
                 }
             }.start(wait = false) // 不能传true，会block整个程序
 
-            MyLog.w(TAG, "Http Server started on '${genHttpHostPortStr(settings.httpService.listenHost, settings.httpService.listenPort.toString())}'")
+            MyLog.w(TAG, "Http Server started on '${genHttpHostPortStr(host, port.toString())}'")
             return null
         }catch (e:Exception) {
             //端口占用之类的能捕获到错误，看来即使非阻塞也并非一启动就立即返回，应该是成功绑定端口ip后才返回
@@ -382,9 +382,9 @@ object HttpServer {
         }
     }
 
-    suspend fun restartServer(settings: AppSettings):Exception? {
+    suspend fun restartServer(host: String, port: Int):Exception? {
         stopServer()
-        return startServer(settings)
+        return startServer(host, port)
     }
 
     fun isServerRunning():Boolean {

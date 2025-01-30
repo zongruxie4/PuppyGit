@@ -97,7 +97,7 @@ fun ServiceInnerPage(
 
     val settingsState = mutableCustomStateOf(stateKeyTag, "settingsState", SettingsUtil.getSettingsSnapshot())
 
-    val runningStatus = rememberSaveable { mutableStateOf(HttpServer.isServerRunning()) }
+    val runningStatus = rememberSaveable { mutableStateOf(HttpService.isRunning()) }
     val launchOnAppStartup = rememberSaveable { mutableStateOf(settingsState.value.httpService.launchOnAppStartup) }
     val launchOnSystemStartUp = rememberSaveable { mutableStateOf(HttpService.launchOnSystemStartUpEnabled(activityContext)) }
     val progressNotify = rememberSaveable { mutableStateOf(settingsState.value.httpService.showNotifyWhenProgress) }
@@ -616,7 +616,7 @@ fun ServiceInnerPage(
 
     LaunchedEffect(needRefreshPage.value) {
         settingsState.value = SettingsUtil.getSettingsSnapshot()
-        runningStatus.value = HttpServer.isServerRunning()
+        runningStatus.value = HttpService.isRunning()
     }
 
 

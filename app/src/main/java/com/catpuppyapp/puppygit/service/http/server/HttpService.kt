@@ -27,6 +27,7 @@ private const val serviceId = IDS.HttpService  //这id必须唯一，最好和no
 
 class HttpService : Service() {
     companion object {
+        private val httpServer = HttpServer()
         const val command_stop = "STOP"
         const val command_copy_addr = "COPY_ADDR"
 
@@ -42,8 +43,8 @@ class HttpService : Service() {
          * 调这个方法不需要HttpServer.doActWithLock()，其内部会自己调用
          */
         fun start(appContext: Context) {
-            if(HttpServer.isServerRunning()) {
-                MyLog.w(TAG, "HttpServer already running, start canceled")
+            if(isRunning()) {
+                MyLog.w(TAG, "HttpService already running, start canceled")
             }else {
                 val serviceIntent = Intent(appContext, HttpService::class.java)
                 appContext.startForegroundService(serviceIntent)
@@ -62,7 +63,9 @@ class HttpService : Service() {
             TileHttpService.sendUpdateTileRequest(appContext, false)
         }
 
-
+        fun isRunning() :Boolean {
+            return httpServer.isServerRunning()
+        }
         //service启动Activity似乎需要弹窗权限，算了，点击通知启动也很方便
 //        fun launchApp() {
 //            val context = AppModel.realAppContext
@@ -127,8 +130,8 @@ class HttpService : Service() {
 
 
             doJobThenOffLoading {
-                HttpServer.doActWithLock {
-                    startServer(settings)
+                httpServer.doActWithLock {
+                    startServer(settings.httpService.listenHost, settings.httpService.listenPort)
                 }
             }
 
@@ -149,7 +152,7 @@ class HttpService : Service() {
         super.onDestroy()
 
         doJobThenOffLoading {
-            HttpServer.doActWithLock {
+            httpServer.doActWithLock {
                 stopServer()
             }
         }

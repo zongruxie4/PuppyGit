@@ -47,7 +47,7 @@ class TileHttpService: TileService() {
     override fun onTileAdded() {
         super.onTileAdded()
 
-        updateState(HttpServer.isServerRunning())
+        updateState(HttpService.isRunning())
     }
 
     // Called when your app can update your tile.
