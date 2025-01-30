@@ -1173,6 +1173,7 @@
     <string name="unselected">未选择</string>
     <string name="linked_repos">已关联的仓库</string>
     <string name="unlinked_repos">未关联的仓库</string>
+    <string name="will_auto_pull_push_linked_repos_when_selected_apps_enter_exit">当已选中的应用 进入/退出 时，将会自动 拉取/推送 关联的仓库</string>
 
 
 </resources>

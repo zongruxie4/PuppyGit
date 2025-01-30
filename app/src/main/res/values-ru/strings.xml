@@ -1196,5 +1196,6 @@
     <string name="unselected">Unselected</string>
     <string name="linked_repos">Linked Repos</string>
     <string name="unlinked_repos">Unlinked Repos</string>
+    <string name="will_auto_pull_push_linked_repos_when_selected_apps_enter_exit">Will auto pull/push linked repos when selected apps enter/exit</string>
 
 </resources>
