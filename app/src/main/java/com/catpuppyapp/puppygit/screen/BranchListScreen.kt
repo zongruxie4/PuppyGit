@@ -325,6 +325,8 @@ fun BranchListScreen(
         )
     }
 
+    val initUpstreamForCheckoutRemoteBranch = rememberSaveable { mutableStateOf("") }
+    val remotePrefixMaybe = rememberSaveable { mutableStateOf("") }
     val checkoutLocalBranch = rememberSaveable { mutableStateOf(false)}
     if(showCheckoutBranchDialog.value) {
         //注意：这种写法，如果curObjInPage.value被重新赋值，本代码块将会被重复调用！不过实际不会有问题，因为显示弹窗时无法再长按条目进而无法改变本对象。
@@ -335,6 +337,8 @@ fun BranchListScreen(
 
         CheckoutDialog(
             showCheckoutDialog=showCheckoutBranchDialog,
+            initBranchName = initUpstreamForCheckoutRemoteBranch.value,
+            remotePrefixMaybe = remotePrefixMaybe.value,
             from = CheckoutDialogFrom.BRANCH_LIST,
             showJustCheckout=checkoutLocalBranch.value,
             expectCheckoutType = if(checkoutLocalBranch.value) Cons.checkoutType_checkoutRefThenUpdateHead else Cons.checkoutType_checkoutRefThenDetachHead,
@@ -1303,8 +1307,38 @@ fun BranchListScreen(
                 BottomSheetItem(sheetState, showBottomSheet, stringResource(R.string.checkout),textDesc= stringResource(R.string.switch_branch),
                     enabled = curObjInPage.value.shortName != repoCurrentActiveBranchOrShortDetachedHashForShown.value
                 ){
-                    checkoutLocalBranch.value = curObjInPage.value.type==Branch.BranchType.LOCAL
-                    showCheckoutBranchDialog.value = true
+                    val curObjInPage = curObjInPage.value
+                    doJobThenOffLoading {
+                        checkoutLocalBranch.value = curObjInPage.type==Branch.BranchType.LOCAL
+
+                        if(curObjInPage.type == Branch.BranchType.REMOTE) { // isRemote
+                            //这个Remotes列表每次刷新页面后会更新
+                            val maybeIsRemoteIfNoNameAmbiguous = upstreamRemoteOptionsList.value.find { curObjInPage.shortName.startsWith(it) }
+
+                            initUpstreamForCheckoutRemoteBranch.value = if(maybeIsRemoteIfNoNameAmbiguous != null) {
+                                remotePrefixMaybe.value = maybeIsRemoteIfNoNameAmbiguous
+
+                                val branchNameNoRemotePrefix = curObjInPage.shortName.removePrefix("$maybeIsRemoteIfNoNameAmbiguous/")
+                                // checkout HEAD，不填名字
+                                if(branchNameNoRemotePrefix == Cons.gitHeadStr) {
+                                    ""
+                                }else {
+                                    branchNameNoRemotePrefix
+                                }
+                            }else {
+                                remotePrefixMaybe.value = ""
+
+                                ""
+                            }
+
+                        }else {  //非remote，清空相关字段
+                            remotePrefixMaybe.value = ""
+                            initUpstreamForCheckoutRemoteBranch.value = ""
+                        }
+
+                        showCheckoutBranchDialog.value = true
+
+                    }
                 }
                 //merge into current 实际上是和HEAD进行合并，产生一个新的提交
                 //x 对当前分支禁用这个选项，只有其他分支才能用

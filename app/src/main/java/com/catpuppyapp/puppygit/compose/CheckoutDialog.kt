@@ -1,7 +1,6 @@
 package com.catpuppyapp.puppygit.compose
 
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.heightIn
@@ -48,6 +47,9 @@ private val stateKeyTag = "CheckoutDialog"
 
 @Composable
 fun CheckoutDialog(
+    isCheckoutRemoteBranch:Boolean,  // show set upstream checkbox
+    initBranchName:String,
+    remotePrefixMaybe:String,
     showCheckoutDialog:MutableState<Boolean>,
     from: CheckoutDialogFrom,
     curRepo:RepoEntity,
@@ -83,12 +85,13 @@ fun CheckoutDialog(
     )
 
 
-    val checkoutSelectedOption = rememberSaveable{mutableIntStateOf(checkoutOptionDefault)}
-    val checkoutRemoteCreateBranchName = rememberSaveable { mutableStateOf("")}
-    val checkoutUserInputCommitHash = rememberSaveable { mutableStateOf("")}
-    val forceCheckout = rememberSaveable { mutableStateOf(false)}
-    val dontCheckout = rememberSaveable { mutableStateOf(false)}
-    val overwriteIfExist = rememberSaveable { mutableStateOf(false)}
+    val checkoutSelectedOption = rememberSaveable{ mutableIntStateOf(checkoutOptionDefault) }
+    val checkoutRemoteCreateBranchName = rememberSaveable { mutableStateOf(initBranchName) }
+    val checkoutUserInputCommitHash = rememberSaveable { mutableStateOf("") }
+    val forceCheckout = rememberSaveable { mutableStateOf(false) }
+    val dontCheckout = rememberSaveable { mutableStateOf(false) }
+    val overwriteIfExist = rememberSaveable { mutableStateOf(false) }
+    val setUpstream = rememberSaveable { mutableStateOf(isCheckoutRemoteBranch) }
 
     val getCheckoutOkBtnEnabled:()->Boolean = getCheckoutOkBtnEnabled@{
         //请求checkout时创建分支但没填分支，返回假
@@ -267,6 +270,10 @@ fun CheckoutDialog(
 //                            }
                     )
 
+                    if(isCheckoutRemoteBranch) {
+                        MyCheckBox(text = stringResource(R.string.set_upstream), value = setUpstream)
+                    }
+
                     if(proFeatureEnabled(overwriteExistWhenCreateBranchTestPassed)) {
                         MyCheckBox(text = stringResource(R.string.overwrite_if_exist), value = overwriteIfExist)
                         if(overwriteIfExist.value) {
@@ -423,6 +430,20 @@ fun CheckoutDialog(
                     val createBranchRet = doCreateBranch(localBranchWillCreate, baseCommitOid, overwriteIfExist.value)  //创建分支
                     if (createBranchRet.success()) {
                         val (fullBranchRefspec, branchShortName, branchHeadFullHash) = createBranchRet.data!!  //第一个返回值是长分支名，二是短分支名，三是分支头hash
+
+                        //检出远程分支勾选了设置上游并且存在可能有效的remote名
+                        if(setUpstream.value) {
+                            if(remotePrefixMaybe.isNotBlank()) {
+                                Repository.open(curRepo.fullSavePath).use { repo->
+                                    val success = Libgit2Helper.setUpstreamForBranchByRemoteAndRefspec(repo, remotePrefixMaybe, fullBranchRefspec, branchShortName)
+                                    if(!success) {
+                                        Msg.requireShowLongDuration(activityContext.getString(R.string.set_upstream_error))
+                                    }  // else set upstream 成功就不显示通知了，这个操作显示的通知已经够多了
+                                }
+                            }else { // remote is blank, can't set upstream for branch
+                                Msg.requireShowLongDuration(activityContext.getString(R.string.set_upstream_err_remote_is_invalid))
+                            }
+                        }
 
                         // if come from branch list page, need update commit info for new branch. if come from repoCard need not do it at here, because will refresh page(reload all commits) in that case :)
                         if(onlyUpdateCurItem) {

@@ -1203,6 +1203,7 @@
     <string name="will_auto_pull_push_linked_repos_when_selected_apps_enter_exit">Will auto pull/push linked repos when selected apps enter/exit</string>
     <string name="app_info">App Info</string>
     <string name="intro_go_to_app_info_to_allow_autostart_and_disable_battery_optimization">Maybe you want to go to App Info to allow \'Autostart\' and \'Disable Battery Optimization\'</string>
+    <string name="set_upstream_err_remote_is_invalid">Set upstream err, remote is invalid</string>
 
 
 </resources>
