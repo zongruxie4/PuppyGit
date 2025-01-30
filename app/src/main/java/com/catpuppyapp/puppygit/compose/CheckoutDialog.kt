@@ -47,9 +47,9 @@ private val stateKeyTag = "CheckoutDialog"
 
 @Composable
 fun CheckoutDialog(
-    isCheckoutRemoteBranch:Boolean,  // show set upstream checkbox
-    initBranchName:String,
-    remotePrefixMaybe:String,
+    initBranchName:String="",
+    isCheckoutRemoteBranch:Boolean=false,  // show set upstream checkbox if true
+    remotePrefixMaybe:String="",
     showCheckoutDialog:MutableState<Boolean>,
     from: CheckoutDialogFrom,
     curRepo:RepoEntity,
@@ -270,7 +270,7 @@ fun CheckoutDialog(
 //                            }
                     )
 
-                    if(isCheckoutRemoteBranch) {
+                    if(isCheckoutRemoteBranch && remotePrefixMaybe.isNotBlank()) {
                         MyCheckBox(text = stringResource(R.string.set_upstream), value = setUpstream)
                     }
 

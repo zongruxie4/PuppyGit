@@ -169,7 +169,7 @@ fun AutomationInnerPage(
                                         it.put(
                                             packageNameForSelectReposDialog.value,
                                             //按仓库名排序，然后把id存上
-                                            selectedRepoList.value.toList().sortedBy { clickedRepo.repoName }.map { clickedRepo.id }
+                                            selectedRepoList.value.toList().sortedBy { it.repoName }.map { it.id }
                                         )
                                     }
                                 }
@@ -203,8 +203,7 @@ fun AutomationInnerPage(
                                     it.automation.packageNameAndRepoIdsMap.let {
                                         it.put(
                                             packageNameForSelectReposDialog.value,
-                                            // 移除并不需要重新排序，直接把id列表存上即可
-                                            selectedRepoList.value.toList().map { clickedRepo.id }
+                                            selectedRepoList.value.toList().sortedBy { it.repoName }.map { it.id }
                                         )
                                     }
                                 }

@@ -327,6 +327,7 @@ fun BranchListScreen(
 
     val initUpstreamForCheckoutRemoteBranch = rememberSaveable { mutableStateOf("") }
     val remotePrefixMaybe = rememberSaveable { mutableStateOf("") }
+    val isCheckoutRemoteBranch = rememberSaveable { mutableStateOf(false)}
     val checkoutLocalBranch = rememberSaveable { mutableStateOf(false)}
     if(showCheckoutBranchDialog.value) {
         //注意：这种写法，如果curObjInPage.value被重新赋值，本代码块将会被重复调用！不过实际不会有问题，因为显示弹窗时无法再长按条目进而无法改变本对象。
@@ -339,6 +340,7 @@ fun BranchListScreen(
             showCheckoutDialog=showCheckoutBranchDialog,
             initBranchName = initUpstreamForCheckoutRemoteBranch.value,
             remotePrefixMaybe = remotePrefixMaybe.value,
+            isCheckoutRemoteBranch = isCheckoutRemoteBranch.value,
             from = CheckoutDialogFrom.BRANCH_LIST,
             showJustCheckout=checkoutLocalBranch.value,
             expectCheckoutType = if(checkoutLocalBranch.value) Cons.checkoutType_checkoutRefThenUpdateHead else Cons.checkoutType_checkoutRefThenDetachHead,
@@ -1311,7 +1313,10 @@ fun BranchListScreen(
                     doJobThenOffLoading {
                         checkoutLocalBranch.value = curObjInPage.type==Branch.BranchType.LOCAL
 
-                        if(curObjInPage.type == Branch.BranchType.REMOTE) { // isRemote
+                        val isCheckoutRemote = curObjInPage.type == Branch.BranchType.REMOTE
+                        isCheckoutRemoteBranch.value =  isCheckoutRemote
+
+                        if(isCheckoutRemote) { // isRemote
                             //这个Remotes列表每次刷新页面后会更新
                             val maybeIsRemoteIfNoNameAmbiguous = upstreamRemoteOptionsList.value.find { curObjInPage.shortName.startsWith(it) }
 
