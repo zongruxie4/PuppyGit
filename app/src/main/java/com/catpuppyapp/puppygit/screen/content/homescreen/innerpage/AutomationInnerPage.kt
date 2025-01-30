@@ -214,7 +214,6 @@ fun AutomationInnerPage(
 
 
         item {
-
             SettingsContent(onClick = {
                 val newValue = !errNotify.value
 
@@ -298,6 +297,11 @@ fun AutomationInnerPage(
                                         notAddedAppList.value.clear()
                                         notAddedAppList.value.add(appInfo)
                                         notAddedAppList.value.addAll(tmp)
+
+                                        //保存，从列表移除
+                                        SettingsUtil.update {
+                                            it.automation.packageNameAndRepoIdsMap.remove(appInfo.packageName)
+                                        }
                                     }
                                 ) {
                                     Icon(
@@ -342,6 +346,11 @@ fun AutomationInnerPage(
                                         notAddedAppList.value.remove(appInfo)
                                         //添加到已选中列表末尾
                                         addedAppList.value.add(appInfo)
+
+                                        //保存，添加到列表
+                                        SettingsUtil.update {
+                                            it.automation.packageNameAndRepoIdsMap.put(appInfo.packageName, sortedSetOf())
+                                        }
                                     }
                                 ) {
                                     Icon(
