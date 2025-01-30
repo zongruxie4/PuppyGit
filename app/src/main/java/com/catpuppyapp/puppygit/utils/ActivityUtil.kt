@@ -48,4 +48,21 @@ object ActivityUtil {
         val intent = Intent(Settings.ACTION_ACCESSIBILITY_SETTINGS)
         context.startActivity(intent)
     }
+
+    /**
+     * this method may throw exception when packageName invalid, better try catch when using it
+     */
+    fun openSpecifedAppInfoPage(context: Context, packageName:String) {
+        if(packageName.isBlank()) {
+            return
+        }
+
+        val intent = Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS)
+        intent.data = Uri.parse("package:$packageName")
+        context.startActivity(intent)
+    }
+
+    fun openThisAppInfoPage(context: Context) {
+        openSpecifedAppInfoPage(context, AppModel.appPackageName)
+    }
 }

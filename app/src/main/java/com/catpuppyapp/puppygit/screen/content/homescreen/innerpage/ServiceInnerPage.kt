@@ -53,6 +53,7 @@ import com.catpuppyapp.puppygit.utils.ActivityUtil
 import com.catpuppyapp.puppygit.utils.AppModel
 import com.catpuppyapp.puppygit.utils.ComposeHelper
 import com.catpuppyapp.puppygit.utils.Msg
+import com.catpuppyapp.puppygit.utils.MyLog
 import com.catpuppyapp.puppygit.utils.NetUtils
 import com.catpuppyapp.puppygit.utils.UIHelper
 import com.catpuppyapp.puppygit.utils.doJobThenOffLoading
@@ -445,6 +446,21 @@ fun ServiceInnerPage(
             }
         }
 
+
+        SettingsContent(onClick = {
+            try {
+                ActivityUtil.openThisAppInfoPage(activityContext)
+            }catch (e:Exception) {
+                Msg.requireShowLongDuration("err: ${e.localizedMessage}")
+                MyLog.d(TAG, "call `ActivityUtil.openThisAppInfoPage(activityContext)` from Service Page err: ${e.stackTraceToString()}")
+            }
+        }) {
+            Column {
+                Text(stringResource(R.string.app_info), fontSize = itemFontSize)
+                Text(stringResource(R.string.intro_go_to_app_info_to_allow_autostart_and_disable_battery_optimization), fontSize = itemDescFontSize, fontWeight = FontWeight.Light)
+
+            }
+        }
 
         SettingsContent(onClick = {
             ActivityUtil.openUrl(activityContext, httpServiceApiUrl)
