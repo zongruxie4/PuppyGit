@@ -118,6 +118,8 @@ class MyAccessibilityService: AccessibilityService() {
                     if(targetPackageList.contains(packageName)) {  // 是我们关注的app
                         lastTargetPackageName = packageName
 
+                        val lastTargetPackageName = Unit  // to avoid mistake using
+
                         MyLog.d(TAG, "target packageName '$packageName' opened, checking need pull or no....")
 
                         val targetOpened = targetPackageTrueOpenedFalseCloseNullNeverOpenedList[packageName] == true
@@ -141,8 +143,12 @@ class MyAccessibilityService: AccessibilityService() {
                             }
                         }
                     }else if(lastTargetPackageName.isNotBlank()) { //当前app不是我们关注的app，但上个是
+                        val packageName = Unit  //避免在这个代码块误调用这个变量名
+
                         val lastOpenedTarget = lastTargetPackageName
                         lastTargetPackageName = ""
+
+                        val lastTargetPackageName = Unit  // for avoid mistake using this variable
 
                         //这里需要判断，不然用户更新列表后，这里若不判断会对之前在列表但后来移除的条目多执行一次pull
                         if(targetPackageList.contains(lastOpenedTarget)) {
@@ -153,7 +159,7 @@ class MyAccessibilityService: AccessibilityService() {
                                 MyLog.d(TAG, "target packageName '$lastOpenedTarget' leaved, need do push")
                                 targetPackageTrueOpenedFalseCloseNullNeverOpenedList[lastOpenedTarget] = false
 
-                                val bindRepoIds = AutomationUtil.getRepoIds(settings.automation, packageName)
+                                val bindRepoIds = AutomationUtil.getRepoIds(settings.automation, lastOpenedTarget)
                                 if(bindRepoIds.isEmpty()) {
                                     return@withLock
                                 }
