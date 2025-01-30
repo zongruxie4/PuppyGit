@@ -21,6 +21,7 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.layout.onGloballyPositioned
@@ -54,6 +55,8 @@ import com.catpuppyapp.puppygit.utils.parseInt
 import com.catpuppyapp.puppygit.utils.splitLines
 import com.catpuppyapp.puppygit.utils.state.mutableCustomStateListOf
 import com.catpuppyapp.puppygit.utils.state.mutableCustomStateOf
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
 
 private const val stateKeyTag = "AutomationInnerPage"
 private const val TAG = "AutomationInnerPage"
@@ -84,6 +87,10 @@ fun AutomationInnerPage(
 
     // softkeyboard show/hidden relate end
 
+
+
+
+    val scope = rememberCoroutineScope()
     val activityContext = LocalContext.current
     val clipboardManager = LocalClipboardManager.current
 
@@ -491,7 +498,16 @@ fun AutomationInnerPage(
 
     LaunchedEffect(needRefreshPage.value) {
         settingsState.value = SettingsUtil.getSettingsSnapshot()
-        updateServiceStatus()
+    }
+
+    LaunchedEffect(Unit) {
+        //定时检查状态，不然从无障碍页面返回后状态不会更新
+        scope.launch {
+            while (true) {
+                updateServiceStatus()
+                delay(1000)
+            }
+        }
     }
 
 
