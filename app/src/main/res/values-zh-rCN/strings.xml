@@ -1170,6 +1170,7 @@
     <string name="unknown_state">未知状态</string>
     <string name="app_list">应用列表</string>
     <string name="add_an_app">添加一个仓库</string>
+    <string name="unselected">未选择</string>
 
 
 </resources>

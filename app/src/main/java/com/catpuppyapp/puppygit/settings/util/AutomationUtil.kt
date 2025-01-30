@@ -40,19 +40,26 @@ object AutomationUtil {
         }
     }
 
-    fun getSelectedAppList(context: Context, automationSettings: AutomationSettings):List<AppInfo> {
+    /**
+     * @return Pair(selectedList, unselectedList)
+     */
+    fun getSelectedAndUnSelectedAppList(context: Context, automationSettings: AutomationSettings):Pair<List<AppInfo>, List<AppInfo>> {
         val installedAppList = getInstalledAppList(context)
         val userAddedAppList = getPackageNames(automationSettings)
         val selectedList = mutableListOf<AppInfo>()
+        val unselectedList = mutableListOf<AppInfo>()
 
         installedAppList.forEach { installed ->
             if(userAddedAppList.contains(installed.packageName)) {
                 installed.isSelected = true
                 selectedList.add(installed)
+            }else {
+                installed.isSelected = false
+                unselectedList.add(installed)
             }
         }
 
-        return selectedList
+        return Pair(selectedList, unselectedList)
     }
 
 

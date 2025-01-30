@@ -1,49 +1,48 @@
 package com.catpuppyapp.puppygit.screen.content.homescreen.innerpage
 
 import androidx.activity.compose.BackHandler
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
-import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.DeleteOutline
+import androidx.compose.material.icons.outlined.Settings
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextField
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.MutableState
-import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.platform.LocalClipboardManager
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.platform.LocalDensity
-import androidx.compose.ui.platform.LocalView
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.catpuppyapp.puppygit.compose.AddItemBar
 import com.catpuppyapp.puppygit.compose.AppItem
-import com.catpuppyapp.puppygit.compose.ConfirmDialog2
+import com.catpuppyapp.puppygit.compose.FilterTextField
+import com.catpuppyapp.puppygit.compose.ItemListIsEmpty
 import com.catpuppyapp.puppygit.compose.LoadingText
 import com.catpuppyapp.puppygit.compose.PaddingRow
+import com.catpuppyapp.puppygit.compose.ScrollableRow
 import com.catpuppyapp.puppygit.compose.SettingsContent
 import com.catpuppyapp.puppygit.compose.SettingsTitle
-import com.catpuppyapp.puppygit.compose.SoftkeyboardVisibleListener
 import com.catpuppyapp.puppygit.dto.AppInfo
 import com.catpuppyapp.puppygit.play.pro.R
 import com.catpuppyapp.puppygit.service.HttpService
@@ -56,8 +55,6 @@ import com.catpuppyapp.puppygit.utils.ComposeHelper
 import com.catpuppyapp.puppygit.utils.Msg
 import com.catpuppyapp.puppygit.utils.UIHelper
 import com.catpuppyapp.puppygit.utils.doJobThenOffLoading
-import com.catpuppyapp.puppygit.utils.listToLines
-import com.catpuppyapp.puppygit.utils.splitLines
 import com.catpuppyapp.puppygit.utils.state.mutableCustomStateListOf
 import com.catpuppyapp.puppygit.utils.state.mutableCustomStateOf
 import kotlinx.coroutines.delay
@@ -76,25 +73,6 @@ fun AutomationInnerPage(
     exitApp:()->Unit,
     listState: LazyListState
 ){
-
-    // softkeyboard show/hidden relate start
-
-    val view = LocalView.current
-    val density = LocalDensity.current
-
-    val isKeyboardVisible = rememberSaveable { mutableStateOf(false) }
-    //indicate keyboard covered component
-    val isKeyboardCoveredComponent = rememberSaveable { mutableStateOf(false) }
-    // which component expect adjust heghit or padding when softkeyboard shown
-    val componentHeight = rememberSaveable { mutableIntStateOf(0) }
-    // the padding value when softkeyboard shown
-    val keyboardPaddingDp = rememberSaveable { mutableIntStateOf(0) }
-
-    // softkeyboard show/hidden relate end
-
-
-
-
     val scope = rememberCoroutineScope()
     val activityContext = LocalContext.current
     val clipboardManager = LocalClipboardManager.current
@@ -110,7 +88,12 @@ fun AutomationInnerPage(
         runningStatus.value = getServiceStatus()
     }
 
-    val appList = mutableCustomStateListOf(stateKeyTag, "appList") { listOf<AppInfo>() }
+    val appsFilterKeyword = mutableCustomStateOf(stateKeyTag, "appsFilterKeyword", TextFieldValue(""))
+    val reposFilterKeyword = mutableCustomStateOf(stateKeyTag, "reposFilterKeyword", TextFieldValue(""))
+
+
+    val addedAppList = mutableCustomStateListOf(stateKeyTag, "appList") { listOf<AppInfo>() }
+    val notAddedAppList = mutableCustomStateListOf(stateKeyTag, "notAddedAppList") { listOf<AppInfo>() }
     val appListLoading = rememberSaveable { mutableStateOf(true) }
 
     val launchOnAppStartup = rememberSaveable { mutableStateOf(settingsState.value.httpService.launchOnAppStartup) }
@@ -119,157 +102,16 @@ fun AutomationInnerPage(
     val errNotify = rememberSaveable { mutableStateOf(settingsState.value.httpService.showNotifyWhenErr) }
     val successNotify = rememberSaveable { mutableStateOf(settingsState.value.httpService.showNotifyWhenSuccess) }
 
-    val ipWhitelist = mutableCustomStateListOf(stateKeyTag, "ipWhitelist") { settingsState.value.httpService.ipWhiteList }
-    val ipWhitelistBuf = rememberSaveable { mutableStateOf("") }
-    val showSetIpWhiteListDialog = rememberSaveable { mutableStateOf(false) }
-    val initSetIpWhitelistDialog = {
-        ipWhitelistBuf.value = listToLines(ipWhitelist.value)
-        showSetIpWhiteListDialog.value = true
-    }
-
-    if(showSetIpWhiteListDialog.value) {
-        ConfirmDialog2(
-            title = stringResource(R.string.ip_whitelist),
-            requireShowTextCompose = true,
-            textCompose =  {
-                Column(
-                    // get height for add bottom padding when showing softkeyboard
-                    modifier = Modifier.onGloballyPositioned { layoutCoordinates ->
-//                                println("layoutCoordinates.size.height:${layoutCoordinates.size.height}")
-                        // 获取组件的高度
-                        // unit is px ( i am not very sure)
-                        componentHeight.intValue = layoutCoordinates.size.height
-                    }
-                ) {
-                    Text(stringResource(R.string.per_line_one_ip), fontWeight = FontWeight.Light)
-                    Spacer(modifier = Modifier.height(5.dp))
-                    Text(stringResource(R.string.if_empty_will_reject_all_requests), fontWeight = FontWeight.Light)
-                    Spacer(modifier = Modifier.height(5.dp))
-                    Text(stringResource(R.string.use_asterisk_to_match_all_ips), fontWeight = FontWeight.Light)
-                    Spacer(modifier = Modifier.height(5.dp))
-                    TextField(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .then(
-                                if (isKeyboardCoveredComponent.value) Modifier.padding(bottom = keyboardPaddingDp.intValue.dp) else Modifier
-                            ),
-                        value = ipWhitelistBuf.value,
-                        onValueChange = {
-                            ipWhitelistBuf.value = it
-                        },
-                        label = {
-                            Text(stringResource(R.string.list_of_ips))
-                        },
-                    )
-
-                    Spacer(Modifier.height(10.dp))
-                }
-
-            },
-            okBtnText = stringResource(id = R.string.save),
-            cancelBtnText = stringResource(id = R.string.cancel),
-            onCancel = { showSetIpWhiteListDialog.value = false }
-        ) {
-            showSetIpWhiteListDialog.value = false
-
-            doJobThenOffLoading {
-                val newValue = ipWhitelistBuf.value
-                val newList = splitLines(newValue)
-                ipWhitelist.value.clear()
-                ipWhitelist.value.addAll(newList)
-                SettingsUtil.update {
-                    it.httpService.ipWhiteList = newList
-                }
-
-                Msg.requireShow(activityContext.getString(R.string.success))
-            }
+    val selectedAppsList = mutableCustomStateListOf(stateKeyTag, "selectedAppsList") { listOf<AppInfo>() }
+    val unselectedAppsList = mutableCustomStateListOf(stateKeyTag, "selectedAppsList") { listOf<AppInfo>() }
+    val selectedAppsListLoading = rememberSaveable { mutableStateOf(false) }
+    val initSelectAppDialog = {
+        doJobThenOffLoading {
+            selectedAppsListLoading.value = true
+            selectedAppsList.value.clear()
+            selectedAppsList.value.addAll(addedAppList.value)
+            selectedAppsListLoading.value = false
         }
-    }
-
-
-    val tokenList = mutableCustomStateListOf(stateKeyTag, "tokenList") { settingsState.value.httpService.tokenList }
-    val tokenListBuf = rememberSaveable { mutableStateOf("") }
-    val showSetTokenListDialog = rememberSaveable { mutableStateOf(false) }
-    val initSetTokenListDialog = {
-        tokenListBuf.value = listToLines(tokenList.value)
-        showSetTokenListDialog.value = true
-    }
-
-    if(showSetTokenListDialog.value) {
-        ConfirmDialog2(
-            title = stringResource(R.string.tokens),
-            requireShowTextCompose = true,
-            textCompose =  {
-                Column(
-                    // get height for add bottom padding when showing softkeyboard
-                    modifier = Modifier.onGloballyPositioned { layoutCoordinates ->
-//                                println("layoutCoordinates.size.height:${layoutCoordinates.size.height}")
-                        // 获取组件的高度
-                        // unit is px ( i am not very sure)
-                        componentHeight.intValue = layoutCoordinates.size.height
-                    }
-                ) {
-                    Text(stringResource(R.string.per_line_one_token), fontWeight = FontWeight.Light)
-                    Spacer(modifier = Modifier.height(5.dp))
-                    Text(stringResource(R.string.if_empty_will_reject_all_requests), fontWeight = FontWeight.Light)
-                    Spacer(modifier = Modifier.height(5.dp))
-                    TextField(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .then(
-                                if (isKeyboardCoveredComponent.value) Modifier.padding(bottom = keyboardPaddingDp.intValue.dp) else Modifier
-                            ),
-                        value = tokenListBuf.value,
-                        onValueChange = {
-                            tokenListBuf.value = it
-                        },
-                        label = {
-                            Text(stringResource(R.string.list_of_tokens))
-                        },
-                    )
-
-                    Spacer(Modifier.height(10.dp))
-                }
-
-            },
-            okBtnText = stringResource(id = R.string.save),
-            cancelBtnText = stringResource(id = R.string.cancel),
-            onCancel = { showSetTokenListDialog.value = false }
-        ) {
-            showSetTokenListDialog.value = false
-
-            doJobThenOffLoading {
-                val newValue = tokenListBuf.value
-                val newList = splitLines(newValue)
-                tokenList.value.clear()
-                tokenList.value.addAll(newList)
-                SettingsUtil.update {
-                    it.httpService.tokenList = newList
-                }
-
-                Msg.requireShow(activityContext.getString(R.string.success))
-            }
-        }
-    }
-
-
-
-    val listenHost = rememberSaveable { mutableStateOf(settingsState.value.httpService.listenHost) }
-    val listenHostBuf = rememberSaveable { mutableStateOf(listenHost.value) }
-    val showSetHostDialog = rememberSaveable { mutableStateOf(false) }
-    val initSetHostDialog = {
-        listenHostBuf.value = listenHost.value
-        showSetHostDialog.value=true
-    }
-
-    val listenPort = rememberSaveable { mutableStateOf(settingsState.value.httpService.listenPort.toString()) }
-    val listenPortBuf = rememberSaveable { mutableStateOf(listenPort.value) }
-    val showSetPortDialog = rememberSaveable { mutableStateOf(false) }
-
-    val initSetPortDialog = {
-        listenPortBuf.value = listenPort.value
-
-        showSetPortDialog.value = true
     }
 
 
@@ -398,53 +240,122 @@ fun AutomationInnerPage(
         }
 
         item {
-            SettingsTitle(stringResource(R.string.app_list))
+            Row(
+                modifier = Modifier.fillMaxWidth().padding(vertical = 20.dp),
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.Center
+            ) {
+                Text(stringResource(R.string.app_list), fontSize = 30.sp)
+            }
 
         }
 
         val addItemBarHeight = 40.dp
         item {
-            // 显示添加按钮
-            AddItemBar() {
-                // TODO 点击跳转到用户安装的app列表，包含所有app，包括系统的
+            Row(modifier = Modifier.fillMaxWidth().padding(10.dp)) {
+                FilterTextField(
+                    appsFilterKeyword,
+                )
             }
 
         }
 
-        item {
-
-            if(appListLoading.value){
+        if(appListLoading.value){
+            item {
                 LoadingText(stringResource(R.string.loading), PaddingValues(top = addItemBarHeight+30.dp), enableScroll = false)
             }
         }
 
 
+
         // 旧版compose有bug，用else有可能会忽略条件，所以这里直接if判断下反条件
         if(appListLoading.value.not()) {
-            appList.value.toList().forEach { appInfo ->
+            item {
+                SettingsTitle(stringResource(R.string.selected_str)+"("+addedAppList.value.size+")")
+            }
+
+            if(addedAppList.value.isEmpty()) {
                 item {
-
-                    AppItem(
-                        appInfo,
-                        trailIcon = { iconInitModifier ->
-                            IconButton(
-                                modifier = iconInitModifier,
-                                onClick = { appList.value.remove(appInfo) }
-                            ) {
-                                Icon(
-                                    imageVector = Icons.Filled.DeleteOutline,
-                                    contentDescription = stringResource(R.string.trash_bin_icon_for_delete_item)
-                                )
-                            }
-                        }
-
-                    ) { clickedApp ->
-                        //TODO 点击app跳转到app关联的仓库列表
-                    }
-
-                    HorizontalDivider()
+                    ItemListIsEmpty()
                 }
 
+            }
+
+            if(addedAppList.value.isNotEmpty()) {
+                addedAppList.value.toList().forEach { appInfo ->
+                    item {
+                        AppItem(
+                            appInfo,
+                            trailIcon = { iconInitModifier ->
+                                IconButton(
+                                    modifier = iconInitModifier,
+
+                                    onClick = {
+                                        addedAppList.value.remove(appInfo)
+
+                                        val tmp = notAddedAppList.value.toList()
+                                        //添加到未选中列表头部
+                                        notAddedAppList.value.clear()
+                                        notAddedAppList.value.add(appInfo)
+                                        notAddedAppList.value.addAll(tmp)
+                                    }
+                                ) {
+                                    Icon(
+                                        imageVector = Icons.Filled.DeleteOutline,
+                                        contentDescription = stringResource(R.string.trash_bin_icon_for_delete_item)
+                                    )
+                                }
+                            }
+
+                        ) { clickedApp ->
+                            //TODO 点击app跳转到app关联的仓库列表
+                        }
+
+                        HorizontalDivider()
+                    }
+
+                }
+            }
+
+
+            item {
+                SettingsTitle(stringResource(R.string.unselected)+"("+notAddedAppList.value.size+")")
+            }
+
+            if(notAddedAppList.value.isEmpty()) {
+                item {
+                    ItemListIsEmpty()
+                }
+
+            }
+
+
+            if(notAddedAppList.value.isNotEmpty()) {
+                notAddedAppList.value.toList().forEach { appInfo ->
+                    item {
+                        AppItem(
+                            appInfo,
+                            trailIcon = { iconInitModifier ->
+                                IconButton(
+                                    modifier = iconInitModifier,
+                                    onClick = {
+                                        notAddedAppList.value.remove(appInfo)
+                                        //添加到已选中列表末尾
+                                        addedAppList.value.add(appInfo)
+                                    }
+                                ) {
+                                    Icon(
+                                        imageVector = Icons.Filled.Add,
+                                        contentDescription = stringResource(R.string.add)
+                                    )
+                                }
+                            },
+                            onClick = null
+                        )
+
+                        HorizontalDivider()
+                    }
+                }
             }
         }
 
@@ -464,11 +375,12 @@ fun AutomationInnerPage(
             appListLoading.value = true
 
             // update app list
-            val userAddedAppList = AutomationUtil.getSelectedAppList(activityContext, newSettings.automation)
+            val (userAddedAppList, userNotAddedAppList) = AutomationUtil.getSelectedAndUnSelectedAppList(activityContext, newSettings.automation)
 
-            appList.value.clear()
-            appList.value.addAll(userAddedAppList)
-
+            addedAppList.value.clear()
+            addedAppList.value.addAll(userAddedAppList)
+            notAddedAppList.value.clear()
+            notAddedAppList.value.addAll(userNotAddedAppList)
             appListLoading.value = false
         }
     }
@@ -483,18 +395,4 @@ fun AutomationInnerPage(
         }
     }
 
-
-    SoftkeyboardVisibleListener(
-        view = view,
-        isKeyboardVisible = isKeyboardVisible,
-        isKeyboardCoveredComponent = isKeyboardCoveredComponent,
-        componentHeight = componentHeight,
-        keyboardPaddingDp = keyboardPaddingDp,
-        density = density,
-        skipCondition = {
-            showSetTokenListDialog.value.not() && showSetIpWhiteListDialog.value.not()
-        }
-    )
-
 }
-

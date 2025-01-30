@@ -1197,6 +1197,7 @@
     <string name="unknown_state">Unknown State</string>
     <string name="app_list">App List</string>
     <string name="add_an_app">Add an app</string>
+    <string name="unselected">UnSelected</string>
 
 
 </resources>
