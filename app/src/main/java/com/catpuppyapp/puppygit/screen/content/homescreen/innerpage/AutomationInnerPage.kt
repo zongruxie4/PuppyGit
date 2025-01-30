@@ -13,8 +13,8 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.DeleteOutline
-import androidx.compose.material.icons.outlined.Settings
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -40,7 +40,6 @@ import com.catpuppyapp.puppygit.compose.FilterTextField
 import com.catpuppyapp.puppygit.compose.ItemListIsEmpty
 import com.catpuppyapp.puppygit.compose.LoadingText
 import com.catpuppyapp.puppygit.compose.PaddingRow
-import com.catpuppyapp.puppygit.compose.ScrollableRow
 import com.catpuppyapp.puppygit.compose.SettingsContent
 import com.catpuppyapp.puppygit.compose.SettingsTitle
 import com.catpuppyapp.puppygit.dto.AppInfo
@@ -252,8 +251,14 @@ fun AutomationInnerPage(
         val addItemBarHeight = 40.dp
         item {
             Row(modifier = Modifier.fillMaxWidth().padding(10.dp)) {
+                val keyWordIsEmpty = appsFilterKeyword.value.text.isEmpty()
+                //普通的过滤，加不加清空无所谓，一按返回就清空了，但这个常驻显示，得加个清空按钮
                 FilterTextField(
                     appsFilterKeyword,
+                    trailingIconTooltipText = stringResource(R.string.clear),
+                    trailingIcon = if(keyWordIsEmpty) null else Icons.Filled.Close,
+                    trailingIconDesc = stringResource(R.string.clear),
+                    trailingIconOnClick = { appsFilterKeyword.value = TextFieldValue("") }
                 )
             }
 
@@ -265,23 +270,43 @@ fun AutomationInnerPage(
             }
         }
 
+        //根据关键字过滤条目
+        val k = appsFilterKeyword.value.text.lowercase()  //关键字
+        val enableFilter = k.isNotEmpty()
+        val filterAddedAppList = if(enableFilter){
+            val tmpList = addedAppList.value.filter {
+                it.appName.lowercase().contains(k) || it.packageName.lowercase().contains(k)
+            }
+            tmpList
+        }else {
+            addedAppList.value
+        }
+
+        val filterNotAddedAppList = if(enableFilter){
+            val tmpList = notAddedAppList.value.filter {
+                it.appName.lowercase().contains(k) || it.packageName.lowercase().contains(k)
+            }
+            tmpList
+        }else {
+            notAddedAppList.value
+        }
 
 
         // 旧版compose有bug，用else有可能会忽略条件，所以这里直接if判断下反条件
         if(appListLoading.value.not()) {
             item {
-                SettingsTitle(stringResource(R.string.selected_str)+"("+addedAppList.value.size+")")
+                SettingsTitle(stringResource(R.string.selected_str)+"("+filterAddedAppList.size+")")
             }
 
-            if(addedAppList.value.isEmpty()) {
+            if(filterAddedAppList.isEmpty()) {
                 item {
                     ItemListIsEmpty()
                 }
 
             }
 
-            if(addedAppList.value.isNotEmpty()) {
-                addedAppList.value.toList().forEach { appInfo ->
+            if(filterAddedAppList.isNotEmpty()) {
+                filterAddedAppList.toList().forEach { appInfo ->
                     item {
                         AppItem(
                             appInfo,
@@ -323,10 +348,10 @@ fun AutomationInnerPage(
 
 
             item {
-                SettingsTitle(stringResource(R.string.unselected)+"("+notAddedAppList.value.size+")")
+                SettingsTitle(stringResource(R.string.unselected)+"("+filterNotAddedAppList.size+")")
             }
 
-            if(notAddedAppList.value.isEmpty()) {
+            if(filterNotAddedAppList.isEmpty()) {
                 item {
                     ItemListIsEmpty()
                 }
@@ -334,8 +359,8 @@ fun AutomationInnerPage(
             }
 
 
-            if(notAddedAppList.value.isNotEmpty()) {
-                notAddedAppList.value.toList().forEach { appInfo ->
+            if(filterNotAddedAppList.isNotEmpty()) {
+                filterNotAddedAppList.toList().forEach { appInfo ->
                     item {
                         AppItem(
                             appInfo,
