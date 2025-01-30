@@ -16,7 +16,7 @@ import com.catpuppyapp.puppygit.dto.RemoteDto
 import com.catpuppyapp.puppygit.dto.createCommitDto
 import com.catpuppyapp.puppygit.dto.createFileHistoryDto
 import com.catpuppyapp.puppygit.dto.createSubmoduleDto
-import com.catpuppyapp.puppygit.etc.RepoAction
+import com.catpuppyapp.puppygit.etc.RepoPendingTask
 import com.catpuppyapp.puppygit.etc.Ret
 import com.catpuppyapp.puppygit.git.BranchNameAndTypeDto
 import com.catpuppyapp.puppygit.git.CommitDto
@@ -4389,7 +4389,7 @@ class Libgit2Helper {
 //                            tmpStatusIfHave = AppModel.activityContext.getString(R.string.loading)
 
                         //检查workTreeToIndex，可能会很慢，需要调用者自己开协程检查本地是否有未提交修改 (index or worktree dirty)
-                        repoFromDb.requireAction = RepoAction.NEED_CHECK_UNCOMMITED_CHANGES
+                        repoFromDb.pendingTask = RepoPendingTask.NEED_CHECK_UNCOMMITED_CHANGES
 
                     }else { // repoState != NONE
                         if(hasConflictItemInRepo(repo)) {  //有冲突条目，这个检查起来很快，所以就在这直接查了

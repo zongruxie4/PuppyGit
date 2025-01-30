@@ -1,6 +1,6 @@
 package com.catpuppyapp.puppygit.etc
 
-enum class RepoAction {
+enum class RepoPendingTask {
     NONE,
     NEED_CHECK_UNCOMMITED_CHANGES
 }

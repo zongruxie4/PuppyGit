@@ -8,11 +8,15 @@ import android.content.pm.ServiceInfo.FOREGROUND_SERVICE_TYPE_SPECIAL_USE
 import android.os.Build
 import android.os.IBinder
 import com.catpuppyapp.puppygit.constants.IDS
+import com.catpuppyapp.puppygit.data.entity.RepoEntity
+import com.catpuppyapp.puppygit.dto.genConfigDto
 import com.catpuppyapp.puppygit.notification.HttpServiceHoldNotify
+import com.catpuppyapp.puppygit.notification.ServiceNotify
 import com.catpuppyapp.puppygit.play.pro.R
 import com.catpuppyapp.puppygit.settings.AppSettings
 import com.catpuppyapp.puppygit.settings.SettingsUtil
 import com.catpuppyapp.puppygit.utils.AppModel
+import com.catpuppyapp.puppygit.utils.JsonUtil
 import com.catpuppyapp.puppygit.utils.Msg
 import com.catpuppyapp.puppygit.utils.MyLog
 import com.catpuppyapp.puppygit.utils.PrefMan
@@ -20,13 +24,14 @@ import com.catpuppyapp.puppygit.utils.copyTextToClipboard
 import com.catpuppyapp.puppygit.utils.doJobThenOffLoading
 import com.catpuppyapp.puppygit.utils.genHttpHostPortStr
 import kotlinx.coroutines.runBlocking
+import kotlinx.serialization.serializer
 
 
 private const val TAG = "HttpService"
 private const val serviceId = IDS.HttpService  //这id必须唯一，最好和notifyid也不一样
 
 class HttpService : Service() {
-    companion object {
+    companion object: ServiceNotify(HttpServiceHoldNotify) {
         private val httpServer = HttpServer()
         const val command_stop = "STOP"
         const val command_copy_addr = "COPY_ADDR"
@@ -66,6 +71,19 @@ class HttpService : Service() {
         fun isRunning() :Boolean {
             return httpServer.isServerRunning()
         }
+
+
+        fun getApiJson(repoEntity: RepoEntity, settings: AppSettings):String {
+            return JsonUtil.j2PrettyPrint.let {
+                it.encodeToString(
+                    it.serializersModule.serializer(),
+
+                    genConfigDto(repoEntity, settings)
+                )
+            }
+        }
+
+
         //service启动Activity似乎需要弹窗权限，算了，点击通知启动也很方便
 //        fun launchApp() {
 //            val context = AppModel.realAppContext

@@ -23,7 +23,6 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.ContentCopy
-import androidx.compose.material.icons.filled.DeleteOutline
 import androidx.compose.material.icons.filled.Download
 import androidx.compose.material.icons.filled.Downloading
 import androidx.compose.material.icons.filled.Error
@@ -81,12 +80,11 @@ import com.catpuppyapp.puppygit.constants.PageRequest
 import com.catpuppyapp.puppygit.data.AppContainer
 import com.catpuppyapp.puppygit.data.entity.RepoEntity
 import com.catpuppyapp.puppygit.dto.genConfigDto
-import com.catpuppyapp.puppygit.etc.RepoAction
+import com.catpuppyapp.puppygit.etc.RepoPendingTask
 import com.catpuppyapp.puppygit.etc.Ret
 import com.catpuppyapp.puppygit.git.Upstream
 import com.catpuppyapp.puppygit.play.pro.R
 import com.catpuppyapp.puppygit.service.http.server.ConfigDto
-import com.catpuppyapp.puppygit.service.http.server.HttpServer
 import com.catpuppyapp.puppygit.settings.AppSettings
 import com.catpuppyapp.puppygit.settings.SettingsUtil
 import com.catpuppyapp.puppygit.style.MyStyleKt
@@ -801,7 +799,7 @@ fun RepoInnerPage(
                 val reQueriedRepoInfo = repoDb.getById(it.id)?:return@doJobThenOffLoading
 
                 //检查仓库是否有未提交的修改
-                if(reQueriedRepoInfo.requireAction == RepoAction.NEED_CHECK_UNCOMMITED_CHANGES) {
+                if(reQueriedRepoInfo.pendingTask == RepoPendingTask.NEED_CHECK_UNCOMMITED_CHANGES) {
                     //捕获当前页面刷新状态值，相当于session id
                     val curRefreshValue = needRefreshRepoPage.value
                     checkGitStatusAndUpdateItemInList(reQueriedRepoInfo, idx, repoList, activityContext.getString(R.string.loading), pageChanged = {
@@ -1546,7 +1544,7 @@ fun RepoInnerPage(
         //这个tmpStatus只是粗略判断仓库是否正在执行操作，不一定准，还是得靠lock，不过libgit2底层应该有锁，所以代码里有些地方若不确定是否需要加锁，可以不加
         //如果有设临时状态，说明在执行某个操作，比如正在fetching，所以这时应该不允许再执行fetch或pull之类的操作，我做了处理，即使用户去cl页面执行，也无法绕过此限制( ? 不确定，cl页面好像已经无视tmpStatus了，而且没加mutex，直接依靠libgit2底层的锁（好像有））
         //仅当requireAction不等于检查本地未提交修改时，tmpStatus的值才有意义，否则可能没意义。(因为如果requireAction等于检查未提交修改，这时tmpStatus有可能不为空，但检查本地未提交修改时不与pull/push之类的操作冲突，所以，这时其实仍然可以执行操作)
-        val hasTmpStatus = curRepo.requireAction != RepoAction.NEED_CHECK_UNCOMMITED_CHANGES && curRepo.tmpStatus.isNotBlank()
+        val hasTmpStatus = curRepo.pendingTask != RepoPendingTask.NEED_CHECK_UNCOMMITED_CHANGES && curRepo.tmpStatus.isNotBlank()
         val actionEnabled = !isDetached && !hasTmpStatus
 
         repoStatusGood && actionEnabled
@@ -2412,7 +2410,7 @@ private fun doInit(
                 )
 
 
-            }else if(item.requireAction == RepoAction.NEED_CHECK_UNCOMMITED_CHANGES) {
+            }else if(item.pendingTask == RepoPendingTask.NEED_CHECK_UNCOMMITED_CHANGES) {
                 checkGitStatusAndUpdateItemInList(item, idx, repoDtoList.value, loadingText, pageChanged)
             } else {
                 //TODO: check git status with lock of every repo, get lock then query repo info from db,
@@ -2469,7 +2467,7 @@ private fun checkGitStatusAndUpdateItemInList(item:RepoEntity, idx:Int, repoList
             if(!pageChanged()) {
                 val newRepo = item.copyAllFields()
                 //操作已经执行完毕，清空需要执行的操作
-                newRepo.requireAction = RepoAction.NONE
+                newRepo.pendingTask = RepoPendingTask.NONE
 
                 //清空临时状态
                 if(needUpdateTmpStatus) {

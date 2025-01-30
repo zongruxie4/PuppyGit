@@ -7,7 +7,7 @@ import androidx.room.PrimaryKey
 import com.catpuppyapp.puppygit.constants.Cons
 import com.catpuppyapp.puppygit.constants.StorageDirCons
 import com.catpuppyapp.puppygit.data.entity.common.BaseFields
-import com.catpuppyapp.puppygit.etc.RepoAction
+import com.catpuppyapp.puppygit.etc.RepoPendingTask
 import com.catpuppyapp.puppygit.utils.dbIntToBool
 import com.catpuppyapp.puppygit.utils.getSecFromTime
 import com.catpuppyapp.puppygit.utils.getShortUUID
@@ -116,8 +116,13 @@ data class RepoEntity(
     @Ignore
     var otherText:String?=null
 
+    /**
+     * 有些操作重量级又没必要立刻执行，先挂起，谁爱执行谁执行
+     *
+     * 例如：更新仓库信息的时候需要检查是否有未提交修改，但这个操作有点重量级，就可先挂起，然后在获取列表之后，开个协程单独处理，每个任务应该只消费一次，消费完就设为NONE
+     */
     @Ignore
-    var requireAction:RepoAction=RepoAction.NONE
+    var pendingTask:RepoPendingTask=RepoPendingTask.NONE
 
     /**
      * 拷贝所有字段，包括不在data class构造器的字段
@@ -129,7 +134,7 @@ data class RepoEntity(
         newInstance.parentRepoName = parentRepoName
         newInstance.parentRepoValid = parentRepoValid
         newInstance.otherText = otherText
-        newInstance.requireAction = requireAction
+        newInstance.pendingTask = pendingTask
 
         return newInstance
     }
