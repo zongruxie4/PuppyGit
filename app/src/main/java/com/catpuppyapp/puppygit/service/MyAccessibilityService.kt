@@ -1,7 +1,9 @@
 package com.catpuppyapp.puppygit.service
 
 import android.accessibilityservice.AccessibilityService
+import android.content.Context
 import android.view.accessibility.AccessibilityEvent
+import android.view.inputmethod.InputMethodManager
 import com.catpuppyapp.puppygit.data.entity.RepoEntity
 import com.catpuppyapp.puppygit.notification.AutomationNotify
 import com.catpuppyapp.puppygit.notification.base.ServiceNotify
@@ -103,6 +105,23 @@ class MyAccessibilityService: AccessibilityService() {
         if(event.eventType == AccessibilityEvent.TYPE_WINDOW_STATE_CHANGED) {
             //必须在外部获取，放到协程里会null
             val packageName = event.packageName.toString()
+
+            MyLog.v(TAG, "TYPE_WINDOW_STATE_CHANGED: $packageName")
+
+            try {
+                //ignore input method package names
+                if((getSystemService(Context.INPUT_METHOD_SERVICE) as? InputMethodManager)?.enabledInputMethodList?.find { it.packageName == packageName } != null) {
+                    return
+                }
+            }catch (e:Exception) {
+                MyLog.d(TAG, "get enabledInputMethodList err: ${e.stackTraceToString()}")
+            }
+
+            // notification expand maybe
+            if("com.android.systemui" == packageName) {
+                return
+            }
+
             val settings = SettingsUtil.getSettingsSnapshot()
             val targetPackageList = AutomationUtil.getPackageNames(settings.automation)
 
