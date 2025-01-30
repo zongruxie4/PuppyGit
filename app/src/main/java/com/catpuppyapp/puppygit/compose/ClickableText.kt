@@ -13,7 +13,7 @@ import androidx.compose.ui.unit.sp
 import com.catpuppyapp.puppygit.style.MyStyleKt
 
 @Composable
-fun ClickableText(text:String, onClick:()->Unit) {
+fun ClickableText(text:String, onClick:(()->Unit)?) {
     Text(
         text = text,
         maxLines = 1,
@@ -22,8 +22,10 @@ fun ClickableText(text:String, onClick:()->Unit) {
         style = MyStyleKt.ClickableText.style,
         color = MyStyleKt.ClickableText.color,
         fontSize = 16.sp,
-        modifier = MyStyleKt.ClickableText.modifierNoPadding.clickable {
-            onClick()
+        modifier = if(onClick == null) {
+            Modifier
+        } else {
+            MyStyleKt.ClickableText.modifierNoPadding.clickable { onClick() }
         },
     )
 }

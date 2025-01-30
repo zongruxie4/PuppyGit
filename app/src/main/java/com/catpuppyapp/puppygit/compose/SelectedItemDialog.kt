@@ -1,11 +1,12 @@
 package com.catpuppyapp.puppygit.compose
 
 
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.DeleteOutline
 import androidx.compose.material3.HorizontalDivider
@@ -37,22 +38,30 @@ fun <T> SelectedItemDialog(
     val clipboardManager = LocalClipboardManager.current
     val activityContext = LocalContext.current
 
+
     CopyableDialog(
         title = stringResource(id = R.string.selected_str),
 //            text = selectedItemsShortDetailsStr.value,
         requireShowTextCompose = true,
         textCompose = {
             ScrollableColumn {
-                Row(
-                    modifier = Modifier.height(60.dp).fillMaxWidth(),
-                    verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.Center
-                ) {
-                    ClickableText(stringResource(R.string.clear)) {
-                        closeDialog()
-                        clearAll()
+                //若列表非空，显示清空
+                if(selectedItems.isNotEmpty()) {
+                    Row(
+                        modifier = Modifier.padding(bottom = 5.dp).fillMaxWidth().clickable {
+                            closeDialog()
+                            clearAll()
+                        }.padding(bottom = 15.dp, top = 15.dp)
+                        ,
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.Center
+                    ) {
+                        ClickableText(stringResource(R.string.clear), onClick = null)
                     }
+
+                    HorizontalDivider()
                 }
+
                 selectedItems.forEach {
                     Box(
                         modifier = Modifier.fillMaxWidth(),
