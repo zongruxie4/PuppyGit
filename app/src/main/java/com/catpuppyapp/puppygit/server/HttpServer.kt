@@ -1,4 +1,4 @@
-package com.catpuppyapp.puppygit.service.http.server
+package com.catpuppyapp.puppygit.server
 
 import com.catpuppyapp.puppygit.constants.Cons
 import com.catpuppyapp.puppygit.data.entity.RepoEntity
@@ -420,7 +420,7 @@ internal class HttpServer(
     }
 
 
-    suspend fun pushRepoList(
+    private suspend fun pushRepoList(
         repoList:List<RepoEntity>,
         routeName: String,
         gitUsernameFromUrl:String,

@@ -3,8 +3,7 @@ package com.catpuppyapp.puppygit.receiver
 import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
-import com.catpuppyapp.puppygit.service.http.server.HttpService
-import com.catpuppyapp.puppygit.utils.doJobThenOffLoading
+import com.catpuppyapp.puppygit.service.HttpService
 
 
 class BootReceiver : BroadcastReceiver() {

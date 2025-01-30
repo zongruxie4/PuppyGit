@@ -1,13 +1,13 @@
-package com.catpuppyapp.puppygit.service.http.server
+package com.catpuppyapp.puppygit.server
 
 import kotlinx.serialization.Serializable
 
 
-fun createSuccessResult(msg: String="", data: Map<String, String> = mapOf()):Result {
+fun createSuccessResult(msg: String="", data: Map<String, String> = mapOf()): Result {
     return Result(Code.success, msg, data)
 }
 
-fun createErrResult(msg:String, data: Map<String, String> = mapOf()):Result {
+fun createErrResult(msg:String, data: Map<String, String> = mapOf()): Result {
     return Result(Code.err, msg, data)
 }
 

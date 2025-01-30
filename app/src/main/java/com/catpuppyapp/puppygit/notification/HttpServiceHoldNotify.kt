@@ -8,7 +8,7 @@ import com.catpuppyapp.puppygit.notification.HttpServiceHoldNotify.createPending
 import com.catpuppyapp.puppygit.notification.base.NotifyBase
 import com.catpuppyapp.puppygit.notification.bean.Action
 import com.catpuppyapp.puppygit.play.pro.R
-import com.catpuppyapp.puppygit.service.http.server.HttpService
+import com.catpuppyapp.puppygit.service.HttpService
 
 object HttpServiceHoldNotify: NotifyBase(
     TAG = "HttpServiceHoldNotify",

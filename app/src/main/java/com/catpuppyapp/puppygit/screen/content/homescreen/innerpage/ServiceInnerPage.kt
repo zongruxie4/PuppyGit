@@ -46,8 +46,7 @@ import com.catpuppyapp.puppygit.compose.SettingsContent
 import com.catpuppyapp.puppygit.compose.SettingsTitle
 import com.catpuppyapp.puppygit.compose.SoftkeyboardVisibleListener
 import com.catpuppyapp.puppygit.play.pro.R
-import com.catpuppyapp.puppygit.service.http.server.HttpServer
-import com.catpuppyapp.puppygit.service.http.server.HttpService
+import com.catpuppyapp.puppygit.service.HttpService
 import com.catpuppyapp.puppygit.settings.SettingsUtil
 import com.catpuppyapp.puppygit.style.MyStyleKt
 import com.catpuppyapp.puppygit.utils.ActivityUtil

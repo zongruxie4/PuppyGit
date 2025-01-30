@@ -24,11 +24,9 @@ import com.catpuppyapp.puppygit.dev.FlagFileName
 import com.catpuppyapp.puppygit.dev.dev_EnableUnTestedFeature
 import com.catpuppyapp.puppygit.dto.DeviceWidthHeight
 import com.catpuppyapp.puppygit.jni.LibLoader
-import com.catpuppyapp.puppygit.notification.HttpServiceHoldNotify
-import com.catpuppyapp.puppygit.notification.NormalNotify
 import com.catpuppyapp.puppygit.notification.util.NotifyUtil
 import com.catpuppyapp.puppygit.play.pro.BuildConfig
-import com.catpuppyapp.puppygit.service.http.server.HttpService
+import com.catpuppyapp.puppygit.service.HttpService
 import com.catpuppyapp.puppygit.settings.AppSettings
 import com.catpuppyapp.puppygit.settings.SettingsUtil
 import com.catpuppyapp.puppygit.utils.app.upgrade.migrator.AppMigrator

@@ -1,9 +1,9 @@
-package com.catpuppyapp.puppygit.service.http.server
+package com.catpuppyapp.puppygit.server.bean
 
 import kotlinx.serialization.Serializable
 
 @Serializable
-data class ApiDto (
+data class ApiBean (
     val protocol:String = "http",
     val host:String = "127.0.0.1",
     val port:Int = 52520,

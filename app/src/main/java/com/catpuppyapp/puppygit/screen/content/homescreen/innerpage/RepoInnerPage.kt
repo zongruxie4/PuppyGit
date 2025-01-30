@@ -84,7 +84,7 @@ import com.catpuppyapp.puppygit.etc.RepoPendingTask
 import com.catpuppyapp.puppygit.etc.Ret
 import com.catpuppyapp.puppygit.git.Upstream
 import com.catpuppyapp.puppygit.play.pro.R
-import com.catpuppyapp.puppygit.service.http.server.ConfigDto
+import com.catpuppyapp.puppygit.server.bean.ConfigBean
 import com.catpuppyapp.puppygit.settings.AppSettings
 import com.catpuppyapp.puppygit.settings.SettingsUtil
 import com.catpuppyapp.puppygit.style.MyStyleKt
@@ -1369,7 +1369,7 @@ fun RepoInnerPage(
         )
     }
 
-    val apiConfigDtoList = mutableCustomStateListOf(stateKeyTag, "apiConfigDtoList") { listOf<ConfigDto>() }
+    val apiConfigBeanList = mutableCustomStateListOf(stateKeyTag, "apiConfigDtoList") { listOf<ConfigBean>() }
     val showApiDialog = rememberSaveable { mutableStateOf(false) }
     if(showApiDialog.value) {
         ConfirmDialog2(
@@ -1378,7 +1378,7 @@ fun RepoInnerPage(
             textCompose = {
                 MySelectionContainer {
                     ScrollableColumn {
-                        apiConfigDtoList.value.forEach {
+                        apiConfigBeanList.value.forEach {
                             val pullurl = it.api.pull_example
                             val pushurl = it.api.push_example
                             Row {
@@ -1791,10 +1791,10 @@ fun RepoInnerPage(
         },
 
         api@{
-            apiConfigDtoList.value.clear()
+            apiConfigBeanList.value.clear()
             val settings = SettingsUtil.getSettingsSnapshot()
             selectedItems.value.forEach {
-                apiConfigDtoList.value.add(genConfigDto(it, settings))
+                apiConfigBeanList.value.add(genConfigDto(it, settings))
             }
 
             showApiDialog.value = true

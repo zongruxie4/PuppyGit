@@ -49,13 +49,13 @@
         </service>
 
         <service
-            android:name="com.catpuppyapp.puppygit.service.http.server.HttpService"
+            android:name="com.catpuppyapp.puppygit.service.HttpService"
             android:foregroundServiceType="specialUse"
             android:enabled="true"
             android:exported="false" />
 
         <service
-            android:name="com.catpuppyapp.puppygit.service.http.server.TileHttpService"
+            android:name="com.catpuppyapp.puppygit.service.TileHttpService"
             android:exported="true"
             android:label="@string/app_name"
             android:icon="@drawable/branch"

@@ -1,10 +1,10 @@
-package com.catpuppyapp.puppygit.service.http.server
+package com.catpuppyapp.puppygit.service
 
 import android.app.Notification
 import android.app.Service
 import android.content.Context
 import android.content.Intent
-import android.content.pm.ServiceInfo.FOREGROUND_SERVICE_TYPE_SPECIAL_USE
+import android.content.pm.ServiceInfo
 import android.os.Build
 import android.os.IBinder
 import com.catpuppyapp.puppygit.constants.IDS
@@ -13,6 +13,7 @@ import com.catpuppyapp.puppygit.dto.genConfigDto
 import com.catpuppyapp.puppygit.notification.HttpServiceHoldNotify
 import com.catpuppyapp.puppygit.notification.base.ServiceNotify
 import com.catpuppyapp.puppygit.play.pro.R
+import com.catpuppyapp.puppygit.server.HttpServer
 import com.catpuppyapp.puppygit.settings.AppSettings
 import com.catpuppyapp.puppygit.settings.SettingsUtil
 import com.catpuppyapp.puppygit.utils.AppModel
@@ -46,9 +47,11 @@ private val sendProgressNotification:(repoNameOrId:String, progress:String)->Uni
 }
 
 
+
+
 class HttpService : Service() {
     companion object: ServiceNotify(HttpServiceHoldNotify) {
-        private var httpServer:HttpServer? = null
+        private var httpServer: HttpServer? = null
         const val command_stop = "STOP"
         const val command_copy_addr = "COPY_ADDR"
         private val lock = Mutex()
@@ -99,7 +102,7 @@ class HttpService : Service() {
         }
 
         fun setLaunchOnSystemStartUp(context: Context, enable:Boolean) {
-            PrefMan.set(context, PrefMan.Key.launchServiceOnSystemStartup, if(enable) "1" else "0")
+            PrefMan.set(context, PrefMan.Key.launchServiceOnSystemStartup, if (enable) "1" else "0")
         }
 
         /**
@@ -197,7 +200,7 @@ class HttpService : Service() {
 
             // 启动前台服务
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.UPSIDE_DOWN_CAKE) { // UPSIDE_DOWN_CAKE is sdk 34
-                startForeground(serviceId, getNotification(settings), FOREGROUND_SERVICE_TYPE_SPECIAL_USE)
+                startForeground(serviceId, getNotification(settings), ServiceInfo.FOREGROUND_SERVICE_TYPE_SPECIAL_USE)
             }else {
                 startForeground(serviceId, getNotification(settings))
             }

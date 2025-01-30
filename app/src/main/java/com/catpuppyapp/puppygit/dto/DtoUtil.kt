@@ -8,8 +8,8 @@ import com.catpuppyapp.puppygit.git.CommitDto
 import com.catpuppyapp.puppygit.git.FileHistoryDto
 import com.catpuppyapp.puppygit.git.SubmoduleDto
 import com.catpuppyapp.puppygit.git.TagDto
-import com.catpuppyapp.puppygit.service.http.server.ApiDto
-import com.catpuppyapp.puppygit.service.http.server.ConfigDto
+import com.catpuppyapp.puppygit.server.bean.ApiBean
+import com.catpuppyapp.puppygit.server.bean.ConfigBean
 import com.catpuppyapp.puppygit.settings.AppSettings
 import com.catpuppyapp.puppygit.utils.AppModel
 import com.catpuppyapp.puppygit.utils.Libgit2Helper
@@ -220,15 +220,15 @@ fun createFileHistoryDto(
 fun genConfigDto(
     repoEntity: RepoEntity,
     settings: AppSettings
-):ConfigDto {
+): ConfigBean {
     val host = settings.httpService.listenHost
     val port = settings.httpService.listenPort
     val token = settings.httpService.tokenList.let { if(it.isEmpty()) "" else it.first() }
 
-    return ConfigDto(
+    return ConfigBean(
         repoName = repoEntity.repoName,
         repoId = repoEntity.id,
-        api = ApiDto(
+        api = ApiBean(
             protocol = "http",
             host = host,
             port = port,

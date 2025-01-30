@@ -1,4 +1,4 @@
-package com.catpuppyapp.puppygit.service.http.server
+package com.catpuppyapp.puppygit.service
 
 import android.annotation.TargetApi
 import android.content.BroadcastReceiver
@@ -11,19 +11,19 @@ import android.service.quicksettings.TileService
 import androidx.core.content.ContextCompat
 import com.catpuppyapp.puppygit.utils.AppModel
 import com.catpuppyapp.puppygit.utils.MyLog
-import com.catpuppyapp.puppygit.utils.doJobThenOffLoading
 import com.catpuppyapp.puppygit.utils.receiverFlags
 
 private const val TAG = "TileHttpService"
+
 
 @TargetApi(Build.VERSION_CODES.N)  // tile support by android 24 and above
 class TileHttpService: TileService() {
     companion object {
         //加个包名，避免冲突
-        const val ACTION_UPDATE = AppModel.appPackageName+".UPDATE_TILE"
+        const val ACTION_UPDATE = AppModel.appPackageName +".UPDATE_TILE"
         const val INTENT_EXTRA_KEY_NEW_STATE = "newState"
 
-        fun sendUpdateTileRequest(appContext:Context, newState:Boolean) {
+        fun sendUpdateTileRequest(appContext: Context, newState:Boolean) {
             val intent = Intent(ACTION_UPDATE)
             intent.putExtra(INTENT_EXTRA_KEY_NEW_STATE, newState)
             // 发送广播通知 TileService 更新状态
