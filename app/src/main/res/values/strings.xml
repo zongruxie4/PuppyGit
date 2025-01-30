@@ -1191,6 +1191,7 @@
     <string name="do_you_want_to_edit_the_file_or_import_it">Do you want to edit the file or import it?</string>
     <string name="ask">Ask</string>
     <string name="accessibility_service_description">For auto pull/push when enter/exit specified apps</string>
+    <string name="require_restart_service">Require restart service</string>
 
 
 </resources>

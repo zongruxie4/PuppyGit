@@ -9,8 +9,12 @@ open class ServiceNotify(private val notify: NotifyBase) {
      * @param startPage 是页面id, `Cons.selectedItem_` 开头的那几个变量
      * @param startRepoId 虽然是repo id，但实际上查询的时候可能会匹配id和repoName，但是，这里还是应该尽量传id而不是repoName
      */
-    fun sendNotification(title:String, msg:String, startPage:Int, startRepoId:String) {
+    private fun sendNotification(title:String, msg:String, startPage:Int, startRepoId:String) {
         NotifyUtil.sendNotificationClickGoToSpecifiedPage(notify, title, msg, startPage, startRepoId)
+    }
+
+    fun sendErrNotification(title:String, msg:String, startPage:Int, startRepoId:String) {
+        sendNotification(title, msg, startPage, startRepoId)
     }
 
     fun sendSuccessNotification(title:String?, msg:String?, startPage:Int?, startRepoId:String?) {
@@ -21,6 +25,5 @@ open class ServiceNotify(private val notify: NotifyBase) {
     fun sendProgressNotification(repoNameOrId:String, progress:String) {
         sendNotification(repoNameOrId, progress, Cons.selectedItem_Never, "")
     }
-
 
 }

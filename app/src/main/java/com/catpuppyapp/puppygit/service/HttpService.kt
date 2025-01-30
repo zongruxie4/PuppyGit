@@ -30,27 +30,31 @@ import kotlinx.coroutines.sync.withLock
 import kotlinx.serialization.serializer
 
 
-private const val TAG = "HttpService"
-private const val serviceId = IDS.HttpService  //这id必须唯一，最好和notifyid也不一样
-
-
-private val sendSuccessNotification:(title:String?, msg:String?, startPage:Int?, startRepoId:String?)->Unit= {title, msg, startPage, startRepoId ->
-    HttpService.sendSuccessNotification(title, msg, startPage, startRepoId)
-}
-
-private val sendNotification:(title:String, msg:String, startPage:Int, startRepoId:String)->Unit={title, msg, startPage, startRepoId ->
-    HttpService.sendNotification(title, msg, startPage, startRepoId)
-}
-
-private val sendProgressNotification:(repoNameOrId:String, progress:String)->Unit={repoNameOrId, progress ->
-    HttpService.sendProgressNotification(repoNameOrId, progress)
-}
-
-
-
-
 class HttpService : Service() {
     companion object: ServiceNotify(HttpServiceHoldNotify) {
+
+        private const val TAG = "HttpService"
+        private const val serviceId = IDS.HttpService  //这id必须唯一，最好和notifyid也不一样
+
+
+        private fun sendSuccessNotificationIfEnable(settings: AppSettings) = { title:String?, msg:String?, startPage:Int?, startRepoId:String? ->
+            if(settings.httpService.showNotifyWhenSuccess) {
+                sendSuccessNotification(title, msg, startPage, startRepoId)
+            }
+        }
+
+        private fun sendErrNotificationIfEnable(settings:AppSettings)={ title:String, msg:String, startPage:Int, startRepoId:String ->
+            if(settings.httpService.showNotifyWhenErr) {
+                sendErrNotification(title, msg, startPage, startRepoId)
+            }
+        }
+
+        private fun sendProgressNotificationIfEnable(settings: AppSettings) = { repoNameOrId:String, progress:String ->
+            if(settings.httpService.showNotifyWhenProgress) {
+                sendProgressNotification(repoNameOrId, progress)
+            }
+        }
+
         private var httpServer: HttpServer? = null
         const val command_stop = "STOP"
         const val command_copy_addr = "COPY_ADDR"
@@ -68,7 +72,7 @@ class HttpService : Service() {
         /**
          * 这操作应该在 doActWithLock 里执行
          */
-        private suspend fun runNewHttpServer(host:String, port:Int) {
+        private suspend fun runNewHttpServer(settings:AppSettings) {
             // 避免停止启动同一个端口的服务器冲突，所以stop和start应该同步执行，不应该并行
 
             //停止旧的
@@ -76,11 +80,11 @@ class HttpService : Service() {
 
             //创建新的
             val newServer = HttpServer(
-                host,
-                port,
-                sendSuccessNotification,
-                sendNotification,
-                sendProgressNotification
+                settings.httpService.listenHost,
+                settings.httpService.listenPort,
+                sendSuccessNotificationIfEnable(settings),
+                sendErrNotificationIfEnable(settings),
+                sendProgressNotificationIfEnable(settings)
             )
 
             //更新类变量
@@ -207,7 +211,7 @@ class HttpService : Service() {
 
             doJobThenOffLoading {
                 doActWithLock {
-                    runNewHttpServer(settings.httpService.listenHost, settings.httpService.listenPort)
+                    runNewHttpServer(settings)
                 }
             }
 

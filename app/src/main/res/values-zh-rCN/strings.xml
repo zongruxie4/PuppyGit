@@ -1164,6 +1164,7 @@
     <string name="do_you_want_to_edit_the_file_or_import_it">你想编辑文件还是导入文件？</string>
     <string name="ask">询问</string>
     <string name="accessibility_service_description">用于实现在 进入/离开 指定应用时自动 拉取/推送</string>
+    <string name="require_restart_service">需要重启服务</string>
 
 
 </resources>

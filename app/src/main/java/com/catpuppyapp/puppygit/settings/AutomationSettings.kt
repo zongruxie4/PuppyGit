@@ -17,7 +17,7 @@ data class AutomationSettings (
     /**
      * show notify if server do act success
      */
-    var showNotifyWhenSuccess:Boolean = false,
+    var showNotifyWhenSuccess:Boolean = true,
 
     /**
      * show notify if server acting

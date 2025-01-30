@@ -23,8 +23,8 @@ object RepoActUtil {
     suspend fun pullRepoList(
         repoList:List<RepoEntity>,
         routeName: String,
-        gitUsernameFromUrl:String,
-        gitEmailFromUrl:String,
+        gitUsernameFromUrl:String,  // leave empty to read from config
+        gitEmailFromUrl:String,  // leave empty to read from config
         sendSuccessNotification:(title:String?, msg:String?, startPage:Int?, startRepoId:String?)->Unit,
         sendNotification:(title:String, msg:String, startPage:Int, startRepoId:String)->Unit,
         sendProgressNotification:(repoNameOrId:String, progress:String)->Unit
@@ -36,9 +36,8 @@ object RepoActUtil {
         repoList.forEach { repoFromDb ->
             try {
 
-                if(settings.httpService.showNotifyWhenProgress) {
-                    sendProgressNotification(repoFromDb.repoName, "pulling...")
-                }
+                sendProgressNotification(repoFromDb.repoName, "pulling...")
+
 
                 Libgit2Helper.doActWithRepoLock(repoFromDb, waitInMillSec = waitInMillSecIfApiBusy, onLockFailed = throwRepoBusy) {
                     if(dbIntToBool(repoFromDb.isDetached)) {
@@ -114,18 +113,16 @@ object RepoActUtil {
                     }
 
 
-                    if(settings.httpService.showNotifyWhenSuccess) {
-                        sendSuccessNotification(repoFromDb.repoName, "pull successfully", Cons.selectedItem_ChangeList, repoFromDb.id)
-                    }
+                    sendSuccessNotification(repoFromDb.repoName, "pull successfully", Cons.selectedItem_ChangeList, repoFromDb.id)
+
                 }
             }catch (e:Exception) {
                 val errMsg = e.localizedMessage ?: "unknown err"
 
                 createAndInsertError(repoFromDb.id, "pull by api $routeName err: $errMsg")
 
-                if(settings.httpService.showNotifyWhenErr) {
-                    sendNotification("pull err", errMsg, Cons.selectedItem_ChangeList, repoFromDb.id)
-                }
+                sendNotification("pull err", errMsg, Cons.selectedItem_ChangeList, repoFromDb.id)
+
 
                 MyLog.e(TAG, "route:$routeName, repoName=${repoFromDb.repoName}, err=${e.stackTraceToString()}")
             }
@@ -137,8 +134,8 @@ object RepoActUtil {
     suspend fun pushRepoList(
         repoList:List<RepoEntity>,
         routeName: String,
-        gitUsernameFromUrl:String,
-        gitEmailFromUrl:String,
+        gitUsernameFromUrl:String,    // leave empty to read from config
+        gitEmailFromUrl:String,    // leave empty to read from config
         autoCommit:Boolean,
         force:Boolean,
         sendSuccessNotification:(title:String?, msg:String?, startPage:Int?, startRepoId:String?)->Unit,
@@ -152,9 +149,8 @@ object RepoActUtil {
 
         repoList.forEach {repoFromDb ->
             try {
-                if(settings.httpService.showNotifyWhenProgress) {
-                    sendProgressNotification(repoFromDb.repoName, "pushing...")
-                }
+                sendProgressNotification(repoFromDb.repoName, "pushing...")
+
 
                 Libgit2Helper.doActWithRepoLock(repoFromDb, waitInMillSec = waitInMillSecIfApiBusy, onLockFailed = throwRepoBusy) {
                     if(dbIntToBool(repoFromDb.isDetached)) {
@@ -242,9 +238,8 @@ object RepoActUtil {
 
                             if(ahead < 1) {
                                 //通过behind检测后，如果进入此代码块，代表本地不落后也不领先，即“up to date”，并不需要推送，可返回了
-                                if(settings.httpService.showNotifyWhenSuccess) {
-                                    sendSuccessNotification(repoFromDb.repoName, "Already up-to-date", Cons.selectedItem_ChangeList, repoFromDb.id)
-                                }
+                                sendSuccessNotification(repoFromDb.repoName, "Already up-to-date", Cons.selectedItem_ChangeList, repoFromDb.id)
+
 
                                 return@doActWithRepoLock
                             }
@@ -273,9 +268,8 @@ object RepoActUtil {
                     }
 
 
-                    if(settings.httpService.showNotifyWhenSuccess) {
-                        sendSuccessNotification(repoFromDb.repoName, "push successfully", Cons.selectedItem_ChangeList, repoFromDb.id)
-                    }
+                    sendSuccessNotification(repoFromDb.repoName, "push successfully", Cons.selectedItem_ChangeList, repoFromDb.id)
+
 
                 }
             }catch (e:Exception) {
@@ -283,9 +277,8 @@ object RepoActUtil {
 
                 createAndInsertError(repoFromDb.id, "push by api $routeName err: $errMsg")
 
-                if(settings.httpService.showNotifyWhenErr) {
-                    sendNotification("push err", errMsg, Cons.selectedItem_ChangeList, repoFromDb.id)
-                }
+                sendNotification("push err", errMsg, Cons.selectedItem_ChangeList, repoFromDb.id)
+
 
                 MyLog.e(TAG, "route:$routeName, repoName=${repoFromDb.repoName}, err=${e.stackTraceToString()}")
             }

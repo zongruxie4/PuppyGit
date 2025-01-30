@@ -60,7 +60,7 @@ internal class HttpServer(
     val host:String,
     val port:Int,
     private val sendSuccessNotification:(title:String?, msg:String?, startPage:Int?, startRepoId:String?)->Unit,
-    private val sendNotification:(title:String, msg:String, startPage:Int, startRepoId:String)->Unit,
+    private val sendErrNotification:(title:String, msg:String, startPage:Int, startRepoId:String)->Unit,
     private val sendProgressNotification:(repoNameOrId:String, progress:String)->Unit,
 ) {
     private var server: EmbeddedServer<NettyApplicationEngine, NettyApplicationEngine. Configuration>? = null
@@ -147,9 +147,8 @@ internal class HttpServer(
                                 createAndInsertError(repoForLog.id, "pull by api $routeName err: $errMsg")
                             }
 
-                            if(settings.httpService.showNotifyWhenErr) {
-                                sendNotification("$routeName err", errMsg, Cons.selectedItem_ChangeList, repoForLog?.id ?: "")
-                            }
+                            sendErrNotification("$routeName err", errMsg, Cons.selectedItem_ChangeList, repoForLog?.id ?: "")
+
 
                             MyLog.e(TAG, "method:GET, route:$routeName, repoNameOrId=$repoNameOrIdForLog, err=${e.stackTraceToString()}")
                         }
@@ -190,9 +189,8 @@ internal class HttpServer(
                             repoNameOrIdForLog = repoNameOrId
 
 
-                            if(settings.httpService.showNotifyWhenProgress) {
-                                sendProgressNotification(repoNameOrId, "pushing...")
-                            }
+                            sendProgressNotification(repoNameOrId, "pushing...")
+
 
 
                             val forceUseIdMatchRepo = call.request.queryParameters.get("forceUseIdMatchRepo") == "1"
@@ -235,9 +233,8 @@ internal class HttpServer(
                                 createAndInsertError(repoForLog!!.id, "push by api $routeName err: $errMsg")
                             }
 
-                            if(settings.httpService.showNotifyWhenErr) {
-                                sendNotification("$routeName err", errMsg, Cons.selectedItem_ChangeList, repoForLog?.id ?: "")
-                            }
+                            sendErrNotification("$routeName err", errMsg, Cons.selectedItem_ChangeList, repoForLog?.id ?: "")
+
 
                             MyLog.e(TAG, "method:GET, route:$routeName, repoNameOrId=$repoNameOrIdForLog, err=${e.stackTraceToString()}")
                         }
@@ -261,9 +258,8 @@ internal class HttpServer(
                             tokenPassedOrThrowException(call, routeName, settings)
 
 
-                            if(settings.httpService.showNotifyWhenProgress) {
-                                sendProgressNotification("PuppyGit", "pulling all...")
-                            }
+                            sendProgressNotification("PuppyGit", "pulling all...")
+
 
 
                             // get git username and email for merge, if request doesn't contains them, will use PuppyGit app settings
@@ -281,9 +277,8 @@ internal class HttpServer(
                             val errMsg = e.localizedMessage ?: "unknown err"
                             call.respond(createErrResult(errMsg))
 
-                            if(settings.httpService.showNotifyWhenErr) {
-                                sendNotification("$routeName err", errMsg, Cons.selectedItem_Repos ,"")
-                            }
+                            sendErrNotification("$routeName err", errMsg, Cons.selectedItem_Repos ,"")
+
 
                             MyLog.e(TAG, "method:GET, route:$routeName, err=${e.stackTraceToString()}")
                         }
@@ -307,9 +302,8 @@ internal class HttpServer(
                         try {
                             tokenPassedOrThrowException(call, routeName, settings)
 
-                            if(settings.httpService.showNotifyWhenProgress) {
-                                sendProgressNotification("PuppyGit", "pushing all...")
-                            }
+                            sendProgressNotification("PuppyGit", "pushing all...")
+
 
                             //这个只要不明确传0，就是启用
                             val autoCommit = call.request.queryParameters.get("autoCommit") != "0"
@@ -334,9 +328,8 @@ internal class HttpServer(
                             val errMsg = e.localizedMessage ?: "unknown err"
                             call.respond(createErrResult(errMsg))
 
-                            if(settings.httpService.showNotifyWhenErr) {
-                                sendNotification("$routeName err", errMsg, Cons.selectedItem_Repos, "")
-                            }
+                            sendErrNotification("$routeName err", errMsg, Cons.selectedItem_Repos, "")
+
 
                             MyLog.e(TAG, "method:GET, route:$routeName, err=${e.stackTraceToString()}")
                         }
@@ -414,7 +407,7 @@ internal class HttpServer(
             gitUsernameFromUrl,
             gitEmailFromUrl,
             sendSuccessNotification,
-            sendNotification,
+            sendErrNotification,
             sendProgressNotification,
         )
     }
@@ -436,7 +429,7 @@ internal class HttpServer(
             autoCommit,
             force,
             sendSuccessNotification,
-            sendNotification,
+            sendErrNotification,
             sendProgressNotification
         )
     }
