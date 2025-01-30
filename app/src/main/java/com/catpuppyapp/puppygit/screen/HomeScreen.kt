@@ -74,6 +74,7 @@ import com.catpuppyapp.puppygit.fileeditor.texteditor.view.ScrollEvent
 import com.catpuppyapp.puppygit.git.StatusTypeEntrySaver
 import com.catpuppyapp.puppygit.play.pro.R
 import com.catpuppyapp.puppygit.screen.content.homescreen.innerpage.AboutInnerPage
+import com.catpuppyapp.puppygit.screen.content.homescreen.innerpage.AutomationInnerPage
 import com.catpuppyapp.puppygit.screen.content.homescreen.innerpage.ChangeListInnerPage
 import com.catpuppyapp.puppygit.screen.content.homescreen.innerpage.EditorInnerPage
 import com.catpuppyapp.puppygit.screen.content.homescreen.innerpage.FilesInnerPage
@@ -221,6 +222,7 @@ fun HomeScreen(
 
     val settingsListState = rememberScrollState()
     val serviceListState = rememberScrollState()
+    val automationListState = rememberScrollState()
 
 
     val filesPageIsFileSelectionMode = rememberSaveable { mutableStateOf(false)}
@@ -787,6 +789,8 @@ fun HomeScreen(
                             SimpleTitle(stringResource(R.string.subscription))
                         } else if(currentHomeScreen.intValue == Cons.selectedItem_Service){
                             ScrollableTitle(text = stringResource(R.string.service), listState = serviceListState)
+                        }  else if(currentHomeScreen.intValue == Cons.selectedItem_Automation){
+                            ScrollableTitle(text = stringResource(R.string.automation), listState = automationListState)
                         } else {
                             SimpleTitle()
                         }
@@ -941,6 +945,8 @@ fun HomeScreen(
                             }
                         }else if(currentHomeScreen.intValue == Cons.selectedItem_Service) {
                             RefreshActions(refreshServicePage)
+                        }else if(currentHomeScreen.intValue == Cons.selectedItem_Automation){
+                            RefreshActions(refreshAutomationPage)
                         }
                     },
                     scrollBehavior = homeTopBarScrollBehavior,
@@ -1196,6 +1202,14 @@ fun HomeScreen(
                     openDrawer = openDrawer,
                     exitApp = exitApp,
                     listState = serviceListState,
+                )
+            }else if(currentHomeScreen.intValue == Cons.selectedItem_Automation) {
+                AutomationInnerPage(
+                    contentPadding = contentPadding,
+                    needRefreshPage = needRefreshAutomationPage,
+                    openDrawer = openDrawer,
+                    exitApp = exitApp,
+                    listState = automationListState,
                 )
             }
         }

@@ -4,7 +4,6 @@ import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.ScrollState
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
-import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -14,8 +13,6 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.ContentCopy
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
@@ -25,50 +22,44 @@ import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.saveable.rememberSaveable
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.platform.LocalClipboardManager
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalView
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.catpuppyapp.puppygit.compose.ConfirmDialog2
-import com.catpuppyapp.puppygit.compose.InLineIcon
 import com.catpuppyapp.puppygit.compose.PaddingRow
 import com.catpuppyapp.puppygit.compose.SettingsContent
-import com.catpuppyapp.puppygit.compose.SettingsTitle
 import com.catpuppyapp.puppygit.compose.SoftkeyboardVisibleListener
 import com.catpuppyapp.puppygit.play.pro.R
 import com.catpuppyapp.puppygit.service.HttpService
 import com.catpuppyapp.puppygit.settings.SettingsUtil
+import com.catpuppyapp.puppygit.settings.util.AutomationSettingsUtil
 import com.catpuppyapp.puppygit.style.MyStyleKt
 import com.catpuppyapp.puppygit.utils.ActivityUtil
 import com.catpuppyapp.puppygit.utils.AppModel
 import com.catpuppyapp.puppygit.utils.ComposeHelper
 import com.catpuppyapp.puppygit.utils.Msg
-import com.catpuppyapp.puppygit.utils.NetUtils
 import com.catpuppyapp.puppygit.utils.UIHelper
 import com.catpuppyapp.puppygit.utils.doJobThenOffLoading
-import com.catpuppyapp.puppygit.utils.genHttpHostPortStr
 import com.catpuppyapp.puppygit.utils.listToLines
 import com.catpuppyapp.puppygit.utils.parseInt
 import com.catpuppyapp.puppygit.utils.splitLines
 import com.catpuppyapp.puppygit.utils.state.mutableCustomStateListOf
 import com.catpuppyapp.puppygit.utils.state.mutableCustomStateOf
 
-private const val stateKeyTag = "ServiceInnerPage"
-private const val TAG = "ServiceInnerPage"
+private const val stateKeyTag = "AutomationInnerPage"
+private const val TAG = "AutomationInnerPage"
 
 @Composable
-fun ServiceInnerPage(
+fun AutomationInnerPage(
     contentPadding: PaddingValues,
     needRefreshPage:MutableState<String>,
 //    appContext:Context,
@@ -97,7 +88,16 @@ fun ServiceInnerPage(
 
     val settingsState = mutableCustomStateOf(stateKeyTag, "settingsState", SettingsUtil.getSettingsSnapshot())
 
-    val runningStatus = rememberSaveable { mutableStateOf(HttpService.isRunning()) }
+
+    val getServiceStatus = { AutomationSettingsUtil.isAccessibilityServiceEnabled(AppModel.realAppContext) }
+
+    val runningStatus = rememberSaveable { mutableStateOf<Boolean?>(getServiceStatus()) }
+
+    val updateServiceStatus = {
+        runningStatus.value = getServiceStatus()
+    }
+
+
     val launchOnAppStartup = rememberSaveable { mutableStateOf(settingsState.value.httpService.launchOnAppStartup) }
     val launchOnSystemStartUp = rememberSaveable { mutableStateOf(HttpService.launchOnSystemStartUpEnabled(activityContext)) }
     val progressNotify = rememberSaveable { mutableStateOf(settingsState.value.httpService.showNotifyWhenProgress) }
@@ -393,19 +393,14 @@ fun ServiceInnerPage(
             .fillMaxSize()
             .verticalScroll(listState)
     ) {
-        SettingsContent(onClick = {
-            val newValue = !runningStatus.value
-            if(newValue) {
-                HttpService.start(AppModel.realAppContext)
-            }else {
-                HttpService.stop(AppModel.realAppContext)
-            }
 
-            //save
-            runningStatus.value = newValue
+        SettingsContent(onClick = {
+            //跳转到无障碍服务页面
+            Msg.requireShowLongDuration(activityContext.getString(R.string.please_find_and_enable_disable_service_for_app))
+
+            ActivityUtil.openAccessibilitySettings(activityContext)
         }) {
             val runningStatus = runningStatus.value
-
             Column(modifier = Modifier.fillMaxWidth(itemLeftWidthForSwitcher)) {
                 Text(stringResource(R.string.status), fontSize = itemFontSize)
                 Text(UIHelper.getRunningStateText(activityContext, runningStatus), fontSize = itemDescFontSize, fontWeight = FontWeight.Light, color = UIHelper.getRunningStateColor(runningStatus))
@@ -413,133 +408,9 @@ fun ServiceInnerPage(
 
             Icon(
                 modifier = Modifier.size(switcherIconSize),
-                imageVector = UIHelper.getIconForSwitcher(runningStatus),
+                imageVector = UIHelper.getIconForSwitcher(runningStatus == true),
                 contentDescription = UIHelper.getTextForSwitcher(activityContext, runningStatus),
-                tint = UIHelper.getColorForSwitcher(runningStatus),
-            )
-        }
-
-        SettingsContent(onClick = {
-            doJobThenOffLoading {
-                val requestRet = NetUtils.checkPuppyGitHttpServiceRunning(genHttpHostPortStr(listenHost.value, listenPort.value))
-                if(requestRet.hasError()) {
-                    Msg.requireShow(requestRet.msg)
-                }else {
-                    Msg.requireShow(activityContext.getString(R.string.success))
-                }
-            }
-        }) {
-            Column {
-                Text(stringResource(R.string.test), fontSize = itemFontSize)
-                Row(
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    Text(genHttpHostPortStr(listenHost.value, listenPort.value), fontSize = itemDescFontSize, fontWeight = FontWeight.Light)
-                    InLineIcon(
-                        icon = Icons.Filled.ContentCopy,
-                        tooltipText = stringResource(R.string.copy),
-                    ){
-                        clipboardManager.setText(AnnotatedString(genHttpHostPortStr(listenHost.value, listenPort.value)))
-                        Msg.requireShow(activityContext.getString(R.string.copied))
-                    }
-                }
-            }
-        }
-
-
-        SettingsContent(onClick = {
-            ActivityUtil.openUrl(activityContext, httpServiceApiUrl)
-        }) {
-            Column {
-                Text(stringResource(R.string.document), fontSize = itemFontSize)
-            }
-        }
-
-
-        SettingsTitle(stringResource(R.string.settings))
-
-        SettingsContent(onClick = {
-            initSetHostDialog()
-        }) {
-            Column {
-                Text(stringResource(R.string.host), fontSize = itemFontSize)
-                Text(listenHost.value, fontSize = itemDescFontSize, fontWeight = FontWeight.Light)
-                Text(stringResource(R.string.require_restart_service), fontSize = itemDescFontSize, fontWeight = FontWeight.Light, fontStyle = FontStyle.Italic)
-
-            }
-        }
-
-        SettingsContent(onClick = {
-            initSetPortDialog()
-        }) {
-            Column {
-                Text(stringResource(R.string.port), fontSize = itemFontSize)
-                Text(listenPort.value, fontSize = itemDescFontSize, fontWeight = FontWeight.Light)
-                Text(stringResource(R.string.require_restart_service), fontSize = itemDescFontSize, fontWeight = FontWeight.Light, fontStyle = FontStyle.Italic)
-
-            }
-        }
-
-        SettingsContent(onClick = {
-            initSetTokenListDialog()
-        }) {
-            Column {
-                Text(stringResource(R.string.tokens), fontSize = itemFontSize)
-            }
-        }
-
-        SettingsContent(onClick = {
-            initSetIpWhitelistDialog()
-        }) {
-            Column {
-                Text(stringResource(R.string.ip_whitelist), fontSize = itemFontSize)
-            }
-        }
-
-
-
-        SettingsContent(onClick = {
-            val newValue = !launchOnAppStartup.value
-
-            //save
-            launchOnAppStartup.value = newValue
-            SettingsUtil.update {
-                it.httpService.launchOnAppStartup = newValue
-            }
-        }) {
-            Column(modifier = Modifier.fillMaxWidth(itemLeftWidthForSwitcher)) {
-                Text(stringResource(R.string.launch_on_app_startup), fontSize = itemFontSize)
-//                Text(stringResource(R.string.go_to_top_bottom_buttons), fontSize = itemDescFontSize, fontWeight = FontWeight.Light)
-//                Text(stringResource(R.string.require_restart_app), fontSize = itemDescFontSize, fontWeight = FontWeight.Light, fontStyle = FontStyle.Italic)
-            }
-
-            Icon(
-                modifier = Modifier.size(switcherIconSize),
-                imageVector = UIHelper.getIconForSwitcher(launchOnAppStartup.value),
-                contentDescription = if(launchOnAppStartup.value) stringResource(R.string.enable) else stringResource(R.string.disable),
-                tint = UIHelper.getColorForSwitcher(launchOnAppStartup.value),
-            )
-        }
-
-
-        SettingsContent(onClick = {
-            val newValue = !launchOnSystemStartUp.value
-
-            //save
-            launchOnSystemStartUp.value = newValue
-            HttpService.setLaunchOnSystemStartUp(activityContext, newValue)
-        }) {
-            Column(modifier = Modifier.fillMaxWidth(itemLeftWidthForSwitcher)) {
-                Text(stringResource(R.string.launch_on_system_startup), fontSize = itemFontSize)
-//                Text(stringResource(R.string.go_to_top_bottom_buttons), fontSize = itemDescFontSize, fontWeight = FontWeight.Light)
-//                Text(stringResource(R.string.require_restart_app), fontSize = itemDescFontSize, fontWeight = FontWeight.Light, fontStyle = FontStyle.Italic)
-            }
-
-            Icon(
-                modifier = Modifier.size(switcherIconSize),
-                imageVector = UIHelper.getIconForSwitcher(launchOnSystemStartUp.value),
-                contentDescription = if(launchOnSystemStartUp.value) stringResource(R.string.enable) else stringResource(R.string.disable),
-                tint = UIHelper.getColorForSwitcher(launchOnSystemStartUp.value),
+                tint = UIHelper.getColorForSwitcher(runningStatus == true),
             )
         }
 
@@ -619,7 +490,7 @@ fun ServiceInnerPage(
 
     LaunchedEffect(needRefreshPage.value) {
         settingsState.value = SettingsUtil.getSettingsSnapshot()
-        runningStatus.value = HttpService.isRunning()
+        updateServiceStatus()
     }
 
 
@@ -636,3 +507,4 @@ fun ServiceInnerPage(
     )
 
 }
+

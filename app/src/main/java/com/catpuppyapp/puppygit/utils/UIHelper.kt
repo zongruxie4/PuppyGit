@@ -21,6 +21,7 @@ import androidx.compose.ui.unit.dp
 import com.catpuppyapp.puppygit.constants.Cons
 import com.catpuppyapp.puppygit.dto.DeviceWidthHeight
 import com.catpuppyapp.puppygit.fileeditor.texteditor.view.ExpectConflictStrDto
+import com.catpuppyapp.puppygit.play.pro.R
 import com.catpuppyapp.puppygit.settings.AppSettings
 import com.catpuppyapp.puppygit.style.MyStyleKt
 import com.catpuppyapp.puppygit.ui.theme.Theme
@@ -344,4 +345,20 @@ object UIHelper {
     fun getLastClickedColor(): Color {
         return if(Theme.inDarkTheme) Color.DarkGray.copy(alpha = .2f) else Color.LightGray.copy(alpha=.2f)
     }
+
+
+    fun getRunningStateColor(runningStatus: Boolean?):Color {
+        return if (runningStatus == null) MyStyleKt.TextColor.error() else if (runningStatus) MyStyleKt.TextColor.highlighting_green else Color.Unspecified
+    }
+
+
+    fun getRunningStateText(context: Context, runningStatus: Boolean?):String{
+        return if (runningStatus == null) context.getString(R.string.unknown_state) else if (runningStatus) context.getString(R.string.running) else context.getString(R.string.stopped)
+    }
+
+    fun getTextForSwitcher(context: Context, runningStatus: Boolean?):String {
+        return if (runningStatus == true) context.getString(R.string.enable) else context.getString(R.string.disable)
+    }
+
+
 }
