@@ -104,7 +104,7 @@ class MyAccessibilityService: AccessibilityService() {
             //必须在外部获取，放到协程里会null
             val packageName = event.packageName.toString()
             val settings = SettingsUtil.getSettingsSnapshot()
-            val targetPackageList = AutomationUtil.getRepoIds(settings.automation, packageName)
+            val targetPackageList = AutomationUtil.getPackageNames(settings.automation)
 
             //如果目标app列表为空，就不需要后续判断了，直接返回
             if(targetPackageList.isEmpty()) {
