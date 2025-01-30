@@ -1,7 +1,6 @@
 package com.catpuppyapp.puppygit.screen.content.homescreen.innerpage
 
 import androidx.activity.compose.BackHandler
-import androidx.compose.foundation.ScrollState
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Spacer
@@ -10,10 +9,13 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.text.KeyboardOptions
-import androidx.compose.foundation.verticalScroll
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.LazyListState
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.DeleteOutline
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
 import androidx.compose.runtime.Composable
@@ -32,17 +34,21 @@ import androidx.compose.ui.platform.LocalView
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.catpuppyapp.puppygit.compose.AddItemBar
+import com.catpuppyapp.puppygit.compose.AppItem
 import com.catpuppyapp.puppygit.compose.ConfirmDialog2
+import com.catpuppyapp.puppygit.compose.LoadingText
 import com.catpuppyapp.puppygit.compose.PaddingRow
 import com.catpuppyapp.puppygit.compose.SettingsContent
+import com.catpuppyapp.puppygit.compose.SettingsTitle
 import com.catpuppyapp.puppygit.compose.SoftkeyboardVisibleListener
+import com.catpuppyapp.puppygit.dto.AppInfo
 import com.catpuppyapp.puppygit.play.pro.R
 import com.catpuppyapp.puppygit.service.HttpService
 import com.catpuppyapp.puppygit.settings.SettingsUtil
-import com.catpuppyapp.puppygit.settings.util.AutomationSettingsUtil
+import com.catpuppyapp.puppygit.settings.util.AutomationUtil
 import com.catpuppyapp.puppygit.style.MyStyleKt
 import com.catpuppyapp.puppygit.utils.ActivityUtil
 import com.catpuppyapp.puppygit.utils.AppModel
@@ -51,7 +57,6 @@ import com.catpuppyapp.puppygit.utils.Msg
 import com.catpuppyapp.puppygit.utils.UIHelper
 import com.catpuppyapp.puppygit.utils.doJobThenOffLoading
 import com.catpuppyapp.puppygit.utils.listToLines
-import com.catpuppyapp.puppygit.utils.parseInt
 import com.catpuppyapp.puppygit.utils.splitLines
 import com.catpuppyapp.puppygit.utils.state.mutableCustomStateListOf
 import com.catpuppyapp.puppygit.utils.state.mutableCustomStateOf
@@ -69,7 +74,7 @@ fun AutomationInnerPage(
 //    appContext:Context,
     openDrawer:()->Unit,
     exitApp:()->Unit,
-    listState:ScrollState
+    listState: LazyListState
 ){
 
     // softkeyboard show/hidden relate start
@@ -97,7 +102,7 @@ fun AutomationInnerPage(
     val settingsState = mutableCustomStateOf(stateKeyTag, "settingsState", SettingsUtil.getSettingsSnapshot())
 
 
-    val getServiceStatus = { AutomationSettingsUtil.isAccessibilityServiceEnabled(AppModel.realAppContext) }
+    val getServiceStatus = { AutomationUtil.isAccessibilityServiceEnabled(AppModel.realAppContext) }
 
     val runningStatus = rememberSaveable { mutableStateOf<Boolean?>(getServiceStatus()) }
 
@@ -105,6 +110,8 @@ fun AutomationInnerPage(
         runningStatus.value = getServiceStatus()
     }
 
+    val appList = mutableCustomStateListOf(stateKeyTag, "appList") { listOf<AppInfo>() }
+    val appListLoading = rememberSaveable { mutableStateOf(true) }
 
     val launchOnAppStartup = rememberSaveable { mutableStateOf(settingsState.value.httpService.launchOnAppStartup) }
     val launchOnSystemStartUp = rememberSaveable { mutableStateOf(HttpService.launchOnSystemStartUpEnabled(activityContext)) }
@@ -254,62 +261,6 @@ fun AutomationInnerPage(
         listenHostBuf.value = listenHost.value
         showSetHostDialog.value=true
     }
-    if(showSetHostDialog.value) {
-        ConfirmDialog2(title = stringResource(R.string.host),
-            requireShowTextCompose = true,
-            textCompose = {
-                Column(
-                    modifier= Modifier
-                        .fillMaxWidth()
-                        .verticalScroll(rememberScrollState())
-                    ,
-                ) {
-                    TextField(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(10.dp),
-                        singleLine = true,
-                        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
-                        value = listenHostBuf.value,
-                        onValueChange = {
-                            //直接更新，不管用户输入什么，点确定后再检查值是否有效
-                            listenHostBuf.value = it
-                        },
-                        label = {
-                            Text(stringResource(R.string.port))
-                        },
-//                        placeholder = {}
-                    )
-
-                }
-
-
-            },
-            okBtnText = stringResource(id = R.string.save),
-            cancelBtnText = stringResource(id = R.string.cancel),
-            onCancel = { showSetHostDialog.value = false }
-        ) {
-            showSetHostDialog.value = false
-            doJobThenOffLoading {
-                //解析
-                val newValue = listenHostBuf.value
-
-                //检查
-                if(newValue.isBlank()) {
-                    Msg.requireShowLongDuration(activityContext.getString(R.string.err_host_invalid))
-                    return@doJobThenOffLoading
-                }
-
-                //保存
-                listenHost.value = newValue
-                SettingsUtil.update {
-                    it.httpService.listenHost = newValue
-                }
-
-                Msg.requireShow(activityContext.getString(R.string.saved))
-            }
-        }
-    }
 
     val listenPort = rememberSaveable { mutableStateOf(settingsState.value.httpService.listenPort.toString()) }
     val listenPortBuf = rememberSaveable { mutableStateOf(listenPort.value) }
@@ -320,64 +271,6 @@ fun AutomationInnerPage(
 
         showSetPortDialog.value = true
     }
-
-    if(showSetPortDialog.value) {
-        ConfirmDialog2(title = stringResource(R.string.port),
-            requireShowTextCompose = true,
-            textCompose = {
-                Column(
-                    modifier= Modifier
-                        .fillMaxWidth()
-                        .verticalScroll(rememberScrollState())
-                    ,
-                ) {
-                    TextField(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(10.dp),
-                        singleLine = true,
-                        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
-                        value = listenPortBuf.value,
-                        onValueChange = {
-                            //直接更新，不管用户输入什么，点确定后再检查值是否有效
-                            listenPortBuf.value = it
-                        },
-                        label = {
-                            Text(stringResource(R.string.port))
-                        },
-//                        placeholder = {}
-                    )
-
-                }
-
-
-            },
-            okBtnText = stringResource(id = R.string.save),
-            cancelBtnText = stringResource(id = R.string.cancel),
-            onCancel = { showSetPortDialog.value = false }
-        ) {
-            showSetPortDialog.value = false
-            doJobThenOffLoading {
-                //解析
-                val newValue = parseInt(listenPortBuf.value)
-
-                //检查
-                if(newValue == null || newValue < 0 || newValue > 65535) {
-                    Msg.requireShowLongDuration(activityContext.getString(R.string.err_port_invalid))
-                    return@doJobThenOffLoading
-                }
-
-                //保存
-                listenPort.value = newValue.toString()
-                SettingsUtil.update {
-                    it.httpService.listenPort = newValue
-                }
-
-                Msg.requireShow(activityContext.getString(R.string.saved))
-            }
-        }
-    }
-
 
 
     //back handler block start
@@ -395,109 +288,189 @@ fun AutomationInnerPage(
     val itemLeftWidthForSwitcher = .8f
     val itemLeftWidthForSelector = .6f
 
-    Column(
+    LazyColumn(
         modifier = Modifier
-            .padding(contentPadding)
             .fillMaxSize()
-            .verticalScroll(listState)
+        ,
+
+        contentPadding = contentPadding,
+        state = listState,
     ) {
 
-        SettingsContent(onClick = {
-            //跳转到无障碍服务页面
-            Msg.requireShowLongDuration(activityContext.getString(R.string.please_find_and_enable_disable_service_for_app))
+        item {
+            SettingsContent(onClick = {
+                //跳转到无障碍服务页面
+                Msg.requireShowLongDuration(activityContext.getString(R.string.please_find_and_enable_disable_service_for_app))
 
-            ActivityUtil.openAccessibilitySettings(activityContext)
-        }) {
-            val runningStatus = runningStatus.value
-            Column(modifier = Modifier.fillMaxWidth(itemLeftWidthForSwitcher)) {
-                Text(stringResource(R.string.status), fontSize = itemFontSize)
-                Text(UIHelper.getRunningStateText(activityContext, runningStatus), fontSize = itemDescFontSize, fontWeight = FontWeight.Light, color = UIHelper.getRunningStateColor(runningStatus))
+                ActivityUtil.openAccessibilitySettings(activityContext)
+            }) {
+                val runningStatus = runningStatus.value
+                Column(modifier = Modifier.fillMaxWidth(itemLeftWidthForSwitcher)) {
+                    Text(stringResource(R.string.status), fontSize = itemFontSize)
+                    Text(UIHelper.getRunningStateText(activityContext, runningStatus), fontSize = itemDescFontSize, fontWeight = FontWeight.Light, color = UIHelper.getRunningStateColor(runningStatus))
+                }
+
+                Icon(
+                    modifier = Modifier.size(switcherIconSize),
+                    imageVector = UIHelper.getIconForSwitcher(runningStatus == true),
+                    contentDescription = UIHelper.getTextForSwitcher(activityContext, runningStatus),
+                    tint = UIHelper.getColorForSwitcher(runningStatus == true),
+                )
+            }
+        }
+
+        item {
+            SettingsContent(onClick = {
+                val newValue = !progressNotify.value
+
+                //save
+                progressNotify.value = newValue
+                SettingsUtil.update {
+                    it.httpService.showNotifyWhenProgress = newValue
+                }
+            }) {
+                Column(modifier = Modifier.fillMaxWidth(itemLeftWidthForSwitcher)) {
+                    Text(stringResource(R.string.progress_notification), fontSize = itemFontSize)
+                    Text(stringResource(R.string.require_restart_service), fontSize = itemDescFontSize, fontWeight = FontWeight.Light, fontStyle = FontStyle.Italic)
+                }
+
+                Icon(
+                    modifier = Modifier.size(switcherIconSize),
+                    imageVector = UIHelper.getIconForSwitcher(progressNotify.value),
+                    contentDescription = if(progressNotify.value) stringResource(R.string.enable) else stringResource(R.string.disable),
+                    tint = UIHelper.getColorForSwitcher(progressNotify.value),
+                )
             }
 
-            Icon(
-                modifier = Modifier.size(switcherIconSize),
-                imageVector = UIHelper.getIconForSwitcher(runningStatus == true),
-                contentDescription = UIHelper.getTextForSwitcher(activityContext, runningStatus),
-                tint = UIHelper.getColorForSwitcher(runningStatus == true),
-            )
+
+        }
+
+        item {
+            SettingsContent(onClick = {
+                val newValue = !successNotify.value
+
+                //save
+                successNotify.value = newValue
+                SettingsUtil.update {
+                    it.httpService.showNotifyWhenSuccess = newValue
+                }
+            }) {
+                Column(modifier = Modifier.fillMaxWidth(itemLeftWidthForSwitcher)) {
+                    Text(stringResource(R.string.success_notification), fontSize = itemFontSize)
+                    Text(stringResource(R.string.require_restart_service), fontSize = itemDescFontSize, fontWeight = FontWeight.Light, fontStyle = FontStyle.Italic)
+                }
+
+                Icon(
+                    modifier = Modifier.size(switcherIconSize),
+                    imageVector = UIHelper.getIconForSwitcher(successNotify.value),
+                    contentDescription = if(successNotify.value) stringResource(R.string.enable) else stringResource(R.string.disable),
+                    tint = UIHelper.getColorForSwitcher(successNotify.value),
+                )
+            }
+
         }
 
 
-        SettingsContent(onClick = {
-            val newValue = !progressNotify.value
+        item {
 
-            //save
-            progressNotify.value = newValue
-            SettingsUtil.update {
-                it.httpService.showNotifyWhenProgress = newValue
-            }
-        }) {
-            Column(modifier = Modifier.fillMaxWidth(itemLeftWidthForSwitcher)) {
-                Text(stringResource(R.string.progress_notification), fontSize = itemFontSize)
-                Text(stringResource(R.string.require_restart_service), fontSize = itemDescFontSize, fontWeight = FontWeight.Light, fontStyle = FontStyle.Italic)
+            SettingsContent(onClick = {
+                val newValue = !errNotify.value
+
+                //save
+                errNotify.value = newValue
+                SettingsUtil.update {
+                    it.httpService.showNotifyWhenErr = newValue
+                }
+            }) {
+                Column(modifier = Modifier.fillMaxWidth(itemLeftWidthForSwitcher)) {
+                    Text(stringResource(R.string.err_notification), fontSize = itemFontSize)
+                    Text(stringResource(R.string.require_restart_service), fontSize = itemDescFontSize, fontWeight = FontWeight.Light, fontStyle = FontStyle.Italic)
+                }
+
+                Icon(
+                    modifier = Modifier.size(switcherIconSize),
+                    imageVector = UIHelper.getIconForSwitcher(errNotify.value),
+                    contentDescription = if(errNotify.value) stringResource(R.string.enable) else stringResource(R.string.disable),
+                    tint = UIHelper.getColorForSwitcher(errNotify.value),
+                )
             }
 
-            Icon(
-                modifier = Modifier.size(switcherIconSize),
-                imageVector = UIHelper.getIconForSwitcher(progressNotify.value),
-                contentDescription = if(progressNotify.value) stringResource(R.string.enable) else stringResource(R.string.disable),
-                tint = UIHelper.getColorForSwitcher(progressNotify.value),
-            )
+        }
+
+        item {
+            SettingsTitle(stringResource(R.string.app_list))
+
+        }
+
+        val addItemBarHeight = 40.dp
+        item {
+            // 显示添加按钮
+            AddItemBar() {
+                // TODO 点击跳转到用户安装的app列表，包含所有app，包括系统的
+            }
+
+        }
+
+        item {
+
+            if(appListLoading.value){
+                LoadingText(stringResource(R.string.loading), PaddingValues(top = addItemBarHeight+30.dp), enableScroll = false)
+            }
         }
 
 
-        SettingsContent(onClick = {
-            val newValue = !successNotify.value
+        // 旧版compose有bug，用else有可能会忽略条件，所以这里直接if判断下反条件
+        if(appListLoading.value.not()) {
+            appList.value.toList().forEach { appInfo ->
+                item {
 
-            //save
-            successNotify.value = newValue
-            SettingsUtil.update {
-                it.httpService.showNotifyWhenSuccess = newValue
-            }
-        }) {
-            Column(modifier = Modifier.fillMaxWidth(itemLeftWidthForSwitcher)) {
-                Text(stringResource(R.string.success_notification), fontSize = itemFontSize)
-                Text(stringResource(R.string.require_restart_service), fontSize = itemDescFontSize, fontWeight = FontWeight.Light, fontStyle = FontStyle.Italic)
-            }
+                    AppItem(
+                        appInfo,
+                        trailIcon = { iconInitModifier ->
+                            IconButton(
+                                modifier = iconInitModifier,
+                                onClick = { appList.value.remove(appInfo) }
+                            ) {
+                                Icon(
+                                    imageVector = Icons.Filled.DeleteOutline,
+                                    contentDescription = stringResource(R.string.trash_bin_icon_for_delete_item)
+                                )
+                            }
+                        }
 
-            Icon(
-                modifier = Modifier.size(switcherIconSize),
-                imageVector = UIHelper.getIconForSwitcher(successNotify.value),
-                contentDescription = if(successNotify.value) stringResource(R.string.enable) else stringResource(R.string.disable),
-                tint = UIHelper.getColorForSwitcher(successNotify.value),
-            )
+                    ) { clickedApp ->
+                        //TODO 点击app跳转到app关联的仓库列表
+                    }
+
+                    HorizontalDivider()
+                }
+
+            }
         }
 
 
-        SettingsContent(onClick = {
-            val newValue = !errNotify.value
+        item {
+            PaddingRow()
 
-            //save
-            errNotify.value = newValue
-            SettingsUtil.update {
-                it.httpService.showNotifyWhenErr = newValue
-            }
-        }) {
-            Column(modifier = Modifier.fillMaxWidth(itemLeftWidthForSwitcher)) {
-                Text(stringResource(R.string.err_notification), fontSize = itemFontSize)
-                Text(stringResource(R.string.require_restart_service), fontSize = itemDescFontSize, fontWeight = FontWeight.Light, fontStyle = FontStyle.Italic)
-            }
-
-            Icon(
-                modifier = Modifier.size(switcherIconSize),
-                imageVector = UIHelper.getIconForSwitcher(errNotify.value),
-                contentDescription = if(errNotify.value) stringResource(R.string.enable) else stringResource(R.string.disable),
-                tint = UIHelper.getColorForSwitcher(errNotify.value),
-            )
         }
-
-
-        PaddingRow()
     }
 
 
     LaunchedEffect(needRefreshPage.value) {
-        settingsState.value = SettingsUtil.getSettingsSnapshot()
+        val newSettings = SettingsUtil.getSettingsSnapshot()
+        settingsState.value = newSettings
+
+        doJobThenOffLoading {
+            appListLoading.value = true
+
+            // update app list
+            val userAddedAppList = AutomationUtil.getSelectedAppList(activityContext, newSettings.automation)
+
+            appList.value.clear()
+            appList.value.addAll(userAddedAppList)
+
+            appListLoading.value = false
+        }
     }
 
     LaunchedEffect(Unit) {

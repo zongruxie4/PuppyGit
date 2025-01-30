@@ -3,6 +3,7 @@ package com.catpuppyapp.puppygit.utils
 import android.content.ClipData
 import android.content.ClipboardManager
 import android.content.Context
+import android.content.pm.PackageManager
 import android.os.Build
 import android.widget.Toast
 import androidx.compose.runtime.MutableState
@@ -10,6 +11,8 @@ import androidx.core.content.ContextCompat
 import com.catpuppyapp.puppygit.constants.Cons
 import com.catpuppyapp.puppygit.data.entity.ErrorEntity
 import com.catpuppyapp.puppygit.data.entity.RepoEntity
+import com.catpuppyapp.puppygit.dto.AppInfo
+import com.catpuppyapp.puppygit.dto.rawAppInfoToAppInfo
 import com.catpuppyapp.puppygit.etc.Ret
 import com.catpuppyapp.puppygit.play.pro.R
 import com.catpuppyapp.puppygit.settings.AppSettings
@@ -992,4 +995,20 @@ fun genHttpHostPortStr(host:String, port:String, prefix:String="http://") : Stri
     //如果host 是 0.0.0.0 换成 127.0.0.1，否则使用原ip
     val host = if(host == Cons.zero000Ip) Cons.localHostIp else host
     return "$prefix$host:$port"
+}
+
+fun getInstalledAppList(context:Context, selected:(AppInfo)->Boolean = {false}):List<AppInfo> {
+    val packageManager = context.packageManager
+    val packages = packageManager.getInstalledPackages(PackageManager.GET_META_DATA)
+    val apps = mutableListOf<AppInfo>()
+
+    for (pkg in packages) {
+        val applicationInfo = pkg.applicationInfo ?: continue
+
+        val appInfo = rawAppInfoToAppInfo(applicationInfo, packageManager, selected) ?: continue
+
+        apps.add(appInfo)
+    }
+
+    return apps
 }

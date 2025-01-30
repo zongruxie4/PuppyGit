@@ -1191,5 +1191,7 @@
     <string name="automation">Automation</string>
     <string name="please_find_and_enable_disable_service_for_app">Please find and enable/disable service for App</string>
     <string name="unknown_state">Unknown State</string>
+    <string name="app_list">App List</string>
+    <string name="add_an_app">Add an app</string>
 
 </resources>

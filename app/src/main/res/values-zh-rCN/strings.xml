@@ -1168,6 +1168,8 @@
     <string name="automation">自动化</string>
     <string name="please_find_and_enable_disable_service_for_app">请查找并为App 启用/禁用 服务</string>
     <string name="unknown_state">未知状态</string>
+    <string name="app_list">应用列表</string>
+    <string name="add_an_app">添加一个仓库</string>
 
 
 </resources>

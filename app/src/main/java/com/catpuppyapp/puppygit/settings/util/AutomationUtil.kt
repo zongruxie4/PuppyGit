@@ -3,12 +3,14 @@ package com.catpuppyapp.puppygit.settings.util
 import android.content.ComponentName
 import android.content.Context
 import android.provider.Settings
+import com.catpuppyapp.puppygit.dto.AppInfo
 import com.catpuppyapp.puppygit.service.MyAccessibilityService
 import com.catpuppyapp.puppygit.settings.AutomationSettings
 import com.catpuppyapp.puppygit.utils.MyLog
+import com.catpuppyapp.puppygit.utils.getInstalledAppList
 
 
-object AutomationSettingsUtil {
+object AutomationUtil {
     private const val TAG = "AutomationSettingsUtil"
 
 
@@ -37,4 +39,21 @@ object AutomationSettingsUtil {
             null
         }
     }
+
+    fun getSelectedAppList(context: Context, automationSettings: AutomationSettings):List<AppInfo> {
+        val installedAppList = getInstalledAppList(context)
+        val userAddedAppList = getPackageNames(automationSettings)
+        val selectedList = mutableListOf<AppInfo>()
+
+        installedAppList.forEach { installed ->
+            if(userAddedAppList.contains(installed.packageName)) {
+                installed.isSelected = true
+                selectedList.add(installed)
+            }
+        }
+
+        return selectedList
+    }
+
+
 }

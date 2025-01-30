@@ -7,7 +7,7 @@ import com.catpuppyapp.puppygit.notification.AutomationNotify
 import com.catpuppyapp.puppygit.notification.base.ServiceNotify
 import com.catpuppyapp.puppygit.settings.AppSettings
 import com.catpuppyapp.puppygit.settings.SettingsUtil
-import com.catpuppyapp.puppygit.settings.util.AutomationSettingsUtil
+import com.catpuppyapp.puppygit.settings.util.AutomationUtil
 import com.catpuppyapp.puppygit.utils.AppModel
 import com.catpuppyapp.puppygit.utils.MyLog
 import com.catpuppyapp.puppygit.utils.RepoActUtil
@@ -104,7 +104,7 @@ class MyAccessibilityService: AccessibilityService() {
             //必须在外部获取，放到协程里会null
             val packageName = event.packageName.toString()
             val settings = SettingsUtil.getSettingsSnapshot()
-            val targetPackageList = AutomationSettingsUtil.getRepoIds(settings.automation, packageName)
+            val targetPackageList = AutomationUtil.getRepoIds(settings.automation, packageName)
 
             //如果目标app列表为空，就不需要后续判断了，直接返回
             if(targetPackageList.isEmpty()) {
@@ -125,7 +125,7 @@ class MyAccessibilityService: AccessibilityService() {
                             targetPackageTrueOpenedFalseCloseNullNeverOpenedList[packageName] = true
                             MyLog.d(TAG, "target packageName '$packageName' opened, need do pull")
 
-                            val bindRepoIds = AutomationSettingsUtil.getRepoIds(settings.automation, packageName)
+                            val bindRepoIds = AutomationUtil.getRepoIds(settings.automation, packageName)
                             if(bindRepoIds.isEmpty()) {
                                 return@withLock
                             }
@@ -153,7 +153,7 @@ class MyAccessibilityService: AccessibilityService() {
                                 MyLog.d(TAG, "target packageName '$lastOpenedTarget' leaved, need do push")
                                 targetPackageTrueOpenedFalseCloseNullNeverOpenedList[lastOpenedTarget] = false
 
-                                val bindRepoIds = AutomationSettingsUtil.getRepoIds(settings.automation, packageName)
+                                val bindRepoIds = AutomationUtil.getRepoIds(settings.automation, packageName)
                                 if(bindRepoIds.isEmpty()) {
                                     return@withLock
                                 }

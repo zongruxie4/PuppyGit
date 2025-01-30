@@ -1,5 +1,7 @@
 package com.catpuppyapp.puppygit.dto
 
+import android.content.pm.ApplicationInfo
+import android.content.pm.PackageManager
 import com.catpuppyapp.puppygit.constants.Cons
 import com.catpuppyapp.puppygit.constants.SpecialCredential
 import com.catpuppyapp.puppygit.data.entity.RepoEntity
@@ -240,4 +242,22 @@ fun genConfigDto(
             push_example = "${genHttpHostPortStr(host, port.toString())}/push?token=$token&repoNameOrId=${repoEntity.repoName}",
         )
     )
+}
+
+fun rawAppInfoToAppInfo(rawAppInfo: ApplicationInfo, packageManager: PackageManager, selected:(AppInfo)->Boolean) :AppInfo? {
+    val appName = rawAppInfo.loadLabel(packageManager).toString()
+    val appIcon = rawAppInfo.loadIcon(packageManager) ?: return null
+    val isSystemApp = (rawAppInfo.flags and ApplicationInfo.FLAG_SYSTEM) > 0
+
+    val tmp = AppInfo(
+        appName = appName,
+        packageName = rawAppInfo.packageName,
+        appIcon = appIcon,
+        isSystemApp = isSystemApp,
+        isSelected = false
+    )
+
+    tmp.isSelected = selected(tmp)
+
+    return tmp
 }

@@ -222,7 +222,7 @@ fun HomeScreen(
 
     val settingsListState = rememberScrollState()
     val serviceListState = rememberScrollState()
-    val automationListState = rememberScrollState()
+    val automationListState = rememberLazyListState()
 
 
     val filesPageIsFileSelectionMode = rememberSaveable { mutableStateOf(false)}
