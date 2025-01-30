@@ -62,6 +62,7 @@ private const val TAG = "AutomationInnerPage"
 fun AutomationInnerPage(
     contentPadding: PaddingValues,
     needRefreshPage:MutableState<String>,
+    refreshPage:()->Unit,
 //    appContext:Context,
     openDrawer:()->Unit,
     exitApp:()->Unit,

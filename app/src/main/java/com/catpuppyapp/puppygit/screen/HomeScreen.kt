@@ -1207,6 +1207,7 @@ fun HomeScreen(
                 AutomationInnerPage(
                     contentPadding = contentPadding,
                     needRefreshPage = needRefreshAutomationPage,
+                    refreshPage = refreshAutomationPage,
                     openDrawer = openDrawer,
                     exitApp = exitApp,
                     listState = automationListState,
