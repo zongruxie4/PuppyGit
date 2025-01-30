@@ -1,8 +1,11 @@
 package com.catpuppyapp.puppygit.compose
 
 
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.DeleteOutline
 import androidx.compose.material3.HorizontalDivider
@@ -16,6 +19,7 @@ import androidx.compose.ui.platform.LocalClipboardManager
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.AnnotatedString
+import androidx.compose.ui.unit.dp
 import com.catpuppyapp.puppygit.play.pro.R
 import com.catpuppyapp.puppygit.utils.Msg
 
@@ -26,6 +30,7 @@ fun <T> SelectedItemDialog(
     selectedItems:List<T>,
     formatter:(T)->String,
     switchItemSelected:(T)->Unit,  //用switch而不是单纯的remove是为了日后可实现撤销删除方便
+    clearAll:()->Unit,
     closeDialog:()->Unit,
     onCancel:()->Unit = closeDialog
 ) {
@@ -38,6 +43,16 @@ fun <T> SelectedItemDialog(
         requireShowTextCompose = true,
         textCompose = {
             ScrollableColumn {
+                Row(
+                    modifier = Modifier.height(60.dp).fillMaxWidth(),
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.Center
+                ) {
+                    ClickableText(stringResource(R.string.clear)) {
+                        closeDialog()
+                        clearAll()
+                    }
+                }
                 selectedItems.forEach {
                     Box(
                         modifier = Modifier.fillMaxWidth(),

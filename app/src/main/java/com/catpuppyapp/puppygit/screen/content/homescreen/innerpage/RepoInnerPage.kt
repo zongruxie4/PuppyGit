@@ -1892,6 +1892,7 @@ fun RepoInnerPage(
             selectedItems = selectedItems.value,
             formatter = {it.repoName},
             switchItemSelected = switchItemSelected,
+            clearAll = {selectedItems.value.clear()},
             closeDialog = {showSelectedItemsShortDetailsDialog.value = false}
         )
     }

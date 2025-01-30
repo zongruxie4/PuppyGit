@@ -1078,6 +1078,7 @@ fun SubmoduleListScreen(
             selectedItems = selectedItemList.value,
             formatter = {it.name},
             switchItemSelected = switchItemSelected,
+            clearAll = {selectedItemList.value.clear()},
             closeDialog = {showSelectedItemsShortDetailsDialog.value = false}
         )
     }

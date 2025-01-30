@@ -1838,6 +1838,8 @@ fun FilesInnerPage(
             selectedItems = selectedItems.value,
             formatter = {"${it.name}, ${if(it.isDir) "dir" else "file"}, ${it.fullPath}"},
             switchItemSelected = switchItemSelected,
+            clearAll = {selectedItems.value.clear()},
+
             closeDialog = {showSelectedItemsShortDetailsDialog.value = false}
         )
     }
@@ -1847,6 +1849,8 @@ fun FilesInnerPage(
             detailStr = selectedItemsShortDetailsStrForImportMode.value,
             selectedItems = requireImportUriList.value,
             formatter = {it.path ?: ""},
+            clearAll = {requireImportUriList.value.clear()},
+
             switchItemSelected = {requireImportUriList.value.remove(it)},
             closeDialog = {showSelectedItemsShortDetailsDialogForImportMode.value = false}
         )

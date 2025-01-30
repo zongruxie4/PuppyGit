@@ -539,6 +539,7 @@ fun TagListScreen(
             selectedItems = selectedItemList.value,
             formatter = {it.shortName},
             switchItemSelected = switchItemSelected,
+            clearAll = {selectedItemList.value.clear()},
             closeDialog = {showSelectedItemsShortDetailsDialog.value = false}
         )
     }
