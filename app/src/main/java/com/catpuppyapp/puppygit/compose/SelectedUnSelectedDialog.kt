@@ -2,11 +2,12 @@ package com.catpuppyapp.puppygit.compose
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.PaddingValues
-import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Close
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -18,39 +19,60 @@ import com.catpuppyapp.puppygit.utils.state.CustomStateSaveable
 
 @Composable
 fun <T> SelectedUnSelectedDialog(
-    title: String,
     loading:Boolean,
+    selectedTitleText:String,
+    unselectedTitleText:String,
     selectedItemList:MutableList<T>,
-    unSelectedItemList:MutableList<T>,
+    unselectedItemList:MutableList<T>,
     filterKeyWord: CustomStateSaveable<TextFieldValue>,
     selectedItemFormatter:@Composable (T)->Unit,
     unselectedItemFormatter:@Composable (T)->Unit,
+    filterSelectedItemList: (keyword:String)->List<T>,
+    filterUnselectedItemList: (keyword:String)->List<T>,
     cancel:()->Unit,
-    save:()->Unit
 ){
-    ConfirmDialog2(
-        title = title,
+    ConfirmDialog3(
+        requireShowTitleCompose = true,
+        titleCompose = {},
         requireShowTextCompose = true,
         textCompose = {
-
+            SelectedUnSelectedList(
+                loading = loading,
+                selectedTitleText = selectedTitleText,
+                unselectedTitleText = unselectedTitleText,
+                selectedItemList = selectedItemList,
+                unselectedItemList = unselectedItemList,
+                filterKeyWord = filterKeyWord,
+                selectedItemFormatter = selectedItemFormatter,
+                unselectedItemFormatter = unselectedItemFormatter,
+                filterSelectedItemList=filterSelectedItemList,
+                filterUnselectedItemList=filterUnselectedItemList,
+            )
         },
+        cancelBtnText = stringResource(R.string.close),
         onCancel = cancel,
-        onOk = save
+        showOk = false,
+        onOk = {}
     )
 }
 
 @Composable
 fun <T> SelectedUnSelectedList(
     loading:Boolean,
+    selectedTitleText:String,
+    unselectedTitleText:String,
     selectedItemList:MutableList<T>,
-    unSelectedItemList:MutableList<T>,
+    unselectedItemList:MutableList<T>,
     filterKeyWord: CustomStateSaveable<TextFieldValue>,
     selectedItemFormatter:@Composable (T)->Unit,
     unselectedItemFormatter:@Composable (T)->Unit,
+
+    filterSelectedItemList: (keyword:String)->List<T>,
+    filterUnselectedItemList: (keyword:String)->List<T>,
 ) {
     MySelectionContainer {
         if(loading) {
-            LoadingText(stringResource(R.string.loading), PaddingValues(30.dp), enableScroll = false)
+            LoadingText(modifier = Modifier.height(30.dp).fillMaxWidth(), stringResource(R.string.loading))
         }
 
         if(loading.not()) {
@@ -59,30 +81,64 @@ fun <T> SelectedUnSelectedList(
                 horizontalAlignment = Alignment.CenterHorizontally,
                 verticalArrangement = Arrangement.Center
             ) {
-                Row(modifier = Modifier.fillMaxWidth().padding(10.dp)) {
-                    FilterTextField(
-                        filterKeyWord,
-                    )
-                }
+
+                val keyWordIsEmpty = filterKeyWord.value.text.isEmpty()
+                //普通的过滤，加不加清空无所谓，一按返回就清空了，但这个常驻显示，得加个清空按钮
+                FilterTextField(
+                    filterKeyWord,
+                    trailingIconTooltipText = stringResource(R.string.clear),
+                    trailingIcon = if(keyWordIsEmpty) null else Icons.Filled.Close,
+                    trailingIconDesc = stringResource(R.string.clear),
+                    trailingIconOnClick = { filterKeyWord.value = TextFieldValue("") }
+                )
+
+                Spacer(Modifier.height(10.dp))
 
                 LazyColumn(modifier = Modifier.fillMaxWidth()) {
                     item {
-                        SettingsTitle(stringResource(R.string.selected_str))
+                        SettingsTitle(selectedTitleText)
                     }
 
-                    selectedItemList.forEach {
+
+                    //根据关键字过滤条目
+                    val k = filterKeyWord.value.text.lowercase()  //关键字
+                    val enableFilter = k.isNotEmpty()
+                    val filteredSelectedList = if(enableFilter){
+                        filterSelectedItemList(k)
+                    }else {
+                        selectedItemList
+                    }
+
+                    val filteredUnselectedList = if(enableFilter){
+                        filterUnselectedItemList(k)
+                    }else {
+                        unselectedItemList
+                    }
+
+
+                    if(filteredSelectedList.isEmpty()) {
                         item {
-                            selectedItemFormatter(it)
+                            ItemListIsEmpty()
+                        }
+                    }else {
+                        filteredSelectedList.forEach {
+                            item {
+                                selectedItemFormatter(it)
+                            }
                         }
                     }
 
                     item {
-                        SettingsTitle(stringResource(R.string.unselected))
+                        SettingsTitle(unselectedTitleText)
                     }
 
-                    unSelectedItemList.forEach {
-                        item {
-                            unselectedItemFormatter(it)
+                    if(filteredUnselectedList.isEmpty()) {
+                        item { ItemListIsEmpty() }
+                    }else {
+                        filteredUnselectedList.forEach {
+                            item {
+                                unselectedItemFormatter(it)
+                            }
                         }
                     }
                 }

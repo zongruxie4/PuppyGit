@@ -18,8 +18,8 @@ object AutomationUtil {
         return automationSettings.packageNameAndRepoIdsMap.keys
     }
 
-    fun getRepoIds(automationSettings: AutomationSettings, packageName:String):Set<String> {
-        return automationSettings.packageNameAndRepoIdsMap.get(packageName) ?: sortedSetOf()
+    fun getRepoIds(automationSettings: AutomationSettings, packageName:String):List<String> {
+        return automationSettings.packageNameAndRepoIdsMap.get(packageName) ?: listOf()
     }
 
 

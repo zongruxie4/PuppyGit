@@ -30,7 +30,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalClipboardManager
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.unit.dp
@@ -40,11 +39,13 @@ import com.catpuppyapp.puppygit.compose.FilterTextField
 import com.catpuppyapp.puppygit.compose.ItemListIsEmpty
 import com.catpuppyapp.puppygit.compose.LoadingText
 import com.catpuppyapp.puppygit.compose.PaddingRow
+import com.catpuppyapp.puppygit.compose.RepoNameAndIdItem
+import com.catpuppyapp.puppygit.compose.SelectedUnSelectedDialog
 import com.catpuppyapp.puppygit.compose.SettingsContent
 import com.catpuppyapp.puppygit.compose.SettingsTitle
+import com.catpuppyapp.puppygit.data.entity.RepoEntity
 import com.catpuppyapp.puppygit.dto.AppInfo
 import com.catpuppyapp.puppygit.play.pro.R
-import com.catpuppyapp.puppygit.service.HttpService
 import com.catpuppyapp.puppygit.settings.SettingsUtil
 import com.catpuppyapp.puppygit.settings.util.AutomationUtil
 import com.catpuppyapp.puppygit.style.MyStyleKt
@@ -91,26 +92,137 @@ fun AutomationInnerPage(
     val reposFilterKeyword = mutableCustomStateOf(stateKeyTag, "reposFilterKeyword", TextFieldValue(""))
 
 
-    val addedAppList = mutableCustomStateListOf(stateKeyTag, "appList") { listOf<AppInfo>() }
+    val addedAppList = mutableCustomStateListOf(stateKeyTag, "addedAppList") { listOf<AppInfo>() }
     val notAddedAppList = mutableCustomStateListOf(stateKeyTag, "notAddedAppList") { listOf<AppInfo>() }
     val appListLoading = rememberSaveable { mutableStateOf(true) }
 
-    val launchOnAppStartup = rememberSaveable { mutableStateOf(settingsState.value.httpService.launchOnAppStartup) }
-    val launchOnSystemStartUp = rememberSaveable { mutableStateOf(HttpService.launchOnSystemStartUpEnabled(activityContext)) }
-    val progressNotify = rememberSaveable { mutableStateOf(settingsState.value.httpService.showNotifyWhenProgress) }
-    val errNotify = rememberSaveable { mutableStateOf(settingsState.value.httpService.showNotifyWhenErr) }
-    val successNotify = rememberSaveable { mutableStateOf(settingsState.value.httpService.showNotifyWhenSuccess) }
+    val progressNotify = rememberSaveable { mutableStateOf(settingsState.value.automation.showNotifyWhenProgress) }
+    val errNotify = rememberSaveable { mutableStateOf(settingsState.value.automation.showNotifyWhenErr) }
+    val successNotify = rememberSaveable { mutableStateOf(settingsState.value.automation.showNotifyWhenSuccess) }
 
-    val selectedAppsList = mutableCustomStateListOf(stateKeyTag, "selectedAppsList") { listOf<AppInfo>() }
-    val unselectedAppsList = mutableCustomStateListOf(stateKeyTag, "selectedAppsList") { listOf<AppInfo>() }
-    val selectedAppsListLoading = rememberSaveable { mutableStateOf(false) }
-    val initSelectAppDialog = {
+    val packageNameForSelectReposDialog = rememberSaveable { mutableStateOf("") }
+    val selectedRepoList = mutableCustomStateListOf(stateKeyTag, "selectedRepoList") { listOf<RepoEntity>() }
+    val unselectedRepoList = mutableCustomStateListOf(stateKeyTag, "unselectedRepoList") { listOf<RepoEntity>() }
+    val selectedRepoListLoading = rememberSaveable { mutableStateOf(false) }
+    val showSelectReposDialog = rememberSaveable { mutableStateOf(false) }
+    val initSelectReposDialog = { packageName:String ->
+        packageNameForSelectReposDialog.value = packageName
+
         doJobThenOffLoading {
-            selectedAppsListLoading.value = true
-            selectedAppsList.value.clear()
-            selectedAppsList.value.addAll(addedAppList.value)
-            selectedAppsListLoading.value = false
+            selectedRepoListLoading.value = true
+
+            val packageNameLinkedRepos = AutomationUtil.getRepoIds(SettingsUtil.getSettingsSnapshot().automation, packageName)
+            val repos = AppModel.dbContainer.repoRepository.getAll(updateRepoInfo = false)
+            selectedRepoList.value.clear()
+            unselectedRepoList.value.clear()
+            repos.forEach {
+                if(packageNameLinkedRepos.contains(it.id)) {
+                    selectedRepoList.value.add(it)
+                }else {
+                    unselectedRepoList.value.add(it)
+                }
+            }
+
+            selectedRepoListLoading.value = false
         }
+
+        showSelectReposDialog.value = true
+    }
+
+    val filterRepos = { keyword:String, list:List<RepoEntity> ->
+        list.filter { it.repoName.lowercase().contains(keyword) || it.id.lowercase().contains(keyword) }
+    }
+
+    val filterApps = { keyword:String, list:List<AppInfo> ->
+        list.filter { it.appName.lowercase().contains(keyword) || it.packageName.lowercase().contains(keyword) }
+    }
+
+    if(showSelectReposDialog.value) {
+        SelectedUnSelectedDialog(
+            loading = selectedRepoListLoading.value,
+            selectedTitleText = stringResource(R.string.linked_repos),
+            unselectedTitleText = stringResource(R.string.unlinked_repos),
+            selectedItemList = selectedRepoList.value,
+            unselectedItemList = unselectedRepoList.value,
+            filterKeyWord = reposFilterKeyword,
+            selectedItemFormatter={ clickedRepo ->
+                RepoNameAndIdItem(
+                    clickedRepo,
+                    trailIcon = { iconInitModifier ->
+                        IconButton(
+                            modifier = iconInitModifier,
+
+                            onClick = {
+                                selectedRepoList.value.remove(clickedRepo)
+
+                                val tmp = unselectedRepoList.value.toList()
+                                //添加到未选中列表头部
+                                unselectedRepoList.value.clear()
+                                unselectedRepoList.value.add(clickedRepo)
+                                unselectedRepoList.value.addAll(tmp)
+
+                                //保存
+                                SettingsUtil.update {
+                                    it.automation.packageNameAndRepoIdsMap.let {
+                                        it.put(
+                                            packageNameForSelectReposDialog.value,
+                                            //按仓库名排序，然后把id存上
+                                            selectedRepoList.value.toList().sortedBy { clickedRepo.repoName }.map { clickedRepo.id }
+                                        )
+                                    }
+                                }
+                            }
+                        ) {
+                            Icon(
+                                imageVector = Icons.Filled.DeleteOutline,
+                                contentDescription = stringResource(R.string.trash_bin_icon_for_delete_item)
+                            )
+                        }
+                    }
+                    ,
+                    onClick = null
+                )
+
+                HorizontalDivider()
+            },
+            unselectedItemFormatter = { clickedRepo ->
+                RepoNameAndIdItem(
+                    clickedRepo,
+                    trailIcon = { iconInitModifier ->
+                        IconButton(
+                            modifier = iconInitModifier,
+                            onClick = {
+                                unselectedRepoList.value.remove(clickedRepo)
+                                //添加到已选中列表末尾
+                                selectedRepoList.value.add(clickedRepo)
+
+                                //保存
+                                SettingsUtil.update {
+                                    it.automation.packageNameAndRepoIdsMap.let {
+                                        it.put(
+                                            packageNameForSelectReposDialog.value,
+                                            // 移除并不需要重新排序，直接把id列表存上即可
+                                            selectedRepoList.value.toList().map { clickedRepo.id }
+                                        )
+                                    }
+                                }
+                            }
+                        ) {
+                            Icon(
+                                imageVector = Icons.Filled.Add,
+                                contentDescription = stringResource(R.string.add)
+                            )
+                        }
+                    },
+                    onClick = null
+                )
+
+                HorizontalDivider()
+            },
+            filterSelectedItemList = {keyword -> filterRepos(keyword, selectedRepoList.value)},
+            filterUnselectedItemList = {keyword -> filterRepos(keyword, unselectedRepoList.value)},
+            cancel = {showSelectReposDialog.value = false}
+        )
     }
 
 
@@ -167,12 +279,11 @@ fun AutomationInnerPage(
                 //save
                 progressNotify.value = newValue
                 SettingsUtil.update {
-                    it.httpService.showNotifyWhenProgress = newValue
+                    it.automation.showNotifyWhenProgress = newValue
                 }
             }) {
                 Column(modifier = Modifier.fillMaxWidth(itemLeftWidthForSwitcher)) {
                     Text(stringResource(R.string.progress_notification), fontSize = itemFontSize)
-                    Text(stringResource(R.string.require_restart_service), fontSize = itemDescFontSize, fontWeight = FontWeight.Light, fontStyle = FontStyle.Italic)
                 }
 
                 Icon(
@@ -193,12 +304,11 @@ fun AutomationInnerPage(
                 //save
                 successNotify.value = newValue
                 SettingsUtil.update {
-                    it.httpService.showNotifyWhenSuccess = newValue
+                    it.automation.showNotifyWhenSuccess = newValue
                 }
             }) {
                 Column(modifier = Modifier.fillMaxWidth(itemLeftWidthForSwitcher)) {
                     Text(stringResource(R.string.success_notification), fontSize = itemFontSize)
-                    Text(stringResource(R.string.require_restart_service), fontSize = itemDescFontSize, fontWeight = FontWeight.Light, fontStyle = FontStyle.Italic)
                 }
 
                 Icon(
@@ -219,12 +329,11 @@ fun AutomationInnerPage(
                 //save
                 errNotify.value = newValue
                 SettingsUtil.update {
-                    it.httpService.showNotifyWhenErr = newValue
+                    it.automation.showNotifyWhenErr = newValue
                 }
             }) {
                 Column(modifier = Modifier.fillMaxWidth(itemLeftWidthForSwitcher)) {
                     Text(stringResource(R.string.err_notification), fontSize = itemFontSize)
-                    Text(stringResource(R.string.require_restart_service), fontSize = itemDescFontSize, fontWeight = FontWeight.Light, fontStyle = FontStyle.Italic)
                 }
 
                 Icon(
@@ -239,7 +348,9 @@ fun AutomationInnerPage(
 
         item {
             Row(
-                modifier = Modifier.fillMaxWidth().padding(vertical = 20.dp),
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(vertical = 20.dp),
                 verticalAlignment = Alignment.CenterVertically,
                 horizontalArrangement = Arrangement.Center
             ) {
@@ -250,7 +361,9 @@ fun AutomationInnerPage(
 
         val addItemBarHeight = 40.dp
         item {
-            Row(modifier = Modifier.fillMaxWidth().padding(10.dp)) {
+            Row(modifier = Modifier
+                .fillMaxWidth()
+                .padding(10.dp)) {
                 val keyWordIsEmpty = appsFilterKeyword.value.text.isEmpty()
                 //普通的过滤，加不加清空无所谓，一按返回就清空了，但这个常驻显示，得加个清空按钮
                 FilterTextField(
@@ -273,19 +386,15 @@ fun AutomationInnerPage(
         //根据关键字过滤条目
         val k = appsFilterKeyword.value.text.lowercase()  //关键字
         val enableFilter = k.isNotEmpty()
-        val filterAddedAppList = if(enableFilter){
-            val tmpList = addedAppList.value.filter {
-                it.appName.lowercase().contains(k) || it.packageName.lowercase().contains(k)
-            }
+        val filteredAddedAppList = if(enableFilter){
+            val tmpList = filterApps(k, addedAppList.value)
             tmpList
         }else {
             addedAppList.value
         }
 
-        val filterNotAddedAppList = if(enableFilter){
-            val tmpList = notAddedAppList.value.filter {
-                it.appName.lowercase().contains(k) || it.packageName.lowercase().contains(k)
-            }
+        val filteredNotAddedAppList = if(enableFilter){
+            val tmpList = filterApps(k, notAddedAppList.value)
             tmpList
         }else {
             notAddedAppList.value
@@ -295,18 +404,18 @@ fun AutomationInnerPage(
         // 旧版compose有bug，用else有可能会忽略条件，所以这里直接if判断下反条件
         if(appListLoading.value.not()) {
             item {
-                SettingsTitle(stringResource(R.string.selected_str)+"("+filterAddedAppList.size+")")
+                SettingsTitle(stringResource(R.string.selected_str)+"("+filteredAddedAppList.size+")")
             }
 
-            if(filterAddedAppList.isEmpty()) {
+            if(filteredAddedAppList.isEmpty()) {
                 item {
                     ItemListIsEmpty()
                 }
 
             }
 
-            if(filterAddedAppList.isNotEmpty()) {
-                filterAddedAppList.toList().forEach { appInfo ->
+            if(filteredAddedAppList.isNotEmpty()) {
+                filteredAddedAppList.toList().forEach { appInfo ->
                     item {
                         AppItem(
                             appInfo,
@@ -337,7 +446,7 @@ fun AutomationInnerPage(
                             }
 
                         ) { clickedApp ->
-                            //TODO 点击app跳转到app关联的仓库列表
+                            initSelectReposDialog(clickedApp.packageName)
                         }
 
                         HorizontalDivider()
@@ -348,10 +457,10 @@ fun AutomationInnerPage(
 
 
             item {
-                SettingsTitle(stringResource(R.string.unselected)+"("+filterNotAddedAppList.size+")")
+                SettingsTitle(stringResource(R.string.unselected)+"("+filteredNotAddedAppList.size+")")
             }
 
-            if(filterNotAddedAppList.isEmpty()) {
+            if(filteredNotAddedAppList.isEmpty()) {
                 item {
                     ItemListIsEmpty()
                 }
@@ -359,8 +468,8 @@ fun AutomationInnerPage(
             }
 
 
-            if(filterNotAddedAppList.isNotEmpty()) {
-                filterNotAddedAppList.toList().forEach { appInfo ->
+            if(filteredNotAddedAppList.isNotEmpty()) {
+                filteredNotAddedAppList.toList().forEach { appInfo ->
                     item {
                         AppItem(
                             appInfo,
@@ -374,7 +483,7 @@ fun AutomationInnerPage(
 
                                         //保存，添加到列表
                                         SettingsUtil.update {
-                                            it.automation.packageNameAndRepoIdsMap.put(appInfo.packageName, sortedSetOf())
+                                            it.automation.packageNameAndRepoIdsMap.put(appInfo.packageName, listOf())
                                         }
                                     }
                                 ) {

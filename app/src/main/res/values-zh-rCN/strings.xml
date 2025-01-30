@@ -1171,6 +1171,8 @@
     <string name="app_list">应用列表</string>
     <string name="add_an_app">添加一个仓库</string>
     <string name="unselected">未选择</string>
+    <string name="linked_repos">已关联的仓库</string>
+    <string name="unlinked_repos">未关联的仓库</string>
 
 
 </resources>

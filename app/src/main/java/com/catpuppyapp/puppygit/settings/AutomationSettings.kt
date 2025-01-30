@@ -1,12 +1,10 @@
 package com.catpuppyapp.puppygit.settings
 
 import kotlinx.serialization.Serializable
-import java.util.SortedMap
-import java.util.SortedSet
 
 @Serializable
 data class AutomationSettings (
-    val packageNameAndRepoIdsMap:SortedMap<String, SortedSet<String>> = sortedMapOf(),
+    val packageNameAndRepoIdsMap:MutableMap<String, List<String>> = mutableMapOf(),
 
     /**
      * show notify if server do act err
