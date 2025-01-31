@@ -105,6 +105,7 @@ import com.catpuppyapp.puppygit.utils.AppModel
 import com.catpuppyapp.puppygit.utils.FsUtils
 import com.catpuppyapp.puppygit.utils.Msg
 import com.catpuppyapp.puppygit.utils.MyLog
+import com.catpuppyapp.puppygit.utils.PrefMan
 import com.catpuppyapp.puppygit.utils.changeStateTriggerRefreshPage
 import com.catpuppyapp.puppygit.utils.doJobThenOffLoading
 import com.catpuppyapp.puppygit.utils.state.mutableCustomStateListOf
@@ -591,25 +592,14 @@ fun HomeScreen(
 //    }
 
     //对新用户显示设置git用户名和邮箱的弹窗
-    val showWelcomeToNewUser = rememberSaveable { mutableStateOf(settingsSnapshot.value.firstUse)}
-    val showSetGlobalGitUsernameAndEmailDialog = rememberSaveable { mutableStateOf(showWelcomeToNewUser.value)}
+    val showWelcomeToNewUser = rememberSaveable { mutableStateOf(PrefMan.isFirstUse(activityContext))}
+    val showSetGlobalGitUsernameAndEmailDialog = rememberSaveable { mutableStateOf(false)}
 
     val closeWelcome = {
+        //更新配置文件
+        PrefMan.updateFirstUse(activityContext, false)
         //关闭弹窗
         showWelcomeToNewUser.value=false
-
-//        //更新设置项
-//        val settingsWillSave = SettingsUtil.getSettingsSnapshot()
-//        settingsWillSave.firstUse = false
-//        SettingsUtil.updateSettings(settingsWillSave)  //更新配置文件
-//
-//        //更新设置项状态变量
-//        settingsSnapshot.value=settingsWillSave  //更新当前页面的设置项为最新
-
-        //更新配置文件并更新页面存储的app配置状态变量
-        settingsSnapshot.value = SettingsUtil.update(true) {
-            it.firstUse = false
-        }!!
     }
 
 //    20250131 改成对新用户显示设置git用户名和邮箱了，比这个有用
@@ -1264,6 +1254,15 @@ fun HomeScreen(
 
         doJobThenOffLoading {
             try {
+                //有时候明明设置过了还会显示欢迎弹窗，做些额外判断看看好不好用
+                if(showWelcomeToNewUser.value) {
+                    val newSettings = SettingsUtil.getSettingsSnapshot()
+                    if(PrefMan.isFirstUse(activityContext) && newSettings.globalGitConfig.username.isEmpty() && newSettings.globalGitConfig.email.isEmpty()) {
+                        showSetGlobalGitUsernameAndEmailDialog.value = true
+                    }else {
+                        closeWelcome()
+                    }
+                }
 
                 //恢复上次退出页面
                 val startPageMode = settingsSnapshot.value.startPageMode

@@ -237,15 +237,14 @@ fun RepoInnerPage(
             isForGlobal=true,
             repos = listOf(), // global,不需要此list，传空即可
             onOk={
+                if(showWelcomeToNewUser.value) {
+                    closeWelcome()
+                }
+
                 doJobThenOffLoading(
                     //loadingOn = loadingOn, loadingOff=loadingOff,
 //                    loadingText=appContext.getString(R.string.saving)
                 ){
-
-                    if(showWelcomeToNewUser.value) {
-                        closeWelcome()
-                    }
-
                     //save email and username
                     Libgit2Helper.saveGitUsernameAndEmailForGlobal(
                         requireShowErr=requireShowToast,
@@ -255,6 +254,7 @@ fun RepoInnerPage(
                         username=globalUsername.value,
                         email=globalEmail.value
                     )
+
                     showSetGlobalGitUsernameAndEmailDialog.value=false
                     requireShowToast(saved)
                 }

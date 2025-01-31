@@ -33,7 +33,10 @@ data class AppSettings(
     //全局设置
     var startPageMode:Int=startPageMode_rememberLastQuit,
     var lastQuitHomeScreen:Int= Cons.selectedItem_Repos,
+
+    @Deprecated("改成存到prefman了")
     var firstUse:Boolean=true,      //是否初次使用，对第一次使用的人显示个按钮可长按显示功能的提示弹窗
+
     var snapshotKeepInDays:Int = 3,  //快照文件保存天数，快照文件夹内最后修改时间超过此天书的文件将在app启动时被自动删除
 
     //全局git设置

@@ -48,6 +48,8 @@ object PrefMan {
          * master password，名字抽象一点，别让人一眼就看出是什么，妈的不是自欺欺人吗，呵呵
          */
         const val masterPass = "mpwd"
+
+        const val firstUse = "firstUse"
     }
 
     private fun getPrefs(appContext: Context) = appContext.getSharedPreferences(fileName, MODE_PRIVATE)
@@ -96,6 +98,16 @@ object PrefMan {
         // 提交更改
         // apply is async, commit is sync
         editor.apply() // 或者 editor.commit();
+    }
+
+
+
+    fun isFirstUse(context: Context):Boolean {
+        return PrefMan.get(context, PrefMan.Key.firstUse, "1") == "1"
+    }
+
+    fun updateFirstUse(context: Context, newValue:Boolean) {
+        PrefMan.set(context, PrefMan.Key.firstUse, if(newValue) "1" else "0")
     }
 
 }
