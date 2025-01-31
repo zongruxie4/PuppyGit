@@ -157,6 +157,10 @@ fun RepoInnerPage(
     upstreamRemoteOptionsList:CustomStateListSaveable<String>,
     specifiedRefreshRepoList:CustomStateListSaveable<RepoEntity>,
 
+    showWelcomeToNewUser:MutableState<Boolean>,
+    closeWelcome:()->Unit,
+
+
 ) {
     val activityContext = LocalContext.current
     val exitApp = AppModel.exitApp;
@@ -226,8 +230,8 @@ fun RepoInnerPage(
         val curRepo = curRepo.value
 
         AskGitUsernameAndEmailDialog(
-            title = stringResource(R.string.user_info),
-            text=setGlobalGitUsernameAndEmailStrRes,
+            title = if(showWelcomeToNewUser.value) stringResource(R.string.welcome) else stringResource(R.string.user_info),
+            text = if(showWelcomeToNewUser.value) stringResource(R.string.welcome_please_set_git_username_and_email) else setGlobalGitUsernameAndEmailStrRes,
             username=globalUsername,
             email=globalEmail,
             isForGlobal=true,
@@ -237,6 +241,11 @@ fun RepoInnerPage(
                     //loadingOn = loadingOn, loadingOff=loadingOff,
 //                    loadingText=appContext.getString(R.string.saving)
                 ){
+
+                    if(showWelcomeToNewUser.value) {
+                        closeWelcome()
+                    }
+
                     //save email and username
                     Libgit2Helper.saveGitUsernameAndEmailForGlobal(
                         requireShowErr=requireShowToast,
@@ -251,6 +260,10 @@ fun RepoInnerPage(
                 }
             },
             onCancel={
+                if(showWelcomeToNewUser.value) {
+                    closeWelcome()
+                }
+
                 showSetGlobalGitUsernameAndEmailDialog.value=false
                 globalUsername.value=""
                 globalEmail.value=""
@@ -1389,7 +1402,9 @@ fun RepoInnerPage(
                                 modifier = Modifier.fillMaxWidth(),
                             ) {
                                 Row(
-                                    modifier = Modifier.fillMaxWidth(.8f).align(Alignment.CenterStart),
+                                    modifier = Modifier
+                                        .fillMaxWidth(.8f)
+                                        .align(Alignment.CenterStart),
                                     verticalAlignment = Alignment.CenterVertically
                                 ) {
                                     Text(stringResource(R.string.pull)+": ", fontWeight = FontWeight.Bold)
@@ -1398,7 +1413,9 @@ fun RepoInnerPage(
                                 }
 
                                 IconButton(
-                                    modifier = Modifier.fillMaxWidth(.2f).align(Alignment.CenterEnd),
+                                    modifier = Modifier
+                                        .fillMaxWidth(.2f)
+                                        .align(Alignment.CenterEnd),
                                     onClick = {
                                         clipboardManager.setText(AnnotatedString(pullurl))
                                         Msg.requireShow(activityContext.getString(R.string.copied))
@@ -1417,7 +1434,9 @@ fun RepoInnerPage(
                                 modifier = Modifier.fillMaxWidth(),
                             ) {
                                 Row(
-                                    modifier = Modifier.fillMaxWidth(.8f).align(Alignment.CenterStart),
+                                    modifier = Modifier
+                                        .fillMaxWidth(.8f)
+                                        .align(Alignment.CenterStart),
                                     verticalAlignment = Alignment.CenterVertically
                                 )  {
                                     Text(stringResource(R.string.push)+": ", fontWeight = FontWeight.Bold)
@@ -1425,7 +1444,9 @@ fun RepoInnerPage(
                                 }
 
                                 IconButton(
-                                    modifier = Modifier.fillMaxWidth(.2f).align(Alignment.CenterEnd),
+                                    modifier = Modifier
+                                        .fillMaxWidth(.2f)
+                                        .align(Alignment.CenterEnd),
                                     onClick = {
                                         clipboardManager.setText(AnnotatedString(pushurl))
                                         Msg.requireShow(activityContext.getString(R.string.copied))

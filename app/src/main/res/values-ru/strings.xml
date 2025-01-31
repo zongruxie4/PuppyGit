@@ -1200,6 +1200,7 @@
     <string name="app_info">App Info</string>
     <string name="intro_go_to_app_info_to_allow_autostart_and_disable_battery_optimization">Maybe you want to go to App Info to \'Allow Autostart\' and \'Disable Battery Optimization\'</string>
     <string name="set_upstream_err_remote_is_invalid">Set upstream err, remote is invalid</string>
+    <string name="welcome_please_set_git_username_and_email">Welcome! Please set git username and email! This is necessary for create commit!</string>
 
 
 </resources>

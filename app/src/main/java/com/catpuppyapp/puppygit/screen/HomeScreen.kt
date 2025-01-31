@@ -146,7 +146,6 @@ fun HomeScreen(
     val allRepoParentDir = AppModel.allRepoParentDir
 
     val settingsSnapshot = mutableCustomStateOf(keyTag = stateKeyTag, keyName = "settingsSnapshot", initValue = SettingsUtil.getSettingsSnapshot())
-    val showWelcomeToNewUser = rememberSaveable { mutableStateOf(false)}
     val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = MyStyleKt.BottomSheet.skipPartiallyExpanded)
     val showBottomSheet = rememberSaveable { mutableStateOf(false)}
 
@@ -306,7 +305,6 @@ fun HomeScreen(
     val filesPageCurPathFileItemDto = mutableCustomStateOf(stateKeyTag, "filesPageCurPathFileItemDto") { FileItemDto() }
     val filesPageCurrentPathBreadCrumbList = mutableCustomStateListOf(keyTag = stateKeyTag, keyName = "filesPageCurrentPathBreadCrumbList", initValue = listOf<FileItemDto>())
 
-    val showSetGlobalGitUsernameAndEmailDialog = rememberSaveable { mutableStateOf(false)}
 
     //判定过滤模式是否真开启的状态变量，例如虽然filterModeOn为真，但是，如果没输入任何关键字，过滤模式其实还是没开，这时这个变量会为假，但filterModeOn为真
     val repoPageEnableFilterState = rememberSaveable { mutableStateOf(false)}
@@ -592,6 +590,10 @@ fun HomeScreen(
 //        }
 //    }
 
+    //对新用户显示设置git用户名和邮箱的弹窗
+    val showWelcomeToNewUser = rememberSaveable { mutableStateOf(settingsSnapshot.value.firstUse)}
+    val showSetGlobalGitUsernameAndEmailDialog = rememberSaveable { mutableStateOf(showWelcomeToNewUser.value)}
+
     val closeWelcome = {
         //关闭弹窗
         showWelcomeToNewUser.value=false
@@ -609,48 +611,50 @@ fun HomeScreen(
             it.firstUse = false
         }!!
     }
-    //显示欢迎弹窗
-    if(showWelcomeToNewUser.value) {
-        AlertDialog(
-            title = {
-                Text(stringResource(id = R.string.welcome))
-            },
-            text = {
-                ScrollableColumn {
-                    Row {
-                        Text(text = stringResource(id = R.string.welcome)+"!")
-                    }
 
-                    Row (modifier = Modifier.padding(top = 10.dp)){
-                        Text(text = stringResource(id = R.string.tips)+":"+ stringResource(R.string.try_long_press_icon_get_hints))
-                    }
-
-                    // whatever, the master password actually 没什么卵用，每次都要输麻烦，若存，就不绝对安全，而且很多时候没必要啊，数据库在用户手机本地，app空间内，一般不会泄漏，不建议设了，虽然设了还是比不设好一点点
-//                    Row (modifier = Modifier.padding(top = 15.dp)){
-//                        Text(text = stringResource(R.string.recommend_go_to_settings_screen_set_a_master_password), color = MyStyleKt.TextColor.danger())
+//    20250131 改成对新用户显示设置git用户名和邮箱了，比这个有用
+//    //显示欢迎弹窗
+//    if(showWelcomeToNewUser.value) {
+//        AlertDialog(
+//            title = {
+//                Text(stringResource(id = R.string.welcome))
+//            },
+//            text = {
+//                ScrollableColumn {
+//                    Row {
+//                        Text(text = stringResource(id = R.string.welcome)+"!")
 //                    }
-                }
-            },
-            //点击弹框外区域的时候触发此方法，一般设为和OnCancel一样的行为即可
-            onDismissRequest = {closeWelcome()},
-            dismissButton = {},  //禁用取消按钮，一个按钮就够了
-            confirmButton = {
-                TextButton(
-                    enabled = true,
-                    onClick = {
-                        //执行用户传入的callback
-                        closeWelcome()
-                    },
-                ) {
-                    Text(
-                        text = stringResource(id = R.string.ok),
-                    )
-                }
-            },
-
-            )
-
-    }
+//
+//                    Row (modifier = Modifier.padding(top = 10.dp)){
+//                        Text(text = stringResource(id = R.string.tips)+":"+ stringResource(R.string.try_long_press_icon_get_hints))
+//                    }
+//
+//                    // whatever, the master password actually 没什么卵用，每次都要输麻烦，若存，就不绝对安全，而且很多时候没必要啊，数据库在用户手机本地，app空间内，一般不会泄漏，不建议设了，虽然设了还是比不设好一点点
+////                    Row (modifier = Modifier.padding(top = 15.dp)){
+////                        Text(text = stringResource(R.string.recommend_go_to_settings_screen_set_a_master_password), color = MyStyleKt.TextColor.danger())
+////                    }
+//                }
+//            },
+//            //点击弹框外区域的时候触发此方法，一般设为和OnCancel一样的行为即可
+//            onDismissRequest = {closeWelcome()},
+//            dismissButton = {},  //禁用取消按钮，一个按钮就够了
+//            confirmButton = {
+//                TextButton(
+//                    enabled = true,
+//                    onClick = {
+//                        //执行用户传入的callback
+//                        closeWelcome()
+//                    },
+//                ) {
+//                    Text(
+//                        text = stringResource(id = R.string.ok),
+//                    )
+//                }
+//            },
+//
+//            )
+//
+//    }
 
 //    if(editorPageShowSaveDoneToast.value) {
 //        showToast(context = appContext, appContext.getString(R.string.file_saved), Toast.LENGTH_SHORT)
@@ -1028,7 +1032,9 @@ fun HomeScreen(
                     deleteList = reposPageDeleteItems,
                     userInfoRepoList = reposPageUserInfoRepoList,
                     upstreamRemoteOptionsList = reposPageUpstreamRemoteOptionsList,
-                    specifiedRefreshRepoList = reposPageSpecifiedRefreshRepoList
+                    specifiedRefreshRepoList = reposPageSpecifiedRefreshRepoList,
+                    showWelcomeToNewUser = showWelcomeToNewUser,
+                    closeWelcome = closeWelcome,
                 )
 
             }
@@ -1258,10 +1264,7 @@ fun HomeScreen(
 
         doJobThenOffLoading {
             try {
-                //检查是否初次使用，若是，显示欢迎弹窗
-                if (settingsSnapshot.value.firstUse) {
-                    showWelcomeToNewUser.value = true
-                }
+
                 //恢复上次退出页面
                 val startPageMode = settingsSnapshot.value.startPageMode
                 if (startPageMode == SettingsCons.startPageMode_rememberLastQuit) {
