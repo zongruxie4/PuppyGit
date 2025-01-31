@@ -23,7 +23,6 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -50,6 +49,7 @@ import com.catpuppyapp.puppygit.compose.RemoteItemForCredential
 import com.catpuppyapp.puppygit.compose.ScrollableColumn
 import com.catpuppyapp.puppygit.compose.ScrollableRow
 import com.catpuppyapp.puppygit.constants.Cons
+import com.catpuppyapp.puppygit.constants.SpecialCredential
 import com.catpuppyapp.puppygit.data.entity.CredentialEntity
 import com.catpuppyapp.puppygit.dto.RemoteDtoForCredential
 import com.catpuppyapp.puppygit.play.pro.R
@@ -81,6 +81,8 @@ fun CredentialRemoteListScreen(
     val activityContext = LocalContext.current
     val scope = rememberCoroutineScope()
     val settings = remember { SettingsUtil.getSettingsSnapshot() }
+
+    val isNonePage = credentialId == SpecialCredential.NONE.credentialId
 
     //这个页面的滚动状态不用记住，每次点开重置也无所谓
     val listState = rememberLazyListState()
@@ -435,13 +437,15 @@ fun CredentialRemoteListScreen(
                 isShowLink=isShowLink,
                 idx = idx, thisItem = it,
                 showUrlDialog = showUrlDialog,
-                actText = if(isShowLink)stringResource(R.string.unlink) else stringResource(R.string.link),
-            ){
-                curItem.value = it
-                requireDoLink.value = !isShowLink
-                targetAll.value = false
-                linkOrUnlinkDialogTitle.value=if(requireDoLink.value) activityContext.getString(R.string.link) else activityContext.getString(R.string.unlink)  // (不建议，不方便记Err)若空字符串，将会自动根据requireDoLink的值决定使用link还是unlink作为title
-                showLinkOrUnLinkDialog.value=true
+                actText = if(isShowLink) stringResource(R.string.unlink) else stringResource(R.string.link),
+
+                //如果是None页面且是关联模式，不需要显示link，因为在无凭据条目列表将条目link到无凭据没有意义
+                actAction = if(isNonePage && isShowLink) null else ({
+                    curItem.value = it
+                    requireDoLink.value = !isShowLink
+                    targetAll.value = false
+                    linkOrUnlinkDialogTitle.value=if(requireDoLink.value) activityContext.getString(R.string.link) else activityContext.getString(R.string.unlink)  // (不建议，不方便记Err)若空字符串，将会自动根据requireDoLink的值决定使用link还是unlink作为title
+                    showLinkOrUnLinkDialog.value=true
 
 //                if(isShowLink) {  //如果是显示已关联条目的页面，点击取关直接执行
 //                    doUnLink(it.remoteId)
@@ -454,7 +458,8 @@ fun CredentialRemoteListScreen(
 //                    }
 //                }
 
-            }
+                })
+            )
 
             HorizontalDivider()
 
@@ -489,13 +494,6 @@ fun CredentialRemoteListScreen(
             }
         } catch (cancel: Exception) {
 //            println("LaunchedEffect: job cancelled")
-        }
-    }
-    //compose被销毁时执行的副作用
-    DisposableEffect(Unit) {
-//        println("DisposableEffect: entered main")
-        onDispose {
-//            println("DisposableEffect: exited main")
         }
     }
 

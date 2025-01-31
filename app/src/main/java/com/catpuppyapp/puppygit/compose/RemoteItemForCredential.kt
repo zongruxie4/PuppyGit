@@ -28,7 +28,7 @@ fun RemoteItemForCredential(
     thisItem:RemoteDtoForCredential,
     actText:String,
     showUrlDialog:(title:String, url:String) -> Unit,
-    actAction:()->Unit,
+    actAction:(()->Unit)?,
 ) {
 //    val haptic = AppModel.haptic
 
@@ -48,7 +48,8 @@ fun RemoteItemForCredential(
 
         // .8f width, make sure right content still stay in screen when left content very long
         // .8f 宽度确保当左边内容很长时右边内容不会被顶出屏幕
-        Column(modifier = Modifier.fillMaxWidth(.8f)) {
+        //如果不需要执行操作，右边没元素，填满全部宽度，否则填8成
+        Column(modifier = if(actAction == null) Modifier.fillMaxWidth() else Modifier.fillMaxWidth(.8f)) {
             Row (
                 verticalAlignment = Alignment.CenterVertically,
             ){
@@ -134,16 +135,19 @@ fun RemoteItemForCredential(
             }
 
         }
-        Column {
-            ClickableText (
-                text = actText,
-                modifier = MyStyleKt.ClickableText.modifier.clickable(onClick = {
-                    actAction()
-                }),
-                maxLines = 1,
-                overflow = TextOverflow.Ellipsis,
-                fontWeight = FontWeight.Light
-            )
+
+        if(actAction != null){
+            Column {
+                ClickableText (
+                    text = actText,
+                    modifier = MyStyleKt.ClickableText.modifier.clickable(onClick = {
+                        actAction()
+                    }),
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis,
+                    fontWeight = FontWeight.Light
+                )
+            }
         }
     }
 }
