@@ -3,6 +3,11 @@
 - will save master password on the local, no longer input required when launching app (issue #23)
 - support auto pull/push when enter/exit specified apps
 
+
+- 支持 进入/退出 指定app时自动执行 拉取/推送 (issue #28)
+- 支持运行Http服务，可通过Tasker等自动化工具发送http请求以实现某些需求 (issue #23)
+- 主密码将保存在本地，启动app时不再需要输入
+
 ---
 
 1.0.8.0v56 - 20250125:
