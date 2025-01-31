@@ -1,7 +1,7 @@
 1.0.8.1v57 - 20250131:
-- support run a http service, it can used for request action by tasker or other apps which can send http request (issue #28)
-- will save master password on the local, no longer input required when launching app (issue #23)
-- support auto pull/push when enter/exit specified apps
+- support auto pull/push when enter/exit specified apps (issue #28)
+- support run a http service, it can used for request action by tasker or other apps which can send http request (issue #23)
+- will save master password on the local, no longer input required when launching app
 
 
 - 支持 进入/退出 指定app时自动执行 拉取/推送 (issue #28)
