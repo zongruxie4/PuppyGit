@@ -372,7 +372,7 @@ internal class HttpServer(
 
         //虽然有repo name or id，但全部无效，数据库无匹配条目
         if(validRepoListFromDb.isEmpty()) {
-            throw RuntimeException("no valid Repo found")
+            throw RuntimeException("no valid Repo matched")
         }
 
 
