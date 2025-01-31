@@ -31,14 +31,15 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.input.nestedscroll.nestedScroll
+import androidx.compose.ui.platform.LocalClipboardManager
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import com.catpuppyapp.puppygit.compose.ConfirmDialog
-import com.catpuppyapp.puppygit.compose.ConfirmDialog2
-import com.catpuppyapp.puppygit.compose.CopyScrollableColumn
+import com.catpuppyapp.puppygit.compose.CopyableDialog
 import com.catpuppyapp.puppygit.compose.FilterTextField
 import com.catpuppyapp.puppygit.compose.GoToTopAndGoToBottomFab
 import com.catpuppyapp.puppygit.compose.InfoDialog
@@ -74,10 +75,10 @@ fun CredentialRemoteListScreen(
     isShowLink:Boolean,
     naviUp: () -> Unit,
 ) {
-
+    val clipboardManager = LocalClipboardManager.current
     val homeTopBarScrollBehavior = AppModel.homeTopBarScrollBehavior
     val navController = AppModel.navController
-    val activityContext = AppModel.activityContext
+    val activityContext = LocalContext.current
     val scope = rememberCoroutineScope()
     val settings = remember { SettingsUtil.getSettingsSnapshot() }
 
@@ -256,18 +257,16 @@ fun CredentialRemoteListScreen(
         showUrlDialogState.value = true
     }
     if(showUrlDialogState.value) {
-        ConfirmDialog2(
+        CopyableDialog(
             title = titleForShow.value,
-            requireShowTextCompose = true,
-            textCompose = {
-                CopyScrollableColumn {
-                   Text(urlForShow.value)
-                }
-            },
+            text = urlForShow.value,
             onCancel = {showUrlDialogState.value=false},
-            cancelBtnText = stringResource(R.string.close),
-            showOk = false
-        ) { }
+        ) {
+            //复制到剪贴板
+            showUrlDialogState.value=false
+            clipboardManager.setText(AnnotatedString(urlForShow.value))
+            Msg.requireShow(activityContext.getString(R.string.copied))
+        }
     }
 
     Scaffold(
