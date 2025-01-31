@@ -349,6 +349,7 @@ internal class HttpServer(
             throw RuntimeException("require repo name or id")
         }
 
+        //这个列表用来在出错的时候日志记一下用户传了什么参数
         repoNameOrIdForLog.addAll(repoNameOrIdList)
 
 
@@ -358,9 +359,10 @@ internal class HttpServer(
             val repoRet = db.repoRepository.getByNameOrId(repoNameOrId, forceUseIdMatchRepo)
             if (repoRet.hasError() || repoRet.data == null) {
                 MyLog.d(TAG, "query repo '$repoNameOrId' from db err: " + repoRet.msg)
+            }else {
+                validRepoListFromDb.add(repoRet.data!!)
             }
 
-            validRepoListFromDb.add(repoRet.data!!)
         }
 
 
