@@ -40,8 +40,8 @@ android {
         //ndk编译的库不能大于minSdk值，否则会不支持
         minSdk = 26 //26，安卓8(Oreo, O)
         targetSdk = 35
-        versionCode = 56
-        versionName = "1.0.8.0"
+        versionCode = 57
+        versionName = "1.0.8.1"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         vectorDrawables {

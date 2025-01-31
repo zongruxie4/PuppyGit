@@ -1,7 +1,8 @@
-next version:
- - support run a http service, it can used for request action by tasker or other apps which can send http request
- - will save master password on the local, no longer input required when launching app
- - support auto pull/push when enter/exit specified apps
+1.0.8.1v57 - 20250131:
+- support run a http service, it can used for request action by tasker or other apps which can send http request (issue #28)
+- will save master password on the local, no longer input required when launching app (issue #23)
+- support auto pull/push when enter/exit specified apps
+
 ---
 
 1.0.8.0v56 - 20250125:
