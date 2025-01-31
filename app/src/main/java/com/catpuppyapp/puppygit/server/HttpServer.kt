@@ -235,6 +235,82 @@ internal class HttpServer(
 
                     /**
                      * query params:
+                     *  repoNameOrId: repo name or id, match by name first, if none, will match by id
+                     *  gitUsername: using for create commit, if null, will use PuppyGit settings
+                     *  gitEmail: using for create commit, if null, will use PuppyGit settings
+                     *  force: force push, 1 enable , 0 disable, if null, will disable (as 0)
+                     *  forceUseIdMatchRepo: 1 enable or 0 disable, default 0, if enable, will force match repo by repo id, else will match by name first, if no match, then match by id
+                     *  token: token is required
+                     *  autoCommit: 1 enable or 0 disable, default 1: if enable and no conflict items exists, will auto commit all changes,
+                     *    and will check index, if index empty, will not pushing;
+                     *    if disable, will only do push, no commit changes,
+                     *    no index empty check, no conflict items check.
+                     */
+                    get("/sync") {
+                        val repoNameOrIdForLog = mutableListOf<String>()
+                        var repoForLog:RepoEntity? = null
+                        val routeName = "'/sync'"
+                        val settings = SettingsUtil.getSettingsSnapshot()
+
+                        try {
+                            tokenPassedOrThrowException(call, routeName, settings)
+
+                            //默认禁用，不明确启用就当作禁用
+                            val forceUseIdMatchRepo = call.request.queryParameters.get("forceUseIdMatchRepo") == "1"
+
+                            //这个只要不明确传0，就是启用
+                            val autoCommit = call.request.queryParameters.get("autoCommit") != "0"
+
+                            // force push or no
+                            val force = call.request.queryParameters.get("force") == "1"
+
+
+                            // get git username and email for merge
+                            val gitUsernameFromUrl = call.request.queryParameters.get("gitUsername") ?:""
+                            val gitEmailFromUrl = call.request.queryParameters.get("gitEmail") ?:""
+
+                            // 查询仓库是否存在
+                            // 尝试获取仓库锁，若获取失败，返回仓库正在执行其他操作
+
+                            //从数据库查询仓库列表
+                            val validRepoListFromDb = getRepoListFromDb(
+                                call.request.queryParameters.getAll("repoNameOrId"),
+                                repoNameOrIdForLog,
+                                forceUseIdMatchRepo
+                            )
+
+
+                            //如果只有一个仓库，出错的话记录到数据库，显示在仓库卡片上
+                            if(validRepoListFromDb.size == 1) {
+                                repoForLog = validRepoListFromDb.first()
+                            }
+
+                            MyLog.d(TAG, "will do sync for ${validRepoListFromDb.size} repos: $validRepoListFromDb")
+
+                            doJobThenOffLoading {
+                                syncRepoList(validRepoListFromDb, routeName, gitUsernameFromUrl, gitEmailFromUrl, autoCommit, force)
+                            }
+
+                            call.respond(createSuccessResult())
+
+                        }catch (e:Exception) {
+                            val errMsg = e.localizedMessage ?: "unknown err"
+                            call.respond(createErrResult(errMsg))
+
+                            if(repoForLog!=null) {
+                                createAndInsertError(repoForLog!!.id, "sync by api $routeName err: $errMsg")
+                            }
+
+                            sendErrNotification("$routeName err", errMsg, Cons.selectedItem_ChangeList, repoForLog?.id ?: "")
+
+
+                            MyLog.e(TAG, "method:GET, route:$routeName, repoNameOrId.size=${repoNameOrIdForLog.size}, repoNameOrId=$repoNameOrIdForLog, err=${e.stackTraceToString()}")
+                        }
+
+                    }
+
+                    /**
+                     * query params:
                      *  gitUsername: using for create commit, if null, will use PuppyGit settings
                      *  gitEmail: using for create commit, if null, will use PuppyGit settings
                      *  token: token is required
@@ -326,6 +402,47 @@ internal class HttpServer(
                             MyLog.e(TAG, "method:GET, route:$routeName, err=${e.stackTraceToString()}")
                         }
 
+
+                    }
+
+                    get("/syncAll") {
+                        val routeName = "'/syncAll'"
+                        val settings = SettingsUtil.getSettingsSnapshot()
+
+                        try {
+                            tokenPassedOrThrowException(call, routeName, settings)
+
+                            sendProgressNotification("PuppyGit", "syncing all...")
+
+
+                            //这个只要不明确传0，就是启用
+                            val autoCommit = call.request.queryParameters.get("autoCommit") != "0"
+
+                            // force push or no
+                            val force = call.request.queryParameters.get("force") == "1"
+
+
+                            // get git username and email for merge
+                            val gitUsernameFromUrl = call.request.queryParameters.get("gitUsername") ?:""
+                            val gitEmailFromUrl = call.request.queryParameters.get("gitEmail") ?:""
+
+                            // 查询仓库是否存在
+                            // 尝试获取仓库锁，若获取失败，返回仓库正在执行其他操作
+                            doJobThenOffLoading {
+                                syncRepoList(AppModel.dbContainer.repoRepository.getAll(), routeName, gitUsernameFromUrl, gitEmailFromUrl, autoCommit, force)
+                            }
+
+                            call.respond(createSuccessResult())
+
+                        }catch (e:Exception) {
+                            val errMsg = e.localizedMessage ?: "unknown err"
+                            call.respond(createErrResult(errMsg))
+
+                            sendErrNotification("$routeName err", errMsg, Cons.selectedItem_Repos, "")
+
+
+                            MyLog.e(TAG, "method:GET, route:$routeName, err=${e.stackTraceToString()}")
+                        }
 
                     }
                 }
@@ -433,13 +550,13 @@ internal class HttpServer(
         gitEmailFromUrl:String,
     ) {
         RepoActUtil.pullRepoList(
-            repoList,
-            routeName,
-            gitUsernameFromUrl,
-            gitEmailFromUrl,
-            sendSuccessNotification,
-            sendErrNotification,
-            sendProgressNotification,
+            repoList = repoList,
+            routeName = routeName,
+            gitUsernameFromUrl = gitUsernameFromUrl,
+            gitEmailFromUrl = gitEmailFromUrl,
+            sendSuccessNotification = sendSuccessNotification,
+            sendErrNotification = sendErrNotification,
+            sendProgressNotification = sendProgressNotification,
         )
     }
 
@@ -453,15 +570,36 @@ internal class HttpServer(
         force:Boolean,
     ) {
         RepoActUtil.pushRepoList(
-            repoList,
-            routeName,
-            gitUsernameFromUrl,
-            gitEmailFromUrl,
-            autoCommit,
-            force,
-            sendSuccessNotification,
-            sendErrNotification,
-            sendProgressNotification
+            repoList = repoList,
+            routeName = routeName,
+            gitUsernameFromUrl = gitUsernameFromUrl,
+            gitEmailFromUrl = gitEmailFromUrl,
+            autoCommit = autoCommit,
+            force = force,
+            sendSuccessNotification = sendSuccessNotification,
+            sendErrNotification = sendErrNotification,
+            sendProgressNotification = sendProgressNotification
+        )
+    }
+
+    private suspend fun syncRepoList(
+        repoList:List<RepoEntity>,
+        routeName: String,
+        gitUsernameFromUrl:String,
+        gitEmailFromUrl:String,
+        autoCommit:Boolean,
+        force:Boolean,
+    ) {
+        RepoActUtil.syncRepoList(
+            repoList = repoList,
+            routeName = routeName,
+            gitUsernameFromUrl = gitUsernameFromUrl,
+            gitEmailFromUrl = gitEmailFromUrl,
+            autoCommit = autoCommit,
+            force = force,
+            sendSuccessNotification = sendSuccessNotification,
+            sendErrNotification = sendErrNotification,
+            sendProgressNotification = sendProgressNotification
         )
     }
 
