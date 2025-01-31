@@ -65,8 +65,8 @@ import com.catpuppyapp.puppygit.utils.doJobThenOffLoading
 import com.catpuppyapp.puppygit.utils.state.mutableCustomStateListOf
 import com.catpuppyapp.puppygit.utils.state.mutableCustomStateOf
 
-private val TAG = "CredentialRemoteListScreen"
-private val stateKeyTag = "CredentialRemoteListScreen"
+private const val TAG = "CredentialRemoteListScreen"
+private const val stateKeyTag = "CredentialRemoteListScreen"
 
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalFoundationApi::class)
 @Composable
@@ -409,6 +409,8 @@ fun CredentialRemoteListScreen(
             list.value.filter {
                     it.repoName.lowercase().contains(k)
                         || it.remoteName.lowercase().contains(k)
+                        || it.remoteFetchUrl.lowercase().contains(k)
+                        || it.remotePushUrl.lowercase().contains(k)
                         || it.getCredentialNameOrNone().lowercase().contains(k)
                         || it.getPushCredentialNameOrNone().lowercase().contains(k)
             }
