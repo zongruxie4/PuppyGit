@@ -3047,10 +3047,10 @@ class Libgit2Helper {
             //如果有冲突，提示解决冲突，否则创建提交
             if(repo.index().hasConflicts()) {
                 //调用者可在返回error后检查repo.index.hasConflicts()来确认是否因为有冲突所以合并失败，不过一般不用检查，返回error直接显示提示并终止后续操作就行了
-                return Ret.createError(null, "merge failed:has conflicts", Ret.ErrCode.mergeFailedByAfterMergeHasConfilts)  //merge完了，存在冲突
+                return Ret.createError(null, "merge failed: has conflicts", Ret.ErrCode.mergeFailedByAfterMergeHasConfilts)  //merge完了，存在冲突
             }else {  //合并完无冲突，创建提交
                 // merge成功后创建的提交应该有两个父提交： HEAD 和 targetBranch.
-                val headName = "HEAD"
+                val headName = Cons.gitHeadStr
                 val parent = mutableListOf<Commit>()
                 val headRef = resolveRefByName(repo, headName)
                 if(headRef==null) {
