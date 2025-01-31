@@ -13,9 +13,13 @@ pull: http://127.0.0.1:52520/pull?token=replace_to_your_token&repoNameOrId=yourR
 
 push: http://127.0.0.1:52520/push?token=replace_to_your_token&repoNameOrId=yourRepoName
 
+sync(pull then push): http://127.0.0.1:52520/sync?token=replace_to_your_token&repoNameOrId=yourRepoName
+
 pullAll: http://127.0.0.1:52520/pullAll?token=replace_to_your_token
 
 pushAll: http://127.0.0.1:52520/pushAll?token=replace_to_your_token
+
+syncAll: http://127.0.0.1:52520/syncAll?token=replace_to_your_token
 
 ---
 
@@ -110,3 +114,48 @@ example:<br>
 http://127.0.0.1/pushAll?token=your_token
 
 http://127.0.0.1/pushAll?token=your_token&gitUsername=your_git_username&gitEmail=your_email@example.com
+
+
+### path: /sync
+
+protocol: http
+
+Http method: GET
+
+params:
+- repoNameOrId: repo name or ids, match by name first, if none, will match by id. can have multi repo name or ids, will do action to the list which matched with the repo name or ids and ignore invalids
+- gitUsername: using for create commit, if not pass this param, will use PuppyGit settings
+- gitEmail: using for create commit, if not pass this param, will use PuppyGit settings
+- force: force push, 1 enable , 0 disable, default 0
+- forceUseIdMatchRepo: 1 enable or 0 disable, default 0, if enable, will force match repo by repo id, else will match by name first, if no match, then match by id
+- token: a valid token in your token list
+- autoCommit: 1 enable or 0 disable, default 1: if enable and no conflict items exists, will auto commit all changes, and will check index, if index empty, will not pushing; if disable, will only do push, no commit changes, no index empty check, no conflict items check.
+
+example:<br>
+http://127.0.0.1/sync?repoNameOrId=your_repo_name&token=your_token
+
+http://127.0.0.1/sync?repoNameOrId=your_repo_name&repoNameOrId=another_repoName&repoNameOrId=another_repoId&token=your_token
+
+http://127.0.0.1/sync?repoNameOrId=your_repo_name&token=your_token&gitUsername=your_git_user_name&gitEmail=your_email@example.com
+
+
+
+### path: /syncAll
+
+protocol: http
+
+Http method: GET
+
+params:
+- gitUsername: using for create commit, if not pass this param, will use PuppyGit settings
+- gitEmail: using for create commit, if not pass this param, will use PuppyGit settings
+- force: force push, 1 enable , 0 disable, default 0
+- autoCommit: 1 enable or 0 disable, default 1: if enable and no conflict items exists, will auto commit all changes, and will check index, if index empty, will not pushing; if disable, will only do push, no commit changes, no index empty check, no conflict items check.
+- token: a valid token in your token list
+
+
+example:<br>
+http://127.0.0.1/syncAll?token=your_token
+
+http://127.0.0.1/syncAll?token=your_token&gitUsername=your_git_username&gitEmail=your_email@example.com
+
