@@ -101,41 +101,38 @@ internal class HttpServer(
                      * request: http://127.0.0.1/pull?repoNameOrId=abc
                      */
                     get("/pull") {
-                        var repoNameOrIdForLog:String? = null
+                        val repoNameOrIdForLog = mutableListOf<String>()
                         var repoForLog:RepoEntity? = null
                         val routeName = "'/pull'"
                         val settings = SettingsUtil.getSettingsSnapshot()
 
                         try {
+                            //检查token和ip
                             tokenPassedOrThrowException(call, routeName, settings)
 
-                            val repoNameOrId = call.request.queryParameters.get("repoNameOrId")
-                            if(repoNameOrId == null || repoNameOrId.isBlank()) {
-                                throw RuntimeException("invalid repo name or id")
-                            }
-
-                            repoNameOrIdForLog = repoNameOrId
-
-
-
+                            //取参数
                             val forceUseIdMatchRepo = call.request.queryParameters.get("forceUseIdMatchRepo") == "1"
                             // get git username and email for merge, if request doesn't contains them, will use PuppyGit app settings
                             val gitUsernameFromUrl = call.request.queryParameters.get("gitUsername") ?:""
                             val gitEmailFromUrl = call.request.queryParameters.get("gitEmail") ?:""
 
+                            //从数据库查询仓库列表
+                            val validRepoListFromDb = getRepoListFromDb(
+                                call.request.queryParameters.getAll("repoNameOrId"),
+                                repoNameOrIdForLog,
+                                forceUseIdMatchRepo
+                            )
 
-                            val db = AppModel.dbContainer
-                            val repoRet = db.repoRepository.getByNameOrId(repoNameOrId, forceUseIdMatchRepo)
-                            if(repoRet.hasError()) {
-                                throw RuntimeException(repoRet.msg)
+
+                            //如果只有一个仓库，出错的话记录到数据库，显示在仓库卡片上
+                            if(validRepoListFromDb.size == 1) {
+                                repoForLog = validRepoListFromDb.first()
                             }
 
-                            val repoFromDb = repoRet.data!!
-                            repoForLog = repoFromDb
 
                             //执行请求，可能时间很长，所以开个协程，直接返回响应即可
                             doJobThenOffLoading {
-                                pullRepoList(listOf(repoFromDb), routeName, gitUsernameFromUrl, gitEmailFromUrl)
+                                pullRepoList(validRepoListFromDb, routeName, gitUsernameFromUrl, gitEmailFromUrl)
                             }
 
                             call.respond(createSuccessResult())
@@ -173,7 +170,7 @@ internal class HttpServer(
                      * request: http://127.0.0.1/push?repoNameOrId=abc
                      */
                     get("/push") {
-                        var repoNameOrIdForLog:String? = null
+                        val repoNameOrIdForLog = mutableListOf<String>()
                         var repoForLog:RepoEntity? = null
                         val routeName = "'/push'"
                         val settings = SettingsUtil.getSettingsSnapshot()
@@ -181,20 +178,8 @@ internal class HttpServer(
                         try {
                             tokenPassedOrThrowException(call, routeName, settings)
 
-                            val repoNameOrId = call.request.queryParameters.get("repoNameOrId")
-                            if(repoNameOrId == null || repoNameOrId.isBlank()) {
-                                throw RuntimeException("invalid repo name or id")
-                            }
-
-                            repoNameOrIdForLog = repoNameOrId
-
-
-                            sendProgressNotification(repoNameOrId, "pushing...")
-
-
-
+                            //默认禁用，不明确启用就当作禁用
                             val forceUseIdMatchRepo = call.request.queryParameters.get("forceUseIdMatchRepo") == "1"
-
 
                             //这个只要不明确传0，就是启用
                             val autoCommit = call.request.queryParameters.get("autoCommit") != "0"
@@ -210,17 +195,22 @@ internal class HttpServer(
                             // 查询仓库是否存在
                             // 尝试获取仓库锁，若获取失败，返回仓库正在执行其他操作
 
-                            val db = AppModel.dbContainer
-                            val repoRet = db.repoRepository.getByNameOrId(repoNameOrId, forceUseIdMatchRepo)
-                            if(repoRet.hasError()) {
-                                throw RuntimeException(repoRet.msg)
+                            //从数据库查询仓库列表
+                            val validRepoListFromDb = getRepoListFromDb(
+                                call.request.queryParameters.getAll("repoNameOrId"),
+                                repoNameOrIdForLog,
+                                forceUseIdMatchRepo
+                            )
+
+
+                            //如果只有一个仓库，出错的话记录到数据库，显示在仓库卡片上
+                            if(validRepoListFromDb.size == 1) {
+                                repoForLog = validRepoListFromDb.first()
                             }
 
-                            val repoFromDb = repoRet.data!!
-                            repoForLog = repoFromDb
 
                             doJobThenOffLoading {
-                                pushRepoList(listOf(repoFromDb),routeName, gitUsernameFromUrl, gitEmailFromUrl, autoCommit, force)
+                                pushRepoList(validRepoListFromDb, routeName, gitUsernameFromUrl, gitEmailFromUrl, autoCommit, force)
                             }
 
                             call.respond(createSuccessResult())
@@ -319,7 +309,7 @@ internal class HttpServer(
                             // 查询仓库是否存在
                             // 尝试获取仓库锁，若获取失败，返回仓库正在执行其他操作
                             doJobThenOffLoading {
-                                pushRepoList(AppModel.dbContainer.repoRepository.getAll(),routeName, gitUsernameFromUrl, gitEmailFromUrl, autoCommit, force)
+                                pushRepoList(AppModel.dbContainer.repoRepository.getAll(), routeName, gitUsernameFromUrl, gitEmailFromUrl, autoCommit, force)
                             }
 
                             call.respond(createSuccessResult())
@@ -346,6 +336,41 @@ internal class HttpServer(
             MyLog.e(TAG, "Http Server start failed, err=${e.stackTraceToString()}")
             return e
         }
+    }
+
+    private suspend fun getRepoListFromDb(
+        repoNameOrIdList:List<String>?,
+        repoNameOrIdForLog: MutableList<String>,
+        forceUseIdMatchRepo: Boolean
+    ): MutableList<RepoEntity> {
+        //取 仓库名或id 列表
+        //如果没这个参数，list会是null而不是空list
+        if (repoNameOrIdList == null || repoNameOrIdList.isEmpty()) {
+            throw RuntimeException("require repo name or id")
+        }
+
+        repoNameOrIdForLog.addAll(repoNameOrIdList)
+
+
+        val db = AppModel.dbContainer
+        val validRepoListFromDb = mutableListOf<RepoEntity>()
+        repoNameOrIdList.forEach { repoNameOrId ->
+            val repoRet = db.repoRepository.getByNameOrId(repoNameOrId, forceUseIdMatchRepo)
+            if (repoRet.hasError() || repoRet.data == null) {
+                MyLog.d(TAG, "query repo '$repoNameOrId' from db err: " + repoRet.msg)
+            }
+
+            validRepoListFromDb.add(repoRet.data!!)
+        }
+
+
+        //虽然有repo name or id，但全部无效，数据库无匹配条目
+        if(validRepoListFromDb.isEmpty()) {
+            throw RuntimeException("no valid Repo found")
+        }
+
+
+        return validRepoListFromDb
     }
 
     /**
