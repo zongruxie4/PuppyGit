@@ -56,21 +56,24 @@ fun AppItem(
             Column(
                 verticalArrangement = Arrangement.Center,
             ) {
-                Row(
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    Text(text = appInfo.appName)
+                Box {
+                    Column(
+                        modifier = Modifier.align(Alignment.CenterStart).then(if(onClick!=null) Modifier.fillMaxWidth(.9f) else Modifier.fillMaxWidth())
+                    ) {
+                        Text(text = appInfo.appName)
+                        Text(text = appInfo.packageName, style = androidx.compose.material3.MaterialTheme.typography.bodySmall)
+
+                    }
 
                     if(onClick != null) {
                         Icon(
-                            modifier = Modifier.size(18.dp),
+                            modifier = Modifier.align(Alignment.CenterEnd).fillMaxWidth(.1f),
                             imageVector = Icons.Outlined.Settings,
                             contentDescription = stringResource(R.string.settings)
                         )
                     }
                 }
 
-                Text(text = appInfo.packageName, style = androidx.compose.material3.MaterialTheme.typography.bodySmall)
             }
         }
 

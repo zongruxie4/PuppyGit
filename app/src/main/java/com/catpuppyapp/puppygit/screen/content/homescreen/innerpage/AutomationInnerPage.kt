@@ -103,12 +103,14 @@ fun AutomationInnerPage(
     val successNotify = rememberSaveable { mutableStateOf(settingsState.value.automation.showNotifyWhenSuccess) }
 
     val packageNameForSelectReposDialog = rememberSaveable { mutableStateOf("") }
+    val appNameForSelectReposDialog = rememberSaveable { mutableStateOf("") }
     val selectedRepoList = mutableCustomStateListOf(stateKeyTag, "selectedRepoList") { listOf<RepoEntity>() }
     val unselectedRepoList = mutableCustomStateListOf(stateKeyTag, "unselectedRepoList") { listOf<RepoEntity>() }
     val selectedRepoListLoading = rememberSaveable { mutableStateOf(false) }
     val showSelectReposDialog = rememberSaveable { mutableStateOf(false) }
-    val initSelectReposDialog = { packageName:String ->
+    val initSelectReposDialog = { packageName:String, appName:String ->
         packageNameForSelectReposDialog.value = packageName
+        appNameForSelectReposDialog.value = appName
 
         doJobThenOffLoading {
             selectedRepoListLoading.value = true
@@ -141,6 +143,7 @@ fun AutomationInnerPage(
 
     if(showSelectReposDialog.value) {
         SelectedUnSelectedDialog(
+            title = appNameForSelectReposDialog.value,
             loading = selectedRepoListLoading.value,
             selectedTitleText = stringResource(R.string.linked_repos),
             unselectedTitleText = stringResource(R.string.unlinked_repos),
@@ -450,7 +453,7 @@ fun AutomationInnerPage(
                             }
 
                         ) { clickedApp ->
-                            initSelectReposDialog(clickedApp.packageName)
+                            initSelectReposDialog(clickedApp.packageName, clickedApp.appName)
                         }
 
                         HorizontalDivider()

@@ -19,6 +19,7 @@ import com.catpuppyapp.puppygit.utils.state.CustomStateSaveable
 
 @Composable
 fun <T> SelectedUnSelectedDialog(
+    title:String,
     loading:Boolean,
     selectedTitleText:String,
     unselectedTitleText:String,
@@ -32,8 +33,7 @@ fun <T> SelectedUnSelectedDialog(
     cancel:()->Unit,
 ){
     ConfirmDialog3(
-        requireShowTitleCompose = true,
-        titleCompose = {},
+        title = title,
         requireShowTextCompose = true,
         textCompose = {
             SelectedUnSelectedList(
