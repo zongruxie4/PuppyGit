@@ -19,6 +19,13 @@ pushAll: http://127.0.0.1:52520/pushAll?token=replace_to_your_token
 
 ---
 
+## Tasker Integration:
+You can start the Server in PuppyGit, and use automation tools like Tasker to send http request to do some task, like frequency sync(pull/push) the repos, auto pull/push when enter/exit specified apps.
+
+btw: if you expect to auto pull/push when enter/exit specified apps, no more 3rd apps require, PuppyGit already included this feature, just go to the 'Automation' Screen in PuppyGit, and select apps and link repos, then PuppyGit will do pull when enter selected app, and do push after leave it.
+
+---
+
 ## Apis:
 ### path: /pull
 
@@ -27,7 +34,7 @@ protocol: http
 Http method: GET
 
 params:
-- repoNameOrId: repo name or id, match by name first, if none, will match by id
+- repoNameOrId: repo name or ids, match by name first, if none, will match by id. can have multi repo name or ids, will do action to the list which matched with the repo name or ids and ignore invalids
 - gitUsername: using for create commit, if not pass this param, will use PuppyGit settings
 - gitEmail: using for create commit, if not pass this param, will use PuppyGit settings
 - forceUseIdMatchRepo: 1 enable or 0 disable, default 0, if enable, will force match repo by repo id, else will match by name first, if no match, then match by id
@@ -35,6 +42,8 @@ params:
 
 example:<br>
 http://127.0.0.1/pull?repoNameOrId=your_repo_name&token=your_token
+
+http://127.0.0.1/pull?repoNameOrId=your_repo_name&repoNameOrId=another_repoName&repoNameOrId=another_repoId&token=your_token
 
 http://127.0.0.1/pull?repoNameOrId=your_repo_name&token=your_token&gitUsername=your_git_username&gitEmail=your_email@example.com
 
@@ -47,7 +56,7 @@ protocol: http
 Http method: GET
 
 params:
-- repoNameOrId: repo name or id, match by name first, if none, will match by id
+- repoNameOrId: repo name or ids, match by name first, if none, will match by id. can have multi repo name or ids, will do action to the list which matched with the repo name or ids and ignore invalids
 - gitUsername: using for create commit, if not pass this param, will use PuppyGit settings
 - gitEmail: using for create commit, if not pass this param, will use PuppyGit settings
 - force: force push, 1 enable , 0 disable, default 0
@@ -57,6 +66,8 @@ params:
 
 example:<br>
 http://127.0.0.1/push?repoNameOrId=your_repo_name&token=your_token
+
+http://127.0.0.1/push?repoNameOrId=your_repo_name&repoNameOrId=another_repoName&repoNameOrId=another_repoId&token=your_token
 
 http://127.0.0.1/push?repoNameOrId=your_repo_name&token=your_token&gitUsername=your_git_user_name&gitEmail=your_email@example.com
 
