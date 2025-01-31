@@ -213,13 +213,13 @@ fun RepoInnerPage(
     val errWhenQuerySettingsFromDbStrRes = stringResource(R.string.err_when_querying_settings_from_db)
     val saved = stringResource(R.string.saved)
 
+    val pageRequest = rememberSaveable { mutableStateOf("")}
+
+
 //    val showSetGlobalGitUsernameAndEmailDialog = rememberSaveable { mutableStateOf(false) }
     val setGlobalGitUsernameAndEmailStrRes = stringResource(R.string.set_global_username_and_email)
     val globalUsername = rememberSaveable { mutableStateOf("")}
     val globalEmail = rememberSaveable { mutableStateOf("")}
-
-
-    val pageRequest = rememberSaveable { mutableStateOf("")}
 
     // global username and email dialog
     if(showSetGlobalGitUsernameAndEmailDialog.value) {
