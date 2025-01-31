@@ -439,8 +439,8 @@ fun CredentialRemoteListScreen(
                 showUrlDialog = showUrlDialog,
                 actText = if(isShowLink) stringResource(R.string.unlink) else stringResource(R.string.link),
 
-                //如果是None页面且是关联模式，不需要显示link，因为在无凭据条目列表将条目link到无凭据没有意义
-                actAction = if(isNonePage && isShowLink) null else ({
+                //如果是 None页面 且 是关联模式 且 条目fetch和push凭据id都为空，则不需要显示unlink，因为在无凭据条目列表将条目unlink到无凭据没有意义，执行了也没效果
+                actAction = if(isNonePage && isShowLink && it.credentialId.isNullOrEmpty() && it.pushCredentialId.isNullOrEmpty()) null else ({
                     curItem.value = it
                     requireDoLink.value = !isShowLink
                     targetAll.value = false
