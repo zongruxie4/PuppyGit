@@ -129,6 +129,7 @@ internal class HttpServer(
                                 repoForLog = validRepoListFromDb.first()
                             }
 
+                            MyLog.d(TAG, "will do pull for ${validRepoListFromDb.size} repos: $validRepoListFromDb")
 
                             //执行请求，可能时间很长，所以开个协程，直接返回响应即可
                             doJobThenOffLoading {
@@ -147,7 +148,7 @@ internal class HttpServer(
                             sendErrNotification("$routeName err", errMsg, Cons.selectedItem_ChangeList, repoForLog?.id ?: "")
 
 
-                            MyLog.e(TAG, "method:GET, route:$routeName, repoNameOrId=$repoNameOrIdForLog, err=${e.stackTraceToString()}")
+                            MyLog.e(TAG, "method:GET, route:$routeName, repoNameOrId.size=${repoNameOrIdForLog.size}, repoNameOrId=$repoNameOrIdForLog, err=${e.stackTraceToString()}")
                         }
 
                     }
@@ -208,6 +209,7 @@ internal class HttpServer(
                                 repoForLog = validRepoListFromDb.first()
                             }
 
+                            MyLog.d(TAG, "will do push for ${validRepoListFromDb.size} repos: $validRepoListFromDb")
 
                             doJobThenOffLoading {
                                 pushRepoList(validRepoListFromDb, routeName, gitUsernameFromUrl, gitEmailFromUrl, autoCommit, force)
@@ -226,7 +228,7 @@ internal class HttpServer(
                             sendErrNotification("$routeName err", errMsg, Cons.selectedItem_ChangeList, repoForLog?.id ?: "")
 
 
-                            MyLog.e(TAG, "method:GET, route:$routeName, repoNameOrId=$repoNameOrIdForLog, err=${e.stackTraceToString()}")
+                            MyLog.e(TAG, "method:GET, route:$routeName, repoNameOrId.size=${repoNameOrIdForLog.size}, repoNameOrId=$repoNameOrIdForLog, err=${e.stackTraceToString()}")
                         }
 
                     }
@@ -348,6 +350,8 @@ internal class HttpServer(
         if (repoNameOrIdList == null || repoNameOrIdList.isEmpty()) {
             throw RuntimeException("require repo name or id")
         }
+
+        MyLog.d(TAG, "raw repoNameOrId list size is: ${repoNameOrIdList.size}, values are: $repoNameOrIdList")
 
         //这个列表用来在出错的时候日志记一下用户传了什么参数
         repoNameOrIdForLog.addAll(repoNameOrIdList)

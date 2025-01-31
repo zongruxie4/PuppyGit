@@ -148,6 +148,10 @@ class RepoRepositoryImpl(private val dao: RepoDao) : RepoRepository {
     }
 
     override suspend fun getById(id: String): RepoEntity? {
+        if(id.isEmpty()) {
+            return null
+        }
+
         val repoFromDb = dao.getById(id)?:return null
 
         Libgit2Helper.updateRepoInfo(repoFromDb)
@@ -156,6 +160,10 @@ class RepoRepositoryImpl(private val dao: RepoDao) : RepoRepository {
     }
 
     override suspend fun getByName(name: String): RepoEntity? {
+        if(name.isEmpty()) {
+            return null
+        }
+
         val items = dao.getByName(name)
         return if(items.isEmpty()) {
             null
@@ -168,6 +176,10 @@ class RepoRepositoryImpl(private val dao: RepoDao) : RepoRepository {
     }
 
     override suspend fun getByNameOrId(repoNameOrId: String, forceUseIdMatchRepo: Boolean): Ret<RepoEntity?> {
+        if(repoNameOrId.isEmpty()) {
+            return Ret.createError(null, "repoNameOrId is empty")
+        }
+
         val repo = if (forceUseIdMatchRepo) {
             val repo = getById(repoNameOrId)
             if (repo == null) {
