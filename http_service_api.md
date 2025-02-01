@@ -4,6 +4,9 @@
 3. if you want to allow all request ip, use '*' to match all
 4. if host set to 0.0.0.0 will allow external access, else will only allow request with specified ip
 
+
+### You must know if you allow external network access the http service, your traffics are ** plain text **, everyone on your route link can see what you transfered if they want.
+
 ### You can go to `PuppyGit -> Service` to manage your tokens and ip whitelist  
 
 ---
