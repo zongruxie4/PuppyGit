@@ -2,7 +2,7 @@
 1. Every request must with the token and the ip of client must in the ip white list.
 2. if token or ip list empty, all requests will be rejected
 3. if you want to allow all requests ip, use '*' to match all
-4. if the host set to 0.0.0.0 will allow any ip to access the service, else will only allow request to specified ip
+4. if the host set to 0.0.0.0 will allow any ip of your device to access the service, else will only allow request to specified ip
 
 
 ### You must know if you allow external network access the http service, your traffics are plain text, everyone on your route link can see what you transfered if they want.
