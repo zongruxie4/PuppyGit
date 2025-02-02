@@ -1394,6 +1394,8 @@ fun RepoInnerPage(
                         apiConfigBeanList.value.forEach {
                             val pullurl = it.api.pull_example
                             val pushurl = it.api.push_example
+                            val syncurl = it.api.sync_example
+
                             Row {
                                 Text(it.repoName, fontSize = 20.sp, fontWeight = FontWeight.Bold)
                             }
@@ -1458,7 +1460,41 @@ fun RepoInnerPage(
                                     )
                                 }
                             }
+
                             HorizontalDivider()
+
+                            Box(
+                                modifier = Modifier.fillMaxWidth(),
+                            ) {
+                                Row(
+                                    modifier = Modifier
+                                        .fillMaxWidth(.8f)
+                                        .align(Alignment.CenterStart),
+                                    verticalAlignment = Alignment.CenterVertically
+                                ) {
+                                    Text(stringResource(R.string.sync)+": ", fontWeight = FontWeight.Bold)
+
+                                    Text(text = syncurl)
+                                }
+
+                                IconButton(
+                                    modifier = Modifier
+                                        .fillMaxWidth(.2f)
+                                        .align(Alignment.CenterEnd),
+                                    onClick = {
+                                        clipboardManager.setText(AnnotatedString(syncurl))
+                                        Msg.requireShow(activityContext.getString(R.string.copied))
+                                    }
+                                ) {
+                                    Icon(
+                                        imageVector = Icons.Filled.ContentCopy,
+                                        contentDescription = stringResource(R.string.copy)
+                                    )
+                                }
+                            }
+
+                            HorizontalDivider()
+
                             Spacer(Modifier.height(30.dp))
 
                         }

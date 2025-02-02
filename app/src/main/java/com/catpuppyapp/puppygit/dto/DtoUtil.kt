@@ -237,9 +237,11 @@ fun genConfigDto(
             token = token,
             pull = "/pull",
             push = "/push",
+            sync = "/sync",
             //少加点参数，少写少错
             pull_example = "${genHttpHostPortStr(host, port.toString())}/pull?token=$token&repoNameOrId=${repoEntity.repoName}",
             push_example = "${genHttpHostPortStr(host, port.toString())}/push?token=$token&repoNameOrId=${repoEntity.repoName}",
+            sync_example = "${genHttpHostPortStr(host, port.toString())}/sync?token=$token&repoNameOrId=${repoEntity.repoName}",
         )
     )
 }
