@@ -20,6 +20,7 @@ import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.hapticfeedback.HapticFeedback
 import androidx.compose.ui.hapticfeedback.HapticFeedbackType
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
@@ -27,6 +28,7 @@ import com.catpuppyapp.puppygit.ui.theme.Theme
 import com.catpuppyapp.puppygit.utils.AppModel
 import com.catpuppyapp.puppygit.utils.UIHelper
 import com.catpuppyapp.puppygit.utils.showToast
+import kotlin.reflect.jvm.internal.impl.descriptors.Visibilities.Local
 
 @Composable
 fun LongPressAbleIconBtn(
@@ -42,13 +44,13 @@ fun LongPressAbleIconBtn(
     onLongClick:()->Unit = {
         //震动反馈，显示tooltip提示
         AppModel.haptic.performHapticFeedback(HapticFeedbackType.LongPress)
-        showToast(AppModel.activityContext, tooltipText, Toast.LENGTH_SHORT)
+        showToast(AppModel.realAppContext, tooltipText, Toast.LENGTH_SHORT)
     },
     onClick: ()->Unit,
 ){
     val iconColor = iconColor?:LocalContentColor.current
-    val activityContext = AppModel.activityContext
-    val haptic = AppModel.haptic
+    val activityContext = LocalContext.current
+    val haptic = LocalHapticFeedback.current
 
     LongPressAbleIconBtnToastVersion(context=activityContext, modifier=modifier,iconModifier=iconModifier,
         tooltipText=tooltipText,icon=icon,iconContentDesc=iconContentDesc,haptic=haptic,

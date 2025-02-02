@@ -20,7 +20,7 @@ fun FilterTextField(
     modifier: Modifier? = null,
     trailingIconTooltipText: String="",
     trailingIcon: ImageVector?=null,
-    trailingIconColor: Color = Color.Unspecified,
+    trailingIconColor: Color?=null,
     trailingIconDesc: String?=null,
     trailingIconOnClick:(()->Unit)?=null,
     onValueChange:(newValue:TextFieldValue)->Unit = { filterKeyWord.value = it },
@@ -33,9 +33,7 @@ fun FilterTextField(
                 iconContentDesc = trailingIconDesc,
                 iconColor = trailingIconColor
             ) {
-                if(trailingIconOnClick != null) {
-                    trailingIconOnClick()
-                }
+                trailingIconOnClick?.invoke()
             }
 
         }

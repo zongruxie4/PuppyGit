@@ -96,7 +96,7 @@ fun <T> SelectedUnSelectedList(
 
                 LazyColumn(modifier = Modifier.fillMaxWidth()) {
                     item {
-                        SettingsTitle(selectedTitleText)
+                        SettingsTitle(selectedTitleText+"(${selectedItemList.size})")
                     }
 
 
@@ -129,7 +129,7 @@ fun <T> SelectedUnSelectedList(
                     }
 
                     item {
-                        SettingsTitle(unselectedTitleText)
+                        SettingsTitle(unselectedTitleText+"(${unselectedItemList.size})")
                     }
 
                     if(filteredUnselectedList.isEmpty()) {

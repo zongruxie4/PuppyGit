@@ -11,6 +11,7 @@ import com.catpuppyapp.puppygit.constants.Cons
 import com.catpuppyapp.puppygit.data.entity.RepoEntity
 import com.catpuppyapp.puppygit.dto.genConfigDto
 import com.catpuppyapp.puppygit.notification.HttpServiceHoldNotify
+import com.catpuppyapp.puppygit.notification.base.NotifyBase
 import com.catpuppyapp.puppygit.notification.base.ServiceNotify
 import com.catpuppyapp.puppygit.notification.util.NotifyUtil
 import com.catpuppyapp.puppygit.play.pro.R
@@ -32,29 +33,9 @@ import kotlinx.serialization.serializer
 
 
 class HttpService : Service() {
-    companion object: ServiceNotify(HttpServiceHoldNotify) {
+    companion object {
 
         private const val TAG = "HttpService"
-        private const val serviceNotificationId = 1  //service前台通知的通知id，必须不能是0，随便个常量就行，如果要在这个渠道显示其他通知，其他id必须和这个不一样，不然应该会覆盖
-
-
-        private fun sendSuccessNotificationIfEnable(settings: AppSettings) = { title:String?, msg:String?, startPage:Int?, startRepoId:String? ->
-            if(settings.httpService.showNotifyWhenSuccess) {
-                sendSuccessNotification(title, msg, startPage, startRepoId)
-            }
-        }
-
-        private fun sendErrNotificationIfEnable(settings:AppSettings)={ title:String, msg:String, startPage:Int, startRepoId:String ->
-            if(settings.httpService.showNotifyWhenErr) {
-                sendErrNotification(title, msg, startPage, startRepoId)
-            }
-        }
-
-        private fun sendProgressNotificationIfEnable(settings: AppSettings) = { repoNameOrId:String, progress:String ->
-            if(settings.httpService.showNotifyWhenProgress) {
-                sendProgressNotification(repoNameOrId, progress)
-            }
-        }
 
         private var httpServer: HttpServer? = null
         const val command_stop = "STOP"
@@ -82,10 +63,7 @@ class HttpService : Service() {
             //创建新的
             val newServer = HttpServer(
                 settings.httpService.listenHost,
-                settings.httpService.listenPort,
-                sendSuccessNotificationIfEnable(settings),
-                sendErrNotificationIfEnable(settings),
-                sendProgressNotificationIfEnable(settings)
+                settings.httpService.listenPort
             )
 
             //更新类变量
@@ -203,11 +181,13 @@ class HttpService : Service() {
         }else { // start
             val settings = SettingsUtil.getSettingsSnapshot()
 
+            // 这个参数 1 是 service前台通知的通知id，必须不能是0，随便个常量就行，如果要在这个渠道显示其他通知，其他id必须和这个不一样，不然应该会覆盖
+            val serviceNotify = HttpServiceHoldNotify.create(1)
             // 启动前台服务
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.UPSIDE_DOWN_CAKE) { // UPSIDE_DOWN_CAKE is sdk 34
-                startForeground(serviceNotificationId, getNotification(settings), ServiceInfo.FOREGROUND_SERVICE_TYPE_SPECIAL_USE)
+                startForeground(serviceNotify.notifyId, getNotification(serviceNotify, settings), ServiceInfo.FOREGROUND_SERVICE_TYPE_SPECIAL_USE)
             }else {
-                startForeground(serviceNotificationId, getNotification(settings))
+                startForeground(serviceNotify.notifyId, getNotification(serviceNotify, settings))
             }
 
             doJobThenOffLoading {
@@ -245,8 +225,8 @@ class HttpService : Service() {
     /**
      * 在通知栏显示的常驻通知
      */
-    private fun getNotification(settings: AppSettings): Notification {
-        val builder = HttpServiceHoldNotify.getNotificationBuilder(
+    private fun getNotification(notifyBase: NotifyBase, settings: AppSettings): Notification {
+        val builder = notifyBase.getNotificationBuilder(
             this,
             "PuppyGit Service",
             "Listen on: ${genHttpHostPortStr(settings.httpService.listenHost, settings.httpService.listenPort.toString())}",

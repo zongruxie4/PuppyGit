@@ -3,7 +3,7 @@ package com.catpuppyapp.puppygit.notification.base
 import com.catpuppyapp.puppygit.constants.Cons
 import com.catpuppyapp.puppygit.notification.util.NotifyUtil
 
-open class ServiceNotify(private val notify: NotifyBase) {
+open class ServiceNotify(val notify: NotifyBase) {
     /**
      * 启动app并定位到ChangeList和指定仓库
      * @param startPage 是页面id, `Cons.selectedItem_` 开头的那几个变量

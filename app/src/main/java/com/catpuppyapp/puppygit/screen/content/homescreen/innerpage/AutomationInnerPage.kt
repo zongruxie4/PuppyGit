@@ -155,75 +155,45 @@ fun AutomationInnerPage(
             unselectedItemList = unselectedRepoList.value,
             filterKeyWord = reposFilterKeyword,
             selectedItemFormatter={ clickedRepo ->
-                RepoNameAndIdItem(
-                    clickedRepo,
-                    trailIcon = { iconInitModifier ->
-                        IconButton(
-                            modifier = iconInitModifier,
+                RepoNameAndIdItem(clickedRepo) {
+                    selectedRepoList.value.remove(clickedRepo)
 
-                            onClick = {
-                                selectedRepoList.value.remove(clickedRepo)
+                    val tmp = unselectedRepoList.value.toList()
+                    //添加到未选中列表头部
+                    unselectedRepoList.value.clear()
+                    unselectedRepoList.value.add(clickedRepo)
+                    unselectedRepoList.value.addAll(tmp)
 
-                                val tmp = unselectedRepoList.value.toList()
-                                //添加到未选中列表头部
-                                unselectedRepoList.value.clear()
-                                unselectedRepoList.value.add(clickedRepo)
-                                unselectedRepoList.value.addAll(tmp)
-
-                                //保存
-                                SettingsUtil.update {
-                                    it.automation.packageNameAndRepoIdsMap.let {
-                                        it.put(
-                                            packageNameForSelectReposDialog.value,
-                                            //按仓库名排序，然后把id存上
-                                            selectedRepoList.value.toList().sortedBy { it.repoName }.map { it.id }
-                                        )
-                                    }
-                                }
-                            }
-                        ) {
-                            Icon(
-                                imageVector = Icons.Filled.DeleteOutline,
-                                contentDescription = stringResource(R.string.trash_bin_icon_for_delete_item)
+                    //保存
+                    SettingsUtil.update {
+                        it.automation.packageNameAndRepoIdsMap.let {
+                            it.put(
+                                packageNameForSelectReposDialog.value,
+                                //按仓库名排序，然后把id存上
+                                selectedRepoList.value.toList().sortedBy { it.repoName }.map { it.id }
                             )
                         }
                     }
-                    ,
-                    onClick = null
-                )
+                }
 
                 HorizontalDivider()
             },
             unselectedItemFormatter = { clickedRepo ->
-                RepoNameAndIdItem(
-                    clickedRepo,
-                    trailIcon = { iconInitModifier ->
-                        IconButton(
-                            modifier = iconInitModifier,
-                            onClick = {
-                                unselectedRepoList.value.remove(clickedRepo)
-                                //添加到已选中列表末尾
-                                selectedRepoList.value.add(clickedRepo)
+                RepoNameAndIdItem(clickedRepo) {
+                    unselectedRepoList.value.remove(clickedRepo)
+                    //添加到已选中列表末尾
+                    selectedRepoList.value.add(clickedRepo)
 
-                                //保存
-                                SettingsUtil.update {
-                                    it.automation.packageNameAndRepoIdsMap.let {
-                                        it.put(
-                                            packageNameForSelectReposDialog.value,
-                                            selectedRepoList.value.toList().sortedBy { it.repoName }.map { it.id }
-                                        )
-                                    }
-                                }
-                            }
-                        ) {
-                            Icon(
-                                imageVector = Icons.Filled.Add,
-                                contentDescription = stringResource(R.string.add)
+                    //保存
+                    SettingsUtil.update {
+                        it.automation.packageNameAndRepoIdsMap.let {
+                            it.put(
+                                packageNameForSelectReposDialog.value,
+                                selectedRepoList.value.toList().sortedBy { it.repoName }.map { it.id }
                             )
                         }
-                    },
-                    onClick = null
-                )
+                    }
+                }
 
                 HorizontalDivider()
             },

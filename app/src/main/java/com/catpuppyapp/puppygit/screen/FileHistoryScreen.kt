@@ -650,7 +650,7 @@ fun FileHistoryScreen(
                             filterKeyword,
                             trailingIconTooltipText= stringResource(R.string.filter_by_paths),
                             trailingIcon = Icons.AutoMirrored.Filled.List,
-                            trailingIconColor = UIHelper.getIconEnableColorOrNull(pathsForFilter.value.isNotEmpty()) ?: Color.Unspecified,
+                            trailingIconColor = UIHelper.getIconEnableColorOrNull(pathsForFilter.value.isNotEmpty()),
                             trailingIconDesc = stringResource(R.string.a_list_icon_lor_filter_commits_by_paths),
                             trailingIconOnClick = {
                                 // show filte by path dialog

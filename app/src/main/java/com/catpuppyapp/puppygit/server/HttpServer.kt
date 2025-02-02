@@ -3,6 +3,9 @@ package com.catpuppyapp.puppygit.server
 import com.catpuppyapp.puppygit.constants.Cons
 import com.catpuppyapp.puppygit.data.entity.RepoEntity
 import com.catpuppyapp.puppygit.etc.Ret
+import com.catpuppyapp.puppygit.notification.HttpServiceHoldNotify
+import com.catpuppyapp.puppygit.notification.base.ServiceNotify
+import com.catpuppyapp.puppygit.notification.util.NotifyUtil
 import com.catpuppyapp.puppygit.settings.AppSettings
 import com.catpuppyapp.puppygit.settings.SettingsUtil
 import com.catpuppyapp.puppygit.utils.AppModel
@@ -58,12 +61,32 @@ private fun tokenPassedOrThrowException(token:String?, ip:String, settings: AppS
 
 internal class HttpServer(
     val host:String,
-    val port:Int,
-    private val sendSuccessNotification:(title:String?, msg:String?, startPage:Int?, startRepoId:String?)->Unit,
-    private val sendErrNotification:(title:String, msg:String, startPage:Int, startRepoId:String)->Unit,
-    private val sendProgressNotification:(repoNameOrId:String, progress:String)->Unit,
+    val port:Int
 ) {
     private var server: EmbeddedServer<NettyApplicationEngine, NettyApplicationEngine. Configuration>? = null
+
+    private fun createNotify(notifyId:Int) : ServiceNotify {
+        return ServiceNotify(HttpServiceHoldNotify.create(notifyId))
+    }
+
+    private fun sendSuccessNotificationIfEnable(serviceNotify: ServiceNotify, settings: AppSettings) = { title:String?, msg:String?, startPage:Int?, startRepoId:String? ->
+        if(settings.httpService.showNotifyWhenSuccess) {
+            serviceNotify.sendSuccessNotification(title, msg, startPage, startRepoId)
+        }
+    }
+
+    private fun sendErrNotificationIfEnable(serviceNotify: ServiceNotify, settings:AppSettings)={ title:String, msg:String, startPage:Int, startRepoId:String ->
+        if(settings.httpService.showNotifyWhenErr) {
+            serviceNotify.sendErrNotification(title, msg, startPage, startRepoId)
+        }
+    }
+
+    private fun sendProgressNotificationIfEnable(serviceNotify: ServiceNotify, settings: AppSettings) = { repoNameOrId:String, progress:String ->
+        if(settings.httpService.showNotifyWhenProgress) {
+            serviceNotify.sendProgressNotification(repoNameOrId, progress)
+        }
+    }
+
 
     suspend fun startServer():Exception? {
         if(isServerRunning()) return null
@@ -106,6 +129,13 @@ internal class HttpServer(
                         val routeName = "'/pull'"
                         val settings = SettingsUtil.getSettingsSnapshot()
 
+                        //notify
+                        val serviceNotify = createNotify(NotifyUtil.genId())
+                        val sendSuccessNotification = sendSuccessNotificationIfEnable(serviceNotify, settings)
+                        val sendErrNotification = sendErrNotificationIfEnable(serviceNotify, settings)
+                        val sendProgressNotification = sendProgressNotificationIfEnable(serviceNotify, settings)
+
+
                         try {
                             //检查token和ip
                             tokenPassedOrThrowException(call, routeName, settings)
@@ -133,7 +163,16 @@ internal class HttpServer(
 
                             //执行请求，可能时间很长，所以开个协程，直接返回响应即可
                             doJobThenOffLoading {
-                                pullRepoList(validRepoListFromDb, routeName, gitUsernameFromUrl, gitEmailFromUrl)
+                                pullRepoList(
+                                    repoList = validRepoListFromDb,
+                                    routeName = routeName,
+                                    gitUsernameFromUrl = gitUsernameFromUrl,
+                                    gitEmailFromUrl = gitEmailFromUrl,
+
+                                    sendSuccessNotification = sendSuccessNotification,
+                                    sendErrNotification = sendErrNotification,
+                                    sendProgressNotification = sendProgressNotification,
+                                )
                             }
 
                             call.respond(createSuccessResult())
@@ -176,6 +215,12 @@ internal class HttpServer(
                         val routeName = "'/push'"
                         val settings = SettingsUtil.getSettingsSnapshot()
 
+                        //notify
+                        val serviceNotify = createNotify(NotifyUtil.genId())
+                        val sendSuccessNotification = sendSuccessNotificationIfEnable(serviceNotify, settings)
+                        val sendErrNotification = sendErrNotificationIfEnable(serviceNotify, settings)
+                        val sendProgressNotification = sendProgressNotificationIfEnable(serviceNotify, settings)
+
                         try {
                             tokenPassedOrThrowException(call, routeName, settings)
 
@@ -212,7 +257,18 @@ internal class HttpServer(
                             MyLog.d(TAG, "will do push for ${validRepoListFromDb.size} repos: $validRepoListFromDb")
 
                             doJobThenOffLoading {
-                                pushRepoList(validRepoListFromDb, routeName, gitUsernameFromUrl, gitEmailFromUrl, autoCommit, force)
+                                pushRepoList(
+                                    repoList = validRepoListFromDb,
+                                    routeName = routeName,
+                                    gitUsernameFromUrl = gitUsernameFromUrl,
+                                    gitEmailFromUrl = gitEmailFromUrl,
+                                    autoCommit = autoCommit,
+                                    force = force,
+
+                                    sendSuccessNotification = sendSuccessNotification,
+                                    sendErrNotification = sendErrNotification,
+                                    sendProgressNotification = sendProgressNotification,
+                                )
                             }
 
                             call.respond(createSuccessResult())
@@ -252,6 +308,12 @@ internal class HttpServer(
                         val routeName = "'/sync'"
                         val settings = SettingsUtil.getSettingsSnapshot()
 
+                        //notify
+                        val serviceNotify = createNotify(NotifyUtil.genId())
+                        val sendSuccessNotification = sendSuccessNotificationIfEnable(serviceNotify, settings)
+                        val sendErrNotification = sendErrNotificationIfEnable(serviceNotify, settings)
+                        val sendProgressNotification = sendProgressNotificationIfEnable(serviceNotify, settings)
+
                         try {
                             tokenPassedOrThrowException(call, routeName, settings)
 
@@ -288,7 +350,18 @@ internal class HttpServer(
                             MyLog.d(TAG, "will do sync for ${validRepoListFromDb.size} repos: $validRepoListFromDb")
 
                             doJobThenOffLoading {
-                                syncRepoList(validRepoListFromDb, routeName, gitUsernameFromUrl, gitEmailFromUrl, autoCommit, force)
+                                syncRepoList(
+                                    repoList = validRepoListFromDb,
+                                    routeName = routeName,
+                                    gitUsernameFromUrl = gitUsernameFromUrl,
+                                    gitEmailFromUrl = gitEmailFromUrl,
+                                    autoCommit = autoCommit,
+                                    force = force,
+
+                                    sendSuccessNotification = sendSuccessNotification,
+                                    sendErrNotification = sendErrNotification,
+                                    sendProgressNotification = sendProgressNotification,
+                                )
                             }
 
                             call.respond(createSuccessResult())
@@ -322,6 +395,12 @@ internal class HttpServer(
                         val routeName = "'/pullAll'"
                         val settings = SettingsUtil.getSettingsSnapshot()
 
+                        //notify
+                        val serviceNotify = createNotify(NotifyUtil.genId())
+                        val sendSuccessNotification = sendSuccessNotificationIfEnable(serviceNotify, settings)
+                        val sendErrNotification = sendErrNotificationIfEnable(serviceNotify, settings)
+                        val sendProgressNotification = sendProgressNotificationIfEnable(serviceNotify, settings)
+
                         try {
                             tokenPassedOrThrowException(call, routeName, settings)
 
@@ -337,7 +416,16 @@ internal class HttpServer(
 
                             //执行请求，可能时间很长，所以开个协程，直接返回响应即可
                             doJobThenOffLoading {
-                                pullRepoList(AppModel.dbContainer.repoRepository.getAll(), routeName, gitUsernameFromUrl, gitEmailFromUrl)
+                                pullRepoList(
+                                    repoList = AppModel.dbContainer.repoRepository.getAll(),
+                                    routeName = routeName,
+                                    gitUsernameFromUrl = gitUsernameFromUrl,
+                                    gitEmailFromUrl = gitEmailFromUrl,
+
+                                    sendSuccessNotification = sendSuccessNotification,
+                                    sendErrNotification = sendErrNotification,
+                                    sendProgressNotification = sendProgressNotification,
+                                )
                             }
 
                             call.respond(createSuccessResult())
@@ -367,6 +455,12 @@ internal class HttpServer(
                         val routeName = "'/pushAll'"
                         val settings = SettingsUtil.getSettingsSnapshot()
 
+                        //notify
+                        val serviceNotify = createNotify(NotifyUtil.genId())
+                        val sendSuccessNotification = sendSuccessNotificationIfEnable(serviceNotify, settings)
+                        val sendErrNotification = sendErrNotificationIfEnable(serviceNotify, settings)
+                        val sendProgressNotification = sendProgressNotificationIfEnable(serviceNotify, settings)
+
                         try {
                             tokenPassedOrThrowException(call, routeName, settings)
 
@@ -387,7 +481,18 @@ internal class HttpServer(
                             // 查询仓库是否存在
                             // 尝试获取仓库锁，若获取失败，返回仓库正在执行其他操作
                             doJobThenOffLoading {
-                                pushRepoList(AppModel.dbContainer.repoRepository.getAll(), routeName, gitUsernameFromUrl, gitEmailFromUrl, autoCommit, force)
+                                pushRepoList(
+                                    repoList = AppModel.dbContainer.repoRepository.getAll(),
+                                    routeName = routeName,
+                                    gitUsernameFromUrl = gitUsernameFromUrl,
+                                    gitEmailFromUrl = gitEmailFromUrl,
+                                    autoCommit = autoCommit,
+                                    force = force,
+
+                                    sendSuccessNotification = sendSuccessNotification,
+                                    sendErrNotification = sendErrNotification,
+                                    sendProgressNotification = sendProgressNotification,
+                                )
                             }
 
                             call.respond(createSuccessResult())
@@ -409,6 +514,12 @@ internal class HttpServer(
                         val routeName = "'/syncAll'"
                         val settings = SettingsUtil.getSettingsSnapshot()
 
+                        //notify
+                        val serviceNotify = createNotify(NotifyUtil.genId())
+                        val sendSuccessNotification = sendSuccessNotificationIfEnable(serviceNotify, settings)
+                        val sendErrNotification = sendErrNotificationIfEnable(serviceNotify, settings)
+                        val sendProgressNotification = sendProgressNotificationIfEnable(serviceNotify, settings)
+
                         try {
                             tokenPassedOrThrowException(call, routeName, settings)
 
@@ -429,7 +540,18 @@ internal class HttpServer(
                             // 查询仓库是否存在
                             // 尝试获取仓库锁，若获取失败，返回仓库正在执行其他操作
                             doJobThenOffLoading {
-                                syncRepoList(AppModel.dbContainer.repoRepository.getAll(), routeName, gitUsernameFromUrl, gitEmailFromUrl, autoCommit, force)
+                                syncRepoList(
+                                    repoList = AppModel.dbContainer.repoRepository.getAll(),
+                                    routeName = routeName,
+                                    gitUsernameFromUrl = gitUsernameFromUrl,
+                                    gitEmailFromUrl = gitEmailFromUrl,
+                                    autoCommit = autoCommit,
+                                    force = force,
+
+                                    sendSuccessNotification = sendSuccessNotification,
+                                    sendErrNotification = sendErrNotification,
+                                    sendProgressNotification = sendProgressNotification,
+                                )
                             }
 
                             call.respond(createSuccessResult())
@@ -548,6 +670,10 @@ internal class HttpServer(
         routeName: String,
         gitUsernameFromUrl:String,
         gitEmailFromUrl:String,
+
+        sendSuccessNotification:(title:String?, msg:String?, startPage:Int?, startRepoId:String?)->Unit,
+        sendErrNotification:(title:String, msg:String, startPage:Int, startRepoId:String)->Unit,
+        sendProgressNotification:(repoNameOrId:String, progress:String)->Unit,
     ) {
         RepoActUtil.pullRepoList(
             repoList = repoList,
@@ -568,6 +694,9 @@ internal class HttpServer(
         gitEmailFromUrl:String,
         autoCommit:Boolean,
         force:Boolean,
+        sendSuccessNotification:(title:String?, msg:String?, startPage:Int?, startRepoId:String?)->Unit,
+        sendErrNotification:(title:String, msg:String, startPage:Int, startRepoId:String)->Unit,
+        sendProgressNotification:(repoNameOrId:String, progress:String)->Unit,
     ) {
         RepoActUtil.pushRepoList(
             repoList = repoList,
@@ -589,6 +718,9 @@ internal class HttpServer(
         gitEmailFromUrl:String,
         autoCommit:Boolean,
         force:Boolean,
+        sendSuccessNotification:(title:String?, msg:String?, startPage:Int?, startRepoId:String?)->Unit,
+        sendErrNotification:(title:String, msg:String, startPage:Int, startRepoId:String)->Unit,
+        sendProgressNotification:(repoNameOrId:String, progress:String)->Unit,
     ) {
         RepoActUtil.syncRepoList(
             repoList = repoList,

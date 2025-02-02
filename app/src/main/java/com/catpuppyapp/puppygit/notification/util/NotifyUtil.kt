@@ -65,4 +65,8 @@ object NotifyUtil {
         )
     }
 
+    fun genId():Int {
+        return System.currentTimeMillis().toInt()
+    }
+
 }

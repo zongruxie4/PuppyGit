@@ -7,6 +7,7 @@ import android.view.inputmethod.InputMethodManager
 import com.catpuppyapp.puppygit.data.entity.RepoEntity
 import com.catpuppyapp.puppygit.notification.AutomationNotify
 import com.catpuppyapp.puppygit.notification.base.ServiceNotify
+import com.catpuppyapp.puppygit.notification.util.NotifyUtil
 import com.catpuppyapp.puppygit.settings.AppSettings
 import com.catpuppyapp.puppygit.settings.SettingsUtil
 import com.catpuppyapp.puppygit.settings.util.AutomationUtil
@@ -20,7 +21,7 @@ import kotlinx.coroutines.sync.withLock
 
 
 class MyAccessibilityService: AccessibilityService() {
-    companion object: ServiceNotify(AutomationNotify) {
+    companion object {
         private const val TAG = "MyAccessibilityService"
 
         private val lock = Mutex()
@@ -28,26 +29,32 @@ class MyAccessibilityService: AccessibilityService() {
         private var lastTargetPackageName = ""  // use to check enter/leave app
 
 
-        private fun sendSuccessNotificationIfEnable(settings: AppSettings) = { title:String?, msg:String?, startPage:Int?, startRepoId:String? ->
+        private fun createNotify(notifyId:Int):ServiceNotify {
+            return ServiceNotify(AutomationNotify.create(notifyId))
+        }
+
+
+        private fun sendSuccessNotificationIfEnable(serviceNotify: ServiceNotify, settings: AppSettings) = { title:String?, msg:String?, startPage:Int?, startRepoId:String? ->
             if(settings.automation.showNotifyWhenSuccess) {
-                sendSuccessNotification(title, msg, startPage, startRepoId)
+                serviceNotify.sendSuccessNotification(title, msg, startPage, startRepoId)
             }
         }
 
-        private fun sendErrNotificationIfEnable(settings: AppSettings)={ title:String, msg:String, startPage:Int, startRepoId:String ->
+        private fun sendErrNotificationIfEnable(serviceNotify: ServiceNotify, settings: AppSettings)={ title:String, msg:String, startPage:Int, startRepoId:String ->
             if(settings.automation.showNotifyWhenErr) {
-                sendErrNotification(title, msg, startPage, startRepoId)
+                serviceNotify.sendErrNotification(title, msg, startPage, startRepoId)
             }
         }
 
-        private fun sendProgressNotificationIfEnable(settings: AppSettings) = { repoNameOrId:String, progress:String ->
+        private fun sendProgressNotificationIfEnable(serviceNotify: ServiceNotify, settings: AppSettings) = { repoNameOrId:String, progress:String ->
             if(settings.automation.showNotifyWhenProgress) {
-                sendProgressNotification(repoNameOrId, progress)
+                serviceNotify.sendProgressNotification(repoNameOrId, progress)
             }
         }
 
 
         private suspend fun pullRepoList(
+            serviceNotify: ServiceNotify,
             settings: AppSettings,
             repoList:List<RepoEntity>,
         ) {
@@ -56,14 +63,15 @@ class MyAccessibilityService: AccessibilityService() {
                 routeName = "automation pull service",
                 gitUsernameFromUrl="",
                 gitEmailFromUrl="",
-                sendSuccessNotificationIfEnable(settings),
-                sendErrNotificationIfEnable(settings),
-                sendProgressNotificationIfEnable(settings),
+                sendSuccessNotificationIfEnable(serviceNotify, settings),
+                sendErrNotificationIfEnable(serviceNotify, settings),
+                sendProgressNotificationIfEnable(serviceNotify, settings),
             )
         }
 
 
         private suspend fun pushRepoList(
+            serviceNotify: ServiceNotify,
             settings: AppSettings,
             repoList:List<RepoEntity>,
         ) {
@@ -74,9 +82,9 @@ class MyAccessibilityService: AccessibilityService() {
                 gitEmailFromUrl="",
                 autoCommit=true,
                 force=false,
-                sendSuccessNotificationIfEnable(settings),
-                sendErrNotificationIfEnable(settings),
-                sendProgressNotificationIfEnable(settings),
+                sendSuccessNotificationIfEnable(serviceNotify, settings),
+                sendErrNotificationIfEnable(serviceNotify, settings),
+                sendProgressNotificationIfEnable(serviceNotify, settings),
             )
         }
 
@@ -158,7 +166,7 @@ class MyAccessibilityService: AccessibilityService() {
 
                             //do pull
                             doJobThenOffLoading {
-                                pullRepoList(settings, repoList)
+                                pullRepoList(createNotify(NotifyUtil.genId()), settings, repoList)
                             }
                         }
                     }else if(lastTargetPackageName.isNotBlank()) { //当前app不是我们关注的app，但上个是
@@ -190,7 +198,7 @@ class MyAccessibilityService: AccessibilityService() {
 
                                 // do push, one package may bind multi repos, start a coroutine do push for them
                                 doJobThenOffLoading {
-                                    pushRepoList(settings, repoList)
+                                    pushRepoList(createNotify(NotifyUtil.genId()), settings, repoList)
                                 }
                             }
                         }else {  //这里得设置下，如果一个条目之前在列表后来移除了，这里不更新下的话，下次打开目标app会忽略一次应该执行的pull

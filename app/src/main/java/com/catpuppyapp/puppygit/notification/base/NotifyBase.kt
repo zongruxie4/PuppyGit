@@ -27,7 +27,7 @@ open class NotifyBase(
     private val actionList:((context:Context) -> List<Action>)? = null
 ) {
     //每条通知此id必须唯一，否则覆盖上条同id通知
-    protected open val notifyId:Int = 10  //子类应该覆盖此字段，每次发通知会为当前操作生成一个唯一通知id，若通知id一样会覆盖
+    open val notifyId:Int = 10  //子类应该覆盖此字段，每次发通知会为当前操作生成一个唯一通知id，若通知id一样会覆盖
 
     /**
      * 用来避免重复执行init出错
