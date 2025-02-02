@@ -5,18 +5,21 @@ import android.content.Context
 import android.content.Intent
 import com.catpuppyapp.puppygit.constants.IntentCons
 import com.catpuppyapp.puppygit.notification.AutomationNotify
+import com.catpuppyapp.puppygit.notification.HttpServiceExecuteNotify
 import com.catpuppyapp.puppygit.notification.HttpServiceHoldNotify
 import com.catpuppyapp.puppygit.notification.NormalNotify
 import com.catpuppyapp.puppygit.notification.base.NotifyBase
 import com.catpuppyapp.puppygit.play.pro.MainActivity
 import com.catpuppyapp.puppygit.utils.AppModel
+import kotlin.random.Random
 
 object NotifyUtil {
     private val notifyList:List<NotifyBase> = listOf(
         //这创建的实例只是用来注册通知渠道的，通知id随便填个数就行，反正不用
         NormalNotify.create(1),
         HttpServiceHoldNotify.create(2),
-        AutomationNotify.create(3)
+        HttpServiceExecuteNotify.create(3),
+        AutomationNotify.create(4),
     )
 
     /**
@@ -66,7 +69,8 @@ object NotifyUtil {
     }
 
     fun genId():Int {
-        return System.currentTimeMillis().toInt()
+        //I want less than 50 as reserved notification Id,so dont use it
+        return Random.nextInt(51, Int.MAX_VALUE)
     }
 
 }

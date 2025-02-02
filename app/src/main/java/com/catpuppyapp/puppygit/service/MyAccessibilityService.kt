@@ -8,13 +8,16 @@ import com.catpuppyapp.puppygit.data.entity.RepoEntity
 import com.catpuppyapp.puppygit.notification.AutomationNotify
 import com.catpuppyapp.puppygit.notification.base.ServiceNotify
 import com.catpuppyapp.puppygit.notification.util.NotifyUtil
+import com.catpuppyapp.puppygit.server.bean.NotificationSender
 import com.catpuppyapp.puppygit.settings.AppSettings
 import com.catpuppyapp.puppygit.settings.SettingsUtil
 import com.catpuppyapp.puppygit.settings.util.AutomationUtil
 import com.catpuppyapp.puppygit.utils.AppModel
 import com.catpuppyapp.puppygit.utils.MyLog
 import com.catpuppyapp.puppygit.utils.RepoActUtil
+import com.catpuppyapp.puppygit.utils.cache.NotifySenderMap
 import com.catpuppyapp.puppygit.utils.doJobThenOffLoading
+import com.catpuppyapp.puppygit.utils.generateRandomString
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
@@ -54,37 +57,65 @@ class MyAccessibilityService: AccessibilityService() {
 
 
         private suspend fun pullRepoList(
-            serviceNotify: ServiceNotify,
+            sessionId:String,
             settings: AppSettings,
             repoList:List<RepoEntity>,
         ) {
+
+            MyLog.d(TAG, "generate notifyers for ${repoList.size} repos")
+
+            repoList.forEach {
+                //notify
+                val serviceNotify = createNotify(NotifyUtil.genId())
+                NotifySenderMap.set(
+                    NotifySenderMap.genKey(it.id, sessionId),
+                    NotificationSender(
+                        sendErrNotificationIfEnable(serviceNotify, settings),
+                        sendSuccessNotificationIfEnable(serviceNotify, settings),
+                        sendProgressNotificationIfEnable(serviceNotify, settings),
+                    )
+                )
+            }
+
             RepoActUtil.pullRepoList(
+                sessionId,
                 repoList,
                 routeName = "automation pull service",
                 gitUsernameFromUrl="",
                 gitEmailFromUrl="",
-                sendSuccessNotificationIfEnable(serviceNotify, settings),
-                sendErrNotificationIfEnable(serviceNotify, settings),
-                sendProgressNotificationIfEnable(serviceNotify, settings),
             )
         }
 
 
         private suspend fun pushRepoList(
-            serviceNotify: ServiceNotify,
+            sessionId:String,
             settings: AppSettings,
             repoList:List<RepoEntity>,
         ) {
+
+            MyLog.d(TAG, "generate notifyers for ${repoList.size} repos")
+
+            repoList.forEach {
+                //notify
+                val serviceNotify = createNotify(NotifyUtil.genId())
+                NotifySenderMap.set(
+                    NotifySenderMap.genKey(it.id, sessionId),
+                    NotificationSender(
+                        sendErrNotificationIfEnable(serviceNotify, settings),
+                        sendSuccessNotificationIfEnable(serviceNotify, settings),
+                        sendProgressNotificationIfEnable(serviceNotify, settings),
+                    )
+                )
+            }
+
             RepoActUtil.pushRepoList(
+                sessionId,
                 repoList,
                 routeName = "automation push service",
                 gitUsernameFromUrl="",
                 gitEmailFromUrl="",
                 autoCommit=true,
                 force=false,
-                sendSuccessNotificationIfEnable(serviceNotify, settings),
-                sendErrNotificationIfEnable(serviceNotify, settings),
-                sendProgressNotificationIfEnable(serviceNotify, settings),
             )
         }
 
@@ -142,6 +173,8 @@ class MyAccessibilityService: AccessibilityService() {
                 val event = Unit  //覆盖外部event变量名，避免错误捕获
 
                 lock.withLock {
+                    val sessionId = generateRandomString()
+
                     if(targetPackageList.contains(packageName)) {  // 是我们关注的app
                         lastTargetPackageName = packageName
 
@@ -166,7 +199,7 @@ class MyAccessibilityService: AccessibilityService() {
 
                             //do pull
                             doJobThenOffLoading {
-                                pullRepoList(createNotify(NotifyUtil.genId()), settings, repoList)
+                                pullRepoList(sessionId, settings, repoList)
                             }
                         }
                     }else if(lastTargetPackageName.isNotBlank()) { //当前app不是我们关注的app，但上个是
@@ -198,7 +231,7 @@ class MyAccessibilityService: AccessibilityService() {
 
                                 // do push, one package may bind multi repos, start a coroutine do push for them
                                 doJobThenOffLoading {
-                                    pushRepoList(createNotify(NotifyUtil.genId()), settings, repoList)
+                                    pushRepoList(sessionId, settings, repoList)
                                 }
                             }
                         }else {  //这里得设置下，如果一个条目之前在列表后来移除了，这里不更新下的话，下次打开目标app会忽略一次应该执行的pull

@@ -3,17 +3,20 @@ package com.catpuppyapp.puppygit.server
 import com.catpuppyapp.puppygit.constants.Cons
 import com.catpuppyapp.puppygit.data.entity.RepoEntity
 import com.catpuppyapp.puppygit.etc.Ret
-import com.catpuppyapp.puppygit.notification.HttpServiceHoldNotify
+import com.catpuppyapp.puppygit.notification.HttpServiceExecuteNotify
 import com.catpuppyapp.puppygit.notification.base.ServiceNotify
 import com.catpuppyapp.puppygit.notification.util.NotifyUtil
+import com.catpuppyapp.puppygit.server.bean.NotificationSender
 import com.catpuppyapp.puppygit.settings.AppSettings
 import com.catpuppyapp.puppygit.settings.SettingsUtil
 import com.catpuppyapp.puppygit.utils.AppModel
 import com.catpuppyapp.puppygit.utils.MyLog
 import com.catpuppyapp.puppygit.utils.RepoActUtil
+import com.catpuppyapp.puppygit.utils.cache.NotifySenderMap
 import com.catpuppyapp.puppygit.utils.createAndInsertError
 import com.catpuppyapp.puppygit.utils.doJobThenOffLoading
 import com.catpuppyapp.puppygit.utils.genHttpHostPortStr
+import com.catpuppyapp.puppygit.utils.generateRandomString
 import io.ktor.serialization.kotlinx.json.json
 import io.ktor.server.application.install
 import io.ktor.server.engine.EmbeddedServer
@@ -66,7 +69,7 @@ internal class HttpServer(
     private var server: EmbeddedServer<NettyApplicationEngine, NettyApplicationEngine. Configuration>? = null
 
     private fun createNotify(notifyId:Int) : ServiceNotify {
-        return ServiceNotify(HttpServiceHoldNotify.create(notifyId))
+        return ServiceNotify(HttpServiceExecuteNotify.create(notifyId))
     }
 
     private fun sendSuccessNotificationIfEnable(serviceNotify: ServiceNotify, settings: AppSettings) = { title:String?, msg:String?, startPage:Int?, startRepoId:String? ->
@@ -124,6 +127,8 @@ internal class HttpServer(
                      * request: http://127.0.0.1/pull?repoNameOrId=abc
                      */
                     get("/pull") {
+                        val sessionId = generateRandomString()
+
                         val repoNameOrIdForLog = mutableListOf<String>()
                         var repoForLog:RepoEntity? = null
                         val routeName = "'/pull'"
@@ -131,9 +136,7 @@ internal class HttpServer(
 
                         //notify
                         val serviceNotify = createNotify(NotifyUtil.genId())
-                        val sendSuccessNotification = sendSuccessNotificationIfEnable(serviceNotify, settings)
                         val sendErrNotification = sendErrNotificationIfEnable(serviceNotify, settings)
-                        val sendProgressNotification = sendProgressNotificationIfEnable(serviceNotify, settings)
 
 
                         try {
@@ -159,19 +162,31 @@ internal class HttpServer(
                                 repoForLog = validRepoListFromDb.first()
                             }
 
-                            MyLog.d(TAG, "will do pull for ${validRepoListFromDb.size} repos: $validRepoListFromDb")
-
                             //执行请求，可能时间很长，所以开个协程，直接返回响应即可
                             doJobThenOffLoading {
+
+                                MyLog.d(TAG, "generate notifyers for ${validRepoListFromDb.size} repos")
+
+                                validRepoListFromDb.forEach {
+                                    //notify
+                                    val serviceNotify = createNotify(NotifyUtil.genId())
+                                    NotifySenderMap.set(
+                                        NotifySenderMap.genKey(it.id, sessionId),
+                                        NotificationSender(
+                                            sendErrNotificationIfEnable(serviceNotify, settings),
+                                            sendSuccessNotificationIfEnable(serviceNotify, settings),
+                                            sendProgressNotificationIfEnable(serviceNotify, settings),
+                                        )
+                                    )
+                                }
+
+                                MyLog.d(TAG, "will do pull for ${validRepoListFromDb.size} repos: $validRepoListFromDb")
                                 pullRepoList(
+                                    sessionId = sessionId,
                                     repoList = validRepoListFromDb,
                                     routeName = routeName,
                                     gitUsernameFromUrl = gitUsernameFromUrl,
                                     gitEmailFromUrl = gitEmailFromUrl,
-
-                                    sendSuccessNotification = sendSuccessNotification,
-                                    sendErrNotification = sendErrNotification,
-                                    sendProgressNotification = sendProgressNotification,
                                 )
                             }
 
@@ -187,7 +202,7 @@ internal class HttpServer(
                             sendErrNotification("$routeName err", errMsg, Cons.selectedItem_ChangeList, repoForLog?.id ?: "")
 
 
-                            MyLog.e(TAG, "method:GET, route:$routeName, repoNameOrId.size=${repoNameOrIdForLog.size}, repoNameOrId=$repoNameOrIdForLog, err=${e.stackTraceToString()}")
+                            MyLog.e(TAG, "method:GET, route:$routeName, sessionId=$sessionId, repoNameOrId.size=${repoNameOrIdForLog.size}, repoNameOrId=$repoNameOrIdForLog, err=${e.stackTraceToString()}")
                         }
 
                     }
@@ -210,6 +225,8 @@ internal class HttpServer(
                      * request: http://127.0.0.1/push?repoNameOrId=abc
                      */
                     get("/push") {
+                        val sessionId = generateRandomString()
+
                         val repoNameOrIdForLog = mutableListOf<String>()
                         var repoForLog:RepoEntity? = null
                         val routeName = "'/push'"
@@ -217,9 +234,7 @@ internal class HttpServer(
 
                         //notify
                         val serviceNotify = createNotify(NotifyUtil.genId())
-                        val sendSuccessNotification = sendSuccessNotificationIfEnable(serviceNotify, settings)
                         val sendErrNotification = sendErrNotificationIfEnable(serviceNotify, settings)
-                        val sendProgressNotification = sendProgressNotificationIfEnable(serviceNotify, settings)
 
                         try {
                             tokenPassedOrThrowException(call, routeName, settings)
@@ -254,20 +269,33 @@ internal class HttpServer(
                                 repoForLog = validRepoListFromDb.first()
                             }
 
-                            MyLog.d(TAG, "will do push for ${validRepoListFromDb.size} repos: $validRepoListFromDb")
-
                             doJobThenOffLoading {
+
+                                MyLog.d(TAG, "generate notifyers for ${validRepoListFromDb.size} repos")
+
+                                validRepoListFromDb.forEach {
+                                    //notify
+                                    val serviceNotify = createNotify(NotifyUtil.genId())
+                                    NotifySenderMap.set(
+                                        NotifySenderMap.genKey(it.id, sessionId),
+                                        NotificationSender(
+                                            sendErrNotificationIfEnable(serviceNotify, settings),
+                                            sendSuccessNotificationIfEnable(serviceNotify, settings),
+                                            sendProgressNotificationIfEnable(serviceNotify, settings),
+                                        )
+                                    )
+                                }
+
+                                MyLog.d(TAG, "will do push for ${validRepoListFromDb.size} repos: $validRepoListFromDb")
+
                                 pushRepoList(
+                                    sessionId = sessionId,
                                     repoList = validRepoListFromDb,
                                     routeName = routeName,
                                     gitUsernameFromUrl = gitUsernameFromUrl,
                                     gitEmailFromUrl = gitEmailFromUrl,
                                     autoCommit = autoCommit,
                                     force = force,
-
-                                    sendSuccessNotification = sendSuccessNotification,
-                                    sendErrNotification = sendErrNotification,
-                                    sendProgressNotification = sendProgressNotification,
                                 )
                             }
 
@@ -284,7 +312,7 @@ internal class HttpServer(
                             sendErrNotification("$routeName err", errMsg, Cons.selectedItem_ChangeList, repoForLog?.id ?: "")
 
 
-                            MyLog.e(TAG, "method:GET, route:$routeName, repoNameOrId.size=${repoNameOrIdForLog.size}, repoNameOrId=$repoNameOrIdForLog, err=${e.stackTraceToString()}")
+                            MyLog.e(TAG, "method:GET, route:$routeName, sessionId=$sessionId, repoNameOrId.size=${repoNameOrIdForLog.size}, repoNameOrId=$repoNameOrIdForLog, err=${e.stackTraceToString()}")
                         }
 
                     }
@@ -303,6 +331,7 @@ internal class HttpServer(
                      *    no index empty check, no conflict items check.
                      */
                     get("/sync") {
+                        val sessionId = generateRandomString()
                         val repoNameOrIdForLog = mutableListOf<String>()
                         var repoForLog:RepoEntity? = null
                         val routeName = "'/sync'"
@@ -310,9 +339,7 @@ internal class HttpServer(
 
                         //notify
                         val serviceNotify = createNotify(NotifyUtil.genId())
-                        val sendSuccessNotification = sendSuccessNotificationIfEnable(serviceNotify, settings)
                         val sendErrNotification = sendErrNotificationIfEnable(serviceNotify, settings)
-                        val sendProgressNotification = sendProgressNotificationIfEnable(serviceNotify, settings)
 
                         try {
                             tokenPassedOrThrowException(call, routeName, settings)
@@ -347,20 +374,34 @@ internal class HttpServer(
                                 repoForLog = validRepoListFromDb.first()
                             }
 
-                            MyLog.d(TAG, "will do sync for ${validRepoListFromDb.size} repos: $validRepoListFromDb")
 
                             doJobThenOffLoading {
+
+                                MyLog.d(TAG, "generate notifyers for ${validRepoListFromDb.size} repos")
+
+                                validRepoListFromDb.forEach {
+                                    //notify
+                                    val serviceNotify = createNotify(NotifyUtil.genId())
+                                    NotifySenderMap.set(
+                                        NotifySenderMap.genKey(it.id, sessionId),
+                                        NotificationSender(
+                                            sendErrNotificationIfEnable(serviceNotify, settings),
+                                            sendSuccessNotificationIfEnable(serviceNotify, settings),
+                                            sendProgressNotificationIfEnable(serviceNotify, settings),
+                                        )
+                                    )
+                                }
+
+                                MyLog.d(TAG, "will do sync for ${validRepoListFromDb.size} repos: $validRepoListFromDb")
+
                                 syncRepoList(
+                                    sessionId = sessionId,
                                     repoList = validRepoListFromDb,
                                     routeName = routeName,
                                     gitUsernameFromUrl = gitUsernameFromUrl,
                                     gitEmailFromUrl = gitEmailFromUrl,
                                     autoCommit = autoCommit,
                                     force = force,
-
-                                    sendSuccessNotification = sendSuccessNotification,
-                                    sendErrNotification = sendErrNotification,
-                                    sendProgressNotification = sendProgressNotification,
                                 )
                             }
 
@@ -377,7 +418,7 @@ internal class HttpServer(
                             sendErrNotification("$routeName err", errMsg, Cons.selectedItem_ChangeList, repoForLog?.id ?: "")
 
 
-                            MyLog.e(TAG, "method:GET, route:$routeName, repoNameOrId.size=${repoNameOrIdForLog.size}, repoNameOrId=$repoNameOrIdForLog, err=${e.stackTraceToString()}")
+                            MyLog.e(TAG, "method:GET, route:$routeName, sessionId=$sessionId, repoNameOrId.size=${repoNameOrIdForLog.size}, repoNameOrId=$repoNameOrIdForLog, err=${e.stackTraceToString()}")
                         }
 
                     }
@@ -392,20 +433,19 @@ internal class HttpServer(
                      * request: http://127.0.0.1/pullAll?gitUsername=username&gitEmail=email&token=your_token
                      */
                     get("/pullAll") {
+                        val sessionId = generateRandomString()
+
                         val routeName = "'/pullAll'"
                         val settings = SettingsUtil.getSettingsSnapshot()
 
                         //notify
                         val serviceNotify = createNotify(NotifyUtil.genId())
-                        val sendSuccessNotification = sendSuccessNotificationIfEnable(serviceNotify, settings)
                         val sendErrNotification = sendErrNotificationIfEnable(serviceNotify, settings)
-                        val sendProgressNotification = sendProgressNotificationIfEnable(serviceNotify, settings)
 
                         try {
                             tokenPassedOrThrowException(call, routeName, settings)
 
 
-                            sendProgressNotification("PuppyGit", "pulling all...")
 
 
 
@@ -416,15 +456,29 @@ internal class HttpServer(
 
                             //执行请求，可能时间很长，所以开个协程，直接返回响应即可
                             doJobThenOffLoading {
+
+                                val allRepos = AppModel.dbContainer.repoRepository.getAll()
+                                MyLog.d(TAG, "generate notifyers for ${allRepos.size} repos")
+
+                                allRepos.forEach {
+                                    //notify
+                                    val serviceNotify = createNotify(NotifyUtil.genId())
+                                    NotifySenderMap.set(
+                                        NotifySenderMap.genKey(it.id, sessionId),
+                                        NotificationSender(
+                                            sendErrNotificationIfEnable(serviceNotify, settings),
+                                            sendSuccessNotificationIfEnable(serviceNotify, settings),
+                                            sendProgressNotificationIfEnable(serviceNotify, settings),
+                                        )
+                                    )
+                                }
+
                                 pullRepoList(
-                                    repoList = AppModel.dbContainer.repoRepository.getAll(),
+                                    sessionId = sessionId,
+                                    repoList = allRepos,
                                     routeName = routeName,
                                     gitUsernameFromUrl = gitUsernameFromUrl,
                                     gitEmailFromUrl = gitEmailFromUrl,
-
-                                    sendSuccessNotification = sendSuccessNotification,
-                                    sendErrNotification = sendErrNotification,
-                                    sendProgressNotification = sendProgressNotification,
                                 )
                             }
 
@@ -436,7 +490,7 @@ internal class HttpServer(
                             sendErrNotification("$routeName err", errMsg, Cons.selectedItem_Repos ,"")
 
 
-                            MyLog.e(TAG, "method:GET, route:$routeName, err=${e.stackTraceToString()}")
+                            MyLog.e(TAG, "method:GET, route:$routeName, sessionId=$sessionId, err=${e.stackTraceToString()}")
                         }
                     }
 
@@ -452,19 +506,18 @@ internal class HttpServer(
                      * request: http://127.0.0.1/pushAll?token=your_token
                      */
                     get("/pushAll") {
+                        val sessionId = generateRandomString()
+
                         val routeName = "'/pushAll'"
                         val settings = SettingsUtil.getSettingsSnapshot()
 
                         //notify
                         val serviceNotify = createNotify(NotifyUtil.genId())
-                        val sendSuccessNotification = sendSuccessNotificationIfEnable(serviceNotify, settings)
                         val sendErrNotification = sendErrNotificationIfEnable(serviceNotify, settings)
-                        val sendProgressNotification = sendProgressNotificationIfEnable(serviceNotify, settings)
 
                         try {
                             tokenPassedOrThrowException(call, routeName, settings)
 
-                            sendProgressNotification("PuppyGit", "pushing all...")
 
 
                             //这个只要不明确传0，就是启用
@@ -481,17 +534,30 @@ internal class HttpServer(
                             // 查询仓库是否存在
                             // 尝试获取仓库锁，若获取失败，返回仓库正在执行其他操作
                             doJobThenOffLoading {
+                                val allRepos = AppModel.dbContainer.repoRepository.getAll()
+                                MyLog.d(TAG, "generate notifyers for ${allRepos.size} repos")
+
+                                allRepos.forEach {
+                                    //notify
+                                    val serviceNotify = createNotify(NotifyUtil.genId())
+                                    NotifySenderMap.set(
+                                        NotifySenderMap.genKey(it.id, sessionId),
+                                        NotificationSender(
+                                            sendErrNotificationIfEnable(serviceNotify, settings),
+                                            sendSuccessNotificationIfEnable(serviceNotify, settings),
+                                            sendProgressNotificationIfEnable(serviceNotify, settings),
+                                        )
+                                    )
+                                }
+
                                 pushRepoList(
-                                    repoList = AppModel.dbContainer.repoRepository.getAll(),
+                                    sessionId = sessionId,
+                                    repoList = allRepos,
                                     routeName = routeName,
                                     gitUsernameFromUrl = gitUsernameFromUrl,
                                     gitEmailFromUrl = gitEmailFromUrl,
                                     autoCommit = autoCommit,
                                     force = force,
-
-                                    sendSuccessNotification = sendSuccessNotification,
-                                    sendErrNotification = sendErrNotification,
-                                    sendProgressNotification = sendProgressNotification,
                                 )
                             }
 
@@ -504,26 +570,25 @@ internal class HttpServer(
                             sendErrNotification("$routeName err", errMsg, Cons.selectedItem_Repos, "")
 
 
-                            MyLog.e(TAG, "method:GET, route:$routeName, err=${e.stackTraceToString()}")
+                            MyLog.e(TAG, "method:GET, route:$routeName, sessionId=$sessionId, err=${e.stackTraceToString()}")
                         }
 
 
                     }
 
                     get("/syncAll") {
+                        val sessionId = generateRandomString()
+
                         val routeName = "'/syncAll'"
                         val settings = SettingsUtil.getSettingsSnapshot()
 
                         //notify
                         val serviceNotify = createNotify(NotifyUtil.genId())
-                        val sendSuccessNotification = sendSuccessNotificationIfEnable(serviceNotify, settings)
                         val sendErrNotification = sendErrNotificationIfEnable(serviceNotify, settings)
-                        val sendProgressNotification = sendProgressNotificationIfEnable(serviceNotify, settings)
 
                         try {
                             tokenPassedOrThrowException(call, routeName, settings)
 
-                            sendProgressNotification("PuppyGit", "syncing all...")
 
 
                             //这个只要不明确传0，就是启用
@@ -540,17 +605,31 @@ internal class HttpServer(
                             // 查询仓库是否存在
                             // 尝试获取仓库锁，若获取失败，返回仓库正在执行其他操作
                             doJobThenOffLoading {
+
+                                val allRepos = AppModel.dbContainer.repoRepository.getAll()
+                                MyLog.d(TAG, "generate notifyers for ${allRepos.size} repos")
+
+                                allRepos.forEach {
+                                    //notify
+                                    val serviceNotify = createNotify(NotifyUtil.genId())
+                                    NotifySenderMap.set(
+                                        NotifySenderMap.genKey(it.id, sessionId),
+                                        NotificationSender(
+                                            sendErrNotificationIfEnable(serviceNotify, settings),
+                                            sendSuccessNotificationIfEnable(serviceNotify, settings),
+                                            sendProgressNotificationIfEnable(serviceNotify, settings),
+                                        )
+                                    )
+                                }
+
                                 syncRepoList(
-                                    repoList = AppModel.dbContainer.repoRepository.getAll(),
+                                    sessionId=sessionId,
+                                    repoList = allRepos,
                                     routeName = routeName,
                                     gitUsernameFromUrl = gitUsernameFromUrl,
                                     gitEmailFromUrl = gitEmailFromUrl,
                                     autoCommit = autoCommit,
                                     force = force,
-
-                                    sendSuccessNotification = sendSuccessNotification,
-                                    sendErrNotification = sendErrNotification,
-                                    sendProgressNotification = sendProgressNotification,
                                 )
                             }
 
@@ -563,7 +642,7 @@ internal class HttpServer(
                             sendErrNotification("$routeName err", errMsg, Cons.selectedItem_Repos, "")
 
 
-                            MyLog.e(TAG, "method:GET, route:$routeName, err=${e.stackTraceToString()}")
+                            MyLog.e(TAG, "method:GET, route:$routeName, sessionId=$sessionId, err=${e.stackTraceToString()}")
                         }
 
                     }
@@ -666,74 +745,61 @@ internal class HttpServer(
 
 
     private suspend fun pullRepoList(
+        sessionId: String,
         repoList:List<RepoEntity>,
         routeName: String,
         gitUsernameFromUrl:String,
         gitEmailFromUrl:String,
-
-        sendSuccessNotification:(title:String?, msg:String?, startPage:Int?, startRepoId:String?)->Unit,
-        sendErrNotification:(title:String, msg:String, startPage:Int, startRepoId:String)->Unit,
-        sendProgressNotification:(repoNameOrId:String, progress:String)->Unit,
     ) {
         RepoActUtil.pullRepoList(
+            sessionId = sessionId,
+
             repoList = repoList,
             routeName = routeName,
             gitUsernameFromUrl = gitUsernameFromUrl,
             gitEmailFromUrl = gitEmailFromUrl,
-            sendSuccessNotification = sendSuccessNotification,
-            sendErrNotification = sendErrNotification,
-            sendProgressNotification = sendProgressNotification,
         )
     }
 
 
     private suspend fun pushRepoList(
+        sessionId: String,
+
         repoList:List<RepoEntity>,
         routeName: String,
         gitUsernameFromUrl:String,
         gitEmailFromUrl:String,
         autoCommit:Boolean,
         force:Boolean,
-        sendSuccessNotification:(title:String?, msg:String?, startPage:Int?, startRepoId:String?)->Unit,
-        sendErrNotification:(title:String, msg:String, startPage:Int, startRepoId:String)->Unit,
-        sendProgressNotification:(repoNameOrId:String, progress:String)->Unit,
     ) {
         RepoActUtil.pushRepoList(
+            sessionId = sessionId,
             repoList = repoList,
             routeName = routeName,
             gitUsernameFromUrl = gitUsernameFromUrl,
             gitEmailFromUrl = gitEmailFromUrl,
             autoCommit = autoCommit,
             force = force,
-            sendSuccessNotification = sendSuccessNotification,
-            sendErrNotification = sendErrNotification,
-            sendProgressNotification = sendProgressNotification
         )
     }
 
     private suspend fun syncRepoList(
+        sessionId:String,
         repoList:List<RepoEntity>,
         routeName: String,
         gitUsernameFromUrl:String,
         gitEmailFromUrl:String,
         autoCommit:Boolean,
         force:Boolean,
-        sendSuccessNotification:(title:String?, msg:String?, startPage:Int?, startRepoId:String?)->Unit,
-        sendErrNotification:(title:String, msg:String, startPage:Int, startRepoId:String)->Unit,
-        sendProgressNotification:(repoNameOrId:String, progress:String)->Unit,
     ) {
         RepoActUtil.syncRepoList(
+            sessionId = sessionId,
             repoList = repoList,
             routeName = routeName,
             gitUsernameFromUrl = gitUsernameFromUrl,
             gitEmailFromUrl = gitEmailFromUrl,
             autoCommit = autoCommit,
             force = force,
-            sendSuccessNotification = sendSuccessNotification,
-            sendErrNotification = sendErrNotification,
-            sendProgressNotification = sendProgressNotification
         )
     }
-
-
 }

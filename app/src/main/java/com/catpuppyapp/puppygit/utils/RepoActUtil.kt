@@ -3,9 +3,11 @@ package com.catpuppyapp.puppygit.utils
 import com.catpuppyapp.puppygit.constants.Cons
 import com.catpuppyapp.puppygit.data.AppContainer
 import com.catpuppyapp.puppygit.data.entity.RepoEntity
+import com.catpuppyapp.puppygit.server.bean.NotificationSender
 import com.catpuppyapp.puppygit.settings.AppSettings
 import com.catpuppyapp.puppygit.settings.SettingsUtil
 import com.catpuppyapp.puppygit.utils.Libgit2Helper.Companion.getAheadBehind
+import com.catpuppyapp.puppygit.utils.cache.NotifySenderMap
 import com.catpuppyapp.puppygit.utils.encrypt.MasterPassUtil
 import com.github.git24j.core.Oid
 import com.github.git24j.core.Repository
@@ -22,16 +24,22 @@ object RepoActUtil {
         throw RuntimeException("repo busy, plz try later")
     }
 
+    private fun getNotifySender(repoId:String, sessionId: String):NotificationSender? {
+        return NotifySenderMap.getByType<NotificationSender>(NotifySenderMap.genKey(repoId, sessionId))
+    }
+
+    private fun removeNotifySender(repoId:String, sessionId: String) {
+        NotifySenderMap.del(NotifySenderMap.genKey(repoId, sessionId))
+    }
+
     suspend fun syncRepoList(
+        sessionId:String,
         repoList:List<RepoEntity>,
         routeName: String,
         gitUsernameFromUrl:String,    // leave empty to read from config
         gitEmailFromUrl:String,    // leave empty to read from config
         autoCommit:Boolean,
         force:Boolean,
-        sendSuccessNotification:(title:String?, msg:String?, startPage:Int?, startRepoId:String?)->Unit,
-        sendErrNotification:(title:String, msg:String, startPage:Int, startRepoId:String)->Unit,
-        sendProgressNotification:(repoNameOrId:String, progress:String)->Unit
 
     ){
         val db = AppModel.dbContainer
@@ -40,22 +48,25 @@ object RepoActUtil {
 
         repoList.forEach { repoFromDb ->
             doJobThenOffLoading {
+                val notiSender = getNotifySender(repoFromDb.id, sessionId)
+
                 try {
-                    sendProgressNotification(repoFromDb.repoName, "syncing...")
+
+                    notiSender?.sendProgressNotification?.invoke(repoFromDb.repoName, "syncing...")
 
                     Libgit2Helper.doActWithRepoLock(repoFromDb, waitInMillSec = waitInMillSecIfApiBusy, onLockFailed = throwRepoBusy) {
                         syncSingle(
-                            sendProgressNotification = sendProgressNotification,
+                            sendProgressNotification = notiSender?.sendProgressNotification,
                             repoFromDb = repoFromDb,
                             db = db,
                             masterPassword = masterPassword,
                             gitUsernameFromUrl = gitUsernameFromUrl,
                             gitEmailFromUrl = gitEmailFromUrl,
                             settings = settings,
-                            sendSuccessNotification = sendSuccessNotification,
+                            sendSuccessNotification = notiSender?.sendSuccessNotification,
                             autoCommit = autoCommit,
                             routeName = routeName,
-                            sendErrNotification = sendErrNotification,
+                            sendErrNotification = notiSender?.sendErrNotification,
                             force = force
                         )
 
@@ -65,10 +76,12 @@ object RepoActUtil {
 
                     createAndInsertError(repoFromDb.id, "sync by api $routeName err: $errMsg")
 
-                    sendErrNotification("sync err", errMsg, Cons.selectedItem_ChangeList, repoFromDb.id)
+                    notiSender?.sendErrNotification?.invoke("sync err", errMsg, Cons.selectedItem_ChangeList, repoFromDb.id)
 
 
                     MyLog.e(TAG, "route:$routeName, repoName=${repoFromDb.repoName}, err=${e.stackTraceToString()}")
+                }finally {
+                    removeNotifySender(repoFromDb.id, sessionId)
                 }
             }
 
@@ -77,20 +90,20 @@ object RepoActUtil {
     }
 
     private suspend fun syncSingle(
-        sendProgressNotification: (repoNameOrId: String, progress: String) -> Unit,
+        sendProgressNotification: ((repoNameOrId: String, progress: String) -> Unit)?,
         repoFromDb: RepoEntity,
         db: AppContainer,
         masterPassword: String,
         gitUsernameFromUrl: String,
         gitEmailFromUrl: String,
         settings: AppSettings,
-        sendSuccessNotification: (title: String?, msg: String?, startPage: Int?, startRepoId: String?) -> Unit,
+        sendSuccessNotification: ((title: String?, msg: String?, startPage: Int?, startRepoId: String?) -> Unit)?,
         autoCommit: Boolean,
         routeName: String,
-        sendErrNotification: (title: String, msg: String, startPage: Int, startRepoId: String) -> Unit,
+        sendErrNotification: ((title: String, msg: String, startPage: Int, startRepoId: String) -> Unit)?,
         force: Boolean
     ) {
-        sendProgressNotification(repoFromDb.repoName, "pulling...")
+        sendProgressNotification?.invoke(repoFromDb.repoName, "pulling...")
 
         pullSingle(
             repoFromDb = repoFromDb,
@@ -102,7 +115,7 @@ object RepoActUtil {
             sendSuccessNotification = sendSuccessNotification
         )
 
-        sendProgressNotification(repoFromDb.repoName, "pushing...")
+        sendProgressNotification?.invoke(repoFromDb.repoName, "pushing...")
 
         pushSingle(
             repoFromDb = repoFromDb,
@@ -120,13 +133,11 @@ object RepoActUtil {
     }
 
     suspend fun pullRepoList(
+        sessionId:String,
         repoList:List<RepoEntity>,
         routeName: String,
         gitUsernameFromUrl:String,  // leave empty to read from config
         gitEmailFromUrl:String,  // leave empty to read from config
-        sendSuccessNotification:(title:String?, msg:String?, startPage:Int?, startRepoId:String?)->Unit,
-        sendErrNotification:(title:String, msg:String, startPage:Int, startRepoId:String)->Unit,
-        sendProgressNotification:(repoNameOrId:String, progress:String)->Unit
     ) {
         val db = AppModel.dbContainer
         val settings = SettingsUtil.getSettingsSnapshot()
@@ -134,8 +145,10 @@ object RepoActUtil {
 
         repoList.forEach { repoFromDb ->
             doJobThenOffLoading {
+                val notiSender = getNotifySender(repoFromDb.id, sessionId)
+
                 try {
-                    sendProgressNotification(repoFromDb.repoName, "pulling...")
+                    notiSender?.sendProgressNotification?.invoke(repoFromDb.repoName, "pulling...")
 
                     Libgit2Helper.doActWithRepoLock(repoFromDb, waitInMillSec = waitInMillSecIfApiBusy, onLockFailed = throwRepoBusy) {
                         pullSingle(
@@ -145,7 +158,7 @@ object RepoActUtil {
                             gitUsernameFromUrl = gitUsernameFromUrl,
                             gitEmailFromUrl = gitEmailFromUrl,
                             settings = settings,
-                            sendSuccessNotification = sendSuccessNotification
+                            sendSuccessNotification = notiSender?.sendSuccessNotification
                         )
 
                     }
@@ -154,10 +167,13 @@ object RepoActUtil {
 
                     createAndInsertError(repoFromDb.id, "pull by api $routeName err: $errMsg")
 
-                    sendErrNotification("pull err", errMsg, Cons.selectedItem_ChangeList, repoFromDb.id)
+                    notiSender?.sendErrNotification?.invoke("pull err", errMsg, Cons.selectedItem_ChangeList, repoFromDb.id)
 
 
                     MyLog.e(TAG, "route:$routeName, repoName=${repoFromDb.repoName}, err=${e.stackTraceToString()}")
+                }finally {
+                    removeNotifySender(repoFromDb.id, sessionId)
+
                 }
             }
 
@@ -172,7 +188,7 @@ object RepoActUtil {
         gitUsernameFromUrl: String,
         gitEmailFromUrl: String,
         settings: AppSettings,
-        sendSuccessNotification: (title: String?, msg: String?, startPage: Int?, startRepoId: String?) -> Unit
+        sendSuccessNotification: ((title: String?, msg: String?, startPage: Int?, startRepoId: String?) -> Unit)?
     ) {
         if (dbIntToBool(repoFromDb.isDetached)) {
             throw RuntimeException("repo is detached")
@@ -247,19 +263,17 @@ object RepoActUtil {
         }
 
 
-        sendSuccessNotification(repoFromDb.repoName, "pull successfully", Cons.selectedItem_ChangeList, repoFromDb.id)
+        sendSuccessNotification?.invoke(repoFromDb.repoName, "pull successfully", Cons.selectedItem_ChangeList, repoFromDb.id)
     }
 
     suspend fun pushRepoList(
+        sessionId: String,
         repoList:List<RepoEntity>,
         routeName: String,
         gitUsernameFromUrl:String,    // leave empty to read from config
         gitEmailFromUrl:String,    // leave empty to read from config
         autoCommit:Boolean,
         force:Boolean,
-        sendSuccessNotification:(title:String?, msg:String?, startPage:Int?, startRepoId:String?)->Unit,
-        sendErrNotification:(title:String, msg:String, startPage:Int, startRepoId:String)->Unit,
-        sendProgressNotification:(repoNameOrId:String, progress:String)->Unit
 
     ) {
         val db = AppModel.dbContainer
@@ -269,8 +283,9 @@ object RepoActUtil {
         repoList.forEach { repoFromDb ->
             //每仓库一协程并发执行
             doJobThenOffLoading {
+                val notiSender = getNotifySender(repoFromDb.id, sessionId)
                 try {
-                    sendProgressNotification(repoFromDb.repoName, "pushing...")
+                    notiSender?.sendProgressNotification?.invoke(repoFromDb.repoName, "pushing...")
 
                     Libgit2Helper.doActWithRepoLock(repoFromDb, waitInMillSec = waitInMillSecIfApiBusy, onLockFailed = throwRepoBusy) {
                         pushSingle(
@@ -279,10 +294,10 @@ object RepoActUtil {
                             gitUsernameFromUrl = gitUsernameFromUrl,
                             gitEmailFromUrl = gitEmailFromUrl,
                             routeName = routeName,
-                            sendErrNotification = sendErrNotification,
+                            sendErrNotification = notiSender?.sendErrNotification,
                             settings = settings,
                             force = force,
-                            sendSuccessNotification = sendSuccessNotification,
+                            sendSuccessNotification = notiSender?.sendSuccessNotification,
                             db = db,
                             masterPassword = masterPassword
                         )
@@ -294,10 +309,13 @@ object RepoActUtil {
 
                     createAndInsertError(repoFromDb.id, "push by api $routeName err: $errMsg")
 
-                    sendErrNotification("push err", errMsg, Cons.selectedItem_ChangeList, repoFromDb.id)
+                    notiSender?.sendErrNotification?.invoke("push err", errMsg, Cons.selectedItem_ChangeList, repoFromDb.id)
 
 
                     MyLog.e(TAG, "route:$routeName, repoName=${repoFromDb.repoName}, err=${e.stackTraceToString()}")
+                }finally {
+                    removeNotifySender(repoFromDb.id, sessionId)
+
                 }
             }
 
@@ -310,10 +328,10 @@ object RepoActUtil {
         gitUsernameFromUrl: String,
         gitEmailFromUrl: String,
         routeName: String,
-        sendErrNotification: (title: String, msg: String, startPage: Int, startRepoId: String) -> Unit,
+        sendErrNotification: ((title: String, msg: String, startPage: Int, startRepoId: String) -> Unit)?,
         settings: AppSettings,
         force: Boolean,
-        sendSuccessNotification: (title: String?, msg: String?, startPage: Int?, startRepoId: String?) -> Unit,
+        sendSuccessNotification: ((title: String?, msg: String?, startPage: Int?, startRepoId: String?) -> Unit)?,
         db: AppContainer,
         masterPassword: String
     ) {
@@ -355,7 +373,7 @@ object RepoActUtil {
                     if (Libgit2Helper.hasConflictItemInRepo(gitRepo)) {
                         MyLog.w(TAG, "http server: api=$routeName, repoName=${repoFromDb.repoName}, err=conflict abort the commit")
                         // 显示个手机通知，点击进入ChangeList并定位到对应仓库
-                        sendErrNotification("Error", "Conflict abort the commit", Cons.selectedItem_ChangeList, repoFromDb.id)
+                        sendErrNotification?.invoke("Error", "Conflict abort the commit", Cons.selectedItem_ChangeList, repoFromDb.id)
                     } else {
                         // 有username 和 email，且无冲突
 
@@ -379,7 +397,7 @@ object RepoActUtil {
                             if (ret.hasError()) {
                                 MyLog.w(TAG, "http server: api=$routeName, repoName=${repoFromDb.repoName}, create commit err: ${ret.msg}, exception=${ret.exception?.printStackTrace()}")
                                 // 显示个手机通知，点击进入ChangeList并定位到对应仓库
-                                sendErrNotification("Error", "Commit err: ${ret.msg}", Cons.selectedItem_ChangeList, repoFromDb.id)
+                                sendErrNotification?.invoke("Error", "Commit err: ${ret.msg}", Cons.selectedItem_ChangeList, repoFromDb.id)
                             } else if(ret.data != null){
                                 //更新本地oid，不然后面会误认为up to date，然后不推送
                                 upstream.localOid = ret.data!!.toString()
@@ -401,7 +419,7 @@ object RepoActUtil {
 
                 if (ahead < 1) {
                     //通过behind检测后，如果进入此代码块，代表本地不落后也不领先，即“up to date”，并不需要推送，可返回了
-                    sendSuccessNotification(repoFromDb.repoName, "Already up-to-date", Cons.selectedItem_ChangeList, repoFromDb.id)
+                    sendSuccessNotification?.invoke(repoFromDb.repoName, "Already up-to-date", Cons.selectedItem_ChangeList, repoFromDb.id)
 
 
                     return
@@ -431,7 +449,7 @@ object RepoActUtil {
         }
 
 
-        sendSuccessNotification(repoFromDb.repoName, "push successfully", Cons.selectedItem_ChangeList, repoFromDb.id)
+        sendSuccessNotification?.invoke(repoFromDb.repoName, "push successfully", Cons.selectedItem_ChangeList, repoFromDb.id)
     }
 
 

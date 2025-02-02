@@ -12,9 +12,9 @@ class HttpServiceHoldNotify private constructor(
     override val notifyId:Int
 ): NotifyBase(
     TAG = "HttpServiceHoldNotify",
-    channelId="service_notify",
-    channelName = "Service",
-    channelDesc = "Show Service Notifications",
+    channelId="http_service_hold_notify",
+    channelName = "Http Service",
+    channelDesc = "Show Http Foreground Service Notification",
     actionList = { context ->
         listOf(
             // "stop" action, click stop service
