@@ -1,7 +1,9 @@
 A modern git client for android
 
 features：
-- pull/push
+- pull/push when enter/exit specified apps
+- tasker supported via http service
+- fetch/merge/pull/push/sync/checkout/reset
 - resolve conflict
 - files explorer
 - text editor

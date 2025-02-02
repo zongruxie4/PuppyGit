@@ -1,17 +1,13 @@
 <img src="screenshots/banner.png"/>
 
 
-# Happy New year!
-In 2024, I spent 1 year for create this app, and make it to become basic good in my mind, I was want to make it as paid app, but the plan broken by some reasons, After 2025, if I can get some donations by users, then I'll spent more time to make this app great and implement more features, else, I'll reduce time on it. but don't worry, I'll still spent some time to maintance this app even no donation, so welcome pr, and report bug, and feature request.
-
-
 # PuppyGit
 PuppyGit is A Git Client for Android, Open Source and No Ads and Free to use
 
 ## Author
 PuppyGit made by Bandeapart1964 of catpuppyapp
 
-### PuppyGit is a free app, but if it helpful to you, please consider Star + <a href=https://github.com/catpuppyapp/PuppyGit/blob/main/donate.md>Donate</a>, it will help this project long live.
+### I feel tired with this app, giving it a Star + <a href=https://github.com/catpuppyapp/PuppyGit/blob/main/donate.md>Donate</a>, it will help provide motivation
 
 
 
