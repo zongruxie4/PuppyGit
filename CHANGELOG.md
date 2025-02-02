@@ -1,3 +1,11 @@
+next version:
+- optimize notification method
+
+
+- 优化通知显示逻辑
+
+---
+
 1.0.8.1v57 - 20250131:
 - support auto pull/push when enter/exit specified apps (issue #28)
 - support run a http service, it can used for request action by tasker or other apps which can send http request (issue #23)
