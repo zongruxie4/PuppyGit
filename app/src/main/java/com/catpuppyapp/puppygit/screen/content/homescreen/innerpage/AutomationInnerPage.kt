@@ -31,9 +31,12 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalClipboardManager
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.TextFieldValue
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.catpuppyapp.puppygit.compose.AppItem
@@ -78,6 +81,7 @@ fun AutomationInnerPage(
     val scope = rememberCoroutineScope()
     val activityContext = LocalContext.current
     val clipboardManager = LocalClipboardManager.current
+    val haptic = LocalHapticFeedback.current
 
     val settingsState = mutableCustomStateOf(stateKeyTag, "settingsState", SettingsUtil.getSettingsSnapshot())
 
@@ -359,9 +363,11 @@ fun AutomationInnerPage(
                 horizontalAlignment = Alignment.CenterHorizontally,
                 verticalArrangement = Arrangement.Center,
             ) {
-                Text(stringResource(R.string.app_list), fontSize = 30.sp)
+                Text(stringResource(R.string.app_list), fontSize = 30.sp, textAlign = TextAlign.Center)
                 Spacer(Modifier.height(10.dp))
-                Text(stringResource(R.string.will_auto_pull_push_linked_repos_when_selected_apps_enter_exit))
+                Text(stringResource(R.string.will_auto_pull_push_linked_repos_when_selected_apps_enter_exit), textAlign = TextAlign.Center)
+                Spacer(Modifier.height(10.dp))
+                Text(stringResource(R.string.click_to_switch_selected_unselected_long_click_to_config_linked_repos), fontSize = 12.sp, fontStyle = FontStyle.Italic, textAlign = TextAlign.Center)
             }
 
         }
@@ -425,35 +431,25 @@ fun AutomationInnerPage(
                 filteredAddedAppList.toList().forEach { appInfo ->
                     item {
                         AppItem(
-                            appInfo,
-                            trailIcon = { iconInitModifier ->
-                                IconButton(
-                                    modifier = iconInitModifier,
-
-                                    onClick = {
-                                        addedAppList.value.remove(appInfo)
-
-                                        val tmp = notAddedAppList.value.toList()
-                                        //添加到未选中列表头部
-                                        notAddedAppList.value.clear()
-                                        notAddedAppList.value.add(appInfo)
-                                        notAddedAppList.value.addAll(tmp)
-
-                                        //保存，从列表移除
-                                        SettingsUtil.update {
-                                            it.automation.packageNameAndRepoIdsMap.remove(appInfo.packageName)
-                                        }
-                                    }
-                                ) {
-                                    Icon(
-                                        imageVector = Icons.Filled.DeleteOutline,
-                                        contentDescription = stringResource(R.string.trash_bin_icon_for_delete_item)
-                                    )
-                                }
+                            appInfo = appInfo,
+                            haptic = haptic,
+                            onLongClick = { clickedApp ->
+                                initSelectReposDialog(clickedApp.packageName, clickedApp.appName)
                             }
+                        ) {
 
-                        ) { clickedApp ->
-                            initSelectReposDialog(clickedApp.packageName, clickedApp.appName)
+                            addedAppList.value.remove(appInfo)
+
+                            val tmp = notAddedAppList.value.toList()
+                            //添加到未选中列表头部
+                            notAddedAppList.value.clear()
+                            notAddedAppList.value.add(appInfo)
+                            notAddedAppList.value.addAll(tmp)
+
+                            //保存，从列表移除
+                            SettingsUtil.update {
+                                it.automation.packageNameAndRepoIdsMap.remove(appInfo.packageName)
+                            }
                         }
 
                         HorizontalDivider()
@@ -479,29 +475,19 @@ fun AutomationInnerPage(
                 filteredNotAddedAppList.toList().forEach { appInfo ->
                     item {
                         AppItem(
-                            appInfo,
-                            trailIcon = { iconInitModifier ->
-                                IconButton(
-                                    modifier = iconInitModifier,
-                                    onClick = {
-                                        notAddedAppList.value.remove(appInfo)
-                                        //添加到已选中列表末尾
-                                        addedAppList.value.add(appInfo)
+                            appInfo = appInfo,
+                            haptic = haptic,
+                            onLongClick = null
+                        ) {
+                            notAddedAppList.value.remove(appInfo)
+                            //添加到已选中列表末尾
+                            addedAppList.value.add(appInfo)
 
-                                        //保存，添加到列表
-                                        SettingsUtil.update {
-                                            it.automation.packageNameAndRepoIdsMap.put(appInfo.packageName, listOf())
-                                        }
-                                    }
-                                ) {
-                                    Icon(
-                                        imageVector = Icons.Filled.Add,
-                                        contentDescription = stringResource(R.string.add)
-                                    )
-                                }
-                            },
-                            onClick = null
-                        )
+                            //保存，添加到列表
+                            SettingsUtil.update {
+                                it.automation.packageNameAndRepoIdsMap.put(appInfo.packageName, listOf())
+                            }
+                        }
 
                         HorizontalDivider()
                     }

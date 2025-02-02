@@ -1178,6 +1178,7 @@
     <string name="intro_go_to_app_info_to_allow_autostart_and_disable_battery_optimization">或许你想前往应用详情页以 \'允许自动启动\' 并 \'禁用电池优化\'</string>
     <string name="set_upstream_err_remote_is_invalid">设置上游出错，远程无效</string>
     <string name="welcome_please_set_git_username_and_email">欢迎！请为git设置用户名和邮箱！否则将无法创建提交！</string>
+    <string name="click_to_switch_selected_unselected_long_click_to_config_linked_repos">点击切换选中，长按已选中App可配置关联仓库</string>
 
 
 </resources>
