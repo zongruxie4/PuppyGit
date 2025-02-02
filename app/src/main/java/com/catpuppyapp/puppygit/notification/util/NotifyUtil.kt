@@ -13,9 +13,10 @@ import com.catpuppyapp.puppygit.utils.AppModel
 
 object NotifyUtil {
     private val notifyList:List<NotifyBase> = listOf(
-        NormalNotify,
-        HttpServiceHoldNotify,
-        AutomationNotify
+        //这创建的实例只是用来注册通知渠道的，通知id随便填个数就行，反正不用
+        NormalNotify.create(1),
+        HttpServiceHoldNotify.create(2),
+        AutomationNotify.create(3)
     )
 
     /**

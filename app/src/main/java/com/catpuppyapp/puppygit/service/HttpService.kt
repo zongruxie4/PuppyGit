@@ -8,7 +8,6 @@ import android.content.pm.ServiceInfo
 import android.os.Build
 import android.os.IBinder
 import com.catpuppyapp.puppygit.constants.Cons
-import com.catpuppyapp.puppygit.constants.IDS
 import com.catpuppyapp.puppygit.data.entity.RepoEntity
 import com.catpuppyapp.puppygit.dto.genConfigDto
 import com.catpuppyapp.puppygit.notification.HttpServiceHoldNotify
@@ -36,7 +35,7 @@ class HttpService : Service() {
     companion object: ServiceNotify(HttpServiceHoldNotify) {
 
         private const val TAG = "HttpService"
-        private const val serviceId = IDS.HttpService  //这id必须唯一，最好和notifyid也不一样
+        private const val serviceNotificationId = 1  //service前台通知的通知id，必须不能是0，随便个常量就行，如果要在这个渠道显示其他通知，其他id必须和这个不一样，不然应该会覆盖
 
 
         private fun sendSuccessNotificationIfEnable(settings: AppSettings) = { title:String?, msg:String?, startPage:Int?, startRepoId:String? ->
@@ -206,9 +205,9 @@ class HttpService : Service() {
 
             // 启动前台服务
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.UPSIDE_DOWN_CAKE) { // UPSIDE_DOWN_CAKE is sdk 34
-                startForeground(serviceId, getNotification(settings), ServiceInfo.FOREGROUND_SERVICE_TYPE_SPECIAL_USE)
+                startForeground(serviceNotificationId, getNotification(settings), ServiceInfo.FOREGROUND_SERVICE_TYPE_SPECIAL_USE)
             }else {
-                startForeground(serviceId, getNotification(settings))
+                startForeground(serviceNotificationId, getNotification(settings))
             }
 
             doJobThenOffLoading {

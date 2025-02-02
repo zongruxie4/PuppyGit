@@ -1,12 +1,18 @@
 package com.catpuppyapp.puppygit.notification
 
-import com.catpuppyapp.puppygit.constants.IDS
 import com.catpuppyapp.puppygit.notification.base.NotifyBase
 
-object NormalNotify: NotifyBase(
+class NormalNotify private constructor(
+    override val notifyId:Int
+): NotifyBase(
     TAG = "NormalNotify",
-    notifyId = IDS.NormalNotify,  //在你app里你这个通知id，必须唯一
     channelId="normal_notify",
     channelName = "Normal",
     channelDesc = "Show Notifications",
-)
+) {
+    companion object {
+        fun create(notifyId:Int):NotifyBase {
+            return NormalNotify(notifyId)
+        }
+    }
+}
