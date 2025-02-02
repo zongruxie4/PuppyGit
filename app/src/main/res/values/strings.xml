@@ -1206,6 +1206,7 @@
     <string name="set_upstream_err_remote_is_invalid">Set upstream err, remote is invalid</string>
     <string name="welcome_please_set_git_username_and_email">Welcome! Please set git username and email! This is necessary for create commit!</string>
     <string name="click_to_switch_selected_unselected_long_click_to_config_linked_repos">Click to switch Selected/Unselected, Long-Click a selected App to config linked Repos</string>
+    <string name="cut">Cut</string>
 
 
 </resources>

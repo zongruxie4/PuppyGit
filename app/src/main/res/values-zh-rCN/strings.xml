@@ -1179,6 +1179,8 @@
     <string name="set_upstream_err_remote_is_invalid">设置上游出错，远程无效</string>
     <string name="welcome_please_set_git_username_and_email">欢迎！请为git设置用户名和邮箱！否则将无法创建提交！</string>
     <string name="click_to_switch_selected_unselected_long_click_to_config_linked_repos">点击切换选中，长按已选中App可配置关联仓库</string>
+    <!-- 故意翻译成剪切而不是剪贴，剪切更普适，无论用在文件还是剪辑都合理 -->
+    <string name="cut">剪切</string>
 
 
 </resources>

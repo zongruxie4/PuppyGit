@@ -15,6 +15,7 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ContentCopy
+import androidx.compose.material.icons.filled.ContentCut
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.SelectAll
 import androidx.compose.material3.MaterialTheme
@@ -142,7 +143,14 @@ fun FileEditor(
         }
     }
 
+    val deleteLines = {
+        //删除选中行
+        editableController.value.createDeletedState()
 
+        //删除行，改变内容flag设为真
+        isContentChanged.value=true
+        editorPageIsContentSnapshoted.value=false
+    }
 
     if(showDeleteDialog.value) {
         ConfirmDialog(
@@ -153,13 +161,8 @@ fun FileEditor(
         ) {
             //关弹窗
             showDeleteDialog.value=false
-
-            //删除选中行
-            editableController.value.createDeletedState()
-
-            //删除行，改变内容flag设为真
-            isContentChanged.value=true
-            editorPageIsContentSnapshoted.value=false
+            //删除行
+            deleteLines()
             //显示通知
             Msg.requireShow(activityContext.getString(R.string.deleted))
         }
@@ -289,13 +292,15 @@ fun FileEditor(
             }
             val iconList = listOf(
                 Icons.Filled.Delete,
+                Icons.Filled.ContentCut,
                 Icons.Filled.ContentCopy,
                 Icons.Filled.SelectAll
             )
             val iconTextList = listOf(
-                activityContext.getString(R.string.delete),
-                activityContext.getString(R.string.copy),
-                activityContext.getString(R.string.select_all),
+                stringResource(R.string.delete),
+                stringResource(R.string.cut),
+                stringResource(R.string.copy),
+                stringResource(R.string.select_all),
             )
             val iconOnClickList = listOf(
                 onDelete@{
@@ -312,7 +317,17 @@ fun FileEditor(
 
                     showDeleteDialog.value = true
                 },
+                onCut@{
+                    val selectedLinesNum = textEditorState.value.getSelectedCount();
+                    if (selectedLinesNum < 1) {
+                        Msg.requireShow(activityContext.getString(R.string.no_line_selected))
+                        return@onCut
+                    }
 
+                    clipboardManager.setText(AnnotatedString(textEditorState.value.getSelectedText()))
+                    Msg.requireShow(replaceStringResList(activityContext.getString(R.string.n_lines_copied), listOf(selectedLinesNum.toString())), )
+                    deleteLines()
+                },
                 onCopy@{
                     val selectedLinesNum = textEditorState.value.getSelectedCount();
                     if (selectedLinesNum < 1) {
@@ -334,6 +349,7 @@ fun FileEditor(
             val hasLineSelected = {getSelectedFilesCount() > 0}
             val iconEnableList = listOf(
                 delete@{ readOnlyMode.not() && hasLineSelected() },  // delete
+                cut@{ hasLineSelected() },  // cut
                 copy@{ hasLineSelected() },  // copy
                 selectAll@{ true },  // select all
             )
