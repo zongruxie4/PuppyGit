@@ -1075,7 +1075,6 @@
     <string name="allowed_plz_re_try_clone_fetch_push">Разрешено, пожалуйста, повторите клонирование/запрос/отправку</string>
     <string name="http_s_credential">Учетные данные http(s)</string>
     <string name="http_s">http(s)</string>
-    <string name="if_unable_choose_a_path_just_copy_paste_instead">Если не удается выбрать путь, возможно, ваша система удаляет средство выбора файлов. Просто скопируйте нужный путь и вставьте его вместо этого.</string>
     <string name="fetch_url">URL для получения</string>
     <!--  the placeholder is remote name,   e.g. Fetching origin...-->
     <string name="fetching_remotename">Получение ph_a3f241dc_1…</string>
@@ -1203,6 +1202,7 @@
     <string name="welcome_please_set_git_username_and_email">Welcome! Please set git username and email! This is necessary for create commit!</string>
     <string name="click_to_switch_selected_unselected_long_click_to_config_linked_repos">Click to switch Selected/Unselected, Long-Click a selected App to config linked Repos</string>
     <string name="cut">Cut</string>
+    <string name="if_unable_choose_a_path_just_copy_paste_instead">If unable to choose a path, maybe your system removed the file picker, just copy the path from the \'Files\' and paste it to here instead</string>
 
 
 </resources>

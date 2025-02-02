@@ -1059,7 +1059,6 @@
     <string name="allowed_plz_re_try_clone_fetch_push">已允许, 请重试 克隆/下载/推送</string>
     <string name="http_s_credential">http(s)凭据</string>
     <string name="http_s">http(s)</string>
-    <string name="if_unable_choose_a_path_just_copy_paste_instead">如果无法选择路径，可能你的系统精简了文件选择器，可以复制你希望的路径然后粘贴到这里来替代。</string>
     <string name="fetch_url">下载地址</string>
     <string name="fetching_remotename">正在下载 ph_a3f241dc_1…</string>
     <string name="repo_state">仓库状态</string>
@@ -1181,6 +1180,7 @@
     <string name="click_to_switch_selected_unselected_long_click_to_config_linked_repos">点击切换选中，长按已选中App可配置关联仓库</string>
     <!-- 故意翻译成剪切而不是剪贴，剪切更普适，无论用在文件还是剪辑都合理 -->
     <string name="cut">剪切</string>
+    <string name="if_unable_choose_a_path_just_copy_paste_instead">如果无法选择路径，或许你的系统精简了文件选择器，可以前往\'文件管理器\'复制你希望的路径然后粘贴到这里来替代</string>
 
 
 </resources>

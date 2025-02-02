@@ -1082,7 +1082,6 @@
     <string name="allowed_plz_re_try_clone_fetch_push">Allowed, plz re-try Clone/Fetch/Push</string>
     <string name="http_s_credential">http(s) Credential</string>
     <string name="http_s">http(s)</string>
-    <string name="if_unable_choose_a_path_just_copy_paste_instead">If unable to choose a path, may be your system removed the file picker. Just copy the path you wised and paste it instead.</string>
     <string name="fetch_url">Fetch Url</string>
 <!--  the placeholder is remote name,   e.g. Fetching origin...-->
     <string name="fetching_remotename">Fetching ph_a3f241dc_1…</string>
@@ -1207,6 +1206,7 @@
     <string name="welcome_please_set_git_username_and_email">Welcome! Please set git username and email! This is necessary for create commit!</string>
     <string name="click_to_switch_selected_unselected_long_click_to_config_linked_repos">Click to switch Selected/Unselected, Long-Click a selected App to config linked Repos</string>
     <string name="cut">Cut</string>
+    <string name="if_unable_choose_a_path_just_copy_paste_instead">If unable to choose a path, maybe your system removed the file picker, just copy the path from the \'Files\' and paste it to here instead</string>
 
 
 </resources>
