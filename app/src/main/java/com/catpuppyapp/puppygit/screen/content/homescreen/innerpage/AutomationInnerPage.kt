@@ -103,8 +103,8 @@ fun AutomationInnerPage(
     val appListLoading = rememberSaveable { mutableStateOf(true) }
 
     val progressNotify = rememberSaveable { mutableStateOf(settingsState.value.automation.showNotifyWhenProgress) }
-    val errNotify = rememberSaveable { mutableStateOf(settingsState.value.automation.showNotifyWhenErr) }
-    val successNotify = rememberSaveable { mutableStateOf(settingsState.value.automation.showNotifyWhenSuccess) }
+//    val errNotify = rememberSaveable { mutableStateOf(settingsState.value.automation.showNotifyWhenErr) }
+//    val successNotify = rememberSaveable { mutableStateOf(settingsState.value.automation.showNotifyWhenSuccess) }
 
     val packageNameForSelectReposDialog = rememberSaveable { mutableStateOf("") }
     val appNameForSelectReposDialog = rememberSaveable { mutableStateOf("") }
@@ -274,55 +274,55 @@ fun AutomationInnerPage(
 
 
         }
-
-        item {
-            SettingsContent(onClick = {
-                val newValue = !successNotify.value
-
-                //save
-                successNotify.value = newValue
-                SettingsUtil.update {
-                    it.automation.showNotifyWhenSuccess = newValue
-                }
-            }) {
-                Column(modifier = Modifier.fillMaxWidth(itemLeftWidthForSwitcher)) {
-                    Text(stringResource(R.string.success_notification), fontSize = itemFontSize)
-                }
-
-                Icon(
-                    modifier = Modifier.size(switcherIconSize),
-                    imageVector = UIHelper.getIconForSwitcher(successNotify.value),
-                    contentDescription = if(successNotify.value) stringResource(R.string.enable) else stringResource(R.string.disable),
-                    tint = UIHelper.getColorForSwitcher(successNotify.value),
-                )
-            }
-
-        }
-
-
-        item {
-            SettingsContent(onClick = {
-                val newValue = !errNotify.value
-
-                //save
-                errNotify.value = newValue
-                SettingsUtil.update {
-                    it.automation.showNotifyWhenErr = newValue
-                }
-            }) {
-                Column(modifier = Modifier.fillMaxWidth(itemLeftWidthForSwitcher)) {
-                    Text(stringResource(R.string.err_notification), fontSize = itemFontSize)
-                }
-
-                Icon(
-                    modifier = Modifier.size(switcherIconSize),
-                    imageVector = UIHelper.getIconForSwitcher(errNotify.value),
-                    contentDescription = if(errNotify.value) stringResource(R.string.enable) else stringResource(R.string.disable),
-                    tint = UIHelper.getColorForSwitcher(errNotify.value),
-                )
-            }
-
-        }
+//
+//        item {
+//            SettingsContent(onClick = {
+//                val newValue = !successNotify.value
+//
+//                //save
+//                successNotify.value = newValue
+//                SettingsUtil.update {
+//                    it.automation.showNotifyWhenSuccess = newValue
+//                }
+//            }) {
+//                Column(modifier = Modifier.fillMaxWidth(itemLeftWidthForSwitcher)) {
+//                    Text(stringResource(R.string.success_notification), fontSize = itemFontSize)
+//                }
+//
+//                Icon(
+//                    modifier = Modifier.size(switcherIconSize),
+//                    imageVector = UIHelper.getIconForSwitcher(successNotify.value),
+//                    contentDescription = if(successNotify.value) stringResource(R.string.enable) else stringResource(R.string.disable),
+//                    tint = UIHelper.getColorForSwitcher(successNotify.value),
+//                )
+//            }
+//
+//        }
+//
+//
+//        item {
+//            SettingsContent(onClick = {
+//                val newValue = !errNotify.value
+//
+//                //save
+//                errNotify.value = newValue
+//                SettingsUtil.update {
+//                    it.automation.showNotifyWhenErr = newValue
+//                }
+//            }) {
+//                Column(modifier = Modifier.fillMaxWidth(itemLeftWidthForSwitcher)) {
+//                    Text(stringResource(R.string.err_notification), fontSize = itemFontSize)
+//                }
+//
+//                Icon(
+//                    modifier = Modifier.size(switcherIconSize),
+//                    imageVector = UIHelper.getIconForSwitcher(errNotify.value),
+//                    contentDescription = if(errNotify.value) stringResource(R.string.enable) else stringResource(R.string.disable),
+//                    tint = UIHelper.getColorForSwitcher(errNotify.value),
+//                )
+//            }
+//
+//        }
 
         item {
             Column(

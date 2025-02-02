@@ -70,13 +70,13 @@ internal class HttpServer(
     }
 
     private fun sendSuccessNotificationIfEnable(serviceNotify: ServiceNotify, settings: AppSettings) = { title:String?, msg:String?, startPage:Int?, startRepoId:String? ->
-        if(settings.httpService.showNotifyWhenSuccess) {
+        if(settings.httpService.showNotifyWhenProgress) {
             serviceNotify.sendSuccessNotification(title, msg, startPage, startRepoId)
         }
     }
 
     private fun sendErrNotificationIfEnable(serviceNotify: ServiceNotify, settings:AppSettings)={ title:String, msg:String, startPage:Int, startRepoId:String ->
-        if(settings.httpService.showNotifyWhenErr) {
+        if(settings.httpService.showNotifyWhenProgress) {
             serviceNotify.sendErrNotification(title, msg, startPage, startRepoId)
         }
     }

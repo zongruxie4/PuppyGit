@@ -35,13 +35,13 @@ class MyAccessibilityService: AccessibilityService() {
 
 
         private fun sendSuccessNotificationIfEnable(serviceNotify: ServiceNotify, settings: AppSettings) = { title:String?, msg:String?, startPage:Int?, startRepoId:String? ->
-            if(settings.automation.showNotifyWhenSuccess) {
+            if(settings.automation.showNotifyWhenProgress) {
                 serviceNotify.sendSuccessNotification(title, msg, startPage, startRepoId)
             }
         }
 
         private fun sendErrNotificationIfEnable(serviceNotify: ServiceNotify, settings: AppSettings)={ title:String, msg:String, startPage:Int, startRepoId:String ->
-            if(settings.automation.showNotifyWhenErr) {
+            if(settings.automation.showNotifyWhenProgress) {
                 serviceNotify.sendErrNotification(title, msg, startPage, startRepoId)
             }
         }

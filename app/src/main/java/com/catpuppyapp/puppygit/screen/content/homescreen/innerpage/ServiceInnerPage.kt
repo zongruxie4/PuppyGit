@@ -101,8 +101,8 @@ fun ServiceInnerPage(
     val launchOnAppStartup = rememberSaveable { mutableStateOf(settingsState.value.httpService.launchOnAppStartup) }
     val launchOnSystemStartUp = rememberSaveable { mutableStateOf(HttpService.launchOnSystemStartUpEnabled(activityContext)) }
     val progressNotify = rememberSaveable { mutableStateOf(settingsState.value.httpService.showNotifyWhenProgress) }
-    val errNotify = rememberSaveable { mutableStateOf(settingsState.value.httpService.showNotifyWhenErr) }
-    val successNotify = rememberSaveable { mutableStateOf(settingsState.value.httpService.showNotifyWhenSuccess) }
+//    val errNotify = rememberSaveable { mutableStateOf(settingsState.value.httpService.showNotifyWhenErr) }
+//    val successNotify = rememberSaveable { mutableStateOf(settingsState.value.httpService.showNotifyWhenSuccess) }
 
     val ipWhitelist = mutableCustomStateListOf(stateKeyTag, "ipWhitelist") { settingsState.value.httpService.ipWhiteList }
     val ipWhitelistBuf = rememberSaveable { mutableStateOf("") }
@@ -581,52 +581,52 @@ fun ServiceInnerPage(
             )
         }
 
-
-        SettingsContent(onClick = {
-            val newValue = !successNotify.value
-
-            //save
-            successNotify.value = newValue
-            SettingsUtil.update {
-                it.httpService.showNotifyWhenSuccess = newValue
-            }
-        }) {
-            Column(modifier = Modifier.fillMaxWidth(itemLeftWidthForSwitcher)) {
-                Text(stringResource(R.string.success_notification), fontSize = itemFontSize)
-                Text(stringResource(R.string.require_restart_service), fontSize = itemDescFontSize, fontWeight = FontWeight.Light, fontStyle = FontStyle.Italic)
-            }
-
-            Icon(
-                modifier = Modifier.size(switcherIconSize),
-                imageVector = UIHelper.getIconForSwitcher(successNotify.value),
-                contentDescription = if(successNotify.value) stringResource(R.string.enable) else stringResource(R.string.disable),
-                tint = UIHelper.getColorForSwitcher(successNotify.value),
-            )
-        }
-
-
-        SettingsContent(onClick = {
-            val newValue = !errNotify.value
-
-            //save
-            errNotify.value = newValue
-            SettingsUtil.update {
-                it.httpService.showNotifyWhenErr = newValue
-            }
-        }) {
-            Column(modifier = Modifier.fillMaxWidth(itemLeftWidthForSwitcher)) {
-                Text(stringResource(R.string.err_notification), fontSize = itemFontSize)
-                Text(stringResource(R.string.require_restart_service), fontSize = itemDescFontSize, fontWeight = FontWeight.Light, fontStyle = FontStyle.Italic)
-            }
-
-            Icon(
-                modifier = Modifier.size(switcherIconSize),
-                imageVector = UIHelper.getIconForSwitcher(errNotify.value),
-                contentDescription = if(errNotify.value) stringResource(R.string.enable) else stringResource(R.string.disable),
-                tint = UIHelper.getColorForSwitcher(errNotify.value),
-            )
-        }
-
+//
+//        SettingsContent(onClick = {
+//            val newValue = !successNotify.value
+//
+//            //save
+//            successNotify.value = newValue
+//            SettingsUtil.update {
+//                it.httpService.showNotifyWhenSuccess = newValue
+//            }
+//        }) {
+//            Column(modifier = Modifier.fillMaxWidth(itemLeftWidthForSwitcher)) {
+//                Text(stringResource(R.string.success_notification), fontSize = itemFontSize)
+//                Text(stringResource(R.string.require_restart_service), fontSize = itemDescFontSize, fontWeight = FontWeight.Light, fontStyle = FontStyle.Italic)
+//            }
+//
+//            Icon(
+//                modifier = Modifier.size(switcherIconSize),
+//                imageVector = UIHelper.getIconForSwitcher(successNotify.value),
+//                contentDescription = if(successNotify.value) stringResource(R.string.enable) else stringResource(R.string.disable),
+//                tint = UIHelper.getColorForSwitcher(successNotify.value),
+//            )
+//        }
+//
+//
+//        SettingsContent(onClick = {
+//            val newValue = !errNotify.value
+//
+//            //save
+//            errNotify.value = newValue
+//            SettingsUtil.update {
+//                it.httpService.showNotifyWhenErr = newValue
+//            }
+//        }) {
+//            Column(modifier = Modifier.fillMaxWidth(itemLeftWidthForSwitcher)) {
+//                Text(stringResource(R.string.err_notification), fontSize = itemFontSize)
+//                Text(stringResource(R.string.require_restart_service), fontSize = itemDescFontSize, fontWeight = FontWeight.Light, fontStyle = FontStyle.Italic)
+//            }
+//
+//            Icon(
+//                modifier = Modifier.size(switcherIconSize),
+//                imageVector = UIHelper.getIconForSwitcher(errNotify.value),
+//                contentDescription = if(errNotify.value) stringResource(R.string.enable) else stringResource(R.string.disable),
+//                tint = UIHelper.getColorForSwitcher(errNotify.value),
+//            )
+//        }
+//
 
         PaddingRow()
     }
