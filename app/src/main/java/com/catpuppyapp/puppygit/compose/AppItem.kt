@@ -55,7 +55,7 @@ fun AppItem(
         )
 
         Column(
-            modifier = Modifier.fillMaxWidth(),
+            modifier = Modifier.padding(5.dp).fillMaxWidth(),
             verticalArrangement = Arrangement.Center,
         ) {
             Text(text = appInfo.appName)
