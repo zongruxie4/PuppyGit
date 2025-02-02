@@ -58,6 +58,8 @@ see:<br>
 
 
 ## Features
+- auto pull/push when enter/exit specified apps(useful for auto sync note taking app like obsidian/markor)
+- call pull/push/sync by tasker or other automation tools via http service 
 - fetch
 - merge
 - pull
