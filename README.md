@@ -105,7 +105,7 @@ I recommend every user set a master password, it will used to encrypt password/p
 ### if your language added
 1. find the `strings.xml` in the `res/values-your_language_code`
 2. update it
-3 send pr 
+3. send pr 
 
 ### if your language not added
 1. Download <a href="https://github.com/catpuppyapp/PuppyGit/blob/main/app/src/main/res/values/strings.xml">strings.xml</a>
