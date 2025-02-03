@@ -1,6 +1,7 @@
 package com.catpuppyapp.puppygit.screen.content.homescreen.innerpage
 
 import androidx.activity.compose.BackHandler
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
@@ -14,12 +15,12 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Close
-import androidx.compose.material.icons.filled.DeleteOutline
+import androidx.compose.material.icons.outlined.Add
+import androidx.compose.material.icons.outlined.DeleteOutline
+import androidx.compose.material.icons.outlined.Settings
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -156,43 +157,75 @@ fun AutomationInnerPage(
             filterKeyWord = reposFilterKeyword,
             selectedItemFormatter={ clickedRepo ->
                 RepoNameAndIdItem(clickedRepo) {
-                    selectedRepoList.value.remove(clickedRepo)
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.End
+                    ) {
 
-                    val tmp = unselectedRepoList.value.toList()
-                    //添加到未选中列表头部
-                    unselectedRepoList.value.clear()
-                    unselectedRepoList.value.add(clickedRepo)
-                    unselectedRepoList.value.addAll(tmp)
+                        Icon(
+                            modifier=Modifier.clickable {
+                                selectedRepoList.value.remove(clickedRepo)
 
-                    //保存
-                    SettingsUtil.update {
-                        it.automation.packageNameAndRepoIdsMap.let {
-                            it.put(
-                                packageNameForSelectReposDialog.value,
-                                //按仓库名排序，然后把id存上
-                                selectedRepoList.value.toList().sortedBy { it.repoName }.map { it.id }
-                            )
-                        }
+                                val tmp = unselectedRepoList.value.toList()
+                                //添加到未选中列表头部
+                                unselectedRepoList.value.clear()
+                                unselectedRepoList.value.add(clickedRepo)
+                                unselectedRepoList.value.addAll(tmp)
+
+                                //保存
+                                SettingsUtil.update {
+                                    it.automation.packageNameAndRepoIdsMap.let {
+                                        it.put(
+                                            packageNameForSelectReposDialog.value,
+                                            //按仓库名排序，然后把id存上
+                                            selectedRepoList.value.toList().sortedBy { it.repoName }.map { it.id }
+                                        )
+                                    }
+                                }
+                            },
+                            imageVector = Icons.Outlined.DeleteOutline,
+                            contentDescription = stringResource(R.string.delete)
+                        )
                     }
+
+
                 }
 
                 HorizontalDivider()
             },
             unselectedItemFormatter = { clickedRepo ->
                 RepoNameAndIdItem(clickedRepo) {
-                    unselectedRepoList.value.remove(clickedRepo)
-                    //添加到已选中列表末尾
-                    selectedRepoList.value.add(clickedRepo)
 
-                    //保存
-                    SettingsUtil.update {
-                        it.automation.packageNameAndRepoIdsMap.let {
-                            it.put(
-                                packageNameForSelectReposDialog.value,
-                                selectedRepoList.value.toList().sortedBy { it.repoName }.map { it.id }
-                            )
-                        }
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.End
+                    ) {
+
+                        Icon(
+                            modifier=Modifier.clickable {
+                                unselectedRepoList.value.remove(clickedRepo)
+                                //添加到已选中列表末尾
+                                selectedRepoList.value.add(clickedRepo)
+
+                                //保存
+                                SettingsUtil.update {
+                                    it.automation.packageNameAndRepoIdsMap.let {
+                                        it.put(
+                                            packageNameForSelectReposDialog.value,
+                                            selectedRepoList.value.toList().sortedBy { it.repoName }.map { it.id }
+                                        )
+                                    }
+                                }
+                            },
+                            imageVector = Icons.Outlined.Add,
+                            contentDescription = stringResource(R.string.add)
+                        )
                     }
+
+
+
                 }
 
                 HorizontalDivider()
@@ -336,8 +369,6 @@ fun AutomationInnerPage(
                 Text(stringResource(R.string.app_list), fontSize = 30.sp, textAlign = TextAlign.Center)
                 Spacer(Modifier.height(10.dp))
                 Text(stringResource(R.string.will_auto_pull_push_linked_repos_when_selected_apps_enter_exit), textAlign = TextAlign.Center)
-                Spacer(Modifier.height(10.dp))
-                Text(stringResource(R.string.click_to_switch_selected_unselected_long_click_to_config_linked_repos), fontSize = 12.sp, fontStyle = FontStyle.Italic, textAlign = TextAlign.Center)
             }
 
         }
@@ -402,25 +433,42 @@ fun AutomationInnerPage(
                     item {
                         AppItem(
                             appInfo = appInfo,
-                            haptic = haptic,
-                            onLongClick = { clickedApp ->
-                                initSelectReposDialog(clickedApp.packageName, clickedApp.appName)
-                            }
-                        ) {
+                            trailIcons = {
+                                Row(
+                                    modifier = Modifier.fillMaxWidth(),
+                                    verticalAlignment = Alignment.CenterVertically,
+                                    horizontalArrangement = Arrangement.SpaceBetween
+                                ) {
 
-                            addedAppList.value.remove(appInfo)
+                                    Icon(
+                                        modifier=Modifier.clickable {
+                                            initSelectReposDialog(appInfo.packageName, appInfo.appName)
+                                        },
+                                        imageVector = Icons.Outlined.Settings,
+                                        contentDescription = stringResource(R.string.settings)
+                                    )
 
-                            val tmp = notAddedAppList.value.toList()
-                            //添加到未选中列表头部
-                            notAddedAppList.value.clear()
-                            notAddedAppList.value.add(appInfo)
-                            notAddedAppList.value.addAll(tmp)
+                                    Icon(
+                                        modifier=Modifier.clickable {
+                                            addedAppList.value.remove(appInfo)
 
-                            //保存，从列表移除
-                            SettingsUtil.update {
-                                it.automation.packageNameAndRepoIdsMap.remove(appInfo.packageName)
-                            }
-                        }
+                                            val tmp = notAddedAppList.value.toList()
+                                            //添加到未选中列表头部
+                                            notAddedAppList.value.clear()
+                                            notAddedAppList.value.add(appInfo)
+                                            notAddedAppList.value.addAll(tmp)
+
+                                            //保存，从列表移除
+                                            SettingsUtil.update {
+                                                it.automation.packageNameAndRepoIdsMap.remove(appInfo.packageName)
+                                            }
+                                        },
+                                        imageVector = Icons.Outlined.DeleteOutline,
+                                        contentDescription = stringResource(R.string.delete)
+                                    )
+                                }
+                            },
+                        )
 
                         HorizontalDivider()
                     }
@@ -446,18 +494,31 @@ fun AutomationInnerPage(
                     item {
                         AppItem(
                             appInfo = appInfo,
-                            haptic = haptic,
-                            onLongClick = null
-                        ) {
-                            notAddedAppList.value.remove(appInfo)
-                            //添加到已选中列表末尾
-                            addedAppList.value.add(appInfo)
+                            trailIcons = {
+                                Row(
+                                    modifier = Modifier.fillMaxWidth(),
+                                    verticalAlignment = Alignment.CenterVertically,
+                                    horizontalArrangement = Arrangement.End
+                                ) {
 
-                            //保存，添加到列表
-                            SettingsUtil.update {
-                                it.automation.packageNameAndRepoIdsMap.put(appInfo.packageName, listOf())
-                            }
-                        }
+                                    Icon(
+                                        modifier=Modifier.clickable {
+                                            notAddedAppList.value.remove(appInfo)
+                                            //添加到已选中列表末尾
+                                            addedAppList.value.add(appInfo)
+
+                                            //保存，添加到列表
+                                            SettingsUtil.update {
+                                                it.automation.packageNameAndRepoIdsMap.put(appInfo.packageName, listOf())
+                                            }
+                                        },
+                                        imageVector = Icons.Outlined.Add,
+                                        contentDescription = stringResource(R.string.add)
+                                    )
+                                }
+
+                            },
+                        )
 
                         HorizontalDivider()
                     }
