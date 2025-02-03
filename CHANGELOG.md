@@ -1,4 +1,4 @@
-next version:
+1.0.8.2v58 - 20250203:
 - optimize notification method
 
 
