@@ -71,7 +71,7 @@ jobs:
           cd $GITHUB_WORKSPACE
           chmod +x gradlew
           ./gradlew clean
-          ./gradlew assembleRelease -q
+          ./gradlew assembleRelease
 
       - name: Upload Release APK
         uses: actions/upload-artifact@v4
@@ -85,7 +85,7 @@ jobs:
           cd $GITHUB_WORKSPACE
           chmod +x gradlew
           ./gradlew clean
-          ./gradlew assembleDebug -q
+          ./gradlew assembleDebug
 
       - name: Upload Debug APK
         uses: actions/upload-artifact@v4
