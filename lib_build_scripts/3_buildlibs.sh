@@ -151,7 +151,7 @@ for arch in $archs; do
     mkdir -p $build_out_tmp
     cd $build_out_tmp
     # cmake .. --preset android
-    $CMAKE_PATH .. -DCMAKE_TOOLCHAIN_FILE=$toolchainfile -DANDROID_ABI=$cur_android_abi -DANDROID_PLATFORM="android-$android_target_abi" -DCMAKE_INSTALL_PREFIX=$prefix -DOPENSSL_TARGET_PLATFORM=$opensslarch -DOPENSSL_CONFIGURE_OPTIONS="-D__ANDROID_API__=$android_target_abi;--openssldir=$prefix/ssl;--prefix=$prefix" -DOPENSSL_INSTALL=TRUE -DOPENSSL_PATCH="$openssl_cmake/patch/android.patch" -DBUILD_SHARED_LIBS=ON -DOPENSSL_SOURCE=$opensslsrc
+    $CMAKE_PATH .. -DCMAKE_TOOLCHAIN_FILE=$toolchainfile -DANDROID_ABI=$cur_android_abi -DANDROID_PLATFORM="android-$android_target_abi" -DCMAKE_INSTALL_PREFIX=$prefix -DOPENSSL_TARGET_PLATFORM=$opensslarch -DOPENSSL_CONFIGURE_OPTIONS="-D__ANDROID_API__=$android_target_abi;--openssldir=$prefix/ssl;--prefix=$prefix" -DOPENSSL_INSTALL=TRUE -DOPENSSL_PATCH="$openssl_cmake/patch/android.patch" -DBUILD_SHARED_LIBS=ON -DOPENSSL_SOURCE=$opensslsrc 1>/dev/null 2>&1
 
     $CMAKE_PATH --build . --target install 1>/dev/null 2>&1
 
@@ -167,7 +167,7 @@ for arch in $archs; do
     cd $libssh2src
     mkdir -p $build_out_tmp
     cd $build_out_tmp
-    $CMAKE_PATH .. -DCMAKE_TOOLCHAIN_FILE=$toolchainfile -DCMAKE_INSTALL_PREFIX=$prefix -DCMAKE_BUILD_TYPE=Release
+    $CMAKE_PATH .. -DCMAKE_TOOLCHAIN_FILE=$toolchainfile -DCMAKE_INSTALL_PREFIX=$prefix -DCMAKE_BUILD_TYPE=Release 1>/dev/null 2>&1
 
     $CMAKE_PATH --build . --target install 1>/dev/null 2>&1
 
@@ -185,7 +185,7 @@ for arch in $archs; do
     cd $libgit2src
     mkdir -p $build_out_tmp
     cd $build_out_tmp
-    $CMAKE_PATH .. -DCMAKE_TOOLCHAIN_FILE=$toolchainfile -DCMAKE_INSTALL_PREFIX=$prefix -DCMAKE_BUILD_TYPE=Release -DUSE_SSH=ON -DBUILD_TESTS=OFF -DBUILD_CLI=OFF -DBUILD_EXAMPLES=OFF -DBUILD_FUZZERS=OFF -DBUILD_SHARED_LIBS=ON -DCMAKE_C_STANDARD=99
+    $CMAKE_PATH .. -DCMAKE_TOOLCHAIN_FILE=$toolchainfile -DCMAKE_INSTALL_PREFIX=$prefix -DCMAKE_BUILD_TYPE=Release -DUSE_SSH=ON -DBUILD_TESTS=OFF -DBUILD_CLI=OFF -DBUILD_EXAMPLES=OFF -DBUILD_FUZZERS=OFF -DBUILD_SHARED_LIBS=ON -DCMAKE_C_STANDARD=99 1>/dev/null 2>&1
 
     $CMAKE_PATH --build . --target install 1>/dev/null 2>&1
 
