@@ -963,7 +963,7 @@
     <string name="hide">Скрыть</string>
     <string name="prev_filename">Предыдущий: ph_a3f241dc_1</string>
     <string name="next_filename">Следующий: ph_a3f241dc_1</string>
-    <string name="invalid_conflict_block">Некорректный блок конфликта</string>
+    <string name="invalid_conflict_block">Недопустимый блок конфликта</string>
     <string name="accept_both">Принять оба</string>
     <string name="reject_both">Отклонить оба</string>
     <!--    e.g. "will accept ours, and delete lines: 1, 4-10"-->
@@ -1149,60 +1149,59 @@
     <string name="default_timezone_rule_description">При просмотре объекта Git считывать из него часовой пояс. При создании объекта Git сохранять в нем системный часовой пояс</string>
 
 
-    <!-- new strings at 20250102, translate by chatgpt, compare to VSCODE interface, is same -->
+    <!--    new at 20250102-->
     <string name="undo">Отменить</string>
     <string name="redo">Повторить</string>
-    <string name="show_undo_redo">Показать Отменить/Повторить</string>
+    <string name="show_undo_redo">Показать отмену/повтор</string>
 
-
-    <!-- new string after 20250127 -->
-    <string name="encode_new_password_failed_plz_try_another_one">encode new password failed, plz try another one</string>
-    <string name="stop">Stop</string>
-    <string name="service">Service</string>
-    <string name="launch_on_app_startup">Launch On App Startup</string>
-    <string name="launch_on_system_startup">Launch On System Startup</string>
-    <string name="port">Port</string>
-    <string name="err_notification">Err Notification</string>
-    <string name="success_notification">Success Notification</string>
-    <string name="running">Running</string>
-    <string name="stopped">Stopped</string>
-    <string name="err_port_invalid">err: Port Invalid</string>
-    <string name="copy_api">Copy Api</string>
-    <string name="test">Test</string>
-    <string name="failed">Failed</string>
-    <string name="host">Host</string>
-    <string name="err_host_invalid">err: Host Invalid</string>
-    <string name="tokens">Tokens</string>
-    <string name="per_line_one_token">Per line one token</string>
-    <string name="if_empty_will_reject_all_requests">If empty, will reject all requests</string>
-    <string name="ip_whitelist">ip Whitelist</string>
-    <string name="per_line_one_ip">Per line one ip</string>
-    <string name="use_asterisk_to_match_all_ips">use \'*\' to match all ips</string>
-    <string name="document">Document</string>
-    <string name="list_of_tokens">List of tokens</string>
-    <string name="list_of_ips">List of ips</string>
-    <string name="api">Api</string>
-    <string name="progress_notification">Progress Notification</string>
-    <string name="do_you_want_to_edit_the_file_or_import_it">Do you want to edit the file or import it?</string>
-    <string name="ask">Ask</string>
-    <string name="accessibility_service_description">For auto pull/push when enter/exit specified apps</string>
-    <string name="require_restart_service">Require restart service</string>
-    <string name="automation">Automation</string>
-    <string name="please_find_and_enable_disable_service_for_app">Please find and enable/disable service for App</string>
-    <string name="unknown_state">Unknown State</string>
-    <string name="app_list">App List</string>
-    <string name="add_an_app">Add an app</string>
-    <string name="unselected">Unselected</string>
-    <string name="linked_repos">Linked Repos</string>
-    <string name="unlinked_repos">Unlinked Repos</string>
-    <string name="will_auto_pull_push_linked_repos_when_selected_apps_enter_exit">Will auto pull/push linked repos when selected apps enter/exit</string>
-    <string name="app_info">App Info</string>
-    <string name="intro_go_to_app_info_to_allow_autostart_and_disable_battery_optimization">Maybe you want to go to App Info to \'Allow Autostart\' and \'Disable Battery Optimization\'</string>
-    <string name="set_upstream_err_remote_is_invalid">Set upstream err, remote is invalid</string>
-    <string name="welcome_please_set_git_username_and_email">Welcome! Please set git username and email! This is necessary for create commit!</string>
-    <string name="click_to_switch_selected_unselected_long_click_to_config_linked_repos">Click to switch Selected/Unselected, Long-Click a selected App to config linked Repos</string>
-    <string name="cut">Cut</string>
-    <string name="if_unable_choose_a_path_just_copy_paste_instead">If unable to choose a path, maybe your system removed the file picker, just copy the path from the \'Files\' and paste it to here instead</string>
+    <!--    new at 20250127-->
+    <string name="encode_new_password_failed_plz_try_another_one">Ошибка шифрования нового пароля, попробуйте другой</string>
+    <string name="stop">Остановить</string>
+    <string name="service">Сервис</string>
+    <string name="launch_on_app_startup">Запускать при старте приложения</string>
+    <string name="launch_on_system_startup">Запускать при старте системы</string>
+    <string name="port">Порт</string>
+    <string name="err_notification">Ошибка уведомления</string>
+    <string name="success_notification">Успешное уведомление</string>
+    <string name="running">Работает</string>
+    <string name="stopped">Остановлено</string>
+    <string name="err_port_invalid">Ошибка: недопустимый порт</string>
+    <string name="copy_api">Копировать API</string>
+    <string name="test">Тест</string>
+    <string name="failed">Ошибка</string>
+    <string name="host">Хост</string>
+    <string name="err_host_invalid">Ошибка: недопустимый хост</string>
+    <string name="tokens">Токены</string>
+    <string name="per_line_one_token">Один токен на строку</string>
+    <string name="if_empty_will_reject_all_requests">Если пусто, все запросы будут отклонены</string>
+    <string name="ip_whitelist">Белый список IP</string>
+    <string name="per_line_one_ip">Один IP на строку</string>
+    <string name="use_asterisk_to_match_all_ips">Используйте \'*\' для соответствия всем IP</string>
+    <string name="document">Документ</string>
+    <string name="list_of_tokens">Список токенов</string>
+    <string name="list_of_ips">Список IP</string>
+    <string name="api">API</string>
+    <string name="progress_notification">Уведомление о процессе</string>
+    <string name="do_you_want_to_edit_the_file_or_import_it">Вы хотите редактировать файл или импортировать его?</string>
+    <string name="ask">Спросить</string>
+    <string name="accessibility_service_description">Для автоматического pull/push при входе/выходе из указанных приложений</string>
+    <string name="require_restart_service">Требуется перезапуск сервиса</string>
+    <string name="automation">Автоматизация</string>
+    <string name="please_find_and_enable_disable_service_for_app">Найдите и включите/отключите сервис для приложения</string>
+    <string name="unknown_state">Неизвестное состояние</string>
+    <string name="app_list">Список приложений</string>
+    <string name="add_an_app">Добавить приложение</string>
+    <string name="unselected">Не выбрано</string>
+    <string name="linked_repos">Связанные репозитории</string>
+    <string name="unlinked_repos">Несвязанные репозитории</string>
+    <string name="will_auto_pull_push_linked_repos_when_selected_apps_enter_exit">Автоматически выполнять pull/push для связанных репозиториев при входе/выходе из выбранных приложений</string>
+    <string name="app_info">Информация о приложении</string>
+    <string name="intro_go_to_app_info_to_allow_autostart_and_disable_battery_optimization">Рекомендуется перейти в информацию о приложении, чтобы Разрешить автозапуск и Отключить оптимизацию батареи</string>
+    <string name="set_upstream_err_remote_is_invalid">Ошибка установки upstream: недопустимый удалённый репозиторий</string>
+    <string name="welcome_please_set_git_username_and_email">Добро пожаловать! Укажите имя пользователя и email для Git! Это необходимо для создания коммитов!</string>
+    <string name="click_to_switch_selected_unselected_long_click_to_config_linked_repos">Нажмите для переключения выбранного/невыбранного, долгий клик по выбранному приложению для настройки связанных репозиториев</string>
+    <string name="cut">Вырезать</string>
+    <string name="if_unable_choose_a_path_just_copy_paste_instead">Если невозможно выбрать путь, возможно, ваша система удалила файловый менеджер. Просто скопируйте путь из \'Файлы\' и вставьте его сюда</string>
 
 
 </resources>
