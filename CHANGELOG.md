@@ -1,3 +1,11 @@
+1.0.8.3v59 - 20250206:
+- update russian translation (thx @triksterr)
+
+
+- 更新俄语翻译 (感谢 @triksterr)
+
+---
+
 1.0.8.2v58 - 20250203:
 - optimize notification method
 
