@@ -136,8 +136,9 @@ class PuppyHunkAndLines {
                 requireBetterMatching = requireBetterMatchingForCompare,
                 matchByWords = matchByWords,
 
-                //我发现del在前面add在后面匹配率更高，所以swap传true
-                swap = true
+                //20250210之后：我发现调换后，又有很多add在前，del在后匹配率更高的情况，所以我觉得没必要调换了，可能匹配率差不太多，调换反而影响性能
+                //(20250210之前)我发现del在前面add在后面匹配率更高，所以swap传true
+//                swap = true
             )
 
             modifyResultMap.put(lineNum, modifyResult2)

@@ -589,7 +589,7 @@ fun DiffContent(
                                     requireBetterMatching = requireBetterMatchingForCompare.value,
                                     matchByWords = matchByWords.value,
 
-                                    swap = true
+//                                    swap = true
                                 )
 
                                 if(modifyResult2.matched) {

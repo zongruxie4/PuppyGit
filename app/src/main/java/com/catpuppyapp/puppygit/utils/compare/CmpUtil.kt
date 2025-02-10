@@ -6,7 +6,8 @@ import com.catpuppyapp.puppygit.utils.compare.result.IndexModifyResult
 object CmpUtil {
 
     /**
-     * @param swap 我发现del在前add在后匹配率更高，可能因为修改某行一般不会完全删除旧行内容？
+     * @param swap (20250210之后)我调换后用了段时间发现很多时候add在前del在后匹配率更高，可能差不多，没必要调换了，调换反而浪费性能。
+     *   (20250210之前)我发现del在前add在后匹配率更高，可能因为修改某行一般不会完全删除旧行内容？
      *   总之，因为感觉匹配率高所以我加了这个参数，若传true，则会在比较前调用add和del，
      *   并在返回结果前再调换回来，调用者只需正常传add和del即可，无需再手动调换；
      *   若传false，则在比较时不会调用add和del的顺序。
