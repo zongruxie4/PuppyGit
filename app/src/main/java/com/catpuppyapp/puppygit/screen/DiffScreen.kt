@@ -202,7 +202,7 @@ fun DiffScreen(
 
     // cant switch = force readonly, else init value set to off
     // 不能切换等于强制只读，否则初始值设为关闭只读模式
-    val readOnlyModeOn = rememberSaveable(readOnlySwitchable.value) { mutableStateOf(readOnlySwitchable.value.not()) }
+    val readOnlyModeOn = rememberSaveable(readOnlySwitchable.value) { mutableStateOf(settings.diff.readOnly || readOnlySwitchable.value.not()) }
 
     val enableLineTapMenu = remember(isSubmodule.value, changeType.value, fileFullPath.value, localAtDiffRight, readOnlyModeOn.value) {
         derivedStateOf {
@@ -440,7 +440,8 @@ fun DiffScreen(
                         listState,
                         scope,
                         request,
-                        changeType.value
+                        changeType.value,
+                        readOnlyModeOn.value
                     )
                 },
                 navigationIcon = {
@@ -483,8 +484,8 @@ fun DiffScreen(
                             request = request,
                             fileFullPath = fileFullPath.value,
                             requireBetterMatchingForCompare = requireBetterMatchingForCompare,
-                            copyModeOn = readOnlyModeOn,
-                            copyModeSwitchable = readOnlySwitchable.value,
+                            readOnlyModeOn = readOnlyModeOn,
+                            readOnlyModeSwitchable = readOnlySwitchable.value,
                             showLineNum=showLineNum,
                             showOriginType=showOriginType,
                             adjustFontSizeModeOn = adjustFontSizeModeOn,

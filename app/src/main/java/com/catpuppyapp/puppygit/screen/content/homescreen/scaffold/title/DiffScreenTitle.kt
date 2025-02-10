@@ -2,15 +2,24 @@ package com.catpuppyapp.puppygit.screen.content.homescreen.scaffold.title
 
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.combinedClickable
+import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.lazy.LazyListState
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Lock
+import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.MutableState
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.catpuppyapp.puppygit.compose.ScrollableRow
 import com.catpuppyapp.puppygit.constants.PageRequest
@@ -29,6 +38,7 @@ fun DiffScreenTitle(
     scope: CoroutineScope,
     request:MutableState<String>,
     changeType:String,
+    readOnly:Boolean,
 ) {
 
     if(fileRelativePathUnderRepoState.value.isNotBlank()) {
@@ -42,7 +52,18 @@ fun DiffScreenTitle(
                 request.value = PageRequest.showDetails
             }
         ) {
-            ScrollableRow  {
+
+            Row(modifier = Modifier.horizontalScroll(rememberScrollState()),
+                verticalAlignment = Alignment.CenterVertically
+            ) {  //话说这名如果超了，在Row上加个滚动属性让用户能滚动查看，怎么样？（20240411加了，测试了下，勉强能用，还行，好！
+                if(readOnly) {
+                    Icon(
+                        modifier = Modifier.size(12.dp),
+                        imageVector = Icons.Filled.Lock,
+                        contentDescription = stringResource(R.string.read_only),
+                    )
+                }
+
                 Text(fileName,
                     fontSize = 15.sp,
                     maxLines=1,

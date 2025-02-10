@@ -57,5 +57,12 @@ data class DiffSettings (
      * if enable, when edit line, before saving, will create snapshot for origin file first
      * 若启用，编辑行后，保存之前，会先为原始文件创建快照
      */
-    var createSnapShotForOriginFileBeforeSave:Boolean = false
+    var createSnapShotForOriginFileBeforeSave:Boolean = false,
+
+    /**
+     * read only mode (was called "copyMode")
+     * note: even this value false, it may still enable in some cases (e.g. compare two commits)，usually this value switchable when compare to local(worktree)
+     * 注意：即使此值为false，只读模式仍可能强制启用（例如比较两个提交时），一般只有和本地文件(worktree)比较时此值才可切换
+     */
+    var readOnly:Boolean = false,
 )

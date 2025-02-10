@@ -44,8 +44,8 @@ fun DiffPageActions(
     request:MutableState<String>,
     fileFullPath:String,
     requireBetterMatchingForCompare:MutableState<Boolean>,
-    copyModeOn:MutableState<Boolean>,
-    copyModeSwitchable:Boolean,
+    readOnlyModeOn:MutableState<Boolean>,  // `readOnlyMode` was named `copyMode`，当时想的是只能拷贝不能编辑，所以叫拷贝模式，但后来发现这不就是只读模式吗，所以就改成只读模式了
+    readOnlyModeSwitchable:Boolean,
     showLineNum:MutableState<Boolean>,
     showOriginType:MutableState<Boolean>,
     adjustFontSizeModeOn:MutableState<Boolean>,
@@ -301,16 +301,20 @@ fun DiffPageActions(
         }
 
         DropdownMenuItem(
-            enabled = copyModeSwitchable,
+            enabled = readOnlyModeSwitchable,
             text = { Text(stringResource(R.string.read_only)) },
             trailingIcon = {
                 Icon(
-                    imageVector = if(copyModeOn.value) Icons.Filled.CheckBox else Icons.Filled.CheckBoxOutlineBlank,
+                    imageVector = if(readOnlyModeOn.value) Icons.Filled.CheckBox else Icons.Filled.CheckBoxOutlineBlank,
                     contentDescription = null
                 )
             },
             onClick = {
-                copyModeOn.value = !copyModeOn.value
+                readOnlyModeOn.value = !readOnlyModeOn.value
+
+                SettingsUtil.update {
+                    it.diff.readOnly = readOnlyModeOn.value
+                }
 
                 dropDownMenuExpendState.value = false
             }
