@@ -1,3 +1,13 @@
+1.0.8.4v60 - 20250213:
+- remember read-only for DiffScreen
+- adjust compare method
+
+
+- 为比较页面记住只读状态
+- 调整比较方法
+
+---
+
 1.0.8.3v59 - 20250206:
 - update russian translation (thx @triksterr)
 
