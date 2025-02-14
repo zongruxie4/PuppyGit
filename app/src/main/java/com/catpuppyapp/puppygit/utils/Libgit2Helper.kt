@@ -4062,6 +4062,8 @@ class Libgit2Helper {
                                         }else {
                                             lastLastCommit = lastCommit
                                             lastLastEntryOidStr = lastVersionEntryOid
+
+                                            lastCommit = null
                                         }
 
                                     }else {
