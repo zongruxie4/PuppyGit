@@ -4036,13 +4036,25 @@ class Libgit2Helper {
                             val entry =getEntryOrNullByPathOrName(tree, fileRelativePathUnderRepo, byName = false)
                             if(entry!=null) {
                                 val entryOid = entry.id()
+                                //当前提交存在目标文件
                                 if(!entryOid.isNullOrEmptyOrZero) {
                                     val entryOidStr = entryOid.toString()
                                     if(entryOidStr != lastVersionEntryOid) {
+                                        if(lastCommit != null) {
+                                            lastLastCommit = lastCommit
+                                        }
+
+                                        if(lastVersionEntryOid != null) {
+                                            lastLastEntryOidStr = lastVersionEntryOid
+                                        }
+
                                         lastVersionEntryOid = entryOidStr
                                         lastCommit = commit
 
-                                        if(lastLastCommit != null) {
+                                        //只有每次调用当前方法第一轮循环时这两个值至少lastLastCommit会是null，然后不执行添加，
+                                        // 若当前提交不是最后一个提交，最终会在下个不同的条目id之后添加当前提交和条目id，
+                                        // 但不管怎样，遍历到提交历史末尾，必然会遗漏最后一个条目，需要在循环外处理（已经处理）
+                                        if(lastLastCommit != null && lastLastEntryOidStr != null) {
                                             retList.add(createFileHistoryDto(
                                                 commitOidStr= lastLastCommit.id().toString(),
                                                 treeEntryOidStr= lastLastEntryOidStr.toString(),
@@ -4052,25 +4064,16 @@ class Libgit2Helper {
                                                 settings = settings
                                             ))
 
-                                            lastLastCommit = null
-                                            lastLastEntryOidStr = null
 
                                             if(++count >= pageSize) {
                                                 break
                                             }
 
-                                        }else {
-                                            lastLastCommit = lastCommit
-                                            lastLastEntryOidStr = lastVersionEntryOid
-
-                                            lastCommit = null
                                         }
 
                                     }else {
-                                        lastLastCommit = commit
-                                        lastLastEntryOidStr = entryOidStr
-
-                                        lastCommit = null
+                                        //条目id一样，更新下提交id
+                                        lastCommit = commit
                                     }
                                 }
 
@@ -4088,24 +4091,12 @@ class Libgit2Helper {
 
             }
 
-            //到提交列表末尾了但还没存上一个条目
+            //到提交列表末尾了但还没存上最后一个条目（最后一个条目一定会遗漏，必须处理）
             if(next == null) {
-                //处理可能没存储的上上个和上个条目
+                //处理可能没存储的最后一个条目
 
-                //上上个条目没存，存上
-                if(lastLastCommit != null) {
-                    retList.add(createFileHistoryDto(
-                        commitOidStr= lastLastCommit.id().toString(),
-                        treeEntryOidStr= lastLastEntryOidStr.toString(),
-                        commit=lastLastCommit,
-                        repoId=repoId,
-                        fileRelativePathUnderRepo=fileRelativePathUnderRepo,
-                        settings = settings
-                    ))
-                }
-
-                //上个条目没存，存上
-                if(lastCommit != null) {
+                //最后一个条目没存，存上
+                if(lastCommit != null && lastVersionEntryOid != null) {
                     retList.add(createFileHistoryDto(
                         commitOidStr= lastCommit.id().toString(),
                         treeEntryOidStr= lastVersionEntryOid.toString(),
@@ -4115,6 +4106,7 @@ class Libgit2Helper {
                         settings = settings
                     ))
                 }
+
             }
 
 //            return FileHistoryQueryResult(hasMore, lastVersionEntryOid)
