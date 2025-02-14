@@ -1,8 +1,10 @@
 1.0.8.5v61 - 20250214:
 - update tls certs
+- fix: commit oid in the file history didn't match the file modified commit oid 
 
 
 - 更新tls证书
+- 修复文件历史页面中的提交oid与文件修改时的提交oid不匹配的bug
 
 ---
 1.0.8.4v60 - 20250213:
