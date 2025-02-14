@@ -3975,7 +3975,7 @@ class Libgit2Helper {
             lastVersionEntryOid:String?,
             fileRelativePathUnderRepo:String, // file pathspec
             settings: AppSettings
-        ): String? {
+        ): Pair<String?, Oid?> {
 //            if(debugModeOn) {
 //                MyLog.d(TAG, "#getCommitList: startOid="+startOid.toString())
 //            }
@@ -3983,8 +3983,12 @@ class Libgit2Helper {
             // no more
             if(initNext == null || initNext.isNullOrEmptyOrZero) {
 //                return FileHistoryQueryResult(false, lastVersionOid)
-                return lastVersionEntryOid
+                return Pair(lastVersionEntryOid, initNext)
             }
+
+            var lastCommit:Commit? = null
+            var lastLastCommit:Commit? = null
+            var lastLastEntryOidStr:String? = null
 
             var lastVersionEntryOid = lastVersionEntryOid
 
@@ -4035,27 +4039,42 @@ class Libgit2Helper {
                                 if(!entryOid.isNullOrEmptyOrZero) {
                                     val entryOidStr = entryOid.toString()
                                     if(entryOidStr != lastVersionEntryOid) {
-                                        retList.add(createFileHistoryDto(
-                                            commitOidStr= nextStr,
-                                            treeEntryOidStr= entryOidStr,
-                                            commit=commit,
-                                            repoId=repoId,
-                                            fileRelativePathUnderRepo=fileRelativePathUnderRepo,
-                                            settings = settings
-                                        ))
-
                                         lastVersionEntryOid = entryOidStr
-                                        count++
+                                        lastCommit = commit
+
+                                        if(lastLastCommit != null) {
+                                            retList.add(createFileHistoryDto(
+                                                commitOidStr= lastLastCommit.id().toString(),
+                                                treeEntryOidStr= lastLastEntryOidStr.toString(),
+                                                commit=lastLastCommit,
+                                                repoId=repoId,
+                                                fileRelativePathUnderRepo=fileRelativePathUnderRepo,
+                                                settings = settings
+                                            ))
+
+                                            lastLastCommit = null
+                                            lastLastEntryOidStr = null
+
+                                            if(++count >= pageSize) {
+                                                break
+                                            }
+
+                                        }else {
+                                            lastLastCommit = lastCommit
+                                            lastLastEntryOidStr = lastVersionEntryOid
+                                        }
+
+                                    }else {
+                                        lastLastCommit = commit
+                                        lastLastEntryOidStr = entryOidStr
+
+                                        lastCommit = null
                                     }
                                 }
 
                             }
                         }
 
-                    }
-
-                    if(count >= pageSize) {
-                        break
                     }
 
                     //更新迭代器
@@ -4067,8 +4086,37 @@ class Libgit2Helper {
 
             }
 
+            //到提交列表末尾了但还没存上一个条目
+            if(next == null) {
+                //处理可能没存储的上上个和上个条目
+
+                //上上个条目没存，存上
+                if(lastLastCommit != null) {
+                    retList.add(createFileHistoryDto(
+                        commitOidStr= lastLastCommit.id().toString(),
+                        treeEntryOidStr= lastLastEntryOidStr.toString(),
+                        commit=lastLastCommit,
+                        repoId=repoId,
+                        fileRelativePathUnderRepo=fileRelativePathUnderRepo,
+                        settings = settings
+                    ))
+                }
+
+                //上个条目没存，存上
+                if(lastCommit != null) {
+                    retList.add(createFileHistoryDto(
+                        commitOidStr= lastCommit.id().toString(),
+                        treeEntryOidStr= lastVersionEntryOid.toString(),
+                        commit=lastCommit,
+                        repoId=repoId,
+                        fileRelativePathUnderRepo=fileRelativePathUnderRepo,
+                        settings = settings
+                    ))
+                }
+            }
+
 //            return FileHistoryQueryResult(hasMore, lastVersionEntryOid)
-            return lastVersionEntryOid
+            return Pair(lastVersionEntryOid, next)
         }
 
         /**

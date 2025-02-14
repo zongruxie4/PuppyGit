@@ -323,7 +323,7 @@ fun FileHistoryScreen(
                         loadMoreText.value = activityContext.getString(R.string.end_of_the_list)
                     }else {
                         //start travel commit history
-                        lastVersionEntryOid.value = Libgit2Helper.getFileHistoryList(
+                        val (retLastVersionEntryOid, retNextCommitOid) = Libgit2Helper.getFileHistoryList(
                             repo,
                             revwalk.value!!,
                             nextCommitOid.value,
@@ -338,7 +338,10 @@ fun FileHistoryScreen(
                         )
 
                         //update state
-                        nextCommitOid.value = revwalk.value!!.next() ?: Cons.allZeroOid
+                        lastVersionEntryOid.value = retLastVersionEntryOid
+                        nextCommitOid.value = retNextCommitOid ?: Cons.allZeroOid
+//                        nextCommitOid.value = revwalk.value!!.next() ?: Cons.allZeroOid
+
                         hasMore.value = !nextCommitOid.value.isNullOrEmptyOrZero
                         loadMoreText.value = if (hasMore.value) activityContext.getString(R.string.load_more) else activityContext.getString(R.string.end_of_the_list)
 

@@ -28,9 +28,11 @@ fun goToFileHistory(fileFullPath:String, appContext: Context){
 
             // file is belong a repo, but need check is under .git folder
             repo.use {
-                val repoGitDir = Libgit2Helper.getRepoGitDirPathNoEndsWithSlash(it)
-                if(fileFullPath.startsWith(repoGitDir)) {
+                //检查文件是否在.git目录下，若在，直接返回，此目录下的文件无历史记录
+                val repoGitDirEndsWithSlash = Libgit2Helper.getRepoGitDirPathNoEndsWithSlash(it) + Cons.slash
+                if(fileFullPath.startsWith(repoGitDirEndsWithSlash)) {
                     Msg.requireShowLongDuration(appContext.getString(R.string.err_file_under_git_dir))
+                    return@job
                 }
 
 
