@@ -1,3 +1,11 @@
+1.0.8.6v62 - 20250215:
+- fix: file history omitted items
+
+
+- 修复文件历史页面遗漏条目的bug
+
+---
+
 1.0.8.5v61 - 20250214:
 - update tls certs
 - fix: commit oid in the file history didn't match the file modified commit oid 
