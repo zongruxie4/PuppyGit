@@ -45,7 +45,6 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.platform.LocalClipboardManager
@@ -112,8 +111,8 @@ import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 
-private val TAG = "FileHistoryScreen"
-private val stateKeyTag = "FileHistoryScreen"
+private const val TAG = "FileHistoryScreen"
+private const val stateKeyTag = "FileHistoryScreen"
 
 
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalFoundationApi::class)
