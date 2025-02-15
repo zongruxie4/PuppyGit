@@ -63,6 +63,11 @@ object AppModel {
     lateinit var deviceWidthHeight: DeviceWidthHeight
 
     /**
+     * 和日志的debug模式没直接关系，这个不影响日志等级，只是有些时候，开发模式下希望出错立刻抛异常，但对用户来说，这样体验不好，所以加个开关判断下
+     */
+    var devModeOn = false
+
+    /**
      * long long ago, this is applicationContext get from Activity, but now, this maybe is baseContext of Activity,
      * baseContext bundled with Activity, save it's reference may cause memory leak;
      * applicationContext bundled with App (process maybe?), save it's reference more time is safe, but it can't get properly resources in some cases,

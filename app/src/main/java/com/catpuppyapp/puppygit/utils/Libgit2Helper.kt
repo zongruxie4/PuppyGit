@@ -4040,6 +4040,15 @@ class Libgit2Helper {
                                 if(!entryOid.isNullOrEmptyOrZero) {
                                     val entryOidStr = entryOid.toString()
                                     if(entryOidStr != lastVersionEntryOid) {
+                                        //这两个如果一个为null另一个不为null，必然会漏条目，不应该存在这个状态，若发生，肯定哪里出错了，抛个异常
+                                        if(AppModel.devModeOn) {
+                                            if((lastCommit==null && lastVersionEntryOid!=null)
+                                                || (lastCommit!=null && lastVersionEntryOid==null)
+                                            ) {
+                                                throw RuntimeException("#getFileHistoryList: Wrong State: lastCommit=${lastCommit?.id().toString()}, lastVersionEntryOid=$lastVersionEntryOid")
+                                            }
+                                        }
+
                                         if(lastCommit != null) {
                                             lastLastCommit = lastCommit
                                         }

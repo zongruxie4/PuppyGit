@@ -1,3 +1,10 @@
+1.0.8.7v63 - 20250215:
+- add dev mode
+
+- 添加开发模式
+
+---
+
 1.0.8.6v62 - 20250215:
 - fix: file history omitted items
 
