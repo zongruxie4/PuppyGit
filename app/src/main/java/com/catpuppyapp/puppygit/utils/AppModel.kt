@@ -272,6 +272,8 @@ object AppModel {
         }
 
 
+        AppModel.devModeOn = PrefUtil.getDevMode(realAppContext)
+
         AppModel.deviceWidthHeight = UIHelper.getDeviceWidthHeightInDp(activityContext)
 
         AppModel.realAppContext = realAppContext

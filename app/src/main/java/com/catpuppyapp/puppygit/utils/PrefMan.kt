@@ -50,6 +50,11 @@ object PrefMan {
         const val masterPass = "mpwd"
 
         const val firstUse = "firstUse"
+
+        /**
+         * 0 disable, 1 enable, default 0
+         */
+        const val devModeOn = "devModeOn"
     }
 
     private fun getPrefs(appContext: Context) = appContext.getSharedPreferences(fileName, MODE_PRIVATE)

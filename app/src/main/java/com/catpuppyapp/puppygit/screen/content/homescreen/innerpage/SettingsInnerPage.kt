@@ -3,14 +3,11 @@ package com.catpuppyapp.puppygit.screen.content.homescreen.innerpage
 import android.app.Activity
 import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.ScrollState
-import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.defaultMinSize
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -19,7 +16,6 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
@@ -31,7 +27,6 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalClipboardManager
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
@@ -65,6 +60,7 @@ import com.catpuppyapp.puppygit.utils.Lg2HomeUtils
 import com.catpuppyapp.puppygit.utils.Msg
 import com.catpuppyapp.puppygit.utils.MyLog
 import com.catpuppyapp.puppygit.utils.PrefMan
+import com.catpuppyapp.puppygit.utils.PrefUtil
 import com.catpuppyapp.puppygit.utils.UIHelper
 import com.catpuppyapp.puppygit.utils.doJobThenOffLoading
 import com.catpuppyapp.puppygit.utils.encrypt.MasterPassUtil
@@ -107,6 +103,7 @@ fun SettingsInnerPage(
 
     val enableEditCache = rememberSaveable { mutableStateOf(settingsState.value.editor.editCacheEnable) }
     val showNaviButtons = rememberSaveable { mutableStateOf(settingsState.value.showNaviButtons) }
+    val devModeOn = rememberSaveable { mutableStateOf(PrefUtil.getDevMode(activityContext)) }
     val enableSnapshot_File = rememberSaveable { mutableStateOf(settingsState.value.editor.enableFileSnapshot) }
     val enableSnapshot_Content = rememberSaveable { mutableStateOf(settingsState.value.editor.enableContentSnapshot) }
     val diff_CreateSnapShotForOriginFileBeforeSave = rememberSaveable { mutableStateOf(settingsState.value.diff.createSnapShotForOriginFileBeforeSave) }
@@ -711,6 +708,32 @@ fun SettingsInnerPage(
                     }
                 )
             }
+        }
+
+
+        SettingsContent(onClick = {
+            //获取新值
+            val newValue = !devModeOn.value
+
+            //更新页面状态
+            devModeOn.value = newValue
+
+            //更新app内存中存储的状态
+            AppModel.devModeOn = newValue
+
+            //保存到配置文件
+            PrefUtil.setDevMode(activityContext, newValue)
+        }) {
+            Column(modifier = Modifier.fillMaxWidth(itemLeftWidthForSwitcher)) {
+                Text(stringResource(R.string.dev_mode), fontSize = itemFontSize)
+            }
+
+            Icon(
+                modifier = Modifier.size(switcherIconSize),
+                imageVector = UIHelper.getIconForSwitcher(devModeOn.value),
+                contentDescription = if(devModeOn.value) stringResource(R.string.enable) else stringResource(R.string.disable),
+                tint = UIHelper.getColorForSwitcher(devModeOn.value),
+            )
         }
 
 

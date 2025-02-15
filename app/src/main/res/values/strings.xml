@@ -1209,4 +1209,8 @@
     <string name="if_unable_choose_a_path_just_copy_paste_instead">If unable to choose a path, maybe your system removed the file picker, just copy the path from the \'Files\' and paste it to here instead</string>
 
 
+    <!-- new at 20250215 -->
+    <string name="dev_mode">Dev Mode</string>
+
+
 </resources>

@@ -1204,4 +1204,8 @@
     <string name="if_unable_choose_a_path_just_copy_paste_instead">Если невозможно выбрать путь, возможно, ваша система удалила файловый менеджер. Просто скопируйте путь из \'Файлы\' и вставьте его сюда</string>
 
 
+    <!-- new at 20250215 -->
+    <string name="dev_mode">Dev Mode</string>
+
+
 </resources>

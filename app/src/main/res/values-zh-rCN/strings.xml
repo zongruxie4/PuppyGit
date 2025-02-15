@@ -1183,4 +1183,8 @@
     <string name="if_unable_choose_a_path_just_copy_paste_instead">如果无法选择路径，或许你的系统精简了文件选择器，可以前往\'文件管理器\'复制你希望的路径然后粘贴到这里来替代</string>
 
 
+    <!-- new at 20250215 -->
+    <string name="dev_mode">开发模式</string>
+
+
 </resources>
