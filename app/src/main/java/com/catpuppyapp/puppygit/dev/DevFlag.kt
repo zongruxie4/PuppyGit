@@ -90,6 +90,9 @@ val editorHideOrShowLineNumTestPassed = true  //editor显示或隐藏行号（�
 val editorEnableLineSelecteModeFromMenuTestPassed = true  //editor 从菜单开启行选择模式，若隐藏行号，只能由此开启选择模式（不保存）
 
 val importRepoTestPassed = true
+
+
+
 /**
  * below is bug
  */
