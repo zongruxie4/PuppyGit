@@ -4045,7 +4045,7 @@ class Libgit2Helper {
                                             if((lastCommit==null && lastVersionEntryOid!=null)
                                                 || (lastCommit!=null && lastVersionEntryOid==null)
                                             ) {
-                                                throw RuntimeException("#getFileHistoryList: Wrong State: lastCommit=${lastCommit?.id().toString()}, lastVersionEntryOid=$lastVersionEntryOid")
+                                                throw RuntimeException("#getFileHistoryList() err: Wrong State: lastCommit=${lastCommit?.id().toString()}, lastVersionEntryOid=$lastVersionEntryOid")
                                             }
                                         }
 
