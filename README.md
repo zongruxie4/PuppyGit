@@ -17,7 +17,7 @@ PuppyGit made by Bandeapart1964 of catpuppyapp
 <a href=https://www.patreon.com/posts/markor-puppygit-114681068>Markor + PuppyGit</a> <br>
 <a href=https://www.patreon.com/posts/puppygit-now-and-114680923>Switch DarkMode and Chinese</a><br>
 <a href=https://www.patreon.com/posts/1-0-5-9v35-new-115069154>Resolve Conflicts/Squash Commits</a><br>
-<a href=https://www.patreon.com/posts/puppygit-auto-122345809>Auto Sync Obsidian vault</a><br>
+<a href=https://www.patreon.com/posts/puppygit-auto-122345809>Auto Sync Obsidian Vault</a><br>
 
 
 
@@ -37,7 +37,7 @@ PuppyGit made by Bandeapart1964 of catpuppyapp
 ## PuppyGit + Notes App = A new way to sync your notes on Android!
 Not only sync codes, You can use PuppyGit sync your notes repository create by note-taking apps like: <a href="https://github.com/obsidianmd/obsidian-releases">Obsidian</a> / <a href="https://github.com/gsantner/markor">Markor</a> or Other!
 
-also see: <a href=https://www.patreon.com/posts/puppygit-auto-122345809>Auto Sync Obsidian vault</a><br>
+also see: <a href=https://www.patreon.com/posts/puppygit-auto-122345809>Auto Sync Obsidian Vault</a><br>
 
 
 ## 2fa
