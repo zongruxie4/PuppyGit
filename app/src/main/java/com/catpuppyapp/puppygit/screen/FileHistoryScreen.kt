@@ -349,6 +349,9 @@ fun FileHistoryScreen(
 
 
                 }catch (e:Exception) {
+                    //经过我的测试用 !! 断言非null抛出的空指针异常的exception.message和localizedMessage都是null，
+                    // 所以如果提示 "unknown err"，很可能是空指针异常NullPointerException，
+                    // 不过用e.stackTraceToString()可以正常获取到错误信息，用e.printStackTrace()可在std err打印错误信息
                     val errMsg = e.localizedMessage ?: "unknown err"
                     Msg.requireShowLongDuration(errMsg)
                     createAndInsertError(repoId, "err: $errMsg")
