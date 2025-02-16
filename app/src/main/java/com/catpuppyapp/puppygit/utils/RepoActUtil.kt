@@ -427,10 +427,12 @@ object RepoActUtil {
             if (!force) {  //只有非force才检查，否则强推
                 val (ahead, behind) = getAheadBehind(gitRepo, Oid.of(upstream.localOid), Oid.of(upstream.remoteOid))
 
+                //非force push的情况下，如果本地落后远程，必然推送失败，所以就不用推了，直接报错
                 if (behind > 0) {  //本地落后远程（远程领先本地）
                     throwWithPrefix(prefix, "upstream ahead of local")
                 }
 
+                //如果本地不领先远程，不需要推送，加上已经通过上面的behind检测，执行到这里，若通过if，则代表，本地不落后远程，同时也不领先远程，也就是两者相同，ahead和behind都是0，这时就是 Already up-to-date，可以返回了，不需要执行后续操作
                 if (ahead < 1) {
                     //通过behind检测后，如果进入此代码块，代表本地不落后也不领先，即“up to date”，并不需要推送，可返回了
                     sendSuccessNotification?.invoke(repoFromDb.repoName, "$prefix: Already up-to-date", Cons.selectedItem_ChangeList, repoFromDb.id)
