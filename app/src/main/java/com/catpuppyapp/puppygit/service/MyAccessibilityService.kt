@@ -146,6 +146,11 @@ class MyAccessibilityService: AccessibilityService() {
 
     override fun onAccessibilityEvent(event: AccessibilityEvent?) {
         if(event == null) {
+
+            if(AppModel.devModeOn) {
+                MyLog.d(TAG, "#onAccessibilityEvent: event is null")
+            }
+
             return
         }
 
@@ -268,8 +273,11 @@ class MyAccessibilityService: AccessibilityService() {
         }
     }
 
-    override fun onInterrupt() {
 
+    override fun onInterrupt() {
+        if(AppModel.devModeOn) {
+            MyLog.w(TAG, "#onInterrupt: interrupted?")
+        }
     }
 
 }
