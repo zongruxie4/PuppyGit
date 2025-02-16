@@ -31,6 +31,11 @@ class MyAccessibilityService: AccessibilityService() {
         private val targetPackageTrueOpenedFalseCloseNullNeverOpenedList = mutableMapOf<String, Boolean>()
         private var lastTargetPackageName = ""  // use to check enter/leave app
 
+        private val ignorePackageNames = listOf<String>(
+            "com.android.systemui",  //通知栏之类的
+            "android",  //切换输入法的弹窗，有的系统（例如原生）会是这个包名，有的不是（例如国产color os）
+        )
+
 
         private fun createNotify(notifyId:Int):ServiceNotify {
             return ServiceNotify(AutomationNotify.create(notifyId))
@@ -148,11 +153,18 @@ class MyAccessibilityService: AccessibilityService() {
             //必须在外部获取，放到协程里会null
             val packageName = event.packageName.toString()
 
-            MyLog.v(TAG, "TYPE_WINDOW_STATE_CHANGED: $packageName")
+            if(AppModel.devModeOn) {
+                MyLog.v(TAG, "TYPE_WINDOW_STATE_CHANGED: $packageName")
+            }
 
             try {
                 //ignore input method package names
                 if((getSystemService(Context.INPUT_METHOD_SERVICE) as? InputMethodManager)?.enabledInputMethodList?.find { it.packageName == packageName } != null) {
+
+                    if(AppModel.devModeOn) {
+                        MyLog.d(TAG, "ignore input method (soft keyboard): '$packageName'")
+                    }
+
                     return
                 }
             }catch (e:Exception) {
@@ -160,7 +172,12 @@ class MyAccessibilityService: AccessibilityService() {
             }
 
             // notification expand or gesture maybe
-            if("com.android.systemui" == packageName) {
+            if(ignorePackageNames.contains(packageName)) {
+
+                if(AppModel.devModeOn) {
+                    MyLog.d(TAG, "ignore package name: '$packageName'")
+                }
+
                 return
             }
 
@@ -204,6 +221,8 @@ class MyAccessibilityService: AccessibilityService() {
                             doJobThenOffLoading {
                                 pullRepoList(sessionId, settings, repoList)
                             }
+                        }else {
+                            MyLog.d(TAG, "target packageName '$packageName' opened but no need do pull")
                         }
                     }else if(lastTargetPackageName.isNotBlank()) { //当前app不是我们关注的app，但上个是
                         val packageName = Unit  //避免在这个代码块误调用这个变量名
@@ -236,6 +255,8 @@ class MyAccessibilityService: AccessibilityService() {
                                 doJobThenOffLoading {
                                     pushRepoList(sessionId, settings, repoList)
                                 }
+                            }else {
+                                MyLog.d(TAG, "target packageName '$packageName' opened but no need do push")
                             }
                         }else {  //这里得设置下，如果一个条目之前在列表后来移除了，这里不更新下的话，下次打开目标app会忽略一次应该执行的pull
                             MyLog.d(TAG, "target packageName '$lastOpenedTarget' was in targetList but removed, will not do push for it")
