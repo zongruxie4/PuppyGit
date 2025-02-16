@@ -11,7 +11,6 @@ import com.catpuppyapp.puppygit.utils.cache.NotifySenderMap
 import com.catpuppyapp.puppygit.utils.encrypt.MasterPassUtil
 import com.github.git24j.core.Oid
 import com.github.git24j.core.Repository
-import kotlinx.coroutines.sync.Mutex
 
 
 private const val TAG = "RepoActUtil"
@@ -20,8 +19,8 @@ object RepoActUtil {
     //若获取锁失败，等5秒，再获取，若还获取不到就返回仓库忙
     private const val waitInMillSecIfApiBusy = 5000L  //5s
 
-    private val throwRepoBusy = { _: Mutex ->
-        throw RuntimeException("repo busy, plz try later")
+    private fun throwRepoBusy(prefix:String, repoName:String) {
+        throwWithPrefix(prefix, "repo '$repoName' busy, plz try later")
     }
 
     private fun getNotifySender(repoId:String, sessionId: String):NotificationSender? {
@@ -42,6 +41,7 @@ object RepoActUtil {
         force:Boolean,
 
     ){
+        val prefix = "sync"
         val db = AppModel.dbContainer
         val settings = SettingsUtil.getSettingsSnapshot()
         val masterPassword = MasterPassUtil.get(AppModel.realAppContext)
@@ -54,7 +54,7 @@ object RepoActUtil {
 
                     notiSender?.sendProgressNotification?.invoke(repoFromDb.repoName, "syncing...")
 
-                    Libgit2Helper.doActWithRepoLock(repoFromDb, waitInMillSec = waitInMillSecIfApiBusy, onLockFailed = throwRepoBusy) {
+                    Libgit2Helper.doActWithRepoLock(repoFromDb, waitInMillSec = waitInMillSecIfApiBusy, onLockFailed = { throwRepoBusy(prefix, repoFromDb.repoName) }) {
                         syncSingle(
                             sendProgressNotification = notiSender?.sendProgressNotification,
                             repoFromDb = repoFromDb,
@@ -139,6 +139,7 @@ object RepoActUtil {
         gitUsernameFromUrl:String,  // leave empty to read from config
         gitEmailFromUrl:String,  // leave empty to read from config
     ) {
+        val prefix = "pull"
         val db = AppModel.dbContainer
         val settings = SettingsUtil.getSettingsSnapshot()
         val masterPassword = MasterPassUtil.get(AppModel.realAppContext)
@@ -150,7 +151,7 @@ object RepoActUtil {
                 try {
                     notiSender?.sendProgressNotification?.invoke(repoFromDb.repoName, "pulling...")
 
-                    Libgit2Helper.doActWithRepoLock(repoFromDb, waitInMillSec = waitInMillSecIfApiBusy, onLockFailed = throwRepoBusy) {
+                    Libgit2Helper.doActWithRepoLock(repoFromDb, waitInMillSec = waitInMillSecIfApiBusy, onLockFailed = { throwRepoBusy(prefix, repoFromDb.repoName) }) {
                         pullSingle(
                             repoFromDb = repoFromDb,
                             db = db,
@@ -190,18 +191,19 @@ object RepoActUtil {
         settings: AppSettings,
         sendSuccessNotification: ((title: String?, msg: String?, startPage: Int?, startRepoId: String?) -> Unit)?
     ) {
+        val prefix = "pull"
         if (dbIntToBool(repoFromDb.isDetached)) {
-            throw RuntimeException("repo is detached")
+            throwWithPrefix(prefix, "repo is detached")
         }
 
         if (!Libgit2Helper.isValidGitRepo(repoFromDb.fullSavePath)) {
-            throw RuntimeException("invalid git repo")
+            throwWithPrefix(prefix, "invalid git repo")
         }
 
         Repository.open(repoFromDb.fullSavePath).use { gitRepo ->
             val upstream = Libgit2Helper.getUpstreamOfBranch(gitRepo, repoFromDb.branch)
             if (upstream.remote.isBlank() || upstream.branchRefsHeadsFullRefSpec.isBlank()) {
-                throw RuntimeException("invalid upstream")
+                throwWithPrefix(prefix, "invalid upstream")
             }
 
             // get fetch credential
@@ -235,11 +237,11 @@ object RepoActUtil {
             }
 
             if (username == null || username.isBlank()) {
-                throw RuntimeException("git username invalid")
+                throwWithPrefix(prefix, "git username invalid")
             }
 
             if (email == null || email.isBlank()) {
-                throw RuntimeException("git email invalid")
+                throwWithPrefix(prefix, "git email invalid")
             }
 
             val remoteRefSpec = Libgit2Helper.getUpstreamRemoteBranchShortNameByRemoteAndBranchRefsHeadsRefSpec(
@@ -257,13 +259,21 @@ object RepoActUtil {
             )
 
             if (mergeRet.hasError()) {
-                throw RuntimeException(mergeRet.msg)
+                throwWithPrefix(prefix, mergeRet.msg)
             }
 
+
+            val successMsg =  if(mergeRet.msg.isBlank()) {
+                "pull successfully"
+            }else {
+                //显示 already up to date之类的，btw 如果显示already up to date，代表没发生merge，文件应该没修改，不需要重新加载(20250216 markor不会在文件在外部被修改后自动重载，如果文件变化，需要手动重载，不过obsidian会，所以若嫌麻烦可以用obsidian)
+                "$prefix: ${mergeRet.msg}"
+            }
+
+            sendSuccessNotification?.invoke(repoFromDb.repoName, successMsg, Cons.selectedItem_ChangeList, repoFromDb.id)
         }
 
 
-        sendSuccessNotification?.invoke(repoFromDb.repoName, "pull successfully", Cons.selectedItem_ChangeList, repoFromDb.id)
     }
 
     suspend fun pushRepoList(
@@ -276,6 +286,7 @@ object RepoActUtil {
         force:Boolean,
 
     ) {
+        val prefix = "push"
         val db = AppModel.dbContainer
         val settings = SettingsUtil.getSettingsSnapshot()
         val masterPassword = MasterPassUtil.get(AppModel.realAppContext)
@@ -287,7 +298,7 @@ object RepoActUtil {
                 try {
                     notiSender?.sendProgressNotification?.invoke(repoFromDb.repoName, "pushing...")
 
-                    Libgit2Helper.doActWithRepoLock(repoFromDb, waitInMillSec = waitInMillSecIfApiBusy, onLockFailed = throwRepoBusy) {
+                    Libgit2Helper.doActWithRepoLock(repoFromDb, waitInMillSec = waitInMillSecIfApiBusy, onLockFailed = { throwRepoBusy(prefix, repoFromDb.repoName) }) {
                         pushSingle(
                             repoFromDb = repoFromDb,
                             autoCommit = autoCommit,
@@ -335,25 +346,28 @@ object RepoActUtil {
         db: AppContainer,
         masterPassword: String
     ) {
+        val prefix = "push"
+
         if (dbIntToBool(repoFromDb.isDetached)) {
-            throw RuntimeException("repo is detached")
+            throwWithPrefix(prefix, "repo is detached")
         }
 
         if (!Libgit2Helper.isValidGitRepo(repoFromDb.fullSavePath)) {
-            throw RuntimeException("invalid git repo")
+            throwWithPrefix(prefix, "invalid git repo")
         }
 
         Repository.open(repoFromDb.fullSavePath).use { gitRepo ->
             val repoState = gitRepo.state()
             if (repoState != Repository.StateT.NONE) {
-                throw RuntimeException("repository state is '$repoState', expect 'NONE'")
+                throwWithPrefix(prefix, "repository state is '$repoState', expect 'NONE'")
             }
 
             val upstream = Libgit2Helper.getUpstreamOfBranch(gitRepo, repoFromDb.branch)
             if (upstream.remote.isBlank() || upstream.branchRefsHeadsFullRefSpec.isBlank()) {
-                throw RuntimeException("invalid upstream")
+                throwWithPrefix(prefix, "invalid upstream")
             }
 
+            //提交，就算失败也会尝试push，因为就算没提交也有可能本地比远程新，比如在其他地方提交过，就有可能会这样
             if (autoCommit) {
                 val (username, email) = if (gitUsernameFromUrl.isNotBlank() && gitEmailFromUrl.isNotBlank()) {
                     Pair(gitUsernameFromUrl, gitEmailFromUrl)
@@ -367,13 +381,13 @@ object RepoActUtil {
                 }
 
                 if (username == null || username.isBlank() || email == null || email.isBlank()) {
-                    MyLog.w(TAG, "http server: api $routeName: commit abort by username or email invalid")
+                    MyLog.e(TAG, "http server: api $routeName: commit abort by username or email invalid")
                 } else {
                     //检查是否存在冲突，如果存在，将不会创建提交
                     if (Libgit2Helper.hasConflictItemInRepo(gitRepo)) {
-                        MyLog.w(TAG, "http server: api=$routeName, repoName=${repoFromDb.repoName}, err=conflict abort the commit")
+                        MyLog.e(TAG, "http server: api=$routeName, repoName=${repoFromDb.repoName}, err=conflict abort the commit")
                         // 显示个手机通知，点击进入ChangeList并定位到对应仓库
-                        sendErrNotification?.invoke("Error", "Conflict abort the commit", Cons.selectedItem_ChangeList, repoFromDb.id)
+                        sendErrNotification?.invoke(repoFromDb.repoName, "$prefix: auto commit aborted by conflicts", Cons.selectedItem_ChangeList, repoFromDb.id)
                     } else {
                         // 有username 和 email，且无冲突
 
@@ -395,9 +409,9 @@ object RepoActUtil {
                             )
 
                             if (ret.hasError()) {
-                                MyLog.w(TAG, "http server: api=$routeName, repoName=${repoFromDb.repoName}, create commit err: ${ret.msg}, exception=${ret.exception?.printStackTrace()}")
+                                MyLog.e(TAG, "http server: api=$routeName, repoName=${repoFromDb.repoName}, create commit err: ${ret.msg}, exception=${ret.exception?.stackTraceToString()}")
                                 // 显示个手机通知，点击进入ChangeList并定位到对应仓库
-                                sendErrNotification?.invoke("Error", "Commit err: ${ret.msg}", Cons.selectedItem_ChangeList, repoFromDb.id)
+                                sendErrNotification?.invoke(repoFromDb.repoName, "$prefix: auto commit err: ${ret.msg}", Cons.selectedItem_ChangeList, repoFromDb.id)
                             } else if(ret.data != null){
                                 //更新本地oid，不然后面会误认为up to date，然后不推送
                                 upstream.localOid = ret.data!!.toString()
@@ -414,12 +428,12 @@ object RepoActUtil {
                 val (ahead, behind) = getAheadBehind(gitRepo, Oid.of(upstream.localOid), Oid.of(upstream.remoteOid))
 
                 if (behind > 0) {  //本地落后远程（远程领先本地）
-                    throw RuntimeException("upstream ahead of local")
+                    throwWithPrefix(prefix, "upstream ahead of local")
                 }
 
                 if (ahead < 1) {
                     //通过behind检测后，如果进入此代码块，代表本地不落后也不领先，即“up to date”，并不需要推送，可返回了
-                    sendSuccessNotification?.invoke(repoFromDb.repoName, "Already up-to-date", Cons.selectedItem_ChangeList, repoFromDb.id)
+                    sendSuccessNotification?.invoke(repoFromDb.repoName, "$prefix: Already up-to-date", Cons.selectedItem_ChangeList, repoFromDb.id)
 
 
                     return
@@ -440,7 +454,7 @@ object RepoActUtil {
 
             val ret = Libgit2Helper.push(gitRepo, upstream.remote, upstream.pushRefSpec, credential, force)
             if (ret.hasError()) {
-                throw RuntimeException(ret.msg)
+                throwWithPrefix(prefix, ret.msg)
             }
 
             // 更新修改workstatus的时间，只更新时间就行，状态会在查询repo时更新
@@ -453,4 +467,7 @@ object RepoActUtil {
     }
 
 
+    private fun throwWithPrefix(prefix:String, msg:String) {
+        throw RuntimeException("$prefix: $msg")
+    }
 }
