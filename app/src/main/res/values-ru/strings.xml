@@ -1205,7 +1205,7 @@
 
 
     <!-- new at 20250215 -->
-    <string name="dev_mode">Dev Mode</string>
+    <string name="dev_mode">Режим разработчика</string>
 
 
 </resources>
