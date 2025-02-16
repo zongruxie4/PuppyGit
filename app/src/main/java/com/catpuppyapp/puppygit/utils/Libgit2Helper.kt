@@ -3135,7 +3135,11 @@ class Libgit2Helper {
 
             //这判断好像没什么意义，其实如果没抛异常，这里直接返回true就行
             return if(newTargetRef != null) {
-                Ret.createSuccess(newTargetRef.id(), "success")
+                if(AppModel.devModeOn) {
+                    MyLog.d(TAG, "doFastForward: fast-forward success")
+                }
+
+                Ret.createSuccess(newTargetRef.id(), "fast-forward success")
             }else {
                 Ret.createError(null, "newTargetRef is null", Ret.ErrCode.newTargetRefIsNull)
             }

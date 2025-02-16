@@ -3,6 +3,7 @@ package com.catpuppyapp.puppygit.utils
 import com.catpuppyapp.puppygit.constants.Cons
 import com.catpuppyapp.puppygit.data.AppContainer
 import com.catpuppyapp.puppygit.data.entity.RepoEntity
+import com.catpuppyapp.puppygit.etc.Ret
 import com.catpuppyapp.puppygit.server.bean.NotificationSender
 import com.catpuppyapp.puppygit.settings.AppSettings
 import com.catpuppyapp.puppygit.settings.SettingsUtil
@@ -262,12 +263,13 @@ object RepoActUtil {
                 throwWithPrefix(prefix, mergeRet.msg)
             }
 
+            //merge没报错，基本算是成功了，不过可能是up to date啥也没干，也可能fast forward，也可能发生了merge，后面不会提示太详细，仅区分up to date和pull successfully(fast-forwarded or merged)
 
-            val successMsg =  if(mergeRet.msg.isBlank()) {
-                "pull successfully"
-            }else {
+            val successMsg = if(mergeRet.code == Ret.SuccessCode.upToDate) { // up to date, no fast-forward or merge
                 //显示 already up to date之类的，btw 如果显示already up to date，代表没发生merge，文件应该没修改，不需要重新加载(20250216 markor不会在文件在外部被修改后自动重载，如果文件变化，需要手动重载，不过obsidian会，所以若嫌麻烦可以用obsidian)
-                "$prefix: ${mergeRet.msg}"
+                "$prefix: Already up-to-date"
+            }else { // fast-forwarded or merged
+                "pull successfully"
             }
 
             sendSuccessNotification?.invoke(repoFromDb.repoName, successMsg, Cons.selectedItem_ChangeList, repoFromDb.id)
