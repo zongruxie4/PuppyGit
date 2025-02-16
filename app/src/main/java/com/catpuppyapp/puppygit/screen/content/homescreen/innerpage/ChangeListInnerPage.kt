@@ -1537,7 +1537,7 @@ fun ChangeListInnerPage(
 //                        bottomBarActDoneCallback("")
 
                     }catch (e:Exception){
-                        e.printStackTrace()
+//                        e.printStackTrace()
                         MyLog.e(TAG, "#doCommit at showCommitMsgDialog #onOk:" + e.stackTraceToString())
                     }
                 }
@@ -3445,17 +3445,43 @@ fun ChangeListInnerPage(
                 getThenDel = true
             )
 
+
+            if(AppModel.devModeOn) {
+                MyLog.d(TAG, "#LaunchedEffect: requestType=$requestType, payloadRepoId=$payloadRepoId")
+            }
+
+
             //if navi to Difference page or internal Editor then navi back, actually most time no need reload page
             if(naviTarget.value == Cons.ChangeListNaviTarget_NoNeedReload){
                 //不管是否返回，反正消费过naviTarget一次后，就重置为初始值
                 // if navi back from Index, need refresh
                 naviTarget.value = Cons.ChangeListNaviTarget_InitValue
 
-                //如果无请求数据，在这就可返回了，否则往下判断下，再决定是否返回
-                if(requestType == StateRequestType.invalid) {
-                    return@LaunchedEffect
+
+                //执行到这个代码块一般是从Diff页面或者子页面文本编辑器(SubPageEditor)返回来的，
+                // 有可能携带了希望执行的操作，这里检查下(可理解成子页面向父页面传参)
+                //检查是否有需要执行的操作
+                // 从diff页面返回可能会请求执行此操作，可针对 homeChangeList和indexChangeList执行此操作
+                if(requestType == StateRequestType.indexToWorkTree_CommitAll) {
+                    Cache.set(Cache.Key.changeListInnerPage_requireDoActFromParent, PageRequest.indexToWorkTree_CommitAll)
+                    requireDoActFromParentShowTextWhenDoingAct.value = activityContext.getString(R.string.committing)
+                    requireDoActFromParent.value = true
+
+                    enableActionFromParent.value=false  //禁用顶栏按钮避免冲突
+
+                }else if(requestType == StateRequestType.headToIndex_CommitAll) {
+                    Cache.set(Cache.Key.changeListInnerPage_requireDoActFromParent, PageRequest.commit)
+                    requireDoActFromParentShowTextWhenDoingAct.value = activityContext.getString(R.string.committing)
+                    requireDoActFromParent.value = true
+
+                    enableActionFromParent.value=false
                 }
+
+
+                //无需重载的情况下，可直接返回了，上面请求执行的操作直接使用现有数据即可，无需重载
+                return@LaunchedEffect
             }
+
 
             if(requestType == StateRequestType.withRepoId && payloadRepoId != null) {
                 // 请求刷新页面的仓库的repoId
@@ -3527,26 +3553,6 @@ fun ChangeListInnerPage(
                 )
 
                 //下面执行需要等初始化完成后才能执行的操作
-
-                if(AppModel.devModeOn) {
-                    MyLog.d(TAG, "#LaunchedEffect: requestType = $requestType")
-                }
-
-                // do act when init done，从diff页面返回可能会请求执行此操作，可针对 homeChangeList和indexChangeList执行此操作
-                if(requestType == StateRequestType.indexToWorkTree_CommitAll) {
-                    Cache.set(Cache.Key.changeListInnerPage_requireDoActFromParent, PageRequest.indexToWorkTree_CommitAll)
-                    requireDoActFromParentShowTextWhenDoingAct.value = activityContext.getString(R.string.committing)
-                    requireDoActFromParent.value = true
-
-                    enableActionFromParent.value=false  //禁用顶栏按钮避免冲突
-
-                }else if(requestType == StateRequestType.headToIndex_CommitAll) {
-                    Cache.set(Cache.Key.changeListInnerPage_requireDoActFromParent, PageRequest.commit)
-                    requireDoActFromParentShowTextWhenDoingAct.value = activityContext.getString(R.string.committing)
-                    requireDoActFromParent.value = true
-
-                    enableActionFromParent.value=false
-                }
 
 
 

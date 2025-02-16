@@ -6,6 +6,7 @@ import java.io.Serializable
 
 
 object BroadcastUtil {
+    private const val TAG = "BroadcastUtil"
 
     private fun sendMsg(ctx: Context, action: String, what: Int, content: Serializable) {
         try {
@@ -16,7 +17,7 @@ object BroadcastUtil {
             intent.putExtra("content", content)
             ctx.sendBroadcast(intent)
         } catch (e: Exception) {
-            e.printStackTrace()
+            MyLog.e(TAG, "#sendMsg: ${e.stackTraceToString()}")
         }
     }
 }

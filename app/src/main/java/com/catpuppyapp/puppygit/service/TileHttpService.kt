@@ -56,7 +56,7 @@ class TileHttpService: TileService() {
         try {
             ContextCompat.registerReceiver(applicationContext, updateTileReceiver, IntentFilter(ACTION_UPDATE), receiverFlags())
         }catch (e:Exception) {
-            e.printStackTrace()
+            MyLog.e(TAG, "#onStartListening: ${e.stackTraceToString()}")
         }
     }
 
@@ -67,7 +67,7 @@ class TileHttpService: TileService() {
             //有时候会报错，必须try catch
             unregisterReceiver(updateTileReceiver)
         }catch (e:Exception) {
-            e.printStackTrace()
+            MyLog.e(TAG, "#onStopListening: ${e.stackTraceToString()}")
         }
     }
 

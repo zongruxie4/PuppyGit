@@ -77,12 +77,7 @@ object EditCache {
         }catch (e:Exception) {
             isInited=false
 
-            try {
-                e.printStackTrace()
-                Log.e(TAG, "#init err:"+e.stackTraceToString())
-            }catch (e2:Exception) {
-                e2.printStackTrace()
-            }
+            MyLog.e(TAG, "#init err:"+e.stackTraceToString())
 
         }
     }
@@ -168,8 +163,7 @@ object EditCache {
 //                writer?.flush()
 //            }
         } catch (e: IOException) {
-            e.printStackTrace()
-            Log.e(TAG, "#writeToFile err:"+e.stackTraceToString())
+            MyLog.e(TAG, "#writeToFile err:"+e.stackTraceToString())
         }
     }
 

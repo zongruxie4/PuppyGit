@@ -1003,14 +1003,19 @@ private fun NaviButton(
                                 Libgit2Helper.stageStatusEntryAndWriteToDisk(repo, listOf(targetItem))
                             }
 
+                            //执行到这里，实际上已经stage成功了
+                            Msg.requireShow(activityContext.getString(R.string.success))
+
+                            //下面处理页面相关的变量
+
                             //从cl页面的列表移除条目
                             SharedState.homeChangeList_itemList.remove(targetItem)
                             //cl页面设置索引有条目，因为上面添加成功了，所以大概率index至少有一个条目
                             SharedState.homeChangeList_indexHasItem.value = true
 
-                            //如果存在下个条目或上个条目，跳转；否则留在当前页面。
+                            //如果存在下个条目或上个条目，跳转；否则返回上级页面
                             val nextOrPreviousIndex = if(hasNext) (nextIndex - 1) else previousIndex
-                            if(nextOrPreviousIndex >= 0 && nextOrPreviousIndex < diffableItemList.size) {
+                            if(nextOrPreviousIndex >= 0 && nextOrPreviousIndex < diffableItemList.size) {  // still has next or previous, switch to it
                                 //从列表移除当前条目
                                 diffableItemList.removeAt(targetIndex)
 
@@ -1018,9 +1023,10 @@ private fun NaviButton(
                                 val item = diffableItemList[nextOrPreviousIndex]
                                 lastClickedItemKey.value = item.getItemKey()
                                 switchItem(item, nextOrPreviousIndex)
+                            }else {  // no next or previous, go back parent page
+                                naviUp()
                             }
 
-                            Msg.requireShow(activityContext.getString(R.string.success))
                         }catch (e:Exception) {
                             val errMsg = "err: ${e.localizedMessage}"
                             Msg.requireShowLongDuration(errMsg)
