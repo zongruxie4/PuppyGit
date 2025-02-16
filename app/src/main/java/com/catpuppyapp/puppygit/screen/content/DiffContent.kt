@@ -74,6 +74,7 @@ import com.catpuppyapp.puppygit.utils.replaceStringResList
 import com.catpuppyapp.puppygit.utils.state.CustomStateSaveable
 import com.catpuppyapp.puppygit.utils.state.mutableCustomStateMapOf
 import com.catpuppyapp.puppygit.utils.state.mutableCustomStateOf
+import com.catpuppyapp.puppygit.utils.withMainContext
 import com.github.git24j.core.Diff
 import com.github.git24j.core.Repository
 import kotlinx.coroutines.channels.Channel
@@ -1024,7 +1025,9 @@ private fun NaviButton(
                                 lastClickedItemKey.value = item.getItemKey()
                                 switchItem(item, nextOrPreviousIndex)
                             }else {  // no next or previous, go back parent page
-                                naviUp()
+                                withMainContext {
+                                    naviUp()
+                                }
                             }
 
                         }catch (e:Exception) {
