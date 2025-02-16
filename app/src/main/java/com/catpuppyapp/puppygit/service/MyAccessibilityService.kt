@@ -32,7 +32,7 @@ class MyAccessibilityService: AccessibilityService() {
         private var lastTargetPackageName = ""  // use to check enter/leave app
 
         private val ignorePackageNames = listOf<String>(
-            "com.android.systemui",  //通知栏之类的
+            "com.android.systemui",  //通知栏或全面屏手势之类的
             "android",  //切换输入法的弹窗，有的系统（例如原生）会是这个包名，有的不是（例如国产color os）
         )
 
@@ -162,6 +162,16 @@ class MyAccessibilityService: AccessibilityService() {
                 MyLog.v(TAG, "TYPE_WINDOW_STATE_CHANGED: $packageName")
             }
 
+            // 若是期望忽略的包名则返回
+            if(ignorePackageNames.contains(packageName)) {
+
+                if(AppModel.devModeOn) {
+                    MyLog.d(TAG, "ignore package name: '$packageName'")
+                }
+
+                return
+            }
+
             try {
                 //ignore input method package names
                 if((getSystemService(Context.INPUT_METHOD_SERVICE) as? InputMethodManager)?.enabledInputMethodList?.find { it.packageName == packageName } != null) {
@@ -174,16 +184,6 @@ class MyAccessibilityService: AccessibilityService() {
                 }
             }catch (e:Exception) {
                 MyLog.d(TAG, "get enabledInputMethodList err: ${e.stackTraceToString()}")
-            }
-
-            // notification expand or gesture maybe
-            if(ignorePackageNames.contains(packageName)) {
-
-                if(AppModel.devModeOn) {
-                    MyLog.d(TAG, "ignore package name: '$packageName'")
-                }
-
-                return
             }
 
             val settings = SettingsUtil.getSettingsSnapshot()
