@@ -1,10 +1,12 @@
 1.0.8.7v63 - 20250215:
 - add dev mode
 - update russian translation (thx @triksterr)
+- support commit items from Diff screen
 
 
 - 添加开发模式
 - 更新俄语翻译 (thx @triksterr)
+- 支持从Diff页面提交条目
 
 ---
 
