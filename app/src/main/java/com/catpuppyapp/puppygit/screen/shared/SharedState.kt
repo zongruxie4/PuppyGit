@@ -13,6 +13,6 @@ object SharedState {
     val treeToTree_LastClickedItemKey = mutableStateOf(Cons.init_last_clicked_item_key)
     val fileHistory_LastClickedItemKey = mutableStateOf(Cons.init_last_clicked_item_key)
 
-    val homeChangeList_Refresh = mutableStateOf("WorktreeToIndex_ChangeList_refresh_init_value_5hpn")
-    val indexChangeList_Refresh = mutableStateOf("Index_ChangeList_refresh_init_value_ts7n")
+    val homeChangeList_Refresh = mutableStateOf("IndexToWorkTree_ChangeList_refresh_init_value_5hpn")
+    val indexChangeList_Refresh = mutableStateOf("HeadToIndex_ChangeList_refresh_init_value_ts7n")
 }

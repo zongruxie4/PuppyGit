@@ -50,7 +50,7 @@ object ChangeListFunctions {
         repoId:String,
         bottomBarActDoneCallback:(String, RepoEntity)->Unit,
         fromTo:String,
-        itemList:CustomStateListSaveable<StatusTypeEntrySaver>,
+        itemList:List<StatusTypeEntrySaver>?,
         successCommitStrRes:String,
         indexIsEmptyForCommitDialog:MutableState<Boolean>,
         commitBtnTextForCommitDialog:MutableState<String>,
@@ -205,7 +205,10 @@ object ChangeListFunctions {
                     msg = tmpCommitMsg,
                     username = username.value,
                     email = email.value,
-                    indexItemList = if(fromTo == Cons.gitDiffFromHeadToIndex) itemList.value else null,
+
+                    //如果是index页面的条目列表，直接使用，否则无视并强制传null触发重查index条目，不过如果从index页面调用此方法又想触发重查，也可直接在调用此函数时传null给itemList
+                    indexItemList = if(fromTo == Cons.gitDiffFromHeadToIndex) itemList else null,
+
                     amend = amendCommit.value,
                     overwriteAuthorWhenAmend = overwriteAuthor.value,
                     settings = settings

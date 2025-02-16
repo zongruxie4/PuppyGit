@@ -70,5 +70,6 @@ fun delRequestDataByState(stateValue:String) {
     if(stateValue.isBlank()) {
         return
     }
+
     storage.del(stateValue)
 }

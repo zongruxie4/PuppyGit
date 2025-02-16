@@ -4439,7 +4439,7 @@ class Libgit2Helper {
                             //废弃：不需要在这里设置，调用者自己决定检查git status时由它自己设置tmp status，我这不用管
 //                            tmpStatusIfHave = AppModel.activityContext.getString(R.string.loading)
 
-                        //检查workTreeToIndex，可能会很慢，需要调用者自己开协程检查本地是否有未提交修改 (index or worktree dirty)
+                        //检查IndexToWorkTree，可能会很慢，需要调用者自己开协程检查本地是否有未提交修改 (index or worktree dirty)
                         repoFromDb.pendingTask = RepoPendingTask.NEED_CHECK_UNCOMMITED_CHANGES
 
                     }else { // repoState != NONE
