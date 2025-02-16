@@ -1212,5 +1212,8 @@
     <!-- new at 20250215 -->
     <string name="dev_mode">Dev Mode</string>
 
+    <!-- new at 20250216 -->
+    <string name="commit_all">Commit All</string>
+
 
 </resources>

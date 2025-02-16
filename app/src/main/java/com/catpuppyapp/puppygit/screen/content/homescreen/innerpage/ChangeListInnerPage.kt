@@ -585,6 +585,26 @@ fun ChangeListInnerPage(
         )
     }
 
+
+    val doStageAll_2 = { curRepo:RepoEntity, requireCloseBottomBar:Boolean->
+        //第2个参数代表使用参数提供的列表，第3个参数是当前仓库所有的changelist列表，这样就实现了stage all
+        ChangeListFunctions.doStage(
+            curRepo = curRepo,
+            requireCloseBottomBar = requireCloseBottomBar,
+            userParamList = true,
+            paramList = itemList.value.toList(),
+            fromTo = fromTo,
+            selectedListIsEmpty = selectedListIsEmpty,
+            requireShowToast = requireShowToast,
+            noItemSelectedStrRes = noItemSelectedStrRes,
+            activityContext = activityContext,
+            selectedItemList = selectedItemList.value.toList(),
+            loadingText = loadingText,
+            nFilesStagedStrRes = nFilesStagedStrRes,
+            bottomBarActDoneCallback = bottomBarActDoneCallback
+        )
+    }
+
     //调用者记得刷新页面
     val doAbortMerge:suspend (RepoEntity)->Unit = { curRepo:RepoEntity ->
         loadingText.value = activityContext.getString(R.string.aborting_merge)
@@ -920,6 +940,55 @@ fun ChangeListInnerPage(
                     doStageAll(curRepo)
                 }catch (e:Exception){
                     showErrAndSaveLog(TAG,"require stage_all error:"+e.stackTraceToString(), activityContext.getString(R.string.stage_all_failed)+":"+e.localizedMessage, requireShowToast, curRepo.id)
+                }finally {
+//                    RepoStatusUtil.clearRepoStatus(repoId)
+
+                    changeListRequireRefreshFromParentPage(curRepo)
+//                    refreshRepoPage()
+
+                }
+            }else if(requireAct == PageRequest.commitAllFromIndexToWorkTree) {
+                try {
+//                    RepoStatusUtil.setRepoStatus(repoId, appContext.getString(R.string.staging))
+
+                    val requireCloseBottombar = false
+                    val stageSuccess = doStageAll_2(curRepo, requireCloseBottombar)
+
+                    if(!stageSuccess){
+                        bottomBarActDoneCallback(activityContext.getString(R.string.stage_failed), curRepo)
+                    }else {
+                        //显示commit弹窗，之后在其确认回调函数里执行后续操作
+//                        doCommit(true,"", true, false)
+                        ChangeListFunctions.doCommit(
+                            requireShowCommitMsgDialog = true,
+                            cmtMsg = "",
+                            requireCloseBottomBar = true,
+//                            requireDoSync = false,
+                            curRepoFromParentPage = curRepo,
+                            refreshChangeList = changeListRequireRefreshFromParentPage,
+                            username = username,
+                            email = email,
+                            requireShowToast = requireShowToast,
+                            pleaseSetUsernameAndEmailBeforeCommit = pleaseSetUsernameAndEmailBeforeCommit,
+                            showUserAndEmailDialog = showUserAndEmailDialog,
+                            amendCommit = amendCommit,
+                            overwriteAuthor = overwriteAuthor,
+                            showCommitMsgDialog = showCommitMsgDialog,
+                            repoState = repoState,
+                            appContext = activityContext,
+                            loadingText = loadingText,
+                            repoId = repoId,
+                            bottomBarActDoneCallback = bottomBarActDoneCallback,
+                            fromTo = fromTo,
+                            itemList = itemList,
+                            successCommitStrRes = successCommitStrRes,
+                            indexIsEmptyForCommitDialog=indexIsEmptyForCommitDialog,
+                            commitBtnTextForCommitDialog=commitBtnTextForCommitDialog,
+//                            showPushForCommitDialog=showPushForCommitDialog
+                        )
+                    }
+                }catch (e:Exception){
+                    showErrAndSaveLog(TAG,"require commit all error:"+e.stackTraceToString(), activityContext.getString(R.string.commit_err)+":"+e.localizedMessage, requireShowToast, curRepo.id)
                 }finally {
 //                    RepoStatusUtil.clearRepoStatus(repoId)
 
@@ -2071,6 +2140,7 @@ fun ChangeListInnerPage(
                         nFilesStagedStrRes = nFilesStagedStrRes,
                         bottomBarActDoneCallback = bottomBarActDoneCallback
                     )
+
                     if(!stageSuccess){
                         bottomBarActDoneCallback(activityContext.getString(R.string.stage_failed), curRepo)
                     }else {

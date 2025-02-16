@@ -661,6 +661,7 @@ object ChangeListFunctions {
         bottomBarActDoneCallback:(String, RepoEntity)->Unit
     ):Boolean{
         //在index页面是不需要stage的，只有在首页抽屉那个代表worktree的changelist页面才需要stage，但为了简化逻辑，少改代码，直接在这加个非worktree就返回true的判断，这样调用此函数的地方就都不用改了，当作stage成功，然后继续执行后续操作即可
+        //只有在indexToWorktree(默认的ChangeList页面)才需要执行stage，其他页面调用此方法直接返回true，无需执行任何操作
         if(fromTo != Cons.gitDiffFromIndexToWorktree) {
             return true
         }

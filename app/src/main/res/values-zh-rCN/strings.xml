@@ -1186,5 +1186,8 @@
     <!-- new at 20250215 -->
     <string name="dev_mode">开发模式</string>
 
+    <!-- new at 20250216 -->
+    <string name="commit_all">提交所有</string>
+
 
 </resources>
