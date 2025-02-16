@@ -162,7 +162,7 @@ fun ChangeListPageActions(
 
                     text = { Text(stringResource(R.string.commit_all)) },
                     onClick = {
-                        Cache.set(Cache.Key.changeListInnerPage_requireDoActFromParent, PageRequest.commitAllFromIndexToWorkTree)
+                        Cache.set(Cache.Key.changeListInnerPage_requireDoActFromParent, PageRequest.indexToWorkTree_CommitAll)
                         requireDoActFromParentShowTextWhenDoingAct.value = activityContext.getString(R.string.committing)
                         requireDoActFromParent.value = true
                         enableAction.value=false  //禁用顶栏的按钮，避免用户重复操作，不过libgit2应该本身有避免重复执行会冲突的操作的机制，但我最好还是再控制一下，避免发生冲突才是最佳

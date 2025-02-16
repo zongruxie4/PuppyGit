@@ -947,7 +947,7 @@ fun ChangeListInnerPage(
 //                    refreshRepoPage()
 
                 }
-            }else if(requireAct == PageRequest.commitAllFromIndexToWorkTree) {
+            }else if(requireAct == PageRequest.indexToWorkTree_CommitAll) {
                 try {
 //                    RepoStatusUtil.setRepoStatus(repoId, appContext.getString(R.string.staging))
 
@@ -3511,12 +3511,20 @@ fun ChangeListInnerPage(
 
 
 
-            // do act when init done，从diff页面返回可能会请求执行此操作
-            if(requestType == StateRequestType.commitAll) {
-                Cache.set(Cache.Key.changeListInnerPage_requireDoActFromParent, PageRequest.commitAllFromIndexToWorkTree)
+            // do act when init done，从diff页面返回可能会请求执行此操作，可针对 homeChangeList和indexChangeList执行此操作
+            if(requestType == StateRequestType.indexToWorkTree_CommitAll) {
+                Cache.set(Cache.Key.changeListInnerPage_requireDoActFromParent, PageRequest.indexToWorkTree_CommitAll)
                 requireDoActFromParentShowTextWhenDoingAct.value = activityContext.getString(R.string.committing)
                 requireDoActFromParent.value = true
-                enableActionFromParent.value=false  //禁用顶栏的按钮，避免用户重复操作，不过libgit2应该本身有避免重复执行会冲突的操作的机制，但我最好还是再控制一下，避免发生冲突才是最佳
+
+                enableActionFromParent.value=false  //禁用顶栏按钮避免冲突
+
+            }else if(requestType == StateRequestType.headToIndex_CommitAll) {
+                Cache.set(Cache.Key.changeListInnerPage_requireDoActFromParent, PageRequest.commit)
+                requireDoActFromParentShowTextWhenDoingAct.value = activityContext.getString(R.string.committing)
+                requireDoActFromParent.value = true
+
+                enableActionFromParent.value=false
             }
 
 

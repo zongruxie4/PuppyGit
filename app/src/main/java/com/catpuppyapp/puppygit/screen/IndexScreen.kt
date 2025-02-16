@@ -66,7 +66,7 @@ fun IndexScreen(
 //    val curRepo = rememberSaveable{ mutableStateOf(RepoEntity()) }
 //    val curRepo = mutableCustomStateOf(value = RepoEntity())
 
-    val changeListRefreshRequiredByParentPage = rememberSaveable { mutableStateOf("Index_ChangeList_refresh_init_value_ts7n") }
+    val changeListRefreshRequiredByParentPage = rememberSaveable { SharedState.indexChangeList_Refresh }
     val changeListRequireRefreshFromParentPage = { whichRepoRequestRefresh:RepoEntity ->
         ChangeListFunctions.changeListDoRefresh(changeListRefreshRequiredByParentPage, whichRepoRequestRefresh)
     }

@@ -269,6 +269,7 @@ fun DiffContent(
                     switchItem = closeChannelThenSwitchItem,
                     switchItemForFileHistory = closeChannelThenSwitchItem,
                     fromTo = fromTo,
+                    naviUp = naviUp,
                     lastClickedItemKey = lastClickedItemKey,
                     diffableItemListForFileHistory = diffableItemListForFileHistory
                 )
@@ -786,6 +787,7 @@ fun DiffContent(
                         switchItem = closeChannelThenSwitchItem,
                         switchItemForFileHistory = closeChannelThenSwitchItem,
                         fromTo = fromTo,
+                        naviUp = naviUp,
                         lastClickedItemKey = lastClickedItemKey,
                         diffableItemListForFileHistory = diffableItemListForFileHistory
                     )
@@ -964,6 +966,7 @@ private fun NaviButton(
     diffableItemListForFileHistory:List<FileHistoryDto>,
     curItemIndex: MutableIntState,
     lastClickedItemKey: MutableState<String>,
+    naviUp:()->Boolean,
     switchItem: (StatusTypeEntrySaver, index: Int) -> Unit,
     switchItemForFileHistory: (FileHistoryDto, index: Int) -> Unit,
 ) {
@@ -1026,6 +1029,26 @@ private fun NaviButton(
                             MyLog.e(TAG, "stage item '${targetItem.relativePathUnderRepo}' for repo '${curRepo.repoName}' err: ${e.stackTraceToString()}")
                         }
                     }
+                }
+
+                Spacer(Modifier.height(20.dp))
+            }
+
+            // show commit all
+            if(fromTo == Cons.gitDiffFromIndexToWorktree || fromTo == Cons.gitDiffFromHeadToIndex) {
+                val (state, requestType) = if(fromTo == Cons.gitDiffFromIndexToWorktree) {
+                    Pair(SharedState.homeChangeList_Refresh, StateRequestType.indexToWorkTree_CommitAll)
+                } else {
+                    Pair(SharedState.indexChangeList_Refresh, StateRequestType.headToIndex_CommitAll)
+                }
+
+
+                CardButton(
+                    text =  stringResource(R.string.commit_all),
+                    enabled = true
+                ) {
+                    changeStateTriggerRefreshPage(state, requestType)
+                    naviUp()
                 }
 
                 Spacer(Modifier.height(20.dp))

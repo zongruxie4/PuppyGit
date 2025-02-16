@@ -2,9 +2,7 @@ package com.catpuppyapp.puppygit.screen
 
 import android.content.Intent
 import android.net.Uri
-import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxHeight
-import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.foundation.lazy.rememberLazyListState
@@ -22,7 +20,6 @@ import androidx.compose.material.icons.filled.Inventory
 import androidx.compose.material.icons.filled.Menu
 import androidx.compose.material.icons.filled.Save
 import androidx.compose.material.icons.filled.Settings
-import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.DrawerState
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
@@ -58,7 +55,6 @@ import com.catpuppyapp.puppygit.compose.FilterTextField
 import com.catpuppyapp.puppygit.compose.GoToTopAndGoToBottomFab
 import com.catpuppyapp.puppygit.compose.LoadingDialog
 import com.catpuppyapp.puppygit.compose.LongPressAbleIconBtn
-import com.catpuppyapp.puppygit.compose.ScrollableColumn
 import com.catpuppyapp.puppygit.compose.ScrollableRow
 import com.catpuppyapp.puppygit.compose.SmallFab
 import com.catpuppyapp.puppygit.constants.Cons
@@ -164,7 +160,7 @@ fun HomeScreen(
 
     val repoPageRepoList = mutableCustomStateListOf(stateKeyTag, "repoPageRepoList", listOf<RepoEntity>())
 
-    val changeListRefreshRequiredByParentPage= rememberSaveable { mutableStateOf("WorktreeToIndex_ChangeList_refresh_init_value_5hpn")}
+    val changeListRefreshRequiredByParentPage = rememberSaveable { SharedState.homeChangeList_Refresh }
 
     //参数repoId用来实现如果在仓库a执行操作，然后切换了仓库，则仓库a的仓库执行完后不会刷新页面
     val changeListRequireRefreshFromParentPage = { whichRepoRequestRefresh:RepoEntity ->
