@@ -61,8 +61,9 @@ class MyAccessibilityService: AccessibilityService() {
             settings: AppSettings,
             repoList:List<RepoEntity>,
         ) {
-
-            MyLog.d(TAG, "generate notifyers for ${repoList.size} repos")
+            if(AppModel.devModeOn) {
+                MyLog.d(TAG, "#pullRepoList: generate notifyers for ${repoList.size} repos")
+            }
 
             repoList.forEach {
                 //notify
@@ -93,7 +94,9 @@ class MyAccessibilityService: AccessibilityService() {
             repoList:List<RepoEntity>,
         ) {
 
-            MyLog.d(TAG, "generate notifyers for ${repoList.size} repos")
+            if(AppModel.devModeOn) {
+                MyLog.d(TAG, "#pushRepoList: generate notifyers for ${repoList.size} repos")
+            }
 
             repoList.forEach {
                 //notify
