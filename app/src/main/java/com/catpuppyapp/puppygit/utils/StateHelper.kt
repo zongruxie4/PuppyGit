@@ -11,6 +11,7 @@ private val storage = Cache
 
 object StateRequestType {
     val invalid = -1
+
     //强制重新加载数据，就算有能恢复的数据也不使用，一般用来加载更多的那种列表上，例如 CommitListScreen
     val forceReload = 1
 
@@ -19,6 +20,9 @@ object StateRequestType {
 
     //diff页面切换条目后跳转到列表顶部
     val requireGoToTop = 3
+
+    //从diff页面返回到changelist(index to worktree)，请求执行提交所有
+    val commitAll = 4
 }
 
 //改变值触发执行刷新页面的代码

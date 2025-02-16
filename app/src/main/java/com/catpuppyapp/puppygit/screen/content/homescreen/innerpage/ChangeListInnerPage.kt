@@ -3509,6 +3509,17 @@ fun ChangeListInnerPage(
 //        scope
             )
 
+
+
+            // do act when init done，从diff页面返回可能会请求执行此操作
+            if(requestType == StateRequestType.commitAll) {
+                Cache.set(Cache.Key.changeListInnerPage_requireDoActFromParent, PageRequest.commitAllFromIndexToWorkTree)
+                requireDoActFromParentShowTextWhenDoingAct.value = activityContext.getString(R.string.committing)
+                requireDoActFromParent.value = true
+                enableActionFromParent.value=false  //禁用顶栏的按钮，避免用户重复操作，不过libgit2应该本身有避免重复执行会冲突的操作的机制，但我最好还是再控制一下，避免发生冲突才是最佳
+            }
+
+
         } catch (e: Exception) {
             MyLog.e(TAG, "#LaunchedEffect err: ${e.stackTraceToString()}")
         }
