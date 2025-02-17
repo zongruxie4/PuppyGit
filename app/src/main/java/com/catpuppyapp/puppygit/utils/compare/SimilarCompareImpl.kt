@@ -501,6 +501,7 @@ private val wordSeparators = listOf(
     ' ',
     '\n',
     '\r',
+    '\t',
     ',',
     '.',
     '<',
