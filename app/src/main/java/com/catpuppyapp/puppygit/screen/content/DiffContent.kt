@@ -1161,26 +1161,6 @@ private fun NaviButton(
                 Spacer(Modifier.height(20.dp))
             }
 
-            // show commit all
-            if(fromTo == Cons.gitDiffFromIndexToWorktree || fromTo == Cons.gitDiffFromHeadToIndex) {
-                val (state, requestType) = if(fromTo == Cons.gitDiffFromIndexToWorktree) {
-                    Pair(SharedState.homeChangeList_Refresh, StateRequestType.indexToWorkTree_CommitAll)
-                } else {
-                    Pair(SharedState.indexChangeList_Refresh, StateRequestType.headToIndex_CommitAll)
-                }
-
-
-                CardButton(
-                    text = stringResource(R.string.commit_all),
-                    enabled = true
-                ) {
-                    changeStateTriggerRefreshPage(state, requestType)
-                    naviUp()
-                }
-
-                Spacer(Modifier.height(20.dp))
-            }
-
             // show revert for worktreeToIndex
             if(fromTo == Cons.gitDiffFromIndexToWorktree) {
                 CardButton(
@@ -1227,6 +1207,26 @@ private fun NaviButton(
                 Spacer(Modifier.height(20.dp))
             }
 
+
+            // show commit all for indexToWorktree or headToIndex (虽然显示同一按钮，但两者实现不同，indexToWorktree的commit all是先stage all再提交，headToIndex的commit all则是直接提交index，不会stage未添加到index但存在于indexToWorktree ChangeList页面的条目)
+            if(fromTo == Cons.gitDiffFromIndexToWorktree || fromTo == Cons.gitDiffFromHeadToIndex) {
+                val (state, requestType) = if(fromTo == Cons.gitDiffFromIndexToWorktree) {
+                    Pair(SharedState.homeChangeList_Refresh, StateRequestType.indexToWorkTree_CommitAll)
+                } else {
+                    Pair(SharedState.indexChangeList_Refresh, StateRequestType.headToIndex_CommitAll)
+                }
+
+
+                CardButton(
+                    text = stringResource(R.string.commit_all),
+                    enabled = true
+                ) {
+                    changeStateTriggerRefreshPage(state, requestType)
+                    naviUp()
+                }
+
+                Spacer(Modifier.height(20.dp))
+            }
 
 
 
