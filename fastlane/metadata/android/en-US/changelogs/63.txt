@@ -1,4 +1,4 @@
 - add dev mode
 - update russian translation (thx @triksterr)
-- support commit items from Diff screen
+- support commit/unstage/revert items from Diff screen
 - optimize match by words for compare files

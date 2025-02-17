@@ -1,13 +1,13 @@
 1.0.8.7v63 - 20250217:
 - add dev mode
 - update russian translation (thx @triksterr)
-- support commit items from Diff screen
+- support commit/unstage/revert items from Diff screen
 - optimize match by words for compare files
 
 
 - 添加开发模式
 - 更新俄语翻译 (thx @triksterr)
-- 支持从Diff页面提交条目
+- 支持从Diff页面提交、取消暂存、恢复条目
 - 优化比较文件时的按单词匹配模式
 
 ---
