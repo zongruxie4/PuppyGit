@@ -422,6 +422,8 @@ class SimilarCompareImpl: SimilarCompare {
         var wordMatching = false
         var spaceMatching = false
         var wordAndIndex:WordAndIndex? = null
+
+        //20250217 update: 实际上这里已经不是最初的只存空白字符了（空格、tab、换行之类的），现在是把常见的分隔单词的标点符号都存里面了。
         var spaceAndIndex:WordAndIndex? = null
 
 
@@ -430,7 +432,7 @@ class SimilarCompareImpl: SimilarCompare {
 
         for(i in 0 until compareParam.getLen()) {
             val char = compareParam.getChar(i)
-            if(char.isWhitespace()) {
+            if(isWordSeparator(char)) {
                 wordMatching = false
 
                 if(spaceMatching) {
@@ -492,4 +494,71 @@ private data class WordsSpacesPair(
 // p.s. list compare will not remove same elements
 private val comparator = { o1:IndexStringPart, o2:IndexStringPart ->
     o1.start.compareTo(o2.start)
+}
+
+private val wordSeparators = listOf(
+    // english words separators
+    ' ',
+    '\n',
+    '\r',
+    ',',
+    '.',
+    '<',
+    '>',
+    '/',
+    '?',
+    '\\',
+    '|',
+    '!',
+    '(',
+    ')',
+    '{',
+    '}',
+    '[',
+    ']',
+    '`',
+    '~',
+    '@',
+    '#',
+    '$',
+    '%',
+    '^',
+    '&',
+    '*',
+    '+',
+    '=',
+    '\'',
+    '\"',
+    ';',
+    ':',
+    '-',
+    '_',
+
+    //chinese words separators
+    '，',
+    '。',
+    '、',
+    '；',
+    '：',
+    '“',
+    '”',
+    '‘',
+    '’',
+    '《',
+    '》',
+    '〈',
+    '〉',
+    '【',
+    '】',
+    '（',
+    '）',
+    '—',
+    '！',
+    '？',
+
+
+)
+
+private fun isWordSeparator(char:Char):Boolean {
+    return char.isWhitespace() || wordSeparators.contains(char)
 }
