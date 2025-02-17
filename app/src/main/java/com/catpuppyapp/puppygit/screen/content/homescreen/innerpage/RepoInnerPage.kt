@@ -102,6 +102,7 @@ import com.catpuppyapp.puppygit.utils.createAndInsertError
 import com.catpuppyapp.puppygit.utils.dbIntToBool
 import com.catpuppyapp.puppygit.utils.doActIfIndexGood
 import com.catpuppyapp.puppygit.utils.doJobThenOffLoading
+import com.catpuppyapp.puppygit.utils.genHttpHostPortStr
 import com.catpuppyapp.puppygit.utils.getSecFromTime
 import com.catpuppyapp.puppygit.utils.getStoragePermission
 import com.catpuppyapp.puppygit.utils.isRepoReadyAndPathExist
@@ -1382,6 +1383,129 @@ fun RepoInnerPage(
         )
     }
 
+    val apiPullUrl = rememberSaveable { mutableStateOf("") }
+    val apiPushUrl = rememberSaveable { mutableStateOf("") }
+    val apiSyncUrl = rememberSaveable { mutableStateOf("") }
+    val showApiDialog2 = rememberSaveable { mutableStateOf(false) }
+    if(showApiDialog2.value) {
+        ConfirmDialog2(
+            title = stringResource(R.string.api),
+            requireShowTextCompose = true,
+            textCompose = {
+                MySelectionContainer {
+                    ScrollableColumn {
+                        val pullurl = apiPullUrl.value
+                        val pushurl = apiPushUrl.value
+                        val syncurl = apiSyncUrl.value
+
+                        Box(
+                            modifier = Modifier.fillMaxWidth(),
+                        ) {
+                            Row(
+                                modifier = Modifier
+                                    .fillMaxWidth(.8f)
+                                    .align(Alignment.CenterStart),
+                                verticalAlignment = Alignment.CenterVertically
+                            ) {
+                                Text(stringResource(R.string.pull)+": ", fontWeight = FontWeight.Bold)
+
+                                Text(text = pullurl)
+                            }
+
+                            IconButton(
+                                modifier = Modifier
+                                    .fillMaxWidth(.2f)
+                                    .align(Alignment.CenterEnd),
+                                onClick = {
+                                    clipboardManager.setText(AnnotatedString(pullurl))
+                                    Msg.requireShow(activityContext.getString(R.string.copied))
+                                }
+                            ) {
+                                Icon(
+                                    imageVector = Icons.Filled.ContentCopy,
+                                    contentDescription = stringResource(R.string.copy)
+                                )
+                            }
+                        }
+
+                        HorizontalDivider()
+
+                        Box(
+                            modifier = Modifier.fillMaxWidth(),
+                        ) {
+                            Row(
+                                modifier = Modifier
+                                    .fillMaxWidth(.8f)
+                                    .align(Alignment.CenterStart),
+                                verticalAlignment = Alignment.CenterVertically
+                            )  {
+                                Text(stringResource(R.string.push)+": ", fontWeight = FontWeight.Bold)
+                                Text(text = pushurl)
+                            }
+
+                            IconButton(
+                                modifier = Modifier
+                                    .fillMaxWidth(.2f)
+                                    .align(Alignment.CenterEnd),
+                                onClick = {
+                                    clipboardManager.setText(AnnotatedString(pushurl))
+                                    Msg.requireShow(activityContext.getString(R.string.copied))
+                                }
+                            ) {
+                                Icon(
+                                    imageVector = Icons.Filled.ContentCopy,
+                                    contentDescription = stringResource(R.string.copy)
+                                )
+                            }
+                        }
+
+                        HorizontalDivider()
+
+                        Box(
+                            modifier = Modifier.fillMaxWidth(),
+                        ) {
+                            Row(
+                                modifier = Modifier
+                                    .fillMaxWidth(.8f)
+                                    .align(Alignment.CenterStart),
+                                verticalAlignment = Alignment.CenterVertically
+                            ) {
+                                Text(stringResource(R.string.sync)+": ", fontWeight = FontWeight.Bold)
+
+                                Text(text = syncurl)
+                            }
+
+                            IconButton(
+                                modifier = Modifier
+                                    .fillMaxWidth(.2f)
+                                    .align(Alignment.CenterEnd),
+                                onClick = {
+                                    clipboardManager.setText(AnnotatedString(syncurl))
+                                    Msg.requireShow(activityContext.getString(R.string.copied))
+                                }
+                            ) {
+                                Icon(
+                                    imageVector = Icons.Filled.ContentCopy,
+                                    contentDescription = stringResource(R.string.copy)
+                                )
+                            }
+                        }
+
+                        HorizontalDivider()
+
+                        Spacer(Modifier.height(30.dp))
+
+
+                    }
+                }
+            },
+            onCancel = {showApiDialog2.value = false},
+            cancelBtnText = stringResource(R.string.close),
+            showOk = false
+        ) {}
+    }
+
+
     val apiConfigBeanList = mutableCustomStateListOf(stateKeyTag, "apiConfigDtoList") { listOf<ConfigBean>() }
     val showApiDialog = rememberSaveable { mutableStateOf(false) }
     if(showApiDialog.value) {
@@ -1847,16 +1971,45 @@ fun RepoInnerPage(
             showRenameDialog.value = true
         },
 
+        //这个是多选仓库则生成可操作多仓库的url的api版本，更方便
         api@{
-            apiConfigBeanList.value.clear()
             val settings = SettingsUtil.getSettingsSnapshot()
-            selectedItems.value.forEach {
-                apiConfigBeanList.value.add(genConfigDto(it, settings))
+            val host = settings.httpService.listenHost
+            val port = settings.httpService.listenPort
+            val token = settings.httpService.tokenList.let {
+                if(it.isEmpty()) "" else it.first()
             }
 
-            showApiDialog.value = true
+            val sbpull = StringBuilder("${genHttpHostPortStr(host, port.toString())}/pull?token=$token")
+            val sbpush = StringBuilder("${genHttpHostPortStr(host, port.toString())}/push?token=$token")
+            val sbsync = StringBuilder("${genHttpHostPortStr(host, port.toString())}/sync?token=$token")
+
+            selectedItems.value.forEach {
+                val repoNameOrId = "&repoNameOrId=${it.repoName}"
+                sbpull.append(repoNameOrId)
+                sbpush.append(repoNameOrId)
+                sbsync.append(repoNameOrId)
+            }
+
+            apiPullUrl.value = sbpull.toString()
+            apiPushUrl.value = sbpush.toString()
+            apiSyncUrl.value = sbsync.toString()
+
+            showApiDialog2.value = true
         },
+
+        //这个是每个仓库独立url的方案，没注释弹窗，仅注释了本段代码，取消注释并注释多仓库整合单url版api的代码即可启用
+//        api@{
+//            apiConfigBeanList.value.clear()
+//            val settings = SettingsUtil.getSettingsSnapshot()
+//            selectedItems.value.forEach {
+//                apiConfigBeanList.value.add(genConfigDto(it, settings))
+//            }
 //
+//            showApiDialog.value = true
+//        },
+
+    //这个是仅限单仓库且单条目单api的代码，已废弃
 //        api@{
 //            val sb = StringBuilder()
 //            val suffix = "\n\n--------------\n\n"
