@@ -1491,9 +1491,9 @@ fun RepoInnerPage(
                             }
                         }
 
-                        HorizontalDivider()
+//                        HorizontalDivider()
 
-                        Spacer(Modifier.height(30.dp))
+//                        Spacer(Modifier.height(30.dp))
 
 
                     }
