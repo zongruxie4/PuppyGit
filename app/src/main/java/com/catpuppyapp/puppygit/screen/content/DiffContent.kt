@@ -738,12 +738,12 @@ fun DiffContent(
                 //EOF_NL only appear at last hunk, so better check index avoid non-sense iterate
                 if(index == lastIndex) {
                     // if delete EOFNL or add EOFNL , show it
-                    val indexOfEOFNL = hunkAndLines.lines.indexOfFirst { it.originType ==  Diff.Line.OriginType.ADD_EOFNL.toString() || it.originType ==  Diff.Line.OriginType.DEL_EOFNL.toString()}
+                    val indexOfEOFNL = hunkAndLines.lines.indexOfFirst { it.originType == Diff.Line.OriginType.ADD_EOFNL.toString() || it.originType == Diff.Line.OriginType.DEL_EOFNL.toString()}
                     if(indexOfEOFNL != -1) {  // found originType EOFNL
                         val eofLine = hunkAndLines.lines.get(indexOfEOFNL)
                         item {
                             DiffRow(
-                                line = LineNum.EOF.transLineToEofLine(eofLine, add = eofLine.originType ==  Diff.Line.OriginType.ADD_EOFNL.toString()),
+                                line = LineNum.EOF.transLineToEofLine(eofLine, add = eofLine.originType == Diff.Line.OriginType.ADD_EOFNL.toString()),
                                 fileFullPath=fileFullPath,
                                 isFileAndExist = isFileAndExist.value,
                                 clipboardManager=clipboardManager,
@@ -1119,7 +1119,7 @@ private fun NaviButton(
             // if is index to work tree, show stage button
             if(fromTo == Cons.gitDiffFromIndexToWorktree) {
                 CardButton(
-                    text =  stringResource(R.string.stage),
+                    text = stringResource(R.string.stage),
                     enabled = true
                 ) doStage@{
                     val targetIndex = curItemIndex.intValue
@@ -1171,7 +1171,7 @@ private fun NaviButton(
 
 
                 CardButton(
-                    text =  stringResource(R.string.commit_all),
+                    text = stringResource(R.string.commit_all),
                     enabled = true
                 ) {
                     changeStateTriggerRefreshPage(state, requestType)
@@ -1184,7 +1184,7 @@ private fun NaviButton(
             // show revert for worktreeToIndex
             if(fromTo == Cons.gitDiffFromIndexToWorktree) {
                 CardButton(
-                    text =  stringResource(R.string.revert),
+                    text = stringResource(R.string.revert),
                     enabled = true
                 ) onClick@{
                     val targetIndex = curItemIndex.intValue
@@ -1207,7 +1207,7 @@ private fun NaviButton(
             // show unstage for indexToHead
             if(fromTo == Cons.gitDiffFromHeadToIndex) {
                 CardButton(
-                    text =  stringResource(R.string.unstage),
+                    text = stringResource(R.string.unstage),
                     enabled = true
                 ) onClick@{
                     val targetIndex = curItemIndex.intValue
@@ -1245,7 +1245,7 @@ private fun NaviButton(
         }
 
         CardButton(
-            text =  replaceStringResList(stringResource(R.string.prev_filename), listOf(if(hasPrevious) {
+            text = replaceStringResList(stringResource(R.string.prev_filename), listOf(if(hasPrevious) {
                 if(isFileHistoryTreeToLocalOrTree) diffableItemListForFileHistory[previousIndex].getCachedCommitShortOidStr() else diffableItemList[previousIndex].fileName
             } else stringResource(R.string.none))),
             enabled = hasPrevious
