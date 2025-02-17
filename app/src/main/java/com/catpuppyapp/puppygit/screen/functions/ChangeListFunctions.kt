@@ -434,6 +434,7 @@ object ChangeListFunctions {
                 if (requireCloseBottomBar) {
                     bottomBarActDoneCallback("", curRepoFromParentPage)
                 }
+
                 return true
             }
         }catch (e:Exception) {

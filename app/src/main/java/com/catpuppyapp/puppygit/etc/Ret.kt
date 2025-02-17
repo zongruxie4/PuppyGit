@@ -56,6 +56,11 @@ class Ret<T> private constructor(initData:T){
         val openFileWithEditMode=1002
         val openFileWithViewMode=1003
         val fileContentIsEmptyNeedNotCreateSnapshot=1004
+
+        /**
+         * merge or rebase, fast forward success
+         */
+        val fastForwardSuccess=1005
     }
 
 

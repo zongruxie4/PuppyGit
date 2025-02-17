@@ -3139,7 +3139,7 @@ class Libgit2Helper {
                     MyLog.d(TAG, "doFastForward: fast-forward success")
                 }
 
-                Ret.createSuccess(newTargetRef.id(), "fast-forward success")
+                Ret.createSuccess(newTargetRef.id(), "fast-forward success", successCode = Ret.SuccessCode.fastForwardSuccess)
             }else {
                 Ret.createError(null, "newTargetRef is null", Ret.ErrCode.newTargetRefIsNull)
             }
@@ -3159,8 +3159,11 @@ class Libgit2Helper {
                     lastCommitHash = shortNewCommitHash,
                 )
 
+                //如果是fast-forward成功的，实际上没发生合并，添加个提示前缀
+                val fastforwardPrefix = if(mergeResult.code == Ret.SuccessCode.fastForwardSuccess) "(FF) " else ""
+
                 //显示成功通知
-                msgNotifier(appContext.getString(if(trueMergeFalseRebase) R.string.merge_success else R.string.rebase_success))
+                msgNotifier(fastforwardPrefix + appContext.getString(if(trueMergeFalseRebase) R.string.merge_success else R.string.rebase_success))
 
             }
         }
