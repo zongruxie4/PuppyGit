@@ -131,6 +131,9 @@ object RepoActUtil {
             db = db,
             masterPassword = masterPassword
         )
+
+        sendProgressNotification?.invoke(repoFromDb.repoName, "sync successfully")
+
     }
 
     suspend fun pullRepoList(
