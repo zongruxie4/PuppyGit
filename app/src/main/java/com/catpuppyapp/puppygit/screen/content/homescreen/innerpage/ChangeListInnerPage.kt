@@ -2383,7 +2383,7 @@ fun ChangeListInnerPage(
             val refspecList = mutableListOf<String>()
 //                准备refspecList
             selectedItemList.forEach {
-                //不要用index.removeByPath()，remote是停止追踪，不是unstage！！！
+                //不要用index.removeByPath()，那个是停止追踪(make it untracked)，不是unstage！！！
                 refspecList.add(it.relativePathUnderRepo)
             }
 

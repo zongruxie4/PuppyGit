@@ -5,7 +5,10 @@ import com.catpuppyapp.puppygit.constants.Cons
 import com.catpuppyapp.puppygit.git.StatusTypeEntrySaver
 
 object SharedState {
+    // indexToWorktree or headToIndex页面的列表，无论从上述哪个页面跳转到diff页面，都会把那个页面的列表地址存到这个变量中。(所以，导航链不能是 indexToWorktree ChangeList->Diff->headToIndex ChangeList->Diff，不过正常来说，并没从Diff前进到Index的路径，所以无此bug)
     var homeChangeList_itemList = mutableListOf<StatusTypeEntrySaver>()
+
+    //用于在indexToWorkTree那个页面指示index是否有条目
     var homeChangeList_indexHasItem = mutableStateOf(false)
 
     val homeChangeList_LastClickedItemKey = mutableStateOf(Cons.init_last_clicked_item_key)
