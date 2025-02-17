@@ -2470,8 +2470,9 @@ fun RepoInnerPage(
                 specifiedRefreshRepoList = specifiedRefreshRepoList.value
             )
 
-        } catch (cancel: Exception) {
-//            LaunchedEffect job cancelled
+        } catch (e: Exception) {
+//            LaunchedEffect job cancelled maybe?
+            MyLog.e(TAG, "#LaunchedEffect err: ${e.stackTraceToString()}")
         }
     }
 }
@@ -2502,12 +2503,12 @@ private fun doInit(
 
 
     doJobThenOffLoading(loadingOn, loadingOff, loadingText) {
-        val specifiedRefreshRepoList:List<RepoEntity> = if(specifiedRefreshRepoList.isNotEmpty()) {
-            val copy = specifiedRefreshRepoList.toList()
+        val specifiedRefreshRepoList:MutableList<RepoEntity> = if(specifiedRefreshRepoList.isNotEmpty()) {
+            val copy = specifiedRefreshRepoList.toMutableList()
             specifiedRefreshRepoList.clear()  //清空以避免重复刷新，这样的话，即使出现无法刷新全部的bug，最多按两次顶栏的全部刷新也可变成刷新所有条目
             copy
         }else {
-            listOf()
+            mutableListOf()
         }
 
         //执行仓库页面的初始化操作
@@ -2519,14 +2520,18 @@ private fun doInit(
             repoDtoList.value.clear()
             repoDtoList.value.addAll(willReloadTheseRepos)
         }else {
+            val spCopy = specifiedRefreshRepoList.toList()
+            specifiedRefreshRepoList.clear()
             //重查指定列表的仓库信息
-            specifiedRefreshRepoList.forEach {
-                Libgit2Helper.updateRepoInfo(it)
+            spCopy.forEach {
+                val reQueriedRepo = repoRepository.getById(it.id) ?: return@forEach
+
+                specifiedRefreshRepoList.add(reQueriedRepo)
             }
 
             //更新仓库列表
             val newList = mutableListOf<RepoEntity>()
-            //保持原始列表的顺序但替换为更新后的仓库（不过仓库地址可能并没变化，更新要靠后面的clear()和addAll()）
+            //保持原始列表的顺序但替换为更新后的仓库（不过如果只调用LibgitHelper.updateRepoInfo()，那么仓库地址可能并没变化，更新要靠后面的clear()和addAll()，若从数据库重查则仓库地址会变化，但不管怎样，只要clear()再addAll()一下，最终结果应该都没问题）
             repoDtoList.value.toList().forEach { i1->
                 val found = specifiedRefreshRepoList.find { i2-> i2.id == i1.id }
                 if(found != null) {
