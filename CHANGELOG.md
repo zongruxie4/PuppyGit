@@ -1,4 +1,4 @@
-1.0.8.7v63 - 20250215:
+1.0.8.7v63 - 20250217:
 - add dev mode
 - update russian translation (thx @triksterr)
 - support commit items from Diff screen
