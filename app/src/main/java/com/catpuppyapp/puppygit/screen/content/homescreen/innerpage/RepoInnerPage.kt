@@ -1428,7 +1428,7 @@ fun RepoInnerPage(
                             }
                         }
 
-                        HorizontalDivider()
+                        HorizontalDivider(Modifier.padding(top = 10.dp, bottom = 10.dp))
 
                         Box(
                             modifier = Modifier.fillMaxWidth(),
@@ -1459,7 +1459,7 @@ fun RepoInnerPage(
                             }
                         }
 
-                        HorizontalDivider()
+                        HorizontalDivider(Modifier.padding(top = 10.dp, bottom = 10.dp))
 
                         Box(
                             modifier = Modifier.fillMaxWidth(),
