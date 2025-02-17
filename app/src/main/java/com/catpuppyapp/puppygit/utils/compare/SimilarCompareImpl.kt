@@ -496,6 +496,8 @@ private val comparator = { o1:IndexStringPart, o2:IndexStringPart ->
     o1.start.compareTo(o2.start)
 }
 
+
+//TODO 要不要搞个设置项，让用户可添加自定义的单词分隔符？不过好像意义不大，算了。
 private val wordSeparators = listOf(
     // english words separators
     ' ',
@@ -561,5 +563,5 @@ private val wordSeparators = listOf(
 )
 
 private fun isWordSeparator(char:Char):Boolean {
-    return char.isWhitespace() || wordSeparators.contains(char)
+    return char.isWhitespace() || wordSeparators.contains(char) || !char.isLetterOrDigit()
 }
