@@ -1208,7 +1208,7 @@
     <string name="dev_mode">Режим разработчика</string>
 
     <!-- new at 20250216 -->
-    <string name="commit_all">Зафиксировать все</string>
+    <string name="commit_all">Коммитить все</string>
 
 
 </resources>
