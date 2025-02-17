@@ -980,6 +980,25 @@ private fun NaviButton(
     val hasPrevious = previousIndex >= 0 && previousIndex < size
     val hasNext = nextIndex >= 0 && nextIndex < size
 
+    val doActThenSwitchItemOrNaviBack:suspend (targetIndex:Int, act:()->Unit)->Unit = { targetIndex, act ->
+        act()
+
+        //如果存在下个条目或上个条目，跳转；否则返回上级页面
+        val nextOrPreviousIndex = if(hasNext) (nextIndex - 1) else previousIndex
+        if(nextOrPreviousIndex >= 0 && nextOrPreviousIndex < diffableItemList.size) {  // still has next or previous, switch to it
+            //从列表移除当前条目
+            diffableItemList.removeAt(targetIndex)
+
+            //切换条目
+            val item = diffableItemList[nextOrPreviousIndex]
+            lastClickedItemKey.value = item.getItemKey()
+            switchItem(item, nextOrPreviousIndex)
+        }else {  // no next or previous, go back parent page
+            withMainContext {
+                naviUp()
+            }
+        }
+    }
 
     val targetItemState = mutableCustomStateOf(stateKeyTag, "targetItemState") { StatusTypeEntrySaver() }
     val targetIndexState = rememberSaveable { mutableIntStateOf(-1) }
@@ -999,55 +1018,41 @@ private fun NaviButton(
 
             doJobThenOffLoading {
                 try {
-                    //取出数据库路径
-                    Repository.open(curRepo.fullSavePath).use { repo ->
-                        val untrakcedFileList = mutableListOf<String>()  // untracked list，在我的app里这种修改类型显示为 "New"
-                        val pathspecList = mutableListOf<String>()  // modified、deleted 列表
-                        //新文件(Untracked)在index里不存在，若revert，只能删除文件，所以单独加到另一个列表
-                        if(targetItem.changeType == Cons.gitStatusNew) {
-                            untrakcedFileList.add(targetItem.canonicalPath)  //删除文件，添加全路径（但其实用仓库内相对路径也行，只是需要把仓库路径和仓库下相对路径拼接一下，而这个全路径是我在查询status list的时候拼好的，所以直接用就行）
-                        }else if(targetItem.changeType != Cons.gitStatusConflict){  //冲突条目不可revert！其余index中有的文件，也就是git tracked的文件，删除/修改 之类的，都可恢复为index中的状态
-                            pathspecList.add(targetItem.relativePathUnderRepo)
+                    doActThenSwitchItemOrNaviBack(targetIndex) {
+                        //取出数据库路径
+                        Repository.open(curRepo.fullSavePath).use { repo ->
+                            val untrakcedFileList = mutableListOf<String>()  // untracked list，在我的app里这种修改类型显示为 "New"
+                            val pathspecList = mutableListOf<String>()  // modified、deleted 列表
+                            //新文件(Untracked)在index里不存在，若revert，只能删除文件，所以单独加到另一个列表
+                            if(targetItem.changeType == Cons.gitStatusNew) {
+                                untrakcedFileList.add(targetItem.canonicalPath)  //删除文件，添加全路径（但其实用仓库内相对路径也行，只是需要把仓库路径和仓库下相对路径拼接一下，而这个全路径是我在查询status list的时候拼好的，所以直接用就行）
+                            }else if(targetItem.changeType != Cons.gitStatusConflict){  //冲突条目不可revert！其余index中有的文件，也就是git tracked的文件，删除/修改 之类的，都可恢复为index中的状态
+                                pathspecList.add(targetItem.relativePathUnderRepo)
+                            }
+                            //如果列表不为空，恢复文件
+                            if(pathspecList.isNotEmpty()) {
+                                Libgit2Helper.revertFilesToIndexVersion(repo, pathspecList)
+                            }
+                            //如果untracked列表不为空，删除文件
+                            if(untrakcedFileList.isNotEmpty()) {
+                                Libgit2Helper.rmUntrackedFiles(untrakcedFileList)
+                            }
                         }
-                        //如果列表不为空，恢复文件
-                        if(pathspecList.isNotEmpty()) {
-                            Libgit2Helper.revertFilesToIndexVersion(repo, pathspecList)
-                        }
-                        //如果untracked列表不为空，删除文件
-                        if(untrakcedFileList.isNotEmpty()) {
-                            Libgit2Helper.rmUntrackedFiles(untrakcedFileList)
-                        }
-                    }
 
 
-                    //操作完成，显示提示
-                    Msg.requireShow(activityContext.getString(R.string.success))
+                        //操作完成，显示提示
+                        Msg.requireShow(activityContext.getString(R.string.success))
 
-                    //切换下一条目，若没有，返回上级页面
+                        //切换下一条目，若没有，返回上级页面
 
-                    //下面处理页面相关的变量
+                        //下面处理页面相关的变量
 
-                    //从cl页面的列表移除条目
-                    SharedState.homeChangeList_itemList.remove(targetItem)
-                    //cl页面设置索引有条目，因为上面添加成功了，所以大概率index至少有一个条目
+                        //从cl页面的列表移除条目
+                        SharedState.homeChangeList_itemList.remove(targetItem)
+                        //cl页面设置索引有条目，因为上面添加成功了，所以大概率index至少有一个条目
 //                        SharedState.homeChangeList_indexHasItem.value = true  // revert不需要操作index
 
-                    //如果存在下个条目或上个条目，跳转；否则返回上级页面
-                    val nextOrPreviousIndex = if(hasNext) (nextIndex - 1) else previousIndex
-                    if(nextOrPreviousIndex >= 0 && nextOrPreviousIndex < diffableItemList.size) {  // still has next or previous, switch to it
-                        //从列表移除当前条目
-                        diffableItemList.removeAt(targetIndex)
-
-                        //切换条目
-                        val item = diffableItemList[nextOrPreviousIndex]
-                        lastClickedItemKey.value = item.getItemKey()
-                        switchItem(item, nextOrPreviousIndex)
-                    }else {  // no next or previous, go back parent page
-                        withMainContext {
-                            naviUp()
-                        }
                     }
-
                 }catch (e:Exception) {
                     val errMsg = "err: ${e.localizedMessage}"
                     Msg.requireShowLongDuration(errMsg)
@@ -1072,51 +1077,35 @@ private fun NaviButton(
 
             doJobThenOffLoading {
                 try {
+                    doActThenSwitchItemOrNaviBack(targetIndex) {
+                        //menu action: unstage
+                        Repository.open(curRepo.fullSavePath).use { repo ->
+                            val refspecList = mutableListOf<String>()
+                            // 准备refspecList
+                            refspecList.add(targetItem.relativePathUnderRepo)
 
-                    //menu action: unstage
-                    Repository.open(curRepo.fullSavePath).use {repo ->
-                        val refspecList = mutableListOf<String>()
-                        // 准备refspecList
-                        refspecList.add(targetItem.relativePathUnderRepo)
-
-                        //do unstage
-                        Libgit2Helper.unStageItems(repo, refspecList)
-                    }
-
-                    //操作完成，显示提示
-                    Msg.requireShow(activityContext.getString(R.string.success))
-
-                    //切换下一条目，若没有，返回上级页面
-
-                    //下面处理页面相关的变量
-
-                    //从cl页面的列表移除条目
-                    SharedState.homeChangeList_itemList.remove(targetItem)
-                    //cl页面设置索引有条目，因为上面添加成功了，所以大概率index至少有一个条目
-//                        SharedState.homeChangeList_indexHasItem.value = true  // index页面unstage不需要管home页面那个changeList指示index是否有条目的那个变量
-
-                    //如果存在下个条目或上个条目，跳转；否则返回上级页面
-                    val nextOrPreviousIndex = if(hasNext) (nextIndex - 1) else previousIndex
-                    if(nextOrPreviousIndex >= 0 && nextOrPreviousIndex < diffableItemList.size) {  // still has next or previous, switch to it
-                        //从列表移除当前条目
-                        diffableItemList.removeAt(targetIndex)
-
-                        //切换条目
-                        val item = diffableItemList[nextOrPreviousIndex]
-                        lastClickedItemKey.value = item.getItemKey()
-                        switchItem(item, nextOrPreviousIndex)
-                    }else {  // no next or previous, go back parent page
-                        withMainContext {
-                            naviUp()
+                            //do unstage
+                            Libgit2Helper.unStageItems(repo, refspecList)
                         }
-                    }
 
+                        //操作完成，显示提示
+                        Msg.requireShow(activityContext.getString(R.string.success))
+
+                        //切换下一条目，若没有，返回上级页面
+
+                        //下面处理页面相关的变量
+
+                        //从cl页面的列表移除条目
+                        SharedState.homeChangeList_itemList.remove(targetItem)
+                        //cl页面设置索引有条目，因为上面添加成功了，所以大概率index至少有一个条目
+//                        SharedState.homeChangeList_indexHasItem.value = true  // index页面unstage不需要管home页面那个changeList指示index是否有条目的那个变量
+                    }
                 }catch (e:Exception) {
                     val errMsg = "err: ${e.localizedMessage}"
                     Msg.requireShowLongDuration(errMsg)
                     createAndInsertError(curRepo.id, errMsg)
 
-                    MyLog.e(TAG, "revert item '${targetItem.relativePathUnderRepo}' for repo '${curRepo.repoName}' err: ${e.stackTraceToString()}")
+                    MyLog.e(TAG, "unstage item '${targetItem.relativePathUnderRepo}' for repo '${curRepo.repoName}' err: ${e.stackTraceToString()}")
                 }
             }
         }
@@ -1143,37 +1132,22 @@ private fun NaviButton(
 
                     doJobThenOffLoading {
                         try {
-                            // stage 条目
-                            Repository.open(curRepo.fullSavePath).use { repo ->
-                                Libgit2Helper.stageStatusEntryAndWriteToDisk(repo, listOf(targetItem))
-                            }
-
-                            //执行到这里，实际上已经stage成功了
-                            Msg.requireShow(activityContext.getString(R.string.success))
-
-                            //下面处理页面相关的变量
-
-                            //从cl页面的列表移除条目
-                            SharedState.homeChangeList_itemList.remove(targetItem)
-                            //cl页面设置索引有条目，因为上面添加成功了，所以大概率index至少有一个条目
-                            SharedState.homeChangeList_indexHasItem.value = true
-
-                            //如果存在下个条目或上个条目，跳转；否则返回上级页面
-                            val nextOrPreviousIndex = if(hasNext) (nextIndex - 1) else previousIndex
-                            if(nextOrPreviousIndex >= 0 && nextOrPreviousIndex < diffableItemList.size) {  // still has next or previous, switch to it
-                                //从列表移除当前条目
-                                diffableItemList.removeAt(targetIndex)
-
-                                //切换条目
-                                val item = diffableItemList[nextOrPreviousIndex]
-                                lastClickedItemKey.value = item.getItemKey()
-                                switchItem(item, nextOrPreviousIndex)
-                            }else {  // no next or previous, go back parent page
-                                withMainContext {
-                                    naviUp()
+                            doActThenSwitchItemOrNaviBack(targetIndex) {
+                                // stage 条目
+                                Repository.open(curRepo.fullSavePath).use { repo ->
+                                    Libgit2Helper.stageStatusEntryAndWriteToDisk(repo, listOf(targetItem))
                                 }
-                            }
 
+                                //执行到这里，实际上已经stage成功了
+                                Msg.requireShow(activityContext.getString(R.string.success))
+
+                                //下面处理页面相关的变量
+
+                                //从cl页面的列表移除条目
+                                SharedState.homeChangeList_itemList.remove(targetItem)
+                                //cl页面设置索引有条目，因为上面stage成功了，所以大概率index至少有一个条目
+                                SharedState.homeChangeList_indexHasItem.value = true
+                            }
                         }catch (e:Exception) {
                             val errMsg = "err: ${e.localizedMessage}"
                             Msg.requireShowLongDuration(errMsg)
@@ -1222,7 +1196,7 @@ private fun NaviButton(
                     }
 
                     targetItemState.value = targetItem
-                    targetIndexState.value = targetIndex
+                    targetIndexState.intValue = targetIndex
 
                     showRevertDialog.value = true
                 }
@@ -1245,7 +1219,7 @@ private fun NaviButton(
                     }
 
                     targetItemState.value = targetItem
-                    targetIndexState.value = targetIndex
+                    targetIndexState.intValue = targetIndex
 
                     showUnstageDialog.value = true
                 }
