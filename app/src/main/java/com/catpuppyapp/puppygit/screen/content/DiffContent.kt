@@ -1128,173 +1128,175 @@ private fun NaviButton(
             }
 
             Spacer(Modifier.height(20.dp))
-        }else {
-
         }
 
+        if(fromTo != Cons.gitDiffFileHistoryFromTreeToTree) {
+            if(size>0) {
+                // if is index to work tree, show stage button
+                if(fromTo == Cons.gitDiffFromIndexToWorktree) {
+                    CardButton(
+                        text = stringResource(R.string.stage),
+                        enabled = true
+                    ) doStage@{
+                        val targetIndex = curItemIndex.intValue
+                        val targetItem = if(isGoodIndexForList(targetIndex, diffableItemList)) diffableItemList[targetIndex] else null
 
-        if(size>0) {
-            // if is index to work tree, show stage button
-            if(fromTo == Cons.gitDiffFromIndexToWorktree) {
-                CardButton(
-                    text = stringResource(R.string.stage),
-                    enabled = true
-                ) doStage@{
-                    val targetIndex = curItemIndex.intValue
-                    val targetItem = if(isGoodIndexForList(targetIndex, diffableItemList)) diffableItemList[targetIndex] else null
+                        if(targetItem == null) {
+                            Msg.requireShow("err: bad index $targetIndex")
+                            return@doStage
+                        }
 
-                    if(targetItem == null) {
-                        Msg.requireShow("err: bad index $targetIndex")
-                        return@doStage
-                    }
+                        doJobThenOffLoading {
+                            try {
+                                doActThenSwitchItemOrNaviBack(targetIndex) {
+                                    // stage 条目
+                                    Repository.open(curRepo.fullSavePath).use { repo ->
+                                        Libgit2Helper.stageStatusEntryAndWriteToDisk(repo, listOf(targetItem))
+                                    }
 
-                    doJobThenOffLoading {
-                        try {
-                            doActThenSwitchItemOrNaviBack(targetIndex) {
-                                // stage 条目
-                                Repository.open(curRepo.fullSavePath).use { repo ->
-                                    Libgit2Helper.stageStatusEntryAndWriteToDisk(repo, listOf(targetItem))
+                                    //执行到这里，实际上已经stage成功了
+                                    Msg.requireShow(activityContext.getString(R.string.success))
+
+                                    //下面处理页面相关的变量
+
+                                    //从cl页面的列表移除条目
+                                    SharedState.homeChangeList_itemList.remove(targetItem)
+                                    //cl页面设置索引有条目，因为上面stage成功了，所以大概率index至少有一个条目
+                                    SharedState.homeChangeList_indexHasItem.value = true
                                 }
+                            }catch (e:Exception) {
+                                val errMsg = "err: ${e.localizedMessage}"
+                                Msg.requireShowLongDuration(errMsg)
+                                createAndInsertError(curRepo.id, errMsg)
 
-                                //执行到这里，实际上已经stage成功了
-                                Msg.requireShow(activityContext.getString(R.string.success))
-
-                                //下面处理页面相关的变量
-
-                                //从cl页面的列表移除条目
-                                SharedState.homeChangeList_itemList.remove(targetItem)
-                                //cl页面设置索引有条目，因为上面stage成功了，所以大概率index至少有一个条目
-                                SharedState.homeChangeList_indexHasItem.value = true
+                                MyLog.e(TAG, "stage item '${targetItem.relativePathUnderRepo}' for repo '${curRepo.repoName}' err: ${e.stackTraceToString()}")
                             }
-                        }catch (e:Exception) {
-                            val errMsg = "err: ${e.localizedMessage}"
-                            Msg.requireShowLongDuration(errMsg)
-                            createAndInsertError(curRepo.id, errMsg)
-
-                            MyLog.e(TAG, "stage item '${targetItem.relativePathUnderRepo}' for repo '${curRepo.repoName}' err: ${e.stackTraceToString()}")
                         }
                     }
+
+                    Spacer(Modifier.height(20.dp))
                 }
 
-                Spacer(Modifier.height(20.dp))
-            }
+                // show revert for worktreeToIndex
+                if(fromTo == Cons.gitDiffFromIndexToWorktree) {
+                    CardButton(
+                        text = stringResource(R.string.revert),
+                        enabled = true
+                    ) onClick@{
+                        val targetIndex = curItemIndex.intValue
+                        val targetItem = if(isGoodIndexForList(targetIndex, diffableItemList)) diffableItemList[targetIndex] else null
 
-            // show revert for worktreeToIndex
-            if(fromTo == Cons.gitDiffFromIndexToWorktree) {
-                CardButton(
-                    text = stringResource(R.string.revert),
-                    enabled = true
-                ) onClick@{
-                    val targetIndex = curItemIndex.intValue
-                    val targetItem = if(isGoodIndexForList(targetIndex, diffableItemList)) diffableItemList[targetIndex] else null
+                        if(targetItem == null) {
+                            Msg.requireShow("err: bad index $targetIndex")
+                            return@onClick
+                        }
 
-                    if(targetItem == null) {
-                        Msg.requireShow("err: bad index $targetIndex")
-                        return@onClick
+                        targetItemState.value = targetItem
+                        targetIndexState.intValue = targetIndex
+
+                        showRevertDialog.value = true
                     }
 
-                    targetItemState.value = targetItem
-                    targetIndexState.intValue = targetIndex
-
-                    showRevertDialog.value = true
+                    Spacer(Modifier.height(20.dp))
                 }
 
-                Spacer(Modifier.height(20.dp))
-            }
+                // show unstage for indexToHead
+                if(fromTo == Cons.gitDiffFromHeadToIndex) {
+                    CardButton(
+                        text = stringResource(R.string.unstage),
+                        enabled = true
+                    ) onClick@{
+                        val targetIndex = curItemIndex.intValue
+                        val targetItem = if(isGoodIndexForList(targetIndex, diffableItemList)) diffableItemList[targetIndex] else null
 
-            // show unstage for indexToHead
-            if(fromTo == Cons.gitDiffFromHeadToIndex) {
-                CardButton(
-                    text = stringResource(R.string.unstage),
-                    enabled = true
-                ) onClick@{
-                    val targetIndex = curItemIndex.intValue
-                    val targetItem = if(isGoodIndexForList(targetIndex, diffableItemList)) diffableItemList[targetIndex] else null
+                        if(targetItem == null) {
+                            Msg.requireShow("err: bad index $targetIndex")
+                            return@onClick
+                        }
 
-                    if(targetItem == null) {
-                        Msg.requireShow("err: bad index $targetIndex")
-                        return@onClick
+                        targetItemState.value = targetItem
+                        targetIndexState.intValue = targetIndex
+
+                        showUnstageDialog.value = true
                     }
 
-                    targetItemState.value = targetItem
-                    targetIndexState.intValue = targetIndex
-
-                    showUnstageDialog.value = true
-                }
-
-                Spacer(Modifier.height(20.dp))
-            }
-
-
-            // show commit all for indexToWorktree or headToIndex (虽然显示同一按钮，但两者实现不同，indexToWorktree的commit all是先stage all再提交，headToIndex的commit all则是直接提交index，不会stage未添加到index但存在于indexToWorktree ChangeList页面的条目)
-            if(fromTo == Cons.gitDiffFromIndexToWorktree || fromTo == Cons.gitDiffFromHeadToIndex) {
-                val (state, requestType) = if(fromTo == Cons.gitDiffFromIndexToWorktree) {
-                    Pair(SharedState.homeChangeList_Refresh, StateRequestType.indexToWorkTree_CommitAll)
-                } else {
-                    Pair(SharedState.indexChangeList_Refresh, StateRequestType.headToIndex_CommitAll)
+                    Spacer(Modifier.height(20.dp))
                 }
 
 
-                CardButton(
-                    text = stringResource(R.string.commit_all),
-                    enabled = true
-                ) {
-                    changeStateTriggerRefreshPage(state, requestType)
-                    naviUp()
+                // show commit all for indexToWorktree or headToIndex (虽然显示同一按钮，但两者实现不同，indexToWorktree的commit all是先stage all再提交，headToIndex的commit all则是直接提交index，不会stage未添加到index但存在于indexToWorktree ChangeList页面的条目)
+                if(fromTo == Cons.gitDiffFromIndexToWorktree || fromTo == Cons.gitDiffFromHeadToIndex) {
+                    val (state, requestType) = if(fromTo == Cons.gitDiffFromIndexToWorktree) {
+                        Pair(SharedState.homeChangeList_Refresh, StateRequestType.indexToWorkTree_CommitAll)
+                    } else {
+                        Pair(SharedState.indexChangeList_Refresh, StateRequestType.headToIndex_CommitAll)
+                    }
+
+
+                    CardButton(
+                        text = stringResource(R.string.commit_all),
+                        enabled = true
+                    ) {
+                        changeStateTriggerRefreshPage(state, requestType)
+                        naviUp()
+                    }
+
+                    Spacer(Modifier.height(20.dp))
                 }
 
-                Spacer(Modifier.height(20.dp))
+
+
+                Row (
+                    modifier = Modifier.fillMaxWidth(),
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.Center
+                ){
+                    Text(
+                        replaceStringResList(stringResource(R.string.current_n_all_m), listOf("" + (curItemIndex.intValue+1), "" + size)),
+                        fontWeight = FontWeight.Light,
+                        fontStyle = FontStyle.Italic,
+                        color = UIHelper.getSecondaryFontColor()
+                    )
+                }
+            }
+
+            CardButton(
+                text = replaceStringResList(stringResource(R.string.prev_filename), listOf(if(hasPrevious) {
+                    if(isFileHistoryTreeToLocalOrTree) diffableItemListForFileHistory[previousIndex].getCachedCommitShortOidStr() else diffableItemList[previousIndex].fileName
+                } else stringResource(R.string.none))),
+                enabled = hasPrevious
+            ) {
+                if(isFileHistoryTreeToLocalOrTree) {
+                    val item = diffableItemListForFileHistory[previousIndex]
+                    lastClickedItemKey.value = item.getItemKey()
+                    switchItemForFileHistory(item, previousIndex)
+                }else{
+                    val item = diffableItemList[previousIndex]
+                    lastClickedItemKey.value = item.getItemKey()
+                    switchItem(item, previousIndex)
+                }
+            }
+            Spacer(Modifier.height(10.dp))
+            CardButton(
+                text = replaceStringResList(stringResource(R.string.next_filename), listOf(if(hasNext) {
+                    if(isFileHistoryTreeToLocalOrTree) diffableItemListForFileHistory[nextIndex].getCachedCommitShortOidStr() else diffableItemList[nextIndex].fileName
+                } else stringResource(R.string.none))),
+                enabled = hasNext
+            ) {
+                if(isFileHistoryTreeToLocalOrTree) {
+                    val item = diffableItemListForFileHistory[nextIndex]
+                    lastClickedItemKey.value = item.getItemKey()
+                    switchItemForFileHistory(item, nextIndex)
+                }else{
+                    val item = diffableItemList[nextIndex]
+                    lastClickedItemKey.value = item.getItemKey()
+                    switchItem(item, nextIndex)
+                }
             }
 
 
-
-            Row (
-                modifier = Modifier.fillMaxWidth(),
-                verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.Center
-            ){
-                Text(
-                    replaceStringResList(stringResource(R.string.current_n_all_m), listOf("" + (curItemIndex.intValue+1), "" + size)),
-                    fontWeight = FontWeight.Light,
-                    fontStyle = FontStyle.Italic,
-                    color = UIHelper.getSecondaryFontColor()
-                )
-            }
         }
 
-        CardButton(
-            text = replaceStringResList(stringResource(R.string.prev_filename), listOf(if(hasPrevious) {
-                if(isFileHistoryTreeToLocalOrTree) diffableItemListForFileHistory[previousIndex].getCachedCommitShortOidStr() else diffableItemList[previousIndex].fileName
-            } else stringResource(R.string.none))),
-            enabled = hasPrevious
-        ) {
-            if(isFileHistoryTreeToLocalOrTree) {
-                val item = diffableItemListForFileHistory[previousIndex]
-                lastClickedItemKey.value = item.getItemKey()
-                switchItemForFileHistory(item, previousIndex)
-            }else{
-                val item = diffableItemList[previousIndex]
-                lastClickedItemKey.value = item.getItemKey()
-                switchItem(item, previousIndex)
-            }
-        }
-        Spacer(Modifier.height(10.dp))
-        CardButton(
-            text = replaceStringResList(stringResource(R.string.next_filename), listOf(if(hasNext) {
-                if(isFileHistoryTreeToLocalOrTree) diffableItemListForFileHistory[nextIndex].getCachedCommitShortOidStr() else diffableItemList[nextIndex].fileName
-            } else stringResource(R.string.none))),
-            enabled = hasNext
-        ) {
-            if(isFileHistoryTreeToLocalOrTree) {
-                val item = diffableItemListForFileHistory[nextIndex]
-                lastClickedItemKey.value = item.getItemKey()
-                switchItemForFileHistory(item, nextIndex)
-            }else{
-                val item = diffableItemList[nextIndex]
-                lastClickedItemKey.value = item.getItemKey()
-                switchItem(item, nextIndex)
-            }
-        }
 
 //        Spacer(Modifier.height(150.dp))
 
