@@ -207,7 +207,9 @@ object ChangeListFunctions {
                     email = email.value,
 
                     //如果是index页面的条目列表，直接使用，否则无视并强制传null触发重查index条目，不过如果从index页面调用此方法又想触发重查，也可直接在调用此函数时传null给itemList
-                    indexItemList = if(fromTo == Cons.gitDiffFromHeadToIndex) itemList else null,
+//                    indexItemList = if(fromTo == Cons.gitDiffFromHeadToIndex) itemList else null,
+                    //20250218: 因为现在在diff页面或者filehistory有可能影响到index的itemlist，所以就算itemlist来自index页面我也无法确保那个列表就一定靠谱，所以这里传null，重查下
+                    indexItemList = null,
 
                     amend = amendCommit.value,
                     overwriteAuthorWhenAmend = overwriteAuthor.value,
