@@ -265,22 +265,20 @@ fun DiffContent(
 
             Spacer(Modifier.height(100.dp))
 
-            if(isDiffFileHistoryFromTreeToTree.not()) {
-                NaviButton(
-                    activityContext = activityContext,
-                    curRepo = curRepo.value,
-                    diffableItemList = diffableItemList,
-                    curItemIndex = curItemIndex,
-                    switchItem = closeChannelThenSwitchItem,
-                    switchItemForFileHistory = closeChannelThenSwitchItem,
-                    fromTo = fromTo,
-                    naviUp = naviUp,
-                    lastClickedItemKey = lastClickedItemKey,
-                    pageRequest = pageRequest,
-                    diffableItemListForFileHistory = diffableItemListForFileHistory
-                )
-                Spacer(Modifier.height(100.dp))
-            }
+            NaviButton(
+                activityContext = activityContext,
+                curRepo = curRepo.value,
+                diffableItemList = diffableItemList,
+                curItemIndex = curItemIndex,
+                switchItem = closeChannelThenSwitchItem,
+                switchItemForFileHistory = closeChannelThenSwitchItem,
+                fromTo = fromTo,
+                naviUp = naviUp,
+                lastClickedItemKey = lastClickedItemKey,
+                pageRequest = pageRequest,
+                diffableItemListForFileHistory = diffableItemListForFileHistory
+            )
+            Spacer(Modifier.height(100.dp))
         }
     }else {  //文本类型且没超过大小且文件修改过，正常显示diff信息
         val lastIndex = diffItem.value.hunks.size - 1
@@ -784,21 +782,20 @@ fun DiffContent(
             item {
                 Spacer(Modifier.height(50.dp))
 
-                if(isDiffFileHistoryFromTreeToTree.not()) {
-                    NaviButton(
-                        activityContext = activityContext,
-                        curRepo = curRepo.value,
-                        diffableItemList = diffableItemList,
-                        curItemIndex = curItemIndex,
-                        switchItem = closeChannelThenSwitchItem,
-                        switchItemForFileHistory = closeChannelThenSwitchItem,
-                        fromTo = fromTo,
-                        naviUp = naviUp,
-                        lastClickedItemKey = lastClickedItemKey,
-                        pageRequest = pageRequest,
-                        diffableItemListForFileHistory = diffableItemListForFileHistory
-                    )
-                }
+
+                NaviButton(
+                    activityContext = activityContext,
+                    curRepo = curRepo.value,
+                    diffableItemList = diffableItemList,
+                    curItemIndex = curItemIndex,
+                    switchItem = closeChannelThenSwitchItem,
+                    switchItemForFileHistory = closeChannelThenSwitchItem,
+                    fromTo = fromTo,
+                    naviUp = naviUp,
+                    lastClickedItemKey = lastClickedItemKey,
+                    pageRequest = pageRequest,
+                    diffableItemListForFileHistory = diffableItemListForFileHistory
+                )
 
                 Spacer(Modifier.height(100.dp))
             }
@@ -1120,6 +1117,22 @@ private fun NaviButton(
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.Center
     ) {
+
+        // show restore for file history
+        if(isFileHistoryTreeToLocalOrTree) {
+            CardButton(
+                text = stringResource(R.string.restore),
+                enabled = true
+            ) {
+                pageRequest.value = PageRequest.showRestoreDialog
+            }
+
+            Spacer(Modifier.height(20.dp))
+        }else {
+
+        }
+
+
         if(size>0) {
             // if is index to work tree, show stage button
             if(fromTo == Cons.gitDiffFromIndexToWorktree) {
@@ -1228,18 +1241,6 @@ private fun NaviButton(
                 ) {
                     changeStateTriggerRefreshPage(state, requestType)
                     naviUp()
-                }
-
-                Spacer(Modifier.height(20.dp))
-            }
-
-            // show restore for file history
-            if(fromTo == Cons.gitDiffFileHistoryFromTreeToLocal || fromTo == Cons.gitDiffFileHistoryFromTreeToTree) {
-                CardButton(
-                    text = stringResource(R.string.restore),
-                    enabled = true
-                ) {
-                    pageRequest.value = PageRequest.showRestoreDialog
                 }
 
                 Spacer(Modifier.height(20.dp))
