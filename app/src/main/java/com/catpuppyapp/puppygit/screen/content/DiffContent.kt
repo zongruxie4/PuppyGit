@@ -1002,6 +1002,7 @@ private fun NaviButton(
 
         if(size>0 && fromTo != Cons.gitDiffFileHistoryFromTreeToTree) {
 
+            //准备好变量
             val doActThenSwitchItemOrNaviBack:suspend (targetIndex:Int, act:()->Unit)->Unit = { targetIndex, act ->
                 act()
 
@@ -1027,6 +1028,7 @@ private fun NaviButton(
             val showRevertDialog = rememberSaveable { mutableStateOf(false) }
             val showUnstageDialog = rememberSaveable { mutableStateOf(false) }
 
+            //revert弹窗
             if(showRevertDialog.value) {
                 ConfirmDialog(
                     title=stringResource(R.string.revert),
@@ -1086,6 +1088,7 @@ private fun NaviButton(
                 }
             }
 
+            //unstage弹窗
             if(showUnstageDialog.value) {
                 ConfirmDialog(
                     title=stringResource(R.string.unstage),
@@ -1134,6 +1137,8 @@ private fun NaviButton(
             }
 
 
+            //各种按钮
+
             // if is index to work tree, show stage button
             if(fromTo == Cons.gitDiffFromIndexToWorktree) {
                 CardButton(
@@ -1177,10 +1182,8 @@ private fun NaviButton(
                 }
 
                 Spacer(Modifier.height(20.dp))
-            }
 
-            // show revert for worktreeToIndex
-            if(fromTo == Cons.gitDiffFromIndexToWorktree) {
+                // show revert for worktreeToIndex
                 CardButton(
                     text = stringResource(R.string.revert),
                     enabled = true
@@ -1200,10 +1203,7 @@ private fun NaviButton(
                 }
 
                 Spacer(Modifier.height(20.dp))
-            }
-
-            // show unstage for indexToHead
-            if(fromTo == Cons.gitDiffFromHeadToIndex) {
+            }else if(fromTo == Cons.gitDiffFromHeadToIndex) {  // show unstage for indexToHead
                 CardButton(
                     text = stringResource(R.string.unstage),
                     enabled = true
@@ -1248,6 +1248,10 @@ private fun NaviButton(
 
 
 
+
+            // 条目数和切换条目按钮
+
+            //当前是第几个条目，总共几个条目，这玩意必须和上一下一按钮在同一代码块并一起显示，要不然怪怪的
             Row (
                 modifier = Modifier.fillMaxWidth(),
                 verticalAlignment = Alignment.CenterVertically,
@@ -1261,8 +1265,7 @@ private fun NaviButton(
                 )
             }
 
-
-
+            //切换上个下个条目按钮
             CardButton(
                 text = replaceStringResList(stringResource(R.string.prev_filename), listOf(if(hasPrevious) {
                     if(isFileHistoryTreeToLocalOrTree) diffableItemListForFileHistory[previousIndex].getCachedCommitShortOidStr() else diffableItemList[previousIndex].fileName
