@@ -86,18 +86,19 @@ object ChangeListFunctions {
             val readyCreateCommit = Libgit2Helper.isReadyCreateCommit(repo, activityContext)
             if(readyCreateCommit.hasError()) {
                 //20240819 支持index为空时创建提交，因为目前实现了amend而amend可仅修改之前的提交且不提交新内容，所以index非空检测就不能强制了，显示个提示就够了，但仍允许提交
-                if(readyCreateCommit.code != Ret.ErrCode.indexIsEmpty) {  //若错误不是index为空，则结束提交
-                    //显示错误信息
-                    Msg.requireShowLongDuration(readyCreateCommit.msg)
-                    //若有错，必刷新页面
-                    refreshChangeList(curRepoFromParentPage)
-                    return@doCommit false
-                }else {
+                if(readyCreateCommit.code == Ret.ErrCode.indexIsEmpty) {
                     // allow create empty commit, but show a warning
                     // (only show warning when repostate==NONE and amend==false, when MERGE/CHERRYPICK/REBASE,
                     // will not show warning, cuz MERGE allow empty is necessary,
                     // CHERRYPICK and REABSE will try ignore empty commit when continue)
                     indexIsEmptyForCommitDialog.value = true
+
+                }else {  //若错误不是index为空，则结束提交
+                    //显示错误信息
+                    Msg.requireShowLongDuration(readyCreateCommit.msg)
+                    //若有错，必刷新页面
+                    refreshChangeList(curRepoFromParentPage)
+                    return@doCommit false
                 }
 
             }
