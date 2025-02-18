@@ -291,9 +291,9 @@ object AppModel {
 
 
         // init Activity only variable
-        if(initActivity) {
+//        if(initActivity) {
 //            AppModel.activityContext = activityContext;
-        }
+//        }
 //            AppModel.mainActivity = mainActivity  //忘了这个干嘛的了，后来反正没用了，IDE提示什么Activity内存泄漏之类的，所以就注释了
 
         //设置app工作目录，如果获取不到目录，app无法工作，会在这抛出异常
