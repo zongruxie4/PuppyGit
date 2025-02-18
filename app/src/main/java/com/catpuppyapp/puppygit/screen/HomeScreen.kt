@@ -1344,6 +1344,9 @@ fun HomeScreen(
                                     filesPageRequireImportFile.value = true
                                     currentHomeScreen.intValue = Cons.selectedItem_Files  //跳转到Files页面
 
+                                    //20250218: fix bug: 导入单文件时若本来就在Files页面，不会显示导入文件的底栏，必须手动刷新一下，或者离开此页面再返回才会显示
+                                    changeStateTriggerRefreshPage(needRefreshFilesPage)
+
                                     importFiles = true
                                 }
 
