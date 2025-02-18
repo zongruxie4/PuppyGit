@@ -3,12 +3,14 @@
 - update russian translation (thx @triksterr)
 - support commit/unstage/revert items from Diff screen
 - optimize match by words for compare files
+- icon style follow system theme (android 13+) (pr #33, thx @sebastien46)
 
 
 - 添加开发模式
 - 更新俄语翻译 (thx @triksterr)
 - 支持从Diff页面提交、取消暂存、恢复条目
 - 优化比较文件时的按单词匹配模式
+- 图标风格跟随系统主题 (安卓 13+) (pr #33, thx @sebastien46)
 
 ---
 
