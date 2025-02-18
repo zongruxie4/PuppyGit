@@ -1,5 +1,6 @@
 package com.catpuppyapp.puppygit.git
 
+import android.content.Context
 import androidx.compose.ui.graphics.Color
 import com.catpuppyapp.puppygit.play.pro.R
 import com.catpuppyapp.puppygit.style.MyStyleKt
@@ -19,15 +20,14 @@ data class SubmoduleDto (
     var tempStatus:String = "",  // cloning... etc
 
 ) {
-    private fun getClonedText():String{
-        val activityContext = AppModel.activityContext
+    private fun getClonedText(activityContext:Context):String{
 
         return if(cloned) activityContext.getString(R.string.cloned) else activityContext.getString(R.string.not_clone)
 
     }
 
-    fun getStatus():String {
-        return tempStatus.ifBlank { getClonedText() }
+    fun getStatus(activityContext:Context):String {
+        return tempStatus.ifBlank { getClonedText(activityContext) }
     }
 
     fun getStatusColor(): Color {

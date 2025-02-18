@@ -98,14 +98,18 @@ object FsUtils {
             "application/zip",  //暂时用zip代替归档文件(压缩文件)，因为压缩mime类型有好多个！用模糊的application/*支持的程序不多，只有zip支持的最多！而且解压程序一般会根据二进制内容判断具体类型，所以，用zip实际上效果不错
             "*/*",
         )
-        val textList = listOf(
-            AppModel.activityContext.getString(R.string.file_open_as_type_text),
-            AppModel.activityContext.getString(R.string.file_open_as_type_image),
-            AppModel.activityContext.getString(R.string.file_open_as_type_audio),
-            AppModel.activityContext.getString(R.string.file_open_as_type_video),
-            AppModel.activityContext.getString(R.string.file_open_as_type_archive),
-            AppModel.activityContext.getString(R.string.file_open_as_type_any),
-        )
+
+        fun getTextList(activityContext:Context) :List<String> {
+            return listOf(
+                activityContext.getString(R.string.file_open_as_type_text),
+                activityContext.getString(R.string.file_open_as_type_image),
+                activityContext.getString(R.string.file_open_as_type_audio),
+                activityContext.getString(R.string.file_open_as_type_video),
+                activityContext.getString(R.string.file_open_as_type_archive),
+                activityContext.getString(R.string.file_open_as_type_any),
+            )
+        }
+
     }
 
     private fun getMimeType(url: String): String {

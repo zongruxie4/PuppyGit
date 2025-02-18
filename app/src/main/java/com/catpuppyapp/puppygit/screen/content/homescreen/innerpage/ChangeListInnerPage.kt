@@ -982,7 +982,7 @@ fun ChangeListInnerPage(
                         overwriteAuthor = overwriteAuthor,
                         showCommitMsgDialog = showCommitMsgDialog,
                         repoState = repoState,
-                        appContext = activityContext,
+                        activityContext = activityContext,
                         loadingText = loadingText,
                         repoId = repoId,
                         bottomBarActDoneCallback = bottomBarActDoneCallback,
@@ -1023,7 +1023,7 @@ fun ChangeListInnerPage(
                         overwriteAuthor = overwriteAuthor,
                         showCommitMsgDialog = showCommitMsgDialog,
                         repoState = repoState,
-                        appContext = activityContext,
+                        activityContext = activityContext,
                         loadingText = loadingText,
                         repoId = repoId,
                         bottomBarActDoneCallback = bottomBarActDoneCallback,
@@ -1049,7 +1049,7 @@ fun ChangeListInnerPage(
 
                     val repoFullPath = curRepo.fullSavePath
                     Repository.open(repoFullPath).use {repo ->
-                        val readyRet = Libgit2Helper.readyForContinueMerge(repo)
+                        val readyRet = Libgit2Helper.readyForContinueMerge(repo, activityContext)
                         if(readyRet.hasError()) {
                             Msg.requireShowLongDuration(readyRet.msg)
 
@@ -1074,7 +1074,7 @@ fun ChangeListInnerPage(
                                 overwriteAuthor = overwriteAuthor,
                                 showCommitMsgDialog = showCommitMsgDialog,
                                 repoState = repoState,
-                                appContext = activityContext,
+                                activityContext = activityContext,
                                 loadingText = loadingText,
                                 repoId = repoId,
                                 bottomBarActDoneCallback = bottomBarActDoneCallback,
@@ -1116,7 +1116,7 @@ fun ChangeListInnerPage(
                         overwriteAuthor = overwriteAuthor,
                         showCommitMsgDialog = showCommitMsgDialog,
                         repoState = repoState,
-                        appContext = activityContext,
+                        activityContext = activityContext,
                         loadingText = loadingText,
                         repoId = repoId,
                         bottomBarActDoneCallback = bottomBarActDoneCallback,
@@ -1145,7 +1145,7 @@ fun ChangeListInnerPage(
                         if (usernameFromConfig.isBlank() || emailFromConfig.isBlank()) {
                             Msg.requireShowLongDuration(activityContext.getString(R.string.plz_set_email_and_username_then_try_again))
                         } else {
-                            val readyRet = Libgit2Helper.rebaseSkip(repo, usernameFromConfig, emailFromConfig, settings = settings)
+                            val readyRet = Libgit2Helper.rebaseSkip(repo, activityContext, usernameFromConfig, emailFromConfig, settings = settings)
                             if (readyRet.hasError()) {
                                 Msg.requireShowLongDuration(readyRet.msg)
 
@@ -1221,7 +1221,7 @@ fun ChangeListInnerPage(
                         overwriteAuthor = overwriteAuthor,
                         showCommitMsgDialog = showCommitMsgDialog,
                         repoState = repoState,
-                        appContext = activityContext,
+                        activityContext = activityContext,
                         loadingText = loadingText,
                         repoId = repoId,
                         bottomBarActDoneCallback = bottomBarActDoneCallback,
@@ -1473,7 +1473,7 @@ fun ChangeListInnerPage(
                             overwriteAuthor = overwriteAuthor,
                             showCommitMsgDialog = showCommitMsgDialog,
                             repoState = repoState,
-                            appContext = activityContext,
+                            activityContext = activityContext,
                             loadingText = loadingText,
                             repoId = repoId,
                             bottomBarActDoneCallback = bottomBarActDoneCallback,
@@ -1636,7 +1636,7 @@ fun ChangeListInnerPage(
                             overwriteAuthor = overwriteAuthor,
                             showCommitMsgDialog = showCommitMsgDialog,
                             repoState = repoState,
-                            appContext = activityContext,
+                            activityContext = activityContext,
                             loadingText = loadingText,
                             repoId = repoId,
                             bottomBarActDoneCallback = bottomBarActDoneCallback,
@@ -2169,7 +2169,7 @@ fun ChangeListInnerPage(
                             overwriteAuthor = overwriteAuthor,
                             showCommitMsgDialog = showCommitMsgDialog,
                             repoState = repoState,
-                            appContext = activityContext,
+                            activityContext = activityContext,
                             loadingText = loadingText,
                             repoId = repoId,
                             bottomBarActDoneCallback = bottomBarActDoneCallback,
@@ -2247,7 +2247,7 @@ fun ChangeListInnerPage(
                     overwriteAuthor = overwriteAuthor,
                     showCommitMsgDialog = showCommitMsgDialog,
                     repoState = repoState,
-                    appContext = activityContext,
+                    activityContext = activityContext,
                     loadingText = loadingText,
                     repoId = repoId,
                     bottomBarActDoneCallback = bottomBarActDoneCallback,

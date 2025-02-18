@@ -21,7 +21,6 @@ import com.catpuppyapp.puppygit.utils.createAndInsertError
 import com.catpuppyapp.puppygit.utils.getSecFromTime
 import com.catpuppyapp.puppygit.utils.replaceStringResList
 import com.catpuppyapp.puppygit.utils.showErrAndSaveLog
-import com.catpuppyapp.puppygit.utils.state.CustomStateListSaveable
 import com.github.git24j.core.Repository
 
 private const val TAG = "ChangeListFunctions"
@@ -45,7 +44,7 @@ object ChangeListFunctions {
         overwriteAuthor: MutableState<Boolean>,
         showCommitMsgDialog: MutableState<Boolean>,
         repoState:MutableIntState,
-        appContext:Context,
+        activityContext:Context,
         loadingText:MutableState<String>,
         repoId:String,
         bottomBarActDoneCallback:(String, RepoEntity)->Unit,
@@ -61,7 +60,7 @@ object ChangeListFunctions {
 //        commitBtnTextForCommitDialog.value = appContext.getString(if(requireDoSync) R.string.sync else R.string.commit)
 //        showPushForCommitDialog.value = !requireDoSync
 
-        commitBtnTextForCommitDialog.value = appContext.getString(R.string.commit)
+        commitBtnTextForCommitDialog.value = activityContext.getString(R.string.commit)
 //        showPushForCommitDialog.value = true
 
 
@@ -84,7 +83,7 @@ object ChangeListFunctions {
         //执行commit
         Repository.open(curRepoFromParentPage.fullSavePath).use { repo ->
             //检查是否存在冲突条目，有可能已经stage了，就不存在了，就能提交，否则，不能提交
-            val readyCreateCommit = Libgit2Helper.isReadyCreateCommit(repo)
+            val readyCreateCommit = Libgit2Helper.isReadyCreateCommit(repo, activityContext)
             if(readyCreateCommit.hasError()) {
                 //20240819 支持index为空时创建提交，因为目前实现了amend而amend可仅修改之前的提交且不提交新内容，所以index非空检测就不能强制了，显示个提示就够了，但仍允许提交
                 if(readyCreateCommit.code != Ret.ErrCode.indexIsEmpty) {  //若错误不是index为空，则结束提交
@@ -175,10 +174,11 @@ object ChangeListFunctions {
             MyLog.d(TAG, "#doCommit, before createCommit")
             //do commit
             val ret = if(repoState.intValue== Repository.StateT.REBASE_MERGE.bit) {    //执行rebase continue
-                loadingText.value = appContext.getString(R.string.rebase_continue)
+                loadingText.value = activityContext.getString(R.string.rebase_continue)
 
                 Libgit2Helper.rebaseContinue(
                     repo,
+                    activityContext,
                     usernameFromConfig,
                     emailFromConfig,
                     commitMsgForFirstCommit = tmpCommitMsg,
@@ -187,9 +187,11 @@ object ChangeListFunctions {
                 )
 
             }else if(repoState.intValue == Repository.StateT.CHERRYPICK.bit) {
-                loadingText.value = appContext.getString(R.string.cherrypick_continue)
+                loadingText.value = activityContext.getString(R.string.cherrypick_continue)
 
-                Libgit2Helper.cherrypickContinue(repo,
+                Libgit2Helper.cherrypickContinue(
+                    activityContext,
+                    repo,
                     msg=tmpCommitMsg,
                     username = usernameFromConfig,
                     email=emailFromConfig,
@@ -198,7 +200,7 @@ object ChangeListFunctions {
                     settings=settings
                 )
             }else {
-                loadingText.value = appContext.getString(R.string.committing)
+                loadingText.value = activityContext.getString(R.string.committing)
 
                 Libgit2Helper.createCommit(
                     repo = repo,
@@ -224,7 +226,7 @@ object ChangeListFunctions {
                 Msg.requireShowLongDuration(ret.msg)
 
                 //显示的时候只显示简短错误信息，例如"请先解决冲突！"，存的时候存详细点，存上什么操作导致的错误，例如：“merge continue err:请先解决冲突”
-                val errPrefix= appContext.getString(R.string.commit_err)
+                val errPrefix= activityContext.getString(R.string.commit_err)
                 createAndInsertError(repoId, "$errPrefix:${ret.msg}")
 
                 //若出错，必刷新页面

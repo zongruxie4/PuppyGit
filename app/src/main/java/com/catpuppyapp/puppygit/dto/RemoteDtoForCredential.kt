@@ -1,5 +1,6 @@
 package com.catpuppyapp.puppygit.dto
 
+import android.content.Context
 import androidx.room.Ignore
 import com.catpuppyapp.puppygit.constants.Cons
 import com.catpuppyapp.puppygit.constants.SpecialCredential
@@ -36,16 +37,15 @@ class RemoteDtoForCredential (var remoteId: String="",
     @Ignore
     var remotePushUrl:String=""
 
-    fun getCredentialNameOrNone():String {
-        return getFetchOrPushCredentialNameOrNone(isFetch = true)
+    fun getCredentialNameOrNone(activityContext: Context):String {
+        return getFetchOrPushCredentialNameOrNone(activityContext, isFetch = true)
     }
 
-    fun getPushCredentialNameOrNone():String {
-        return getFetchOrPushCredentialNameOrNone(isFetch = false)
+    fun getPushCredentialNameOrNone(activityContext: Context):String {
+        return getFetchOrPushCredentialNameOrNone(activityContext, isFetch = false)
     }
 
-    private fun getFetchOrPushCredentialNameOrNone(isFetch:Boolean):String {
-        val activityContext = AppModel.activityContext
+    private fun getFetchOrPushCredentialNameOrNone(activityContext: Context, isFetch:Boolean):String {
         val name = if(isFetch) {
             if(credentialId == SpecialCredential.MatchByDomain.credentialId) {
                 SpecialCredential.MatchByDomain.name

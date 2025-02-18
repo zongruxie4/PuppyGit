@@ -21,6 +21,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.hapticfeedback.HapticFeedbackType
+import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.res.stringResource
 import com.catpuppyapp.puppygit.compose.FontSizeAdjuster
 import com.catpuppyapp.puppygit.compose.LongPressAbleIconBtn
@@ -78,7 +79,7 @@ fun EditorPageActions(
         注意：如果以后需要同一个EditorInnerPage配合多个title，就不要在这执行操作了，把这里的action逻辑放到EditorInnerPage执行，在这只发request，类似ChangeList页面请求执行pull/push那样
      */
 
-    val haptic = AppModel.haptic
+    val haptic = LocalHapticFeedback.current
 
     val hasGoodKeyword = editorSearchKeyword.isNotEmpty()
 

@@ -2,6 +2,7 @@ package com.catpuppyapp.puppygit.compose
 
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.MutableState
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import com.catpuppyapp.puppygit.play.pro.R
 import com.catpuppyapp.puppygit.utils.AppModel
@@ -13,7 +14,7 @@ fun ShowErrorIfNeed(
     errMsg:MutableState<String>,
     useErrorPrefix:Boolean=true
 ) {
-    val activityContext = AppModel.activityContext
+    val activityContext = LocalContext.current
 
     if(hasErr.value) {
         //显示提示信息：

@@ -20,6 +20,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.text.style.TextOverflow
@@ -57,7 +58,7 @@ fun CreateBranchDialog(
     onFinally:()->Unit, //在 try...catch...finally，finally代码块里的代码
 //    onOk: (branchName:String, baseRefSpec:String, basedHead:Boolean, createByRef:Boolean, needCheckout:Boolean, forceCheckout:Boolean, overwriteIfExist:Boolean) -> Unit,
 ) {
-    val activityContext = AppModel.activityContext
+    val activityContext = LocalContext.current
 
     val repoId=curRepo.id
     //文案提示是“基于当前分支xxx（分支名）创建新分支(btw：如果想基于某个提交创建分支，可以去commit记录页面)”，以及强调“如果勾选checkout将立即检出分支，但如果有未提交数据，可能会丢失”
@@ -82,7 +83,7 @@ fun CreateBranchDialog(
         Repository.open(curRepo.fullSavePath).use { repo ->
 
             //最后一个bool值代表是否根据引用创建分支，这个页面都是根据分支创建的，肯定是true
-            val ret = Libgit2Helper.doCreateBranch(repo, repoId, branchNameParam, basedHead, baseRefSpec, createByRef, overwriteIfExist)
+            val ret = Libgit2Helper.doCreateBranch(activityContext, repo, repoId, branchNameParam, basedHead, baseRefSpec, createByRef, overwriteIfExist)
 
             return@doCreateBranch ret
         }

@@ -22,6 +22,7 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.platform.LocalClipboardManager
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.AnnotatedString
 import com.catpuppyapp.puppygit.compose.CopyableDialog
@@ -85,7 +86,7 @@ fun DiffScreen(
     val dbContainer = AppModel.dbContainer
     val homeTopBarScrollBehavior = AppModel.homeTopBarScrollBehavior
 
-    val activityContext = AppModel.activityContext
+    val activityContext = LocalContext.current
 
     val isFileHistoryTreeToLocal = fromTo == Cons.gitDiffFileHistoryFromTreeToLocal
     val isFileHistoryTreeToTree = fromTo == Cons.gitDiffFileHistoryFromTreeToTree

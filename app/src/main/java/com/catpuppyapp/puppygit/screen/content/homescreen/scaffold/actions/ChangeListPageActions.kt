@@ -18,6 +18,7 @@ import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.TextFieldValue
 import com.catpuppyapp.puppygit.compose.LongPressAbleIconBtn
@@ -65,7 +66,7 @@ fun ChangeListPageActions(
 ) {
     val isWorktreePage = fromTo == Cons.gitDiffFromIndexToWorktree
     val navController = AppModel.navController
-    val activityContext = AppModel.activityContext
+    val activityContext = LocalContext.current
     val dropDownMenuExpendState = rememberSaveable { mutableStateOf(false) }
 
     val repoIsDetached = dbIntToBool(changeListCurRepo.value.isDetached)

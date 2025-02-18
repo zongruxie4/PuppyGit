@@ -897,9 +897,7 @@ class Libgit2Helper {
         }
 
         //返回 success 就是就绪了，否则就是没就绪
-        fun readyForContinueMerge(repo: Repository):Ret<String?> {
-            val activityContext = AppModel.activityContext
-
+        fun readyForContinueMerge(repo: Repository, activityContext:Context):Ret<String?> {
             try {
                 if(repo.state() != Repository.StateT.MERGE) {
                     return Ret.createError(null, activityContext.getString(R.string.repo_not_in_merging))
@@ -919,9 +917,8 @@ class Libgit2Helper {
         }
 
         //不会返回oid，只是和continue rebase的返回值一致，方便返回
-        fun readyForContinueRebase(repo: Repository):Ret<Oid?> {
+        fun readyForContinueRebase(repo: Repository, activityContext:Context):Ret<Oid?> {
             val funName = "readyForContinueRebase"
-            val activityContext = AppModel.activityContext
 
             try {
                 //20240814:目前libgit2只支持REBASE_MERGE，不支持 git默认的 REBASE_INTERACTIVE
@@ -983,8 +980,8 @@ class Libgit2Helper {
          * @param overwriteAuthorForFirstCommit 执行continue时覆盖提交的作者用户名和邮箱，只针对continue的对象也就是rebase的当前commit有效，仅当skipFirst为假时有效
          * @param skipFirst 为true时将强制不提交当前rebase的目标commit，直接执行next
          */
-        fun rebaseContinue(repo:Repository, username: String, email: String, overwriteAuthorForFirstCommit:Boolean=false, commitMsgForFirstCommit: String="", skipFirst:Boolean= false, settings: AppSettings):Ret<Oid?>{
-            val readyCheck = readyForContinueRebase(repo)
+        fun rebaseContinue(repo:Repository, activityContext:Context, username: String, email: String, overwriteAuthorForFirstCommit:Boolean=false, commitMsgForFirstCommit: String="", skipFirst:Boolean= false, settings: AppSettings):Ret<Oid?>{
+            val readyCheck = readyForContinueRebase(repo, activityContext)
             if (readyCheck.hasError()) {
                 return readyCheck
             }
@@ -1038,7 +1035,7 @@ class Libgit2Helper {
             return Ret.createSuccess(headId)
         }
 
-        fun rebaseSkip(repo: Repository, username: String, email: String, settings: AppSettings):Ret<Oid?> {
+        fun rebaseSkip(repo: Repository, activityContext:Context, username: String, email: String, settings: AppSettings):Ret<Oid?> {
             //reset HEAD，直接丢弃上次 rebase.next() 造成的修改
             //不能用reset，这个会把状态清掉！就不能继续rebase了！
 //            val resetRet = resetHardToHead(repo)
@@ -1052,7 +1049,7 @@ class Libgit2Helper {
             Checkout.head(repo, checkoutOptions)
 
             //然后执行 rebase.next() 就跳过当前提交了，这里直接执行rebaseContinue，skipFirst传true会跳过当前提交，并直接执行rebase.next()
-            return rebaseContinue(repo, username, email, skipFirst = true, settings = settings)
+            return rebaseContinue(repo, activityContext, username, email, skipFirst = true, settings = settings)
         }
 
         fun rebaseAbort(repo:Repository):Ret<Unit?> {
@@ -2009,8 +2006,7 @@ class Libgit2Helper {
             repo.stateCleanup()
         }
 
-        fun isReadyCreateCommit(repo: Repository):Ret<Oid?> {
-            val activityContext = AppModel.activityContext
+        fun isReadyCreateCommit(repo: Repository, activityContext:Context):Ret<Oid?> {
 
             //检查是否存在未stage的冲突，若有则不能创建提交
             if(hasConflictItemInRepo(repo)) {
@@ -2044,8 +2040,8 @@ class Libgit2Helper {
         }
 
         //通过检查才创建提交
-        fun createCommitIfPassedCheck(repo: Repository, msg: String, username: String, email: String, settings: AppSettings):Ret<Oid?> {
-            val isReady = isReadyCreateCommit(repo)
+        fun createCommitIfPassedCheck(repo: Repository, activityContext:Context, msg: String, username: String, email: String, settings: AppSettings):Ret<Oid?> {
+            val isReady = isReadyCreateCommit(repo, activityContext)
             if(isReady.hasError()) {  //如果有错，说明没准备就绪，直接返回
                 return isReady
             }
@@ -2616,7 +2612,8 @@ class Libgit2Helper {
                             )
                         }
 
-                        Msg.requireShow(AppModel.activityContext.getString(R.string.aborted_unknown_host))
+                        //用realAppContext可能无法显示中文，只显示英文，不过用activityContext还得传，调的地方太多，传的话，有点麻烦，所以，凑合用吧，比什么都不显示强
+                        Msg.requireShow(AppModel.realAppContext.getString(R.string.aborted_unknown_host))
 
                         // reject at here, wait user response, then user need re-try the action before requested, add allow and reject callbacks to the request too complex, and maybe can't refresh view, so, let use do the action again by self, better
                         return@cb -1
@@ -4274,7 +4271,9 @@ class Libgit2Helper {
         }
 
         //errCallBack 可用来显示错误通知，和记录错误信息到日志之类的，errCallBack第1个参数是错误信息，第2个参数是仓库id
+        //返回: 分支长名，短名，完整hash
         fun doCreateBranch(
+            activityContext:Context,
             repo: Repository,
             repoId: String,
             branchNameParam: String,  //要创建的分支名
@@ -4283,10 +4282,9 @@ class Libgit2Helper {
             createByRef: Boolean,  //true 根据引用创建分支，否则直接用提交号创建分支，只有baseHead为假时，此值才有效，否则一律使用当前HEAD指向的提交创建分支
 //                           errCallback:(String)->Unit = Msg.requireShow,
 //                           successCallback:()->Unit
-            overwriteIfExisted:Boolean
-        ):Ret<Triple<String, String, String>?>  //返回: 分支长名，短名，完整hash
-        {
-            val activityContext = AppModel.activityContext
+            overwriteIfExisted:Boolean,
+
+        ):Ret<Triple<String, String, String>?> {
 
             //这个如果检查，不会发生本地和远程分支同名的情况，例如同时存在 refs/remotes/origin/abc 和 refs/heads/origin/abc，好处是不容易混淆，坏处是增加了限制；
             //如果不检查，则可创建和远程分支同名分支，虽然全名处于不同命名空间（refs/remotes和refs/heads），但很多地方是通过短名解析的，所以实际上会混淆解析失败或者原本想
@@ -4881,9 +4879,8 @@ class Libgit2Helper {
 
 
         //不会返回oid，只是和continue rebase的返回值一致，方便返回
-        fun readyForContinueCherrypick(repo: Repository):Ret<Oid?> {
+        fun readyForContinueCherrypick(activityContext:Context, repo: Repository):Ret<Oid?> {
             val funName = "readyForContinueCherrypick"
-            val activityContext = AppModel.activityContext
 
             try {
                 //20240814:目前libgit2只支持REBASE_MERGE，不支持 git默认的 REBASE_INTERACTIVE
@@ -4928,8 +4925,8 @@ class Libgit2Helper {
          *
          * @param msg 如果为空，将会使用原提交的msg
          */
-        fun cherrypickContinue(repo: Repository, msg: String="", username: String, email: String, autoClearState:Boolean=true, overwriteAuthor: Boolean, settings: AppSettings):Ret<Oid?> {
-            val readyCheckRet = readyForContinueCherrypick(repo)
+        fun cherrypickContinue(activityContext:Context, repo: Repository, msg: String="", username: String, email: String, autoClearState:Boolean=true, overwriteAuthor: Boolean, settings: AppSettings):Ret<Oid?> {
+            val readyCheckRet = readyForContinueCherrypick(activityContext, repo)
             if(readyCheckRet.hasError()) {
                 return readyCheckRet
             }
@@ -5442,12 +5439,10 @@ class Libgit2Helper {
             SubmoduleDotGitFileMan.backupDotGitFileForSubmodule(getRepoWorkdirNoEndsWithSlash(repo), relativePathUnderParentRepo)
         }
 
-        fun getSubmoduleDtoList(repo:Repository, predicate: (submoduleName: String) -> Boolean={true}):List<SubmoduleDto> {
+        fun getSubmoduleDtoList(repo:Repository, invalidUrlAlertText:String, predicate: (submoduleName: String) -> Boolean={true}):List<SubmoduleDto> {
             val parentWorkdirPathNoSlashSuffix = getRepoWorkdirNoEndsWithSlash(repo)
             val parentDotGitModuleFile = File(parentWorkdirPathNoSlashSuffix, Cons.gitDotModules)
             val list = mutableListOf<SubmoduleDto>()
-            val activityContext = AppModel.activityContext
-            val invalidUrlAlertText = activityContext.getString(R.string.submodule_invalid_url_err)
 
             Submodule.foreach(repo) { sm, name ->
                 try {

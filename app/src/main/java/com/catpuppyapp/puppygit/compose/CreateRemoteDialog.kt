@@ -11,6 +11,7 @@ import androidx.compose.material3.TextField
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.MutableState
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import com.catpuppyapp.puppygit.data.entity.RemoteEntity
@@ -33,10 +34,12 @@ fun CreateRemoteDialog(
     loadingOff:()->Unit,
     onCancel:()->Unit ={},
     onErr:suspend (e:Exception)->Unit,
-    onOk:()->Unit = { Msg.requireShow(AppModel.activityContext.getString(R.string.success))},
+    onOk:(()->Unit)? = null,
     onFinally:()->Unit,
 ) {
-    val activityContext = AppModel.activityContext
+    val activityContext = LocalContext.current
+
+    val onOk:()->Unit = onOk ?: { Msg.requireShow(activityContext.getString(R.string.success)) }
 
     val close = {show.value = false}
 

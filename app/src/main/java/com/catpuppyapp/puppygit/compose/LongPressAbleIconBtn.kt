@@ -41,16 +41,18 @@ fun LongPressAbleIconBtn(
     iconColor:Color? = null,
     isInDarkTheme:Boolean = Theme.inDarkTheme,
     pressedCircleSize:Dp = 40.0.dp,
-    onLongClick:()->Unit = {
-        //震动反馈，显示tooltip提示
-        AppModel.haptic.performHapticFeedback(HapticFeedbackType.LongPress)
-        showToast(AppModel.realAppContext, tooltipText, Toast.LENGTH_SHORT)
-    },
+    onLongClick:(()->Unit)? = null,
     onClick: ()->Unit,
 ){
     val iconColor = iconColor?:LocalContentColor.current
     val activityContext = LocalContext.current
     val haptic = LocalHapticFeedback.current
+
+    val onLongClick:()->Unit = onLongClick ?:  {
+        //震动反馈，显示tooltip提示
+        haptic.performHapticFeedback(HapticFeedbackType.LongPress)
+        showToast(AppModel.realAppContext, tooltipText, Toast.LENGTH_SHORT)
+    }
 
     LongPressAbleIconBtnToastVersion(context=activityContext, modifier=modifier,iconModifier=iconModifier,
         tooltipText=tooltipText,icon=icon,iconContentDesc=iconContentDesc,haptic=haptic,

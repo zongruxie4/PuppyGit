@@ -20,6 +20,7 @@ import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.text.font.FontWeight
@@ -44,7 +45,7 @@ fun ResetDialog(
     refreshPage: (oldHeadCommitOid:String, isDetached:Boolean)->Unit,  //入参为Hard Reset之前HEAD指向的commit id和仓库是否detached。这个detached在这只是顺手判断，commitList页面要用到这个参数，但那个页面的curRepo若是从分支页面进入，则很少更新，所以，在这顺便更新下detached状态以尽量确保那个对象能持有准确的状态
 ) {
 
-    val activityContext = AppModel.activityContext
+    val activityContext = LocalContext.current
 
     val optSoft = 0  // only HEAD
     val optMixed = 1  // HEAD+Index

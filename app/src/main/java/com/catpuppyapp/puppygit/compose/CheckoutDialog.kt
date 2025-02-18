@@ -135,6 +135,7 @@ fun CheckoutDialog(
 
                 //第4个参数是base head，在提交页面创建，肯定不base head，base head是在分支页面用顶栏的按钮创建分支的默认选项
                 val ret = Libgit2Helper.doCreateBranch(
+                    activityContext,
                     repo,
                     repoId,
                     branchNamePram,

@@ -1,5 +1,6 @@
 package com.catpuppyapp.puppygit.git
 
+import android.content.Context
 import com.catpuppyapp.puppygit.constants.Cons
 import com.catpuppyapp.puppygit.play.pro.R
 import com.catpuppyapp.puppygit.utils.AppModel
@@ -40,8 +41,7 @@ class TagDto (
         return formatMinutesToUtc(date!!.offset.totalSeconds / 60)
     }
 
-    fun getType(searchable:Boolean):String {
-        val activityContext = AppModel.activityContext
+    fun getType(activityContext: Context, searchable:Boolean):String {
 
         return if(isAnnotated) {
             if(searchable) {

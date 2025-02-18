@@ -413,8 +413,8 @@ fun CredentialRemoteListScreen(
                         || it.remoteName.lowercase().contains(k)
                         || it.remoteFetchUrl.lowercase().contains(k)
                         || it.remotePushUrl.lowercase().contains(k)
-                        || it.getCredentialNameOrNone().lowercase().contains(k)
-                        || it.getPushCredentialNameOrNone().lowercase().contains(k)
+                        || it.getCredentialNameOrNone(activityContext).lowercase().contains(k)
+                        || it.getPushCredentialNameOrNone(activityContext).lowercase().contains(k)
             }
         }else {
             list.value

@@ -115,7 +115,7 @@ fun TagItem(
         ){
 
             Text(text = stringResource(R.string.type) +":")
-            Text(text = thisObj.getType(false),
+            Text(text = thisObj.getType(activityContext, false),
                 maxLines = 1,
                 overflow = TextOverflow.Ellipsis,
                 fontWeight = FontWeight.Light

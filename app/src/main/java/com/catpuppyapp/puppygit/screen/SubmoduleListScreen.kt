@@ -278,7 +278,7 @@ fun SubmoduleListScreen(
             .appendLine(activityContext.getString(R.string.location)+": "+item.location.toString()).appendLine()
             .appendLine(activityContext.getString(R.string.path)+": "+item.relativePathUnderParent).appendLine()
             .appendLine(activityContext.getString(R.string.full_path)+": "+item.fullPath).appendLine()
-            .appendLine(activityContext.getString(R.string.status)+": "+item.getStatus())
+            .appendLine(activityContext.getString(R.string.status)+": "+item.getStatus(activityContext))
 
         sb.toString()
 
@@ -1259,7 +1259,7 @@ fun SubmoduleListScreen(
                 val fl = list.value.filter {
                     it.name.lowercase().contains(k)
                             || it.remoteUrl.contains(k)
-                            || it.getStatus().lowercase().contains(k)
+                            || it.getStatus(activityContext).lowercase().contains(k)
                             || it.fullPath.lowercase().contains(k)
                             || it.targetHash.lowercase().contains(k)
                             || it.location.toString().lowercase().contains(k)
@@ -1369,7 +1369,7 @@ fun SubmoduleListScreen(
                     if(repoFromDb!=null) {
                         curRepo.value = repoFromDb
                         Repository.open(repoFromDb.fullSavePath).use {repo ->
-                            val items = Libgit2Helper.getSubmoduleDtoList(repo);
+                            val items = Libgit2Helper.getSubmoduleDtoList(repo, invalidUrlAlertText = activityContext.getString(R.string.submodule_invalid_url_err));
                             list.value.addAll(items)
                         }
                     }

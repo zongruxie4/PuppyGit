@@ -1,5 +1,6 @@
 package com.catpuppyapp.puppygit.git
 
+import android.content.Context
 import com.catpuppyapp.puppygit.play.pro.R
 import com.catpuppyapp.puppygit.utils.AppModel
 import com.catpuppyapp.puppygit.utils.Libgit2Helper
@@ -38,8 +39,7 @@ class BranchNameAndTypeDto {
         return remotePrefixFromShortName.isBlank()
     }
 
-    fun getAheadBehind(searchable: Boolean):String {
-        val activityContext = AppModel.activityContext
+    fun getAheadBehind(activityContext: Context, searchable: Boolean):String {
         return if(ahead==0 && 0==behind) {
             if(searchable) {
                 BranchSearchableText.upToDate
@@ -86,7 +86,7 @@ class BranchNameAndTypeDto {
         return upstream?.isPublished == true
     }
 
-    fun getOther(searchable:Boolean):String {
+    fun getOther(activityContext:Context, searchable:Boolean):String {
         val noCache = if(searchable) {
             otherSearchableTextCached == null
         }else {
@@ -94,7 +94,6 @@ class BranchNameAndTypeDto {
         }
 
         if(noCache) {
-            val activityContext = AppModel.activityContext
             val suffix = ", "
             val sb= StringBuilder()
 
@@ -178,8 +177,7 @@ class BranchNameAndTypeDto {
         return (if(searchable) otherSearchableTextCached else otherCached) ?: ""
     }
 
-    fun getTypeString(searchable: Boolean):String {
-        val activityContext = AppModel.activityContext
+    fun getTypeString(activityContext: Context, searchable: Boolean):String {
         return if(type == BranchType.LOCAL) {
             if(searchable) {
                 BranchSearchableText.local
@@ -195,21 +193,20 @@ class BranchNameAndTypeDto {
         }
     }
 
-    fun getUpstreamShortName():String {
+    fun getUpstreamShortName(activityContext: Context):String {
         //非local直接返回空字符串
         if(type != BranchType.LOCAL) {
             return ""
         }
 
         //只有local branch才有upstream
-        val activityContext = AppModel.activityContext
 
         val shortUpstreamBranchName = upstream?.remoteBranchShortRefSpec ?:""
 
         return shortUpstreamBranchName.ifBlank { "[" + activityContext.getString(R.string.none) + "]" }
     }
 
-    fun getUpstreamFullName(): String {
+    fun getUpstreamFullName(activityContext: Context): String {
 
         //非local直接返回空字符串
         if(type != BranchType.LOCAL) {
@@ -217,7 +214,6 @@ class BranchNameAndTypeDto {
         }
 
         //只有local branch才有upstream
-        val activityContext = AppModel.activityContext
 
         val upstreamBranchName = upstream?.remoteBranchRefsRemotesFullRefSpec ?:""
 

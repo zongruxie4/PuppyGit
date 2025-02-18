@@ -52,7 +52,7 @@ fun OpenAsDialog(readOnly: MutableState<Boolean>, fileName:String, filePath:Stri
     val activityContext = LocalContext.current
 
     val mimeTypeList = FsUtils.FileMimeTypes.typeList.toMutableList()
-    val mimeTextList = FsUtils.FileMimeTypes.textList.toMutableList()
+    val mimeTextList = FsUtils.FileMimeTypes.getTextList(activityContext).toMutableList()
 
     //添加一个根据文件名后缀打开的方式，不过可能不准
 //    mimeTypeList.add(FsUtils.getMimeTypeForFilePath(appContext, filePath))

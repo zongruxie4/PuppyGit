@@ -154,7 +154,7 @@ fun BranchItem(
             ){
 
             Text(text = stringResource(R.string.type) +":")
-            Text(text = thisObj.getTypeString(false),
+            Text(text = thisObj.getTypeString(activityContext, false),
                 maxLines = 1,
                 overflow = TextOverflow.Ellipsis,
                 fontWeight = FontWeight.Light
@@ -189,7 +189,7 @@ fun BranchItem(
                     verticalAlignment = Alignment.CenterVertically,
                 ) {
                     Text(text = stringResource(R.string.upstream) + ":")
-                    ClickableText(thisObj.getUpstreamShortName()) {
+                    ClickableText(thisObj.getUpstreamShortName(activityContext)) {
                         lastClickedItemKey.value = thisObj.fullName
 
                         setCurObj()
@@ -204,7 +204,7 @@ fun BranchItem(
                 ) {
                     Text(text = stringResource(R.string.status) + ":")
                     Text(
-                        text = thisObj.getAheadBehind(false),
+                        text = thisObj.getAheadBehind(activityContext, false),
                         maxLines = 1,
                         overflow = TextOverflow.Ellipsis,
                         fontWeight = FontWeight.Light
@@ -235,7 +235,7 @@ fun BranchItem(
         ){
 
             Text(text = stringResource(R.string.other) +":")
-            Text(text = thisObj.getOther(false),
+            Text(text = thisObj.getOther(activityContext, false),
                 maxLines = 1,
                 overflow = TextOverflow.Ellipsis,
                 fontWeight = FontWeight.Light

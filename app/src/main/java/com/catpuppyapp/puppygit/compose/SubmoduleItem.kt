@@ -14,6 +14,7 @@ import androidx.compose.runtime.MutableState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.hapticfeedback.HapticFeedbackType
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
@@ -35,7 +36,7 @@ fun SubmoduleItem(
     onLongClick:(SubmoduleDto)->Unit,
     onClick:(SubmoduleDto)->Unit
 ) {
-
+    val activityContext = LocalContext.current
     val haptic = LocalHapticFeedback.current
 
     Column(
@@ -144,7 +145,7 @@ fun SubmoduleItem(
         ){
 
             Text(text = stringResource(R.string.status) +":")
-            Text(text = thisObj.getStatus(),
+            Text(text = thisObj.getStatus(activityContext),
                 maxLines = 1,
                 overflow = TextOverflow.Ellipsis,
                 fontWeight = FontWeight.Light,

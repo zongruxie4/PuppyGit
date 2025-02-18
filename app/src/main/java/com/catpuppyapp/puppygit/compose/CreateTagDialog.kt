@@ -17,6 +17,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import com.catpuppyapp.puppygit.data.entity.RepoEntity
@@ -48,7 +49,7 @@ fun CreateTagDialog(showDialog:MutableState<Boolean>,
 
                     onOkDoneCallback:(newTagFullOidStr:String)->Unit
 ) {
-    val activityContext = AppModel.activityContext
+    val activityContext = LocalContext.current
 
     val tagNameErrMsg = rememberSaveable { mutableStateOf("")}
     val commitHashShortOrLongErrMsg = rememberSaveable { mutableStateOf("")}

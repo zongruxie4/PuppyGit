@@ -36,6 +36,7 @@ import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.platform.LocalClipboardManager
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.AnnotatedString
@@ -90,7 +91,7 @@ fun FileEditor(
     undoStack: UndoStack?
 ) {
     val activityContext = LocalContext.current
-    val haptic = AppModel.haptic
+    val haptic = LocalHapticFeedback.current
 
     val inDarkTheme = Theme.inDarkTheme
 

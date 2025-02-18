@@ -179,37 +179,39 @@ object AppModel {
     var theme:MutableState<String>? = null
 
     //外部不应该直接获取此文件，此文件应通过DebugModeManager的setOn/Off方法维护
-    private lateinit var debugModeFlagFile:File
+//    private lateinit var debugModeFlagFile:File
+
+    //20250218: 禁用此变量，日后可能会删除相关代码。原因：这个debugModeOn最初是用来控制日志等级的，确保我在开发的时候能打印些调试信息到log文件，后来，设置页面有了专门控制日志等级的设置项，还加了个开发模式，此变量已经没用了
     //外部应通过获取此文件来判断是否开启debug模式并通过DebugModeManager的set方法维护此变量和debugModeFlagFile
     //此变量为true，则设置页面的debug模式状态为开启；false则为关闭。注：设置页面的debug模式开启或关闭仅与此变量有关，与debug flag文件是否存在无关。例如：用户打开了debug模式，app创建了debug flag文件，但随后，用户手动删除了flag文件，这时设置页面debug模式仍为开启，直到下次启动app时才会更新为关闭
-    @Deprecated("use `DevFlag.isDebugModeOn()` instead")
-    var debugModeOn = false  //这个变量改成让用户可配置，所以弄成变量，放到init_1里初始化，然后后面的日志之类的会用到它
-        private set  //应通过AppModel.DebugModeManager修改debugModeOn的值，那个方法可持久化debug模式开启或关闭，也可临时设置此变量，一举两得
+//    @Deprecated("use `DevFlag.isDebugModeOn()` instead")
+//    var debugModeOn = false  //这个变量改成让用户可配置，所以弄成变量，放到init_1里初始化，然后后面的日志之类的会用到它
+//        private set  //应通过AppModel.DebugModeManager修改debugModeOn的值，那个方法可持久化debug模式开启或关闭，也可临时设置此变量，一举两得
 
 
-
-    object DebugModeManager {
-        const val debugModeFlagFileName = FlagFileName.enableDebugMode
-
-        //用户在设置页面开启debug模式时，调用此方法，创建flag文件，下次app启动检测到flag文件存在，就会自动开启debug模式了（不过模式开启关闭可直接改AppModel相关变量，并不需要重启app就能立即生效，直接改变量相当于本次有效，创建flag文件相当于把修改持久化了）
-        fun setDebugModeOn(requirePersist:Boolean){
-            AppModel.debugModeOn = true
-
-            //如果请求持久化，则创建相关文件，否则修改仅针对本次会话有效，一重启app就根据flag文件是否存在重置debugModeOn变量了
-            if(requirePersist && !AppModel.isDebugModeFlagFileExists()) {
-                AppModel.debugModeFlagFile.createNewFile()
-            }
-        }
-
-        //用户在设置页面关闭debug模式时，调用此方法，删除flag文件，下次启动就会自动关闭debug模式
-        fun setDebugModeOff(requirePersist: Boolean) {
-            AppModel.debugModeOn = false
-
-            if(requirePersist && AppModel.isDebugModeFlagFileExists()){
-                AppModel.debugModeFlagFile.delete()
-            }
-        }
-    }
+//
+//    object DebugModeManager {
+//        const val debugModeFlagFileName = FlagFileName.enableDebugMode
+//
+//        //用户在设置页面开启debug模式时，调用此方法，创建flag文件，下次app启动检测到flag文件存在，就会自动开启debug模式了（不过模式开启关闭可直接改AppModel相关变量，并不需要重启app就能立即生效，直接改变量相当于本次有效，创建flag文件相当于把修改持久化了）
+//        fun setDebugModeOn(requirePersist:Boolean){
+//            AppModel.debugModeOn = true
+//
+//            //如果请求持久化，则创建相关文件，否则修改仅针对本次会话有效，一重启app就根据flag文件是否存在重置debugModeOn变量了
+//            if(requirePersist && !AppModel.isDebugModeFlagFileExists()) {
+//                AppModel.debugModeFlagFile.createNewFile()
+//            }
+//        }
+//
+//        //用户在设置页面关闭debug模式时，调用此方法，删除flag文件，下次启动就会自动关闭debug模式
+//        fun setDebugModeOff(requirePersist: Boolean) {
+//            AppModel.debugModeOn = false
+//
+//            if(requirePersist && AppModel.isDebugModeFlagFileExists()){
+//                AppModel.debugModeFlagFile.delete()
+//            }
+//        }
+//    }
 
     object PuppyGitUnderGitDirManager {
         const val dirName = "PuppyGit"
@@ -249,7 +251,7 @@ object AppModel {
      * 中量级，应该不会阻塞很久
      */
     fun init_1(activityContext:Context, realAppContext:Context, exitApp:()->Unit, initActivity:Boolean) {
-        val funName = "init_1"
+//        val funName = "init_1"
 
         // run once in app process life time
         // 在app进程生命周期内仅运行一次
@@ -361,9 +363,9 @@ object AppModel {
 
         //debug mode相关变量
         //必须先初始化此变量再去查询isDebugModeOn()
-        AppModel.debugModeFlagFile = File(AppModel.appDataUnderAllReposDir, DebugModeManager.debugModeFlagFileName)  //debugMode检测模式是如果在特定目录下存在名为`debugModeFlagFileName`变量值的文件，则debugModeOn，否则off
+//        AppModel.debugModeFlagFile = File(AppModel.appDataUnderAllReposDir, DebugModeManager.debugModeFlagFileName)  //debugMode检测模式是如果在特定目录下存在名为`debugModeFlagFileName`变量值的文件，则debugModeOn，否则off
         //初始化debugModeOn。注：app运行期间若需修改此变量，应通过DebugModeManager来修改；获取则直接通过AppModel.debugModeOn来获取即可
-        AppModel.debugModeOn = AppModel.isDebugModeFlagFileExists()  //TODO 在设置页面添加相关选项“开启调试模式”，开启则在上面的目录创建debugModeOn文件，否则删除文件，这样每次启动app就能通过检查文件是否存在来判断是否开了debugMode了。(btw: 因为要在Settings初始化之前就读取到这个变量，所以不能放到Settings里)
+//        AppModel.debugModeOn = AppModel.isDebugModeFlagFileExists()  //TODO 在设置页面添加相关选项“开启调试模式”，开启则在上面的目录创建debugModeOn文件，否则删除文件，这样每次启动app就能通过检查文件是否存在来判断是否开了debugMode了。(btw: 因为要在Settings初始化之前就读取到这个变量，所以不能放到Settings里)
 
 
         //for test unstable features
@@ -744,9 +746,9 @@ object AppModel {
     }
 
     //这个方法应该仅在初始化时调用一次，以后应通过AppModel.singleInstance.debugModeOn来获取debugMode是否开启，并且通过setDebugModeOn/Off来开启或关闭debug模式
-    private fun isDebugModeFlagFileExists():Boolean {
-        return debugModeFlagFile.exists()
-    }
+//    private fun isDebugModeFlagFileExists():Boolean {
+//        return debugModeFlagFile.exists()
+//    }
 
     fun getOrCreateExternalCacheDir():File{
         if(externalCacheDir.exists().not()) {

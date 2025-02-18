@@ -498,7 +498,7 @@ fun TagListScreen(
                 sb.append(activityContext.getString(R.string.name)).append(": ").append(it.shortName).appendLine().appendLine()
                 sb.append(activityContext.getString(R.string.full_name)).append(": ").append(it.name).appendLine().appendLine()
                 sb.append(activityContext.getString(R.string.target)).append(": ").append(it.targetFullOidStr).appendLine().appendLine()
-                sb.append(activityContext.getString(R.string.type)).append(": ").append(it.getType(false)).appendLine().appendLine()
+                sb.append(activityContext.getString(R.string.type)).append(": ").append(it.getType(activityContext, false)).appendLine().appendLine()
                 if(it.isAnnotated) {
                     sb.append(activityContext.getString(R.string.tag_oid)).append(": ").append(it.fullOidStr).appendLine().appendLine()
                     sb.append(activityContext.getString(R.string.author)).append(": ").append(it.getFormattedTaggerNameAndEmail()).appendLine().appendLine()
@@ -507,7 +507,7 @@ fun TagListScreen(
                     sb.append(activityContext.getString(R.string.msg)).append(": ").append(it.msg).appendLine().appendLine()
                 }
 
-                sb.append(Cons.flagStr).append(": ").append(it.getType(true)).appendLine().appendLine()
+                sb.append(Cons.flagStr).append(": ").append(it.getType(activityContext, true)).appendLine().appendLine()
 
                 sb.append("------------------------------").appendLine().appendLine()
             }
@@ -742,8 +742,8 @@ fun TagListScreen(
                             || it.taggerName.lowercase().contains(k)
                             || it.taggerEmail.lowercase().contains(k)
                             || it.fullOidStr.lowercase().contains(k)  // annotated tag对象的oid；非annotated tag此值和targetFullOidStr一样
-                            || it.getType(false).lowercase().contains(k)
-                            || it.getType(true).lowercase().contains(k)
+                            || it.getType(activityContext, false).lowercase().contains(k)
+                            || it.getType(activityContext, true).lowercase().contains(k)
                             || formatMinutesToUtc(it.originTimeOffsetInMinutes).lowercase().contains(k)
                 }
 

@@ -1,5 +1,6 @@
 package com.catpuppyapp.puppygit.git
 
+import android.content.Context
 import com.catpuppyapp.puppygit.play.pro.R
 import com.catpuppyapp.puppygit.settings.AppSettings
 import com.catpuppyapp.puppygit.utils.AppModel
@@ -33,7 +34,7 @@ class CommitDto (
         return isGrafted || isMerged()
     }
 
-    fun getOther(searchable:Boolean):String {
+    fun getOther(activityContext: Context, searchable:Boolean):String {
         val noCache = if(searchable) {
             otherMsgSearchableText == null
         }else {
@@ -41,7 +42,6 @@ class CommitDto (
         }
 
         if(noCache) {
-            val activityContext = AppModel.activityContext
             val sb = StringBuilder()
             val suffix = ", "
 

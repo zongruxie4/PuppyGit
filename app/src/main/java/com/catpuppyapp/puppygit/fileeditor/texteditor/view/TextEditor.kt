@@ -39,6 +39,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalClipboardManager
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.platform.LocalTextInputService
 import androidx.compose.ui.res.stringResource
@@ -171,8 +172,7 @@ fun TextEditor(
     val acceptBothBtnColor = UIHelper.getAcceptBothIconColor()
     val rejectBothBtnColor = UIHelper.getRejectBothIconColor()
 
-    val haptic = AppModel.haptic
-    val activityContext = AppModel.activityContext
+    val activityContext = LocalContext.current
 
     val scope = rememberCoroutineScope()
     val keyboardController = LocalSoftwareKeyboardController.current

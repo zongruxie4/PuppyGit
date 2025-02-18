@@ -1017,14 +1017,14 @@ fun CommitListScreen(
         }
 
         if(curCommit.hasOther()) {
-            sb.appendLine("${activityContext.getString(R.string.other)}: ${curCommit.getOther(false)}")
+            sb.appendLine("${activityContext.getString(R.string.other)}: ${curCommit.getOther(activityContext, false)}")
             sb.appendLine()
         }
 
 
 
         //追加可过滤的flag
-        sb.appendLine("${Cons.flagStr}: ${curCommit.getOther(true)}")
+        sb.appendLine("${Cons.flagStr}: ${curCommit.getOther(activityContext, true)}")
         sb.appendLine()
 
         detailsString.value = sb.toString()
@@ -1922,8 +1922,8 @@ fun CommitListScreen(
                             || it.parentOidStrList.toString().lowercase().contains(k)
                             || it.treeOidStr.lowercase().contains(k)
                             || it.msg.lowercase().contains(k)
-                            || it.getOther(false).lowercase().contains(k)
-                            || it.getOther(true).lowercase().contains(k)
+                            || it.getOther(activityContext, false).lowercase().contains(k)
+                            || it.getOther(activityContext, true).lowercase().contains(k)
                             || formatMinutesToUtc(it.originTimeOffsetInMinutes).lowercase().contains(k)
 
                     // for "show in list"

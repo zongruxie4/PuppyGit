@@ -13,6 +13,7 @@ import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
@@ -51,7 +52,7 @@ fun TagFetchPushDialog(
     onFinally:()->Unit, //在 try...catch...finally，finally代码块里的代码
 ) {
 
-    val activityContext = AppModel.activityContext
+    val activityContext = LocalContext.current
 
     val force = rememberSaveable { mutableStateOf(false) }
 

@@ -31,6 +31,7 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.input.nestedscroll.nestedScroll
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
@@ -112,7 +113,7 @@ fun TreeToTreeChangeListScreen(
     val homeTopBarScrollBehavior = AppModel.homeTopBarScrollBehavior
 
     val allRepoParentDir = AppModel.allRepoParentDir
-    val activityContext = AppModel.activityContext
+    val activityContext = LocalContext.current
     val settings = remember { SettingsUtil.getSettingsSnapshot() }
 
     //取出title desc，存到状态变量里，与页面共存亡就行
