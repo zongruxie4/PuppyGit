@@ -982,137 +982,6 @@ private fun NaviButton(
     val hasPrevious = previousIndex >= 0 && previousIndex < size
     val hasNext = nextIndex >= 0 && nextIndex < size
 
-    val doActThenSwitchItemOrNaviBack:suspend (targetIndex:Int, act:()->Unit)->Unit = { targetIndex, act ->
-        act()
-
-        //如果存在下个条目或上个条目，跳转；否则返回上级页面
-        val nextOrPreviousIndex = if(hasNext) (nextIndex - 1) else previousIndex
-        if(nextOrPreviousIndex >= 0 && nextOrPreviousIndex < diffableItemList.size) {  // still has next or previous, switch to it
-            //从列表移除当前条目
-            diffableItemList.removeAt(targetIndex)
-
-            //切换条目
-            val item = diffableItemList[nextOrPreviousIndex]
-            lastClickedItemKey.value = item.getItemKey()
-            switchItem(item, nextOrPreviousIndex)
-        }else {  // no next or previous, go back parent page
-            withMainContext {
-                naviUp()
-            }
-        }
-    }
-
-    val targetItemState = mutableCustomStateOf(stateKeyTag, "targetItemState") { StatusTypeEntrySaver() }
-    val targetIndexState = rememberSaveable { mutableIntStateOf(-1) }
-    val showRevertDialog = rememberSaveable { mutableStateOf(false) }
-    val showUnstageDialog = rememberSaveable { mutableStateOf(false) }
-
-    if(showRevertDialog.value) {
-        ConfirmDialog(
-            title=stringResource(R.string.revert),
-            text=stringResource(R.string.are_you_sure),
-            okTextColor = MyStyleKt.TextColor.danger(),
-            onCancel = {showRevertDialog.value=false}
-        ) {  //onOk
-            showRevertDialog.value=false
-            val targetItem = targetItemState.value
-            val targetIndex = targetIndexState.intValue
-
-            doJobThenOffLoading {
-                try {
-                    doActThenSwitchItemOrNaviBack(targetIndex) {
-                        //取出数据库路径
-                        Repository.open(curRepo.fullSavePath).use { repo ->
-                            val untrakcedFileList = mutableListOf<String>()  // untracked list，在我的app里这种修改类型显示为 "New"
-                            val pathspecList = mutableListOf<String>()  // modified、deleted 列表
-                            //新文件(Untracked)在index里不存在，若revert，只能删除文件，所以单独加到另一个列表
-                            if(targetItem.changeType == Cons.gitStatusNew) {
-                                untrakcedFileList.add(targetItem.canonicalPath)  //删除文件，添加全路径（但其实用仓库内相对路径也行，只是需要把仓库路径和仓库下相对路径拼接一下，而这个全路径是我在查询status list的时候拼好的，所以直接用就行）
-                            }else if(targetItem.changeType != Cons.gitStatusConflict){  //冲突条目不可revert！其余index中有的文件，也就是git tracked的文件，删除/修改 之类的，都可恢复为index中的状态
-                                pathspecList.add(targetItem.relativePathUnderRepo)
-                            }
-                            //如果列表不为空，恢复文件
-                            if(pathspecList.isNotEmpty()) {
-                                Libgit2Helper.revertFilesToIndexVersion(repo, pathspecList)
-                            }
-                            //如果untracked列表不为空，删除文件
-                            if(untrakcedFileList.isNotEmpty()) {
-                                Libgit2Helper.rmUntrackedFiles(untrakcedFileList)
-                            }
-                        }
-
-
-                        //操作完成，显示提示
-                        Msg.requireShow(activityContext.getString(R.string.success))
-
-                        //切换下一条目，若没有，返回上级页面
-
-                        //下面处理页面相关的变量
-
-                        //从cl页面的列表移除条目
-                        SharedState.homeChangeList_itemList.remove(targetItem)
-                        //cl页面设置索引有条目，因为上面添加成功了，所以大概率index至少有一个条目
-//                        SharedState.homeChangeList_indexHasItem.value = true  // revert不需要操作index
-
-                    }
-                }catch (e:Exception) {
-                    val errMsg = "err: ${e.localizedMessage}"
-                    Msg.requireShowLongDuration(errMsg)
-                    createAndInsertError(curRepo.id, errMsg)
-
-                    MyLog.e(TAG, "revert item '${targetItem.relativePathUnderRepo}' for repo '${curRepo.repoName}' err: ${e.stackTraceToString()}")
-                }
-            }
-        }
-    }
-
-    if(showUnstageDialog.value) {
-        ConfirmDialog(
-            title=stringResource(R.string.unstage),
-            text=stringResource(R.string.are_you_sure),
-            okTextColor = MyStyleKt.TextColor.danger(),
-            onCancel = {showUnstageDialog.value=false}
-        ) {  //onOk
-            showUnstageDialog.value=false
-            val targetItem = targetItemState.value
-            val targetIndex = targetIndexState.intValue
-
-            doJobThenOffLoading {
-                try {
-                    doActThenSwitchItemOrNaviBack(targetIndex) {
-                        //menu action: unstage
-                        Repository.open(curRepo.fullSavePath).use { repo ->
-                            val refspecList = mutableListOf<String>()
-                            // 准备refspecList
-                            refspecList.add(targetItem.relativePathUnderRepo)
-
-                            //do unstage
-                            Libgit2Helper.unStageItems(repo, refspecList)
-                        }
-
-                        //操作完成，显示提示
-                        Msg.requireShow(activityContext.getString(R.string.success))
-
-                        //切换下一条目，若没有，返回上级页面
-
-                        //下面处理页面相关的变量
-
-                        //从cl页面的列表移除条目
-                        SharedState.homeChangeList_itemList.remove(targetItem)
-                        //cl页面设置索引有条目，因为上面添加成功了，所以大概率index至少有一个条目
-//                        SharedState.homeChangeList_indexHasItem.value = true  // index页面unstage不需要管home页面那个changeList指示index是否有条目的那个变量
-                    }
-                }catch (e:Exception) {
-                    val errMsg = "err: ${e.localizedMessage}"
-                    Msg.requireShowLongDuration(errMsg)
-                    createAndInsertError(curRepo.id, errMsg)
-
-                    MyLog.e(TAG, "unstage item '${targetItem.relativePathUnderRepo}' for repo '${curRepo.repoName}' err: ${e.stackTraceToString()}")
-                }
-            }
-        }
-    }
-
     Column(
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.Center
@@ -1130,135 +999,269 @@ private fun NaviButton(
             Spacer(Modifier.height(20.dp))
         }
 
-        if(fromTo != Cons.gitDiffFileHistoryFromTreeToTree) {
-            if(size>0) {
-                // if is index to work tree, show stage button
-                if(fromTo == Cons.gitDiffFromIndexToWorktree) {
-                    CardButton(
-                        text = stringResource(R.string.stage),
-                        enabled = true
-                    ) doStage@{
-                        val targetIndex = curItemIndex.intValue
-                        val targetItem = if(isGoodIndexForList(targetIndex, diffableItemList)) diffableItemList[targetIndex] else null
 
-                        if(targetItem == null) {
-                            Msg.requireShow("err: bad index $targetIndex")
-                            return@doStage
-                        }
+        if(size>0 && fromTo != Cons.gitDiffFileHistoryFromTreeToTree) {
 
-                        doJobThenOffLoading {
-                            try {
-                                doActThenSwitchItemOrNaviBack(targetIndex) {
-                                    // stage 条目
-                                    Repository.open(curRepo.fullSavePath).use { repo ->
-                                        Libgit2Helper.stageStatusEntryAndWriteToDisk(repo, listOf(targetItem))
-                                    }
+            val doActThenSwitchItemOrNaviBack:suspend (targetIndex:Int, act:()->Unit)->Unit = { targetIndex, act ->
+                act()
 
-                                    //执行到这里，实际上已经stage成功了
-                                    Msg.requireShow(activityContext.getString(R.string.success))
+                //如果存在下个条目或上个条目，跳转；否则返回上级页面
+                val nextOrPreviousIndex = if(hasNext) (nextIndex - 1) else previousIndex
+                if(nextOrPreviousIndex >= 0 && nextOrPreviousIndex < diffableItemList.size) {  // still has next or previous, switch to it
+                    //从列表移除当前条目
+                    diffableItemList.removeAt(targetIndex)
 
-                                    //下面处理页面相关的变量
-
-                                    //从cl页面的列表移除条目
-                                    SharedState.homeChangeList_itemList.remove(targetItem)
-                                    //cl页面设置索引有条目，因为上面stage成功了，所以大概率index至少有一个条目
-                                    SharedState.homeChangeList_indexHasItem.value = true
-                                }
-                            }catch (e:Exception) {
-                                val errMsg = "err: ${e.localizedMessage}"
-                                Msg.requireShowLongDuration(errMsg)
-                                createAndInsertError(curRepo.id, errMsg)
-
-                                MyLog.e(TAG, "stage item '${targetItem.relativePathUnderRepo}' for repo '${curRepo.repoName}' err: ${e.stackTraceToString()}")
-                            }
-                        }
-                    }
-
-                    Spacer(Modifier.height(20.dp))
-                }
-
-                // show revert for worktreeToIndex
-                if(fromTo == Cons.gitDiffFromIndexToWorktree) {
-                    CardButton(
-                        text = stringResource(R.string.revert),
-                        enabled = true
-                    ) onClick@{
-                        val targetIndex = curItemIndex.intValue
-                        val targetItem = if(isGoodIndexForList(targetIndex, diffableItemList)) diffableItemList[targetIndex] else null
-
-                        if(targetItem == null) {
-                            Msg.requireShow("err: bad index $targetIndex")
-                            return@onClick
-                        }
-
-                        targetItemState.value = targetItem
-                        targetIndexState.intValue = targetIndex
-
-                        showRevertDialog.value = true
-                    }
-
-                    Spacer(Modifier.height(20.dp))
-                }
-
-                // show unstage for indexToHead
-                if(fromTo == Cons.gitDiffFromHeadToIndex) {
-                    CardButton(
-                        text = stringResource(R.string.unstage),
-                        enabled = true
-                    ) onClick@{
-                        val targetIndex = curItemIndex.intValue
-                        val targetItem = if(isGoodIndexForList(targetIndex, diffableItemList)) diffableItemList[targetIndex] else null
-
-                        if(targetItem == null) {
-                            Msg.requireShow("err: bad index $targetIndex")
-                            return@onClick
-                        }
-
-                        targetItemState.value = targetItem
-                        targetIndexState.intValue = targetIndex
-
-                        showUnstageDialog.value = true
-                    }
-
-                    Spacer(Modifier.height(20.dp))
-                }
-
-
-                // show commit all for indexToWorktree or headToIndex (虽然显示同一按钮，但两者实现不同，indexToWorktree的commit all是先stage all再提交，headToIndex的commit all则是直接提交index，不会stage未添加到index但存在于indexToWorktree ChangeList页面的条目)
-                if(fromTo == Cons.gitDiffFromIndexToWorktree || fromTo == Cons.gitDiffFromHeadToIndex) {
-                    val (state, requestType) = if(fromTo == Cons.gitDiffFromIndexToWorktree) {
-                        Pair(SharedState.homeChangeList_Refresh, StateRequestType.indexToWorkTree_CommitAll)
-                    } else {
-                        Pair(SharedState.indexChangeList_Refresh, StateRequestType.headToIndex_CommitAll)
-                    }
-
-
-                    CardButton(
-                        text = stringResource(R.string.commit_all),
-                        enabled = true
-                    ) {
-                        changeStateTriggerRefreshPage(state, requestType)
+                    //切换条目
+                    val item = diffableItemList[nextOrPreviousIndex]
+                    lastClickedItemKey.value = item.getItemKey()
+                    switchItem(item, nextOrPreviousIndex)
+                }else {  // no next or previous, go back parent page
+                    withMainContext {
                         naviUp()
                     }
-
-                    Spacer(Modifier.height(20.dp))
-                }
-
-
-
-                Row (
-                    modifier = Modifier.fillMaxWidth(),
-                    verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.Center
-                ){
-                    Text(
-                        replaceStringResList(stringResource(R.string.current_n_all_m), listOf("" + (curItemIndex.intValue+1), "" + size)),
-                        fontWeight = FontWeight.Light,
-                        fontStyle = FontStyle.Italic,
-                        color = UIHelper.getSecondaryFontColor()
-                    )
                 }
             }
+
+            val targetItemState = mutableCustomStateOf(stateKeyTag, "targetItemState") { StatusTypeEntrySaver() }
+            val targetIndexState = rememberSaveable { mutableIntStateOf(-1) }
+            val showRevertDialog = rememberSaveable { mutableStateOf(false) }
+            val showUnstageDialog = rememberSaveable { mutableStateOf(false) }
+
+            if(showRevertDialog.value) {
+                ConfirmDialog(
+                    title=stringResource(R.string.revert),
+                    text=stringResource(R.string.are_you_sure),
+                    okTextColor = MyStyleKt.TextColor.danger(),
+                    onCancel = {showRevertDialog.value=false}
+                ) {  //onOk
+                    showRevertDialog.value=false
+                    val targetItem = targetItemState.value
+                    val targetIndex = targetIndexState.intValue
+
+                    doJobThenOffLoading {
+                        try {
+                            doActThenSwitchItemOrNaviBack(targetIndex) {
+                                //取出数据库路径
+                                Repository.open(curRepo.fullSavePath).use { repo ->
+                                    val untrakcedFileList = mutableListOf<String>()  // untracked list，在我的app里这种修改类型显示为 "New"
+                                    val pathspecList = mutableListOf<String>()  // modified、deleted 列表
+                                    //新文件(Untracked)在index里不存在，若revert，只能删除文件，所以单独加到另一个列表
+                                    if(targetItem.changeType == Cons.gitStatusNew) {
+                                        untrakcedFileList.add(targetItem.canonicalPath)  //删除文件，添加全路径（但其实用仓库内相对路径也行，只是需要把仓库路径和仓库下相对路径拼接一下，而这个全路径是我在查询status list的时候拼好的，所以直接用就行）
+                                    }else if(targetItem.changeType != Cons.gitStatusConflict){  //冲突条目不可revert！其余index中有的文件，也就是git tracked的文件，删除/修改 之类的，都可恢复为index中的状态
+                                        pathspecList.add(targetItem.relativePathUnderRepo)
+                                    }
+                                    //如果列表不为空，恢复文件
+                                    if(pathspecList.isNotEmpty()) {
+                                        Libgit2Helper.revertFilesToIndexVersion(repo, pathspecList)
+                                    }
+                                    //如果untracked列表不为空，删除文件
+                                    if(untrakcedFileList.isNotEmpty()) {
+                                        Libgit2Helper.rmUntrackedFiles(untrakcedFileList)
+                                    }
+                                }
+
+
+                                //操作完成，显示提示
+                                Msg.requireShow(activityContext.getString(R.string.success))
+
+                                //切换下一条目，若没有，返回上级页面
+
+                                //下面处理页面相关的变量
+
+                                //从cl页面的列表移除条目
+                                SharedState.homeChangeList_itemList.remove(targetItem)
+                                //cl页面设置索引有条目，因为上面添加成功了，所以大概率index至少有一个条目
+//                        SharedState.homeChangeList_indexHasItem.value = true  // revert不需要操作index
+
+                            }
+                        }catch (e:Exception) {
+                            val errMsg = "err: ${e.localizedMessage}"
+                            Msg.requireShowLongDuration(errMsg)
+                            createAndInsertError(curRepo.id, errMsg)
+
+                            MyLog.e(TAG, "revert item '${targetItem.relativePathUnderRepo}' for repo '${curRepo.repoName}' err: ${e.stackTraceToString()}")
+                        }
+                    }
+                }
+            }
+
+            if(showUnstageDialog.value) {
+                ConfirmDialog(
+                    title=stringResource(R.string.unstage),
+                    text=stringResource(R.string.are_you_sure),
+                    okTextColor = MyStyleKt.TextColor.danger(),
+                    onCancel = {showUnstageDialog.value=false}
+                ) {  //onOk
+                    showUnstageDialog.value=false
+                    val targetItem = targetItemState.value
+                    val targetIndex = targetIndexState.intValue
+
+                    doJobThenOffLoading {
+                        try {
+                            doActThenSwitchItemOrNaviBack(targetIndex) {
+                                //menu action: unstage
+                                Repository.open(curRepo.fullSavePath).use { repo ->
+                                    val refspecList = mutableListOf<String>()
+                                    // 准备refspecList
+                                    refspecList.add(targetItem.relativePathUnderRepo)
+
+                                    //do unstage
+                                    Libgit2Helper.unStageItems(repo, refspecList)
+                                }
+
+                                //操作完成，显示提示
+                                Msg.requireShow(activityContext.getString(R.string.success))
+
+                                //切换下一条目，若没有，返回上级页面
+
+                                //下面处理页面相关的变量
+
+                                //从cl页面的列表移除条目
+                                SharedState.homeChangeList_itemList.remove(targetItem)
+                                //cl页面设置索引有条目，因为上面添加成功了，所以大概率index至少有一个条目
+//                        SharedState.homeChangeList_indexHasItem.value = true  // index页面unstage不需要管home页面那个changeList指示index是否有条目的那个变量
+                            }
+                        }catch (e:Exception) {
+                            val errMsg = "err: ${e.localizedMessage}"
+                            Msg.requireShowLongDuration(errMsg)
+                            createAndInsertError(curRepo.id, errMsg)
+
+                            MyLog.e(TAG, "unstage item '${targetItem.relativePathUnderRepo}' for repo '${curRepo.repoName}' err: ${e.stackTraceToString()}")
+                        }
+                    }
+                }
+            }
+
+
+            // if is index to work tree, show stage button
+            if(fromTo == Cons.gitDiffFromIndexToWorktree) {
+                CardButton(
+                    text = stringResource(R.string.stage),
+                    enabled = true
+                ) doStage@{
+                    val targetIndex = curItemIndex.intValue
+                    val targetItem = if(isGoodIndexForList(targetIndex, diffableItemList)) diffableItemList[targetIndex] else null
+
+                    if(targetItem == null) {
+                        Msg.requireShow("err: bad index $targetIndex")
+                        return@doStage
+                    }
+
+                    doJobThenOffLoading {
+                        try {
+                            doActThenSwitchItemOrNaviBack(targetIndex) {
+                                // stage 条目
+                                Repository.open(curRepo.fullSavePath).use { repo ->
+                                    Libgit2Helper.stageStatusEntryAndWriteToDisk(repo, listOf(targetItem))
+                                }
+
+                                //执行到这里，实际上已经stage成功了
+                                Msg.requireShow(activityContext.getString(R.string.success))
+
+                                //下面处理页面相关的变量
+
+                                //从cl页面的列表移除条目
+                                SharedState.homeChangeList_itemList.remove(targetItem)
+                                //cl页面设置索引有条目，因为上面stage成功了，所以大概率index至少有一个条目
+                                SharedState.homeChangeList_indexHasItem.value = true
+                            }
+                        }catch (e:Exception) {
+                            val errMsg = "err: ${e.localizedMessage}"
+                            Msg.requireShowLongDuration(errMsg)
+                            createAndInsertError(curRepo.id, errMsg)
+
+                            MyLog.e(TAG, "stage item '${targetItem.relativePathUnderRepo}' for repo '${curRepo.repoName}' err: ${e.stackTraceToString()}")
+                        }
+                    }
+                }
+
+                Spacer(Modifier.height(20.dp))
+            }
+
+            // show revert for worktreeToIndex
+            if(fromTo == Cons.gitDiffFromIndexToWorktree) {
+                CardButton(
+                    text = stringResource(R.string.revert),
+                    enabled = true
+                ) onClick@{
+                    val targetIndex = curItemIndex.intValue
+                    val targetItem = if(isGoodIndexForList(targetIndex, diffableItemList)) diffableItemList[targetIndex] else null
+
+                    if(targetItem == null) {
+                        Msg.requireShow("err: bad index $targetIndex")
+                        return@onClick
+                    }
+
+                    targetItemState.value = targetItem
+                    targetIndexState.intValue = targetIndex
+
+                    showRevertDialog.value = true
+                }
+
+                Spacer(Modifier.height(20.dp))
+            }
+
+            // show unstage for indexToHead
+            if(fromTo == Cons.gitDiffFromHeadToIndex) {
+                CardButton(
+                    text = stringResource(R.string.unstage),
+                    enabled = true
+                ) onClick@{
+                    val targetIndex = curItemIndex.intValue
+                    val targetItem = if(isGoodIndexForList(targetIndex, diffableItemList)) diffableItemList[targetIndex] else null
+
+                    if(targetItem == null) {
+                        Msg.requireShow("err: bad index $targetIndex")
+                        return@onClick
+                    }
+
+                    targetItemState.value = targetItem
+                    targetIndexState.intValue = targetIndex
+
+                    showUnstageDialog.value = true
+                }
+
+                Spacer(Modifier.height(20.dp))
+            }
+
+
+            // show commit all for indexToWorktree or headToIndex (虽然显示同一按钮，但两者实现不同，indexToWorktree的commit all是先stage all再提交，headToIndex的commit all则是直接提交index，不会stage未添加到index但存在于indexToWorktree ChangeList页面的条目)
+            if(fromTo == Cons.gitDiffFromIndexToWorktree || fromTo == Cons.gitDiffFromHeadToIndex) {
+                val (state, requestType) = if(fromTo == Cons.gitDiffFromIndexToWorktree) {
+                    Pair(SharedState.homeChangeList_Refresh, StateRequestType.indexToWorkTree_CommitAll)
+                } else {
+                    Pair(SharedState.indexChangeList_Refresh, StateRequestType.headToIndex_CommitAll)
+                }
+
+
+                CardButton(
+                    text = stringResource(R.string.commit_all),
+                    enabled = true
+                ) {
+                    changeStateTriggerRefreshPage(state, requestType)
+                    naviUp()
+                }
+
+                Spacer(Modifier.height(20.dp))
+            }
+
+
+
+            Row (
+                modifier = Modifier.fillMaxWidth(),
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.Center
+            ){
+                Text(
+                    replaceStringResList(stringResource(R.string.current_n_all_m), listOf("" + (curItemIndex.intValue+1), "" + size)),
+                    fontWeight = FontWeight.Light,
+                    fontStyle = FontStyle.Italic,
+                    color = UIHelper.getSecondaryFontColor()
+                )
+            }
+
+
 
             CardButton(
                 text = replaceStringResList(stringResource(R.string.prev_filename), listOf(if(hasPrevious) {
@@ -1293,8 +1296,6 @@ private fun NaviButton(
                     switchItem(item, nextIndex)
                 }
             }
-
-
         }
 
 
