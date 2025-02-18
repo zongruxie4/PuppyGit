@@ -78,8 +78,8 @@ object AppModel {
      *
      * now , actually this is Activity's Context, not the App
      */
-    @Deprecated("use `LocalContext.current` instead, but this already many usages, so, keep it for now")
-    lateinit var activityContext:Context
+//    @Deprecated("use `LocalContext.current` instead, but this already many usages, so, keep it for now")
+//    lateinit var activityContext:Context
 
     /**
      * real the App context, not activity, this may not be get strings resource with expect language, but for show Toast or load raw resource stream, is fine
@@ -90,11 +90,11 @@ object AppModel {
 
     lateinit var dbContainer: AppContainer
 
-    @Deprecated("用 `LocalHapticFeedback.current` 替代")
-    lateinit var haptic:HapticFeedback
+//    @Deprecated("用 `LocalHapticFeedback.current` 替代")
+//    lateinit var haptic:HapticFeedback
 
-    @Deprecated("用 `rememberCoroutineScope()` 替代，remember的貌似会随页面创建，随页面释放")
-    lateinit var coroutineScope:CoroutineScope  //这个scope是全局的，生命周期几乎等于app的生命周期(？有待验证，不过因为是在根Compose创建的所以多半差不多是这样)，如果要执行和当前compose生命周期一致的任务，应该用 rememberCoroutineScope() 在对应compose重新获取一个scope
+//    @Deprecated("用 `rememberCoroutineScope()` 替代，remember的貌似会随页面创建，随页面释放")
+//    lateinit var coroutineScope:CoroutineScope  //这个scope是全局的，生命周期几乎等于app的生命周期(？有待验证，不过因为是在根Compose创建的所以多半差不多是这样)，如果要执行和当前compose生命周期一致的任务，应该用 rememberCoroutineScope() 在对应compose重新获取一个scope
 
     lateinit var navController:NavHostController
 
@@ -272,6 +272,9 @@ object AppModel {
         }
 
 
+        // every time run after Activity/Service destory and re create
+
+
         AppModel.devModeOn = PrefUtil.getDevMode(realAppContext)
 
         AppModel.deviceWidthHeight = UIHelper.getDeviceWidthHeightInDp(activityContext)
@@ -284,10 +287,10 @@ object AppModel {
         //获取主密码 (若与AppSetings里记的hash不匹配，启动时会弹窗请求用户输入）
         AppModel.masterPassword.value = MasterPassUtil.get(realAppContext)
 
-        // every time run after Activity destory and re create
 
+        // init Activity only variable
         if(initActivity) {
-            AppModel.activityContext = activityContext;
+//            AppModel.activityContext = activityContext;
         }
 //            AppModel.mainActivity = mainActivity  //忘了这个干嘛的了，后来反正没用了，IDE提示什么Activity内存泄漏之类的，所以就注释了
 
@@ -624,14 +627,14 @@ object AppModel {
         AppModel.lastNavController = AppModel.navController
         // nav controller, end
 
-        AppModel.coroutineScope = rememberCoroutineScope()
+//        AppModel.coroutineScope = rememberCoroutineScope()
 
 //            TopAppBarDefaults.enterAlwaysScrollBehavior(rememberTopAppBarState())  //上推隐藏，下拉出现，TopAppBarState 可放到外部以保存状态，如果需要的话
         //TopAppBarDefaults.pinnedScrollBehavior(rememberTopAppBarState())  //常驻TopBar，固定显示，不会隐藏
 //            AppModel.homeTopBarScrollBehavior = TopAppBarDefaults.pinnedScrollBehavior(rememberTopAppBarState())
         AppModel.homeTopBarScrollBehavior = TopAppBarDefaults.enterAlwaysScrollBehavior(rememberTopAppBarState())
 
-        AppModel.haptic = LocalHapticFeedback.current
+//        AppModel.haptic = LocalHapticFeedback.current
 
     }
 
