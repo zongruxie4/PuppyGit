@@ -532,10 +532,10 @@ fun TagListScreen(
 
 
     val showSelectedItemsShortDetailsDialog = rememberSaveable { mutableStateOf(false) }
-    val selectedItemsShortDetailsStr = rememberSaveable { mutableStateOf("") }
+//    val selectedItemsShortDetailsStr = rememberSaveable { mutableStateOf("") }
     if(showSelectedItemsShortDetailsDialog.value) {
         SelectedItemDialog(
-            detailStr = selectedItemsShortDetailsStr.value,
+//            detailStr = selectedItemsShortDetailsStr.value,
             selectedItems = selectedItemList.value,
             formatter = {it.shortName},
             switchItemSelected = switchItemSelected,
@@ -545,11 +545,11 @@ fun TagListScreen(
     }
 
     val countNumOnClickForBottomBar = {
-        val sb = StringBuilder()
-        selectedItemList.value.forEach {
-            sb.appendLine(it.shortName).appendLine()
-        }
-        selectedItemsShortDetailsStr.value = sb.removeSuffix("\n").toString()
+//        val sb = StringBuilder()
+//        selectedItemList.value.forEach {
+//            sb.appendLine(it.shortName).appendLine()
+//        }
+//        selectedItemsShortDetailsStr.value = sb.removeSuffix("\n").toString()
         showSelectedItemsShortDetailsDialog.value = true
     }
 

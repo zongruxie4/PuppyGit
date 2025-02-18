@@ -45,6 +45,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.platform.LocalClipboardManager
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.AnnotatedString
@@ -105,7 +106,7 @@ fun SubmoduleListScreen(
 ) {
     val homeTopBarScrollBehavior = AppModel.homeTopBarScrollBehavior
     val navController = AppModel.navController
-    val activityContext = AppModel.activityContext
+    val activityContext = LocalContext.current
     val haptic = LocalHapticFeedback.current
     val scope = rememberCoroutineScope()
     val settings = remember { SettingsUtil.getSettingsSnapshot() }
@@ -1071,10 +1072,10 @@ fun SubmoduleListScreen(
 
 
     val showSelectedItemsShortDetailsDialog = rememberSaveable { mutableStateOf(false)}
-    val selectedItemsShortDetailsStr = rememberSaveable { mutableStateOf("")}
+//    val selectedItemsShortDetailsStr = rememberSaveable { mutableStateOf("")}
     if(showSelectedItemsShortDetailsDialog.value) {
         SelectedItemDialog(
-            detailStr = selectedItemsShortDetailsStr.value,
+//            detailStr = selectedItemsShortDetailsStr.value,
             selectedItems = selectedItemList.value,
             formatter = {it.name},
             switchItemSelected = switchItemSelected,
@@ -1084,11 +1085,12 @@ fun SubmoduleListScreen(
     }
 
     val countNumOnClickForBottomBar = {
-        val sb = StringBuilder()
-        selectedItemList.value.forEach {
-            sb.appendLine(it.name).appendLine()
-        }
-        selectedItemsShortDetailsStr.value = sb.removeSuffix("\n").toString()
+//        val sb = StringBuilder()
+//        selectedItemList.value.forEach {
+//            sb.appendLine(it.name).appendLine()
+//        }
+//        selectedItemsShortDetailsStr.value = sb.removeSuffix("\n").toString()
+
         showSelectedItemsShortDetailsDialog.value = true
     }
 

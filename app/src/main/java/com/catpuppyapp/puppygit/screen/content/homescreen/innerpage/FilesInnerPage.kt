@@ -59,6 +59,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.platform.LocalClipboardManager
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.text.AnnotatedString
@@ -181,7 +182,7 @@ fun FilesInnerPage(
 //    val appContext = AppModel.appContext;
     val activityContext = LocalContext.current;
     val exitApp = AppModel.exitApp
-    val haptic = AppModel.haptic
+    val haptic = LocalHapticFeedback.current
 
     val scope = rememberCoroutineScope()
     val activity = ActivityUtil.getCurrentActivity()
@@ -822,7 +823,7 @@ fun FilesInnerPage(
                             if(renameSuccess) {
                                 //重命名成功，把重命名之前的旧条目从选中列表移除，然后把改名后的新条目添加到列表（要不要改成：不管执行重命名失败还是成功，都一律移除？没必要啊，如果失败，名字又没变，移除干嘛？）
                                 if(selectedItems.value.remove(renameFileItemDto.value)) {  //移除旧条目。如果返回true，说明存在，则添加重命名后的新条目进列表；如果返回false，说明旧文件不在选中列表，不执行操作
-                                    val newNameDto = FileItemDto.genFileItemDtoByFile(newFile, AppModel.activityContext)
+                                    val newNameDto = FileItemDto.genFileItemDtoByFile(newFile, activityContext)
                                     selectedItems.value.add(newNameDto)
                                 }
 //                            selectedItems.requireRefreshView()
@@ -1829,12 +1830,12 @@ fun FilesInnerPage(
 
 
     val showSelectedItemsShortDetailsDialog = rememberSaveable { mutableStateOf(false)}
-    val selectedItemsShortDetailsStr = rememberSaveable { mutableStateOf("")}
+//    val selectedItemsShortDetailsStr = rememberSaveable { mutableStateOf("")}
     val showSelectedItemsShortDetailsDialogForImportMode = rememberSaveable { mutableStateOf(false)}
-    val selectedItemsShortDetailsStrForImportMode = rememberSaveable { mutableStateOf("")}
+//    val selectedItemsShortDetailsStrForImportMode = rememberSaveable { mutableStateOf("")}
     if(showSelectedItemsShortDetailsDialog.value) {
         SelectedItemDialog(
-            detailStr = selectedItemsShortDetailsStr.value,
+//            detailStr = selectedItemsShortDetailsStr.value,
             selectedItems = selectedItems.value,
             formatter = {"${it.name}, ${if(it.isDir) "dir" else "file"}, ${it.fullPath}"},
             switchItemSelected = switchItemSelected,
@@ -1846,7 +1847,7 @@ fun FilesInnerPage(
 
     if(showSelectedItemsShortDetailsDialogForImportMode.value) {
         SelectedItemDialog(
-            detailStr = selectedItemsShortDetailsStrForImportMode.value,
+//            detailStr = selectedItemsShortDetailsStrForImportMode.value,
             selectedItems = requireImportUriList.value,
             formatter = {it.path ?: ""},
             clearAll = {requireImportUriList.value.clear()},
@@ -1859,11 +1860,11 @@ fun FilesInnerPage(
 
 
     val countNumOnClickForSelectAndPasteModeBottomBar = {
-        val sb = StringBuilder()
-        selectedItems.value.forEach {
-            sb.appendLine("${it.name}, ${if(it.isDir) "dir" else "file"}, ${it.fullPath}").appendLine()
-        }
-        selectedItemsShortDetailsStr.value = sb.removeSuffix("\n").toString()
+//        val sb = StringBuilder()
+//        selectedItems.value.forEach {
+//            sb.appendLine("${it.name}, ${if(it.isDir) "dir" else "file"}, ${it.fullPath}").appendLine()
+//        }
+//        selectedItemsShortDetailsStr.value = sb.removeSuffix("\n").toString()
         showSelectedItemsShortDetailsDialog.value = true
     }
 
@@ -2111,14 +2112,13 @@ fun FilesInnerPage(
         )
 
         val countNumOnClickForImportMode = {
-            val sb = StringBuilder()
-            requireImportUriList.value.forEach {
-                sb.appendLine(it.path).appendLine()
-            }
-
-            selectedItemsShortDetailsStrForImportMode.value = sb.removeSuffix("\n").toString()
+//            val sb = StringBuilder()
+//            requireImportUriList.value.forEach {
+//                sb.appendLine(it.path).appendLine()
+//            }
+//
+//            selectedItemsShortDetailsStrForImportMode.value = sb.removeSuffix("\n").toString()
             showSelectedItemsShortDetailsDialogForImportMode.value = true
-
         }
 
         if(!isLoading.value) {

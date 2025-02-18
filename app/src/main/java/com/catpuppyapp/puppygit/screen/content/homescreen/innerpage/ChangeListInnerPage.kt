@@ -2741,10 +2741,10 @@ fun ChangeListInnerPage(
     //back handler block end
 
     val showSelectedItemsShortDetailsDialog = rememberSaveable { mutableStateOf(false)}
-    val selectedItemsShortDetailsStr = rememberSaveable { mutableStateOf("")}
+//    val selectedItemsShortDetailsStr = rememberSaveable { mutableStateOf("")}
     if(showSelectedItemsShortDetailsDialog.value) {
         SelectedItemDialog(
-            detailStr = selectedItemsShortDetailsStr.value,
+//            detailStr = selectedItemsShortDetailsStr.value,
             selectedItems = selectedItemList.value,
             formatter = {"${it.fileName}, ${it.relativePathUnderRepo.removeSuffix(it.fileName)}"},
             switchItemSelected = switchItemSelected,
@@ -2754,11 +2754,11 @@ fun ChangeListInnerPage(
     }
 
     val countNumOnClickForBottomBar = {
-        val sb = StringBuilder()
-        selectedItemList.value.forEach {
-            sb.appendLine("${it.fileName}, ${it.relativePathUnderRepo.removeSuffix(it.fileName)}").appendLine()
-        }
-        selectedItemsShortDetailsStr.value = sb.removeSuffix("\n").toString()
+//        val sb = StringBuilder()
+//        selectedItemList.value.forEach {
+//            sb.appendLine("${it.fileName}, ${it.relativePathUnderRepo.removeSuffix(it.fileName)}").appendLine()
+//        }
+//        selectedItemsShortDetailsStr.value = sb.removeSuffix("\n").toString()
         showSelectedItemsShortDetailsDialog.value = true
     }
 

@@ -2095,10 +2095,10 @@ fun RepoInnerPage(
     )
 
     val showSelectedItemsShortDetailsDialog = rememberSaveable { mutableStateOf(false)}
-    val selectedItemsShortDetailsStr = rememberSaveable { mutableStateOf("")}
+//    val selectedItemsShortDetailsStr = rememberSaveable { mutableStateOf("")}
     if(showSelectedItemsShortDetailsDialog.value) {
         SelectedItemDialog(
-            detailStr = selectedItemsShortDetailsStr.value,
+//            detailStr = selectedItemsShortDetailsStr.value,
             selectedItems = selectedItems.value,
             formatter = {it.repoName},
             switchItemSelected = switchItemSelected,
@@ -2108,12 +2108,11 @@ fun RepoInnerPage(
     }
 
     val showSelectedItems = {
-        val list = selectedItems.value.toList()
-        val sb = StringBuilder()
-        list.toList().forEach {
-            sb.append(it.repoName).append("\n\n")
-        }
-        selectedItemsShortDetailsStr.value = sb.removeSuffix("\n").toString()
+//        val sb = StringBuilder()
+//        selectedItems.value.toList().forEach {
+//            sb.append(it.repoName).append("\n\n")
+//        }
+//        selectedItemsShortDetailsStr.value = sb.removeSuffix("\n").toString()
         showSelectedItemsShortDetailsDialog.value = true
     }
 

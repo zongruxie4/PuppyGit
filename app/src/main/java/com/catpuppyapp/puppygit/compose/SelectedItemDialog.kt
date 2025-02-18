@@ -1,33 +1,32 @@
 package com.catpuppyapp.puppygit.compose
 
 
-import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.DeleteOutline
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalClipboardManager
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.AnnotatedString
-import androidx.compose.ui.unit.dp
+import com.catpuppyapp.puppygit.constants.Cons
 import com.catpuppyapp.puppygit.play.pro.R
+import com.catpuppyapp.puppygit.style.MyStyleKt
 import com.catpuppyapp.puppygit.utils.Msg
+import com.catpuppyapp.puppygit.utils.doJobThenOffLoading
 
 
 @Composable
 fun <T> SelectedItemDialog(
-    detailStr:String,
     selectedItems:List<T>,
     formatter:(T)->String,
     switchItemSelected:(T)->Unit,  //用switch而不是单纯的remove是为了日后可实现撤销删除方便
@@ -39,29 +38,12 @@ fun <T> SelectedItemDialog(
     val activityContext = LocalContext.current
 
 
-    CopyableDialog(
+    CopyableDialog2(
         title = stringResource(id = R.string.selected_str),
 //            text = selectedItemsShortDetailsStr.value,
         requireShowTextCompose = true,
         textCompose = {
             ScrollableColumn {
-                //若列表非空，显示清空
-                if(selectedItems.isNotEmpty()) {
-                    Row(
-                        modifier = Modifier.padding(bottom = 5.dp).fillMaxWidth().clickable {
-                            closeDialog()
-                            clearAll()
-                        }.padding(bottom = 15.dp, top = 15.dp)
-                        ,
-                        verticalAlignment = Alignment.CenterVertically,
-                        horizontalArrangement = Arrangement.Center
-                    ) {
-                        ClickableText(stringResource(R.string.clear), onClick = null)
-                    }
-
-                    HorizontalDivider()
-                }
-
                 selectedItems.forEach {
                     Box(
                         modifier = Modifier.fillMaxWidth(),
@@ -84,10 +66,50 @@ fun <T> SelectedItemDialog(
 
             }
         },
-        onCancel = onCancel
+        cancelCompose = {
+            ScrollableRow {
+                //清空按钮
+                if(selectedItems.isNotEmpty()) {
+                    TextButton(
+                        onClick = {
+                            closeDialog()
+                            clearAll()
+                        }
+                    ) {
+                        Text(
+                            text = stringResource(R.string.clear),
+                            color = MyStyleKt.TextColor.danger(),
+                        )
+                    }
+                }
+
+                //关闭按钮
+                TextButton(
+                    onClick = onCancel
+                ) {
+                    Text(
+                        text = stringResource(R.string.close),
+                        color = Color.Unspecified,
+                    )
+                }
+            }
+        },
+        onCancel = onCancel,
+
+        //仅有条目时才可复制
+        okBtnEnabled = selectedItems.isNotEmpty(),
     ) {
         closeDialog()
-        clipboardManager.setText(AnnotatedString(detailStr))
-        Msg.requireShow(activityContext.getString(R.string.copied))
+
+        doJobThenOffLoading {
+            val lb = Cons.lineBreak
+            val sb = StringBuilder()
+            selectedItems.forEach {
+                sb.append(formatter(it)).append(lb)
+            }
+
+            clipboardManager.setText(AnnotatedString(sb.removeSuffix(lb).toString()))
+            Msg.requireShow(activityContext.getString(R.string.copied))
+        }
     }
 }
