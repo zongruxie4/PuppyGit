@@ -1,4 +1,4 @@
-1.0.8.7v63 - 20250217:
+1.0.8.7v63 - 20250219:
 - add dev mode
 - update russian translation (thx @triksterr)
 - support commit/unstage/revert items from Diff screen
