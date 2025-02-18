@@ -183,12 +183,12 @@ fun DiffScreen(
         loadingText.value = ""
     }
 
-    val needRefresh = rememberSaveable { mutableStateOf("DiffScreen_refresh_init_value_4kc9")}
+    val needRefresh = rememberSaveable { mutableStateOf("DiffScreen_refresh_init_value_4kc9") }
 
-    val request = rememberSaveable { mutableStateOf("")}
+    val request = rememberSaveable { mutableStateOf("") }
 
     val listState = rememberLazyListState()
-    val fileFullPath = remember{ derivedStateOf{curRepo.value.fullSavePath + File.separator + relativePathUnderRepoState.value}}
+    val fileFullPath = remember{ derivedStateOf{curRepo.value.fullSavePath + File.separator + relativePathUnderRepoState.value} }
 
     val isFileAndExist = remember(fileFullPath.value) { derivedStateOf {
         val f= File(fileFullPath.value)
@@ -548,7 +548,7 @@ fun DiffScreen(
                 showLineNum=showLineNum.value, showOriginType=showOriginType.value,
                 fontSize=fontSize.intValue, lineNumSize=lineNumFontSize.intValue,
                 groupDiffContentByLineNum=groupDiffContentByLineNum.value,switchItemForFileHistory=switchItemForFileHistory,
-                enableSelectCompare = enableSelectCompare.value, lastClickedItemKey=lastClickedItemKey
+                enableSelectCompare = enableSelectCompare.value, lastClickedItemKey=lastClickedItemKey, pageRequest = request,
             )
         }else {
             MySelectionContainer {
@@ -564,7 +564,7 @@ fun DiffScreen(
                     showLineNum=showLineNum.value, showOriginType=showOriginType.value,
                     fontSize=fontSize.intValue, lineNumSize=lineNumFontSize.intValue,
                     groupDiffContentByLineNum=groupDiffContentByLineNum.value,switchItemForFileHistory=switchItemForFileHistory,
-                    enableSelectCompare = enableSelectCompare.value, lastClickedItemKey=lastClickedItemKey
+                    enableSelectCompare = enableSelectCompare.value, lastClickedItemKey=lastClickedItemKey, pageRequest = request,
 
 
 

@@ -40,6 +40,7 @@ import com.catpuppyapp.puppygit.compose.ConfirmDialog
 import com.catpuppyapp.puppygit.compose.DiffRow
 import com.catpuppyapp.puppygit.constants.Cons
 import com.catpuppyapp.puppygit.constants.LineNum
+import com.catpuppyapp.puppygit.constants.PageRequest
 import com.catpuppyapp.puppygit.data.AppContainer
 import com.catpuppyapp.puppygit.data.entity.RepoEntity
 import com.catpuppyapp.puppygit.dev.FlagFileName
@@ -119,7 +120,8 @@ fun DiffContent(
     groupDiffContentByLineNum:Boolean,
     switchItemForFileHistory:(FileHistoryDto, index:Int)->Unit,
     enableSelectCompare:Boolean,
-    lastClickedItemKey:MutableState<String>
+    lastClickedItemKey:MutableState<String>,
+    pageRequest:MutableState<String>,
 
 ) {
 
@@ -274,6 +276,7 @@ fun DiffContent(
                     fromTo = fromTo,
                     naviUp = naviUp,
                     lastClickedItemKey = lastClickedItemKey,
+                    pageRequest = pageRequest,
                     diffableItemListForFileHistory = diffableItemListForFileHistory
                 )
                 Spacer(Modifier.height(100.dp))
@@ -792,6 +795,7 @@ fun DiffContent(
                         fromTo = fromTo,
                         naviUp = naviUp,
                         lastClickedItemKey = lastClickedItemKey,
+                        pageRequest = pageRequest,
                         diffableItemListForFileHistory = diffableItemListForFileHistory
                     )
                 }
@@ -969,6 +973,7 @@ private fun NaviButton(
     diffableItemListForFileHistory:List<FileHistoryDto>,
     curItemIndex: MutableIntState,
     lastClickedItemKey: MutableState<String>,
+    pageRequest:MutableState<String>,
     naviUp:()->Boolean,
     switchItem: (StatusTypeEntrySaver, index: Int) -> Unit,
     switchItemForFileHistory: (FileHistoryDto, index: Int) -> Unit,
@@ -1223,6 +1228,18 @@ private fun NaviButton(
                 ) {
                     changeStateTriggerRefreshPage(state, requestType)
                     naviUp()
+                }
+
+                Spacer(Modifier.height(20.dp))
+            }
+
+            // show restore for file history
+            if(fromTo == Cons.gitDiffFileHistoryFromTreeToLocal || fromTo == Cons.gitDiffFileHistoryFromTreeToTree) {
+                CardButton(
+                    text = stringResource(R.string.restore),
+                    enabled = true
+                ) {
+                    pageRequest.value = PageRequest.showRestoreDialog
                 }
 
                 Spacer(Modifier.height(20.dp))
