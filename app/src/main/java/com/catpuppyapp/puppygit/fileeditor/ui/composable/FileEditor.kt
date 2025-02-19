@@ -212,6 +212,7 @@ fun FileEditor(
                             textEditorState.value.isMultipleSelectionMode
                         )
                     )
+                    .padding(start = (if(showLineNum.value) 2.dp else 5.dp), end = 5.dp)
                     .bottomBorder(
                         strokeWidth = 1.dp,
                         color = if (inDarkTheme) Color.DarkGray.copy(alpha = 0.2f) else Color.LightGray.copy(alpha = 0.2f)
@@ -275,6 +276,7 @@ fun FileEditor(
 
             }
         }
+
 
         // Multiple Selection Menu
         if (textEditorState.value.isMultipleSelectionMode) {
