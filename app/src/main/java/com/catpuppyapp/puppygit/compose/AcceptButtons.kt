@@ -1,7 +1,9 @@
 package com.catpuppyapp.puppygit.compose
 
 import androidx.compose.foundation.border
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ChevronLeft
@@ -9,6 +11,7 @@ import androidx.compose.material.icons.filled.ChevronRight
 import androidx.compose.material.icons.filled.Code
 import androidx.compose.material.icons.filled.CodeOff
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
@@ -56,7 +59,12 @@ private fun AcceptButtons_LongPressedIcon(
     rejectBothColor:Color,
     prepareAcceptBlock: (Boolean, Boolean, Int, String) -> Unit,
 ) {
-    Row {
+    Row(
+        modifier = Modifier.fillMaxWidth(),
+
+        horizontalArrangement = Arrangement.End,
+        verticalAlignment = Alignment.CenterVertically,
+    ) {
         LongPressAbleIconBtn(
             tooltipText = stringResource(R.string.accept_ours),
             icon = Icons.Filled.ChevronLeft,
