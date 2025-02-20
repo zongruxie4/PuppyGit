@@ -1,11 +1,12 @@
 ## TODO 20241221
-- 支持以 isMerged NotMerged hasUpstream noUpstream等附加条件过滤提交、分支，或者强制把这些东西改成可搜索的英语和供查看的指定语言？例如可通过IsMerged/NotMerged过滤条目，但显示的时候显示为合并而来和非合并而来
+- 本地化service通知信息：给RepoActUtil下相关方法添加context参数，然后逐层向上添加context参数，直到顶层Service类里，然后把this作为context传过去即可。最后在这条链路上，把硬编码的英文字符串都替换为context.getString()就行了。还有，别忘了把Service类里的相应字符串资源也替换下，例如HttpService里的"Listen on:........."字符串。（ps: 20250220已经重写了所有的Service的attachBaseContext()所以直接在Service/Activity里传this即可正常根据app设置的语言获取相应的字符串资源。btw 获取字符串资源最好不要传applicationContext，不然有可能获取到英文或者强制根据系统语言获取资源而不是获取app设置的语言对应的字符串资源）
+x - 支持以 isMerged NotMerged hasUpstream noUpstream等附加条件过滤提交、分支，或者强制把这些东西改成可搜索的英语和供查看的指定语言？例如可通过IsMerged/NotMerged过滤条目，但显示的时候显示为合并而来和非合并而来
 - support gif-lfs(should compitable .gitconfig settings)
-- sign commit and tag(include rebase/merge/cherrypick generated commits, and can enable or disable respectively)(at least support gpg sign, better ssh as well)(should compitable .gitconfig settings)
+- sign commit and tag(include rebase/merge/cherrypick generated commits, and can enable or disable respectively)(at least support gpg sign, better ssh as well)(should compatible .gitconfig settings)
 - ChangeList/Index/TreeToTree support view by folder and support more sort method(sort by name/modified time, asc/desc just like Files screen)（submodule虽是folder但实际处理起来类似file，普通folder点击可展开/隐藏，点击file前往diff页面，选择模式下点folder自动选择其下所有文件，长按folder也可开启选择模式）
 - syntax  highlighting in Editor and Diff screen
-- 启动一个http服务器，支持执行拉取推送，并返回是否出错。需要考虑如何保持进程不被杀掉，常驻通知栏或许可行。创建提交的请求必须有一个参数控制是否创允许建空提交，只有允许才能创建空提交否则不能，这样是为了避免执行命令后创建空提交并推送。细节：需要针对每个仓库分别使用各自的公平锁以避免冲突并保持操作顺序与请求顺序一致。
-- 实现http服务后，写一个obsidian插件，启动时发送拉取请求给puppygit，关闭时发送推送请求。
+x - 启动一个http服务器，支持执行拉取推送，并返回是否出错。需要考虑如何保持进程不被杀掉，常驻通知栏或许可行。创建提交的请求必须有一个参数控制是否创允许建空提交，只有允许才能创建空提交否则不能，这样是为了避免执行命令后创建空提交并推送。细节：需要针对每个仓库分别使用各自的公平锁以避免冲突并保持操作顺序与请求顺序一致。
+x 废弃，obsidian安卓版无法实现在退出app时执行操作，改由无障碍实现打开/退出app自动拉取/推送，或者通过tasker在打开/退出app时调用http pull/push api) - 实现http服务后，写一个obsidian插件，启动时发送拉取请求给puppygit，关闭时发送推送请求。
 
 ---
 
