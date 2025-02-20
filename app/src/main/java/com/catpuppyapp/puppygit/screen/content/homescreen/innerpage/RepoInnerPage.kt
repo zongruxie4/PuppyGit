@@ -478,7 +478,15 @@ fun RepoInnerPage(
             //记录到日志
             //显示提示
             //保存数据库(给用户看的，消息尽量简单些)
-            showErrAndSaveLog(TAG, "#doFetch() from Repo Page err:"+e.stackTraceToString(), "fetch err:"+e.localizedMessage, requireShowToast, curRepo.id)
+            showErrAndSaveLog(
+                logTag = TAG,
+                logMsg = "#doFetch() from Repo Page err:"+e.stackTraceToString(),
+                showMsg = "fetch err:"+e.localizedMessage,
+                // showMsgMethod = requireShowToast,
+                showMsgMethod = {},
+
+                repoId = curRepo.id
+            )
 
             retVal = false
         }
@@ -573,8 +581,9 @@ fun RepoInnerPage(
             showErrAndSaveLog(
                 logTag = TAG,
                 logMsg = "#doMerge(trueMergeFalseRebase=$trueMergeFalseRebase) from Repo Page err:"+e.stackTraceToString(),
-                showMsg = e.localizedMessage ?:"err",
-                showMsgMethod = requireShowToast,
+                showMsg = "merge error:"+e.localizedMessage,
+                // showMsgMethod = requireShowToast,
+                showMsgMethod = {},
                 repoId = curRepo.id,
                 errMsgForErrDb = "${if(trueMergeFalseRebase) "merge" else "rebase"} err: "+e.localizedMessage
             )
@@ -630,7 +639,14 @@ fun RepoInnerPage(
             }
         }catch (e:Exception) {
             //log
-            showErrAndSaveLog(TAG, "#doPush() err:"+e.stackTraceToString(), "push error:"+e.localizedMessage, requireShowToast, curRepo.id)
+            showErrAndSaveLog(
+                logTag = TAG,
+                logMsg = "#doPush() err:"+e.stackTraceToString(),
+                showMsg = "push error:"+e.localizedMessage,
+                // showMsgMethod = requireShowToast,
+                showMsgMethod = {},
+                repoId = curRepo.id
+            )
 
             retVal =  false
         }
@@ -744,7 +760,14 @@ fun RepoInnerPage(
             }
         }catch (e:Exception) {
             //log
-            showErrAndSaveLog(TAG, "#doSync() err:"+e.stackTraceToString(), "sync err:"+e.localizedMessage, requireShowToast, curRepo.id)
+            showErrAndSaveLog(
+                logTag = TAG,
+                logMsg = "#doSync() err:"+e.stackTraceToString(),
+                showMsg = "sync err:"+e.localizedMessage,
+                // showMsgMethod = requireShowToast,
+                showMsgMethod = {},
+                repoId = curRepo.id
+            )
 
         }
 
@@ -762,7 +785,14 @@ fun RepoInnerPage(
                 }
             }
         }catch (e:Exception){
-            showErrAndSaveLog(TAG,"require pull error:"+e.stackTraceToString(), activityContext.getString(R.string.pull_err)+":"+e.localizedMessage, requireShowToast, curRepo.id)
+            showErrAndSaveLog(
+                logTag = TAG,
+                logMsg = "pull error:"+e.stackTraceToString(),
+                showMsg = activityContext.getString(R.string.pull_err)+":"+e.localizedMessage,
+                // showMsgMethod = requireShowToast,
+                showMsgMethod = {},
+                repoId = curRepo.id
+            )
         }
     }
 
