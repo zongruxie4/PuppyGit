@@ -13,6 +13,7 @@ import com.catpuppyapp.puppygit.settings.AppSettings
 import com.catpuppyapp.puppygit.settings.SettingsUtil
 import com.catpuppyapp.puppygit.settings.util.AutomationUtil
 import com.catpuppyapp.puppygit.utils.AppModel
+import com.catpuppyapp.puppygit.utils.ContextUtil
 import com.catpuppyapp.puppygit.utils.MyLog
 import com.catpuppyapp.puppygit.utils.RepoActUtil
 import com.catpuppyapp.puppygit.utils.cache.NotifySenderMap
@@ -130,11 +131,17 @@ class MyAccessibilityService: AccessibilityService() {
 
     }
 
+
+    override fun attachBaseContext(newBase: Context) {
+        super.attachBaseContext(ContextUtil.getLocalizedContext(newBase))
+    }
+
+
     override fun onCreate() {
         super.onCreate()
 
         // 初始化代码
-        AppModel.init_1(activityContext = this, realAppContext = applicationContext, exitApp = {}, initActivity = false)
+        AppModel.init_1(realAppContext = applicationContext, exitApp = {}, initActivity = false)
 
         runBlocking {
             AppModel.init_2()

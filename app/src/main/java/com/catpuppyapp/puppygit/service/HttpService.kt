@@ -12,13 +12,13 @@ import com.catpuppyapp.puppygit.data.entity.RepoEntity
 import com.catpuppyapp.puppygit.dto.genConfigDto
 import com.catpuppyapp.puppygit.notification.HttpServiceHoldNotify
 import com.catpuppyapp.puppygit.notification.base.NotifyBase
-import com.catpuppyapp.puppygit.notification.base.ServiceNotify
 import com.catpuppyapp.puppygit.notification.util.NotifyUtil
 import com.catpuppyapp.puppygit.play.pro.R
 import com.catpuppyapp.puppygit.server.HttpServer
 import com.catpuppyapp.puppygit.settings.AppSettings
 import com.catpuppyapp.puppygit.settings.SettingsUtil
 import com.catpuppyapp.puppygit.utils.AppModel
+import com.catpuppyapp.puppygit.utils.ContextUtil
 import com.catpuppyapp.puppygit.utils.JsonUtil
 import com.catpuppyapp.puppygit.utils.Msg
 import com.catpuppyapp.puppygit.utils.MyLog
@@ -147,12 +147,15 @@ class HttpService : Service() {
     }
 
 
+    override fun attachBaseContext(newBase: Context) {
+        super.attachBaseContext(ContextUtil.getLocalizedContext(newBase))
+    }
 
     override fun onCreate() {
         super.onCreate()
 
         // 初始化代码
-        AppModel.init_1(activityContext = this, realAppContext = applicationContext, exitApp = {}, initActivity = false)
+        AppModel.init_1(realAppContext = applicationContext, exitApp = {}, initActivity = false)
 
         runBlocking {
             AppModel.init_2()

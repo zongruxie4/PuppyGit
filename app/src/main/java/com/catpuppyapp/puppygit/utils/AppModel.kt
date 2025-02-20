@@ -250,7 +250,7 @@ object AppModel {
      * 执行必须且无法显示界面的操作。
      * 中量级，应该不会阻塞很久
      */
-    fun init_1(activityContext:Context, realAppContext:Context, exitApp:()->Unit, initActivity:Boolean) {
+    fun init_1(realAppContext:Context, exitApp:()->Unit, initActivity:Boolean) {
 //        val funName = "init_1"
 
         // run once in app process life time
@@ -279,7 +279,7 @@ object AppModel {
 
         AppModel.devModeOn = PrefUtil.getDevMode(realAppContext)
 
-        AppModel.deviceWidthHeight = UIHelper.getDeviceWidthHeightInDp(activityContext)
+        AppModel.deviceWidthHeight = UIHelper.getDeviceWidthHeightInDp(realAppContext)
 
         AppModel.realAppContext = realAppContext
 
@@ -297,9 +297,9 @@ object AppModel {
 //            AppModel.mainActivity = mainActivity  //忘了这个干嘛的了，后来反正没用了，IDE提示什么Activity内存泄漏之类的，所以就注释了
 
         //设置app工作目录，如果获取不到目录，app无法工作，会在这抛出异常
-        val externalFilesDir = getExternalFilesIfErrGetInnerIfStillErrThrowException(activityContext)
-        val externalCacheDir = getExternalCacheDirIfErrGetInnerIfStillErrThrowException(activityContext)
-        val innerDataDir = getInnerDataDirOrThrowException(activityContext)
+        val externalFilesDir = getExternalFilesIfErrGetInnerIfStillErrThrowException(realAppContext)
+        val externalCacheDir = getExternalCacheDirIfErrGetInnerIfStillErrThrowException(realAppContext)
+        val innerDataDir = getInnerDataDirOrThrowException(realAppContext)
         AppModel.externalFilesDir = externalFilesDir
         AppModel.externalCacheDir = externalCacheDir
         AppModel.innerDataDir = innerDataDir

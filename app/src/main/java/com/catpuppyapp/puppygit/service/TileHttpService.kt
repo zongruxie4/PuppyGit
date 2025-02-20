@@ -10,6 +10,7 @@ import android.service.quicksettings.Tile
 import android.service.quicksettings.TileService
 import androidx.core.content.ContextCompat
 import com.catpuppyapp.puppygit.utils.AppModel
+import com.catpuppyapp.puppygit.utils.ContextUtil
 import com.catpuppyapp.puppygit.utils.MyLog
 import com.catpuppyapp.puppygit.utils.receiverFlags
 
@@ -31,6 +32,7 @@ class TileHttpService: TileService() {
         }
     }
 
+    
     private val updateTileReceiver = object : BroadcastReceiver() {
         //这个只有一个action，而且靠receiver过滤掉了其他intent，所以不用判断action，来消息就更新，如果之后添加更多不同类型的请求，换成extra传参
         override fun onReceive(context: Context?, intent: Intent?) {
@@ -41,6 +43,10 @@ class TileHttpService: TileService() {
                 updateState(newState)
             }
         }
+    }
+
+    override fun attachBaseContext(newBase: Context) {
+        super.attachBaseContext(ContextUtil.getLocalizedContext(newBase))
     }
 
     // Called when the user adds your tile.

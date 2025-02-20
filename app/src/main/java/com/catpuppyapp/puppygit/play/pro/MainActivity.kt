@@ -27,7 +27,7 @@ import com.catpuppyapp.puppygit.ui.theme.PuppyGitAndroidTheme
 import com.catpuppyapp.puppygit.ui.theme.Theme
 import com.catpuppyapp.puppygit.user.UserUtil
 import com.catpuppyapp.puppygit.utils.AppModel
-import com.catpuppyapp.puppygit.utils.LanguageUtil
+import com.catpuppyapp.puppygit.utils.ContextUtil
 import com.catpuppyapp.puppygit.utils.Lg2HomeUtils
 import com.catpuppyapp.puppygit.utils.MyLog
 import com.catpuppyapp.puppygit.utils.PrefMan
@@ -38,10 +38,9 @@ import com.catpuppyapp.puppygit.utils.state.mutableCustomStateOf
 import kotlinx.coroutines.CoroutineExceptionHandler
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.delay
-import java.util.Locale
 
 
-private val TAG = "MainActivity"
+private const val TAG = "MainActivity"
 
 // use `ActivityUtil.getCurrentActivity()` instead
 //fun Context.findActivity(): Activity? = when (this) {
@@ -99,7 +98,7 @@ class MainActivity : ComponentActivity() {
 
         // baseContext, life time with activity, can get properly resources, but save reference to static field will increase risk of memory leak
 //        AppModel.init_1(activityContext = baseContext, realAppContext = applicationContext, exitApp = {finish()})
-        AppModel.init_1(activityContext = this, realAppContext = applicationContext, exitApp = {finish()}, initActivity = true)
+        AppModel.init_1(realAppContext = applicationContext, exitApp = {finish()}, initActivity = true)
 
         //for make imePadding() work
         WindowCompat.setDecorFitsSystemWindows(window, false)
@@ -149,39 +148,7 @@ class MainActivity : ComponentActivity() {
     }
 
     override fun attachBaseContext(newBase: Context) {
-        try {
-            // check language
-            val languageCode = LanguageUtil.getLangCode(newBase)
-            if(!LanguageUtil.isSupportedLanguage(languageCode)) {
-                // here should run faster as possible, throw Exception is bad for running speed
-//               // throw RuntimeException("found unsupported lang in config, will try auto detect language")
-
-                // auto detected or unsupported language
-                super.attachBaseContext(newBase)
-                return
-            }
-
-
-            // found supported language
-            super.attachBaseContext(createContextByLanguageCode(languageCode, newBase))
-        }catch (e:Exception) {
-            MyLog.e(TAG, "#attachBaseContext err: ${e.localizedMessage}")
-
-            // auto detected or unsupported language
-            super.attachBaseContext(newBase)
-        }
-
-    }
-
-    private fun createContextByLanguageCode(languageCode: String, baseContext: Context): Context {
-        // split language codes, e.g. split "zh-rCN" to "zh" and "CN"
-        val (language, country) = LanguageUtil.splitLanguageCode(languageCode)
-        val locale = if (country.isBlank()) Locale(language) else Locale(language, country)
-        Locale.setDefault(locale)
-        val config = baseContext.resources.configuration
-        config.setLocale(locale)
-        config.setLayoutDirection(locale)
-        return baseContext.createConfigurationContext(config)
+        super.attachBaseContext(ContextUtil.getLocalizedContext(newBase))
     }
 
     override fun onDestroy() {
