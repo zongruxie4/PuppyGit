@@ -42,6 +42,7 @@ object RepoActUtil {
         force:Boolean,
 
     ){
+        val funName = "syncRepoList"
         val prefix = "sync"
         val db = AppModel.dbContainer
         val settings = SettingsUtil.getSettingsSnapshot()
@@ -80,7 +81,7 @@ object RepoActUtil {
                     notiSender?.sendErrNotification?.invoke("sync err", errMsg, Cons.selectedItem_ChangeList, repoFromDb.id)
 
 
-                    MyLog.e(TAG, "route:$routeName, repoName=${repoFromDb.repoName}, err=${e.stackTraceToString()}")
+                    MyLog.e(TAG, "#$funName: route:$routeName, repoName=${repoFromDb.repoName}, err=${e.stackTraceToString()}")
                 }finally {
                     removeNotifySender(repoFromDb.id, sessionId)
                 }
@@ -143,6 +144,7 @@ object RepoActUtil {
         gitUsernameFromUrl:String,  // leave empty to read from config
         gitEmailFromUrl:String,  // leave empty to read from config
     ) {
+        val funName = "pullRepoList"
         val prefix = "pull"
         val db = AppModel.dbContainer
         val settings = SettingsUtil.getSettingsSnapshot()
@@ -175,7 +177,7 @@ object RepoActUtil {
                     notiSender?.sendErrNotification?.invoke("pull err", errMsg, Cons.selectedItem_ChangeList, repoFromDb.id)
 
 
-                    MyLog.e(TAG, "route:$routeName, repoName=${repoFromDb.repoName}, err=${e.stackTraceToString()}")
+                    MyLog.e(TAG, "#$funName: route:$routeName, repoName=${repoFromDb.repoName}, err=${e.stackTraceToString()}")
                 }finally {
                     removeNotifySender(repoFromDb.id, sessionId)
 
@@ -291,6 +293,7 @@ object RepoActUtil {
         force:Boolean,
 
     ) {
+        val funName = "pushRepoList"
         val prefix = "push"
         val db = AppModel.dbContainer
         val settings = SettingsUtil.getSettingsSnapshot()
@@ -328,7 +331,7 @@ object RepoActUtil {
                     notiSender?.sendErrNotification?.invoke("push err", errMsg, Cons.selectedItem_ChangeList, repoFromDb.id)
 
 
-                    MyLog.e(TAG, "route:$routeName, repoName=${repoFromDb.repoName}, err=${e.stackTraceToString()}")
+                    MyLog.e(TAG, "#$funName: route:$routeName, repoName=${repoFromDb.repoName}, err=${e.stackTraceToString()}")
                 }finally {
                     removeNotifySender(repoFromDb.id, sessionId)
 
@@ -351,6 +354,7 @@ object RepoActUtil {
         db: AppContainer,
         masterPassword: String
     ) {
+        val funName = "pushSingle"
         val prefix = "push"
 
         if (dbIntToBool(repoFromDb.isDetached)) {
@@ -386,11 +390,11 @@ object RepoActUtil {
                 }
 
                 if (username == null || username.isBlank() || email == null || email.isBlank()) {
-                    MyLog.e(TAG, "api $routeName: commit abort by username or email invalid")
+                    MyLog.e(TAG, "#$funName: api $routeName: commit abort by username or email invalid")
                 } else {
                     //检查是否存在冲突，如果存在，将不会创建提交
                     if (Libgit2Helper.hasConflictItemInRepo(gitRepo)) {
-                        MyLog.e(TAG, "api=$routeName, repoName=${repoFromDb.repoName}, err=conflict abort the commit")
+                        MyLog.e(TAG, "#$funName: api=$routeName, repoName=${repoFromDb.repoName}, err=conflict abort the commit")
                         // 显示个手机通知，点击进入ChangeList并定位到对应仓库
                         sendErrNotification?.invoke(repoFromDb.repoName, "$prefix: auto commit aborted by conflicts", Cons.selectedItem_ChangeList, repoFromDb.id)
                     } else {
@@ -414,7 +418,7 @@ object RepoActUtil {
                             )
 
                             if (ret.hasError()) {
-                                MyLog.e(TAG, "api=$routeName, repoName=${repoFromDb.repoName}, create commit err: ${ret.msg}, exception=${ret.exception?.stackTraceToString()}")
+                                MyLog.e(TAG, "#$funName: api=$routeName, repoName=${repoFromDb.repoName}, create commit err: ${ret.msg}, exception=${ret.exception?.stackTraceToString()}")
                                 // 显示个手机通知，点击进入ChangeList并定位到对应仓库
                                 sendErrNotification?.invoke(repoFromDb.repoName, "$prefix: auto commit err: ${ret.msg}", Cons.selectedItem_ChangeList, repoFromDb.id)
                             } else if(ret.data != null){
