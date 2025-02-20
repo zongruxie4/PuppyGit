@@ -87,7 +87,7 @@ class MyAccessibilityService: AccessibilityService() {
             RepoActUtil.pullRepoList(
                 sessionId,
                 repoList,
-                routeName = "automation pull service",
+                routeName = "'automation pull service'",
                 gitUsernameFromUrl="",
                 gitEmailFromUrl="",
             )
@@ -120,7 +120,7 @@ class MyAccessibilityService: AccessibilityService() {
             RepoActUtil.pushRepoList(
                 sessionId,
                 repoList,
-                routeName = "automation push service",
+                routeName = "'automation push service'",
                 gitUsernameFromUrl="",
                 gitEmailFromUrl="",
                 autoCommit=true,
