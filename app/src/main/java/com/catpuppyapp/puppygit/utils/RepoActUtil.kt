@@ -386,11 +386,11 @@ object RepoActUtil {
                 }
 
                 if (username == null || username.isBlank() || email == null || email.isBlank()) {
-                    MyLog.e(TAG, "http server: api $routeName: commit abort by username or email invalid")
+                    MyLog.e(TAG, "api $routeName: commit abort by username or email invalid")
                 } else {
                     //检查是否存在冲突，如果存在，将不会创建提交
                     if (Libgit2Helper.hasConflictItemInRepo(gitRepo)) {
-                        MyLog.e(TAG, "http server: api=$routeName, repoName=${repoFromDb.repoName}, err=conflict abort the commit")
+                        MyLog.e(TAG, "api=$routeName, repoName=${repoFromDb.repoName}, err=conflict abort the commit")
                         // 显示个手机通知，点击进入ChangeList并定位到对应仓库
                         sendErrNotification?.invoke(repoFromDb.repoName, "$prefix: auto commit aborted by conflicts", Cons.selectedItem_ChangeList, repoFromDb.id)
                     } else {
@@ -414,7 +414,7 @@ object RepoActUtil {
                             )
 
                             if (ret.hasError()) {
-                                MyLog.e(TAG, "http server: api=$routeName, repoName=${repoFromDb.repoName}, create commit err: ${ret.msg}, exception=${ret.exception?.stackTraceToString()}")
+                                MyLog.e(TAG, "api=$routeName, repoName=${repoFromDb.repoName}, create commit err: ${ret.msg}, exception=${ret.exception?.stackTraceToString()}")
                                 // 显示个手机通知，点击进入ChangeList并定位到对应仓库
                                 sendErrNotification?.invoke(repoFromDb.repoName, "$prefix: auto commit err: ${ret.msg}", Cons.selectedItem_ChangeList, repoFromDb.id)
                             } else if(ret.data != null){
