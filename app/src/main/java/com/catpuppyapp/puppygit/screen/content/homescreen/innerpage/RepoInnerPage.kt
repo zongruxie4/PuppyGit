@@ -1702,19 +1702,17 @@ fun RepoInnerPage(
     }
 
     val selectionModeIconList = listOf(
-        Icons.Filled.Downloading,  // fetch
-        Icons.Filled.Download,  // pull
-        Icons.Filled.Publish,  // push
         ImageVector.vectorResource(R.drawable.two_way_sync),  //sync
-//        Icons.Filled.Refresh,  // refresh (selected items)
+        Icons.Filled.Publish,  // push
+        Icons.Filled.Download,  // pull
+        Icons.Filled.Downloading,  // fetch
         Icons.Filled.SelectAll,  //Select All
     )
     val selectionModeIconTextList = listOf(
-        stringResource(R.string.fetch),
-        stringResource(R.string.pull),
-        stringResource(R.string.push),
         stringResource(R.string.sync),
-//        stringResource(R.string.refresh),
+        stringResource(R.string.push),
+        stringResource(R.string.pull),
+        stringResource(R.string.fetch),
         stringResource(R.string.select_all),
     )
 
@@ -1773,35 +1771,6 @@ fun RepoInnerPage(
     val invalidIdx = remember { -1 }
 
     val selectionModeIconOnClickList = listOf<()->Unit>(
-        fetch@{
-            selectedItems.value.toList().filter { it.upstreamBranch.isNotBlank() && !dbIntToBool(it.isDetached) }.forEach { curRepo ->
-                doActWithLockIfRepoGoodAndActEnabled(curRepo) {
-                    //fetch 当前仓库上游的remote
-                    doActAndSetRepoStatus(invalidIdx, curRepo.id, activityContext.getString(R.string.fetching)) {
-                        doFetch(null, curRepo)
-                    }
-                }
-            }
-        },
-        pull@{
-            selectedItems.value.toList().filter { it.upstreamBranch.isNotBlank() && !dbIntToBool(it.isDetached) }.forEach { curRepo ->
-                doActWithLockIfRepoGoodAndActEnabled(curRepo) {
-                    doActAndSetRepoStatus(invalidIdx, curRepo.id, activityContext.getString(R.string.pulling)) {
-                        doPull(curRepo)
-                    }
-                }
-            }
-        },
-        push@{
-            selectedItems.value.toList().filter { it.upstreamBranch.isNotBlank() && !dbIntToBool(it.isDetached) }.forEach { curRepo ->
-                doActWithLockIfRepoGoodAndActEnabled(curRepo) {
-                    doActAndSetRepoStatus(invalidIdx, curRepo.id, activityContext.getString(R.string.pushing)) {
-                        doPush(null, curRepo)
-                    }
-                }
-            }
-
-        },
         sync@{
             val list = selectedItems.value.toList()
             //若选中一个条目且未设置上游且非detached，则显示设置上游弹窗，然后执行同步
@@ -1829,6 +1798,39 @@ fun RepoInnerPage(
             Unit
         },
 
+        push@{
+            selectedItems.value.toList().filter { it.upstreamBranch.isNotBlank() && !dbIntToBool(it.isDetached) }.forEach { curRepo ->
+                doActWithLockIfRepoGoodAndActEnabled(curRepo) {
+                    doActAndSetRepoStatus(invalidIdx, curRepo.id, activityContext.getString(R.string.pushing)) {
+                        doPush(null, curRepo)
+                    }
+                }
+            }
+
+        },
+
+        pull@{
+            selectedItems.value.toList().filter { it.upstreamBranch.isNotBlank() && !dbIntToBool(it.isDetached) }.forEach { curRepo ->
+                doActWithLockIfRepoGoodAndActEnabled(curRepo) {
+                    doActAndSetRepoStatus(invalidIdx, curRepo.id, activityContext.getString(R.string.pulling)) {
+                        doPull(curRepo)
+                    }
+                }
+            }
+        },
+
+        fetch@{
+            selectedItems.value.toList().filter { it.upstreamBranch.isNotBlank() && !dbIntToBool(it.isDetached) }.forEach { curRepo ->
+                doActWithLockIfRepoGoodAndActEnabled(curRepo) {
+                    //fetch 当前仓库上游的remote
+                    doActAndSetRepoStatus(invalidIdx, curRepo.id, activityContext.getString(R.string.fetching)) {
+                        doFetch(null, curRepo)
+                    }
+                }
+            }
+        },
+
+
         selectAll@{
             val list = if(enableFilterState.value) filterList.value else repoList.value
 
@@ -1842,10 +1844,6 @@ fun RepoInnerPage(
 
     val bottomBarIconDefaultEnable =  { hasSelectedItems() && selectedItems.value.any { it.upstreamBranch.isNotBlank() && !dbIntToBool(it.isDetached) } }
     val selectionModeIconEnableList = listOf(
-        // 点击后再检查取出可执行fetch的仓库
-        fetchEnable@{ bottomBarIconDefaultEnable() },
-        pullEnable@{ bottomBarIconDefaultEnable() },
-        pushEnable@{ bottomBarIconDefaultEnable() },
         syncEnable@{
             val list = selectedItems.value
             if(list.size == 1) {  //若只选中一个条目，仅判断是否detached，若无上游，弹窗设置并同步
@@ -1858,6 +1856,9 @@ fun RepoInnerPage(
                 bottomBarIconDefaultEnable()
             }
         },
+        pushEnable@{ bottomBarIconDefaultEnable() },
+        pullEnable@{ bottomBarIconDefaultEnable() },
+        fetchEnable@{ bottomBarIconDefaultEnable() },
         selectAllEnable@{ true },
     )
 
