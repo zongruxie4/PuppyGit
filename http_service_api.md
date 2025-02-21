@@ -21,17 +21,23 @@
 ---
 
 ## Quick Start:
-pull: http://127.0.0.1:52520/pull?token=replace_to_your_token&repoNameOrId=yourRepoName
+pull a repo: http://127.0.0.1:52520/pull?token=replace_to_your_token&repoNameOrId=yourRepoName
 
-push: http://127.0.0.1:52520/push?token=replace_to_your_token&repoNameOrId=yourRepoName
+push a repo: http://127.0.0.1:52520/push?token=replace_to_your_token&repoNameOrId=yourRepoName
 
-sync(pull then push): http://127.0.0.1:52520/sync?token=replace_to_your_token&repoNameOrId=yourRepoName
+sync a repo(pull then push): http://127.0.0.1:52520/sync?token=replace_to_your_token&repoNameOrId=yourRepoName
 
-pullAll: http://127.0.0.1:52520/pullAll?token=replace_to_your_token
+pull multi repos: http://127.0.0.1:52520/pull?token=replace_to_your_token&repoNameOrId=Repo1&repoNameOrId=Repo2&&repoNameOrId=Repo3
 
-pushAll: http://127.0.0.1:52520/pushAll?token=replace_to_your_token
+push multi repos: http://127.0.0.1:52520/push?token=replace_to_your_token&repoNameOrId=Repo1&repoNameOrId=Repo2&&repoNameOrId=Repo3
 
-syncAll: http://127.0.0.1:52520/syncAll?token=replace_to_your_token
+sync multi repos: http://127.0.0.1:52520/sync?token=replace_to_your_token&repoNameOrId=Repo1&repoNameOrId=Repo2&&repoNameOrId=Repo3
+
+pull all repos: http://127.0.0.1:52520/pullAll?token=replace_to_your_token
+
+push all repos: http://127.0.0.1:52520/pushAll?token=replace_to_your_token
+
+sync all repos: http://127.0.0.1:52520/syncAll?token=replace_to_your_token
 
 ---
 
