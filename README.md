@@ -18,6 +18,7 @@ PuppyGit made by Bandeapart1964 of catpuppyapp
 <a href=https://www.patreon.com/posts/puppygit-now-and-114680923>Switch DarkMode and Chinese</a><br>
 <a href=https://www.patreon.com/posts/1-0-5-9v35-new-115069154>Resolve Conflicts/Squash Commits</a><br>
 <a href=https://www.patreon.com/posts/puppygit-auto-122757321>Auto Sync Obsidian Vault</a><br>
+<a href="https://www.patreon.com/posts/puppygit-tasker-122757862">PuppyGit + Tasker</a><br>
 
 
 
