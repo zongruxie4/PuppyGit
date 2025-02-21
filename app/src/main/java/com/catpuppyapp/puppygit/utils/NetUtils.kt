@@ -12,7 +12,7 @@ object NetUtils {
     private const val TAG="NetUtils"
 
 
-    fun checkPuppyGitHttpServiceRunning(baseUrl: String, timeoutInSec: Long=15): Ret<Unit?> {
+    fun checkPuppyGitHttpServiceRunning(baseUrl: String, timeoutInSec: Long=5): Ret<Unit?> {
         val targetUrl = "$baseUrl/status"
         val success = checkApiRunning(targetUrl, timeoutInSec)
         MyLog.d(TAG, "#checkPuppyGitHttpServiceRunning: test url '$targetUrl', success=$success")
