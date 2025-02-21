@@ -40,6 +40,9 @@ Not only sync codes, You can use PuppyGit sync your notes repository create by n
 
 also see: <a href=https://www.patreon.com/posts/puppygit-auto-122757321>Auto Sync Obsidian Vault</a><br>
 
+## Tasker
+You can call PuppyGit by Tasker via Http Request, check the demo video: <a href="https://www.patreon.com/posts/puppygit-tasker-122757862">PuppyGit + Tasker</a><br>
+
 
 ## 2fa
 If your github/gitlab or other platforms account enabled 2fa, you may need create a personal access token instead your password
