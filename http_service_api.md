@@ -1,7 +1,8 @@
 ## Video tutorials
-<a href=replace to your url>replace to your text</a><br>
+<a href=replace to your url>Enable Service and pull/push via Tasker when entering/leaving an app</a><br>
 
 
+* Note: You can use other automation tools which support send http request instead the Tasker. *
 
 ---
 
@@ -34,7 +35,7 @@ syncAll: http://127.0.0.1:52520/syncAll?token=replace_to_your_token
 ---
 
 ## Tasker Integration:
-You can start the Server in PuppyGit, and use automation tools like Tasker to send http request to do some task, like frequency sync(pull/push) the repos, auto pull/push when enter/exit specified apps.
+You can start the Service in PuppyGit, and use automation tools like Tasker to send http request to do some task, e.g. schedule a sync for the repos and/or auto pull/push when enter/exit specified apps.
 
 btw: if you expect to auto pull/push when enter/exit specified apps, no more 3rd apps require, PuppyGit already included this feature, just go to the 'Automation' Screen in PuppyGit, and select apps and link repos, then PuppyGit will do pull when enter selected app, and do push after leave it.
 
