@@ -2,7 +2,7 @@
 <a href="https://www.patreon.com/posts/puppygit-tasker-122757862">Enable http service and request pull/push by Tasker when entering/leaving an app</a><br>
 
 
-**Note: You can use other automation tools which support send http request instead the Tasker.**<br>
+**Note: You can use other automation tools that support sending HTTP requests instead of Tasker.**<br>
 **Note: If has conflicts, you must go to PuppyGit resolve and stage them, else you will not be able pull/push by the http api.**
 
 ---
