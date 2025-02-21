@@ -1,5 +1,5 @@
 ## Video tutorials
-<a href=replace to your url>Enable Service and pull/push via Tasker when entering/leaving an app</a><br>
+<a href="https://www.patreon.com/posts/puppygit-tasker-122757862">Enable Service and pull/push via Tasker when entering/leaving an app</a><br>
 
 
 * Note: You can use other automation tools which support send http request instead the Tasker. *
