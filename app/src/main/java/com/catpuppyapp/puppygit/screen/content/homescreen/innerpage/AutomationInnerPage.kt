@@ -307,6 +307,17 @@ fun AutomationInnerPage(
 
 
         }
+
+        item {
+            SettingsContent(onClick = {
+                ActivityUtil.openUrl(activityContext, automationDocUrl)
+            }) {
+                Column {
+                    Text(stringResource(R.string.document), fontSize = itemFontSize)
+                }
+            }
+        }
+
 //
 //        item {
 //            SettingsContent(onClick = {
