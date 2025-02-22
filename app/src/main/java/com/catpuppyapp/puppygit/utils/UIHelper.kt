@@ -13,6 +13,7 @@ import androidx.compose.material.icons.filled.ToggleOff
 import androidx.compose.material.icons.filled.ToggleOn
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.MutableState
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalDensity
@@ -183,6 +184,36 @@ object UIHelper {
     fun scrollTo(coroutineScope: CoroutineScope, listState: ScrollState, index:Int)  {
         coroutineScope.launch { listState.scrollTo(Math.max(0, index)) }
     }
+
+    fun switchBetweenTopAndLastVisiblePosition(coroutineScope: CoroutineScope, listState: LazyListState, lastPosition:MutableState<Int>)  {
+        val lastVisibleLine = listState.firstVisibleItemIndex
+        val notAtTop = lastVisibleLine != 0
+        // if 不在顶部，go to 顶部 else go to 上次编辑位置
+        val position = if(notAtTop) {
+            lastPosition.value = lastVisibleLine
+            0
+        } else {
+            lastPosition.value
+        }
+
+        scrollToItem(coroutineScope, listState, position)
+    }
+
+
+    fun switchBetweenTopAndLastVisiblePosition(coroutineScope: CoroutineScope, listState: ScrollState, lastPosition:MutableState<Int>)  {
+        val lastVisibleLine = listState.value
+        val notAtTop = lastVisibleLine != 0
+        // if 不在顶部，go to 顶部 else go to 上次编辑位置
+        val position = if(notAtTop) {
+            lastPosition.value = lastVisibleLine
+            0
+        } else {
+            lastPosition.value
+        }
+
+        scrollTo(coroutineScope, listState, position)
+    }
+
 
     /**
      * 获取高亮条目闪烁时间（换个角度来说，即“解除高亮倒计时”）。
