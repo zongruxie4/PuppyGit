@@ -73,7 +73,8 @@ fun EditorTitle(
     //                        editorPageRequestFromParent.value = PageRequest.backLastEditedLine
     //                    }
 
-                        editorPageRequestFromParent.value = PageRequest.switchBetweenFirstLineAndLastEditLine
+//                        editorPageRequestFromParent.value = PageRequest.switchBetweenFirstLineAndLastEditLine
+                        editorPageRequestFromParent.value = PageRequest.switchBetweenFirstLineAndCurrentLine
                     },
                     onLongClick = {
                         haptic.performHapticFeedback(HapticFeedbackType.LongPress)

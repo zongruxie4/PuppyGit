@@ -193,6 +193,7 @@ fun TextEditor(
 
     val showGoToLineDialog  = rememberSaveable { mutableStateOf(false) }
     val goToLineValue  = rememberSaveable { mutableStateOf("") }
+    val lastVisibleLineState  = rememberSaveable { mutableStateOf(0) }
 
     //是否显示光标拖手(cursor handle
     val needShowCursorHandle = rememberSaveable { mutableStateOf(false) }
@@ -432,6 +433,7 @@ fun TextEditor(
 ////            lastScrollEvent = ScrollEvent(23, forceGo = true)  //测试跳转是否好使，结果：passed
 //        }
 //    }
+
     if(requestFromParent.value==PageRequest.switchBetweenFirstLineAndLastEditLine) {
         PageRequest.clearStateThenDoAct(requestFromParent) {
 //            println("firstline:"+firstLineIndexState.value)
@@ -440,6 +442,25 @@ fun TextEditor(
             val notAtTop = listState.firstVisibleItemIndex != 0
             // if 不在顶部，go to 顶部 else go to 上次编辑位置
             val position = if(notAtTop) 0 else lastEditedLineIndexState.intValue
+            lastScrollEvent.value = ScrollEvent(position, forceGo = true)
+        }
+    }
+
+    if(requestFromParent.value==PageRequest.switchBetweenFirstLineAndCurrentLine) {
+        PageRequest.clearStateThenDoAct(requestFromParent) {
+//            println("firstline:"+firstLineIndexState.value)
+//            println("lastEditedLineIndexState:"+lastEditedLineIndexState)
+
+            val lastVisibleLine = listState.firstVisibleItemIndex
+            val notAtTop = lastVisibleLine != 0
+            // if 不在顶部，go to 顶部 else go to 上次编辑位置
+            val position = if(notAtTop) {
+                lastVisibleLineState.value = lastVisibleLine
+                0
+            } else {
+                lastVisibleLineState.value
+            }
+
             lastScrollEvent.value = ScrollEvent(position, forceGo = true)
         }
     }

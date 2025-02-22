@@ -79,6 +79,7 @@ object PageRequest {
 
     const val showOpenAsDialog = "showOpenAsDialog"
     const val switchBetweenFirstLineAndLastEditLine = "switchBetweenFirstLineAndLastEditLine"   //实现双击时在返回顶部和返回上次编辑行之间切换
+    const val switchBetweenFirstLineAndCurrentLine = "switchBetweenFirstLineAndCurrentLine"   //实现双击时在返回顶部和返回当前滚动到的行之间切换
 
     fun clearStateThenDoAct(state:MutableState<String>, act:()->Unit) {
         state.value=""
