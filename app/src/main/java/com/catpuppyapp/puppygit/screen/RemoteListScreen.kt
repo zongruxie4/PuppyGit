@@ -68,6 +68,7 @@ import com.catpuppyapp.puppygit.dev.proFeatureEnabled
 import com.catpuppyapp.puppygit.dev.shallowAndSingleBranchTestPassed
 import com.catpuppyapp.puppygit.dto.RemoteDto
 import com.catpuppyapp.puppygit.play.pro.R
+import com.catpuppyapp.puppygit.screen.functions.defaultTitleDoubleClick
 import com.catpuppyapp.puppygit.settings.SettingsUtil
 import com.catpuppyapp.puppygit.style.MyStyleKt
 import com.catpuppyapp.puppygit.user.UserUtil
@@ -663,7 +664,7 @@ fun RemoteListScreen(
                     }else {
                         val repoName = curRepo.value.repoName
                         Column (modifier = Modifier.combinedClickable(onDoubleClick = {
-                            UIHelper.switchBetweenTopAndLastVisiblePosition(scope, lazyListState, lastPosition)
+                            defaultTitleDoubleClick(scope, lazyListState, lastPosition)
                         }) {
                             //onClick
                             showTitleInfoDialog.value = true

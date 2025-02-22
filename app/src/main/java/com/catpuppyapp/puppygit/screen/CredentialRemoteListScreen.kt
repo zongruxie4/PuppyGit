@@ -53,6 +53,7 @@ import com.catpuppyapp.puppygit.constants.SpecialCredential
 import com.catpuppyapp.puppygit.data.entity.CredentialEntity
 import com.catpuppyapp.puppygit.dto.RemoteDtoForCredential
 import com.catpuppyapp.puppygit.play.pro.R
+import com.catpuppyapp.puppygit.screen.functions.defaultTitleDoubleClick
 import com.catpuppyapp.puppygit.settings.SettingsUtil
 import com.catpuppyapp.puppygit.style.MyStyleKt
 import com.catpuppyapp.puppygit.utils.AppModel
@@ -289,7 +290,7 @@ fun CredentialRemoteListScreen(
                         )
                     }else{
                         Column (modifier = Modifier.combinedClickable(onDoubleClick = {
-                            UIHelper.switchBetweenTopAndLastVisiblePosition(scope, listState, lastPosition)
+                            defaultTitleDoubleClick(scope, listState, lastPosition)
                         }) {
                             showTitleInfoDialog.value = true
                         }){

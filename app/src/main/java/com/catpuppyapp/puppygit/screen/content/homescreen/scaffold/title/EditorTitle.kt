@@ -64,7 +64,7 @@ fun EditorTitle(
                 .combinedClickable(
                     enabled = !editorOpenFileErr,  //只有在成功打开文件时才启用点击标题长按标题之类的操作
                     onDoubleClick = {
-//                        editorPageRequestFromParent.value = PageRequest.switchBetweenFirstLineAndLastEditLine
+                        // editorPageRequestFromParent.value = PageRequest.switchBetweenFirstLineAndLastEditLine
                         defaultTitleDoubleClickRequest(editorPageRequestFromParent)
                     },
                     onLongClick = {

@@ -80,6 +80,7 @@ import com.catpuppyapp.puppygit.dev.proFeatureEnabled
 import com.catpuppyapp.puppygit.dev.resetByHashTestPassed
 import com.catpuppyapp.puppygit.git.FileHistoryDto
 import com.catpuppyapp.puppygit.play.pro.R
+import com.catpuppyapp.puppygit.screen.functions.defaultTitleDoubleClick
 import com.catpuppyapp.puppygit.screen.functions.getLoadText
 import com.catpuppyapp.puppygit.screen.shared.DiffFromScreen
 import com.catpuppyapp.puppygit.screen.shared.SharedState
@@ -675,7 +676,7 @@ fun FileHistoryScreen(
                         Column(
                             modifier = Modifier.combinedClickable(
                                 onDoubleClick = {
-                                    UIHelper.switchBetweenTopAndLastVisiblePosition(scope, listState, lastPosition)
+                                    defaultTitleDoubleClick(scope, listState, lastPosition)
                                 },
                                 onLongClick = {
                                     //长按显示仓库和分支信息

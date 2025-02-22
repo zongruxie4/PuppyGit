@@ -21,6 +21,7 @@ import com.catpuppyapp.puppygit.compose.RepoInfoDialog
 import com.catpuppyapp.puppygit.compose.ScrollableRow
 import com.catpuppyapp.puppygit.data.entity.RepoEntity
 import com.catpuppyapp.puppygit.play.pro.R
+import com.catpuppyapp.puppygit.screen.functions.defaultTitleDoubleClick
 import com.catpuppyapp.puppygit.style.MyStyleKt
 import com.catpuppyapp.puppygit.utils.Libgit2Helper
 import com.catpuppyapp.puppygit.utils.UIHelper
@@ -58,7 +59,7 @@ fun IndexScreenTitle(
         .widthIn(min = MyStyleKt.Title.clickableTitleMinWidth)
         .combinedClickable(
             onDoubleClick = {
-                UIHelper.switchBetweenTopAndLastVisiblePosition(scope, changeListPageItemListState, lastPosition)
+                defaultTitleDoubleClick(scope, changeListPageItemListState, lastPosition)
             },
             onLongClick = null
 //            {  //长按显示仓库名

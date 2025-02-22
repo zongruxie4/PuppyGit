@@ -24,6 +24,7 @@ import androidx.compose.ui.unit.sp
 import com.catpuppyapp.puppygit.compose.ScrollableRow
 import com.catpuppyapp.puppygit.constants.PageRequest
 import com.catpuppyapp.puppygit.play.pro.R
+import com.catpuppyapp.puppygit.screen.functions.defaultTitleDoubleClick
 import com.catpuppyapp.puppygit.style.MyStyleKt
 import com.catpuppyapp.puppygit.utils.UIHelper
 import kotlinx.coroutines.CoroutineScope
@@ -48,7 +49,7 @@ fun DiffScreenTitle(
             .combinedClickable(
                 //double click go to top of list
                 onDoubleClick = {
-                    UIHelper.switchBetweenTopAndLastVisiblePosition(scope, listState, lastPosition)
+                    defaultTitleDoubleClick(scope, listState, lastPosition)
                 },
             ) {  //onClick
                 //show details , include file name and path

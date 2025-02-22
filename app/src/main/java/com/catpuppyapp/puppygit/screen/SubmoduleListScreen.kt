@@ -78,6 +78,7 @@ import com.catpuppyapp.puppygit.data.entity.RepoEntity
 import com.catpuppyapp.puppygit.git.ImportRepoResult
 import com.catpuppyapp.puppygit.git.SubmoduleDto
 import com.catpuppyapp.puppygit.play.pro.R
+import com.catpuppyapp.puppygit.screen.functions.defaultTitleDoubleClick
 import com.catpuppyapp.puppygit.settings.SettingsUtil
 import com.catpuppyapp.puppygit.style.MyStyleKt
 import com.catpuppyapp.puppygit.ui.theme.Theme
@@ -1119,7 +1120,7 @@ fun SubmoduleListScreen(
                         val repoAndBranch = Libgit2Helper.getRepoOnBranchOrOnDetachedHash(curRepo.value)
                         Column (modifier = Modifier.combinedClickable (
                             onDoubleClick = {
-                                UIHelper.switchBetweenTopAndLastVisiblePosition(scope, listState, lastPosition)
+                                defaultTitleDoubleClick(scope, listState, lastPosition)
                             },
 
                         ){  //onClick

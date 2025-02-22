@@ -86,6 +86,7 @@ import com.catpuppyapp.puppygit.dev.resetByHashTestPassed
 import com.catpuppyapp.puppygit.etc.Ret
 import com.catpuppyapp.puppygit.git.BranchNameAndTypeDto
 import com.catpuppyapp.puppygit.play.pro.R
+import com.catpuppyapp.puppygit.screen.functions.defaultTitleDoubleClick
 import com.catpuppyapp.puppygit.settings.SettingsUtil
 import com.catpuppyapp.puppygit.style.MyStyleKt
 import com.catpuppyapp.puppygit.ui.theme.Theme
@@ -1180,8 +1181,8 @@ fun BranchListScreen(
                         val repoAndBranch = Libgit2Helper.getRepoOnBranchOrOnDetachedHash(curRepo.value)
                         Column (modifier = Modifier.combinedClickable (
                                     onDoubleClick = {
-                                        UIHelper.switchBetweenTopAndLastVisiblePosition(scope, listState, lastPosition)
-                                    },  // go to top
+                                        defaultTitleDoubleClick(scope, listState, lastPosition)
+                                    },
                                     onLongClick = null
 //                                    { // onLongClick
 ////                                        haptic.performHapticFeedback(HapticFeedbackType.LongPress)

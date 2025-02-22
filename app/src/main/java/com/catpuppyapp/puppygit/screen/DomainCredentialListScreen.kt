@@ -61,6 +61,7 @@ import com.catpuppyapp.puppygit.data.entity.RemoteEntity
 import com.catpuppyapp.puppygit.data.entity.RepoEntity
 import com.catpuppyapp.puppygit.dto.DomainCredentialDto
 import com.catpuppyapp.puppygit.play.pro.R
+import com.catpuppyapp.puppygit.screen.functions.defaultTitleDoubleClick
 import com.catpuppyapp.puppygit.settings.SettingsUtil
 import com.catpuppyapp.puppygit.style.MyStyleKt
 import com.catpuppyapp.puppygit.utils.AppModel
@@ -359,7 +360,7 @@ fun DomainCredentialListScreen(
                         )
                     }else{
                         Column(modifier = Modifier.combinedClickable(onDoubleClick = {
-                            UIHelper.switchBetweenTopAndLastVisiblePosition(scope, listState, lastPosition)
+                            defaultTitleDoubleClick(scope, listState, lastPosition)
                         }) {    // onClick
                             showTitleInfoDialog.value = true
                         }

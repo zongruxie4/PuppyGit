@@ -12,6 +12,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextOverflow
 import com.catpuppyapp.puppygit.compose.ScrollableRow
 import com.catpuppyapp.puppygit.play.pro.R
+import com.catpuppyapp.puppygit.screen.functions.defaultTitleDoubleClick
 import com.catpuppyapp.puppygit.style.MyStyleKt
 import com.catpuppyapp.puppygit.utils.UIHelper
 import com.catpuppyapp.puppygit.utils.replaceStringResList
@@ -26,7 +27,7 @@ fun ReposTitle(
     lastPosition:MutableState<Int>
 ) {
     Column (modifier = Modifier.combinedClickable(onDoubleClick = {
-        UIHelper.switchBetweenTopAndLastVisiblePosition(scope, listState, lastPosition)
+        defaultTitleDoubleClick(scope, listState, lastPosition)
     }) {
             // onClick
     }){

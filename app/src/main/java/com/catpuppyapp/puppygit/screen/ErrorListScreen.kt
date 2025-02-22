@@ -49,6 +49,7 @@ import com.catpuppyapp.puppygit.constants.Cons
 import com.catpuppyapp.puppygit.data.entity.ErrorEntity
 import com.catpuppyapp.puppygit.data.entity.RepoEntity
 import com.catpuppyapp.puppygit.play.pro.R
+import com.catpuppyapp.puppygit.screen.functions.defaultTitleDoubleClick
 import com.catpuppyapp.puppygit.settings.SettingsUtil
 import com.catpuppyapp.puppygit.style.MyStyleKt
 import com.catpuppyapp.puppygit.utils.AppModel
@@ -192,7 +193,7 @@ fun ErrorListScreen(
                     }else {
                         Column(modifier = Modifier.combinedClickable(onDoubleClick = {
                             //能点这个必然没开过滤模式，必然是普通的listState，所以无需判断是否filterListState
-                            UIHelper.switchBetweenTopAndLastVisiblePosition(scope, lazyListState, lastPosition)
+                            defaultTitleDoubleClick(scope, lazyListState, lastPosition)
                         }) {
                             // onClick
                             showTitleInfoDialog.value=true
