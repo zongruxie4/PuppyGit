@@ -1568,7 +1568,10 @@ fun BranchListScreen(
                         || it.oidStr.lowercase().contains(k)
                         || it.symbolicTargetFullName.lowercase().contains(k)
                         || it.getUpstreamShortName(activityContext).lowercase().contains(k)
-                        || it.getUpstreamFullName(activityContext).lowercase().contains(k)
+
+                        //如果加这个，一搜"remote"会把关联了远程分支的本地分支也显示出来，因为这些分支的上游完整名是 "refs/remotes/....."，其中包含了关键字"remote"
+                        // || it.getUpstreamFullName(activityContext).lowercase().contains(k)
+
                         || it.getOther(activityContext, false).lowercase().contains(k)
                         || it.getOther(activityContext, true).lowercase().contains(k)
                         || it.getTypeString(activityContext, false).lowercase().contains(k)
