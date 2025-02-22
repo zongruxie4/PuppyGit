@@ -2,6 +2,7 @@ package com.catpuppyapp.puppygit.screen.content.homescreen.innerpage
 
 import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.Image
+import androidx.compose.foundation.ScrollState
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -75,7 +76,7 @@ private val openSourceList= listOf(
 
 @Composable
 fun AboutInnerPage(
-    listState:LazyListState,
+    listState:ScrollState,
     contentPadding: PaddingValues,
     openDrawer:() -> Unit,
 ){

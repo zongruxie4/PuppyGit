@@ -218,7 +218,7 @@ fun HomeScreen(
 
     val settingsListState = rememberScrollState()
     val serviceListState = rememberScrollState()
-    val aboutListState = rememberLazyListState()
+    val aboutListState = rememberScrollState()
     val automationListState = rememberLazyListState()
 
 
