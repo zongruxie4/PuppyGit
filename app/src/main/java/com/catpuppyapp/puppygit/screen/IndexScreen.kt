@@ -129,6 +129,7 @@ fun IndexScreen(
     val changeListFilterList = mutableCustomStateListOf(keyTag = stateKeyTag, keyName = "changeListFilterList", initValue = listOf<StatusTypeEntrySaver>())
     val changeListLastClickedItemKey = rememberSaveable{ SharedState.index_LastClickedItemKey }
 
+    val lastPosition = rememberSaveable { mutableStateOf(0) }
 
     Scaffold(
         modifier = Modifier.nestedScroll(homeTopBarScrollBehavior.nestedScrollConnection),
@@ -144,7 +145,7 @@ fun IndexScreen(
                             changeListPageFilterKeyWord,
                         )
                     }else {
-                        IndexScreenTitle(changeListCurRepo, repoState, scope, changeListPageItemListState)
+                        IndexScreenTitle(changeListCurRepo, repoState, scope, changeListPageItemListState, lastPosition)
                     }
                 },
                 navigationIcon = {

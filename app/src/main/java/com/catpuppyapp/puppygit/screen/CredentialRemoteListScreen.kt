@@ -270,6 +270,7 @@ fun CredentialRemoteListScreen(
             Msg.requireShow(activityContext.getString(R.string.copied))
         }
     }
+    val lastPosition = rememberSaveable { mutableStateOf(0) }
 
     Scaffold(
         modifier = Modifier.nestedScroll(homeTopBarScrollBehavior.nestedScrollConnection),
@@ -285,7 +286,9 @@ fun CredentialRemoteListScreen(
                             filterKeyword,
                         )
                     }else{
-                        Column (modifier = Modifier.combinedClickable(onDoubleClick = { UIHelper.scrollToItem(scope, listState, 0) }) {
+                        Column (modifier = Modifier.combinedClickable(onDoubleClick = {
+                            UIHelper.switchBetweenTopAndLastVisiblePosition(scope, listState, lastPosition)
+                        }) {
                             showTitleInfoDialog.value = true
                         }){
                             ScrollableRow {

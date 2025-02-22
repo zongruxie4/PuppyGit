@@ -79,6 +79,7 @@ import com.catpuppyapp.puppygit.data.entity.RepoEntity
 import com.catpuppyapp.puppygit.dev.dev_EnableUnTestedFeature
 import com.catpuppyapp.puppygit.dev.shallowAndSingleBranchTestPassed
 import com.catpuppyapp.puppygit.play.pro.R
+import com.catpuppyapp.puppygit.screen.content.homescreen.scaffold.title.ScrollableTitle
 import com.catpuppyapp.puppygit.style.MyStyleKt
 import com.catpuppyapp.puppygit.ui.theme.Theme
 import com.catpuppyapp.puppygit.user.UserUtil
@@ -505,6 +506,10 @@ fun CloneScreen(
 
 
     val loadingText = rememberSaveable { mutableStateOf(activityContext.getString(R.string.loading))}
+    val listState = rememberScrollState()
+    val lastPosition = rememberSaveable { mutableStateOf(0) }
+
+
 
     val spacerPadding = 2.dp
     Scaffold(
@@ -516,7 +521,7 @@ fun CloneScreen(
                     titleContentColor = MaterialTheme.colorScheme.primary,
                 ),
                 title = {
-                        Text(stringResource(R.string.clone))
+                    ScrollableTitle(stringResource(R.string.clone), listState, lastPosition)
                 },
                 navigationIcon = {
                     LongPressAbleIconBtn(
@@ -552,7 +557,7 @@ fun CloneScreen(
         Column (modifier = Modifier
             .padding(contentPadding)
             .fillMaxSize()
-            .verticalScroll(rememberScrollState())
+            .verticalScroll(listState)
             .padding(bottom = MyStyleKt.Padding.PageBottom)  //这个padding是为了使密码框不在底部，类似vscode中文件的最后一行也可滑到屏幕中间一样的意义
         ){
             TextField(

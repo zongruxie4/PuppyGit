@@ -176,7 +176,8 @@ fun FilesInnerPage(
     curPathFileItemDto:CustomStateSaveable<FileItemDto>,
     currentPathBreadCrumbList:CustomStateListSaveable<FileItemDto>,
     enableFilterState:MutableState<Boolean>,
-    filterList:CustomStateListSaveable<FileItemDto>
+    filterList:CustomStateListSaveable<FileItemDto>,
+    lastPosition:MutableState<Int>
 ) {
     val allRepoParentDir = AppModel.allRepoParentDir;
 //    val appContext = AppModel.appContext;
@@ -2295,6 +2296,12 @@ fun FilesInnerPage(
     if(filesPageRequestFromParent.value==PageRequest.goToTop) {
         PageRequest.clearStateThenDoAct(filesPageRequestFromParent) {
             UIHelper.scrollToItem(scope, curListState.value, 0)
+        }
+    }
+
+    if(filesPageRequestFromParent.value==PageRequest.switchBetweenTopAndLastPosition) {
+        PageRequest.clearStateThenDoAct(filesPageRequestFromParent) {
+            UIHelper.switchBetweenTopAndLastVisiblePosition(scope, curListState.value, lastPosition)
         }
     }
 

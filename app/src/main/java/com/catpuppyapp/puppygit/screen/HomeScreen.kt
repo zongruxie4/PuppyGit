@@ -218,6 +218,7 @@ fun HomeScreen(
 
     val settingsListState = rememberScrollState()
     val serviceListState = rememberScrollState()
+    val aboutListState = rememberLazyListState()
     val automationListState = rememberLazyListState()
 
 
@@ -731,9 +732,17 @@ fun HomeScreen(
         },
     ) {
 
+        val reposLastPosition = rememberSaveable { mutableStateOf(0) }
+        val filesLastPosition = rememberSaveable { mutableStateOf(0) }
+        val settingsLastPosition = rememberSaveable { mutableStateOf(0) }
+        val aboutLastPosition = rememberSaveable { mutableStateOf(0) }
+        val serviceLastPosition = rememberSaveable { mutableStateOf(0) }
+        val automationLastPosition = rememberSaveable { mutableStateOf(0) }
+
+
         Scaffold(
-            modifier = Modifier.nestedScroll(homeTopBarScrollBehavior.nestedScrollConnection)
-            ,
+            modifier = Modifier.nestedScroll(homeTopBarScrollBehavior.nestedScrollConnection),
+
             topBar = {
                 TopAppBar(
                     colors = TopAppBarDefaults.topAppBarColors(
@@ -748,13 +757,13 @@ fun HomeScreen(
                                     repoPageFilterKeyWord,
                                 )
                             }else {
-                                ReposTitle(repoPageListState, scope, repoPageRepoList.value.size)
+                                ReposTitle(repoPageListState, scope, repoPageRepoList.value.size, reposLastPosition)
                             }
                         } else if(currentHomeScreen.intValue == Cons.selectedItem_Files){
                             FilesTitle(filesPageCurrentPath, allRepoParentDir, needRefreshFilesPage, filesPageGetFilterMode,
                                 filesPageFilterKeyword, filesPageFilterOn,filesPageDoFilter, filesPageRequestFromParent,
                                 filesPageFilterTextFieldFocusRequester, filesPageSimpleFilterOn.value, filesPageSimpleFilterKeyWord,
-                                filesPageCurPathFileItemDto.value
+                                filesPageCurPathFileItemDto.value,
                             )
                         } else if (currentHomeScreen.intValue == Cons.selectedItem_Editor) {
                             EditorTitle(editorPageShowingFileName.value, editorPageShowingFilePath,editorPageRequestFromParent, editorPageSearchMode.value, editorPageSearchKeyword, editorPageMergeMode.value, editorReadOnlyMode.value, editorOpenFileErr.value)
@@ -777,15 +786,15 @@ fun HomeScreen(
                                 )
                             }
                         } else if (currentHomeScreen.intValue == Cons.selectedItem_Settings) {
-                            ScrollableTitle(text = stringResource(R.string.settings), listState = settingsListState)
+                            ScrollableTitle(text = stringResource(R.string.settings), listState = settingsListState, settingsLastPosition)
                         } else if (currentHomeScreen.intValue == Cons.selectedItem_About) {
-                            SimpleTitle(stringResource(R.string.about))
+                            ScrollableTitle(text = stringResource(R.string.about), listState = aboutListState, aboutLastPosition)
                         } else if(currentHomeScreen.intValue == Cons.selectedItem_Subscription) {
                             SimpleTitle(stringResource(R.string.subscription))
                         } else if(currentHomeScreen.intValue == Cons.selectedItem_Service){
-                            ScrollableTitle(text = stringResource(R.string.service), listState = serviceListState)
+                            ScrollableTitle(text = stringResource(R.string.service), listState = serviceListState, serviceLastPosition)
                         }  else if(currentHomeScreen.intValue == Cons.selectedItem_Automation){
-                            ScrollableTitle(text = stringResource(R.string.automation), listState = automationListState)
+                            ScrollableTitle(text = stringResource(R.string.automation), listState = automationListState, automationLastPosition)
                         } else {
                             SimpleTitle()
                         }
@@ -1060,7 +1069,9 @@ fun HomeScreen(
                     curPathFileItemDto=filesPageCurPathFileItemDto,
                     currentPathBreadCrumbList=filesPageCurrentPathBreadCrumbList,
                     enableFilterState = filesPageEnableFilterState,
-                    filterList = filesPageFilterList
+                    filterList = filesPageFilterList,
+                    lastPosition = filesLastPosition,
+
                 )
             }
             else if(currentHomeScreen.intValue == Cons.selectedItem_Editor) {
@@ -1189,7 +1200,7 @@ fun HomeScreen(
                 )
             }else if(currentHomeScreen.intValue == Cons.selectedItem_About) {
                 //About页面是静态的，无需刷新
-                AboutInnerPage(contentPadding, openDrawer = openDrawer)
+                AboutInnerPage(aboutListState, contentPadding, openDrawer = openDrawer)
             }else if(currentHomeScreen.intValue == Cons.selectedItem_Subscription) {
                 SubscriptionPage(contentPadding = contentPadding, needRefresh = subscriptionPageNeedRefresh, openDrawer = openDrawer)
             }else if(currentHomeScreen.intValue == Cons.selectedItem_Service) {

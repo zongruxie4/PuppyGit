@@ -1160,6 +1160,8 @@ fun BranchListScreen(
     }
 
 
+    val lastPosition = rememberSaveable { mutableStateOf(0) }
+
     Scaffold(
         modifier = Modifier.nestedScroll(homeTopBarScrollBehavior.nestedScrollConnection),
         topBar = {
@@ -1176,7 +1178,9 @@ fun BranchListScreen(
                     }else {
                         val repoAndBranch = Libgit2Helper.getRepoOnBranchOrOnDetachedHash(curRepo.value)
                         Column (modifier = Modifier.combinedClickable (
-                                    onDoubleClick = {UIHelper.scrollToItem(scope, listState,0)},  // go to top
+                                    onDoubleClick = {
+                                        UIHelper.switchBetweenTopAndLastVisiblePosition(scope, listState, lastPosition)
+                                    },  // go to top
                                     onLongClick = null
 //                                    { // onLongClick
 ////                                        haptic.performHapticFeedback(HapticFeedbackType.LongPress)

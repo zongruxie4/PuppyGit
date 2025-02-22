@@ -261,6 +261,8 @@ fun CredentialManagerScreen(
         }
     }
 
+    val lastPosition = rememberSaveable { mutableStateOf(0) }
+
     Scaffold(
         modifier = Modifier.nestedScroll(homeTopBarScrollBehavior.nestedScrollConnection),
         topBar = {
@@ -275,7 +277,9 @@ fun CredentialManagerScreen(
                             filterKeyword,
                         )
                     }else{
-                        Column(modifier = Modifier.combinedClickable(onDoubleClick = { UIHelper.scrollToItem(scope, listState, 0) }) {
+                        Column(modifier = Modifier.combinedClickable(onDoubleClick = {
+                            UIHelper.switchBetweenTopAndLastVisiblePosition(scope, listState, lastPosition)
+                        }) {
                             showTitleInfoDialog.value = true
                         }) {
                             titleString.value = stringResource(id = R.string.credential_manager)

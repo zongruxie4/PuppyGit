@@ -341,6 +341,8 @@ fun DomainCredentialListScreen(
         }
     }
 
+    val lastPosition = rememberSaveable { mutableStateOf(0) }
+
     Scaffold(
         modifier = Modifier.nestedScroll(homeTopBarScrollBehavior.nestedScrollConnection),
         topBar = {
@@ -356,7 +358,7 @@ fun DomainCredentialListScreen(
                         )
                     }else{
                         Column(modifier = Modifier.combinedClickable(onDoubleClick = {
-                            UIHelper.scrollToItem(scope, listState, 0)
+                            UIHelper.switchBetweenTopAndLastVisiblePosition(scope, listState, lastPosition)
                         }) {    // onClick
                             showTitleInfoDialog.value = true
                         }

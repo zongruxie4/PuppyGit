@@ -83,8 +83,7 @@ fun FilesTitle(
             modifier = Modifier
             .combinedClickable(
                 onDoubleClick = {
-                    //双击标题返回列表顶部
-                    requestFromParent.value=PageRequest.goToTop
+                    requestFromParent.value = PageRequest.switchBetweenTopAndLastPosition
                 },
                 onLongClick = {
                     haptic.performHapticFeedback(HapticFeedbackType.LongPress)

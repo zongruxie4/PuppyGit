@@ -270,11 +270,6 @@ fun CommitListScreen(
         initValue = RepoEntity(id = "")
     )
 
-    // 两个用途：1点击刷新按钮后回到列表顶部 2放到刷新按钮旁边，用户滚动到底部后，想回到顶部，可点击这个按钮
-    val goToTop = {
-        UIHelper.scrollToItem(scope, listState, 0)
-    }
-
 
     val showFilterByPathsDialog = rememberSaveable { mutableStateOf(false) }
 //    val pathsForFilterByPathsDialog = mutableCustomStateListOf(stateKeyTag, "pathsForFilterByPathsDialog") { listOf<String>() }
@@ -1472,6 +1467,15 @@ fun CommitListScreen(
     val lastClickedItemKey = rememberSaveable{mutableStateOf(Cons.init_last_clicked_item_key)}
 
 
+    val getActuallyListState = {
+        if(enableFilterState.value) filterListState else listState
+    }
+    // 两个用途：1点击刷新按钮后回到列表顶部 2放到刷新按钮旁边，用户滚动到底部后，想回到顶部，可点击这个按钮
+    val goToTop = {
+        UIHelper.scrollToItem(scope, getActuallyListState(), 0)
+    }
+    val lastPosition = rememberSaveable { mutableStateOf(0) }
+
     Scaffold(
         modifier = Modifier.nestedScroll(homeTopBarScrollBehavior.nestedScrollConnection),
         topBar = {
@@ -1501,8 +1505,7 @@ fun CommitListScreen(
                         Column(
                             modifier = Modifier.combinedClickable(
                                 onDoubleClick = {
-                                    //双击返回列表顶部
-                                    goToTop()
+                                    UIHelper.switchBetweenTopAndLastVisiblePosition(scope, listState, lastPosition)
                                 },
                                 onLongClick = {
                                     //长按显示仓库和分支信息

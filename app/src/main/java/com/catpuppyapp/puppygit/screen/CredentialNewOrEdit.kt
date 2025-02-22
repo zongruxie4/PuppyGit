@@ -48,6 +48,7 @@ import com.catpuppyapp.puppygit.constants.Cons
 import com.catpuppyapp.puppygit.data.entity.CredentialEntity
 import com.catpuppyapp.puppygit.data.entity.RepoEntity
 import com.catpuppyapp.puppygit.play.pro.R
+import com.catpuppyapp.puppygit.screen.content.homescreen.scaffold.title.ScrollableTitle
 import com.catpuppyapp.puppygit.style.MyStyleKt
 import com.catpuppyapp.puppygit.utils.AppModel
 import com.catpuppyapp.puppygit.utils.doJobThenOffLoading
@@ -215,7 +216,9 @@ fun CredentialNewOrEdit(
     }
     val loadingText = rememberSaveable { mutableStateOf(activityContext.getString(R.string.loading))}
 
-    val spacerPadding = 2.dp
+    val listState = rememberScrollState()
+    val lastPosition = rememberSaveable { mutableStateOf(0) }
+
     Scaffold(
         modifier = Modifier.nestedScroll(homeTopBarScrollBehavior.nestedScrollConnection),
         topBar = {
@@ -225,12 +228,15 @@ fun CredentialNewOrEdit(
                     titleContentColor = MaterialTheme.colorScheme.primary,
                 ),
                 title = {
-                    if(isEditMode.value){
-                        Text(stringResource(R.string.edit_credential))
+                    val titleText = if(isEditMode.value){
+                        stringResource(R.string.edit_credential)
                     }else{
-                        Text(stringResource(R.string.new_credential))
+                        stringResource(R.string.new_credential)
                     }
+
+                    ScrollableTitle(titleText, listState, lastPosition)
                 },
+
                 navigationIcon = {
                     LongPressAbleIconBtn(
                         tooltipText = stringResource(R.string.back),
@@ -266,7 +272,7 @@ fun CredentialNewOrEdit(
         Column (modifier = Modifier
             .padding(contentPadding)
             .fillMaxSize()
-            .verticalScroll(rememberScrollState())
+            .verticalScroll(listState)
             .padding(bottom = MyStyleKt.Padding.PageBottom)  //这个padding是为了使密码框不在底部，类似vscode中文件的最后一行也可滑到屏幕中间一样的意义
         ){
 

@@ -39,6 +39,7 @@ fun DiffScreenTitle(
     request:MutableState<String>,
     changeType:String,
     readOnly:Boolean,
+    lastPosition:MutableState<Int>,
 ) {
 
     if(fileRelativePathUnderRepoState.value.isNotBlank()) {
@@ -46,7 +47,9 @@ fun DiffScreenTitle(
         Column(modifier = Modifier.widthIn(min=MyStyleKt.Title.clickableTitleMinWidth)
             .combinedClickable(
                 //double click go to top of list
-                onDoubleClick = { UIHelper.scrollToItem(scope, listState, 0) },
+                onDoubleClick = {
+                    UIHelper.switchBetweenTopAndLastVisiblePosition(scope, listState, lastPosition)
+                },
             ) {  //onClick
                 //show details , include file name and path
                 request.value = PageRequest.showDetails

@@ -424,6 +424,7 @@ fun DiffScreen(
         )
     )
 
+    val lastPosition = rememberSaveable { mutableStateOf(0) }
 
     Scaffold(
         modifier = Modifier.nestedScroll(homeTopBarScrollBehavior.nestedScrollConnection),
@@ -442,7 +443,8 @@ fun DiffScreen(
                         scope,
                         request,
                         changeType.value,
-                        readOnlyModeOn.value
+                        readOnlyModeOn.value,
+                        lastPosition
                     )
                 },
                 navigationIcon = {

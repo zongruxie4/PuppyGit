@@ -644,6 +644,7 @@ fun RemoteListScreen(
         RepoInfoDialog(curRepo.value, showTitleInfoDialog)
     }
 
+    val lastPosition = rememberSaveable { mutableStateOf(0) }
 
     Scaffold(
         modifier = Modifier.nestedScroll(homeTopBarScrollBehavior.nestedScrollConnection),
@@ -660,8 +661,9 @@ fun RemoteListScreen(
                         )
                     }else {
                         val repoName = curRepo.value.repoName
-                        Column (modifier = Modifier.combinedClickable(onDoubleClick = { UIHelper.scrollToItem(scope, lazyListState, 0) }
-                        ) {
+                        Column (modifier = Modifier.combinedClickable(onDoubleClick = {
+                            UIHelper.switchBetweenTopAndLastVisiblePosition(scope, lazyListState, lastPosition)
+                        }) {
                             //onClick
                             showTitleInfoDialog.value = true
                         }){

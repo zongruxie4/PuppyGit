@@ -345,6 +345,7 @@ fun StashListScreen(
     if(showTitleInfoDialog.value) {
         RepoInfoDialog(curRepo.value, showTitleInfoDialog)
     }
+    val lastPosition = rememberSaveable { mutableStateOf(0) }
 
     Scaffold(
         modifier = Modifier.nestedScroll(homeTopBarScrollBehavior.nestedScrollConnection),
@@ -362,7 +363,9 @@ fun StashListScreen(
                     }else {
                         val repoAndBranch = Libgit2Helper.getRepoOnBranchOrOnDetachedHash(curRepo.value)
                         Column (modifier = Modifier.combinedClickable (
-                            onDoubleClick = {UIHelper.scrollToItem(scope, listState,0)},  // go to top
+                            onDoubleClick = {
+                                UIHelper.switchBetweenTopAndLastVisiblePosition(scope, listState, lastPosition)
+                            },
                         ){  //onClick
                             showTitleInfoDialog.value = true
                         }){

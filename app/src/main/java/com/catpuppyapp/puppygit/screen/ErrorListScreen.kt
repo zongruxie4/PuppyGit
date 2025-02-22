@@ -169,6 +169,10 @@ fun ErrorListScreen(
     }
 
     val lastClickedItemKey = rememberSaveable{mutableStateOf(Cons.init_last_clicked_item_key)}
+    val getActuallyListState = {
+        if(enableFilterState.value) filterListState else lazyListState
+    }
+    val lastPosition = rememberSaveable { mutableStateOf(0) }
 
     Scaffold(
         modifier = Modifier.nestedScroll(homeTopBarScrollBehavior.nestedScrollConnection),
@@ -185,7 +189,8 @@ fun ErrorListScreen(
                         )
                     }else {
                         Column(modifier = Modifier.combinedClickable(onDoubleClick = {
-                            UIHelper.scrollToItem(scope, lazyListState, 0)
+                            //能点这个必然没开过滤模式，必然是普通的listState，所以无需判断是否filterListState
+                            UIHelper.switchBetweenTopAndLastVisiblePosition(scope, lazyListState, lastPosition)
                         }) {
                             // onClick
                             showTitleInfoDialog.value=true

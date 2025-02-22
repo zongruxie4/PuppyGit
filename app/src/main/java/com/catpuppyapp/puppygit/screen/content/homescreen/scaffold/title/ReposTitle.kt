@@ -6,6 +6,7 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.MutableState
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextOverflow
@@ -18,9 +19,15 @@ import kotlinx.coroutines.CoroutineScope
 
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
-fun ReposTitle(listState: LazyListState, scope:CoroutineScope, allRepoCount:Int) {
-
-    Column (modifier = Modifier.combinedClickable(onDoubleClick = { UIHelper.scrollToItem(scope,listState,0) }) {
+fun ReposTitle(
+    listState: LazyListState,
+    scope:CoroutineScope,
+    allRepoCount:Int,
+    lastPosition:MutableState<Int>
+) {
+    Column (modifier = Modifier.combinedClickable(onDoubleClick = {
+        UIHelper.switchBetweenTopAndLastVisiblePosition(scope, listState, lastPosition)
+    }) {
             // onClick
     }){
         ScrollableRow {
