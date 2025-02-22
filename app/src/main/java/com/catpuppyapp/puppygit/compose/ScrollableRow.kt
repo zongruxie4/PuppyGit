@@ -12,7 +12,7 @@ import androidx.compose.ui.Modifier
 fun ScrollableRow(
     modifier: Modifier=Modifier,
     horizontalArrangement: Arrangement.Horizontal = Arrangement.Start,
-    verticalAlignment: Alignment.Vertical = Alignment.Top,
+    verticalAlignment: Alignment.Vertical = Alignment.CenterVertically,
     content:@Composable ()->Unit
 ) {
     Row(
