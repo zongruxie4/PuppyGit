@@ -287,6 +287,8 @@ fun HomeScreen(
         changeStateTriggerRefreshPage(needRefreshFilesPage)  //刷新页面
     }
 
+    val automationPageScrolled = rememberSaveable { mutableStateOf(settingsSnapshot.value.showNaviButtons)}
+
     val filesPageScrolled = rememberSaveable { mutableStateOf(settingsSnapshot.value.showNaviButtons)}
     val filesPageListState = mutableCustomStateOf(stateKeyTag, "filesPageListState", initValue = LazyListState(0,0))
 
@@ -998,6 +1000,13 @@ fun HomeScreen(
                         filterListLastPosition = fileListFilterLastPosition,
                         listLastPosition = filesLastPosition,
                         showFab = filesPageScrolled
+                    )
+                }else if(currentHomeScreen.intValue == Cons.selectedItem_Automation && automationPageScrolled.value) {
+                    GoToTopAndGoToBottomFab(
+                        scope = scope,
+                        listState = automationListState,
+                        listLastPosition = automationLastPosition,
+                        showFab = automationPageScrolled
                     )
                 }
             }
