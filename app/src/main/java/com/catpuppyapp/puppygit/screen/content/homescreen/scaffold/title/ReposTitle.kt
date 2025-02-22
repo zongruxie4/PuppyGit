@@ -14,7 +14,6 @@ import com.catpuppyapp.puppygit.compose.ScrollableRow
 import com.catpuppyapp.puppygit.play.pro.R
 import com.catpuppyapp.puppygit.screen.functions.defaultTitleDoubleClick
 import com.catpuppyapp.puppygit.style.MyStyleKt
-import com.catpuppyapp.puppygit.utils.UIHelper
 import com.catpuppyapp.puppygit.utils.replaceStringResList
 import kotlinx.coroutines.CoroutineScope
 
