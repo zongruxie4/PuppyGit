@@ -1,4 +1,4 @@
-next:
+1.0.8.8v64 - 20250222:
 - double-click title can switch between top and current position
 - change go to top fab logic to switch between top and last position
 
