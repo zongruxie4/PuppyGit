@@ -50,10 +50,14 @@ object AutomationUtil {
         val selectedList = mutableListOf<AppInfo>()
         val unselectedList = mutableListOf<AppInfo>()
 
+        //记录存在的app包名，用来移除已卸载但仍在配置文件中的app
+        val existedApps = mutableListOf<String>()
+
         installedAppList.forEach { installed ->
             if(userAddedAppList.contains(installed.packageName)) {
                 installed.isSelected = true
                 selectedList.add(installed)
+                existedApps.add(installed.packageName)
             }else {
                 installed.isSelected = false
                 unselectedList.add(installed)
@@ -62,7 +66,6 @@ object AutomationUtil {
 
 
         // remove uninstalled apps
-        val existedApps = selectedList.map { it.packageName }
         SettingsUtil.update { s ->
             val map = s.automation.packageNameAndRepoIdsMap
             map.keys.forEach { k ->
