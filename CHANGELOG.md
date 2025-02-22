@@ -1,3 +1,10 @@
+next:
+- double-click title can switch between top and current position
+
+- 双击标题可在顶部和当前位置切换
+
+---
+
 1.0.8.7v63 - 20250219:
 - add dev mode
 - update russian translation (thx @triksterr)
