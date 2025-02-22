@@ -1,7 +1,10 @@
 next:
 - double-click title can switch between top and current position
+- change go to top fab logic to switch between top and last position
+
 
 - 双击标题可在顶部和当前位置切换
+- 修改回到顶部浮动按钮逻辑为在顶部和上次位置间切换
 
 ---
 
