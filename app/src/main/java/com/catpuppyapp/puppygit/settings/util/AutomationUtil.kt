@@ -12,7 +12,7 @@ import com.catpuppyapp.puppygit.utils.getInstalledAppList
 
 
 object AutomationUtil {
-    private const val TAG = "AutomationSettingsUtil"
+    private const val TAG = "AutomationUtil"
 
 
     fun getPackageNames(automationSettings: AutomationSettings):Set<String> {
@@ -70,6 +70,8 @@ object AutomationUtil {
             val newMap = mutableMapOf<String, List<String>>()
             val oldMap = s.automation.packageNameAndRepoIdsMap
             existedApps.forEach { packageName ->
+                //这里oldMap.get()百分百有值（除非并发修改，但在这个函数运行期间并发修改这个map的概率很小，几乎不会发生），
+                // 因为existedApps添加的包名必然是oldMap的key，不过为了逻辑完整以及避免出错，还是 ?: 一个空list保险
                 newMap.put(packageName, oldMap.get(packageName) ?: listOf())
             }
 
