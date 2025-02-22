@@ -124,15 +124,26 @@ fun AutomationInnerPage(
             val repos = AppModel.dbContainer.repoRepository.getAll(updateRepoInfo = false)
             selectedRepoList.value.clear()
             unselectedRepoList.value.clear()
+            val selectedRepoIdList = mutableListOf<String>()
             repos.forEach {
                 if(packageNameLinkedRepos.contains(it.id)) {
                     selectedRepoList.value.add(it)
+                    selectedRepoIdList.add(it.id)
                 }else {
                     unselectedRepoList.value.add(it)
                 }
             }
 
+            //可以把仓库列表显示给用户了
             selectedRepoListLoading.value = false
+
+
+            //善后操作
+            // update config, remove nonexistent repos
+            SettingsUtil.update { s ->
+                s.automation.packageNameAndRepoIdsMap.set(packageName, selectedRepoIdList)
+            }
+
         }
 
         showSelectReposDialog.value = true
