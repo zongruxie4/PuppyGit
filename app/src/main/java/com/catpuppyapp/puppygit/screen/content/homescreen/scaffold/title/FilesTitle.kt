@@ -19,6 +19,7 @@ import com.catpuppyapp.puppygit.compose.ScrollableRow
 import com.catpuppyapp.puppygit.constants.PageRequest
 import com.catpuppyapp.puppygit.dto.FileItemDto
 import com.catpuppyapp.puppygit.play.pro.R
+import com.catpuppyapp.puppygit.screen.functions.defaultTitleDoubleClickRequest
 import com.catpuppyapp.puppygit.style.MyStyleKt
 import com.catpuppyapp.puppygit.utils.changeStateTriggerRefreshPage
 import com.catpuppyapp.puppygit.utils.replaceStringResList
@@ -83,7 +84,7 @@ fun FilesTitle(
             modifier = Modifier
             .combinedClickable(
                 onDoubleClick = {
-                    requestFromParent.value = PageRequest.switchBetweenTopAndLastPosition
+                    defaultTitleDoubleClickRequest(requestFromParent)
                 },
                 onLongClick = {
                     haptic.performHapticFeedback(HapticFeedbackType.LongPress)

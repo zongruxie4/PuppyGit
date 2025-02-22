@@ -11,7 +11,7 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.style.TextOverflow
 import com.catpuppyapp.puppygit.compose.ScrollableRow
-import com.catpuppyapp.puppygit.utils.UIHelper
+import com.catpuppyapp.puppygit.screen.functions.defaultTitleDoubleClick
 
 
 /**
@@ -34,7 +34,7 @@ fun ScrollableTitle(
             overflow = TextOverflow.Ellipsis,
             modifier = Modifier.combinedClickable(onDoubleClick = {
                 // double click go to top
-                UIHelper.switchBetweenTopAndLastVisiblePosition(scope, listState, lastPosition)
+                defaultTitleDoubleClick(scope, listState, lastPosition)
 
             }) {  }
         )
@@ -61,7 +61,7 @@ fun ScrollableTitle(
             overflow = TextOverflow.Ellipsis,
             modifier = Modifier.combinedClickable(onDoubleClick = {
                 // double click go to top
-                UIHelper.switchBetweenTopAndLastVisiblePosition(scope, listState, lastPosition)
+                defaultTitleDoubleClick(scope, listState, lastPosition)
 
             }) {  }
         )

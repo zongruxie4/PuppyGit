@@ -28,6 +28,7 @@ import com.catpuppyapp.puppygit.compose.FilterTextField
 import com.catpuppyapp.puppygit.compose.ScrollableRow
 import com.catpuppyapp.puppygit.constants.PageRequest
 import com.catpuppyapp.puppygit.play.pro.R
+import com.catpuppyapp.puppygit.screen.functions.defaultTitleDoubleClickRequest
 import com.catpuppyapp.puppygit.style.MyStyleKt
 import com.catpuppyapp.puppygit.utils.FsUtils
 import com.catpuppyapp.puppygit.utils.getFileNameFromCanonicalPath
@@ -63,18 +64,8 @@ fun EditorTitle(
                 .combinedClickable(
                     enabled = !editorOpenFileErr,  //只有在成功打开文件时才启用点击标题长按标题之类的操作
                     onDoubleClick = {
-    //                    val settings = SettingsUtil.getSettingsSnapshot()
-    //                    val lastPos = settings.editor.filesLastEditPosition[editorPageShowingFilePath.value]
-    //
-    //                    //不在第一行，返回第一行；否则返回上次编辑位置（如果有的话，没的话还是返回第一行）
-    //                    if(lastPos==null || lastPos.firstVisibleLineIndex != 0) {
-    //                        editorPageRequestFromParent.value = PageRequest.goToTop
-    //                    }else {
-    //                        editorPageRequestFromParent.value = PageRequest.backLastEditedLine
-    //                    }
-
 //                        editorPageRequestFromParent.value = PageRequest.switchBetweenFirstLineAndLastEditLine
-                        editorPageRequestFromParent.value = PageRequest.switchBetweenTopAndLastPosition
+                        defaultTitleDoubleClickRequest(editorPageRequestFromParent)
                     },
                     onLongClick = {
                         haptic.performHapticFeedback(HapticFeedbackType.LongPress)

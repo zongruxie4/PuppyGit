@@ -2,17 +2,23 @@ package com.catpuppyapp.puppygit.screen.functions
 
 import androidx.compose.ui.platform.ClipboardManager
 import android.content.Context
+import androidx.compose.foundation.ScrollState
+import androidx.compose.foundation.lazy.LazyListState
+import androidx.compose.runtime.MutableState
 import com.catpuppyapp.puppygit.constants.Cons
 import com.catpuppyapp.puppygit.constants.LineNum
+import com.catpuppyapp.puppygit.constants.PageRequest
 import com.catpuppyapp.puppygit.play.pro.R
 import com.catpuppyapp.puppygit.utils.AppModel
 import com.catpuppyapp.puppygit.utils.Libgit2Helper
 import com.catpuppyapp.puppygit.utils.Msg
 import com.catpuppyapp.puppygit.utils.MyLog
+import com.catpuppyapp.puppygit.utils.UIHelper
 import com.catpuppyapp.puppygit.utils.cache.Cache
 import com.catpuppyapp.puppygit.utils.doJobThenOffLoading
 import com.catpuppyapp.puppygit.utils.replaceStringResList
 import com.catpuppyapp.puppygit.utils.withMainContext
+import kotlinx.coroutines.CoroutineScope
 
 private const val TAG = "ScreenHelper"
 
@@ -120,3 +126,21 @@ fun fromTagToCommitHistory(fullOid:String, shortName:String, repoId:String){
     val isHEAD = "0"
     AppModel.navController.navigate(Cons.nav_CommitListScreen + "/" + repoId + "/" +useFullOid  + "/" + isHEAD)
 }
+
+
+
+// topbar title text double-click functions start
+
+fun defaultTitleDoubleClick(coroutineScope: CoroutineScope, listState: LazyListState, lastPosition: MutableState<Int>)  {
+    UIHelper.switchBetweenTopAndLastVisiblePosition(coroutineScope, listState, lastPosition)
+}
+
+fun defaultTitleDoubleClick(coroutineScope: CoroutineScope, listState: ScrollState, lastPosition: MutableState<Int>)  {
+    UIHelper.switchBetweenTopAndLastVisiblePosition(coroutineScope, listState, lastPosition)
+}
+
+fun defaultTitleDoubleClickRequest(pageRequest: MutableState<String>) {
+    pageRequest.value = PageRequest.switchBetweenTopAndLastPosition
+}
+
+// topbar title text double-click functions end
