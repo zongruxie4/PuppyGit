@@ -26,6 +26,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
@@ -73,16 +74,25 @@ private const val TAG = "AutomationInnerPage"
 fun AutomationInnerPage(
     contentPadding: PaddingValues,
     needRefreshPage:MutableState<String>,
+    listState: LazyListState,
+    pageScrolled: MutableState<Boolean>,
     refreshPage:()->Unit,
-//    appContext:Context,
     openDrawer:()->Unit,
     exitApp:()->Unit,
-    listState: LazyListState
 ){
     val scope = rememberCoroutineScope()
     val activityContext = LocalContext.current
     val clipboardManager = LocalClipboardManager.current
     val haptic = LocalHapticFeedback.current
+
+
+    //两个作用：1离开页面，返回后重新显示导航按钮；2在设置页面开启、关闭导航按钮后使其立即生效（因为remember离开页面就会销毁，所以每次重进页面都会读取最新的settings值）。
+    //20250222: 其实这个pageScrolled现在已经仅代表是否显示navi buttons 了，跟是否滚动没关系了
+    val _for_update_pageScrolled = remember {
+        pageScrolled.value = SettingsUtil.getSettingsSnapshot().showNaviButtons
+        pageScrolled.value
+    }
+
 
     val settingsState = mutableCustomStateOf(stateKeyTag, "settingsState", SettingsUtil.getSettingsSnapshot())
 

@@ -1233,10 +1233,11 @@ fun HomeScreen(
                 AutomationInnerPage(
                     contentPadding = contentPadding,
                     needRefreshPage = needRefreshAutomationPage,
+                    listState = automationListState,
+                    pageScrolled = automationPageScrolled,
                     refreshPage = refreshAutomationPage,
                     openDrawer = openDrawer,
                     exitApp = exitApp,
-                    listState = automationListState,
                 )
             }
         }
