@@ -67,12 +67,13 @@ object AutomationUtil {
 
         // remove uninstalled apps
         SettingsUtil.update { s ->
-            val packageNameAndRepoIdsMap = s.automation.packageNameAndRepoIdsMap
-            packageNameAndRepoIdsMap.keys.forEach { packageName ->
-                if(!existedApps.contains(packageName)) {
-                    packageNameAndRepoIdsMap.remove(packageName)
-                }
+            val newMap = mutableMapOf<String, List<String>>()
+            val oldMap = s.automation.packageNameAndRepoIdsMap
+            existedApps.forEach { packageName ->
+                newMap.put(packageName, oldMap.get(packageName) ?: listOf())
             }
+
+            s.automation.packageNameAndRepoIdsMap = newMap
         }
 
         return Pair(selectedList, unselectedList)
