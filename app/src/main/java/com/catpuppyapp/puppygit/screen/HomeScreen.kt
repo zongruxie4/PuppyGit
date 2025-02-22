@@ -732,6 +732,10 @@ fun HomeScreen(
         },
     ) {
 
+        val repoListFilterLastPosition = rememberSaveable { mutableStateOf(0) }
+        val fileListFilterLastPosition = rememberSaveable { mutableStateOf(0) }
+        val changeListFilterLastPosition = rememberSaveable { mutableStateOf(0) }
+        val changeListLastPosition = rememberSaveable { mutableStateOf(0) }
         val reposLastPosition = rememberSaveable { mutableStateOf(0) }
         val filesLastPosition = rememberSaveable { mutableStateOf(0) }
         val settingsLastPosition = rememberSaveable { mutableStateOf(0) }
@@ -964,12 +968,13 @@ fun HomeScreen(
                         editorPageRequestFromParent.value = PageRequest.requireSave
                     }
                 }else if(currentHomeScreen.intValue == Cons.selectedItem_ChangeList && changelistPageScrolled.value) {
-
                     GoToTopAndGoToBottomFab(
                         filterModeOn = changeListPageFilterModeOn.value,
                         scope = scope,
                         filterListState = changelistFilterListState,
                         listState = changeListPageItemListState,
+                        filterListLastPosition = changeListFilterLastPosition,
+                        listLastPosition = changeListLastPosition,
                         showFab = changelistPageScrolled
                     )
 
@@ -979,6 +984,8 @@ fun HomeScreen(
                         scope = scope,
                         filterListState = repoFilterListState,
                         listState = repoPageListState,
+                        filterListLastPosition = repoListFilterLastPosition,
+                        listLastPosition = reposLastPosition,
                         showFab = repoPageScrolled
                     )
 
@@ -988,6 +995,8 @@ fun HomeScreen(
                         scope = scope,
                         filterListState = filesFilterListState,
                         listState = filesPageListState.value,
+                        filterListLastPosition = fileListFilterLastPosition,
+                        listLastPosition = filesLastPosition,
                         showFab = filesPageScrolled
                     )
                 }

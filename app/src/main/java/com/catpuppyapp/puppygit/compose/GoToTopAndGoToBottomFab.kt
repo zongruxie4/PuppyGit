@@ -22,10 +22,12 @@ fun GoToTopAndGoToBottomFab(
     scope: CoroutineScope,
     filterListState: LazyListState,
     listState: LazyListState,
+    filterListLastPosition: MutableState<Int>,
+    listLastPosition: MutableState<Int>,
     showFab: MutableState<Boolean>
 ) {
-    val goToTop = {UIHelper.scrollToItem(scope, listState, 0)}
-    val goToTopFiltered = {UIHelper.scrollToItem(scope, filterListState, 0)}
+    val goToTop = {UIHelper.switchBetweenTopAndLastVisiblePosition(scope, listState, listLastPosition)}
+    val goToTopFiltered = {UIHelper.switchBetweenTopAndLastVisiblePosition(scope, filterListState, filterListLastPosition)}
     val goToBottom = {UIHelper.scrollToItem(scope, listState, Int.MAX_VALUE)}
     val goToBottomFiltered = {UIHelper.scrollToItem(scope, filterListState, Int.MAX_VALUE)}
     val hideButton = {showFab.value = false}
@@ -44,9 +46,11 @@ fun GoToTopAndGoToBottomFab(
 fun GoToTopAndGoToBottomFab(
     scope: CoroutineScope,
     listState: LazyListState,
+    listLastPosition: MutableState<Int>,
+
     showFab: MutableState<Boolean>
 ) {
-    val goToTop = {UIHelper.scrollToItem(scope, listState, 0)}
+    val goToTop = {UIHelper.switchBetweenTopAndLastVisiblePosition(scope, listState, listLastPosition)}
     val goToBottom = {UIHelper.scrollToItem(scope, listState, Int.MAX_VALUE)}
     val hideButton = {showFab.value = false}
 
@@ -64,9 +68,11 @@ fun GoToTopAndGoToBottomFab(
 fun GoToTopAndGoToBottomFab(
     scope: CoroutineScope,
     listState: ScrollState,
+    listLastPosition: MutableState<Int>,
+
     showFab: MutableState<Boolean>
 ) {
-    val goToTop = {UIHelper.scrollTo(scope, listState, 0)}
+    val goToTop = {UIHelper.switchBetweenTopAndLastVisiblePosition(scope, listState, listLastPosition)}
     val goToBottom = {UIHelper.scrollTo(scope, listState, Int.MAX_VALUE)}
     val hideButton = {showFab.value = false}
 

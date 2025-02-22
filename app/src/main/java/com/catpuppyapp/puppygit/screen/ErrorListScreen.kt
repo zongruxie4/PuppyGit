@@ -172,6 +172,8 @@ fun ErrorListScreen(
     val getActuallyListState = {
         if(enableFilterState.value) filterListState else lazyListState
     }
+
+    val filterLastPosition = rememberSaveable { mutableStateOf(0) }
     val lastPosition = rememberSaveable { mutableStateOf(0) }
 
     Scaffold(
@@ -281,6 +283,8 @@ fun ErrorListScreen(
                     scope = scope,
                     filterListState = filterListState,
                     listState = lazyListState,
+                    filterListLastPosition = filterLastPosition,
+                    listLastPosition = lastPosition,
                     showFab = pageScrolled
                 )
 

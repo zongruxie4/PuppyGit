@@ -284,6 +284,9 @@ fun ReflogListScreen(
         changeStateTriggerRefreshPage(needRefresh)
     }
 
+    val filterLastPosition = rememberSaveable { mutableStateOf(0) }
+    val lastPosition = rememberSaveable { mutableStateOf(0) }
+
     Scaffold(
         modifier = Modifier.nestedScroll(homeTopBarScrollBehavior.nestedScrollConnection),
         topBar = {
@@ -360,12 +363,13 @@ fun ReflogListScreen(
         },
         floatingActionButton = {
             if(pageScrolled.value) {
-
                 GoToTopAndGoToBottomFab(
                     filterModeOn = enableFilterState.value,
                     scope = scope,
                     filterListState = filterListState,
                     listState = listState,
+                    filterListLastPosition = filterLastPosition,
+                    listLastPosition = lastPosition,
                     showFab = pageScrolled
                 )
 

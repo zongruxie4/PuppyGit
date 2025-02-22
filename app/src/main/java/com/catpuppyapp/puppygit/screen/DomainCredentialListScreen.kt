@@ -341,6 +341,7 @@ fun DomainCredentialListScreen(
         }
     }
 
+    val filterLastPosition = rememberSaveable { mutableStateOf(0) }
     val lastPosition = rememberSaveable { mutableStateOf(0) }
 
     Scaffold(
@@ -459,6 +460,8 @@ fun DomainCredentialListScreen(
                     scope = scope,
                     filterListState = filterListState,
                     listState = listState,
+                    filterListLastPosition = filterLastPosition,
+                    listLastPosition = lastPosition,
                     showFab = pageScrolled
                 )
 

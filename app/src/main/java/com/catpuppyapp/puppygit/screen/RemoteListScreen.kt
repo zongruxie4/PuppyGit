@@ -644,6 +644,7 @@ fun RemoteListScreen(
         RepoInfoDialog(curRepo.value, showTitleInfoDialog)
     }
 
+    val filterLastPosition = rememberSaveable { mutableStateOf(0) }
     val lastPosition = rememberSaveable { mutableStateOf(0) }
 
     Scaffold(
@@ -760,6 +761,8 @@ fun RemoteListScreen(
                     scope = scope,
                     filterListState = filterListState,
                     listState = lazyListState,
+                    filterListLastPosition = filterLastPosition,
+                    listLastPosition = lastPosition,
                     showFab = pageScrolled
                 )
 

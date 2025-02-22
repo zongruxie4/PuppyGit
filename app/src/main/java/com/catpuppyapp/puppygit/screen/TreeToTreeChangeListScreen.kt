@@ -210,6 +210,9 @@ fun TreeToTreeChangeListScreen(
     val changeListLastClickedItemKey = rememberSaveable{ SharedState.treeToTree_LastClickedItemKey }
 
 
+    val filterLastPosition = rememberSaveable { mutableStateOf(0) }
+    val lastPosition = rememberSaveable { mutableStateOf(0) }
+
     Scaffold(
         modifier = Modifier.nestedScroll(homeTopBarScrollBehavior.nestedScrollConnection),
         topBar = {
@@ -375,6 +378,8 @@ fun TreeToTreeChangeListScreen(
                     scope = scope,
                     filterListState = changelistFilterListState,
                     listState = changeListPageItemListState,
+                    filterListLastPosition = filterLastPosition,
+                    listLastPosition = lastPosition,
                     showFab = changelistPageScrolled
                 )
             }

@@ -509,6 +509,7 @@ fun DiffScreen(
                 GoToTopAndGoToBottomFab(
                     scope = scope,
                     listState = listState,
+                    listLastPosition = lastPosition,
                     showFab = pageScrolled
                 )
             }

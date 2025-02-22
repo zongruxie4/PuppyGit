@@ -557,6 +557,8 @@ fun TagListScreen(
     if(showTitleInfoDialog.value) {
         RepoInfoDialog(curRepo.value, showTitleInfoDialog)
     }
+
+    val filterLastPosition = rememberSaveable { mutableStateOf(0) }
     val lastPosition = rememberSaveable { mutableStateOf(0) }
 
     Scaffold(
@@ -670,6 +672,8 @@ fun TagListScreen(
                     scope = scope,
                     filterListState = filterListState,
                     listState = listState,
+                    filterListLastPosition = filterLastPosition,
+                    listLastPosition = lastPosition,
                     showFab = pageScrolled
                 )
 

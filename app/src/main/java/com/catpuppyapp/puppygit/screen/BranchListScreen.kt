@@ -1160,6 +1160,7 @@ fun BranchListScreen(
     }
 
 
+    val filterLastPosition = rememberSaveable { mutableStateOf(0) }
     val lastPosition = rememberSaveable { mutableStateOf(0) }
 
     Scaffold(
@@ -1299,6 +1300,8 @@ fun BranchListScreen(
                     scope = scope,
                     filterListState = filterListState,
                     listState = listState,
+                    filterListLastPosition = filterLastPosition,
+                    listLastPosition = lastPosition,
                     showFab = pageScrolled
                 )
             }

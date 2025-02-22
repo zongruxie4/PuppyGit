@@ -1474,6 +1474,8 @@ fun CommitListScreen(
     val goToTop = {
         UIHelper.scrollToItem(scope, getActuallyListState(), 0)
     }
+
+    val filterLastPosition = rememberSaveable { mutableStateOf(0) }
     val lastPosition = rememberSaveable { mutableStateOf(0) }
 
     Scaffold(
@@ -1683,6 +1685,8 @@ fun CommitListScreen(
                     scope = scope,
                     filterListState = filterListState,
                     listState = listState,
+                    filterListLastPosition = filterLastPosition,
+                    listLastPosition = lastPosition,
                     showFab = pageScrolled
                 )
 

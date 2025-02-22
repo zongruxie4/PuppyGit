@@ -129,6 +129,7 @@ fun IndexScreen(
     val changeListFilterList = mutableCustomStateListOf(keyTag = stateKeyTag, keyName = "changeListFilterList", initValue = listOf<StatusTypeEntrySaver>())
     val changeListLastClickedItemKey = rememberSaveable{ SharedState.index_LastClickedItemKey }
 
+    val filterLastPosition = rememberSaveable { mutableStateOf(0) }
     val lastPosition = rememberSaveable { mutableStateOf(0) }
 
     Scaffold(
@@ -204,6 +205,8 @@ fun IndexScreen(
                     scope = scope,
                     filterListState = changelistFilterListState,
                     listState = changeListPageItemListState,
+                    filterListLastPosition = filterLastPosition,
+                    listLastPosition = lastPosition,
                     showFab = changelistPageScrolled
                 )
 
