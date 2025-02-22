@@ -446,7 +446,7 @@ fun TextEditor(
         }
     }
 
-    if(requestFromParent.value==PageRequest.switchBetweenFirstLineAndCurrentLine) {
+    if(requestFromParent.value==PageRequest.switchBetweenTopAndLastPosition) {
         PageRequest.clearStateThenDoAct(requestFromParent) {
 //            println("firstline:"+firstLineIndexState.value)
 //            println("lastEditedLineIndexState:"+lastEditedLineIndexState)
