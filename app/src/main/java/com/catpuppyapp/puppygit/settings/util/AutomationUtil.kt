@@ -6,6 +6,7 @@ import android.provider.Settings
 import com.catpuppyapp.puppygit.dto.AppInfo
 import com.catpuppyapp.puppygit.service.MyAccessibilityService
 import com.catpuppyapp.puppygit.settings.AutomationSettings
+import com.catpuppyapp.puppygit.settings.SettingsUtil
 import com.catpuppyapp.puppygit.utils.MyLog
 import com.catpuppyapp.puppygit.utils.getInstalledAppList
 
@@ -56,6 +57,18 @@ object AutomationUtil {
             }else {
                 installed.isSelected = false
                 unselectedList.add(installed)
+            }
+        }
+
+
+        // remove uninstalled apps
+        val existedApps = selectedList.map { it.packageName }
+        SettingsUtil.update { s ->
+            val map = s.automation.packageNameAndRepoIdsMap
+            map.keys.forEach { k ->
+                if(!existedApps.contains(k)) {
+                    map.remove(k)
+                }
             }
         }
 
