@@ -106,6 +106,7 @@ import com.catpuppyapp.puppygit.git.CommitDto
 import com.catpuppyapp.puppygit.play.pro.R
 import com.catpuppyapp.puppygit.screen.functions.defaultTitleDoubleClick
 import com.catpuppyapp.puppygit.screen.functions.getLoadText
+import com.catpuppyapp.puppygit.screen.functions.maybeIsGoodKeyword
 import com.catpuppyapp.puppygit.settings.SettingsUtil
 import com.catpuppyapp.puppygit.style.MyStyleKt
 import com.catpuppyapp.puppygit.user.UserUtil
@@ -1903,7 +1904,7 @@ fun CommitListScreen(
             val k = filterKeyword.value.text.lowercase()  //关键字
             val pathList = pathsListForFilter.value
             val needFilterByPath = pathList.isNotEmpty()
-            val enableFilter = filterModeOn_dontUseThisCheckFilterModeReallyEnabledOrNot.value && (k.isNotEmpty() || needFilterByPath)
+            val enableFilter = filterModeOn_dontUseThisCheckFilterModeReallyEnabledOrNot.value && (maybeIsGoodKeyword(k) || needFilterByPath)
             val list = if(enableFilter){
                 filterIdxList.value.clear()
 

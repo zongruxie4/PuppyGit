@@ -144,3 +144,8 @@ fun defaultTitleDoubleClickRequest(pageRequest: MutableState<String>) {
 }
 
 // topbar title text double-click functions end
+
+fun maybeIsGoodKeyword(keyword:String) : Boolean {
+    return keyword.isNotEmpty()
+}
+

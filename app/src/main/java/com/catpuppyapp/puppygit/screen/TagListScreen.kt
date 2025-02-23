@@ -71,6 +71,7 @@ import com.catpuppyapp.puppygit.git.TagDto
 import com.catpuppyapp.puppygit.play.pro.R
 import com.catpuppyapp.puppygit.screen.functions.defaultTitleDoubleClick
 import com.catpuppyapp.puppygit.screen.functions.fromTagToCommitHistory
+import com.catpuppyapp.puppygit.screen.functions.maybeIsGoodKeyword
 import com.catpuppyapp.puppygit.settings.SettingsUtil
 import com.catpuppyapp.puppygit.style.MyStyleKt
 import com.catpuppyapp.puppygit.ui.theme.Theme
@@ -740,7 +741,7 @@ fun TagListScreen(
         }else {  //有条目
             //根据关键字过滤条目
             val k = filterKeyword.value.text.lowercase()  //关键字
-            val enableFilter = filterModeOn.value && k.isNotEmpty()
+            val enableFilter = filterModeOn.value && maybeIsGoodKeyword(k)
             val list = if(enableFilter){
                 val fl = list.value.filter {
                     it.shortName.lowercase().contains(k)

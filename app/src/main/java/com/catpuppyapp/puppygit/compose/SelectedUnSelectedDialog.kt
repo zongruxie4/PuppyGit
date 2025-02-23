@@ -15,6 +15,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.unit.dp
 import com.catpuppyapp.puppygit.play.pro.R
+import com.catpuppyapp.puppygit.screen.functions.maybeIsGoodKeyword
 import com.catpuppyapp.puppygit.utils.state.CustomStateSaveable
 
 @Composable
@@ -102,7 +103,7 @@ fun <T> SelectedUnSelectedList(
 
                     //根据关键字过滤条目
                     val k = filterKeyWord.value.text.lowercase()  //关键字
-                    val enableFilter = k.isNotEmpty()
+                    val enableFilter = maybeIsGoodKeyword(k)
                     val filteredSelectedList = if(enableFilter){
                         filterSelectedItemList(k)
                     }else {

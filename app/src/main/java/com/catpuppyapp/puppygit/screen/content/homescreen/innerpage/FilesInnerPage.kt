@@ -98,6 +98,7 @@ import com.catpuppyapp.puppygit.etc.Ret
 import com.catpuppyapp.puppygit.git.ImportRepoResult
 import com.catpuppyapp.puppygit.play.pro.R
 import com.catpuppyapp.puppygit.screen.functions.goToFileHistory
+import com.catpuppyapp.puppygit.screen.functions.maybeIsGoodKeyword
 import com.catpuppyapp.puppygit.settings.AppSettings
 import com.catpuppyapp.puppygit.settings.DirViewAndSort
 import com.catpuppyapp.puppygit.settings.SettingsUtil
@@ -1303,7 +1304,7 @@ fun FilesInnerPage(
                 }
             }else {
                 val k = filesPageSimpleFilterKeyWord.value.text.lowercase()  //关键字
-                val enableFilter = filesPageSimpleFilterOn.value && k.isNotEmpty()
+                val enableFilter = filesPageSimpleFilterOn.value && maybeIsGoodKeyword(k)
                 val currentPathFileList = if(enableFilter){
                     val fl = currentPathFileList.value.filter {
                         it.name.lowercase().contains(k)

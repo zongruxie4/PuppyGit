@@ -84,6 +84,7 @@ import com.catpuppyapp.puppygit.etc.RepoPendingTask
 import com.catpuppyapp.puppygit.etc.Ret
 import com.catpuppyapp.puppygit.git.Upstream
 import com.catpuppyapp.puppygit.play.pro.R
+import com.catpuppyapp.puppygit.screen.functions.maybeIsGoodKeyword
 import com.catpuppyapp.puppygit.server.bean.ConfigBean
 import com.catpuppyapp.puppygit.settings.AppSettings
 import com.catpuppyapp.puppygit.settings.SettingsUtil
@@ -2266,7 +2267,7 @@ fun RepoInnerPage(
 
         //根据关键字过滤条目
         val k = repoPageFilterKeyWord.value.text.lowercase()  //关键字
-        val enableFilter = repoPageFilterModeOn.value && k.isNotEmpty()
+        val enableFilter = repoPageFilterModeOn.value && maybeIsGoodKeyword(k)
         val filteredListTmp = if(enableFilter){
             val tmpList = repoList.value.filter {
                 it.repoName.lowercase().contains(k)

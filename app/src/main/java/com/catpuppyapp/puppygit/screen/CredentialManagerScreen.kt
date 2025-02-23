@@ -56,6 +56,7 @@ import com.catpuppyapp.puppygit.data.entity.RepoEntity
 import com.catpuppyapp.puppygit.dto.RemoteDtoForCredential
 import com.catpuppyapp.puppygit.play.pro.R
 import com.catpuppyapp.puppygit.screen.functions.defaultTitleDoubleClick
+import com.catpuppyapp.puppygit.screen.functions.maybeIsGoodKeyword
 import com.catpuppyapp.puppygit.settings.SettingsUtil
 import com.catpuppyapp.puppygit.style.MyStyleKt
 import com.catpuppyapp.puppygit.utils.AppModel
@@ -421,7 +422,7 @@ fun CredentialManagerScreen(
 
             //根据关键字过滤条目
             val k = filterKeyword.value.text.lowercase()  //关键字
-            val enableFilter = filterModeOn.value && k.isNotEmpty()
+            val enableFilter = filterModeOn.value && maybeIsGoodKeyword(k)
             val list = if(enableFilter){
                 list.value.filter {
                     it.name.lowercase().contains(k) || it.value.lowercase().contains(k)

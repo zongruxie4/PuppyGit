@@ -53,6 +53,7 @@ import com.catpuppyapp.puppygit.compose.SettingsTitle
 import com.catpuppyapp.puppygit.data.entity.RepoEntity
 import com.catpuppyapp.puppygit.dto.AppInfo
 import com.catpuppyapp.puppygit.play.pro.R
+import com.catpuppyapp.puppygit.screen.functions.maybeIsGoodKeyword
 import com.catpuppyapp.puppygit.settings.SettingsUtil
 import com.catpuppyapp.puppygit.settings.util.AutomationUtil
 import com.catpuppyapp.puppygit.style.MyStyleKt
@@ -431,7 +432,7 @@ fun AutomationInnerPage(
 
         //根据关键字过滤条目
         val k = appsFilterKeyword.value.text.lowercase()  //关键字
-        val enableFilter = k.isNotEmpty()
+        val enableFilter = maybeIsGoodKeyword(k)
         val filteredAddedAppList = if(enableFilter){
             val tmpList = filterApps(k, addedAppList.value)
             tmpList

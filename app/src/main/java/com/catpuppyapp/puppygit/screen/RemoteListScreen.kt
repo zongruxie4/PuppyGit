@@ -69,6 +69,7 @@ import com.catpuppyapp.puppygit.dev.shallowAndSingleBranchTestPassed
 import com.catpuppyapp.puppygit.dto.RemoteDto
 import com.catpuppyapp.puppygit.play.pro.R
 import com.catpuppyapp.puppygit.screen.functions.defaultTitleDoubleClick
+import com.catpuppyapp.puppygit.screen.functions.maybeIsGoodKeyword
 import com.catpuppyapp.puppygit.settings.SettingsUtil
 import com.catpuppyapp.puppygit.style.MyStyleKt
 import com.catpuppyapp.puppygit.user.UserUtil
@@ -848,7 +849,7 @@ fun RemoteListScreen(
         }else {
             //根据关键字过滤条目
             val k = filterKeyword.value.text.lowercase()  //关键字
-            val enableFilter = filterModeOn.value && k.isNotEmpty()
+            val enableFilter = filterModeOn.value && maybeIsGoodKeyword(k)
             val list = if(enableFilter){
                 list.value.filter {
                     it.remoteName.lowercase().contains(k)

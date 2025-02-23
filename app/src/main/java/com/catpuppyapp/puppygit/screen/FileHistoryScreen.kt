@@ -82,6 +82,7 @@ import com.catpuppyapp.puppygit.git.FileHistoryDto
 import com.catpuppyapp.puppygit.play.pro.R
 import com.catpuppyapp.puppygit.screen.functions.defaultTitleDoubleClick
 import com.catpuppyapp.puppygit.screen.functions.getLoadText
+import com.catpuppyapp.puppygit.screen.functions.maybeIsGoodKeyword
 import com.catpuppyapp.puppygit.screen.shared.DiffFromScreen
 import com.catpuppyapp.puppygit.screen.shared.SharedState
 import com.catpuppyapp.puppygit.settings.SettingsUtil
@@ -947,7 +948,7 @@ fun FileHistoryScreen(
 
             //根据关键字过滤条目
             val k = filterKeyword.value.text.lowercase()  //关键字
-            val enableFilter = filterModeOn_dontUseThisCheckFilterModeReallyEnabledOrNot.value && k.isNotEmpty()
+            val enableFilter = filterModeOn_dontUseThisCheckFilterModeReallyEnabledOrNot.value && maybeIsGoodKeyword(k)
             val list = if(enableFilter){
                 filterIdxList.value.clear()
                 filterList.value.clear()
