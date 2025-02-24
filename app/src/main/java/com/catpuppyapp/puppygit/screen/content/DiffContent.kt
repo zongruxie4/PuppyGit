@@ -594,6 +594,10 @@ fun DiffContent(
                                 // show `del` and `add` end
 
                             }else if(context == null) { //需要合并add和del且没有 real context，显示个fake context
+                                //如果mergeDelAndAddToFakeContext为假，且context!=null，则不会进入此代码块，这时，context和add和del去掉末尾换行符后的内容应该是一样的，所以不需要进入此代码块，直接执行后面代码显示真正的context即可
+                                // 但正常来说这种情况并不会发生，因为如果同时存在add和del，不太可能再次出现相同行号的context，就算出现，其内容也必然和add一样，而这时又分两种情况：1 add和del一样，那么add del context三者相同，直接显示context即可；
+                                // 2 add和del不同，则正常显示add和del和context，但这时add和context显示的内容是相同的，会重复，不过问题不大
+
                                 // show `fake context` start (就是那种add和del一个有换行符一个没有，其他都一样的情况，这种情况显示一个context文本取代两个看起来完全一样的add和del，但这个context其实是假的，不是真的)
                                 //只有在第一次执行比较时才执行此检查，且一旦转换，add和del行将消失，变成相同行号的上下文行
                                 //潜在bug：如果存在一个行号，同时有add/del/context 3种类型的行号且 add和del 仅末尾行号不同，而和context内容上有不同，就会有bug，会少显示add del行的内容，不过，应该不会存在这种情况
@@ -615,7 +619,7 @@ fun DiffContent(
                                 item {
                                     DiffRow(
                                         //随便拷贝下del或add（不拷贝只改类型也行但不推荐以免有坏影响）把类型改成context，就行了
-                                        //这里del肯定不为null，因为mergeDelAndAddToFakeContext的条件包含了del和add都不为null
+                                        //这里del肯定不为null，因为 mergeDelAndAddToFakeContext 的条件包含了del和add都不为null
                                         line = del!!.copy(originType = Diff.Line.OriginType.CONTEXT.toString()),
                                         fileFullPath=fileFullPath,
                                         isFileAndExist = isFileAndExist.value,
