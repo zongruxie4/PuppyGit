@@ -18,8 +18,8 @@ fun InLineIcon(
     icon: ImageVector,
     tooltipText: String,
     iconContentDesc: String = tooltipText,
-    iconModifier: Modifier = Modifier.size(20.dp),
-    pressedCircleSize: Dp = 30.dp,
+    iconModifier: Modifier = Modifier.size(16.dp),
+    pressedCircleSize: Dp = 24.dp,
     onClick: () -> Unit
 ) {
     LongPressAbleIconBtn(
