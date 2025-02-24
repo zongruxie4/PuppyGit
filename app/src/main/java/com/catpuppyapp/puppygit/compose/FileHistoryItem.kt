@@ -118,7 +118,15 @@ fun FileHistoryItem(
             ) {
 
             Text(text = stringResource(R.string.commit_id) + ":")
-            ClickableText(dto.getCachedCommitShortOidStr()){
+            Text(
+                text = dto.getCachedCommitShortOidStr(),
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis,
+                fontWeight = FontWeight.Light
+
+            )
+
+            InLineCopyIcon {
                 clipboardManager.setText(AnnotatedString(dto.commitOidStr))
                 Msg.requireShow(activityContext.getString(R.string.copied))
             }
@@ -137,6 +145,11 @@ fun FileHistoryItem(
                 fontWeight = FontWeight.Light
 
             )
+
+            InLineCopyIcon {
+                clipboardManager.setText(AnnotatedString(dto.treeEntryOidStr))
+                Msg.requireShow(activityContext.getString(R.string.copied))
+            }
         }
 //        Row (
 //            verticalAlignment = Alignment.CenterVertically,

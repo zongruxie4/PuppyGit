@@ -126,7 +126,15 @@ fun BranchItem(
         ){
 
             Text(text = stringResource(R.string.last_commit) +":")
-            ClickableText(thisObj.shortOidStr) {
+
+            Text(text = thisObj.shortOidStr,
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis,
+                fontWeight = FontWeight.Light
+
+            )
+
+            InLineCopyIcon {
                 clipboardManager.setText(AnnotatedString(thisObj.oidStr))
                 Msg.requireShow(activityContext.getString(R.string.copied))
             }

@@ -104,7 +104,14 @@ fun TagItem(
         ){
 
             Text(text = stringResource(R.string.target) +":")
-            ClickableText(thisObj.getCachedTargetShortOidStr()) {
+
+            Text(text = thisObj.getCachedTargetShortOidStr(),
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis,
+                fontWeight = FontWeight.Light
+            )
+
+            InLineCopyIcon {
                 clipboardManager.setText(AnnotatedString(thisObj.targetFullOidStr))
                 Msg.requireShow(activityContext.getString(R.string.copied))
             }

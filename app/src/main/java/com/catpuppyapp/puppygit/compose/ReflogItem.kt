@@ -97,7 +97,15 @@ fun ReflogItem(
         ){
 
             Text(text = stringResource(R.string.new_oid) +":")
-            ClickableText(thisObj.getShortNewId()) {
+
+            Text(text = thisObj.getShortNewId(),
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis,
+                fontWeight = FontWeight.Light
+
+            )
+
+            InLineCopyIcon {
                 clipboardManager.setText(AnnotatedString(thisObj.idNew.toString()))
                 Msg.requireShow(activityContext.getString(R.string.copied))
             }
@@ -119,7 +127,15 @@ fun ReflogItem(
         ){
 
             Text(text = stringResource(R.string.old_oid) +":")
-            ClickableText(thisObj.getShortOldId()){
+
+            Text(text = thisObj.getShortOldId(),
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis,
+                fontWeight = FontWeight.Light
+
+            )
+
+            InLineCopyIcon {
                 clipboardManager.setText(AnnotatedString(thisObj.idOld.toString()))
                 Msg.requireShow(activityContext.getString(R.string.copied))
             }

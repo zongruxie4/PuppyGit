@@ -116,7 +116,15 @@ fun CommitItem(
         ){
 
             Text(text = stringResource(R.string.hash) +":")
-            ClickableText(commitDto.shortOidStr) {
+
+            Text(text = commitDto.shortOidStr,
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis,
+                fontWeight = FontWeight.Light
+
+            )
+
+            InLineCopyIcon {
                 clipboardManager.setText(AnnotatedString(commitDto.oidStr))
                 Msg.requireShow(activityContext.getString(R.string.copied))
             }
