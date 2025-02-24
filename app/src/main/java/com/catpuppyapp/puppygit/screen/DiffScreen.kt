@@ -8,6 +8,7 @@ import androidx.compose.material.icons.filled.Close
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
@@ -25,6 +26,7 @@ import androidx.compose.ui.platform.LocalClipboardManager
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.AnnotatedString
+import com.catpuppyapp.puppygit.compose.ConfirmDialog
 import com.catpuppyapp.puppygit.compose.CopyableDialog
 import com.catpuppyapp.puppygit.compose.FileHistoryRestoreDialog
 import com.catpuppyapp.puppygit.compose.FontSizeAdjuster
@@ -34,6 +36,7 @@ import com.catpuppyapp.puppygit.compose.LongPressAbleIconBtn
 import com.catpuppyapp.puppygit.compose.MySelectionContainer
 import com.catpuppyapp.puppygit.compose.OpenAsAskReloadDialog
 import com.catpuppyapp.puppygit.compose.OpenAsDialog
+import com.catpuppyapp.puppygit.compose.ScrollableColumn
 import com.catpuppyapp.puppygit.constants.Cons
 import com.catpuppyapp.puppygit.constants.PageRequest
 import com.catpuppyapp.puppygit.data.entity.RepoEntity
@@ -43,6 +46,7 @@ import com.catpuppyapp.puppygit.play.pro.R
 import com.catpuppyapp.puppygit.screen.content.DiffContent
 import com.catpuppyapp.puppygit.screen.content.homescreen.scaffold.actions.DiffPageActions
 import com.catpuppyapp.puppygit.screen.content.homescreen.scaffold.title.DiffScreenTitle
+import com.catpuppyapp.puppygit.screen.functions.ChangeListFunctions
 import com.catpuppyapp.puppygit.screen.shared.DiffFromScreen
 import com.catpuppyapp.puppygit.screen.shared.SharedState
 import com.catpuppyapp.puppygit.settings.SettingsCons
@@ -50,17 +54,22 @@ import com.catpuppyapp.puppygit.settings.SettingsUtil
 import com.catpuppyapp.puppygit.utils.AppModel
 import com.catpuppyapp.puppygit.utils.Libgit2Helper
 import com.catpuppyapp.puppygit.utils.Msg
+import com.catpuppyapp.puppygit.utils.MyLog
 import com.catpuppyapp.puppygit.utils.StateRequestType
 import com.catpuppyapp.puppygit.utils.cache.Cache
 import com.catpuppyapp.puppygit.utils.changeStateTriggerRefreshPage
+import com.catpuppyapp.puppygit.utils.createAndInsertError
+import com.catpuppyapp.puppygit.utils.doJobThenOffLoading
 import com.catpuppyapp.puppygit.utils.getFileNameFromCanonicalPath
 import com.catpuppyapp.puppygit.utils.getFormattedLastModifiedTimeOfFile
 import com.catpuppyapp.puppygit.utils.getHumanReadableSizeStr
 import com.catpuppyapp.puppygit.utils.getParentPathEndsWithSeparator
+import com.catpuppyapp.puppygit.utils.replaceStringResList
 import com.catpuppyapp.puppygit.utils.state.mutableCustomStateListOf
 import com.catpuppyapp.puppygit.utils.state.mutableCustomStateOf
 import java.io.File
 
+private const val TAG = "DiffScreen"
 private const val stateKeyTag = "DiffScreen"
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -229,6 +238,77 @@ fun DiffScreen(
         }
     }
 
+    val savePatchPath= rememberSaveable { mutableStateOf("") } //给这变量一赋值app就崩溃，原因不明，报的是"java.lang.VerifyError: Verifier rejected class"之类的错误，日，后来升级gradle解决了
+    val showSavePatchSuccessDialog = rememberSaveable { mutableStateOf(false)}
+
+    if(showSavePatchSuccessDialog.value) {
+//        val path = Cache.getByType<String>(Cache.Key.changeListInnerPage_SavePatchPath) ?:""
+        val path = savePatchPath.value
+
+        CopyableDialog(
+            title = stringResource(R.string.success),
+            text = replaceStringResList(stringResource(R.string.export_path_ph1_you_can_go_to_files_page_found_this_file), listOf(path)),
+            okBtnText = stringResource(R.string.copy_path),
+            onCancel = { showSavePatchSuccessDialog.value = false }
+        ) {
+            showSavePatchSuccessDialog.value = false
+
+            clipboardManager.setText(AnnotatedString(path))
+            Msg.requireShow(activityContext.getString(R.string.copied))
+        }
+    }
+
+
+    val showCreatePatchDialog = rememberSaveable { mutableStateOf(false)}
+    if(showCreatePatchDialog.value) {
+        ConfirmDialog(
+            title = stringResource(R.string.create_patch),
+            requireShowTextCompose = true,
+            textCompose = {
+                ScrollableColumn {
+                    Text(text = stringResource(R.string.are_you_sure))
+                }
+            },
+            onCancel = { showCreatePatchDialog.value = false }
+        ){
+            showCreatePatchDialog.value = false
+
+            val curRepo = curRepo.value
+            val relativePathUnderRepo = relativePathUnderRepoState.value
+            val leftCommit = treeOid1Str.value
+            val rightCommit = treeOid2Str.value
+
+            doJobThenOffLoading(loadingOn,loadingOff, activityContext.getString(R.string.creating_patch)) job@{
+                try {
+                    val savePatchRet = ChangeListFunctions.createPath(
+                        curRepo = curRepo,
+                        leftCommit = leftCommit,
+                        rightCommit = rightCommit,
+                        fromTo = fromTo,
+                        relativePaths = listOf(relativePathUnderRepo)
+                    );
+
+                    if(savePatchRet.success()) {
+//                            savePatchPath.value = getFilePathStrBasedRepoDir(outFile.canonicalPath, returnResultStartsWithSeparator = true)
+                        savePatchPath.value = savePatchRet.data?.outFileFullPath ?: ""
+                        //之前app给savePatchPath赋值会崩溃，所以用了Cache规避，后来升级gradle解决了
+//                            Cache.set(Cache.Key.changeListInnerPage_SavePatchPath, getFilePathStrBasedRepoDir(outFile.canonicalPath, returnResultStartsWithSeparator = true))
+                        showSavePatchSuccessDialog.value = true
+                    }else {
+                        //抛异常，catch里会向用户显示错误信息 (btw: exception.message或.localizedMessage都不包含异常类型名，对用户展示比较友好)
+                        throw (savePatchRet.exception ?: RuntimeException(savePatchRet.msg))
+                    }
+                }catch (e:Exception) {
+                    val errPrefix = "create patch err: "
+                    Msg.requireShowLongDuration(e.localizedMessage ?: errPrefix)
+                    createAndInsertError(curRepo.id, errPrefix+e.localizedMessage)
+                    MyLog.e(TAG, "$errPrefix${e.stackTraceToString()}")
+                }
+
+            }
+        }
+
+    }
 
     val showOpenAsDialog = rememberSaveable { mutableStateOf(false)}
     val readOnlyForOpenAsDialog = rememberSaveable { mutableStateOf(false)}
@@ -293,6 +373,12 @@ fun DiffScreen(
 //            readOnlyForOpenAsDialog.value = FsUtils.isReadOnlyDir(fileFullPath.value)
             openAsDialogFilePath.value = fileFullPath.value
             showOpenAsDialog.value=true
+        }
+    }
+
+    if(request.value == PageRequest.createPatch) {
+        PageRequest.clearStateThenDoAct(request) {
+            showCreatePatchDialog.value=true
         }
     }
 

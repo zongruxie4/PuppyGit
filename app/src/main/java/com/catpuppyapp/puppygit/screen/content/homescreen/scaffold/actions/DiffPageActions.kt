@@ -178,6 +178,16 @@ fun DiffPageActions(
     ) {
 
         DropdownMenuItem(
+            text = { Text(stringResource(R.string.create_patch)) },
+            onClick = {
+                request.value = PageRequest.createPatch
+
+                dropDownMenuExpendState.value = false
+            }
+
+        )
+
+        DropdownMenuItem(
             text = { Text(stringResource(R.string.font_size)) },
             onClick = {
                 adjustFontSizeModeOn.value = true

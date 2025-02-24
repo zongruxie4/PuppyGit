@@ -1,8 +1,10 @@
 1.0.8.9v65 - 20250224:
 - Line number of Diff and Editor screens use width-fixed font
+- support create patch at Diff screen
 
 
 - Diff和Editor页面的行号改用等宽字体
+- 支持在Diff页面创建补丁
 
 ---
 

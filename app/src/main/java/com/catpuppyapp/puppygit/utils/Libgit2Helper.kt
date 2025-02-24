@@ -22,6 +22,7 @@ import com.catpuppyapp.puppygit.git.BranchNameAndTypeDto
 import com.catpuppyapp.puppygit.git.CommitDto
 import com.catpuppyapp.puppygit.git.DiffItemSaver
 import com.catpuppyapp.puppygit.git.FileHistoryDto
+import com.catpuppyapp.puppygit.git.PatchFile
 import com.catpuppyapp.puppygit.git.PuppyHunkAndLines
 import com.catpuppyapp.puppygit.git.PuppyLine
 import com.catpuppyapp.puppygit.git.ReflogEntryDto
@@ -4974,6 +4975,10 @@ class Libgit2Helper {
             return resetHardToHead(repo)
         }
 
+        /**
+         * @param returnDiffContent 为true返回patch内容，否则不返回，因为有可能内容很大，所以若没必要不建议返回
+         * @return 返回Ret对象，包含:文件路径 和 diff内容。（当outFile不为null时，返回值必包含文件路径；当returnDiffContent为true时，返回值必包含diff内容(patch内容）（补丁内容））
+         */
         fun savePatchToFileAndGetContent(
             outFile:File?=null,  // 为null不写入文件，否则写入
             pathSpecList: List<String>?=null,   //为null或空代表diff所有文件
@@ -4987,8 +4992,9 @@ class Libgit2Helper {
             treeToWorkTree: Boolean = false,  // only used when fromTo=TreeToTree, if true, will use treeToWorkdir instead treeToTree
 
             returnDiffContent:Boolean = false  //为true返回patch内容，否则不返回，因为有可能内容很大，所以若没必要不建议返回
-        ):Ret<String?>{
-            val funName = "savePatchToFile"
+        ):Ret<PatchFile?>{
+            val funName = "savePatchToFileAndGetContent"
+
             try{
                 val options = Diff.Options.create()
                 val opFlags = diffOptionsFlags.toMutableSet()
@@ -5050,29 +5056,33 @@ class Libgit2Helper {
                     sb.append(patchOutStr).appendLine()
                 }
 
-                var diffContent = ""
+                var diffContent:String? = null
 
-                val writeToFile = outFile != null
+                val writeToFile = (outFile != null)
                 if(writeToFile) {
                     //写入patch字符串到文件
                     outFile!!.bufferedWriter().use {
+                        //存上diff内容（patch内容）（补丁内容），如果后面需要返回时就不需要重新获取了
                         diffContent = sb.toString()
                         it.write(diffContent)
                     }
                 }
 
-                val ret = if(returnDiffContent) {
-                    if(!writeToFile) {  //如果writeToFile为假，需要获取一下diff内容
-                        sb.toString()
-                    }else {  //如果writeToFile为真，写入文件之前已经获取了diff内容，这里直接返回即可
-                        diffContent
-                    }
+                val retContent = if(returnDiffContent) {
+                    //如果writeToFile为真，写入文件之前已经获取了diff内容，diffContent则不为null，这里直接返回即可
+                    //如果writeToFile为假，则diffContent为null，这时就需要获取一下diff内容
+                    diffContent ?: sb.toString()
                 }else {  //不请求返回diff内容
                     null
                 }
 
                 //返回操作成功
-                return Ret.createSuccess(ret)
+                return Ret.createSuccess(
+                    PatchFile(
+                        outFileFullPath = outFile?.canonicalPath,
+                        content = retContent
+                    )
+                )
 
             }catch (e:Exception) {
                 MyLog.e(TAG, "#$funName err:${e.stackTraceToString()}")

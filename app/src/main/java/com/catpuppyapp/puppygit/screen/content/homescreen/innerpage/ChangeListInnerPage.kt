@@ -215,6 +215,7 @@ fun ChangeListInnerPage(
     } }
 
     val haptic = LocalHapticFeedback.current
+    val clipboardManager = LocalClipboardManager.current
 
 //    val allRepoParentDir = AppModel.allRepoParentDir;
     val activityContext = LocalContext.current
@@ -1810,8 +1811,6 @@ fun ChangeListInnerPage(
     val savePatchPath= rememberSaveable { mutableStateOf("") } //给这变量一赋值app就崩溃，原因不明，报的是"java.lang.VerifyError: Verifier rejected class"之类的错误，日，后来升级gradle解决了
     val showSavePatchSuccessDialog = rememberSaveable { mutableStateOf(false)}
 
-    val clipboardManager = LocalClipboardManager.current
-
     if(showSavePatchSuccessDialog.value) {
 //        val path = Cache.getByType<String>(Cache.Key.changeListInnerPage_SavePatchPath) ?:""
         val path = savePatchPath.value
@@ -1841,110 +1840,36 @@ fun ChangeListInnerPage(
             },
             onCancel = { showCreatePatchDialog.value = false }
         ){
-            showCreatePatchDialog.value=false
+            showCreatePatchDialog.value = false
+
             val curRepo = curRepoFromParentPage.value
-            val selectedItemList = selectedItemList.value.toList()
 
             doJobThenOffLoading(loadingOn,loadingOff, activityContext.getString(R.string.creating_patch)) job@{
                 try {
-                    Repository.open(curRepo.fullSavePath).use { repo->
-                        val leftCommit = getCommitLeft()  //逻辑上在左边的commit
-                        val rightCommit = getCommitRight()  //逻辑上在右边的commit
+                    val savePatchRet = ChangeListFunctions.createPath(
+                        curRepo = curRepo,
+                        leftCommit = getCommitLeft(),
+                        rightCommit = getCommitRight(),
+                        fromTo = fromTo,
+                        relativePaths = selectedItemList.value.map { it.relativePathUnderRepo }
+                    );
 
-                        var treeToWorkTree = false  //默认设为假，若和worktree对比（local），会改为真
-
-                        val (reverse:Boolean, tree1:Tree?, tree2:Tree?) = if(fromTo == Cons.gitDiffFromIndexToWorktree || fromTo == Cons.gitDiffFromHeadToIndex) {
-                            Triple(false, null, null)
-                        }else if(Libgit2Helper.CommitUtil.isLocalCommitHash(leftCommit) || Libgit2Helper.CommitUtil.isLocalCommitHash(rightCommit)) {
-                            treeToWorkTree = true
-
-                            //其中一个是local路径，为local的可不是有效tree
-                            val reverse = Libgit2Helper.CommitUtil.isLocalCommitHash(leftCommit)  //若左边的commit是local，需要反转一下，因为默认api只有 treeToWorkdir，即treeToLocal，而我们需要的是localToTree，所以不反转不行
-
-                            val tree1 = if(reverse) {
-                                Libgit2Helper.resolveTree(repo, rightCommit)
-                            }else {
-                                Libgit2Helper.resolveTree(repo, leftCommit)
-                            }
-
-                            if(tree1 == null) {
-                                throw RuntimeException("resolve tree1 failed, 11982433")
-                            }
-
-                            val tree2 = null
-
-                            Triple(reverse, tree1, tree2)
-                        } else {
-                            //没有local路径，全都是有效tree
-                            val reverse = false
-                            val tree1 = Libgit2Helper.resolveTree(repo, leftCommit) ?: throw RuntimeException("resolve tree1 failed, 12978960")
-                            val tree2 = Libgit2Helper.resolveTree(repo, rightCommit) ?: throw RuntimeException("resolve tree2 failed, 17819020")
-                            Triple(reverse, tree1, tree2)
-                        }
-
-                        //获取输出文件，可能没创建，执行输出时会自动创建，重点是文件路径
-                        val (left:String, right:String) = if(fromTo==Cons.gitDiffFromIndexToWorktree) {
-                            Pair(Cons.gitIndexCommitHash, Cons.gitLocalWorktreeCommitHash)
-                        }else if(fromTo==Cons.gitDiffFromHeadToIndex) {
-                            Pair(Cons.gitHeadCommitHash, Cons.gitIndexCommitHash)
-                        }else {
-                            Pair(leftCommit, rightCommit)
-                        }
-
-                        val outFile = FsUtils.Patch.newPatchFile(curRepo.repoName, left, right)
-
-                        /*
-                         *
-                            outFile:File?=null,  // 为null不写入文件，否则写入
-                            pathSpecList: List<String>?=null,   //为null或空代表diff所有文件
-
-                            repo: Repository,
-                            tree1: Tree,
-                            tree2: Tree?,  // when diff to worktree, pass `null`
-                            diffOptionsFlags: EnumSet<Diff.Options.FlagT> = getDefaultDiffOptionsFlags(),
-                            fromTo: String,
-                            reverse: Boolean = false, // when compare worktreeToTree , pass true, then can use treeToWorktree api to diff worktree to tree
-                            treeToWorkTree: Boolean = false,  // only used when fromTo=TreeToTree, if true, will use treeToWorkdir instead treeToTree
-
-                            returnDiffContent:Boolean = false  //为true返回patch内容，否则不返回，因为有可能内容很大，所以若没必要不建议返回
-                        )
-                         */
-//                        println(selectedItemList.value[0].relativePathUnderRepo)  //看下路径是否包含文件名，期望包含，结果：包含！虽然是我自己写的，但我真的忘了！
-//                        return@job
-
-                        val savePatchRet = Libgit2Helper.savePatchToFileAndGetContent(
-                            outFile=outFile,
-                            pathSpecList = selectedItemList.map { it.relativePathUnderRepo },
-                            repo = repo,
-                            tree1 = tree1,
-                            tree2 = tree2,
-                            fromTo = fromTo,
-                            reverse = reverse,
-                            treeToWorkTree = treeToWorkTree,
-                            returnDiffContent = false  //是否返回输出的内容，若返回，可在ret中取出字符串
-                        )
-
-                        if(savePatchRet.success()) {
+                    if(savePatchRet.success()) {
 //                            savePatchPath.value = getFilePathStrBasedRepoDir(outFile.canonicalPath, returnResultStartsWithSeparator = true)
-                            savePatchPath.value = outFile.canonicalPath
-                            //之前app给savePatchPath赋值会崩溃，所以用了Cache规避，后来升级gradle解决了
+                        savePatchPath.value = savePatchRet.data?.outFileFullPath ?: ""
+                        //之前app给savePatchPath赋值会崩溃，所以用了Cache规避，后来升级gradle解决了
 //                            Cache.set(Cache.Key.changeListInnerPage_SavePatchPath, getFilePathStrBasedRepoDir(outFile.canonicalPath, returnResultStartsWithSeparator = true))
-                            showSavePatchSuccessDialog.value = true
-                        }else {
-                            if(savePatchRet.exception!=null) {
-                                throw savePatchRet.exception!!
-                            }else {
-                                throw RuntimeException(savePatchRet.msg)  //抛异常，catch里会向用户显示错误信息，exception.message或.localizedMessage都不包含异常类型名，对用户展示比较友好
-                            }
-                        }
+                        showSavePatchSuccessDialog.value = true
+                    }else {
+                        //抛异常，catch里会向用户显示错误信息 (btw: exception.message或.localizedMessage都不包含异常类型名，对用户展示比较友好)
+                        throw (savePatchRet.exception ?: RuntimeException(savePatchRet.msg))
                     }
                 }catch (e:Exception) {
-                    val errPrefix = "create patch err:"
+                    val errPrefix = "create patch err: "
                     Msg.requireShowLongDuration(e.localizedMessage ?: errPrefix)
                     createAndInsertError(curRepo.id, errPrefix+e.localizedMessage)
+                    MyLog.e(TAG, "$errPrefix${e.stackTraceToString()}")
                 }
-
-
             }
         }
     }
@@ -3544,6 +3469,7 @@ fun ChangeListInnerPage(
 //        }
 //    }
 }
+
 
 
 private suspend fun changeListInit(

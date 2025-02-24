@@ -20,6 +20,7 @@ object PageRequest {
 //    const val goToBranch ="goToBranch"  //goToBranch#branchName，#后面是要goto的分支名
 
 
+    const val createPatch = "createPatch"
     const val indexToWorkTree_CommitAll = "indexToWorkTree_CommitAll"
     const val goToUpstream = "goToUpstream"
     const val editorCreateCancelledState = "editorCreateCancelledState"

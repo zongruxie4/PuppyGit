@@ -7,11 +7,13 @@ import com.catpuppyapp.puppygit.constants.Cons
 import com.catpuppyapp.puppygit.data.AppContainer
 import com.catpuppyapp.puppygit.data.entity.RepoEntity
 import com.catpuppyapp.puppygit.etc.Ret
+import com.catpuppyapp.puppygit.git.PatchFile
 import com.catpuppyapp.puppygit.git.StatusTypeEntrySaver
 import com.catpuppyapp.puppygit.git.Upstream
 import com.catpuppyapp.puppygit.play.pro.R
 import com.catpuppyapp.puppygit.settings.SettingsUtil
 import com.catpuppyapp.puppygit.utils.AppModel
+import com.catpuppyapp.puppygit.utils.FsUtils
 import com.catpuppyapp.puppygit.utils.Libgit2Helper
 import com.catpuppyapp.puppygit.utils.Msg
 import com.catpuppyapp.puppygit.utils.MyLog
@@ -22,6 +24,7 @@ import com.catpuppyapp.puppygit.utils.getSecFromTime
 import com.catpuppyapp.puppygit.utils.replaceStringResList
 import com.catpuppyapp.puppygit.utils.showErrAndSaveLog
 import com.github.git24j.core.Repository
+import com.github.git24j.core.Tree
 
 private const val TAG = "ChangeListFunctions"
 
@@ -843,5 +846,73 @@ object ChangeListFunctions {
         }
     }
 
+
+    /**
+     * ChangeListInnerPage用的创建补丁的方法，和CommitListScreen创建补丁的逻辑有些不同，需判断fromTo
+     */
+    fun createPath(
+        curRepo: RepoEntity,
+        leftCommit:String,  //逻辑上在左边的commit，如果有swap，这里应传swap后的值而不是原始值
+        rightCommit:String,  //逻辑上在右边的commit，如果有swap，这里应传swap后的值而不是原始值
+        fromTo: String,
+        relativePaths: List<String>
+    ):Ret<PatchFile?> {
+        Repository.open(curRepo.fullSavePath).use { repo ->
+            var treeToWorkTree = false  //默认设为假，若和worktree对比（local），会改为真
+
+            val (reverse: Boolean, tree1: Tree?, tree2: Tree?) = if (fromTo == Cons.gitDiffFromIndexToWorktree || fromTo == Cons.gitDiffFromHeadToIndex) {
+                Triple(false, null, null)
+            } else if (Libgit2Helper.CommitUtil.isLocalCommitHash(leftCommit) || Libgit2Helper.CommitUtil.isLocalCommitHash(rightCommit)) {
+                treeToWorkTree = true
+
+                //其中一个是local路径，为local的可不是有效tree
+                val reverse = Libgit2Helper.CommitUtil.isLocalCommitHash(leftCommit)  //若左边的commit是local，需要反转一下，因为默认api只有 treeToWorkdir，即treeToLocal，而我们需要的是localToTree，所以不反转不行
+
+                val tree1 = if (reverse) {
+                    Libgit2Helper.resolveTree(repo, rightCommit)
+                } else {
+                    Libgit2Helper.resolveTree(repo, leftCommit)
+                }
+
+                if (tree1 == null) {
+                    throw RuntimeException("resolve tree1 failed, 11982433")
+                }
+
+                val tree2 = null
+
+                Triple(reverse, tree1, tree2)
+            } else {
+                //没有local路径，全都是有效tree
+                val reverse = false
+                val tree1 = Libgit2Helper.resolveTree(repo, leftCommit) ?: throw RuntimeException("resolve tree1 failed, 12978960")
+                val tree2 = Libgit2Helper.resolveTree(repo, rightCommit) ?: throw RuntimeException("resolve tree2 failed, 17819020")
+                Triple(reverse, tree1, tree2)
+            }
+
+            //获取输出文件，可能没创建，执行输出时会自动创建，重点是文件路径
+            val (left: String, right: String) = if (fromTo == Cons.gitDiffFromIndexToWorktree) {
+                Pair(Cons.gitIndexCommitHash, Cons.gitLocalWorktreeCommitHash)
+            } else if (fromTo == Cons.gitDiffFromHeadToIndex) {
+                Pair(Cons.gitHeadCommitHash, Cons.gitIndexCommitHash)
+            } else {
+                Pair(leftCommit, rightCommit)
+            }
+
+            val outFile = FsUtils.Patch.newPatchFile(curRepo.repoName, left, right)
+
+            return Libgit2Helper.savePatchToFileAndGetContent(
+                outFile = outFile,
+                pathSpecList = relativePaths,
+                repo = repo,
+                tree1 = tree1,
+                tree2 = tree2,
+                fromTo = fromTo,
+                reverse = reverse,
+                treeToWorkTree = treeToWorkTree,
+                returnDiffContent = false  //是否返回输出的内容，若返回，可在ret中取出字符串
+            )
+
+        }
+    }
 
 }

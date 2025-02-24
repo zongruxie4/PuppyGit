@@ -139,8 +139,8 @@ import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 
-private val TAG = "CommitListScreen"
-private val stateKeyTag = "CommitListScreen"
+private const val TAG = "CommitListScreen"
+private const val stateKeyTag = "CommitListScreen"
 
 //TODO 备忘：修改这个页面为可多选的形式，记得加一个 filterList remmeber变量，在过滤模式点击全选或span选择时，操作filterList
 
@@ -1244,9 +1244,10 @@ fun CommitListScreen(
                         }
                     }
                 }catch (e:Exception) {
-                    val errPrefix = "create patch err:"
+                    val errPrefix = "create patch err: "
                     Msg.requireShowLongDuration(e.localizedMessage ?: errPrefix)
                     createAndInsertError(curRepo.value.id, errPrefix+e.localizedMessage)
+                    MyLog.e(TAG, "$errPrefix${e.stackTraceToString()}")
                 }
 
             }
