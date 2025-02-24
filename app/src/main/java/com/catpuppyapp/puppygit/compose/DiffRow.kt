@@ -457,6 +457,7 @@ fun DiffRow (
             //如果是经过compare的添加或删除行，背景半透明，然后真修改的内容用不透明，这样就能突出真修改的内容
             //alpha值越大越不透明
             .background(if (useStringPartList) color.copy(alpha = 0.4f) else color)
+            .padding(end = 5.dp)
 //            .background(color)
 //                            .clickable {
 //
@@ -482,6 +483,12 @@ fun DiffRow (
                 val initReadOnly = "0"  //app内置目录下的文件不可能在diff页面显示，所以在这把readonly设为0即可
                 navController.navigate(Cons.nav_SubPageEditor +"/$goToLine"+"/$initMergeMode"+"/$initReadOnly")
             }
+
+                //这个和changeType加行号(prefix)左边的padding构成完整每行左右padding
+                //如果有前缀，padding小点，否则大点
+                //这个放到clickable后面，这样点击padding区域也可触发onClick
+            .padding(start = (if(prefix.isNotEmpty()) 2.dp else 5.dp))
+
         )
 
         if(useStringPartList) {
