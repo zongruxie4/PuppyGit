@@ -40,6 +40,7 @@ import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.AnnotatedString
+import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -229,8 +230,9 @@ fun FileEditor(
                             text = getLineNumber(index),
                             color = if(inDarkTheme) MyStyleKt.TextColor.lineNum_forEditorInDarkTheme else MyStyleKt.TextColor.lineNum_forEditorInLightTheme,
                             fontSize = lineNumFontSize.intValue.sp,
+                            fontFamily = FontFamily.Monospace,  //等宽字体，和diff页面的行号保持一致
                             //行号居中
-                            //                    modifier = Modifier.align(Alignment.CenterVertically)
+                            // modifier = Modifier.align(Alignment.CenterVertically)
                         )
 
                         // TextField Menu Icon

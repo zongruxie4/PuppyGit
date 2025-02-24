@@ -27,6 +27,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.buildAnnotatedString
+import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.text.withStyle
@@ -475,6 +476,7 @@ fun DiffRow (
             text = prefix,
             color = lineNumColor,
             fontSize = lineNumSize.sp,
+            fontFamily = FontFamily.Monospace, // 使用系统自带的等宽字体，不然那个+和-不等宽，看着难受
             modifier = Modifier.clickable {
                 Cache.set(Cache.Key.subPageEditor_filePathKey, fileFullPath)
                 //if jump line is EOF, should go to last line of file, but didn't know the line num, so set line num to a enough big number
