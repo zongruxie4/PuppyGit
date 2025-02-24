@@ -479,8 +479,181 @@ fun DiffContent(
                             val add = lines.get(Diff.Line.OriginType.ADDITION.toString())
                             val del = lines.get(Diff.Line.OriginType.DELETION.toString())
                             val context = lines.get(Diff.Line.OriginType.CONTEXT.toString())
-                            //若 context del add同时存在，打印顺序为 context/del/add，不过不太可能3个同时存在，顶多两个同时存在
-                            if(context!=null) {
+                            //(deprecated:) 若 context del add同时存在，打印顺序为 context/del/add，不过不太可能3个同时存在，顶多两个同时存在
+                            //20250224 change: 若 context del add同时存在，打印顺序为 del/add/context ，不过不太可能3个同时存在，顶多两个同时存在
+                            val mergeDelAndAddToFakeContext = add!=null && del!=null && add.getContentNoLineBreak().equals(del.getContentNoLineBreak()) ;
+
+
+                            // show `del` and `add` or `fake context `start
+                            if(mergeDelAndAddToFakeContext.not()) {  //分别显示add和del
+                                //show `del` and `add` start
+//                            val pair = comparePair.value
+                                //不存在的key是为了使返回值为null
+                                val addCompareLinePairResult = indexStringPartListMapForComparePair.value.get(add?.key?:"nonexist keyadd")
+                                val delCompareLinePairResult = indexStringPartListMapForComparePair.value.get(del?.key?:"nonexist keydel")
+                                var addUsedPair = false
+                                var delUsedPair = false
+
+                                var delStringPartListWillUse:List<IndexStringPart>? = null
+                                var addStringPartListWillUse:List<IndexStringPart>? = null
+
+                                if(delCompareLinePairResult != null && del != null){
+                                    delUsedPair = true
+                                    delStringPartListWillUse = delCompareLinePairResult.stringPartList
+                                }
+
+                                if(addCompareLinePairResult != null && add != null) {
+                                    addUsedPair = true
+                                    addStringPartListWillUse = addCompareLinePairResult.stringPartList
+                                }
+
+
+                                if(del!=null && add!=null && (delUsedPair.not() || addUsedPair.not())) {
+                                    val modifyResult2 = CmpUtil.compare(
+                                        add = StringCompareParam(add.content, add.content.length),
+                                        del = StringCompareParam(del.content, del.content.length),
+
+                                        //为true则对比更精细，但是，时间复杂度乘积式增加，不开 O(n)， 开了 O(nm)
+                                        requireBetterMatching = requireBetterMatchingForCompare.value,
+                                        matchByWords = matchByWords.value,
+
+//                                    swap = true
+                                    )
+
+                                    if(modifyResult2.matched) {
+                                        if(delUsedPair.not()) {
+                                            delStringPartListWillUse = modifyResult2.del
+                                        }
+
+                                        if(addUsedPair.not()) {
+                                            addStringPartListWillUse = modifyResult2.add
+                                        }
+
+                                    }
+                                }
+
+
+                                if(del!=null) {
+                                    item {
+                                        DiffRow(
+                                            line = del,
+                                            stringPartList = delStringPartListWillUse,
+                                            fileFullPath=fileFullPath,
+                                            isFileAndExist = isFileAndExist.value,
+                                            clipboardManager=clipboardManager,
+                                            loadingOn=loadingOnParent,
+                                            loadingOff=loadingOffParent,
+                                            refreshPage=refreshPageIfComparingWithLocal,
+                                            repoId=repoId,
+                                            showOriginType = showOriginType,
+                                            showLineNum = showLineNum,
+                                            fontSize = fontSize,
+                                            lineNumSize = lineNumSize,
+                                            comparePairBuffer = comparePairBuffer,
+                                            betterCompare = requireBetterMatchingForCompare.value,
+                                            reForEachDiffContent=reForEachDiffContent,
+                                            indexStringPartListMap = indexStringPartListMapForComparePair,
+                                            enableSelectCompare=enableSelectCompare,
+                                            matchByWords = matchByWords.value,
+                                            settings = settings,
+                                            navController = navController,
+                                            activityContext = activityContext
+                                        )
+                                    }
+                                }
+
+                                if(add!=null) {
+                                    item {
+                                        DiffRow(
+                                            line = add,
+                                            stringPartList = addStringPartListWillUse,
+                                            fileFullPath=fileFullPath,
+                                            isFileAndExist = isFileAndExist.value,
+                                            clipboardManager=clipboardManager,
+                                            loadingOn=loadingOnParent,
+                                            loadingOff=loadingOffParent,
+                                            refreshPage=refreshPageIfComparingWithLocal,
+                                            repoId=repoId,
+                                            showOriginType = showOriginType,
+                                            showLineNum = showLineNum,
+                                            fontSize = fontSize,
+                                            lineNumSize = lineNumSize,
+                                            comparePairBuffer = comparePairBuffer,
+                                            betterCompare = requireBetterMatchingForCompare.value,
+                                            reForEachDiffContent=reForEachDiffContent,
+                                            indexStringPartListMap = indexStringPartListMapForComparePair,
+                                            enableSelectCompare=enableSelectCompare,
+                                            matchByWords = matchByWords.value,
+                                            settings = settings,
+                                            navController = navController,
+                                            activityContext = activityContext
+                                        )
+                                    }
+                                }
+
+                                // show `del` and `add` end
+
+                            }else if(context == null) { //需要合并add和del且没有 real context，显示个fake context
+                                // show `fake context` start (就是那种add和del一个有换行符一个没有，其他都一样的情况，这种情况显示一个context文本取代两个看起来完全一样的add和del，但这个context其实是假的，不是真的)
+                                //只有在第一次执行比较时才执行此检查，且一旦转换，add和del行将消失，变成相同行号的上下文行
+                                //潜在bug：如果存在一个行号，同时有add/del/context 3种类型的行号且 add和del 仅末尾行号不同，而和context内容上有不同，就会有bug，会少显示add del行的内容，不过，应该不会存在这种情况
+
+                                    //解决：两行除了末尾换行符没任何区别的情况仍显示diff的bug（有红有绿但没区别，令人迷惑）
+                                    //如果转换成context，其实就不能触发select compare了，不过并没bug，因为如果转换为context，一开始就转换了，后面就不会再有选择行比较了？不对，有bug，必须得把原先的添加和删除类型的行删掉，换成一个上下文行，这样才能在之后选择比较行时无bug，我已经处理了
+
+                                    //添加和删除行仅一个有换行符，另一个没有，当作没区别，移除添加和删除类型，并添加一个新的上下文行
+                                    //转换后的行有无换行符无所谓，DiffRow显示前会先移除末尾的换行符
+                                    //不能remove，不然切换group by line后，会有问题
+//                                lines.remove(Diff.Line.OriginType.ADDITION.toString())
+//                                lines.remove(Diff.Line.OriginType.DELETION.toString())
+
+                                    //如果已经存在真context，就不显示这个假context了，否则显示
+                                    //这里可以假设 add 和 context 是一样的，所以如果add和del一样，其实隐含了add == del == context，因此若context已经显示，就不需要再显示了
+//                                    val newContextLineFromAddAndDelOnlyLineBreakDifference = del.copy(originType = Diff.Line.OriginType.CONTEXT.toString())
+//                                    lines.put(Diff.Line.OriginType.CONTEXT.toString(), newContextLineFromAddAndDelOnlyLineBreakDifference)
+
+                                item {
+                                    DiffRow(
+                                        //随便拷贝下del或add（不拷贝只改类型也行但不推荐以免有坏影响）把类型改成context，就行了
+                                        //这里del肯定不为null，因为mergeDelAndAddToFakeContext的条件包含了del和add都不为null
+                                        line = del!!.copy(originType = Diff.Line.OriginType.CONTEXT.toString()),
+                                        fileFullPath=fileFullPath,
+                                        isFileAndExist = isFileAndExist.value,
+                                        clipboardManager=clipboardManager,
+                                        loadingOn=loadingOnParent,
+                                        loadingOff=loadingOffParent,
+                                        refreshPage=refreshPageIfComparingWithLocal,
+                                        repoId=repoId,
+                                        showOriginType = showOriginType,
+                                        showLineNum = showLineNum,
+                                        fontSize = fontSize,
+                                        lineNumSize = lineNumSize,
+                                        comparePairBuffer = comparePairBuffer,
+                                        betterCompare = requireBetterMatchingForCompare.value,
+                                        reForEachDiffContent=reForEachDiffContent,
+                                        indexStringPartListMap = indexStringPartListMapForComparePair,
+                                        enableSelectCompare=enableSelectCompare,
+                                        matchByWords = matchByWords.value,
+                                        settings = settings,
+                                        navController = navController,
+                                        activityContext = activityContext
+                                    )
+
+                                }
+
+
+                                //add和del合并成fake context了，同时没有真context需要显示，return，加载下一行
+                                return@printLine
+
+                                // show `fake context` end
+
+                            }
+
+                            // show `del` and `add` or `fake context `start
+
+                            // show real `context` start
+                            // true context
+                            if(context != null) {
                                 item {
                                     //打印context
                                     DiffRow(
@@ -509,164 +682,7 @@ fun DiffContent(
                                 }
                             }
 
-
-
-                            //只有在第一次执行比较时才执行此检查，且一旦转换，add和del行将消失，变成相同行号的上下文行
-                            //潜在bug：如果存在一个行号，同时有add/del/context 3种类型的行号且 add和del 仅末尾行号不同，而和context内容上有不同，就会有bug，会少显示add del行的内容，不过，应该不会存在这种情况
-                            if(add!=null && del!=null && add.getContentNoLineBreak().equals(del.getContentNoLineBreak())) {  //同样行号，同时存在删除和新增，执行增量diff
-                                //解决：两行除了末尾换行符没任何区别的情况仍显示diff的bug（有红有绿但没区别，令人迷惑）
-                                //如果转换成context，其实就不能触发select compare了，不过并没bug，因为如果转换为context，一开始就转换了，后面就不会再有选择行比较了？不对，有bug，必须得把原先的添加和删除类型的行删掉，换成一个上下文行，这样才能在之后选择比较行时无bug，我已经处理了
-
-                                //添加和删除行仅一个有换行符，另一个没有，当作没区别，移除添加和删除类型，并添加一个新的上下文行
-                                //转换后的行有无换行符无所谓，DiffRow显示前会先移除末尾的换行符
-                                //不能remove，不然切换group by line后，会有问题
-//                                lines.remove(Diff.Line.OriginType.ADDITION.toString())
-//                                lines.remove(Diff.Line.OriginType.DELETION.toString())
-
-                                //如果已经存在真context，就不显示这个假context了，否则显示
-                                //这里可以假设 add 和 context 是一样的，所以如果add和del一样，其实隐含了add == del == context，因此若context已经显示，就不需要再显示了
-                                if(context == null) {
-//                                    val newContextLineFromAddAndDelOnlyLineBreakDifference = del.copy(originType = Diff.Line.OriginType.CONTEXT.toString())
-//                                    lines.put(Diff.Line.OriginType.CONTEXT.toString(), newContextLineFromAddAndDelOnlyLineBreakDifference)
-
-                                    item {
-                                        DiffRow(
-                                            //随便拷贝下del或add（不拷贝只改类型也行但不推荐以免有坏影响）把类型改成context，就行了
-                                            line = del.copy(originType = Diff.Line.OriginType.CONTEXT.toString()),
-                                            fileFullPath=fileFullPath,
-                                            isFileAndExist = isFileAndExist.value,
-                                            clipboardManager=clipboardManager,
-                                            loadingOn=loadingOnParent,
-                                            loadingOff=loadingOffParent,
-                                            refreshPage=refreshPageIfComparingWithLocal,
-                                            repoId=repoId,
-                                            showOriginType = showOriginType,
-                                            showLineNum = showLineNum,
-                                            fontSize = fontSize,
-                                            lineNumSize = lineNumSize,
-                                            comparePairBuffer = comparePairBuffer,
-                                            betterCompare = requireBetterMatchingForCompare.value,
-                                            reForEachDiffContent=reForEachDiffContent,
-                                            indexStringPartListMap = indexStringPartListMapForComparePair,
-                                            enableSelectCompare=enableSelectCompare,
-                                            matchByWords = matchByWords.value,
-                                            settings = settings,
-                                            navController = navController,
-                                            activityContext = activityContext
-                                        )
-
-                                    }
-                                }
-
-                                //已经显示了一个真的或假的context行，执行到这里，就可以下一行了
-                                return@printLine
-                            }
-
-
-
-//                            val pair = comparePair.value
-                            //不存在的key是为了使返回值为null
-                            val addCompareLinePairResult = indexStringPartListMapForComparePair.value.get(add?.key?:"nonexist keyadd")
-                            val delCompareLinePairResult = indexStringPartListMapForComparePair.value.get(del?.key?:"nonexist keydel")
-                            var addUsedPair = false
-                            var delUsedPair = false
-
-                            var delStringPartListWillUse:List<IndexStringPart>? = null
-                            var addStringPartListWillUse:List<IndexStringPart>? = null
-
-                            if(delCompareLinePairResult != null && del != null){
-                                delUsedPair = true
-                                delStringPartListWillUse = delCompareLinePairResult.stringPartList
-                            }
-
-                            if(addCompareLinePairResult != null && add != null) {
-                                addUsedPair = true
-                                addStringPartListWillUse = addCompareLinePairResult.stringPartList
-                            }
-
-
-                            if(del!=null && add!=null && (delUsedPair.not() || addUsedPair.not())) {
-                                val modifyResult2 = CmpUtil.compare(
-                                    add = StringCompareParam(add.content, add.content.length),
-                                    del = StringCompareParam(del.content, del.content.length),
-
-                                    //为true则对比更精细，但是，时间复杂度乘积式增加，不开 O(n)， 开了 O(nm)
-                                    requireBetterMatching = requireBetterMatchingForCompare.value,
-                                    matchByWords = matchByWords.value,
-
-//                                    swap = true
-                                )
-
-                                if(modifyResult2.matched) {
-                                    if(delUsedPair.not()) {
-                                        delStringPartListWillUse = modifyResult2.del
-                                    }
-
-                                    if(addUsedPair.not()) {
-                                        addStringPartListWillUse = modifyResult2.add
-                                    }
-
-                                }
-                            }
-
-
-                            if(del!=null) {
-                                item {
-                                    DiffRow(
-                                        line = del,
-                                        stringPartList = delStringPartListWillUse,
-                                        fileFullPath=fileFullPath,
-                                        isFileAndExist = isFileAndExist.value,
-                                        clipboardManager=clipboardManager,
-                                        loadingOn=loadingOnParent,
-                                        loadingOff=loadingOffParent,
-                                        refreshPage=refreshPageIfComparingWithLocal,
-                                        repoId=repoId,
-                                        showOriginType = showOriginType,
-                                        showLineNum = showLineNum,
-                                        fontSize = fontSize,
-                                        lineNumSize = lineNumSize,
-                                        comparePairBuffer = comparePairBuffer,
-                                        betterCompare = requireBetterMatchingForCompare.value,
-                                        reForEachDiffContent=reForEachDiffContent,
-                                        indexStringPartListMap = indexStringPartListMapForComparePair,
-                                        enableSelectCompare=enableSelectCompare,
-                                        matchByWords = matchByWords.value,
-                                        settings = settings,
-                                        navController = navController,
-                                        activityContext = activityContext
-                                    )
-                                }
-                            }
-
-                            if(add!=null) {
-                                item {
-                                    DiffRow(
-                                        line = add,
-                                        stringPartList = addStringPartListWillUse,
-                                        fileFullPath=fileFullPath,
-                                        isFileAndExist = isFileAndExist.value,
-                                        clipboardManager=clipboardManager,
-                                        loadingOn=loadingOnParent,
-                                        loadingOff=loadingOffParent,
-                                        refreshPage=refreshPageIfComparingWithLocal,
-                                        repoId=repoId,
-                                        showOriginType = showOriginType,
-                                        showLineNum = showLineNum,
-                                        fontSize = fontSize,
-                                        lineNumSize = lineNumSize,
-                                        comparePairBuffer = comparePairBuffer,
-                                        betterCompare = requireBetterMatchingForCompare.value,
-                                        reForEachDiffContent=reForEachDiffContent,
-                                        indexStringPartListMap = indexStringPartListMapForComparePair,
-                                        enableSelectCompare=enableSelectCompare,
-                                        matchByWords = matchByWords.value,
-                                        settings = settings,
-                                        navController = navController,
-                                        activityContext = activityContext
-                                    )
-                                }
-                            }
+                            // show real `context` end
 
                         }
 
