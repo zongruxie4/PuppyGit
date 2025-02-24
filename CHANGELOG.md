@@ -1,4 +1,4 @@
-next:
+1.0.8.9v65 - 20250224:
 - Line number of Diff and Editor screens use width-fixed font
 
 
