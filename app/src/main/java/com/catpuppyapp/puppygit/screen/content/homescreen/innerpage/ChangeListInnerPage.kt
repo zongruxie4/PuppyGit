@@ -1835,7 +1835,7 @@ fun ChangeListInnerPage(
             title = stringResource(R.string.create_patch),
             requireShowTextCompose = true,
             textCompose = {
-                Column{
+                ScrollableColumn {
                     Text(text = stringResource(R.string.will_create_patch_of_selected_files_are_you_sure))
                 }
             },
@@ -1888,7 +1888,7 @@ fun ChangeListInnerPage(
                         }else if(fromTo==Cons.gitDiffFromHeadToIndex) {
                             Pair(Cons.gitHeadCommitHash, Cons.gitIndexCommitHash)
                         }else {
-                            Pair(getCommitLeft(), getCommitRight())
+                            Pair(leftCommit, rightCommit)
                         }
 
                         val outFile = FsUtils.Patch.newPatchFile(curRepo.repoName, left, right)

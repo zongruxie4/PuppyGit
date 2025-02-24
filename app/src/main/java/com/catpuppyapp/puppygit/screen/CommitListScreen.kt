@@ -1131,7 +1131,7 @@ fun CommitListScreen(
             title = stringResource(R.string.create_patch),
             requireShowTextCompose = true,
             textCompose = {
-                Column{
+                ScrollableColumn {
                     Text(text =  buildAnnotatedString {
                         append(stringResource(R.string.target)+": ")
                         withStyle(style = SpanStyle(fontWeight = FontWeight.ExtraBold)) {
