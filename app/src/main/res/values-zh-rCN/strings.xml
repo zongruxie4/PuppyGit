@@ -715,7 +715,7 @@
     <string name="cherrypick_aborted">中止精选</string>
     <string name="cherrypick_continue_err">继续精选出错</string>
     <string name="creating_patch">创建补丁中…</string>
-    <string name="will_create_patch_of_selected_files_are_you_sure">将为选中的文件创建补丁，你确定吗？</string>
+    <string name="will_create_patch_for_selected_files_are_you_sure">将为选中的文件创建补丁，你确定吗？</string>
     <string name="copy_path">复制路径</string>
     <string name="committer">提交者</string>
     <string name="apply_as_patch">作为补丁应用</string>

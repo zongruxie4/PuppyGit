@@ -103,7 +103,6 @@ import com.catpuppyapp.puppygit.settings.SettingsUtil
 import com.catpuppyapp.puppygit.style.MyStyleKt
 import com.catpuppyapp.puppygit.user.UserUtil
 import com.catpuppyapp.puppygit.utils.AppModel
-import com.catpuppyapp.puppygit.utils.FsUtils
 import com.catpuppyapp.puppygit.utils.IgnoreMan
 import com.catpuppyapp.puppygit.utils.Libgit2Helper
 import com.catpuppyapp.puppygit.utils.Msg
@@ -129,7 +128,6 @@ import com.catpuppyapp.puppygit.utils.updateSelectedList
 import com.catpuppyapp.puppygit.utils.withMainContext
 import com.github.git24j.core.Repository
 import com.github.git24j.core.Repository.StateT
-import com.github.git24j.core.Tree
 
 private const val TAG = "ChangeListInnerPage"
 private const val stateKeyTag = "ChangeListInnerPage"
@@ -1835,7 +1833,7 @@ fun ChangeListInnerPage(
             requireShowTextCompose = true,
             textCompose = {
                 ScrollableColumn {
-                    Text(text = stringResource(R.string.will_create_patch_of_selected_files_are_you_sure))
+                    Text(text = stringResource(R.string.will_create_patch_for_selected_files_are_you_sure))
                 }
             },
             onCancel = { showCreatePatchDialog.value = false }

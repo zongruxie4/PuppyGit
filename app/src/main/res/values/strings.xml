@@ -715,7 +715,7 @@
     <string name="cherrypick_aborted">Cherrypick Aborted</string>
     <string name="cherrypick_continue_err">Cherrypick Continue Err</string>
     <string name="creating_patch">Creating Patch…</string>
-    <string name="will_create_patch_of_selected_files_are_you_sure">will create patch of selected files, are you sure?</string>
+    <string name="will_create_patch_for_selected_files_are_you_sure">will create patch for selected files, are you sure?</string>
     <string name="copy_path">Copy Path</string>
     <string name="committer">Committer</string>
     <string name="apply_as_patch">Apply as Patch</string>

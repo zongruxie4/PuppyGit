@@ -715,7 +715,7 @@
     <string name="cherrypick_aborted">Cherry-pick отменён</string>
     <string name="cherrypick_continue_err">Ошибка при продолжении cherry-pick</string>
     <string name="creating_patch">Создание патча…</string>
-    <string name="will_create_patch_of_selected_files_are_you_sure">Будет создан патч для выбранных файлов, вы уверены?</string>
+    <string name="will_create_patch_for_selected_files_are_you_sure">Будет создан патч для выбранных файлов, вы уверены?</string>
     <string name="copy_path">Копировать путь</string>
     <string name="committer">Автор фиксации</string>
     <string name="apply_as_patch">Применить как патч</string>

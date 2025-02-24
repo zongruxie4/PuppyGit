@@ -67,6 +67,7 @@ fun<T> SingleSelectList(
     Card(
         //0.9f 占父元素宽度的百分之90
         modifier = outterModifier
+            .padding(bottom = 10.dp)
             .clickable {
                 expandDropdownMenu.value = !expandDropdownMenu.value
             }
