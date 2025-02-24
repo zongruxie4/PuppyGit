@@ -1,3 +1,11 @@
+next:
+- Line number of Diff and Editor screens use width-fixed font
+
+
+- Diff和Editor页面的行号改用等宽字体
+
+---
+
 1.0.8.8v64 - 20250222:
 - double-click title can switch between top and current position
 - change go to top fab logic to switch between top and last position
