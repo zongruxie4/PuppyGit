@@ -85,6 +85,7 @@ import com.catpuppyapp.puppygit.compose.LoadingDialog
 import com.catpuppyapp.puppygit.compose.LongPressAbleIconBtn
 import com.catpuppyapp.puppygit.compose.MyCheckBox
 import com.catpuppyapp.puppygit.compose.MyLazyColumn
+import com.catpuppyapp.puppygit.compose.MySelectionContainer
 import com.catpuppyapp.puppygit.compose.RepoInfoDialog
 import com.catpuppyapp.puppygit.compose.ResetDialog
 import com.catpuppyapp.puppygit.compose.ScrollableColumn
@@ -1132,14 +1133,19 @@ fun CommitListScreen(
             requireShowTextCompose = true,
             textCompose = {
                 ScrollableColumn {
-                    Text(text =  buildAnnotatedString {
-                        append(stringResource(R.string.target)+": ")
-                        withStyle(style = SpanStyle(fontWeight = FontWeight.ExtraBold)) {
-                            append(shortTarget)
-                        }
-                    },
-                        modifier = Modifier.padding(horizontal = padding)
-                    )
+                    MySelectionContainer {
+                        Text(
+                            text =  buildAnnotatedString {
+                                append(stringResource(R.string.target)+": ")
+
+                                withStyle(style = SpanStyle(fontWeight = FontWeight.ExtraBold)) {
+                                    append(shortTarget)
+                                }
+                            },
+
+                            modifier = Modifier.padding(horizontal = padding)
+                        )
+                    }
 
                     Row(modifier = Modifier.padding(padding)) {
                         Text(text = stringResource(R.string.select_a_parent_for_find_changes)+":")
