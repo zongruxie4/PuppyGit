@@ -1,3 +1,11 @@
+1.0.9.0v66 - 20250225:
+- use icon instead of clickable text to copy commit hash
+
+
+- 使用图标替代可点击文字拷贝提交hash
+
+---
+
 1.0.8.9v65 - 20250224:
 - Line number of Diff and Editor screens use width-fixed font
 - support create patch at Diff screen
