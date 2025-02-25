@@ -36,12 +36,10 @@ fun InLineIcon(
 
 @Composable
 fun InLineCommitHistoryIcon(
-    tooltipText: String = stringResource(R.string.commit_history),
     onClick: () -> Unit
 ) {
-    InLineIcon(
-        icon = Icons.Filled.History,
-        tooltipText = tooltipText,
+    InLineHistoryIcon(
+        tooltipText = stringResource(R.string.commit_history),
     ){
         onClick()
     }
@@ -49,11 +47,23 @@ fun InLineCommitHistoryIcon(
 
 @Composable
 fun InLineCopyIcon(
-    tooltipText: String = stringResource(R.string.copy),
     onClick: () -> Unit
 ) {
     InLineIcon(
         icon = Icons.Filled.ContentCopy,
+        tooltipText = stringResource(R.string.copy),
+    ){
+        onClick()
+    }
+}
+
+@Composable
+private fun InLineHistoryIcon(
+    tooltipText: String,
+    onClick: () -> Unit
+) {
+    InLineIcon(
+        icon = Icons.Filled.History,
         tooltipText = tooltipText,
     ){
         onClick()
