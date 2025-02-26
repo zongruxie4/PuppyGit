@@ -37,13 +37,18 @@ open class CacheStoreImpl(
         return storage.get(key)
     }
 
-    override fun getOrDefault(key: String, default: Any, saveDefaultWhenNoKey:Boolean): Any {
+    override fun getOrDefault(key: String, default: ()->Any): Any {
+        return get(key) ?: default()
+    }
+
+    override fun getOrPut(key: String, default: ()->Any): Any {
         val v = get(key)
-        return if(v==null) {
-            if(saveDefaultWhenNoKey) {
-                set(key, default)
-            }
-            default
+
+        return if(v == null) {
+            val defaultValue = default()
+            set(key, defaultValue)
+
+            defaultValue
         }else {
             v
         }
@@ -53,13 +58,18 @@ open class CacheStoreImpl(
         return get(key) as? T
     }
 
-    override fun <T:Any> getOrDefaultByType(key: String, default: T, saveDefaultWhenNoKey:Boolean): T {
+    override fun <T:Any> getOrDefaultByType(key:String, default:()->T):T {
+        return getByType<T>(key) ?: default()
+    }
+
+    override fun <T:Any> getOrPutByType(key:String, default:()->T):T {
         val v = getByType<T>(key)
-        return if(v==null) {
-            if(saveDefaultWhenNoKey) {
-                set(key, default)
-            }
-            default
+
+        return if(v == null) {
+            val defaultValue = default()
+            set(key, defaultValue)
+
+            defaultValue
         }else {
             v
         }

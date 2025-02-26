@@ -11,10 +11,22 @@ interface CacheStore { // TODO定时删除
     fun set(key:String, value:Any):Any?
     fun get(key:String):Any?
 
-    fun getOrDefault(key:String, default:Any, saveDefaultWhenNoKey:Boolean):Any
+    /**
+     * if key exists, return value, else return default
+     */
+    fun getOrDefault(key: String, default: ()->Any): Any
+
+    /**
+     * if key exists, return value, else will put and return default
+     */
+    fun getOrPut(key: String, default: ()->Any): Any
+
 
     fun<T> getByType(key:String):T?
-    fun<T:Any> getOrDefaultByType(key:String, default:T, saveDefaultWhenNoKey:Boolean):T
+
+    fun<T:Any> getOrDefaultByType(key:String, default:()->T):T
+
+    fun<T:Any> getOrPutByType(key:String, default:()->T):T
 
     fun<T> getByTypeThenDel(key:String):T?
 
