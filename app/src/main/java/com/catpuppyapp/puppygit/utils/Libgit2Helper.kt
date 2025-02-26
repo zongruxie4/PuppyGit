@@ -83,6 +83,7 @@ import java.io.File
 import java.nio.charset.Charset
 import java.time.ZoneOffset
 import java.util.EnumSet
+import java.util.concurrent.ConcurrentHashMap
 
 
 private const val TAG = "Libgit2Helper"
@@ -250,6 +251,11 @@ class Libgit2Helper {
     }
 
     companion object {
+        /**
+         * 获取仓库对应的锁，不要直接调用这个变量，用 `Ligit2Helper.getRepoLock()` 来获取仓库的锁
+         */
+        private val repoLockMap:MutableMap<String, Mutex> = ConcurrentHashMap()
+
         //x DONE at 20241114) change this "credentialType" set by url
         private val getCredentialCb = { credentialType:Int, usernameOrPrivateKey:String, passOrPassphrase:String ->
 
@@ -6223,7 +6229,7 @@ class Libgit2Helper {
         }
 
         fun getRepoLock(repoId:String):Mutex {
-            return Cons.repoLockMap.getOrPut(repoId) {
+            return repoLockMap.getOrPut(repoId) {
                 //这锁不可重入
                 //如果get不到，put这个进去
                 Mutex()

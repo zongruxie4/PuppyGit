@@ -204,7 +204,6 @@ object Cons {
 
     //db相关常量结束
 
-    val repoLockMap:MutableMap<String, Mutex> = ConcurrentHashMap()
 
     // git相关变量开始
     const val gitRepoStateInvalid=-1
