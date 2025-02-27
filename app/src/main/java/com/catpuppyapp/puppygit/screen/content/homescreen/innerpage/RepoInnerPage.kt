@@ -1997,9 +1997,11 @@ fun RepoInnerPage(
             // rename不需要检查仓库状态是否good，直接执行即可
             val selectedRepo = selectedItems.value.first()
             curRepo.value = RepoEntity()
-            curRepo.value = selectedItems.value.first()
+            curRepo.value = selectedRepo
 
+            // init rename dialog
             repoNameForRenameDialog.value = selectedRepo.repoName
+            errMsgForRenameDialog.value = ""
             showRenameDialog.value = true
         },
 
