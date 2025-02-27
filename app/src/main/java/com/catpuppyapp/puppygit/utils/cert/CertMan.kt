@@ -13,7 +13,7 @@ import com.github.git24j.core.Libgit2
 import java.io.File
 
 object CertMan {
-    private val TAG = "CertMan"
+    private const val TAG = "CertMan"
 
     //若更新证书，应更新此值
     const val currentVersion = 4

@@ -34,6 +34,7 @@ import com.catpuppyapp.puppygit.utils.app.upgrade.migrator.AppVersionMan
 import com.catpuppyapp.puppygit.utils.cert.CertMan
 import com.catpuppyapp.puppygit.utils.encrypt.MasterPassUtil
 import com.catpuppyapp.puppygit.utils.fileopenhistory.FileOpenHistoryMan
+import com.catpuppyapp.puppygit.utils.saf.SafUtil
 import com.catpuppyapp.puppygit.utils.snapshot.SnapshotUtil
 import com.catpuppyapp.puppygit.utils.storagepaths.StoragePathsMan
 import com.catpuppyapp.puppygit.utils.time.TimeZoneMode
@@ -332,6 +333,8 @@ object AppModel {
         //设置对用户可见的app工作目录
         AppModel.appDataUnderAllReposDir = createDirIfNonexists(AppModel.allRepoParentDir, Cons.defalutPuppyGitDataUnderAllReposDirName)
         //与sd相关代码互斥，结束
+
+        SafUtil.init(AppModel.appDataUnderAllReposDir)
 
 
         //存放app内置证书的路径
