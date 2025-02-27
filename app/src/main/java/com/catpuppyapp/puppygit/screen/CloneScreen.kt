@@ -100,8 +100,7 @@ import com.catpuppyapp.puppygit.utils.isPathExists
 import com.catpuppyapp.puppygit.utils.state.mutableCustomStateListOf
 import com.catpuppyapp.puppygit.utils.state.mutableCustomStateOf
 import com.catpuppyapp.puppygit.utils.storagepaths.StoragePathsMan
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.withContext
+import com.catpuppyapp.puppygit.utils.withMainContext
 import java.io.File
 
 private val TAG = "CloneScreen"
@@ -398,20 +397,23 @@ fun CloneScreen(
 
             val fullSavePath = storagePathSelectedPath.value.removeSuffix(File.separator) + File.separator + repoNameText
 
-            //如果不是编辑模式 或者 是编辑模式但用户输入的仓库名不是当前仓库已经保存的名字 则 检查仓库名和文件夹是否已经存在
-            if(!isEditMode || repoNameText != repoFromDb.value.repoName) {
+            //如果不是编辑模式 或者 是编辑模式但用户输入的仓库名不是当前仓库已经保存的名字（用户修改了仓库名） 则 检查仓库名和文件夹是否已经存在
+            //判断数据库是否已经存在相同名字的条目
+            val isRepoNameExist = if(!isEditMode || repoNameText != repoFromDb.value.repoName) {
                 //检查仓库名是否已经存在
-                val isRepoNameExist = repoDb.isRepoNameExist(repoNameText)
-                //仓库在数据库存在或者路径已经存在，则报错
-                if(isRepoNameExist || isPathExists(null, fullSavePath)) {
-                    focusRepoName()
-                    showRepoNameAlreadyExistsErr.value=true
-                    showLoadingDialog.value=false
-                    return@launch
-                }
-
+                repoDb.isRepoNameExist(repoNameText)
+            }else {
+                //否则直接当不存在（允许克隆）
+                false
             }
 
+            //仓库在数据库存在或者路径已经存在，则报错
+            if(isRepoNameExist || isPathExists(null, fullSavePath)) {  //无论是否编辑模式，都需要判断下isPathExists()不然会错误覆盖其他目录
+                focusRepoName()
+                showRepoNameAlreadyExistsErr.value=true
+                showLoadingDialog.value=false
+                return@launch
+            }
 
             var credentialIdForClone = ""  //如果选的是 no credential，则就是这个值，否则，会在下面的判断里更新其值为新增或选择的credentialid
 
@@ -494,11 +496,13 @@ fun CloneScreen(
             }else{
                 repoDb.insert(repoForSave)
             }
+
             showLoadingDialog.value=false
 
-            //设置此变量，下次重新渲染就会直接返回上级页面了
+            //设置此变量，下次重新渲染就会直接返回上级页面了（之前写这个是因为在协程返回上级页面会报错，后来发现withMainContext就行了，所以不需要这个了）
 //            isTimeNaviUp.value = true
-            withContext(Dispatchers.Main) {
+
+            withMainContext {
                 naviUp()
             }
         }

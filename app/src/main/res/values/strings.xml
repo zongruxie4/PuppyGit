@@ -89,8 +89,8 @@
     <string name="input_passphrase_if_have">Input passphrase (if have)</string>
     <string name="tap_for_select_credential">Tap for select credential</string>
     <string name="selected_credential">Selected credential:</string>
-    <string name="credential_name_exists_err">Credential name already Exists, please change it</string>
-    <string name="repo_name_exists_err">Repo name already Exists, please change it</string>
+    <string name="credential_name_exists_err">Credential name already exists, please try another</string>
+    <string name="repo_name_exists_err">Repo name already exists, please try another</string>
     <string name="cloning">Cloning…</string>
     <string name="edit_repo">Edit Repo</string>
     <string name="del_repo">Delete Repo</string>
