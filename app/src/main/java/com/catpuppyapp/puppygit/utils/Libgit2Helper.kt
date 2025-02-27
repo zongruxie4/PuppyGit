@@ -2481,6 +2481,13 @@ class Libgit2Helper {
             var repoIsShallow = isRepoShallow(repo)
 //            val repoGitDirPath = repo.workdir().pathString + File.separator + ".git"
             val repoGitDirPath = getRepoGitDirPathNoEndsWithSlash(repo)
+
+            //在fetch前检查仓库是否shallow，若是，备份shallow文件，之前仅在克隆仓库后处理，但在fetch前处理更合适，不然从外部导入仓库的话，普通的shallow仓库会在fetch后丢失shallow文件，导致报错
+            if (repoIsShallow) {
+                //创建shallow文件备份，目前20240509 libgit2有bug
+                Libgit2Helper.ShallowManage.createShallowBak(repoGitDirPath)
+            }
+
             val shallowFile = File(repoGitDirPath, "shallow")
 
             for(remoteAndCredentials in remoteList) {
