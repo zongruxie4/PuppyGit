@@ -26,13 +26,14 @@ import com.catpuppyapp.puppygit.play.pro.R
 import com.catpuppyapp.puppygit.utils.FsUtils
 import com.catpuppyapp.puppygit.utils.MyLog
 
-private val TAG = "SystemFolderChooser"
+private const val TAG = "SystemFolderChooser"
 
 /**
  * A Folder Chooser depend System File Chooser, may not work if system removed internal file picker, in that case, can input path instead
  */
 @Composable
 fun SystemFolderChooser(
+    safEnabled:MutableState<Boolean>,
     path:MutableState<String>,
     pathTextFieldLabel:String=stringResource(R.string.path),
     pathTextFieldPlaceHolder:String=stringResource(R.string.eg_storage_emulate_0_repos),
@@ -53,6 +54,7 @@ fun SystemFolderChooser(
     }
 
 
+    //这里不需要能滚动，应该由使用此组件的组件考虑是否能滚动
     Column {
         Row(
             modifier = Modifier.fillMaxWidth(),
@@ -90,5 +92,8 @@ fun SystemFolderChooser(
         Spacer(Modifier.height(15.dp))
         Text(stringResource(R.string.if_unable_choose_a_path_just_copy_paste_instead), fontWeight = FontWeight.Light)
 
+        Spacer(Modifier.height(15.dp))
+        MyCheckBox(text = stringResource(R.string.saf_mode), value = safEnabled)
+        CheckBoxNoteText(stringResource(R.string.saf_mode_note))
     }
 }

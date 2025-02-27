@@ -79,7 +79,6 @@ import com.catpuppyapp.puppygit.constants.Cons
 import com.catpuppyapp.puppygit.constants.PageRequest
 import com.catpuppyapp.puppygit.data.AppContainer
 import com.catpuppyapp.puppygit.data.entity.RepoEntity
-import com.catpuppyapp.puppygit.dto.genConfigDto
 import com.catpuppyapp.puppygit.etc.RepoPendingTask
 import com.catpuppyapp.puppygit.etc.Ret
 import com.catpuppyapp.puppygit.git.Upstream
@@ -337,6 +336,7 @@ fun RepoInnerPage(
 
     }
 
+    val safEnabledForSystemFolderChooser = rememberSaveable { mutableStateOf(false)}
     val importRepoPath = rememberSaveable { mutableStateOf("") }
     val isReposParentFolderForImport = rememberSaveable { mutableStateOf(false) }
 
@@ -368,7 +368,7 @@ fun RepoInnerPage(
 
                         }
 
-                        SystemFolderChooser(path = importRepoPath)
+                        SystemFolderChooser(safEnabled = safEnabledForSystemFolderChooser, path = importRepoPath)
 
                         Spacer(Modifier.height(15.dp))
 

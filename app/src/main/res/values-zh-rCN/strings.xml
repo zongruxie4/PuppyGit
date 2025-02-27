@@ -1189,5 +1189,9 @@
     <!-- new at 20250216 -->
     <string name="commit_all">提交所有</string>
 
+    <!-- new at 20250227 -->
+    <string name="saf_mode">Saf模式</string>
+    <string name="saf_mode_note">Saf模式兼容性更好且支持Termux，但性能较差</string>
+
 
 </resources>
