@@ -20,5 +20,11 @@ object SafUtil {
         safDir = createDirIfNonexists(puppyGitDataDir, safDirName)
     }
 
+    fun toAppSpecifiedSafFormat(originPath:String):String {
+        return "$safPathPrefix$originPath"
+    }
 
+    fun getOriginPathFromAppSpecifiedSafPath(appSpecifiedSafPath:String):String {
+        return appSpecifiedSafPath.removePrefix(safPathPrefix)
+    }
 }

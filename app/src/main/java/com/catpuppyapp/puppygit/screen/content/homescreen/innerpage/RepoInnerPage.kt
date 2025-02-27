@@ -338,6 +338,8 @@ fun RepoInnerPage(
 
     val safEnabledForSystemFolderChooser = rememberSaveable { mutableStateOf(false)}
     val importRepoPath = rememberSaveable { mutableStateOf("") }
+    val safPath = rememberSaveable { mutableStateOf("") }
+    val nonSafPath = rememberSaveable { mutableStateOf("") }
     val isReposParentFolderForImport = rememberSaveable { mutableStateOf(false) }
 
     if(showImportRepoDialog.value) {
@@ -368,7 +370,7 @@ fun RepoInnerPage(
 
                         }
 
-                        SystemFolderChooser(safEnabled = safEnabledForSystemFolderChooser, path = importRepoPath)
+                        SystemFolderChooser(safEnabled = safEnabledForSystemFolderChooser, safPath = safPath, nonSafPath = nonSafPath, path = importRepoPath)
 
                         Spacer(Modifier.height(15.dp))
 

@@ -275,6 +275,9 @@ fun CloneScreen(
 
     val safEnabledForSystemFolderChooser = rememberSaveable { mutableStateOf(false)}
     val storagePathForAdd = rememberSaveable { mutableStateOf("")}
+    val safPath = rememberSaveable { mutableStateOf("") }
+    val nonSafPath = rememberSaveable { mutableStateOf("") }
+
 
     //vars of  storage select end
 
@@ -306,7 +309,7 @@ fun CloneScreen(
                             )
                         }
 
-                        SystemFolderChooser(safEnabled = safEnabledForSystemFolderChooser, path = storagePathForAdd)
+                        SystemFolderChooser(safEnabled = safEnabledForSystemFolderChooser, safPath = safPath, nonSafPath = nonSafPath, path = storagePathForAdd)
 
                     }
                 }

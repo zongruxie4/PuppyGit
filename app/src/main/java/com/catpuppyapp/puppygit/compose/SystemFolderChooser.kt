@@ -25,6 +25,7 @@ import androidx.compose.ui.unit.dp
 import com.catpuppyapp.puppygit.play.pro.R
 import com.catpuppyapp.puppygit.utils.FsUtils
 import com.catpuppyapp.puppygit.utils.MyLog
+import com.catpuppyapp.puppygit.utils.saf.SafUtil
 
 private const val TAG = "SystemFolderChooser"
 
@@ -34,6 +35,8 @@ private const val TAG = "SystemFolderChooser"
 @Composable
 fun SystemFolderChooser(
     safEnabled:MutableState<Boolean>,
+    safPath:MutableState<String>,
+    nonSafPath:MutableState<String>,
     path:MutableState<String>,
     pathTextFieldLabel:String=stringResource(R.string.path),
     pathTextFieldPlaceHolder:String=stringResource(R.string.eg_storage_emulate_0_repos),
@@ -41,13 +44,14 @@ fun SystemFolderChooser(
 ) {
 
 
-
     val chooseDirLauncher = rememberLauncherForActivityResult(ActivityResultContracts.OpenDocumentTree()) { uri ->
         if(uri!=null) {
+            safPath.value = SafUtil.toAppSpecifiedSafFormat(uri.toString())
+
             val realPath = FsUtils.getRealPathFromUri(uri)
-            if(realPath.isNotBlank()) {
-                chosenPathCallback(realPath, uri)
-            }
+            //最初是检查realPath.isNotBlank()才调用回调，但感觉检查与否意义不大，如果路径真为空，就清空也没什么
+            nonSafPath.value = realPath
+            chosenPathCallback(realPath, uri)
 
             MyLog.d(TAG, "#chooseDirLauncher, uri.path=${uri.path}, realPath=$realPath")
         }
@@ -66,7 +70,7 @@ fun SystemFolderChooser(
                 value = path.value,
                 maxLines = 6,
                 onValueChange = {
-                    path.value=it.trim('\n').trimEnd('/')
+                    path.value = it.trim('\n').trimEnd('/')
                 },
                 label = {
                     Text(pathTextFieldLabel)
@@ -93,7 +97,15 @@ fun SystemFolderChooser(
         Text(stringResource(R.string.if_unable_choose_a_path_just_copy_paste_instead), fontWeight = FontWeight.Light)
 
         Spacer(Modifier.height(15.dp))
-        MyCheckBox(text = stringResource(R.string.saf_mode), value = safEnabled)
+        MyCheckBox(text = stringResource(R.string.saf_mode), value = safEnabled, onValueChange = { newValue ->
+            path.value = if (newValue) {
+                safPath.value
+            } else {
+                nonSafPath.value
+            }
+
+            safEnabled.value = newValue
+        })
         CheckBoxNoteText(stringResource(R.string.saf_mode_note))
     }
 }
