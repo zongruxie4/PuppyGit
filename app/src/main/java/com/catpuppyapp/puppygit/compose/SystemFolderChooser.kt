@@ -23,6 +23,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import com.catpuppyapp.puppygit.play.pro.R
+import com.catpuppyapp.puppygit.utils.AppModel
 import com.catpuppyapp.puppygit.utils.FsUtils
 import com.catpuppyapp.puppygit.utils.MyLog
 import com.catpuppyapp.puppygit.utils.saf.SafUtil
@@ -42,6 +43,12 @@ fun SystemFolderChooser(
     pathTextFieldPlaceHolder:String=stringResource(R.string.eg_storage_emulate_0_repos),
     chosenPathCallback:(uri: Uri?)->Unit = {uri->
         if(uri != null) {
+            if(AppModel.devModeOn) {
+                //example of output: uri.toString() == uri.path: false, uri.toString()=content://com.android.externalstorage.documents/tree/primary%3ARepos, uri.path=/tree/primary:Repos
+                // toString更完整些，是我期望的safPath，uri.path缺乏一些信息，不行
+                MyLog.d(TAG, "uri.toString() == uri.path: ${uri.toString() == uri.path}, uri.toString()=${uri.toString()}, uri.path=${uri.path}")
+            }
+
             safPath.value = SafUtil.toAppSpecifiedSafFormat(uri.toString())
 
             //最初是检查realPath.isNotBlank()才调用回调，但感觉检查与否意义不大，如果路径真为空，就清空也没什么
@@ -49,7 +56,7 @@ fun SystemFolderChooser(
 
             path.value = if(safEnabled.value) safPath.value else nonSafPath.value
 
-            MyLog.d(TAG, "#chooseDirLauncher, uri.path=${uri.path}, safEnabled=${safEnabled.value}, safPath=${safPath.value}, nonSafPath=${nonSafPath.value}")
+            MyLog.d(TAG, "#chooseDirLauncher: uri.toString()=${uri.toString()}, uri.path=${uri.path}, safEnabled=${safEnabled.value}, safPath=${safPath.value}, nonSafPath=${nonSafPath.value}")
         }
     }
 ) {
