@@ -40,21 +40,23 @@ fun SystemFolderChooser(
     path:MutableState<String>,
     pathTextFieldLabel:String=stringResource(R.string.path),
     pathTextFieldPlaceHolder:String=stringResource(R.string.eg_storage_emulate_0_repos),
-    chosenPathCallback:(realPath:String, uri: Uri?)->Unit = {realPath, uri-> path.value = realPath}
+    chosenPathCallback:(uri: Uri?)->Unit = {uri->
+        if(uri != null) {
+            safPath.value = SafUtil.toAppSpecifiedSafFormat(uri.toString())
+
+            //最初是检查realPath.isNotBlank()才调用回调，但感觉检查与否意义不大，如果路径真为空，就清空也没什么
+            nonSafPath.value = FsUtils.getRealPathFromUri(uri)
+
+            path.value = if(safEnabled.value) safPath.value else nonSafPath.value
+
+            MyLog.d(TAG, "#chooseDirLauncher, uri.path=${uri.path}, safEnabled=${safEnabled.value}, safPath=${safPath.value}, nonSafPath=${nonSafPath.value}")
+        }
+    }
 ) {
 
 
     val chooseDirLauncher = rememberLauncherForActivityResult(ActivityResultContracts.OpenDocumentTree()) { uri ->
-        if(uri!=null) {
-            safPath.value = SafUtil.toAppSpecifiedSafFormat(uri.toString())
-
-            val realPath = FsUtils.getRealPathFromUri(uri)
-            //最初是检查realPath.isNotBlank()才调用回调，但感觉检查与否意义不大，如果路径真为空，就清空也没什么
-            nonSafPath.value = realPath
-            chosenPathCallback(realPath, uri)
-
-            MyLog.d(TAG, "#chooseDirLauncher, uri.path=${uri.path}, realPath=$realPath")
-        }
+        chosenPathCallback(uri)
     }
 
 
