@@ -31,6 +31,7 @@ import java.io.OutputStream
 import java.nio.charset.Charset
 import java.util.Locale
 
+private const val TAG = "FsUtils"
 
 object FsUtils {
 
@@ -41,7 +42,6 @@ object FsUtils {
     const val internalPathPrefix = "Internal:/"
     const val externalPathPrefix = "External:/"
 
-    private val TAG = "FsUtils"
     //必须和 AndroidManifest.xml 里的 provider.android:authorities 的值一样
 //    const val PROVIDER_AUTHORITY = "com.catpuppyapp.puppygit.play.pro.fileprovider"
 
