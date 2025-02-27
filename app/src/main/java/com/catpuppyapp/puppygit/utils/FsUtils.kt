@@ -1225,4 +1225,12 @@ object FsUtils {
 
         return pathAndFileNamePair
     }
+
+    //不确定 `rememberLauncherForActivityResult` 是否还需要这东西，如果能永久获得uri权限就不需要，否则需要。测试方法：获取一个uri访问权限，重启，如果还能访问就ok，否则不ok
+    fun getPersistableUriIntent():Intent {
+        return Intent(Intent.ACTION_OPEN_DOCUMENT_TREE).apply {
+            addFlags(Intent.FLAG_GRANT_PERSISTABLE_URI_PERMISSION) // 添加持久化标志
+        }
+    }
+
 }
