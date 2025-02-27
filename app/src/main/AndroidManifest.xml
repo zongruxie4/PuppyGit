@@ -119,8 +119,9 @@
 
         </activity>
 
+<!--            android:name="androidx.core.content.FileProvider"-->
         <provider
-            android:name="androidx.core.content.FileProvider"
+            android:name="com.catpuppyapp.puppygit.provider.MyFileProvider"
             android:authorities="${applicationId}.provider"
             android:exported="false"
             android:grantUriPermissions="true">
