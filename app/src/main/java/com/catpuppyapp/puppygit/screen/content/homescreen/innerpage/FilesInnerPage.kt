@@ -1748,16 +1748,16 @@ fun FilesInnerPage(
                     if(trueExportFalseImport) {
                         FsUtils.recursiveExportFiles_Saf(
                             contentResolver = activityContext.contentResolver,
-                            exportDir = chosenDir,
-                            files = itemListForExport.value.map<FileItemDto, File> { it.toFile() }.toTypedArray(),
+                            targetDir = chosenDir,
+                            srcFiles = itemListForExport.value.map<FileItemDto, File> { it.toFile() }.toTypedArray(),
                             canceled = { requireCancelAct.value },
                             conflictStrategy = conflictStrategy
                         )
                     }else {
                         FsUtils.recursiveImportFiles_Saf(
                             contentResolver = activityContext.contentResolver,
-                            importDir = File(currentPath.value),
-                            files = chosenDir.listFiles(),
+                            targetDir = File(currentPath.value),
+                            srcFiles = chosenDir.listFiles(),
                             canceled = { requireCancelAct.value },
                             conflictStrategy = conflictStrategy
                         )
@@ -1810,8 +1810,8 @@ fun FilesInnerPage(
                 try {
                     FsUtils.recursiveExportFiles_Saf(
                         contentResolver = activityContext.contentResolver,
-                        exportDir = chosenDir,
-                        files = selectedItems.value.map<FileItemDto, File> { it.toFile() }.toTypedArray(),
+                        targetDir = chosenDir,
+                        srcFiles = selectedItems.value.map<FileItemDto, File> { it.toFile() }.toTypedArray(),
                         canceled = { requireCancelAct.value }
                     )
                     // throw RuntimeException("测试异常！")  passed

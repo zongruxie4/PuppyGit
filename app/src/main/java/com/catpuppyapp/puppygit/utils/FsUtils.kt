@@ -500,8 +500,8 @@ object FsUtils {
 
     fun recursiveExportFiles_Saf(
         contentResolver: ContentResolver,
-        exportDir: DocumentFile,
-        files: Array<File>,
+        targetDir: DocumentFile,
+        srcFiles: Array<File>,
         ignorePaths:List<String> = listOf(),
         canceled:()->Boolean = {false},
         conflictStrategy:CopyFileConflictStrategy = CopyFileConflictStrategy.RENAME,
@@ -510,9 +510,9 @@ object FsUtils {
             throw CancellationException()
         }
 
-        val filesUnderExportDir = exportDir.listFiles()
+        val filesUnderExportDir = targetDir.listFiles()
 
-        for(f in files) {
+        for(f in srcFiles) {
             if(canceled()) {
                 throw CancellationException()
             }
@@ -530,31 +530,33 @@ object FsUtils {
                 if(conflictStrategy == CopyFileConflictStrategy.SKIP) {
                     continue
                 }else if(conflictStrategy == CopyFileConflictStrategy.OVERWRITE_FOLDER_AND_FILE) {
-                    if(targetFileBeforeCreate.isFile) {
-                        targetFileBeforeCreate.delete()
-                    }else {  //递归删除目录
-                        recursiveDeleteFiles_Saf(contentResolver, targetFileBeforeCreate, targetFileBeforeCreate.listFiles(), canceled)
+                    if(targetFileBeforeCreate.isDirectory) {   // 递归删除目录下的文件（清空目录）
+                        recursiveDeleteFiles_Saf(contentResolver, targetFileBeforeCreate.listFiles(), canceled)
                     }
+
+                    //删除文件或已清空的目录
+                    targetFileBeforeCreate.delete()
+
                 }else if(conflictStrategy == CopyFileConflictStrategy.RENAME) {
                     targetName = getANonExistsName(targetName, exists = {newName -> filesUnderExportDir.find { it.name == newName } != null})
                 }
             }
 
             if(f.isDirectory) {
-                val subDir = exportDir.createDirectory(targetName)?:continue
-                val subDirFiles = f.listFiles()?:continue
-                if(subDirFiles.isNotEmpty()) {
+                val nextTargetDir = targetDir.createDirectory(targetName)?:continue
+                val nextSrcFiles = f.listFiles()?:continue
+                if(nextSrcFiles.isNotEmpty()) {
                     recursiveExportFiles_Saf(
                         contentResolver = contentResolver,
-                        exportDir = subDir,
-                        files = subDirFiles,
+                        targetDir = nextTargetDir,
+                        srcFiles = nextSrcFiles,
                         ignorePaths = ignorePaths,
                         canceled = canceled,
                         conflictStrategy = conflictStrategy
                     )
                 }
             }else {
-                val targetFile = exportDir.createFile("*/*", targetName)?:continue
+                val targetFile = targetDir.createFile("*/*", targetName)?:continue
 
                 val output = contentResolver.openOutputStream(targetFile.uri)?:continue
 
@@ -570,8 +572,8 @@ object FsUtils {
 
     fun recursiveImportFiles_Saf(
         contentResolver: ContentResolver,
-        importDir: File,
-        files: Array<DocumentFile>,
+        targetDir: File,
+        srcFiles: Array<DocumentFile>,
         canceled:()->Boolean = {false},
         conflictStrategy:CopyFileConflictStrategy = CopyFileConflictStrategy.RENAME,
     ) {
@@ -579,9 +581,9 @@ object FsUtils {
             throw CancellationException()
         }
 
-        val filesUnderImportDir = importDir.listFiles() ?: arrayOf<File>()
+        val filesUnderImportDir = targetDir.listFiles() ?: arrayOf<File>()
 
-        for(f in files) {
+        for(f in srcFiles) {
             if(canceled()) {
                 throw CancellationException()
             }
@@ -600,25 +602,25 @@ object FsUtils {
                 }
             }
 
-            val target = File(importDir.canonicalPath, targetName)
+            val nextTarget = File(targetDir.canonicalPath, targetName)
 
             if(f.isDirectory) {
-                target.mkdirs()
-                val subDirFiles = f.listFiles()?:continue
-                if(subDirFiles.isNotEmpty()) {
+                nextTarget.mkdirs()
+                val nextSrcFiles = f.listFiles()?:continue
+                if(nextSrcFiles.isNotEmpty()) {
                     recursiveImportFiles_Saf(
                         contentResolver = contentResolver,
-                        importDir = target,
-                        files = subDirFiles,
+                        targetDir = nextTarget,
+                        srcFiles = nextSrcFiles,
                         canceled = canceled,
                         conflictStrategy = conflictStrategy
                     )
                 }
             }else {
-                target.createNewFile()
+                nextTarget.createNewFile()
 
                 val inputStream = contentResolver.openInputStream(f.uri)?:continue
-                val outputStream = target.outputStream()
+                val outputStream = nextTarget.outputStream()
                 inputStream.use { ins->
                     outputStream.use { outs ->
                         ins.copyTo(outs)
@@ -630,26 +632,24 @@ object FsUtils {
 
     private fun recursiveDeleteFiles_Saf(
         contentResolver: ContentResolver,
-        dir: DocumentFile,
-        files: Array<DocumentFile>,
+        targetFiles: Array<DocumentFile>,
         canceled:()->Boolean,
     ) {
-
         if(canceled()) {
             throw CancellationException()
         }
 
-        for(f in files) {
+        for(f in targetFiles) {
             if(canceled()) {
                 throw CancellationException()
             }
 
             if(f.isDirectory) {
-                val subDirFiles = dir.listFiles()?:continue
-                if(subDirFiles.isEmpty()) {
+                val nextTargetFiles = f.listFiles()
+                if(nextTargetFiles.isEmpty()) {
                     f.delete()
                 }else {
-                    recursiveDeleteFiles_Saf(contentResolver, dir, subDirFiles, canceled)
+                    recursiveDeleteFiles_Saf(contentResolver, nextTargetFiles, canceled)
                     f.delete()
                 }
             }else {
