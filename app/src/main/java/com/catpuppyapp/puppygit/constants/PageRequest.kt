@@ -1,11 +1,15 @@
 package com.catpuppyapp.puppygit.constants
 
 import androidx.compose.runtime.MutableState
+import com.catpuppyapp.puppygit.utils.Msg
+import com.catpuppyapp.puppygit.utils.MyLog
 
 /**
  * 页面之间通信用的请求指令
  */
 object PageRequest {
+    private const val TAG = "PageRequest"
+
     //request值 开始
 
     //注意：同一条渲染链上不同组件不可使用相同的请求值，否则只有第一个匹配的组件会执行request，换句话说，再同一渲染链上请求值必须唯一且只有一个消费者
@@ -20,6 +24,8 @@ object PageRequest {
 //    const val goToBranch ="goToBranch"  //goToBranch#branchName，#后面是要goto的分支名
 
 
+    const val safExport = "safExport"
+    const val safImport = "safImport"
     const val createPatch = "createPatch"
     const val indexToWorkTree_CommitAll = "indexToWorkTree_CommitAll"
     const val goToUpstream = "goToUpstream"
@@ -84,7 +90,12 @@ object PageRequest {
 
     fun clearStateThenDoAct(state:MutableState<String>, act:()->Unit) {
         state.value=""
-        act()
+        try {
+            act()
+        }catch (e:Exception) {
+            Msg.requireShowLongDuration("err: ${e.localizedMessage}")
+            MyLog.e(TAG, "#clearStateThenDoAct err: ${e.stackTraceToString()}")
+        }
     }
 
     fun getRequestThenClearStateThenDoAct(state:MutableState<String>, act:(request:String)->Unit) {

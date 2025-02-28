@@ -114,7 +114,6 @@ fun FilesTitle(
             }
         }
 
-
     }
 
     LaunchedEffect( filesPageGetFilterMode() ) {

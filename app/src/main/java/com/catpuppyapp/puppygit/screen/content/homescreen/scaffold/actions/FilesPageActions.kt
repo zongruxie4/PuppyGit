@@ -22,7 +22,6 @@ import com.catpuppyapp.puppygit.constants.PageRequest
 import com.catpuppyapp.puppygit.play.pro.R
 import com.catpuppyapp.puppygit.style.MyStyleKt
 import com.catpuppyapp.puppygit.utils.state.CustomStateSaveable
-import com.catpuppyapp.puppygit.utils.state.StateUtil
 
 
 @Composable
@@ -143,6 +142,24 @@ fun FilesPageActions(
                     text = { Text(stringResource(R.string.view_and_sort)) },
                     onClick = {
                         requestFromParent.value = PageRequest.showViewAndSortMenu
+                        dropDownMenuExpendState.value = false
+                    }
+                )
+
+                DropdownMenuItem(
+                    enabled = enableMenuItem,
+                    text = { Text(stringResource(R.string.import_str)) },
+                    onClick = {
+                        requestFromParent.value = PageRequest.safImport
+                        dropDownMenuExpendState.value = false
+                    }
+                )
+
+                DropdownMenuItem(
+                    enabled = enableMenuItem,
+                    text = { Text(stringResource(R.string.export)) },
+                    onClick = {
+                        requestFromParent.value = PageRequest.safExport
                         dropDownMenuExpendState.value = false
                     }
                 )

@@ -1664,9 +1664,20 @@ fun FilesInnerPage(
     }
 
 
+    val itemListForExport = mutableCustomStateListOf(stateKeyTag, "itemListForExport") { listOf<FileItemDto>() }
     val showSafImportDialog = rememberSaveable { mutableStateOf(false) }
     val showSafExportDialog = rememberSaveable { mutableStateOf(false) }
+    val initSafExportDialog = { itemList:List<FileItemDto> ->
+        itemListForExport.value.clear()
+        itemListForExport.value.addAll(itemList)
 
+        showSafImportDialog.value = false
+        showSafExportDialog.value = true
+    }
+    val initSafImportDialog = {
+        showSafExportDialog.value = false
+        showSafImportDialog.value = true
+    }
     // saf import export 共享这些状态
     val safImportExportOverwrite = rememberSaveable { mutableStateOf(false) }
     val choosenSafUri = remember { mutableStateOf<Uri?>(null) }
@@ -1680,6 +1691,7 @@ fun FilesInnerPage(
 
     val showImportExportErrorDialog = rememberSaveable { mutableStateOf(false)}
     val importExportErrorMsg = rememberSaveable { mutableStateOf("")}
+
 
     if(showSafExportDialog.value || showSafImportDialog.value) {
         val importOrExportText = if(showSafExportDialog.value) stringResource(R.string.export) else stringResource(R.string.import_str)
@@ -1736,7 +1748,7 @@ fun FilesInnerPage(
                         FsUtils.recursiveExportFiles_Saf(
                             contentResolver = activityContext.contentResolver,
                             exportDir = chosenDir,
-                            files = selectedItems.value.map<FileItemDto, File> { it.toFile() }.toTypedArray(),
+                            files = itemListForExport.value.map<FileItemDto, File> { it.toFile() }.toTypedArray(),
                             canceled = { requireCancelAct.value },
                             conflictStrategy = conflictStrategy
                         )
@@ -2111,16 +2123,16 @@ fun FilesInnerPage(
             },
 
             export@{
+                initSafExportDialog(selectedItems.value.toList())
 //                choosenSafUri.value = null  //不设为null了，这样可以直接用上次的uri
-                showSafImportDialog.value = false
-                showSafExportDialog.value = true
+
                 //显示选择导出目录的文件选择界面
 //                chooseDirLauncher.launch(null)
             },
             import@{
+                initSafImportDialog()
 //                choosenSafUri.value = null
-                showSafExportDialog.value = false
-                showSafImportDialog.value = true
+
                 //显示选择导出目录的文件选择界面
 //                chooseDirLauncher.launch(null)
             },
@@ -2507,6 +2519,39 @@ fun FilesInnerPage(
         }
     }
 
+    if(filesPageRequestFromParent.value==PageRequest.safImport) {
+        PageRequest.clearStateThenDoAct(filesPageRequestFromParent) {
+            val curPathReadable = try {
+                File(currentPath.value).canRead()
+            }catch (e:Exception) {
+                false
+            }
+
+            if(curPathReadable) {
+                initSafImportDialog()
+            }else {
+                Msg.requireShow(activityContext.getString(R.string.invalid_path))
+            }
+        }
+    }
+
+    if(filesPageRequestFromParent.value==PageRequest.safExport) {
+        PageRequest.clearStateThenDoAct(filesPageRequestFromParent) {
+            val curFile = File(currentPath.value)
+            val curPathReadable = try {
+                curFile.canRead()
+            }catch (e:Exception) {
+                false
+            }
+
+            if(curPathReadable) {
+                initSafExportDialog(listOf(FileItemDto.genFileItemDtoByFile(curFile, activityContext)))
+            }else {
+                Msg.requireShow(activityContext.getString(R.string.invalid_path))
+            }
+        }
+    }
+
     if(filesPageRequestFromParent.value==PageRequest.switchBetweenTopAndLastPosition) {
         PageRequest.clearStateThenDoAct(filesPageRequestFromParent) {
             UIHelper.switchBetweenTopAndLastVisiblePosition(scope, curListState.value, lastPosition)
@@ -2583,14 +2628,18 @@ fun FilesInnerPage(
     LaunchedEffect(needRefreshFilesPage.value) {
         try {
             //只有当目录改变时(需要刷新页面)，才需要执行initFilesPage，选择文件之类的操作不需要执行此操作
-            doInit(currentPath, currentPathFileList, currentPathBreadCrumbList,settingsSnapshot,
-                filesPageGetFilterMode,
-                filesPageFilterKeyword,
-                curListState,
-                getListState,
-                loadingOn,
-                loadingOff,
-                activityContext,
+            doInit(
+                currentPath = currentPath,
+                currentPathFileList = currentPathFileList,
+                currentPathBreadCrumbList = currentPathBreadCrumbList,
+                settingsSnapshot = settingsSnapshot,
+                filesPageGetFilterModeOn = filesPageGetFilterMode,
+                filesPageFilterKeyword = filesPageFilterKeyword,
+                curListState = curListState,
+                getListState = getListState,
+                loadingOn = loadingOn,
+                loadingOff = loadingOff,
+                activityContext = activityContext,
                 requireImportFile=requireImportFile,
                 requireImportUriList = requireImportUriList,
                 filesPageQuitSelectionMode = filesPageQuitSelectionMode,
@@ -2625,7 +2674,7 @@ private fun doInit(
     getListState:(String)->LazyListState,
     loadingOn: (String) -> Unit,
     loadingOff: () -> Unit,
-    appContext: Context,
+    activityContext: Context,
     requireImportFile:MutableState<Boolean>,
     requireImportUriList: CustomStateListSaveable<Uri>,
     filesPageQuitSelectionMode:()->Unit,
@@ -2641,7 +2690,7 @@ private fun doInit(
 //    currentPathBreadCrumbList1: SnapshotStateList<FileItemDto>,
 //    currentPathBreadCrumbList2: SnapshotStateList<FileItemDto>
 ){
-    doJobThenOffLoading(loadingOn, loadingOff, appContext.getString(R.string.loading)) {
+    doJobThenOffLoading(loadingOn, loadingOff, activityContext.getString(R.string.loading)) {
         val lastOpenedPathFromSettings = settingsSnapshot.value.files.lastOpenedPath
 
         //如果路径为空，从配置文件读取上次打开的路径
@@ -2764,7 +2813,7 @@ private fun doInit(
         // 遍历文件列表
         currentDir.listFiles()?.let {
             it.forEach { file ->
-                val fdto = FileItemDto.genFileItemDtoByFile(file, appContext)
+                val fdto = FileItemDto.genFileItemDtoByFile(file, activityContext)
                 //过滤模式开启 且 文件名不包含关键字则忽略当前条目。（TODO 做点高级的东西？如果输入特定关键字就开启指定模式，比如可根据文件大小或后缀过滤？匹配模式直接抄Everything这个软件的即可，比自己发明格式要好，你自己发明的太小众，别人用不惯，已经广泛受用的，则有可能别人已经知道，用着就会感觉有亲切感）
 //                if(isFilterModeOn && !fdto.name.lowercase().contains(filterKeywordText.lowercase())) {
 //                    return@forEach
@@ -2797,7 +2846,7 @@ private fun doInit(
 
 //        val lastUsedPath = curPathFileItemDto.value.fullPath
 
-        val curPathDtoTmp = FileItemDto.genFileItemDtoByFile(currentDir, appContext)
+        val curPathDtoTmp = FileItemDto.genFileItemDtoByFile(currentDir, activityContext)
         curPathDtoTmp.folderCount = folderCount
         curPathDtoTmp.fileCount = fileCount
         curPathFileItemDto.value = curPathDtoTmp
@@ -2894,7 +2943,7 @@ private fun doInit(
             requireImportFile.value = false
             if(requireImportUriList.value.isEmpty()) {
 //                    不开启导入模式，提示下用户导入条目为空即可
-                Msg.requireShow(appContext.getString(R.string.require_import_files_list_is_empty))
+                Msg.requireShow(activityContext.getString(R.string.require_import_files_list_is_empty))
             }else {
                 //退出选择模式
                 filesPageQuitSelectionMode()
@@ -2908,7 +2957,7 @@ private fun doInit(
 
         // set err if has
 //        if(!File(currentPath.value).canRead()) {  // can't read dir, usually no permission for dir or dir doesn't exist
-        openDirErr.value = if(currentDir.canRead() && currentDir.isDirectory) "" else appContext.getString(R.string.err_read_path_failed)
+        openDirErr.value = if(currentDir.canRead() && currentDir.isDirectory) "" else activityContext.getString(R.string.err_read_path_failed)
     }
 
 }

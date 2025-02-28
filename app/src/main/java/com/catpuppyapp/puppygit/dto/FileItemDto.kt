@@ -6,7 +6,6 @@ import com.catpuppyapp.puppygit.utils.MyLog
 import com.catpuppyapp.puppygit.utils.getFileAttributes
 import com.catpuppyapp.puppygit.utils.getFormatTimeFromSec
 import com.catpuppyapp.puppygit.utils.getHumanReadableSizeStr
-import com.catpuppyapp.puppygit.utils.getSystemDefaultTimeZoneOffset
 import com.catpuppyapp.puppygit.utils.mime.MimeType
 import com.catpuppyapp.puppygit.utils.mime.guessFromFile
 import java.io.File
@@ -83,13 +82,13 @@ data class FileItemDto (
     companion object {
 
         //appContext for get string source
-        fun genFileItemDtoByFile(file: File, appContext:Context):FileItemDto {
+        fun genFileItemDtoByFile(file: File, activityContext:Context):FileItemDto {
             val fdto = FileItemDto()
-            updateFileItemDto(fdto, file, appContext)
+            updateFileItemDto(fdto, file, activityContext)
             return fdto
         }
 
-        fun updateFileItemDto(fdto:FileItemDto, file: File, appContext: Context) {
+        fun updateFileItemDto(fdto:FileItemDto, file: File, activityContext: Context) {
             try {
                 fdto.name = file.name
                 fdto.fullPath = file.canonicalPath
@@ -104,7 +103,7 @@ data class FileItemDto (
                 fdto.isHidden = file.isHidden
 
                 if(fdto.isDir) {  // 目录，没有大小，暂不递归计算文件大小，先显示："[Folder]"
-                    fdto.sizeInHumanReadable = "["+ appContext.getString(R.string.folder) +"]"  //文件夹大小不是递归显示内部文件总和，所以显示没意义，改成Folder，指示条目是个目录，让界面看着不那么空，就行了
+                    fdto.sizeInHumanReadable = "["+ activityContext.getString(R.string.folder) +"]"  //文件夹大小不是递归显示内部文件总和，所以显示没意义，改成Folder，指示条目是个目录，让界面看着不那么空，就行了
                 }else {  //读文件大小，但不读目录大小
                     fdto.sizeInHumanReadable = getHumanReadableSizeStr(fdto.sizeInBytes)
                 }
