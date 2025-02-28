@@ -1218,6 +1218,7 @@
     <string name="export_files">Export Files</string>
     <string name="select_path">Select Path</string>
     <string name="overwrite_files_note">If checked, will remove folders/files that already exist before copying; otherwise, will skip them.</string>
+    <string name="err_get_dir_object_failed">err: get dir object failed</string>
 
 
 </resources>

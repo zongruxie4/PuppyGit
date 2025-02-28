@@ -516,7 +516,7 @@ object FsUtils {
                 return
             }
 
-            //可以用来实现忽略.git目录之类的逻辑
+            //可以用来实现忽略.git目录之类的逻辑，这忽略的是源目录的文件或文件夹
             if(ignorePaths.contains(f.canonicalPath)) {
                 continue
             }
@@ -565,6 +565,66 @@ object FsUtils {
             }
         }
 
+    }
+
+    fun recursiveImportFiles_Saf(
+        contentResolver: ContentResolver,
+        importDir: File,
+        files: Array<DocumentFile>,
+        canceled:()->Boolean = {false},
+        conflictStrategy:CopyFileConflictStrategy = CopyFileConflictStrategy.RENAME,
+    ) {
+        if(canceled()) {
+            return
+        }
+
+        val filesUnderImportDir = importDir.listFiles() ?: arrayOf<File>()
+
+        for(f in files) {
+            if(canceled()) {
+                return
+            }
+
+            var targetName = f.name ?: continue
+
+            val targetFileBeforeCreate = filesUnderImportDir.find { it.name == targetName }
+
+            if(targetFileBeforeCreate != null) {  //文件已存在
+                if(conflictStrategy == CopyFileConflictStrategy.SKIP) {
+                    continue
+                }else if(conflictStrategy == CopyFileConflictStrategy.OVERWRITE_FOLDER_AND_FILE) {
+                    targetFileBeforeCreate.deleteRecursively()
+                }else if(conflictStrategy == CopyFileConflictStrategy.RENAME) {
+                    targetName = getANonExistsName(targetName, exists = {newName -> filesUnderImportDir.find { it.name == newName } != null})
+                }
+            }
+
+            val target = File(importDir.canonicalPath, targetName)
+
+            if(f.isDirectory) {
+                target.mkdirs()
+                val subDirFiles = f.listFiles()?:continue
+                if(subDirFiles.isNotEmpty()) {
+                    recursiveImportFiles_Saf(
+                        contentResolver = contentResolver,
+                        importDir = target,
+                        files = subDirFiles,
+                        canceled = canceled,
+                        conflictStrategy = conflictStrategy
+                    )
+                }
+            }else {
+                target.createNewFile()
+
+                val inputStream = contentResolver.openInputStream(f.uri)?:continue
+                val outputStream = target.outputStream()
+                inputStream.use { ins->
+                    outputStream.use { outs ->
+                        ins.copyTo(outs)
+                    }
+                }
+            }
+        }
     }
 
     fun recursiveDeleteFiles_Saf(contentResolver: ContentResolver, dir: DocumentFile, files: Array<DocumentFile>) {

@@ -228,6 +228,23 @@ fun FilesInnerPage(
     val successStrRes = stringResource(R.string.success)
     val errorStrRes = stringResource(R.string.error)
 
+
+
+    val defaultLoadingText = activityContext.getString(R.string.loading)
+    val isLoading = rememberSaveable { mutableStateOf(false)}
+    val loadingText = rememberSaveable { mutableStateOf(defaultLoadingText)}
+    val loadingOn = { msg:String ->
+        loadingText.value=msg
+        isLoading.value=true
+    }
+    val loadingOff = {
+        isLoading.value=false
+        loadingText.value=defaultLoadingText
+    }
+
+
+
+
     // 取消任务相关变量，开始
     val requireCancelAct = rememberSaveable { mutableStateOf(false)}
     val cancellableActRunning = rememberSaveable { mutableStateOf(false)}
@@ -249,6 +266,17 @@ fun FilesInnerPage(
         resetAct()
     }
     //取消任务相关变量，结束
+
+    val loadingOnCancellable = { loadingText:String ->
+        loadingOn(loadingText)
+        // reset，使其可取消
+        startCancellableAct()
+    }
+    val loadingOffCancellable = {
+        loadingOff()
+        // reset，使其他可取消任务任务能正常开始执行
+        stopCancellableAct()
+    }
 
 //    val repoList = mutableCustomStateListOf(keyTag = stateKeyTag, keyName = "repoList", initValue = listOf<RepoEntity>())
 
@@ -673,18 +701,6 @@ fun FilesInnerPage(
     val failedImportListStr = rememberSaveable { mutableStateOf("")}
     val successImportCount = rememberSaveable{mutableIntStateOf(0)}
     val failedImportCount = rememberSaveable{mutableIntStateOf(0)}
-
-    val defaultLoadingText = activityContext.getString(R.string.loading)
-    val isLoading = rememberSaveable { mutableStateOf(false)}
-    val loadingText = rememberSaveable { mutableStateOf(defaultLoadingText)}
-    val loadingOn = { msg:String ->
-        loadingText.value=msg
-        isLoading.value=true
-    }
-    val loadingOff = {
-        isLoading.value=false
-        loadingText.value=defaultLoadingText
-    }
 
     val openDirErr = rememberSaveable { mutableStateOf("")}
 
@@ -1662,9 +1678,14 @@ fun FilesInnerPage(
         }
     }
 
-    if(showSafExportDialog.value) {
+    val showImportExportErrorDialog = rememberSaveable { mutableStateOf(false)}
+    val importExportErrorMsg = rememberSaveable { mutableStateOf("")}
+
+    if(showSafExportDialog.value || showSafImportDialog.value) {
+        val importOrExportText = if(showSafExportDialog.value) stringResource(R.string.export) else stringResource(R.string.import_str)
+        val closeDialog = { showSafExportDialog.value = false; showSafImportDialog.value = false }
         ConfirmDialog2(
-            title = stringResource(R.string.export),
+            title = importOrExportText,
             requireShowTextCompose = true,
             textCompose = {
                 ScrollableColumn {
@@ -1686,10 +1707,67 @@ fun FilesInnerPage(
                     CheckBoxNoteText(stringResource(R.string.overwrite_files_note))
                 }
             },
-            onCancel = { showSafExportDialog.value = false },
-            okBtnText = stringResource(R.string.export)
+            onCancel = closeDialog,
+            okBtnEnabled = choosenSafUri.value != null,
+            okBtnText = importOrExportText
         ) {
-            showSafExportDialog.value = false
+            val trueExportFalseImport = showSafExportDialog.value
+
+            closeDialog()
+
+            doJobThenOffLoading(
+                loadingOn = loadingOnCancellable,
+
+                loadingOff = loadingOffCancellable,
+
+                loadingText = activityContext.getString(R.string.exporting)
+            ) {
+                val uri = choosenSafUri.value!!
+                val conflictStrategy = if(safImportExportOverwrite.value) FsUtils.CopyFileConflictStrategy.OVERWRITE_FOLDER_AND_FILE else FsUtils.CopyFileConflictStrategy.SKIP
+                val chosenDir = DocumentFile.fromTreeUri(activityContext, uri)
+                if(chosenDir==null) {
+                    Msg.requireShow(activityContext.getString(R.string.err_get_dir_object_failed))
+                    return@doJobThenOffLoading
+                }
+
+//            appContext.contentResolver.openOutputStream(chosenDir?.createFile("*/*", "test.txt")?.uri!!)
+                try {
+                    if(trueExportFalseImport) {
+                        FsUtils.recursiveExportFiles_Saf(
+                            contentResolver = activityContext.contentResolver,
+                            exportDir = chosenDir,
+                            files = selectedItems.value.map<FileItemDto, File> { it.toFile() }.toTypedArray(),
+                            canceled = { requireCancelAct.value },
+                            conflictStrategy = conflictStrategy
+                        )
+                    }else {
+                        FsUtils.recursiveImportFiles_Saf(
+                            contentResolver = activityContext.contentResolver,
+                            importDir = File(currentPath.value),
+                            files = chosenDir.listFiles(),
+                            canceled = { requireCancelAct.value },
+                            conflictStrategy = conflictStrategy
+                        )
+                    }
+
+                    // throw RuntimeException("测试异常！")  passed
+                    Msg.requireShow(activityContext.getString(R.string.success))
+                }catch (e:Exception) {
+                    MyLog.e(TAG, "#SafImportOrExportDialog err:"+e.stackTraceToString())
+                    val errorMsg = "err: ${e.localizedMessage}"
+                    //都显示弹窗了就不用toast了
+//                    Msg.requireShow(errorMsg)
+
+                    //设置错误信息，显示个错误弹窗
+                    importExportErrorMsg.value = errorMsg
+                    showImportExportErrorDialog.value = true
+                }finally {
+                    //如果是导入模式，结束后需要刷新页面
+                    if(!trueExportFalseImport) {
+                        changeStateTriggerRefreshPage(needRefreshFilesPage)
+                    }
+                }
+            }
 
         }
     }
@@ -1697,23 +1775,14 @@ fun FilesInnerPage(
 
 //    val userChosenExportDirUri = StateUtil.getRememberSaveableState<Uri?>(initValue = null)
     //ActivityResultContracts.OpenMultipleDocuments() 多选文件，这个应该可用来导入，不过现在有分享，足够了，虽然分享不能导入目录
-    val exportErrorMsg = rememberSaveable { mutableStateOf("")}
-    val showExportErrorDialog = rememberSaveable { mutableStateOf(false)}
+
     val chooseDirLauncherThenExport = rememberLauncherForActivityResult(ActivityResultContracts.OpenDocumentTree()) exportSaf@{ uri ->
         //执行导出
         if(uri!=null) {
             doJobThenOffLoading(
-                loadingOn = { loadingText ->
-                    loadingOn(loadingText)
-                    // reset，使其可取消
-                    startCancellableAct()
-                },
+                loadingOn = loadingOnCancellable,
 
-                loadingOff = {
-                    loadingOff()
-                    // reset，使其他可取消任务任务能正常开始执行
-                    stopCancellableAct()
-                },
+                loadingOff = loadingOffCancellable,
 
                 loadingText = activityContext.getString(R.string.exporting)
             ) {
@@ -1736,8 +1805,8 @@ fun FilesInnerPage(
                     MyLog.e(TAG, "#exportSaf@ err:"+e.stackTraceToString())
                     val exportErrStrRes = activityContext.getString(R.string.export_err)
                     Msg.requireShow(exportErrStrRes)
-                    exportErrorMsg.value = "$exportErrStrRes: "+e.localizedMessage
-                    showExportErrorDialog.value = true
+                    importExportErrorMsg.value = "$exportErrStrRes: "+e.localizedMessage
+                    showImportExportErrorDialog.value = true
                 }
             }
 
@@ -2043,12 +2112,14 @@ fun FilesInnerPage(
 
             export@{
 //                choosenSafUri.value = null  //不设为null了，这样可以直接用上次的uri
+                showSafImportDialog.value = false
                 showSafExportDialog.value = true
                 //显示选择导出目录的文件选择界面
 //                chooseDirLauncher.launch(null)
             },
             import@{
 //                choosenSafUri.value = null
+                showSafExportDialog.value = false
                 showSafImportDialog.value = true
                 //显示选择导出目录的文件选择界面
 //                chooseDirLauncher.launch(null)
@@ -2272,18 +2343,24 @@ fun FilesInnerPage(
 
 
 
-    if(showExportErrorDialog.value) {
+    if(showImportExportErrorDialog.value) {
+        val closeDialog = {showImportExportErrorDialog.value=false; importExportErrorMsg.value=""}
+
         //显示导出失败弹窗，包含错误信息且可拷贝
         CopyableDialog(
-            title = stringResource(R.string.export_err),
-            text = exportErrorMsg.value,
-            onCancel = {showExportErrorDialog.value=false; exportErrorMsg.value=""}
-        ) {
-            //onOk
-            showExportErrorDialog.value = false
-            clipboardManager.setText(AnnotatedString(exportErrorMsg.value))
+            title = stringResource(R.string.error),
+            text = importExportErrorMsg.value,
+            onCancel = closeDialog
+        ) { //onOk
+            //先取出错误信息
+            val errMsg = importExportErrorMsg.value
+
+            //关弹窗（会清空错误信息，所以之前要先取出）
+            closeDialog()
+
+            //拷贝信息
+            clipboardManager.setText(AnnotatedString(errMsg))
             Msg.requireShow(activityContext.getString(R.string.copied))
-            exportErrorMsg.value = ""  //清空错误信息，节省内存？其实清不清都行，不过不清对用户也不可见了，索性清了吧
         }
     }
 
