@@ -1739,7 +1739,7 @@ fun FilesInnerPage(
                 val conflictStrategy = if(safImportExportOverwrite.value) FsUtils.CopyFileConflictStrategy.OVERWRITE_FOLDER_AND_FILE else FsUtils.CopyFileConflictStrategy.SKIP
                 val chosenDir = DocumentFile.fromTreeUri(activityContext, uri)
                 if(chosenDir==null) {
-                    Msg.requireShow(activityContext.getString(R.string.err_get_dir_object_failed))
+                    Msg.requireShow(activityContext.getString(R.string.err_documentfile_is_null))
                     return@doJobThenOffLoading
                 }
 
