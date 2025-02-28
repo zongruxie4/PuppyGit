@@ -71,6 +71,7 @@ import androidx.compose.ui.unit.dp
 import androidx.documentfile.provider.DocumentFile
 import com.catpuppyapp.puppygit.compose.ApplyPatchDialog
 import com.catpuppyapp.puppygit.compose.BottomBar
+import com.catpuppyapp.puppygit.compose.CardButton
 import com.catpuppyapp.puppygit.compose.CheckBoxNoteText
 import com.catpuppyapp.puppygit.compose.ClickableText
 import com.catpuppyapp.puppygit.compose.ConfirmDialog
@@ -104,6 +105,7 @@ import com.catpuppyapp.puppygit.settings.DirViewAndSort
 import com.catpuppyapp.puppygit.settings.SettingsUtil
 import com.catpuppyapp.puppygit.settings.enums.dirviewandsort.SortMethod
 import com.catpuppyapp.puppygit.style.MyStyleKt
+import com.catpuppyapp.puppygit.ui.theme.Theme
 import com.catpuppyapp.puppygit.utils.ActivityUtil
 import com.catpuppyapp.puppygit.utils.AppModel
 import com.catpuppyapp.puppygit.utils.FsUtils
@@ -180,6 +182,8 @@ fun FilesInnerPage(
     filterList:CustomStateListSaveable<FileItemDto>,
     lastPosition:MutableState<Int>
 ) {
+    val inDarkTheme = Theme.inDarkTheme
+
     val allRepoParentDir = AppModel.allRepoParentDir;
 //    val appContext = AppModel.appContext;
     val activityContext = LocalContext.current;
@@ -1643,12 +1647,15 @@ fun FilesInnerPage(
         isPasteMode.value=true
     }
 
-    val showExportDialog = rememberSaveable { mutableStateOf(false)}
-    val showSafExportDialog = rememberSaveable { mutableStateOf(false)}
-    val showSafImportDialog = rememberSaveable { mutableStateOf(false)}
+
+    val showSafImportDialog = rememberSaveable { mutableStateOf(false) }
+    val showSafExportDialog = rememberSaveable { mutableStateOf(false) }
+
+    // saf import export 共享这些状态
+    val safImportExportOverwrite = rememberSaveable { mutableStateOf(false) }
     val choosenSafUri = remember { mutableStateOf<Uri?>(null) }
 
-    val chooseDirLauncher = rememberLauncherForActivityResult(ActivityResultContracts.OpenDocumentTree()) exportSaf@{ uri ->
+    val chooseDirLauncher = rememberLauncherForActivityResult(ActivityResultContracts.OpenDocumentTree()) { uri ->
         //执行导出
         if(uri!=null) {
             choosenSafUri.value = uri
@@ -1656,7 +1663,35 @@ fun FilesInnerPage(
     }
 
     if(showSafExportDialog.value) {
+        ConfirmDialog2(
+            title = stringResource(R.string.export),
+            requireShowTextCompose = true,
+            textCompose = {
+                ScrollableColumn {
+                    CardButton(
+                        enabled = true,
+                        content = {
+                            Text(
+                                text = if(choosenSafUri.value == null) stringResource(R.string.select_path) else choosenSafUri.value.toString(),
+                                color = UIHelper.getCardButtonTextColor(enabled = true, inDarkTheme = inDarkTheme)
+                            )
+                        },
+                    ) {
+                        chooseDirLauncher.launch(null)
+                    }
 
+                    Spacer(Modifier.height(20.dp))
+
+                    MyCheckBox(stringResource(R.string.overwrite_if_exist), safImportExportOverwrite)
+                    CheckBoxNoteText(stringResource(R.string.overwrite_files_note))
+                }
+            },
+            onCancel = { showSafExportDialog.value = false },
+            okBtnText = stringResource(R.string.export)
+        ) {
+            showSafExportDialog.value = false
+
+        }
     }
 
 
@@ -2007,11 +2042,13 @@ fun FilesInnerPage(
             },
 
             export@{
+//                choosenSafUri.value = null  //不设为null了，这样可以直接用上次的uri
                 showSafExportDialog.value = true
                 //显示选择导出目录的文件选择界面
 //                chooseDirLauncher.launch(null)
             },
             import@{
+//                choosenSafUri.value = null
                 showSafImportDialog.value = true
                 //显示选择导出目录的文件选择界面
 //                chooseDirLauncher.launch(null)
@@ -2250,6 +2287,7 @@ fun FilesInnerPage(
         }
     }
 
+    val showExportDialog = rememberSaveable { mutableStateOf(false) }
 
     if(showExportDialog.value) {
         ConfirmDialog(

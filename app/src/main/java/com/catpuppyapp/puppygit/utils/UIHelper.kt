@@ -392,4 +392,8 @@ object UIHelper {
     }
 
 
+    fun getCardButtonTextColor(enabled: Boolean, inDarkTheme: Boolean):Color {
+        return if (enabled) MyStyleKt.TextColor.enable else if (inDarkTheme) MyStyleKt.TextColor.disable_DarkTheme else MyStyleKt.TextColor.disable
+    }
+
 }

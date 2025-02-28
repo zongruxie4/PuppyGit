@@ -4,6 +4,7 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.RowScope
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
@@ -16,12 +17,11 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
-import com.catpuppyapp.puppygit.style.MyStyleKt
 import com.catpuppyapp.puppygit.ui.theme.Theme
 import com.catpuppyapp.puppygit.utils.UIHelper
 
 
-private val TAG = "CardButton"
+private const val TAG = "CardButton"
 
 @Composable
 fun CardButton(
@@ -33,7 +33,31 @@ fun CardButton(
 ) {
     val inDarkTheme = Theme.inDarkTheme
 
-//    val appContext = AppModel.appContext
+    CardButton(
+        modifier = modifier,
+        enabled = enabled,
+        content = {
+            Text(
+                text = text,
+                fontWeight = FontWeight.Light,
+                maxLines = 1,
+                softWrap = false,
+                overflow = TextOverflow.Ellipsis,
+                color = UIHelper.getCardButtonTextColor(enabled, inDarkTheme)
+            )
+        },
+        onClick = onClick
+    )
+}
+
+
+@Composable
+fun CardButton(
+    modifier: Modifier = Modifier,
+    enabled: Boolean,
+    content:@Composable RowScope.()->Unit,
+    onClick: () -> Unit
+) {
 
     val cardColor = UIHelper.defaultCardColor()
 
@@ -74,14 +98,7 @@ fun CardButton(
                 horizontalArrangement = Arrangement.Center,
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                Text(
-                    text = text,
-                    fontWeight = FontWeight.Light,
-                    maxLines = 1,
-                    softWrap = false,
-                    overflow = TextOverflow.Ellipsis,
-                    color = if (enabled) MyStyleKt.TextColor.enable else if (inDarkTheme) MyStyleKt.TextColor.disable_DarkTheme else MyStyleKt.TextColor.disable
-                )
+                content()
             }
 
         }
