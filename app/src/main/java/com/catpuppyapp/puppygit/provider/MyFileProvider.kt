@@ -19,7 +19,8 @@ class MyFileProvider: FileProvider() {
         //  有点tm的恶心啊，没别的办法监听到文件修改吗？
 
         //我能不能直接在这把saf的fd分享出去？
-        context.contentResolver.openFile()
+//        context.contentResolver.openFile()
+        //TODO 直接在这把saf 关联的uri的file descriptor返回不就行了？
         return super.openFile(uri, mode)
     }
 
