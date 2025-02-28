@@ -1610,12 +1610,25 @@ fun FilesInnerPage(
     val showExportDialog = rememberSaveable { mutableStateOf(false)}
     val showSafExportDialog = rememberSaveable { mutableStateOf(false)}
     val showSafImportDialog = rememberSaveable { mutableStateOf(false)}
+    val choosenSafUri = remember { mutableStateOf<Uri?>(null) }
+
+    val chooseDirLauncher = rememberLauncherForActivityResult(ActivityResultContracts.OpenDocumentTree()) exportSaf@{ uri ->
+        //执行导出
+        if(uri!=null) {
+            choosenSafUri.value = uri
+        }
+    }
+
+    if(showSafExportDialog.value) {
+
+    }
+
 
 //    val userChosenExportDirUri = StateUtil.getRememberSaveableState<Uri?>(initValue = null)
     //ActivityResultContracts.OpenMultipleDocuments() 多选文件，这个应该可用来导入，不过现在有分享，足够了，虽然分享不能导入目录
     val exportErrorMsg = rememberSaveable { mutableStateOf("")}
     val showExportErrorDialog = rememberSaveable { mutableStateOf(false)}
-    val chooseDirLauncher = rememberLauncherForActivityResult(ActivityResultContracts.OpenDocumentTree()) exportSaf@{ uri ->
+    val chooseDirLauncherThenExport = rememberLauncherForActivityResult(ActivityResultContracts.OpenDocumentTree()) exportSaf@{ uri ->
         //执行导出
         if(uri!=null) {
             doJobThenOffLoading(loadingOn, loadingOff, activityContext.getString(R.string.exporting)) {
@@ -2174,11 +2187,11 @@ fun FilesInnerPage(
             text = exportErrorMsg.value,
             onCancel = {showExportErrorDialog.value=false; exportErrorMsg.value=""}
         ) {
-                //onOk
-                showExportErrorDialog.value=false
-                clipboardManager.setText(AnnotatedString(exportErrorMsg.value))
-                Msg.requireShow(activityContext.getString(R.string.copied))
-                exportErrorMsg.value=""  //清空错误信息，节省内存？其实清不清都行，不过不清对用户也不可见了，索性清了吧
+            //onOk
+            showExportErrorDialog.value = false
+            clipboardManager.setText(AnnotatedString(exportErrorMsg.value))
+            Msg.requireShow(activityContext.getString(R.string.copied))
+            exportErrorMsg.value = ""  //清空错误信息，节省内存？其实清不清都行，不过不清对用户也不可见了，索性清了吧
         }
     }
 
@@ -2216,7 +2229,7 @@ fun FilesInnerPage(
             if(ret.hasError() || ret.data==null || !ret.data!!.exists()) {
                 Msg.requireShowLongDuration(activityContext.getString(R.string.get_default_export_folder_failed_plz_choose_one))
                 //如果获取默认export目录失败，弹出文件选择器，让用户选个目录
-                chooseDirLauncher.launch(null)  //这里传的null是弹出的界面的起始文件夹
+                chooseDirLauncherThenExport.launch(null)  //这里传的null是弹出的界面的起始文件夹
                 return@onOk
             }
 
