@@ -12,6 +12,8 @@ object SafUtil {
 
     var safDir:File? = null
 
+    // format: "content://<authority>/<path>"
+    const val safContentPrefix = "content://"
     /**
      * 非saf模式的路径必然是/开头的，只是在显示时区分internal://和external://，但saf则不同，存储的时候会加上saf前缀以和普通路径区分
      */
@@ -34,6 +36,10 @@ object SafUtil {
      */
     fun uriToDbSupportedFormat(uri: Uri):String {
         return uri.toString()
+    }
+
+    fun isSafPath(path:String):Boolean {
+        return path.startsWith(safContentPrefix)
     }
 
 }
