@@ -27,7 +27,6 @@ import androidx.compose.ui.unit.dp
 import com.catpuppyapp.puppygit.play.pro.R
 import com.catpuppyapp.puppygit.utils.AppModel
 import com.catpuppyapp.puppygit.utils.FsUtils
-import com.catpuppyapp.puppygit.utils.Msg
 import com.catpuppyapp.puppygit.utils.MyLog
 import com.catpuppyapp.puppygit.utils.saf.SafUtil
 
@@ -52,7 +51,7 @@ fun SystemFolderChooser(
                 MyLog.d(TAG, "uri.toString() == uri.path: ${uri.toString() == uri.path}, uri.toString()=${uri.toString()}, uri.path=${uri.path}")
             }
 
-            safPath.value = SafUtil.toAppSpecifiedSafFormat(uri.toString())
+            safPath.value = SafUtil.uriToDbSupportedFormat(uri)
 
             //最初是检查realPath.isNotBlank()才调用回调，但感觉检查与否意义不大，如果路径真为空，就清空也没什么
             nonSafPath.value = FsUtils.getRealPathFromUri(uri)
