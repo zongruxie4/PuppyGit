@@ -1897,19 +1897,20 @@ fun RepoInnerPage(
 
     val selectionModeMoreItemTextList = (listOf(
         stringResource(R.string.refresh), // multi
+        stringResource(R.string.changelist), // single
+
 //        stringResource(R.string.import_files),  // multi/single, 可多选，若多选会根据仓库名匹配导入
 //        stringResource(R.string.export_files), // multi/single，如果多选仓库，强制为不同仓库创建文件夹名，如果单选仓库，会显示一个“清空”的按钮，若勾选，执行导入前会先清空git仓库；执行导出前会先清空输出目录。还有，这个导入导出只支持saf，非saf的可通过本app的Files页面完成。
+        stringResource(R.string.user_info), // multi
+        stringResource(R.string.rename), // single
+        stringResource(R.string.set_upstream), // single
         stringResource(R.string.clone), // multi
+        stringResource(R.string.unshallow), // multi
         stringResource(R.string.remotes), // single
         stringResource(R.string.tags),  // single
-        stringResource(R.string.submodules), // single
-        stringResource(R.string.user_info), // multi
-        stringResource(R.string.unshallow), // multi
-        stringResource(R.string.set_upstream), // single
-        stringResource(R.string.changelist), // single
         stringResource(R.string.stash), // single
         stringResource(R.string.reflog), // single
-        stringResource(R.string.rename), // single
+        stringResource(R.string.submodules), // single
         stringResource(R.string.api), // multi
         stringResource(R.string.details), // multi
         stringResource(R.string.delete), // multi
@@ -1922,6 +1923,7 @@ fun RepoInnerPage(
 
             changeStateTriggerRefreshPage(needRefreshRepoPage)
         },
+
 //
 //        importFiles@{
 //
@@ -1931,35 +1933,42 @@ fun RepoInnerPage(
 //
 //        },
 
-        // retry clone for cloned err repos
-        clone@{
-            doClone(selectedItems.value.filter { it.workStatus == Cons.dbRepoWorkStatusCloneErr })
-        },
-
-        remotes@{
+        changelist@{
             val curRepo = selectedItems.value.first()
             doActIfRepoGood(curRepo) {
-                //管理remote，右上角有个fetch all可fetch所有remote
-                navController.navigate(Cons.nav_RemoteListScreen+"/"+curRepo.id)
-            }
-        },
-        tags@{
-            val curRepo = selectedItems.value.first()
-            doActIfRepoGood(curRepo) {
-                //跳转到tags页面
-                navController.navigate(Cons.nav_TagListScreen + "/" + curRepo.id)
-            }
-        },
-        submodules@{
-            val curRepo = selectedItems.value.first()
-            doActIfRepoGood(curRepo) {
-                navController.navigate(Cons.nav_SubmoduleListScreen + "/" + curRepo.id)
+                goToChangeListPage(curRepo)
             }
         },
 
         userInfo@{
             showSetUserInfoDialog(selectedItems.value.filter { isRepoGood(it) })
         },
+
+        rename@{
+            // rename不需要检查仓库状态是否good，直接执行即可
+            val selectedRepo = selectedItems.value.first()
+            curRepo.value = RepoEntity()
+            curRepo.value = selectedRepo
+
+            // init rename dialog
+            repoNameForRenameDialog.value = selectedRepo.repoName
+            errMsgForRenameDialog.value = ""
+            showRenameDialog.value = true
+        },
+
+        setUpstream@{
+            doJobThenOffLoading {
+                initSetUpstreamDialog(selectedItems.value.first(), activityContext.getString(R.string.save)) {}
+            }
+
+            Unit
+        },
+
+        // retry clone for cloned err repos
+        clone@{
+            doClone(selectedItems.value.filter { it.workStatus == Cons.dbRepoWorkStatusCloneErr })
+        },
+
         unshallow@{
             //选出可以执行unshallow的list
             // unshallow不需要upstream，会针对所有remotes执行unshallow
@@ -1982,17 +1991,19 @@ fun RepoInnerPage(
                 showUnshallowDialog.value = true
             }
         },
-        setUpstream@{
-            doJobThenOffLoading {
-                initSetUpstreamDialog(selectedItems.value.first(), activityContext.getString(R.string.save)) {}
-            }
 
-            Unit
-        },
-        changelist@{
+        remotes@{
             val curRepo = selectedItems.value.first()
             doActIfRepoGood(curRepo) {
-                goToChangeListPage(curRepo)
+                //管理remote，右上角有个fetch all可fetch所有remote
+                navController.navigate(Cons.nav_RemoteListScreen+"/"+curRepo.id)
+            }
+        },
+        tags@{
+            val curRepo = selectedItems.value.first()
+            doActIfRepoGood(curRepo) {
+                //跳转到tags页面
+                navController.navigate(Cons.nav_TagListScreen + "/" + curRepo.id)
             }
         },
         stash@{
@@ -2007,16 +2018,12 @@ fun RepoInnerPage(
                 navController.navigate(Cons.nav_ReflogListScreen+"/"+curRepo.id)
             }
         },
-        rename@{
-            // rename不需要检查仓库状态是否good，直接执行即可
-            val selectedRepo = selectedItems.value.first()
-            curRepo.value = RepoEntity()
-            curRepo.value = selectedRepo
 
-            // init rename dialog
-            repoNameForRenameDialog.value = selectedRepo.repoName
-            errMsgForRenameDialog.value = ""
-            showRenameDialog.value = true
+        submodules@{
+            val curRepo = selectedItems.value.first()
+            doActIfRepoGood(curRepo) {
+                navController.navigate(Cons.nav_SubmoduleListScreen + "/" + curRepo.id)
+            }
         },
 
         //这个是多选仓库则生成可操作多仓库的url的api版本，更方便
@@ -2091,6 +2098,9 @@ fun RepoInnerPage(
     val selectionModeMoreItemEnableList = (listOf(
         refresh@{ hasSelectedItems() },
 
+        changelist@{
+            selectedSingle() && isRepoGood(selectedItems.value.first())
+        },
 //        importFiles@{
 //            //可多选，若多选，会根据导入源下的目录名和当前仓库的目录名（不是仓库名，是仓库的fullsavepath末尾的文件夹名）去匹配
 //            //若选中未克隆仓库，可导入文件，然后刷新
@@ -2102,27 +2112,14 @@ fun RepoInnerPage(
 //            hasSelectedItems()
 //        },
 
-        clone@{
-            //至少选中一个需要克隆的仓库才显示此按钮
-            hasSelectedItems() && selectedItems.value.any { it.workStatus == Cons.dbRepoWorkStatusCloneErr }
-        },
-
-        remotes@{
-            selectedSingle() && isRepoGood(selectedItems.value.first())
-        },
-        tags@{
-            selectedSingle() && isRepoGood(selectedItems.value.first())
-        },
-        submodules@{
-            selectedSingle() && isRepoGood(selectedItems.value.first())
-        },
-
         userInfo@{
             hasSelectedItems() && selectedItems.value.any { isRepoGood(it) }
         },
-        unshallow@{
-            hasSelectedItems() && selectedItems.value.any { dbIntToBool(it.isShallow) }
+
+        rename@{
+            selectedSingle()
         },
+
         setUpstream@{
             if(selectedSingle()) {
                 val item = selectedItems.value.first()
@@ -2131,24 +2128,44 @@ fun RepoInnerPage(
                 false
             }
         },
-        changelist@{
+
+        clone@{
+            //至少选中一个需要克隆的仓库才显示此按钮
+            hasSelectedItems() && selectedItems.value.any { it.workStatus == Cons.dbRepoWorkStatusCloneErr }
+        },
+
+        unshallow@{
+            hasSelectedItems() && selectedItems.value.any { dbIntToBool(it.isShallow) }
+        },
+
+        remotes@{
             selectedSingle() && isRepoGood(selectedItems.value.first())
         },
+
+        tags@{
+            selectedSingle() && isRepoGood(selectedItems.value.first())
+        },
+
         stash@{
             selectedSingle()&& isRepoGood(selectedItems.value.first())
         },
+
         reflog@{
             selectedSingle()&& isRepoGood(selectedItems.value.first())
         },
-        rename@{
-            selectedSingle()
+
+        submodules@{
+            selectedSingle() && isRepoGood(selectedItems.value.first())
         },
+
         api@{
             hasSelectedItems()
         },
+
         details@{
             hasSelectedItems()
         },
+
         delete@{
             hasSelectedItems()
         }
