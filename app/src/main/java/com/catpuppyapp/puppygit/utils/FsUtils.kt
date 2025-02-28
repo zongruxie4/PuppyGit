@@ -543,7 +543,14 @@ object FsUtils {
                 val subDir = exportDir.createDirectory(targetName)?:continue
                 val subDirFiles = f.listFiles()?:continue
                 if(subDirFiles.isNotEmpty()) {
-                    recursiveExportFiles_Saf(contentResolver, subDir, subDirFiles)
+                    recursiveExportFiles_Saf(
+                        contentResolver = contentResolver,
+                        exportDir = subDir,
+                        files = subDirFiles,
+                        ignorePaths = ignorePaths,
+                        canceled = canceled,
+                        conflictStrategy = conflictStrategy
+                    )
                 }
             }else {
                 val targetFile = exportDir.createFile("*/*", targetName)?:continue

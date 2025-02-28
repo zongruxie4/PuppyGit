@@ -24,7 +24,24 @@ fun LoadingText(
     text: String = stringResource(R.string.loading),
     contentPadding: PaddingValues,
     enableScroll: Boolean = true,
-    scrollState: ScrollState = rememberScrollState()
+    scrollState: ScrollState = rememberScrollState(),
+) {
+    LoadingText(
+        text = text,
+        contentPadding = contentPadding,
+        enableScroll = enableScroll,
+        scrollState = scrollState,
+        appendContent = null
+    )
+}
+
+@Composable
+fun LoadingText(
+    text: String = stringResource(R.string.loading),
+    contentPadding: PaddingValues,
+    enableScroll: Boolean = true,
+    scrollState: ScrollState = rememberScrollState(),
+    appendContent:(@Composable ()->Unit)? = null,
 ) {
     Column(
         modifier = Modifier
@@ -38,6 +55,7 @@ fun LoadingText(
         verticalArrangement = Arrangement.Center,
     ) {
         Text(text = text)
+        appendContent?.invoke()
     }
 }
 

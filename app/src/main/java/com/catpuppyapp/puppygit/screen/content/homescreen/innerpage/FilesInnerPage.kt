@@ -224,6 +224,28 @@ fun FilesInnerPage(
     val successStrRes = stringResource(R.string.success)
     val errorStrRes = stringResource(R.string.error)
 
+    // 取消任务相关变量，开始
+    val requireCancelAct = rememberSaveable { mutableStateOf(false)}
+    val cancellableActRunning = rememberSaveable { mutableStateOf(false)}
+    val resetAct = {
+        requireCancelAct.value = false
+    }
+
+    val cancelAct = {
+        requireCancelAct.value = true
+    }
+
+    val startCancellableAct = {
+        resetAct()
+        cancellableActRunning.value = true
+    }
+
+    val stopCancellableAct = {
+        cancellableActRunning.value = false
+        resetAct()
+    }
+    //取消任务相关变量，结束
+
 //    val repoList = mutableCustomStateListOf(keyTag = stateKeyTag, keyName = "repoList", initValue = listOf<RepoEntity>())
 
 
@@ -1125,7 +1147,21 @@ fun FilesInnerPage(
     if(isLoading.value) {
 //        LoadingDialog(loadingText.value)        //这个页面不适合用Dialog，页面会闪。
 
-        LoadingText(loadingText.value, contentPadding)
+        LoadingText(
+            loadingText.value,
+            contentPadding,
+            //如果运行的是可取消的任务，显示个取消
+            appendContent = if(cancellableActRunning.value) {
+                {
+                    Spacer(Modifier.height(10.dp))
+                    ClickableText(stringResource(R.string.cancel)) {
+                        cancelAct()
+                    }
+                }
+            }else {
+                null
+            }
+        )
     }else {
         Column(
             modifier = Modifier
@@ -1631,7 +1667,21 @@ fun FilesInnerPage(
     val chooseDirLauncherThenExport = rememberLauncherForActivityResult(ActivityResultContracts.OpenDocumentTree()) exportSaf@{ uri ->
         //执行导出
         if(uri!=null) {
-            doJobThenOffLoading(loadingOn, loadingOff, activityContext.getString(R.string.exporting)) {
+            doJobThenOffLoading(
+                loadingOn = { loadingText ->
+                    loadingOn(loadingText)
+                    // reset，使其可取消
+                    startCancellableAct()
+                },
+
+                loadingOff = {
+                    loadingOff()
+                    // reset，使其他可取消任务任务能正常开始执行
+                    stopCancellableAct()
+                },
+
+                loadingText = activityContext.getString(R.string.exporting)
+            ) {
                 val chosenDir = DocumentFile.fromTreeUri(activityContext, uri)
                 if(chosenDir==null) {
                     Msg.requireShow(activityContext.getString(R.string.err_get_export_dir_failed))
@@ -1639,7 +1689,12 @@ fun FilesInnerPage(
                 }
 //            appContext.contentResolver.openOutputStream(chosenDir?.createFile("*/*", "test.txt")?.uri!!)
                 try {
-                    FsUtils.recursiveExportFiles_Saf(activityContext.contentResolver, chosenDir, selectedItems.value.map<FileItemDto, File> { it.toFile() }.toTypedArray())
+                    FsUtils.recursiveExportFiles_Saf(
+                        contentResolver = activityContext.contentResolver,
+                        exportDir = chosenDir,
+                        files = selectedItems.value.map<FileItemDto, File> { it.toFile() }.toTypedArray(),
+                        canceled = { requireCancelAct.value }
+                    )
                     // throw RuntimeException("测试异常！")  passed
                     Msg.requireShow(activityContext.getString(R.string.export_success))
                 }catch (e:Exception) {
