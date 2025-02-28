@@ -30,6 +30,7 @@ import java.io.InputStream
 import java.io.OutputStream
 import java.nio.charset.Charset
 import java.util.Locale
+import kotlin.coroutines.cancellation.CancellationException
 
 private const val TAG = "FsUtils"
 
@@ -506,14 +507,14 @@ object FsUtils {
         conflictStrategy:CopyFileConflictStrategy = CopyFileConflictStrategy.RENAME,
     ) {
         if(canceled()) {
-            return
+            throw CancellationException()
         }
 
         val filesUnderExportDir = exportDir.listFiles()
 
         for(f in files) {
             if(canceled()) {
-                return
+                throw CancellationException()
             }
 
             //可以用来实现忽略.git目录之类的逻辑，这忽略的是源目录的文件或文件夹
@@ -532,7 +533,7 @@ object FsUtils {
                     if(targetFileBeforeCreate.isFile) {
                         targetFileBeforeCreate.delete()
                     }else {  //递归删除目录
-                        recursiveDeleteFiles_Saf(contentResolver, targetFileBeforeCreate, targetFileBeforeCreate.listFiles())
+                        recursiveDeleteFiles_Saf(contentResolver, targetFileBeforeCreate, targetFileBeforeCreate.listFiles(), canceled)
                     }
                 }else if(conflictStrategy == CopyFileConflictStrategy.RENAME) {
                     targetName = getANonExistsName(targetName, exists = {newName -> filesUnderExportDir.find { it.name == newName } != null})
@@ -575,14 +576,14 @@ object FsUtils {
         conflictStrategy:CopyFileConflictStrategy = CopyFileConflictStrategy.RENAME,
     ) {
         if(canceled()) {
-            return
+            throw CancellationException()
         }
 
         val filesUnderImportDir = importDir.listFiles() ?: arrayOf<File>()
 
         for(f in files) {
             if(canceled()) {
-                return
+                throw CancellationException()
             }
 
             var targetName = f.name ?: continue
@@ -627,14 +628,28 @@ object FsUtils {
         }
     }
 
-    fun recursiveDeleteFiles_Saf(contentResolver: ContentResolver, dir: DocumentFile, files: Array<DocumentFile>) {
+    private fun recursiveDeleteFiles_Saf(
+        contentResolver: ContentResolver,
+        dir: DocumentFile,
+        files: Array<DocumentFile>,
+        canceled:()->Boolean,
+    ) {
+
+        if(canceled()) {
+            throw CancellationException()
+        }
+
         for(f in files) {
+            if(canceled()) {
+                throw CancellationException()
+            }
+
             if(f.isDirectory) {
                 val subDirFiles = dir.listFiles()?:continue
                 if(subDirFiles.isEmpty()) {
                     f.delete()
                 }else {
-                    recursiveDeleteFiles_Saf(contentResolver, dir, subDirFiles)
+                    recursiveDeleteFiles_Saf(contentResolver, dir, subDirFiles, canceled)
                     f.delete()
                 }
             }else {

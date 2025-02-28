@@ -137,9 +137,10 @@ import com.catpuppyapp.puppygit.utils.state.CustomStateSaveable
 import com.catpuppyapp.puppygit.utils.state.mutableCustomStateListOf
 import com.catpuppyapp.puppygit.utils.state.mutableCustomStateOf
 import java.io.File
+import kotlin.coroutines.cancellation.CancellationException
 
-private val TAG = "FilesInnerPage"
-private val stateKeyTag = "FilesInnerPage"
+private const val TAG = "FilesInnerPage"
+private const val stateKeyTag = "FilesInnerPage"
 
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
@@ -1764,6 +1765,8 @@ fun FilesInnerPage(
 
                     // throw RuntimeException("测试异常！")  passed
                     Msg.requireShow(activityContext.getString(R.string.success))
+                }catch (cancelled: CancellationException){
+                    Msg.requireShow(activityContext.getString(R.string.canceled))
                 }catch (e:Exception) {
                     MyLog.e(TAG, "#SafImportOrExportDialog err:"+e.stackTraceToString())
                     val errorMsg = "err: ${e.localizedMessage}"
@@ -1813,6 +1816,8 @@ fun FilesInnerPage(
                     )
                     // throw RuntimeException("测试异常！")  passed
                     Msg.requireShow(activityContext.getString(R.string.export_success))
+                }catch (cancelled: CancellationException){
+                    Msg.requireShow(activityContext.getString(R.string.canceled))
                 }catch (e:Exception) {
                     MyLog.e(TAG, "#exportSaf@ err:"+e.stackTraceToString())
                     val exportErrStrRes = activityContext.getString(R.string.export_err)
