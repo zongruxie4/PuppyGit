@@ -1622,7 +1622,7 @@ fun FilesInnerPage(
                 }
 //            appContext.contentResolver.openOutputStream(chosenDir?.createFile("*/*", "test.txt")?.uri!!)
                 try {
-                    FsUtils.recursiveExportFiles_Saf(activityContext.contentResolver, chosenDir, selectedItems.value.map<FileItemDto, File> { it.toFile() })
+                    FsUtils.recursiveExportFiles_Saf(activityContext.contentResolver, chosenDir, selectedItems.value.map<FileItemDto, File> { it.toFile() }.toTypedArray())
                     // throw RuntimeException("测试异常！")  passed
                     Msg.requireShow(activityContext.getString(R.string.export_success))
                 }catch (e:Exception) {

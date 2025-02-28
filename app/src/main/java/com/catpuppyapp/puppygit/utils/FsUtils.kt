@@ -435,12 +435,14 @@ object FsUtils {
 //        startActivityForResult(safIntent, 1)
 //    }
 
-    fun recursiveExportFiles_Saf(contentResolver: ContentResolver, exportDir: DocumentFile, files: List<File>) {
+    fun recursiveExportFiles_Saf(contentResolver: ContentResolver, exportDir: DocumentFile, files: Array<File>) {
         for(f in files) {
             if(f.isDirectory) {
                 val subDir = exportDir.createDirectory(f.name)?:continue
                 val subDirFiles = f.listFiles()?:continue
-                recursiveExportFiles_Saf(contentResolver, subDir, subDirFiles.toList())
+                if(subDirFiles.isNotEmpty()) {
+                    recursiveExportFiles_Saf(contentResolver, subDir, subDirFiles)
+                }
             }else {
                 val targetFile = exportDir.createFile("*/*", f.name)?:continue
 //                if(srcFile.exists()) {  //无需判断文件名是否已经存在，DocumentFile创建文件时会自动重命名
@@ -455,6 +457,21 @@ object FsUtils {
             }
         }
 
+    }
+
+    fun recursiveDeleteFiles_Saf(contentResolver: ContentResolver, dir: DocumentFile, files: List<DocumentFile>) {
+        for(f in files) {
+            if(f.isDirectory) {
+                val subDirFiles = dir.listFiles()?:continue
+                if(subDirFiles.isEmpty()) {
+                    f.delete()
+                }else {
+                    recursiveDeleteFiles_Saf(contentResolver, dir, subDirFiles.toList())
+                }
+            }else {
+                f.delete()
+            }
+        }
     }
 
     //操作成功返回content和file的快照完整路径，否则，内容快照和文件快照，谁成功谁有路径，都不成功则都没路径但不会返回null，只是返回两个空字符串。
