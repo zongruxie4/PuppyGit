@@ -68,7 +68,9 @@ fun SystemFolderChooser(
 
     val chooseDirLauncher = rememberLauncherForActivityResult(ActivityResultContracts.OpenDocumentTree()) { uri ->
         if(uri == null) {
-            Msg.requireShowLongDuration("invalid uri")
+            //不提示了，因为并非出错才返回null，如果用户不选目录，返回的uri也会为null，就算提示个“未选择任何目录”或者“操作已取消”，感觉也没什么意义，不过我记得导出时选择目录是有“导出已取消”的提示的，那里提示，感觉还合理些
+//            Msg.requireShowLongDuration("invalid uri")
+
         }else {
             //获取永久访问权限
             activityContext.contentResolver.takePersistableUriPermission(
