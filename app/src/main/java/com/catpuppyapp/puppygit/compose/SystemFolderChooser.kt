@@ -71,12 +71,14 @@ fun SystemFolderChooser(
             //不提示了，因为并非出错才返回null，如果用户不选目录，返回的uri也会为null，就算提示个“未选择任何目录”或者“操作已取消”，感觉也没什么意义，不过我记得导出时选择目录是有“导出已取消”的提示的，那里提示，感觉还合理些
 //            Msg.requireShowLongDuration("invalid uri")
 
-        }else {
+        }else {  // uri != null
+
+            //这个我没测试过是否靠谱，而且暂时放弃支持saf了，所以，先注释了，以后如果支持，再启用并且进行测试
             //获取永久访问权限
-            activityContext.contentResolver.takePersistableUriPermission(
-                uri,
-                Intent.FLAG_GRANT_READ_URI_PERMISSION or Intent.FLAG_GRANT_WRITE_URI_PERMISSION
-            )
+//            activityContext.contentResolver.takePersistableUriPermission(
+//                uri,
+//                Intent.FLAG_GRANT_READ_URI_PERMISSION or Intent.FLAG_GRANT_WRITE_URI_PERMISSION
+//            )
 
             //更新path
             chosenPathCallback(uri)
