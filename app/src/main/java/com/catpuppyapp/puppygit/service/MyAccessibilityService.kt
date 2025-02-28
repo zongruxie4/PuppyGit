@@ -36,6 +36,8 @@ class MyAccessibilityService: AccessibilityService() {
             "com.android.systemui",  //通知栏或全面屏手势之类的
             "android",  //切换输入法的弹窗，有的系统（例如原生）会是这个包名，有的不是（例如国产color os）
             "com.oplus.notificationmanager",  //oneplus等oppo系系统，安装app，初次启动，弹窗，询问“是否允许当前app显示通知”
+            "com.google.android.permissioncontroller",  //原生系统安装app后首次启动时询问是否允许通知的弹窗，不确定其他权限（例如“获取位置信息”）的弹窗是否也和这个有关
+
 
         )
 
