@@ -43,6 +43,7 @@ fun SystemFolderChooser(
     path:MutableState<String>,
     pathTextFieldLabel:String=stringResource(R.string.path),
     pathTextFieldPlaceHolder:String=stringResource(R.string.eg_storage_emulate_0_repos),
+    showSafSwitchButton:Boolean = false,
     chosenPathCallback:(uri: Uri?)->Unit = {uri->
         if(uri != null) {
             if(AppModel.devModeOn) {
@@ -121,16 +122,18 @@ fun SystemFolderChooser(
         Spacer(Modifier.height(15.dp))
         Text(stringResource(R.string.if_unable_choose_a_path_just_copy_paste_instead), fontWeight = FontWeight.Light)
 
-        Spacer(Modifier.height(15.dp))
-        MyCheckBox(text = stringResource(R.string.saf_mode), value = safEnabled, onValueChange = { newValue ->
-            path.value = if (newValue) {
-                safPath.value
-            } else {
-                nonSafPath.value
-            }
+        if(showSafSwitchButton) {
+            Spacer(Modifier.height(15.dp))
+            MyCheckBox(text = stringResource(R.string.saf_mode), value = safEnabled, onValueChange = { newSafEnabledValue ->
+                path.value = if (newSafEnabledValue) {
+                    safPath.value
+                } else {
+                    nonSafPath.value
+                }
 
-            safEnabled.value = newValue
-        })
-        CheckBoxNoteText(stringResource(R.string.saf_mode_note))
+                safEnabled.value = newSafEnabledValue
+            })
+            CheckBoxNoteText(stringResource(R.string.saf_mode_note))
+        }
     }
 }
