@@ -49,6 +49,29 @@ object FsUtils {
     const val appExportFolderName = "PuppyGitExport"
     const val appExportFolderNameUnderDocumentsDirShowToUser = "Documents/${appExportFolderName}"  //显示给用户看的路径
 
+    enum class CopyFileConflictStrategy(val code:Int) {
+        /**
+         * skip exists files
+         */
+        SKIP(1),
+
+        /**
+         * rename exists files
+         */
+        RENAME(2),
+
+        /**
+         * clear folder if exists, overwrite file if exists
+         */
+        OVERWRITE_FOLDER_AND_FILE(3),
+        ;
+
+        companion object {
+            fun fromCode(code: Int): CopyFileConflictStrategy? {
+                return CopyFileConflictStrategy.entries.find { it.code == code }
+            }
+        }
+    }
 
     object Patch {
         const val suffix = ".patch"
@@ -324,6 +347,45 @@ object FsUtils {
         return target
     }
 
+
+    fun getANonExistsName(name:String, exists:(String)->Boolean):String {
+        var target = name
+        if(exists(name)) {
+            //拆分出文件名和后缀，生成类似 "file(1).ext" 的格式，而不是 "file.ext(1)" 那样
+            val extIndex = name.lastIndexOf('.')
+            val (fileName, fileExt) = if(extIndex > 0) {  //注意这里是索引大于最后一个分隔符加1，即"."之前至少有一个字符，因为如果文件名开头是"."，是隐藏文件，不将其视为后缀名，这时生成的文件名类似 ".git(1)" 而不是"(1).git"
+                // 例如输入：/path/to/abc.txt, 返回 "/path/to/abc" 和 ".txt"，后缀名包含"."
+                Pair(name.substring(0, extIndex), name.substring(extIndex))
+            }else {  //无后缀或.在第一位(例如".git")
+                Pair(name, "")
+            }
+
+            //生成文件名的最大编号，超过这个编号将会生成随机文件名
+//            val max = Int.MAX_VALUE
+            val max = 1000
+
+            //for循环，直到生成一个不存在的名字
+            for(i in 1..max) {
+                target = "$fileName($i)$fileExt"
+                if(!exists(target)) {
+                    break
+                }
+            }
+
+            //如果文件还存在，生成随机名
+            if(exists(target)){
+                while (true) {
+                    target = "$fileName(${getShortUUID(len=8)})$fileExt"
+                    if(!exists(target)) {
+                        break
+                    }
+                }
+            }
+        }
+
+        return target
+    }
+
     //考虑要不要加个suspend？加suspend是因为拷贝大量文件时，有可能长时间阻塞，但实际上不加这方法也可运行
     fun copyOrMoveOrExportFile(srcList:List<File>, destDir:File, requireDeleteSrc:Boolean):Ret<String?> {
         //其实不管拷贝还是移动都要先拷贝，区别在于移动后需要删除源目录
@@ -435,25 +497,59 @@ object FsUtils {
 //        startActivityForResult(safIntent, 1)
 //    }
 
-    fun recursiveExportFiles_Saf(contentResolver: ContentResolver, exportDir: DocumentFile, files: Array<File>, ignorePaths:List<String> = listOf()) {
+    fun recursiveExportFiles_Saf(
+        contentResolver: ContentResolver,
+        exportDir: DocumentFile,
+        files: Array<File>,
+        ignorePaths:List<String> = listOf(),
+        canceled:()->Boolean = {false},
+        conflictStrategy:CopyFileConflictStrategy = CopyFileConflictStrategy.RENAME,
+    ) {
+        if(canceled()) {
+            return
+        }
+
+        val filesUnderExportDir = exportDir.listFiles()
+
         for(f in files) {
+            if(canceled()) {
+                return
+            }
+
             //可以用来实现忽略.git目录之类的逻辑
             if(ignorePaths.contains(f.canonicalPath)) {
                 continue
             }
 
+            var targetName = f.name
+
+            val targetFileBeforeCreate = filesUnderExportDir.find { it.name == targetName }
+
+            if(targetFileBeforeCreate != null) {  //文件已存在
+                if(conflictStrategy == CopyFileConflictStrategy.SKIP) {
+                    continue
+                }else if(conflictStrategy == CopyFileConflictStrategy.OVERWRITE_FOLDER_AND_FILE) {
+                    if(targetFileBeforeCreate.isFile) {
+                        targetFileBeforeCreate.delete()
+                    }else {  //递归删除目录
+                        recursiveDeleteFiles_Saf(contentResolver, targetFileBeforeCreate, targetFileBeforeCreate.listFiles())
+                    }
+                }else if(conflictStrategy == CopyFileConflictStrategy.RENAME) {
+                    targetName = getANonExistsName(targetName, exists = {newName -> filesUnderExportDir.find { it.name == newName } != null})
+                }
+            }
+
             if(f.isDirectory) {
-                val subDir = exportDir.createDirectory(f.name)?:continue
+                val subDir = exportDir.createDirectory(targetName)?:continue
                 val subDirFiles = f.listFiles()?:continue
                 if(subDirFiles.isNotEmpty()) {
                     recursiveExportFiles_Saf(contentResolver, subDir, subDirFiles)
                 }
             }else {
-                val targetFile = exportDir.createFile("*/*", f.name)?:continue
-//                if(srcFile.exists()) {  //无需判断文件名是否已经存在，DocumentFile创建文件时会自动重命名
-//
-//                }
+                val targetFile = exportDir.createFile("*/*", targetName)?:continue
+
                 val output = contentResolver.openOutputStream(targetFile.uri)?:continue
+
                 f.inputStream().use { ins->
                     output.use { outs ->
                         ins.copyTo(outs)
