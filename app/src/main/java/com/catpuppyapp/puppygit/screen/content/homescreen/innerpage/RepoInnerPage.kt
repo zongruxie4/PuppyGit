@@ -1897,8 +1897,8 @@ fun RepoInnerPage(
 
     val selectionModeMoreItemTextList = (listOf(
         stringResource(R.string.refresh), // multi
-        stringResource(R.string.import_files),  // multi/single, 可多选，若多选会根据仓库名匹配导入
-        stringResource(R.string.export_files), // multi/single，如果多选仓库，强制为不同仓库创建文件夹名，如果单选仓库，会显示一个“清空”的按钮，若勾选，执行导入前会先清空git仓库；执行导出前会先清空输出目录。还有，这个导入导出只支持saf，非saf的可通过本app的Files页面完成。
+//        stringResource(R.string.import_files),  // multi/single, 可多选，若多选会根据仓库名匹配导入
+//        stringResource(R.string.export_files), // multi/single，如果多选仓库，强制为不同仓库创建文件夹名，如果单选仓库，会显示一个“清空”的按钮，若勾选，执行导入前会先清空git仓库；执行导出前会先清空输出目录。还有，这个导入导出只支持saf，非saf的可通过本app的Files页面完成。
         stringResource(R.string.clone), // multi
         stringResource(R.string.remotes), // single
         stringResource(R.string.tags),  // single
@@ -1922,14 +1922,14 @@ fun RepoInnerPage(
 
             changeStateTriggerRefreshPage(needRefreshRepoPage)
         },
-
-        importFiles@{
-            ddddddddddddddd
-        },
-
-        exportFiles@{
-ddddddddddddd
-        },
+//
+//        importFiles@{
+//
+//        },
+//
+//        exportFiles@{
+//
+//        },
 
         // retry clone for cloned err repos
         clone@{
@@ -2091,16 +2091,16 @@ ddddddddddddd
     val selectionModeMoreItemEnableList = (listOf(
         refresh@{ hasSelectedItems() },
 
-        importFiles@{
-            //可多选，若多选，会根据导入源下的目录名和当前仓库的目录名（不是仓库名，是仓库的fullsavepath末尾的文件夹名）去匹配
-            //若选中未克隆仓库，可导入文件，然后刷新
-            hasSelectedItems()
-        },
-
-        exportFiles@ {
-            //这个无所谓了，不判断仓库是否能用了，直接如果目录存在，就导出，简化逻辑
-            hasSelectedItems()
-        },
+//        importFiles@{
+//            //可多选，若多选，会根据导入源下的目录名和当前仓库的目录名（不是仓库名，是仓库的fullsavepath末尾的文件夹名）去匹配
+//            //若选中未克隆仓库，可导入文件，然后刷新
+//            hasSelectedItems()
+//        },
+//
+//        exportFiles@ {
+//            //这个无所谓了，不判断仓库是否能用了，直接如果目录存在，就导出，简化逻辑
+//            hasSelectedItems()
+//        },
 
         clone@{
             //至少选中一个需要克隆的仓库才显示此按钮
