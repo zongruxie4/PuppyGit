@@ -2108,8 +2108,8 @@ fun FilesInnerPage(
             stringResource(id = R.string.details),
             if(proFeatureEnabled(importReposFromFilesTestPassed)) stringResource(id = R.string.import_as_repo) else "",  // empty string will be ignore when display menu items
             if(proFeatureEnabled(initRepoFromFilesPageTestPassed)) stringResource(id = R.string.init_repo) else "",
-            stringResource(R.string.export),
             stringResource(R.string.import_str),
+            stringResource(R.string.export),
         )).asReversed()
 
         val selectionModeMoreItemOnClickList = (listOf(
@@ -2127,16 +2127,17 @@ fun FilesInnerPage(
                 initInitRepoDialog(selectedItems.value.filter { it.isDir }.map { it.fullPath })
             },
 
-            export@{
-                initSafExportDialog(selectedItems.value.toList())
-//                choosenSafUri.value = null  //不设为null了，这样可以直接用上次的uri
+            import@{
+                initSafImportDialog()
+//                choosenSafUri.value = null
 
                 //显示选择导出目录的文件选择界面
 //                chooseDirLauncher.launch(null)
             },
-            import@{
-                initSafImportDialog()
-//                choosenSafUri.value = null
+
+            export@{
+                initSafExportDialog(selectedItems.value.toList())
+//                choosenSafUri.value = null  //不设为null了，这样可以直接用上次的uri
 
                 //显示选择导出目录的文件选择界面
 //                chooseDirLauncher.launch(null)
@@ -2149,16 +2150,18 @@ fun FilesInnerPage(
 //            {selectedItems.value.indexOfFirst{it.isDir} != -1}  //enable import as repo. (if has dirs in selected items, then enable else disbale) (after clicked then check better than check at every time selected list change)
             {getSelectedFilesCount()>0},  // import as repos
             {getSelectedFilesCount()>0}, // init repo
-            {getSelectedFilesCount()>0}, //是否启用export
 
             //是否启用import
             {
+                //只要当前目录可读，就启用import
                 try {
                     File(currentPath.value).canRead()
                 }catch (_:Exception) {
                     false
                 }
             },
+
+            {getSelectedFilesCount()>0}, //是否启用export
 
         )).asReversed()
 
