@@ -1608,6 +1608,8 @@ fun FilesInnerPage(
     }
 
     val showExportDialog = rememberSaveable { mutableStateOf(false)}
+    val showSafExportDialog = rememberSaveable { mutableStateOf(false)}
+    val showSafImportDialog = rememberSaveable { mutableStateOf(false)}
 
 //    val userChosenExportDirUri = StateUtil.getRememberSaveableState<Uri?>(initValue = null)
     //ActivityResultContracts.OpenMultipleDocuments() 多选文件，这个应该可用来导入，不过现在有分享，足够了，虽然分享不能导入目录
@@ -1918,6 +1920,7 @@ fun FilesInnerPage(
             if(proFeatureEnabled(importReposFromFilesTestPassed)) stringResource(id = R.string.import_as_repo) else "",  // empty string will be ignore when display menu items
             if(proFeatureEnabled(initRepoFromFilesPageTestPassed)) stringResource(id = R.string.init_repo) else "",
             stringResource(R.string.export),
+            stringResource(R.string.import_str),
         )).asReversed()
 
         val selectionModeMoreItemOnClickList = (listOf(
@@ -1936,9 +1939,14 @@ fun FilesInnerPage(
             },
 
             export@{
-//                showExportDialog.value = true
+                showSafExportDialog.value = true
                 //显示选择导出目录的文件选择界面
-                chooseDirLauncher.launch(null)
+//                chooseDirLauncher.launch(null)
+            },
+            import@{
+                showSafImportDialog.value = true
+                //显示选择导出目录的文件选择界面
+//                chooseDirLauncher.launch(null)
             },
         )).asReversed()
 
@@ -1949,6 +1957,15 @@ fun FilesInnerPage(
             {getSelectedFilesCount()>0},  // import as repos
             {getSelectedFilesCount()>0}, // init repo
             {getSelectedFilesCount()>0}, //是否启用export
+
+            //是否启用import
+            {
+                try {
+                    File(currentPath.value).canRead()
+                }catch (_:Exception) {
+                    false
+                }
+            },
 
         )).asReversed()
 
@@ -2167,7 +2184,8 @@ fun FilesInnerPage(
 
 
     if(showExportDialog.value) {
-        ConfirmDialog(title= stringResource(id = R.string.export),
+        ConfirmDialog(
+            title= stringResource(id = R.string.export),
             requireShowTextCompose = true,
             textCompose = {
                 ScrollableColumn {
