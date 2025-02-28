@@ -1895,7 +1895,7 @@ fun RepoInnerPage(
         selectAllEnable@{ true },
     )
 
-    val selectionModeMoreItemTextList = listOf(
+    val selectionModeMoreItemTextList = (listOf(
         stringResource(R.string.refresh), // multi
         stringResource(R.string.clone), // multi
         stringResource(R.string.remotes), // single
@@ -1911,9 +1911,9 @@ fun RepoInnerPage(
         stringResource(R.string.api), // multi
         stringResource(R.string.details), // multi
         stringResource(R.string.delete), // multi
-    )
+    )).asReversed()
 
-    val selectionModeMoreItemOnClickList = listOf(
+    val selectionModeMoreItemOnClickList = (listOf(
         refresh@{
             specifiedRefreshRepoList.value.clear()
             specifiedRefreshRepoList.value.addAll(selectedItems.value)
@@ -2074,9 +2074,9 @@ fun RepoInnerPage(
         delete@{
             requireDelRepo(selectedItems.value.toList())
         }
-    )
+    )).asReversed()
 
-    val selectionModeMoreItemEnableList = listOf(
+    val selectionModeMoreItemEnableList = (listOf(
         refresh@{ hasSelectedItems() },
 
         clone@{
@@ -2128,7 +2128,7 @@ fun RepoInnerPage(
         delete@{
             hasSelectedItems()
         }
-    )
+    )).asReversed()
 
     val showSelectedItemsShortDetailsDialog = rememberSaveable { mutableStateOf(false)}
 //    val selectedItemsShortDetailsStr = rememberSaveable { mutableStateOf("")}
@@ -2468,9 +2468,9 @@ fun RepoInnerPage(
             visibleMoreIcon=true,
             moreItemTextList=selectionModeMoreItemTextList,
             moreItemOnClickList=selectionModeMoreItemOnClickList,
-            getSelectedFilesCount = getSelectedFilesCount,
             moreItemEnableList = selectionModeMoreItemEnableList,
             moreItemVisibleList = selectionModeMoreItemEnableList,  //禁用即隐藏
+            getSelectedFilesCount = getSelectedFilesCount,
             countNumOnClickEnabled = true,
             countNumOnClick = showSelectedItems,
         )

@@ -633,7 +633,7 @@ fun SubmoduleListScreen(
         }
     }
 
-    val moreItemEnableList:List<()->Boolean> = listOf(
+    val moreItemEnableList:List<()->Boolean> = (listOf(
         {selectedItemList.value.isNotEmpty()},  // import repo
         {selectedItemList.value.isNotEmpty()},  // reset to target
         {selectedItemList.value.isNotEmpty()},  // reload
@@ -643,9 +643,9 @@ fun SubmoduleListScreen(
         {selectedItemList.value.size == 1},  // set url
         {selectedItemList.value.size == 1},  // copy full path
         {selectedItemList.value.isNotEmpty()},  // details
-    )
+    )).asReversed()
 
-    val moreItemTextList = listOf(
+    val moreItemTextList = (listOf(
         stringResource(R.string.import_to_repos),
         stringResource(R.string.reset_to_target),
         stringResource(R.string.reload),
@@ -655,9 +655,9 @@ fun SubmoduleListScreen(
         stringResource(R.string.set_url),
         stringResource(R.string.copy_full_path),
         stringResource(R.string.details),  //可针对单个或多个条目查看details，多个时，用分割线分割多个条目的信息
-    )
+    )).asReversed()
 
-    val moreItemOnClickList:List<()->Unit> = listOf(
+    val moreItemOnClickList:List<()->Unit> = (listOf(
         importToRepos@{
             showImportToReposDialog.value = true
         },
@@ -718,7 +718,7 @@ fun SubmoduleListScreen(
 
             showDetailsDialog.value = true
         },
-    )
+    )).asReversed()
 
     val filterKeyword =mutableCustomStateOf(
         keyTag = stateKeyTag,
@@ -1335,8 +1335,8 @@ fun SubmoduleListScreen(
                     enableMoreIcon=true,
                     moreItemTextList=moreItemTextList,
                     moreItemOnClickList=moreItemOnClickList,
-                    getSelectedFilesCount = getSelectedFilesCount,
                     moreItemEnableList = moreItemEnableList,
+                    getSelectedFilesCount = getSelectedFilesCount,
                     countNumOnClickEnabled = true,
                     countNumOnClick = countNumOnClickForBottomBar
                 )

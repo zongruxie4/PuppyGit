@@ -404,7 +404,7 @@ fun ChangeListInnerPage(
 
         ret
     }
-    val moreItemEnableList:List<()->Boolean> =if(fromTo == Cons.gitDiffFromIndexToWorktree)  listOf(
+    val moreItemEnableList:List<()->Boolean> = (if(fromTo == Cons.gitDiffFromIndexToWorktree)  listOf(
             hasConflictItemsSelected,  //accept ours
             hasConflictItemsSelected,  //accept theirs
             selectedListIsNotEmpty,  //stage
@@ -417,6 +417,7 @@ fun ChangeListInnerPage(
             selectedListIsNotEmpty, // create patch
             selectedListIsNotEmpty, // import as repo
         )
+    ).asReversed()
 
 //    val isAllConflictItemsSelected:()->Boolean = isAllConflictItemsSelectedLabel@{
 //        //如果不存在冲突条目，返回true
@@ -2233,7 +2234,7 @@ fun ChangeListInnerPage(
 
     val enableMoreIcon = fromTo != Cons.gitDiffFromTreeToTree
     //话说用这个diffFromTo变量来判断其实并非本意，但也勉强说得过去，因为worktree的changelist和index页面所需要diff的不同，所以，也可以这么写，其实本该还有一个FromHeadToWorktree的diff变量的，但在这里用不上
-    val moreItemTextList = if(fromTo == Cons.gitDiffFromIndexToWorktree) listOf(
+    val moreItemTextList = (if(fromTo == Cons.gitDiffFromIndexToWorktree) listOf(
         if(UserUtil.isPro()) stringResource(id = R.string.accept_ours) else stringResource(id = R.string.accept_ours_pro_only),
         if(UserUtil.isPro()) stringResource(id = R.string.accept_theirs) else stringResource(id = R.string.accept_theirs_pro_only),
         stringResource(R.string.stage),
@@ -2245,9 +2246,11 @@ fun ChangeListInnerPage(
     )  //按元素添加顺序在列表中会呈现为从上到下
     else if(fromTo == Cons.gitDiffFromHeadToIndex) listOf(stringResource(R.string.unstage), stringResource(R.string.create_patch), stringResource(R.string.import_as_repo),)
     else listOf()  // tree to tree，无选项
+    ).asReversed()
 
     val showAcceptOursTheirs = (repoState.intValue == Repository.StateT.MERGE.bit || repoState.intValue == Repository.StateT.REBASE_MERGE.bit || repoState.intValue == Repository.StateT.CHERRYPICK.bit)
-    val moreItemVisibleList = if(fromTo == Cons.gitDiffFromIndexToWorktree) listOf(
+
+    val moreItemVisibleList = (if(fromTo == Cons.gitDiffFromIndexToWorktree) listOf(
         {showAcceptOursTheirs},  // visible for "accept ours"
         {showAcceptOursTheirs},  // visible for "accept theirs"
         {true},  // stage
@@ -2256,6 +2259,7 @@ fun ChangeListInnerPage(
         {true},  // ignore
         {true}, // import as repo
     ) else listOf()  // empty list, always visible
+    ).asReversed()
 
     val showRevertAlert = rememberSaveable { mutableStateOf(false)}
     val doRevert = { curRepo:RepoEntity, selectedItemList:List<StatusTypeEntrySaver> ->
@@ -2424,7 +2428,7 @@ fun ChangeListInnerPage(
         }
     }
 
-    val moreItemOnClickList:List<()->Unit> = if(fromTo == Cons.gitDiffFromIndexToWorktree) listOf(
+    val moreItemOnClickList:List<()->Unit> = (if(fromTo == Cons.gitDiffFromIndexToWorktree) listOf(
         acceptOurs@{
             if(!UserUtil.isPro()) {
                 Msg.requireShowLongDuration(activityContext.getString(R.string.this_feature_is_pro_only))
@@ -2468,6 +2472,8 @@ fun ChangeListInnerPage(
                     bottomBarActDoneCallback = bottomBarActDoneCallback
                 )
             }
+
+            Unit
         },
         //menu action: Revert
         revert@{
@@ -2494,6 +2500,8 @@ fun ChangeListInnerPage(
             initImportAsRepo()
         }
     ) else listOf()  // fromTo == Cons.gitDiffFromTreeToTree
+
+    ).asReversed()
 
     val switchItemSelected = { item:StatusTypeEntrySaver ->
         if(isFileSelectionMode.value.not()) {
@@ -3313,11 +3321,11 @@ fun ChangeListInnerPage(
                         enableMoreIcon=enableMoreIcon,
                         moreItemTextList=moreItemTextList,
                         moreItemOnClickList=moreItemOnClickList,
-                        getSelectedFilesCount = getSelectedFilesCount,
                         moreItemEnableList = moreItemEnableList,
                         moreItemVisibleList = moreItemVisibleList,
                         iconVisibleList = iconVisibleList,
                         countNumOnClickEnabled = true,
+                        getSelectedFilesCount = getSelectedFilesCount,
                         countNumOnClick = countNumOnClickForBottomBar
                     )
                 }

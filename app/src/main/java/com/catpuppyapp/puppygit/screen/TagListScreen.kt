@@ -171,6 +171,11 @@ fun TagListScreen(
     // BottomBar相关变量，开始
     val multiSelectionMode = rememberSaveable { mutableStateOf(false) }
     val selectedItemList = mutableCustomStateListOf(keyTag = stateKeyTag, keyName = "selectedItemList", listOf<TagDto>())
+
+    val getSelectedFilesCount = {
+        selectedItemList.value.size
+    }
+
     val quitSelectionMode = {
         multiSelectionMode.value=false  //关闭选择模式
         selectedItemList.value.clear()  //清空选中文件列表
@@ -194,20 +199,18 @@ fun TagListScreen(
         {true} // select all
     )
 
-    val moreItemTextList = listOf(
+    val moreItemTextList = (listOf(
         stringResource(R.string.checkout),
         stringResource(R.string.reset),  //日后改成reset并可选模式 soft/mixed/hard
 //        stringResource(R.string.details),  //可针对单个或多个条目查看details，多个时，用分割线分割多个条目的信息
-    )
+    )).asReversed()
 
-    val getSelectedFilesCount = {
-        selectedItemList.value.size
-    }
-    val moreItemEnableList:List<()->Boolean> = listOf(
+    val moreItemEnableList:List<()->Boolean> = (listOf(
         {selectedItemList.value.size==1},  // checkout
         {selectedItemList.value.size==1},  // hardReset
         {selectedItemList.value.isNotEmpty()}  // details
-    )
+    )).asReversed()
+
     // BottomBar相关变量，结束
 
     //多选模式相关函数，开始
@@ -323,7 +326,7 @@ fun TagListScreen(
         }
     }
 
-    val moreItemOnClickList:List<()->Unit> = listOf(
+    val moreItemOnClickList:List<()->Unit> = (listOf(
         checkout@{
             initCheckoutDialogComposableVersion()
         },
@@ -331,9 +334,11 @@ fun TagListScreen(
             doActIfIndexGood(0, selectedItemList.value) { item ->
                 initResetDialog(item.targetFullOidStr)
             }
+
+            Unit
         },
 
-    )
+    )).asReversed()
 
     val filterKeyword = mutableCustomStateOf(
         keyTag = stateKeyTag,
@@ -819,8 +824,8 @@ fun TagListScreen(
                     enableMoreIcon=true,
                     moreItemTextList=moreItemTextList,
                     moreItemOnClickList=moreItemOnClickList,
-                    getSelectedFilesCount = getSelectedFilesCount,
                     moreItemEnableList = moreItemEnableList,
+                    getSelectedFilesCount = getSelectedFilesCount,
                     countNumOnClickEnabled = true,
                     countNumOnClick = countNumOnClickForBottomBar
                 )

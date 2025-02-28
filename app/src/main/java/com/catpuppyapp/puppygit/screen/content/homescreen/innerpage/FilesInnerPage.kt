@@ -1910,14 +1910,15 @@ fun FilesInnerPage(
             {getSelectedFilesCount()>0},  //是否启用copy
             {true},  //是否启用全选
         )
-        val selectionModeMoreItemTextList = listOf(
+        val selectionModeMoreItemTextList = (listOf(
             stringResource(R.string.export),
             stringResource(id = R.string.remove_from_git),  //列表显示顺序就是这里的排序，上到下
             stringResource(id = R.string.details),
             if(proFeatureEnabled(importReposFromFilesTestPassed)) stringResource(id = R.string.import_as_repo) else "",  // empty string will be ignore when display menu items
             if(proFeatureEnabled(initRepoFromFilesPageTestPassed)) stringResource(id = R.string.init_repo) else "",
-        )
-        val selectionModeMoreItemOnClickList = listOf(
+        )).asReversed()
+
+        val selectionModeMoreItemOnClickList = (listOf(
             export@{
 //                showExportDialog.value = true
                 //显示选择导出目录的文件选择界面
@@ -1936,15 +1937,16 @@ fun FilesInnerPage(
             initRepo@{
                 initInitRepoDialog(selectedItems.value.filter { it.isDir }.map { it.fullPath })
             }
-        )
-        val selectionModeMoreItemEnableList = listOf(
+        )).asReversed()
+
+        val selectionModeMoreItemEnableList = (listOf(
             {getSelectedFilesCount()>0}, //是否启用export
             {getSelectedFilesCount()>0}, //是否启用remove from git
             {getSelectedFilesCount()>0}, //是否启用details
 //            {selectedItems.value.indexOfFirst{it.isDir} != -1}  //enable import as repo. (if has dirs in selected items, then enable else disbale) (after clicked then check better than check at every time selected list change)
             {getSelectedFilesCount()>0},  // import as repos
             {getSelectedFilesCount()>0}, // init repo
-        )
+        )).asReversed()
 
 
         if(!isLoading.value) {
@@ -1958,8 +1960,8 @@ fun FilesInnerPage(
                 enableMoreIcon=true,
                 moreItemTextList=selectionModeMoreItemTextList,
                 moreItemOnClickList=selectionModeMoreItemOnClickList,
-                getSelectedFilesCount = getSelectedFilesCount,
                 moreItemEnableList = selectionModeMoreItemEnableList,
+                getSelectedFilesCount = getSelectedFilesCount,
                 countNumOnClickEnabled = true,
                 countNumOnClick = countNumOnClickForSelectAndPasteModeBottomBar,
             )
@@ -2134,8 +2136,8 @@ fun FilesInnerPage(
                 enableMoreIcon=false,
                 moreItemTextList= listOf(),
                 moreItemOnClickList= listOf(),
-                getSelectedFilesCount = getRequireUriFilesCount,
                 moreItemEnableList = listOf(),
+                getSelectedFilesCount = getRequireUriFilesCount,
                 countNumOnClickEnabled = true,
                 countNumOnClick=countNumOnClickForImportMode
             )
@@ -2234,8 +2236,8 @@ fun FilesInnerPage(
                 enableMoreIcon=false,
                 moreItemTextList= listOf(),
                 moreItemOnClickList= listOf(),
-                getSelectedFilesCount = getSelectedFilesCount,
                 moreItemEnableList = listOf(),
+                getSelectedFilesCount = getSelectedFilesCount,
                 countNumOnClickEnabled = true,
                 countNumOnClick = countNumOnClickForSelectAndPasteModeBottomBar
             )
