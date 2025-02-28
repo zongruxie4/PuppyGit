@@ -1446,6 +1446,7 @@ fun FilesInnerPage(
         ConfirmDialog(
             title = stringResource(id = R.string.remove_from_git),
             text = stringResource(R.string.will_remove_selected_items_from_git_are_u_sure),
+            okTextColor = MyStyleKt.TextColor.danger(),
             onCancel = { showRemoveFromGitDialog.value=false }
         ) {
             //关闭弹窗
@@ -1455,8 +1456,8 @@ fun FilesInnerPage(
                 if(selectedItems.value.isEmpty()) {  //例如，我选择了文件，然后对文件执行了重命名，导致已选中条目被移除，就会发生选中条目列表为空或缺少了条目的情况
                     Msg.requireShow(activityContext.getString(R.string.no_item_selected))
                     //退出选择模式和刷新页面
-                    filesPageQuitSelectionMode()
-                    changeStateTriggerRefreshPage(needRefreshFilesPage)
+//                    filesPageQuitSelectionMode()
+//                    changeStateTriggerRefreshPage(needRefreshFilesPage)
                     return@doJobThenOffLoading  // 结束操作
                 }
 
@@ -1464,8 +1465,8 @@ fun FilesInnerPage(
                 if(repoWillUse == null) {
                     Msg.requireShow(activityContext.getString(R.string.err_dir_is_not_a_git_repo))
                     //退出选择模式和刷新页面
-                    filesPageQuitSelectionMode()
-                    changeStateTriggerRefreshPage(needRefreshFilesPage)
+//                    filesPageQuitSelectionMode()
+//                    changeStateTriggerRefreshPage(needRefreshFilesPage)
                     return@doJobThenOffLoading  // 结束操作
                 }
 
@@ -1499,9 +1500,10 @@ fun FilesInnerPage(
 
                 Msg.requireShow(activityContext.getString(R.string.success))
 
+                //没必要退出选择模式，也没必要刷新目录，是从git移除，又不会影响这里显示的的文件，这显示的文件属于git的worktree区域
                 //退出选择模式并刷新目录
-                filesPageQuitSelectionMode()
-                changeStateTriggerRefreshPage(needRefreshFilesPage)
+//                filesPageQuitSelectionMode()
+//                changeStateTriggerRefreshPage(needRefreshFilesPage)
 
             }
         }
@@ -1911,19 +1913,14 @@ fun FilesInnerPage(
             {true},  //是否启用全选
         )
         val selectionModeMoreItemTextList = (listOf(
-            stringResource(R.string.export),
             stringResource(id = R.string.remove_from_git),  //列表显示顺序就是这里的排序，上到下
             stringResource(id = R.string.details),
             if(proFeatureEnabled(importReposFromFilesTestPassed)) stringResource(id = R.string.import_as_repo) else "",  // empty string will be ignore when display menu items
             if(proFeatureEnabled(initRepoFromFilesPageTestPassed)) stringResource(id = R.string.init_repo) else "",
+            stringResource(R.string.export),
         )).asReversed()
 
         val selectionModeMoreItemOnClickList = (listOf(
-            export@{
-//                showExportDialog.value = true
-                //显示选择导出目录的文件选择界面
-                chooseDirLauncher.launch(null)
-            },
             removeFromGit@{
                 showRemoveFromGitDialog.value = true
             },
@@ -1936,16 +1933,23 @@ fun FilesInnerPage(
             },
             initRepo@{
                 initInitRepoDialog(selectedItems.value.filter { it.isDir }.map { it.fullPath })
-            }
+            },
+
+            export@{
+//                showExportDialog.value = true
+                //显示选择导出目录的文件选择界面
+                chooseDirLauncher.launch(null)
+            },
         )).asReversed()
 
         val selectionModeMoreItemEnableList = (listOf(
-            {getSelectedFilesCount()>0}, //是否启用export
             {getSelectedFilesCount()>0}, //是否启用remove from git
             {getSelectedFilesCount()>0}, //是否启用details
 //            {selectedItems.value.indexOfFirst{it.isDir} != -1}  //enable import as repo. (if has dirs in selected items, then enable else disbale) (after clicked then check better than check at every time selected list change)
             {getSelectedFilesCount()>0},  // import as repos
             {getSelectedFilesCount()>0}, // init repo
+            {getSelectedFilesCount()>0}, //是否启用export
+
         )).asReversed()
 
 
