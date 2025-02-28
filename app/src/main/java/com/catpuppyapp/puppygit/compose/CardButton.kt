@@ -36,6 +36,7 @@ fun CardButton(
     CardButton(
         modifier = modifier,
         enabled = enabled,
+        buttonHeight = 50,
         content = {
             Text(
                 text = text,
@@ -55,13 +56,13 @@ fun CardButton(
 fun CardButton(
     modifier: Modifier = Modifier,
     enabled: Boolean,
+    buttonHeight:Int? = null,  //null = no limit
     content:@Composable RowScope.()->Unit,
     onClick: () -> Unit
 ) {
 
     val cardColor = UIHelper.defaultCardColor()
 
-    val buttonHeight = 50
 
 
 
@@ -91,7 +92,14 @@ fun CardButton(
             Row(
                 modifier = Modifier
                     .fillMaxWidth(.85f)
-                    .height(buttonHeight.dp)
+                    .then(
+                        //如果高度不为null，限制高度；否则不限
+                        if(buttonHeight != null) {
+                            Modifier.height(buttonHeight.dp)
+                        }else{
+                            Modifier
+                        }
+                    )
                     .padding(5.dp)
                 ,
 
