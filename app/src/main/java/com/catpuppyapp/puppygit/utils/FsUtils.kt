@@ -459,14 +459,15 @@ object FsUtils {
 
     }
 
-    fun recursiveDeleteFiles_Saf(contentResolver: ContentResolver, dir: DocumentFile, files: List<DocumentFile>) {
+    fun recursiveDeleteFiles_Saf(contentResolver: ContentResolver, dir: DocumentFile, files: Array<DocumentFile>) {
         for(f in files) {
             if(f.isDirectory) {
                 val subDirFiles = dir.listFiles()?:continue
                 if(subDirFiles.isEmpty()) {
                     f.delete()
                 }else {
-                    recursiveDeleteFiles_Saf(contentResolver, dir, subDirFiles.toList())
+                    recursiveDeleteFiles_Saf(contentResolver, dir, subDirFiles)
+                    f.delete()
                 }
             }else {
                 f.delete()
