@@ -384,9 +384,10 @@ object AppModel {
      * 执行必须但已经可以显示界面的操作，所以这时候可以看到开发者设置的loading页面了，如果有的话。
      * 可重可轻，有可能阻塞很久
      */
-    suspend fun init_2(editCacheDirPath:String=AppModel.editCacheDir.canonicalPath) {
+    suspend fun init_2() {
         val funName = "init_2"
         val applicationContext = AppModel.realAppContext
+        val editCacheDirPath = AppModel.editCacheDir.canonicalPath
 
         // one time task in one time app process life time
         if(inited_2.value.not()) {
