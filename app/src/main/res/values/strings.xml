@@ -1218,6 +1218,7 @@
     <!-- new at 20250227 -->
     <string name="saf_mode">Saf Mode</string>
     <string name="saf_mode_note">Saf mode offers better compatibility and support for Termux, but it has bad performance</string>
+    <string name="import_export">Import/Export</string>
 
 
 </resources>

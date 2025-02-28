@@ -435,8 +435,13 @@ object FsUtils {
 //        startActivityForResult(safIntent, 1)
 //    }
 
-    fun recursiveExportFiles_Saf(contentResolver: ContentResolver, exportDir: DocumentFile, files: Array<File>) {
+    fun recursiveExportFiles_Saf(contentResolver: ContentResolver, exportDir: DocumentFile, files: Array<File>, ignorePaths:List<String> = listOf()) {
         for(f in files) {
+            //可以用来实现忽略.git目录之类的逻辑
+            if(ignorePaths.contains(f.canonicalPath)) {
+                continue
+            }
+
             if(f.isDirectory) {
                 val subDir = exportDir.createDirectory(f.name)?:continue
                 val subDirFiles = f.listFiles()?:continue
