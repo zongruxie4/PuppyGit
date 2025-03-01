@@ -25,6 +25,8 @@ import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.selection.selectable
+import androidx.compose.foundation.text.KeyboardActions
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ContentCopy
@@ -64,6 +66,8 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.input.ImeAction
+import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.DpOffset
@@ -357,29 +361,7 @@ fun FilesInnerPage(
     val showGoToPathDialog = rememberSaveable { mutableStateOf(false)}
     val pathToGo = rememberSaveable { mutableStateOf("")}
     if(showGoToPathDialog.value) {
-        ConfirmDialog(
-            requireShowTextCompose = true,
-            textCompose = {
-                ScrollableColumn {
-                    TextField(
-                        modifier = Modifier.fillMaxWidth(),
-                        value = pathToGo.value,
-//                        singleLine = true,
-                        onValueChange = {
-                            pathToGo.value = it
-                        },
-                        label = {
-                            Text(stringResource(R.string.path))
-                        },
-                    )
-                }
-            },
-            okBtnEnabled = pathToGo.value.isNotBlank(),
-            okBtnText = stringResource(id = R.string.go),
-            cancelBtnText = stringResource(id = R.string.cancel),
-            title = stringResource(R.string.go_to),
-            onCancel = { showGoToPathDialog.value = false }
-        ) {
+        val goToDialogOnOk = {
             showGoToPathDialog.value = false
 
             doJobThenOffLoading {
@@ -395,12 +377,12 @@ fun FilesInnerPage(
 
                 // handle path to absolute path, btw: internal path must before external path, because internal actually starts with external, if swap order, code block of internal path will ignore ever
                 val finallyPath = (if(pathToGo.value.startsWith(FsUtils.internalPathPrefix)) {
-                        FsUtils.getInternalStorageRootPathNoEndsWithSeparator()+"/"+FsUtils.removeInternalStoragePrefix(pathToGo.value)
-                    }else if(pathToGo.value.startsWith(FsUtils.externalPathPrefix)) {
-                        FsUtils.getExternalStorageRootPathNoEndsWithSeparator()+"/"+FsUtils.removeExternalStoragePrefix(pathToGo.value)
-                    }else {  // absolute path like "/storage/emulate/0/abc"
-                        pathToGo.value
-                    }).trim('\n')
+                    FsUtils.getInternalStorageRootPathNoEndsWithSeparator()+"/"+FsUtils.removeInternalStoragePrefix(pathToGo.value)
+                }else if(pathToGo.value.startsWith(FsUtils.externalPathPrefix)) {
+                    FsUtils.getExternalStorageRootPathNoEndsWithSeparator()+"/"+FsUtils.removeExternalStoragePrefix(pathToGo.value)
+                }else {  // absolute path like "/storage/emulate/0/abc"
+                    pathToGo.value
+                }).trim('\n')
 
                 val f = File(finallyPath)
                 if(f.canRead()) {
@@ -410,6 +392,41 @@ fun FilesInnerPage(
                 }
 
             }
+
+            Unit
+        }
+
+        ConfirmDialog(
+            requireShowTextCompose = true,
+            textCompose = {
+                ScrollableColumn {
+                    TextField(
+                        modifier = Modifier.fillMaxWidth(),
+                        value = pathToGo.value,
+//                        singleLine = true,
+                        onValueChange = {
+                            pathToGo.value = it
+                        },
+                        label = {
+                            Text(stringResource(R.string.path))
+                        },
+
+                        // 把软键盘回车替换成Go
+                        keyboardOptions = KeyboardOptions(imeAction = ImeAction.Go),
+                        // 点击Go直接跳转路径
+                        keyboardActions = KeyboardActions(onGo = {
+                            goToDialogOnOk()
+                        })
+                    )
+                }
+            },
+            okBtnEnabled = pathToGo.value.isNotBlank(),
+            okBtnText = stringResource(id = R.string.go),
+            cancelBtnText = stringResource(id = R.string.cancel),
+            title = stringResource(R.string.go_to),
+            onCancel = { showGoToPathDialog.value = false }
+        ) {
+            goToDialogOnOk()
         }
     }
 
