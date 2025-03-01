@@ -1742,7 +1742,7 @@ fun FilesInnerPage(
 
                 loadingOff = loadingOffCancellable,
 
-                loadingText = activityContext.getString(R.string.exporting)
+                loadingText = activityContext.getString(if(trueExportFalseImport) R.string.exporting else R.string.importing)
             ) {
                 val uri = choosenSafUri.value!!
                 val conflictStrategy = if(safImportExportOverwrite.value) FsUtils.CopyFileConflictStrategy.OVERWRITE_FOLDER_AND_FILE else FsUtils.CopyFileConflictStrategy.SKIP
