@@ -1,10 +1,15 @@
 package com.catpuppyapp.puppygit.utils.saf
 
+import android.content.ContentResolver
+import android.content.Intent
 import android.net.Uri
 import com.catpuppyapp.puppygit.utils.AppModel
 import com.catpuppyapp.puppygit.utils.FsUtils
+import com.catpuppyapp.puppygit.utils.MyLog
 import com.catpuppyapp.puppygit.utils.createDirIfNonexists
 import java.io.File
+
+private const val TAG = "SafUtil"
 
 object SafUtil {
     /**
@@ -99,4 +104,52 @@ object SafUtil {
             null
         }
     }
+
+    fun takePersistableRWPermission(contentResolver: ContentResolver, uri: Uri):Boolean {
+        return try {
+            contentResolver.takePersistableUriPermission(
+                uri,
+                Intent.FLAG_GRANT_READ_URI_PERMISSION or Intent.FLAG_GRANT_WRITE_URI_PERMISSION
+            )
+            true
+        }catch (e:Exception) {
+            MyLog.e(TAG, "#takePersistableRWPermission() try take RW permissions err: ${e.stackTraceToString()}")
+            false
+        }
+    }
+
+    fun takePersistableReadOnlyPermission(contentResolver: ContentResolver, uri: Uri):Boolean {
+        return try {
+            contentResolver.takePersistableUriPermission(
+                uri,
+                Intent.FLAG_GRANT_READ_URI_PERMISSION
+            )
+            true
+        }catch (e:Exception) {
+            MyLog.e(TAG, "#takePersistableReadOnlyPermission() try take ReadOnly permissions err: ${e.stackTraceToString()}")
+            false
+        }
+    }
+
+
+    fun releasePersistableRWPermission(contentResolver: ContentResolver, uri: Uri):Boolean {
+        return try {
+            contentResolver.releasePersistableUriPermission(uri, Intent.FLAG_GRANT_READ_URI_PERMISSION or Intent.FLAG_GRANT_WRITE_URI_PERMISSION)
+            true
+        } catch (e: SecurityException) {
+            MyLog.e(TAG, "#releasePersistableRWPermission() try release RW permissions err: ${e.stackTraceToString()}")
+            false
+        }
+    }
+
+    fun releasePersistableReadOnlyPermission(contentResolver: ContentResolver, uri: Uri):Boolean {
+        return try {
+            contentResolver.releasePersistableUriPermission(uri, Intent.FLAG_GRANT_READ_URI_PERMISSION)
+            true
+        } catch (e: SecurityException) {
+            MyLog.e(TAG, "#releasePersistableReadOnlyPermission() try release ReadOnly permissions err: ${e.stackTraceToString()}")
+            false
+        }
+    }
+
 }

@@ -72,12 +72,9 @@ fun SystemFolderChooser(
 
         }else {  // uri != null
 
-            //这个我没测试过是否靠谱，而且暂时放弃支持saf了，所以，先注释了，以后如果支持，再启用并且进行测试
+            //这个我没测试过是否靠谱，有待验证
             //获取永久访问权限
-//            activityContext.contentResolver.takePersistableUriPermission(
-//                uri,
-//                Intent.FLAG_GRANT_READ_URI_PERMISSION or Intent.FLAG_GRANT_WRITE_URI_PERMISSION
-//            )
+            SafUtil.takePersistableRWPermission(activityContext.contentResolver, uri)
 
             //更新path
             chosenPathCallback(uri)
