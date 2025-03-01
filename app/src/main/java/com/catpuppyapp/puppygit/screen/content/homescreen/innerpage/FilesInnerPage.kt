@@ -67,7 +67,6 @@ import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.ImeAction
-import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.DpOffset
@@ -95,6 +94,7 @@ import com.catpuppyapp.puppygit.compose.SelectedItemDialog
 import com.catpuppyapp.puppygit.constants.Cons
 import com.catpuppyapp.puppygit.constants.PageRequest
 import com.catpuppyapp.puppygit.data.entity.RepoEntity
+import com.catpuppyapp.puppygit.dev.DevFeature
 import com.catpuppyapp.puppygit.dev.applyPatchTestPassed
 import com.catpuppyapp.puppygit.dev.importReposFromFilesTestPassed
 import com.catpuppyapp.puppygit.dev.initRepoFromFilesPageTestPassed
@@ -1829,7 +1829,7 @@ fun FilesInnerPage(
         val closeDialog = { showSafDiffDialog.value = false; cancelAct() }
 
         ConfirmDialog2(
-            title = "SAF Diff",
+            title = DevFeature.safDiff_text,
             requireShowTextCompose = true,
             textCompose = {
                 CopyScrollableColumn {

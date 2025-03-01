@@ -19,6 +19,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.TextFieldValue
 import com.catpuppyapp.puppygit.compose.LongPressAbleIconBtn
 import com.catpuppyapp.puppygit.constants.PageRequest
+import com.catpuppyapp.puppygit.dev.DevFeature
 import com.catpuppyapp.puppygit.play.pro.R
 import com.catpuppyapp.puppygit.style.MyStyleKt
 import com.catpuppyapp.puppygit.utils.AppModel
@@ -168,7 +169,7 @@ fun FilesPageActions(
                 if(AppModel.devModeOn) {
                     DropdownMenuItem(
                         enabled = enableMenuItem,
-                        text = { Text("SAF Diff") },
+                        text = { Text(DevFeature.safDiff_text) },
                         onClick = {
                             requestFromParent.value = PageRequest.safDiff
                             dropDownMenuExpendState.value = false
