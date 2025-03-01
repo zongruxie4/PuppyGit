@@ -138,6 +138,8 @@ import com.catpuppyapp.puppygit.utils.isPathExists
 import com.catpuppyapp.puppygit.utils.mime.MimeType
 import com.catpuppyapp.puppygit.utils.mime.guessFromFileName
 import com.catpuppyapp.puppygit.utils.replaceStringResList
+import com.catpuppyapp.puppygit.utils.saf.MyOpenDocumentTree
+import com.catpuppyapp.puppygit.utils.saf.SafUtil
 import com.catpuppyapp.puppygit.utils.showToast
 import com.catpuppyapp.puppygit.utils.state.CustomStateListSaveable
 import com.catpuppyapp.puppygit.utils.state.CustomStateSaveable
@@ -1712,9 +1714,11 @@ fun FilesInnerPage(
     val safImportExportOverwrite = rememberSaveable { mutableStateOf(false) }
     val choosenSafUri = remember { mutableStateOf<Uri?>(null) }
 
-    val chooseDirLauncher = rememberLauncherForActivityResult(ActivityResultContracts.OpenDocumentTree()) { uri ->
+    val chooseDirLauncher = rememberLauncherForActivityResult(MyOpenDocumentTree()) { uri ->
         //执行导出
         if(uri!=null) {
+            SafUtil.takePersistableRWPermission(activityContext.contentResolver, uri)
+
             choosenSafUri.value = uri
         }
     }
@@ -1929,9 +1933,11 @@ fun FilesInnerPage(
 //    val userChosenExportDirUri = StateUtil.getRememberSaveableState<Uri?>(initValue = null)
     //ActivityResultContracts.OpenMultipleDocuments() 多选文件，这个应该可用来导入，不过现在有分享，足够了，虽然分享不能导入目录
 
-    val chooseDirLauncherThenExport = rememberLauncherForActivityResult(ActivityResultContracts.OpenDocumentTree()) exportSaf@{ uri ->
+    val chooseDirLauncherThenExport = rememberLauncherForActivityResult(MyOpenDocumentTree()) exportSaf@{ uri ->
         //执行导出
         if(uri!=null) {
+            SafUtil.takePersistableRWPermission(activityContext.contentResolver, uri)
+
             doJobThenOffLoading(
                 loadingOn = loadingOnCancellable,
 

@@ -27,6 +27,7 @@ import com.catpuppyapp.puppygit.play.pro.R
 import com.catpuppyapp.puppygit.utils.AppModel
 import com.catpuppyapp.puppygit.utils.FsUtils
 import com.catpuppyapp.puppygit.utils.MyLog
+import com.catpuppyapp.puppygit.utils.saf.MyOpenDocumentTree
 import com.catpuppyapp.puppygit.utils.saf.SafUtil
 
 private const val TAG = "SystemFolderChooser"
@@ -65,14 +66,8 @@ fun SystemFolderChooser(
 
     val activityContext = LocalContext.current
 
-    val chooseDirLauncher = rememberLauncherForActivityResult(ActivityResultContracts.OpenDocumentTree()) { uri ->
-        if(uri == null) {
-            //不提示了，因为并非出错才返回null，如果用户不选目录，返回的uri也会为null，就算提示个“未选择任何目录”或者“操作已取消”，感觉也没什么意义，不过我记得导出时选择目录是有“导出已取消”的提示的，那里提示，感觉还合理些
-//            Msg.requireShowLongDuration("invalid uri")
-
-        }else {  // uri != null
-
-            //这个我没测试过是否靠谱，有待验证
+    val chooseDirLauncher = rememberLauncherForActivityResult(MyOpenDocumentTree()) { uri ->
+        if(uri != null){
             //获取永久访问权限
             SafUtil.takePersistableRWPermission(activityContext.contentResolver, uri)
 
