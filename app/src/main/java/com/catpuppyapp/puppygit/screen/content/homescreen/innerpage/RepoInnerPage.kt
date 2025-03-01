@@ -92,6 +92,7 @@ import com.catpuppyapp.puppygit.ui.theme.Theme
 import com.catpuppyapp.puppygit.utils.ActivityUtil
 import com.catpuppyapp.puppygit.utils.AppModel
 import com.catpuppyapp.puppygit.utils.ComposeHelper
+import com.catpuppyapp.puppygit.utils.FsUtils
 import com.catpuppyapp.puppygit.utils.Libgit2Helper
 import com.catpuppyapp.puppygit.utils.Msg
 import com.catpuppyapp.puppygit.utils.MyLog
@@ -392,7 +393,7 @@ fun RepoInnerPage(
 
             doJobThenOffLoading(loadingOn, loadingOff, activityContext.getString(R.string.importing)) {
                 try {
-                    val newPath = importRepoPath.value
+                    val newPath = FsUtils.trimPath(importRepoPath.value)
 
                     if(newPath.isNotBlank()) {
                         val f = File(newPath)

@@ -322,7 +322,8 @@ fun CloneScreen(
 
             doJobThenOffLoading {
 
-                val newPath = storagePathForAdd.value
+                val newPath = FsUtils.trimPath(storagePathForAdd.value)
+
                 if(newPath.isNotBlank()) {
                     val spForSave = StoragePathsMan.get()
 

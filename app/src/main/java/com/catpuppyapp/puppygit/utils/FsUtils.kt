@@ -1122,7 +1122,7 @@ object FsUtils {
      */
     fun getExternalStorageRootPathNoEndsWithSeparator():String{
         return try {
-            Environment.getExternalStorageDirectory().path.removeSuffix("/")
+            trimPath(Environment.getExternalStorageDirectory().path)
         }catch (_:Exception) {
             ""
         }
@@ -1132,10 +1132,14 @@ object FsUtils {
         return try {
             val uriPathString = uri.path.toString()
             //eg. /storage/emulated/0/folder1/folder2
-            Environment.getExternalStorageDirectory().path+File.separator +uriPathString.substring(uriPathString.indexOf(":")+1)
+            trimPath(getExternalStorageRootPathNoEndsWithSeparator() + Cons.slash + uriPathString.substring(uriPathString.indexOf(":")+1))
         }catch (_:Exception) {
             ""
         }
+    }
+
+    fun trimPath(path:String):String {
+        return path.trim { it == '\n' || it == '\r' }.trimEnd('/')
     }
 
     /**

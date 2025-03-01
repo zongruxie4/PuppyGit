@@ -98,7 +98,7 @@ fun SystemFolderChooser(
                 value = path.value,
                 maxLines = 6,
                 onValueChange = {
-                    path.value = it.trim('\n').trimEnd('/')
+                    path.value = it
                 },
                 label = {
                     Text(pathTextFieldLabel)
