@@ -1150,11 +1150,16 @@ object FsUtils {
     }
 
     /**
-     * eg: fullPath = /storage/emulated/0/repos/abc, return External:/abc
-     * eg: fullPath = /storage/emulated/0/Android/path-to-app-internal-repos-folder/abc, return Internal:/abc
+     * eg: fullPath = /storage/emulated/0/repos/abc, return "External:/abc"
+     * eg (wrong path): fullPath = /storage/emulated/0//repos/abc, return "External://repos/abc" ("External:/" + "/repos/abc")
+     * eg: fullPath = /storage/emulated/0/Android/path-to-app-internal-repos-folder/abc, return "Internal:/abc"
      * eg: fullPath = /data/data/app.package.name/files/abc, return origin path
+     * eg (matched internal/external storage prefix): fullPath = /storage/emulated/0, return "External:/"
      */
-    fun getPathWithInternalOrExternalPrefix(fullPath:String, internalStorageRoot:String=FsUtils.getInternalStorageRootPathNoEndsWithSeparator(), externalStorageRoot:String=FsUtils.getExternalStorageRootPathNoEndsWithSeparator()) :String {
+    fun getPathWithInternalOrExternalPrefix(fullPath:String) :String {
+        val internalStorageRoot = getInternalStorageRootPathNoEndsWithSeparator()
+        val externalStorageRoot = getExternalStorageRootPathNoEndsWithSeparator()
+
         return if(fullPath.startsWith(internalStorageRoot)) {  // internal storage must before external storage, because internal storage actually under external storage (eg: internal is "/storage/emulated/0/Android/data/packagename/xxx/xxxx/x", external is "/storage/emulated/0")
             internalPathPrefix+((getPathAfterParent(parent= internalStorageRoot, fullPath=fullPath)).removePrefix("/"))
         }else if(fullPath.startsWith(externalStorageRoot)) {
