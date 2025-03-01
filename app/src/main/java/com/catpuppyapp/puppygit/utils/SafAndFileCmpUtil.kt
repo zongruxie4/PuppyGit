@@ -9,17 +9,24 @@ object SafAndFileCmpUtil {
 
     class SafAndFileCompareResult (
         /**
+         * 仅存在于saf目标的文件
          * saf to files的时候，这个应该在files被添加到files；files to saf的时候，这个应该从saf被删除
+         * 注意：列表元素有可能是文件夹，也有可能是文件，处理时需要做判断
          */
         val onlyInSaf:MutableList<DocumentFile> = mutableListOf(),
+
         /**
+         * 仅存在于files目标的文件
          * saf to files，这个应该从files里删除；files to saf，这个应该被添加到saf目录。
+         * 注意：列表元素有可能是文件夹，也有可能是文件，处理时需要做判断
          */
         val onlyInFiles:MutableList<File> = mutableListOf(),
 
         /**
          * 两者相同目录都有同样文件，但文件内容或类型不同
          * saf to files，用saf的覆盖files的；files to saf，用files的覆盖saf的
+         * 注意：列表元素有可能是文件夹，也有可能是文件，处理时需要做判断。
+         * 注意：因为不同的元素会精确到文件，所以这个列表的元素不会存在两个目标都是文件夹的情况，只有可能存在 "一方文件夹另一方文件(类型不同)" 或 "两方都是文件但内容不同"
          */
         val bothAndNotSame:MutableList<SafAndFileDiffPair> = mutableListOf(),
 
