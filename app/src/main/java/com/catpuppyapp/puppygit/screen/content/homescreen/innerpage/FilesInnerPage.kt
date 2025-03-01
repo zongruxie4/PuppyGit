@@ -117,7 +117,7 @@ import com.catpuppyapp.puppygit.utils.FsUtils
 import com.catpuppyapp.puppygit.utils.Libgit2Helper
 import com.catpuppyapp.puppygit.utils.Msg
 import com.catpuppyapp.puppygit.utils.MyLog
-import com.catpuppyapp.puppygit.utils.SafAndFileCmpUtil
+import com.catpuppyapp.puppygit.utils.saf.SafAndFileCmpUtil
 import com.catpuppyapp.puppygit.utils.SafAndFileCmpUtil.OpenInputStreamFailed
 import com.catpuppyapp.puppygit.utils.UIHelper
 import com.catpuppyapp.puppygit.utils.cache.Cache
