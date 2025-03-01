@@ -1198,6 +1198,7 @@
     <string name="select_path">选择路径</string>
     <string name="overwrite_files_note">若勾选，将会在拷贝前删除已存在的文件夹和文件；否则将会跳过</string>
     <string name="err_documentfile_is_null">错误: DocumentFile 为 null</string>
+    <string name="folder_is_empty">文件夹为空</string>
 
 
 </resources>

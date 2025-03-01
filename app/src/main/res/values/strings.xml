@@ -1224,6 +1224,7 @@
     <string name="select_path">Select Path</string>
     <string name="overwrite_files_note">If checked, will remove folders/files that already exist before copying; otherwise, will skip them.</string>
     <string name="err_documentfile_is_null">err: DocumentFile is null</string>
+    <string name="folder_is_empty">Folder is empty</string>
 
 
 </resources>

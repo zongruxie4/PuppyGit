@@ -2544,7 +2544,12 @@ fun FilesInnerPage(
             }
 
             if(curPathReadable) {
-                initSafExportDialog(listOf(FileItemDto.genFileItemDtoByFile(curFile, activityContext)))
+                val subFiles = curFile.listFiles()
+                if(subFiles == null || subFiles.isEmpty()) { //空文件夹没什么好导出的
+                    Msg.requireShow(activityContext.getString(R.string.folder_is_empty))
+                }else { //执行导出
+                    initSafExportDialog(subFiles.map { FileItemDto.genFileItemDtoByFile(it, activityContext) })
+                }
             }else {
                 Msg.requireShow(activityContext.getString(R.string.invalid_path))
             }
