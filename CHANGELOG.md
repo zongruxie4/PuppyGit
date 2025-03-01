@@ -1,3 +1,10 @@
+1.0.9.1v67 - 20250301:
+- Files screen support Import/Export from/to external apps which implemented system documents picker (e.g. Termux)
+
+- 文件管理器支持从实现了系统文档选择器的app（例如：Termux）导入导出文件
+
+---
+
 1.0.9.0v66 - 20250225:
 - use icon instead of clickable text to copy commit hash
 
