@@ -21,6 +21,7 @@ import com.catpuppyapp.puppygit.compose.LongPressAbleIconBtn
 import com.catpuppyapp.puppygit.constants.PageRequest
 import com.catpuppyapp.puppygit.play.pro.R
 import com.catpuppyapp.puppygit.style.MyStyleKt
+import com.catpuppyapp.puppygit.utils.AppModel
 import com.catpuppyapp.puppygit.utils.state.CustomStateSaveable
 
 
@@ -163,6 +164,17 @@ fun FilesPageActions(
                         dropDownMenuExpendState.value = false
                     }
                 )
+
+                if(AppModel.devModeOn) {
+                    DropdownMenuItem(
+                        enabled = enableMenuItem,
+                        text = { Text("Saf Diff") },
+                        onClick = {
+                            requestFromParent.value = PageRequest.safDiff
+                            dropDownMenuExpendState.value = false
+                        }
+                    )
+                }
 
                 //拷贝app内相对路径
 //                DropdownMenuItem(

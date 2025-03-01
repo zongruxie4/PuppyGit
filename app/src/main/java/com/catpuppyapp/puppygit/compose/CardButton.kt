@@ -28,7 +28,7 @@ fun CardButton(
     modifier: Modifier = Modifier,
 //    paddingValues: PaddingValues = PaddingValues(30.dp),
     text: String,
-    enabled: Boolean,
+    enabled: Boolean = true,
     onClick: () -> Unit
 ) {
     val inDarkTheme = Theme.inDarkTheme
@@ -55,7 +55,7 @@ fun CardButton(
 @Composable
 fun CardButton(
     modifier: Modifier = Modifier,
-    enabled: Boolean,
+    enabled: Boolean = true,
     buttonHeight:Int? = null,  //null = no limit
     content:@Composable RowScope.()->Unit,
     onClick: () -> Unit

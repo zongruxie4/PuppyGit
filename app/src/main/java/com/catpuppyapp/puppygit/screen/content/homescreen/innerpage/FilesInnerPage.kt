@@ -80,6 +80,7 @@ import com.catpuppyapp.puppygit.compose.CheckBoxNoteText
 import com.catpuppyapp.puppygit.compose.ClickableText
 import com.catpuppyapp.puppygit.compose.ConfirmDialog
 import com.catpuppyapp.puppygit.compose.ConfirmDialog2
+import com.catpuppyapp.puppygit.compose.CopyScrollableColumn
 import com.catpuppyapp.puppygit.compose.CopyableDialog
 import com.catpuppyapp.puppygit.compose.CreateFileOrFolderDialog
 import com.catpuppyapp.puppygit.compose.FileListItem
@@ -116,6 +117,8 @@ import com.catpuppyapp.puppygit.utils.FsUtils
 import com.catpuppyapp.puppygit.utils.Libgit2Helper
 import com.catpuppyapp.puppygit.utils.Msg
 import com.catpuppyapp.puppygit.utils.MyLog
+import com.catpuppyapp.puppygit.utils.SafAndFileCmpUtil
+import com.catpuppyapp.puppygit.utils.SafAndFileCmpUtil.OpenInputStreamFailed
 import com.catpuppyapp.puppygit.utils.UIHelper
 import com.catpuppyapp.puppygit.utils.cache.Cache
 import com.catpuppyapp.puppygit.utils.changeStateTriggerRefreshPage
@@ -1814,6 +1817,115 @@ fun FilesInnerPage(
     }
 
 
+
+    val showSafDiffDialog = rememberSaveable { mutableStateOf(false) }
+    val safDiffResultStr = rememberSaveable { mutableStateOf("") }
+    val initSafDiffDialog = {
+        safDiffResultStr.value = ""
+        showSafDiffDialog.value = true
+    }
+
+    if(showSafDiffDialog.value) {
+        val closeDialog = { showSafDiffDialog.value = false; cancelAct() }
+
+        ConfirmDialog2(
+            title = "Saf Diff",
+            requireShowTextCompose = true,
+            textCompose = {
+                CopyScrollableColumn {
+                    CardButton(
+                        enabled = true,
+                        content = {
+                            Text(
+                                text = if(choosenSafUri.value == null) stringResource(R.string.select_path) else choosenSafUri.value.toString(),
+                                color = UIHelper.getCardButtonTextColor(enabled = true, inDarkTheme = inDarkTheme)
+                            )
+                        },
+                    ) {
+                        chooseDirLauncher.launch(null)
+                    }
+
+                    Spacer(Modifier.height(20.dp))
+
+                    CardButton(text = if(cancellableActRunning.value) "Cancel!" else "Diff!", enabled = true) {
+                        if(cancellableActRunning.value) {
+                            cancelAct()
+                        }else {
+                            // compare
+                            doJobThenOffLoading(
+                                loadingOn = { startCancellableAct() },
+
+                                loadingOff = { stopCancellableAct() },
+
+                                loadingText = "Comparing..."
+                            ) {
+                                val uri = choosenSafUri.value!!
+                                val chosenDir = DocumentFile.fromTreeUri(activityContext, uri)
+                                if(chosenDir==null) {
+                                    Msg.requireShow(activityContext.getString(R.string.err_documentfile_is_null))
+                                    return@doJobThenOffLoading
+                                }
+
+//            appContext.contentResolver.openOutputStream(chosenDir?.createFile("*/*", "test.txt")?.uri!!)
+                                try {
+                                    safDiffResultStr.value = "Comparing..."
+
+                                    val result = SafAndFileCmpUtil.SafAndFileCompareResult()
+                                    SafAndFileCmpUtil.recursiveCompareFiles_Saf(
+                                        contentResolver = activityContext.contentResolver,
+                                        safFiles = chosenDir.listFiles() ?: arrayOf(),
+                                        files = File(currentPath.value).listFiles() ?: arrayOf(),
+                                        result = result,
+                                        canceled = { requireCancelAct.value }
+                                    )
+
+                                    safDiffResultStr.value = result.toString()
+
+                                    // throw RuntimeException("测试异常！")  passed
+                                    Msg.requireShow(activityContext.getString(R.string.done))
+                                }catch (cancelled: CancellationException){
+                                    safDiffResultStr.value = ""
+                                    Msg.requireShow(activityContext.getString(R.string.canceled))
+                                }catch (openInputStreamFailed: OpenInputStreamFailed){
+                                    val errMsg = "open input stream for uri failed"
+                                    safDiffResultStr.value = openInputStreamFailed.localizedMessage ?: errMsg
+                                    Msg.requireShow(errMsg)
+                                }catch (e:Exception) {
+                                    MyLog.e(TAG, "#SafDiffDialog err:"+e.stackTraceToString())
+                                    val errorMsg = "err: ${e.localizedMessage}"
+                                    //都显示弹窗了就不用toast了
+//                    Msg.requireShow(errorMsg)
+
+                                    //设置错误信息
+                                    safDiffResultStr.value = errorMsg
+                                }
+                            }
+
+                        }
+                    }
+
+                    if(safDiffResultStr.value.isNotBlank()) {
+                        Spacer(Modifier.height(20.dp))
+
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.Center
+                        ) {
+                            Text(safDiffResultStr.value)
+                        }
+                    }
+
+                    Spacer(Modifier.height(10.dp))
+
+                }
+            },
+            onCancel = closeDialog,
+            cancelBtnText = stringResource(R.string.close),
+            showOk = false
+        ) {  // onOk
+        }
+    }
+
 //    val userChosenExportDirUri = StateUtil.getRememberSaveableState<Uri?>(initValue = null)
     //ActivityResultContracts.OpenMultipleDocuments() 多选文件，这个应该可用来导入，不过现在有分享，足够了，虽然分享不能导入目录
 
@@ -2550,6 +2662,12 @@ fun FilesInnerPage(
     if(filesPageRequestFromParent.value==PageRequest.goToTop) {
         PageRequest.clearStateThenDoAct(filesPageRequestFromParent) {
             UIHelper.scrollToItem(scope, curListState.value, 0)
+        }
+    }
+
+    if(filesPageRequestFromParent.value==PageRequest.safDiff) {
+        PageRequest.clearStateThenDoAct(filesPageRequestFromParent) {
+            initSafDiffDialog()
         }
     }
 
