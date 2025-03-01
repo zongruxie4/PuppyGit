@@ -1766,7 +1766,7 @@ fun FilesInnerPage(
                         FsUtils.recursiveImportFiles_Saf(
                             contentResolver = activityContext.contentResolver,
                             targetDir = File(currentPath.value),
-                            srcFiles = chosenDir.listFiles(),
+                            srcFiles = chosenDir.listFiles() ?: arrayOf<DocumentFile>(),
                             canceled = { requireCancelAct.value },
                             conflictStrategy = conflictStrategy
                         )

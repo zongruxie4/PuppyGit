@@ -510,7 +510,7 @@ object FsUtils {
             throw CancellationException()
         }
 
-        val filesUnderExportDir = targetDir.listFiles()
+        val filesUnderExportDir = targetDir.listFiles() ?: arrayOf<DocumentFile>()
 
         for(f in srcFiles) {
             if(canceled()) {
@@ -531,7 +531,7 @@ object FsUtils {
                     continue
                 }else if(conflictStrategy == CopyFileConflictStrategy.OVERWRITE_FOLDER_AND_FILE) {
                     if(targetFileBeforeCreate.isDirectory) {   // 递归删除目录及其子文件
-                        recursiveDeleteFiles_Saf(contentResolver, targetFileBeforeCreate, targetFileBeforeCreate.listFiles(), canceled)
+                        recursiveDeleteFiles_Saf(contentResolver, targetFileBeforeCreate, targetFileBeforeCreate.listFiles() ?: arrayOf<DocumentFile>(), canceled)
                     }else {  //删除文件
                         targetFileBeforeCreate.delete()
                     }
@@ -604,7 +604,7 @@ object FsUtils {
 
             if(f.isDirectory) {
                 nextTarget.mkdirs()
-                val nextSrcFiles = f.listFiles()?:continue
+                val nextSrcFiles = f.listFiles() ?: continue
                 if(nextSrcFiles.isNotEmpty()) {
                     recursiveImportFiles_Saf(
                         contentResolver = contentResolver,
@@ -644,7 +644,7 @@ object FsUtils {
             }
 
             if(f.isDirectory) {
-                val nextTargetFiles = f.listFiles()
+                val nextTargetFiles = f.listFiles() ?: arrayOf<DocumentFile>()
                 if(nextTargetFiles.isEmpty()) {  //目录下无文件，直接删
                     f.delete()
                 }else {  //目录下有文件，递归删除
