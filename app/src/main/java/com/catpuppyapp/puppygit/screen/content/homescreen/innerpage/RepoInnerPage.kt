@@ -395,31 +395,35 @@ fun RepoInnerPage(
                 try {
                     val newPath = FsUtils.trimPath(importRepoPath.value)
 
-                    if(newPath.isNotBlank()) {
-                        val f = File(newPath)
-
-                        if(!f.canRead()) {
-                            Msg.requireShowLongDuration(activityContext.getString(R.string.cant_read_path))
-                            return@doJobThenOffLoading
-                        }
-
-                        if(!f.isDirectory) {
-                            Msg.requireShowLongDuration(activityContext.getString(R.string.path_is_not_a_dir))
-                            return@doJobThenOffLoading
-                        }
-
-
-                        showImportRepoDialog.value = false
-
-                        val importRepoResult = AppModel.dbContainer.repoRepository.importRepos(dir=newPath, isReposParent=isReposParentFolderForImport.value)
-
-                        // show a result dialog may better?
-
-                        Msg.requireShowLongDuration(replaceStringResList(activityContext.getString(R.string.n_imported), listOf(""+importRepoResult.success)))
-
-                    }else {
+                    if(newPath.isBlank()) {
                         Msg.requireShow(activityContext.getString(R.string.invalid_path))
+                        return@doJobThenOffLoading
                     }
+
+
+                    // path is not blank
+
+                    val f = File(newPath)
+
+                    if(!f.canRead()) {
+                        Msg.requireShowLongDuration(activityContext.getString(R.string.cant_read_path))
+                        return@doJobThenOffLoading
+                    }
+
+                    if(!f.isDirectory) {
+                        Msg.requireShowLongDuration(activityContext.getString(R.string.path_is_not_a_dir))
+                        return@doJobThenOffLoading
+                    }
+
+
+                    showImportRepoDialog.value = false
+
+                    val importRepoResult = AppModel.dbContainer.repoRepository.importRepos(dir=newPath, isReposParent=isReposParentFolderForImport.value)
+
+                    // show a result dialog may better?
+
+                    Msg.requireShowLongDuration(replaceStringResList(activityContext.getString(R.string.n_imported), listOf(""+importRepoResult.success)))
+
                 }catch (e:Exception) {
                     MyLog.e(TAG, "import repo from ReposPage err: "+e.stackTraceToString())
                     Msg.requireShowLongDuration("err:${e.localizedMessage}")

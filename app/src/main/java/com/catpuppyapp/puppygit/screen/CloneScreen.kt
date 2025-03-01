@@ -324,37 +324,43 @@ fun CloneScreen(
 
                 val newPath = FsUtils.trimPath(storagePathForAdd.value)
 
-                if(newPath.isNotBlank()) {
-                    val spForSave = StoragePathsMan.get()
+                if(newPath.isBlank()) {
+                    Msg.requireShow(activityContext.getString(R.string.invalid_path))
+                    return@doJobThenOffLoading
+                }
 
-                    // add to list
-                    if(!storagePathList.value.contains(newPath)) {
-                        storagePathList.value.add(newPath)
-                        val newItemIndex = storagePathList.value.size-1
-                        // select new added
-                        storagePathSelectedIndex.intValue = newItemIndex
-                        storagePathSelectedPath.value = newPath
-                        // update settings
+                // path is not blank
+
+                val spForSave = StoragePathsMan.get()
+
+                // add to list
+                if(!storagePathList.value.contains(newPath)) {
+                    storagePathList.value.add(newPath)
+                    val newItemIndex = storagePathList.value.size-1
+                    // select new added
+                    storagePathSelectedIndex.intValue = newItemIndex
+                    storagePathSelectedPath.value = newPath
+                    // update settings
 //                        SettingsUtil.update {
 //                            it.storagePaths.add(newPath)
 //                            it.storagePathLastSelected = newPath
 //                        }
 
-                        spForSave.storagePaths.add(newPath)
-                        spForSave.storagePathLastSelected = newPath
-                    }else {  // contains, only need update last selected
-                        storagePathSelectedPath.value = newPath
-                        storagePathSelectedIndex.intValue = storagePathList.value.indexOf(newPath)
+                    spForSave.storagePaths.add(newPath)
+                    spForSave.storagePathLastSelected = newPath
+                }else {  // contains, only need update last selected
+                    storagePathSelectedPath.value = newPath
+                    storagePathSelectedIndex.intValue = storagePathList.value.indexOf(newPath)
 //                        SettingsUtil.update {
 //                            it.storagePathLastSelected = newPath
 //                        }
-                        spForSave.storagePathLastSelected = newPath
-                    }
-
-                    StoragePathsMan.save(spForSave)
-
+                    spForSave.storagePathLastSelected = newPath
                 }
 
+                StoragePathsMan.save(spForSave)
+
+
+                //关弹窗
                 showAddStoragePathDialog.value = false
 
             }
