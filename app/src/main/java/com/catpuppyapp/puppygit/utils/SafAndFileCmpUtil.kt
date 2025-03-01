@@ -89,6 +89,11 @@ object SafAndFileCmpUtil {
             throw CancellationException()
         }
 
+        //两个目录都是空，没有任何需要添加的东西
+        if(safFiles.isEmpty() && files.isEmpty()) {
+            return
+        }
+
         val safFiles = safFiles.toMutableList()
         val files = files.toMutableList()
 
