@@ -1667,8 +1667,20 @@ fun FilesInnerPage(
         showSafExportDialog.value = true
     }
     val initSafImportDialog = {
-        showSafExportDialog.value = false
-        showSafImportDialog.value = true
+        //检查目录是否可读
+        val curPathReadable = try {
+            File(currentPath.value).canRead()
+        }catch (e:Exception) {
+            false
+        }
+
+        //若可读则显示弹窗，否则提示读取路径失败
+        if(curPathReadable) {
+            showSafExportDialog.value = false
+            showSafImportDialog.value = true
+        }else {
+            Msg.requireShow(activityContext.getString(R.string.err_read_path_failed))
+        }
     }
     // saf import export 共享这些状态
     val safImportExportOverwrite = rememberSaveable { mutableStateOf(false) }
@@ -2520,17 +2532,7 @@ fun FilesInnerPage(
 
     if(filesPageRequestFromParent.value==PageRequest.safImport) {
         PageRequest.clearStateThenDoAct(filesPageRequestFromParent) {
-            val curPathReadable = try {
-                File(currentPath.value).canRead()
-            }catch (e:Exception) {
-                false
-            }
-
-            if(curPathReadable) {
-                initSafImportDialog()
-            }else {
-                Msg.requireShow(activityContext.getString(R.string.invalid_path))
-            }
+            initSafImportDialog()
         }
     }
 
@@ -2551,7 +2553,7 @@ fun FilesInnerPage(
                     initSafExportDialog(subFiles.map { FileItemDto.genFileItemDtoByFile(it, activityContext) })
                 }
             }else {
-                Msg.requireShow(activityContext.getString(R.string.invalid_path))
+                Msg.requireShow(activityContext.getString(R.string.err_read_path_failed))
             }
         }
     }
