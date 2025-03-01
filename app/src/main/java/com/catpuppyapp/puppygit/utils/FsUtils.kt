@@ -530,13 +530,11 @@ object FsUtils {
                 if(conflictStrategy == CopyFileConflictStrategy.SKIP) {
                     continue
                 }else if(conflictStrategy == CopyFileConflictStrategy.OVERWRITE_FOLDER_AND_FILE) {
-                    if(targetFileBeforeCreate.isDirectory) {   // 递归删除目录下的文件（清空目录）
-                        recursiveDeleteFiles_Saf(contentResolver, targetFileBeforeCreate.listFiles(), canceled)
+                    if(targetFileBeforeCreate.isDirectory) {   // 递归删除目录及其子文件
+                        recursiveDeleteFiles_Saf(contentResolver, targetFileBeforeCreate, targetFileBeforeCreate.listFiles(), canceled)
+                    }else {  //删除文件
+                        targetFileBeforeCreate.delete()
                     }
-
-                    //删除文件或已清空的目录
-                    targetFileBeforeCreate.delete()
-
                 }else if(conflictStrategy == CopyFileConflictStrategy.RENAME) {
                     targetName = getANonExistsName(targetName, exists = {newName -> filesUnderExportDir.find { it.name == newName } != null})
                 }
@@ -632,30 +630,32 @@ object FsUtils {
 
     private fun recursiveDeleteFiles_Saf(
         contentResolver: ContentResolver,
-        targetFiles: Array<DocumentFile>,
+        targetDir: DocumentFile,
+        filesUnderTargetDir: Array<DocumentFile>,
         canceled:()->Boolean,
     ) {
         if(canceled()) {
             throw CancellationException()
         }
 
-        for(f in targetFiles) {
+        for(f in filesUnderTargetDir) {
             if(canceled()) {
                 throw CancellationException()
             }
 
             if(f.isDirectory) {
                 val nextTargetFiles = f.listFiles()
-                if(nextTargetFiles.isEmpty()) {
+                if(nextTargetFiles.isEmpty()) {  //目录下无文件，直接删
                     f.delete()
-                }else {
-                    recursiveDeleteFiles_Saf(contentResolver, nextTargetFiles, canceled)
-                    f.delete()
+                }else {  //目录下有文件，递归删除
+                    recursiveDeleteFiles_Saf(contentResolver, f, nextTargetFiles, canceled)
                 }
             }else {
                 f.delete()
             }
         }
+
+        targetDir.delete()
     }
 
     //操作成功返回content和file的快照完整路径，否则，内容快照和文件快照，谁成功谁有路径，都不成功则都没路径但不会返回null，只是返回两个空字符串。
