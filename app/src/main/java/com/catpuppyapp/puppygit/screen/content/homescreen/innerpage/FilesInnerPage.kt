@@ -1336,7 +1336,9 @@ fun FilesInnerPage(
 
             // file list
             // if has err, show err, else show file list
-            if(openDirErr.value.isNotBlank()){
+            val isOpenDirErr = openDirErr.value.isNotBlank()
+            val folderIsEmpty = currentPathFileList.value.isEmpty()
+            if(isOpenDirErr || folderIsEmpty){
                 Column(
                     modifier = Modifier
                         //fillMaxSize 必须在最上面！要不然，文字不会显示在中间！
@@ -1348,7 +1350,11 @@ fun FilesInnerPage(
                     verticalArrangement = Arrangement.Center,
                     horizontalAlignment = Alignment.CenterHorizontally,
                 ) {
-                    Text(openDirErr.value, color=MyStyleKt.TextColor.error())
+                    if(isOpenDirErr){
+                        Text(openDirErr.value, color = MyStyleKt.TextColor.error())
+                    }else if(folderIsEmpty) {
+                        Text(stringResource(R.string.folder_is_empty))
+                    }  // else maybe
                 }
             }else {
                 val k = filesPageSimpleFilterKeyWord.value.text.lowercase()  //关键字
