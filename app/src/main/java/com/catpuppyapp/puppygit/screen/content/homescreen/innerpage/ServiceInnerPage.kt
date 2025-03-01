@@ -259,14 +259,13 @@ fun ServiceInnerPage(
                             .fillMaxWidth()
                             .padding(10.dp),
                         singleLine = true,
-                        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
                         value = listenHostBuf.value,
                         onValueChange = {
                             //直接更新，不管用户输入什么，点确定后再检查值是否有效
                             listenHostBuf.value = it
                         },
                         label = {
-                            Text(stringResource(R.string.port))
+                            Text(stringResource(R.string.host))
                         },
 //                        placeholder = {}
                     )

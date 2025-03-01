@@ -769,7 +769,7 @@ fun CloneScreen(
 //            改成启用未测试特性和 is shallowpassed控制功能是否显示，isPro决定功能是否enabled以及显示不同的文案( eg: depth and depth(Pro))
             if(dev_EnableUnTestedFeature || shallowAndSingleBranchTestPassed) {
                 val isPro = UserUtil.isPro()
-                val enableSingleBranch =  branch.value.isNotBlank() && isPro
+                val enableSingleBranch =  isPro && branch.value.isNotBlank()
                 //single branch checkbox 开始
                 //single branch选择框，如果branch值不为空，则可以启用或禁用，如果branch值为空，checkbox状态本身不变，但存储时忽略其值，默认当成禁用。
                 Row(
