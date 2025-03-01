@@ -168,7 +168,7 @@ fun FilesPageActions(
                 if(AppModel.devModeOn) {
                     DropdownMenuItem(
                         enabled = enableMenuItem,
-                        text = { Text("Saf Diff") },
+                        text = { Text("SAF Diff") },
                         onClick = {
                             requestFromParent.value = PageRequest.safDiff
                             dropDownMenuExpendState.value = false

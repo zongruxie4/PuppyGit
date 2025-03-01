@@ -1211,15 +1211,15 @@
     <string name="commit_all">Коммитить все</string>
 
     <!-- new at 20250227 -->
-    <string name="saf_mode">Saf Mode</string>
-    <string name="saf_mode_note">Saf mode offers better compatibility and support for Termux, but it has bad performance</string>
-    <string name="import_export">Import/Export</string>
-    <string name="import_files">Import Files</string>
-    <string name="export_files">Export Files</string>
-    <string name="select_path">Select Path</string>
-    <string name="overwrite_files_note">If checked, will remove folders/files that already exist before copying; otherwise, will skip them.</string>
-    <string name="err_documentfile_is_null">err: DocumentFile is null</string>
-    <string name="folder_is_empty">Folder is empty</string>
+    <string name="saf_mode">SAF режим</string>
+    <string name="saf_mode_note">SAF режим даёт лучшую совместимость и поддержку Termux, но имеет низкую производительность</string>
+    <string name="import_export">Импорт/Экспорт</string>
+    <string name="import_files">Файлы импорта</string>
+    <string name="export_files">Файлы экспорта</string>
+    <string name="select_path">Выберите путь</string>
+    <string name="overwrite_files_note">Если помечено, то перед копированием будут удалены уже существующие папки/файлы; если нет - они останутся.</string>
+    <string name="err_documentfile_is_null">Ошибка: DocumentFile is null</string>
+    <string name="folder_is_empty">Папка пуста</string>
 
 
 </resources>

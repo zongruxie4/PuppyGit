@@ -1829,7 +1829,7 @@ fun FilesInnerPage(
         val closeDialog = { showSafDiffDialog.value = false; cancelAct() }
 
         ConfirmDialog2(
-            title = "Saf Diff",
+            title = "SAF Diff",
             requireShowTextCompose = true,
             textCompose = {
                 CopyScrollableColumn {
