@@ -1169,19 +1169,10 @@ fun FilesInnerPage(
 //        LoadingDialog(loadingText.value)        //这个页面不适合用Dialog，页面会闪。
 
         LoadingText(
-            loadingText.value,
-            contentPadding,
-            //如果运行的是可取消的任务，显示个取消
-            appendContent = if(cancellableActRunning.value) {
-                {
-                    Spacer(Modifier.height(10.dp))
-                    ClickableText(stringResource(R.string.cancel)) {
-                        cancelAct()
-                    }
-                }
-            }else {
-                null
-            }
+            text = loadingText.value,
+            contentPadding = contentPadding,
+            showCancel = cancellableActRunning.value,
+            onCancel = cancelAct,  //这里直接传函数即可，仅当showCancel为真，才有可能调用此函数，所以不用检查是否需要传null
         )
     }else {
         Column(

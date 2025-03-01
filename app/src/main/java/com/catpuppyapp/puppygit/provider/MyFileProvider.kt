@@ -29,6 +29,8 @@ class MyFileProvider: FileProvider() {
 //    }
 
     override fun openFile(uri: Uri, mode: String): ParcelFileDescriptor? {
+        return super.openFile(uri, mode)
+
 //        若文件修改，这个会被调用，所以只需要在这里把uri转成完整路径再判断路径是否处于safbuf下，若处于再调用safapi去修改saf目标文件即可！
 //
 //        println("fileprovider的openFile被调用了")
@@ -40,7 +42,6 @@ class MyFileProvider: FileProvider() {
 
 //        println("uriTOPATH:::::::::::+${SafUtil.appCreatedUriToPath(uri)}")
 
-        return super.openFile(uri, mode)
 
 
     }
