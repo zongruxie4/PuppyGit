@@ -1892,8 +1892,9 @@ fun RepoInnerPage(
                 val curRepo = list.first()
 
                 if(expectRepos(curRepo)) {
-                    task(curRepo)
-
+                    doTaskOrShowSetUsernameAndEmailDialog(curRepo) {
+                        task(curRepo)
+                    }
                 }else if(needSetUpstreamBeforeSync(curRepo)){ //需要设置上游
                     doTaskOrShowSetUsernameAndEmailDialog(curRepo) {
                         doJobThenOffLoading {
