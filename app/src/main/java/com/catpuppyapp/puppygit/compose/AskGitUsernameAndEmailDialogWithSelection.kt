@@ -49,7 +49,7 @@ fun AskGitUsernameAndEmailDialogWithSelection(
 ) {
     val activityContext = LocalContext.current
     val setUserAndEmailForGlobal = stringResource(R.string.set_for_global)
-    val setUserAndEmailForCurRepo = stringResource(R.string.set_for_current_repo)
+    val setUserAndEmailForCurRepo = stringResource(R.string.set_for_current_repo) + " (${curRepo.repoName})"
     val errWhenQuerySettingsFromDbStrRes = stringResource(R.string.err_when_querying_settings_from_db)
     val invalidUsernameOrEmail = stringResource(R.string.invalid_username_or_email)
 
