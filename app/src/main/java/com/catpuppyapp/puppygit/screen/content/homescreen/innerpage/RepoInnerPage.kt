@@ -61,6 +61,7 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.catpuppyapp.puppygit.compose.AskGitUsernameAndEmailDialog
+import com.catpuppyapp.puppygit.compose.AskGitUsernameAndEmailDialogWithSelection
 import com.catpuppyapp.puppygit.compose.BottomBar
 import com.catpuppyapp.puppygit.compose.CheckBoxNoteText
 import com.catpuppyapp.puppygit.compose.ClickableText
@@ -220,6 +221,70 @@ fun RepoInnerPage(
     val saved = stringResource(R.string.saved)
 
     val pageRequest = rememberSaveable { mutableStateOf("")}
+
+    // username and email start
+    val username = rememberSaveable { mutableStateOf("") }
+    val email = rememberSaveable { mutableStateOf("") }
+    val showUsernameAndEmailDialog = rememberSaveable { mutableStateOf(false) }
+    val afterSetUsernameAndEmailSuccessCallback = remember { mutableStateOf<(()->Unit)?>(null) }
+    val initSetUsernameAndEmailDialog = { callback:(()->Unit)? ->
+        afterSetUsernameAndEmailSuccessCallback.value = callback
+        showUsernameAndEmailDialog.value = true
+    }
+
+    //若仓库有有效用户名和邮箱，执行task，否则弹窗设置用户名和邮箱，并在保存用户名和邮箱后调用task
+    val doTaskOrShowSetUsernameAndEmailDialog = { curRepo:RepoEntity, task:(()->Unit)? ->
+        try {
+            Repository.open(curRepo.fullSavePath).use { repo ->
+                if(Libgit2Helper.repoUsernameAndEmailInvaild(repo)) {
+                    Msg.requireShowLongDuration(activityContext.getString(R.string.plz_set_username_and_email_first))
+
+                    initSetUsernameAndEmailDialog(task)
+                }else {
+                    task?.invoke()
+                }
+            }
+        }catch (e:Exception) {
+            Msg.requireShowLongDuration("err: ${e.localizedMessage}")
+        }
+    }
+    // username and email end
+
+    if(showUsernameAndEmailDialog.value) {
+        val curRepo = curRepo.value
+        val closeDialog = { showUsernameAndEmailDialog.value = false }
+
+        //请求用户设置用户名和邮箱的弹窗
+        AskGitUsernameAndEmailDialogWithSelection(
+            curRepo = curRepo,
+            username = username,
+            email = email,
+            closeDialog = closeDialog,
+            onErrorCallback = { e->
+                Msg.requireShowLongDuration("err: ${e.localizedMessage}")
+                MyLog.e(TAG, "set username and email err (from Repos page): ${e.stackTraceToString()}")
+            },
+            onFinallyCallback = {},
+            onSuccessCallback = {
+                //已经保存成功，调用回调
+
+                //取出callback
+                val successCallback = afterSetUsernameAndEmailSuccessCallback.value
+                afterSetUsernameAndEmailSuccessCallback.value = null
+
+                successCallback?.invoke()
+            },
+            onCancel = {
+                closeDialog()
+
+                email.value = ""
+                username.value = ""
+
+                Msg.requireShow(activityContext.getString(R.string.canceled))
+            },
+
+        )
+    }
 
 
 //    val showSetGlobalGitUsernameAndEmailDialog = rememberSaveable { mutableStateOf(false) }
@@ -1810,26 +1875,38 @@ fun RepoInnerPage(
 
     val selectionModeIconOnClickList = listOf<()->Unit>(
         sync@{
+            val needSetUpstreamBeforeSync = {curRepo:RepoEntity -> curRepo.upstreamBranch.isBlank() && !dbIntToBool(curRepo.isDetached)}
+            val expectRepos = {it:RepoEntity -> it.upstreamBranch.isNotBlank() && !dbIntToBool(it.isDetached) }
+            val task = { curRepo: RepoEntity ->
+                doActWithLockIfRepoGoodAndActEnabled(curRepo) {
+                    doActAndSetRepoStatus(invalidIdx, curRepo.id, activityContext.getString(R.string.syncing)) {
+                        doSync(curRepo)
+                    }
+                }
+            }
+
+
             val list = selectedItems.value.toList()
             //若选中一个条目且未设置上游且非detached，则显示设置上游弹窗，然后执行同步
-            if(list.size == 1 && list.first().upstreamBranch.isBlank() && !dbIntToBool(list.first().isDetached)) {
+            if(list.size == 1) {
                 val curRepo = list.first()
-                doJobThenOffLoading {
-                    initSetUpstreamDialog(curRepo, activityContext.getString(R.string.save_and_sync)) {
-                        doActWithLockIfRepoGoodAndActEnabled(curRepo) {
-                            doActAndSetRepoStatus(invalidIdx, curRepo.id, activityContext.getString(R.string.syncing)) {
-                                doSync(curRepo)
+
+                if(expectRepos(curRepo)) {
+                    task(curRepo)
+
+                }else if(needSetUpstreamBeforeSync(curRepo)){ //需要设置上游
+                    doTaskOrShowSetUsernameAndEmailDialog(curRepo) {
+                        doJobThenOffLoading {
+                            //需要设置上游
+                            initSetUpstreamDialog(curRepo, activityContext.getString(R.string.save_and_sync)) {
+                                task(curRepo)
                             }
                         }
                     }
                 }
             }else { //若选中多个条目或选中一个存在有效上游的条目，则不会弹出设置上游的弹窗，直接执行同步
-                list.filter { it.upstreamBranch.isNotBlank() && !dbIntToBool(it.isDetached) }.forEach { curRepo ->
-                    doActWithLockIfRepoGoodAndActEnabled(curRepo) {
-                        doActAndSetRepoStatus(invalidIdx, curRepo.id, activityContext.getString(R.string.syncing)) {
-                            doSync(curRepo)
-                        }
-                    }
+                list.filter { expectRepos(it) }.forEach { curRepo ->
+                    task(curRepo)
                 }
             }
 
@@ -1848,11 +1925,28 @@ fun RepoInnerPage(
         },
 
         pull@{
-            selectedItems.value.toList().filter { it.upstreamBranch.isNotBlank() && !dbIntToBool(it.isDetached) }.forEach { curRepo ->
+            val expectRepos = {it:RepoEntity -> it.upstreamBranch.isNotBlank() && !dbIntToBool(it.isDetached)}
+            val task = { curRepo:RepoEntity ->
                 doActWithLockIfRepoGoodAndActEnabled(curRepo) {
                     doActAndSetRepoStatus(invalidIdx, curRepo.id, activityContext.getString(R.string.pulling)) {
                         doPull(curRepo)
                     }
+                }
+            }
+
+            val list = selectedItems.value.toList()
+
+            //如果只选了一个条目，检查执行任务前是否需要设置用户名和邮箱，若需要则弹窗；否则直接取出可用的仓库然后执行任务
+            if(list.size == 1) {
+                val curRepo = list.first()
+                if(expectRepos(curRepo)){
+                    doTaskOrShowSetUsernameAndEmailDialog(curRepo) {
+                        task(curRepo)
+                    }
+                }
+            }else {
+                list.filter { expectRepos(it) }.forEach {
+                    task(it)
                 }
             }
         },
@@ -2443,19 +2537,23 @@ fun RepoInnerPage(
                                 Msg.requireShow(activityContext.getString(R.string.sync_failed_by_detached_head))
                             }else {  // not detached HEAD
                                 if(curRepo.upstreamBranch.isBlank()) {  //无上游，先设置，再同步
-                                    doJobThenOffLoading {
-                                        initSetUpstreamDialog(curRepo, activityContext.getString(R.string.save_and_sync)) {
-                                            doActWithLockIfRepoGoodAndActEnabled(curRepo) {
-                                                doActAndSetRepoStatus(invalidIdx, curRepo.id, activityContext.getString(R.string.syncing)) {
-                                                    doSync(curRepo)
+                                    doTaskOrShowSetUsernameAndEmailDialog(curRepo) {
+                                        doJobThenOffLoading {
+                                            initSetUpstreamDialog(curRepo, activityContext.getString(R.string.save_and_sync)) {
+                                                doActWithLockIfRepoGoodAndActEnabled(curRepo) {
+                                                    doActAndSetRepoStatus(invalidIdx, curRepo.id, activityContext.getString(R.string.syncing)) {
+                                                        doSync(curRepo)
+                                                    }
                                                 }
                                             }
                                         }
                                     }
                                 }else {  //有上游，直接同步
-                                    doActWithLockIfRepoGoodAndActEnabled(curRepo) {
-                                        doActAndSetRepoStatus(invalidIdx, curRepo.id, activityContext.getString(R.string.syncing)) {
-                                            doSync(curRepo)
+                                    doTaskOrShowSetUsernameAndEmailDialog(curRepo) {
+                                        doActWithLockIfRepoGoodAndActEnabled(curRepo) {
+                                            doActAndSetRepoStatus(invalidIdx, curRepo.id, activityContext.getString(R.string.syncing)) {
+                                                doSync(curRepo)
+                                            }
                                         }
                                     }
                                 }
@@ -2463,9 +2561,11 @@ fun RepoInnerPage(
                         }else if (status == Cons.dbRepoWorkStatusNeedPull) {
                             val curRepo = clickedRepo
 
-                            doActWithLockIfRepoGoodAndActEnabled(curRepo) {
-                                doActAndSetRepoStatus(invalidIdx, curRepo.id, activityContext.getString(R.string.pulling)) {
-                                    doPull(curRepo)
+                            doTaskOrShowSetUsernameAndEmailDialog(curRepo) {
+                                doActWithLockIfRepoGoodAndActEnabled(curRepo) {
+                                    doActAndSetRepoStatus(invalidIdx, curRepo.id, activityContext.getString(R.string.pulling)) {
+                                        doPull(curRepo)
+                                    }
                                 }
                             }
                         }else if (status == Cons.dbRepoWorkStatusNeedPush) {
