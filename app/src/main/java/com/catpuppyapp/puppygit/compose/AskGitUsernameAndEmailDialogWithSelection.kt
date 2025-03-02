@@ -38,7 +38,7 @@ private const val TAG = "AskGitUsernameAndEmailDialogWithSelection"
 @Composable
 fun AskGitUsernameAndEmailDialogWithSelection(
     curRepo: RepoEntity,
-    text: String,
+    text: String="",
     username: MutableState<String>,
     email: MutableState<String>,
 
