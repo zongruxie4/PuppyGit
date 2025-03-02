@@ -38,7 +38,6 @@ private const val TAG = "AskGitUsernameAndEmailDialogWithSelection"
 @Composable
 fun AskGitUsernameAndEmailDialogWithSelection(
     curRepo: RepoEntity,
-    text: String="",
     username: MutableState<String>,
     email: MutableState<String>,
 
@@ -73,10 +72,6 @@ fun AskGitUsernameAndEmailDialogWithSelection(
         },
         text = {
             ScrollableColumn {
-                Row(modifier = Modifier.padding(10.dp)) {
-                    Text(text = text)
-                }
-
                 Column(
                     modifier = Modifier.selectableGroup(),
 
@@ -117,9 +112,11 @@ fun AskGitUsernameAndEmailDialogWithSelection(
                         }
                     }
                 }
+
                 Row(modifier = Modifier.padding(5.dp)) {
 
                 }
+
                 TextField(
                     modifier = Modifier.fillMaxWidth(),
 

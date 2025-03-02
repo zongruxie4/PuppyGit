@@ -1643,7 +1643,7 @@ fun ChangeListInnerPage(
         //请求用户设置用户名和邮箱的弹窗
         AskGitUsernameAndEmailDialogWithSelection(
             curRepo = curRepo,
-            text = pleaseSetUsernameAndEmailBeforeCommit,
+//            text = pleaseSetUsernameAndEmailBeforeCommit,
             username = username,
             email = email,
             closeDialog = closeDialog,
