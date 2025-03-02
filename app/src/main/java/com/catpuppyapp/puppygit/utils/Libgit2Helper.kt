@@ -1853,6 +1853,15 @@ class Libgit2Helper {
             return Pair(username, email)
         }
 
+        fun repoUsernameAndEmailAreVaild(repo: Repository):Boolean {
+            return !repoUsernameAndEmailInvaild(repo)
+        }
+
+        fun repoUsernameAndEmailInvaild(repo: Repository):Boolean {
+            val (username, email) = getGitUsernameAndEmail(repo)
+            return username.isBlank() || email.isBlank()
+        }
+
         /**
          * get username and email from repo, if repo not set, try get from global git config, else return empty string
          * @return Pair(username, email)

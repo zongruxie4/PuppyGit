@@ -111,8 +111,8 @@ import com.catpuppyapp.puppygit.utils.state.mutableCustomStateOf
 import com.github.git24j.core.Branch
 import com.github.git24j.core.Repository
 
-private val TAG = "BranchListScreen"
-private val stateKeyTag = "BranchListScreen"
+private const val TAG = "BranchListScreen"
+private const val stateKeyTag = "BranchListScreen"
 
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalFoundationApi::class)
 @Composable

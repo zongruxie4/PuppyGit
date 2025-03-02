@@ -253,9 +253,7 @@ fun ChangeListInnerPage(
         try {
             val repoFullPath = curRepo.fullSavePath
             Repository.open(repoFullPath).use { repo ->
-                val (usernameFromConfig, emailFromConfig) = Libgit2Helper.getGitUsernameAndEmail(repo)
-
-                if (usernameFromConfig.isBlank() || emailFromConfig.isBlank()) {
+                if (Libgit2Helper.repoUsernameAndEmailInvaild(repo)) {
                     Msg.requireShowLongDuration(activityContext.getString(R.string.plz_set_username_and_email_first))
 
                     //显示设置用户名和邮箱的弹窗并设置回调，保存用户名和邮箱后就会调用此回调
