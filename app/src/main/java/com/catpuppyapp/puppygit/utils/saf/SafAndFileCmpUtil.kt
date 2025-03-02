@@ -33,12 +33,17 @@ object SafAndFileCmpUtil {
         //缺一个 bothAndSame，不过没必要记录一样的，并不需要操作它们
     ) {
         override fun toString(): String {
-            return "onlyInSaf.size=${onlyInSaf.size}, onlyInFiles.size=${onlyInFiles.size}, bothAndNotSame.size=${bothAndNotSame.size}\n\n\n" +
-                    "onlyInSaf=${onlyInSaf.map { it.uri.toString() + "\n\n" }}\n\n" +
-                    "onlyInFiles=${onlyInFiles.map { it.canonicalPath + "\n\n" }}\n\n" +
+            val splitLine = "\n\n------------\n\n"
+
+            return "onlyInSaf.size=${onlyInSaf.size}, \nonlyInFiles.size=${onlyInFiles.size}, \nbothAndNotSame.size=${bothAndNotSame.size}" +
+                    splitLine +
+                    "onlyInSaf=${onlyInSaf.map { it.uri.toString() + "\n\n" }}" +
+                    splitLine +
+                    "onlyInFiles=${onlyInFiles.map { it.canonicalPath + "\n\n" }}" +
+                    splitLine +
                     "bothAndNotSame=${bothAndNotSame.map { 
-                        "safFile=${it.safFile.uri}, file=${it.file.canonicalPath}, diffType=${it.diffType}\n\n"
-                    }}\n\n"
+                        "safFile=${it.safFile.uri}, \nfile=${it.file.canonicalPath}, \ndiffType=${it.diffType}\n\n"
+                    }}"
         }
     }
 

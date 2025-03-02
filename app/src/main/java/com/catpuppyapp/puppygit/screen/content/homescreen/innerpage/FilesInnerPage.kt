@@ -1851,10 +1851,11 @@ fun FilesInnerPage(
 
                     Spacer(Modifier.height(20.dp))
 
+                    //正在运行，点击可取消；未运行，点击则执行比较
                     CardButton(text = if(cancellableActRunning.value) "Cancel!" else "Diff!", enabled = true) {
-                        if(cancellableActRunning.value) {
+                        if(cancellableActRunning.value) {  //正在运行，点击则取消
                             cancelAct()
-                        }else {
+                        }else {  //未运行则点击执行比较
                             // compare
                             doJobThenOffLoading(
                                 loadingOn = { startCancellableAct() },
@@ -1874,7 +1875,11 @@ fun FilesInnerPage(
                                 try {
                                     safDiffResultStr.value = "Comparing..."
 
+                                    val startAt = System.currentTimeMillis()
+
+                                    //递归结果会存到这个result里
                                     val result = SafAndFileCmpUtil.SafAndFileCompareResult()
+
                                     SafAndFileCmpUtil.recursiveCompareFiles_Saf(
                                         contentResolver = activityContext.contentResolver,
                                         safFiles = chosenDir.listFiles() ?: arrayOf(),
@@ -1883,9 +1888,9 @@ fun FilesInnerPage(
                                         canceled = { requireCancelAct.value }
                                     )
 
-                                    safDiffResultStr.value = result.toString()
+                                    val spentTime = (System.currentTimeMillis() - startAt) / 1000  // 转换 毫秒 为 秒
+                                    safDiffResultStr.value = "spent time: $spentTime seconds\n\n------------\n\n $result"
 
-                                    // throw RuntimeException("测试异常！")  passed
                                     Msg.requireShow(activityContext.getString(R.string.done))
                                 }catch (cancelled: CancellationException){
                                     safDiffResultStr.value = ""
