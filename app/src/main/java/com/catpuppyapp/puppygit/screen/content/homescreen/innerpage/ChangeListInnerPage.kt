@@ -227,19 +227,55 @@ fun ChangeListInnerPage(
         s
     }
 
-//    val headCommitHash = rememberSaveable { mutableStateOf("")   //只有tree to tree页面需要查这个
+
+    // username and email start
+    val setUserAndEmailForGlobal = stringResource(R.string.set_for_global)
+    val setUserAndEmailForCurRepo = stringResource(R.string.set_for_current_repo)
+    val pleaseSetUsernameAndEmailBeforeCommit = stringResource(R.string.please_set_username_email_before_commit)
+
+    val optNumSetUserAndEmailForGlobal = 0  //为全局设置用户名和密码，值是对应选项在选项列表中的索引，这个变量其实相当于是索引的别名。关联列表：usernameAndEmailDialogOptionList
+    val optNumSetUserAndEmailForCurRepo = 1  //为当前仓库设置用户名和密码
+    //num: optText，例如 "1: 选项1文本"
+//    val usernameAndEmailDialogOptionList = listOf(RadioOptionsUtil.formatOptionKeyAndText(optNumSetUserAndEmailForGlobal,setUserAndEmailForGlobal), RadioOptionsUtil.formatOptionKeyAndText(optNumSetUserAndEmailForCurRepo,setUserAndEmailForCurRepo))
+    val usernameAndEmailDialogOptionList = listOf(  // idx关联选项：optNumSetUserAndEmailForGlobal, optNumSetUserAndEmailForCurRepo
+        setUserAndEmailForGlobal,  //值的存放顺序要和选项值匹配 (这个值对应的是 optNumSetUserAndEmailForGlobal )
+        setUserAndEmailForCurRepo
+    )
+
+    val usernameAndEmailDialogSelectedOption = rememberSaveable{mutableIntStateOf(optNumSetUserAndEmailForGlobal)}
+
+    val username = rememberSaveable { mutableStateOf("") }
+    val email = rememberSaveable { mutableStateOf("") }
+    val showUsernameAndEmailDialog = rememberSaveable { mutableStateOf(false) }
+    // username and email end
 
 
-//    val scope = rememberCoroutineScope()
-//    val changeListPageCurRepo = rememberSaveable { mutableStateOf(RepoEntity()) }
-//    val changeListPageHasConflictItem = rememberSaveable { mutableStateOf(false) }
-//    val changeListPageHasIndexItem = rememberSaveable { mutableStateOf(false) }
+
     val changeListPageHasWorktreeItem = rememberSaveable { mutableStateOf(false) }
 
     val showRebaseSkipDialog = rememberSaveable { mutableStateOf(false) }
     val showRebaseAbortDialog = rememberSaveable { mutableStateOf(false) }
     val showCherrypickAbortDialog = rememberSaveable { mutableStateOf(false) }
     val showMergeAbortDialog = rememberSaveable { mutableStateOf(false) }
+
+    val initRebaseSkipDialog = { curRepo:RepoEntity ->
+        try {
+            val repoFullPath = curRepo.fullSavePath
+            Repository.open(repoFullPath).use { repo ->
+                val (usernameFromConfig, emailFromConfig) = Libgit2Helper.getGitUsernameAndEmail(repo)
+
+                if (usernameFromConfig.isBlank() || emailFromConfig.isBlank()) {
+                    Msg.requireShowLongDuration(activityContext.getString(R.string.plz_set_email_and_username_then_try_again))
+                    showUsernameAndEmailDialog.value = true
+                } else {
+                    showRebaseSkipDialog.value = true
+                }
+            }
+        }catch (e:Exception) {
+            Msg.requireShow("init skip err")
+            MyLog.e(TAG, "#initRebaseSkipDialog err: ${e.stackTraceToString()}")
+        }
+    }
 
     val initMergeAbortDialog = {
         showCherrypickAbortDialog.value = false
@@ -491,25 +527,7 @@ fun ChangeListInnerPage(
     }
 
     val mustSelectAllConflictBeforeCommitStrRes = stringResource(R.string.must_resolved_conflict_and_select_them_before_commit)
-    val setUserAndEmailForGlobal = stringResource(R.string.set_for_global)
-    val setUserAndEmailForCurRepo = stringResource(R.string.set_for_current_repo)
-    val optNumSetUserAndEmailForGlobal = 0  //为全局设置用户名和密码，值是对应选项在选项列表中的索引，这个变量其实相当于是索引的别名。关联列表：usernameAndEmailDialogOptionList
-    val optNumSetUserAndEmailForCurRepo = 1  //为当前仓库设置用户名和密码
-    //num: optText，例如 "1: 选项1文本"
-//    val usernameAndEmailDialogOptionList = listOf(RadioOptionsUtil.formatOptionKeyAndText(optNumSetUserAndEmailForGlobal,setUserAndEmailForGlobal), RadioOptionsUtil.formatOptionKeyAndText(optNumSetUserAndEmailForCurRepo,setUserAndEmailForCurRepo))
-    val usernameAndEmailDialogOptionList = listOf(  // idx关联选项：optNumSetUserAndEmailForGlobal, optNumSetUserAndEmailForCurRepo
-        setUserAndEmailForGlobal,  //值的存放顺序要和选项值匹配 (这个值对应的是 optNumSetUserAndEmailForGlobal )
-        setUserAndEmailForCurRepo
-    )
 
-    val usernameAndEmailDialogSelectedOption = rememberSaveable{mutableIntStateOf(optNumSetUserAndEmailForGlobal)}
-
-    val username = rememberSaveable { mutableStateOf("")}
-    val email = rememberSaveable { mutableStateOf("")}
-
-    val showUserAndEmailDialog = rememberSaveable { mutableStateOf(false)}
-
-    val pleaseSetUsernameAndEmailBeforeCommit = stringResource(R.string.please_set_username_email_before_commit)
     val canceledStrRes = stringResource(R.string.canceled)
     val nFilesStagedStrRes = stringResource(R.string.n_files_staged)
 
@@ -1001,7 +1019,7 @@ fun ChangeListInnerPage(
                         email = email,
                         requireShowToast = requireShowToast,
                         pleaseSetUsernameAndEmailBeforeCommit = pleaseSetUsernameAndEmailBeforeCommit,
-                        showUserAndEmailDialog = showUserAndEmailDialog,
+                        showUsernameAndEmailDialog = showUsernameAndEmailDialog,
                         amendCommit = amendCommit,
                         overwriteAuthor = overwriteAuthor,
                         showCommitMsgDialog = showCommitMsgDialog,
@@ -1043,7 +1061,7 @@ fun ChangeListInnerPage(
                         email = email,
                         requireShowToast = requireShowToast,
                         pleaseSetUsernameAndEmailBeforeCommit = pleaseSetUsernameAndEmailBeforeCommit,
-                        showUserAndEmailDialog = showUserAndEmailDialog,
+                        showUsernameAndEmailDialog = showUsernameAndEmailDialog,
                         amendCommit = amendCommit,
                         overwriteAuthor = overwriteAuthor,
                         showCommitMsgDialog = showCommitMsgDialog,
@@ -1094,7 +1112,7 @@ fun ChangeListInnerPage(
                                 email = email,
                                 requireShowToast = requireShowToast,
                                 pleaseSetUsernameAndEmailBeforeCommit = pleaseSetUsernameAndEmailBeforeCommit,
-                                showUserAndEmailDialog = showUserAndEmailDialog,
+                                showUsernameAndEmailDialog = showUsernameAndEmailDialog,
                                 amendCommit = amendCommit,
                                 overwriteAuthor = overwriteAuthor,
                                 showCommitMsgDialog = showCommitMsgDialog,
@@ -1136,7 +1154,7 @@ fun ChangeListInnerPage(
                         email = email,
                         requireShowToast = requireShowToast,
                         pleaseSetUsernameAndEmailBeforeCommit = pleaseSetUsernameAndEmailBeforeCommit,
-                        showUserAndEmailDialog = showUserAndEmailDialog,
+                        showUsernameAndEmailDialog = showUsernameAndEmailDialog,
                         amendCommit = amendCommit,
                         overwriteAuthor = overwriteAuthor,
                         showCommitMsgDialog = showCommitMsgDialog,
@@ -1162,7 +1180,7 @@ fun ChangeListInnerPage(
 
                 }
             }else if(requireAct == PageRequest.rebaseSkip) {
-                showRebaseSkipDialog.value = true
+                initRebaseSkipDialog(curRepo)
 
             }else if(requireAct == PageRequest.rebaseAbort) {
                 initRebaseAbortDialog()
@@ -1181,7 +1199,7 @@ fun ChangeListInnerPage(
                         email = email,
                         requireShowToast = requireShowToast,
                         pleaseSetUsernameAndEmailBeforeCommit = pleaseSetUsernameAndEmailBeforeCommit,
-                        showUserAndEmailDialog = showUserAndEmailDialog,
+                        showUsernameAndEmailDialog = showUsernameAndEmailDialog,
                         amendCommit = amendCommit,
                         overwriteAuthor = overwriteAuthor,
                         showCommitMsgDialog = showCommitMsgDialog,
@@ -1259,7 +1277,7 @@ fun ChangeListInnerPage(
 
                         if (usernameFromConfig.isBlank() || emailFromConfig.isBlank()) {
                             Msg.requireShowLongDuration(activityContext.getString(R.string.plz_set_email_and_username_then_try_again))
-                            showUserAndEmailDialog.value = true
+                            showUsernameAndEmailDialog.value = true
                         } else {
                             val readyRet = Libgit2Helper.rebaseSkip(repo, activityContext, usernameFromConfig, emailFromConfig, settings = settings)
                             if (readyRet.hasError()) {
@@ -1538,7 +1556,7 @@ fun ChangeListInnerPage(
                             email = email,
                             requireShowToast = requireShowToast,
                             pleaseSetUsernameAndEmailBeforeCommit = pleaseSetUsernameAndEmailBeforeCommit,
-                            showUserAndEmailDialog = showUserAndEmailDialog,
+                            showUsernameAndEmailDialog = showUsernameAndEmailDialog,
                             amendCommit = amendCommit,
                             overwriteAuthor = overwriteAuthor,
                             showCommitMsgDialog = showCommitMsgDialog,
@@ -1626,7 +1644,7 @@ fun ChangeListInnerPage(
     val invalidUsernameOrEmail = stringResource(R.string.invalid_username_or_email)
     val errorUnknownSelectionStrRes = stringResource(R.string.error_unknown_selection)
 
-    if(showUserAndEmailDialog.value) {
+    if(showUsernameAndEmailDialog.value) {
         //请求用户设置用户名和邮箱的弹窗
         AskGitUsernameAndEmailDialogWithSelection(
             curRepo = curRepoFromParentPage.value,
@@ -1642,7 +1660,7 @@ fun ChangeListInnerPage(
 //                    loadingText = appContext.getString(R.string.saving)
                 ) saveUsernameAndEmail@{
                     //关闭弹窗
-                    showUserAndEmailDialog.value = false
+                    showUsernameAndEmailDialog.value = false
                     //debug
 //                println("username.value::"+username.value)
 //                println("email.value::"+email.value)
@@ -1701,7 +1719,7 @@ fun ChangeListInnerPage(
                             email = email,
                             requireShowToast = requireShowToast,
                             pleaseSetUsernameAndEmailBeforeCommit = pleaseSetUsernameAndEmailBeforeCommit,
-                            showUserAndEmailDialog = showUserAndEmailDialog,
+                            showUsernameAndEmailDialog = showUsernameAndEmailDialog,
                             amendCommit = amendCommit,
                             overwriteAuthor = overwriteAuthor,
                             showCommitMsgDialog = showCommitMsgDialog,
@@ -1724,7 +1742,7 @@ fun ChangeListInnerPage(
 
             },
             onCancel = {curRepo ->
-                showUserAndEmailDialog.value = false
+                showUsernameAndEmailDialog.value = false
                 email.value = ""
                 username.value = ""
                 requireShowToast(canceledStrRes)
@@ -2158,7 +2176,7 @@ fun ChangeListInnerPage(
                             email = email,
                             requireShowToast = requireShowToast,
                             pleaseSetUsernameAndEmailBeforeCommit = pleaseSetUsernameAndEmailBeforeCommit,
-                            showUserAndEmailDialog = showUserAndEmailDialog,
+                            showUsernameAndEmailDialog = showUsernameAndEmailDialog,
                             amendCommit = amendCommit,
                             overwriteAuthor = overwriteAuthor,
                             showCommitMsgDialog = showCommitMsgDialog,
@@ -2236,7 +2254,7 @@ fun ChangeListInnerPage(
                     email = email,
                     requireShowToast = requireShowToast,
                     pleaseSetUsernameAndEmailBeforeCommit = pleaseSetUsernameAndEmailBeforeCommit,
-                    showUserAndEmailDialog = showUserAndEmailDialog,
+                    showUsernameAndEmailDialog = showUsernameAndEmailDialog,
                     amendCommit = amendCommit,
                     overwriteAuthor = overwriteAuthor,
                     showCommitMsgDialog = showCommitMsgDialog,
