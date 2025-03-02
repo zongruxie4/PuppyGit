@@ -2,6 +2,7 @@ package com.catpuppyapp.puppygit.utils.saf
 
 import android.content.ContentResolver
 import androidx.documentfile.provider.DocumentFile
+import com.catpuppyapp.puppygit.utils.IOUtil
 import java.io.File
 import kotlin.coroutines.cancellation.CancellationException
 
@@ -134,20 +135,24 @@ object SafAndFileCmpUtil {
                     val diffType = if(f.length() != saff.length()) {
                         SafAndFileDiffType.CONTENT
                     }else { //大小一样，逐字节比较
+                        val saffis = contentResolver.openInputStream(saff.uri) ?: throw OpenInputStreamFailed(message = "open InputStream for uri failed: uri = '${saff.uri}'")
+                        val fiBuf = IOUtil.createByteBuffer()
+                        val saffiBuf = IOUtil.createByteBuffer()
+                        //初始为相同，若有不同，更新此变量
                         var type = SafAndFileDiffType.NONE
-
-                        val fi = f.inputStream()
-                        val saffi = contentResolver.openInputStream(saff.uri) ?: throw OpenInputStreamFailed(message = "open InputStream for uri failed: uri = '${saff.uri}'")
-                        fi.use { fiit->
-                            saffi.use { saffiit->
+                        //开始逐字节比较
+                        f.inputStream().use { fis ->
+                            saffis.use { saffis ->
                                 while (true) {
-                                    val fb = fiit.read()
-                                    if(fb == -1) {
+                                    val fb = IOUtil.readBytes(fis, fiBuf)
+                                    if(fb < 1) {  //实际读了0个字节，换句话说，eof了
                                         break
                                     }
 
-                                    val saffb = saffiit.read()
-                                    if(saffb != fb) {
+                                    //因为两个文件大小且buffer的size一样，所以按顺序读的话，fb和safb应该大小始终一样
+                                    IOUtil.readBytes(saffis, saffiBuf)
+
+                                    if(IOUtil.bytesAreNotEquals(fiBuf, saffiBuf, 0, fb)) {
                                         type = SafAndFileDiffType.CONTENT
                                         break
                                     }
