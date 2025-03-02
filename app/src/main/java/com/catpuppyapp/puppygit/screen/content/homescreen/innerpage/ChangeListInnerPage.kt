@@ -247,6 +247,11 @@ fun ChangeListInnerPage(
     val username = rememberSaveable { mutableStateOf("") }
     val email = rememberSaveable { mutableStateOf("") }
     val showUsernameAndEmailDialog = rememberSaveable { mutableStateOf(false) }
+    val afterSetUsernameAndEmailSuccessCallback = remember { mutableStateOf<(()->Unit)?>(null) }
+    val initSetUsernameAndEmailDialog = { callback:(()->Unit)? ->
+        afterSetUsernameAndEmailSuccessCallback.value = callback
+        showUsernameAndEmailDialog.value = true
+    }
     // username and email end
 
 
@@ -265,8 +270,12 @@ fun ChangeListInnerPage(
                 val (usernameFromConfig, emailFromConfig) = Libgit2Helper.getGitUsernameAndEmail(repo)
 
                 if (usernameFromConfig.isBlank() || emailFromConfig.isBlank()) {
-                    Msg.requireShowLongDuration(activityContext.getString(R.string.plz_set_email_and_username_then_try_again))
-                    showUsernameAndEmailDialog.value = true
+                    Msg.requireShowLongDuration(activityContext.getString(R.string.plz_set_username_and_email_first))
+
+                    //显示设置用户名和邮箱的弹窗并设置回调，保存用户名和邮箱后就会调用此回调
+                    initSetUsernameAndEmailDialog {
+                        showRebaseSkipDialog.value = true
+                    }
                 } else {
                     showRebaseSkipDialog.value = true
                 }
@@ -1276,8 +1285,10 @@ fun ChangeListInnerPage(
                         val (usernameFromConfig, emailFromConfig) = Libgit2Helper.getGitUsernameAndEmail(repo)
 
                         if (usernameFromConfig.isBlank() || emailFromConfig.isBlank()) {
-                            Msg.requireShowLongDuration(activityContext.getString(R.string.plz_set_email_and_username_then_try_again))
-                            showUsernameAndEmailDialog.value = true
+                            Msg.requireShowLongDuration(activityContext.getString(R.string.plz_set_username_and_email_first))
+                            initSetUsernameAndEmailDialog {
+                                showRebaseSkipDialog.value = true
+                            }
                         } else {
                             val readyRet = Libgit2Helper.rebaseSkip(repo, activityContext, usernameFromConfig, emailFromConfig, settings = settings)
                             if (readyRet.hasError()) {
@@ -1654,20 +1665,30 @@ fun ChangeListInnerPage(
             username = username,
             email = email,
             onOk = {curRepo ->
+                //关闭弹窗
+                showUsernameAndEmailDialog.value = false
+
+                //取出callback
+                val successCallback = afterSetUsernameAndEmailSuccessCallback.value
+                afterSetUsernameAndEmailSuccessCallback.value = null
+
+                //取出用户名和邮箱
+                val usernameValue = username.value
+                val emailValue = email.value
+
                 doJobThenOffLoading(
                     loadingOn = loadingOn,
                     loadingOff = loadingOff,
 //                    loadingText = appContext.getString(R.string.saving)
                 ) saveUsernameAndEmail@{
-                    //关闭弹窗
-                    showUsernameAndEmailDialog.value = false
+
                     //debug
 //                println("username.value::"+username.value)
 //                println("email.value::"+email.value)
                     //debug
 
                     //如果用户名和邮箱都不为空，保存然后执行提交，否则显示提示信息
-                    if (username.value.isNotBlank() && email.value.isNotBlank()) {
+                    if (usernameValue.isNotBlank() && emailValue.isNotBlank()) {
                         //save username and email to global or repo, then redo commit
                         if (usernameAndEmailDialogSelectedOption.intValue == optNumSetUserAndEmailForGlobal) {  //为全局设置用户名和邮箱
                             //如果保存失败，return
@@ -1675,9 +1696,9 @@ fun ChangeListInnerPage(
                                     requireShowErr = requireShowToast,
                                     errText = errWhenQuerySettingsFromDbStrRes,
                                     errCode1 = "1",
-                                    errCode2 = "2",   //??? wtf errcode?
-                                    username = username.value,
-                                    email = email.value
+                                    errCode2 = "2",   //??? wtf errcode? I forgotten!
+                                    username = usernameValue,
+                                    email = emailValue
                                 )
                             ) {
                                 return@saveUsernameAndEmail
@@ -1689,8 +1710,8 @@ fun ChangeListInnerPage(
                                 if (!Libgit2Helper.saveGitUsernameAndEmailForRepo(
                                         repo,
                                         requireShowToast,
-                                        username = username.value,
-                                        email = email.value
+                                        username = usernameValue,
+                                        email = emailValue
                                     )
                                 ) {
                                     return@saveUsernameAndEmail
@@ -1705,36 +1726,42 @@ fun ChangeListInnerPage(
                         requireShowToast(savedStrRes)
 //                        val requireDoSync:Boolean = Cache.getByType<Boolean>(Cache.Key.changeListInnerPage_RequireDoSyncAfterCommit)?:false
 
-                        //重新执行commit，这次会从状态里取出用户名和邮箱，不对，因为上面已经存到配置文件里了，所以其实直接从配置文件就能取到
+                        //已经保存，调用回调
+
+                        if(successCallback != null) {
+                            successCallback()
+                        }else {  //默认没设回调的话，在这个页面，多半是由提交发起的设置请求，保存后继续执行提交。这个代码主要是为了兼容旧代码，不然直接调用回调就行了
+                            //重新执行commit，这次会从状态里取出用户名和邮箱，不对，因为上面已经存到配置文件里了，所以其实直接从配置文件就能取到
 //                        doCommit(true, "", !requireDoSync, requireDoSync)
-                        ChangeListFunctions.doCommit(
-                            requireShowCommitMsgDialog = true,
-                            cmtMsg = "",
+                            ChangeListFunctions.doCommit(
+                                requireShowCommitMsgDialog = true,
+                                cmtMsg = "",
 //                            requireCloseBottomBar = !requireDoSync,
-                            requireCloseBottomBar = true,
+                                requireCloseBottomBar = true,
 //                            requireDoSync = requireDoSync,
-                            curRepoFromParentPage = curRepo,
-                            refreshChangeList = changeListRequireRefreshFromParentPage,
-                            username = username,
-                            email = email,
-                            requireShowToast = requireShowToast,
-                            pleaseSetUsernameAndEmailBeforeCommit = pleaseSetUsernameAndEmailBeforeCommit,
-                            showUsernameAndEmailDialog = showUsernameAndEmailDialog,
-                            amendCommit = amendCommit,
-                            overwriteAuthor = overwriteAuthor,
-                            showCommitMsgDialog = showCommitMsgDialog,
-                            repoState = repoState,
-                            activityContext = activityContext,
-                            loadingText = loadingText,
-                            repoId = repoId,
-                            bottomBarActDoneCallback = bottomBarActDoneCallback,
-                            fromTo = fromTo,
-                            itemList = itemList.value,
-                            successCommitStrRes = successCommitStrRes,
-                            indexIsEmptyForCommitDialog = indexIsEmptyForCommitDialog,
-                            commitBtnTextForCommitDialog=commitBtnTextForCommitDialog,
+                                curRepoFromParentPage = curRepo,
+                                refreshChangeList = changeListRequireRefreshFromParentPage,
+                                username = username,
+                                email = email,
+                                requireShowToast = requireShowToast,
+                                pleaseSetUsernameAndEmailBeforeCommit = pleaseSetUsernameAndEmailBeforeCommit,
+                                showUsernameAndEmailDialog = showUsernameAndEmailDialog,
+                                amendCommit = amendCommit,
+                                overwriteAuthor = overwriteAuthor,
+                                showCommitMsgDialog = showCommitMsgDialog,
+                                repoState = repoState,
+                                activityContext = activityContext,
+                                loadingText = loadingText,
+                                repoId = repoId,
+                                bottomBarActDoneCallback = bottomBarActDoneCallback,
+                                fromTo = fromTo,
+                                itemList = itemList.value,
+                                successCommitStrRes = successCommitStrRes,
+                                indexIsEmptyForCommitDialog = indexIsEmptyForCommitDialog,
+                                commitBtnTextForCommitDialog=commitBtnTextForCommitDialog,
 //                            showPushForCommitDialog=showPushForCommitDialog
-                        )
+                            )
+                        }
                     } else {
                         requireShowToast(invalidUsernameOrEmail)
                     }
