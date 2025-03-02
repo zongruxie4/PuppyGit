@@ -25,7 +25,6 @@ import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.unit.dp
 import com.catpuppyapp.puppygit.data.entity.RepoEntity
 import com.catpuppyapp.puppygit.play.pro.R
-import com.catpuppyapp.puppygit.style.MyStyleKt
 import com.catpuppyapp.puppygit.utils.AppModel
 import com.catpuppyapp.puppygit.utils.Libgit2Helper
 import com.catpuppyapp.puppygit.utils.Msg
@@ -84,7 +83,7 @@ fun AskGitUsernameAndEmailDialogWithSelection(
                         Row(
                             Modifier
                                 .fillMaxWidth()
-                                .heightIn(min=MyStyleKt.RadioOptions.minHeight)
+                                .heightIn(min=40.dp)
                                 .selectable(
                                     selected = selectedOption.intValue==k,
                                     onClick = {

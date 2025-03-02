@@ -223,12 +223,18 @@ fun RepoInnerPage(
     val pageRequest = rememberSaveable { mutableStateOf("")}
 
     // username and email start
+    val repoOfSetUsernameAndEmailDialog = mutableCustomStateOf(stateKeyTag, "repoOfSetUsernameAndEmailDialog") { RepoEntity(id = "") }
     val username = rememberSaveable { mutableStateOf("") }
     val email = rememberSaveable { mutableStateOf("") }
     val showUsernameAndEmailDialog = rememberSaveable { mutableStateOf(false) }
     val afterSetUsernameAndEmailSuccessCallback = remember { mutableStateOf<(()->Unit)?>(null) }
-    val initSetUsernameAndEmailDialog = { callback:(()->Unit)? ->
+    val initSetUsernameAndEmailDialog = { targetRepo:RepoEntity, callback:(()->Unit)? ->
+        username.value = ""
+        email.value = ""
+
+        repoOfSetUsernameAndEmailDialog.value = targetRepo
         afterSetUsernameAndEmailSuccessCallback.value = callback
+
         showUsernameAndEmailDialog.value = true
     }
 
@@ -239,7 +245,7 @@ fun RepoInnerPage(
                 if(Libgit2Helper.repoUsernameAndEmailInvaild(repo)) {
                     Msg.requireShowLongDuration(activityContext.getString(R.string.plz_set_username_and_email_first))
 
-                    initSetUsernameAndEmailDialog(task)
+                    initSetUsernameAndEmailDialog(curRepo, task)
                 }else {
                     task?.invoke()
                 }
@@ -251,7 +257,7 @@ fun RepoInnerPage(
     // username and email end
 
     if(showUsernameAndEmailDialog.value) {
-        val curRepo = curRepo.value
+        val curRepo = repoOfSetUsernameAndEmailDialog.value
         val closeDialog = { showUsernameAndEmailDialog.value = false }
 
         //请求用户设置用户名和邮箱的弹窗
@@ -273,14 +279,6 @@ fun RepoInnerPage(
                 afterSetUsernameAndEmailSuccessCallback.value = null
 
                 successCallback?.invoke()
-            },
-            onCancel = {
-                closeDialog()
-
-                email.value = ""
-                username.value = ""
-
-                Msg.requireShow(activityContext.getString(R.string.canceled))
             },
 
         )

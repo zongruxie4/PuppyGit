@@ -234,6 +234,9 @@ fun ChangeListInnerPage(
     val showUsernameAndEmailDialog = rememberSaveable { mutableStateOf(false) }
     val afterSetUsernameAndEmailSuccessCallback = remember { mutableStateOf<(()->Unit)?>(null) }
     val initSetUsernameAndEmailDialog = { callback:(()->Unit)? ->
+        email.value = ""
+        username.value = ""
+
         afterSetUsernameAndEmailSuccessCallback.value = callback
         showUsernameAndEmailDialog.value = true
     }
@@ -1719,16 +1722,6 @@ fun ChangeListInnerPage(
 //                            showPushForCommitDialog=showPushForCommitDialog
                     )
                 }
-            },
-            onCancel = {
-                closeDialog()
-
-                email.value = ""
-                username.value = ""
-                requireShowToast(canceledStrRes)
-
-                // cancelled，什么都没设置，没必要刷新页面
-//                changeListRequireRefreshFromParentPage(curRepo)
             },
 
         )

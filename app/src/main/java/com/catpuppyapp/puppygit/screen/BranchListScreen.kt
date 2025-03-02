@@ -172,6 +172,9 @@ fun BranchListScreen(
     val showUsernameAndEmailDialog = rememberSaveable { mutableStateOf(false) }
     val afterSetUsernameAndEmailSuccessCallback = remember { mutableStateOf<(()->Unit)?>(null) }
     val initSetUsernameAndEmailDialog = { callback:(()->Unit)? ->
+        email.value = ""
+        username.value = ""
+
         afterSetUsernameAndEmailSuccessCallback.value = callback
         showUsernameAndEmailDialog.value = true
     }
@@ -217,14 +220,6 @@ fun BranchListScreen(
                 afterSetUsernameAndEmailSuccessCallback.value = null
 
                 successCallback?.invoke()
-            },
-            onCancel = {
-                closeDialog()
-
-                email.value = ""
-                username.value = ""
-
-                Msg.requireShow(activityContext.getString(R.string.canceled))
             },
 
         )
