@@ -374,7 +374,7 @@ fun ChangeListPageActions(
                     text = { Text(stringResource(R.string.merge_abort)) },
                     onClick = {
                         Cache.set(Cache.Key.changeListInnerPage_requireDoActFromParent, PageRequest.mergeAbort)
-                        requireDoActFromParentShowTextWhenDoingAct.value= activityContext.getString(R.string.aborting_merge)
+                        requireDoActFromParentShowTextWhenDoingAct.value= activityContext.getString(R.string.aborting)
                         requireDoActFromParent.value = true
                         enableAction.value=false
 
@@ -393,7 +393,7 @@ fun ChangeListPageActions(
                     text = { Text(stringResource(R.string.rebase_continue)+rebaseCurOfAll) },
                     onClick = {
                         Cache.set(Cache.Key.changeListInnerPage_requireDoActFromParent, PageRequest.rebaseContinue)
-                        requireDoActFromParentShowTextWhenDoingAct.value= activityContext.getString(R.string.rebase_continue)
+                        requireDoActFromParentShowTextWhenDoingAct.value= activityContext.getString(R.string.loading)
                         requireDoActFromParent.value = true
                         enableAction.value=false
 
@@ -409,7 +409,7 @@ fun ChangeListPageActions(
                     text = { Text(stringResource(R.string.rebase_skip)) },
                     onClick = {
                         Cache.set(Cache.Key.changeListInnerPage_requireDoActFromParent, PageRequest.rebaseSkip)
-                        requireDoActFromParentShowTextWhenDoingAct.value= activityContext.getString(R.string.rebase_skip)
+                        requireDoActFromParentShowTextWhenDoingAct.value= activityContext.getString(R.string.loading)
                         requireDoActFromParent.value = true
                         enableAction.value=false
 
@@ -424,7 +424,7 @@ fun ChangeListPageActions(
                     text = { Text(stringResource(R.string.rebase_abort)) },
                     onClick = {
                         Cache.set(Cache.Key.changeListInnerPage_requireDoActFromParent, PageRequest.rebaseAbort)
-                        requireDoActFromParentShowTextWhenDoingAct.value= activityContext.getString(R.string.rebase_abort)
+                        requireDoActFromParentShowTextWhenDoingAct.value= activityContext.getString(R.string.aborting)
                         requireDoActFromParent.value = true
                         enableAction.value=false
 
@@ -442,7 +442,7 @@ fun ChangeListPageActions(
                     text = { Text(stringResource(R.string.cherrypick_continue)) },
                     onClick = {
                         Cache.set(Cache.Key.changeListInnerPage_requireDoActFromParent, PageRequest.cherrypickContinue)
-                        requireDoActFromParentShowTextWhenDoingAct.value= activityContext.getString(R.string.cherrypick_continue)
+                        requireDoActFromParentShowTextWhenDoingAct.value= activityContext.getString(R.string.loading)
                         requireDoActFromParent.value = true
                         enableAction.value=false
 
@@ -458,7 +458,7 @@ fun ChangeListPageActions(
                     text = { Text(stringResource(R.string.cherrypick_abort)) },
                     onClick = {
                         Cache.set(Cache.Key.changeListInnerPage_requireDoActFromParent, PageRequest.cherrypickAbort)
-                        requireDoActFromParentShowTextWhenDoingAct.value= activityContext.getString(R.string.cherrypick_abort)
+                        requireDoActFromParentShowTextWhenDoingAct.value= activityContext.getString(R.string.aborting)
                         requireDoActFromParent.value = true
                         enableAction.value=false
 

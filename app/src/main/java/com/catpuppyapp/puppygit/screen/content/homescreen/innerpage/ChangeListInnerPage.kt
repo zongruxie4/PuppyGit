@@ -232,10 +232,34 @@ fun ChangeListInnerPage(
 
 //    val scope = rememberCoroutineScope()
 //    val changeListPageCurRepo = rememberSaveable { mutableStateOf(RepoEntity()) }
-    val changeListPageHasConflictItem = rememberSaveable { mutableStateOf(false)}
+//    val changeListPageHasConflictItem = rememberSaveable { mutableStateOf(false) }
 //    val changeListPageHasIndexItem = rememberSaveable { mutableStateOf(false) }
-    val changeListPageHasWorktreeItem = rememberSaveable { mutableStateOf(false)}
-    val showAbortMergeDialog = rememberSaveable { mutableStateOf(false)}
+    val changeListPageHasWorktreeItem = rememberSaveable { mutableStateOf(false) }
+
+    val showRebaseSkipDialog = rememberSaveable { mutableStateOf(false) }
+    val showRebaseAbortDialog = rememberSaveable { mutableStateOf(false) }
+    val showCherrypickAbortDialog = rememberSaveable { mutableStateOf(false) }
+    val showMergeAbortDialog = rememberSaveable { mutableStateOf(false) }
+
+    val initMergeAbortDialog = {
+        showCherrypickAbortDialog.value = false
+        showRebaseAbortDialog.value = false
+        showMergeAbortDialog.value = true
+    }
+
+    val initRebaseAbortDialog = {
+        showMergeAbortDialog.value = false
+        showCherrypickAbortDialog.value = false
+        showRebaseAbortDialog.value = true
+    }
+
+    val initCherrypickAbortDialog = {
+        showMergeAbortDialog.value = false
+        showRebaseAbortDialog.value = false
+        showCherrypickAbortDialog.value = true
+    }
+
+
     val showMergeAcceptTheirsOrOursDialog = rememberSaveable { mutableStateOf(false)}
     val mergeAcceptTheirs = rememberSaveable { mutableStateOf(false)}
     //this state used for make navi back to this page do LaunchedEffect, it must not rememberSaveable
@@ -626,7 +650,7 @@ fun ChangeListInnerPage(
 
     val showPushForceDialog = rememberSaveable { mutableStateOf(false)}
     if(showPushForceDialog.value) {
-        ConfirmDialog(
+        ConfirmDialog2(
             title = stringResource(id = R.string.push_force),
             requireShowTextCompose = true,
             textCompose = {
@@ -634,8 +658,6 @@ fun ChangeListInnerPage(
                     Text(stringResource(id = R.string.will_force_overwrite_remote_branch_even_it_is_ahead_to_local),
                         color = MyStyleKt.TextColor.danger()
                     )
-                    Spacer(modifier = Modifier.height(10.dp))
-                    Text(stringResource(id = R.string.are_you_sure))
                 }
             },
             okTextColor = MyStyleKt.TextColor.danger(),
@@ -934,7 +956,7 @@ fun ChangeListInnerPage(
 
                 }
             }else if(requireAct == PageRequest.mergeAbort) {
-                showAbortMergeDialog.value = true  //  显示弹窗，用户点击确认后，执行abort merge
+                initMergeAbortDialog()
             }else if(requireAct == PageRequest.stageAll) {
                 try {
 //                    RepoStatusUtil.setRepoStatus(repoId, appContext.getString(R.string.staging))
@@ -1140,71 +1162,11 @@ fun ChangeListInnerPage(
 
                 }
             }else if(requireAct == PageRequest.rebaseSkip) {
-                try {
-                    val repoFullPath = curRepo.fullSavePath
-                    Repository.open(repoFullPath).use { repo ->
-                        val (usernameFromConfig, emailFromConfig) = Libgit2Helper.getGitUsernameAndEmail(repo)
+                showRebaseSkipDialog.value = true
 
-                        if (usernameFromConfig.isBlank() || emailFromConfig.isBlank()) {
-                            Msg.requireShowLongDuration(activityContext.getString(R.string.plz_set_email_and_username_then_try_again))
-                        } else {
-                            val readyRet = Libgit2Helper.rebaseSkip(repo, activityContext, usernameFromConfig, emailFromConfig, settings = settings)
-                            if (readyRet.hasError()) {
-                                Msg.requireShowLongDuration(readyRet.msg)
-
-                                //显示的时候只显示简短错误信息，例如"请先解决冲突！"，存的时候存详细点，存上什么操作导致的错误，例如：“merge continue err:请先解决冲突”
-                                val errPrefix = activityContext.getString(R.string.rebase_skip_err)
-                                createAndInsertError(repoId, "$errPrefix:${readyRet.msg}")
-                            } else {
-                                Msg.requireShow(activityContext.getString(R.string.rebase_success))
-                            }
-                        }
-                    }
-                } catch (e: Exception) {
-                    showErrAndSaveLog(
-                        TAG,
-                        "require Rebase Skip error:" + e.stackTraceToString(),
-                        activityContext.getString(R.string.rebase_skip_err) + ":" + e.localizedMessage,
-                        requireShowToast,
-                        repoId
-                    )
-                } finally {
-//                    RepoStatusUtil.clearRepoStatus(repoId)
-
-                    changeListRequireRefreshFromParentPage(curRepo)
-//                    refreshRepoPage()
-
-                }
             }else if(requireAct == PageRequest.rebaseAbort) {
-                try {
-                    val repoFullPath = curRepo.fullSavePath
-                    Repository.open(repoFullPath).use { repo ->
-                        val readyRet = Libgit2Helper.rebaseAbort(repo)
-                        if (readyRet.hasError()) {
-                            Msg.requireShowLongDuration(readyRet.msg)
+                initRebaseAbortDialog()
 
-                            //显示的时候只显示简短错误信息，例如"请先解决冲突！"，存的时候存详细点，存上什么操作导致的错误，例如：“merge continue err:请先解决冲突”
-                            val errPrefix = activityContext.getString(R.string.rebase_abort_err)
-                            createAndInsertError(repoId, "$errPrefix:${readyRet.msg}")
-                        } else {
-                            Msg.requireShow(activityContext.getString(R.string.rebase_aborted))
-                        }
-                    }
-                } catch (e: Exception) {
-                    showErrAndSaveLog(
-                        TAG,
-                        "require Rebase Abort error:" + e.stackTraceToString(),
-                        activityContext.getString(R.string.rebase_abort_err) + ":" + e.localizedMessage,
-                        requireShowToast,
-                        repoId
-                    )
-                } finally {
-//                    RepoStatusUtil.clearRepoStatus(repoId)
-
-                    changeListRequireRefreshFromParentPage(curRepo)
-//                    refreshRepoPage()
-
-                }
             }else if(requireAct == PageRequest.cherrypickContinue) {
                 try {
 //                    doCommit(true, "", true, false)
@@ -1245,35 +1207,7 @@ fun ChangeListInnerPage(
 
                 }
             }else if(requireAct == PageRequest.cherrypickAbort) {
-                try {
-                    val repoFullPath = curRepo.fullSavePath
-                    Repository.open(repoFullPath).use { repo ->
-                        val readyRet = Libgit2Helper.cherrypickAbort(repo)
-                        if (readyRet.hasError()) {
-                            Msg.requireShowLongDuration(readyRet.msg)
-
-                            //显示的时候只显示简短错误信息，例如"请先解决冲突！"，存的时候存详细点，存上什么操作导致的错误，例如：“merge continue err:请先解决冲突”
-                            val errPrefix = activityContext.getString(R.string.cherrypick_abort_err)
-                            createAndInsertError(repoId, "$errPrefix:${readyRet.msg}")
-                        } else {
-                            Msg.requireShow(activityContext.getString(R.string.cherrypick_aborted))
-                        }
-                    }
-                } catch (e: Exception) {
-                    showErrAndSaveLog(
-                        TAG,
-                        "require Cherrypick Abort error:" + e.stackTraceToString(),
-                        activityContext.getString(R.string.cherrypick_abort_err) + ":" + e.localizedMessage,
-                        requireShowToast,
-                        repoId
-                    )
-                } finally {
-//                    RepoStatusUtil.clearRepoStatus(repoId)
-
-                    changeListRequireRefreshFromParentPage(curRepo)
-//                    refreshRepoPage()
-
-                }
+                initCherrypickAbortDialog()
             }
 
         }
@@ -1297,35 +1231,168 @@ fun ChangeListInnerPage(
         }
     }
 
-    if(showAbortMergeDialog.value) {
+    if(showRebaseSkipDialog.value) {
+        val closeDialog = {
+            showRebaseSkipDialog.value = false
+        }
+
         ConfirmDialog(
-            title=stringResource(R.string.abort_merge),
-            text=stringResource(R.string.abort_merge_notice_text),
+            title=stringResource(R.string.rebase_skip),
+            text=stringResource(R.string.are_you_sure),
             okTextColor = MyStyleKt.TextColor.danger(),
             onCancel = {
-                showAbortMergeDialog.value=false
+                closeDialog()
             }
         ) {  //onOk
-            showAbortMergeDialog.value=false
+            closeDialog()
+
             val curRepo = curRepoFromParentPage.value
             doJobThenOffLoading(
                 loadingOn = loadingOn,
                 loadingOff = loadingOff,
-                loadingText = activityContext.getString(R.string.aborting_merge)
+                loadingText = activityContext.getString(R.string.loading)
             ) {
                 try {
-//                    RepoStatusUtil.setRepoStatus(repoId, appContext.getString(R.string.aborting_merge))
+                    val repoFullPath = curRepo.fullSavePath
+                    Repository.open(repoFullPath).use { repo ->
+                        val (usernameFromConfig, emailFromConfig) = Libgit2Helper.getGitUsernameAndEmail(repo)
 
-                    doAbortMerge(curRepo)
+                        if (usernameFromConfig.isBlank() || emailFromConfig.isBlank()) {
+                            Msg.requireShowLongDuration(activityContext.getString(R.string.plz_set_email_and_username_then_try_again))
+                            showUserAndEmailDialog.value = true
+                        } else {
+                            val readyRet = Libgit2Helper.rebaseSkip(repo, activityContext, usernameFromConfig, emailFromConfig, settings = settings)
+                            if (readyRet.hasError()) {
+                                Msg.requireShowLongDuration(readyRet.msg)
 
-                }catch (e:Exception){
-                    showErrAndSaveLog(TAG,"require abort_merge error:"+e.stackTraceToString(), activityContext.getString(R.string.abort_merge_failed)+":"+e.localizedMessage, requireShowToast, curRepo.id)
-                }finally {
+                                //显示的时候只显示简短错误信息，例如"请先解决冲突！"，存的时候存详细点，存上什么操作导致的错误，例如：“merge continue err:请先解决冲突”
+                                val errPrefix = activityContext.getString(R.string.rebase_skip_err)
+                                createAndInsertError(repoId, "$errPrefix:${readyRet.msg}")
+                            } else {
+                                Msg.requireShow(activityContext.getString(R.string.rebase_success))
+                            }
+                        }
+                    }
+                } catch (e: Exception) {
+                    showErrAndSaveLog(
+                        TAG,
+                        "require Rebase Skip error:" + e.stackTraceToString(),
+                        activityContext.getString(R.string.rebase_skip_err) + ":" + e.localizedMessage,
+                        requireShowToast,
+                        repoId
+                    )
+                } finally {
 //                    RepoStatusUtil.clearRepoStatus(repoId)
 
                     changeListRequireRefreshFromParentPage(curRepo)
 //                    refreshRepoPage()
 
+                }
+            }
+        }
+    }
+
+    if(showMergeAbortDialog.value || showRebaseAbortDialog.value || showCherrypickAbortDialog.value) {
+        val closeDialog = {
+            showMergeAbortDialog.value = false
+            showRebaseAbortDialog.value = false
+            showCherrypickAbortDialog.value = false
+        }
+
+        ConfirmDialog(
+            title=stringResource(R.string.abort),
+            text=stringResource(R.string.abort_merge_notice_text),
+            okTextColor = MyStyleKt.TextColor.danger(),
+            onCancel = {
+                closeDialog()
+            }
+        ) {  //onOk
+//            val nullMergeTrueRebaseFalseCherrypick = if(showMergeAbortDialog.value) null else if(showRebaseAbortDialog.value) true else false
+            val nullMergeTrueRebaseFalseCherrypick = if(showMergeAbortDialog.value) null else showRebaseAbortDialog.value
+
+            closeDialog()
+
+            val curRepo = curRepoFromParentPage.value
+            doJobThenOffLoading(
+                loadingOn = loadingOn,
+                loadingOff = loadingOff,
+                loadingText = activityContext.getString(R.string.aborting)
+            ) {
+                if(nullMergeTrueRebaseFalseCherrypick == null) {  // merge abort
+                    try {
+//                    RepoStatusUtil.setRepoStatus(repoId, appContext.getString(R.string.aborting_merge))
+
+                        doAbortMerge(curRepo)
+
+                    }catch (e:Exception){
+                        showErrAndSaveLog(TAG,"require abort_merge error:"+e.stackTraceToString(), activityContext.getString(R.string.abort_merge_failed)+":"+e.localizedMessage, requireShowToast, curRepo.id)
+                    }finally {
+//                    RepoStatusUtil.clearRepoStatus(repoId)
+
+                        changeListRequireRefreshFromParentPage(curRepo)
+//                    refreshRepoPage()
+
+                    }
+                }else if(nullMergeTrueRebaseFalseCherrypick) {  // rebase abort
+                    try {
+                        val repoFullPath = curRepo.fullSavePath
+                        Repository.open(repoFullPath).use { repo ->
+                            val readyRet = Libgit2Helper.rebaseAbort(repo)
+                            if (readyRet.hasError()) {
+                                Msg.requireShowLongDuration(readyRet.msg)
+
+                                //显示的时候只显示简短错误信息，例如"请先解决冲突！"，存的时候存详细点，存上什么操作导致的错误，例如：“merge continue err:请先解决冲突”
+                                val errPrefix = activityContext.getString(R.string.rebase_abort_err)
+                                createAndInsertError(repoId, "$errPrefix:${readyRet.msg}")
+                            } else {
+                                Msg.requireShow(activityContext.getString(R.string.rebase_aborted))
+                            }
+                        }
+                    } catch (e: Exception) {
+                        showErrAndSaveLog(
+                            TAG,
+                            "require Rebase Abort error:" + e.stackTraceToString(),
+                            activityContext.getString(R.string.rebase_abort_err) + ":" + e.localizedMessage,
+                            requireShowToast,
+                            repoId
+                        )
+                    } finally {
+//                    RepoStatusUtil.clearRepoStatus(repoId)
+
+                        changeListRequireRefreshFromParentPage(curRepo)
+//                    refreshRepoPage()
+
+                    }
+                }else {  // cherrypick abort
+                    try {
+                        val repoFullPath = curRepo.fullSavePath
+                        Repository.open(repoFullPath).use { repo ->
+                            val readyRet = Libgit2Helper.cherrypickAbort(repo)
+                            if (readyRet.hasError()) {
+                                Msg.requireShowLongDuration(readyRet.msg)
+
+                                //显示的时候只显示简短错误信息，例如"请先解决冲突！"，存的时候存详细点，存上什么操作导致的错误，例如：“merge continue err:请先解决冲突”
+                                val errPrefix = activityContext.getString(R.string.cherrypick_abort_err)
+                                createAndInsertError(repoId, "$errPrefix:${readyRet.msg}")
+                            } else {
+                                Msg.requireShow(activityContext.getString(R.string.cherrypick_aborted))
+                            }
+                        }
+                    } catch (e: Exception) {
+                        showErrAndSaveLog(
+                            TAG,
+                            "require Cherrypick Abort error:" + e.stackTraceToString(),
+                            activityContext.getString(R.string.cherrypick_abort_err) + ":" + e.localizedMessage,
+                            requireShowToast,
+                            repoId
+                        )
+                    } finally {
+//                    RepoStatusUtil.clearRepoStatus(repoId)
+
+                        changeListRequireRefreshFromParentPage(curRepo)
+//                    refreshRepoPage()
+
+                    }
                 }
             }
         }

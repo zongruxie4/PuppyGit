@@ -217,7 +217,7 @@
     <string name="aborting_merge">Aborting Merge…</string>
     <string name="continue_merging">Continue Merging…</string>
     <string name="abort_merge">Abort Merge</string>
-    <string name="abort_merge_notice_text">Will try restore repo files to before merge state, are you sure?</string>
+    <string name="abort_merge_notice_text">Will try to restore the repository files to the state before the merge. Are you sure?</string>
     <string name="repo">Repo</string>
     <string name="unlink">UnLink</string>
     <string name="link">Link</string>
@@ -1226,5 +1226,9 @@
     <string name="err_documentfile_is_null">err: DocumentFile is null</string>
     <string name="folder_is_empty">Folder is empty</string>
 
+
+    <!-- new at 20250302-->
+    <string name="aborting">Aborting…</string>
+    <string name="abort">Abort</string>
 
 </resources>

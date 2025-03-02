@@ -1221,5 +1221,9 @@
     <string name="err_documentfile_is_null">Ошибка: DocumentFile is null</string>
     <string name="folder_is_empty">Папка пуста</string>
 
+    <!-- new at 20250302-->
+    <string name="aborting">Отмена…</string>
+    <string name="abort">Прервать</string>
+
 
 </resources>

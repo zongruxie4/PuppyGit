@@ -1201,4 +1201,8 @@
     <string name="folder_is_empty">文件夹为空</string>
 
 
+    <!-- new at 20250302-->
+    <string name="aborting">正在中止…</string>
+    <string name="abort">中止</string>
+
 </resources>
