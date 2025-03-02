@@ -175,7 +175,25 @@ fun BranchListScreen(
         afterSetUsernameAndEmailSuccessCallback.value = callback
         showUsernameAndEmailDialog.value = true
     }
+
+    //若仓库有有效用户名和邮箱，执行task，否则弹窗设置用户名和邮箱，并在保存用户名和邮箱后调用task
+    val doTaskOrShowSetUsernameAndEmailDialog = { curRepo:RepoEntity, task:(()->Unit)? ->
+        try {
+            Repository.open(curRepo.fullSavePath).use { repo ->
+                if(Libgit2Helper.repoUsernameAndEmailInvaild(repo)) {
+                    Msg.requireShowLongDuration(activityContext.getString(R.string.plz_set_username_and_email_first))
+
+                    initSetUsernameAndEmailDialog(task)
+                }else {
+                    task?.invoke()
+                }
+            }
+        }catch (e:Exception) {
+            Msg.requireShowLongDuration("err: ${e.localizedMessage}")
+        }
+    }
     // username and email end
+
     if(showUsernameAndEmailDialog.value) {
         val curRepo = curRepo.value
         val closeDialog = { showUsernameAndEmailDialog.value = false }
@@ -1409,24 +1427,10 @@ fun BranchListScreen(
                     textDesc = stringResource(R.string.merge_into_current),
                     enabled = curObjInPage.value.shortName != repoCurrentActiveBranchOrShortDetachedHashForShown.value
                 ){
-                    try {
-                        Repository.open(curRepo.value.fullSavePath).use { repo ->
-                            if(Libgit2Helper.repoUsernameAndEmailInvaild(repo)) {
-                                Msg.requireShowLongDuration(activityContext.getString(R.string.plz_set_username_and_email_first))
-
-                                initSetUsernameAndEmailDialog {
-                                    requireRebase.value = false
-                                    //弹出确认框，如果确定，执行merge，否则不执行
-                                    showRebaseOrMergeDialog.value = true
-                                }
-                            }else {
-                                requireRebase.value = false
-                                //弹出确认框，如果确定，执行merge，否则不执行
-                                showRebaseOrMergeDialog.value = true
-                            }
-                        }
-                    }catch (e:Exception) {
-                        Msg.requireShowLongDuration("err: ${e.localizedMessage}")
+                    doTaskOrShowSetUsernameAndEmailDialog(curRepo.value) {
+                        requireRebase.value = false
+                        //弹出确认框，如果确定，执行merge，否则不执行
+                        showRebaseOrMergeDialog.value = true
                     }
                 }
 
@@ -1436,24 +1440,10 @@ fun BranchListScreen(
                         textDesc = stringResource(R.string.rebase_current_onto),
                         enabled = curObjInPage.value.shortName != repoCurrentActiveBranchOrShortDetachedHashForShown.value
                     ){
-                        try {
-                            Repository.open(curRepo.value.fullSavePath).use { repo ->
-                                if(Libgit2Helper.repoUsernameAndEmailInvaild(repo)) {
-                                    Msg.requireShowLongDuration(activityContext.getString(R.string.plz_set_username_and_email_first))
-
-                                    initSetUsernameAndEmailDialog {
-                                        requireRebase.value = true
-                                        //弹出确认框，如果确定，执行merge，否则不执行
-                                        showRebaseOrMergeDialog.value = true
-                                    }
-                                }else {
-                                    requireRebase.value = true
-                                    //弹出确认框，如果确定，执行merge，否则不执行
-                                    showRebaseOrMergeDialog.value = true
-                                }
-                            }
-                        }catch (e:Exception) {
-                            Msg.requireShowLongDuration("err: ${e.localizedMessage}")
+                        doTaskOrShowSetUsernameAndEmailDialog(curRepo.value) {
+                            requireRebase.value = true
+                            //弹出确认框，如果确定，执行merge，否则不执行
+                            showRebaseOrMergeDialog.value = true
                         }
                     }
                 }

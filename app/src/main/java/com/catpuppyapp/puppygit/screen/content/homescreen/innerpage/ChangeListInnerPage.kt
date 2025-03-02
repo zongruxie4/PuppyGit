@@ -237,7 +237,25 @@ fun ChangeListInnerPage(
         afterSetUsernameAndEmailSuccessCallback.value = callback
         showUsernameAndEmailDialog.value = true
     }
+
+    //若仓库有有效用户名和邮箱，执行task，否则弹窗设置用户名和邮箱，并在保存用户名和邮箱后调用task
+    val doTaskOrShowSetUsernameAndEmailDialog = { curRepo:RepoEntity, task:(()->Unit)? ->
+        try {
+            Repository.open(curRepo.fullSavePath).use { repo ->
+                if(Libgit2Helper.repoUsernameAndEmailInvaild(repo)) {
+                    Msg.requireShowLongDuration(activityContext.getString(R.string.plz_set_username_and_email_first))
+
+                    initSetUsernameAndEmailDialog(task)
+                }else {
+                    task?.invoke()
+                }
+            }
+        }catch (e:Exception) {
+            Msg.requireShowLongDuration("err: ${e.localizedMessage}")
+        }
+    }
     // username and email end
+
 
     val pleaseSetUsernameAndEmailBeforeCommit = stringResource(R.string.please_set_username_email_before_commit)
 
@@ -250,23 +268,8 @@ fun ChangeListInnerPage(
     val showMergeAbortDialog = rememberSaveable { mutableStateOf(false) }
 
     val initRebaseSkipDialog = { curRepo:RepoEntity ->
-        try {
-            val repoFullPath = curRepo.fullSavePath
-            Repository.open(repoFullPath).use { repo ->
-                if (Libgit2Helper.repoUsernameAndEmailInvaild(repo)) {
-                    Msg.requireShowLongDuration(activityContext.getString(R.string.plz_set_username_and_email_first))
-
-                    //显示设置用户名和邮箱的弹窗并设置回调，保存用户名和邮箱后就会调用此回调
-                    initSetUsernameAndEmailDialog {
-                        showRebaseSkipDialog.value = true
-                    }
-                } else {
-                    showRebaseSkipDialog.value = true
-                }
-            }
-        }catch (e:Exception) {
-            Msg.requireShow("init skip err")
-            MyLog.e(TAG, "#initRebaseSkipDialog err: ${e.stackTraceToString()}")
+        doTaskOrShowSetUsernameAndEmailDialog(curRepo) {
+            showRebaseSkipDialog.value = true
         }
     }
 
@@ -782,15 +785,19 @@ fun ChangeListInnerPage(
             }else if(requireAct==PageRequest.goParent) {
                 goParentChangeList(curRepo)
             }else if(requireAct==PageRequest.pull) { // pull(fetch+merge)
-                ChangeListFunctions.doPull(
-                    curRepo = curRepo,
-                    activityContext = activityContext,
-                    dbContainer = dbContainer,
-                    requireShowToast = requireShowToast,
-                    loadingText = loadingText,
-                    bottomBarActDoneCallback = bottomBarActDoneCallback,
-                    changeListRequireRefreshFromParentPage = changeListRequireRefreshFromParentPage,
-                )
+                doTaskOrShowSetUsernameAndEmailDialog(curRepo) {
+                    doJobThenOffLoading(loadingOn, loadingOff, activityContext.getString(R.string.pulling)){
+                        ChangeListFunctions.doPull(
+                            curRepo = curRepo,
+                            activityContext = activityContext,
+                            dbContainer = dbContainer,
+                            requireShowToast = requireShowToast,
+                            loadingText = loadingText,
+                            bottomBarActDoneCallback = bottomBarActDoneCallback,
+                            changeListRequireRefreshFromParentPage = changeListRequireRefreshFromParentPage,
+                        )
+                    }
+                }
 
             }else if(requireAct==PageRequest.fetch) {
                 try {
@@ -823,54 +830,63 @@ fun ChangeListInnerPage(
                 }
 
             }else if(requireAct==PageRequest.pullRebase) {
-                try {
-                    //设置仓库临时状态(把临时状态设置到缓存里，不退出app都有效，目的是为了使重新查列表后临时状态亦可见)，这样重新加载页面时依然能看到临时状态
+                doTaskOrShowSetUsernameAndEmailDialog(curRepo) {
+                    doJobThenOffLoading(
+                        loadingOn,
+                        loadingOff,
+                        activityContext.getString(R.string.pulling)
+                    ) {
+                        try {
+                            //设置仓库临时状态(把临时状态设置到缓存里，不退出app都有效，目的是为了使重新查列表后临时状态亦可见)，这样重新加载页面时依然能看到临时状态
 //                    RepoStatusUtil.setRepoStatus(repoId, appContext.getString(R.string.pulling))
 
-                    //执行操作
+                            //执行操作
 //                    val fetchSuccess = doFetch(null)
-                    val fetchSuccess = ChangeListFunctions.doFetch(
-                        remoteNameParam = null,
-                        curRepoFromParentPage = curRepo,
-                        requireShowToast = requireShowToast,
-                        appContext = activityContext,
-                        loadingText = loadingText,
-                        dbContainer = dbContainer
-                    )
-                    if(!fetchSuccess) {
-                        //刷新页面
+                            val fetchSuccess = ChangeListFunctions.doFetch(
+                                remoteNameParam = null,
+                                curRepoFromParentPage = curRepo,
+                                requireShowToast = requireShowToast,
+                                appContext = activityContext,
+                                loadingText = loadingText,
+                                dbContainer = dbContainer
+                            )
+                            if(!fetchSuccess) {
+                                //刷新页面
 //                        changeStateTriggerRefreshPage(needRefreshChangeListPage)
 
-                        requireShowToast(activityContext.getString(R.string.fetch_failed))
-                    }else {
+                                requireShowToast(activityContext.getString(R.string.fetch_failed))
+                            }else {
 //                        val mergeSuccess = doMerge(true, null, true, trueMergeFalseRebase = false)
-                        val mergeSuccess = ChangeListFunctions.doMerge(
-                            requireCloseBottomBar = true,
-                            upstreamParam = null,
-                            showMsgIfHasConflicts = true,
-                            trueMergeFalseRebase = false,
-                            curRepoFromParentPage = curRepo,
-                            requireShowToast = requireShowToast,
-                            appContext = activityContext,
-                            loadingText = loadingText,
-                            bottomBarActDoneCallback = bottomBarActDoneCallback
-                        )
-                        if(!mergeSuccess){
-                            requireShowToast(activityContext.getString(R.string.rebase_failed))
-                        }else {
-                            requireShowToast(activityContext.getString(R.string.pull_rebase_success))
-                        }
-                    }
-                }catch (e:Exception){
-                    showErrAndSaveLog(TAG,"require Pull(Rebase) error:"+e.stackTraceToString(), activityContext.getString(R.string.pull_rebase_failed)+":"+e.localizedMessage, requireShowToast, curRepo.id)
-                }finally {
-                    //清除缓存中的仓库状态
+                                val mergeSuccess = ChangeListFunctions.doMerge(
+                                    requireCloseBottomBar = true,
+                                    upstreamParam = null,
+                                    showMsgIfHasConflicts = true,
+                                    trueMergeFalseRebase = false,
+                                    curRepoFromParentPage = curRepo,
+                                    requireShowToast = requireShowToast,
+                                    appContext = activityContext,
+                                    loadingText = loadingText,
+                                    bottomBarActDoneCallback = bottomBarActDoneCallback
+                                )
+                                if(!mergeSuccess){
+                                    requireShowToast(activityContext.getString(R.string.rebase_failed))
+                                }else {
+                                    requireShowToast(activityContext.getString(R.string.pull_rebase_success))
+                                }
+                            }
+                        }catch (e:Exception){
+                            showErrAndSaveLog(TAG,"require Pull(Rebase) error:"+e.stackTraceToString(), activityContext.getString(R.string.pull_rebase_failed)+":"+e.localizedMessage, requireShowToast, curRepo.id)
+                        }finally {
+                            //清除缓存中的仓库状态
 //                    RepoStatusUtil.clearRepoStatus(repoId)
-                    //刷新页面
-                    changeListRequireRefreshFromParentPage(curRepo)
+                            //刷新页面
+                            changeListRequireRefreshFromParentPage(curRepo)
 //                    refreshRepoPage()
-                }
+                        }
 
+                    }
+
+                }
                 //push
             }else if(requireAct ==PageRequest.push) {
 //                RepoStatusUtil.setRepoStatus(repoId, appContext.getString(R.string.pushing))
@@ -915,55 +931,65 @@ fun ChangeListInnerPage(
 
             //sync
             }else if(requireAct == PageRequest.sync) {
-                try {
+                doTaskOrShowSetUsernameAndEmailDialog(curRepo) {
+                    doJobThenOffLoading(loadingOn, loadingOff, activityContext.getString(R.string.syncing)) {
+
+                        try {
 //                    RepoStatusUtil.setRepoStatus(repoId, appContext.getString(R.string.syncing))
 //                    doSync(true)
-                    ChangeListFunctions.doSync(
-                        requireCloseBottomBar = true,
-                        trueMergeFalseRebase = true,
-                        curRepoFromParentPage = curRepo,
-                        requireShowToast = requireShowToast,
-                        appContext = activityContext,
-                        bottomBarActDoneCallback = bottomBarActDoneCallback,
-                        plzSetUpStreamForCurBranch = plzSetUpStreamForCurBranch,
-                        initSetUpstreamDialog = initSetUpstreamDialog,
-                        loadingText = loadingText,
-                        dbContainer = dbContainer
-                    )
-                }catch (e:Exception){
-                    showErrAndSaveLog(TAG,"require sync error:"+e.stackTraceToString(), activityContext.getString(R.string.sync_failed)+":"+e.localizedMessage, requireShowToast,curRepo.id)
-                }finally {
+                            ChangeListFunctions.doSync(
+                                requireCloseBottomBar = true,
+                                trueMergeFalseRebase = true,
+                                curRepoFromParentPage = curRepo,
+                                requireShowToast = requireShowToast,
+                                appContext = activityContext,
+                                bottomBarActDoneCallback = bottomBarActDoneCallback,
+                                plzSetUpStreamForCurBranch = plzSetUpStreamForCurBranch,
+                                initSetUpstreamDialog = initSetUpstreamDialog,
+                                loadingText = loadingText,
+                                dbContainer = dbContainer
+                            )
+                        }catch (e:Exception){
+                            showErrAndSaveLog(TAG,"require sync error:"+e.stackTraceToString(), activityContext.getString(R.string.sync_failed)+":"+e.localizedMessage, requireShowToast,curRepo.id)
+                        }finally {
 //                    RepoStatusUtil.clearRepoStatus(repoId)
 
-                    changeListRequireRefreshFromParentPage(curRepo)
+                            changeListRequireRefreshFromParentPage(curRepo)
 //                    refreshRepoPage()
 
+                        }
+                    }
                 }
             }else if(requireAct == PageRequest.syncRebase) {
-                try {
+                doTaskOrShowSetUsernameAndEmailDialog(curRepo) {
+                    doJobThenOffLoading(loadingOn, loadingOff, activityContext.getString(R.string.syncing)){
+
+                        try {
 //                    RepoStatusUtil.setRepoStatus(repoId, appContext.getString(R.string.syncing))
 //                    doSync(true, trueMergeFalseRebase = false)
-                    ChangeListFunctions.doSync(
-                        requireCloseBottomBar = true,
-                        trueMergeFalseRebase = false,
-                        curRepoFromParentPage = curRepo,
-                        requireShowToast = requireShowToast,
-                        appContext = activityContext,
-                        bottomBarActDoneCallback = bottomBarActDoneCallback,
-                        plzSetUpStreamForCurBranch = plzSetUpStreamForCurBranch,
-                        initSetUpstreamDialog = initSetUpstreamDialog,
+                            ChangeListFunctions.doSync(
+                                requireCloseBottomBar = true,
+                                trueMergeFalseRebase = false,
+                                curRepoFromParentPage = curRepo,
+                                requireShowToast = requireShowToast,
+                                appContext = activityContext,
+                                bottomBarActDoneCallback = bottomBarActDoneCallback,
+                                plzSetUpStreamForCurBranch = plzSetUpStreamForCurBranch,
+                                initSetUpstreamDialog = initSetUpstreamDialog,
 
-                        loadingText = loadingText,
-                        dbContainer = dbContainer
-                    )
-                }catch (e:Exception){
-                    showErrAndSaveLog(TAG,"require Sync(Rebase) error:"+e.stackTraceToString(), activityContext.getString(R.string.sync_rebase_failed)+":"+e.localizedMessage, requireShowToast,curRepo.id)
-                }finally {
+                                loadingText = loadingText,
+                                dbContainer = dbContainer
+                            )
+                        }catch (e:Exception){
+                            showErrAndSaveLog(TAG,"require Sync(Rebase) error:"+e.stackTraceToString(), activityContext.getString(R.string.sync_rebase_failed)+":"+e.localizedMessage, requireShowToast,curRepo.id)
+                        }finally {
 //                    RepoStatusUtil.clearRepoStatus(repoId)
 
-                    changeListRequireRefreshFromParentPage(curRepo)
+                            changeListRequireRefreshFromParentPage(curRepo)
 //                    refreshRepoPage()
 
+                        }
+                    }
                 }
             }else if(requireAct == PageRequest.mergeAbort) {
                 initMergeAbortDialog()
@@ -2876,18 +2902,21 @@ fun ChangeListInnerPage(
                                                 fontSize = fontSizeOfPullPushSync,
                                                 modifier = MyStyleKt.ClickableText.modifierNoPadding.clickable {
                                                     val curRepo = curRepoFromParentPage.value
-                                                    doJobThenOffLoading(loadingOn, loadingOff, activityContext.getString(R.string.merging)) {
-                                                        ChangeListFunctions.doMerge(
-                                                            requireCloseBottomBar = true,
-                                                            upstreamParam = null,
-                                                            showMsgIfHasConflicts = true,
-                                                            trueMergeFalseRebase = true,
-                                                            curRepoFromParentPage = curRepo,
-                                                            requireShowToast = requireShowToast,
-                                                            appContext = activityContext,
-                                                            loadingText = loadingText,
-                                                            bottomBarActDoneCallback = bottomBarActDoneCallback
-                                                        )
+
+                                                    doTaskOrShowSetUsernameAndEmailDialog(curRepo) {
+                                                        doJobThenOffLoading(loadingOn, loadingOff, activityContext.getString(R.string.merging)) {
+                                                            ChangeListFunctions.doMerge(
+                                                                requireCloseBottomBar = true,
+                                                                upstreamParam = null,
+                                                                showMsgIfHasConflicts = true,
+                                                                trueMergeFalseRebase = true,
+                                                                curRepoFromParentPage = curRepo,
+                                                                requireShowToast = requireShowToast,
+                                                                appContext = activityContext,
+                                                                loadingText = loadingText,
+                                                                bottomBarActDoneCallback = bottomBarActDoneCallback
+                                                            )
+                                                        }
                                                     }
                                                 }
                                             )
@@ -2899,18 +2928,21 @@ fun ChangeListInnerPage(
                                                 fontSize = fontSizeOfPullPushSync,
                                                 modifier = MyStyleKt.ClickableText.modifierNoPadding.clickable {
                                                     val curRepo = curRepoFromParentPage.value
-                                                    doJobThenOffLoading(loadingOn, loadingOff, activityContext.getString(R.string.rebasing)) {
-                                                        ChangeListFunctions.doMerge(
-                                                            requireCloseBottomBar = true,
-                                                            upstreamParam = null,
-                                                            showMsgIfHasConflicts = true,
-                                                            trueMergeFalseRebase = false,
-                                                            curRepoFromParentPage = curRepo,
-                                                            requireShowToast = requireShowToast,
-                                                            appContext = activityContext,
-                                                            loadingText = loadingText,
-                                                            bottomBarActDoneCallback = bottomBarActDoneCallback
-                                                        )
+
+                                                    doTaskOrShowSetUsernameAndEmailDialog(curRepo) {
+                                                        doJobThenOffLoading(loadingOn, loadingOff, activityContext.getString(R.string.rebasing)) {
+                                                            ChangeListFunctions.doMerge(
+                                                                requireCloseBottomBar = true,
+                                                                upstreamParam = null,
+                                                                showMsgIfHasConflicts = true,
+                                                                trueMergeFalseRebase = false,
+                                                                curRepoFromParentPage = curRepo,
+                                                                requireShowToast = requireShowToast,
+                                                                appContext = activityContext,
+                                                                loadingText = loadingText,
+                                                                bottomBarActDoneCallback = bottomBarActDoneCallback
+                                                            )
+                                                        }
                                                     }
                                                 }
                                             )
@@ -2938,38 +2970,42 @@ fun ChangeListInnerPage(
                                         icon = syncIcon ,
                                         iconContentDesc = syncText,
 
-                                        ) {
+                                    ) {
                                         val curRepo = curRepoFromParentPage.value
-                                        doJobThenOffLoading(loadingOn, loadingOff, activityContext.getString(R.string.syncing)) {
-                                            try {
+
+                                        doTaskOrShowSetUsernameAndEmailDialog(curRepo) {
+
+                                            doJobThenOffLoading(loadingOn, loadingOff, activityContext.getString(R.string.syncing)) {
+                                                try {
 //                                                   //     doSync(true)
-                                                ChangeListFunctions.doSync(
-                                                    requireCloseBottomBar = true,
-                                                    trueMergeFalseRebase = true,
-                                                    curRepoFromParentPage = curRepo,
-                                                    requireShowToast = requireShowToast,
-                                                    appContext = activityContext,
-                                                    bottomBarActDoneCallback = bottomBarActDoneCallback,
-                                                    plzSetUpStreamForCurBranch = plzSetUpStreamForCurBranch,
-                                                    initSetUpstreamDialog = initSetUpstreamDialog,
+                                                    ChangeListFunctions.doSync(
+                                                        requireCloseBottomBar = true,
+                                                        trueMergeFalseRebase = true,
+                                                        curRepoFromParentPage = curRepo,
+                                                        requireShowToast = requireShowToast,
+                                                        appContext = activityContext,
+                                                        bottomBarActDoneCallback = bottomBarActDoneCallback,
+                                                        plzSetUpStreamForCurBranch = plzSetUpStreamForCurBranch,
+                                                        initSetUpstreamDialog = initSetUpstreamDialog,
 
-                                                    loadingText = loadingText,
-                                                    dbContainer = dbContainer
-                                                )
-                                            } catch (e: Exception) {
-                                                showErrAndSaveLog(
-                                                    TAG,
-                                                    "sync error:" + e.stackTraceToString(),
-                                                    activityContext.getString(
-                                                        R.string.sync_failed
-                                                    ) + ":" + e.localizedMessage,
-                                                    requireShowToast,
-                                                    curRepo.id
-                                                )
-                                            } finally {
-                                                changeListRequireRefreshFromParentPage(curRepo)
+                                                        loadingText = loadingText,
+                                                        dbContainer = dbContainer
+                                                    )
+                                                } catch (e: Exception) {
+                                                    showErrAndSaveLog(
+                                                        TAG,
+                                                        "sync error:" + e.stackTraceToString(),
+                                                        activityContext.getString(
+                                                            R.string.sync_failed
+                                                        ) + ":" + e.localizedMessage,
+                                                        requireShowToast,
+                                                        curRepo.id
+                                                    )
+                                                } finally {
+                                                    changeListRequireRefreshFromParentPage(curRepo)
+                                                }
+
                                             }
-
                                         }
 
                                     }
@@ -3025,19 +3061,21 @@ fun ChangeListInnerPage(
                                             icon =  Icons.Filled.Download,
                                             iconContentDesc = stringResource(id = R.string.pull),
 
-                                            ) {
-                                            doJobThenOffLoading(loadingOn, loadingOff, activityContext.getString(R.string.pulling)) {
-                                                val curRepo = curRepoFromParentPage.value
+                                        ) {
+                                            val curRepo = curRepoFromParentPage.value
 
-                                                ChangeListFunctions.doPull(
-                                                    curRepo = curRepo,
-                                                    activityContext = activityContext,
-                                                    dbContainer = dbContainer,
-                                                    requireShowToast = requireShowToast,
-                                                    loadingText = loadingText,
-                                                    bottomBarActDoneCallback = bottomBarActDoneCallback,
-                                                    changeListRequireRefreshFromParentPage = changeListRequireRefreshFromParentPage,
-                                                )
+                                            doTaskOrShowSetUsernameAndEmailDialog(curRepo) {
+                                                doJobThenOffLoading(loadingOn, loadingOff, activityContext.getString(R.string.pulling)) {
+                                                    ChangeListFunctions.doPull(
+                                                        curRepo = curRepo,
+                                                        activityContext = activityContext,
+                                                        dbContainer = dbContainer,
+                                                        requireShowToast = requireShowToast,
+                                                        loadingText = loadingText,
+                                                        bottomBarActDoneCallback = bottomBarActDoneCallback,
+                                                        changeListRequireRefreshFromParentPage = changeListRequireRefreshFromParentPage,
+                                                    )
+                                                }
                                             }
 
                                         }
