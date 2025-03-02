@@ -741,6 +741,7 @@ fun ChangeListInnerPage(
                     }
                 }catch (e:Exception) {
                     Msg.requireShowLongDuration(e.localizedMessage ?: "err")
+                    MyLog.e(TAG, "get ignore file for repo '${curRepo.repoName}' err: ${e.stackTraceToString()}")
                 }
 
 
@@ -842,7 +843,7 @@ fun ChangeListInnerPage(
             }else if(requireAct ==PageRequest.push) {
 //                RepoStatusUtil.setRepoStatus(repoId, appContext.getString(R.string.pushing))
 
-                MyLog.d(TAG,"require doPush from top bar action")
+//                MyLog.d(TAG,"require doPush from top bar action")
                 try {
 //                    val success = doPush(true, null)
                     val success = ChangeListFunctions.doPush(
@@ -1000,7 +1001,8 @@ fun ChangeListInnerPage(
                 }finally {
 //                    RepoStatusUtil.clearRepoStatus(repoId)
 
-                    changeListRequireRefreshFromParentPage(curRepo)
+                    //提交会弹窗，不要在这里刷新页面，在弹窗回调里刷新
+//                    changeListRequireRefreshFromParentPage(curRepo)
 //                    refreshRepoPage()
 
                 }
@@ -1040,7 +1042,7 @@ fun ChangeListInnerPage(
                 }finally {
 //                    RepoStatusUtil.clearRepoStatus(repoId)
 
-                    changeListRequireRefreshFromParentPage(curRepo)
+//                    changeListRequireRefreshFromParentPage(curRepo)
 //                    refreshRepoPage()
 
                 }
@@ -1094,7 +1096,7 @@ fun ChangeListInnerPage(
                 }finally {
 //                    RepoStatusUtil.clearRepoStatus(repoId)
 
-                    changeListRequireRefreshFromParentPage(curRepo)
+//                    changeListRequireRefreshFromParentPage(curRepo)
 //                    refreshRepoPage()
 
                 }
@@ -1133,7 +1135,7 @@ fun ChangeListInnerPage(
                 }finally {
 //                    RepoStatusUtil.clearRepoStatus(repoId)
 
-                    changeListRequireRefreshFromParentPage(curRepo)
+//                    changeListRequireRefreshFromParentPage(curRepo)
 //                    refreshRepoPage()
 
                 }
@@ -1238,7 +1240,7 @@ fun ChangeListInnerPage(
                 }finally {
 //                    RepoStatusUtil.clearRepoStatus(repoId)
 
-                    changeListRequireRefreshFromParentPage(curRepo)
+//                    changeListRequireRefreshFromParentPage(curRepo)
 //                    refreshRepoPage()
 
                 }

@@ -148,8 +148,19 @@ import com.catpuppyapp.puppygit.utils.state.mutableCustomStateOf
 import java.io.File
 import kotlin.coroutines.cancellation.CancellationException
 
+
+
+
 private const val TAG = "FilesInnerPage"
 private const val stateKeyTag = "FilesInnerPage"
+
+//是否在底栏显示导入按钮，没必要，不用显示，导入是针对当前文件夹的，应该在顶栏显示
+//避免以后修改，保留代码，用开关变量控制是否显示
+private const val showImportForBottomBar = false
+
+
+
+
 
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
@@ -2257,7 +2268,7 @@ fun FilesInnerPage(
             stringResource(id = R.string.details),
             if(proFeatureEnabled(importReposFromFilesTestPassed)) stringResource(id = R.string.import_as_repo) else "",  // empty string will be ignore when display menu items
             if(proFeatureEnabled(initRepoFromFilesPageTestPassed)) stringResource(id = R.string.init_repo) else "",
-            stringResource(R.string.import_str),
+            if(showImportForBottomBar) stringResource(R.string.import_str) else "", // 底栏没必要显示import，避免以后修改，保留代码，用开关变量控制是否显示
             stringResource(R.string.export),
         )).asReversed()
 
