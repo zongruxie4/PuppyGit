@@ -84,22 +84,22 @@ fun<T> SingleSelectList(
 
     ) {
         Box(modifier = Modifier
-            .padding(start = 5.dp, end = 5.dp)
+            .padding(start = 8.dp, end = 5.dp)
             .defaultMinSize(minHeight = 50.dp)
 //            .fillMaxWidth(),
         ) {
-            Row(
+            ScrollableRow (
                 modifier = Modifier
-                    .fillMaxWidth(.92f)
+                    .fillMaxWidth(.85f)
                     .align(Alignment.CenterStart)
 
             ) {
                 Text(text = menuItemFormatter(selectedOptionIndex?.intValue, selectedOptionValue))
             }
 
-            Row(
+            Row (
                 modifier = Modifier
-                    .fillMaxWidth(.08f)
+                    .fillMaxWidth(.15f)
                     .align(Alignment.CenterEnd)
             ) {
                 Icon(imageVector = if(expandDropdownMenu.value) Icons.Filled.ArrowDropDown else Icons.AutoMirrored.Filled.ArrowLeft
