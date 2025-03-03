@@ -1139,7 +1139,30 @@ object FsUtils {
     }
 
     fun trimPath(path:String):String {
-        return path.trim { it == '\n' || it == '\r' }.trimEnd('/')
+        //先把首尾的换行符移除
+        val path = path.trim { it == '\n' || it == '\r' }
+
+        return if(path.length == 1) { //移除换行符后只剩一个字符了，直接返回
+            path
+        }else {  //移除末尾的 '/'
+            val slash = '/'
+            val pathStartsWithSlash = path.startsWith(slash)
+
+            //移除末尾的'/'
+            val path = path.trimEnd(slash)
+
+            //如果原字符串以'/'开头，那trimEnd('/')之后就啥都没了，这时返回一个'/'；否则返回移除末尾'/'之后的字符串
+            if(pathStartsWithSlash && path.isEmpty()) {
+                slash.toString()
+            }else {
+                //如果字符串以'/'开头，为避免以多个连续'/'开头，移除开头的所有'/'然后替换成一个'/'，最后返回；若不以'/'开头，直接返回
+                if(pathStartsWithSlash) {
+                    slash + path.trimStart(slash)
+                }else {
+                    path
+                }
+            }
+        }
     }
 
     /**

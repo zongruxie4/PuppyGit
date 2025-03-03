@@ -118,9 +118,9 @@ I recommend every user set a master password, it will used to encrypt password/p
 ### if your language not added
 1. Download <a href="https://github.com/catpuppyapp/PuppyGit/blob/main/app/src/main/res/values/strings.xml">strings.xml</a>
 2. Translate the file's values to your language, e.g.```<help>help translate</help>```to```<help>帮助翻译</help>```
-3. Create a issue attaching the file you was translated, the issue should tell which language you traslated to
+3. Create an issue attaching the file you was translated, the issue should tell which language you translated to
 
-Then I'll add your language into PuppyGit in furthur version, after added, if have new strings need translate, you can simple update existsed `res/vlaues-your_language_code/strings.xml` in the PuppyGit project then send a pr to update it.
+Then I'll add your language into PuppyGit in further version, after added, if have new strings need translate, you can simple update existed `res/vlaues-your_language_code/strings.xml` in the PuppyGit project then send a pr to update it.
 
 ### NOTE
 The string in strings.xml like "ph_a3f241dc_NUMBER" are place holders, the last NUMBER is order, e.g. a string resource ```<str1>name: ph_a3f241dc_1, age: ph_a3f241dc_2</str1>```, will replaced when running, it maybe will show as: ```"name: abc, age: 123"```, if you have mistake with the order number, e.g.```<str1>name: ph_a3f241dc_2, age: ph_a3f241dc_1</str1>```, it may cause app show wrong text like ```"name: 123, age: abc"```
