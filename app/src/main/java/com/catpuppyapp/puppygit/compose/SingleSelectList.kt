@@ -83,24 +83,33 @@ fun<T> SingleSelectList(
         )
 
     ) {
-        Box(modifier = Modifier
-            .padding(start = 8.dp, end = 5.dp)
-            .defaultMinSize(minHeight = 50.dp)
-            .fillMaxWidth(),
+        //用box的好处是如果整体宽度过小，不会把右边的健顶没，但箭头会和文本内容重叠
+        Box(
+            modifier = Modifier
+                .padding(horizontal = 10.dp)
+                .defaultMinSize(minHeight = 50.dp)
+                .fillMaxWidth()
+            ,
         ) {
             ScrollableRow (
                 modifier = Modifier
-                    .fillMaxWidth(.85f)
+                    .fillMaxWidth(.88f)
                     .align(Alignment.CenterStart)
+                ,
 
+                verticalAlignment = Alignment.CenterVertically,
             ) {
                 Text(text = menuItemFormatter(selectedOptionIndex?.intValue, selectedOptionValue))
             }
 
             Row (
                 modifier = Modifier
-                    .fillMaxWidth(.15f)
+                    .width(20.dp)
                     .align(Alignment.CenterEnd)
+                ,
+
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.Center,
             ) {
                 Icon(imageVector = if(expandDropdownMenu.value) Icons.Filled.ArrowDropDown else Icons.AutoMirrored.Filled.ArrowLeft
                     , contentDescription = null
