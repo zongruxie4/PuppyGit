@@ -1223,7 +1223,7 @@
 
     <!-- new at 20250302-->
     <string name="aborting">Отмена…</string>
-    <string name="abort">Прервать</string>
+    <string name="abort">Отменить</string>
 
 
 </resources>
