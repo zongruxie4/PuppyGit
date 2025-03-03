@@ -349,17 +349,25 @@ object FsUtils {
     }
 
 
+    /**
+     * @return Pair(name, ext)
+     */
+    fun splitNameAndExt(name:String):Pair<String, String> {
+        //拆分出文件名和后缀，生成类似 "file(1).ext" 的格式，而不是 "file.ext(1)" 那样
+        val extIndex = name.lastIndexOf('.')
+        return if(extIndex > 0) {  //注意这里是索引大于最后一个分隔符加1，即"."之前至少有一个字符，因为如果文件名开头是"."，是隐藏文件，不将其视为后缀名，这时生成的文件名类似 ".git(1)" 而不是"(1).git"
+            // 例如输入：/path/to/abc.txt, 返回 "/path/to/abc" 和 ".txt"，后缀名包含"."
+            Pair(name.substring(0, extIndex), name.substring(extIndex))
+        }else {  //无后缀或.在第一位(例如".git")
+            Pair(name, "")
+        }
+    }
+
     fun getANonExistsName(name:String, exists:(String)->Boolean):String {
         var target = name
         if(exists(name)) {
             //拆分出文件名和后缀，生成类似 "file(1).ext" 的格式，而不是 "file.ext(1)" 那样
-            val extIndex = name.lastIndexOf('.')
-            val (fileName, fileExt) = if(extIndex > 0) {  //注意这里是索引大于最后一个分隔符加1，即"."之前至少有一个字符，因为如果文件名开头是"."，是隐藏文件，不将其视为后缀名，这时生成的文件名类似 ".git(1)" 而不是"(1).git"
-                // 例如输入：/path/to/abc.txt, 返回 "/path/to/abc" 和 ".txt"，后缀名包含"."
-                Pair(name.substring(0, extIndex), name.substring(extIndex))
-            }else {  //无后缀或.在第一位(例如".git")
-                Pair(name, "")
-            }
+            val (fileName, fileExt) = splitNameAndExt(name)
 
             //生成文件名的最大编号，超过这个编号将会生成随机文件名
 //            val max = Int.MAX_VALUE
