@@ -86,7 +86,7 @@ fun<T> SingleSelectList(
         Box(modifier = Modifier
             .padding(start = 8.dp, end = 5.dp)
             .defaultMinSize(minHeight = 50.dp)
-//            .fillMaxWidth(),
+            .fillMaxWidth(),
         ) {
             ScrollableRow (
                 modifier = Modifier
