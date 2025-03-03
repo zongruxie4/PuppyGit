@@ -16,7 +16,7 @@ object CertMan {
     private const val TAG = "CertMan"
 
     //若更新证书，应更新此值
-    const val currentVersion = 4
+    const val currentVersion = 5
 
     private val certRawId = R.raw.cert_bundle_pem
 
