@@ -295,13 +295,15 @@ fun CommitListScreen(
                         componentHeight.intValue = layoutCoordinates.size.height
                     }
                 ) {
+                    //这个文字和其他条目间距大些，因为没什么关联
                     Text(stringResource(R.string.filter_commits_which_included_the_paths_leave_empty_for_show_all))
-
-
                     Spacer(modifier = Modifier.height(10.dp))
 
+                    //这个文字和输入框举例小些，因为文字和输入框有点关联
                     Text(stringResource(R.string.per_line_one_path), fontWeight = FontWeight.Light)
                     Spacer(modifier = Modifier.height(5.dp))
+
+                    //输入框
                     TextField(
                         modifier = Modifier
                             .fillMaxWidth()
