@@ -308,44 +308,16 @@ object FsUtils {
 
     //如果路径不存在，返回文件，如果存在，生成一个唯一名
     fun getANonExistsTarget(targetNeedCheck:File):File {
-        var target = targetNeedCheck
-        if(target.exists()) {
-            //原始文件名
-            val originFileFullPath = target.canonicalPath  //canonicalPath不会包含末尾的 / ，所以不用removeSuffix('/')
-
-            //拆分出文件名和后缀，生成类似 "file(1).ext" 的格式，而不是 "file.ext(1)" 那样
-            val extIndex = originFileFullPath.lastIndexOf('.')
-            val slashIndexPlusOne = originFileFullPath.lastIndexOf('/') + 1  //此变量最小值是0，即 lastIndexOf()找不到返回-1，然后+1，等于0
-            val (filePathAndName, fileExt) = if(extIndex > slashIndexPlusOne) {  //注意这里是索引大于最后一个分隔符加1，即"."之前至少有一个字符，因为如果文件名开头是"."，是隐藏文件，不将其视为后缀名，这时生成的文件名类似 ".git(1)" 而不是"(1).git"
-                // 例如输入：/path/to/abc.txt, 返回 "/path/to/abc" 和 ".txt"，后缀名包含"."
-                Pair(originFileFullPath.substring(0, extIndex), originFileFullPath.substring(extIndex))
-            }else {
-                Pair(originFileFullPath, "")
-            }
-
-            //生成文件名的最大编号，超过这个编号将会生成随机文件名
-//            val max = Int.MAX_VALUE
-            val max = 1000
-
-            //for循环，直到生成一个不存在的名字
-            for(i in 1..max) {
-                target = File("$filePathAndName($i)$fileExt")
-                if(!target.exists()) {
-                    break
-                }
-            }
-            //如果文件还存在，生成随机名
-            if(target.exists()){
-                while (true) {
-                    target = File("$filePathAndName(${getShortUUID(len=8)})$fileExt")
-                    if(!target.exists()) {
-                        break
-                    }
-                }
-            }
+        //若文件不存在，直接返回
+        if(targetNeedCheck.exists().not()) {
+            return targetNeedCheck
         }
 
-        return target
+        //文件存在，需要生成唯一文件名
+
+        val (parent, fileName) = splitParentAndName(targetNeedCheck.canonicalPath)
+
+        return File(parent + getANonExistsName(fileName, exists = { newName -> File(parent+newName).exists() }))
     }
 
 
@@ -360,6 +332,21 @@ object FsUtils {
             Pair(name.substring(0, extIndex), name.substring(extIndex))
         }else {  //无后缀或.在第一位(例如".git")
             Pair(name, "")
+        }
+    }
+
+    /**
+     * @return Pair(parentPath, fileName), e.g. input "/abc/def/123", will return Pair("/abc/def/", "123")
+     */
+    fun splitParentAndName(canonicalPath:String):Pair<String, String> {
+        val lastSeparatorAt = canonicalPath.lastIndexOf('/')
+        val fileNameStartAt = lastSeparatorAt+1
+
+        return if(fileNameStartAt >= canonicalPath.length) { //bad index, out of bound
+            // no file name yet, canonicalPath is "/" maybe
+            Pair(canonicalPath, "")
+        } else {
+            Pair(canonicalPath.substring(0, fileNameStartAt), canonicalPath.substring(fileNameStartAt))
         }
     }
 
