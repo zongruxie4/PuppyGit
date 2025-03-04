@@ -35,12 +35,16 @@ import kotlinx.serialization.json.Json
 
 private const val TAG = "HttpServer"
 
+/**
+ * 这个符号用来在ip列表匹配所有ip
+ */
+private const val matchAllIpSign = "*"
 
 /**
  * 如果ip同时在白名单和黑名单，将允许连接
  * 如果设置项中的token为空字符串，将允许所有连接
  */
-private fun tokenPassedOrThrowException(token:String?, ip:String, settings: AppSettings): Ret<Unit?> {
+private fun isGoodTokenAndIp(token:String?, requestIp:String, settings: AppSettings): Ret<Unit?> {
     //这个错误信息不要写太具体哪个出错，不然别人可以探测你的ip和token名单
     val errMsg = "invalid token or ip blocked"
     val errRet:Ret<Unit?> = Ret.createError(null, errMsg)
@@ -55,7 +59,7 @@ private fun tokenPassedOrThrowException(token:String?, ip:String, settings: AppS
 
     val whiteList = settings.httpService.ipWhiteList
     //匹配到通配符 或者 匹配到请求者的ip 则 放行
-    if(whiteList.isEmpty() || ip.isBlank() || whiteList.find { it == "*" || it == ip } == null) {
+    if(whiteList.isEmpty() || requestIp.isBlank() || whiteList.find { it == matchAllIpSign || it == requestIp } == null) {
         return errRet
     }
 
@@ -102,14 +106,17 @@ internal class HttpServer(
                     json(Json{ ignoreUnknownKeys = true; encodeDefaults=true; prettyPrint = false})
                 }
                 routing {
+                    /**
+                     * 用于检测服务器是否在线
+                     */
                     get("/status") {
                         call.respond(createSuccessResult("online"))
                     }
 
                     // for test
-                    get("/echo/{msg}") {
-                        call.respond(createSuccessResult(call.parameters.get("msg") ?: ""))
-                    }
+//                    get("/echo/{msg}") {
+//                        call.respond(createSuccessResult(call.parameters.get("msg") ?: ""))
+//                    }
 
                     // not work, service launch app may require float window permission
 //                    get("/launchApp") {
@@ -142,7 +149,7 @@ internal class HttpServer(
 
                         try {
                             //检查token和ip
-                            tokenPassedOrThrowException(call, routeName, settings)
+                            tokenAndIpPassedOrThrowException(call, routeName, settings)
 
                             //取参数
                             val forceUseIdMatchRepo = call.request.queryParameters.get("forceUseIdMatchRepo") == "1"
@@ -238,7 +245,7 @@ internal class HttpServer(
                         val sendErrNotification = sendErrNotificationIfEnable(serviceNotify, settings)
 
                         try {
-                            tokenPassedOrThrowException(call, routeName, settings)
+                            tokenAndIpPassedOrThrowException(call, routeName, settings)
 
                             //默认禁用，不明确启用就当作禁用
                             val forceUseIdMatchRepo = call.request.queryParameters.get("forceUseIdMatchRepo") == "1"
@@ -343,7 +350,7 @@ internal class HttpServer(
                         val sendErrNotification = sendErrNotificationIfEnable(serviceNotify, settings)
 
                         try {
-                            tokenPassedOrThrowException(call, routeName, settings)
+                            tokenAndIpPassedOrThrowException(call, routeName, settings)
 
                             //默认禁用，不明确启用就当作禁用
                             val forceUseIdMatchRepo = call.request.queryParameters.get("forceUseIdMatchRepo") == "1"
@@ -444,7 +451,7 @@ internal class HttpServer(
                         val sendErrNotification = sendErrNotificationIfEnable(serviceNotify, settings)
 
                         try {
-                            tokenPassedOrThrowException(call, routeName, settings)
+                            tokenAndIpPassedOrThrowException(call, routeName, settings)
 
 
 
@@ -517,7 +524,7 @@ internal class HttpServer(
                         val sendErrNotification = sendErrNotificationIfEnable(serviceNotify, settings)
 
                         try {
-                            tokenPassedOrThrowException(call, routeName, settings)
+                            tokenAndIpPassedOrThrowException(call, routeName, settings)
 
 
 
@@ -588,7 +595,7 @@ internal class HttpServer(
                         val sendErrNotification = sendErrNotificationIfEnable(serviceNotify, settings)
 
                         try {
-                            tokenPassedOrThrowException(call, routeName, settings)
+                            tokenAndIpPassedOrThrowException(call, routeName, settings)
 
 
 
@@ -701,13 +708,13 @@ internal class HttpServer(
     /**
      * will throw exception if token bad
      */
-    private fun tokenPassedOrThrowException(call: RoutingCall, routeName: String, settings: AppSettings) {
-        val callerIp = call.request.host()
+    private fun tokenAndIpPassedOrThrowException(call: RoutingCall, routeName: String, settings: AppSettings) {
         val token = call.request.queryParameters.get("token")
-        val tokenCheckRet = tokenPassedOrThrowException(token, callerIp, settings)
+        val requestIp = call.request.host()
+        val tokenCheckRet = isGoodTokenAndIp(token, requestIp, settings)
         if (tokenCheckRet.hasError()) {
             // log the query params maybe better?
-            MyLog.e(TAG, "request rejected: route=$routeName, ip=$callerIp, token=$token, reason=${tokenCheckRet.msg}")
+            MyLog.e(TAG, "request rejected: routeName=$routeName, requestIp=$requestIp, token=$token, reason=${tokenCheckRet.msg}")
             throw RuntimeException(tokenCheckRet.msg)
         }
     }
