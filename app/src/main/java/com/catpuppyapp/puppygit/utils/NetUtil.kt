@@ -8,16 +8,8 @@ import java.util.concurrent.Future
 import java.util.concurrent.TimeUnit
 import java.util.concurrent.TimeoutException
 
-object NetUtils {
-    private const val TAG="NetUtils"
-
-
-    fun checkPuppyGitHttpServiceRunning(baseUrl: String, timeoutInSec: Long=5): Ret<Unit?> {
-        val targetUrl = "$baseUrl/status"
-        val success = checkApiRunning(targetUrl, timeoutInSec)
-        MyLog.d(TAG, "#checkPuppyGitHttpServiceRunning: test url '$targetUrl', success=$success")
-        return success
-    }
+object NetUtil {
+    private const val TAG = "NetUtil"
 
     /**
      * @param urlString url

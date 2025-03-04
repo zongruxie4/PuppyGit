@@ -44,6 +44,7 @@ import com.catpuppyapp.puppygit.compose.SettingsContent
 import com.catpuppyapp.puppygit.compose.SettingsTitle
 import com.catpuppyapp.puppygit.compose.SoftkeyboardVisibleListener
 import com.catpuppyapp.puppygit.play.pro.R
+import com.catpuppyapp.puppygit.server.isHttpServerOnline
 import com.catpuppyapp.puppygit.service.HttpService
 import com.catpuppyapp.puppygit.settings.SettingsUtil
 import com.catpuppyapp.puppygit.style.MyStyleKt
@@ -52,7 +53,6 @@ import com.catpuppyapp.puppygit.utils.AppModel
 import com.catpuppyapp.puppygit.utils.ComposeHelper
 import com.catpuppyapp.puppygit.utils.Msg
 import com.catpuppyapp.puppygit.utils.MyLog
-import com.catpuppyapp.puppygit.utils.NetUtils
 import com.catpuppyapp.puppygit.utils.UIHelper
 import com.catpuppyapp.puppygit.utils.doJobThenOffLoading
 import com.catpuppyapp.puppygit.utils.genHttpHostPortStr
@@ -418,7 +418,7 @@ fun ServiceInnerPage(
 
         SettingsContent(onClick = {
             doJobThenOffLoading {
-                val requestRet = NetUtils.checkPuppyGitHttpServiceRunning(genHttpHostPortStr(listenHost.value, listenPort.value))
+                val requestRet = isHttpServerOnline(host = listenHost.value, port = listenPort.value)
                 if(requestRet.hasError()) {
                     Msg.requireShow(requestRet.msg)
                 }else {

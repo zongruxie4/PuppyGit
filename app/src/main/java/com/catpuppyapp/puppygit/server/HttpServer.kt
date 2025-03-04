@@ -11,6 +11,7 @@ import com.catpuppyapp.puppygit.settings.AppSettings
 import com.catpuppyapp.puppygit.settings.SettingsUtil
 import com.catpuppyapp.puppygit.utils.AppModel
 import com.catpuppyapp.puppygit.utils.MyLog
+import com.catpuppyapp.puppygit.utils.NetUtil
 import com.catpuppyapp.puppygit.utils.RepoActUtil
 import com.catpuppyapp.puppygit.utils.cache.NotifySenderMap
 import com.catpuppyapp.puppygit.utils.createAndInsertError
@@ -802,4 +803,13 @@ internal class HttpServer(
             force = force,
         )
     }
+}
+
+
+
+fun isHttpServerOnline(host: String, port:String, timeoutInSec: Long=5): Ret<Unit?> {
+    val targetUrl = "${genHttpHostPortStr(host, port)}/status"
+    val success = NetUtil.checkApiRunning(targetUrl, timeoutInSec)
+    MyLog.d(TAG, "#isHttpServerOnline: test url '$targetUrl', success=$success")
+    return success
 }
