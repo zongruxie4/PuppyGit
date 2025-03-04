@@ -814,9 +814,9 @@ internal class HttpServer(
 
 
 
-fun isHttpServerOnline(host: String, port:String, timeoutInSec: Long=5): Ret<Unit?> {
+fun isHttpServerOnline(host: String, port:String): Ret<Unit?> {
     val targetUrl = "${genHttpHostPortStr(host, port)}/status"
-    val success = NetUtil.checkApiRunning(targetUrl, timeoutInSec)
+    val success = NetUtil.checkApiRunning(targetUrl)
     MyLog.d(TAG, "#isHttpServerOnline: test url '$targetUrl', success=$success")
     return success
 }

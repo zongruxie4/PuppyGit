@@ -15,9 +15,11 @@ object NetUtil {
      * @param urlString url
      * @param timeoutInSec timeout in second
      *
-     * @return if got any, even err status from server, then return true, else false
+     * @return if got any(even err status from server), then return true; else false
      */
-    fun checkApiRunning(urlString: String, timeoutInSec: Long): Ret<Unit?> {
+    fun checkApiRunning(urlString: String, timeoutInSec: Int = 5): Ret<Unit?> {
+        val timeoutInMillSeconds = timeoutInSec * 1000  //乘1000把秒转换成毫秒
+
         val executor = Executors.newSingleThreadExecutor()
         val future: Future<Ret<Unit?>> = executor.submit<Ret<Unit?>> {
             var connection: HttpURLConnection? = null
@@ -25,8 +27,8 @@ object NetUtil {
                 val url = URL(urlString)
                 connection = url.openConnection() as HttpURLConnection
                 connection.requestMethod = "GET"
-                connection.connectTimeout = (timeoutInSec * 1000).toInt() // 设置连接超时，乘1000把秒转换成毫秒
-                connection.readTimeout = (timeoutInSec * 1000).toInt() // 设置读取超时
+                connection.connectTimeout = timeoutInMillSeconds
+                connection.readTimeout = timeoutInMillSeconds
 
                 val responseCode = connection.responseCode
 
@@ -47,13 +49,12 @@ object NetUtil {
         }
 
         return try {
-            future.get(timeoutInSec, TimeUnit.SECONDS) // 等待结果，设置超时
+            future.get(timeoutInSec.toLong(), TimeUnit.SECONDS) // 等待结果，设置超时
         }catch (e:TimeoutException){
-            MyLog.e(TAG, "#checkApiRunning: errcode=9f2d7aec, timeout maybe, err=${e.stackTraceToString()}")
-
+            MyLog.e(TAG, "#checkApiRunning(), timeout: ${e.stackTraceToString()}")
             Ret.createError(null, "timeout: ${e.localizedMessage}")
         } catch (e: Exception) {
-            MyLog.e(TAG, "#checkApiRunning: errcode=1c31128d, err=${e.stackTraceToString()}")
+            MyLog.e(TAG, "#checkApiRunning(), err: ${e.stackTraceToString()}")
             Ret.createError(null, "err: ${e.localizedMessage}")
         } finally {
             executor.shutdown()
