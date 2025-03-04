@@ -306,7 +306,11 @@ object FsUtils {
 
     }
 
-    //如果路径不存在，返回文件，如果存在，生成一个唯一名
+    /**
+     * 如果文件不存在，直接返回；如果存在，在相同路径下生成一个唯一文件名，例如输入"/abc/def.txt"，若def.txt已经存在，则可能返回"/abc/def(1).txt"
+     *
+     * 此函数主要用途：用来在拷贝文件名称冲突时自动重命名
+     */
     fun getANonExistsTarget(targetNeedCheck:File):File {
         //若文件不存在，直接返回
         if(targetNeedCheck.exists().not()) {
@@ -322,7 +326,7 @@ object FsUtils {
 
 
     /**
-     * @return Pair(name, ext)
+     * @return Pair(name, ext) e.g. input "abc.txt", return "abc" and ".txt"; 但是如果.在开头，则不视为后缀，例如 input ".git", return ".git" and ""
      */
     fun splitNameAndExt(name:String):Pair<String, String> {
         //拆分出文件名和后缀，生成类似 "file(1).ext" 的格式，而不是 "file.ext(1)" 那样
@@ -336,7 +340,7 @@ object FsUtils {
     }
 
     /**
-     * @return Pair(parentPath, fileName), e.g. input "/abc/def/123", will return Pair("/abc/def/", "123")
+     * @return Pair(parentPath, fileName), e.g. input "/abc/def/123", will return Pair("/abc/def/", "123")，并不会移除父路径末尾的'/'，所以可以直接把parentPath和新文件名拼接获得同目录下的新文件对象
      */
     fun splitParentAndName(canonicalPath:String):Pair<String, String> {
         val lastSeparatorAt = canonicalPath.lastIndexOf('/')
@@ -350,6 +354,11 @@ object FsUtils {
         }
     }
 
+    /**
+     * 获取一个不存在的名字，由exists函数判定名字是否已经存在
+     *
+     * 主要用途：名称冲突时生成唯一文件名，不过也能用来干别的，如果有需求的话
+     */
     fun getANonExistsName(name:String, exists:(String)->Boolean):String {
         var target = name
         if(exists(name)) {
