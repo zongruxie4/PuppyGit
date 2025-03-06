@@ -1,8 +1,10 @@
 1.0.9.2v68 - 20250306:
 - fixed a bug that cause Diff screen crashed
+- update dependencies
 
 
 - 修复了一个会导致Diff页面崩溃的bug
+- 更新依赖库版本
 
 ---
 
