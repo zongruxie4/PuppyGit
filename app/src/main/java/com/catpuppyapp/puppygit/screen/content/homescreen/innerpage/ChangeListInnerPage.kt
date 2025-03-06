@@ -1040,7 +1040,7 @@ fun ChangeListInnerPage(
                         email = email,
                         requireShowToast = requireShowToast,
                         pleaseSetUsernameAndEmailBeforeCommit = pleaseSetUsernameAndEmailBeforeCommit,
-                        showUsernameAndEmailDialog = showUsernameAndEmailDialog,
+                        initSetUsernameAndEmailDialog = initSetUsernameAndEmailDialog,
                         amendCommit = amendCommit,
                         overwriteAuthor = overwriteAuthor,
                         showCommitMsgDialog = showCommitMsgDialog,
@@ -1082,7 +1082,7 @@ fun ChangeListInnerPage(
                         email = email,
                         requireShowToast = requireShowToast,
                         pleaseSetUsernameAndEmailBeforeCommit = pleaseSetUsernameAndEmailBeforeCommit,
-                        showUsernameAndEmailDialog = showUsernameAndEmailDialog,
+                        initSetUsernameAndEmailDialog = initSetUsernameAndEmailDialog,
                         amendCommit = amendCommit,
                         overwriteAuthor = overwriteAuthor,
                         showCommitMsgDialog = showCommitMsgDialog,
@@ -1133,7 +1133,7 @@ fun ChangeListInnerPage(
                                 email = email,
                                 requireShowToast = requireShowToast,
                                 pleaseSetUsernameAndEmailBeforeCommit = pleaseSetUsernameAndEmailBeforeCommit,
-                                showUsernameAndEmailDialog = showUsernameAndEmailDialog,
+                                initSetUsernameAndEmailDialog = initSetUsernameAndEmailDialog,
                                 amendCommit = amendCommit,
                                 overwriteAuthor = overwriteAuthor,
                                 showCommitMsgDialog = showCommitMsgDialog,
@@ -1175,7 +1175,7 @@ fun ChangeListInnerPage(
                         email = email,
                         requireShowToast = requireShowToast,
                         pleaseSetUsernameAndEmailBeforeCommit = pleaseSetUsernameAndEmailBeforeCommit,
-                        showUsernameAndEmailDialog = showUsernameAndEmailDialog,
+                        initSetUsernameAndEmailDialog = initSetUsernameAndEmailDialog,
                         amendCommit = amendCommit,
                         overwriteAuthor = overwriteAuthor,
                         showCommitMsgDialog = showCommitMsgDialog,
@@ -1220,7 +1220,7 @@ fun ChangeListInnerPage(
                         email = email,
                         requireShowToast = requireShowToast,
                         pleaseSetUsernameAndEmailBeforeCommit = pleaseSetUsernameAndEmailBeforeCommit,
-                        showUsernameAndEmailDialog = showUsernameAndEmailDialog,
+                        initSetUsernameAndEmailDialog = initSetUsernameAndEmailDialog,
                         amendCommit = amendCommit,
                         overwriteAuthor = overwriteAuthor,
                         showCommitMsgDialog = showCommitMsgDialog,
@@ -1579,7 +1579,7 @@ fun ChangeListInnerPage(
                             email = email,
                             requireShowToast = requireShowToast,
                             pleaseSetUsernameAndEmailBeforeCommit = pleaseSetUsernameAndEmailBeforeCommit,
-                            showUsernameAndEmailDialog = showUsernameAndEmailDialog,
+                            initSetUsernameAndEmailDialog = initSetUsernameAndEmailDialog,
                             amendCommit = amendCommit,
                             overwriteAuthor = overwriteAuthor,
                             showCommitMsgDialog = showCommitMsgDialog,
@@ -1688,40 +1688,8 @@ fun ChangeListInnerPage(
                 val successCallback = afterSetUsernameAndEmailSuccessCallback.value
                 afterSetUsernameAndEmailSuccessCallback.value = null
 
-                if(successCallback != null) {
-                    successCallback()
-                }else {  //默认没设回调的话，在这个页面，多半是由提交发起的设置请求，保存后继续执行提交。这个代码主要是为了兼容旧代码，不然直接调用回调就行了
-                    //重新执行commit，这次会从状态里取出用户名和邮箱，不对，因为上面已经存到配置文件里了，所以其实直接从配置文件就能取到
-//                        doCommit(true, "", !requireDoSync, requireDoSync)
-                    ChangeListFunctions.doCommit(
-                        requireShowCommitMsgDialog = true,
-                        cmtMsg = "",
-//                            requireCloseBottomBar = !requireDoSync,
-                        requireCloseBottomBar = true,
-//                            requireDoSync = requireDoSync,
-                        curRepoFromParentPage = curRepo,
-                        refreshChangeList = changeListRequireRefreshFromParentPage,
-                        username = username,
-                        email = email,
-                        requireShowToast = requireShowToast,
-                        pleaseSetUsernameAndEmailBeforeCommit = pleaseSetUsernameAndEmailBeforeCommit,
-                        showUsernameAndEmailDialog = showUsernameAndEmailDialog,
-                        amendCommit = amendCommit,
-                        overwriteAuthor = overwriteAuthor,
-                        showCommitMsgDialog = showCommitMsgDialog,
-                        repoState = repoState,
-                        activityContext = activityContext,
-                        loadingText = loadingText,
-                        repoId = repoId,
-                        bottomBarActDoneCallback = bottomBarActDoneCallback,
-                        fromTo = fromTo,
-                        itemList = itemList.value,
-                        successCommitStrRes = successCommitStrRes,
-                        indexIsEmptyForCommitDialog = indexIsEmptyForCommitDialog,
-                        commitBtnTextForCommitDialog = commitBtnTextForCommitDialog,
-//                            showPushForCommitDialog=showPushForCommitDialog
-                    )
-                }
+                successCallback?.invoke()
+
             },
 
         )
@@ -2147,7 +2115,7 @@ fun ChangeListInnerPage(
                             email = email,
                             requireShowToast = requireShowToast,
                             pleaseSetUsernameAndEmailBeforeCommit = pleaseSetUsernameAndEmailBeforeCommit,
-                            showUsernameAndEmailDialog = showUsernameAndEmailDialog,
+                            initSetUsernameAndEmailDialog = initSetUsernameAndEmailDialog,
                             amendCommit = amendCommit,
                             overwriteAuthor = overwriteAuthor,
                             showCommitMsgDialog = showCommitMsgDialog,
@@ -2225,7 +2193,7 @@ fun ChangeListInnerPage(
                     email = email,
                     requireShowToast = requireShowToast,
                     pleaseSetUsernameAndEmailBeforeCommit = pleaseSetUsernameAndEmailBeforeCommit,
-                    showUsernameAndEmailDialog = showUsernameAndEmailDialog,
+                    initSetUsernameAndEmailDialog = initSetUsernameAndEmailDialog,
                     amendCommit = amendCommit,
                     overwriteAuthor = overwriteAuthor,
                     showCommitMsgDialog = showCommitMsgDialog,

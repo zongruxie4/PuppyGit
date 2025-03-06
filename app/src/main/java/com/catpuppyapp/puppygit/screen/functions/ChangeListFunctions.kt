@@ -20,6 +20,7 @@ import com.catpuppyapp.puppygit.utils.MyLog
 import com.catpuppyapp.puppygit.utils.StateRequestType
 import com.catpuppyapp.puppygit.utils.changeStateTriggerRefreshPage
 import com.catpuppyapp.puppygit.utils.createAndInsertError
+import com.catpuppyapp.puppygit.utils.doJobThenOffLoading
 import com.catpuppyapp.puppygit.utils.getSecFromTime
 import com.catpuppyapp.puppygit.utils.replaceStringResList
 import com.catpuppyapp.puppygit.utils.showErrAndSaveLog
@@ -42,7 +43,7 @@ object ChangeListFunctions {
         email:MutableState<String>,
         requireShowToast:(String)->Unit,
         pleaseSetUsernameAndEmailBeforeCommit:String,
-        showUsernameAndEmailDialog:MutableState<Boolean>,
+        initSetUsernameAndEmailDialog:(callback:(()->Unit)?)->Unit,
         amendCommit: MutableState<Boolean>,
         overwriteAuthor: MutableState<Boolean>,
         showCommitMsgDialog: MutableState<Boolean>,
@@ -133,7 +134,36 @@ object ChangeListFunctions {
                 //显示提示信息
                 requireShowToast(pleaseSetUsernameAndEmailBeforeCommit)
                 //弹窗提示没用户名和邮箱，询问是否设置，用户设置好再重新调用此方法即可
-                showUsernameAndEmailDialog.value=true
+                initSetUsernameAndEmailDialog {
+                    doJobThenOffLoading {
+                        doCommit(
+                            requireShowCommitMsgDialog = requireShowCommitMsgDialog,
+                            cmtMsg = cmtMsg,
+                            requireCloseBottomBar = requireCloseBottomBar,
+                            curRepoFromParentPage = curRepoFromParentPage,
+                            refreshChangeList = refreshChangeList,
+                            username = username,
+                            email = email,
+                            requireShowToast = requireShowToast,
+                            pleaseSetUsernameAndEmailBeforeCommit = pleaseSetUsernameAndEmailBeforeCommit,
+                            initSetUsernameAndEmailDialog = initSetUsernameAndEmailDialog,
+                            amendCommit = amendCommit,
+                            overwriteAuthor = overwriteAuthor,
+                            showCommitMsgDialog = showCommitMsgDialog,
+                            repoState = repoState,
+                            activityContext = activityContext,
+                            loadingText = loadingText,
+                            repoId = repoId,
+                            bottomBarActDoneCallback = bottomBarActDoneCallback,
+                            fromTo = fromTo,
+                            itemList = itemList,
+                            successCommitStrRes = successCommitStrRes,
+                            indexIsEmptyForCommitDialog = indexIsEmptyForCommitDialog,
+                            commitBtnTextForCommitDialog = commitBtnTextForCommitDialog
+                        )
+                    }
+                }
+
                 return@doCommit false
             }
 
