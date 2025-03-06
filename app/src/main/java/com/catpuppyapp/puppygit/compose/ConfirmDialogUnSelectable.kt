@@ -16,6 +16,8 @@ import com.catpuppyapp.puppygit.play.pro.R
  * 原型拷贝的ConfirmDialog3，添加了禁用长按选择的功能。
  *
  * 应用场景：适用于整个页面启用长按选择的场景，例如Diff页面，这时如果弹窗不禁用长按选择，就会在长按弹窗非输入框文本时导致app崩溃
+ *
+ * 注意：SelectionContainer和DisableSelection和互相嵌套，所以，如果在类似Diff页面那样整个页面启用了长按选择的情况下担心弹窗崩溃，可使用此弹窗，并且可在此弹窗内容中启用 SelectionContainer 以使弹窗内容可拷贝（这样启用的长按选择不会导致app崩溃）
  */
 @Composable
 fun ConfirmDialogUnSelectable(
