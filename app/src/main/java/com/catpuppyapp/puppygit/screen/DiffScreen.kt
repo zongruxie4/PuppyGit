@@ -624,8 +624,8 @@ fun DiffScreen(
 
         //改成统一在DiffContent里检查实际diff需要获取的内容的大小了，和文件大小有所不同，有时候文件大小很大，但需要diff的内容大小实际很小，这时其实可以diff，性能不会太差
 
-        // if diff to local, enable edit menu and disable copy(because may cause app crashed), else disable edit menu but enable copy(no complex layout enable copy is ok)
-        if(localAtDiffRight && readOnlyModeOn.value.not() && enableSelectCompare.value.not()){
+        //以前是如果启用编辑就不启用选择拷贝，因为如果在开了SelectionContainer的情况下显示弹窗，并在弹窗非输入框区域长按文字，会导致app崩溃，错误信息为内容不在一个层级之类的，但那是compose这个库的问题，不是我的问题，按逻辑上来说，就算启用编辑行的菜单，也应该可以选择拷贝文本，所以现在不做判断了，直接套可选择容器启用长按选择拷贝功能
+        MySelectionContainer {
             DiffContent(repoId=repoId,relativePathUnderRepoDecoded=relativePathUnderRepoState.value,
                 fromTo=fromTo,changeType=changeType.value,fileSize=fileSize.longValue, naviUp=naviUp, dbContainer=dbContainer,
                 contentPadding = contentPadding, treeOid1Str = treeOid1Str.value, treeOid2Str = treeOid2Str.value,
@@ -634,32 +634,12 @@ fun DiffScreen(
                 isSubmodule=isSubmodule.value, isDiffToLocal = isDiffToLocal,
                 diffableItemList= diffableItemList.value,diffableItemListForFileHistory=diffableItemListForFileHistory.value,
                 curItemIndex=curItemIndex, switchItem=switchItem, clipboardManager=clipboardManager,
-                loadingOnParent=loadingOn, loadingOffParent=loadingOff,isFileAndExist=enableLineTapMenu,
+                loadingOnParent=loadingOn, loadingOffParent=loadingOff, isFileAndExist=enableLineTapMenu,
                 showLineNum=showLineNum.value, showOriginType=showOriginType.value,
                 fontSize=fontSize.intValue, lineNumSize=lineNumFontSize.intValue,
                 groupDiffContentByLineNum=groupDiffContentByLineNum.value,switchItemForFileHistory=switchItemForFileHistory,
                 enableSelectCompare = enableSelectCompare.value, lastClickedItemKey=lastClickedItemKey, pageRequest = request,
             )
-        }else {
-            MySelectionContainer {
-                DiffContent(repoId=repoId,relativePathUnderRepoDecoded=relativePathUnderRepoState.value,
-                    fromTo=fromTo,changeType=changeType.value,fileSize=fileSize.longValue, naviUp=naviUp, dbContainer=dbContainer,
-                    contentPadding = contentPadding, treeOid1Str = treeOid1Str.value, treeOid2Str = treeOid2Str.value,
-                    needRefresh = needRefresh, listState = listState, curRepo=curRepo,
-                    requireBetterMatchingForCompare = requireBetterMatchingForCompare, matchByWords = matchByWords, fileFullPath = fileFullPath.value,
-                    isSubmodule=isSubmodule.value, isDiffToLocal = isDiffToLocal,
-                    diffableItemList= diffableItemList.value,diffableItemListForFileHistory=diffableItemListForFileHistory.value,
-                    curItemIndex=curItemIndex, switchItem=switchItem, clipboardManager=clipboardManager,
-                    loadingOnParent=loadingOn, loadingOffParent=loadingOff, isFileAndExist=enableLineTapMenu,
-                    showLineNum=showLineNum.value, showOriginType=showOriginType.value,
-                    fontSize=fontSize.intValue, lineNumSize=lineNumFontSize.intValue,
-                    groupDiffContentByLineNum=groupDiffContentByLineNum.value,switchItemForFileHistory=switchItemForFileHistory,
-                    enableSelectCompare = enableSelectCompare.value, lastClickedItemKey=lastClickedItemKey, pageRequest = request,
-
-
-
-                )
-            }
         }
 
 
