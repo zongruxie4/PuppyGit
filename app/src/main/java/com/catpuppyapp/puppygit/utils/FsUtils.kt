@@ -429,7 +429,7 @@ object FsUtils {
                 }
 
             }catch (e:Exception) {
-                MyLog.e(TAG, "#copyOrMoveOrExportFile err: src=${src.canonicalPath}, target=${target?.canonicalPath}, err=${e.localizedMessage}")
+                MyLog.e(TAG, "#copyOrMoveOrExportFile() err: src=${src.canonicalPath}, target=${target?.canonicalPath}, err=${e.stackTraceToString()}")
 
                 // avoid copy many files get many toasts
                 if(neverShowErr) {
