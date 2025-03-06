@@ -233,12 +233,21 @@ fun ChangeListInnerPage(
     val email = rememberSaveable { mutableStateOf("") }
     val showUsernameAndEmailDialog = rememberSaveable { mutableStateOf(false) }
     val afterSetUsernameAndEmailSuccessCallback = remember { mutableStateOf<(()->Unit)?>(null) }
-    val initSetUsernameAndEmailDialog = { callback:(()->Unit)? ->
-        email.value = ""
-        username.value = ""
+    val initSetUsernameAndEmailDialog = { curRepo:RepoEntity, callback:(()->Unit)? ->
+        try {
+            Repository.open(curRepo.fullSavePath).use { repo ->
+                //回显用户名和邮箱
+                val (usernameFromConfig, emailFromConfig) = Libgit2Helper.getGitUsernameAndEmail(repo)
+                username.value = usernameFromConfig
+                email.value = emailFromConfig
+            }
 
-        afterSetUsernameAndEmailSuccessCallback.value = callback
-        showUsernameAndEmailDialog.value = true
+            afterSetUsernameAndEmailSuccessCallback.value = callback
+            showUsernameAndEmailDialog.value = true
+        }catch (e:Exception) {
+            Msg.requireShowLongDuration("init username and email dialog err: ${e.localizedMessage}")
+            MyLog.e(TAG, "#initSetUsernameAndEmailDialog err: ${e.stackTraceToString()}")
+        }
     }
 
     //若仓库有有效用户名和邮箱，执行task，否则弹窗设置用户名和邮箱，并在保存用户名和邮箱后调用task
@@ -248,13 +257,14 @@ fun ChangeListInnerPage(
                 if(Libgit2Helper.repoUsernameAndEmailInvaild(repo)) {
                     Msg.requireShowLongDuration(activityContext.getString(R.string.plz_set_username_and_email_first))
 
-                    initSetUsernameAndEmailDialog(task)
+                    initSetUsernameAndEmailDialog(curRepo, task)
                 }else {
                     task?.invoke()
                 }
             }
         }catch (e:Exception) {
             Msg.requireShowLongDuration("err: ${e.localizedMessage}")
+            MyLog.e(TAG, "#doTaskOrShowSetUsernameAndEmailDialog err: ${e.stackTraceToString()}")
         }
     }
     // username and email end
@@ -1298,7 +1308,7 @@ fun ChangeListInnerPage(
 
                         if (usernameFromConfig.isBlank() || emailFromConfig.isBlank()) {
                             Msg.requireShowLongDuration(activityContext.getString(R.string.plz_set_username_and_email_first))
-                            initSetUsernameAndEmailDialog {
+                            initSetUsernameAndEmailDialog(curRepo) {
                                 showRebaseSkipDialog.value = true
                             }
                         } else {

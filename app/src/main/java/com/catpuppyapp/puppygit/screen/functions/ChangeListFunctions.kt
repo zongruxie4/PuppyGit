@@ -43,7 +43,7 @@ object ChangeListFunctions {
         email:MutableState<String>,
         requireShowToast:(String)->Unit,
         pleaseSetUsernameAndEmailBeforeCommit:String,
-        initSetUsernameAndEmailDialog:(callback:(()->Unit)?)->Unit,
+        initSetUsernameAndEmailDialog:(curRepo:RepoEntity, callback:(()->Unit)?)->Unit,
         amendCommit: MutableState<Boolean>,
         overwriteAuthor: MutableState<Boolean>,
         showCommitMsgDialog: MutableState<Boolean>,
@@ -134,7 +134,7 @@ object ChangeListFunctions {
                 //显示提示信息
                 requireShowToast(pleaseSetUsernameAndEmailBeforeCommit)
                 //弹窗提示没用户名和邮箱，询问是否设置，用户设置好再重新调用此方法即可
-                initSetUsernameAndEmailDialog {
+                initSetUsernameAndEmailDialog(curRepoFromParentPage) {
                     doJobThenOffLoading {
                         doCommit(
                             requireShowCommitMsgDialog = requireShowCommitMsgDialog,
