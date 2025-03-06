@@ -1,3 +1,11 @@
+1.0.9.2v68 - 20250306:
+- fixed a bug that cause Diff screen crashed
+
+
+- 修复了一个会导致Diff页面崩溃的bug
+
+---
+
 1.0.9.1v67 - 20250301:
 - Files screen support Import/Export from/to external apps which implemented system documents picker (e.g. Termux)
 - update russian translation (thx @triksterr)

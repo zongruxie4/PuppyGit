@@ -1,0 +1,1 @@
+- fixed a bug that cause Diff screen crashed
