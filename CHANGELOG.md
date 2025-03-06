@@ -1,3 +1,11 @@
+1.0.9.3v69 - 20250307:
+- adjust set username and email dialog
+
+
+- 调整设置用户名和邮箱的弹窗
+
+---
+
 1.0.9.2v68 - 20250306:
 - fixed a bug that cause Diff screen crashed
 - update dependencies
