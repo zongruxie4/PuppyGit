@@ -151,6 +151,9 @@ class PuppyHunkAndLines {
 }
 
 class PuppyHunk {
+    /**
+     * 参见 `hunk_header_format.md`
+     */
     var header:String=""
 }
 
