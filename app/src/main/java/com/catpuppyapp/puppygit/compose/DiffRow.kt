@@ -227,22 +227,15 @@ fun DiffRow (
                         componentHeight.intValue = layoutCoordinates.size.height
                     }
                 ) {
-                    Text(
-                        replaceStringResList(
-                            stringResource(if (truePrependFalseAppendNullReplace.value == null) R.string.line_at_n else R.string.new_line_at_n),
-                            listOf(
-                                "" + (
-                                        if(lineNumOfEditLineDialog.value == LineNum.EOF.LINE_NUM) {
-                                            LineNum.EOF.TEXT
-                                        }else if (truePrependFalseAppendNullReplace.value != false) {
-                                            lineNumOfEditLineDialog.value
-                                        } else {
-                                            lineNumOfEditLineDialog.value + 1
-                                        }
-                                        )
+                    MySelectionContainer {
+                        Text(
+                            replaceStringResList(
+                                stringResource(if (truePrependFalseAppendNullReplace.value == null) R.string.line_at_n else R.string.new_line_at_n),
+                                listOf(""+(if(lineNumOfEditLineDialog.value == LineNum.EOF.LINE_NUM) LineNum.EOF.TEXT else if (truePrependFalseAppendNullReplace.value != false) lineNumOfEditLineDialog.value else { lineNumOfEditLineDialog.value + 1 }))
                             )
                         )
-                    )
+                    }
+
 
                     Spacer(modifier = Modifier.height(10.dp))
 
@@ -303,18 +296,20 @@ fun DiffRow (
             requireShowTextCompose = true,
             textCompose = {
                 ScrollableColumn {
-                    Text(
-                        replaceStringResList(
-                            stringResource(R.string.line_at_n),
-                            listOf(
-                                if (lineNumOfEditLineDialog.value != LineNum.EOF.LINE_NUM) {
-                                    "" + lineNumOfEditLineDialog.value
-                                } else {
-                                    LineNum.EOF.TEXT
-                                }
+                    MySelectionContainer {
+                        Text(
+                            replaceStringResList(
+                                stringResource(R.string.line_at_n),
+                                listOf(
+                                    if (lineNumOfEditLineDialog.value != LineNum.EOF.LINE_NUM) {
+                                        "" + lineNumOfEditLineDialog.value
+                                    } else {
+                                        LineNum.EOF.TEXT
+                                    }
+                                )
                             )
                         )
-                    )
+                    }
                 }
             },
             okBtnText = stringResource(R.string.delete),
@@ -361,7 +356,9 @@ fun DiffRow (
                         componentHeight.intValue = layoutCoordinates.size.height
                     }
                 ) {
-                    Text(stringResource(R.string.note_if_line_number_doesnt_exist_will_append_content_to_the_end_of_the_file), color = MyStyleKt.TextColor.highlighting_green)
+                    MySelectionContainer {
+                        Text(stringResource(R.string.note_if_line_number_doesnt_exist_will_append_content_to_the_end_of_the_file), color = MyStyleKt.TextColor.highlighting_green)
+                    }
                     Spacer(modifier = Modifier.height(10.dp))
 
                     TextField(
