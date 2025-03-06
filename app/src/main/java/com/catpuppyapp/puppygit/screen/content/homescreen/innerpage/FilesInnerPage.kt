@@ -5,7 +5,6 @@ import android.net.Uri
 import android.widget.Toast
 import androidx.activity.compose.BackHandler
 import androidx.activity.compose.rememberLauncherForActivityResult
-import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.combinedClickable
@@ -2418,7 +2417,7 @@ fun FilesInnerPage(
                                     }
                                 }
                                 //拷贝
-                                val target = FsUtils.getANonExistsTarget(File(dest, srcFileName))  //获得一个不重名的文件
+                                val target = FsUtils.getANonExistsFile(File(dest, srcFileName))  //获得一个不重名的文件
                                 //从这里到操作成功，curTarget和previousFilePath都应该不同，操作成功后，两者相同
                                 curTarget = File(target.canonicalPath)  //获得target后，立刻创建一个拷贝，用来在异常时判断是否更新了target来决定是否删除target
 //                                println("target.canonicalPath:::"+target.canonicalPath)

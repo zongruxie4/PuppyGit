@@ -311,15 +311,15 @@ object FsUtils {
      *
      * 此函数主要用途：用来在拷贝文件名称冲突时自动重命名
      */
-    fun getANonExistsTarget(targetNeedCheck:File):File {
+    fun getANonExistsFile(file:File):File {
         //若文件不存在，直接返回
-        if(targetNeedCheck.exists().not()) {
-            return targetNeedCheck
+        if(file.exists().not()) {
+            return file
         }
 
         //文件存在，需要生成唯一文件名
 
-        val (parent, fileName) = splitParentAndName(targetNeedCheck.canonicalPath)
+        val (parent, fileName) = splitParentAndName(file.canonicalPath)
 
         return File(parent + getANonExistsName(fileName, exists = { newName -> File(parent+newName).exists() }))
     }
@@ -420,7 +420,7 @@ object FsUtils {
                     return@forEach  //不会终止循环而是会进入下次迭代，相当于continue
                 }
 
-                target = getANonExistsTarget(File(destDir, src.name))
+                target = getANonExistsFile(File(destDir, src.name))
 
                 src.copyRecursively(target, false)  //false，禁用覆盖，不过，只有文件存在时才需要覆盖，而上面其实已经判断过了，所以执行到这，target肯定不存在，也用不着覆盖，但以防万一，这个值传false，避免错误覆盖文件
 
