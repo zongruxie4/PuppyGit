@@ -116,8 +116,6 @@ import com.catpuppyapp.puppygit.utils.FsUtils
 import com.catpuppyapp.puppygit.utils.Libgit2Helper
 import com.catpuppyapp.puppygit.utils.Msg
 import com.catpuppyapp.puppygit.utils.MyLog
-import com.catpuppyapp.puppygit.utils.saf.SafAndFileCmpUtil
-import com.catpuppyapp.puppygit.utils.saf.SafAndFileCmpUtil.OpenInputStreamFailed
 import com.catpuppyapp.puppygit.utils.UIHelper
 import com.catpuppyapp.puppygit.utils.cache.Cache
 import com.catpuppyapp.puppygit.utils.changeStateTriggerRefreshPage
@@ -138,6 +136,8 @@ import com.catpuppyapp.puppygit.utils.mime.MimeType
 import com.catpuppyapp.puppygit.utils.mime.guessFromFileName
 import com.catpuppyapp.puppygit.utils.replaceStringResList
 import com.catpuppyapp.puppygit.utils.saf.MyOpenDocumentTree
+import com.catpuppyapp.puppygit.utils.saf.SafAndFileCmpUtil
+import com.catpuppyapp.puppygit.utils.saf.SafAndFileCmpUtil.OpenInputStreamFailed
 import com.catpuppyapp.puppygit.utils.saf.SafUtil
 import com.catpuppyapp.puppygit.utils.showToast
 import com.catpuppyapp.puppygit.utils.state.CustomStateListSaveable
@@ -146,8 +146,6 @@ import com.catpuppyapp.puppygit.utils.state.mutableCustomStateListOf
 import com.catpuppyapp.puppygit.utils.state.mutableCustomStateOf
 import java.io.File
 import kotlin.coroutines.cancellation.CancellationException
-
-
 
 
 private const val TAG = "FilesInnerPage"
@@ -1744,7 +1742,7 @@ fun FilesInnerPage(
             title = importOrExportText,
             requireShowTextCompose = true,
             textCompose = {
-                ScrollableColumn {
+                CopyScrollableColumn {
                     CardButton(
                         enabled = true,
                         content = {
