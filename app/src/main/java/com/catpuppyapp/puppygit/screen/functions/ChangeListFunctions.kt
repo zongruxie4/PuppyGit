@@ -169,7 +169,7 @@ object ChangeListFunctions {
 
             //提交信息
             //执行到这，用户名和邮箱就有了，接下来获取提交信息
-            var tmpCommitMsg = ""
+            var commitMsgWillUse = ""
             //还没设置过提交信息，显示弹窗，请求用户输入提交信息
             if(requireShowCommitMsgDialog) {  //显示弹窗，结束
 //                    MyLog.d(TAG, "#doCommit, require show commit msg dialog")
@@ -179,9 +179,14 @@ object ChangeListFunctions {
                 showCommitMsgDialog.value = true
                 return@doCommit false
             }else { // 已经请求过输入提交信息了，这里直接获取
-                tmpCommitMsg = cmtMsg
+                commitMsgWillUse = cmtMsg
             }
 
+            //把变量都取出来，准备执行操作
+            val amendCommit = amendCommit.value
+            val overwriteAuthor = overwriteAuthor.value
+            val username = usernameFromConfig
+            val email = emailFromConfig
             //20240815:改成由createCommit生成提交信息了
             //如果用户输入的commitMsg全是空白字符或者没填，将会自动生成一个
 //                if(tmpCommitMsg.isBlank()) {
@@ -213,10 +218,10 @@ object ChangeListFunctions {
                 Libgit2Helper.rebaseContinue(
                     repo,
                     activityContext,
-                    usernameFromConfig,
-                    emailFromConfig,
-                    commitMsgForFirstCommit = tmpCommitMsg,
-                    overwriteAuthorForFirstCommit = overwriteAuthor.value,
+                    username,
+                    email,
+                    commitMsgForFirstCommit = commitMsgWillUse,
+                    overwriteAuthorForFirstCommit = overwriteAuthor,
                     settings = settings
                 )
 
@@ -226,11 +231,11 @@ object ChangeListFunctions {
                 Libgit2Helper.cherrypickContinue(
                     activityContext,
                     repo,
-                    msg=tmpCommitMsg,
+                    msg=commitMsgWillUse,
                     username = usernameFromConfig,
                     email=emailFromConfig,
                     autoClearState = false,  //这里后续会检查若操作成功会清状态，所以此处传false，不然会清两次状态
-                    overwriteAuthor = overwriteAuthor.value,
+                    overwriteAuthor = overwriteAuthor,
                     settings=settings
                 )
             }else {
@@ -238,17 +243,17 @@ object ChangeListFunctions {
 
                 Libgit2Helper.createCommit(
                     repo = repo,
-                    msg = tmpCommitMsg,
-                    username = username.value,
-                    email = email.value,
+                    msg = commitMsgWillUse,
+                    username = username,
+                    email = email,
 
                     //如果是index页面的条目列表，直接使用，否则无视并强制传null触发重查index条目，不过如果从index页面调用此方法又想触发重查，也可直接在调用此函数时传null给itemList
 //                    indexItemList = if(fromTo == Cons.gitDiffFromHeadToIndex) itemList else null,
                     //20250218: 因为现在在diff页面或者filehistory有可能影响到index的itemlist，所以就算itemlist来自index页面我也无法确保那个列表就一定靠谱，所以这里传null，重查下
                     indexItemList = null,
 
-                    amend = amendCommit.value,
-                    overwriteAuthorWhenAmend = overwriteAuthor.value,
+                    amend = amendCommit,
+                    overwriteAuthorWhenAmend = overwriteAuthor,
                     settings = settings
                 )
 
