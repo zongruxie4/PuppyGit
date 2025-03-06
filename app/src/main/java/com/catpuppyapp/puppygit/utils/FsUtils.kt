@@ -1425,6 +1425,7 @@ object FsUtils {
             return Pair("", "")
         }
 
+        // path是去掉authority（一般是包名）后的路径，例如：uri为：content://com.android.externalstorage.documents/tree/primary%3ARepos, 则uri.path为 /tree/primary:Repos
         val uriPath = uri.path ?: ""
         if(uriPath.isBlank()) {
             return Pair("", "")
@@ -1449,7 +1450,7 @@ object FsUtils {
             val rawPath = lastPath.substring(8)
             Pair(rawPath, getFileNameFromCanonicalPath(rawPath))
         }else if(uriPath.startsWith(contentUriPathPrefix)) {
-            //如果尝试获取uri名失败，就用File凑合下吧，虽然File获取的文件名可能乱码，不知道是乱码还是编码，反正不是给人看的
+            //尝试从uri获取真实文件名（从外部分享文件到ppgit时用的就是此函数获取文件名）；如果失败，用uri创建File对象，然后获取文件名，不过File获取的文件名可能乱码而且不一定是文件名
             Pair(uriPath, getFileRealNameFromUri(context, uri) ?: File(uriPath).name)
         }else if(uriPath.startsWith(fileUriPathPrefix)) {
             val path = fileUriPathPrefix.removePrefix(fileUriPathPrefix)

@@ -2413,9 +2413,9 @@ fun FilesInnerPage(
                                         val randomName = getShortUUID()
                                         srcFileName = randomName
                                         MyLog.w(TAG, "#importFiles@:src.name is null or empty, will use a random name:${srcFileName}")
-
                                     }
                                 }
+
                                 //拷贝
                                 val target = FsUtils.getANonExistsFile(File(dest, srcFileName))  //获得一个不重名的文件
                                 //从这里到操作成功，curTarget和previousFilePath都应该不同，操作成功后，两者相同
