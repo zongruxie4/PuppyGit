@@ -335,9 +335,7 @@ fun ChangeListInnerPage(
 //    }
 //    ShowToast(showToast, toastMsg)
 
-    val requireShowToast:(String)->Unit = {msg:String->
-        Msg.requireShowLongDuration(msg)
-    }
+    val requireShowToast = Msg.requireShowLongDuration
 
 
     val noItemSelectedStrRes = stringResource(R.string.no_item_selected)
