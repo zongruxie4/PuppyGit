@@ -196,7 +196,9 @@ fun SetUpstreamDialog(
 
 
                     // update git config
-                    doJobThenOffLoading(loadingOn, loadingOff, activityContext.getString(R.string.setting_upstream)) {
+                    //设置上游太快了，显示loading没啥意义，闪一下，就没了，还不如不闪
+//                    doJobThenOffLoading(loadingOn, loadingOff, activityContext.getString(R.string.setting_upstream)) {
+                    doJobThenOffLoading {
                         try {
                             var branch = ""
                             var setUpstreamSuccess = false
