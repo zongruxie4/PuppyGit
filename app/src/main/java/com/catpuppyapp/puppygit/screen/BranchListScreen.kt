@@ -451,6 +451,7 @@ fun BranchListScreen(
     //把远程分支名设成当前分支的完整名
     val upstreamBranchShortRefSpec = rememberSaveable { mutableStateOf("")}
     val afterSetUpstreamSuccessCallback = remember { mutableStateOf<(()->Unit)?>(null) }
+    val setUpstreamOnFinallyCallback = remember { mutableStateOf<()->Unit>({}) }
 
     //注意：如果callback不为null，设置上游的弹窗将不会在操作结束后自动刷新页面，这时应由callback负责刷新页面
     val initSetUpstreamDialog = { curObjInPage:BranchNameAndTypeDto, callback:(()->Unit)? ->
@@ -501,6 +502,15 @@ fun BranchListScreen(
             upstreamBranchSameWithLocal.value = sameWithLocal
 
             MyLog.d(TAG, "set upstream menu item #onClick(): after read old settings, finally, default select remote idx is:${upstreamSelectedRemote.intValue}, branch name is:${upstreamBranchShortRefSpec.value}, check 'same with local branch` is:${upstreamBranchSameWithLocal.value}")
+
+            //设置onFinally
+            //如果没callback，由当前弹窗负责刷新页面；若有callback，让callback负责刷新页面
+            //务必确保使用initSetUpstreamDialog并在不需要callback时传null，否则这个判断将出错，可能导致该刷新的时候没刷新或者不该刷新的时候刷新
+            setUpstreamOnFinallyCallback.value = if(callback == null) {
+                {
+                    changeStateTriggerRefreshPage(needRefresh)
+                }
+            }else {{}}
 
             //设置callback
             afterSetUpstreamSuccessCallback.value = callback
@@ -607,13 +617,7 @@ fun BranchListScreen(
 
             },
 
-            //如果没callback，由当前弹窗负责刷新页面；若有callback，让callback负责刷新页面
-            //务必确保使用initSetUpstreamDialog并在不需要callback时传null，否则这个判断将出错，可能导致该刷新的时候没刷新或者不该刷新的时候刷新
-            onFinallyCallback = if(afterSetUpstreamSuccessCallback.value == null) {
-                {
-                    changeStateTriggerRefreshPage(needRefresh)
-                }
-            }else {{}},
+            onFinallyCallback = setUpstreamOnFinallyCallback.value,
 
         )
     }
