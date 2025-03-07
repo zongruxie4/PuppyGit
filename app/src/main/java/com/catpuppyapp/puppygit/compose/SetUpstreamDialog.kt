@@ -198,39 +198,43 @@ fun SetUpstreamDialog(
                     // update git config
                     doJobThenOffLoading(loadingOn, loadingOff, activityContext.getString(R.string.setting_upstream)) {
                         try {
+                            var branch = ""
+                            var setUpstreamSuccess = false
+
                             Repository.open(repoFullPath).use { repo ->
-                                var branch = ""
-                                if (upstreamSameWithLocal) {  //勾选了使用和本地同名的分支，创建本地同名远程分支
+                                branch = if (upstreamSameWithLocal) {  //勾选了使用和本地同名的分支，创建本地同名远程分支
                                     //取出repo当前分支长名。注意：这里不能直接用head.name()，因为不一定是为当前分支设置上游，不过若正好是未当前分支设置上游，其实可以用head.name()
-                                    branch = curBranchFullName
+                                    curBranchFullName
                                 } else {  //否则取出用户输入的远程分支短名，然后生成长名
-                                    branch = Libgit2Helper.getRefsHeadsBranchFullRefSpecFromShortRefSpec(upstreamShortName)
+                                    Libgit2Helper.getRefsHeadsBranchFullRefSpecFromShortRefSpec(upstreamShortName)
                                 }
+
                                 MyLog.d(callerTag, "#$funName: set upstream dialog #onOk(): repo is '$repoName', will write to git config: remote=$remote, branch=$branch")
 
                                 //把分支的upstream信息写入配置文件
-                                val setUpstreamSuccess = Libgit2Helper.setUpstreamForBranchByRemoteAndRefspec(
+                                setUpstreamSuccess = Libgit2Helper.setUpstreamForBranchByRemoteAndRefspec(
                                     repo = repo,
                                     remote = remote,
                                     fullBranchRefSpec = branch,
                                     targetBranchShortName = curBranchShortName
                                 )
+                            }
 
-                                //如果是当前活跃分支，更新下db，否则不用更新
-                                if (isCurrentBranchOfRepo) {
-                                    //更新数据库
-                                    val upstreamBranchShortName = Libgit2Helper.getUpstreamRemoteBranchShortNameByRemoteAndBranchRefsHeadsRefSpec(remote, branch)
 
-                                    MyLog.d(callerTag, "#$funName: set upstream dialog #onOk(): upstreamBranchShortName=$upstreamBranchShortName")
+                            //如果是当前活跃分支，更新下db，否则不用更新
+                            if (isCurrentBranchOfRepo) {
+                                //更新数据库
+                                val upstreamBranchShortName = Libgit2Helper.getUpstreamRemoteBranchShortNameByRemoteAndBranchRefsHeadsRefSpec(remote, branch)
 
-                                    AppModel.dbContainer.repoRepository.updateUpstream(repoId, upstreamBranchShortName)
-                                }
+                                MyLog.d(callerTag, "#$funName: set upstream dialog #onOk(): upstreamBranchShortName=$upstreamBranchShortName")
 
-                                if (setUpstreamSuccess) {
-                                    onSuccessCallback()
-                                } else {
-                                    throw RuntimeException("unknown error, code '1c3f943a8e'")  //这code是用来定位出错原因在源代码中的位置的
-                                }
+                                AppModel.dbContainer.repoRepository.updateUpstream(repoId, upstreamBranchShortName)
+                            }
+
+                            if (setUpstreamSuccess) {
+                                onSuccessCallback()
+                            } else {
+                                throw RuntimeException("unknown error, code '1c3f943a8e'")  //这code是用来定位出错原因在源代码中的位置的
                             }
                         } catch (e: Exception) {
                             //显示通知

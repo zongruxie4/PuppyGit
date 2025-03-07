@@ -155,7 +155,7 @@ fun BranchListScreen(
     val showCheckoutBranchDialog = rememberSaveable { mutableStateOf(false)}
     val forceCheckoutForCreateBranch = rememberSaveable { mutableStateOf(false)}
 //    val showCheckoutRemoteBranchDialog = StateUtil.getRememberSaveableState(initValue = false)
-    val showSetUpstreamForLocalBranchDialog = rememberSaveable { mutableStateOf(false)}
+
     val needRefresh = rememberSaveable { mutableStateOf("")}
     val branchName = rememberSaveable { mutableStateOf("")}
 //    val curCommit = rememberSaveable{ mutableStateOf(CommitDto()) }
@@ -436,6 +436,10 @@ fun BranchListScreen(
         )
     }
 
+
+
+
+    val showSetUpstreamForLocalBranchDialog = rememberSaveable { mutableStateOf(false)}
     val upstreamRemoteOptionsList = mutableCustomStateListOf(
         keyTag = stateKeyTag,
         keyName = "upstreamRemoteOptionsList",
@@ -448,6 +452,75 @@ fun BranchListScreen(
     val showClearForSetUpstreamDialog =rememberSaveable { mutableStateOf(false)}
     //把远程分支名设成当前分支的完整名
     val upstreamBranchShortRefSpec = rememberSaveable { mutableStateOf("")}
+    val afterSetUpstreamSuccessCallback = remember { mutableStateOf<(()->Unit)?>(null) }
+
+    //注意：如果callback不为null，设置上游的弹窗将不会在操作结束后自动刷新页面，这时应由callback负责刷新页面
+    val initSetUpstreamDialog = { curObjInPage:BranchNameAndTypeDto, callback:(()->Unit)? ->
+        // onClick()
+        // 弹出确认框，为分支设置上游
+        if(curObjInPage.type == Branch.BranchType.REMOTE) {  // remote分支不能设置上游
+            //提示用户不能给remote设置上游
+            Msg.requireShowLongDuration(activityContext.getString(R.string.cant_set_upstream_for_remote_branch))
+        }else { //为本地分支设置上游
+            //设置默认值
+            var remoteIdx = 0   //默认选中第一个元素
+            var shortBranch = curObjInPage.shortName  //默认分支名为当前选中的分支短名
+            var sameWithLocal = true  //默认勾选和本地分支同名，除非用户的上游不为空且有值
+
+            // 查询旧值，如果有的话
+            val upstream = curObjInPage.upstream
+
+            // show clear if upstream was configured
+            showClearForSetUpstreamDialog.value = upstream!=null && (upstream.remote.isNotBlank() || upstream.branchRefsHeadsFullRefSpec.isNotBlank())
+
+            if(upstream!=null) {
+                MyLog.d(TAG,"set upstream menu item #onClick(): upstream is not null, old remote in config is: ${upstream.remote}, old branch in config is:${upstream.branchRefsHeadsFullRefSpec}")
+
+                val oldRemote = upstream.remote
+                //查询之前的remote
+                if(oldRemote.isNotBlank()) {
+                    //检查 remote 是否在列表里，万一remote被删或者无效，就依然默认选中第一个remote
+                    for((idx, value) in upstreamRemoteOptionsList.value.toList().withIndex()) {
+                        if(value == oldRemote) {
+                            MyLog.d(TAG,"set upstream menu item #onClick(): found old remote: ${value}, idx in remote list is: $idx")
+                            remoteIdx = idx
+                            break
+                        }
+                    }
+                }
+                val oldUpstreamShortBranchNameNoPrefix = upstream.remoteBranchShortRefSpecNoPrefix
+                //查询之前的分支
+                if(!oldUpstreamShortBranchNameNoPrefix.isNullOrBlank()) {
+                    MyLog.d(TAG,"set upstream menu item #onClick(): found old branch full refspec: ${upstream.branchRefsHeadsFullRefSpec}, short refspec: $oldUpstreamShortBranchNameNoPrefix")
+                    shortBranch = oldUpstreamShortBranchNameNoPrefix
+                    sameWithLocal = false  //有有效的分支值，就不勾选 same with local 了
+                }
+
+            }
+
+            upstreamSelectedRemote.intValue = remoteIdx
+            upstreamBranchShortRefSpec.value = shortBranch
+            upstreamBranchSameWithLocal.value = sameWithLocal
+
+            MyLog.d(TAG, "set upstream menu item #onClick(): after read old settings, finally, default select remote idx is:${upstreamSelectedRemote.intValue}, branch name is:${upstreamBranchShortRefSpec.value}, check 'same with local branch` is:${upstreamBranchSameWithLocal.value}")
+
+            //设置callback
+            afterSetUpstreamSuccessCallback.value = callback
+
+            //显示弹窗
+            showSetUpstreamForLocalBranchDialog.value = true
+        }
+    }
+
+    val doTaskOrShowSetUpstream = { curObjInPage:BranchNameAndTypeDto, task:(()->Unit)? ->
+        if(curObjInPage.isUpstreamAlreadySet()) {
+            task?.invoke()
+        }else {
+            initSetUpstreamDialog(curObjInPage) {
+                task?.invoke()
+            }
+        }
+    }
 
     if(showSetUpstreamForLocalBranchDialog.value) {
         SetUpstreamDialog(
@@ -492,6 +565,16 @@ fun BranchListScreen(
             },
             onSuccessCallback = {
                 requireShowToast(activityContext.getString(R.string.set_upstream_success))
+
+                //更新 curObjInPage的upstream，后面的callback可能会用到此变量
+                Repository.open(curRepo.value.fullSavePath).use { repo ->
+                    curObjInPage.value.upstream = Libgit2Helper.getUpstreamOfBranch(repo, curObjInPage.value.shortName)
+                }
+
+                //调用callback，如果有的话
+                val callback = afterSetUpstreamSuccessCallback.value
+                afterSetUpstreamSuccessCallback.value = null
+                callback?.invoke()
             },
             onErrorCallback = onErr@{ e->
                 val repoName = curRepo.value.repoName
@@ -525,9 +608,14 @@ fun BranchListScreen(
 
 
             },
-            onFinallyCallback = {
-                changeStateTriggerRefreshPage(needRefresh)
-            },
+
+            //如果没callback，由当前弹窗负责刷新页面；若有callback，让callback负责刷新页面
+            //务必确保使用initSetUpstreamDialog并在不需要callback时传null，否则这个判断将出错，可能导致该刷新的时候没刷新或者不该刷新的时候刷新
+            onFinallyCallback = if(afterSetUpstreamSuccessCallback.value == null) {
+                {
+                    changeStateTriggerRefreshPage(needRefresh)
+                }
+            }else {{}},
 
         )
     }
@@ -1101,15 +1189,15 @@ fun BranchListScreen(
     if(showPublishDialog.value) {
         val curBranch = curObjInPage.value
         val upstream = curBranch.upstream
-        val remoteBranchShortRefSpec = upstream?.remoteBranchShortRefSpec ?: ""  //其实不用检测这个，upstream.isUpstreamAlreadySet()为真的话，这个值就不会为空
-
-        //publish 应仅对local分支启用，但因为设置的是此选项仅对local分支启用，所以这里不用再检测分支是否local，不过，由于弹窗未使用独立状态变量，所以并不能说一定不会错误地对远程分支执行publish，但弹窗会遮盖用户对下层条目的操作，所以实际上弹窗出现后，当前长按条目就不会再被用户改变了，因此，代码执行到这里便可以断言当前分支一定是local
 
         //本质上是push实现，若没设置上游，提示先设置，若设置了，无论是否已发布都显示发布弹窗，因为即使发布了也有需要用本地覆盖远程的情况
-        if(remoteBranchShortRefSpec.isBlank() || !curBranch.isUpstreamAlreadySet()) {  //没设置上游
+        if(curBranch.type != Branch.BranchType.LOCAL) {  //百分之99的可能性不会进入这个代码块，因为在显示弹窗前入口处设置了enabled条件为仅限local，不过要是错误触发的话，关弹窗就行
+            showPublishDialog.value = false
+            Msg.requireShowLongDuration(stringResource(R.string.canceled))
+        }else if(curBranch.isUpstreamAlreadySet().not()) {  //没设置上游
             showPublishDialog.value = false  //关弹窗，不然页面重新渲染时会反复执行这里的代码块
             Msg.requireShowLongDuration(stringResource(R.string.plz_set_upstream_first))
-        }else {
+        }else {  //显示弹窗
             ConfirmDialog(title = stringResource(R.string.publish),
                 requireShowTextCompose = true,
                 textCompose = {
@@ -1123,7 +1211,7 @@ fun BranchListScreen(
 
                         Row {
                             Text(text = stringResource(R.string.remote) +": ")
-                            Text(text = remoteBranchShortRefSpec,
+                            Text(text = upstream?.remoteBranchShortRefSpec ?: "",
                                 fontWeight = FontWeight.ExtraBold
                             )
                         }
@@ -1466,64 +1554,18 @@ fun BranchListScreen(
                     BottomSheetItem(sheetState, showBottomSheet, stringResource(R.string.set_upstream),
                         enabled = curObjInPage.value.type == Branch.BranchType.LOCAL
                     ){
-                        // onClick()
-                        // 弹出确认框，为分支设置上游
-                        if(curObjInPage.value.type == Branch.BranchType.REMOTE) {  // remote分支不能设置上游
-                            requireShowToast(activityContext.getString(R.string.cant_set_upstream_for_remote_branch))
-                        }else { //为本地分支设置上游
-                            //设置默认值
-                            var remoteIdx = 0   //默认选中第一个元素
-                            var shortBranch = curObjInPage.value.shortName  //默认分支名为当前选中的分支短名
-                            var sameWithLocal = true  //默认勾选和本地分支同名，除非用户的上游不为空且有值
-
-                            // 查询旧值，如果有的话
-                            val upstream = curObjInPage.value.upstream
-
-                            // show clear if upstream was configured
-                            showClearForSetUpstreamDialog.value = upstream!=null && (upstream.remote.isNotBlank() || upstream.branchRefsHeadsFullRefSpec.isNotBlank())
-
-                            if(upstream!=null) {
-                                MyLog.d(TAG,"set upstream menu item #onClick(): upstream is not null, old remote in config is: ${upstream.remote}, old branch in config is:${upstream.branchRefsHeadsFullRefSpec}")
-
-                                val oldRemote = upstream.remote
-                                //查询之前的remote
-                                if(oldRemote.isNotBlank()) {
-                                    //检查 remote 是否在列表里，万一remote被删或者无效，就依然默认选中第一个remote
-                                    for((idx, value) in upstreamRemoteOptionsList.value.toList().withIndex()) {
-                                        if(value == oldRemote) {
-                                            MyLog.d(TAG,"set upstream menu item #onClick(): found old remote: ${value}, idx in remote list is: $idx")
-                                            remoteIdx = idx
-                                            break
-                                        }
-                                    }
-                                }
-                                val oldUpstreamShortBranchNameNoPrefix = upstream.remoteBranchShortRefSpecNoPrefix
-                                //查询之前的分支
-                                if(!oldUpstreamShortBranchNameNoPrefix.isNullOrBlank()) {
-                                    MyLog.d(TAG,"set upstream menu item #onClick(): found old branch full refspec: ${upstream.branchRefsHeadsFullRefSpec}, short refspec: $oldUpstreamShortBranchNameNoPrefix")
-                                    shortBranch = oldUpstreamShortBranchNameNoPrefix
-                                    sameWithLocal = false  //有有效的分支值，就不勾选 same with local 了
-                                }
-
-                            }
-
-                            upstreamSelectedRemote.intValue = remoteIdx
-                            upstreamBranchShortRefSpec.value = shortBranch
-                            upstreamBranchSameWithLocal.value = sameWithLocal
-
-                            MyLog.d(TAG, "set upstream menu item #onClick(): after read old settings, finally, default select remote idx is:${upstreamSelectedRemote.intValue}, branch name is:${upstreamBranchShortRefSpec.value}, check 'same with local branch` is:${upstreamBranchSameWithLocal.value}")
-
-                            //显示弹窗
-                            showSetUpstreamForLocalBranchDialog.value = true
-                        }
+                        //这里不管是否有上游都一定显示弹窗并且无成功callback，所以直接调用init弹窗而不是先检查是否有上游再决定是执行任务还是显示弹窗的doTaskOrShowSetUpstream函数
+                        initSetUpstreamDialog(curObjInPage.value, null)
                     }
 
                     if(proFeatureEnabled(branchListPagePublishBranchTestPassed)) {
                         BottomSheetItem(sheetState, showBottomSheet, stringResource(R.string.publish),
                             enabled = curObjInPage.value.type == Branch.BranchType.LOCAL
                         ){
-                            forcePublish.value=false
-                            showPublishDialog.value = true
+                            doTaskOrShowSetUpstream(curObjInPage.value) {
+                                forcePublish.value = false
+                                showPublishDialog.value = true
+                            }
                         }
                     }
 
