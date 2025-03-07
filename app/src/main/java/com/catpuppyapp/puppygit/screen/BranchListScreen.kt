@@ -262,8 +262,6 @@ fun BranchListScreen(
     }
 
 
-    val requireShowToast:(String)->Unit = Msg.requireShowLongDuration
-
 
     val showTitleInfoDialog = rememberSaveable { mutableStateOf(false)}
     if(showTitleInfoDialog.value) {
@@ -278,7 +276,7 @@ fun BranchListScreen(
         //如果选中条目和仓库当前活跃分支一样，则不用合并
         if(curObjInPage.value.oidStr == repoCurrentActiveBranchOrDetachedHeadFullHashForDoAct.value) {
 //            requireShowToast(appContext.getString(R.string.merge_failed_src_and_target_same))
-            requireShowToast(activityContext.getString(R.string.already_up_to_date))
+            Msg.requireShow(activityContext.getString(R.string.already_up_to_date))
             return Ret.createSuccess(null)  //源和目标一样不算错误，返回true
         }
 
@@ -366,7 +364,7 @@ fun BranchListScreen(
             //合并成功清下仓库状态，要不然可能停留在Merging
             Libgit2Helper.cleanRepoState(repo)
             //合并完成后更新db，显示通知
-            Libgit2Helper.updateDbAfterMergeSuccess(mergeResult,activityContext,curRepo.value.id, requireShowToast, trueMergeFalseRebase)
+            Libgit2Helper.updateDbAfterMergeSuccess(mergeResult,activityContext,curRepo.value.id, Msg.requireShow, trueMergeFalseRebase)
         }
 
 
@@ -548,7 +546,7 @@ fun BranchListScreen(
                 val curBranchShortName = curObjInPage.value.shortName
 
                 //显示通知
-                requireShowToast("clear upstream err:" + e.localizedMessage)
+                Msg.requireShowLongDuration("clear upstream err:" + e.localizedMessage)
                 //给用户看到错误
                 createAndInsertError(
                     repoId,
@@ -564,7 +562,7 @@ fun BranchListScreen(
                 changeStateTriggerRefreshPage(needRefresh)
             },
             onSuccessCallback = {
-                requireShowToast(activityContext.getString(R.string.set_upstream_success))
+                Msg.requireShow(activityContext.getString(R.string.set_upstream_success))
 
                 //更新 curObjInPage的upstream，后面的callback可能会用到此变量
                 Repository.open(curRepo.value.fullSavePath).use { repo ->
@@ -594,7 +592,7 @@ fun BranchListScreen(
                 }
 
                 //显示通知
-                requireShowToast("set upstream err:" + e.localizedMessage)
+                Msg.requireShowLongDuration("set upstream err:" + e.localizedMessage)
                 //给用户看到错误
                 createAndInsertError(
                     repoId,
@@ -680,7 +678,7 @@ fun BranchListScreen(
                 }catch (e:Exception) {
                     MyLog.e(TAG, "MergeDialog#doMerge(trueMergeFalseRebase=${!requireRebase.value}) err: "+e.stackTraceToString())
 
-                    requireShowToast(e.localizedMessage ?: "err")
+                    Msg.requireShowLongDuration("err: " + e.localizedMessage)
 
                     val errMsg = "${if(requireRebase.value) "rebase" else "merge"} failed: "+e.localizedMessage
                     createAndInsertError(curRepo.value.id, errMsg)
@@ -775,13 +773,13 @@ fun BranchListScreen(
                             throw RuntimeException(deleteBranchRet.msg)
                         }
 
-                        requireShowToast(activityContext.getString(R.string.del_local_branch_success))
+                        Msg.requireShow(activityContext.getString(R.string.del_local_branch_success))
 
                         //检查当前选中对象是否有上游，如果有，检查用户是否勾选了删除上游，如果是执行删除上游
                         if (delUpstreamToo.value) {  //用户勾选了删除远程分支，检查下有没有有效的远程分支可以删
                             if (curObjInPage.isUpstreamValid()) {
                                 //进入到这说明用户勾选了一并删除上游并且存在有效上游，提示正在删除远程分支
-                                requireShowToast(activityContext.getString(R.string.deleting_upstream))
+                                Msg.requireShow(activityContext.getString(R.string.deleting_upstream))
 
                                 //通过上面的判断，upstream不可能是null
                                 val upstream = curObjInPage.upstream!!
@@ -827,7 +825,7 @@ fun BranchListScreen(
                                 }
 
                                 //执行到这，本地分支和其上游都已经删除并推送到服务器（未勾选push则不会推送）了
-                                requireShowToast(activityContext.getString(R.string.del_upstream_success))
+                                Msg.requireShow(activityContext.getString(R.string.del_upstream_success))
                             }else {  //进入这里说明没有有效的上游但又勾选了删除上游（正常来说无有效应该勾选不了），提示下，不用执行删除
                                 throw RuntimeException(activityContext.getString(R.string.del_upstream_failed_upstream_is_invalid))
                             }
@@ -837,11 +835,11 @@ fun BranchListScreen(
                     }
                     //删除远程分支不一定成功，因为名字可能有歧义，这时，提示即可，不弹窗让用户输分支名，如果用户还是想删，可找到对应的远程分支手动删除，那个删除时如果发现remote名歧义就会提示用户输入一个具体的remote名
                 }catch (e:Exception) {
-                    val errMsg = "del branch failed:"+e.localizedMessage
-                    requireShowToast(errMsg)
+                    val errMsg = "del branch failed: "+e.localizedMessage
+                    Msg.requireShowLongDuration(errMsg)
                     createAndInsertError(curRepo.id, errMsg)
 
-                    MyLog.e(TAG, "#delLocalBranchDialog err:"+e.stackTraceToString())
+                    MyLog.e(TAG, "#delLocalBranchDialog err: "+e.stackTraceToString())
                 }finally {
                     //别忘了刷新页面！
                     changeStateTriggerRefreshPage(needRefresh)
@@ -994,16 +992,15 @@ fun BranchListScreen(
 
 
                         //执行到这，本地远程分支删除了，且远程服务器上的分支也删除了(push到服务器了)
-                        requireShowToast(activityContext.getString(R.string.del_remote_branch_success))
+                        Msg.requireShow(activityContext.getString(R.string.del_remote_branch_success))
 
                     }
 
                 }catch (e:Exception) {
-                    val errPrefix = "del remote branch '${curObjInPage.shortName}' err: "
-                    val errMsg = errPrefix+e.localizedMessage
-                    requireShowToast(errMsg)
-                    createAndInsertError(curRepo.id, errMsg)
+                    Msg.requireShowLongDuration("err: ${e.localizedMessage}")
 
+                    val errPrefix = "del remote branch '${curObjInPage.shortName}' err: "
+                    createAndInsertError(curRepo.id, errPrefix+e.localizedMessage)
                     MyLog.e(TAG, errPrefix+e.stackTraceToString())
                 }finally {
                     //别忘了刷新页面！
@@ -1260,7 +1257,7 @@ fun BranchListScreen(
                             Msg.requireShow(activityContext.getString(R.string.success))
                         }
                     }catch (e:Exception) {
-                        showErrAndSaveLog(TAG, "#PublishBranchDialog(force=$force) err:"+e.stackTraceToString(), "Publish branch error:"+e.localizedMessage, requireShowToast, curRepo.value.id)
+                        showErrAndSaveLog(TAG, "#PublishBranchDialog(force=$force) err:"+e.stackTraceToString(), "Publish branch error:"+e.localizedMessage, Msg.requireShowLongDuration, curRepo.value.id)
                     }finally {
                         changeStateTriggerRefreshPage(needRefresh)
                     }
