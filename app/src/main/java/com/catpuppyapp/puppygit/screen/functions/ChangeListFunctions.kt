@@ -39,8 +39,11 @@ object ChangeListFunctions {
 //        requireDoSync:Boolean,
         curRepoFromParentPage:RepoEntity,
         refreshChangeList:(RepoEntity) -> Unit,
+
+        //因为会从配置文件读取用户名和邮箱，所以这两个变量其实没用了
         username:MutableState<String>,
         email:MutableState<String>,
+
         requireShowToast:(String)->Unit,
         pleaseSetUsernameAndEmailBeforeCommit:String,
         initSetUsernameAndEmailDialog:(curRepo:RepoEntity, callback:(()->Unit)?)->Unit,
@@ -120,13 +123,10 @@ object ChangeListFunctions {
 //                    emailFromConfig = email.value
 //                }
 
-            //更新下状态，这样用户在输入的时候如果之前设置过用户名或密码，就不用重新输了
-            if(usernameFromConfig.isNotBlank()) {
-                username.value = usernameFromConfig
-            }
-            if(emailFromConfig.isNotBlank()) {
-                email.value = emailFromConfig
-            }
+            //废弃，20250307之后会在初始化用户名和邮箱弹窗前更新状态：更新下状态，这样用户在输入的时候如果之前设置过用户名或密码，就不用重新输了
+//            username.value = usernameFromConfig
+//            email.value = emailFromConfig
+
 
             //如果仓库、全局、状态变量(用户刚输入的)都没有username和email，显示弹窗请求用户输入
             if(usernameFromConfig.isBlank() || emailFromConfig.isBlank()){
