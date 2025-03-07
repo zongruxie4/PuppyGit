@@ -614,7 +614,7 @@ fun BranchListScreen(
 
     if(showLocalBranchDelDialog.value) {
         ConfirmDialog(
-            title = stringResource(R.string.delete_branch),
+            title = stringResource(R.string.delete),
             requireShowTextCompose = true,
             textCompose = {
                 ScrollableColumn {
@@ -638,9 +638,9 @@ fun BranchListScreen(
                         }
                     }
 
-                    Row {
-                        Text(text = activityContext.getString(R.string.are_you_sure))
-                    }
+//                    Row {
+//                        Text(text = activityContext.getString(R.string.are_you_sure))
+//                    }
 
                     //若已设置上游且已发布，则可删除远程，否则不可
                     if (curObjInPage.value.isUpstreamValid()) {
@@ -662,7 +662,11 @@ fun BranchListScreen(
                     }
                 }
             },
-            onCancel = {showLocalBranchDelDialog.value=false}
+            onCancel = {showLocalBranchDelDialog.value=false},
+
+            okTextColor = MyStyleKt.TextColor.danger(),
+            okBtnText = stringResource(R.string.delete),
+            cancelBtnText = stringResource(R.string.cancel),
         ) {
             showLocalBranchDelDialog.value=false
 
@@ -762,7 +766,7 @@ fun BranchListScreen(
     val pushCheckBoxForRemoteBranchDelDialog = rememberSaveable { mutableStateOf(false)}
     if(showRemoteBranchDelDialog.value) {
         ConfirmDialog(
-            title = stringResource(R.string.delete_branch),
+            title = stringResource(R.string.delete),
             okBtnEnabled = !pushCheckBoxForRemoteBranchDelDialog.value || !curRequireDelRemoteNameIsAmbiguous.value || userSpecifyRemoteName.value.isNotBlank(),
             requireShowTextCompose = true,
             textCompose = {
@@ -790,12 +794,13 @@ fun BranchListScreen(
                     Row(modifier = Modifier.padding(5.dp)) {
 
                     }
-                    Row{
-                        Text(text = activityContext.getString(R.string.are_you_sure))
-                    }
-                    Row(modifier = Modifier.padding(5.dp)) {
 
-                    }
+//                    Row{
+//                        Text(text = activityContext.getString(R.string.are_you_sure))
+//                    }
+//                    Row(modifier = Modifier.padding(5.dp)) {
+//
+//                    }
 
                     MyCheckBox(text = activityContext.getString(R.string.push), value = pushCheckBoxForRemoteBranchDelDialog)
 
@@ -836,7 +841,11 @@ fun BranchListScreen(
 
                 }
             },
-            onCancel = { showRemoteBranchDelDialog.value=false}
+            onCancel = { showRemoteBranchDelDialog.value=false},
+
+            okTextColor = MyStyleKt.TextColor.danger(),
+            okBtnText = stringResource(R.string.delete),
+            cancelBtnText = stringResource(R.string.cancel),
         ) {
             showRemoteBranchDelDialog.value=false
             val curRepo = curRepo.value
