@@ -87,11 +87,6 @@ fun ErrorListScreen(
     val curRepo = mutableCustomStateOf(keyTag = stateKeyTag, keyName = "curRepo", initValue = RepoEntity(id=""))
 //    val sumPage = MockData.getErrorSum(repoId)
 
-    val requireShowToast:(String)->Unit = Msg.requireShow
-//    SideEffect {
-//        Msg.msgNotifyHost()
-//    }
-
 
     //这个页面的滚动状态不用记住，每次点开重置也无所谓
     val lazyListState = rememberLazyListState()
@@ -336,8 +331,7 @@ fun ErrorListScreen(
             ) { //复制到剪贴板
                 showViewDialog.value=false
                 clipboardManager.setText(AnnotatedString(viewDialogText.value))
-                requireShowToast(activityContext.getString(R.string.copied))
-
+                Msg.requireShow(activityContext.getString(R.string.copied))
             }
         }
 

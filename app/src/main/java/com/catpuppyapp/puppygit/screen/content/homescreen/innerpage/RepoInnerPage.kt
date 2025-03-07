@@ -209,13 +209,6 @@ fun RepoInnerPage(
     }
 
 
-//    val requireShowToast = { msg:String->
-//        showToast.value = true;
-//        toastMsg.value = msg
-//    }
-//    ShowToast(showToast, toastMsg)
-    val requireShowToast:(String)->Unit = Msg.requireShowLongDuration
-
 
     val errWhenQuerySettingsFromDbStrRes = stringResource(R.string.err_when_querying_settings_from_db)
     val saved = stringResource(R.string.saved)
@@ -322,7 +315,7 @@ fun RepoInnerPage(
                 ){
                     //save email and username
                     Libgit2Helper.saveGitUsernameAndEmailForGlobal(
-                        requireShowErr=requireShowToast,
+                        requireShowErr=Msg.requireShowLongDuration,
                         errText=errWhenQuerySettingsFromDbStrRes,
                         errCode1="15569470",  // for noticed where caused error
                         errCode2="10405847",
@@ -331,7 +324,7 @@ fun RepoInnerPage(
                     )
 
                     showSetGlobalGitUsernameAndEmailDialog.value=false
-                    requireShowToast(saved)
+                    Msg.requireShow(saved)
                 }
             },
             onCancel={
@@ -387,14 +380,14 @@ fun RepoInnerPage(
                             //save email and username
                             Libgit2Helper.saveGitUsernameAndEmailForRepo(
                                 repo = repo,
-                                requireShowErr=requireShowToast,
+                                requireShowErr=Msg.requireShowLongDuration,
                                 username=curRepoUsername.value,
                                 email=curRepoEmail.value
                             )
                         }
                     }
 
-                    requireShowToast(saved)
+                    Msg.requireShow(saved)
                 }
 
             },
@@ -1432,7 +1425,7 @@ fun RepoInnerPage(
                 val curBranchShortName = curBranchShortNameForSetUpstreamDialog.value
 
                 //显示通知
-                requireShowToast("clear upstream err:" + e.localizedMessage)
+                Msg.requireShowLongDuration("clear upstream err:" + e.localizedMessage)
                 //给用户看到错误
                 createAndInsertError(
                     repoId,
@@ -1448,7 +1441,7 @@ fun RepoInnerPage(
                 changeStateTriggerRefreshPage(needRefreshRepoPage)
             },
             onSuccessCallback = {
-                requireShowToast(activityContext.getString(R.string.set_upstream_success))
+                Msg.requireShow(activityContext.getString(R.string.set_upstream_success))
                 //例如你设置完之后要执行同步啊之类的，就设置到这
                 doActAfterSetUpstreamSuccess.value()
             },
@@ -1474,7 +1467,7 @@ fun RepoInnerPage(
                 }
 
                 //显示通知
-                requireShowToast("set upstream err:" + e.localizedMessage)
+                Msg.requireShowLongDuration("set upstream err:" + e.localizedMessage)
                 //给用户看到错误
                 createAndInsertError(
                     repoId,

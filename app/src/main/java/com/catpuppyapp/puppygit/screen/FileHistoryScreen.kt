@@ -211,7 +211,6 @@ fun FileHistoryScreen(
     val pathsCacheForFilterByPathsDialog = rememberSaveable { mutableStateOf("") }  // cache the paths until user clicked the ok, then assign the value to `pathsForFilter`
     val pathsForFilter = rememberSaveable { mutableStateOf("") }
 
-//    val requireShowToast: (String) -> Unit = Msg.requireShow
 
 
     val loadMoreLoading = rememberSaveable { mutableStateOf(false)}
