@@ -213,7 +213,7 @@ object ChangeListFunctions {
             MyLog.d(TAG, "#doCommit, before createCommit")
             //do commit
             val ret = if(repoState.intValue== Repository.StateT.REBASE_MERGE.bit) {    //执行rebase continue
-                loadingText.value = activityContext.getString(R.string.rebase_continue)
+                loadingText.value = activityContext.getString(R.string.rebase_continue) + Cons.oneChar3dots
 
                 Libgit2Helper.rebaseContinue(
                     repo,
@@ -226,7 +226,7 @@ object ChangeListFunctions {
                 )
 
             }else if(repoState.intValue == Repository.StateT.CHERRYPICK.bit) {
-                loadingText.value = activityContext.getString(R.string.cherrypick_continue)
+                loadingText.value = activityContext.getString(R.string.cherrypick_continue)+Cons.oneChar3dots
 
                 Libgit2Helper.cherrypickContinue(
                     activityContext,
@@ -323,7 +323,7 @@ object ChangeListFunctions {
         remoteNameParam:String?,
         curRepoFromParentPage:RepoEntity,
         requireShowToast:(String)->Unit,
-        appContext:Context,
+        activityContext:Context,
         loadingText:MutableState<String>,
         dbContainer:AppContainer,
 
@@ -338,12 +338,12 @@ object ChangeListFunctions {
                     val upstream = Libgit2Helper.getUpstreamOfBranch(repo, shortBranchName)
                     remoteName = upstream.remote
                     if(remoteName == null || remoteName.isBlank()) {  //fetch不需合并，只需remote有效即可，所以只检查remote
-                        requireShowToast(appContext.getString(R.string.err_upstream_invalid_plz_try_sync_first))
+                        requireShowToast(activityContext.getString(R.string.err_upstream_invalid_plz_try_sync_first))
                         return@doFetch false
                     }
                 }
 
-                loadingText.value = appContext.getString(R.string.fetching)
+                loadingText.value = activityContext.getString(R.string.fetching)
 
                 //执行到这，upstream的remote有效，执行fetch
                 //            只fetch当前分支关联的remote即可，获取仓库当前remote和credential的关联，组合起来放到一个pair里，pair放到一个列表里，然后调用fetch
@@ -379,7 +379,7 @@ object ChangeListFunctions {
                         trueMergeFalseRebase:Boolean=true,
                         curRepoFromParentPage:RepoEntity,
                         requireShowToast:(String)->Unit,
-                        appContext:Context,
+                        activityContext:Context,
                         loadingText:MutableState<String>,
                         bottomBarActDoneCallback:(String, RepoEntity)->Unit,
     ):Boolean {
@@ -393,7 +393,7 @@ object ChangeListFunctions {
                     upstream = Libgit2Helper.getUpstreamOfBranch(repo, shortBranchName)  //获取当前分支的上游，例如 remote=origin 和 merge=refs/heads/main，参见配置文件 branch.yourbranchname.remote 和 .merge 字段
                     //如果查出的upstream还是无效，终止操作
                     if(Libgit2Helper.isUpstreamInvalid(upstream)) {
-                        requireShowToast(appContext.getString(R.string.err_upstream_invalid_plz_try_sync_first))
+                        requireShowToast(activityContext.getString(R.string.err_upstream_invalid_plz_try_sync_first))
                         return false
                     }
                 }
@@ -408,12 +408,12 @@ object ChangeListFunctions {
 
                 //如果用户名或邮箱无效，无法创建commit，merge无法完成，所以，直接终止操作
                 if(Libgit2Helper.isUsernameAndEmailInvalid(usernameFromConfig,emailFromConfig)) {
-                    requireShowToast(appContext.getString(R.string.plz_set_username_and_email_first))
+                    requireShowToast(activityContext.getString(R.string.plz_set_username_and_email_first))
                     return false
                 }
 
                 val mergeResult = if(trueMergeFalseRebase) {
-                    loadingText.value = appContext.getString(R.string.merging)
+                    loadingText.value = activityContext.getString(R.string.merging)
 
                     Libgit2Helper.mergeOneHead(
                         repo,
@@ -423,7 +423,7 @@ object ChangeListFunctions {
                         settings = settings
                     )
                 }else {
-                    loadingText.value = appContext.getString(R.string.rebasing)
+                    loadingText.value = activityContext.getString(R.string.rebasing)
 
                     Libgit2Helper.mergeOrRebase(
                         repo,
@@ -442,7 +442,7 @@ object ChangeListFunctions {
                     //如果调用者想自己判断是否有冲突，可传showMsgIfHasConflicts为false
                     if (mergeResult.code == Ret.ErrCode.mergeFailedByAfterMergeHasConfilts) {
                         if(showMsgIfHasConflicts){
-                            requireShowToast(appContext.getString(R.string.has_conflicts))
+                            requireShowToast(activityContext.getString(R.string.has_conflicts))
 
 //                            if(trueMergeFalseRebase) {
 //                                requireShowToast(appContext.getString(R.string.merge_has_conflicts))
@@ -471,7 +471,7 @@ object ChangeListFunctions {
                 Libgit2Helper.cleanRepoState(repo)
 
                 //更新db显示成功通知
-                Libgit2Helper.updateDbAfterMergeSuccess(mergeResult, appContext, curRepoFromParentPage.id, requireShowToast, trueMergeFalseRebase)
+                Libgit2Helper.updateDbAfterMergeSuccess(mergeResult, activityContext, curRepoFromParentPage.id, requireShowToast, trueMergeFalseRebase)
 
                 //关闭底栏，如果需要的话
                 if (requireCloseBottomBar) {
@@ -500,21 +500,22 @@ object ChangeListFunctions {
 
     }
 
-    suspend fun doPush(requireCloseBottomBar:Boolean,
-                       upstreamParam:Upstream?,
-                       force:Boolean=false,
-                       curRepoFromParentPage:RepoEntity,
-                       requireShowToast:(String)->Unit,
-                       appContext:Context,
-                       loadingText:MutableState<String>,
-                       bottomBarActDoneCallback:(String, RepoEntity)->Unit,
-                       dbContainer: AppContainer
+    suspend fun doPush(
+        requireCloseBottomBar:Boolean,
+        upstreamParam:Upstream?,
+        force:Boolean=false,
+        curRepoFromParentPage:RepoEntity,
+        requireShowToast:(String)->Unit,
+        activityContext:Context,
+        loadingText:MutableState<String>,
+        bottomBarActDoneCallback:(String, RepoEntity)->Unit,
+        dbContainer: AppContainer
     ) : Boolean {
         try {
 //            MyLog.d(TAG, "#doPush: start")
             Repository.open(curRepoFromParentPage.fullSavePath).use { repo ->
                 if(repo.headDetached()) {
-                    requireShowToast(appContext.getString(R.string.push_failed_by_detached_head))
+                    requireShowToast(activityContext.getString(R.string.push_failed_by_detached_head))
                     return@doPush false
                 }
 
@@ -524,13 +525,13 @@ object ChangeListFunctions {
                     upstream = Libgit2Helper.getUpstreamOfBranch(repo, shortBranchName)  //获取当前分支的上游，例如 remote=origin 和 merge=refs/heads/main，参见配置文件 branch.yourbranchname.remote 和 .merge 字段
                     //如果查出的upstream还是无效，终止操作
                     if(Libgit2Helper.isUpstreamInvalid(upstream)) {
-                        requireShowToast(appContext.getString(R.string.err_upstream_invalid_plz_try_sync_first))
+                        requireShowToast(activityContext.getString(R.string.err_upstream_invalid_plz_try_sync_first))
                         return@doPush false
                     }
                 }
                 MyLog.d(TAG, "#doPush: upstream.remote="+upstream!!.remote+", upstream.branchFullRefSpec="+upstream!!.branchRefsHeadsFullRefSpec)
 
-                loadingText.value = appContext.getString(R.string.pushing)
+                loadingText.value = activityContext.getString(R.string.pushing)
 
                 //执行到这里，必定有上游，push
                 val credential = Libgit2Helper.getRemoteCredential(
@@ -572,19 +573,19 @@ object ChangeListFunctions {
 
     suspend fun doSync(
         requireCloseBottomBar:Boolean,
-        trueMergeFalseRebase:Boolean=true,
+        trueMergeFalseRebase:Boolean,
         curRepoFromParentPage:RepoEntity,
         requireShowToast:(String)->Unit,
-        appContext:Context,
+        activityContext:Context,
         bottomBarActDoneCallback:(String, RepoEntity)->Unit,
         plzSetUpStreamForCurBranch:String,
-        initSetUpstreamDialog:(remoteList: List<String>, curBranchShortName: String, curBranchFullName: String, onOkText: String) -> Unit,
+        initSetUpstreamDialog:(remoteList: List<String>, curBranchShortName: String, curBranchFullName: String, onOkText: String, successCallback: (()->Unit)?) -> Unit,
         loadingText:MutableState<String>,
         dbContainer:AppContainer,
     ) {
         Repository.open(curRepoFromParentPage.fullSavePath).use { repo ->
             if(repo.headDetached()) {
-                requireShowToast(appContext.getString(R.string.sync_failed_by_detached_head))
+                requireShowToast(activityContext.getString(R.string.sync_failed_by_detached_head))
                 return@doSync
             }
 
@@ -598,22 +599,42 @@ object ChangeListFunctions {
                 requireShowToast(plzSetUpStreamForCurBranch)  //显示请设置上游的提示
 
                 //显示弹窗
-                initSetUpstreamDialog(Libgit2Helper.getRemoteList(repo), curBranchShortName, curBranchFullName, appContext.getString(R.string.save_and_sync))
+                initSetUpstreamDialog(Libgit2Helper.getRemoteList(repo), curBranchShortName, curBranchFullName, activityContext.getString(R.string.save_and_sync)) {
+                    //设置上游成功的callback
+                    doJobThenOffLoading {
+                        doSync(
+                            requireCloseBottomBar = requireCloseBottomBar,
+                            trueMergeFalseRebase = trueMergeFalseRebase,
+                            curRepoFromParentPage = curRepoFromParentPage,
+                            requireShowToast = requireShowToast,
+                            activityContext = activityContext,
+                            bottomBarActDoneCallback = bottomBarActDoneCallback,
+                            plzSetUpStreamForCurBranch = plzSetUpStreamForCurBranch,
+                            initSetUpstreamDialog = initSetUpstreamDialog,
+                            loadingText = loadingText,
+                            dbContainer = dbContainer
+                        )
+                    }
+
+                    Unit
+                }
 
             }else {  //存在上游
                 try {
-//取出上游
+                    loadingText.value = activityContext.getString(R.string.syncing)
+
+                    //取出上游
                     val upstream = Libgit2Helper.getUpstreamOfBranch(repo, curBranchShortName)
                     val fetchSuccess = doFetch(
                         upstream.remote,
                         curRepoFromParentPage = curRepoFromParentPage,
                         requireShowToast = requireShowToast,
-                        appContext = appContext,
+                        activityContext = activityContext,
                         loadingText = loadingText,
                         dbContainer = dbContainer
                     )
                     if(!fetchSuccess) {
-                        requireShowToast(appContext.getString(R.string.fetch_failed))
+                        requireShowToast(activityContext.getString(R.string.fetch_failed))
                         if(requireCloseBottomBar) {
                             bottomBarActDoneCallback("", curRepoFromParentPage)
                         }
@@ -636,14 +657,14 @@ object ChangeListFunctions {
                             false, upstream, false, trueMergeFalseRebase,
                             curRepoFromParentPage = curRepoFromParentPage,
                             requireShowToast = requireShowToast,
-                            appContext = appContext,
+                            activityContext = activityContext,
                             loadingText = loadingText,
                             bottomBarActDoneCallback = bottomBarActDoneCallback,
                         )
                         if(!mergeSuccess) {  //merge 失败，终止操作
                             //如果merge完存在冲突条目，就不要执行push了
                             if(Libgit2Helper.hasConflictItemInRepo(repo)) {  //检查失败原因是否是存在冲突，若是则显示提示
-                                requireShowToast(appContext.getString(R.string.has_conflicts_abort_sync))
+                                requireShowToast(activityContext.getString(R.string.has_conflicts_abort_sync))
                                 if(requireCloseBottomBar) {
                                     bottomBarActDoneCallback("", curRepoFromParentPage)
                                 }
@@ -661,15 +682,15 @@ object ChangeListFunctions {
                         force = false,
                         curRepoFromParentPage = curRepoFromParentPage,
                         requireShowToast = requireShowToast,
-                        appContext = appContext,
+                        activityContext = activityContext,
                         loadingText = loadingText,
                         bottomBarActDoneCallback = bottomBarActDoneCallback,
                         dbContainer = dbContainer
                     )
                     if(pushSuccess) {
-                        requireShowToast(appContext.getString(R.string.sync_success))
+                        requireShowToast(activityContext.getString(R.string.sync_success))
                     }else {
-                        requireShowToast(appContext.getString(R.string.sync_failed))
+                        requireShowToast(activityContext.getString(R.string.sync_failed))
                     }
 
                     if(requireCloseBottomBar) {
@@ -771,7 +792,7 @@ object ChangeListFunctions {
                 remoteNameParam = null,
                 curRepoFromParentPage = curRepo,
                 requireShowToast = requireShowToast,
-                appContext = activityContext,
+                activityContext = activityContext,
                 loadingText = loadingText,
                 dbContainer = dbContainer
             )
@@ -786,7 +807,7 @@ object ChangeListFunctions {
                     trueMergeFalseRebase = true,
                     curRepoFromParentPage = curRepo,
                     requireShowToast = requireShowToast,
-                    appContext = activityContext,
+                    activityContext = activityContext,
                     loadingText = loadingText,
                     bottomBarActDoneCallback = bottomBarActDoneCallback
                 )
@@ -822,7 +843,7 @@ object ChangeListFunctions {
         bottomBarActDoneCallback:(String, RepoEntity)->Unit,
         changeListRequireRefreshFromParentPage:(RepoEntity)->Unit,
     ) {
-        loadingText.value = if(acceptTheirs) activityContext.getString(R.string.accept_theirs) else activityContext.getString(R.string.accept_ours)
+        loadingText.value = (if(acceptTheirs) activityContext.getString(R.string.accept_theirs) else activityContext.getString(R.string.accept_ours)) + Cons.oneChar3dots
 
         val repoFullPath = curRepo.fullSavePath
         if(!hasConflictItemsSelected()) {

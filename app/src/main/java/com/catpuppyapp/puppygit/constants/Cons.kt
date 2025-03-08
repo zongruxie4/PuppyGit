@@ -3,9 +3,11 @@ package com.catpuppyapp.puppygit.constants
 import com.github.git24j.core.Oid
 import kotlinx.coroutines.sync.Mutex
 import java.time.format.DateTimeFormatter
-import java.util.concurrent.ConcurrentHashMap
 
 object Cons {
+    //一个字符（但不确定是否一个字节），三个点的省略号
+    const val oneChar3dots = "…"
+
     const val isShallowStr = "IsShallow"
     const val notShallowStr = "NotShallow"
     const val httpStr = "Http"

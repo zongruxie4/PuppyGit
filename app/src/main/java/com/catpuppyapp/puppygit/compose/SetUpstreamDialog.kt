@@ -53,10 +53,10 @@ fun SetUpstreamDialog(
     closeDialog: () -> Unit,  //仅关闭弹窗
     onCancel:() -> Unit = closeDialog, // 点击取消或返回或空白处执行的操作，一般和closeDialog逻辑一样，但也可能会执行比closeDialog更多的操作
     onClearErrorCallback:suspend (Exception) -> Unit,
-    onClearFinallyCallback:() -> Unit,
+    onClearFinallyCallback:(() -> Unit)?,
     onClearSuccessCallback: suspend () -> Unit,
     onErrorCallback:suspend (Exception) -> Unit,
-    onFinallyCallback:() -> Unit,
+    onFinallyCallback:(() -> Unit)?,
     onSuccessCallback: suspend () -> Unit,
 ) {
     val funName = remember {"SetUpstreamDialog"}
@@ -77,7 +77,7 @@ fun SetUpstreamDialog(
             } catch (e: Exception) {
                 onClearErrorCallback(e)
             } finally {
-                onClearFinallyCallback()
+                onClearFinallyCallback?.invoke()
             }
         }
 
@@ -243,7 +243,7 @@ fun SetUpstreamDialog(
                             onErrorCallback(e)
 
                         } finally {
-                            onFinallyCallback()
+                            onFinallyCallback?.invoke()
                         }
 
                     }

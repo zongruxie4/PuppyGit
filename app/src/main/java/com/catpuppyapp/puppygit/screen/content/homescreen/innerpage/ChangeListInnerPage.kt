@@ -586,7 +586,9 @@ fun ChangeListInnerPage(
     //修改状态，显示弹窗
     val showSetUpstreamDialog  =rememberSaveable { mutableStateOf(false)}
     val upstreamDialogOnOkText  =rememberSaveable { mutableStateOf("")}
-    val initSetUpstreamDialog:(List<String>, String, String, String) -> Unit = { remoteList, curBranchShortName, curBranchFullName, onOkText ->
+    val afterSetUpstreamSuccessCallback = mutableCustomStateOf<(()->Unit)?>(stateKeyTag, "afterSetUpstreamSuccessCallback") { null }
+    val setUpstreamOnFinallyCallback = mutableCustomStateOf<(()->Unit)?>(stateKeyTag, "setUpstreamOnFinallyCallback") { null }
+    val initSetUpstreamDialog:(List<String>, String, String, String, (()->Unit)?) -> Unit = { remoteList, curBranchShortName, curBranchFullName, onOkText, successCallback ->
         //设置远程名
         upstreamRemoteOptionsList.value.clear()
         upstreamRemoteOptionsList.value.addAll(remoteList)
@@ -604,6 +606,10 @@ fun ChangeListInnerPage(
         upstreamCurBranchFullName.value = curBranchFullName
 
         upstreamDialogOnOkText.value = onOkText
+        afterSetUpstreamSuccessCallback.value = successCallback
+        //若设置完上游还要执行其他操作，其他操作结束后会刷新页面；否则由当前组件负责刷新页面
+        setUpstreamOnFinallyCallback.value = if(successCallback != null) null else { { changeListRequireRefreshFromParentPage(curRepoFromParentPage.value) } }
+
         //修改状态，显示弹窗，在弹窗设置完后，应该就不会进入这个判断了
         showSetUpstreamDialog.value = true
     }
@@ -703,7 +709,7 @@ fun ChangeListInnerPage(
                         force = true,
                         curRepoFromParentPage = curRepo,
                         requireShowToast = requireShowToast,
-                        appContext = activityContext,
+                        activityContext = activityContext,
                         loadingText = loadingText,
                         bottomBarActDoneCallback = bottomBarActDoneCallback,
                         dbContainer = dbContainer
@@ -821,7 +827,7 @@ fun ChangeListInnerPage(
                         remoteNameParam = null,
                         curRepoFromParentPage = curRepo,
                         requireShowToast = requireShowToast,
-                        appContext = activityContext,
+                        activityContext = activityContext,
                         loadingText = loadingText,
                         dbContainer = dbContainer
                     )
@@ -857,7 +863,7 @@ fun ChangeListInnerPage(
                                 remoteNameParam = null,
                                 curRepoFromParentPage = curRepo,
                                 requireShowToast = requireShowToast,
-                                appContext = activityContext,
+                                activityContext = activityContext,
                                 loadingText = loadingText,
                                 dbContainer = dbContainer
                             )
@@ -875,7 +881,7 @@ fun ChangeListInnerPage(
                                     trueMergeFalseRebase = false,
                                     curRepoFromParentPage = curRepo,
                                     requireShowToast = requireShowToast,
-                                    appContext = activityContext,
+                                    activityContext = activityContext,
                                     loadingText = loadingText,
                                     bottomBarActDoneCallback = bottomBarActDoneCallback
                                 )
@@ -911,7 +917,7 @@ fun ChangeListInnerPage(
                         force = false,
                         curRepoFromParentPage = curRepo,
                         requireShowToast = requireShowToast,
-                        appContext = activityContext,
+                        activityContext = activityContext,
                         loadingText = loadingText,
                         bottomBarActDoneCallback = bottomBarActDoneCallback,
                         dbContainer = dbContainer
@@ -953,7 +959,7 @@ fun ChangeListInnerPage(
                                 trueMergeFalseRebase = true,
                                 curRepoFromParentPage = curRepo,
                                 requireShowToast = requireShowToast,
-                                appContext = activityContext,
+                                activityContext = activityContext,
                                 bottomBarActDoneCallback = bottomBarActDoneCallback,
                                 plzSetUpStreamForCurBranch = plzSetUpStreamForCurBranch,
                                 initSetUpstreamDialog = initSetUpstreamDialog,
@@ -983,7 +989,7 @@ fun ChangeListInnerPage(
                                 trueMergeFalseRebase = false,
                                 curRepoFromParentPage = curRepo,
                                 requireShowToast = requireShowToast,
-                                appContext = activityContext,
+                                activityContext = activityContext,
                                 bottomBarActDoneCallback = bottomBarActDoneCallback,
                                 plzSetUpStreamForCurBranch = plzSetUpStreamForCurBranch,
                                 initSetUpstreamDialog = initSetUpstreamDialog,
@@ -1494,7 +1500,7 @@ fun ChangeListInnerPage(
             curRepo = curRepo,
             loadingOn = loadingOn,
             loadingOff = loadingOff,
-            showClear = false,  //这个页面肯定是没上游才会显示设置上游的弹窗，所以不需要显示clear
+            showClear = false,  //这个页面只有在期望设置上有效上游以执行后续操作的情况下才显示此弹窗，所以不需要clear (例如：我想执行sync，但发现完全没上游或只设置了部分参数（例如指定了remote，但没指定分支），这时就弹窗设置下，然后若设置成功则继续执行sync)
             remoteList = upstreamRemoteOptionsList.value,
             curBranchShortName = upstreamCurBranchShortName.value,  //供显示的，让用户知道在为哪个分支设置上游
             curBranchFullName = upstreamCurBranchFullName.value,
@@ -1504,27 +1510,13 @@ fun ChangeListInnerPage(
             onOkText = upstreamDialogOnOkText.value,
             isCurrentBranchOfRepo = true,
             onSuccessCallback = {
-                //提示用户：上游已保存
+                //提示用户上游已保存
                 requireShowToast(activityContext.getString(R.string.upstream_saved))
-                //把loading信息改成正在同步
-                loadingOn(activityContext.getString(R.string.syncing))
-改成设置 callbakc
-                //目前在这个页面只有在执行sync时发现没上游才会弹窗让设置上游，所以设置完上游无脑执行doSync就行，但日后若有其他需求，则需要设置个独立的callback，在显示弹窗前设置下callback，然后保存上游成功后再调用callback
-                //重新执行doSync()
-                ChangeListFunctions.doSync(
-                    requireCloseBottomBar = true,
-                    trueMergeFalseRebase = true,
-                    curRepoFromParentPage = curRepo,
-                    requireShowToast = requireShowToast,
-                    appContext = activityContext,
-                    bottomBarActDoneCallback = bottomBarActDoneCallback,
-                    plzSetUpStreamForCurBranch = plzSetUpStreamForCurBranch,
-                    initSetUpstreamDialog = initSetUpstreamDialog,
 
-                    loadingText = loadingText,
-                    dbContainer = dbContainer
-                )
-
+                //调用callback
+                val cb = afterSetUpstreamSuccessCallback.value
+                afterSetUpstreamSuccessCallback.value = null
+                cb?.invoke()
             },
             onErrorCallback = {
                 requireShowToast(activityContext.getString(R.string.set_upstream_error))
@@ -1534,13 +1526,13 @@ fun ChangeListInnerPage(
             },
             onCancel = {
                 showSetUpstreamDialog.value = false
-                //刷新页面是为了显示提交后或stage后的change list
+                //刷新页面是为了显示commit后或stage后的change list
                 changeListRequireRefreshFromParentPage(curRepo)
             },
             onClearErrorCallback = {},
-            onClearFinallyCallback = {},
             onClearSuccessCallback = {},
-            onFinallyCallback = {},  //这里不用刷新页面，因为在这个页面设置完上游还要执行其他操作，其他操作结束后会刷新页面
+            onClearFinallyCallback = null, //这个页面不会显示clear，所以也不需要设置clear finally callback
+            onFinallyCallback = setUpstreamOnFinallyCallback.value,
 
         )
     }
@@ -1615,7 +1607,7 @@ fun ChangeListInnerPage(
                                     trueMergeFalseRebase = true,
                                     curRepoFromParentPage = curRepo,
                                     requireShowToast = requireShowToast,
-                                    appContext = activityContext,
+                                    activityContext = activityContext,
                                     bottomBarActDoneCallback = bottomBarActDoneCallback,
                                     plzSetUpStreamForCurBranch = plzSetUpStreamForCurBranch,
                                     initSetUpstreamDialog = initSetUpstreamDialog,
@@ -1636,7 +1628,7 @@ fun ChangeListInnerPage(
                                     force = false,
                                     curRepoFromParentPage = curRepo,
                                     requireShowToast = requireShowToast,
-                                    appContext = activityContext,
+                                    activityContext = activityContext,
                                     loadingText = loadingText,
                                     bottomBarActDoneCallback = bottomBarActDoneCallback,
                                     dbContainer = dbContainer
@@ -2881,7 +2873,7 @@ fun ChangeListInnerPage(
                                                                 trueMergeFalseRebase = true,
                                                                 curRepoFromParentPage = curRepo,
                                                                 requireShowToast = requireShowToast,
-                                                                appContext = activityContext,
+                                                                activityContext = activityContext,
                                                                 loadingText = loadingText,
                                                                 bottomBarActDoneCallback = bottomBarActDoneCallback
                                                             )
@@ -2907,7 +2899,7 @@ fun ChangeListInnerPage(
                                                                 trueMergeFalseRebase = false,
                                                                 curRepoFromParentPage = curRepo,
                                                                 requireShowToast = requireShowToast,
-                                                                appContext = activityContext,
+                                                                activityContext = activityContext,
                                                                 loadingText = loadingText,
                                                                 bottomBarActDoneCallback = bottomBarActDoneCallback
                                                             )
@@ -2952,7 +2944,7 @@ fun ChangeListInnerPage(
                                                         trueMergeFalseRebase = true,
                                                         curRepoFromParentPage = curRepo,
                                                         requireShowToast = requireShowToast,
-                                                        appContext = activityContext,
+                                                        activityContext = activityContext,
                                                         bottomBarActDoneCallback = bottomBarActDoneCallback,
                                                         plzSetUpStreamForCurBranch = plzSetUpStreamForCurBranch,
                                                         initSetUpstreamDialog = initSetUpstreamDialog,
@@ -2998,7 +2990,7 @@ fun ChangeListInnerPage(
                                                         force = false,
                                                         curRepoFromParentPage = curRepo,
                                                         requireShowToast = requireShowToast,
-                                                        appContext = activityContext,
+                                                        activityContext = activityContext,
                                                         loadingText = loadingText,
                                                         bottomBarActDoneCallback = bottomBarActDoneCallback,
                                                         dbContainer = dbContainer
@@ -3084,7 +3076,7 @@ fun ChangeListInnerPage(
                                                     remoteNameParam = null,
                                                     curRepoFromParentPage = curRepo,
                                                     requireShowToast = requireShowToast,
-                                                    appContext = activityContext,
+                                                    activityContext = activityContext,
                                                     loadingText = loadingText,
                                                     dbContainer = dbContainer
                                                 )

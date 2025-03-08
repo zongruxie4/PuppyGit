@@ -451,7 +451,7 @@ fun BranchListScreen(
     //把远程分支名设成当前分支的完整名
     val upstreamBranchShortRefSpec = rememberSaveable { mutableStateOf("")}
     val afterSetUpstreamSuccessCallback = mutableCustomStateOf<(()->Unit)?>(stateKeyTag, "afterSetUpstreamSuccessCallback") { null }
-    val setUpstreamOnFinallyCallback = mutableCustomStateOf<()->Unit>(stateKeyTag, "setUpstreamOnFinallyCallback") { {} }
+    val setUpstreamOnFinallyCallback = mutableCustomStateOf<(()->Unit)?>(stateKeyTag, "setUpstreamOnFinallyCallback") { null }
 
     //注意：如果callback不为null，设置上游的弹窗将不会在操作结束后自动刷新页面，这时应由callback负责刷新页面
     val initSetUpstreamDialog = { curObjInPage:BranchNameAndTypeDto, callback:(()->Unit)? ->
@@ -506,11 +506,7 @@ fun BranchListScreen(
             //设置onFinally
             //如果没callback，由当前弹窗负责刷新页面；若有callback，让callback负责刷新页面
             //务必确保使用initSetUpstreamDialog并在不需要callback时传null，否则这个判断将出错，可能导致该刷新的时候没刷新或者不该刷新的时候刷新
-            setUpstreamOnFinallyCallback.value = if(callback == null) {
-                {
-                    changeStateTriggerRefreshPage(needRefresh)
-                }
-            }else {{}}
+            setUpstreamOnFinallyCallback.value = if(callback != null) null else { changeStateTriggerRefreshPage(needRefresh) }
 
             //设置callback
             afterSetUpstreamSuccessCallback.value = callback
@@ -575,6 +571,7 @@ fun BranchListScreen(
                 Msg.requireShow(activityContext.getString(R.string.set_upstream_success))
 
                 //更新 curObjInPage的upstream，后面的callback可能会用到此变量
+                //注: curObjInPage指向的对象在当前页面条目列表里，所以这里更新后即使不刷新整个页面也会刷新页面当前条目 （不过！我记得以前更新嵌套对象不会刷新啊？怎么回事？）
                 Repository.open(curRepo.value.fullSavePath).use { repo ->
                     curObjInPage.value.upstream = Libgit2Helper.getUpstreamOfBranch(repo, curObjInPage.value.shortName)
                 }

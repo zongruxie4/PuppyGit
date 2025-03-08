@@ -1308,6 +1308,14 @@ fun RepoInnerPage(
         }
     }
 
+    //刷新指定仓库而不是全部（以前没想到用这种机制刷新指定仓库，对指定仓库执行完pull/sync等操作后，完全是根据id重查实现的仅刷新指定仓库，不过历史遗留问题，代码太散乱，不改了
+    val refreshSpecifedRepos = { repos:List<RepoEntity> ->
+        specifiedRefreshRepoList.value.clear()
+        specifiedRefreshRepoList.value.addAll(repos)
+
+        changeStateTriggerRefreshPage(needRefreshRepoPage)
+    }
+
 
     val showSetUpstreamForLocalBranchDialog = rememberSaveable { mutableStateOf(false)}
     val upstreamSelectedRemote = rememberSaveable{mutableIntStateOf(0)}  //默认选中第一个remote，每个仓库至少有一个origin remote，应该不会出错
@@ -1320,16 +1328,12 @@ fun RepoInnerPage(
     val curBranchFullNameForSetUpstreamDialog  =rememberSaveable { mutableStateOf("")}
 
     val doActAfterSetUpstreamSuccess = mutableCustomStateOf<(()->Unit)?>(stateKeyTag, "doActAfterSetUpstreamSuccess") { null }
+    val setUpstreamOnFinally = mutableCustomStateOf<(()->Unit)?>(stateKeyTag, "setUpstreamOnFinally") { null }
     val showClearForSetUpstreamDialog = rememberSaveable { mutableStateOf(false) }
 
     val initSetUpstreamDialog: suspend (RepoEntity, String, (()->Unit)?) -> Unit = {targetRepo, onOkText, actAfterSuccess ->
         try {
             curRepo.value = targetRepo
-
-            upstreamDialogOnOkText.value = onOkText
-
-            //设置成功后的callback，可在设置完上游执行sync之类的
-            doActAfterSetUpstreamSuccess.value = actAfterSuccess
 
             //为本地分支设置上游
             //设置默认值
@@ -1386,6 +1390,14 @@ fun RepoInnerPage(
 
             MyLog.d(TAG, "set upstream menu item #onClick(): after read old settings, finally, default select remote idx is:${upstreamSelectedRemote.intValue}, branch name is:${upstreamBranchShortRefSpec.value}, check 'same with local branch` is:${upstreamBranchSameWithLocal.value}")
 
+
+            upstreamDialogOnOkText.value = onOkText
+
+            //设置成功后的callback，可在设置完上游执行sync之类的
+            doActAfterSetUpstreamSuccess.value = actAfterSuccess
+            //若有回调，则不在finally里执行刷新页面（此时应由回调负责执行刷新），否则执行
+            setUpstreamOnFinally.value = if(actAfterSuccess != null) null else { { refreshSpecifedRepos(listOf(targetRepo)) } }
+
             //显示弹窗
             showSetUpstreamForLocalBranchDialog.value = true
 
@@ -1437,14 +1449,12 @@ fun RepoInnerPage(
                     "clear upstream for '$curBranchShortName' of '$repoName' err: " + e.stackTraceToString()
                 )
             },
-            onClearFinallyCallback = {
-                若有callback是否还需要在这里执行刷新？
-                changeStateTriggerRefreshPage(needRefreshRepoPage)
-            },
             onSuccessCallback = {
                 Msg.requireShow(activityContext.getString(R.string.set_upstream_success))
                 //例如你设置完之后要执行同步啊之类的，就设置到这
-                doActAfterSetUpstreamSuccess.value()
+                val cb = doActAfterSetUpstreamSuccess.value
+                doActAfterSetUpstreamSuccess.value = null
+                cb?.invoke()
             },
             onErrorCallback = onErr@{ e ->
                 val repoId = curRepo.id
@@ -1482,9 +1492,11 @@ fun RepoInnerPage(
 
 
             },
-            onFinallyCallback = {
-                changeStateTriggerRefreshPage(needRefreshRepoPage)
-            },
+            //clear后刷新当前仓库，若有success callback也不会调用，因为clear就清空了，与设置成功相反，这时就放弃调用callback了，刷新下当前仓库就完事了
+            onClearFinallyCallback = { refreshSpecifedRepos(listOf(curRepo)) },
+
+            //这个finally是否调用取决于是否有success callback，如果有，其值应为null（调用者负责执行刷新操作）；否则应刷新当前条目
+            onFinallyCallback = setUpstreamOnFinally.value,
         )
     }
 
@@ -2020,10 +2032,7 @@ fun RepoInnerPage(
 
     val selectionModeMoreItemOnClickList = (listOf(
         refresh@{
-            specifiedRefreshRepoList.value.clear()
-            specifiedRefreshRepoList.value.addAll(selectedItems.value)
-
-            changeStateTriggerRefreshPage(needRefreshRepoPage)
+            refreshSpecifedRepos(selectedItems.value)
         },
 
 //
@@ -2060,7 +2069,7 @@ fun RepoInnerPage(
 
         setUpstream@{
             doJobThenOffLoading {
-                initSetUpstreamDialog(selectedItems.value.first(), activityContext.getString(R.string.save)) {}
+                initSetUpstreamDialog(selectedItems.value.first(), activityContext.getString(R.string.save), null)
             }
 
             Unit
