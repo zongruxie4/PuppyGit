@@ -506,7 +506,7 @@ fun BranchListScreen(
             //设置onFinally
             //如果没callback，由当前弹窗负责刷新页面；若有callback，让callback负责刷新页面
             //务必确保使用initSetUpstreamDialog并在不需要callback时传null，否则这个判断将出错，可能导致该刷新的时候没刷新或者不该刷新的时候刷新
-            setUpstreamOnFinallyCallback.value = if(callback != null) null else { changeStateTriggerRefreshPage(needRefresh) }
+            setUpstreamOnFinallyCallback.value = if(callback != null) null else { {changeStateTriggerRefreshPage(needRefresh)} }
 
             //设置callback
             afterSetUpstreamSuccessCallback.value = callback

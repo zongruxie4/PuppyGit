@@ -2794,35 +2794,37 @@ fun FilesInnerPage(
     LaunchedEffect(needRefreshFilesPage.value) {
         try {
             //只有当目录改变时(需要刷新页面)，才需要执行initFilesPage，选择文件之类的操作不需要执行此操作
-            doInit(
-                currentPath = currentPath,
-                currentPathFileList = currentPathFileList,
-                currentPathBreadCrumbList = currentPathBreadCrumbList,
-                settingsSnapshot = settingsSnapshot,
-                filesPageGetFilterModeOn = filesPageGetFilterMode,
-                filesPageFilterKeyword = filesPageFilterKeyword,
-                curListState = curListState,
-                getListState = getListState,
-                loadingOn = loadingOn,
-                loadingOff = loadingOff,
-                activityContext = activityContext,
-                requireImportFile=requireImportFile,
-                requireImportUriList = requireImportUriList,
-                filesPageQuitSelectionMode = filesPageQuitSelectionMode,
-                isImportedMode = isImportMode,
-                selectItem=selectItem,
-                filesPageRequestFromParent = filesPageRequestFromParent,
-                openDirErr=openDirErr,
-                viewAndSortState=viewAndSortState,
-                viewAndSortOnlyForThisFolderState=onlyForThisFolderState,
-                curPathFileItemDto=curPathFileItemDto,
-                quitImportMode=quitImportMode
+            doJobThenOffLoading(loadingOn, loadingOff, activityContext.getString(R.string.loading)) {
+                doInit(
+                    currentPath = currentPath,
+                    currentPathFileList = currentPathFileList,
+                    currentPathBreadCrumbList = currentPathBreadCrumbList,
+                    settingsSnapshot = settingsSnapshot,
+                    filesPageGetFilterModeOn = filesPageGetFilterMode,
+                    filesPageFilterKeyword = filesPageFilterKeyword,
+                    curListState = curListState,
+                    getListState = getListState,
+                    loadingOn = loadingOn,
+                    loadingOff = loadingOff,
+                    activityContext = activityContext,
+                    requireImportFile = requireImportFile,
+                    requireImportUriList = requireImportUriList,
+                    filesPageQuitSelectionMode = filesPageQuitSelectionMode,
+                    isImportedMode = isImportMode,
+                    selectItem=selectItem,
+                    filesPageRequestFromParent = filesPageRequestFromParent,
+                    openDirErr = openDirErr,
+                    viewAndSortState = viewAndSortState,
+                    viewAndSortOnlyForThisFolderState = onlyForThisFolderState,
+                    curPathFileItemDto = curPathFileItemDto,
+                    quitImportMode = quitImportMode,
+                    selectedItems = selectedItems.value,
 //                repoList=repoList,
-            )
-
-
-        } catch (cancel: Exception) {
-//            ("LaunchedEffect: job cancelled")
+                )
+            }
+        } catch (e: Exception) {
+            // job cancelled maybe
+            MyLog.e(TAG, "#LaunchedEffect err: ${e.stackTraceToString()}")
         }
     }
 }
@@ -2830,7 +2832,7 @@ fun FilesInnerPage(
 
 
 
-private fun doInit(
+private suspend fun doInit(
     currentPath: MutableState<String>,
     currentPathFileList: CustomStateListSaveable<FileItemDto>,
     currentPathBreadCrumbList: CustomStateListSaveable<FileItemDto>,
@@ -2859,280 +2861,279 @@ private fun doInit(
 //    currentPathBreadCrumbList1: SnapshotStateList<FileItemDto>,
 //    currentPathBreadCrumbList2: SnapshotStateList<FileItemDto>
 ){
-    doJobThenOffLoading(loadingOn, loadingOff, activityContext.getString(R.string.loading)) {
-        //无选中条目则退出选择模式
-        if(selectedItems.isEmpty()) {
-            filesPageQuitSelectionMode()
+
+    //无选中条目则退出选择模式
+    if(selectedItems.isEmpty()) {
+        filesPageQuitSelectionMode()
+    }
+
+    val lastOpenedPathFromSettings = settingsSnapshot.value.files.lastOpenedPath
+
+    //如果路径为空，从配置文件读取上次打开的路径
+    if(currentPath.value.isBlank()) {
+        currentPath.value = lastOpenedPathFromSettings
+    }
+
+    //先清下列表，感觉在开头清比较好，如果加载慢，先白屏，然后出东西；放后面清的话，如果加载慢，会依然显示旧条目列表，感觉没变化，像卡了一样，用户可能重复点击
+    currentPathFileList.value.clear()
+
+    val repoBaseDirPath = AppModel.allRepoParentDir.canonicalPath
+
+    currentPath.value = if(currentPath.value.isBlank()) {
+        repoBaseDirPath
+    }else {
+        // make path canonical first, elst dir/ will return once dir, that make must press 2 times back for back to parent dir
+        File(currentPath.value).canonicalPath
+    }
+
+    //更新当前目录的文件列表
+    var currentDir = File(currentPath.value)
+    var currentFile:File? = null
+
+    //无论对应文件是否存在，只要currentDir不是文件夹（其实也可能不是文件），都尝试取出其上级目录作为即将打开的目录
+    // 之所以不判断文件是否存在是想在文件不存在时也尽量定位到其所在目录，不过只尝试定位一层上级目录，不会递归查找存在的上级目录，一层不存在就直接返回app根目录了
+    if(currentDir.canRead() && currentDir.isFile) {  //注：若文件不存在 isDirectory和isFile 都为假，所以这个判断并不能确定目标路径就一定是个存在的文件
+        //当curpath不是文件夹时，尝试取出其上级，若是目录，则定位并有可能选中对应文件，若不是目录，则忽略，然后在后面的代码中会定位到app根目录
+        val parent = currentDir.parentFile
+        if(parent!=null && parent.exists() && parent.isDirectory) {
+            currentFile = currentDir
+            currentDir = parent
+            currentPath.value = currentDir.canonicalPath
         }
+    }
 
-        val lastOpenedPathFromSettings = settingsSnapshot.value.files.lastOpenedPath
-
-        //如果路径为空，从配置文件读取上次打开的路径
-        if(currentPath.value.isBlank()) {
-            currentPath.value = lastOpenedPathFromSettings
-        }
-
-        //先清下列表，感觉在开头清比较好，如果加载慢，先白屏，然后出东西；放后面清的话，如果加载慢，会依然显示旧条目列表，感觉没变化，像卡了一样，用户可能重复点击
-        currentPathFileList.value.clear()
-
-        val repoBaseDirPath = AppModel.allRepoParentDir.canonicalPath
-
-        currentPath.value = if(currentPath.value.isBlank()) {
-            repoBaseDirPath
-        }else {
-            // make path canonical first, elst dir/ will return once dir, that make must press 2 times back for back to parent dir
-            File(currentPath.value).canonicalPath
-        }
-
-        //更新当前目录的文件列表
-        var currentDir = File(currentPath.value)
-        var currentFile:File? = null
-
-        //无论对应文件是否存在，只要currentDir不是文件夹（其实也可能不是文件），都尝试取出其上级目录作为即将打开的目录
-        // 之所以不判断文件是否存在是想在文件不存在时也尽量定位到其所在目录，不过只尝试定位一层上级目录，不会递归查找存在的上级目录，一层不存在就直接返回app根目录了
-        if(currentDir.canRead() && currentDir.isFile) {  //注：若文件不存在 isDirectory和isFile 都为假，所以这个判断并不能确定目标路径就一定是个存在的文件
-            //当curpath不是文件夹时，尝试取出其上级，若是目录，则定位并有可能选中对应文件，若不是目录，则忽略，然后在后面的代码中会定位到app根目录
-            val parent = currentDir.parentFile
-            if(parent!=null && parent.exists() && parent.isDirectory) {
-                currentFile = currentDir
-                currentDir = parent
-                currentPath.value = currentDir.canonicalPath
-            }
-        }
-
-        //最终决定currentPath值的判断
-        //xxx.contains(xxxxxx)判断是为了避免用户修改json文件中的lastOpenedPath越狱访问 allRepoParentDir 之外的目录
-        //如果进入过上面的parent不等于null和是否目录和存在的判断，则执行到这里，只有判断路径是否越狱的条件可能为真
+    //最终决定currentPath值的判断
+    //xxx.contains(xxxxxx)判断是为了避免用户修改json文件中的lastOpenedPath越狱访问 allRepoParentDir 之外的目录
+    //如果进入过上面的parent不等于null和是否目录和存在的判断，则执行到这里，只有判断路径是否越狱的条件可能为真
 //        if(!currentDir.exists() || !currentDir.isDirectory || !currentDir.canonicalPath.startsWith(repoBaseDirPath)) {  //如果当前目录不存在，将路径设置为仓库根目录
 
-        //because now(2024-09-23) support external path, so doesn't check startsWith repoBaseDirPath anymore
+    //because now(2024-09-23) support external path, so doesn't check startsWith repoBaseDirPath anymore
 //        if(currentDir.canRead() && (!currentDir.exists() || !currentDir.isDirectory)) {  //如果当前目录不存在，将路径设置为仓库根目录
-        //若可读，路径必然存在，所以不用再检查是否存在路径
-        //其实这个和上面的canRead() && isFile 差不多，约等于又做了一次同样的检测
-        if(currentDir.canRead() && !currentDir.isDirectory) {  //如果当前目录不存在，将路径设置为仓库根目录
+    //若可读，路径必然存在，所以不用再检查是否存在路径
+    //其实这个和上面的canRead() && isFile 差不多，约等于又做了一次同样的检测
+    if(currentDir.canRead() && !currentDir.isDirectory) {  //如果当前目录不存在，将路径设置为仓库根目录
 //            Msg.requireShow(appContext.getString(R.string.invalid_path))  一边自己跳转到主页，一边提示无效path，产生一种主页是无效path的错觉，另人迷惑，故废弃
 
-            currentFile=null  // 如果进入这个判断，currentFile已无意义，设为null，方便后面判断快速得到结果而不用继续比较path
-            currentDir = File(repoBaseDirPath)
-            currentPath.value = repoBaseDirPath
+        currentFile=null  // 如果进入这个判断，currentFile已无意义，设为null，方便后面判断快速得到结果而不用继续比较path
+        currentDir = File(repoBaseDirPath)
+        currentPath.value = repoBaseDirPath
+    }
+
+
+    //执行到这，路径一定存在（要么路径存在，要么不存在被替换成了所有仓库的父目录，然后路径存在）
+
+    //更新配置文件中记录的最后打开路径，如果需要
+    if(lastOpenedPathFromSettings != currentPath.value) {
+        //更新页面变量
+        settingsSnapshot.value.files.lastOpenedPath = currentPath.value
+
+        //更新配置文件，避免卡顿，可开个协程，但其实没必要，因为最有可能造成卡顿的io操作其实已经放到协程里执行了
+        SettingsUtil.update {  //这里并不是把页面的settingsSnapshot状态变量完全写入到配置文件，而是获取一份当下最新设置项的拷贝，然后修改我在这个代码块里修改的变量，再写入文件，所以，在这修改的设置项其实和页面的设置项可能会有出入，但我只需要currentPath关联的一个值而已，所以有差异也无所谓
+            it.files.lastOpenedPath = currentPath.value
+        }
+    }
+
+
+    //文件列表排序算法
+    val (viewAndSortOnlyForThisFolder, viewAndSort) = getViewAndSortForPath(currentPath.value, settingsSnapshot.value)
+    viewAndSortState.value = viewAndSort
+    viewAndSortOnlyForThisFolderState.value = viewAndSortOnlyForThisFolder
+
+    val sortMethod = viewAndSort.sortMethod
+    val ascend = viewAndSort.ascend
+
+    //排序
+    //注意：文件夹大小不是0，可能是4096字节，所以按大小排序会在某些大小非0的文件上面！
+    val comparator = { o1:FileItemDto, o2:FileItemDto ->  //不能让比较器返回0，不然就等于“去重”了，就会少文件
+        var compareResult = if(sortMethod == SortMethod.NAME.code){
+            o1.name.compareTo(o2.name, ignoreCase = true)
+        }else if(sortMethod == SortMethod.TYPE.code){
+            getFileExtOrEmpty(o1.name).compareTo(getFileExtOrEmpty(o2.name), ignoreCase = true)
+        } else if(sortMethod == SortMethod.SIZE.code) {
+            o1.sizeInBytes.compareTo(o2.sizeInBytes)
+        } else { //sortMethod == SortMethod.LAST_MODIFIED
+            o1.lastModifiedTimeInSec.compareTo(o2.lastModifiedTimeInSec)
         }
 
-
-        //执行到这，路径一定存在（要么路径存在，要么不存在被替换成了所有仓库的父目录，然后路径存在）
-
-        //更新配置文件中记录的最后打开路径，如果需要
-        if(lastOpenedPathFromSettings != currentPath.value) {
-            //更新页面变量
-            settingsSnapshot.value.files.lastOpenedPath = currentPath.value
-
-            //更新配置文件，避免卡顿，可开个协程，但其实没必要，因为最有可能造成卡顿的io操作其实已经放到协程里执行了
-            SettingsUtil.update {  //这里并不是把页面的settingsSnapshot状态变量完全写入到配置文件，而是获取一份当下最新设置项的拷贝，然后修改我在这个代码块里修改的变量，再写入文件，所以，在这修改的设置项其实和页面的设置项可能会有出入，但我只需要currentPath关联的一个值而已，所以有差异也无所谓
-                it.files.lastOpenedPath = currentPath.value
-            }
+        //if equals and is not sort by name, try sort by name
+        if(compareResult==0 && sortMethod!=SortMethod.NAME.code) {
+            compareResult = o1.name.compareTo(o2.name, ignoreCase = true)
         }
 
-
-        //文件列表排序算法
-        val (viewAndSortOnlyForThisFolder, viewAndSort) = getViewAndSortForPath(currentPath.value, settingsSnapshot.value)
-        viewAndSortState.value = viewAndSort
-        viewAndSortOnlyForThisFolderState.value = viewAndSortOnlyForThisFolder
-
-        val sortMethod = viewAndSort.sortMethod
-        val ascend = viewAndSort.ascend
-
-        //排序
-        //注意：文件夹大小不是0，可能是4096字节，所以按大小排序会在某些大小非0的文件上面！
-        val comparator = { o1:FileItemDto, o2:FileItemDto ->  //不能让比较器返回0，不然就等于“去重”了，就会少文件
-            var compareResult = if(sortMethod == SortMethod.NAME.code){
-                o1.name.compareTo(o2.name, ignoreCase = true)
-            }else if(sortMethod == SortMethod.TYPE.code){
-                getFileExtOrEmpty(o1.name).compareTo(getFileExtOrEmpty(o2.name), ignoreCase = true)
-            } else if(sortMethod == SortMethod.SIZE.code) {
-                o1.sizeInBytes.compareTo(o2.sizeInBytes)
-            } else { //sortMethod == SortMethod.LAST_MODIFIED
-                o1.lastModifiedTimeInSec.compareTo(o2.lastModifiedTimeInSec)
-            }
-
-            //if equals and is not sort by name, try sort by name
-            if(compareResult==0 && sortMethod!=SortMethod.NAME.code) {
-                compareResult = o1.name.compareTo(o2.name, ignoreCase = true)
-            }
-
-            if(compareResult > 0){
-                if(ascend) 1 else -1
-            } else {
-                if(ascend) -1 else 1
-            }
+        if(compareResult > 0){
+            if(ascend) 1 else -1
+        } else {
+            if(ascend) -1 else 1
         }
+    }
 
-        val fileSortedSet = sortedSetOf<FileItemDto>(comparator)
-        val dirSortedSet = sortedSetOf<FileItemDto>(comparator)
+    val fileSortedSet = sortedSetOf<FileItemDto>(comparator)
+    val dirSortedSet = sortedSetOf<FileItemDto>(comparator)
 
-        //注意，如果keyword为empty，正常来说不会进入搜索模式，不过如果进入，也会显示所有文件，因为任何字符串都包含空字符串
-        //注意：只有当filterMode==2，也就是“显示根据关键字过滤的结果”的时候，才执行过滤，如果只是打开输入框，不会执行过滤。这个值不要改成不等于0，不然，打开输入框，输入内容，然后执行会触发刷新页面的操作（例如新建文件），就会执行过滤了，那样就会没点确定就开始过滤，会感觉有点混乱。比较好的交互逻辑是：要么就需要确认才过滤，要么就不需要确认边输入边过滤，不要两者混合。
+    //注意，如果keyword为empty，正常来说不会进入搜索模式，不过如果进入，也会显示所有文件，因为任何字符串都包含空字符串
+    //注意：只有当filterMode==2，也就是“显示根据关键字过滤的结果”的时候，才执行过滤，如果只是打开输入框，不会执行过滤。这个值不要改成不等于0，不然，打开输入框，输入内容，然后执行会触发刷新页面的操作（例如新建文件），就会执行过滤了，那样就会没点确定就开始过滤，会感觉有点混乱。比较好的交互逻辑是：要么就需要确认才过滤，要么就不需要确认边输入边过滤，不要两者混合。
 //        val isFilterModeOn = filesPageGetFilterModeOn() == 2
 //        val filterKeywordText = filesPageFilterKeyword.value.text
 
-        // 当请求打开的curpath是个文件时会用到这几个变量 开始
-        val needSelectFile = currentFile!=null && currentFile.exists()
-        val curFilePath = currentFile?.canonicalPath
-        var curFileFromCurPathAlreadySelected = false
-        var curFileFromCurPathFileDto:FileItemDto? = null  //用来存匹配的dto，然后在列表查找index，然后滚动到指定位置
-        // 当请求打开的curpath是个文件时会用到这几个变量 结束
+    // 当请求打开的curpath是个文件时会用到这几个变量 开始
+    val needSelectFile = currentFile!=null && currentFile.exists()
+    val curFilePath = currentFile?.canonicalPath
+    var curFileFromCurPathAlreadySelected = false
+    var curFileFromCurPathFileDto:FileItemDto? = null  //用来存匹配的dto，然后在列表查找index，然后滚动到指定位置
+    // 当请求打开的curpath是个文件时会用到这几个变量 结束
 
-        //获取文件列表之类的
+    //获取文件列表之类的
 
-        var folderCount = 0
-        var fileCount = 0
-        // 遍历文件列表
-        currentDir.listFiles()?.let {
-            it.forEach { file ->
-                val fdto = FileItemDto.genFileItemDtoByFile(file, activityContext)
-                //过滤模式开启 且 文件名不包含关键字则忽略当前条目。（TODO 做点高级的东西？如果输入特定关键字就开启指定模式，比如可根据文件大小或后缀过滤？匹配模式直接抄Everything这个软件的即可，比自己发明格式要好，你自己发明的太小众，别人用不惯，已经广泛受用的，则有可能别人已经知道，用着就会感觉有亲切感）
+    var folderCount = 0
+    var fileCount = 0
+    // 遍历文件列表
+    currentDir.listFiles()?.let {
+        it.forEach { file ->
+            val fdto = FileItemDto.genFileItemDtoByFile(file, activityContext)
+            //过滤模式开启 且 文件名不包含关键字则忽略当前条目。（TODO 做点高级的东西？如果输入特定关键字就开启指定模式，比如可根据文件大小或后缀过滤？匹配模式直接抄Everything这个软件的即可，比自己发明格式要好，你自己发明的太小众，别人用不惯，已经广泛受用的，则有可能别人已经知道，用着就会感觉有亲切感）
 //                if(isFilterModeOn && !fdto.name.lowercase().contains(filterKeywordText.lowercase())) {
 //                    return@forEach
 //                }
 
-                if(fdto.isFile) {
-                    fileCount++
-                    //如果从请求打开的路径带来的文件存在，且和当前遍历的文件重合，选中
-                    if(needSelectFile && !curFileFromCurPathAlreadySelected && curFilePath == fdto.fullPath) {
+            if(fdto.isFile) {
+                fileCount++
+                //如果从请求打开的路径带来的文件存在，且和当前遍历的文件重合，选中
+                if(needSelectFile && !curFileFromCurPathAlreadySelected && curFilePath == fdto.fullPath) {
 //                        清空已选中条目列表
-                        filesPageQuitSelectionMode()
+                    filesPageQuitSelectionMode()
 //                        把当前条目添加进已选中列表并开启选择模式
-                        selectItem(fdto)
-                        curFileFromCurPathFileDto=fdto
-                        //因为路径只有可能代表一个文件，所以此判断代码块只需执行一次，设置flag为已执行，这样下次就会跳过不必要的判断了
-                        curFileFromCurPathAlreadySelected = true
-                    }
+                    selectItem(fdto)
+                    curFileFromCurPathFileDto=fdto
+                    //因为路径只有可能代表一个文件，所以此判断代码块只需执行一次，设置flag为已执行，这样下次就会跳过不必要的判断了
+                    curFileFromCurPathAlreadySelected = true
+                }
 
-                    fileSortedSet.add(fdto)
+                fileSortedSet.add(fdto)
+            }else {
+                folderCount++
+                if(viewAndSort.folderFirst) {
+                    dirSortedSet.add(fdto)
                 }else {
-                    folderCount++
-                    if(viewAndSort.folderFirst) {
-                        dirSortedSet.add(fdto)
-                    }else {
-                        fileSortedSet.add(fdto)
-                    }
+                    fileSortedSet.add(fdto)
                 }
             }
         }
+    }
 
 //        val lastUsedPath = curPathFileItemDto.value.fullPath
 
-        val curPathDtoTmp = FileItemDto.genFileItemDtoByFile(currentDir, activityContext)
-        curPathDtoTmp.folderCount = folderCount
-        curPathDtoTmp.fileCount = fileCount
-        curPathFileItemDto.value = curPathDtoTmp
+    val curPathDtoTmp = FileItemDto.genFileItemDtoByFile(currentDir, activityContext)
+    curPathDtoTmp.folderCount = folderCount
+    curPathDtoTmp.fileCount = fileCount
+    curPathFileItemDto.value = curPathDtoTmp
 
 //    println("dirSortedSet:"+dirSortedSet)
 //    println("fileSortedSet:"+fileSortedSet)
 
-        //清文件列表。（如果在开头清了，这里就不用再清了）
+    //清文件列表。（如果在开头清了，这里就不用再清了）
 //    currentPathFileList.value.clear()
-        //添加文件列表
-        //一级顺序：文件夹在上，文件在下；二级顺序：各自按时间降序排列
-        currentPathFileList.value.addAll(dirSortedSet)
-        currentPathFileList.value.addAll(fileSortedSet)
-        //恢复或新建当前路径的list state
-        curListState.value = getListState(currentPath.value)
+    //添加文件列表
+    //一级顺序：文件夹在上，文件在下；二级顺序：各自按时间降序排列
+    currentPathFileList.value.addAll(dirSortedSet)
+    currentPathFileList.value.addAll(fileSortedSet)
+    //恢复或新建当前路径的list state
+    curListState.value = getListState(currentPath.value)
 //    currentPathFileList.requireRefreshView()
-        //当curpath是文件时，如果文件确实存在并且已选中，则跳转到对应文件的索引
-        if(curFileFromCurPathAlreadySelected && curFileFromCurPathFileDto!=null) {
-            var indexForScrollTo = currentPathFileList.value.indexOf(curFileFromCurPathFileDto)
+    //当curpath是文件时，如果文件确实存在并且已选中，则跳转到对应文件的索引
+    if(curFileFromCurPathAlreadySelected && curFileFromCurPathFileDto!=null) {
+        var indexForScrollTo = currentPathFileList.value.indexOf(curFileFromCurPathFileDto)
 
-            //这个判断是可选的，考虑下要不要注释掉
-            //这个判断是为了使文件滚动时避免把选中条目放到最顶端，因为那样看着不太舒服，不过，这样有个弊端，如果当前选中条目的上一个条目文件名无敌长，那当前条目可能就被顶到下面的不可见范围了
-            if(indexForScrollTo>0) {
-                indexForScrollTo-=1
-            }
-
-            //下次渲染时请求滚动页面到对应条目
-            filesPageRequestFromParent.value = PageRequest.DataRequest.build(PageRequest.goToIndex, ""+indexForScrollTo)
+        //这个判断是可选的，考虑下要不要注释掉
+        //这个判断是为了使文件滚动时避免把选中条目放到最顶端，因为那样看着不太舒服，不过，这样有个弊端，如果当前选中条目的上一个条目文件名无敌长，那当前条目可能就被顶到下面的不可见范围了
+        if(indexForScrollTo>0) {
+            indexForScrollTo-=1
         }
 
-        //设置面包屑
-        //每一层都显示自己的路径不就行了？
+        //下次渲染时请求滚动页面到对应条目
+        filesPageRequestFromParent.value = PageRequest.DataRequest.build(PageRequest.goToIndex, ""+indexForScrollTo)
+    }
 
-        //列出从仓库目录往后的目录，删掉前面的/storage/emu...之类的，返回结果形如[repo1,repo1Inside,otherDirs...]
+    //设置面包屑
+    //每一层都显示自己的路径不就行了？
+
+    //列出从仓库目录往后的目录，删掉前面的/storage/emu...之类的，返回结果形如[repo1,repo1Inside,otherDirs...]
 //    currentPathStrList.addAll(getFilePathStrBasedRepoDir(curDirPath).split(File.separator))
 
-        //这个函数其实只有在第一次进入Files页面且开启了记住上次退出路径的时候才有必要执行，这是一个针对当前路径初始化面包屑的操作，正常来说，更新面包屑不用执行这个函数，直接在点击文件夹时把路径添加到面包屑列表中即可
-        //添加包含文件夹名和文件夹完整路径的对象到列表用来做面包屑路径导航
+    //这个函数其实只有在第一次进入Files页面且开启了记住上次退出路径的时候才有必要执行，这是一个针对当前路径初始化面包屑的操作，正常来说，更新面包屑不用执行这个函数，直接在点击文件夹时把路径添加到面包屑列表中即可
+    //添加包含文件夹名和文件夹完整路径的对象到列表用来做面包屑路径导航
 
-        //每次在这里更新面包屑其实也行，但不如点击目录时增量更新省事
-        //值等于0，需要初始化
+    //每次在这里更新面包屑其实也行，但不如点击目录时增量更新省事
+    //值等于0，需要初始化
 //    if(currentPathBreadCrumbList.intValue==0) {  //刚创建页面的时候，面包屑列表为空，需要初始化一下，后续由点击目录的onClick函数维护面包屑状态
 
 //        val willUpdateList = if(currentPathBreadCrumbList.intValue==1) currentPathBreadCrumbList1 else currentPathBreadCrumbList2  //初始化时更新列表1，列表2由后续点击面包屑后的onClick函数更新
 
-        val curDirPath = currentDir.canonicalPath
-        val curBreadCrumbList = currentPathBreadCrumbList.value
-        //重新生成面包屑的条件：上次路径为空 或 面包屑列表为空 或 上次路径非startsWith当前路径
+    val curDirPath = currentDir.canonicalPath
+    val curBreadCrumbList = currentPathBreadCrumbList.value
+    //重新生成面包屑的条件：上次路径为空 或 面包屑列表为空 或 上次路径非startsWith当前路径
 //        if(lastUsedPath.isBlank() || curDirPath==FsUtils.rootPath || currentPathBreadCrumbList.value.isEmpty() || lastUsedPath.startsWith(curDirPath).not()) {
 
-        val separator = Cons.slashChar
+    val separator = Cons.slashChar
 
-        //if breadCrumblist empty or last item full path not starts with current path, recreate the breadcrumblist
-        //如果面包屑不为空或最后一个元素不是当前路径的子目录，重新创建面包屑列表
-        if(breadCrumbPathNotCoverdCurPath(curBreadCrumbList, curDirPath, separator)) {
+    //if breadCrumblist empty or last item full path not starts with current path, recreate the breadcrumblist
+    //如果面包屑不为空或最后一个元素不是当前路径的子目录，重新创建面包屑列表
+    if(breadCrumbPathNotCoverdCurPath(curBreadCrumbList, curDirPath, separator)) {
 //        val isInternalStoragePath = curDirPath.startsWith(repoBaseDirPath)
 //        val splitPath = (if(isInternalStoragePath) getFilePathStrBasedRepoDir(curDirPath) else curDirPath.removePrefix("/")).split(File.separator)  //获得一个分割后的目录列表
 //        val root = if(isInternalStoragePath) repoBaseDirPath else "/"
-            val splitPath = curDirPath.trim(separator).split(separator)  //获得一个分割后的目录列表
+        val splitPath = curDirPath.trim(separator).split(separator)  //获得一个分割后的目录列表
 //            val root = separator
-            curBreadCrumbList.clear()  //避免和之前的路径拼接在一起，先清空下列表
+        curBreadCrumbList.clear()  //避免和之前的路径拼接在一起，先清空下列表
 //        if(splitPath.isNotEmpty()) {  //啥也没分割出来的话，就没必要填东西了，不过应该不会出现这种情况
 //            var lastPathName=StringBuilder(40).append(rootPath)  // if not starts with root path "/", use this instead create a empty StringBuilder, the rootPath should is a canonical path, which starts with '/' and no ends with '/'
-            var lastPathName=StringBuilder(40)  // most time the path should more than 30 "/storage/emulated/0" , so set it to 40 I think is better than StringBuilder default size 16
-            for(pathName in splitPath) {  //更新面包屑
-                lastPathName.append(separator).append(pathName)  //拼接列表路径为仓库下的 完整相对路径
-                // bread crumb为了生成快速创建的是阉割板的对象，只有少数必要参数，如果想获取path的完整dto，需要重新生成， 调用genFileItemDtoByFile(dto.toFile())即可
-                val pathDto = FileItemDto()
+        var lastPathName=StringBuilder(40)  // most time the path should more than 30 "/storage/emulated/0" , so set it to 40 I think is better than StringBuilder default size 16
+        for(pathName in splitPath) {  //更新面包屑
+            lastPathName.append(separator).append(pathName)  //拼接列表路径为仓库下的 完整相对路径
+            // bread crumb为了生成快速创建的是阉割板的对象，只有少数必要参数，如果想获取path的完整dto，需要重新生成， 调用genFileItemDtoByFile(dto.toFile())即可
+            val pathDto = FileItemDto()
 
-                //breadCrumb must dir, if is file, will replace at up code
-                //面包屑肯定是目录，如果是文件，在上面的代码中会被替换成目录
+            //breadCrumb must dir, if is file, will replace at up code
+            //面包屑肯定是目录，如果是文件，在上面的代码中会被替换成目录
 //                pathDto.isFile=false
-                pathDto.isDir=true
+            pathDto.isDir=true
 
 //                pathDto.fullPath = File(root, lastPathName.toString()).canonicalPath  //把仓库下完整相对路径和仓库路径拼接，得到一个绝对路径
-                pathDto.fullPath = lastPathName.toString()  // this will output path like "/abc/def" and should faster than `File(root, lastPathName).canonicalPath`
+            pathDto.fullPath = lastPathName.toString()  // this will output path like "/abc/def" and should faster than `File(root, lastPathName).canonicalPath`
 
 //                println("f1: ${pathDto.fullPath}")  // "/abc/def"
 
-                pathDto.name = pathName
-                curBreadCrumbList.add(pathDto)
-            }
-
+            pathDto.name = pathName
+            curBreadCrumbList.add(pathDto)
         }
+
+    }
 //        currentPathBreadCrumbList.requireRefreshView()
 //        }
 
 //    }
 
 
-        // since require manage storage permission, no more need this, users can simple copy file at Files page between external and internal storage
-        //检查是否请求导入文件
-        if(requireImportFile.value) {
-            requireImportFile.value = false
-            if(requireImportUriList.value.isEmpty()) { //待导入列表为空，退出导入模式
-                //退出导入模式
-                quitImportMode()
-            }else { //有条目待导入，开启导入模式
-                //退出选择模式
-                filesPageQuitSelectionMode()
-                //切换到导入模式，显示导入栏
-                isImportedMode.value=true
-            }
-            //刷新页面，改了状态应该会自动刷新，不需再刷新
-//            changeStateTriggerRefreshPage(needRefreshFilesPage)
+    // since require manage storage permission, no more need this, users can simple copy file at Files page between external and internal storage
+    //检查是否请求导入文件
+    if(requireImportFile.value) {
+        requireImportFile.value = false
+        if(requireImportUriList.value.isEmpty()) { //待导入列表为空，退出导入模式
+            //退出导入模式
+            quitImportMode()
+        }else { //有条目待导入，开启导入模式
+            //退出选择模式
+            filesPageQuitSelectionMode()
+            //切换到导入模式，显示导入栏
+            isImportedMode.value=true
         }
-
-
-        // set err if has
-//        if(!File(currentPath.value).canRead()) {  // can't read dir, usually no permission for dir or dir doesn't exist
-        openDirErr.value = if(currentDir.canRead() && currentDir.isDirectory) "" else activityContext.getString(R.string.err_read_path_failed)
+        //刷新页面，改了状态应该会自动刷新，不需再刷新
+//            changeStateTriggerRefreshPage(needRefreshFilesPage)
     }
+
+
+    // set err if has
+//        if(!File(currentPath.value).canRead()) {  // can't read dir, usually no permission for dir or dir doesn't exist
+    openDirErr.value = if(currentDir.canRead() && currentDir.isDirectory) "" else activityContext.getString(R.string.err_read_path_failed)
 
 }
 
