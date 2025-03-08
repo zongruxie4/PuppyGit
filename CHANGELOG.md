@@ -1,3 +1,11 @@
+1.0.9.4v70 - 20250308:
+- optimize code
+
+
+- 优化代码
+
+---
+
 1.0.9.3v69 - 20250307:
 - adjust set username and email dialog
 
