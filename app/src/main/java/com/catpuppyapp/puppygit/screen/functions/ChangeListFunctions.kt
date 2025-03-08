@@ -135,6 +135,7 @@ object ChangeListFunctions {
                 requireShowToast(pleaseSetUsernameAndEmailBeforeCommit)
                 //弹窗提示没用户名和邮箱，询问是否设置，用户设置好再重新调用此方法即可
                 initSetUsernameAndEmailDialog(curRepoFromParentPage) {
+                    //这里因为还要显示提交信息的弹窗，所以没必要在这显示loading，应由那个弹窗的成功回调来显示
                     doJobThenOffLoading {
                         doCommit(
                             requireShowCommitMsgDialog = requireShowCommitMsgDialog,
@@ -572,6 +573,8 @@ object ChangeListFunctions {
     }
 
     suspend fun doSync(
+        loadingOn:(String)->Unit,
+        loadingOff:()->Unit,
         requireCloseBottomBar:Boolean,
         trueMergeFalseRebase:Boolean,
         curRepoFromParentPage:RepoEntity,
@@ -601,8 +604,11 @@ object ChangeListFunctions {
                 //显示弹窗
                 initSetUpstreamDialog(Libgit2Helper.getRemoteList(repo), curBranchShortName, curBranchFullName, activityContext.getString(R.string.save_and_sync)) {
                     //设置上游成功的callback
-                    doJobThenOffLoading {
+                    //这里得设置loading，因为sync一般是顶级操作，它不开loading没人帮它开
+                    doJobThenOffLoading(loadingOn, loadingOff, activityContext.getString(R.string.syncing)) {
                         doSync(
+                            loadingOn = loadingOn,
+                            loadingOff = loadingOff,
                             requireCloseBottomBar = requireCloseBottomBar,
                             trueMergeFalseRebase = trueMergeFalseRebase,
                             curRepoFromParentPage = curRepoFromParentPage,

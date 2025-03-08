@@ -955,6 +955,8 @@ fun ChangeListInnerPage(
 //                    RepoStatusUtil.setRepoStatus(repoId, appContext.getString(R.string.syncing))
 //                    doSync(true)
                             ChangeListFunctions.doSync(
+                                loadingOn = loadingOn,
+                                loadingOff = loadingOff,
                                 requireCloseBottomBar = true,
                                 trueMergeFalseRebase = true,
                                 curRepoFromParentPage = curRepo,
@@ -985,6 +987,8 @@ fun ChangeListInnerPage(
 //                    RepoStatusUtil.setRepoStatus(repoId, appContext.getString(R.string.syncing))
 //                    doSync(true, trueMergeFalseRebase = false)
                             ChangeListFunctions.doSync(
+                                loadingOn = loadingOn,
+                                loadingOff = loadingOff,
                                 requireCloseBottomBar = true,
                                 trueMergeFalseRebase = false,
                                 curRepoFromParentPage = curRepo,
@@ -1603,6 +1607,8 @@ fun ChangeListInnerPage(
 
 //                                doSync(true)
                                 ChangeListFunctions.doSync(
+                                    loadingOn = loadingOn,
+                                    loadingOff = loadingOff,
                                     requireCloseBottomBar = true,
                                     trueMergeFalseRebase = true,
                                     curRepoFromParentPage = curRepo,
@@ -2940,6 +2946,8 @@ fun ChangeListInnerPage(
                                                 try {
 //                                                   //     doSync(true)
                                                     ChangeListFunctions.doSync(
+                                                        loadingOn = loadingOn,
+                                                        loadingOff = loadingOff,
                                                         requireCloseBottomBar = true,
                                                         trueMergeFalseRebase = true,
                                                         curRepoFromParentPage = curRepo,
