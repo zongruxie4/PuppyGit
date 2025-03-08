@@ -3116,20 +3116,28 @@ private suspend fun doInit(
     // since require manage storage permission, no more need this, users can simple copy file at Files page between external and internal storage
     //检查是否请求导入文件
     if(requireImportFile.value) {
+        //确保只启动一次导入模式
         requireImportFile.value = false
-        if(requireImportUriList.value.isEmpty()) { //待导入列表为空，退出导入模式
-            //退出导入模式
-            quitImportMode()
-        }else { //有条目待导入，开启导入模式
+
+        //若待导入列表不为空，退出选择模式并启动导入模式
+        if(requireImportUriList.value.isNotEmpty()) { //有条目待导入，开启导入模式
             //退出选择模式
             filesPageQuitSelectionMode()
             //切换到导入模式，显示导入栏
-            isImportedMode.value=true
+            isImportedMode.value = true
         }
         //刷新页面，改了状态应该会自动刷新，不需再刷新
 //            changeStateTriggerRefreshPage(needRefreshFilesPage)
     }
 
+    //如果待导入列表为空，退出导入模式，这个必须放在检查是否启动导入模式的后面+外面，若放前面会提前清空导入列表，直接使导入模式作废；
+    // 若放判断是否启动导入模式的里面则大概率会使这段代码失效（除非进入的时候待导入列表为空），
+    // 因为是否启动导入模式是一次性判断，进入代码块后就重置flag了，比如用户先导入文件，然后清空文件列表，再刷新，这时应退出导入模式，
+    // 但如果放检查是否启动导入模式的代码块里，这时flag已设为假，就不会被执行了，于是就导致bug：待导入条目为0，却依然开着导入模式
+    if(requireImportUriList.value.isEmpty()) { //待导入列表为空，退出导入模式
+        //退出导入模式
+        quitImportMode()
+    }
 
     // set err if has
 //        if(!File(currentPath.value).canRead()) {  // can't read dir, usually no permission for dir or dir doesn't exist
