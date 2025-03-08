@@ -2816,6 +2816,7 @@ fun FilesInnerPage(
                 viewAndSortState=viewAndSortState,
                 viewAndSortOnlyForThisFolderState=onlyForThisFolderState,
                 curPathFileItemDto=curPathFileItemDto,
+                quitImportMode=quitImportMode
 //                repoList=repoList,
             )
 
@@ -2851,12 +2852,19 @@ private fun doInit(
     viewAndSortState:CustomStateSaveable<DirViewAndSort>,
     viewAndSortOnlyForThisFolderState:MutableState<Boolean>,
     curPathFileItemDto:CustomStateSaveable<FileItemDto>,
+    quitImportMode:()->Unit,
+    selectedItems:List<FileItemDto>
 //    repoList:CustomStateListSaveable<RepoEntity>,
 //    currentPathBreadCrumbList: MutableIntState,
 //    currentPathBreadCrumbList1: SnapshotStateList<FileItemDto>,
 //    currentPathBreadCrumbList2: SnapshotStateList<FileItemDto>
 ){
     doJobThenOffLoading(loadingOn, loadingOff, activityContext.getString(R.string.loading)) {
+        //无选中条目则退出选择模式
+        if(selectedItems.isEmpty()) {
+            filesPageQuitSelectionMode()
+        }
+
         val lastOpenedPathFromSettings = settingsSnapshot.value.files.lastOpenedPath
 
         //如果路径为空，从配置文件读取上次打开的路径
@@ -3107,10 +3115,10 @@ private fun doInit(
         //检查是否请求导入文件
         if(requireImportFile.value) {
             requireImportFile.value = false
-            if(requireImportUriList.value.isEmpty()) {
-//                    不开启导入模式，提示下用户导入条目为空即可
-                Msg.requireShow(activityContext.getString(R.string.require_import_files_list_is_empty))
-            }else {
+            if(requireImportUriList.value.isEmpty()) { //待导入列表为空，退出导入模式
+                //退出导入模式
+                quitImportMode()
+            }else { //有条目待导入，开启导入模式
                 //退出选择模式
                 filesPageQuitSelectionMode()
                 //切换到导入模式，显示导入栏
