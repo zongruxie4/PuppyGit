@@ -170,7 +170,7 @@ fun BranchListScreen(
     val username = rememberSaveable { mutableStateOf("") }
     val email = rememberSaveable { mutableStateOf("") }
     val showUsernameAndEmailDialog = rememberSaveable { mutableStateOf(false) }
-    val afterSetUsernameAndEmailSuccessCallback = remember { mutableStateOf<(()->Unit)?>(null) }
+    val afterSetUsernameAndEmailSuccessCallback = mutableCustomStateOf<(()->Unit)?>(keyTag = stateKeyTag, keyName = "afterSetUsernameAndEmailSuccessCallback") { null }
     val initSetUsernameAndEmailDialog = { curRepo:RepoEntity, callback:(()->Unit)? ->
         try {
             Repository.open(curRepo.fullSavePath).use { repo ->
@@ -450,8 +450,8 @@ fun BranchListScreen(
     val showClearForSetUpstreamDialog =rememberSaveable { mutableStateOf(false)}
     //把远程分支名设成当前分支的完整名
     val upstreamBranchShortRefSpec = rememberSaveable { mutableStateOf("")}
-    val afterSetUpstreamSuccessCallback = remember { mutableStateOf<(()->Unit)?>(null) }
-    val setUpstreamOnFinallyCallback = remember { mutableStateOf<()->Unit>({}) }
+    val afterSetUpstreamSuccessCallback = mutableCustomStateOf<(()->Unit)?>(stateKeyTag, "afterSetUpstreamSuccessCallback") { null }
+    val setUpstreamOnFinallyCallback = mutableCustomStateOf<()->Unit>(stateKeyTag, "setUpstreamOnFinallyCallback") { {} }
 
     //注意：如果callback不为null，设置上游的弹窗将不会在操作结束后自动刷新页面，这时应由callback负责刷新页面
     val initSetUpstreamDialog = { curObjInPage:BranchNameAndTypeDto, callback:(()->Unit)? ->

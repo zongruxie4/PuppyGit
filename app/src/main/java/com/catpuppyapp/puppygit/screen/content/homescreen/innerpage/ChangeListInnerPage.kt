@@ -232,7 +232,7 @@ fun ChangeListInnerPage(
     val username = rememberSaveable { mutableStateOf("") }
     val email = rememberSaveable { mutableStateOf("") }
     val showUsernameAndEmailDialog = rememberSaveable { mutableStateOf(false) }
-    val afterSetUsernameAndEmailSuccessCallback = remember { mutableStateOf<(()->Unit)?>(null) }
+    val afterSetUsernameAndEmailSuccessCallback = mutableCustomStateOf<(()->Unit)?>(stateKeyTag, "afterSetUsernameAndEmailSuccessCallback") { null }
     val initSetUsernameAndEmailDialog = { curRepo:RepoEntity, callback:(()->Unit)? ->
         try {
             Repository.open(curRepo.fullSavePath).use { repo ->
@@ -1508,9 +1508,9 @@ fun ChangeListInnerPage(
                 requireShowToast(activityContext.getString(R.string.upstream_saved))
                 //把loading信息改成正在同步
                 loadingOn(activityContext.getString(R.string.syncing))
-
+改成设置 callbakc
+                //目前在这个页面只有在执行sync时发现没上游才会弹窗让设置上游，所以设置完上游无脑执行doSync就行，但日后若有其他需求，则需要设置个独立的callback，在显示弹窗前设置下callback，然后保存上游成功后再调用callback
                 //重新执行doSync()
-//                            doSync(true)
                 ChangeListFunctions.doSync(
                     requireCloseBottomBar = true,
                     trueMergeFalseRebase = true,

@@ -220,7 +220,7 @@ fun RepoInnerPage(
     val username = rememberSaveable { mutableStateOf("") }
     val email = rememberSaveable { mutableStateOf("") }
     val showUsernameAndEmailDialog = rememberSaveable { mutableStateOf(false) }
-    val afterSetUsernameAndEmailSuccessCallback = remember { mutableStateOf<(()->Unit)?>(null) }
+    val afterSetUsernameAndEmailSuccessCallback = mutableCustomStateOf<(()->Unit)?>(stateKeyTag, "afterSetUsernameAndEmailSuccessCallback") { null }
     val initSetUsernameAndEmailDialog = { targetRepo:RepoEntity, callback:(()->Unit)? ->
         try {
             Repository.open(targetRepo.fullSavePath).use { repo ->
@@ -1319,10 +1319,10 @@ fun RepoInnerPage(
     val curBranchShortNameForSetUpstreamDialog  =rememberSaveable { mutableStateOf("")}
     val curBranchFullNameForSetUpstreamDialog  =rememberSaveable { mutableStateOf("")}
 
-    val doActAfterSetUpstreamSuccess = remember { mutableStateOf({}) }
+    val doActAfterSetUpstreamSuccess = mutableCustomStateOf<(()->Unit)?>(stateKeyTag, "doActAfterSetUpstreamSuccess") { null }
     val showClearForSetUpstreamDialog = rememberSaveable { mutableStateOf(false) }
 
-    val initSetUpstreamDialog: suspend (RepoEntity, String, ()->Unit) -> Unit = {targetRepo, onOkText, actAfterSuccess ->
+    val initSetUpstreamDialog: suspend (RepoEntity, String, (()->Unit)?) -> Unit = {targetRepo, onOkText, actAfterSuccess ->
         try {
             curRepo.value = targetRepo
 
@@ -1438,6 +1438,7 @@ fun RepoInnerPage(
                 )
             },
             onClearFinallyCallback = {
+                若有callback是否还需要在这里执行刷新？
                 changeStateTriggerRefreshPage(needRefreshRepoPage)
             },
             onSuccessCallback = {
