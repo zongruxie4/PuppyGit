@@ -139,11 +139,30 @@ fun FilesPageActions(
                         dropDownMenuExpendState.value = false
                     }
                 )
+
                 DropdownMenuItem(
                     enabled = enableMenuItem,
                     text = { Text(stringResource(R.string.view_and_sort)) },
                     onClick = {
                         requestFromParent.value = PageRequest.showViewAndSortMenu
+                        dropDownMenuExpendState.value = false
+                    }
+                )
+
+                DropdownMenuItem(
+                    enabled = enableMenuItem,
+                    text = { Text(stringResource(R.string.copy_repo_relative_path)) },
+                    onClick = {
+                        requestFromParent.value = PageRequest.copyRepoRelativePath
+                        dropDownMenuExpendState.value = false
+                    }
+                )
+
+                DropdownMenuItem(
+                    enabled = enableMenuItem,
+                    text = { Text(stringResource(R.string.copy_full_path)) },
+                    onClick = {
+                        requestFromParent.value = PageRequest.copyFullPath
                         dropDownMenuExpendState.value = false
                     }
                 )

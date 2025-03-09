@@ -689,7 +689,7 @@ fun FilesInnerPage(
         copyRepoRelativePath@{
             copyRepoRelativePath(it.fullPath)
         },
-        copyRealPath@{
+        copyFullPath@{
             copyThenShowCopied(it.fullPath)
         },
         details@{
@@ -717,7 +717,7 @@ fun FilesInnerPage(
         copyRepoRelativePath@{
             copyRepoRelativePath(it.fullPath)
         },
-        copyRealPath@{
+        copyFullPath@{
             copyThenShowCopied(it.fullPath)
         },
         details@{
@@ -2775,7 +2775,7 @@ fun FilesInnerPage(
 //        }
 //    }
 
-    if(filesPageRequestFromParent.value==PageRequest.copyRealPath) {
+    if(filesPageRequestFromParent.value==PageRequest.copyFullPath) {
         PageRequest.clearStateThenDoAct(filesPageRequestFromParent) {
             copyThenShowCopied(currentPath.value)
         }

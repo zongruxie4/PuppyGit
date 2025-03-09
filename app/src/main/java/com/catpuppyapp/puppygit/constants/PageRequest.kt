@@ -50,7 +50,7 @@ object PageRequest {
     const val showInFiles ="showInFiles"
     const val goToPath ="goToPath"
 //    const val copyPath="copyPath"
-    const val copyRealPath="copyRealPath"
+    const val copyFullPath="copyFullPath"
     const val copyRepoRelativePath="copyRepoRelativePath"
     const val cherrypickContinue ="cherrypickContinue"
     const val cherrypickAbort ="cherrypickAbort"
