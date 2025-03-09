@@ -486,10 +486,9 @@ object ChangeListFunctions {
             showErrAndSaveLog(
                 logTag = TAG,
                 logMsg = "#doMerge(trueMergeFalseRebase=$trueMergeFalseRebase) err:"+e.stackTraceToString(),
-                showMsg = e.localizedMessage ?: "err",
+                showMsg = "${if(trueMergeFalseRebase) "merge" else "rebase"} err: "+e.localizedMessage,
                 showMsgMethod = requireShowToast,
                 repoId = curRepoFromParentPage.id,
-                errMsgForErrDb = "${if(trueMergeFalseRebase) "merge" else "rebase"} err: "+e.localizedMessage
             )
 
             //关闭底栏，如果需要的话
