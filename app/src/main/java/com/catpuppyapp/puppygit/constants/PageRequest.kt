@@ -51,6 +51,7 @@ object PageRequest {
     const val goToPath ="goToPath"
 //    const val copyPath="copyPath"
     const val copyRealPath="copyRealPath"
+    const val copyRepoRelativePath="copyRepoRelativePath"
     const val cherrypickContinue ="cherrypickContinue"
     const val cherrypickAbort ="cherrypickAbort"
     const val rebaseContinue ="rebaseContinue"

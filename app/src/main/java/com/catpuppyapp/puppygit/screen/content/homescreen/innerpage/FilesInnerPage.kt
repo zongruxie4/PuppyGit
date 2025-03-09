@@ -2780,6 +2780,13 @@ fun FilesInnerPage(
             copyThenShowCopied(currentPath.value)
         }
     }
+
+    if(filesPageRequestFromParent.value==PageRequest.copyRepoRelativePath) {
+        PageRequest.clearStateThenDoAct(filesPageRequestFromParent) {
+            copyRepoRelativePath(currentPath.value)
+        }
+    }
+
     if(filesPageRequestFromParent.value==PageRequest.goToInternalStorage) {
         PageRequest.clearStateThenDoAct(filesPageRequestFromParent) {
             goToPath(FsUtils.getInternalStorageRootPathNoEndsWithSeparator())
