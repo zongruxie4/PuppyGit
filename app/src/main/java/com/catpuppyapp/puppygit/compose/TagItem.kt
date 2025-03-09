@@ -89,7 +89,7 @@ fun TagItem(
 
         ){
 
-            Text(text = stringResource(R.string.name) +":")
+            Text(text = stringResource(R.string.name) +": ")
             Text(text = thisObj.shortName,
                 maxLines = 1,
                 overflow = TextOverflow.Ellipsis,
@@ -103,7 +103,7 @@ fun TagItem(
 
         ){
 
-            Text(text = stringResource(R.string.target) +":")
+            Text(text = stringResource(R.string.target) +": ")
 
             Text(text = thisObj.getCachedTargetShortOidStr(),
                 maxLines = 1,
@@ -121,7 +121,7 @@ fun TagItem(
 
         ){
 
-            Text(text = stringResource(R.string.type) +":")
+            Text(text = stringResource(R.string.type) +": ")
             Text(text = thisObj.getType(activityContext, false),
                 maxLines = 1,
                 overflow = TextOverflow.Ellipsis,
@@ -135,7 +135,7 @@ fun TagItem(
                 verticalAlignment = Alignment.CenterVertically,
             ){
 
-                Text(text = stringResource(R.string.tagger) +":")
+                Text(text = stringResource(R.string.tagger) +": ")
                 Text(text = thisObj.getFormattedTaggerNameAndEmail(),
                     maxLines = 1,
                     overflow = TextOverflow.Ellipsis,
@@ -147,7 +147,7 @@ fun TagItem(
                 verticalAlignment = Alignment.CenterVertically,
             ){
 
-                Text(text = stringResource(R.string.date) +":")
+                Text(text = stringResource(R.string.date) +": ")
                 Text(text = if(shouldShowTimeZoneInfo) TimeZoneUtil.appendUtcTimeZoneText(thisObj.getFormattedDate(), thisObj.originTimeOffsetInMinutes) else thisObj.getFormattedDate(),
                     maxLines = 1,
                     overflow = TextOverflow.Ellipsis,
@@ -159,7 +159,7 @@ fun TagItem(
                 verticalAlignment = Alignment.CenterVertically,
             ){
 
-                Text(text = stringResource(R.string.msg) +":")
+                Text(text = stringResource(R.string.msg) +": ")
                 Text(text = thisObj.msg,
                     maxLines = 1,
                     overflow = TextOverflow.Ellipsis,

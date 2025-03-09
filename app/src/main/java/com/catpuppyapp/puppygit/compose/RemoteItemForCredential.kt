@@ -54,7 +54,7 @@ fun RemoteItemForCredential(
                 verticalAlignment = Alignment.CenterVertically,
             ){
 
-                Text(text = stringResource(R.string.repo) +":")
+                Text(text = stringResource(R.string.repo) +": ")
                 Text(text = thisItem.repoName,
                     maxLines = 1,
                     overflow = TextOverflow.Ellipsis,
@@ -65,7 +65,7 @@ fun RemoteItemForCredential(
             Row (
                 verticalAlignment = Alignment.CenterVertically,
             ){
-                Text(text = stringResource(R.string.remote) +":")
+                Text(text = stringResource(R.string.remote) +": ")
                 Text(text = thisItem.remoteName,
                     maxLines = 1,
                     overflow = TextOverflow.Ellipsis,
@@ -78,7 +78,7 @@ fun RemoteItemForCredential(
             Row (
                 verticalAlignment = Alignment.CenterVertically,
             ){
-                Text(text = fetchUrlTitle+":")
+                Text(text = fetchUrlTitle+": ")
                 Row(
                     modifier = Modifier.horizontalScroll(rememberScrollState())
                         .clickable {
@@ -97,7 +97,7 @@ fun RemoteItemForCredential(
             Row (
                 verticalAlignment = Alignment.CenterVertically,
             ){
-                Text(text = pushUrlTitle+":")
+                Text(text = pushUrlTitle+": ")
                 Row(
                     modifier = Modifier.horizontalScroll(rememberScrollState())
                         .clickable {
@@ -115,7 +115,7 @@ fun RemoteItemForCredential(
             Row (
                 verticalAlignment = Alignment.CenterVertically,
             ){
-                Text(text = stringResource(R.string.fetch_linked) +":")
+                Text(text = stringResource(R.string.fetch_linked) +": ")
                 Text(text = thisItem.getCredentialNameOrNone(activityContext),
                     maxLines = 1,
                     overflow = TextOverflow.Ellipsis,
@@ -126,7 +126,7 @@ fun RemoteItemForCredential(
             Row (
                 verticalAlignment = Alignment.CenterVertically,
             ){
-                Text(text = stringResource(R.string.push_linked) +":")
+                Text(text = stringResource(R.string.push_linked) +": ")
                 Text(text = thisItem.getPushCredentialNameOrNone(activityContext),
                     maxLines = 1,
                     overflow = TextOverflow.Ellipsis,

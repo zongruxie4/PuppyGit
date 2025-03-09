@@ -81,7 +81,7 @@ fun ErrorItem(
 
         ){
 
-            Text(text = stringResource(R.string.id) +":")
+            Text(text = stringResource(R.string.id) +": ")
             Text(text = curObj.id,
                 maxLines = 1,
                 overflow = TextOverflow.Ellipsis,
@@ -94,7 +94,7 @@ fun ErrorItem(
 
             ){
 
-            Text(text = stringResource(R.string.date) +":")
+            Text(text = stringResource(R.string.date) +": ")
             Text(text = curObj.date,
                 maxLines = 1,
                 overflow = TextOverflow.Ellipsis,
@@ -107,7 +107,7 @@ fun ErrorItem(
 
             ){
 
-            Text(text = stringResource(R.string.msg) +":")
+            Text(text = stringResource(R.string.msg) +": ")
             Text(text = curObj.msg,
                 maxLines = 1,
                 overflow = TextOverflow.Ellipsis,

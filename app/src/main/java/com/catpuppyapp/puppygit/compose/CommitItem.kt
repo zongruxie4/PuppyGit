@@ -115,7 +115,7 @@ fun CommitItem(
 
         ){
 
-            Text(text = stringResource(R.string.hash) +":")
+            Text(text = stringResource(R.string.hash) +": ")
 
             Text(text = commitDto.shortOidStr,
                 maxLines = 1,
@@ -146,7 +146,7 @@ fun CommitItem(
             verticalAlignment = Alignment.CenterVertically,
 
         ){
-            Text(text = stringResource(R.string.author) +":")
+            Text(text = stringResource(R.string.author) +": ")
             Text(text = Libgit2Helper.getFormattedUsernameAndEmail(commitDto.author, commitDto.email),
                 maxLines = 1,
                 overflow = TextOverflow.Ellipsis,
@@ -160,7 +160,7 @@ fun CommitItem(
             Row (
                 verticalAlignment = Alignment.CenterVertically,
             ){
-                Text(text = stringResource(R.string.committer) +":")
+                Text(text = stringResource(R.string.committer) +": ")
                 Text(text = Libgit2Helper.getFormattedUsernameAndEmail(commitDto.committerUsername, commitDto.committerEmail),
                     maxLines = 1,
                     overflow = TextOverflow.Ellipsis,
@@ -175,7 +175,7 @@ fun CommitItem(
 
             ){
 
-            Text(text = stringResource(R.string.date) +":")
+            Text(text = stringResource(R.string.date) +": ")
             Text(text = if(shouldShowTimeZoneInfo) TimeZoneUtil.appendUtcTimeZoneText(commitDto.dateTime, commitDto.originTimeOffsetInMinutes) else commitDto.dateTime,
                 maxLines = 1,
                 overflow = TextOverflow.Ellipsis,
@@ -186,7 +186,7 @@ fun CommitItem(
         Row (
             verticalAlignment = Alignment.CenterVertically,
         ){
-            Text(text = stringResource(R.string.msg) +":")
+            Text(text = stringResource(R.string.msg) +": ")
             ClickableText(commitDto.msg) {
                 lastClickedItemKey.value = commitDto.oidStr
 
@@ -200,7 +200,7 @@ fun CommitItem(
 
             ){
 
-                Text(text = (if(commitDto.branchShortNameList.size > 1) stringResource(R.string.branches) else stringResource(R.string.branch)) +":")
+                Text(text = (if(commitDto.branchShortNameList.size > 1) stringResource(R.string.branches) else stringResource(R.string.branch)) +": ")
                 Text(text = commitDto.branchShortNameList.toString(),
                     maxLines = 1,
                     overflow = TextOverflow.Ellipsis,
@@ -217,7 +217,7 @@ fun CommitItem(
 
             ){
 
-                Text(text = (if(commitDto.tagShortNameList.size > 1) stringResource(R.string.tags) else stringResource(R.string.tag)) +":")
+                Text(text = (if(commitDto.tagShortNameList.size > 1) stringResource(R.string.tags) else stringResource(R.string.tag)) +": ")
                 Text(text = commitDto.tagShortNameList.toString(),
                     maxLines = 1,
                     overflow = TextOverflow.Ellipsis,
@@ -234,7 +234,7 @@ fun CommitItem(
 
             ){
 
-                Text(text = (if(commitDto.parentShortOidStrList.size > 1) stringResource(R.string.parents) else stringResource(R.string.parent)) +":")
+                Text(text = (if(commitDto.parentShortOidStrList.size > 1) stringResource(R.string.parents) else stringResource(R.string.parent)) +": ")
                 Text(text = commitDto.parentShortOidStrList.toString(),
                     maxLines = 1,
                     overflow = TextOverflow.Ellipsis,
@@ -249,7 +249,7 @@ fun CommitItem(
             Row (
                 verticalAlignment = Alignment.CenterVertically,
             ){
-                Text(text = stringResource(R.string.other)+":")
+                Text(text = stringResource(R.string.other)+": ")
                 Text(text = commitDto.getOther(activityContext, false),
                     maxLines = 1,
                     overflow = TextOverflow.Ellipsis,

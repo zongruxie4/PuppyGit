@@ -105,10 +105,10 @@ fun CredentialItem(
             Row (
                 verticalAlignment = Alignment.CenterVertically,
 
-                ){
+            ){
 
                 //如果关联模式，对已绑定的前面加个*
-                Text(text = stringResource(R.string.name) + ":")
+                Text(text = stringResource(R.string.name) + ": ")
                 Text(text = (if(isLinkMode && (linkedFetchId==thisItem.id || linkedPushId==thisItem.id)) "*" else "") + thisItem.name,
                     maxLines = 1,
                     overflow = TextOverflow.Ellipsis,
@@ -136,8 +136,8 @@ fun CredentialItem(
                 Row (
                     verticalAlignment = Alignment.CenterVertically,
 
-                    ){
-                    Text(text = stringResource(R.string.desc) +":")
+                ){
+                    Text(text = stringResource(R.string.desc) +": ")
                     Text(text = if(isMatchByDomain) stringResource(R.string.credential_match_by_domain_note_short) else stringResource(R.string.no_credential_will_be_used),
                         overflow = TextOverflow.Ellipsis,
                         fontWeight = FontWeight.Light
@@ -151,7 +151,7 @@ fun CredentialItem(
                 Row (
                     verticalAlignment = Alignment.CenterVertically,
                 ){
-                    Text(text = stringResource(R.string.edited) +":")
+                    Text(text = stringResource(R.string.edited) +": ")
                     ScrollableRow {
                         Text(text = getFormatTimeFromSec(thisItem.baseFields.baseUpdateTime),
                             maxLines = 1,

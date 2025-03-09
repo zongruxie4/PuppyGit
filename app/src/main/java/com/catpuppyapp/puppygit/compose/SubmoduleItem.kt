@@ -82,7 +82,7 @@ fun SubmoduleItem(
             verticalAlignment = Alignment.CenterVertically,
 
         ){
-            Text(text = stringResource(R.string.name) +":")
+            Text(text = stringResource(R.string.name) +": ")
             Text(text = thisObj.name,
                 maxLines = 1,
                 overflow = TextOverflow.Ellipsis,
@@ -95,7 +95,7 @@ fun SubmoduleItem(
             verticalAlignment = Alignment.CenterVertically,
 
         ){
-            Text(text = stringResource(R.string.url) +":")
+            Text(text = stringResource(R.string.url) +": ")
             Text(text = thisObj.remoteUrl,
                 maxLines = 1,
                 overflow = TextOverflow.Ellipsis,
@@ -108,7 +108,7 @@ fun SubmoduleItem(
             verticalAlignment = Alignment.CenterVertically,
 
         ){
-            Text(text = stringResource(R.string.path) +":")
+            Text(text = stringResource(R.string.path) +": ")
             Text(text = thisObj.relativePathUnderParent,
                 maxLines = 1,
                 overflow = TextOverflow.Ellipsis,
@@ -120,7 +120,7 @@ fun SubmoduleItem(
             verticalAlignment = Alignment.CenterVertically,
 
         ){
-            Text(text = stringResource(R.string.target) +":")
+            Text(text = stringResource(R.string.target) +": ")
             Text(text = Libgit2Helper.getShortOidStrByFull(thisObj.targetHash),
                 maxLines = 1,
                 overflow = TextOverflow.Ellipsis,
@@ -131,7 +131,7 @@ fun SubmoduleItem(
             verticalAlignment = Alignment.CenterVertically,
 
         ){
-            Text(text = stringResource(R.string.location) +":")
+            Text(text = stringResource(R.string.location) +": ")
             Text(text = thisObj.location.toString(),
                 maxLines = 1,
                 overflow = TextOverflow.Ellipsis,
@@ -144,7 +144,7 @@ fun SubmoduleItem(
 
         ){
 
-            Text(text = stringResource(R.string.status) +":")
+            Text(text = stringResource(R.string.status) +": ")
             Text(text = thisObj.getStatus(activityContext),
                 maxLines = 1,
                 overflow = TextOverflow.Ellipsis,

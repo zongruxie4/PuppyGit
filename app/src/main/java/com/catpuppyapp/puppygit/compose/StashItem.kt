@@ -90,7 +90,7 @@ fun StashItem(
             verticalAlignment = Alignment.CenterVertically,
         ) {
 
-            Text(text = stringResource(R.string.index) + ":")
+            Text(text = stringResource(R.string.index) + ": ")
             Text(
                 text = thisObj.index.toString(),
                 maxLines = 1,
@@ -103,7 +103,7 @@ fun StashItem(
         ) {
 
             // stash id 本质上是提交号，应该也能和其他提交对比或checkout、reset等，不过这个功能一般是临时用下，所以没添加复杂功能
-            Text(text = stringResource(R.string.stash_id) + ":")
+            Text(text = stringResource(R.string.stash_id) + ": ")
 
             Text(
                 text = thisObj.getCachedShortStashId(),
@@ -133,7 +133,7 @@ fun StashItem(
             verticalAlignment = Alignment.CenterVertically,
         ) {
 
-            Text(text = stringResource(R.string.msg) + ":")
+            Text(text = stringResource(R.string.msg) + ": ")
             Text(
                 text = thisObj.msg,
                 maxLines = 1,

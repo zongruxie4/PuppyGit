@@ -111,7 +111,7 @@ fun BranchItem(
 
         ){
 
-            Text(text = stringResource(R.string.name) +":")
+            Text(text = stringResource(R.string.name) +": ")
             Text(text = thisObj.shortName,
                 maxLines = 1,
                 overflow = TextOverflow.Ellipsis,
@@ -125,7 +125,7 @@ fun BranchItem(
 
         ){
 
-            Text(text = stringResource(R.string.last_commit) +":")
+            Text(text = stringResource(R.string.last_commit) +": ")
 
             Text(text = thisObj.shortOidStr,
                 maxLines = 1,
@@ -161,7 +161,7 @@ fun BranchItem(
 
             ){
 
-            Text(text = stringResource(R.string.type) +":")
+            Text(text = stringResource(R.string.type) +": ")
             Text(text = thisObj.getTypeString(activityContext, false),
                 maxLines = 1,
                 overflow = TextOverflow.Ellipsis,
@@ -196,7 +196,7 @@ fun BranchItem(
                 Row(
                     verticalAlignment = Alignment.CenterVertically,
                 ) {
-                    Text(text = stringResource(R.string.upstream) + ":")
+                    Text(text = stringResource(R.string.upstream) + ": ")
                     ClickableText(thisObj.getUpstreamShortName(activityContext)) {
                         lastClickedItemKey.value = thisObj.fullName
 
@@ -210,7 +210,7 @@ fun BranchItem(
                 Row(
                     verticalAlignment = Alignment.CenterVertically,
                 ) {
-                    Text(text = stringResource(R.string.status) + ":")
+                    Text(text = stringResource(R.string.status) + ": ")
                     Text(
                         text = thisObj.getAheadBehind(activityContext, false),
                         maxLines = 1,
@@ -228,7 +228,7 @@ fun BranchItem(
             Row (
                 verticalAlignment = Alignment.CenterVertically,
             ){
-                Text(text = stringResource(R.string.symbolic_target) +":")
+                Text(text = stringResource(R.string.symbolic_target) +": ")
                 Text(text = thisObj.symbolicTargetShortName,
                     maxLines = 1,
                     overflow = TextOverflow.Ellipsis,
@@ -242,7 +242,7 @@ fun BranchItem(
             verticalAlignment = Alignment.CenterVertically,
         ){
 
-            Text(text = stringResource(R.string.other) +":")
+            Text(text = stringResource(R.string.other) +": ")
             Text(text = thisObj.getOther(activityContext, false),
                 maxLines = 1,
                 overflow = TextOverflow.Ellipsis,

@@ -96,7 +96,7 @@ fun ReflogItem(
 
         ){
 
-            Text(text = stringResource(R.string.new_oid) +":")
+            Text(text = stringResource(R.string.new_oid) +": ")
 
             Text(text = thisObj.getShortNewId(),
                 maxLines = 1,
@@ -126,7 +126,7 @@ fun ReflogItem(
 
         ){
 
-            Text(text = stringResource(R.string.old_oid) +":")
+            Text(text = stringResource(R.string.old_oid) +": ")
 
             Text(text = thisObj.getShortOldId(),
                 maxLines = 1,
@@ -156,7 +156,7 @@ fun ReflogItem(
 
         ){
 
-            Text(text = stringResource(R.string.date) +":")
+            Text(text = stringResource(R.string.date) +": ")
             Text(text = if(shouldShowTimeZoneInfo) TimeZoneUtil.appendUtcTimeZoneText(thisObj.date, thisObj.originTimeZoneOffsetInMinutes) else thisObj.date,
                 maxLines = 1,
                 overflow = TextOverflow.Ellipsis,
@@ -170,7 +170,7 @@ fun ReflogItem(
 
         ){
 
-            Text(text = stringResource(R.string.author) +":")
+            Text(text = stringResource(R.string.author) +": ")
             Text(text = Libgit2Helper.getFormattedUsernameAndEmail(thisObj.username, thisObj.email),
                 maxLines = 1,
                 overflow = TextOverflow.Ellipsis,
@@ -184,7 +184,7 @@ fun ReflogItem(
 
         ){
 
-            Text(text = stringResource(R.string.msg) +":")
+            Text(text = stringResource(R.string.msg) +": ")
             Text(text = thisObj.msg,
                 maxLines = 1,
                 overflow = TextOverflow.Ellipsis,

@@ -117,7 +117,7 @@ fun FileHistoryItem(
 
             ) {
 
-            Text(text = stringResource(R.string.commit_id) + ":")
+            Text(text = stringResource(R.string.commit_id) + ": ")
             Text(
                 text = dto.getCachedCommitShortOidStr(),
                 maxLines = 1,
@@ -137,7 +137,7 @@ fun FileHistoryItem(
 
             ) {
 
-            Text(text = stringResource(R.string.entry_id) + ":")
+            Text(text = stringResource(R.string.entry_id) + ": ")
             Text(
                 text = dto.getCachedTreeEntryShortOidStr(),
                 maxLines = 1,
@@ -168,7 +168,7 @@ fun FileHistoryItem(
             verticalAlignment = Alignment.CenterVertically,
 
             ) {
-            Text(text = stringResource(R.string.author) + ":")
+            Text(text = stringResource(R.string.author) + ": ")
             Text(
                 text = Libgit2Helper.getFormattedUsernameAndEmail(dto.authorUsername, dto.authorEmail),
                 maxLines = 1,
@@ -183,7 +183,7 @@ fun FileHistoryItem(
             Row(
                 verticalAlignment = Alignment.CenterVertically,
             ) {
-                Text(text = stringResource(R.string.committer) + ":")
+                Text(text = stringResource(R.string.committer) + ": ")
                 Text(
                     text = Libgit2Helper.getFormattedUsernameAndEmail(dto.committerUsername, dto.committerEmail),
                     maxLines = 1,
@@ -199,7 +199,7 @@ fun FileHistoryItem(
 
             ) {
 
-            Text(text = stringResource(R.string.date) + ":")
+            Text(text = stringResource(R.string.date) + ": ")
             Text(
                 text = if(shouldShowTimeZoneInfo) TimeZoneUtil.appendUtcTimeZoneText(dto.dateTime, dto.originTimeOffsetInMinutes) else dto.dateTime,
                 maxLines = 1,
@@ -212,7 +212,7 @@ fun FileHistoryItem(
             verticalAlignment = Alignment.CenterVertically,
         ) {
 
-            Text(text = stringResource(R.string.msg) + ":")
+            Text(text = stringResource(R.string.msg) + ": ")
             ClickableText(dto.msg) {
                 lastClickedItemKey.value = dto.getItemKey()
 

@@ -213,7 +213,7 @@ fun RepoCard(
                         Row(
                             verticalAlignment = Alignment.CenterVertically
                         ) {
-                            Text(text = stringResource(R.string.state) + ":")
+                            Text(text = stringResource(R.string.state) + ": ")
                             Text(
                                 //如果是detached，显示分支号，否则显示“本地分支:远程分支”
                                 text = repoDto.gitRepoState?.toString() ?: stringResource(R.string.invalid),  //状态为null显示错误，否则显示状态
@@ -229,7 +229,7 @@ fun RepoCard(
                         Row(
                             verticalAlignment = Alignment.CenterVertically
                         ) {
-                            Text(text = stringResource(R.string.repo_label_branch) + ":")
+                            Text(text = stringResource(R.string.repo_label_branch) + ": ")
                             ClickableText (
                                 //如果是detached，显示分支号，否则显示“本地分支:远程分支”
                                 text = if(repoStatusGood) {if(dbIntToBool(repoDto.isDetached)) repoDto.lastCommitHash+"("+ stringResource(R.string.detached)+")" else repoDto.branch+":"+repoDto.upstreamBranch} else "",
@@ -248,7 +248,7 @@ fun RepoCard(
                     Row(
                         verticalAlignment = Alignment.CenterVertically
                     ) {
-                        Text(text = stringResource(R.string.repo_label_last_update_time) + ":")
+                        Text(text = stringResource(R.string.repo_label_last_update_time) + ": ")
                         Text(
                             text = getFormatTimeFromSec(repoDto.lastUpdateTime),
                             maxLines = 1,
@@ -264,7 +264,7 @@ fun RepoCard(
                         Row(
                             verticalAlignment = Alignment.CenterVertically
                         ) {
-                            Text(text = stringResource(R.string.repo_label_last_commit) + ":")
+                            Text(text = stringResource(R.string.repo_label_last_commit) + ": ")
                             ClickableText (
                                 text = if(repoStatusGood) repoDto.lastCommitHash else "",
                                 maxLines = 1,
@@ -289,7 +289,7 @@ fun RepoCard(
                     Row(
                         verticalAlignment = Alignment.CenterVertically
                     ) {
-                        Text(text = stringResource(R.string.repo_label_status) + ":")
+                        Text(text = stringResource(R.string.repo_label_status) + ": ")
 
 
                         //如果不写入数据库的临时中间状态 pushing/pulling 之类的 不为空，显示中间状态，否则显示写入数据库的持久状态
@@ -340,7 +340,7 @@ fun RepoCard(
                     Row(
                         verticalAlignment = Alignment.CenterVertically
                     ) {
-                        Text(text = stringResource(R.string.storage) + ":")
+                        Text(text = stringResource(R.string.storage) + ": ")
                         ClickableText (
                             text = FsUtils.getPathWithInternalOrExternalPrefix(fullPath = repoDto.fullSavePath),
                             maxLines = 1,
@@ -368,7 +368,7 @@ fun RepoCard(
                             //错误信息不用检测仓库状态，因为显示错误信息只需要数据库中有对应条目即可，而正常情况下，如果有有效的错误信息，必然有数据库条目
                             val hasUncheckedErr = repoDto.latestUncheckedErrMsg.isNotBlank()
 
-                            Text(text = stringResource(R.string.repo_label_error) + ":")
+                            Text(text = stringResource(R.string.repo_label_error) + ": ")
                             ClickableText (
                                 text = if (hasUncheckedErr) repoDto.latestUncheckedErrMsg else stringResource(R.string.repo_err_no_err_or_all_checked),
                                 maxLines = 1,
@@ -413,7 +413,7 @@ fun RepoCard(
                         Row(
                             verticalAlignment = Alignment.CenterVertically
                         ) {
-                            Text(text = stringResource(R.string.other) + ":")
+                            Text(text = stringResource(R.string.other) + ": ")
                             Text(
                                 text = repoDto.getOther(),
                                 maxLines = 1,
@@ -439,7 +439,7 @@ fun RepoCard(
                         Row(
                             verticalAlignment = Alignment.CenterVertically
                         ) {
-                            Text(text = stringResource(R.string.parent_repo) + ":")
+                            Text(text = stringResource(R.string.parent_repo) + ": ")
                             ClickableText(
                                 text = repoDto.parentRepoName,
                                 maxLines = 1,
@@ -455,7 +455,7 @@ fun RepoCard(
 
 
                 }
-            }else {
+            }else {  // err repo card
                 Column(
                     modifier = Modifier.fillMaxWidth(),
                     horizontalAlignment = Alignment.CenterHorizontally,
@@ -471,11 +471,11 @@ fun RepoCard(
                         verticalAlignment = Alignment.CenterVertically,
                         horizontalArrangement = Arrangement.Center
                     ) {
-                        Text(text = stringResource(R.string.error)+":"+repoDto.createErrMsg,
+                        Text(
+                            text = stringResource(R.string.error)+": "+repoDto.createErrMsg,
                             color= MyStyleKt.TextColor.error(),
                             textAlign = TextAlign.Left,
-
-                            )
+                        )
                     }
 
                     Spacer(Modifier.height(10.dp))
