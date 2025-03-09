@@ -380,12 +380,13 @@ fun RepoCard(
                                         if (hasUncheckedErr) {
                                             haptic.performHapticFeedback(HapticFeedbackType.LongPress)
                                             // "repo:xxx\n\n err:errinfo"
-                                            val errMsg = StringBuilder("repo: ")
+                                            val errMsg = StringBuilder("${activityContext.getString(R.string.repo)}: ")
                                                 .appendLine(repoDto.repoName)
                                                 .appendLine()
-                                                .append("err: ")
+                                                .append("${activityContext.getString(R.string.error)}: ")
                                                 .append(repoDto.latestUncheckedErrMsg)
                                                 .toString()
+
                                             showErrMsg(repoDto.id, errMsg)
                                         }
                                     },
