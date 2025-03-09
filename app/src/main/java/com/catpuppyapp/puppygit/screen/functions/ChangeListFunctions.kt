@@ -374,15 +374,16 @@ object ChangeListFunctions {
         }
     }
 
-    suspend fun doMerge(requireCloseBottomBar:Boolean,
-                        upstreamParam: Upstream?,
-                        showMsgIfHasConflicts:Boolean,
-                        trueMergeFalseRebase:Boolean=true,
-                        curRepoFromParentPage:RepoEntity,
-                        requireShowToast:(String)->Unit,
-                        activityContext:Context,
-                        loadingText:MutableState<String>,
-                        bottomBarActDoneCallback:(String, RepoEntity)->Unit,
+    suspend fun doMerge(
+        requireCloseBottomBar:Boolean,
+        upstreamParam: Upstream?,
+        showMsgIfHasConflicts:Boolean,
+        trueMergeFalseRebase:Boolean,
+        curRepoFromParentPage:RepoEntity,
+        requireShowToast:(String)->Unit,
+        activityContext:Context,
+        loadingText:MutableState<String>,
+        bottomBarActDoneCallback:(String, RepoEntity)->Unit,
     ):Boolean {
         try {
             val settings = SettingsUtil.getSettingsSnapshot()
@@ -482,6 +483,12 @@ object ChangeListFunctions {
                 return true
             }
         }catch (e:Exception) {
+
+            //关闭底栏，如果需要的话
+            if (requireCloseBottomBar) {
+                bottomBarActDoneCallback("", curRepoFromParentPage)
+            }
+
             //log
             showErrAndSaveLog(
                 logTag = TAG,
@@ -491,10 +498,6 @@ object ChangeListFunctions {
                 repoId = curRepoFromParentPage.id,
             )
 
-            //关闭底栏，如果需要的话
-            if (requireCloseBottomBar) {
-                bottomBarActDoneCallback("", curRepoFromParentPage)
-            }
             return false
         }
 
@@ -559,13 +562,15 @@ object ChangeListFunctions {
                 return@doPush true
             }
         }catch (e:Exception) {
-            //log
-            showErrAndSaveLog(TAG, "#doPush(force=$force) err:"+e.stackTraceToString(), "${if(force) "Push(Force)" else "Push"} error:"+e.localizedMessage, requireShowToast, curRepoFromParentPage.id)
 
             //关闭底栏，如果需要的话
             if (requireCloseBottomBar) {
                 bottomBarActDoneCallback("", curRepoFromParentPage)
             }
+
+            //log
+            showErrAndSaveLog(TAG, "#doPush(force=$force) err:"+e.stackTraceToString(), "${if(force) "Push(Force)" else "Push"} error:"+e.localizedMessage, requireShowToast, curRepoFromParentPage.id)
+
             return@doPush false
         }
 
@@ -659,20 +664,25 @@ object ChangeListFunctions {
                     if(isUpstreamExistOnLocal) {  //上游分支在本地存在
                         // doMerge
                         val mergeSuccess = doMerge(
-                            false, upstream, false, trueMergeFalseRebase,
+                            requireCloseBottomBar = false,
+                            upstreamParam = upstream,
+                            showMsgIfHasConflicts = false,
+                            trueMergeFalseRebase = trueMergeFalseRebase,
                             curRepoFromParentPage = curRepoFromParentPage,
                             requireShowToast = requireShowToast,
                             activityContext = activityContext,
                             loadingText = loadingText,
                             bottomBarActDoneCallback = bottomBarActDoneCallback,
                         )
+
                         if(!mergeSuccess) {  //merge 失败，终止操作
                             //如果merge完存在冲突条目，就不要执行push了
                             if(Libgit2Helper.hasConflictItemInRepo(repo)) {  //检查失败原因是否是存在冲突，若是则显示提示
-                                requireShowToast(activityContext.getString(R.string.has_conflicts_abort_sync))
-                                if(requireCloseBottomBar) {
-                                    bottomBarActDoneCallback("", curRepoFromParentPage)
-                                }
+                                requireShowToast(activityContext.getString(R.string.has_conflicts))
+                            }
+
+                            if(requireCloseBottomBar) {
+                                bottomBarActDoneCallback("", curRepoFromParentPage)
                             }
 
                             return@doSync
@@ -702,13 +712,15 @@ object ChangeListFunctions {
                         bottomBarActDoneCallback("", curRepoFromParentPage)
                     }
                 }catch (e:Exception) {
-                    //log
-                    showErrAndSaveLog(TAG, "#doSync() err:"+e.stackTraceToString(), "sync err:"+e.localizedMessage, requireShowToast, curRepoFromParentPage.id)
 
                     //close if require
                     if(requireCloseBottomBar) {
                         bottomBarActDoneCallback("", curRepoFromParentPage)
                     }
+
+                    //log
+                    showErrAndSaveLog(TAG, "#doSync() err: "+e.stackTraceToString(), "sync err: "+e.localizedMessage, requireShowToast, curRepoFromParentPage.id)
+
                 }
 
             }
@@ -783,7 +795,9 @@ object ChangeListFunctions {
 
     suspend fun doPull(
         curRepo:RepoEntity,
+        trueMergeFalseRebase: Boolean,
         activityContext:Context,
+        requireCloseBottomBar:Boolean,
         dbContainer: AppContainer,
         requireShowToast:(String)->Unit,
         loadingText:MutableState<String>,
@@ -793,7 +807,7 @@ object ChangeListFunctions {
         try {
             //执行操作
 //            val fetchSuccess = doFetch(null)
-            val fetchSuccess = ChangeListFunctions.doFetch(
+            val fetchSuccess = doFetch(
                 remoteNameParam = null,
                 curRepoFromParentPage = curRepo,
                 requireShowToast = requireShowToast,
@@ -801,15 +815,16 @@ object ChangeListFunctions {
                 loadingText = loadingText,
                 dbContainer = dbContainer
             )
+
             if(!fetchSuccess) {
                 requireShowToast(activityContext.getString(R.string.fetch_failed))
             }else {
 //                val mergeSuccess = doMerge(true, null, true)
-                val mergeSuccess = ChangeListFunctions.doMerge(
-                    requireCloseBottomBar = true,
+                val mergeSuccess = doMerge(
+                    requireCloseBottomBar = false,
                     upstreamParam = null,
                     showMsgIfHasConflicts = true,
-                    trueMergeFalseRebase = true,
+                    trueMergeFalseRebase = trueMergeFalseRebase,
                     curRepoFromParentPage = curRepo,
                     requireShowToast = requireShowToast,
                     activityContext = activityContext,
@@ -817,16 +832,27 @@ object ChangeListFunctions {
                     bottomBarActDoneCallback = bottomBarActDoneCallback
                 )
                 if(!mergeSuccess){
-                    requireShowToast(activityContext.getString(R.string.merge_failed))
+                    requireShowToast(activityContext.getString(if(trueMergeFalseRebase) R.string.merge_failed else R.string.rebase_failed))
                 }else {
-                    requireShowToast(activityContext.getString(R.string.pull_success))
+                    requireShowToast(activityContext.getString(if(trueMergeFalseRebase) R.string.pull_success else R.string.pull_rebase_success))
                 }
             }
+
+            if(requireCloseBottomBar) {
+                bottomBarActDoneCallback("", curRepo)
+            }
         }catch (e:Exception){
-            showErrAndSaveLog(TAG,"require pull error:"+e.stackTraceToString(), activityContext.getString(R.string.pull_failed)+":"+e.localizedMessage, requireShowToast,curRepo.id)
-        }finally {
-            //刷新页面
-            changeListRequireRefreshFromParentPage(curRepo)
+            if(requireCloseBottomBar) {
+                bottomBarActDoneCallback("", curRepo)
+            }
+
+            showErrAndSaveLog(
+                logTag = TAG,
+                logMsg = "doPull(trueMergeFalseRebase=$trueMergeFalseRebase) err: "+e.stackTraceToString(),
+                showMsg = activityContext.getString(if(trueMergeFalseRebase) R.string.pull_failed else R.string.pull_rebase_failed)+": "+e.localizedMessage,
+                showMsgMethod = requireShowToast,
+                repoId = curRepo.id
+            )
         }
     }
 

@@ -803,7 +803,7 @@ fun ChangeListInnerPage(
                 goParentChangeList(curRepo)
             }else if(requireAct==PageRequest.pull) { // pull(fetch+merge)
                 doTaskOrShowSetUsernameAndEmailDialog(curRepo) {
-                    doJobThenOffLoading(loadingOn, loadingOff, activityContext.getString(R.string.pulling)){
+                    doJobThenOffLoading(loadingOn, loadingOff, activityContext.getString(R.string.pulling)) {
                         ChangeListFunctions.doPull(
                             curRepo = curRepo,
                             activityContext = activityContext,
@@ -812,6 +812,8 @@ fun ChangeListInnerPage(
                             loadingText = loadingText,
                             bottomBarActDoneCallback = bottomBarActDoneCallback,
                             changeListRequireRefreshFromParentPage = changeListRequireRefreshFromParentPage,
+                            trueMergeFalseRebase = true,
+                            requireCloseBottomBar = true
                         )
                     }
                 }
@@ -848,61 +850,19 @@ fun ChangeListInnerPage(
 
             }else if(requireAct==PageRequest.pullRebase) {
                 doTaskOrShowSetUsernameAndEmailDialog(curRepo) {
-                    doJobThenOffLoading(
-                        loadingOn,
-                        loadingOff,
-                        activityContext.getString(R.string.pulling)
-                    ) {
-                        try {
-                            //设置仓库临时状态(把临时状态设置到缓存里，不退出app都有效，目的是为了使重新查列表后临时状态亦可见)，这样重新加载页面时依然能看到临时状态
-//                    RepoStatusUtil.setRepoStatus(repoId, appContext.getString(R.string.pulling))
-
-                            //执行操作
-//                    val fetchSuccess = doFetch(null)
-                            val fetchSuccess = ChangeListFunctions.doFetch(
-                                remoteNameParam = null,
-                                curRepoFromParentPage = curRepo,
-                                requireShowToast = requireShowToast,
-                                activityContext = activityContext,
-                                loadingText = loadingText,
-                                dbContainer = dbContainer
-                            )
-                            if(!fetchSuccess) {
-                                //刷新页面
-//                        changeStateTriggerRefreshPage(needRefreshChangeListPage)
-
-                                requireShowToast(activityContext.getString(R.string.fetch_failed))
-                            }else {
-//                        val mergeSuccess = doMerge(true, null, true, trueMergeFalseRebase = false)
-                                val mergeSuccess = ChangeListFunctions.doMerge(
-                                    requireCloseBottomBar = true,
-                                    upstreamParam = null,
-                                    showMsgIfHasConflicts = true,
-                                    trueMergeFalseRebase = false,
-                                    curRepoFromParentPage = curRepo,
-                                    requireShowToast = requireShowToast,
-                                    activityContext = activityContext,
-                                    loadingText = loadingText,
-                                    bottomBarActDoneCallback = bottomBarActDoneCallback
-                                )
-                                if(!mergeSuccess){
-                                    requireShowToast(activityContext.getString(R.string.rebase_failed))
-                                }else {
-                                    requireShowToast(activityContext.getString(R.string.pull_rebase_success))
-                                }
-                            }
-                        }catch (e:Exception){
-                            showErrAndSaveLog(TAG,"require Pull(Rebase) error:"+e.stackTraceToString(), activityContext.getString(R.string.pull_rebase_failed)+":"+e.localizedMessage, requireShowToast, curRepo.id)
-                        }finally {
-                            //清除缓存中的仓库状态
-//                    RepoStatusUtil.clearRepoStatus(repoId)
-                            //刷新页面
-                            changeListRequireRefreshFromParentPage(curRepo)
-//                    refreshRepoPage()
-                        }
-
+                    doJobThenOffLoading(loadingOn, loadingOff, activityContext.getString(R.string.pulling)) {
+                        ChangeListFunctions.doPull(
+                            curRepo = curRepo,
+                            trueMergeFalseRebase = false,
+                            activityContext = activityContext,
+                            requireCloseBottomBar = true,
+                            dbContainer = dbContainer,
+                            requireShowToast = requireShowToast,
+                            loadingText = loadingText,
+                            bottomBarActDoneCallback = bottomBarActDoneCallback,
+                            changeListRequireRefreshFromParentPage = changeListRequireRefreshFromParentPage
+                        )
                     }
-
                 }
                 //push
             }else if(requireAct ==PageRequest.push) {
@@ -929,7 +889,7 @@ fun ChangeListInnerPage(
                     }
 
                 }catch (e:Exception){
-                    showErrAndSaveLog(TAG,"require push error:"+e.stackTraceToString(), activityContext.getString(R.string.push_failed)+":"+e.localizedMessage, requireShowToast,curRepo.id)
+                    showErrAndSaveLog(TAG,"require push error:"+e.stackTraceToString(), activityContext.getString(R.string.push_failed)+": "+e.localizedMessage, requireShowToast,curRepo.id)
                 }finally {
 //                    RepoStatusUtil.clearRepoStatus(repoId)
 
@@ -969,7 +929,7 @@ fun ChangeListInnerPage(
                                 dbContainer = dbContainer
                             )
                         }catch (e:Exception){
-                            showErrAndSaveLog(TAG,"require sync error:"+e.stackTraceToString(), activityContext.getString(R.string.sync_failed)+":"+e.localizedMessage, requireShowToast,curRepo.id)
+                            showErrAndSaveLog(TAG,"require sync error:"+e.stackTraceToString(), activityContext.getString(R.string.sync_failed)+": "+e.localizedMessage, requireShowToast,curRepo.id)
                         }finally {
 //                    RepoStatusUtil.clearRepoStatus(repoId)
 
@@ -1117,7 +1077,7 @@ fun ChangeListInnerPage(
 //                        showPushForCommitDialog=showPushForCommitDialog
                     )
                 }catch (e:Exception){
-                    showErrAndSaveLog(TAG,"require commit error:"+e.stackTraceToString(), activityContext.getString(R.string.commit_failed)+":"+e.localizedMessage, requireShowToast, curRepo.id)
+                    showErrAndSaveLog(TAG,"require commit error: "+e.stackTraceToString(), activityContext.getString(R.string.commit_failed)+": "+e.localizedMessage, requireShowToast, curRepo.id)
                 }finally {
 //                    RepoStatusUtil.clearRepoStatus(repoId)
 
@@ -1384,7 +1344,7 @@ fun ChangeListInnerPage(
                         doAbortMerge(curRepo)
 
                     }catch (e:Exception){
-                        showErrAndSaveLog(TAG,"require abort_merge error:"+e.stackTraceToString(), activityContext.getString(R.string.abort_merge_failed)+":"+e.localizedMessage, requireShowToast, curRepo.id)
+                        showErrAndSaveLog(TAG,"require abort_merge error: "+e.stackTraceToString(), activityContext.getString(R.string.abort_merge_failed)+": "+e.localizedMessage, requireShowToast, curRepo.id)
                     }finally {
 //                    RepoStatusUtil.clearRepoStatus(repoId)
 
@@ -2962,13 +2922,11 @@ fun ChangeListInnerPage(
                                                     )
                                                 } catch (e: Exception) {
                                                     showErrAndSaveLog(
-                                                        TAG,
-                                                        "sync error:" + e.stackTraceToString(),
-                                                        activityContext.getString(
-                                                            R.string.sync_failed
-                                                        ) + ":" + e.localizedMessage,
-                                                        requireShowToast,
-                                                        curRepo.id
+                                                        logTag = TAG,
+                                                        logMsg = "sync error: " + e.stackTraceToString(),
+                                                        showMsg = activityContext.getString(R.string.sync_failed) + ": " + e.localizedMessage,
+                                                        showMsgMethod = requireShowToast,
+                                                        repoId = curRepo.id
                                                     )
                                                 } finally {
                                                     changeListRequireRefreshFromParentPage(curRepo)
@@ -3010,11 +2968,11 @@ fun ChangeListInnerPage(
                                                     }
                                                 } catch (e: Exception) {
                                                     showErrAndSaveLog(
-                                                        TAG,
-                                                        "require push error:" + e.stackTraceToString(),
-                                                        activityContext.getString(R.string.push_failed) + ":" + e.localizedMessage,
-                                                        requireShowToast,
-                                                        curRepo.id
+                                                        logTag = TAG,
+                                                        logMsg = "push err: " + e.stackTraceToString(),
+                                                        showMsg = activityContext.getString(R.string.push_failed) + ": " + e.localizedMessage,
+                                                        showMsgMethod = requireShowToast,
+                                                        repoId = curRepo.id
                                                     )
                                                 } finally {
                                                     changeListRequireRefreshFromParentPage(curRepo)
@@ -3043,6 +3001,8 @@ fun ChangeListInnerPage(
                                                         loadingText = loadingText,
                                                         bottomBarActDoneCallback = bottomBarActDoneCallback,
                                                         changeListRequireRefreshFromParentPage = changeListRequireRefreshFromParentPage,
+                                                        trueMergeFalseRebase = true,
+                                                        requireCloseBottomBar = true
                                                     )
                                                 }
                                             }
@@ -3103,13 +3063,11 @@ fun ChangeListInnerPage(
                                                 }
                                             } catch (e: Exception) {
                                                 showErrAndSaveLog(
-                                                    TAG,
-                                                    "fetch error:" + e.stackTraceToString(),
-                                                    activityContext.getString(
-                                                        R.string.fetch_failed
-                                                    ) + ":" + e.localizedMessage,
-                                                    requireShowToast,
-                                                    curRepo.id
+                                                    logTag = TAG,
+                                                    logMsg = "fetch err: " + e.stackTraceToString(),
+                                                    showMsg = activityContext.getString(R.string.fetch_failed) + ": " + e.localizedMessage,
+                                                    showMsgMethod = requireShowToast,
+                                                    repoId = curRepo.id
                                                 )
                                             } finally {
                                                 changeListRequireRefreshFromParentPage(curRepo)

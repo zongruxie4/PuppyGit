@@ -272,7 +272,7 @@ fun BranchListScreen(
 
 
 
-    suspend fun doMerge(trueMergeFalseRebase:Boolean=true):Ret<Unit?>{
+    suspend fun doMerge(trueMergeFalseRebase:Boolean):Ret<Unit?>{
         //如果选中条目和仓库当前活跃分支一样，则不用合并
         if(curObjInPage.value.oidStr == repoCurrentActiveBranchOrDetachedHeadFullHashForDoAct.value) {
 //            requireShowToast(appContext.getString(R.string.merge_failed_src_and_target_same))
@@ -679,9 +679,8 @@ fun BranchListScreen(
                 }catch (e:Exception) {
                     MyLog.e(TAG, "MergeDialog#doMerge(trueMergeFalseRebase=${!requireRebase.value}) err: "+e.stackTraceToString())
 
-                    Msg.requireShowLongDuration("err: " + e.localizedMessage)
-
                     val errMsg = "${if(requireRebase.value) "rebase" else "merge"} failed: "+e.localizedMessage
+                    Msg.requireShowLongDuration(errMsg)
                     createAndInsertError(curRepo.value.id, errMsg)
                 }finally {
                     //别忘了刷新页面！
