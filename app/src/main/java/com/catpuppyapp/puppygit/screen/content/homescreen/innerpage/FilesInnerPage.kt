@@ -557,9 +557,9 @@ fun FilesInnerPage(
     }
 
     // 复制app内路径到剪贴板，显示提示copied
-    val copyPath = {realFullPath:String ->
-        copyThenShowCopied(getFilePathStrBasedRepoDir(realFullPath, returnResultStartsWithSeparator = true))
-    }
+//    val copyPath = {realFullPath:String ->
+//        copyThenShowCopied(getFilePathStrBasedRepoDir(realFullPath, returnResultStartsWithSeparator = true))
+//    }
 
     val copyRepoRelativePath = {realFullPath:String ->
         try {
@@ -2768,11 +2768,12 @@ fun FilesInnerPage(
         }
     }
 
-    if(filesPageRequestFromParent.value==PageRequest.copyPath) {
-        PageRequest.clearStateThenDoAct(filesPageRequestFromParent) {
-            copyPath(currentPath.value)
-        }
-    }
+//    拷贝基于app内仓库路径的相对路径，由于后来改成可选仓库父目录了，所以仓库不一定在内部仓库路径下，因此此功能废弃
+//    if(filesPageRequestFromParent.value==PageRequest.copyPath) {
+//        PageRequest.clearStateThenDoAct(filesPageRequestFromParent) {
+//            copyPath(currentPath.value)
+//        }
+//    }
 
     if(filesPageRequestFromParent.value==PageRequest.copyRealPath) {
         PageRequest.clearStateThenDoAct(filesPageRequestFromParent) {

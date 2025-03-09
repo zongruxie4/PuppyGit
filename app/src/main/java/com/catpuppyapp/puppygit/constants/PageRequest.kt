@@ -49,7 +49,7 @@ object PageRequest {
     const val requireSaveLineNumFontSizeAndQuitAdjust = "requireSaveLineNumFontSizeAndQuitAdjust"
     const val showInFiles ="showInFiles"
     const val goToPath ="goToPath"
-    const val copyPath="copyPath"
+//    const val copyPath="copyPath"
     const val copyRealPath="copyRealPath"
     const val cherrypickContinue ="cherrypickContinue"
     const val cherrypickAbort ="cherrypickAbort"
