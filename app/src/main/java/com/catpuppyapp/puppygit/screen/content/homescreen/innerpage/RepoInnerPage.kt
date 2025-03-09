@@ -507,230 +507,176 @@ fun RepoInnerPage(
 
     }
 
-//    val needRefreshRepoPage = rememberSaveable { mutableStateOf(false) }
-//    val needRefreshRepoPage = rememberSaveable { mutableStateOf("") }
-
-    //执行完doFetch/doMerge/doPush/doSync记得刷新页面，刷新页面不会改变列表滚动位置，所以放心刷，不用怕一刷新列表元素又滚动回第一个，让正在浏览仓库列表的用户困扰
-    val doFetch:suspend (String?,RepoEntity)->Boolean = doFetch@{remoteNameParam:String?,curRepo:RepoEntity ->  //参数的remoteNameParam如果有效就用参数的，否则自己查当前head分支对应的remote
-        //x 废弃，逻辑已经改了) 执行isReadyDoSync检查之前要先do fetch，想象一下，如果远程创建了一个分支，正好和本地的关联，但如果我没先fetch，那我检查时就get不到那个远程分支是否存在，然后就会先执行push，但可能远程仓库已经领先本地了，所以push也可能失败，但如果先fetch，就不会有这种问题了
-        //fetch成功返回true，否则返回false
-        var retVal = false
+    val doActAndLogErr:suspend (curRepo:RepoEntity, actName:String, act:suspend ()->Unit)->Unit = {curRepo, actName, act ->
         try {
-            Repository.open(curRepo.fullSavePath).use { repo ->
-                var remoteName = remoteNameParam
-                if(remoteName == null || remoteName.isBlank()) {
-                    val shortBranchName = Libgit2Helper.getRepoCurBranchShortRefSpec(repo)
-                    val upstream = Libgit2Helper.getUpstreamOfBranch(repo, shortBranchName)
-                    remoteName = upstream.remote
-                    if(remoteName == null || remoteName.isBlank()) {  //fetch不需合并，只需remote有效即可，所以只检查remote
-                        throw RuntimeException(activityContext.getString(R.string.err_upstream_invalid_plz_go_branches_page_set_it_then_try_again))
-//                        return@doFetch false
-                    }
-                }
-
-                //执行到这，upstream的remote有效，执行fetch
-//            只fetch当前分支关联的remote即可，获取仓库当前remote和credential的关联，组合起来放到一个pair里，pair放到一个列表里，然后调用fetch
-                val credential = Libgit2Helper.getRemoteCredential(
-                    dbContainer.remoteRepository,
-                    dbContainer.credentialRepository,
-                    curRepo.id,
-                    remoteName,
-                    trueFetchFalsePush = true
-                )
-
-                //执行fetch
-                Libgit2Helper.fetchRemoteForRepo(repo, remoteName, credential, curRepo)
-
-            }
-
-            // 更新修改workstatus的时间，只更新时间就行，状态会在查询repo时更新
-            val repoDb = AppModel.dbContainer.repoRepository
-            repoDb.updateLastUpdateTime(curRepo.id, getSecFromTime())
-
-            retVal = true
+            act()
         }catch (e:Exception) {
             //记录到日志
             //显示提示
             //保存数据库(给用户看的，消息尽量简单些)
             showErrAndSaveLog(
                 logTag = TAG,
-                logMsg = "#doFetch() from Repo Page err:"+e.stackTraceToString(),
-                showMsg = "fetch err:"+e.localizedMessage,
-                // showMsgMethod = requireShowToast,
-                showMsgMethod = {},
-
+                logMsg = "do `$actName` from Repo Page err: "+e.stackTraceToString(),
+                showMsg = "$actName err: "+e.localizedMessage,
+                showMsgMethod = {},  //不显示错误信息toast
                 repoId = curRepo.id
             )
-
-            retVal = false
         }
-
-        return@doFetch retVal
     }
 
-    suspend fun doMerge(upstreamParam: Upstream?, curRepo:RepoEntity, trueMergeFalseRebase:Boolean=true):Boolean {
-        try {
-            //这的repo不能共享，不然一释放就要完蛋了，这repo不是rc是box单指针
-            Repository.open(curRepo.fullSavePath).use { repo ->
-                var upstream = upstreamParam
-                if(Libgit2Helper.isUpstreamInvalid(upstream)) {  //如果调用者没传有效的upstream，查一下
-                    val shortBranchName = Libgit2Helper.getRepoCurBranchShortRefSpec(repo)  //获取当前分支短名，例如 main
-                    upstream = Libgit2Helper.getUpstreamOfBranch(repo, shortBranchName)  //获取当前分支的上游，例如 remote=origin 和 merge=refs/heads/main，参见配置文件 branch.yourbranchname.remote 和 .merge 字段
-                    //如果查出的upstream还是无效，终止操作
-                    if(Libgit2Helper.isUpstreamInvalid(upstream)) {
-                        throw RuntimeException(activityContext.getString(R.string.err_upstream_invalid_plz_go_branches_page_set_it_then_try_again))
+    //执行完doFetch/doMerge/doPush/doSync记得刷新页面，刷新页面不会改变列表滚动位置，所以放心刷，不用怕一刷新列表元素又滚动回第一个，让正在浏览仓库列表的用户困扰
+    val doFetch:suspend (String?,RepoEntity)->Unit = doFetch@{remoteNameParam:String?,curRepo:RepoEntity ->  //参数的remoteNameParam如果有效就用参数的，否则自己查当前head分支对应的remote
+        Repository.open(curRepo.fullSavePath).use { repo ->
+            var remoteName = remoteNameParam
+            if(remoteName == null || remoteName.isBlank()) {
+                val shortBranchName = Libgit2Helper.getRepoCurBranchShortRefSpec(repo)
+                val upstream = Libgit2Helper.getUpstreamOfBranch(repo, shortBranchName)
+                remoteName = upstream.remote
+                if(remoteName == null || remoteName.isBlank()) {  //fetch不需合并，只需remote有效即可，所以只检查remote
+                    throw RuntimeException(activityContext.getString(R.string.err_upstream_invalid_plz_go_branches_page_set_it_then_try_again))
+//                        return@doFetch false
+                }
+            }
+
+            //执行到这，upstream的remote有效，执行fetch
+//            只fetch当前分支关联的remote即可，获取仓库当前remote和credential的关联，组合起来放到一个pair里，pair放到一个列表里，然后调用fetch
+            val credential = Libgit2Helper.getRemoteCredential(
+                dbContainer.remoteRepository,
+                dbContainer.credentialRepository,
+                curRepo.id,
+                remoteName,
+                trueFetchFalsePush = true
+            )
+
+            //执行fetch
+            Libgit2Helper.fetchRemoteForRepo(repo, remoteName, credential, curRepo)
+
+        }
+
+        // 更新修改workstatus的时间，只更新时间就行，状态会在查询repo时更新
+        val repoDb = AppModel.dbContainer.repoRepository
+        repoDb.updateLastUpdateTime(curRepo.id, getSecFromTime())
+
+    }
+
+    suspend fun doMerge(upstreamParam: Upstream?, curRepo:RepoEntity, trueMergeFalseRebase:Boolean=true):Unit {
+        //这的repo不能共享，不然一释放就要完蛋了，这repo不是rc是box单指针
+        Repository.open(curRepo.fullSavePath).use { repo ->
+            var upstream = upstreamParam
+            if(Libgit2Helper.isUpstreamInvalid(upstream)) {  //如果调用者没传有效的upstream，查一下
+                val shortBranchName = Libgit2Helper.getRepoCurBranchShortRefSpec(repo)  //获取当前分支短名，例如 main
+                upstream = Libgit2Helper.getUpstreamOfBranch(repo, shortBranchName)  //获取当前分支的上游，例如 remote=origin 和 merge=refs/heads/main，参见配置文件 branch.yourbranchname.remote 和 .merge 字段
+                //如果查出的upstream还是无效，终止操作
+                if(Libgit2Helper.isUpstreamInvalid(upstream)) {
+                    throw RuntimeException(activityContext.getString(R.string.err_upstream_invalid_plz_go_branches_page_set_it_then_try_again))
 //                        return@doMerge false
-                    }
                 }
+            }
 
-                // doMerge
-                val remoteRefSpec = Libgit2Helper.getUpstreamRemoteBranchShortNameByRemoteAndBranchRefsHeadsRefSpec(
-                    upstream!!.remote,
-                    upstream.branchRefsHeadsFullRefSpec
-                )
-                MyLog.d(TAG, "doMerge: remote="+upstream.remote+", branchFullRefSpec=" + upstream.branchRefsHeadsFullRefSpec +", trueMergeFalseRebase=$trueMergeFalseRebase")
-                val (usernameFromConfig, emailFromConfig) = Libgit2Helper.getGitUsernameAndEmail(repo)
+            // doMerge
+            val remoteRefSpec = Libgit2Helper.getUpstreamRemoteBranchShortNameByRemoteAndBranchRefsHeadsRefSpec(
+                upstream!!.remote,
+                upstream.branchRefsHeadsFullRefSpec
+            )
+            MyLog.d(TAG, "doMerge: remote="+upstream.remote+", branchFullRefSpec=" + upstream.branchRefsHeadsFullRefSpec +", trueMergeFalseRebase=$trueMergeFalseRebase")
+            val (usernameFromConfig, emailFromConfig) = Libgit2Helper.getGitUsernameAndEmail(repo)
 
-                //如果用户名或邮箱无效，无法创建commit，merge无法完成，所以，直接终止操作
-                if(Libgit2Helper.isUsernameAndEmailInvalid(usernameFromConfig,emailFromConfig)) {
-                    throw RuntimeException(activityContext.getString(R.string.plz_set_username_and_email_first))
+            //如果用户名或邮箱无效，无法创建commit，merge无法完成，所以，直接终止操作
+            if(Libgit2Helper.isUsernameAndEmailInvalid(usernameFromConfig,emailFromConfig)) {
+                throw RuntimeException(activityContext.getString(R.string.plz_set_username_and_email_first))
 //                    return@doMerge false
-                }
+            }
 
-                val mergeResult = if(trueMergeFalseRebase) {
-                    Libgit2Helper.mergeOneHead(
-                        repo,
-                        remoteRefSpec,
-                        usernameFromConfig,
-                        emailFromConfig,
-                        settings = settings
-                    )
-                }else {
-                    Libgit2Helper.mergeOrRebase(
-                        repo,
-                        targetRefName = remoteRefSpec,
-                        username = usernameFromConfig,
-                        email = emailFromConfig,
-                        requireMergeByRevspec = false,
-                        revspec = "",
-                        trueMergeFalseRebase = false,
-                        settings = settings
-                    )
-                }
+            val mergeResult = if(trueMergeFalseRebase) {
+                Libgit2Helper.mergeOneHead(
+                    repo,
+                    remoteRefSpec,
+                    usernameFromConfig,
+                    emailFromConfig,
+                    settings = settings
+                )
+            }else {
+                Libgit2Helper.mergeOrRebase(
+                    repo,
+                    targetRefName = remoteRefSpec,
+                    username = usernameFromConfig,
+                    email = emailFromConfig,
+                    requireMergeByRevspec = false,
+                    revspec = "",
+                    trueMergeFalseRebase = false,
+                    settings = settings
+                )
+            }
 
-                if (mergeResult.hasError()) {
-                    //检查是否存在冲突条目
-                    //如果调用者想自己判断是否有冲突，可传showMsgIfHasConflicts为false
-                    if (mergeResult.code == Ret.ErrCode.mergeFailedByAfterMergeHasConfilts) {
-                        throw RuntimeException(activityContext.getString(R.string.has_conflicts))
+            if (mergeResult.hasError()) {
+                //检查是否存在冲突条目
+                //如果调用者想自己判断是否有冲突，可传showMsgIfHasConflicts为false
+                if (mergeResult.code == Ret.ErrCode.mergeFailedByAfterMergeHasConfilts) {
+                    throw RuntimeException(activityContext.getString(R.string.has_conflicts))
 
 //                        if(trueMergeFalseRebase) {
 //                            throw RuntimeException(appContext.getString(R.string.merge_has_conflicts))
 //                        }else {
 //                            throw RuntimeException(appContext.getString(R.string.rebase_has_conflicts))
 //                        }
-                    }
+                }
 
-                    //显示错误提示
-                    throw RuntimeException(mergeResult.msg)
+                //显示错误提示
+                throw RuntimeException(mergeResult.msg)
 
-                    //记到数据库error日志
+                //记到数据库error日志
 //                    createAndInsertError(curRepo.id, mergeResult.msg)
 
 //                    return@doMerge false
-                }
-
-                //执行到这就合并成功了
-
-                //清下仓库状态
-                Libgit2Helper.cleanRepoState(repo)
-
-                //更新db显示通知
-                Libgit2Helper.updateDbAfterMergeSuccess(mergeResult, activityContext, curRepo.id, {}, trueMergeFalseRebase)  //最后一个参数是合并成功或者不需要合并(uptodate)的信息提示函数，这个页面就不要在成功时提示了，合并完刷新下页面显示在仓库卡片上就行了
-
-                return true
             }
-        }catch (e:Exception) {
-            //log
-            showErrAndSaveLog(
-                logTag = TAG,
-                logMsg = "#doMerge(trueMergeFalseRebase=$trueMergeFalseRebase) from Repo Page err:"+e.stackTraceToString(),
-                showMsg = "merge error:"+e.localizedMessage,
-                // showMsgMethod = requireShowToast,
-                showMsgMethod = {},
-                repoId = curRepo.id,
-                errMsgForErrDb = "${if(trueMergeFalseRebase) "merge" else "rebase"} err: "+e.localizedMessage
-            )
 
-            return false
+            //执行到这就合并成功了
+
+            //清下仓库状态
+            Libgit2Helper.cleanRepoState(repo)
+
+            //更新db显示通知
+            Libgit2Helper.updateDbAfterMergeSuccess(mergeResult, activityContext, curRepo.id, {}, trueMergeFalseRebase)  //最后一个参数是合并成功或者不需要合并(uptodate)的信息提示函数，这个页面就不要在成功时提示了，合并完刷新下页面显示在仓库卡片上就行了
+
         }
-
     }
 
-    val doPush:suspend (Upstream?,RepoEntity) -> Boolean  = doPush@{upstreamParam:Upstream?,curRepo:RepoEntity ->
-        var retVal =false
-        try {
-//            MyLog.d(TAG, "#doPush: start")
-            Repository.open(curRepo.fullSavePath).use { repo ->
-
-                if(repo.headDetached()) {
-                    throw RuntimeException(activityContext.getString(R.string.push_failed_by_detached_head))
-//                    return@doPush false
-                }
-
-
-                var upstream:Upstream? = upstreamParam
-                if(Libgit2Helper.isUpstreamInvalid(upstream)) {  //如果调用者没传有效的upstream，查一下
-                    val shortBranchName = Libgit2Helper.getRepoCurBranchShortRefSpec(repo)  //获取当前分支短名，例如 main
-                    upstream = Libgit2Helper.getUpstreamOfBranch(repo, shortBranchName)  //获取当前分支的上游，例如 remote=origin 和 merge=refs/heads/main，参见配置文件 branch.yourbranchname.remote 和 .merge 字段
-                    //如果查出的upstream还是无效，终止操作
-                    if(Libgit2Helper.isUpstreamInvalid(upstream)) {
-                        throw RuntimeException(activityContext.getString(R.string.err_upstream_invalid_plz_go_branches_page_set_it_then_try_again))
-//                        return@doPush false
-                    }
-                }
-                MyLog.d(TAG, "#doPush: upstream.remote="+upstream!!.remote+", upstream.branchFullRefSpec="+upstream!!.branchRefsHeadsFullRefSpec)
-
-                //执行到这里，必定有上游，push
-                val credential = Libgit2Helper.getRemoteCredential(
-                    dbContainer.remoteRepository,
-                    dbContainer.credentialRepository,
-                    curRepo.id,
-                    upstream!!.remote,
-                    trueFetchFalsePush = false
-                )
-
-                val ret = Libgit2Helper.push(repo, upstream!!.remote, upstream!!.pushRefSpec, credential)
-                if(ret.hasError()) {
-                    throw RuntimeException(ret.msg)
-                }
-
-                // 更新修改workstatus的时间，只更新时间就行，状态会在查询repo时更新
-                val repoDb = AppModel.dbContainer.repoRepository
-                repoDb.updateLastUpdateTime(curRepo.id, getSecFromTime())
-
-                retVal =  true
+    val doPush:suspend (Upstream?,RepoEntity) -> Unit  = doPush@{upstreamParam:Upstream?,curRepo:RepoEntity ->
+        Repository.open(curRepo.fullSavePath).use { repo ->
+            if(repo.headDetached()) {
+                throw RuntimeException(activityContext.getString(R.string.push_failed_by_detached_head))
             }
-        }catch (e:Exception) {
-            //log
-            showErrAndSaveLog(
-                logTag = TAG,
-                logMsg = "#doPush() err:"+e.stackTraceToString(),
-                showMsg = "push error:"+e.localizedMessage,
-                // showMsgMethod = requireShowToast,
-                showMsgMethod = {},
-                repoId = curRepo.id
+
+
+            var upstream:Upstream? = upstreamParam
+            if(Libgit2Helper.isUpstreamInvalid(upstream)) {  //如果调用者没传有效的upstream，查一下
+                val shortBranchName = Libgit2Helper.getRepoCurBranchShortRefSpec(repo)  //获取当前分支短名，例如 main
+                upstream = Libgit2Helper.getUpstreamOfBranch(repo, shortBranchName)  //获取当前分支的上游，例如 remote=origin 和 merge=refs/heads/main，参见配置文件 branch.yourbranchname.remote 和 .merge 字段
+                //如果查出的upstream还是无效，终止操作
+                if(Libgit2Helper.isUpstreamInvalid(upstream)) {
+                    throw RuntimeException(activityContext.getString(R.string.err_upstream_invalid_plz_go_branches_page_set_it_then_try_again))
+                }
+            }
+            MyLog.d(TAG, "#doPush: upstream.remote="+upstream!!.remote+", upstream.branchFullRefSpec="+upstream!!.branchRefsHeadsFullRefSpec)
+
+            //执行到这里，必定有上游，push
+            val credential = Libgit2Helper.getRemoteCredential(
+                dbContainer.remoteRepository,
+                dbContainer.credentialRepository,
+                curRepo.id,
+                upstream!!.remote,
+                trueFetchFalsePush = false
             )
 
-            retVal =  false
+            val ret = Libgit2Helper.push(repo, upstream!!.remote, upstream!!.pushRefSpec, credential)
+            if(ret.hasError()) {
+                throw RuntimeException(ret.msg)
+            }
+
+            // 更新修改workstatus的时间，只更新时间就行，状态会在查询repo时更新
+            val repoDb = AppModel.dbContainer.repoRepository
+            repoDb.updateLastUpdateTime(curRepo.id, getSecFromTime())
         }
-
-
-//        如果push失败，有必要更新这个时间吗？没，所以我后来把更新时间放到成功代码块里了
-
-
-        return@doPush retVal
-
     }
 
     val doClone = doClone@{repoList:List<RepoEntity> ->
@@ -774,100 +720,55 @@ fun RepoInnerPage(
 
     //sync之前，先执行stage，然后执行提交，如果成功，执行fetch/merge/push (= pull/push = sync)
     val doSync:suspend (RepoEntity)->Unit = doSync@{curRepo:RepoEntity ->
-        try {
-            Repository.open(curRepo.fullSavePath).use { repo ->
-                if(repo.headDetached()) {
-                    throw RuntimeException(activityContext.getString(R.string.sync_failed_by_detached_head))
-                }
 
-
-                //检查是否有upstream，如果有，do fetch do merge，然后do push,如果没有，请求设置upstream，然后do push
-                val hasUpstream = Libgit2Helper.isBranchHasUpstream(repo)
-                val shortBranchName = Libgit2Helper.getRepoCurBranchShortRefSpec(repo)
-                if (!hasUpstream) {  //不存在上游，提示先去分支页面设置
-                    //应该支持在仓库页面设置
-                    throw RuntimeException(activityContext.getString(R.string.err_upstream_invalid_plz_go_branches_page_set_it_then_try_again))
-                }
-
-
-                //存在上游
-
-                //取出上游
-                val upstream = Libgit2Helper.getUpstreamOfBranch(repo, shortBranchName)
-                val fetchSuccess = doFetch(upstream.remote, curRepo)
-                if(!fetchSuccess) {
-                    throw RuntimeException(activityContext.getString(R.string.fetch_failed))
-//                    return@doSync
-                }
-
-                //检查配置文件设置的remote和branch是否实际存在，
-                val isUpstreamExistOnLocal = Libgit2Helper.isUpstreamActuallyExistOnLocal(
-                    repo,
-                    upstream.remote,
-                    upstream.branchRefsHeadsFullRefSpec
-                )
-
-                //如果存在上游，执行merge 若没冲突则push，否则终止操作直接return
-                //如果不存在上游，只需执行push，相当于pc的 git push with -u (--set-upstream)，但上面已经把remote和branch设置到gitconfig里了(执行到这里都能取出来upstream所以肯定设置过了，在 对话框或分支管理页面设置的)，所以这里正常推送即可，不用再设置什么
-                MyLog.d(TAG, "@doSync: isUpstreamExistOnLocal="+isUpstreamExistOnLocal)
-                if(isUpstreamExistOnLocal) {  //上游分支在本地存在
-                    // doMerge
-                    val mergeSuccess = doMerge(upstream, curRepo)
-                    if(!mergeSuccess) {  //merge 失败，终止操作
-                        //如果merge完存在冲突条目，就不要执行push了
-                        if(Libgit2Helper.hasConflictItemInRepo(repo)) {  //检查失败原因是否是存在冲突，若是则显示提示
-                            throw RuntimeException(activityContext.getString(R.string.has_conflicts_abort_sync))
-                        }
-
-                        throw RuntimeException(activityContext.getString(R.string.merge_failed))
-//                        return@doSync
-                    }
-                }
-
-                //如果执行到这，要么不存在上游，直接push(新建远程分支)；要么存在上游，但fetch/merge成功完成，需要push，所以，执行push
-                //doPush
-                val pushSuccess = doPush(upstream, curRepo)
-                if(!pushSuccess) {
-                    throw RuntimeException(activityContext.getString(R.string.push_failed))
-                }
-//                    requireShowToast(appContext.getString(R.string.sync_success))  //这个页面如果成功就不要提示了
+        Repository.open(curRepo.fullSavePath).use { repo ->
+            if(repo.headDetached()) {
+                throw RuntimeException(activityContext.getString(R.string.sync_failed_by_detached_head))
             }
-        }catch (e:Exception) {
-            //log
-            showErrAndSaveLog(
-                logTag = TAG,
-                logMsg = "#doSync() err:"+e.stackTraceToString(),
-                showMsg = "sync err:"+e.localizedMessage,
-                // showMsgMethod = requireShowToast,
-                showMsgMethod = {},
-                repoId = curRepo.id
+
+
+            //检查是否有upstream，如果有，do fetch do merge，然后do push,如果没有，请求设置upstream，然后do push
+            val hasUpstream = Libgit2Helper.isBranchHasUpstream(repo)
+            val shortBranchName = Libgit2Helper.getRepoCurBranchShortRefSpec(repo)
+            if (!hasUpstream) {  //不存在上游，提示先去分支页面设置
+                //应该支持在仓库页面设置
+                throw RuntimeException(activityContext.getString(R.string.err_upstream_invalid_plz_go_branches_page_set_it_then_try_again))
+            }
+
+
+            //存在上游
+
+            //取出上游
+            val upstream = Libgit2Helper.getUpstreamOfBranch(repo, shortBranchName)
+
+            doFetch(upstream.remote, curRepo)
+
+
+            //检查配置文件设置的remote和branch是否实际存在，
+            val isUpstreamExistOnLocal = Libgit2Helper.isUpstreamActuallyExistOnLocal(
+                repo,
+                upstream.remote,
+                upstream.branchRefsHeadsFullRefSpec
             )
 
+            //如果存在上游，执行merge 若没冲突则push，否则终止操作直接return
+            //如果不存在上游，只需执行push，相当于pc的 git push with -u (--set-upstream)，但上面已经把remote和branch设置到gitconfig里了(执行到这里都能取出来upstream所以肯定设置过了，在 对话框或分支管理页面设置的)，所以这里正常推送即可，不用再设置什么
+            MyLog.d(TAG, "@doSync: isUpstreamExistOnLocal="+isUpstreamExistOnLocal)
+            if(isUpstreamExistOnLocal) {  //上游分支在本地存在
+                // doMerge
+                doMerge(upstream, curRepo)
+            }
+
+            //如果执行到这，要么不存在上游，直接push(新建远程分支)；要么存在上游，但fetch/merge成功完成，需要push，所以，执行push
+            //doPush
+            doPush(upstream, curRepo)
         }
 
     }
 
     val doPull:suspend (RepoEntity)->Unit = {curRepo ->
-        try {
-            val fetchSuccess = doFetch(null, curRepo)
-            if(!fetchSuccess) {
-                throw RuntimeException(activityContext.getString(R.string.fetch_failed))
-            }else {
-                val mergeSuccess = doMerge(null, curRepo)
-                if(!mergeSuccess){
-                    throw RuntimeException(activityContext.getString(R.string.merge_failed))
-                }
-            }
-        }catch (e:Exception){
-            showErrAndSaveLog(
-                logTag = TAG,
-                logMsg = "pull error:"+e.stackTraceToString(),
-                showMsg = activityContext.getString(R.string.pull_err)+":"+e.localizedMessage,
-                // showMsgMethod = requireShowToast,
-                showMsgMethod = {},
-                repoId = curRepo.id
-            )
-        }
+        doFetch(null, curRepo)
+        doMerge(null, curRepo)
     }
 
 
@@ -1894,7 +1795,9 @@ fun RepoInnerPage(
             val task = { curRepo: RepoEntity ->
                 doActWithLockIfRepoGoodAndActEnabled(curRepo) {
                     doActAndSetRepoStatus(invalidIdx, curRepo.id, activityContext.getString(R.string.syncing)) {
-                        doSync(curRepo)
+                        doActAndLogErr(curRepo, "sync") {
+                            doSync(curRepo)
+                        }
                     }
                 }
             }
@@ -1932,7 +1835,9 @@ fun RepoInnerPage(
             selectedItems.value.toList().filter { it.upstreamBranch.isNotBlank() && !dbIntToBool(it.isDetached) }.forEach { curRepo ->
                 doActWithLockIfRepoGoodAndActEnabled(curRepo) {
                     doActAndSetRepoStatus(invalidIdx, curRepo.id, activityContext.getString(R.string.pushing)) {
-                        doPush(null, curRepo)
+                        doActAndLogErr(curRepo, "push") {
+                            doPush(null, curRepo)
+                        }
                     }
                 }
             }
@@ -1944,7 +1849,9 @@ fun RepoInnerPage(
             val task = { curRepo:RepoEntity ->
                 doActWithLockIfRepoGoodAndActEnabled(curRepo) {
                     doActAndSetRepoStatus(invalidIdx, curRepo.id, activityContext.getString(R.string.pulling)) {
-                        doPull(curRepo)
+                        doActAndLogErr(curRepo, "pull") {
+                            doPull(curRepo)
+                        }
                     }
                 }
             }
@@ -1971,7 +1878,9 @@ fun RepoInnerPage(
                 doActWithLockIfRepoGoodAndActEnabled(curRepo) {
                     //fetch 当前仓库上游的remote
                     doActAndSetRepoStatus(invalidIdx, curRepo.id, activityContext.getString(R.string.fetching)) {
-                        doFetch(null, curRepo)
+                        doActAndLogErr(curRepo, "fetch") {
+                            doFetch(null, curRepo)
+                        }
                     }
                 }
             }
@@ -2554,7 +2463,9 @@ fun RepoInnerPage(
                                             initSetUpstreamDialog(curRepo, activityContext.getString(R.string.save_and_sync)) {
                                                 doActWithLockIfRepoGoodAndActEnabled(curRepo) {
                                                     doActAndSetRepoStatus(invalidIdx, curRepo.id, activityContext.getString(R.string.syncing)) {
-                                                        doSync(curRepo)
+                                                        doActAndLogErr(curRepo, "sync") {
+                                                            doSync(curRepo)
+                                                        }
                                                     }
                                                 }
                                             }
@@ -2564,7 +2475,9 @@ fun RepoInnerPage(
                                     doTaskOrShowSetUsernameAndEmailDialog(curRepo) {
                                         doActWithLockIfRepoGoodAndActEnabled(curRepo) {
                                             doActAndSetRepoStatus(invalidIdx, curRepo.id, activityContext.getString(R.string.syncing)) {
-                                                doSync(curRepo)
+                                                doActAndLogErr(curRepo, "sync") {
+                                                    doSync(curRepo)
+                                                }
                                             }
                                         }
                                     }
@@ -2576,7 +2489,9 @@ fun RepoInnerPage(
                             doTaskOrShowSetUsernameAndEmailDialog(curRepo) {
                                 doActWithLockIfRepoGoodAndActEnabled(curRepo) {
                                     doActAndSetRepoStatus(invalidIdx, curRepo.id, activityContext.getString(R.string.pulling)) {
-                                        doPull(curRepo)
+                                        doActAndLogErr(curRepo, "pull") {
+                                            doPull(curRepo)
+                                        }
                                     }
                                 }
                             }
@@ -2585,7 +2500,9 @@ fun RepoInnerPage(
 
                             doActWithLockIfRepoGoodAndActEnabled(curRepo) {
                                 doActAndSetRepoStatus(invalidIdx, curRepo.id, activityContext.getString(R.string.pushing)) {
-                                    doPush(null, curRepo)
+                                    doActAndLogErr(curRepo, "push") {
+                                        doPush(null, curRepo)
+                                    }
                                 }
                             }
                         }
