@@ -2189,10 +2189,7 @@ fun FilesInnerPage(
         SelectedItemDialog(
 //            detailStr = selectedItemsShortDetailsStr.value,
             selectedItems = selectedItems.value,
-            //这个太长，废弃
-//            formatter = {"${it.name}, ${if(it.isDir) "dir" else "file"}, ${it.fullPath}"},
-            // 这个简洁，示例： "File: abc.txt"，"Folder: 123"
-            formatter = {"${activityContext.getString(if(it.isDir) R.string.folder else R.string.file)}: ${it.name}"},
+            formatter = {it.name},
             switchItemSelected = switchItemSelected,
             clearAll = {selectedItems.value.clear()},
 
@@ -2204,7 +2201,7 @@ fun FilesInnerPage(
         SelectedItemDialog(
 //            detailStr = selectedItemsShortDetailsStrForImportMode.value,
             selectedItems = requireImportUriList.value,
-            formatter = {it.path ?: ""},
+            formatter = {FsUtils.getFileRealNameFromUri(activityContext, it) ?: it.path ?: ""},
             clearAll = {requireImportUriList.value.clear()},
 
             switchItemSelected = {requireImportUriList.value.remove(it)},

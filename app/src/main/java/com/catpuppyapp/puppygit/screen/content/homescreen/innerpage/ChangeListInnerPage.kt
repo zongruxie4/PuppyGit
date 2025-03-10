@@ -2676,7 +2676,8 @@ fun ChangeListInnerPage(
         SelectedItemDialog(
 //            detailStr = selectedItemsShortDetailsStr.value,
             selectedItems = selectedItemList.value,
-            formatter = {"${it.fileName}, ${it.relativePathUnderRepo.removeSuffix(it.fileName)}"},
+            // formatter = {"${it.fileName}, ${it.relativePathUnderRepo.removeSuffix(it.fileName)}"},
+            formatter = {it.fileName},
             switchItemSelected = switchItemSelected,
             clearAll = {selectedItemList.value.clear()},
             closeDialog = {showSelectedItemsShortDetailsDialog.value = false}
