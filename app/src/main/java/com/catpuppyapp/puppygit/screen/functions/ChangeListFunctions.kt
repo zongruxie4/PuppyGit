@@ -569,7 +569,13 @@ object ChangeListFunctions {
             }
 
             //log
-            showErrAndSaveLog(TAG, "#doPush(force=$force) err:"+e.stackTraceToString(), "${if(force) "Push(Force)" else "Push"} error:"+e.localizedMessage, requireShowToast, curRepoFromParentPage.id)
+            showErrAndSaveLog(
+                logTag = TAG,
+                logMsg = "#doPush(force=$force) err: "+e.stackTraceToString(),
+                showMsg = "${if(force) "Push(Force)" else "Push"} error: "+e.localizedMessage,
+                showMsgMethod = requireShowToast,
+                repoId = curRepoFromParentPage.id
+            )
 
             return@doPush false
         }

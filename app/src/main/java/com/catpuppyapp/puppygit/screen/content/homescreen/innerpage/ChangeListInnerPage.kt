@@ -722,7 +722,13 @@ fun ChangeListInnerPage(
                     }
 
                 }catch (e:Exception){
-                    showErrAndSaveLog(TAG,"require Push(Force) error:"+e.stackTraceToString(), activityContext.getString(R.string.push_force_failed)+":"+e.localizedMessage, requireShowToast, curRepo.id)
+                    showErrAndSaveLog(
+                        logTag = TAG,
+                        logMsg = "Push(Force) error: "+e.stackTraceToString(),
+                        showMsg = activityContext.getString(R.string.push_force_failed)+": "+e.localizedMessage,
+                        showMsgMethod = requireShowToast,
+                        repoId = curRepo.id
+                    )
                 }finally {
 //                    RepoStatusUtil.clearRepoStatus(repoId)
 
