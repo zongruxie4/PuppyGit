@@ -2,7 +2,9 @@ package com.catpuppyapp.puppygit.compose
 
 
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.BoxScope
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.DeleteOutline
 import androidx.compose.material3.HorizontalDivider
@@ -18,6 +20,7 @@ import androidx.compose.ui.platform.LocalClipboardManager
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.AnnotatedString
+import androidx.compose.ui.unit.dp
 import com.catpuppyapp.puppygit.constants.Cons
 import com.catpuppyapp.puppygit.play.pro.R
 import com.catpuppyapp.puppygit.style.MyStyleKt
@@ -29,15 +32,69 @@ import com.catpuppyapp.puppygit.utils.doJobThenOffLoading
 fun <T> SelectedItemDialog(
     selectedItems:List<T>,
     formatter:(T)->String,
-    switchItemSelected:(T)->Unit,  //用switch而不是单纯的remove是为了日后可实现撤销删除方便
+    switchItemSelected:(T)->Unit,  //用switch而不是单纯的remove是为了日后可实现撤销删除方便，只要再把条目传给switchItemSelected函数，就能重新选中条目，但这样的话，恢复后的条目会在列表末尾，若想回到原位呢？难道删除后做整个列表的备份？或者这个函数改成能指定索引的？
+
+    //清空条目列表
     clearAll:()->Unit,
+
+    //此函数应该仅关闭弹窗，不要执行多余操作
     closeDialog:()->Unit,
+
+    // cancel可能包含比closeDialog更多的操作
     onCancel:()->Unit = closeDialog
 ) {
     val clipboardManager = LocalClipboardManager.current
     val activityContext = LocalContext.current
 
+    SelectedItemDialog2(
+        selectedItems = selectedItems,
+        text = {
+            Text(text = formatter(it), modifier = Modifier.fillMaxWidth(.8f).padding(start = 5.dp).align(Alignment.CenterStart))
+        },
+        trailIcon = {
+            IconButton(
+                modifier = Modifier.fillMaxWidth(.2f).align(Alignment.CenterEnd),
+                onClick = { switchItemSelected(it) }
+            ) {
+                Icon(
+                    imageVector = Icons.Filled.DeleteOutline,
+                    contentDescription = stringResource(R.string.trash_bin_icon_for_delete_item)
+                )
+            }
+        },
+        clearAll = clearAll,
+        closeDialog = closeDialog,
+        onCancel = onCancel,
+        onCopy = {
+            closeDialog()
 
+            doJobThenOffLoading {
+                val lb = Cons.lineBreak
+                val sb = StringBuilder()
+                selectedItems.forEach {
+                    sb.append(formatter(it)).append(lb)
+                }
+
+                clipboardManager.setText(AnnotatedString(sb.removeSuffix(lb).toString()))
+                Msg.requireShow(activityContext.getString(R.string.copied))
+            }
+        }
+    )
+}
+
+/**
+ * 相比第一版，提供更多自定义的可能性，可用 Compose组件自定义文本和尾部图标
+ */
+@Composable
+fun <T> SelectedItemDialog2(
+    selectedItems:List<T>,
+    text:@Composable BoxScope.(T) -> Unit,
+    trailIcon:@Composable BoxScope.(T) -> Unit,
+    clearAll:()->Unit,
+    closeDialog:()->Unit,
+    onCancel:()->Unit,
+    onCopy:()->Unit
+) {
     CopyableDialog2(
         title = stringResource(id = R.string.selected_str),
 //            text = selectedItemsShortDetailsStr.value,
@@ -48,17 +105,9 @@ fun <T> SelectedItemDialog(
                     Box(
                         modifier = Modifier.fillMaxWidth(),
                     ) {
-                        Text(text = formatter(it), modifier = Modifier.fillMaxWidth(.8f).align(Alignment.CenterStart))
+                        text(it)
 
-                        IconButton(
-                            modifier = Modifier.fillMaxWidth(.2f).align(Alignment.CenterEnd),
-                            onClick = { switchItemSelected(it) }
-                        ) {
-                            Icon(
-                                imageVector = Icons.Filled.DeleteOutline,
-                                contentDescription = stringResource(R.string.trash_bin_icon_for_delete_item)
-                            )
-                        }
+                        trailIcon(it)
                     }
 
                     HorizontalDivider()
@@ -94,22 +143,13 @@ fun <T> SelectedItemDialog(
                 }
             }
         },
+
+        //就算上面自定义了cancel样式，也得传onCancel，因为onDismiss要用
         onCancel = onCancel,
 
         //仅有条目时才可复制
         okBtnEnabled = selectedItems.isNotEmpty(),
-    ) {
-        closeDialog()
-
-        doJobThenOffLoading {
-            val lb = Cons.lineBreak
-            val sb = StringBuilder()
-            selectedItems.forEach {
-                sb.append(formatter(it)).append(lb)
-            }
-
-            clipboardManager.setText(AnnotatedString(sb.removeSuffix(lb).toString()))
-            Msg.requireShow(activityContext.getString(R.string.copied))
-        }
+    ) {  //点击拷贝按钮的回调
+        onCopy()
     }
 }

@@ -107,7 +107,10 @@ fun CopyableDialog2(
     loadingText: String= stringResource(R.string.loading),
     cancelCompose: (@Composable ()->Unit)? = null,
     okCompose: (@Composable ()->Unit)? = null,
+
+    //若cancelCompose为null，则此函数为 cancel按钮 和 onDismiss 回调；否则仅为onDismiss回调。（p.s. onDismiss就是弹窗显示的情况下，点击非弹窗区域触发的那个函数）
     onCancel: () -> Unit,
+
     onOk: suspend () -> Unit,  //加suspend是为了避免拷贝的时候卡住或抛异常，不过外部不需要开协程，本组件内开就行了，调用者只写逻辑即可
 ) {
     //本来是想：如果执行完操作的某个阶段需要改loadingText，可使用此状态变量作为doJob协程的参数并在需要更新loadingText时修改此状态变量的值。但实际上：在onOk里更新loadingText就行了
