@@ -2592,24 +2592,35 @@ fun FilesInnerPage(
     if(isPasteMode.value) {
         val iconList = listOf(
             Icons.Filled.ContentPaste,
+            if(pasteMode.intValue == pasteMode_Move) Icons.Filled.ContentCut else Icons.Filled.ContentCopy
         )
         val iconTextList = listOf(
             stringResource(R.string.paste),
+            if(pasteMode.intValue == pasteMode_Move) stringResource(R.string.cut) else stringResource(R.string.copy)
         )
         val iconOnClickList = listOf(
             paste@{
                 copyOrMoveOrExportFile(selectedItems.value, currentPath.value, pasteMode.intValue == pasteMode_Move)  //最后一个参数代表是否删除源，如果是move，则删除
                 Unit
             },
+            cutOrCopyIndicator@{},
+
         )
 
         val iconEnableList = listOf(
             {getSelectedFilesCount()>0},  //是否启用paste
+            cutOrCopyIndicator@{false},  //永远禁用，只用来指示是cut还是copy
         )
+
+
+        val quitPasteAndBackToSelectionMode = {
+            isPasteMode.value=false  //关闭粘贴模式
+            isFileSelectionMode.value=true  //开启选择模式
+        }
 
         if(!isLoading.value) {
             BottomBar(
-                quitSelectionMode=filesPageQuitSelectionMode,
+                quitSelectionMode=quitPasteAndBackToSelectionMode,
                 iconList=iconList,
                 iconTextList=iconTextList,
                 iconDescTextList=iconTextList,
