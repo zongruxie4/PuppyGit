@@ -30,6 +30,7 @@ import com.catpuppyapp.puppygit.utils.doJobThenOffLoading
 
 @Composable
 fun <T> SelectedItemDialog(
+    title: String = stringResource(R.string.selected_str),
     selectedItems:List<T>,
     formatter:(T)->String,
     switchItemSelected:(T)->Unit,  //用switch而不是单纯的remove是为了日后可实现撤销删除方便，只要再把条目传给switchItemSelected函数，就能重新选中条目，但这样的话，恢复后的条目会在列表末尾，若想回到原位呢？难道删除后做整个列表的备份？或者这个函数改成能指定索引的？
@@ -48,6 +49,7 @@ fun <T> SelectedItemDialog(
 
     SelectedItemDialog2(
         selectedItems = selectedItems,
+        title = title,
         text = {
             Text(text = formatter(it), modifier = Modifier.fillMaxWidth(.8f).padding(start = 5.dp).align(Alignment.CenterStart))
         },
@@ -88,6 +90,7 @@ fun <T> SelectedItemDialog(
 @Composable
 fun <T> SelectedItemDialog2(
     selectedItems:List<T>,
+    title:String,
     text:@Composable BoxScope.(T) -> Unit,
     trailIcon:@Composable BoxScope.(T) -> Unit,
     clearAll:()->Unit,
@@ -96,7 +99,7 @@ fun <T> SelectedItemDialog2(
     onCopy:()->Unit
 ) {
     CopyableDialog2(
-        title = stringResource(id = R.string.selected_str),
+        title = title,
 //            text = selectedItemsShortDetailsStr.value,
         requireShowTextCompose = true,
         textCompose = {

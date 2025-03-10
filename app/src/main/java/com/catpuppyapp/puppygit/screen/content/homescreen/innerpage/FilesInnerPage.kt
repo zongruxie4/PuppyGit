@@ -2199,11 +2199,10 @@ fun FilesInnerPage(
 
     if(showSelectedItemsShortDetailsDialogForImportMode.value) {
         SelectedItemDialog(
-//            detailStr = selectedItemsShortDetailsStrForImportMode.value,
+            title = stringResource(R.string.import_str),
             selectedItems = requireImportUriList.value,
             formatter = {FsUtils.getFileRealNameFromUri(activityContext, it) ?: it.path ?: ""},
             clearAll = {requireImportUriList.value.clear()},
-
             switchItemSelected = {requireImportUriList.value.remove(it)},
             closeDialog = {showSelectedItemsShortDetailsDialogForImportMode.value = false}
         )
