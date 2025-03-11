@@ -3485,6 +3485,20 @@ private suspend fun changeListInit(
 //            selectedItemList.value.clear()
 
 
+
+
+        //开始：查凭据列表，导入subm为仓库时用
+        val credentialListFromDb = AppModel.dbContainer.credentialRepository.getAll(includeNone = true, includeMatchByDomain = true)
+
+        if(repoChanged()) {
+            return
+        }
+
+        credentialList.value.clear()
+        credentialList.value.addAll(credentialListFromDb)
+        //结束：查凭据列表
+
+
         if(fromTo == Cons.gitDiffFromTreeToTree) {
             val repoDb = dbContainer.repoRepository
             val repoFromDb = repoDb.getById(repoId)
@@ -3703,18 +3717,6 @@ private suspend fun changeListInit(
                 SettingsUtil.updateSettings(settingsWillSave)
             }
 
-
-
-            //查凭据列表(20250123：忘了为什么要在这查凭据列表了)
-            val credentialListFromDb = AppModel.dbContainer.credentialRepository.getAll(includeNone = true, includeMatchByDomain = true)
-
-            if(repoChanged()) {
-                return
-            }
-
-            credentialList.value.clear()
-            credentialList.value.addAll(credentialListFromDb)
-            //查凭据列表结束
 
 
 
