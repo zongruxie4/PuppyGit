@@ -1716,21 +1716,6 @@ fun RepoInnerPage(
         switchItemSelected(item)
     }
 
-    val selectionModeIconList = listOf(
-        ImageVector.vectorResource(R.drawable.two_way_sync),  //sync
-        Icons.Filled.Publish,  // push
-        Icons.Filled.Download,  // pull
-        Icons.Filled.Downloading,  // fetch
-        Icons.Filled.SelectAll,  //Select All
-    )
-    val selectionModeIconTextList = listOf(
-        stringResource(R.string.sync),
-        stringResource(R.string.push),
-        stringResource(R.string.pull),
-        stringResource(R.string.fetch),
-        stringResource(R.string.select_all),
-    )
-
     val isRepoGoodAndActEnabled = {curRepo:RepoEntity ->
         val repoStatusGood = curRepo.gitRepoState!=null && !Libgit2Helper.isRepoStatusNotReadyOrErr(curRepo)
 
@@ -1784,409 +1769,6 @@ fun RepoInnerPage(
 //    }
 
     val invalidIdx = remember { -1 }
-
-    val selectionModeIconOnClickList = listOf<()->Unit>(
-        sync@{
-            val needSetUpstreamBeforeSync = {curRepo:RepoEntity -> curRepo.upstreamBranch.isBlank() && !dbIntToBool(curRepo.isDetached)}
-            val expectRepos = {it:RepoEntity -> it.upstreamBranch.isNotBlank() && !dbIntToBool(it.isDetached) }
-            val task = { curRepo: RepoEntity ->
-                doActWithLockIfRepoGoodAndActEnabled(curRepo) {
-                    doActAndSetRepoStatus(invalidIdx, curRepo.id, activityContext.getString(R.string.syncing)) {
-                        doActAndLogErr(curRepo, "sync") {
-                            doSync(curRepo)
-                        }
-                    }
-                }
-            }
-
-
-            val list = selectedItems.value.toList()
-            //若选中一个条目且未设置上游且非detached，则显示设置上游弹窗，然后执行同步
-            if(list.size == 1) {
-                val curRepo = list.first()
-
-                if(expectRepos(curRepo)) {
-                    doTaskOrShowSetUsernameAndEmailDialog(curRepo) {
-                        task(curRepo)
-                    }
-                }else if(needSetUpstreamBeforeSync(curRepo)){ //需要设置上游
-                    doTaskOrShowSetUsernameAndEmailDialog(curRepo) {
-                        doJobThenOffLoading {
-                            //需要设置上游
-                            initSetUpstreamDialog(curRepo, activityContext.getString(R.string.save_and_sync)) {
-                                task(curRepo)
-                            }
-                        }
-                    }
-                }
-            }else { //若选中多个条目或选中一个存在有效上游的条目，则不会弹出设置上游的弹窗，直接执行同步
-                list.filter { expectRepos(it) }.forEach { curRepo ->
-                    task(curRepo)
-                }
-            }
-
-            Unit
-        },
-
-        push@{
-            selectedItems.value.toList().filter { it.upstreamBranch.isNotBlank() && !dbIntToBool(it.isDetached) }.forEach { curRepo ->
-                doActWithLockIfRepoGoodAndActEnabled(curRepo) {
-                    doActAndSetRepoStatus(invalidIdx, curRepo.id, activityContext.getString(R.string.pushing)) {
-                        doActAndLogErr(curRepo, "push") {
-                            doPush(null, curRepo)
-                        }
-                    }
-                }
-            }
-
-        },
-
-        pull@{
-            val expectRepos = {it:RepoEntity -> it.upstreamBranch.isNotBlank() && !dbIntToBool(it.isDetached)}
-            val task = { curRepo:RepoEntity ->
-                doActWithLockIfRepoGoodAndActEnabled(curRepo) {
-                    doActAndSetRepoStatus(invalidIdx, curRepo.id, activityContext.getString(R.string.pulling)) {
-                        doActAndLogErr(curRepo, "pull") {
-                            doPull(curRepo)
-                        }
-                    }
-                }
-            }
-
-            val list = selectedItems.value.toList()
-
-            //如果只选了一个条目，检查执行任务前是否需要设置用户名和邮箱，若需要则弹窗；否则直接取出可用的仓库然后执行任务
-            if(list.size == 1) {
-                val curRepo = list.first()
-                if(expectRepos(curRepo)){
-                    doTaskOrShowSetUsernameAndEmailDialog(curRepo) {
-                        task(curRepo)
-                    }
-                }
-            }else {
-                list.filter { expectRepos(it) }.forEach {
-                    task(it)
-                }
-            }
-        },
-
-        fetch@{
-            selectedItems.value.toList().filter { it.upstreamBranch.isNotBlank() && !dbIntToBool(it.isDetached) }.forEach { curRepo ->
-                doActWithLockIfRepoGoodAndActEnabled(curRepo) {
-                    //fetch 当前仓库上游的remote
-                    doActAndSetRepoStatus(invalidIdx, curRepo.id, activityContext.getString(R.string.fetching)) {
-                        doActAndLogErr(curRepo, "fetch") {
-                            doFetch(null, curRepo)
-                        }
-                    }
-                }
-            }
-        },
-
-
-        selectAll@{
-            val list = if(enableFilterState.value) filterList.value else repoList.value
-
-            list.toList().forEach {
-                selectItem(it)
-            }
-
-            Unit
-        }
-    )
-
-    val bottomBarIconDefaultEnable =  { hasSelectedItems() && selectedItems.value.any { it.upstreamBranch.isNotBlank() && !dbIntToBool(it.isDetached) } }
-    val selectionModeIconEnableList = listOf(
-        syncEnable@{
-            val list = selectedItems.value
-            if(list.size == 1) {  //若只选中一个条目，仅判断是否detached，若无上游，弹窗设置并同步
-                //只有一个条目的时候检测下仓库是否有效，避免选中未克隆仓库仍启用此按钮；
-                //  但选中多个条目时不用检测，因为执行时会过滤出存在上游且非detached仓库，会把未克隆仓库筛掉，所以这里不用处理
-                val item = list.first()
-                //先执行轻量的detached HEAD检测，如果为真，肯定克隆并且至少曾经能用，那就没必要再执行后面的检测了
-                !dbIntToBool(item.isDetached) && isRepoReadyAndPathExist(item)
-            }else { //若选中多个条目，不会弹出设置上游的弹窗，必须有至少一个存在上游的仓库才启用同步按钮
-                bottomBarIconDefaultEnable()
-            }
-        },
-        pushEnable@{ bottomBarIconDefaultEnable() },
-        pullEnable@{ bottomBarIconDefaultEnable() },
-        fetchEnable@{ bottomBarIconDefaultEnable() },
-        selectAllEnable@{ true },
-    )
-
-    val selectionModeMoreItemTextList = (listOf(
-        stringResource(R.string.refresh), // multi
-        stringResource(R.string.changelist), // single
-
-//        stringResource(R.string.import_files),  // multi/single, 可多选，若多选会根据仓库名匹配导入
-//        stringResource(R.string.export_files), // multi/single，如果多选仓库，强制为不同仓库创建文件夹名，如果单选仓库，会显示一个“清空”的按钮，若勾选，执行导入前会先清空git仓库；执行导出前会先清空输出目录。还有，这个导入导出只支持saf，非saf的可通过本app的Files页面完成。
-        stringResource(R.string.user_info), // multi
-        stringResource(R.string.rename), // single
-        stringResource(R.string.set_upstream), // single
-        stringResource(R.string.clone), // multi
-        stringResource(R.string.unshallow), // multi
-        stringResource(R.string.remotes), // single
-        stringResource(R.string.tags),  // single
-        stringResource(R.string.stash), // single
-        stringResource(R.string.reflog), // single
-        stringResource(R.string.submodules), // single
-        stringResource(R.string.api), // multi
-        stringResource(R.string.details), // multi
-        stringResource(R.string.delete), // multi
-    ))
-
-    val selectionModeMoreItemOnClickList = (listOf(
-        refresh@{
-            refreshSpecifedRepos(selectedItems.value)
-        },
-
-//
-//        importFiles@{
-//
-//        },
-//
-//        exportFiles@{
-//
-//        },
-
-        changelist@{
-            val curRepo = selectedItems.value.first()
-            doActIfRepoGood(curRepo) {
-                goToChangeListPage(curRepo)
-            }
-        },
-
-        userInfo@{
-            showSetUserInfoDialog(selectedItems.value.filter { isRepoGood(it) })
-        },
-
-        rename@{
-            // rename不需要检查仓库状态是否good，直接执行即可
-            val selectedRepo = selectedItems.value.first()
-            curRepo.value = RepoEntity()
-            curRepo.value = selectedRepo
-
-            // init rename dialog
-            repoNameForRenameDialog.value = selectedRepo.repoName
-            errMsgForRenameDialog.value = ""
-            showRenameDialog.value = true
-        },
-
-        setUpstream@{
-            doJobThenOffLoading {
-                initSetUpstreamDialog(selectedItems.value.first(), activityContext.getString(R.string.save), null)
-            }
-
-            Unit
-        },
-
-        // retry clone for cloned err repos
-        clone@{
-            doClone(selectedItems.value.filter { it.workStatus == Cons.dbRepoWorkStatusCloneErr })
-        },
-
-        unshallow@{
-            //选出可以执行unshallow的list
-            // unshallow不需要upstream，会针对所有remotes执行unshallow
-            val unshallowableList = selectedItems.value.filter { curRepo ->
-                val repoStatusGood = curRepo.gitRepoState!=null && !Libgit2Helper.isRepoStatusNotReadyOrErr(curRepo)
-                repoStatusGood && dbIntToBool(curRepo.isShallow)
-            }
-
-            //若不为空，询问，然后执行unshallow
-            if(unshallowableList.isNotEmpty()) {
-                unshallowList.value.clear()
-                unshallowList.value.addAll(unshallowableList)
-
-                //生成仓库名，用于显示
-                val sb = StringBuilder()
-                val suffix = ", "
-                unshallowableList.forEach { sb.append(it.repoName).append(suffix) }
-                unshallowRepoNames.value = sb.removeSuffix(suffix).toString()
-
-                showUnshallowDialog.value = true
-            }
-        },
-
-        remotes@{
-            val curRepo = selectedItems.value.first()
-            doActIfRepoGood(curRepo) {
-                //管理remote，右上角有个fetch all可fetch所有remote
-                navController.navigate(Cons.nav_RemoteListScreen+"/"+curRepo.id)
-            }
-        },
-        tags@{
-            val curRepo = selectedItems.value.first()
-            doActIfRepoGood(curRepo) {
-                //跳转到tags页面
-                navController.navigate(Cons.nav_TagListScreen + "/" + curRepo.id)
-            }
-        },
-        stash@{
-            val curRepo = selectedItems.value.first()
-            doActIfRepoGood(curRepo) {
-                navController.navigate(Cons.nav_StashListScreen+"/"+curRepo.id)
-            }
-        },
-        reflog@{
-            val curRepo = selectedItems.value.first()
-            doActIfRepoGood(curRepo) {
-                navController.navigate(Cons.nav_ReflogListScreen+"/"+curRepo.id)
-            }
-        },
-
-        submodules@{
-            val curRepo = selectedItems.value.first()
-            doActIfRepoGood(curRepo) {
-                navController.navigate(Cons.nav_SubmoduleListScreen + "/" + curRepo.id)
-            }
-        },
-
-        //这个是多选仓库则生成可操作多仓库的url的api版本，更方便
-        api@{
-            val settings = SettingsUtil.getSettingsSnapshot()
-            val host = settings.httpService.listenHost
-            val port = settings.httpService.listenPort
-            val token = settings.httpService.tokenList.let {
-                if(it.isEmpty()) "" else it.first()
-            }
-
-            val sbpull = StringBuilder("${genHttpHostPortStr(host, port.toString())}/pull?token=$token")
-            val sbpush = StringBuilder("${genHttpHostPortStr(host, port.toString())}/push?token=$token")
-            val sbsync = StringBuilder("${genHttpHostPortStr(host, port.toString())}/sync?token=$token")
-
-            selectedItems.value.forEach {
-                val repoNameOrId = "&repoNameOrId=${it.repoName}"
-                sbpull.append(repoNameOrId)
-                sbpush.append(repoNameOrId)
-                sbsync.append(repoNameOrId)
-            }
-
-            apiPullUrl.value = sbpull.toString()
-            apiPushUrl.value = sbpush.toString()
-            apiSyncUrl.value = sbsync.toString()
-
-            showApiDialog2.value = true
-        },
-
-        //这个是每个仓库独立url的方案，没注释弹窗，仅注释了本段代码，取消注释并注释多仓库整合单url版api的代码即可启用
-//        api@{
-//            apiConfigBeanList.value.clear()
-//            val settings = SettingsUtil.getSettingsSnapshot()
-//            selectedItems.value.forEach {
-//                apiConfigBeanList.value.add(genConfigDto(it, settings))
-//            }
-//
-//            showApiDialog.value = true
-//        },
-
-    //这个是仅限单仓库且单条目单api的代码，已废弃
-//        api@{
-//            val sb = StringBuilder()
-//            val spliter = Cons.itemDetailSpliter
-//            selectedItems.value.forEach {
-//                sb.append(HttpServer.getApiJson(it, SettingsUtil.getSettingsSnapshot()))
-//                sb.append(spliter)
-//            }
-//
-//            initDetailsDialog(activityContext.getString(R.string.api), sb.removeSuffix(spliter).toString())
-//        },
-
-        details@{
-            val sb = StringBuilder()
-            val lb = "\n"
-            val spliter = Cons.itemDetailSpliter
-
-            selectedItems.value.forEach {
-                sb.append(activityContext.getString(R.string.name)).append(": ").append(it.repoName).append(lb).append(lb)
-                sb.append(activityContext.getString(R.string.id)).append(": ").append(it.id)
-                sb.append(spliter)
-            }
-
-            initDetailsDialog(activityContext.getString(R.string.details), sb.removeSuffix(spliter).toString())
-        },
-
-        delete@{
-            requireDelRepo(selectedItems.value.toList())
-        }
-    ))
-
-    val selectionModeMoreItemEnableList = (listOf(
-        refresh@{ hasSelectedItems() },
-
-        changelist@{
-            selectedSingle() && isRepoGood(selectedItems.value.first())
-        },
-//        importFiles@{
-//            //可多选，若多选，会根据导入源下的目录名和当前仓库的目录名（不是仓库名，是仓库的fullsavepath末尾的文件夹名）去匹配
-//            //若选中未克隆仓库，可导入文件，然后刷新
-//            hasSelectedItems()
-//        },
-//
-//        exportFiles@ {
-//            //这个无所谓了，不判断仓库是否能用了，直接如果目录存在，就导出，简化逻辑
-//            hasSelectedItems()
-//        },
-
-        userInfo@{
-            hasSelectedItems() && selectedItems.value.any { isRepoGood(it) }
-        },
-
-        rename@{
-            selectedSingle()
-        },
-
-        setUpstream@{
-            if(selectedSingle()) {
-                val item = selectedItems.value.first()
-                !dbIntToBool(item.isDetached) && isRepoReadyAndPathExist(item)
-            }else {
-                false
-            }
-        },
-
-        clone@{
-            //至少选中一个需要克隆的仓库才显示此按钮
-            hasSelectedItems() && selectedItems.value.any { it.workStatus == Cons.dbRepoWorkStatusCloneErr }
-        },
-
-        unshallow@{
-            hasSelectedItems() && selectedItems.value.any { dbIntToBool(it.isShallow) }
-        },
-
-        remotes@{
-            selectedSingle() && isRepoGood(selectedItems.value.first())
-        },
-
-        tags@{
-            selectedSingle() && isRepoGood(selectedItems.value.first())
-        },
-
-        stash@{
-            selectedSingle()&& isRepoGood(selectedItems.value.first())
-        },
-
-        reflog@{
-            selectedSingle()&& isRepoGood(selectedItems.value.first())
-        },
-
-        submodules@{
-            selectedSingle() && isRepoGood(selectedItems.value.first())
-        },
-
-        api@{
-            hasSelectedItems()
-        },
-
-        details@{
-            hasSelectedItems()
-        },
-
-        delete@{
-            hasSelectedItems()
-        }
-    ))
 
     val showSelectedItemsShortDetailsDialog = rememberSaveable { mutableStateOf(false)}
 //    val selectedItemsShortDetailsStr = rememberSaveable { mutableStateOf("")}
@@ -2529,6 +2111,425 @@ fun RepoInnerPage(
 
 
     if(isSelectionMode.value) {
+        val selectionModeIconList = listOf(
+            ImageVector.vectorResource(R.drawable.two_way_sync),  //sync
+            Icons.Filled.Publish,  // push
+            Icons.Filled.Download,  // pull
+            Icons.Filled.Downloading,  // fetch
+            Icons.Filled.SelectAll,  //Select All
+        )
+
+        val selectionModeIconTextList = listOf(
+            stringResource(R.string.sync),
+            stringResource(R.string.push),
+            stringResource(R.string.pull),
+            stringResource(R.string.fetch),
+            stringResource(R.string.select_all),
+        )
+
+        val selectionModeIconOnClickList = listOf<()->Unit>(
+            sync@{
+                val needSetUpstreamBeforeSync = {curRepo:RepoEntity -> curRepo.upstreamBranch.isBlank() && !dbIntToBool(curRepo.isDetached)}
+                val expectRepos = {it:RepoEntity -> it.upstreamBranch.isNotBlank() && !dbIntToBool(it.isDetached) }
+                val task = { curRepo: RepoEntity ->
+                    doActWithLockIfRepoGoodAndActEnabled(curRepo) {
+                        doActAndSetRepoStatus(invalidIdx, curRepo.id, activityContext.getString(R.string.syncing)) {
+                            doActAndLogErr(curRepo, "sync") {
+                                doSync(curRepo)
+                            }
+                        }
+                    }
+                }
+
+
+                val list = selectedItems.value.toList()
+                //若选中一个条目且未设置上游且非detached，则显示设置上游弹窗，然后执行同步
+                if(list.size == 1) {
+                    val curRepo = list.first()
+
+                    if(expectRepos(curRepo)) {
+                        doTaskOrShowSetUsernameAndEmailDialog(curRepo) {
+                            task(curRepo)
+                        }
+                    }else if(needSetUpstreamBeforeSync(curRepo)){ //需要设置上游
+                        doTaskOrShowSetUsernameAndEmailDialog(curRepo) {
+                            doJobThenOffLoading {
+                                //需要设置上游
+                                initSetUpstreamDialog(curRepo, activityContext.getString(R.string.save_and_sync)) {
+                                    task(curRepo)
+                                }
+                            }
+                        }
+                    }
+                }else { //若选中多个条目或选中一个存在有效上游的条目，则不会弹出设置上游的弹窗，直接执行同步
+                    list.filter { expectRepos(it) }.forEach { curRepo ->
+                        task(curRepo)
+                    }
+                }
+
+                Unit
+            },
+
+            push@{
+                selectedItems.value.toList().filter { it.upstreamBranch.isNotBlank() && !dbIntToBool(it.isDetached) }.forEach { curRepo ->
+                    doActWithLockIfRepoGoodAndActEnabled(curRepo) {
+                        doActAndSetRepoStatus(invalidIdx, curRepo.id, activityContext.getString(R.string.pushing)) {
+                            doActAndLogErr(curRepo, "push") {
+                                doPush(null, curRepo)
+                            }
+                        }
+                    }
+                }
+
+            },
+
+            pull@{
+                val expectRepos = {it:RepoEntity -> it.upstreamBranch.isNotBlank() && !dbIntToBool(it.isDetached)}
+                val task = { curRepo:RepoEntity ->
+                    doActWithLockIfRepoGoodAndActEnabled(curRepo) {
+                        doActAndSetRepoStatus(invalidIdx, curRepo.id, activityContext.getString(R.string.pulling)) {
+                            doActAndLogErr(curRepo, "pull") {
+                                doPull(curRepo)
+                            }
+                        }
+                    }
+                }
+
+                val list = selectedItems.value.toList()
+
+                //如果只选了一个条目，检查执行任务前是否需要设置用户名和邮箱，若需要则弹窗；否则直接取出可用的仓库然后执行任务
+                if(list.size == 1) {
+                    val curRepo = list.first()
+                    if(expectRepos(curRepo)){
+                        doTaskOrShowSetUsernameAndEmailDialog(curRepo) {
+                            task(curRepo)
+                        }
+                    }
+                }else {
+                    list.filter { expectRepos(it) }.forEach {
+                        task(it)
+                    }
+                }
+            },
+
+            fetch@{
+                selectedItems.value.toList().filter { it.upstreamBranch.isNotBlank() && !dbIntToBool(it.isDetached) }.forEach { curRepo ->
+                    doActWithLockIfRepoGoodAndActEnabled(curRepo) {
+                        //fetch 当前仓库上游的remote
+                        doActAndSetRepoStatus(invalidIdx, curRepo.id, activityContext.getString(R.string.fetching)) {
+                            doActAndLogErr(curRepo, "fetch") {
+                                doFetch(null, curRepo)
+                            }
+                        }
+                    }
+                }
+            },
+
+
+            selectAll@{
+                val list = if(enableFilterState.value) filterList.value else repoList.value
+
+                list.toList().forEach {
+                    selectItem(it)
+                }
+
+                Unit
+            }
+        )
+
+        val bottomBarIconDefaultEnable =  { hasSelectedItems() && selectedItems.value.any { it.upstreamBranch.isNotBlank() && !dbIntToBool(it.isDetached) } }
+        val selectionModeIconEnableList = listOf(
+            syncEnable@{
+                val list = selectedItems.value
+                if(list.size == 1) {  //若只选中一个条目，仅判断是否detached，若无上游，弹窗设置并同步
+                    //只有一个条目的时候检测下仓库是否有效，避免选中未克隆仓库仍启用此按钮；
+                    //  但选中多个条目时不用检测，因为执行时会过滤出存在上游且非detached仓库，会把未克隆仓库筛掉，所以这里不用处理
+                    val item = list.first()
+                    //先执行轻量的detached HEAD检测，如果为真，肯定克隆并且至少曾经能用，那就没必要再执行后面的检测了
+                    !dbIntToBool(item.isDetached) && isRepoReadyAndPathExist(item)
+                }else { //若选中多个条目，不会弹出设置上游的弹窗，必须有至少一个存在上游的仓库才启用同步按钮
+                    bottomBarIconDefaultEnable()
+                }
+            },
+            pushEnable@{ bottomBarIconDefaultEnable() },
+            pullEnable@{ bottomBarIconDefaultEnable() },
+            fetchEnable@{ bottomBarIconDefaultEnable() },
+            selectAllEnable@{ true },
+        )
+
+        val selectionModeMoreItemTextList = (listOf(
+            stringResource(R.string.refresh), // multi
+            stringResource(R.string.changelist), // single
+
+//        stringResource(R.string.import_files),  // multi/single, 可多选，若多选会根据仓库名匹配导入
+//        stringResource(R.string.export_files), // multi/single，如果多选仓库，强制为不同仓库创建文件夹名，如果单选仓库，会显示一个“清空”的按钮，若勾选，执行导入前会先清空git仓库；执行导出前会先清空输出目录。还有，这个导入导出只支持saf，非saf的可通过本app的Files页面完成。
+            stringResource(R.string.user_info), // multi
+            stringResource(R.string.rename), // single
+            stringResource(R.string.set_upstream), // single
+            stringResource(R.string.clone), // multi
+            stringResource(R.string.unshallow), // multi
+            stringResource(R.string.remotes), // single
+            stringResource(R.string.tags),  // single
+            stringResource(R.string.stash), // single
+            stringResource(R.string.reflog), // single
+            stringResource(R.string.submodules), // single
+            stringResource(R.string.api), // multi
+            stringResource(R.string.details), // multi
+            stringResource(R.string.delete), // multi
+        ))
+
+        val selectionModeMoreItemOnClickList = (listOf(
+            refresh@{
+                refreshSpecifedRepos(selectedItems.value)
+            },
+
+//
+//        importFiles@{
+//
+//        },
+//
+//        exportFiles@{
+//
+//        },
+
+            changelist@{
+                val curRepo = selectedItems.value.first()
+                doActIfRepoGood(curRepo) {
+                    goToChangeListPage(curRepo)
+                }
+            },
+
+            userInfo@{
+                showSetUserInfoDialog(selectedItems.value.filter { isRepoGood(it) })
+            },
+
+            rename@{
+                // rename不需要检查仓库状态是否good，直接执行即可
+                val selectedRepo = selectedItems.value.first()
+                curRepo.value = RepoEntity()
+                curRepo.value = selectedRepo
+
+                // init rename dialog
+                repoNameForRenameDialog.value = selectedRepo.repoName
+                errMsgForRenameDialog.value = ""
+                showRenameDialog.value = true
+            },
+
+            setUpstream@{
+                doJobThenOffLoading {
+                    initSetUpstreamDialog(selectedItems.value.first(), activityContext.getString(R.string.save), null)
+                }
+
+                Unit
+            },
+
+            // retry clone for cloned err repos
+            clone@{
+                doClone(selectedItems.value.filter { it.workStatus == Cons.dbRepoWorkStatusCloneErr })
+            },
+
+            unshallow@{
+                //选出可以执行unshallow的list
+                // unshallow不需要upstream，会针对所有remotes执行unshallow
+                val unshallowableList = selectedItems.value.filter { curRepo ->
+                    val repoStatusGood = curRepo.gitRepoState!=null && !Libgit2Helper.isRepoStatusNotReadyOrErr(curRepo)
+                    repoStatusGood && dbIntToBool(curRepo.isShallow)
+                }
+
+                //若不为空，询问，然后执行unshallow
+                if(unshallowableList.isNotEmpty()) {
+                    unshallowList.value.clear()
+                    unshallowList.value.addAll(unshallowableList)
+
+                    //生成仓库名，用于显示
+                    val sb = StringBuilder()
+                    val suffix = ", "
+                    unshallowableList.forEach { sb.append(it.repoName).append(suffix) }
+                    unshallowRepoNames.value = sb.removeSuffix(suffix).toString()
+
+                    showUnshallowDialog.value = true
+                }
+            },
+
+            remotes@{
+                val curRepo = selectedItems.value.first()
+                doActIfRepoGood(curRepo) {
+                    //管理remote，右上角有个fetch all可fetch所有remote
+                    navController.navigate(Cons.nav_RemoteListScreen+"/"+curRepo.id)
+                }
+            },
+            tags@{
+                val curRepo = selectedItems.value.first()
+                doActIfRepoGood(curRepo) {
+                    //跳转到tags页面
+                    navController.navigate(Cons.nav_TagListScreen + "/" + curRepo.id)
+                }
+            },
+            stash@{
+                val curRepo = selectedItems.value.first()
+                doActIfRepoGood(curRepo) {
+                    navController.navigate(Cons.nav_StashListScreen+"/"+curRepo.id)
+                }
+            },
+            reflog@{
+                val curRepo = selectedItems.value.first()
+                doActIfRepoGood(curRepo) {
+                    navController.navigate(Cons.nav_ReflogListScreen+"/"+curRepo.id)
+                }
+            },
+
+            submodules@{
+                val curRepo = selectedItems.value.first()
+                doActIfRepoGood(curRepo) {
+                    navController.navigate(Cons.nav_SubmoduleListScreen + "/" + curRepo.id)
+                }
+            },
+
+            //这个是多选仓库则生成可操作多仓库的url的api版本，更方便
+            api@{
+                val settings = SettingsUtil.getSettingsSnapshot()
+                val host = settings.httpService.listenHost
+                val port = settings.httpService.listenPort
+                val token = settings.httpService.tokenList.let {
+                    if(it.isEmpty()) "" else it.first()
+                }
+
+                val sbpull = StringBuilder("${genHttpHostPortStr(host, port.toString())}/pull?token=$token")
+                val sbpush = StringBuilder("${genHttpHostPortStr(host, port.toString())}/push?token=$token")
+                val sbsync = StringBuilder("${genHttpHostPortStr(host, port.toString())}/sync?token=$token")
+
+                selectedItems.value.forEach {
+                    val repoNameOrId = "&repoNameOrId=${it.repoName}"
+                    sbpull.append(repoNameOrId)
+                    sbpush.append(repoNameOrId)
+                    sbsync.append(repoNameOrId)
+                }
+
+                apiPullUrl.value = sbpull.toString()
+                apiPushUrl.value = sbpush.toString()
+                apiSyncUrl.value = sbsync.toString()
+
+                showApiDialog2.value = true
+            },
+
+            //这个是每个仓库独立url的方案，没注释弹窗，仅注释了本段代码，取消注释并注释多仓库整合单url版api的代码即可启用
+//        api@{
+//            apiConfigBeanList.value.clear()
+//            val settings = SettingsUtil.getSettingsSnapshot()
+//            selectedItems.value.forEach {
+//                apiConfigBeanList.value.add(genConfigDto(it, settings))
+//            }
+//
+//            showApiDialog.value = true
+//        },
+
+            //这个是仅限单仓库且单条目单api的代码，已废弃
+//        api@{
+//            val sb = StringBuilder()
+//            val spliter = Cons.itemDetailSpliter
+//            selectedItems.value.forEach {
+//                sb.append(HttpServer.getApiJson(it, SettingsUtil.getSettingsSnapshot()))
+//                sb.append(spliter)
+//            }
+//
+//            initDetailsDialog(activityContext.getString(R.string.api), sb.removeSuffix(spliter).toString())
+//        },
+
+            details@{
+                val sb = StringBuilder()
+                val lb = "\n"
+                val spliter = Cons.itemDetailSpliter
+
+                selectedItems.value.forEach {
+                    sb.append(activityContext.getString(R.string.name)).append(": ").append(it.repoName).append(lb).append(lb)
+                    sb.append(activityContext.getString(R.string.id)).append(": ").append(it.id)
+                    sb.append(spliter)
+                }
+
+                initDetailsDialog(activityContext.getString(R.string.details), sb.removeSuffix(spliter).toString())
+            },
+
+            delete@{
+                requireDelRepo(selectedItems.value.toList())
+            }
+        ))
+
+        val selectionModeMoreItemEnableList = (listOf(
+            refresh@{ hasSelectedItems() },
+
+            changelist@{
+                selectedSingle() && isRepoGood(selectedItems.value.first())
+            },
+//        importFiles@{
+//            //可多选，若多选，会根据导入源下的目录名和当前仓库的目录名（不是仓库名，是仓库的fullsavepath末尾的文件夹名）去匹配
+//            //若选中未克隆仓库，可导入文件，然后刷新
+//            hasSelectedItems()
+//        },
+//
+//        exportFiles@ {
+//            //这个无所谓了，不判断仓库是否能用了，直接如果目录存在，就导出，简化逻辑
+//            hasSelectedItems()
+//        },
+
+            userInfo@{
+                hasSelectedItems() && selectedItems.value.any { isRepoGood(it) }
+            },
+
+            rename@{
+                selectedSingle()
+            },
+
+            setUpstream@{
+                if(selectedSingle()) {
+                    val item = selectedItems.value.first()
+                    !dbIntToBool(item.isDetached) && isRepoReadyAndPathExist(item)
+                }else {
+                    false
+                }
+            },
+
+            clone@{
+                //至少选中一个需要克隆的仓库才显示此按钮
+                hasSelectedItems() && selectedItems.value.any { it.workStatus == Cons.dbRepoWorkStatusCloneErr }
+            },
+
+            unshallow@{
+                hasSelectedItems() && selectedItems.value.any { dbIntToBool(it.isShallow) }
+            },
+
+            remotes@{
+                selectedSingle() && isRepoGood(selectedItems.value.first())
+            },
+
+            tags@{
+                selectedSingle() && isRepoGood(selectedItems.value.first())
+            },
+
+            stash@{
+                selectedSingle()&& isRepoGood(selectedItems.value.first())
+            },
+
+            reflog@{
+                selectedSingle()&& isRepoGood(selectedItems.value.first())
+            },
+
+            submodules@{
+                selectedSingle() && isRepoGood(selectedItems.value.first())
+            },
+
+            api@{
+                hasSelectedItems()
+            },
+
+            details@{
+                hasSelectedItems()
+            },
+
+            delete@{
+                hasSelectedItems()
+            }
+        ))
+
         BottomBar(
             quitSelectionMode=quitSelectionMode,
             iconList=selectionModeIconList,

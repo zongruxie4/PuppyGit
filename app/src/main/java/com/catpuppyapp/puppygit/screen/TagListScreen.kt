@@ -113,6 +113,7 @@ fun TagListScreen(
     val scope = rememberCoroutineScope()
     val settings = remember { SettingsUtil.getSettingsSnapshot() }
     val shouldShowTimeZoneInfo = remember { TimeZoneUtil.shouldShowTimeZoneInfo(settings) }
+    val clipboardManager = LocalClipboardManager.current
 
     val inDarkTheme = Theme.inDarkTheme
 
@@ -180,36 +181,6 @@ fun TagListScreen(
         multiSelectionMode.value=false  //关闭选择模式
         selectedItemList.value.clear()  //清空选中文件列表
     }
-    val iconList:List<ImageVector> = listOf(
-        Icons.Filled.Delete,  //删除
-        Icons.Filled.Upload,  //上传（push）
-        Icons.Filled.Info,  //详情
-        Icons.Filled.SelectAll,  //全选
-    )
-    val iconTextList:List<String> = listOf(
-        stringResource(id = R.string.delete),
-        stringResource(id = R.string.push),
-        stringResource(id = R.string.details),
-        stringResource(id = R.string.select_all),
-    )
-    val iconEnableList:List<()->Boolean> = listOf(
-        {selectedItemList.value.isNotEmpty()},  // delete
-        {selectedItemList.value.isNotEmpty()},  // push
-        {selectedItemList.value.isNotEmpty()},  // details
-        {true} // select all
-    )
-
-    val moreItemTextList = (listOf(
-        stringResource(R.string.checkout),
-        stringResource(R.string.reset),  //日后改成reset并可选模式 soft/mixed/hard
-//        stringResource(R.string.details),  //可针对单个或多个条目查看details，多个时，用分割线分割多个条目的信息
-    ))
-
-    val moreItemEnableList:List<()->Boolean> = (listOf(
-        {selectedItemList.value.size==1},  // checkout
-        {selectedItemList.value.size==1},  // hardReset
-        {selectedItemList.value.isNotEmpty()}  // details
-    ))
 
     // BottomBar相关变量，结束
 
@@ -310,7 +281,6 @@ fun TagListScreen(
     }
     //checkout end
 
-    val clipboardManager = LocalClipboardManager.current
 
     val showDetailsDialog = rememberSaveable { mutableStateOf(false) }
     val detailsString = rememberSaveable { mutableStateOf("") }
@@ -325,20 +295,6 @@ fun TagListScreen(
             Msg.requireShow(activityContext.getString(R.string.copied))
         }
     }
-
-    val moreItemOnClickList:List<()->Unit> = (listOf(
-        checkout@{
-            initCheckoutDialogComposableVersion()
-        },
-        hardReset@{
-            doActIfIndexGood(0, selectedItemList.value) { item ->
-                initResetDialog(item.targetFullOidStr)
-            }
-
-            Unit
-        },
-
-    ))
 
     val filterKeyword = mutableCustomStateOf(
         keyTag = stateKeyTag,
@@ -514,55 +470,6 @@ fun TagListScreen(
 //        }
 //    }.value
     // 向下滚动监听，结束
-
-    val iconOnClickList:List<()->Unit> = listOf(  //index页面的底栏选项
-        delete@{
-            initDelTagDialog()
-        },
-
-        push@{
-            initPushTagDialog()
-        },
-        details@{
-            val sb = StringBuilder()
-            val spliter = Cons.itemDetailSpliter
-
-            selectedItemList.value.forEach {
-                sb.append(activityContext.getString(R.string.name)).append(": ").append(it.shortName).appendLine().appendLine()
-                sb.append(activityContext.getString(R.string.full_name)).append(": ").append(it.name).appendLine().appendLine()
-                sb.append(activityContext.getString(R.string.target)).append(": ").append(it.targetFullOidStr).appendLine().appendLine()
-                sb.append(activityContext.getString(R.string.type)).append(": ").append(it.getType(activityContext, false)).appendLine().appendLine()
-                if(it.isAnnotated) {
-                    sb.append(activityContext.getString(R.string.tag_oid)).append(": ").append(it.fullOidStr).appendLine().appendLine()
-                    sb.append(activityContext.getString(R.string.author)).append(": ").append(it.getFormattedTaggerNameAndEmail()).appendLine().appendLine()
-                    sb.append(activityContext.getString(R.string.date)).append(": ").append(it.getFormattedDate()+" (${it.getActuallyUsingTimeOffsetInUtcFormat()})").appendLine().appendLine()
-                    sb.append(activityContext.getString(R.string.timezone)).append(": ").append(formatMinutesToUtc(it.originTimeOffsetInMinutes)).appendLine().appendLine()
-                    sb.append(activityContext.getString(R.string.msg)).append(": ").append(it.msg).appendLine().appendLine()
-                }
-
-                sb.append(Cons.flagStr).append(": ").append(it.getType(activityContext, true))
-
-                sb.append(spliter)
-            }
-
-            detailsString.value = sb.removeSuffix(spliter).toString()
-
-            showDetailsDialog.value = true
-        },
-        selectAll@{
-            //impl select all
-            val list = if(enableFilterState.value) filterList.value else list.value
-            list.toList().forEach {
-                selectItem(it)
-            }
-
-            Unit
-//            list.forEach {
-//                UIHelper.selectIfNotInSelectedListElseNoop(it, selectedItemList.value)
-//            }
-        },
-    )
-
 
     val showSelectedItemsShortDetailsDialog = rememberSaveable { mutableStateOf(false) }
 //    val selectedItemsShortDetailsStr = rememberSaveable { mutableStateOf("") }
@@ -840,6 +747,98 @@ fun TagListScreen(
             }
 
             if (multiSelectionMode.value) {
+
+                val iconList:List<ImageVector> = listOf(
+                    Icons.Filled.Delete,  //删除
+                    Icons.Filled.Upload,  //上传（push）
+                    Icons.Filled.Info,  //详情
+                    Icons.Filled.SelectAll,  //全选
+                )
+                val iconTextList:List<String> = listOf(
+                    stringResource(id = R.string.delete),
+                    stringResource(id = R.string.push),
+                    stringResource(id = R.string.details),
+                    stringResource(id = R.string.select_all),
+                )
+                val iconEnableList:List<()->Boolean> = listOf(
+                    {selectedItemList.value.isNotEmpty()},  // delete
+                    {selectedItemList.value.isNotEmpty()},  // push
+                    {selectedItemList.value.isNotEmpty()},  // details
+                    {true} // select all
+                )
+
+                val moreItemTextList = (listOf(
+                    stringResource(R.string.checkout),
+                    stringResource(R.string.reset),  //日后改成reset并可选模式 soft/mixed/hard
+//        stringResource(R.string.details),  //可针对单个或多个条目查看details，多个时，用分割线分割多个条目的信息
+                ))
+
+                val moreItemEnableList:List<()->Boolean> = (listOf(
+                    {selectedItemList.value.size==1},  // checkout
+                    {selectedItemList.value.size==1},  // hardReset
+                    {selectedItemList.value.isNotEmpty()}  // details
+                ))
+
+                val iconOnClickList:List<()->Unit> = listOf(  //index页面的底栏选项
+                    delete@{
+                        initDelTagDialog()
+                    },
+
+                    push@{
+                        initPushTagDialog()
+                    },
+                    details@{
+                        val sb = StringBuilder()
+                        val spliter = Cons.itemDetailSpliter
+
+                        selectedItemList.value.forEach {
+                            sb.append(activityContext.getString(R.string.name)).append(": ").append(it.shortName).appendLine().appendLine()
+                            sb.append(activityContext.getString(R.string.full_name)).append(": ").append(it.name).appendLine().appendLine()
+                            sb.append(activityContext.getString(R.string.target)).append(": ").append(it.targetFullOidStr).appendLine().appendLine()
+                            sb.append(activityContext.getString(R.string.type)).append(": ").append(it.getType(activityContext, false)).appendLine().appendLine()
+                            if(it.isAnnotated) {
+                                sb.append(activityContext.getString(R.string.tag_oid)).append(": ").append(it.fullOidStr).appendLine().appendLine()
+                                sb.append(activityContext.getString(R.string.author)).append(": ").append(it.getFormattedTaggerNameAndEmail()).appendLine().appendLine()
+                                sb.append(activityContext.getString(R.string.date)).append(": ").append(it.getFormattedDate()+" (${it.getActuallyUsingTimeOffsetInUtcFormat()})").appendLine().appendLine()
+                                sb.append(activityContext.getString(R.string.timezone)).append(": ").append(formatMinutesToUtc(it.originTimeOffsetInMinutes)).appendLine().appendLine()
+                                sb.append(activityContext.getString(R.string.msg)).append(": ").append(it.msg).appendLine().appendLine()
+                            }
+
+                            sb.append(Cons.flagStr).append(": ").append(it.getType(activityContext, true))
+
+                            sb.append(spliter)
+                        }
+
+                        detailsString.value = sb.removeSuffix(spliter).toString()
+
+                        showDetailsDialog.value = true
+                    },
+                    selectAll@{
+//                        val list = if(enableFilterState.value) filterList.value else list.value
+
+                        list.forEach {
+                            selectItem(it)
+                        }
+
+                        Unit
+                    },
+                )
+
+
+                val moreItemOnClickList:List<()->Unit> = (listOf(
+                    checkout@{
+                        initCheckoutDialogComposableVersion()
+                    },
+                    hardReset@{
+                        doActIfIndexGood(0, selectedItemList.value) { item ->
+                            initResetDialog(item.targetFullOidStr)
+                        }
+
+                        Unit
+                    },
+
+                    ))
+
                 BottomBar(
                     quitSelectionMode=quitSelectionMode,
                     iconList=iconList,

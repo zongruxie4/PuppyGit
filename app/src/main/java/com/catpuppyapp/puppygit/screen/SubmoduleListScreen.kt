@@ -97,8 +97,8 @@ import com.catpuppyapp.puppygit.utils.state.mutableCustomStateOf
 import com.catpuppyapp.puppygit.utils.updateSelectedList
 import com.github.git24j.core.Repository
 
-private val TAG = "SubmoduleListScreen"
-private val stateKeyTag = "SubmoduleListScreen"
+private const val TAG = "SubmoduleListScreen"
+private const val stateKeyTag = "SubmoduleListScreen"
 
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalFoundationApi::class)
 @Composable
@@ -110,6 +110,7 @@ fun SubmoduleListScreen(
     val navController = AppModel.navController
     val activityContext = LocalContext.current
     val haptic = LocalHapticFeedback.current
+    val clipboardManager = LocalClipboardManager.current
     val scope = rememberCoroutineScope()
     val settings = remember { SettingsUtil.getSettingsSnapshot() }
 
@@ -218,29 +219,12 @@ fun SubmoduleListScreen(
     // BottomBar相关变量，开始
     val multiSelectionMode = rememberSaveable { mutableStateOf(false)}
     val selectedItemList = mutableCustomStateListOf(keyTag = stateKeyTag, keyName = "selectedItemList",listOf<SubmoduleDto>() )
+
+
     val quitSelectionMode = {
         multiSelectionMode.value=false  //关闭选择模式
         selectedItemList.value.clear()  //清空选中文件列表
     }
-    val iconList:List<ImageVector> = listOf(
-        Icons.Filled.Delete,  //删除
-        Icons.Filled.DownloadForOffline,  //clone
-        Icons.Filled.ReplayCircleFilled,  //do `git submodule update`, actually is checkout submodule to parent's recorded commit
-        Icons.Filled.SelectAll,  //全选
-    )
-    val iconTextList:List<String> = listOf(
-        stringResource(id = R.string.delete),
-        stringResource(id = R.string.clone),
-        stringResource(R.string.update),
-        stringResource(id = R.string.select_all),
-    )
-    val iconEnableList:List<()->Boolean> = listOf(
-        {selectedItemList.value.isNotEmpty()},  // delete
-        {selectedItemList.value.isNotEmpty()},  // clone
-        {selectedItemList.value.isNotEmpty()},  // update
-        {true} // select all
-    )
-
 
     val getSelectedFilesCount = {
         selectedItemList.value.size
@@ -286,7 +270,6 @@ fun SubmoduleListScreen(
 
     }
 
-    val clipboardManager = LocalClipboardManager.current
 
     val showDetailsDialog = rememberSaveable { mutableStateOf(false)}
     val detailsString = rememberSaveable { mutableStateOf("")}
@@ -633,94 +616,6 @@ fun SubmoduleListScreen(
         }
     }
 
-    val moreItemEnableList:List<()->Boolean> = (listOf(
-        {selectedItemList.value.isNotEmpty()},  // import repo
-        {selectedItemList.value.isNotEmpty()},  // reset to target
-        {selectedItemList.value.isNotEmpty()},  // reload
-        {selectedItemList.value.isNotEmpty()},  // update config
-        {selectedItemList.value.isNotEmpty()},  // init repo
-        {selectedItemList.value.isNotEmpty()},  // restore .git file
-        {selectedItemList.value.size == 1},  // set url
-        {selectedItemList.value.size == 1},  // copy full path
-        {selectedItemList.value.isNotEmpty()},  // details
-    ))
-
-    val moreItemTextList = (listOf(
-        stringResource(R.string.import_to_repos),
-        stringResource(R.string.reset_to_target),
-        stringResource(R.string.reload),
-        stringResource(R.string.sync_configs),
-        stringResource(R.string.init_repo),
-        stringResource(R.string.restore_dot_git_file),
-        stringResource(R.string.set_url),
-        stringResource(R.string.copy_full_path),
-        stringResource(R.string.details),  //可针对单个或多个条目查看details，多个时，用分割线分割多个条目的信息
-    ))
-
-    val moreItemOnClickList:List<()->Unit> = (listOf(
-        importToRepos@{
-            showImportToReposDialog.value = true
-        },
-        resetToTarget@{
-            showResetToTargetDialog.value = true
-        },
-        reload@{
-            forceReload.value=false
-            showReloadDialog.value = true
-        },
-        syncConfigs@{  // git submodule init, git submodule sync. this is necessary if user's edit .gitmodules by hand
-            syncParentConfig.value = true
-            syncSubmoduleConfig.value = true
-
-            showSyncConfigDialog.value = true
-        },
-        initRepo@{ // libgit2's submodule.repoInit
-            showInitRepoDialog.value = true
-        },
-        restoreDotGitFile@{ // most time will auto backup and restore when need
-            showRestoreDotGitFileDialog.value = true
-        },
-        setUrl@{  // if selected one
-            try {
-                if(selectedItemList.value.isNotEmpty()) {
-                    val curItem = selectedItemList.value[0]
-                    urlForSetUrlDialog.value = curItem.remoteUrl
-                    nameForSetUrlDialog.value = curItem.name
-                    showSetUrlDialog.value = true
-                }else {
-                    Msg.requireShow(activityContext.getString(R.string.no_item_selected))
-                }
-            }catch (e:Exception){
-                Msg.requireShow(e.localizedMessage ?: "err")
-            }
-        },
-        copyFullPath@{  // if selected one
-            // copy full path of a submodule
-            try {
-                if(selectedItemList.value.isNotEmpty()) {
-                    clipboardManager.setText(AnnotatedString(selectedItemList.value[0].fullPath))
-                    Msg.requireShow(activityContext.getString(R.string.success))
-                }else {
-                    Msg.requireShow(activityContext.getString(R.string.no_item_selected))
-                }
-            }catch (e:Exception){
-                Msg.requireShow(e.localizedMessage ?: "err")
-            }
-        },
-        details@{
-            val sb = StringBuilder()
-            val spliter = Cons.itemDetailSpliter
-
-            selectedItemList.value.forEach {
-                sb.append(getDetail(it))
-                sb.append(spliter)
-            }
-
-            detailsString.value = sb.removeSuffix(spliter).toString()
-
-            showDetailsDialog.value = true
-        },
-    ))
 
     val filterKeyword =mutableCustomStateOf(
         keyTag = stateKeyTag,
@@ -1053,27 +948,6 @@ fun SubmoduleListScreen(
 //    }.value
     // 向下滚动监听，结束
 
-    val iconOnClickList:List<()->Unit> = listOf(  //index页面的底栏选项
-        delete@{
-            initDelDialog()
-        },
-
-        clone@{
-            initCloneDialog()
-        },
-        update@{
-            initUpdateDialog()
-        },
-        selectAll@{
-            //impl select all
-            val list = if(enableFilterState.value) filterList.value else list.value
-            list.toList().forEach {
-                selectItem(it)
-            }
-            Unit
-        },
-    )
-
 
     val showSelectedItemsShortDetailsDialog = rememberSaveable { mutableStateOf(false)}
 //    val selectedItemsShortDetailsStr = rememberSaveable { mutableStateOf("")}
@@ -1327,6 +1201,135 @@ fun SubmoduleListScreen(
             }
 
             if (multiSelectionMode.value) {
+                val iconList:List<ImageVector> = listOf(
+                    Icons.Filled.Delete,  //删除
+                    Icons.Filled.DownloadForOffline,  //clone
+                    Icons.Filled.ReplayCircleFilled,  //do `git submodule update`, actually is checkout submodule to parent's recorded commit
+                    Icons.Filled.SelectAll,  //全选
+                )
+                val iconTextList:List<String> = listOf(
+                    stringResource(id = R.string.delete),
+                    stringResource(id = R.string.clone),
+                    stringResource(R.string.update),
+                    stringResource(id = R.string.select_all),
+                )
+                val iconEnableList:List<()->Boolean> = listOf(
+                    {selectedItemList.value.isNotEmpty()},  // delete
+                    {selectedItemList.value.isNotEmpty()},  // clone
+                    {selectedItemList.value.isNotEmpty()},  // update
+                    {true} // select all
+                )
+                val iconOnClickList:List<()->Unit> = listOf(  //index页面的底栏选项
+                    delete@{
+                        initDelDialog()
+                    },
+
+                    clone@{
+                        initCloneDialog()
+                    },
+                    update@{
+                        initUpdateDialog()
+                    },
+                    selectAll@{
+//                        val list = if(enableFilterState.value) filterList.value else list.value
+
+                        list.forEach {
+                            selectItem(it)
+                        }
+
+                        Unit
+                    },
+                )
+
+                val moreItemEnableList:List<()->Boolean> = (listOf(
+                    {selectedItemList.value.isNotEmpty()},  // import repo
+                    {selectedItemList.value.isNotEmpty()},  // reset to target
+                    {selectedItemList.value.isNotEmpty()},  // reload
+                    {selectedItemList.value.isNotEmpty()},  // update config
+                    {selectedItemList.value.isNotEmpty()},  // init repo
+                    {selectedItemList.value.isNotEmpty()},  // restore .git file
+                    {selectedItemList.value.size == 1},  // set url
+                    {selectedItemList.value.size == 1},  // copy full path
+                    {selectedItemList.value.isNotEmpty()},  // details
+                ))
+
+                val moreItemTextList = (listOf(
+                    stringResource(R.string.import_to_repos),
+                    stringResource(R.string.reset_to_target),
+                    stringResource(R.string.reload),
+                    stringResource(R.string.sync_configs),
+                    stringResource(R.string.init_repo),
+                    stringResource(R.string.restore_dot_git_file),
+                    stringResource(R.string.set_url),
+                    stringResource(R.string.copy_full_path),
+                    stringResource(R.string.details),  //可针对单个或多个条目查看details，多个时，用分割线分割多个条目的信息
+                ))
+
+                val moreItemOnClickList:List<()->Unit> = (listOf(
+                    importToRepos@{
+                        showImportToReposDialog.value = true
+                    },
+                    resetToTarget@{
+                        showResetToTargetDialog.value = true
+                    },
+                    reload@{
+                        forceReload.value=false
+                        showReloadDialog.value = true
+                    },
+                    syncConfigs@{  // git submodule init, git submodule sync. this is necessary if user's edit .gitmodules by hand
+                        syncParentConfig.value = true
+                        syncSubmoduleConfig.value = true
+
+                        showSyncConfigDialog.value = true
+                    },
+                    initRepo@{ // libgit2's submodule.repoInit
+                        showInitRepoDialog.value = true
+                    },
+                    restoreDotGitFile@{ // most time will auto backup and restore when need
+                        showRestoreDotGitFileDialog.value = true
+                    },
+                    setUrl@{  // if selected one
+                        try {
+                            if(selectedItemList.value.isNotEmpty()) {
+                                val curItem = selectedItemList.value[0]
+                                urlForSetUrlDialog.value = curItem.remoteUrl
+                                nameForSetUrlDialog.value = curItem.name
+                                showSetUrlDialog.value = true
+                            }else {
+                                Msg.requireShow(activityContext.getString(R.string.no_item_selected))
+                            }
+                        }catch (e:Exception){
+                            Msg.requireShow(e.localizedMessage ?: "err")
+                        }
+                    },
+                    copyFullPath@{  // if selected one
+                        // copy full path of a submodule
+                        try {
+                            if(selectedItemList.value.isNotEmpty()) {
+                                clipboardManager.setText(AnnotatedString(selectedItemList.value[0].fullPath))
+                                Msg.requireShow(activityContext.getString(R.string.success))
+                            }else {
+                                Msg.requireShow(activityContext.getString(R.string.no_item_selected))
+                            }
+                        }catch (e:Exception){
+                            Msg.requireShow(e.localizedMessage ?: "err")
+                        }
+                    },
+                    details@{
+                        val sb = StringBuilder()
+                        val spliter = Cons.itemDetailSpliter
+
+                        selectedItemList.value.forEach {
+                            sb.append(getDetail(it))
+                            sb.append(spliter)
+                        }
+
+                        detailsString.value = sb.removeSuffix(spliter).toString()
+
+                        showDetailsDialog.value = true
+                    },
+                ))
+
                 BottomBar(
                     quitSelectionMode=quitSelectionMode,
                     iconList=iconList,

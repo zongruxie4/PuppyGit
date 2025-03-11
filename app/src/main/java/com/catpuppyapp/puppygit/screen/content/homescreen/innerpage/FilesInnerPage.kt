@@ -2363,7 +2363,9 @@ fun FilesInnerPage(
         isImportMode.value=false
         requireImportUriList.value.clear()
     }
+
     val getRequireUriFilesCount = {requireImportUriList.value.size}
+
     if(isImportMode.value) {
         val selectionModeIconList = listOf(
             Icons.Filled.FileDownload,
