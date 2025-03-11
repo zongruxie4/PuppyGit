@@ -738,7 +738,7 @@
     <string name="reset_new">Reset New</string>
     <string name="reset_old">Reset Old</string>
     <string name="invalid_oid">invalid oid</string>
-    <string name="export_path_ph1_you_can_go_to_files_page_found_this_file">export path: ph_a3f241dc_1 \n\n you can go to Files page found this file</string>
+    <string name="export_path_ph1_you_can_go_to_files_page_found_this_file">Export path: ph_a3f241dc_1\n\nYou can go to Files page to found the file</string>
     <string name="full_name">Full Name</string>
     <string name="left">Left</string>
     <string name="right">Right</string>

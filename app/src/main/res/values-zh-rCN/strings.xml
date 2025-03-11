@@ -738,7 +738,7 @@
     <string name="reset_new">重置为新</string>
     <string name="reset_old">重置为旧</string>
     <string name="invalid_oid">无效oid</string>
-    <string name="export_path_ph1_you_can_go_to_files_page_found_this_file">导出路径: ph_a3f241dc_1 \n\n 你可前往文件页面找到这个文件</string>
+    <string name="export_path_ph1_you_can_go_to_files_page_found_this_file">导出路径: ph_a3f241dc_1\n\n你可前往文件页面找到此文件</string>
     <string name="full_name">全名</string>
     <string name="left">左</string>
     <string name="right">右</string>

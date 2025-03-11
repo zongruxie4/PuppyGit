@@ -738,7 +738,7 @@
     <string name="reset_new">Сбросить новую</string>
     <string name="reset_old">Сбросить старую</string>
     <string name="invalid_oid">Неверный OID</string>
-    <string name="export_path_ph1_you_can_go_to_files_page_found_this_file">Путь экспорта: ph_a3f241dc_1 \n\n Вы можете найти этот файл на странице Файлы</string>
+    <string name="export_path_ph1_you_can_go_to_files_page_found_this_file">Путь экспорта: ph_a3f241dc_1\n\nВы можете найти этот файл на странице Файлы</string>
     <string name="full_name">Полное имя</string>
     <string name="left">Лево</string>
     <string name="right">Право</string>
