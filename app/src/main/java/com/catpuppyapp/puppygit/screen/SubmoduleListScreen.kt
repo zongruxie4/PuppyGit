@@ -643,7 +643,7 @@ fun SubmoduleListScreen(
         {selectedItemList.value.size == 1},  // set url
         {selectedItemList.value.size == 1},  // copy full path
         {selectedItemList.value.isNotEmpty()},  // details
-    )).asReversed()
+    ))
 
     val moreItemTextList = (listOf(
         stringResource(R.string.import_to_repos),
@@ -655,7 +655,7 @@ fun SubmoduleListScreen(
         stringResource(R.string.set_url),
         stringResource(R.string.copy_full_path),
         stringResource(R.string.details),  //可针对单个或多个条目查看details，多个时，用分割线分割多个条目的信息
-    )).asReversed()
+    ))
 
     val moreItemOnClickList:List<()->Unit> = (listOf(
         importToRepos@{
@@ -720,7 +720,7 @@ fun SubmoduleListScreen(
 
             showDetailsDialog.value = true
         },
-    )).asReversed()
+    ))
 
     val filterKeyword =mutableCustomStateOf(
         keyTag = stateKeyTag,
@@ -1340,7 +1340,8 @@ fun SubmoduleListScreen(
                     moreItemEnableList = moreItemEnableList,
                     getSelectedFilesCount = getSelectedFilesCount,
                     countNumOnClickEnabled = true,
-                    countNumOnClick = countNumOnClickForBottomBar
+                    countNumOnClick = countNumOnClickForBottomBar,
+                    reverseMoreItemList = true
                 )
             }
         }

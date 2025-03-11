@@ -37,24 +37,33 @@ import com.catpuppyapp.puppygit.style.MyStyleKt
 @Composable
 fun BottomBar(
     modifier: Modifier=Modifier,
-    getSelectedFilesCount:()->Int,
     height: Dp = MyStyleKt.BottomBar.height,
     color: Color = MaterialTheme.colorScheme.primaryContainer,
+
     quitSelectionMode: () -> Unit,
+
+    // icon
     iconList:List<ImageVector>,
     iconTextList:List<String>,
     iconDescTextList:List<String>,
     iconOnClickList:List<()->Unit>,
     iconEnableList:List<()->Boolean>,
+    iconVisibleList:List<()->Boolean> = listOf(),
+
+    // more menu
     enableMoreIcon:Boolean,
     visibleMoreIcon:Boolean = enableMoreIcon,  //默认情况启用即显示三点more图标，禁用即隐藏，不过也可分别控制显示和启用禁用。
     moreItemTextList:List<String>,
     moreItemOnClickList:List<()->Unit>,
     moreItemEnableList:List<()->Boolean>,
-    iconVisibleList:List<()->Boolean> = listOf(),
     moreItemVisibleList:List<()->Boolean> = listOf(),
+    reverseMoreItemList:Boolean = false,
+
+    // count number
+    getSelectedFilesCount:()->Int,
     countNumOnClickEnabled:Boolean=false,
     countNumOnClick:()->Unit={},
+
 ) {
     val dropDownMenuExpendState = rememberSaveable { mutableStateOf(false) }
     val showDropDownMenu = {
@@ -66,6 +75,21 @@ fun BottomBar(
     val switchDropDownMenu = {
         dropDownMenuExpendState.value = !dropDownMenuExpendState.value
     }
+
+    //开始：反转more菜单条目，如果设置了反转的话
+    var moreItemTextList = moreItemTextList
+    var moreItemOnClickList = moreItemOnClickList
+    var moreItemEnableList = moreItemEnableList
+    var moreItemVisibleList = moreItemVisibleList
+
+    if(enableMoreIcon && reverseMoreItemList) {
+        moreItemTextList = moreItemTextList.asReversed()
+        moreItemOnClickList = moreItemOnClickList.asReversed()
+        moreItemEnableList = moreItemEnableList.asReversed()
+        moreItemVisibleList = moreItemVisibleList.asReversed()
+    }
+    //结束：反转more菜单条目，如果设置了反转的话
+
 
     Column(
         modifier = Modifier

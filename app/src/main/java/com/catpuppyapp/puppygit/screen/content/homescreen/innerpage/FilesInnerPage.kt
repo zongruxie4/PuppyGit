@@ -2274,7 +2274,7 @@ fun FilesInnerPage(
             if(proFeatureEnabled(initRepoFromFilesPageTestPassed)) stringResource(id = R.string.init_repo) else "",
             if(showImportForBottomBar) stringResource(R.string.import_str) else "", // 底栏没必要显示import，避免以后修改，保留代码，用开关变量控制是否显示
             stringResource(R.string.export),
-        )).asReversed()
+        ))
 
         val selectionModeMoreItemOnClickList = (listOf(
             removeFromGit@{
@@ -2306,7 +2306,7 @@ fun FilesInnerPage(
                 //显示选择导出目录的文件选择界面
 //                chooseDirLauncher.launch(null)
             },
-        )).asReversed()
+        ))
 
         val selectionModeMoreItemEnableList = (listOf(
             {getSelectedFilesCount()>0}, //是否启用remove from git
@@ -2327,7 +2327,7 @@ fun FilesInnerPage(
 
             {getSelectedFilesCount()>0}, //是否启用export
 
-        )).asReversed()
+        ))
 
 
         if(!isLoading.value) {
@@ -2345,6 +2345,7 @@ fun FilesInnerPage(
                 getSelectedFilesCount = getSelectedFilesCount,
                 countNumOnClickEnabled = true,
                 countNumOnClick = countNumOnClickForSelectAndPasteModeBottomBar,
+                reverseMoreItemList = true
             )
         }
     }

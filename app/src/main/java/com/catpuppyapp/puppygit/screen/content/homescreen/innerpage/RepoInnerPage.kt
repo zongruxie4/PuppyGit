@@ -1934,7 +1934,7 @@ fun RepoInnerPage(
         stringResource(R.string.api), // multi
         stringResource(R.string.details), // multi
         stringResource(R.string.delete), // multi
-    )).asReversed()
+    ))
 
     val selectionModeMoreItemOnClickList = (listOf(
         refresh@{
@@ -2110,7 +2110,7 @@ fun RepoInnerPage(
         delete@{
             requireDelRepo(selectedItems.value.toList())
         }
-    )).asReversed()
+    ))
 
     val selectionModeMoreItemEnableList = (listOf(
         refresh@{ hasSelectedItems() },
@@ -2186,7 +2186,7 @@ fun RepoInnerPage(
         delete@{
             hasSelectedItems()
         }
-    )).asReversed()
+    ))
 
     val showSelectedItemsShortDetailsDialog = rememberSaveable { mutableStateOf(false)}
 //    val selectedItemsShortDetailsStr = rememberSaveable { mutableStateOf("")}
@@ -2545,6 +2545,7 @@ fun RepoInnerPage(
             getSelectedFilesCount = getSelectedFilesCount,
             countNumOnClickEnabled = true,
             countNumOnClick = showSelectedItems,
+            reverseMoreItemList = true
         )
 
     }

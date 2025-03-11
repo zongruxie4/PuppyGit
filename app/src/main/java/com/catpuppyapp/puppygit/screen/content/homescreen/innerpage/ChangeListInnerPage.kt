@@ -485,7 +485,7 @@ fun ChangeListInnerPage(
             selectedListIsNotEmpty, // import as repo
         )
 
-    ).asReversed()
+    )
 
 //    val isAllConflictItemsSelected:()->Boolean = isAllConflictItemsSelectedLabel@{
 //        //如果不存在冲突条目，返回true
@@ -2236,7 +2236,7 @@ fun ChangeListInnerPage(
     else listOf(  // tree to tree，无选项
         stringResource(R.string.import_as_repo)
     )
-    ).asReversed()
+    )
 
     val showAcceptOursTheirs = (repoState.intValue == Repository.StateT.MERGE.bit || repoState.intValue == Repository.StateT.REBASE_MERGE.bit || repoState.intValue == Repository.StateT.CHERRYPICK.bit)
 
@@ -2252,7 +2252,7 @@ fun ChangeListInnerPage(
         {true},  // ignore
         {true}, // import as repo
     ) else listOf()  // empty list, always visible. index和treeToTree目前没有需要隐藏的条目，全显示
-    ).asReversed()
+    )
 
     val showRevertAlert = rememberSaveable { mutableStateOf(false)}
     val doRevert = { curRepo:RepoEntity, selectedItemList:List<StatusTypeEntrySaver> ->
@@ -2496,7 +2496,7 @@ fun ChangeListInnerPage(
             initImportAsRepo(selectedItemList.value.toList())
         }
     )
-    ).asReversed()
+    )
 
     val switchItemSelected = { item:StatusTypeEntrySaver ->
         if(isFileSelectionMode.value.not()) {
@@ -3336,7 +3336,8 @@ fun ChangeListInnerPage(
                         moreItemVisibleList = moreItemVisibleList,
                         countNumOnClickEnabled = true,
                         getSelectedFilesCount = getSelectedFilesCount,
-                        countNumOnClick = countNumOnClickForBottomBar
+                        countNumOnClick = countNumOnClickForBottomBar,
+                        reverseMoreItemList = true
                     )
                 }
             }

@@ -203,13 +203,13 @@ fun TagListScreen(
         stringResource(R.string.checkout),
         stringResource(R.string.reset),  //日后改成reset并可选模式 soft/mixed/hard
 //        stringResource(R.string.details),  //可针对单个或多个条目查看details，多个时，用分割线分割多个条目的信息
-    )).asReversed()
+    ))
 
     val moreItemEnableList:List<()->Boolean> = (listOf(
         {selectedItemList.value.size==1},  // checkout
         {selectedItemList.value.size==1},  // hardReset
         {selectedItemList.value.isNotEmpty()}  // details
-    )).asReversed()
+    ))
 
     // BottomBar相关变量，结束
 
@@ -338,7 +338,7 @@ fun TagListScreen(
             Unit
         },
 
-    )).asReversed()
+    ))
 
     val filterKeyword = mutableCustomStateOf(
         keyTag = stateKeyTag,
@@ -853,7 +853,8 @@ fun TagListScreen(
                     moreItemEnableList = moreItemEnableList,
                     getSelectedFilesCount = getSelectedFilesCount,
                     countNumOnClickEnabled = true,
-                    countNumOnClick = countNumOnClickForBottomBar
+                    countNumOnClick = countNumOnClickForBottomBar,
+                    reverseMoreItemList = true
                 )
             }
         }
