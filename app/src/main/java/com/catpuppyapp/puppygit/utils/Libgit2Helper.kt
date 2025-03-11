@@ -3828,7 +3828,7 @@ class Libgit2Helper {
             }catch (e:Exception) {
                 MyLog.e(TAG, "#deleteRemoteBranchByRemoteAndRefsHeadsBranchRefSpec() error:params are(remote=$remote, refsHeadsRefspec=$refsHeadsRefspec), err="+e.stackTraceToString())
                 // e.g. "del 'refs/heads/abc' for remote 'origin' err: err msg"
-                return Ret.createError(null, "del branch '$refsHeadsRefspec' for remote '$remote' err: ${e.localizedMessage}")
+                return Ret.createError(null, "del branch '$refsHeadsRefspec' for remote '$remote' err: ${e.localizedMessage}", exception = e)
             }
         }
 

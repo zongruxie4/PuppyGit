@@ -13,6 +13,7 @@ import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
@@ -37,7 +38,10 @@ fun TagFetchPushDialog(
     remoteCheckedList:MutableList<Boolean>,
     enableOk:Boolean,
     showForce:Boolean,
+
+    // 若requireDel为true，trueFetchFalsePush必为false；但trueFetchFalsePush为false，requireDel不一定为true。若做判断需要注意这点，应优先判断requireDel，后判断trueFetchFalsePush
     requireDel:Boolean,
+
     requireDelRemoteChecked:MutableState<Boolean>,
     trueFetchFalsePush:Boolean,
     showTagFetchPushDialog:MutableState<Boolean>,
@@ -127,7 +131,7 @@ fun TagFetchPushDialog(
                     if(trueFetchFalsePush) {  // fetch
                         Libgit2Helper.fetchAllTags(repo, curRepo, remoteAndCredentials, force)
                         onSuccess()
-                    } else {
+                    } else {  // push, but may require delete
                         val pushRefSpecs = mutableListOf<String>()
                         selectedTagsList.forEach { pushRefSpecs.add(if(delRemote) ":${it.name}" else "${it.name}:${it.name}") }
 
@@ -157,10 +161,6 @@ fun TagFetchPushDialog(
             Column(modifier = Modifier.verticalScroll(rememberScrollState())) {
 
                 if(requireDel) {
-                    Row(modifier = Modifier.padding(10.dp)) {
-                        Text(text = stringResource(R.string.are_you_sure))
-                    }
-
                     MyCheckBox(
                         text = stringResource(R.string.del_tags_on_remotes),
                         value = requireDelRemoteChecked
@@ -208,13 +208,10 @@ fun TagFetchPushDialog(
         },
         confirmButton = {
             TextButton(
-                onClick = {
-                    onOk(force.value)
-                },
+                onClick = { onOk(force.value) },
                 enabled = enableOk
             ) {
-                Text(text = stringResource(id = R.string.ok))
-
+                Text(text = stringResource(if(requireDel) R.string.delete else if(trueFetchFalsePush) R.string.fetch else R.string.push), color = if(requireDel) MyStyleKt.TextColor.danger() else Color.Unspecified)
             }
         },
         dismissButton = {

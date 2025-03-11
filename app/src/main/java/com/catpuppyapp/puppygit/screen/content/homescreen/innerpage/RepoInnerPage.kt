@@ -668,10 +668,7 @@ fun RepoInnerPage(
                 trueFetchFalsePush = false
             )
 
-            val ret = Libgit2Helper.push(repo, upstream!!.remote, listOf(upstream!!.pushRefSpec), credential, force = false)
-            if(ret.hasError()) {
-                throw RuntimeException(ret.msg)
-            }
+            Libgit2Helper.push(repo, upstream!!.remote, listOf(upstream!!.pushRefSpec), credential, force = false)
 
             // 更新修改workstatus的时间，只更新时间就行，状态会在查询repo时更新
             val repoDb = AppModel.dbContainer.repoRepository
