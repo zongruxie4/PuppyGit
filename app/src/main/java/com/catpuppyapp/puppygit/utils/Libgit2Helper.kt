@@ -3294,7 +3294,9 @@ class Libgit2Helper {
                 try {
                     push(repo, rc.remoteName, refspecs, rc.pushCredential, rc.forcePush)
                 }catch (e:Exception) {
-                    MyLog.e(TAG, "$funName err: remoteName=${rc.remoteName}, err=${e.stackTraceToString()}")
+                    //应该由调用者负责log
+//                    MyLog.e(TAG, "$funName err: remoteName=${rc.remoteName}, err=${e.stackTraceToString()}")
+
                     pushFailedList.add(PushFailedItem(rc.remoteName, e))
                 }
             }
