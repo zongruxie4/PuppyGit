@@ -1,6 +1,5 @@
 package com.catpuppyapp.puppygit.screen
 
-import CreatePatchSuccessDialog
 import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.clickable
@@ -77,6 +76,7 @@ import com.catpuppyapp.puppygit.compose.CommitItem
 import com.catpuppyapp.puppygit.compose.ConfirmDialog
 import com.catpuppyapp.puppygit.compose.ConfirmDialog2
 import com.catpuppyapp.puppygit.compose.CopyableDialog
+import com.catpuppyapp.puppygit.compose.CreatePatchSuccessDialog
 import com.catpuppyapp.puppygit.compose.CreateTagDialog
 import com.catpuppyapp.puppygit.compose.DiffCommitsDialog
 import com.catpuppyapp.puppygit.compose.FilterTextField

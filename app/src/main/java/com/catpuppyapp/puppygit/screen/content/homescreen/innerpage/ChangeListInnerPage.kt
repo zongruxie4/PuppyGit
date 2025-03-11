@@ -1,6 +1,5 @@
 package com.catpuppyapp.puppygit.screen.content.homescreen.innerpage
 
-import CreatePatchSuccessDialog
 import android.content.Context
 import android.widget.Toast
 import androidx.activity.compose.BackHandler
@@ -64,6 +63,7 @@ import com.catpuppyapp.puppygit.compose.CheckBoxNoteText
 import com.catpuppyapp.puppygit.compose.ClickableText
 import com.catpuppyapp.puppygit.compose.ConfirmDialog
 import com.catpuppyapp.puppygit.compose.ConfirmDialog2
+import com.catpuppyapp.puppygit.compose.CreatePatchSuccessDialog
 import com.catpuppyapp.puppygit.compose.CredentialSelector
 import com.catpuppyapp.puppygit.compose.LoadingText
 import com.catpuppyapp.puppygit.compose.LongPressAbleIconBtn
