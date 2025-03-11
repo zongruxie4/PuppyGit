@@ -2560,8 +2560,8 @@ fun ChangeListInnerPage(
         stringResource(R.string.open_as),
         stringResource(R.string.show_in_files),
         stringResource(R.string.file_history),
-        stringResource(R.string.copy_repo_relative_path),
         stringResource(R.string.copy_full_path),
+        stringResource(R.string.copy_repo_relative_path),
         stringResource(R.string.import_as_repo),
         stringResource(R.string.go_sub),
     )
@@ -2601,14 +2601,17 @@ fun ChangeListInnerPage(
         fileHistory@{item:StatusTypeEntrySaver ->
             naviToFileHistoryByRelativePath(repoId, item.relativePathUnderRepo)
         },
-        copyPath@{item:StatusTypeEntrySaver ->
-            clipboardManager.setText(AnnotatedString(item.relativePathUnderRepo))
-            Msg.requireShow(activityContext.getString(R.string.copied))
-        },
-        copyRealPath@{item:StatusTypeEntrySaver ->
+
+        copyFullPath@{item:StatusTypeEntrySaver ->
             clipboardManager.setText(AnnotatedString(item.canonicalPath))
             Msg.requireShow(activityContext.getString(R.string.copied))
         },
+
+        copyRepoRelativePath@{item:StatusTypeEntrySaver ->
+            clipboardManager.setText(AnnotatedString(item.relativePathUnderRepo))
+            Msg.requireShow(activityContext.getString(R.string.copied))
+        },
+
         importAsRepo@{
             importList.value.clear()
             importList.value.add(it)
@@ -2625,8 +2628,8 @@ fun ChangeListInnerPage(
         //只有worktree的cl页面支持在Files页面显示文件，index页面由于是二级页面，跳转不了，干脆禁用了
         showInFilesEnabled@{fromTo == Cons.gitDiffFromIndexToWorktree},  //对所有条目都启用showInFiles，不过会在点击后检查文件是否存在，若不存在不会跳转
         fileHistoryEnabled@{it.maybeIsFileAndExist()},
-        copyPath@{true},
-        copyRealPath@{true},
+        copyFullPath@{true},
+        copyRepoRelativePath@{true},
         importAsRepo@{ (fromTo == Cons.gitDiffFromIndexToWorktree || fromTo == Cons.gitDiffFromHeadToIndex) && it.toFile().isDirectory }, //only dir can be import as repo
         goToSub@{fromTo == Cons.gitDiffFromIndexToWorktree && it.toFile().isDirectory},  // only dir maybe import as cur repo's sub repo, then maybe can go to sub
     )

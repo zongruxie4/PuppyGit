@@ -528,8 +528,8 @@ fun FilesInnerPage(
 //        这列表如果添加元素最好往头或尾加，别往中间加，不然改关联的数组可能容易改错位置
 //        stringResource(R.string.copy_path),
         stringResource(R.string.file_history),
-        stringResource(R.string.copy_repo_relative_path),
         stringResource(R.string.copy_full_path),
+        stringResource(R.string.copy_repo_relative_path),
         stringResource(R.string.details),
 
 //        stringResource(R.string.export),  //改到批量操作里了
@@ -539,15 +539,11 @@ fun FilesInnerPage(
     //目录条目菜单没有open with
     val dirMenuKeyTextList = listOf(
         stringResource(R.string.rename),
-//        stringResource(R.string.copy_path),
-        stringResource(R.string.copy_repo_relative_path),
-
         stringResource(R.string.copy_full_path),
+        stringResource(R.string.copy_repo_relative_path),
         stringResource(R.string.import_as_repo),
         stringResource(R.string.init_repo),
         stringResource(R.string.details),
-
-//        stringResource(id = R.string.delete)  //改用长按菜单的删除功能了
     )
 
 
@@ -713,12 +709,15 @@ fun FilesInnerPage(
         fileHistory@{
             goToFileHistory(it.fullPath, activityContext)
         },
-        copyRepoRelativePath@{
-            copyRepoRelativePath(it.fullPath)
-        },
+
         copyFullPath@{
             copyThenShowCopied(it.fullPath)
         },
+
+        copyRepoRelativePath@{
+            copyRepoRelativePath(it.fullPath)
+        },
+
         details@{
             initDetailsDialog(listOf(it))
         }
@@ -738,14 +737,11 @@ fun FilesInnerPage(
     )
     val dirMenuKeyActList = listOf(
         renameFile,
-//        copyPath@{
-//            copyPath(it.fullPath)
-//        },
-        copyRepoRelativePath@{
-            copyRepoRelativePath(it.fullPath)
-        },
         copyFullPath@{
             copyThenShowCopied(it.fullPath)
+        },
+        copyRepoRelativePath@{
+            copyRepoRelativePath(it.fullPath)
         },
         importAsRepo@{
             initImportAsRepoDialog(listOf(it.fullPath))
@@ -1297,19 +1293,19 @@ fun FilesInnerPage(
 
                                         DropdownMenuItem(
                                             enabled = enableMenuItem,
-                                            text = { Text(stringResource(R.string.copy_repo_relative_path)) },
+                                            text = { Text(stringResource(R.string.copy_full_path)) },
                                             onClick = {
                                                 breadCrumbDropDownMenuExpendState.value = false
-                                                copyRepoRelativePath(it.fullPath)
+                                                copyThenShowCopied(it.fullPath)
                                             }
                                         )
 
                                         DropdownMenuItem(
                                             enabled = enableMenuItem,
-                                            text = { Text(stringResource(R.string.copy_full_path)) },
+                                            text = { Text(stringResource(R.string.copy_repo_relative_path)) },
                                             onClick = {
                                                 breadCrumbDropDownMenuExpendState.value = false
-                                                copyThenShowCopied(it.fullPath)
+                                                copyRepoRelativePath(it.fullPath)
                                             }
                                         )
 
