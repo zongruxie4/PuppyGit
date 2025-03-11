@@ -1275,22 +1275,27 @@ class Libgit2Helper {
                 }
 
                 diff = Diff.treeToIndex(repo, headTree, repo.index(), options)
-            }else if(fromTo == Cons.gitDiffFromHeadToWorktree){
-                val headTree:Tree? = resolveHeadTree(repo)
-                if(headTree==null) {
-                    MyLog.w(TAG, "#$funName(): require diff from head to worktree, but resolve HEAD tree failed!")
-                    return DiffItemSaver()
-                }
+            }
 
-                diff = Diff.treeToWorkdir(repo, headTree, options);
-            }else {  // fromTo == Cons.gitDiffFromTreeToTree
+            // 这个实际上被TreeToTree模式取代了：先解析head传给本函数，再设置treeToWorkTree为true，就行了
+//            else if(fromTo == Cons.gitDiffFromHeadToWorktree){
+//                val headTree:Tree? = resolveHeadTree(repo)
+//                if(headTree==null) {
+//                    MyLog.w(TAG, "#$funName(): require diff from head to worktree, but resolve HEAD tree failed!")
+//                    return DiffItemSaver()
+//                }
+//
+//                diff = Diff.treeToWorkdir(repo, headTree, options);
+//            }
+
+            else {  // fromTo == Cons.gitDiffFromTreeToTree
                   // tree to tree
                 MyLog.d(TAG, "#$funName(): require diff from tree to tree, tree1Oid=${tree1?.id().toString()}, tree2Oid=${tree2?.id().toString()}, reverse=$reverse")
 //                println("treeToWorkTree:${treeToWorkTree},  tree1Oid=${tree1?.id().toString()}, tree2Oid=${tree2?.id().toString()}, reverse=$reverse")
                 diff = if(treeToWorkTree) Diff.treeToWorkdir(repo, tree1, options) else Diff.treeToTree(repo, tree1, tree2, options)
             }
 
-            //上面的代码没bug，下面的不一定！（flag，后来下面的代码果然报错了）
+
 
 
             val deltaNum = diff.numDeltas()
@@ -5016,20 +5021,26 @@ class Libgit2Helper {
                     }
 
                     Diff.treeToIndex(repo, headTree, repo.index(), options)
-                }else if(fromTo == Cons.gitDiffFromHeadToWorktree){
-                    val headTree:Tree? = resolveHeadTree(repo)
-                    if(headTree==null) {
-                        MyLog.w(TAG, "#$funName(): require diff from head to worktree, but resolve HEAD tree failed!")
-                        return Ret.createError(null, "require diff from head to worktree, but resolve HEAD tree failed!")
-                    }
+                }
 
-                    Diff.treeToWorkdir(repo, headTree, options);
-                }else {  // fromTo == Cons.gitDiffFromTreeToTree
+                // 这个实际上被TreeToTree模式取代了：先解析head传给本函数，再设置treeToWorkTree为true，就行了
+//                else if(fromTo == Cons.gitDiffFromHeadToWorktree){
+//                    val headTree:Tree? = resolveHeadTree(repo)
+//                    if(headTree==null) {
+//                        MyLog.w(TAG, "#$funName(): require diff from head to worktree, but resolve HEAD tree failed!")
+//                        return Ret.createError(null, "require diff from head to worktree, but resolve HEAD tree failed!")
+//                    }
+//
+//                    Diff.treeToWorkdir(repo, headTree, options);
+//                }
+
+                else {  // fromTo == Cons.gitDiffFromTreeToTree
                     // tree to tree
                     MyLog.d(TAG, "#$funName(): require diff from tree to tree, tree1Oid=${tree1?.id().toString()}, tree2Oid=${tree2?.id().toString()}, reverse=$reverse")
 //                println("treeToWorkTree:${treeToWorkTree},  tree1Oid=${tree1?.id().toString()}, tree2Oid=${tree2?.id().toString()}, reverse=$reverse")
                     if(treeToWorkTree) Diff.treeToWorkdir(repo, tree1, options) else Diff.treeToTree(repo, tree1, tree2, options)
                 }
+
 
                 //遍历diff条目，存储patch到字符串
                 val sb = StringBuilder()

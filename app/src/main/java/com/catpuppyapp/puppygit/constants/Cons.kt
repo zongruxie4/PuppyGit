@@ -281,10 +281,10 @@ object Cons {
     val gitSubmoduleDirtyStr="Dirty"  // for item type submodule, when dirty, show this at ChangeList item
 
 
-    // git diff from commit to commit start
+    // git diff from commit to commit start，实际在用的只有 indexToWorktree/headToIndex/treeToTree
     val gitDiffFromIndexToWorktree = "1";
     val gitDiffFromHeadToIndex = "2";
-    val gitDiffFromHeadToWorktree = "3";
+//    val gitDiffFromHeadToWorktree = "3";  //这个其实没有用
     val gitDiffFromTreeToTree = "4";  //例如：一个提交和另一个提交比较，就属于这个类型
     //        val gitDiffFromTreeToWorktree = "5"
     // git diff file history start
