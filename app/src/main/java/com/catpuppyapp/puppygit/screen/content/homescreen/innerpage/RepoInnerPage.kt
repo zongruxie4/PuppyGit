@@ -668,7 +668,7 @@ fun RepoInnerPage(
                 trueFetchFalsePush = false
             )
 
-            val ret = Libgit2Helper.push(repo, upstream!!.remote, upstream!!.pushRefSpec, credential)
+            val ret = Libgit2Helper.push(repo, upstream!!.remote, listOf(upstream!!.pushRefSpec), credential, force = false)
             if(ret.hasError()) {
                 throw RuntimeException(ret.msg)
             }

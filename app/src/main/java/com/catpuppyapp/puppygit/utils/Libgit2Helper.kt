@@ -3229,19 +3229,23 @@ class Libgit2Helper {
         /**
          * 注意：pushRefSpec不要带加号+，若想强制推送，传force=true。不过这里没强制要求，若你非带加号同时force传false，也能强制push
          */
-        fun push(repo: Repository, remoteName: String, pushRefSpec: String, credential: CredentialEntity?, force: Boolean=false):Ret<String?> {
+        fun push(repo: Repository, remoteName: String, refspecs: List<String>, credential: CredentialEntity?, force: Boolean):Ret<String?> {
             //head detached没有上游，不能push
             //publish a branch which is not current active, even head detached, still should can be pushing
 //            if(repo.headDetached()) {
 //                return Ret.createError(null, "push failed: head detached!", Ret.ErrCode.headDetached)
 //            }
 
-            if(pushRefSpec.isBlank()) {
-                return Ret.createError(null, "invalid push refspec")
+            if(refspecs.isEmpty()) {
+                return Ret.createError(null, "refspecs are empty")
             }
 
             //+的作用是force push，如果带+，当本地和远程不一致时（无法fast-forward)，会强制用本地覆盖远程提交列表，但一般远程仓库主分支都有覆盖保护，所以可能会push失败
-            val pushRefSpec = if(force && !pushRefSpec.startsWith("+")) "+$pushRefSpec" else pushRefSpec
+            val refspecs:List<String> = if(force) {
+                refspecs.map { if(it.startsWith("+")) it else "+$it" }
+            }else {
+                refspecs
+            }
 
             val pushOptions = PushOptions.createDefault()
             val callbacks = pushOptions.callbacks!!
@@ -3249,12 +3253,14 @@ class Libgit2Helper {
 
             //找remote
             val remote = resolveRemote(repo, remoteName)
-            if(remote==null) {
+            if(remote == null) {
                 return Ret.createError(null, "resolve remote failed!", Ret.ErrCode.resolveRemoteFailed)
             }
+
             val pushUrl = getRemoteActuallyUsedPushUrl(remote)
+
             //如果凭据不为空，设置一下
-            if(credential!=null) {
+            if(credential != null) {
                 setCredentialCbForRemoteCallbacks(callbacks, getCredentialTypeByUrl(pushUrl), credential.value, credential.pass)
             }
 
@@ -3263,14 +3269,13 @@ class Libgit2Helper {
 
             //要push的refspec (要push哪些分支)
             // push RefSpec 形如：refs/heads/main:refs/heads/main
-            val refspecList = mutableListOf(pushRefSpec)
 //            val refspecList = mutableListOf("refs/heads/bb6:refs/heads/bb6up")
 //            val refspecList = mutableListOf<String>()  //传空列表，将使用配置文件中的设置，但实际上有点问题，测试了下没把我想推送的分支推上去，所以还是不要传空列表了
 
-            MyLog.d(TAG, "#push(): remoteName=$remoteName, refspecList=$refspecList")
+            MyLog.d(TAG, "#push(): remoteName=$remoteName, refspecs=$refspecs")
 
             //推送
-            remote.push(refspecList, pushOptions)
+            remote.push(refspecs, pushOptions)
 
             return Ret.createSuccess(null, "push success")
         }
@@ -3278,55 +3283,17 @@ class Libgit2Helper {
 
         /**
          * 针对每个remotes推送一遍refspecs
-         * 注意：这个函数没有force参数！如果要force push，需要调用前自己在refspecs的对应元素里加加号
+         * 注意：这个函数没有force参数！如果要force push，需要调用前将对应RemoteAndCredentials的的forcePush设为true
          */
-        fun pushMulti(repo: Repository, remotes: List<RemoteAndCredentials>, refspecs: List<String>, returnIfAnyRemotePushFailed:Boolean=true):Ret<String?> {
+        fun pushMulti(repo: Repository, remotes: List<RemoteAndCredentials>, refspecs: List<String>):Ret<List<PushFailedItem>?> {
             val funName = "pushMulti"
 
             for (rc in remotes) {
                 try {
-
-                    val credential = rc.pushCredential
-                    val pushOptions = PushOptions.createDefault()
-
-                    //找remote
-                    val remote = resolveRemote(repo, rc.remoteName)
-                    if(remote==null) {
-                        val errMsg = "resolve remote failed! remoteName=${rc.remoteName}"
-
-                        if(returnIfAnyRemotePushFailed) {
-                            return Ret.createError(null, errMsg, Ret.ErrCode.resolveRemoteFailed)
-                        }else {
-                            MyLog.e(TAG, "#$funName: $errMsg")
-                            continue
-                        }
-                    }
-
-
-                    val pushUrl = getRemoteActuallyUsedPushUrl(remote)
-                    val callbacks = pushOptions.callbacks!!
-                    //如果凭据不为空，设置一下
-                    if(credential!=null) {
-                        setCredentialCbForRemoteCallbacks(callbacks, getCredentialTypeByUrl(pushUrl), credential.value, credential.pass)
-                    }
-
-                    //要push的refspec (要push哪些分支)
-                    // push RefSpec 形如：refs/heads/main:refs/heads/main
-//                val refspecList = mutableListOf(pushRefSpec)
-//            val refspecList = mutableListOf("refs/heads/bb6:refs/heads/bb6up")
-//            val refspecList = mutableListOf<String>()  //传空列表，将使用配置文件中的设置，但实际上有点问题，测试了下没把我想推送的分支推上去，所以还是不要传空列表了
-
-                    MyLog.d(TAG, "#$funName: will push: remoteName=${rc.remoteName}, refspecs=$refspecs")
-
-                    setCertCheckCallback(pushUrl, callbacks)
-
-
-                    //推送
-                    remote.push(refspecs, pushOptions)
-
+                    push(repo, rc.remoteName, refspecs, rc.pushCredential, rc.forcePush)
                 }catch (e:Exception) {
                     MyLog.e(TAG, "$funName err: remoteName=${rc.remoteName}, err=${e.stackTraceToString()}")
-                    throw e
+
                 }
             }
 
@@ -3852,7 +3819,7 @@ class Libgit2Helper {
 //                    return Ret.error(null, "resolve remote failed!", Ret.ErrCode.resolveRemoteFailed)
 //                }
                 // :refspec，等于删除远程分支
-                return push(repo, remote, ":$refsHeadsRefspec", credential)
+                return push(repo, remote, listOf(":$refsHeadsRefspec"), credential, force = false)
             }catch (e:Exception) {
                 MyLog.e(TAG, "#deleteRemoteBranchByRemoteAndRefsHeadsBranchRefSpec() error:params are(remote=$remote, refsHeadsRefspec=$refsHeadsRefspec), err="+e.stackTraceToString())
                 // e.g. "del 'refs/heads/abc' for remote 'origin' err: err msg"

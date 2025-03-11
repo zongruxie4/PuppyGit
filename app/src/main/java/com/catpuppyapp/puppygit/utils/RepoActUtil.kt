@@ -463,7 +463,7 @@ object RepoActUtil {
                 masterPassword = masterPassword
             )
 
-            val ret = Libgit2Helper.push(gitRepo, upstream.remote, upstream.pushRefSpec, credential, force)
+            val ret = Libgit2Helper.push(gitRepo, upstream.remote, listOf(upstream.pushRefSpec), credential, force)
             if (ret.hasError()) {
                 throwWithPrefix(prefix, ret.msg)
             }

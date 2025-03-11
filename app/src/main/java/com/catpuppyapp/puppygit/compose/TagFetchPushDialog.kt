@@ -77,8 +77,21 @@ fun TagFetchPushDialog(
                         }
                     }
 
+                    // del remote tags
+                    val delRemote = requireDel && requireDelRemoteChecked.value && selectedRemoteList.isNotEmpty()
+                    val pushAndDel = trueFetchFalsePush.not() && delRemote
 
-                    // fetch/push(and del remote tags)
+                    // 若删除远程tags则不需要force，否则使用用户选择的值。（ps 删除远程tags必然是push，所以需要先判断是否push再判断是否del
+                    val force = if(pushAndDel) {
+                        //修改下loading text
+                        loadingTextForFetchPushDialog.value = activityContext.getString(R.string.deleting_remote_tags)
+                        false  // del remote 没必要使用force push，所以设为假
+                    }else {
+                        force
+                    }
+
+
+                    // fetch or push(and del remote tags)
                     val remoteAndCredentials = mutableListOf<RemoteAndCredentials>()
                     val remoteDb = AppModel.dbContainer.remoteRepository
                     val credentialDb = AppModel.dbContainer.credentialRepository
@@ -100,7 +113,8 @@ fun TagFetchPushDialog(
                             RemoteAndCredentials(
                                 remoteName = it,
                                 fetchCredential = fetchCredential,
-                                pushCredential = pushCredential
+                                pushCredential = pushCredential,
+                                forcePush = force
                             )
 
                         )
@@ -108,37 +122,12 @@ fun TagFetchPushDialog(
 
                     if(trueFetchFalsePush) {  // fetch
                         Libgit2Helper.fetchAllTags(repo, curRepo, remoteAndCredentials, force)
-                    } else {  // push
-                        val delRemote = requireDel && requireDelRemoteChecked.value && selectedRemoteList.isNotEmpty()
-
-                        //修改下loading text
-                        if(delRemote) {
-                            loadingTextForFetchPushDialog.value = activityContext.getString(R.string.deleting_remote_tags)
-                        }
-
-                        val force = if(delRemote) false else force  // del mode 没必要使用force，所以设为假
-//                        val selectedAllTags = selectedTagsList.size == allTagsList.size
-//                        if(selectedAllTags) {
-//                            Libgit2Helper.pushAllTags(repo, remoteAndCredentials, force, delRemote)
-//                        }else {
+                    } else {
                         val pushRefSpecs = mutableListOf<String>()
-                        selectedTagsList.forEach {
-                            if(delRemote) {
-                                pushRefSpecs.add(":${it.name}")
-                            }else {
-                                pushRefSpecs.add(
-                                    if(force){
-                                        "+"+it.name+":"+it.name
-                                    }else{
-                                        it.name+":"+it.name
-                                    }
-                                )
+                        selectedTagsList.forEach { pushRefSpecs.add(if(delRemote) ":${it.name}" else "${it.name}:${it.name}") }
 
-                            }
-                        }
-
+                        // push
                         Libgit2Helper.pushTags(repo, remoteAndCredentials, pushRefSpecs)
-//                        }
                     }
                 }
 

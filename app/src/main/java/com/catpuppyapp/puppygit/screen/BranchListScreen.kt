@@ -1245,7 +1245,7 @@ fun BranchListScreen(
                                 trueFetchFalsePush = false
                             )
 
-                            val ret = Libgit2Helper.push(repo, upstream!!.remote, upstream!!.pushRefSpec, credential, force)
+                            val ret = Libgit2Helper.push(repo, upstream!!.remote, listOf(upstream!!.pushRefSpec), credential, force)
                             if(ret.hasError()) {
                                 throw RuntimeException(ret.msg)
                             }
