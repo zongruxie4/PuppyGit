@@ -1,5 +1,6 @@
 package com.catpuppyapp.puppygit.screen.content.homescreen.innerpage
 
+import CreatePatchSuccessDialog
 import android.content.Context
 import android.widget.Toast
 import androidx.activity.compose.BackHandler
@@ -63,7 +64,6 @@ import com.catpuppyapp.puppygit.compose.CheckBoxNoteText
 import com.catpuppyapp.puppygit.compose.ClickableText
 import com.catpuppyapp.puppygit.compose.ConfirmDialog
 import com.catpuppyapp.puppygit.compose.ConfirmDialog2
-import com.catpuppyapp.puppygit.compose.CopyableDialog
 import com.catpuppyapp.puppygit.compose.CredentialSelector
 import com.catpuppyapp.puppygit.compose.LoadingText
 import com.catpuppyapp.puppygit.compose.LongPressAbleIconBtn
@@ -1809,20 +1809,10 @@ fun ChangeListInnerPage(
     val showSavePatchSuccessDialog = rememberSaveable { mutableStateOf(false)}
 
     if(showSavePatchSuccessDialog.value) {
-//        val path = Cache.getByType<String>(Cache.Key.changeListInnerPage_SavePatchPath) ?:""
-        val path = savePatchPath.value
-
-        CopyableDialog(
-            title = stringResource(R.string.success),
-            text = replaceStringResList(stringResource(R.string.export_path_ph1_you_can_go_to_files_page_found_this_file), listOf(path)),
-            okBtnText = stringResource(R.string.copy_path),
-            onCancel = { showSavePatchSuccessDialog.value = false }
-        ) {
-            showSavePatchSuccessDialog.value = false
-
-            clipboardManager.setText(AnnotatedString(path))
-            Msg.requireShow(activityContext.getString(R.string.copied))
-        }
+        CreatePatchSuccessDialog(
+            path = savePatchPath.value,
+            closeDialog = {showSavePatchSuccessDialog.value = false}
+        )
     }
 
 

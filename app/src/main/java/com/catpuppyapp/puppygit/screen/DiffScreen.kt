@@ -1,5 +1,6 @@
 package com.catpuppyapp.puppygit.screen
 
+import CreatePatchSuccessDialog
 import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material.icons.Icons
@@ -63,7 +64,6 @@ import com.catpuppyapp.puppygit.utils.getFileNameFromCanonicalPath
 import com.catpuppyapp.puppygit.utils.getFormattedLastModifiedTimeOfFile
 import com.catpuppyapp.puppygit.utils.getHumanReadableSizeStr
 import com.catpuppyapp.puppygit.utils.getParentPathEndsWithSeparator
-import com.catpuppyapp.puppygit.utils.replaceStringResList
 import com.catpuppyapp.puppygit.utils.state.mutableCustomStateListOf
 import com.catpuppyapp.puppygit.utils.state.mutableCustomStateOf
 import java.io.File
@@ -241,20 +241,10 @@ fun DiffScreen(
     val showSavePatchSuccessDialog = rememberSaveable { mutableStateOf(false)}
 
     if(showSavePatchSuccessDialog.value) {
-//        val path = Cache.getByType<String>(Cache.Key.changeListInnerPage_SavePatchPath) ?:""
-        val path = savePatchPath.value
-
-        CopyableDialog(
-            title = stringResource(R.string.success),
-            text = replaceStringResList(stringResource(R.string.export_path_ph1_you_can_go_to_files_page_found_this_file), listOf(path)),
-            okBtnText = stringResource(R.string.copy_path),
-            onCancel = { showSavePatchSuccessDialog.value = false }
-        ) {
-            showSavePatchSuccessDialog.value = false
-
-            clipboardManager.setText(AnnotatedString(path))
-            Msg.requireShow(activityContext.getString(R.string.copied))
-        }
+        CreatePatchSuccessDialog(
+            path = savePatchPath.value,
+            closeDialog = {showSavePatchSuccessDialog.value = false}
+        )
     }
 
 
