@@ -210,6 +210,7 @@ fun FilesInnerPage(
 
     val scope = rememberCoroutineScope()
     val activity = ActivityUtil.getCurrentActivity()
+    val clipboardManager = LocalClipboardManager.current
 
 
     val settingsSnapshot = mutableCustomStateOf(keyTag = stateKeyTag, keyName = "settingsSnapshot") {
@@ -542,12 +543,13 @@ fun FilesInnerPage(
         stringResource(R.string.copy_repo_relative_path),
 
         stringResource(R.string.copy_full_path),
+        stringResource(R.string.import_as_repo),
+        stringResource(R.string.init_repo),
         stringResource(R.string.details),
 
 //        stringResource(id = R.string.delete)  //改用长按菜单的删除功能了
     )
 
-    val clipboardManager = LocalClipboardManager.current
 
 
     // 复制真实路径到剪贴板，显示提示copied
@@ -633,6 +635,30 @@ fun FilesInnerPage(
 
 
 
+    // import as repo variables block start
+    val showImportAsRepoDialog = rememberSaveable { mutableStateOf(false)}
+    val importAsRepoList = mutableCustomStateListOf(stateKeyTag, "importAsRepoList", listOf<String>())
+    val isReposParentFolderForImport = rememberSaveable { mutableStateOf(false)}
+    val initImportAsRepoDialog = { fullPathList:List<String> ->
+        importAsRepoList.value.clear()
+        importAsRepoList.value.addAll(fullPathList)
+        isReposParentFolderForImport.value = false
+        showImportAsRepoDialog.value = true
+    }
+    // import as repo variables block end
+
+
+    // init repo dialog variables block start
+    val showInitRepoDialog = rememberSaveable { mutableStateOf(false)}
+    val initRepoList = mutableCustomStateListOf(stateKeyTag, "initRepoList", listOf<String>())
+    val initInitRepoDialog = {pathList:List<String> ->
+        initRepoList.value.clear()
+        initRepoList.value.addAll(pathList)
+        showInitRepoDialog.value = true
+    }
+    // init repo dialog variables block end
+
+
 
     val renameFile = {item:FileItemDto ->
         renameFileItemDto.value = item  // 旧item
@@ -643,6 +669,7 @@ fun FilesInnerPage(
 
         showRenameDialog.value = true  // 显示弹窗
     }
+
     val fileMenuKeyActList = listOf<(FileItemDto)->Unit>(
         open@{ item:FileItemDto ->
             val expectReadOnly = false
@@ -719,6 +746,12 @@ fun FilesInnerPage(
         },
         copyFullPath@{
             copyThenShowCopied(it.fullPath)
+        },
+        importAsRepo@{
+            initImportAsRepoDialog(listOf(it.fullPath))
+        },
+        initRepo@{
+            initInitRepoDialog(listOf(it.fullPath))
         },
         details@{
             initDetailsDialog(listOf(it))
@@ -1028,29 +1061,6 @@ fun FilesInnerPage(
     // 向下滚动监听，结束
 
 
-    // import as repo variables block start
-    val showImportAsRepoDialog = rememberSaveable { mutableStateOf(false)}
-    val importAsRepoList = mutableCustomStateListOf(stateKeyTag, "importAsRepoList", listOf<String>())
-    val isReposParentFolderForImport = rememberSaveable { mutableStateOf(false)}
-    val initImportAsRepoDialog = { fullPathList:List<String> ->
-        importAsRepoList.value.clear()
-        importAsRepoList.value.addAll(fullPathList)
-        isReposParentFolderForImport.value = false
-        showImportAsRepoDialog.value = true
-    }
-    // import as repo variables block end
-
-
-    // init repo dialog variables block start
-    val showInitRepoDialog = rememberSaveable { mutableStateOf(false)}
-    val initRepoList = mutableCustomStateListOf(stateKeyTag, "initRepoList", listOf<String>())
-    val initInitRepoDialog = {pathList:List<String> ->
-        initRepoList.value.clear()
-        initRepoList.value.addAll(pathList)
-        showInitRepoDialog.value = true
-    }
-    // init repo dialog variables block end
-
 
     val findRepoThenGoToReposOrChangList = { fullPath:String, trueGoToReposFalseGoToChangeList:Boolean ->
         doJobThenOffLoading job@{
@@ -1287,20 +1297,22 @@ fun FilesInnerPage(
 
                                         DropdownMenuItem(
                                             enabled = enableMenuItem,
-                                            text = { Text(stringResource(R.string.copy_full_path)) },
-                                            onClick = {
-                                                breadCrumbDropDownMenuExpendState.value = false
-                                                copyThenShowCopied(it.fullPath)
-                                            }
-                                        )
-                                        DropdownMenuItem(
-                                            enabled = enableMenuItem,
                                             text = { Text(stringResource(R.string.copy_repo_relative_path)) },
                                             onClick = {
                                                 breadCrumbDropDownMenuExpendState.value = false
                                                 copyRepoRelativePath(it.fullPath)
                                             }
                                         )
+
+                                        DropdownMenuItem(
+                                            enabled = enableMenuItem,
+                                            text = { Text(stringResource(R.string.copy_full_path)) },
+                                            onClick = {
+                                                breadCrumbDropDownMenuExpendState.value = false
+                                                copyThenShowCopied(it.fullPath)
+                                            }
+                                        )
+
                                         DropdownMenuItem(
                                             enabled = enableMenuItem,
                                             text = { Text(stringResource(R.string.import_as_repo)) },
