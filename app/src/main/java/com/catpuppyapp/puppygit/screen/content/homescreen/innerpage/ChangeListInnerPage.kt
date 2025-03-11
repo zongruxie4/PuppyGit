@@ -414,13 +414,11 @@ fun ChangeListInnerPage(
 //            stringResource(id = R.string.commit_all_index_items_then_sync),
             stringResource(id = R.string.commit_all_index_items),
             stringResource(id = R.string.select_all),
-        ) else if(fromTo == Cons.gitDiffFromTreeToTree) listOf(
+        ) else listOf(  //if(fromTo == Cons.gitDiffFromTreeToTree)
         stringResource(R.string.checkout),
         stringResource(R.string.cherrypick),
         stringResource(R.string.create_patch),
         stringResource(id = R.string.select_all),
-        )else listOf(
-
         )
 
     //是否显示底栏按钮
@@ -452,13 +450,13 @@ fun ChangeListInnerPage(
 
             {changeListPageHasIndexItem.value},  //提交，只有当存在index条目时才启用
             {true} // select all
-        )else if(fromTo == Cons.gitDiffFromTreeToTree) listOf(
+        )else listOf( //  if(fromTo == Cons.gitDiffFromTreeToTree)
             selectedListIsNotEmpty,  // checkout
 //            {isDiffToHead?.value==true && selectedListIsNotEmpty()},  // cherrypick，之前理解错了，cherrypick和HEAD无关，只要是和parents对比，就能pick
             {commitParentList.value.isNotEmpty() && selectedListIsNotEmpty()},  // cherrypick，只有存在parents的情况下才可cherrypick
             selectedListIsNotEmpty,  // create patch
-            {true}
-        )else listOf()
+            {true}  // select all
+        )
 
     val hasConflictItemsSelected:()->Boolean = {
         var ret= false
@@ -471,7 +469,7 @@ fun ChangeListInnerPage(
 
         ret
     }
-    val moreItemEnableList:List<()->Boolean> = (if(fromTo == Cons.gitDiffFromIndexToWorktree)  listOf(
+    val moreItemEnableList:List<()->Boolean> = (if(fromTo == Cons.gitDiffFromIndexToWorktree) listOf( // worktree page
             hasConflictItemsSelected,  //accept ours
             hasConflictItemsSelected,  //accept theirs
             selectedListIsNotEmpty,  //stage
@@ -479,11 +477,14 @@ fun ChangeListInnerPage(
             selectedListIsNotEmpty, // create patch
             selectedListIsNotEmpty, // ignore
             selectedListIsNotEmpty, // import as repo
-        ) else listOf( // index page actually
+        ) else if(fromTo == Cons.gitDiffFromHeadToIndex) listOf( // index page
             selectedListIsNotEmpty,  // unstage
             selectedListIsNotEmpty, // create patch
             selectedListIsNotEmpty, // import as repo
+        ) else listOf(  // tree to tree page
+            selectedListIsNotEmpty, // import as repo
         )
+
     ).asReversed()
 
 //    val isAllConflictItemsSelected:()->Boolean = isAllConflictItemsSelectedLabel@{
@@ -2178,7 +2179,7 @@ fun ChangeListInnerPage(
             //impl select all
             selectAll()
         }
-    )else if(fromTo == Cons.gitDiffFromTreeToTree) {
+    )else {  // if(fromTo == Cons.gitDiffFromTreeToTree)
         listOf(  //tree to tree页面的底栏选项
             checkout@{
                 val curRepo = curRepoFromParentPage.value
@@ -2214,39 +2215,43 @@ fun ChangeListInnerPage(
             }
         )
 
-    }else {
-        listOf()
     }
 
     val revertStrRes = stringResource(R.string.revert_n_and_del_m_files)
 
-    val enableMoreIcon = fromTo != Cons.gitDiffFromTreeToTree
+//    val enableMoreIcon = fromTo != Cons.gitDiffFromTreeToTree
+    val enableMoreIcon = true
     //话说用这个diffFromTo变量来判断其实并非本意，但也勉强说得过去，因为worktree的changelist和index页面所需要diff的不同，所以，也可以这么写，其实本该还有一个FromHeadToWorktree的diff变量的，但在这里用不上
     val moreItemTextList = (if(fromTo == Cons.gitDiffFromIndexToWorktree) listOf(
-        if(UserUtil.isPro()) stringResource(id = R.string.accept_ours) else stringResource(id = R.string.accept_ours_pro_only),
-        if(UserUtil.isPro()) stringResource(id = R.string.accept_theirs) else stringResource(id = R.string.accept_theirs_pro_only),
+        stringResource(R.string.accept_ours),
+        stringResource(R.string.accept_theirs),
         stringResource(R.string.stage),
         stringResource(R.string.revert),
         stringResource(R.string.create_patch),
-        if(proFeatureEnabled(ignoreWorktreeFilesTestPassed)) stringResource(R.string.ignore) else "",
+        if(proFeatureEnabled(ignoreWorktreeFilesTestPassed)) stringResource(R.string.ignore) else "",  //显示菜单时会跳过空文本条目
         stringResource(R.string.import_as_repo),
 
     )  //按元素添加顺序在列表中会呈现为从上到下
     else if(fromTo == Cons.gitDiffFromHeadToIndex) listOf(stringResource(R.string.unstage), stringResource(R.string.create_patch), stringResource(R.string.import_as_repo),)
-    else listOf()  // tree to tree，无选项
+    else listOf(  // tree to tree，无选项
+        stringResource(R.string.import_as_repo)
+    )
     ).asReversed()
 
     val showAcceptOursTheirs = (repoState.intValue == Repository.StateT.MERGE.bit || repoState.intValue == Repository.StateT.REBASE_MERGE.bit || repoState.intValue == Repository.StateT.CHERRYPICK.bit)
 
     val moreItemVisibleList = (if(fromTo == Cons.gitDiffFromIndexToWorktree) listOf(
+        // workTree 页面主要是得在不需要时隐藏accept ours/theirs，所以得单独写visible list，否则直接默认全显示就行
         {showAcceptOursTheirs},  // visible for "accept ours"
         {showAcceptOursTheirs},  // visible for "accept theirs"
+
+        //其他条目
         {true},  // stage
         {true},  // revert
         {true},  // create patch
         {true},  // ignore
         {true}, // import as repo
-    ) else listOf()  // empty list, always visible
+    ) else listOf()  // empty list, always visible. index和treeToTree目前没有需要隐藏的条目，全显示
     ).asReversed()
 
     val showRevertAlert = rememberSaveable { mutableStateOf(false)}
@@ -2404,8 +2409,7 @@ fun ChangeListInnerPage(
                             else listOf()  //这个应该不会执行到
      */
 
-    val initImportAsRepo = {
-        val selectedItemList = selectedItemList.value.toList()
+    val initImportAsRepo = {selectedItemList:List<StatusTypeEntrySaver> ->
         val tmplist = selectedItemList.filter { it.toFile().isDirectory }
         if(tmplist.isEmpty()) {
             Msg.requireShow(activityContext.getString(R.string.no_dir_selected))
@@ -2475,7 +2479,7 @@ fun ChangeListInnerPage(
             showIgnoreDialog.value = true
         },
         importAsRepo@{
-            initImportAsRepo()
+            initImportAsRepo(selectedItemList.value.toList())
         }
     ) else if(fromTo == Cons.gitDiffFromHeadToIndex) listOf(
         unstage@{
@@ -2485,10 +2489,13 @@ fun ChangeListInnerPage(
             showCreatePatchDialog.value = true
         },
         importAsRepo@{
-            initImportAsRepo()
+            initImportAsRepo(selectedItemList.value.toList())
         }
-    ) else listOf()  // fromTo == Cons.gitDiffFromTreeToTree
-
+    ) else listOf( // fromTo == Cons.gitDiffFromTreeToTree
+        importAsRepo@{
+            initImportAsRepo(selectedItemList.value.toList())
+        }
+    )
     ).asReversed()
 
     val switchItemSelected = { item:StatusTypeEntrySaver ->
@@ -2603,9 +2610,7 @@ fun ChangeListInnerPage(
         },
 
         importAsRepo@{
-            importList.value.clear()
-            importList.value.add(it)
-            showImportToReposDialog.value = true
+            initImportAsRepo(listOf(it))
         },
         goToSub@{
             goToSub(it)
@@ -2620,8 +2625,9 @@ fun ChangeListInnerPage(
         fileHistoryEnabled@{it.maybeIsFileAndExist()},
         copyFullPath@{true},
         copyRepoRelativePath@{true},
-        importAsRepo@{ (fromTo == Cons.gitDiffFromIndexToWorktree || fromTo == Cons.gitDiffFromHeadToIndex) && it.toFile().isDirectory }, //only dir can be import as repo
-        goToSub@{fromTo == Cons.gitDiffFromIndexToWorktree && it.toFile().isDirectory},  // only dir maybe import as cur repo's sub repo, then maybe can switch to sub, and only ChangeList can be switch repo, so need check it also
+//        importAsRepo@{ (fromTo == Cons.gitDiffFromIndexToWorktree || fromTo == Cons.gitDiffFromHeadToIndex) && it.toFile().isDirectory }, //only dir can be import as repo
+        importAsRepo@{ it.toFile().isDirectory }, //only dir can be import as repo
+        goToSub@{fromTo == Cons.gitDiffFromIndexToWorktree && it.toFile().isDirectory},  // only Worktree page can switch repo, and only dir maybe is repo
     )
 
     //这个页面，显示就是启用，禁用就不需要显示，所以直接把enableList作为visibleList即可
@@ -3322,12 +3328,12 @@ fun ChangeListInnerPage(
                         iconDescTextList=iconTextList,
                         iconOnClickList=iconOnClickList,
                         iconEnableList=iconEnableList,
+                        iconVisibleList = iconVisibleList,
                         enableMoreIcon=enableMoreIcon,
                         moreItemTextList=moreItemTextList,
                         moreItemOnClickList=moreItemOnClickList,
                         moreItemEnableList = moreItemEnableList,
                         moreItemVisibleList = moreItemVisibleList,
-                        iconVisibleList = iconVisibleList,
                         countNumOnClickEnabled = true,
                         getSelectedFilesCount = getSelectedFilesCount,
                         countNumOnClick = countNumOnClickForBottomBar
