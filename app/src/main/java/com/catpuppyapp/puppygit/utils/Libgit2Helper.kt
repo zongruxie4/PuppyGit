@@ -25,6 +25,7 @@ import com.catpuppyapp.puppygit.git.FileHistoryDto
 import com.catpuppyapp.puppygit.git.PatchFile
 import com.catpuppyapp.puppygit.git.PuppyHunkAndLines
 import com.catpuppyapp.puppygit.git.PuppyLine
+import com.catpuppyapp.puppygit.git.PushFailedItem
 import com.catpuppyapp.puppygit.git.ReflogEntryDto
 import com.catpuppyapp.puppygit.git.RemoteAndCredentials
 import com.catpuppyapp.puppygit.git.SquashData
@@ -3229,7 +3230,7 @@ class Libgit2Helper {
         /**
          * 注意：pushRefSpec不要带加号+，若想强制推送，传force=true。不过这里没强制要求，若你非带加号同时force传false，也能强制push
          */
-        fun push(repo: Repository, remoteName: String, refspecs: List<String>, credential: CredentialEntity?, force: Boolean):Ret<String?> {
+        fun push(repo: Repository, remoteName: String, refspecs: List<String>, credential: CredentialEntity?, force: Boolean) {
             //head detached没有上游，不能push
             //publish a branch which is not current active, even head detached, still should can be pushing
 //            if(repo.headDetached()) {
@@ -3237,7 +3238,7 @@ class Libgit2Helper {
 //            }
 
             if(refspecs.isEmpty()) {
-                return Ret.createError(null, "refspecs are empty")
+                throw RuntimeException("refspecs are empty")
             }
 
             //+的作用是force push，如果带+，当本地和远程不一致时（无法fast-forward)，会强制用本地覆盖远程提交列表，但一般远程仓库主分支都有覆盖保护，所以可能会push失败
@@ -3254,7 +3255,7 @@ class Libgit2Helper {
             //找remote
             val remote = resolveRemote(repo, remoteName)
             if(remote == null) {
-                return Ret.createError(null, "resolve remote failed!", Ret.ErrCode.resolveRemoteFailed)
+                throw RuntimeException("resolve remote failed!")
             }
 
             val pushUrl = getRemoteActuallyUsedPushUrl(remote)
@@ -3276,28 +3277,30 @@ class Libgit2Helper {
 
             //推送
             remote.push(refspecs, pushOptions)
-
-            return Ret.createSuccess(null, "push success")
         }
 
 
         /**
          * 针对每个remotes推送一遍refspecs
          * 注意：这个函数没有force参数！如果要force push，需要调用前将对应RemoteAndCredentials的的forcePush设为true
+         *
+         * @return 如果全推送成功，failedlist空，否则非空
          */
-        fun pushMulti(repo: Repository, remotes: List<RemoteAndCredentials>, refspecs: List<String>):Ret<List<PushFailedItem>?> {
+        fun pushMulti(repo: Repository, remotes: List<RemoteAndCredentials>, refspecs: List<String>):List<PushFailedItem> {
             val funName = "pushMulti"
 
+            val pushFailedList = mutableListOf<PushFailedItem>()
             for (rc in remotes) {
                 try {
                     push(repo, rc.remoteName, refspecs, rc.pushCredential, rc.forcePush)
                 }catch (e:Exception) {
                     MyLog.e(TAG, "$funName err: remoteName=${rc.remoteName}, err=${e.stackTraceToString()}")
-
+                    pushFailedList.add(PushFailedItem(rc.remoteName, e))
                 }
             }
 
-            return Ret.createSuccess(null, "push success")
+
+            return pushFailedList
         }
 
         fun isSshUrl(url:String):Boolean {
@@ -3819,7 +3822,9 @@ class Libgit2Helper {
 //                    return Ret.error(null, "resolve remote failed!", Ret.ErrCode.resolveRemoteFailed)
 //                }
                 // :refspec，等于删除远程分支
-                return push(repo, remote, listOf(":$refsHeadsRefspec"), credential, force = false)
+                push(repo, remote, listOf(":$refsHeadsRefspec"), credential, force = false)
+
+                return Ret.createSuccess(null)
             }catch (e:Exception) {
                 MyLog.e(TAG, "#deleteRemoteBranchByRemoteAndRefsHeadsBranchRefSpec() error:params are(remote=$remote, refsHeadsRefspec=$refsHeadsRefspec), err="+e.stackTraceToString())
                 // e.g. "del 'refs/heads/abc' for remote 'origin' err: err msg"
@@ -4624,8 +4629,8 @@ class Libgit2Helper {
         /**
          * 若需要force push 自己在对应的refspec里加
          */
-        fun pushTags(repo:Repository, remoteAndCredentials:List<RemoteAndCredentials>, refspecs: List<String>) {
-            pushMulti(repo, remoteAndCredentials, refspecs)
+        fun pushTags(repo:Repository, remoteAndCredentials:List<RemoteAndCredentials>, refspecs: List<String>):List<PushFailedItem> {
+            return pushMulti(repo, remoteAndCredentials, refspecs)
         }
 
 //        fun pushAllTags(repo:Repository, remoteAndCredentials:List<RemoteAndCredentials>, force: Boolean=false, delMode:Boolean=false) {

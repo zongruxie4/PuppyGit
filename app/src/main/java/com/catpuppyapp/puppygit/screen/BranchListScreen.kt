@@ -818,7 +818,8 @@ fun BranchListScreen(
                                             upstream.remote,
                                             upstream.branchRefsHeadsFullRefSpec,
                                             credential
-                                        )
+                                    )
+
                                     if (delRemotePushRet.hasError()) {
                                         throw RuntimeException("del upstream '${upstream.remoteBranchShortRefSpec}' push err: "+delRemotePushRet.msg)
                                     }
@@ -1245,10 +1246,7 @@ fun BranchListScreen(
                                 trueFetchFalsePush = false
                             )
 
-                            val ret = Libgit2Helper.push(repo, upstream!!.remote, listOf(upstream!!.pushRefSpec), credential, force)
-                            if(ret.hasError()) {
-                                throw RuntimeException(ret.msg)
-                            }
+                            Libgit2Helper.push(repo, upstream!!.remote, listOf(upstream!!.pushRefSpec), credential, force)
 
                             // 更新修改workstatus的时间，只更新时间就行，状态会在查询repo时更新
                             val repoDb = AppModel.dbContainer.repoRepository

@@ -18,6 +18,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import com.catpuppyapp.puppygit.data.entity.RepoEntity
+import com.catpuppyapp.puppygit.git.PushFailedItem
 import com.catpuppyapp.puppygit.git.RemoteAndCredentials
 import com.catpuppyapp.puppygit.git.TagDto
 import com.catpuppyapp.puppygit.play.pro.R
@@ -50,6 +51,9 @@ fun TagFetchPushDialog(
     onSuccess:()->Unit,  //try代码块末尾
     onErr:suspend (e:Exception)->Unit, //catch代码块末尾
     onFinally:()->Unit, //在 try...catch...finally，finally代码块里的代码
+
+    //处理推送失败的条目的回调
+    pushFailedListHandler:suspend (List<PushFailedItem>)->Unit,
 ) {
 
     val activityContext = LocalContext.current
@@ -122,16 +126,21 @@ fun TagFetchPushDialog(
 
                     if(trueFetchFalsePush) {  // fetch
                         Libgit2Helper.fetchAllTags(repo, curRepo, remoteAndCredentials, force)
+                        onSuccess()
                     } else {
                         val pushRefSpecs = mutableListOf<String>()
                         selectedTagsList.forEach { pushRefSpecs.add(if(delRemote) ":${it.name}" else "${it.name}:${it.name}") }
 
                         // push
-                        Libgit2Helper.pushTags(repo, remoteAndCredentials, pushRefSpecs)
+                        val failedList = Libgit2Helper.pushTags(repo, remoteAndCredentials, pushRefSpecs)
+                        if(failedList.isEmpty()) {
+                            onSuccess()
+                        }else {
+                            pushFailedListHandler(failedList)
+                        }
                     }
                 }
 
-                onSuccess()
             }catch (e:Exception) {
                 onErr(e)
             }finally {

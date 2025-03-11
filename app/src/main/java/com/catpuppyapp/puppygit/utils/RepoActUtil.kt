@@ -21,7 +21,7 @@ object RepoActUtil {
     private const val waitInMillSecIfApiBusy = 5000L  //5s
 
     private fun throwRepoBusy(prefix:String, repoName:String) {
-        throwWithPrefix(prefix, "repo '$repoName' busy, plz try later")
+        throwWithPrefix(prefix, RuntimeException("repo '$repoName' busy, plz try again later"))
     }
 
     private fun getNotifySender(repoId:String, sessionId: String):NotificationSender? {
@@ -105,36 +105,42 @@ object RepoActUtil {
         sendErrNotification: ((title: String, msg: String, startPage: Int, startRepoId: String) -> Unit)?,
         force: Boolean
     ) {
-        sendProgressNotification?.invoke(repoFromDb.repoName, "pulling...")
+        val prefix = "sync"
 
-        pullSingle(
-            repoFromDb = repoFromDb,
-            db = db,
-            masterPassword = masterPassword,
-            gitUsernameFromUrl = gitUsernameFromUrl,
-            gitEmailFromUrl = gitEmailFromUrl,
-            settings = settings,
-            sendSuccessNotification = sendSuccessNotification
-        )
+        try {
+            sendProgressNotification?.invoke(repoFromDb.repoName, "pulling...")
 
-        sendProgressNotification?.invoke(repoFromDb.repoName, "pushing...")
+            pullSingle(
+                repoFromDb = repoFromDb,
+                db = db,
+                masterPassword = masterPassword,
+                gitUsernameFromUrl = gitUsernameFromUrl,
+                gitEmailFromUrl = gitEmailFromUrl,
+                settings = settings,
+                sendSuccessNotification = sendSuccessNotification
+            )
 
-        pushSingle(
-            repoFromDb = repoFromDb,
-            autoCommit = autoCommit,
-            gitUsernameFromUrl = gitUsernameFromUrl,
-            gitEmailFromUrl = gitEmailFromUrl,
-            routeName = routeName,
-            sendErrNotification = sendErrNotification,
-            settings = settings,
-            force = force,
-            sendSuccessNotification = sendSuccessNotification,
-            db = db,
-            masterPassword = masterPassword
-        )
+            sendProgressNotification?.invoke(repoFromDb.repoName, "pushing...")
 
-        sendProgressNotification?.invoke(repoFromDb.repoName, "sync successfully")
+            pushSingle(
+                repoFromDb = repoFromDb,
+                autoCommit = autoCommit,
+                gitUsernameFromUrl = gitUsernameFromUrl,
+                gitEmailFromUrl = gitEmailFromUrl,
+                routeName = routeName,
+                sendErrNotification = sendErrNotification,
+                settings = settings,
+                force = force,
+                sendSuccessNotification = sendSuccessNotification,
+                db = db,
+                masterPassword = masterPassword
+            )
 
+            sendProgressNotification?.invoke(repoFromDb.repoName, "sync successfully")
+
+        }catch (e:Exception) {
+            throwWithPrefix(prefix, e)
+        }
     }
 
     suspend fun pullRepoList(
@@ -198,88 +204,94 @@ object RepoActUtil {
         sendSuccessNotification: ((title: String?, msg: String?, startPage: Int?, startRepoId: String?) -> Unit)?
     ) {
         val prefix = "pull"
-        if (dbIntToBool(repoFromDb.isDetached)) {
-            throwWithPrefix(prefix, "repo is detached")
+
+        try {
+
+            if (dbIntToBool(repoFromDb.isDetached)) {
+                throw RuntimeException("repo is detached")
+            }
+
+            if (!Libgit2Helper.isValidGitRepo(repoFromDb.fullSavePath)) {
+                throw RuntimeException("invalid git repo")
+            }
+
+            Repository.open(repoFromDb.fullSavePath).use { gitRepo ->
+                val upstream = Libgit2Helper.getUpstreamOfBranch(gitRepo, repoFromDb.branch)
+                if (upstream.remote.isBlank() || upstream.branchRefsHeadsFullRefSpec.isBlank()) {
+                    throw RuntimeException("invalid upstream")
+                }
+
+                // get fetch credential
+                val credential = Libgit2Helper.getRemoteCredential(
+                    db.remoteRepository,
+                    db.credentialRepository,
+                    repoFromDb.id,
+                    upstream.remote,
+                    trueFetchFalsePush = true,
+                    masterPassword = masterPassword
+                )
+
+                // fetch
+                Libgit2Helper.fetchRemoteForRepo(gitRepo, upstream.remote, credential, repoFromDb)
+
+
+                // 更新修改workstatus的时间，只更新时间就行，状态会在查询repo时更新
+                val repoDb = AppModel.dbContainer.repoRepository
+                repoDb.updateLastUpdateTime(repoFromDb.id, getSecFromTime())
+
+                // get git username and email for merge
+                val (username, email) = if (gitUsernameFromUrl.isNotBlank() && gitEmailFromUrl.isNotBlank()) {
+                    Pair(gitUsernameFromUrl, gitEmailFromUrl)
+                } else {
+                    val (gitUsernameFromConfig, gitEmailFromConfig) = Libgit2Helper.getGitUsernameAndEmail(gitRepo)
+                    val finallyUsername = gitUsernameFromUrl.ifBlank { gitUsernameFromConfig }
+
+                    val finallyEmail = gitEmailFromUrl.ifBlank { gitEmailFromConfig }
+
+                    Pair(finallyUsername, finallyEmail)
+                }
+
+                if (username == null || username.isBlank()) {
+                    throw RuntimeException("git username invalid")
+                }
+
+                if (email == null || email.isBlank()) {
+                    throw RuntimeException("git email invalid")
+                }
+
+                val remoteRefSpec = Libgit2Helper.getUpstreamRemoteBranchShortNameByRemoteAndBranchRefsHeadsRefSpec(
+                    upstream!!.remote,
+                    upstream.branchRefsHeadsFullRefSpec
+                )
+
+                //merge
+                val mergeRet = Libgit2Helper.mergeOneHead(
+                    gitRepo,
+                    remoteRefSpec,
+                    username,
+                    email,
+                    settings = settings
+                )
+
+                if (mergeRet.hasError()) {
+                    throw RuntimeException(mergeRet.msg)
+                }
+
+                //merge没报错，基本算是成功了，不过可能是up to date啥也没干，也可能fast forward，也可能发生了merge，后面不会提示太详细，仅区分up to date和pull successfully(fast-forwarded or merged)
+
+                val successMsg = if(mergeRet.code == Ret.SuccessCode.upToDate) { // up to date, no fast-forward or merge
+                    //显示 already up to date之类的，btw 如果显示already up to date，代表没发生merge，文件应该没修改，不需要重新加载(20250216 markor不会在文件在外部被修改后自动重载，如果文件变化，需要手动重载，不过obsidian会，所以若嫌麻烦可以用obsidian)
+                    "$prefix: Already up-to-date"
+                }else { // fast-forwarded or merged
+                    "pull successfully"
+                }
+
+                sendSuccessNotification?.invoke(repoFromDb.repoName, successMsg, Cons.selectedItem_ChangeList, repoFromDb.id)
+            }
+
+        }catch (e:Exception) {
+            throwWithPrefix(prefix, e)
         }
-
-        if (!Libgit2Helper.isValidGitRepo(repoFromDb.fullSavePath)) {
-            throwWithPrefix(prefix, "invalid git repo")
-        }
-
-        Repository.open(repoFromDb.fullSavePath).use { gitRepo ->
-            val upstream = Libgit2Helper.getUpstreamOfBranch(gitRepo, repoFromDb.branch)
-            if (upstream.remote.isBlank() || upstream.branchRefsHeadsFullRefSpec.isBlank()) {
-                throwWithPrefix(prefix, "invalid upstream")
-            }
-
-            // get fetch credential
-            val credential = Libgit2Helper.getRemoteCredential(
-                db.remoteRepository,
-                db.credentialRepository,
-                repoFromDb.id,
-                upstream.remote,
-                trueFetchFalsePush = true,
-                masterPassword = masterPassword
-            )
-
-            // fetch
-            Libgit2Helper.fetchRemoteForRepo(gitRepo, upstream.remote, credential, repoFromDb)
-
-
-            // 更新修改workstatus的时间，只更新时间就行，状态会在查询repo时更新
-            val repoDb = AppModel.dbContainer.repoRepository
-            repoDb.updateLastUpdateTime(repoFromDb.id, getSecFromTime())
-
-            // get git username and email for merge
-            val (username, email) = if (gitUsernameFromUrl.isNotBlank() && gitEmailFromUrl.isNotBlank()) {
-                Pair(gitUsernameFromUrl, gitEmailFromUrl)
-            } else {
-                val (gitUsernameFromConfig, gitEmailFromConfig) = Libgit2Helper.getGitUsernameAndEmail(gitRepo)
-                val finallyUsername = gitUsernameFromUrl.ifBlank { gitUsernameFromConfig }
-
-                val finallyEmail = gitEmailFromUrl.ifBlank { gitEmailFromConfig }
-
-                Pair(finallyUsername, finallyEmail)
-            }
-
-            if (username == null || username.isBlank()) {
-                throwWithPrefix(prefix, "git username invalid")
-            }
-
-            if (email == null || email.isBlank()) {
-                throwWithPrefix(prefix, "git email invalid")
-            }
-
-            val remoteRefSpec = Libgit2Helper.getUpstreamRemoteBranchShortNameByRemoteAndBranchRefsHeadsRefSpec(
-                upstream!!.remote,
-                upstream.branchRefsHeadsFullRefSpec
-            )
-
-            //merge
-            val mergeRet = Libgit2Helper.mergeOneHead(
-                gitRepo,
-                remoteRefSpec,
-                username,
-                email,
-                settings = settings
-            )
-
-            if (mergeRet.hasError()) {
-                throwWithPrefix(prefix, mergeRet.msg)
-            }
-
-            //merge没报错，基本算是成功了，不过可能是up to date啥也没干，也可能fast forward，也可能发生了merge，后面不会提示太详细，仅区分up to date和pull successfully(fast-forwarded or merged)
-
-            val successMsg = if(mergeRet.code == Ret.SuccessCode.upToDate) { // up to date, no fast-forward or merge
-                //显示 already up to date之类的，btw 如果显示already up to date，代表没发生merge，文件应该没修改，不需要重新加载(20250216 markor不会在文件在外部被修改后自动重载，如果文件变化，需要手动重载，不过obsidian会，所以若嫌麻烦可以用obsidian)
-                "$prefix: Already up-to-date"
-            }else { // fast-forwarded or merged
-                "pull successfully"
-            }
-
-            sendSuccessNotification?.invoke(repoFromDb.repoName, successMsg, Cons.selectedItem_ChangeList, repoFromDb.id)
-        }
-
 
     }
 
@@ -357,128 +369,132 @@ object RepoActUtil {
         val funName = "pushSingle"
         val prefix = "push"
 
-        if (dbIntToBool(repoFromDb.isDetached)) {
-            throwWithPrefix(prefix, "repo is detached")
-        }
-
-        if (!Libgit2Helper.isValidGitRepo(repoFromDb.fullSavePath)) {
-            throwWithPrefix(prefix, "invalid git repo")
-        }
-
-        Repository.open(repoFromDb.fullSavePath).use { gitRepo ->
-            val repoState = gitRepo.state()
-            if (repoState != Repository.StateT.NONE) {
-                throwWithPrefix(prefix, "repository state is '$repoState', expect 'NONE'")
+        try {
+            if (dbIntToBool(repoFromDb.isDetached)) {
+                throw RuntimeException("repo is detached")
             }
 
-            val upstream = Libgit2Helper.getUpstreamOfBranch(gitRepo, repoFromDb.branch)
-            if (upstream.remote.isBlank() || upstream.branchRefsHeadsFullRefSpec.isBlank()) {
-                throwWithPrefix(prefix, "invalid upstream")
+            if (!Libgit2Helper.isValidGitRepo(repoFromDb.fullSavePath)) {
+                throw RuntimeException("invalid git repo")
             }
 
-            //提交，就算失败也会尝试push，因为就算没提交也有可能本地比远程新，比如在其他地方提交过，就有可能会这样
-            if (autoCommit) {
-                val (username, email) = if (gitUsernameFromUrl.isNotBlank() && gitEmailFromUrl.isNotBlank()) {
-                    Pair(gitUsernameFromUrl, gitEmailFromUrl)
-                } else {
-                    val (gitUsernameFromConfig, gitEmailFromConfig) = Libgit2Helper.getGitUsernameAndEmail(gitRepo)
-                    val finallyUsername = gitUsernameFromUrl.ifBlank { gitUsernameFromConfig }
-
-                    val finallyEmail = gitEmailFromUrl.ifBlank { gitEmailFromConfig }
-
-                    Pair(finallyUsername, finallyEmail)
+            Repository.open(repoFromDb.fullSavePath).use { gitRepo ->
+                val repoState = gitRepo.state()
+                if (repoState != Repository.StateT.NONE) {
+                    throw RuntimeException("repository state is '$repoState', expect 'NONE'")
                 }
 
-                if (username == null || username.isBlank() || email == null || email.isBlank()) {
-                    MyLog.e(TAG, "#$funName: api $routeName: commit abort by username or email invalid")
-                } else {
-                    //检查是否存在冲突，如果存在，将不会创建提交
-                    if (Libgit2Helper.hasConflictItemInRepo(gitRepo)) {
-                        MyLog.e(TAG, "#$funName: api=$routeName, repoName=${repoFromDb.repoName}, err=conflict abort the commit")
-                        // 显示个手机通知，点击进入ChangeList并定位到对应仓库
-                        sendErrNotification?.invoke(repoFromDb.repoName, "$prefix: auto commit aborted by conflicts", Cons.selectedItem_ChangeList, repoFromDb.id)
+                val upstream = Libgit2Helper.getUpstreamOfBranch(gitRepo, repoFromDb.branch)
+                if (upstream.remote.isBlank() || upstream.branchRefsHeadsFullRefSpec.isBlank()) {
+                    throw RuntimeException("invalid upstream")
+                }
+
+                //提交，就算失败也会尝试push，因为就算没提交也有可能本地比远程新，比如在其他地方提交过，就有可能会这样
+                if (autoCommit) {
+                    val (username, email) = if (gitUsernameFromUrl.isNotBlank() && gitEmailFromUrl.isNotBlank()) {
+                        Pair(gitUsernameFromUrl, gitEmailFromUrl)
                     } else {
-                        // 有username 和 email，且无冲突
+                        val (gitUsernameFromConfig, gitEmailFromConfig) = Libgit2Helper.getGitUsernameAndEmail(gitRepo)
+                        val finallyUsername = gitUsernameFromUrl.ifBlank { gitUsernameFromConfig }
 
-                        // stage worktree changes
-                        Libgit2Helper.stageAll(gitRepo, repoFromDb.id)
+                        val finallyEmail = gitEmailFromUrl.ifBlank { gitEmailFromConfig }
+
+                        Pair(finallyUsername, finallyEmail)
+                    }
+
+                    if (username == null || username.isBlank() || email == null || email.isBlank()) {
+                        MyLog.e(TAG, "#$funName: api $routeName: commit abort by username or email invalid")
+                    } else {
+                        //检查是否存在冲突，如果存在，将不会创建提交
+                        if (Libgit2Helper.hasConflictItemInRepo(gitRepo)) {
+                            MyLog.e(TAG, "#$funName: api=$routeName, repoName=${repoFromDb.repoName}, err=conflict abort the commit")
+                            // 显示个手机通知，点击进入ChangeList并定位到对应仓库
+                            sendErrNotification?.invoke(repoFromDb.repoName, "$prefix: auto commit aborted by conflicts", Cons.selectedItem_ChangeList, repoFromDb.id)
+                        } else {
+                            // 有username 和 email，且无冲突
+
+                            // stage worktree changes
+                            Libgit2Helper.stageAll(gitRepo, repoFromDb.id)
 
 
-                        //如果index不为空，则创建提交
-                        if (!Libgit2Helper.indexIsEmpty(gitRepo)) {
-                            val ret = Libgit2Helper.createCommit(
-                                repo = gitRepo,
-                                msg = "",
-                                username = username,
-                                email = email,
-                                indexItemList = null,
-                                amend = false,
-                                overwriteAuthorWhenAmend = false,
-                                settings = settings
-                            )
+                            //如果index不为空，则创建提交
+                            if (!Libgit2Helper.indexIsEmpty(gitRepo)) {
+                                val ret = Libgit2Helper.createCommit(
+                                    repo = gitRepo,
+                                    msg = "",
+                                    username = username,
+                                    email = email,
+                                    indexItemList = null,
+                                    amend = false,
+                                    overwriteAuthorWhenAmend = false,
+                                    settings = settings
+                                )
 
-                            if (ret.hasError()) {
-                                MyLog.e(TAG, "#$funName: api=$routeName, repoName=${repoFromDb.repoName}, create commit err: ${ret.msg}, exception=${ret.exception?.stackTraceToString()}")
-                                // 显示个手机通知，点击进入ChangeList并定位到对应仓库
-                                sendErrNotification?.invoke(repoFromDb.repoName, "$prefix: auto commit err: ${ret.msg}", Cons.selectedItem_ChangeList, repoFromDb.id)
-                            } else if(ret.data != null){
-                                //更新本地oid，不然后面会误认为up to date，然后不推送
-                                upstream.localOid = ret.data!!.toString()
+                                if (ret.hasError()) {
+                                    MyLog.e(TAG, "#$funName: api=$routeName, repoName=${repoFromDb.repoName}, create commit err: ${ret.msg}, exception=${ret.exception?.stackTraceToString()}")
+                                    // 显示个手机通知，点击进入ChangeList并定位到对应仓库
+                                    sendErrNotification?.invoke(repoFromDb.repoName, "$prefix: auto commit err: ${ret.msg}", Cons.selectedItem_ChangeList, repoFromDb.id)
+                                } else if(ret.data != null){
+                                    //更新本地oid，不然后面会误认为up to date，然后不推送
+                                    upstream.localOid = ret.data!!.toString()
+                                }
                             }
-                        }
 
+                        }
                     }
                 }
-            }
 
 
-            // 检查 ahead和behind
-            if (!force) {  //只有非force才检查，否则强推
-                val (ahead, behind) = getAheadBehind(gitRepo, Oid.of(upstream.localOid), Oid.of(upstream.remoteOid))
+                // 检查 ahead和behind
+                if (!force) {  //只有非force才检查，否则强推
+                    val (ahead, behind) = getAheadBehind(gitRepo, Oid.of(upstream.localOid), Oid.of(upstream.remoteOid))
 
-                //非force push的情况下，如果本地落后远程，必然推送失败，所以就不用推了，直接报错
-                if (behind > 0) {  //本地落后远程（远程领先本地）
-                    throwWithPrefix(prefix, "upstream ahead of local")
+                    //非force push的情况下，如果本地落后远程，必然推送失败，所以就不用推了，直接报错
+                    if (behind > 0) {  //本地落后远程（远程领先本地）
+                        throw RuntimeException("upstream ahead of local")
+                    }
+
+                    //如果本地不领先远程，不需要推送，加上已经通过上面的behind检测，执行到这里，若通过if，则代表，本地不落后远程，同时也不领先远程，也就是两者相同，ahead和behind都是0，这时就是 Already up-to-date，可以返回了，不需要执行后续操作
+                    if (ahead < 1) {
+                        //通过behind检测后，如果进入此代码块，代表本地不落后也不领先，即“up to date”，并不需要推送，可返回了
+                        sendSuccessNotification?.invoke(repoFromDb.repoName, "$prefix: Already up-to-date", Cons.selectedItem_ChangeList, repoFromDb.id)
+
+
+                        return
+                    }
+
                 }
 
-                //如果本地不领先远程，不需要推送，加上已经通过上面的behind检测，执行到这里，若通过if，则代表，本地不落后远程，同时也不领先远程，也就是两者相同，ahead和behind都是0，这时就是 Already up-to-date，可以返回了，不需要执行后续操作
-                if (ahead < 1) {
-                    //通过behind检测后，如果进入此代码块，代表本地不落后也不领先，即“up to date”，并不需要推送，可返回了
-                    sendSuccessNotification?.invoke(repoFromDb.repoName, "$prefix: Already up-to-date", Cons.selectedItem_ChangeList, repoFromDb.id)
 
+                // get push credential
+                val credential = Libgit2Helper.getRemoteCredential(
+                    db.remoteRepository,
+                    db.credentialRepository,
+                    repoFromDb.id,
+                    upstream.remote,
+                    trueFetchFalsePush = false,
+                    masterPassword = masterPassword
+                )
 
-                    return
-                }
+                Libgit2Helper.push(gitRepo, upstream.remote, listOf(upstream.pushRefSpec), credential, force)
 
+                // 更新修改workstatus的时间，只更新时间就行，状态会在查询repo时更新
+                val repoDb = AppModel.dbContainer.repoRepository
+                repoDb.updateLastUpdateTime(repoFromDb.id, getSecFromTime())
             }
 
 
-            // get push credential
-            val credential = Libgit2Helper.getRemoteCredential(
-                db.remoteRepository,
-                db.credentialRepository,
-                repoFromDb.id,
-                upstream.remote,
-                trueFetchFalsePush = false,
-                masterPassword = masterPassword
-            )
-
-            val ret = Libgit2Helper.push(gitRepo, upstream.remote, listOf(upstream.pushRefSpec), credential, force)
-            if (ret.hasError()) {
-                throwWithPrefix(prefix, ret.msg)
-            }
-
-            // 更新修改workstatus的时间，只更新时间就行，状态会在查询repo时更新
-            val repoDb = AppModel.dbContainer.repoRepository
-            repoDb.updateLastUpdateTime(repoFromDb.id, getSecFromTime())
+            sendSuccessNotification?.invoke(repoFromDb.repoName, "push successfully", Cons.selectedItem_ChangeList, repoFromDb.id)
+        }catch (e:Exception) {
+            throwWithPrefix(prefix, e)
         }
 
-
-        sendSuccessNotification?.invoke(repoFromDb.repoName, "push successfully", Cons.selectedItem_ChangeList, repoFromDb.id)
     }
 
 
-    private fun throwWithPrefix(prefix:String, msg:String) {
-        throw RuntimeException("$prefix: $msg")
+    private fun throwWithPrefix(prefix:String, exception:Exception) {
+        val prefixedException = RuntimeException("$prefix: ${exception.localizedMessage ?: "err"}")
+        prefixedException.stackTrace = exception.stackTrace
+        throw prefixedException
     }
 }

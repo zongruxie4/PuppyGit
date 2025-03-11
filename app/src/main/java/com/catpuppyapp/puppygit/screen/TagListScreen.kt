@@ -405,6 +405,30 @@ fun TagListScreen(
             },
             onFinally = {
                 changeStateTriggerRefreshPage(needRefresh)
+            },
+            pushFailedListHandler = { pushFailedList ->
+                val prefix = "${pushFailedList.size} remotes are push failed"
+
+                val toastMsg = StringBuilder("$prefix: ")
+                val repoLogMsg = StringBuilder("$prefix:\n")
+                val logMsg = StringBuilder("$prefix:\n")
+                val suffix = ", "
+                val spliter = "\n----------\n"
+
+                pushFailedList.forEach {
+                    toastMsg.append(it.remoteName).append(suffix)
+                    repoLogMsg.append("remoteName='${it.remoteName}', err=${it.exception?.localizedMessage}").append(spliter)
+                    logMsg.append("remoteName='${it.remoteName}', err=${it.exception?.stackTraceToString()}").append(spliter)
+                }
+
+                //提示用户
+                Msg.requireShowLongDuration(toastMsg.removeSuffix(suffix).toString())
+
+                //记错误到仓库卡片
+                createAndInsertError(curRepo.value.id, repoLogMsg.removeSuffix(spliter).toString()+"\n\n")
+
+                //记到日志
+                MyLog.e(TAG, "#TagFetchPushDialog: ${logMsg.removeSuffix(spliter)}\n\n")
             }
         )
     }
