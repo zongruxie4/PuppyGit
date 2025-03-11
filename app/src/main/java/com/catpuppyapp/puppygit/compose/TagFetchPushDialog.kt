@@ -1,6 +1,7 @@
 package com.catpuppyapp.puppygit.compose
 
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
@@ -159,14 +160,19 @@ fun TagFetchPushDialog(
         },
         text = {
             Column(modifier = Modifier.verticalScroll(rememberScrollState())) {
+                val topLinePadding = PaddingValues(start = 10.dp, top = 5.dp, end = 10.dp, bottom = 15.dp)
 
                 if(requireDel) {
+                    Row(modifier = Modifier.padding(topLinePadding)) {
+                        Text(text = stringResource(R.string.will_delete_selected_items_are_u_sure))
+                    }
+
                     MyCheckBox(
                         text = stringResource(R.string.del_tags_on_remotes),
                         value = requireDelRemoteChecked
                     )
                 }else {  // fetch/push，显示默认不勾选force的覆盖提示
-                    Row(modifier = Modifier.padding(10.dp)) {
+                    Row(modifier = Modifier.padding(topLinePadding)) {
                         Text(text = if(trueFetchFalsePush) stringResource(R.string.note_as_default_remote_will_not_override_local_tags)
                                     else stringResource(R.string.note_as_default_local_will_override_remote_tags)
                             ,
