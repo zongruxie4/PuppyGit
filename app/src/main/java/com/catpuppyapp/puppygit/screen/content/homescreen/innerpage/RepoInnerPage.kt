@@ -2560,24 +2560,31 @@ fun RepoInnerPage(
     //compose创建时的副作用
     LaunchedEffect(needRefreshRepoPage.value) {
         try {
-            // 仓库页面检查仓库状态，对所有状态为notReadyNeedClone的仓库执行clone，卡片把所有状态为notReadyNeedClone的仓库都设置成不可操作，显示正在克隆loading信息
-            doInit(
-                dbContainer = dbContainer,
-                repoDtoList = repoList,
-                selectedItems = selectedItems.value,
-                quitSelectionMode = quitSelectionMode,
-                cloningText = cloningText,
-                unknownErrWhenCloning = unknownErrWhenCloning,
-                loadingOn = loadingOn,
-                loadingOff = loadingOff,
-                activityContext = activityContext,
-                goToThisRepoId = goToThisRepoId,
-                goToThisRepoAndHighlightingIt = goToThisRepoAndHighlightingIt,
-                settings=settings,
-                refreshId=needRefreshRepoPage.value,
-                latestRefreshId = needRefreshRepoPage,
-                specifiedRefreshRepoList = specifiedRefreshRepoList.value
-            )
+            val loadingText = activityContext.getString(R.string.loading)
+
+            doJobThenOffLoading(loadingOn, loadingOff, loadingText) {
+                try {
+                    // 仓库页面检查仓库状态，对所有状态为notReadyNeedClone的仓库执行clone，卡片把所有状态为notReadyNeedClone的仓库都设置成不可操作，显示正在克隆loading信息
+                    doInit(
+                        dbContainer = dbContainer,
+                        repoDtoList = repoList,
+                        selectedItems = selectedItems.value,
+                        quitSelectionMode = quitSelectionMode,
+                        cloningText = cloningText,
+                        unknownErrWhenCloning = unknownErrWhenCloning,
+                        goToThisRepoId = goToThisRepoId,
+                        goToThisRepoAndHighlightingIt = goToThisRepoAndHighlightingIt,
+                        settings=settings,
+                        refreshId=needRefreshRepoPage.value,
+                        latestRefreshId = needRefreshRepoPage,
+                        specifiedRefreshRepoList = specifiedRefreshRepoList.value,
+                        loadingText = loadingText
+                    )
+                }catch (e:Exception) {
+                    Msg.requireShowLongDuration("init Repos err: ${e.localizedMessage}")
+                    MyLog.e(TAG, "#init Repos page err: ${e.stackTraceToString()}")
+                }
+            }
 
         } catch (e: Exception) {
 //            LaunchedEffect job cancelled maybe?
@@ -2586,90 +2593,83 @@ fun RepoInnerPage(
     }
 }
 
-private fun doInit(
+private suspend fun doInit(
     dbContainer: AppContainer,
     repoDtoList: CustomStateListSaveable<RepoEntity>,
     selectedItems: MutableList<RepoEntity>,
     quitSelectionMode:()->Unit,
     cloningText: String,
     unknownErrWhenCloning: String,
-    loadingOn:(String)->Unit,
-    loadingOff:()->Unit,
-    activityContext:Context,
     goToThisRepoId: MutableState<String>,
     goToThisRepoAndHighlightingIt:(id:String) ->Unit,
     settings:AppSettings,
     refreshId:String,
     latestRefreshId:MutableState<String>,
-    specifiedRefreshRepoList:MutableList<RepoEntity>
+    specifiedRefreshRepoList:MutableList<RepoEntity>,
+    loadingText: String,
 ){
     val pageChanged = {
         refreshId != latestRefreshId.value
     }
 
-    val loadingText = activityContext.getString(R.string.loading)
+    val specifiedRefreshRepoList:MutableList<RepoEntity> = if(specifiedRefreshRepoList.isNotEmpty()) {
+        val copy = specifiedRefreshRepoList.toMutableList()
+        specifiedRefreshRepoList.clear()  //清空以避免重复刷新，这样的话，即使出现无法刷新全部的bug，最多按两次顶栏的全部刷新也可变成刷新所有条目
+        copy
+    }else {
+        mutableListOf()
+    }
 
+    //执行仓库页面的初始化操作
+    val repoRepository = dbContainer.repoRepository
+    //貌似如果用Flow，后续我更新数据库，不需要再次手动更新State数据就会自动刷新，也就是Flow会观测数据，如果改变，重新执行sql获取最新的数据，但最好还是手动更新，避免资源浪费
+    val willReloadTheseRepos = specifiedRefreshRepoList.ifEmpty { repoRepository.getAll() }
 
+    if(specifiedRefreshRepoList.isEmpty()) {
+        repoDtoList.value.clear()
+        repoDtoList.value.addAll(willReloadTheseRepos)
+    }else {
+        val spCopy = specifiedRefreshRepoList.toList()
+        specifiedRefreshRepoList.clear()
+        //重查指定列表的仓库信息
+        spCopy.forEach {
+            val reQueriedRepo = repoRepository.getById(it.id) ?: return@forEach
 
-    doJobThenOffLoading(loadingOn, loadingOff, loadingText) {
-        val specifiedRefreshRepoList:MutableList<RepoEntity> = if(specifiedRefreshRepoList.isNotEmpty()) {
-            val copy = specifiedRefreshRepoList.toMutableList()
-            specifiedRefreshRepoList.clear()  //清空以避免重复刷新，这样的话，即使出现无法刷新全部的bug，最多按两次顶栏的全部刷新也可变成刷新所有条目
-            copy
-        }else {
-            mutableListOf()
+            specifiedRefreshRepoList.add(reQueriedRepo)
         }
 
-        //执行仓库页面的初始化操作
-        val repoRepository = dbContainer.repoRepository
-        //貌似如果用Flow，后续我更新数据库，不需要再次手动更新State数据就会自动刷新，也就是Flow会观测数据，如果改变，重新执行sql获取最新的数据，但最好还是手动更新，避免资源浪费
-        val willReloadTheseRepos = specifiedRefreshRepoList.ifEmpty { repoRepository.getAll() }
-
-        if(specifiedRefreshRepoList.isEmpty()) {
-            repoDtoList.value.clear()
-            repoDtoList.value.addAll(willReloadTheseRepos)
-        }else {
-            val spCopy = specifiedRefreshRepoList.toList()
-            specifiedRefreshRepoList.clear()
-            //重查指定列表的仓库信息
-            spCopy.forEach {
-                val reQueriedRepo = repoRepository.getById(it.id) ?: return@forEach
-
-                specifiedRefreshRepoList.add(reQueriedRepo)
+        //更新仓库列表
+        val newList = mutableListOf<RepoEntity>()
+        //保持原始列表的顺序但替换为更新后的仓库（不过如果只调用LibgitHelper.updateRepoInfo()，那么仓库地址可能并没变化，更新要靠后面的clear()和addAll()，若从数据库重查则仓库地址会变化，但不管怎样，只要clear()再addAll()一下，最终结果应该都没问题）
+        repoDtoList.value.toList().forEach { i1->
+            val found = specifiedRefreshRepoList.find { i2-> i2.id == i1.id }
+            if(found != null) {
+                newList.add(found)
+            }else {
+                newList.add(i1)
             }
-
-            //更新仓库列表
-            val newList = mutableListOf<RepoEntity>()
-            //保持原始列表的顺序但替换为更新后的仓库（不过如果只调用LibgitHelper.updateRepoInfo()，那么仓库地址可能并没变化，更新要靠后面的clear()和addAll()，若从数据库重查则仓库地址会变化，但不管怎样，只要clear()再addAll()一下，最终结果应该都没问题）
-            repoDtoList.value.toList().forEach { i1->
-                val found = specifiedRefreshRepoList.find { i2-> i2.id == i1.id }
-                if(found != null) {
-                    newList.add(found)
-                }else {
-                    newList.add(i1)
-                }
-            }
-
-            repoDtoList.value.clear()
-            repoDtoList.value.addAll(newList)
         }
 
-
-        val pageChangedNeedAbort = updateSelectedList(
-            selectedItemList = selectedItems,
-            itemList = repoDtoList.value,
-            quitSelectionMode = quitSelectionMode,
-            match = { oldSelected, item-> oldSelected.id == item.id },
-            pageChanged = pageChanged
-        )
-
-        // 这里本来就在最后，所以是否return没差别，但避免以后往下面加代码忘了return，这里还是return下吧
-        if (pageChangedNeedAbort) return@doJobThenOffLoading
+        repoDtoList.value.clear()
+        repoDtoList.value.addAll(newList)
+    }
 
 
+    val pageChangedNeedAbort = updateSelectedList(
+        selectedItemList = selectedItems,
+        itemList = repoDtoList.value,
+        quitSelectionMode = quitSelectionMode,
+        match = { oldSelected, item-> oldSelected.id == item.id },
+        pageChanged = pageChanged
+    )
+
+    // 这里本来就在最后，所以是否return没差别，但避免以后往下面加代码忘了return，这里还是return下吧
+    if (pageChangedNeedAbort) return
 
 
-        // complex code for update item and remove non-exist item, but the effect just no-difference with clear then addAll, so, disable it
+
+
+    // complex code for update item and remove non-exist item, but the effect just no-difference with clear then addAll, so, disable it
 //        if(repoDtoList.value.isEmpty()) {
 //            repoDtoList.value.addAll(repoListFromDb)
 //        }else if(repoListFromDb.isEmpty()){
@@ -2701,53 +2701,52 @@ private fun doInit(
 
 
 
-        if(goToThisRepoId.value.isNotBlank()) {
-            val target = goToThisRepoId.value
-            goToThisRepoId.value = ""
+    if(goToThisRepoId.value.isNotBlank()) {
+        val target = goToThisRepoId.value
+        goToThisRepoId.value = ""
 
-            goToThisRepoAndHighlightingIt(target)
+        goToThisRepoAndHighlightingIt(target)
+    }
+
+//        repoDtoList.requireRefreshView()
+//        repoDtoList.requireRefreshView()
+    //这里必须遍历 repoDtoList，不能遍历will reload那个list，不然索引可能会错（即使遍历repoDtoList，其实也可能索引会错，因为没严格的并发控制，不过一般没事）
+    for ((idx,item) in repoDtoList.value.toList().withIndex()) {
+        //若指定了要刷新的列表，则遵循列表，忽略其他元素
+        if(specifiedRefreshRepoList.isNotEmpty() && specifiedRefreshRepoList.find { it.id == item.id } == null) {
+            continue
         }
 
-//        repoDtoList.requireRefreshView()
-//        repoDtoList.requireRefreshView()
-        //这里必须遍历 repoDtoList，不能遍历will reload那个list，不然索引可能会错（即使遍历repoDtoList，其实也可能索引会错，因为没严格的并发控制，不过一般没事）
-        for ((idx,item) in repoDtoList.value.toList().withIndex()) {
-            //若指定了要刷新的列表，则遵循列表，忽略其他元素
-            if(specifiedRefreshRepoList.isNotEmpty() && specifiedRefreshRepoList.find { it.id == item.id } == null) {
-                continue
-            }
-
-            //对需要克隆的仓库执行克隆
-            if (item.workStatus == Cons.dbRepoWorkStatusNotReadyNeedClone) {
-                //设置临时状态为 正在克隆...
-                //我严重怀疑这里不需要拷贝元素赋值就可立即看到修改后的元素状态是因为上面addAll和这里的赋值操作刚好在视图的同一个刷新间隔里，所以到下一个刷新操作时，可看到在这修改后的状态
-                repoDtoList.value[idx].tmpStatus = cloningText
+        //对需要克隆的仓库执行克隆
+        if (item.workStatus == Cons.dbRepoWorkStatusNotReadyNeedClone) {
+            //设置临时状态为 正在克隆...
+            //我严重怀疑这里不需要拷贝元素赋值就可立即看到修改后的元素状态是因为上面addAll和这里的赋值操作刚好在视图的同一个刷新间隔里，所以到下一个刷新操作时，可看到在这修改后的状态
+            repoDtoList.value[idx].tmpStatus = cloningText
 //                repoDtoList.requireRefreshView()
 
-                Libgit2Helper.cloneSingleRepo(
-                    targetRepo = item,
-                    repoDb = repoRepository,
-                    settings = settings,
-                    unknownErrWhenCloning = unknownErrWhenCloning,
-                    repoDtoList = repoDtoList.value,
-                    repoCurrentIndexInRepoDtoList = idx,
-                    selectedItems = selectedItems
-                )
+            Libgit2Helper.cloneSingleRepo(
+                targetRepo = item,
+                repoDb = repoRepository,
+                settings = settings,
+                unknownErrWhenCloning = unknownErrWhenCloning,
+                repoDtoList = repoDtoList.value,
+                repoCurrentIndexInRepoDtoList = idx,
+                selectedItems = selectedItems
+            )
 
 
-            }else if(item.pendingTask == RepoPendingTask.NEED_CHECK_UNCOMMITED_CHANGES) {
-                checkGitStatusAndUpdateItemInList(item, idx, repoDtoList.value, loadingText, pageChanged)
-            } else {
-                //TODO: check git status with lock of every repo, get lock then query repo info from db,
-                // if updatetime field changed, then update item in repodtolist, else do git status,
-                // then update db and repodtolist
-            }
+        }else if(item.pendingTask == RepoPendingTask.NEED_CHECK_UNCOMMITED_CHANGES) {
+            checkGitStatusAndUpdateItemInList(item, idx, repoDtoList.value, loadingText, pageChanged)
+        } else {
+            //TODO: check git status with lock of every repo, get lock then query repo info from db,
+            // if updatetime field changed, then update item in repodtolist, else do git status,
+            // then update db and repodtolist
         }
+    }
 
 
         //在这clear()很可能不管用，因为上面的闭包捕获了repoDtoList当时的值，而当时是有数据的，也就是数据在这被清，然后在上面的闭包被回调的时候，又被填充上了闭包创建时的数据，同时加上了闭包执行后的数据，所以，在这清这个list就“不管用”了，实际不是不管用，只是清了又被填充了
 //                repoDtoList.clear()
-    }
 }
 
 private fun updateRepoListByIndexOrId(newItem:RepoEntity, idx: Int, list:MutableList<RepoEntity>, expectListSize:Int) {

@@ -2824,32 +2824,37 @@ fun FilesInnerPage(
         try {
             //只有当目录改变时(需要刷新页面)，才需要执行initFilesPage，选择文件之类的操作不需要执行此操作
             doJobThenOffLoading(loadingOn, loadingOff, activityContext.getString(R.string.loading)) {
-                doInit(
-                    currentPath = currentPath,
-                    currentPathFileList = currentPathFileList,
-                    currentPathBreadCrumbList = currentPathBreadCrumbList,
-                    settingsSnapshot = settingsSnapshot,
-                    filesPageGetFilterModeOn = filesPageGetFilterMode,
-                    filesPageFilterKeyword = filesPageFilterKeyword,
-                    curListState = curListState,
-                    getListState = getListState,
-                    loadingOn = loadingOn,
-                    loadingOff = loadingOff,
-                    activityContext = activityContext,
-                    requireImportFile = requireImportFile,
-                    requireImportUriList = requireImportUriList,
-                    filesPageQuitSelectionMode = filesPageQuitSelectionMode,
-                    isImportedMode = isImportMode,
-                    selectItem=selectItem,
-                    filesPageRequestFromParent = filesPageRequestFromParent,
-                    openDirErr = openDirErr,
-                    viewAndSortState = viewAndSortState,
-                    viewAndSortOnlyForThisFolderState = onlyForThisFolderState,
-                    curPathFileItemDto = curPathFileItemDto,
-                    quitImportMode = quitImportMode,
-                    selectedItems = selectedItems.value,
+                try {
+                    doInit(
+                        currentPath = currentPath,
+                        currentPathFileList = currentPathFileList,
+                        currentPathBreadCrumbList = currentPathBreadCrumbList,
+                        settingsSnapshot = settingsSnapshot,
+                        filesPageGetFilterModeOn = filesPageGetFilterMode,
+                        filesPageFilterKeyword = filesPageFilterKeyword,
+                        curListState = curListState,
+                        getListState = getListState,
+                        loadingOn = loadingOn,
+                        loadingOff = loadingOff,
+                        activityContext = activityContext,
+                        requireImportFile = requireImportFile,
+                        requireImportUriList = requireImportUriList,
+                        filesPageQuitSelectionMode = filesPageQuitSelectionMode,
+                        isImportedMode = isImportMode,
+                        selectItem=selectItem,
+                        filesPageRequestFromParent = filesPageRequestFromParent,
+                        openDirErr = openDirErr,
+                        viewAndSortState = viewAndSortState,
+                        viewAndSortOnlyForThisFolderState = onlyForThisFolderState,
+                        curPathFileItemDto = curPathFileItemDto,
+                        quitImportMode = quitImportMode,
+                        selectedItems = selectedItems.value,
 //                repoList=repoList,
-                )
+                    )
+                }catch (e:Exception) {
+                    Msg.requireShowLongDuration("init Files err: ${e.localizedMessage}")
+                    MyLog.e(TAG, "#init Files page err: ${e.stackTraceToString()}")
+                }
             }
         } catch (e: Exception) {
             // job cancelled maybe

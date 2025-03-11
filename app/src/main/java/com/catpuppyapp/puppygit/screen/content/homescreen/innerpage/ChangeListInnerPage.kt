@@ -3345,56 +3345,74 @@ fun ChangeListInnerPage(
 
             //初始化
             doJobThenOffLoading(loadingOn, loadingOff, activityContext.getString(R.string.loading)) {
-                changeListInit(
-                    dbContainer = dbContainer,
-                    activityContext = activityContext,
+                try {
+                    changeListInit(
+                        dbContainer = dbContainer,
+                        activityContext = activityContext,
 //        needRefresh = needRefreshChangeListPage,
 //        needRefreshParent = refreshRequiredByParentPage,
-                    curRepoUpstream=curRepoUpstream,
-                    isFileSelectionMode = isFileSelectionMode,
-                    changeListPageNoRepo = changeListPageNoRepo,
-                    changeListPageHasIndexItem = changeListPageHasIndexItem,
-                    changeListPageHasWorktreeItem = changeListPageHasWorktreeItem,
-                    itemList = itemList,
-                    requireShowToast=requireShowToast,
-                    curRepoFromParentPage = curRepoFromParentPage,
-                    selectedItemList = selectedItemList,
-                    fromTo = fromTo,
-                    repoState=repoState,
-                    commit1OidStr = commit1OidStr,
-                    commit2OidStr=commit2OidStr,
-                    commitParentList=commitParentList,
-                    repoId = repoId,
-                    setErrMsg=setErrMsg,
-                    clearErrMsg=clearErrMsg,
-                    loadingOn=loadingOn,
-                    loadingOff=loadingOff,
-                    hasNoConflictItems=hasNoConflictItems,
-                    swap=swap,
-                    commitForQueryParents=commitForQueryParents,
-                    rebaseCurOfAll=rebaseCurOfAll,
-                    credentialList=credentialList,
-                    quitSelectionMode = quitSelectionMode,
-                    repoChanged = {
-                        // 检测原理是currentPageId捕获的是常量(或值拷贝)，state变量每次调用都重新查最新的值，因此若变化，可检测到
-                        val repoChanged = currentPageId != newestPageId.value
-                        if(repoChanged) {
-                            MyLog.d(TAG, "Repo Changed!")
-                        }
+                        curRepoUpstream=curRepoUpstream,
+                        isFileSelectionMode = isFileSelectionMode,
+                        changeListPageNoRepo = changeListPageNoRepo,
+                        changeListPageHasIndexItem = changeListPageHasIndexItem,
+                        changeListPageHasWorktreeItem = changeListPageHasWorktreeItem,
+                        itemList = itemList,
+                        requireShowToast=requireShowToast,
+                        curRepoFromParentPage = curRepoFromParentPage,
+                        selectedItemList = selectedItemList,
+                        fromTo = fromTo,
+                        repoState=repoState,
+                        commit1OidStr = commit1OidStr,
+                        commit2OidStr=commit2OidStr,
+                        commitParentList=commitParentList,
+                        repoId = repoId,
+                        setErrMsg=setErrMsg,
+                        clearErrMsg=clearErrMsg,
+                        loadingOn=loadingOn,
+                        loadingOff=loadingOff,
+                        hasNoConflictItems=hasNoConflictItems,
+                        swap=swap,
+                        commitForQueryParents=commitForQueryParents,
+                        rebaseCurOfAll=rebaseCurOfAll,
+                        credentialList=credentialList,
+                        quitSelectionMode = quitSelectionMode,
+                        repoChanged = {
+                            // 检测原理是currentPageId捕获的是常量(或值拷贝)，state变量每次调用都重新查最新的值，因此若变化，可检测到
+                            val repoChanged = currentPageId != newestPageId.value
+                            if(repoChanged) {
+                                MyLog.d(TAG, "Repo Changed!")
+                            }
 
-                        // if true, page changed
-                        repoChanged
-                    }
+                            // if true, page changed
+                            repoChanged
+                        }
 
 //        isDiffToHead=isDiffToHead,
 //        headCommitHash=headCommitHash
 //        scope
-                )
+                    )
 
-                //下面执行需要等初始化完成后才能执行的操作
+                    //下面执行需要等初始化完成后才能执行的操作
 
 
+                }catch (e:Exception) {
+                    val curRepo = curRepoFromParentPage.value
+//            setErrMsgForTriggerNotify(hasErr, errMsg, e.localizedMessage?:"")
+                    val prefix = "init ChangeList err"
+                    val errMsgForUsers = "$prefix: ${e.localizedMessage}"
 
+                    //设置页面显示错误
+                    setErrMsg(errMsgForUsers)
+
+                    //log
+                    showErrAndSaveLog(
+                        logTag = TAG,
+                        logMsg = "#LaunchedEffect: $prefix, params are: fromTo=${fromTo}, commit1OidStr=${commit1OidStr}, commit2OidStr=${commit2OidStr}, curRepo=${curRepo}\nerr is: "+e.stackTraceToString(),
+                        showMsg = errMsgForUsers,
+                        showMsgMethod = Msg.requireShowLongDuration,
+                        repoId = curRepo.id
+                    )
+                }
             }
         } catch (e: Exception) {
             MyLog.e(TAG, "#LaunchedEffect err: ${e.stackTraceToString()}")
@@ -3448,72 +3466,72 @@ private suspend fun changeListInit(
 //    scope:CoroutineScope
 ){
     val funName = "changeListInit"
-    try {
-        val tmpCommit1 = commit1OidStr
-        val commit1OidStr = if(swap) commit2OidStr else commit1OidStr
-        val commit2OidStr = if(swap) tmpCommit1 else commit2OidStr
 
-        //先清空错误信息，后面若有错会设置上
-        clearErrMsg()
-        //先设置无仓库为假，后面如果查了发现确实没会改成真
-        changeListPageNoRepo.value=false
-        changeListPageHasIndexItem.value=false
-        //设置仓库状态为初始值
-        repoState.intValue = StateT.NONE.bit
+    val tmpCommit1 = commit1OidStr
+    val commit1OidStr = if(swap) commit2OidStr else commit1OidStr
+    val commit2OidStr = if(swap) tmpCommit1 else commit2OidStr
 
-        //设置仓库为无效仓库（后面会查询然后更新为有效仓库，如果存在有效仓库的话）
-        //仓库名之所以保留是为了在标题栏尽可能快的让用户看到切换后的仓库标题；id和fullSavePath是为了确保后面的检测能判断出来这是个无效仓库以执行更新
-        //没必要给整个变量重新赋值
+    //先清空错误信息，后面若有错会设置上
+    clearErrMsg()
+    //先设置无仓库为假，后面如果查了发现确实没会改成真
+    changeListPageNoRepo.value=false
+    changeListPageHasIndexItem.value=false
+    //设置仓库状态为初始值
+    repoState.intValue = StateT.NONE.bit
+
+    //设置仓库为无效仓库（后面会查询然后更新为有效仓库，如果存在有效仓库的话）
+    //仓库名之所以保留是为了在标题栏尽可能快的让用户看到切换后的仓库标题；id和fullSavePath是为了确保后面的检测能判断出来这是个无效仓库以执行更新
+    //没必要给整个变量重新赋值
 //            curRepoFromParentPage.value = RepoEntity(id = "", fullSavePath = "", repoName = curRepoFromParentPage.value.repoName)
 
-        //不能清id或fullSavePath，会导致误判仓库无效，然后重新查一个
+    //不能清id或fullSavePath，会导致误判仓库无效，然后重新查一个
 //            tmpCurRepo.id=""
 //            tmpCurRepo.fullSavePath=""
-        //重置下信息，后面会重新从db查询
-        val tmpCurRepo = curRepoFromParentPage.value
-        tmpCurRepo.lastCommitHash=""
-        tmpCurRepo.branch=""
-        tmpCurRepo.upstreamBranch=""
+    //重置下信息，后面会重新从db查询
+    val tmpCurRepo = curRepoFromParentPage.value
+    tmpCurRepo.lastCommitHash=""
+    tmpCurRepo.branch=""
+    tmpCurRepo.upstreamBranch=""
 
 
-        //先清空列表
-        //废弃，因为恢复的有可能不是最新状态：这里实现恢复的逻辑，如果列表不为空，就直接恢复数据，不清空列表，也不重新查询，如果刷新，加个flag，强制重新查询
-        itemList.value.clear()  //这里必须清下这个列表，不然切换仓库后可能有残留，可能在此函数外修改了此列表？懒得排查了直接清下，后续查了会更新
-        credentialList.value.clear()  //这个也在添加之前清了，避免出“残留”的问题，这里也清下
+    //先清空列表
+    //废弃，因为恢复的有可能不是最新状态：这里实现恢复的逻辑，如果列表不为空，就直接恢复数据，不清空列表，也不重新查询，如果刷新，加个flag，强制重新查询
+    itemList.value.clear()  //这里必须清下这个列表，不然切换仓库后可能有残留，可能在此函数外修改了此列表？懒得排查了直接清下，后续查了会更新
+    credentialList.value.clear()  //这个也在添加之前清了，避免出“残留”的问题，这里也清下
 
-        //这个列表不用全清，最后会更新，若在这清，可能会出现刷新后归0，卡一下，然后出现数字的bug，因为清空和重新添加之间可能会有一段时间间隔
+    //这个列表不用全清，最后会更新，若在这清，可能会出现刷新后归0，卡一下，然后出现数字的bug，因为清空和重新添加之间可能会有一段时间间隔
 //            selectedItemList.value.clear()
 
 
 
 
-        //开始：查凭据列表，导入subm为仓库时用
-        val credentialListFromDb = AppModel.dbContainer.credentialRepository.getAll(includeNone = true, includeMatchByDomain = true)
+    //开始：查凭据列表，导入subm为仓库时用
+    val credentialListFromDb = AppModel.dbContainer.credentialRepository.getAll(includeNone = true, includeMatchByDomain = true)
 
-        if(repoChanged()) {
+    if(repoChanged()) {
+        return
+    }
+
+    credentialList.value.clear()
+    credentialList.value.addAll(credentialListFromDb)
+    //结束：查凭据列表
+
+
+    if(fromTo == Cons.gitDiffFromTreeToTree) {
+        val repoDb = dbContainer.repoRepository
+        val repoFromDb = repoDb.getById(repoId)
+        if(repoFromDb==null) {
+            MyLog.w(TAG, "#$funName, tree to tree diff, query repo err!")
+            changeListPageNoRepo.value=true
+            setErrMsg(activityContext.getString(R.string.err_when_querying_repo_info))
             return
         }
 
-        credentialList.value.clear()
-        credentialList.value.addAll(credentialListFromDb)
-        //结束：查凭据列表
+        curRepoFromParentPage.value = repoFromDb
+        //避免后续从状态变量获取值导致仓库不一致
+        val curRepoFromParentPage = curRepoFromParentPage.value
 
-
-        if(fromTo == Cons.gitDiffFromTreeToTree) {
-            val repoDb = dbContainer.repoRepository
-            val repoFromDb = repoDb.getById(repoId)
-            if(repoFromDb==null) {
-                MyLog.w(TAG, "#$funName, tree to tree diff, query repo err!")
-                changeListPageNoRepo.value=true
-                setErrMsg(activityContext.getString(R.string.err_when_querying_repo_info))
-                return
-            }
-
-            curRepoFromParentPage.value = repoFromDb
-            //避免后续从状态变量获取值导致仓库不一致
-            val curRepoFromParentPage = curRepoFromParentPage.value
-
-            //想启动个定时检查仓库临时状态是否已清空的协程，意义不大，问题很多，后来放弃了
+        //想启动个定时检查仓库临时状态是否已清空的协程，意义不大，问题很多，后来放弃了
 //                if(repoFromDb.tmpStatus.isNotBlank()) {
 //                    scope.launch {
 //                        while (true) {
@@ -3537,8 +3555,8 @@ private suspend fun changeListInit(
 //                    }
 //                }
 
-            Repository.open(repoFromDb.fullSavePath).use { repo ->
-                //查询head然后检查是否diff to head
+        Repository.open(repoFromDb.fullSavePath).use { repo ->
+            //查询head然后检查是否diff to head
 //                    val headCommitRet = Libgit2Helper.getHeadCommit(repo)
 //                    if(headCommitRet.success()) {
 //                        val headCommitId = headCommitRet.data?.id()?.toString()
@@ -3549,266 +3567,139 @@ private suspend fun changeListInit(
 //                    }
 
 
-                //如果1或2是worktree ( local )，则用 treeToWorkTree 函数
-                if(Libgit2Helper.CommitUtil.isLocalCommitHash(commit1OidStr)
-                    || Libgit2Helper.CommitUtil.isLocalCommitHash(commit2OidStr)
-                ) {  // tree to worktree
-                    //如果1是 "local" 则需要反转比较的两个提交对象
-                    val reverse = Libgit2Helper.CommitUtil.isLocalCommitHash(commit1OidStr)
+            //如果1或2是worktree ( local )，则用 treeToWorkTree 函数
+            if(Libgit2Helper.CommitUtil.isLocalCommitHash(commit1OidStr)
+                || Libgit2Helper.CommitUtil.isLocalCommitHash(commit2OidStr)
+            ) {  // tree to worktree
+                //如果1是 "local" 则需要反转比较的两个提交对象
+                val reverse = Libgit2Helper.CommitUtil.isLocalCommitHash(commit1OidStr)
 
-                    val cl = if(reverse) {  //commit1 是local，解析commit2为tree2，把tree2作为参数1然后传reverse为true，这时就可比较 workTreeToTree 了
-                        val tree2 = Libgit2Helper.resolveTree(repo, commit2OidStr)
-                        if(tree2==null) {
-                            MyLog.w(TAG, "#$funName, tree to tree diff, query tree2 err!")
-                            setErrMsg(activityContext.getString(R.string.error_invalid_commit_hash)+", 3")
-                            return
-                        }
-                        Libgit2Helper.getTreeToTreeChangeList(repo, repoId, tree2, null, reverse=true, treeToWorkTree = true)
-                    }else {  //commit2 是local，解析commit1为tree1，tree2传null，反转传false
-                        val tree1 = Libgit2Helper.resolveTree(repo, commit1OidStr)
-                        if(tree1==null) {
-                            MyLog.w(TAG, "#$funName, tree to tree diff, query tree1 err!")
-                            setErrMsg(activityContext.getString(R.string.error_invalid_commit_hash)+", 4")
-                            return
-                        }
-                        Libgit2Helper.getTreeToTreeChangeList(repo, repoId, tree1, null, reverse=false, treeToWorkTree = true)
-                    }
-
-                    if(repoChanged()) {
-                        return
-                    }
-
-                    itemList.value.clear()
-                    itemList.value.addAll(cl)
-
-                    //和local比较不需要parents list
-                    commitParentList.value.clear()
-                }else {  // tree to tree，两个tree都不是local(worktree)
-                    val tree1 = Libgit2Helper.resolveTree(repo, commit1OidStr)
-                    if(tree1==null) {
-                        MyLog.w(TAG, "#$funName, tree to tree diff, query tree1 err!")
-                        setErrMsg(activityContext.getString(R.string.error_invalid_commit_hash)+", 1")
-                        return
-                    }
+                val cl = if(reverse) {  //commit1 是local，解析commit2为tree2，把tree2作为参数1然后传reverse为true，这时就可比较 workTreeToTree 了
                     val tree2 = Libgit2Helper.resolveTree(repo, commit2OidStr)
                     if(tree2==null) {
                         MyLog.w(TAG, "#$funName, tree to tree diff, query tree2 err!")
-                        setErrMsg(activityContext.getString(R.string.error_invalid_commit_hash)+", 2")
+                        setErrMsg(activityContext.getString(R.string.error_invalid_commit_hash)+", 3")
                         return
                     }
-                    val treeToTreeChangeList = Libgit2Helper.getTreeToTreeChangeList(repo, repoId, tree1, tree2);
-
-                    if(repoChanged()) {
+                    Libgit2Helper.getTreeToTreeChangeList(repo, repoId, tree2, null, reverse=true, treeToWorkTree = true)
+                }else {  //commit2 是local，解析commit1为tree1，tree2传null，反转传false
+                    val tree1 = Libgit2Helper.resolveTree(repo, commit1OidStr)
+                    if(tree1==null) {
+                        MyLog.w(TAG, "#$funName, tree to tree diff, query tree1 err!")
+                        setErrMsg(activityContext.getString(R.string.error_invalid_commit_hash)+", 4")
                         return
                     }
+                    Libgit2Helper.getTreeToTreeChangeList(repo, repoId, tree1, null, reverse=false, treeToWorkTree = true)
+                }
 
-                    itemList.value.clear()
-                    itemList.value.addAll(treeToTreeChangeList)
+                if(repoChanged()) {
+                    return
+                }
 
-                    //只有和parents比较时才需要查询parents（目前20240807只通过点击commit item触发）；其他情况（手动输入两个commit、长按commit条目出现的diff to local）都不需要查询commit，这时把commitForQueryParents直接传空字符串就行
-                    if(Libgit2Helper.CommitUtil.mayGoodCommitHash(commitForQueryParents)) {
-                        //get commit parents list
-                        val parentList = Libgit2Helper.getCommitParentsOidStrList(repo, commitForQueryParents)
+                itemList.value.clear()
+                itemList.value.addAll(cl)
+
+                //和local比较不需要parents list
+                commitParentList.value.clear()
+            }else {  // tree to tree，两个tree都不是local(worktree)
+                val tree1 = Libgit2Helper.resolveTree(repo, commit1OidStr)
+                if(tree1==null) {
+                    MyLog.w(TAG, "#$funName, tree to tree diff, query tree1 err!")
+                    setErrMsg(activityContext.getString(R.string.error_invalid_commit_hash)+", 1")
+                    return
+                }
+                val tree2 = Libgit2Helper.resolveTree(repo, commit2OidStr)
+                if(tree2==null) {
+                    MyLog.w(TAG, "#$funName, tree to tree diff, query tree2 err!")
+                    setErrMsg(activityContext.getString(R.string.error_invalid_commit_hash)+", 2")
+                    return
+                }
+                val treeToTreeChangeList = Libgit2Helper.getTreeToTreeChangeList(repo, repoId, tree1, tree2);
+
+                if(repoChanged()) {
+                    return
+                }
+
+                itemList.value.clear()
+                itemList.value.addAll(treeToTreeChangeList)
+
+                //只有和parents比较时才需要查询parents（目前20240807只通过点击commit item触发）；其他情况（手动输入两个commit、长按commit条目出现的diff to local）都不需要查询commit，这时把commitForQueryParents直接传空字符串就行
+                if(Libgit2Helper.CommitUtil.mayGoodCommitHash(commitForQueryParents)) {
+                    //get commit parents list
+                    val parentList = Libgit2Helper.getCommitParentsOidStrList(repo, commitForQueryParents)
 //                    if(debugModeOn) {
 //                        println("parentList="+parentList)
 //                    }
 
-                        if(repoChanged()) {
-                            return
-                        }
-
-                        commitParentList.value.clear()
-                        commitParentList.value.addAll(parentList)
-                    }
-                }
-
-
-
-            }
-        }else {  // IndexToWorkTree or HeadToIndex
-            //再查询数据
-            //从changelist相关设置项读取上次在这个页面最后使用的仓库
-//                val settingsRepository = dbContainer.settingsRepository
-            //除非给getOrInsertByUsedFor()传的参数有误，否则这里绝对不会为null，所以永远不会在这return
-//                val settings = settingsRepository.getOrInsertByUsedFor(Cons.dbSettingsUsedForChangeList)
-//                    ?: return@launch
-            //这个?:不是三元表达式，这里的作用是如果?:左边的内容为null，返回其右边的内容
-//                val changeListSettings = MoshiUtil.changeListSettingsJsonAdapter.fromJson(settings.jsonVal) ?: ChangeListSettings()
-            val changeListSettings = SettingsUtil.getSettingsSnapshot().changeList
-            val lastUsedRepoId = changeListSettings.lastUsedRepoId
-            var needQueryRepoFromDb = false
-
-            //如果当前仓库无效，则检查是否需要查询(20240404:修改逻辑，第一次进入这个页面必查(如果仓库状态就绪且路径有效，就查下当前仓库信息，相当于更新下页面的仓库变量；否则重选个仓库)，要不然在其他页面更新了仓库信息，这页面显示的还是旧信息！)
-            if(!isRepoReadyAndPathExist(curRepoFromParentPage.value)) {
-                //如果有上次使用的仓库id，根据id查询，如果无，设置flag，之后会从数据库查询一个ready的仓库
-                if (lastUsedRepoId.isBlank()) {  //没有之前使用的repoid
-                    needQueryRepoFromDb = true  //没有上次使用的仓库信息，从数据库挑一个能用的
-                } else {  //有之前使用的repoid，查询一下仓库信息，但不一定能查出来
-                    //如果设置项记录的id无效（比如repo被删除），则无法查询出有效的仓库
-                    val repoFromDb = dbContainer.repoRepository.getById(lastUsedRepoId)
-                    //检查仓库是否为null，是否就绪且路径有效
-                    if (repoFromDb == null || !isRepoReadyAndPathExist(repoFromDb)) {  //进入这个分支可能是之前changelist页面使用的仓库被删除了，所以id无效了
-                        needQueryRepoFromDb = true
-                    } else {  //正常来说，如果是非第一次打开这个页面，并且之前选过有效仓库，会进入到这里查询出上次使用的仓库
-                        curRepoFromParentPage.value = repoFromDb  //执行到这，repoFromDb必然非null，否则会在上面的isRepoReadyAndPathExist()判断返回假而进入上面的if语句
-                    }
-                }
-            }else { //如果上次使用仓库状态ok，路径存在，从查一下，更新下它的信息，以免有误，例如我在其他页面修改了仓库信息，但这个页面没销毁，也不知道，那就会依然显示旧信息
-                val repoFromDb = dbContainer.repoRepository.getById(curRepoFromParentPage.value.id)
-                if(repoFromDb == null || !isRepoReadyAndPathExist(repoFromDb)) {  //等于null，需要重查一个就绪的仓库，不过一般进入到这查出的仓库就不会等于null，这个判断只是以防万一
-                    needQueryRepoFromDb = true
-                }else {  //在其他页面更新过仓库信息后，会进入到这里，例如在分支页面修改了仓库分支，或者在changelist页面标题栏切换了仓库
-                    curRepoFromParentPage.value = repoFromDb  //更新下仓库信息。(执行到这，repoFromDb必然非null，否则会在上面的isRepoReadyAndPathExist()判断返回假而进入上面的if语句)
-                }
-            }
-
-            if(repoChanged()) {
-                return
-            }
-
-            //如果上面的id查出的仓库无效，从数据库重新获取一个就绪且路径存在的仓库
-            if (needQueryRepoFromDb) {  //没有效仓库，从数据库随便挑一个能用的
-                val repoFromDb = dbContainer.repoRepository.getAReadyRepo()
-
-                if(repoChanged()) {
-                    return
-                }
-
-                if (repoFromDb == null) {  //没就绪的仓库，直接结束
-                    changeListPageNoRepo.value = true
-                    setErrMsg(activityContext.getString(R.string.no_repo_for_shown))
-                    return
-                } else {
-                    //更新页面state
-                    curRepoFromParentPage.value = repoFromDb
-                }
-            }
-
-
-            if(repoChanged()) {
-                return
-            }
-
-            val curRepoFromParentPage = curRepoFromParentPage.value
-
-            //检测是否查询出了有效仓库
-            if (!isRepoReadyAndPathExist(curRepoFromParentPage)) {
-                //            setErrMsgForTriggerNotify(hasErr, errMsg, queryRepoForChangeListErrStrRes)
-                //如果执行到这，还没查询到仓库也没出任何错误，那很可能是因为数据库里根本没有仓库
-                changeListPageNoRepo.value=true
-                setErrMsg(activityContext.getString(R.string.no_repo_for_shown))
-                return
-            }
-
-            if(repoChanged()) {
-                return
-            }
-
-            //通过上面的检测，执行到这里，一定查询到了有效的仓库且赋值给了 curRepoFromParentPage
-            //如果选择的仓库改变了，则更新最后选择的仓库并保存到数据库
-            if(changeListSettings.lastUsedRepoId != curRepoFromParentPage.id) {
-                //更新changeListSettings，下次就不用查询repo表了(若仓库状态后续变成无效或者仓库被删除，其实还是需要查表)
-                changeListSettings.lastUsedRepoId = curRepoFromParentPage.id
-//                    settings.jsonVal=MoshiUtil.changeListSettingsJsonAdapter.toJson(changeListSettings)
-//                    settingsRepository.update(settings)
-                val settingsWillSave = SettingsUtil.getSettingsSnapshot()
-                settingsWillSave.changeList = changeListSettings
-                //更新配置文件
-                SettingsUtil.updateSettings(settingsWillSave)
-            }
-
-
-
-
-//            MyLog.d(TAG, "ChangeListInnerPage#Init: queryed Repo id:"+curRepoFromParentPage.value.id)
-
-            Repository.open(curRepoFromParentPage.fullSavePath).use { gitRepository ->
-                //废弃，新的逻辑是把冲突条目列在其他条目上面就行了：确认实现这的逻辑： 如果有冲突，会提示先去解决冲突
-//                changeListPageHasConflictItem.value = Libgit2Helper.hasConflictItemInRepo(gitRepository)
-//                //如果有冲突，后面就先不用检测了，优先解决冲突
-//                if (changeListPageHasConflictItem.value) {
-//                    return@launch
-//                }
-
-                //更新下仓库状态的状态变量，这个最快，所以先更新它
-                //这个值应该不会是null，除非libgit2添加了新状态，git24j没跟着添加
-                repoState.intValue = gitRepository.state()?.bit?: Cons.gitRepoStateInvalid
-                //如果状态是rebase，更新计数，仅在worktree页面和index页面需要查询此值，tree to tree不需要
-                //TODO 日后如果实现multi commits cherrypick，也需要添加一个cherrypick计数的变量。(另外，merge因为总是只有一个合并对象，所以不需要显示计数)
-                if(repoState.intValue == Repository.StateT.REBASE_MERGE.bit
-                    && (fromTo== Cons.gitDiffFromIndexToWorktree || fromTo== Cons.gitDiffFromHeadToIndex)
-                ) {
-                    rebaseCurOfAll?.value = Libgit2Helper.rebaseCurOfAllFormatted(gitRepository)
-                }
-
-                hasNoConflictItems.value = !gitRepository.index().hasConflicts()
-                MyLog.d(TAG, "hasNoConflictItems="+hasNoConflictItems.value)
-
-
-
-
-
-
-                //先检查index是否为空，因为这个性能比检查worktree快。
-                //注意：冲突条目实际在index和worktree都有，但是我这里只有在worktree的时候才添加冲突条目，在index是隐藏的，因为冲突条目实际上是没有stage的，所以理应出现在worktree而不是index
-                //检查是否存在staged条目，用来在worktree条目为空时，决定是否显示index有条目的提示
-                //这个列表可以考虑传给index页面，不过要在index页面设置成如果没传参就查询，有参则用参的形式，但即使有参，也可通过index的刷新按钮刷新页面状态
-                val (indexIsEmpty, indexList) = Libgit2Helper.checkIndexIsEmptyAndGetIndexList(gitRepository, curRepoFromParentPage.id, onlyCheckEmpty = false)
-
-                if(repoChanged()) {
-                    return
-                }
-
-                changeListPageHasIndexItem.value = !indexIsEmpty
-                MyLog.d(TAG,"#$funName(): changeListPageHasIndexItem = "+changeListPageHasIndexItem.value)
-                //只有在index页面，才需要更新条目列表，否则这个列表由worktree页面来更新
-                if(fromTo == Cons.gitDiffFromHeadToIndex) {
-                    itemList.value.clear()
-                    indexList?.let {
-                        itemList.value.addAll(it)
-                    }
-                }
-
-
-
-
-
-
-                //最后查worktree是否为空，这个查的最慢，放最后。
-                //20240504: 先查worktree，再查index是否为空，因为worktree有可能更改index。20250123：worktree修改index？用户不操作会自动修改？不可能啊，总之又改成先查index和仓库状态了，最后再查worktree列表，因为查worktree列表最慢
-                // 检测index是否为空，如果不为空，会在图标有红点提示(最好红点，高亮图标也行)，如果worktree status为空(包含conflict条目) 且 index不为空，则会提示用户可去index区查看status
-
-                if(fromTo == Cons.gitDiffFromIndexToWorktree) {  //查询worktree页面条目，就是从首页抽屉打开的changelist
-                    //查询status页面的条目
-                    val wtStatusList = Libgit2Helper.getWorkdirStatusList(gitRepository)
-
-                    // 这个可以说是最重要的一处检测，因为重新执行git status最费时间的
                     if(repoChanged()) {
                         return
                     }
 
-                    val hasWorktreeItem = wtStatusList.entryCount() > 0
-                    changeListPageHasWorktreeItem.value = hasWorktreeItem
-                    if (hasWorktreeItem) {
-                        val worktreeItems = Libgit2Helper.getWorktreeChangeList(gitRepository, wtStatusList, curRepoFromParentPage.id)
-
-                        if(repoChanged()) {
-                            return
-                        }
-
-                        itemList.value.clear()
-                        itemList.value.addAll(worktreeItems)
-                    }
-
-                    curRepoUpstream.value = Libgit2Helper.getUpstreamOfBranch(gitRepository, curRepoFromParentPage.branch)
+                    commitParentList.value.clear()
+                    commitParentList.value.addAll(parentList)
                 }
-
-
             }
 
 
 
+        }
+    }else {  // IndexToWorkTree or HeadToIndex
+        //再查询数据
+        //从changelist相关设置项读取上次在这个页面最后使用的仓库
+//                val settingsRepository = dbContainer.settingsRepository
+        //除非给getOrInsertByUsedFor()传的参数有误，否则这里绝对不会为null，所以永远不会在这return
+//                val settings = settingsRepository.getOrInsertByUsedFor(Cons.dbSettingsUsedForChangeList)
+//                    ?: return@launch
+        //这个?:不是三元表达式，这里的作用是如果?:左边的内容为null，返回其右边的内容
+//                val changeListSettings = MoshiUtil.changeListSettingsJsonAdapter.fromJson(settings.jsonVal) ?: ChangeListSettings()
+        val changeListSettings = SettingsUtil.getSettingsSnapshot().changeList
+        val lastUsedRepoId = changeListSettings.lastUsedRepoId
+        var needQueryRepoFromDb = false
 
+        //如果当前仓库无效，则检查是否需要查询(20240404:修改逻辑，第一次进入这个页面必查(如果仓库状态就绪且路径有效，就查下当前仓库信息，相当于更新下页面的仓库变量；否则重选个仓库)，要不然在其他页面更新了仓库信息，这页面显示的还是旧信息！)
+        if(!isRepoReadyAndPathExist(curRepoFromParentPage.value)) {
+            //如果有上次使用的仓库id，根据id查询，如果无，设置flag，之后会从数据库查询一个ready的仓库
+            if (lastUsedRepoId.isBlank()) {  //没有之前使用的repoid
+                needQueryRepoFromDb = true  //没有上次使用的仓库信息，从数据库挑一个能用的
+            } else {  //有之前使用的repoid，查询一下仓库信息，但不一定能查出来
+                //如果设置项记录的id无效（比如repo被删除），则无法查询出有效的仓库
+                val repoFromDb = dbContainer.repoRepository.getById(lastUsedRepoId)
+                //检查仓库是否为null，是否就绪且路径有效
+                if (repoFromDb == null || !isRepoReadyAndPathExist(repoFromDb)) {  //进入这个分支可能是之前changelist页面使用的仓库被删除了，所以id无效了
+                    needQueryRepoFromDb = true
+                } else {  //正常来说，如果是非第一次打开这个页面，并且之前选过有效仓库，会进入到这里查询出上次使用的仓库
+                    curRepoFromParentPage.value = repoFromDb  //执行到这，repoFromDb必然非null，否则会在上面的isRepoReadyAndPathExist()判断返回假而进入上面的if语句
+                }
+            }
+        }else { //如果上次使用仓库状态ok，路径存在，从查一下，更新下它的信息，以免有误，例如我在其他页面修改了仓库信息，但这个页面没销毁，也不知道，那就会依然显示旧信息
+            val repoFromDb = dbContainer.repoRepository.getById(curRepoFromParentPage.value.id)
+            if(repoFromDb == null || !isRepoReadyAndPathExist(repoFromDb)) {  //等于null，需要重查一个就绪的仓库，不过一般进入到这查出的仓库就不会等于null，这个判断只是以防万一
+                needQueryRepoFromDb = true
+            }else {  //在其他页面更新过仓库信息后，会进入到这里，例如在分支页面修改了仓库分支，或者在changelist页面标题栏切换了仓库
+                curRepoFromParentPage.value = repoFromDb  //更新下仓库信息。(执行到这，repoFromDb必然非null，否则会在上面的isRepoReadyAndPathExist()判断返回假而进入上面的if语句)
+            }
+        }
+
+        if(repoChanged()) {
+            return
+        }
+
+        //如果上面的id查出的仓库无效，从数据库重新获取一个就绪且路径存在的仓库
+        if (needQueryRepoFromDb) {  //没有效仓库，从数据库随便挑一个能用的
+            val repoFromDb = dbContainer.repoRepository.getAReadyRepo()
+
+            if(repoChanged()) {
+                return
+            }
+
+            if (repoFromDb == null) {  //没就绪的仓库，直接结束
+                changeListPageNoRepo.value = true
+                setErrMsg(activityContext.getString(R.string.no_repo_for_shown))
+                return
+            } else {
+                //更新页面state
+                curRepoFromParentPage.value = repoFromDb
+            }
         }
 
 
@@ -3816,32 +3707,145 @@ private suspend fun changeListInit(
             return
         }
 
-        val pageChangedNeedAbort = updateSelectedList(
-            selectedItemList = selectedItemList.value,
-            itemList = itemList.value,
-            quitSelectionMode = quitSelectionMode,
-            match = { oldSelected, item-> oldSelected.relativePathUnderRepo == item.relativePathUnderRepo },
-            pageChanged = repoChanged
-        )
+        val curRepoFromParentPage = curRepoFromParentPage.value
 
-        // 这里本来就在最后，所以是否return没差别，但避免以后往下面加代码忘了return，这里还是return下吧
-        if (pageChangedNeedAbort) return
+        //检测是否查询出了有效仓库
+        if (!isRepoReadyAndPathExist(curRepoFromParentPage)) {
+            //            setErrMsgForTriggerNotify(hasErr, errMsg, queryRepoForChangeListErrStrRes)
+            //如果执行到这，还没查询到仓库也没出任何错误，那很可能是因为数据库里根本没有仓库
+            changeListPageNoRepo.value=true
+            setErrMsg(activityContext.getString(R.string.no_repo_for_shown))
+            return
+        }
+
+        if(repoChanged()) {
+            return
+        }
+
+        //通过上面的检测，执行到这里，一定查询到了有效的仓库且赋值给了 curRepoFromParentPage
+        //如果选择的仓库改变了，则更新最后选择的仓库并保存到数据库
+        if(changeListSettings.lastUsedRepoId != curRepoFromParentPage.id) {
+            //更新changeListSettings，下次就不用查询repo表了(若仓库状态后续变成无效或者仓库被删除，其实还是需要查表)
+            changeListSettings.lastUsedRepoId = curRepoFromParentPage.id
+//                    settings.jsonVal=MoshiUtil.changeListSettingsJsonAdapter.toJson(changeListSettings)
+//                    settingsRepository.update(settings)
+            val settingsWillSave = SettingsUtil.getSettingsSnapshot()
+            settingsWillSave.changeList = changeListSettings
+            //更新配置文件
+            SettingsUtil.updateSettings(settingsWillSave)
+        }
 
 
 
-    }catch (e:Exception) {
-        val curRepo = curRepoFromParentPage.value
-//            setErrMsgForTriggerNotify(hasErr, errMsg, e.localizedMessage?:"")
 
-        setErrMsg(e.localizedMessage ?: "ChangeList init err, code=182u45c945")
+//            MyLog.d(TAG, "ChangeListInnerPage#Init: queryed Repo id:"+curRepoFromParentPage.value.id)
 
-        showErrAndSaveLog(TAG,
-            "#$funName() err, params are: fromTo=${fromTo}, commit1OidStr=${commit1OidStr}, commit2OidStr=${commit2OidStr}, curRepo=${curRepo}\nerr is: "+e.stackTraceToString(),
-            "ChangeList init err:"+e.localizedMessage,
-            requireShowToast,
-            curRepo.id
-        )
+        Repository.open(curRepoFromParentPage.fullSavePath).use { gitRepository ->
+            //废弃，新的逻辑是把冲突条目列在其他条目上面就行了：确认实现这的逻辑： 如果有冲突，会提示先去解决冲突
+//                changeListPageHasConflictItem.value = Libgit2Helper.hasConflictItemInRepo(gitRepository)
+//                //如果有冲突，后面就先不用检测了，优先解决冲突
+//                if (changeListPageHasConflictItem.value) {
+//                    return@launch
+//                }
+
+            //更新下仓库状态的状态变量，这个最快，所以先更新它
+            //这个值应该不会是null，除非libgit2添加了新状态，git24j没跟着添加
+            repoState.intValue = gitRepository.state()?.bit?: Cons.gitRepoStateInvalid
+            //如果状态是rebase，更新计数，仅在worktree页面和index页面需要查询此值，tree to tree不需要
+            //TODO 日后如果实现multi commits cherrypick，也需要添加一个cherrypick计数的变量。(另外，merge因为总是只有一个合并对象，所以不需要显示计数)
+            if(repoState.intValue == Repository.StateT.REBASE_MERGE.bit
+                && (fromTo== Cons.gitDiffFromIndexToWorktree || fromTo== Cons.gitDiffFromHeadToIndex)
+            ) {
+                rebaseCurOfAll?.value = Libgit2Helper.rebaseCurOfAllFormatted(gitRepository)
+            }
+
+            hasNoConflictItems.value = !gitRepository.index().hasConflicts()
+            MyLog.d(TAG, "hasNoConflictItems="+hasNoConflictItems.value)
+
+
+
+
+
+
+            //先检查index是否为空，因为这个性能比检查worktree快。
+            //注意：冲突条目实际在index和worktree都有，但是我这里只有在worktree的时候才添加冲突条目，在index是隐藏的，因为冲突条目实际上是没有stage的，所以理应出现在worktree而不是index
+            //检查是否存在staged条目，用来在worktree条目为空时，决定是否显示index有条目的提示
+            //这个列表可以考虑传给index页面，不过要在index页面设置成如果没传参就查询，有参则用参的形式，但即使有参，也可通过index的刷新按钮刷新页面状态
+            val (indexIsEmpty, indexList) = Libgit2Helper.checkIndexIsEmptyAndGetIndexList(gitRepository, curRepoFromParentPage.id, onlyCheckEmpty = false)
+
+            if(repoChanged()) {
+                return
+            }
+
+            changeListPageHasIndexItem.value = !indexIsEmpty
+            MyLog.d(TAG,"#$funName(): changeListPageHasIndexItem = "+changeListPageHasIndexItem.value)
+            //只有在index页面，才需要更新条目列表，否则这个列表由worktree页面来更新
+            if(fromTo == Cons.gitDiffFromHeadToIndex) {
+                itemList.value.clear()
+                indexList?.let {
+                    itemList.value.addAll(it)
+                }
+            }
+
+
+
+
+
+
+            //最后查worktree是否为空，这个查的最慢，放最后。
+            //20240504: 先查worktree，再查index是否为空，因为worktree有可能更改index。20250123：worktree修改index？用户不操作会自动修改？不可能啊，总之又改成先查index和仓库状态了，最后再查worktree列表，因为查worktree列表最慢
+            // 检测index是否为空，如果不为空，会在图标有红点提示(最好红点，高亮图标也行)，如果worktree status为空(包含conflict条目) 且 index不为空，则会提示用户可去index区查看status
+
+            if(fromTo == Cons.gitDiffFromIndexToWorktree) {  //查询worktree页面条目，就是从首页抽屉打开的changelist
+                //查询status页面的条目
+                val wtStatusList = Libgit2Helper.getWorkdirStatusList(gitRepository)
+
+                // 这个可以说是最重要的一处检测，因为重新执行git status最费时间的
+                if(repoChanged()) {
+                    return
+                }
+
+                val hasWorktreeItem = wtStatusList.entryCount() > 0
+                changeListPageHasWorktreeItem.value = hasWorktreeItem
+                if (hasWorktreeItem) {
+                    val worktreeItems = Libgit2Helper.getWorktreeChangeList(gitRepository, wtStatusList, curRepoFromParentPage.id)
+
+                    if(repoChanged()) {
+                        return
+                    }
+
+                    itemList.value.clear()
+                    itemList.value.addAll(worktreeItems)
+                }
+
+                curRepoUpstream.value = Libgit2Helper.getUpstreamOfBranch(gitRepository, curRepoFromParentPage.branch)
+            }
+
+
+        }
+
+
+
+
     }
+
+
+    if(repoChanged()) {
+        return
+    }
+
+    val pageChangedNeedAbort = updateSelectedList(
+        selectedItemList = selectedItemList.value,
+        itemList = itemList.value,
+        quitSelectionMode = quitSelectionMode,
+        match = { oldSelected, item-> oldSelected.relativePathUnderRepo == item.relativePathUnderRepo },
+        pageChanged = repoChanged
+    )
+
+    // 这里本来就在最后，所以是否return没差别，但避免以后往下面加代码忘了return，这里还是return下吧
+    if (pageChangedNeedAbort) return
+
+
 }
 
 
