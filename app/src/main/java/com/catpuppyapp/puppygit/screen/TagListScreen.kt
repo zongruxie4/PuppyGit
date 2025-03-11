@@ -525,6 +525,8 @@ fun TagListScreen(
         },
         details@{
             val sb = StringBuilder()
+            val spliter = Cons.itemDetailSpliter
+
             selectedItemList.value.forEach {
                 sb.append(activityContext.getString(R.string.name)).append(": ").append(it.shortName).appendLine().appendLine()
                 sb.append(activityContext.getString(R.string.full_name)).append(": ").append(it.name).appendLine().appendLine()
@@ -538,12 +540,12 @@ fun TagListScreen(
                     sb.append(activityContext.getString(R.string.msg)).append(": ").append(it.msg).appendLine().appendLine()
                 }
 
-                sb.append(Cons.flagStr).append(": ").append(it.getType(activityContext, true)).appendLine().appendLine()
+                sb.append(Cons.flagStr).append(": ").append(it.getType(activityContext, true))
 
-                sb.append("------------------------------").appendLine().appendLine()
+                sb.append(spliter)
             }
 
-            detailsString.value = sb.toString()
+            detailsString.value = sb.removeSuffix(spliter).toString()
 
             showDetailsDialog.value = true
         },

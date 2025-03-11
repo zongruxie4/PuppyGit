@@ -280,7 +280,7 @@ fun SubmoduleListScreen(
             .appendLine(activityContext.getString(R.string.location)+": "+item.location.toString()).appendLine()
             .appendLine(activityContext.getString(R.string.path)+": "+item.relativePathUnderParent).appendLine()
             .appendLine(activityContext.getString(R.string.full_path)+": "+item.fullPath).appendLine()
-            .appendLine(activityContext.getString(R.string.status)+": "+item.getStatus(activityContext))
+            .append(activityContext.getString(R.string.status)+": "+item.getStatus(activityContext))
 
         sb.toString()
 
@@ -709,12 +709,14 @@ fun SubmoduleListScreen(
         },
         details@{
             val sb = StringBuilder()
+            val spliter = Cons.itemDetailSpliter
+
             selectedItemList.value.forEach {
-                sb.appendLine(getDetail(it))
-                sb.appendLine("------------------------------").appendLine()
+                sb.append(getDetail(it))
+                sb.append(spliter)
             }
 
-            detailsString.value = sb.toString()
+            detailsString.value = sb.removeSuffix(spliter).toString()
 
             showDetailsDialog.value = true
         },

@@ -5,6 +5,11 @@ import kotlinx.coroutines.sync.Mutex
 import java.time.format.DateTimeFormatter
 
 object Cons {
+    /**
+     * 详情列表，条目分割线
+     */
+    const val itemDetailSpliter = "\n\n--------------\n\n"
+
     //一个字符（但不确定是否一个字节），三个点的省略号
     const val oneChar3dots = "…"
 

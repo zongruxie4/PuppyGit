@@ -2084,27 +2084,27 @@ fun RepoInnerPage(
     //这个是仅限单仓库且单条目单api的代码，已废弃
 //        api@{
 //            val sb = StringBuilder()
-//            val suffix = "\n\n--------------\n\n"
+//            val spliter = Cons.itemDetailSpliter
 //            selectedItems.value.forEach {
 //                sb.append(HttpServer.getApiJson(it, SettingsUtil.getSettingsSnapshot()))
-//                sb.append(suffix)
+//                sb.append(spliter)
 //            }
 //
-//            initDetailsDialog(activityContext.getString(R.string.api), sb.removeSuffix(suffix).toString())
+//            initDetailsDialog(activityContext.getString(R.string.api), sb.removeSuffix(spliter).toString())
 //        },
 
         details@{
             val sb = StringBuilder()
             val lb = "\n"
-            val suffix = "\n\n--------------\n\n"
+            val spliter = Cons.itemDetailSpliter
 
             selectedItems.value.forEach {
                 sb.append(activityContext.getString(R.string.name)).append(": ").append(it.repoName).append(lb).append(lb)
                 sb.append(activityContext.getString(R.string.id)).append(": ").append(it.id)
-                sb.append(suffix)
+                sb.append(spliter)
             }
 
-            initDetailsDialog(activityContext.getString(R.string.details), sb.removeSuffix(suffix).toString())
+            initDetailsDialog(activityContext.getString(R.string.details), sb.removeSuffix(spliter).toString())
         },
 
         delete@{
