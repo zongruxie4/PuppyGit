@@ -2621,7 +2621,7 @@ fun ChangeListInnerPage(
         copyFullPath@{true},
         copyRepoRelativePath@{true},
         importAsRepo@{ (fromTo == Cons.gitDiffFromIndexToWorktree || fromTo == Cons.gitDiffFromHeadToIndex) && it.toFile().isDirectory }, //only dir can be import as repo
-        goToSub@{fromTo == Cons.gitDiffFromIndexToWorktree && it.toFile().isDirectory},  // only dir maybe import as cur repo's sub repo, then maybe can go to sub
+        goToSub@{fromTo == Cons.gitDiffFromIndexToWorktree && it.toFile().isDirectory},  // only dir maybe import as cur repo's sub repo, then maybe can switch to sub, and only ChangeList can be switch repo, so need check it also
     )
 
     //这个页面，显示就是启用，禁用就不需要显示，所以直接把enableList作为visibleList即可
