@@ -119,6 +119,7 @@ import com.catpuppyapp.puppygit.utils.FsUtils
 import com.catpuppyapp.puppygit.utils.Libgit2Helper
 import com.catpuppyapp.puppygit.utils.Msg
 import com.catpuppyapp.puppygit.utils.MyLog
+import com.catpuppyapp.puppygit.utils.RegexUtil
 import com.catpuppyapp.puppygit.utils.UIHelper
 import com.catpuppyapp.puppygit.utils.cache.Cache
 import com.catpuppyapp.puppygit.utils.changeStateTriggerRefreshPage
@@ -1404,7 +1405,9 @@ fun FilesInnerPage(
                             }
 
                             val match = { it:File ->
-                                it.name.lowercase().contains(k)
+                                val nameLowerCase = it.name.lowercase();
+                                //匹配名称 或 "*.txt"之类的后缀
+                                nameLowerCase.contains(k) || RegexUtil.matchWildcard(input = nameLowerCase, pattern = k)
                             }
 
                             filterList.value.clear()
@@ -1416,6 +1419,9 @@ fun FilesInnerPage(
                     //返回过滤列表
                     filterList.value
                 }else {
+                    //清空token，中止搜索
+                    filesPageSearchToken.value = ""
+
                     currentPathFileList.value
                 }
 
