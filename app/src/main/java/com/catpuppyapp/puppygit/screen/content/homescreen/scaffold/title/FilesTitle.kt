@@ -41,7 +41,8 @@ fun FilesTitle(
     filterKeywordFocusRequester: FocusRequester,
     filesPageSimpleFilterOn: Boolean,
     filesPageSimpleFilterKeyWord:CustomStateSaveable<TextFieldValue>,
-    curPathItemDto: FileItemDto
+    curPathItemDto: FileItemDto,
+    searching:Boolean
 ) {
     val haptic = LocalHapticFeedback.current
 
@@ -75,7 +76,7 @@ fun FilesTitle(
 //        )
 //    }
     if(filesPageSimpleFilterOn) {
-        FilterTextField(filterKeyWord = filesPageSimpleFilterKeyWord)
+        FilterTextField(filterKeyWord = filesPageSimpleFilterKeyWord, loading = searching)
     } else {  //filesPageGetFilterMode()==0 , 搜索模式关闭
             //render page
         Column(

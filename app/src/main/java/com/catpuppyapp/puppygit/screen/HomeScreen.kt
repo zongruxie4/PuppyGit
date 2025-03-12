@@ -767,16 +767,40 @@ fun HomeScreen(
                             if(repoPageFilterModeOn.value) {
                                 FilterTextField(filterKeyWord = repoPageFilterKeyWord)
                             }else {
-                                ReposTitle(repoPageListState, scope, repoPageRepoList.value.size, reposLastPosition)
+                                ReposTitle(
+                                    listState = repoPageListState,
+                                    scope = scope,
+                                    allRepoCount = repoPageRepoList.value.size,
+                                    lastPosition = reposLastPosition
+                                )
                             }
                         } else if(currentHomeScreen.intValue == Cons.selectedItem_Files){
-                            FilesTitle(filesPageCurrentPath, allRepoParentDir, needRefreshFilesPage, filesPageGetFilterMode,
-                                filesPageFilterKeyword, filesPageFilterOn,filesPageDoFilter, filesPageRequestFromParent,
-                                filesPageFilterTextFieldFocusRequester, filesPageSimpleFilterOn.value, filesPageSimpleFilterKeyWord,
-                                filesPageCurPathFileItemDto.value,
+                            FilesTitle(
+                                currentPath = filesPageCurrentPath,
+                                allRepoParentDir = allRepoParentDir,
+                                needRefreshFilesPage = needRefreshFilesPage,
+                                filesPageGetFilterMode = filesPageGetFilterMode,
+                                filterKeyWord = filesPageFilterKeyword,
+                                filterModeOn = filesPageFilterOn,
+                                doFilter = filesPageDoFilter,
+                                requestFromParent = filesPageRequestFromParent,
+                                filterKeywordFocusRequester = filesPageFilterTextFieldFocusRequester,
+                                filesPageSimpleFilterOn = filesPageSimpleFilterOn.value,
+                                filesPageSimpleFilterKeyWord = filesPageSimpleFilterKeyWord,
+                                curPathItemDto = filesPageCurPathFileItemDto.value,
+                                searching = filesPageSearching.value
                             )
                         } else if (currentHomeScreen.intValue == Cons.selectedItem_Editor) {
-                            EditorTitle(editorPageShowingFileName.value, editorPageShowingFilePath,editorPageRequestFromParent, editorPageSearchMode.value, editorPageSearchKeyword, editorPageMergeMode.value, editorReadOnlyMode.value, editorOpenFileErr.value)
+                            EditorTitle(
+                                editorPageShowingFileName = editorPageShowingFileName.value,
+                                editorPageShowingFilePath = editorPageShowingFilePath,
+                                editorPageRequestFromParent = editorPageRequestFromParent,
+                                editorSearchMode = editorPageSearchMode.value,
+                                editorSearchKeyword = editorPageSearchKeyword,
+                                editorPageMergeMode = editorPageMergeMode.value,
+                                readOnly = editorReadOnlyMode.value,
+                                editorOpenFileErr = editorOpenFileErr.value
+                            )
                         } else if (currentHomeScreen.intValue == Cons.selectedItem_ChangeList) {
                             if(changeListPageFilterModeOn.value) {
                                 FilterTextField(filterKeyWord = changeListPageFilterKeyWord)
@@ -794,15 +818,15 @@ fun HomeScreen(
                                 )
                             }
                         } else if (currentHomeScreen.intValue == Cons.selectedItem_Settings) {
-                            ScrollableTitle(text = stringResource(R.string.settings), listState = settingsListState, settingsLastPosition)
+                            ScrollableTitle(text = stringResource(R.string.settings), listState = settingsListState, lastPosition = settingsLastPosition)
                         } else if (currentHomeScreen.intValue == Cons.selectedItem_About) {
-                            ScrollableTitle(text = stringResource(R.string.about), listState = aboutListState, aboutLastPosition)
+                            ScrollableTitle(text = stringResource(R.string.about), listState = aboutListState, lastPosition = aboutLastPosition)
                         } else if(currentHomeScreen.intValue == Cons.selectedItem_Subscription) {
-                            SimpleTitle(stringResource(R.string.subscription))
+                            SimpleTitle(text = stringResource(R.string.subscription))
                         } else if(currentHomeScreen.intValue == Cons.selectedItem_Service){
-                            ScrollableTitle(text = stringResource(R.string.service), listState = serviceListState, serviceLastPosition)
+                            ScrollableTitle(text = stringResource(R.string.service), listState = serviceListState, lastPosition = serviceLastPosition)
                         }  else if(currentHomeScreen.intValue == Cons.selectedItem_Automation){
-                            ScrollableTitle(text = stringResource(R.string.automation), listState = automationListState, automationLastPosition)
+                            ScrollableTitle(text = stringResource(R.string.automation), listState = automationListState, lastPosition = automationLastPosition)
                         } else {
                             SimpleTitle()
                         }
