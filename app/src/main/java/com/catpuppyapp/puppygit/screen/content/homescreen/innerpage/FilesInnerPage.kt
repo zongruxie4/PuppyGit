@@ -6,6 +6,7 @@ import android.widget.Toast
 import androidx.activity.compose.BackHandler
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.compose.foundation.ExperimentalFoundationApi
+import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.horizontalScroll
@@ -1226,7 +1227,8 @@ fun FilesInnerPage(
                     // noop
                 }
             }else {
-                LazyRow(modifier = Modifier.padding(5.dp),
+                LazyRow(
+                    modifier = Modifier.background(MaterialTheme.colorScheme.surfaceContainer).padding(5.dp),
                     state = breadCrumbListState
                 ) {
 //            var breadCrumbList = currentPathBreadCrumbList1
