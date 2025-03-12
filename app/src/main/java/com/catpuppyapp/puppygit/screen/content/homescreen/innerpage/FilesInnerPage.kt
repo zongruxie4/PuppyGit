@@ -3094,9 +3094,7 @@ private suspend fun doInit(
 
     val curDirPath = currentDir.canonicalPath
     val curBreadCrumbList = currentPathBreadCrumbList.value
-    curBreadCrumbList.clear()  //避免和之前的路径拼接在一起，先清空下列表
-    // add Root
-    curBreadCrumbList.add(FileItemDto.getRootDto())
+
     //重新生成面包屑的条件：上次路径为空 或 面包屑列表为空 或 上次路径非startsWith当前路径
 //        if(lastUsedPath.isBlank() || curDirPath==FsUtils.rootPath || currentPathBreadCrumbList.value.isEmpty() || lastUsedPath.startsWith(curDirPath).not()) {
 
@@ -3105,39 +3103,31 @@ private suspend fun doInit(
     //if breadCrumblist empty or last item full path not starts with current path, recreate the breadcrumblist
     //如果面包屑不为空或最后一个元素不是当前路径的子目录，重新创建面包屑列表
     if(breadCrumbPathNotCoverdCurPath(curBreadCrumbList, curDirPath, separator)) {
-//        val isInternalStoragePath = curDirPath.startsWith(repoBaseDirPath)
-//        val splitPath = (if(isInternalStoragePath) getFilePathStrBasedRepoDir(curDirPath) else curDirPath.removePrefix("/")).split(File.separator)  //获得一个分割后的目录列表
-//        val root = if(isInternalStoragePath) repoBaseDirPath else "/"
-        val splitPath = curDirPath.trim(separator).split(separator)  //获得一个分割后的目录列表
-//            val root = separator
+        curBreadCrumbList.clear()  //避免和之前的路径拼接在一起，先清空下列表
+        curBreadCrumbList.add(FileItemDto.getRootDto())  //添加root条目
 
-//        if(splitPath.isNotEmpty()) {  //啥也没分割出来的话，就没必要填东西了，不过应该不会出现这种情况
-//            var lastPathName=StringBuilder(40).append(rootPath)  // if not starts with root path "/", use this instead create a empty StringBuilder, the rootPath should is a canonical path, which starts with '/' and no ends with '/'
-        var lastPathName=StringBuilder(40)  // most time the path should more than 30 "/storage/emulated/0" , so set it to 40 I think is better than StringBuilder default size 16
-        for(pathName in splitPath) {  //更新面包屑
-            lastPathName.append(separator).append(pathName)  //拼接列表路径为仓库下的 完整相对路径
-            // bread crumb为了生成快速创建的是阉割板的对象，只有少数必要参数，如果想获取path的完整dto，需要重新生成， 调用genFileItemDtoByFile(dto.toFile())即可
-            val pathDto = FileItemDto()
+        //分割路径，不包含root，若用root path '/' 去分割，结果会是仅有1个元素且元素内容为空字符串的List
+        val splitPath = curDirPath.trim(separator).split(separator)
+        //分割后的字符串如果只有一个条目且是空字符串，则当前路径为root，由于上面已经添加了root，所以不需要再额外添加
+        if(!(splitPath.size == 1 && splitPath[0].isEmpty())) {  //如果当前路径非root，则添加面包屑，否则不需要添加，因为上面已经添加了rootpath，这里再添加只会添加个空元素，无意义
+            var lastPathName=StringBuilder(40)  // most time the path should more than 30 "/storage/emulated/0" , so set it to 40 I think is better than StringBuilder default size 16
+            for(pathName in splitPath) {  //更新面包屑
+                lastPathName.append(separator).append(pathName)  //拼接列表路径为仓库下的 完整相对路径
+                // bread crumb为了生成快速创建的是阉割板的对象，只有少数必要参数，如果想获取path的完整dto，需要重新生成， 调用genFileItemDtoByFile(dto.toFile())即可
+                val pathDto = FileItemDto()
 
-            //breadCrumb must dir, if is file, will replace at up code
-            //面包屑肯定是目录，如果是文件，在上面的代码中会被替换成目录
-//                pathDto.isFile=false
-            pathDto.isDir=true
+                //breadCrumb must dir, if is file, will replace at up code
+                //面包屑肯定是目录，如果是文件，在上面的代码中会被替换成目录
+                pathDto.isDir=true
 
-//                pathDto.fullPath = File(root, lastPathName.toString()).canonicalPath  //把仓库下完整相对路径和仓库路径拼接，得到一个绝对路径
-            pathDto.fullPath = lastPathName.toString()  // this will output path like "/abc/def" and should faster than `File(root, lastPathName).canonicalPath`
+                pathDto.fullPath = lastPathName.toString()  // this will output path like "/abc/def" and should faster than `File(root, lastPathName).canonicalPath`
 
-//                println("f1: ${pathDto.fullPath}")  // "/abc/def"
 
-            pathDto.name = pathName
-            curBreadCrumbList.add(pathDto)
+                pathDto.name = pathName
+                curBreadCrumbList.add(pathDto)
+            }
         }
-
     }
-//        currentPathBreadCrumbList.requireRefreshView()
-//        }
-
-//    }
 
 
     // since require manage storage permission, no more need this, users can simple copy file at Files page between external and internal storage
