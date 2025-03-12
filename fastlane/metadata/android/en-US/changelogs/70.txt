@@ -1,1 +1,3 @@
 - optimize code
+- Files support recursive search
+- fix a bug may cause app run slowly when filter mode on

@@ -147,6 +147,7 @@ import com.catpuppyapp.puppygit.utils.state.CustomStateListSaveable
 import com.catpuppyapp.puppygit.utils.state.CustomStateSaveable
 import com.catpuppyapp.puppygit.utils.state.mutableCustomStateListOf
 import com.catpuppyapp.puppygit.utils.state.mutableCustomStateOf
+import com.catpuppyapp.puppygit.utils.withMainContext
 import java.io.File
 import kotlin.coroutines.cancellation.CancellationException
 
@@ -186,6 +187,8 @@ fun FilesInnerPage(
     filesPageLastKeyword:MutableState<String>,
     filesPageSearchToken:MutableState<String>,
     filesPageSearching:MutableState<Boolean>,
+    resetFilesSearchVars:()->Unit,
+
     filesPageScrolled:MutableState<Boolean>,
     curListState:CustomStateSaveable<LazyListState>,
     filterListState:LazyListState,
@@ -292,15 +295,20 @@ fun FilesInnerPage(
     }
     //取消任务相关变量，结束
 
-    val loadingOnCancellable = { loadingText:String ->
-        loadingOn(loadingText)
-        // reset，使其可取消
-        startCancellableAct()
+    //这个cancel变量必须确保及时更新，而我发现如果在非主线程更新可能获取到旧值，所以改成强制在主线程更新
+    val loadingOnCancellable:suspend (String)->Unit = { loadingText:String ->
+        withMainContext {
+            loadingOn(loadingText)
+            // reset，使其可取消
+            startCancellableAct()
+        }
     }
-    val loadingOffCancellable = {
-        loadingOff()
-        // reset，使其他可取消任务任务能正常开始执行
-        stopCancellableAct()
+    val loadingOffCancellable:suspend ()->Unit  = {
+        withMainContext {
+            loadingOff()
+            // reset，使其他可取消任务任务能正常开始执行
+            stopCancellableAct()
+        }
     }
 
 //    val repoList = mutableCustomStateListOf(keyTag = stateKeyTag, keyName = "repoList", initValue = listOf<RepoEntity>())
@@ -1396,13 +1404,14 @@ fun FilesInnerPage(
                 val currentPathFileList = if(enableFilter){
                     //只有关键字变了才执行搜索
                     if(k != filesPageLastKeyword.value) {
-                        val canceled = initSearch(k, filesPageLastKeyword, filesPageSearchToken)
                         doJobThenOffLoading(loadingOff = {filesPageSearching.value = false}) {
                             val curDir = File(currentPath.value)
                             if(curDir.canRead().not()) {
                                 Msg.requireShow(activityContext.getString(R.string.err_read_path_failed))
                                 return@doJobThenOffLoading
                             }
+
+                            val canceled = initSearch(keyword = k, lastKeyword = filesPageLastKeyword, token = filesPageSearchToken)
 
                             val match = { it:File ->
                                 val nameLowerCase = it.name.lowercase();
@@ -1420,7 +1429,7 @@ fun FilesInnerPage(
                     filterList.value
                 }else {
                     //清空token，中止搜索
-                    filesPageSearchToken.value = ""
+                    resetFilesSearchVars()
 
                     currentPathFileList.value
                 }
@@ -1787,13 +1796,9 @@ fun FilesInnerPage(
 
             closeDialog()
 
-            doJobThenOffLoading(
-                loadingOn = loadingOnCancellable,
+            val loadingText = activityContext.getString(if(trueExportFalseImport) R.string.exporting else R.string.importing)
 
-                loadingOff = loadingOffCancellable,
-
-                loadingText = activityContext.getString(if(trueExportFalseImport) R.string.exporting else R.string.importing)
-            ) {
+            doJobThenOffLoading {
                 val uri = choosenSafUri.value!!
                 val conflictStrategy = if(safImportExportOverwrite.value) FsUtils.CopyFileConflictStrategy.OVERWRITE_FOLDER_AND_FILE else FsUtils.CopyFileConflictStrategy.SKIP
                 val chosenDir = DocumentFile.fromTreeUri(activityContext, uri)
@@ -1804,6 +1809,8 @@ fun FilesInnerPage(
 
 //            appContext.contentResolver.openOutputStream(chosenDir?.createFile("*/*", "test.txt")?.uri!!)
                 try {
+                    loadingOnCancellable(loadingText)
+
                     if(trueExportFalseImport) {
                         FsUtils.recursiveExportFiles_Saf(
                             contentResolver = activityContext.contentResolver,
@@ -1836,6 +1843,8 @@ fun FilesInnerPage(
                     importExportErrorMsg.value = errorMsg
                     showImportExportErrorDialog.value = true
                 }finally {
+                    loadingOffCancellable()
+
                     //如果是导入模式，结束后需要刷新页面
                     if(!trueExportFalseImport) {
                         changeStateTriggerRefreshPage(needRefreshFilesPage)
@@ -1969,13 +1978,9 @@ fun FilesInnerPage(
         if(uri!=null) {
             SafUtil.takePersistableRWPermission(activityContext.contentResolver, uri)
 
-            doJobThenOffLoading(
-                loadingOn = loadingOnCancellable,
+            val loadingText = activityContext.getString(R.string.exporting)
 
-                loadingOff = loadingOffCancellable,
-
-                loadingText = activityContext.getString(R.string.exporting)
-            ) {
+            doJobThenOffLoading {
                 val chosenDir = DocumentFile.fromTreeUri(activityContext, uri)
                 if(chosenDir==null) {
                     Msg.requireShow(activityContext.getString(R.string.err_get_export_dir_failed))
@@ -1983,6 +1988,8 @@ fun FilesInnerPage(
                 }
 //            appContext.contentResolver.openOutputStream(chosenDir?.createFile("*/*", "test.txt")?.uri!!)
                 try {
+                    loadingOnCancellable(loadingText)
+
                     FsUtils.recursiveExportFiles_Saf(
                         contentResolver = activityContext.contentResolver,
                         targetDir = chosenDir,
@@ -1999,6 +2006,8 @@ fun FilesInnerPage(
                     Msg.requireShow(exportErrStrRes)
                     importExportErrorMsg.value = "$exportErrStrRes: "+e.localizedMessage
                     showImportExportErrorDialog.value = true
+                }finally {
+                    loadingOffCancellable()
                 }
             }
 

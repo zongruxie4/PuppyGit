@@ -242,7 +242,13 @@ fun HomeScreen(
     val filesPageLastKeyword = rememberSaveable{ mutableStateOf("") }
     val filesPageSearchToken = rememberSaveable{ mutableStateOf("") }
     val filesPageSearching = rememberSaveable{ mutableStateOf(false) }
-
+    val resetFilesSearchVars = {
+        // search loading
+        filesPageSearching.value = false
+        // empty token to stop running search task
+        filesPageSearchToken.value = ""
+        filesPageLastKeyword.value = ""
+    }
     //这个filter有点重量级，比较适合做成全局搜索之类的功能
     val filesPageFilterMode = rememberSaveable{mutableIntStateOf(0)}  //0关闭，1正在搜索，显示输入框，2显示搜索结果
     val filesPageFilterKeyword = mutableCustomStateOf(
@@ -842,11 +848,7 @@ fun HomeScreen(
                                 iconContentDesc = stringResource(R.string.close),
 
                             ) {
-                                // search loading
-                                filesPageSearching.value = false
-                                // generate new token to stop running search task
-                                filesPageSearchToken.value = generateNewTokenForSearch()
-
+                                resetFilesSearchVars()
                                 // close input text field
                                 filesPageSimpleFilterOn.value = false
                             }
@@ -1088,6 +1090,7 @@ fun HomeScreen(
                     filesPageLastKeyword=filesPageLastKeyword,
                     filesPageSearchToken=filesPageSearchToken,
                     filesPageSearching=filesPageSearching,
+                    resetFilesSearchVars=resetFilesSearchVars,
                     contentPadding = contentPadding,
 //                    filePageListState = filePageListState,
                     currentHomeScreen=currentHomeScreen,

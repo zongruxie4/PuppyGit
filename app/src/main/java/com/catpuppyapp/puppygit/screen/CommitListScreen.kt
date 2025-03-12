@@ -108,7 +108,9 @@ import com.catpuppyapp.puppygit.git.CommitDto
 import com.catpuppyapp.puppygit.play.pro.R
 import com.catpuppyapp.puppygit.screen.functions.defaultTitleDoubleClick
 import com.catpuppyapp.puppygit.screen.functions.getLoadText
+import com.catpuppyapp.puppygit.screen.functions.initSearch
 import com.catpuppyapp.puppygit.screen.functions.maybeIsGoodKeyword
+import com.catpuppyapp.puppygit.screen.functions.search
 import com.catpuppyapp.puppygit.settings.SettingsUtil
 import com.catpuppyapp.puppygit.style.MyStyleKt
 import com.catpuppyapp.puppygit.user.UserUtil
@@ -218,11 +220,21 @@ fun CommitListScreen(
     //获取假数据
 //    val list = remember { mutableStateListOf<CommitDto>() };
 //    val list = StateUtil.getCustomSaveableState(keyTag = stateKeyTag, keyDesc = "list", initValue = mutableStateListOf<CommitDto>())
-    val list = mutableCustomStateListOf(
-        keyTag = stateKeyTag,
-        keyName = "list",
-        initValue = listOf<CommitDto>()
-    )
+    val list = mutableCustomStateListOf(keyTag = stateKeyTag, keyName = "list", initValue = listOf<CommitDto>())
+    val filterList = mutableCustomStateListOf(keyTag = stateKeyTag, keyName = "filterList", initValue = listOf<CommitDto>())
+
+    // start: search states
+    val lastKeyword = rememberSaveable { mutableStateOf("") }
+    val lastListSize = rememberSaveable { mutableIntStateOf(0) }
+    val token = rememberSaveable { mutableStateOf("") }
+    val searching = rememberSaveable { mutableStateOf(false) }
+    val resetSearchVars = {
+        searching.value = false
+        token.value = ""
+        lastKeyword.value = ""
+    }
+    // end: search states
+
 //    val list = rememberSaveable(
 //        stateSaver = getSaver()
 //    ) {
@@ -1491,6 +1503,7 @@ fun CommitListScreen(
                     if(filterModeOn_dontUseThisCheckFilterModeReallyEnabledOrNot.value) {
                         FilterTextField(
                             filterKeyWord = filterKeyword,
+                            loading = searching.value,
                             trailingIconTooltipText= stringResource(R.string.filter_by_paths),
                             trailingIcon = Icons.AutoMirrored.Filled.List,
                             trailingIconColor = UIHelper.getIconEnableColorOrNull(pathsForFilter.value.isNotEmpty()),
@@ -1556,6 +1569,8 @@ fun CommitListScreen(
                             iconContentDesc = stringResource(R.string.close),
 
                         ) {
+                            // empty token to cancel searching
+                            resetSearchVars()
                             filterModeOn_dontUseThisCheckFilterModeReallyEnabledOrNot.value = false
                         }
                     } else {
@@ -1906,55 +1921,74 @@ fun CommitListScreen(
             val needFilterByPath = pathList.isNotEmpty()
             val enableFilter = filterModeOn_dontUseThisCheckFilterModeReallyEnabledOrNot.value && (maybeIsGoodKeyword(k) || needFilterByPath)
             val list = if(enableFilter){
-                filterIdxList.value.clear()
+                val curListSize = list.value.size
+                //如果关键字变化或者总条目数变化（点“加载更多”就会导致它变化），则重新执行过滤
+                if(k != lastKeyword.value || curListSize != lastListSize.intValue) {
+                    lastListSize.intValue = curListSize
+                    doJobThenOffLoading(loadingOff = {searching.value = false}) {
+                        filterIdxList.value.clear()
 
-                val repo = if(needFilterByPath) {
-                    try{
-                        Repository.open(curRepo.value.fullSavePath)
-                    }catch (_:Exception) {
-                        null
-                    }
-                }else {
-                    null
-                }
-
-                val retlist = list.value.filterIndexed {idx, it ->
-                    var found = it.oidStr.lowercase().contains(k)
-                            || it.email.lowercase().contains(k)
-                            || it.author.lowercase().contains(k)
-                            || it.committerEmail.lowercase().contains(k)
-                            || it.committerUsername.lowercase().contains(k)
-                            || it.dateTime.lowercase().contains(k)
-                            || it.branchShortNameList.toString().lowercase().contains(k)
-                            || it.tagShortNameList.toString().lowercase().contains(k)
-                            || it.parentOidStrList.toString().lowercase().contains(k)
-                            || it.treeOidStr.lowercase().contains(k)
-                            || it.msg.lowercase().contains(k)
-                            || it.getOther(activityContext, false).lowercase().contains(k)
-                            || it.getOther(activityContext, true).lowercase().contains(k)
-                            || formatMinutesToUtc(it.originTimeOffsetInMinutes).lowercase().contains(k)
-
-                    // for "show in list"
-                    if(found) {
-                        if(needFilterByPath && repo!=null && pathList.isNotEmpty()) {
-                            val tree = Libgit2Helper.resolveTreeByTreeId(repo, Oid.of(it.treeOidStr))
-                            if(tree != null) {
-                                found = Libgit2Helper.isTreeIncludedPaths(tree, pathList, filterByEntryName.value)
+                        val repo = if(needFilterByPath) {
+                            try{
+                                Repository.open(curRepo.value.fullSavePath)
+                            }catch (_:Exception) {
+                                null
                             }
+                        }else {
+                            null
                         }
 
-                        if(found) {
-                            filterIdxList.value.add(idx)
+                        val canceled = initSearch(keyword = k, lastKeyword = lastKeyword, token = token)
+
+                        val match = { idx:Int, it: CommitDto ->
+                            var found = it.oidStr.lowercase().contains(k)
+                                    || it.email.lowercase().contains(k)
+                                    || it.author.lowercase().contains(k)
+                                    || it.committerEmail.lowercase().contains(k)
+                                    || it.committerUsername.lowercase().contains(k)
+                                    || it.dateTime.lowercase().contains(k)
+                                    || it.branchShortNameList.toString().lowercase().contains(k)
+                                    || it.tagShortNameList.toString().lowercase().contains(k)
+                                    || it.parentOidStrList.toString().lowercase().contains(k)
+                                    || it.treeOidStr.lowercase().contains(k)
+                                    || it.msg.lowercase().contains(k)
+                                    || it.getOther(activityContext, false).lowercase().contains(k)
+                                    || it.getOther(activityContext, true).lowercase().contains(k)
+                                    || formatMinutesToUtc(it.originTimeOffsetInMinutes).lowercase().contains(k)
+
+                            if(found) {
+                                // filter by path
+                                if(needFilterByPath && repo!=null && pathList.isNotEmpty()) {
+                                    val tree = Libgit2Helper.resolveTreeByTreeId(repo, Oid.of(it.treeOidStr))
+                                    if(tree != null) {
+                                        found = Libgit2Helper.isTreeIncludedPaths(tree, pathList, filterByEntryName.value)
+                                    }
+                                }
+
+                                // for "show in list"
+                                if(found) {
+                                    filterIdxList.value.add(idx)
+                                }
+                            }
+
+                            found
+
+                        }
+
+                        searching.value = true
+
+                        try{
+                            filterList.value.clear()
+                            search(src = list.value, target = filterList.value, match = match, canceled = canceled)
+                        }finally {
+                            repo?.close()
                         }
                     }
-
-                    found
                 }
 
-                repo?.close()
-
-                retlist
+                filterList.value
             }else {
+                resetSearchVars()
                 list.value
             }
 

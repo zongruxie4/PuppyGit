@@ -152,13 +152,20 @@ fun maybeIsGoodKeyword(keyword:String) : Boolean {
     return keyword.isNotEmpty()
 }
 
-fun <T> search(src:List<T>, target:MutableList<T>, match:(src:T)->Boolean, canceled:()->Boolean) {
-    for(it in src){
+fun <T> search(
+    src:List<T>,
+    target:MutableList<T>,
+    match:(idx:Int, srcItem:T)->Boolean,
+    canceled:()->Boolean
+) {
+    for(idx in src.indices){
         if(canceled()) {
             return
         }
 
-        if(match(it)) {
+        val it = src[idx]
+
+        if(match(idx, it)) {
             target.add(it)
         }
     }
@@ -171,7 +178,7 @@ fun filterModeActuallyEnabled(filterOn:Boolean, keyword: String):Boolean {
 /**
  * 先遍历当前目录所有条目，然后再继续遍历当前目录的文件夹（广度优先）
  */
-fun recursiveBreadthFirstSearch(activityContext: Context, dir: File, target:MutableList<FileItemDto>, match: (src: File) -> Boolean, canceled: () -> Boolean) {
+fun recursiveBreadthFirstSearch(activityContext: Context, dir: File, target:MutableList<FileItemDto>, match: (srcItem: File) -> Boolean, canceled: () -> Boolean) {
     val files = dir.listFiles()
     if(files == null || files.isEmpty()) {
         return
@@ -205,18 +212,27 @@ fun recursiveBreadthFirstSearch(activityContext: Context, dir: File, target:Muta
 /**
  * @return canceled() 函数
  */
-fun initSearch(keyword: String, lastKeyword: MutableState<String>, token:MutableState<String>):()->Boolean {
+suspend fun initSearch(keyword: String, lastKeyword: MutableState<String>, token:MutableState<String>):()->Boolean {
     //更新上个关键字
     lastKeyword.value = keyword
 
     //生成新token
-    val newToken = generateNewTokenForSearch()
-    token.value = newToken
+    val tokenForThisSession = generateNewTokenForSearch()
+    //必须在主线程更新状态变量，不然可能获取到旧值，如果还有问题，改用Channel
+    withMainContext {
+        token.value = tokenForThisSession
+    }
 
     //生成cancel函数并返回
     return {
-        //如果ide有 "Unused equals expression "，无视，ide不知道这个state变化后value会变，而curToken不会变，所以这个表达式并非常量
-        newToken != token.value
+        if(AppModel.devModeOn) {
+            //若不相等，就是有bug，改用channel替换状态变量
+            MyLog.d(TAG, "token.value==tokenForThisSession is ${token.value==tokenForThisSession}: token.value=${token.value}, tokenForThisSession=$tokenForThisSession")
+        }
+
+        //如果ide有 "Unused equals expression "，无视即可，ide不知道这个state变化后value会变，而curToken不会变，所以这个表达式并非常量
+        //正常来说搜索前会生成新token，因此token必然非空，若为空，则代表取消搜索；若非空则与当前state变量进行比较，若不相等，代表开启了新的搜索，此次搜索已取消
+        token.value.isEmpty() || tokenForThisSession != token.value
     }
 }
 
