@@ -31,6 +31,7 @@ object Cons {
     const val slashChar = '/'
     const val lineBreak = "\n"
     const val lineBreakChar = '\n'
+    const val arrowToRight = ">"
 
     //        @Deprecated("改用：StorageDirCons.DefaultStorageDir.allRepoParentsDir.name")  //20240527：禁用，sd相关
     const val defaultAllRepoParentDirName = "PuppyGitRepos"

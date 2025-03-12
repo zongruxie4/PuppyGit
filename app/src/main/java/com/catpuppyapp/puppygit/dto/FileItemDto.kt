@@ -2,6 +2,7 @@ package com.catpuppyapp.puppygit.dto
 
 import android.content.Context
 import com.catpuppyapp.puppygit.play.pro.R
+import com.catpuppyapp.puppygit.utils.FsUtils
 import com.catpuppyapp.puppygit.utils.MyLog
 import com.catpuppyapp.puppygit.utils.getFileAttributes
 import com.catpuppyapp.puppygit.utils.getFormatTimeFromSec
@@ -80,6 +81,10 @@ data class FileItemDto (
     }
 
     companion object {
+        fun getRootDto():FileItemDto {
+            return FileItemDto(isDir = true, fullPath = FsUtils.rootPath, name = FsUtils.rootName)
+        }
+
 
         //appContext for get string source
         fun genFileItemDtoByFile(file: File, activityContext:Context):FileItemDto {

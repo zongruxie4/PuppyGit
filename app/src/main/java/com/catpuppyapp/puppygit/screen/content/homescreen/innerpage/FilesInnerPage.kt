@@ -125,7 +125,6 @@ import com.catpuppyapp.puppygit.utils.createAndInsertError
 import com.catpuppyapp.puppygit.utils.doJobThenOffLoading
 import com.catpuppyapp.puppygit.utils.getFileExtOrEmpty
 import com.catpuppyapp.puppygit.utils.getFileNameFromCanonicalPath
-import com.catpuppyapp.puppygit.utils.getFilePathStrBasedRepoDir
 import com.catpuppyapp.puppygit.utils.getFilePathUnderParent
 import com.catpuppyapp.puppygit.utils.getHumanReadableSizeStr
 import com.catpuppyapp.puppygit.utils.getSecFromTime
@@ -1224,11 +1223,15 @@ fun FilesInnerPage(
                     .padding(5.dp)
                     .horizontalScroll(rememberScrollState())
                 ){
-                    // noop
+                    // noop, dead code, 之前可能进这里，但后来给面包屑强制添加了root path，所以其实应该不可能执行这里的代码了
                 }
             }else {
                 LazyRow(
-                    modifier = Modifier.background(MaterialTheme.colorScheme.surfaceContainer).padding(5.dp),
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .background(MaterialTheme.colorScheme.surfaceContainer)
+                        .padding(5.dp)
+                    ,
                     state = breadCrumbListState
                 ) {
                     //面包屑 (breadcrumb)
@@ -1238,26 +1241,32 @@ fun FilesInnerPage(
                             val separator = Cons.slash
                             val breadCrumbDropDownMenuExpendState = rememberSaveable { mutableStateOf(false)}
                             val curPathIsRoot = currentPath.value == separator
-                            val curPathIsRootAndCurItemIsRoot = curPathIsRoot && idx==0
-                            val textColor = if(curPathIsRoot || it.fullPath.startsWith(currentPath.value+separator)) Color.Gray else Color.Unspecified
-                            //如果是所有仓库的根目录，返回 "/"，否则返回 "路径+/"
-                            Text(text = separator, color = if(curPathIsRootAndCurItemIsRoot) Color.Unspecified else textColor, fontWeight = if(curPathIsRootAndCurItemIsRoot) FontWeight.Bold else FontWeight.Normal)
-                            Text(text =it.name,
+                            val curItemIsRoot = idx==0  // root path '/'
+                            val curPathIsRootAndCurItemIsRoot = curPathIsRoot && curItemIsRoot
+                            val textColor = if(it.fullPath.startsWith(currentPath.value+separator)) Color.Gray else Color.Unspecified
+
+                            //非根路径显示路径分割符
+                            if(curItemIsRoot.not()) {
+                                Text(text = Cons.arrowToRight, color = if(curPathIsRootAndCurItemIsRoot) Color.Unspecified else textColor, fontWeight = if(curPathIsRootAndCurItemIsRoot) FontWeight.Bold else FontWeight.Normal)
+                            }
+
+                            Text(
+                                text = it.name,
                                 color = textColor,
                                 fontWeight = if(it.fullPath == currentPath.value) FontWeight.Bold else FontWeight.Normal,
-                                modifier = Modifier.combinedClickable (
+                                modifier = Modifier.combinedClickable(
                                         onLongClick = {  //long press will show menu for pressed path
                                             haptic.performHapticFeedback(HapticFeedbackType.LongPress)
                                             breadCrumbDropDownMenuExpendState.value = true
                                         }
                                     ) { //onClick
                                         //点击跳转路径
-
                                         currentPath.value = it.fullPath
                                         filesPageSimpleFilterKeyWord.value = TextFieldValue("")  //清空过滤关键字
                                         //刷新页面（然后面包屑也会重新生成）
                                         changeStateTriggerRefreshPage(needRefreshFilesPage)
                                     }
+                                    .padding(horizontal = 10.dp)  //整宽点，好点击，不然名字很短，手按不到
                             )
 
 
@@ -3084,6 +3093,9 @@ private suspend fun doInit(
 
     val curDirPath = currentDir.canonicalPath
     val curBreadCrumbList = currentPathBreadCrumbList.value
+    curBreadCrumbList.clear()  //避免和之前的路径拼接在一起，先清空下列表
+    // add Root
+    curBreadCrumbList.add(FileItemDto.getRootDto())
     //重新生成面包屑的条件：上次路径为空 或 面包屑列表为空 或 上次路径非startsWith当前路径
 //        if(lastUsedPath.isBlank() || curDirPath==FsUtils.rootPath || currentPathBreadCrumbList.value.isEmpty() || lastUsedPath.startsWith(curDirPath).not()) {
 
@@ -3097,7 +3109,7 @@ private suspend fun doInit(
 //        val root = if(isInternalStoragePath) repoBaseDirPath else "/"
         val splitPath = curDirPath.trim(separator).split(separator)  //获得一个分割后的目录列表
 //            val root = separator
-        curBreadCrumbList.clear()  //避免和之前的路径拼接在一起，先清空下列表
+
 //        if(splitPath.isNotEmpty()) {  //啥也没分割出来的话，就没必要填东西了，不过应该不会出现这种情况
 //            var lastPathName=StringBuilder(40).append(rootPath)  // if not starts with root path "/", use this instead create a empty StringBuilder, the rootPath should is a canonical path, which starts with '/' and no ends with '/'
         var lastPathName=StringBuilder(40)  // most time the path should more than 30 "/storage/emulated/0" , so set it to 40 I think is better than StringBuilder default size 16

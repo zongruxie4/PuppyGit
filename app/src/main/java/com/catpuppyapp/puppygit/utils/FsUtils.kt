@@ -36,6 +36,7 @@ private const val TAG = "FsUtils"
 
 object FsUtils {
 
+    const val rootName = "root"
     const val rootPath = "/"
     /**
      * internal and external storage path prefix
