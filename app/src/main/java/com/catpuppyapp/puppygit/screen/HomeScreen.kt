@@ -92,6 +92,7 @@ import com.catpuppyapp.puppygit.screen.content.homescreen.scaffold.title.ReposTi
 import com.catpuppyapp.puppygit.screen.content.homescreen.scaffold.title.ScrollableTitle
 import com.catpuppyapp.puppygit.screen.content.homescreen.scaffold.title.SimpleTitle
 import com.catpuppyapp.puppygit.screen.functions.ChangeListFunctions
+import com.catpuppyapp.puppygit.screen.functions.generateNewTokenForSearch
 import com.catpuppyapp.puppygit.screen.shared.SharedState
 import com.catpuppyapp.puppygit.settings.SettingsCons
 import com.catpuppyapp.puppygit.settings.SettingsUtil
@@ -236,6 +237,11 @@ fun HomeScreen(
     // 指定一个待刷新的仓库列表，若为空，则刷新全部仓库
     val reposPageSpecifiedRefreshRepoList = mutableCustomStateListOf(keyTag = stateKeyTag, keyName = "reposPageSpecifiedRefreshRepoList", initValue = listOf<RepoEntity>())
 
+
+
+    val filesPageLastKeyword = rememberSaveable{ mutableStateOf("") }
+    val filesPageSearchToken = rememberSaveable{ mutableStateOf("") }
+    val filesPageSearching = rememberSaveable{ mutableStateOf(false) }
 
     //这个filter有点重量级，比较适合做成全局搜索之类的功能
     val filesPageFilterMode = rememberSaveable{mutableIntStateOf(0)}  //0关闭，1正在搜索，显示输入框，2显示搜索结果
@@ -816,7 +822,12 @@ fun HomeScreen(
                                 iconContentDesc = stringResource(R.string.close),
 
                             ) {
-//                                filesPageFilterOff()
+                                // search loading
+                                filesPageSearching.value = false
+                                // generate new token to stop running search task
+                                filesPageSearchToken.value = generateNewTokenForSearch()
+
+                                // close input text field
                                 filesPageSimpleFilterOn.value = false
                             }
                         }else if(currentHomeScreen.intValue == Cons.selectedItem_ChangeList && changeListPageFilterModeOn.value){
@@ -1054,6 +1065,9 @@ fun HomeScreen(
             else if(currentHomeScreen.intValue== Cons.selectedItem_Files) {
 //                changeStateTriggerRefreshPage(needRefreshFilesPage)
                 FilesInnerPage(
+                    filesPageLastKeyword=filesPageLastKeyword,
+                    filesPageSearchToken=filesPageSearchToken,
+                    filesPageSearching=filesPageSearching,
                     contentPadding = contentPadding,
 //                    filePageListState = filePageListState,
                     currentHomeScreen=currentHomeScreen,

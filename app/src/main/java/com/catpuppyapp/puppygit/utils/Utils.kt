@@ -173,7 +173,7 @@ fun getShortUUID(len:Int=20):String {
     return getRandomUUID(includeSeparator = false).substring(0, actuallyLen)
 }
 
-fun generateRandomString(length: Int=10): String {
+fun generateRandomString(length: Int=16): String {
     val characters = ('a'..'z') + ('A'..'Z') + ('0'..'9')
     return (1..length)
         .map { characters.random() }

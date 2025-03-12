@@ -103,8 +103,10 @@ import com.catpuppyapp.puppygit.dto.FileItemDto
 import com.catpuppyapp.puppygit.etc.Ret
 import com.catpuppyapp.puppygit.git.ImportRepoResult
 import com.catpuppyapp.puppygit.play.pro.R
+import com.catpuppyapp.puppygit.screen.functions.filterModeActuallyEnabled
 import com.catpuppyapp.puppygit.screen.functions.goToFileHistory
-import com.catpuppyapp.puppygit.screen.functions.maybeIsGoodKeyword
+import com.catpuppyapp.puppygit.screen.functions.initSearch
+import com.catpuppyapp.puppygit.screen.functions.recursiveBreadthFirstSearch
 import com.catpuppyapp.puppygit.settings.AppSettings
 import com.catpuppyapp.puppygit.settings.DirViewAndSort
 import com.catpuppyapp.puppygit.settings.SettingsUtil
@@ -180,6 +182,9 @@ fun FilesInnerPage(
     requireInnerEditorOpenFile:(filePath:String, expectReadOnly:Boolean)->Unit,
     filesPageSimpleFilterOn:MutableState<Boolean>,
     filesPageSimpleFilterKeyWord:CustomStateSaveable<TextFieldValue>,
+    filesPageLastKeyword:MutableState<String>,
+    filesPageSearchToken:MutableState<String>,
+    filesPageSearching:MutableState<Boolean>,
     filesPageScrolled:MutableState<Boolean>,
     curListState:CustomStateSaveable<LazyListState>,
     filterListState:LazyListState,
@@ -1386,22 +1391,30 @@ fun FilesInnerPage(
                 }
             }else {
                 val k = filesPageSimpleFilterKeyWord.value.text.lowercase()  //关键字
-                val enableFilter = filesPageSimpleFilterOn.value && maybeIsGoodKeyword(k)
+                val enableFilter = filterModeActuallyEnabled(filesPageSimpleFilterOn.value, k)
                 val currentPathFileList = if(enableFilter){
-                    val fl = currentPathFileList.value.filter {
-                        it.name.lowercase().contains(k)
-                                || it.lastModifiedTime.lowercase().contains(k)
-//                                || it.createTime.lowercase().contains(k)  // linux好像没有创建时间
-                                || it.sizeInHumanReadable.lowercase().contains(k)
+                    //只有关键字变了才执行搜索
+                    if(k != filesPageLastKeyword.value) {
+                        val canceled = initSearch(k, filesPageLastKeyword, filesPageSearchToken)
+                        doJobThenOffLoading(loadingOff = {filesPageSearching.value = false}) {
+                            val curDir = File(currentPath.value)
+                            if(curDir.canRead().not()) {
+                                Msg.requireShow(activityContext.getString(R.string.err_read_path_failed))
+                                return@doJobThenOffLoading
+                            }
 
-                                    // disabled by "document" will match all dirs
-                                    // 禁用了，不然搜document会因为mimetype而匹配所有目录
-//                                || it.mime.value.lowercase().contains(k)  // mime.value，类似 "text/plain"
+                            val match = { it:File ->
+                                it.name.lowercase().contains(k)
+                            }
+
+                            filterList.value.clear()
+                            filesPageSearching.value = true
+                            recursiveBreadthFirstSearch(activityContext, curDir, filterList.value, match, canceled)
+                        }
                     }
 
-                    filterList.value.clear()
-                    filterList.value.addAll(fl)
-                    fl
+                    //返回过滤列表
+                    filterList.value
                 }else {
                     currentPathFileList.value
                 }
@@ -1423,6 +1436,7 @@ fun FilesInnerPage(
                 ) {index, it ->
                     // 没测试，我看其他文件管理器针对目录都没open with，所以直接隐藏了) 需要测试：能否针对目录执行openwith？如果不能，对目录移除openwith选项
                     FileListItem(
+                        fullPathOfTopNoEndSlash = if(enableFilter) currentPath.value else "",
                         item = it,
                         lastPathByPressBack = lastPathByPressBack.value,
                         isPasteMode = isPasteMode,

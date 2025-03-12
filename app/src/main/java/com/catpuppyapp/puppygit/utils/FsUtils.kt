@@ -1317,7 +1317,7 @@ object FsUtils {
     }
 
     fun createTempFile(prefix:String, suffix:String=".tmp"):File{
-        return File(AppModel.getOrCreateExternalCacheDir().canonicalPath, "$prefix-${generateRandomString()}$suffix")
+        return File(AppModel.getOrCreateExternalCacheDir().canonicalPath, "$prefix-${generateRandomString(8)}$suffix")
     }
 
     fun copy(input:InputStream, output:OutputStream) {

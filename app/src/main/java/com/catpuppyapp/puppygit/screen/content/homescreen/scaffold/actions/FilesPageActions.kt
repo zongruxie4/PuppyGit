@@ -4,9 +4,9 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
-import androidx.compose.material.icons.filled.FilterAlt
 import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.material.icons.filled.Refresh
+import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.Text
@@ -64,7 +64,7 @@ fun FilesPageActions(
     if(!filesPageSimpleFilterOn.value) { //没filter的常规模式或显示filter结果模式
         LongPressAbleIconBtn(
             tooltipText = stringResource(R.string.filter_files),
-            icon = Icons.Filled.FilterAlt,
+            icon = Icons.Filled.Search,
             iconContentDesc = stringResource(id = R.string.filter_files),
         ) {
             filesPageSimpleFilterKeyWord.value = TextFieldValue("")

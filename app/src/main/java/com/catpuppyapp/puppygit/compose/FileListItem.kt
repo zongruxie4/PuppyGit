@@ -31,16 +31,24 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.catpuppyapp.puppygit.constants.Cons
 import com.catpuppyapp.puppygit.play.pro.R
 import com.catpuppyapp.puppygit.dto.FileItemDto
 import com.catpuppyapp.puppygit.ui.theme.Theme
 import com.catpuppyapp.puppygit.utils.UIHelper
+import com.catpuppyapp.puppygit.utils.getParentPathEndsWithSeparator
 import com.catpuppyapp.puppygit.utils.mime.iconRes
 
 
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun FileListItem(
+    /**
+     * 若不为空字符串，将针对所有条目以此path为基础显示其相对路径，否则不显示。
+     * 应用场景：在递归搜索时使用此变量
+    */
+    fullPathOfTopNoEndSlash:String,
+
     item: FileItemDto,
     lastPathByPressBack:String,
     isPasteMode: MutableState<Boolean>,
@@ -124,18 +132,23 @@ fun FileListItem(
                             color = fontColor
                     )
                 }
+
                 Row{
-                    Text(item.lastModifiedTime?:"", fontSize = 12.sp,
-                        color = fontColor
-
-                        )
+                    Text(item.sizeInHumanReadable + ", " +item.lastModifiedTime, fontSize = 12.sp, color = fontColor)
                 }
-                Row {
-                    Text(text = item.sizeInHumanReadable,fontSize = 12.sp,
-                        color = fontColor
 
-                        )
+                if(fullPathOfTopNoEndSlash.isNotBlank()) {
+                    //末尾必须分别移除path和/，若合并移除"path/"，当path和当前路径相同时会漏
+                    val relativePath = item.fullPath.removePrefix(fullPathOfTopNoEndSlash).removePrefix(Cons.slash)
+                        .let { getParentPathEndsWithSeparator(it, trueWhenNoParentReturnEmpty = true) }
+
+                    if(relativePath.isNotEmpty()) {
+                        Row {
+                            Text(text = relativePath, fontSize = 12.sp, color = fontColor)
+                        }
+                    }
                 }
+
             }
 
         }

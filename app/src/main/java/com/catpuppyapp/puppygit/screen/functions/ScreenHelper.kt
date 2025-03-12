@@ -8,6 +8,7 @@ import androidx.compose.ui.platform.ClipboardManager
 import com.catpuppyapp.puppygit.constants.Cons
 import com.catpuppyapp.puppygit.constants.LineNum
 import com.catpuppyapp.puppygit.constants.PageRequest
+import com.catpuppyapp.puppygit.dto.FileItemDto
 import com.catpuppyapp.puppygit.play.pro.R
 import com.catpuppyapp.puppygit.utils.AppModel
 import com.catpuppyapp.puppygit.utils.Libgit2Helper
@@ -16,9 +17,11 @@ import com.catpuppyapp.puppygit.utils.MyLog
 import com.catpuppyapp.puppygit.utils.UIHelper
 import com.catpuppyapp.puppygit.utils.cache.Cache
 import com.catpuppyapp.puppygit.utils.doJobThenOffLoading
+import com.catpuppyapp.puppygit.utils.generateRandomString
 import com.catpuppyapp.puppygit.utils.replaceStringResList
 import com.catpuppyapp.puppygit.utils.withMainContext
 import kotlinx.coroutines.CoroutineScope
+import java.io.File
 
 private const val TAG = "ScreenHelper"
 
@@ -149,3 +152,74 @@ fun maybeIsGoodKeyword(keyword:String) : Boolean {
     return keyword.isNotEmpty()
 }
 
+fun <T> search(src:List<T>, target:MutableList<T>, match:(src:T)->Boolean, canceled:()->Boolean) {
+    for(it in src){
+        if(canceled()) {
+            return
+        }
+
+        if(match(it)) {
+            target.add(it)
+        }
+    }
+}
+
+fun filterModeActuallyEnabled(filterOn:Boolean, keyword: String):Boolean {
+    return filterOn && maybeIsGoodKeyword(keyword)
+}
+
+/**
+ * 先遍历当前目录所有条目，然后再继续遍历当前目录的文件夹（广度优先）
+ */
+fun recursiveBreadthFirstSearch(activityContext: Context, dir: File, target:MutableList<FileItemDto>, match: (src: File) -> Boolean, canceled: () -> Boolean) {
+    val files = dir.listFiles()
+    if(files == null || files.isEmpty()) {
+        return
+    }
+
+    val subdirs = mutableListOf<File>()
+    for(f in files) {
+        if(canceled()) {
+            return
+        }
+
+        if(match(f)) {
+            target.add(FileItemDto.genFileItemDtoByFile(f, activityContext))
+        }
+
+        if(f.isDirectory) {
+            subdirs.add(f)
+        }
+    }
+
+    //遍历子目录
+    for(sub in subdirs) {
+        if(canceled()) {
+           return
+        }
+
+        recursiveBreadthFirstSearch(activityContext, sub, target, match, canceled)
+    }
+}
+
+/**
+ * @return canceled() 函数
+ */
+fun initSearch(keyword: String, lastKeyword: MutableState<String>, token:MutableState<String>):()->Boolean {
+    //更新上个关键字
+    lastKeyword.value = keyword
+
+    //生成新token
+    val newToken = generateNewTokenForSearch()
+    token.value = newToken
+
+    //生成cancel函数并返回
+    return {
+        //如果ide有 "Unused equals expression "，无视，ide不知道这个state变化后value会变，而curToken不会变，所以这个表达式并非常量
+        newToken != token.value
+    }
+}
+
+fun generateNewTokenForSearch():String {
+    return generateRandomString(18)
+}
