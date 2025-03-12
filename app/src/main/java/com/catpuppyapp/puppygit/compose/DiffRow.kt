@@ -215,6 +215,9 @@ fun DiffRow (
 
     if(showEditLineDialog.value) {
         ConfirmDialogAndDisableSelection(
+            //禁用点击弹窗外部区域或按返回键关闭弹窗，这样可避免误操作而丢失正在编辑的数据
+            onDismiss = {},
+
             title = if(truePrependFalseAppendNullReplace.value == true) stringResource(R.string.insert) else if(truePrependFalseAppendNullReplace.value == false) stringResource(R.string.append) else stringResource(R.string.edit),
             requireShowTextCompose = true,
             textCompose = {
@@ -344,6 +347,8 @@ fun DiffRow (
 
     if(showRestoreLineDialog.value) {
         ConfirmDialogAndDisableSelection(
+            onDismiss = {},
+
             title = if(trueRestoreFalseReplace.value) stringResource(R.string.restore) else stringResource(R.string.replace),
             requireShowTextCompose = true,
             textCompose = {
