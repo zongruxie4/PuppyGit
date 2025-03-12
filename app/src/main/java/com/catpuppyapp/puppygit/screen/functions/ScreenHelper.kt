@@ -227,7 +227,7 @@ suspend fun initSearch(keyword: String, lastKeyword: MutableState<String>, token
     return {
         if(AppModel.devModeOn) {
             //若不相等，就是有bug，改用channel替换状态变量
-            MyLog.d(TAG, "token.value==tokenForThisSession is ${token.value==tokenForThisSession}: token.value=${token.value}, tokenForThisSession=$tokenForThisSession")
+            MyLog.d(TAG, "token.value==tokenForThisSession is '${token.value==tokenForThisSession}', if is false, may something wrong: token.value=${token.value}, tokenForThisSession=$tokenForThisSession")
         }
 
         //如果ide有 "Unused equals expression "，无视即可，ide不知道这个state变化后value会变，而curToken不会变，所以这个表达式并非常量
