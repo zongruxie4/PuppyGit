@@ -223,9 +223,7 @@ fun TreeToTreeChangeListScreen(
                 ),
                 title = {
                     if(changeListPageFilterModeOn.value) {
-                        FilterTextField(
-                            changeListPageFilterKeyWord,
-                        )
+                        FilterTextField(filterKeyWord = changeListPageFilterKeyWord)
                     }else{
                         val titleText = Libgit2Helper.getLeftToRightDiffCommitsText(commit1OidStrState.value, commit2OidStr, swap.value)
                         Column(modifier = Modifier

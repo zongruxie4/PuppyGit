@@ -86,7 +86,7 @@ fun <T> SelectedUnSelectedList(
                 val keyWordIsEmpty = filterKeyWord.value.text.isEmpty()
                 //普通的过滤，加不加清空无所谓，一按返回就清空了，但这个常驻显示，得加个清空按钮
                 FilterTextField(
-                    filterKeyWord,
+                    filterKeyWord = filterKeyWord,
                     trailingIconTooltipText = stringResource(R.string.clear),
                     trailingIcon = if(keyWordIsEmpty) null else Icons.Filled.Close,
                     trailingIconDesc = stringResource(R.string.clear),

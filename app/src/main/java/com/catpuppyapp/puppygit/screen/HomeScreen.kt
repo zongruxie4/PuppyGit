@@ -765,9 +765,7 @@ fun HomeScreen(
                         //TODO 把app标题放到抽屉里，最好再有个长方形的背景图
                         if(currentHomeScreen.intValue == Cons.selectedItem_Repos){
                             if(repoPageFilterModeOn.value) {
-                                FilterTextField(
-                                    repoPageFilterKeyWord,
-                                )
+                                FilterTextField(filterKeyWord = repoPageFilterKeyWord)
                             }else {
                                 ReposTitle(repoPageListState, scope, repoPageRepoList.value.size, reposLastPosition)
                             }
@@ -781,9 +779,7 @@ fun HomeScreen(
                             EditorTitle(editorPageShowingFileName.value, editorPageShowingFilePath,editorPageRequestFromParent, editorPageSearchMode.value, editorPageSearchKeyword, editorPageMergeMode.value, editorReadOnlyMode.value, editorOpenFileErr.value)
                         } else if (currentHomeScreen.intValue == Cons.selectedItem_ChangeList) {
                             if(changeListPageFilterModeOn.value) {
-                                FilterTextField(
-                                    changeListPageFilterKeyWord,
-                                )
+                                FilterTextField(filterKeyWord = changeListPageFilterKeyWord)
                             }else{
                                 ChangeListTitle(
                                     changeListCurRepo = changeListCurRepo,

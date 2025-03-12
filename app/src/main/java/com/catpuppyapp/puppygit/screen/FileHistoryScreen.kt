@@ -653,7 +653,7 @@ fun FileHistoryScreen(
                 title = {
                     if(filterModeOn_dontUseThisCheckFilterModeReallyEnabledOrNot.value) {
                         FilterTextField(
-                            filterKeyword,
+                            filterKeyWord = filterKeyword,
                             trailingIconTooltipText= stringResource(R.string.filter_by_paths),
                             trailingIcon = Icons.AutoMirrored.Filled.List,
                             trailingIconColor = UIHelper.getIconEnableColorOrNull(pathsForFilter.value.isNotEmpty()),

@@ -182,9 +182,7 @@ fun ErrorListScreen(
                 ),
                 title = {
                     if(filterModeOn.value) {
-                        FilterTextField(
-                            filterKeyword,
-                        )
+                        FilterTextField(filterKeyWord = filterKeyword)
                     }else {
                         Column(modifier = Modifier.combinedClickable(onDoubleClick = {
                             //能点这个必然没开过滤模式，必然是普通的listState，所以无需判断是否filterListState

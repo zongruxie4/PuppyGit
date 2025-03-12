@@ -298,9 +298,7 @@ fun ReflogListScreen(
                 ),
                 title = {
                     if(filterModeOn.value) {
-                        FilterTextField(
-                            filterKeyword,
-                        )
+                        FilterTextField(filterKeyWord = filterKeyword)
                     }else {
                         TitleDropDownMenu(
                             dropDownMenuExpendState = dropDownMenuExpendState,

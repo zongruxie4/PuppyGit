@@ -142,9 +142,7 @@ fun IndexScreen(
                 ),
                 title = {
                     if(changeListPageFilterModeOn.value) {
-                        FilterTextField(
-                            changeListPageFilterKeyWord,
-                        )
+                        FilterTextField(filterKeyWord = changeListPageFilterKeyWord)
                     }else {
                         IndexScreenTitle(changeListCurRepo, repoState, scope, changeListPageItemListState, lastPosition)
                     }

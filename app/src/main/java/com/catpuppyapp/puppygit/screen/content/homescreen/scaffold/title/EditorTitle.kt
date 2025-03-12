@@ -82,10 +82,7 @@ fun EditorTitle(
                 }
         ) {
             if(editorSearchMode) {
-                    FilterTextField(
-                        editorSearchKeyword,
-//                        modifier = Modifier, //避免默认的fillMaxWidth()导致显示不出箭头图标
-                    )
+                    FilterTextField(filterKeyWord = editorSearchKeyword)
             }else {
                 Row(modifier = Modifier.horizontalScroll(rememberScrollState()),
                     verticalAlignment = Alignment.CenterVertically

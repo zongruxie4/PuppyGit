@@ -511,9 +511,7 @@ fun TagListScreen(
                 ),
                 title = {
                     if(filterModeOn.value) {
-                        FilterTextField(
-                            filterKeyword,
-                        )
+                        FilterTextField(filterKeyWord = filterKeyword)
                     }else {
                         val repoAndBranch = Libgit2Helper.getRepoOnBranchOrOnDetachedHash(curRepo.value)
                         Column (modifier = Modifier.combinedClickable (

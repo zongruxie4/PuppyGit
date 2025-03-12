@@ -75,9 +75,7 @@ fun FilesTitle(
 //        )
 //    }
     if(filesPageSimpleFilterOn) {
-        FilterTextField(
-            filesPageSimpleFilterKeyWord,
-        )
+        FilterTextField(filterKeyWord = filesPageSimpleFilterKeyWord)
     } else {  //filesPageGetFilterMode()==0 , 搜索模式关闭
             //render page
         Column(

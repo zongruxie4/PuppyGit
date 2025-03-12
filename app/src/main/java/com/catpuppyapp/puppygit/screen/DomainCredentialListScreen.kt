@@ -355,9 +355,7 @@ fun DomainCredentialListScreen(
                 ),
                 title = {
                     if(filterModeOn.value) {
-                        FilterTextField(
-                            filterKeyword,
-                        )
+                        FilterTextField(filterKeyWord = filterKeyword)
                     }else{
                         Column(modifier = Modifier.combinedClickable(onDoubleClick = {
                             defaultTitleDoubleClick(scope, listState, lastPosition)

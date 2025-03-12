@@ -658,9 +658,7 @@ fun RemoteListScreen(
                 ),
                 title = {
                     if(filterModeOn.value) {
-                        FilterTextField(
-                            filterKeyword,
-                        )
+                        FilterTextField(filterKeyWord = filterKeyword)
                     }else {
                         val repoName = curRepo.value.repoName
                         Column (modifier = Modifier.combinedClickable(onDoubleClick = {
