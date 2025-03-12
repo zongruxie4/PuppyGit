@@ -84,6 +84,8 @@ fun <T> SelectedUnSelectedList(
             ) {
 
                 val keyWordIsEmpty = filterKeyWord.value.text.isEmpty()
+
+                //注意：这个过滤没开协程，直接在渲染线程过滤的，目前这个组件用来过滤仓库，我估计用户不会克隆超过100个仓库，性能损耗很小，没必要开协程处理
                 //普通的过滤，加不加清空无所谓，一按返回就清空了，但这个常驻显示，得加个清空按钮
                 FilterTextField(
                     filterKeyWord = filterKeyWord,
