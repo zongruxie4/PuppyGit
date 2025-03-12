@@ -94,9 +94,11 @@ import com.catpuppyapp.puppygit.git.StatusTypeEntrySaver
 import com.catpuppyapp.puppygit.git.Upstream
 import com.catpuppyapp.puppygit.play.pro.R
 import com.catpuppyapp.puppygit.screen.functions.ChangeListFunctions
+import com.catpuppyapp.puppygit.screen.functions.initSearch
 import com.catpuppyapp.puppygit.screen.functions.maybeIsGoodKeyword
 import com.catpuppyapp.puppygit.screen.functions.naviToFileHistoryByRelativePath
 import com.catpuppyapp.puppygit.screen.functions.openFileWithInnerSubPageEditor
+import com.catpuppyapp.puppygit.screen.functions.search
 import com.catpuppyapp.puppygit.screen.shared.DiffFromScreen
 import com.catpuppyapp.puppygit.screen.shared.SharedState
 import com.catpuppyapp.puppygit.settings.SettingsUtil
@@ -134,6 +136,11 @@ private const val stateKeyTag = "ChangeListInnerPage"
 
 @Composable
 fun ChangeListInnerPage(
+    lastSearchKeyword:MutableState<String>,
+    searchToken:MutableState<String>,
+    searching:MutableState<Boolean>,
+    resetSearchVars:()->Unit,
+
     contentPadding: PaddingValues,
     fromTo: String,
     curRepoFromParentPage: CustomStateSaveable<RepoEntity>,
@@ -2753,20 +2760,29 @@ fun ChangeListInnerPage(
                 val k = changeListPageFilterKeyWord.value.text.lowercase()  //关键字
                 val enableFilter = changeListPageFilterModeOn.value && maybeIsGoodKeyword(k)
                 val itemListOrFilterList = if(enableFilter){
-                    val fl = itemList.value.filter {
-                        it.fileName.lowercase().contains(k)
-                                || it.relativePathUnderRepo.lowercase().contains(k)
-                                || it.getSizeStr().lowercase().contains(k)
-                                || it.getChangeTypeAndSuffix(isDiffToLocal).lowercase().contains(k)
-                                || it.getItemTypeString().lowercase().contains(k)
-                                || it.changeType?.lowercase()?.contains(k) == true
+                    if(k != lastSearchKeyword.value) {
+                        doJobThenOffLoading(loadingOff = {searching.value = false}) {
+                            val canceled = initSearch(keyword = k, lastKeyword = lastSearchKeyword, token = searchToken)
+
+                            val match = { idx:Int, it: StatusTypeEntrySaver ->
+                                it.fileName.lowercase().contains(k)
+                                        || it.relativePathUnderRepo.lowercase().contains(k)
+                                        || it.getSizeStr().lowercase().contains(k)
+                                        || it.getChangeTypeAndSuffix(isDiffToLocal).lowercase().contains(k)
+                                        || it.getItemTypeString().lowercase().contains(k)
+                            }
+
+                            searching.value = true
+
+
+                            filterList.value.clear()
+                            search(src = itemList.value, target = filterList.value, match = match, canceled = canceled)
+                        }
                     }
 
-                    filterList.value.clear()
-                    filterList.value.addAll(fl)
-
-                    fl
+                    filterList.value
                 }else {
+                    resetSearchVars()
                     itemList.value
                 }
 

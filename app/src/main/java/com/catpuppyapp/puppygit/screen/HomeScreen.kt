@@ -196,6 +196,29 @@ fun HomeScreen(
     val repoPageGoToId = rememberSaveable { mutableStateOf("") }
 
 
+    // start: search states
+    val reposLastSearchKeyword = rememberSaveable { mutableStateOf("") }
+    val reposSearchToken = rememberSaveable { mutableStateOf("") }
+    val reposSearching = rememberSaveable { mutableStateOf(false) }
+    val resetReposSearchVars = {
+        reposSearching.value = false
+        reposSearchToken.value = ""
+        reposLastSearchKeyword.value = ""
+    }
+    // end: search states
+
+    // start: search states
+    val changeListLastSearchKeyword = rememberSaveable { mutableStateOf("") }
+    val changeListSearchToken = rememberSaveable { mutableStateOf("") }
+    val changeListSearching = rememberSaveable { mutableStateOf(false) }
+    val resetChangeListSearchVars = {
+        changeListSearching.value = false
+        changeListSearchToken.value = ""
+        changeListLastSearchKeyword.value = ""
+    }
+    // end: search states
+
+
     val subscriptionPageNeedRefresh = rememberSaveable { mutableStateOf("") }
     val needRefreshHome = rememberSaveable { mutableStateOf("") }
 
@@ -771,7 +794,7 @@ fun HomeScreen(
                         //TODO 把app标题放到抽屉里，最好再有个长方形的背景图
                         if(currentHomeScreen.intValue == Cons.selectedItem_Repos){
                             if(repoPageFilterModeOn.value) {
-                                FilterTextField(filterKeyWord = repoPageFilterKeyWord)
+                                FilterTextField(filterKeyWord = repoPageFilterKeyWord, loading = reposSearching.value)
                             }else {
                                 ReposTitle(
                                     listState = repoPageListState,
@@ -809,7 +832,7 @@ fun HomeScreen(
                             )
                         } else if (currentHomeScreen.intValue == Cons.selectedItem_ChangeList) {
                             if(changeListPageFilterModeOn.value) {
-                                FilterTextField(filterKeyWord = changeListPageFilterKeyWord)
+                                FilterTextField(filterKeyWord = changeListPageFilterKeyWord, loading = changeListSearching.value)
                             }else{
                                 ChangeListTitle(
                                     changeListCurRepo = changeListCurRepo,
@@ -859,6 +882,7 @@ fun HomeScreen(
                                 iconContentDesc = stringResource(R.string.close),
 
                             ) {
+                                resetChangeListSearchVars()
                                 changeListPageFilterModeOn.value=false
                             }
                         }else if(currentHomeScreen.intValue == Cons.selectedItem_Repos && repoPageFilterModeOn.value){
@@ -868,6 +892,7 @@ fun HomeScreen(
                                 iconContentDesc = stringResource(R.string.close),
 
                             ) {
+                                resetReposSearchVars()
                                 repoPageFilterModeOn.value=false
                             }
                         }else if(currentHomeScreen.intValue == Cons.selectedItem_Editor
@@ -1047,6 +1072,10 @@ fun HomeScreen(
             if(currentHomeScreen.intValue == Cons.selectedItem_Repos) {
 //                changeStateTriggerRefreshPage(needRefreshRepoPage)
                 RepoInnerPage(
+                    lastSearchKeyword=reposLastSearchKeyword,
+                    searchToken=reposSearchToken,
+                    searching=reposSearching,
+                    resetSearchVars=resetReposSearchVars,
                     showBottomSheet = showBottomSheet,
                     sheetState = sheetState,
                     curRepo = repoPageCurRepo,
@@ -1189,20 +1218,25 @@ fun HomeScreen(
 
                 //从抽屉菜单打开的changelist是对比worktree和index的文件，所以from是worktree
                 ChangeListInnerPage(
-                    contentPadding,
-                    fromTo = changeListPageFromTo,
-                    changeListCurRepo,
-                    changeListIsFileSelectionMode,
+                    lastSearchKeyword=changeListLastSearchKeyword,
+                    searchToken=changeListSearchToken,
+                    searching=changeListSearching,
+                    resetSearchVars=resetChangeListSearchVars,
 
-                    changeListRefreshRequiredByParentPage.value,
-                    changeListRequireRefreshFromParentPage,
-                    changeListHasIndexItems,
+                    contentPadding = contentPadding,
+                    fromTo = changeListPageFromTo,
+                    curRepoFromParentPage = changeListCurRepo,
+                    isFileSelectionMode = changeListIsFileSelectionMode,
+
+                    refreshRequiredByParentPage = changeListRefreshRequiredByParentPage.value,
+                    changeListRequireRefreshFromParentPage = changeListRequireRefreshFromParentPage,
+                    changeListPageHasIndexItem = changeListHasIndexItems,
 //                    requirePullFromParentPage = changeListRequirePull,
 //                    requirePushFromParentPage = changeListRequirePush,
-                    changeListRequireDoActFromParent,
-                    changeListRequireDoActFromParentShowTextWhenDoingAct,
-                    changeListEnableAction,
-                    changeListCurRepoState,
+                    requireDoActFromParent = changeListRequireDoActFromParent,
+                    requireDoActFromParentShowTextWhenDoingAct = changeListRequireDoActFromParentShowTextWhenDoingAct,
+                    enableActionFromParent = changeListEnableAction,
+                    repoState = changeListCurRepoState,
                     naviUp = {},  //主页来的，不用naviUp只用exitApp，所以这里随便填就行
                     itemList = changeListPageItemList,
                     itemListState = changeListPageItemListState,

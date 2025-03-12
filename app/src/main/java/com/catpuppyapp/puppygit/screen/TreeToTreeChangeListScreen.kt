@@ -213,6 +213,18 @@ fun TreeToTreeChangeListScreen(
     val filterLastPosition = rememberSaveable { mutableStateOf(0) }
     val lastPosition = rememberSaveable { mutableStateOf(0) }
 
+    // start: search states
+    val changeListLastSearchKeyword = rememberSaveable { mutableStateOf("") }
+    val changeListSearchToken = rememberSaveable { mutableStateOf("") }
+    val changeListSearching = rememberSaveable { mutableStateOf(false) }
+    val resetChangeListSearchVars = {
+        changeListSearching.value = false
+        changeListSearchToken.value = ""
+        changeListLastSearchKeyword.value = ""
+    }
+    // end: search states
+
+
     Scaffold(
         modifier = Modifier.nestedScroll(homeTopBarScrollBehavior.nestedScrollConnection),
         topBar = {
@@ -223,7 +235,7 @@ fun TreeToTreeChangeListScreen(
                 ),
                 title = {
                     if(changeListPageFilterModeOn.value) {
-                        FilterTextField(filterKeyWord = changeListPageFilterKeyWord)
+                        FilterTextField(filterKeyWord = changeListPageFilterKeyWord, loading = changeListSearching.value)
                     }else{
                         val titleText = Libgit2Helper.getLeftToRightDiffCommitsText(commit1OidStrState.value, commit2OidStr, swap.value)
                         Column(modifier = Modifier
@@ -297,6 +309,8 @@ fun TreeToTreeChangeListScreen(
                             iconContentDesc = stringResource(R.string.close),
 
                         ) {
+                            resetChangeListSearchVars()
+
                             changeListPageFilterModeOn.value = false
                         }
                     }else{
@@ -384,19 +398,24 @@ fun TreeToTreeChangeListScreen(
         }
     ) { contentPadding ->
         ChangeListInnerPage(
-            contentPadding,
-            fromTo,
-            changeListCurRepo,
-            changeListIsFileSelectionMode,
-            changeListRefreshRequiredByParentPage.value,
-            changeListRequireRefreshFromParentPage,
-            changeListPageHasIndexItem,
+            lastSearchKeyword=changeListLastSearchKeyword,
+            searchToken=changeListSearchToken,
+            searching=changeListSearching,
+            resetSearchVars=resetChangeListSearchVars,
+
+            contentPadding = contentPadding,
+            fromTo = fromTo,
+            curRepoFromParentPage = changeListCurRepo,
+            isFileSelectionMode = changeListIsFileSelectionMode,
+            refreshRequiredByParentPage = changeListRefreshRequiredByParentPage.value,
+            changeListRequireRefreshFromParentPage = changeListRequireRefreshFromParentPage,
+            changeListPageHasIndexItem = changeListPageHasIndexItem,
 //                requirePullFromParentPage = changeListRequirePull,
 //                requirePushFromParentPage = changeListRequirePush,
-            requireDoActFromParent,
-            requireDoActFromParentShowTextWhenDoingAct,
-            enableAction,
-            repoState,
+            requireDoActFromParent = requireDoActFromParent,
+            requireDoActFromParentShowTextWhenDoingAct = requireDoActFromParentShowTextWhenDoingAct,
+            enableActionFromParent = enableAction,
+            repoState = repoState,
             naviUp=naviUp,
             itemList = changeListPageItemList,
             itemListState = changeListPageItemListState,

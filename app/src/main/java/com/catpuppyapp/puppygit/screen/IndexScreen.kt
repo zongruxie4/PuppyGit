@@ -93,6 +93,17 @@ fun IndexScreen(
     )
     val changeListPageFilterModeOn = rememberSaveable { mutableStateOf(false)}
 
+    // start: search states
+    val changeListLastSearchKeyword = rememberSaveable { mutableStateOf("") }
+    val changeListSearchToken = rememberSaveable { mutableStateOf("") }
+    val changeListSearching = rememberSaveable { mutableStateOf(false) }
+    val resetChangeListSearchVars = {
+        changeListSearching.value = false
+        changeListSearchToken.value = ""
+        changeListLastSearchKeyword.value = ""
+    }
+    // end: search states
+
 //    val changelistFilterListState = mutableCustomStateOf(keyTag = stateKeyTag, keyName = "changelistFilterListState", LazyListState(0,0))
     val changelistFilterListState = rememberLazyListState()
 
@@ -142,7 +153,7 @@ fun IndexScreen(
                 ),
                 title = {
                     if(changeListPageFilterModeOn.value) {
-                        FilterTextField(filterKeyWord = changeListPageFilterKeyWord)
+                        FilterTextField(filterKeyWord = changeListPageFilterKeyWord, loading = changeListSearching.value)
                     }else {
                         IndexScreenTitle(changeListCurRepo, repoState, scope, changeListPageItemListState, lastPosition)
                     }
@@ -155,6 +166,7 @@ fun IndexScreen(
                             iconContentDesc = stringResource(R.string.close),
 
                         ) {
+                            resetChangeListSearchVars()
                             changeListPageFilterModeOn.value = false
                         }
                     }else {
@@ -215,20 +227,25 @@ fun IndexScreen(
 //        val commitParentList = remember { mutableStateListOf<String>() }
 
         ChangeListInnerPage(
-            contentPadding,
-            fromTo,
-            changeListCurRepo,
-            changeListIsFileSelectionMode,
+            lastSearchKeyword=changeListLastSearchKeyword,
+            searchToken=changeListSearchToken,
+            searching=changeListSearching,
+            resetSearchVars=resetChangeListSearchVars,
 
-            changeListRefreshRequiredByParentPage.value,
-            changeListRequireRefreshFromParentPage,
-            changeListPageHasIndexItem,
+            contentPadding = contentPadding,
+            fromTo = fromTo,
+            curRepoFromParentPage = changeListCurRepo,
+            isFileSelectionMode = changeListIsFileSelectionMode,
+
+            refreshRequiredByParentPage = changeListRefreshRequiredByParentPage.value,
+            changeListRequireRefreshFromParentPage = changeListRequireRefreshFromParentPage,
+            changeListPageHasIndexItem = changeListPageHasIndexItem,
 //                requirePullFromParentPage = changeListRequirePull,
 //                requirePushFromParentPage = changeListRequirePush,
-            requireDoActFromParent,
-            requireDoActFromParentShowTextWhenDoingAct,
-            enableAction,
-            repoState,
+            requireDoActFromParent = requireDoActFromParent,
+            requireDoActFromParentShowTextWhenDoingAct = requireDoActFromParentShowTextWhenDoingAct,
+            enableActionFromParent = enableAction,
+            repoState = repoState,
             naviUp=naviUp,
             itemList = changeListPageItemList,
             itemListState = changeListPageItemListState,

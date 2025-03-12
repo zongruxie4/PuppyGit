@@ -1,6 +1,5 @@
 package com.catpuppyapp.puppygit.screen.content.homescreen.innerpage
 
-import android.content.Context
 import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
@@ -84,7 +83,9 @@ import com.catpuppyapp.puppygit.etc.RepoPendingTask
 import com.catpuppyapp.puppygit.etc.Ret
 import com.catpuppyapp.puppygit.git.Upstream
 import com.catpuppyapp.puppygit.play.pro.R
+import com.catpuppyapp.puppygit.screen.functions.initSearch
 import com.catpuppyapp.puppygit.screen.functions.maybeIsGoodKeyword
+import com.catpuppyapp.puppygit.screen.functions.search
 import com.catpuppyapp.puppygit.server.bean.ConfigBean
 import com.catpuppyapp.puppygit.settings.AppSettings
 import com.catpuppyapp.puppygit.settings.SettingsUtil
@@ -126,6 +127,11 @@ private const val stateKeyTag = "RepoInnerPage"
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun RepoInnerPage(
+    lastSearchKeyword:MutableState<String>,
+    searchToken:MutableState<String>,
+    searching:MutableState<Boolean>,
+    resetSearchVars:()->Unit,
+
     showBottomSheet: MutableState<Boolean>,
     sheetState: SheetState,
     curRepo: CustomStateSaveable<RepoEntity>,
@@ -1913,28 +1919,41 @@ fun RepoInnerPage(
         val k = repoPageFilterKeyWord.value.text.lowercase()  //关键字
         val enableFilter = repoPageFilterModeOn.value && maybeIsGoodKeyword(k)
         val filteredListTmp = if(enableFilter){
-            val tmpList = repoList.value.filter {
-                it.repoName.lowercase().contains(k)
+            if(k != lastSearchKeyword.value) {
+                doJobThenOffLoading(loadingOff = {searching.value = false}) {
+                    val canceled = initSearch(keyword = k, lastKeyword = lastSearchKeyword, token = searchToken)
+
+                    val match = { idx:Int, it: RepoEntity ->
+                        it.repoName.lowercase().contains(k)
 //                        || it.branch.lowercase().contains(k)
-                        || it.gitRepoState.toString().lowercase().contains(k)
+                                || it.gitRepoState.toString().lowercase().contains(k)
 //                        || it.cloneUrl.lowercase().contains(k)
 //                        || it.lastCommitHash.lowercase().contains(k)
-                        || it.latestUncheckedErrMsg.lowercase().contains(k)
+                                || it.latestUncheckedErrMsg.lowercase().contains(k)
 //                        || it.pullRemoteName.lowercase().contains(k)
 //                        || it.pushRemoteName.lowercase().contains(k)
 //                        || it.pullRemoteUrl.lowercase().contains(k)
 //                        || it.pushRemoteUrl.lowercase().contains(k)
-                        || it.tmpStatus.lowercase().contains(k)
+                                || it.tmpStatus.lowercase().contains(k)
 //                        || it.upstreamBranch.lowercase().contains(k)
-                        || it.createErrMsg.lowercase().contains(k)
+                                || it.createErrMsg.lowercase().contains(k)
 //                        || it.fullSavePath.lowercase().contains(k)
-                        || it.parentRepoName.lowercase().contains(k)
-                        || it.getOther().lowercase().contains(k)
+                                || it.parentRepoName.lowercase().contains(k)
+                                || it.getOther().lowercase().contains(k)
+
+                    }
+
+                    searching.value = true
+
+
+                    filterList.value.clear()
+                    search(src = repoList.value, target = filterList.value, match = match, canceled = canceled)
+                }
             }
-            filterList.value.clear()
-            filterList.value.addAll(tmpList)
-            tmpList
+
+            filterList.value
         }else {
+            resetSearchVars()
             repoList.value
         }
 
