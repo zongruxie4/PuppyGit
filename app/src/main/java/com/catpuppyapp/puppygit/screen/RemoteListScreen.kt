@@ -69,7 +69,9 @@ import com.catpuppyapp.puppygit.dev.shallowAndSingleBranchTestPassed
 import com.catpuppyapp.puppygit.dto.RemoteDto
 import com.catpuppyapp.puppygit.play.pro.R
 import com.catpuppyapp.puppygit.screen.functions.defaultTitleDoubleClick
+import com.catpuppyapp.puppygit.screen.functions.initSearch
 import com.catpuppyapp.puppygit.screen.functions.maybeIsGoodKeyword
+import com.catpuppyapp.puppygit.screen.functions.search
 import com.catpuppyapp.puppygit.settings.SettingsUtil
 import com.catpuppyapp.puppygit.style.MyStyleKt
 import com.catpuppyapp.puppygit.user.UserUtil
@@ -111,11 +113,8 @@ fun RemoteListScreen(
 
     //获取假数据
 //    val list = MockData.getErrorList(repoId,1,100);
-    val list = mutableCustomStateListOf(
-        keyTag = stateKeyTag,
-        keyName = "list",
-        initValue = listOf<RemoteDto>()
-    )
+    val list = mutableCustomStateListOf(keyTag = stateKeyTag, keyName = "list", initValue = listOf<RemoteDto>())
+    val filterList = mutableCustomStateListOf(keyTag = stateKeyTag, keyName = "filterList", initValue = listOf<RemoteDto>())
 
 //
 //    SideEffect {
@@ -596,6 +595,17 @@ fun RemoteListScreen(
     )
     val filterModeOn = rememberSaveable { mutableStateOf(false)}
 
+    // start: search states
+    val lastKeyword = rememberSaveable { mutableStateOf("") }
+    val token = rememberSaveable { mutableStateOf("") }
+    val searching = rememberSaveable { mutableStateOf(false) }
+    val resetSearchVars = {
+        searching.value = false
+        token.value = ""
+        lastKeyword.value = ""
+    }
+    // end: search states
+
 
     // 向下滚动监听，开始
     val pageScrolled = rememberSaveable { mutableStateOf(settings.showNaviButtons) }
@@ -658,7 +668,7 @@ fun RemoteListScreen(
                 ),
                 title = {
                     if(filterModeOn.value) {
-                        FilterTextField(filterKeyWord = filterKeyword)
+                        FilterTextField(filterKeyWord = filterKeyword, loading = searching.value)
                     }else {
                         val repoName = curRepo.value.repoName
                         Column (modifier = Modifier.combinedClickable(onDoubleClick = {
@@ -690,7 +700,9 @@ fun RemoteListScreen(
                             icon = Icons.Filled.Close,
                             iconContentDesc = stringResource(R.string.close),
 
-                            ) {
+                        ) {
+                            resetSearchVars()
+
                             filterModeOn.value = false
                         }
                     }else{
@@ -849,15 +861,30 @@ fun RemoteListScreen(
             val k = filterKeyword.value.text.lowercase()  //关键字
             val enableFilter = filterModeOn.value && maybeIsGoodKeyword(k)
             val list = if(enableFilter){
-                list.value.filter {
-                    it.remoteName.lowercase().contains(k)
-                            || it.remoteUrl.lowercase().contains(k)
-                            || it.pushUrl.lowercase().contains(k)
-                            || it.credentialName?.lowercase()?.contains(k) == true
-                            || it.pushCredentialName?.lowercase()?.contains(k) == true
-                            || it.branchListForFetch.toString().lowercase().contains(k)
+                if(k != lastKeyword.value) {
+                    doJobThenOffLoading(loadingOff = {searching.value = false}) {
+                        val canceled = initSearch(keyword = k, lastKeyword = lastKeyword, token = token)
+
+                        val match = { idx:Int, it: RemoteDto ->
+                            it.remoteName.lowercase().contains(k)
+                                    || it.remoteUrl.lowercase().contains(k)
+                                    || it.pushUrl.lowercase().contains(k)
+                                    || it.credentialName?.lowercase()?.contains(k) == true
+                                    || it.pushCredentialName?.lowercase()?.contains(k) == true
+                                    || it.branchListForFetch.toString().lowercase().contains(k)
+                        }
+
+                        searching.value = true
+
+
+                        filterList.value.clear()
+                        search(src = list.value, target = filterList.value, match = match, canceled = canceled)
+                    }
                 }
+
+                filterList.value
             }else {
+                resetSearchVars()
                 list.value
             }
             val listState = if(enableFilter) filterListState else lazyListState

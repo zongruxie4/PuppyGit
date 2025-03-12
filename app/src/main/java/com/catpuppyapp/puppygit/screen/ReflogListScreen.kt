@@ -51,7 +51,9 @@ import com.catpuppyapp.puppygit.dev.proFeatureEnabled
 import com.catpuppyapp.puppygit.dev.resetByHashTestPassed
 import com.catpuppyapp.puppygit.git.ReflogEntryDto
 import com.catpuppyapp.puppygit.play.pro.R
+import com.catpuppyapp.puppygit.screen.functions.initSearch
 import com.catpuppyapp.puppygit.screen.functions.maybeIsGoodKeyword
+import com.catpuppyapp.puppygit.screen.functions.search
 import com.catpuppyapp.puppygit.settings.SettingsUtil
 import com.catpuppyapp.puppygit.style.MyStyleKt
 import com.catpuppyapp.puppygit.ui.theme.Theme
@@ -143,6 +145,17 @@ fun ReflogListScreen(
         initValue = TextFieldValue("")
     )
     val filterModeOn = rememberSaveable { mutableStateOf(false)}
+
+    // start: search states
+    val lastKeyword = rememberSaveable { mutableStateOf("") }
+    val token = rememberSaveable { mutableStateOf("") }
+    val searching = rememberSaveable { mutableStateOf(false) }
+    val resetSearchVars = {
+        searching.value = false
+        token.value = ""
+        lastKeyword.value = ""
+    }
+    // end: search states
 
 
     // 向下滚动监听，开始
@@ -298,7 +311,7 @@ fun ReflogListScreen(
                 ),
                 title = {
                     if(filterModeOn.value) {
-                        FilterTextField(filterKeyWord = filterKeyword)
+                        FilterTextField(filterKeyWord = filterKeyword, loading = searching.value)
                     }else {
                         TitleDropDownMenu(
                             dropDownMenuExpendState = dropDownMenuExpendState,
@@ -322,6 +335,8 @@ fun ReflogListScreen(
                             iconContentDesc = stringResource(R.string.close),
 
                         ) {
+                            resetSearchVars()
+
                             filterModeOn.value = false
                         }
                     }else {
@@ -424,19 +439,31 @@ fun ReflogListScreen(
         val k = filterKeyword.value.text.lowercase()  //关键字
         val enableFilter = filterModeOn.value && maybeIsGoodKeyword(k)
         val list = if(enableFilter){
-            val fl = list.value.filter {
-                it.username.lowercase().contains(k)
-                        || it.email.lowercase().contains(k)
-                        || it.date.lowercase().contains(k)
-                        || it.msg.lowercase().contains(k)
-                        || it.idNew.toString().lowercase().contains(k)
-                        || it.idOld.toString().lowercase().contains(k)
-                        || formatMinutesToUtc(it.originTimeZoneOffsetInMinutes).lowercase().contains(k)
+            if(k != lastKeyword.value) {
+                doJobThenOffLoading(loadingOff = {searching.value = false}) {
+                    val canceled = initSearch(keyword = k, lastKeyword = lastKeyword, token = token)
+
+                    val match = { idx:Int, it: ReflogEntryDto ->
+                        it.username.lowercase().contains(k)
+                                || it.email.lowercase().contains(k)
+                                || it.date.lowercase().contains(k)
+                                || it.msg.lowercase().contains(k)
+                                || it.idNew.toString().lowercase().contains(k)
+                                || it.idOld.toString().lowercase().contains(k)
+                                || formatMinutesToUtc(it.originTimeZoneOffsetInMinutes).lowercase().contains(k)
+                    }
+
+                    searching.value = true
+
+
+                    filterList.value.clear()
+                    search(src = list.value, target = filterList.value, match = match, canceled = canceled)
+                }
             }
-            filterList.value.clear()
-            filterList.value.addAll(fl)
-            fl
+
+            filterList.value
         }else {
+            resetSearchVars()
             list.value
         }
 

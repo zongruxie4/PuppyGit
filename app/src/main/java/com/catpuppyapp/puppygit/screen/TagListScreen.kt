@@ -71,7 +71,9 @@ import com.catpuppyapp.puppygit.git.TagDto
 import com.catpuppyapp.puppygit.play.pro.R
 import com.catpuppyapp.puppygit.screen.functions.defaultTitleDoubleClick
 import com.catpuppyapp.puppygit.screen.functions.fromTagToCommitHistory
+import com.catpuppyapp.puppygit.screen.functions.initSearch
 import com.catpuppyapp.puppygit.screen.functions.maybeIsGoodKeyword
+import com.catpuppyapp.puppygit.screen.functions.search
 import com.catpuppyapp.puppygit.settings.SettingsUtil
 import com.catpuppyapp.puppygit.style.MyStyleKt
 import com.catpuppyapp.puppygit.ui.theme.Theme
@@ -303,6 +305,17 @@ fun TagListScreen(
     )
     val filterModeOn = rememberSaveable { mutableStateOf(false) }
 
+    // start: search states
+    val lastKeyword = rememberSaveable { mutableStateOf("") }
+    val token = rememberSaveable { mutableStateOf("") }
+    val searching = rememberSaveable { mutableStateOf(false) }
+    val resetSearchVars = {
+        searching.value = false
+        token.value = ""
+        lastKeyword.value = ""
+    }
+    // end: search states
+
 
     val showTagFetchPushDialog = rememberSaveable { mutableStateOf(false) }
     val showForce = rememberSaveable { mutableStateOf( false) }
@@ -511,7 +524,7 @@ fun TagListScreen(
                 ),
                 title = {
                     if(filterModeOn.value) {
-                        FilterTextField(filterKeyWord = filterKeyword)
+                        FilterTextField(filterKeyWord = filterKeyword, loading = searching.value)
                     }else {
                         val repoAndBranch = Libgit2Helper.getRepoOnBranchOrOnDetachedHash(curRepo.value)
                         Column (modifier = Modifier.combinedClickable (
@@ -547,6 +560,8 @@ fun TagListScreen(
                             iconContentDesc = stringResource(R.string.close),
 
                         ) {
+                            resetSearchVars()
+
                             filterModeOn.value = false
                         }
                     }else {
@@ -679,23 +694,35 @@ fun TagListScreen(
             val k = filterKeyword.value.text.lowercase()  //关键字
             val enableFilter = filterModeOn.value && maybeIsGoodKeyword(k)
             val list = if(enableFilter){
-                val fl = list.value.filter {
-                    it.shortName.lowercase().contains(k)
-                            || it.name.lowercase().contains(k)
-                            || it.msg.lowercase().contains(k)
-                            || it.targetFullOidStr.lowercase().contains(k)
-                            || it.taggerName.lowercase().contains(k)
-                            || it.taggerEmail.lowercase().contains(k)
-                            || it.fullOidStr.lowercase().contains(k)  // annotated tag对象的oid；非annotated tag此值和targetFullOidStr一样
-                            || it.getType(activityContext, false).lowercase().contains(k)
-                            || it.getType(activityContext, true).lowercase().contains(k)
-                            || formatMinutesToUtc(it.originTimeOffsetInMinutes).lowercase().contains(k)
+
+                if(k != lastKeyword.value) {
+                    doJobThenOffLoading(loadingOff = {searching.value = false}) {
+                        val canceled = initSearch(keyword = k, lastKeyword = lastKeyword, token = token)
+
+                        val match = { idx:Int, it: TagDto ->
+                            it.shortName.lowercase().contains(k)
+                                    || it.name.lowercase().contains(k)
+                                    || it.msg.lowercase().contains(k)
+                                    || it.targetFullOidStr.lowercase().contains(k)
+                                    || it.taggerName.lowercase().contains(k)
+                                    || it.taggerEmail.lowercase().contains(k)
+                                    || it.fullOidStr.lowercase().contains(k)  // annotated tag对象的oid；非annotated tag此值和targetFullOidStr一样
+                                    || it.getType(activityContext, false).lowercase().contains(k)
+                                    || it.getType(activityContext, true).lowercase().contains(k)
+                                    || formatMinutesToUtc(it.originTimeOffsetInMinutes).lowercase().contains(k)
+                        }
+
+                        searching.value = true
+
+
+                        filterList.value.clear()
+                        search(src = list.value, target = filterList.value, match = match, canceled = canceled)
+                    }
                 }
 
-                filterList.value.clear()
-                filterList.value.addAll(fl)
-                fl
+                filterList.value
             }else {
+                resetSearchVars()
                 list.value
             }
 

@@ -58,7 +58,9 @@ import com.catpuppyapp.puppygit.data.entity.RepoEntity
 import com.catpuppyapp.puppygit.git.StashDto
 import com.catpuppyapp.puppygit.play.pro.R
 import com.catpuppyapp.puppygit.screen.functions.defaultTitleDoubleClick
+import com.catpuppyapp.puppygit.screen.functions.initSearch
 import com.catpuppyapp.puppygit.screen.functions.maybeIsGoodKeyword
+import com.catpuppyapp.puppygit.screen.functions.search
 import com.catpuppyapp.puppygit.settings.SettingsUtil
 import com.catpuppyapp.puppygit.style.MyStyleKt
 import com.catpuppyapp.puppygit.ui.theme.Theme
@@ -93,6 +95,7 @@ fun StashListScreen(
 
     //获取假数据
     val list = mutableCustomStateListOf(keyTag = stateKeyTag, keyName = "list", initValue = listOf<StashDto>())
+    val filterList = mutableCustomStateListOf(keyTag = stateKeyTag, keyName = "filterList", initValue = listOf<StashDto>())
 
 
     //这个页面的滚动状态不用记住，每次点开重置也无所谓
@@ -127,6 +130,17 @@ fun StashListScreen(
     )
     val filterModeOn = rememberSaveable { mutableStateOf(false)}
     //filter相关，结束
+
+    // start: search states
+    val lastKeyword = rememberSaveable { mutableStateOf("") }
+    val token = rememberSaveable { mutableStateOf("") }
+    val searching = rememberSaveable { mutableStateOf(false) }
+    val resetSearchVars = {
+        searching.value = false
+        token.value = ""
+        lastKeyword.value = ""
+    }
+    // end: search states
 
     // 向下滚动监听，开始
     val pageScrolled = rememberSaveable { mutableStateOf(settings.showNaviButtons) }
@@ -359,7 +373,7 @@ fun StashListScreen(
                 ),
                 title = {
                     if(filterModeOn.value) {
-                        FilterTextField(filterKeyWord = filterKeyword)
+                        FilterTextField(filterKeyWord = filterKeyword, loading = searching.value)
                     }else {
                         val repoAndBranch = Libgit2Helper.getRepoOnBranchOrOnDetachedHash(curRepo.value)
                         Column (modifier = Modifier.combinedClickable (
@@ -396,6 +410,8 @@ fun StashListScreen(
                             iconContentDesc = stringResource(R.string.close),
 
                         ) {
+                            resetSearchVars()
+
                             filterModeOn.value = false
                         }
                     }else {
@@ -495,12 +511,29 @@ fun StashListScreen(
         val k = filterKeyword.value.text.lowercase()  //关键字
         val enableFilter = filterModeOn.value && maybeIsGoodKeyword(k)
         val list = if(enableFilter){
-            list.value.filter {
-                it.index.toString().lowercase().contains(k)
-                    || it.stashId.toString().lowercase().contains(k)
-                    || it.msg.lowercase().contains(k)
+
+            if(k != lastKeyword.value) {
+                doJobThenOffLoading(loadingOff = {searching.value = false}) {
+                    val canceled = initSearch(keyword = k, lastKeyword = lastKeyword, token = token)
+
+                    val match = { idx:Int, it: StashDto ->
+                        it.index.toString().lowercase().contains(k)
+                                || it.stashId.toString().lowercase().contains(k)
+                                || it.msg.lowercase().contains(k)
+                    }
+
+                    searching.value = true
+
+
+                    filterList.value.clear()
+                    search(src = list.value, target = filterList.value, match = match, canceled = canceled)
+                }
             }
+
+            filterList.value
+
         }else {
+            resetSearchVars()
             list.value
         }
 

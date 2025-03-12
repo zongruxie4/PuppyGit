@@ -79,7 +79,9 @@ import com.catpuppyapp.puppygit.git.ImportRepoResult
 import com.catpuppyapp.puppygit.git.SubmoduleDto
 import com.catpuppyapp.puppygit.play.pro.R
 import com.catpuppyapp.puppygit.screen.functions.defaultTitleDoubleClick
+import com.catpuppyapp.puppygit.screen.functions.initSearch
 import com.catpuppyapp.puppygit.screen.functions.maybeIsGoodKeyword
+import com.catpuppyapp.puppygit.screen.functions.search
 import com.catpuppyapp.puppygit.settings.SettingsUtil
 import com.catpuppyapp.puppygit.style.MyStyleKt
 import com.catpuppyapp.puppygit.ui.theme.Theme
@@ -624,7 +626,18 @@ fun SubmoduleListScreen(
     )
     val filterModeOn = rememberSaveable { mutableStateOf(false)}
 
-//
+    // start: search states
+    val lastKeyword = rememberSaveable { mutableStateOf("") }
+    val token = rememberSaveable { mutableStateOf("") }
+    val searching = rememberSaveable { mutableStateOf(false) }
+    val resetSearchVars = {
+        searching.value = false
+        token.value = ""
+        lastKeyword.value = ""
+    }
+    // end: search states
+
+
 //    val showTagFetchPushDialog = rememberSaveable { mutableStateOf(false)}
 //    val showForce = rememberSaveable { mutableStateOf(false)}
 //    val remoteList = StateUtil.getCustomSaveableStateList(
@@ -990,7 +1003,7 @@ fun SubmoduleListScreen(
                 ),
                 title = {
                     if(filterModeOn.value) {
-                        FilterTextField(filterKeyWord = filterKeyword)
+                        FilterTextField(filterKeyWord = filterKeyword, loading = searching.value)
                     }else {
                         val repoAndBranch = Libgit2Helper.getRepoOnBranchOrOnDetachedHash(curRepo.value)
                         Column (modifier = Modifier.combinedClickable (
@@ -1027,6 +1040,8 @@ fun SubmoduleListScreen(
                             iconContentDesc = stringResource(R.string.close),
 
                         ) {
+                            resetSearchVars()
+
                             filterModeOn.value = false
                         }
                     }else {
@@ -1139,18 +1154,31 @@ fun SubmoduleListScreen(
             val k = filterKeyword.value.text.lowercase()  //关键字
             val enableFilter = filterModeOn.value && maybeIsGoodKeyword(k)
             val list = if(enableFilter){
-                val fl = list.value.filter {
-                    it.name.lowercase().contains(k)
-                            || it.remoteUrl.contains(k)
-                            || it.getStatus(activityContext).lowercase().contains(k)
-                            || it.fullPath.lowercase().contains(k)
-                            || it.targetHash.lowercase().contains(k)
-                            || it.location.toString().lowercase().contains(k)
+
+                if(k != lastKeyword.value) {
+                    doJobThenOffLoading(loadingOff = {searching.value = false}) {
+                        val canceled = initSearch(keyword = k, lastKeyword = lastKeyword, token = token)
+
+                        val match = { idx:Int, it: SubmoduleDto ->
+                            it.name.lowercase().contains(k)
+                                    || it.remoteUrl.contains(k)
+                                    || it.getStatus(activityContext).lowercase().contains(k)
+                                    || it.fullPath.lowercase().contains(k)
+                                    || it.targetHash.lowercase().contains(k)
+                                    || it.location.toString().lowercase().contains(k)
+                        }
+
+                        searching.value = true
+
+
+                        filterList.value.clear()
+                        search(src = list.value, target = filterList.value, match = match, canceled = canceled)
+                    }
                 }
-                filterList.value.clear()
-                filterList.value.addAll(fl)
-                fl
+
+                filterList.value
             }else {
+                resetSearchVars()
                 list.value
             }
 
