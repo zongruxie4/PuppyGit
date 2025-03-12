@@ -1246,14 +1246,14 @@ fun FilesInnerPage(
                         item {
                             val separator = Cons.slash
                             val breadCrumbDropDownMenuExpendState = rememberSaveable { mutableStateOf(false)}
-                            val curPathIsRoot = currentPath.value == separator
                             val curItemIsRoot = idx==0  // root path '/'
-                            val curPathIsRootAndCurItemIsRoot = curPathIsRoot && curItemIsRoot
+//                            val curPathIsRoot = currentPath.value == separator
+//                            val curPathIsRootAndCurItemIsRoot = curPathIsRoot && curItemIsRoot
                             val textColor = if(it.fullPath.startsWith(currentPath.value+separator)) Color.Gray else Color.Unspecified
 
                             //非根路径显示路径分割符
                             if(curItemIsRoot.not()) {
-                                Text(text = Cons.arrowToRight, color = if(curPathIsRootAndCurItemIsRoot) Color.Unspecified else textColor, fontWeight = if(curPathIsRootAndCurItemIsRoot) FontWeight.Bold else FontWeight.Normal)
+                                Text(text = Cons.arrowToRight, color = textColor, fontWeight = FontWeight.Light)
                             }
 
                             Text(
