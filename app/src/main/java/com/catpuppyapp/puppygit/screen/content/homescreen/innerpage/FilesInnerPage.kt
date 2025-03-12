@@ -1231,13 +1231,8 @@ fun FilesInnerPage(
                     modifier = Modifier.background(MaterialTheme.colorScheme.surfaceContainer).padding(5.dp),
                     state = breadCrumbListState
                 ) {
-//            var breadCrumbList = currentPathBreadCrumbList1
-//            if(currentPathBreadCrumbList.intValue==2) {
-//                breadCrumbList = currentPathBreadCrumbList2
-//            }
                     //面包屑 (breadcrumb)
                     val breadList = currentPathBreadCrumbList.value.toList()
-//                    val lastIndex = breadList.size - 1
                     breadList.forEachIndexed { idx, it ->
                         item {
                             val separator = Cons.slash
@@ -1254,31 +1249,14 @@ fun FilesInnerPage(
                                         onLongClick = {  //long press will show menu for pressed path
                                             haptic.performHapticFeedback(HapticFeedbackType.LongPress)
                                             breadCrumbDropDownMenuExpendState.value = true
-
-//                                        // copy full path
-//                                        clipboardManager.setText(AnnotatedString(it.fullPath))
-//                                        Msg.requireShow(appContext.getString(R.string.path_copied))
                                         }
                                     ) { //onClick
+                                        //点击跳转路径
 
-                                        //                        //点击面包屑跳转路径
-                                        //返回没在使用的列表
-                                        //                        val willUpdateList = if(currentPathBreadCrumbList.intValue==1) currentPathBreadCrumbList2 else currentPathBreadCrumbList1
-                                        //                        val clickedItemIndex = willUpdateList.indexOf(it)
-                                        //                        val subListEndIndex = clickedItemIndex+1
-                                        //                        if(subListEndIndex < willUpdateList.size) {  //避免越界
-                                        //                            val subList = willUpdateList.subList(0, subListEndIndex)  //返回起始地址到点击位置的子列表
-                                        //                            willUpdateList.clear()
-                                        //                            willUpdateList.addAll(subList)
-                                        //                            currentPathBreadCrumbList.intValue = if(currentPathBreadCrumbList.intValue==1) 2 else 1
-                                        //                        }
-
-                                        //更新当前路径
                                         currentPath.value = it.fullPath
                                         filesPageSimpleFilterKeyWord.value = TextFieldValue("")  //清空过滤关键字
                                         //刷新页面（然后面包屑也会重新生成）
                                         changeStateTriggerRefreshPage(needRefreshFilesPage)
-
                                     }
                             )
 
