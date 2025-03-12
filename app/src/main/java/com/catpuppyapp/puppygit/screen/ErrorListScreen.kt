@@ -50,7 +50,9 @@ import com.catpuppyapp.puppygit.data.entity.ErrorEntity
 import com.catpuppyapp.puppygit.data.entity.RepoEntity
 import com.catpuppyapp.puppygit.play.pro.R
 import com.catpuppyapp.puppygit.screen.functions.defaultTitleDoubleClick
+import com.catpuppyapp.puppygit.screen.functions.initSearch
 import com.catpuppyapp.puppygit.screen.functions.maybeIsGoodKeyword
+import com.catpuppyapp.puppygit.screen.functions.search
 import com.catpuppyapp.puppygit.settings.SettingsUtil
 import com.catpuppyapp.puppygit.style.MyStyleKt
 import com.catpuppyapp.puppygit.utils.AppModel
@@ -84,6 +86,7 @@ fun ErrorListScreen(
     //获取假数据
 //    val list = MockData.getErrorList(repoId,1,100);
     val list = mutableCustomStateListOf(keyTag = stateKeyTag, keyName = "list", initValue = listOf<ErrorEntity>())
+    val filterList = mutableCustomStateListOf(keyTag = stateKeyTag, keyName = "filterList", initValue = listOf<ErrorEntity>())
     val curRepo = mutableCustomStateOf(keyTag = stateKeyTag, keyName = "curRepo", initValue = RepoEntity(id=""))
 //    val sumPage = MockData.getErrorSum(repoId)
 
@@ -114,6 +117,17 @@ fun ErrorListScreen(
         initValue = TextFieldValue("")
     )
     val filterModeOn = rememberSaveable { mutableStateOf(false)}
+
+    // start: search states
+    val lastKeyword = rememberSaveable { mutableStateOf("") }
+    val token = rememberSaveable { mutableStateOf("") }
+    val searching = rememberSaveable { mutableStateOf(false) }
+    val resetSearchVars = {
+        searching.value = false
+        token.value = ""
+        lastKeyword.value = ""
+    }
+    // end: search states
 
     // 向下滚动监听，开始
     val pageScrolled = rememberSaveable { mutableStateOf(settings.showNaviButtons) }
@@ -182,7 +196,7 @@ fun ErrorListScreen(
                 ),
                 title = {
                     if(filterModeOn.value) {
-                        FilterTextField(filterKeyWord = filterKeyword)
+                        FilterTextField(filterKeyWord = filterKeyword, loading = searching.value)
                     }else {
                         Column(modifier = Modifier.combinedClickable(onDoubleClick = {
                             //能点这个必然没开过滤模式，必然是普通的listState，所以无需判断是否filterListState
@@ -218,7 +232,9 @@ fun ErrorListScreen(
                             icon = Icons.Filled.Close,
                             iconContentDesc = stringResource(R.string.close),
 
-                            ) {
+                        ) {
+                            resetSearchVars()
+
                             filterModeOn.value = false
                         }
                     }else{
@@ -337,11 +353,27 @@ fun ErrorListScreen(
         val k = filterKeyword.value.text.lowercase()  //关键字
         val enableFilter = filterModeOn.value && maybeIsGoodKeyword(k)
         val list = if(enableFilter){
-            list.value.filter {
-                it.msg.lowercase().contains(k) || it.date.lowercase().contains(k)
-                        || it.id.lowercase().contains(k)
+
+            if(k != lastKeyword.value) {
+                doJobThenOffLoading(loadingOff = {searching.value = false}) {
+                    val canceled = initSearch(keyword = k, lastKeyword = lastKeyword, token = token)
+
+                    val match = { idx: Int, it: ErrorEntity ->
+                        it.msg.lowercase().contains(k) || it.date.lowercase().contains(k) || it.id.lowercase().contains(k)
+                    }
+
+                    searching.value = true
+
+
+                    filterList.value.clear()
+                    search(src = list.value, target = filterList.value, match = match, canceled = canceled)
+                }
             }
+
+            filterList.value
+
         }else {
+            resetSearchVars()
             list.value
         }
 

@@ -224,8 +224,8 @@ fun CommitListScreen(
     val filterList = mutableCustomStateListOf(keyTag = stateKeyTag, keyName = "filterList", initValue = listOf<CommitDto>())
 
     // start: search states
-    val lastKeyword = rememberSaveable { mutableStateOf("") }
     val lastListSize = rememberSaveable { mutableIntStateOf(0) }
+    val lastKeyword = rememberSaveable { mutableStateOf("") }
     val token = rememberSaveable { mutableStateOf("") }
     val searching = rememberSaveable { mutableStateOf(false) }
     val resetSearchVars = {
@@ -1925,8 +1925,8 @@ fun CommitListScreen(
                 //如果关键字变化或者总条目数变化（点“加载更多”就会导致它变化），则重新执行过滤
                 if(k != lastKeyword.value || curListSize != lastListSize.intValue) {
                     lastListSize.intValue = curListSize
+                    filterIdxList.value.clear()
                     doJobThenOffLoading(loadingOff = {searching.value = false}) {
-                        filterIdxList.value.clear()
 
                         val repo = if(needFilterByPath) {
                             try{

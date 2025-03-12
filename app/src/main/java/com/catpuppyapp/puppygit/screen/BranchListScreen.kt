@@ -88,7 +88,9 @@ import com.catpuppyapp.puppygit.etc.Ret
 import com.catpuppyapp.puppygit.git.BranchNameAndTypeDto
 import com.catpuppyapp.puppygit.play.pro.R
 import com.catpuppyapp.puppygit.screen.functions.defaultTitleDoubleClick
+import com.catpuppyapp.puppygit.screen.functions.initSearch
 import com.catpuppyapp.puppygit.screen.functions.maybeIsGoodKeyword
+import com.catpuppyapp.puppygit.screen.functions.search
 import com.catpuppyapp.puppygit.settings.SettingsUtil
 import com.catpuppyapp.puppygit.style.MyStyleKt
 import com.catpuppyapp.puppygit.ui.theme.Theme
@@ -1270,6 +1272,17 @@ fun BranchListScreen(
 
     val filterList = mutableCustomStateListOf(keyTag = stateKeyTag, keyName = "filterList", initValue = listOf<BranchNameAndTypeDto>())
 
+    // start: search states
+    val lastKeyword = rememberSaveable { mutableStateOf("") }
+    val token = rememberSaveable { mutableStateOf("") }
+    val searching = rememberSaveable { mutableStateOf(false) }
+    val resetSearchVars = {
+        searching.value = false
+        token.value = ""
+        lastKeyword.value = ""
+    }
+    // end: search states
+
     val getActuallyListState = {
         if(enableFilterState.value) filterListState else listState
     }
@@ -1336,7 +1349,7 @@ fun BranchListScreen(
                 ),
                 title = {
                     if(filterModeOn.value) {
-                        FilterTextField(filterKeyWord = filterKeyword)
+                        FilterTextField(filterKeyWord = filterKeyword, loading = searching.value)
                     }else {
                         val repoAndBranch = Libgit2Helper.getRepoOnBranchOrOnDetachedHash(curRepo.value)
                         Column (modifier = Modifier.combinedClickable (
@@ -1380,6 +1393,7 @@ fun BranchListScreen(
                             iconContentDesc = stringResource(R.string.close),
 
                         ) {
+                            resetSearchVars()
                             filterModeOn.value = false
                         }
                     }else {
@@ -1681,29 +1695,38 @@ fun BranchListScreen(
         val k = filterKeyword.value.text.lowercase()  //关键字
         val enableFilter = filterModeOn.value && maybeIsGoodKeyword(k)
         val list = if(enableFilter){
-            val ret = list.value.filter {
-                it.fullName.lowercase().contains(k)
-                        || it.oidStr.lowercase().contains(k)
-                        || it.symbolicTargetFullName.lowercase().contains(k)
-                        || it.getUpstreamShortName(activityContext).lowercase().contains(k)
+            if(k != lastKeyword.value) {
+                doJobThenOffLoading(loadingOff = {searching.value = false}) {
+                    val canceled = initSearch(keyword = k, lastKeyword = lastKeyword, token = token)
 
-                        //如果加这个，一搜"remote"会把关联了远程分支的本地分支也显示出来，因为这些分支的上游完整名是 "refs/remotes/....."，其中包含了关键字"remote"
-                        // || it.getUpstreamFullName(activityContext).lowercase().contains(k)
+                    val match = { idx:Int, it: BranchNameAndTypeDto ->
+                        it.fullName.lowercase().contains(k)
+                                || it.oidStr.lowercase().contains(k)
+                                || it.symbolicTargetFullName.lowercase().contains(k)
+                                || it.getUpstreamShortName(activityContext).lowercase().contains(k)
 
-                        || it.getOther(activityContext, false).lowercase().contains(k)
-                        || it.getOther(activityContext, true).lowercase().contains(k)
-                        || it.getTypeString(activityContext, false).lowercase().contains(k)
-                        || it.getTypeString(activityContext, true).lowercase().contains(k)
-                        || it.getAheadBehind(activityContext, false).lowercase().contains(k)
-                        || it.getAheadBehind(activityContext, true).lowercase().contains(k)
+                                //如果加这个，一搜"remote"会把关联了远程分支的本地分支也显示出来，因为这些分支的上游完整名是 "refs/remotes/....."，其中包含了关键字"remote"
+                                // || it.getUpstreamFullName(activityContext).lowercase().contains(k)
+
+                                || it.getOther(activityContext, false).lowercase().contains(k)
+                                || it.getOther(activityContext, true).lowercase().contains(k)
+                                || it.getTypeString(activityContext, false).lowercase().contains(k)
+                                || it.getTypeString(activityContext, true).lowercase().contains(k)
+                                || it.getAheadBehind(activityContext, false).lowercase().contains(k)
+                                || it.getAheadBehind(activityContext, true).lowercase().contains(k)
+                    }
+
+                    searching.value = true
+
+
+                    filterList.value.clear()
+                    search(src = list.value, target = filterList.value, match = match, canceled = canceled)
+                }
             }
 
-            //更新filterList
-            filterList.value.clear()
-            filterList.value.addAll(ret)
-
-            ret
+            filterList.value
         }else {
+            resetSearchVars()
             list.value
         }
 

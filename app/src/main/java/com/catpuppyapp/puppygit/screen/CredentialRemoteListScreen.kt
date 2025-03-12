@@ -54,7 +54,9 @@ import com.catpuppyapp.puppygit.data.entity.CredentialEntity
 import com.catpuppyapp.puppygit.dto.RemoteDtoForCredential
 import com.catpuppyapp.puppygit.play.pro.R
 import com.catpuppyapp.puppygit.screen.functions.defaultTitleDoubleClick
+import com.catpuppyapp.puppygit.screen.functions.initSearch
 import com.catpuppyapp.puppygit.screen.functions.maybeIsGoodKeyword
+import com.catpuppyapp.puppygit.screen.functions.search
 import com.catpuppyapp.puppygit.settings.SettingsUtil
 import com.catpuppyapp.puppygit.style.MyStyleKt
 import com.catpuppyapp.puppygit.utils.AppModel
@@ -97,6 +99,7 @@ fun CredentialRemoteListScreen(
 //    val curCommit = rememberSaveable{ mutableStateOf(CommitDto()) }
     val curItemInPage = mutableCustomStateOf(keyTag = stateKeyTag, keyName = "curItemInPage", initValue = CredentialEntity())
     val list = mutableCustomStateListOf(keyTag = stateKeyTag, keyName = "list", initValue = listOf<RemoteDtoForCredential>())
+    val filterList = mutableCustomStateListOf(keyTag = stateKeyTag, keyName = "filterList", initValue = listOf<RemoteDtoForCredential>())
     val needOverrideLinkItem = mutableCustomStateOf(keyTag = stateKeyTag, keyName = "needOverrideLinkItem", initValue = RemoteDtoForCredential())
     val showOverrideLinkDialog = rememberSaveable { mutableStateOf(false)}
     val needRefresh = rememberSaveable { mutableStateOf("")}
@@ -105,7 +108,7 @@ fun CredentialRemoteListScreen(
     val requireDoLink = rememberSaveable { mutableStateOf(false)}
     val targetAll = rememberSaveable { mutableStateOf(false)}
     val curItem = mutableCustomStateOf(keyTag = stateKeyTag, keyName = "curItem", initValue = RemoteDtoForCredential())
-    val linkOrUnlinkDialogTitle = rememberSaveable { mutableStateOf( "")}
+    val linkOrUnlinkDialogTitle = rememberSaveable { mutableStateOf("") }
 
 
     val doLink= { remoteId: String ->
@@ -189,6 +192,17 @@ fun CredentialRemoteListScreen(
     )
     val filterModeOn = rememberSaveable { mutableStateOf(false)}
     //filter相关，结束
+
+    // start: search states
+    val lastKeyword = rememberSaveable { mutableStateOf("") }
+    val token = rememberSaveable { mutableStateOf("") }
+    val searching = rememberSaveable { mutableStateOf(false) }
+    val resetSearchVars = {
+        searching.value = false
+        token.value = ""
+        lastKeyword.value = ""
+    }
+    // end: search states
 
 
     // 向下滚动监听，开始
@@ -285,7 +299,7 @@ fun CredentialRemoteListScreen(
                 ),
                 title = {
                     if(filterModeOn.value) {
-                        FilterTextField(filterKeyWord = filterKeyword)
+                        FilterTextField(filterKeyWord = filterKeyword, loading = searching.value)
                     }else{
                         Column (modifier = Modifier.combinedClickable(onDoubleClick = {
                             defaultTitleDoubleClick(scope, listState, lastPosition)
@@ -324,7 +338,8 @@ fun CredentialRemoteListScreen(
                             icon = Icons.Filled.Close,
                             iconContentDesc = stringResource(R.string.close),
 
-                            ) {
+                        ) {
+                            resetSearchVars()
                             filterModeOn.value = false
                         }
                     }else{
@@ -414,15 +429,32 @@ fun CredentialRemoteListScreen(
         val k = filterKeyword.value.text.lowercase()  //关键字
         val enableFilter = filterModeOn.value && maybeIsGoodKeyword(k)
         val list = if(enableFilter){
-            list.value.filter {
-                    it.repoName.lowercase().contains(k)
-                        || it.remoteName.lowercase().contains(k)
-                        || it.remoteFetchUrl.lowercase().contains(k)
-                        || it.remotePushUrl.lowercase().contains(k)
-                        || it.getCredentialNameOrNone(activityContext).lowercase().contains(k)
-                        || it.getPushCredentialNameOrNone(activityContext).lowercase().contains(k)
+
+            if(k != lastKeyword.value) {
+                doJobThenOffLoading(loadingOff = {searching.value = false}) {
+                    val canceled = initSearch(keyword = k, lastKeyword = lastKeyword, token = token)
+
+                    val match = { idx:Int, it: RemoteDtoForCredential ->
+                        it.repoName.lowercase().contains(k)
+                                || it.remoteName.lowercase().contains(k)
+                                || it.remoteFetchUrl.lowercase().contains(k)
+                                || it.remotePushUrl.lowercase().contains(k)
+                                || it.getCredentialNameOrNone(activityContext).lowercase().contains(k)
+                                || it.getPushCredentialNameOrNone(activityContext).lowercase().contains(k)
+
+                    }
+
+                    searching.value = true
+
+
+                    filterList.value.clear()
+                    search(src = list.value, target = filterList.value, match = match, canceled = canceled)
+                }
             }
+
+            filterList.value
         }else {
+            resetSearchVars()
             list.value
         }
         val listState = if(enableFilter) filterListState else listState

@@ -56,7 +56,9 @@ import com.catpuppyapp.puppygit.data.entity.RepoEntity
 import com.catpuppyapp.puppygit.dto.RemoteDtoForCredential
 import com.catpuppyapp.puppygit.play.pro.R
 import com.catpuppyapp.puppygit.screen.functions.defaultTitleDoubleClick
+import com.catpuppyapp.puppygit.screen.functions.initSearch
 import com.catpuppyapp.puppygit.screen.functions.maybeIsGoodKeyword
+import com.catpuppyapp.puppygit.screen.functions.search
 import com.catpuppyapp.puppygit.settings.SettingsUtil
 import com.catpuppyapp.puppygit.style.MyStyleKt
 import com.catpuppyapp.puppygit.utils.AppModel
@@ -100,6 +102,7 @@ fun CredentialManagerScreen(
     val settings = remember { SettingsUtil.getSettingsSnapshot() }
 
     val list = mutableCustomStateListOf(keyTag = stateKeyTag, keyName = "list", initValue = listOf<CredentialEntity>() )
+    val filterList = mutableCustomStateListOf(keyTag = stateKeyTag, keyName = "filterList", initValue = listOf<CredentialEntity>() )
     val listState = rememberLazyListState()
     val curCredential = mutableCustomStateOf(keyTag = stateKeyTag, keyName = "curCredential", initValue = CredentialEntity(id=""))
     val needRefresh = rememberSaveable { mutableStateOf("")}
@@ -234,6 +237,17 @@ fun CredentialManagerScreen(
     val filterModeOn = rememberSaveable { mutableStateOf(false)}
     //filter相关，结束
 
+    // start: search states
+    val lastKeyword = rememberSaveable { mutableStateOf("") }
+    val token = rememberSaveable { mutableStateOf("") }
+    val searching = rememberSaveable { mutableStateOf(false) }
+    val resetSearchVars = {
+        searching.value = false
+        token.value = ""
+        lastKeyword.value = ""
+    }
+    // end: search states
+
 
     val titleString = rememberSaveable { mutableStateOf("")}
     val titleSecondaryString = rememberSaveable { mutableStateOf("")}  // title secondary line string
@@ -274,7 +288,7 @@ fun CredentialManagerScreen(
                 ),
                 title = {
                     if(filterModeOn.value) {
-                        FilterTextField(filterKeyWord = filterKeyword)
+                        FilterTextField(filterKeyWord = filterKeyword, loading = searching.value)
                     }else{
                         Column(modifier = Modifier.combinedClickable(onDoubleClick = {
                             defaultTitleDoubleClick(scope, listState, lastPosition)
@@ -315,7 +329,9 @@ fun CredentialManagerScreen(
                             icon = Icons.Filled.Close,
                             iconContentDesc = stringResource(R.string.close),
 
-                            ) {
+                        ) {
+                            resetSearchVars()
+
                             filterModeOn.value = false
                         }
                     }else{
@@ -422,15 +438,30 @@ fun CredentialManagerScreen(
             val k = filterKeyword.value.text.lowercase()  //关键字
             val enableFilter = filterModeOn.value && maybeIsGoodKeyword(k)
             val list = if(enableFilter){
-                list.value.filter {
-                    it.name.lowercase().contains(k) || it.value.lowercase().contains(k)
 
-                    // type已弃用，所以没必要使用type过滤了
-//                            || it.getTypeStr().lowercase().contains(k)
+                if(k != lastKeyword.value) {
+                    doJobThenOffLoading(loadingOff = {searching.value = false}) {
+                        val canceled = initSearch(keyword = k, lastKeyword = lastKeyword, token = token)
+
+                        val match = { idx:Int, it: CredentialEntity ->
+                            it.name.lowercase().contains(k) || it.value.lowercase().contains(k)
+                        }
+
+                        searching.value = true
+
+
+                        filterList.value.clear()
+                        search(src = list.value, target = filterList.value, match = match, canceled = canceled)
+                    }
                 }
+
+                filterList.value
+
             }else {
+                resetSearchVars()
                 list.value
             }
+
             val listState = if(enableFilter) filterListState else listState
 //            if(enableFilter) {  //更新filter列表state
 //                filterListState.value = listState

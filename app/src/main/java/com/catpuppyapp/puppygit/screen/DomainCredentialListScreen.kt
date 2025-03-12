@@ -62,7 +62,9 @@ import com.catpuppyapp.puppygit.data.entity.RepoEntity
 import com.catpuppyapp.puppygit.dto.DomainCredentialDto
 import com.catpuppyapp.puppygit.play.pro.R
 import com.catpuppyapp.puppygit.screen.functions.defaultTitleDoubleClick
+import com.catpuppyapp.puppygit.screen.functions.initSearch
 import com.catpuppyapp.puppygit.screen.functions.maybeIsGoodKeyword
+import com.catpuppyapp.puppygit.screen.functions.search
 import com.catpuppyapp.puppygit.settings.SettingsUtil
 import com.catpuppyapp.puppygit.style.MyStyleKt
 import com.catpuppyapp.puppygit.utils.AppModel
@@ -98,6 +100,7 @@ fun DomainCredentialListScreen(
     val settings = remember { SettingsUtil.getSettingsSnapshot() }
 
     val list = mutableCustomStateListOf(keyTag = stateKeyTag, keyName = "list", initValue = listOf<DomainCredentialDto>() )
+    val filterList = mutableCustomStateListOf(keyTag = stateKeyTag, keyName = "filterList", initValue = listOf<DomainCredentialDto>() )
     val listState = rememberLazyListState()
     val curCredential = mutableCustomStateOf(keyTag = stateKeyTag, keyName = "curCredential", initValue = DomainCredentialDto())
     val needRefresh = rememberSaveable { mutableStateOf("")}
@@ -325,6 +328,17 @@ fun DomainCredentialListScreen(
     val filterModeOn = rememberSaveable { mutableStateOf(false)}
     //filter相关，结束
 
+    // start: search states
+    val lastKeyword = rememberSaveable { mutableStateOf("") }
+    val token = rememberSaveable { mutableStateOf("") }
+    val searching = rememberSaveable { mutableStateOf(false) }
+    val resetSearchVars = {
+        searching.value = false
+        token.value = ""
+        lastKeyword.value = ""
+    }
+    // end: search states
+
 
     val titleString = rememberSaveable { mutableStateOf("")}
     val titleSecondaryString = rememberSaveable { mutableStateOf("")}
@@ -355,7 +369,7 @@ fun DomainCredentialListScreen(
                 ),
                 title = {
                     if(filterModeOn.value) {
-                        FilterTextField(filterKeyWord = filterKeyword)
+                        FilterTextField(filterKeyWord = filterKeyword, loading = searching.value)
                     }else{
                         Column(modifier = Modifier.combinedClickable(onDoubleClick = {
                             defaultTitleDoubleClick(scope, listState, lastPosition)
@@ -395,7 +409,9 @@ fun DomainCredentialListScreen(
                             icon = Icons.Filled.Close,
                             iconContentDesc = stringResource(R.string.close),
 
-                            ) {
+                        ) {
+                            resetSearchVars()
+
                             filterModeOn.value = false
                         }
                     }else{
@@ -493,10 +509,27 @@ fun DomainCredentialListScreen(
             val k = filterKeyword.value.text.lowercase()  //关键字
             val enableFilter = filterModeOn.value && maybeIsGoodKeyword(k)
             val list = if(enableFilter){
-                list.value.filter {
-                    it.domain.lowercase().contains(k) || (it.credName?.lowercase()?.contains(k) == true)
+
+                if(k != lastKeyword.value) {
+                    doJobThenOffLoading(loadingOff = {searching.value = false}) {
+                        val canceled = initSearch(keyword = k, lastKeyword = lastKeyword, token = token)
+
+                        val match = { idx:Int, it: DomainCredentialDto ->
+                            it.domain.lowercase().contains(k) || (it.credName?.lowercase()?.contains(k) == true)
+                        }
+
+                        searching.value = true
+
+
+                        filterList.value.clear()
+                        search(src = list.value, target = filterList.value, match = match, canceled = canceled)
+                    }
                 }
+
+                filterList.value
             }else {
+                resetSearchVars()
+
                 list.value
             }
             val listState = if(enableFilter) filterListState else listState

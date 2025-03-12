@@ -83,7 +83,9 @@ import com.catpuppyapp.puppygit.git.FileHistoryDto
 import com.catpuppyapp.puppygit.play.pro.R
 import com.catpuppyapp.puppygit.screen.functions.defaultTitleDoubleClick
 import com.catpuppyapp.puppygit.screen.functions.getLoadText
+import com.catpuppyapp.puppygit.screen.functions.initSearch
 import com.catpuppyapp.puppygit.screen.functions.maybeIsGoodKeyword
+import com.catpuppyapp.puppygit.screen.functions.search
 import com.catpuppyapp.puppygit.screen.shared.DiffFromScreen
 import com.catpuppyapp.puppygit.screen.shared.SharedState
 import com.catpuppyapp.puppygit.settings.SettingsUtil
@@ -409,8 +411,8 @@ fun FileHistoryScreen(
     )
     // should use `enableFilterState` check filter mode really work or not, cause even this value true,
     // but maybe no filter text inputted, then actually filter mode still not really working
-    val filterModeOn_dontUseThisCheckFilterModeReallyEnabledOrNot = rememberSaveable { mutableStateOf(false)
-}
+    val filterModeOn_dontUseThisCheckFilterModeReallyEnabledOrNot = rememberSaveable { mutableStateOf(false) }
+
     //存储符合过滤条件的条目在源列表中的真实索引。本列表索引对应filter list条目索引，值对应原始列表索引
     val filterIdxList = mutableCustomStateListOf(
         keyTag = stateKeyTag,
@@ -425,6 +427,18 @@ fun FileHistoryScreen(
 
     //filter相关，结束
 
+
+    // start: search states
+    val lastListSize = rememberSaveable { mutableIntStateOf(0) }
+    val lastKeyword = rememberSaveable { mutableStateOf("") }
+    val token = rememberSaveable { mutableStateOf("") }
+    val searching = rememberSaveable { mutableStateOf(false) }
+    val resetSearchVars = {
+        searching.value = false
+        token.value = ""
+        lastKeyword.value = ""
+    }
+    // end: search states
 
     val nameOfNewTag = rememberSaveable { mutableStateOf("")}
     val overwriteIfNameExistOfNewTag = rememberSaveable { mutableStateOf(false)}  // force
@@ -654,6 +668,7 @@ fun FileHistoryScreen(
                     if(filterModeOn_dontUseThisCheckFilterModeReallyEnabledOrNot.value) {
                         FilterTextField(
                             filterKeyWord = filterKeyword,
+                            loading = searching.value,
                             trailingIconTooltipText= stringResource(R.string.filter_by_paths),
                             trailingIcon = Icons.AutoMirrored.Filled.List,
                             trailingIconColor = UIHelper.getIconEnableColorOrNull(pathsForFilter.value.isNotEmpty()),
@@ -716,6 +731,7 @@ fun FileHistoryScreen(
                             iconContentDesc = stringResource(R.string.close),
 
                         ) {
+                            resetSearchVars()
                             filterModeOn_dontUseThisCheckFilterModeReallyEnabledOrNot.value = false
                         }
                     } else {
@@ -941,31 +957,44 @@ fun FileHistoryScreen(
             val k = filterKeyword.value.text.lowercase()  //关键字
             val enableFilter = filterModeOn_dontUseThisCheckFilterModeReallyEnabledOrNot.value && maybeIsGoodKeyword(k)
             val list = if(enableFilter){
-                filterIdxList.value.clear()
-                filterList.value.clear()
+                val curListSize = list.value.size
 
-                val retlist = list.value.filterIndexed {idx, it ->
-                    val found = it.treeEntryOidStr.lowercase().contains(k)
-                            || it.authorEmail.lowercase().contains(k)
-                            || it.authorUsername.lowercase().contains(k)
-                            || it.committerEmail.lowercase().contains(k)
-                            || it.committerUsername.lowercase().contains(k)
-                            || it.dateTime.lowercase().contains(k)
-                            || it.commitOidStr.lowercase().contains(k)
-                            || it.msg.lowercase().contains(k)
-                            || formatMinutesToUtc(it.originTimeOffsetInMinutes).lowercase().contains(k)
+                if(k != lastKeyword.value || curListSize != lastListSize.intValue) {
+                    lastListSize.intValue = curListSize
+                    filterIdxList.value.clear()
+
+                    doJobThenOffLoading(loadingOff = {searching.value = false}) {
+                        val canceled = initSearch(keyword = k, lastKeyword = lastKeyword, token = token)
+
+                        val match = { idx:Int, it: FileHistoryDto ->
+                            val found = it.treeEntryOidStr.lowercase().contains(k)
+                                    || it.authorEmail.lowercase().contains(k)
+                                    || it.authorUsername.lowercase().contains(k)
+                                    || it.committerEmail.lowercase().contains(k)
+                                    || it.committerUsername.lowercase().contains(k)
+                                    || it.dateTime.lowercase().contains(k)
+                                    || it.commitOidStr.lowercase().contains(k)
+                                    || it.msg.lowercase().contains(k)
+                                    || formatMinutesToUtc(it.originTimeOffsetInMinutes).lowercase().contains(k)
 
 
-                    if(found) {
-                        filterIdxList.value.add(idx)
-                        filterList.value.add(it)
+                            if(found) {
+                                filterIdxList.value.add(idx)
+                            }
+
+                            found
+                        }
+
+                        searching.value = true
+
+                        filterList.value.clear()
+                        search(src = list.value, target = filterList.value, match = match, canceled = canceled)
                     }
-
-                    found
                 }
 
-                retlist
+                filterList.value
             }else {
+                resetSearchVars()
                 list.value
             }
 
