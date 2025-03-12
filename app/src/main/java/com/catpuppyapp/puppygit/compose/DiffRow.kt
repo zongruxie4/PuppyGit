@@ -214,7 +214,7 @@ fun DiffRow (
 
 
     if(showEditLineDialog.value) {
-        ConfirmDialogUnSelectable(
+        ConfirmDialogAndDisableSelection(
             title = if(truePrependFalseAppendNullReplace.value == true) stringResource(R.string.insert) else if(truePrependFalseAppendNullReplace.value == false) stringResource(R.string.append) else stringResource(R.string.edit),
             requireShowTextCompose = true,
             textCompose = {
@@ -291,7 +291,7 @@ fun DiffRow (
     }
 
     if(showDelLineDialog.value) {
-        ConfirmDialogUnSelectable(
+        ConfirmDialogAndDisableSelection(
             title = stringResource(R.string.delete),
             requireShowTextCompose = true,
             textCompose = {
@@ -343,7 +343,7 @@ fun DiffRow (
     }
 
     if(showRestoreLineDialog.value) {
-        ConfirmDialogUnSelectable(
+        ConfirmDialogAndDisableSelection(
             title = if(trueRestoreFalseReplace.value) stringResource(R.string.restore) else stringResource(R.string.replace),
             requireShowTextCompose = true,
             textCompose = {

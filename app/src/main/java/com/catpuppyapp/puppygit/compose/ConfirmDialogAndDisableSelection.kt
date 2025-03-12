@@ -20,7 +20,7 @@ import com.catpuppyapp.puppygit.play.pro.R
  * 注意：MySelectionContainer和DisableSelection可互相嵌套，所以，如果在类似Diff页面那样整个页面启用了长按选择的情况下担心弹窗崩溃，可使用此弹窗，并且可在此弹窗内容中使用 MySelectionContainer 以使弹窗内容可拷贝（这样启用的长按选择不会导致app崩溃）
  */
 @Composable
-fun ConfirmDialogUnSelectable(
+fun ConfirmDialogAndDisableSelection(
     modifier: Modifier=Modifier,
     title: String="",
     text: String="",
