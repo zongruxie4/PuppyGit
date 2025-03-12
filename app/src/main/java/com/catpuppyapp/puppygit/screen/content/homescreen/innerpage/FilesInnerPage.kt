@@ -1232,7 +1232,8 @@ fun FilesInnerPage(
                         .background(MaterialTheme.colorScheme.surfaceContainer)
                         .padding(5.dp)
                     ,
-                    state = breadCrumbListState
+                    state = breadCrumbListState,
+                    verticalAlignment = Alignment.CenterVertically
                 ) {
                     //面包屑 (breadcrumb)
                     val breadList = currentPathBreadCrumbList.value.toList()
