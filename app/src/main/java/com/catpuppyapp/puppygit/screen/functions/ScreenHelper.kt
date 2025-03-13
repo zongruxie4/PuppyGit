@@ -269,13 +269,19 @@ fun <T> filterTheList(
     customTask:(suspend ()->Unit)? = null,  //若此参数非null，将忽略入参match，此参数内部应该完全自定义如何匹配条目
     // 结束：file history 和 commit history用这几个变量
 
+    // commit history用到这个参数。若此参数返回真，则会重新执行搜索，可把附加的重新启用搜索的条件放到这个参数里执行
+    orCustomDoFilterCondition:()->Boolean = {false},
+    // commit history用这个参数。在搜索之前执行些附加操作，一般是清列表或者更新上次列表相关的变量
+    //此函数调用的时机是已通过执行搜索的判断，但在执行搜索之前
+    beforeSearchCallback:(()->Unit)? = null,
 ) : List<T> {
     return if (enableFilter) {
         val curListSize = list.size
 
-        if (keyword != lastKeyword.value || ( lastListSize!=null && curListSize != lastListSize.intValue)) {
+        if (keyword != lastKeyword.value || ( lastListSize!=null && curListSize != lastListSize.intValue) || orCustomDoFilterCondition()) {
             lastListSize?.intValue = curListSize
             filterIdxList?.clear()
+            beforeSearchCallback?.invoke()
 
             //若自定义任务为null则运行默认任务
             doJobThenOffLoading(loadingOff = { searching.value = false }) {

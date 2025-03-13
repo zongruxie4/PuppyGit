@@ -292,6 +292,7 @@ fun CommitListScreen(
     val pathsForFilterBuffer = rememberSaveable { mutableStateOf("") }  // cache the paths until user clicked the ok, then assign the value to `pathsForFilter`
     val pathsForFilter = rememberSaveable { mutableStateOf("") }
     val pathsListForFilter = mutableCustomStateListOf(stateKeyTag, "pathsListForFilter") { listOf<String>() }
+    val lastPathsListForFilter = mutableCustomStateListOf(stateKeyTag, "lastPathsListForFilter") { listOf<String>() }
     val filterByEntryName = rememberSaveable { mutableStateOf(false) }
     val filterByEntryNameBuffer = rememberSaveable { mutableStateOf(false) }
 
@@ -1925,6 +1926,32 @@ fun CommitListScreen(
             val needFilterByPath = pathList.isNotEmpty()
             val enableFilter = filterModeOn_dontUseThisCheckFilterModeReallyEnabledOrNot.value && (maybeIsGoodKeyword(keyword) || needFilterByPath)
             val list = filterTheList(
+                orCustomDoFilterCondition = if(needFilterByPath.not()) {
+                    { false }
+                }else {
+                    {
+                        //拷贝，避免通过size比较后条目发生变化导致索引越界
+                        val lastCopy = lastPathsListForFilter.value.toList()
+                        val curCopy = pathList.toList()
+
+                        //检测path列表是否发生了变化，若是返回真；否则返回假。返回真将会触发重新执行过滤
+                        lastCopy.size != curCopy.size || run {
+                            var changed = false
+                            for (idx in lastCopy.indices) {
+                                if (lastCopy[idx] != curCopy[idx]) {
+                                    changed = true
+                                    break
+                                }
+                            }
+
+                            changed
+                        }
+                    }
+                },
+                beforeSearchCallback = {
+                    lastPathsListForFilter.value.clear()
+                    lastPathsListForFilter.value.addAll(pathList)
+                },
                 enableFilter = enableFilter,
                 keyword = keyword,
                 lastKeyword = lastKeyword,
