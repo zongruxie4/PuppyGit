@@ -20,6 +20,16 @@ import androidx.compose.ui.unit.sp
 import com.catpuppyapp.puppygit.play.pro.R
 import com.catpuppyapp.puppygit.utils.state.CustomStateSaveable
 
+/**
+ * 关于此组件的备忘：
+ * 文件管理器 一类
+ * 提交历史 和 文件历史 一类
+ * 自动化页面 一类
+ * 自动化页面弹窗选择仓库那个 一类
+ * 其他所有页面 一类
+ *
+ * 其中自动化页面首页和弹窗数据量不会太大，没做在渲染时避免重复执行过滤操作的处理；文件管理器由于执行了递归搜索，需要单独处理；提交历史和文件历史由于有个在普通列表显示过滤列表条目的功能，需要处理下索引；其他所有页面几乎是相同的过滤策略，只有匹配条件不同
+ */
 @Composable
 fun FilterTextField(
     filterKeyWord: CustomStateSaveable<TextFieldValue>,
