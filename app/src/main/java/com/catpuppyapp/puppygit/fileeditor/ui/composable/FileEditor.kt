@@ -38,11 +38,13 @@ import androidx.compose.ui.platform.LocalClipboardManager
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalHapticFeedback
+import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.unit.Dp
+import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.catpuppyapp.puppygit.compose.BottomBar
@@ -174,7 +176,10 @@ fun FileEditor(
 
 
 
-//    val isRtl = LocalLayoutDirection.current == LayoutDirection.Rtl
+    val isRtl = LocalLayoutDirection.current == LayoutDirection.Rtl
+
+    val onLeftToRight = {openDrawer()}
+    val onRightToLeft = {}
 
     Box(
         modifier = Modifier
@@ -182,15 +187,14 @@ fun FileEditor(
             .pointerInput(Unit) {
                 //这个会覆盖侧栏抽屉的滑动手势，所以需要处理下
                 detectDragGestures { change, dragAmount ->
-                    // 更新偏移量
+                    // debug
 //                    println("dragAmount.x: ${dragAmount.x}")
 //                    println("dragAmount.y: ${dragAmount.y}")
-                    if (dragAmount.x > 5) {
-                        openDrawer()
-                    }
 
-                    if (dragAmount.x < 0 && dragAmount.x > -5) {
-//                        "右滑了"
+                    if(dragAmount.x > 2) {  // left to right
+                        if(isRtl) onRightToLeft() else onLeftToRight()
+                    }else if(dragAmount.x < -2) {  // right to right
+                        if(isRtl) onLeftToRight() else onRightToLeft()
                     }
 
                     change.consume() // 消费事件

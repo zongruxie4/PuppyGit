@@ -329,13 +329,13 @@ fun SubPageEditor(
             saveOnDispose = false,  //这时父页面（当前页面）负责保存，不需要子页面保存，所以传false
             doSave = doSave,  //doSave还是要传的，虽然销毁组件时的保存关闭了，但是返回时的保存依然要用doSave
             naviUp=naviUp,
-            editorPageRequestFromParent,
-            editorPageShowingFileDto,
-            editorPageLastFilePath,
-            editorPageLastScrollEvent,
-            editorPageLazyListState,
-            editorPageIsInitDone,
-            editorPageIsContentSnapshoted,
+            requestFromParent = editorPageRequestFromParent,
+            editorPageShowingFileDto = editorPageShowingFileDto,
+            lastFilePath = editorPageLastFilePath,
+            editorLastScrollEvent = editorPageLastScrollEvent,
+            editorListState = editorPageLazyListState,
+            editorPageIsInitDone = editorPageIsInitDone,
+            editorPageIsContentSnapshoted = editorPageIsContentSnapshoted,
             goToFilesPage = {},  //子页面不支持在Files显示文件，所以传空函数即可，应该由子页面的调用者(应该是个顶级页面)来实现在Files页面显示文件，子页面只负责编辑（暂时先这样，实际上就算想支持也不行，因为子页面无法跳转到顶级的Files页面）
             goToLine=goToLine,
             editorSearchMode = editorPageSearchMode,
