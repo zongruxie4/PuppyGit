@@ -82,6 +82,7 @@ import com.catpuppyapp.puppygit.dev.resetByHashTestPassed
 import com.catpuppyapp.puppygit.git.FileHistoryDto
 import com.catpuppyapp.puppygit.play.pro.R
 import com.catpuppyapp.puppygit.screen.functions.defaultTitleDoubleClick
+import com.catpuppyapp.puppygit.screen.functions.filterTheList
 import com.catpuppyapp.puppygit.screen.functions.getLoadText
 import com.catpuppyapp.puppygit.screen.functions.initSearch
 import com.catpuppyapp.puppygit.screen.functions.maybeIsGoodKeyword
@@ -954,49 +955,50 @@ fun FileHistoryScreen(
             }
 
             //根据关键字过滤条目
-            val k = filterKeyword.value.text.lowercase()  //关键字
-            val enableFilter = filterModeOn_dontUseThisCheckFilterModeReallyEnabledOrNot.value && maybeIsGoodKeyword(k)
-            val list = if(enableFilter){
-                val curListSize = list.value.size
+            val keyword = filterKeyword.value.text.lowercase()  //关键字
+            val enableFilter = filterModeOn_dontUseThisCheckFilterModeReallyEnabledOrNot.value && maybeIsGoodKeyword(keyword)
+            val list = filterTheList(
+                enableFilter = enableFilter,
+                keyword = keyword,
+                lastKeyword = lastKeyword,
+                searching = searching,
+                token = token,
+                activityContext = activityContext,
+                filterList = filterList.value,
+                list = list.value,
+                resetSearchVars = resetSearchVars,
+                match = { idx, it -> true },
+                lastListSize = lastListSize,
+                filterIdxList = filterIdxList.value,
+                customTask = {
+                    val canceled = initSearch(keyword = keyword, lastKeyword = lastKeyword, token = token)
 
-                if(k != lastKeyword.value || curListSize != lastListSize.intValue) {
-                    lastListSize.intValue = curListSize
-                    filterIdxList.value.clear()
-
-                    doJobThenOffLoading(loadingOff = {searching.value = false}) {
-                        val canceled = initSearch(keyword = k, lastKeyword = lastKeyword, token = token)
-
-                        val match = { idx:Int, it: FileHistoryDto ->
-                            val found = it.treeEntryOidStr.lowercase().contains(k)
-                                    || it.authorEmail.lowercase().contains(k)
-                                    || it.authorUsername.lowercase().contains(k)
-                                    || it.committerEmail.lowercase().contains(k)
-                                    || it.committerUsername.lowercase().contains(k)
-                                    || it.dateTime.lowercase().contains(k)
-                                    || it.commitOidStr.lowercase().contains(k)
-                                    || it.msg.lowercase().contains(k)
-                                    || formatMinutesToUtc(it.originTimeOffsetInMinutes).lowercase().contains(k)
+                    val match = { idx:Int, it: FileHistoryDto ->
+                        val found = it.treeEntryOidStr.lowercase().contains(keyword)
+                                || it.authorEmail.lowercase().contains(keyword)
+                                || it.authorUsername.lowercase().contains(keyword)
+                                || it.committerEmail.lowercase().contains(keyword)
+                                || it.committerUsername.lowercase().contains(keyword)
+                                || it.dateTime.lowercase().contains(keyword)
+                                || it.commitOidStr.lowercase().contains(keyword)
+                                || it.msg.lowercase().contains(keyword)
+                                || formatMinutesToUtc(it.originTimeOffsetInMinutes).lowercase().contains(keyword)
 
 
-                            if(found) {
-                                filterIdxList.value.add(idx)
-                            }
-
-                            found
+                        if(found) {
+                            filterIdxList.value.add(idx)
                         }
 
-                        searching.value = true
-
-                        filterList.value.clear()
-                        search(src = list.value, target = filterList.value, match = match, canceled = canceled)
+                        found
                     }
-                }
 
-                filterList.value
-            }else {
-                resetSearchVars()
-                list.value
-            }
+                    searching.value = true
+
+                    filterList.value.clear()
+                    search(src = list.value, target = filterList.value, match = match, canceled = canceled)
+                }
+            )
+
 
             val listState = if(enableFilter) filterListState else listState
 //        if(enableFilter) {  //更新filter列表state

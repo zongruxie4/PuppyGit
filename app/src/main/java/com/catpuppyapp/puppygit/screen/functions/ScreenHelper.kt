@@ -3,6 +3,8 @@ package com.catpuppyapp.puppygit.screen.functions
 import android.content.Context
 import androidx.compose.foundation.ScrollState
 import androidx.compose.foundation.lazy.LazyListState
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.MutableIntState
 import androidx.compose.runtime.MutableState
 import androidx.compose.ui.platform.ClipboardManager
 import com.catpuppyapp.puppygit.constants.Cons
@@ -238,4 +240,56 @@ suspend fun initSearch(keyword: String, lastKeyword: MutableState<String>, token
 
 fun generateNewTokenForSearch():String {
     return generateRandomString(18)
+}
+
+
+@Composable
+fun <T> filterTheList(
+    activityContext: Context,
+    enableFilter: Boolean,
+    keyword: String,
+    lastKeyword: MutableState<String>,
+    searching: MutableState<Boolean>,
+    token: MutableState<String>,
+    resetSearchVars: () -> Unit,
+    match:(idx:Int, item:T)->Boolean, // 若customTask非null，此参数无效
+    list: List<T>,
+    filterList: MutableList<T>,
+
+    // 开始：file history 和 commit history用这几个变量
+    lastListSize: MutableIntState? = null,
+    filterIdxList:MutableList<Int>? = null,
+    customTask:(suspend (match:(idx:Int, item:T)->Boolean)->Unit)? = null,  //入参 match 就是这个函数的match，传过去若不需要可以不用，但如果不这么写上面的match就得传空函数或null，感觉不好，会产生不需要过滤的错觉
+    // 结束：file history 和 commit history用这几个变量
+
+) : List<T> {
+    return if (enableFilter) {
+        val curListSize = list.size
+
+        if (keyword != lastKeyword.value || ( lastListSize!=null && curListSize != lastListSize.intValue)) {
+            lastListSize?.intValue = curListSize
+            filterIdxList?.clear()
+
+            //若自定义任务为null则运行默认任务
+            doJobThenOffLoading(loadingOff = { searching.value = false }) {
+                if (customTask == null) {  // default task
+                    val canceled = initSearch(keyword = keyword, lastKeyword = lastKeyword, token = token)
+
+                    searching.value = true
+
+                    filterList.clear()
+                    search(src = list, target = filterList, match = match, canceled = canceled)
+                } else {  // custom task
+                    customTask(match)
+                }
+            }
+
+        }
+
+        filterList
+    } else {
+        resetSearchVars()
+        list
+    }
+
 }

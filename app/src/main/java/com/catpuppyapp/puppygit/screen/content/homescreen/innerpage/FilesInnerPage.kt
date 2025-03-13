@@ -104,6 +104,7 @@ import com.catpuppyapp.puppygit.etc.Ret
 import com.catpuppyapp.puppygit.git.ImportRepoResult
 import com.catpuppyapp.puppygit.play.pro.R
 import com.catpuppyapp.puppygit.screen.functions.filterModeActuallyEnabled
+import com.catpuppyapp.puppygit.screen.functions.filterTheList
 import com.catpuppyapp.puppygit.screen.functions.goToFileHistory
 import com.catpuppyapp.puppygit.screen.functions.initSearch
 import com.catpuppyapp.puppygit.screen.functions.recursiveBreadthFirstSearch
@@ -1399,40 +1400,39 @@ fun FilesInnerPage(
                     }  // else maybe
                 }
             }else {
-                val k = filesPageSimpleFilterKeyWord.value.text.lowercase()  //关键字
-                val enableFilter = filterModeActuallyEnabled(filesPageSimpleFilterOn.value, k)
-                val currentPathFileList = if(enableFilter){
-                    //只有关键字变了才执行搜索
-                    if(k != filesPageLastKeyword.value) {
-                        doJobThenOffLoading(loadingOff = {filesPageSearching.value = false}) {
-                            val curDir = File(currentPath.value)
-                            if(curDir.canRead().not()) {
-                                Msg.requireShow(activityContext.getString(R.string.err_read_path_failed))
-                                return@doJobThenOffLoading
-                            }
-
-                            val canceled = initSearch(keyword = k, lastKeyword = filesPageLastKeyword, token = filesPageSearchToken)
-
-                            val match = { it:File ->
-                                val nameLowerCase = it.name.lowercase();
-                                //匹配名称 或 "*.txt"之类的后缀
-                                nameLowerCase.contains(k) || RegexUtil.matchWildcard(input = nameLowerCase, pattern = k)
-                            }
-
-                            filterList.value.clear()
-                            filesPageSearching.value = true
-                            recursiveBreadthFirstSearch(activityContext, curDir, filterList.value, match, canceled)
+                val keyword = filesPageSimpleFilterKeyWord.value.text.lowercase()  //关键字
+                val enableFilter = filterModeActuallyEnabled(filesPageSimpleFilterOn.value, keyword)
+                val currentPathFileList = filterTheList(
+                    enableFilter = enableFilter,
+                    keyword = keyword,
+                    lastKeyword = filesPageLastKeyword,
+                    searching = filesPageSearching,
+                    token = filesPageSearchToken,
+                    activityContext = activityContext,
+                    filterList = filterList.value,
+                    list = currentPathFileList.value,
+                    resetSearchVars = resetFilesSearchVars,
+                    match = { idx, it -> true },
+                    customTask = task@{
+                        val curDir = File(currentPath.value)
+                        if(curDir.canRead().not()) {
+                            Msg.requireShow(activityContext.getString(R.string.err_read_path_failed))
+                            return@task
                         }
+
+                        val canceled = initSearch(keyword = keyword, lastKeyword = filesPageLastKeyword, token = filesPageSearchToken)
+
+                        val match = { it:File ->
+                            val nameLowerCase = it.name.lowercase();
+                            //匹配名称 或 "*.txt"之类的后缀
+                            nameLowerCase.contains(keyword) || RegexUtil.matchWildcard(input = nameLowerCase, pattern = keyword)
+                        }
+
+                        filterList.value.clear()
+                        filesPageSearching.value = true
+                        recursiveBreadthFirstSearch(activityContext, curDir, filterList.value, match, canceled)
                     }
-
-                    //返回过滤列表
-                    filterList.value
-                }else {
-                    //清空token，中止搜索
-                    resetFilesSearchVars()
-
-                    currentPathFileList.value
-                }
+                )
 
 
                 val listState = if(enableFilter) filterListState else curListState.value

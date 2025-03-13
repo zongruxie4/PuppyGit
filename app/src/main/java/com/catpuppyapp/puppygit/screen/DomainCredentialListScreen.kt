@@ -62,9 +62,8 @@ import com.catpuppyapp.puppygit.data.entity.RepoEntity
 import com.catpuppyapp.puppygit.dto.DomainCredentialDto
 import com.catpuppyapp.puppygit.play.pro.R
 import com.catpuppyapp.puppygit.screen.functions.defaultTitleDoubleClick
-import com.catpuppyapp.puppygit.screen.functions.initSearch
+import com.catpuppyapp.puppygit.screen.functions.filterTheList
 import com.catpuppyapp.puppygit.screen.functions.maybeIsGoodKeyword
-import com.catpuppyapp.puppygit.screen.functions.search
 import com.catpuppyapp.puppygit.settings.SettingsUtil
 import com.catpuppyapp.puppygit.style.MyStyleKt
 import com.catpuppyapp.puppygit.utils.AppModel
@@ -506,32 +505,23 @@ fun DomainCredentialListScreen(
         }else {
 
             //根据关键字过滤条目
-            val k = filterKeyword.value.text.lowercase()  //关键字
-            val enableFilter = filterModeOn.value && maybeIsGoodKeyword(k)
-            val list = if(enableFilter){
-
-                if(k != lastKeyword.value) {
-                    doJobThenOffLoading(loadingOff = {searching.value = false}) {
-                        val canceled = initSearch(keyword = k, lastKeyword = lastKeyword, token = token)
-
-                        val match = { idx:Int, it: DomainCredentialDto ->
-                            it.domain.lowercase().contains(k) || (it.credName?.lowercase()?.contains(k) == true)
-                        }
-
-                        searching.value = true
-
-
-                        filterList.value.clear()
-                        search(src = list.value, target = filterList.value, match = match, canceled = canceled)
-                    }
+            val keyword = filterKeyword.value.text.lowercase()  //关键字
+            val enableFilter = filterModeOn.value && maybeIsGoodKeyword(keyword)
+            val list = filterTheList(
+                enableFilter = enableFilter,
+                keyword = keyword,
+                lastKeyword = lastKeyword,
+                searching = searching,
+                token = token,
+                activityContext = activityContext,
+                filterList = filterList.value,
+                list = list.value,
+                resetSearchVars = resetSearchVars,
+                match = { idx:Int, it: DomainCredentialDto ->
+                    it.domain.lowercase().contains(keyword) || (it.credName?.lowercase()?.contains(keyword) == true)
                 }
+            )
 
-                filterList.value
-            }else {
-                resetSearchVars()
-
-                list.value
-            }
             val listState = if(enableFilter) filterListState else listState
 //            if(enableFilter) {  //更新filter列表state
 //                filterListState.value = listState

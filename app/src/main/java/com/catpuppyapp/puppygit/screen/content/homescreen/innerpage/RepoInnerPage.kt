@@ -83,9 +83,8 @@ import com.catpuppyapp.puppygit.etc.RepoPendingTask
 import com.catpuppyapp.puppygit.etc.Ret
 import com.catpuppyapp.puppygit.git.Upstream
 import com.catpuppyapp.puppygit.play.pro.R
-import com.catpuppyapp.puppygit.screen.functions.initSearch
+import com.catpuppyapp.puppygit.screen.functions.filterTheList
 import com.catpuppyapp.puppygit.screen.functions.maybeIsGoodKeyword
-import com.catpuppyapp.puppygit.screen.functions.search
 import com.catpuppyapp.puppygit.server.bean.ConfigBean
 import com.catpuppyapp.puppygit.settings.AppSettings
 import com.catpuppyapp.puppygit.settings.SettingsUtil
@@ -1916,46 +1915,28 @@ fun RepoInnerPage(
     if(!isLoading.value && repoList.value.isNotEmpty()) {  //有仓库
 
         //根据关键字过滤条目
-        val k = repoPageFilterKeyWord.value.text.lowercase()  //关键字
-        val enableFilter = repoPageFilterModeOn.value && maybeIsGoodKeyword(k)
-        val filteredListTmp = if(enableFilter){
-            if(k != lastSearchKeyword.value) {
-                doJobThenOffLoading(loadingOff = {searching.value = false}) {
-                    val canceled = initSearch(keyword = k, lastKeyword = lastSearchKeyword, token = searchToken)
-
-                    val match = { idx:Int, it: RepoEntity ->
-                        it.repoName.lowercase().contains(k)
-//                        || it.branch.lowercase().contains(k)
-                                || it.gitRepoState.toString().lowercase().contains(k)
-//                        || it.cloneUrl.lowercase().contains(k)
-//                        || it.lastCommitHash.lowercase().contains(k)
-                                || it.latestUncheckedErrMsg.lowercase().contains(k)
-//                        || it.pullRemoteName.lowercase().contains(k)
-//                        || it.pushRemoteName.lowercase().contains(k)
-//                        || it.pullRemoteUrl.lowercase().contains(k)
-//                        || it.pushRemoteUrl.lowercase().contains(k)
-                                || it.tmpStatus.lowercase().contains(k)
-//                        || it.upstreamBranch.lowercase().contains(k)
-                                || it.createErrMsg.lowercase().contains(k)
-//                        || it.fullSavePath.lowercase().contains(k)
-                                || it.parentRepoName.lowercase().contains(k)
-                                || it.getOther().lowercase().contains(k)
-
-                    }
-
-                    searching.value = true
-
-
-                    filterList.value.clear()
-                    search(src = repoList.value, target = filterList.value, match = match, canceled = canceled)
-                }
+        val keyword = repoPageFilterKeyWord.value.text.lowercase()  //关键字
+        val enableFilter = repoPageFilterModeOn.value && maybeIsGoodKeyword(keyword)
+        val filteredListTmp = filterTheList(
+            enableFilter = enableFilter,
+            keyword = keyword,
+            lastKeyword = lastSearchKeyword,
+            searching = searching,
+            token = searchToken,
+            activityContext = activityContext,
+            filterList = filterList.value,
+            list = repoList.value,
+            resetSearchVars = resetSearchVars,
+            match = { idx:Int, it: RepoEntity ->
+                it.repoName.lowercase().contains(keyword)
+                        || it.gitRepoState.toString().lowercase().contains(keyword)
+                        || it.latestUncheckedErrMsg.lowercase().contains(keyword)
+                        || it.tmpStatus.lowercase().contains(keyword)
+                        || it.createErrMsg.lowercase().contains(keyword)
+                        || it.parentRepoName.lowercase().contains(keyword)
+                        || it.getOther().lowercase().contains(keyword)
             }
-
-            filterList.value
-        }else {
-            resetSearchVars()
-            repoList.value
-        }
+        )
 
 
         //若一行只有一个条目，fillMaxWidth()

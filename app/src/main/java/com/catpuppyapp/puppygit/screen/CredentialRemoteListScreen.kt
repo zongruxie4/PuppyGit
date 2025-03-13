@@ -54,9 +54,8 @@ import com.catpuppyapp.puppygit.data.entity.CredentialEntity
 import com.catpuppyapp.puppygit.dto.RemoteDtoForCredential
 import com.catpuppyapp.puppygit.play.pro.R
 import com.catpuppyapp.puppygit.screen.functions.defaultTitleDoubleClick
-import com.catpuppyapp.puppygit.screen.functions.initSearch
+import com.catpuppyapp.puppygit.screen.functions.filterTheList
 import com.catpuppyapp.puppygit.screen.functions.maybeIsGoodKeyword
-import com.catpuppyapp.puppygit.screen.functions.search
 import com.catpuppyapp.puppygit.settings.SettingsUtil
 import com.catpuppyapp.puppygit.style.MyStyleKt
 import com.catpuppyapp.puppygit.utils.AppModel
@@ -426,37 +425,29 @@ fun CredentialRemoteListScreen(
     ) { contentPadding ->
 
         //根据关键字过滤条目
-        val k = filterKeyword.value.text.lowercase()  //关键字
-        val enableFilter = filterModeOn.value && maybeIsGoodKeyword(k)
-        val list = if(enableFilter){
+        val keyword = filterKeyword.value.text.lowercase()  //关键字
+        val enableFilter = filterModeOn.value && maybeIsGoodKeyword(keyword)
+        val list = filterTheList(
+            enableFilter = enableFilter,
+            keyword = keyword,
+            lastKeyword = lastKeyword,
+            searching = searching,
+            token = token,
+            activityContext = activityContext,
+            filterList = filterList.value,
+            list = list.value,
+            resetSearchVars = resetSearchVars,
+            match = { idx:Int, it: RemoteDtoForCredential ->
+                it.repoName.lowercase().contains(keyword)
+                        || it.remoteName.lowercase().contains(keyword)
+                        || it.remoteFetchUrl.lowercase().contains(keyword)
+                        || it.remotePushUrl.lowercase().contains(keyword)
+                        || it.getCredentialNameOrNone(activityContext).lowercase().contains(keyword)
+                        || it.getPushCredentialNameOrNone(activityContext).lowercase().contains(keyword)
 
-            if(k != lastKeyword.value) {
-                doJobThenOffLoading(loadingOff = {searching.value = false}) {
-                    val canceled = initSearch(keyword = k, lastKeyword = lastKeyword, token = token)
-
-                    val match = { idx:Int, it: RemoteDtoForCredential ->
-                        it.repoName.lowercase().contains(k)
-                                || it.remoteName.lowercase().contains(k)
-                                || it.remoteFetchUrl.lowercase().contains(k)
-                                || it.remotePushUrl.lowercase().contains(k)
-                                || it.getCredentialNameOrNone(activityContext).lowercase().contains(k)
-                                || it.getPushCredentialNameOrNone(activityContext).lowercase().contains(k)
-
-                    }
-
-                    searching.value = true
-
-
-                    filterList.value.clear()
-                    search(src = list.value, target = filterList.value, match = match, canceled = canceled)
-                }
             }
+        )
 
-            filterList.value
-        }else {
-            resetSearchVars()
-            list.value
-        }
         val listState = if(enableFilter) filterListState else listState
 //        if(enableFilter) {  //更新filter列表state
 //            filterListState.value = listState

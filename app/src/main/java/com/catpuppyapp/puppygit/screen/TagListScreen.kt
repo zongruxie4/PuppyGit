@@ -70,10 +70,9 @@ import com.catpuppyapp.puppygit.data.entity.RepoEntity
 import com.catpuppyapp.puppygit.git.TagDto
 import com.catpuppyapp.puppygit.play.pro.R
 import com.catpuppyapp.puppygit.screen.functions.defaultTitleDoubleClick
+import com.catpuppyapp.puppygit.screen.functions.filterTheList
 import com.catpuppyapp.puppygit.screen.functions.fromTagToCommitHistory
-import com.catpuppyapp.puppygit.screen.functions.initSearch
 import com.catpuppyapp.puppygit.screen.functions.maybeIsGoodKeyword
-import com.catpuppyapp.puppygit.screen.functions.search
 import com.catpuppyapp.puppygit.settings.SettingsUtil
 import com.catpuppyapp.puppygit.style.MyStyleKt
 import com.catpuppyapp.puppygit.ui.theme.Theme
@@ -691,40 +690,32 @@ fun TagListScreen(
 
         }else {  //有条目
             //根据关键字过滤条目
-            val k = filterKeyword.value.text.lowercase()  //关键字
-            val enableFilter = filterModeOn.value && maybeIsGoodKeyword(k)
-            val list = if(enableFilter){
-
-                if(k != lastKeyword.value) {
-                    doJobThenOffLoading(loadingOff = {searching.value = false}) {
-                        val canceled = initSearch(keyword = k, lastKeyword = lastKeyword, token = token)
-
-                        val match = { idx:Int, it: TagDto ->
-                            it.shortName.lowercase().contains(k)
-                                    || it.name.lowercase().contains(k)
-                                    || it.msg.lowercase().contains(k)
-                                    || it.targetFullOidStr.lowercase().contains(k)
-                                    || it.taggerName.lowercase().contains(k)
-                                    || it.taggerEmail.lowercase().contains(k)
-                                    || it.fullOidStr.lowercase().contains(k)  // annotated tag对象的oid；非annotated tag此值和targetFullOidStr一样
-                                    || it.getType(activityContext, false).lowercase().contains(k)
-                                    || it.getType(activityContext, true).lowercase().contains(k)
-                                    || formatMinutesToUtc(it.originTimeOffsetInMinutes).lowercase().contains(k)
-                        }
-
-                        searching.value = true
-
-
-                        filterList.value.clear()
-                        search(src = list.value, target = filterList.value, match = match, canceled = canceled)
-                    }
+            val keyword = filterKeyword.value.text.lowercase()  //关键字
+            val enableFilter = filterModeOn.value && maybeIsGoodKeyword(keyword)
+            val list = filterTheList(
+                enableFilter = enableFilter,
+                keyword = keyword,
+                lastKeyword = lastKeyword,
+                searching = searching,
+                token = token,
+                activityContext = activityContext,
+                filterList = filterList.value,
+                list = list.value,
+                resetSearchVars = resetSearchVars,
+                match = { idx:Int, it: TagDto ->
+                    it.shortName.lowercase().contains(keyword)
+                            || it.name.lowercase().contains(keyword)
+                            || it.msg.lowercase().contains(keyword)
+                            || it.targetFullOidStr.lowercase().contains(keyword)
+                            || it.taggerName.lowercase().contains(keyword)
+                            || it.taggerEmail.lowercase().contains(keyword)
+                            || it.fullOidStr.lowercase().contains(keyword)  // annotated tag对象的oid；非annotated tag此值和targetFullOidStr一样
+                            || it.getType(activityContext, false).lowercase().contains(keyword)
+                            || it.getType(activityContext, true).lowercase().contains(keyword)
+                            || formatMinutesToUtc(it.originTimeOffsetInMinutes).lowercase().contains(keyword)
                 }
+            )
 
-                filterList.value
-            }else {
-                resetSearchVars()
-                list.value
-            }
 
             val listState = if(enableFilter) filterListState else listState
 //            if(enableFilter) {  //更新filter列表state

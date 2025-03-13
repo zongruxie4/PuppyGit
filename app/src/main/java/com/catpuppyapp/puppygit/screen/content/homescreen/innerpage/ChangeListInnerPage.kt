@@ -94,11 +94,10 @@ import com.catpuppyapp.puppygit.git.StatusTypeEntrySaver
 import com.catpuppyapp.puppygit.git.Upstream
 import com.catpuppyapp.puppygit.play.pro.R
 import com.catpuppyapp.puppygit.screen.functions.ChangeListFunctions
-import com.catpuppyapp.puppygit.screen.functions.initSearch
+import com.catpuppyapp.puppygit.screen.functions.filterTheList
 import com.catpuppyapp.puppygit.screen.functions.maybeIsGoodKeyword
 import com.catpuppyapp.puppygit.screen.functions.naviToFileHistoryByRelativePath
 import com.catpuppyapp.puppygit.screen.functions.openFileWithInnerSubPageEditor
-import com.catpuppyapp.puppygit.screen.functions.search
 import com.catpuppyapp.puppygit.screen.shared.DiffFromScreen
 import com.catpuppyapp.puppygit.screen.shared.SharedState
 import com.catpuppyapp.puppygit.settings.SettingsUtil
@@ -2757,34 +2756,26 @@ fun ChangeListInnerPage(
 
             }else {  //列表不为空，显示条目
                 //根据关键字过滤条目
-                val k = changeListPageFilterKeyWord.value.text.lowercase()  //关键字
-                val enableFilter = changeListPageFilterModeOn.value && maybeIsGoodKeyword(k)
-                val itemListOrFilterList = if(enableFilter){
-                    if(k != lastSearchKeyword.value) {
-                        doJobThenOffLoading(loadingOff = {searching.value = false}) {
-                            val canceled = initSearch(keyword = k, lastKeyword = lastSearchKeyword, token = searchToken)
-
-                            val match = { idx:Int, it: StatusTypeEntrySaver ->
-                                it.fileName.lowercase().contains(k)
-                                        || it.relativePathUnderRepo.lowercase().contains(k)
-                                        || it.getSizeStr().lowercase().contains(k)
-                                        || it.getChangeTypeAndSuffix(isDiffToLocal).lowercase().contains(k)
-                                        || it.getItemTypeString().lowercase().contains(k)
-                            }
-
-                            searching.value = true
-
-
-                            filterList.value.clear()
-                            search(src = itemList.value, target = filterList.value, match = match, canceled = canceled)
-                        }
+                val keyword = changeListPageFilterKeyWord.value.text.lowercase()  //关键字
+                val enableFilter = changeListPageFilterModeOn.value && maybeIsGoodKeyword(keyword)
+                val itemListOrFilterList = filterTheList(
+                    enableFilter = enableFilter,
+                    keyword = keyword,
+                    lastKeyword = lastSearchKeyword,
+                    searching = searching,
+                    token = searchToken,
+                    activityContext = activityContext,
+                    filterList = filterList.value,
+                    list = itemList.value,
+                    resetSearchVars = resetSearchVars,
+                    match = { idx:Int, it: StatusTypeEntrySaver ->
+                        it.fileName.lowercase().contains(keyword)
+                                || it.relativePathUnderRepo.lowercase().contains(keyword)
+                                || it.getSizeStr().lowercase().contains(keyword)
+                                || it.getChangeTypeAndSuffix(isDiffToLocal).lowercase().contains(keyword)
+                                || it.getItemTypeString().lowercase().contains(keyword)
                     }
-
-                    filterList.value
-                }else {
-                    resetSearchVars()
-                    itemList.value
-                }
+                )
 
                 val listState = if(enableFilter) filterListState else itemListState
 //                if(enableFilter) {  //更新filter列表state

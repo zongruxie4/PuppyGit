@@ -88,9 +88,8 @@ import com.catpuppyapp.puppygit.etc.Ret
 import com.catpuppyapp.puppygit.git.BranchNameAndTypeDto
 import com.catpuppyapp.puppygit.play.pro.R
 import com.catpuppyapp.puppygit.screen.functions.defaultTitleDoubleClick
-import com.catpuppyapp.puppygit.screen.functions.initSearch
+import com.catpuppyapp.puppygit.screen.functions.filterTheList
 import com.catpuppyapp.puppygit.screen.functions.maybeIsGoodKeyword
-import com.catpuppyapp.puppygit.screen.functions.search
 import com.catpuppyapp.puppygit.settings.SettingsUtil
 import com.catpuppyapp.puppygit.style.MyStyleKt
 import com.catpuppyapp.puppygit.ui.theme.Theme
@@ -1692,43 +1691,35 @@ fun BranchListScreen(
 
 
         //根据关键字过滤条目
-        val k = filterKeyword.value.text.lowercase()  //关键字
-        val enableFilter = filterModeOn.value && maybeIsGoodKeyword(k)
-        val list = if(enableFilter){
-            if(k != lastKeyword.value) {
-                doJobThenOffLoading(loadingOff = {searching.value = false}) {
-                    val canceled = initSearch(keyword = k, lastKeyword = lastKeyword, token = token)
+        val keyword = filterKeyword.value.text.lowercase()  //关键字
+        val enableFilter = filterModeOn.value && maybeIsGoodKeyword(keyword)
+        val list = filterTheList(
+            enableFilter = enableFilter,
+            keyword = keyword,
+            lastKeyword = lastKeyword,
+            searching = searching,
+            token = token,
+            activityContext = activityContext,
+            filterList = filterList.value,
+            list = list.value,
+            resetSearchVars = resetSearchVars,
+            match = { idx: Int, it: BranchNameAndTypeDto ->
+            it.fullName.lowercase().contains(keyword)
+                    || it.oidStr.lowercase().contains(keyword)
+                    || it.symbolicTargetFullName.lowercase().contains(keyword)
+                    || it.getUpstreamShortName(activityContext).lowercase().contains(keyword)
 
-                    val match = { idx:Int, it: BranchNameAndTypeDto ->
-                        it.fullName.lowercase().contains(k)
-                                || it.oidStr.lowercase().contains(k)
-                                || it.symbolicTargetFullName.lowercase().contains(k)
-                                || it.getUpstreamShortName(activityContext).lowercase().contains(k)
+                    //如果加这个，一搜"remote"会把关联了远程分支的本地分支也显示出来，因为这些分支的上游完整名是 "refs/remotes/....."，其中包含了关键字"remote"
+                    // || it.getUpstreamFullName(activityContext).lowercase().contains(k)
 
-                                //如果加这个，一搜"remote"会把关联了远程分支的本地分支也显示出来，因为这些分支的上游完整名是 "refs/remotes/....."，其中包含了关键字"remote"
-                                // || it.getUpstreamFullName(activityContext).lowercase().contains(k)
-
-                                || it.getOther(activityContext, false).lowercase().contains(k)
-                                || it.getOther(activityContext, true).lowercase().contains(k)
-                                || it.getTypeString(activityContext, false).lowercase().contains(k)
-                                || it.getTypeString(activityContext, true).lowercase().contains(k)
-                                || it.getAheadBehind(activityContext, false).lowercase().contains(k)
-                                || it.getAheadBehind(activityContext, true).lowercase().contains(k)
-                    }
-
-                    searching.value = true
-
-
-                    filterList.value.clear()
-                    search(src = list.value, target = filterList.value, match = match, canceled = canceled)
-                }
+                    || it.getOther(activityContext, false).lowercase().contains(keyword)
+                    || it.getOther(activityContext, true).lowercase().contains(keyword)
+                    || it.getTypeString(activityContext, false).lowercase().contains(keyword)
+                    || it.getTypeString(activityContext, true).lowercase().contains(keyword)
+                    || it.getAheadBehind(activityContext, false).lowercase().contains(keyword)
+                    || it.getAheadBehind(activityContext, true).lowercase().contains(keyword)
             }
-
-            filterList.value
-        }else {
-            resetSearchVars()
-            list.value
-        }
+        )
 
 
         val listState = if(enableFilter) filterListState else listState
