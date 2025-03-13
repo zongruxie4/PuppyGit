@@ -38,7 +38,12 @@ import java.io.File
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun EditorTitle(
+    isPreviewModeOn:Boolean,
+
+    // 若指定文件名，将使用，否则解析路径取出文件名。
+    // 应用场景：用来在打开uri时指定文件名，因为uri不是/开头的规范路径，而且还可能有%2F之类的编码，不一定能通过拆分路径取出文件名，所以干脆让上级页面解析好了传过来即可。
     editorPageShowingFileName: String?,
+
     editorPageShowingFilePath: MutableState<String>,
     editorPageRequestFromParent:MutableState<String>,
     editorSearchMode:Boolean,
@@ -50,7 +55,7 @@ fun EditorTitle(
     val haptic = LocalHapticFeedback.current
 
     if(editorPageShowingFilePath.value.isNotBlank()) {
-        val fileName = editorPageShowingFileName ?: getFileNameFromCanonicalPath(editorPageShowingFilePath.value)
+        val fileName = if(editorPageShowingFileName.isNullOrEmpty()) getFileNameFromCanonicalPath(editorPageShowingFilePath.value) else editorPageShowingFileName
 //        val filePath = getFilePathStrBasedRepoDir(editorPageShowingFilePath.value, returnResultStartsWithSeparator = true)
         val filePath = FsUtils.getPathWithInternalOrExternalPrefix(editorPageShowingFilePath.value)
 
@@ -62,7 +67,8 @@ fun EditorTitle(
             //双击标题回到文件顶部；长按可跳转到指定行；点击显示路径
             modifier = Modifier.widthIn(min=MyStyleKt.Title.clickableTitleMinWidth)
                 .combinedClickable(
-                    enabled = !editorOpenFileErr,  //只有在成功打开文件时才启用点击标题长按标题之类的操作
+                    //打开文件没出错 且 非预览模式
+                    enabled = !editorOpenFileErr && !isPreviewModeOn,
                     onDoubleClick = {
                         // editorPageRequestFromParent.value = PageRequest.switchBetweenFirstLineAndLastEditLine
                         defaultTitleDoubleClickRequest(editorPageRequestFromParent)

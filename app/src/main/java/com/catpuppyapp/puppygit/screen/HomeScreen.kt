@@ -9,6 +9,7 @@ import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.AutoFixHigh
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Cloud
@@ -92,7 +93,6 @@ import com.catpuppyapp.puppygit.screen.content.homescreen.scaffold.title.ReposTi
 import com.catpuppyapp.puppygit.screen.content.homescreen.scaffold.title.ScrollableTitle
 import com.catpuppyapp.puppygit.screen.content.homescreen.scaffold.title.SimpleTitle
 import com.catpuppyapp.puppygit.screen.functions.ChangeListFunctions
-import com.catpuppyapp.puppygit.screen.functions.generateNewTokenForSearch
 import com.catpuppyapp.puppygit.screen.shared.SharedState
 import com.catpuppyapp.puppygit.settings.SettingsCons
 import com.catpuppyapp.puppygit.settings.SettingsUtil
@@ -109,6 +109,7 @@ import com.catpuppyapp.puppygit.utils.state.mutableCustomStateListOf
 import com.catpuppyapp.puppygit.utils.state.mutableCustomStateOf
 import com.github.git24j.core.Repository.StateT
 import kotlinx.coroutines.launch
+import java.io.File
 
 
 private const val TAG = "HomeScreen"
@@ -403,6 +404,30 @@ fun HomeScreen(
         changeListCurRepo.value=item
         changeListRequireRefreshFromParentPage(item)
     }
+
+
+    val editorPreviewScrollState = rememberScrollState()
+    val editorIsPreviewModeOn = rememberSaveable { mutableStateOf(false) }
+    val editorMdText = rememberSaveable { mutableStateOf("") }
+    val editorBasePath = rememberSaveable { mutableStateOf("") }
+    val editorQuitPreviewMode = {
+        editorBasePath.value = ""
+        editorMdText.value = ""
+        editorIsPreviewModeOn.value = false
+    }
+    val editorInitPreviewMode = {
+        doJobThenOffLoading {
+            editorBasePath.value = File(editorPageShowingFilePath.value).parent ?: ""
+            // may take time
+            editorMdText.value = editorPageTextEditorState.value.getAllText()
+            editorIsPreviewModeOn.value = true
+        }
+
+        Unit
+    }
+
+
+
 
     val editorPageShowingFileName = rememberSaveable { mutableStateOf<String?>(null) }
     val filesPageRequireImportFile = rememberSaveable { mutableStateOf( false)}
@@ -740,6 +765,20 @@ fun HomeScreen(
         Unit
     }
 
+    val menuButton:@Composable ()->Unit = {
+        LongPressAbleIconBtn(
+            tooltipText = stringResource(R.string.menu),
+            icon = Icons.Filled.Menu,
+            iconContentDesc = stringResource(R.string.menu),
+        ) {
+            scope.launch {
+                drawerState.apply {
+                    if (isClosed) open() else close()
+                }
+            }
+        }
+    }
+
     ModalNavigationDrawer(
         drawerState = drawerState,
         drawerContent = {
@@ -821,6 +860,7 @@ fun HomeScreen(
                             )
                         } else if (currentHomeScreen.intValue == Cons.selectedItem_Editor) {
                             EditorTitle(
+                                isPreviewModeOn = editorIsPreviewModeOn.value,
                                 editorPageShowingFileName = editorPageShowingFileName.value,
                                 editorPageShowingFilePath = editorPageShowingFilePath,
                                 editorPageRequestFromParent = editorPageRequestFromParent,
@@ -895,36 +935,34 @@ fun HomeScreen(
                                 resetReposSearchVars()
                                 repoPageFilterModeOn.value=false
                             }
-                        }else if(currentHomeScreen.intValue == Cons.selectedItem_Editor
-                            && (editorPageSearchMode.value || editorAdjustFontSizeMode.value || editorAdjustLineNumFontSizeMode.value)
-                        ){
-                            LongPressAbleIconBtn(
-                                tooltipText = stringResource(R.string.close),
-                                icon =  Icons.Filled.Close,
-                                iconContentDesc = stringResource(R.string.close),
-
-                            ) {
-                                if(editorPageSearchMode.value) {
-                                    editorPageSearchMode.value = false
-                                }else if(editorAdjustFontSizeMode.value) {
-                                    editorPageRequestFromParent.value = PageRequest.requireSaveFontSizeAndQuitAdjust
-                                }else if(editorAdjustLineNumFontSizeMode.value) {
-                                    editorPageRequestFromParent.value = PageRequest.requireSaveLineNumFontSizeAndQuitAdjust
+                        }else if(currentHomeScreen.intValue == Cons.selectedItem_Editor){
+                            if(editorIsPreviewModeOn.value) {
+                                LongPressAbleIconBtn(
+                                    tooltipText = stringResource(R.string.back),
+                                    icon = Icons.AutoMirrored.Filled.ArrowBack,
+                                ) {
+                                    editorQuitPreviewMode()
                                 }
-                            }
-                        }else {
-                            LongPressAbleIconBtn(
-                                tooltipText = stringResource(R.string.menu),
-                                icon = Icons.Filled.Menu,
-                                iconContentDesc = stringResource(R.string.menu),
-                            ) {
-                                scope.launch {
-                                    drawerState.apply {
-                                        if (isClosed) open() else close()
+                            } else if((editorPageSearchMode.value || editorAdjustFontSizeMode.value || editorAdjustLineNumFontSizeMode.value)) {
+                                LongPressAbleIconBtn(
+                                    tooltipText = stringResource(R.string.close),
+                                    icon =  Icons.Filled.Close,
+                                    iconContentDesc = stringResource(R.string.close),
+
+                                ) {
+                                    if(editorPageSearchMode.value) {
+                                        editorPageSearchMode.value = false
+                                    }else if(editorAdjustFontSizeMode.value) {
+                                        editorPageRequestFromParent.value = PageRequest.requireSaveFontSizeAndQuitAdjust
+                                    }else if(editorAdjustLineNumFontSizeMode.value) {
+                                        editorPageRequestFromParent.value = PageRequest.requireSaveLineNumFontSizeAndQuitAdjust
                                     }
                                 }
+                            } else {
+                                menuButton()
                             }
-
+                        }else {
+                            menuButton()
                         }
 
                     },
@@ -951,11 +989,13 @@ fun HomeScreen(
 
                         }else if(currentHomeScreen.intValue == Cons.selectedItem_Editor && !editorOpenFileErr.value) {
                             EditorPageActions(
-                                editorPageShowingFilePath,
+                                isPreviewModeOn = editorIsPreviewModeOn.value,
+                                previewScrollState = editorPreviewScrollState,
+                                editorPageShowingFilePath = editorPageShowingFilePath,
 //                                editorPageRequireOpenFilePath,
-                                editorPageShowingFileIsReady,
-                                needRefreshEditorPage,
-                                editorPageTextEditorState,
+                                editorPageShowingFileIsReady = editorPageShowingFileIsReady,
+                                needRefreshEditorPage = needRefreshEditorPage,
+                                editorPageTextEditorState = editorPageTextEditorState,
 //                                editorPageShowSaveDoneToast,
                                 isSaving = editorPageIsSaving,
                                 isEdited = editorPageIsEdited,
@@ -1162,6 +1202,13 @@ fun HomeScreen(
 //                changeStateTriggerRefreshPage(needRefreshEditorPage)
 
                 EditorInnerPage(
+                    isPreviewModeOn = editorIsPreviewModeOn,
+                    previewScrollState = editorPreviewScrollState,
+                    mdText = editorMdText,
+                    basePath = editorBasePath,
+                    quitPreviewMode = editorQuitPreviewMode,
+                    initPreviewMode = editorInitPreviewMode,
+
                     editorPageShowingFileName=editorPageShowingFileName.value,
                     contentPadding = contentPadding,
                     currentHomeScreen = currentHomeScreen,
@@ -1185,14 +1232,14 @@ fun HomeScreen(
                     doSave=doSave,
                     naviUp = {},  //当前页面是一级页面，不需要传naviUp所有逻辑都包含在backhandler里了；二级页面(子页面)才需要传naviUp，用来在按返回箭头时保存再返回
                     requestFromParent = editorPageRequestFromParent,
-                    editorPageShowingFileDto,
-                    editorPageLastFilePath,
-                    editorPageLastScrollEvent,
-                    editorPageLazyListState,
-                    editorPageIsInitDone,
-                    editorPageIsContentSnapshoted,
-                    goToFilesPage,
-                    drawerState,
+                    editorPageShowingFileDto = editorPageShowingFileDto,
+                    lastFilePath = editorPageLastFilePath,
+                    editorLastScrollEvent = editorPageLastScrollEvent,
+                    editorListState = editorPageLazyListState,
+                    editorPageIsInitDone = editorPageIsInitDone,
+                    editorPageIsContentSnapshoted = editorPageIsContentSnapshoted,
+                    goToFilesPage = goToFilesPage,
+                    drawerState = drawerState,
                     editorSearchMode = editorPageSearchMode,
                     editorSearchKeyword = editorPageSearchKeyword,
                     readOnlyMode = editorReadOnlyMode,

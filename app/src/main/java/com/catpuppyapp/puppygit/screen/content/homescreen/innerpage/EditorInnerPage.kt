@@ -3,6 +3,7 @@ package com.catpuppyapp.puppygit.screen.content.homescreen.innerpage
 import android.content.Context
 import android.widget.Toast
 import androidx.activity.compose.BackHandler
+import androidx.compose.foundation.ScrollState
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
@@ -95,6 +96,12 @@ private var justForSaveFileWhenDrawerOpen = getShortUUID()
 
 @Composable
 fun EditorInnerPage(
+    previewScrollState:ScrollState,
+    isPreviewModeOn:MutableState<Boolean>,
+    mdText:MutableState<String>,
+    basePath:MutableState<String>,
+    quitPreviewMode:()->Unit,
+    initPreviewMode:()->Unit,
     editorPageShowingFileName:String?,
     contentPadding: PaddingValues,
     currentHomeScreen: MutableIntState,
@@ -323,27 +330,7 @@ fun EditorInnerPage(
 //        }
     }
 
-    //是否启用预览和滚动需要放到上级页面，一个用来在标题栏显示回到顶部和底部按钮；另一个用来在切换页面后记住滚动状态
-    val previewScrollState = rememberScrollState()  //放上级页面
-    val isPreviewModeOn = rememberSaveable { mutableStateOf(false) }  //放上级页面
 
-    val mdText = rememberSaveable { mutableStateOf("") }
-    val basePath = rememberSaveable { mutableStateOf("") }
-    val quitPreviewMode = {
-        basePath.value = ""
-        mdText.value = ""
-        isPreviewModeOn.value = false
-    }
-    val initPreviewMode = {
-        doJobThenOffLoading {
-            basePath.value = File(editorPageShowingFilePath.value).parent ?: ""
-            // may take time
-            mdText.value = editorPageTextEditorState.value.getAllText()
-            isPreviewModeOn.value = true
-        }
-
-        Unit
-    }
 
 //    if(!isSubPageMode) {  //如果是子页面模式，不注册back handler，因为不需要双击退出
     //back handler block start

@@ -1,5 +1,6 @@
 package com.catpuppyapp.puppygit.screen.content.homescreen.scaffold.actions
 
+import androidx.compose.foundation.ScrollState
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
@@ -10,6 +11,8 @@ import androidx.compose.material.icons.filled.ArrowUpward
 import androidx.compose.material.icons.filled.CheckBox
 import androidx.compose.material.icons.filled.CheckBoxOutlineBlank
 import androidx.compose.material.icons.filled.MoreVert
+import androidx.compose.material.icons.filled.VerticalAlignBottom
+import androidx.compose.material.icons.filled.VerticalAlignTop
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.Icon
@@ -18,6 +21,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.MutableIntState
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.hapticfeedback.HapticFeedbackType
@@ -41,12 +45,15 @@ import com.catpuppyapp.puppygit.settings.SettingsCons
 import com.catpuppyapp.puppygit.settings.SettingsUtil
 import com.catpuppyapp.puppygit.style.MyStyleKt
 import com.catpuppyapp.puppygit.user.UserUtil
-import com.catpuppyapp.puppygit.utils.AppModel
 import com.catpuppyapp.puppygit.utils.Msg
+import com.catpuppyapp.puppygit.utils.UIHelper
 import com.catpuppyapp.puppygit.utils.state.CustomStateSaveable
 
 @Composable
 fun EditorPageActions(
+    isPreviewModeOn:Boolean,
+    previewScrollState: ScrollState,
+
     editorPageShowingFilePath: MutableState<String>,
 //    editorPageRequireOpenFilePath: MutableState<String>,
     editorPageShowingFileIsReady: MutableState<Boolean>,
@@ -80,11 +87,29 @@ fun EditorPageActions(
      */
 
     val haptic = LocalHapticFeedback.current
+    val scope = rememberCoroutineScope()
 
     val hasGoodKeyword = editorSearchKeyword.isNotEmpty()
 
     //这几个模式互斥，其实可以做成枚举
-    if(editorPageSearchMode.value) {
+
+    if(isPreviewModeOn) {
+        LongPressAbleIconBtn(
+            tooltipText = stringResource(R.string.go_to_top),
+            icon = Icons.Filled.VerticalAlignTop,
+        ) {
+            UIHelper.scrollTo(scope, previewScrollState, 0)
+        }
+
+        LongPressAbleIconBtn(
+            tooltipText = stringResource(R.string.go_to_bottom),
+            icon = Icons.Filled.VerticalAlignBottom,
+        ) {
+            UIHelper.scrollTo(scope, previewScrollState, Int.MAX_VALUE)
+        }
+
+        return  //返回，以免显示菜单项
+    }else if(editorPageSearchMode.value) {
         LongPressAbleIconBtn(
             enabled = hasGoodKeyword,
             tooltipText = stringResource(R.string.find_previous),

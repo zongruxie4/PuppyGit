@@ -1,6 +1,7 @@
 package com.catpuppyapp.puppygit.screen
 
 import androidx.compose.foundation.lazy.rememberLazyListState
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Close
@@ -43,6 +44,7 @@ import com.catpuppyapp.puppygit.utils.doJobThenOffLoading
 import com.catpuppyapp.puppygit.utils.state.mutableCustomStateOf
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
+import java.io.File
 
 //for debug
 private const val TAG = "SubPageEditor"
@@ -138,6 +140,27 @@ fun SubPageEditor(
     val editorPageMergeMode = rememberSaveable{mutableStateOf(initMergeMode)}
 
 
+    val editorPreviewScrollState = rememberScrollState()
+    val editorIsPreviewModeOn = rememberSaveable { mutableStateOf(false) }
+    val editorMdText = rememberSaveable { mutableStateOf("") }
+    val editorBasePath = rememberSaveable { mutableStateOf("") }
+    val editorQuitPreviewMode = {
+        editorBasePath.value = ""
+        editorMdText.value = ""
+        editorIsPreviewModeOn.value = false
+    }
+    val editorInitPreviewMode = {
+        doJobThenOffLoading {
+            editorBasePath.value = File(editorPageShowingFilePath.value).parent ?: ""
+            // may take time
+            editorMdText.value = editorPageTextEditorState.value.getAllText()
+            editorIsPreviewModeOn.value = true
+        }
+
+        Unit
+    }
+
+
     val settingsTmp = remember { SettingsUtil.getSettingsSnapshot() }  //避免状态变量里的设置项过旧，重新获取一个
     val editorShowLineNum = rememberSaveable{mutableStateOf(settingsTmp.editor.showLineNum)}
     val editorLineNumFontSize = rememberSaveable { mutableIntStateOf(settingsTmp.editor.lineNumFontSize)}
@@ -207,11 +230,29 @@ fun SubPageEditor(
                 ),
                 title = {
                     //这页面不用来打开外部文件，正常来说不会出现file uri，不过虽然可以通过最近文件列表打开一个uri路径，但这个处理起来有点繁琐，算了，不管了，又不是不能用
-                    EditorTitle(null, editorPageShowingFilePath, editorPageRequestFromParent, editorPageSearchMode.value, editorPageSearchKeyword, editorPageMergeMode.value, editorReadOnlyMode.value, editorOpenFileErr.value)
+
+                    EditorTitle(
+                        isPreviewModeOn = editorIsPreviewModeOn.value,
+                        editorPageShowingFileName = null,  //若打开 uri 此变量是文件名，但此页面不用来打开uri，所以也不需要指定uri关联的文件名
+                        editorPageShowingFilePath = editorPageShowingFilePath,
+                        editorPageRequestFromParent = editorPageRequestFromParent,
+                        editorSearchMode = editorPageSearchMode.value,
+                        editorSearchKeyword = editorPageSearchKeyword,
+                        editorPageMergeMode = editorPageMergeMode.value,
+                        readOnly = editorReadOnlyMode.value,
+                        editorOpenFileErr = editorOpenFileErr.value
+                    )
 
                 },
                 navigationIcon = {
-                    if(editorPageSearchMode.value || editorAdjustFontSizeMode.value || editorAdjustLineNumFontSizeMode.value) {
+                    if(editorIsPreviewModeOn.value) {
+                        LongPressAbleIconBtn(
+                            tooltipText = stringResource(R.string.back),
+                            icon = Icons.AutoMirrored.Filled.ArrowBack,
+                        ) {
+                            editorQuitPreviewMode()
+                        }
+                    }else if(editorPageSearchMode.value || editorAdjustFontSizeMode.value || editorAdjustLineNumFontSizeMode.value) {
                         LongPressAbleIconBtn(
                             tooltipText = stringResource(R.string.close),
                             icon =  Icons.Filled.Close,
@@ -257,11 +298,13 @@ fun SubPageEditor(
                 actions = {
                     if(!editorOpenFileErr.value) {
                         EditorPageActions(
-                            editorPageShowingFilePath,
+                            isPreviewModeOn = editorIsPreviewModeOn.value,
+                            previewScrollState = editorPreviewScrollState,
+                            editorPageShowingFilePath = editorPageShowingFilePath,
     //                        editorPageRequireOpenFilePath,
-                            editorPageShowingFileIsReady,
-                            needRefreshEditorPage,
-                            editorPageTextEditorState,
+                            editorPageShowingFileIsReady = editorPageShowingFileIsReady,
+                            needRefreshEditorPage = needRefreshEditorPage,
+                            editorPageTextEditorState = editorPageTextEditorState,
     //                        editorPageShowSaveDoneToast,
                             isSaving = editorPageIsSaving,
                             isEdited = editorPageIsEdited,
@@ -304,6 +347,13 @@ fun SubPageEditor(
         }
     ) { contentPadding ->
         EditorInnerPage(
+            isPreviewModeOn = editorIsPreviewModeOn,
+            previewScrollState = editorPreviewScrollState,
+            mdText = editorMdText,
+            basePath = editorBasePath,
+            quitPreviewMode = editorQuitPreviewMode,
+            initPreviewMode = editorInitPreviewMode,
+
             editorPageShowingFileName = null,
             contentPadding = contentPadding,
 
