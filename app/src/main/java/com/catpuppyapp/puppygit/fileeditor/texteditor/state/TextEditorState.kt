@@ -14,7 +14,7 @@ import java.io.OutputStream
 class TextEditorState private constructor(
 
     /**
-     the `fieldsId` only about fields, same fieldsId should has same fields，但不强制要求
+     the `fieldsId` only about fields, same fieldsId should has same fields，but isn't enforce (但不强制要求)
      */
     val fieldsId: String,
     val fields: List<TextFieldState>,
@@ -22,13 +22,20 @@ class TextEditorState private constructor(
     val selectedIndices: List<Int>,
     val isMultipleSelectionMode: Boolean,
 ) {
-    @Deprecated("if you want to save lines to file, use `dumpLines` instead")
-    fun deprecated_getAllText(): String {
+    /**
+     * note: if you want to save lines to file, recommend to use `dumpLines` instead
+     */
+    fun getAllText(): String {
         val sb = StringBuilder()
-        fields.forEach { sb.append(it.value.text).append("\n") }
-        return sb.removeSuffix("\n").toString()
+        val fields = fields
+        val lb = "\n"
+        for(idx in fields.indices) {
+            sb.append(fields[idx].value.text).append(lb)
+        }
 
-        //below code very slow when file over 1MB
+        return sb.removeSuffix(lb).toString()
+
+        //below code very slow when file over 1MB，主要原因是字符串拼接，次要是隐含多次循环
 //        return fields.map { it.value.text }.foldIndexed("") { index, acc, s ->
 //            if (index == 0) acc + s else acc + "\n" + s
 //        }
