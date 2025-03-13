@@ -21,7 +21,6 @@ import com.catpuppyapp.puppygit.ui.theme.Theme
 import com.catpuppyapp.puppygit.utils.UIHelper
 
 
-private const val TAG = "CardButton"
 
 @Composable
 fun CardButton(
@@ -63,14 +62,10 @@ fun CardButton(
 
     val cardColor = UIHelper.defaultCardColor()
 
-
-
-
     Column(
         modifier = Modifier
             .fillMaxWidth()
-//            .padding(paddingValues)
-//            .padding(start = 10.dp, end = 10.dp)
+            .padding(top = 2.dp)  //顶部加点margin，不然有时候显示不全
             .then(modifier),
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.Center
