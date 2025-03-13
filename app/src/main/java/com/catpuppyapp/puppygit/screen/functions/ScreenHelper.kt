@@ -154,6 +154,10 @@ fun maybeIsGoodKeyword(keyword:String) : Boolean {
     return keyword.isNotEmpty()
 }
 
+fun filterModeActuallyEnabled(filterOn:Boolean, keyword: String):Boolean {
+    return filterOn && maybeIsGoodKeyword(keyword)
+}
+
 fun <T> search(
     src:List<T>,
     match:(srcIdx:Int, srcItem:T)->Boolean,
@@ -171,10 +175,6 @@ fun <T> search(
             matchedCallback(idx, it)
         }
     }
-}
-
-fun filterModeActuallyEnabled(filterOn:Boolean, keyword: String):Boolean {
-    return filterOn && maybeIsGoodKeyword(keyword)
 }
 
 /**

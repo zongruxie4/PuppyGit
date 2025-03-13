@@ -94,6 +94,7 @@ import com.catpuppyapp.puppygit.git.StatusTypeEntrySaver
 import com.catpuppyapp.puppygit.git.Upstream
 import com.catpuppyapp.puppygit.play.pro.R
 import com.catpuppyapp.puppygit.screen.functions.ChangeListFunctions
+import com.catpuppyapp.puppygit.screen.functions.filterModeActuallyEnabled
 import com.catpuppyapp.puppygit.screen.functions.filterTheList
 import com.catpuppyapp.puppygit.screen.functions.maybeIsGoodKeyword
 import com.catpuppyapp.puppygit.screen.functions.naviToFileHistoryByRelativePath
@@ -2757,7 +2758,7 @@ fun ChangeListInnerPage(
             }else {  //列表不为空，显示条目
                 //根据关键字过滤条目
                 val keyword = changeListPageFilterKeyWord.value.text.lowercase()  //关键字
-                val enableFilter = changeListPageFilterModeOn.value && maybeIsGoodKeyword(keyword)
+                val enableFilter = filterModeActuallyEnabled(filterOn = changeListPageFilterModeOn.value, keyword = keyword)
                 val itemListOrFilterList = filterTheList(
                     enableFilter = enableFilter,
                     keyword = keyword,

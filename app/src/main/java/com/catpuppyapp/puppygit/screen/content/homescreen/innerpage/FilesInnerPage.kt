@@ -1401,7 +1401,7 @@ fun FilesInnerPage(
                 }
             }else {
                 val keyword = filesPageSimpleFilterKeyWord.value.text.lowercase()  //关键字
-                val enableFilter = filterModeActuallyEnabled(filesPageSimpleFilterOn.value, keyword)
+                val enableFilter = filterModeActuallyEnabled(filterOn = filesPageSimpleFilterOn.value, keyword = keyword)
                 val currentPathFileList = filterTheList(
                     enableFilter = enableFilter,
                     keyword = keyword,

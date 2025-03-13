@@ -50,8 +50,8 @@ import com.catpuppyapp.puppygit.data.entity.ErrorEntity
 import com.catpuppyapp.puppygit.data.entity.RepoEntity
 import com.catpuppyapp.puppygit.play.pro.R
 import com.catpuppyapp.puppygit.screen.functions.defaultTitleDoubleClick
+import com.catpuppyapp.puppygit.screen.functions.filterModeActuallyEnabled
 import com.catpuppyapp.puppygit.screen.functions.filterTheList
-import com.catpuppyapp.puppygit.screen.functions.maybeIsGoodKeyword
 import com.catpuppyapp.puppygit.settings.SettingsUtil
 import com.catpuppyapp.puppygit.style.MyStyleKt
 import com.catpuppyapp.puppygit.utils.AppModel
@@ -350,7 +350,7 @@ fun ErrorListScreen(
 
         //根据关键字过滤条目
         val keyword = filterKeyword.value.text.lowercase()  //关键字
-        val enableFilter = filterModeOn.value && maybeIsGoodKeyword(keyword)
+        val enableFilter = filterModeActuallyEnabled(filterModeOn.value, keyword)
         val list = filterTheList(
             enableFilter = enableFilter,
             keyword = keyword,
