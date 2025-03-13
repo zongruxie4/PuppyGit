@@ -1465,4 +1465,15 @@ object FsUtils {
         return pathAndFileNamePair
     }
 
+
+    fun prependBaseDirIfIsRelativePath(path:String, baseDirNoEndSlash: String):String {
+        if(!(path.startsWith("https://") || path.startsWith("http://")
+                    || path.startsWith("content://") || path.startsWith("file://")
+                    || path.startsWith("/") || path.startsWith("ftp://"))
+        ) {
+            return "$baseDirNoEndSlash/$path"
+        }
+
+        return path
+    }
 }
