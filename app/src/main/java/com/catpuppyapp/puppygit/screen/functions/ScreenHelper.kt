@@ -259,7 +259,7 @@ fun <T> filterTheList(
     // 开始：file history 和 commit history用这几个变量
     lastListSize: MutableIntState? = null,
     filterIdxList:MutableList<Int>? = null,
-    customTask:(suspend (match:(idx:Int, item:T)->Boolean)->Unit)? = null,  //入参 match 就是这个函数的match，传过去若不需要可以不用，但如果不这么写上面的match就得传空函数或null，感觉不好，会产生不需要过滤的错觉
+    customTask:(suspend ()->Unit)? = null,  //若此参数非null，将忽略入参match，此参数内部应该完全自定义如何匹配条目
     // 结束：file history 和 commit history用这几个变量
 
 ) : List<T> {
@@ -280,7 +280,7 @@ fun <T> filterTheList(
                     filterList.clear()
                     search(src = list, target = filterList, match = match, canceled = canceled)
                 } else {  // custom task
-                    customTask(match)
+                    customTask()
                 }
             }
 

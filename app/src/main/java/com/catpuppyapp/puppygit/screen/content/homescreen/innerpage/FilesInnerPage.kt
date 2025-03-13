@@ -1413,24 +1413,23 @@ fun FilesInnerPage(
                     list = currentPathFileList.value,
                     resetSearchVars = resetFilesSearchVars,
                     match = { idx, it -> true },
-                    customTask = task@{
+                    customTask = {
                         val curDir = File(currentPath.value)
-                        if(curDir.canRead().not()) {
+                        if(curDir.canRead().not()) {  //目录不可读，提示下
                             Msg.requireShow(activityContext.getString(R.string.err_read_path_failed))
-                            return@task
+                        }else { //目录可读，执行搜索
+                            val canceled = initSearch(keyword = keyword, lastKeyword = filesPageLastKeyword, token = filesPageSearchToken)
+
+                            val match = { it:File ->
+                                val nameLowerCase = it.name.lowercase();
+                                //匹配名称 或 "*.txt"之类的后缀
+                                nameLowerCase.contains(keyword) || RegexUtil.matchWildcard(input = nameLowerCase, pattern = keyword)
+                            }
+
+                            filterList.value.clear()
+                            filesPageSearching.value = true
+                            recursiveBreadthFirstSearch(activityContext, curDir, filterList.value, match, canceled)
                         }
-
-                        val canceled = initSearch(keyword = keyword, lastKeyword = filesPageLastKeyword, token = filesPageSearchToken)
-
-                        val match = { it:File ->
-                            val nameLowerCase = it.name.lowercase();
-                            //匹配名称 或 "*.txt"之类的后缀
-                            nameLowerCase.contains(keyword) || RegexUtil.matchWildcard(input = nameLowerCase, pattern = keyword)
-                        }
-
-                        filterList.value.clear()
-                        filesPageSearching.value = true
-                        recursiveBreadthFirstSearch(activityContext, curDir, filterList.value, match, canceled)
                     }
                 )
 
