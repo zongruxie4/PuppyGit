@@ -1938,6 +1938,7 @@ fun CommitListScreen(
                 lastListSize = lastListSize,
                 filterIdxList = filterIdxList.value,
                 customTask = {
+                    //如果filter by path启用，则打开一个仓库对象用来查找路径
                     val repo = if(needFilterByPath) {
                         try{
                             Repository.open(curRepo.value.fullSavePath)
@@ -1968,16 +1969,11 @@ fun CommitListScreen(
 
                         if(found) {
                             // filter by path
-                            if(needFilterByPath && repo!=null && pathList.isNotEmpty()) {
+                            if(needFilterByPath && repo!=null) {
                                 val tree = Libgit2Helper.resolveTreeByTreeId(repo, Oid.of(it.treeOidStr))
                                 if(tree != null) {
                                     found = Libgit2Helper.isTreeIncludedPaths(tree, pathList, filterByEntryName.value)
                                 }
-                            }
-
-                            // for "show in list"
-                            if(found) {
-                                filterIdxList.value.add(idx)
                             }
                         }
 
@@ -1986,11 +1982,24 @@ fun CommitListScreen(
 
                     searching.value = true
 
-                    try{
-                        filterList.value.clear()
-                        search(src = list.value, target = filterList.value, match = match, canceled = canceled)
-                    }finally {
-                        repo?.close()
+                    filterList.value.clear()
+
+                    // repo.use == try...finally{repo.close()}
+                    // match里面使用repo了，所以在搜索结束前不能释放repo
+                    // 这里用repo.use代表代码块里直接或间接使用了repo对象，并希望在代码块结束后释放repo，和try代码块finally释放repo效果一样
+                    repo.use { repo ->
+                        search(
+                            src = list.value,
+                            match = match,
+                            matchedCallback = { idx, item ->
+                                filterList.value.add(item)
+
+                                // add src idx for show in list, use `srcList[filterIdxList[idxOfFilterList]]` to get item of filter list related item in src list
+                                // 为“在列表显示”功能添加这个索引，使用 `srcList[filterIdxList[idxOfFilterList]]` 可获得过滤后列表的元素在源列表关联的元素
+                                filterIdxList.value.add(idx)
+                            },
+                            canceled = canceled
+                        )
                     }
                 },
             )

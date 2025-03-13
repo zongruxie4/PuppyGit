@@ -1420,7 +1420,7 @@ fun FilesInnerPage(
                         }else { //目录可读，执行搜索
                             val canceled = initSearch(keyword = keyword, lastKeyword = filesPageLastKeyword, token = filesPageSearchToken)
 
-                            val match = { it:File ->
+                            val match = { idx:Int, it:File ->
                                 val nameLowerCase = it.name.lowercase();
                                 //匹配名称 或 "*.txt"之类的后缀
                                 nameLowerCase.contains(keyword) || RegexUtil.matchWildcard(input = nameLowerCase, pattern = keyword)
@@ -1428,7 +1428,14 @@ fun FilesInnerPage(
 
                             filterList.value.clear()
                             filesPageSearching.value = true
-                            recursiveBreadthFirstSearch(activityContext, curDir, filterList.value, match, canceled)
+
+                            recursiveBreadthFirstSearch(
+                                dir = curDir,
+                                target = filterList.value,
+                                match = match,
+                                matchedCallback = {idx, item -> filterList.value.add(FileItemDto.genFileItemDtoByFile(item, activityContext))},
+                                canceled = canceled
+                            )
                         }
                     }
                 )

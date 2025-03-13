@@ -970,17 +970,20 @@ fun FileHistoryScreen(
                                 || formatMinutesToUtc(it.originTimeOffsetInMinutes).lowercase().contains(keyword)
 
 
-                        if(found) {
-                            filterIdxList.value.add(idx)
-                        }
-
                         found
                     }
 
                     searching.value = true
 
                     filterList.value.clear()
-                    search(src = list.value, target = filterList.value, match = match, canceled = canceled)
+                    search(
+                        src = list.value,
+                        match = match,
+                        matchedCallback = { idx, item ->
+                            filterList.value.add(item)
+                            filterIdxList.value.add(idx)
+                        },
+                        canceled = canceled)
                 }
             )
 

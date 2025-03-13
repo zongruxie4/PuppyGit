@@ -156,8 +156,8 @@ fun maybeIsGoodKeyword(keyword:String) : Boolean {
 
 fun <T> search(
     src:List<T>,
-    target:MutableList<T>,
-    match:(idx:Int, srcItem:T)->Boolean,
+    match:(srcIdx:Int, srcItem:T)->Boolean,
+    matchedCallback:(srcIdx:Int, srcItem:T)->Unit,
     canceled:()->Boolean
 ) {
     for(idx in src.indices){
@@ -168,7 +168,7 @@ fun <T> search(
         val it = src[idx]
 
         if(match(idx, it)) {
-            target.add(it)
+            matchedCallback(idx, it)
         }
     }
 }
@@ -180,20 +180,31 @@ fun filterModeActuallyEnabled(filterOn:Boolean, keyword: String):Boolean {
 /**
  * 先遍历当前目录所有条目，然后再继续遍历当前目录的文件夹（广度优先）
  */
-fun recursiveBreadthFirstSearch(activityContext: Context, dir: File, target:MutableList<FileItemDto>, match: (srcItem: File) -> Boolean, canceled: () -> Boolean) {
+fun recursiveBreadthFirstSearch(
+    dir: File, target:MutableList<FileItemDto>,
+    match: (srcIdx:Int, srcItem: File) -> Boolean,
+    matchedCallback: (srcIdx:Int, srcItem: File) -> Unit,
+    canceled: () -> Boolean
+) {
+    if(canceled()) {
+        return
+    }
+
     val files = dir.listFiles()
     if(files == null || files.isEmpty()) {
         return
     }
 
     val subdirs = mutableListOf<File>()
-    for(f in files) {
+    for(idx in files.indices) {
         if(canceled()) {
             return
         }
 
-        if(match(f)) {
-            target.add(FileItemDto.genFileItemDtoByFile(f, activityContext))
+        val f = files[idx]
+
+        if(match(idx, f)) {
+            matchedCallback(idx, f)
         }
 
         if(f.isDirectory) {
@@ -203,11 +214,7 @@ fun recursiveBreadthFirstSearch(activityContext: Context, dir: File, target:Muta
 
     //遍历子目录
     for(sub in subdirs) {
-        if(canceled()) {
-           return
-        }
-
-        recursiveBreadthFirstSearch(activityContext, sub, target, match, canceled)
+        recursiveBreadthFirstSearch(dir = sub, target = target, match = match, matchedCallback=matchedCallback, canceled = canceled)
     }
 }
 
@@ -272,16 +279,15 @@ fun <T> filterTheList(
 
             //若自定义任务为null则运行默认任务
             doJobThenOffLoading(loadingOff = { searching.value = false }) {
-                if (customTask == null) {  // default task
+                // customTask若不为null，调用；若为null，调用默认task
+                (customTask ?: {
                     val canceled = initSearch(keyword = keyword, lastKeyword = lastKeyword, token = token)
 
                     searching.value = true
 
                     filterList.clear()
-                    search(src = list, target = filterList, match = match, canceled = canceled)
-                } else {  // custom task
-                    customTask()
-                }
+                    search(src = list, match = match, matchedCallback = {idx, item -> filterList.add(item)}, canceled = canceled)
+                }).invoke()
             }
 
         }
