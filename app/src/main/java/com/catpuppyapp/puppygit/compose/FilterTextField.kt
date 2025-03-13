@@ -1,9 +1,9 @@
 package com.catpuppyapp.puppygit.compose
 
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.fillMaxHeight
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.height
 import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.LocalTextStyle
 import androidx.compose.material3.MaterialTheme
@@ -60,10 +60,10 @@ fun FilterTextField(
     }
 
     Column(
-        modifier = Modifier.fillMaxWidth().fillMaxHeight().padding(top = 1.dp),
+        modifier = Modifier.fillMaxWidth(),
     ) {
         OutlinedTextField(
-            modifier = Modifier.fillMaxWidth().fillMaxHeight(.95f),
+            modifier = Modifier.fillMaxWidth(),
             textStyle = LocalTextStyle.current.copy(fontSize = 16.sp),  //字整小点，不然若高度不占满，可能竖着显示不全字
             value = filterKeyWord.value,
             onValueChange = { onValueChange(it) },
@@ -80,12 +80,17 @@ fun FilterTextField(
         )
 
         //用来指示是否仍在查找
-        if(loading) {
-            LinearProgressIndicator(
-                modifier = Modifier.fillMaxWidth(),
-                color = MaterialTheme.colorScheme.secondary,
-                trackColor = MaterialTheme.colorScheme.surfaceVariant,
-            )
+        Row(
+            //不管是否启用进度条都必须固定高度，不然显示隐藏进度条会导致输入框抖动
+            modifier = Modifier.fillMaxWidth().height(1.dp),
+        ){
+            if(loading) {
+                LinearProgressIndicator(
+                    modifier = Modifier.fillMaxWidth(),
+                    color = MaterialTheme.colorScheme.secondary,
+                    trackColor = MaterialTheme.colorScheme.surfaceVariant,
+                )
+            }
         }
     }
 }
