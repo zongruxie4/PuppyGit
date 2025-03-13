@@ -71,6 +71,9 @@ private const val stateKeyTag = "FileEditor"
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun FileEditor(
+    isPreviewModeOn:MutableState<Boolean>,
+    quitPreviewMode:()->Unit,
+    initPreviewMode:()->Unit,
     openDrawer:()->Unit,
     editorPageShowingFileName:String?,
     requestFromParent:MutableState<String>,
@@ -178,8 +181,8 @@ fun FileEditor(
 
     val isRtl = LocalLayoutDirection.current == LayoutDirection.Rtl
 
-    val onLeftToRight = {openDrawer()}
-    val onRightToLeft = {}
+    val onLeftToRight = { if(isPreviewModeOn.value) quitPreviewMode() else openDrawer()}
+    val onRightToLeft = { if(isPreviewModeOn.value.not()) initPreviewMode() }
 
     Box(
         modifier = Modifier
@@ -204,9 +207,9 @@ fun FileEditor(
         ,
     ) {
         TextEditor(
-            editorPageShowingFileName,
-            requestFromParent,
-            fileFullPath,
+            editorPageShowingFileName = editorPageShowingFileName,
+            requestFromParent = requestFromParent,
+            fileFullPath = fileFullPath,
             lastEditedPos = lastEditedPos,
             textEditorState = textEditorState.value,
             editableController = editableController.value,

@@ -323,11 +323,17 @@ fun EditorInnerPage(
 //        }
     }
 
+    val isPreviewModeOn = rememberSaveable { mutableStateOf(false) }
+    val quitPreviewMode = { isPreviewModeOn.value = false }
+    val initPreviewMode = { isPreviewModeOn.value = true }
+
 //    if(!isSubPageMode) {  //如果是子页面模式，不注册back handler，因为不需要双击退出
     //back handler block start
     val isBackHandlerEnable = rememberSaveable { mutableStateOf(true) }
 
     val backHandlerOnBack = getBackHandler(
+        isPreviewModeOn = isPreviewModeOn,
+        quitPreviewMode = quitPreviewMode,
         activityContext = activityContext,
         textEditorState = editorPageTextEditorState,
         isSubPage = isSubPageMode,
@@ -995,7 +1001,12 @@ fun EditorInnerPage(
 //            it.editor.filesLastEditPosition[fileFullPath] = fileEditedPos
 //        }
         FileEditor(
+            isPreviewModeOn = isPreviewModeOn,
+            quitPreviewMode = quitPreviewMode,
+            initPreviewMode = initPreviewMode,
+
             openDrawer = openDrawer,
+
             editorPageShowingFileName = editorPageShowingFileName,
             requestFromParent = requestFromParent,
             fileFullPath = fileFullPath,
@@ -1375,6 +1386,9 @@ private suspend fun doInit(
 
 @Composable
 private fun getBackHandler(
+    isPreviewModeOn:MutableState<Boolean>,
+    quitPreviewMode:()->Unit,
+
     activityContext: Context,
     textEditorState: CustomStateSaveable<TextEditorState>,
     isSubPage: Boolean,
@@ -1404,7 +1418,9 @@ private fun getBackHandler(
 
     val backHandlerOnBack = {
         //是多选模式则退出多选，否则检查是否编辑过文件，若编辑过则保存，然后判断是否子页面，是子页面则返回上级页面，否则显示再按返回退出的提示
-        if(textEditorState.value.isMultipleSelectionMode) {  //退出编辑器多选模式
+        if(isPreviewModeOn.value) {
+            quitPreviewMode()
+        }else if(textEditorState.value.isMultipleSelectionMode) {  //退出编辑器多选模式
             requestFromParent.value = PageRequest.editorCreateCancelledState
         }else if(searchMode.value){
             searchMode.value = false
