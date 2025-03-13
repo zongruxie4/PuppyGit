@@ -12,11 +12,11 @@ object MdUtil {
     /**
      * 支持加载相对路径的图片
      */
-    fun getCoilStore(context: Context, baseDirNoEndSlash:String):ImagesPlugin.CoilStore {
+    fun getCoilStore(context: Context, basePathNoEndSlash:String):ImagesPlugin.CoilStore {
         return object : CoilStore {
             override fun load(drawable: AsyncDrawable): ImageRequest {
                 val path = drawable.destination.let {
-                    FsUtils.prependBaseDirIfIsRelativePath(it, baseDirNoEndSlash)
+                    FsUtils.prependBasePathIfIsRelativePath(path = it, basePathNoEndSlash = basePathNoEndSlash)
                 }
 
                 return ImageRequest.Builder(context)
