@@ -136,6 +136,7 @@ import com.catpuppyapp.puppygit.utils.getShortUUID
 import com.catpuppyapp.puppygit.utils.getStoragePermission
 import com.catpuppyapp.puppygit.utils.getViewAndSortForPath
 import com.catpuppyapp.puppygit.utils.isPathExists
+import com.catpuppyapp.puppygit.utils.markdown.MdUtil
 import com.catpuppyapp.puppygit.utils.mime.MimeType
 import com.catpuppyapp.puppygit.utils.mime.guessFromFileName
 import com.catpuppyapp.puppygit.utils.replaceStringResList
@@ -1504,7 +1505,7 @@ fun FilesInnerPage(
                                 //goto editor page with file path
 
                                 //如果是文件，只有使用内部Editor打开文件才退出过滤模式，否则不退出（请求使用外部程序打开文件时退出过滤模式的话感觉很奇怪）
-                                if(MimeType.guessFromFileName(it.name).value == MimeType.TEXT_PLAIN.value) {  //如果是文本类型，直接打开
+                                if(MimeType.guessFromFileName(it.name).value == MimeType.TEXT_PLAIN.value || MdUtil.maybeIsMarkdownFile(it.name)) {  //如果是文本类型，直接打开
                                     //关闭过滤模式
                                     //20240516: 改成跳转到编辑器不关过滤模式了，感觉更符合直觉
 //                                filesPageFilterModeOff()

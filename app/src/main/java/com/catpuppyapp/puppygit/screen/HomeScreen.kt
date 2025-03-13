@@ -103,6 +103,7 @@ import com.catpuppyapp.puppygit.utils.FsUtils
 import com.catpuppyapp.puppygit.utils.Msg
 import com.catpuppyapp.puppygit.utils.MyLog
 import com.catpuppyapp.puppygit.utils.PrefMan
+import com.catpuppyapp.puppygit.utils.UIHelper
 import com.catpuppyapp.puppygit.utils.changeStateTriggerRefreshPage
 import com.catpuppyapp.puppygit.utils.doJobThenOffLoading
 import com.catpuppyapp.puppygit.utils.state.mutableCustomStateListOf
@@ -410,10 +411,17 @@ fun HomeScreen(
     val editorIsPreviewModeOn = rememberSaveable { mutableStateOf(false) }
     val editorMdText = rememberSaveable { mutableStateOf("") }
     val editorBasePath = rememberSaveable { mutableStateOf("") }
+
     val editorQuitPreviewMode = {
         editorBasePath.value = ""
         editorMdText.value = ""
         editorIsPreviewModeOn.value = false
+    }
+    val resetPreviewMode = {
+        //退出预览模式
+        editorQuitPreviewMode()
+        //重置到顶部
+        UIHelper.scrollTo(scope, editorPreviewScrollState, 0)
     }
     val editorInitPreviewMode = {
         doJobThenOffLoading {
@@ -537,6 +545,12 @@ fun HomeScreen(
     //给Files页面点击打开文件用的
     //第2个参数是期望值，只有当文件路径不属于app内置禁止edit的目录时才会使用那个值，否则强制开启readonly模式
     val requireInnerEditorOpenFileWithFileName = { fullPath:String, expectReadOnly:Boolean, fileName:String? ->
+        // 切换了文件
+        if(fullPath != editorPageShowingFilePath.value) {
+            // 重置预览模式相关的参数
+            resetPreviewMode()
+        }
+
         //文件名后来加的，用来从外部打开content uri file uri那类路径时使用提取的文件名，不然content://开头的那种uri可能会拿到错误文件名
         editorPageShowingFileName.value = fileName
 

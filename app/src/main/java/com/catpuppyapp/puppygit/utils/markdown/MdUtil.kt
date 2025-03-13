@@ -4,6 +4,7 @@ import android.content.Context
 import coil.request.Disposable
 import coil.request.ImageRequest
 import com.catpuppyapp.puppygit.utils.FsUtils
+import com.catpuppyapp.puppygit.utils.RegexUtil
 import dev.jeziellago.compose.markdowntext.plugins.image.ImagesPlugin
 import dev.jeziellago.compose.markdowntext.plugins.image.ImagesPlugin.CoilStore
 import io.noties.markwon.image.AsyncDrawable
@@ -28,6 +29,11 @@ object MdUtil {
                 disposable.dispose()
             }
         }
+    }
+
+    fun maybeIsMarkdownFile(name: String): Boolean {
+        val name = name.lowercase()
+        return RegexUtil.matchWildcard(name, "*.md") || RegexUtil.matchWildcard(name, "*.markdown")
     }
 
 }
