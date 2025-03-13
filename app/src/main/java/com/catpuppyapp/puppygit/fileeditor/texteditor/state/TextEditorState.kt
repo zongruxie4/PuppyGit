@@ -9,6 +9,8 @@ import com.catpuppyapp.puppygit.utils.generateRandomString
 import java.io.File
 import java.io.OutputStream
 
+private const val lb = "\n"
+
 //不实现equals，直接比较指针地址，反而性能可能更好，不过状态更新可能并不准确，例如fields没更改的情况也会触发页面刷新
 @Immutable
 class TextEditorState private constructor(
@@ -27,21 +29,18 @@ class TextEditorState private constructor(
      */
     fun getAllText(): String {
         val sb = StringBuilder()
-        val fields = fields
-        val lb = "\n"
-        for(idx in fields.indices) {
-            sb.append(fields[idx].value.text).append(lb)
-        }
+        fields.forEach { sb.append(it.value.text).append(lb) }
 
+        //移除遍历时多添加的末尾换行符，然后返回
         return sb.removeSuffix(lb).toString()
 
         //below code very slow when file over 1MB，主要原因是字符串拼接，次要是隐含多次循环
 //        return fields.map { it.value.text }.foldIndexed("") { index, acc, s ->
-//            if (index == 0) acc + s else acc + "\n" + s
+//            if (index == 0) acc + s else acc + lb + s
 //        }
     }
 
-    fun dumpLinesAndGetRet(output: OutputStream, lineBreak:String="\n"): Ret<Unit?> {
+    fun dumpLinesAndGetRet(output: OutputStream, lineBreak:String=lb): Ret<Unit?> {
         try {
             dumpLines(output, lineBreak)
             return Ret.createSuccess(null)
@@ -50,7 +49,7 @@ class TextEditorState private constructor(
         }
     }
 
-    fun dumpLines(output: OutputStream, lineBreak:String="\n") {
+    fun dumpLines(output: OutputStream, lineBreak:String=lb) {
         val lastIndex = fields.size - 1
         output.bufferedWriter().use { out ->
             for(i in fields.indices) {
@@ -72,18 +71,18 @@ class TextEditorState private constructor(
             // filed 就是fields[selectedLineIndex]，doActIfIndexGood()的作用是仅当索引有效时，才会调用后面的函数，
             // 所以，如果selectedLineIndex是个无效索引，那后面的lambda就不会被执行，这样就避免了索引越界等异常
             doActIfIndexGood(selectedLineIndex, fields) { field ->
-                sb.append(field.value.text).append("\n")
+                sb.append(field.value.text).append(lb)
             }
         }
 
         //移除末尾多余的换行符，然后返回
-//        return sb.removeSuffix("\n").toString()
+//        return sb.removeSuffix(lb).toString()
         //保留末尾多出来的换行符，就是要让它多一个，不然复制多行时粘贴后会定位到最后一行开头，反直觉，要解决这个问题需要改掉整个行处理机制，太麻烦了，所以暂时这样规避下，其实这样倒合理，在粘贴内容到一行的中间部位时，感觉比之前还合理
         return sb.toString()
 
 
 //        return targets.foldIndexed("") { index, acc, s ->
-//            if (index == 0) acc + s else acc + "\n" + s
+//            if (index == 0) acc + s else acc + lb + s
 //        }
     }
 
