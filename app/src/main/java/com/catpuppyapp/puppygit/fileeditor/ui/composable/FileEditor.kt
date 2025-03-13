@@ -5,6 +5,7 @@ import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.focusable
+import androidx.compose.foundation.gestures.detectDragGestures
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
@@ -32,6 +33,7 @@ import androidx.compose.ui.draw.drawBehind
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.hapticfeedback.HapticFeedbackType
+import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalClipboardManager
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
@@ -67,6 +69,7 @@ private const val stateKeyTag = "FileEditor"
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun FileEditor(
+    openDrawer:()->Unit,
     editorPageShowingFileName:String?,
     requestFromParent:MutableState<String>,
     fileFullPath:String,
@@ -171,10 +174,28 @@ fun FileEditor(
 
 
 
+//    val isRtl = LocalLayoutDirection.current == LayoutDirection.Rtl
 
     Box(
         modifier = Modifier
             .fillMaxSize()
+            .pointerInput(Unit) {
+                //这个会覆盖侧栏抽屉的滑动手势，所以需要处理下
+                detectDragGestures { change, dragAmount ->
+                    // 更新偏移量
+//                    println("dragAmount.x: ${dragAmount.x}")
+//                    println("dragAmount.y: ${dragAmount.y}")
+                    if (dragAmount.x > 5) {
+                        openDrawer()
+                    }
+
+                    if (dragAmount.x < 0 && dragAmount.x > -5) {
+//                        "右滑了"
+                    }
+
+                    change.consume() // 消费事件
+                }
+            }
 //            .systemBarsPadding()  //用脚手架的contentPadding就不需要这个了
         ,
     ) {

@@ -995,6 +995,7 @@ fun EditorInnerPage(
 //            it.editor.filesLastEditPosition[fileFullPath] = fileEditedPos
 //        }
         FileEditor(
+            openDrawer = openDrawer,
             editorPageShowingFileName = editorPageShowingFileName,
             requestFromParent = requestFromParent,
             fileFullPath = fileFullPath,
