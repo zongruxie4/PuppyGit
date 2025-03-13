@@ -595,6 +595,23 @@ fun EditorInnerPage(
             }
         }
     }
+    if(requestFromParent.value == PageRequest.requireInitPreview) {
+        PageRequest.clearStateThenDoAct(requestFromParent) {
+            doJobThenOffLoading {
+                //先保存，不然如果文件大切换预览会卡住然后崩溃导致会丢数据
+                doSaveNoCoroutine()
+
+
+                //开启预览模式
+                //取出当前文件所在目录作为相对路径的父目录
+                basePath.value = File(editorPageShowingFilePath.value).parent ?: ""
+                // 取出当前文件内容，may take time
+                mdText.value = editorPageTextEditorState.value.getAllText()
+                //开启预览模式
+                isPreviewModeOn.value = true
+            }
+        }
+    }
     if(requestFromParent.value == PageRequest.requireSaveFontSizeAndQuitAdjust) {
         PageRequest.clearStateThenDoAct(requestFromParent) {
             saveFontSizeAndQuitAdjust()

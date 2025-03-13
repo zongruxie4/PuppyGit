@@ -406,6 +406,8 @@ fun HomeScreen(
         changeListRequireRefreshFromParentPage(item)
     }
 
+    val editorPageRequestFromParent = rememberSaveable { mutableStateOf("")}
+
 
     val editorPreviewScrollState = rememberScrollState()
     val editorIsPreviewModeOn = rememberSaveable { mutableStateOf(false) }
@@ -424,14 +426,8 @@ fun HomeScreen(
         UIHelper.scrollTo(scope, editorPreviewScrollState, 0)
     }
     val editorInitPreviewMode = {
-        doJobThenOffLoading {
-            editorBasePath.value = File(editorPageShowingFilePath.value).parent ?: ""
-            // may take time
-            editorMdText.value = editorPageTextEditorState.value.getAllText()
-            editorIsPreviewModeOn.value = true
-        }
-
-        Unit
+        //请求执行一次保存，不然有可能切换
+        editorPageRequestFromParent.value = PageRequest.requireInitPreview
     }
 
 
@@ -518,7 +514,6 @@ fun HomeScreen(
 //        changeStateTriggerRefreshPage(needRefreshEditorPage)
     }
 
-    val editorPageRequestFromParent = rememberSaveable { mutableStateOf("")}
     val editorPageShowingFileDto = mutableCustomStateOf(keyTag = stateKeyTag, keyName = "editorPageShowingFileDto",FileSimpleDto() )
     val editorPageSnapshotedFileInfo = mutableCustomStateOf(keyTag = stateKeyTag, keyName = "editorPageSnapshotedFileInfo",FileSimpleDto())
     val editorPageLastScrollEvent = mutableCustomStateOf<ScrollEvent?>(keyTag = stateKeyTag, keyName = "editorPageLastScrollEvent") { null }  //这个用remember就行，没必要在显示配置改变时还保留这个滚动状态，如果显示配置改变，直接设为null，从配置文件读取滚动位置重定位更好

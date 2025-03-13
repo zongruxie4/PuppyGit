@@ -139,6 +139,8 @@ fun SubPageEditor(
     //如果用户pro且功能测试通过，允许使用url传来的初始值，否则一律false
     val editorPageMergeMode = rememberSaveable{mutableStateOf(initMergeMode)}
 
+    val editorPageRequestFromParent = rememberSaveable { mutableStateOf("")}
+
 
     val editorPreviewScrollState = rememberScrollState()
     val editorIsPreviewModeOn = rememberSaveable { mutableStateOf(false) }
@@ -150,14 +152,8 @@ fun SubPageEditor(
         editorIsPreviewModeOn.value = false
     }
     val editorInitPreviewMode = {
-        doJobThenOffLoading {
-            editorBasePath.value = File(editorPageShowingFilePath.value).parent ?: ""
-            // may take time
-            editorMdText.value = editorPageTextEditorState.value.getAllText()
-            editorIsPreviewModeOn.value = true
-        }
-
-        Unit
+        //请求执行一次保存，不然有可能切换
+        editorPageRequestFromParent.value = PageRequest.requireInitPreview
     }
 
 
@@ -175,7 +171,6 @@ fun SubPageEditor(
     val editorUndoStack = mutableCustomStateOf<UndoStack?>(stateKeyTag, "editorUndoStack") { null }
 
     val showCloseDialog = rememberSaveable { mutableStateOf(false)}
-    val editorPageRequestFromParent = rememberSaveable { mutableStateOf("")}
 
     val closeDialogCallback = mutableCustomStateOf<(Boolean)->Unit>(
         keyTag = stateKeyTag,
