@@ -995,11 +995,11 @@ fun EditorInnerPage(
 //            it.editor.filesLastEditPosition[fileFullPath] = fileEditedPos
 //        }
         FileEditor(
-            editorPageShowingFileName,
-            requestFromParent,
-            fileFullPath,
-            fileEditedPos,
-            editorPageTextEditorState,
+            editorPageShowingFileName = editorPageShowingFileName,
+            requestFromParent = requestFromParent,
+            fileFullPath = fileFullPath,
+            lastEditedPos = fileEditedPos,
+            textEditorState = editorPageTextEditorState,
             onChanged = {newState:TextEditorState, trueSaveToUndoFalseRedoNullNoSave:Boolean?, clearRedoStack:Boolean ->
                 editorPageTextEditorState.value = newState
 
@@ -1038,8 +1038,8 @@ fun EditorInnerPage(
             isContentChanged = isEdited,   //谁调用onChanged，谁检查内容是否改变
             editorLastScrollEvent=editorLastScrollEvent,
             editorListState=editorListState,
-            editorPageIsInitDone,
-            editorPageIsContentSnapshoted,
+            editorPageIsInitDone = editorPageIsInitDone,
+            editorPageIsContentSnapshoted = editorPageIsContentSnapshoted,
             goToLine=goToLine,
             readOnlyMode=readOnlyMode.value,
             searchMode = editorSearchMode,
