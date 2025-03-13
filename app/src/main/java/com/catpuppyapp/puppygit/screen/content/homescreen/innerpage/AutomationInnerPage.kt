@@ -410,17 +410,10 @@ fun AutomationInnerPage(
             Row(modifier = Modifier
                 .fillMaxWidth()
                 .padding(10.dp)) {
-                val keyWordIsEmpty = appsFilterKeyword.value.text.isEmpty()
 
                 //注意：这个过滤没开协程，直接在渲染线程过滤的，因为感觉用户应该不会装超过500个应用，就算真有500个，也很快就过滤完，所以感觉没必要加代码
                 //普通的过滤，加不加清空无所谓，一按返回就清空了，但这个常驻显示，得加个清空按钮
-                FilterTextField(
-                    filterKeyWord = appsFilterKeyword,
-                    trailingIconTooltipText = stringResource(R.string.clear),
-                    trailingIcon = if(keyWordIsEmpty) null else Icons.Filled.Close,
-                    trailingIconDesc = stringResource(R.string.clear),
-                    trailingIconOnClick = { appsFilterKeyword.value = TextFieldValue("") }
-                )
+                FilterTextField(filterKeyWord = appsFilterKeyword)
             }
 
         }

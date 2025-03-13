@@ -18,7 +18,6 @@ import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
-import androidx.compose.material.icons.automirrored.filled.List
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.FilterAlt
 import androidx.compose.material.icons.filled.MoreVert
@@ -210,10 +209,6 @@ fun FileHistoryScreen(
     }}
 
 
-    val showFilterByPathsDialog = rememberSaveable { mutableStateOf(false) }
-//    val pathsForFilterByPathsDialog = mutableCustomStateListOf(stateKeyTag, "pathsForFilterByPathsDialog") { listOf<String>() }
-    val pathsCacheForFilterByPathsDialog = rememberSaveable { mutableStateOf("") }  // cache the paths until user clicked the ok, then assign the value to `pathsForFilter`
-    val pathsForFilter = rememberSaveable { mutableStateOf("") }
 
 
 
@@ -670,15 +665,6 @@ fun FileHistoryScreen(
                         FilterTextField(
                             filterKeyWord = filterKeyword,
                             loading = searching.value,
-                            trailingIconTooltipText= stringResource(R.string.filter_by_paths),
-                            trailingIcon = Icons.AutoMirrored.Filled.List,
-                            trailingIconColor = UIHelper.getIconEnableColorOrNull(pathsForFilter.value.isNotEmpty()),
-                            trailingIconDesc = stringResource(R.string.a_list_icon_lor_filter_commits_by_paths),
-                            trailingIconOnClick = {
-                                // show filte by path dialog
-                                pathsCacheForFilterByPathsDialog.value = pathsForFilter.value  // assign current working filter paths to paths cache for accept user input
-                                showFilterByPathsDialog.value = true
-                            }
                         )
                     }else{
                         Column(
@@ -756,7 +742,6 @@ fun FileHistoryScreen(
                             ) {
                                 // filter item
                                 filterKeyword.value = TextFieldValue("")
-                                pathsForFilter.value = ""
 
                                 filterModeOn_dontUseThisCheckFilterModeReallyEnabledOrNot.value = true
                             }

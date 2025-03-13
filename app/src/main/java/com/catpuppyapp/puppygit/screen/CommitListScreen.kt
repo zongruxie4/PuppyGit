@@ -1505,17 +1505,20 @@ fun CommitListScreen(
                         FilterTextField(
                             filterKeyWord = filterKeyword,
                             loading = searching.value,
-                            trailingIconTooltipText= stringResource(R.string.filter_by_paths),
-                            trailingIcon = Icons.AutoMirrored.Filled.List,
-                            trailingIconColor = UIHelper.getIconEnableColorOrNull(pathsForFilter.value.isNotEmpty()),
-                            trailingIconDesc = stringResource(R.string.a_list_icon_lor_filter_commits_by_paths),
-                            trailingIconOnClick = {
-                                // show filter by path dialog
-                                pathsForFilterBuffer.value = pathsForFilter.value  // assign current working filter paths to paths cache for accept user input
-                                filterByEntryNameBuffer.value = filterByEntryName.value
+                            trailingIcon = {
+                                LongPressAbleIconBtn(
+                                    tooltipText = stringResource(R.string.filter_by_paths),
+                                    icon = Icons.AutoMirrored.Filled.List,
+                                    iconContentDesc = stringResource(R.string.a_list_icon_lor_filter_commits_by_paths),
+                                    iconColor = UIHelper.getIconEnableColorOrNull(pathsForFilter.value.isNotEmpty()),
+                                ) {
+                                    // show filter by path dialog
+                                    pathsForFilterBuffer.value = pathsForFilter.value  // assign current working filter paths to paths cache for accept user input
+                                    filterByEntryNameBuffer.value = filterByEntryName.value
 
-                                showFilterByPathsDialog.value = true
-                            }
+                                    showFilterByPathsDialog.value = true
+                                }
+                            },
                         )
                     }else{
                         val repoAndBranchText = if(useFullOid) branchShortNameOrShortHashByFullOidForShowOnTitle.value else repoOnBranchOrDetachedHash.value
