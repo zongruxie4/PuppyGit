@@ -6,7 +6,7 @@ import androidx.compose.foundation.ScrollState
 import androidx.compose.foundation.background
 import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.focusable
-import androidx.compose.foundation.gestures.detectDragGestures
+import androidx.compose.foundation.gestures.detectHorizontalDragGestures
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
@@ -205,7 +205,8 @@ fun FileEditor(
             .fillMaxSize()
             .pointerInput(Unit) {
                 //这个会覆盖侧栏抽屉的滑动手势，所以需要处理下
-                detectDragGestures { change, dragAmount ->
+                //Drag手势有 x y；水平只有x；垂直只有y
+                detectHorizontalDragGestures { change, dragAmount ->
                     // debug
 //                    println("dragAmount.x: ${dragAmount.x}")
 //                    println("dragAmount.y: ${dragAmount.y}")
@@ -213,9 +214,9 @@ fun FileEditor(
                     val curTimeInMills = System.currentTimeMillis()
                     //避免短时间滑动触发两次（抖动）
                     if(curTimeInMills - curTime.longValue > dragHandleInterval) {
-                        if (dragAmount.x > 2) {  // left to right
+                        if (dragAmount > 2) {  // left to right
                             if (isRtl) onRightToLeft() else onLeftToRight()
-                        } else if (dragAmount.x < -2) {  // right to right
+                        } else if (dragAmount < -2) {  // right to left
                             if (isRtl) onLeftToRight() else onRightToLeft()
                         }
                     }
