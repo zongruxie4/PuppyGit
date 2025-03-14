@@ -17,7 +17,9 @@ import androidx.compose.runtime.MutableState
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.unit.Dp
+import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
 import com.catpuppyapp.puppygit.constants.Cons
 import com.catpuppyapp.puppygit.dto.DeviceWidthHeight
@@ -394,6 +396,11 @@ object UIHelper {
 
     fun getCardButtonTextColor(enabled: Boolean, inDarkTheme: Boolean):Color {
         return if (enabled) MyStyleKt.TextColor.enable else if (inDarkTheme) MyStyleKt.TextColor.disable_DarkTheme else MyStyleKt.TextColor.disable
+    }
+
+    @Composable
+    fun isRtlLayout(): Boolean {
+        return LocalLayoutDirection.current == LayoutDirection.Rtl
     }
 
 }

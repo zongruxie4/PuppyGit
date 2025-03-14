@@ -45,13 +45,11 @@ import androidx.compose.ui.platform.LocalClipboardManager
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalHapticFeedback
-import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.unit.Dp
-import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.catpuppyapp.puppygit.compose.BottomBar
@@ -70,6 +68,7 @@ import com.catpuppyapp.puppygit.settings.FileEditedPos
 import com.catpuppyapp.puppygit.style.MyStyleKt
 import com.catpuppyapp.puppygit.ui.theme.Theme
 import com.catpuppyapp.puppygit.utils.Msg
+import com.catpuppyapp.puppygit.utils.UIHelper
 import com.catpuppyapp.puppygit.utils.replaceStringResList
 import com.catpuppyapp.puppygit.utils.state.CustomStateSaveable
 import com.catpuppyapp.puppygit.utils.state.mutableCustomStateOf
@@ -193,7 +192,7 @@ fun FileEditor(
 
 
 
-    val isRtl = LocalLayoutDirection.current == LayoutDirection.Rtl
+    val isRtl = UIHelper.isRtlLayout()
 
     val onLeftToRight = { if(isPreviewModeOn.value) quitPreviewMode() else openDrawer() }
     val onRightToLeft = { if(isPreviewModeOn.value.not()) initPreviewMode() }
