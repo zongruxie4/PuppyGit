@@ -7,11 +7,13 @@ import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 import java.util.concurrent.ConcurrentHashMap
 
+private val pathScrollStateMap = ConcurrentHashMap<String, ScrollState>()
+
+
 class EditorPreviewNavStack(val firstPath:String) {
     private val lock = Mutex()
     private val backStack = Stack<String>()
     private val aheadStack = Stack<String>()
-    private val pathScrollStateMap = ConcurrentHashMap<String, ScrollState>()
 
     suspend fun push(path:String) {
         lock.withLock {
@@ -55,7 +57,11 @@ class EditorPreviewNavStack(val firstPath:String) {
 
 
     fun getScrollState(path:String):ScrollState {
-        return pathScrollStateMap[path] ?: run {
+        val scrollState = pathScrollStateMap[path]
+
+        return if(scrollState != null) {
+            scrollState
+        }else {
             val scrollState = newScrollState()
             pathScrollStateMap[path] = scrollState
             scrollState
