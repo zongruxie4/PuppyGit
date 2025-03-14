@@ -63,7 +63,7 @@ fun LoadingText(
 
 @Composable
 fun LoadingText(
-    modifier: Modifier,
+    modifier: Modifier = Modifier,
     text:String= stringResource(R.string.loading),
 ) {
     Column(
