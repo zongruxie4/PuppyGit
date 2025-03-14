@@ -5,6 +5,7 @@ import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.rememberScrollState
@@ -96,7 +97,7 @@ fun EditorTitle(
                 ) {  //话说这名如果超了，在Row上加个滚动属性让用户能滚动查看，怎么样？（20240411加了，测试了下，勉强能用，还行，好！
                     if(isPreviewModeOn || readOnly) {
                         Icon(
-                            modifier = Modifier.size(12.dp),
+                            modifier = Modifier.size(12.dp).padding(end = 1.dp),
                             imageVector = if(isPreviewModeOn) Icons.Filled.RemoveRedEye else Icons.Filled.Lock,
                             contentDescription = null,
                         )
