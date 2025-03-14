@@ -562,6 +562,8 @@ fun EditorInnerPage(
 
     }
 
+    //若想重载文件但保留stack，重载前将此变量设为真，一次性有效
+    val keepPreviewStack = rememberSaveable { mutableStateOf(false) }
     val previewLoading = rememberSaveable { mutableStateOf(false) }
     val previewLoadingOn = {
         previewLoading.value = true
@@ -727,6 +729,7 @@ fun EditorInnerPage(
         PageRequest.clearStateThenDoAct(requestFromParent) {
             runBlocking {
                 editorPageShowingFilePath.value = previewNavStack.value.getFirst().first
+//                keepPreviewStack.value = true  //感觉好像不太好，不保留了，若保留，我编辑完文件，预览，再返回，会返回到上次的文件，再编辑，再预览，预览的也还是上次的文件，不合逻辑
                 reloadFile()
             }
         }
@@ -1231,6 +1234,8 @@ fun EditorInnerPage(
             doJobThenOffLoading {
                 try {
                     doInit(
+                        previewPath = previewPath,
+                        keepPreviewStack = keepPreviewStack,
                         previewNavStack = previewNavStack,
                         activityContext = activityContext,
                         editorPageShowingFilePath = editorPageShowingFilePath,
@@ -1301,6 +1306,8 @@ fun EditorInnerPage(
 }
 
 private suspend fun doInit(
+    previewPath: MutableState<String>,
+    keepPreviewStack:MutableState<Boolean>,
     previewNavStack:CustomStateSaveable<EditorPreviewNavStack>,
     activityContext:Context,
 //    editorPageRequireOpenFilePath: MutableState<String>,
@@ -1346,12 +1353,17 @@ private suspend fun doInit(
 //        editorPageShowingFileIsReady.value = false  //20240429:文件未就绪应归调用者设置
     //如果存在待打开的文件，则打开，文件可能来自从文件管理器的点击
 
+    var isUsingBackupPath = false
     // 加载文件 (load file)
     if (!editorPageShowingFileIsReady.value) {  //从文件管理器跳转到editor 或 打开文件后从其他页面跳转到editor
         //准备文件路径，开始
         //优先打开从文件管理器跳转来的文件，如果不是跳转来的，打开之前显示的文件
         if(editorPageShowingFilePath.value.isBlank()) {
-            editorPageShowingFilePath.value = AppModel.lastEditFileWhenDestroy.value
+            editorPageShowingFilePath.value = AppModel.lastEditFileWhenDestroy.value.let {
+                isUsingBackupPath = it.isNotBlank()
+
+                it
+            }
             AppModel.lastEditFileWhenDestroy.value = ""
         }
 
@@ -1489,6 +1501,23 @@ private suspend fun doInit(
             // update file last used time
             FileOpenHistoryMan.touch(requireOpenFilePath)
 
+
+            //判断是否需要生成新的预览页面导航栈
+            if(!(isUsingBackupPath || keepPreviewStack.value || editorPageShowingFilePath.value == previewNavStack.value.firstPath)) {
+                previewNavStack.value = EditorPreviewNavStack(requireOpenFilePath)
+            }
+            //不管是否保持上次的stack，执行完都重置此值
+            keepPreviewStack.value = false
+
+            //这个路径可能在旋转屏幕后丢失，恢复下
+            if(previewPath.value.isBlank()) {
+                previewPath.value = previewNavStack.value.getFirst().first
+                if(previewPath.value.isBlank()) {
+                    previewPath.value = requireOpenFilePath
+                }
+            }
+
+
             //旋转屏幕后恢复预览模式
             if(isSubPage) {
                 if(AppModel.subEditorPreviewModeOnWhenDestroy.value) {
@@ -1498,8 +1527,6 @@ private suspend fun doInit(
                 pageRequest.value = PageRequest.requireInitPreview
             }
 
-            //TODO 如果通过顶栏action编辑文件打开文件，不要生成新的 nav stack
-            previewNavStack.value = EditorPreviewNavStack(requireOpenFilePath)
         } catch (e: Exception) {
             editorPageShowingFileIsReady.value = false
             //设置错误信息
