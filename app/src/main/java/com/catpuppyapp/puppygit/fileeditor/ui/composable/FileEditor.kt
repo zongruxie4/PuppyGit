@@ -204,6 +204,7 @@ fun FileEditor(
     Box(
         modifier = Modifier
             .fillMaxSize()
+            //括号里的参数是个类似remember key的东西，若变化会重新执行后续代码块。在特定情况下重新注册callback时可使用此参数。
             .pointerInput(Unit) {
                 //这个会覆盖侧栏抽屉的滑动手势，所以需要处理下
                 //Drag手势有 x y；水平只有x；垂直只有y
@@ -251,6 +252,13 @@ fun FileEditor(
                         content = mdText.value,
                         basePathNoEndSlash = basePath.value,
                         fontSize = fontSize.intValue, //和编辑器字体大小保持一致
+                        onLinkClicked = { link ->
+                            //检查类型：
+                            // - 若相对路径或绝对路径，检查是否存在对应文件，若不存在，吐司提示，若存在，跳转
+                            // - 若mailto用邮箱打开（参考关于页面的实现）
+                            // - 若url或其他，一律用浏览器打开
+                            println("Link clicked: "+link)
+                        }
                     )
 
                     Spacer(Modifier.height(30.dp))

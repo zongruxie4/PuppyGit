@@ -1,5 +1,6 @@
 package com.catpuppyapp.puppygit.compose
 
+import android.text.util.Linkify
 import androidx.compose.material3.LocalTextStyle
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
@@ -17,6 +18,7 @@ fun MarkDownContainer(
     content:String,
     basePathNoEndSlash:String,
     fontSize:Int,
+    onLinkClicked: ((String) -> Unit)? = null,
 ) {
     val activityContext = LocalContext.current
     val inDarkTheme = Theme.inDarkTheme
@@ -24,6 +26,8 @@ fun MarkDownContainer(
     MarkdownText(
         modifier = modifier,
         markdown = content,
+        linkifyMask = Linkify.EMAIL_ADDRESSES or Linkify.WEB_URLS,
+        onLinkClicked = onLinkClicked,
         linkColor = MyStyleKt.ClickableText.color,
         style = LocalTextStyle.current.copy(fontSize = fontSize.sp),
         isTextSelectable = true,
