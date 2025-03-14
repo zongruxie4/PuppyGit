@@ -83,4 +83,8 @@ class EditorPreviewNavStack(val firstPath:String) {
         return backStack.isNotEmpty()
     }
 
+    fun ofThisPath(path: String): Boolean {
+        return path == firstPath
+    }
+
 }

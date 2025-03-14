@@ -1353,17 +1353,12 @@ private suspend fun doInit(
 //        editorPageShowingFileIsReady.value = false  //20240429:文件未就绪应归调用者设置
     //如果存在待打开的文件，则打开，文件可能来自从文件管理器的点击
 
-    var isUsingBackupPath = false
     // 加载文件 (load file)
     if (!editorPageShowingFileIsReady.value) {  //从文件管理器跳转到editor 或 打开文件后从其他页面跳转到editor
         //准备文件路径，开始
         //优先打开从文件管理器跳转来的文件，如果不是跳转来的，打开之前显示的文件
         if(editorPageShowingFilePath.value.isBlank()) {
-            editorPageShowingFilePath.value = AppModel.lastEditFileWhenDestroy.value.let {
-                isUsingBackupPath = it.isNotBlank()
-
-                it
-            }
+            editorPageShowingFilePath.value = AppModel.lastEditFileWhenDestroy.value
             AppModel.lastEditFileWhenDestroy.value = ""
         }
 
@@ -1502,12 +1497,15 @@ private suspend fun doInit(
             FileOpenHistoryMan.touch(requireOpenFilePath)
 
 
+            val keepPreviewStackOnce = keepPreviewStack.value
+            keepPreviewStack.value = false  //不管是否保持上次的stack，都只消费此值一次，用完就重置
+            val keepPreviewStack = Unit //防止后面调用此变量
             //判断是否需要生成新的预览页面导航栈
-            if(!(isUsingBackupPath || keepPreviewStack.value || editorPageShowingFilePath.value == previewNavStack.value.firstPath)) {
+            //如果当前stack不属于当前文件 且 没请求保留当前栈，重新生成
+            if(previewNavStack.value.ofThisPath(requireOpenFilePath).not() && keepPreviewStackOnce.not()) {
                 previewNavStack.value = EditorPreviewNavStack(requireOpenFilePath)
             }
-            //不管是否保持上次的stack，执行完都重置此值
-            keepPreviewStack.value = false
+
 
             //这个路径可能在旋转屏幕后丢失，恢复下
             if(previewPath.value.isBlank()) {
