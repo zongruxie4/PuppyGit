@@ -574,7 +574,7 @@ fun EditorInnerPage(
             if(last == null) {
                 quitPreviewMode()
             }else {
-                requestFromParent.value = if(isSubPageMode) PageRequest.requireInitPreviewFromSubEditorBack else PageRequest.requireInitPreviewBack
+                requestFromParent.value = if(isSubPageMode) PageRequest.requireInitPreviewFromSubEditor else PageRequest.requireInitPreview
             }
         }
 
@@ -586,7 +586,7 @@ fun EditorInnerPage(
             val next = previewNavStack.value.ahead()
 
             if(next != null){
-                requestFromParent.value = if(isSubPageMode) PageRequest.requireInitPreviewFromSubEditorAhead else PageRequest.requireInitPreviewAhead
+                requestFromParent.value = if(isSubPageMode) PageRequest.requireInitPreviewFromSubEditor else PageRequest.requireInitPreview
             }
         }
 
@@ -602,7 +602,7 @@ fun EditorInnerPage(
     val previewLinkHandler:(link:String)->Boolean = { link ->
         if(FsUtils.maybeIsRelativePath(link)) {
             doJobThenOffLoading {
-                val basePathAndFileName = previewNavStack.value.getFirst(trueAheadFalseBack = false).first
+                val basePathAndFileName = previewNavStack.value.getFirst().first
                 //当前预览文件不一定是showing file path，有可能跳转过，所以正确操作应该是取出栈中最上面的一个元素
                 val linkFullPath = FsUtils.getAbsolutePathIfIsRelative(path = link, basePathNoEndSlash = FsUtils.getParentPath(basePathAndFileName))
 
@@ -631,13 +631,7 @@ fun EditorInnerPage(
         }
     }
 
-    if(requestFromParent.value == PageRequest.requireInitPreview
-        || requestFromParent.value == PageRequest.requireInitPreviewBack
-        || requestFromParent.value == PageRequest.requireInitPreviewAhead
-        || requestFromParent.value == PageRequest.requireInitPreviewFromSubEditor
-        || requestFromParent.value == PageRequest.requireInitPreviewFromSubEditorAhead
-        || requestFromParent.value == PageRequest.requireInitPreviewFromSubEditorBack
-    ) {
+    if(requestFromParent.value == PageRequest.requireInitPreview || requestFromParent.value == PageRequest.requireInitPreviewFromSubEditor) {
         PageRequest.clearStateThenDoAct(requestFromParent) {
             doJobThenOffLoading {
                 //先保存，不然如果文件大切换预览会卡住然后崩溃导致会丢数据
@@ -645,13 +639,11 @@ fun EditorInnerPage(
 
                 previewLoadingOn()
 
-                val isAhead = requestFromParent.value != PageRequest.requireInitPreview && requestFromParent.value != PageRequest.requireInitPreviewFromSubEditor && (requestFromParent.value == PageRequest.requireInitPreviewAhead || requestFromParent.value == PageRequest.requireInitPreviewFromSubEditorAhead)
-                val isSubEditorRequest = requestFromParent.value == PageRequest.requireInitPreviewFromSubEditor || requestFromParent.value == PageRequest.requireInitPreviewFromSubEditorAhead || requestFromParent.value == PageRequest.requireInitPreviewFromSubEditorBack
 
                 //开启预览模式
                 //取出当前文件所在目录作为相对路径的父目录
                 //从stack取出第一个元素，若没有，使用showing path
-                val path = previewNavStack.value.getFirst(trueAheadFalseBack = isAhead).first
+                val path = previewNavStack.value.getFirst().first
 
                 previewPath.value = path
                 basePath.value = FsUtils.getParentPath(path)
@@ -664,7 +656,7 @@ fun EditorInnerPage(
 
                 previewLoadingOff()
 
-                if(isSubEditorRequest){
+                if(isSubPageMode){
                     AppModel.subEditorPreviewModeOnWhenDestroy.value = true
                 }else {
                     AppModel.editorPreviewModeOnWhenDestroy.value = true
