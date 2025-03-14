@@ -120,7 +120,7 @@ android {
 }
 
 dependencies {
-    // begin: temprory markdwon depencies, remove when compose-markdown support custom coilStore(for load image from relative path)
+    // start: temporary markdown dependencies, remove when 'compose-markdown' support custom coilStore(for load image from relative path)
     val markwonVersion = "4.6.2"
     implementation("androidx.appcompat:appcompat:1.7.0")
     implementation("io.noties.markwon:core:$markwonVersion")
@@ -129,17 +129,15 @@ dependencies {
     implementation("io.noties.markwon:html:$markwonVersion")
     implementation("io.noties.markwon:linkify:$markwonVersion")
     implementation("io.noties.markwon:ext-tasklist:$markwonVersion")
-
-    // TODO: Change it after migrating markwon project
     implementation("com.github.jeziellago:Markwon:58aa5aba6a")
-
     api("io.coil-kt:coil:2.6.0")
     api("io.coil-kt:coil-gif:2.6.0")
-    // markdown render
-//    implementation("com.github.jeziellago:compose-markdown:0.5.7")
-//    implementation("org.jetbrains:markdown:0.7.3")  // jetbran md lib, trans md to html
+    // end: temporary markdown dependencies
 
-    // end: temprory markdwon depencies
+
+    // markdown preview support, enable this after it support load relative path resources
+//    implementation("com.github.jeziellago:compose-markdown:change_to_the_latest_version")
+
 
 
 

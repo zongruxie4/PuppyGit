@@ -47,8 +47,8 @@ class ImagesPlugin private constructor(
     companion object {
         private val cache: HashMap<AsyncDrawable, Disposable> = HashMap(2)
 
-        fun create(context: Context, imageLoader: ImageLoader, customCoilStore: CoilStore?): ImagesPlugin {
-            val coilStore = customCoilStore ?: (object : CoilStore {
+        fun create(context: Context, imageLoader: ImageLoader, coilStore: CoilStore?): ImagesPlugin {
+            val coilStore = coilStore ?: (object : CoilStore {
                 override fun load(drawable: AsyncDrawable): ImageRequest {
                     return ImageRequest.Builder(context)
                         .data(drawable.destination)
