@@ -18,7 +18,7 @@ fun MarkDownContainer(
     content:String,
     basePathNoEndSlash:String,
     fontSize:Int,
-    onLinkClicked: ((String) -> Unit)? = null,
+    onLinkClicked: (String) -> Boolean = {false},
 ) {
     val activityContext = LocalContext.current
     val inDarkTheme = Theme.inDarkTheme
