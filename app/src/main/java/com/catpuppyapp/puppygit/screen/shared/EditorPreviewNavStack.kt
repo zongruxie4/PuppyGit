@@ -48,9 +48,9 @@ class EditorPreviewNavStack(val firstPath:String) {
         }
     }
 
-    suspend fun getFirst(trueAheadFalseBack:Boolean):Pair<String, ScrollState>? {
+    suspend fun getFirst(trueAheadFalseBack:Boolean):Pair<String, ScrollState> {
         lock.withLock {
-            val first = (if(trueAheadFalseBack) aheadStack else backStack).getFirst() ?: return null
+            val first = (if(trueAheadFalseBack) aheadStack else backStack).getFirst() ?: firstPath
             return Pair(first, getScrollState(first))
         }
     }
