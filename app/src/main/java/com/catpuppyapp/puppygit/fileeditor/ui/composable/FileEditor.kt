@@ -250,7 +250,8 @@ fun FileEditor(
                     MarkDownContainer(
                         modifier = Modifier.padding(horizontal = 10.dp),
                         content = mdText.value,
-                        basePathNoEndSlash = basePath.value
+                        basePathNoEndSlash = basePath.value,
+                        fontSize = fontSize.intValue, //和编辑器字体大小保持一致
                     )
 
                     Spacer(Modifier.height(30.dp))
