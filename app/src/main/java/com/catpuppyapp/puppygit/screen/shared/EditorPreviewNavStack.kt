@@ -3,7 +3,6 @@ package com.catpuppyapp.puppygit.screen.shared
 import androidx.compose.foundation.ScrollState
 import com.catpuppyapp.puppygit.datastruct.Stack
 import com.catpuppyapp.puppygit.screen.functions.newScrollState
-import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 import java.util.concurrent.ConcurrentHashMap

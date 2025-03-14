@@ -1218,6 +1218,7 @@ fun EditorInnerPage(
             doJobThenOffLoading {
                 try {
                     doInit(
+                        previewNavStack = previewNavStack,
                         activityContext = activityContext,
                         editorPageShowingFilePath = editorPageShowingFilePath,
                         editorPageShowingFileIsReady = editorPageShowingFileIsReady,
@@ -1287,8 +1288,8 @@ fun EditorInnerPage(
 }
 
 private suspend fun doInit(
+    previewNavStack:CustomStateSaveable<EditorPreviewNavStack>,
     activityContext:Context,
-
 //    editorPageRequireOpenFilePath: MutableState<String>,
     editorPageShowingFilePath: MutableState<String>,
     editorPageShowingFileIsReady: MutableState<Boolean>,
@@ -1483,6 +1484,8 @@ private suspend fun doInit(
             }else if(AppModel.editorPreviewModeOnWhenDestroy.value) {
                 pageRequest.value = PageRequest.requireInitPreview
             }
+
+            previewNavStack.value = EditorPreviewNavStack(requireOpenFilePath)
         } catch (e: Exception) {
             editorPageShowingFileIsReady.value = false
             //设置错误信息
