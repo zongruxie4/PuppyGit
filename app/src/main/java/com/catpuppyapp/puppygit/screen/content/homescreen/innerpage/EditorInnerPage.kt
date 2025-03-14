@@ -602,7 +602,7 @@ fun EditorInnerPage(
     val previewLinkHandler:(link:String)->Boolean = { link ->
         if(FsUtils.maybeIsRelativePath(link)) {
             doJobThenOffLoading {
-                val basePathAndFileName = previewNavStack.value.getFirst(trueAheadFalseBack = true).first
+                val basePathAndFileName = previewNavStack.value.getFirst(trueAheadFalseBack = false).first
                 //当前预览文件不一定是showing file path，有可能跳转过，所以正确操作应该是取出栈中最上面的一个元素
                 val linkFullPath = FsUtils.getAbsolutePathIfIsRelative(path = link, basePathNoEndSlash = FsUtils.getParentPath(basePathAndFileName))
 
