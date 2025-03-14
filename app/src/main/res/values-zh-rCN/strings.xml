@@ -1205,4 +1205,8 @@
     <string name="aborting">正在中止…</string>
     <string name="abort">中止</string>
 
+    <!-- new at 20250315-->
+    <string name="home">主页</string>
+    <string name="Preview">预览</string>
+
 </resources>

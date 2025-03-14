@@ -10,6 +10,8 @@ import androidx.compose.material.icons.filled.ArrowDownward
 import androidx.compose.material.icons.filled.ArrowUpward
 import androidx.compose.material.icons.filled.CheckBox
 import androidx.compose.material.icons.filled.CheckBoxOutlineBlank
+import androidx.compose.material.icons.filled.Edit
+import androidx.compose.material.icons.filled.Home
 import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.material.icons.filled.VerticalAlignBottom
 import androidx.compose.material.icons.filled.VerticalAlignTop
@@ -41,12 +43,14 @@ import com.catpuppyapp.puppygit.dev.proFeatureEnabled
 import com.catpuppyapp.puppygit.dto.UndoStack
 import com.catpuppyapp.puppygit.fileeditor.texteditor.state.TextEditorState
 import com.catpuppyapp.puppygit.play.pro.R
+import com.catpuppyapp.puppygit.screen.shared.EditorPreviewNavStack
 import com.catpuppyapp.puppygit.settings.SettingsCons
 import com.catpuppyapp.puppygit.settings.SettingsUtil
 import com.catpuppyapp.puppygit.style.MyStyleKt
 import com.catpuppyapp.puppygit.user.UserUtil
 import com.catpuppyapp.puppygit.utils.Msg
 import com.catpuppyapp.puppygit.utils.UIHelper
+import com.catpuppyapp.puppygit.utils.doJobThenOffLoading
 import com.catpuppyapp.puppygit.utils.state.CustomStateSaveable
 
 @Composable
@@ -94,6 +98,18 @@ fun EditorPageActions(
     //这几个模式互斥，其实可以做成枚举
 
     if(isPreviewModeOn) {
+        LongPressAbleIconBtn(
+            tooltipText = stringResource(R.string.edit),
+            icon = Icons.Filled.Edit,
+        ) {
+            editorPageRequest.value = PageRequest.requireOpenCurrentPreviewingFile
+        }
+        LongPressAbleIconBtn(
+            tooltipText = stringResource(R.string.home),
+            icon = Icons.Filled.Home,
+        ) {
+            editorPageRequest.value = PageRequest.requireBackToHome
+        }
         LongPressAbleIconBtn(
             tooltipText = stringResource(R.string.go_to_top),
             icon = Icons.Filled.VerticalAlignTop,

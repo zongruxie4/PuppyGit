@@ -396,6 +396,8 @@ fun EditorInnerPage(
             AppModel.editorPreviewModeOnWhenDestroy.value = false
         }
 
+        quitPreviewMode()
+
 //        showReloadDialog.value=false
 
         //重新加载文件，需要弹窗确认“重新加载文件将丢失未保存的修改，确定？”，加载时需要有遮罩加载动画避免加载时用户操作
@@ -718,6 +720,26 @@ fun EditorInnerPage(
     if(requestFromParent.value == PageRequest.requireGoToFileHistory) {
         PageRequest.clearStateThenDoAct(requestFromParent) {
             goToFileHistory(editorPageShowingFilePath.value, activityContext)
+        }
+    }
+
+    if(requestFromParent.value == PageRequest.requireOpenCurrentPreviewingFile) {
+        PageRequest.clearStateThenDoAct(requestFromParent) {
+            runBlocking {
+                editorPageShowingFilePath.value = previewNavStack.value.getFirst().first
+                reloadFile()
+            }
+        }
+    }
+
+    if(requestFromParent.value == PageRequest.requireBackToHome) {
+        PageRequest.clearStateThenDoAct(requestFromParent) {
+            runBlocking {
+                previewNavStack.value.backToHome()
+                if(previewNavStack.value.backIsNotEmpty()) {
+                    previewNavBack()
+                }
+            }
         }
     }
 
@@ -1476,6 +1498,7 @@ private suspend fun doInit(
                 pageRequest.value = PageRequest.requireInitPreview
             }
 
+            //TODO 如果通过顶栏action编辑文件打开文件，不要生成新的 nav stack
             previewNavStack.value = EditorPreviewNavStack(requireOpenFilePath)
         } catch (e: Exception) {
             editorPageShowingFileIsReady.value = false

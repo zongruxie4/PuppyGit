@@ -25,6 +25,17 @@ class EditorPreviewNavStack(val firstPath:String) {
         }
     }
 
+    suspend fun backToHome() {
+        lock.withLock {
+            val size = backStack.size()
+            if(size > 1) {
+                for(i in 0..size-2) {
+                    backStack.pop()?.let { aheadStack.push(it) }
+                }
+            }
+        }
+    }
+
     /**
      * ahead()前需要先push目标path
      */
@@ -66,6 +77,10 @@ class EditorPreviewNavStack(val firstPath:String) {
             pathAndScrollStateMap[path] = scrollState
             scrollState
         }
+    }
+
+    fun backIsNotEmpty():Boolean {
+        return backStack.isNotEmpty()
     }
 
 }

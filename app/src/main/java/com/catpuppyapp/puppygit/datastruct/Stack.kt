@@ -20,6 +20,10 @@ class Stack<T>(val store:LinkedList<T> = LinkedList()) {
         return store.pollFirst()
     }
 
+    fun size():Int {
+        return store.size
+    }
+
     fun clear() {
         store.clear()
     }

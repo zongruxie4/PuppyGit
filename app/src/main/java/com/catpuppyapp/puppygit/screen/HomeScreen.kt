@@ -984,22 +984,28 @@ fun HomeScreen(
                     actions = {
                         if(currentHomeScreen.intValue == Cons.selectedItem_Repos) {
                             if(!repoPageFilterModeOn.value){
-                                RepoPageActions(navController, repoPageCurRepo, showSetGlobalGitUsernameAndEmailDialog, needRefreshRepoPage,
-                                    repoPageFilterModeOn, repoPageFilterKeyWord,
+                                RepoPageActions(
+                                    navController = navController,
+                                    curRepo = repoPageCurRepo,
+                                    showGlobalUsernameAndEmailDialog = showSetGlobalGitUsernameAndEmailDialog,
+                                    needRefreshRepoPage = needRefreshRepoPage,
+                                    repoPageFilterModeOn = repoPageFilterModeOn,
+                                    repoPageFilterKeyWord = repoPageFilterKeyWord,
                                     showImportRepoDialog = repoPageShowImportRepoDialog
                                 )
                             }
                         }else if(currentHomeScreen.intValue == Cons.selectedItem_Files) {
-                            FilesPageActions(showCreateFileOrFolderDialog,
+                            FilesPageActions(
+                                showCreateFileOrFolderDialog = showCreateFileOrFolderDialog,
                                 refreshPage = {
                                     changeStateTriggerRefreshPage(needRefreshFilesPage)
                                 },
                                 filterOn = filesPageFilterOn,
-                                filesPageGetFilterMode,
-                                filesPageDoFilter,
-                                filesPageRequestFromParent,
-                                filesPageSimpleFilterOn,
-                                filesPageSimpleFilterKeyWord
+                                filesPageGetFilterMode = filesPageGetFilterMode,
+                                doFilter = filesPageDoFilter,
+                                requestFromParent = filesPageRequestFromParent,
+                                filesPageSimpleFilterOn = filesPageSimpleFilterOn,
+                                filesPageSimpleFilterKeyWord = filesPageSimpleFilterKeyWord
                             )
 
                         }else if(currentHomeScreen.intValue == Cons.selectedItem_Editor && !editorOpenFileErr.value) {

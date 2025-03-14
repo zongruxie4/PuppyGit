@@ -1225,5 +1225,9 @@
     <string name="aborting">Отмена…</string>
     <string name="abort">Отменить</string>
 
+    <!-- new at 20250315-->
+    <string name="home">Home</string>
+    <string name="Preview">Preview</string>
+
 
 </resources>
