@@ -17,7 +17,7 @@ object MdUtil {
         return object : CoilStore {
             override fun load(drawable: AsyncDrawable): ImageRequest {
                 val path = drawable.destination.let {
-                    FsUtils.prependBasePathIfIsRelativePath(path = it, basePathNoEndSlash = basePathNoEndSlash)
+                    FsUtils.getAbsolutePathIfIsRelative(path = it, basePathNoEndSlash = basePathNoEndSlash)
                 }
 
                 return ImageRequest.Builder(context)

@@ -46,6 +46,7 @@ import com.catpuppyapp.puppygit.screen.functions.getClipboardText
 import com.catpuppyapp.puppygit.settings.AppSettings
 import com.catpuppyapp.puppygit.style.MyStyleKt
 import com.catpuppyapp.puppygit.ui.theme.Theme
+import com.catpuppyapp.puppygit.utils.AppModel
 import com.catpuppyapp.puppygit.utils.FsUtils
 import com.catpuppyapp.puppygit.utils.Libgit2Helper
 import com.catpuppyapp.puppygit.utils.Msg
@@ -485,6 +486,9 @@ fun DiffRow (
                 val goToLine = if(lineNum == LineNum.EOF.TEXT) LineNum.EOF.LINE_NUM else lineNum
                 val initMergeMode = "0"  //能进diff页面说明没冲突，所以mergemode设为0
                 val initReadOnly = "0"  //app内置目录下的文件不可能在diff页面显示，所以在这把readonly设为0即可
+
+                AppModel.subEditorPreviewModeOnWhenDestroy.value = false
+
                 navController.navigate(Cons.nav_SubPageEditor +"/$goToLine"+"/$initMergeMode"+"/$initReadOnly")
             }
 

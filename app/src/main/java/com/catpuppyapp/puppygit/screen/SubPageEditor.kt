@@ -35,6 +35,7 @@ import com.catpuppyapp.puppygit.play.pro.R
 import com.catpuppyapp.puppygit.screen.content.homescreen.innerpage.EditorInnerPage
 import com.catpuppyapp.puppygit.screen.content.homescreen.scaffold.actions.EditorPageActions
 import com.catpuppyapp.puppygit.screen.content.homescreen.scaffold.title.EditorTitle
+import com.catpuppyapp.puppygit.screen.shared.EditorPreviewNavStack
 import com.catpuppyapp.puppygit.settings.SettingsUtil
 import com.catpuppyapp.puppygit.style.MyStyleKt
 import com.catpuppyapp.puppygit.utils.AppModel
@@ -44,7 +45,6 @@ import com.catpuppyapp.puppygit.utils.doJobThenOffLoading
 import com.catpuppyapp.puppygit.utils.state.mutableCustomStateOf
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
-import java.io.File
 
 //for debug
 private const val TAG = "SubPageEditor"
@@ -146,14 +146,18 @@ fun SubPageEditor(
     val editorIsPreviewModeOn = rememberSaveable { mutableStateOf(false) }
     val editorMdText = rememberSaveable { mutableStateOf("") }
     val editorBasePath = rememberSaveable { mutableStateOf("") }
+    val editorPreviewNavStack = mutableCustomStateOf(stateKeyTag, "editorPreviewNavStack") { EditorPreviewNavStack("") }
+
     val editorQuitPreviewMode = {
+        AppModel.subEditorPreviewModeOnWhenDestroy.value = false
+
         editorBasePath.value = ""
         editorMdText.value = ""
         editorIsPreviewModeOn.value = false
     }
     val editorInitPreviewMode = {
         //请求执行一次保存，不然有可能切换
-        editorPageRequestFromParent.value = PageRequest.requireInitPreview
+        editorPageRequestFromParent.value = PageRequest.requireInitPreviewFromSubEditor
     }
 
 
@@ -342,6 +346,7 @@ fun SubPageEditor(
         }
     ) { contentPadding ->
         EditorInnerPage(
+            previewNavStack = editorPreviewNavStack,
             isPreviewModeOn = editorIsPreviewModeOn,
             previewScrollState = editorPreviewScrollState,
             mdText = editorMdText,

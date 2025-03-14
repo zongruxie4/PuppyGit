@@ -64,6 +64,7 @@ import com.catpuppyapp.puppygit.fileeditor.texteditor.view.ScrollEvent
 import com.catpuppyapp.puppygit.fileeditor.texteditor.view.TextEditor
 import com.catpuppyapp.puppygit.fileeditor.ui.composable.editor.FieldIcon
 import com.catpuppyapp.puppygit.play.pro.R
+import com.catpuppyapp.puppygit.screen.shared.EditorPreviewNavStack
 import com.catpuppyapp.puppygit.settings.FileEditedPos
 import com.catpuppyapp.puppygit.style.MyStyleKt
 import com.catpuppyapp.puppygit.ui.theme.Theme
@@ -79,10 +80,15 @@ private const val stateKeyTag = "FileEditor"
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun FileEditor(
+    previewNavBack:()->Unit,
+    previewNavAhead:()->Unit,
+    previewNavStack:CustomStateSaveable<EditorPreviewNavStack>,
+
     previewLoading:Boolean,
     previewScrollState:ScrollState,
     mdText:MutableState<String>,
     basePath:MutableState<String>,
+    previewLinkHandler:(link:String)->Boolean,
 
     isPreviewModeOn:MutableState<Boolean>,
     quitPreviewMode:()->Unit,
@@ -194,8 +200,21 @@ fun FileEditor(
 
     val isRtl = UIHelper.isRtlLayout()
 
-    val onLeftToRight = { if(isPreviewModeOn.value) quitPreviewMode() else openDrawer() }
-    val onRightToLeft = { if(isPreviewModeOn.value.not()) initPreviewMode() }
+    //处理返回和前进
+    val onLeftToRight = {
+        if(isPreviewModeOn.value) {
+            previewNavBack()
+        } else {
+            openDrawer()
+        }
+    }
+    val onRightToLeft = {
+        if(isPreviewModeOn.value) {
+            previewNavAhead()
+        } else {
+            initPreviewMode()
+        }
+    }
 
     val dragHandleInterval = remember { 500L } //ms
     val curTime = rememberSaveable { mutableLongStateOf(0) }
@@ -244,7 +263,7 @@ fun FileEditor(
                         //fillMaxSize 必须在最上面！要不然，文字不会显示在中间！
                         .fillMaxSize()
                         .padding(contentPadding)
-                        .verticalScroll(previewScrollState)
+                        .verticalScroll(previewNavStack.value.getFirstElementScrollState())
                     ,
                 ) {
                     MarkDownContainer(
@@ -253,11 +272,7 @@ fun FileEditor(
                         basePathNoEndSlash = basePath.value,
                         fontSize = fontSize.intValue, //和编辑器字体大小保持一致
                         onLinkClicked = { link ->
-                            //检查类型：
-                            // - 若相对路径或绝对路径，检查是否存在对应文件，若不存在，吐司提示，若存在，跳转
-                            // - 若mailto用邮箱打开（参考关于页面的实现）
-                            // - 若url或其他，一律用浏览器打开
-                            println("Link clicked: "+link)
+                            previewLinkHandler(link)
                         }
                     )
 

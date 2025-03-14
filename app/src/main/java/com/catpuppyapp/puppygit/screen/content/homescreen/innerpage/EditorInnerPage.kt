@@ -64,6 +64,7 @@ import com.catpuppyapp.puppygit.fileeditor.texteditor.view.ScrollEvent
 import com.catpuppyapp.puppygit.fileeditor.ui.composable.FileEditor
 import com.catpuppyapp.puppygit.play.pro.R
 import com.catpuppyapp.puppygit.screen.functions.goToFileHistory
+import com.catpuppyapp.puppygit.screen.shared.EditorPreviewNavStack
 import com.catpuppyapp.puppygit.settings.SettingsUtil
 import com.catpuppyapp.puppygit.style.MyStyleKt
 import com.catpuppyapp.puppygit.utils.AppModel
@@ -85,6 +86,7 @@ import com.catpuppyapp.puppygit.utils.snapshot.SnapshotUtil
 import com.catpuppyapp.puppygit.utils.state.CustomStateSaveable
 import com.catpuppyapp.puppygit.utils.state.mutableCustomStateListOf
 import com.catpuppyapp.puppygit.utils.withMainContext
+import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 import java.io.File
@@ -96,6 +98,7 @@ private var justForSaveFileWhenDrawerOpen = getShortUUID()
 
 @Composable
 fun EditorInnerPage(
+    previewNavStack:CustomStateSaveable<EditorPreviewNavStack>,
     previewScrollState:ScrollState,
     isPreviewModeOn:MutableState<Boolean>,
     mdText:MutableState<String>,
@@ -332,33 +335,6 @@ fun EditorInnerPage(
 
 
 
-//    if(!isSubPageMode) {  //如果是子页面模式，不注册back handler，因为不需要双击退出
-    //back handler block start
-    val isBackHandlerEnable = rememberSaveable { mutableStateOf(true) }
-
-    val backHandlerOnBack = getBackHandler(
-        isPreviewModeOn = isPreviewModeOn,
-        quitPreviewMode = quitPreviewMode,
-        activityContext = activityContext,
-        textEditorState = editorPageTextEditorState,
-        isSubPage = isSubPageMode,
-        isEdited = isEdited,
-        readOnlyMode = readOnlyMode,
-//        doSaveInCoroutine,
-        doSaveNoCoroutine = doSaveNoCoroutine,
-        searchMode = editorSearchMode,
-        needAndReadyDoSave = needAndReadyDoSave,
-        naviUp = naviUp,
-        adjustFontSizeMode=editorAdjustFontSizeMode,
-        adjustLineNumFontSizeMode=editorAdjustLineNumFontSizeMode,
-        saveFontSizeAndQuitAdjust = saveFontSizeAndQuitAdjust,
-        saveLineNumFontSizeAndQuitAdjust = saveLineNumFontSizeAndQuitAdjust,
-        exitApp = exitApp,
-        openDrawer=openDrawer,
-        requestFromParent = requestFromParent
-
-    )
-
     //更新最后打开文件状态变量并保存到配置文件（注：重复打开同一文件不会重复更新）
     val saveLastOpenPath = {path:String->
         if(path.isNotBlank() && lastFilePath.value != path) {
@@ -370,11 +346,6 @@ fun EditorInnerPage(
         }
     }
 
-    //注册BackHandler，拦截返回键，实现双击返回和返回上级目录
-    BackHandler(enabled = isBackHandlerEnable.value, onBack = {backHandlerOnBack()})
-    //back handler block end
-
-//    }
     val closeFile = {
 //        showCloseDialog.value=false
 
@@ -418,6 +389,12 @@ fun EditorInnerPage(
     }
 
     val reloadFile={
+        if(isSubPageMode) {
+            AppModel.subEditorPreviewModeOnWhenDestroy.value = false
+        }else {
+            AppModel.editorPreviewModeOnWhenDestroy.value = false
+        }
+
 //        showReloadDialog.value=false
 
         //重新加载文件，需要弹窗确认“重新加载文件将丢失未保存的修改，确定？”，加载时需要有遮罩加载动画避免加载时用户操作
@@ -590,6 +567,57 @@ fun EditorInnerPage(
         previewLoading.value = false
     }
 
+    //检查类型：
+    // - 若相对路径或绝对路径，检查是否存在对应文件，若不存在，吐司提示，若存在，跳转
+    // - 若mailto用邮箱打开（参考关于页面的实现）
+    // - 若url或其他，一律用浏览器打开
+    // return true means consumed, else default link handler will take it
+    val previewLinkHandler:(link:String)->Boolean = { link ->
+        if(FsUtils.maybeIsRelativePath(link)) {
+            doJobThenOffLoading {
+                val basePathAndFileName = previewNavStack.value.getFirst()?.first ?: editorPageShowingFilePath.value
+                //当前预览文件不一定是showing file path，有可能跳转过，所以正确操作应该是取出栈中最上面的一个元素
+                val linkFullPath = FsUtils.getAbsolutePathIfIsRelative(path = link, basePathNoEndSlash = FsUtils.getParentPath(basePathAndFileName))
+
+                previewNavStack.value.push(linkFullPath)
+
+                requestFromParent.value = if(isSubPageMode) {
+                    PageRequest.requireInitPreviewFromSubEditor
+                }else {
+                    PageRequest.requireInitPreview
+                }
+            }
+
+            true
+        }else {
+            false
+        }
+    }
+
+    val previewNavBack = {
+        runBlocking {
+            val last = previewNavStack.value.back()
+            if(last == null) {
+                quitPreviewMode()
+            }else {
+                requestFromParent.value = if(isSubPageMode) PageRequest.requireInitPreviewFromSubEditor else PageRequest.requireInitPreview
+            }
+        }
+
+        Unit
+    }
+
+    val previewNavAhead = {
+        runBlocking {
+            previewNavStack.value.ahead()?.let {
+                requestFromParent.value = if(isSubPageMode) PageRequest.requireInitPreviewFromSubEditor else PageRequest.requireInitPreview
+            }
+        }
+
+        Unit
+    }
+
+
     //用不着这个了，在内部处理了
 //    if(requestFromParent.value == PageRequest.backFromExternalAppAskReloadFile) {
 //        PageRequest.clearStateThenDoAct(requestFromParent) {
@@ -604,7 +632,7 @@ fun EditorInnerPage(
         }
     }
 
-    if(requestFromParent.value == PageRequest.requireInitPreview) {
+    if(requestFromParent.value == PageRequest.requireInitPreview || requestFromParent.value == PageRequest.requireInitPreviewFromSubEditor) {
         PageRequest.clearStateThenDoAct(requestFromParent) {
             doJobThenOffLoading {
                 //先保存，不然如果文件大切换预览会卡住然后崩溃导致会丢数据
@@ -613,13 +641,26 @@ fun EditorInnerPage(
                 previewLoadingOn()
                 //开启预览模式
                 //取出当前文件所在目录作为相对路径的父目录
-                basePath.value = FsUtils.splitParentAndName(editorPageShowingFilePath.value).first.removeSuffix(Cons.slash)
+                //从stack取出第一个元素，若没有，使用showing path
+                val path = previewNavStack.value.getFirst()?.first ?: run {
+                    val showingPath = editorPageShowingFilePath.value
+                    previewNavStack.value = EditorPreviewNavStack(showingPath)
+                    showingPath
+                }
+
+                basePath.value = FsUtils.getParentPath(path)
                 // 取出当前文件内容，may take time
                 mdText.value = editorPageTextEditorState.value.getAllText()
                 //开启预览模式
                 isPreviewModeOn.value = true
 
                 previewLoadingOff()
+
+                if(requestFromParent.value == PageRequest.requireInitPreview){
+                    AppModel.editorPreviewModeOnWhenDestroy.value = true
+                }else {
+                    AppModel.subEditorPreviewModeOnWhenDestroy.value = true
+                }
             }
         }
     }
@@ -679,6 +720,41 @@ fun EditorInnerPage(
             goToFileHistory(editorPageShowingFilePath.value, activityContext)
         }
     }
+
+
+    //back handler block start
+    val isBackHandlerEnable = rememberSaveable { mutableStateOf(true) }
+
+    val backHandlerOnBack = getBackHandler(
+        previewNavBack = previewNavBack,
+        isPreviewModeOn = isPreviewModeOn,
+        quitPreviewMode = quitPreviewMode,
+        activityContext = activityContext,
+        textEditorState = editorPageTextEditorState,
+        isSubPage = isSubPageMode,
+        isEdited = isEdited,
+        readOnlyMode = readOnlyMode,
+//        doSaveInCoroutine,
+        doSaveNoCoroutine = doSaveNoCoroutine,
+        searchMode = editorSearchMode,
+        needAndReadyDoSave = needAndReadyDoSave,
+        naviUp = naviUp,
+        adjustFontSizeMode=editorAdjustFontSizeMode,
+        adjustLineNumFontSizeMode=editorAdjustLineNumFontSizeMode,
+        saveFontSizeAndQuitAdjust = saveFontSizeAndQuitAdjust,
+        saveLineNumFontSizeAndQuitAdjust = saveLineNumFontSizeAndQuitAdjust,
+        exitApp = exitApp,
+        openDrawer=openDrawer,
+        requestFromParent = requestFromParent
+
+    )
+
+    //注册BackHandler，拦截返回键，实现双击返回和返回上级目录
+    BackHandler(enabled = isBackHandlerEnable.value, onBack = {backHandlerOnBack()})
+    //back handler block end
+
+
+
 
 
 //    if(needRefreshEditorPage.value) {
@@ -1034,6 +1110,10 @@ fun EditorInnerPage(
 //            it.editor.filesLastEditPosition[fileFullPath] = fileEditedPos
 //        }
         FileEditor(
+            previewNavBack = previewNavBack,
+            previewNavAhead = previewNavAhead,
+            previewNavStack = previewNavStack,
+            previewLinkHandler = previewLinkHandler,
             previewLoading = previewLoading.value,
             previewScrollState = previewScrollState,
             mdText = mdText,
@@ -1250,6 +1330,9 @@ private suspend fun doInit(
             editorPageShowingFilePath.value = AppModel.lastEditFileWhenDestroy.value
             AppModel.lastEditFileWhenDestroy.value = ""
         }
+
+        editorPageShowingFilePath.value = FsUtils.makeThePathCanonical(editorPageShowingFilePath.value)
+
         //保存上次打开文件路径
         AppModel.lastEditFile.value = editorPageShowingFilePath.value
 
@@ -1381,6 +1464,15 @@ private suspend fun doInit(
 
             // update file last used time
             FileOpenHistoryMan.touch(requireOpenFilePath)
+
+            //旋转屏幕后恢复预览模式
+            if(isSubPage) {
+                if(AppModel.subEditorPreviewModeOnWhenDestroy.value) {
+                    pageRequest.value = PageRequest.requireInitPreviewFromSubEditor
+                }
+            }else if(AppModel.editorPreviewModeOnWhenDestroy.value) {
+                pageRequest.value = PageRequest.requireInitPreview
+            }
         } catch (e: Exception) {
             editorPageShowingFileIsReady.value = false
             //设置错误信息
@@ -1424,6 +1516,8 @@ private suspend fun doInit(
 
 @Composable
 private fun getBackHandler(
+    previewNavBack: ()->Unit,
+
     isPreviewModeOn:MutableState<Boolean>,
     quitPreviewMode:()->Unit,
 
@@ -1457,7 +1551,7 @@ private fun getBackHandler(
     val backHandlerOnBack = {
         //是多选模式则退出多选，否则检查是否编辑过文件，若编辑过则保存，然后判断是否子页面，是子页面则返回上级页面，否则显示再按返回退出的提示
         if(isPreviewModeOn.value) {
-            quitPreviewMode()
+            previewNavBack()
         }else if(textEditorState.value.isMultipleSelectionMode) {  //退出编辑器多选模式
             requestFromParent.value = PageRequest.editorCreateCancelledState
         }else if(searchMode.value){

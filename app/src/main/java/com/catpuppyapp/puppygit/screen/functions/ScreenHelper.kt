@@ -118,8 +118,9 @@ fun openFileWithInnerSubPageEditor(filePath:String, mergeMode:Boolean, readOnly:
     val initMergeMode = if(mergeMode) "1" else "0"
     val initReadOnly = if(readOnly) "1" else "0"
 
-    AppModel.navController
-        .navigate(Cons.nav_SubPageEditor + "/$goToLine/$initMergeMode/$initReadOnly")
+    AppModel.subEditorPreviewModeOnWhenDestroy.value = false
+
+    AppModel.navController.navigate(Cons.nav_SubPageEditor + "/$goToLine/$initMergeMode/$initReadOnly")
 }
 
 
@@ -305,3 +306,5 @@ fun <T> filterTheList(
     }
 
 }
+
+fun newScrollState(initial:Int = 0):ScrollState = ScrollState(initial = initial)

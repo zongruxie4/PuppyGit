@@ -93,6 +93,7 @@ import com.catpuppyapp.puppygit.screen.content.homescreen.scaffold.title.ReposTi
 import com.catpuppyapp.puppygit.screen.content.homescreen.scaffold.title.ScrollableTitle
 import com.catpuppyapp.puppygit.screen.content.homescreen.scaffold.title.SimpleTitle
 import com.catpuppyapp.puppygit.screen.functions.ChangeListFunctions
+import com.catpuppyapp.puppygit.screen.shared.EditorPreviewNavStack
 import com.catpuppyapp.puppygit.screen.shared.SharedState
 import com.catpuppyapp.puppygit.settings.SettingsCons
 import com.catpuppyapp.puppygit.settings.SettingsUtil
@@ -110,7 +111,6 @@ import com.catpuppyapp.puppygit.utils.state.mutableCustomStateListOf
 import com.catpuppyapp.puppygit.utils.state.mutableCustomStateOf
 import com.github.git24j.core.Repository.StateT
 import kotlinx.coroutines.launch
-import java.io.File
 
 
 private const val TAG = "HomeScreen"
@@ -413,8 +413,11 @@ fun HomeScreen(
     val editorIsPreviewModeOn = rememberSaveable { mutableStateOf(false) }
     val editorMdText = rememberSaveable { mutableStateOf("") }
     val editorBasePath = rememberSaveable { mutableStateOf("") }
+    val editorPreviewNavStack = mutableCustomStateOf(stateKeyTag, "editorPreviewNavStack") { EditorPreviewNavStack("") }
 
     val editorQuitPreviewMode = {
+        AppModel.editorPreviewModeOnWhenDestroy.value = false
+
         editorBasePath.value = ""
         editorMdText.value = ""
         editorIsPreviewModeOn.value = false
@@ -545,6 +548,8 @@ fun HomeScreen(
             // 重置预览模式相关的参数
             resetPreviewMode()
         }
+
+        AppModel.editorPreviewModeOnWhenDestroy.value = false
 
         //文件名后来加的，用来从外部打开content uri file uri那类路径时使用提取的文件名，不然content://开头的那种uri可能会拿到错误文件名
         editorPageShowingFileName.value = fileName
@@ -1211,6 +1216,7 @@ fun HomeScreen(
 //                changeStateTriggerRefreshPage(needRefreshEditorPage)
 
                 EditorInnerPage(
+                    previewNavStack = editorPreviewNavStack,
                     isPreviewModeOn = editorIsPreviewModeOn,
                     previewScrollState = editorPreviewScrollState,
                     mdText = editorMdText,

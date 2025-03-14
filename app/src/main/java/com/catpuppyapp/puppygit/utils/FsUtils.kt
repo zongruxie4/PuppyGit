@@ -356,6 +356,17 @@ object FsUtils {
     }
 
     /**
+     * 入参期望规范路径，但不强制要求，只要是有效完整路径就行，"/.././abc" 这样的也行
+     */
+    fun getParentPath(canonicalPath: String):String {
+        // method 1
+        return File(canonicalPath).canonicalFile.parent ?: ""
+
+        // method 2
+//        return splitParentAndName(canonicalPath).first.removeSuffix(Cons.slash)
+    }
+
+    /**
      * 获取一个不存在的名字，由exists函数判定名字是否已经存在
      *
      * 主要用途：名称冲突时生成唯一文件名，不过也能用来干别的，如果有需求的话
@@ -1466,14 +1477,29 @@ object FsUtils {
     }
 
 
-    fun prependBasePathIfIsRelativePath(path:String, basePathNoEndSlash: String):String {
-        if(!(path.startsWith("https://") || path.startsWith("http://")
-                    || path.startsWith("content://") || path.startsWith("file://")
-                    || path.startsWith("/") || path.startsWith("ftp://"))
-        ) {
-            return "$basePathNoEndSlash/$path"
+    fun maybeIsRelativePath(path: String) :Boolean {
+        return !(path.startsWith("https://") || path.startsWith("http://")
+                || path.startsWith("content://") || path.startsWith("file://")
+                || path.startsWith("/") || path.startsWith("ftp://"))
+    }
+
+    /**
+     * if is relative path, return absolute path based on base path, else return raw path
+     * @param basePathNoEndSlash 之前用的拼接，所以期望没有'/'，但现在改用files了，所以其实末尾有无slash无所谓了
+     */
+    fun getAbsolutePathIfIsRelative(path:String, basePathNoEndSlash: String):String {
+        if(maybeIsRelativePath(path)) {
+            return File(basePathNoEndSlash, path).canonicalPath
         }
 
         return path
+    }
+
+    fun makeThePathCanonical(path: String): String {
+        if(path.isBlank()) {
+            return ""
+        }
+
+        return File(path).canonicalPath
     }
 }

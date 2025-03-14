@@ -8,11 +8,8 @@ import androidx.compose.material3.rememberTopAppBarState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.graphics.ImageBitmap
 import androidx.compose.ui.graphics.asImageBitmap
-import androidx.compose.ui.hapticfeedback.HapticFeedback
-import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.core.graphics.drawable.toBitmap
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.rememberNavController
@@ -40,7 +37,6 @@ import com.catpuppyapp.puppygit.utils.storagepaths.StoragePathsMan
 import com.catpuppyapp.puppygit.utils.time.TimeZoneMode
 import com.catpuppyapp.puppygit.utils.time.TimeZoneUtil
 import com.github.git24j.core.Libgit2
-import kotlinx.coroutines.CoroutineScope
 import java.io.File
 import java.time.ZoneOffset
 import java.util.concurrent.ConcurrentHashMap
@@ -119,6 +115,12 @@ object AppModel {
      * 此变量应确保仅消费一次，不然可能会在不应该打开文件的时候打开文件
      */
     val lastEditFileWhenDestroy:MutableState<String> = mutableStateOf("")
+
+    /**
+     * 用来在旋转屏幕后恢复预览模式
+     */
+    val editorPreviewModeOnWhenDestroy:MutableState<Boolean> = mutableStateOf(false)
+    val subEditorPreviewModeOnWhenDestroy:MutableState<Boolean> = mutableStateOf(false)
 
     /**
      * 系统时区偏移量，单位: 分钟
@@ -361,7 +363,16 @@ object AppModel {
 
         //设置退出app的函数
         if(initActivity) {
-            AppModel.exitApp = exitApp
+            AppModel.exitApp = {
+                //先清空再退出，不然退出后，下次启动，默认打开上次文件，如果上次文件会导致app崩溃，就死循环了
+                AppModel.lastEditFile.value = ""
+                //重置切换屏幕后恢复预览模式的变量
+                AppModel.editorPreviewModeOnWhenDestroy.value = false
+                AppModel.subEditorPreviewModeOnWhenDestroy.value = false
+
+                //退出 Activity
+                exitApp()
+            }
         }
 
         //debug mode相关变量

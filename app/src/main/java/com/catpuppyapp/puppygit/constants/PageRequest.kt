@@ -24,6 +24,7 @@ object PageRequest {
 //    const val goToBranch ="goToBranch"  //goToBranch#branchName，#后面是要goto的分支名
 
 
+    const val requireInitPreviewFromSubEditor = "requireInitPreviewFromSubEditor"
     const val requireInitPreview = "requireInitPreview"
     const val safDiff = "safDiff"
     const val safExport = "safExport"
