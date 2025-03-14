@@ -11,7 +11,6 @@ import androidx.compose.material.icons.filled.ArrowUpward
 import androidx.compose.material.icons.filled.CheckBox
 import androidx.compose.material.icons.filled.CheckBoxOutlineBlank
 import androidx.compose.material.icons.filled.MoreVert
-import androidx.compose.material.icons.filled.RemoveRedEye
 import androidx.compose.material.icons.filled.VerticalAlignBottom
 import androidx.compose.material.icons.filled.VerticalAlignTop
 import androidx.compose.material3.DropdownMenu
@@ -95,13 +94,6 @@ fun EditorPageActions(
     //这几个模式互斥，其实可以做成枚举
 
     if(isPreviewModeOn) {
-        //用来指示当前是预览模式
-        LongPressAbleIconBtn(
-            enabled = false,
-            tooltipText = "",
-            icon = Icons.Filled.RemoveRedEye,
-        ) {}
-
         LongPressAbleIconBtn(
             tooltipText = stringResource(R.string.go_to_top),
             icon = Icons.Filled.VerticalAlignTop,

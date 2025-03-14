@@ -1,5 +1,6 @@
 package com.catpuppyapp.puppygit.compose
 
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
@@ -17,6 +18,8 @@ fun MarkDownContainer(
     MarkdownText(
         modifier = modifier,
         markdown = content,
+        isTextSelectable = true,
+        syntaxHighlightColor = MaterialTheme.colorScheme.surfaceContainer,
         coilStore = MdUtil.getCoilStore(context = activityContext, basePathNoEndSlash = basePathNoEndSlash)
     )
 }

@@ -10,6 +10,7 @@ import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Lock
+import androidx.compose.material.icons.filled.RemoveRedEye
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -93,11 +94,11 @@ fun EditorTitle(
                 Row(modifier = Modifier.horizontalScroll(rememberScrollState()),
                     verticalAlignment = Alignment.CenterVertically
                 ) {  //话说这名如果超了，在Row上加个滚动属性让用户能滚动查看，怎么样？（20240411加了，测试了下，勉强能用，还行，好！
-                    if(readOnly) {
+                    if(isPreviewModeOn || readOnly) {
                         Icon(
                             modifier = Modifier.size(12.dp),
-                            imageVector = Icons.Filled.Lock,
-                            contentDescription = stringResource(R.string.read_only),
+                            imageVector = if(isPreviewModeOn) Icons.Filled.RemoveRedEye else Icons.Filled.Lock,
+                            contentDescription = null,
                         )
                     }
 

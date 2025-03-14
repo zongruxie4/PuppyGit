@@ -56,6 +56,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.catpuppyapp.puppygit.compose.BottomBar
 import com.catpuppyapp.puppygit.compose.ConfirmDialog
+import com.catpuppyapp.puppygit.compose.LoadingText
 import com.catpuppyapp.puppygit.compose.MarkDownContainer
 import com.catpuppyapp.puppygit.constants.PageRequest
 import com.catpuppyapp.puppygit.dto.UndoStack
@@ -79,6 +80,7 @@ private const val stateKeyTag = "FileEditor"
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun FileEditor(
+    previewLoading:Boolean,
     previewScrollState:ScrollState,
     mdText:MutableState<String>,
     basePath:MutableState<String>,
@@ -231,21 +233,28 @@ fun FileEditor(
 //            .systemBarsPadding()  //用脚手架的contentPadding就不需要这个了
     ) {
         if(isPreviewModeOn.value) {
-            Column(
-                modifier = Modifier
-                    //fillMaxSize 必须在最上面！要不然，文字不会显示在中间！
-                    .fillMaxSize()
-                    .padding(contentPadding)
-                    .verticalScroll(previewScrollState)
-                ,
-            ) {
-                MarkDownContainer(
-                    modifier = Modifier.padding(horizontal = 10.dp),
-                    content = mdText.value,
-                    basePathNoEndSlash = basePath.value
+            if(previewLoading) {
+                LoadingText(
+                    text = stringResource(R.string.loading),
+                    contentPadding = contentPadding
                 )
+            }else {
+                Column(
+                    modifier = Modifier
+                        //fillMaxSize 必须在最上面！要不然，文字不会显示在中间！
+                        .fillMaxSize()
+                        .padding(contentPadding)
+                        .verticalScroll(previewScrollState)
+                    ,
+                ) {
+                    MarkDownContainer(
+                        modifier = Modifier.padding(horizontal = 10.dp),
+                        content = mdText.value,
+                        basePathNoEndSlash = basePath.value
+                    )
 
-                Spacer(Modifier.height(30.dp))
+                    Spacer(Modifier.height(30.dp))
+                }
             }
         } else {
 

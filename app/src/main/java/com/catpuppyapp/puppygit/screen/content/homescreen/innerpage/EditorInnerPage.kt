@@ -582,6 +582,14 @@ fun EditorInnerPage(
 
     }
 
+    val previewLoading = rememberSaveable { mutableStateOf(false) }
+    val previewLoadingOn = {
+        previewLoading.value = true
+    }
+    val previewLoadingOff = {
+        previewLoading.value = false
+    }
+
     //用不着这个了，在内部处理了
 //    if(requestFromParent.value == PageRequest.backFromExternalAppAskReloadFile) {
 //        PageRequest.clearStateThenDoAct(requestFromParent) {
@@ -595,20 +603,23 @@ fun EditorInnerPage(
             }
         }
     }
+
     if(requestFromParent.value == PageRequest.requireInitPreview) {
         PageRequest.clearStateThenDoAct(requestFromParent) {
             doJobThenOffLoading {
                 //先保存，不然如果文件大切换预览会卡住然后崩溃导致会丢数据
                 doSaveNoCoroutine()
 
-
+                previewLoadingOn()
                 //开启预览模式
                 //取出当前文件所在目录作为相对路径的父目录
-                basePath.value = File(editorPageShowingFilePath.value).parent ?: ""
+                basePath.value = FsUtils.splitParentAndName(editorPageShowingFilePath.value).first.removeSuffix(Cons.slash)
                 // 取出当前文件内容，may take time
                 mdText.value = editorPageTextEditorState.value.getAllText()
                 //开启预览模式
                 isPreviewModeOn.value = true
+
+                previewLoadingOff()
             }
         }
     }
@@ -1023,6 +1034,7 @@ fun EditorInnerPage(
 //            it.editor.filesLastEditPosition[fileFullPath] = fileEditedPos
 //        }
         FileEditor(
+            previewLoading = previewLoading.value,
             previewScrollState = previewScrollState,
             mdText = mdText,
             basePath = basePath,
