@@ -36,6 +36,7 @@ import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.mutableLongStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -71,6 +72,7 @@ import com.catpuppyapp.puppygit.utils.AppModel
 import com.catpuppyapp.puppygit.utils.FsUtils
 import com.catpuppyapp.puppygit.utils.Msg
 import com.catpuppyapp.puppygit.utils.MyLog
+import com.catpuppyapp.puppygit.utils.UIHelper
 import com.catpuppyapp.puppygit.utils.cache.Cache
 import com.catpuppyapp.puppygit.utils.changeStateTriggerRefreshPage
 import com.catpuppyapp.puppygit.utils.doJobThenOffLoading
@@ -157,8 +159,7 @@ fun EditorInnerPage(
     undoStack:CustomStateSaveable<UndoStack?>,
 
 ) {
-    val allRepoParentDir = AppModel.allRepoParentDir;
-//    val appContext = AppModel.appContext;
+    val scope = rememberCoroutineScope()
     val activityContext = LocalContext.current
     val exitApp = {
         AppModel.lastEditFile.value = ""
@@ -666,6 +667,16 @@ fun EditorInnerPage(
                     AppModel.editorPreviewModeOnWhenDestroy.value = true
                 }
             }
+        }
+    }
+    if(requestFromParent.value == PageRequest.editorPreviewPageGoToTop) {
+        PageRequest.clearStateThenDoAct(requestFromParent) {
+            UIHelper.scrollTo(scope, previewNavStack.value.getScrollState(previewPath.value), 0)
+        }
+    }
+    if(requestFromParent.value == PageRequest.editorPreviewPageGoToBottom) {
+        PageRequest.clearStateThenDoAct(requestFromParent) {
+            UIHelper.scrollTo(scope, previewNavStack.value.getScrollState(previewPath.value), Int.MAX_VALUE)
         }
     }
     if(requestFromParent.value == PageRequest.requireSaveFontSizeAndQuitAdjust) {

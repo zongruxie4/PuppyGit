@@ -43,14 +43,11 @@ import com.catpuppyapp.puppygit.dev.proFeatureEnabled
 import com.catpuppyapp.puppygit.dto.UndoStack
 import com.catpuppyapp.puppygit.fileeditor.texteditor.state.TextEditorState
 import com.catpuppyapp.puppygit.play.pro.R
-import com.catpuppyapp.puppygit.screen.shared.EditorPreviewNavStack
 import com.catpuppyapp.puppygit.settings.SettingsCons
 import com.catpuppyapp.puppygit.settings.SettingsUtil
 import com.catpuppyapp.puppygit.style.MyStyleKt
 import com.catpuppyapp.puppygit.user.UserUtil
 import com.catpuppyapp.puppygit.utils.Msg
-import com.catpuppyapp.puppygit.utils.UIHelper
-import com.catpuppyapp.puppygit.utils.doJobThenOffLoading
 import com.catpuppyapp.puppygit.utils.state.CustomStateSaveable
 
 @Composable
@@ -114,14 +111,14 @@ fun EditorPageActions(
             tooltipText = stringResource(R.string.go_to_top),
             icon = Icons.Filled.VerticalAlignTop,
         ) {
-            UIHelper.scrollTo(scope, previewScrollState, 0)
+            editorPageRequest.value = PageRequest.editorPreviewPageGoToTop
         }
 
         LongPressAbleIconBtn(
             tooltipText = stringResource(R.string.go_to_bottom),
             icon = Icons.Filled.VerticalAlignBottom,
         ) {
-            UIHelper.scrollTo(scope, previewScrollState, Int.MAX_VALUE)
+            editorPageRequest.value = PageRequest.editorPreviewPageGoToBottom
         }
 
         return  //返回，以免显示菜单项
