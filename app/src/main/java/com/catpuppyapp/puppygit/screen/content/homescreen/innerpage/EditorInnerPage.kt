@@ -583,7 +583,9 @@ fun EditorInnerPage(
 
     val previewNavAhead = {
         runBlocking {
-            previewNavStack.value.ahead()?.let {
+            val next = previewNavStack.value.ahead()
+
+            if(next != null){
                 requestFromParent.value = if(isSubPageMode) PageRequest.requireInitPreviewFromSubEditorAhead else PageRequest.requireInitPreviewAhead
             }
         }
