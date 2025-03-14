@@ -7,24 +7,21 @@ import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 import java.util.concurrent.ConcurrentHashMap
 
-private val pathScrollStateMap = ConcurrentHashMap<String, ScrollState>()
 
 
 class EditorPreviewNavStack(val firstPath:String) {
     private val lock = Mutex()
     private val backStack = Stack<String>()
     private val aheadStack = Stack<String>()
+    private val pathAndScrollStateMap = ConcurrentHashMap<String, ScrollState>()
 
     suspend fun push(path:String) {
         lock.withLock {
-            val next = backStack.getFirst()
-            if(next!=null && next==path) {
-                backStack.pop()
-            }else {
-                backStack.clear()
+            val next = aheadStack.getFirst()
+            if(next==null || next!=path) {  //和现有路由列表不同，需要清栈
+                aheadStack.clear()
+                aheadStack.push(path)
             }
-
-            aheadStack.push(path)
         }
     }
 
@@ -57,16 +54,15 @@ class EditorPreviewNavStack(val firstPath:String) {
 
 
     fun getScrollState(path:String):ScrollState {
-        val scrollState = pathScrollStateMap[path]
+        val scrollState = pathAndScrollStateMap[path]
 
         return if(scrollState != null) {
             scrollState
         }else {
             val scrollState = newScrollState()
-            pathScrollStateMap[path] = scrollState
+            pathAndScrollStateMap[path] = scrollState
             scrollState
         }
     }
-
 
 }
