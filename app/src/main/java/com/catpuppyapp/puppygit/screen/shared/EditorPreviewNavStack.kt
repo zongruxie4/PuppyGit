@@ -47,12 +47,13 @@ class EditorPreviewNavStack(val firstPath:String) {
         }
     }
 
-    suspend fun getFirst():Pair<String, ScrollState>? {
+    suspend fun getFirst(trueAheadFalseBack:Boolean):Pair<String, ScrollState>? {
         lock.withLock {
-            val first = backStack.getFirst() ?: return null
+            val first = (if(trueAheadFalseBack) aheadStack else backStack).getFirst() ?: return null
             return Pair(first, getScrollState(first))
         }
     }
+
 
     fun getScrollState(path:String):ScrollState {
         return pathScrollStateMap[path] ?: run {
@@ -62,8 +63,5 @@ class EditorPreviewNavStack(val firstPath:String) {
         }
     }
 
-    fun getFirstElementScrollState():ScrollState {
-        return getScrollState(runBlocking { getFirst()?.first ?: firstPath } )
-    }
 
 }

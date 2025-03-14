@@ -413,6 +413,7 @@ fun HomeScreen(
     val editorIsPreviewModeOn = rememberSaveable { mutableStateOf(false) }
     val editorMdText = rememberSaveable { mutableStateOf("") }
     val editorBasePath = rememberSaveable { mutableStateOf("") }
+    val editorPreviewPath = rememberSaveable { mutableStateOf("") }
     val editorPreviewNavStack = mutableCustomStateOf(stateKeyTag, "editorPreviewNavStack") { EditorPreviewNavStack("") }
 
     val editorQuitPreviewMode = {
@@ -1216,6 +1217,7 @@ fun HomeScreen(
 //                changeStateTriggerRefreshPage(needRefreshEditorPage)
 
                 EditorInnerPage(
+                    previewPath = editorPreviewPath,
                     previewNavStack = editorPreviewNavStack,
                     isPreviewModeOn = editorIsPreviewModeOn,
                     previewScrollState = editorPreviewScrollState,

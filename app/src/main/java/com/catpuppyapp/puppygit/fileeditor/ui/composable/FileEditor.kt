@@ -80,6 +80,7 @@ private const val stateKeyTag = "FileEditor"
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun FileEditor(
+    previewPath:String,
     previewNavBack:()->Unit,
     previewNavAhead:()->Unit,
     previewNavStack:CustomStateSaveable<EditorPreviewNavStack>,
@@ -263,7 +264,7 @@ fun FileEditor(
                         //fillMaxSize 必须在最上面！要不然，文字不会显示在中间！
                         .fillMaxSize()
                         .padding(contentPadding)
-                        .verticalScroll(previewNavStack.value.getFirstElementScrollState())
+                        .verticalScroll(previewNavStack.value.getScrollState(previewPath))
                     ,
                 ) {
                     MarkDownContainer(
