@@ -7,6 +7,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.sp
 import com.catpuppyapp.puppygit.style.MyStyleKt
+import com.catpuppyapp.puppygit.ui.theme.Theme
 import com.catpuppyapp.puppygit.utils.markdown.MdUtil
 import dev.jeziellago.compose.markdowntext.MarkdownText
 
@@ -18,6 +19,7 @@ fun MarkDownContainer(
     fontSize:Int,
 ) {
     val activityContext = LocalContext.current
+    val inDarkTheme = Theme.inDarkTheme
 
     MarkdownText(
         modifier = modifier,
@@ -25,7 +27,7 @@ fun MarkDownContainer(
         linkColor = MyStyleKt.ClickableText.color,
         style = LocalTextStyle.current.copy(fontSize = fontSize.sp),
         isTextSelectable = true,
-        syntaxHighlightColor = MaterialTheme.colorScheme.surfaceContainer,
+        syntaxHighlightColor = if(inDarkTheme) MaterialTheme.colorScheme.surfaceBright else MaterialTheme.colorScheme.surfaceDim,
         coilStore = MdUtil.getCoilStore(context = activityContext, basePathNoEndSlash = basePathNoEndSlash)
     )
 }
