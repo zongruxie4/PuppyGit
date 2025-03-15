@@ -27,6 +27,7 @@ import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.Menu
 import androidx.compose.material.icons.filled.RemoveRedEye
 import androidx.compose.material.icons.filled.SelectAll
+import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -42,7 +43,6 @@ import androidx.compose.ui.composed
 import androidx.compose.ui.draw.drawBehind
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.vector.rememberVectorPainter
 import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.platform.LocalClipboardManager
 import androidx.compose.ui.platform.LocalContext
@@ -84,6 +84,7 @@ private const val stateKeyTag = "FileEditor"
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun FileEditor(
+    isSubPageMode:Boolean,
     previewNavBack:()->Unit,
     previewNavAhead:()->Unit,
     previewNavStack:CustomStateSaveable<EditorPreviewNavStack>,
@@ -222,21 +223,44 @@ fun FileEditor(
     //内容顶部padding
     val topPadding = remember { 5.dp }
 
+    val getLeftToRightIcon = {
+        if(isPreviewModeOn.value) runBlocking { if (previewNavStack.value.backStackIsEmpty()) Icons.Filled.Edit else Icons.AutoMirrored.Filled.ArrowBackIos } else Icons.Filled.Menu
+    }
+    val getRightToLeftIcon = {
+        if(isPreviewModeOn.value) Icons.AutoMirrored.Filled.ArrowForwardIos else Icons.Filled.RemoveRedEye
+    }
+
     val leftToRightAct = SwipeAction(
-        icon = rememberVectorPainter(if(isPreviewModeOn.value) runBlocking { if (previewNavStack.value.backStackIsEmpty()) Icons.Filled.Edit else Icons.AutoMirrored.Filled.ArrowBackIos } else Icons.Filled.Menu),
+        icon = {
+            Icon(
+                imageVector = if(isRtl) getRightToLeftIcon() else getLeftToRightIcon(),
+                contentDescription = null
+            )
+        },
         background = Color.Unspecified,
         onSwipe = { if (isRtl) onRightToLeft() else onLeftToRight() }
     )
 
     val rightToLeftAct = SwipeAction(
-        icon = rememberVectorPainter(if(isPreviewModeOn.value) Icons.AutoMirrored.Filled.ArrowForwardIos else Icons.Filled.RemoveRedEye),
+        icon = {
+            Icon(
+                imageVector = if(isRtl) getLeftToRightIcon() else getRightToLeftIcon(),
+                contentDescription = null
+            )
+        },
         background = Color.Unspecified,
         onSwipe = { if (isRtl) onLeftToRight() else onRightToLeft() },
     )
 
+    val getStartActs = {
+        if(isSubPageMode && isPreviewModeOn.value.not()) listOf() else listOf(leftToRightAct)
+    }
+    val getEndActs = {
+        runBlocking { if(isPreviewModeOn.value && previewNavStack.value.aheadStackIsEmpty()) listOf() else listOf(rightToLeftAct) }
+    }
     SwipeableActionsBox(
-        startActions = listOf(leftToRightAct),
-        endActions = runBlocking { if(isPreviewModeOn.value && previewNavStack.value.aheadStackIsEmpty()) listOf() else listOf(rightToLeftAct) }
+        startActions = getStartActs(),
+        endActions = getEndActs()
     ) {
         Box(modifier = Modifier.fillMaxSize()) {
             if(isPreviewModeOn.value) {
