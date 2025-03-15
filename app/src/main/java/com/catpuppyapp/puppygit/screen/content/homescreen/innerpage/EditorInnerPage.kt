@@ -681,12 +681,14 @@ fun EditorInnerPage(
     }
     if(requestFromParent.value == PageRequest.editorPreviewPageGoToTop) {
         PageRequest.clearStateThenDoAct(requestFromParent) {
-            UIHelper.scrollTo(scope, previewNavStack.value.getScrollState(previewPath.value), 0)
+            val scrollState = runBlocking { previewNavStack.value.getScrollState(previewPath.value) }
+            UIHelper.scrollTo(scope, scrollState, 0)
         }
     }
     if(requestFromParent.value == PageRequest.editorPreviewPageGoToBottom) {
         PageRequest.clearStateThenDoAct(requestFromParent) {
-            UIHelper.scrollTo(scope, previewNavStack.value.getScrollState(previewPath.value), Int.MAX_VALUE)
+            val scrollState = runBlocking { previewNavStack.value.getScrollState(previewPath.value) }
+            UIHelper.scrollTo(scope, scrollState, Int.MAX_VALUE)
         }
     }
     if(requestFromParent.value == PageRequest.requireSaveFontSizeAndQuitAdjust) {
@@ -769,7 +771,7 @@ fun EditorInnerPage(
         PageRequest.clearStateThenDoAct(requestFromParent) {
             runBlocking {
                 previewNavStack.value.backToHome()
-                if(previewNavStack.value.backIsNotEmpty()) {
+                if(previewNavStack.value.backStackIsNotEmpty()) {
                     previewNavBack()
                 }
             }

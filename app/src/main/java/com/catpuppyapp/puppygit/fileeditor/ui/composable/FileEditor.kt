@@ -54,7 +54,6 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.catpuppyapp.puppygit.compose.BottomBar
 import com.catpuppyapp.puppygit.compose.ConfirmDialog
-import com.catpuppyapp.puppygit.compose.CopyableDialog
 import com.catpuppyapp.puppygit.compose.MarkDownContainer
 import com.catpuppyapp.puppygit.constants.PageRequest
 import com.catpuppyapp.puppygit.dto.UndoStack
@@ -70,12 +69,9 @@ import com.catpuppyapp.puppygit.style.MyStyleKt
 import com.catpuppyapp.puppygit.ui.theme.Theme
 import com.catpuppyapp.puppygit.utils.Msg
 import com.catpuppyapp.puppygit.utils.UIHelper
-import com.catpuppyapp.puppygit.utils.getFormattedLastModifiedTimeOfFile
-import com.catpuppyapp.puppygit.utils.getHumanReadableSizeStr
 import com.catpuppyapp.puppygit.utils.replaceStringResList
 import com.catpuppyapp.puppygit.utils.state.CustomStateSaveable
-import com.catpuppyapp.puppygit.utils.state.mutableCustomStateOf
-import java.io.File
+import kotlinx.coroutines.runBlocking
 
 private const val TAG = "FileEditor"
 private const val stateKeyTag = "FileEditor"
@@ -258,7 +254,7 @@ fun FileEditor(
                     //fillMaxSize 必须在最上面！要不然，文字不会显示在中间！
                     .fillMaxSize()
                     .padding(contentPadding)
-                    .verticalScroll(previewNavStack.value.getScrollState(previewPath))
+                    .verticalScroll(runBlocking { previewNavStack.value.getScrollState(previewPath) })
                 ,
             ) {
                 MarkDownContainer(
