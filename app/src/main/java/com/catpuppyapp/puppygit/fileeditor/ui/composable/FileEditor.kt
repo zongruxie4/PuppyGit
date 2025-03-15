@@ -23,6 +23,7 @@ import androidx.compose.material.icons.automirrored.filled.ArrowForwardIos
 import androidx.compose.material.icons.filled.ContentCopy
 import androidx.compose.material.icons.filled.ContentCut
 import androidx.compose.material.icons.filled.Delete
+import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.Menu
 import androidx.compose.material.icons.filled.RemoveRedEye
 import androidx.compose.material.icons.filled.SelectAll
@@ -222,7 +223,7 @@ fun FileEditor(
     val topPadding = remember { 5.dp }
 
     val leftToRightAct = SwipeAction(
-        icon = rememberVectorPainter(if(isPreviewModeOn.value) Icons.AutoMirrored.Filled.ArrowBackIos else Icons.Filled.Menu),
+        icon = rememberVectorPainter(if(isPreviewModeOn.value) runBlocking { if (previewNavStack.value.backStackIsEmpty()) Icons.Filled.Edit else Icons.AutoMirrored.Filled.ArrowBackIos } else Icons.Filled.Menu),
         background = Color.Unspecified,
         onSwipe = { if (isRtl) onRightToLeft() else onLeftToRight() }
     )
@@ -235,7 +236,7 @@ fun FileEditor(
 
     SwipeableActionsBox(
         startActions = listOf(leftToRightAct),
-        endActions = listOf(rightToLeftAct)
+        endActions = runBlocking { if(isPreviewModeOn.value && previewNavStack.value.aheadStackIsEmpty()) listOf() else listOf(rightToLeftAct) }
     ) {
         Box(modifier = Modifier.fillMaxSize()) {
             if(isPreviewModeOn.value) {
