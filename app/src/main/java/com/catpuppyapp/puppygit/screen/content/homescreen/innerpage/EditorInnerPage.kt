@@ -646,24 +646,43 @@ fun EditorInnerPage(
 
     if(requestFromParent.value == PageRequest.requireInitPreview || requestFromParent.value == PageRequest.requireInitPreviewFromSubEditor) {
         PageRequest.clearStateThenDoAct(requestFromParent) {
+            val editorPageShowingFilePath = editorPageShowingFilePath.value
+            val previewNavStack = previewNavStack.value
             doJobThenOffLoading {
                 //先保存，不然如果文件大切换预览会卡住然后崩溃导致会丢数据
                 doSaveNoCoroutine()
 
                 previewLoadingOn()
 
+                val switchFromEditPage = isPreviewModeOn.value.not()
+                var pathWillPreview = previewNavStack.getFirst().first
+
+                //如果是从编辑器页面切换到预览页面，定位到当前预览页面
+                //判断条件为 “从编辑页面而来 且 stack当前路径和编辑器正在显示的路径不同 且 backStack或aheadStack非空”
+                if(switchFromEditPage && pathWillPreview != editorPageShowingFilePath && previewNavStack.backStackOrAheadStackIsNotEmpty()) {
+                    //执行类似点击链接的操作，把当前路径压入栈中
+                    val pushSuccess = previewNavStack.push(editorPageShowingFilePath)
+                    if(pushSuccess) {
+                        previewNavStack.ahead()
+                    }
+
+                    // ahead之后，再用stack的getFirst()，取到的应该就是当前路径editorPageShowingFilePath。
+                    // 若不是，就代表有bug了，这时要么使用错误的路径，但导航栈状态ok；
+                    // 要么使用正确的路径editorPageShowingFilePath，但是导航栈被破坏，后果为“回退，再前进，不会恢复到editorPageShowingFilePath”。
+                    // 由于后果不严重，而且用户要是不导航就不会触发，所以这里使用正确路径。
+                    pathWillPreview = editorPageShowingFilePath
+                }
 
                 //开启预览模式
                 //取出当前文件所在目录作为相对路径的父目录
                 //从stack取出第一个元素，若没有，使用showing path
-                val pathWillPreview = previewNavStack.value.getFirst().first
-                previewNavStack.value.previewingPath = pathWillPreview
+                previewNavStack.previewingPath = pathWillPreview
                 previewPath.value = pathWillPreview
                 basePath.value = FsUtils.getParentPath(pathWillPreview)
                 // 取出当前文件内容，may take time
 //                mdText.value = editorPageTextEditorState.value.getAllText()
                 //如果要预览的路径和当前正在编辑的文件路径一样，直接使用内存中的数据；否则从文件读取
-                mdText.value = if(pathWillPreview == editorPageShowingFilePath.value) editorPageTextEditorState.value.getAllText() else FsUtils.readFile(pathWillPreview)
+                mdText.value = if(pathWillPreview == editorPageShowingFilePath) editorPageTextEditorState.value.getAllText() else FsUtils.readFile(pathWillPreview)
 //                mdText.value = FsUtils.readFile(path)
                 //开启预览模式
                 isPreviewModeOn.value = true
