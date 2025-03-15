@@ -1,16 +1,41 @@
 package com.catpuppyapp.puppygit.screen.shared
 
 import androidx.compose.foundation.ScrollState
+import androidx.compose.runtime.Composable
 import com.catpuppyapp.puppygit.datastruct.Stack
 import com.catpuppyapp.puppygit.screen.functions.newScrollState
 import com.catpuppyapp.puppygit.utils.MyLog
+import com.catpuppyapp.puppygit.utils.generateRandomString
+import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 import java.io.File
 
 private const val TAG = "EditorPreviewNavStack"
 
-class EditorPreviewNavStackItem (val path: String = "", val scrollState: ScrollState = newScrollState())
+class EditorPreviewNavStackItem (val path: String = "", val scrollState: ScrollState = newScrollState()) {
+    private val uid = generateRandomString()
+
+    override fun equals(other: Any?): Boolean {
+        if (this === other) return true
+        if (javaClass != other?.javaClass) return false
+
+        other as EditorPreviewNavStackItem
+
+        if (path != other.path) return false
+        if (uid != other.uid) return false
+
+        return true
+    }
+
+    override fun hashCode(): Int {
+        var result = path.hashCode()
+        result = 31 * result + uid.hashCode()
+        return result
+    }
+
+
+}
 
 /**
  * push 和 ahead/back 应该先后调用，不然会有页面未显示，比如在页面z push了a、b、c，然后ahead，那会从z直接到c，但返回时却会返回到b，再返回a，再返回z，会比较反逻辑
@@ -131,6 +156,12 @@ class EditorPreviewNavStack internal constructor(var root:String) {
     suspend fun backStackOrAheadStackIsNotEmpty():Boolean {
         lock.withLock {
             return backStack.isNotEmpty() || aheadStack.isNotEmpty()
+        }
+    }
+
+    suspend fun currentIsRoot():Boolean {
+        lock.withLock {
+            return getCurrentNoLock() == rootNavStackItem
         }
     }
 

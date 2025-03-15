@@ -42,6 +42,7 @@ import com.catpuppyapp.puppygit.utils.AppModel
 import com.catpuppyapp.puppygit.utils.FsUtils
 import com.catpuppyapp.puppygit.utils.cache.Cache
 import com.catpuppyapp.puppygit.utils.doJobThenOffLoading
+import com.catpuppyapp.puppygit.utils.generateRandomString
 import com.catpuppyapp.puppygit.utils.state.mutableCustomStateOf
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
@@ -146,7 +147,13 @@ fun SubPageEditor(
     val editorIsPreviewModeOn = rememberSaveable { mutableStateOf(false) }
     val editorMdText = rememberSaveable { mutableStateOf("") }
     val editorBasePath = rememberSaveable { mutableStateOf("") }
-    val editorPreviewPath = rememberSaveable { mutableStateOf("") }
+    val (editorPreviewPath, updatePreviewPath_Internal) = rememberSaveable { mutableStateOf("") }
+    val editorPreviewPathChanged = rememberSaveable { mutableStateOf("") }  //由于有可能重复入栈相同路径，例如从a->a，这时previewPath不会变化，导致其关联的检测当前页面是否是home页面的代码也不会被触发，所以，在修改previewPath的地方，同时给这个变量赋值随机数以触发页面刷新
+    val updatePreviewPath = { newPath:String ->
+        updatePreviewPath_Internal(newPath)
+        editorPreviewPathChanged.value = generateRandomString()
+    }
+
     val editorPreviewNavStack = mutableCustomStateOf(stateKeyTag, "editorPreviewNavStack") { SharedState.subEditorPreviewNavStack }
 
     val editorQuitPreviewMode = {
@@ -233,7 +240,7 @@ fun SubPageEditor(
 
                     EditorTitle(
                         previewNavStack = editorPreviewNavStack.value,
-                        previewingPath = editorPreviewPath.value,
+                        previewingPath = editorPreviewPath,
                         isPreviewModeOn = editorIsPreviewModeOn.value,
                         editorPageShowingFileName = null,  //若打开 uri 此变量是文件名，但此页面不用来打开uri，所以也不需要指定uri关联的文件名
                         editorPageShowingFilePath = editorPageShowingFilePath,
@@ -295,7 +302,8 @@ fun SubPageEditor(
                     if(!editorOpenFileErr.value) {
                         EditorPageActions(
                             previewNavStack = editorPreviewNavStack.value,
-                            previewPath = editorPreviewPath.value,
+                            previewPath = editorPreviewPath,
+                            previewPathChanged = editorPreviewPathChanged.value,
                             isPreviewModeOn = editorIsPreviewModeOn.value,
                             editorPageShowingFilePath = editorPageShowingFilePath,
     //                        editorPageRequireOpenFilePath,
@@ -345,6 +353,7 @@ fun SubPageEditor(
     ) { contentPadding ->
         EditorInnerPage(
             previewPath = editorPreviewPath,
+            updatePreviewPath = updatePreviewPath,
             previewNavStack = editorPreviewNavStack,
             isPreviewModeOn = editorIsPreviewModeOn,
             mdText = editorMdText,

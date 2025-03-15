@@ -1,6 +1,5 @@
 package com.catpuppyapp.puppygit.screen.content.homescreen.scaffold.actions
 
-import androidx.compose.foundation.ScrollState
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
@@ -22,7 +21,9 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.MutableIntState
 import androidx.compose.runtime.MutableState
+import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Modifier
@@ -49,13 +50,16 @@ import com.catpuppyapp.puppygit.settings.SettingsUtil
 import com.catpuppyapp.puppygit.style.MyStyleKt
 import com.catpuppyapp.puppygit.user.UserUtil
 import com.catpuppyapp.puppygit.utils.Msg
+import com.catpuppyapp.puppygit.utils.generateRandomString
 import com.catpuppyapp.puppygit.utils.state.CustomStateSaveable
+import kotlinx.coroutines.runBlocking
 
 @Composable
 fun EditorPageActions(
     isPreviewModeOn:Boolean,
     previewNavStack: EditorPreviewNavStack,
     previewPath: String,
+    previewPathChanged: String,
 
     editorPageShowingFilePath: MutableState<String>,
 //    editorPageRequireOpenFilePath: MutableState<String>,
@@ -97,6 +101,8 @@ fun EditorPageActions(
     //这几个模式互斥，其实可以做成枚举
 
     if(isPreviewModeOn) {
+        val currentIsNotAtHome = remember(previewPathChanged) { derivedStateOf { runBlocking { previewNavStack.currentIsRoot().not() } } }
+
         LongPressAbleIconBtn(
             tooltipText = stringResource(R.string.edit),
             icon = Icons.Filled.Edit,
@@ -105,7 +111,7 @@ fun EditorPageActions(
         }
         LongPressAbleIconBtn(
             //若没在首页则启用首页按钮
-            enabled = previewPath != previewNavStack.root,
+            enabled = currentIsNotAtHome.value,
 
             tooltipText = stringResource(R.string.home),
             icon = Icons.Filled.Home,

@@ -80,6 +80,7 @@ import com.catpuppyapp.puppygit.utils.cache.Cache
 import com.catpuppyapp.puppygit.utils.changeStateTriggerRefreshPage
 import com.catpuppyapp.puppygit.utils.doJobThenOffLoading
 import com.catpuppyapp.puppygit.utils.fileopenhistory.FileOpenHistoryMan
+import com.catpuppyapp.puppygit.utils.generateRandomString
 import com.catpuppyapp.puppygit.utils.getFileNameFromCanonicalPath
 import com.catpuppyapp.puppygit.utils.getFormattedLastModifiedTimeOfFile
 import com.catpuppyapp.puppygit.utils.getHumanReadableSizeStr
@@ -105,7 +106,8 @@ private var justForSaveFileWhenDrawerOpen = getShortUUID()
 
 @Composable
 fun EditorInnerPage(
-    previewPath:MutableState<String>,
+    previewPath:String,
+    updatePreviewPath:(String)->Unit,
     previewNavStack:CustomStateSaveable<EditorPreviewNavStack>,
     isPreviewModeOn:MutableState<Boolean>,
     mdText:MutableState<String>,
@@ -677,7 +679,7 @@ fun EditorInnerPage(
                 //取出当前文件所在目录作为相对路径的父目录
                 //从stack取出第一个元素，若没有，使用showing path
                 previewNavStack.previewingPath = pathWillPreview
-                previewPath.value = pathWillPreview
+                updatePreviewPath(pathWillPreview)
                 basePath.value = FsUtils.getParentPath(pathWillPreview)
                 // 取出当前文件内容，may take time
 //                mdText.value = editorPageTextEditorState.value.getAllText()
@@ -884,7 +886,7 @@ fun EditorInnerPage(
     if(requestFromParent.value==PageRequest.showDetails) {
         PageRequest.clearStateThenDoAct(requestFromParent) {
             val fileFullPath = editorPageShowingFilePath.value
-            val file = File(if(isPreviewModeOn.value) previewPath.value else fileFullPath)
+            val file = File(if(isPreviewModeOn.value) previewPath else fileFullPath)
             val fileReadable = file.canRead()
             val fileName = editorPageShowingFileName ?: file.name
             val fileSize = if(fileReadable) getHumanReadableSizeStr(file.length()) else 0
@@ -1199,7 +1201,6 @@ fun EditorInnerPage(
 //            it.editor.filesLastEditPosition[fileFullPath] = fileEditedPos
 //        }
         FileEditor(
-            previewPath = previewPath.value,
             previewNavBack = previewNavBack,
             previewNavAhead = previewNavAhead,
             previewNavStack = previewNavStack,
@@ -1269,6 +1270,7 @@ fun EditorInnerPage(
                 try {
                     doInit(
                         previewPath = previewPath,
+                        updatePreviewPath = updatePreviewPath,
                         keepPreviewStack = keepPreviewNavStackOnce,
                         previewNavStack = previewNavStack,
                         activityContext = activityContext,
@@ -1340,7 +1342,8 @@ fun EditorInnerPage(
 }
 
 private suspend fun doInit(
-    previewPath: MutableState<String>,
+    previewPath: String,
+    updatePreviewPath: (String)->Unit,
     keepPreviewStack:MutableState<Boolean>,
     previewNavStack:CustomStateSaveable<EditorPreviewNavStack>,
     activityContext:Context,
@@ -1542,11 +1545,13 @@ private suspend fun doInit(
 
 
             //这个路径可能在旋转屏幕后丢失，恢复下
-            if(previewPath.value.isBlank()) {
-                previewPath.value = previewNavStack.value.getCurrent().path
-                if(previewPath.value.isBlank()) {
-                    previewPath.value = requireOpenFilePath
+            if(previewPath.isBlank()) {
+                var newPreviewPath = previewNavStack.value.getCurrent().path
+                if(newPreviewPath.isBlank()) {
+                    newPreviewPath = requireOpenFilePath
                 }
+
+                updatePreviewPath(newPreviewPath)
             }
 
 

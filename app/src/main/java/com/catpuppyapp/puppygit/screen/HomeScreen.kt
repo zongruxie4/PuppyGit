@@ -9,7 +9,6 @@ import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.AutoFixHigh
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Cloud
@@ -103,9 +102,9 @@ import com.catpuppyapp.puppygit.utils.FsUtils
 import com.catpuppyapp.puppygit.utils.Msg
 import com.catpuppyapp.puppygit.utils.MyLog
 import com.catpuppyapp.puppygit.utils.PrefMan
-import com.catpuppyapp.puppygit.utils.UIHelper
 import com.catpuppyapp.puppygit.utils.changeStateTriggerRefreshPage
 import com.catpuppyapp.puppygit.utils.doJobThenOffLoading
+import com.catpuppyapp.puppygit.utils.generateRandomString
 import com.catpuppyapp.puppygit.utils.state.mutableCustomStateListOf
 import com.catpuppyapp.puppygit.utils.state.mutableCustomStateOf
 import com.github.git24j.core.Repository.StateT
@@ -412,7 +411,12 @@ fun HomeScreen(
     val editorIsPreviewModeOn = rememberSaveable { mutableStateOf(false) }
     val editorMdText = rememberSaveable { mutableStateOf("") }
     val editorBasePath = rememberSaveable { mutableStateOf("") }
-    val editorPreviewPath = rememberSaveable { mutableStateOf("") }
+    val (editorPreviewPath, updatePreviewPath_Internal) = rememberSaveable { mutableStateOf("") }
+    val editorPreviewPathChanged = rememberSaveable { mutableStateOf("") }  //由于有可能重复入栈相同路径，例如从a->a，这时previewPath不会变化，导致其关联的检测当前页面是否是home页面的代码也不会被触发，所以，在修改previewPath的地方，同时给这个变量赋值随机数以触发页面刷新
+    val updatePreviewPath = { newPath:String ->
+        updatePreviewPath_Internal(newPath)
+        editorPreviewPathChanged.value = generateRandomString()
+    }
     val editorPreviewNavStack = mutableCustomStateOf(stateKeyTag, "editorPreviewNavStack") { SharedState.editorPreviewNavStack }
 
     val editorQuitPreviewMode = {
@@ -865,7 +869,7 @@ fun HomeScreen(
                         } else if (currentHomeScreen.intValue == Cons.selectedItem_Editor) {
                             EditorTitle(
                                 previewNavStack = editorPreviewNavStack.value,
-                                previewingPath = editorPreviewPath.value,
+                                previewingPath = editorPreviewPath,
                                 isPreviewModeOn = editorIsPreviewModeOn.value,
                                 editorPageShowingFileName = editorPageShowingFileName.value,
                                 editorPageShowingFilePath = editorPageShowingFilePath,
@@ -995,7 +999,8 @@ fun HomeScreen(
                         }else if(currentHomeScreen.intValue == Cons.selectedItem_Editor && !editorOpenFileErr.value) {
                             EditorPageActions(
                                 previewNavStack = editorPreviewNavStack.value,
-                                previewPath = editorPreviewPath.value,
+                                previewPath = editorPreviewPath,
+                                previewPathChanged = editorPreviewPathChanged.value,
                                 isPreviewModeOn = editorIsPreviewModeOn.value,
                                 editorPageShowingFilePath = editorPageShowingFilePath,
 //                                editorPageRequireOpenFilePath,
@@ -1209,6 +1214,8 @@ fun HomeScreen(
 
                 EditorInnerPage(
                     previewPath = editorPreviewPath,
+                    updatePreviewPath = updatePreviewPath,
+
                     previewNavStack = editorPreviewNavStack,
                     isPreviewModeOn = editorIsPreviewModeOn,
                     mdText = editorMdText,
