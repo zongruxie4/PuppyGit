@@ -142,7 +142,7 @@ fun SubPageEditor(
     val editorPageRequestFromParent = rememberSaveable { mutableStateOf("")}
 
 
-    val editorPreviewScrollState = rememberScrollState()
+//    val editorPreviewScrollState = rememberScrollState()
     val editorIsPreviewModeOn = rememberSaveable { mutableStateOf(false) }
     val editorMdText = rememberSaveable { mutableStateOf("") }
     val editorBasePath = rememberSaveable { mutableStateOf("") }
@@ -297,7 +297,6 @@ fun SubPageEditor(
                             previewNavStack = editorPreviewNavStack.value,
                             previewPath = editorPreviewPath.value,
                             isPreviewModeOn = editorIsPreviewModeOn.value,
-                            previewScrollState = editorPreviewScrollState,
                             editorPageShowingFilePath = editorPageShowingFilePath,
     //                        editorPageRequireOpenFilePath,
                             editorPageShowingFileIsReady = editorPageShowingFileIsReady,
@@ -348,7 +347,6 @@ fun SubPageEditor(
             previewPath = editorPreviewPath,
             previewNavStack = editorPreviewNavStack,
             isPreviewModeOn = editorIsPreviewModeOn,
-            previewScrollState = editorPreviewScrollState,
             mdText = editorMdText,
             basePath = editorBasePath,
             quitPreviewMode = editorQuitPreviewMode,

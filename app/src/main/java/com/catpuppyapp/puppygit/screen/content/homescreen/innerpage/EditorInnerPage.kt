@@ -108,7 +108,6 @@ private var justForSaveFileWhenDrawerOpen = getShortUUID()
 fun EditorInnerPage(
     previewPath:MutableState<String>,
     previewNavStack:CustomStateSaveable<EditorPreviewNavStack>,
-    previewScrollState:ScrollState,
     isPreviewModeOn:MutableState<Boolean>,
     mdText:MutableState<String>,
     basePath:MutableState<String>,
@@ -1187,7 +1186,6 @@ fun EditorInnerPage(
             previewNavStack = previewNavStack,
             previewLinkHandler = previewLinkHandler,
             previewLoading = previewLoading.value,
-            previewScrollState = previewScrollState,
             mdText = mdText,
             basePath = basePath,
 

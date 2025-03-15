@@ -85,7 +85,6 @@ fun FileEditor(
     previewNavStack:CustomStateSaveable<EditorPreviewNavStack>,
 
     previewLoading:Boolean,
-    previewScrollState:ScrollState,
     mdText:MutableState<String>,
     basePath:MutableState<String>,
     previewLinkHandler:(link:String)->Boolean,

@@ -54,7 +54,6 @@ import com.catpuppyapp.puppygit.utils.state.CustomStateSaveable
 @Composable
 fun EditorPageActions(
     isPreviewModeOn:Boolean,
-    previewScrollState: ScrollState,
     previewNavStack: EditorPreviewNavStack,
     previewPath: String,
 

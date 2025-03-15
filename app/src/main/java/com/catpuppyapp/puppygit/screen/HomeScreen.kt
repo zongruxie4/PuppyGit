@@ -408,7 +408,7 @@ fun HomeScreen(
     val editorPageRequestFromParent = rememberSaveable { mutableStateOf("")}
 
 
-    val editorPreviewScrollState = rememberScrollState()
+//    val editorPreviewScrollState = rememberScrollState()
     val editorIsPreviewModeOn = rememberSaveable { mutableStateOf(false) }
     val editorMdText = rememberSaveable { mutableStateOf("") }
     val editorBasePath = rememberSaveable { mutableStateOf("") }
@@ -422,12 +422,7 @@ fun HomeScreen(
         editorMdText.value = ""
         editorIsPreviewModeOn.value = false
     }
-    val resetPreviewMode = {
-        //退出预览模式
-        editorQuitPreviewMode()
-        //重置到顶部
-        UIHelper.scrollTo(scope, editorPreviewScrollState, 0)
-    }
+
     val editorInitPreviewMode = {
         //请求执行一次保存，不然有可能切换
         editorPageRequestFromParent.value = PageRequest.requireInitPreview
@@ -543,13 +538,8 @@ fun HomeScreen(
     //给Files页面点击打开文件用的
     //第2个参数是期望值，只有当文件路径不属于app内置禁止edit的目录时才会使用那个值，否则强制开启readonly模式
     val requireInnerEditorOpenFileWithFileName = { fullPath:String, expectReadOnly:Boolean, fileName:String? ->
-        // 切换了文件
-        if(fullPath != editorPageShowingFilePath.value) {
-            // 重置预览模式相关的参数
-            resetPreviewMode()
-        }
-
-        AppModel.editorPreviewModeOnWhenDestroy.value = false
+        //请求打开文件，先退出预览模式
+        editorQuitPreviewMode()
 
         //文件名后来加的，用来从外部打开content uri file uri那类路径时使用提取的文件名，不然content://开头的那种uri可能会拿到错误文件名
         editorPageShowingFileName.value = fileName
@@ -1007,7 +997,6 @@ fun HomeScreen(
                                 previewNavStack = editorPreviewNavStack.value,
                                 previewPath = editorPreviewPath.value,
                                 isPreviewModeOn = editorIsPreviewModeOn.value,
-                                previewScrollState = editorPreviewScrollState,
                                 editorPageShowingFilePath = editorPageShowingFilePath,
 //                                editorPageRequireOpenFilePath,
                                 editorPageShowingFileIsReady = editorPageShowingFileIsReady,
@@ -1222,7 +1211,6 @@ fun HomeScreen(
                     previewPath = editorPreviewPath,
                     previewNavStack = editorPreviewNavStack,
                     isPreviewModeOn = editorIsPreviewModeOn,
-                    previewScrollState = editorPreviewScrollState,
                     mdText = editorMdText,
                     basePath = editorBasePath,
                     quitPreviewMode = editorQuitPreviewMode,
