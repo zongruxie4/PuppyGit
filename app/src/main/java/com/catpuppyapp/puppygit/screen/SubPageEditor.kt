@@ -1,7 +1,6 @@
 package com.catpuppyapp.puppygit.screen
 
 import androidx.compose.foundation.lazy.rememberLazyListState
-import androidx.compose.foundation.rememberScrollState
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Close
@@ -16,12 +15,14 @@ import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.TextFieldValue
+import com.catpuppyapp.puppygit.compose.GoToTopAndGoToBottomFab
 import com.catpuppyapp.puppygit.compose.LoadingDialog
 import com.catpuppyapp.puppygit.compose.LongPressAbleIconBtn
 import com.catpuppyapp.puppygit.compose.SmallFab
@@ -45,6 +46,7 @@ import com.catpuppyapp.puppygit.utils.doJobThenOffLoading
 import com.catpuppyapp.puppygit.utils.generateRandomString
 import com.catpuppyapp.puppygit.utils.state.mutableCustomStateOf
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.withContext
 
 //for debug
@@ -90,9 +92,9 @@ fun SubPageEditor(
     val homeTopBarScrollBehavior = AppModel.homeTopBarScrollBehavior
 //    val appContext = AppModel.appContext  //这个获取不了Activity!
     val activityContext = LocalContext.current  //这个能获取到
-
+    val scope = rememberCoroutineScope()
     val allRepoParentDir = AppModel.allRepoParentDir
-
+    val settings = remember { SettingsUtil.getSettingsSnapshot() }
 
 //    val changeListRefreshRequiredByParentPage= StateUtil.getRememberSaveableState(initValue = "")
 //    val changeListRequireRefreshFromParentPage = {
@@ -143,7 +145,9 @@ fun SubPageEditor(
     val editorPageRequestFromParent = rememberSaveable { mutableStateOf("")}
 
 
-//    val editorPreviewScrollState = rememberScrollState()
+    val editorPreviewPageScrolled = rememberSaveable { mutableStateOf(settings.showNaviButtons) }
+    val editorPreviewLastScrollPosition = rememberSaveable { mutableStateOf(0) }
+
     val editorIsPreviewModeOn = rememberSaveable { mutableStateOf(false) }
     val editorMdText = rememberSaveable { mutableStateOf("") }
     val editorBasePath = rememberSaveable { mutableStateOf("") }
@@ -341,7 +345,14 @@ fun SubPageEditor(
             )
         },
         floatingActionButton = {
-            if(editorPageShowingFileIsReady.value && editorPageShowingFilePath.value.isNotBlank() && editorPageIsEdited.value && !editorPageIsSaving.value && !editorReadOnlyMode.value) {
+            if(editorIsPreviewModeOn.value && editorPreviewPageScrolled.value) {
+                GoToTopAndGoToBottomFab(
+                    scope = scope,
+                    listState = runBlocking { editorPreviewNavStack.value.getCurrentScrollState() },
+                    listLastPosition = editorPreviewLastScrollPosition,
+                    showFab = editorPreviewPageScrolled
+                )
+            }else if(editorPageShowingFileIsReady.value && editorPageShowingFilePath.value.isNotBlank() && editorPageIsEdited.value && !editorPageIsSaving.value && !editorReadOnlyMode.value) {
                 SmallFab(
                     modifier= MyStyleKt.Fab.getFabModifierForEditor(editorPageTextEditorState.value.isMultipleSelectionMode),
                     icon = Icons.Filled.Save, iconDesc = stringResource(id = R.string.save)
@@ -352,6 +363,7 @@ fun SubPageEditor(
         }
     ) { contentPadding ->
         EditorInnerPage(
+            previewPageScrolled = editorPreviewPageScrolled,
             previewPath = editorPreviewPath,
             updatePreviewPath = updatePreviewPath,
             previewNavStack = editorPreviewNavStack,

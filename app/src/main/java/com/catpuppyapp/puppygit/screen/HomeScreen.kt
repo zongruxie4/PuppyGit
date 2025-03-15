@@ -109,6 +109,7 @@ import com.catpuppyapp.puppygit.utils.state.mutableCustomStateListOf
 import com.catpuppyapp.puppygit.utils.state.mutableCustomStateOf
 import com.github.git24j.core.Repository.StateT
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.runBlocking
 
 
 private const val TAG = "HomeScreen"
@@ -639,6 +640,7 @@ fun HomeScreen(
 
 
 
+    val editorPreviewPageScrolled = rememberSaveable { mutableStateOf(settingsSnapshot.value.showNaviButtons) }
     val changelistPageScrolled = rememberSaveable { mutableStateOf(settingsSnapshot.value.showNaviButtons) }
     val repoPageScrolled = rememberSaveable { mutableStateOf(settingsSnapshot.value.showNaviButtons) }
 
@@ -820,6 +822,7 @@ fun HomeScreen(
         val fileListFilterLastPosition = rememberSaveable { mutableStateOf(0) }
         val changeListFilterLastPosition = rememberSaveable { mutableStateOf(0) }
         val changeListLastPosition = rememberSaveable { mutableStateOf(0) }
+        val editorPreviewLastScrollPosition = rememberSaveable { mutableStateOf(0) }
         val reposLastPosition = rememberSaveable { mutableStateOf(0) }
         val filesLastPosition = rememberSaveable { mutableStateOf(0) }
         val settingsLastPosition = rememberSaveable { mutableStateOf(0) }
@@ -1072,7 +1075,15 @@ fun HomeScreen(
                 )
             },
             floatingActionButton = {
-                if(currentHomeScreen.intValue == Cons.selectedItem_Editor && (editorPageShowingFileIsReady.value && editorPageShowingFilePath.value.isNotBlank() && editorPageIsEdited.value && !editorPageIsSaving.value && !editorReadOnlyMode.value)) {
+                //因为以前是滚动页面才显示回到顶部浮动按钮，所以是否显示浮动按钮的变量名叫pageScrolled，但后来改成不检测是否滚动了，而这个变量已经传的到处都是，所以就将错就错了
+                if(currentHomeScreen.intValue == Cons.selectedItem_Editor && editorIsPreviewModeOn.value && editorPreviewPageScrolled.value) {
+                    GoToTopAndGoToBottomFab(
+                        scope = scope,
+                        listState = runBlocking { editorPreviewNavStack.value.getCurrentScrollState() },
+                        listLastPosition = editorPreviewLastScrollPosition,
+                        showFab = editorPreviewPageScrolled
+                    )
+                } else if(currentHomeScreen.intValue == Cons.selectedItem_Editor && (editorIsPreviewModeOn.value.not() && editorPageShowingFileIsReady.value && editorPageShowingFilePath.value.isNotBlank() && editorPageIsEdited.value && !editorPageIsSaving.value && !editorReadOnlyMode.value)) {
                     SmallFab(modifier = MyStyleKt.Fab.getFabModifierForEditor(editorPageTextEditorState.value.isMultipleSelectionMode),
                         icon = Icons.Filled.Save, iconDesc = stringResource(id = R.string.save)
                     ) {
@@ -1213,6 +1224,7 @@ fun HomeScreen(
 //                changeStateTriggerRefreshPage(needRefreshEditorPage)
 
                 EditorInnerPage(
+                    previewPageScrolled = editorPreviewPageScrolled,
                     previewPath = editorPreviewPath,
                     updatePreviewPath = updatePreviewPath,
 

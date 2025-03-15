@@ -105,6 +105,7 @@ private var justForSaveFileWhenDrawerOpen = getShortUUID()
 
 @Composable
 fun EditorInnerPage(
+    previewPageScrolled:MutableState<Boolean>,
     previewPath:String,
     updatePreviewPath:(String)->Unit,
     previewNavStack:CustomStateSaveable<EditorPreviewNavStack>,
@@ -175,6 +176,14 @@ fun EditorInnerPage(
         AppModel.exitApp()
 
         Unit
+    }
+
+
+    //这样可在修改设置项后立刻生效
+    val settings = remember(isPreviewModeOn.value) {
+        val s = SettingsUtil.getSettingsSnapshot()
+        previewPageScrolled.value = s.showNaviButtons
+        s
     }
 
     val saveLock = remember(editorPageShowingFilePath.value) { Cache.getOrPutByType(generateKeyForSaveLock(editorPageShowingFilePath.value), default = { Mutex() }) }
