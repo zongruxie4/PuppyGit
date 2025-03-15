@@ -41,9 +41,11 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.platform.LocalClipboardManager
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.res.vectorResource
+import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.unit.DpOffset
 import androidx.compose.ui.unit.dp
@@ -51,6 +53,7 @@ import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.compose.LifecycleEventEffect
 import com.catpuppyapp.puppygit.compose.ConfirmDialog
 import com.catpuppyapp.puppygit.compose.ConfirmDialog2
+import com.catpuppyapp.puppygit.compose.CopyableDialog
 import com.catpuppyapp.puppygit.compose.LongPressAbleIconBtn
 import com.catpuppyapp.puppygit.compose.MySelectionContainer
 import com.catpuppyapp.puppygit.compose.OpenAsAskReloadDialog
@@ -60,6 +63,7 @@ import com.catpuppyapp.puppygit.constants.LineNum
 import com.catpuppyapp.puppygit.constants.PageRequest
 import com.catpuppyapp.puppygit.dto.FileSimpleDto
 import com.catpuppyapp.puppygit.dto.UndoStack
+import com.catpuppyapp.puppygit.fileeditor.texteditor.controller.EditorController
 import com.catpuppyapp.puppygit.fileeditor.texteditor.state.TextEditorState
 import com.catpuppyapp.puppygit.fileeditor.texteditor.view.ScrollEvent
 import com.catpuppyapp.puppygit.fileeditor.ui.composable.FileEditor
@@ -78,6 +82,7 @@ import com.catpuppyapp.puppygit.utils.changeStateTriggerRefreshPage
 import com.catpuppyapp.puppygit.utils.doJobThenOffLoading
 import com.catpuppyapp.puppygit.utils.fileopenhistory.FileOpenHistoryMan
 import com.catpuppyapp.puppygit.utils.getFileNameFromCanonicalPath
+import com.catpuppyapp.puppygit.utils.getFormattedLastModifiedTimeOfFile
 import com.catpuppyapp.puppygit.utils.getHumanReadableSizeStr
 import com.catpuppyapp.puppygit.utils.getSecFromTime
 import com.catpuppyapp.puppygit.utils.getShortUUID
@@ -87,6 +92,7 @@ import com.catpuppyapp.puppygit.utils.snapshot.SnapshotFileFlag
 import com.catpuppyapp.puppygit.utils.snapshot.SnapshotUtil
 import com.catpuppyapp.puppygit.utils.state.CustomStateSaveable
 import com.catpuppyapp.puppygit.utils.state.mutableCustomStateListOf
+import com.catpuppyapp.puppygit.utils.state.mutableCustomStateOf
 import com.catpuppyapp.puppygit.utils.withMainContext
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.sync.Mutex
@@ -161,6 +167,8 @@ fun EditorInnerPage(
 ) {
     val scope = rememberCoroutineScope()
     val activityContext = LocalContext.current
+    val clipboardManager = LocalClipboardManager.current
+
     val exitApp = {
         AppModel.lastEditFile.value = ""
         AppModel.lastEditFileWhenDestroy.value = ""
@@ -799,79 +807,93 @@ fun EditorInnerPage(
     //back handler block end
 
 
+    val editorStateOnChange = {newState:TextEditorState, trueSaveToUndoFalseRedoNullNoSave:Boolean?, clearRedoStack:Boolean ->
+        editorPageTextEditorState.value = newState
 
-
-
-//    if(needRefreshEditorPage.value) {
-//        initEditorPage()
-//        needRefreshEditorPage.value=false
-//    }
-
-
-    //别忘了底部加padding，目的是最后一行也可以放到屏幕中间编辑
-    //render page
-    /*
-    LazyColumn(modifier = Modifier
-        .padding(contentPadding)
-        .fillMaxSize()
-        .clickable {
-            //点击，聚焦textfield
-            editorPageEditorFocusRequester.requestFocus()
-            keyboardCtl?.show()
-        }
-    ) {
-        item {
-            BasicTextField(
-                modifier = Modifier
-                .padding(bottom = 600.dp)
-                .focusRequester(editorPageEditorFocusRequester),
-                value = editorPageShowingFileText.value,
-                onValueChange = { newText->
-                    editorPageShowingFileText.value = newText
+        val lastState = lastTextEditorState.value
+        // last state == null || 不等于新state的filesId，则入栈
+        //这个fieldsId只是个粗略判断，即使一样也不能保证fields完全一样
+        if(lastState.maybeNotEquals(newState)) {
+//                    if(lastTextEditorState.value?.fields != newState.fields) {
+            //true或null，存undo; false存redo。null本来是在选择行之类的场景的，没改内容，可以不存，但我后来感觉存上比较好
+            val saved = if(trueSaveToUndoFalseRedoNullNoSave != false) {  // null or true
+                // redo的时候，添加状态到undo，不清redo stack，平时编辑文件的时候更新undo stack需清空redo stack
+                // trueSaveToUndoFalseRedoNullNoSave为null时是选择某行之类的不修改内容的状态变化，因此不用清redoStack
+//                        if(trueSaveToUndoFalseRedoNullNoSave!=null && clearRedoStack) {
+                //改了下调用函数时传的这个值，在不修改内容时更新状态清除clearReadStack传了false，所以不需要额外判断trueSaveToUndoFalseRedoNullNoSave是否为null了
+                if(clearRedoStack) {
+                    undoStack.value?.redoStackClear()
                 }
-           )
+
+                undoStack.value?.undoStackPush(lastState) ?: false
+            }else {  // false
+                undoStack.value?.redoStackPush(lastState) ?: false
+            }
+
+            if(saved) {
+                lastTextEditorState.value = newState
+            }
+        }
+
+//                isEdited.value=true
+    }
+
+    val editableController = mutableCustomStateOf(stateKeyTag, "editableController") {
+        EditorController(editorPageTextEditorState.value, undoStack.value).apply {
+            setOnChangedTextListener(isEdited, editorPageIsContentSnapshoted, editorStateOnChange)
         }
     }
-     */
 
-//                Box(modifier = Modifier.fillMaxSize().systemBarsPadding()) {
-//                    TextEditor(
-//                        modifier = Modifier.padding(bottom = 600.dp),
-//                        textEditorState = editorPageTextEditorState.value,
-//                        onChanged = { editorPageTextEditorState.value = it },
-//                        contentPaddingValues = contentPadding,
-//                    )
-//                }
+    val showDetailsDialog = rememberSaveable { mutableStateOf(false) }
+    val detailsStr = rememberSaveable { mutableStateOf("") }
+    if(showDetailsDialog.value) {
+        CopyableDialog(
+            title = stringResource(R.string.details),
+            text = detailsStr.value,
+            onCancel = { showDetailsDialog.value = false }
+        ) {
+            showDetailsDialog.value = false
+            clipboardManager.setText(AnnotatedString(detailsStr.value))
+            Msg.requireShow(activityContext.getString(R.string.copied))
+        }
+    }
 
-    //由父页面负责显示loading
-//    val requireShowLoadingDialog = rememberSaveable { mutableStateOf(false) }
-//    if(requireShowLoadingDialog.value) {
-//        LoadingDialog()
-//    }
 
-//放父页面了
-//    val doSave = {
-//        //让页面知道正在保存文件
-//        loadingOn(appContext.getString(R.string.saving))
-//        isSaving.value=true
-//        changeStateTriggerRefreshPage(needRefreshEditorPage)
-//
-//        //保存文件
-//        FsUtils.saveFile(editorPageShowingFilePath.value, editorPageTextEditorState.value.getAllText())
-//
-//        //提示保存成功
-//        Msg.requireShow(appContext.getString(R.string.file_saved))
-////        requireShowLoadingDialog.value= false
-//        isSaving.value=false
-//        isEdited.value=false
-//        loadingOff()
-//        changeStateTriggerRefreshPage(needRefreshEditorPage)
-//
-//    }
-//    if (editorPageShowingFilePath.value.isNotBlank() && editorPageShowingFileIsReady.value) {
-//    if (editorPageShowingFileIsReady.value) {
+    if(requestFromParent.value==PageRequest.showDetails) {
+        PageRequest.clearStateThenDoAct(requestFromParent) {
+            val fileFullPath = editorPageShowingFilePath.value
+            val file = File(if(isPreviewModeOn.value) previewPath.value else fileFullPath)
+            val fileReadable = file.canRead()
+            val fileName = editorPageShowingFileName ?: file.name
+            val fileSize = if(fileReadable) getHumanReadableSizeStr(file.length()) else 0
+            //仅文件可读且当前预览或编辑的文件与当前编辑的文件相同时才显示行数和字数
+            val showLinesCharsCount = fileReadable && file.canonicalPath == fileFullPath
+            val (charsCount, linesCount) = if(showLinesCharsCount) editableController.value.getCharsAndLinesCount() else Pair(0, 0)
+//            val lastModifiedTimeStr = getFormatTimeFromSec(sec=file.lastModified()/1000, offset = getSystemDefaultTimeZoneOffset())
+            val lastModifiedTimeStr = if(fileReadable) getFormattedLastModifiedTimeOfFile(file) else ""
 
-//    } else {  // file not ready
+
+            val sb = StringBuilder()
+            val suffix = "\n\n"
+            sb.append(activityContext.getString(R.string.file_name)+": "+fileName).append(suffix)
+            sb.append(activityContext.getString(R.string.path)+": "+ fileFullPath).append(suffix)
+
+            if(showLinesCharsCount) {
+                sb.append(activityContext.getString(R.string.chars)+": "+charsCount).append(suffix)
+                sb.append(activityContext.getString(R.string.lines) +": "+linesCount).append(suffix)
+            }
+
+            if(fileReadable) {
+                sb.append(activityContext.getString(R.string.file_size)+": "+fileSize).append(suffix)
+                sb.append(activityContext.getString(R.string.last_modified)+": "+lastModifiedTimeStr).append(suffix)
+            }
+
+            detailsStr.value = sb.removeSuffix(suffix).toString()
+            showDetailsDialog.value = true
+        }
+    }
+
+
 
     val ifLastPathOkThenDoOkActElseDoNoOkAct:((String) -> Unit, (String) ->Unit)->Unit = { okAct:(last:String)->Unit, noOkAct:(last:String)->Unit ->
         var last = lastFilePath.value
@@ -1169,43 +1191,14 @@ fun EditorInnerPage(
             quitPreviewMode = quitPreviewMode,
             initPreviewMode = initPreviewMode,
 
+            editableController = editableController,
             openDrawer = openDrawer,
-
             editorPageShowingFileName = editorPageShowingFileName,
             requestFromParent = requestFromParent,
             fileFullPath = fileFullPath,
             lastEditedPos = fileEditedPos,
             textEditorState = editorPageTextEditorState,
-            onChanged = {newState:TextEditorState, trueSaveToUndoFalseRedoNullNoSave:Boolean?, clearRedoStack:Boolean ->
-                editorPageTextEditorState.value = newState
-
-                val lastState = lastTextEditorState.value
-                // last state == null || 不等于新state的filesId，则入栈
-                //这个fieldsId只是个粗略判断，即使一样也不能保证fields完全一样
-                if(lastState.maybeNotEquals(newState)) {
-//                    if(lastTextEditorState.value?.fields != newState.fields) {
-                    //true或null，存undo; false存redo。null本来是在选择行之类的场景的，没改内容，可以不存，但我后来感觉存上比较好
-                    val saved = if(trueSaveToUndoFalseRedoNullNoSave != false) {  // null or true
-                        // redo的时候，添加状态到undo，不清redo stack，平时编辑文件的时候更新undo stack需清空redo stack
-                        // trueSaveToUndoFalseRedoNullNoSave为null时是选择某行之类的不修改内容的状态变化，因此不用清redoStack
-//                        if(trueSaveToUndoFalseRedoNullNoSave!=null && clearRedoStack) {
-                        //改了下调用函数时传的这个值，在不修改内容时更新状态清除clearReadStack传了false，所以不需要额外判断trueSaveToUndoFalseRedoNullNoSave是否为null了
-                        if(clearRedoStack) {
-                            undoStack.value?.redoStackClear()
-                        }
-
-                        undoStack.value?.undoStackPush(lastState) ?: false
-                    }else {  // false
-                        undoStack.value?.redoStackPush(lastState) ?: false
-                    }
-
-                    if(saved) {
-                        lastTextEditorState.value = newState
-                    }
-                }
-
-//                isEdited.value=true
-            },
+            onChanged = editorStateOnChange,
 
             contentPadding = contentPadding,
             //如果外部Column进行Padding了，这里padding传0即可

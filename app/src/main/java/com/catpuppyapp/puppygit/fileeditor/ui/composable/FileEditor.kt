@@ -97,6 +97,8 @@ fun FileEditor(
     isPreviewModeOn:MutableState<Boolean>,
     quitPreviewMode:()->Unit,
     initPreviewMode:()->Unit,
+
+    editableController:CustomStateSaveable<EditorController>,
     openDrawer:()->Unit,
     editorPageShowingFileName:String?,
     requestFromParent:MutableState<String>,
@@ -130,11 +132,7 @@ fun FileEditor(
 
     val showDeleteDialog = rememberSaveable { mutableStateOf(false) }
 //    val editableController by rememberTextEditorController(textEditorState.value, onChanged = { onChanged(it) }, isContentChanged, editorPageIsContentSnapshoted)
-    val editableController = mutableCustomStateOf(stateKeyTag, "editableController") {
-        EditorController(textEditorState.value, undoStack).apply {
-            setOnChangedTextListener(isContentChanged, editorPageIsContentSnapshoted, onChanged)
-        }
-    }
+
 
 
 //    val bottomPadding = if (textEditorState.value.isMultipleSelectionMode) 100.dp else 0.dp  //如果使用这个padding，开启选择模式时底栏会有背景，否则没有，没有的时候就像直接浮在编辑器上
@@ -198,55 +196,6 @@ fun FileEditor(
             Msg.requireShow(activityContext.getString(R.string.deleted))
         }
     }
-
-
-    val showDetailsDialog = rememberSaveable { mutableStateOf(false) }
-    val detailsStr = rememberSaveable { mutableStateOf("") }
-
-    if(showDetailsDialog.value) {
-        CopyableDialog(
-            title = stringResource(R.string.details),
-            text = detailsStr.value,
-            onCancel = { showDetailsDialog.value = false }
-        ) {
-            showDetailsDialog.value = false
-            clipboardManager.setText(AnnotatedString(detailsStr.value))
-            Msg.requireShow(activityContext.getString(R.string.copied))
-        }
-    }
-
-
-    if(requestFromParent.value==PageRequest.showDetails) {
-        PageRequest.clearStateThenDoAct(requestFromParent) {
-            val file = File(if(isPreviewModeOn.value) previewPath else fileFullPath)
-            val fileReadable = file.canRead()
-            val fileName = editorPageShowingFileName ?: file.name
-            val fileSize = if(fileReadable) getHumanReadableSizeStr(file.length()) else 0
-            //仅文件可读且当前预览或编辑的文件与当前编辑的文件相同时才显示行数和字数
-            val showLinesCharsCount = fileReadable && file.canonicalPath == fileFullPath
-            val (charsCount, linesCount) = if(showLinesCharsCount) editableController.value.getCharsAndLinesCount() else Pair(0, 0)
-//            val lastModifiedTimeStr = getFormatTimeFromSec(sec=file.lastModified()/1000, offset = getSystemDefaultTimeZoneOffset())
-            val lastModifiedTimeStr = if(fileReadable) getFormattedLastModifiedTimeOfFile(file) else ""
-            val sb = StringBuilder()
-
-            sb.appendLine(activityContext.getString(R.string.file_name)+": "+fileName).appendLine()
-            sb.appendLine(activityContext.getString(R.string.path)+": "+ fileFullPath).appendLine()
-
-            if(showLinesCharsCount) {
-                sb.appendLine(activityContext.getString(R.string.chars)+": "+charsCount).appendLine()
-                sb.appendLine(activityContext.getString(R.string.lines) +": "+linesCount).appendLine()
-            }
-
-            if(fileReadable) {
-                sb.appendLine(activityContext.getString(R.string.file_size)+": "+fileSize).appendLine()
-                sb.appendLine(activityContext.getString(R.string.last_modified)+": "+lastModifiedTimeStr)
-            }
-
-            detailsStr.value = sb.toString()
-            showDetailsDialog.value = true
-        }
-    }
-
 
 
 

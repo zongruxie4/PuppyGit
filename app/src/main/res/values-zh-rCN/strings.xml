@@ -370,7 +370,7 @@
     <string name="import_failed">导入失败</string>
     <string name="you_can_click_here_copy_err_msg">点此复制错误信息到剪贴板</string>
     <string name="err_msg">错误信息</string>
-    <string name="file_not_found">文件未找到!</string>
+    <string name="file_not_found">文件不存在</string>
     <string name="do_you_want_save_before_close_file">关闭文件前你想先保存吗？</string>
     <string name="reopen">重新打开</string>
     <string name="no_items_for_shown">无条目可显示</string>
