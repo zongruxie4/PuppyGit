@@ -7,19 +7,24 @@ import com.catpuppyapp.puppygit.utils.MyLog
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 import java.io.File
-import java.util.concurrent.ConcurrentHashMap
 
 private const val TAG = "EditorPreviewNavStack"
 
+class EditorPreviewNavStackItem (val path: String = "", val scrollState: ScrollState = newScrollState())
+
+/**
+ * push 和 ahead/back 应该先后调用，不然会有页面未显示，比如在页面z push了a、b、c，然后ahead，那会从z直接到c，但返回时却会返回到b，再返回a，再返回z，会比较反逻辑
+ */
 class EditorPreviewNavStack internal constructor(var root:String) {
     //虽然这个类很多操作都加了lock，但是，没有会长时间阻塞的操作，所以若没必要不需要开协程，直接用runBlocking就行
     private val lock = Mutex()
 
     var editingPath = root
     var previewingPath = root
-    private val backStack = Stack<String>()
-    private val aheadStack = Stack<String>()
-    private val pathAndScrollStateMap = ConcurrentHashMap<String, ScrollState>()
+    var rootNavStackItem = EditorPreviewNavStackItem(root, newScrollState())
+
+    private val backStack = Stack<EditorPreviewNavStackItem>()
+    private val aheadStack = Stack<EditorPreviewNavStackItem>()
 
     suspend fun reset(newRoot: String) {
         //除lock外都重置，因为共享的都是同一个变量，所以不能重置lock
@@ -27,9 +32,9 @@ class EditorPreviewNavStack internal constructor(var root:String) {
             root = newRoot
             editingPath = newRoot
             previewingPath = newRoot
+            rootNavStackItem = EditorPreviewNavStackItem(newRoot, newScrollState())
             backStack.clear()
             aheadStack.clear()
-            pathAndScrollStateMap.clear()
         }
     }
 
@@ -55,11 +60,12 @@ class EditorPreviewNavStack internal constructor(var root:String) {
 
             val path = f.canonicalPath
 
-            val next = aheadStack.getFirst()
-            if(next==null || next!=path) {  //和现有路由列表不同，需要清栈
+            val curFirst = aheadStack.getFirst()?.path
+            if(curFirst != path) {  //和现有路由列表不同，需要清栈
                 aheadStack.clear()
-                aheadStack.push(path)
             }
+
+            aheadStack.push(EditorPreviewNavStackItem(path))
 
             return true
         }
@@ -79,49 +85,40 @@ class EditorPreviewNavStack internal constructor(var root:String) {
     /**
      * ahead()前需要先push目标path
      */
-    suspend fun ahead():Pair<String, ScrollState>? {
+    suspend fun ahead():EditorPreviewNavStackItem? {
         lock.withLock {
-            val nextPath = aheadStack.pop() ?: return null;
+            val target = aheadStack.pop() ?: return null;
 
-            backStack.push(nextPath)
+            backStack.push(target)
 
-            return Pair(nextPath, getScrollStateInternal(nextPath))
+            return target
         }
     }
 
-    suspend fun back():Pair<String, ScrollState>? {
+    suspend fun back():EditorPreviewNavStackItem? {
         lock.withLock {
-            val lastPath = backStack.pop() ?: return null;
+            val target = backStack.pop() ?: return null;
 
-            aheadStack.push(lastPath)
+            aheadStack.push(target)
 
-            return Pair(lastPath, getScrollStateInternal(lastPath))
+            return target
         }
     }
 
-    suspend fun getFirst():Pair<String, ScrollState> {
+    suspend fun getFirst():EditorPreviewNavStackItem {
         lock.withLock {
-            val first = backStack.getFirst() ?: root
-            return Pair(first, getScrollStateInternal(first))
+            return getFirstNoLock()
         }
     }
 
-
-    suspend fun getScrollState(path:String):ScrollState {
-        lock.withLock {
-            return getScrollStateInternal(path)
-        }
+    private suspend fun getFirstNoLock():EditorPreviewNavStackItem {
+        return backStack.getFirst() ?: rootNavStackItem
     }
 
-    private suspend fun getScrollStateInternal(path:String):ScrollState {
-        val scrollState = pathAndScrollStateMap[path]
 
-        return if(scrollState != null) {
-            scrollState
-        }else {
-            val scrollState = newScrollState()
-            pathAndScrollStateMap[path] = scrollState
-            scrollState
+    suspend fun getCurScrollState():ScrollState {
+        lock.withLock {
+            return getFirstNoLock().scrollState
         }
     }
 
@@ -134,12 +131,6 @@ class EditorPreviewNavStack internal constructor(var root:String) {
     suspend fun backStackOrAheadStackIsNotEmpty():Boolean {
         lock.withLock {
             return backStack.isNotEmpty() || aheadStack.isNotEmpty()
-        }
-    }
-
-    suspend fun ofThisPath(path: String): Boolean {
-        lock.withLock {
-            return path == root
         }
     }
 
