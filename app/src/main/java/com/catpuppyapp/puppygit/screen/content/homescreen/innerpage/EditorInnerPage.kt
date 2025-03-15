@@ -3,7 +3,6 @@ package com.catpuppyapp.puppygit.screen.content.homescreen.innerpage
 import android.content.Context
 import android.widget.Toast
 import androidx.activity.compose.BackHandler
-import androidx.compose.foundation.ScrollState
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
@@ -657,13 +656,14 @@ fun EditorInnerPage(
                 //开启预览模式
                 //取出当前文件所在目录作为相对路径的父目录
                 //从stack取出第一个元素，若没有，使用showing path
-                val path = previewNavStack.value.getFirst().first
-                previewNavStack.value.previewingPath = path
-                previewPath.value = path
-                basePath.value = FsUtils.getParentPath(path)
+                val pathWillPreview = previewNavStack.value.getFirst().first
+                previewNavStack.value.previewingPath = pathWillPreview
+                previewPath.value = pathWillPreview
+                basePath.value = FsUtils.getParentPath(pathWillPreview)
                 // 取出当前文件内容，may take time
 //                mdText.value = editorPageTextEditorState.value.getAllText()
-                mdText.value = if(path == editorPageShowingFilePath.value) editorPageTextEditorState.value.getAllText() else FsUtils.readFile(path)
+                //如果要预览的路径和当前正在编辑的文件路径一样，直接使用内存中的数据；否则从文件读取
+                mdText.value = if(pathWillPreview == editorPageShowingFilePath.value) editorPageTextEditorState.value.getAllText() else FsUtils.readFile(pathWillPreview)
 //                mdText.value = FsUtils.readFile(path)
                 //开启预览模式
                 isPreviewModeOn.value = true
