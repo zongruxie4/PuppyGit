@@ -43,6 +43,7 @@ import com.catpuppyapp.puppygit.dev.proFeatureEnabled
 import com.catpuppyapp.puppygit.dto.UndoStack
 import com.catpuppyapp.puppygit.fileeditor.texteditor.state.TextEditorState
 import com.catpuppyapp.puppygit.play.pro.R
+import com.catpuppyapp.puppygit.screen.shared.EditorPreviewNavStack
 import com.catpuppyapp.puppygit.settings.SettingsCons
 import com.catpuppyapp.puppygit.settings.SettingsUtil
 import com.catpuppyapp.puppygit.style.MyStyleKt
@@ -54,6 +55,8 @@ import com.catpuppyapp.puppygit.utils.state.CustomStateSaveable
 fun EditorPageActions(
     isPreviewModeOn:Boolean,
     previewScrollState: ScrollState,
+    previewNavStack: EditorPreviewNavStack,
+    previewPath: String,
 
     editorPageShowingFilePath: MutableState<String>,
 //    editorPageRequireOpenFilePath: MutableState<String>,
@@ -102,6 +105,9 @@ fun EditorPageActions(
             editorPageRequest.value = PageRequest.requireEditPreviewingFile
         }
         LongPressAbleIconBtn(
+            //若没在首页则启用首页按钮
+            enabled = previewPath != previewNavStack.root,
+
             tooltipText = stringResource(R.string.home),
             icon = Icons.Filled.Home,
         ) {
