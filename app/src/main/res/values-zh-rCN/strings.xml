@@ -1207,6 +1207,8 @@
 
     <!-- new at 20250315-->
     <string name="home">主页</string>
-    <string name="Preview">预览</string>
+    <string name="preview">预览</string>
+    <string name="go_back">后退</string>
+    <string name="go_forward">前进</string>
 
 </resources>

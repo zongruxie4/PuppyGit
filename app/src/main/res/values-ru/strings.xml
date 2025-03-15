@@ -1227,7 +1227,9 @@
 
     <!-- new at 20250315-->
     <string name="home">Home</string>
-    <string name="Preview">Preview</string>
+    <string name="preview">Preview</string>
+    <string name="go_back">Go Back</string>
+    <string name="go_forward">Go Forward</string>
 
 
 </resources>
