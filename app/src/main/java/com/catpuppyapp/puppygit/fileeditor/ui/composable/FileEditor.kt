@@ -253,10 +253,11 @@ fun FileEditor(
                     //fillMaxSize 必须在最上面！要不然，文字不会显示在中间！
                     .fillMaxSize()
                     .padding(contentPadding)
-                    .padding(top = topPadding)
                     .verticalScroll(runBlocking { previewNavStack.value.getCurrentScrollState() })
                 ,
             ) {
+                Spacer(Modifier.height(topPadding))
+
                 MarkDownContainer(
                     modifier = Modifier.padding(horizontal = 10.dp),
                     content = mdText.value,
