@@ -223,44 +223,32 @@ fun FileEditor(
     //内容顶部padding
     val topPadding = remember { 5.dp }
 
-    val getLeftToRightIcon = {
-        if(isPreviewModeOn.value) runBlocking { if (previewNavStack.value.backStackIsEmpty()) Icons.Filled.Edit else Icons.AutoMirrored.Filled.ArrowBackIos } else Icons.Filled.Menu
-    }
-    val getRightToLeftIcon = {
-        if(isPreviewModeOn.value) Icons.AutoMirrored.Filled.ArrowForwardIos else Icons.Filled.RemoveRedEye
-    }
-
     val leftToRightAct = SwipeAction(
         icon = {
             Icon(
-                imageVector = if(isRtl) getRightToLeftIcon() else getLeftToRightIcon(),
+                imageVector = if(isPreviewModeOn.value) runBlocking { if (previewNavStack.value.backStackIsEmpty()) Icons.Filled.Edit else Icons.AutoMirrored.Filled.ArrowBackIos } else Icons.Filled.Menu,
                 contentDescription = null
             )
         },
         background = Color.Unspecified,
-        onSwipe = { if (isRtl) onRightToLeft() else onLeftToRight() }
+        onSwipe = { onLeftToRight() }
     )
 
     val rightToLeftAct = SwipeAction(
         icon = {
             Icon(
-                imageVector = if(isRtl) getLeftToRightIcon() else getRightToLeftIcon(),
+                imageVector = if(isPreviewModeOn.value) Icons.AutoMirrored.Filled.ArrowForwardIos else Icons.Filled.RemoveRedEye,
                 contentDescription = null
             )
         },
         background = Color.Unspecified,
-        onSwipe = { if (isRtl) onLeftToRight() else onRightToLeft() },
+        onSwipe = { onRightToLeft() },
     )
 
-    val getStartActs = {
-        if(isSubPageMode && isPreviewModeOn.value.not()) listOf() else listOf(leftToRightAct)
-    }
-    val getEndActs = {
-        runBlocking { if(isPreviewModeOn.value && previewNavStack.value.aheadStackIsEmpty()) listOf() else listOf(rightToLeftAct) }
-    }
+
     SwipeableActionsBox(
-        startActions = getStartActs(),
-        endActions = getEndActs()
+        startActions = if(isSubPageMode && isPreviewModeOn.value.not()) listOf() else listOf(leftToRightAct),
+        endActions = runBlocking { if(isPreviewModeOn.value && previewNavStack.value.aheadStackIsEmpty()) listOf() else listOf(rightToLeftAct) }
     ) {
         Box(modifier = Modifier.fillMaxSize()) {
             if(isPreviewModeOn.value) {
