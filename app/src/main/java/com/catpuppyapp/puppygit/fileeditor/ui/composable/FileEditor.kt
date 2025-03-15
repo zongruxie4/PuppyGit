@@ -213,6 +213,8 @@ fun FileEditor(
     val dragHandleInterval = remember { 500L } //ms
     val curTime = rememberSaveable { mutableLongStateOf(0) }
 
+    //内容顶部padding
+    val topPadding = remember { 5.dp }
 
     Box(
         modifier = Modifier
@@ -251,6 +253,7 @@ fun FileEditor(
                     //fillMaxSize 必须在最上面！要不然，文字不会显示在中间！
                     .fillMaxSize()
                     .padding(contentPadding)
+                    .padding(top = topPadding)
                     .verticalScroll(runBlocking { previewNavStack.value.getCurrentScrollState() })
                 ,
             ) {
@@ -302,6 +305,10 @@ fun FileEditor(
                             )
                         )
                         .padding(start = (if (showLineNum.value) 2.dp else 5.dp), end = 5.dp)
+                        .then(
+                            //给第一行top加点padding，不然离上面太近，难受
+                            if(index == 0) Modifier.padding(top = topPadding) else Modifier
+                        )
                         .bottomBorder(
                             strokeWidth = 1.dp,
                             color = if (inDarkTheme) Color.DarkGray.copy(alpha = 0.2f) else Color.LightGray.copy(alpha = 0.2f)

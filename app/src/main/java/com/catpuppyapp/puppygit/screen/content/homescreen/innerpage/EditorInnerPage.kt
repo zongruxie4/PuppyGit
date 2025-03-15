@@ -1192,14 +1192,8 @@ fun EditorInnerPage(
     // file loaded (load file successfully)
     if(!editorPageShowingFileHasErr.value && editorPageShowingFileIsReady.value && editorPageShowingFilePath.value.isNotBlank()){
         val fileFullPath = editorPageShowingFilePath.value
-//        val settingsSnapshot = SettingsUtil.getSettingsSnapshot()
         val fileEditedPos = FileOpenHistoryMan.get(fileFullPath)
-        //每次打开文件，更新最后使用文件定位信息的时间，日后可实现删除超过指定期限没使用过的文件定位信息
-//        fileEditedPos.lastUsedTime= getSecFromTime()
-        //更新配置文件
-//        SettingsUtil.update {
-//            it.editor.filesLastEditPosition[fileFullPath] = fileEditedPos
-//        }
+
         FileEditor(
             previewNavBack = previewNavBack,
             previewNavAhead = previewNavAhead,
