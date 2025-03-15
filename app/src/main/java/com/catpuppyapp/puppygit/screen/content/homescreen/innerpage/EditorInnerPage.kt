@@ -1263,6 +1263,7 @@ fun EditorInnerPage(
             doJobThenOffLoading {
                 try {
                     doInit(
+                        isPreviewModeOn = isPreviewModeOn,
                         previewPath = previewPath,
                         updatePreviewPath = updatePreviewPath,
                         keepPreviewStack = keepPreviewNavStackOnce,
@@ -1336,6 +1337,7 @@ fun EditorInnerPage(
 }
 
 private suspend fun doInit(
+    isPreviewModeOn: MutableState<Boolean>,
     previewPath: String,
     updatePreviewPath: (String)->Unit,
     keepPreviewStack:MutableState<Boolean>,
@@ -1552,9 +1554,11 @@ private suspend fun doInit(
             //旋转屏幕后恢复预览模式
             if(isSubPage) {
                 if(AppModel.subEditorPreviewModeOnWhenDestroy.value) {
+                    isPreviewModeOn.value = true
                     pageRequest.value = PageRequest.requireInitPreviewFromSubEditor
                 }
             }else if(AppModel.editorPreviewModeOnWhenDestroy.value) {
+                isPreviewModeOn.value = true
                 pageRequest.value = PageRequest.requireInitPreview
             }
 
