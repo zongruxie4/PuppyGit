@@ -85,12 +85,13 @@ class EditorPreviewNavStack internal constructor(var root:String) {
 
             val path = f.canonicalPath
 
-            val curFirst = aheadStack.getFirst()?.path
-            if(curFirst != path) {  //和现有路由列表不同，需要清栈
+            val current = aheadStack.getFirst()?.path
+            if(current != path) { //当前路径和要push的路径不同
+                //需要清栈，和文件管理器面包屑路径与已存在的面包屑不同而清面包屑一个逻辑
                 aheadStack.clear()
+                //只有和当前栈的head不同才需要push
+                aheadStack.push(EditorPreviewNavStackItem(path))
             }
-
-            aheadStack.push(EditorPreviewNavStackItem(path))
 
             return true
         }
