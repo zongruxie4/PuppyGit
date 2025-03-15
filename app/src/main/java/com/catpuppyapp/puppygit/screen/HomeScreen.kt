@@ -93,7 +93,6 @@ import com.catpuppyapp.puppygit.screen.content.homescreen.scaffold.title.ReposTi
 import com.catpuppyapp.puppygit.screen.content.homescreen.scaffold.title.ScrollableTitle
 import com.catpuppyapp.puppygit.screen.content.homescreen.scaffold.title.SimpleTitle
 import com.catpuppyapp.puppygit.screen.functions.ChangeListFunctions
-import com.catpuppyapp.puppygit.screen.shared.EditorPreviewNavStack
 import com.catpuppyapp.puppygit.screen.shared.SharedState
 import com.catpuppyapp.puppygit.settings.SettingsCons
 import com.catpuppyapp.puppygit.settings.SettingsUtil
@@ -414,7 +413,7 @@ fun HomeScreen(
     val editorMdText = rememberSaveable { mutableStateOf("") }
     val editorBasePath = rememberSaveable { mutableStateOf("") }
     val editorPreviewPath = rememberSaveable { mutableStateOf("") }
-    val editorPreviewNavStack = mutableCustomStateOf(stateKeyTag, "editorPreviewNavStack") { EditorPreviewNavStack("") }
+    val editorPreviewNavStack = mutableCustomStateOf(stateKeyTag, "editorPreviewNavStack") { SharedState.editorPreviewNavStack }
 
     val editorQuitPreviewMode = {
         AppModel.editorPreviewModeOnWhenDestroy.value = false

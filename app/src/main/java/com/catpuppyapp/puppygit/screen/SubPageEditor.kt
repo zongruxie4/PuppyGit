@@ -35,7 +35,7 @@ import com.catpuppyapp.puppygit.play.pro.R
 import com.catpuppyapp.puppygit.screen.content.homescreen.innerpage.EditorInnerPage
 import com.catpuppyapp.puppygit.screen.content.homescreen.scaffold.actions.EditorPageActions
 import com.catpuppyapp.puppygit.screen.content.homescreen.scaffold.title.EditorTitle
-import com.catpuppyapp.puppygit.screen.shared.EditorPreviewNavStack
+import com.catpuppyapp.puppygit.screen.shared.SharedState
 import com.catpuppyapp.puppygit.settings.SettingsUtil
 import com.catpuppyapp.puppygit.style.MyStyleKt
 import com.catpuppyapp.puppygit.utils.AppModel
@@ -147,7 +147,7 @@ fun SubPageEditor(
     val editorMdText = rememberSaveable { mutableStateOf("") }
     val editorBasePath = rememberSaveable { mutableStateOf("") }
     val editorPreviewPath = rememberSaveable { mutableStateOf("") }
-    val editorPreviewNavStack = mutableCustomStateOf(stateKeyTag, "editorPreviewNavStack") { EditorPreviewNavStack("") }
+    val editorPreviewNavStack = mutableCustomStateOf(stateKeyTag, "editorPreviewNavStack") { SharedState.subEditorPreviewNavStack }
 
     val editorQuitPreviewMode = {
         AppModel.subEditorPreviewModeOnWhenDestroy.value = false

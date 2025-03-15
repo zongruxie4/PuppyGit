@@ -11,14 +11,24 @@ import java.util.concurrent.ConcurrentHashMap
 
 private const val TAG = "EditorPreviewNavStack"
 
-class EditorPreviewNavStack(val root:String) {
+class EditorPreviewNavStack internal constructor(var root:String) {
+    private val lock = Mutex()
+
     var editingPath = root
     var previewingPath = root
-    private val lock = Mutex()
     private val backStack = Stack<String>()
     private val aheadStack = Stack<String>()
     private val pathAndScrollStateMap = ConcurrentHashMap<String, ScrollState>()
 
+    suspend fun reset(newRoot: String) {
+        //除lock外都重置，因为共享的都是同一个变量，所以不能重置lock
+        root = newRoot
+        editingPath = newRoot
+        previewingPath = newRoot
+        backStack.clear()
+        aheadStack.clear()
+        pathAndScrollStateMap.clear()
+    }
 
     suspend fun push(path:String):Boolean {
         lock.withLock {

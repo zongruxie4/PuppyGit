@@ -1518,7 +1518,7 @@ private suspend fun doInit(
             //判断是否需要生成新的预览页面导航栈
             //如果当前stack不属于当前文件 且 没请求保留当前栈，重新生成
             if(previewNavStack.value.editingPath != requireOpenFilePath && keepPreviewStackOnce.not()) {
-                previewNavStack.value = EditorPreviewNavStack(requireOpenFilePath)
+                previewNavStack.value.reset(requireOpenFilePath)
             }
 
 

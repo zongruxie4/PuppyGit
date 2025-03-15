@@ -18,4 +18,7 @@ object SharedState {
 
     val homeChangeList_Refresh = mutableStateOf("IndexToWorkTree_ChangeList_refresh_init_value_5hpn")
     val indexChangeList_Refresh = mutableStateOf("HeadToIndex_ChangeList_refresh_init_value_ts7n")
+
+    val editorPreviewNavStack = EditorPreviewNavStack("")
+    val subEditorPreviewNavStack = EditorPreviewNavStack("")
 }
