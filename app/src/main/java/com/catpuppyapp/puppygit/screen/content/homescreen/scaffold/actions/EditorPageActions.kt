@@ -55,6 +55,7 @@ import kotlinx.coroutines.runBlocking
 
 @Composable
 fun EditorPageActions(
+    initPreviewMode:()->Unit,
     isPreviewModeOn:Boolean,
     previewNavStack: EditorPreviewNavStack,
     previewPath: String,
@@ -303,6 +304,17 @@ fun EditorPageActions(
                 text = { Text(stringResource(R.string.save)) },
                 onClick = {
                     editorPageRequest.value = PageRequest.requireSave
+
+                    closeMenu()
+                }
+            )
+
+            DropdownMenuItem(
+                enabled = enableMenuItem && editorPageShowingFileIsReady.value,
+
+                text = { Text(stringResource(R.string.preview)) },
+                onClick = {
+                    initPreviewMode()
 
                     closeMenu()
                 }

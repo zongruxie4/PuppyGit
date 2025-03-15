@@ -305,6 +305,7 @@ fun SubPageEditor(
                 actions = {
                     if(!editorOpenFileErr.value) {
                         EditorPageActions(
+                            initPreviewMode = editorInitPreviewMode,
                             previewNavStack = editorPreviewNavStack.value,
                             previewPath = editorPreviewPath,
                             previewPathChanged = editorPreviewPathChanged.value,
