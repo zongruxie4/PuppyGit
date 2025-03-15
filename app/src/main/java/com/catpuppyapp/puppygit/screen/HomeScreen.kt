@@ -875,6 +875,8 @@ fun HomeScreen(
                             )
                         } else if (currentHomeScreen.intValue == Cons.selectedItem_Editor) {
                             EditorTitle(
+                                previewNavStack = editorPreviewNavStack.value,
+                                previewingPath = editorPreviewPath.value,
                                 isPreviewModeOn = editorIsPreviewModeOn.value,
                                 editorPageShowingFileName = editorPageShowingFileName.value,
                                 editorPageShowingFilePath = editorPageShowingFilePath,

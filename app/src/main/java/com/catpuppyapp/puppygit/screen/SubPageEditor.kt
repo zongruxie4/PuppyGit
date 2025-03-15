@@ -232,6 +232,8 @@ fun SubPageEditor(
                     //这页面不用来打开外部文件，正常来说不会出现file uri，不过虽然可以通过最近文件列表打开一个uri路径，但这个处理起来有点繁琐，算了，不管了，又不是不能用
 
                     EditorTitle(
+                        previewNavStack = editorPreviewNavStack.value,
+                        previewingPath = editorPreviewPath.value,
                         isPreviewModeOn = editorIsPreviewModeOn.value,
                         editorPageShowingFileName = null,  //若打开 uri 此变量是文件名，但此页面不用来打开uri，所以也不需要指定uri关联的文件名
                         editorPageShowingFilePath = editorPageShowingFilePath,

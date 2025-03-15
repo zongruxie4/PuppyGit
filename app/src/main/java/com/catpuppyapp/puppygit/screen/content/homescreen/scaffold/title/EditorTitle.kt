@@ -31,6 +31,7 @@ import com.catpuppyapp.puppygit.compose.ScrollableRow
 import com.catpuppyapp.puppygit.constants.PageRequest
 import com.catpuppyapp.puppygit.play.pro.R
 import com.catpuppyapp.puppygit.screen.functions.defaultTitleDoubleClickRequest
+import com.catpuppyapp.puppygit.screen.shared.EditorPreviewNavStack
 import com.catpuppyapp.puppygit.style.MyStyleKt
 import com.catpuppyapp.puppygit.utils.FsUtils
 import com.catpuppyapp.puppygit.utils.getFileNameFromCanonicalPath
@@ -40,6 +41,8 @@ import java.io.File
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun EditorTitle(
+    previewNavStack: EditorPreviewNavStack,
+    previewingPath:String,
     isPreviewModeOn:Boolean,
 
     // 若指定文件名，将使用，否则解析路径取出文件名。
@@ -57,9 +60,9 @@ fun EditorTitle(
     val haptic = LocalHapticFeedback.current
 
     if(editorPageShowingFilePath.value.isNotBlank()) {
-        val fileName = if(editorPageShowingFileName.isNullOrEmpty()) getFileNameFromCanonicalPath(editorPageShowingFilePath.value) else editorPageShowingFileName
+        val fileName = if(isPreviewModeOn && editorPageShowingFilePath.value != previewingPath) getFileNameFromCanonicalPath(previewingPath) else if(editorPageShowingFileName.isNullOrEmpty()) getFileNameFromCanonicalPath(editorPageShowingFilePath.value) else editorPageShowingFileName
 //        val filePath = getFilePathStrBasedRepoDir(editorPageShowingFilePath.value, returnResultStartsWithSeparator = true)
-        val filePath = FsUtils.getPathWithInternalOrExternalPrefix(editorPageShowingFilePath.value)
+        val filePath = FsUtils.getPathWithInternalOrExternalPrefix(if(isPreviewModeOn) previewingPath else editorPageShowingFilePath.value)
 
         val filePathNoFileName = filePath.removeSuffix(fileName)  // "/"结尾的路径或者只有"/"
         //如果只剩/，就返回 /，否则把末尾的/移除

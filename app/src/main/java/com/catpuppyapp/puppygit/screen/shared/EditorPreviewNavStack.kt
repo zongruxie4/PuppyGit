@@ -9,11 +9,14 @@ import java.util.concurrent.ConcurrentHashMap
 
 
 
-class EditorPreviewNavStack(val firstPath:String) {
+class EditorPreviewNavStack(val root:String) {
+    var editingPath = root
+    var previewingPath = root
     private val lock = Mutex()
     private val backStack = Stack<String>()
     private val aheadStack = Stack<String>()
     private val pathAndScrollStateMap = ConcurrentHashMap<String, ScrollState>()
+
 
     suspend fun push(path:String) {
         lock.withLock {
@@ -61,7 +64,7 @@ class EditorPreviewNavStack(val firstPath:String) {
 
     suspend fun getFirst():Pair<String, ScrollState> {
         lock.withLock {
-            val first = backStack.getFirst() ?: firstPath
+            val first = backStack.getFirst() ?: root
             return Pair(first, getScrollState(first))
         }
     }
@@ -84,7 +87,7 @@ class EditorPreviewNavStack(val firstPath:String) {
     }
 
     fun ofThisPath(path: String): Boolean {
-        return path == firstPath
+        return path == root
     }
 
 }

@@ -26,7 +26,7 @@ object PageRequest {
 
     const val editorPreviewPageGoToTop = "editorPreviewPageGoToTop"
     const val editorPreviewPageGoToBottom = "editorPreviewPageGoToBottom"
-    const val requireOpenCurrentPreviewingFile = "requireOpenCurrentPreviewingFile"
+    const val requireEditPreviewingFile = "requireEditPreviewingFile"
     const val requireBackToHome = "requireBackToHome"
     const val requireInitPreviewFromSubEditor = "requireInitPreviewFromSubEditor"
     const val requireInitPreview = "requireInitPreview"

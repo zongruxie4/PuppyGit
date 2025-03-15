@@ -99,7 +99,7 @@ fun EditorPageActions(
             tooltipText = stringResource(R.string.edit),
             icon = Icons.Filled.Edit,
         ) {
-            editorPageRequest.value = PageRequest.requireOpenCurrentPreviewingFile
+            editorPageRequest.value = PageRequest.requireEditPreviewingFile
         }
         LongPressAbleIconBtn(
             tooltipText = stringResource(R.string.home),

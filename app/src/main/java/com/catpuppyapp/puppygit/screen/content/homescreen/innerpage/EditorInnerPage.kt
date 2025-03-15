@@ -564,7 +564,7 @@ fun EditorInnerPage(
     }
 
     //若想重载文件但保留stack，重载前将此变量设为真，一次性有效
-    val keepPreviewStack = rememberSaveable { mutableStateOf(false) }
+    val keepPreviewNavStackOnce = rememberSaveable { mutableStateOf(false) }
     val previewLoading = rememberSaveable { mutableStateOf(false) }
     val previewLoadingOn = {
         previewLoading.value = true
@@ -649,7 +649,7 @@ fun EditorInnerPage(
                 //取出当前文件所在目录作为相对路径的父目录
                 //从stack取出第一个元素，若没有，使用showing path
                 val path = previewNavStack.value.getFirst().first
-
+                previewNavStack.value.previewingPath = path
                 previewPath.value = path
                 basePath.value = FsUtils.getParentPath(path)
                 // 取出当前文件内容，may take time
@@ -736,12 +736,21 @@ fun EditorInnerPage(
         }
     }
 
-    if(requestFromParent.value == PageRequest.requireOpenCurrentPreviewingFile) {
+    if(requestFromParent.value == PageRequest.requireEditPreviewingFile) {
         PageRequest.clearStateThenDoAct(requestFromParent) {
             runBlocking {
-                editorPageShowingFilePath.value = previewNavStack.value.getFirst().first
-//                keepPreviewStack.value = true  //感觉好像不太好，不保留了，若保留，我编辑完文件，预览，再返回，会返回到上次的文件，再编辑，再预览，预览的也还是上次的文件，不合逻辑
-                reloadFile()
+                // user expect edit current previewing file
+                val previewing = previewNavStack.value.previewingPath  // or use page state `previewPath.value`
+                previewNavStack.value.editingPath = previewing
+
+                //若正在预览和正在编辑的文件不同则重载，否则仅退出预览模式即可
+                if(previewing != editorPageShowingFilePath.value) {
+                    editorPageShowingFilePath.value = previewing
+                    keepPreviewNavStackOnce.value = true  //保留导航栈
+                    reloadFile()
+                }else {
+                    quitPreviewMode()
+                }
             }
         }
     }
@@ -1246,7 +1255,7 @@ fun EditorInnerPage(
                 try {
                     doInit(
                         previewPath = previewPath,
-                        keepPreviewStack = keepPreviewStack,
+                        keepPreviewStack = keepPreviewNavStackOnce,
                         previewNavStack = previewNavStack,
                         activityContext = activityContext,
                         editorPageShowingFilePath = editorPageShowingFilePath,
@@ -1513,7 +1522,7 @@ private suspend fun doInit(
             val keepPreviewStack = Unit //防止后面调用此变量
             //判断是否需要生成新的预览页面导航栈
             //如果当前stack不属于当前文件 且 没请求保留当前栈，重新生成
-            if(previewNavStack.value.ofThisPath(requireOpenFilePath).not() && keepPreviewStackOnce.not()) {
+            if(previewNavStack.value.editingPath != requireOpenFilePath && keepPreviewStackOnce.not()) {
                 previewNavStack.value = EditorPreviewNavStack(requireOpenFilePath)
             }
 
