@@ -105,20 +105,20 @@ class EditorPreviewNavStack internal constructor(var root:String) {
         }
     }
 
-    suspend fun getFirst():EditorPreviewNavStackItem {
+    suspend fun getCurrent():EditorPreviewNavStackItem {
         lock.withLock {
-            return getFirstNoLock()
+            return getCurrentNoLock()
         }
     }
 
-    private suspend fun getFirstNoLock():EditorPreviewNavStackItem {
+    private suspend fun getCurrentNoLock():EditorPreviewNavStackItem {
         return backStack.getFirst() ?: rootNavStackItem
     }
 
 
-    suspend fun getCurScrollState():ScrollState {
+    suspend fun getCurrentScrollState():ScrollState {
         lock.withLock {
-            return getFirstNoLock().scrollState
+            return getCurrentNoLock().scrollState
         }
     }
 

@@ -2,7 +2,6 @@ package com.catpuppyapp.puppygit.fileeditor.ui.composable
 
 import android.annotation.SuppressLint
 import androidx.compose.foundation.ExperimentalFoundationApi
-import androidx.compose.foundation.ScrollState
 import androidx.compose.foundation.background
 import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.focusable
@@ -253,7 +252,7 @@ fun FileEditor(
                     //fillMaxSize 必须在最上面！要不然，文字不会显示在中间！
                     .fillMaxSize()
                     .padding(contentPadding)
-                    .verticalScroll(runBlocking { previewNavStack.value.getScrollState(previewPath) })
+                    .verticalScroll(runBlocking { previewNavStack.value.getCurrentScrollState() })
                 ,
             ) {
                 MarkDownContainer(

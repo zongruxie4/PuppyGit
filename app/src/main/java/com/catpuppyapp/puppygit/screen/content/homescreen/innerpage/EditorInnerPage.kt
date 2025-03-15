@@ -613,7 +613,7 @@ fun EditorInnerPage(
     val previewLinkHandler:(link:String)->Boolean = { link ->
         if(FsUtils.maybeIsRelativePath(link)) {
             runBlocking {
-                val basePathAndFileName = previewNavStack.value.getFirst().first
+                val basePathAndFileName = previewNavStack.value.getCurrent().path
                 //当前预览文件不一定是showing file path，有可能跳转过，所以正确操作应该是取出栈中最上面的一个元素
                 val linkFullPath = FsUtils.getAbsolutePathIfIsRelative(path = link, basePathNoEndSlash = FsUtils.getParentPath(basePathAndFileName))
 
@@ -655,7 +655,7 @@ fun EditorInnerPage(
                 previewLoadingOn()
 
                 val switchFromEditPage = isPreviewModeOn.value.not()
-                var pathWillPreview = previewNavStack.getFirst().first
+                var pathWillPreview = previewNavStack.getCurrent().path
 
                 //如果是从编辑器页面切换到预览页面，定位到当前预览页面
                 //判断条件为 “从编辑页面而来 且 stack当前路径和编辑器正在显示的路径不同 且 backStack或aheadStack非空”
@@ -699,13 +699,13 @@ fun EditorInnerPage(
     }
     if(requestFromParent.value == PageRequest.editorPreviewPageGoToTop) {
         PageRequest.clearStateThenDoAct(requestFromParent) {
-            val scrollState = runBlocking { previewNavStack.value.getScrollState(previewPath.value) }
+            val scrollState = runBlocking { previewNavStack.value.getCurrentScrollState() }
             UIHelper.scrollTo(scope, scrollState, 0)
         }
     }
     if(requestFromParent.value == PageRequest.editorPreviewPageGoToBottom) {
         PageRequest.clearStateThenDoAct(requestFromParent) {
-            val scrollState = runBlocking { previewNavStack.value.getScrollState(previewPath.value) }
+            val scrollState = runBlocking { previewNavStack.value.getCurrentScrollState() }
             UIHelper.scrollTo(scope, scrollState, Int.MAX_VALUE)
         }
     }
@@ -1543,7 +1543,7 @@ private suspend fun doInit(
 
             //这个路径可能在旋转屏幕后丢失，恢复下
             if(previewPath.value.isBlank()) {
-                previewPath.value = previewNavStack.value.getFirst().first
+                previewPath.value = previewNavStack.value.getCurrent().path
                 if(previewPath.value.isBlank()) {
                     previewPath.value = requireOpenFilePath
                 }
