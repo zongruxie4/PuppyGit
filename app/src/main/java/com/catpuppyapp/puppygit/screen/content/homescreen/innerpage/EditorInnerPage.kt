@@ -80,7 +80,6 @@ import com.catpuppyapp.puppygit.utils.cache.Cache
 import com.catpuppyapp.puppygit.utils.changeStateTriggerRefreshPage
 import com.catpuppyapp.puppygit.utils.doJobThenOffLoading
 import com.catpuppyapp.puppygit.utils.fileopenhistory.FileOpenHistoryMan
-import com.catpuppyapp.puppygit.utils.generateRandomString
 import com.catpuppyapp.puppygit.utils.getFileNameFromCanonicalPath
 import com.catpuppyapp.puppygit.utils.getFormattedLastModifiedTimeOfFile
 import com.catpuppyapp.puppygit.utils.getHumanReadableSizeStr
@@ -614,17 +613,25 @@ fun EditorInnerPage(
     // return true means consumed, else default link handler will take it
     val previewLinkHandler:(link:String)->Boolean = { link ->
         if(FsUtils.maybeIsRelativePath(link)) {
+            val previewNavStack = previewNavStack.value
             runBlocking {
-                val basePathAndFileName = previewNavStack.value.getCurrent().path
+                val previewingFileFullPath = previewNavStack.previewingPath
                 //当前预览文件不一定是showing file path，有可能跳转过，所以正确操作应该是取出栈中最上面的一个元素
-                val linkFullPath = FsUtils.getAbsolutePathIfIsRelative(path = link, basePathNoEndSlash = FsUtils.getParentPath(basePathAndFileName))
+                val linkFullPath = FsUtils.getAbsolutePathIfIsRelative(path = link, basePathNoEndSlash = FsUtils.getParentPath(previewingFileFullPath))
 
-                val pushSuccess = previewNavStack.value.push(linkFullPath)
-                if(pushSuccess) {
+                val aheadFirstPath = previewNavStack.getAheadStackFirst()?.path
+                if(aheadFirstPath == linkFullPath) {  //当前条目已经在ahead栈中，不需要再push。这种可能是后退过再点击和前进目标相同的链接，就会导致两个路径一样
                     previewNavAhead()
                     true
-                }else{  // push failed, maybe is not a valid relative path, then return false to let default link handler to take it
-                    false
+                }else { //当前条目不在栈中，push
+                    val pushSuccess = previewNavStack.push(linkFullPath)
+                    if(pushSuccess) {
+                        previewNavAhead()
+                        true
+                    }else{
+                        // push failed, maybe is not a valid relative path, then return false to let default link handler to take it
+                        false
+                    }
                 }
             }
         }else {

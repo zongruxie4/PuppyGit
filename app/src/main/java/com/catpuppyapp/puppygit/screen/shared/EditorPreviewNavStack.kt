@@ -141,6 +141,12 @@ class EditorPreviewNavStack internal constructor(var root:String) {
         return backStack.getFirst() ?: rootNavStackItem
     }
 
+    suspend fun getAheadStackFirst():EditorPreviewNavStackItem? {
+        lock.withLock {
+            return aheadStack.getFirst()
+        }
+    }
+
 
     suspend fun getCurrentScrollState():ScrollState {
         lock.withLock {
