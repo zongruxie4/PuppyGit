@@ -33,7 +33,6 @@ import java.time.Instant
 import java.time.ZoneOffset
 import java.time.ZonedDateTime
 import java.time.format.DateTimeFormatter
-import java.util.UUID
 import kotlin.io.path.exists
 import kotlin.math.absoluteValue
 
@@ -147,38 +146,62 @@ fun checkFileOrFolderNameAndTryCreateFile(nameWillCheck:String, appContext: Cont
 }
 
 
+
+// start: deprecated uuid functions
+//
+////返回值示例(32个字符+4个分隔符=36个字符)：171885d6-93b5-497a-8b9b-17e58ac99138
+//private fun getRandomUUIDWithSeparator():String {
+//    return UUID.randomUUID().toString();
+//}
+
+////返回值示例(32个字符)：171885d693b5497a8b9b17e58ac99138
+//private fun getRandomUUIDNoSeparator():String {
+//    return UUID.randomUUID().toString().replace("-","");
+//}
+
 //返回值示例：includeSeparator=true,36位字符:171885d6-93b5-497a-8b9b-17e58ac99138
 //          includeSeparator=false，32位字符:171885d693b5497a8b9b17e58ac99138
-fun getRandomUUID(includeSeparator:Boolean=false):String {
-    return if(includeSeparator) getRandomUUIDWithSeparator()
-            else  getRandomUUIDNoSeparator()
+//fun getRandomUUID(includeSeparator:Boolean=false):String {
+//    return if(includeSeparator) getRandomUUIDWithSeparator()
+//            else  getRandomUUIDNoSeparator()
+//}
+
+//fun getShortUUID(len:Int=20):String {
+//    var actuallyLen = len
+//    if(len>32) {
+//        actuallyLen=32
+//    }
+//    return getRandomUUID().substring(0, actuallyLen)
+//}
+// end: deprecated uuid functions
+
+
+
+
+fun getRandomUUID(len: Int = 32):String {
+    return generateRandomString(len)
 }
 
-//返回值示例(32个字符+4个分隔符=36个字符)：171885d6-93b5-497a-8b9b-17e58ac99138
-private fun getRandomUUIDWithSeparator():String {
-    return UUID.randomUUID().toString();
-}
-//返回值示例(32个字符)：171885d693b5497a8b9b17e58ac99138
-private fun getRandomUUIDNoSeparator():String {
-    return UUID.randomUUID().toString().replace("-","");
-}
-
-//返回值示例: 171885d617e58ac99138
-//注：这个len实际不能超过32，不然要改代码，改成拼接UUID直到满足长度，太麻烦了也没必要
 fun getShortUUID(len:Int=20):String {
-    var actuallyLen = len
-    if(len>32) {
-        actuallyLen=32
-    }
-    return getRandomUUID(includeSeparator = false).substring(0, actuallyLen)
+    return getRandomUUID(len)
 }
 
+
+// start: 生成随机字符串，字符集：a..z, 0..9, A..Z
+val randomStringCharList = listOf('a','b','c','d','e','f','g','h','i','j','k','l','m','n','o','p','q','r','s','t','u','v','w','x','y','z','0','1','2','3','4','5','6','7','8','9','A','B','C','D','E','F','G','H','I','J','K','L','M','N','O','P','Q','R','S','T','U','V','W','X','Y','Z');
+
+/**
+ * 生成随机字符串比生成真UUID性能更好，好近10倍
+ */
 fun generateRandomString(length: Int=16): String {
-    val characters = ('a'..'z') + ('A'..'Z') + ('0'..'9')
-    return (1..length)
-        .map { characters.random() }
-        .joinToString("")
+    val sb = StringBuilder(length)
+    for (i in 1..length) {
+        sb.append(randomStringCharList.random())
+    }
+    return sb.toString()
 }
+// end: 生成随机字符串
+
 
 fun dbIntToBool(v:Int):Boolean {
     return v != Cons.dbCommonFalse
