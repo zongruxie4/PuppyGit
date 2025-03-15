@@ -24,6 +24,8 @@ object PageRequest {
 //    const val goToBranch ="goToBranch"  //goToBranch#branchName，#后面是要goto的分支名
 
 
+    const val editorPreviewPageGoBack = "editorPreviewPageGoBack"
+    const val editorPreviewPageGoForward = "editorPreviewPageGoForward"
     const val editorPreviewPageGoToTop = "editorPreviewPageGoToTop"
     const val editorPreviewPageGoToBottom = "editorPreviewPageGoToBottom"
     const val requireEditPreviewingFile = "requireEditPreviewingFile"

@@ -160,6 +160,12 @@ class EditorPreviewNavStack internal constructor(var root:String) {
         }
     }
 
+    suspend fun aheadStackIsNotEmpty():Boolean {
+        lock.withLock {
+            return aheadStack.isNotEmpty()
+        }
+    }
+
     suspend fun backStackOrAheadStackIsNotEmpty():Boolean {
         lock.withLock {
             return backStack.isNotEmpty() || aheadStack.isNotEmpty()

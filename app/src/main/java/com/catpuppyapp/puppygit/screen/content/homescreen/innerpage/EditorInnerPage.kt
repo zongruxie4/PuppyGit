@@ -654,11 +654,24 @@ fun EditorInnerPage(
 //            showBackFromExternalAppAskReloadDialog.value=true
 //        }
 //    }
+
     if(requestFromParent.value == PageRequest.requireSave) {
         PageRequest.clearStateThenDoAct(requestFromParent) {
             if(needAndReadyDoSave()){
                 doSaveInCoroutine()
             }
+        }
+    }
+
+    if(requestFromParent.value == PageRequest.editorPreviewPageGoBack) {
+        PageRequest.clearStateThenDoAct(requestFromParent) {
+            previewNavBack()
+        }
+    }
+
+    if(requestFromParent.value == PageRequest.editorPreviewPageGoForward) {
+        PageRequest.clearStateThenDoAct(requestFromParent) {
+            previewNavAhead()
         }
     }
 

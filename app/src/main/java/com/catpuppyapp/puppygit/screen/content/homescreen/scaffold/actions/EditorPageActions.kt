@@ -3,6 +3,8 @@ package com.catpuppyapp.puppygit.screen.content.homescreen.scaffold.actions
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.ArrowBackIos
+import androidx.compose.material.icons.automirrored.filled.ArrowForwardIos
 import androidx.compose.material.icons.automirrored.filled.Redo
 import androidx.compose.material.icons.automirrored.filled.Undo
 import androidx.compose.material.icons.filled.ArrowDownward
@@ -12,8 +14,6 @@ import androidx.compose.material.icons.filled.CheckBoxOutlineBlank
 import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.Home
 import androidx.compose.material.icons.filled.MoreVert
-import androidx.compose.material.icons.filled.VerticalAlignBottom
-import androidx.compose.material.icons.filled.VerticalAlignTop
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.Icon
@@ -50,7 +50,6 @@ import com.catpuppyapp.puppygit.settings.SettingsUtil
 import com.catpuppyapp.puppygit.style.MyStyleKt
 import com.catpuppyapp.puppygit.user.UserUtil
 import com.catpuppyapp.puppygit.utils.Msg
-import com.catpuppyapp.puppygit.utils.generateRandomString
 import com.catpuppyapp.puppygit.utils.state.CustomStateSaveable
 import kotlinx.coroutines.runBlocking
 
@@ -102,6 +101,8 @@ fun EditorPageActions(
 
     if(isPreviewModeOn) {
         val currentIsNotAtHome = remember(previewPathChanged) { derivedStateOf { runBlocking { previewNavStack.currentIsRoot().not() } } }
+        val canGoBack = remember(previewPathChanged) { derivedStateOf { runBlocking { previewNavStack.backStackIsNotEmpty() } } }
+        val canGoForward = remember(previewPathChanged) { derivedStateOf { runBlocking { previewNavStack.aheadStackIsNotEmpty() } } }
 
         LongPressAbleIconBtn(
             tooltipText = stringResource(R.string.edit),
@@ -119,17 +120,19 @@ fun EditorPageActions(
             editorPageRequest.value = PageRequest.requireBackToHome
         }
         LongPressAbleIconBtn(
-            tooltipText = stringResource(R.string.go_to_top),
-            icon = Icons.Filled.VerticalAlignTop,
+            enabled = canGoBack.value,
+            tooltipText = stringResource(R.string.go_back),
+            icon = Icons.AutoMirrored.Filled.ArrowBackIos,
         ) {
-            editorPageRequest.value = PageRequest.editorPreviewPageGoToTop
+            editorPageRequest.value = PageRequest.editorPreviewPageGoBack
         }
 
         LongPressAbleIconBtn(
-            tooltipText = stringResource(R.string.go_to_bottom),
-            icon = Icons.Filled.VerticalAlignBottom,
+            enabled = canGoForward.value,
+            tooltipText = stringResource(R.string.go_forward),
+            icon = Icons.AutoMirrored.Filled.ArrowForwardIos,
         ) {
-            editorPageRequest.value = PageRequest.editorPreviewPageGoToBottom
+            editorPageRequest.value = PageRequest.editorPreviewPageGoForward
         }
 
         return  //返回，以免显示菜单项
