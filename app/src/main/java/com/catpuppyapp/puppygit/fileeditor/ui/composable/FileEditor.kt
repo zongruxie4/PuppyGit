@@ -5,7 +5,6 @@ import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.focusable
-import androidx.compose.foundation.gestures.detectHorizontalDragGestures
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
@@ -19,9 +18,13 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.ArrowBackIos
+import androidx.compose.material.icons.automirrored.filled.ArrowForwardIos
 import androidx.compose.material.icons.filled.ContentCopy
 import androidx.compose.material.icons.filled.ContentCut
 import androidx.compose.material.icons.filled.Delete
+import androidx.compose.material.icons.filled.Menu
+import androidx.compose.material.icons.filled.RemoveRedEye
 import androidx.compose.material.icons.filled.SelectAll
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
@@ -38,8 +41,8 @@ import androidx.compose.ui.composed
 import androidx.compose.ui.draw.drawBehind
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.vector.rememberVectorPainter
 import androidx.compose.ui.hapticfeedback.HapticFeedbackType
-import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalClipboardManager
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
@@ -71,6 +74,8 @@ import com.catpuppyapp.puppygit.utils.UIHelper
 import com.catpuppyapp.puppygit.utils.replaceStringResList
 import com.catpuppyapp.puppygit.utils.state.CustomStateSaveable
 import kotlinx.coroutines.runBlocking
+import me.saket.swipe.SwipeAction
+import me.saket.swipe.SwipeableActionsBox
 
 private const val TAG = "FileEditor"
 private const val stateKeyTag = "FileEditor"
@@ -216,270 +221,258 @@ fun FileEditor(
     //内容顶部padding
     val topPadding = remember { 5.dp }
 
-    Box(
-        modifier = Modifier
-            .fillMaxSize()
-            //括号里的参数是个类似remember key的东西，若变化会重新执行后续代码块。在特定情况下重新注册callback时可使用此参数。
-            .pointerInput(Unit) {
-                //这个会覆盖侧栏抽屉的滑动手势，所以需要处理下
-                //Drag手势有 x y；水平只有x；垂直只有y
-                detectHorizontalDragGestures { change, dragAmount ->
-                    // debug
-//                    println("dragAmount.x: ${dragAmount.x}")
-//                    println("dragAmount.y: ${dragAmount.y}")
+    val leftToRightAct = SwipeAction(
+        icon = rememberVectorPainter(if(isPreviewModeOn.value) Icons.AutoMirrored.Filled.ArrowBackIos else Icons.Filled.Menu),
+        background = Color.Unspecified,
+        onSwipe = { if (isRtl) onRightToLeft() else onLeftToRight() }
+    )
 
-                    val curTimeInMills = System.currentTimeMillis()
-                    //避免短时间滑动触发两次（抖动）
-                    if(curTimeInMills - curTime.longValue > dragHandleInterval) {
-                        if (dragAmount > 2) {  // left to right
-                            if (isRtl) onRightToLeft() else onLeftToRight()
-                        } else if (dragAmount < -2) {  // right to left
-                            if (isRtl) onLeftToRight() else onRightToLeft()
-                        }
-                    }
+    val rightToLeftAct = SwipeAction(
+        icon = rememberVectorPainter(if(isPreviewModeOn.value) Icons.AutoMirrored.Filled.ArrowForwardIos else Icons.Filled.RemoveRedEye),
+        background = Color.Unspecified,
+        onSwipe = { if (isRtl) onLeftToRight() else onRightToLeft() },
+    )
 
-                    //更新时间
-                    curTime.longValue = curTimeInMills
-
-                    // 消费事件，不知道有没有实际作用，理论上其他接受此事件的回调应检查如果已消费就不再处理
-                    change.consume()
-                }
-            },
-//            .systemBarsPadding()  //用脚手架的contentPadding就不需要这个了
+    SwipeableActionsBox(
+        startActions = listOf(leftToRightAct),
+        endActions = listOf(rightToLeftAct)
     ) {
-        if(isPreviewModeOn.value) {
-            Column(
-                modifier = Modifier
-                    //fillMaxSize 必须在最上面！要不然，文字不会显示在中间！
-                    .fillMaxSize()
-                    .padding(contentPadding)
-                    .verticalScroll(runBlocking { previewNavStack.value.getCurrentScrollState() })
-                ,
-            ) {
-                Spacer(Modifier.height(topPadding))
+        Box(modifier = Modifier.fillMaxSize()) {
+            if(isPreviewModeOn.value) {
+                Column(
+                    modifier = Modifier
+                        //fillMaxSize 必须在最上面！要不然，文字不会显示在中间！
+                        .fillMaxSize()
+                        .padding(contentPadding)
+                        .verticalScroll(runBlocking { previewNavStack.value.getCurrentScrollState() })
+                    ,
+                ) {
+                    Spacer(Modifier.height(topPadding))
 
-                MarkDownContainer(
-                    modifier = Modifier.padding(horizontal = 10.dp),
-                    content = mdText.value,
-                    basePathNoEndSlash = basePath.value,
-                    fontSize = fontSize.intValue, //和编辑器字体大小保持一致
-                    onLinkClicked = { link ->
-                        previewLinkHandler(link)
-                    }
-                )
+                    MarkDownContainer(
+                        modifier = Modifier.padding(horizontal = 10.dp),
+                        content = mdText.value,
+                        basePathNoEndSlash = basePath.value,
+                        fontSize = fontSize.intValue, //和编辑器字体大小保持一致
+                        onLinkClicked = { link ->
+                            previewLinkHandler(link)
+                        }
+                    )
 
-                Spacer(Modifier.height(30.dp))
-            }
-        } else {
+                    Spacer(Modifier.height(30.dp))
+                }
+            } else {
 
-            TextEditor(
-                editorPageShowingFileName = editorPageShowingFileName,
-                requestFromParent = requestFromParent,
-                fileFullPath = fileFullPath,
-                lastEditedPos = lastEditedPos,
-                textEditorState = textEditorState.value,
-                editableController = editableController.value,
+                TextEditor(
+                    editorPageShowingFileName = editorPageShowingFileName,
+                    requestFromParent = requestFromParent,
+                    fileFullPath = fileFullPath,
+                    lastEditedPos = lastEditedPos,
+                    textEditorState = textEditorState.value,
+                    editableController = editableController.value,
 //            onChanged = onChanged,
-                contentPaddingValues = contentPaddingValues,
-                lastScrollEvent =editorLastScrollEvent,
-                listState =editorListState,
-                editorPageIsInitDone = editorPageIsInitDone,
-                goToLine=goToLine,
-                readOnlyMode=readOnlyMode,
-                searchMode = searchMode,
-                searchKeyword =searchKeyword,
-                mergeMode=mergeMode,
-                fontSize=fontSize,
+                    contentPaddingValues = contentPaddingValues,
+                    lastScrollEvent =editorLastScrollEvent,
+                    listState =editorListState,
+                    editorPageIsInitDone = editorPageIsInitDone,
+                    goToLine=goToLine,
+                    readOnlyMode=readOnlyMode,
+                    searchMode = searchMode,
+                    searchKeyword =searchKeyword,
+                    mergeMode=mergeMode,
+                    fontSize=fontSize,
 
 //            modifier = Modifier.padding(bottom = bottomPadding)
 //            modifier = Modifier.fillMaxSize()
-            ) { index, isSelected, innerTextField ->
-                // TextLine
-                Row(
+                ) { index, isSelected, innerTextField ->
+                    // TextLine
+                    Row(
 //                horizontalArrangement = Arrangement.spacedBy(4.dp),
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .background(
-                            getBackgroundColor(
-                                isSelected,
-                                textEditorState.value.isMultipleSelectionMode
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .background(
+                                getBackgroundColor(
+                                    isSelected,
+                                    textEditorState.value.isMultipleSelectionMode
+                                )
                             )
-                        )
-                        .padding(start = (if (showLineNum.value) 2.dp else 5.dp), end = 5.dp)
-                        .then(
-                            //给第一行top加点padding，不然离上面太近，难受
-                            if(index == 0) Modifier.padding(top = topPadding) else Modifier
-                        )
-                        .bottomBorder(
-                            strokeWidth = 1.dp,
-                            color = if (inDarkTheme) Color.DarkGray.copy(alpha = 0.2f) else Color.LightGray.copy(alpha = 0.2f)
-                        )
-                ) {
-                    if(showLineNum.value) {
-                        Box (
-                            //让行号和选择图标居中
+                            .padding(start = (if (showLineNum.value) 2.dp else 5.dp), end = 5.dp)
+                            .then(
+                                //给第一行top加点padding，不然离上面太近，难受
+                                if(index == 0) Modifier.padding(top = topPadding) else Modifier
+                            )
+                            .bottomBorder(
+                                strokeWidth = 1.dp,
+                                color = if (inDarkTheme) Color.DarkGray.copy(alpha = 0.2f) else Color.LightGray.copy(alpha = 0.2f)
+                            )
+                    ) {
+                        if(showLineNum.value) {
+                            Box (
+                                //让行号和选择图标居中
 //                    horizontalAlignment = Alignment.CenterHorizontally
-                        ){
-                            // TextLine Number
-                            Text(
-                                modifier = Modifier.align(Alignment.TopCenter),
-                                text = getLineNumber(index),
-                                color = if(inDarkTheme) MyStyleKt.TextColor.lineNum_forEditorInDarkTheme else MyStyleKt.TextColor.lineNum_forEditorInLightTheme,
-                                fontSize = lineNumFontSize.intValue.sp,
-                                fontFamily = FontFamily.Monospace,  //等宽字体，和diff页面的行号保持一致
-                                //行号居中
-                                // modifier = Modifier.align(Alignment.CenterVertically)
-                            )
+                            ){
+                                // TextLine Number
+                                Text(
+                                    modifier = Modifier.align(Alignment.TopCenter),
+                                    text = getLineNumber(index),
+                                    color = if(inDarkTheme) MyStyleKt.TextColor.lineNum_forEditorInDarkTheme else MyStyleKt.TextColor.lineNum_forEditorInLightTheme,
+                                    fontSize = lineNumFontSize.intValue.sp,
+                                    fontFamily = FontFamily.Monospace,  //等宽字体，和diff页面的行号保持一致
+                                    //行号居中
+                                    // modifier = Modifier.align(Alignment.CenterVertically)
+                                )
 
-                            // TextField Menu Icon
-                            FieldIcon(
-                                isMultipleSelection = textEditorState.value.isMultipleSelectionMode,
-                                isSelected = isSelected,
-                                modifier = Modifier
-                                    .size(12.dp)
-                                    .padding(top = 1.dp)
-                                    .align(Alignment.BottomCenter)
-                                    .focusable(false)  //不知道这个focusable(false)有什么用
-                                    .combinedClickable(
-                                        onLongClick = {
+                                // TextField Menu Icon
+                                FieldIcon(
+                                    isMultipleSelection = textEditorState.value.isMultipleSelectionMode,
+                                    isSelected = isSelected,
+                                    modifier = Modifier
+                                        .size(12.dp)
+                                        .padding(top = 1.dp)
+                                        .align(Alignment.BottomCenter)
+                                        .focusable(false)  //不知道这个focusable(false)有什么用
+                                        .combinedClickable(
+                                            onLongClick = {
+                                                if (textEditorState.value.isMultipleSelectionMode) {
+                                                    haptic.performHapticFeedback(HapticFeedbackType.LongPress)
+
+                                                    editableController.value.selectFieldSpan(targetIndex = index)
+                                                }
+                                            }
+                                        ) {
+                                            //如果是行选择模式，选中当前点击的行如果不是行选择模式；进入行选择模式
                                             if (textEditorState.value.isMultipleSelectionMode) {
-                                                haptic.performHapticFeedback(HapticFeedbackType.LongPress)
+                                                //选中/取消选中 当前点击的行
+                                                editableController.value.selectField(targetIndex = index)
 
-                                                editableController.value.selectFieldSpan(targetIndex = index)
+                                            } else { // 非行选择模式，启动行选择模式 (multiple selection mode on)
+                                                enableSelectMode(index)
                                             }
                                         }
-                                    ) {
-                                        //如果是行选择模式，选中当前点击的行如果不是行选择模式；进入行选择模式
-                                        if (textEditorState.value.isMultipleSelectionMode) {
-                                            //选中/取消选中 当前点击的行
-                                            editableController.value.selectField(targetIndex = index)
 
-                                        } else { // 非行选择模式，启动行选择模式 (multiple selection mode on)
-                                            enableSelectMode(index)
-                                        }
-                                    }
+                                )
 
-                            )
-
+                            }
                         }
-                    }
 
-                    // TextField
-                    innerTextField(
-                        Modifier
-                            .weight(0.9f, true)
-                            .align(Alignment.CenterVertically)
+                        // TextField
+                        innerTextField(
+                            Modifier
+                                .weight(0.9f, true)
+                                .align(Alignment.CenterVertically)
+                        )
+
+
+                    }
+                }
+
+
+                // Multiple Selection Menu
+                if (textEditorState.value.isMultipleSelectionMode) {
+                    //涉及到状态变量的函数一律不要用remember，
+                    // 不然状态变量改变后函数不会重新生成，
+                    // 例如删除按钮的enable函数依赖只读，
+                    // 期望打开关闭只读影响其启用状态，若remember，
+                    // 则开关将无影响，否则有影响，
+                    // 当然也可把所有相关的状态放到rememberd的括号里，
+                    // 例如 remember(相关状态1，状态2，等) {你的函数}，
+                    // 但这样写太麻烦了
+
+                    // BottomBar params block start
+                    val quitSelectionMode = {
+                        editableController.value.createCancelledState()
+                    }
+                    val iconList = listOf(
+                        Icons.Filled.Delete,
+                        Icons.Filled.ContentCut,
+                        Icons.Filled.ContentCopy,
+                        Icons.Filled.SelectAll
+                    )
+                    val iconTextList = listOf(
+                        stringResource(R.string.delete),
+                        stringResource(R.string.cut),
+                        stringResource(R.string.copy),
+                        stringResource(R.string.select_all),
+                    )
+                    val iconOnClickList = listOf(
+                        onDelete@{
+                            if (readOnlyMode) {
+                                Msg.requireShow(activityContext.getString(R.string.readonly_cant_edit))
+                                return@onDelete
+                            }
+
+                            val selectedLinesNum = textEditorState.value.getSelectedCount();
+                            if (selectedLinesNum < 1) {
+                                Msg.requireShow(activityContext.getString(R.string.no_line_selected))
+                                return@onDelete
+                            }
+
+                            showDeleteDialog.value = true
+                        },
+                        onCut@{
+                            val selectedLinesNum = textEditorState.value.getSelectedCount();
+                            if (selectedLinesNum < 1) {
+                                Msg.requireShow(activityContext.getString(R.string.no_line_selected))
+                                return@onCut
+                            }
+
+                            clipboardManager.setText(AnnotatedString(textEditorState.value.getSelectedText()))
+                            Msg.requireShow(replaceStringResList(activityContext.getString(R.string.n_lines_copied), listOf(selectedLinesNum.toString())), )
+                            deleteLines()
+                        },
+                        onCopy@{
+                            val selectedLinesNum = textEditorState.value.getSelectedCount();
+                            if (selectedLinesNum < 1) {
+                                Msg.requireShow(activityContext.getString(R.string.no_line_selected))
+                                return@onCopy
+                            }
+
+                            clipboardManager.setText(AnnotatedString(textEditorState.value.getSelectedText()))
+                            Msg.requireShow(replaceStringResList(activityContext.getString(R.string.n_lines_copied), listOf(selectedLinesNum.toString())), )
+                            editableController.value.createCopiedState()
+                        },
+
+                        onSelectAll@{
+                            editableController.value.createSelectAllState()
+                        }
                     )
 
+                    val getSelectedFilesCount = {textEditorState.value.getSelectedCount()}
+                    val hasLineSelected = {getSelectedFilesCount() > 0}
+                    val iconEnableList = listOf(
+                        delete@{ readOnlyMode.not() && hasLineSelected() },  // delete
+                        cut@{ hasLineSelected() },  // cut
+                        copy@{ hasLineSelected() },  // copy
+                        selectAll@{ true },  // select all
+                    )
+                    // BottomBar params block end
 
+
+
+                    BottomBar(
+                        quitSelectionMode=quitSelectionMode,
+                        iconList=iconList,
+                        iconTextList=iconTextList,
+                        iconDescTextList=iconTextList,
+                        iconOnClickList=iconOnClickList,
+                        iconEnableList=iconEnableList,
+                        enableMoreIcon=false,
+                        moreItemTextList= listOf(),
+                        moreItemOnClickList= listOf(),
+                        moreItemEnableList = listOf(),
+                        getSelectedFilesCount = getSelectedFilesCount,
+                        countNumOnClickEnabled = false,
+                        countNumOnClick = {}
+                    )
                 }
             }
-
-
-            // Multiple Selection Menu
-            if (textEditorState.value.isMultipleSelectionMode) {
-                //涉及到状态变量的函数一律不要用remember，
-                // 不然状态变量改变后函数不会重新生成，
-                // 例如删除按钮的enable函数依赖只读，
-                // 期望打开关闭只读影响其启用状态，若remember，
-                // 则开关将无影响，否则有影响，
-                // 当然也可把所有相关的状态放到rememberd的括号里，
-                // 例如 remember(相关状态1，状态2，等) {你的函数}，
-                // 但这样写太麻烦了
-
-                // BottomBar params block start
-                val quitSelectionMode = {
-                    editableController.value.createCancelledState()
-                }
-                val iconList = listOf(
-                    Icons.Filled.Delete,
-                    Icons.Filled.ContentCut,
-                    Icons.Filled.ContentCopy,
-                    Icons.Filled.SelectAll
-                )
-                val iconTextList = listOf(
-                    stringResource(R.string.delete),
-                    stringResource(R.string.cut),
-                    stringResource(R.string.copy),
-                    stringResource(R.string.select_all),
-                )
-                val iconOnClickList = listOf(
-                    onDelete@{
-                        if (readOnlyMode) {
-                            Msg.requireShow(activityContext.getString(R.string.readonly_cant_edit))
-                            return@onDelete
-                        }
-
-                        val selectedLinesNum = textEditorState.value.getSelectedCount();
-                        if (selectedLinesNum < 1) {
-                            Msg.requireShow(activityContext.getString(R.string.no_line_selected))
-                            return@onDelete
-                        }
-
-                        showDeleteDialog.value = true
-                    },
-                    onCut@{
-                        val selectedLinesNum = textEditorState.value.getSelectedCount();
-                        if (selectedLinesNum < 1) {
-                            Msg.requireShow(activityContext.getString(R.string.no_line_selected))
-                            return@onCut
-                        }
-
-                        clipboardManager.setText(AnnotatedString(textEditorState.value.getSelectedText()))
-                        Msg.requireShow(replaceStringResList(activityContext.getString(R.string.n_lines_copied), listOf(selectedLinesNum.toString())), )
-                        deleteLines()
-                    },
-                    onCopy@{
-                        val selectedLinesNum = textEditorState.value.getSelectedCount();
-                        if (selectedLinesNum < 1) {
-                            Msg.requireShow(activityContext.getString(R.string.no_line_selected))
-                            return@onCopy
-                        }
-
-                        clipboardManager.setText(AnnotatedString(textEditorState.value.getSelectedText()))
-                        Msg.requireShow(replaceStringResList(activityContext.getString(R.string.n_lines_copied), listOf(selectedLinesNum.toString())), )
-                        editableController.value.createCopiedState()
-                    },
-
-                    onSelectAll@{
-                        editableController.value.createSelectAllState()
-                    }
-                )
-
-                val getSelectedFilesCount = {textEditorState.value.getSelectedCount()}
-                val hasLineSelected = {getSelectedFilesCount() > 0}
-                val iconEnableList = listOf(
-                    delete@{ readOnlyMode.not() && hasLineSelected() },  // delete
-                    cut@{ hasLineSelected() },  // cut
-                    copy@{ hasLineSelected() },  // copy
-                    selectAll@{ true },  // select all
-                )
-                // BottomBar params block end
-
-
-
-                BottomBar(
-                    quitSelectionMode=quitSelectionMode,
-                    iconList=iconList,
-                    iconTextList=iconTextList,
-                    iconDescTextList=iconTextList,
-                    iconOnClickList=iconOnClickList,
-                    iconEnableList=iconEnableList,
-                    enableMoreIcon=false,
-                    moreItemTextList= listOf(),
-                    moreItemOnClickList= listOf(),
-                    moreItemEnableList = listOf(),
-                    getSelectedFilesCount = getSelectedFilesCount,
-                    countNumOnClickEnabled = false,
-                    countNumOnClick = {}
-                )
-            }
-        }
 
 //        SmallFab(modifier = Modifier.align(Alignment.BottomEnd), icon = Icons.Filled.Save, iconDesc = stringResource(id = R.string.save)) {
 //
 //        }
+        }
     }
+
 }
 
 private fun getLineNumber(index: Int): String {

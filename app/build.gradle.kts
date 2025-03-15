@@ -139,7 +139,8 @@ dependencies {
 //    implementation("com.github.jeziellago:compose-markdown:change_to_the_latest_version")
 
 
-
+    // swipe compose
+    implementation("me.saket.swipe:swipe:1.3.0")
 
     val ktorVersion = "3.0.3"
     implementation("io.ktor:ktor-server-core:$ktorVersion")
