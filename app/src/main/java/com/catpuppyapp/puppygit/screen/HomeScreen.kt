@@ -951,31 +951,24 @@ fun HomeScreen(
                                 resetReposSearchVars()
                                 repoPageFilterModeOn.value=false
                             }
-                        }else if(currentHomeScreen.intValue == Cons.selectedItem_Editor){
-                            if(editorIsPreviewModeOn.value) {
-                                LongPressAbleIconBtn(
-                                    tooltipText = stringResource(R.string.back),
-                                    icon = Icons.AutoMirrored.Filled.ArrowBack,
-                                ) {
+                        }else if(currentHomeScreen.intValue == Cons.selectedItem_Editor
+                            && (editorIsPreviewModeOn.value || editorPageSearchMode.value
+                                    || editorAdjustFontSizeMode.value || editorAdjustLineNumFontSizeMode.value)
+                            ){
+                            LongPressAbleIconBtn(
+                                tooltipText = stringResource(R.string.close),
+                                icon =  Icons.Filled.Close,
+                                iconContentDesc = stringResource(R.string.close),
+                            ) {
+                                if(editorIsPreviewModeOn.value){
                                     editorQuitPreviewMode()
+                                }else if(editorPageSearchMode.value) {
+                                    editorPageSearchMode.value = false
+                                }else if(editorAdjustFontSizeMode.value) {
+                                    editorPageRequestFromParent.value = PageRequest.requireSaveFontSizeAndQuitAdjust
+                                }else if(editorAdjustLineNumFontSizeMode.value) {
+                                    editorPageRequestFromParent.value = PageRequest.requireSaveLineNumFontSizeAndQuitAdjust
                                 }
-                            } else if((editorPageSearchMode.value || editorAdjustFontSizeMode.value || editorAdjustLineNumFontSizeMode.value)) {
-                                LongPressAbleIconBtn(
-                                    tooltipText = stringResource(R.string.close),
-                                    icon =  Icons.Filled.Close,
-                                    iconContentDesc = stringResource(R.string.close),
-
-                                ) {
-                                    if(editorPageSearchMode.value) {
-                                        editorPageSearchMode.value = false
-                                    }else if(editorAdjustFontSizeMode.value) {
-                                        editorPageRequestFromParent.value = PageRequest.requireSaveFontSizeAndQuitAdjust
-                                    }else if(editorAdjustLineNumFontSizeMode.value) {
-                                        editorPageRequestFromParent.value = PageRequest.requireSaveLineNumFontSizeAndQuitAdjust
-                                    }
-                                }
-                            } else {
-                                menuButton()
                             }
                         }else {
                             menuButton()
