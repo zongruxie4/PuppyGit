@@ -1477,10 +1477,14 @@ object FsUtils {
     }
 
 
-    fun maybeIsRelativePath(path: String) :Boolean {
-        return !(path.startsWith("https://") || path.startsWith("http://")
+    fun isNotRelativePath(path: String):Boolean {
+        return path.startsWith("https://") || path.startsWith("http://")
                 || path.startsWith("content://") || path.startsWith("file://")
-                || path.startsWith("/") || path.startsWith("ftp://"))
+                || path.startsWith("/") || path.startsWith("ftp://") || path.startsWith("mailto:")
+    }
+
+    fun maybeIsRelativePath(path: String) :Boolean {
+        return isNotRelativePath(path).not()
     }
 
     /**

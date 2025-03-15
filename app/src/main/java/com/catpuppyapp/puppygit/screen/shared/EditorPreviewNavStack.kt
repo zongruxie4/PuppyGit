@@ -3,11 +3,13 @@ package com.catpuppyapp.puppygit.screen.shared
 import androidx.compose.foundation.ScrollState
 import com.catpuppyapp.puppygit.datastruct.Stack
 import com.catpuppyapp.puppygit.screen.functions.newScrollState
+import com.catpuppyapp.puppygit.utils.MyLog
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
+import java.io.File
 import java.util.concurrent.ConcurrentHashMap
 
-
+private const val TAG = "EditorPreviewNavStack"
 
 class EditorPreviewNavStack(val root:String) {
     var editingPath = root
@@ -18,13 +20,35 @@ class EditorPreviewNavStack(val root:String) {
     private val pathAndScrollStateMap = ConcurrentHashMap<String, ScrollState>()
 
 
-    suspend fun push(path:String) {
+    suspend fun push(path:String):Boolean {
         lock.withLock {
+            //创建文件对象
+            val f = try {
+                File(path)
+            }catch (e:Exception) {
+                MyLog.e(TAG, "push path: create File err! path=$path, err=${e.stackTraceToString()}")
+                return false
+            }
+
+            //无法读取文件
+            try {
+                if(f.canRead().not()) {
+                    return false
+                }
+            }catch (e:Exception) {
+                MyLog.e(TAG, "push path: can't read file! path=$path, err=${e.stackTraceToString()}")
+                return false
+            }
+
+            val path = f.canonicalPath
+
             val next = aheadStack.getFirst()
             if(next==null || next!=path) {  //和现有路由列表不同，需要清栈
                 aheadStack.clear()
                 aheadStack.push(path)
             }
+
+            return true
         }
     }
 
