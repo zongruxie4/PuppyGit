@@ -72,8 +72,9 @@ fun EditorTitle(
             //双击标题回到文件顶部；长按可跳转到指定行；点击显示路径
             modifier = Modifier.widthIn(min=MyStyleKt.Title.clickableTitleMinWidth)
                 .combinedClickable(
-                    //打开文件没出错 且 非预览模式
-                    enabled = !editorOpenFileErr && !isPreviewModeOn,
+                    //打开文件没出错 或 预览模式则启用，预览模式不管打开出没出错，都尝试显示弹窗，不过如果文件无法打开，
+//                    enabled = !editorOpenFileErr || isPreviewModeOn,
+
                     onDoubleClick = {
                         // editorPageRequestFromParent.value = PageRequest.switchBetweenFirstLineAndLastEditLine
                         defaultTitleDoubleClickRequest(editorPageRequestFromParent)

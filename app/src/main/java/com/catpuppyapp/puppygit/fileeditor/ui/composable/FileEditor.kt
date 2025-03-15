@@ -54,7 +54,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.catpuppyapp.puppygit.compose.BottomBar
 import com.catpuppyapp.puppygit.compose.ConfirmDialog
-import com.catpuppyapp.puppygit.compose.LoadingText
+import com.catpuppyapp.puppygit.compose.CopyableDialog
 import com.catpuppyapp.puppygit.compose.MarkDownContainer
 import com.catpuppyapp.puppygit.constants.PageRequest
 import com.catpuppyapp.puppygit.dto.UndoStack
@@ -70,9 +70,12 @@ import com.catpuppyapp.puppygit.style.MyStyleKt
 import com.catpuppyapp.puppygit.ui.theme.Theme
 import com.catpuppyapp.puppygit.utils.Msg
 import com.catpuppyapp.puppygit.utils.UIHelper
+import com.catpuppyapp.puppygit.utils.getFormattedLastModifiedTimeOfFile
+import com.catpuppyapp.puppygit.utils.getHumanReadableSizeStr
 import com.catpuppyapp.puppygit.utils.replaceStringResList
 import com.catpuppyapp.puppygit.utils.state.CustomStateSaveable
 import com.catpuppyapp.puppygit.utils.state.mutableCustomStateOf
+import java.io.File
 
 private const val TAG = "FileEditor"
 private const val stateKeyTag = "FileEditor"
@@ -197,6 +200,54 @@ fun FileEditor(
     }
 
 
+    val showDetailsDialog = rememberSaveable { mutableStateOf(false) }
+    val detailsStr = rememberSaveable { mutableStateOf("") }
+
+    if(showDetailsDialog.value) {
+        CopyableDialog(
+            title = stringResource(R.string.details),
+            text = detailsStr.value,
+            onCancel = { showDetailsDialog.value = false }
+        ) {
+            showDetailsDialog.value = false
+            clipboardManager.setText(AnnotatedString(detailsStr.value))
+            Msg.requireShow(activityContext.getString(R.string.copied))
+        }
+    }
+
+
+    if(requestFromParent.value==PageRequest.showDetails) {
+        PageRequest.clearStateThenDoAct(requestFromParent) {
+            val file = File(if(isPreviewModeOn.value) previewPath else fileFullPath)
+            val fileReadable = file.canRead()
+            val fileName = editorPageShowingFileName ?: file.name
+            val fileSize = if(fileReadable) getHumanReadableSizeStr(file.length()) else 0
+            //仅文件可读且当前预览或编辑的文件与当前编辑的文件相同时才显示行数和字数
+            val showLinesCharsCount = fileReadable && file.canonicalPath == fileFullPath
+            val (charsCount, linesCount) = if(showLinesCharsCount) editableController.value.getCharsAndLinesCount() else Pair(0, 0)
+//            val lastModifiedTimeStr = getFormatTimeFromSec(sec=file.lastModified()/1000, offset = getSystemDefaultTimeZoneOffset())
+            val lastModifiedTimeStr = if(fileReadable) getFormattedLastModifiedTimeOfFile(file) else ""
+            val sb = StringBuilder()
+
+            sb.appendLine(activityContext.getString(R.string.file_name)+": "+fileName).appendLine()
+            sb.appendLine(activityContext.getString(R.string.path)+": "+ fileFullPath).appendLine()
+
+            if(showLinesCharsCount) {
+                sb.appendLine(activityContext.getString(R.string.chars)+": "+charsCount).appendLine()
+                sb.appendLine(activityContext.getString(R.string.lines) +": "+linesCount).appendLine()
+            }
+
+            if(fileReadable) {
+                sb.appendLine(activityContext.getString(R.string.file_size)+": "+fileSize).appendLine()
+                sb.appendLine(activityContext.getString(R.string.last_modified)+": "+lastModifiedTimeStr)
+            }
+
+            detailsStr.value = sb.toString()
+            showDetailsDialog.value = true
+        }
+    }
+
+
 
 
     val isRtl = UIHelper.isRtlLayout()
@@ -253,32 +304,25 @@ fun FileEditor(
 //            .systemBarsPadding()  //用脚手架的contentPadding就不需要这个了
     ) {
         if(isPreviewModeOn.value) {
-            if(previewLoading) {
-                LoadingText(
-                    text = stringResource(R.string.loading),
-                    contentPadding = contentPadding
+            Column(
+                modifier = Modifier
+                    //fillMaxSize 必须在最上面！要不然，文字不会显示在中间！
+                    .fillMaxSize()
+                    .padding(contentPadding)
+                    .verticalScroll(previewNavStack.value.getScrollState(previewPath))
+                ,
+            ) {
+                MarkDownContainer(
+                    modifier = Modifier.padding(horizontal = 10.dp),
+                    content = mdText.value,
+                    basePathNoEndSlash = basePath.value,
+                    fontSize = fontSize.intValue, //和编辑器字体大小保持一致
+                    onLinkClicked = { link ->
+                        previewLinkHandler(link)
+                    }
                 )
-            }else {
-                Column(
-                    modifier = Modifier
-                        //fillMaxSize 必须在最上面！要不然，文字不会显示在中间！
-                        .fillMaxSize()
-                        .padding(contentPadding)
-                        .verticalScroll(previewNavStack.value.getScrollState(previewPath))
-                    ,
-                ) {
-                    MarkDownContainer(
-                        modifier = Modifier.padding(horizontal = 10.dp),
-                        content = mdText.value,
-                        basePathNoEndSlash = basePath.value,
-                        fontSize = fontSize.intValue, //和编辑器字体大小保持一致
-                        onLinkClicked = { link ->
-                            previewLinkHandler(link)
-                        }
-                    )
 
-                    Spacer(Modifier.height(30.dp))
-                }
+                Spacer(Modifier.height(30.dp))
             }
         } else {
 

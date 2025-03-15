@@ -293,21 +293,6 @@ fun TextEditor(
 
     val clipboardManager = LocalClipboardManager.current
 
-    val showDetailsDialog = rememberSaveable { mutableStateOf(false) }
-    val detailsStr = rememberSaveable { mutableStateOf("") }
-
-    if(showDetailsDialog.value) {
-        CopyableDialog(
-            title = stringResource(R.string.details),
-            text = detailsStr.value,
-            onCancel = { showDetailsDialog.value = false }
-        ) {
-            showDetailsDialog.value = false
-            clipboardManager.setText(AnnotatedString(detailsStr.value))
-            Msg.requireShow(activityContext.getString(R.string.copied))
-        }
-    }
-
     //上级页面发来的request，请求执行某些操作
     //20240507: 这个其实已经没用了，改用在第一行和最后编辑位置切换了，不过，暂且先留着这代码
     if(requestFromParent.value==PageRequest.editorCreateCancelledState) {
@@ -462,33 +447,6 @@ fun TextEditor(
             }
 
             lastScrollEvent.value = ScrollEvent(position, forceGo = true)
-        }
-    }
-
-
-    if(requestFromParent.value==PageRequest.showDetails) {
-        PageRequest.clearStateThenDoAct(requestFromParent) {
-            val file = File(fileFullPath)
-            val fileName = editorPageShowingFileName ?: file.name
-            val fileSize = getHumanReadableSizeStr(file.length())
-            val (charsCount, linesCount) = editableController.getCharsAndLinesCount()
-//            val lastModifiedTimeStr = getFormatTimeFromSec(sec=file.lastModified()/1000, offset = getSystemDefaultTimeZoneOffset())
-            val lastModifiedTimeStr = getFormattedLastModifiedTimeOfFile(file)
-            val sb = StringBuilder()
-
-            sb.appendLine(activityContext.getString(R.string.file_name)+": "+fileName).appendLine()
-//            .appendLine(appContext.getString(R.string.path)+": "+ getFilePathStrBasedRepoDir(fileFullPath, returnResultStartsWithSeparator=true)).appendLine()
-                .appendLine(activityContext.getString(R.string.path)+": "+ fileFullPath).appendLine()
-                .appendLine(activityContext.getString(R.string.chars)+": "+charsCount).appendLine()
-                .appendLine(activityContext.getString(R.string.lines) +": "+linesCount).appendLine()
-
-                .appendLine(activityContext.getString(R.string.file_size)+": "+fileSize).appendLine()
-                .appendLine(activityContext.getString(R.string.last_modified)+": "+lastModifiedTimeStr)
-
-
-
-            detailsStr.value = sb.toString()
-            showDetailsDialog.value = true
         }
     }
 
