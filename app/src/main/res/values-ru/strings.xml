@@ -1222,14 +1222,14 @@
     <string name="folder_is_empty">Папка пуста</string>
 
     <!-- new at 20250302-->
-    <string name="aborting">Отмена…</string>
-    <string name="abort">Отменить</string>
+    <string name="aborting">Прерывание…</string>
+    <string name="abort">Прервать</string>
 
     <!-- new at 20250315-->
-    <string name="home">Home</string>
-    <string name="preview">Preview</string>
-    <string name="go_back">Go Back</string>
-    <string name="go_forward">Go Forward</string>
+    <string name="home">Домой</string>
+    <string name="preview">Предпросмотр</string>
+    <string name="go_back">Назад</string>
+    <string name="go_forward">Вперёд</string>
 
 
 </resources>
