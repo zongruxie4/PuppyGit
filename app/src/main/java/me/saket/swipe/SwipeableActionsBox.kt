@@ -47,11 +47,12 @@ fun SwipeableActionsBox(
   endActions: List<SwipeAction> = emptyList(),
   swipeThreshold: Dp = 40.dp,
   backgroundUntilSwipeThreshold: Color = Color.DarkGray,
+  isRtl: Boolean = LocalLayoutDirection.current == LayoutDirection.Rtl,
   content: @Composable BoxScope.() -> Unit
 ) = Box(modifier) {
+
   state.also {
     it.swipeThresholdPx = LocalDensity.current.run { swipeThreshold.toPx() }
-    val isRtl = LocalLayoutDirection.current == LayoutDirection.Rtl
     it.actions = remember(endActions, startActions, isRtl) {
       ActionFinder(
         left = if (isRtl) endActions else startActions,
@@ -95,6 +96,7 @@ fun SwipeableActionsBox(
   (state.swipedAction ?: state.visibleAction)?.let { action ->
     ActionIconBox(
       modifier = Modifier.matchParentSize(),
+      isRtl = isRtl,
       action = action,
       offset = state.offset.value,
       backgroundColor = animatedBackgroundColor,
@@ -113,6 +115,7 @@ fun SwipeableActionsBox(
 @Composable
 private fun ActionIconBox(
   action: SwipeActionMeta,
+  isRtl:Boolean,
   offset: Float,
   backgroundColor: Color,
   modifier: Modifier = Modifier,
@@ -124,12 +127,12 @@ private fun ActionIconBox(
         val placeable = measurable.measure(constraints)
         layout(width = placeable.width, height = placeable.height) {
           // Align icon with the left/right edge of the content being swiped.
-          val iconOffset = if (action.isOnRightSide) constraints.maxWidth + offset else offset - placeable.width
+          val iconOffset = (if (action.isOnRightSide) constraints.maxWidth + offset else offset - placeable.width).let { if(isRtl) -it else it }
           placeable.placeRelative(x = iconOffset.roundToInt(), y = 0)
         }
       }
       .background(color = backgroundColor),
-    horizontalArrangement = if (action.isOnRightSide) Arrangement.Start else Arrangement.End,
+    horizontalArrangement = if(isRtl) {if (action.isOnRightSide) Arrangement.End else Arrangement.Start} else {if (action.isOnRightSide) Arrangement.Start else Arrangement.End},
     verticalAlignment = Alignment.CenterVertically,
   ) {
     content()
