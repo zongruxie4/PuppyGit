@@ -397,7 +397,7 @@ fun FilesInnerPage(
 
             doJobThenOffLoading {
                 // remove '\n'
-                val pathToGo = FsUtils.trimPath(pathToGoRaw)
+                val pathToGo = FsUtils.trimPath(path = pathToGoRaw, keepEndSlash = true)  // `keepEndSlash` for keep end slash when path is "External://" or "Internal://"
                 val pathToGoRaw = Unit // to avoid mistake use
 
                 // handle path to absolute path, btw: internal path must before external path, because internal actually starts with external, if swap order, code block of internal path will ignore ever
