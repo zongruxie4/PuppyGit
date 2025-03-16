@@ -220,6 +220,8 @@ fun FileEditor(
     val dragHandleInterval = remember { 500L } //ms
     val curTime = rememberSaveable { mutableLongStateOf(0) }
 
+    val disableAnimationIfNoAction = rememberSaveable { mutableStateOf(false) }
+
     //内容顶部padding
     val topPadding = remember { 5.dp }
 
@@ -247,6 +249,7 @@ fun FileEditor(
 
 
     SwipeableActionsBox(
+        disableAnimationIfNoAction = disableAnimationIfNoAction.value,
         startActions = if(isSubPageMode && isPreviewModeOn.value.not()) listOf() else listOf(leftToRightAct),
         endActions = runBlocking { if(isPreviewModeOn.value && previewNavStack.value.aheadStackIsEmpty()) listOf() else listOf(rightToLeftAct) }
     ) {
