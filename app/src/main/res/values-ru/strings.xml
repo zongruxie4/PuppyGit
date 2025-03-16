@@ -1232,9 +1232,12 @@
     <string name="go_forward">Вперёд</string>
 
     <!-- new at 20250316-->
+    <!-- if a file in the association list, will use internal Editor open it -->
     <string name="file_association">File Association</string>
+    <!-- The "pattern" is regex pattern to match string, the "wildcard" is "*" of "*.txt", use to match string too-->
     <string name="file_association_note">Per line one pattern, support wildcard</string>
     <string name="patterns">Patterns</string>
+    <!-- edit the config file -->
     <string name="edit_config">Edit Config</string>
 
 </resources>
