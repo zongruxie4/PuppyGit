@@ -1137,6 +1137,7 @@ fun HomeScreen(
             if(currentHomeScreen.intValue == Cons.selectedItem_Repos) {
 //                changeStateTriggerRefreshPage(needRefreshRepoPage)
                 RepoInnerPage(
+                    requireInnerEditorOpenFile = requireInnerEditorOpenFile,
                     lastSearchKeyword=reposLastSearchKeyword,
                     searchToken=reposSearchToken,
                     searching=reposSearching,

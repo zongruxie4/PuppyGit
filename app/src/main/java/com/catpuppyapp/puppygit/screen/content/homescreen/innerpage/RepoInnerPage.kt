@@ -126,6 +126,8 @@ private const val stateKeyTag = "RepoInnerPage"
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun RepoInnerPage(
+    requireInnerEditorOpenFile:(filePath:String, expectReadOnly:Boolean)->Unit,
+
     lastSearchKeyword:MutableState<String>,
     searchToken:MutableState<String>,
     searching:MutableState<Boolean>,
@@ -2273,6 +2275,7 @@ fun RepoInnerPage(
             stringResource(R.string.stash), // single
             stringResource(R.string.reflog), // single
             stringResource(R.string.submodules), // single
+            stringResource(R.string.edit_config), // single
             stringResource(R.string.api), // multi
             stringResource(R.string.details), // multi
             stringResource(R.string.delete), // multi
@@ -2382,6 +2385,27 @@ fun RepoInnerPage(
                 val curRepo = selectedItems.value.first()
                 doActIfRepoGood(curRepo) {
                     navController.navigate(Cons.nav_SubmoduleListScreen + "/" + curRepo.id)
+                }
+            },
+
+            editConfig@{
+                try {
+                    val curRepo = selectedItems.value.first()
+                    Repository.open(curRepo.fullSavePath).use { repo ->
+                        val dotGitDirPath = Libgit2Helper.getRepoGitDirPathNoEndsWithSlash(repo)
+                        val configFile = File(dotGitDirPath, "config")
+                        //能读取文件则代表文件存在并有权限，打开；否则提示错误
+                        if(configFile.canRead()) {
+                            val expectReadOnly = false
+                            requireInnerEditorOpenFile(configFile.canonicalPath, expectReadOnly)
+                        }else {
+                            //这没必要抛异常，提示下用户就行
+                            Msg.requireShowLongDuration(activityContext.getString(R.string.file_not_found))
+                        }
+                    }
+                }catch (e:Exception) {
+                    Msg.requireShowLongDuration("err: ${e.localizedMessage}")
+                    MyLog.e(TAG, "#editConfig err: ${e.stackTraceToString()}")
                 }
             },
 
@@ -2515,6 +2539,10 @@ fun RepoInnerPage(
 
             submodules@{
                 selectedSingle() && isRepoGood(selectedItems.value.first())
+            },
+
+            editConfig@{
+                selectedSingle()
             },
 
             api@{
