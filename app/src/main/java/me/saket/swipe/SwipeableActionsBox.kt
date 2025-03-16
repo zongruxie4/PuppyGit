@@ -48,10 +48,12 @@ fun SwipeableActionsBox(
   swipeThreshold: Dp = 40.dp,
   backgroundUntilSwipeThreshold: Color = Color.DarkGray,
   disableAnimationIfNoAction:Boolean = false,
+  disabledAction:((onRight:Boolean) -> Unit)? = null,
   content: @Composable BoxScope.() -> Unit
 ) = Box(modifier) {
   state.also {
     it.disableAnimationIfNoAction = disableAnimationIfNoAction
+    it.disabledAction = disabledAction
     it.swipeThresholdPx = LocalDensity.current.run { swipeThreshold.toPx() }
     val isRtl = LocalLayoutDirection.current == LayoutDirection.Rtl
     it.actions = remember(endActions, startActions, isRtl) {

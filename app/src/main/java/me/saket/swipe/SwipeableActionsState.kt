@@ -33,6 +33,7 @@ class SwipeableActionsState internal constructor() {
   internal var offsetState = mutableStateOf(0f)
 
   var disableAnimationIfNoAction = false
+  var disabledAction:((onRight:Boolean) -> Unit)? = null
 
   /**
    * Whether [SwipeableActionsBox] is currently animating to reset its offset after it was swiped.
@@ -72,6 +73,11 @@ class SwipeableActionsState internal constructor() {
 
   internal suspend fun handleOnDragStopped() = coroutineScope {
     launch {
+      if(visibleAction == null) {
+        disabledAction?.invoke(isOnRightSide(offset.value))
+      }
+    }
+    launch {
       if (hasCrossedSwipeThreshold()) {
         visibleAction?.let { action ->
           swipedAction = action
@@ -92,4 +98,8 @@ class SwipeableActionsState internal constructor() {
       swipedAction = null
     }
   }
+}
+
+private fun isOnRightSide(offset:Float):Boolean {
+  return offset < 0f
 }

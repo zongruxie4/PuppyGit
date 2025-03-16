@@ -220,7 +220,6 @@ fun FileEditor(
     val dragHandleInterval = remember { 500L } //ms
     val curTime = rememberSaveable { mutableLongStateOf(0) }
 
-    val disableAnimationIfNoAction = rememberSaveable { mutableStateOf(false) }
 
     //内容顶部padding
     val topPadding = remember { 5.dp }
@@ -228,7 +227,13 @@ fun FileEditor(
     val leftToRightAct = SwipeAction(
         icon = {
             Icon(
-                imageVector = if(isPreviewModeOn.value) runBlocking { if (previewNavStack.value.backStackIsEmpty()) Icons.Filled.Edit else Icons.AutoMirrored.Filled.ArrowBackIos } else Icons.Filled.Menu,
+                imageVector = if(isPreviewModeOn.value) {
+                    runBlocking {
+                        if (previewNavStack.value.backStackIsEmpty()) Icons.Filled.Edit else Icons.AutoMirrored.Filled.ArrowBackIos
+                    }
+                } else {
+                    Icons.Filled.Menu
+                },
                 contentDescription = null
             )
         },
@@ -247,10 +252,16 @@ fun FileEditor(
         onSwipe = { onRightToLeft() },
     )
 
+    val disableAction = {onRight:Boolean ->
+        if(onRight.not()) {
+            onLeftToRight()
+        }
+    }
 
     SwipeableActionsBox(
-        disableAnimationIfNoAction = disableAnimationIfNoAction.value,
-        startActions = if(isSubPageMode && isPreviewModeOn.value.not()) listOf() else listOf(leftToRightAct),
+        disabledAction = disableAction,
+        disableAnimationIfNoAction = isPreviewModeOn.value.not(),
+        startActions = if(isPreviewModeOn.value.not()) listOf() else listOf(leftToRightAct),
         endActions = runBlocking { if(isPreviewModeOn.value && previewNavStack.value.aheadStackIsEmpty()) listOf() else listOf(rightToLeftAct) }
     ) {
         Box(modifier = Modifier.fillMaxSize()) {
