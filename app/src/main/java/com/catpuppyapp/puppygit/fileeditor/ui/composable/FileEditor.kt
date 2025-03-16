@@ -252,16 +252,18 @@ fun FileEditor(
         onSwipe = { onRightToLeft() },
     )
 
+    val isEditPage = isPreviewModeOn.value.not()
+
     val emptyActListCallback = { onRight:Boolean ->
-        if(onRight.not()) {
+        if(isEditPage && onRight.not()) {
             onLeftToRight()
         }
     }
 
     SwipeableActionsBox(
         emptyActListCallback = emptyActListCallback,
-        disableAnimationIfActListIsEmpty = isPreviewModeOn.value.not(),
-        startActions = if(isPreviewModeOn.value.not()) listOf() else listOf(leftToRightAct),
+        disableAnimationWhenActListIsEmpty = isEditPage,
+        startActions = if(isEditPage) listOf() else listOf(leftToRightAct),
         endActions = runBlocking { if(isPreviewModeOn.value && previewNavStack.value.aheadStackIsEmpty()) listOf() else listOf(rightToLeftAct) }
     ) {
         Box(modifier = Modifier.fillMaxSize()) {

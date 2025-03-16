@@ -32,7 +32,7 @@ class SwipeableActionsState internal constructor() {
   val offset: State<Float> get() = offsetState
   internal var offsetState = mutableStateOf(0f)
 
-  var disableAnimationIfActListIsEmpty = false
+  var disableAnimationWhenActListIsEmpty = false
   var emptyActListCallback:((onRight:Boolean) -> Unit)? = null
 
   /**
@@ -64,7 +64,7 @@ class SwipeableActionsState internal constructor() {
       || targetOffset == 0f
       || (targetOffset > 0f && canSwipeTowardsRight)
       || (targetOffset < 0f && canSwipeTowardsLeft)
-    offsetState.value += if (isAllowed) delta else if(disableAnimationIfActListIsEmpty) 0f else (delta / 10)
+    offsetState.value += if (isAllowed) delta else if(disableAnimationWhenActListIsEmpty) 0f else (delta / 10)
   }
 
   internal fun hasCrossedSwipeThreshold(): Boolean {
