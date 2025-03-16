@@ -30,31 +30,22 @@ object IgnoreMan {
     fun getAllValidPattern(repoDotGitDir: String):List<String> {
         val f = getFile(repoDotGitDir)
         val retList = mutableListOf<String>()
-        val br = f.bufferedReader()
-        var rline = br.readLine()
-        while (rline!=null){
-            if(isValidLine(rline)){
-                retList.add(rline)
+        f.bufferedReader().use { br ->
+            while (true){
+                val rline = br.readLine()?.trim() ?: break
+                if(isValidLine(rline)){
+                    retList.add(rline)
+                }
             }
-
-            rline = br.readLine()
         }
 
         return retList
     }
 
     fun matchedPatternList(input:String, patternList:List<String>):Boolean {
-        if(patternList.isEmpty()) {
-            return false
+        return RegexUtil.matchByPredicate(input, patternList) { i, p ->
+            RegexUtil.matchForIgnoreFile(i, p)
         }
-
-        for(i in patternList.indices) {
-            if(RegexUtil.matchForIgnoreFile(input, patternList[i])) {
-                return true
-            }
-        }
-
-        return false
     }
 
     private fun isComment(str:String):Boolean {
