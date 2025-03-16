@@ -2,3 +2,4 @@
 - Files support recursive search
 - fix a bug may cause app run slowly when filter mode on
 - support preview markdown file
+- update russian translation (thx @triksterr)

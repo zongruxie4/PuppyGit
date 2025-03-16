@@ -3,12 +3,14 @@
 - Files support recursive search
 - fix a bug may cause app run slowly when filter mode on
 - support preview markdown file
+- update russian translation (thx @triksterr)
 
 
 - 优化代码
 - 文件管理器支持递归搜索
 - 修复一个在开启过滤模式时可能会导致app卡顿的bug
 - 支持预览markdown文件
+- 更新俄语翻译 (thx @triksterr)
 
 ---
 
