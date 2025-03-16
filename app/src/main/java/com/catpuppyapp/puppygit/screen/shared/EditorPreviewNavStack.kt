@@ -1,12 +1,10 @@
 package com.catpuppyapp.puppygit.screen.shared
 
 import androidx.compose.foundation.ScrollState
-import androidx.compose.runtime.Composable
 import com.catpuppyapp.puppygit.datastruct.Stack
 import com.catpuppyapp.puppygit.screen.functions.newScrollState
 import com.catpuppyapp.puppygit.utils.MyLog
 import com.catpuppyapp.puppygit.utils.generateRandomString
-import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 import java.io.File
@@ -45,7 +43,11 @@ class EditorPreviewNavStack internal constructor(var root:String) {
     private val lock = Mutex()
 
     var editingPath = root
+
+    // after a stack action(e.g. ahead/back) finished, this value should same as page state `previewPath` and  `previewNavStack.getCurrent()`
+    // 一个栈操作结束之后，这个值应该和页面的状态变量`previewPath`一样，并且和`previewNavStack.getCurrent()`的返回值一样
     var previewingPath = root
+
     var rootNavStackItem = EditorPreviewNavStackItem(root, newScrollState())
 
     private val backStack = Stack<EditorPreviewNavStackItem>()

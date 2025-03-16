@@ -801,7 +801,7 @@ fun EditorInnerPage(
         PageRequest.clearStateThenDoAct(requestFromParent) {
             runBlocking {
                 // user expect edit current previewing file
-                val previewing = previewNavStack.value.previewingPath  // or use page state `previewPath.value`
+                val previewing = previewNavStack.value.previewingPath  // or use page state `previewPath.value`, or `previewNavStack.getCurrent()`
                 previewNavStack.value.editingPath = previewing
 
                 //若正在预览和正在编辑的文件不同则重载，否则仅退出预览模式即可
@@ -1560,6 +1560,7 @@ private suspend fun doInit(
             FileOpenHistoryMan.touch(requireOpenFilePath)
 
 
+            // preview mode maybe
             val keepPreviewStackOnce = keepPreviewStack.value
             keepPreviewStack.value = false  //不管是否保持上次的stack，都只消费此值一次，用完就重置
             val keepPreviewStack = Unit //防止后面调用此变量
