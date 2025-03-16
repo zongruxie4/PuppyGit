@@ -402,13 +402,7 @@ fun FilesInnerPage(
                 val pathToGoRaw = Unit // to avoid mistake use
 
                 // handle path to absolute path, btw: internal path must before external path, because internal actually starts with external, if swap order, code block of internal path will ignore ever
-                val finallyPath = if(pathToGo.startsWith(FsUtils.internalPathPrefix)) {
-                    FsUtils.getInternalStorageRootPathNoEndsWithSeparator()+"/"+FsUtils.removeInternalStoragePrefix(pathToGo)
-                }else if(pathToGo.startsWith(FsUtils.externalPathPrefix)) {
-                    FsUtils.getExternalStorageRootPathNoEndsWithSeparator()+"/"+FsUtils.removeExternalStoragePrefix(pathToGo)
-                }else {  // absolute path like "/storage/emulate/0/abc"
-                    pathToGo
-                }
+                val finallyPath = FsUtils.internalExternalPrefixPathToRealPath(pathToGo)
 
                 val f = File(finallyPath)
                 if(f.canRead()) {

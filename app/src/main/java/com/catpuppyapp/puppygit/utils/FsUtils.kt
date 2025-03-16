@@ -1138,24 +1138,53 @@ object FsUtils {
      */
     fun getExternalStorageRootPathNoEndsWithSeparator():String{
         return try {
-            trimPath(Environment.getExternalStorageDirectory().path)
+            Environment.getExternalStorageDirectory().path.trimEnd(Cons.slashChar)
         }catch (_:Exception) {
             ""
         }
     }
 
+    /**
+     * 返回的不一定是真实路径
+     * maybe returned is not real path, no promise
+     */
     fun getRealPathFromUri(uri:Uri):String {
         return try {
             val uriPathString = uri.path.toString()
             //eg. /storage/emulated/0/folder1/folder2
-            trimPath(getExternalStorageRootPathNoEndsWithSeparator() + Cons.slash + uriPathString.substring(uriPathString.indexOf(":")+1))
+            (getExternalStorageRootPathNoEndsWithSeparator() + Cons.slash + uriPathString.substring(uriPathString.indexOf(":")+1)).trimEnd(Cons.slashChar)
         }catch (_:Exception) {
             ""
         }
     }
 
+    /**
+     * 如果是 `internalPathPrefix` 或 `externalPathPrefix` 开头的路径，转换为真实路径，否则返回原路径
+     */
+    fun internalExternalPrefixPathToRealPath(path:String):String {
+        return if(path.startsWith(internalPathPrefix)) {
+            (getInternalStorageRootPathNoEndsWithSeparator() + Cons.slash + removeInternalStoragePrefix(path)).trimEnd(Cons.slashChar)
+        }else if(path.startsWith(externalPathPrefix)) {
+            (getExternalStorageRootPathNoEndsWithSeparator() + Cons.slash + removeExternalStoragePrefix(path)).trimEnd(Cons.slashChar)
+        }else {  // absolute path like "/storage/emulate/0/abc"
+            path
+        }
+    }
 
+    fun userInputPathToCanonical(path: String):Ret<String?> {
+        try{
+            val path = internalExternalPrefixPathToRealPath(trimLineBreak(path))
+            if(path.isBlank()) {
+                throw RuntimeException("invalid path")
+            }
 
+            return Ret.createSuccess(data = File(path).canonicalPath)
+        }catch (e:Exception) {
+            return Ret.createError(data = null, errMsg = "err: ${e.localizedMessage}", exception = e)
+        }
+    }
+
+    @Deprecated("this too complex, only trim line break then use `File(path).cononicalPath` is enough")
     fun trimPath(path:String, appendEndSlash:Boolean = false):String {
         //先把首尾的换行符移除
         val path = trimLineBreak(path)

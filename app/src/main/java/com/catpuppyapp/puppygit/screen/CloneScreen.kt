@@ -319,15 +319,18 @@ fun CloneScreen(
             okBtnEnabled = storagePathForAdd.value.isNotBlank(),
             onCancel = { showAddStoragePathDialog.value = false },
         ) {
+            val storagePathForAdd = storagePathForAdd.value
 
             doJobThenOffLoading {
+                val newPathRet = FsUtils.userInputPathToCanonical(storagePathForAdd)
 
-                val newPath = FsUtils.trimPath(storagePathForAdd.value)
-
-                if(newPath.isBlank()) {
+                if(newPathRet.hasError()) {
                     Msg.requireShow(activityContext.getString(R.string.invalid_path))
                     return@doJobThenOffLoading
                 }
+
+                val newPath = newPathRet.data!!
+
 
                 // path is not blank
 

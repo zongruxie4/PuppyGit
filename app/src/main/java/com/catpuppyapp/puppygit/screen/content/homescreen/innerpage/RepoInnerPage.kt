@@ -463,16 +463,18 @@ fun RepoInnerPage(
             okBtnEnabled = importRepoPath.value.isNotBlank(),
             onCancel = { showImportRepoDialog.value = false },
         ) {
+            val importRepoPath = importRepoPath.value
 
             doJobThenOffLoading(loadingOn, loadingOff, activityContext.getString(R.string.importing)) {
                 try {
-                    val newPath = FsUtils.trimPath(importRepoPath.value)
+                    val newPathRet = FsUtils.userInputPathToCanonical(importRepoPath)
 
-                    if(newPath.isBlank()) {
+                    if(newPathRet.hasError()) {
                         Msg.requireShow(activityContext.getString(R.string.invalid_path))
                         return@doJobThenOffLoading
                     }
 
+                    val newPath = newPathRet.data!!
 
                     // path is not blank
 
