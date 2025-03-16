@@ -391,31 +391,35 @@ fun FilesInnerPage(
         val goToDialogOnOk = {
             showGoToPathDialog.value = false
 
-            doJobThenOffLoading {
-//                val slash = File.separator
-//                val repoBaseDirPath = AppModel.allRepoParentDir.canonicalPath
+            //取出用户输入的path 和 当前路径（用来跳转相对路径）
+            val pathToGoRaw = pathToGo.value
+            val currentPath = currentPath.value
 
-//                val finallyPath = if(pathGoTo.value.removePrefix(slash).startsWith(repoBaseDirPath.removePrefix(slash))) { // real path，直接跳转
-//                    pathGoTo.value  //如果用户输入真实路径但没以 / 开头，后面会报无效路径，问题不大且合理，不处理
-//                }else {  //in app path，需要拼接上路径前缀
-//                    // 拼接：repoBaseDirPath/pathGoTo
-//                    repoBaseDirPath.removeSuffix(slash)+slash+pathGoTo.value.removePrefix(slash)
-//                }
+            doJobThenOffLoading {
+                // remove '\n'
+                val pathToGo = FsUtils.trimPath(pathToGoRaw)
+                val pathToGoRaw = Unit // to avoid mistake use
 
                 // handle path to absolute path, btw: internal path must before external path, because internal actually starts with external, if swap order, code block of internal path will ignore ever
-                val finallyPath = (if(pathToGo.value.startsWith(FsUtils.internalPathPrefix)) {
-                    FsUtils.getInternalStorageRootPathNoEndsWithSeparator()+"/"+FsUtils.removeInternalStoragePrefix(pathToGo.value)
-                }else if(pathToGo.value.startsWith(FsUtils.externalPathPrefix)) {
-                    FsUtils.getExternalStorageRootPathNoEndsWithSeparator()+"/"+FsUtils.removeExternalStoragePrefix(pathToGo.value)
+                val finallyPath = if(pathToGo.startsWith(FsUtils.internalPathPrefix)) {
+                    FsUtils.getInternalStorageRootPathNoEndsWithSeparator()+"/"+FsUtils.removeInternalStoragePrefix(pathToGo)
+                }else if(pathToGo.startsWith(FsUtils.externalPathPrefix)) {
+                    FsUtils.getExternalStorageRootPathNoEndsWithSeparator()+"/"+FsUtils.removeExternalStoragePrefix(pathToGo)
                 }else {  // absolute path like "/storage/emulate/0/abc"
-                    pathToGo.value
-                }).trim('\n')
+                    pathToGo
+                }
 
                 val f = File(finallyPath)
                 if(f.canRead()) {
-                    goToPath(finallyPath)
+                    goToPath(f.canonicalPath)
                 }else { // can't read path: usually by path non-exists or no permission to read
-                    Msg.requireShow(activityContext.getString(R.string.cant_read_path))
+//                    try relative path
+                    val f = File(currentPath, pathToGo)
+                    if(f.canRead()) {
+                        goToPath(f.canonicalPath)
+                    }else {
+                        Msg.requireShow(activityContext.getString(R.string.cant_read_path))
+                    }
                 }
 
             }
