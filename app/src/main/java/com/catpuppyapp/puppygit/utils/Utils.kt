@@ -1017,3 +1017,7 @@ fun getInstalledAppList(context:Context, selected:(AppInfo)->Boolean = {false}):
     return apps
 }
 
+fun trimLineBreak(str:String) :String {
+    return str.trim { it == '\n' || it == '\r' }
+}
+

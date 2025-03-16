@@ -1154,20 +1154,17 @@ object FsUtils {
         }
     }
 
-    /**
-     * @param keepEndSlash if path maybe is "External://" or "Internal://" should pass `true` to keep the last slash of the string
-     */
-    fun trimPath(path:String, keepEndSlash:Boolean = false):String {
+
+
+    fun trimPath(path:String, appendEndSlash:Boolean = false):String {
         //先把首尾的换行符移除
-        val path = path.trim { it == '\n' || it == '\r' }
+        val path = trimLineBreak(path)
 
         return if(path.length == 1) { //移除换行符后只剩一个字符了，直接返回
             path
         }else {  //移除末尾的 '/'
             val slash = '/'
             val pathStartsWithSlash = path.startsWith(slash)
-            val pathEndsWithSlash = path.endsWith(slash)
-
 
             //移除末尾的'/'
             val path = path.trimEnd(slash)
@@ -1183,7 +1180,8 @@ object FsUtils {
                     path
                 }
 
-                if(pathEndsWithSlash && keepEndSlash) {
+                //如果期望末尾加/就加上
+                if(appendEndSlash) {
                     "$pathWithoutEndSlash$slash"
                 }else {
                     pathWithoutEndSlash
