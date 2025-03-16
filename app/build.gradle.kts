@@ -139,8 +139,10 @@ dependencies {
 //    implementation("com.github.jeziellago:compose-markdown:change_to_the_latest_version")
 
 
-    // swipe compose
+    // swipe compose, I need change this lib, but is very depend my use case, so, I am not sure may I should send pr? 让我想想...
 //    implementation("me.saket.swipe:swipe:1.3.0")
+
+
 
     // ktor for http server (git pull/push api)
     val ktorVersion = "3.0.3"

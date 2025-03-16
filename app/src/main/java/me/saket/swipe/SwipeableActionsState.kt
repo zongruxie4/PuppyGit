@@ -32,8 +32,8 @@ class SwipeableActionsState internal constructor() {
   val offset: State<Float> get() = offsetState
   internal var offsetState = mutableStateOf(0f)
 
-  var disableAnimationIfNoAction = false
-  var disabledAction:((onRight:Boolean) -> Unit)? = null
+  var disableAnimationIfActListIsEmpty = false
+  var emptyActListCallback:((onRight:Boolean) -> Unit)? = null
 
   /**
    * Whether [SwipeableActionsBox] is currently animating to reset its offset after it was swiped.
@@ -64,7 +64,7 @@ class SwipeableActionsState internal constructor() {
       || targetOffset == 0f
       || (targetOffset > 0f && canSwipeTowardsRight)
       || (targetOffset < 0f && canSwipeTowardsLeft)
-    offsetState.value += if (isAllowed) delta else if(disableAnimationIfNoAction) 0f else (delta / 10)
+    offsetState.value += if (isAllowed) delta else if(disableAnimationIfActListIsEmpty) 0f else (delta / 10)
   }
 
   internal fun hasCrossedSwipeThreshold(): Boolean {
@@ -74,7 +74,7 @@ class SwipeableActionsState internal constructor() {
   internal suspend fun handleOnDragStopped() = coroutineScope {
     launch {
       if(visibleAction == null) {
-        disabledAction?.invoke(isOnRightSide(offset.value))
+        emptyActListCallback?.invoke(isOnRightSide(offset.value))
       }
     }
     launch {

@@ -252,15 +252,15 @@ fun FileEditor(
         onSwipe = { onRightToLeft() },
     )
 
-    val disableAction = {onRight:Boolean ->
+    val emptyActListCallback = { onRight:Boolean ->
         if(onRight.not()) {
             onLeftToRight()
         }
     }
 
     SwipeableActionsBox(
-        disabledAction = disableAction,
-        disableAnimationIfNoAction = isPreviewModeOn.value.not(),
+        emptyActListCallback = emptyActListCallback,
+        disableAnimationIfActListIsEmpty = isPreviewModeOn.value.not(),
         startActions = if(isPreviewModeOn.value.not()) listOf() else listOf(leftToRightAct),
         endActions = runBlocking { if(isPreviewModeOn.value && previewNavStack.value.aheadStackIsEmpty()) listOf() else listOf(rightToLeftAct) }
     ) {

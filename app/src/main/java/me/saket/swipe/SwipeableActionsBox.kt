@@ -38,6 +38,11 @@ import kotlin.math.roundToInt
  * @param backgroundUntilSwipeThreshold Color drawn behind the content until
  * [swipeThreshold] is reached. When the threshold is passed, this color is
  * replaced by the currently visible [SwipeAction]'s background.
+ *
+ * @param disableAnimationIfActListIsEmpty if true, will disable animation when user swiping but the act list of the side is empty
+ *
+ * @param emptyActListCallback if not null will call it when user swiped but the act list of swiped side is empty,
+ * the param `isRight` is indicate the action start from which side (left/right).
  */
 @Composable
 fun SwipeableActionsBox(
@@ -47,13 +52,13 @@ fun SwipeableActionsBox(
   endActions: List<SwipeAction> = emptyList(),
   swipeThreshold: Dp = 40.dp,
   backgroundUntilSwipeThreshold: Color = Color.DarkGray,
-  disableAnimationIfNoAction:Boolean = false,
-  disabledAction:((onRight:Boolean) -> Unit)? = null,
+  disableAnimationIfActListIsEmpty:Boolean = false,
+  emptyActListCallback:((onRight:Boolean) -> Unit)? = null,
   content: @Composable BoxScope.() -> Unit
 ) = Box(modifier) {
   state.also {
-    it.disableAnimationIfNoAction = disableAnimationIfNoAction
-    it.disabledAction = disabledAction
+    it.disableAnimationIfActListIsEmpty = disableAnimationIfActListIsEmpty
+    it.emptyActListCallback = emptyActListCallback
     it.swipeThresholdPx = LocalDensity.current.run { swipeThreshold.toPx() }
     val isRtl = LocalLayoutDirection.current == LayoutDirection.Rtl
     it.actions = remember(endActions, startActions, isRtl) {
