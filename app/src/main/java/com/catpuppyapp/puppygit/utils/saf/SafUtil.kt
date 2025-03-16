@@ -24,7 +24,7 @@ object SafUtil {
     /**
      * 非saf模式的路径必然是/开头的，只是在显示时区分internal://和external://，但saf则不同，存储的时候会加上saf前缀以和普通路径区分
      */
-//    const val safPathPrefix = "Saf:/"
+//    const val safPathPrefix = "Saf://"
 
 //    fun toAppSpecifiedSafFormat(originPath:String):String {
 //        return "$safPathPrefix$originPath"

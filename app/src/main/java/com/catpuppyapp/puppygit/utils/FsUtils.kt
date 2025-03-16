@@ -41,8 +41,8 @@ object FsUtils {
     /**
      * internal and external storage path prefix
      */
-    const val internalPathPrefix = "Internal:/"
-    const val externalPathPrefix = "External:/"
+    const val internalPathPrefix = "Internal://"
+    const val externalPathPrefix = "External://"
 
     //必须和 AndroidManifest.xml 里的 provider.android:authorities 的值一样
 //    const val PROVIDER_AUTHORITY = "com.catpuppyapp.puppygit.play.pro.fileprovider"
