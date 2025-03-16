@@ -43,7 +43,8 @@ object IgnoreMan {
     }
 
     fun matchedPatternList(input:String, patternList:List<String>):Boolean {
-        return RegexUtil.matchByPredicate(input, patternList) { i, p ->
+        //这里的文件名匹配应大小写敏感，因为linux是大小写敏感的（不过windows不是）
+        return RegexUtil.matchByPredicate(input, patternList, ignoreCase = false) { i, p ->
             RegexUtil.matchForIgnoreFile(i, p)
         }
     }

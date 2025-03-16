@@ -32,19 +32,24 @@ object RegexUtil {
     }
 
 
-    fun matchWildcardList(input: String, patternList:List<String>):Boolean {
-        return matchByPredicate(input, patternList) { i, p ->
+    fun matchWildcardList(input: String, patternList:List<String>, ignoreCase:Boolean):Boolean {
+        return matchByPredicate(input, patternList, ignoreCase) { i, p ->
             matchWildcard(i, p)
         }
     }
 
-    fun matchByPredicate(input: String, patternList:List<String>, predicate:(input:String, pattern:String)->Boolean):Boolean {
+    /**
+     * @param ignoreCase if false, will pass origin input and pattern to predicate , else pass lowercased input and pattern.
+     */
+    fun matchByPredicate(input: String, patternList:List<String>, ignoreCase:Boolean, predicate:(input:String, pattern:String)->Boolean):Boolean {
         if(input.isEmpty() || patternList.isEmpty()) {
             return false
         }
 
+        val input = if(ignoreCase) input.lowercase() else input
+
         for (pattern in patternList) {
-            if(predicate(input, pattern)) {
+            if(predicate(input, pattern.let { if(ignoreCase) pattern.lowercase() else pattern })) {
                 return true
             }
         }

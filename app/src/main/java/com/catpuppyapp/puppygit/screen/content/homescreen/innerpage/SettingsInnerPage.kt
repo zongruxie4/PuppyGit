@@ -18,6 +18,7 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.material3.TextField
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -27,8 +28,11 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.platform.LocalClipboardManager
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.platform.LocalView
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.font.FontStyle
@@ -38,17 +42,21 @@ import androidx.compose.ui.unit.sp
 import com.catpuppyapp.puppygit.compose.CheckBoxNoteText
 import com.catpuppyapp.puppygit.compose.ClickableText
 import com.catpuppyapp.puppygit.compose.ConfirmDialog2
+import com.catpuppyapp.puppygit.compose.ConfirmDialog3
 import com.catpuppyapp.puppygit.compose.CopyableDialog
 import com.catpuppyapp.puppygit.compose.MyCheckBox
 import com.catpuppyapp.puppygit.compose.MySelectionContainer
 import com.catpuppyapp.puppygit.compose.PaddingRow
 import com.catpuppyapp.puppygit.compose.PasswordTextFiled
 import com.catpuppyapp.puppygit.compose.ScrollableColumn
+import com.catpuppyapp.puppygit.compose.ScrollableRow
 import com.catpuppyapp.puppygit.compose.SettingsContent
 import com.catpuppyapp.puppygit.compose.SettingsTitle
 import com.catpuppyapp.puppygit.compose.SingleSelectList
+import com.catpuppyapp.puppygit.compose.SoftkeyboardVisibleListener
 import com.catpuppyapp.puppygit.constants.Cons
 import com.catpuppyapp.puppygit.play.pro.R
+import com.catpuppyapp.puppygit.settings.SettingsCons
 import com.catpuppyapp.puppygit.settings.SettingsUtil
 import com.catpuppyapp.puppygit.style.MyStyleKt
 import com.catpuppyapp.puppygit.ui.theme.Theme
@@ -61,6 +69,7 @@ import com.catpuppyapp.puppygit.utils.Msg
 import com.catpuppyapp.puppygit.utils.MyLog
 import com.catpuppyapp.puppygit.utils.PrefMan
 import com.catpuppyapp.puppygit.utils.PrefUtil
+import com.catpuppyapp.puppygit.utils.StrListUtil
 import com.catpuppyapp.puppygit.utils.UIHelper
 import com.catpuppyapp.puppygit.utils.doJobThenOffLoading
 import com.catpuppyapp.puppygit.utils.encrypt.MasterPassUtil
@@ -71,6 +80,7 @@ import com.catpuppyapp.puppygit.utils.getStoragePermission
 import com.catpuppyapp.puppygit.utils.getValidTimeZoneOffsetRangeInMinutes
 import com.catpuppyapp.puppygit.utils.isValidOffsetInMinutes
 import com.catpuppyapp.puppygit.utils.replaceStringResList
+import com.catpuppyapp.puppygit.utils.state.mutableCustomStateListOf
 import com.catpuppyapp.puppygit.utils.state.mutableCustomStateOf
 import com.catpuppyapp.puppygit.utils.storagepaths.StoragePathsMan
 
@@ -86,6 +96,23 @@ fun SettingsInnerPage(
     exitApp:()->Unit,
     listState:ScrollState
 ){
+
+    // softkeyboard show/hidden relate start
+
+    val view = LocalView.current
+    val density = LocalDensity.current
+
+    val isKeyboardVisible = rememberSaveable { mutableStateOf(false) }
+    //indicate keyboard covered component
+    val isKeyboardCoveredComponent = rememberSaveable { mutableStateOf(false) }
+    // which component expect adjust heghit or padding when softkeyboard shown
+    val componentHeight = rememberSaveable { mutableIntStateOf(0) }
+    // the padding value when softkeyboard shown
+    val keyboardPaddingDp = rememberSaveable { mutableIntStateOf(0) }
+
+    // softkeyboard show/hidden relate end
+
+
 
     val activityContext = LocalContext.current
     val clipboardManager = LocalClipboardManager.current
@@ -107,6 +134,92 @@ fun SettingsInnerPage(
     val enableSnapshot_File = rememberSaveable { mutableStateOf(settingsState.value.editor.enableFileSnapshot) }
     val enableSnapshot_Content = rememberSaveable { mutableStateOf(settingsState.value.editor.enableContentSnapshot) }
     val diff_CreateSnapShotForOriginFileBeforeSave = rememberSaveable { mutableStateOf(settingsState.value.diff.createSnapShotForOriginFileBeforeSave) }
+
+
+    val fileAssociationList = mutableCustomStateListOf(stateKeyTag, "fileAssociationList") { settingsState.value.editor.fileAssociationList }
+    val fileAssociationListBuf = rememberSaveable { mutableStateOf("") }
+    val showSetFileAssociationDialog = rememberSaveable { mutableStateOf(false) }
+    val initSetFileAssociationDialog = {
+        fileAssociationListBuf.value = StrListUtil.listToLines(fileAssociationList.value)
+        showSetFileAssociationDialog.value = true
+    }
+
+    if(showSetFileAssociationDialog.value) {
+        val closeDialog = { showSetFileAssociationDialog.value = false }
+        val cancelText = stringResource(R.string.cancel)
+
+        ConfirmDialog3(
+            title = stringResource(R.string.file_association),
+            requireShowTextCompose = true,
+            textCompose = {
+                Column(
+                    // get height for add bottom padding when showing softkeyboard
+                    modifier = Modifier.onGloballyPositioned { layoutCoordinates ->
+//                                println("layoutCoordinates.size.height:${layoutCoordinates.size.height}")
+                        // 获取组件的高度
+                        // unit is px ( i am not very sure)
+                        componentHeight.intValue = layoutCoordinates.size.height
+                    }
+                ) {
+                    Text(stringResource(R.string.file_association_note), fontWeight = FontWeight.Light)
+                    Spacer(modifier = Modifier.height(5.dp))
+                    TextField(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .then(
+                                if (isKeyboardCoveredComponent.value) Modifier.padding(bottom = keyboardPaddingDp.intValue.dp) else Modifier
+                            ),
+                        value = fileAssociationListBuf.value,
+                        onValueChange = {
+                            fileAssociationListBuf.value = it
+                        },
+                        label = {
+                            Text(stringResource(R.string.patterns))
+                        },
+                    )
+
+                    Spacer(Modifier.height(10.dp))
+                }
+            },
+            okBtnText = stringResource(R.string.save),
+            cancelBtnText = cancelText,
+            onCancel = closeDialog,
+            customCancel = {
+                ScrollableRow {
+                    // reset to app default association list
+                    TextButton(
+                        onClick = {
+                            fileAssociationListBuf.value = StrListUtil.listToLines(SettingsCons.editor_defaultFileAssociationList)
+                            //这里没漏操作，故意不关弹窗的，感觉更好
+                        }
+                    ) {
+                        Text(stringResource(R.string.reset), color = MyStyleKt.TextColor.danger())
+                    }
+
+                    // cancel
+                    TextButton(
+                        onClick = closeDialog
+                    ) {
+                        Text(cancelText)
+                    }
+                }
+            }
+        ) {
+            showSetFileAssociationDialog.value = false
+
+            doJobThenOffLoading {
+                val newValue = fileAssociationListBuf.value
+                val newList = StrListUtil.linesToList(newValue)
+                fileAssociationList.value.clear()
+                fileAssociationList.value.addAll(newList)
+                SettingsUtil.update {
+                    it.editor.fileAssociationList = newList
+                }
+
+                Msg.requireShow(activityContext.getString(R.string.success))
+            }
+        }
+    }
 
 //    val groupContentByLineNum = rememberSaveable { mutableStateOf(settingsState.value.diff.groupDiffContentByLineNum) }
 
@@ -781,11 +894,14 @@ fun SettingsInnerPage(
         }
 
 
-//        SettingsTitle(stringResource(R.string.commits))
-
-
 
         SettingsTitle(stringResource(R.string.editor))
+
+        SettingsContent(onClick = {
+            initSetFileAssociationDialog()
+        }) {
+            Text(stringResource(R.string.file_association), fontSize = itemFontSize)
+        }
 
         SettingsContent(onClick = {
             val newValue = !enableEditCache.value
@@ -1027,5 +1143,19 @@ fun SettingsInnerPage(
         settingsState.value = SettingsUtil.getSettingsSnapshot()
 
     }
+
+
+    SoftkeyboardVisibleListener(
+        view = view,
+        isKeyboardVisible = isKeyboardVisible,
+        isKeyboardCoveredComponent = isKeyboardCoveredComponent,
+        componentHeight = componentHeight,
+        keyboardPaddingDp = keyboardPaddingDp,
+        density = density,
+        skipCondition = {
+            showSetFileAssociationDialog.value.not()
+        }
+    )
+
 }
 

@@ -136,9 +136,6 @@ import com.catpuppyapp.puppygit.utils.getShortUUID
 import com.catpuppyapp.puppygit.utils.getStoragePermission
 import com.catpuppyapp.puppygit.utils.getViewAndSortForPath
 import com.catpuppyapp.puppygit.utils.isPathExists
-import com.catpuppyapp.puppygit.utils.markdown.MdUtil
-import com.catpuppyapp.puppygit.utils.mime.MimeType
-import com.catpuppyapp.puppygit.utils.mime.guessFromFileName
 import com.catpuppyapp.puppygit.utils.replaceStringResList
 import com.catpuppyapp.puppygit.utils.saf.MyOpenDocumentTree
 import com.catpuppyapp.puppygit.utils.saf.SafAndFileCmpUtil
@@ -1504,30 +1501,22 @@ fun FilesInnerPage(
                                 // 如果是文本类型，用文本编辑器打开，其他类型弹窗提示用外部程序打开还是用文本编辑器打开
                                 //goto editor page with file path
 
-                                //如果是文件，只有使用内部Editor打开文件才退出过滤模式，否则不退出（请求使用外部程序打开文件时退出过滤模式的话感觉很奇怪）
-                                if(MimeType.guessFromFileName(it.name).value == MimeType.TEXT_PLAIN.value || MdUtil.maybeIsMarkdownFile(it.name)) {  //如果是文本类型，直接打开
-                                    //关闭过滤模式
-                                    //20240516: 改成跳转到编辑器不关过滤模式了，感觉更符合直觉
-//                                filesPageFilterModeOff()
-
-
+                                //若匹配内部Editor关联文件类型，则打开
+                                if(RegexUtil.matchWildcardList(it.name, settingsSnapshot.value.editor.fileAssociationList, ignoreCase = true)) {
                                     //请求打开文件
                                     val expectReadOnly = false
                                     requireInnerEditorOpenFile(it.fullPath, expectReadOnly)
-                                }else {  //非文本类型，尝试用外部软件打开
-//                                    readOnlyForOpenAsDialog.value = FsUtils.isReadOnlyDir(it.fullPath)
+
+                                }else {  //非关联类型，尝试用外部软件打开
+
+                                    //已废弃：若文件在只读目录，默认以只读方式打开
+                                    //  readOnlyForOpenAsDialog.value = FsUtils.isReadOnlyDir(it.fullPath)
+
                                     openAsDialogFilePath.value = it.fullPath
                                     showOpenInEditor.value=true
                                     showOpenAsDialog.value=true
-//                                        val file = File(it.fullPath)
-//                                        val ret = FsUtils.openFileEditFirstIfFailedThenTryView(appContext, file)
-//                                        if(ret.hasError()) {
-//                                            Msg.requireShow(appContext.getString(R.string.open_file_err_not_supported_type_may_try_change_name_to_txt))
-//                                            changeStateTriggerRefreshPage(needRefreshFilesPage)
-//
-//                                        }
                                 }
-                            } else/* if (item.isDirectory) */ {  //点击目录，直接打开
+                            } else {  // if(item.isDirectory) 点击目录，直接打开。
                                 //粘贴模式下点击被选中的文件夹无效，以免出现无限递归复制
                                 //导入模式不会选中PuppyGit app中的文件夹且所有文件夹都可点击，所以无需判断导入模式
                                 if(isPasteMode.value && isItemInSelected(it)) {

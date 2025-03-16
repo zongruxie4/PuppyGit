@@ -45,4 +45,10 @@ data class Editor (
 
     var showUndoRedo:Boolean = false,
 
+    /**
+     * when click file name from `Files` which match the patterns will open in internal Editor as default, else will show open with dialog
+     */
+    var fileAssociationList:List<String> = SettingsCons.editor_defaultFileAssociationList,
+
+
 )

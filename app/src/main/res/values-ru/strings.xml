@@ -1233,5 +1233,7 @@
 
     <!-- new at 20250316-->
     <string name="file_association">File Association</string>
+    <string name="file_association_note">Per line one pattern, support wildcard</string>
+    <string name="patterns">Patterns</string>
 
 </resources>
