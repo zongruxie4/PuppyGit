@@ -36,6 +36,7 @@ fun ConfirmDialogAndDisableSelection(
     showOk:Boolean = true,
     showCancel:Boolean = true,
     customOk:(@Composable ()->Unit)? = null,
+    customCancel:(@Composable ()->Unit)? = null,
     onCancel: () -> Unit,
     onDismiss: ()->Unit = onCancel,  //点击非弹窗区域时执行的操作，若不指定则和onCancel行为一致
     onOk: () -> Unit,
@@ -67,13 +68,17 @@ fun ConfirmDialogAndDisableSelection(
         dismissButton = {
             DisableSelection {
                 if(showCancel) {
-                    TextButton(
-                        onClick = onCancel
-                    ) {
-                        Text(
-                            text = cancelBtnText,
-                            color = cancelTextColor,
-                        )
+                    if(customCancel != null) {
+                        customCancel()
+                    }else {
+                        TextButton(
+                            onClick = onCancel
+                        ) {
+                            Text(
+                                text = cancelBtnText,
+                                color = cancelTextColor,
+                            )
+                        }
                     }
                 }
             }
