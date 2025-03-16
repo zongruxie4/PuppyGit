@@ -246,6 +246,8 @@ fun SubPageEditor(
                         previewNavStack = editorPreviewNavStack.value,
                         previewingPath = editorPreviewPath,
                         isPreviewModeOn = editorIsPreviewModeOn.value,
+                        previewLastScrollPosition = editorPreviewLastScrollPosition,
+                        scope = scope,
                         editorPageShowingFileName = null,  //若打开 uri 此变量是文件名，但此页面不用来打开uri，所以也不需要指定uri关联的文件名
                         editorPageShowingFilePath = editorPageShowingFilePath,
                         editorPageRequestFromParent = editorPageRequestFromParent,

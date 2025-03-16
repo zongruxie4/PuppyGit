@@ -30,12 +30,15 @@ import com.catpuppyapp.puppygit.compose.FilterTextField
 import com.catpuppyapp.puppygit.compose.ScrollableRow
 import com.catpuppyapp.puppygit.constants.PageRequest
 import com.catpuppyapp.puppygit.play.pro.R
+import com.catpuppyapp.puppygit.screen.functions.defaultTitleDoubleClick
 import com.catpuppyapp.puppygit.screen.functions.defaultTitleDoubleClickRequest
 import com.catpuppyapp.puppygit.screen.shared.EditorPreviewNavStack
 import com.catpuppyapp.puppygit.style.MyStyleKt
 import com.catpuppyapp.puppygit.utils.FsUtils
 import com.catpuppyapp.puppygit.utils.getFileNameFromCanonicalPath
 import com.catpuppyapp.puppygit.utils.state.CustomStateSaveable
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.runBlocking
 import java.io.File
 
 @OptIn(ExperimentalFoundationApi::class)
@@ -44,6 +47,8 @@ fun EditorTitle(
     previewNavStack: EditorPreviewNavStack,
     previewingPath:String,
     isPreviewModeOn:Boolean,
+    previewLastScrollPosition:MutableState<Int>,
+    scope:CoroutineScope,
 
     // 若指定文件名，将使用，否则解析路径取出文件名。
     // 应用场景：用来在打开uri时指定文件名，因为uri不是/开头的规范路径，而且还可能有%2F之类的编码，不一定能通过拆分路径取出文件名，所以干脆让上级页面解析好了传过来即可。
@@ -76,12 +81,19 @@ fun EditorTitle(
 //                    enabled = !editorOpenFileErr || isPreviewModeOn,
 
                     onDoubleClick = {
-                        // editorPageRequestFromParent.value = PageRequest.switchBetweenFirstLineAndLastEditLine
-                        defaultTitleDoubleClickRequest(editorPageRequestFromParent)
+                        if(isPreviewModeOn) {
+                            runBlocking {
+                                defaultTitleDoubleClick(scope, previewNavStack.getCurrentScrollState(), previewLastScrollPosition)
+                            }
+                        }else {
+                            defaultTitleDoubleClickRequest(editorPageRequestFromParent)
+                        }
                     },
                     onLongClick = {
-                        haptic.performHapticFeedback(HapticFeedbackType.LongPress)
-                        editorPageRequestFromParent.value = PageRequest.goToLine
+                        if(isPreviewModeOn.not()) {
+                            haptic.performHapticFeedback(HapticFeedbackType.LongPress)
+                            editorPageRequestFromParent.value = PageRequest.goToLine
+                        }
                     }
                 ) {  //onClick
                         //显示仓库开头的相对路径

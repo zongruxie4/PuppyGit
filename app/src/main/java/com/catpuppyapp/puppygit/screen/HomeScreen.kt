@@ -874,6 +874,8 @@ fun HomeScreen(
                                 previewNavStack = editorPreviewNavStack.value,
                                 previewingPath = editorPreviewPath,
                                 isPreviewModeOn = editorIsPreviewModeOn.value,
+                                previewLastScrollPosition = editorPreviewLastScrollPosition,
+                                scope = scope,
                                 editorPageShowingFileName = editorPageShowingFileName.value,
                                 editorPageShowingFilePath = editorPageShowingFilePath,
                                 editorPageRequestFromParent = editorPageRequestFromParent,
