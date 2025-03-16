@@ -140,8 +140,9 @@ dependencies {
 
 
     // swipe compose
-    implementation("me.saket.swipe:swipe:1.3.0")
+//    implementation("me.saket.swipe:swipe:1.3.0")
 
+    // ktor for http server (git pull/push api)
     val ktorVersion = "3.0.3"
     implementation("io.ktor:ktor-server-core:$ktorVersion")
     implementation("io.ktor:ktor-server-netty:$ktorVersion")
