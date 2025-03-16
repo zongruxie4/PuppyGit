@@ -1211,4 +1211,7 @@
     <string name="go_back">后退</string>
     <string name="go_forward">前进</string>
 
+    <!-- new at 20250316-->
+    <string name="file_association">文件关联</string>
+
 </resources>

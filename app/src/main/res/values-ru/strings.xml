@@ -1231,5 +1231,7 @@
     <string name="go_back">Назад</string>
     <string name="go_forward">Вперёд</string>
 
+    <!-- new at 20250316-->
+    <string name="file_association">File Association</string>
 
 </resources>

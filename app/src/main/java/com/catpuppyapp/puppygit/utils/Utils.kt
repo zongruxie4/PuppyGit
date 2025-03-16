@@ -972,27 +972,7 @@ fun <T> updateSelectedList(
     return false
 }
 
-fun splitLines(str:String):List<String> {
-    val filteredLines = mutableListOf<String>()
-    str.lines().forEach {
-        val trimed = it.trim()
-        //这里用isNotEmpty检查应该也行，因为上面trim了，全空格会变空字符串; 若trim后非空，必然有非空格字符，必然 is not blank
-        if(trimed.isNotBlank()) {
-            filteredLines.add(trimed)
-        }
-    }
 
-    return filteredLines
-}
-
-fun listToLines(list:List<String>):String {
-    val line = "\n"
-    val sb = StringBuilder()
-    list.forEach { sb.append(it).append(line) }
-    return sb.removeSuffix(line).toString()
-}
-
-//我为什么要写这个函数来着？
 fun parseInt(str:String):Int? {
     return try {
         str.trim().toInt()
@@ -1036,3 +1016,4 @@ fun getInstalledAppList(context:Context, selected:(AppInfo)->Boolean = {false}):
 
     return apps
 }
+

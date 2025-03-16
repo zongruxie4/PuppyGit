@@ -265,7 +265,6 @@ fun RemoteListScreen(
                             fetch_BranchMode = Cons.dbRemote_Fetch_BranchMode_All,
                             remote = remoteName,
                             branchOrBranches = Cons.gitFetchAllBranchSign,
-                            branchListSeparator = Cons.stringListSeparator,
                             appContext = activityContext
                             )
                     }else {
@@ -274,7 +273,6 @@ fun RemoteListScreen(
                             fetch_BranchMode = Cons.dbRemote_Fetch_BranchMode_CustomBranches,
                             remote = remoteName,
                             branchOrBranches = branchCsvStr,
-                            branchListSeparator = Cons.stringListSeparator,
                             appContext = activityContext
                         )
 

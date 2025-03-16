@@ -1693,12 +1693,12 @@ class Libgit2Helper {
 
         //为仓库设置fetch url，可以有多个
         //注：config可通过本类的方法 getRepoConfig() 获得
-        fun setRemoteFetchRefSpecToGitConfig(config: Config,
-                                             fetch_BranchMode:Int,
-                                             remote:String,
-                                             branchOrBranches:String,
-                                             branchListSeparator:String=Cons.stringListSeparator,
-                                             appContext: Context
+        fun setRemoteFetchRefSpecToGitConfig(
+            config: Config,
+            fetch_BranchMode:Int,
+            remote:String,
+            branchOrBranches:String,
+            appContext: Context
         ):Ret<String?> {
             try {
                 //e.g. remote.origin.fetch
@@ -1718,7 +1718,7 @@ class Libgit2Helper {
                     }
 
 //                    val branches = branchOrBranches.trim().split(branchListSeparator)
-                    val branches = getBranchListFromUserInputCsvStr(branchOrBranches, branchListSeparator)
+                    val branches = getBranchListFromUserInputCsvStr(branchOrBranches)
 
                     if(branches.isEmpty()) {
                         return Ret.createError(null, appContext.getString(R.string.err_branch_list_is_empty));
@@ -3733,15 +3733,8 @@ class Libgit2Helper {
             }
         }
 
-        fun getBranchListFromUserInputCsvStr(branchListCsv:String, branchListSeparator:String=Cons.stringListSeparator):List<String> {
-            val list = mutableListOf<String>()
-            branchListCsv.replace("\n", "").split(branchListSeparator).forEach {
-                val s = it.trim()
-                if(s.isNotBlank()) {
-                    list.add(s)
-                }
-            }
-            return list
+        fun getBranchListFromUserInputCsvStr(branchListCsv:String):List<String> {
+            return StrListUtil.csvStrToList(branchListCsv)
         }
 
         //只支持传本地分支 "abc" 或 远程分支 "origin/main" 这两种格式，也就是 Reference.shorthand() 输出的名字，传完整名会解析不出来，返回空指针

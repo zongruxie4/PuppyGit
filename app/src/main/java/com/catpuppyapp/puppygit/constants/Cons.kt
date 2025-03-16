@@ -242,7 +242,7 @@ object Cons {
     const val regexMatchAll = ".*"
     const val regexMatchNothing = "\$^"  //kotlin中 $需要转义，否则会尝试匹配字符串template
 
-    const val stringListSeparator = ","
+    const val comma = ","
 
     //用来代表文件类型
     const val fileTypeFile = 0

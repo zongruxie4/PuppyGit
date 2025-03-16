@@ -31,6 +31,7 @@ import com.catpuppyapp.puppygit.style.MyStyleKt
 import com.catpuppyapp.puppygit.utils.Libgit2Helper
 import com.catpuppyapp.puppygit.utils.Msg
 import com.catpuppyapp.puppygit.utils.MyLog
+import com.catpuppyapp.puppygit.utils.StrListUtil
 import com.catpuppyapp.puppygit.utils.createAndInsertError
 import com.catpuppyapp.puppygit.utils.doJobThenOffLoading
 import com.catpuppyapp.puppygit.utils.replaceStringResList
@@ -53,7 +54,7 @@ fun SetBranchForRemoteDialog(
 //        listOf<String>()
 //    }
     val branchCsvStr = rememberSaveable { mutableStateOf("")}
-    val strListSeparator = Cons.stringListSeparator
+    val strListSeparator = Cons.comma
 
     AlertDialog(
         title = {
@@ -178,11 +179,7 @@ fun SetBranchForRemoteDialog(
                     if (isAllRealValue) {
                         branchCsvStr.value = ""
                     } else {
-                        val sb = StringBuilder()
-                        branchNameList.forEach {
-                            sb.append(it).append(strListSeparator)
-                        }
-                        branchCsvStr.value = sb.removeSuffix(strListSeparator).toString()
+                        branchCsvStr.value = StrListUtil.listToCsvStr(branchNameList)
                     }
 
 //                    branchList.value.clear()

@@ -53,12 +53,11 @@ import com.catpuppyapp.puppygit.utils.AppModel
 import com.catpuppyapp.puppygit.utils.ComposeHelper
 import com.catpuppyapp.puppygit.utils.Msg
 import com.catpuppyapp.puppygit.utils.MyLog
+import com.catpuppyapp.puppygit.utils.StrListUtil
 import com.catpuppyapp.puppygit.utils.UIHelper
 import com.catpuppyapp.puppygit.utils.doJobThenOffLoading
 import com.catpuppyapp.puppygit.utils.genHttpHostPortStr
-import com.catpuppyapp.puppygit.utils.listToLines
 import com.catpuppyapp.puppygit.utils.parseInt
-import com.catpuppyapp.puppygit.utils.splitLines
 import com.catpuppyapp.puppygit.utils.state.mutableCustomStateListOf
 import com.catpuppyapp.puppygit.utils.state.mutableCustomStateOf
 
@@ -106,7 +105,7 @@ fun ServiceInnerPage(
     val ipWhitelistBuf = rememberSaveable { mutableStateOf("") }
     val showSetIpWhiteListDialog = rememberSaveable { mutableStateOf(false) }
     val initSetIpWhitelistDialog = {
-        ipWhitelistBuf.value = listToLines(ipWhitelist.value)
+        ipWhitelistBuf.value = StrListUtil.listToLines(ipWhitelist.value)
         showSetIpWhiteListDialog.value = true
     }
 
@@ -157,7 +156,7 @@ fun ServiceInnerPage(
 
             doJobThenOffLoading {
                 val newValue = ipWhitelistBuf.value
-                val newList = splitLines(newValue)
+                val newList = StrListUtil.linesToList(newValue)
                 ipWhitelist.value.clear()
                 ipWhitelist.value.addAll(newList)
                 SettingsUtil.update {
@@ -174,7 +173,7 @@ fun ServiceInnerPage(
     val tokenListBuf = rememberSaveable { mutableStateOf("") }
     val showSetTokenListDialog = rememberSaveable { mutableStateOf(false) }
     val initSetTokenListDialog = {
-        tokenListBuf.value = listToLines(tokenList.value)
+        tokenListBuf.value = StrListUtil.listToLines(tokenList.value)
         showSetTokenListDialog.value = true
     }
 
@@ -223,7 +222,7 @@ fun ServiceInnerPage(
 
             doJobThenOffLoading {
                 val newValue = tokenListBuf.value
-                val newList = splitLines(newValue)
+                val newList = StrListUtil.linesToList(newValue)
                 tokenList.value.clear()
                 tokenList.value.addAll(newList)
                 SettingsUtil.update {
