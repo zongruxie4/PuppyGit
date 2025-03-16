@@ -5,7 +5,6 @@ import androidx.compose.animation.core.tween
 import androidx.compose.foundation.MutatePriority
 import androidx.compose.foundation.gestures.DraggableState
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.Stable
 import androidx.compose.runtime.State
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
@@ -26,13 +25,14 @@ fun rememberSwipeableActionsState(): SwipeableActionsState {
 /**
  * The state of a [SwipeableActionsBox].
  */
-@Stable
 class SwipeableActionsState internal constructor() {
   /**
    * The current position (in pixels) of a [SwipeableActionsBox].
    */
   val offset: State<Float> get() = offsetState
   internal var offsetState = mutableStateOf(0f)
+
+  var disableAnimationIfNoAction = false
 
   /**
    * Whether [SwipeableActionsBox] is currently animating to reset its offset after it was swiped.
@@ -63,7 +63,7 @@ class SwipeableActionsState internal constructor() {
       || targetOffset == 0f
       || (targetOffset > 0f && canSwipeTowardsRight)
       || (targetOffset < 0f && canSwipeTowardsLeft)
-    offsetState.value += if (isAllowed) delta else delta / 10
+    offsetState.value += if (isAllowed) delta else if(disableAnimationIfNoAction) 0f else (delta / 10)
   }
 
   internal fun hasCrossedSwipeThreshold(): Boolean {
