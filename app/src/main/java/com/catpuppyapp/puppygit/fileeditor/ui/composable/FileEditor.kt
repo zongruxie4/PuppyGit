@@ -197,13 +197,13 @@ fun FileEditor(
 
 
 
-    val isRtl = UIHelper.isRtlLayout()
+//    val isRtl = UIHelper.isRtlLayout()
 
     //处理返回和前进
     val onLeftToRight = {
         if(isPreviewModeOn.value) {
             previewNavBack()
-        } else {
+        } else if(isSubPageMode.not()) {
             openDrawer()
         }
     }
@@ -243,6 +243,7 @@ fun FileEditor(
         background = Color.Unspecified,
         //编辑模式由于有抽屉菜单，所以这里禁用动画
         enableAnimation = isPreviewModeOn.value,
+        enableAct = isSubPageMode.not() || isPreviewModeOn.value,
         onSwipe = { onLeftToRight() }
     )
 
