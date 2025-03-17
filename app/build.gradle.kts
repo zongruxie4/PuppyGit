@@ -139,7 +139,7 @@ dependencies {
 //    implementation("com.github.jeziellago:compose-markdown:change_to_the_latest_version")
 
 
-    // swipe compose, I need change this lib, but is very depend my use case, so, I am not sure should I send pr? 需要整理下做成通用的方式再发pr
+    // swipe compose, I need change this lib, but is very depend my use case, so, I am not sure should I send pr? TODO 我的需求是禁用滑动但启用操作，感觉没人会需要这个feature吧？好像没必要发pr？
 //    implementation("me.saket.swipe:swipe:1.3.0")
 
 

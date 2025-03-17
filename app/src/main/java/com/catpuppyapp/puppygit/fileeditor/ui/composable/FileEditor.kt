@@ -223,7 +223,7 @@ fun FileEditor(
     val topPadding = remember { 5.dp }
 
     //只需要contentPadding的上和下，不然横屏会因为底部导航栏而有偏差
-    val swipeActionModifier = Modifier.padding(top = contentPadding.calculateTopPadding(), bottom = contentPadding.calculateBottomPadding()).padding(horizontal = 10.dp)
+    val swipeIconModifier = Modifier.padding(top = contentPadding.calculateTopPadding(), bottom = contentPadding.calculateBottomPadding()).padding(horizontal = 10.dp)
 
     //左边操作总是启用，但需要确定是否显示动画
     val leftToRightAct = SwipeAction(
@@ -231,7 +231,7 @@ fun FileEditor(
             //只有满足条件才显示图标，否则若图标根据条件变化，滑动图标松手后会短暂显示变化的图标，不好
             if(isPreviewModeOn.value) {
                 SwipeIcon(
-                    modifier = swipeActionModifier,
+                    modifier = swipeIconModifier,
                     imageVector = runBlocking {
                         if (previewNavStack.value.backStackIsEmpty()) Icons.Filled.Edit else Icons.AutoMirrored.Filled.ArrowBackIos
                     },
@@ -253,7 +253,7 @@ fun FileEditor(
         icon = {
             if(enableRightToLeftAct) {
                 SwipeIcon(
-                    modifier = swipeActionModifier,
+                    modifier = swipeIconModifier,
                     imageVector = if(isPreviewModeOn.value) Icons.AutoMirrored.Filled.ArrowForwardIos else Icons.Filled.RemoveRedEye,
                     contentDescription = null
                 )
