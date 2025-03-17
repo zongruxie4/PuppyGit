@@ -64,9 +64,7 @@ class SwipeableActionsState internal constructor() {
       || (targetOffset > 0f && canSwipeTowardsRight)
       || (targetOffset < 0f && canSwipeTowardsLeft)
 
-    offsetState.value += if(isResettingOnRelease.not() && visibleAction?.value?.enableAnimation == false) 0f
-    else if (isAllowed) delta
-    else (delta / 10)
+    offsetState.value += if (isAllowed) delta else (delta / 10)
   }
 
   internal fun hasCrossedSwipeThreshold(): Boolean {
@@ -74,18 +72,16 @@ class SwipeableActionsState internal constructor() {
   }
 
   internal suspend fun handleOnDragStopped() = coroutineScope {
-    // if disable animation will not be able to determine swiped by offset
-    val cantDetermineSwiped = visibleAction?.value?.enableAnimation == false
+    val animationEnabled = visibleAction?.value?.enableAnimation == true
     val actEnabled = visibleAction?.value?.enableAct == true
 
     launch {
-      val actTriggeredBySwipe = hasCrossedSwipeThreshold()
-      if (actEnabled && (actTriggeredBySwipe || cantDetermineSwiped)) {
+      if (actEnabled && hasCrossedSwipeThreshold()) {
         visibleAction?.let { action ->
           swipedAction = action
           action.value.onSwipe()
 
-          if(actTriggeredBySwipe) {
+          if(animationEnabled) {
             ripple.animate(action = action)
           }
         }
@@ -94,13 +90,16 @@ class SwipeableActionsState internal constructor() {
 
     launch {
       draggableState.drag(MutatePriority.PreventUserInput) {
-        Animatable(offsetState.value).animateTo(
-          targetValue = 0f,
-          animationSpec = tween(durationMillis = animationDurationMs),
-        ) {
-          dragBy(value - offsetState.value)
+        if(animationEnabled) {
+          Animatable(offsetState.value).animateTo(
+            targetValue = 0f,
+            animationSpec = tween(durationMillis = animationDurationMs),
+          ) {
+            dragBy(value - offsetState.value)
+          }
         }
       }
+
       swipedAction = null
     }
   }

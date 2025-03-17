@@ -77,9 +77,12 @@ fun SwipeableActionsBox(
   val scope = rememberCoroutineScope()
   Box(
     modifier = Modifier
-      .onSizeChanged { state.layoutWidth = it.width }
-      .absoluteOffset { IntOffset(x = state.offset.value.roundToInt(), y = 0) }
-      .drawOverContent { state.ripple.draw(scope = this) }
+      .onSizeChanged { state.layoutWidth = it.width }.then(
+        if(state.visibleAction?.value?.enableAnimation == true) {
+          Modifier.absoluteOffset { IntOffset(x = state.offset.value.roundToInt(), y = 0) }
+            .drawOverContent { state.ripple.draw(scope = this) }
+        }else Modifier
+      )
       .horizontalDraggable(
         enabled = !state.isResettingOnRelease,
         onDragStopped = {
@@ -93,17 +96,20 @@ fun SwipeableActionsBox(
   )
 
   (state.swipedAction ?: state.visibleAction)?.let { action ->
-    ActionIconBox(
-      modifier = Modifier.matchParentSize(),
-      action = action,
-      offset = state.offset.value,
-      backgroundColor = animatedBackgroundColor,
-      content = { action.value.icon() }
-    )
+    if(action.value.enableAnimation) {
+      ActionIconBox(
+        modifier = Modifier.matchParentSize(),
+        action = action,
+        offset = state.offset.value,
+        backgroundColor = animatedBackgroundColor,
+        content = { action.value.icon() }
+      )
+    }
   }
 
   val hapticFeedback = LocalHapticFeedback.current
-  if (state.hasCrossedSwipeThreshold() && state.swipedAction == null) {
+  // I am not sure, but the `swipedAction == null` should means drag going ahead, if non-null meas going back, so, going ahead will vibrate, going back will not.
+  if (state.swipedAction == null && state.visibleAction?.value?.enableAnimation == true && state.hasCrossedSwipeThreshold()) {
     LaunchedEffect(state.visibleAction) {
       hapticFeedback.performHapticFeedback(HapticFeedbackType.LongPress)
     }
