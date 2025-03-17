@@ -5,6 +5,7 @@ import androidx.compose.animation.core.tween
 import androidx.compose.foundation.MutatePriority
 import androidx.compose.foundation.gestures.DraggableState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.Stable
 import androidx.compose.runtime.State
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
@@ -25,13 +26,13 @@ fun rememberSwipeableActionsState(): SwipeableActionsState {
 /**
  * The state of a [SwipeableActionsBox].
  */
+@Stable
 class SwipeableActionsState internal constructor() {
   /**
    * The current position (in pixels) of a [SwipeableActionsBox].
    */
   val offset: State<Float> get() = offsetState
   internal var offsetState = mutableStateOf(0f)
-
 
   /**
    * Whether [SwipeableActionsBox] is currently animating to reset its offset after it was swiped.
@@ -103,8 +104,4 @@ class SwipeableActionsState internal constructor() {
       swipedAction = null
     }
   }
-}
-
-private fun isOnRightSide(offset:Float):Boolean {
-  return offset < 0f
 }

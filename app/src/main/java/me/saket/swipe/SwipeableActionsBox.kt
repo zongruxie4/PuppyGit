@@ -38,7 +38,6 @@ import kotlin.math.roundToInt
  * @param backgroundUntilSwipeThreshold Color drawn behind the content until
  * [swipeThreshold] is reached. When the threshold is passed, this color is
  * replaced by the currently visible [SwipeAction]'s background.
- *
  */
 @Composable
 fun SwipeableActionsBox(
