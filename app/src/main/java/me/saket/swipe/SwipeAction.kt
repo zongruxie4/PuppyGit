@@ -30,7 +30,9 @@ class SwipeAction(
   val icon: @Composable () -> Unit,
   val background: Color,
   val weight: Double = 1.0,
-  val isUndo: Boolean = false
+  val isUndo: Boolean = false,
+  val enableAnimation: Boolean = true,
+  val enableAct: Boolean = true,
 ) {
   init {
     require(weight > 0.0) { "invalid weight $weight; must be greater than zero" }
@@ -42,12 +44,16 @@ class SwipeAction(
     background: Color = this.background,
     weight: Double = this.weight,
     isUndo: Boolean = this.isUndo,
+    enableAnimation: Boolean = this.enableAnimation,
+    enableAct: Boolean = this.enableAct,
   ) = SwipeAction(
     onSwipe = onSwipe,
     icon = icon,
     background = background,
     weight = weight,
-    isUndo = isUndo
+    isUndo = isUndo,
+    enableAnimation = enableAnimation,
+    enableAct = enableAct,
   )
 }
 
@@ -59,7 +65,9 @@ fun SwipeAction(
   icon: Painter,
   background: Color,
   weight: Double = 1.0,
-  isUndo: Boolean = false
+  isUndo: Boolean = false,
+  enableAnimation: Boolean = true,
+  enableAct: Boolean = true,
 ): SwipeAction {
   return SwipeAction(
     icon = {
@@ -72,6 +80,8 @@ fun SwipeAction(
     background = background,
     weight = weight,
     onSwipe = onSwipe,
-    isUndo = isUndo
+    isUndo = isUndo,
+    enableAnimation = enableAnimation,
+    enableAct = enableAct,
   )
 }

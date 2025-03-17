@@ -32,8 +32,6 @@ class SwipeableActionsState internal constructor() {
   val offset: State<Float> get() = offsetState
   internal var offsetState = mutableStateOf(0f)
 
-  var disableAnimationWhenActListIsEmpty = false
-  var emptyActListCallback:((onRight:Boolean) -> Unit)? = null
 
   /**
    * Whether [SwipeableActionsBox] is currently animating to reset its offset after it was swiped.
@@ -57,14 +55,17 @@ class SwipeableActionsState internal constructor() {
   internal val draggableState = DraggableState { delta ->
     val targetOffset = offsetState.value + delta
 
-    val canSwipeTowardsRight = actions.left.isNotEmpty()
-    val canSwipeTowardsLeft = actions.right.isNotEmpty()
+    val canSwipeTowardsRight = actions.left.isNotEmpty() && visibleAction?.value?.enableAct == true
+    val canSwipeTowardsLeft = actions.right.isNotEmpty() && visibleAction?.value?.enableAct == true
 
     val isAllowed = isResettingOnRelease
       || targetOffset == 0f
       || (targetOffset > 0f && canSwipeTowardsRight)
       || (targetOffset < 0f && canSwipeTowardsLeft)
-    offsetState.value += if (isAllowed) delta else if(disableAnimationWhenActListIsEmpty) 0f else (delta / 10)
+
+    offsetState.value += if(isResettingOnRelease.not() && visibleAction?.value?.enableAnimation == false) 0f
+    else if (isAllowed) delta
+    else (delta / 10)
   }
 
   internal fun hasCrossedSwipeThreshold(): Boolean {
@@ -72,20 +73,24 @@ class SwipeableActionsState internal constructor() {
   }
 
   internal suspend fun handleOnDragStopped() = coroutineScope {
+    // if disable animation will not be able to determine swiped by offset
+    val cantDetermineSwiped = visibleAction?.value?.enableAnimation == false
+    val actEnabled = visibleAction?.value?.enableAct == true
+
     launch {
-      if(visibleAction == null) {
-        emptyActListCallback?.invoke(isOnRightSide(offset.value))
-      }
-    }
-    launch {
-      if (hasCrossedSwipeThreshold()) {
+      val actTriggeredBySwipe = hasCrossedSwipeThreshold()
+      if (actEnabled && (actTriggeredBySwipe || cantDetermineSwiped)) {
         visibleAction?.let { action ->
           swipedAction = action
           action.value.onSwipe()
-          ripple.animate(action = action)
+
+          if(actTriggeredBySwipe) {
+            ripple.animate(action = action)
+          }
         }
       }
     }
+
     launch {
       draggableState.drag(MutatePriority.PreventUserInput) {
         Animatable(offsetState.value).animateTo(

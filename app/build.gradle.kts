@@ -139,7 +139,7 @@ dependencies {
 //    implementation("com.github.jeziellago:compose-markdown:change_to_the_latest_version")
 
 
-    // swipe compose, I need change this lib, but is very depend my use case, so, I am not sure may I should send pr? 让我想想...
+    // swipe compose, I need change this lib, but is very depend my use case, so, I am not sure should I send pr? 需要整理下做成通用的方式再发pr
 //    implementation("me.saket.swipe:swipe:1.3.0")
 
 

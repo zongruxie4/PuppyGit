@@ -24,16 +24,13 @@ import androidx.compose.material.icons.filled.ContentCopy
 import androidx.compose.material.icons.filled.ContentCut
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Edit
-import androidx.compose.material.icons.filled.Menu
 import androidx.compose.material.icons.filled.RemoveRedEye
 import androidx.compose.material.icons.filled.SelectAll
-import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.MutableIntState
 import androidx.compose.runtime.MutableState
-import androidx.compose.runtime.mutableLongStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
@@ -218,54 +215,58 @@ fun FileEditor(
         }
     }
 
-    val dragHandleInterval = remember { 500L } //ms
-    val curTime = rememberSaveable { mutableLongStateOf(0) }
+//    val dragHandleInterval = remember { 500L } //ms
+//    val curTime = rememberSaveable { mutableLongStateOf(0) }
 
 
     //内容顶部padding
     val topPadding = remember { 5.dp }
 
+    //只需要contentPadding的上和下，不然横屏会因为底部导航栏而有偏差
+    val swipeActionModifier = Modifier.padding(top = contentPadding.calculateTopPadding(), bottom = contentPadding.calculateBottomPadding()).padding(horizontal = 10.dp)
+
+    //左边操作总是启用，但需要确定是否显示动画
     val leftToRightAct = SwipeAction(
         icon = {
-            SwipeIcon(
-                imageVector = if(isPreviewModeOn.value) {
-                    runBlocking {
+            //只有满足条件才显示图标，否则若图标根据条件变化，滑动图标松手后会短暂显示变化的图标，不好
+            if(isPreviewModeOn.value) {
+                SwipeIcon(
+                    modifier = swipeActionModifier,
+                    imageVector = runBlocking {
                         if (previewNavStack.value.backStackIsEmpty()) Icons.Filled.Edit else Icons.AutoMirrored.Filled.ArrowBackIos
-                    }
-                } else {
-                    Icons.Filled.Menu
-                },
-                contentDescription = null
-            )
+                    },
+                    contentDescription = null
+                )
+            }
+
         },
         background = Color.Unspecified,
+        //编辑模式由于有抽屉菜单，所以这里禁用动画
+        enableAnimation = isPreviewModeOn.value,
         onSwipe = { onLeftToRight() }
     )
 
+    val enableRightToLeftAct = isPreviewModeOn.value.not() || runBlocking { previewNavStack.value.aheadStackIsNotEmpty() }
+
+    //右边操作不总是启用，但动画总是启用
     val rightToLeftAct = SwipeAction(
         icon = {
-            SwipeIcon(
-                imageVector = if(isPreviewModeOn.value) Icons.AutoMirrored.Filled.ArrowForwardIos else Icons.Filled.RemoveRedEye,
-                contentDescription = null
-            )
+            if(enableRightToLeftAct) {
+                SwipeIcon(
+                    modifier = swipeActionModifier,
+                    imageVector = if(isPreviewModeOn.value) Icons.AutoMirrored.Filled.ArrowForwardIos else Icons.Filled.RemoveRedEye,
+                    contentDescription = null
+                )
+            }
         },
         background = Color.Unspecified,
+        enableAct = enableRightToLeftAct,
         onSwipe = { onRightToLeft() },
     )
 
-    val isEditPage = isPreviewModeOn.value.not()
-
-    val emptyActListCallback = { onRight:Boolean ->
-        if(isEditPage && onRight.not()) {
-            onLeftToRight()
-        }
-    }
-
     SwipeableActionsBox(
-        emptyActListCallback = emptyActListCallback,
-        disableAnimationWhenActListIsEmpty = isEditPage,
-        startActions = if(isEditPage) listOf() else listOf(leftToRightAct),
-        endActions = runBlocking { if(isPreviewModeOn.value && previewNavStack.value.aheadStackIsEmpty()) listOf() else listOf(rightToLeftAct) }
+        startActions = listOf(leftToRightAct),
+        endActions = listOf(rightToLeftAct),
     ) {
         Box(modifier = Modifier.fillMaxSize()) {
             if(isPreviewModeOn.value) {
