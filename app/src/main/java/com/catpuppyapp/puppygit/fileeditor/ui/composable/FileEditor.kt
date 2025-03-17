@@ -58,6 +58,7 @@ import androidx.compose.ui.unit.sp
 import com.catpuppyapp.puppygit.compose.BottomBar
 import com.catpuppyapp.puppygit.compose.ConfirmDialog
 import com.catpuppyapp.puppygit.compose.MarkDownContainer
+import com.catpuppyapp.puppygit.compose.SwipeIcon
 import com.catpuppyapp.puppygit.constants.PageRequest
 import com.catpuppyapp.puppygit.dto.UndoStack
 import com.catpuppyapp.puppygit.fileeditor.texteditor.controller.EditorController
@@ -226,7 +227,7 @@ fun FileEditor(
 
     val leftToRightAct = SwipeAction(
         icon = {
-            Icon(
+            SwipeIcon(
                 imageVector = if(isPreviewModeOn.value) {
                     runBlocking {
                         if (previewNavStack.value.backStackIsEmpty()) Icons.Filled.Edit else Icons.AutoMirrored.Filled.ArrowBackIos
@@ -243,7 +244,7 @@ fun FileEditor(
 
     val rightToLeftAct = SwipeAction(
         icon = {
-            Icon(
+            SwipeIcon(
                 imageVector = if(isPreviewModeOn.value) Icons.AutoMirrored.Filled.ArrowForwardIos else Icons.Filled.RemoveRedEye,
                 contentDescription = null
             )
