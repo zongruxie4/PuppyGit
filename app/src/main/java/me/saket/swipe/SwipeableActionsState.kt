@@ -89,8 +89,9 @@ class SwipeableActionsState internal constructor() {
     }
 
     launch {
-      draggableState.drag(MutatePriority.PreventUserInput) {
-        if(animationEnabled) {
+      if(animationEnabled) {
+        // here call drag is for keep the position correct when animating, if no animate then no need call drag
+        draggableState.drag(MutatePriority.PreventUserInput) {
           Animatable(offsetState.value).animateTo(
             targetValue = 0f,
             animationSpec = tween(durationMillis = animationDurationMs),
