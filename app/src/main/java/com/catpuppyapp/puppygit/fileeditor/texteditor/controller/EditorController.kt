@@ -918,7 +918,7 @@ class EditorController(
 
             val lineChars = it.value.text.length
             //软换行行数 (soft-wrap lines)
-            val softLineCount = (lineChars / oneLineHowManyChars)
+            val softLineCount = (lineChars / oneLineHowManyChars).coerceAtLeast(1)
             //行数 乘 字体大小，粗略得到当前物理行占用多少像素
             targetPx += (softLineCount * lineHeight)
         }
@@ -955,7 +955,7 @@ class EditorController(
 
             val lineChars = it.value.text.length
             //软换行行数 (soft-wrap lines)
-            val softLineCount = (lineChars / oneLineHowManyChars)
+            val softLineCount = (lineChars / oneLineHowManyChars).coerceAtLeast(1)
             //行数 乘 字体大小，粗略得到当前物理行占用多少像素
             pos += (softLineCount * lineHeight)
         }

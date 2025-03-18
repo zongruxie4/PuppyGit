@@ -422,7 +422,7 @@ object UIHelper {
     fun getLuckyOffset(indexToPx:Boolean, screenWidthInPx:Float, screenHeightInPx:Float):Float {
         val base = (screenWidthInPx + screenHeightInPx)
 //        return base * (if(indexToPx) 0.9f else 0.9f)
-        return base * 0.9f
+        return base * 0.2f
     }
 
     fun guessLineHeight(fontSizeInPx: Float): Float {
