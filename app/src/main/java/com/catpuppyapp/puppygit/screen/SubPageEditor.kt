@@ -145,6 +145,8 @@ fun SubPageEditor(
     val editorPageRequestFromParent = rememberSaveable { mutableStateOf("")}
 
 
+    val requireEditorScrollToPreviewCurPos = rememberSaveable { mutableStateOf(false) }
+    val requirePreviewScrollToEditorCurPos = rememberSaveable { mutableStateOf(false) }
     val editorPreviewPageScrolled = rememberSaveable { mutableStateOf(settings.showNaviButtons) }
     val editorPreviewLastScrollPosition = rememberSaveable { mutableStateOf(0) }
 
@@ -307,6 +309,7 @@ fun SubPageEditor(
                 actions = {
                     if(!editorOpenFileErr.value) {
                         EditorPageActions(
+                            requireEditorScrollToPreviewCurPos = requireEditorScrollToPreviewCurPos,
                             initPreviewMode = editorInitPreviewMode,
                             previewNavStack = editorPreviewNavStack.value,
                             previewPath = editorPreviewPath,
@@ -366,6 +369,7 @@ fun SubPageEditor(
         }
     ) { contentPadding ->
         EditorInnerPage(
+            requirePreviewScrollToEditorCurPos = requirePreviewScrollToEditorCurPos,
             previewPageScrolled = editorPreviewPageScrolled,
             previewPath = editorPreviewPath,
             updatePreviewPath = updatePreviewPath,

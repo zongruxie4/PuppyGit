@@ -640,6 +640,8 @@ fun HomeScreen(
 
 
 
+    val requireEditorScrollToPreviewCurPos = rememberSaveable { mutableStateOf(false) }
+    val requirePreviewScrollToEditorCurPos = rememberSaveable { mutableStateOf(false) }
     val editorPreviewPageScrolled = rememberSaveable { mutableStateOf(settingsSnapshot.value.showNaviButtons) }
     val changelistPageScrolled = rememberSaveable { mutableStateOf(settingsSnapshot.value.showNaviButtons) }
     val repoPageScrolled = rememberSaveable { mutableStateOf(settingsSnapshot.value.showNaviButtons) }
@@ -1004,6 +1006,7 @@ fun HomeScreen(
                         }else if(currentHomeScreen.intValue == Cons.selectedItem_Editor && !editorOpenFileErr.value) {
                             EditorPageActions(
                                 initPreviewMode = editorInitPreviewMode,
+                                requireEditorScrollToPreviewCurPos = requireEditorScrollToPreviewCurPos,
                                 previewNavStack = editorPreviewNavStack.value,
                                 previewPath = editorPreviewPath,
                                 previewPathChanged = editorPreviewPathChanged.value,
@@ -1228,6 +1231,7 @@ fun HomeScreen(
 //                changeStateTriggerRefreshPage(needRefreshEditorPage)
 
                 EditorInnerPage(
+                    requirePreviewScrollToEditorCurPos = requirePreviewScrollToEditorCurPos,
                     previewPageScrolled = editorPreviewPageScrolled,
                     previewPath = editorPreviewPath,
                     updatePreviewPath = updatePreviewPath,

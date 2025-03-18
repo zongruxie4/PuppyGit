@@ -56,6 +56,7 @@ import kotlinx.coroutines.runBlocking
 @Composable
 fun EditorPageActions(
     initPreviewMode:()->Unit,
+    requireEditorScrollToPreviewCurPos:MutableState<Boolean>,
     isPreviewModeOn:Boolean,
     previewNavStack: EditorPreviewNavStack,
     previewPath: String,
@@ -109,6 +110,7 @@ fun EditorPageActions(
             tooltipText = stringResource(R.string.edit),
             icon = Icons.Filled.Edit,
         ) {
+            requireEditorScrollToPreviewCurPos.value = true
             editorPageRequest.value = PageRequest.requireEditPreviewingFile
         }
         LongPressAbleIconBtn(

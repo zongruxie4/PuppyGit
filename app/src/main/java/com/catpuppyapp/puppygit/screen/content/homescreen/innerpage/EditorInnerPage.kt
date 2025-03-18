@@ -105,6 +105,7 @@ private var justForSaveFileWhenDrawerOpen = getShortUUID()
 
 @Composable
 fun EditorInnerPage(
+    requirePreviewScrollToEditorCurPos:MutableState<Boolean>,
     previewPageScrolled:MutableState<Boolean>,
     previewPath:String,
     updatePreviewPath:(String)->Unit,
@@ -696,6 +697,8 @@ fun EditorInnerPage(
                     if(pushSuccess) {
                         previewNavStack.ahead()
                     }
+
+                    requirePreviewScrollToEditorCurPos.value = true
 
                     // ahead之后，再用stack的getFirst()，取到的应该就是当前路径editorPageShowingFilePath。
                     // 若不是，就代表有bug了，这时要么使用错误的路径，但导航栈状态ok；
@@ -1293,6 +1296,7 @@ fun EditorInnerPage(
             doJobThenOffLoading {
                 try {
                     doInit(
+                        requirePreviewScrollToEditorCurPos = requirePreviewScrollToEditorCurPos,
                         isPreviewModeOn = isPreviewModeOn,
                         previewPath = previewPath,
                         updatePreviewPath = updatePreviewPath,
@@ -1367,6 +1371,7 @@ fun EditorInnerPage(
 }
 
 private suspend fun doInit(
+    requirePreviewScrollToEditorCurPos: MutableState<Boolean>,
     isPreviewModeOn: MutableState<Boolean>,
     previewPath: String,
     updatePreviewPath: (String)->Unit,
@@ -1568,6 +1573,7 @@ private suspend fun doInit(
             //如果当前stack不属于当前文件 且 没请求保留当前栈，重新生成
             if(previewNavStack.value.editingPath != requireOpenFilePath && keepPreviewStackOnce.not()) {
                 previewNavStack.value.reset(requireOpenFilePath)
+                requirePreviewScrollToEditorCurPos.value = true
             }
 
 
