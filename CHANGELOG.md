@@ -1,18 +1,18 @@
-1.0.9.4v70 - 20250308:
-- optimize code
+1.0.9.4v70 - 20250318:
 - Files support recursive search
 - fix a bug may cause app run slowly when filter mode on
 - support preview markdown file
 - update russian translation (thx @triksterr)
 - support set file associations for Editor
+- optimize code
 
 
-- 优化代码
 - 文件管理器支持递归搜索
 - 修复一个在开启过滤模式时可能会导致app卡顿的bug
 - 支持预览markdown文件
 - 更新俄语翻译 (thx @triksterr)
 - 支持为文本编辑器设置关联文件类型
+- 优化代码
 
 ---
 
