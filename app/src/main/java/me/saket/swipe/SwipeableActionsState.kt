@@ -56,8 +56,8 @@ class SwipeableActionsState internal constructor() {
   internal val draggableState = DraggableState { delta ->
     val targetOffset = offsetState.value + delta
 
-    val canSwipeTowardsRight = actions.left.isNotEmpty() && visibleAction?.value?.enableAct == true
-    val canSwipeTowardsLeft = actions.right.isNotEmpty() && visibleAction?.value?.enableAct == true
+    val canSwipeTowardsRight = actions.left.isNotEmpty()
+    val canSwipeTowardsLeft = actions.right.isNotEmpty()
 
     val isAllowed = isResettingOnRelease
       || targetOffset == 0f
@@ -99,6 +99,8 @@ class SwipeableActionsState internal constructor() {
             dragBy(value - offsetState.value)
           }
         }
+      }else {  // no animation, reset offset to 0 when drag stopped
+        offsetState.value = 0f
       }
 
       swipedAction = null
