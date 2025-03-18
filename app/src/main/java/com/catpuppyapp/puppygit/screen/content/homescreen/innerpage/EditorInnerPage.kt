@@ -1227,6 +1227,7 @@ fun EditorInnerPage(
         val fileEditedPos = FileOpenHistoryMan.get(fileFullPath)
 
         FileEditor(
+            requirePreviewScrollToEditorCurPos = requirePreviewScrollToEditorCurPos,
             isSubPageMode = isSubPageMode,
             previewNavBack = previewNavBack,
             previewNavAhead = previewNavAhead,

@@ -18,6 +18,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalLayoutDirection
+import androidx.compose.ui.unit.Density
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
@@ -403,4 +404,22 @@ object UIHelper {
         return LocalLayoutDirection.current == LayoutDirection.Rtl
     }
 
+    fun spToPx(sp: Float, density: Density): Float {
+        return with(density) { sp.toSp().toPx() }
+    }
+
+    fun spToPx(sp: Int, density: Density): Float {
+        return spToPx(sp.toFloat(), density)
+    }
+
+    fun dpToPx(dp:Int, density:Density): Float {
+        return with(density) { dp.toDp().toPx() }
+    }
+
+    /**
+     * well, no promise this offset can send you to expect position, but maybe closer ;)
+     */
+    fun getLuckyOffset(screenWidthInPx:Float, screenHeightInPx:Float):Float {
+        return (screenWidthInPx + screenHeightInPx) * 1.2f
+    }
 }

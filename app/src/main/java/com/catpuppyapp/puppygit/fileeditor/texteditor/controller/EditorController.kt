@@ -10,6 +10,7 @@ import com.catpuppyapp.puppygit.fileeditor.texteditor.view.SearchPos
 import com.catpuppyapp.puppygit.fileeditor.texteditor.view.SearchPosResult
 import com.catpuppyapp.puppygit.utils.Msg
 import com.catpuppyapp.puppygit.utils.MyLog
+import com.catpuppyapp.puppygit.utils.UIHelper
 import com.catpuppyapp.puppygit.utils.isGoodIndexForList
 import com.catpuppyapp.puppygit.utils.isGoodIndexForStr
 import java.security.InvalidParameterException
@@ -891,6 +892,33 @@ class EditorController(
         }
     }
 
+    /**
+     * 计算行号对应的以像素为单位大概滚动位置。
+     * 注：只能算个大概，如果有图片之类的，文字可能只占一行，但预览可能占很多行，这时滚动可能会有较大偏差
+     */
+    fun goToThisLineIndexMayNeedScrollThesePxs(index: Int, fontSizeInPx:Float, screenWidthInPx:Float, screenHeightInPx:Float):Float {
+        val oneLineHowManyChars = (screenWidthInPx / fontSizeInPx).toInt()
+        var count = 0
+
+        var pos = UIHelper.getLuckyOffset(screenWidthInPx = screenWidthInPx, screenHeightInPx = screenHeightInPx)
+
+        val iterator = fields.iterator()
+        while (true) {
+            if(count++ > index || iterator.hasNext().not()) {
+                break
+            }
+
+            val it = iterator.next()
+
+            val lineChars = it.value.text.length
+            //软换行行数 (soft-wrap lines)
+            val softLineCount = (lineChars / oneLineHowManyChars)
+            //行数 乘 字体大小，粗略得到当前物理行占用多少像素
+            pos += (softLineCount * fontSizeInPx)
+        }
+
+        return pos
+    }
 
 
     enum class SelectionOption {

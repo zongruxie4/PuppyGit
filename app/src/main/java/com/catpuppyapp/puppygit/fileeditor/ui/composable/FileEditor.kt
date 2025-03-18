@@ -29,10 +29,12 @@ import androidx.compose.material.icons.filled.SelectAll
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.MutableIntState
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -42,6 +44,7 @@ import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.platform.LocalClipboardManager
+import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalHapticFeedback
@@ -69,6 +72,7 @@ import com.catpuppyapp.puppygit.settings.FileEditedPos
 import com.catpuppyapp.puppygit.style.MyStyleKt
 import com.catpuppyapp.puppygit.ui.theme.Theme
 import com.catpuppyapp.puppygit.utils.Msg
+import com.catpuppyapp.puppygit.utils.MyLog
 import com.catpuppyapp.puppygit.utils.UIHelper
 import com.catpuppyapp.puppygit.utils.replaceStringResList
 import com.catpuppyapp.puppygit.utils.state.CustomStateSaveable
@@ -82,6 +86,7 @@ private const val stateKeyTag = "FileEditor"
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun FileEditor(
+    requirePreviewScrollToEditorCurPos:MutableState<Boolean>,
     isSubPageMode:Boolean,
     previewNavBack:()->Unit,
     previewNavAhead:()->Unit,
@@ -122,6 +127,10 @@ fun FileEditor(
 ) {
     val activityContext = LocalContext.current
     val haptic = LocalHapticFeedback.current
+    val density = LocalDensity.current
+    val deviceConfiguration = LocalConfiguration.current
+
+    val scope = rememberCoroutineScope()
 
     val inDarkTheme = Theme.inDarkTheme
 
@@ -266,10 +275,13 @@ fun FileEditor(
         onSwipe = { onRightToLeft() },
     )
 
+
     SwipeableActionsBox(
         startActions = listOf(leftToRightAct),
         endActions = listOf(rightToLeftAct),
     ) {
+        val curScrollState = runBlocking { previewNavStack.value.getCurrentScrollState() }
+
         Box(modifier = Modifier.fillMaxSize()) {
             if(isPreviewModeOn.value) {
                 Column(
@@ -277,7 +289,7 @@ fun FileEditor(
                         //fillMaxSize 必须在最上面！要不然，文字不会显示在中间！
                         .fillMaxSize()
                         .padding(contentPadding)
-                        .verticalScroll(runBlocking { previewNavStack.value.getCurrentScrollState() })
+                        .verticalScroll(curScrollState)
                     ,
                 ) {
                     Spacer(Modifier.height(topPadding))
@@ -293,6 +305,29 @@ fun FileEditor(
                     )
 
                     Spacer(Modifier.height(30.dp))
+                }
+
+                LaunchedEffect(Unit) {
+                    try {
+                        if(requirePreviewScrollToEditorCurPos.value) {
+                            //一次性变量，立刻重置
+                            requirePreviewScrollToEditorCurPos.value = false
+
+                            val fontSizeInPx = UIHelper.spToPx(sp = fontSize.intValue, density = density)
+                            val screenWidthInPx = UIHelper.dpToPx(dp = deviceConfiguration.screenWidthDp, density = density)
+                            val screenHeightInPx = UIHelper.dpToPx(dp = deviceConfiguration.screenHeightDp, density = density)
+                            val editorCurIndex = editorListState.firstVisibleItemIndex
+
+                            //计算目标滚动位置
+                            val targetPos = editableController.value.goToThisLineIndexMayNeedScrollThesePxs(index=editorCurIndex, fontSizeInPx=fontSizeInPx, screenWidthInPx=screenWidthInPx, screenHeightInPx=screenHeightInPx)
+
+                            //滚动
+                            UIHelper.scrollTo(scope, curScrollState, targetPos.toInt())
+                        }
+                    }catch (e:Exception) {
+                        //并非很严重的错误，debug级别吧
+                        MyLog.d(TAG, "let preview scroll to current edit position failed: ${e.stackTraceToString()}")
+                    }
                 }
             } else {
 
