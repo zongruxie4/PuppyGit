@@ -6,6 +6,7 @@ features：
 - fetch/merge/pull/push/sync/checkout/reset
 - resolve conflict
 - files explorer
+- markdown preview
 - text editor
 - rebase/tags/reflog
 - and more...
