@@ -692,6 +692,7 @@ fun EditorInnerPage(
 
                 //如果是从编辑器页面切换到预览页面，定位到当前预览页面
                 //判断条件为 “从编辑页面而来 且 stack当前路径和编辑器正在显示的路径不同 且 backStack或aheadStack非空”
+                //判断是否需要在预览页面的导航栈“加塞”
                 if(switchFromEditPage && pathWillPreview != editorPageShowingFilePath && previewNavStack.backStackOrAheadStackIsNotEmpty()) {
                     //执行类似点击链接的操作，把当前路径压入栈中
                     val pushSuccess = previewNavStack.push(editorPageShowingFilePath)
