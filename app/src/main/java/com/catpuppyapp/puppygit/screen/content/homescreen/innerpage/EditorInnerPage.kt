@@ -105,6 +105,7 @@ private var justForSaveFileWhenDrawerOpen = getShortUUID()
 
 @Composable
 fun EditorInnerPage(
+    requireEditorScrollToPreviewCurPos:MutableState<Boolean>,
     requirePreviewScrollToEditorCurPos:MutableState<Boolean>,
     previewPageScrolled:MutableState<Boolean>,
     previewPath:String,
@@ -1227,6 +1228,7 @@ fun EditorInnerPage(
         val fileEditedPos = FileOpenHistoryMan.get(fileFullPath)
 
         FileEditor(
+            requireEditorScrollToPreviewCurPos = requireEditorScrollToPreviewCurPos,
             requirePreviewScrollToEditorCurPos = requirePreviewScrollToEditorCurPos,
             isSubPageMode = isSubPageMode,
             previewNavBack = previewNavBack,

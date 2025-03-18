@@ -419,7 +419,13 @@ object UIHelper {
     /**
      * well, no promise this offset can send you to expect position, but maybe closer ;)
      */
-    fun getLuckyOffset(screenWidthInPx:Float, screenHeightInPx:Float):Float {
-        return (screenWidthInPx + screenHeightInPx) * 1.2f
+    fun getLuckyOffset(indexToPx:Boolean, screenWidthInPx:Float, screenHeightInPx:Float):Float {
+        val base = (screenWidthInPx + screenHeightInPx)
+//        return base * (if(indexToPx) 0.9f else 0.9f)
+        return base * 0.9f
+    }
+
+    fun guessLineHeight(fontSizeInPx: Float): Float {
+        return fontSizeInPx * 1.5f
     }
 }

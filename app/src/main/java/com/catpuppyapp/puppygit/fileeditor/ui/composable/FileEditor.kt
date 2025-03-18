@@ -86,6 +86,7 @@ private const val stateKeyTag = "FileEditor"
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun FileEditor(
+    requireEditorScrollToPreviewCurPos:MutableState<Boolean>,
     requirePreviewScrollToEditorCurPos:MutableState<Boolean>,
     isSubPageMode:Boolean,
     previewNavBack:()->Unit,
@@ -280,7 +281,7 @@ fun FileEditor(
         startActions = listOf(leftToRightAct),
         endActions = listOf(rightToLeftAct),
     ) {
-        val curScrollState = runBlocking { previewNavStack.value.getCurrentScrollState() }
+        val curPreviewScrollState = runBlocking { previewNavStack.value.getCurrentScrollState() }
 
         Box(modifier = Modifier.fillMaxSize()) {
             if(isPreviewModeOn.value) {
@@ -289,7 +290,7 @@ fun FileEditor(
                         //fillMaxSize 必须在最上面！要不然，文字不会显示在中间！
                         .fillMaxSize()
                         .padding(contentPadding)
-                        .verticalScroll(curScrollState)
+                        .verticalScroll(curPreviewScrollState)
                     ,
                 ) {
                     Spacer(Modifier.height(topPadding))
@@ -316,22 +317,24 @@ fun FileEditor(
                             val fontSizeInPx = UIHelper.spToPx(sp = fontSize.intValue, density = density)
                             val screenWidthInPx = UIHelper.dpToPx(dp = deviceConfiguration.screenWidthDp, density = density)
                             val screenHeightInPx = UIHelper.dpToPx(dp = deviceConfiguration.screenHeightDp, density = density)
-                            val editorCurIndex = editorListState.firstVisibleItemIndex
+                            val editorCurLineIndex = editorListState.firstVisibleItemIndex
 
                             //计算目标滚动位置
-                            val targetPos = editableController.value.goToThisLineIndexMayNeedScrollThesePxs(index=editorCurIndex, fontSizeInPx=fontSizeInPx, screenWidthInPx=screenWidthInPx, screenHeightInPx=screenHeightInPx)
+                            val targetPos = editableController.value.lineIdxToPx(lineIndex=editorCurLineIndex, fontSizeInPx=fontSizeInPx, screenWidthInPx=screenWidthInPx, screenHeightInPx=screenHeightInPx)
 
                             //滚动
-                            UIHelper.scrollTo(scope, curScrollState, targetPos.toInt())
+                            UIHelper.scrollTo(scope, curPreviewScrollState, targetPos.toInt())
                         }
                     }catch (e:Exception) {
                         //并非很严重的错误，debug级别吧
-                        MyLog.d(TAG, "let preview scroll to current edit position failed: ${e.stackTraceToString()}")
+                        MyLog.d(TAG, "let preview scroll to current editor position failed: ${e.stackTraceToString()}")
                     }
                 }
             } else {
 
                 TextEditor(
+                    curPreviewScrollState = curPreviewScrollState,
+                    requireEditorScrollToPreviewCurPos = requireEditorScrollToPreviewCurPos,
                     editorPageShowingFileName = editorPageShowingFileName,
                     requestFromParent = requestFromParent,
                     fileFullPath = fileFullPath,

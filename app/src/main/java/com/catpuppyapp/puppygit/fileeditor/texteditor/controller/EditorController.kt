@@ -893,18 +893,24 @@ class EditorController(
     }
 
     /**
-     * 计算行号对应的以像素为单位大概滚动位置。
+     * 计算行索引对应的以像素为单位大概滚动位置。
      * 注：只能算个大概，如果有图片之类的，文字可能只占一行，但预览可能占很多行，这时滚动可能会有较大偏差
      */
-    fun goToThisLineIndexMayNeedScrollThesePxs(index: Int, fontSizeInPx:Float, screenWidthInPx:Float, screenHeightInPx:Float):Float {
-        val oneLineHowManyChars = (screenWidthInPx / fontSizeInPx).toInt()
+    fun lineIdxToPx(lineIndex: Int, fontSizeInPx:Float, screenWidthInPx:Float, screenHeightInPx:Float):Float {
+        // 好，最简单的情况，直接在开头，不用换算
+        if(lineIndex == 0) {
+            return  0f
+        }
+
         var count = 0
 
-        var pos = UIHelper.getLuckyOffset(screenWidthInPx = screenWidthInPx, screenHeightInPx = screenHeightInPx)
+        val lineHeight = UIHelper.guessLineHeight(fontSizeInPx)
+        val (oneLineHowManyChars, luckyOffset) = getOneLineHowManyCharsAndLuckyOffset(lineHeight = lineHeight, screenWidthInPx = screenWidthInPx, screenHeightInPx = screenHeightInPx, indexToPx = true)
+        var targetPx = luckyOffset
 
         val iterator = fields.iterator()
-        while (true) {
-            if(count++ > index || iterator.hasNext().not()) {
+        while(iterator.hasNext()) {
+            if(count++ > lineIndex) {
                 break
             }
 
@@ -914,10 +920,53 @@ class EditorController(
             //软换行行数 (soft-wrap lines)
             val softLineCount = (lineChars / oneLineHowManyChars)
             //行数 乘 字体大小，粗略得到当前物理行占用多少像素
-            pos += (softLineCount * fontSizeInPx)
+            targetPx += (softLineCount * lineHeight)
         }
 
-        return pos
+        return targetPx
+    }
+
+
+    /**
+     * 计算索引对应的大概行索引。
+     * 注：只能算个大概，如果有图片之类的，文字可能只占一行，但预览可能占很多行，这时滚动可能会有较大偏差
+     */
+    fun pxToLineIdx(targetPx: Int, fontSizeInPx:Float, screenWidthInPx:Float, screenHeightInPx:Float):Int {
+        // 好，最简单的情况，直接在开头，不用换算
+        if(targetPx == 0) {
+            return  0
+        }
+
+        val lineHeight = UIHelper.guessLineHeight(fontSizeInPx)
+        val (oneLineHowManyChars, luckyOffset) = getOneLineHowManyCharsAndLuckyOffset(lineHeight = lineHeight, screenWidthInPx = screenWidthInPx, screenHeightInPx = screenHeightInPx, indexToPx = false)
+
+        var pos = luckyOffset
+
+        var targetLineIndex = 0
+        val iterator = fields.iterator()
+        while (iterator.hasNext()) {
+            if(pos >= targetPx) {
+                break
+            }
+
+            targetLineIndex++
+
+            val it = iterator.next()
+
+            val lineChars = it.value.text.length
+            //软换行行数 (soft-wrap lines)
+            val softLineCount = (lineChars / oneLineHowManyChars)
+            //行数 乘 字体大小，粗略得到当前物理行占用多少像素
+            pos += (softLineCount * lineHeight)
+        }
+
+        return targetLineIndex
+    }
+
+    private fun getOneLineHowManyCharsAndLuckyOffset(lineHeight: Float, screenWidthInPx: Float, screenHeightInPx: Float, indexToPx:Boolean): Pair<Int, Float> {
+        val oneLineHowManyChars = (screenWidthInPx / lineHeight).toInt()
+        val luckyOffset = UIHelper.getLuckyOffset(indexToPx = indexToPx, screenWidthInPx = screenWidthInPx, screenHeightInPx = screenHeightInPx)
+        return Pair(oneLineHowManyChars, luckyOffset)
     }
 
 

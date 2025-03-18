@@ -369,6 +369,7 @@ fun SubPageEditor(
         }
     ) { contentPadding ->
         EditorInnerPage(
+            requireEditorScrollToPreviewCurPos = requireEditorScrollToPreviewCurPos,
             requirePreviewScrollToEditorCurPos = requirePreviewScrollToEditorCurPos,
             previewPageScrolled = editorPreviewPageScrolled,
             previewPath = editorPreviewPath,

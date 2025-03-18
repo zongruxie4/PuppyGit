@@ -1,6 +1,7 @@
 package com.catpuppyapp.puppygit.fileeditor.texteditor.view
 
 import androidx.compose.foundation.ExperimentalFoundationApi
+import androidx.compose.foundation.ScrollState
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.combinedClickable
@@ -39,7 +40,9 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalClipboardManager
+import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.platform.LocalTextInputService
 import androidx.compose.ui.res.stringResource
@@ -133,6 +136,8 @@ private val customTextSelectionColors_hideCursorHandle = MyStyleKt.TextSelection
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun TextEditor(
+    curPreviewScrollState: ScrollState,
+    requireEditorScrollToPreviewCurPos:MutableState<Boolean>,
     editorPageShowingFileName:String?,
     requestFromParent:MutableState<String>,
     fileFullPath:String,
@@ -154,6 +159,9 @@ fun TextEditor(
 
     decorationBox: DecorationBoxComposable = { _, _, innerTextField -> innerTextField(Modifier) },
 ) {
+
+    val density = LocalDensity.current
+    val deviceConfiguration = LocalConfiguration.current
 
     val conflictOursBlockBgColor = UIHelper.getConflictOursBlockBgColor()
     val conflictTheirsBlockBgColor = UIHelper.getConflictTheirsBlockBgColor()
@@ -461,10 +469,15 @@ fun TextEditor(
         }
 
     }
-    val doGoToLine = {
+
+    /**
+     * 入参是行号，不是索引，最小是1
+     * param is line number, not index, min is 1
+     */
+    val doGoToLine = { line:String ->
         //x 会报错，提示index必须为非负数) 测试下如果是-1会怎样？是否会报错？
 //        val lineIntVal = -1
-        val lineIntVal = getLineVal(goToLineValue.value)
+        val lineIntVal = getLineVal(line)
         //行号减1即要定位行的索引
         lastScrollEvent.value = ScrollEvent(index = lineIntVal-1, forceGo=true)
     }
@@ -491,7 +504,7 @@ fun TextEditor(
                         keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number, imeAction = ImeAction.Go),
                         keyboardActions = KeyboardActions(onGo = {
                             showGoToLineDialog.value = false
-                            doGoToLine()
+                            doGoToLine(goToLineValue.value)
                         }),
                         singleLine = true,
 
@@ -547,7 +560,7 @@ fun TextEditor(
             onCancel = { showGoToLineDialog.value = false }
         ) {
             showGoToLineDialog.value = false
-            doGoToLine()
+            doGoToLine(goToLineValue.value)
         }
     }
 
@@ -720,6 +733,27 @@ fun TextEditor(
         }
     }
 
+
+    if(requireEditorScrollToPreviewCurPos.value) {
+        //一次性变量，立刻重置
+        requireEditorScrollToPreviewCurPos.value = false
+
+        try {
+            val fontSizeInPx = UIHelper.spToPx(sp = fontSize.intValue, density = density)
+            val screenWidthInPx = UIHelper.dpToPx(dp = deviceConfiguration.screenWidthDp, density = density)
+            val screenHeightInPx = UIHelper.dpToPx(dp = deviceConfiguration.screenHeightDp, density = density)
+            val previewCurAt = curPreviewScrollState.value
+
+            //计算目标滚动位置
+            val targetLineIndex = editableController.pxToLineIdx(targetPx=previewCurAt, fontSizeInPx=fontSizeInPx, screenWidthInPx=screenWidthInPx, screenHeightInPx=screenHeightInPx)
+
+            //滚动
+            doGoToLine((targetLineIndex + 1).toString()) //index + 1变成行号
+        }catch (e:Exception) {
+            //并非很严重的错误，debug级别吧
+            MyLog.d(TAG, "let editor scroll to current preview position failed: ${e.stackTraceToString()}")
+        }
+    }
 
     LaunchedEffect(lastScrollEvent.value) TextEditorLaunchedEffect@{
         try {
