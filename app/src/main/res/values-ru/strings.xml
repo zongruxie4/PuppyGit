@@ -1236,7 +1236,7 @@
     <string name="file_association">Ассоциация файлов</string>
     <!-- The "pattern" is regex pattern to match string, the "wildcard" is "*" of "*.txt", use to match string too-->
     <string name="file_association_note">Одна маска на строку, поддерживаются wildcard-символы</string>
-    <string name="patterns">Маски имен файлов</string>
+    <string name="file_name_patterns">Маски имен файлов</string>
     <!-- edit the config file -->
     <string name="edit_config">Изменить файл конфигурации</string>
 

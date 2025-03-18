@@ -174,7 +174,7 @@ fun SettingsInnerPage(
                             fileAssociationListBuf.value = it
                         },
                         label = {
-                            Text(stringResource(R.string.patterns))
+                            Text(stringResource(R.string.file_name_patterns))
                         },
                     )
 

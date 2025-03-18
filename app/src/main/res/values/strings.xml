@@ -1242,7 +1242,7 @@
     <string name="file_association">File Association</string>
     <!-- The "pattern" is regex pattern to match string, the "wildcard" is "*" of "*.txt", use to match string too-->
     <string name="file_association_note">Per line one pattern, support wildcard</string>
-    <string name="patterns">Patterns</string>
+    <string name="file_name_patterns">File Name Patterns</string>
     <!-- edit the config file -->
     <string name="edit_config">Edit Config</string>
 
