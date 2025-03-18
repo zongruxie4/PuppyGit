@@ -33,6 +33,7 @@ class SwipeAction(
   val isUndo: Boolean = false,
   val enableAnimation: Boolean = true,
   val enableAct: Boolean = true,
+  val enableVibration: Boolean = enableAct,
 ) {
   init {
     require(weight > 0.0) { "invalid weight $weight; must be greater than zero" }
@@ -46,6 +47,7 @@ class SwipeAction(
     isUndo: Boolean = this.isUndo,
     enableAnimation: Boolean = this.enableAnimation,
     enableAct: Boolean = this.enableAct,
+    enableVibration: Boolean = this.enableVibration,
   ) = SwipeAction(
     onSwipe = onSwipe,
     icon = icon,
@@ -54,6 +56,7 @@ class SwipeAction(
     isUndo = isUndo,
     enableAnimation = enableAnimation,
     enableAct = enableAct,
+    enableVibration = enableVibration,
   )
 }
 
@@ -68,6 +71,7 @@ fun SwipeAction(
   isUndo: Boolean = false,
   enableAnimation: Boolean = true,
   enableAct: Boolean = true,
+  enableVibration: Boolean = enableAct,
 ): SwipeAction {
   return SwipeAction(
     icon = {
@@ -83,5 +87,6 @@ fun SwipeAction(
     isUndo = isUndo,
     enableAnimation = enableAnimation,
     enableAct = enableAct,
+    enableVibration = enableVibration,
   )
 }

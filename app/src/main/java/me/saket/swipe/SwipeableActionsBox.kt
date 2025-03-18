@@ -109,7 +109,7 @@ fun SwipeableActionsBox(
 
   val hapticFeedback = LocalHapticFeedback.current
   // I am not sure, but the `swipedAction == null` should means drag going ahead, if non-null meas going back, so, going ahead will vibrate, going back will not.
-  if (state.swipedAction == null && state.visibleAction?.value?.enableAct == true && state.hasCrossedSwipeThreshold()) {
+  if (state.swipedAction == null && state.visibleAction?.value?.enableVibration == true && state.hasCrossedSwipeThreshold()) {
     LaunchedEffect(state.visibleAction) {
       hapticFeedback.performHapticFeedback(HapticFeedbackType.LongPress)
     }

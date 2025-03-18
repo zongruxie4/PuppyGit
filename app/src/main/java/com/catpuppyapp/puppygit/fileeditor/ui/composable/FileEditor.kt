@@ -244,6 +244,7 @@ fun FileEditor(
         //编辑模式由于有抽屉菜单，所以这里禁用动画
         enableAnimation = isPreviewModeOn.value,
         enableAct = isSubPageMode.not() || isPreviewModeOn.value,
+        enableVibration = isPreviewModeOn.value,  //在编辑器滑动出现抽屉菜单时不震动
         onSwipe = { onLeftToRight() }
     )
 
