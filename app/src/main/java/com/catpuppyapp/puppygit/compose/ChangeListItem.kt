@@ -146,7 +146,7 @@ fun ChangeListItem(
                 Text(text = item.fileName, fontSize = 20.sp, color = changeTypeColor)
 
                 val secondLineFontSize = 12.sp
-                Text(text = item.getSizeStr() + ", " + item.getChangeTypeAndSuffix(isDiffToLocal), fontSize = secondLineFontSize, color = changeTypeColor)
+                Text(text = item.getChangeListItemSecondLineText(isDiffToLocal), fontSize = secondLineFontSize, color = changeTypeColor)
 
                 val parentPath = item.getParentDirStr()
                 if(parentPath.isNotEmpty()) {

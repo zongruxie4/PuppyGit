@@ -56,6 +56,10 @@ class StatusTypeEntrySaver: ItemKey {
         return changeTypeAndSuffix ?: ""
     }
 
+    fun getChangeListItemSecondLineText(isDiffToLocal:Boolean):String {
+        return getSizeStr() + ", " + getChangeTypeAndSuffix(isDiffToLocal)
+    }
+
     fun getItemTypeString():String {
         if(itemTypeString==null) {
             itemTypeString = if(itemType == Cons.gitItemTypeDir) {
