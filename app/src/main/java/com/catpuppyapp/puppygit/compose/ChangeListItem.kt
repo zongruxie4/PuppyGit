@@ -138,31 +138,19 @@ fun ChangeListItem(
                     contentDescription = if(item.changeType == Cons.gitStatusDeleted) null else if(itemIsDir) stringResource(R.string.folder_icon) else stringResource(R.string.file_icon)
                 )
             }
+
             Spacer(modifier = Modifier.padding(10.dp))
             Column {
-                Row {
-                    Text(
-                            text = item.fileName,
-                            fontSize = 20.sp,
-                    )
-                }
                 val changeTypeColor = UIHelper.getChangeTypeColor(item.changeType ?: "")
-                val fontSize = 12.sp
-                Row{
-//                    Text((item.changeType?:"") + (if(item.itemType==Cons.gitItemTypeSubmodule) ", ${Cons.gitItemTypeSubmoduleStr+(if(isDiffToLocal && item.dirty) ", ${Cons.gitSubmoduleDirtyStr}" else "")}" else ""), fontSize = fontSize, color = changeTypeColor)
-                    Text(item.getChangeTypeAndSuffix(isDiffToLocal),
-                        fontSize = fontSize, color = changeTypeColor
-                    )
-                }
-                Row {
-                    Text(text = item.getSizeStr(),fontSize = fontSize, )
-                }
+
+                Text(text = item.fileName, fontSize = 20.sp, color = changeTypeColor)
+
+                val secondLineFontSize = 12.sp
+                Text(text = item.getSizeStr() + ", " + item.getChangeTypeAndSuffix(isDiffToLocal), fontSize = secondLineFontSize, color = changeTypeColor)
 
                 val parentPath = item.getParentDirStr()
                 if(parentPath.isNotEmpty()) {
-                    Row{
-                        Text(text = parentPath,fontSize = fontSize)
-                    }
+                    Text(text = parentPath, fontSize = secondLineFontSize, color = changeTypeColor)
                 }
             }
 
