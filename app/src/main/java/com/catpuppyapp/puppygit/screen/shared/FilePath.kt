@@ -22,4 +22,8 @@ data class FilePath(
     fun toFuckSafFile(context: Context):FuckSafFile {
         return FuckSafFile(context = context, path = this)
     }
+
+    override fun toString(): String {
+        return originPath
+    }
 }

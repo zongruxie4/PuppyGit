@@ -138,6 +138,6 @@ class FuckSafFile(val context: Context?, val path: FilePath) {
     }
 
     override fun toString(): String {
-        return path.originPath
+        return canonicalPath
     }
 }
