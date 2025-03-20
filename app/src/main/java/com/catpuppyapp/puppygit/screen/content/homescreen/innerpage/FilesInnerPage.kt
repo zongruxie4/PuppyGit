@@ -549,31 +549,24 @@ fun FilesInnerPage(
     //如果apply patch测试通过，则启用包含apply as patch的菜单，否则使用不包含此选项的菜单
     //注意：会忽略值为空的选项！可用此特性来对用户隐藏未测试特性
     val fileMenuKeyTextList = listOf(
-        stringResource(R.string.open),  //用内部编辑器打开，得加个这个选项，因为如果自动判断文件该用外部程序打开，但又没对应的外部程序，用户又想用内部编辑器打开，但文件管理器又判断文件该用内部文件打开，就死局了，所以得加这个选项
-        stringResource(R.string.open_as),
-//        stringResource(R.string.edit_with),
-//        stringResource(R.string.view_with),
-        stringResource(R.string.rename),
-        if(proFeatureEnabled(applyPatchTestPassed)) stringResource(R.string.apply_as_patch) else "",  //应用patch，弹窗让用户选仓库，然后可对仓库应用patch
-//        这列表如果添加元素最好往头或尾加，别往中间加，不然改关联的数组可能容易改错位置
-//        stringResource(R.string.copy_path),
-        stringResource(R.string.file_history),
-        stringResource(R.string.copy_full_path),
-        stringResource(R.string.copy_repo_relative_path),
-        stringResource(R.string.details),
-
-//        stringResource(R.string.export),  //改到批量操作里了
-//        stringResource(id = R.string.delete)  //改用长按菜单的删除功能了
-    )
+            if(isFileChooser) "" else stringResource(R.string.open),  //用内部编辑器打开，得加个这个选项，因为如果自动判断文件该用外部程序打开，但又没对应的外部程序，用户又想用内部编辑器打开，但文件管理器又判断文件该用内部文件打开，就死局了，所以得加这个选项
+            if(isFileChooser) "" else stringResource(R.string.open_as),
+            stringResource(R.string.rename),
+            if(isFileChooser) "" else if(proFeatureEnabled(applyPatchTestPassed)) stringResource(R.string.apply_as_patch) else "",  //应用patch，弹窗让用户选仓库，然后可对仓库应用patch
+            if(isFileChooser) "" else stringResource(R.string.file_history),
+            stringResource(R.string.copy_full_path),
+            stringResource(R.string.copy_repo_relative_path),
+            if(isFileChooser) "" else stringResource(R.string.details),
+        )
 
     //目录条目菜单没有open with
     val dirMenuKeyTextList = listOf(
         stringResource(R.string.rename),
         stringResource(R.string.copy_full_path),
         stringResource(R.string.copy_repo_relative_path),
-        stringResource(R.string.import_as_repo),
-        stringResource(R.string.init_repo),
-        stringResource(R.string.details),
+        if(isFileChooser) "" else stringResource(R.string.import_as_repo),
+        if(isFileChooser) "" else stringResource(R.string.init_repo),
+        if(isFileChooser) "" else stringResource(R.string.details),
     )
 
 
