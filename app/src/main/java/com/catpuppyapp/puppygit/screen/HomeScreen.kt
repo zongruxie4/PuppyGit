@@ -1190,6 +1190,8 @@ fun HomeScreen(
             else if(currentHomeScreen.intValue== Cons.selectedItem_Files) {
 //                changeStateTriggerRefreshPage(needRefreshFilesPage)
                 FilesInnerPage(
+                    naviUp = {},
+                    updateSelectedPath = {},
                     isFileChooser = false,
                     enableMultiSelectionForFileChooser = false,
                     fileDisplayFilter = fileDisplayFilter.value,

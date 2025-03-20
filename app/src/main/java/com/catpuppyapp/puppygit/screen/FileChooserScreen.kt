@@ -34,6 +34,7 @@ import com.catpuppyapp.puppygit.screen.content.homescreen.scaffold.actions.Files
 import com.catpuppyapp.puppygit.screen.content.homescreen.scaffold.title.FilesTitle
 import com.catpuppyapp.puppygit.screen.shared.FileDisplayFilter
 import com.catpuppyapp.puppygit.screen.shared.FilePath
+import com.catpuppyapp.puppygit.screen.shared.SharedState
 import com.catpuppyapp.puppygit.settings.SettingsUtil
 import com.catpuppyapp.puppygit.utils.AppModel
 import com.catpuppyapp.puppygit.utils.Msg
@@ -68,6 +69,9 @@ fun FileChooserScreen(
     val filesPageIsPasteMode = rememberSaveable { mutableStateOf(false)}
     val filesPageSelectedItems = mutableCustomStateListOf(keyTag = stateKeyTag, keyName = "filesPageSelectedItems", initValue = listOf<FileItemDto>())
 
+    val updateSelectedPath = {path:String->
+        SharedState.pathOfFileChooser.value = path
+    }
 
     val filesPageLastKeyword = rememberSaveable{ mutableStateOf("") }
     val filesPageSearchToken = rememberSaveable{ mutableStateOf("") }
@@ -244,6 +248,8 @@ fun FileChooserScreen(
 
 //                changeStateTriggerRefreshPage(needRefreshFilesPage)
         FilesInnerPage(
+            naviUp = naviUp,
+            updateSelectedPath = updateSelectedPath,
             isFileChooser = true,
             enableMultiSelectionForFileChooser = false,
             fileDisplayFilter = fileDisplayFilter.value,

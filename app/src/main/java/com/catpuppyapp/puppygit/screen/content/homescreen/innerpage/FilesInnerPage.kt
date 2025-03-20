@@ -169,6 +169,8 @@ private const val showImportForBottomBar = false
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun FilesInnerPage(
+    naviUp:()->Unit,
+    updateSelectedPath:(path:String) -> Unit,
     isFileChooser:Boolean,
     enableMultiSelectionForFileChooser:Boolean,  //仅当 `isFileChooser` 为真此值才有效
     fileDisplayFilter: FileDisplayFilter,
@@ -800,6 +802,8 @@ fun FilesInnerPage(
     val isBackHandlerEnable = rememberSaveable { mutableStateOf(true)}
 
     val backHandlerOnBack = getBackHandler(
+        naviUp = naviUp,
+        isFileChooser = isFileChooser,
         appContext = activityContext,
         isFileSelectionMode = isFileSelectionMode,
         filesPageQuitSelectionMode = filesPageQuitSelectionMode,
@@ -3223,6 +3227,8 @@ private suspend fun doInit(
 
 @Composable
 private fun getBackHandler(
+    naviUp:()->Unit,
+    isFileChooser: Boolean,
     appContext: Context,
     isFileSelectionMode: MutableState<Boolean>,
     filesPageQuitSelectionMode: () -> Unit,
@@ -3263,6 +3269,8 @@ private fun getBackHandler(
 //            currentPath.value = File(currentPath.value).parent ?: FsUtils.rootPath
             //刷新页面
             changeStateTriggerRefreshPage(needRefreshFilesPage)
+        }else if(isFileChooser){
+            naviUp()
         } else {
             //如果在两秒内按返回键，就会退出，否则会提示再按一次可退出程序
             if (backStartSec.longValue > 0 && getSecFromTime() <= backStartSec.longValue) {  //大于0说明不是第一次执行此方法，那检测是上次获取的秒数，否则直接显示“再按一次退出app”的提示
