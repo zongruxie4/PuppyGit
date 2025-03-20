@@ -1,5 +1,7 @@
 package com.catpuppyapp.puppygit.screen
 
+import android.net.Uri
+import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
@@ -16,26 +18,28 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.input.nestedscroll.nestedScroll
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.TextRange
 import androidx.compose.ui.text.input.TextFieldValue
-import com.catpuppyapp.puppygit.compose.FilterTextField
-import com.catpuppyapp.puppygit.compose.GoToTopAndGoToBottomFab
 import com.catpuppyapp.puppygit.compose.LongPressAbleIconBtn
 import com.catpuppyapp.puppygit.constants.Cons
 import com.catpuppyapp.puppygit.data.entity.RepoEntity
-import com.catpuppyapp.puppygit.git.StatusTypeEntrySaver
+import com.catpuppyapp.puppygit.dto.FileItemDto
 import com.catpuppyapp.puppygit.play.pro.R
-import com.catpuppyapp.puppygit.screen.content.homescreen.innerpage.ChangeListInnerPage
-import com.catpuppyapp.puppygit.screen.content.homescreen.scaffold.actions.ChangeListPageActions
-import com.catpuppyapp.puppygit.screen.content.homescreen.scaffold.title.IndexScreenTitle
-import com.catpuppyapp.puppygit.screen.functions.ChangeListFunctions
+import com.catpuppyapp.puppygit.screen.content.homescreen.innerpage.FilesInnerPage
+import com.catpuppyapp.puppygit.screen.content.homescreen.scaffold.actions.FilesPageActions
+import com.catpuppyapp.puppygit.screen.content.homescreen.scaffold.title.FilesTitle
+import com.catpuppyapp.puppygit.screen.shared.FilePath
 import com.catpuppyapp.puppygit.screen.shared.SharedState
 import com.catpuppyapp.puppygit.settings.SettingsUtil
 import com.catpuppyapp.puppygit.utils.AppModel
+import com.catpuppyapp.puppygit.utils.Msg
+import com.catpuppyapp.puppygit.utils.changeStateTriggerRefreshPage
 import com.catpuppyapp.puppygit.utils.state.mutableCustomStateListOf
 import com.catpuppyapp.puppygit.utils.state.mutableCustomStateOf
-import com.github.git24j.core.Repository
 
 private val TAG = "FileChooserScreen"
 private val stateKeyTag = "FileChooserScreen"
@@ -45,96 +49,125 @@ private val stateKeyTag = "FileChooserScreen"
 fun FileChooserScreen(
     naviUp: () -> Unit
 ) {
+    val activityContext = LocalContext.current
+    val allRepoParentDir = AppModel.allRepoParentDir
 
-
-    val navController = AppModel.navController
     val homeTopBarScrollBehavior = AppModel.homeTopBarScrollBehavior
 
-    val allRepoParentDir = AppModel.allRepoParentDir
     val scope = rememberCoroutineScope()
 
     val settings = remember {SettingsUtil.getSettingsSnapshot()}
 
-    //替换成我的cusntomstateSaver，然后把所有实现parcellzier的类都取消实现parcellzier，改成用我的saver
-//    val curRepo = rememberSaveable{ mutableStateOf(RepoEntity()) }
-//    val curRepo = mutableCustomStateOf(value = RepoEntity())
-
-    val changeListRefreshRequiredByParentPage = rememberSaveable { SharedState.indexChangeList_Refresh }
-    val changeListRequireRefreshFromParentPage = { whichRepoRequestRefresh:RepoEntity ->
-        ChangeListFunctions.changeListDoRefresh(changeListRefreshRequiredByParentPage, whichRepoRequestRefresh)
+    val needRefreshFilesPage = rememberSaveable { mutableStateOf("") }
+    val refreshPage = {
+        changeStateTriggerRefreshPage(needRefreshFilesPage)
     }
-//    val changeListCurRepo = rememberSaveable{ mutableStateOf(RepoEntity()) }
-    val changeListCurRepo = mutableCustomStateOf(keyTag = stateKeyTag, keyName = "changeListCurRepo", initValue = RepoEntity(id=""))
-    val changeListIsShowRepoList = rememberSaveable { mutableStateOf(false)}
-    val changeListPageHasIndexItem = rememberSaveable { mutableStateOf(false)}
-    val changeListShowRepoList = {
-        changeListIsShowRepoList.value = true
+
+    val filesPageIsFileSelectionMode = rememberSaveable { mutableStateOf(false)}
+    val filesPageIsPasteMode = rememberSaveable { mutableStateOf(false)}
+    val filesPageSelectedItems = mutableCustomStateListOf(keyTag = stateKeyTag, keyName = "filesPageSelectedItems", initValue = listOf<FileItemDto>())
+
+
+    val filesPageLastKeyword = rememberSaveable{ mutableStateOf("") }
+    val filesPageSearchToken = rememberSaveable{ mutableStateOf("") }
+    val filesPageSearching = rememberSaveable{ mutableStateOf(false) }
+    val resetFilesSearchVars = {
+        // search loading
+        filesPageSearching.value = false
+        // empty token to stop running search task
+        filesPageSearchToken.value = ""
+        filesPageLastKeyword.value = ""
     }
-    val changeListIsFileSelectionMode = rememberSaveable { mutableStateOf( false)}
-    val changeListPageNoRepo = rememberSaveable { mutableStateOf( false)}
-    val changeListPageHasNoConflictItems = rememberSaveable { mutableStateOf(false)}
-
-    val changeListPageRebaseCurOfAll = rememberSaveable { mutableStateOf( "")}
-    val changeListNaviTarget = rememberSaveable { mutableStateOf(Cons.ChangeListNaviTarget_InitValue)}
-
-
-
-    val changeListPageFilterKeyWord = mutableCustomStateOf(
+    //这个filter有点重量级，比较适合做成全局搜索之类的功能
+    val filesPageFilterMode = rememberSaveable{mutableIntStateOf(0)}  //0关闭，1正在搜索，显示输入框，2显示搜索结果
+    val filesPageFilterKeyword = mutableCustomStateOf(
         keyTag = stateKeyTag,
-        keyName = "changeListPageFilterKeyWord",
+        keyName = "filesPageFilterKeyword",
         initValue = TextFieldValue("")
     )
-    val changeListPageFilterModeOn = rememberSaveable { mutableStateOf(false)}
+    val filesPageFilterTextFieldFocusRequester = remember { FocusRequester() }
+    val filesPageFilterOn = {
+        filesPageFilterMode.intValue = 1
 
-    // start: search states
-    val changeListLastSearchKeyword = rememberSaveable { mutableStateOf("") }
-    val changeListSearchToken = rememberSaveable { mutableStateOf("") }
-    val changeListSearching = rememberSaveable { mutableStateOf(false) }
-    val resetChangeListSearchVars = {
-        changeListSearching.value = false
-        changeListSearchToken.value = ""
-        changeListLastSearchKeyword.value = ""
+        //若不为空，选中关键字
+        val text = filesPageFilterKeyword.value.text
+        if(text.isNotEmpty()) {
+            filesPageFilterKeyword.value = filesPageFilterKeyword.value.copy(
+                //这个TextRange，左闭右开，话说kotlin这一会左闭右闭一会左闭右开，有点难受
+                selection = TextRange(0, text.length)
+            )
+        }
     }
-    // end: search states
+    val filesPageFilterOff = {
+        filesPageFilterMode.intValue = 0
+        changeStateTriggerRefreshPage(needRefreshFilesPage)
+    }
+    val filesPageGetFilterMode = {
+        filesPageFilterMode.intValue
+    }
+    val filesPageDoFilter= doFilter@{ keyWord:String ->
+        //传参的话，优先使用，参数若为空，检查状态变量是否有数据，若有使用，若还是空，中止操作
+        var needUpdateFieldState = true  //如果不是从状态变量获取的关键字，则更新状态变量为关键字
 
-//    val changelistFilterListState = mutableCustomStateOf(keyTag = stateKeyTag, keyName = "changelistFilterListState", LazyListState(0,0))
-    val changelistFilterListState = rememberLazyListState()
+        var key = keyWord
+        if(key.isEmpty()) {  //注意是empty，不要用blank，不然不能搜索空格，但文件名可能包含空格
+            key = filesPageFilterKeyword.value.text
+            if(key.isEmpty()) {
+                Msg.requireShow(activityContext.getString(R.string.keyword_is_empty))
+                return@doFilter
+            }
 
-    val swap =rememberSaveable { mutableStateOf(false)}
+            needUpdateFieldState = false  //这时，key本身就是从state获取的，所以不用再更新state了
+        }
 
-//    val editorPageRequireOpenFilePath = rememberSaveable{ mutableStateOf("") } // canonicalPath
-////    val needRefreshFilesPage = rememberSaveable { mutableStateOf(false) }
-//    val needRefreshFilesPage = rememberSaveable { mutableStateOf("") }
-//    val currentPath = rememberSaveable { mutableStateOf(allRepoParentDir.canonicalPath) }
-//    val showCreateFileOrFolderDialog = rememberSaveable{ mutableStateOf(false) }
-//
-//    val showSetGlobalGitUsernameAndEmailDialog = rememberSaveable { mutableStateOf(false) }
-//
-//    val editorPageShowingFilePath = rememberSaveable{ mutableStateOf("") } //当前展示的文件的canonicalPath
-//    val editorPageShowingFileIsReady = rememberSaveable{ mutableStateOf(false) } //当前展示的文件是否已经加载完毕
-//    //TextEditor用的变量
-//    val editorPageTextEditorState = remember { mutableStateOf(TextEditorState.create("")) }
-//    val editorPageShowSaveDoneToast = rememberSaveable { mutableStateOf(false) }
-////    val needRefreshEditorPage = rememberSaveable { mutableStateOf(false) }
-//    val needRefreshEditorPage = rememberSaveable { mutableStateOf("") }
-//    val changeListRequirePull = rememberSaveable { mutableStateOf(false) }
-//    val changeListRequirePush = rememberSaveable { mutableStateOf(false) }
-    val requireDoActFromParent = rememberSaveable { mutableStateOf(false)}
-    val requireDoActFromParentShowTextWhenDoingAct = rememberSaveable { mutableStateOf("")}
-    val enableAction = rememberSaveable { mutableStateOf( true)}
-    val repoState = rememberSaveable{mutableIntStateOf(Repository.StateT.NONE.bit)}  //初始状态是NONE，后面会在ChangeListInnerPage检查并更新状态，只要一创建innerpage或刷新（重新执行init），就会更新此状态
-    val fromTo = Cons.gitDiffFromHeadToIndex
-    val changeListPageItemList = mutableCustomStateListOf(keyTag = stateKeyTag, keyName = "changeListPageItemList", initValue = listOf<StatusTypeEntrySaver>())
-    val changeListPageItemListState = rememberLazyListState()
-    val changeListPageSelectedItemList = mutableCustomStateListOf(keyTag = stateKeyTag, keyName = "changeListPageSelectedItemList", initValue = listOf<StatusTypeEntrySaver>())
-    val changelistPageScrolled = rememberSaveable { mutableStateOf(settings.showNaviButtons) }
-    val changelistNewestPageId = rememberSaveable { mutableStateOf("") }
-    val changeListPageEnableFilterState = rememberSaveable { mutableStateOf(false)}
-    val changeListFilterList = mutableCustomStateListOf(keyTag = stateKeyTag, keyName = "changeListFilterList", initValue = listOf<StatusTypeEntrySaver>())
-    val changeListLastClickedItemKey = rememberSaveable{ SharedState.index_LastClickedItemKey }
+        if(needUpdateFieldState){
+            filesPageFilterKeyword.value = TextFieldValue(key)  //设置关键字
+        }
 
-    val filterLastPosition = rememberSaveable { mutableStateOf(0) }
-    val lastPosition = rememberSaveable { mutableStateOf(0) }
+        filesPageFilterMode.intValue=2  // 设置搜索模式为显示结果
+        changeStateTriggerRefreshPage(needRefreshFilesPage)  //刷新页面
+    }
+
+
+    val filesPageScrolled = rememberSaveable { mutableStateOf(settings.showNaviButtons)}
+    val filesPageListState = mutableCustomStateOf(stateKeyTag, "filesPageListState", initValue = LazyListState(0,0))
+
+    val filesPageSimpleFilterOn = rememberSaveable { mutableStateOf(false)}
+    val filesPageSimpleFilterKeyWord = mutableCustomStateOf(
+        keyTag = stateKeyTag,
+        keyName = "filesPageSimpleFilterKeyWord",
+        initValue = TextFieldValue("")
+    )
+
+    val filesPageCurrentPath = rememberSaveable { mutableStateOf("")}
+    val filesPageLastPathByPressBack = rememberSaveable { mutableStateOf("")}
+    val showCreateFileOrFolderDialog = rememberSaveable { mutableStateOf(false)}
+    val filesPageCurPathFileItemDto = mutableCustomStateOf(stateKeyTag, "filesPageCurPathFileItemDto") { FileItemDto() }
+    val filesPageCurrentPathBreadCrumbList = mutableCustomStateListOf(keyTag = stateKeyTag, keyName = "filesPageCurrentPathBreadCrumbList", initValue = listOf<FileItemDto>())
+
+    //上次滚动位置
+    val filesLastPosition = rememberSaveable { mutableStateOf(0) }
+
+    //判定过滤模式是否真开启的状态变量，例如虽然filterModeOn为真，但是，如果没输入任何关键字，过滤模式其实还是没开，这时这个变量会为假，但filterModeOn为真
+    val filesPageEnableFilterState = rememberSaveable { mutableStateOf(false)}
+    val filesPageFilterList = mutableCustomStateListOf(stateKeyTag, "filesPageFilterList", listOf<FileItemDto>())
+//    val repoFilterListState = mutableCustomStateOf(keyTag = stateKeyTag, keyName = "repoFilterListState", LazyListState(0,0))
+    val filesFilterListState = rememberLazyListState()
+
+    val filesPageRequireImportFile = rememberSaveable { mutableStateOf( false)}
+    val filesPageRequireImportUriList = mutableCustomStateListOf(keyTag = stateKeyTag, keyName = "filesPageRequireImportUriList", initValue = listOf<Uri>())
+    val filesPageCurrentPathFileList = mutableCustomStateListOf(keyTag = stateKeyTag, keyName = "filesPageCurrentPathFileList", initValue = listOf<FileItemDto>()) //路径字符串，用路径分隔符分隔后的list
+    val filesPageRequestFromParent = rememberSaveable { mutableStateOf("")}
+    val filesPageCheckOnly = rememberSaveable { mutableStateOf(false)}
+    val filesPageSelectedRepo = mutableCustomStateOf(keyTag = stateKeyTag, keyName = "filesPageSelectedRepo", RepoEntity(id="") )
+
+    //无用变量，开始：这些变量在这个页面无用，但占位置
+    val currentHomeScreen = rememberSaveable { mutableIntStateOf(Cons.selectedItem_Files) }
+    val editorPageShowingFilePath = rememberSaveable { mutableStateOf(FilePath("")) }
+    val editorPageShowingFileIsReady = rememberSaveable { mutableStateOf(false) }
+    val requireInnerEditorOpenFile = {filepath:String, expectReadOnly:Boolean ->}
+    //无用变量，结束
+
 
     Scaffold(
         modifier = Modifier.nestedScroll(homeTopBarScrollBehavior.nestedScrollConnection),
@@ -145,22 +178,33 @@ fun FileChooserScreen(
                     titleContentColor = MaterialTheme.colorScheme.primary,
                 ),
                 title = {
-                    if(changeListPageFilterModeOn.value) {
-                        FilterTextField(filterKeyWord = changeListPageFilterKeyWord, loading = changeListSearching.value)
-                    }else {
-                        IndexScreenTitle(changeListCurRepo, repoState, scope, changeListPageItemListState, lastPosition)
-                    }
+                    FilesTitle(
+                        currentPath = filesPageCurrentPath,
+                        allRepoParentDir = allRepoParentDir,
+                        needRefreshFilesPage = needRefreshFilesPage,
+                        filesPageGetFilterMode = filesPageGetFilterMode,
+                        filterKeyWord = filesPageFilterKeyword,
+                        filterModeOn = filesPageFilterOn,
+                        doFilter = filesPageDoFilter,
+                        requestFromParent = filesPageRequestFromParent,
+                        filterKeywordFocusRequester = filesPageFilterTextFieldFocusRequester,
+                        filesPageSimpleFilterOn = filesPageSimpleFilterOn.value,
+                        filesPageSimpleFilterKeyWord = filesPageSimpleFilterKeyWord,
+                        curPathItemDto = filesPageCurPathFileItemDto.value,
+                        searching = filesPageSearching.value
+                    )
                 },
                 navigationIcon = {
-                    if(changeListPageFilterModeOn.value) {
+                    if(filesPageGetFilterMode() != 0 || filesPageSimpleFilterOn.value) {
                         LongPressAbleIconBtn(
                             tooltipText = stringResource(R.string.close),
-                            icon = Icons.Filled.Close,
+                            icon =  Icons.Filled.Close,
                             iconContentDesc = stringResource(R.string.close),
 
                         ) {
-                            resetChangeListSearchVars()
-                            changeListPageFilterModeOn.value = false
+                            resetFilesSearchVars()
+                            // close input text field
+                            filesPageSimpleFilterOn.value = false
                         }
                     }else {
                         LongPressAbleIconBtn(
@@ -176,116 +220,68 @@ fun FileChooserScreen(
                 },
 
                 actions = {
-                    if(!changeListPageFilterModeOn.value) {
-                        ChangeListPageActions(
-                            changeListCurRepo,
-                            changeListRequireRefreshFromParentPage,
-                            changeListPageHasIndexItem,
-                            requireDoActFromParent,
-                            requireDoActFromParentShowTextWhenDoingAct,
-                            enableAction,
-                            repoState,
-                            fromTo,
-                            changeListPageItemListState,
-                            scope,
-                            changeListPageNoRepo=changeListPageNoRepo,
-                            hasNoConflictItems = changeListPageHasNoConflictItems.value,
-                            changeListPageFilterModeOn=changeListPageFilterModeOn,
-                            changeListPageFilterKeyWord=changeListPageFilterKeyWord,
-                            rebaseCurOfAll = changeListPageRebaseCurOfAll.value,
-                            naviTarget = changeListNaviTarget
-                        )
+                    FilesPageActions(
+                        showCreateFileOrFolderDialog = showCreateFileOrFolderDialog,
+                        refreshPage = refreshPage,
+                        filterOn = filesPageFilterOn,
+                        filesPageGetFilterMode = filesPageGetFilterMode,
+                        doFilter = filesPageDoFilter,
+                        requestFromParent = filesPageRequestFromParent,
+                        filesPageSimpleFilterOn = filesPageSimpleFilterOn,
+                        filesPageSimpleFilterKeyWord = filesPageSimpleFilterKeyWord
+                    )
 
-                    }
                 },
                 scrollBehavior = homeTopBarScrollBehavior,
             )
         },
         floatingActionButton = {
-            if(changelistPageScrolled.value) {
-                GoToTopAndGoToBottomFab(
-                    filterModeOn = changeListPageFilterModeOn.value,
-                    scope = scope,
-                    filterListState = changelistFilterListState,
-                    listState = changeListPageItemListState,
-                    filterListLastPosition = filterLastPosition,
-                    listLastPosition = lastPosition,
-                    showFab = changelistPageScrolled
-                )
-
-            }
         }
     ) { contentPadding ->
-//        val commit1OidStr = rememberSaveable { mutableStateOf("") }
-//        val commitParentList = remember { mutableStateListOf<String>() }
 
-        ChangeListInnerPage(
-            lastSearchKeyword=changeListLastSearchKeyword,
-            searchToken=changeListSearchToken,
-            searching=changeListSearching,
-            resetSearchVars=resetChangeListSearchVars,
-
+//                changeStateTriggerRefreshPage(needRefreshFilesPage)
+        FilesInnerPage(
+            filesPageLastKeyword=filesPageLastKeyword,
+            filesPageSearchToken=filesPageSearchToken,
+            filesPageSearching=filesPageSearching,
+            resetFilesSearchVars=resetFilesSearchVars,
             contentPadding = contentPadding,
-            fromTo = fromTo,
-            curRepoFromParentPage = changeListCurRepo,
-            isFileSelectionMode = changeListIsFileSelectionMode,
+            currentHomeScreen=currentHomeScreen,
+            editorPageShowingFilePath = editorPageShowingFilePath,
+            editorPageShowingFileIsReady = editorPageShowingFileIsReady,
+            needRefreshFilesPage = needRefreshFilesPage,
+            currentPath=filesPageCurrentPath,
+            showCreateFileOrFolderDialog=showCreateFileOrFolderDialog,
+            requireImportFile=filesPageRequireImportFile,
+            requireImportUriList=filesPageRequireImportUriList,
+            filesPageGetFilterMode=filesPageGetFilterMode,
+            filesPageFilterKeyword=filesPageFilterKeyword,
+            filesPageFilterModeOff = filesPageFilterOff,
+            currentPathFileList = filesPageCurrentPathFileList,
+            filesPageRequestFromParent = filesPageRequestFromParent,
+            requireInnerEditorOpenFile = requireInnerEditorOpenFile,
+            filesPageSimpleFilterOn = filesPageSimpleFilterOn,
+            filesPageSimpleFilterKeyWord = filesPageSimpleFilterKeyWord,
+            filesPageScrolled = filesPageScrolled,
+            curListState = filesPageListState,
+            filterListState = filesFilterListState,
+            openDrawer = {},
+            isFileSelectionMode= filesPageIsFileSelectionMode,
+            isPasteMode = filesPageIsPasteMode,
+            selectedItems = filesPageSelectedItems,
+            checkOnly = filesPageCheckOnly,
+            selectedRepo = filesPageSelectedRepo,
+            goToRepoPage={},
+            goToChangeListPage={},
+            lastPathByPressBack=filesPageLastPathByPressBack,
+            curPathFileItemDto=filesPageCurPathFileItemDto,
+            currentPathBreadCrumbList=filesPageCurrentPathBreadCrumbList,
+            enableFilterState = filesPageEnableFilterState,
+            filterList = filesPageFilterList,
+            lastPosition = filesLastPosition,
 
-            refreshRequiredByParentPage = changeListRefreshRequiredByParentPage.value,
-            changeListRequireRefreshFromParentPage = changeListRequireRefreshFromParentPage,
-            changeListPageHasIndexItem = changeListPageHasIndexItem,
-//                requirePullFromParentPage = changeListRequirePull,
-//                requirePushFromParentPage = changeListRequirePush,
-            requireDoActFromParent = requireDoActFromParent,
-            requireDoActFromParentShowTextWhenDoingAct = requireDoActFromParentShowTextWhenDoingAct,
-            enableActionFromParent = enableAction,
-            repoState = repoState,
-            naviUp=naviUp,
-            itemList = changeListPageItemList,
-            itemListState = changeListPageItemListState,
-            selectedItemList = changeListPageSelectedItemList,
-            changeListPageNoRepo=changeListPageNoRepo,
-            hasNoConflictItems = changeListPageHasNoConflictItems,
-            changelistPageScrolled=changelistPageScrolled,
-            changeListPageFilterModeOn= changeListPageFilterModeOn,
-            changeListPageFilterKeyWord=changeListPageFilterKeyWord,
-            filterListState = changelistFilterListState,
-            swap=swap.value,
-            commitForQueryParents = "",
-            rebaseCurOfAll = changeListPageRebaseCurOfAll,
-            openDrawer = {}, //非顶级页面按返回键不需要打开抽屉
-            newestPageId = changelistNewestPageId,
-            naviTarget = changeListNaviTarget,
-            enableFilterState = changeListPageEnableFilterState,
-            filterList = changeListFilterList,
-            lastClickedItemKey = changeListLastClickedItemKey
-
-
-//            commit1OidStr=commit1OidStr,
-//            commitParentList=commitParentList
         )
-
     }
-//    }
-
-    //compose创建时的副作用
-//    LaunchedEffect(currentPage.intValue) {
-//    LaunchedEffect(Unit) {
-//        try {
-//
-//        } catch (cancel: Exception) {
-////            ("LaunchedEffect: job cancelled")
-//        }
-//    }
-//
-//
-//    //compose被销毁时执行的副作用
-//    DisposableEffect(Unit) {
-////        ("DisposableEffect: entered main")
-//        onDispose {
-////            ("DisposableEffect: exited main")
-//        }
-//    }
-
 }
 
 
