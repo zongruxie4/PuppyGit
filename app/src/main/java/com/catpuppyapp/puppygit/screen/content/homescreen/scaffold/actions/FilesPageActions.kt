@@ -176,16 +176,17 @@ fun FilesPageActions(
                     }
                 )
 
-                DropdownMenuItem(
-                    enabled = enableMenuItem,
-                    text = { Text(stringResource(R.string.export)) },
-                    onClick = {
-                        requestFromParent.value = PageRequest.safExport
-                        dropDownMenuExpendState.value = false
-                    }
-                )
 
                 if(AppModel.devModeOn) {
+                    DropdownMenuItem(
+                        enabled = enableMenuItem,
+                        text = { Text(DevFeature.appendDevPrefix(stringResource(R.string.export))) },
+                        onClick = {
+                            requestFromParent.value = PageRequest.safExport
+                            dropDownMenuExpendState.value = false
+                        }
+                    )
+
                     DropdownMenuItem(
                         enabled = enableMenuItem,
                         text = { Text(DevFeature.safDiff_text) },

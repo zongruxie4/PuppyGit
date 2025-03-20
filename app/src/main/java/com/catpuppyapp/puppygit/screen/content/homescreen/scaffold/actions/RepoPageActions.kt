@@ -21,13 +21,14 @@ import androidx.navigation.NavHostController
 import com.catpuppyapp.puppygit.compose.LongPressAbleIconBtn
 import com.catpuppyapp.puppygit.constants.Cons
 import com.catpuppyapp.puppygit.data.entity.RepoEntity
+import com.catpuppyapp.puppygit.dev.DevFeature
 import com.catpuppyapp.puppygit.dev.importRepoTestPassed
 import com.catpuppyapp.puppygit.dev.proFeatureEnabled
 import com.catpuppyapp.puppygit.play.pro.R
 import com.catpuppyapp.puppygit.style.MyStyleKt
+import com.catpuppyapp.puppygit.utils.AppModel
 import com.catpuppyapp.puppygit.utils.changeStateTriggerRefreshPage
 import com.catpuppyapp.puppygit.utils.state.CustomStateSaveable
-import com.catpuppyapp.puppygit.utils.state.StateUtil
 
 
 @Composable
@@ -101,9 +102,9 @@ fun RepoPageActions(
             expanded = dropDownMenuExpendState.value,
             onDismissRequest = { closeMenu() }
         ) {
-            if(proFeatureEnabled(importRepoTestPassed)) {
+            if(AppModel.devModeOn && proFeatureEnabled(importRepoTestPassed)) {
                 DropdownMenuItem(
-                    text = { Text(stringResource(R.string.import_repo)) },
+                    text = { Text(DevFeature.appendDevPrefix(stringResource(R.string.import_repo))) },
                     onClick = {
                         closeMenu()
                         showImportRepoDialog.value = true
