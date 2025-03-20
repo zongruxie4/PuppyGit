@@ -190,7 +190,7 @@ fun EditorInnerPage(
         s
     }
 
-    val saveLock = remember(editorPageShowingFilePath.value.originPath) { Cache.getOrPutByType(generateKeyForSaveLock(editorPageShowingFilePath.value.originPath), default = { Mutex() }) }
+    val saveLock = remember(editorPageShowingFilePath.value.ioPath) { Cache.getOrPutByType(generateKeyForSaveLock(editorPageShowingFilePath.value.ioPath), default = { Mutex() }) }
 //    val saveLock = Mutex()  //其实这样也行，不过根据路径创建锁更严谨，跨页面也适用，比如如果首页的Editor正在保存，然后打开子页面，这时子页面必须等首页保存完成，但如果用这个和页面生命周期一样的锁，就无法实现那种效果了，但和页面生命周期一样的锁其实也够用
 
 //    val isEdited = rememberSaveable{ mutableStateOf(false) }
@@ -381,7 +381,7 @@ fun EditorInnerPage(
         isSaving.value=false
 //        editorPageRequireOpenFilePath.value = ""
         //存上当前文件路径，要不然reOpen时还得从配置文件查，当然，app销毁后，此变量作废，依然需要从配置文件查
-        saveLastOpenPath(editorPageShowingFilePath.value.originPath)
+        saveLastOpenPath(editorPageShowingFilePath.value.ioPath)
 
         editorPageShowingFilePath.value = FilePath("")
         editorPageShowingFileDto.value.fullPath=""
@@ -683,7 +683,7 @@ fun EditorInnerPage(
 
     if(requestFromParent.value == PageRequest.requireInitPreview || requestFromParent.value == PageRequest.requireInitPreviewFromSubEditor) {
         PageRequest.clearStateThenDoAct(requestFromParent) {
-            val editorPageShowingFilePath = editorPageShowingFilePath.value.originPath
+            val editorPageShowingFilePath = editorPageShowingFilePath.value.ioPath
             val previewNavStack = previewNavStack.value
             doJobThenOffLoading {
                 //先保存，不然如果文件大切换预览会卡住然后崩溃导致会丢数据
@@ -814,7 +814,7 @@ fun EditorInnerPage(
                 previewNavStack.value.editingPath = previewing
 
                 //若正在预览和正在编辑的文件不同则重载，否则仅退出预览模式即可
-                if(previewing != editorPageShowingFilePath.value.originPath) {
+                if(previewing != editorPageShowingFilePath.value.ioPath) {
                     editorPageShowingFilePath.value = FilePath(previewing)
                     keepPreviewNavStackOnce.value = true  //保留导航栈
                     reloadFile()
@@ -929,7 +929,7 @@ fun EditorInnerPage(
             val fileName = editorPageShowingFileName ?: currentFile.name
             val fileSize = if(fileReadable) getHumanReadableSizeStr(currentFile.length()) else 0
             //仅文件可读且当前预览或编辑的文件与当前编辑的文件相同时才显示行数和字数
-            val showLinesCharsCount = fileReadable && currentFile.path.originPath == editorFilePath.originPath
+            val showLinesCharsCount = fileReadable && currentFile.path.ioPath == editorFilePath.ioPath
             val (charsCount, linesCount) = if(showLinesCharsCount) editableController.value.getCharsAndLinesCount() else Pair(0, 0)
 //            val lastModifiedTimeStr = getFormatTimeFromSec(sec=file.lastModified()/1000, offset = getSystemDefaultTimeZoneOffset())
             val lastModifiedTimeStr = if(fileReadable) getFormattedLastModifiedTimeOfFile(currentFile) else ""
@@ -1149,6 +1149,7 @@ fun EditorInnerPage(
                                 })
                                 // map to list
                                 .map { (k, v) ->
+                                    //如果从外部app请求本app打开文件，然后对方app没允许获取永久uri权限，那么下次重启本app后，这个文件名有可能会变成空白，除非请求打开的路径可以解析出相应的绝对路径，那样本app就会使用绝对路径访问文件，就是 "/storage/emulate/0" 那种路径，这时文件名就不会有错了，除非用户没授权访问外部存储
                                     // Pair(fileName, fileFullPath)
                                     Pair(FilePath(k).toFuckSafFile(activityContext).name, k)
                                 }.let {
@@ -1230,7 +1231,7 @@ fun EditorInnerPage(
     // file loaded (load file successfully)
     if(!editorPageShowingFileHasErr.value && editorPageShowingFileIsReady.value && editorPageShowingFilePath.value.isNotBlank()){
         val fileFullPath = editorPageShowingFilePath.value
-        val fileEditedPos = FileOpenHistoryMan.get(fileFullPath.originPath)
+        val fileEditedPos = FileOpenHistoryMan.get(fileFullPath.ioPath)
 
         FileEditor(
             requireEditorScrollToPreviewCurPos = requireEditorScrollToPreviewCurPos,
@@ -1370,7 +1371,7 @@ fun EditorInnerPage(
             }
 
             //保存最后打开文件路径
-            saveLastOpenPath(editorPageShowingFilePath.value.originPath)
+            saveLastOpenPath(editorPageShowingFilePath.value.ioPath)
 
 
 //            editorPageShowingFilePath.value = ""
@@ -1439,11 +1440,11 @@ private suspend fun doInit(
         }
 
         //保存上次打开文件路径
-        AppModel.lastEditFile.value = editorPageShowingFilePath.value.originPath
+        AppModel.lastEditFile.value = editorPageShowingFilePath.value.ioPath
 
         //到这，文件路径就确定了
         val editorPageShowingFilePath = editorPageShowingFilePath.value
-        val requireOpenFilePath = editorPageShowingFilePath.originPath
+        val requireOpenFilePath = editorPageShowingFilePath.ioPath
         if (requireOpenFilePath.isBlank()) {
             //这时页面会显示选择文件和打开上次文件，这里无需处理
             return

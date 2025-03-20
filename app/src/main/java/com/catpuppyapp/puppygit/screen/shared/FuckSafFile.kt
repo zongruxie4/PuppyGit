@@ -44,15 +44,15 @@ class FuckSafFile(val context: Context?, val path: FilePath) {
 
 
     init {
-        val pathType = path.pathType
-        val originPath = path.originPath
+        val ioPath = path.ioPath
+        val pathType = path.ioPathType
 
         if(pathType == PathType.ABSOLUTE) {
-            initFile(originPath)
+            initFile(ioPath)
         }else if(pathType == PathType.CONTENT_URI) {
-            initDocFile(originPath)
+            initDocFile(ioPath)
         }else if(pathType == PathType.FILE_URI) {
-            val realPath = originPath.removePrefix(FsUtils.fileUriPathPrefix)
+            val realPath = ioPath.removePrefix(FsUtils.fileUriPathPrefix)
             initFile(realPath)
         }
     }

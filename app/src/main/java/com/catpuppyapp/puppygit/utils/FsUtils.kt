@@ -53,6 +53,9 @@ object FsUtils {
     const val fileUriPathPrefix = "file://"
     const val absolutePathPrefix = "/"
 
+    //换了种解析方法，这个没用了
+//    const val encodedFileUriPathPrefix = "file%3A%2F%2F%2F"  // web 那个url encoder或url component编码过的 "file://"，由于安卓的uri在.net包下，可能在设计上想用来网络传输所以用web的url组件编码，呵呵，这破saf的破uri，本地用都这么恶心，还想web用，想屁呢
+
 
     //必须和 AndroidManifest.xml 里的 provider.android:authorities 的值一样
 //    const val PROVIDER_AUTHORITY = "com.catpuppyapp.puppygit.play.pro.fileprovider"
@@ -1160,12 +1163,14 @@ object FsUtils {
     /**
      * 返回的不一定是真实路径
      * maybe returned is not real path, no promise
+     *
+     * @return eg. /storage/emulated/0/folder1/folder2
      */
     fun getRealPathFromUri(uri:Uri):String {
         return try {
             val uriPathString = uri.path.toString()
-            //eg. /storage/emulated/0/folder1/folder2
-            (getExternalStorageRootPathNoEndsWithSeparator() + Cons.slash + uriPathString.substring(uriPathString.indexOf(":")+1)).trimEnd(Cons.slashChar)
+            // 例如：uri为：content://com.android.externalstorage.documents/tree/primary%3ARepos, 则uri.path为 /tree/primary:Repos
+            (getExternalStorageRootPathNoEndsWithSeparator() + Cons.slash + uriPathString.substring(uriPathString.indexOf(":")+1).trim(Cons.slashChar)).trimEnd(Cons.slashChar)
         }catch (_:Exception) {
             ""
         }
@@ -1461,48 +1466,6 @@ object FsUtils {
     }
 
 
-    /**
-     * @return Pair(path, filename)
-     */
-    @Deprecated("这个函数会尝试转换content uri to 绝对路径，后来editor支持处理content uri了，不需要转换了")
-    fun getFilePathAndRealNameFromUriOrCanonicalPath(context: Context, uri: Uri?): Pair<String, String> {
-        if(uri == null) {
-            return Pair("", "")
-        }
-
-        // path是去掉authority（一般是包名）后的路径，例如：uri为：content://com.android.externalstorage.documents/tree/primary%3ARepos, 则uri.path为 /tree/primary:Repos
-        val uriPath = uri.path ?: ""
-        if(uriPath.isBlank()) {
-            return Pair("", "")
-        }
-
-        MyLog.d(TAG, "#getFilePathAndRealNameFromUriOrCanonicalPath: before parsing, uriPath=$uriPath")
-
-        //可能是编码后的绝对路径，质感文件分享的就是这种路径，类似: "content://me.zhanghai.android.files.file_provider/file%253A%252F%252F%252Fstorage%252Femulated%252F0%252Fabcrepos%252FPuppyGit2%252Fautomation_doc.md"
-        //但这种路径其实还是content://开头，没必要转换成绝对路径，直接用saf的api读写就行
-        val pathAndFileNamePair = if(uriPath.startsWith("/file%3A%2F%2F%2F")) {  // "/file:///" 转码过的路径，处理下，质感文件分享的uri取出的uriPath就是转码过的
-            //字符串有可能经过多次编码，所以需要循环一下，解析到无法再解析为止
-            var lastPath = Uri.decode(uriPath)
-            for(i in 1..1000) { // 1000次应该够了吧？
-                val newPath = Uri.decode(lastPath)
-                if(newPath == lastPath) {
-                    break
-                }
-
-                lastPath = newPath
-            }
-
-            // rawPath like /storage/emulated/0/filename.txt
-            val rawPath = lastPath.substring(8)
-            Pair(rawPath, getFileNameFromCanonicalPath(rawPath))
-        }else {
-            getIoPathAndFileName(context, uri.toString())
-        }
-
-        MyLog.d(TAG, "#getFilePathAndRealNameFromUriOrCanonicalPath: after parsed, path=${pathAndFileNamePair.first}, fileName=${pathAndFileNamePair.second}")
-
-        return pathAndFileNamePair
-    }
 
 
     fun isNotRelativePath(path: String):Boolean {
@@ -1536,21 +1499,6 @@ object FsUtils {
     }
 
 
-
-    /**
-     * 获取一个能io的path：如果是file://，转换成绝对路径，否则原样返回
-     */
-    fun getIoPathAndFileName(context: Context, originPath: String):Pair<String, String> {
-        return if(originPath.startsWith(contentUriPathPrefix)) {
-            //尝试从uri获取真实文件名（从外部分享文件到ppgit时用的就是此函数获取文件名）；如果失败，用uri创建File对象，然后获取文件名，不过File获取的文件名可能乱码而且不一定是文件名
-            Pair(originPath, getFileRealNameFromUri(context, Uri.parse(originPath)) ?: File(originPath).name)
-        }else if(originPath.startsWith(fileUriPathPrefix)) {
-            val path = originPath.removePrefix(fileUriPathPrefix)
-            Pair(path, getFileNameFromCanonicalPath(path))
-        }else { // starts with / or other cases
-            Pair(originPath, getFileNameFromCanonicalPath(originPath))
-        }
-    }
 
     fun copy(inputStream:InputStream, outputStream:OutputStream) {
         inputStream.use { input ->

@@ -13,12 +13,12 @@ enum class PathType {
    ;
 
    companion object {
-      fun getType(originPath:String): PathType {
-         return if(originPath.startsWith(absolutePathPrefix)) {
+      fun getType(path:String): PathType {
+         return if(path.startsWith(absolutePathPrefix)) {
             ABSOLUTE
-         }else if(originPath.startsWith(contentUriPathPrefix)) {
+         }else if(path.startsWith(contentUriPathPrefix)) {
             CONTENT_URI
-         }else if(originPath.startsWith(fileUriPathPrefix)) {
+         }else if(path.startsWith(fileUriPathPrefix)) {
             FILE_URI
          }else {
             INVALID

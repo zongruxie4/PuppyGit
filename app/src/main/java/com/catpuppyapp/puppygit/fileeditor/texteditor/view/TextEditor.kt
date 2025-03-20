@@ -895,7 +895,7 @@ fun TextEditor(
                 //更新配置文件记录的滚动位置（当前屏幕可见第一行）和最后编辑行
                 //如果当前索引不是上次定位的索引，更新页面状态变量和配置文件中记录的最后编辑行索引，不管是否需要滚动，反正先记上
                 //先比较一下，Settings对象从内存取不用读文件，很快，如果没变化，就不用更新配置文件了，省了磁盘IO，所以有必要检查下
-                val oldLinePos = FileOpenHistoryMan.get(fileFullPath.originPath)
+                val oldLinePos = FileOpenHistoryMan.get(fileFullPath.ioPath)
                 val needUpdateLastEditedLineIndex = oldLinePos?.lineIndex != lastEditedLineIndexState.intValue
                 val currentFirstVisibleIndex = listState.firstVisibleItemIndex
                 val needUpdateFirstVisibleLineIndex = oldLinePos?.firstVisibleLineIndex != currentFirstVisibleIndex
@@ -925,7 +925,7 @@ fun TextEditor(
 //                    println("editorPos will save: "+pos)
 //                }
 //                        println(pos) //test2024081116726433
-                    FileOpenHistoryMan.set(fileFullPath.originPath, pos)
+                    FileOpenHistoryMan.set(fileFullPath.ioPath, pos)
 //                    }
                 }
             }catch (e:Exception) {
