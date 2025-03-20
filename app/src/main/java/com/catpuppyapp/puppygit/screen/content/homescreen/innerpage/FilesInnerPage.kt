@@ -1324,48 +1324,50 @@ fun FilesInnerPage(
                                             }
                                         )
 
-                                        DropdownMenuItem(
-                                            enabled = enableMenuItem,
-                                            text = { Text(stringResource(R.string.import_as_repo)) },
-                                            onClick = {
-                                                breadCrumbDropDownMenuExpendState.value = false
-                                                initImportAsRepoDialog(listOf(it.fullPath))
-                                            }
-                                        )
-                                        DropdownMenuItem(
-                                            enabled = enableMenuItem,
-                                            text = { Text(stringResource(R.string.init_repo)) },
-                                            onClick = {
-                                                breadCrumbDropDownMenuExpendState.value = false
-                                                initInitRepoDialog(listOf(it.fullPath))
-                                            }
-                                        )
-                                        DropdownMenuItem(
-                                            enabled = enableMenuItem,
-                                            text = { Text(stringResource(R.string.show_in_repos)) },
-                                            onClick = {
-                                                breadCrumbDropDownMenuExpendState.value = false
-                                                showInRepos(it.fullPath)
-                                            }
-                                        )
-                                        DropdownMenuItem(
-                                            enabled = enableMenuItem,
-                                            text = { Text(stringResource(R.string.show_in_changelist)) },
-                                            onClick = {
-                                                breadCrumbDropDownMenuExpendState.value = false
-                                                showInChangeList(it.fullPath)
-                                            }
-                                        )
-                                        DropdownMenuItem(
-                                            enabled = enableMenuItem,
-                                            text = { Text(stringResource(R.string.details)) },
-                                            onClick = {
-                                                breadCrumbDropDownMenuExpendState.value = false
-                                                // bread crumb dto lack some info for faster loading, so need requrey a new dto when show details
-                                                //面包屑的dto是缩水的，为了加载快而没查最后修改时间和大小等在面包屑用不到的信息，因此显示前需要重新查下dto
-                                                initDetailsDialog(listOf(FileItemDto.genFileItemDtoByFile(File(it.fullPath), activityContext)))
-                                            }
-                                        )
+                                        if(isFileChooser.not()) {
+                                            DropdownMenuItem(
+                                                enabled = enableMenuItem,
+                                                text = { Text(stringResource(R.string.import_as_repo)) },
+                                                onClick = {
+                                                    breadCrumbDropDownMenuExpendState.value = false
+                                                    initImportAsRepoDialog(listOf(it.fullPath))
+                                                }
+                                            )
+                                            DropdownMenuItem(
+                                                enabled = enableMenuItem,
+                                                text = { Text(stringResource(R.string.init_repo)) },
+                                                onClick = {
+                                                    breadCrumbDropDownMenuExpendState.value = false
+                                                    initInitRepoDialog(listOf(it.fullPath))
+                                                }
+                                            )
+                                            DropdownMenuItem(
+                                                enabled = enableMenuItem,
+                                                text = { Text(stringResource(R.string.show_in_repos)) },
+                                                onClick = {
+                                                    breadCrumbDropDownMenuExpendState.value = false
+                                                    showInRepos(it.fullPath)
+                                                }
+                                            )
+                                            DropdownMenuItem(
+                                                enabled = enableMenuItem,
+                                                text = { Text(stringResource(R.string.show_in_changelist)) },
+                                                onClick = {
+                                                    breadCrumbDropDownMenuExpendState.value = false
+                                                    showInChangeList(it.fullPath)
+                                                }
+                                            )
+                                            DropdownMenuItem(
+                                                enabled = enableMenuItem,
+                                                text = { Text(stringResource(R.string.details)) },
+                                                onClick = {
+                                                    breadCrumbDropDownMenuExpendState.value = false
+                                                    // bread crumb dto lack some info for faster loading, so need requrey a new dto when show details
+                                                    //面包屑的dto是缩水的，为了加载快而没查最后修改时间和大小等在面包屑用不到的信息，因此显示前需要重新查下dto
+                                                    initDetailsDialog(listOf(FileItemDto.genFileItemDtoByFile(File(it.fullPath), activityContext)))
+                                                }
+                                            )
+                                        }
                                     }
                                 }
                             }
