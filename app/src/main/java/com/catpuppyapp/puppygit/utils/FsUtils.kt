@@ -44,6 +44,14 @@ object FsUtils {
     const val internalPathPrefix = "Internal://"
     const val externalPathPrefix = "External://"
 
+    //路径前缀
+    //这个后面跟的不是路径，得用什么玩意解析一下才能拿到真名
+    const val contentUriPathPrefix = "content://"
+    //这个后面跟的是绝对路径，例如: "file:///storage/emulated/0/yourfile.txt"
+    const val fileUriPathPrefix = "file://"
+    const val absolutePathPrefix = "/"
+
+
     //必须和 AndroidManifest.xml 里的 provider.android:authorities 的值一样
 //    const val PROVIDER_AUTHORITY = "com.catpuppyapp.puppygit.play.pro.fileprovider"
 
@@ -1461,15 +1469,10 @@ object FsUtils {
     }
 
 
-    //这个后面跟的不是路径，得用什么玩意解析一下才能拿到真名
-    val contentUriPathPrefix = "content://"
-    //这个后面跟的是绝对路径，例如: "file:///storage/emulated/0/yourfile.txt"
-    val fileUriPathPrefix = "file://"
-
-
     /**
      * @return Pair(path, filename)
      */
+    @Deprecated("这个函数会尝试转换content uri to 绝对路径，后来editor支持处理content uri了，不需要转换了")
     fun getFilePathAndRealNameFromUriOrCanonicalPath(context: Context, uri: Uri?): Pair<String, String> {
         if(uri == null) {
             return Pair("", "")
@@ -1483,8 +1486,9 @@ object FsUtils {
 
         MyLog.d(TAG, "#getFilePathAndRealNameFromUriOrCanonicalPath: before parsing, uriPath=$uriPath")
 
-
-        val pathAndFileNamePair = if(uriPath.startsWith("/file%3A%2F%2F%2F")){  // "/file:///" 转码过的路径，处理下，质感文件分享的路径就是转码过的
+        //可能是编码后的绝对路径，质感文件分享的就是这种路径，类似: "content://me.zhanghai.android.files.file_provider/file%253A%252F%252F%252Fstorage%252Femulated%252F0%252Fabcrepos%252FPuppyGit2%252Fautomation_doc.md"
+        //但这种路径其实还是content://开头，没必要转换成绝对路径，直接用saf的api读写就行
+        val pathAndFileNamePair = if(uriPath.startsWith("/file%3A%2F%2F%2F")) {  // "/file:///" 转码过的路径，处理下，质感文件分享的uri取出的uriPath就是转码过的
             //字符串有可能经过多次编码，所以需要循环一下，解析到无法再解析为止
             var lastPath = Uri.decode(uriPath)
             for(i in 1..1000) { // 1000次应该够了吧？
@@ -1499,14 +1503,8 @@ object FsUtils {
             // rawPath like /storage/emulated/0/filename.txt
             val rawPath = lastPath.substring(8)
             Pair(rawPath, getFileNameFromCanonicalPath(rawPath))
-        }else if(uriPath.startsWith(contentUriPathPrefix)) {
-            //尝试从uri获取真实文件名（从外部分享文件到ppgit时用的就是此函数获取文件名）；如果失败，用uri创建File对象，然后获取文件名，不过File获取的文件名可能乱码而且不一定是文件名
-            Pair(uriPath, getFileRealNameFromUri(context, uri) ?: File(uriPath).name)
-        }else if(uriPath.startsWith(fileUriPathPrefix)) {
-            val path = fileUriPathPrefix.removePrefix(fileUriPathPrefix)
-            Pair(path, getFileNameFromCanonicalPath(path))
-        }else { // starts with / or other cases
-            Pair(uriPath, getFileNameFromCanonicalPath(uriPath))
+        }else {
+            getIoPathAndFileName(context, uri.toString())
         }
 
         MyLog.d(TAG, "#getFilePathAndRealNameFromUriOrCanonicalPath: after parsed, path=${pathAndFileNamePair.first}, fileName=${pathAndFileNamePair.second}")
@@ -1544,4 +1542,22 @@ object FsUtils {
 
         return File(path).canonicalPath
     }
+
+
+
+    /**
+     * 获取一个能io的path：如果是file://，转换成绝对路径，否则原样返回
+     */
+    fun getIoPathAndFileName(context: Context, originPath: String):Pair<String, String> {
+        return if(originPath.startsWith(contentUriPathPrefix)) {
+            //尝试从uri获取真实文件名（从外部分享文件到ppgit时用的就是此函数获取文件名）；如果失败，用uri创建File对象，然后获取文件名，不过File获取的文件名可能乱码而且不一定是文件名
+            Pair(originPath, getFileRealNameFromUri(context, Uri.parse(originPath)) ?: File(originPath).name)
+        }else if(originPath.startsWith(fileUriPathPrefix)) {
+            val path = originPath.removePrefix(fileUriPathPrefix)
+            Pair(path, getFileNameFromCanonicalPath(path))
+        }else { // starts with / or other cases
+            Pair(originPath, getFileNameFromCanonicalPath(originPath))
+        }
+    }
+
 }
