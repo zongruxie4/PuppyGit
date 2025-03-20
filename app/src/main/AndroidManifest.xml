@@ -117,6 +117,16 @@
                 <!--                <data android:mimeType="image/*" />-->
             </intent-filter>
 
+            <intent-filter>
+                <action android:name="android.intent.action.VIEW" />
+                <category android:name="android.intent.category.DEFAULT" />
+                <data android:mimeType="text/*" />
+                <!-- support "file://" -->
+                <data android:scheme="file" />
+                <!-- support "content://" -->
+                <data android:scheme="content" />
+            </intent-filter>
+
         </activity>
 
 <!--            android:name="androidx.core.content.FileProvider"-->
