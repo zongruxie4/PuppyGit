@@ -18,6 +18,8 @@ import com.catpuppyapp.puppygit.dto.FileSimpleDto
 import com.catpuppyapp.puppygit.etc.Ret
 import com.catpuppyapp.puppygit.fileeditor.texteditor.state.TextEditorState
 import com.catpuppyapp.puppygit.play.pro.R
+import com.catpuppyapp.puppygit.screen.shared.FilePath
+import com.catpuppyapp.puppygit.screen.shared.FuckSafFile
 import com.catpuppyapp.puppygit.settings.AppSettings
 import com.catpuppyapp.puppygit.utils.snapshot.SnapshotFileFlag
 import com.catpuppyapp.puppygit.utils.snapshot.SnapshotUtil
@@ -687,10 +689,11 @@ object FsUtils {
     //如果两个请求创建备份的变量都传假，则此方法等同于单纯保存内容到targetFilePath对应的文件
     //返回值：1 保存内容到目标文件是否成功， 2 内容快照路径，若创建快照成功则非空字符串值，否则为空字符串， 3 文件快照路径，创建成功则非空字符串
     fun simpleSafeFastSave(
+        context: Context,
         content: String?,
         editorState: TextEditorState?,
         trueUseContentFalseUseEditorState: Boolean,
-        targetFilePath: String,
+        targetFilePath: FilePath,
         requireBackupContent: Boolean,
         requireBackupFile: Boolean,
         contentSnapshotFlag: SnapshotFileFlag,
@@ -699,7 +702,8 @@ object FsUtils {
         var contentAndFileSnapshotPathPair = Pair("","")
 
         try {
-            val targetFile = File(targetFilePath)
+            val targetFile = FuckSafFile(context, targetFilePath)
+
             //为内容创建快照
             val contentRet = if(requireBackupContent) {
                 SnapshotUtil.createSnapshotByContentAndGetResult(
@@ -771,10 +775,10 @@ object FsUtils {
     //这个函数为了状态变量变化时能重新获取doSave，所以加了Composable？
     @Composable
     fun getDoSaveForEditor(
-        editorPageShowingFilePath: MutableState<String>,
+        editorPageShowingFilePath: MutableState<FilePath>,
         editorPageLoadingOn: (String) -> Unit,
         editorPageLoadingOff: () -> Unit,
-        appContext: Context,
+        activityContext: Context,
         editorPageIsSaving: MutableState<Boolean>,
         needRefreshEditorPage: MutableState<String>,
         editorPageTextEditorState: CustomStateSaveable<TextEditorState>,
@@ -791,7 +795,7 @@ object FsUtils {
 
             //让页面知道正在保存文件
             editorPageIsSaving.value = true
-            editorPageLoadingOn(appContext.getString(R.string.saving))
+            editorPageLoadingOn(activityContext.getString(R.string.saving))
 
             try {
                 // 先把filePath和content取出来
@@ -836,7 +840,7 @@ object FsUtils {
 //            println("before getAllText:"+ getSecFromTime())
 
                 //保存前检查文件是否修改过，如果修改过，对源文件创建快照再保存
-                val targetFile = File(filePath)
+                val targetFile = filePath.toFile(activityContext)
                 // 如果要保存的那个文件已经不存在（比如被删），就不检查其是否被外部修改过了，下面直接保存即可，保存的时候会自动创建文件
                 if(targetFile.exists()) {
                     //文件存在，检查是否修改过，如果修改过，创建快照，如果创建快照失败，为当前显示的内容创建快照
@@ -858,7 +862,7 @@ object FsUtils {
                                 //虽然为源文件创建快照失败了，但如果没有为当前内容创建快照，则为当前用户编辑的内容(content)创建个快照
                                 if(editorPageTextEditorState.value.contentIsEmpty().not() && !isContentSnapshoted.value) {
                                     val contentSnapRet = SnapshotUtil.createSnapshotByContentAndGetResult(
-                                        srcFileName = getFileNameFromCanonicalPath(filePath),
+                                        srcFileName = targetFile.name,
                                         fileContent = null,
                                         editorState = editorPageTextEditorState.value,
                                         trueUseContentFalseUseEditorState = false,
@@ -898,6 +902,7 @@ object FsUtils {
 
                 // 保存文件。
                 val ret = FsUtils.simpleSafeFastSave(
+                    context = activityContext,
                     content = null,
                     editorState = editorPageTextEditorState.value,
                     trueUseContentFalseUseEditorState = false,
@@ -906,7 +911,7 @@ object FsUtils {
                     requireBackupFile = true,
                     contentSnapshotFlag = SnapshotFileFlag.editor_content_NormalDoSave,
                     fileSnapshotFlag = SnapshotFileFlag.editor_file_NormalDoSave
-                    )
+                )
 //            println("after save:"+ getSecFromTime())
 
                 //判断content快照是否成功创建，如果成功创建，更新相关变量，那样即使保存出错也不会执行后面创建内容快照的步骤了
@@ -926,7 +931,7 @@ object FsUtils {
                     //保存失败但content不为空且之前没创建过这个content的快照，则创建content快照 (ps: content就是编辑器中的未保存的内容)
                     if (editorPageTextEditorState.value.contentIsEmpty().not() && !isContentSnapshoted.value) {
                         val snapRet = SnapshotUtil.createSnapshotByContentAndGetResult(
-                            srcFileName = getFileNameFromCanonicalPath(filePath),
+                            srcFileName = targetFile.name,
                             fileContent = null,
                             editorState = editorPageTextEditorState.value,
                             trueUseContentFalseUseEditorState = false,
@@ -956,14 +961,14 @@ object FsUtils {
 
                     //执行到这里，targetFile已经修改过了，但我不确定targetFile能否获取到filePath对应的文件修改后的属性，所以新建个File对象
                     //这个是重载dto和更新快照的dto无关，所以即使创建快照成功且更新了快照dto，这个dto也依然要更新（作用好像重复了？）
-                    editorPageFileDto.value = FileSimpleDto.genByFile(File(filePath))
+                    editorPageFileDto.value = FileSimpleDto.genByFile(FuckSafFile(activityContext, filePath))
 //                    }
 
                     //如果保存成功，将isEdited设置为假
                     editorPageIsEdited.value = false
 
                     //提示保存成功
-                    Msg.requireShow(appContext.getString(R.string.file_saved))
+                    Msg.requireShow(activityContext.getString(R.string.file_saved))
                 }
 
 //        requireShowLoadingDialog.value= false
@@ -1278,7 +1283,13 @@ object FsUtils {
      * @param newLines the lines will replace
      * @param trueInsertFalseReplaceNullDelete true insert , false replace, null delete
      */
-    private suspend fun replaceOrInsertOrDeleteLinesToFile(file: File, startLineNum: Int, newLines: List<String>, trueInsertFalseReplaceNullDelete:Boolean?, settings: AppSettings) {
+    private suspend fun replaceOrInsertOrDeleteLinesToFile(
+        file: FuckSafFile,
+        startLineNum: Int,
+        newLines: List<String>,
+        trueInsertFalseReplaceNullDelete:Boolean?,
+        settings: AppSettings
+    ) {
         if(trueInsertFalseReplaceNullDelete != null && newLines.isEmpty()) {
             return
         }
@@ -1300,7 +1311,7 @@ object FsUtils {
         }
 
 
-        val tempFile = FsUtils.createTempFile("${TempFileFlag.FROM_DIFF_SCREEN_REPLACE_LINES_TO_FILE.flag}-${file.name}")
+        val tempFile = FuckSafFile.fromFile(createTempFile("${TempFileFlag.FROM_DIFF_SCREEN_REPLACE_LINES_TO_FILE.flag}-${file.name}"))
         var found = false
 
         file.bufferedReader().use { reader ->
@@ -1353,43 +1364,28 @@ object FsUtils {
         }
     }
 
-    suspend fun replaceLinesToFile(file: File, startLineNum: Int, newLines: List<String>, settings: AppSettings) {
+    suspend fun replaceLinesToFile(file: FuckSafFile, startLineNum: Int, newLines: List<String>, settings: AppSettings) {
         replaceOrInsertOrDeleteLinesToFile(file, startLineNum, newLines, trueInsertFalseReplaceNullDelete = false, settings)
     }
 
-    suspend fun insertLinesToFile(file: File, startLineNum: Int, newLines: List<String>, settings: AppSettings) {
+    suspend fun insertLinesToFile(file: FuckSafFile, startLineNum: Int, newLines: List<String>, settings: AppSettings) {
         prependLinesToFile(file, startLineNum, newLines, settings)
     }
 
-    suspend fun prependLinesToFile(file: File, startLineNum: Int, newLines: List<String>, settings: AppSettings) {
+    suspend fun prependLinesToFile(file: FuckSafFile, startLineNum: Int, newLines: List<String>, settings: AppSettings) {
         replaceOrInsertOrDeleteLinesToFile(file, startLineNum, newLines, trueInsertFalseReplaceNullDelete = true, settings)
     }
 
-    suspend fun appendLinesToFile(file: File, startLineNum: Int, newLines: List<String>, settings: AppSettings) {
+    suspend fun appendLinesToFile(file: FuckSafFile, startLineNum: Int, newLines: List<String>, settings: AppSettings) {
         replaceOrInsertOrDeleteLinesToFile(file, startLineNum+1, newLines, trueInsertFalseReplaceNullDelete = true, settings)
     }
 
-    suspend fun deleteLineToFile(file: File, lineNum: Int, settings: AppSettings) {
+    suspend fun deleteLineToFile(file: FuckSafFile, lineNum: Int, settings: AppSettings) {
         replaceOrInsertOrDeleteLinesToFile(file, lineNum, newLines=listOf(), trueInsertFalseReplaceNullDelete = null, settings)
     }
 
     fun createTempFile(prefix:String, suffix:String=".tmp"):File{
         return File(AppModel.getOrCreateExternalCacheDir().canonicalPath, "$prefix-${generateRandomString(8)}$suffix")
-    }
-
-    fun copy(input:InputStream, output:OutputStream) {
-        val inputStream = input.bufferedReader()
-        val outputStream = output.bufferedWriter()
-
-        inputStream.use { i ->
-            outputStream.use { o->
-                var b = i.read()
-                while(b != -1) {
-                    o.write(b)
-                    b = i.read()
-                }
-            }
-        }
     }
 
     fun readLinesFromFile(filePath: String, addNewLineIfFileEmpty:Boolean = true): List<String> {
@@ -1560,4 +1556,11 @@ object FsUtils {
         }
     }
 
+    fun copy(inputStream:InputStream, outputStream:OutputStream) {
+        inputStream.use { input ->
+            outputStream.use { output ->
+                input.copyTo(output)
+            }
+        }
+    }
 }

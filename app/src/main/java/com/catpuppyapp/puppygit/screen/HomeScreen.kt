@@ -92,6 +92,7 @@ import com.catpuppyapp.puppygit.screen.content.homescreen.scaffold.title.ReposTi
 import com.catpuppyapp.puppygit.screen.content.homescreen.scaffold.title.ScrollableTitle
 import com.catpuppyapp.puppygit.screen.content.homescreen.scaffold.title.SimpleTitle
 import com.catpuppyapp.puppygit.screen.functions.ChangeListFunctions
+import com.catpuppyapp.puppygit.screen.shared.FilePath
 import com.catpuppyapp.puppygit.screen.shared.SharedState
 import com.catpuppyapp.puppygit.settings.SettingsCons
 import com.catpuppyapp.puppygit.settings.SettingsUtil
@@ -361,7 +362,8 @@ fun HomeScreen(
     val repoFilterListState = rememberLazyListState()
 
     //当前展示的文件的canonicalPath
-    val editorPageShowingFilePath = rememberSaveable { mutableStateOf("")}
+    val editorPageShowingFilePath = rememberSaveable { mutableStateOf(FilePath("")) }
+
     //当前展示的文件是否已经加载完毕
     val editorPageShowingFileIsReady = rememberSaveable { mutableStateOf(false)}
     //TextEditor用的变量
@@ -550,7 +552,7 @@ fun HomeScreen(
         editorPageShowingFileName.value = fileName
 
         editorPageShowingFileIsReady.value=false
-        editorPageShowingFilePath.value = fullPath
+        editorPageShowingFilePath.value = FilePath(fullPath)
         editorPageShowingFileDto.value.fullPath = ""
         currentHomeScreen.intValue = Cons.selectedItem_Editor
 
@@ -574,7 +576,7 @@ fun HomeScreen(
         editorPageShowingFilePath = editorPageShowingFilePath,
         editorPageLoadingOn = editorPageLoadingOn,
         editorPageLoadingOff = editorPageLoadingOff,
-        appContext = activityContext,
+        activityContext = activityContext,
         editorPageIsSaving = editorPageIsSaving,
         needRefreshEditorPage = needRefreshEditorPage,
         editorPageTextEditorState = editorPageTextEditorState,

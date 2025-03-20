@@ -220,7 +220,7 @@ fun SubPageEditor(
         editorPageShowingFilePath = editorPageShowingFilePath,
         editorPageLoadingOn = loadingOn,
         editorPageLoadingOff = loadingOff,
-        appContext = activityContext,
+        activityContext = activityContext,
         editorPageIsSaving = editorPageIsSaving,
         needRefreshEditorPage = needRefreshEditorPage,
         editorPageTextEditorState = editorPageTextEditorState,

@@ -3,6 +3,7 @@ package com.catpuppyapp.puppygit.utils.snapshot
 import com.catpuppyapp.puppygit.constants.Cons
 import com.catpuppyapp.puppygit.etc.Ret
 import com.catpuppyapp.puppygit.fileeditor.texteditor.state.TextEditorState
+import com.catpuppyapp.puppygit.screen.shared.FuckSafFile
 import com.catpuppyapp.puppygit.utils.AppModel
 import com.catpuppyapp.puppygit.utils.FsUtils
 import com.catpuppyapp.puppygit.utils.MyLog
@@ -11,7 +12,7 @@ import com.catpuppyapp.puppygit.utils.getShortUUID
 import java.io.File
 
 object SnapshotUtil:SnapshotCreator {
-    private val TAG = "SnapshotUtil"
+    private const val TAG = "SnapshotUtil"
 
     /*
         禁用快照时，返回Ret Success，但由于没创建快照，文件名和路径都是空字符串，但有的地方会用文件名或路径是否为空来判断快照是否创建成功，这样就会误判导致某些方法无法正常执行，
@@ -74,7 +75,7 @@ object SnapshotUtil:SnapshotCreator {
     }
 
 
-    override fun createSnapshotByFileAndGetResult(srcFile:File, flag:SnapshotFileFlag):Ret<Pair<String,String>?>{
+    override fun createSnapshotByFileAndGetResult(srcFile:FuckSafFile, flag:SnapshotFileFlag):Ret<Pair<String,String>?>{
         //如果未开启文件快照功能 或 开启了diff文件但flag不是diff文件快照 或 开启了editor文件快照但flag不是editor文件快照 则 直接返回成功
         if((!enableFileSnapshotForEditor && !enableFileSnapshotForDiff)
             || (!enableFileSnapshotForEditor && enableFileSnapshotForDiff && !flag.isDiffFileSnapShot())
@@ -85,7 +86,7 @@ object SnapshotUtil:SnapshotCreator {
 
         try {
             if(!srcFile.exists()) {
-                throw NoSuchFileException(file=srcFile, reason="`srcFile` doesn't exist!")
+                throw RuntimeException("`srcFile` doesn't exist!, path=${srcFile.canonicalPath}")
             }
 
             val srcFileName = srcFile.name
@@ -93,8 +94,9 @@ object SnapshotUtil:SnapshotCreator {
 
             MyLog.w(TAG, "#createSnapshotByFileAndGetResult: will save snapFile to:" + snapFileFullPath)
 
-//            val snapRet = copyOrMoveOrExportFile(listOf(srcFile), snapFile, requireDeleteSrc = false)
-            srcFile.copyTo(snapFile)
+            // copy src to snap file
+            srcFile.copyTo(snapFile.outputStream())
+
             if(!snapFile.exists()) {  //拷贝失败
                 MyLog.e(TAG, "#createSnapshotByFileAndGetResult: save snapFile '$snapshotFileName' failed!")
                 throw RuntimeException("copy src to snapshot failed!")

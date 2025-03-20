@@ -5,54 +5,128 @@ import android.net.Uri
 import androidx.documentfile.provider.DocumentFile
 import com.catpuppyapp.puppygit.etc.PathType
 import com.catpuppyapp.puppygit.utils.FsUtils
+import java.io.BufferedReader
+import java.io.BufferedWriter
 import java.io.File
 import java.io.InputStream
 import java.io.OutputStream
 
 /**
  * fuck the saf api, saf should full-compatible with File api and support jni, else it just shit
+ *
+ * 如果只使用File，context可传null
  */
-class FuckSafFile(val path: FilePath, val context: Context) {
+class FuckSafFile(val context: Context?, val path: FilePath) {
+    companion object {
+        fun fromFile(f:File):FuckSafFile {
+            return FuckSafFile(null, FilePath(f.canonicalPath))
+        }
+    }
+
     var isSaf:Boolean = false
+
     var file:File? = null
-    var docFile:DocumentFile? = null
-    var uri:Uri? = null
+
+    var safFile:DocumentFile? = null
+    var safUri:Uri? = null
+
+    val isFile:Boolean
+        get() = (if(isSaf) safFile?.isFile else file?.isFile) == true
+
+    val isDirectory:Boolean
+        get() = (if(isSaf) safFile?.isDirectory else file?.isDirectory) == true
+
+    val name:String
+        get() = (if(isSaf) safFile?.name else file?.name) ?: ""
+
+    val canonicalPath:String
+        get() = (if(isSaf) safUri.toString() else file?.canonicalPath) ?: ""
+
 
     init {
-        initFile()
-    }
-
-    fun lastModified():Long {
-        return (if (isSaf) docFile?.lastModified() else file?.lastModified()) ?: 0L
-    }
-
-    fun size():Long {
-        return (if (isSaf) docFile?.length() else file?.length()) ?: 0L
-    }
-
-    fun initFile(){
         val pathType = path.pathType
         val originPath = path.originPath
 
         if(pathType == PathType.ABSOLUTE) {
-            file = File(originPath)
-            isSaf = false
+            initFile(originPath)
         }else if(pathType == PathType.CONTENT_URI) {
-            uri = Uri.parse(originPath)
-            docFile = FsUtils.getDocumentFileFromUri(context, uri!!)
-            isSaf = true
+            initDocFile(originPath)
         }else if(pathType == PathType.FILE_URI) {
             val realPath = originPath.removePrefix(FsUtils.fileUriPathPrefix)
-            file = File(realPath)
-            isSaf = false
+            initFile(realPath)
         }
     }
 
+    fun lastModifiedTime():Long {
+        return (if (isSaf) safFile?.lastModified() else file?.lastModified()) ?: 0L
+    }
+
+    /**
+     * android doesn't support get creation time yet
+     */
+    fun creationTime():Long {
+        return lastModifiedTime()
+    }
+
+    fun length():Long {
+        return (if (isSaf) safFile?.length() else file?.length()) ?: 0L
+    }
+
+    private fun initFile(path:String) {
+        isSaf = false
+        file = File(path)
+    }
+
+    private fun initDocFile(path:String) {
+        isSaf = true
+        val currentUri = Uri.parse(path)
+        safUri = currentUri
+        safFile = FsUtils.getDocumentFileFromUri(context!!, currentUri)
+    }
+
     fun inputStream():InputStream {
-        return if(isSaf) context.contentResolver.openInputStream(uri!!)!! else file!!.inputStream()
+        return if(isSaf) context!!.contentResolver.openInputStream(safUri!!)!! else file!!.inputStream()
     }
 
     fun outputStream():OutputStream {
-        return if(isSaf) context.contentResolver.openOutputStream(uri!!)!! else file!!.outputStream()
+        return if(isSaf) context!!.contentResolver.openOutputStream(safUri!!)!! else file!!.outputStream()
+    }
+
+    fun bufferedReader():BufferedReader {
+        return inputStream().bufferedReader()
+    }
+
+    fun bufferedWriter(): BufferedWriter {
+        return outputStream().bufferedWriter()
+    }
+
+    fun exists():Boolean {
+        return (if(isSaf) safFile?.exists() else file?.exists()) == true
+    }
+
+    fun renameFileTo(newPath:String):Boolean {
+        return renameFileTo(File(newPath))
+    }
+
+    fun renameFileTo(newFile:File):Boolean {
+        return file?.renameTo(newFile) == true
+    }
+
+    fun renameSafFile(newName:String):Boolean {
+        return safFile?.renameTo(newName) == true
+    }
+
+    fun delete():Boolean {
+        return (if(isSaf) safFile?.delete() else file?.delete()) == true
+    }
+
+    fun renameTo(newFuckSafFile:FuckSafFile):Boolean {
+        inputStream().copyTo(newFuckSafFile.outputStream())
+
+        return delete()
+    }
+
+    fun copyTo(target:OutputStream) {
+        FsUtils.copy(inputStream(), target)
     }
 }
