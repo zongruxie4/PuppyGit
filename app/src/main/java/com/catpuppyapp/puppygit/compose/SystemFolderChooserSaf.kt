@@ -28,13 +28,13 @@ import com.catpuppyapp.puppygit.utils.MyLog
 import com.catpuppyapp.puppygit.utils.saf.MyOpenDocumentTree
 import com.catpuppyapp.puppygit.utils.saf.SafUtil
 
-private const val TAG = "SystemFolderChooser"
+private const val TAG = "SystemFolderChooserSaf"
 
 /**
  * A Folder Chooser depend System File Chooser, may not work if system removed internal file picker, in that case, can input path instead
  */
 @Composable
-fun SystemFolderChooser(
+fun SystemFolderChooserSaf(
     safEnabled:MutableState<Boolean>,
     safPath:MutableState<String>,
     nonSafPath:MutableState<String>,
