@@ -38,6 +38,7 @@ import com.catpuppyapp.puppygit.screen.shared.FilePath
 import com.catpuppyapp.puppygit.screen.shared.SharedState
 import com.catpuppyapp.puppygit.settings.SettingsUtil
 import com.catpuppyapp.puppygit.utils.AppModel
+import com.catpuppyapp.puppygit.utils.FsUtils
 import com.catpuppyapp.puppygit.utils.Msg
 import com.catpuppyapp.puppygit.utils.changeStateTriggerRefreshPage
 import com.catpuppyapp.puppygit.utils.state.mutableCustomStateListOf
@@ -153,7 +154,7 @@ fun FileChooserScreen(
         initValue = TextFieldValue("")
     )
 
-    val filesPageCurrentPath = rememberSaveable { mutableStateOf("")}
+    val filesPageCurrentPath = rememberSaveable { mutableStateOf(SharedState.pathOfFileChooser.value.ifBlank { settings.files.lastOpenedPath.ifBlank { FsUtils.getExternalStorageRootPathNoEndsWithSeparator() } }) }
     val filesPageLastPathByPressBack = rememberSaveable { mutableStateOf("")}
     val showCreateFileOrFolderDialog = rememberSaveable { mutableStateOf(false)}
     val filesPageCurPathFileItemDto = mutableCustomStateOf(stateKeyTag, "filesPageCurPathFileItemDto") { FileItemDto() }
