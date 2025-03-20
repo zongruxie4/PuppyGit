@@ -136,4 +136,8 @@ class FuckSafFile(val context: Context?, val path: FilePath) {
     fun canRead():Boolean {
         return (if(isSaf) safFile?.canRead() else file?.canRead()) == true
     }
+
+    override fun toString(): String {
+        return path.originPath
+    }
 }

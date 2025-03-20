@@ -1490,8 +1490,12 @@ fun HomeScreen(
                                     }
                                 }
 
+                                if(extras == null) {
+                                    return@doJobThenOffLoading
+                                }
 
-                                //执行到已经排除编辑文件，还有三种可能：
+
+                                //执行到已经排除外部app请求让本app编辑文件，还剩三种可能：
                                 // 1. action 为 SEND，导入或编辑单文件
                                 // 2. action 为 SEND_MULTIPLE，导入多文件
                                 // 3. 请求打开指定页面，从通知栏点通知信息时会用到这个逻辑，p.s. 这个是直接通过类跳转的，我不确定action是什么
@@ -1509,28 +1513,29 @@ fun HomeScreen(
                                     null
                                 }
 
+                                //过去导入单文件会询问是否编辑，若想测试，可取消这行注释
+//                                val howToDealWithSingleSend = howToDealWithSingleSend.value
+
+                                //目前已经实现了专门的编辑，这里只有 import 一种可能了
+                                val howToDealWithSingleSend = SingleSendHandleMethod.IMPORT.code
+
                                 //导入单文件，需要弹窗询问一下，用户想导入文件还是想编辑文件
                                 if (uri != null) {
-                                    if(howToDealWithSingleSend.value == SingleSendHandleMethod.NEED_ASK.code) {
+                                    if(howToDealWithSingleSend == SingleSendHandleMethod.NEED_ASK.code) {
                                         //设为假，因为肯定要再入一次这个代码块
                                         intentConsumed.value = false
                                         showAskHandleSingleSendMethod.value = true
                                         return@doJobThenOffLoading
-                                    }else if(howToDealWithSingleSend.value == SingleSendHandleMethod.EDIT.code) {
+                                    }else if(howToDealWithSingleSend == SingleSendHandleMethod.EDIT.code) {
+                                        //由于直接导入时只有对uri的写权限，而且现在已经实现了专门针对文本文件的编辑功能，所以这里以导入作为edit入口的功能作废
                                         val uriStr = uri.toString()
-
-//                                        这个提示没什么意义啊，Editor打开空路径肯定报错，我在这提示多此一举。
-//                                        if(uriStr.isBlank()) {
-//                                            //path如果为空，依然跳转到editor页面
-//                                            Msg.requireShowLongDuration(activityContext.getString(R.string.file_path_invalid))
-//                                        }
 
                                         val expectReadOnly = false
                                         val fileName = null  //直接传null即可，会自动获取文件名，做了处理，兼容"content://"和"file://"
                                         requireInnerEditorOpenFileWithFileName(uriStr, expectReadOnly, fileName)
 
                                         return@doJobThenOffLoading
-                                    }else if(howToDealWithSingleSend.value == SingleSendHandleMethod.IMPORT.code) {
+                                    }else if(howToDealWithSingleSend == SingleSendHandleMethod.IMPORT.code) {
                                         //导入文件，添加到列表，然后继续执行后面的代码块就行
                                         filesPageRequireImportUriList.value.add(uri)
                                     }
