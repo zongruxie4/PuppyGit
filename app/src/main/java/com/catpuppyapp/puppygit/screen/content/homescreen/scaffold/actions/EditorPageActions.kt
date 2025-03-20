@@ -45,6 +45,7 @@ import com.catpuppyapp.puppygit.dto.UndoStack
 import com.catpuppyapp.puppygit.fileeditor.texteditor.state.TextEditorState
 import com.catpuppyapp.puppygit.play.pro.R
 import com.catpuppyapp.puppygit.screen.shared.EditorPreviewNavStack
+import com.catpuppyapp.puppygit.screen.shared.FilePath
 import com.catpuppyapp.puppygit.settings.SettingsCons
 import com.catpuppyapp.puppygit.settings.SettingsUtil
 import com.catpuppyapp.puppygit.style.MyStyleKt
@@ -62,7 +63,7 @@ fun EditorPageActions(
     previewPath: String,
     previewPathChanged: String,
 
-    editorPageShowingFilePath: MutableState<String>,
+    editorPageShowingFilePath: MutableState<FilePath>,
 //    editorPageRequireOpenFilePath: MutableState<String>,
     editorPageShowingFileIsReady: MutableState<Boolean>,
     needRefreshEditorPage: MutableState<String>,

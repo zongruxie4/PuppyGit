@@ -43,6 +43,7 @@ import com.catpuppyapp.puppygit.git.CompareLinePairResult
 import com.catpuppyapp.puppygit.git.PuppyLine
 import com.catpuppyapp.puppygit.play.pro.R
 import com.catpuppyapp.puppygit.screen.functions.getClipboardText
+import com.catpuppyapp.puppygit.screen.shared.FilePath
 import com.catpuppyapp.puppygit.settings.AppSettings
 import com.catpuppyapp.puppygit.style.MyStyleKt
 import com.catpuppyapp.puppygit.ui.theme.Theme
@@ -60,7 +61,6 @@ import com.catpuppyapp.puppygit.utils.state.CustomStateSaveable
 import com.github.git24j.core.Diff
 import com.github.git24j.core.Diff.Line
 import com.github.git24j.core.Diff.Line.OriginType
-import java.io.File
 
 /**
  * @param stringPartList 如果用不到，可传null或使用默认值（还是null）
@@ -272,7 +272,7 @@ fun DiffRow (
                     }
 
                     val lines = FsUtils.stringToLines(lineContentOfEditLineDialog.value)
-                    val file = File(fileFullPath)
+                    val file = FilePath(fileFullPath).toFuckSafFile(activityContext)
                     if(truePrependFalseAppendNullReplace.value == true) {
                         FsUtils.prependLinesToFile(file, lineNum, lines, settings)
                     }else if (truePrependFalseAppendNullReplace.value == false) {
@@ -330,7 +330,7 @@ fun DiffRow (
                         return@job
                     }
 
-                    val file = File(fileFullPath)
+                    val file = FilePath(fileFullPath).toFuckSafFile(activityContext)
                     FsUtils.deleteLineToFile(file, lineNum, settings)
 
                     Msg.requireShow(activityContext.getString(R.string.success))
@@ -417,7 +417,7 @@ fun DiffRow (
                     }
 
                     val lines = FsUtils.stringToLines(lineContentOfEditLineDialog.value)
-                    val file = File(fileFullPath)
+                    val file = FilePath(fileFullPath).toFuckSafFile(activityContext)
                     if(trueRestoreFalseReplace.value) {
                         FsUtils.prependLinesToFile(file, lineNum, lines, settings)
                     }else {

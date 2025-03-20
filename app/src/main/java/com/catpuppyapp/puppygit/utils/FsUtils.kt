@@ -840,7 +840,7 @@ object FsUtils {
 //            println("before getAllText:"+ getSecFromTime())
 
                 //保存前检查文件是否修改过，如果修改过，对源文件创建快照再保存
-                val targetFile = filePath.toFile(activityContext)
+                val targetFile = filePath.toFuckSafFile(activityContext)
                 // 如果要保存的那个文件已经不存在（比如被删），就不检查其是否被外部修改过了，下面直接保存即可，保存的时候会自动创建文件
                 if(targetFile.exists()) {
                     //文件存在，检查是否修改过，如果修改过，创建快照，如果创建快照失败，为当前显示的内容创建快照
@@ -1388,10 +1388,6 @@ object FsUtils {
         return File(AppModel.getOrCreateExternalCacheDir().canonicalPath, "$prefix-${generateRandomString(8)}$suffix")
     }
 
-    fun readLinesFromFile(filePath: String, addNewLineIfFileEmpty:Boolean = true): List<String> {
-        return readLinesFromFile(File(filePath), addNewLineIfFileEmpty)
-    }
-
     /**
      * 读取文件中的行到list，
      * 支持 \r 或 \n 或 \r\n 分割的文件，
@@ -1401,7 +1397,7 @@ object FsUtils {
      *  else will return an empty list. set it to true, if you expect this function has same behavior with `String.lines()`
      *  (如果为true，文件为空时返回只有一个空字符串元素的list，否则返回空list。如果期望此函数和`String.lines()`行为一致（空字符串返回元素1的list），此值应传true。)
      */
-    fun readLinesFromFile(file: File, addNewLineIfFileEmpty:Boolean = true): List<String> {
+    fun readLinesFromFile(file: FuckSafFile, addNewLineIfFileEmpty:Boolean = true): List<String> {
 //        val lines = ArrayList<String>(30)  //不确定用户打开的文件到底多少行啊，算了，用默认吧
         //readLines() api 说不能用于 huge files?我看源代码好像也是用readLine一行行读的，我自己写好像差不多，不过不会创建迭代器之类的，可能稍微快一点点，但应该也不能用于huge files吧？大概
 //        File(filePath).bufferedReader().readLines()

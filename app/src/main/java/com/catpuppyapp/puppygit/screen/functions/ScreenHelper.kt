@@ -12,6 +12,7 @@ import com.catpuppyapp.puppygit.constants.LineNum
 import com.catpuppyapp.puppygit.constants.PageRequest
 import com.catpuppyapp.puppygit.dto.FileItemDto
 import com.catpuppyapp.puppygit.play.pro.R
+import com.catpuppyapp.puppygit.screen.shared.FilePath
 import com.catpuppyapp.puppygit.utils.AppModel
 import com.catpuppyapp.puppygit.utils.Libgit2Helper
 import com.catpuppyapp.puppygit.utils.Msg
@@ -27,12 +28,16 @@ import java.io.File
 
 private const val TAG = "ScreenHelper"
 
-fun goToFileHistory(fileFullPath:String, appContext: Context){
+fun goToFileHistory(filePath: FilePath, activityContext: Context){
+    goToFileHistory(filePath.toFuckSafFile(activityContext).canonicalPath, activityContext)
+}
+
+fun goToFileHistory(fileFullPath:String, activityContext: Context){
     doJobThenOffLoading job@{
         try {
             val repo = Libgit2Helper.findRepoByPath(fileFullPath)
             if(repo == null) {
-                Msg.requireShow(appContext.getString(R.string.no_repo_found))
+                Msg.requireShow(activityContext.getString(R.string.no_repo_found))
                 return@job
             }
 
@@ -42,7 +47,7 @@ fun goToFileHistory(fileFullPath:String, appContext: Context){
                 //检查文件是否在.git目录下，若在，直接返回，此目录下的文件无历史记录
                 val repoGitDirEndsWithSlash = Libgit2Helper.getRepoGitDirPathNoEndsWithSlash(it) + Cons.slash
                 if(fileFullPath.startsWith(repoGitDirEndsWithSlash)) {
-                    Msg.requireShowLongDuration(appContext.getString(R.string.err_file_under_git_dir))
+                    Msg.requireShowLongDuration(activityContext.getString(R.string.err_file_under_git_dir))
                     return@job
                 }
 
@@ -50,7 +55,7 @@ fun goToFileHistory(fileFullPath:String, appContext: Context){
                 val repoWorkDirPath = Libgit2Helper.getRepoWorkdirNoEndsWithSlash(it)
                 val relativePath = Libgit2Helper.getRelativePathUnderRepo(repoWorkDirPath, fileFullPath)
                 if(relativePath == null) {  // this should never happen, cuz go to file history only available for file, not for dir, and this only happens when the realFullPath = repoWorkDirPath
-                    Msg.requireShow(appContext.getString(R.string.path_not_under_repo))
+                    Msg.requireShow(activityContext.getString(R.string.path_not_under_repo))
                     return@job
                 }
 
@@ -62,7 +67,7 @@ fun goToFileHistory(fileFullPath:String, appContext: Context){
                 )
 
                 if(repoFromDb == null) {
-                    Msg.requireShowLongDuration(appContext.getString(R.string.plz_import_repo_then_try_again))
+                    Msg.requireShowLongDuration(activityContext.getString(R.string.plz_import_repo_then_try_again))
                     return@job
                 }
 
@@ -92,13 +97,13 @@ fun naviToFileHistoryByRelativePath(repoId:String, relativePathUnderRepo:String)
         )
 }
 
-fun getLoadText(loadedCount:Int, actuallyEnabledFilterMode:Boolean, appContext:Context):String?{
+fun getLoadText(loadedCount:Int, actuallyEnabledFilterMode:Boolean, activityContext:Context):String?{
     return if(loadedCount < 1){
         null
     }else if(actuallyEnabledFilterMode) {
-        replaceStringResList(appContext.getString(R.string.item_count_n), listOf(""+loadedCount))
+        replaceStringResList(activityContext.getString(R.string.item_count_n), listOf(""+loadedCount))
     }else {
-        replaceStringResList(appContext.getString(R.string.loaded_n), listOf(""+loadedCount))
+        replaceStringResList(activityContext.getString(R.string.loaded_n), listOf(""+loadedCount))
     }
 }
 

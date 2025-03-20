@@ -40,7 +40,7 @@ class FuckSafFile(val context: Context?, val path: FilePath) {
         get() = (if(isSaf) safFile?.name else file?.name) ?: ""
 
     val canonicalPath:String
-        get() = (if(isSaf) safUri.toString() else file?.canonicalPath) ?: ""
+        get() = (if(isSaf) safUri?.toString() else file?.canonicalPath) ?: ""
 
 
     init {
@@ -57,7 +57,10 @@ class FuckSafFile(val context: Context?, val path: FilePath) {
         }
     }
 
-    fun lastModifiedTime():Long {
+    /**
+     * 最后修改时间，单位毫秒
+     */
+    fun lastModified():Long {
         return (if (isSaf) safFile?.lastModified() else file?.lastModified()) ?: 0L
     }
 
@@ -65,7 +68,7 @@ class FuckSafFile(val context: Context?, val path: FilePath) {
      * android doesn't support get creation time yet
      */
     fun creationTime():Long {
-        return lastModifiedTime()
+        return lastModified()
     }
 
     fun length():Long {
@@ -128,5 +131,9 @@ class FuckSafFile(val context: Context?, val path: FilePath) {
 
     fun copyTo(target:OutputStream) {
         FsUtils.copy(inputStream(), target)
+    }
+
+    fun canRead():Boolean {
+        return (if(isSaf) safFile?.canRead() else file?.canRead()) == true
     }
 }

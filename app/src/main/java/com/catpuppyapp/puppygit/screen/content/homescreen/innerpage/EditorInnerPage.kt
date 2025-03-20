@@ -69,6 +69,8 @@ import com.catpuppyapp.puppygit.fileeditor.ui.composable.FileEditor
 import com.catpuppyapp.puppygit.play.pro.R
 import com.catpuppyapp.puppygit.screen.functions.goToFileHistory
 import com.catpuppyapp.puppygit.screen.shared.EditorPreviewNavStack
+import com.catpuppyapp.puppygit.screen.shared.FilePath
+import com.catpuppyapp.puppygit.screen.shared.FuckSafFile
 import com.catpuppyapp.puppygit.settings.SettingsUtil
 import com.catpuppyapp.puppygit.style.MyStyleKt
 import com.catpuppyapp.puppygit.utils.AppModel
@@ -120,7 +122,7 @@ fun EditorInnerPage(
     contentPadding: PaddingValues,
     currentHomeScreen: MutableIntState,
 //    editorPageRequireOpenFilePath:MutableState<String>,
-    editorPageShowingFilePath:MutableState<String>,
+    editorPageShowingFilePath:MutableState<FilePath>,
     editorPageShowingFileIsReady:MutableState<Boolean>,
     editorPageTextEditorState:CustomStateSaveable<TextEditorState>,
     /**
@@ -188,7 +190,7 @@ fun EditorInnerPage(
         s
     }
 
-    val saveLock = remember(editorPageShowingFilePath.value) { Cache.getOrPutByType(generateKeyForSaveLock(editorPageShowingFilePath.value), default = { Mutex() }) }
+    val saveLock = remember(editorPageShowingFilePath.value.originPath) { Cache.getOrPutByType(generateKeyForSaveLock(editorPageShowingFilePath.value.originPath), default = { Mutex() }) }
 //    val saveLock = Mutex()  //其实这样也行，不过根据路径创建锁更严谨，跨页面也适用，比如如果首页的Editor正在保存，然后打开子页面，这时子页面必须等首页保存完成，但如果用这个和页面生命周期一样的锁，就无法实现那种效果了，但和页面生命周期一样的锁其实也够用
 
 //    val isEdited = rememberSaveable{ mutableStateOf(false) }
@@ -317,7 +319,7 @@ fun EditorInnerPage(
 //                        val fileContent = null
 
                         val ret = FsUtils.simpleSafeFastSave(
-//                            content = fileContent,
+                            context = activityContext,
                             content = null,
                             editorState = editorPageTextEditorState.value,
                             trueUseContentFalseUseEditorState = false,
@@ -379,9 +381,9 @@ fun EditorInnerPage(
         isSaving.value=false
 //        editorPageRequireOpenFilePath.value = ""
         //存上当前文件路径，要不然reOpen时还得从配置文件查，当然，app销毁后，此变量作废，依然需要从配置文件查
-        saveLastOpenPath(editorPageShowingFilePath.value)
+        saveLastOpenPath(editorPageShowingFilePath.value.originPath)
 
-        editorPageShowingFilePath.value = ""
+        editorPageShowingFilePath.value = FilePath("")
         editorPageShowingFileDto.value.fullPath=""
         editorPageClearShowingFileErrWhenLoading()  //关闭文件清除错误，不然文件标题变了，错误还在显示
         editorPageShowingFileIsReady.value = false
@@ -443,7 +445,7 @@ fun EditorInnerPage(
             showReloadDialog.value=false  //立即关弹窗避免重入
 
             //检查源文件是否被外部修改过，若修改过，创建快照，然后再重载
-            val newDto = FileSimpleDto.genByFile(File(editorPageShowingFilePath.value))
+            val newDto = FileSimpleDto.genByFile(editorPageShowingFilePath.value.toFuckSafFile(activityContext))
 
             if (newDto.lastModifiedTime != editorPageShowingFileDto.value.lastModifiedTime
                 || newDto.sizeInBytes != editorPageShowingFileDto.value.sizeInBytes
@@ -519,7 +521,7 @@ fun EditorInnerPage(
             onCancel = { showBackFromExternalAppAskReloadDialog.value=false }
         ) {  // doReload
             //检查源文件是否被外部修改过，若修改过，创建快照，然后再重载
-            val newDto = FileSimpleDto.genByFile(File(editorPageShowingFilePath.value))
+            val newDto = FileSimpleDto.genByFile(editorPageShowingFilePath.value.toFuckSafFile(activityContext))
 
             if (newDto.lastModifiedTime != editorPageShowingFileDto.value.lastModifiedTime
                 || newDto.sizeInBytes != editorPageShowingFileDto.value.sizeInBytes
@@ -572,13 +574,15 @@ fun EditorInnerPage(
             Msg.requireShow(activityContext.getString(R.string.invalid_path))
         }else {
             //如果文件不存在，显示个提示，然后跳转到file页面但不选中任何条目，否则会选中当前editor打开的文件
-            if(!File(path).exists()) {
+            val fuckSafFile = FuckSafFile(activityContext, path)
+            if(!fuckSafFile.exists()) {
                 Msg.requireShow(activityContext.getString(R.string.file_doesnt_exist))
+            }else {  //文件存在，跳转
+                //若是saf之类的路径 content://那种路径，则无法跳转哦
+                //这个跳转最好用canonicalPath而不是originPath，不然当originPath为 file:// 那种路径时，跳转会失效
+                goToFilesPage(fuckSafFile.canonicalPath)
             }
-
-            goToFilesPage(path)
         }
-
     }
 
     //若想重载文件但保留stack，重载前将此变量设为真，一次性有效
@@ -679,7 +683,7 @@ fun EditorInnerPage(
 
     if(requestFromParent.value == PageRequest.requireInitPreview || requestFromParent.value == PageRequest.requireInitPreviewFromSubEditor) {
         PageRequest.clearStateThenDoAct(requestFromParent) {
-            val editorPageShowingFilePath = editorPageShowingFilePath.value
+            val editorPageShowingFilePath = editorPageShowingFilePath.value.originPath
             val previewNavStack = previewNavStack.value
             doJobThenOffLoading {
                 //先保存，不然如果文件大切换预览会卡住然后崩溃导致会丢数据
@@ -779,7 +783,7 @@ fun EditorInnerPage(
 
                     //请求外部程序打开文件
 //                    readOnlyForOpenAsDialog.value = FsUtils.isReadOnlyDir(editorPageShowingFilePath.value)
-                    openAsDialogFilePath.value = editorPageShowingFilePath.value
+                    openAsDialogFilePath.value = editorPageShowingFilePath.value.toFuckSafFile(activityContext).canonicalPath
                     showOpenAsDialog.value=true
 
                 }
@@ -810,8 +814,8 @@ fun EditorInnerPage(
                 previewNavStack.value.editingPath = previewing
 
                 //若正在预览和正在编辑的文件不同则重载，否则仅退出预览模式即可
-                if(previewing != editorPageShowingFilePath.value) {
-                    editorPageShowingFilePath.value = previewing
+                if(previewing != editorPageShowingFilePath.value.originPath) {
+                    editorPageShowingFilePath.value = FilePath(previewing)
                     keepPreviewNavStackOnce.value = true  //保留导航栈
                     reloadFile()
                 }else {
@@ -919,22 +923,22 @@ fun EditorInnerPage(
 
     if(requestFromParent.value==PageRequest.showDetails) {
         PageRequest.clearStateThenDoAct(requestFromParent) {
-            val fileFullPath = editorPageShowingFilePath.value
-            val file = File(if(isPreviewModeOn.value) previewPath else fileFullPath)
-            val fileReadable = file.canRead()
-            val fileName = editorPageShowingFileName ?: file.name
-            val fileSize = if(fileReadable) getHumanReadableSizeStr(file.length()) else 0
+            val editorFilePath = editorPageShowingFilePath.value
+            val currentFile = FuckSafFile(activityContext, if(isPreviewModeOn.value) FilePath(previewPath) else editorFilePath)
+            val fileReadable = currentFile.canRead()
+            val fileName = editorPageShowingFileName ?: currentFile.name
+            val fileSize = if(fileReadable) getHumanReadableSizeStr(currentFile.length()) else 0
             //仅文件可读且当前预览或编辑的文件与当前编辑的文件相同时才显示行数和字数
-            val showLinesCharsCount = fileReadable && file.canonicalPath == fileFullPath
+            val showLinesCharsCount = fileReadable && currentFile.path.originPath == editorFilePath.originPath
             val (charsCount, linesCount) = if(showLinesCharsCount) editableController.value.getCharsAndLinesCount() else Pair(0, 0)
 //            val lastModifiedTimeStr = getFormatTimeFromSec(sec=file.lastModified()/1000, offset = getSystemDefaultTimeZoneOffset())
-            val lastModifiedTimeStr = if(fileReadable) getFormattedLastModifiedTimeOfFile(file) else ""
+            val lastModifiedTimeStr = if(fileReadable) getFormattedLastModifiedTimeOfFile(currentFile) else ""
 
 
             val sb = StringBuilder()
             val suffix = "\n\n"
             sb.append(activityContext.getString(R.string.file_name)+": "+fileName).append(suffix)
-            sb.append(activityContext.getString(R.string.path)+": "+ fileFullPath).append(suffix)
+            sb.append(activityContext.getString(R.string.path)+": "+ editorFilePath).append(suffix)
 
             if(showLinesCharsCount) {
                 sb.append(activityContext.getString(R.string.chars)+": "+charsCount).append(suffix)
@@ -1113,7 +1117,7 @@ fun EditorInnerPage(
 //                                editorMergeMode.value = false  //此值在这无需重置
 //                            readOnlyMode.value = FsUtils.isReadOnlyDir(last)  //避免打开文件，退出app，直接从editor点击 open last然后可编辑本不应该允许编辑的app内置目录下的文件
 
-                            editorPageShowingFilePath.value = last
+                            editorPageShowingFilePath.value = FilePath(last)
                             reloadFile()
                         }) noOkAct@{
                             Msg.requireShowLongDuration(activityContext.getString(R.string.file_not_found))
@@ -1146,7 +1150,7 @@ fun EditorInnerPage(
                                 // map to list
                                 .map { (k, v) ->
                                     // Pair(fileName, fileFullPath)
-                                    Pair(getFileNameFromCanonicalPath(k), k)
+                                    Pair(FilePath(k).toFuckSafFile(activityContext).name, k)
                                 }.let {
                                     // limit list size to 10
                                     it.subList(0, it.size.coerceAtMost(10))  // I think, recent file list, show 10 is good, if more, feels bad, to much files = no files, just make headache
@@ -1187,7 +1191,7 @@ fun EditorInnerPage(
 //                                editorMergeMode.value = false  //此值在这无需重置
 //                        readOnlyMode.value = FsUtils.isReadOnlyDir(filePath)  //避免打开文件，退出app，直接从editor点击 open last然后可编辑本不应该允许编辑的app内置目录下的文件
 
-                                        editorPageShowingFilePath.value = filePath
+                                        editorPageShowingFilePath.value = FilePath(filePath)
                                         reloadFile()
 
                                     }
@@ -1226,7 +1230,7 @@ fun EditorInnerPage(
     // file loaded (load file successfully)
     if(!editorPageShowingFileHasErr.value && editorPageShowingFileIsReady.value && editorPageShowingFilePath.value.isNotBlank()){
         val fileFullPath = editorPageShowingFilePath.value
-        val fileEditedPos = FileOpenHistoryMan.get(fileFullPath)
+        val fileEditedPos = FileOpenHistoryMan.get(fileFullPath.originPath)
 
         FileEditor(
             requireEditorScrollToPreviewCurPos = requireEditorScrollToPreviewCurPos,
@@ -1366,7 +1370,7 @@ fun EditorInnerPage(
             }
 
             //保存最后打开文件路径
-            saveLastOpenPath(editorPageShowingFilePath.value)
+            saveLastOpenPath(editorPageShowingFilePath.value.originPath)
 
 
 //            editorPageShowingFilePath.value = ""
@@ -1383,7 +1387,7 @@ private suspend fun doInit(
     previewNavStack:CustomStateSaveable<EditorPreviewNavStack>,
     activityContext:Context,
 //    editorPageRequireOpenFilePath: MutableState<String>,
-    editorPageShowingFilePath: MutableState<String>,
+    editorPageShowingFilePath: MutableState<FilePath>,
     editorPageShowingFileIsReady: MutableState<Boolean>,
     editorPageClearShowingFileErrWhenLoading: () -> Unit,
     editorPageTextEditorState: CustomStateSaveable<TextEditorState>,
@@ -1430,17 +1434,16 @@ private suspend fun doInit(
         //准备文件路径，开始
         //优先打开从文件管理器跳转来的文件，如果不是跳转来的，打开之前显示的文件
         if(editorPageShowingFilePath.value.isBlank()) {
-            editorPageShowingFilePath.value = AppModel.lastEditFileWhenDestroy.value
+            editorPageShowingFilePath.value = FilePath(AppModel.lastEditFileWhenDestroy.value)
             AppModel.lastEditFileWhenDestroy.value = ""
         }
 
-        editorPageShowingFilePath.value = FsUtils.makeThePathCanonical(editorPageShowingFilePath.value)
-
         //保存上次打开文件路径
-        AppModel.lastEditFile.value = editorPageShowingFilePath.value
+        AppModel.lastEditFile.value = editorPageShowingFilePath.value.originPath
 
         //到这，文件路径就确定了
-        val requireOpenFilePath = editorPageShowingFilePath.value
+        val editorPageShowingFilePath = editorPageShowingFilePath.value
+        val requireOpenFilePath = editorPageShowingFilePath.originPath
         if (requireOpenFilePath.isBlank()) {
             //这时页面会显示选择文件和打开上次文件，这里无需处理
             return
@@ -1458,7 +1461,7 @@ private suspend fun doInit(
         editorPageClearShowingFileErrWhenLoading()
         //读取文件内容
         try {
-            val file = File(requireOpenFilePath)
+            val file = FuckSafFile(activityContext, editorPageShowingFilePath)
             //如果文件不存在，抛异常，然后会显示错误信息给用户
             if (!file.exists()) {
                 //如果当前显示的内容不为空，为当前显示的内容创建个快照，然后抛异常
@@ -1466,8 +1469,8 @@ private suspend fun doInit(
 //                val content = null
                 if(editorPageTextEditorState.value.contentIsEmpty().not() && !isContentSnapshoted.value) {
                     MyLog.w(TAG, "#loadFile: file doesn't exist anymore, but content is not empty, will create snapshot for content")
+                    val fileName = file.name
                     doJobThenOffLoading {
-                        val fileName = File(requireOpenFilePath).name
                         val snapRet = SnapshotUtil.createSnapshotByContentAndGetResult(
                             srcFileName = fileName,
                             fileContent = null,
@@ -1542,7 +1545,7 @@ private suspend fun doInit(
             //读取文件内容
 //            editorPageTextEditorState.value = TextEditorState.create(FsUtils.readFile(requireOpenFilePath))
 //                editorPageTextEditorState.value = TextEditorState.create(FsUtils.readLinesFromFile(requireOpenFilePath))
-            editorPageTextEditorState.value = TextEditorState.create(file = File(requireOpenFilePath), fieldsId = TextEditorState.newId())
+            editorPageTextEditorState.value = TextEditorState.create(file = editorPageShowingFilePath.toFuckSafFile(activityContext), fieldsId = TextEditorState.newId())
             lastTextEditorState.value = editorPageTextEditorState.value
 //                lastTextEditorState.value = editorPageTextEditorState.value
 

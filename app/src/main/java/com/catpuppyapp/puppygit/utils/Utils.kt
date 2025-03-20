@@ -15,6 +15,7 @@ import com.catpuppyapp.puppygit.dto.AppInfo
 import com.catpuppyapp.puppygit.dto.rawAppInfoToAppInfo
 import com.catpuppyapp.puppygit.etc.Ret
 import com.catpuppyapp.puppygit.play.pro.R
+import com.catpuppyapp.puppygit.screen.shared.FuckSafFile
 import com.catpuppyapp.puppygit.settings.AppSettings
 import com.catpuppyapp.puppygit.settings.DirViewAndSort
 import com.catpuppyapp.puppygit.settings.SettingsUtil
@@ -836,6 +837,10 @@ fun getDomainByUrl(url:String):String {
 }
 
 fun getFormattedLastModifiedTimeOfFile(file:File):String{
+    return getFormatTimeFromSec(sec = file.lastModified() / 1000)
+}
+
+fun getFormattedLastModifiedTimeOfFile(file:FuckSafFile):String{
     return getFormatTimeFromSec(sec = file.lastModified() / 1000)
 }
 

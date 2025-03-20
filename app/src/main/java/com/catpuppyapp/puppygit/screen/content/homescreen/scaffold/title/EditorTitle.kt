@@ -20,6 +20,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.hapticfeedback.HapticFeedbackType
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.TextFieldValue
@@ -33,9 +34,10 @@ import com.catpuppyapp.puppygit.play.pro.R
 import com.catpuppyapp.puppygit.screen.functions.defaultTitleDoubleClick
 import com.catpuppyapp.puppygit.screen.functions.defaultTitleDoubleClickRequest
 import com.catpuppyapp.puppygit.screen.shared.EditorPreviewNavStack
+import com.catpuppyapp.puppygit.screen.shared.FilePath
+import com.catpuppyapp.puppygit.screen.shared.FuckSafFile
 import com.catpuppyapp.puppygit.style.MyStyleKt
 import com.catpuppyapp.puppygit.utils.FsUtils
-import com.catpuppyapp.puppygit.utils.getFileNameFromCanonicalPath
 import com.catpuppyapp.puppygit.utils.state.CustomStateSaveable
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.runBlocking
@@ -54,7 +56,7 @@ fun EditorTitle(
     // 应用场景：用来在打开uri时指定文件名，因为uri不是/开头的规范路径，而且还可能有%2F之类的编码，不一定能通过拆分路径取出文件名，所以干脆让上级页面解析好了传过来即可。
     editorPageShowingFileName: String?,
 
-    editorPageShowingFilePath: MutableState<String>,
+    editorPageShowingFilePath: MutableState<FilePath>,
     editorPageRequestFromParent:MutableState<String>,
     editorSearchMode:Boolean,
     editorSearchKeyword: CustomStateSaveable<TextFieldValue>,
@@ -63,11 +65,12 @@ fun EditorTitle(
     editorOpenFileErr:Boolean
 ) {
     val haptic = LocalHapticFeedback.current
+    val activityContext = LocalContext.current
 
     if(editorPageShowingFilePath.value.isNotBlank()) {
-        val fileName = if(isPreviewModeOn && editorPageShowingFilePath.value != previewingPath) getFileNameFromCanonicalPath(previewingPath) else if(editorPageShowingFileName.isNullOrEmpty()) getFileNameFromCanonicalPath(editorPageShowingFilePath.value) else editorPageShowingFileName
+        val fileName = if(isPreviewModeOn && editorPageShowingFilePath.value.originPath != previewingPath) FuckSafFile(activityContext, FilePath(previewingPath)).name else if(editorPageShowingFileName.isNullOrEmpty()) FuckSafFile(activityContext, editorPageShowingFilePath.value).name else editorPageShowingFileName
 //        val filePath = getFilePathStrBasedRepoDir(editorPageShowingFilePath.value, returnResultStartsWithSeparator = true)
-        val filePath = FsUtils.getPathWithInternalOrExternalPrefix(if(isPreviewModeOn) previewingPath else editorPageShowingFilePath.value)
+        val filePath = FsUtils.getPathWithInternalOrExternalPrefix(if(isPreviewModeOn) previewingPath else editorPageShowingFilePath.value.originPath)
 
         val filePathNoFileName = filePath.removeSuffix(fileName)  // "/"结尾的路径或者只有"/"
         //如果只剩/，就返回 /，否则把末尾的/移除

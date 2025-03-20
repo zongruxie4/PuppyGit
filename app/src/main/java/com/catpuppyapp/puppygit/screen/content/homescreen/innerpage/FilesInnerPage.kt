@@ -108,6 +108,7 @@ import com.catpuppyapp.puppygit.screen.functions.filterTheList
 import com.catpuppyapp.puppygit.screen.functions.goToFileHistory
 import com.catpuppyapp.puppygit.screen.functions.initSearch
 import com.catpuppyapp.puppygit.screen.functions.recursiveBreadthFirstSearch
+import com.catpuppyapp.puppygit.screen.shared.FilePath
 import com.catpuppyapp.puppygit.settings.AppSettings
 import com.catpuppyapp.puppygit.settings.DirViewAndSort
 import com.catpuppyapp.puppygit.settings.SettingsUtil
@@ -169,7 +170,7 @@ fun FilesInnerPage(
     contentPadding: PaddingValues,
 //    filePageListState: LazyListState,
     currentHomeScreen: MutableIntState,
-    editorPageShowingFilePath: MutableState<String>,
+    editorPageShowingFilePath: MutableState<FilePath>,
     editorPageShowingFileIsReady: MutableState<Boolean>,
     needRefreshFilesPage: MutableState<String>,
     currentPath: MutableState<String>,

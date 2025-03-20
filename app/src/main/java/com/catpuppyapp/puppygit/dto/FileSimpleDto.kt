@@ -68,7 +68,7 @@ class FileSimpleDto {
                 fdto.isFile = file.isFile
                 fdto.sizeInBytes = file.length()  //对于文件夹，只能读出文件夹本身占的大小(4kb or 8kb之类的)，不会计算内部文件大小总和
 
-                fdto.lastModifiedTime = timeUnit.convert(file.lastModifiedTime(), TimeUnit.MILLISECONDS)
+                fdto.lastModifiedTime = timeUnit.convert(file.lastModified(), TimeUnit.MILLISECONDS)
                 fdto.createTime = timeUnit.convert(file.creationTime(), TimeUnit.MILLISECONDS)  // actually on linux, this same as lastModifiedTime ;(
 
             }catch (e:Exception) {

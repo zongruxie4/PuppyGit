@@ -68,6 +68,7 @@ import com.catpuppyapp.puppygit.fileeditor.texteditor.view.TextEditor
 import com.catpuppyapp.puppygit.fileeditor.ui.composable.editor.FieldIcon
 import com.catpuppyapp.puppygit.play.pro.R
 import com.catpuppyapp.puppygit.screen.shared.EditorPreviewNavStack
+import com.catpuppyapp.puppygit.screen.shared.FilePath
 import com.catpuppyapp.puppygit.settings.FileEditedPos
 import com.catpuppyapp.puppygit.style.MyStyleKt
 import com.catpuppyapp.puppygit.ui.theme.Theme
@@ -106,7 +107,7 @@ fun FileEditor(
     openDrawer:()->Unit,
     editorPageShowingFileName:String?,
     requestFromParent:MutableState<String>,
-    fileFullPath:String,
+    fileFullPath:FilePath,
     lastEditedPos:FileEditedPos,
     textEditorState:CustomStateSaveable<TextEditorState>,
     onChanged:(newState:TextEditorState, trueSaveToUndoFalseRedoNullNoSave:Boolean?, clearRedoStack:Boolean)->Unit,

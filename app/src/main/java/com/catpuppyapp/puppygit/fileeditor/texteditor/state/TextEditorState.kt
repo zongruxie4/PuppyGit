@@ -3,10 +3,10 @@ package com.catpuppyapp.puppygit.fileeditor.texteditor.state
 import androidx.compose.runtime.Immutable
 import com.catpuppyapp.puppygit.etc.Ret
 import com.catpuppyapp.puppygit.fileeditor.texteditor.controller.EditorController.Companion.createInitTextFieldStates
+import com.catpuppyapp.puppygit.screen.shared.FuckSafFile
 import com.catpuppyapp.puppygit.utils.FsUtils
 import com.catpuppyapp.puppygit.utils.doActIfIndexGood
 import com.catpuppyapp.puppygit.utils.generateRandomString
-import java.io.File
 import java.io.OutputStream
 
 private const val lb = "\n"
@@ -126,7 +126,7 @@ class TextEditorState private constructor(
             )
         }
 
-        fun create(file: File, fieldsId: String, isMultipleSelectionMode:Boolean = false): TextEditorState {
+        fun create(file: FuckSafFile, fieldsId: String, isMultipleSelectionMode:Boolean = false): TextEditorState {
             //这里`addNewLineIfFileEmpty`必须传true，以确保和String.lines()行为一致，不然若文件末尾有空行，读取出来会少一行
             return create(
                 lines = FsUtils.readLinesFromFile(file, addNewLineIfFileEmpty = true),

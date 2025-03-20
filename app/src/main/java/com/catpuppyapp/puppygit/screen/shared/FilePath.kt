@@ -19,7 +19,7 @@ data class FilePath(
     fun isNotEmpty():Boolean = originPath.isNotEmpty()
     fun isNotBlank():Boolean = originPath.isNotBlank()
 
-    fun toFile(context: Context):FuckSafFile {
+    fun toFuckSafFile(context: Context):FuckSafFile {
         return FuckSafFile(context = context, path = this)
     }
 }

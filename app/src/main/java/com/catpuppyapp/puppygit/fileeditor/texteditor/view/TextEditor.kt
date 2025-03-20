@@ -62,6 +62,7 @@ import com.catpuppyapp.puppygit.fileeditor.texteditor.controller.EditorControlle
 import com.catpuppyapp.puppygit.fileeditor.texteditor.controller.FindDirection
 import com.catpuppyapp.puppygit.fileeditor.texteditor.state.TextEditorState
 import com.catpuppyapp.puppygit.play.pro.R
+import com.catpuppyapp.puppygit.screen.shared.FilePath
 import com.catpuppyapp.puppygit.settings.AppSettings
 import com.catpuppyapp.puppygit.settings.FileEditedPos
 import com.catpuppyapp.puppygit.settings.SettingsUtil
@@ -140,7 +141,7 @@ fun TextEditor(
     requireEditorScrollToPreviewCurPos:MutableState<Boolean>,
     editorPageShowingFileName:String?,
     requestFromParent:MutableState<String>,
-    fileFullPath:String,
+    fileFullPath:FilePath,
     lastEditedPos: FileEditedPos,
     textEditorState: TextEditorState,
     editableController: EditorController,
@@ -894,7 +895,7 @@ fun TextEditor(
                 //更新配置文件记录的滚动位置（当前屏幕可见第一行）和最后编辑行
                 //如果当前索引不是上次定位的索引，更新页面状态变量和配置文件中记录的最后编辑行索引，不管是否需要滚动，反正先记上
                 //先比较一下，Settings对象从内存取不用读文件，很快，如果没变化，就不用更新配置文件了，省了磁盘IO，所以有必要检查下
-                val oldLinePos = FileOpenHistoryMan.get(fileFullPath)
+                val oldLinePos = FileOpenHistoryMan.get(fileFullPath.originPath)
                 val needUpdateLastEditedLineIndex = oldLinePos?.lineIndex != lastEditedLineIndexState.intValue
                 val currentFirstVisibleIndex = listState.firstVisibleItemIndex
                 val needUpdateFirstVisibleLineIndex = oldLinePos?.firstVisibleLineIndex != currentFirstVisibleIndex
@@ -924,7 +925,7 @@ fun TextEditor(
 //                    println("editorPos will save: "+pos)
 //                }
 //                        println(pos) //test2024081116726433
-                    FileOpenHistoryMan.set(fileFullPath, pos)
+                    FileOpenHistoryMan.set(fileFullPath.originPath, pos)
 //                    }
                 }
             }catch (e:Exception) {
