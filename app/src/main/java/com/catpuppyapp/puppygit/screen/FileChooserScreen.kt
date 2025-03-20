@@ -253,16 +253,17 @@ fun FileChooserScreen(
             )
         },
         floatingActionButton = {
-
-            GoToTopAndGoToBottomFab(
-                filterModeOn = filesPageSimpleFilterOn.value,
-                scope = scope,
-                filterListState = filesFilterListState,
-                listState = filesPageListState.value,
-                filterListLastPosition = fileListFilterLastPosition,
-                listLastPosition = filesLastPosition,
-                showFab = filesPageScrolled
-            )
+            if(filesPageScrolled.value) {
+                GoToTopAndGoToBottomFab(
+                    filterModeOn = filesPageSimpleFilterOn.value,
+                    scope = scope,
+                    filterListState = filesFilterListState,
+                    listState = filesPageListState.value,
+                    filterListLastPosition = fileListFilterLastPosition,
+                    listLastPosition = filesLastPosition,
+                    showFab = filesPageScrolled
+                )
+            }
         }
     ) { contentPadding ->
 
