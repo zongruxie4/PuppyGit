@@ -109,6 +109,7 @@ object Cons {
     const val nav_SubmoduleListScreen = "submodulelist"
     const val nav_DomainCredentialListScreen = "domain_credential_list"
     const val nav_FileHistoryScreen = "file_history"
+    const val nav_FileChooserScreen = "file_chooser"
 
 
 

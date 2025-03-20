@@ -253,5 +253,13 @@ fun AppScreenNavigator() {
             )
         }
 
+        composable(Cons.nav_FileChooserScreen) {
+            FileChooserScreen (
+                naviUp = {
+                    navController.navigateUp()
+                },
+            )
+        }
+
     }
 }
