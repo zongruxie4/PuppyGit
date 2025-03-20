@@ -996,6 +996,7 @@ fun HomeScreen(
                             }
                         }else if(currentHomeScreen.intValue == Cons.selectedItem_Files) {
                             FilesPageActions(
+                                isFileChooser = false,
                                 showCreateFileOrFolderDialog = showCreateFileOrFolderDialog,
                                 refreshPage = {
                                     changeStateTriggerRefreshPage(needRefreshFilesPage)

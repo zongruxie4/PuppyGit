@@ -24,6 +24,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.TextRange
 import androidx.compose.ui.text.input.TextFieldValue
+import com.catpuppyapp.puppygit.compose.GoToTopAndGoToBottomFab
 import com.catpuppyapp.puppygit.compose.LongPressAbleIconBtn
 import com.catpuppyapp.puppygit.constants.Cons
 import com.catpuppyapp.puppygit.data.entity.RepoEntity
@@ -51,6 +52,14 @@ fun FileChooserScreen(
     displayTypeFlags: Int,
     naviUp: () -> Unit
 ) {
+
+    val isFileChooser = remember { true }
+    val enableMultiSelectionForFileChooser = remember { false }
+
+    //目前实际上只支持选择目录不支持选择文件
+    val fileDisplayFilter = rememberSaveable { mutableStateOf(FileDisplayFilter(displayTypeFlags)) }
+
+
     val activityContext = LocalContext.current
     val allRepoParentDir = AppModel.allRepoParentDir
 
@@ -152,6 +161,7 @@ fun FileChooserScreen(
 
     //上次滚动位置
     val filesLastPosition = rememberSaveable { mutableStateOf(0) }
+    val fileListFilterLastPosition = rememberSaveable { mutableStateOf(0) }
 
     //判定过滤模式是否真开启的状态变量，例如虽然filterModeOn为真，但是，如果没输入任何关键字，过滤模式其实还是没开，这时这个变量会为假，但filterModeOn为真
     val filesPageEnableFilterState = rememberSaveable { mutableStateOf(false)}
@@ -166,7 +176,6 @@ fun FileChooserScreen(
     val filesPageCheckOnly = rememberSaveable { mutableStateOf(false)}
     val filesPageSelectedRepo = mutableCustomStateOf(keyTag = stateKeyTag, keyName = "filesPageSelectedRepo", RepoEntity(id="") )
 
-    val fileDisplayFilter = rememberSaveable { mutableStateOf(FileDisplayFilter(displayTypeFlags)) }
 
     //无用变量，开始：这些变量在这个页面无用，但占位置
     val currentHomeScreen = rememberSaveable { mutableIntStateOf(Cons.selectedItem_Files) }
@@ -228,6 +237,7 @@ fun FileChooserScreen(
 
                 actions = {
                     FilesPageActions(
+                        isFileChooser = isFileChooser,
                         showCreateFileOrFolderDialog = showCreateFileOrFolderDialog,
                         refreshPage = refreshPage,
                         filterOn = filesPageFilterOn,
@@ -243,6 +253,16 @@ fun FileChooserScreen(
             )
         },
         floatingActionButton = {
+
+            GoToTopAndGoToBottomFab(
+                filterModeOn = filesPageSimpleFilterOn.value,
+                scope = scope,
+                filterListState = filesFilterListState,
+                listState = filesPageListState.value,
+                filterListLastPosition = fileListFilterLastPosition,
+                listLastPosition = filesLastPosition,
+                showFab = filesPageScrolled
+            )
         }
     ) { contentPadding ->
 
@@ -250,8 +270,8 @@ fun FileChooserScreen(
         FilesInnerPage(
             naviUp = naviUp,
             updateSelectedPath = updateSelectedPath,
-            isFileChooser = true,
-            enableMultiSelectionForFileChooser = false,
+            isFileChooser = isFileChooser,
+            enableMultiSelectionForFileChooser = enableMultiSelectionForFileChooser,
             fileDisplayFilter = fileDisplayFilter.value,
             filesPageLastKeyword=filesPageLastKeyword,
             filesPageSearchToken=filesPageSearchToken,

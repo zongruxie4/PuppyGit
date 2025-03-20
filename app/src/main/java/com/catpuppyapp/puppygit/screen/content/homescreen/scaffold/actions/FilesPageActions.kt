@@ -28,6 +28,7 @@ import com.catpuppyapp.puppygit.utils.state.CustomStateSaveable
 
 @Composable
 fun FilesPageActions(
+    isFileChooser:Boolean,
     showCreateFileOrFolderDialog: MutableState<Boolean>,
     refreshPage: () -> Unit,
     filterOn: () -> Unit,
@@ -40,26 +41,6 @@ fun FilesPageActions(
 
     val dropDownMenuExpendState = rememberSaveable { mutableStateOf(false)}
 
-//    if(filesPageGetFilterMode()==0) {
-//        LongPressAbleIconBtn(
-//            tooltipText = stringResource(R.string.filter_files),
-//            icon = Icons.Filled.FilterAlt,
-//            iconContentDesc = stringResource(id = R.string.filter_files),
-//        ) {
-//            filterOn()
-//        }
-//    }
-//
-//    if(filesPageGetFilterMode() == 1) {
-//        LongPressAbleIconBtn(
-//            tooltipText = stringResource(R.string.do_filter),
-//            icon = Icons.Filled.Check,
-//            iconContentDesc = stringResource(id = R.string.do_filter),
-//        ) {
-//                //如果为空，尝试从keyword state获取值
-//                doFilter("")
-//        }
-//    }
 
     if(!filesPageSimpleFilterOn.value) { //没filter的常规模式或显示filter结果模式
         LongPressAbleIconBtn(
@@ -70,14 +51,6 @@ fun FilesPageActions(
             filesPageSimpleFilterKeyWord.value = TextFieldValue("")
             filesPageSimpleFilterOn.value = true
         }
-
-//        LongPressAbleIconBtn(
-//            tooltipText = stringResource(R.string.go_to_top),
-//            icon = Icons.Filled.VerticalAlignTop,
-//            iconContentDesc = stringResource(id = R.string.go_to_top),
-//        ) {
-//            requestFromParent.value=PageRequest.goToTop
-//        }
 
         LongPressAbleIconBtn(
             tooltipText = stringResource(R.string.refresh),
@@ -148,74 +121,40 @@ fun FilesPageActions(
                         dropDownMenuExpendState.value = false
                     }
                 )
-//
-//                DropdownMenuItem(
-//                    enabled = enableMenuItem,
-//                    text = { Text(stringResource(R.string.copy_full_path)) },
-//                    onClick = {
-//                        requestFromParent.value = PageRequest.copyFullPath
-//                        dropDownMenuExpendState.value = false
-//                    }
-//                )
-//
-//                DropdownMenuItem(
-//                    enabled = enableMenuItem,
-//                    text = { Text(stringResource(R.string.copy_repo_relative_path)) },
-//                    onClick = {
-//                        requestFromParent.value = PageRequest.copyRepoRelativePath
-//                        dropDownMenuExpendState.value = false
-//                    }
-//                )
 
-                DropdownMenuItem(
-                    enabled = enableMenuItem,
-                    text = { Text(stringResource(R.string.import_str)) },
-                    onClick = {
-                        requestFromParent.value = PageRequest.safImport
-                        dropDownMenuExpendState.value = false
+
+                if(isFileChooser.not()) {
+                    DropdownMenuItem(
+                        enabled = enableMenuItem,
+                        text = { Text(stringResource(R.string.import_str)) },
+                        onClick = {
+                            requestFromParent.value = PageRequest.safImport
+                            dropDownMenuExpendState.value = false
+                        }
+                    )
+
+
+                    if(AppModel.devModeOn) {
+                        DropdownMenuItem(
+                            enabled = enableMenuItem,
+                            text = { Text(DevFeature.appendDevPrefix(stringResource(R.string.export))) },
+                            onClick = {
+                                requestFromParent.value = PageRequest.safExport
+                                dropDownMenuExpendState.value = false
+                            }
+                        )
+
+                        DropdownMenuItem(
+                            enabled = enableMenuItem,
+                            text = { Text(DevFeature.safDiff_text) },
+                            onClick = {
+                                requestFromParent.value = PageRequest.safDiff
+                                dropDownMenuExpendState.value = false
+                            }
+                        )
                     }
-                )
-
-
-                if(AppModel.devModeOn) {
-                    DropdownMenuItem(
-                        enabled = enableMenuItem,
-                        text = { Text(DevFeature.appendDevPrefix(stringResource(R.string.export))) },
-                        onClick = {
-                            requestFromParent.value = PageRequest.safExport
-                            dropDownMenuExpendState.value = false
-                        }
-                    )
-
-                    DropdownMenuItem(
-                        enabled = enableMenuItem,
-                        text = { Text(DevFeature.safDiff_text) },
-                        onClick = {
-                            requestFromParent.value = PageRequest.safDiff
-                            dropDownMenuExpendState.value = false
-                        }
-                    )
                 }
 
-                //拷贝app内相对路径
-//                DropdownMenuItem(
-//                    enabled = enableMenuItem,
-//                    text = { Text(stringResource(R.string.copy_path)) },
-//                    onClick = {
-//                        requestFromParent.value = PageRequest.copyPath
-//                        dropDownMenuExpendState.value = false
-//                    }
-//                )
-
-                //拷贝真实路径， /storage/em/0/xx/x/x/x/那种，真实的路径
-//                DropdownMenuItem(
-//                    enabled = enableMenuItem,
-//                    text = { Text(stringResource(R.string.copy_real_path)) },
-//                    onClick = {
-//                        requestFromParent.value = PageRequest.copyRealPath
-//                        dropDownMenuExpendState.value = false
-//                    }
-//                )
             }
         }
     }
