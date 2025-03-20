@@ -121,11 +121,16 @@
                 <action android:name="android.intent.action.VIEW" />
                 <action android:name="android.intent.action.EDIT" />
                 <category android:name="android.intent.category.DEFAULT" />
-                <data android:mimeType="text/*" />
                 <!-- support "file://" -->
                 <data android:scheme="file" />
                 <!-- support "content://" -->
                 <data android:scheme="content" />
+
+                <!-- mime type, 可设置多个，往后面加就行 -->
+                <data android:mimeType="text/*" />
+                <data android:mimeType="*/*" />
+                <!-- <data android:mimeType="text/plain" />-->
+
             </intent-filter>
 
         </activity>
