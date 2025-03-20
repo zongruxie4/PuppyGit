@@ -85,6 +85,7 @@ import com.catpuppyapp.puppygit.git.Upstream
 import com.catpuppyapp.puppygit.play.pro.R
 import com.catpuppyapp.puppygit.screen.functions.filterModeActuallyEnabled
 import com.catpuppyapp.puppygit.screen.functions.filterTheList
+import com.catpuppyapp.puppygit.screen.shared.SharedState
 import com.catpuppyapp.puppygit.server.bean.ConfigBean
 import com.catpuppyapp.puppygit.settings.AppSettings
 import com.catpuppyapp.puppygit.settings.SettingsUtil
@@ -410,10 +411,10 @@ fun RepoInnerPage(
 
     }
 
-    val safEnabledForSystemFolderChooser = rememberSaveable { mutableStateOf(false)}
-    val importRepoPath = rememberSaveable { mutableStateOf("") }
-    val safPath = rememberSaveable { mutableStateOf("") }
-    val nonSafPath = rememberSaveable { mutableStateOf("") }
+    val importRepoPath = rememberSaveable { SharedState.pathOfFileChooser }
+//    val safEnabledForSystemFolderChooser = rememberSaveable { mutableStateOf(false)}
+//    val safPath = rememberSaveable { mutableStateOf("") }
+//    val nonSafPath = rememberSaveable { mutableStateOf("") }
     val isReposParentFolderForImport = rememberSaveable { mutableStateOf(false) }
 
     if(showImportRepoDialog.value) {
@@ -444,7 +445,7 @@ fun RepoInnerPage(
 
                         }
 
-                        SystemFolderChooser(safEnabled = safEnabledForSystemFolderChooser, safPath = safPath, nonSafPath = nonSafPath, path = importRepoPath)
+                        SystemFolderChooser(path = importRepoPath)
 
                         Spacer(Modifier.height(15.dp))
 

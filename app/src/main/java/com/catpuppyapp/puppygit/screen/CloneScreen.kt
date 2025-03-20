@@ -80,6 +80,7 @@ import com.catpuppyapp.puppygit.dev.dev_EnableUnTestedFeature
 import com.catpuppyapp.puppygit.dev.shallowAndSingleBranchTestPassed
 import com.catpuppyapp.puppygit.play.pro.R
 import com.catpuppyapp.puppygit.screen.content.homescreen.scaffold.title.ScrollableTitle
+import com.catpuppyapp.puppygit.screen.shared.SharedState
 import com.catpuppyapp.puppygit.style.MyStyleKt
 import com.catpuppyapp.puppygit.ui.theme.Theme
 import com.catpuppyapp.puppygit.user.UserUtil
@@ -273,10 +274,10 @@ fun CloneScreen(
 
     val showAddStoragePathDialog = rememberSaveable { mutableStateOf(false)}
 
-    val safEnabledForSystemFolderChooser = rememberSaveable { mutableStateOf(false)}
-    val storagePathForAdd = rememberSaveable { mutableStateOf("")}
-    val safPath = rememberSaveable { mutableStateOf("") }
-    val nonSafPath = rememberSaveable { mutableStateOf("") }
+    val storagePathForAdd = rememberSaveable { SharedState.pathOfFileChooser }
+//    val safEnabledForSystemFolderChooser = rememberSaveable { mutableStateOf(false)}
+//    val safPath = rememberSaveable { mutableStateOf("") }
+//    val nonSafPath = rememberSaveable { mutableStateOf("") }
 
 
     //vars of  storage select end
@@ -309,7 +310,7 @@ fun CloneScreen(
                             )
                         }
 
-                        SystemFolderChooser(safEnabled = safEnabledForSystemFolderChooser, safPath = safPath, nonSafPath = nonSafPath, path = storagePathForAdd)
+                        SystemFolderChooser(path = storagePathForAdd)
 
                     }
                 }

@@ -21,4 +21,6 @@ object SharedState {
 
     val editorPreviewNavStack = EditorPreviewNavStack("")
     val subEditorPreviewNavStack = EditorPreviewNavStack("")
+
+    val pathOfFileChooser = mutableStateOf("")
 }
