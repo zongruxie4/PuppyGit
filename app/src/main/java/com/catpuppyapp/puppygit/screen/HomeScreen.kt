@@ -1,5 +1,6 @@
 package com.catpuppyapp.puppygit.screen
 
+import android.app.Activity
 import android.content.Intent
 import android.net.Uri
 import androidx.compose.foundation.layout.fillMaxHeight
@@ -106,6 +107,7 @@ import com.catpuppyapp.puppygit.utils.PrefMan
 import com.catpuppyapp.puppygit.utils.changeStateTriggerRefreshPage
 import com.catpuppyapp.puppygit.utils.doJobThenOffLoading
 import com.catpuppyapp.puppygit.utils.generateRandomString
+import com.catpuppyapp.puppygit.utils.saf.SafUtil
 import com.catpuppyapp.puppygit.utils.state.mutableCustomStateListOf
 import com.catpuppyapp.puppygit.utils.state.mutableCustomStateOf
 import com.github.git24j.core.Repository.StateT
@@ -139,7 +141,7 @@ fun HomeScreen(
     val homeTopBarScrollBehavior = AppModel.homeTopBarScrollBehavior
 //    val appContext = AppModel.appContext  //这个获取不了Activity!
     val activityContext = LocalContext.current  //这个能获取到
-    val activity = ActivityUtil.getCurrentActivity()
+    val activity = activityContext as? Activity
 
 //    val settingsTmp = remember { SettingsUtil.getSettingsSnapshot() }   //避免状态变量里的设置项过旧，重新获取一个
 
@@ -1483,7 +1485,17 @@ fun HomeScreen(
                                 if(requireEditFile) {
                                     val uri: Uri? = intent.data
                                     if(uri != null) {
+                                        //若无写权限，则以只读方式打开
                                         val expectReadOnly = (intent.flags and Intent.FLAG_GRANT_WRITE_URI_PERMISSION) == 0
+
+                                        //请求获取永久访问权限，不然重启手机后会丢失权限
+                                        val contentResolver = activityContext.contentResolver
+                                        if(expectReadOnly) {
+                                            SafUtil.takePersistableReadOnlyPermission(contentResolver, uri)
+                                        }else {
+                                            SafUtil.takePersistableRWPermission(contentResolver, uri)
+                                        }
+
                                         requireInnerEditorOpenFile(uri.toString(), expectReadOnly)
 
                                         return@doJobThenOffLoading
