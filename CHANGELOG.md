@@ -1,3 +1,11 @@
+1.0.9.5v71 - 20250321:
+- use internal file manager instead of system file picker
+
+
+- 使用内置文件管理器替代系统文件选择器
+
+---
+
 1.0.9.4v70 - 20250318:
 - Files support recursive search
 - fix a bug may cause app run slowly when filter mode on
