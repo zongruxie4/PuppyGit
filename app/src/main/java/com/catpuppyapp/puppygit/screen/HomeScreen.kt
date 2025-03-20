@@ -1458,11 +1458,14 @@ fun HomeScreen(
                 //检查是否存在intent，如果存在，则切换到导入模式
                 if (activity != null) {
                     val intent = activity.intent
+
                     if (intent != null) {
+                        // import file or jump to specified screen
+                        val requireEditFile = Intent.ACTION_VIEW == intent.action || Intent.ACTION_EDIT == intent.action
                         val extras = intent.extras
 
                         //importListConsumed 确保每个Activity的文件列表只被消费一次(20240706: 修复以导入模式启动app再进入子页面再返回会再次触发导入模式的bug)
-                        if (extras != null) {
+                        if (requireEditFile || extras != null) {
                             //if need import files, go to Files, else go to page which matched to the page id in the extras
                             //if need import files, go to Files, else go to page which matched to the page id in the extras
 
@@ -1475,6 +1478,23 @@ fun HomeScreen(
                                 // 再点进随便一个二级页面，再返回，又会重入此代码块，又回到changelist...
                                 intentConsumed.value = true
 
+
+                                //是否请求编辑文件
+                                if(requireEditFile) {
+                                    val uri: Uri? = intent.data
+                                    if(uri != null) {
+                                        val expectReadOnly = (intent.flags and Intent.FLAG_GRANT_WRITE_URI_PERMISSION) == 0
+                                        requireInnerEditorOpenFile(uri.toString(), expectReadOnly)
+
+                                        return@doJobThenOffLoading
+                                    }
+                                }
+
+
+                                //执行到已经排除编辑文件，还有三种可能：
+                                // 1. action 为 SEND，导入或编辑单文件
+                                // 2. action 为 SEND_MULTIPLE，导入多文件
+                                // 3. 请求打开指定页面，从通知栏点通知信息时会用到这个逻辑，p.s. 这个是直接通过类跳转的，我不确定action是什么
 
                                 //检查是否需要启动导入模式（用户可通过系统分享菜单文件到app以启动此模式）
                                 var importFiles = false  // after jump to Files, it will be set to true, else keep false
@@ -1497,14 +1517,17 @@ fun HomeScreen(
                                         showAskHandleSingleSendMethod.value = true
                                         return@doJobThenOffLoading
                                     }else if(howToDealWithSingleSend.value == SingleSendHandleMethod.EDIT.code) {
-                                        val (path, filename) = FsUtils.getFilePathAndRealNameFromUriOrCanonicalPath(activityContext, uri)
-                                        if(path.isBlank()) {
-                                            //path如果为空，依然跳转到editor页面
-                                            Msg.requireShowLongDuration(activityContext.getString(R.string.file_path_invalid))
-                                        }
+                                        val uriStr = uri.toString()
+
+//                                        这个提示没什么意义啊，Editor打开空路径肯定报错，我在这提示多此一举。
+//                                        if(uriStr.isBlank()) {
+//                                            //path如果为空，依然跳转到editor页面
+//                                            Msg.requireShowLongDuration(activityContext.getString(R.string.file_path_invalid))
+//                                        }
 
                                         val expectReadOnly = false
-                                        requireInnerEditorOpenFileWithFileName(path, expectReadOnly, filename)
+                                        val fileName = null  //直接传null即可，会自动获取文件名，做了处理，兼容"content://"和"file://"
+                                        requireInnerEditorOpenFileWithFileName(uriStr, expectReadOnly, fileName)
 
                                         return@doJobThenOffLoading
                                     }else if(howToDealWithSingleSend.value == SingleSendHandleMethod.IMPORT.code) {
