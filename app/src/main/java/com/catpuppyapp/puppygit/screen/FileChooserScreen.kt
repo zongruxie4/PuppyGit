@@ -65,7 +65,7 @@ fun FileChooserScreen(
         changeStateTriggerRefreshPage(needRefreshFilesPage)
     }
 
-    val filesPageIsFileSelectionMode = rememberSaveable { mutableStateOf(false)}
+    val filesPageIsFileSelectionMode = rememberSaveable { mutableStateOf(true)}
     val filesPageIsPasteMode = rememberSaveable { mutableStateOf(false)}
     val filesPageSelectedItems = mutableCustomStateListOf(keyTag = stateKeyTag, keyName = "filesPageSelectedItems", initValue = listOf<FileItemDto>())
 

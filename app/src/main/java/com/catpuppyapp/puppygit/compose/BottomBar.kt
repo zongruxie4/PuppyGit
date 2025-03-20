@@ -6,12 +6,14 @@ import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.systemBarsPadding
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Close
@@ -37,6 +39,7 @@ import com.catpuppyapp.puppygit.style.MyStyleKt
 @Composable
 fun BottomBar(
     modifier: Modifier=Modifier,
+    showClose: Boolean = true,
     height: Dp = MyStyleKt.BottomBar.height,
     color: Color = MaterialTheme.colorScheme.primaryContainer,
 
@@ -112,23 +115,30 @@ fun BottomBar(
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.SpaceBetween
         ) {
+
             Row(
                 verticalAlignment = Alignment.CenterVertically,
                 horizontalArrangement = Arrangement.Center
             ) {
-                //关闭按钮
-                LongPressAbleIconBtn(
-                    modifier = Modifier
-                        .padding(10.dp)
-                        .size(40.dp),
-                    tooltipText = stringResource(R.string.close),
-                    icon = Icons.Filled.Close,
-                    iconContentDesc = stringResource(R.string.quit_selection_files_mode),
-                    onClick = {
-                        //退出选择模式
-                        quitSelectionMode()
-                    },
-                )
+                if(showClose) {
+                    //关闭按钮
+                    LongPressAbleIconBtn(
+                        modifier = Modifier
+                            .padding(10.dp)
+                            .size(40.dp),
+                        tooltipText = stringResource(R.string.close),
+                        icon = Icons.Filled.Close,
+                        iconContentDesc = stringResource(R.string.quit_selection_files_mode),
+                        onClick = {
+                            //退出选择模式
+                            quitSelectionMode()
+                        },
+                    )
+                }
+
+                if(showClose.not()) {
+                    Spacer(Modifier.width(10.dp))
+                }
 
                 //选择的条目数
                 Text(text = ""+getSelectedFilesCount(),

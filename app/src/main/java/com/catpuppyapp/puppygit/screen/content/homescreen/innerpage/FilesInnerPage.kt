@@ -29,6 +29,7 @@ import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.ContentCopy
 import androidx.compose.material.icons.filled.ContentCut
 import androidx.compose.material.icons.filled.ContentPaste
@@ -343,6 +344,15 @@ fun FilesInnerPage(
     val switchItemSelected = { item: FileItemDto ->
         isFileSelectionMode.value = true
         UIHelper.selectIfNotInSelectedListElseRemove(item, selectedItems.value, contains = containsForSelected)
+
+        //文件选择器 且 单选，每次切换选择后都移除与当前点击条目不相等的文件
+        if(isFileChooser && enableMultiSelectionForFileChooser.not()) {
+            selectedItems.value.toList().forEach {
+                if(it.equalsForSelected(item).not()) {
+                    selectedItems.value.remove(it)
+                }
+            }
+        }
     }
 
     val selectItem = { item:FileItemDto ->
@@ -1484,7 +1494,7 @@ fun FilesInnerPage(
                                 switchItemSelected(it)
 
                                 //如果处于选择模式，长按执行连续选择
-                            }else if(isFileSelectionMode.value && !isPasteMode.value && !isImportMode.value) {
+                            }else if(isFileSelectionMode.value && !isPasteMode.value && !isImportMode.value && (isFileChooser.not() || enableMultiSelectionForFileChooser)) {
                                 haptic.performHapticFeedback(HapticFeedbackType.LongPress)
                                 UIHelper.doSelectSpan(index, it,
                                     //这里调用 toList() 是为了拷贝下源list，避免并发修改异常
@@ -2253,44 +2263,112 @@ fun FilesInnerPage(
 
     //Bottom bar，一个是选择模式，一个是粘贴模式
     if (isFileSelectionMode.value) {
-        val selectionModeIconList = listOf(
-            Icons.Filled.Delete,
-            Icons.Filled.ContentCut,
-            Icons.Filled.ContentCopy,
-            Icons.Filled.SelectAll,  //全选
-        )
-        val selectionModeIconTextList = listOf(
-            stringResource(R.string.delete),
-            stringResource(R.string.move),
-            stringResource(R.string.copy),
-            stringResource(R.string.select_all),
-        )
-        val selectionModeIconOnClickList = listOf<()->Unit>(
-            delete@{
-                initDelFileDialog()
-            },
-            move@{
-                setPasteModeThenShowPasteBar(pasteMode_Move)
-            },
-            copy@{
-                setPasteModeThenShowPasteBar(pasteMode_Copy)
-            },
-            selectAll@{
-                val list = if(enableFilterState.value) filterList.value else currentPathFileList.value
-
-                list.toList().forEach {
-                    selectItem(it)
-                }
-
-                Unit
+        val selectionModeIconList = if(isFileChooser) {
+            if(enableMultiSelectionForFileChooser) {
+                listOf(
+                    Icons.Filled.SelectAll,  //全选
+                    Icons.Filled.Check, // 确定选择这个目录
+                )
+            }else {
+                listOf(
+                    Icons.Filled.Check, // 确定选择这个目录
+                )
             }
-        )
-        val selectionModeIconEnableList = listOf(
-            {getSelectedFilesCount()>0},  //是否启用delete
-            {getSelectedFilesCount()>0},  //是否启用move
-            {getSelectedFilesCount()>0},  //是否启用copy
-            {true},  //是否启用全选
-        )
+        } else {
+            listOf(
+                Icons.Filled.Delete,
+                Icons.Filled.ContentCut,
+                Icons.Filled.ContentCopy,
+                Icons.Filled.SelectAll,  //全选
+            )
+        }
+
+        val selectAll = {
+            val list = if(enableFilterState.value) filterList.value else currentPathFileList.value
+
+            list.toList().forEach {
+                selectItem(it)
+            }
+
+            Unit
+        }
+
+        val selectionModeIconTextList = if(isFileChooser){
+            if(enableMultiSelectionForFileChooser) {
+                listOf(
+                    stringResource(R.string.select_all),
+                    stringResource(R.string.confirm), // 确定选择
+                )
+            }else {
+                listOf(
+                    stringResource(R.string.confirm), // 确定选择
+                )
+            }
+        } else {
+            listOf(
+                stringResource(R.string.delete),
+                stringResource(R.string.move),
+                stringResource(R.string.copy),
+                stringResource(R.string.select_all),
+            )
+        }
+
+        val confirmForChooser = {
+            updateSelectedPath(selectedItems.value.first().fullPath)
+            naviUp()
+        }
+
+        val selectionModeIconOnClickList = if(isFileChooser){
+            if(enableMultiSelectionForFileChooser) {
+                listOf(
+                    selectAll,
+                    confirm@{
+                        confirmForChooser()
+                    }
+                )
+            }else {
+                listOf(
+                    confirm@{
+                        confirmForChooser()
+                    }
+                )
+            }
+        } else {
+            listOf<()->Unit>(
+                delete@{
+                    initDelFileDialog()
+                },
+                move@{
+                    setPasteModeThenShowPasteBar(pasteMode_Move)
+                },
+                copy@{
+                    setPasteModeThenShowPasteBar(pasteMode_Copy)
+                },
+                selectAll@{
+                    selectAll()
+                }
+            )
+        }
+
+        val selectionModeIconEnableList = if(isFileChooser) {
+            if(enableMultiSelectionForFileChooser) {
+                listOf(
+                    selectAll@{true},  //是否启用全选
+                    confirm@{getSelectedFilesCount()>0},  //是否启用确认
+                )
+            }else {
+                listOf(
+                    confirm@{getSelectedFilesCount()>0},  //是否启用确认
+                )
+            }
+        } else {
+            listOf(
+                delete@{getSelectedFilesCount()>0},  //是否启用delete
+                move@{getSelectedFilesCount()>0},  //是否启用move
+                copy@{getSelectedFilesCount()>0},  //是否启用copy
+                selectAll@{true},  //是否启用全选
+            )
+        }
         val selectionModeMoreItemTextList = (listOf(
             stringResource(id = R.string.remove_from_git),  //列表显示顺序就是这里的排序，上到下
             stringResource(id = R.string.details),
@@ -2355,22 +2433,42 @@ fun FilesInnerPage(
 
 
         if(!isLoading.value) {
-            BottomBar(
-                quitSelectionMode=filesPageQuitSelectionMode,
-                iconList=selectionModeIconList,
-                iconTextList=selectionModeIconTextList,
-                iconDescTextList=selectionModeIconTextList,
-                iconOnClickList=selectionModeIconOnClickList,
-                iconEnableList=selectionModeIconEnableList,
-                enableMoreIcon=true,
-                moreItemTextList=selectionModeMoreItemTextList,
-                moreItemOnClickList=selectionModeMoreItemOnClickList,
-                moreItemEnableList = selectionModeMoreItemEnableList,
-                getSelectedFilesCount = getSelectedFilesCount,
-                countNumOnClickEnabled = true,
-                countNumOnClick = countNumOnClickForSelectAndPasteModeBottomBar,
-                reverseMoreItemList = true
-            )
+            if(isFileChooser) {
+                BottomBar(
+                    showClose = false,
+                    quitSelectionMode={},
+                    iconList=selectionModeIconList,
+                    iconTextList=selectionModeIconTextList,
+                    iconDescTextList=selectionModeIconTextList,
+                    iconOnClickList=selectionModeIconOnClickList,
+                    iconEnableList=selectionModeIconEnableList,
+                    enableMoreIcon=false,
+                    moreItemTextList= listOf(),
+                    moreItemOnClickList= listOf(),
+                    moreItemEnableList = listOf(),
+                    getSelectedFilesCount = getSelectedFilesCount,
+                    countNumOnClickEnabled = true,
+                    countNumOnClick = countNumOnClickForSelectAndPasteModeBottomBar,
+                    reverseMoreItemList = true
+                )
+            }else {
+                BottomBar(
+                    quitSelectionMode=filesPageQuitSelectionMode,
+                    iconList=selectionModeIconList,
+                    iconTextList=selectionModeIconTextList,
+                    iconDescTextList=selectionModeIconTextList,
+                    iconOnClickList=selectionModeIconOnClickList,
+                    iconEnableList=selectionModeIconEnableList,
+                    enableMoreIcon=true,
+                    moreItemTextList=selectionModeMoreItemTextList,
+                    moreItemOnClickList=selectionModeMoreItemOnClickList,
+                    moreItemEnableList = selectionModeMoreItemEnableList,
+                    getSelectedFilesCount = getSelectedFilesCount,
+                    countNumOnClickEnabled = true,
+                    countNumOnClick = countNumOnClickForSelectAndPasteModeBottomBar,
+                    reverseMoreItemList = true
+                )
+            }
         }
     }
 
@@ -2851,6 +2949,7 @@ fun FilesInnerPage(
                 try {
                     doInit(
                         fileDisplayFilter = fileDisplayFilter,
+                        isFileChooser = isFileChooser,
                         currentPath = currentPath,
                         currentPathFileList = currentPathFileList,
                         currentPathBreadCrumbList = currentPathBreadCrumbList,
@@ -2893,7 +2992,7 @@ fun FilesInnerPage(
 
 private suspend fun doInit(
     fileDisplayFilter: FileDisplayFilter,
-
+    isFileChooser:Boolean,
     currentPath: MutableState<String>,
     currentPathFileList: CustomStateListSaveable<FileItemDto>,
     currentPathBreadCrumbList: CustomStateListSaveable<FileItemDto>,
@@ -2924,7 +3023,7 @@ private suspend fun doInit(
 ){
 
     //无选中条目则退出选择模式
-    if(selectedItems.isEmpty()) {
+    if(isFileChooser.not() && selectedItems.isEmpty()) {
         filesPageQuitSelectionMode()
     }
 
@@ -3254,7 +3353,7 @@ private fun getBackHandler(
     }
 
     val backHandlerOnBack:()->Unit = {
-        if (isFileSelectionMode.value) {
+        if (isFileChooser.not() && isFileSelectionMode.value) {
             filesPageQuitSelectionMode()
         } else if(filesPageSimpleFilterOn.value) {
             filesPageSimpleFilterOn.value = false
