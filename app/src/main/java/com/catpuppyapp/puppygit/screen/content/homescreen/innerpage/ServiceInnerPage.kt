@@ -57,7 +57,7 @@ import com.catpuppyapp.puppygit.utils.StrListUtil
 import com.catpuppyapp.puppygit.utils.UIHelper
 import com.catpuppyapp.puppygit.utils.doJobThenOffLoading
 import com.catpuppyapp.puppygit.utils.genHttpHostPortStr
-import com.catpuppyapp.puppygit.utils.parseInt
+import com.catpuppyapp.puppygit.utils.parseIntOrDefault
 import com.catpuppyapp.puppygit.utils.state.mutableCustomStateListOf
 import com.catpuppyapp.puppygit.utils.state.mutableCustomStateOf
 
@@ -347,7 +347,7 @@ fun ServiceInnerPage(
             showSetPortDialog.value = false
             doJobThenOffLoading {
                 //解析
-                val newValue = parseInt(listenPortBuf.value)
+                val newValue = parseIntOrDefault(listenPortBuf.value, default = null)
 
                 //检查
                 if(newValue == null || newValue < 0 || newValue > 65535) {

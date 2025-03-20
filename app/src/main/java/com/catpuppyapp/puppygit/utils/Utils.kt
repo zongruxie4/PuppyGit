@@ -978,11 +978,11 @@ fun <T> updateSelectedList(
 }
 
 
-fun parseInt(str:String):Int? {
+fun parseIntOrDefault(str:String, default:Int?):Int? {
     return try {
         str.trim().toInt()
     }catch (_:Exception){
-        null
+        default
     }
 }
 

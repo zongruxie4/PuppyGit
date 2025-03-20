@@ -5,9 +5,9 @@ import kotlinx.parcelize.Parcelize
 
 
 object FileDisplayType{
-    const val FILE = 0 shl 1
+    const val FILE = 1 shl 0
 
-    const val DIR = 0 shl 2
+    const val DIR = 1 shl 1
 }
 
 /**

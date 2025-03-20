@@ -14,6 +14,7 @@ import com.catpuppyapp.puppygit.constants.LineNum
 import com.catpuppyapp.puppygit.screen.shared.DiffFromScreen
 import com.catpuppyapp.puppygit.screen.shared.FileDisplayType
 import com.catpuppyapp.puppygit.utils.AppModel
+import com.catpuppyapp.puppygit.utils.parseIntOrDefault
 
 @Composable
 fun AppScreenNavigator() {
@@ -256,7 +257,8 @@ fun AppScreenNavigator() {
 
         composable(Cons.nav_FileChooserScreen+"/{displayTypeFlags}") {
             FileChooserScreen (
-                displayTypeFlags = it.arguments?.getInt("displayTypeFlags") ?: FileDisplayType.DIR,
+                //不要用getInt()，会报错，妈的，什么狗屁api
+                displayTypeFlags = parseIntOrDefault(it.arguments?.getString("displayTypeFlags") ?: "", default = FileDisplayType.DIR)!!,
                 naviUp = {
                     navController.navigateUp()
                 },

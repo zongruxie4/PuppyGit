@@ -3050,7 +3050,7 @@ private suspend fun doInit(
     var fileCount = 0
     // 遍历文件列表
     currentDir.listFiles()?.let {
-        it.forEach { file ->
+        for(file in it) {
             val fdto = FileItemDto.genFileItemDtoByFile(file, activityContext)
             //过滤模式开启 且 文件名不包含关键字则忽略当前条目。（TODO 做点高级的东西？如果输入特定关键字就开启指定模式，比如可根据文件大小或后缀过滤？匹配模式直接抄Everything这个软件的即可，比自己发明格式要好，你自己发明的太小众，别人用不惯，已经广泛受用的，则有可能别人已经知道，用着就会感觉有亲切感）
 //                if(isFilterModeOn && !fdto.name.lowercase().contains(filterKeywordText.lowercase())) {
@@ -3059,11 +3059,11 @@ private suspend fun doInit(
 
             if(fdto.isFile) {
                 if(showFile.not()) {
-                    return@forEach
+                    continue
                 }
 
                 if(needMathFile && RegexUtil.matchWildcard(input = fdto.name, pattern = mathPattern).not()) {
-                    return@forEach
+                    continue
                 }
 
                 // 不需要匹配或匹配成功
@@ -3083,11 +3083,11 @@ private suspend fun doInit(
                 fileSortedSet.add(fdto)
             }else {
                 if(showDir.not()) {
-                    return@forEach
+                    continue
                 }
 
                 if(needMathFile && RegexUtil.matchWildcard(input = fdto.name, pattern = mathPattern).not()) {
-                    return@forEach
+                    continue
                 }
 
                 // 不需要匹配或匹配成功
