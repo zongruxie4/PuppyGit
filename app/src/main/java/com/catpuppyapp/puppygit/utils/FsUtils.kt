@@ -1161,15 +1161,16 @@ object FsUtils {
     }
 
     /**
-     * 返回的不一定是真实路径
+     * 返回的不一定是真实路径，例如 termux用这种方式解析路径会出现两个/ 例如 "/storage/emulated/0/tree//data/data/com.termux/files/home/Repo_export"，这是因为termux在路径中间加了两个/，懒得处理了，反正不支持使用saf克隆仓库
      * maybe returned is not real path, no promise
      *
      * @return eg. /storage/emulated/0/folder1/folder2
      */
+    @Deprecated("不靠谱，尽量不要用")
     fun getRealPathFromUri(uri:Uri):String {
         return try {
             val uriPathString = uri.path.toString()
-            // 例如：uri为：content://com.android.externalstorage.documents/tree/primary%3ARepos, 则uri.path为 /tree/primary:Repos
+            // 例如：uri为：content://com.android.externalstorage.documents/tree/primary%3ARepos, 则uri.path为 /tree/primary:Repos，但不保证一定是canonical path，可能中间出现两个 "//" 也可能有其他东西
             (getExternalStorageRootPathNoEndsWithSeparator() + Cons.slash + uriPathString.substring(uriPathString.indexOf(":")+1).trim(Cons.slashChar)).trimEnd(Cons.slashChar)
         }catch (_:Exception) {
             ""
