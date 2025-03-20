@@ -40,6 +40,7 @@ import com.catpuppyapp.puppygit.style.MyStyleKt
 fun BottomBar(
     modifier: Modifier=Modifier,
     showClose: Boolean = true,
+    showSelectedCount: Boolean = true,
     height: Dp = MyStyleKt.BottomBar.height,
     color: Color = MaterialTheme.colorScheme.primaryContainer,
 
@@ -136,16 +137,19 @@ fun BottomBar(
                     )
                 }
 
-                if(showClose.not()) {
-                    Spacer(Modifier.width(10.dp))
-                }
-
-                //选择的条目数
-                Text(text = ""+getSelectedFilesCount(),
-                    modifier = MyStyleKt.ClickableText.modifier.clickable(enabled = countNumOnClickEnabled) {
-                        countNumOnClick()
+                if(showSelectedCount) {
+                    //不显示左边的关闭按钮的话，需要加点宽度，不然太靠近屏幕边缘
+                    if(showClose.not()) {
+                        Spacer(Modifier.width(10.dp))
                     }
-                )
+
+                    //选择的条目数
+                    Text(text = ""+getSelectedFilesCount(),
+                        modifier = MyStyleKt.ClickableText.modifier.clickable(enabled = countNumOnClickEnabled) {
+                            countNumOnClick()
+                        }
+                    )
+                }
 
             }
 

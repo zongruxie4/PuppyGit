@@ -1490,27 +1490,29 @@ fun FilesInnerPage(
                         menuKeyTextList = if(it.isFile) fileMenuKeyTextList else dirMenuKeyTextList,
                         menuKeyActList = if(it.isFile) fileMenuKeyActList else dirMenuKeyActList,
                         iconOnClick={  //点击文件或文件夹图标时的回调函数
-                            if (!isPasteMode.value && !isImportMode.value) {
+                            if (isFileChooser.not() && !isPasteMode.value && !isImportMode.value) {
                                 switchItemSelected(it)
                             }
                         },
                         switchItemSelected = switchItemSelected,
                         isItemInSelected=isItemInSelected,
                         itemOnLongClick = {
-                            //如果不是选择模式或粘贴模式，切换为选择模式
-                            if (!isFileSelectionMode.value && !isPasteMode.value && !isImportMode.value) {
-                                haptic.performHapticFeedback(HapticFeedbackType.LongPress)
-                                switchItemSelected(it)
+                            if(isFileChooser.not()){
+                                //如果不是选择模式或粘贴模式，切换为选择模式
+                                if (!isFileSelectionMode.value && !isPasteMode.value && !isImportMode.value) {
+                                    haptic.performHapticFeedback(HapticFeedbackType.LongPress)
+                                    switchItemSelected(it)
 
-                                //如果处于选择模式，长按执行连续选择
-                            }else if(isFileSelectionMode.value && !isPasteMode.value && !isImportMode.value && (isFileChooser.not() || enableMultiSelectionForFileChooser)) {
-                                haptic.performHapticFeedback(HapticFeedbackType.LongPress)
-                                UIHelper.doSelectSpan(index, it,
-                                    //这里调用 toList() 是为了拷贝下源list，避免并发修改异常
-                                    selectedItems.value.toList(), currentPathFileList.toList(),
-                                    switchItemSelected,
-                                    selectItem
-                                )
+                                    //如果处于选择模式，长按执行连续选择
+                                }else if(isFileSelectionMode.value && !isPasteMode.value && !isImportMode.value && (isFileChooser.not() || enableMultiSelectionForFileChooser)) {
+                                    haptic.performHapticFeedback(HapticFeedbackType.LongPress)
+                                    UIHelper.doSelectSpan(index, it,
+                                        //这里调用 toList() 是为了拷贝下源list，避免并发修改异常
+                                        selectedItems.value.toList(), currentPathFileList.toList(),
+                                        switchItemSelected,
+                                        selectItem
+                                    )
+                                }
                             }
                         }
                     ) itemOnClick@{  //itemOnClick
@@ -2271,7 +2273,8 @@ fun FilesInnerPage(
     }
 
     //Bottom bar，一个是选择模式，一个是粘贴模式
-    if (isFileSelectionMode.value) {
+    //目前不支持选择文件，若以后支持，这个判断需要改，单选文件不需要显示选择栏
+    if (isFileChooser || isFileSelectionMode.value) {
         val selectionModeIconList = if(isFileChooser) {
             if(enableMultiSelectionForFileChooser) {
                 listOf(
@@ -2322,9 +2325,13 @@ fun FilesInnerPage(
             )
         }
 
-        val confirmForChooser = {
-            updateSelectedPath(selectedItems.value.first().fullPath)
+        val confirmForChooser = { path:String ->
+            updateSelectedPath(path)
             naviUp()
+        }
+
+        val confirmForMultiChooser = { path:List<FileItemDto> ->
+            // not impemented yet
         }
 
         val selectionModeIconOnClickList = if(isFileChooser){
@@ -2332,13 +2339,13 @@ fun FilesInnerPage(
                 listOf(
                     selectAll,
                     confirm@{
-                        confirmForChooser()
+                        confirmForMultiChooser(selectedItems.value)
                     }
                 )
             }else {
                 listOf(
                     confirm@{
-                        confirmForChooser()
+                        confirmForChooser(currentPath.value)
                     }
                 )
             }
@@ -2367,7 +2374,8 @@ fun FilesInnerPage(
                 )
             }else {
                 listOf(
-                    confirm@{getSelectedFilesCount()>0},  //是否启用确认
+                    //单选模式永远启用确认，点击确认即代表选择当前目录，如果选文件的话，需要额外处理，点击文件条目时获取文件路径并返回，就不需要显示这个确认了
+                    confirm@{ true },  //是否启用确认
                 )
             }
         } else {
@@ -2445,6 +2453,7 @@ fun FilesInnerPage(
             if(isFileChooser) {
                 BottomBar(
                     showClose = false,
+                    showSelectedCount = false,
                     quitSelectionMode={},
                     iconList=selectionModeIconList,
                     iconTextList=selectionModeIconTextList,
