@@ -108,6 +108,8 @@ import com.catpuppyapp.puppygit.screen.functions.filterTheList
 import com.catpuppyapp.puppygit.screen.functions.goToFileHistory
 import com.catpuppyapp.puppygit.screen.functions.initSearch
 import com.catpuppyapp.puppygit.screen.functions.recursiveBreadthFirstSearch
+import com.catpuppyapp.puppygit.screen.shared.FileDisplayFilter
+import com.catpuppyapp.puppygit.screen.shared.FileDisplayType
 import com.catpuppyapp.puppygit.screen.shared.FilePath
 import com.catpuppyapp.puppygit.settings.AppSettings
 import com.catpuppyapp.puppygit.settings.DirViewAndSort
@@ -167,6 +169,9 @@ private const val showImportForBottomBar = false
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun FilesInnerPage(
+    isFileChooser:Boolean,
+    enableMultiSelectionForFileChooser:Boolean,  //仅当 `isFileChooser` 为真此值才有效
+    fileDisplayFilter: FileDisplayFilter,
     contentPadding: PaddingValues,
 //    filePageListState: LazyListState,
     currentHomeScreen: MutableIntState,
@@ -2841,6 +2846,7 @@ fun FilesInnerPage(
             doJobThenOffLoading(loadingOn, loadingOff, activityContext.getString(R.string.loading)) {
                 try {
                     doInit(
+                        fileDisplayFilter = fileDisplayFilter,
                         currentPath = currentPath,
                         currentPathFileList = currentPathFileList,
                         currentPathBreadCrumbList = currentPathBreadCrumbList,
@@ -2882,6 +2888,8 @@ fun FilesInnerPage(
 
 
 private suspend fun doInit(
+    fileDisplayFilter: FileDisplayFilter,
+
     currentPath: MutableState<String>,
     currentPathFileList: CustomStateListSaveable<FileItemDto>,
     currentPathBreadCrumbList: CustomStateListSaveable<FileItemDto>,
@@ -3033,6 +3041,11 @@ private suspend fun doInit(
 
     //获取文件列表之类的
 
+    val showFile = fileDisplayFilter.displayTypeFlags and FileDisplayType.FILE > 0
+    val showDir = fileDisplayFilter.displayTypeFlags and FileDisplayType.DIR > 0
+    val mathPattern = fileDisplayFilter.pattern
+    val needMathFile = mathPattern.isNotEmpty()
+
     var folderCount = 0
     var fileCount = 0
     // 遍历文件列表
@@ -3045,6 +3058,16 @@ private suspend fun doInit(
 //                }
 
             if(fdto.isFile) {
+                if(showFile.not()) {
+                    return@forEach
+                }
+
+                if(needMathFile && RegexUtil.matchWildcard(input = fdto.name, pattern = mathPattern).not()) {
+                    return@forEach
+                }
+
+                // 不需要匹配或匹配成功
+
                 fileCount++
                 //如果从请求打开的路径带来的文件存在，且和当前遍历的文件重合，选中
                 if(needSelectFile && !curFileFromCurPathAlreadySelected && curFilePath == fdto.fullPath) {
@@ -3059,6 +3082,17 @@ private suspend fun doInit(
 
                 fileSortedSet.add(fdto)
             }else {
+                if(showDir.not()) {
+                    return@forEach
+                }
+
+                if(needMathFile && RegexUtil.matchWildcard(input = fdto.name, pattern = mathPattern).not()) {
+                    return@forEach
+                }
+
+                // 不需要匹配或匹配成功
+
+
                 folderCount++
                 if(viewAndSort.folderFirst) {
                     dirSortedSet.add(fdto)

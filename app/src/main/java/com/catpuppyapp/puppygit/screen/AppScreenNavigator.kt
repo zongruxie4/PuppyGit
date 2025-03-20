@@ -12,6 +12,7 @@ import androidx.navigation.compose.composable
 import com.catpuppyapp.puppygit.constants.Cons
 import com.catpuppyapp.puppygit.constants.LineNum
 import com.catpuppyapp.puppygit.screen.shared.DiffFromScreen
+import com.catpuppyapp.puppygit.screen.shared.FileDisplayType
 import com.catpuppyapp.puppygit.utils.AppModel
 
 @Composable
@@ -253,8 +254,9 @@ fun AppScreenNavigator() {
             )
         }
 
-        composable(Cons.nav_FileChooserScreen) {
+        composable(Cons.nav_FileChooserScreen+"/{displayTypeFlags}") {
             FileChooserScreen (
+                displayTypeFlags = it.arguments?.getInt("displayTypeFlags") ?: FileDisplayType.DIR,
                 naviUp = {
                     navController.navigateUp()
                 },

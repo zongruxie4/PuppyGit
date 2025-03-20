@@ -313,3 +313,7 @@ fun <T> filterTheList(
 }
 
 fun newScrollState(initial:Int = 0):ScrollState = ScrollState(initial = initial)
+
+fun navToFileChooser(displayTypeFlags: Int) {
+    AppModel.navController.navigate(Cons.nav_FileChooserScreen + "/" + displayTypeFlags)
+}

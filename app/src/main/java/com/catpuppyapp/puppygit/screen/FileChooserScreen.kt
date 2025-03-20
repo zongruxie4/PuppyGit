@@ -32,8 +32,8 @@ import com.catpuppyapp.puppygit.play.pro.R
 import com.catpuppyapp.puppygit.screen.content.homescreen.innerpage.FilesInnerPage
 import com.catpuppyapp.puppygit.screen.content.homescreen.scaffold.actions.FilesPageActions
 import com.catpuppyapp.puppygit.screen.content.homescreen.scaffold.title.FilesTitle
+import com.catpuppyapp.puppygit.screen.shared.FileDisplayFilter
 import com.catpuppyapp.puppygit.screen.shared.FilePath
-import com.catpuppyapp.puppygit.screen.shared.SharedState
 import com.catpuppyapp.puppygit.settings.SettingsUtil
 import com.catpuppyapp.puppygit.utils.AppModel
 import com.catpuppyapp.puppygit.utils.Msg
@@ -47,6 +47,7 @@ private val stateKeyTag = "FileChooserScreen"
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun FileChooserScreen(
+    displayTypeFlags: Int,
     naviUp: () -> Unit
 ) {
     val activityContext = LocalContext.current
@@ -161,6 +162,8 @@ fun FileChooserScreen(
     val filesPageCheckOnly = rememberSaveable { mutableStateOf(false)}
     val filesPageSelectedRepo = mutableCustomStateOf(keyTag = stateKeyTag, keyName = "filesPageSelectedRepo", RepoEntity(id="") )
 
+    val fileDisplayFilter = rememberSaveable { mutableStateOf(FileDisplayFilter(displayTypeFlags)) }
+
     //无用变量，开始：这些变量在这个页面无用，但占位置
     val currentHomeScreen = rememberSaveable { mutableIntStateOf(Cons.selectedItem_Files) }
     val editorPageShowingFilePath = rememberSaveable { mutableStateOf(FilePath("")) }
@@ -241,6 +244,9 @@ fun FileChooserScreen(
 
 //                changeStateTriggerRefreshPage(needRefreshFilesPage)
         FilesInnerPage(
+            isFileChooser = true,
+            enableMultiSelectionForFileChooser = false,
+            fileDisplayFilter = fileDisplayFilter.value,
             filesPageLastKeyword=filesPageLastKeyword,
             filesPageSearchToken=filesPageSearchToken,
             filesPageSearching=filesPageSearching,
