@@ -69,19 +69,19 @@ fun FilesTitle(
             ) {  //onClick
                 requestFromParent.value = PageRequest.requireShowPathDetails
             },
-            ) {
+        ) {
             ScrollableRow {
                 Text(
                     text = getFilesScreenTitle(currentPath.value, activityContext),
                     maxLines = 1,
-                    overflow = TextOverflow.Ellipsis
+                    overflow = TextOverflow.Ellipsis,
+                    fontSize = MyStyleKt.Title.firstLineFontSize,
                 )
             }
 
             ScrollableRow {
                 Text(
-                    replaceStringResList(stringResource(R.string.folder_n_file_m), listOf(""+curPathItemDto.folderCount, ""+curPathItemDto.fileCount))
-                ,
+                    text = replaceStringResList(stringResource(R.string.folder_n_file_m), listOf(""+curPathItemDto.folderCount, ""+curPathItemDto.fileCount)),
                     fontSize = MyStyleKt.Title.secondLineFontSize
                 )
             }
