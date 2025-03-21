@@ -32,6 +32,7 @@ import com.catpuppyapp.puppygit.play.pro.R
 import com.catpuppyapp.puppygit.style.MyStyleKt
 
 
+@Deprecated("use `CreateFileOrFolderDialog2` instead")
 @Composable
 fun CreateFileOrFolderDialog(
     cancelBtnText: String = stringResource(R.string.cancel),
