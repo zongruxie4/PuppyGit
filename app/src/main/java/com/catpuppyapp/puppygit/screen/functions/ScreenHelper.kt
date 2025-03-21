@@ -15,6 +15,7 @@ import com.catpuppyapp.puppygit.play.pro.R
 import com.catpuppyapp.puppygit.screen.shared.FileChooserType
 import com.catpuppyapp.puppygit.screen.shared.FilePath
 import com.catpuppyapp.puppygit.utils.AppModel
+import com.catpuppyapp.puppygit.utils.FsUtils
 import com.catpuppyapp.puppygit.utils.Libgit2Helper
 import com.catpuppyapp.puppygit.utils.Msg
 import com.catpuppyapp.puppygit.utils.MyLog
@@ -317,4 +318,23 @@ fun newScrollState(initial:Int = 0):ScrollState = ScrollState(initial = initial)
 
 fun navToFileChooser(type: FileChooserType) {
     AppModel.navController.navigate(Cons.nav_FileChooserScreen + "/" + type.code)
+}
+
+fun getFilesScreenTitle(currentPath:String, activityContext: Context):String {
+    if(currentPath == FsUtils.rootPath) {
+        return FsUtils.rootName
+    }
+
+    //不要在这判断path是否空字符串，后面的else会处理
+
+
+    val trimedSlashCurPath = currentPath.trimEnd(Cons.slashChar)
+
+    return if(trimedSlashCurPath == FsUtils.getInternalStorageRootPathNoEndsWithSeparator()) {
+        activityContext.getString(R.string.internal_storage)
+    }else if(trimedSlashCurPath == FsUtils.getExternalStorageRootPathNoEndsWithSeparator()) {
+        activityContext.getString(R.string.external_storage)
+    }else {
+        runCatching { FsUtils.splitParentAndName(currentPath).second }.getOrDefault("").ifEmpty { activityContext.getString(R.string.files) }
+    }
 }

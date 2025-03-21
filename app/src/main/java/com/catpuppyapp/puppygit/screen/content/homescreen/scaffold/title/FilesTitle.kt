@@ -10,6 +10,7 @@ import androidx.compose.runtime.MutableState
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.hapticfeedback.HapticFeedbackType
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.TextFieldValue
@@ -20,6 +21,7 @@ import com.catpuppyapp.puppygit.constants.PageRequest
 import com.catpuppyapp.puppygit.dto.FileItemDto
 import com.catpuppyapp.puppygit.play.pro.R
 import com.catpuppyapp.puppygit.screen.functions.defaultTitleDoubleClickRequest
+import com.catpuppyapp.puppygit.screen.functions.getFilesScreenTitle
 import com.catpuppyapp.puppygit.style.MyStyleKt
 import com.catpuppyapp.puppygit.utils.changeStateTriggerRefreshPage
 import com.catpuppyapp.puppygit.utils.replaceStringResList
@@ -45,36 +47,8 @@ fun FilesTitle(
     searching:Boolean
 ) {
     val haptic = LocalHapticFeedback.current
+    val activityContext = LocalContext.current
 
-//    if (filesPageGetFilterMode() == 1) {  //正在搜索，显示输入框
-//        OutlinedTextField(
-//            modifier = Modifier.fillMaxWidth().focusRequester(filterKeywordFocusRequester),
-//            value = filterKeyWord.value,
-//            onValueChange = { filterKeyWord.value = it },
-//            placeholder = { Text(stringResource(R.string.input_keyword)) },
-//            singleLine = true,
-//            // label = {Text(title)}
-//            keyboardOptions = KeyboardOptions(imeAction = ImeAction.Search),
-//            keyboardActions = KeyboardActions(onSearch = {
-//                doFilter(filterKeyWord.value.text)
-//            })
-//        )
-//
-//    }else if(filesPageGetFilterMode()==2){  //显示搜索结果
-//        Text(
-//            text= "\""+filterKeyWord.value.text+"\"",
-//            maxLines = 1,
-//            overflow = TextOverflow.Ellipsis,
-//            modifier = Modifier.combinedClickable(onLongClick = {  //长按显示关键字
-//                haptic.performHapticFeedback(HapticFeedbackType.LongPress)
-//                Msg.requireShow(filterKeyWord.value.text)
-//            }
-//            ) { //onClick
-//                //点按重新输入关键字
-//                filterModeOn()
-//            }
-//        )
-//    }
     if(filesPageSimpleFilterOn) {
         FilterTextField(filterKeyWord = filesPageSimpleFilterKeyWord, loading = searching)
     } else {  //filesPageGetFilterMode()==0 , 搜索模式关闭
@@ -98,7 +72,7 @@ fun FilesTitle(
             ) {
             ScrollableRow {
                 Text(
-                    text = stringResource(id = R.string.files),
+                    text = getFilesScreenTitle(currentPath.value, activityContext),
                     maxLines = 1,
                     overflow = TextOverflow.Ellipsis
                 )

@@ -440,11 +440,20 @@ fun isSizeOverLimit(size:Long, limitMax:Long):Boolean {
 }
 
 /**
+ * return file name or empty string
+ */
+fun getFileNameFromCanonicalPath(path:String) : String {
+    return runCatching { FsUtils.splitParentAndName(path).second }.getOrDefault("")
+}
+
+
+/**
  * @return e.g.: input "abc" or "/path/to/abc" or "/path/to/abc/" or "path/to/abc"，return "abc";
  *          input "abc//" or other bad path, return origin path;
  *          if err, return origin path
  */
-fun getFileNameFromCanonicalPath(path:String, separator:Char=Cons.slashChar) : String {
+@Deprecated("over complex")
+fun deprecated_getFileNameFromCanonicalPath(path:String, separator:Char=Cons.slashChar) : String {
     try {
         val pathRemovedSuffix = path.trim(separator)  //为目录移除末尾的/，如果有的话
 
