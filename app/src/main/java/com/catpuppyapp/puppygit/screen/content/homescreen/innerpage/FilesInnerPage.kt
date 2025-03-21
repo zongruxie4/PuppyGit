@@ -1023,15 +1023,15 @@ fun FilesInnerPage(
                         }
                     }
                 } catch (e: Exception) {
-                    Msg.requireShowLongDuration(errorStrRes + ":" + e.localizedMessage)
-                    MyLog.e(TAG, "CreateFileOrFolderDialog in Files Page err:"+e.stackTraceToString())
-                    createFileOrFolderErrMsg.value=e.localizedMessage ?: errorStrRes
+                    createFileOrFolderErrMsg.value = e.localizedMessage ?: errorStrRes
+                    MyLog.e(TAG, "CreateFileOrFolderDialog in Files Page err: "+e.stackTraceToString())
+
                     return@f false
                 }
             },
             onCancel = {
                 showCreateFileOrFolderDialog.value = false
-                createFileOrFolderErrMsg.value=""
+                createFileOrFolderErrMsg.value = ""
             }
         )
     }
