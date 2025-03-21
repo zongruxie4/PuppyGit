@@ -33,7 +33,7 @@ import com.catpuppyapp.puppygit.style.MyStyleKt
 
 
 @Composable
-fun CreateFileOrFolderDialog(
+fun CreateFileOrFolderDialog2(
     cancelBtnText: String = stringResource(R.string.cancel),
     okBtnText: String = stringResource(R.string.ok),
     cancelTextColor: Color = Color.Unspecified,
