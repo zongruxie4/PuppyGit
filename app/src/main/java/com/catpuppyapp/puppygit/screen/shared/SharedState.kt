@@ -22,6 +22,8 @@ object SharedState {
     val editorPreviewNavStack = EditorPreviewNavStack("")
     val subEditorPreviewNavStack = EditorPreviewNavStack("")
 
-    val selectedDirFullPathOfFileChooser = mutableStateOf("")
-    val selectedFileFullPathOfFileChooser = mutableStateOf("")
+
+    //用来在请求选择和执行选择的FileChooser页面之间共享选中的路径
+    val fileChooser_DirPath = mutableStateOf("")  //如果用app内置 File Picker 选目录，用这个做state
+    val fileChooser_FilePath = mutableStateOf("")  //如果用app内置 File Picker 选文件，用这个做state
 }

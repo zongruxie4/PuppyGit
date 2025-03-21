@@ -74,7 +74,7 @@ import com.catpuppyapp.puppygit.compose.RepoCard
 import com.catpuppyapp.puppygit.compose.ScrollableColumn
 import com.catpuppyapp.puppygit.compose.SelectedItemDialog
 import com.catpuppyapp.puppygit.compose.SetUpstreamDialog
-import com.catpuppyapp.puppygit.compose.SystemFolderChooser
+import com.catpuppyapp.puppygit.compose.InternalFileChooser
 import com.catpuppyapp.puppygit.constants.Cons
 import com.catpuppyapp.puppygit.constants.PageRequest
 import com.catpuppyapp.puppygit.data.AppContainer
@@ -411,7 +411,7 @@ fun RepoInnerPage(
 
     }
 
-    val importRepoPath = rememberSaveable { SharedState.selectedDirFullPathOfFileChooser }
+    val importRepoPath = rememberSaveable { SharedState.fileChooser_DirPath }
 //    val safEnabledForSystemFolderChooser = rememberSaveable { mutableStateOf(false)}
 //    val safPath = rememberSaveable { mutableStateOf("") }
 //    val nonSafPath = rememberSaveable { mutableStateOf("") }
@@ -445,7 +445,7 @@ fun RepoInnerPage(
 
                         }
 
-                        SystemFolderChooser(path = importRepoPath)
+                        InternalFileChooser(path = importRepoPath)
 
                         Spacer(Modifier.height(15.dp))
 

@@ -71,7 +71,7 @@ import com.catpuppyapp.puppygit.compose.LoadingDialog
 import com.catpuppyapp.puppygit.compose.LongPressAbleIconBtn
 import com.catpuppyapp.puppygit.compose.MySelectionContainer
 import com.catpuppyapp.puppygit.compose.SingleSelectList
-import com.catpuppyapp.puppygit.compose.SystemFolderChooser
+import com.catpuppyapp.puppygit.compose.InternalFileChooser
 import com.catpuppyapp.puppygit.constants.Cons
 import com.catpuppyapp.puppygit.constants.SpecialCredential
 import com.catpuppyapp.puppygit.data.entity.CredentialEntity
@@ -274,7 +274,7 @@ fun CloneScreen(
 
     val showAddStoragePathDialog = rememberSaveable { mutableStateOf(false)}
 
-    val storagePathForAdd = rememberSaveable { SharedState.selectedDirFullPathOfFileChooser }
+    val storagePathForAdd = rememberSaveable { SharedState.fileChooser_DirPath }
 //    val safEnabledForSystemFolderChooser = rememberSaveable { mutableStateOf(false)}
 //    val safPath = rememberSaveable { mutableStateOf("") }
 //    val nonSafPath = rememberSaveable { mutableStateOf("") }
@@ -310,7 +310,7 @@ fun CloneScreen(
                             )
                         }
 
-                        SystemFolderChooser(path = storagePathForAdd)
+                        InternalFileChooser(path = storagePathForAdd)
 
                     }
                 }

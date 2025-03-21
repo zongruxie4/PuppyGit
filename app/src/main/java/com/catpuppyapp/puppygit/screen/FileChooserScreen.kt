@@ -59,9 +59,9 @@ fun FileChooserScreen(
 
     val updateSelectedPath = { path:String->
         if(type == FileChooserType.SINGLE_DIR) {
-            SharedState.selectedDirFullPathOfFileChooser.value = path
+            SharedState.fileChooser_DirPath.value = path
         }else {
-            SharedState.selectedFileFullPathOfFileChooser.value = path
+            SharedState.fileChooser_FilePath.value = path
         }
     }
 
@@ -159,9 +159,9 @@ fun FileChooserScreen(
     val filesPageCurrentPath = rememberSaveable {
         val initPath = runCatching {
             val tmpPath = if(type == FileChooserType.SINGLE_DIR) {
-                    SharedState.selectedDirFullPathOfFileChooser.value
+                    SharedState.fileChooser_DirPath.value
                 }else {
-                    SharedState.selectedFileFullPathOfFileChooser.value
+                    SharedState.fileChooser_FilePath.value
                 }
 
             //如果为空，再用File创建对象，再获取canonicalPath，会获取到根目录，所以只有当非空才获取规范路径，否则直接返回空字符串，不然若路径为空会错误的初始定位到根目录

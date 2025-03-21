@@ -18,21 +18,18 @@ import androidx.compose.ui.res.stringResource
 import com.catpuppyapp.puppygit.play.pro.R
 import com.catpuppyapp.puppygit.screen.functions.navToFileChooser
 import com.catpuppyapp.puppygit.screen.shared.FileChooserType
-import com.catpuppyapp.puppygit.utils.AppModel
 
-private const val TAG = "SystemFolderChooser"
 
 /**
  * A Folder Chooser depend System File Chooser, may not work if system removed internal file picker, in that case, can input path instead
  */
 @Composable
-fun SystemFolderChooser(
+fun InternalFileChooser(
     path:MutableState<String>,
+    chooserType: FileChooserType = FileChooserType.SINGLE_DIR,  //默认选dir，如果想选文件，可传对应类型
     pathTextFieldLabel:String=stringResource(R.string.path),
     pathTextFieldPlaceHolder:String=stringResource(R.string.eg_storage_emulate_0_repos),
 ) {
-    val navController = AppModel.navController
-
     //这里不需要能滚动，应该由使用此组件的组件考虑是否能滚动
     Column {
         Row(
@@ -57,7 +54,7 @@ fun SystemFolderChooser(
 
             IconButton(
                 onClick = {
-                    navToFileChooser(FileChooserType.SINGLE_DIR)
+                    navToFileChooser(chooserType)
                 }
 
             ) {
