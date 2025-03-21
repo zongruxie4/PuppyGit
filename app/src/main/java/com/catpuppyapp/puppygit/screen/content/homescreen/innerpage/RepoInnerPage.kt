@@ -411,7 +411,7 @@ fun RepoInnerPage(
 
     }
 
-    val importRepoPath = rememberSaveable { SharedState.pathOfFileChooser }
+    val importRepoPath = rememberSaveable { SharedState.selectedDirFullPathOfFileChooser }
 //    val safEnabledForSystemFolderChooser = rememberSaveable { mutableStateOf(false)}
 //    val safPath = rememberSaveable { mutableStateOf("") }
 //    val nonSafPath = rememberSaveable { mutableStateOf("") }

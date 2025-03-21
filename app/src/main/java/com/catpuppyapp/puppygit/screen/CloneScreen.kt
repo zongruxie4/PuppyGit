@@ -274,7 +274,7 @@ fun CloneScreen(
 
     val showAddStoragePathDialog = rememberSaveable { mutableStateOf(false)}
 
-    val storagePathForAdd = rememberSaveable { SharedState.pathOfFileChooser }
+    val storagePathForAdd = rememberSaveable { SharedState.selectedDirFullPathOfFileChooser }
 //    val safEnabledForSystemFolderChooser = rememberSaveable { mutableStateOf(false)}
 //    val safPath = rememberSaveable { mutableStateOf("") }
 //    val nonSafPath = rememberSaveable { mutableStateOf("") }

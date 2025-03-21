@@ -544,18 +544,18 @@ fun FilesInnerPage(
             if(isFileChooser) "" else if(proFeatureEnabled(applyPatchTestPassed)) stringResource(R.string.apply_as_patch) else "",  //应用patch，弹窗让用户选仓库，然后可对仓库应用patch
             if(isFileChooser) "" else stringResource(R.string.file_history),
             stringResource(R.string.copy_full_path),
-            stringResource(R.string.copy_repo_relative_path),
-            if(isFileChooser) "" else stringResource(R.string.details),
+            if(isFileChooser) "" else stringResource(R.string.copy_repo_relative_path),
+            stringResource(R.string.details),
         )
 
     //目录条目菜单没有open with
     val dirMenuKeyTextList = listOf(
         stringResource(R.string.rename),
         stringResource(R.string.copy_full_path),
-        stringResource(R.string.copy_repo_relative_path),
+        if(isFileChooser) "" else stringResource(R.string.copy_repo_relative_path),
         if(isFileChooser) "" else stringResource(R.string.import_as_repo),
         if(isFileChooser) "" else stringResource(R.string.init_repo),
-        if(isFileChooser) "" else stringResource(R.string.details),
+        stringResource(R.string.details),
     )
 
 
@@ -1304,16 +1304,16 @@ fun FilesInnerPage(
                                             }
                                         )
 
-                                        DropdownMenuItem(
-                                            enabled = enableMenuItem,
-                                            text = { Text(stringResource(R.string.copy_repo_relative_path)) },
-                                            onClick = {
-                                                breadCrumbDropDownMenuExpendState.value = false
-                                                copyRepoRelativePath(it.fullPath)
-                                            }
-                                        )
 
                                         if(isFileChooser.not()) {
+                                            DropdownMenuItem(
+                                                enabled = enableMenuItem,
+                                                text = { Text(stringResource(R.string.copy_repo_relative_path)) },
+                                                onClick = {
+                                                    breadCrumbDropDownMenuExpendState.value = false
+                                                    copyRepoRelativePath(it.fullPath)
+                                                }
+                                            )
                                             DropdownMenuItem(
                                                 enabled = enableMenuItem,
                                                 text = { Text(stringResource(R.string.import_as_repo)) },
@@ -1346,17 +1346,19 @@ fun FilesInnerPage(
                                                     showInChangeList(it.fullPath)
                                                 }
                                             )
-                                            DropdownMenuItem(
-                                                enabled = enableMenuItem,
-                                                text = { Text(stringResource(R.string.details)) },
-                                                onClick = {
-                                                    breadCrumbDropDownMenuExpendState.value = false
-                                                    // bread crumb dto lack some info for faster loading, so need requrey a new dto when show details
-                                                    //面包屑的dto是缩水的，为了加载快而没查最后修改时间和大小等在面包屑用不到的信息，因此显示前需要重新查下dto
-                                                    initDetailsDialog(listOf(FileItemDto.genFileItemDtoByFile(File(it.fullPath), activityContext)))
-                                                }
-                                            )
                                         }
+
+
+                                        DropdownMenuItem(
+                                            enabled = enableMenuItem,
+                                            text = { Text(stringResource(R.string.details)) },
+                                            onClick = {
+                                                breadCrumbDropDownMenuExpendState.value = false
+                                                // bread crumb dto lack some info for faster loading, so need requrey a new dto when show details
+                                                //面包屑的dto是缩水的，为了加载快而没查最后修改时间和大小等在面包屑用不到的信息，因此显示前需要重新查下dto
+                                                initDetailsDialog(listOf(FileItemDto.genFileItemDtoByFile(File(it.fullPath), activityContext)))
+                                            }
+                                        )
                                     }
                                 }
                             }

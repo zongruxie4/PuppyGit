@@ -43,9 +43,10 @@ import com.catpuppyapp.puppygit.utils.Msg
 import com.catpuppyapp.puppygit.utils.changeStateTriggerRefreshPage
 import com.catpuppyapp.puppygit.utils.state.mutableCustomStateListOf
 import com.catpuppyapp.puppygit.utils.state.mutableCustomStateOf
+import java.io.File
 
-private val TAG = "FileChooserScreen"
-private val stateKeyTag = "FileChooserScreen"
+private const val TAG = "FileChooserScreen"
+private const val stateKeyTag = "FileChooserScreen"
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -55,6 +56,14 @@ fun FileChooserScreen(
 ) {
 
     val isFileChooser = remember { true }
+
+    val updateSelectedPath = { path:String->
+        if(type == FileChooserType.SINGLE_DIR) {
+            SharedState.selectedDirFullPathOfFileChooser.value = path
+        }else {
+            SharedState.selectedFileFullPathOfFileChooser.value = path
+        }
+    }
 
 
 
@@ -75,10 +84,6 @@ fun FileChooserScreen(
     val filesPageIsFileSelectionMode = rememberSaveable { mutableStateOf(false)}
     val filesPageIsPasteMode = rememberSaveable { mutableStateOf(false)}
     val filesPageSelectedItems = mutableCustomStateListOf(keyTag = stateKeyTag, keyName = "filesPageSelectedItems", initValue = listOf<FileItemDto>())
-
-    val updateSelectedPath = {path:String->
-        SharedState.pathOfFileChooser.value = path
-    }
 
     val filesPageLastKeyword = rememberSaveable{ mutableStateOf("") }
     val filesPageSearchToken = rememberSaveable{ mutableStateOf("") }
@@ -151,7 +156,27 @@ fun FileChooserScreen(
         initValue = TextFieldValue("")
     )
 
-    val filesPageCurrentPath = rememberSaveable { mutableStateOf(SharedState.pathOfFileChooser.value.ifBlank { settings.files.lastOpenedPath.ifBlank { FsUtils.getExternalStorageRootPathNoEndsWithSeparator() } }) }
+    val filesPageCurrentPath = rememberSaveable {
+        val initPath = runCatching {
+            val tmpPath = if(type == FileChooserType.SINGLE_DIR) {
+                    SharedState.selectedDirFullPathOfFileChooser.value
+                }else {
+                    SharedState.selectedFileFullPathOfFileChooser.value
+                }
+
+            //如果为空，再用File创建对象，再获取canonicalPath，会获取到根目录，所以只有当非空才获取规范路径，否则直接返回空字符串，不然若路径为空会错误的初始定位到根目录
+            if(tmpPath.isBlank()) {
+                ""
+            }else {
+                File(tmpPath).let { (if(it.isFile) it.canonicalFile.parent else it.canonicalPath) ?: "" }
+            }
+        }.getOrDefault("");
+
+        initPath.ifBlank { settings.files.lastOpenedPath.ifBlank { FsUtils.getExternalStorageRootPathNoEndsWithSeparator() } }
+
+        mutableStateOf(initPath)
+    }
+
     val filesPageLastPathByPressBack = rememberSaveable { mutableStateOf("")}
     val showCreateFileOrFolderDialog = rememberSaveable { mutableStateOf(false)}
     val filesPageCurPathFileItemDto = mutableCustomStateOf(stateKeyTag, "filesPageCurPathFileItemDto") { FileItemDto() }
