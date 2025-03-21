@@ -660,7 +660,7 @@ fun SettingsInnerPage(
                         AppModel.getOrCreateLogDir().deleteRecursively()
                         AppModel.getOrCreateLogDir()
                     }catch (e:Exception) {
-                        MyLog.e(TAG, "clean log err: ${e.localizedMessage}")
+                        MyLog.e(TAG, "clean log err: ${e.stackTraceToString()}")
                     }
                 }
 
@@ -670,7 +670,7 @@ fun SettingsInnerPage(
                         AppModel.externalCacheDir.deleteRecursively()
                         AppModel.externalCacheDir.mkdirs()
                     }catch (e:Exception) {
-                        MyLog.e(TAG, "clean external cache dir err: ${e.localizedMessage}")
+                        MyLog.e(TAG, "clean external cache dir err: ${e.stackTraceToString()}")
                     }
 
                     // clean inner data cache
@@ -678,7 +678,7 @@ fun SettingsInnerPage(
                         AppModel.innerCacheDir?.deleteRecursively()
                         AppModel.innerCacheDir?.mkdirs()
                     }catch (e:Exception) {
-                        MyLog.e(TAG, "clean inner cache dir err: ${e.localizedMessage}")
+                        MyLog.e(TAG, "clean inner cache dir err: ${e.stackTraceToString()}")
                     }
 
                 }
@@ -688,7 +688,7 @@ fun SettingsInnerPage(
                         AppModel.getOrCreateEditCacheDir().deleteRecursively()
                         AppModel.getOrCreateEditCacheDir()
                     }catch (e:Exception) {
-                        MyLog.e(TAG, "clean edit cache err: ${e.localizedMessage}")
+                        MyLog.e(TAG, "clean edit cache err: ${e.stackTraceToString()}")
                     }
                 }
 
@@ -697,16 +697,17 @@ fun SettingsInnerPage(
                         AppModel.getOrCreateFileSnapshotDir().deleteRecursively()
                         AppModel.getOrCreateFileSnapshotDir()
                     }catch (e:Exception) {
-                        MyLog.e(TAG, "clean file and content snapshot err: ${e.localizedMessage}")
+                        MyLog.e(TAG, "clean file and content snapshot err: ${e.stackTraceToString()}")
                     }
                 }
 
 
+                // 只是清除路径列表，不会删除路径对应的文件或目录
                 if(cleanStoragePath.value) {
                     try {
                         StoragePathsMan.reset()
                     }catch (e:Exception) {
-                        MyLog.e(TAG, "clean storage paths err: ${e.localizedMessage}")
+                        MyLog.e(TAG, "clean storage paths err: ${e.stackTraceToString()}")
                     }
                 }
 
@@ -714,7 +715,7 @@ fun SettingsInnerPage(
                     try {
                         FileOpenHistoryMan.reset()
                     }catch (e:Exception) {
-                        MyLog.e(TAG, "clean file opened history err: ${e.localizedMessage}")
+                        MyLog.e(TAG, "clean file opened history err: ${e.stackTraceToString()}")
                     }
                 }
 
