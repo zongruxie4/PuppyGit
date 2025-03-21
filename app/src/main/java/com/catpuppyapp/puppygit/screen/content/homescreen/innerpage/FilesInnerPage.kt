@@ -1370,16 +1370,16 @@ fun FilesInnerPage(
                 }
 
                 //make breadCrumb always scroll to end for show current path
-                val scrollToCurPath = remember{
+                val scrollToCurPath = remember {
                     derivedStateOf {
                         //若当前目录在面包屑中的条目不可见，滚动使其可见
                         val indexOfCurPath = currentPathBreadCrumbList.value.indexOfFirst { it.fullPath == currentPath.value }
                         if(indexOfCurPath != -1) {
-                            //滚动到当前条目前两个位置，不然当前条目在屏幕最左边，难受，当然，如果用户的文件夹名非常长的话，这样滚动就看不见了，不过一般不会那么长的
+                            //滚动到当前条目前2个位置，不然当前条目在屏幕最左边，而比较顺眼的位置是最右边。。。。。不过滚动前2个位置只是粗略调整，没任何依据，如果当前文件夹名非常长的话，这样滚动就看不见了。。。。
                             UIHelper.scrollToItem(scope, breadCrumbListState, indexOfCurPath-2)
                         }
                     }
-                }.value
+                }.value;  //调用.value才会触发懒计算
             }
 
             // file list
