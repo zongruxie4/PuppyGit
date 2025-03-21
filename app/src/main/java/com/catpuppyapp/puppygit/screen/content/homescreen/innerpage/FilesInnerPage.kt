@@ -988,7 +988,6 @@ fun FilesInnerPage(
 
                     val fileOrFolderNameCheckRet = checkFileOrFolderNameAndTryCreateFile(fileOrFolderName, activityContext)
                     if(fileOrFolderNameCheckRet.hasError()){
-//                        Msg.requireShowLongDuration(pathCheckRet.msg)
                         createFileOrFolderErrMsg.value = fileOrFolderNameCheckRet.msg
                         return@f false
                     }else {  //文件名ok，检查文件是否存在
@@ -1008,12 +1007,17 @@ fun FilesInnerPage(
                                 Msg.requireShow(successStrRes)  //提示成功
                                 createFileOrFolderErrMsg.value=""  //清空错误信息
                                 fileNameForCreateDialog.value=""  //清空文件名
-                                //刷新Files页面
-                                changeStateTriggerRefreshPage(needRefreshFilesPage)
+
+                                //若创建的目录，创建完毕后打开
+                                if(isDir) {
+                                    goToPath(file.canonicalPath)
+                                }else {
+                                    changeStateTriggerRefreshPage(needRefreshFilesPage)
+                                }
+
                                 return@f true
                             } else { //创建失败但原因不明
-                                Msg.requireShow(errorStrRes) //提示错误
-                                createFileOrFolderErrMsg.value=errorStrRes  //设置错误信息为err，不过没有具体信息，用户虽然不知道出了什么错，但知道出错了，而且仍可点取消关闭弹窗，所以问题不大
+                                createFileOrFolderErrMsg.value = errorStrRes  //设置错误信息为err，不过没有具体信息，用户虽然不知道出了什么错，但知道出错了，而且仍可点取消关闭弹窗，所以问题不大
                                 return@f false
                             }
                         }

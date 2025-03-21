@@ -72,7 +72,7 @@ fun CreateFileOrFolderDialog2(
                         }
                     },
                     label = {
-                        Text(stringResource(R.string.file_or_folder_name))
+                        Text(stringResource(R.string.name))
                     },
                 )
 
