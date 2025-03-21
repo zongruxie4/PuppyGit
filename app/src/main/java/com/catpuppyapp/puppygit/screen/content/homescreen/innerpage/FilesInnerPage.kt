@@ -1500,9 +1500,13 @@ fun FilesInnerPage(
                             //关闭过滤模式的逻辑：如果是目录，一律关闭；如果是文件，判断是否用内部Editor打开，如果是关闭，否则不关闭。
                             if (it.isFile) {
                                 //单选文件模式，点击文件后直接返回
-                                if(isFileChooser && fileChooserType == FileChooserType.SINGLE_FILE) {
-                                    updateSelectedPath(it.fullPath)
-                                    naviUp()
+                                if(isFileChooser) {
+                                    if(fileChooserType == FileChooserType.SINGLE_FILE) {
+                                        updateSelectedPath(it.fullPath)
+                                        naviUp()
+                                    }
+
+                                    //不管单选文件还是单选目录，只要是文件选择器页面，点文件后都不需要执行后续逻辑
                                     return@itemOnClick
                                 }
 
