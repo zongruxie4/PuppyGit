@@ -83,6 +83,7 @@ import com.catpuppyapp.puppygit.compose.ConfirmDialog2
 import com.catpuppyapp.puppygit.compose.CopyScrollableColumn
 import com.catpuppyapp.puppygit.compose.CopyableDialog
 import com.catpuppyapp.puppygit.compose.CreateFileOrFolderDialog
+import com.catpuppyapp.puppygit.compose.CreateFileOrFolderDialog2
 import com.catpuppyapp.puppygit.compose.FileListItem
 import com.catpuppyapp.puppygit.compose.LoadingText
 import com.catpuppyapp.puppygit.compose.MyCheckBox
@@ -970,16 +971,14 @@ fun FilesInnerPage(
     val createFileOrFolderErrMsg = rememberSaveable { mutableStateOf("")}
 
     val fileNameForCreateDialog = rememberSaveable { mutableStateOf("")}
-    val fileTypeOptionsForCreateDialog = remember {listOf(activityContext.getString(R.string.file), activityContext.getString(R.string.folder))}  // idx: 0 1
-    val selectedFileTypeOptionForCreateDialog = rememberSaveable{mutableIntStateOf(0)}
+//    val fileTypeOptionsForCreateDialog = remember {listOf(activityContext.getString(R.string.file), activityContext.getString(R.string.folder))}  // idx: 0 1
+//    val selectedFileTypeOptionForCreateDialog = rememberSaveable{mutableIntStateOf(0)}
 
     if (showCreateFileOrFolderDialog.value) {
-        CreateFileOrFolderDialog(
+        CreateFileOrFolderDialog2(
             fileName = fileNameForCreateDialog,
-            fileTypeOptions = fileTypeOptionsForCreateDialog,
-            selectedFileTypeOption = selectedFileTypeOptionForCreateDialog,
             errMsg = createFileOrFolderErrMsg,
-            onOk = f@{ fileOrFolderName: String, type: Int ->
+            onOk = f@{ fileOrFolderName: String, isDir:Boolean ->
                 //do create file or folder
                 try {
                     // if current path already deleted, then show err and abort create
@@ -998,11 +997,10 @@ fun FilesInnerPage(
                             createFileOrFolderErrMsg.value = fileAlreadyExistStrRes
                             return@f false
                         }else {  //文件不存在（且文件名ok
-                            var isCreateSuccess = false
-                            if (type == Cons.fileTypeFile) {  // create file
-                                isCreateSuccess = file.createNewFile()
-                            } else {  // create dir
-                                isCreateSuccess = file.mkdir()  //应该不需要mkdirs()，用户肯定是在当前目录创建一层目录，所以mkdir()就够用了
+                            val isCreateSuccess = if(isDir) {  // create dir
+                                file.mkdir()  //这不需要mkdirs()，用户肯定是在当前目录创建一层目录，所以mkdir()就够用了，而且路径分隔符 / 被检测文件名是否合法的函数当作非法字符，无法使用，所以用户其实也没法输入连环目录
+                            }else {  // create file
+                                file.createNewFile()
                             }
 
                             //检测创建是否成功并显示提醒

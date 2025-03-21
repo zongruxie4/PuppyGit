@@ -1,59 +1,36 @@
 package com.catpuppyapp.puppygit.compose
 
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.heightIn
-import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.selection.selectable
-import androidx.compose.foundation.text.KeyboardActions
-import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Error
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.RadioButton
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.TextField
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.MutableIntState
 import androidx.compose.runtime.MutableState
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.semantics.Role
-import androidx.compose.ui.text.input.ImeAction
-import androidx.compose.ui.unit.dp
-import com.catpuppyapp.puppygit.constants.Cons
 import com.catpuppyapp.puppygit.play.pro.R
-import com.catpuppyapp.puppygit.style.MyStyleKt
 
 
 @Composable
 fun CreateFileOrFolderDialog2(
-    cancelBtnText: String = stringResource(R.string.cancel),
-    okBtnText: String = stringResource(R.string.ok),
-    cancelTextColor: Color = Color.Unspecified,
-    okTextColor: Color = Color.Unspecified,
     errMsg: MutableState<String>,
     fileName:MutableState<String>,
-    fileTypeOptions:List<String>,
-    selectedFileTypeOption:MutableIntState,
     onCancel: () -> Unit,
-    onOk: (String, Int) -> Boolean,
+    onOk: (fileName: String, isDir:Boolean) -> Boolean,
 ) {
-    val doCreate = doCreate@{
-        val fileType = if (selectedFileTypeOption.intValue == 0) Cons.fileTypeFile else Cons.fileTypeFolder
-        //执行用户传入的callback
-        val createSuccess = onOk(fileName.value, fileType)
+    val activityContext = LocalContext.current
+
+    val doCreate = { isDir:Boolean ->
+        val createSuccess = onOk(fileName.value, isDir)
         if(createSuccess) {
-            //关闭对话框
             onCancel()
         }
-
     }
 
     val hasErr = {
@@ -97,44 +74,7 @@ fun CreateFileOrFolderDialog2(
                     label = {
                         Text(stringResource(R.string.file_or_folder_name))
                     },
-                    placeholder = {
-//                    Text(stringResource(R.string.file_name_placeholder))
-                    },
-                    keyboardOptions = KeyboardOptions(imeAction = ImeAction.Done),
-                    keyboardActions = KeyboardActions(onDone = {
-                        doCreate()
-                    })
                 )
-
-                Spacer(modifier = Modifier.padding(15.dp))
-                for ((idx, optext) in fileTypeOptions.toList().withIndex()) {
-                    Row(
-                        Modifier
-                            .fillMaxWidth()
-                            .heightIn(min = MyStyleKt.RadioOptions.minHeight)
-
-                            .selectable(
-                                selected = (selectedFileTypeOption.intValue == idx),
-                                onClick = {
-                                    //更新选择值
-                                    selectedFileTypeOption.intValue = idx
-                                },
-                                role = Role.RadioButton
-                            )
-                            .padding(horizontal = 10.dp),
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        RadioButton(
-                            selected = (selectedFileTypeOption.intValue == idx),
-                            onClick = null // null recommended for accessibility with screenreaders
-                        )
-                        Text(
-                            text = optext,
-                            style = MaterialTheme.typography.bodyLarge,
-                            modifier = Modifier.padding(start = 10.dp)
-                        )
-                    }
-                }
 
             }
         },
@@ -144,26 +84,38 @@ fun CreateFileOrFolderDialog2(
             TextButton(
                 onClick = onCancel
             ) {
-                Text(
-                    text = cancelBtnText,
-                    color = cancelTextColor,
-                )
+                Text(text = stringResource(R.string.cancel))
             }
         },
         confirmButton = {
-            TextButton(
-                enabled = fileName.value.isNotEmpty() && !hasErr(),
-                onClick = {
-                    doCreate()
-                },
-            ) {
-                Text(
-                    text = okBtnText,
-                    color = okTextColor,
-                )
+            ScrollableRow {
+                val enableButton = fileName.value.isNotEmpty() && !hasErr()
+                TextButton(
+                    enabled = enableButton,
+                    onClick = {
+                        val isDir = true
+                        doCreate(isDir)
+                    },
+                ) {
+                    Text(
+                        text = activityContext.getString(R.string.folder),
+                    )
+                }
+
+                TextButton(
+                    enabled = enableButton,
+                    onClick = {
+                        val isDir = false
+                        doCreate(isDir)
+                    },
+                ) {
+                    Text(
+                        text = activityContext.getString(R.string.file),
+                    )
+                }
             }
         },
 
-        )
+    )
 
 }
