@@ -2916,6 +2916,21 @@ fun FilesInnerPage(
             goToPath(FsUtils.getExternalStorageRootPathNoEndsWithSeparator())
         }
     }
+    if(filesPageRequestFromParent.value==PageRequest.goToInnerDataStorage) {
+        PageRequest.clearStateThenDoAct(filesPageRequestFromParent) {
+            goToPath(AppModel.innerDataDir.canonicalPath)
+        }
+    }
+    if(filesPageRequestFromParent.value==PageRequest.goToExternalDataStorage) {
+        PageRequest.clearStateThenDoAct(filesPageRequestFromParent) {
+            val targetPath = AppModel.externalDataDir?.canonicalPath ?: ""
+            if(targetPath.isBlank()) {
+                Msg.requireShow(activityContext.getString(R.string.invalid_path))
+            }else {
+                goToPath(targetPath)
+            }
+        }
+    }
 
 
     LaunchedEffect(needRefreshFilesPage.value) {

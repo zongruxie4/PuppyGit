@@ -359,6 +359,22 @@ fun getInnerDataDirOrThrowException(context:Context):File {
     return getDirIfNullThenShowToastAndThrowException(context, context.dataDir, Cons.errorCantGetInnerDataDir)
 }
 
+fun getExternalDataDirOrNull(context:Context):File? {
+    return try {
+        val dir = context.getExternalFilesDir(null) ?: throw RuntimeException("`context.getExternalFilesDir(null)` returned `null`")
+        if(!dir.exists()) {
+            dir.mkdirs()
+        }
+
+        //先转成规范路径File再获取parentFile，不然如果是 File("parent", "sub/abc")，这种路径获取到的就会是parent，而不是真正的当前目录abc的上级目录"parent/sub"
+        dir.canonicalFile.parentFile
+    }catch (e:Exception) {
+        MyLog.e(TAG, "get app external data failed, usually this folder at '/storage/emulated/Android/data/app_package_name, err is: ${e.stackTraceToString()}")
+
+        null
+    }
+}
+
 //fun createAllRepoParentDirIfNonexists(baseDir:File, allRepoParentDir:String=Cons.defaultAllRepoParentDirName):File {
 //    return createDirIfNonexists(baseDir, allRepoParentDir)
 //}

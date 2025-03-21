@@ -156,6 +156,7 @@ object AppModel {
 
     // app 的内部目录， /data/data/app包名 或者 /data/user/0/app包名，这俩目录好像其中一个是另一个的符号链接
     lateinit var innerDataDir: File
+    var externalDataDir: File? = null
     //存储app内置证书的目录
     lateinit var certBundleDir: File
     //存储用户证书的目录（例如自签证书
@@ -306,6 +307,7 @@ object AppModel {
         AppModel.externalFilesDir = externalFilesDir
         AppModel.externalCacheDir = externalCacheDir
         AppModel.innerDataDir = innerDataDir
+        AppModel.externalDataDir = getExternalDataDirOrNull(realAppContext)
 
 
 //            AppModel.logDir = createLogDirIfNonexists(externalCacheDir, Cons.defaultLogDirName);
