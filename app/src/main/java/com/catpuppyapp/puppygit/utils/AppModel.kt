@@ -151,12 +151,36 @@ object AppModel {
 
     lateinit var allRepoParentDir: File  // this is internal storage, early version doesn't support clone repo to external path, so this name not indicate this path is internal path, but actually it is
     lateinit var exitApp: ()->Unit
+
+    /**
+     * 路径：app实际使用的私有目录/files
+     *
+     * 实际存放app设置项、log等公开数据的目录，优先选择外部存储路径下Android/data下的app私有目录，若无，使用 /data/data 下的app私有目录
+     *
+     * 必须存在
+     */
     lateinit var externalFilesDir: File
+
+    /**
+     * 路径： app实际使用的私有目录/cache
+     * 父目录同 externalFilesDir，只是这个是cache目录，那个是files目录
+     *
+     * 必须存在
+     */
     lateinit var externalCacheDir: File
 
-    // app 的内部目录， /data/data/app包名 或者 /data/user/0/app包名，这俩目录好像其中一个是另一个的符号链接
+    /**
+     * app 的内部目录， /data/data/app包名 或者 /data/user/0/app包名，这俩目录好像其中一个是另一个的符号链接
+     *
+     * 必须存在
+     */
     lateinit var innerDataDir: File
+
+    /**
+     * 可能不存在，但大概率存在，若存在，优先使用此目录下的files和cache目录，否则使用 /data/data 下的
+     */
     var externalDataDir: File? = null
+
     //存储app内置证书的目录
     lateinit var certBundleDir: File
     //存储用户证书的目录（例如自签证书
