@@ -21,7 +21,7 @@ import com.catpuppyapp.puppygit.screen.shared.FileChooserType
 
 
 /**
- * A Folder Chooser depend System File Chooser, may not work if system removed internal file picker, in that case, can input path instead
+ * App Internal File Chooser, no-depend system file chooser, also no saf support
  */
 @Composable
 fun InternalFileChooser(
