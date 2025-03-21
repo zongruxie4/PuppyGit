@@ -1,3 +1,12 @@
+1.0.9.6v72 - 20250322:
+- change style of Files screen title
+
+
+
+- 修改文件管理器标题样式
+
+---
+
 1.0.9.5v71 - 20250321:
 - use internal file manager instead of system file picker
 
