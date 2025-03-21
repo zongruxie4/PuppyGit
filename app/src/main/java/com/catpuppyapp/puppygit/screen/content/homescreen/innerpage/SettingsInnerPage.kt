@@ -648,6 +648,8 @@ fun SettingsInnerPage(
                     }
                 }
             },
+            okBtnText = stringResource(R.string.clean),
+            okTextColor = MyStyleKt.TextColor.danger(),
             onCancel = {showCleanDialog.value = false}
         ) {
             showCleanDialog.value=false

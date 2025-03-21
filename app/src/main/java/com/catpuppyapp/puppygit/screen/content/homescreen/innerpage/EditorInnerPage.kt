@@ -488,8 +488,9 @@ fun EditorInnerPage(
     val showClearRecentFilesDialog = rememberSaveable { mutableStateOf(false) }
     if(showClearRecentFilesDialog.value) {
         ConfirmDialog2(
-            title = stringResource(R.string.confirm),
+            title = stringResource(R.string.clear),
             text = stringResource(R.string.clear_recent_files_confirm_text),
+            okBtnText = stringResource(R.string.clear),
             okTextColor = MyStyleKt.TextColor.danger(),
             onCancel = {showClearRecentFilesDialog.value = false}
         ) {
