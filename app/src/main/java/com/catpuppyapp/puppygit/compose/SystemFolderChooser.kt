@@ -17,7 +17,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import com.catpuppyapp.puppygit.play.pro.R
 import com.catpuppyapp.puppygit.screen.functions.navToFileChooser
-import com.catpuppyapp.puppygit.screen.shared.FileDisplayType
+import com.catpuppyapp.puppygit.screen.shared.FileChooserType
 import com.catpuppyapp.puppygit.utils.AppModel
 
 private const val TAG = "SystemFolderChooser"
@@ -57,7 +57,7 @@ fun SystemFolderChooser(
 
             IconButton(
                 onClick = {
-                    navToFileChooser(FileDisplayType.DIR)
+                    navToFileChooser(FileChooserType.SINGLE_DIR)
                 }
 
             ) {

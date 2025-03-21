@@ -109,6 +109,7 @@ import com.catpuppyapp.puppygit.screen.functions.filterTheList
 import com.catpuppyapp.puppygit.screen.functions.goToFileHistory
 import com.catpuppyapp.puppygit.screen.functions.initSearch
 import com.catpuppyapp.puppygit.screen.functions.recursiveBreadthFirstSearch
+import com.catpuppyapp.puppygit.screen.shared.FileChooserType
 import com.catpuppyapp.puppygit.screen.shared.FilePath
 import com.catpuppyapp.puppygit.settings.AppSettings
 import com.catpuppyapp.puppygit.settings.DirViewAndSort
@@ -171,6 +172,7 @@ fun FilesInnerPage(
     naviUp:()->Unit,
     updateSelectedPath:(path:String) -> Unit,
     isFileChooser:Boolean,
+    fileChooserType:FileChooserType,  //若 `isFileChooser` 为假则此值无效
     contentPadding: PaddingValues,
 //    filePageListState: LazyListState,
     currentHomeScreen: MutableIntState,
@@ -2246,9 +2248,9 @@ fun FilesInnerPage(
     }
 
     //Bottom bar，一个是选择模式，一个是粘贴模式
-    val isFileChooserAndSingleSelectDir = isFileChooser dd
-    if (isFileChooserAndSingleSelectDir || isFileSelectionMode.value) {
-        val selectionModeIconList = if(isFileChooserAndSingleSelectDir) {
+    val isFileChooserAndSingleDirType = isFileChooser && fileChooserType == FileChooserType.SINGLE_DIR
+    if (isFileChooserAndSingleDirType || isFileSelectionMode.value) {
+        val selectionModeIconList = if(isFileChooserAndSingleDirType) {
             listOf(
                 Icons.Filled.Check, // 确定选择这个目录
             )
@@ -2271,7 +2273,7 @@ fun FilesInnerPage(
             Unit
         }
 
-        val selectionModeIconTextList = if(isFileChooserAndSingleSelectDir){
+        val selectionModeIconTextList = if(isFileChooserAndSingleDirType){
             listOf(
                 stringResource(R.string.confirm), // 确定选择
             )
@@ -2293,7 +2295,7 @@ fun FilesInnerPage(
             // not impemented yet
         }
 
-        val selectionModeIconOnClickList = if(isFileChooserAndSingleSelectDir){
+        val selectionModeIconOnClickList = if(isFileChooserAndSingleDirType){
             listOf(
                 confirm@{
                     confirmForChooser(currentPath.value)
@@ -2316,7 +2318,7 @@ fun FilesInnerPage(
             )
         }
 
-        val selectionModeIconEnableList = if(isFileChooserAndSingleSelectDir) {
+        val selectionModeIconEnableList = if(isFileChooserAndSingleDirType) {
             listOf(
                 //单选模式永远启用确认，点击确认即代表选择当前目录，如果选文件的话，需要额外处理，点击文件条目时获取文件路径并返回，就不需要显示这个确认了
                 confirm@{ true },  //是否启用确认

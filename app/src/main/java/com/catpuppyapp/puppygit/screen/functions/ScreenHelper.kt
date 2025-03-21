@@ -12,6 +12,7 @@ import com.catpuppyapp.puppygit.constants.LineNum
 import com.catpuppyapp.puppygit.constants.PageRequest
 import com.catpuppyapp.puppygit.dto.FileItemDto
 import com.catpuppyapp.puppygit.play.pro.R
+import com.catpuppyapp.puppygit.screen.shared.FileChooserType
 import com.catpuppyapp.puppygit.screen.shared.FilePath
 import com.catpuppyapp.puppygit.utils.AppModel
 import com.catpuppyapp.puppygit.utils.Libgit2Helper
@@ -314,6 +315,6 @@ fun <T> filterTheList(
 
 fun newScrollState(initial:Int = 0):ScrollState = ScrollState(initial = initial)
 
-fun navToFileChooser(displayTypeFlags: Int) {
-    AppModel.navController.navigate(Cons.nav_FileChooserScreen + "/" + displayTypeFlags)
+fun navToFileChooser(type: FileChooserType) {
+    AppModel.navController.navigate(Cons.nav_FileChooserScreen + "/" + type.code)
 }

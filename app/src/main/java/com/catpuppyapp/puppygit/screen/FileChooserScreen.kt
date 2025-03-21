@@ -33,6 +33,7 @@ import com.catpuppyapp.puppygit.play.pro.R
 import com.catpuppyapp.puppygit.screen.content.homescreen.innerpage.FilesInnerPage
 import com.catpuppyapp.puppygit.screen.content.homescreen.scaffold.actions.FilesPageActions
 import com.catpuppyapp.puppygit.screen.content.homescreen.scaffold.title.FilesTitle
+import com.catpuppyapp.puppygit.screen.shared.FileChooserType
 import com.catpuppyapp.puppygit.screen.shared.FilePath
 import com.catpuppyapp.puppygit.screen.shared.SharedState
 import com.catpuppyapp.puppygit.settings.SettingsUtil
@@ -49,7 +50,7 @@ private val stateKeyTag = "FileChooserScreen"
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun FileChooserScreen(
-    displayTypeFlags: Int,
+    type: FileChooserType,
     naviUp: () -> Unit
 ) {
 
@@ -269,6 +270,7 @@ fun FileChooserScreen(
             naviUp = naviUp,
             updateSelectedPath = updateSelectedPath,
             isFileChooser = isFileChooser,
+            fileChooserType = type,
             filesPageLastKeyword=filesPageLastKeyword,
             filesPageSearchToken=filesPageSearchToken,
             filesPageSearching=filesPageSearching,

@@ -93,6 +93,7 @@ import com.catpuppyapp.puppygit.screen.content.homescreen.scaffold.title.ReposTi
 import com.catpuppyapp.puppygit.screen.content.homescreen.scaffold.title.ScrollableTitle
 import com.catpuppyapp.puppygit.screen.content.homescreen.scaffold.title.SimpleTitle
 import com.catpuppyapp.puppygit.screen.functions.ChangeListFunctions
+import com.catpuppyapp.puppygit.screen.shared.FileChooserType
 import com.catpuppyapp.puppygit.screen.shared.FilePath
 import com.catpuppyapp.puppygit.screen.shared.SharedState
 import com.catpuppyapp.puppygit.settings.SettingsCons
@@ -1192,6 +1193,7 @@ fun HomeScreen(
                     naviUp = {},
                     updateSelectedPath = {},
                     isFileChooser = false,
+                    fileChooserType = FileChooserType.SINGLE_DIR, //isFileChooser为假时，此值无效
                     filesPageLastKeyword=filesPageLastKeyword,
                     filesPageSearchToken=filesPageSearchToken,
                     filesPageSearching=filesPageSearching,
