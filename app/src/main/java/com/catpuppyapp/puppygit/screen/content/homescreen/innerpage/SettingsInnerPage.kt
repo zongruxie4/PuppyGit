@@ -665,12 +665,22 @@ fun SettingsInnerPage(
                 }
 
                 if(cleanCacheFolder.value) {
+                    // clean external data cache
                     try {
                         AppModel.externalCacheDir.deleteRecursively()
                         AppModel.externalCacheDir.mkdirs()
                     }catch (e:Exception) {
-                        MyLog.e(TAG, "clean cache folder err: ${e.localizedMessage}")
+                        MyLog.e(TAG, "clean external cache dir err: ${e.localizedMessage}")
                     }
+
+                    // clean inner data cache
+                    try {
+                        AppModel.innerCacheDir?.deleteRecursively()
+                        AppModel.innerCacheDir?.mkdirs()
+                    }catch (e:Exception) {
+                        MyLog.e(TAG, "clean inner cache dir err: ${e.localizedMessage}")
+                    }
+
                 }
 
                 if(cleanEditCache.value) {

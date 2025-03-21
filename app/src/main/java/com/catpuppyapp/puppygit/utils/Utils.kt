@@ -375,6 +375,22 @@ fun getExternalDataDirOrNull(context:Context):File? {
     }
 }
 
+// inner cache dir, usually at: "/data/data/app_package_name/cache"
+fun getInnerCacheDirOrNull(context:Context):File? {
+    return try {
+        val dir = context.cacheDir ?: throw RuntimeException("`context.cacheDir` returned `null`")
+        if(!dir.exists()) {
+            dir.mkdirs()
+        }
+
+        dir
+    }catch (e:Exception) {
+        MyLog.e(TAG, "get app inner cache dir failed, err is: ${e.stackTraceToString()}")
+
+        null
+    }
+}
+
 //fun createAllRepoParentDirIfNonexists(baseDir:File, allRepoParentDir:String=Cons.defaultAllRepoParentDirName):File {
 //    return createDirIfNonexists(baseDir, allRepoParentDir)
 //}

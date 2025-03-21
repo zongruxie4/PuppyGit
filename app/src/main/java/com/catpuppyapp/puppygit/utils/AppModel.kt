@@ -170,6 +170,11 @@ object AppModel {
     lateinit var externalCacheDir: File
 
     /**
+     * 不一定会用到，null也无所谓，但清缓存时会清这个目录，所以需要获取这个对象
+     */
+    var innerCacheDir: File? = null
+
+    /**
      * app 的内部目录， /data/data/app包名 或者 /data/user/0/app包名，这俩目录好像其中一个是另一个的符号链接
      *
      * 必须存在
@@ -331,6 +336,7 @@ object AppModel {
         AppModel.externalFilesDir = externalFilesDir
         AppModel.externalCacheDir = externalCacheDir
         AppModel.innerDataDir = innerDataDir
+        AppModel.innerCacheDir = getInnerCacheDirOrNull(realAppContext)
         AppModel.externalDataDir = getExternalDataDirOrNull(realAppContext)
 
 
