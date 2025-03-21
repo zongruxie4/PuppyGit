@@ -89,9 +89,25 @@ fun CreateFileOrFolderDialog2(
         },
         confirmButton = {
             ScrollableRow {
-                val enableButton = fileName.value.isNotEmpty() && !hasErr()
+                //按钮启用条件
+                val maybeIsGoodFileName = fileName.value.isNotEmpty() && !hasErr()
+
+                //创建文件（左边）
                 TextButton(
-                    enabled = enableButton,
+                    enabled = maybeIsGoodFileName,
+                    onClick = {
+                        val isDir = false
+                        doCreate(isDir)
+                    },
+                ) {
+                    Text(
+                        text = activityContext.getString(R.string.file),
+                    )
+                }
+
+                //创建文件夹（右边）
+                TextButton(
+                    enabled = maybeIsGoodFileName,
                     onClick = {
                         val isDir = true
                         doCreate(isDir)
@@ -102,17 +118,6 @@ fun CreateFileOrFolderDialog2(
                     )
                 }
 
-                TextButton(
-                    enabled = enableButton,
-                    onClick = {
-                        val isDir = false
-                        doCreate(isDir)
-                    },
-                ) {
-                    Text(
-                        text = activityContext.getString(R.string.file),
-                    )
-                }
             }
         },
 
