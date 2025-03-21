@@ -33,7 +33,6 @@ import com.catpuppyapp.puppygit.play.pro.R
 import com.catpuppyapp.puppygit.screen.content.homescreen.innerpage.FilesInnerPage
 import com.catpuppyapp.puppygit.screen.content.homescreen.scaffold.actions.FilesPageActions
 import com.catpuppyapp.puppygit.screen.content.homescreen.scaffold.title.FilesTitle
-import com.catpuppyapp.puppygit.screen.shared.FileDisplayFilter
 import com.catpuppyapp.puppygit.screen.shared.FilePath
 import com.catpuppyapp.puppygit.screen.shared.SharedState
 import com.catpuppyapp.puppygit.settings.SettingsUtil
@@ -55,10 +54,7 @@ fun FileChooserScreen(
 ) {
 
     val isFileChooser = remember { true }
-    val enableMultiSelectionForFileChooser = remember { false }
 
-    //目前实际上只支持选择目录不支持选择文件
-    val fileDisplayFilter = rememberSaveable { mutableStateOf(FileDisplayFilter(displayTypeFlags)) }
 
 
     val activityContext = LocalContext.current
@@ -273,8 +269,6 @@ fun FileChooserScreen(
             naviUp = naviUp,
             updateSelectedPath = updateSelectedPath,
             isFileChooser = isFileChooser,
-            enableMultiSelectionForFileChooser = enableMultiSelectionForFileChooser,
-            fileDisplayFilter = fileDisplayFilter.value,
             filesPageLastKeyword=filesPageLastKeyword,
             filesPageSearchToken=filesPageSearchToken,
             filesPageSearching=filesPageSearching,

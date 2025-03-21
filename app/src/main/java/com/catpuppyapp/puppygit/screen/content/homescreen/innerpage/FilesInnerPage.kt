@@ -109,8 +109,6 @@ import com.catpuppyapp.puppygit.screen.functions.filterTheList
 import com.catpuppyapp.puppygit.screen.functions.goToFileHistory
 import com.catpuppyapp.puppygit.screen.functions.initSearch
 import com.catpuppyapp.puppygit.screen.functions.recursiveBreadthFirstSearch
-import com.catpuppyapp.puppygit.screen.shared.FileDisplayFilter
-import com.catpuppyapp.puppygit.screen.shared.FileDisplayType
 import com.catpuppyapp.puppygit.screen.shared.FilePath
 import com.catpuppyapp.puppygit.settings.AppSettings
 import com.catpuppyapp.puppygit.settings.DirViewAndSort
@@ -173,8 +171,6 @@ fun FilesInnerPage(
     naviUp:()->Unit,
     updateSelectedPath:(path:String) -> Unit,
     isFileChooser:Boolean,
-    enableMultiSelectionForFileChooser:Boolean,  //仅当 `isFileChooser` 为真此值才有效
-    fileDisplayFilter: FileDisplayFilter,
     contentPadding: PaddingValues,
 //    filePageListState: LazyListState,
     currentHomeScreen: MutableIntState,
@@ -344,15 +340,6 @@ fun FilesInnerPage(
     val switchItemSelected = { item: FileItemDto ->
         isFileSelectionMode.value = true
         UIHelper.selectIfNotInSelectedListElseRemove(item, selectedItems.value, contains = containsForSelected)
-
-        //文件选择器 且 单选，每次切换选择后都移除与当前点击条目不相等的文件
-        if(isFileChooser && enableMultiSelectionForFileChooser.not()) {
-            selectedItems.value.toList().forEach {
-                if(it.equalsForSelected(item).not()) {
-                    selectedItems.value.remove(it)
-                }
-            }
-        }
     }
 
     val selectItem = { item:FileItemDto ->
@@ -1432,26 +1419,10 @@ fun FilesInnerPage(
                         }else { //目录可读，执行搜索
                             val canceled = initSearch(keyword = keyword, lastKeyword = filesPageLastKeyword, token = filesPageSearchToken)
 
-
-                            val showFile = fileDisplayFilter.displayTypeFlags and FileDisplayType.FILE > 0
-                            val showDir = fileDisplayFilter.displayTypeFlags and FileDisplayType.DIR > 0
-                            val mathPattern = fileDisplayFilter.pattern.lowercase()
-                            val needMathFile = mathPattern.isNotEmpty()
-
                             val match = { idx:Int, it:File ->
-                                if((showFile.not() && it.isFile) || (showDir.not() && it.isFile.not())) {
-                                    false
-                                }else {
-                                    val nameLowerCase = it.name.lowercase();
-
-                                    //第一层过滤
-                                    if(needMathFile && RegexUtil.matchWildcard(input = nameLowerCase, pattern = mathPattern).not()) {
-                                        false
-                                    }else {  //当前关键字过滤
-                                        //匹配名称 或 "*.txt"之类的后缀
-                                        nameLowerCase.contains(keyword) || RegexUtil.matchWildcard(input = nameLowerCase, pattern = keyword)
-                                    }
-                                }
+                                val nameLowerCase = it.name.lowercase();
+                                //匹配名称 或 "*.txt"之类的后缀
+                                nameLowerCase.contains(keyword) || RegexUtil.matchWildcard(input = nameLowerCase, pattern = keyword)
                             }
 
                             filterList.value.clear()
@@ -1506,7 +1477,7 @@ fun FilesInnerPage(
                                     switchItemSelected(it)
 
                                     //如果处于选择模式，长按执行连续选择
-                                }else if(isFileSelectionMode.value && !isPasteMode.value && !isImportMode.value && (isFileChooser.not() || enableMultiSelectionForFileChooser)) {
+                                }else if(isFileSelectionMode.value && !isPasteMode.value && !isImportMode.value) {
                                     haptic.performHapticFeedback(HapticFeedbackType.LongPress)
                                     UIHelper.doSelectSpan(index, it,
                                         //这里调用 toList() 是为了拷贝下源list，避免并发修改异常
@@ -2275,19 +2246,12 @@ fun FilesInnerPage(
     }
 
     //Bottom bar，一个是选择模式，一个是粘贴模式
-    //目前不支持选择文件，若以后支持，这个判断需要改，单选文件不需要显示选择栏
-    if (isFileChooser || isFileSelectionMode.value) {
-        val selectionModeIconList = if(isFileChooser) {
-            if(enableMultiSelectionForFileChooser) {
-                listOf(
-                    Icons.Filled.SelectAll,  //全选
-                    Icons.Filled.Check, // 确定选择这个目录
-                )
-            }else {
-                listOf(
-                    Icons.Filled.Check, // 确定选择这个目录
-                )
-            }
+    val isFileChooserAndSingleSelectDir = isFileChooser dd
+    if (isFileChooserAndSingleSelectDir || isFileSelectionMode.value) {
+        val selectionModeIconList = if(isFileChooserAndSingleSelectDir) {
+            listOf(
+                Icons.Filled.Check, // 确定选择这个目录
+            )
         } else {
             listOf(
                 Icons.Filled.Delete,
@@ -2307,17 +2271,10 @@ fun FilesInnerPage(
             Unit
         }
 
-        val selectionModeIconTextList = if(isFileChooser){
-            if(enableMultiSelectionForFileChooser) {
-                listOf(
-                    stringResource(R.string.select_all),
-                    stringResource(R.string.confirm), // 确定选择
-                )
-            }else {
-                listOf(
-                    stringResource(R.string.confirm), // 确定选择
-                )
-            }
+        val selectionModeIconTextList = if(isFileChooserAndSingleSelectDir){
+            listOf(
+                stringResource(R.string.confirm), // 确定选择
+            )
         } else {
             listOf(
                 stringResource(R.string.delete),
@@ -2336,21 +2293,12 @@ fun FilesInnerPage(
             // not impemented yet
         }
 
-        val selectionModeIconOnClickList = if(isFileChooser){
-            if(enableMultiSelectionForFileChooser) {
-                listOf(
-                    selectAll,
-                    confirm@{
-                        confirmForMultiChooser(selectedItems.value)
-                    }
-                )
-            }else {
-                listOf(
-                    confirm@{
-                        confirmForChooser(currentPath.value)
-                    }
-                )
-            }
+        val selectionModeIconOnClickList = if(isFileChooserAndSingleSelectDir){
+            listOf(
+                confirm@{
+                    confirmForChooser(currentPath.value)
+                }
+            )
         } else {
             listOf<()->Unit>(
                 delete@{
@@ -2368,18 +2316,11 @@ fun FilesInnerPage(
             )
         }
 
-        val selectionModeIconEnableList = if(isFileChooser) {
-            if(enableMultiSelectionForFileChooser) {
-                listOf(
-                    selectAll@{true},  //是否启用全选
-                    confirm@{getSelectedFilesCount()>0},  //是否启用确认
-                )
-            }else {
-                listOf(
-                    //单选模式永远启用确认，点击确认即代表选择当前目录，如果选文件的话，需要额外处理，点击文件条目时获取文件路径并返回，就不需要显示这个确认了
-                    confirm@{ true },  //是否启用确认
-                )
-            }
+        val selectionModeIconEnableList = if(isFileChooserAndSingleSelectDir) {
+            listOf(
+                //单选模式永远启用确认，点击确认即代表选择当前目录，如果选文件的话，需要额外处理，点击文件条目时获取文件路径并返回，就不需要显示这个确认了
+                confirm@{ true },  //是否启用确认
+            )
         } else {
             listOf(
                 delete@{getSelectedFilesCount()>0},  //是否启用delete
@@ -2968,7 +2909,6 @@ fun FilesInnerPage(
             doJobThenOffLoading(loadingOn, loadingOff, activityContext.getString(R.string.loading)) {
                 try {
                     doInit(
-                        fileDisplayFilter = fileDisplayFilter,
                         isFileChooser = isFileChooser,
                         currentPath = currentPath,
                         currentPathFileList = currentPathFileList,
@@ -3011,7 +2951,6 @@ fun FilesInnerPage(
 
 
 private suspend fun doInit(
-    fileDisplayFilter: FileDisplayFilter,
     isFileChooser:Boolean,
     currentPath: MutableState<String>,
     currentPathFileList: CustomStateListSaveable<FileItemDto>,
@@ -3163,12 +3102,6 @@ private suspend fun doInit(
     // 当请求打开的curpath是个文件时会用到这几个变量 结束
 
     //获取文件列表之类的
-
-    val showFile = fileDisplayFilter.displayTypeFlags and FileDisplayType.FILE > 0
-    val showDir = fileDisplayFilter.displayTypeFlags and FileDisplayType.DIR > 0
-    val mathPattern = fileDisplayFilter.pattern.lowercase()
-    val needMathFile = mathPattern.isNotEmpty()
-
     var folderCount = 0
     var fileCount = 0
     // 遍历文件列表
@@ -3176,18 +3109,7 @@ private suspend fun doInit(
         for(file in it) {
             val fdto = FileItemDto.genFileItemDtoByFile(file, activityContext)
 
-            val fileNameLowerCase = fdto.name.lowercase()
-
             if(fdto.isFile) {
-                if(showFile.not()) {
-                    continue
-                }
-                if(needMathFile && RegexUtil.matchWildcard(input = fileNameLowerCase, pattern = mathPattern).not()) {
-                    continue
-                }
-
-                // 不需要匹配或匹配成功
-
                 fileCount++
                 //如果从请求打开的路径带来的文件存在，且和当前遍历的文件重合，选中
                 if(needSelectFile && !curFileFromCurPathAlreadySelected && curFilePath == fdto.fullPath) {
@@ -3202,17 +3124,6 @@ private suspend fun doInit(
 
                 fileSortedSet.add(fdto)
             }else {
-                if(showDir.not()) {
-                    continue
-                }
-
-                if(needMathFile && RegexUtil.matchWildcard(input = fileNameLowerCase, pattern = mathPattern).not()) {
-                    continue
-                }
-
-                // 不需要匹配或匹配成功
-
-
                 folderCount++
                 if(viewAndSort.folderFirst) {
                     dirSortedSet.add(fdto)

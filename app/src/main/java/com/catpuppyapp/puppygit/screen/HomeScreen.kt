@@ -93,7 +93,6 @@ import com.catpuppyapp.puppygit.screen.content.homescreen.scaffold.title.ReposTi
 import com.catpuppyapp.puppygit.screen.content.homescreen.scaffold.title.ScrollableTitle
 import com.catpuppyapp.puppygit.screen.content.homescreen.scaffold.title.SimpleTitle
 import com.catpuppyapp.puppygit.screen.functions.ChangeListFunctions
-import com.catpuppyapp.puppygit.screen.shared.FileDisplayFilter
 import com.catpuppyapp.puppygit.screen.shared.FilePath
 import com.catpuppyapp.puppygit.screen.shared.SharedState
 import com.catpuppyapp.puppygit.settings.SettingsCons
@@ -265,7 +264,6 @@ fun HomeScreen(
     val reposPageSpecifiedRefreshRepoList = mutableCustomStateListOf(keyTag = stateKeyTag, keyName = "reposPageSpecifiedRefreshRepoList", initValue = listOf<RepoEntity>())
 
 
-    val fileDisplayFilter = rememberSaveable { mutableStateOf(FileDisplayFilter()) }
 
     val filesPageLastKeyword = rememberSaveable{ mutableStateOf("") }
     val filesPageSearchToken = rememberSaveable{ mutableStateOf("") }
@@ -1194,8 +1192,6 @@ fun HomeScreen(
                     naviUp = {},
                     updateSelectedPath = {},
                     isFileChooser = false,
-                    enableMultiSelectionForFileChooser = false,
-                    fileDisplayFilter = fileDisplayFilter.value,
                     filesPageLastKeyword=filesPageLastKeyword,
                     filesPageSearchToken=filesPageSearchToken,
                     filesPageSearching=filesPageSearching,
