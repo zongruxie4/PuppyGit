@@ -1497,6 +1497,13 @@ fun FilesInnerPage(
 
                             //关闭过滤模式的逻辑：如果是目录，一律关闭；如果是文件，判断是否用内部Editor打开，如果是关闭，否则不关闭。
                             if (it.isFile) {
+                                //单选文件模式，点击文件后直接返回
+                                if(isFileChooser && fileChooserType == FileChooserType.SINGLE_FILE) {
+                                    updateSelectedPath(it.fullPath)
+                                    naviUp()
+                                    return@itemOnClick
+                                }
+
                                 //粘贴或导入模式下点击文件无效，除非先退出对应模式(不过没禁止通过三个点的菜单打开文件)
                                 if(isPasteMode.value || isImportMode.value) {
                                     return@itemOnClick
