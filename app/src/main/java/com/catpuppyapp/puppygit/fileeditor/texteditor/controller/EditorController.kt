@@ -367,11 +367,16 @@ class EditorController(
         }
     }
 
+
+    private val targetIndexValidOrThrow = { targetIndex:Int ->
+        if (targetIndex < 0 || targetIndex >= _fields.size) {
+            throw IndexOutOfBoundsException("targetIndex out of range($targetIndex)")
+        }
+    }
+
     fun updateField(targetIndex: Int, textFieldValue: TextFieldValue) {
         lock.withLock {
-            if (targetIndex < 0 || fields.count() <= targetIndex) {
-                throw IndexOutOfBoundsException("targetIndex out of range($targetIndex)")
-            }
+            targetIndexValidOrThrow(targetIndex)
 
             if (textFieldValue.text.contains('\n')) {
                 throw InvalidParameterException("textFieldValue contains newline")
@@ -390,6 +395,46 @@ class EditorController(
             _fields[targetIndex] = _fields[targetIndex].copy(value = textFieldValue)
 
             onChanged(genNewState(), if(contentChanged) true else null, contentChanged)
+        }
+    }
+
+
+    fun appendOrReplaceFields(targetIndex: Int, textFiledStates: List<TextFieldState>, trueAppendFalseReplace:Boolean) {
+        lock.withLock {
+            if(textFiledStates.isEmpty()) {
+                return
+            }
+
+            if(targetIndex < 0) {
+                return
+            }
+
+            //若超过size，追加到末尾
+            val targetIndex = if(trueAppendFalseReplace) targetIndex+1 else targetIndex
+
+
+            //若超过有效索引则追加到末尾；否则追加到目标行（原本的目标行会后移）
+            if(targetIndex >= _fields.size) {
+                _fields.addAll(textFiledStates)
+            }else {
+                _fields.addAll(targetIndex, textFiledStates)
+            }
+
+            //若是replace则移除之前的当前行
+            if(trueAppendFalseReplace.not()) {
+                _fields.removeAt(targetIndex + textFiledStates.size)
+            }
+
+
+
+
+            //通知页面状态变化
+            isContentChanged?.value = true
+            editorPageIsContentSnapshoted?.value = false
+            _fieldsId = TextEditorState.newId()
+
+            //更新状态
+            onChanged(genNewState(), true, true)
         }
     }
 
@@ -967,6 +1012,35 @@ class EditorController(
         val oneLineHowManyChars = (screenWidthInPx / lineHeight).toInt()
         val luckyOffset = UIHelper.getLuckyOffset(indexToPx = indexToPx, screenWidthInPx = screenWidthInPx, screenHeightInPx = screenHeightInPx)
         return Pair(oneLineHowManyChars, luckyOffset)
+    }
+
+    /**
+     * 如果当前行为空行，用text替换当前行；否则追加到当前行后面
+     */
+    fun appendTextToLastSelectedLine(text: String) {
+        if(text.isEmpty()) {
+            return
+        }
+
+        //由于这个 selectedIndices 的getter 默认会创建拷贝，所以和上面的text是否为空分开判断，以避免无意义的拷贝
+        val selectedIndices = selectedIndices
+        if(selectedIndices.isEmpty()) {
+            return
+        }
+
+        //selectedIndices里存的是fields的索引
+        val lastSelectedIndexOfLine = selectedIndices.last()
+        if(lastSelectedIndexOfLine < 0 || lastSelectedIndexOfLine >= _fields.size) {
+            return
+        }
+
+
+        val lines = text.lines()
+
+        val trueAppendFalseReplace = _fields[lastSelectedIndexOfLine].value.text.isNotEmpty()
+        //执行添加，到这才真正修改Editor的数据
+        appendOrReplaceFields(targetIndex = lastSelectedIndexOfLine, textFiledStates = lines.map { TextFieldState(value = TextFieldValue(text = it)) }, trueAppendFalseReplace = trueAppendFalseReplace)
+
     }
 
 

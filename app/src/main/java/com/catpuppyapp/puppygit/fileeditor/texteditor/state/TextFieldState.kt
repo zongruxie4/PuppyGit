@@ -8,5 +8,5 @@ import java.util.UUID
 data class TextFieldState(
     val id: String = UUID.randomUUID().toString(),
     val value: TextFieldValue = TextFieldValue(),
-    val isSelected: Boolean
+    val isSelected: Boolean = false
 )

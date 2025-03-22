@@ -22,6 +22,7 @@ import androidx.compose.material.icons.automirrored.filled.ArrowBackIos
 import androidx.compose.material.icons.automirrored.filled.ArrowForwardIos
 import androidx.compose.material.icons.filled.ContentCopy
 import androidx.compose.material.icons.filled.ContentCut
+import androidx.compose.material.icons.filled.ContentPaste
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.RemoveRedEye
@@ -455,18 +456,28 @@ fun FileEditor(
                         editableController.value.createCancelledState()
                     }
                     val iconList = listOf(
+                        Icons.Filled.ContentPaste,
                         Icons.Filled.Delete,
                         Icons.Filled.ContentCut,
                         Icons.Filled.ContentCopy,
                         Icons.Filled.SelectAll
                     )
                     val iconTextList = listOf(
+                        stringResource(R.string.paste),
                         stringResource(R.string.delete),
                         stringResource(R.string.cut),
                         stringResource(R.string.copy),
                         stringResource(R.string.select_all),
                     )
                     val iconOnClickList = listOf(
+                        onPaste@{
+                            if (readOnlyMode) {
+                                Msg.requireShow(activityContext.getString(R.string.readonly_cant_edit))
+                                return@onPaste
+                            }
+
+                            editableController.value.appendTextToLastSelectedLine(clipboardManager.getText()?.text ?: "")
+                        },
                         onDelete@{
                             if (readOnlyMode) {
                                 Msg.requireShow(activityContext.getString(R.string.readonly_cant_edit))
@@ -509,12 +520,13 @@ fun FileEditor(
                         }
                     )
 
-                    val getSelectedFilesCount = {textEditorState.value.getSelectedCount()}
-                    val hasLineSelected = {getSelectedFilesCount() > 0}
+                    val selectedLines = textEditorState.value.getSelectedCount()
+                    val hasLineSelected = selectedLines > 0
                     val iconEnableList = listOf(
-                        delete@{ readOnlyMode.not() && hasLineSelected() },  // delete
-                        cut@{ hasLineSelected() },  // cut
-                        copy@{ hasLineSelected() },  // copy
+                        paste@{ hasLineSelected && clipboardManager.hasText() },  // paste，必须 "剪贴板非空 且 选中某行" 才启用
+                        delete@{ hasLineSelected && readOnlyMode.not() },  // delete
+                        cut@{ hasLineSelected },  // cut
+                        copy@{ hasLineSelected },  // copy
                         selectAll@{ true },  // select all
                     )
                     // BottomBar params block end
@@ -532,7 +544,7 @@ fun FileEditor(
                         moreItemTextList= listOf(),
                         moreItemOnClickList= listOf(),
                         moreItemEnableList = listOf(),
-                        getSelectedFilesCount = getSelectedFilesCount,
+                        getSelectedFilesCount = {selectedLines},
                         countNumOnClickEnabled = false,
                         countNumOnClick = {}
                     )
