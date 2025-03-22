@@ -398,15 +398,7 @@ fun ChangeListInnerPage(
 
 
     val hasConflictItemsSelected:()->Boolean = {
-        var ret= false
-        for(i in selectedItemList.value.toList()) {
-            if(i.changeType==Cons.gitStatusConflict) {
-                ret=true
-                break
-            }
-        }
-
-        ret
+        selectedItemList.value.toList().any { it.changeType == Cons.gitStatusConflict }
     }
 
 //    val isAllConflictItemsSelected:()->Boolean = isAllConflictItemsSelectedLabel@{
@@ -2983,20 +2975,32 @@ fun ChangeListInnerPage(
                         {true}  // select all
                     )
 
+                    //仅当至少选中一个目录才启用enable as repo选项
+                    val enableImportAsRepo = {
+                        // if have loads of items, may casue performance issue
+                        //如果条目多可能导致性能问题
+                        selectedItemList.value.toList().any { it.toFile().isDirectory }
+                    }
+
+                    val enableAcceptOursTheirs = {
+                        val repoState = repoState.intValue
+                        (repoState == Repository.StateT.MERGE.bit || repoState == Repository.StateT.REBASE_MERGE.bit || repoState == Repository.StateT.CHERRYPICK.bit) && hasConflictItemsSelected()
+                    }
+
                     val moreItemEnableList:List<()->Boolean> = (if(fromTo == Cons.gitDiffFromIndexToWorktree) listOf( // worktree page
-                        hasConflictItemsSelected,  //accept ours
-                        hasConflictItemsSelected,  //accept theirs
+                        enableAcceptOursTheirs,  //accept ours
+                        enableAcceptOursTheirs,  //accept theirs
                         selectedListIsNotEmpty,  //stage
                         selectedListIsNotEmpty,  //revert
                         selectedListIsNotEmpty, // create patch
                         selectedListIsNotEmpty, // ignore
-                        selectedListIsNotEmpty, // import as repo
+                        enableImportAsRepo, // import as repo
                     ) else if(fromTo == Cons.gitDiffFromHeadToIndex) listOf( // index page
                         selectedListIsNotEmpty,  // unstage
                         selectedListIsNotEmpty, // create patch
-                        selectedListIsNotEmpty, // import as repo
+                        enableImportAsRepo, // import as repo
                     ) else listOf(  // tree to tree page
-                        selectedListIsNotEmpty, // import as repo
+                        enableImportAsRepo, // import as repo
                     ))
 
                     val iconOnClickList:List<()->Unit> = if(fromTo == Cons.gitDiffFromIndexToWorktree) listOf(  // ChangeList页面的底栏选项 ( worktree页面 )
@@ -3158,22 +3162,6 @@ fun ChangeListInnerPage(
                         stringResource(R.string.import_as_repo)
                     ))
 
-                    val showAcceptOursTheirs = (repoState.intValue == Repository.StateT.MERGE.bit || repoState.intValue == Repository.StateT.REBASE_MERGE.bit || repoState.intValue == Repository.StateT.CHERRYPICK.bit)
-
-                    val moreItemVisibleList = (if(fromTo == Cons.gitDiffFromIndexToWorktree) listOf(
-                        // workTree 页面主要是得在不需要时隐藏accept ours/theirs，所以得单独写visible list，否则直接默认全显示就行
-                        {showAcceptOursTheirs},  // visible for "accept ours"
-                        {showAcceptOursTheirs},  // visible for "accept theirs"
-
-                        //其他条目
-                        {true},  // stage
-                        {true},  // revert
-                        {true},  // create patch
-                        {true},  // ignore
-                        {true}, // import as repo
-                    ) else listOf(  // empty list, always visible. index和treeToTree目前没有需要隐藏的条目，全显示
-
-                    ))
 
                     val moreItemOnClickList:List<()->Unit> = (if(fromTo == Cons.gitDiffFromIndexToWorktree) listOf(
                         acceptOurs@{
@@ -3264,7 +3252,7 @@ fun ChangeListInnerPage(
                         moreItemTextList=moreItemTextList,
                         moreItemOnClickList=moreItemOnClickList,
                         moreItemEnableList = moreItemEnableList,
-                        moreItemVisibleList = moreItemVisibleList,
+                        moreItemVisibleList = moreItemEnableList,
                         countNumOnClickEnabled = true,
                         getSelectedFilesCount = getSelectedFilesCount,
                         countNumOnClick = countNumOnClickForBottomBar,

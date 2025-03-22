@@ -60,7 +60,7 @@ fun BottomBar(
     moreItemTextList:List<String>,
     moreItemOnClickList:List<()->Unit>,
     moreItemEnableList:List<()->Boolean>,
-    moreItemVisibleList:List<()->Boolean> = listOf(),
+    moreItemVisibleList:List<()->Boolean> = moreItemEnableList,  //默认启用即显示；禁用即隐藏
     reverseMoreItemList:Boolean = false,
 
     // count number
