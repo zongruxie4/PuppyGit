@@ -304,8 +304,8 @@ fun DiffContent(
                         }
                     }
                 }
-
-                if(diffItem.value.hunks.isEmpty()) {
+                val diffItem = diffItem.value
+                if(diffItem.hunks.isEmpty()) {
                     item {
                         Row(modifier = Modifier
                             .fillMaxSize()
@@ -318,8 +318,11 @@ fun DiffContent(
                         }
                     }
                 }else {
+                    //顶部padding，要把这个颜色弄得和当前行的类型（context/add/del）弄得一样才不违和，但处理起来有点麻烦，算了
+//                    item { Spacer(Modifier.height(3.dp)) }
+
                     //数据结构是一个hunk header N 个行
-                    diffItem.value.hunks.forEachIndexed { index, hunkAndLines: PuppyHunkAndLines ->
+                    diffItem.hunks.forEachIndexed { index, hunkAndLines: PuppyHunkAndLines ->
                         if(fileChangeTypeIsModified && proFeatureEnabled(detailsDiffTestPassed)) {  //增量diff
                             if(!groupDiffContentByLineNum || FlagFileName.flagFileExist(FlagFileName.disableGroupDiffContentByLineNum)) {
                                 //this method need use some caches, clear them before iterate lines

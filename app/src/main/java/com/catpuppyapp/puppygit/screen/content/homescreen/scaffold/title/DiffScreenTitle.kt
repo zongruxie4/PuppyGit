@@ -56,6 +56,7 @@ fun DiffScreenTitle(
                 request.value = PageRequest.showDetails
             }
         ) {
+            val changeTypeColor = UIHelper.getChangeTypeColor(changeType)
 
             Row(modifier = Modifier.horizontalScroll(rememberScrollState()),
                 verticalAlignment = Alignment.CenterVertically
@@ -71,8 +72,8 @@ fun DiffScreenTitle(
                 Text(fileName,
                     fontSize = 15.sp,
                     maxLines=1,
-                    overflow = TextOverflow.Ellipsis,
-                    color = UIHelper.getChangeTypeColor(changeType)
+                    overflow = TextOverflow.Ellipsis,  //可滚动条目永远不会over flow，所以这个在这其实没啥意义
+                    color = changeTypeColor
                 )
             }
 
@@ -81,7 +82,8 @@ fun DiffScreenTitle(
                     text = filePath,
                     fontSize = 11.sp,
                     maxLines=1,
-                    overflow = TextOverflow.Ellipsis
+                    overflow = TextOverflow.Ellipsis,
+                    color = changeTypeColor
                 )
             }
         }
