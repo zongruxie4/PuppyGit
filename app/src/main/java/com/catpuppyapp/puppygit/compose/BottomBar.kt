@@ -52,7 +52,7 @@ fun BottomBar(
     iconDescTextList:List<String>,
     iconOnClickList:List<()->Unit>,
     iconEnableList:List<()->Boolean>,
-    iconVisibleList:List<()->Boolean> = listOf(),
+    iconVisibleList:List<()->Boolean> = listOf(),  //这个默认就用空list()让所有条目都可以显示就很好，不要把默认行为调整成启用则显示禁用则隐藏，因为这个按钮本来就只显示4、5个，用户可能会习惯按某个位置对应某个功能，若默认隐藏禁用按钮，可能会按错
 
     // more menu
     enableMoreIcon:Boolean,
@@ -60,7 +60,7 @@ fun BottomBar(
     moreItemTextList:List<String>,
     moreItemOnClickList:List<()->Unit>,
     moreItemEnableList:List<()->Boolean>,
-    moreItemVisibleList:List<()->Boolean> = moreItemEnableList,  //默认启用即显示；禁用即隐藏
+    moreItemVisibleList:List<()->Boolean> = moreItemEnableList,  //这个菜单条目默认启用即显示，禁用即隐藏，这样感觉比较节省心智，因为有可能有很多菜单条目而且这个菜单用户一般是先看一下才会按，就算菜单条目变化一般也不会按错
     reverseMoreItemList:Boolean = false,
 
     // count number
