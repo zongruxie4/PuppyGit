@@ -126,7 +126,7 @@ fun FileEditor(
     showLineNum:MutableState<Boolean>,
     lineNumFontSize:MutableIntState,
     fontSize:MutableIntState,
-    undoStack: UndoStack?
+    undoStack: UndoStack
 ) {
     val activityContext = LocalContext.current
     val haptic = LocalHapticFeedback.current

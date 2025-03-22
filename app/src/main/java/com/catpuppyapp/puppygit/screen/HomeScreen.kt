@@ -541,7 +541,7 @@ fun HomeScreen(
     val editorAdjustLineNumFontSizeMode = rememberSaveable{mutableStateOf(false)}
     val editorOpenFileErr = rememberSaveable{mutableStateOf(false)}
     val editorShowUndoRedo = rememberSaveable{mutableStateOf(settingsSnapshot.value.editor.showUndoRedo)}
-    val editorUndoStack = mutableCustomStateOf<UndoStack?>(stateKeyTag, "editorUndoStack") { null }
+    val editorUndoStack = mutableCustomStateOf(stateKeyTag, "editorUndoStack") { UndoStack(filePath = "") }
 
 
     //给Files页面点击打开文件用的

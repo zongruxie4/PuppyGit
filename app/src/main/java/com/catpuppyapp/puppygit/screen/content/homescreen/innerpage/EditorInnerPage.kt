@@ -166,7 +166,7 @@ fun EditorInnerPage(
 
     openDrawer:()->Unit,
     editorOpenFileErr:MutableState<Boolean>,
-    undoStack:CustomStateSaveable<UndoStack?>,
+    undoStack:CustomStateSaveable<UndoStack>,
 
 ) {
     val scope = rememberCoroutineScope()
@@ -388,7 +388,7 @@ fun EditorInnerPage(
         editorPageClearShowingFileErrWhenLoading()  //关闭文件清除错误，不然文件标题变了，错误还在显示
         editorPageShowingFileIsReady.value = false
 
-        undoStack.value=null
+        undoStack.value.reset(filePath = "")
 //        changeStateTriggerRefreshPage(needRefreshEditorPage)
     }
 
@@ -885,12 +885,12 @@ fun EditorInnerPage(
 //                        if(trueSaveToUndoFalseRedoNullNoSave!=null && clearRedoStack) {
                 //改了下调用函数时传的这个值，在不修改内容时更新状态清除clearReadStack传了false，所以不需要额外判断trueSaveToUndoFalseRedoNullNoSave是否为null了
                 if(clearRedoStack) {
-                    undoStack.value?.redoStackClear()
+                    undoStack.value.redoStackClear()
                 }
 
-                undoStack.value?.undoStackPush(lastState) ?: false
+                undoStack.value.undoStackPush(lastState) ?: false
             }else {  // false
-                undoStack.value?.redoStackPush(lastState) ?: false
+                undoStack.value.redoStackPush(lastState) ?: false
             }
 
             if(saved) {
@@ -901,11 +901,15 @@ fun EditorInnerPage(
 //                isEdited.value=true
     }
 
-    val editableController = mutableCustomStateOf(stateKeyTag, "editableController") {
+    val getNewEditController = {
         EditorController(editorPageTextEditorState.value, undoStack.value).apply {
             setOnChangedTextListener(isEdited, editorPageIsContentSnapshoted, editorStateOnChange)
         }
     }
+    val editableController = mutableCustomStateOf(stateKeyTag, "editableController") { getNewEditController() }
+
+    //需要重新生成edit controller
+    val updateEditController = remember(editorPageTextEditorState.value, undoStack.value.filePath) { derivedStateOf { editableController.value = getNewEditController() } }.value
 
     val showDetailsDialog = rememberSaveable { mutableStateOf(false) }
     val detailsStr = rememberSaveable { mutableStateOf("") }
@@ -1409,7 +1413,7 @@ private suspend fun doInit(
     readOnlyMode: MutableState<Boolean>,
     mergeMode: MutableState<Boolean>,
     saveLastOpenPath:(path:String)->Unit,
-    undoStack: CustomStateSaveable<UndoStack?>,
+    undoStack: CustomStateSaveable<UndoStack>,
     lastTextEditorState: CustomStateSaveable<TextEditorState>,
 
 ) {
@@ -1455,8 +1459,8 @@ private suspend fun doInit(
         //执行到这里，一定有一个非空的文件路径
 
         // 之前为null或打开了另一个文件，创建个新UndoStack
-        if(undoStack.value==null || undoStack.value?.filePath != requireOpenFilePath) {
-            undoStack.value = UndoStack(requireOpenFilePath)
+        if(undoStack.value==null || undoStack.value.filePath != requireOpenFilePath) {
+            undoStack.value.reset(filePath = requireOpenFilePath)
         }
 
         //清除错误信息，如果打开文件时出错，会重新设置错误信息

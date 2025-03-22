@@ -17,7 +17,7 @@ data class UndoStack(
     /**
     用来标记这是哪个文件的stack
      */
-    val filePath:String,
+    var filePath:String,
     /**
      * 记多少步
      */
@@ -36,11 +36,20 @@ data class UndoStack(
     var undoLastSaveAt:MutableLongState = mutableLongStateOf(0),
 
 
-    private val undoStack:LinkedList<TextEditorState> = LinkedList(),
-    private val redoStack:LinkedList<TextEditorState> = LinkedList(),
-    private val undoLock: ReentrantLock = ReentrantLock(true),
-    private val redoLock: ReentrantLock = ReentrantLock(true),
+    private var undoStack:LinkedList<TextEditorState> = LinkedList(),
+    private var redoStack:LinkedList<TextEditorState> = LinkedList(),
+    private var undoLock: ReentrantLock = ReentrantLock(true),
+    private var redoLock: ReentrantLock = ReentrantLock(true),
 ) {
+    fun reset(filePath: String) {
+        this.filePath = filePath
+        undoLastSaveAt.longValue = 0L
+        undoStack = LinkedList()
+        redoStack = LinkedList()
+        undoLock  = ReentrantLock(true)
+        redoLock  = ReentrantLock(true)
+    }
+
 //    private var redoLastPop:MutableState<TextEditorState?> = mutableStateOf(null)
 //
 //    private val remainUndoLock:ReentrantLock = ReentrantLock(true)

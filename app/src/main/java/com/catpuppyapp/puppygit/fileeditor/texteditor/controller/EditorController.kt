@@ -22,7 +22,7 @@ private const val stateKeyTag = "EditorController"
 
 class EditorController(
     textEditorState: TextEditorState,
-    undoStack: UndoStack?
+    undoStack: UndoStack
 ) {
     val _undoStack = undoStack
     private var isContentChanged:MutableState<Boolean>? = null
@@ -70,7 +70,7 @@ class EditorController(
 
     private fun undoOrRedo(trueUndoFalseRedo:Boolean) {
         lock.withLock {
-            val lastState = if(trueUndoFalseRedo) _undoStack?.undoStackPop() else _undoStack?.redoStackPop()
+            val lastState = if(trueUndoFalseRedo) _undoStack.undoStackPop() else _undoStack.redoStackPop()
             if(lastState != null) {
                 isContentChanged?.value=true
                 editorPageIsContentSnapshoted?.value=false
