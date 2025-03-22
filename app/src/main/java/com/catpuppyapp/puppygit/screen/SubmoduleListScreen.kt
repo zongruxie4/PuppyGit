@@ -1220,20 +1220,20 @@ fun SubmoduleListScreen(
             if (multiSelectionMode.value) {
                 val iconList:List<ImageVector> = listOf(
                     Icons.Filled.Delete,  //删除
-                    Icons.Filled.DownloadForOffline,  //clone
                     Icons.Filled.ReplayCircleFilled,  //do `git submodule update`, actually is checkout submodule to parent's recorded commit
+                    Icons.Filled.DownloadForOffline,  //clone
                     Icons.Filled.SelectAll,  //全选
                 )
                 val iconTextList:List<String> = listOf(
                     stringResource(id = R.string.delete),
-                    stringResource(id = R.string.clone),
                     stringResource(R.string.update),
+                    stringResource(id = R.string.clone),
                     stringResource(id = R.string.select_all),
                 )
                 val iconEnableList:List<()->Boolean> = listOf(
                     {selectedItemList.value.isNotEmpty()},  // delete
-                    {selectedItemList.value.isNotEmpty()},  // clone
                     {selectedItemList.value.isNotEmpty()},  // update
+                    {selectedItemList.value.isNotEmpty()},  // clone
                     {true} // select all
                 )
                 val iconOnClickList:List<()->Unit> = listOf(  //index页面的底栏选项
@@ -1241,12 +1241,14 @@ fun SubmoduleListScreen(
                         initDelDialog()
                     },
 
-                    clone@{
-                        initCloneDialog()
-                    },
                     update@{
                         initUpdateDialog()
                     },
+
+                    clone@{
+                        initCloneDialog()
+                    },
+
                     selectAll@{
 //                        val list = if(enableFilterState.value) filterList.value else list.value
 
@@ -1259,35 +1261,63 @@ fun SubmoduleListScreen(
                 )
 
                 val moreItemEnableList:List<()->Boolean> = (listOf(
-                    {selectedItemList.value.isNotEmpty()},  // import repo
+                    {selectedItemList.value.size == 1},  // copy full path
+                    {selectedItemList.value.isNotEmpty()},  // import to repos
                     {selectedItemList.value.isNotEmpty()},  // reset to target
+                    {selectedItemList.value.size == 1},  // set url
                     {selectedItemList.value.isNotEmpty()},  // reload
-                    {selectedItemList.value.isNotEmpty()},  // update config
+                    {selectedItemList.value.isNotEmpty()},  // sync config （同步.gitmodules 里的内容到父仓库或子仓库的配置文件）
                     {selectedItemList.value.isNotEmpty()},  // init repo
                     {selectedItemList.value.isNotEmpty()},  // restore .git file
-                    {selectedItemList.value.size == 1},  // set url
-                    {selectedItemList.value.size == 1},  // copy full path
                     {selectedItemList.value.isNotEmpty()},  // details
                 ))
 
                 val moreItemTextList = (listOf(
+                    stringResource(R.string.copy_full_path),
                     stringResource(R.string.import_to_repos),
                     stringResource(R.string.reset_to_target),
+                    stringResource(R.string.set_url),
                     stringResource(R.string.reload),
                     stringResource(R.string.sync_configs),
                     stringResource(R.string.init_repo),
                     stringResource(R.string.restore_dot_git_file),
-                    stringResource(R.string.set_url),
-                    stringResource(R.string.copy_full_path),
                     stringResource(R.string.details),  //可针对单个或多个条目查看details，多个时，用分割线分割多个条目的信息
                 ))
 
                 val moreItemOnClickList:List<()->Unit> = (listOf(
+                    copyFullPath@{  // if selected one
+                        // copy full path of a submodule
+                        try {
+                            if(selectedItemList.value.isNotEmpty()) {
+                                clipboardManager.setText(AnnotatedString(selectedItemList.value[0].fullPath))
+                                Msg.requireShow(activityContext.getString(R.string.copied))
+                            }else {
+                                Msg.requireShowLongDuration(activityContext.getString(R.string.no_item_selected))
+                            }
+                        }catch (e:Exception){
+                            Msg.requireShowLongDuration("err: " + e.localizedMessage)
+                            MyLog.e(TAG, "#copyFullPath err: ${e.stackTraceToString()}")
+                        }
+                    },
                     importToRepos@{
                         showImportToReposDialog.value = true
                     },
                     resetToTarget@{
                         showResetToTargetDialog.value = true
+                    },
+                    setUrl@{  // if selected one
+                        try {
+                            if(selectedItemList.value.isNotEmpty()) {
+                                val curItem = selectedItemList.value[0]
+                                urlForSetUrlDialog.value = curItem.remoteUrl
+                                nameForSetUrlDialog.value = curItem.name
+                                showSetUrlDialog.value = true
+                            }else {
+                                Msg.requireShow(activityContext.getString(R.string.no_item_selected))
+                            }
+                        }catch (e:Exception){
+                            Msg.requireShow(e.localizedMessage ?: "err")
+                        }
                     },
                     reload@{
                         forceReload.value=false
@@ -1305,33 +1335,7 @@ fun SubmoduleListScreen(
                     restoreDotGitFile@{ // most time will auto backup and restore when need
                         showRestoreDotGitFileDialog.value = true
                     },
-                    setUrl@{  // if selected one
-                        try {
-                            if(selectedItemList.value.isNotEmpty()) {
-                                val curItem = selectedItemList.value[0]
-                                urlForSetUrlDialog.value = curItem.remoteUrl
-                                nameForSetUrlDialog.value = curItem.name
-                                showSetUrlDialog.value = true
-                            }else {
-                                Msg.requireShow(activityContext.getString(R.string.no_item_selected))
-                            }
-                        }catch (e:Exception){
-                            Msg.requireShow(e.localizedMessage ?: "err")
-                        }
-                    },
-                    copyFullPath@{  // if selected one
-                        // copy full path of a submodule
-                        try {
-                            if(selectedItemList.value.isNotEmpty()) {
-                                clipboardManager.setText(AnnotatedString(selectedItemList.value[0].fullPath))
-                                Msg.requireShow(activityContext.getString(R.string.success))
-                            }else {
-                                Msg.requireShow(activityContext.getString(R.string.no_item_selected))
-                            }
-                        }catch (e:Exception){
-                            Msg.requireShow(e.localizedMessage ?: "err")
-                        }
-                    },
+
                     details@{
                         val sb = StringBuilder()
                         val spliter = Cons.itemDetailSpliter
@@ -1358,6 +1362,7 @@ fun SubmoduleListScreen(
                     moreItemTextList=moreItemTextList,
                     moreItemOnClickList=moreItemOnClickList,
                     moreItemEnableList = moreItemEnableList,
+                    moreItemVisibleList = moreItemEnableList,
                     getSelectedFilesCount = getSelectedFilesCount,
                     countNumOnClickEnabled = true,
                     countNumOnClick = countNumOnClickForBottomBar,

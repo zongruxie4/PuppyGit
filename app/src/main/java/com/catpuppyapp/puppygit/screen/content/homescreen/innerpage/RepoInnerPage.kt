@@ -67,6 +67,7 @@ import com.catpuppyapp.puppygit.compose.ClickableText
 import com.catpuppyapp.puppygit.compose.ConfirmDialog
 import com.catpuppyapp.puppygit.compose.ConfirmDialog2
 import com.catpuppyapp.puppygit.compose.CopyableDialog
+import com.catpuppyapp.puppygit.compose.InternalFileChooser
 import com.catpuppyapp.puppygit.compose.MyCheckBox
 import com.catpuppyapp.puppygit.compose.MyLazyColumn
 import com.catpuppyapp.puppygit.compose.MySelectionContainer
@@ -74,7 +75,6 @@ import com.catpuppyapp.puppygit.compose.RepoCard
 import com.catpuppyapp.puppygit.compose.ScrollableColumn
 import com.catpuppyapp.puppygit.compose.SelectedItemDialog
 import com.catpuppyapp.puppygit.compose.SetUpstreamDialog
-import com.catpuppyapp.puppygit.compose.InternalFileChooser
 import com.catpuppyapp.puppygit.constants.Cons
 import com.catpuppyapp.puppygit.constants.PageRequest
 import com.catpuppyapp.puppygit.data.AppContainer
@@ -872,8 +872,8 @@ fun RepoInnerPage(
     }
 
     if(showDelRepoDialog.value) {
-        ConfirmDialog(
-            title = stringResource(id = R.string.delete),
+        ConfirmDialog2(
+            title = stringResource(R.string.delete),
 //            text = stringResource(id = R.string.are_you_sure_to_delete)+": '"+willDeleteRepo.value.repoName+"' ?"+"\n"+ stringResource(R.string.will_delete_repo_and_all_its_files_on_disk),
             requireShowTextCompose = true,
             textCompose = {
@@ -901,7 +901,6 @@ fun RepoInnerPage(
                     }
 
                     Column {
-                        Text(text = stringResource(R.string.are_you_sure))
                         Row(
                             Modifier
                                 .fillMaxWidth()
@@ -942,6 +941,7 @@ fun RepoInnerPage(
                 }
 
             },
+            okBtnText = stringResource(R.string.delete),
             okTextColor = MyStyleKt.TextColor.danger(),
             onCancel = { showDelRepoDialog.value=false }
         ) {
