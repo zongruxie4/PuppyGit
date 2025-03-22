@@ -43,7 +43,7 @@ class MyStyleKt{
         val changeTypeAdded_darkTheme = Color(0xFF78ab78)
         val changeTypeModified = Color(0xFF2B6FC2)
         val changeTypeModified_darkTheme = Color(0xFF5A9AD9)
-        val changeTypeDeleted = Color(0xFF414141)
+        val changeTypeDeleted = Color(0xFF5E5E5E)
         val changeTypeDeleted_darkTheme = Color(0xFF8A8A8A)
         val changeTypeConflict = Color(0xFFBE4040)
         val changeTypeConflict_darkTheme = Color(0xFFBE4040)
