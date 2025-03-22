@@ -193,7 +193,7 @@ fun EditorPageActions(
         if(showUndoRedo.value) {
             val undoStr = stringResource(R.string.undo)
             LongPressAbleIconBtn(
-                enabled = undoStack.undoStackIsEmpty().not() ?: false,
+                enabled = undoStack.undoStackIsEmpty().not(),
                 tooltipText = undoStr,
                 icon = Icons.AutoMirrored.Filled.Undo,
                 iconContentDesc = undoStr,
@@ -202,7 +202,7 @@ fun EditorPageActions(
                     haptic.performHapticFeedback(HapticFeedbackType.LongPress)
 
                     // 显示 "Undo(saved steps count)"
-                    Msg.requireShow("$undoStr(${undoStack.undoStackSize() ?: 0})")
+                    Msg.requireShow("$undoStr(${undoStack.undoStackSize()})")
                 }
             ) {
                 editorPageRequest.value = PageRequest.requestUndo
@@ -210,7 +210,7 @@ fun EditorPageActions(
 
             val redoStr = stringResource(R.string.redo)
             LongPressAbleIconBtn(
-                enabled = undoStack.redoStackIsEmpty().not() ?: false,
+                enabled = undoStack.redoStackIsEmpty().not(),
                 tooltipText = redoStr,
                 icon = Icons.AutoMirrored.Filled.Redo,
                 iconContentDesc = redoStr,
@@ -219,7 +219,7 @@ fun EditorPageActions(
                     haptic.performHapticFeedback(HapticFeedbackType.LongPress)
 
                     // 显示 "Undo(saved steps count)"
-                    Msg.requireShow("$redoStr(${undoStack.redoStackSize() ?: 0})")
+                    Msg.requireShow("$redoStr(${undoStack.redoStackSize()})")
                 }
             ) {
                 editorPageRequest.value = PageRequest.requestRedo

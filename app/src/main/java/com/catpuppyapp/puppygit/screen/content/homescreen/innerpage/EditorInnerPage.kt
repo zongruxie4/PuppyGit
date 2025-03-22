@@ -888,9 +888,9 @@ fun EditorInnerPage(
                     undoStack.value.redoStackClear()
                 }
 
-                undoStack.value.undoStackPush(lastState) ?: false
+                undoStack.value.undoStackPush(lastState)
             }else {  // false
-                undoStack.value.redoStackPush(lastState) ?: false
+                undoStack.value.redoStackPush(lastState)
             }
 
             if(saved) {
