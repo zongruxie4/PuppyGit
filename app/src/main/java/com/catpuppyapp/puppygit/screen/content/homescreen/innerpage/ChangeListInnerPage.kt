@@ -2209,7 +2209,6 @@ fun ChangeListInnerPage(
         fileHistoryEnabled@{it.maybeIsFileAndExist()},
         copyFullPath@{true},
         copyRepoRelativePath@{true},
-//        importAsRepo@{ (fromTo == Cons.gitDiffFromIndexToWorktree || fromTo == Cons.gitDiffFromHeadToIndex) && it.toFile().isDirectory }, //only dir can be import as repo
         importAsRepo@{ it.toFile().isDirectory }, //only dir can be import as repo
         goToSub@{fromTo == Cons.gitDiffFromIndexToWorktree && it.toFile().isDirectory},  // only Worktree page can switch repo, and only dir maybe is repo
     )
