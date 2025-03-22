@@ -412,16 +412,28 @@ class EditorController(
             //若超过size，追加到末尾
             val targetIndex = if(trueAppendFalseReplace) targetIndex+1 else targetIndex
 
+            var targetLineSelected = false
 
             //若超过有效索引则追加到末尾；否则追加到目标行（原本的目标行会后移）
             if(targetIndex >= _fields.size) {
                 _fields.addAll(textFiledStates)
             }else {
+                //如果是replace，保留之前行的选择状态
+                //到这才能确定索引没越界，所以在这取而不是在if else之前取
+                if(trueAppendFalseReplace.not()) {
+                    targetLineSelected = _fields[targetIndex].isSelected
+                }
+
                 _fields.addAll(targetIndex, textFiledStates)
             }
 
             //若是replace则移除之前的当前行
             if(trueAppendFalseReplace.not()) {
+                //更新目标行的选择状态使其和旧行一致
+                if(targetLineSelected) {
+                    _fields[targetIndex] = _fields[targetIndex].copy(isSelected = true)
+                }
+
                 _fields.removeAt(targetIndex + textFiledStates.size)
             }
 
