@@ -1047,9 +1047,8 @@ fun TextEditor(
                                     onUpdateText = { newText ->
                                         try{
                                             //写入编辑缓存
-                                            doJobThenOffLoading {
-                                                EditCache.writeToFile(newText.text)
-                                            }
+                                            EditCache.writeToFile(newText.text)
+
 
                                             editableController.updateField(
                                                 targetIndex = index,
@@ -1073,9 +1072,8 @@ fun TextEditor(
                                     onContainNewLine = cb@{ newText ->
                                         try {
                                             //写入编辑缓存
-                                            doJobThenOffLoading {
-                                                EditCache.writeToFile(newText.text)
-                                            }
+                                            EditCache.writeToFile(newText.text)
+
 
                                             if (lastScrollEvent.value?.isConsumed == false) return@cb
 
@@ -1094,9 +1092,8 @@ fun TextEditor(
                                     onAddNewLine = cb@{ newText ->
                                         try {
                                             //写入编辑缓存
-                                            doJobThenOffLoading {
-                                                EditCache.writeToFile(newText.text)
-                                            }
+                                            EditCache.writeToFile(newText.text)
+
 
                                             if (lastScrollEvent.value?.isConsumed == false) return@cb
 

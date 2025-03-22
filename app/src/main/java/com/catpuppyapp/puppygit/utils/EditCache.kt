@@ -1,6 +1,5 @@
 package com.catpuppyapp.puppygit.utils
 
-import android.util.Log
 import kotlinx.coroutines.channels.BufferOverflow
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.sync.Mutex
@@ -138,32 +137,34 @@ object EditCache {
     /**
      * @param text  要写入的内容
      */
-    suspend fun writeToFile(text: String) {
-        try {
-            //只有初始化成功且启用了edit cache的情况下，才记录cache
-            if(!isInited || !enable) {
-                return
-            }
+    fun writeToFile(text: String) {
+        //只有初始化成功且启用了edit cache的情况下，才记录cache
+        if(!isInited || !enable) {
+            return
+        }
 
-            //忽略空行
-            if (text.isBlank()) {
-                return
-            }
+        //忽略空行
+        if (text.isBlank()) {
+            return
+        }
 
-            //初始化完毕并且启用cache，则写入内容到cache
-            val formattedTimeStr = timestampFormatter.format(LocalDateTime.now())
-            val textWillWrite = "-------- $formattedTimeStr :\n$text"
+        doJobThenOffLoading {
+            try {
+                //初始化完毕并且启用cache，则写入内容到cache
+                val formattedTimeStr = timestampFormatter.format(LocalDateTime.now())
+                val textWillWrite = "-------- $formattedTimeStr :\n$text"
 
-            writeChannel.send(textWillWrite)
+                writeChannel.send(textWillWrite)
 
-            //用lock没法保证写入顺序，所以改用channel，或者用公平锁也行，公平锁和channel内部都有阻塞队列，所以可确保先调用的先执行
+                //用lock没法保证写入顺序，所以改用channel，或者用公平锁也行，公平锁和channel内部都有阻塞队列，所以可确保先调用的先执行
 //            writeLock.withLock {
 //                writer?.write(textWillWrite)
 //                writer?.newLine()
 //                writer?.flush()
 //            }
-        } catch (e: IOException) {
-            MyLog.e(TAG, "#writeToFile err:"+e.stackTraceToString())
+            } catch (e: IOException) {
+                MyLog.e(TAG, "#writeToFile err:"+e.stackTraceToString())
+            }
         }
     }
 
