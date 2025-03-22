@@ -124,12 +124,12 @@ fun BottomBar(
                 if(showClose) {
                     //关闭按钮
                     LongPressAbleIconBtn(
-                        modifier = Modifier
-                            .padding(10.dp)
-                            .size(40.dp),
+//                        modifier = Modifier
+//                            .padding(10.dp)
+//                            .size(40.dp),
                         tooltipText = stringResource(R.string.close),
                         icon = Icons.Filled.Close,
-                        iconContentDesc = stringResource(R.string.quit_selection_files_mode),
+                        iconContentDesc = stringResource(R.string.close),
                         onClick = {
                             //退出选择模式
                             quitSelectionMode()
@@ -144,10 +144,11 @@ fun BottomBar(
                     }
 
                     //选择的条目数
-                    Text(text = ""+getSelectedFilesCount(),
+                    Text(
+                        text = ""+getSelectedFilesCount(),
                         modifier = MyStyleKt.ClickableText.modifier.clickable(enabled = countNumOnClickEnabled) {
                             countNumOnClick()
-                        }
+                        }.padding(horizontal = 10.dp)
                     )
                 }
 
