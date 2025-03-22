@@ -1,9 +1,11 @@
 1.0.9.7v73 - 20250323:
 - style adjust
+- fix: Editor redo/undo not work
 
 
 
 - 样式调整
+- 修复bug：编辑器撤销失效
 
 ---
 

@@ -1,1 +1,2 @@
 - style adjust
+- fix: Editor redo/undo not work
