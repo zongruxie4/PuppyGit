@@ -29,13 +29,13 @@ import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.unit.sp
 import com.catpuppyapp.puppygit.dev.bug_Editor_WrongUpdateEditColumnIdx_Fixed
-import com.catpuppyapp.puppygit.settings.SettingsUtil
+import com.catpuppyapp.puppygit.fileeditor.texteditor.state.TextFieldState
 import com.catpuppyapp.puppygit.ui.theme.Theme
 import com.catpuppyapp.puppygit.utils.UIHelper
-import com.catpuppyapp.puppygit.fileeditor.texteditor.state.TextFieldState
 
 @Composable
 internal fun TextField(
+    focusThisLine:Boolean,
     textFieldState: TextFieldState,
     enabled: Boolean,
     focusRequester: FocusRequester,
@@ -57,12 +57,6 @@ internal fun TextField(
     val currentTextField by rememberUpdatedState(newValue = textFieldState.value)
     val inDarkTheme = Theme.inDarkTheme
 
-
-    LaunchedEffect(textFieldState.isSelected) {
-        if (textFieldState.isSelected) {
-            focusRequester.requestFocus()
-        }
-    }
 
     BasicTextField(
         value = textFieldState.value,
@@ -120,6 +114,14 @@ internal fun TextField(
                 false
             }
     )
+
+
+    if(focusThisLine) {
+        LaunchedEffect(Unit) {
+            focusRequester.requestFocus()
+        }
+    }
+
 }
 
 private fun onPreviewDelKeyEvent(

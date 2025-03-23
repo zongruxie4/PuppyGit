@@ -292,7 +292,7 @@ fun TextEditor(
     //执行一次LaunchedEffected后，此值才应为真，放到LaunchedEffect末尾修改为true即可。（目前 20240419 用来判断是否需要保存可见的第一行索引，刚打开文件要么默认0，要么恢复上次滚动位置，都不需要保存，只有打开文件后（初始化后）再滚动才需要保存）
     val isInitDone = editorPageIsInitDone
 
-    editableController.syncState(textEditorState)
+//    editableController.syncState(textEditorState)
 
 //    val clipboardManager = LocalClipboardManager.current
 
@@ -1032,6 +1032,7 @@ fun TextEditor(
                                     }
                             ) {
                                 TextField(
+                                    focusThisLine = index == editableController.focusingLineIdx.value,
                                     mergeMode=mergeMode,
                                     searchMode = searchMode.value,
                                     lastEditedColumnIndexState=lastEditedColumnIndexState,

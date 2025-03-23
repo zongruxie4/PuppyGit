@@ -24,14 +24,13 @@ class EditorController(
     textEditorState: TextEditorState,
     undoStack: UndoStack
 ) {
-    var focusingLineIdx:Int? = null
 
     val _undoStack = undoStack
     private var isContentChanged:MutableState<Boolean>? = null
     private var editorPageIsContentSnapshoted:MutableState<Boolean>? = null
     private var onChanged: (newState:TextEditorState, trueSaveToUndoFalseRedoNullNoSave:Boolean?, clearRedoStack:Boolean) -> Unit = {newState, trueSaveToUndoFalseRedoNullNoSave, clearRedoStack ->  }
 
-
+    val focusingLineIdx = textEditorState.focusingLineIdx
     private var _isMultipleSelectionMode = textEditorState.isMultipleSelectionMode
     private var _fieldsId = textEditorState.fieldsId
     val isMultipleSelectionMode get() = _isMultipleSelectionMode
@@ -65,6 +64,7 @@ class EditorController(
             fieldsId = _fieldsId,
             selectedIndices = _selectedIndices.toList(),
             isMultipleSelectionMode = _isMultipleSelectionMode,
+            focusingLineIdx = focusingLineIdx
         )
 
         return newState
@@ -97,6 +97,7 @@ class EditorController(
 
     /**
      * 只要调用syncState的地方必须先对state里的数据创建拷贝，不然执行clear等操作会被源state里的数据也清掉
+     * 注：不需要同步focusingIndex，那个直接共享的state
      */
     fun syncState(state: TextEditorState) {
         lock.withLock {
@@ -684,13 +685,13 @@ class EditorController(
                 )
 
                 _fields[targetIndex] = copyTarget
-                focusingLineIdx = targetIndex
+                focusingLineIdx.value = targetIndex
             }
 
         }else{  //非多选模式，定位光标到对应行，并选中行
             //更新行选中范围并focus行
             _fields[targetIndex] = target.copy(value = target.value.copy(selection = selection))
-            focusingLineIdx = targetIndex
+            focusingLineIdx.value = targetIndex
 
 
 
@@ -861,6 +862,8 @@ class EditorController(
                 fields = newFields,  //把当前点击而开启选择行模式的那行的选中状态设为真了
                 selectedIndices = newSelectedIndices,  //默认选中的索引包含当前选中行即可，因为肯定是点击某一行开启选中模式的，所以只会有一个索引
                 isMultipleSelectionMode = true,
+                focusingLineIdx = focusingLineIdx
+
             )
 
             syncState(newState)
@@ -875,10 +878,12 @@ class EditorController(
             val newState = TextEditorState.create(
     //        fields = fields.map { TextFieldState(it.id, it.value, isSelected = false)},  //对所有选中行解除选中
     //        isMultipleSelectionMode = false,  //退出选择模式
-                    fieldsId = _fieldsId,
-                    fields = fields,
-                    selectedIndices = selectedIndices,
-                    isMultipleSelectionMode = isMultipleSelectionMode,  //拷贝和删除不要退出选择模式(准确来说是不要改变是否处于选择模式，若以后以非多选模式创建CopiedState，也不会自动进入选择模式)，这样用户可间接实现剪切功能，因为选择很多行有时候很废力，所以除非用户明确按取消，否则不要自动解除选择模式
+                fieldsId = _fieldsId,
+                fields = fields,
+                selectedIndices = selectedIndices,
+                isMultipleSelectionMode = isMultipleSelectionMode,  //拷贝和删除不要退出选择模式(准确来说是不要改变是否处于选择模式，若以后以非多选模式创建CopiedState，也不会自动进入选择模式)，这样用户可间接实现剪切功能，因为选择很多行有时候很废力，所以除非用户明确按取消，否则不要自动解除选择模式
+                focusingLineIdx = focusingLineIdx
+
             )
 
             syncState(newState)
@@ -903,6 +908,8 @@ class EditorController(
                 fields = selectedFieldList,
                 selectedIndices = selectedIndexList,
                 isMultipleSelectionMode = true,
+                focusingLineIdx = focusingLineIdx
+
             )
 
             syncState(newState)
@@ -941,6 +948,8 @@ class EditorController(
                     fields = newFields,
                     selectedIndices = emptyList(),
                     isMultipleSelectionMode = isMultipleSelectionMode,  //一般来说此值在这会是true，不过，这里的语义是“不修改是否选择模式”，所以把这个字段传过去比直接设为true要合适
+                    focusingLineIdx = focusingLineIdx
+
                 )
             }
 
@@ -960,6 +969,8 @@ class EditorController(
                 fields = _fields.map { TextFieldState(id = it.id, value = it.value, isSelected = false) },
                 selectedIndices = emptyList(),
                 isMultipleSelectionMode = keepSelectionModeOn,
+                focusingLineIdx = focusingLineIdx
+
             )
 
             syncState(newState)
