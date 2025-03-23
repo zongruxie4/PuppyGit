@@ -537,6 +537,9 @@ class EditorController(
     //第1个参数是行索引；第2个参数是当前行的哪个位置
     fun selectFieldSpan(targetIndex: Int) {
         lock.withLock {
+            val selectedIndices = selectedIndices
+            val fields = fields
+
             if(selectedIndices.isEmpty()) {  //如果选中列表为空，仅选中当前行
                 selectFieldInternal(targetIndex, forceAdd = true)
             }else {  //选中列表不为空，执行区域选择
@@ -563,7 +566,7 @@ class EditorController(
     fun selectPreviousField() {
         lock.withLock {
             if (isMultipleSelectionMode) return
-            val selectedIndex = selectedIndices.firstOrNull() ?: return
+            val selectedIndex = _selectedIndices.firstOrNull() ?: return
             if (selectedIndex == 0) return
 
             val previousIndex = selectedIndex - 1
@@ -575,8 +578,8 @@ class EditorController(
     fun selectNextField() {
         lock.withLock {
             if (isMultipleSelectionMode) return
-            val selectedIndex = selectedIndices.firstOrNull() ?: return
-            if (selectedIndex == fields.lastIndex) return
+            val selectedIndex = _selectedIndices.firstOrNull() ?: return
+            if (selectedIndex == _fields.lastIndex) return
 
             val nextIndex = selectedIndex + 1
             selectFieldInternal(nextIndex, SelectionOption.FIRST_POSITION)
@@ -926,7 +929,8 @@ class EditorController(
             val selectedFieldList = mutableListOf<TextFieldState>()
             for((idx, f) in fields.withIndex()) {
                 selectedIndexList.add(idx)
-                selectedFieldList.add(TextFieldState(f.id,f.value, isSelected = true))
+                //这个id要不要重新生成？我忘了这个id是指示内容是否改变还是只要任何字段变了就换新id了，不过全选能正常工作，所以这代码就这样吧，不改了
+                selectedFieldList.add(TextFieldState(id = f.id, value = f.value, isSelected = true))
             }
             //我不太确定 data类的copy是深还是浅，但我可以确定这里不需要深拷贝，所以用下面创建浅拷贝的方法创建对象
             val newState = TextEditorState.create(
