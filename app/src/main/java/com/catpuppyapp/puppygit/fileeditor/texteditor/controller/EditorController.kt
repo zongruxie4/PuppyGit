@@ -3,7 +3,6 @@ package com.catpuppyapp.puppygit.fileeditor.texteditor.controller
 import androidx.compose.runtime.MutableState
 import androidx.compose.ui.text.TextRange
 import androidx.compose.ui.text.input.TextFieldValue
-import com.catpuppyapp.puppygit.constants.Cons
 import com.catpuppyapp.puppygit.dto.UndoStack
 import com.catpuppyapp.puppygit.fileeditor.texteditor.state.TextEditorState
 import com.catpuppyapp.puppygit.fileeditor.texteditor.state.TextFieldState
@@ -446,15 +445,22 @@ class EditorController(
 
             //如果目标索引没超过原集合大小，则判断下是否需要更新选中索引列表；否则不用判断，因为超过大小的话，等于无效索引，肯定不会在已选中列表
             if(targetIndexOverSize.not()) {
+                val selectedIndexOffsetValue = textFiledStates.size.let {if(trueAppendFalseReplace) it else (it-1)}
+                val indexNeedOffset:(selectedIdx:Int)->Boolean = if(trueAppendFalseReplace){{ it >= targetIndex }} else {{ it > targetIndex }}
+
+                val focusIndex = focusingLineIdx.value
+                //更新聚焦行索引
+                if(focusIndex != null && indexNeedOffset(focusIndex)) {
+                    focusingLineIdx.value = focusIndex+selectedIndexOffsetValue
+                }
+
+                //更新已选中索引
                 val selectedIndices = selectedIndices
                 if(selectedIndices.isNotEmpty()) {
-                    val selectedIndexNeedOffsetLines = textFiledStates.size.let {if(trueAppendFalseReplace) it else (it-1)}
-                    val predicate:(selectedIdx:Int)->Boolean = if(trueAppendFalseReplace){{ it >= targetIndex }} else {{ it > targetIndex }}
-
                     //更新选中索引集合
                     for((idx, value) in selectedIndices.withIndex()) {
-                        if(predicate(value)) {
-                            _selectedIndices[idx] = value+selectedIndexNeedOffsetLines
+                        if(indexNeedOffset(value)) {
+                            _selectedIndices[idx] = value+selectedIndexOffsetValue
                         }
                     }
                 }
