@@ -102,7 +102,7 @@ class TextEditorState private constructor(
     }
 
     companion object {
-        fun create(text: String, fieldsId: String,isMultipleSelectionMode:Boolean = false, focusingLineIdx:MutableState<Int?> = mutableStateOf(null)): TextEditorState {
+        fun create(text: String, fieldsId: String, isMultipleSelectionMode:Boolean = false, focusingLineIdx:MutableState<Int?> = mutableStateOf(null)): TextEditorState {
             return create(
                 lines = text.lines(),
                 fieldsId= fieldsId,

@@ -20,6 +20,7 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBackIos
 import androidx.compose.material.icons.automirrored.filled.ArrowForwardIos
+import androidx.compose.material.icons.filled.CleaningServices
 import androidx.compose.material.icons.filled.ContentCopy
 import androidx.compose.material.icons.filled.ContentCut
 import androidx.compose.material.icons.filled.ContentPaste
@@ -459,6 +460,7 @@ fun FileEditor(
                         editableController.value.quitSelectionMode()
                     }
                     val iconList = listOf(
+                        Icons.Filled.CleaningServices,  // clear line content
                         Icons.Filled.ContentPaste,
                         Icons.Filled.Delete,
                         Icons.Filled.ContentCut,
@@ -466,6 +468,7 @@ fun FileEditor(
                         Icons.Filled.SelectAll
                     )
                     val iconTextList = listOf(
+                        stringResource(R.string.clear),
                         stringResource(R.string.paste),
                         stringResource(R.string.delete),
                         stringResource(R.string.cut),
@@ -473,6 +476,15 @@ fun FileEditor(
                         stringResource(R.string.select_all),
                     )
                     val iconOnClickList = listOf(
+                        onClear@{
+                            if (readOnlyMode) {
+                                Msg.requireShow(activityContext.getString(R.string.readonly_cant_edit))
+                                return@onClear
+                            }
+
+                            //不用确认，直接清空，若后悔可用undo撤销
+                            editableController.value.clearSelectedFields()
+                        },
                         onPaste@{
                             if (readOnlyMode) {
                                 Msg.requireShow(activityContext.getString(R.string.readonly_cant_edit))
@@ -525,12 +537,14 @@ fun FileEditor(
 
                     val selectedLines = textEditorState.value.getSelectedCount()
                     val hasLineSelected = selectedLines > 0
+                    val hasLineSelectedAndNotReadOnly = hasLineSelected && readOnlyMode.not()
                     val iconEnableList = listOf(
-                        paste@{ hasLineSelected && readOnlyMode.not() && clipboardManager.hasText() },  // paste，必须 "剪贴板非空 且 选中某行" 才启用
-                        delete@{ hasLineSelected && readOnlyMode.not() },  // delete
-                        cut@{ hasLineSelected && readOnlyMode.not()},  // cut
-                        copy@{ hasLineSelected },  // copy
-                        selectAll@{ true },  // select all
+                        onClear@{ hasLineSelectedAndNotReadOnly },  // clear
+                        onPaste@{ hasLineSelectedAndNotReadOnly && clipboardManager.hasText() },  // paste，必须 "剪贴板非空 且 选中某行" 才启用
+                        onDelete@{ hasLineSelectedAndNotReadOnly },  // delete
+                        onCut@{ hasLineSelectedAndNotReadOnly },  // cut
+                        onCopy@{ hasLineSelected },  // copy
+                        onSelectAll@{ true },  // select all
                     )
                     // BottomBar params block end
 
@@ -548,7 +562,7 @@ fun FileEditor(
                             textFormatterForCopy = { editableController.value.getContentOfLineIndex(it) },
 
                             switchItemSelected = { editableController.value.selectField(targetIndex = it) },
-                            clearAll = { editableController.value.clearSelected() },
+                            clearAll = { editableController.value.clearSelectedItemList() },
                             closeDialog = {showSelectedItemsShortDetailsDialog.value = false}
                         )
                     }

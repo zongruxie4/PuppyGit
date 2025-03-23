@@ -96,6 +96,8 @@ class EditorController(
     }
 
     /**
+     * 目前这个函数和手动给每个字段重新赋值的区别在于，有时候，要更新state，调用onchange，顺便用新的state同步一下，但好像意义不大？我不太确定这个同步有没有意义
+     *
      * 只要调用syncState的地方必须先对state里的数据创建拷贝，不然执行clear等操作会被源state里的数据也清掉
      * 注：不需要同步focusingIndex，那个直接共享的state
      */
@@ -471,6 +473,8 @@ class EditorController(
             //通知页面状态变化
             isContentChanged?.value = true
             editorPageIsContentSnapshoted?.value = false
+
+            //页面内容发生了实际改变，创建个新的id
             _fieldsId = TextEditorState.newId()
 
             //更新状态
@@ -942,6 +946,8 @@ class EditorController(
 
     fun createDeletedState(){
         lock.withLock {
+            val selectedIndices = selectedIndices
+            val fields = fields
 
             //把没选中的行取出来，作为新的文件内容
             val newFields = fields.filterIndexed { index, _ ->
@@ -962,6 +968,7 @@ class EditorController(
                     fieldsId = TextEditorState.newId(),
                     text = "",
                     isMultipleSelectionMode = isMultipleSelectionMode,
+//                    focusingLineIdx = mutableStateOf(null), //全删了就一行都不用聚焦了，不用传参，默认值就是null
                 )
             }else {
                 //即使全删了，完全创建新状态，也不要影响选择模式，要不然有的情况自动退选择模式，有的不退，容易让人感到混乱
@@ -977,9 +984,48 @@ class EditorController(
 
             isContentChanged?.value=true
             editorPageIsContentSnapshoted?.value=false
-            _fieldsId = TextEditorState.newId()
+
+            // syncState会更新此值，这里更新多此一举
+//            _fieldsId = TextEditorState.newId()
 
             syncState(newState)
+            onChanged(newState, true, true)
+        }
+    }
+
+
+    /**
+     * 清空选中行的内容
+     */
+    fun clearSelectedFields(){
+        lock.withLock {
+            val selectedIndices = selectedIndices
+            val fields = fields
+
+            //清空已选中行
+            val newFields = fields.mapIndexed { index, field ->
+                if(selectedIndices.contains(index)) {
+                    field.copy(value = field.value.copy(text = ""))
+                }else {
+                    field
+                }
+            }
+
+
+            //即使全删了，完全创建新状态，也不要影响选择模式，要不然有的情况自动退选择模式，有的不退，容易让人感到混乱
+            val newState = TextEditorState.create(
+                fieldsId = TextEditorState.newId(),
+                fields = newFields,
+                selectedIndices = selectedIndices,
+                isMultipleSelectionMode = isMultipleSelectionMode,  //一般来说此值在这会是true，不过，这里的语义是“不修改是否选择模式”，所以把这个字段传过去比直接设为true要合适
+                focusingLineIdx = focusingLineIdx
+            )
+
+            isContentChanged?.value = true
+            editorPageIsContentSnapshoted?.value = false
+
+            syncState(newState)
+
             onChanged(newState, true, true)
         }
     }
@@ -1000,7 +1046,7 @@ class EditorController(
         }
     }
 
-    fun clearSelected(){
+    fun clearSelectedItemList(){
         quitSelectionMode(keepSelectionModeOn = true)
     }
 

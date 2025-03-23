@@ -1182,13 +1182,18 @@ fun TextEditor(
                             interactionSource = remember { MutableInteractionSource() },
                             indication = null
                         ) {
-                            //点击空白区域定位到最后一行最后一个字符后面
-                            //第1个参数是行索引；第2个参数是当前行的哪个位置
-                            editableController.selectField(
-                                textEditorState.fields.lastIndex,
-                                EditorController.SelectionOption.LAST_POSITION
-                            )
-                            keyboardController?.show()  //确保弹出键盘，不加的话“点击空白区域，关闭键盘，再点击空白区域”就不弹出键盘了
+                            //非选择模式，点空白区域，聚焦最后一行
+                            if(editableController.isMultipleSelectionMode.not()) {
+                                //点击空白区域定位到最后一行最后一个字符后面
+                                //第1个参数是行索引；第2个参数是当前行的哪个位置
+                                editableController.selectField(
+                                    textEditorState.fields.lastIndex,
+                                    EditorController.SelectionOption.LAST_POSITION
+                                )
+
+                                //显示键盘
+                                keyboardController?.show()  //确保弹出键盘，不加的话“点击空白区域，关闭键盘，再点击空白区域”就不弹出键盘了
+                            }
                         }
 //                    .background(Color.Red)  //debug
                         ,
