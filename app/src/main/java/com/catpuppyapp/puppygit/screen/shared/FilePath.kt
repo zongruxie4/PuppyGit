@@ -11,7 +11,7 @@ import kotlinx.parcelize.Parcelize
 import java.io.File
 
 @Parcelize
-data class FilePath(
+class FilePath(
     private val rawPath:String,
 ):Parcelable {
     @IgnoredOnParcel

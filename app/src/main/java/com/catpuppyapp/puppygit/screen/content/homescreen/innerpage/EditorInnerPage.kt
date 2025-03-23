@@ -31,6 +31,7 @@ import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.MutableIntState
 import androidx.compose.runtime.MutableState
+import androidx.compose.runtime.State
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.mutableLongStateOf
 import androidx.compose.runtime.mutableStateOf
@@ -166,7 +167,7 @@ fun EditorInnerPage(
 
     openDrawer:()->Unit,
     editorOpenFileErr:MutableState<Boolean>,
-    undoStack:CustomStateSaveable<UndoStack>,
+    undoStack: State<UndoStack>,
 
 ) {
     val scope = rememberCoroutineScope()
@@ -388,7 +389,7 @@ fun EditorInnerPage(
         editorPageClearShowingFileErrWhenLoading()  //关闭文件清除错误，不然文件标题变了，错误还在显示
         editorPageShowingFileIsReady.value = false
 
-        undoStack.value.reset(filePath = "")
+//        undoStack.value.reset(filePath = "")
 //        changeStateTriggerRefreshPage(needRefreshEditorPage)
     }
 
@@ -901,15 +902,13 @@ fun EditorInnerPage(
 //                isEdited.value=true
     }
 
-    val getNewEditController = {
-        EditorController(editorPageTextEditorState.value, undoStack.value).apply {
-            setOnChangedTextListener(isEdited, editorPageIsContentSnapshoted, editorStateOnChange)
+    val editableController = remember(editorPageTextEditorState.value, undoStack.value) {
+        derivedStateOf{
+            EditorController(editorPageTextEditorState.value, undoStack.value).apply {
+                setOnChangedTextListener(isContentChanged = isEdited, editorPageIsContentSnapshoted = editorPageIsContentSnapshoted, onChanged = editorStateOnChange)
+            }
         }
     }
-    val editableController = mutableCustomStateOf(stateKeyTag, "editableController") { getNewEditController() }
-
-    //需要重新生成edit controller
-    val updateEditController = remember(editorPageTextEditorState.value, undoStack.value.filePath) { derivedStateOf { editableController.value = getNewEditController() } }.value
 
     val showDetailsDialog = rememberSaveable { mutableStateOf(false) }
     val detailsStr = rememberSaveable { mutableStateOf("") }
@@ -1323,9 +1322,6 @@ fun EditorInnerPage(
                         editorPageTextEditorState = editorPageTextEditorState,
                         unknownErrStrRes = unknownErrStrRes,
                         editorPageSetShowingFileErrWhenLoading = editorPageSetShowingFileErrWhenLoading,
-                        loadingOn = loadingOn,
-                        loadingOff = loadingOff,
-                        appContext = activityContext,
                         pageRequest = requestFromParent,
                         editorPageShowingFileDto = editorPageShowingFileDto,
                         isSubPage = isSubPageMode,
@@ -1334,10 +1330,6 @@ fun EditorInnerPage(
                         isEdited = isEdited,
                         isSaving = isSaving,
                         isContentSnapshoted = editorPageIsContentSnapshoted,
-                        readOnlyMode = readOnlyMode,
-                        mergeMode = editorMergeMode,
-                        saveLastOpenPath = saveLastOpenPath,
-                        undoStack = undoStack,
                         lastTextEditorState = lastTextEditorState
                     )
                 }catch (e:Exception) {
@@ -1392,16 +1384,12 @@ private suspend fun doInit(
     keepPreviewStack:MutableState<Boolean>,
     previewNavStack:CustomStateSaveable<EditorPreviewNavStack>,
     activityContext:Context,
-//    editorPageRequireOpenFilePath: MutableState<String>,
     editorPageShowingFilePath: MutableState<FilePath>,
     editorPageShowingFileIsReady: MutableState<Boolean>,
     editorPageClearShowingFileErrWhenLoading: () -> Unit,
     editorPageTextEditorState: CustomStateSaveable<TextEditorState>,
     unknownErrStrRes: String,
     editorPageSetShowingFileErrWhenLoading: (errMsg: String) -> Unit,
-    loadingOn: (String) -> Unit,
-    loadingOff: () -> Unit,
-    appContext: Context,
     pageRequest:MutableState<String>,
     editorPageShowingFileDto: CustomStateSaveable<FileSimpleDto>,
     isSubPage: Boolean,
@@ -1410,10 +1398,6 @@ private suspend fun doInit(
     isEdited:MutableState<Boolean>,
     isSaving:MutableState<Boolean>,
     isContentSnapshoted:MutableState<Boolean>,
-    readOnlyMode: MutableState<Boolean>,
-    mergeMode: MutableState<Boolean>,
-    saveLastOpenPath:(path:String)->Unit,
-    undoStack: CustomStateSaveable<UndoStack>,
     lastTextEditorState: CustomStateSaveable<TextEditorState>,
 
 ) {
@@ -1458,10 +1442,7 @@ private suspend fun doInit(
 
         //执行到这里，一定有一个非空的文件路径
 
-        // 之前为null或打开了另一个文件，创建个新UndoStack
-        if(undoStack.value==null || undoStack.value.filePath != requireOpenFilePath) {
-            undoStack.value.reset(filePath = requireOpenFilePath)
-        }
+
 
         //清除错误信息，如果打开文件时出错，会重新设置错误信息
         editorPageClearShowingFileErrWhenLoading()

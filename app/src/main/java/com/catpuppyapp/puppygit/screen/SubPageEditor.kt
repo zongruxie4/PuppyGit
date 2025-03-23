@@ -12,6 +12,7 @@ import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.MutableState
+import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -187,7 +188,8 @@ fun SubPageEditor(
     val editorOpenFileErr = rememberSaveable{mutableStateOf(false)}
 
     val editorShowUndoRedo = rememberSaveable{mutableStateOf(settingsTmp.editor.showUndoRedo)}
-    val editorUndoStack = mutableCustomStateOf(stateKeyTag, "editorUndoStack") { UndoStack(filePath = "") }
+    val editorUndoStack = remember(editorPageShowingFilePath.value){ derivedStateOf { UndoStack(filePath = editorPageShowingFilePath.value.ioPath) } }
+
 
     val showCloseDialog = rememberSaveable { mutableStateOf(false)}
 

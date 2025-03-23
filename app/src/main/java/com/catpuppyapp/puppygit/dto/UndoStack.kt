@@ -41,40 +41,6 @@ data class UndoStack(
     private var undoLock: ReentrantLock = ReentrantLock(true),
     private var redoLock: ReentrantLock = ReentrantLock(true),
 ) {
-    fun reset(filePath: String) {
-        this.filePath = filePath
-        undoLastSaveAt.longValue = 0L
-        undoStack = LinkedList()
-        redoStack = LinkedList()
-        undoLock  = ReentrantLock(true)
-        redoLock  = ReentrantLock(true)
-    }
-
-//    private var redoLastPop:MutableState<TextEditorState?> = mutableStateOf(null)
-//
-//    private val remainUndoLock:ReentrantLock = ReentrantLock(true)
-//    private var remainRedoStackCount:Int = 0
-//
-//    fun remainOnceRedoStackCount():Int {
-//        remainUndoLock.withLock {
-//            remainRedoStackCount++
-//            return remainRedoStackCount
-//        }
-//    }
-//
-//    /**
-//     * @return 返回新的记数
-//     */
-//    private fun consumeOnceRedoStackCount():Int {
-//        remainUndoLock.withLock {
-//            remainRedoStackCount--
-//            //好像小于0没什么必要，所以归0
-//            if(remainRedoStackCount < 0) {
-//                remainRedoStackCount = 0
-//            }
-//            return remainRedoStackCount
-//        }
-//    }
 
     fun undoStackIsEmpty():Boolean {
         return undoStack.isEmpty()

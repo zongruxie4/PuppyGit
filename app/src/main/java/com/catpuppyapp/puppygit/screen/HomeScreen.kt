@@ -37,6 +37,7 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.MutableIntState
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.SideEffect
+import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -541,7 +542,7 @@ fun HomeScreen(
     val editorAdjustLineNumFontSizeMode = rememberSaveable{mutableStateOf(false)}
     val editorOpenFileErr = rememberSaveable{mutableStateOf(false)}
     val editorShowUndoRedo = rememberSaveable{mutableStateOf(settingsSnapshot.value.editor.showUndoRedo)}
-    val editorUndoStack = mutableCustomStateOf(stateKeyTag, "editorUndoStack") { UndoStack(filePath = "") }
+    val editorUndoStack = remember(editorPageShowingFilePath.value){ derivedStateOf { UndoStack(filePath = editorPageShowingFilePath.value.ioPath) } }
 
 
     //给Files页面点击打开文件用的

@@ -96,7 +96,7 @@ fun EditorPageActions(
      */
 
     val haptic = LocalHapticFeedback.current
-    val scope = rememberCoroutineScope()
+//    val scope = rememberCoroutineScope()
 
     val hasGoodKeyword = editorSearchKeyword.isNotEmpty()
 
