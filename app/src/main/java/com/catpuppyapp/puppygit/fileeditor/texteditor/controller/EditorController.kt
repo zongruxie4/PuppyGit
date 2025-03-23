@@ -24,6 +24,8 @@ class EditorController(
     textEditorState: TextEditorState,
     undoStack: UndoStack
 ) {
+    var focusingLineIdx:Int? = null
+
     val _undoStack = undoStack
     private var isContentChanged:MutableState<Boolean>? = null
     private var editorPageIsContentSnapshoted:MutableState<Boolean>? = null
@@ -682,15 +684,17 @@ class EditorController(
                 )
 
                 _fields[targetIndex] = copyTarget
+                focusingLineIdx = targetIndex
             }
 
         }else{  //非多选模式，定位光标到对应行，并选中行
+            //更新行选中范围并focus行
             _fields[targetIndex] = target.copy(value = target.value.copy(selection = selection))
+            focusingLineIdx = targetIndex
 
 
 
-
-        //下面的代码涉及遍历所有行，优点是你点击行之后行号下面显示个菜单图标，暗示用户可点击行号，缺点是性能差
+        //下面的代码涉及遍历所有行和全部行拷贝，性能差
 
             //清除选中索引
 //            val copyFields = _fields.toList().map { it.copy(isSelected = false) }
@@ -772,6 +776,9 @@ class EditorController(
         return Pair(chars, lines)
     }
 
+    /**
+     * 从startIndex开始根据FindDirection查找，找到predicate返回true的行后，返回其索引和内容
+     */
     fun indexAndValueOf(startIndex:Int, direction: FindDirection, predicate: (text:String) -> Boolean, includeStartIndex:Boolean): Pair<Int, String> {
         val list = fields
         var retPair = Pair(-1, "")
