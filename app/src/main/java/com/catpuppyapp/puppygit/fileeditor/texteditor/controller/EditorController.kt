@@ -478,7 +478,7 @@ class EditorController(
         }
     }
 
-    fun deleteField(targetIndex: Int) {
+    fun deleteNewLine(targetIndex: Int) {
         lock.withLock {
             targetIndexValidOrThrow(targetIndex)
 
@@ -491,10 +491,8 @@ class EditorController(
 
             val concatText = toText + fromText
             val concatSelection = TextRange(toText.count())
-            val concatTextFieldValue =
-                TextFieldValue(text = concatText, selection = concatSelection)
-            val toTextFieldState =
-                _fields[targetIndex - 1].copy(value = concatTextFieldValue, isSelected = false)
+            val concatTextFieldValue = TextFieldValue(text = concatText, selection = concatSelection)
+            val toTextFieldState = _fields[targetIndex - 1].copy(value = concatTextFieldValue, isSelected = false)
 
             _fields[targetIndex - 1] = toTextFieldState
 

@@ -1110,7 +1110,7 @@ fun TextEditor(
                                     onDeleteNewLine = cb@{
                                         try {
                                             if (lastScrollEvent.value?.isConsumed == false) return@cb
-                                            editableController.deleteField(targetIndex = index)
+                                            editableController.deleteNewLine(targetIndex = index)
                                             if (index != 0) lastScrollEvent.value = ScrollEvent(index - 1)
                                         }catch (e:Exception) {
                                             Msg.requireShowLongDuration("#onDeleteNewLine err: "+e.localizedMessage)
