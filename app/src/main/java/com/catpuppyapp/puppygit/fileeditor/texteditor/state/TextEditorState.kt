@@ -72,24 +72,16 @@ class TextEditorState private constructor(
         // 把索引排序，然后取出文本，拼接，返回
         val sb = StringBuilder()
         selectedIndices.toSortedSet().forEach { selectedLineIndex->
-
-            //ps: fields是所有行集合，这段代码的作用是从所有行里根据索引取出当前选中的行，然后追加到StringBuilder中
-            // filed 就是fields[selectedLineIndex]，doActIfIndexGood()的作用是仅当索引有效时，才会调用后面的函数，
-            // 所以，如果selectedLineIndex是个无效索引，那后面的lambda就不会被执行，这样就避免了索引越界等异常
             doActIfIndexGood(selectedLineIndex, fields) { field ->
                 sb.append(field.value.text).append(lb)
             }
         }
 
-        //移除末尾多余的换行符，然后返回
-//        return sb.removeSuffix(lb).toString()
-        //保留末尾多出来的换行符，就是要让它多一个，不然复制多行时粘贴后会定位到最后一行开头，反直觉，要解决这个问题需要改掉整个行处理机制，太麻烦了，所以暂时这样规避下，其实这样倒合理，在粘贴内容到一行的中间部位时，感觉比之前还合理
-        return sb.toString()
+        return sb.removeSuffix(lb).toString().ifEmpty { lb }
 
+        //废弃：保留末尾多出来的换行符，就是要让它多一个，不然复制多行时粘贴后会定位到最后一行开头，反直觉，要解决这个问题需要改掉整个行处理机制，太麻烦了，所以暂时这样规避下，其实这样倒合理，在粘贴内容到一行的中间部位时，感觉比之前还合理
+//        return sb.toString()
 
-//        return targets.foldIndexed("") { index, acc, s ->
-//            if (index == 0) acc + s else acc + lb + s
-//        }
     }
 
     //获取选择行记数（获取选择了多少行）

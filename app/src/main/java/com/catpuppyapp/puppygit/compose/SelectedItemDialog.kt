@@ -195,7 +195,7 @@ fun <T> SelectedItemDialog3(
                     sb.append(textFormatterForCopy(it)).append(lb)
                 }
 
-                clipboardManager.setText(AnnotatedString(sb.removeSuffix(lb).toString()))
+                clipboardManager.setText(AnnotatedString(sb.removeSuffix(lb).toString().ifEmpty { lb }))
                 Msg.requireShow(activityContext.getString(R.string.copied))
             }
         }

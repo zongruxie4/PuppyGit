@@ -526,9 +526,9 @@ fun FileEditor(
                     val selectedLines = textEditorState.value.getSelectedCount()
                     val hasLineSelected = selectedLines > 0
                     val iconEnableList = listOf(
-                        paste@{ hasLineSelected && clipboardManager.hasText() },  // paste，必须 "剪贴板非空 且 选中某行" 才启用
+                        paste@{ hasLineSelected && readOnlyMode.not() && clipboardManager.hasText() },  // paste，必须 "剪贴板非空 且 选中某行" 才启用
                         delete@{ hasLineSelected && readOnlyMode.not() },  // delete
-                        cut@{ hasLineSelected },  // cut
+                        cut@{ hasLineSelected && readOnlyMode.not()},  // cut
                         copy@{ hasLineSelected },  // copy
                         selectAll@{ true },  // select all
                     )

@@ -3,6 +3,7 @@ package com.catpuppyapp.puppygit.fileeditor.texteditor.controller
 import androidx.compose.runtime.MutableState
 import androidx.compose.ui.text.TextRange
 import androidx.compose.ui.text.input.TextFieldValue
+import com.catpuppyapp.puppygit.constants.Cons
 import com.catpuppyapp.puppygit.dto.UndoStack
 import com.catpuppyapp.puppygit.fileeditor.texteditor.state.TextEditorState
 import com.catpuppyapp.puppygit.fileeditor.texteditor.state.TextFieldState
@@ -418,8 +419,9 @@ class EditorController(
 
             var targetLineSelected = false
 
+            val targetIndexOverSize = targetIndex >= _fields.size
             //若超过有效索引则追加到末尾；否则追加到目标行（原本的目标行会后移）
-            if(targetIndex >= _fields.size) {
+            if(targetIndexOverSize) {
                 _fields.addAll(textFiledStates)
             }else {
                 //如果是replace，保留之前行的选择状态
@@ -438,9 +440,25 @@ class EditorController(
                     _fields[targetIndex] = _fields[targetIndex].copy(isSelected = true)
                 }
 
+                //粘贴之后，之前的目标行会被顶到当前要粘贴的内容后面，如果是replace，则把这行删除
                 _fields.removeAt(targetIndex + textFiledStates.size)
             }
 
+            //如果目标索引没超过原集合大小，则判断下是否需要更新选中索引列表；否则不用判断，因为超过大小的话，等于无效索引，肯定不会在已选中列表
+            if(targetIndexOverSize.not()) {
+                val selectedIndices = selectedIndices
+                if(selectedIndices.isNotEmpty()) {
+                    val selectedIndexNeedOffsetLines = textFiledStates.size.let {if(trueAppendFalseReplace) it else (it-1)}
+                    val predicate:(selectedIdx:Int)->Boolean = if(trueAppendFalseReplace){{ it >= targetIndex }} else {{ it > targetIndex }}
+
+                    //更新选中索引集合
+                    for((idx, value) in selectedIndices.withIndex()) {
+                        if(predicate(value)) {
+                            _selectedIndices[idx] = value+selectedIndexNeedOffsetLines
+                        }
+                    }
+                }
+            }
 
 
 
@@ -1080,7 +1098,8 @@ class EditorController(
         }
 
 
-        val lines = text.lines()
+        // "\n".lines()会分出两个元素的集合，需要处理下
+        val lines = if(text == Cons.lineBreak) listOf("") else text.lines()
 
         val trueAppendFalseReplace = _fields[lastSelectedIndexOfLine].value.text.isNotEmpty()
         //执行添加，到这才真正修改Editor的数据
