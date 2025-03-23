@@ -43,8 +43,16 @@ class EditorController(
 
     private val lock = ReentrantLock()
 
-    init {
-        selectFieldInternal(0)
+    //这为什么要选中第0行？？？？
+//    init {
+//        selectFieldInternal(0)
+//    }
+
+
+    private val targetIndexValidOrThrow = { targetIndex:Int ->
+        if (targetIndex < 0 || targetIndex >= _fields.size) {
+            throw IndexOutOfBoundsException("targetIndex out of range($targetIndex)")
+        }
     }
 
     private fun genNewState():TextEditorState {
@@ -85,6 +93,9 @@ class EditorController(
         }
     }
 
+    /**
+     * 只要调用syncState的地方必须先对state里的数据创建拷贝，不然执行clear等操作会被源state里的数据也清掉
+     */
     fun syncState(state: TextEditorState) {
         lock.withLock {
             _fieldsId = state.fieldsId
@@ -304,9 +315,7 @@ class EditorController(
 
     fun splitNewLine(targetIndex: Int, textFieldValue: TextFieldValue) {
         lock.withLock {
-            if (targetIndex < 0 || fields.count() <= targetIndex) {
-                throw InvalidParameterException("targetIndex out of range($targetIndex)")
-            }
+            targetIndexValidOrThrow(targetIndex)
 
             if (!textFieldValue.text.contains('\n')) {
                 throw InvalidParameterException("textFieldValue doesn't contains newline")
@@ -332,9 +341,7 @@ class EditorController(
 
     fun splitAtCursor(targetIndex: Int, textFieldValue: TextFieldValue) {
         lock.withLock {
-            if (targetIndex < 0 || fields.count() <= targetIndex) {
-                throw InvalidParameterException("targetIndex out of range($targetIndex)")
-            }
+            targetIndexValidOrThrow(targetIndex)
 
             val splitPosition = textFieldValue.selection.start
             if (splitPosition < 0 || textFieldValue.text.length < splitPosition) {
@@ -367,12 +374,6 @@ class EditorController(
         }
     }
 
-
-    private val targetIndexValidOrThrow = { targetIndex:Int ->
-        if (targetIndex < 0 || targetIndex >= _fields.size) {
-            throw IndexOutOfBoundsException("targetIndex out of range($targetIndex)")
-        }
-    }
 
     fun updateField(targetIndex: Int, textFieldValue: TextFieldValue) {
         lock.withLock {
@@ -452,9 +453,7 @@ class EditorController(
 
     fun deleteField(targetIndex: Int) {
         lock.withLock {
-            if (targetIndex < 0 || fields.count() <= targetIndex) {
-                throw InvalidParameterException("targetIndex out of range($targetIndex)")
-            }
+            targetIndexValidOrThrow(targetIndex)
 
             if (targetIndex == 0) {
                 return
@@ -624,12 +623,6 @@ class EditorController(
 //        }
 //    }
 
-    private fun clearSelectedIndicesInternal() {
-        val copyFields = _fields.toList().map { it.copy(isSelected = false) }
-        _fields.clear()
-        _fields.addAll(copyFields)
-        _selectedIndices.clear()
-    }
 
     private fun selectFieldInternal(
         targetIndex: Int,
@@ -639,11 +632,10 @@ class EditorController(
         columnEndIndexExclusive:Int=columnStartIndexInclusive,
         requireSelectLine:Boolean = true,
     ) {
-        if (targetIndex < 0 || fields.count() <= targetIndex) {
-            throw InvalidParameterException("targetIndex out of range($targetIndex)")
-        }
+        targetIndexValidOrThrow(targetIndex)
 
         val target = _fields[targetIndex]
+
         val selection = when (option) {
             SelectionOption.CUSTOM -> {
                 TextRange(columnStartIndexInclusive, columnEndIndexExclusive)
@@ -658,6 +650,7 @@ class EditorController(
                 }
             }
         }
+
 
         if(isMultipleSelectionMode) {  //多选模式，添加选中行列表或从列表移除
             if(requireSelectLine) {
@@ -683,7 +676,7 @@ class EditorController(
                     if (isSelected) _selectedIndices.add(targetIndex) else _selectedIndices.remove(targetIndex)
                 }
 
-            }else{ //no touch selected lines, just go to target line
+            }else{ //no touch selected lines, just go to target line，这个并不是选择行，只是同一行，但选中不同的范围，原本是想用来高亮查找的关键字的，但有点毛病，目前实现成仅将光标定位到关键字前面，但无法选中范围，不过我忘了现在定位到关键字前面是不是依靠的这段代码了
                 val copyTarget = target.copy(
                     value = target.value.copy(selection = selection)
                 )
@@ -692,13 +685,27 @@ class EditorController(
             }
 
         }else{  //非多选模式，定位光标到对应行，并选中行
-            val copyTarget = target.copy(
-                isSelected = true,  // selected target line
-                value = target.value.copy(selection = selection), // copy for new selection range
-            )
-            this.clearSelectedIndicesInternal()  // clear selected lines
-            _fields[targetIndex] = copyTarget  // update line
-            _selectedIndices.add(targetIndex)  // add line to selected list
+            _fields[targetIndex] = target.copy(value = target.value.copy(selection = selection))
+
+
+
+
+        //下面的代码涉及遍历所有行，优点是你点击行之后行号下面显示个菜单图标，暗示用户可点击行号，缺点是性能差
+
+            //清除选中索引
+//            val copyFields = _fields.toList().map { it.copy(isSelected = false) }
+//            _fields.clear()
+//            _fields.addAll(copyFields)
+//            _selectedIndices.clear()
+
+            //选中当前行
+//            val copyTarget = target.copy(
+//                isSelected = true,  // selected target line
+//                value = target.value.copy(selection = selection), // copy for new selection range
+//            )
+
+//            _fields[targetIndex] = copyTarget  // update line
+//            _selectedIndices.add(targetIndex)  // add line to selected list
         }
     }
 
@@ -833,15 +840,19 @@ class EditorController(
             //用14431行的近2mb文件简单测试了下，性能还行
             //进入选择模式，数据不变，只是 MultipleSelectionMode 设为true且对应行的isSelected设为true
 
-            //关闭所有条目的选中状态
-            val newFieldsList = fields.mapIndexed{idx,it ->
-                it.copy(isSelected = idx==index)  //为当前点击的条目开启选中状态。注：若index为-1或其他无效索引值，则不会选中任何行。
+            //必须创建拷贝，只要调用synsState的地方都必须创建拷贝，不然会和源list冲突
+            val newFields = _fields.toMutableList()
+            val newSelectedIndices = mutableListOf<Int>()
+            //若索引有效，选中对应行
+            if(index >= 0 && index < newFields.size) {
+                newFields[index] = newFields[index].copy(isSelected = true)
+                newSelectedIndices.add(index)
             }
 
             val newState = TextEditorState.create(
-                fieldsId = _fieldsId,
-                fields = newFieldsList,  //把当前点击而开启选择行模式的那行的选中状态设为真了
-                selectedIndices = if(isGoodIndexForList(index, newFieldsList)) listOf(index) else listOf(),  //默认选中的索引包含当前选中行即可，因为肯定是点击某一行开启选中模式的，所以只会有一个索引
+                fieldsId = _fieldsId,  //这个似乎是用来判断是否需要将当前状态入撤销栈的，如果文件内容不变，不用更新此字段
+                fields = newFields,  //把当前点击而开启选择行模式的那行的选中状态设为真了
+                selectedIndices = newSelectedIndices,  //默认选中的索引包含当前选中行即可，因为肯定是点击某一行开启选中模式的，所以只会有一个索引
                 isMultipleSelectionMode = true,
             )
 
@@ -935,18 +946,22 @@ class EditorController(
         }
     }
 
-    fun createCancelledState(){
+    fun quitSelectionMode(keepSelectionModeOn:Boolean = false){
         lock.withLock {
             val newState = TextEditorState.create(
                 fieldsId = _fieldsId,
-                fields = fields.map { TextFieldState(id = it.id, value = it.value, isSelected = false) },
+                fields = _fields.map { TextFieldState(id = it.id, value = it.value, isSelected = false) },
                 selectedIndices = emptyList(),
-                isMultipleSelectionMode = false,
+                isMultipleSelectionMode = keepSelectionModeOn,
             )
 
             syncState(newState)
             onChanged(newState, null, false)
         }
+    }
+
+    fun clearSelected(){
+        quitSelectionMode(keepSelectionModeOn = true)
     }
 
     /**
@@ -1053,6 +1068,15 @@ class EditorController(
         //执行添加，到这才真正修改Editor的数据
         appendOrReplaceFields(targetIndex = lastSelectedIndexOfLine, textFiledStates = lines.map { TextFieldState(value = TextFieldValue(text = it)) }, trueAppendFalseReplace = trueAppendFalseReplace)
 
+    }
+
+    fun getContentOfLineIndex(lineIndex: Int): String {
+        val f = _fields
+        return if(lineIndex >= 0 && lineIndex < f.size) {
+            f[lineIndex].value.text
+        }else {
+            ""
+        }
     }
 
 

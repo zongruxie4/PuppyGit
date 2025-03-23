@@ -54,12 +54,14 @@ import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.font.FontFamily
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.catpuppyapp.puppygit.compose.BottomBar
 import com.catpuppyapp.puppygit.compose.ConfirmDialog
 import com.catpuppyapp.puppygit.compose.MarkDownContainer
+import com.catpuppyapp.puppygit.compose.SelectedItemDialog3
 import com.catpuppyapp.puppygit.compose.SwipeIcon
 import com.catpuppyapp.puppygit.constants.PageRequest
 import com.catpuppyapp.puppygit.dto.UndoStack
@@ -175,7 +177,7 @@ fun FileEditor(
         PageRequest.clearStateThenDoAct(requestFromParent) {
             //如果已经是选择模式，退出；否则开启选择模式
             if(textEditorState.value.isMultipleSelectionMode) {  //退出选择模式
-                editableController.value.createCancelledState()
+                editableController.value.quitSelectionMode()
             }else {  //开启选择模式
                 enableSelectMode(-1)
             }
@@ -454,7 +456,7 @@ fun FileEditor(
 
                     // BottomBar params block start
                     val quitSelectionMode = {
-                        editableController.value.createCancelledState()
+                        editableController.value.quitSelectionMode()
                     }
                     val iconList = listOf(
                         Icons.Filled.ContentPaste,
@@ -532,7 +534,24 @@ fun FileEditor(
                     )
                     // BottomBar params block end
 
+                    val showSelectedItemsShortDetailsDialog = rememberSaveable { mutableStateOf(false) }
+                    if(showSelectedItemsShortDetailsDialog.value) {
+                        SelectedItemDialog3(
+                            selectedItems = editableController.value.selectedIndices,
 
+                            //预览的时候带行号，拷贝的时候不带
+                            text = {
+                                // "行号: 行内容"
+                                //it是index，index+1即行号
+                                Text(text = "${it+1}: ${editableController.value.getContentOfLineIndex(it)}", softWrap = false, overflow = TextOverflow.Ellipsis)
+                            },
+                            textFormatterForCopy = { editableController.value.getContentOfLineIndex(it) },
+
+                            switchItemSelected = { editableController.value.selectField(targetIndex = it) },
+                            clearAll = { editableController.value.clearSelected() },
+                            closeDialog = {showSelectedItemsShortDetailsDialog.value = false}
+                        )
+                    }
 
                     BottomBar(
                         quitSelectionMode=quitSelectionMode,
@@ -546,8 +565,8 @@ fun FileEditor(
                         moreItemOnClickList= listOf(),
                         moreItemEnableList = listOf(),
                         getSelectedFilesCount = {selectedLines},
-                        countNumOnClickEnabled = false,
-                        countNumOnClick = {}
+                        countNumOnClickEnabled = true,
+                        countNumOnClick = {showSelectedItemsShortDetailsDialog.value = true}
                     )
                 }
             }

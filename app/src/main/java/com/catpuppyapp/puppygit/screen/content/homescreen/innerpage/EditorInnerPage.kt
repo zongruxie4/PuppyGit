@@ -94,7 +94,6 @@ import com.catpuppyapp.puppygit.utils.snapshot.SnapshotFileFlag
 import com.catpuppyapp.puppygit.utils.snapshot.SnapshotUtil
 import com.catpuppyapp.puppygit.utils.state.CustomStateSaveable
 import com.catpuppyapp.puppygit.utils.state.mutableCustomStateListOf
-import com.catpuppyapp.puppygit.utils.state.mutableCustomStateOf
 import com.catpuppyapp.puppygit.utils.withMainContext
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.sync.Mutex
@@ -1673,7 +1672,7 @@ private fun getBackHandler(
         if(isPreviewModeOn.value) {
             previewNavBack()
         }else if(textEditorState.value.isMultipleSelectionMode) {  //退出编辑器多选模式
-            requestFromParent.value = PageRequest.editorCreateCancelledState
+            requestFromParent.value = PageRequest.editorQuitSelectionMode
         }else if(searchMode.value){
             searchMode.value = false
         }else if(adjustFontSizeMode.value){

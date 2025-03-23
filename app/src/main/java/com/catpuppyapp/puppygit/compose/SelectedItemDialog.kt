@@ -3,6 +3,8 @@ package com.catpuppyapp.puppygit.compose
 
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxScope
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.RowScope
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
@@ -44,43 +46,16 @@ fun <T> SelectedItemDialog(
     // cancel可能包含比closeDialog更多的操作
     onCancel:()->Unit = closeDialog
 ) {
-    val clipboardManager = LocalClipboardManager.current
-    val activityContext = LocalContext.current
-
-    SelectedItemDialog2(
-        selectedItems = selectedItems,
+    SelectedItemDialog3(
         title = title,
-        text = {
-            Text(text = formatter(it), modifier = Modifier.fillMaxWidth(.8f).padding(start = 5.dp).align(Alignment.CenterStart))
-        },
-        trailIcon = {
-            IconButton(
-                modifier = Modifier.fillMaxWidth(.2f).align(Alignment.CenterEnd),
-                onClick = { switchItemSelected(it) }
-            ) {
-                Icon(
-                    imageVector = Icons.Filled.DeleteOutline,
-                    contentDescription = stringResource(R.string.trash_bin_icon_for_delete_item)
-                )
-            }
-        },
+        selectedItems = selectedItems,
+        text = { Text(text = formatter(it)) },
+        textFormatterForCopy = formatter,
+        switchItemSelected = switchItemSelected,
         clearAll = clearAll,
         closeDialog = closeDialog,
         onCancel = onCancel,
-        onCopy = {
-            closeDialog()
 
-            doJobThenOffLoading {
-                val lb = Cons.lineBreak
-                val sb = StringBuilder()
-                selectedItems.forEach {
-                    sb.append(formatter(it)).append(lb)
-                }
-
-                clipboardManager.setText(AnnotatedString(sb.removeSuffix(lb).toString()))
-                Msg.requireShow(activityContext.getString(R.string.copied))
-            }
-        }
     )
 }
 
@@ -155,4 +130,74 @@ fun <T> SelectedItemDialog2(
     ) {  //点击拷贝按钮的回调
         onCopy()
     }
+}
+
+
+
+/**
+ * SelectedItemDialog2的简化版，SelectedItemDialog的增强版
+ */
+@Composable
+fun <T> SelectedItemDialog3(
+    title: String = stringResource(R.string.selected_str),
+    selectedItems:List<T>,
+    switchItemSelected:(T)->Unit,  //用switch而不是单纯的remove是为了日后可实现撤销删除方便，只要再把条目传给switchItemSelected函数，就能重新选中条目，但这样的话，恢复后的条目会在列表末尾，若想回到原位呢？难道删除后做整个列表的备份？或者这个函数改成能指定索引的？
+
+    //自定义text
+    text:@Composable RowScope.(T) -> Unit,
+    textContainerModifier: BoxScope.() -> Modifier = { Modifier.fillMaxWidth(.8f).padding(start = 5.dp).align(Alignment.CenterStart) },
+    textFormatterForCopy:(T)->String,
+
+    //清空条目列表
+    clearAll:()->Unit,
+
+    //此函数应该仅关闭弹窗，不要执行多余操作
+    closeDialog:()->Unit,
+
+    // cancel可能包含比closeDialog更多的操作
+    onCancel:()->Unit = closeDialog
+) {
+    val clipboardManager = LocalClipboardManager.current
+    val activityContext = LocalContext.current
+
+    SelectedItemDialog2(
+        selectedItems = selectedItems,
+        title = title,
+        text = {
+            Row(
+                modifier = textContainerModifier(),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                text(it)
+            }
+        },
+        trailIcon = {
+            IconButton(
+                modifier = Modifier.fillMaxWidth(.2f).align(Alignment.CenterEnd),
+                onClick = { switchItemSelected(it) }
+            ) {
+                Icon(
+                    imageVector = Icons.Filled.DeleteOutline,
+                    contentDescription = stringResource(R.string.trash_bin_icon_for_delete_item)
+                )
+            }
+        },
+        clearAll = clearAll,
+        closeDialog = closeDialog,
+        onCancel = onCancel,
+        onCopy = {
+            closeDialog()
+
+            doJobThenOffLoading {
+                val lb = Cons.lineBreak
+                val sb = StringBuilder()
+                selectedItems.forEach {
+                    sb.append(textFormatterForCopy(it)).append(lb)
+                }
+
+                clipboardManager.setText(AnnotatedString(sb.removeSuffix(lb).toString()))
+                Msg.requireShow(activityContext.getString(R.string.copied))
+            }
+        }
+    )
 }

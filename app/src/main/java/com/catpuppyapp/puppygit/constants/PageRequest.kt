@@ -40,7 +40,7 @@ object PageRequest {
     const val createPatch = "createPatch"
     const val indexToWorkTree_CommitAll = "indexToWorkTree_CommitAll"
     const val goToUpstream = "goToUpstream"
-    const val editorCreateCancelledState = "editorCreateCancelledState"
+    const val editorQuitSelectionMode = "editorQuitSelectionMode"
     const val requestUndo = "requestUndo"
     const val requestRedo = "requestRedo"
     const val requireShowPathDetails = "requireShowPathDetails"

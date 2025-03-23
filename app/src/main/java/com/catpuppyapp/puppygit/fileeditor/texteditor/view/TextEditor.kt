@@ -39,7 +39,6 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.platform.LocalClipboardManager
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
@@ -295,13 +294,12 @@ fun TextEditor(
 
     editableController.syncState(textEditorState)
 
-    val clipboardManager = LocalClipboardManager.current
+//    val clipboardManager = LocalClipboardManager.current
 
     //上级页面发来的request，请求执行某些操作
-    //20240507: 这个其实已经没用了，改用在第一行和最后编辑位置切换了，不过，暂且先留着这代码
-    if(requestFromParent.value==PageRequest.editorCreateCancelledState) {
+    if(requestFromParent.value==PageRequest.editorQuitSelectionMode) {
         PageRequest.clearStateThenDoAct(requestFromParent) {
-            editableController.createCancelledState()
+            editableController.quitSelectionMode()
         }
     }
     if(requestFromParent.value==PageRequest.requestUndo) {

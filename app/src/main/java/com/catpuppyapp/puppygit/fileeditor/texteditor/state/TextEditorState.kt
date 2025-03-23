@@ -88,7 +88,8 @@ class TextEditorState private constructor(
 
     //获取选择行记数（获取选择了多少行）
     fun getSelectedCount():Int{
-        return selectedIndices.toSet().filter{ it>=0 }.size  //toSet()是为了去重，我不确定是否一定没重复，去下保险；filter {it>=0} 是为了避免里面有-1，我记得初始值好像是往selectedIndices里塞个-1。
+//        return selectedIndices.toSet().filter{ it>=0 }.size  //toSet()是为了去重，我不确定是否一定没重复，去下保险；filter {it>=0} 是为了避免里面有-1，我记得初始值好像是往selectedIndices里塞个-1。
+        return selectedIndices.size  //toSet()是为了去重，我不确定是否一定没重复，去下保险；filter {it>=0} 是为了避免里面有-1，我记得初始值好像是往selectedIndices里塞个-1。
     }
 
     fun contentIsEmpty(): Boolean {
@@ -121,7 +122,7 @@ class TextEditorState private constructor(
             return create(
                 fields = lines.createInitTextFieldStates(),
                 fieldsId= fieldsId,
-                selectedIndices = listOf(-1),
+                selectedIndices = listOf(),
                 isMultipleSelectionMode = isMultipleSelectionMode,
             )
         }
