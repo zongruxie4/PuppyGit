@@ -43,7 +43,7 @@ data class Editor (
     var maxFileSizeLimit:Long = 0L,  // 0=no limit, Unit is Byte, e.g. 2MB should set to 2000000L
 
 
-    var showUndoRedo:Boolean = false,
+    var showUndoRedo:Boolean = true,
 
     /**
      * when click file name from `Files` which match the patterns will open in internal Editor as default, else will show open with dialog
