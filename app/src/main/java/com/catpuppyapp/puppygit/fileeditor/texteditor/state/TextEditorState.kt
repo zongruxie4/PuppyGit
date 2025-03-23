@@ -77,7 +77,7 @@ class TextEditorState private constructor(
             }
         }
 
-        return sb.removeSuffix(lb).toString().ifEmpty { lb }
+        return sb.removeSuffix(lb).toString()
 
         //废弃：保留末尾多出来的换行符，就是要让它多一个，不然复制多行时粘贴后会定位到最后一行开头，反直觉，要解决这个问题需要改掉整个行处理机制，太麻烦了，所以暂时这样规避下，其实这样倒合理，在粘贴内容到一行的中间部位时，感觉比之前还合理
 //        return sb.toString()

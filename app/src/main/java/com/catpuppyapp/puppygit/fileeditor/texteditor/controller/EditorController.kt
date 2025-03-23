@@ -1081,27 +1081,34 @@ class EditorController(
      * 如果当前行为空行，用text替换当前行；否则追加到当前行后面
      */
     fun appendTextToLastSelectedLine(text: String) {
-        if(text.isEmpty()) {
-            return
-        }
+        //若取消注释这个，复制空行再粘贴会作废，除非在复制那里处理下，ifEmpty返回个空行，
+        // 但是不如在这处理，直接忽略这个条件，
+        // 然后用空字符串调用.lines()会得到一个空行，就符合复制一个空行粘贴一个空行的需求了，
+        // 别的地方也省得改了
+//        if(text.isEmpty()) {
+//            return
+//        }
 
-        //由于这个 selectedIndices 的getter 默认会创建拷贝，所以和上面的text是否为空分开判断，以避免无意义的拷贝
+        //因为要粘贴到选中行后边，所以必须得有选中条目
         val selectedIndices = selectedIndices
         if(selectedIndices.isEmpty()) {
             return
         }
 
-        //selectedIndices里存的是fields的索引
+        //selectedIndices里存的是fields的索引，若是无效索引，直接返回
         val lastSelectedIndexOfLine = selectedIndices.last()
         if(lastSelectedIndexOfLine < 0 || lastSelectedIndexOfLine >= _fields.size) {
+            MyLog.w(TAG, "#appendTextToLastSelectedLine: invalid index `$lastSelectedIndexOfLine` of `_fields`")
             return
         }
 
 
-        // "\n".lines()会分出两个元素的集合，需要处理下
-        val lines = if(text == Cons.lineBreak) listOf("") else text.lines()
+        //空字符串会拆分出一个空行，一个"\n"会拆分出两个空行
+        val lines = text.lines()
 
+        //目标若是空行则replace，否则append
         val trueAppendFalseReplace = _fields[lastSelectedIndexOfLine].value.text.isNotEmpty()
+
         //执行添加，到这才真正修改Editor的数据
         appendOrReplaceFields(targetIndex = lastSelectedIndexOfLine, textFiledStates = lines.map { TextFieldState(value = TextFieldValue(text = it)) }, trueAppendFalseReplace = trueAppendFalseReplace)
 
