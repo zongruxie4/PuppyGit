@@ -695,7 +695,7 @@ class EditorController(
 
 
 
-        //下面的代码涉及遍历所有行和全部行拷贝，性能差
+        //下面的代码会执行全量浅拷贝，性能差
 
             //清除选中索引
 //            val copyFields = _fields.toList().map { it.copy(isSelected = false) }
