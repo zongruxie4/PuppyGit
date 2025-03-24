@@ -1225,10 +1225,15 @@ fun TextEditor(
                                         SelectionOption.LAST_POSITION
                                     )
 
-                                    //显示键盘
-                                    withMainContext {
-                                        keyboardController?.show()  //确保弹出键盘，不加的话“点击空白区域，关闭键盘，再点击空白区域”就不弹出键盘了
-                                    }
+
+                                    //确保弹出键盘，不加的话“点击空白区域，关闭键盘，再点击空白区域”就不弹出键盘了
+                                    //显示键盘，不在主线程运行也可以
+                                    keyboardController?.show()
+
+                                    //显示键盘（在主线程运行，可选，其实不在主线程也行）
+//                                    withMainContext {
+//                                        keyboardController?.show()
+//                                    }
                                 }
 
                             }
