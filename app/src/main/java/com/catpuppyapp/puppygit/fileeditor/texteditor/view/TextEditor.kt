@@ -1045,7 +1045,10 @@ fun TextEditor(
                                     }
                             ) {
                                 TextField(
-                                    focusThisLine = index == textEditorState.focusingLineIdx,
+//                                    focusThisLine = index == textEditorState.focusingLineIdx,
+                                    //默认不自动聚焦任何行，不然一切换页面再回来弹出键盘，恶心
+                                    focusThisLine = false,
+
                                     mergeMode=mergeMode,
                                     searchMode = searchMode.value,
                                     lastEditedColumnIndexState=lastEditedColumnIndexState,

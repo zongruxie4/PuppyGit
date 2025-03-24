@@ -380,4 +380,14 @@ fun getEditorStateOnChange(
 }
 
 //初始状态值随便填，只是为了帮助泛型确定类型并且避免使用null作为初始值而已，具体的值在打开文件后会重新创建
-fun getInitTextEditorState() = TextEditorState.create(text = "", fieldsId = "", isContentEdited = mutableStateOf(false), editorPageIsContentSnapshoted = mutableStateOf(false), isMultipleSelectionMode = false, focusingLineIdx = null, onChanged = { i1, i2, i3->})
+fun getInitTextEditorState():TextEditorState {
+    return TextEditorState.create(
+        text = "",
+        fieldsId = "",
+        isContentEdited = mutableStateOf(false),
+        editorPageIsContentSnapshoted = mutableStateOf(false),
+        isMultipleSelectionMode = false,
+//        focusingLineIdx = null,
+        onChanged = { i1, i2, i3->}
+    )
+}
