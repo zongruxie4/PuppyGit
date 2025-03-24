@@ -1,10 +1,12 @@
 1.0.9.7v73 - 20250323:
+- optimize Editor performance
 - fix: Editor redo/undo not work
 - Editor selection mode: add "Clear" and "Paste" button
 - style adjust
 
 
 
+- 优化编辑器性能
 - 修复编辑器撤销失效的bug
 - 编辑器选择模式：添加清除和粘贴按钮
 - 样式调整
