@@ -2,7 +2,6 @@ package com.catpuppyapp.puppygit.fileeditor.texteditor.state
 
 import androidx.compose.runtime.Immutable
 import androidx.compose.runtime.MutableState
-import androidx.compose.runtime.mutableStateOf
 import androidx.compose.ui.text.TextRange
 import androidx.compose.ui.text.input.TextFieldValue
 import com.catpuppyapp.puppygit.dto.UndoStack
@@ -708,8 +707,10 @@ class TextEditorState private constructor(
 
 
     private fun selectFieldInternal(
-        out_fileds:MutableList<TextFieldState>,
-        out_selectedIndices:MutableList<Int>,
+        out_fileds:List<TextFieldState>,
+        out_selectedIndices:List<Int>,
+        isMutableFields:Boolean,
+        isMutableSelectedIndices:Boolean,
 //        out_focusingLineIdx:MutableState<Int?>,
 
         targetIndex: Int,
@@ -718,10 +719,18 @@ class TextEditorState private constructor(
         columnStartIndexInclusive:Int=0,
         columnEndIndexExclusive:Int=columnStartIndexInclusive,
         requireSelectLine:Boolean = true,
-    ) {
-        targetIndexValidOrThrow(targetIndex, out_fileds.size)
+    ):SelectFieldInternalRet {
+        //后面会根据需要决定是否创建拷贝
+        var ret_fields = out_fileds
+        var ret_selectedIndices = out_selectedIndices
 
-        val target = out_fileds[targetIndex]
+        // avoid mistake using
+        val out_fileds = Unit
+        val out_selectedIndices = Unit
+
+        targetIndexValidOrThrow(targetIndex, ret_fields.size)
+
+        val target = ret_fields[targetIndex]
 
         val selection = when (option) {
             SelectionOption.CUSTOM -> {
@@ -741,43 +750,53 @@ class TextEditorState private constructor(
 
         if(isMultipleSelectionMode) {  //多选模式，添加选中行列表或从列表移除
             if(requireSelectLine) {
+                ret_fields = if(isMutableFields) (ret_fields as MutableList) else ret_fields.toMutableList()
+                ret_selectedIndices = if(isMutableSelectedIndices) (ret_selectedIndices as MutableList) else ret_selectedIndices.toMutableList()
+
                 if(forceAdd) {  //强制添加
-                    val isSelected = out_fileds[targetIndex].isSelected
+                    val isSelected = ret_fields[targetIndex].isSelected
                     //未添加则添加，否则什么都不做
                     if(!isSelected) {
                         val copyTarget = target.copy(
                             isSelected = true,
                             value = target.value.copy(selection = selection)
                         )
-                        out_fileds[targetIndex] = copyTarget
-                        out_selectedIndices.add(targetIndex)
+
+                        ret_fields[targetIndex] = copyTarget
+                        ret_selectedIndices.add(targetIndex)
                     }
                 }else {  //切换添加和移除
-                    val isSelected = !out_fileds[targetIndex].isSelected
+                    val isSelected = !ret_fields[targetIndex].isSelected
                     val copyTarget = target.copy(
                         isSelected = isSelected,
                         value = target.value.copy(selection = selection)
                     )
-                    out_fileds[targetIndex] = copyTarget
 
-                    if (isSelected) out_selectedIndices.add(targetIndex) else out_selectedIndices.remove(targetIndex)
+                    ret_fields[targetIndex] = copyTarget
+                    if (isSelected) ret_selectedIndices.add(targetIndex) else ret_selectedIndices.remove(targetIndex)
                 }
 
             }else{ //no touch selected lines, just go to target line，这个并不是选择行，只是同一行，但选中不同的范围，原本是想用来高亮查找的关键字的，但有点毛病，目前实现成仅将光标定位到关键字前面，但无法选中范围，不过我忘了现在定位到关键字前面是不是依靠的这段代码了
-                val copyTarget = target.copy(
-                    value = target.value.copy(selection = selection)
-                )
 
-                out_fileds[targetIndex] = copyTarget
+                if(target.value.selection != selection) {
+                    ret_fields = if(isMutableFields) (ret_fields as MutableList) else ret_fields.toMutableList()
+                    ret_fields[targetIndex] = target.copy(value = target.value.copy(selection = selection))
+                }
+
 //                out_focusingLineIdx.value = targetIndex
             }
 
         }else{  //非多选模式，定位光标到对应行，并选中行
             //更新行选中范围并focus行
-            out_fileds[targetIndex] = target.copy(value = target.value.copy(selection = selection))
+            if(selection != target.value.selection) {
+                ret_fields = if(isMutableFields) (ret_fields as MutableList) else ret_fields.toMutableList()
+                ret_fields[targetIndex] = target.copy(value = target.value.copy(selection = selection))
+            }
 //            out_focusingLineIdx.value = targetIndex
 
         }
+
+        return SelectFieldInternalRet(fields = ret_fields, selectedIndices = ret_selectedIndices)
     }
 
     private fun splitTextsByNL(textFieldValue: TextFieldValue): List<TextFieldValue> {
@@ -1429,3 +1448,9 @@ enum class FindDirection {
     UP,
     DOWN
 }
+
+// return type of `selectFieldInternal`
+private class SelectFieldInternalRet(
+    fields: List<TextFieldState>,
+    selectedIndices: List<Int>,
+)
