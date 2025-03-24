@@ -1491,12 +1491,14 @@ private suspend fun doInit(
             //读取文件内容
 //            editorPageTextEditorState.value = TextEditorState.create(FsUtils.readFile(requireOpenFilePath))
 //                editorPageTextEditorState.value = TextEditorState.create(FsUtils.readLinesFromFile(requireOpenFilePath))
+            //为新打开的文件创建全新的state
             editorPageTextEditorState.value = TextEditorState.create(
                 file = editorPageShowingFilePath.toFuckSafFile(activityContext),
                 fieldsId = TextEditorState.newId(),
                 isContentEdited = isEdited,
                 editorPageIsContentSnapshoted = isContentSnapshoted,
-
+                isMultipleSelectionMode = false,
+                focusingLineIdx = null,
                 onChanged = getEditorStateOnChange(
                     editorPageTextEditorState = editorPageTextEditorState,
                     lastTextEditorState = lastTextEditorState,

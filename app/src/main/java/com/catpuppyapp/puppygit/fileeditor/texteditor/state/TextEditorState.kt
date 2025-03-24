@@ -49,6 +49,7 @@ class TextEditorState private constructor(
 
     val focusingLineIdx: Int?,
 
+    //话说这几个状态如果改变是否会触发重组？不过就算重组也不会创建新数据拷贝，性能影响应该不大
     //这个东西可以每个状态独有，但会增加额外拷贝，也可所有状态共享，但无法判断每个状态是否已经创建快照或者是否有未保存修改，目前采用方案2，所有Editor状态共享相同的指示内容是否修改的状态
     val isContentEdited: MutableState<Boolean>,  // old name `isContentChanged`
     val editorPageIsContentSnapshoted:MutableState<Boolean>,
@@ -1010,8 +1011,8 @@ class TextEditorState private constructor(
                     isMultipleSelectionMode = isMultipleSelectionMode,
                     isContentEdited = isContentEdited,
                     editorPageIsContentSnapshoted = editorPageIsContentSnapshoted,
-                    onChanged = onChanged
-//                    focusingLineIdx = mutableStateOf(null), //全删了就一行都不用聚焦了，不用传参，默认值就是null
+                    onChanged = onChanged,
+                    focusingLineIdx = null, //全删了就一行都不用聚焦了
                 )
             }else {
                 //非全删，创建新状态，不要影响选择模式，要不然有的情况自动退选择模式，有的不退，容易让人感到混乱
@@ -1304,8 +1305,8 @@ class TextEditorState private constructor(
         fun create(
             text: String,
             fieldsId: String,
-            isMultipleSelectionMode:Boolean = false,
-            focusingLineIdx:Int? = null,
+            isMultipleSelectionMode:Boolean,
+            focusingLineIdx:Int?,
 
             isContentEdited: MutableState<Boolean>,
             editorPageIsContentSnapshoted:MutableState<Boolean>,
@@ -1327,8 +1328,8 @@ class TextEditorState private constructor(
         fun create(
             lines: List<String>,
             fieldsId: String,
-            isMultipleSelectionMode:Boolean = false,
-            focusingLineIdx:Int? = null,
+            isMultipleSelectionMode:Boolean,
+            focusingLineIdx:Int?,
 
             isContentEdited: MutableState<Boolean>,
             editorPageIsContentSnapshoted:MutableState<Boolean>,
@@ -1351,8 +1352,8 @@ class TextEditorState private constructor(
         fun create(
             file: FuckSafFile,
             fieldsId: String,
-            isMultipleSelectionMode:Boolean = false,
-            focusingLineIdx:Int? = null,
+            isMultipleSelectionMode:Boolean,
+            focusingLineIdx:Int?,
             isContentEdited: MutableState<Boolean>,
             editorPageIsContentSnapshoted:MutableState<Boolean>,
             onChanged: (newState:TextEditorState, trueSaveToUndoFalseRedoNullNoSave:Boolean?, clearRedoStack:Boolean) -> Unit,
