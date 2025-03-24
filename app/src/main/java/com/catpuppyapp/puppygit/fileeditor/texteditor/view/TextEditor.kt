@@ -1045,9 +1045,11 @@ fun TextEditor(
                                     }
                             ) {
                                 TextField(
+                                    //仅当搜索模式，或者内容发生变化（比如换行）时光标才会自动聚焦，否则不聚焦，这样是为了避免切换页面再回来自动弹出键盘
+                                    focusThisLine = if(searchMode.value || textEditorState.isContentEdited.value) index == textEditorState.focusingLineIdx else false,
 //                                    focusThisLine = index == textEditorState.focusingLineIdx,
                                     //默认不自动聚焦任何行，不然一切换页面再回来弹出键盘，恶心
-                                    focusThisLine = false,
+//                                    focusThisLine = false,
 
                                     mergeMode=mergeMode,
                                     searchMode = searchMode.value,

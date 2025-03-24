@@ -400,10 +400,10 @@ fun FileEditor(
                                 // TextField Menu Icon
                                 FieldIcon(
 //                                    isMultipleSelection = textEditorState.value.isMultipleSelectionMode,
-//                                    focused = index == textEditorState.value.focusingLineIdx,
+                                    focused = index == textEditorState.value.focusingLineIdx,
 
                                     //是否聚焦本行（三道横线图标）禁用了，不管了，维护这个状态太烦
-                                    focused = false,
+//                                    focused = false,
 
                                     modifier = Modifier
                                         .size(12.dp)

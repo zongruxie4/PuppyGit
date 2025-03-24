@@ -46,7 +46,7 @@ class TextEditorState private constructor(
     val selectedIndices: List<Int>,
     val isMultipleSelectionMode: Boolean,
 
-//    val focusingLineIdx: Int?,
+    val focusingLineIdx: Int?,
 
     //话说这几个状态如果改变是否会触发重组？不过就算重组也不会创建新数据拷贝，性能影响应该不大
     //这个东西可以每个状态独有，但会增加额外拷贝，也可所有状态共享，但无法判断每个状态是否已经创建快照或者是否有未保存修改，目前采用方案2，所有Editor状态共享相同的指示内容是否修改的状态
@@ -300,12 +300,12 @@ class TextEditorState private constructor(
 //            val newSelectedIndices = selectedIndices.toMutableList()
 
             val sfiRet = selectFieldInternal(
-                out_fileds = newFields,
-                out_selectedIndices = selectedIndices,
+                init_fields = newFields,
+                init_selectedIndices = selectedIndices,
                 isMutableFields = true,
                 isMutableSelectedIndices = false,
 //                out_focusingLineIdx = newFocusingLineIdx,
-
+                init_focusingLineIdx = focusingLineIdx,
                 targetIndex = lastNewSplitFieldIndex
             )
 
@@ -317,7 +317,7 @@ class TextEditorState private constructor(
                 fieldsId = newId(),
                 selectedIndices = sfiRet.selectedIndices,
                 isMultipleSelectionMode = isMultipleSelectionMode,
-//                focusingLineIdx = newFocusingLineIdx.value
+                focusingLineIdx = sfiRet.focusingLineIdx
             )
 
             onChanged(newState, true, true)
@@ -358,11 +358,12 @@ class TextEditorState private constructor(
 //            val newSelectedIndices = selectedIndices.toMutableList()
 
             val sfiRet = selectFieldInternal(
-                out_fileds = newFields,
-                out_selectedIndices = selectedIndices,
+                init_fields = newFields,
+                init_selectedIndices = selectedIndices,
                 isMutableFields = true,
                 isMutableSelectedIndices = false,
 //                out_focusingLineIdx = newFocusingLineIdx,
+                init_focusingLineIdx = focusingLineIdx,
 
                 targetIndex = targetIndex + 1
             )
@@ -376,7 +377,7 @@ class TextEditorState private constructor(
                 fieldsId = newId(),
                 selectedIndices = sfiRet.selectedIndices,
                 isMultipleSelectionMode = isMultipleSelectionMode,
-//                focusingLineIdx = newFocusingLineIdx.value
+                focusingLineIdx = sfiRet.focusingLineIdx
             )
 
             onChanged(newState, true, true)
@@ -413,7 +414,7 @@ class TextEditorState private constructor(
                 fieldsId = maybeNewId,
                 selectedIndices = selectedIndices,
                 isMultipleSelectionMode = isMultipleSelectionMode,
-//                focusingLineIdx = focusingLineIdx
+                focusingLineIdx = focusingLineIdx
             )
 
             onChanged(newState, if(contentChanged) true else null, contentChanged)
@@ -463,7 +464,7 @@ class TextEditorState private constructor(
                 newFields.removeAt(targetIndex + textFiledStates.size)
             }
 
-//            var newFocusingLineIdx = focusingLineIdx
+            var newFocusingLineIdx = focusingLineIdx
             val newSelectedIndices = selectedIndices.toMutableList()
 
             //如果目标索引没超过原集合大小，则判断下是否需要更新选中索引列表；否则不用判断，因为超过大小的话，等于无效索引，肯定不会在已选中列表
@@ -471,11 +472,11 @@ class TextEditorState private constructor(
                 val selectedIndexOffsetValue = textFiledStates.size.let {if(trueAppendFalseReplace) it else (it-1)}
                 val indexNeedOffset:(selectedIdx:Int)->Boolean = if(trueAppendFalseReplace){{ it >= targetIndex }} else {{ it > targetIndex }}
 
-//                val focusIndex = newFocusingLineIdx
-                //更新聚焦行索引
-//                if(focusIndex != null && indexNeedOffset(focusIndex)) {
-//                    newFocusingLineIdx = focusIndex+selectedIndexOffsetValue
-//                }
+                val focusIndex = newFocusingLineIdx
+                // 更新聚焦行索引
+                if(focusIndex != null && indexNeedOffset(focusIndex)) {
+                    newFocusingLineIdx = focusIndex+selectedIndexOffsetValue
+                }
 
                 //更新已选中索引
                 if(newSelectedIndices.isNotEmpty()) {
@@ -499,7 +500,8 @@ class TextEditorState private constructor(
                 fieldsId = newId(),
                 selectedIndices = newSelectedIndices,
                 isMultipleSelectionMode = isMultipleSelectionMode,
-//                focusingLineIdx = newFocusingLineIdx
+                focusingLineIdx = newFocusingLineIdx
+
             )
 
             //更新状态
@@ -532,12 +534,12 @@ class TextEditorState private constructor(
 //            val newFocusingLineIdx = mutableStateOf(focusingLineIdx)
 //            val newSelectedIndices = selectedIndices.toMutableList()
             val sfiRet = selectFieldInternal(
-                out_fileds = newFields,
-                out_selectedIndices = selectedIndices,
+                init_fields = newFields,
+                init_selectedIndices = selectedIndices,
 //                out_focusingLineIdx = newFocusingLineIdx,
                 isMutableFields = true,
                 isMutableSelectedIndices = false,
-
+                init_focusingLineIdx = focusingLineIdx,
                 targetIndex = targetIndex - 1
             )
 
@@ -549,7 +551,7 @@ class TextEditorState private constructor(
                 fieldsId = newId(),
                 selectedIndices = sfiRet.selectedIndices,
                 isMultipleSelectionMode = isMultipleSelectionMode,
-//                focusingLineIdx = newFocusingLineIdx.value
+                focusingLineIdx = sfiRet.focusingLineIdx
             )
 
             onChanged(newState, true, true)
@@ -571,12 +573,12 @@ class TextEditorState private constructor(
 //            val newFocusingLineIdx = mutableStateOf(focusingLineIdx)
 //            val newSelectedIndices = selectedIndices.toMutableList()
             val sfiRet = selectFieldInternal(
-                out_fileds = fields,
-                out_selectedIndices = selectedIndices,
+                init_fields = fields,
+                init_selectedIndices = selectedIndices,
                 isMutableFields = false,
                 isMutableSelectedIndices = false,
 //                out_focusingLineIdx = newFocusingLineIdx,
-
+                init_focusingLineIdx = focusingLineIdx,
                 targetIndex = targetIndex,
                 option = option,
                 columnStartIndexInclusive=columnStartIndexInclusive,
@@ -589,7 +591,7 @@ class TextEditorState private constructor(
                 fieldsId = fieldsId,  //选择某行，fields实际内容未改变，顶多影响光标位置或者选中字段之类的，所以不需要生成新fieldsId
                 selectedIndices = sfiRet.selectedIndices,
                 isMultipleSelectionMode = isMultipleSelectionMode,
-//                focusingLineIdx = newFocusingLineIdx.value
+                focusingLineIdx = sfiRet.focusingLineIdx
             )
 
             onChanged(newState, null, false)
@@ -603,12 +605,12 @@ class TextEditorState private constructor(
 
             if(selectedIndices.isEmpty()) {  //如果选中列表为空，仅选中当前行
                 sfiRet = selectFieldInternal(
-                    out_fileds = fields,
-                    out_selectedIndices = selectedIndices,
+                    init_fields = fields,
+                    init_selectedIndices = selectedIndices,
                     isMutableFields = false,
                     isMutableSelectedIndices = false,
 //                    out_focusingLineIdx = newFocusingLineIdx,
-
+                    init_focusingLineIdx = focusingLineIdx,
                     targetIndex = targetIndex,
                     forceAdd = true
                 )
@@ -626,12 +628,12 @@ class TextEditorState private constructor(
 
                 for(i in startIndex..<endIndexExclusive) {
                     sfiRet = selectFieldInternal(
-                        out_fileds = fields,
-                        out_selectedIndices = selectedIndices,
+                        init_fields = fields,
+                        init_selectedIndices = selectedIndices,
                         isMutableFields = false,
                         isMutableSelectedIndices = false,
 //                        out_focusingLineIdx = newFocusingLineIdx,
-
+                        init_focusingLineIdx = focusingLineIdx,
                         targetIndex = i,
                         forceAdd = true
                     )
@@ -644,6 +646,7 @@ class TextEditorState private constructor(
                 selectedIndices = sfiRet?.selectedIndices ?: selectedIndices,
                 isMultipleSelectionMode = isMultipleSelectionMode,
 //                focusingLineIdx = newFocusingLineIdx.value
+                focusingLineIdx = sfiRet?.focusingLineIdx ?: focusingLineIdx
             )
 
             onChanged(newState, null, false)
@@ -662,12 +665,12 @@ class TextEditorState private constructor(
 //            val newSelectedIndices = selectedIndices.toMutableList()
 //            val newFocusingLineIdx = mutableStateOf(focusingLineIdx)
             val sfiRet = selectFieldInternal(
-                out_fileds = fields,
-                out_selectedIndices = selectedIndices,
+                init_fields = fields,
+                init_selectedIndices = selectedIndices,
                 isMutableFields = false,
                 isMutableSelectedIndices = false,
 //                out_focusingLineIdx = newFocusingLineIdx,
-
+                init_focusingLineIdx = focusingLineIdx,
                 targetIndex = previousIndex,
                 option = SelectionOption.LAST_POSITION
             )
@@ -678,6 +681,7 @@ class TextEditorState private constructor(
                 selectedIndices = sfiRet.selectedIndices,
                 isMultipleSelectionMode = isMultipleSelectionMode,
 //                focusingLineIdx = newFocusingLineIdx.value
+                focusingLineIdx = sfiRet.focusingLineIdx
             )
 
             onChanged(newState, null, false)
@@ -695,12 +699,12 @@ class TextEditorState private constructor(
             //更新状态
 //            val newFocusingLineIdx = mutableStateOf(focusingLineIdx)
             val sfiRet = selectFieldInternal(
-                out_fileds = fields,
-                out_selectedIndices = selectedIndices,
+                init_fields = fields,
+                init_selectedIndices = selectedIndices,
 //                out_focusingLineIdx = newFocusingLineIdx,
                 isMutableFields = false,
                 isMutableSelectedIndices = false,
-
+                init_focusingLineIdx = focusingLineIdx,
                 targetIndex = nextIndex,
                 option = SelectionOption.FIRST_POSITION
             )
@@ -711,6 +715,8 @@ class TextEditorState private constructor(
                 selectedIndices = sfiRet.selectedIndices,
                 isMultipleSelectionMode = isMultipleSelectionMode,
 //                focusingLineIdx = newFocusingLineIdx.value
+                focusingLineIdx = sfiRet.focusingLineIdx
+
             )
 
             onChanged(newState, null, false)
@@ -719,11 +725,11 @@ class TextEditorState private constructor(
 
 
     private fun selectFieldInternal(
-        out_fileds:List<TextFieldState>,
-        out_selectedIndices:List<Int>,
+        init_fields:List<TextFieldState>,
+        init_selectedIndices:List<Int>,
         isMutableFields:Boolean,
         isMutableSelectedIndices:Boolean,
-//        out_focusingLineIdx:MutableState<Int?>,
+        init_focusingLineIdx:Int?,
 
         targetIndex: Int,
         option: SelectionOption = SelectionOption.NONE,
@@ -733,12 +739,14 @@ class TextEditorState private constructor(
         requireSelectLine:Boolean = true,
     ):SelectFieldInternalRet {
         //后面会根据需要决定是否创建拷贝
-        var ret_fields = out_fileds
-        var ret_selectedIndices = out_selectedIndices
+        var ret_fields = init_fields
+        var ret_selectedIndices = init_selectedIndices
+        var ret_focusingLineIdx = init_focusingLineIdx
 
         // avoid mistake using
         val out_fileds = Unit
         val out_selectedIndices = Unit
+        val init_focusingLineIdx = Unit
 
         targetIndexValidOrThrow(targetIndex, ret_fields.size)
 
@@ -795,7 +803,7 @@ class TextEditorState private constructor(
                     ret_fields[targetIndex] = target.copy(value = target.value.copy(selection = selection))
                 }
 
-//                out_focusingLineIdx.value = targetIndex
+                ret_focusingLineIdx = targetIndex
             }
 
         }else{  //非多选模式，定位光标到对应行，并选中行
@@ -804,11 +812,12 @@ class TextEditorState private constructor(
                 ret_fields = if(isMutableFields) (ret_fields as MutableList) else ret_fields.toMutableList()
                 ret_fields[targetIndex] = target.copy(value = target.value.copy(selection = selection))
             }
-//            out_focusingLineIdx.value = targetIndex
+
+            ret_focusingLineIdx = targetIndex
 
         }
 
-        return SelectFieldInternalRet(fields = ret_fields, selectedIndices = ret_selectedIndices)
+        return SelectFieldInternalRet(fields = ret_fields, selectedIndices = ret_selectedIndices, focusingLineIdx = ret_focusingLineIdx)
     }
 
     private fun splitTextsByNL(textFieldValue: TextFieldValue): List<TextFieldValue> {
@@ -936,7 +945,7 @@ class TextEditorState private constructor(
                 fieldsId = newId(),
                 selectedIndices = selectedIndices,
                 isMultipleSelectionMode = isMultipleSelectionMode,
-//                focusingLineIdx = focusingLineIdx
+                focusingLineIdx = focusingLineIdx
             )
 
             onChanged(newState, true, true)
@@ -966,7 +975,7 @@ class TextEditorState private constructor(
                 fields = newFields,  //把当前点击而开启选择行模式的那行的选中状态设为真了
                 selectedIndices = newSelectedIndices,  //默认选中的索引包含当前选中行即可，因为肯定是点击某一行开启选中模式的，所以只会有一个索引
                 isMultipleSelectionMode = true,
-//                focusingLineIdx = focusingLineIdx
+                focusingLineIdx = focusingLineIdx
 
             )
 
@@ -1009,7 +1018,7 @@ class TextEditorState private constructor(
                 fields = selectedFieldList,
                 selectedIndices = selectedIndexList,
                 isMultipleSelectionMode = true,
-//                focusingLineIdx = focusingLineIdx
+                focusingLineIdx = focusingLineIdx
 
             )
 
@@ -1046,7 +1055,7 @@ class TextEditorState private constructor(
                     isContentEdited = isContentEdited,
                     editorPageIsContentSnapshoted = editorPageIsContentSnapshoted,
                     onChanged = onChanged,
-//                    focusingLineIdx = null, //全删了就一行都不用聚焦了
+                    focusingLineIdx = null, //全删了就一行都不用聚焦了
                 )
             }else {
                 //非全删，创建新状态，不要影响选择模式，要不然有的情况自动退选择模式，有的不退，容易让人感到混乱
@@ -1055,7 +1064,7 @@ class TextEditorState private constructor(
                     fields = newFields,
                     selectedIndices = emptyList(),
                     isMultipleSelectionMode = isMultipleSelectionMode,  //一般来说此值在这会是true，不过，这里的语义是“不修改是否选择模式”，所以把这个字段传过去比直接设为true要合适
-//                    focusingLineIdx = focusingLineIdx
+                    focusingLineIdx = focusingLineIdx
 
                 )
             }
@@ -1093,7 +1102,7 @@ class TextEditorState private constructor(
                 fields = newFields,
                 selectedIndices = selectedIndices,
                 isMultipleSelectionMode = isMultipleSelectionMode,  //一般来说此值在这会是true，不过，这里的语义是“不修改是否选择模式”，所以把这个字段传过去比直接设为true要合适
-//                focusingLineIdx = focusingLineIdx
+                focusingLineIdx = focusingLineIdx
             )
 
             isContentEdited?.value = true
@@ -1110,7 +1119,7 @@ class TextEditorState private constructor(
                 fields = fields.map { TextFieldState(id = it.id, value = it.value, isSelected = false) },
                 selectedIndices = emptyList(),
                 isMultipleSelectionMode = keepSelectionModeOn,
-//                focusingLineIdx = focusingLineIdx
+                focusingLineIdx = focusingLineIdx
 
             )
 
@@ -1323,14 +1332,14 @@ class TextEditorState private constructor(
         fieldsId: String,
         selectedIndices: List<Int>,
         isMultipleSelectionMode: Boolean,
-//        focusingLineIdx: Int?,
+        focusingLineIdx: Int?,
     ): TextEditorState {
         return TextEditorState(
             fieldsId= fieldsId,
             fields = fields,
             selectedIndices = selectedIndices,
             isMultipleSelectionMode = isMultipleSelectionMode,
-//            focusingLineIdx = focusingLineIdx,
+            focusingLineIdx = focusingLineIdx,
 
             //这几个变量是共享的，一般不用改
             isContentEdited = isContentEdited,
@@ -1344,7 +1353,7 @@ class TextEditorState private constructor(
             text: String,
             fieldsId: String,
             isMultipleSelectionMode:Boolean,
-//            focusingLineIdx:Int?,
+            focusingLineIdx:Int?,
 
             isContentEdited: MutableState<Boolean>,
             editorPageIsContentSnapshoted:MutableState<Boolean>,
@@ -1354,7 +1363,7 @@ class TextEditorState private constructor(
                 lines = text.lines(),
                 fieldsId= fieldsId,
                 isMultipleSelectionMode = isMultipleSelectionMode,
-//                focusingLineIdx = focusingLineIdx,
+                focusingLineIdx = focusingLineIdx,
 
                 isContentEdited = isContentEdited,
                 editorPageIsContentSnapshoted = editorPageIsContentSnapshoted,
@@ -1367,7 +1376,7 @@ class TextEditorState private constructor(
             lines: List<String>,
             fieldsId: String,
             isMultipleSelectionMode:Boolean,
-//            focusingLineIdx:Int?,
+            focusingLineIdx:Int?,
 
             isContentEdited: MutableState<Boolean>,
             editorPageIsContentSnapshoted:MutableState<Boolean>,
@@ -1378,7 +1387,7 @@ class TextEditorState private constructor(
                 fieldsId= fieldsId,
                 selectedIndices = listOf(),
                 isMultipleSelectionMode = isMultipleSelectionMode,
-//                focusingLineIdx = focusingLineIdx,
+                focusingLineIdx = focusingLineIdx,
 
                 isContentEdited = isContentEdited,
                 editorPageIsContentSnapshoted = editorPageIsContentSnapshoted,
@@ -1391,7 +1400,7 @@ class TextEditorState private constructor(
             file: FuckSafFile,
             fieldsId: String,
             isMultipleSelectionMode:Boolean,
-//            focusingLineIdx:Int?,
+            focusingLineIdx:Int?,
             isContentEdited: MutableState<Boolean>,
             editorPageIsContentSnapshoted:MutableState<Boolean>,
             onChanged: (newState:TextEditorState, trueSaveToUndoFalseRedoNullNoSave:Boolean?, clearRedoStack:Boolean) -> Unit,
@@ -1401,7 +1410,7 @@ class TextEditorState private constructor(
                 lines = FsUtils.readLinesFromFile(file, addNewLineIfFileEmpty = true),
                 fieldsId= fieldsId,
                 isMultipleSelectionMode = isMultipleSelectionMode,
-//                focusingLineIdx = focusingLineIdx,
+                focusingLineIdx = focusingLineIdx,
 
                 isContentEdited = isContentEdited,
                 editorPageIsContentSnapshoted = editorPageIsContentSnapshoted,
@@ -1414,7 +1423,7 @@ class TextEditorState private constructor(
             fieldsId: String,
             selectedIndices: List<Int>,
             isMultipleSelectionMode: Boolean,
-//            focusingLineIdx: Int?,
+            focusingLineIdx: Int?,
             isContentEdited: MutableState<Boolean>,
             editorPageIsContentSnapshoted:MutableState<Boolean>,
             onChanged: (newState:TextEditorState, trueSaveToUndoFalseRedoNullNoSave:Boolean?, clearRedoStack:Boolean) -> Unit,
@@ -1424,7 +1433,7 @@ class TextEditorState private constructor(
                 fields = fields,
                 selectedIndices = selectedIndices,
                 isMultipleSelectionMode = isMultipleSelectionMode,
-//                focusingLineIdx = focusingLineIdx,
+                focusingLineIdx = focusingLineIdx,
                 isContentEdited = isContentEdited,
                 editorPageIsContentSnapshoted = editorPageIsContentSnapshoted,
                 onChanged = onChanged
@@ -1465,4 +1474,5 @@ enum class FindDirection {
 private class SelectFieldInternalRet(
     val fields: List<TextFieldState>,
     val selectedIndices: List<Int>,
+    val focusingLineIdx:Int?,
 )

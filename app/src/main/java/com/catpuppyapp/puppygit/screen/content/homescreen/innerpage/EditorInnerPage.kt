@@ -1498,7 +1498,7 @@ private suspend fun doInit(
                 isContentEdited = isEdited,
                 editorPageIsContentSnapshoted = isContentSnapshoted,
                 isMultipleSelectionMode = false,
-//                focusingLineIdx = null,
+                focusingLineIdx = null,
                 onChanged = getEditorStateOnChange(
                     editorPageTextEditorState = editorPageTextEditorState,
                     lastTextEditorState = lastTextEditorState,

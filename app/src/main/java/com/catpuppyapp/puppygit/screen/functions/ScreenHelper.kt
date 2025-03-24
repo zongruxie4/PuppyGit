@@ -387,7 +387,7 @@ fun getInitTextEditorState():TextEditorState {
         isContentEdited = mutableStateOf(false),
         editorPageIsContentSnapshoted = mutableStateOf(false),
         isMultipleSelectionMode = false,
-//        focusingLineIdx = null,
+        focusingLineIdx = null,
         onChanged = { i1, i2, i3->}
     )
 }
