@@ -1322,6 +1322,7 @@ class TextEditorState private constructor(
 
     /**
      * 此函数不比较fields数组，缺点是返回结果并不准确(真或假都不靠谱)，优点是快
+     * 用来粗略判断当前状态是否需要入撤销栈（undoStack）
      */
     fun maybeNotEquals(other: TextEditorState):Boolean {
         return this.fieldsId != other.fieldsId || this.isMultipleSelectionMode != other.isMultipleSelectionMode || this.selectedIndices != other.selectedIndices
