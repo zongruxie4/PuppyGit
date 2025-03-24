@@ -387,19 +387,24 @@ class TextEditorState private constructor(
 
     suspend fun updateField(targetIndex: Int, textFieldValue: TextFieldValue) {
         lock.withLock {
-
             targetIndexValidOrThrow(targetIndex, fields.size)
 
             if (textFieldValue.text.contains('\n')) {
                 throw InvalidParameterException("textFieldValue contains newline")
             }
 
-            val newFields = fields.toMutableList()
+            val oldField = fields[targetIndex]
             //检查字段内容是否改变，由于没改变也会调用此方法，所以必须判断下才能知道内容是否改变
-            val contentChanged = newFields[targetIndex].value.text != textFieldValue.text  // 旧值 != 新值
+            val contentChanged = oldField.value.text != textFieldValue.text  // 旧值 != 新值
+
+            //没什么意义，两者总是不相等，似乎相等根本不会触发updateField
+//            if(oldField.equals(textFieldValue)) {
+//                return
+//            }
 
             var maybeNewId = fieldsId
 
+            //判断文本是否相等，注意：就算文本不相等也不能在这返回，不然页面显示有问题，比如光标位置会无法更新
             if(contentChanged) {
                 isContentEdited?.value = true
                 editorPageIsContentSnapshoted?.value = false
@@ -407,6 +412,7 @@ class TextEditorState private constructor(
             }
 
             //更新字段
+            val newFields = fields.toMutableList()
             newFields[targetIndex] = newFields[targetIndex].copy(value = textFieldValue)
 
             val newState = internalCreate(
