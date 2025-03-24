@@ -297,10 +297,13 @@ class TextEditorState private constructor(
             val lastNewSplitFieldIndex = targetIndex + newSplitFieldValues.count()
 
 //            val newFocusingLineIdx = mutableStateOf(focusingLineIdx)
-            val newSelectedIndices = selectedIndices.toMutableList()
-            selectFieldInternal(
+//            val newSelectedIndices = selectedIndices.toMutableList()
+
+            val sfiRet = selectFieldInternal(
                 out_fileds = newFields,
-                out_selectedIndices = newSelectedIndices,
+                out_selectedIndices = selectedIndices,
+                isMutableFields = true,
+                isMutableSelectedIndices = false,
 //                out_focusingLineIdx = newFocusingLineIdx,
 
                 targetIndex = lastNewSplitFieldIndex
@@ -310,9 +313,9 @@ class TextEditorState private constructor(
             editorPageIsContentSnapshoted?.value=false
 
             val newState = internalCreate(
-                fields = newFields,
+                fields = sfiRet.fields,
                 fieldsId = newId(),
-                selectedIndices = newSelectedIndices,
+                selectedIndices = sfiRet.selectedIndices,
                 isMultipleSelectionMode = isMultipleSelectionMode,
 //                focusingLineIdx = newFocusingLineIdx.value
             )
@@ -352,10 +355,13 @@ class TextEditorState private constructor(
 
 
 //            val newFocusingLineIdx = mutableStateOf(focusingLineIdx)
-            val newSelectedIndices = selectedIndices.toMutableList()
-            selectFieldInternal(
+//            val newSelectedIndices = selectedIndices.toMutableList()
+
+            val sfiRet = selectFieldInternal(
                 out_fileds = newFields,
-                out_selectedIndices = newSelectedIndices,
+                out_selectedIndices = selectedIndices,
+                isMutableFields = true,
+                isMutableSelectedIndices = false,
 //                out_focusingLineIdx = newFocusingLineIdx,
 
                 targetIndex = targetIndex + 1
@@ -366,9 +372,9 @@ class TextEditorState private constructor(
             editorPageIsContentSnapshoted?.value=false
 
             val newState = internalCreate(
-                fields = newFields,
+                fields = sfiRet.fields,
                 fieldsId = newId(),
-                selectedIndices = newSelectedIndices,
+                selectedIndices = sfiRet.selectedIndices,
                 isMultipleSelectionMode = isMultipleSelectionMode,
 //                focusingLineIdx = newFocusingLineIdx.value
             )
@@ -524,11 +530,13 @@ class TextEditorState private constructor(
             newFields.removeAt(targetIndex)
 
 //            val newFocusingLineIdx = mutableStateOf(focusingLineIdx)
-            val newSelectedIndices = selectedIndices.toMutableList()
-            selectFieldInternal(
+//            val newSelectedIndices = selectedIndices.toMutableList()
+            val sfiRet = selectFieldInternal(
                 out_fileds = newFields,
-                out_selectedIndices = newSelectedIndices,
+                out_selectedIndices = selectedIndices,
 //                out_focusingLineIdx = newFocusingLineIdx,
+                isMutableFields = true,
+                isMutableSelectedIndices = false,
 
                 targetIndex = targetIndex - 1
             )
@@ -537,9 +545,9 @@ class TextEditorState private constructor(
             editorPageIsContentSnapshoted?.value= false
 
             val newState = internalCreate(
-                fields = newFields,
+                fields = sfiRet.fields,
                 fieldsId = newId(),
-                selectedIndices = newSelectedIndices,
+                selectedIndices = sfiRet.selectedIndices,
                 isMultipleSelectionMode = isMultipleSelectionMode,
 //                focusingLineIdx = newFocusingLineIdx.value
             )
@@ -559,12 +567,14 @@ class TextEditorState private constructor(
     ) {
 
         lock.withLock {
-            val newFields = fields.toMutableList()
+//            val newFields = fields.toMutableList()
 //            val newFocusingLineIdx = mutableStateOf(focusingLineIdx)
-            val newSelectedIndices = selectedIndices.toMutableList()
-            selectFieldInternal(
-                out_fileds = newFields,
-                out_selectedIndices = newSelectedIndices,
+//            val newSelectedIndices = selectedIndices.toMutableList()
+            val sfiRet = selectFieldInternal(
+                out_fileds = fields,
+                out_selectedIndices = selectedIndices,
+                isMutableFields = false,
+                isMutableSelectedIndices = false,
 //                out_focusingLineIdx = newFocusingLineIdx,
 
                 targetIndex = targetIndex,
@@ -575,9 +585,9 @@ class TextEditorState private constructor(
             )
 
             val newState = internalCreate(
-                fields = newFields,
+                fields = sfiRet.fields,
                 fieldsId = fieldsId,  //选择某行，fields实际内容未改变，顶多影响光标位置或者选中字段之类的，所以不需要生成新fieldsId
-                selectedIndices = newSelectedIndices,
+                selectedIndices = sfiRet.selectedIndices,
                 isMultipleSelectionMode = isMultipleSelectionMode,
 //                focusingLineIdx = newFocusingLineIdx.value
             )
@@ -589,37 +599,37 @@ class TextEditorState private constructor(
     //第1个参数是行索引；第2个参数是当前行的哪个位置
     suspend fun selectFieldSpan(targetIndex: Int) {
         lock.withLock {
-            val newSelectedIndices = selectedIndices.toMutableList()
-            val newFields = fields.toMutableList()
+            var sfiRet:SelectFieldInternalRet? = null
 
-//            val newFocusingLineIdx = mutableStateOf(focusingLineIdx)
-
-
-            if(newSelectedIndices.isEmpty()) {  //如果选中列表为空，仅选中当前行
-                selectFieldInternal(
-                    out_fileds = newFields,
-                    out_selectedIndices = newSelectedIndices,
+            if(selectedIndices.isEmpty()) {  //如果选中列表为空，仅选中当前行
+                sfiRet = selectFieldInternal(
+                    out_fileds = fields,
+                    out_selectedIndices = selectedIndices,
+                    isMutableFields = false,
+                    isMutableSelectedIndices = false,
 //                    out_focusingLineIdx = newFocusingLineIdx,
 
                     targetIndex = targetIndex,
                     forceAdd = true
                 )
             }else {  //选中列表不为空，执行区域选择
-                val lastSelectedIndex = newSelectedIndices.last()
+                val lastSelectedIndex = selectedIndices.last()
                 val startIndex = Math.min(targetIndex, lastSelectedIndex)
                 val endIndexExclusive = Math.max(targetIndex, lastSelectedIndex) + 1
 
                 if(startIndex >= endIndexExclusive
-                    || startIndex<0 || startIndex>newFields.lastIndex  // lastIndex is list.size - 1
-                    || endIndexExclusive<0 || endIndexExclusive>newFields.size
+                    || startIndex<0 || startIndex>fields.lastIndex  // lastIndex is list.size - 1
+                    || endIndexExclusive<0 || endIndexExclusive>fields.size
                 ) {
                     return
                 }
 
                 for(i in startIndex..<endIndexExclusive) {
-                    selectFieldInternal(
-                        out_fileds = newFields,
-                        out_selectedIndices = newSelectedIndices,
+                    sfiRet = selectFieldInternal(
+                        out_fileds = fields,
+                        out_selectedIndices = selectedIndices,
+                        isMutableFields = false,
+                        isMutableSelectedIndices = false,
 //                        out_focusingLineIdx = newFocusingLineIdx,
 
                         targetIndex = i,
@@ -629,9 +639,9 @@ class TextEditorState private constructor(
             }
 
             val newState = internalCreate(
-                fields = newFields,
+                fields = sfiRet?.fields ?: fields,
                 fieldsId = fieldsId,
-                selectedIndices = newSelectedIndices,
+                selectedIndices = sfiRet?.selectedIndices ?: selectedIndices,
                 isMultipleSelectionMode = isMultipleSelectionMode,
 //                focusingLineIdx = newFocusingLineIdx.value
             )
@@ -648,12 +658,14 @@ class TextEditorState private constructor(
             val previousIndex = selectedIndex - 1
 
             //更新状态
-            val newFields = fields.toMutableList()
-            val newSelectedIndices = selectedIndices.toMutableList()
+//            val newFields = fields.toMutableList()
+//            val newSelectedIndices = selectedIndices.toMutableList()
 //            val newFocusingLineIdx = mutableStateOf(focusingLineIdx)
-            selectFieldInternal(
-                out_fileds = newFields,
-                out_selectedIndices = newSelectedIndices,
+            val sfiRet = selectFieldInternal(
+                out_fileds = fields,
+                out_selectedIndices = selectedIndices,
+                isMutableFields = false,
+                isMutableSelectedIndices = false,
 //                out_focusingLineIdx = newFocusingLineIdx,
 
                 targetIndex = previousIndex,
@@ -661,9 +673,9 @@ class TextEditorState private constructor(
             )
 
             val newState = internalCreate(
-                fields = newFields,
+                fields = sfiRet.fields,
                 fieldsId = fieldsId,
-                selectedIndices = newSelectedIndices,
+                selectedIndices = sfiRet.selectedIndices,
                 isMultipleSelectionMode = isMultipleSelectionMode,
 //                focusingLineIdx = newFocusingLineIdx.value
             )
@@ -681,22 +693,22 @@ class TextEditorState private constructor(
             val nextIndex = selectedIndex + 1
 
             //更新状态
-            val newFields = fields.toMutableList()
-            val newSelectedIndices = selectedIndices.toMutableList()
 //            val newFocusingLineIdx = mutableStateOf(focusingLineIdx)
-            selectFieldInternal(
-                out_fileds = newFields,
-                out_selectedIndices = newSelectedIndices,
+            val sfiRet = selectFieldInternal(
+                out_fileds = fields,
+                out_selectedIndices = selectedIndices,
 //                out_focusingLineIdx = newFocusingLineIdx,
+                isMutableFields = false,
+                isMutableSelectedIndices = false,
 
                 targetIndex = nextIndex,
                 option = SelectionOption.FIRST_POSITION
             )
 
             val newState = internalCreate(
-                fields = newFields,
+                fields = sfiRet.fields,
                 fieldsId = fieldsId,
-                selectedIndices = newSelectedIndices,
+                selectedIndices = sfiRet.selectedIndices,
                 isMultipleSelectionMode = isMultipleSelectionMode,
 //                focusingLineIdx = newFocusingLineIdx.value
             )
@@ -1451,6 +1463,6 @@ enum class FindDirection {
 
 // return type of `selectFieldInternal`
 private class SelectFieldInternalRet(
-    fields: List<TextFieldState>,
-    selectedIndices: List<Int>,
+    val fields: List<TextFieldState>,
+    val selectedIndices: List<Int>,
 )
