@@ -631,7 +631,7 @@ class TextEditorState private constructor(
 
             val newState = internalCreate(
                 fields = newFields,
-                fieldsId = newId(),
+                fieldsId = fieldsId,
                 selectedIndices = newSelectedIndices,
                 isMultipleSelectionMode = isMultipleSelectionMode,
 //                focusingLineIdx = newFocusingLineIdx.value
@@ -663,7 +663,7 @@ class TextEditorState private constructor(
 
             val newState = internalCreate(
                 fields = newFields,
-                fieldsId = newId(),
+                fieldsId = fieldsId,
                 selectedIndices = newSelectedIndices,
                 isMultipleSelectionMode = isMultipleSelectionMode,
 //                focusingLineIdx = newFocusingLineIdx.value
@@ -696,7 +696,7 @@ class TextEditorState private constructor(
 
             val newState = internalCreate(
                 fields = newFields,
-                fieldsId = newId(),
+                fieldsId = fieldsId,
                 selectedIndices = newSelectedIndices,
                 isMultipleSelectionMode = isMultipleSelectionMode,
 //                focusingLineIdx = newFocusingLineIdx.value
@@ -988,6 +988,10 @@ class TextEditorState private constructor(
 
 
     suspend fun createDeletedState() {
+        if(selectedIndices.isEmpty()) {
+            return
+        }
+
         lock.withLock {
             //把没选中的行取出来，作为新的文件内容
             val newFields = fields.filterIndexed { index, _ ->
@@ -1037,6 +1041,10 @@ class TextEditorState private constructor(
      * 清空选中行的内容
      */
     suspend fun clearSelectedFields(){
+        if(selectedIndices.isEmpty()) {
+            return
+        }
+
         lock.withLock {
             //清空已选中行
             val newFields = fields.mapIndexed { index, field ->
