@@ -305,7 +305,7 @@ class TextEditorState private constructor(
                 isMutableFields = true,
                 isMutableSelectedIndices = false,
 //                out_focusingLineIdx = newFocusingLineIdx,
-                init_focusingLineIdx = focusingLineIdx,
+//                init_focusingLineIdx = focusingLineIdx,
                 targetIndex = lastNewSplitFieldIndex
             )
 
@@ -363,7 +363,7 @@ class TextEditorState private constructor(
                 isMutableFields = true,
                 isMutableSelectedIndices = false,
 //                out_focusingLineIdx = newFocusingLineIdx,
-                init_focusingLineIdx = focusingLineIdx,
+//                init_focusingLineIdx = focusingLineIdx,
 
                 targetIndex = targetIndex + 1
             )
@@ -414,7 +414,7 @@ class TextEditorState private constructor(
                 fieldsId = maybeNewId,
                 selectedIndices = selectedIndices,
                 isMultipleSelectionMode = isMultipleSelectionMode,
-                focusingLineIdx = focusingLineIdx
+                focusingLineIdx = targetIndex
             )
 
             onChanged(newState, if(contentChanged) true else null, contentChanged)
@@ -464,7 +464,7 @@ class TextEditorState private constructor(
                 newFields.removeAt(targetIndex + textFiledStates.size)
             }
 
-            var newFocusingLineIdx = focusingLineIdx
+            var newFocusingLineIdx = targetIndex
             val newSelectedIndices = selectedIndices.toMutableList()
 
             //如果目标索引没超过原集合大小，则判断下是否需要更新选中索引列表；否则不用判断，因为超过大小的话，等于无效索引，肯定不会在已选中列表
@@ -539,7 +539,7 @@ class TextEditorState private constructor(
 //                out_focusingLineIdx = newFocusingLineIdx,
                 isMutableFields = true,
                 isMutableSelectedIndices = false,
-                init_focusingLineIdx = focusingLineIdx,
+//                init_focusingLineIdx = focusingLineIdx,
                 targetIndex = targetIndex - 1
             )
 
@@ -578,7 +578,7 @@ class TextEditorState private constructor(
                 isMutableFields = false,
                 isMutableSelectedIndices = false,
 //                out_focusingLineIdx = newFocusingLineIdx,
-                init_focusingLineIdx = focusingLineIdx,
+//                init_focusingLineIdx = focusingLineIdx,
                 targetIndex = targetIndex,
                 option = option,
                 columnStartIndexInclusive=columnStartIndexInclusive,
@@ -610,7 +610,7 @@ class TextEditorState private constructor(
                     isMutableFields = false,
                     isMutableSelectedIndices = false,
 //                    out_focusingLineIdx = newFocusingLineIdx,
-                    init_focusingLineIdx = focusingLineIdx,
+//                    init_focusingLineIdx = focusingLineIdx,
                     targetIndex = targetIndex,
                     forceAdd = true
                 )
@@ -633,7 +633,7 @@ class TextEditorState private constructor(
                         isMutableFields = false,
                         isMutableSelectedIndices = false,
 //                        out_focusingLineIdx = newFocusingLineIdx,
-                        init_focusingLineIdx = focusingLineIdx,
+//                        init_focusingLineIdx = focusingLineIdx,
                         targetIndex = i,
                         forceAdd = true
                     )
@@ -670,7 +670,7 @@ class TextEditorState private constructor(
                 isMutableFields = false,
                 isMutableSelectedIndices = false,
 //                out_focusingLineIdx = newFocusingLineIdx,
-                init_focusingLineIdx = focusingLineIdx,
+//                init_focusingLineIdx = focusingLineIdx,
                 targetIndex = previousIndex,
                 option = SelectionOption.LAST_POSITION
             )
@@ -704,7 +704,7 @@ class TextEditorState private constructor(
 //                out_focusingLineIdx = newFocusingLineIdx,
                 isMutableFields = false,
                 isMutableSelectedIndices = false,
-                init_focusingLineIdx = focusingLineIdx,
+//                init_focusingLineIdx = focusingLineIdx,
                 targetIndex = nextIndex,
                 option = SelectionOption.FIRST_POSITION
             )
@@ -729,7 +729,7 @@ class TextEditorState private constructor(
         init_selectedIndices:List<Int>,
         isMutableFields:Boolean,
         isMutableSelectedIndices:Boolean,
-        init_focusingLineIdx:Int?,
+//        init_focusingLineIdx:Int?,//废弃
 
         targetIndex: Int,
         option: SelectionOption = SelectionOption.NONE,
@@ -741,7 +741,7 @@ class TextEditorState private constructor(
         //后面会根据需要决定是否创建拷贝
         var ret_fields = init_fields
         var ret_selectedIndices = init_selectedIndices
-        var ret_focusingLineIdx = init_focusingLineIdx
+        var ret_focusingLineIdx = targetIndex
 
         // avoid mistake using
         val out_fileds = Unit
@@ -954,9 +954,9 @@ class TextEditorState private constructor(
 
 
     /**
-     * 注：若index为无效索引，初始不会选择任何行
+     * 注：若 targetIndex 为无效索引，初始不会选择任何行
      */
-    suspend fun createMultipleSelectionModeState(index:Int) {
+    suspend fun createMultipleSelectionModeState(targetIndex:Int) {
         lock.withLock {
             //用14431行的近2mb文件简单测试了下，性能还行
             //进入选择模式，数据不变，只是 MultipleSelectionMode 设为true且对应行的isSelected设为true
@@ -965,9 +965,9 @@ class TextEditorState private constructor(
             val newFields = fields.toMutableList()
             val newSelectedIndices = mutableListOf<Int>()
             //若索引有效，选中对应行
-            if(index >= 0 && index < newFields.size) {
-                newFields[index] = newFields[index].copy(isSelected = true)
-                newSelectedIndices.add(index)
+            if(targetIndex >= 0 && targetIndex < newFields.size) {
+                newFields[targetIndex] = newFields[targetIndex].copy(isSelected = true)
+                newSelectedIndices.add(targetIndex)
             }
 
             val newState = internalCreate(
@@ -975,7 +975,7 @@ class TextEditorState private constructor(
                 fields = newFields,  //把当前点击而开启选择行模式的那行的选中状态设为真了
                 selectedIndices = newSelectedIndices,  //默认选中的索引包含当前选中行即可，因为肯定是点击某一行开启选中模式的，所以只会有一个索引
                 isMultipleSelectionMode = true,
-                focusingLineIdx = focusingLineIdx
+                focusingLineIdx = targetIndex
 
             )
 
