@@ -94,6 +94,8 @@ import com.catpuppyapp.puppygit.screen.content.homescreen.scaffold.title.ReposTi
 import com.catpuppyapp.puppygit.screen.content.homescreen.scaffold.title.ScrollableTitle
 import com.catpuppyapp.puppygit.screen.content.homescreen.scaffold.title.SimpleTitle
 import com.catpuppyapp.puppygit.screen.functions.ChangeListFunctions
+import com.catpuppyapp.puppygit.screen.functions.getEditorStateOnChange
+import com.catpuppyapp.puppygit.screen.functions.getInitTextEditorState
 import com.catpuppyapp.puppygit.screen.shared.FileChooserType
 import com.catpuppyapp.puppygit.screen.shared.FilePath
 import com.catpuppyapp.puppygit.screen.shared.SharedState
@@ -369,30 +371,33 @@ fun HomeScreen(
 
     //当前展示的文件是否已经加载完毕
     val editorPageShowingFileIsReady = rememberSaveable { mutableStateOf(false)}
+
+    val editorPageIsEdited = rememberSaveable { mutableStateOf(false)}
+    val editorPageIsContentSnapshoted = rememberSaveable{mutableStateOf(false)}  //是否已对当前内容创建了快照
+
     //TextEditor用的变量
     val editorPageTextEditorState = mutableCustomStateOf(
         keyTag = stateKeyTag,
         keyName = "editorPageTextEditorState",
-        initValue = TextEditorState.create(text = "", fieldsId = "")
+        initValue = getInitTextEditorState()
     )
     val editorPageLastTextEditorState = mutableCustomStateOf(
         keyTag = stateKeyTag,
         keyName = "editorPageLastTextEditorState",
-        initValue = TextEditorState.create(text = "", fieldsId = "")
+        initValue = getInitTextEditorState()
     )
 //    val editorPageShowSaveDoneToast = rememberSaveable { mutableStateOf(false)}
 //    val needRefreshEditorPage = rememberSaveable { mutableStateOf(false) }
     val needRefreshEditorPage = rememberSaveable { mutableStateOf("")}
     val editorPageIsSaving = rememberSaveable { mutableStateOf(false)}
-    val editorPageIsEdited = rememberSaveable { mutableStateOf( false)}
-    val showReloadDialog = rememberSaveable { mutableStateOf( false)}
+    val showReloadDialog = rememberSaveable { mutableStateOf(false)}
 
-    val changeListHasIndexItems = rememberSaveable { mutableStateOf( false)}
+    val changeListHasIndexItems = rememberSaveable { mutableStateOf(false)}
 //    val changeListRequirePull = rememberSaveable { mutableStateOf(false)}
 //    val changeListRequirePush = rememberSaveable { mutableStateOf(false)}
-    val changeListRequireDoActFromParent = rememberSaveable { mutableStateOf( false)}
+    val changeListRequireDoActFromParent = rememberSaveable { mutableStateOf(false)}
     val changeListRequireDoActFromParentShowTextWhenDoingAct = rememberSaveable { mutableStateOf("")}
-    val changeListEnableAction = rememberSaveable { mutableStateOf( true)}
+    val changeListEnableAction = rememberSaveable { mutableStateOf(true)}
     val changeListCurRepoState = rememberSaveable{mutableIntStateOf(StateT.NONE.bit)}  //初始状态是NONE，后面会在ChangeListInnerPage检查并更新状态，只要一创建innerpage或刷新（重新执行init），就会更新此状态
     val changeListPageFromTo = Cons.gitDiffFromIndexToWorktree
     val changeListPageItemList = mutableCustomStateListOf(keyTag = stateKeyTag, keyName = "changeListPageItemList", initValue = listOf<StatusTypeEntrySaver>())
@@ -527,7 +532,6 @@ fun HomeScreen(
     val editorPageLastScrollEvent = mutableCustomStateOf<ScrollEvent?>(keyTag = stateKeyTag, keyName = "editorPageLastScrollEvent") { null }  //这个用remember就行，没必要在显示配置改变时还保留这个滚动状态，如果显示配置改变，直接设为null，从配置文件读取滚动位置重定位更好
     val editorPageLazyListState = rememberLazyListState()
     val editorPageIsInitDone = rememberSaveable{mutableStateOf(false)}  //这个也用remember就行，无需在配置改变时保存此状态，直接重置成false就行
-    val editorPageIsContentSnapshoted = rememberSaveable{mutableStateOf(false)}  //是否已对当前内容创建了快照
     val editorPageSearchMode = rememberSaveable{mutableStateOf(false)}
     val editorPageSearchKeyword = mutableCustomStateOf(keyTag = stateKeyTag, keyName = "editorPageSearchKeyword", TextFieldValue(""))
     val editorPageMergeMode = rememberSaveable{mutableStateOf(false)}

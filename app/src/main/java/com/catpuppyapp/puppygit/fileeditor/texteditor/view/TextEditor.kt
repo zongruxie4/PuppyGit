@@ -57,8 +57,9 @@ import com.catpuppyapp.puppygit.constants.LineNum
 import com.catpuppyapp.puppygit.constants.PageRequest
 import com.catpuppyapp.puppygit.dev.bug_Editor_GoToColumnCantHideKeyboard_Fixed
 import com.catpuppyapp.puppygit.dev.bug_Editor_SelectColumnRangeOfLine_Fixed
-import com.catpuppyapp.puppygit.fileeditor.texteditor.controller.EditorController
-import com.catpuppyapp.puppygit.fileeditor.texteditor.controller.FindDirection
+import com.catpuppyapp.puppygit.dto.UndoStack
+import com.catpuppyapp.puppygit.fileeditor.texteditor.state.FindDirection
+import com.catpuppyapp.puppygit.fileeditor.texteditor.state.SelectionOption
 import com.catpuppyapp.puppygit.fileeditor.texteditor.state.TextEditorState
 import com.catpuppyapp.puppygit.play.pro.R
 import com.catpuppyapp.puppygit.screen.shared.FilePath
@@ -76,6 +77,7 @@ import com.catpuppyapp.puppygit.utils.fileopenhistory.FileOpenHistoryMan
 import com.catpuppyapp.puppygit.utils.replaceStringResList
 import com.catpuppyapp.puppygit.utils.state.CustomStateSaveable
 import com.catpuppyapp.puppygit.utils.state.mutableCustomStateOf
+import com.catpuppyapp.puppygit.utils.withMainContext
 import java.util.Date
 
 private const val TAG ="TextEditor"
@@ -136,6 +138,7 @@ private val customTextSelectionColors_hideCursorHandle = MyStyleKt.TextSelection
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun TextEditor(
+    undoStack:UndoStack,
     curPreviewScrollState: ScrollState,
     requireEditorScrollToPreviewCurPos:MutableState<Boolean>,
     editorPageShowingFileName:String?,
@@ -143,7 +146,6 @@ fun TextEditor(
     fileFullPath:FilePath,
     lastEditedPos: FileEditedPos,
     textEditorState: TextEditorState,
-    editableController: EditorController,
 //    onChanged:(newState:TextEditorState, trueSaveToUndoFalseRedoNullNoSave:Boolean?, clearRedoStack:Boolean)->Unit,
     modifier: Modifier = Modifier,
     contentPaddingValues: PaddingValues = PaddingValues(),
@@ -247,7 +249,7 @@ fun TextEditor(
     suspend fun doSearch(key:String, toNext:Boolean, startPos: SearchPos) {
         val keyLen = key.length
 
-        val posResult = editableController.doSearch(key.lowercase(), toNext = toNext, startPos = startPos)
+        val posResult = textEditorState.doSearch(key.lowercase(), toNext = toNext, startPos = startPos)
         val foundPos = posResult.foundPos
         if(foundPos == SearchPos.NotFound) {
             if(!searchMode.value && mergeMode) {
@@ -299,17 +301,23 @@ fun TextEditor(
     //上级页面发来的request，请求执行某些操作
     if(requestFromParent.value==PageRequest.editorQuitSelectionMode) {
         PageRequest.clearStateThenDoAct(requestFromParent) {
-            editableController.quitSelectionMode()
+            doJobThenOffLoading {
+                textEditorState.quitSelectionMode()
+            }
         }
     }
     if(requestFromParent.value==PageRequest.requestUndo) {
         PageRequest.clearStateThenDoAct(requestFromParent) {
-            editableController.undo()
+            doJobThenOffLoading {
+                textEditorState.undo(undoStack = undoStack)
+            }
         }
     }
     if(requestFromParent.value==PageRequest.requestRedo) {
         PageRequest.clearStateThenDoAct(requestFromParent) {
-            editableController.redo()
+            doJobThenOffLoading {
+                textEditorState.redo(undoStack=undoStack)
+            }
         }
     }
     if(requestFromParent.value==PageRequest.goToTop) {
@@ -350,7 +358,7 @@ fun TextEditor(
     if(requestFromParent.value==PageRequest.showFindNextAndAllCount) {
         PageRequest.clearStateThenDoAct(requestFromParent) {
             doJobThenOffLoading {
-                val allCount = editableController.getKeywordCount(searchKeyword)
+                val allCount = textEditorState.getKeywordCount(searchKeyword)
                 Msg.requireShow(replaceStringResList(activityContext.getString(R.string.find_next_all_count), listOf(allCount.toString())))
             }
         }
@@ -403,7 +411,7 @@ fun TextEditor(
         PageRequest.clearStateThenDoAct(requestFromParent) {
             doJobThenOffLoading {
 //                val allCount = editableController.getKeywordCount(conflictKeyword.value)  // this keyword is dynamic change when press next or previous, used for count conflict is ok though, but use conflict start str count can be better
-                val allCount = editableController.getKeywordCount(settings.editor.conflictStartStr)
+                val allCount = textEditorState.getKeywordCount(settings.editor.conflictStartStr)
                 Msg.requireShow(replaceStringResList(activityContext.getString(R.string.next_conflict_all_count), listOf(allCount.toString())))
             }
         }
@@ -616,7 +624,7 @@ fun TextEditor(
         }
 
 
-        val (firstIndex, _) = editableController.indexAndValueOf(startIndex=index, direction=firstFindDirection, predicate={it.startsWith(firstExpectStr)}, includeStartIndex = false)
+        val (firstIndex, _) = textEditorState.indexAndValueOf(startIndex=index, direction=firstFindDirection, predicate={it.startsWith(firstExpectStr)}, includeStartIndex = false)
 
         if(firstIndex == -1) {
             Msg.requireShow(activityContext.getString(R.string.invalid_conflict_block))
@@ -640,7 +648,7 @@ fun TextEditor(
         }else {
             firstIndex
         }
-        val (secondIndex, _) = editableController.indexAndValueOf(startIndex=secondStartFindIndexAt, direction=secondFindDirection, predicate={it.startsWith(secondExpectStr)}, includeStartIndex = false)
+        val (secondIndex, _) = textEditorState.indexAndValueOf(startIndex=secondStartFindIndexAt, direction=secondFindDirection, predicate={it.startsWith(secondExpectStr)}, includeStartIndex = false)
 
         if(secondIndex==-1) {
             Msg.requireShow(activityContext.getString(R.string.invalid_conflict_block))
@@ -727,7 +735,7 @@ fun TextEditor(
                     IntRange(start = delStartIndex.value, endInclusive = delEndIndex.value).toList()
                 }
 
-                editableController.deleteLineByIndices(indicesWillDel)
+                textEditorState.deleteLineByIndices(indicesWillDel)
             }
         }
     }
@@ -744,7 +752,7 @@ fun TextEditor(
             val previewCurAt = curPreviewScrollState.value
 
             //计算目标滚动位置
-            val targetLineIndex = editableController.pxToLineIdx(targetPx=previewCurAt, fontSizeInPx=fontSizeInPx, screenWidthInPx=screenWidthInPx, screenHeightInPx=screenHeightInPx)
+            val targetLineIndex = textEditorState.pxToLineIdx(targetPx=previewCurAt, fontSizeInPx=fontSizeInPx, screenWidthInPx=screenWidthInPx, screenHeightInPx=screenHeightInPx)
 
             //滚动
             doGoToLine((targetLineIndex + 1).toString()) //index + 1变成行号
@@ -802,9 +810,9 @@ fun TextEditor(
                     //如果是readOnly模式，就没必要定位到对应列了，就算定位了也无效，多此一举
                     if(!readOnlyMode && useLastEditPos && restoreLastEditColumn) {
                         //定位到指定列。注意：会弹出键盘！没找到好的不弹键盘的方案，所以我把定位列功能默认禁用了
-                        editableController.selectField(
+                        textEditorState.selectField(
                             lastEditedPos.lineIndex,
-                            option = EditorController.SelectionOption.CUSTOM,
+                            option = SelectionOption.CUSTOM,
                             columnStartIndexInclusive = lastEditedPos.columnIndex
                         )
                     }
@@ -841,9 +849,9 @@ fun TextEditor(
                         //定位列，如果请求定位列的话
                         if(lastScrollEvent.value?.goColumn==true) {
                             //选中关键字
-                            editableController.selectField(
+                            textEditorState.selectField(
                                 targetIndex = index,
-                                option = EditorController.SelectionOption.CUSTOM,
+                                option = SelectionOption.CUSTOM,
                                 columnStartIndexInclusive = lastScrollEvent.value!!.columnStartIndexInclusive,
                                 //如果选中某行子字符串的功能修复了，就使用正常的endIndex；否则使用startIndex，定位光标到关键字出现的位置但不选中关键字
                                 columnEndIndexExclusive = if(bug_Editor_SelectColumnRangeOfLine_Fixed) lastScrollEvent.value!!.columnEndIndexExclusive else lastScrollEvent.value!!.columnStartIndexInclusive,
@@ -1023,12 +1031,17 @@ fun TextEditor(
 //                                            haptic.performHapticFeedback(HapticFeedbackType.LongPress)
 
                                             //执行区域选择
-                                            editableController.selectFieldSpan(index)
+                                            doJobThenOffLoading {
+                                                textEditorState.selectFieldSpan(index)
+                                            }
                                         }
                                     ) clickable@{
                                         if (!textEditorState.isMultipleSelectionMode) return@clickable
 
-                                        editableController.selectField(targetIndex = index)
+                                        doJobThenOffLoading {
+                                            textEditorState.selectField(targetIndex = index)
+
+                                        }
                                     }
                             ) {
                                 TextField(
@@ -1044,110 +1057,130 @@ fun TextEditor(
 //                                    bgColor = bgColor,
                                     bgColor = Color.Unspecified,
                                     onUpdateText = { newText ->
-                                        try{
                                             //写入编辑缓存
-                                            EditCache.writeToFile(newText.text)
+                                        EditCache.writeToFile(newText.text)
 
+                                        doJobThenOffLoading {
+                                            try{
 
-                                            editableController.updateField(
-                                                targetIndex = index,
-                                                textFieldValue = newText
-                                            )
+                                                    textEditorState.updateField(
+                                                        targetIndex = index,
+                                                        textFieldValue = newText
+                                                    )
+
+                                            }catch (e:IndexOutOfBoundsException) {
+                                                // Undo/Redo后可能 出现 索引错误，没必要显示给用户，只记下日志就行
+                                                MyLog.e(TAG, "#onUpdateText err: "+e.localizedMessage)
+                                            }catch (e:Exception) {
+                                                // 其他错误，显示给用户
+                                                Msg.requireShowLongDuration("#onUpdateText err: "+e.localizedMessage)
+
+                                                //log
+                                                MyLog.e(TAG, "#onUpdateText err: "+e.stackTraceToString())
+                                            }
+                                        }
 
                                             //改用onFocus定位最后编辑行了，这里不需要了，实际上现在的最后编辑行就是光标最后所在行
 //                                            lastScrollEvent = ScrollEvent(index)
-
-                                        }catch (e:IndexOutOfBoundsException) {
-                                            // Undo/Redo后可能 出现 索引错误，没必要显示给用户，只记下日志就行
-                                            MyLog.e(TAG, "#onUpdateText err: "+e.localizedMessage)
-                                        }catch (e:Exception) {
-                                            // 其他错误，显示给用户
-                                            Msg.requireShowLongDuration("#onUpdateText err: "+e.localizedMessage)
-
-                                            //log
-                                            MyLog.e(TAG, "#onUpdateText err: "+e.stackTraceToString())
-                                        }
                                     },
                                     onContainNewLine = cb@{ newText ->
-                                        try {
                                             //写入编辑缓存
-                                            EditCache.writeToFile(newText.text)
+                                        EditCache.writeToFile(newText.text)
 
+                                        //这里为什么要判断这个东西？
+                                        if (lastScrollEvent.value?.isConsumed == false) return@cb
 
-                                            if (lastScrollEvent.value?.isConsumed == false) return@cb
+                                        doJobThenOffLoading {
+                                            try {
+                                                textEditorState.splitNewLine(
+                                                    targetIndex = index,
+                                                    textFieldValue = newText
+                                                )
 
-                                            editableController.splitNewLine(
-                                                targetIndex = index,
-                                                textFieldValue = newText
-                                            )
-                                            lastScrollEvent.value = ScrollEvent(index + 1)
-                                        }catch (e:Exception) {
-                                            Msg.requireShowLongDuration("#onContainNewLine err: "+e.localizedMessage)
+                                                lastScrollEvent.value = ScrollEvent(index + 1)
+                                            }catch (e:Exception) {
+                                                Msg.requireShowLongDuration("#onContainNewLine err: "+e.localizedMessage)
 
-                                            MyLog.e(TAG, "#onContainNewLine err: "+e.stackTraceToString())
+                                                MyLog.e(TAG, "#onContainNewLine err: "+e.stackTraceToString())
+                                            }
                                         }
 
                                     },
                                     onAddNewLine = cb@{ newText ->
-                                        try {
-                                            //写入编辑缓存
-                                            EditCache.writeToFile(newText.text)
+                                        //写入编辑缓存
+                                        EditCache.writeToFile(newText.text)
 
 
-                                            if (lastScrollEvent.value?.isConsumed == false) return@cb
+                                        if (lastScrollEvent.value?.isConsumed == false) return@cb
 
-                                            editableController.splitAtCursor(
-                                                targetIndex = index,
-                                                textFieldValue = newText
-                                            )
-                                            lastScrollEvent.value = ScrollEvent(index + 1)
-                                        }catch (e:Exception) {
-                                            Msg.requireShowLongDuration("#onAddNewLine err: "+e.localizedMessage)
-                                            MyLog.e(TAG, "#onAddNewLine err: "+e.stackTraceToString())
+                                        doJobThenOffLoading {
+                                            try {
+                                                textEditorState.splitAtCursor(
+                                                    targetIndex = index,
+                                                    textFieldValue = newText
+                                                )
+
+                                                lastScrollEvent.value = ScrollEvent(index + 1)
+                                            }catch (e:Exception) {
+                                                Msg.requireShowLongDuration("#onAddNewLine err: "+e.localizedMessage)
+                                                MyLog.e(TAG, "#onAddNewLine err: "+e.stackTraceToString())
+                                            }
                                         }
 
                                     },
                                     onDeleteNewLine = cb@{
-                                        try {
-                                            if (lastScrollEvent.value?.isConsumed == false) return@cb
-                                            editableController.deleteNewLine(targetIndex = index)
-                                            if (index != 0) lastScrollEvent.value = ScrollEvent(index - 1)
-                                        }catch (e:Exception) {
-                                            Msg.requireShowLongDuration("#onDeleteNewLine err: "+e.localizedMessage)
-                                            MyLog.e(TAG, "#onDeleteNewLine err: "+e.stackTraceToString())
+                                        //这是要确保上一个滚动事件已被消费？有必要吗？
+                                        if (lastScrollEvent.value?.isConsumed == false) return@cb
+
+                                        doJobThenOffLoading {
+                                            try {
+                                                textEditorState.deleteNewLine(targetIndex = index)
+                                                if (index != 0) lastScrollEvent.value = ScrollEvent(index - 1)
+                                            }catch (e:Exception) {
+                                                Msg.requireShowLongDuration("#onDeleteNewLine err: "+e.localizedMessage)
+                                                MyLog.e(TAG, "#onDeleteNewLine err: "+e.stackTraceToString())
+                                            }
                                         }
 
                                     },
                                     onFocus = {
-                                        try {
-                                            editableController.selectField(index)
+                                        doJobThenOffLoading {
+                                            try {
+                                                textEditorState.selectField(index)
 
-                                            //更新最后聚焦行(最后编辑行)
-                                            lastScrollEvent.value = ScrollEvent(index)
-                                        }catch (e:Exception) {
-                                            Msg.requireShowLongDuration("#onFocus err: "+e.localizedMessage)
-                                            MyLog.e(TAG, "#onFocus err: "+e.stackTraceToString())
+                                                //更新最后聚焦行(最后编辑行)
+                                                lastScrollEvent.value = ScrollEvent(index)
+                                            }catch (e:Exception) {
+                                                Msg.requireShowLongDuration("#onFocus err: "+e.localizedMessage)
+                                                MyLog.e(TAG, "#onFocus err: "+e.stackTraceToString())
+                                            }
                                         }
+
                                     },
                                     onUpFocus = cb@{
-                                        try {
-                                            if (lastScrollEvent.value?.isConsumed == false) return@cb
-                                            editableController.selectPreviousField()
-                                            if (index != 0) lastScrollEvent.value = ScrollEvent(index - 1)
-                                        }catch (e:Exception) {
-                                            Msg.requireShowLongDuration("#onUpFocus err: "+e.localizedMessage)
-                                            MyLog.e(TAG, "#onUpFocus err: "+e.stackTraceToString())
+                                        if (lastScrollEvent.value?.isConsumed == false) return@cb
+
+                                        doJobThenOffLoading {
+                                            try {
+                                                textEditorState.selectPreviousField()
+                                                if (index != 0) lastScrollEvent.value = ScrollEvent(index - 1)
+                                            }catch (e:Exception) {
+                                                Msg.requireShowLongDuration("#onUpFocus err: "+e.localizedMessage)
+                                                MyLog.e(TAG, "#onUpFocus err: "+e.stackTraceToString())
+                                            }
                                         }
 
                                     },
                                     onDownFocus = cb@{
-                                        try {
-                                            if (lastScrollEvent.value?.isConsumed == false) return@cb
-                                            editableController.selectNextField()
-                                            if (index != textEditorState.fields.lastIndex) lastScrollEvent.value = ScrollEvent(index + 1)
-                                        }catch (e:Exception) {
-                                            Msg.requireShowLongDuration("#onDownFocus err: "+e.localizedMessage)
-                                            MyLog.e(TAG, "#onDownFocus err: "+e.stackTraceToString())
+                                        if (lastScrollEvent.value?.isConsumed == false) return@cb
+                                        doJobThenOffLoading {
+                                            try {
+                                                textEditorState.selectNextField()
+                                                if (index != textEditorState.fields.lastIndex) lastScrollEvent.value = ScrollEvent(index + 1)
+                                            }catch (e:Exception) {
+                                                Msg.requireShowLongDuration("#onDownFocus err: "+e.localizedMessage)
+                                                MyLog.e(TAG, "#onDownFocus err: "+e.stackTraceToString())
+                                            }
                                         }
 
                                     },
@@ -1184,15 +1217,20 @@ fun TextEditor(
                         ) {
                             //非选择模式，点空白区域，聚焦最后一行
                             if(textEditorState.isMultipleSelectionMode.not()) {
-                                //点击空白区域定位到最后一行最后一个字符后面
-                                //第1个参数是行索引；第2个参数是当前行的哪个位置
-                                editableController.selectField(
-                                    textEditorState.fields.lastIndex,
-                                    EditorController.SelectionOption.LAST_POSITION
-                                )
+                                doJobThenOffLoading {
+                                    //点击空白区域定位到最后一行最后一个字符后面
+                                    //第1个参数是行索引；第2个参数是当前行的哪个位置
+                                    textEditorState.selectField(
+                                        textEditorState.fields.lastIndex,
+                                        SelectionOption.LAST_POSITION
+                                    )
 
-                                //显示键盘
-                                keyboardController?.show()  //确保弹出键盘，不加的话“点击空白区域，关闭键盘，再点击空白区域”就不弹出键盘了
+                                    //显示键盘
+                                    withMainContext {
+                                        keyboardController?.show()  //确保弹出键盘，不加的话“点击空白区域，关闭键盘，再点击空白区域”就不弹出键盘了
+                                    }
+                                }
+
                             }
                         }
 //                    .background(Color.Red)  //debug

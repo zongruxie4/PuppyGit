@@ -6,11 +6,14 @@ import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.MutableIntState
 import androidx.compose.runtime.MutableState
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.ui.platform.ClipboardManager
 import com.catpuppyapp.puppygit.constants.Cons
 import com.catpuppyapp.puppygit.constants.LineNum
 import com.catpuppyapp.puppygit.constants.PageRequest
 import com.catpuppyapp.puppygit.dto.FileItemDto
+import com.catpuppyapp.puppygit.dto.UndoStack
+import com.catpuppyapp.puppygit.fileeditor.texteditor.state.TextEditorState
 import com.catpuppyapp.puppygit.play.pro.R
 import com.catpuppyapp.puppygit.screen.shared.FileChooserType
 import com.catpuppyapp.puppygit.screen.shared.FilePath
@@ -24,6 +27,7 @@ import com.catpuppyapp.puppygit.utils.cache.Cache
 import com.catpuppyapp.puppygit.utils.doJobThenOffLoading
 import com.catpuppyapp.puppygit.utils.generateRandomString
 import com.catpuppyapp.puppygit.utils.replaceStringResList
+import com.catpuppyapp.puppygit.utils.state.CustomStateSaveable
 import com.catpuppyapp.puppygit.utils.withMainContext
 import kotlinx.coroutines.CoroutineScope
 import java.io.File
@@ -338,3 +342,42 @@ fun getFilesScreenTitle(currentPath:String, activityContext: Context):String {
         runCatching { FsUtils.splitParentAndName(currentPath).second }.getOrDefault("").ifEmpty { activityContext.getString(R.string.files) }
     }
 }
+
+fun getEditorStateOnChange(
+    editorPageTextEditorState:CustomStateSaveable<TextEditorState>,
+    lastTextEditorState:CustomStateSaveable<TextEditorState>,
+    undoStack:UndoStack
+):(newState: TextEditorState, trueSaveToUndoFalseRedoNullNoSave:Boolean?, clearRedoStack:Boolean) -> Unit {
+
+    return { newState: TextEditorState, trueSaveToUndoFalseRedoNullNoSave:Boolean?, clearRedoStack:Boolean ->
+        editorPageTextEditorState.value = newState
+
+        val lastState = lastTextEditorState.value
+        // last state == null || 不等于新state的filesId，则入栈
+        //这个fieldsId只是个粗略判断，即使一样也不能保证fields完全一样
+        if(lastState.maybeNotEquals(newState)) {
+//                    if(lastTextEditorState.value?.fields != newState.fields) {
+            //true或null，存undo; false存redo。null本来是在选择行之类的场景的，没改内容，可以不存，但我后来感觉存上比较好
+            val saved = if(trueSaveToUndoFalseRedoNullNoSave != false) {  // null or true
+                // redo的时候，添加状态到undo，不清redo stack，平时编辑文件的时候更新undo stack需清空redo stack
+                // trueSaveToUndoFalseRedoNullNoSave为null时是选择某行之类的不修改内容的状态变化，因此不用清redoStack
+//                        if(trueSaveToUndoFalseRedoNullNoSave!=null && clearRedoStack) {
+                //改了下调用函数时传的这个值，在不修改内容时更新状态清除clearReadStack传了false，所以不需要额外判断trueSaveToUndoFalseRedoNullNoSave是否为null了
+                if(clearRedoStack) {
+                    undoStack.redoStackClear()
+                }
+
+                undoStack.undoStackPush(lastState)
+            }else {  // false
+                undoStack.redoStackPush(lastState)
+            }
+
+            if(saved) {
+                lastTextEditorState.value = newState
+            }
+        }
+    }
+}
+
+//初始状态值随便填，只是为了帮助泛型确定类型并且避免使用null作为初始值而已，具体的值在打开文件后会重新创建
+fun getInitTextEditorState() = TextEditorState.create(text = "", fieldsId = "", isContentEdited = mutableStateOf(false), editorPageIsContentSnapshoted = mutableStateOf(false), onChanged = { i1, i2, i3->})

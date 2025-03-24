@@ -34,7 +34,6 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.MutableIntState
 import androidx.compose.runtime.MutableState
-import androidx.compose.runtime.State
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
@@ -66,7 +65,6 @@ import com.catpuppyapp.puppygit.compose.SelectedItemDialog3
 import com.catpuppyapp.puppygit.compose.SwipeIcon
 import com.catpuppyapp.puppygit.constants.PageRequest
 import com.catpuppyapp.puppygit.dto.UndoStack
-import com.catpuppyapp.puppygit.fileeditor.texteditor.controller.EditorController
 import com.catpuppyapp.puppygit.fileeditor.texteditor.state.TextEditorState
 import com.catpuppyapp.puppygit.fileeditor.texteditor.view.ScrollEvent
 import com.catpuppyapp.puppygit.fileeditor.texteditor.view.TextEditor
@@ -80,6 +78,7 @@ import com.catpuppyapp.puppygit.ui.theme.Theme
 import com.catpuppyapp.puppygit.utils.Msg
 import com.catpuppyapp.puppygit.utils.MyLog
 import com.catpuppyapp.puppygit.utils.UIHelper
+import com.catpuppyapp.puppygit.utils.doJobThenOffLoading
 import com.catpuppyapp.puppygit.utils.replaceStringResList
 import com.catpuppyapp.puppygit.utils.state.CustomStateSaveable
 import kotlinx.coroutines.runBlocking
@@ -108,16 +107,14 @@ fun FileEditor(
     quitPreviewMode:()->Unit,
     initPreviewMode:()->Unit,
 
-    editableController:State<EditorController>,
     openDrawer:()->Unit,
     editorPageShowingFileName:String?,
     requestFromParent:MutableState<String>,
     fileFullPath:FilePath,
     lastEditedPos:FileEditedPos,
     textEditorState:CustomStateSaveable<TextEditorState>,
-    onChanged:(newState:TextEditorState, trueSaveToUndoFalseRedoNullNoSave:Boolean?, clearRedoStack:Boolean)->Unit,
     contentPadding:PaddingValues,
-    isContentChanged:MutableState<Boolean>,
+    isContentEdited:MutableState<Boolean>,
     editorLastScrollEvent:CustomStateSaveable<ScrollEvent?>,
     editorListState: LazyListState,
     editorPageIsInitDone:MutableState<Boolean>,
@@ -147,8 +144,6 @@ fun FileEditor(
     val showDeleteDialog = rememberSaveable { mutableStateOf(false) }
 //    val editableController by rememberTextEditorController(textEditorState.value, onChanged = { onChanged(it) }, isContentChanged, editorPageIsContentSnapshoted)
 
-
-
 //    val bottomPadding = if (textEditorState.value.isMultipleSelectionMode) 100.dp else 0.dp  //如果使用这个padding，开启选择模式时底栏会有背景，否则没有，没有的时候就像直接浮在编辑器上
 //    val bottomPadding = 0.dp
 
@@ -170,7 +165,9 @@ fun FileEditor(
 
         // 非行选择模式，启动行选择模式 (multiple selection mode on)
         //注：索引传-1或其他无效索引即可在不选中任何行的情况下启动选择模式，从顶栏菜单开启选择模式默认不选中任何行，所以这里传-1
-        editableController.value.createMultipleSelectionModeState(index)
+        doJobThenOffLoading {
+            textEditorState.value.createMultipleSelectionModeState(index)
+        }
     }
 
     //切换行选择模式
@@ -178,7 +175,9 @@ fun FileEditor(
         PageRequest.clearStateThenDoAct(requestFromParent) {
             //如果已经是选择模式，退出；否则开启选择模式
             if(textEditorState.value.isMultipleSelectionMode) {  //退出选择模式
-                editableController.value.quitSelectionMode()
+                doJobThenOffLoading {
+                    textEditorState.value.quitSelectionMode()
+                }
             }else {  //开启选择模式
                 enableSelectMode(-1)
             }
@@ -187,12 +186,15 @@ fun FileEditor(
     }
 
     val deleteLines = {
-        //删除选中行
-        editableController.value.createDeletedState()
+        doJobThenOffLoading {
 
-        //删除行，改变内容flag设为真
-        isContentChanged.value=true
-        editorPageIsContentSnapshoted.value=false
+            //删除选中行
+            textEditorState.value.createDeletedState()
+
+            //删除行，改变内容flag设为真
+            isContentEdited.value=true
+            editorPageIsContentSnapshoted.value=false
+        }
     }
 
     if(showDeleteDialog.value) {
@@ -326,7 +328,7 @@ fun FileEditor(
                             val editorCurLineIndex = editorListState.firstVisibleItemIndex
 
                             //计算目标滚动位置
-                            val targetPos = editableController.value.lineIdxToPx(lineIndex=editorCurLineIndex, fontSizeInPx=fontSizeInPx, screenWidthInPx=screenWidthInPx, screenHeightInPx=screenHeightInPx)
+                            val targetPos = textEditorState.value.lineIdxToPx(lineIndex=editorCurLineIndex, fontSizeInPx=fontSizeInPx, screenWidthInPx=screenWidthInPx, screenHeightInPx=screenHeightInPx)
 
                             //滚动
                             UIHelper.scrollTo(scope, curPreviewScrollState, targetPos.toInt())
@@ -339,6 +341,7 @@ fun FileEditor(
             } else {
 
                 TextEditor(
+                    undoStack = undoStack,
                     curPreviewScrollState = curPreviewScrollState,
                     requireEditorScrollToPreviewCurPos = requireEditorScrollToPreviewCurPos,
                     editorPageShowingFileName = editorPageShowingFileName,
@@ -346,8 +349,6 @@ fun FileEditor(
                     fileFullPath = fileFullPath,
                     lastEditedPos = lastEditedPos,
                     textEditorState = textEditorState.value,
-                    editableController = editableController.value,
-//            onChanged = onChanged,
                     contentPaddingValues = contentPaddingValues,
                     lastScrollEvent =editorLastScrollEvent,
                     listState =editorListState,
@@ -358,9 +359,6 @@ fun FileEditor(
                     searchKeyword =searchKeyword,
                     mergeMode=mergeMode,
                     fontSize=fontSize,
-
-//            modifier = Modifier.padding(bottom = bottomPadding)
-//            modifier = Modifier.fillMaxSize()
                 ) { index, isSelected, innerTextField ->
                     // TextLine
                     Row(
@@ -413,14 +411,18 @@ fun FileEditor(
                                                 if (textEditorState.value.isMultipleSelectionMode) {
                                                     haptic.performHapticFeedback(HapticFeedbackType.LongPress)
 
-                                                    editableController.value.selectFieldSpan(targetIndex = index)
+                                                    doJobThenOffLoading {
+                                                        textEditorState.value.selectFieldSpan(targetIndex = index)
+                                                    }
                                                 }
                                             }
                                         ) {
                                             //如果是行选择模式，选中当前点击的行如果不是行选择模式；进入行选择模式
                                             if (textEditorState.value.isMultipleSelectionMode) {
                                                 //选中/取消选中 当前点击的行
-                                                editableController.value.selectField(targetIndex = index)
+                                                doJobThenOffLoading {
+                                                    textEditorState.value.selectField(targetIndex = index)
+                                                }
 
                                             } else { // 非行选择模式，启动行选择模式 (multiple selection mode on)
                                                 enableSelectMode(index)
@@ -457,7 +459,11 @@ fun FileEditor(
 
                     // BottomBar params block start
                     val quitSelectionMode = {
-                        editableController.value.quitSelectionMode()
+                        doJobThenOffLoading {
+                            textEditorState.value.quitSelectionMode()
+                        }
+
+                        Unit
                     }
                     val iconList = listOf(
                         Icons.Filled.CleaningServices,  // clear line content
@@ -483,7 +489,11 @@ fun FileEditor(
                             }
 
                             //不用确认，直接清空，若后悔可用undo撤销
-                            editableController.value.clearSelectedFields()
+                            doJobThenOffLoading {
+                                textEditorState.value.clearSelectedFields()
+                            }
+
+                            Unit
                         },
                         onPaste@{
                             if (readOnlyMode) {
@@ -491,7 +501,11 @@ fun FileEditor(
                                 return@onPaste
                             }
 
-                            editableController.value.appendTextToLastSelectedLine(clipboardManager.getText()?.text ?: "")
+                            doJobThenOffLoading {
+                                textEditorState.value.appendTextToLastSelectedLine(clipboardManager.getText()?.text ?: "")
+                            }
+
+                            Unit
                         },
                         onDelete@{
                             if (readOnlyMode) {
@@ -527,11 +541,15 @@ fun FileEditor(
 
                             clipboardManager.setText(AnnotatedString(textEditorState.value.getSelectedText()))
                             Msg.requireShow(replaceStringResList(activityContext.getString(R.string.n_lines_copied), listOf(selectedLinesNum.toString())), )
-                            editableController.value.createCopiedState()
+//                            editableController.value.createCopiedState()
                         },
 
                         onSelectAll@{
-                            editableController.value.createSelectAllState()
+                            doJobThenOffLoading {
+                                textEditorState.value.createSelectAllState()
+                            }
+
+                            Unit
                         }
                     )
 
@@ -551,18 +569,18 @@ fun FileEditor(
                     val showSelectedItemsShortDetailsDialog = rememberSaveable { mutableStateOf(false) }
                     if(showSelectedItemsShortDetailsDialog.value) {
                         SelectedItemDialog3(
-                            selectedItems = editableController.value.selectedIndices,
+                            selectedItems = textEditorState.value.selectedIndices,
 
                             //预览的时候带行号，拷贝的时候不带
                             text = {
                                 // "行号: 行内容"
                                 //it是index，index+1即行号
-                                Text(text = "${it+1}: ${editableController.value.getContentOfLineIndex(it)}", softWrap = false, overflow = TextOverflow.Ellipsis)
+                                Text(text = "${it+1}: ${textEditorState.value.getContentOfLineIndex(it)}", softWrap = false, overflow = TextOverflow.Ellipsis)
                             },
-                            textFormatterForCopy = { editableController.value.getContentOfLineIndex(it) },
+                            textFormatterForCopy = { textEditorState.value.getContentOfLineIndex(it) },
 
-                            switchItemSelected = { editableController.value.selectField(targetIndex = it) },
-                            clearAll = { editableController.value.clearSelectedItemList() },
+                            switchItemSelected = { doJobThenOffLoading { textEditorState.value.selectField(targetIndex = it) } },
+                            clearAll = { textEditorState.value.clearSelectedItemList() },
                             closeDialog = {showSelectedItemsShortDetailsDialog.value = false}
                         )
                     }

@@ -63,11 +63,11 @@ import com.catpuppyapp.puppygit.constants.LineNum
 import com.catpuppyapp.puppygit.constants.PageRequest
 import com.catpuppyapp.puppygit.dto.FileSimpleDto
 import com.catpuppyapp.puppygit.dto.UndoStack
-import com.catpuppyapp.puppygit.fileeditor.texteditor.controller.EditorController
 import com.catpuppyapp.puppygit.fileeditor.texteditor.state.TextEditorState
 import com.catpuppyapp.puppygit.fileeditor.texteditor.view.ScrollEvent
 import com.catpuppyapp.puppygit.fileeditor.ui.composable.FileEditor
 import com.catpuppyapp.puppygit.play.pro.R
+import com.catpuppyapp.puppygit.screen.functions.getEditorStateOnChange
 import com.catpuppyapp.puppygit.screen.functions.goToFileHistory
 import com.catpuppyapp.puppygit.screen.shared.EditorPreviewNavStack
 import com.catpuppyapp.puppygit.screen.shared.FilePath
@@ -870,45 +870,6 @@ fun EditorInnerPage(
     //back handler block end
 
 
-    val editorStateOnChange = {newState:TextEditorState, trueSaveToUndoFalseRedoNullNoSave:Boolean?, clearRedoStack:Boolean ->
-        editorPageTextEditorState.value = newState
-
-        val lastState = lastTextEditorState.value
-        // last state == null || 不等于新state的filesId，则入栈
-        //这个fieldsId只是个粗略判断，即使一样也不能保证fields完全一样
-        if(lastState.maybeNotEquals(newState)) {
-//                    if(lastTextEditorState.value?.fields != newState.fields) {
-            //true或null，存undo; false存redo。null本来是在选择行之类的场景的，没改内容，可以不存，但我后来感觉存上比较好
-            val saved = if(trueSaveToUndoFalseRedoNullNoSave != false) {  // null or true
-                // redo的时候，添加状态到undo，不清redo stack，平时编辑文件的时候更新undo stack需清空redo stack
-                // trueSaveToUndoFalseRedoNullNoSave为null时是选择某行之类的不修改内容的状态变化，因此不用清redoStack
-//                        if(trueSaveToUndoFalseRedoNullNoSave!=null && clearRedoStack) {
-                //改了下调用函数时传的这个值，在不修改内容时更新状态清除clearReadStack传了false，所以不需要额外判断trueSaveToUndoFalseRedoNullNoSave是否为null了
-                if(clearRedoStack) {
-                    undoStack.value.redoStackClear()
-                }
-
-                undoStack.value.undoStackPush(lastState)
-            }else {  // false
-                undoStack.value.redoStackPush(lastState)
-            }
-
-            if(saved) {
-                lastTextEditorState.value = newState
-            }
-        }
-
-//                isEdited.value=true
-    }
-
-    val editableController = remember(editorPageTextEditorState.value, undoStack.value) {
-        derivedStateOf{
-            EditorController(editorPageTextEditorState.value, undoStack.value).apply {
-                setOnChangedTextListener(isContentChanged = isEdited, editorPageIsContentSnapshoted = editorPageIsContentSnapshoted, onChanged = editorStateOnChange)
-            }
-        }
-    }
-
     val showDetailsDialog = rememberSaveable { mutableStateOf(false) }
     val detailsStr = rememberSaveable { mutableStateOf("") }
     if(showDetailsDialog.value) {
@@ -933,7 +894,7 @@ fun EditorInnerPage(
             val fileSize = if(fileReadable) getHumanReadableSizeStr(currentFile.length()) else 0
             //仅文件可读且当前预览或编辑的文件与当前编辑的文件相同时才显示行数和字数
             val showLinesCharsCount = fileReadable && currentFile.path.ioPath == editorFilePath.ioPath
-            val (charsCount, linesCount) = if(showLinesCharsCount) editableController.value.getCharsAndLinesCount() else Pair(0, 0)
+            val (charsCount, linesCount) = if(showLinesCharsCount) editorPageTextEditorState.value.getCharsAndLinesCount() else Pair(0, 0)
 //            val lastModifiedTimeStr = getFormatTimeFromSec(sec=file.lastModified()/1000, offset = getSystemDefaultTimeZoneOffset())
             val lastModifiedTimeStr = if(fileReadable) getFormattedLastModifiedTimeOfFile(currentFile) else ""
 
@@ -1252,20 +1213,18 @@ fun EditorInnerPage(
             quitPreviewMode = quitPreviewMode,
             initPreviewMode = initPreviewMode,
 
-            editableController = editableController,
             openDrawer = openDrawer,
             editorPageShowingFileName = editorPageShowingFileName,
             requestFromParent = requestFromParent,
             fileFullPath = fileFullPath,
             lastEditedPos = fileEditedPos,
             textEditorState = editorPageTextEditorState,
-            onChanged = editorStateOnChange,
 
             contentPadding = contentPadding,
             //如果外部Column进行Padding了，这里padding传0即可
 //            contentPadding = PaddingValues(0.dp),
 
-            isContentChanged = isEdited,   //谁调用onChanged，谁检查内容是否改变
+            isContentEdited = isEdited,   //谁调用onChanged，谁检查内容是否改变
             editorLastScrollEvent=editorLastScrollEvent,
             editorListState=editorListState,
             editorPageIsInitDone = editorPageIsInitDone,
@@ -1329,7 +1288,8 @@ fun EditorInnerPage(
                         isEdited = isEdited,
                         isSaving = isSaving,
                         isContentSnapshoted = editorPageIsContentSnapshoted,
-                        lastTextEditorState = lastTextEditorState
+                        lastTextEditorState = lastTextEditorState,
+                        undoStack = undoStack.value
                     )
                 }catch (e:Exception) {
                     Msg.requireShowLongDuration("init Editor err: ${e.localizedMessage}")
@@ -1398,7 +1358,7 @@ private suspend fun doInit(
     isSaving:MutableState<Boolean>,
     isContentSnapshoted:MutableState<Boolean>,
     lastTextEditorState: CustomStateSaveable<TextEditorState>,
-
+    undoStack:UndoStack
 ) {
 
     //目前这个函数只有加载文件的逻辑，所以判断下，如果已加载，就直接返回，以后如果添加其他逻辑，把这行注释即可，其他不用改，因为加载文件前又做了一次此判断
@@ -1531,7 +1491,19 @@ private suspend fun doInit(
             //读取文件内容
 //            editorPageTextEditorState.value = TextEditorState.create(FsUtils.readFile(requireOpenFilePath))
 //                editorPageTextEditorState.value = TextEditorState.create(FsUtils.readLinesFromFile(requireOpenFilePath))
-            editorPageTextEditorState.value = TextEditorState.create(file = editorPageShowingFilePath.toFuckSafFile(activityContext), fieldsId = TextEditorState.newId())
+            editorPageTextEditorState.value = TextEditorState.create(
+                file = editorPageShowingFilePath.toFuckSafFile(activityContext),
+                fieldsId = TextEditorState.newId(),
+                isContentEdited = isEdited,
+                editorPageIsContentSnapshoted = isContentSnapshoted,
+
+                onChanged = getEditorStateOnChange(
+                    editorPageTextEditorState = editorPageTextEditorState,
+                    lastTextEditorState = lastTextEditorState,
+                    undoStack = undoStack
+                )
+            )
+
             lastTextEditorState.value = editorPageTextEditorState.value
 //                lastTextEditorState.value = editorPageTextEditorState.value
 

@@ -37,6 +37,7 @@ import com.catpuppyapp.puppygit.play.pro.R
 import com.catpuppyapp.puppygit.screen.content.homescreen.innerpage.EditorInnerPage
 import com.catpuppyapp.puppygit.screen.content.homescreen.scaffold.actions.EditorPageActions
 import com.catpuppyapp.puppygit.screen.content.homescreen.scaffold.title.EditorTitle
+import com.catpuppyapp.puppygit.screen.functions.getInitTextEditorState
 import com.catpuppyapp.puppygit.screen.shared.FilePath
 import com.catpuppyapp.puppygit.screen.shared.SharedState
 import com.catpuppyapp.puppygit.settings.SettingsUtil
@@ -115,20 +116,23 @@ fun SubPageEditor(
     // 注意：虽然rememberSaveable有bug(有时无法在旋转屏幕或其他显示配置改变后正常恢复页面的state变量值)，但就算就算此值在文件打开时恢复失败变成空字符串也无所谓，因为在Activity销毁时保存其值的变量仍会存储最后打开文件路径。
     val editorPageShowingFilePath = rememberSaveable { mutableStateOf(FilePath(Cache.getByTypeThenDel<String>(Cache.Key.subPageEditor_filePathKey) ?: ""))} //当前展示的文件的canonicalPath
     val editorPageShowingFileIsReady = rememberSaveable { mutableStateOf(false)} //当前展示的文件是否已经加载完毕
+
+    val editorPageIsEdited = rememberSaveable { mutableStateOf(false)}
+    val editorPageIsContentSnapshoted = rememberSaveable{mutableStateOf(false)}  //是否已对当前内容创建了快照
+
     //TextEditor用的变量
     val editorPageTextEditorState = mutableCustomStateOf(
         keyTag = stateKeyTag,
         keyName = "editorPageTextEditorState",
-        initValue = TextEditorState.create(text = "", fieldsId = "")
+        initValue = getInitTextEditorState()
     )
     val editorPageLastTextEditorState = mutableCustomStateOf(
         keyTag = stateKeyTag,
         keyName = "editorPageLastTextEditorState",
-        initValue = TextEditorState.create(text = "", fieldsId = "")
+        initValue = getInitTextEditorState()
     )
     val needRefreshEditorPage = rememberSaveable { mutableStateOf("")}
     val editorPageIsSaving = rememberSaveable { mutableStateOf(false)}
-    val editorPageIsEdited = rememberSaveable { mutableStateOf(false)}
     val showReloadDialog = rememberSaveable { mutableStateOf(false)}
     val editorPageShowingFileDto = mutableCustomStateOf(keyTag = stateKeyTag, keyName = "editorPageShowingFileDto",FileSimpleDto() )
     val editorPageSnapshotedFileInfo = mutableCustomStateOf(keyTag = stateKeyTag, keyName = "editorPageSnapshotedFileInfo",FileSimpleDto() )
@@ -136,7 +140,6 @@ fun SubPageEditor(
     val editorPageLastScrollEvent = mutableCustomStateOf<ScrollEvent?>(stateKeyTag, "editorPageLastScrollEvent") { null }  //这个用remember就行，没必要在显示配置改变时还保留这个滚动状态，如果显示配置改变，直接设为null，从配置文件读取滚动位置重定位更好
     val editorPageLazyListState = rememberLazyListState()
     val editorPageIsInitDone = rememberSaveable{mutableStateOf(false)}  //这个也用remember就行，无需在配置改变时保存此状态，直接重置成false就行
-    val editorPageIsContentSnapshoted = rememberSaveable{mutableStateOf(false)}  //是否已对当前内容创建了快照
     val editorPageSearchMode = rememberSaveable{mutableStateOf(false)}
     val editorPageSearchKeyword = mutableCustomStateOf(keyTag = stateKeyTag, keyName = "editorPageSearchKeyword", TextFieldValue("") )
     val editorReadOnlyMode = rememberSaveable{mutableStateOf(initReadOnly)}
