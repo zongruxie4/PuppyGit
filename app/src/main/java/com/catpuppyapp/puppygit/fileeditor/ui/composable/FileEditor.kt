@@ -405,7 +405,7 @@ fun FileEditor(
                                         .size(12.dp)
                                         .padding(top = 1.dp)
                                         .align(Alignment.BottomCenter)
-                                        .focusable(false)  //不知道这个focusable(false)有什么用
+                                        .focusable(false)  //这不是我加的，是compose text editor原作者加的，不知道这个focusable(false)有什么用，是想让这个图标在用键盘导航时不聚焦吗？但实际还是能聚焦啊，所以可能和这个无关，那这个到底什么作用？
                                         .combinedClickable(
                                             onLongClick = {
                                                 if (textEditorState.value.isMultipleSelectionMode) {
