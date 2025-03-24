@@ -1,8 +1,6 @@
 package com.catpuppyapp.puppygit.fileeditor.texteditor.state
 
 import androidx.compose.runtime.Immutable
-import androidx.compose.runtime.MutableState
-import androidx.compose.runtime.mutableStateOf
 import com.catpuppyapp.puppygit.etc.Ret
 import com.catpuppyapp.puppygit.fileeditor.texteditor.controller.EditorController.Companion.createInitTextFieldStates
 import com.catpuppyapp.puppygit.screen.shared.FuckSafFile
@@ -26,8 +24,7 @@ class TextEditorState private constructor(
     val selectedIndices: List<Int>,
     val isMultipleSelectionMode: Boolean,
 
-    //用MutableState是为了方便和controller共享状态，省得sync
-    var focusingLineIdx: MutableState<Int?>
+    var focusingLineIdx: Int?,
 
 ) {
     /**
@@ -102,7 +99,7 @@ class TextEditorState private constructor(
     }
 
     companion object {
-        fun create(text: String, fieldsId: String, isMultipleSelectionMode:Boolean = false, focusingLineIdx:MutableState<Int?> = mutableStateOf(null)): TextEditorState {
+        fun create(text: String, fieldsId: String, isMultipleSelectionMode:Boolean = false, focusingLineIdx:Int? = null): TextEditorState {
             return create(
                 lines = text.lines(),
                 fieldsId= fieldsId,
@@ -112,7 +109,7 @@ class TextEditorState private constructor(
             )
         }
 
-        fun create(lines: List<String>, fieldsId: String, isMultipleSelectionMode:Boolean = false, focusingLineIdx:MutableState<Int?> = mutableStateOf(null)): TextEditorState {
+        fun create(lines: List<String>, fieldsId: String, isMultipleSelectionMode:Boolean = false, focusingLineIdx:Int? = null): TextEditorState {
             return create(
                 fields = lines.createInitTextFieldStates(),
                 fieldsId= fieldsId,
@@ -123,7 +120,7 @@ class TextEditorState private constructor(
             )
         }
 
-        fun create(file: FuckSafFile, fieldsId: String, isMultipleSelectionMode:Boolean = false, focusingLineIdx:MutableState<Int?> = mutableStateOf(null)): TextEditorState {
+        fun create(file: FuckSafFile, fieldsId: String, isMultipleSelectionMode:Boolean = false, focusingLineIdx:Int? = null): TextEditorState {
             //这里`addNewLineIfFileEmpty`必须传true，以确保和String.lines()行为一致，不然若文件末尾有空行，读取出来会少一行
             return create(
                 lines = FsUtils.readLinesFromFile(file, addNewLineIfFileEmpty = true),
@@ -138,7 +135,7 @@ class TextEditorState private constructor(
             fieldsId: String,
             selectedIndices: List<Int>,
             isMultipleSelectionMode: Boolean,
-            focusingLineIdx: MutableState<Int?>
+            focusingLineIdx: Int?
         ): TextEditorState {
             return TextEditorState(
                 fieldsId= fieldsId,

@@ -20,17 +20,21 @@ import kotlin.concurrent.withLock
 private const val TAG = "EditorController"
 private const val stateKeyTag = "EditorController"
 
+/**
+ * 这个controller是个败笔，应该搞个操作state的工具类，简单直接，这个东西过度复杂了，一个state诞生，不管是否需要都先弄个这个东西出来，先复制一堆数据，很多时候没什么意义
+ */
 class EditorController(
     textEditorState: TextEditorState,
     undoStack: UndoStack
 ) {
 
-    val _undoStack = undoStack
+    private val _undoStack = undoStack
     private var isContentChanged:MutableState<Boolean>? = null
     private var editorPageIsContentSnapshoted:MutableState<Boolean>? = null
     private var onChanged: (newState:TextEditorState, trueSaveToUndoFalseRedoNullNoSave:Boolean?, clearRedoStack:Boolean) -> Unit = {newState, trueSaveToUndoFalseRedoNullNoSave, clearRedoStack ->  }
 
-    val focusingLineIdx = textEditorState.focusingLineIdx
+    private var _focusingLineIdx = textEditorState.focusingLineIdx
+    val focusingLineIdx get() = _focusingLineIdx
     private var _isMultipleSelectionMode = textEditorState.isMultipleSelectionMode
     private var _fieldsId = textEditorState.fieldsId
     val isMultipleSelectionMode get() = _isMultipleSelectionMode
@@ -42,7 +46,7 @@ class EditorController(
     val selectedIndices get() = _selectedIndices.toList()
 
 
-    private val lock = ReentrantLock()
+    private val lock = ReentrantLock(true)
 
     //这为什么要选中第0行？？？？
 //    init {
@@ -64,7 +68,7 @@ class EditorController(
             fieldsId = _fieldsId,
             selectedIndices = _selectedIndices.toList(),
             isMultipleSelectionMode = _isMultipleSelectionMode,
-            focusingLineIdx = focusingLineIdx
+            focusingLineIdx = _focusingLineIdx
         )
 
         return newState
@@ -103,6 +107,8 @@ class EditorController(
      */
     fun syncState(state: TextEditorState) {
         lock.withLock {
+            _focusingLineIdx = state.focusingLineIdx
+
             _fieldsId = state.fieldsId
 
             _isMultipleSelectionMode = state.isMultipleSelectionMode
@@ -450,10 +456,10 @@ class EditorController(
                 val selectedIndexOffsetValue = textFiledStates.size.let {if(trueAppendFalseReplace) it else (it-1)}
                 val indexNeedOffset:(selectedIdx:Int)->Boolean = if(trueAppendFalseReplace){{ it >= targetIndex }} else {{ it > targetIndex }}
 
-                val focusIndex = focusingLineIdx.value
+                val focusIndex = _focusingLineIdx
                 //更新聚焦行索引
                 if(focusIndex != null && indexNeedOffset(focusIndex)) {
-                    focusingLineIdx.value = focusIndex+selectedIndexOffsetValue
+                    _focusingLineIdx = focusIndex+selectedIndexOffsetValue
                 }
 
                 //更新已选中索引
@@ -714,13 +720,13 @@ class EditorController(
                 )
 
                 _fields[targetIndex] = copyTarget
-                focusingLineIdx.value = targetIndex
+                _focusingLineIdx = targetIndex
             }
 
         }else{  //非多选模式，定位光标到对应行，并选中行
             //更新行选中范围并focus行
             _fields[targetIndex] = target.copy(value = target.value.copy(selection = selection))
-            focusingLineIdx.value = targetIndex
+            _focusingLineIdx = targetIndex
 
 
 
@@ -891,7 +897,7 @@ class EditorController(
                 fields = newFields,  //把当前点击而开启选择行模式的那行的选中状态设为真了
                 selectedIndices = newSelectedIndices,  //默认选中的索引包含当前选中行即可，因为肯定是点击某一行开启选中模式的，所以只会有一个索引
                 isMultipleSelectionMode = true,
-                focusingLineIdx = focusingLineIdx
+                focusingLineIdx = _focusingLineIdx
 
             )
 
@@ -911,7 +917,7 @@ class EditorController(
                 fields = fields,
                 selectedIndices = selectedIndices,
                 isMultipleSelectionMode = isMultipleSelectionMode,  //拷贝和删除不要退出选择模式(准确来说是不要改变是否处于选择模式，若以后以非多选模式创建CopiedState，也不会自动进入选择模式)，这样用户可间接实现剪切功能，因为选择很多行有时候很废力，所以除非用户明确按取消，否则不要自动解除选择模式
-                focusingLineIdx = focusingLineIdx
+                focusingLineIdx = _focusingLineIdx
 
             )
 
@@ -938,7 +944,7 @@ class EditorController(
                 fields = selectedFieldList,
                 selectedIndices = selectedIndexList,
                 isMultipleSelectionMode = true,
-                focusingLineIdx = focusingLineIdx
+                focusingLineIdx = _focusingLineIdx
 
             )
 
@@ -981,7 +987,7 @@ class EditorController(
                     fields = newFields,
                     selectedIndices = emptyList(),
                     isMultipleSelectionMode = isMultipleSelectionMode,  //一般来说此值在这会是true，不过，这里的语义是“不修改是否选择模式”，所以把这个字段传过去比直接设为true要合适
-                    focusingLineIdx = focusingLineIdx
+                    focusingLineIdx = _focusingLineIdx
 
                 )
             }
@@ -1022,7 +1028,7 @@ class EditorController(
                 fields = newFields,
                 selectedIndices = selectedIndices,
                 isMultipleSelectionMode = isMultipleSelectionMode,  //一般来说此值在这会是true，不过，这里的语义是“不修改是否选择模式”，所以把这个字段传过去比直接设为true要合适
-                focusingLineIdx = focusingLineIdx
+                focusingLineIdx = _focusingLineIdx
             )
 
             isContentChanged?.value = true
@@ -1041,7 +1047,7 @@ class EditorController(
                 fields = _fields.map { TextFieldState(id = it.id, value = it.value, isSelected = false) },
                 selectedIndices = emptyList(),
                 isMultipleSelectionMode = keepSelectionModeOn,
-                focusingLineIdx = focusingLineIdx
+                focusingLineIdx = _focusingLineIdx
 
             )
 

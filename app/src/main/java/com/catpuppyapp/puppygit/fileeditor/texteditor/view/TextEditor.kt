@@ -1032,7 +1032,7 @@ fun TextEditor(
                                     }
                             ) {
                                 TextField(
-                                    focusThisLine = index == editableController.focusingLineIdx.value,
+                                    focusThisLine = index == textEditorState.focusingLineIdx,
                                     mergeMode=mergeMode,
                                     searchMode = searchMode.value,
                                     lastEditedColumnIndexState=lastEditedColumnIndexState,
@@ -1183,7 +1183,7 @@ fun TextEditor(
                             indication = null
                         ) {
                             //非选择模式，点空白区域，聚焦最后一行
-                            if(editableController.isMultipleSelectionMode.not()) {
+                            if(textEditorState.isMultipleSelectionMode.not()) {
                                 //点击空白区域定位到最后一行最后一个字符后面
                                 //第1个参数是行索引；第2个参数是当前行的哪个位置
                                 editableController.selectField(

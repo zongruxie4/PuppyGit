@@ -402,7 +402,7 @@ fun FileEditor(
                                 // TextField Menu Icon
                                 FieldIcon(
 //                                    isMultipleSelection = textEditorState.value.isMultipleSelectionMode,
-                                    focused = index == textEditorState.value.focusingLineIdx.value,
+                                    focused = index == textEditorState.value.focusingLineIdx,
                                     modifier = Modifier
                                         .size(12.dp)
                                         .padding(top = 1.dp)
