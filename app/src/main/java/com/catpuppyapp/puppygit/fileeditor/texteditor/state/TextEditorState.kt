@@ -560,7 +560,6 @@ class TextEditorState private constructor(
     ) {
 
         lock.withLock {
-
             val newFields = fields.toMutableList()
 //            val newFocusingLineIdx = mutableStateOf(focusingLineIdx)
             val newSelectedIndices = selectedIndices.toMutableList()
@@ -578,7 +577,7 @@ class TextEditorState private constructor(
 
             val newState = internalCreate(
                 fields = newFields,
-                fieldsId = newId(),
+                fieldsId = fieldsId,  //选择某行，fields实际内容未改变，顶多影响光标位置或者选中字段之类的，所以不需要生成新fieldsId
                 selectedIndices = newSelectedIndices,
                 isMultipleSelectionMode = isMultipleSelectionMode,
 //                focusingLineIdx = newFocusingLineIdx.value
