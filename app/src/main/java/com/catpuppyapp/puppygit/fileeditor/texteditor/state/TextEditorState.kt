@@ -874,7 +874,8 @@ class TextEditorState private constructor(
 
         val requireHighlighting = isStartInclusiveEndExclusiveRangeValid(start = highlightingStartIndex, endExclusive = highlightingEndExclusiveIndex, size = target.value.text.length)
         val deHighlightingNonTarget = requireHighlighting
-        val requireLossFocus = requireHighlighting
+//        val requireLossFocus = requireHighlighting  // 高亮关键字不聚焦是为了避免有的语言（例如英语）输入法，明明没编辑，也会触发onValueChange导致字段被更新，然后高亮闪一下消失，但不聚焦又不会弹出键盘和定位光标，用起来不方便，所以取消，如果想避免高亮关键字闪一下就消失，可开只读模式再搜索
+        val requireLossFocus = false  //定位光标到关键字后面，英语可能会闪烁一下就消失，具体应该取决于输入法是否自动读写光标范围内的输入
 
         //如果请求取消高亮非当前行，把非当前行的样式都更新下
         val unFocusNonTarget = { mutableFields:MutableList<TextFieldState> ->
