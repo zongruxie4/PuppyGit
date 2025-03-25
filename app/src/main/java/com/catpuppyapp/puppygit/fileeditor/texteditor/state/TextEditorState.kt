@@ -322,15 +322,16 @@ class TextEditorState private constructor(
             //addAll若待插入值，最大值是size，不会越界，若超过就越了
             newFields.addAll(targetIndex + 1, newSplitFieldStates)
 
+            //追加行后的目标索引，实际对应的是 newSplitFieldValues 最后一个元素在当前文件的所有行中的位置
             val lastNewSplitFieldIndex = targetIndex + newSplitFieldValues.count()
 
 //            val newFocusingLineIdx = mutableStateOf(focusingLineIdx)
 //            val newSelectedIndices = selectedIndices.toMutableList()
 
             // 判断是定位到新内容最后一行开头还是末尾
-            val oldTargetText = fields[targetIndex].value.text  //旧行长度
+            val oldTargetText = fields[targetIndex].value.text  //旧行
             val newTargetFirstText = splitFirstLine.text  //分割后的第一行对应旧的目标行
-            val newTargetLastText = splitFieldValues.last().text
+            val newTargetLastText = splitFieldValues.last().text  //分割后的最后一行，光标会focus到此行，此行与 newSplitFieldValues 的最后一个元素相同，因为 newSplitFieldValues 是 splitFieldValues 的一个sub list
 
             val sfiRet = selectFieldInternal(
                 init_fields = newFields,
