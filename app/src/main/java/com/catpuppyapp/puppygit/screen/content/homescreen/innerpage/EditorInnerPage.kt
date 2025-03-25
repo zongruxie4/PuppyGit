@@ -1329,8 +1329,10 @@ fun EditorInnerPage(
             //保存最后打开文件路径
             saveLastOpenPath(editorPageShowingFilePath.value.ioPath)
 
+            //避免离开编辑器再回来自动弹键盘
+            editorPageTextEditorState.value = editorPageTextEditorState.value.copy(focusingLineIdx = null)
 
-//            editorPageShowingFilePath.value = ""
+        // ///////////            editorPageShowingFilePath.value = ""
         }
     }
 }

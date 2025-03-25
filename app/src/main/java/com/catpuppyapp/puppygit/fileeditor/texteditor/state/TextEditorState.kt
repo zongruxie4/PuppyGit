@@ -31,6 +31,7 @@ import java.security.InvalidParameterException
 
 private const val TAG = "TextEditorState"
 private const val lb = "\n"
+private val lock = Mutex()
 
 private val targetIndexValidOrThrow = { targetIndex:Int, listSize:Int ->
     if (targetIndex < 0 || targetIndex >= listSize) {
@@ -62,7 +63,26 @@ class TextEditorState private constructor(
 
 ) {
 
-    private val lock = Mutex()
+    fun copy(
+        fieldsId: String = this.fieldsId,
+        fields: List<TextFieldState> = this.fields,
+        selectedIndices: List<Int> = this.selectedIndices,
+        isMultipleSelectionMode: Boolean = this.isMultipleSelectionMode,
+        focusingLineIdx: Int? = this.focusingLineIdx,
+        isContentEdited: MutableState<Boolean> = this.isContentEdited,
+        editorPageIsContentSnapshoted:MutableState<Boolean> = this.editorPageIsContentSnapshoted,
+        onChanged: (newState:TextEditorState, trueSaveToUndoFalseRedoNullNoSave:Boolean?, clearRedoStack:Boolean) -> Unit = this.onChanged,
+    ):TextEditorState = create(
+        fieldsId = fieldsId,
+        fields = fields,
+        selectedIndices = selectedIndices,
+        isMultipleSelectionMode = isMultipleSelectionMode,
+        focusingLineIdx = focusingLineIdx,
+        isContentEdited = isContentEdited,
+        editorPageIsContentSnapshoted = editorPageIsContentSnapshoted,
+        onChanged = onChanged
+    )
+
 
     suspend fun undo(undoStack: UndoStack) {
         undoOrRedo(undoStack, true)

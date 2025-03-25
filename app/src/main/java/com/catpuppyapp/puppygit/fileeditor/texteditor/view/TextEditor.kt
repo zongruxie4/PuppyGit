@@ -1093,10 +1093,10 @@ fun TextEditor(
                             ) {
                                 TextField(
                                     //搜索模式已经没必要聚焦了，因为不需要光标定位行了，直接高亮关键字了，而且搜索模式会把focusingLineIdx设为null以避免聚焦行弹出键盘误判内容已改变从而触发重组导致高亮关键字功能失效
-                                    focusThisLine = if(textEditorState.isContentEdited.value) index == textEditorState.focusingLineIdx else false,
+//                                    focusThisLine = if(textEditorState.isContentEdited.value) index == textEditorState.focusingLineIdx else false,
                                     //仅当搜索模式，或者内容发生变化（比如换行）时光标才会自动聚焦，否则不聚焦，这样是为了避免切换页面再回来自动弹出键盘
 //                                    focusThisLine = if(searchMode.value || textEditorState.isContentEdited.value) index == textEditorState.focusingLineIdx else false,
-//                                    focusThisLine = index == textEditorState.focusingLineIdx,
+                                    focusThisLine = index == textEditorState.focusingLineIdx,
                                     //默认不自动聚焦任何行，不然一切换页面再回来弹出键盘，恶心
 //                                    focusThisLine = false,
 

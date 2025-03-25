@@ -230,6 +230,11 @@ fun FileEditor(
             previewNavAhead()
         } else {
             initPreviewMode()
+
+            //避免切到预览再切回来后自动弹键盘
+            textEditorState.value = textEditorState.value.copy(
+                focusingLineIdx = null,
+            )
         }
     }
 

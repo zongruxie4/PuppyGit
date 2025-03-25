@@ -351,21 +351,8 @@ fun getEditorStateOnChange(
 
     return { newState: TextEditorState, trueSaveToUndoFalseRedoNullNoSave:Boolean?, clearRedoStack:Boolean ->
         //如果新state的focusingLineIdx为负数，使用上个state的fucusingLineIdx，这样是为了避免 updateField 更新索引，不然会和 selectField 更新索引冲突，有时会定位错
-        val newState = if(newState.focusingLineIdx.let { it == null || it >= 0 }) newState else {
-            TextEditorState.create(
-                //使用上次状态的索引
-                focusingLineIdx = editorPageTextEditorState.value.focusingLineIdx,
+        val newState = if(newState.focusingLineIdx.let { it == null || it >= 0 }) newState else newState.copy(focusingLineIdx = editorPageTextEditorState.value.focusingLineIdx)
 
-                //其余字段使用新状态的
-                fields = newState.fields,
-                fieldsId = newState.fieldsId,
-                selectedIndices = newState.selectedIndices,
-                isMultipleSelectionMode = newState.isMultipleSelectionMode,
-                isContentEdited = newState.isContentEdited,
-                editorPageIsContentSnapshoted = newState.editorPageIsContentSnapshoted,
-                onChanged = newState.onChanged,
-            )
-        }
         editorPageTextEditorState.value = newState
 
         val lastState = lastTextEditorState.value
