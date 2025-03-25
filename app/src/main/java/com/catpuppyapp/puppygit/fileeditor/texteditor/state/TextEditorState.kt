@@ -487,9 +487,9 @@ class TextEditorState private constructor(
                 //更新已选中索引
                 if(newSelectedIndices.isNotEmpty()) {
                     //更新选中索引集合
-                    for((idx, value) in newSelectedIndices.withIndex()) {
-                        if(indexNeedOffset(value)) {
-                            newSelectedIndices[idx] = value+selectedIndexOffsetValue
+                    for((i, selectedIndex) in newSelectedIndices.withIndex()) {
+                        if(indexNeedOffset(selectedIndex)) {
+                            newSelectedIndices[i] = selectedIndex + selectedIndexOffsetValue
                         }
                     }
                 }
@@ -1290,13 +1290,14 @@ class TextEditorState private constructor(
     }
 
     fun dumpLines(output: OutputStream, lineBreak:String=lb) {
-        val lastIndex = fields.size - 1
-        output.bufferedWriter().use { out ->
-            for(i in fields.indices) {
-                out.write(fields[i].value.text)
-
-                if(i != lastIndex) {
-                    out.write(lineBreak)
+        val fieldsSize = fields.size
+        var count = 0
+        output.bufferedWriter().use { bw ->
+            for(f in fields) {
+                if(++count != fieldsSize) {
+                    bw.write("${f.value.text}$lineBreak")
+                }else {
+                    bw.write(f.value.text)
                 }
             }
         }
