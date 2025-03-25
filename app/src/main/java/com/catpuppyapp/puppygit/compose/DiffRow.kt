@@ -4,6 +4,7 @@ import android.content.Context
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -60,13 +61,14 @@ import com.catpuppyapp.puppygit.utils.state.CustomStateMapSaveable
 import com.catpuppyapp.puppygit.utils.state.CustomStateSaveable
 import com.github.git24j.core.Diff
 import com.github.git24j.core.Diff.Line
-import com.github.git24j.core.Diff.Line.OriginType
+
 
 /**
- * @param stringPartList 如果用不到，可传null或使用默认值（还是null）
+ * @param stringPartList 如果用不到，可传null或使用默认值（null）
  */
 @Composable
 fun DiffRow (
+    index:Int,
     line:PuppyLine,
     stringPartList:List<IndexStringPart>? = null,
     fileFullPath:String,
@@ -455,13 +457,16 @@ fun DiffRow (
 //    prefix = prefix.removeSuffix(Cons.lineBreak)
 //    content = content.removeSuffix(Cons.lineBreak)
 
+    //首行加顶部padding，其余不加
+    val linePadding = if(index == 0) PaddingValues(top = 5.dp, end = 5.dp) else PaddingValues(end = 5.dp)
+
     Row(
         modifier = Modifier
             .fillMaxWidth()
             //如果是经过compare的添加或删除行，背景半透明，然后真修改的内容用不透明，这样就能突出真修改的内容
             //alpha值越大越不透明
             .background(if (useStringPartList) color.copy(alpha = 0.4f) else color)
-            .padding(end = 5.dp)
+            .padding(linePadding)
 //            .background(color)
 //                            .clickable {
 //
@@ -595,7 +600,7 @@ fun DiffRow (
                                 expandedMenu.value = false
                             }
                         )
-                        DropdownMenuItem(text = { Text(stringResource(R.string.del))},
+                        DropdownMenuItem(text = { Text(stringResource(R.string.delete))},
                             onClick = {
                                 initDelLineDialog(line.lineNum)
                                 expandedMenu.value = false
@@ -653,7 +658,7 @@ fun DiffRow (
 //                                    }
 
                                     // both are CONTEXT
-                                    if(line.originType == OriginType.CONTEXT.toString() && cp.line1OriginType == line.originType) {
+                                    if(line.originType == Line.OriginType.CONTEXT.toString() && cp.line1OriginType == line.originType) {
                                         Msg.requireShow(activityContext.getString(R.string.can_t_compare_both_context_type_lines))
                                         return@label
                                     }

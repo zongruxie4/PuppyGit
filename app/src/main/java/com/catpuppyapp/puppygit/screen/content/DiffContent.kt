@@ -285,7 +285,7 @@ fun DiffContent(
             Spacer(Modifier.height(100.dp))
         }
     }else {  //文本类型且没超过大小且文件修改过，正常显示diff信息
-        val lastIndex = diffItem.value.hunks.size - 1
+        val lastHunkIndex = diffItem.value.hunks.size - 1
 
         MySelectionContainer {
             LazyColumn(modifier = Modifier.fillMaxSize(),
@@ -322,14 +322,14 @@ fun DiffContent(
 //                    item { Spacer(Modifier.height(3.dp)) }
 
                     //数据结构是一个hunk header N 个行
-                    diffItem.hunks.forEachIndexed { index, hunkAndLines: PuppyHunkAndLines ->
+                    diffItem.hunks.forEachIndexed { hunkIndex, hunkAndLines: PuppyHunkAndLines ->
                         if(fileChangeTypeIsModified && proFeatureEnabled(detailsDiffTestPassed)) {  //增量diff
                             if(!groupDiffContentByLineNum || FlagFileName.flagFileExist(FlagFileName.disableGroupDiffContentByLineNum)) {
                                 //this method need use some caches, clear them before iterate lines
                                 //这种方式需要使用缓存，每次遍历lines前都需要先清下缓存，否则可能多显示或少显示某些行
                                 hunkAndLines.clearCachesForShown()
 
-                                hunkAndLines.lines.forEach printLine@{ line: PuppyLine ->
+                                hunkAndLines.lines.forEachIndexed printLine@{lineIndex, line: PuppyLine ->
                                     //若非 新增行、删除行、上下文 ，不显示
                                     if (line.originType != Diff.Line.OriginType.ADDITION.toString()
                                         && line.originType != Diff.Line.OriginType.DELETION.toString()
@@ -342,6 +342,7 @@ fun DiffContent(
                                     if(line.originType == Diff.Line.OriginType.CONTEXT.toString()) {
                                         item {
                                             DiffRow(
+                                                index = lineIndex,
                                                 line = line,
                                                 fileFullPath=fileFullPath,
                                                 isFileAndExist = isFileAndExist.value,
@@ -379,6 +380,7 @@ fun DiffContent(
                                             if(mergeAddDelLineResult.line != null) {
                                                 item {
                                                     DiffRow(
+                                                        index = lineIndex,
                                                         line = mergeAddDelLineResult.line,
                                                         fileFullPath=fileFullPath,
                                                         isFileAndExist = isFileAndExist.value,
@@ -433,6 +435,7 @@ fun DiffContent(
 
                                         item {
                                             DiffRow(
+                                                index = lineIndex,
                                                 line = line,
                                                 fileFullPath = fileFullPath,
                                                 stringPartList = stringPartListWillUse,
@@ -460,7 +463,12 @@ fun DiffContent(
                                     }
                                 }
                             }else {  // grouped lines by line num
+                                //由于这个是一对一对的，所以如果第一行是一对，实际上两行都会有顶部padding，不过问题不大，看着不太难受
+                                val lineIndex = mutableIntStateOf(-1) //必须用个什么东西包装一下，不然基本类型会被闭包捕获，值会错
                                 hunkAndLines.groupedLines.forEach printLine@{ (_lineNum:Int, lines:Map<String, PuppyLine>) ->
+                                    lineIndex.intValue += 1;
+                                    val lineIndex = lineIndex.intValue
+
                                     //若非 新增行、删除行、上下文 ，不显示
                                     if (!(lines.contains(Diff.Line.OriginType.ADDITION.toString())
                                                 || lines.contains(Diff.Line.OriginType.DELETION.toString())
@@ -531,6 +539,7 @@ fun DiffContent(
                                         if(del!=null) {
                                             item {
                                                 DiffRow(
+                                                    index = lineIndex,
                                                     line = del,
                                                     stringPartList = delStringPartListWillUse,
                                                     fileFullPath=fileFullPath,
@@ -560,6 +569,7 @@ fun DiffContent(
                                         if(add!=null) {
                                             item {
                                                 DiffRow(
+                                                    index = lineIndex,
                                                     line = add,
                                                     stringPartList = addStringPartListWillUse,
                                                     fileFullPath=fileFullPath,
@@ -613,6 +623,7 @@ fun DiffContent(
 
                                         item {
                                             DiffRow(
+                                                index = lineIndex,
                                                 //随便拷贝下del或add（不拷贝只改类型也行但不推荐以免有坏影响）把类型改成context，就行了
                                                 //这里del肯定不为null，因为 mergeDelAndAddToFakeContext 的条件包含了del和add都不为null
                                                 line = del!!.copy(originType = Diff.Line.OriginType.CONTEXT.toString()),
@@ -656,6 +667,7 @@ fun DiffContent(
                                         item {
                                             //打印context
                                             DiffRow(
+                                                index = lineIndex,
                                                 line = context,
                                                 fileFullPath=fileFullPath,
                                                 isFileAndExist = isFileAndExist.value,
@@ -691,7 +703,7 @@ fun DiffContent(
 
                         }else { //普通预览，非pro或关闭细节compare时走这里
                             //遍历行
-                            hunkAndLines.lines.forEach printLine@{ line: PuppyLine ->
+                            hunkAndLines.lines.forEachIndexed printLine@{lineIndex, line: PuppyLine ->
                                 //若非 新增行、删除行、上下文 ，不显示
                                 if (line.originType == Diff.Line.OriginType.ADDITION.toString()
                                     || line.originType == Diff.Line.OriginType.DELETION.toString()
@@ -699,6 +711,7 @@ fun DiffContent(
                                 ) {
                                     item {
                                         DiffRow(
+                                            index = lineIndex,
                                             line = line,
                                             fileFullPath=fileFullPath,
                                             isFileAndExist = isFileAndExist.value,
@@ -728,13 +741,17 @@ fun DiffContent(
 
 
                         //EOF_NL only appear at last hunk, so better check index avoid non-sense iterate
-                        if(index == lastIndex) {
+                        if(hunkIndex == lastHunkIndex) {
                             // if delete EOFNL or add EOFNL , show it
                             val indexOfEOFNL = hunkAndLines.lines.indexOfFirst { it.originType == Diff.Line.OriginType.ADD_EOFNL.toString() || it.originType == Diff.Line.OriginType.DEL_EOFNL.toString()}
                             if(indexOfEOFNL != -1) {  // found originType EOFNL
                                 val eofLine = hunkAndLines.lines.get(indexOfEOFNL)
+                                val fakeIndex = -1
                                 item {
                                     DiffRow(
+                                        // for now, the index only used to add top padding to first line, so passing a invalid fakeIndex is ok
+                                        index = fakeIndex,
+
                                         line = LineNum.EOF.transLineToEofLine(eofLine, add = eofLine.originType == Diff.Line.OriginType.ADD_EOFNL.toString()),
                                         fileFullPath=fileFullPath,
                                         isFileAndExist = isFileAndExist.value,
