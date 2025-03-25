@@ -286,13 +286,15 @@ fun TextEditor(
                 goColumn = true,
 
 
+                //有开头和结尾索引，原本是想做区域选中的，就像手动长按选中某段文本一样，但忘了是什么问题了，反正选中不了，所以最后仅定位某列，无区域选中了
                 //若想定位到关键字开头，用上面的，定位到末尾用下面的
 //                columnStartIndex = keywordStartAtLine, // to keyword start
                 columnStartIndex = keywordEndExclusiveAtLine, // to keyword end
 
-                //这个与定位到关键字开头还是末尾无关，不用动
+                //这个与定位到关键字开头还是末尾无关，不用动，因为有bug，所以就算这个和开头索引不同，也不会选中区域，实际还是会定位到开头那
                 columnEndIndexExclusive = keywordEndExclusiveAtLine,
 
+                //这个高亮关键字也有bug，闪一下就没了，因为TextFieldValue更新后会丢样式
                 //高亮关键字
                 highlightingStartIndex = keywordStartAtLine,
                 highlightingEndExclusiveIndex = keywordEndExclusiveAtLine,

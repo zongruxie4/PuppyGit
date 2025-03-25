@@ -779,6 +779,9 @@ class TextEditorState private constructor(
         }
     }
 
+    /**
+     * 区域选中有bug，高亮也有bug，就算选中或高亮，后面会自动触发TextField OnValueChange，然后就丢失选中或样式了，不过写代码的时候如果需要选中区域或高亮区域，正常传参就行，这样以后修复bug就不需要再改了
+     */
     private fun selectFieldInternal(
         init_fields:List<TextFieldState>,
         init_selectedIndices:List<Int>,
