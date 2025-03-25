@@ -308,11 +308,9 @@ class TextEditorState private constructor(
 //            val newSelectedIndices = selectedIndices.toMutableList()
 
             // 判断是定位到新内容最后一行开头还是末尾
-            val oldTargetTextLen = fields[targetIndex].value.text.length  //旧行长度
-            val newTargetTextLen = splitFirstLine.text.length  //分割后的第一行对应旧的目标行
-            // 若从某行中间换行，定位到开头；若追加内容到某行末尾产生的换行（例如粘贴），定位到末尾
-            //若新行长度比旧行短，说明分割了，这时候定位到新内容最后一行开头；反之，若相等或长，说明旧行没分割，这时候定位到新内容最后一行末尾（若回车在旧行末尾换行，新行为空，定位到末尾和开头一样；若在旧行末尾粘贴内容，定位到新内容末尾）
-            val newLinePosition = if(newTargetTextLen < oldTargetTextLen) SelectionOption.FIRST_POSITION else SelectionOption.LAST_POSITION
+            val oldTargetText = fields[targetIndex].value.text  //旧行长度
+            val newTargetFirstText = splitFirstLine.text  //分割后的第一行对应旧的目标行
+            val newTargetLastText = splitFieldValues.last().text
 
             val sfiRet = selectFieldInternal(
                 init_fields = newFields,
@@ -323,7 +321,20 @@ class TextEditorState private constructor(
 //                init_focusingLineIdx = focusingLineIdx,
                 targetIndex = lastNewSplitFieldIndex,
 
-                option = newLinePosition,
+                option = SelectionOption.CUSTOM,
+                columnStartIndexInclusive = if (oldTargetText == newTargetFirstText) {  //新旧第一行相等，定位到新内容最后一行末尾
+                    newTargetLastText.length
+                } else { //新旧内容不相等，从新内容最后一行和旧内容的末尾开始匹配，定位到从尾到头第一个不匹配的字符后面
+                    var nl = newTargetLastText.length
+                    var ol = oldTargetText.length
+                    var bothLen = Math.min(ol, nl)
+                    while (bothLen-- > 0) {
+                        if(newTargetLastText[--nl] != oldTargetText[--ol]) break
+                    }
+
+                    //break的时候是目标索引-1，所以最后需要加1得到目标索引
+                    bothLen + 1
+                },
             )
 
             isContentEdited?.value=true
@@ -807,6 +818,7 @@ class TextEditorState private constructor(
         columnEndIndexExclusive:Int=columnStartIndexInclusive,
         requireSelectLine:Boolean = true,
 
+        // -1 或其他无效索引，就是啥都不高亮，或者两个值相等，也是啥都不高亮，或者start大于end，也不高亮，总之就是无效左闭右开区间就不高亮
         highlightingStartIndex: Int = -1,
         highlightingEndExclusiveIndex: Int = -1,
     ):SelectFieldInternalRet {
