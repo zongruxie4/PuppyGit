@@ -39,9 +39,11 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.platform.LocalTextInputService
 import androidx.compose.ui.res.stringResource
@@ -77,7 +79,6 @@ import com.catpuppyapp.puppygit.utils.fileopenhistory.FileOpenHistoryMan
 import com.catpuppyapp.puppygit.utils.replaceStringResList
 import com.catpuppyapp.puppygit.utils.state.CustomStateSaveable
 import com.catpuppyapp.puppygit.utils.state.mutableCustomStateOf
-import com.catpuppyapp.puppygit.utils.withMainContext
 import java.util.Date
 
 private const val TAG ="TextEditor"
@@ -177,7 +178,7 @@ fun TextEditor(
     val rejectBothBtnColor = UIHelper.getRejectBothIconColor()
 
     val activityContext = LocalContext.current
-
+    val haptic = LocalHapticFeedback.current
     val scope = rememberCoroutineScope()
     val keyboardController = LocalSoftwareKeyboardController.current
     val inDarkTheme = Theme.inDarkTheme
@@ -1027,8 +1028,8 @@ fun TextEditor(
                                         onLongClick = clickable@{
                                             if (!textEditorState.isMultipleSelectionMode) return@clickable
 
-                                            //震动反馈，和长按选择文本的震动反馈冲突了，若开会振两下
-//                                            haptic.performHapticFeedback(HapticFeedbackType.LongPress)
+                                            //(20250325新版compose似乎不会同时触发选择文本和当前行了，所以不会震两下了) 震动反馈，和长按选择文本的震动反馈冲突了，若开会振两下
+                                            haptic.performHapticFeedback(HapticFeedbackType.LongPress)
 
                                             //执行区域选择
                                             doJobThenOffLoading {
