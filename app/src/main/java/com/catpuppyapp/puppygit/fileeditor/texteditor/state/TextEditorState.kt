@@ -332,8 +332,8 @@ class TextEditorState private constructor(
                         if(newTargetLastText[--nl] != oldTargetText[--ol]) break
                     }
 
-                    //break的时候是目标索引-1，所以最后需要加1得到目标索引
-                    bothLen + 1
+                    //要定位到倒数第一个不匹配的字符后面，所以需要加1
+                    nl + 1
                 },
             )
 
