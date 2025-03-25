@@ -900,6 +900,11 @@ fun TextEditor(
                                 highlightingEndExclusiveIndex = lastScrollEvent.highlightingEndExclusiveIndex,
                                 requireLossFocus = lastScrollEvent.requireLossFocus
                             )
+
+                            //请求失焦则关闭键盘
+                            if(lastScrollEvent.requireLossFocus) {
+                                keyboardController?.hide()
+                            }
                         }
                     }else {
                         //更新最后编辑行状态

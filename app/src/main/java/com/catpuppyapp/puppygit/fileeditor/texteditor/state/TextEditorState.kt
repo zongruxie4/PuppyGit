@@ -759,13 +759,14 @@ class TextEditorState private constructor(
 
         // highlight range if require
         //检查开闭索引是否都为有效索引
-        return if(highlightingStartIndex >= 0 && highlightingEndExclusiveIndex >= 0
-            && highlightingStartIndex < targetTextLen && highlightingEndExclusiveIndex < targetTextLen
+        return if(highlightingStartIndex >= 0 && highlightingEndExclusiveIndex > 0
+            && highlightingStartIndex < targetTextLen && highlightingEndExclusiveIndex <= targetTextLen
         ) {
             val targetText = targetValue.text
             val before = targetText.substring(0, highlightingStartIndex)
             val highlighting = targetText.substring(highlightingStartIndex, highlightingEndExclusiveIndex)
             val after = targetText.substring(highlightingEndExclusiveIndex)
+
 
             targetValue.copy(
                 selection = selection,
