@@ -1067,3 +1067,6 @@ fun trimLineBreak(str:String) :String {
     return str.trim { it == '\n' || it == '\r' }
 }
 
+fun isStartInclusiveEndExclusiveRangeValid(start:Int, endExclusive:Int, size:Int):Boolean {
+  return  start >= 0 && start < size && endExclusive > 0 && endExclusive <= size
+}

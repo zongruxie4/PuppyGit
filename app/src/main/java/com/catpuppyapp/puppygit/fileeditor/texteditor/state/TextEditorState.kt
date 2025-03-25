@@ -21,6 +21,7 @@ import com.catpuppyapp.puppygit.utils.doActIfIndexGood
 import com.catpuppyapp.puppygit.utils.generateRandomString
 import com.catpuppyapp.puppygit.utils.isGoodIndexForList
 import com.catpuppyapp.puppygit.utils.isGoodIndexForStr
+import com.catpuppyapp.puppygit.utils.isStartInclusiveEndExclusiveRangeValid
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
@@ -759,9 +760,7 @@ class TextEditorState private constructor(
 
         // highlight range if require
         //检查开闭索引是否都为有效索引
-        return if(highlightingStartIndex >= 0 && highlightingEndExclusiveIndex > 0
-            && highlightingStartIndex < targetTextLen && highlightingEndExclusiveIndex <= targetTextLen
-        ) {
+        return if(isStartInclusiveEndExclusiveRangeValid(start = highlightingStartIndex, endExclusive = highlightingEndExclusiveIndex, size = targetTextLen)) {
             val targetText = targetValue.text
             val before = targetText.substring(0, highlightingStartIndex)
             val highlighting = targetText.substring(highlightingStartIndex, highlightingEndExclusiveIndex)
@@ -834,32 +833,32 @@ class TextEditorState private constructor(
         }
 
 
-        if(isMultipleSelectionMode) {  //多选模式，添加选中行列表或从列表移除
-            if(requireSelectLine) {
-                ret_fields = if(isMutableFields) (ret_fields as MutableList) else ret_fields.toMutableList()
-                ret_selectedIndices = if(isMutableSelectedIndices) (ret_selectedIndices as MutableList) else ret_selectedIndices.toMutableList()
+        val requireHighlighting = requireLossFocus && isStartInclusiveEndExclusiveRangeValid(start = highlightingStartIndex, endExclusive = highlightingEndExclusiveIndex, size = target.value.text.length)
+        //如果请求取消聚焦当前行，把其他行都解除聚焦
+        val unFocusNonTarget = { mutableFields:MutableList<TextFieldState> ->
+            val ret_fields = Unit  // avoid mistake using
 
-                if(forceAdd) {  //强制添加
-                    val isSelected = ret_fields[targetIndex].isSelected
-                    //未添加则添加，否则什么都不做
-                    if(!isSelected) {
-                        val copyTarget = target.copy(
-                            isSelected = true,
-                            value = getCopyTargetValue(
-                                targetValue = target.value,
-                                selection = selection,
-                                highlightingStartIndex = highlightingStartIndex,
-                                highlightingEndExclusiveIndex = highlightingEndExclusiveIndex
-                            )
-                        )
+            for(i in mutableFields.indices) {
+                if(i != targetIndex) {
+                    mutableFields[i] = mutableFields[i].let { it.copy(value = it.value.copy(text = it.value.text)) }
+                }
+            }
 
-                        ret_fields[targetIndex] = copyTarget
-                        ret_selectedIndices.add(targetIndex)
-                    }
-                }else {  //切换添加和移除
-                    val isSelected = !ret_fields[targetIndex].isSelected
-                    val copyTarget = target.copy(
-                        isSelected = isSelected,
+        }
+
+
+        if(isMultipleSelectionMode && requireSelectLine) {  //多选模式，添加选中行列表或从列表移除
+            ret_fields = if(isMutableFields) (ret_fields as MutableList) else ret_fields.toMutableList()
+            ret_selectedIndices = if(isMutableSelectedIndices) (ret_selectedIndices as MutableList) else ret_selectedIndices.toMutableList()
+
+            if(forceAdd) {  //强制添加
+                val notSelected = ret_fields[targetIndex].isSelected.not()
+                val notInSelectedIndices = ret_selectedIndices.contains(targetIndex).not()
+                //未添加则添加，否则什么都不做
+
+                if(notSelected || requireHighlighting) {
+                    ret_fields[targetIndex] = target.copy(
+                        isSelected = true,  //重点
                         value = getCopyTargetValue(
                             targetValue = target.value,
                             selection = selection,
@@ -867,41 +866,62 @@ class TextEditorState private constructor(
                             highlightingEndExclusiveIndex = highlightingEndExclusiveIndex
                         )
                     )
-
-                    ret_fields[targetIndex] = copyTarget
-                    if (isSelected) ret_selectedIndices.add(targetIndex) else ret_selectedIndices.remove(targetIndex)
                 }
 
-            }else{ //no touch selected lines, just go to target line，这个并不是选择行，只是同一行，但选中不同的范围，原本是想用来高亮查找的关键字的，但有点毛病，目前实现成仅将光标定位到关键字前面，但无法选中范围，不过我忘了现在定位到关键字前面是不是依靠的这段代码了
+                if(notInSelectedIndices) {
+                    ret_selectedIndices.add(targetIndex)
+                }
 
-                if(target.value.selection != selection) {
-                    ret_fields = if(isMutableFields) (ret_fields as MutableList) else ret_fields.toMutableList()
-                    ret_fields[targetIndex] = target.copy(value = getCopyTargetValue(
+            }else {  //切换添加和移除
+                val isSelected = !ret_fields[targetIndex].isSelected
+                ret_fields[targetIndex] = target.copy(
+                    isSelected = isSelected,  //重点
+                    value = getCopyTargetValue(
                         targetValue = target.value,
                         selection = selection,
                         highlightingStartIndex = highlightingStartIndex,
                         highlightingEndExclusiveIndex = highlightingEndExclusiveIndex
-                    ))
-                }
+                    )
+                )
 
-                ret_focusingLineIdx = targetIndex
+                if (isSelected) {
+                    if(ret_selectedIndices.contains(targetIndex).not()) {
+                        ret_selectedIndices.add(targetIndex)
+                    }
+                } else {
+                    ret_selectedIndices.remove(targetIndex)
+                }
             }
 
-        }else{  //非多选模式，定位光标到对应行，并选中行
+            if(requireHighlighting) {
+                unFocusNonTarget(ret_fields)
+            }
+
+        }else{  //非多选模式，定位光标到对应行，并选中行，或者定位到同一行但选中不同范围，原本是想用来高亮查找的关键字的，但有点毛病，目前实现成仅将光标定位到关键字前面，但无法选中范围，不过我忘了现在定位到关键字前面是不是依靠的这段代码了
             //更新行选中范围并focus行
-            if(selection != target.value.selection) {
+            val selectionRangeChanged = selection != target.value.selection
+            if(requireHighlighting || selectionRangeChanged) {
                 ret_fields = if(isMutableFields) (ret_fields as MutableList) else ret_fields.toMutableList()
-                ret_fields[targetIndex] = target.copy(value = getCopyTargetValue(
-                    targetValue = target.value,
-                    selection = selection,
-                    highlightingStartIndex = highlightingStartIndex,
-                    highlightingEndExclusiveIndex = highlightingEndExclusiveIndex
+
+                //这里不要判断 selection != target.value.selection ，因为即使选择范围没变，也有可能请求高亮关键字，还是需要更新targetIndex对应的值
+                ret_fields[targetIndex] = target.copy(
+                    value = getCopyTargetValue(
+                        targetValue = target.value,
+                        selection = selection,
+                        highlightingStartIndex = highlightingStartIndex,
+                        highlightingEndExclusiveIndex = highlightingEndExclusiveIndex
                 ))
+
+                if(requireHighlighting) {
+                    unFocusNonTarget(ret_fields)
+                }
             }
 
             ret_focusingLineIdx = targetIndex
 
         }
+
+
 
         return SelectFieldInternalRet(
             fields = ret_fields,
