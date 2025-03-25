@@ -306,7 +306,8 @@ class TextEditorState private constructor(
                 isMutableSelectedIndices = false,
 //                out_focusingLineIdx = newFocusingLineIdx,
 //                init_focusingLineIdx = focusingLineIdx,
-                targetIndex = lastNewSplitFieldIndex
+                targetIndex = lastNewSplitFieldIndex,
+                option = SelectionOption.LAST_POSITION, //定位到分割后的行末尾
             )
 
             isContentEdited?.value=true
@@ -420,7 +421,10 @@ class TextEditorState private constructor(
                 fieldsId = maybeNewId,
                 selectedIndices = selectedIndices,
                 isMultipleSelectionMode = isMultipleSelectionMode,
-                focusingLineIdx = targetIndex
+//                focusingLineIdx = targetIndex,
+                // -1 to skip focusing, cause `onFocus` callback of `com.catpuppyapp.puppygit.fileeditor.texteditor.view.TextField` already focused target line, usually the onFocus call `selectField()` of this class
+                // 传 -1 跳过聚焦某行，因为onFocus()已经聚焦了，另外，通常onFocus()会调用这里的selectField()
+                focusingLineIdx = -1,
             )
 
             onChanged(newState, if(contentChanged) true else null, contentChanged)
