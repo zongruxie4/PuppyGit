@@ -1,4 +1,4 @@
-1.0.9.7v73 - 20250323:
+1.0.9.7v73 - 20250325:
 - optimize Editor performance
 - fix: Editor redo/undo not work
 - Editor selection mode: add "Clear" and "Paste" button
