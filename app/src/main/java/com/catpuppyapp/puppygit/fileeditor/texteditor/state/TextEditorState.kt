@@ -286,12 +286,14 @@ class TextEditorState private constructor(
                 throw InvalidParameterException("textFieldValue doesn't contains newline")
             }
 
+            //分割当前行
             val splitFieldValues = splitTextsByNL(textFieldValue)
 
             val newFields = fields.toMutableList()
 
-            //分割当前行
-            newFields[targetIndex] = newFields[targetIndex].copy(value = splitFieldValues.first(), isSelected = false)
+            val splitFirstLine = splitFieldValues.first()
+            newFields[targetIndex] = newFields[targetIndex].copy(value = splitFirstLine, isSelected = false)
+
 
             //追加新行（第一行可能有之前行的后半段内容）
             val newSplitFieldValues = splitFieldValues.subList(1, splitFieldValues.count())
@@ -305,6 +307,13 @@ class TextEditorState private constructor(
 //            val newFocusingLineIdx = mutableStateOf(focusingLineIdx)
 //            val newSelectedIndices = selectedIndices.toMutableList()
 
+            // 判断是定位到新内容最后一行开头还是末尾
+            val oldTargetTextLen = fields[targetIndex].value.text.length  //旧行长度
+            val newTargetTextLen = splitFirstLine.text.length  //分割后的第一行对应旧的目标行
+            // 若从某行中间换行，定位到开头；若追加内容到某行末尾产生的换行（例如粘贴），定位到末尾
+            //若新行长度比旧行短，说明分割了，这时候定位到新内容最后一行开头；反之，若相等或长，说明旧行没分割，这时候定位到新内容最后一行末尾（若回车在旧行末尾换行，新行为空，定位到末尾和开头一样；若在旧行末尾粘贴内容，定位到新内容末尾）
+            val newLinePosition = if(newTargetTextLen < oldTargetTextLen) SelectionOption.FIRST_POSITION else SelectionOption.LAST_POSITION
+
             val sfiRet = selectFieldInternal(
                 init_fields = newFields,
                 init_selectedIndices = selectedIndices,
@@ -313,7 +322,8 @@ class TextEditorState private constructor(
 //                out_focusingLineIdx = newFocusingLineIdx,
 //                init_focusingLineIdx = focusingLineIdx,
                 targetIndex = lastNewSplitFieldIndex,
-                option = SelectionOption.LAST_POSITION, //定位到分割后的行末尾
+
+                option = newLinePosition,
             )
 
             isContentEdited?.value=true
