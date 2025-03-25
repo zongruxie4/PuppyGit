@@ -632,12 +632,14 @@ class TextEditorState private constructor(
                     return
                 }
 
+                val newFields = fields.toMutableList()
+                val newSelectedIndices = selectedIndices.toMutableList()
                 for(i in startIndex..<endIndexExclusive) {
                     sfiRet = selectFieldInternal(
-                        init_fields = fields,
-                        init_selectedIndices = selectedIndices,
-                        isMutableFields = false,
-                        isMutableSelectedIndices = false,
+                        init_fields = newFields,
+                        init_selectedIndices = newSelectedIndices,
+                        isMutableFields = true,
+                        isMutableSelectedIndices = true,
 //                        out_focusingLineIdx = newFocusingLineIdx,
 //                        init_focusingLineIdx = focusingLineIdx,
                         targetIndex = i,
