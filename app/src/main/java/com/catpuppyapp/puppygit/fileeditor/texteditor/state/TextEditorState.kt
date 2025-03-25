@@ -799,6 +799,7 @@ class TextEditorState private constructor(
         columnEndIndexExclusive:Int=columnStartIndexInclusive,
         requireSelectLine:Boolean = true,
 
+        //高亮区间一般和lossFocus配合使用，不然就算高亮了，一弹键盘，自动就没了
         highlightingStartIndex: Int = -1,
         highlightingEndExclusiveIndex: Int = -1,
         requireLossFocus: Boolean = false, // if true, will set focusing to null
@@ -927,6 +928,9 @@ class TextEditorState private constructor(
             fields = ret_fields,
             selectedIndices = ret_selectedIndices,
             focusingLineIdx = if(requireLossFocus) null else ret_focusingLineIdx
+
+            //如果不传null，会自动弹键盘，会破坏请求高亮时设置的颜色，高亮颜色在弹出键盘后，闪下就没了
+//            focusingLineIdx = ret_focusingLineIdx
         )
     }
 
