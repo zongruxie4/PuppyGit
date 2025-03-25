@@ -79,7 +79,6 @@ import com.catpuppyapp.puppygit.utils.fileopenhistory.FileOpenHistoryMan
 import com.catpuppyapp.puppygit.utils.replaceStringResList
 import com.catpuppyapp.puppygit.utils.state.CustomStateSaveable
 import com.catpuppyapp.puppygit.utils.state.mutableCustomStateOf
-import java.util.Date
 
 private const val TAG ="TextEditor"
 private const val stateKeyTag ="TextEditor"
@@ -242,9 +241,23 @@ fun TextEditor(
 //        println("startPos:"+nextSearchPos.value) //test1791022120240812
     }
 
-    fun jumpToLineIndex(lineIndex:Int, goColumn: Boolean=false, columnStartIndex:Int=0, columnEndIndexExclusive:Int=columnStartIndex){
-        lastScrollEvent.value = ScrollEvent(lineIndex, forceGo = true,
-            goColumn = goColumn, columnStartIndexInclusive = columnStartIndex, columnEndIndexExclusive = columnEndIndexExclusive)
+    fun jumpToLineIndex(
+        lineIndex:Int,
+        goColumn: Boolean=false,
+        columnStartIndex:Int=0,
+        columnEndIndexExclusive:Int=columnStartIndex,
+        highlightingStartIndex:Int = -1,
+        highlightingEndExclusiveIndex:Int = -1,
+    ){
+        lastScrollEvent.value = ScrollEvent(
+            index = lineIndex,
+            forceGo = true,
+            goColumn = goColumn,
+            columnStartIndexInclusive = columnStartIndex,
+            columnEndIndexExclusive = columnEndIndexExclusive,
+            highlightingStartIndex = highlightingStartIndex,
+            highlightingEndExclusiveIndex = highlightingEndExclusiveIndex,
+        )
     }
 
     suspend fun doSearch(key:String, toNext:Boolean, startPos: SearchPos) {
@@ -265,8 +278,26 @@ fun TextEditor(
             //显示选中文本背景颜色
             needShowCursorHandle.value = true
 
+            val keywordStartAtLine = foundPos.columnIndex
+            val keywordEndExclusiveAtLine = foundPos.columnIndex + keyLen
             //跳转到对应行并选中关键字
-            jumpToLineIndex(foundPos.lineIndex, goColumn = true, foundPos.columnIndex, foundPos.columnIndex+keyLen)
+            jumpToLineIndex(
+                lineIndex = foundPos.lineIndex,
+                goColumn = true,
+
+
+                //若想定位到关键字开头，用上面的，定位到末尾用下面的
+//                columnStartIndex = keywordStartAtLine, // to keyword start
+                columnStartIndex = keywordEndExclusiveAtLine, // to keyword end
+
+                //这个与定位到关键字开头还是末尾无关，不用动
+                columnEndIndexExclusive = keywordEndExclusiveAtLine,
+
+                //高亮关键字
+                highlightingStartIndex = keywordStartAtLine,
+                highlightingEndExclusiveIndex = keywordEndExclusiveAtLine,
+            )
+
 
             lastFoundPos.value = posResult.foundPos.copy()
 
@@ -765,6 +796,7 @@ fun TextEditor(
 
     LaunchedEffect(lastScrollEvent.value) TextEditorLaunchedEffect@{
         try {
+            val lastScrollEvent = lastScrollEvent.value
 //        if(debugModeOn) {
             //还行不是很长
 //            println("lastScrollEvent.toString() + firstLineIndexState.value:"+(lastScrollEvent.toString() + firstLineIndexState.value))
@@ -785,7 +817,7 @@ fun TextEditor(
 //        }
 
             //刚打开文件，定位到上次记录的行，这个滚动只在初始化时执行一次
-            if(lastScrollEvent.value==null && !isInitDone.value) {
+            if(lastScrollEvent==null && !isInitDone.value) {
                 //放到第一行是为了避免重入
                 isInitDone.value=true
 
@@ -824,13 +856,13 @@ fun TextEditor(
 
 
                 //只有当滚动事件不为null且isConsumed为假时，才执行下面的代码块
-            }else if(lastScrollEvent.value?.isConsumed == false) {  //编辑了文件，行号有更新，更新配置文件记录的行并定位到对应的行
+            }else if(lastScrollEvent?.isConsumed == false) {  //编辑了文件，行号有更新，更新配置文件记录的行并定位到对应的行
                 //消费以避免重复执行（设置isConsumed为true）
-                lastScrollEvent.value?.consume()
+                lastScrollEvent?.consume()
 
                 //检查是否不检查行是否可见，直接强制跳转
-                val forceGo = lastScrollEvent.value?.forceGo == true
-                lastScrollEvent.value?.index?.let { index ->
+                val forceGo = lastScrollEvent?.forceGo == true
+                lastScrollEvent?.index?.let { index ->
 //                val safeIndex = Math.max(0, index)
 //                maybeWillSaveEditedLineIndex = safeIndex
 
@@ -848,15 +880,17 @@ fun TextEditor(
 
 //                        println("lastScrollEvent!!.columnStartIndexInclusive:${lastScrollEvent!!.columnStartIndexInclusive}")  //test1791022120240812
                         //定位列，如果请求定位列的话
-                        if(lastScrollEvent.value?.goColumn==true) {
+                        if(lastScrollEvent?.goColumn==true) {
                             //选中关键字
                             textEditorState.selectField(
                                 targetIndex = index,
                                 option = SelectionOption.CUSTOM,
-                                columnStartIndexInclusive = lastScrollEvent.value!!.columnStartIndexInclusive,
+                                columnStartIndexInclusive = lastScrollEvent!!.columnStartIndexInclusive,
                                 //如果选中某行子字符串的功能修复了，就使用正常的endIndex；否则使用startIndex，定位光标到关键字出现的位置但不选中关键字
-                                columnEndIndexExclusive = if(bug_Editor_SelectColumnRangeOfLine_Fixed) lastScrollEvent.value!!.columnEndIndexExclusive else lastScrollEvent.value!!.columnStartIndexInclusive,
-                                requireSelectLine = false
+                                columnEndIndexExclusive = if(bug_Editor_SelectColumnRangeOfLine_Fixed) lastScrollEvent!!.columnEndIndexExclusive else lastScrollEvent!!.columnStartIndexInclusive,
+                                requireSelectLine = false,
+                                highlightingStartIndex = lastScrollEvent.highlightingStartIndex,
+                                highlightingEndExclusiveIndex = lastScrollEvent.highlightingEndExclusiveIndex
                             )
                         }
                     }else {
@@ -1277,9 +1311,18 @@ fun getPreviousKeyWordForConflict(curKeyWord:String, settings: AppSettings):Stri
     }
 }
 
-data class ScrollEvent(val index: Int = -1, val time: Long = Date().time, val forceGo:Boolean = false,
-                       val goColumn:Boolean=false, val columnStartIndexInclusive:Int=0, val columnEndIndexExclusive:Int=columnStartIndexInclusive
-) {
+data class ScrollEvent(
+    val index: Int = -1,
+    val time: Long = System.currentTimeMillis(),
+    val forceGo:Boolean = false,
+    val goColumn:Boolean=false,
+    val columnStartIndexInclusive:Int=0,
+    val columnEndIndexExclusive:Int=columnStartIndexInclusive,
+
+    val highlightingStartIndex:Int = -1,
+    val highlightingEndExclusiveIndex:Int = -1,
+
+    ) {
     var isConsumed: Boolean = false
         private set
 

@@ -2,8 +2,12 @@ package com.catpuppyapp.puppygit.fileeditor.texteditor.state
 
 import androidx.compose.runtime.Immutable
 import androidx.compose.runtime.MutableState
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.TextRange
+import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.input.TextFieldValue
+import androidx.compose.ui.text.withStyle
 import com.catpuppyapp.puppygit.dto.UndoStack
 import com.catpuppyapp.puppygit.etc.Ret
 import com.catpuppyapp.puppygit.fileeditor.texteditor.view.SearchPos
@@ -82,6 +86,7 @@ class TextEditorState private constructor(
             }
         }
     }
+
 
     /**
      * x 已修复） 20241203: 发现有bug，无法找到 " w " 这样字符，已经修复，在无匹配时将被查找的文件中的字符串索引向后移一位再和关键字从头匹配即可（反向查找时是向前移一位然后和关键字末尾匹配）
@@ -576,6 +581,8 @@ class TextEditorState private constructor(
         columnStartIndexInclusive:Int=0,
         columnEndIndexExclusive:Int=columnStartIndexInclusive,
         requireSelectLine: Boolean=true, // if true, will add targetIndex into selected indices, set false if you don't want to select this line(e.g. when you just want go to line)
+        highlightingStartIndex: Int = -1,
+        highlightingEndExclusiveIndex: Int = -1,
     ) {
 
         lock.withLock {
@@ -593,7 +600,10 @@ class TextEditorState private constructor(
                 option = option,
                 columnStartIndexInclusive=columnStartIndexInclusive,
                 columnEndIndexExclusive=columnEndIndexExclusive,
-                requireSelectLine = requireSelectLine
+                requireSelectLine = requireSelectLine,
+                highlightingStartIndex = highlightingStartIndex,
+                highlightingEndExclusiveIndex = highlightingEndExclusiveIndex,
+
             )
 
             val newState = internalCreate(
@@ -736,6 +746,39 @@ class TextEditorState private constructor(
     }
 
 
+    private fun getCopyTargetValue(
+        targetValue: TextFieldValue,
+        selection:TextRange,
+        highlightingStartIndex:Int,
+        highlightingEndExclusiveIndex:Int,
+    ):TextFieldValue {
+        val targetTextLen = targetValue.text.length
+
+        // highlight range if require
+        //检查开闭索引是否都为有效索引
+        return if(highlightingStartIndex >= 0 && highlightingEndExclusiveIndex >= 0
+            && highlightingStartIndex < targetTextLen && highlightingEndExclusiveIndex < targetTextLen
+        ) {
+            val targetText = targetValue.text
+            val before = targetText.substring(0, highlightingStartIndex)
+            val highlighting = targetText.substring(highlightingStartIndex, highlightingEndExclusiveIndex)
+            val after = targetText.substring(highlightingEndExclusiveIndex)
+
+            targetValue.copy(
+                selection = selection,
+                annotatedString = buildAnnotatedString {
+                    append(before)
+                    withStyle(SpanStyle(background = Color.Yellow)) {
+                        append(highlighting)
+                    }
+                    append(after)
+                })
+
+        }else {
+            targetValue.copy(selection = selection)
+        }
+    }
+
     private fun selectFieldInternal(
         init_fields:List<TextFieldState>,
         init_selectedIndices:List<Int>,
@@ -749,6 +792,10 @@ class TextEditorState private constructor(
         columnStartIndexInclusive:Int=0,
         columnEndIndexExclusive:Int=columnStartIndexInclusive,
         requireSelectLine:Boolean = true,
+
+        highlightingStartIndex: Int = -1,
+        highlightingEndExclusiveIndex: Int = -1,
+
     ):SelectFieldInternalRet {
         //后面会根据需要决定是否创建拷贝
         var ret_fields = init_fields
@@ -791,7 +838,12 @@ class TextEditorState private constructor(
                     if(!isSelected) {
                         val copyTarget = target.copy(
                             isSelected = true,
-                            value = target.value.copy(selection = selection)
+                            value = getCopyTargetValue(
+                                targetValue = target.value,
+                                selection = selection,
+                                highlightingStartIndex = highlightingStartIndex,
+                                highlightingEndExclusiveIndex = highlightingEndExclusiveIndex
+                            )
                         )
 
                         ret_fields[targetIndex] = copyTarget
@@ -801,7 +853,12 @@ class TextEditorState private constructor(
                     val isSelected = !ret_fields[targetIndex].isSelected
                     val copyTarget = target.copy(
                         isSelected = isSelected,
-                        value = target.value.copy(selection = selection)
+                        value = getCopyTargetValue(
+                            targetValue = target.value,
+                            selection = selection,
+                            highlightingStartIndex = highlightingStartIndex,
+                            highlightingEndExclusiveIndex = highlightingEndExclusiveIndex
+                        )
                     )
 
                     ret_fields[targetIndex] = copyTarget
@@ -812,7 +869,12 @@ class TextEditorState private constructor(
 
                 if(target.value.selection != selection) {
                     ret_fields = if(isMutableFields) (ret_fields as MutableList) else ret_fields.toMutableList()
-                    ret_fields[targetIndex] = target.copy(value = target.value.copy(selection = selection))
+                    ret_fields[targetIndex] = target.copy(value = getCopyTargetValue(
+                        targetValue = target.value,
+                        selection = selection,
+                        highlightingStartIndex = highlightingStartIndex,
+                        highlightingEndExclusiveIndex = highlightingEndExclusiveIndex
+                    ))
                 }
 
                 ret_focusingLineIdx = targetIndex
@@ -822,7 +884,12 @@ class TextEditorState private constructor(
             //更新行选中范围并focus行
             if(selection != target.value.selection) {
                 ret_fields = if(isMutableFields) (ret_fields as MutableList) else ret_fields.toMutableList()
-                ret_fields[targetIndex] = target.copy(value = target.value.copy(selection = selection))
+                ret_fields[targetIndex] = target.copy(value = getCopyTargetValue(
+                    targetValue = target.value,
+                    selection = selection,
+                    highlightingStartIndex = highlightingStartIndex,
+                    highlightingEndExclusiveIndex = highlightingEndExclusiveIndex
+                ))
             }
 
             ret_focusingLineIdx = targetIndex
