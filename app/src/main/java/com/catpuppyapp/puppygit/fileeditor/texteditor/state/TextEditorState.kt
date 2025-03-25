@@ -57,7 +57,7 @@ class TextEditorState private constructor(
 
 ) {
 
-    val lock = Mutex()
+    private val lock = Mutex()
 
     suspend fun undo(undoStack: UndoStack) {
         undoOrRedo(undoStack, true)
