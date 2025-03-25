@@ -302,7 +302,9 @@ fun TextEditor(
                 highlightingEndExclusiveIndex = keywordEndExclusiveAtLine,
 
                 //请求关掉键盘，不然高亮会被textFieldValue的onValueChange事件刷新掉，不过就算关了键盘，当前正在编辑的行也无法取消聚焦，还是有可能会被刷新掉高亮颜色
-                requireHideKeyboard = true
+//                requireHideKeyboard = true
+                //无所谓，高亮颜色bug触发就触发吧，关了键盘，光标不在关键字后面，不方便修改，若不想编辑只想看关键字附近的内容，可开只读模式，那样就可避免弹出键盘，也可避免输入发触发TextField的onValueChange导致高亮闪一下就消失的bug
+                requireHideKeyboard = false,  // requireLossFocus 相关
             )
 
 
