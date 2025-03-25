@@ -285,7 +285,6 @@ fun DiffContent(
             Spacer(Modifier.height(100.dp))
         }
     }else {  //文本类型且没超过大小且文件修改过，正常显示diff信息
-        val lastHunkIndex = diffItem.value.hunks.size - 1
 
         MySelectionContainer {
             LazyColumn(modifier = Modifier.fillMaxSize(),
@@ -318,6 +317,8 @@ fun DiffContent(
                         }
                     }
                 }else {
+                    val lastHunkIndex = diffItem.hunks.size - 1 ;
+
                     //顶部padding，要把这个颜色弄得和当前行的类型（context/add/del）弄得一样才不违和，但处理起来有点麻烦，算了
 //                    item { Spacer(Modifier.height(3.dp)) }
 
