@@ -248,7 +248,7 @@ fun TextEditor(
         columnEndIndexExclusive:Int=columnStartIndex,
         highlightingStartIndex:Int = -1,
         highlightingEndExclusiveIndex:Int = -1,
-        requireLossFocus:Boolean = false
+        requireHideKeyboard:Boolean = false
     ){
         lastScrollEvent.value = ScrollEvent(
             index = lineIndex,
@@ -258,7 +258,7 @@ fun TextEditor(
             columnEndIndexExclusive = columnEndIndexExclusive,
             highlightingStartIndex = highlightingStartIndex,
             highlightingEndExclusiveIndex = highlightingEndExclusiveIndex,
-            requireLossFocus = requireLossFocus
+            requireHideKeyboard = requireHideKeyboard
         )
     }
 
@@ -301,8 +301,8 @@ fun TextEditor(
                 highlightingStartIndex = keywordStartAtLine,
                 highlightingEndExclusiveIndex = keywordEndExclusiveAtLine,
 
-                //请求失焦，不然高亮会被textFieldValue的onValueChange事件刷新掉
-                requireLossFocus = true
+                //请求关掉键盘，不然高亮会被textFieldValue的onValueChange事件刷新掉，不过就算关了键盘，当前正在编辑的行也无法取消聚焦，还是有可能会被刷新掉高亮颜色
+                requireHideKeyboard = true
             )
 
 
@@ -898,11 +898,10 @@ fun TextEditor(
                                 requireSelectLine = false,
                                 highlightingStartIndex = lastScrollEvent.highlightingStartIndex,
                                 highlightingEndExclusiveIndex = lastScrollEvent.highlightingEndExclusiveIndex,
-                                requireLossFocus = lastScrollEvent.requireLossFocus
                             )
 
                             //请求失焦则关闭键盘
-                            if(lastScrollEvent.requireLossFocus) {
+                            if(lastScrollEvent.requireHideKeyboard) {
                                 keyboardController?.hide()
                             }
                         }
@@ -1335,7 +1334,7 @@ data class ScrollEvent(
 
     val highlightingStartIndex:Int = -1,
     val highlightingEndExclusiveIndex:Int = -1,
-    val requireLossFocus:Boolean = false
+    val requireHideKeyboard:Boolean = false
 
 ) {
     var isConsumed: Boolean = false

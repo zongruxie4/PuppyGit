@@ -585,7 +585,6 @@ class TextEditorState private constructor(
         highlightingStartIndex: Int = -1,
         highlightingEndExclusiveIndex: Int = -1,
 
-        requireLossFocus:Boolean = false
 
     ) {
 
@@ -607,7 +606,6 @@ class TextEditorState private constructor(
                 requireSelectLine = requireSelectLine,
                 highlightingStartIndex = highlightingStartIndex,
                 highlightingEndExclusiveIndex = highlightingEndExclusiveIndex,
-                requireLossFocus = requireLossFocus,
             )
 
             val newState = internalCreate(
@@ -799,10 +797,8 @@ class TextEditorState private constructor(
         columnEndIndexExclusive:Int=columnStartIndexInclusive,
         requireSelectLine:Boolean = true,
 
-        //高亮区间一般和lossFocus配合使用，不然就算高亮了，一弹键盘，自动就没了
         highlightingStartIndex: Int = -1,
         highlightingEndExclusiveIndex: Int = -1,
-        requireLossFocus: Boolean = false, // if true, will set focusing to null
     ):SelectFieldInternalRet {
         //后面会根据需要决定是否创建拷贝
         var ret_fields = init_fields
@@ -834,8 +830,11 @@ class TextEditorState private constructor(
         }
 
 
-        val requireHighlighting = requireLossFocus && isStartInclusiveEndExclusiveRangeValid(start = highlightingStartIndex, endExclusive = highlightingEndExclusiveIndex, size = target.value.text.length)
-        //如果请求取消聚焦当前行，把其他行都解除聚焦
+        val requireHighlighting = isStartInclusiveEndExclusiveRangeValid(start = highlightingStartIndex, endExclusive = highlightingEndExclusiveIndex, size = target.value.text.length)
+        val deHighlightingNonTarget = requireHighlighting
+        val requireLossFocus = requireHighlighting
+
+        //如果请求取消高亮非当前行，把非当前行的样式都更新下
         val unFocusNonTarget = { mutableFields:MutableList<TextFieldState> ->
             val ret_fields = Unit  // avoid mistake using
 
@@ -894,14 +893,14 @@ class TextEditorState private constructor(
                 }
             }
 
-            if(requireHighlighting) {
+            if(deHighlightingNonTarget) {
                 unFocusNonTarget(ret_fields)
             }
 
         }else{  //非多选模式，定位光标到对应行，并选中行，或者定位到同一行但选中不同范围，原本是想用来高亮查找的关键字的，但有点毛病，目前实现成仅将光标定位到关键字前面，但无法选中范围，不过我忘了现在定位到关键字前面是不是依靠的这段代码了
             //更新行选中范围并focus行
             val selectionRangeChanged = selection != target.value.selection
-            if(requireHighlighting || selectionRangeChanged) {
+            if(selectionRangeChanged || requireHighlighting) {
                 ret_fields = if(isMutableFields) (ret_fields as MutableList) else ret_fields.toMutableList()
 
                 //这里不要判断 selection != target.value.selection ，因为即使选择范围没变，也有可能请求高亮关键字，还是需要更新targetIndex对应的值
@@ -913,7 +912,7 @@ class TextEditorState private constructor(
                         highlightingEndExclusiveIndex = highlightingEndExclusiveIndex
                 ))
 
-                if(requireHighlighting) {
+                if(deHighlightingNonTarget) {
                     unFocusNonTarget(ret_fields)
                 }
             }
