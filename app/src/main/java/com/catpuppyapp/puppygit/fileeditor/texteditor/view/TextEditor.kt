@@ -248,6 +248,7 @@ fun TextEditor(
         columnEndIndexExclusive:Int=columnStartIndex,
         highlightingStartIndex:Int = -1,
         highlightingEndExclusiveIndex:Int = -1,
+        requireLossFocus:Boolean = false
     ){
         lastScrollEvent.value = ScrollEvent(
             index = lineIndex,
@@ -257,6 +258,7 @@ fun TextEditor(
             columnEndIndexExclusive = columnEndIndexExclusive,
             highlightingStartIndex = highlightingStartIndex,
             highlightingEndExclusiveIndex = highlightingEndExclusiveIndex,
+            requireLossFocus = requireLossFocus
         )
     }
 
@@ -298,6 +300,9 @@ fun TextEditor(
                 //高亮关键字
                 highlightingStartIndex = keywordStartAtLine,
                 highlightingEndExclusiveIndex = keywordEndExclusiveAtLine,
+
+                //请求失焦，不然高亮会被textFieldValue的onValueChange事件刷新掉
+                requireLossFocus = true
             )
 
 
@@ -892,7 +897,8 @@ fun TextEditor(
                                 columnEndIndexExclusive = if(bug_Editor_SelectColumnRangeOfLine_Fixed) lastScrollEvent!!.columnEndIndexExclusive else lastScrollEvent!!.columnStartIndexInclusive,
                                 requireSelectLine = false,
                                 highlightingStartIndex = lastScrollEvent.highlightingStartIndex,
-                                highlightingEndExclusiveIndex = lastScrollEvent.highlightingEndExclusiveIndex
+                                highlightingEndExclusiveIndex = lastScrollEvent.highlightingEndExclusiveIndex,
+                                requireLossFocus = lastScrollEvent.requireLossFocus
                             )
                         }
                     }else {
@@ -1315,6 +1321,7 @@ fun getPreviousKeyWordForConflict(curKeyWord:String, settings: AppSettings):Stri
 
 data class ScrollEvent(
     val index: Int = -1,
+    //这为什么还要time？
     val time: Long = System.currentTimeMillis(),
     val forceGo:Boolean = false,
     val goColumn:Boolean=false,
@@ -1323,8 +1330,9 @@ data class ScrollEvent(
 
     val highlightingStartIndex:Int = -1,
     val highlightingEndExclusiveIndex:Int = -1,
+    val requireLossFocus:Boolean = false
 
-    ) {
+) {
     var isConsumed: Boolean = false
         private set
 

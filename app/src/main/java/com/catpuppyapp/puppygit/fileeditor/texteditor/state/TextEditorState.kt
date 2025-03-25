@@ -583,6 +583,9 @@ class TextEditorState private constructor(
         requireSelectLine: Boolean=true, // if true, will add targetIndex into selected indices, set false if you don't want to select this line(e.g. when you just want go to line)
         highlightingStartIndex: Int = -1,
         highlightingEndExclusiveIndex: Int = -1,
+
+        requireLossFocus:Boolean = false
+
     ) {
 
         lock.withLock {
@@ -603,7 +606,7 @@ class TextEditorState private constructor(
                 requireSelectLine = requireSelectLine,
                 highlightingStartIndex = highlightingStartIndex,
                 highlightingEndExclusiveIndex = highlightingEndExclusiveIndex,
-
+                requireLossFocus = requireLossFocus,
             )
 
             val newState = internalCreate(
@@ -798,7 +801,7 @@ class TextEditorState private constructor(
 
         highlightingStartIndex: Int = -1,
         highlightingEndExclusiveIndex: Int = -1,
-
+        requireLossFocus: Boolean = false, // if true, will set focusing to null
     ):SelectFieldInternalRet {
         //后面会根据需要决定是否创建拷贝
         var ret_fields = init_fields
@@ -899,7 +902,11 @@ class TextEditorState private constructor(
 
         }
 
-        return SelectFieldInternalRet(fields = ret_fields, selectedIndices = ret_selectedIndices, focusingLineIdx = ret_focusingLineIdx)
+        return SelectFieldInternalRet(
+            fields = ret_fields,
+            selectedIndices = ret_selectedIndices,
+            focusingLineIdx = if(requireLossFocus) null else ret_focusingLineIdx
+        )
     }
 
     private fun splitTextsByNL(textFieldValue: TextFieldValue): List<TextFieldValue> {
