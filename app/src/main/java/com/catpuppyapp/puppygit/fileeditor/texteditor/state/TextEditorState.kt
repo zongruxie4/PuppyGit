@@ -1174,7 +1174,7 @@ class TextEditorState private constructor(
             for((idx, f) in fields.withIndex()) {
                 selectedIndexList.add(idx)
                 //这个id要不要重新生成？我忘了这个id是指示内容是否改变还是只要任何字段变了就换新id了，不过全选能正常工作，所以这代码就这样吧，不改了
-                selectedFieldList.add(TextFieldState(id = f.id, value = f.value, isSelected = true))
+                selectedFieldList.add(f.copy(isSelected = true))
             }
             //我不太确定 data类的copy是深还是浅，但我可以确定这里不需要深拷贝，所以用下面创建浅拷贝的方法创建对象
             val newState = internalCreate(
@@ -1280,7 +1280,7 @@ class TextEditorState private constructor(
         lock.withLock {
             val newState = internalCreate(
                 fieldsId = fieldsId,
-                fields = fields.map { TextFieldState(id = it.id, value = it.value, isSelected = false) },
+                fields = fields.map { it.copy(isSelected = false) },
                 selectedIndices = emptyList(),
                 isMultipleSelectionMode = keepSelectionModeOn,
                 focusingLineIdx = focusingLineIdx
