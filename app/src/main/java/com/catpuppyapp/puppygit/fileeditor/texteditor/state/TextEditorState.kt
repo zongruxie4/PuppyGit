@@ -2,7 +2,6 @@ package com.catpuppyapp.puppygit.fileeditor.texteditor.state
 
 import androidx.compose.runtime.Immutable
 import androidx.compose.runtime.MutableState
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.TextRange
 import androidx.compose.ui.text.buildAnnotatedString
@@ -13,6 +12,7 @@ import com.catpuppyapp.puppygit.etc.Ret
 import com.catpuppyapp.puppygit.fileeditor.texteditor.view.SearchPos
 import com.catpuppyapp.puppygit.fileeditor.texteditor.view.SearchPosResult
 import com.catpuppyapp.puppygit.screen.shared.FuckSafFile
+import com.catpuppyapp.puppygit.style.MyStyleKt
 import com.catpuppyapp.puppygit.utils.FsUtils
 import com.catpuppyapp.puppygit.utils.Msg
 import com.catpuppyapp.puppygit.utils.MyLog
@@ -806,12 +806,11 @@ class TextEditorState private constructor(
             val highlighting = targetText.substring(highlightingStartIndex, highlightingEndExclusiveIndex)
             val after = targetText.substring(highlightingEndExclusiveIndex)
 
-
             targetValue.copy(
                 selection = selection,
                 annotatedString = buildAnnotatedString {
                     append(before)
-                    withStyle(SpanStyle(background = Color.Yellow)) {
+                    withStyle(SpanStyle(background = MyStyleKt.Editor.highlightingBgColor)) {
                         append(highlighting)
                     }
                     append(after)
@@ -884,7 +883,15 @@ class TextEditorState private constructor(
 
             for(i in mutableFields.indices) {
                 if(i != targetIndex) {
-                    mutableFields[i] = mutableFields[i].let { it.copy(value = it.value.copy(text = it.value.text)) }
+                    mutableFields[i] = mutableFields[i].let {
+                        //重新拷贝下text以取消高亮；重新拷贝下selection以取消选中。
+
+                        // （因为这里的选中范围并非像ide那样指示关键字被匹配到了，
+                        // 这里出现多个选中范围，仅仅是因为切换到下个匹配位置后没清上个而出现的“残留”，
+                        // 若不清，会对用户造成困扰，感觉上会像蓝色选中的字是匹配关键字但非当前聚焦，
+                        // 黄色高亮的是选中关键字且是当前聚焦条目，但实际并非如此）
+                        it.copy(value = it.value.copy(selection = TextRange.Zero, text = it.value.text))
+                    }
                 }
             }
 

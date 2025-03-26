@@ -104,6 +104,9 @@ class MyStyleKt{
     object Editor {
         val fontSize = 16.sp
         val bottomBarHeight = 80.dp
+
+        //高亮文本的背景颜色
+        val highlightingBgColor = Color(0xFFFFEB3B)
     }
 
     //只能在compose下获取这个颜色

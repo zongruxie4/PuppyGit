@@ -288,14 +288,18 @@ fun TextEditor(
                 goColumn = true,
 
 
+                //注：让开头和结束索引调换是为了让输入光标在选中内容末尾而不是开头
+                //注：让开头和结束索引调换是为了让输入光标在选中内容末尾而不是开头
+                //注：让开头和结束索引调换是为了让输入光标在选中内容末尾而不是开头
+
                 //有开头和结尾索引，原本是想做区域选中的，就像手动长按选中某段文本一样，但忘了是什么问题了，反正选中不了，所以最后仅定位某列，无区域选中了
                 //若想定位到关键字开头，用上面的，定位到末尾用下面的
-                columnStartIndex = keywordStartAtLine, // to keyword start
-//                columnStartIndex = keywordEndExclusiveAtLine, // to keyword end
+//                columnStartIndex = keywordStartAtLine, // to keyword start
+                columnStartIndex = keywordEndExclusiveAtLine, // to keyword end
 
                 //这个与定位到关键字开头还是末尾无关，不用动，因为有bug，所以就算这个和开头索引不同，也不会选中区域，实际还是会定位到开头那
-                columnEndIndexExclusive = keywordEndExclusiveAtLine,
-//                columnEndIndexExclusive = keywordStartAtLine,
+//                columnEndIndexExclusive = keywordEndExclusiveAtLine,
+                columnEndIndexExclusive = keywordStartAtLine,
 
                 //这个高亮关键字也有bug，闪一下就没了，因为TextFieldValue更新后会丢样式
                 //高亮关键字
@@ -1046,7 +1050,9 @@ fun TextEditor(
                         }
                     }
 
-                    item(key = textFieldState.id) {
+                    //很多时候改了内容，但没改id，懒得一个个改了，直接弃用id作key，让compose自己判断什么时候需要重组，有问题再说
+//                    item(key = textFieldState.id) {
+                    item {
                         val focusRequester = remember { FocusRequester() }
 
                         DisposableEffect(Unit) {
