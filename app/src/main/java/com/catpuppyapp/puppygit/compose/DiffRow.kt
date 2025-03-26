@@ -457,7 +457,7 @@ fun DiffRow (
 //    prefix = prefix.removeSuffix(Cons.lineBreak)
 //    content = content.removeSuffix(Cons.lineBreak)
 
-    //首行加顶部padding，其余不加
+    //首行加顶部padding，其余不加，按行分组时，首行若是一对 add/del，两个都会加顶部padding，但看起来感觉并不难受，所以不用改，就这样吧
     val linePadding = if(index == 0) PaddingValues(top = 5.dp, end = 5.dp) else PaddingValues(end = 5.dp)
 
     Row(

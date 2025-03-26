@@ -97,7 +97,8 @@ val importRepoTestPassed = true
  * below is bug
  */
 
-val bug_Editor_SelectColumnRangeOfLine_Fixed = false  // editor，搜索，定位到某行，选中某个范围，有bug，跳转到对应行，会自动取消选中，应该是Editor实现有问题，那代码我暂时不想看，先禁用选中关键字功能
+//严格来说并没修复这个bug，但是选中区域，配合高亮关键字，work as expected，非常好，能高亮关键字，又有选中效果，两者结合，意外完美
+val bug_Editor_SelectColumnRangeOfLine_Fixed = true  // editor，搜索，定位到某行，选中某个范围，有bug，跳转到对应行，会自动取消选中，应该是Editor实现有问题，那代码我暂时不想看，先禁用选中关键字功能
 val bug_Editor_GoToColumnCantHideKeyboard_Fixed = false // editor，启动时或非启动时，定位到某列，强制弹出键盘，无法实现“打开文件定位光标到上次编辑行的上次编辑列但不弹出键盘”
 
 // 影响1：editor，搜索，定位到某行，再按搜索，卡在原位，因为上次编辑列的变量被错误更新了导致搜索起始位置被重置到错误的列；（测试搜索时遇到很多次此问题，当时测试搜索的关键字为某行最后一个字符，长度为1，可尝试复现）
