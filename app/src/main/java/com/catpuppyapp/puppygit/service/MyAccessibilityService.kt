@@ -19,6 +19,7 @@ import com.catpuppyapp.puppygit.utils.RepoActUtil
 import com.catpuppyapp.puppygit.utils.cache.NotifySenderMap
 import com.catpuppyapp.puppygit.utils.doJobThenOffLoading
 import com.catpuppyapp.puppygit.utils.generateRandomString
+import io.ktor.util.collections.ConcurrentMap
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
@@ -29,7 +30,7 @@ class MyAccessibilityService: AccessibilityService() {
         private const val TAG = "MyAccessibilityService"
 
         private val lock = Mutex()
-        private val targetPackageTrueOpenedFalseCloseNullNeverOpenedList = mutableMapOf<String, Boolean>()
+        private val targetPackageTrueOpenedFalseCloseNullNeverOpenedList = ConcurrentMap<String, Boolean>()
         private var lastTargetPackageName = ""  // use to check enter/leave app
 
         private val ignorePackageNames = listOf<String>(

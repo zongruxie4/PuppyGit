@@ -1,13 +1,13 @@
 package com.catpuppyapp.puppygit.utils.cache
 
 import com.catpuppyapp.puppygit.utils.getShortUUID
+import io.ktor.util.collections.ConcurrentMap
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
-import java.util.concurrent.ConcurrentHashMap
 
 // `open` make it inheritable
 open class CacheStoreImpl(
-    private val storage:MutableMap<String, Any?> = ConcurrentHashMap(),
+    private val storage:MutableMap<String, Any?> = ConcurrentMap(),
     private val lock: Mutex = Mutex()
 ):CacheStore {
 //    private val storage:MutableMap<String, Any?> = _storage

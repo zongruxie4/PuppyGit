@@ -76,6 +76,7 @@ import com.github.git24j.core.Status.StatusList
 import com.github.git24j.core.Submodule
 import com.github.git24j.core.Tag
 import com.github.git24j.core.Tree
+import io.ktor.util.collections.ConcurrentMap
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.sync.Mutex
@@ -84,7 +85,6 @@ import java.io.File
 import java.nio.charset.Charset
 import java.time.ZoneOffset
 import java.util.EnumSet
-import java.util.concurrent.ConcurrentHashMap
 
 
 private const val TAG = "Libgit2Helper"
@@ -255,7 +255,7 @@ class Libgit2Helper {
         /**
          * 获取仓库对应的锁，不要直接调用这个变量，用 `Ligit2Helper.getRepoLock()` 来获取仓库的锁
          */
-        private val repoLockMap:MutableMap<String, Mutex> = ConcurrentHashMap()
+        private val repoLockMap:MutableMap<String, Mutex> = ConcurrentMap()
 
         //x DONE at 20241114) change this "credentialType" set by url
         private val getCredentialCb = { credentialType:Int, usernameOrPrivateKey:String, passOrPassphrase:String ->

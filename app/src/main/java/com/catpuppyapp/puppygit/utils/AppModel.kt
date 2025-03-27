@@ -37,9 +37,9 @@ import com.catpuppyapp.puppygit.utils.storagepaths.StoragePathsMan
 import com.catpuppyapp.puppygit.utils.time.TimeZoneMode
 import com.catpuppyapp.puppygit.utils.time.TimeZoneUtil
 import com.github.git24j.core.Libgit2
+import io.ktor.util.collections.ConcurrentMap
 import java.io.File
 import java.time.ZoneOffset
-import java.util.concurrent.ConcurrentHashMap
 
 private const val TAG ="AppModel"
 
@@ -143,7 +143,7 @@ object AppModel {
      * key 分钟数
      * value UTC时区例如：UTC+8 UTC-7:30 UTC+0
      */
-    val timezoneCacheMap:MutableMap<Int, String> = ConcurrentHashMap()
+    val timezoneCacheMap:MutableMap<Int, String> = ConcurrentMap()
 
 
     @OptIn(ExperimentalMaterial3Api::class)
