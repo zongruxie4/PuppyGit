@@ -130,6 +130,7 @@ import com.catpuppyapp.puppygit.utils.updateSelectedList
 import com.catpuppyapp.puppygit.utils.withMainContext
 import com.github.git24j.core.Repository
 import com.github.git24j.core.Repository.StateT
+import kotlinx.coroutines.sync.Mutex
 
 private const val TAG = "ChangeListInnerPage"
 private const val stateKeyTag = "ChangeListInnerPage"
@@ -234,6 +235,18 @@ fun ChangeListInnerPage(
         s
     }
 
+
+    val onLockFailed = { lock: Mutex ->
+        Msg.requireShowLongDuration("Repo busy now, plz try again later.")
+    }
+
+    val doActWithLock:suspend (curRepo:RepoEntity, act: suspend ()->Unit) -> Unit =  { curRepo, act ->
+        Libgit2Helper.doActWithRepoLock(curRepo = curRepo, onLockFailed = onLockFailed) {
+            act()
+        }
+
+        Unit
+    }
 
     // username and email start
     val username = rememberSaveable { mutableStateOf("") }
@@ -610,46 +623,45 @@ fun ChangeListInnerPage(
         ) {
             showPushForceDialog.value = false
 
+            val curRepo = curRepoFromParentPage.value
+
             doJobThenOffLoading(
                 loadingOn,  //注：这函数内会自动禁用顶栏按钮，无需手动 `enableActionFromParent.value=false`
                 loadingOff,
                 activityContext.getString(R.string.force_pushing)
             ) {
-                val curRepo = curRepoFromParentPage.value
-                try {
+                doActWithLock(curRepo) {
+                    try {
 //                    val success = doPush(true, null, force=true)
-                    val success = ChangeListFunctions.doPush(
-                        requireCloseBottomBar = true,
-                        upstreamParam = null,
-                        force = true,
-                        curRepoFromParentPage = curRepo,
-                        requireShowToast = requireShowToast,
-                        activityContext = activityContext,
-                        loadingText = loadingText,
-                        bottomBarActDoneCallback = bottomBarActDoneCallback,
-                        dbContainer = dbContainer
-                    )
+                        val success = ChangeListFunctions.doPush(
+                            requireCloseBottomBar = true,
+                            upstreamParam = null,
+                            force = true,
+                            curRepoFromParentPage = curRepo,
+                            requireShowToast = requireShowToast,
+                            activityContext = activityContext,
+                            loadingText = loadingText,
+                            bottomBarActDoneCallback = bottomBarActDoneCallback,
+                            dbContainer = dbContainer
+                        )
 
-                    if(!success) {
-                        requireShowToast(activityContext.getString(R.string.push_force_failed))
-                    }else {
-                        requireShowToast(activityContext.getString(R.string.push_force_success))
+                        if(success) {
+                            requireShowToast(activityContext.getString(R.string.push_force_success))
+                        }else {
+                            requireShowToast(activityContext.getString(R.string.push_force_failed))
+                        }
+
+                    }catch (e:Exception){
+                        showErrAndSaveLog(
+                            logTag = TAG,
+                            logMsg = "Push(Force) error: "+e.stackTraceToString(),
+                            showMsg = activityContext.getString(R.string.push_force_failed)+": "+e.localizedMessage,
+                            showMsgMethod = requireShowToast,
+                            repoId = curRepo.id
+                        )
+                    }finally {
+                        changeListRequireRefreshFromParentPage(curRepo)
                     }
-
-                }catch (e:Exception){
-                    showErrAndSaveLog(
-                        logTag = TAG,
-                        logMsg = "Push(Force) error: "+e.stackTraceToString(),
-                        showMsg = activityContext.getString(R.string.push_force_failed)+": "+e.localizedMessage,
-                        showMsgMethod = requireShowToast,
-                        repoId = curRepo.id
-                    )
-                }finally {
-//                    RepoStatusUtil.clearRepoStatus(repoId)
-
-                    changeListRequireRefreshFromParentPage(curRepo)
-//                    refreshRepoPage()
-
                 }
             }
         }
@@ -702,7 +714,9 @@ fun ChangeListInnerPage(
             //防止重复执行的第二层保险，取出请求执行操作的key后就删除，这样即使状态变量没及时更新导致重复执行，执行到这时也会取出null而终止操作
 
             val curRepo = curRepoFromParentPage.value
-            if(requireAct==PageRequest.editIgnoreFile) {
+
+            //不需要lock的操作
+            if(requireAct == PageRequest.editIgnoreFile) {
                 try {
                     Repository.open(curRepo.fullSavePath).use { repo->
                         val ignoreFilePath = IgnoreMan.getFileFullPath(Libgit2Helper.getRepoGitDirPathNoEndsWithSlash(repo))
@@ -716,8 +730,6 @@ fun ChangeListInnerPage(
                     Msg.requireShowLongDuration(e.localizedMessage ?: "err")
                     MyLog.e(TAG, "get ignore file for repo '${curRepo.repoName}' err: ${e.stackTraceToString()}")
                 }
-
-
             }else if(requireAct==PageRequest.showInRepos) {
                 goToRepoPage(repoId)
             }else if(requireAct==PageRequest.goParent) {
@@ -725,307 +737,214 @@ fun ChangeListInnerPage(
             }else if(requireAct==PageRequest.pull) { // pull(fetch+merge)
                 doTaskOrShowSetUsernameAndEmailDialog(curRepo) {
                     doJobThenOffLoading(loadingOn, loadingOff, activityContext.getString(R.string.pulling)) {
-                        ChangeListFunctions.doPull(
-                            curRepo = curRepo,
-                            activityContext = activityContext,
-                            dbContainer = dbContainer,
-                            requireShowToast = requireShowToast,
-                            loadingText = loadingText,
-                            bottomBarActDoneCallback = bottomBarActDoneCallback,
-                            changeListRequireRefreshFromParentPage = changeListRequireRefreshFromParentPage,
-                            trueMergeFalseRebase = true,
-                            requireCloseBottomBar = true
-                        )
+                        doActWithLock(curRepo) {
+                            ChangeListFunctions.doPull(
+                                curRepo = curRepo,
+                                activityContext = activityContext,
+                                dbContainer = dbContainer,
+                                requireShowToast = requireShowToast,
+                                loadingText = loadingText,
+                                bottomBarActDoneCallback = bottomBarActDoneCallback,
+                                changeListRequireRefreshFromParentPage = changeListRequireRefreshFromParentPage,
+                                trueMergeFalseRebase = true,
+                                requireCloseBottomBar = true
+                            )
+                        }
                     }
-                }
-
-            }else if(requireAct==PageRequest.fetch) {
-                try {
-                    //设置仓库临时状态(把临时状态设置到缓存里，不退出app都有效，目的是为了使重新查列表后临时状态亦可见)，这样重新加载页面时依然能看到临时状态
-//                    RepoStatusUtil.setRepoStatus(repoId, appContext.getString(R.string.pulling))
-
-                    //执行操作
-//                    val fetchSuccess = doFetch(null)
-                    val fetchSuccess = ChangeListFunctions.doFetch(
-                        remoteNameParam = null,
-                        curRepoFromParentPage = curRepo,
-                        requireShowToast = requireShowToast,
-                        activityContext = activityContext,
-                        loadingText = loadingText,
-                        dbContainer = dbContainer
-                    )
-                    if(!fetchSuccess) {
-                        requireShowToast(activityContext.getString(R.string.fetch_failed))
-                    }else {
-                        requireShowToast(activityContext.getString(R.string.fetch_success))
-                    }
-                }catch (e:Exception){
-                    showErrAndSaveLog(TAG,"require fetch error:"+e.stackTraceToString(), activityContext.getString(R.string.fetch_failed)+":"+e.localizedMessage, requireShowToast, curRepo.id)
-                }finally {
-                    //清除缓存中的仓库状态
-//                    RepoStatusUtil.clearRepoStatus(repoId)
-                    //刷新页面
-                    changeListRequireRefreshFromParentPage(curRepo)
-//                    refreshRepoPage()
                 }
 
             }else if(requireAct==PageRequest.pullRebase) {
                 doTaskOrShowSetUsernameAndEmailDialog(curRepo) {
                     doJobThenOffLoading(loadingOn, loadingOff, activityContext.getString(R.string.pulling)) {
-                        ChangeListFunctions.doPull(
-                            curRepo = curRepo,
-                            trueMergeFalseRebase = false,
-                            activityContext = activityContext,
-                            requireCloseBottomBar = true,
-                            dbContainer = dbContainer,
-                            requireShowToast = requireShowToast,
-                            loadingText = loadingText,
-                            bottomBarActDoneCallback = bottomBarActDoneCallback,
-                            changeListRequireRefreshFromParentPage = changeListRequireRefreshFromParentPage
-                        )
+                        doActWithLock(curRepo) {
+                            ChangeListFunctions.doPull(
+                                curRepo = curRepo,
+                                trueMergeFalseRebase = false,
+                                activityContext = activityContext,
+                                requireCloseBottomBar = true,
+                                dbContainer = dbContainer,
+                                requireShowToast = requireShowToast,
+                                loadingText = loadingText,
+                                bottomBarActDoneCallback = bottomBarActDoneCallback,
+                                changeListRequireRefreshFromParentPage = changeListRequireRefreshFromParentPage
+                            )
+                        }
                     }
                 }
-                //push
-            }else if(requireAct ==PageRequest.push) {
-//                RepoStatusUtil.setRepoStatus(repoId, appContext.getString(R.string.pushing))
-
-//                MyLog.d(TAG,"require doPush from top bar action")
-                try {
-//                    val success = doPush(true, null)
-                    val success = ChangeListFunctions.doPush(
-                        requireCloseBottomBar = true,
-                        upstreamParam = null,
-                        force = false,
-                        curRepoFromParentPage = curRepo,
-                        requireShowToast = requireShowToast,
-                        activityContext = activityContext,
-                        loadingText = loadingText,
-                        bottomBarActDoneCallback = bottomBarActDoneCallback,
-                        dbContainer = dbContainer
-                    )
-                    if(!success) {
-                        requireShowToast(activityContext.getString(R.string.push_failed))
-                    }else {
-                        requireShowToast(activityContext.getString(R.string.push_success))
-                    }
-
-                }catch (e:Exception){
-                    showErrAndSaveLog(TAG,"require push error:"+e.stackTraceToString(), activityContext.getString(R.string.push_failed)+": "+e.localizedMessage, requireShowToast,curRepo.id)
-                }finally {
-//                    RepoStatusUtil.clearRepoStatus(repoId)
-
-                    changeListRequireRefreshFromParentPage(curRepo)
-//                    refreshRepoPage()
-
-                }
-
-            //sync
-            }else if(requireAct ==PageRequest.pushForce) {
-//                RepoStatusUtil.setRepoStatus(repoId, appContext.getString(R.string.pushing))
-
-                MyLog.d(TAG,"require doPushForce from top bar action")
-
-                showPushForceDialog.value = true
-
-            //sync
             }else if(requireAct == PageRequest.sync) {
                 doTaskOrShowSetUsernameAndEmailDialog(curRepo) {
                     doJobThenOffLoading(loadingOn, loadingOff, activityContext.getString(R.string.syncing)) {
-
-                        try {
-//                    RepoStatusUtil.setRepoStatus(repoId, appContext.getString(R.string.syncing))
-//                    doSync(true)
-                            ChangeListFunctions.doSync(
-                                loadingOn = loadingOn,
-                                loadingOff = loadingOff,
-                                requireCloseBottomBar = true,
-                                trueMergeFalseRebase = true,
-                                curRepoFromParentPage = curRepo,
-                                requireShowToast = requireShowToast,
-                                activityContext = activityContext,
-                                bottomBarActDoneCallback = bottomBarActDoneCallback,
-                                plzSetUpStreamForCurBranch = plzSetUpStreamForCurBranch,
-                                initSetUpstreamDialog = initSetUpstreamDialog,
-                                loadingText = loadingText,
-                                dbContainer = dbContainer
-                            )
-                        }catch (e:Exception){
-                            showErrAndSaveLog(TAG,"require sync error:"+e.stackTraceToString(), activityContext.getString(R.string.sync_failed)+": "+e.localizedMessage, requireShowToast,curRepo.id)
-                        }finally {
-//                    RepoStatusUtil.clearRepoStatus(repoId)
-
-                            changeListRequireRefreshFromParentPage(curRepo)
-//                    refreshRepoPage()
-
+                        doActWithLock(curRepo) {
+                            try {
+                                ChangeListFunctions.doSync(
+                                    loadingOn = loadingOn,
+                                    loadingOff = loadingOff,
+                                    requireCloseBottomBar = true,
+                                    trueMergeFalseRebase = true,
+                                    curRepoFromParentPage = curRepo,
+                                    requireShowToast = requireShowToast,
+                                    activityContext = activityContext,
+                                    bottomBarActDoneCallback = bottomBarActDoneCallback,
+                                    plzSetUpStreamForCurBranch = plzSetUpStreamForCurBranch,
+                                    initSetUpstreamDialog = initSetUpstreamDialog,
+                                    loadingText = loadingText,
+                                    dbContainer = dbContainer
+                                )
+                            }catch (e:Exception){
+                                showErrAndSaveLog(TAG,"require sync error:"+e.stackTraceToString(), activityContext.getString(R.string.sync_failed)+": "+e.localizedMessage, requireShowToast,curRepo.id)
+                            }finally {
+                                changeListRequireRefreshFromParentPage(curRepo)
+                            }
                         }
                     }
                 }
             }else if(requireAct == PageRequest.syncRebase) {
                 doTaskOrShowSetUsernameAndEmailDialog(curRepo) {
-                    doJobThenOffLoading(loadingOn, loadingOff, activityContext.getString(R.string.syncing)){
+                    doJobThenOffLoading(loadingOn, loadingOff, activityContext.getString(R.string.syncing)) {
+                        doActWithLock(curRepo) {
+                            try {
+                                ChangeListFunctions.doSync(
+                                    loadingOn = loadingOn,
+                                    loadingOff = loadingOff,
+                                    requireCloseBottomBar = true,
+                                    trueMergeFalseRebase = false,
+                                    curRepoFromParentPage = curRepo,
+                                    requireShowToast = requireShowToast,
+                                    activityContext = activityContext,
+                                    bottomBarActDoneCallback = bottomBarActDoneCallback,
+                                    plzSetUpStreamForCurBranch = plzSetUpStreamForCurBranch,
+                                    initSetUpstreamDialog = initSetUpstreamDialog,
 
-                        try {
-//                    RepoStatusUtil.setRepoStatus(repoId, appContext.getString(R.string.syncing))
-//                    doSync(true, trueMergeFalseRebase = false)
-                            ChangeListFunctions.doSync(
-                                loadingOn = loadingOn,
-                                loadingOff = loadingOff,
-                                requireCloseBottomBar = true,
-                                trueMergeFalseRebase = false,
-                                curRepoFromParentPage = curRepo,
-                                requireShowToast = requireShowToast,
-                                activityContext = activityContext,
-                                bottomBarActDoneCallback = bottomBarActDoneCallback,
-                                plzSetUpStreamForCurBranch = plzSetUpStreamForCurBranch,
-                                initSetUpstreamDialog = initSetUpstreamDialog,
-
-                                loadingText = loadingText,
-                                dbContainer = dbContainer
-                            )
-                        }catch (e:Exception){
-                            showErrAndSaveLog(TAG,"require Sync(Rebase) error:"+e.stackTraceToString(), activityContext.getString(R.string.sync_rebase_failed)+":"+e.localizedMessage, requireShowToast,curRepo.id)
-                        }finally {
-//                    RepoStatusUtil.clearRepoStatus(repoId)
-
-                            changeListRequireRefreshFromParentPage(curRepo)
-//                    refreshRepoPage()
-
+                                    loadingText = loadingText,
+                                    dbContainer = dbContainer
+                                )
+                            }catch (e:Exception){
+                                showErrAndSaveLog(TAG,"require Sync(Rebase) error:"+e.stackTraceToString(), activityContext.getString(R.string.sync_rebase_failed)+":"+e.localizedMessage, requireShowToast,curRepo.id)
+                            }finally {
+                                changeListRequireRefreshFromParentPage(curRepo)
+                            }
                         }
                     }
                 }
-            }else if(requireAct == PageRequest.mergeAbort) {
-                initMergeAbortDialog()
-            }else if(requireAct == PageRequest.stageAll) {
-                try {
-//                    RepoStatusUtil.setRepoStatus(repoId, appContext.getString(R.string.staging))
+            } else {  // require lock (不过就算不锁，libgit2应该也有锁）
+                doActWithLock(curRepo) {
+                    if(requireAct==PageRequest.fetch) {
+                        try {
+                            val fetchSuccess = ChangeListFunctions.doFetch(
+                                remoteNameParam = null,
+                                curRepoFromParentPage = curRepo,
+                                requireShowToast = requireShowToast,
+                                activityContext = activityContext,
+                                loadingText = loadingText,
+                                dbContainer = dbContainer
+                            )
 
-                    doStageAll(curRepo)
-                }catch (e:Exception){
-                    showErrAndSaveLog(TAG,"require stage_all error:"+e.stackTraceToString(), activityContext.getString(R.string.stage_all_failed)+":"+e.localizedMessage, requireShowToast, curRepo.id)
-                }finally {
-//                    RepoStatusUtil.clearRepoStatus(repoId)
+                            if(fetchSuccess) {
+                                requireShowToast(activityContext.getString(R.string.fetch_success))
+                            }else {
+                                requireShowToast(activityContext.getString(R.string.fetch_failed))
+                            }
+                        }catch (e:Exception){
+                            showErrAndSaveLog(TAG,"require fetch error:"+e.stackTraceToString(), activityContext.getString(R.string.fetch_failed)+":"+e.localizedMessage, requireShowToast, curRepo.id)
+                        }finally {
+                            //刷新页面
+                            changeListRequireRefreshFromParentPage(curRepo)
+                        }
 
-                    changeListRequireRefreshFromParentPage(curRepo)
-//                    refreshRepoPage()
+                    }else if(requireAct == PageRequest.push) {
+                        try {
+                            val success = ChangeListFunctions.doPush(
+                                requireCloseBottomBar = true,
+                                upstreamParam = null,
+                                force = false,
+                                curRepoFromParentPage = curRepo,
+                                requireShowToast = requireShowToast,
+                                activityContext = activityContext,
+                                loadingText = loadingText,
+                                bottomBarActDoneCallback = bottomBarActDoneCallback,
+                                dbContainer = dbContainer
+                            )
 
-                }
-            }else if(requireAct == PageRequest.indexToWorkTree_CommitAll) {
-                // workTreeToIndex的提交所有和Index页面的提交的区别在于：workTreeToIndex在提交前会先执行stage all，并且itemList传null以触发强制重查indexList
+                            if(success) {
+                                requireShowToast(activityContext.getString(R.string.push_success))
+                            }else {
+                                requireShowToast(activityContext.getString(R.string.push_failed))
+                            }
+
+                        }catch (e:Exception){
+                            showErrAndSaveLog(TAG,"require push error:"+e.stackTraceToString(), activityContext.getString(R.string.push_failed)+": "+e.localizedMessage, requireShowToast,curRepo.id)
+                        }finally {
+                            changeListRequireRefreshFromParentPage(curRepo)
+                        }
+
+                    }else if(requireAct == PageRequest.pushForce) {
+                        showPushForceDialog.value = true
+                    }else if(requireAct == PageRequest.mergeAbort) {
+                        initMergeAbortDialog()
+                    }else if(requireAct == PageRequest.stageAll) {
+                        try {
+                            doStageAll(curRepo)
+                        }catch (e:Exception){
+                            showErrAndSaveLog(TAG,"require stage_all error:"+e.stackTraceToString(), activityContext.getString(R.string.stage_all_failed)+":"+e.localizedMessage, requireShowToast, curRepo.id)
+                        }finally {
+                            changeListRequireRefreshFromParentPage(curRepo)
+                        }
+                    }else if(requireAct == PageRequest.indexToWorkTree_CommitAll) {
+                        // workTreeToIndex的提交所有和Index页面的提交的区别在于：workTreeToIndex在提交前会先执行stage all，并且itemList传null以触发强制重查indexList
 
 
-                try {
-//                    RepoStatusUtil.setRepoStatus(repoId, appContext.getString(R.string.staging))
-                    val listForStage = itemList.value.toList()
+                        try {
+                            val listForStage = itemList.value.toList()
 
-                    if(AppModel.devModeOn) {
-                        MyLog.d(TAG, "listForStage.isEmpty() = ${listForStage.isEmpty()}")
-                    }
+                            if(AppModel.devModeOn) {
+                                MyLog.d(TAG, "listForStage.isEmpty() = ${listForStage.isEmpty()}")
+                            }
 
-                    // stage if need，不管是否stage，都一定会执行commit，因为就算index为空，也可amend commit
-                    if(listForStage.isNotEmpty()) {
-                        val requireCloseBottombar = false
-                        doStageAll_2(listForStage, curRepo, requireCloseBottombar)
-                    }
+                            // stage if need，不管是否stage，都一定会执行commit，因为就算index为空，也可amend commit
+                            if(listForStage.isNotEmpty()) {
+                                val requireCloseBottombar = false
+                                doStageAll_2(listForStage, curRepo, requireCloseBottombar)
+                            }
 
-                    //执行commit
-                    ChangeListFunctions.doCommit(
-                        requireShowCommitMsgDialog = true,
-                        cmtMsg = "",
-                        requireCloseBottomBar = true,
-//                            requireDoSync = false,
-                        curRepoFromParentPage = curRepo,
-                        refreshChangeList = changeListRequireRefreshFromParentPage,
-                        username = username,
-                        email = email,
-                        requireShowToast = requireShowToast,
-                        pleaseSetUsernameAndEmailBeforeCommit = pleaseSetUsernameAndEmailBeforeCommit,
-                        initSetUsernameAndEmailDialog = initSetUsernameAndEmailDialog,
-                        amendCommit = amendCommit,
-                        overwriteAuthor = overwriteAuthor,
-                        showCommitMsgDialog = showCommitMsgDialog,
-                        repoState = repoState,
-                        activityContext = activityContext,
-                        loadingText = loadingText,
-                        repoId = repoId,
-                        bottomBarActDoneCallback = bottomBarActDoneCallback,
-                        fromTo = fromTo,
-                        itemList = null,  //直接传null，创建提交前会查index list
-                        successCommitStrRes = successCommitStrRes,
-                        indexIsEmptyForCommitDialog=indexIsEmptyForCommitDialog,
-                        commitBtnTextForCommitDialog=commitBtnTextForCommitDialog,
-//                            showPushForCommitDialog=showPushForCommitDialog
-                    )
-
-                }catch (e:Exception){
-                    showErrAndSaveLog(TAG,"require commit all error:"+e.stackTraceToString(), activityContext.getString(R.string.commit_err)+":"+e.localizedMessage, requireShowToast, curRepo.id)
-                }finally {
-//                    RepoStatusUtil.clearRepoStatus(repoId)
-
-                    //提交会弹窗，不要在这里刷新页面，在弹窗回调里刷新
-//                    changeListRequireRefreshFromParentPage(curRepo)
-//                    refreshRepoPage()
-
-                }
-            }else if(requireAct == PageRequest.commit) {
-                try {
-//                    RepoStatusUtil.setRepoStatus(repoId, appContext.getString(R.string.committing))
-//                    doCommit(true, "", true, false)
-                    ChangeListFunctions.doCommit(
-                        requireShowCommitMsgDialog = true,
-                        cmtMsg = "",
-                        requireCloseBottomBar = true,
-//                        requireDoSync = false,
-                        curRepoFromParentPage = curRepo,
-                        refreshChangeList = changeListRequireRefreshFromParentPage,
-                        username = username,
-                        email = email,
-                        requireShowToast = requireShowToast,
-                        pleaseSetUsernameAndEmailBeforeCommit = pleaseSetUsernameAndEmailBeforeCommit,
-                        initSetUsernameAndEmailDialog = initSetUsernameAndEmailDialog,
-                        amendCommit = amendCommit,
-                        overwriteAuthor = overwriteAuthor,
-                        showCommitMsgDialog = showCommitMsgDialog,
-                        repoState = repoState,
-                        activityContext = activityContext,
-                        loadingText = loadingText,
-                        repoId = repoId,
-                        bottomBarActDoneCallback = bottomBarActDoneCallback,
-                        fromTo = fromTo,
-                        itemList = itemList.value,
-                        successCommitStrRes = successCommitStrRes,
-                        indexIsEmptyForCommitDialog=indexIsEmptyForCommitDialog,
-                        commitBtnTextForCommitDialog=commitBtnTextForCommitDialog,
-//                        showPushForCommitDialog=showPushForCommitDialog
-                    )
-                }catch (e:Exception){
-                    showErrAndSaveLog(TAG,"require commit error: "+e.stackTraceToString(), activityContext.getString(R.string.commit_failed)+": "+e.localizedMessage, requireShowToast, curRepo.id)
-                }finally {
-//                    RepoStatusUtil.clearRepoStatus(repoId)
-
-//                    changeListRequireRefreshFromParentPage(curRepo)
-//                    refreshRepoPage()
-
-                }
-            }else if(requireAct == PageRequest.mergeContinue) {
-                try {
-//                    RepoStatusUtil.setRepoStatus(repoId, appContext.getString(R.string.continue_merging))
-
-                    val repoFullPath = curRepo.fullSavePath
-                    Repository.open(repoFullPath).use {repo ->
-                        val readyRet = Libgit2Helper.readyForContinueMerge(repo, activityContext)
-                        if(readyRet.hasError()) {
-                            Msg.requireShowLongDuration(readyRet.msg)
-
-                            //显示的时候只显示简短错误信息，例如"请先解决冲突！"，存的时候存详细点，存上什么操作导致的错误，例如：“merge continue err:请先解决冲突”
-                            val errPrefix= activityContext.getString(R.string.merge_continue_err)
-                            createAndInsertError(repoId, "$errPrefix:${readyRet.msg}")
-                        }else {
-//                            doCommit(true, "", true, false)
+                            //执行commit
                             ChangeListFunctions.doCommit(
                                 requireShowCommitMsgDialog = true,
                                 cmtMsg = "",
                                 requireCloseBottomBar = true,
-//                                requireDoSync = false,
+//                            requireDoSync = false,
+                                curRepoFromParentPage = curRepo,
+                                refreshChangeList = changeListRequireRefreshFromParentPage,
+                                username = username,
+                                email = email,
+                                requireShowToast = requireShowToast,
+                                pleaseSetUsernameAndEmailBeforeCommit = pleaseSetUsernameAndEmailBeforeCommit,
+                                initSetUsernameAndEmailDialog = initSetUsernameAndEmailDialog,
+                                amendCommit = amendCommit,
+                                overwriteAuthor = overwriteAuthor,
+                                showCommitMsgDialog = showCommitMsgDialog,
+                                repoState = repoState,
+                                activityContext = activityContext,
+                                loadingText = loadingText,
+                                repoId = repoId,
+                                bottomBarActDoneCallback = bottomBarActDoneCallback,
+                                fromTo = fromTo,
+                                itemList = null,  //直接传null，创建提交前会查index list
+                                successCommitStrRes = successCommitStrRes,
+                                indexIsEmptyForCommitDialog=indexIsEmptyForCommitDialog,
+                                commitBtnTextForCommitDialog=commitBtnTextForCommitDialog,
+//                            showPushForCommitDialog=showPushForCommitDialog
+                            )
+
+                        }catch (e:Exception){
+                            showErrAndSaveLog(TAG,"require commit all error:"+e.stackTraceToString(), activityContext.getString(R.string.commit_err)+":"+e.localizedMessage, requireShowToast, curRepo.id)
+                        }
+                    }else if(requireAct == PageRequest.commit) {
+                        try {
+                            ChangeListFunctions.doCommit(
+                                requireShowCommitMsgDialog = true,
+                                cmtMsg = "",
+                                requireCloseBottomBar = true,
+//                        requireDoSync = false,
                                 curRepoFromParentPage = curRepo,
                                 refreshChangeList = changeListRequireRefreshFromParentPage,
                                 username = username,
@@ -1046,106 +965,134 @@ fun ChangeListInnerPage(
                                 successCommitStrRes = successCommitStrRes,
                                 indexIsEmptyForCommitDialog=indexIsEmptyForCommitDialog,
                                 commitBtnTextForCommitDialog=commitBtnTextForCommitDialog,
-//                                showPushForCommitDialog=showPushForCommitDialog
+//                        showPushForCommitDialog=showPushForCommitDialog
                             )
+                        }catch (e:Exception){
+                            showErrAndSaveLog(TAG,"require commit error: "+e.stackTraceToString(), activityContext.getString(R.string.commit_failed)+": "+e.localizedMessage, requireShowToast, curRepo.id)
                         }
+                    }else if(requireAct == PageRequest.mergeContinue) {
+                        try {
+                            val repoFullPath = curRepo.fullSavePath
+                            Repository.open(repoFullPath).use {repo ->
+                                val readyRet = Libgit2Helper.readyForContinueMerge(repo, activityContext)
+                                if(readyRet.hasError()) {
+                                    Msg.requireShowLongDuration(readyRet.msg)
 
+                                    //显示的时候只显示简短错误信息，例如"请先解决冲突！"，存的时候存详细点，存上什么操作导致的错误，例如：“merge continue err:请先解决冲突”
+                                    val errPrefix= activityContext.getString(R.string.merge_continue_err)
+                                    createAndInsertError(repoId, "$errPrefix:${readyRet.msg}")
+                                }else {
+//                            doCommit(true, "", true, false)
+                                    ChangeListFunctions.doCommit(
+                                        requireShowCommitMsgDialog = true,
+                                        cmtMsg = "",
+                                        requireCloseBottomBar = true,
+//                                requireDoSync = false,
+                                        curRepoFromParentPage = curRepo,
+                                        refreshChangeList = changeListRequireRefreshFromParentPage,
+                                        username = username,
+                                        email = email,
+                                        requireShowToast = requireShowToast,
+                                        pleaseSetUsernameAndEmailBeforeCommit = pleaseSetUsernameAndEmailBeforeCommit,
+                                        initSetUsernameAndEmailDialog = initSetUsernameAndEmailDialog,
+                                        amendCommit = amendCommit,
+                                        overwriteAuthor = overwriteAuthor,
+                                        showCommitMsgDialog = showCommitMsgDialog,
+                                        repoState = repoState,
+                                        activityContext = activityContext,
+                                        loadingText = loadingText,
+                                        repoId = repoId,
+                                        bottomBarActDoneCallback = bottomBarActDoneCallback,
+                                        fromTo = fromTo,
+                                        itemList = itemList.value,
+                                        successCommitStrRes = successCommitStrRes,
+                                        indexIsEmptyForCommitDialog=indexIsEmptyForCommitDialog,
+                                        commitBtnTextForCommitDialog=commitBtnTextForCommitDialog,
+//                                showPushForCommitDialog=showPushForCommitDialog
+                                    )
+                                }
+
+                            }
+                        }catch (e:Exception){
+                            showErrAndSaveLog(TAG,"require Continue Merge error:"+e.stackTraceToString(), activityContext.getString(R.string.continue_merge_err)+":"+e.localizedMessage, requireShowToast,repoId)
+                        }
+                    }else if(requireAct == PageRequest.rebaseContinue) {
+                        try {
+//                    doCommit(true, "", true, false)
+                            ChangeListFunctions.doCommit(
+                                requireShowCommitMsgDialog = true,
+                                cmtMsg = "",
+                                requireCloseBottomBar = true,
+//                        requireDoSync = false,
+                                curRepoFromParentPage = curRepo,
+                                refreshChangeList = changeListRequireRefreshFromParentPage,
+                                username = username,
+                                email = email,
+                                requireShowToast = requireShowToast,
+                                pleaseSetUsernameAndEmailBeforeCommit = pleaseSetUsernameAndEmailBeforeCommit,
+                                initSetUsernameAndEmailDialog = initSetUsernameAndEmailDialog,
+                                amendCommit = amendCommit,
+                                overwriteAuthor = overwriteAuthor,
+                                showCommitMsgDialog = showCommitMsgDialog,
+                                repoState = repoState,
+                                activityContext = activityContext,
+                                loadingText = loadingText,
+                                repoId = repoId,
+                                bottomBarActDoneCallback = bottomBarActDoneCallback,
+                                fromTo = fromTo,
+                                itemList = itemList.value,
+                                successCommitStrRes = successCommitStrRes,
+                                indexIsEmptyForCommitDialog=indexIsEmptyForCommitDialog,
+                                commitBtnTextForCommitDialog=commitBtnTextForCommitDialog,
+//                        showPushForCommitDialog=showPushForCommitDialog
+                            )
+                        }catch (e:Exception){
+                            showErrAndSaveLog(TAG,"require Rebase Continue error:"+e.stackTraceToString(), activityContext.getString(R.string.rebase_continue_err)+":"+e.localizedMessage, requireShowToast,repoId)
+                        }
+                    }else if(requireAct == PageRequest.rebaseSkip) {
+                        initRebaseSkipDialog(curRepo)
+
+                    }else if(requireAct == PageRequest.rebaseAbort) {
+                        initRebaseAbortDialog()
+
+                    }else if(requireAct == PageRequest.cherrypickContinue) {
+                        try {
+//                    doCommit(true, "", true, false)
+                            ChangeListFunctions.doCommit(
+                                requireShowCommitMsgDialog = true,
+                                cmtMsg = "",
+                                requireCloseBottomBar = true,
+//                        requireDoSync = false,
+                                curRepoFromParentPage = curRepo,
+                                refreshChangeList = changeListRequireRefreshFromParentPage,
+                                username = username,
+                                email = email,
+                                requireShowToast = requireShowToast,
+                                pleaseSetUsernameAndEmailBeforeCommit = pleaseSetUsernameAndEmailBeforeCommit,
+                                initSetUsernameAndEmailDialog = initSetUsernameAndEmailDialog,
+                                amendCommit = amendCommit,
+                                overwriteAuthor = overwriteAuthor,
+                                showCommitMsgDialog = showCommitMsgDialog,
+                                repoState = repoState,
+                                activityContext = activityContext,
+                                loadingText = loadingText,
+                                repoId = repoId,
+                                bottomBarActDoneCallback = bottomBarActDoneCallback,
+                                fromTo = fromTo,
+                                itemList = itemList.value,
+                                successCommitStrRes = successCommitStrRes,
+                                indexIsEmptyForCommitDialog=indexIsEmptyForCommitDialog,
+                                commitBtnTextForCommitDialog=commitBtnTextForCommitDialog,
+//                        showPushForCommitDialog=showPushForCommitDialog
+                            )
+                        }catch (e:Exception){
+                            showErrAndSaveLog(TAG,"require Cherrypick Continue error:"+e.stackTraceToString(), activityContext.getString(R.string.cherrypick_continue_err)+":"+e.localizedMessage, requireShowToast,repoId)
+                        }
+                    }else if(requireAct == PageRequest.cherrypickAbort) {
+                        initCherrypickAbortDialog()
                     }
-                }catch (e:Exception){
-                    showErrAndSaveLog(TAG,"require Continue Merge error:"+e.stackTraceToString(), activityContext.getString(R.string.continue_merge_err)+":"+e.localizedMessage, requireShowToast,repoId)
-                }finally {
-//                    RepoStatusUtil.clearRepoStatus(repoId)
-
-//                    changeListRequireRefreshFromParentPage(curRepo)
-//                    refreshRepoPage()
 
                 }
-            }else if(requireAct == PageRequest.rebaseContinue) {
-                try {
-//                    doCommit(true, "", true, false)
-                    ChangeListFunctions.doCommit(
-                        requireShowCommitMsgDialog = true,
-                        cmtMsg = "",
-                        requireCloseBottomBar = true,
-//                        requireDoSync = false,
-                        curRepoFromParentPage = curRepo,
-                        refreshChangeList = changeListRequireRefreshFromParentPage,
-                        username = username,
-                        email = email,
-                        requireShowToast = requireShowToast,
-                        pleaseSetUsernameAndEmailBeforeCommit = pleaseSetUsernameAndEmailBeforeCommit,
-                        initSetUsernameAndEmailDialog = initSetUsernameAndEmailDialog,
-                        amendCommit = amendCommit,
-                        overwriteAuthor = overwriteAuthor,
-                        showCommitMsgDialog = showCommitMsgDialog,
-                        repoState = repoState,
-                        activityContext = activityContext,
-                        loadingText = loadingText,
-                        repoId = repoId,
-                        bottomBarActDoneCallback = bottomBarActDoneCallback,
-                        fromTo = fromTo,
-                        itemList = itemList.value,
-                        successCommitStrRes = successCommitStrRes,
-                        indexIsEmptyForCommitDialog=indexIsEmptyForCommitDialog,
-                        commitBtnTextForCommitDialog=commitBtnTextForCommitDialog,
-//                        showPushForCommitDialog=showPushForCommitDialog
-                    )
-                }catch (e:Exception){
-                    showErrAndSaveLog(TAG,"require Rebase Continue error:"+e.stackTraceToString(), activityContext.getString(R.string.rebase_continue_err)+":"+e.localizedMessage, requireShowToast,repoId)
-                }finally {
-//                    RepoStatusUtil.clearRepoStatus(repoId)
-
-//                    changeListRequireRefreshFromParentPage(curRepo)
-//                    refreshRepoPage()
-
-                }
-            }else if(requireAct == PageRequest.rebaseSkip) {
-                initRebaseSkipDialog(curRepo)
-
-            }else if(requireAct == PageRequest.rebaseAbort) {
-                initRebaseAbortDialog()
-
-            }else if(requireAct == PageRequest.cherrypickContinue) {
-                try {
-//                    doCommit(true, "", true, false)
-                    ChangeListFunctions.doCommit(
-                        requireShowCommitMsgDialog = true,
-                        cmtMsg = "",
-                        requireCloseBottomBar = true,
-//                        requireDoSync = false,
-                        curRepoFromParentPage = curRepo,
-                        refreshChangeList = changeListRequireRefreshFromParentPage,
-                        username = username,
-                        email = email,
-                        requireShowToast = requireShowToast,
-                        pleaseSetUsernameAndEmailBeforeCommit = pleaseSetUsernameAndEmailBeforeCommit,
-                        initSetUsernameAndEmailDialog = initSetUsernameAndEmailDialog,
-                        amendCommit = amendCommit,
-                        overwriteAuthor = overwriteAuthor,
-                        showCommitMsgDialog = showCommitMsgDialog,
-                        repoState = repoState,
-                        activityContext = activityContext,
-                        loadingText = loadingText,
-                        repoId = repoId,
-                        bottomBarActDoneCallback = bottomBarActDoneCallback,
-                        fromTo = fromTo,
-                        itemList = itemList.value,
-                        successCommitStrRes = successCommitStrRes,
-                        indexIsEmptyForCommitDialog=indexIsEmptyForCommitDialog,
-                        commitBtnTextForCommitDialog=commitBtnTextForCommitDialog,
-//                        showPushForCommitDialog=showPushForCommitDialog
-                    )
-                }catch (e:Exception){
-                    showErrAndSaveLog(TAG,"require Cherrypick Continue error:"+e.stackTraceToString(), activityContext.getString(R.string.cherrypick_continue_err)+":"+e.localizedMessage, requireShowToast,repoId)
-                }finally {
-//                    RepoStatusUtil.clearRepoStatus(repoId)
-
-//                    changeListRequireRefreshFromParentPage(curRepo)
-//                    refreshRepoPage()
-
-                }
-            }else if(requireAct == PageRequest.cherrypickAbort) {
-                initCherrypickAbortDialog()
             }
 
         }
@@ -1185,49 +1132,53 @@ fun ChangeListInnerPage(
             closeDialog()
 
             val curRepo = curRepoFromParentPage.value
+
             doJobThenOffLoading(
                 loadingOn = loadingOn,
                 loadingOff = loadingOff,
                 loadingText = activityContext.getString(R.string.loading)
             ) {
-                try {
-                    val repoFullPath = curRepo.fullSavePath
-                    Repository.open(repoFullPath).use { repo ->
-                        val (usernameFromConfig, emailFromConfig) = Libgit2Helper.getGitUsernameAndEmail(repo)
+                doActWithLock(curRepo) {
+                    try {
+                        val repoFullPath = curRepo.fullSavePath
+                        Repository.open(repoFullPath).use { repo ->
+                            val (usernameFromConfig, emailFromConfig) = Libgit2Helper.getGitUsernameAndEmail(repo)
 
-                        if (usernameFromConfig.isBlank() || emailFromConfig.isBlank()) {
-                            Msg.requireShowLongDuration(activityContext.getString(R.string.plz_set_username_and_email_first))
-                            initSetUsernameAndEmailDialog(curRepo) {
-                                showRebaseSkipDialog.value = true
-                            }
-                        } else {
-                            val readyRet = Libgit2Helper.rebaseSkip(repo, activityContext, usernameFromConfig, emailFromConfig, settings = settings)
-                            if (readyRet.hasError()) {
-                                Msg.requireShowLongDuration(readyRet.msg)
-
-                                //显示的时候只显示简短错误信息，例如"请先解决冲突！"，存的时候存详细点，存上什么操作导致的错误，例如：“merge continue err:请先解决冲突”
-                                val errPrefix = activityContext.getString(R.string.rebase_skip_err)
-                                createAndInsertError(repoId, "$errPrefix:${readyRet.msg}")
+                            if (usernameFromConfig.isBlank() || emailFromConfig.isBlank()) {
+                                Msg.requireShowLongDuration(activityContext.getString(R.string.plz_set_username_and_email_first))
+                                initSetUsernameAndEmailDialog(curRepo) {
+                                    showRebaseSkipDialog.value = true
+                                }
                             } else {
-                                Msg.requireShow(activityContext.getString(R.string.rebase_success))
+                                val readyRet = Libgit2Helper.rebaseSkip(repo, activityContext, usernameFromConfig, emailFromConfig, settings = settings)
+                                if (readyRet.hasError()) {
+                                    Msg.requireShowLongDuration(readyRet.msg)
+
+                                    //显示的时候只显示简短错误信息，例如"请先解决冲突！"，存的时候存详细点，存上什么操作导致的错误，例如：“merge continue err:请先解决冲突”
+                                    val errPrefix = activityContext.getString(R.string.rebase_skip_err)
+                                    createAndInsertError(repoId, "$errPrefix:${readyRet.msg}")
+                                } else {
+                                    Msg.requireShow(activityContext.getString(R.string.rebase_success))
+                                }
                             }
                         }
-                    }
-                } catch (e: Exception) {
-                    showErrAndSaveLog(
-                        TAG,
-                        "require Rebase Skip error:" + e.stackTraceToString(),
-                        activityContext.getString(R.string.rebase_skip_err) + ":" + e.localizedMessage,
-                        requireShowToast,
-                        repoId
-                    )
-                } finally {
+                    } catch (e: Exception) {
+                        showErrAndSaveLog(
+                            TAG,
+                            "require Rebase Skip error:" + e.stackTraceToString(),
+                            activityContext.getString(R.string.rebase_skip_err) + ":" + e.localizedMessage,
+                            requireShowToast,
+                            repoId
+                        )
+                    } finally {
 //                    RepoStatusUtil.clearRepoStatus(repoId)
 
-                    changeListRequireRefreshFromParentPage(curRepo)
+                        changeListRequireRefreshFromParentPage(curRepo)
 //                    refreshRepoPage()
 
+                    }
                 }
+
             }
         }
     }
@@ -1253,87 +1204,76 @@ fun ChangeListInnerPage(
             closeDialog()
 
             val curRepo = curRepoFromParentPage.value
+
             doJobThenOffLoading(
                 loadingOn = loadingOn,
                 loadingOff = loadingOff,
                 loadingText = activityContext.getString(R.string.aborting)
             ) {
-                if(nullMergeTrueRebaseFalseCherrypick == null) {  // merge abort
-                    try {
-//                    RepoStatusUtil.setRepoStatus(repoId, appContext.getString(R.string.aborting_merge))
-
-                        doAbortMerge(curRepo)
-
-                    }catch (e:Exception){
-                        showErrAndSaveLog(TAG,"require abort_merge error: "+e.stackTraceToString(), activityContext.getString(R.string.abort_merge_failed)+": "+e.localizedMessage, requireShowToast, curRepo.id)
-                    }finally {
-//                    RepoStatusUtil.clearRepoStatus(repoId)
-
-                        changeListRequireRefreshFromParentPage(curRepo)
-//                    refreshRepoPage()
-
-                    }
-                }else if(nullMergeTrueRebaseFalseCherrypick) {  // rebase abort
-                    try {
-                        val repoFullPath = curRepo.fullSavePath
-                        Repository.open(repoFullPath).use { repo ->
-                            val readyRet = Libgit2Helper.rebaseAbort(repo)
-                            if (readyRet.hasError()) {
-                                Msg.requireShowLongDuration(readyRet.msg)
-
-                                //显示的时候只显示简短错误信息，例如"请先解决冲突！"，存的时候存详细点，存上什么操作导致的错误，例如：“merge continue err:请先解决冲突”
-                                val errPrefix = activityContext.getString(R.string.rebase_abort_err)
-                                createAndInsertError(repoId, "$errPrefix:${readyRet.msg}")
-                            } else {
-                                Msg.requireShow(activityContext.getString(R.string.rebase_aborted))
-                            }
+                doActWithLock(curRepo) {
+                    if(nullMergeTrueRebaseFalseCherrypick == null) {  // merge abort
+                        try {
+                            doAbortMerge(curRepo)
+                        }catch (e:Exception){
+                            showErrAndSaveLog(TAG,"require abort_merge error: "+e.stackTraceToString(), activityContext.getString(R.string.abort_merge_failed)+": "+e.localizedMessage, requireShowToast, curRepo.id)
+                        }finally {
+                            changeListRequireRefreshFromParentPage(curRepo)
                         }
-                    } catch (e: Exception) {
-                        showErrAndSaveLog(
-                            TAG,
-                            "require Rebase Abort error:" + e.stackTraceToString(),
-                            activityContext.getString(R.string.rebase_abort_err) + ":" + e.localizedMessage,
-                            requireShowToast,
-                            repoId
-                        )
-                    } finally {
-//                    RepoStatusUtil.clearRepoStatus(repoId)
+                    }else if(nullMergeTrueRebaseFalseCherrypick) {  // rebase abort
+                        try {
+                            val repoFullPath = curRepo.fullSavePath
+                            Repository.open(repoFullPath).use { repo ->
+                                val readyRet = Libgit2Helper.rebaseAbort(repo)
+                                if (readyRet.hasError()) {
+                                    Msg.requireShowLongDuration(readyRet.msg)
 
-                        changeListRequireRefreshFromParentPage(curRepo)
-//                    refreshRepoPage()
-
-                    }
-                }else {  // cherrypick abort
-                    try {
-                        val repoFullPath = curRepo.fullSavePath
-                        Repository.open(repoFullPath).use { repo ->
-                            val readyRet = Libgit2Helper.cherrypickAbort(repo)
-                            if (readyRet.hasError()) {
-                                Msg.requireShowLongDuration(readyRet.msg)
-
-                                //显示的时候只显示简短错误信息，例如"请先解决冲突！"，存的时候存详细点，存上什么操作导致的错误，例如：“merge continue err:请先解决冲突”
-                                val errPrefix = activityContext.getString(R.string.cherrypick_abort_err)
-                                createAndInsertError(repoId, "$errPrefix:${readyRet.msg}")
-                            } else {
-                                Msg.requireShow(activityContext.getString(R.string.cherrypick_aborted))
+                                    //显示的时候只显示简短错误信息，例如"请先解决冲突！"，存的时候存详细点，存上什么操作导致的错误，例如：“merge continue err:请先解决冲突”
+                                    val errPrefix = activityContext.getString(R.string.rebase_abort_err)
+                                    createAndInsertError(repoId, "$errPrefix:${readyRet.msg}")
+                                } else {
+                                    Msg.requireShow(activityContext.getString(R.string.rebase_aborted))
+                                }
                             }
+                        } catch (e: Exception) {
+                            showErrAndSaveLog(
+                                TAG,
+                                "require Rebase Abort error:" + e.stackTraceToString(),
+                                activityContext.getString(R.string.rebase_abort_err) + ":" + e.localizedMessage,
+                                requireShowToast,
+                                repoId
+                            )
+                        } finally {
+                            changeListRequireRefreshFromParentPage(curRepo)
                         }
-                    } catch (e: Exception) {
-                        showErrAndSaveLog(
-                            TAG,
-                            "require Cherrypick Abort error:" + e.stackTraceToString(),
-                            activityContext.getString(R.string.cherrypick_abort_err) + ":" + e.localizedMessage,
-                            requireShowToast,
-                            repoId
-                        )
-                    } finally {
-//                    RepoStatusUtil.clearRepoStatus(repoId)
+                    }else {  // cherrypick abort
+                        try {
+                            val repoFullPath = curRepo.fullSavePath
+                            Repository.open(repoFullPath).use { repo ->
+                                val readyRet = Libgit2Helper.cherrypickAbort(repo)
+                                if (readyRet.hasError()) {
+                                    Msg.requireShowLongDuration(readyRet.msg)
 
-                        changeListRequireRefreshFromParentPage(curRepo)
-//                    refreshRepoPage()
-
+                                    //显示的时候只显示简短错误信息，例如"请先解决冲突！"，存的时候存详细点，存上什么操作导致的错误，例如：“merge continue err:请先解决冲突”
+                                    val errPrefix = activityContext.getString(R.string.cherrypick_abort_err)
+                                    createAndInsertError(repoId, "$errPrefix:${readyRet.msg}")
+                                } else {
+                                    Msg.requireShow(activityContext.getString(R.string.cherrypick_aborted))
+                                }
+                            }
+                        } catch (e: Exception) {
+                            showErrAndSaveLog(
+                                TAG,
+                                "require Cherrypick Abort error:" + e.stackTraceToString(),
+                                activityContext.getString(R.string.cherrypick_abort_err) + ":" + e.localizedMessage,
+                                requireShowToast,
+                                repoId
+                            )
+                        } finally {
+                            changeListRequireRefreshFromParentPage(curRepo)
+                        }
                     }
                 }
+
             }
         }
     }
@@ -1443,7 +1383,8 @@ fun ChangeListInnerPage(
                 commitMsg.value = "" //清空提交信息状态
 
                 doJobThenOffLoading(loadingOn, loadingOff,activityContext.getString(R.string.committing)) {
-                    try {
+                    doActWithLock(curRepo) {
+                        try {
 //                        // do stage, then do commit
 //                        if(!doStage(false)) {  //如果stage失败，提示错误并返回，或许该记日志？
 //                            requireShowToast(stageFailedStrRes)
@@ -1451,92 +1392,93 @@ fun ChangeListInnerPage(
 //                        }
 //                        val requireDoSync:Boolean = Cache.getByType<Boolean>(Cache.Key.changeListInnerPage_RequireDoSyncAfterCommit)?:false
 
-                        //执行commit
+                            //执行commit
 //                        val commitSuccess = doCommit(false, cmtMsg, !requireDoSync, requireDoSync)
-                        val commitSuccess = ChangeListFunctions.doCommit(
-                            requireShowCommitMsgDialog = false,
-                            cmtMsg = cmtMsg,
-                            requireCloseBottomBar = !(requireSync || requirePush),
+                            val commitSuccess = ChangeListFunctions.doCommit(
+                                requireShowCommitMsgDialog = false,
+                                cmtMsg = cmtMsg,
+                                requireCloseBottomBar = !(requireSync || requirePush),
 //                            requireDoSync = requireDoSync,
-                            curRepoFromParentPage = curRepo,
-                            refreshChangeList = changeListRequireRefreshFromParentPage,
-                            username = username,
-                            email = email,
-                            requireShowToast = requireShowToast,
-                            pleaseSetUsernameAndEmailBeforeCommit = pleaseSetUsernameAndEmailBeforeCommit,
-                            initSetUsernameAndEmailDialog = initSetUsernameAndEmailDialog,
-                            amendCommit = amendCommit,
-                            overwriteAuthor = overwriteAuthor,
-                            showCommitMsgDialog = showCommitMsgDialog,
-                            repoState = repoState,
-                            activityContext = activityContext,
-                            loadingText = loadingText,
-                            repoId = repoId,
-                            bottomBarActDoneCallback = bottomBarActDoneCallback,
-                            fromTo = fromTo,
-                            itemList = itemList.value,
-                            successCommitStrRes = successCommitStrRes,
-                            indexIsEmptyForCommitDialog=indexIsEmptyForCommitDialog,
-                            commitBtnTextForCommitDialog=commitBtnTextForCommitDialog,
+                                curRepoFromParentPage = curRepo,
+                                refreshChangeList = changeListRequireRefreshFromParentPage,
+                                username = username,
+                                email = email,
+                                requireShowToast = requireShowToast,
+                                pleaseSetUsernameAndEmailBeforeCommit = pleaseSetUsernameAndEmailBeforeCommit,
+                                initSetUsernameAndEmailDialog = initSetUsernameAndEmailDialog,
+                                amendCommit = amendCommit,
+                                overwriteAuthor = overwriteAuthor,
+                                showCommitMsgDialog = showCommitMsgDialog,
+                                repoState = repoState,
+                                activityContext = activityContext,
+                                loadingText = loadingText,
+                                repoId = repoId,
+                                bottomBarActDoneCallback = bottomBarActDoneCallback,
+                                fromTo = fromTo,
+                                itemList = itemList.value,
+                                successCommitStrRes = successCommitStrRes,
+                                indexIsEmptyForCommitDialog=indexIsEmptyForCommitDialog,
+                                commitBtnTextForCommitDialog=commitBtnTextForCommitDialog,
 //                            showPushForCommitDialog=showPushForCommitDialog
-                        )
+                            )
 
-                        if(requireSync) {
-                            if(commitSuccess){
-                                //更新loading提示文案
-                                loadingText.value = activityContext.getString(R.string.syncing)
+                            if(requireSync) {
+                                if(commitSuccess){
+                                    //更新loading提示文案
+                                    loadingText.value = activityContext.getString(R.string.syncing)
 
 //                                doSync(true)
-                                ChangeListFunctions.doSync(
-                                    loadingOn = loadingOn,
-                                    loadingOff = loadingOff,
-                                    requireCloseBottomBar = true,
-                                    trueMergeFalseRebase = true,
-                                    curRepoFromParentPage = curRepo,
-                                    requireShowToast = requireShowToast,
-                                    activityContext = activityContext,
-                                    bottomBarActDoneCallback = bottomBarActDoneCallback,
-                                    plzSetUpStreamForCurBranch = plzSetUpStreamForCurBranch,
-                                    initSetUpstreamDialog = initSetUpstreamDialog,
+                                    ChangeListFunctions.doSync(
+                                        loadingOn = loadingOn,
+                                        loadingOff = loadingOff,
+                                        requireCloseBottomBar = true,
+                                        trueMergeFalseRebase = true,
+                                        curRepoFromParentPage = curRepo,
+                                        requireShowToast = requireShowToast,
+                                        activityContext = activityContext,
+                                        bottomBarActDoneCallback = bottomBarActDoneCallback,
+                                        plzSetUpStreamForCurBranch = plzSetUpStreamForCurBranch,
+                                        initSetUpstreamDialog = initSetUpstreamDialog,
 
-                                    loadingText = loadingText,
-                                    dbContainer = dbContainer
-                                )
-                            }else {
-                                requireShowToast(activityContext.getString(R.string.sync_canceled_by_commit_failed))
-                            }
-                        }else if(requirePush) {
-                            if(commitSuccess) {
-                                loadingText.value = activityContext.getString(R.string.pushing)
-
-                                val success = ChangeListFunctions.doPush(
-                                    requireCloseBottomBar = true,
-                                    upstreamParam = null,
-                                    force = false,
-                                    curRepoFromParentPage = curRepo,
-                                    requireShowToast = requireShowToast,
-                                    activityContext = activityContext,
-                                    loadingText = loadingText,
-                                    bottomBarActDoneCallback = bottomBarActDoneCallback,
-                                    dbContainer = dbContainer
-                                )
-
-                                if (!success) {
-                                    requireShowToast(activityContext.getString(R.string.push_failed))
-                                } else {
-                                    requireShowToast(activityContext.getString(R.string.push_success))
+                                        loadingText = loadingText,
+                                        dbContainer = dbContainer
+                                    )
+                                }else {
+                                    requireShowToast(activityContext.getString(R.string.sync_canceled_by_commit_failed))
                                 }
-                            }else {
-                                requireShowToast(activityContext.getString(R.string.push_canceled_by_commit_failed))
-                            }
-                        }
+                            }else if(requirePush) {
+                                if(commitSuccess) {
+                                    loadingText.value = activityContext.getString(R.string.pushing)
 
-                        //关闭底栏
+                                    val success = ChangeListFunctions.doPush(
+                                        requireCloseBottomBar = true,
+                                        upstreamParam = null,
+                                        force = false,
+                                        curRepoFromParentPage = curRepo,
+                                        requireShowToast = requireShowToast,
+                                        activityContext = activityContext,
+                                        loadingText = loadingText,
+                                        bottomBarActDoneCallback = bottomBarActDoneCallback,
+                                        dbContainer = dbContainer
+                                    )
+
+                                    if(success) {
+                                        requireShowToast(activityContext.getString(R.string.push_success))
+                                    }else {
+                                        requireShowToast(activityContext.getString(R.string.push_failed))
+                                    }
+                                }else {
+                                    requireShowToast(activityContext.getString(R.string.push_canceled_by_commit_failed))
+                                }
+                            }
+
+                            //关闭底栏
 //                        bottomBarActDoneCallback("")
 
-                    }catch (e:Exception){
+                        }catch (e:Exception){
 //                        e.printStackTrace()
-                        MyLog.e(TAG, "#doCommit at showCommitMsgDialog #onOk:" + e.stackTraceToString())
+                            MyLog.e(TAG, "#doCommit at showCommitMsgDialog #onOk:" + e.stackTraceToString())
+                        }
                     }
                 }
             },
