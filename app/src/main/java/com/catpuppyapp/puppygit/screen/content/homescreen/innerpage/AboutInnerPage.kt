@@ -295,7 +295,7 @@ fun AboutInnerPage(
             }
         }
 
-        PaddingRow(PaddingValues(30.dp))
+        PaddingRow()
     }
 
 }
