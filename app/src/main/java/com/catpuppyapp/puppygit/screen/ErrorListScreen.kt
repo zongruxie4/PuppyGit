@@ -8,7 +8,7 @@ import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Close
-import androidx.compose.material.icons.filled.Delete
+import androidx.compose.material.icons.filled.DeleteSweep
 import androidx.compose.material.icons.filled.FilterAlt
 import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -63,8 +63,8 @@ import com.catpuppyapp.puppygit.utils.state.mutableCustomStateListOf
 import com.catpuppyapp.puppygit.utils.state.mutableCustomStateOf
 
 
-private val TAG = "ErrorListScreen"
-private val stateKeyTag = "ErrorListScreen"
+private const val TAG = "ErrorListScreen"
+private const val stateKeyTag = "ErrorListScreen"
 
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalFoundationApi::class)
 @Composable
@@ -271,7 +271,7 @@ fun ErrorListScreen(
 
                         LongPressAbleIconBtn(
                             tooltipText = stringResource(R.string.clear_all),
-                            icon =  Icons.Filled.Delete,
+                            icon =  Icons.Filled.DeleteSweep,
                             iconContentDesc = stringResource(R.string.clear_all),
 
                         ) {
