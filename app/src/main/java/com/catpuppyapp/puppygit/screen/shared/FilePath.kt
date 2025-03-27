@@ -79,7 +79,20 @@ class FilePath(
                     }
                 }
             }catch (_: Exception) {
-                rawPath
+                try {
+                    val safUriStr = Uri.parse(rawPath).toString()
+                    val markorExternalUriPrefix = "content://net.gsantner.markor.provider/external_files/"
+                    val indexOfMarkorUriExternalPrefix = safUriStr.indexOf(markorExternalUriPrefix)
+                    // indexOf == 0, means `include` and `starsWith`, both are `true`
+                    if(indexOfMarkorUriExternalPrefix == 0) {
+                        // length-1 是为了保留之前的 "/"，如果不减1，还得自己在前面prepend一个 "/"
+                        safUriStr.substring(markorExternalUriPrefix.length-1)
+                    }else{
+                        rawPath
+                    }
+                }catch (_:Exception) {
+                    rawPath
+                }
             }
         }else if(rawPathType == PathType.FILE_URI) {
             rawPath.removePrefix(FsUtils.fileUriPathPrefix)
