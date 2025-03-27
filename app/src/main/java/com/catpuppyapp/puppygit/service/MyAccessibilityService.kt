@@ -20,6 +20,7 @@ import com.catpuppyapp.puppygit.utils.cache.NotifySenderMap
 import com.catpuppyapp.puppygit.utils.doJobThenOffLoading
 import com.catpuppyapp.puppygit.utils.generateRandomString
 import io.ktor.util.collections.ConcurrentMap
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
@@ -30,7 +31,11 @@ class MyAccessibilityService: AccessibilityService() {
         private const val TAG = "MyAccessibilityService"
 
         private val lock = Mutex()
+        // key is package name, value is true=app opened, false=app closed, null=app never open
         private val targetPackageTrueOpenedFalseCloseNullNeverOpenedList = ConcurrentMap<String, Boolean>()
+        // key is package name, value is time app last open time in millseconds, if null, means never open
+        private val appLastOpenTime = ConcurrentMap<String, Long>()
+
         private var lastTargetPackageName = ""  // use to check enter/leave app
 
         private val ignorePackageNames = listOf<String>(
@@ -236,7 +241,14 @@ class MyAccessibilityService: AccessibilityService() {
 
                             //do pull
                             doJobThenOffLoading {
-                                pullRepoList(sessionId, settings, repoList)
+                                val lastOpenAt = appLastOpenTime[packageName] ?: 0L
+                                val now = System.currentTimeMillis()
+                                appLastOpenTime[packageName] = now
+                                val pullIntervalInMillSec = settings.automation.pullIntervalInSec * 1000
+                                val interval = now - lastOpenAt
+                                if(interval > pullIntervalInMillSec) {
+                                    pullRepoList(sessionId, settings, repoList)
+                                }
                             }
                         }else {
                             MyLog.d(TAG, "target packageName '$packageName' opened but no need do pull")
@@ -270,7 +282,29 @@ class MyAccessibilityService: AccessibilityService() {
 
                                 // do push, one package may bind multi repos, start a coroutine do push for them
                                 doJobThenOffLoading {
-                                    pushRepoList(sessionId, settings, repoList)
+                                    val startAt = System.currentTimeMillis()
+                                    val pushDelayInMillSec = settings.automation.pushDelayInSec * 1000
+                                    var taskCanceled = false
+                                    while (true) {
+                                        // 每 2 秒检查一次是否需要push
+                                        delay(2000)
+
+                                        // app重新打开了，取消push任务
+                                        if(targetPackageTrueOpenedFalseCloseNullNeverOpenedList[lastOpenedTarget] == true){
+                                            taskCanceled = true
+                                            break
+                                        }
+
+                                        //超过延迟时间了，执行push
+                                        val passedTime = System.currentTimeMillis() - startAt
+                                        if(passedTime > pushDelayInMillSec) {
+                                            break
+                                        }
+                                    }
+
+                                    if(!taskCanceled) {
+                                        pushRepoList(sessionId, settings, repoList)
+                                    }
                                 }
                             }else {
                                 MyLog.d(TAG, "target packageName '$packageName' opened but no need do push")
