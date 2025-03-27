@@ -291,10 +291,11 @@ class MyAccessibilityService: AccessibilityService() {
                                 //负数将禁用push
                                 if(pushDelayInMillSec >= 0) {
                                     doJobThenOffLoading pushTask@{
-                                        val startAt = System.currentTimeMillis()
                                         var taskCanceled = false
 
                                         if(pushDelayInMillSec > 0) {
+                                            val startAt = System.currentTimeMillis()
+
                                             while (true) {
                                                 // 每 2 秒检查一次是否需要push，虽然设置的单位是秒，但精度是2秒，避免太多无意义cpu空转，最多误差2秒，可接受
                                                 delay(2000)
