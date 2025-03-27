@@ -1292,28 +1292,27 @@ fun ChangeListInnerPage(
             showMergeAcceptTheirsOrOursDialog.value=false
             val curRepo = curRepoFromParentPage.value
 
-            doJobThenOffLoading(
-                loadingOn = loadingOn,
-                loadingOff = loadingOff,
-                loadingText = activityContext.getString(R.string.loading)
-            ) {
-                ChangeListFunctions.doAccept(
-                    curRepo = curRepo,
-                    acceptTheirs = acceptTheirs,
-                    loadingText = loadingText,
-                    activityContext = activityContext,
-                    hasConflictItemsSelected = hasConflictItemsSelected,
-                    requireShowToast = requireShowToast,
-                    selectedItemList = selectedItemList.value.toList(),
-                    repoState = repoState,
-                    repoId = repoId,
-                    fromTo = fromTo,
-                    selectedListIsEmpty = selectedListIsEmpty,
-                    noItemSelectedStrRes = noItemSelectedStrRes,
-                    nFilesStagedStrRes = nFilesStagedStrRes,
-                    bottomBarActDoneCallback = bottomBarActDoneCallback,
-                    changeListRequireRefreshFromParentPage = changeListRequireRefreshFromParentPage,
-                )
+            doJobThenOffLoading(loadingOn = loadingOn, loadingOff = loadingOff, loadingText = activityContext.getString(R.string.loading)) {
+                doActWithLock(curRepo) {
+                    ChangeListFunctions.doAccept(
+                        curRepo = curRepo,
+                        acceptTheirs = acceptTheirs,
+                        loadingText = loadingText,
+                        activityContext = activityContext,
+                        hasConflictItemsSelected = hasConflictItemsSelected,
+                        requireShowToast = requireShowToast,
+                        selectedItemList = selectedItemList.value.toList(),
+                        repoState = repoState,
+                        repoId = repoId,
+                        fromTo = fromTo,
+                        selectedListIsEmpty = selectedListIsEmpty,
+                        noItemSelectedStrRes = noItemSelectedStrRes,
+                        nFilesStagedStrRes = nFilesStagedStrRes,
+                        bottomBarActDoneCallback = bottomBarActDoneCallback,
+                        changeListRequireRefreshFromParentPage = changeListRequireRefreshFromParentPage,
+                    )
+                }
+
             }
         }
     }
@@ -1596,33 +1595,33 @@ fun ChangeListInnerPage(
             showCherrypickDialog.value = false
             val curRepo = curRepoFromParentPage.value
             val selectedItemList = selectedItemList.value.toList()
-            doJobThenOffLoading(
-                loadingOn,
-                loadingOff,
-                activityContext.getString(R.string.cherrypicking)
-            ) {
-                val pathSpecs = selectedItemList.map{it.relativePathUnderRepo}
-                Repository.open(curRepo.fullSavePath).use { repo->
-                    val ret = Libgit2Helper.cherrypick(
-                        repo,
-                        targetCommitFullHash = cherrypickTargetHash.value,
-                        parentCommitFullHash = cherrypickParentHash.value,
-                        pathSpecList = pathSpecs,
-                        autoCommit = cherrypickAutoCommit.value,
-                        settings = settings
-                    )
+            doJobThenOffLoading(loadingOn, loadingOff, activityContext.getString(R.string.cherrypicking)) {
+                doActWithLock(curRepo) {
+                    val pathSpecs = selectedItemList.map { it.relativePathUnderRepo }
 
-                    if(ret.hasError()) {
-                        Msg.requireShowLongDuration(ret.msg)
-                        if(ret.code != Ret.ErrCode.alreadyUpToDate) {  //如果错误码不是 Already up-to-date ，就log下
+                    Repository.open(curRepo.fullSavePath).use { repo->
+                        val ret = Libgit2Helper.cherrypick(
+                            repo,
+                            targetCommitFullHash = cherrypickTargetHash.value,
+                            parentCommitFullHash = cherrypickParentHash.value,
+                            pathSpecList = pathSpecs,
+                            autoCommit = cherrypickAutoCommit.value,
+                            settings = settings
+                        )
 
-                            //选提交时记日志把files改成commits用来区分
-                            createAndInsertError(repoId, "cherrypick files changes of '$shortParent..$shortTarget' err:"+ret.msg)
+                        if(ret.hasError()) {
+                            Msg.requireShowLongDuration(ret.msg)
+                            if(ret.code != Ret.ErrCode.alreadyUpToDate) {  //如果错误码不是 Already up-to-date ，就log下
+
+                                //选提交时记日志把files改成commits用来区分
+                                createAndInsertError(repoId, "cherrypick files changes of '$shortParent..$shortTarget' err:"+ret.msg)
+                            }
+                        }else {
+                            Msg.requireShow(activityContext.getString(R.string.success))
                         }
-                    }else {
-                        Msg.requireShow(activityContext.getString(R.string.success))
                     }
                 }
+
             }
         }
     }
@@ -1776,19 +1775,17 @@ fun ChangeListInnerPage(
             val curRepo = curRepoFromParentPage.value
             val selectedItemList = selectedItemList.value.toList()
 
-            doJobThenOffLoading(
-                loadingOn,
-                loadingOff,
-                activityContext.getString(R.string.checking_out)
-            ) {
-                val pathSpecs = selectedItemList.map{it.relativePathUnderRepo}
-                Repository.open(curRepo.fullSavePath).use { repo->
-                    val ret = Libgit2Helper.checkoutFiles(repo, checkoutTargetHash.value, pathSpecs, force=checkoutForce.value)
-                    if(ret.hasError()) {
-                        Msg.requireShowLongDuration(ret.msg)
-                        createAndInsertError(repoId, "checkout files err:"+ret.msg)
-                    }else {
-                        Msg.requireShow(activityContext.getString(R.string.success))
+            doJobThenOffLoading(loadingOn, loadingOff, activityContext.getString(R.string.checking_out)) {
+                doActWithLock(curRepo) {
+                    val pathSpecs = selectedItemList.map{it.relativePathUnderRepo}
+                    Repository.open(curRepo.fullSavePath).use { repo->
+                        val ret = Libgit2Helper.checkoutFiles(repo, checkoutTargetHash.value, pathSpecs, force=checkoutForce.value)
+                        if(ret.hasError()) {
+                            Msg.requireShowLongDuration(ret.msg)
+                            createAndInsertError(repoId, "checkout files err:"+ret.msg)
+                        }else {
+                            Msg.requireShow(activityContext.getString(R.string.success))
+                        }
                     }
                 }
             }
@@ -1890,9 +1887,11 @@ fun ChangeListInnerPage(
                         }
 
                         //操作完成，显示提示
+                        val revertedCount = pathspecList.size.toString()
+                        val deletedCount = untrakcedFileList.size.toString()
                         // "reverted n and deleted m files"，其中 n 和 m 将替换为恢复和删除的文件数
-                        val msg = replaceStringResList(revertStrRes,
-                            listOf(pathspecList.size.toString(),untrakcedFileList.size.toString()))
+                        val msg = replaceStringResList(revertStrRes, listOf(revertedCount, deletedCount))
+
                         //关闭底栏，revert是个独立操作，不会和其他操作组合，所以一定需要关底栏
                         bottomBarActDoneCallback(msg, curRepo)
                     }
@@ -1927,8 +1926,10 @@ fun ChangeListInnerPage(
         ) {
             showUnstageConfirmDialog.value = false
             val curRepo = curRepoFromParentPage.value
-            doJobThenOffLoading(loadingOn, loadingOff, loadingText=activityContext.getString(R.string.unstaging)) {
-                doUnstage(curRepo, selectedItemList.value.toList())
+            doJobThenOffLoading(loadingOn, loadingOff, activityContext.getString(R.string.unstaging)) {
+                doActWithLock(curRepo) {
+                    doUnstage(curRepo, selectedItemList.value.toList())
+                }
             }
         }
     }
@@ -2227,12 +2228,10 @@ fun ChangeListInnerPage(
             showRevertAlert.value=false
             val curRepo = curRepoFromParentPage.value
 
-            doJobThenOffLoading(
-                loadingOn = loadingOn,
-                loadingOff = loadingOff,
-                loadingText = activityContext.getString(R.string.reverting)
-            ) {
-                doRevert(curRepo, selectedItemList.value.toList())
+            doJobThenOffLoading(loadingOn = loadingOn, loadingOff = loadingOff, loadingText = activityContext.getString(R.string.reverting)) {
+                doActWithLock(curRepo) {
+                    doRevert(curRepo, selectedItemList.value.toList())
+                }
             }
         }
     }
@@ -2954,33 +2953,78 @@ fun ChangeListInnerPage(
                         commit@{
                             val curRepo = curRepoFromParentPage.value
                             doJobThenOffLoading(loadingOn=loadingOn,loadingOff=loadingOff, loadingText=activityContext.getString(R.string.committing)) {
-                                val stageSuccess = ChangeListFunctions.doStage(
-                                    curRepo = curRepo,
-                                    requireCloseBottomBar = false,
-                                    userParamList = false,
-                                    paramList = null,
+                                doActWithLock(curRepo) {
+                                    val stageSuccess = ChangeListFunctions.doStage(
+                                        curRepo = curRepo,
+                                        requireCloseBottomBar = false,
+                                        userParamList = false,
+                                        paramList = null,
 
-                                    fromTo = fromTo,
-                                    selectedListIsEmpty = selectedListIsEmpty,
-                                    requireShowToast = requireShowToast,
-                                    noItemSelectedStrRes = noItemSelectedStrRes,
-                                    activityContext = activityContext,
-                                    selectedItemList = selectedItemList.value.toList(),
-                                    loadingText = loadingText,
-                                    nFilesStagedStrRes = nFilesStagedStrRes,
-                                    bottomBarActDoneCallback = bottomBarActDoneCallback
-                                )
+                                        fromTo = fromTo,
+                                        selectedListIsEmpty = selectedListIsEmpty,
+                                        requireShowToast = requireShowToast,
+                                        noItemSelectedStrRes = noItemSelectedStrRes,
+                                        activityContext = activityContext,
+                                        selectedItemList = selectedItemList.value.toList(),
+                                        loadingText = loadingText,
+                                        nFilesStagedStrRes = nFilesStagedStrRes,
+                                        bottomBarActDoneCallback = bottomBarActDoneCallback
+                                    )
 
-                                if(!stageSuccess){
-                                    bottomBarActDoneCallback(activityContext.getString(R.string.stage_failed), curRepo)
-                                }else {
-                                    //显示commit弹窗，之后在其确认回调函数里执行后续操作
+                                    if(!stageSuccess){
+                                        bottomBarActDoneCallback(activityContext.getString(R.string.stage_failed), curRepo)
+                                    }else {
+                                        //显示commit弹窗，之后在其确认回调函数里执行后续操作
 //                        doCommit(true,"", true, false)
+                                        ChangeListFunctions.doCommit(
+                                            requireShowCommitMsgDialog = true,
+                                            cmtMsg = "",
+                                            requireCloseBottomBar = true,
+//                            requireDoSync = false,
+                                            curRepoFromParentPage = curRepo,
+                                            refreshChangeList = changeListRequireRefreshFromParentPage,
+                                            username = username,
+                                            email = email,
+                                            requireShowToast = requireShowToast,
+                                            pleaseSetUsernameAndEmailBeforeCommit = pleaseSetUsernameAndEmailBeforeCommit,
+                                            initSetUsernameAndEmailDialog = initSetUsernameAndEmailDialog,
+                                            amendCommit = amendCommit,
+                                            overwriteAuthor = overwriteAuthor,
+                                            showCommitMsgDialog = showCommitMsgDialog,
+                                            repoState = repoState,
+                                            activityContext = activityContext,
+                                            loadingText = loadingText,
+                                            repoId = repoId,
+                                            bottomBarActDoneCallback = bottomBarActDoneCallback,
+                                            fromTo = fromTo,
+                                            itemList = itemList.value,
+                                            successCommitStrRes = successCommitStrRes,
+                                            indexIsEmptyForCommitDialog=indexIsEmptyForCommitDialog,
+                                            commitBtnTextForCommitDialog=commitBtnTextForCommitDialog,
+//                            showPushForCommitDialog=showPushForCommitDialog
+                                        )
+                                    }
+                                }
+                            }
+
+                        },
+
+                        selectAll@{
+                            //impl select all
+                            selectAll()
+                        },
+                    ) else if(fromTo == Cons.gitDiffFromHeadToIndex) listOf(  //index页面的底栏选项
+                        commit@{
+                            val curRepo = curRepoFromParentPage.value
+                            doJobThenOffLoading(loadingOn=loadingOn,loadingOff=loadingOff, loadingText=activityContext.getString(R.string.committing)) {
+                                doActWithLock(curRepo) {
+                                    //显示commit弹窗，之后在其确认回调函数里执行后续操作
+//                doCommit(true,"", true, false)
                                     ChangeListFunctions.doCommit(
                                         requireShowCommitMsgDialog = true,
                                         cmtMsg = "",
                                         requireCloseBottomBar = true,
-//                            requireDoSync = false,
+//                    requireDoSync = false,
                                         curRepoFromParentPage = curRepo,
                                         refreshChangeList = changeListRequireRefreshFromParentPage,
                                         username = username,
@@ -3001,50 +3045,10 @@ fun ChangeListInnerPage(
                                         successCommitStrRes = successCommitStrRes,
                                         indexIsEmptyForCommitDialog=indexIsEmptyForCommitDialog,
                                         commitBtnTextForCommitDialog=commitBtnTextForCommitDialog,
-//                            showPushForCommitDialog=showPushForCommitDialog
+//                    showPushForCommitDialog=showPushForCommitDialog
                                     )
                                 }
-                            }
 
-                        },
-
-                        selectAll@{
-                            //impl select all
-                            selectAll()
-                        },
-                    ) else if(fromTo == Cons.gitDiffFromHeadToIndex) listOf(  //index页面的底栏选项
-                        commit@{
-                            val curRepo = curRepoFromParentPage.value
-                            doJobThenOffLoading(loadingOn=loadingOn,loadingOff=loadingOff, loadingText=activityContext.getString(R.string.committing)) {
-                                //显示commit弹窗，之后在其确认回调函数里执行后续操作
-//                doCommit(true,"", true, false)
-                                ChangeListFunctions.doCommit(
-                                    requireShowCommitMsgDialog = true,
-                                    cmtMsg = "",
-                                    requireCloseBottomBar = true,
-//                    requireDoSync = false,
-                                    curRepoFromParentPage = curRepo,
-                                    refreshChangeList = changeListRequireRefreshFromParentPage,
-                                    username = username,
-                                    email = email,
-                                    requireShowToast = requireShowToast,
-                                    pleaseSetUsernameAndEmailBeforeCommit = pleaseSetUsernameAndEmailBeforeCommit,
-                                    initSetUsernameAndEmailDialog = initSetUsernameAndEmailDialog,
-                                    amendCommit = amendCommit,
-                                    overwriteAuthor = overwriteAuthor,
-                                    showCommitMsgDialog = showCommitMsgDialog,
-                                    repoState = repoState,
-                                    activityContext = activityContext,
-                                    loadingText = loadingText,
-                                    repoId = repoId,
-                                    bottomBarActDoneCallback = bottomBarActDoneCallback,
-                                    fromTo = fromTo,
-                                    itemList = itemList.value,
-                                    successCommitStrRes = successCommitStrRes,
-                                    indexIsEmptyForCommitDialog=indexIsEmptyForCommitDialog,
-                                    commitBtnTextForCommitDialog=commitBtnTextForCommitDialog,
-//                    showPushForCommitDialog=showPushForCommitDialog
-                                )
                             }
 
                         },
@@ -3131,28 +3135,28 @@ fun ChangeListInnerPage(
                         },
                         // menu action: Stage
                         stage@{
-                            doJobThenOffLoading(
-                                loadingOn = loadingOn,
-                                loadingOff = loadingOff,
-                                loadingText=activityContext.getString(R.string.staging)
-                            ) {
+                            doJobThenOffLoading(loadingOn = loadingOn, loadingOff = loadingOff, loadingText=activityContext.getString(R.string.staging)) {
                                 val curRepo = curRepoFromParentPage.value
-                                ChangeListFunctions.doStage(
-                                    curRepo = curRepo,
-                                    requireCloseBottomBar = true,
-                                    userParamList = false,
-                                    paramList = null,
 
-                                    fromTo = fromTo,
-                                    selectedListIsEmpty = selectedListIsEmpty,
-                                    requireShowToast = requireShowToast,
-                                    noItemSelectedStrRes = noItemSelectedStrRes,
-                                    activityContext = activityContext,
-                                    selectedItemList = selectedItemList.value.toList(),
-                                    loadingText = loadingText,
-                                    nFilesStagedStrRes = nFilesStagedStrRes,
-                                    bottomBarActDoneCallback = bottomBarActDoneCallback
-                                )
+                                doActWithLock(curRepo) {
+                                    ChangeListFunctions.doStage(
+                                        curRepo = curRepo,
+                                        requireCloseBottomBar = true,
+                                        userParamList = false,
+                                        paramList = null,
+
+                                        fromTo = fromTo,
+                                        selectedListIsEmpty = selectedListIsEmpty,
+                                        requireShowToast = requireShowToast,
+                                        noItemSelectedStrRes = noItemSelectedStrRes,
+                                        activityContext = activityContext,
+                                        selectedItemList = selectedItemList.value.toList(),
+                                        loadingText = loadingText,
+                                        nFilesStagedStrRes = nFilesStagedStrRes,
+                                        bottomBarActDoneCallback = bottomBarActDoneCallback
+                                    )
+                                }
+
                             }
 
                             Unit
