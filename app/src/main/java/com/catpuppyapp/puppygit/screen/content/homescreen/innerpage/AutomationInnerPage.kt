@@ -314,6 +314,16 @@ fun AutomationInnerPage(
 //                        placeholder = {}
                     )
 
+                    Spacer(Modifier.height(10.dp))
+
+                    val note = if(truePullIntervalFalsePushDelay) {
+                        stringResource(R.string.pull_interval_note)
+                    }else {
+                        stringResource(R.string.push_delay_note)
+                    }
+
+                    Text(text = note, fontWeight = FontWeight.Light)
+
                 }
 
 
