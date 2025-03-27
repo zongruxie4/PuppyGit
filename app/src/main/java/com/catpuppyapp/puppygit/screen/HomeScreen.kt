@@ -1498,7 +1498,10 @@ fun HomeScreen(
                                         //若无写权限，则以只读方式打开
                                         val expectReadOnly = (intent.flags and Intent.FLAG_GRANT_WRITE_URI_PERMISSION) == 0
 
-                                        //请求获取永久访问权限，不然重启手机后会丢失权限
+                                        //请求获取永久访问权限，不然重启手机后会丢失权限，文件名等文件信息都会无法读取，最近文件列表的文件名会变成空白
+                                        //注：如果成功从content中guess出绝对路径，则这个权限有无就无所谓了，
+                                        // 不过万一获取不了呢？所以还是尝试take uri永久rw权限，
+                                        // 但是，多数app让外部打开时，其实都不会给你永久权限，所以这个take可能多数情况下都会返回失败。
                                         val contentResolver = activityContext.contentResolver
                                         if(expectReadOnly) {
                                             SafUtil.takePersistableReadOnlyPermission(contentResolver, uri)
