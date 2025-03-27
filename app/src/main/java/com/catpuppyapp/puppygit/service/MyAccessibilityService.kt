@@ -34,7 +34,7 @@ class MyAccessibilityService: AccessibilityService() {
         // key is package name, value is true=app opened, false=app closed, null=app never open
         private val targetPackageTrueOpenedFalseCloseNullNeverOpenedList = ConcurrentMap<String, Boolean>()
         // key is package name, value is time app last open time in millseconds, if null, means never open
-        private val lastPullTime = ConcurrentMap<String, Long>()
+//        private val lastPullTime = ConcurrentMap<String, Long>()
         //app last leaving at, key is package name, value is time in millseconds
         private val appLeaveTime = ConcurrentMap<String, Long>()
 
@@ -227,7 +227,7 @@ class MyAccessibilityService: AccessibilityService() {
                         MyLog.d(TAG, "target packageName '$packageName' opened, checking need pull or no....")
 
                         val targetOpened = targetPackageTrueOpenedFalseCloseNullNeverOpenedList[packageName] == true
-                        if(!targetOpened) { // was leave, now opened; or first time opened
+                        if(!targetOpened) { // was leave, now opened or first time opened （初次打开或离开又重新打开）
                             targetPackageTrueOpenedFalseCloseNullNeverOpenedList[packageName] = true
                             MyLog.d(TAG, "target packageName '$packageName' opened, need do pull")
 
@@ -241,16 +241,19 @@ class MyAccessibilityService: AccessibilityService() {
                                 return@withLock
                             }
 
+
                             //do pull
-                            val pullIntervalInMillSec = settings.automation.pullIntervalInSec * 1000
+                            val pullIntervalInMillSec = settings.automation.pullIntervalInSec * 1000L
                             //负数将禁用pull
-                            if(pullIntervalInMillSec >= 0) {
+                            if(pullIntervalInMillSec >= 0L) {
+                                //离开app后，在一定时间间隔内返回，将不会重复执行pull
+                                val lastLeaveAt = appLeaveTime[packageName] ?: 0L ;
+
                                 doJobThenOffLoading pullTask@{
-                                    val lastPullAt = lastPullTime[packageName] ?: 0L
-                                    val now = System.currentTimeMillis()
-                                    val interval = now - lastPullAt
-                                    if(pullIntervalInMillSec < 1 || interval > pullIntervalInMillSec) {
-                                        lastPullTime[packageName] = now
+                                    // pullIntervalInMillSec == 0 代表用户设置的pull间隔为0，无间隔，直接执行
+                                    // lastLeaveAt == 0 代表没离开过，初次打开app，这时应该直接执行操作，不用检测间隔
+                                    // 最后一个条件是检测时间间隔
+                                    if(pullIntervalInMillSec == 0L || lastLeaveAt == 0L || (System.currentTimeMillis() - lastLeaveAt) > pullIntervalInMillSec) {
                                         pullRepoList(sessionId, settings, repoList)
                                     }
                                 }
@@ -287,31 +290,37 @@ class MyAccessibilityService: AccessibilityService() {
                                 }
 
                                 // do push, one package may bind multi repos, start a coroutine do push for them
-                                val pushDelayInMillSec = settings.automation.pushDelayInSec * 1000
+                                val pushDelayInMillSec = settings.automation.pushDelayInSec * 1000L
                                 //负数将禁用push
-                                if(pushDelayInMillSec >= 0) {
+                                if(pushDelayInMillSec >= 0L) {
                                     doJobThenOffLoading pushTask@{
                                         var taskCanceled = false
 
-                                        if(pushDelayInMillSec > 0) {
+                                        //大于0，等待超过延迟时间后再执行操作；若等于0，则不检查，直接跳过这段，执行后面的push
+                                        if(pushDelayInMillSec > 0L) {
                                             val startAt = System.currentTimeMillis()
 
                                             while (true) {
                                                 // 每 2 秒检查一次是否需要push，虽然设置的单位是秒，但精度是2秒，避免太多无意义cpu空转，最多误差2秒，可接受
-                                                delay(2000)
+                                                delay(2000L)
 
                                                 // 若app重新打开 或者 app在当前任务启动后重新触发了离开（通过leave时间判断），则取消当前push任务
+                                                //这里的两个值必须每次都从map里获取最新的数据，因为map里的值会在每次离开app后更新
                                                 if(
+                                                    // app重新打开，当前任务取消
                                                     targetPackageTrueOpenedFalseCloseNullNeverOpenedList[lastOpenedTarget] == true
+                                                    // app再次离开，当前任务已“过期”，应取消
+                                                    //正常来说，这里获取的app离开时间永远不可能为null，所以 `?: 0L` 应该不会派上用场，
+                                                    // 如果出了问题，真的为null，则代表app没离开，这时不应执行push，或者忽略这个条件都行，这里采用后者，
+                                                    // startAt肯定大于0，所以如果appLeaveTime取出的值为0的话，这个条件永远为假，相当于忽略了，其实就算错误执行一次push也问题不大
                                                     || startAt < (appLeaveTime[lastOpenedTarget] ?: 0L)
-                                                ){
+                                                ) {
                                                     taskCanceled = true
                                                     break
                                                 }
 
-                                                //超过延迟时间了，执行push
-                                                val passedTime = System.currentTimeMillis() - startAt
-                                                if(passedTime > pushDelayInMillSec) {
+                                                //如果当前时间减起始时间超过了设定的延迟时间则执行push
+                                                if((System.currentTimeMillis() - startAt) > pushDelayInMillSec) {
                                                     break
                                                 }
                                             }
