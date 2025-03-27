@@ -4,6 +4,7 @@
 - fix: Editor redo/undo not work
 - Editor selection mode: add "Clear" and "Paste" button
 - style adjust
+- update russian translation (thx @triksterr)
 
 
 
@@ -12,6 +13,8 @@
 - 修复编辑器撤销失效的bug
 - 编辑器选择模式：添加清除和粘贴按钮
 - 样式调整
+- 更新俄语翻译 (thx @triksterr)
+
 ---
 
 1.0.9.6v72 - 20250322:

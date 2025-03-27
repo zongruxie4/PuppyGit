@@ -3,3 +3,4 @@
 - fix: Editor redo/undo not work
 - Editor selection mode: add "Clear" and "Paste" button
 - style adjust
+- update russian translation (thx @triksterr)
