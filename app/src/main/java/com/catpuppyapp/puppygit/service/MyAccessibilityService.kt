@@ -35,6 +35,8 @@ class MyAccessibilityService: AccessibilityService() {
         private val targetPackageTrueOpenedFalseCloseNullNeverOpenedList = ConcurrentMap<String, Boolean>()
         // key is package name, value is time app last open time in millseconds, if null, means never open
         private val lastPullTime = ConcurrentMap<String, Long>()
+        //app last leaving at, key is package name, value is time in millseconds
+        private val appLeaveTime = ConcurrentMap<String, Long>()
 
         private var lastTargetPackageName = ""  // use to check enter/leave app
 
@@ -269,6 +271,7 @@ class MyAccessibilityService: AccessibilityService() {
                             if(targetOpened) { // was opened, now leave
                                 MyLog.d(TAG, "target packageName '$lastOpenedTarget' leaved, need do push")
                                 targetPackageTrueOpenedFalseCloseNullNeverOpenedList[lastOpenedTarget] = false
+                                appLeaveTime[lastOpenedTarget] = System.currentTimeMillis()
 
                                 val bindRepoIds = AutomationUtil.getRepoIds(settings.automation, lastOpenedTarget)
                                 if(bindRepoIds.isEmpty()) {
@@ -291,8 +294,11 @@ class MyAccessibilityService: AccessibilityService() {
                                             // 每 2 秒检查一次是否需要push，虽然设置的单位是秒，但精度是2秒，避免太多无意义cpu空转，最多误差2秒，可接受
                                             delay(2000)
 
-                                            // 若app重新打开了，则取消push任务
-                                            if(targetPackageTrueOpenedFalseCloseNullNeverOpenedList[lastOpenedTarget] == true){
+                                            // 若app重新打开 或者 app在当前任务启动后重新触发了离开（通过leave时间判断），则取消当前push任务
+                                            if(
+                                                targetPackageTrueOpenedFalseCloseNullNeverOpenedList[lastOpenedTarget] == true
+                                                || startAt < (appLeaveTime[lastOpenedTarget] ?: 0L)
+                                            ){
                                                 taskCanceled = true
                                                 break
                                             }
