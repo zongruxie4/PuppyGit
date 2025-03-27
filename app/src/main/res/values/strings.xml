@@ -1251,7 +1251,7 @@
     <string name="push_delay">Push Delay</string>
     <string name="pull_interval_in_seconds">Pull Interval in seconds</string>
     <string name="push_delay_in_seconds">Push Delay in seconds</string>
-    <string name="pull_interval_note">Time interval for pull. e.g. if set to 5, the app will not do pull again if reopened within 5 seconds.</string>
-    <string name="push_delay_note">Time delay for push. e.g. if set to 5, a push will execute after leaving the app for 5 seconds.</string>
+    <string name="pull_interval_note">Time interval for pull. e.g. if set to 5, the app will not do pull again if reopened within 5 seconds; if set to -1, will disable pull.</string>
+    <string name="push_delay_note">Time delay for push. e.g. if set to 5, a push will execute after leaving the app for 5 seconds; if set to -1 will disable push.</string>
 
 </resources>

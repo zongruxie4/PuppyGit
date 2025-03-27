@@ -242,14 +242,17 @@ class MyAccessibilityService: AccessibilityService() {
                             }
 
                             //do pull
-                            doJobThenOffLoading {
-                                val lastPullAt = lastPullTime[packageName] ?: 0L
-                                val now = System.currentTimeMillis()
-                                val pullIntervalInMillSec = settings.automation.pullIntervalInSec * 1000
-                                val interval = now - lastPullAt
-                                if(pullIntervalInMillSec < 1 || interval > pullIntervalInMillSec) {
-                                    lastPullTime[packageName] = now
-                                    pullRepoList(sessionId, settings, repoList)
+                            val pullIntervalInMillSec = settings.automation.pullIntervalInSec * 1000
+                            //负数将禁用pull
+                            if(pullIntervalInMillSec >= 0) {
+                                doJobThenOffLoading pullTask@{
+                                    val lastPullAt = lastPullTime[packageName] ?: 0L
+                                    val now = System.currentTimeMillis()
+                                    val interval = now - lastPullAt
+                                    if(pullIntervalInMillSec < 1 || interval > pullIntervalInMillSec) {
+                                        lastPullTime[packageName] = now
+                                        pullRepoList(sessionId, settings, repoList)
+                                    }
                                 }
                             }
                         }else {
@@ -284,37 +287,41 @@ class MyAccessibilityService: AccessibilityService() {
                                 }
 
                                 // do push, one package may bind multi repos, start a coroutine do push for them
-                                doJobThenOffLoading {
-                                    val startAt = System.currentTimeMillis()
-                                    val pushDelayInMillSec = settings.automation.pushDelayInSec * 1000
-                                    var taskCanceled = false
+                                val pushDelayInMillSec = settings.automation.pushDelayInSec * 1000
+                                //负数将禁用push
+                                if(pushDelayInMillSec >= 0) {
+                                    doJobThenOffLoading pushTask@{
+                                        val startAt = System.currentTimeMillis()
+                                        var taskCanceled = false
 
-                                    if(pushDelayInMillSec > 0) {
-                                        while (true) {
-                                            // 每 2 秒检查一次是否需要push，虽然设置的单位是秒，但精度是2秒，避免太多无意义cpu空转，最多误差2秒，可接受
-                                            delay(2000)
+                                        if(pushDelayInMillSec > 0) {
+                                            while (true) {
+                                                // 每 2 秒检查一次是否需要push，虽然设置的单位是秒，但精度是2秒，避免太多无意义cpu空转，最多误差2秒，可接受
+                                                delay(2000)
 
-                                            // 若app重新打开 或者 app在当前任务启动后重新触发了离开（通过leave时间判断），则取消当前push任务
-                                            if(
-                                                targetPackageTrueOpenedFalseCloseNullNeverOpenedList[lastOpenedTarget] == true
-                                                || startAt < (appLeaveTime[lastOpenedTarget] ?: 0L)
-                                            ){
-                                                taskCanceled = true
-                                                break
-                                            }
+                                                // 若app重新打开 或者 app在当前任务启动后重新触发了离开（通过leave时间判断），则取消当前push任务
+                                                if(
+                                                    targetPackageTrueOpenedFalseCloseNullNeverOpenedList[lastOpenedTarget] == true
+                                                    || startAt < (appLeaveTime[lastOpenedTarget] ?: 0L)
+                                                ){
+                                                    taskCanceled = true
+                                                    break
+                                                }
 
-                                            //超过延迟时间了，执行push
-                                            val passedTime = System.currentTimeMillis() - startAt
-                                            if(passedTime > pushDelayInMillSec) {
-                                                break
+                                                //超过延迟时间了，执行push
+                                                val passedTime = System.currentTimeMillis() - startAt
+                                                if(passedTime > pushDelayInMillSec) {
+                                                    break
+                                                }
                                             }
                                         }
-                                    }
 
-                                    if(!taskCanceled) {
-                                        pushRepoList(sessionId, settings, repoList)
+                                        if(!taskCanceled) {
+                                            pushRepoList(sessionId, settings, repoList)
+                                        }
                                     }
                                 }
+
                             }else {
                                 MyLog.d(TAG, "target packageName '$packageName' opened but no need do push")
                             }

@@ -30,13 +30,13 @@ data class AutomationSettings (
 
     /**
      * 在一段时间间隔内重复进入app只有第一次才会执行pull
+     * 设为负数将禁用pull
      */
     var pullIntervalInSec:Long = 0L,
 
     /**
-     * 离开app后延迟多久才执行推送。
-     *
-     * 若在期间重新进入app将会取消推送
+     * 离开app后延迟多久才执行推送，若在此时间间隔内重新进入app将会取消推送。
+     * 设为负数将禁用push
      */
     var pushDelayInSec:Long = 0L,
 
