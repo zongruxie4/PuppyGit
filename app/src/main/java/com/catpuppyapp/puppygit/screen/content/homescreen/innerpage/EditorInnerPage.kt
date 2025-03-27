@@ -1439,9 +1439,10 @@ private suspend fun doInit(
                 throw RuntimeException(activityContext.getString(R.string.err_file_doesnt_exist_anymore))
             }
 
-            if (!file.isFile) {
-                throw RuntimeException(activityContext.getString(R.string.err_target_is_not_a_file))
-            }
+            //对于saf uri这个判断并不准确，所以，不判断了，直接获取io流，若target真的不是文件的话会报错
+//            if (!file.isFile) {
+//                throw RuntimeException(activityContext.getString(R.string.err_target_is_not_a_file))
+//            }
 
             //检查文件大小，太大了打开会有问题，要么崩溃，要么无法保存
             //如果文件大小超出app支持的最大限制，提示错误

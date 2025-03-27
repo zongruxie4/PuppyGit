@@ -30,6 +30,7 @@ class FuckSafFile(val context: Context?, val path: FilePath) {
     var safFile:DocumentFile? = null
     var safUri:Uri? = null
 
+    //注：saf判断isFile并不准确，有可能目标是文件，但返回假
     val isFile:Boolean
         get() = (if(isSaf) safFile?.isFile else file?.isFile) == true
 
