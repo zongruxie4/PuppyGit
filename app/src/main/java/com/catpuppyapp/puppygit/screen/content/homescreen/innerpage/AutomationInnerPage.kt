@@ -14,6 +14,9 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyListState
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.Add
 import androidx.compose.material.icons.outlined.DeleteOutline
@@ -21,6 +24,7 @@ import androidx.compose.material.icons.outlined.Settings
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextField
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.MutableState
@@ -35,11 +39,13 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.catpuppyapp.puppygit.compose.AppItem
+import com.catpuppyapp.puppygit.compose.ConfirmDialog2
 import com.catpuppyapp.puppygit.compose.FilterTextField
 import com.catpuppyapp.puppygit.compose.ItemListIsEmpty
 import com.catpuppyapp.puppygit.compose.LoadingText
@@ -61,6 +67,7 @@ import com.catpuppyapp.puppygit.utils.ComposeHelper
 import com.catpuppyapp.puppygit.utils.Msg
 import com.catpuppyapp.puppygit.utils.UIHelper
 import com.catpuppyapp.puppygit.utils.doJobThenOffLoading
+import com.catpuppyapp.puppygit.utils.parseLongOrDefault
 import com.catpuppyapp.puppygit.utils.state.mutableCustomStateListOf
 import com.catpuppyapp.puppygit.utils.state.mutableCustomStateOf
 import kotlinx.coroutines.delay
@@ -256,6 +263,99 @@ fun AutomationInnerPage(
         )
     }
 
+    val pullIntervalInSec = rememberSaveable { mutableStateOf(settingsState.value.automation.pullIntervalInSec.toString()) }
+    val pushDelayInSec = rememberSaveable { mutableStateOf(settingsState.value.automation.pushDelayInSec.toString()) }
+    val pullIntervalOrPushDelayInSecBuf = rememberSaveable { mutableStateOf("") }
+    val truePullIntervalFalsePushDelay = rememberSaveable { mutableStateOf(false) }
+    val showSetPullInternalOrPushDelayDialog = rememberSaveable { mutableStateOf(false) }
+
+    val initPullIntervalOrPushDelayDialog = { isPullInterval:Boolean ->
+        if(isPullInterval) {
+            truePullIntervalFalsePushDelay.value = true
+            pullIntervalOrPushDelayInSecBuf.value = pullIntervalInSec.value
+        }else {
+            truePullIntervalFalsePushDelay.value = false
+            pullIntervalOrPushDelayInSecBuf.value = pushDelayInSec.value
+        }
+
+        showSetPullInternalOrPushDelayDialog.value = true
+    }
+
+    if(showSetPullInternalOrPushDelayDialog.value) {
+        val truePullIntervalFalsePushDelay = truePullIntervalFalsePushDelay.value
+
+        val title = if(truePullIntervalFalsePushDelay) stringResource(R.string.pull_interval) else stringResource(R.string.push_delay)
+        val label = if(truePullIntervalFalsePushDelay) stringResource(R.string.pull_interval_in_seconds) else stringResource(R.string.push_delay_in_seconds)
+
+        ConfirmDialog2(
+            title = title,
+            requireShowTextCompose = true,
+            textCompose = {
+                Column(
+                    modifier= Modifier
+                        .fillMaxWidth()
+                        .verticalScroll(rememberScrollState())
+                    ,
+                ) {
+                    TextField(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(10.dp),
+                        singleLine = true,
+                        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
+                        value = pullIntervalOrPushDelayInSecBuf.value,
+                        onValueChange = {
+                            //直接更新，不管用户输入什么，点确定后再检查值是否有效
+                            pullIntervalOrPushDelayInSecBuf.value = it
+                        },
+                        label = {
+                            Text(label)
+                        },
+//                        placeholder = {}
+                    )
+
+                }
+
+
+            },
+            okBtnText = stringResource(id = R.string.save),
+            cancelBtnText = stringResource(id = R.string.cancel),
+            onCancel = { showSetPullInternalOrPushDelayDialog.value = false }
+        ) {
+            showSetPullInternalOrPushDelayDialog.value = false
+
+            doJobThenOffLoading {
+                //解析
+                val newValue = parseLongOrDefault(pullIntervalOrPushDelayInSecBuf.value, default = null)
+
+                //检查
+                //注：这里没处理负数，不过在执行的时候处理了，如果小于0，和设为0效果一样，操作会立刻执行
+                if(newValue == null) {
+                    Msg.requireShowLongDuration(activityContext.getString(R.string.invalid_number))
+                    return@doJobThenOffLoading
+                }
+
+                //保存
+                if(truePullIntervalFalsePushDelay) {
+                    pullIntervalInSec.value = newValue.toString()
+                }else {
+                    pushDelayInSec.value = newValue.toString()
+                }
+
+                SettingsUtil.update {
+                    if(truePullIntervalFalsePushDelay) {
+                        it.automation.pullIntervalInSec = newValue
+                    }else {
+                        it.automation.pushDelayInSec = newValue
+                    }
+                }
+
+                Msg.requireShow(activityContext.getString(R.string.saved))
+            }
+        }
+    }
+
+
 
     //back handler block start
     val isBackHandlerEnable = rememberSaveable { mutableStateOf(true)}
@@ -326,6 +426,31 @@ fun AutomationInnerPage(
             }
 
 
+        }
+
+        // pull interval
+        item {
+            SettingsContent(onClick = {
+                initPullIntervalOrPushDelayDialog(true)
+            }) {
+                Column {
+                    Text(stringResource(R.string.pull_interval), fontSize = itemFontSize)
+                    Text(pullIntervalInSec.value, fontSize = itemDescFontSize, fontWeight = FontWeight.Light)
+                }
+            }
+
+        }
+
+        // push delay
+        item {
+            SettingsContent(onClick = {
+                initPullIntervalOrPushDelayDialog(false)
+            }) {
+                Column {
+                    Text(stringResource(R.string.push_delay), fontSize = itemFontSize)
+                    Text(pushDelayInSec.value, fontSize = itemDescFontSize, fontWeight = FontWeight.Light)
+                }
+            }
         }
 
         item {

@@ -1027,6 +1027,14 @@ fun parseIntOrDefault(str:String, default:Int?):Int? {
     }
 }
 
+fun parseLongOrDefault(str:String, default:Long?):Long? {
+    return try {
+        str.trim().toLong()
+    }catch (_:Exception){
+        default
+    }
+}
+
 //从v2rayNG 拷的
 fun receiverFlags(): Int = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
     ContextCompat.RECEIVER_EXPORTED

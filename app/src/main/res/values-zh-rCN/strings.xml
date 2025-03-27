@@ -1201,20 +1201,26 @@
     <string name="folder_is_empty">文件夹为空</string>
 
 
-    <!-- new at 20250302-->
+    <!-- new at 20250302 -->
     <string name="aborting">正在中止…</string>
     <string name="abort">中止</string>
 
-    <!-- new at 20250315-->
+    <!-- new at 20250315 -->
     <string name="home">主页</string>
     <string name="preview">预览</string>
     <string name="go_back">后退</string>
     <string name="go_forward">前进</string>
 
-    <!-- new at 20250316-->
+    <!-- new at 20250316 -->
     <string name="file_association">文件关联</string>
     <string name="file_association_note">每行一个匹配模板，支持通配符</string>
     <string name="file_name_patterns">文件名匹配模板</string>
     <string name="edit_config">编辑配置文件</string>
+
+    <!-- new at 20250327 -->
+    <string name="pull_interval">拉取间隔</string>
+    <string name="push_delay">推送延迟</string>
+    <string name="pull_interval_in_seconds">拉取间隔（秒）</string>
+    <string name="push_delay_in_seconds">推送延迟（秒）</string>
 
 </resources>

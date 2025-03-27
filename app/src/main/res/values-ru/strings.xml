@@ -1221,23 +1221,31 @@
     <string name="err_documentfile_is_null">Ошибка: DocumentFile is null</string>
     <string name="folder_is_empty">Папка пуста</string>
 
-    <!-- new at 20250302-->
+    <!-- new at 20250302 -->
     <string name="aborting">Прерывание…</string>
     <string name="abort">Прервать</string>
 
-    <!-- new at 20250315-->
+    <!-- new at 20250315 -->
     <string name="home">Домой</string>
     <string name="preview">Предпросмотр</string>
     <string name="go_back">Назад</string>
     <string name="go_forward">Вперёд</string>
 
-    <!-- new at 20250316-->
+    <!-- new at 20250316 -->
     <!-- if a file in the association list, will use internal Editor open it -->
     <string name="file_association">Ассоциация файлов</string>
-    <!-- The "pattern" is regex pattern to match string, the "wildcard" is "*" of "*.txt", use to match string too-->
+    <!-- The "pattern" is regex pattern to match string, the "wildcard" is "*" of "*.txt", use to match string too -->
     <string name="file_association_note">Одна маска на строку, поддерживаются wildcard-символы</string>
     <string name="file_name_patterns">Маски имен файлов</string>
     <!-- edit the config file -->
     <string name="edit_config">Изменить файл конфигурации</string>
+
+    <!-- new at 20250327 -->
+    <!-- this interval is time interval, e.g. set to 5, then in 5 seconds, if users re-open app, will not do a pull again -->
+    <string name="pull_interval">Pull Interval</string>
+    <!-- this is push delay in seconds, e.g. set to 5, then will do push after users leave the app 5 seconds -->
+    <string name="push_delay">Push Delay</string>
+    <string name="pull_interval_in_seconds">Pull Interval in seconds</string>
+    <string name="push_delay_in_seconds">Push Delay in seconds</string>
 
 </resources>

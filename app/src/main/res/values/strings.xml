@@ -1227,23 +1227,29 @@
     <string name="folder_is_empty">Folder is empty</string>
 
 
-    <!-- new at 20250302-->
+    <!-- new at 20250302 -->
     <string name="aborting">Aborting…</string>
     <string name="abort">Abort</string>
 
-    <!-- new at 20250315-->
+    <!-- new at 20250315 -->
     <string name="home">Home</string>
     <string name="preview">Preview</string>
     <string name="go_back">Go Back</string>
     <string name="go_forward">Go Forward</string>
 
-    <!-- new at 20250316-->
+    <!-- new at 20250316 -->
     <!-- if a file in the association list, will use internal Editor open it -->
     <string name="file_association">File Association</string>
-    <!-- The "pattern" is regex pattern to match string, the "wildcard" is "*" of "*.txt", use to match string too-->
+    <!-- The "pattern" is regex pattern to match string, the "wildcard" is "*" of "*.txt", use to match string too -->
     <string name="file_association_note">Per line one pattern, support wildcard</string>
     <string name="file_name_patterns">File Name Patterns</string>
     <!-- edit the config file -->
     <string name="edit_config">Edit Config</string>
+
+    <!-- new at 20250327 -->
+    <string name="pull_interval">Pull Interval</string>
+    <string name="push_delay">Push Delay</string>
+    <string name="pull_interval_in_seconds">Pull Interval in seconds</string>
+    <string name="push_delay_in_seconds">Push Delay in seconds</string>
 
 </resources>
