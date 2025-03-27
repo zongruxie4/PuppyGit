@@ -1435,6 +1435,7 @@ private suspend fun doInit(
                         }
                     }
                 }
+
                 //抛异常
                 throw RuntimeException(activityContext.getString(R.string.err_file_doesnt_exist_anymore))
             }
