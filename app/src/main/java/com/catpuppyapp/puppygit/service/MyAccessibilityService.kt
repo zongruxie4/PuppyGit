@@ -34,7 +34,7 @@ class MyAccessibilityService: AccessibilityService() {
         // key is package name, value is true=app opened, false=app closed, null=app never open
         private val targetPackageTrueOpenedFalseCloseNullNeverOpenedList = ConcurrentMap<String, Boolean>()
         // key is package name, value is time app last open time in millseconds, if null, means never open
-        private val appLastOpenTime = ConcurrentMap<String, Long>()
+        private val lastPullTime = ConcurrentMap<String, Long>()
 
         private var lastTargetPackageName = ""  // use to check enter/leave app
 
@@ -241,12 +241,12 @@ class MyAccessibilityService: AccessibilityService() {
 
                             //do pull
                             doJobThenOffLoading {
-                                val lastOpenAt = appLastOpenTime[packageName] ?: 0L
+                                val lastPullAt = lastPullTime[packageName] ?: 0L
                                 val now = System.currentTimeMillis()
-                                appLastOpenTime[packageName] = now
                                 val pullIntervalInMillSec = settings.automation.pullIntervalInSec * 1000
-                                val interval = now - lastOpenAt
-                                if(interval > pullIntervalInMillSec) {
+                                val interval = now - lastPullAt
+                                if(pullIntervalInMillSec < 1 || interval > pullIntervalInMillSec) {
+                                    lastPullTime[packageName] = now
                                     pullRepoList(sessionId, settings, repoList)
                                 }
                             }
@@ -285,20 +285,23 @@ class MyAccessibilityService: AccessibilityService() {
                                     val startAt = System.currentTimeMillis()
                                     val pushDelayInMillSec = settings.automation.pushDelayInSec * 1000
                                     var taskCanceled = false
-                                    while (true) {
-                                        // 每 2 秒检查一次是否需要push
-                                        delay(2000)
 
-                                        // app重新打开了，取消push任务
-                                        if(targetPackageTrueOpenedFalseCloseNullNeverOpenedList[lastOpenedTarget] == true){
-                                            taskCanceled = true
-                                            break
-                                        }
+                                    if(pushDelayInMillSec > 0) {
+                                        while (true) {
+                                            // 每 2 秒检查一次是否需要push，虽然设置的单位是秒，但精度是2秒，避免太多无意义cpu空转，最多误差2秒，可接受
+                                            delay(2000)
 
-                                        //超过延迟时间了，执行push
-                                        val passedTime = System.currentTimeMillis() - startAt
-                                        if(passedTime > pushDelayInMillSec) {
-                                            break
+                                            // 若app重新打开了，则取消push任务
+                                            if(targetPackageTrueOpenedFalseCloseNullNeverOpenedList[lastOpenedTarget] == true){
+                                                taskCanceled = true
+                                                break
+                                            }
+
+                                            //超过延迟时间了，执行push
+                                            val passedTime = System.currentTimeMillis() - startAt
+                                            if(passedTime > pushDelayInMillSec) {
+                                                break
+                                            }
                                         }
                                     }
 
