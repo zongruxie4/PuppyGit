@@ -27,6 +27,12 @@ data class AutomationSettings (
      */
     var showNotifyWhenProgress:Boolean = true,
 
+
+    /**
+     * 在一段时间间隔内重复进入app只有第一次才会执行pull
+     */
+    var pullIntervalInSec:Long = 0L,
+
     /**
      * 离开app后延迟多久才执行推送。
      *
@@ -34,8 +40,4 @@ data class AutomationSettings (
      */
     var pushDelayInSec:Long = 0L,
 
-    /**
-     * 在一段时间间隔内重复进入app只有第一次才会执行pull
-     */
-    var pullIntervalInSec:Long = 0L
 )

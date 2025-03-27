@@ -34,9 +34,7 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.platform.LocalClipboardManager
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
@@ -49,7 +47,6 @@ import com.catpuppyapp.puppygit.compose.ConfirmDialog2
 import com.catpuppyapp.puppygit.compose.FilterTextField
 import com.catpuppyapp.puppygit.compose.ItemListIsEmpty
 import com.catpuppyapp.puppygit.compose.LoadingText
-import com.catpuppyapp.puppygit.compose.PaddingRow
 import com.catpuppyapp.puppygit.compose.RepoNameAndIdItem
 import com.catpuppyapp.puppygit.compose.SelectedUnSelectedDialog
 import com.catpuppyapp.puppygit.compose.SettingsContent
@@ -88,9 +85,9 @@ fun AutomationInnerPage(
 ){
     val scope = rememberCoroutineScope()
     val activityContext = LocalContext.current
-    val clipboardManager = LocalClipboardManager.current
-    val haptic = LocalHapticFeedback.current
-
+//    val clipboardManager = LocalClipboardManager.current
+//    val haptic = LocalHapticFeedback.current
+    val screenHeightDp = remember { UIHelper.getDeviceWidthHeightInDp(activityContext).height.dp }
 
     //两个作用：1离开页面，返回后重新显示导航按钮；2在设置页面开启、关闭导航按钮后使其立即生效（因为remember离开页面就会销毁，所以每次重进页面都会读取最新的settings值）。
     //20250222: 其实这个pageScrolled现在已经仅代表是否显示navi buttons 了，跟是否滚动没关系了
@@ -690,8 +687,8 @@ fun AutomationInnerPage(
 
 
         item {
-            PaddingRow()
-
+            //高点，不然输入包名后还得关键盘才看得到东西
+            Spacer(Modifier.height(screenHeightDp * 0.7f))
         }
     }
 

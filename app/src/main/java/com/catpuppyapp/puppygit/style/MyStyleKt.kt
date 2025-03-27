@@ -117,7 +117,7 @@ class MyStyleKt{
         val height=60.dp
 
         //使用BottomBar的那个页面，需要padding出这个高度，否则列表内容会被BottomBar盖住
-        val outsideContentPadding = height+10.dp
+        val outsideContentPadding = height+30.dp
     }
 
 
