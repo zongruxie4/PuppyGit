@@ -1,3 +1,4 @@
+- Automation: support set pull interval and push delay
 - optimize Editor performance
 - fix: Editor redo/undo not work
 - Editor selection mode: add "Clear" and "Paste" button

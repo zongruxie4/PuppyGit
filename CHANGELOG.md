@@ -1,4 +1,5 @@
-1.0.9.7v73 - 20250325:
+1.0.9.7v73 - 20250327:
+- Automation: support set pull interval and push delay 
 - optimize Editor performance
 - fix: Editor redo/undo not work
 - Editor selection mode: add "Clear" and "Paste" button
@@ -6,6 +7,7 @@
 
 
 
+- 自动化：支持设置拉取间隔和推送延迟
 - 优化编辑器性能
 - 修复编辑器撤销失效的bug
 - 编辑器选择模式：添加清除和粘贴按钮
