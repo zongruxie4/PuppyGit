@@ -297,10 +297,12 @@ fun AutomationInnerPage(
                         .verticalScroll(rememberScrollState())
                     ,
                 ) {
+                    val padding = 10.dp
+
                     TextField(
                         modifier = Modifier
                             .fillMaxWidth()
-                            .padding(10.dp),
+                            .padding(padding),
                         singleLine = true,
                         keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
                         value = pullIntervalOrPushDelayInSecBuf.value,
@@ -314,7 +316,6 @@ fun AutomationInnerPage(
 //                        placeholder = {}
                     )
 
-                    Spacer(Modifier.height(10.dp))
 
                     val note = if(truePullIntervalFalsePushDelay) {
                         stringResource(R.string.pull_interval_note)
@@ -322,7 +323,7 @@ fun AutomationInnerPage(
                         stringResource(R.string.push_delay_note)
                     }
 
-                    Text(text = note, fontWeight = FontWeight.Light)
+                    Text(text = note, fontWeight = FontWeight.Light, modifier = Modifier.padding(padding))
 
                 }
 
