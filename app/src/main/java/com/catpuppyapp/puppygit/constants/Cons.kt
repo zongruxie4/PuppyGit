@@ -5,6 +5,7 @@ import kotlinx.coroutines.sync.Mutex
 import java.time.format.DateTimeFormatter
 
 object Cons {
+    const val repoBusyStr = "Repo busy now, plz try again later." ;
     /**
      * 详情列表，条目分割线
      */

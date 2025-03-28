@@ -237,12 +237,12 @@ fun ChangeListInnerPage(
     }
 
 
-    val onLockFailed = { lock: Mutex ->
-        Msg.requireShowLongDuration("Repo busy now, plz try again later.")
-    }
 
     val doActWithLock:suspend (curRepo:RepoEntity, act: suspend ()->Unit) -> Unit =  { curRepo, act ->
-        Libgit2Helper.doActWithRepoLock(curRepo = curRepo, onLockFailed = onLockFailed) {
+        Libgit2Helper.doActWithRepoLock(
+            curRepo = curRepo,
+            onLockFailed = { Msg.requireShowLongDuration(Cons.repoBusyStr) }
+        ) {
             act()
         }
 
