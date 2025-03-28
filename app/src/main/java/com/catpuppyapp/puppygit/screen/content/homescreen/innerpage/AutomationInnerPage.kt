@@ -337,7 +337,7 @@ fun AutomationInnerPage(
                 val newValue = parseLongOrDefault(pullIntervalOrPushDelayInSecBuf.value, default = null)
 
                 //检查
-                //注：这里没处理负数，不过在执行的时候处理了，如果小于0，和设为0效果一样，操作会立刻执行
+                //注：只要解析成功，正数、负数、0，均可：正数，延迟指定时间执行；负数，不执行；0，立即执行。
                 if(newValue == null) {
                     Msg.requireShowLongDuration(activityContext.getString(R.string.invalid_number))
                     return@doJobThenOffLoading
@@ -346,17 +346,18 @@ fun AutomationInnerPage(
                 //保存
                 if(truePullIntervalFalsePushDelay) {
                     pullIntervalInSec.value = newValue.toString()
+
+                    SettingsUtil.update {
+                        it.automation.pullIntervalInSec = newValue
+                    }
                 }else {
                     pushDelayInSec.value = newValue.toString()
-                }
 
-                SettingsUtil.update {
-                    if(truePullIntervalFalsePushDelay) {
-                        it.automation.pullIntervalInSec = newValue
-                    }else {
+                    SettingsUtil.update {
                         it.automation.pushDelayInSec = newValue
                     }
                 }
+
 
                 Msg.requireShow(activityContext.getString(R.string.saved))
             }
