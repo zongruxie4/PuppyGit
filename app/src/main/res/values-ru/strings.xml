@@ -1242,12 +1242,12 @@
 
     <!-- new at 20250327 -->
     <!-- this interval is time interval, e.g. set to 5, then in 5 seconds, if users re-open app, will not do a pull again -->
-    <string name="pull_interval">Pull Interval</string>
+    <string name="pull_interval">Интервал вытягивания</string>
     <!-- this is push delay in seconds, e.g. set to 5, then will do push after users leave the app 5 seconds -->
-    <string name="push_delay">Push Delay</string>
-    <string name="pull_interval_in_seconds">Pull Interval in seconds</string>
-    <string name="push_delay_in_seconds">Push Delay in seconds</string>
-    <string name="pull_interval_note">Time interval for pull. e.g. if set to 5, the app will not do pull again if reopened within 5 seconds; if set to -1, will disable pull.</string>
-    <string name="push_delay_note">Time delay for push. e.g. if set to 5, a push will execute after leaving the app for 5 seconds; if set to -1 will disable push.</string>
+    <string name="push_delay">Задержка загрузки</string>
+    <string name="pull_interval_in_seconds">Интервал вытягивания в секундах</string>
+    <string name="push_delay_in_seconds">Задержка загрузки в секундах</string>
+    <string name="pull_interval_note">Временной интервал для загрузки. Например, если установлено 5, приложение не будет выполнять загрузку повторно, если его перезапустили в течение 5 секунд; если установлено -1, загрузка будет отключена.</string>
+    <string name="push_delay_note">Временная задержка для вытягивания. Например, если установлено 5, вытягивание выполнится после 5 секунд с момента выхода из приложения; если установлено -1, вытягивание будет отключено.</string>
 
 </resources>
