@@ -1247,7 +1247,9 @@
     <string name="edit_config">Edit Config</string>
 
     <!-- new at 20250327 -->
+    <!-- this interval is time interval, e.g. set to 5, then in 5 seconds, if users re-open app, will not do a pull again -->
     <string name="pull_interval">Pull Interval</string>
+    <!-- this is push delay in seconds, e.g. set to 5, then will do push after users leave the app 5 seconds -->
     <string name="push_delay">Push Delay</string>
     <string name="pull_interval_in_seconds">Pull Interval in seconds</string>
     <string name="push_delay_in_seconds">Push Delay in seconds</string>
