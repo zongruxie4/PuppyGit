@@ -21,6 +21,7 @@ import androidx.compose.material.icons.filled.DoneAll
 import androidx.compose.material.icons.filled.Download
 import androidx.compose.material.icons.filled.Folder
 import androidx.compose.material.icons.filled.History
+import androidx.compose.material.icons.filled.Inventory
 import androidx.compose.material.icons.filled.LibraryAdd
 import androidx.compose.material.icons.filled.SelectAll
 import androidx.compose.material.icons.filled.Upload
@@ -2860,12 +2861,13 @@ fun ChangeListInnerPage(
                     )else if(fromTo==Cons.gitDiffFromHeadToIndex) listOf(  //index page
 //            Icons.Outlined.CloudDone,  //提交index所有条目并推送
                         Icons.Outlined.Check,  //提交index所有条目
-                        Icons.Outlined.SelectAll
+                        Icons.Outlined.SelectAll  // select all
                     )else if(fromTo == Cons.gitDiffFromTreeToTree) listOf(
+                        Icons.Filled.Inventory,  // import as repo
                         Icons.Filled.Download,  // checkout
                         ImageVector.vectorResource(R.drawable.outline_nutrition_24),  //cherrypick
                         Icons.Filled.LibraryAdd,  // patch
-                        Icons.Outlined.SelectAll
+                        Icons.Outlined.SelectAll, // select all
 
                     ) else listOf()
 
@@ -2878,6 +2880,7 @@ fun ChangeListInnerPage(
                         stringResource(id = R.string.commit_all_index_items),
                         stringResource(id = R.string.select_all),
                     ) else listOf(  //if(fromTo == Cons.gitDiffFromTreeToTree)
+                        stringResource(R.string.import_as_repo),
                         stringResource(R.string.checkout),
                         stringResource(R.string.cherrypick),
                         stringResource(R.string.create_patch),
@@ -2886,10 +2889,11 @@ fun ChangeListInnerPage(
 
                     //是否显示底栏按钮
                     val iconVisibleList = if(fromTo == Cons.gitDiffFromTreeToTree) listOf(
-                        checkoutFileVisible@{ proFeatureEnabled(checkoutFilesTestPassed) },
-                        cherrypickFilesVisible@{ proFeatureEnabled(cherrypickTestPassed) },
-                        createPatchVisible@{ proFeatureEnabled(createPatchTestPassed) },
-                        selectedAll@{true}
+                        imortAsRepo@{ true },
+                        checkoutFile@{ proFeatureEnabled(checkoutFilesTestPassed) },
+                        cherrypickFiles@{ proFeatureEnabled(cherrypickTestPassed) },
+                        createPatch@{ proFeatureEnabled(createPatchTestPassed) },
+                        selectedAll@{ true }
                     ) else listOf()
 
                     //一般用用iconTextList就行，除非有不一样的描述
@@ -2900,26 +2904,6 @@ fun ChangeListInnerPage(
 //            "Select All",
 //        )
 //    }
-
-                    val iconEnableList:List<()->Boolean> = if(fromTo == Cons.gitDiffFromIndexToWorktree) listOf( //worktree页面
-                        //只有仓库非detached HEAD状态时，commitThenSync才可用
-//            {selectedListIsNotEmpty() && !dbIntToBool(curRepoFromParentPage.value.isDetached) },  //提交并同步
-
-                        selectedListIsNotEmpty,  //提交
-                        {true},  //select all 总是启用
-                    ) else if(fromTo==Cons.gitDiffFromHeadToIndex) listOf( //index页面
-                        //只有仓库非detached HEAD状态时，commitThenSync才可用
-//            {changeListPageHasIndexItem.value && !dbIntToBool(curRepoFromParentPage.value.isDetached) },  //提交并同步，只有当存在index条目时才启用，changeListPageHasIndexItem 在index和worktree页面都会更新，所以用这个值来判断是否存在index条目是可靠的，或者改用itemList也行，因为在index页面，itemList代表的就是index页面的所有条目，再或者直接填true也行，因为底栏只有选择模式才打开，而只有存在条目才能进入选择模式，所以，如果你能看到底栏，那就肯定能执行提交和推送，反之你看不到底栏，就算提交和推送按钮启用，你也执行不了
-
-                        {changeListPageHasIndexItem.value},  //提交，只有当存在index条目时才启用
-                        {true} // select all
-                    )else listOf( //  if(fromTo == Cons.gitDiffFromTreeToTree)
-                        selectedListIsNotEmpty,  // checkout
-//            {isDiffToHead?.value==true && selectedListIsNotEmpty()},  // cherrypick，之前理解错了，cherrypick和HEAD无关，只要是和parents对比，就能pick
-                        {commitParentList.value.isNotEmpty() && selectedListIsNotEmpty()},  // cherrypick，只有存在parents的情况下才可cherrypick
-                        selectedListIsNotEmpty,  // create patch
-                        {true}  // select all
-                    )
 
                     //仅当至少选中一个目录才启用enable as repo选项
                     val enableImportAsRepo = {
@@ -2932,6 +2916,20 @@ fun ChangeListInnerPage(
                         val repoState = repoState.intValue
                         (repoState == Repository.StateT.MERGE.bit || repoState == Repository.StateT.REBASE_MERGE.bit || repoState == Repository.StateT.CHERRYPICK.bit) && hasConflictItemsSelected()
                     }
+
+                    val iconEnableList:List<()->Boolean> = if(fromTo == Cons.gitDiffFromIndexToWorktree) listOf( //worktree页面
+                        selectedListIsNotEmpty,  //提交
+                        {true},  //select all 总是启用
+                    ) else if(fromTo==Cons.gitDiffFromHeadToIndex) listOf( //index页面
+                        {changeListPageHasIndexItem.value},  //提交，只有当存在index条目时才启用
+                        {true} // select all
+                    )else listOf( //  if(fromTo == Cons.gitDiffFromTreeToTree)
+                        enableImportAsRepo, // import as repo
+                        selectedListIsNotEmpty,  // checkout
+                        {commitParentList.value.isNotEmpty() && selectedListIsNotEmpty()},  // cherrypick，只有存在parents的情况下才可cherrypick
+                        selectedListIsNotEmpty,  // create patch
+                        {true}  // select all
+                    )
 
                     val moreItemEnableList:List<()->Boolean> = (if(fromTo == Cons.gitDiffFromIndexToWorktree) listOf( // worktree page
                         enableAcceptOursTheirs,  //accept ours
@@ -2946,7 +2944,6 @@ fun ChangeListInnerPage(
                         selectedListIsNotEmpty, // create patch
                         enableImportAsRepo, // import as repo
                     ) else listOf(  // tree to tree page
-                        enableImportAsRepo, // import as repo
                     ))
 
                     val iconOnClickList:List<()->Unit> = if(fromTo == Cons.gitDiffFromIndexToWorktree) listOf(  // ChangeList页面的底栏选项 ( worktree页面 )
@@ -3058,6 +3055,9 @@ fun ChangeListInnerPage(
                         }
                     )else {  // if(fromTo == Cons.gitDiffFromTreeToTree)
                         listOf(  //tree to tree页面的底栏选项
+                            importAsRepo@{
+                                initImportAsRepo(selectedItemList.value.toList())
+                            },
                             checkout@{
                                 val curRepo = curRepoFromParentPage.value
                                 // when diff a commit to local (commit..local), if I clicked the checkout, actually I expect checkout the left version,
@@ -3110,7 +3110,6 @@ fun ChangeListInnerPage(
                         )  //按元素添加顺序在列表中会呈现为从上到下
                     else if(fromTo == Cons.gitDiffFromHeadToIndex) listOf(stringResource(R.string.unstage), stringResource(R.string.create_patch), stringResource(R.string.import_as_repo),)
                     else listOf(  // tree to tree，无选项
-                        stringResource(R.string.import_as_repo)
                     ))
 
 
@@ -3186,9 +3185,7 @@ fun ChangeListInnerPage(
                             initImportAsRepo(selectedItemList.value.toList())
                         }
                     ) else listOf( // fromTo == Cons.gitDiffFromTreeToTree
-                        importAsRepo@{
-                            initImportAsRepo(selectedItemList.value.toList())
-                        }
+
                     ))
 
                     BottomBar(
