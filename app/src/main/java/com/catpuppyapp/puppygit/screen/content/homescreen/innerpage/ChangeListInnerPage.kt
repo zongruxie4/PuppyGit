@@ -2921,7 +2921,8 @@ fun ChangeListInnerPage(
                         selectedListIsNotEmpty,  //提交
                         {true},  //select all 总是启用
                     ) else if(fromTo==Cons.gitDiffFromHeadToIndex) listOf( //index页面
-                        {changeListPageHasIndexItem.value},  //提交，只有当存在index条目时才启用
+                        { true }, // commit
+//                        {changeListPageHasIndexItem.value},  //x 废弃，因为支持amend了，就算index无条目也可提交）commit，只有当存在index条目时才启用
                         {true} // select all
                     )else listOf( //  if(fromTo == Cons.gitDiffFromTreeToTree)
                         enableImportAsRepo, // import as repo
