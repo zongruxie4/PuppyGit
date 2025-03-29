@@ -6243,7 +6243,7 @@ class Libgit2Helper {
                 val repoLock = getRepoLock(targetRepo.id)
 
                 //可能有其他协程正在克隆
-                if(repoLock.isLocked) {
+                if(isLocked(repoLock)) {
                     return@doJobThenOffLoading
                 }
 
@@ -6608,10 +6608,10 @@ class Libgit2Helper {
         suspend fun doActWithRepoLock(curRepo:RepoEntity, waitInMillSec:Long=0, onLockFailed:(lock:Mutex)->Unit={}, act: suspend ()->Unit) {
             val lock = Libgit2Helper.getRepoLock(curRepo.id)
             //maybe do other jobs
-            if(lock.isLocked) {
+            if(isLocked(lock)) {
                 if(waitInMillSec > 0) {
                     delay(waitInMillSec)
-                    if(lock.isLocked) {
+                    if(isLocked(lock)) {
                         onLockFailed(lock)
                     }else {
                         lock.withLock {

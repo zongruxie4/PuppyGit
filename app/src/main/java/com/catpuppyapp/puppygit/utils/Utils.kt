@@ -23,7 +23,9 @@ import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.withContext
 import java.io.File
 import java.net.URI
@@ -1077,4 +1079,11 @@ fun trimLineBreak(str:String) :String {
 
 fun isStartInclusiveEndExclusiveRangeValid(start:Int, endExclusive:Int, size:Int):Boolean {
   return  start < endExclusive && start >= 0 && start < size && endExclusive > 0 && endExclusive <= size
+}
+
+suspend fun isLocked(mutex: Mutex):Boolean {
+    // delay 1 to make locked check more correct
+    //先延迟一毫秒再检查，不然短时间内检查isLocked可能有误
+    delay(1)
+    return mutex.isLocked
 }

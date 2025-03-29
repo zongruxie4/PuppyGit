@@ -108,6 +108,7 @@ import com.catpuppyapp.puppygit.utils.doJobThenOffLoading
 import com.catpuppyapp.puppygit.utils.genHttpHostPortStr
 import com.catpuppyapp.puppygit.utils.getSecFromTime
 import com.catpuppyapp.puppygit.utils.getStoragePermission
+import com.catpuppyapp.puppygit.utils.isLocked
 import com.catpuppyapp.puppygit.utils.isRepoReadyAndPathExist
 import com.catpuppyapp.puppygit.utils.replaceStringResList
 import com.catpuppyapp.puppygit.utils.showErrAndSaveLog
@@ -695,7 +696,7 @@ fun RepoInnerPage(
             //更新仓库状态为待克隆
             repoList.forEach { curRepo ->
                 val repoLock = Libgit2Helper.getRepoLock(curRepo.id)
-                if(repoLock.isLocked) {
+                if(isLocked(repoLock)) {
                     return@doJobThenOffLoading
                 }
 
@@ -1122,7 +1123,7 @@ fun RepoInnerPage(
                     val curRepoVal =  curRepo
 
                     val lock = Libgit2Helper.getRepoLock(curRepoId)
-                    if(lock.isLocked) {
+                    if(isLocked(lock)) {
                         return@doJobThenOffLoading
                     }
 
@@ -1761,22 +1762,6 @@ fun RepoInnerPage(
         doActIfRepoGoodOrElse(curRepo, act, {})
     }
 
-//    val doActWithLockIfRepoGood = { curRepo:RepoEntity, act: suspend ()->Unit ->
-//        val repoStatusGood = curRepo.gitRepoState!=null && !Libgit2Helper.isRepoStatusNotReadyOrErr(curRepo)
-//        if(repoStatusGood) {
-//            doJobThenOffLoading {
-//                val lock = Libgit2Helper.getRepoLock(curRepo.id)
-//                //maybe do other jobs
-//                if(lock.isLocked) {
-//                    return@doJobThenOffLoading
-//                }
-//
-//                lock.withLock {
-//                    act()
-//                }
-//            }
-//        }
-//    }
 
     val invalidIdx = remember { -1 }
 
