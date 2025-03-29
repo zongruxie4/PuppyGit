@@ -21,7 +21,9 @@ object RepoActUtil {
     private const val waitInMillSecIfApiBusy = 5000L  //5s
 
     private fun throwRepoBusy(prefix:String, repoName:String) {
-        throwWithPrefix(prefix, RuntimeException("repo '$repoName' busy, plz try again later"))
+        //这里的信息会作为通知的消息显示给用户，而在通知的标题会显示仓库名，所以这里不必再显示仓库名，仅提示仓库忙即可
+//        throwWithPrefix(prefix, RuntimeException("repo '$repoName' busy, plz try again later"))
+        throwWithPrefix(prefix, RuntimeException(Cons.repoBusyStr))
     }
 
     private fun getNotifySender(repoId:String, sessionId: String):NotificationSender? {
@@ -78,7 +80,7 @@ object RepoActUtil {
 
                     createAndInsertError(repoFromDb.id, "sync by api $routeName err: $errMsg")
 
-                    notiSender?.sendErrNotification?.invoke("sync err", errMsg, Cons.selectedItem_ChangeList, repoFromDb.id)
+                    notiSender?.sendErrNotification?.invoke(repoFromDb.repoName, errMsg, Cons.selectedItem_ChangeList, repoFromDb.id)
 
 
                     MyLog.e(TAG, "#$funName: route:$routeName, repoName=${repoFromDb.repoName}, err=${e.stackTraceToString()}")
@@ -180,7 +182,7 @@ object RepoActUtil {
 
                     createAndInsertError(repoFromDb.id, "pull by api $routeName err: $errMsg")
 
-                    notiSender?.sendErrNotification?.invoke("pull err", errMsg, Cons.selectedItem_ChangeList, repoFromDb.id)
+                    notiSender?.sendErrNotification?.invoke(repoFromDb.repoName, errMsg, Cons.selectedItem_ChangeList, repoFromDb.id)
 
 
                     MyLog.e(TAG, "#$funName: route:$routeName, repoName=${repoFromDb.repoName}, err=${e.stackTraceToString()}")
@@ -340,7 +342,7 @@ object RepoActUtil {
 
                     createAndInsertError(repoFromDb.id, "push by api $routeName err: $errMsg")
 
-                    notiSender?.sendErrNotification?.invoke("push err", errMsg, Cons.selectedItem_ChangeList, repoFromDb.id)
+                    notiSender?.sendErrNotification?.invoke(repoFromDb.repoName, errMsg, Cons.selectedItem_ChangeList, repoFromDb.id)
 
 
                     MyLog.e(TAG, "#$funName: route:$routeName, repoName=${repoFromDb.repoName}, err=${e.stackTraceToString()}")
