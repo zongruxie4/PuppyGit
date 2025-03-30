@@ -43,6 +43,17 @@ class FilePath(
         }
     }
 
+    @IgnoredOnParcel
+    private val readableCanonicalPathOrDefault = { file:File, default:String ->
+        file.let {
+            if(it.canRead()) {
+                it.canonicalPath
+            }else {
+                default
+            }
+        }
+    }
+
     private fun initIoPath() {
         ioPath = if(rawPathType == PathType.CONTENT_URI) {
             try {
@@ -93,24 +104,14 @@ class FilePath(
                     val safExternalStoragePathPrefix = "content://com.android.externalstorage.documents/tree/primary"
                     val indexOfSafExtStoragePrefix = uriStr.indexOf(safExternalStoragePathPrefix)
                     if(indexOfSafExtStoragePrefix == 0) {
-                        val maybeRealPathFile = File(FsUtils.getRealPathFromUriPath(uri.path))
-                        if(maybeRealPathFile.canRead()) {  // 支持解析系统folder picker选择的external storage 0 目录下的文件
-                            maybeRealPathFile.canonicalPath
-                        }else {
-                            rawPath
-                        }
+                        readableCanonicalPathOrDefault(File(FsUtils.getRealPathFromUri(uri)), rawPath)
                     } else {  // try resolve markor uri to real path
                         val markorExternalUriPrefix = "content://net.gsantner.markor.provider/external_files/"
                         val indexOfMarkorUriExternalPrefix = uriStr.indexOf(markorExternalUriPrefix)
                         // indexOf == 0, means `include` and `starsWith`, both are `true`
                         if(indexOfMarkorUriExternalPrefix == 0) {
                             // length-1 是为了保留之前的 "/"，如果不减1，还得自己在前面prepend一个 "/"
-                            val file = File(uriStr.substring(markorExternalUriPrefix.length-1))
-                            if(file.canRead()) {
-                                file.canonicalPath
-                            }else {
-                                rawPath
-                            }
+                            readableCanonicalPathOrDefault(File(uriStr.substring(markorExternalUriPrefix.length-1)), rawPath)
                         }else{
                             rawPath
                         }
