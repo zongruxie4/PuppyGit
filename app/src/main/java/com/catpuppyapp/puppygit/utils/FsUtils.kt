@@ -1175,14 +1175,21 @@ object FsUtils {
      */
     @Deprecated("不靠谱，尽量不要用")
     fun getRealPathFromUri(uri:Uri):String {
+        return getRealPathFromUriPath(uri.path)
+    }
+
+    @Deprecated("不靠谱，尽量别用")
+    fun getRealPathFromUriPath(uriPathString:String?):String {
+        uriPathString ?: return  "" ;
+
         return try {
-            val uriPathString = uri.path.toString()
             // 例如：uri为：content://com.android.externalstorage.documents/tree/primary%3ARepos, 则uri.path为 /tree/primary:Repos，但不保证一定是canonical path，可能中间出现两个 "//" 也可能有其他东西
-            (getExternalStorageRootPathNoEndsWithSeparator() + Cons.slash + uriPathString.substring(uriPathString.indexOf(":")+1).trim(Cons.slashChar)).trimEnd(Cons.slashChar)
+            (getExternalStorageRootPathNoEndsWithSeparator() + Cons.slash + uriPathString.let{ it.substring(it.indexOf(":") + 1).trim(Cons.slashChar) }).trimEnd(Cons.slashChar)
         }catch (_:Exception) {
             ""
         }
     }
+
 
     /**
      * 如果是 `internalPathPrefix` 或 `externalPathPrefix` 开头的路径，转换为真实路径，否则返回原路径
