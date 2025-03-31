@@ -38,7 +38,7 @@
 
 
 ## 小狗Git + 笔记app = 全新的跨平台同步笔记方案！
-小狗Git不仅能用户代码，还能同步笔记，支持基于文件笔记软件，例如: <a href="https://github.com/obsidianmd/obsidian-releases">Obsidian</a> / <a href="https://github.com/gsantner/markor">Markor</a> 等。
+小狗Git不仅能同步代码，还能同步笔记，支持基于文件的笔记软件，例如: <a href="https://github.com/obsidianmd/obsidian-releases">Obsidian</a> / <a href="https://github.com/gsantner/markor">Markor</a> 等。
 
 相关: <a href=https://www.patreon.com/posts/puppygit-auto-122757321>自动同步Obsidian笔记仓库</a><br>
 
@@ -90,7 +90,7 @@ Tasker可通过Http请求调用小狗Git执行操作，演示视频： <a href="
 
 
 ## 关于 ssh
-首次连接到未知主机小狗git将会询问是否允许连接，这样更安全，或者如果你觉得麻烦，可前往设置页面启用默认允许所有连接。
+首次连接到未知主机时，小狗git将会询问是否允许连接，这样更安全，或者如果你觉得麻烦，可前往设置页面启用默认允许所有连接。
 #### 注意: 小狗Git仅需要私钥和passphrase就足够建立ssh连接，并不需要公钥，也不支持生成ssh密钥对，如果你想在手机上生成ssh密钥，可尝试我的另一个app: <a href=https://github.com/catpuppyapp/PuppySshKeyMan/releases>Ssh Key Man</a>
 
 ## 关于签名提交和标签
@@ -104,7 +104,7 @@ Tasker可通过Http请求调用小狗Git执行操作，演示视频： <a href="
 导入仓库，构建。（需要安卓ndk，不过正常来说会自动下载）
 <br><br>
 ### 如果你想自己构建依赖库
-看下<a href=https://github.com/catpuppyapp/PuppyGit/blob/main/.github%2Fworkflows%2Fbuild_libs_and_unsigned_apk.yml>这个workflow</a> 其中描述了怎么构建依赖库
+看下<a href=https://github.com/catpuppyapp/PuppyGit/blob/main/.github%2Fworkflows%2Fbuild_libs_and_unsigned_apk.yml>这个workflow</a>，其中描述了怎么构建依赖库
 
 
 
