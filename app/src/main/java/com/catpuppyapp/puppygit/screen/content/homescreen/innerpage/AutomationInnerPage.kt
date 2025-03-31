@@ -47,6 +47,7 @@ import com.catpuppyapp.puppygit.compose.ConfirmDialog2
 import com.catpuppyapp.puppygit.compose.FilterTextField
 import com.catpuppyapp.puppygit.compose.ItemListIsEmpty
 import com.catpuppyapp.puppygit.compose.LoadingText
+import com.catpuppyapp.puppygit.compose.MySelectionContainer
 import com.catpuppyapp.puppygit.compose.RepoNameAndIdItem
 import com.catpuppyapp.puppygit.compose.SelectedUnSelectedDialog
 import com.catpuppyapp.puppygit.compose.SettingsContent
@@ -320,7 +321,9 @@ fun AutomationInnerPage(
                         stringResource(R.string.push_delay_note)
                     }
 
-                    Text(text = note, fontWeight = FontWeight.Light, modifier = Modifier.padding(padding))
+                    MySelectionContainer {
+                        Text(text = note, fontWeight = FontWeight.Light, modifier = Modifier.padding(padding))
+                    }
 
                 }
 
