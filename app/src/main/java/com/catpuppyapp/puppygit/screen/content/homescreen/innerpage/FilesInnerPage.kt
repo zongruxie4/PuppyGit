@@ -1428,7 +1428,7 @@ fun FilesInnerPage(
                             val match = { idx:Int, it:File ->
                                 val nameLowerCase = it.name.lowercase();
                                 //匹配名称 或 "*.txt"之类的后缀
-                                nameLowerCase.contains(keyword) || RegexUtil.matchWildcard(input = nameLowerCase, pattern = keyword)
+                                nameLowerCase.contains(keyword) || RegexUtil.matchWildcard(nameLowerCase, keyword)
                             }
 
                             filterList.value.clear()
