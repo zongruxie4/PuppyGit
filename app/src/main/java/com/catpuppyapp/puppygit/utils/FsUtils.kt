@@ -28,6 +28,7 @@ import com.catpuppyapp.puppygit.utils.temp.TempFileFlag
 import java.io.File
 import java.io.FileInputStream
 import java.io.FileOutputStream
+import java.io.FileWriter
 import java.io.InputStream
 import java.io.OutputStream
 import java.nio.charset.Charset
@@ -1516,6 +1517,18 @@ object FsUtils {
             outputStream.use { output ->
                 input.copyTo(output)
             }
+        }
+    }
+
+    fun appendTextToFile(file: File, text:String) {
+        if(text.isEmpty()) {
+            return
+        }
+
+        val append = true
+        val filerWriter = FileWriter(file, append)
+        filerWriter.buffered().use { writer ->
+            writer.write(text)
         }
     }
 }

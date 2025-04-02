@@ -12,6 +12,7 @@ import com.catpuppyapp.puppygit.data.entity.RepoEntity
 import com.catpuppyapp.puppygit.data.repository.CredentialRepository
 import com.catpuppyapp.puppygit.data.repository.RemoteRepository
 import com.catpuppyapp.puppygit.data.repository.RepoRepository
+import com.catpuppyapp.puppygit.dto.FileItemDto
 import com.catpuppyapp.puppygit.dto.RemoteDto
 import com.catpuppyapp.puppygit.dto.createCommitDto
 import com.catpuppyapp.puppygit.dto.createFileHistoryDto
@@ -1639,7 +1640,48 @@ class Libgit2Helper {
          */
         fun getRepoGitDirPathNoEndsWithSlash(repo:Repository):String {
             // I am not sure, but in my tests, this api always ends with "/" even in windows(windows default separator is "\")
-            return repo.itemPath(Repository.Item.GITDIR)?.removeSuffix("/") ?: ""
+            return repo.itemPath(Repository.Item.GITDIR)?.trimEnd(Cons.slashChar) ?: ""
+        }
+
+//        fun getRepoWorkdirNoEndsWithSlash(repo:Repository):String {
+//            return repo.itemPath(Repository.Item.WORKDIR)?.removeSuffix("/") ?: ""
+//        }
+
+
+        fun getRepoWorkdirNoEndsWithSlash(repo: Repository): String {
+            return repo.workdir()?.trimEnd(Cons.slashChar) ?: ""
+        }
+
+        fun getRepoIgnoreFilePathNoEndsWithSlash(repo: Repository, createIfNonExists:Boolean = false): String {
+            var path = getRepoWorkdirNoEndsWithSlash(repo) + Cons.slash + ".gitignore"
+
+            if(createIfNonExists) {
+                File(path).let {
+                    it.createNewFile()  // will only create when non-exists
+                    path = it.canonicalPath
+                }
+            }
+
+            return path
+        }
+
+
+        /**
+         * 调用完后需要自行 index.write()以使修改生效
+         */
+        fun removeFromGit(
+            relativePathUnderRepo: String,
+            repoIndex: Index,
+            isFile:Boolean
+        ) {
+            if (relativePathUnderRepo.isNotEmpty() && relativePathUnderRepo != ".git" && !relativePathUnderRepo.startsWith(".git/")) {  //starts with ".git/" 既可用于.git/目录名，也可用于其下的目录名，不过我测试过，如果是选中的.git目录，末尾没/，所以在判断路径是否等于.git那里就已经短路了
+                Libgit2Helper.removeFromIndexThenWriteToDisk(
+                    repoIndex,
+                    Pair(isFile, relativePathUnderRepo),
+                    requireWriteToDisk = false  //这里不保存修改，等删完后统一保存修改
+                )  //最后一个值表示不希望调用的函数执行 index.write()，我删完列表后自己会执行，不需要每个条目都执行，所以传false请求调用的函数别执行index.write()
+
+            }
         }
 
         //检查仓库是否是shallowed，实现机制就是：检查 .git 目录是否有 shallow 文件
@@ -5373,10 +5415,6 @@ class Libgit2Helper {
             }
         }
 
-        fun getRepoWorkdirNoEndsWithSlash(repo: Repository): String {
-            return repo.workdir().toString().removeSuffix("/")
-        }
-
         fun getRepoConfigFilePath(repo: Repository): String {
             return repo.itemPath(Repository.Item.CONFIG) ?: ""
         }
@@ -6662,26 +6700,19 @@ class Libgit2Helper {
             //这里忽略第一个代表是否更新index的值，因为后面会百分百查询index，所以无需判定
             val (_, statusMap) = statusListToStatusMap(repo, rawStatusList, repoIdFromDb = repoId, Cons.gitDiffFromIndexToWorktree)
 
-            val itemList = mutableListOf<StatusTypeEntrySaver>()
+            val retList = mutableListOf<StatusTypeEntrySaver>()
 
             //a?.let{}，如果a不为null，执行函数，若不指定入参名称，默认把 a命名为it传入
             statusMap[Cons.gitStatusKeyConflict]?.let {  //先添加冲突条目，让冲突条目显示在列表前面
-                itemList.addAll(it)
+                retList.addAll(it)
             }
 
             // conflicts are hold ever, but normal types file will filter by app's ignore file
             statusMap[Cons.gitStatusKeyWorkdir]?.let {  //后添加其他条目
-                val validIgnoreRules = IgnoreMan.getAllValidPattern(getRepoGitDirPathNoEndsWithSlash(repo))
-                it.forEach { item ->
-                    // add items are not matched with ignore rules
-                    if (IgnoreMan.matchedPatternList(item.relativePathUnderRepo, validIgnoreRules).not()) {
-                        itemList.add(item)
-                    }
-                }
-
+                retList.addAll(it)
             }
 
-            return itemList
+            return retList
         }
 
     }

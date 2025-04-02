@@ -97,7 +97,6 @@ import com.catpuppyapp.puppygit.play.pro.R
 import com.catpuppyapp.puppygit.screen.functions.ChangeListFunctions
 import com.catpuppyapp.puppygit.screen.functions.filterModeActuallyEnabled
 import com.catpuppyapp.puppygit.screen.functions.filterTheList
-import com.catpuppyapp.puppygit.screen.functions.maybeIsGoodKeyword
 import com.catpuppyapp.puppygit.screen.functions.naviToFileHistoryByRelativePath
 import com.catpuppyapp.puppygit.screen.functions.openFileWithInnerSubPageEditor
 import com.catpuppyapp.puppygit.screen.shared.DiffFromScreen
@@ -106,7 +105,7 @@ import com.catpuppyapp.puppygit.settings.SettingsUtil
 import com.catpuppyapp.puppygit.style.MyStyleKt
 import com.catpuppyapp.puppygit.user.UserUtil
 import com.catpuppyapp.puppygit.utils.AppModel
-import com.catpuppyapp.puppygit.utils.IgnoreMan
+import com.catpuppyapp.puppygit.utils.FsUtils
 import com.catpuppyapp.puppygit.utils.Libgit2Helper
 import com.catpuppyapp.puppygit.utils.Msg
 import com.catpuppyapp.puppygit.utils.MyLog
@@ -131,7 +130,7 @@ import com.catpuppyapp.puppygit.utils.updateSelectedList
 import com.catpuppyapp.puppygit.utils.withMainContext
 import com.github.git24j.core.Repository
 import com.github.git24j.core.Repository.StateT
-import kotlinx.coroutines.sync.Mutex
+import java.io.File
 
 private const val TAG = "ChangeListInnerPage"
 private const val stateKeyTag = "ChangeListInnerPage"
@@ -720,7 +719,8 @@ fun ChangeListInnerPage(
             if(requireAct == PageRequest.editIgnoreFile) {
                 try {
                     Repository.open(curRepo.fullSavePath).use { repo->
-                        val ignoreFilePath = IgnoreMan.getFileFullPath(Libgit2Helper.getRepoGitDirPathNoEndsWithSlash(repo))
+//                        val ignoreFilePath = IgnoreMan.getFileFullPath(Libgit2Helper.getRepoGitDirPathNoEndsWithSlash(repo))
+                        val ignoreFilePath = Libgit2Helper.getRepoIgnoreFilePathNoEndsWithSlash(repo, createIfNonExists = true)
 
                         withMainContext {
                             val initMergeMode = false
@@ -1637,19 +1637,43 @@ fun ChangeListInnerPage(
             showIgnoreDialog.value=false
 
             val curRepo = curRepoFromParentPage.value
-            val selectedItemList = selectedItemList.value.toList()
 
             doJobThenOffLoading(loadingOn, loadingOff, activityContext.getString(R.string.loading)) {
                 try {
-                    Repository.open(curRepo.fullSavePath).use { repo ->
-                        val repoDotGitPath = Libgit2Helper.getRepoGitDirPathNoEndsWithSlash(repo)
-                        val linesWillIgnore = selectedItemList.map { it.relativePathUnderRepo }
-                        IgnoreMan.appendLinesToIgnoreFile(repoDotGitPath, linesWillIgnore)
+                    val selectedItemList = selectedItemList.value.toList()
+
+                    if(selectedItemList.isEmpty()) {
+                        Msg.requireShow(activityContext.getString(R.string.no_item_selected))
+                        return@doJobThenOffLoading  // 结束操作
                     }
+
+                    Repository.open(curRepo.fullSavePath).use { repo ->
+                        val ignoreFile = File(Libgit2Helper.getRepoIgnoreFilePathNoEndsWithSlash(repo, createIfNonExists = true))
+                        val repoIndex = repo.index()
+                        //拼接 "\npath1\npath2\npath3...省略....\n"
+                        val linesWillIgnore = Cons.lineBreak +
+                                (selectedItemList.map {
+                                    // remove from git
+                                    Libgit2Helper.removeFromGit(it.relativePathUnderRepo, repoIndex, it.toFile().isFile)
+
+                                    //返回将添加到 .gitignore 的path
+                                    //相对路径前加/会从仓库根目录开始匹配，若不加杠，会匹配子目录，容易误匹配
+                                    Cons.slash + it.relativePathUnderRepo
+                                }.joinToString(Cons.lineBreak)) +
+                                Cons.lineBreak
+                        ;
+
+                        // 追加路径到仓库workdir下的 .gitignore
+                        FsUtils.appendTextToFile(ignoreFile, linesWillIgnore)
+
+                        //将repoIndex修改写入硬盘
+                        repoIndex.write()
+                    }
+
                     Msg.requireShow(activityContext.getString(R.string.success))
                 }catch (e:Exception) {
                     val errMsg = e.localizedMessage
-                    Msg.requireShowLongDuration(errMsg ?: "err")
+                    Msg.requireShowLongDuration("err: " + errMsg)
                     createAndInsertError(curRepo.id, "ignore files err: $errMsg")
                 }finally {
                     changeListRequireRefreshFromParentPage(curRepo)

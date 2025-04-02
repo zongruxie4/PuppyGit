@@ -241,10 +241,9 @@ public class Repository extends CAutoCloseable {
      *
      * @return the path to the working dir, if it exists
      */
-    @Nonnull
-    public Path workdir() {
-        String wd = jniWorkdir(getRawPointer());
-        return Paths.get(wd);
+    @CheckForNull
+    public String workdir() {
+        return jniWorkdir(getRawPointer());
     }
 
     /**
@@ -647,6 +646,7 @@ public class Repository extends CAutoCloseable {
         return Objects.hashCode(getPath());
     }
 
+    // https://libgit2.org/docs/reference/main/repository/git_repository_item_t.html
     public enum Item {
         GITDIR,
         WORKDIR,
@@ -662,6 +662,7 @@ public class Repository extends CAutoCloseable {
         LOGS,
         MODULES,
         WORKTREES,
+        WORKTREE_CONFIG,
         LAST
     }
 

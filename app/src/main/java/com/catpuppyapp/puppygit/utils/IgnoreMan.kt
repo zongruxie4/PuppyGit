@@ -10,6 +10,7 @@ import java.io.FileWriter
  *   1 call `getAllValidPattern()` get a rules list
  *   2 for each file path call `matchedPatternList(relativePathUnderRepo, rules)`, if return true, means should be ignore
  */
+@Deprecated("改用git自带的忽略了，仅需在添加到.gitignore之前先remove form git一下就能实现相同效果")
 object IgnoreMan {
     private const val commentBegin = "//"
     private const val newFileContent = "$commentBegin a line start with \"$commentBegin\" will treat as comment\n$commentBegin each line one relative path under repo, support simple wildcard like *.log match all files has .log suffix\n\n"

@@ -152,6 +152,7 @@ import com.catpuppyapp.puppygit.utils.state.mutableCustomStateListOf
 import com.catpuppyapp.puppygit.utils.state.mutableCustomStateOf
 import com.catpuppyapp.puppygit.utils.trimLineBreak
 import com.catpuppyapp.puppygit.utils.withMainContext
+import com.github.git24j.core.Index
 import java.io.File
 import kotlin.coroutines.cancellation.CancellationException
 
@@ -1577,10 +1578,13 @@ fun FilesInnerPage(
             onCancel = { showRemoveFromGitDialog.value=false }
         ) {
             //关闭弹窗
-            showRemoveFromGitDialog.value=false
+            showRemoveFromGitDialog.value = false
+
             //执行删除
             doJobThenOffLoading (loadingOn = loadingOn, loadingOff=loadingOff) {
-                if(selectedItems.value.isEmpty()) {  //例如，我选择了文件，然后对文件执行了重命名，导致已选中条目被移除，就会发生选中条目列表为空或缺少了条目的情况
+                val selectedItems = selectedItems.value.toList()
+
+                if(selectedItems.isEmpty()) {
                     Msg.requireShow(activityContext.getString(R.string.no_item_selected))
                     //退出选择模式和刷新页面
 //                    filesPageQuitSelectionMode()
@@ -1588,7 +1592,8 @@ fun FilesInnerPage(
                     return@doJobThenOffLoading  // 结束操作
                 }
 
-                var repoWillUse = Libgit2Helper.findRepoByPath(selectedItems.value[0].fullPath)
+                //注意：如果选中的文件在不同的目录下，可能会失效，因为这里仅通过第一个元素查找仓库，多数情况下不会有问题，因为选择文件默认只能在同一目录选（虽然没严格限制导致有办法跳过）
+                var repoWillUse = Libgit2Helper.findRepoByPath(selectedItems[0].fullPath)
                 if(repoWillUse == null) {
                     Msg.requireShow(activityContext.getString(R.string.err_dir_is_not_a_git_repo))
                     //退出选择模式和刷新页面
@@ -1597,27 +1602,21 @@ fun FilesInnerPage(
                     return@doJobThenOffLoading  // 结束操作
                 }
 
-                val repoWorkDirFullPath = repoWillUse.workdir().toFile().canonicalPath
-                MyLog.d(TAG, "#RemoveFromGitDialog: will remove files from repo: '${repoWorkDirFullPath}'")
+//                val repoWorkDirFullPath = repoWillUse.workdir().toFile().canonicalPath
+                val repoWorkDirFullPath = File(Libgit2Helper.getRepoWorkdirNoEndsWithSlash(repoWillUse)).canonicalPath
+                MyLog.d(TAG, "#RemoveFromGitDialog: will remove files from repo workdir: '${repoWorkDirFullPath}'")
 
                 repoWillUse.use { repo ->
                     val repoIndex = repo.index()
 
                     //开始循环，删除所有选中文件
-                    selectedItems.value.toList().forEach {
+                    selectedItems.forEach {
 //                        val (repoFullPath, relativePathUnderRepo) = getFilePathStrUnderRepoByFullPath(it.fullPath)
-                          val relativePathUnderRepo = getFilePathUnderParent(repoWorkDirFullPath, it.fullPath)
 //                        repoWillUse = repoFullPath  //因为只可能同一时间删除同一仓库下的文件，所以其实只有一个仓库且这个值只需要赋值一次，但我不知道判断仓库是否为空和赋值哪个更快，所以索性每次都赋值了
 
+                        val relativePathUnderRepo = getFilePathUnderParent(repoWorkDirFullPath, it.fullPath)
                         //存在有效仓库，且文件的仓库内相对路径不为空，且不是.git目录本身，且不是.git目录下的文件
-                        if(relativePathUnderRepo.isNotEmpty() && relativePathUnderRepo !=".git" && !relativePathUnderRepo.startsWith(".git/")) {  //starts with ".git/" 既可用于.git/目录名，也可用于其下的目录名，不过我测试过，如果是选中的.git目录，末尾没/，所以在判断路径是否等于.git那里就已经短路了
-                            Libgit2Helper.removeFromIndexThenWriteToDisk(
-                                repoIndex,
-                                Pair(it.isFile, relativePathUnderRepo),
-                                requireWriteToDisk = false  //这里不保存修改，等删完后统一保存修改
-                            )  //最后一个值表示不希望调用的函数执行 index.write()，我删完列表后自己会执行，不需要每个条目都执行，所以传false请求调用的函数别执行index.write()
-
-                        }
+                        Libgit2Helper.removeFromGit(relativePathUnderRepo, repoIndex, it.isFile)
                     }
 
                     //保存修改
