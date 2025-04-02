@@ -1568,7 +1568,7 @@ fun FilesInnerPage(
     }
 
 
-    //这个应该用remember，因为屏幕一旋转，选中列表会被清空，所以，就算显示删除对话框，也不知道该删什么
+    //x 废弃，一旋转屏幕，弹窗也会关闭，所以无所谓) 这个应该用remember，因为屏幕一旋转，选中列表会被清空，所以，就算显示删除对话框，也不知道该删什么
     val showRemoveFromGitDialog = rememberSaveable { mutableStateOf(false)}
     if(showRemoveFromGitDialog.value) {
         ConfirmDialog(
@@ -1602,18 +1602,17 @@ fun FilesInnerPage(
                     return@doJobThenOffLoading  // 结束操作
                 }
 
-//                val repoWorkDirFullPath = repoWillUse.workdir().toFile().canonicalPath
-                val repoWorkDirFullPath = File(Libgit2Helper.getRepoWorkdirNoEndsWithSlash(repoWillUse)).canonicalPath
-                MyLog.d(TAG, "#RemoveFromGitDialog: will remove files from repo workdir: '${repoWorkDirFullPath}'")
+                //存在有效仓库
 
+                // .use 的好处是用完会自动 close，省得手动关
                 repoWillUse.use { repo ->
+                    val repoWorkDirFullPath = File(Libgit2Helper.getRepoWorkdirNoEndsWithSlash(repo)).canonicalPath
+                    MyLog.d(TAG, "#RemoveFromGitDialog: will remove files from repo workdir: '${repoWorkDirFullPath}'")
+
                     val repoIndex = repo.index()
 
                     //开始循环，删除所有选中文件
                     selectedItems.forEach {
-//                        val (repoFullPath, relativePathUnderRepo) = getFilePathStrUnderRepoByFullPath(it.fullPath)
-//                        repoWillUse = repoFullPath  //因为只可能同一时间删除同一仓库下的文件，所以其实只有一个仓库且这个值只需要赋值一次，但我不知道判断仓库是否为空和赋值哪个更快，所以索性每次都赋值了
-
                         val relativePathUnderRepo = getFilePathUnderParent(repoWorkDirFullPath, it.fullPath)
                         //存在有效仓库，且文件的仓库内相对路径不为空，且不是.git目录本身，且不是.git目录下的文件
                         Libgit2Helper.removeFromGit(relativePathUnderRepo, repoIndex, it.isFile)

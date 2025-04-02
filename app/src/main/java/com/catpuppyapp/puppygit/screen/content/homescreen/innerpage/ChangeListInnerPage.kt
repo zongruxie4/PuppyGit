@@ -2877,6 +2877,64 @@ fun ChangeListInnerPage(
                 //放到这里只有存在条目时才显示BottomBar，要不要把这块代码挪外边？不过要是没条目也没必要显示BottomBar，也算合理。
                 //Bottom bar
                 if (isFileSelectionMode.value) {
+
+                    // remove from git弹窗
+                    val showRemoveFromGitDialog = rememberSaveable { mutableStateOf(false)}
+                    if(showRemoveFromGitDialog.value) {
+                        ConfirmDialog(
+                            title = stringResource(id = R.string.remove_from_git),
+                            text = stringResource(R.string.will_remove_selected_items_from_git_are_u_sure),
+                            okTextColor = MyStyleKt.TextColor.danger(),
+                            onCancel = { showRemoveFromGitDialog.value=false }
+                        ) {
+                            //关闭弹窗
+                            showRemoveFromGitDialog.value = false
+
+                            val curRepoFromParentPage = curRepoFromParentPage.value
+
+                            //执行删除
+                            doJobThenOffLoading (loadingOn = loadingOn, loadingOff=loadingOff) {
+                                val selectedItemList = selectedItemList.value.toList()
+
+                                if(selectedItemList.isEmpty()) {
+                                    Msg.requireShow(activityContext.getString(R.string.no_item_selected))
+                                    return@doJobThenOffLoading  // 结束操作
+                                }
+
+                                try {
+                                    //注意：如果选中的文件在不同的目录下，可能会失效，因为这里仅通过第一个元素查找仓库，多数情况下不会有问题，因为选择文件默认只能在同一目录选（虽然没严格限制导致有办法跳过）
+                                    Repository.open(curRepoFromParentPage.fullSavePath).use { repo ->
+                                        val repoWorkDirFullPath = File(Libgit2Helper.getRepoWorkdirNoEndsWithSlash(repo)).canonicalPath
+                                        MyLog.d(TAG, "#RemoveFromGitDialog: will remove files from repo workdir: '${repoWorkDirFullPath}'")
+
+                                        val repoIndex = repo.index()
+
+                                        //开始循环，删除所有选中文件
+                                        selectedItemList.forEach {
+                                            //存在有效仓库，且文件的仓库内相对路径不为空，且不是.git目录本身，且不是.git目录下的文件
+                                            Libgit2Helper.removeFromGit(it.relativePathUnderRepo, repoIndex, it.toFile().isFile)
+                                        }
+
+                                        //保存修改
+                                        repoIndex.write()
+                                    }
+
+
+                                    Msg.requireShow(activityContext.getString(R.string.success))
+
+                                    changeListRequireRefreshFromParentPage(curRepoFromParentPage)
+                                }catch (e:Exception) {
+                                    val errMsg = e.localizedMessage
+                                    Msg.requireShowLongDuration("err: $errMsg")
+                                    createAndInsertError(curRepoFromParentPage.id, "remove from git err: $errMsg")
+                                    MyLog.e(TAG, "remove from git err: ${e.stackTraceToString()}")
+
+                                    changeListRequireRefreshFromParentPage(curRepoFromParentPage)
+                                }
+                            }
+                        }
+                    }
+
                     //这种常量型的state用remember就行，反正也不会改，更提不上恢复
                     val iconList:List<ImageVector> = if(fromTo == Cons.gitDiffFromIndexToWorktree) listOf(  //changelist page
 //            Icons.Filled.CloudDone,  //提交选中文件并推送
@@ -2963,6 +3021,7 @@ fun ChangeListInnerPage(
                         selectedListIsNotEmpty,  //revert
                         selectedListIsNotEmpty, // create patch
                         selectedListIsNotEmpty, // ignore
+                        selectedListIsNotEmpty, // remove from git
                         enableImportAsRepo, // import as repo
                     ) else if(fromTo == Cons.gitDiffFromHeadToIndex) listOf( // index page
                         selectedListIsNotEmpty,  // unstage
@@ -3130,6 +3189,7 @@ fun ChangeListInnerPage(
                         stringResource(R.string.revert),
                         stringResource(R.string.create_patch),
                         if(proFeatureEnabled(ignoreWorktreeFilesTestPassed)) stringResource(R.string.ignore) else "",  //显示菜单时会跳过空文本条目
+                        stringResource(R.string.remove_from_git),
                         stringResource(R.string.import_as_repo),
 
                         )  //按元素添加顺序在列表中会呈现为从上到下
@@ -3195,6 +3255,9 @@ fun ChangeListInnerPage(
                         },
                         ignore@{
                             showIgnoreDialog.value = true
+                        },
+                        removeFromGit@{
+                            showRemoveFromGitDialog.value = true
                         },
                         importAsRepo@{
                             initImportAsRepo(selectedItemList.value.toList())
