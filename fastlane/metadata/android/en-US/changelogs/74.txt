@@ -1,0 +1,1 @@
+- add remove from git to ChangeList

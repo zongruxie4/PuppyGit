@@ -1,3 +1,11 @@
+1.0.9.8v74 - 20250403:
+- add remove from git to ChangeList
+
+
+
+- 修改列表添加从git移除文件（取消追踪）的选项
+
+---
 1.0.9.7v73 - 20250327:
 - Automation: support set pull interval and push delay 
 - optimize Editor performance
