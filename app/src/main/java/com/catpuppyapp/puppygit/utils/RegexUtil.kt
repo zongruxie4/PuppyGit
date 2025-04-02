@@ -66,7 +66,7 @@ object RegexUtil {
 
     //这个不能用斜杠星号注释，会无法判断注释范围。
     // examples:
-    // val target = "/a/b/c/TARGET_FILE.md";
+    // val path = "/a/b/c/TARGET_FILE.md";
     //
     // match results:
     //    /a/b/c/TAR: false
@@ -79,6 +79,9 @@ object RegexUtil {
     //    *.md: true
     //    /a/b/c/TARGET_FILE.md: true
     //    /a/b/c/*.md: true
+    //
+    // examples2（特殊情况，"/*.ext"这种"/*."开头的模式，仅匹配根目录下有相同后缀的文件）:
+    // pattern="/*.txt": path="abc.txt"，返回 true；path="a/abc.txt"，返回false。（实际匹配均不包含引号）
     fun matchForIgnoreFile(path:String, pattern:String):Boolean {
         //这种比较特殊，仅匹配仓库根目录下匹配通配符的文件
         val patternStarsWithSlashAndExtFlag = pattern.startsWith("$slash$extMatchFlag")  // starts with "/*."

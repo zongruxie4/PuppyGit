@@ -41,7 +41,7 @@ object RepoActUtil {
         gitUsernameFromUrl:String,    // leave empty to read from config
         gitEmailFromUrl:String,    // leave empty to read from config
         autoCommit:Boolean,
-        force:Boolean,
+        force:Boolean,  // force push
 
     ){
         val funName = "syncRepoList"
