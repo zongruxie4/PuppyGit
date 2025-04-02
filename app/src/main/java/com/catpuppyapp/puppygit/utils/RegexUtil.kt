@@ -80,6 +80,9 @@ object RegexUtil {
     //    /a/b/c/TARGET_FILE.md: true
     //    /a/b/c/*.md: true
     fun matchForIgnoreFile(path:String, pattern:String):Boolean {
+        //这种比较特殊，仅匹配仓库根目录下匹配通配符的文件
+        val patternStarsWithSlashAndExtFlag = pattern.startsWith("$slash$extMatchFlag")  // starts with "/*."
+
         val target = path.trim(slash)
         val keyword = pattern.trim(slash)
 
@@ -105,7 +108,13 @@ object RegexUtil {
 
             // 忽略通配符 "*.ext" 将忽略所有目录下的ext文件
             if(extensionIdx == 0) { //后缀名在开头，不限目录层级匹配同后缀文件
-                return target.endsWith(".$extension")  // ends with ".ext"
+                val targetEndsWithExt = target.endsWith(".$extension")  // ends with ".ext"
+                if(patternStarsWithSlashAndExtFlag) {  //仅匹配根目录下的文件
+                    //例如：path="abc.txt", pattern="/*.txt"，返回true；但path="a/b/c/abc.txt"或"a/def.txt"之类的非仓库根目录路径，则返回false
+                    return targetEndsWithExt && target.contains(slash).not()  //目标以后缀名结尾，并且不包含任何其他的"/"，说明目标既在仓库根目录又匹配了后缀名
+                }else {
+                    return targetEndsWithExt
+                }
             }
 
             // "*." 不在开头
