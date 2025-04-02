@@ -1943,11 +1943,13 @@ fun ChangeListInnerPage(
         //关闭底栏，刷新页面
         bottomBarActDoneCallback(activityContext.getString(R.string.unstage_success), curRepo)
     }
+
     val showUnstageConfirmDialog = rememberSaveable { mutableStateOf(false)}
     if(showUnstageConfirmDialog.value) {
         ConfirmDialog(
             title = stringResource(R.string.unstage),
             text = stringResource(R.string.will_unstage_are_u_sure),
+            okTextColor = MyStyleKt.TextColor.danger(),
             onCancel = { showUnstageConfirmDialog.value = false }
         ) {
             showUnstageConfirmDialog.value = false
