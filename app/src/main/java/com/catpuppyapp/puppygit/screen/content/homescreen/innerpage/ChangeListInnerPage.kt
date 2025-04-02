@@ -1632,6 +1632,7 @@ fun ChangeListInnerPage(
         ConfirmDialog(
             title = stringResource(R.string.ignore),
             text = stringResource(R.string.will_ignore_selected_files_are_you_sure),
+            okTextColor = MyStyleKt.TextColor.danger(),  // 因为remove from git标红了，而ignore包含remove from git 操作，所以逻辑上也该标红，而且这些操作恢复起来比较麻烦，所以最好高亮确认，暗示用户谨慎操作
             onCancel = { showIgnoreDialog.value = false }
         ) {
             showIgnoreDialog.value=false
