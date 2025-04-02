@@ -1648,7 +1648,6 @@ fun ChangeListInnerPage(
                     }
 
                     Repository.open(curRepo.fullSavePath).use { repo ->
-                        val ignoreFile = File(Libgit2Helper.getRepoIgnoreFilePathNoEndsWithSlash(repo, createIfNonExists = true))
                         val repoIndex = repo.index()
                         //拼接 "\npath1\npath2\npath3...省略....\n"
                         val linesWillIgnore = Cons.lineBreak +
@@ -1663,6 +1662,7 @@ fun ChangeListInnerPage(
                                 Cons.lineBreak
                         ;
 
+                        val ignoreFile = File(Libgit2Helper.getRepoIgnoreFilePathNoEndsWithSlash(repo, createIfNonExists = true))
                         // 追加路径到仓库workdir下的 .gitignore
                         FsUtils.appendTextToFile(ignoreFile, linesWillIgnore)
 
