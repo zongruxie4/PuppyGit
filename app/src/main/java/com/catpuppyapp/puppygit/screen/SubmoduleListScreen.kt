@@ -81,6 +81,7 @@ import com.catpuppyapp.puppygit.play.pro.R
 import com.catpuppyapp.puppygit.screen.functions.defaultTitleDoubleClick
 import com.catpuppyapp.puppygit.screen.functions.filterModeActuallyEnabled
 import com.catpuppyapp.puppygit.screen.functions.filterTheList
+import com.catpuppyapp.puppygit.screen.functions.triggerReFilter
 import com.catpuppyapp.puppygit.settings.SettingsUtil
 import com.catpuppyapp.puppygit.style.MyStyleKt
 import com.catpuppyapp.puppygit.ui.theme.Theme
@@ -618,6 +619,8 @@ fun SubmoduleListScreen(
     }
 
 
+    val filterResultNeedRefresh = rememberSaveable { mutableStateOf("") }
+
     val filterKeyword =mutableCustomStateOf(
         keyTag = stateKeyTag,
         keyName = "filterKeyword",
@@ -1152,9 +1155,10 @@ fun SubmoduleListScreen(
             //根据关键字过滤条目
             val keyword = filterKeyword.value.text.lowercase()  //关键字
             val enableFilter = filterModeActuallyEnabled(filterModeOn.value, keyword)
+
             val lastNeedRefresh = rememberSaveable { mutableStateOf("") }
             val list = filterTheList(
-                needRefresh = needRefresh.value,
+                needRefresh = filterResultNeedRefresh.value,
                 lastNeedRefresh = lastNeedRefresh,
                 enableFilter = enableFilter,
                 keyword = keyword,
@@ -1389,17 +1393,13 @@ fun SubmoduleListScreen(
 
     //compose创建时的副作用
     LaunchedEffect(needRefresh.value) {
-        val refreshId = needRefresh.value
-        val pageChanged = {
-            refreshId != needRefresh.value
-        }
-
         try {
-            doJobThenOffLoading(
-                loadingOn = loadingOn,
-                loadingOff = loadingOff,
-                loadingText = activityContext.getString(R.string.loading),
-            ) {
+            val refreshId = needRefresh.value
+            val pageChanged = {
+                refreshId != needRefresh.value
+            }
+
+            doJobThenOffLoading(loadingOn = loadingOn, loadingOff = loadingOff, loadingText = activityContext.getString(R.string.loading)) {
                 list.value.clear()  //先清一下list，然后可能添加也可能不添加
                 credentialList.value.clear()
 
@@ -1436,7 +1436,7 @@ fun SubmoduleListScreen(
                 if (pageChangedNeedAbort) return@doJobThenOffLoading
 
 
-
+                triggerReFilter(filterResultNeedRefresh)
 
             }
         } catch (e: Exception) {

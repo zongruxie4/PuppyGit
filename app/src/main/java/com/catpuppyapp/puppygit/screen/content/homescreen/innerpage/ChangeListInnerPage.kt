@@ -99,6 +99,7 @@ import com.catpuppyapp.puppygit.screen.functions.filterModeActuallyEnabled
 import com.catpuppyapp.puppygit.screen.functions.filterTheList
 import com.catpuppyapp.puppygit.screen.functions.naviToFileHistoryByRelativePath
 import com.catpuppyapp.puppygit.screen.functions.openFileWithInnerSubPageEditor
+import com.catpuppyapp.puppygit.screen.functions.triggerReFilter
 import com.catpuppyapp.puppygit.screen.shared.DiffFromScreen
 import com.catpuppyapp.puppygit.screen.shared.SharedState
 import com.catpuppyapp.puppygit.settings.SettingsUtil
@@ -2223,6 +2224,10 @@ fun ChangeListInnerPage(
     BackHandler(enabled = isBackHandlerEnable.value, onBack = {backHandlerOnBack()})
     //back handler block end
 
+
+    val filterResultNeedRefresh = rememberSaveable { mutableStateOf("") }
+
+
     val showSelectedItemsShortDetailsDialog = rememberSaveable { mutableStateOf(false)}
 //    val selectedItemsShortDetailsStr = rememberSaveable { mutableStateOf("")}
     if(showSelectedItemsShortDetailsDialog.value) {
@@ -2728,7 +2733,7 @@ fun ChangeListInnerPage(
 
                 val lastNeedRefresh = rememberSaveable { mutableStateOf("") }
                 val itemListOrFilterList = filterTheList(
-                    needRefresh = refreshRequiredByParentPage,
+                    needRefresh = filterResultNeedRefresh.value,
                     lastNeedRefresh = lastNeedRefresh,
 
                     enableFilter = enableFilter,
@@ -3330,6 +3335,19 @@ fun ChangeListInnerPage(
             }
 
 
+            //若切换了仓库，直接返回
+            if(requestType == StateRequestType.withRepoId && payloadRepoId != null) {
+                // 请求刷新页面的仓库的repoId
+                val curRepo = curRepoFromParentPage.value
+                val repoMaybeValid = curRepo.fullSavePath.isNotBlank() && curRepo.id.isNotBlank()
+                if(repoMaybeValid && payloadRepoId != curRepo.id) {
+                    //请求刷新页面的仓库和当前仓库不一致，可能某个仓库执行任务的过程中切换了仓库，直接返回，不刷新
+                    return@LaunchedEffect
+                }
+            }
+
+
+            //未切换仓库，但不需要重载（不过可能需要执行某些操作，例如 commit all）
             //if navi to Difference page or internal Editor then navi back, actually most time no need reload page
             if(naviTarget.value == Cons.ChangeListNaviTarget_NoNeedReload){
                 //不管是否返回，反正消费过naviTarget一次后，就重置为初始值
@@ -3357,20 +3375,13 @@ fun ChangeListInnerPage(
                 }
 
 
+                //列表有可能改变（比如stage了条目），所以需要刷新过滤列表
+                triggerReFilter(filterResultNeedRefresh)
+
                 //无需重载的情况下，可直接返回了，上面请求执行的操作直接使用现有数据即可，无需重载
                 return@LaunchedEffect
             }
 
-
-            if(requestType == StateRequestType.withRepoId && payloadRepoId != null) {
-                // 请求刷新页面的仓库的repoId
-                val curRepo = curRepoFromParentPage.value
-                val repoMaybeValid = curRepo.fullSavePath.isNotBlank() && curRepo.id.isNotBlank()
-                if(repoMaybeValid && payloadRepoId != curRepo.id) {
-                    //请求刷新页面的仓库和当前仓库不一致，可能某个仓库执行任务的过程中切换了仓库，直接返回，不刷新
-                    return@LaunchedEffect
-                }
-            }
 
 
             // this assigned should not be necessary,
@@ -3434,6 +3445,7 @@ fun ChangeListInnerPage(
 
                     //下面执行需要等初始化完成后才能执行的操作
 
+                    triggerReFilter(filterResultNeedRefresh)
 
                 }catch (e:Exception) {
                     val curRepo = curRepoFromParentPage.value

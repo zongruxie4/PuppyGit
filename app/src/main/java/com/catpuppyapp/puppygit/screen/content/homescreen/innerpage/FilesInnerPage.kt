@@ -110,6 +110,7 @@ import com.catpuppyapp.puppygit.screen.functions.filterTheList
 import com.catpuppyapp.puppygit.screen.functions.goToFileHistory
 import com.catpuppyapp.puppygit.screen.functions.initSearch
 import com.catpuppyapp.puppygit.screen.functions.recursiveBreadthFirstSearch
+import com.catpuppyapp.puppygit.screen.functions.triggerReFilter
 import com.catpuppyapp.puppygit.screen.shared.FileChooserType
 import com.catpuppyapp.puppygit.screen.shared.FilePath
 import com.catpuppyapp.puppygit.settings.AppSettings
@@ -239,6 +240,7 @@ fun FilesInnerPage(
         s
     }
 
+    val filterResultNeedRefresh = rememberSaveable { mutableStateOf("") }
 
 
     //文件管理器三个点的菜单项
@@ -1408,9 +1410,10 @@ fun FilesInnerPage(
             }else {
                 val keyword = filesPageSimpleFilterKeyWord.value.text.lowercase()  //关键字
                 val enableFilter = filterModeActuallyEnabled(filterOn = filesPageSimpleFilterOn.value, keyword = keyword)
+
                 val lastNeedRefresh = rememberSaveable { mutableStateOf("") }
                 val currentPathFileList = filterTheList(
-                    needRefresh = needRefreshFilesPage.value,
+                    needRefresh = filterResultNeedRefresh.value,
                     lastNeedRefresh = lastNeedRefresh,
                     enableFilter = enableFilter,
                     keyword = keyword,
@@ -2966,8 +2969,10 @@ fun FilesInnerPage(
                         curPathFileItemDto = curPathFileItemDto,
                         quitImportMode = quitImportMode,
                         selectedItems = selectedItems.value,
-//                repoList=repoList,
                     )
+
+                    triggerReFilter(filterResultNeedRefresh)
+
                 }catch (e:Exception) {
                     Msg.requireShowLongDuration("init Files err: ${e.localizedMessage}")
                     MyLog.e(TAG, "#init Files page err: ${e.stackTraceToString()}")

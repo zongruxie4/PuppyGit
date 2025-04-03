@@ -86,6 +86,7 @@ import com.catpuppyapp.puppygit.screen.functions.filterTheList
 import com.catpuppyapp.puppygit.screen.functions.getLoadText
 import com.catpuppyapp.puppygit.screen.functions.initSearch
 import com.catpuppyapp.puppygit.screen.functions.search
+import com.catpuppyapp.puppygit.screen.functions.triggerReFilter
 import com.catpuppyapp.puppygit.screen.shared.DiffFromScreen
 import com.catpuppyapp.puppygit.screen.shared.SharedState
 import com.catpuppyapp.puppygit.settings.SettingsUtil
@@ -242,6 +243,9 @@ fun FileHistoryScreen(
 //        nextCommitOid.value != null &&
 //    }
 
+    val filterResultNeedRefresh = rememberSaveable { mutableStateOf("") }
+
+
     val revwalk = mutableCustomStateOf<Revwalk?>(stateKeyTag, "revwalk", null)
     val repositoryForRevWalk = mutableCustomStateOf<Repository?>(stateKeyTag, "repositoryForRevWalk", null)
     val loadLock = mutableCustomStateOf<Mutex>(stateKeyTag, "loadLock", Mutex())
@@ -354,6 +358,7 @@ fun FileHistoryScreen(
                 }finally {
                     loadMoreLoading.value = false
 
+                    triggerReFilter(filterResultNeedRefresh)
                 }
             }
         }
@@ -400,6 +405,7 @@ fun FileHistoryScreen(
 
 
     //filter相关，开始
+
     val filterKeyword = mutableCustomStateOf(
         keyTag = stateKeyTag,
         keyName = "filterKeyword",
@@ -942,9 +948,10 @@ fun FileHistoryScreen(
             //根据关键字过滤条目
             val keyword = filterKeyword.value.text.lowercase()  //关键字
             val enableFilter = filterModeActuallyEnabled(filterModeOn_dontUseThisCheckFilterModeReallyEnabledOrNot.value, keyword)
+
             val lastNeedRefresh = rememberSaveable { mutableStateOf("") }
             val list = filterTheList(
-                needRefresh = needRefresh.value,
+                needRefresh = filterResultNeedRefresh.value,
                 lastNeedRefresh = lastNeedRefresh,
                 enableFilter = enableFilter,
                 keyword = keyword,

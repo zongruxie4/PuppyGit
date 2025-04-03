@@ -64,6 +64,7 @@ import com.catpuppyapp.puppygit.play.pro.R
 import com.catpuppyapp.puppygit.screen.functions.defaultTitleDoubleClick
 import com.catpuppyapp.puppygit.screen.functions.filterModeActuallyEnabled
 import com.catpuppyapp.puppygit.screen.functions.filterTheList
+import com.catpuppyapp.puppygit.screen.functions.triggerReFilter
 import com.catpuppyapp.puppygit.settings.SettingsUtil
 import com.catpuppyapp.puppygit.style.MyStyleKt
 import com.catpuppyapp.puppygit.utils.AppModel
@@ -319,6 +320,8 @@ fun DomainCredentialListScreen(
     // 向下滚动监听，结束
 
     //filter相关，开始
+    val filterResultNeedRefresh = rememberSaveable { mutableStateOf("") }
+
     val filterKeyword = mutableCustomStateOf(
         keyTag = stateKeyTag,
         keyName = "filterKeyword",
@@ -507,9 +510,10 @@ fun DomainCredentialListScreen(
             //根据关键字过滤条目
             val keyword = filterKeyword.value.text.lowercase()  //关键字
             val enableFilter = filterModeActuallyEnabled(filterModeOn.value, keyword)
+
             val lastNeedRefresh = rememberSaveable { mutableStateOf("") }
             val list = filterTheList(
-                needRefresh = needRefresh.value,
+                needRefresh = filterResultNeedRefresh.value,
                 lastNeedRefresh = lastNeedRefresh,
                 enableFilter = enableFilter,
                 keyword = keyword,
@@ -583,6 +587,8 @@ fun DomainCredentialListScreen(
                 if(credentialListFromDb.isNotEmpty()) {
                     credentialList.value.addAll(credentialListFromDb)
                 }
+
+                triggerReFilter(filterResultNeedRefresh)
 //                list.requireRefreshView()
             }
 //            读取配置文件，初始化状态之类的

@@ -52,6 +52,7 @@ import com.catpuppyapp.puppygit.play.pro.R
 import com.catpuppyapp.puppygit.screen.functions.defaultTitleDoubleClick
 import com.catpuppyapp.puppygit.screen.functions.filterModeActuallyEnabled
 import com.catpuppyapp.puppygit.screen.functions.filterTheList
+import com.catpuppyapp.puppygit.screen.functions.triggerReFilter
 import com.catpuppyapp.puppygit.settings.SettingsUtil
 import com.catpuppyapp.puppygit.style.MyStyleKt
 import com.catpuppyapp.puppygit.utils.AppModel
@@ -109,6 +110,8 @@ fun ErrorListScreen(
             changeStateTriggerRefreshPage(needRefresh)
         }
     }
+
+    val filterResultNeedRefresh = rememberSaveable { mutableStateOf("") }
 
     val filterKeyword = mutableCustomStateOf(
         keyTag = stateKeyTag,
@@ -351,9 +354,10 @@ fun ErrorListScreen(
         //根据关键字过滤条目
         val keyword = filterKeyword.value.text.lowercase()  //关键字
         val enableFilter = filterModeActuallyEnabled(filterModeOn.value, keyword)
+
         val lastNeedRefresh = rememberSaveable { mutableStateOf("") }
         val list = filterTheList(
-            needRefresh = needRefresh.value,
+            needRefresh = filterResultNeedRefresh.value,
             lastNeedRefresh = lastNeedRefresh,
             enableFilter = enableFilter,
             keyword = keyword,
@@ -433,6 +437,8 @@ fun ErrorListScreen(
                     }else {  // 如果err list为空，仅清空仓库表的错误信息
                         repoDb.updateErrFieldsById(repoId, Cons.dbCommonFalse, "")
                     }
+
+                    triggerReFilter(filterResultNeedRefresh)
                 }
             }
         } catch (e: Exception) {

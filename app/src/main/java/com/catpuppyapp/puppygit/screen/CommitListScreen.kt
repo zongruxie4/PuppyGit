@@ -112,6 +112,7 @@ import com.catpuppyapp.puppygit.screen.functions.getLoadText
 import com.catpuppyapp.puppygit.screen.functions.initSearch
 import com.catpuppyapp.puppygit.screen.functions.maybeIsGoodKeyword
 import com.catpuppyapp.puppygit.screen.functions.search
+import com.catpuppyapp.puppygit.screen.functions.triggerReFilter
 import com.catpuppyapp.puppygit.settings.SettingsUtil
 import com.catpuppyapp.puppygit.style.MyStyleKt
 import com.catpuppyapp.puppygit.user.UserUtil
@@ -424,6 +425,9 @@ fun CommitListScreen(
 //        nextCommitOid.value != null &&
 //    }
 
+    val filterResultNeedRefresh = rememberSaveable { mutableStateOf("") }
+
+
     val revwalk = mutableCustomStateOf<Revwalk?>(stateKeyTag, "revwalk", null)
     val repositoryForRevWalk = mutableCustomStateOf<Repository?>(stateKeyTag, "repositoryForRevWalk", null)
     val loadLock = mutableCustomStateOf<Mutex>(stateKeyTag, "loadLock", Mutex())
@@ -527,6 +531,8 @@ fun CommitListScreen(
                     MyLog.e(TAG, "#doLoadMore: err: ${e.stackTraceToString()}")
                 }finally {
                     loadMoreLoading.value = false
+
+                    triggerReFilter(filterResultNeedRefresh)
                 }
             }
         }
@@ -1493,6 +1499,7 @@ fun CommitListScreen(
     val filterLastPosition = rememberSaveable { mutableStateOf(0) }
     val lastPosition = rememberSaveable { mutableStateOf(0) }
 
+
     Scaffold(
         modifier = Modifier.nestedScroll(homeTopBarScrollBehavior.nestedScrollConnection),
         topBar = {
@@ -1928,7 +1935,7 @@ fun CommitListScreen(
 
             val lastNeedRefresh = rememberSaveable { mutableStateOf("") }
             val list = filterTheList(
-                needRefresh = needRefresh.value,
+                needRefresh = filterResultNeedRefresh.value,
                 lastNeedRefresh = lastNeedRefresh,
 
                 orCustomDoFilterCondition = if(needFilterByPath.not()) {

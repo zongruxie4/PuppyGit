@@ -60,6 +60,7 @@ import com.catpuppyapp.puppygit.play.pro.R
 import com.catpuppyapp.puppygit.screen.functions.defaultTitleDoubleClick
 import com.catpuppyapp.puppygit.screen.functions.filterModeActuallyEnabled
 import com.catpuppyapp.puppygit.screen.functions.filterTheList
+import com.catpuppyapp.puppygit.screen.functions.triggerReFilter
 import com.catpuppyapp.puppygit.settings.SettingsUtil
 import com.catpuppyapp.puppygit.style.MyStyleKt
 import com.catpuppyapp.puppygit.ui.theme.Theme
@@ -122,6 +123,8 @@ fun StashListScreen(
     }
 
     //filter相关，开始
+    val filterResultNeedRefresh = rememberSaveable { mutableStateOf("") }
+
     val filterKeyword = mutableCustomStateOf(
         keyTag = stateKeyTag,
         keyName = "filterKeyword",
@@ -509,9 +512,10 @@ fun StashListScreen(
         //根据关键字过滤条目
         val keyword = filterKeyword.value.text.lowercase()  //关键字
         val enableFilter = filterModeActuallyEnabled(filterModeOn.value, keyword)
+
         val lastNeedRefresh = rememberSaveable { mutableStateOf("") }
         val list = filterTheList(
-            needRefresh = needRefresh.value,
+            needRefresh = filterResultNeedRefresh.value,
             lastNeedRefresh = lastNeedRefresh,
             enableFilter = enableFilter,
             keyword = keyword,
@@ -574,11 +578,7 @@ fun StashListScreen(
     //compose创建时的副作用
     LaunchedEffect(needRefresh.value) {
         try {
-            doJobThenOffLoading(
-                loadingOn = loadingOn,
-                loadingOff = loadingOff,
-                loadingText = activityContext.getString(R.string.loading),
-            ) {
+            doJobThenOffLoading(loadingOn = loadingOn, loadingOff = loadingOff, loadingText = activityContext.getString(R.string.loading)) {
                 list.value.clear()  //先清一下list，然后可能添加也可能不添加
 
                 if(!repoId.isNullOrBlank()) {
@@ -594,6 +594,8 @@ fun StashListScreen(
                         }
                     }
                 }
+
+                triggerReFilter(filterResultNeedRefresh)
             }
         } catch (e: Exception) {
             MyLog.e(TAG, "BranchListScreen#LaunchedEffect() err:"+e.stackTraceToString())

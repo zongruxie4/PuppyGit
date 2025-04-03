@@ -85,6 +85,7 @@ import com.catpuppyapp.puppygit.git.Upstream
 import com.catpuppyapp.puppygit.play.pro.R
 import com.catpuppyapp.puppygit.screen.functions.filterModeActuallyEnabled
 import com.catpuppyapp.puppygit.screen.functions.filterTheList
+import com.catpuppyapp.puppygit.screen.functions.triggerReFilter
 import com.catpuppyapp.puppygit.screen.shared.SharedState
 import com.catpuppyapp.puppygit.server.bean.ConfigBean
 import com.catpuppyapp.puppygit.settings.AppSettings
@@ -1790,6 +1791,9 @@ fun RepoInnerPage(
     // bottom bar block end
 
 
+    val filterResultNeedRefresh = rememberSaveable { mutableStateOf("") }
+
+
     //back handler block start
     val isBackHandlerEnable = rememberSaveable { mutableStateOf(true)}
     val backHandlerOnBack = ComposeHelper.getDoubleClickBackHandler(context = activityContext, openDrawer = openDrawer, exitApp = exitApp)
@@ -1907,9 +1911,10 @@ fun RepoInnerPage(
         //根据关键字过滤条目
         val keyword = repoPageFilterKeyWord.value.text.lowercase()  //关键字
         val enableFilter = filterModeActuallyEnabled(repoPageFilterModeOn.value, keyword)
+
         val lastNeedRefresh = rememberSaveable { mutableStateOf("") }
         val filteredListTmp = filterTheList(
-            needRefresh = needRefreshRepoPage.value,
+            needRefresh = filterResultNeedRefresh.value,
             lastNeedRefresh = lastNeedRefresh,
             enableFilter = enableFilter,
             keyword = keyword,
@@ -2599,6 +2604,10 @@ fun RepoInnerPage(
                         specifiedRefreshRepoList = specifiedRefreshRepoList.value,
                         loadingText = loadingText
                     )
+
+                    //触发重新过滤，避免重命名或删除仓库后过滤模式下的仓库列表未更新
+                    triggerReFilter(filterResultNeedRefresh)
+
                 }catch (e:Exception) {
                     Msg.requireShowLongDuration("init Repos err: ${e.localizedMessage}")
                     MyLog.e(TAG, "#init Repos page err: ${e.stackTraceToString()}")

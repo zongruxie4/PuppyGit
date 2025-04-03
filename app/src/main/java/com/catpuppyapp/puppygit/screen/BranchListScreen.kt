@@ -90,6 +90,7 @@ import com.catpuppyapp.puppygit.play.pro.R
 import com.catpuppyapp.puppygit.screen.functions.defaultTitleDoubleClick
 import com.catpuppyapp.puppygit.screen.functions.filterModeActuallyEnabled
 import com.catpuppyapp.puppygit.screen.functions.filterTheList
+import com.catpuppyapp.puppygit.screen.functions.triggerReFilter
 import com.catpuppyapp.puppygit.settings.SettingsUtil
 import com.catpuppyapp.puppygit.style.MyStyleKt
 import com.catpuppyapp.puppygit.ui.theme.Theme
@@ -1338,6 +1339,8 @@ fun BranchListScreen(
     val filterLastPosition = rememberSaveable { mutableStateOf(0) }
     val lastPosition = rememberSaveable { mutableStateOf(0) }
 
+    val filterResultNeedRefresh = rememberSaveable { mutableStateOf("") }
+
     Scaffold(
         modifier = Modifier.nestedScroll(homeTopBarScrollBehavior.nestedScrollConnection),
         topBar = {
@@ -1696,7 +1699,7 @@ fun BranchListScreen(
 
         val lastNeedRefresh = rememberSaveable { mutableStateOf("") }
         val list = filterTheList(
-            needRefresh = needRefresh.value,
+            needRefresh = filterResultNeedRefresh.value,
             lastNeedRefresh = lastNeedRefresh,
             enableFilter = enableFilter,
             keyword = keyword,
@@ -1777,11 +1780,7 @@ fun BranchListScreen(
     //compose创建时的副作用
     LaunchedEffect(needRefresh.value) {
         try {
-            doJobThenOffLoading(
-                loadingOn = loadingOn,
-                loadingOff = loadingOff,
-                loadingText = activityContext.getString(R.string.loading),
-            ) {
+            doJobThenOffLoading(loadingOn = loadingOn, loadingOff = loadingOff, loadingText = activityContext.getString(R.string.loading)) {
                 list.value.clear()  //先清一下list，然后可能添加也可能不添加
 
                 if(!repoId.isNullOrBlank()) {
@@ -1812,6 +1811,8 @@ fun BranchListScreen(
                         }
                     }
                 }
+
+                triggerReFilter((filterResultNeedRefresh))
             }
         } catch (e: Exception) {
             MyLog.e(TAG, "#LaunchedEffect() err:"+e.stackTraceToString())
