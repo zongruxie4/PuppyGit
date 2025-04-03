@@ -265,6 +265,10 @@ fun generateNewTokenForSearch():String {
 @Composable
 fun <T> filterTheList(
     activityContext: Context,
+
+    needRefresh:String,
+    lastNeedRefresh:MutableState<String>,
+
     enableFilter: Boolean,
     keyword: String,
     lastKeyword: MutableState<String>,
@@ -288,9 +292,12 @@ fun <T> filterTheList(
     beforeSearchCallback:(()->Unit)? = null,
 ) : List<T> {
     return if (enableFilter) {
+        val pageRefreshed = needRefresh != lastNeedRefresh.value;
+        lastNeedRefresh.value = needRefresh
+
         val curListSize = list.size
 
-        if (keyword != lastKeyword.value || ( lastListSize!=null && curListSize != lastListSize.intValue) || orCustomDoFilterCondition()) {
+        if (pageRefreshed || keyword != lastKeyword.value || (lastListSize != null && curListSize != lastListSize.intValue) || orCustomDoFilterCondition()) {
             lastListSize?.intValue = curListSize
             filterIdxList?.clear()
             beforeSearchCallback?.invoke()
