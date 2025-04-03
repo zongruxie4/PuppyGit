@@ -1,11 +1,15 @@
 1.0.9.8v74 - 20250403:
 - add remove from git to ChangeList
-- fix few bugs
+- improve Files filter logic
+- fix: when filter mode on, sometimes result no update 
+- minor bugs fixed
 
 
 
 - 修改列表添加从git移除文件（取消追踪）的选项
-- 修复了几个bug
+- 增强文件管理器过滤逻辑
+- 修复过滤模式开启时列表不更新的bug
+- 修复其他小bug
 
 ---
 1.0.9.7v73 - 20250327:
