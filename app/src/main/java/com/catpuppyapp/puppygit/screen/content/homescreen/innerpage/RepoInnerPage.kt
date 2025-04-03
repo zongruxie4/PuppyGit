@@ -1057,9 +1057,9 @@ fun RepoInnerPage(
 
                     changeStateTriggerRefreshPage(needRefreshRepoPage)
                 }catch (e:Exception) {
-                    val errmsg = e.localizedMessage ?: "rename repo err"
-                    Msg.requireShowLongDuration(errmsg)
-                    createAndInsertError(curRepo.id, "err: rename repo '${curRepo.repoName}' to ${repoNameForRenameDialog.value} failed, err is $errmsg")
+                    val errmsg = e.localizedMessage ?: "rename repo failed"
+                    Msg.requireShowLongDuration("err: "+errmsg)
+                    createAndInsertError(curRepo.id, "err: rename repo '${curRepo.repoName}' to ${repoNameForRenameDialog.value} failed, err message is '$errmsg'")
 
                     changeStateTriggerRefreshPage(needRefreshRepoPage)
                 }
