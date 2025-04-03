@@ -1506,6 +1506,12 @@ fun ChangeListInnerPage(
             username = username,
             email = email,
             closeDialog = closeDialog,
+            onCancel = {
+                closeDialog()
+
+                //这里有点特殊，点取消也需要刷新页面，因为有可能先stage条目，然后再显示这个弹窗，若不刷新，会残留已经stage的条目
+                changeListRequireRefreshFromParentPage(curRepo)
+            },
             onErrorCallback = { e->
                 Msg.requireShowLongDuration("err: ${e.localizedMessage}")
                 MyLog.e(TAG, "set username and email err (from ChangeList page): ${e.stackTraceToString()}")
