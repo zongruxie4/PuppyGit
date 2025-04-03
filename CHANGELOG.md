@@ -1,9 +1,11 @@
 1.0.9.8v74 - 20250403:
 - add remove from git to ChangeList
+- fix few bugs
 
 
 
 - 修改列表添加从git移除文件（取消追踪）的选项
+- 修复了几个bug
 
 ---
 1.0.9.7v73 - 20250327:

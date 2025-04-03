@@ -1,1 +1,2 @@
 - add remove from git to ChangeList
+- fix few bugs
