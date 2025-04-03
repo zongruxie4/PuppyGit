@@ -351,7 +351,10 @@ fun ErrorListScreen(
         //根据关键字过滤条目
         val keyword = filterKeyword.value.text.lowercase()  //关键字
         val enableFilter = filterModeActuallyEnabled(filterModeOn.value, keyword)
+        val lastNeedRefresh = rememberSaveable { mutableStateOf("") }
         val list = filterTheList(
+            needRefresh = needRefresh.value,
+            lastNeedRefresh = lastNeedRefresh,
             enableFilter = enableFilter,
             keyword = keyword,
             lastKeyword = lastKeyword,

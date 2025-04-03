@@ -1925,7 +1925,12 @@ fun CommitListScreen(
             val pathList = pathsListForFilter.value
             val needFilterByPath = pathList.isNotEmpty()
             val enableFilter = filterModeOn_dontUseThisCheckFilterModeReallyEnabledOrNot.value && (maybeIsGoodKeyword(keyword) || needFilterByPath)
+
+            val lastNeedRefresh = rememberSaveable { mutableStateOf("") }
             val list = filterTheList(
+                needRefresh = needRefresh.value,
+                lastNeedRefresh = lastNeedRefresh,
+
                 orCustomDoFilterCondition = if(needFilterByPath.not()) {
                     { false }
                 }else {

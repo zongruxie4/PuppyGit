@@ -1907,7 +1907,10 @@ fun RepoInnerPage(
         //根据关键字过滤条目
         val keyword = repoPageFilterKeyWord.value.text.lowercase()  //关键字
         val enableFilter = filterModeActuallyEnabled(repoPageFilterModeOn.value, keyword)
+        val lastNeedRefresh = rememberSaveable { mutableStateOf("") }
         val filteredListTmp = filterTheList(
+            needRefresh = needRefreshRepoPage.value,
+            lastNeedRefresh = lastNeedRefresh,
             enableFilter = enableFilter,
             keyword = keyword,
             lastKeyword = lastSearchKeyword,

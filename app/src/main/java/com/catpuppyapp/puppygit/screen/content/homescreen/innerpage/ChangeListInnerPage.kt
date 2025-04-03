@@ -2725,7 +2725,12 @@ fun ChangeListInnerPage(
                 //根据关键字过滤条目
                 val keyword = changeListPageFilterKeyWord.value.text.lowercase()  //关键字
                 val enableFilter = filterModeActuallyEnabled(filterOn = changeListPageFilterModeOn.value, keyword = keyword)
+
+                val lastNeedRefresh = rememberSaveable { mutableStateOf("") }
                 val itemListOrFilterList = filterTheList(
+                    needRefresh = refreshRequiredByParentPage,
+                    lastNeedRefresh = lastNeedRefresh,
+
                     enableFilter = enableFilter,
                     keyword = keyword,
                     lastKeyword = lastSearchKeyword,
