@@ -4,6 +4,9 @@ import com.catpuppyapp.puppygit.constants.Cons
 
 object RegexUtil {
     private const val extMatchFlag = "*."
+    private const val extFlagLen = extMatchFlag.length
+    private const val extFlagLenSubOne = extFlagLen-1  //减1是为了保留后缀名的"."，例如"*.txt"，substring 后得到 ".txt"，不减1就变成 "txt" 了
+
     private const val slash = Cons.slashChar
     private const val spaceChar = ' '
 
@@ -45,7 +48,7 @@ object RegexUtil {
             return false
         }
 
-        val extFlagLen = extMatchFlag.length
+
         var needMatchExt = false
         var extMatched = false
         var validKeyword = false  //指示keyword是否有效（非空即有效）
@@ -60,7 +63,7 @@ object RegexUtil {
                 needMatchExt = true
 
                 if(!extMatched) {  //若已匹配后缀成功则不需要再匹配
-                    extMatched = target.endsWith(k.substring(extFlagLen-1))  // `extFlagLen - 1` to keep '.', e.g. "*.txt" will got ".txt"
+                    extMatched = target.endsWith(k.substring(extFlagLenSubOne))  // `extFlagLen - 1` to keep '.', e.g. "*.txt" will got ".txt"
                 }
             }else {  // keyword part，部分关键字
                 if(target.contains(k).not()) {  //不包含某一非后缀名的关键词则直接返回假
