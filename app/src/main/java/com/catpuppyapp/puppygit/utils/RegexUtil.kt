@@ -5,8 +5,12 @@ import com.catpuppyapp.puppygit.constants.Cons
 object RegexUtil {
     private const val extMatchFlag = "*."
     private const val slash = Cons.slashChar
+    private const val spaceChar = ' '
 
     /**
+     *
+     * *.ext 可匹配后缀，多个*.可匹配不同后缀，只要目标匹配任一后缀就返回真，若有其他关键词例如"*.md *.txt filename_part1 part2"则会变成目标匹配任一后缀且包含其他所有关键词则返回真
+     *
      *
      * example:
      *     val input = "TARGET_FILE.md".lowercase()
@@ -29,37 +33,42 @@ object RegexUtil {
             return false
         }
 
-
-        //匹配后缀名
-        val extensionIdx = keyword.lastIndexOf(extMatchFlag)
-        val hasExtensionFlag = extensionIdx >= 0
-        if(hasExtensionFlag) {
-            val extension = keyword.substring(extensionIdx + extMatchFlag.length)
-//        println(extension)  // e.g. "mp4", no "*."
-            if(extension.isNotEmpty() && !target.endsWith(extension)) {
-                return false
-            }
+        //完全匹配
+        if(target == keyword) {
+            return true
         }
 
-        //匹配后缀名前面的部分
-        val keywordNoSuffix = if(hasExtensionFlag) keyword.substring(0, extensionIdx) else keyword
-        if(keywordNoSuffix.isEmpty()) {
-            //匹配 "*.md" 这种只有后缀无其他关键词的情况
-            return hasExtensionFlag
-        }
 
-        val splitKeyword = keywordNoSuffix.split(" ").filter { it.isNotEmpty() }
+        //不完全匹配，尝试匹配后缀名和关键词，若target匹配任一后缀名且包含所有关键词则返回true
+        val splitKeyword = keyword.split(spaceChar)
         if(splitKeyword.isEmpty()) {
             return false
         }
 
+        val extFlagLen = extMatchFlag.length
+        var extMatched = false
+        var hasNonEmptyKeywordsParts = false
         for (k in splitKeyword) {
-            if(!target.contains(k)) {
-                return false
+            if(k.isEmpty()) {
+                continue
+            }
+
+            hasNonEmptyKeywordsParts = true
+
+            if(k.length > extFlagLen && k.startsWith(extMatchFlag)) {  //有后缀名。（注意："*." 会被认为无后缀名，然后去匹配else的 keyword part部分）
+                if(!extMatched) {  //若已匹配后缀成功则不需要再匹配
+                    extMatched = target.endsWith(k.substring(extFlagLen-1))  // `extFlagLen - 1` to keep '.', e.g. "*.txt" will got ".txt"
+                }
+            }else {  // keyword part，部分关键字
+                if(target.contains(k).not()) {  //不包含某一非后缀名的关键词则直接返回假
+                    return false
+                }
             }
         }
 
-        return true
+
+        //执行到这里，若以空格分割后的关键字列表为空，返回假，否则返回真
+        return hasNonEmptyKeywordsParts
     }
 
 
@@ -82,6 +91,7 @@ object RegexUtil {
     //
     // examples2（特殊情况，"/*.ext"这种"/*."开头的模式，仅匹配根目录下有相同后缀的文件）:
     // pattern="/*.txt": path="abc.txt"，返回 true；path="a/abc.txt"，返回false。（实际匹配均不包含引号）
+    @Deprecated("改用git自己的忽略机制了，remove from git + add path to .gitignore能实现和我的ignore机制相同的功能")
     fun matchForIgnoreFile(path:String, pattern:String):Boolean {
         //这种比较特殊，仅匹配仓库根目录下匹配通配符的文件
         val patternStarsWithSlashAndExtFlag = pattern.startsWith("$slash$extMatchFlag")  // starts with "/*."
