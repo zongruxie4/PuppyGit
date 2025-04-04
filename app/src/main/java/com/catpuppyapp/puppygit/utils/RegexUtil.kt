@@ -48,7 +48,7 @@ object RegexUtil {
         val extFlagLen = extMatchFlag.length
         var needMatchExt = false
         var extMatched = false
-        var validKeyword = false
+        var validKeyword = false  //指示keyword是否有效（非空即有效）
         for (k in splitKeyword) {
             if(k.isEmpty()) {
                 continue
@@ -72,7 +72,10 @@ object RegexUtil {
 
         //执行到这里，非后缀名的关键字片段必然全部匹配或者不需要匹配（注：若关键字仅包含 "*.txt" 之类的后缀名则不需要匹配关键字片段），后面仅需要判断是否匹配后缀即可。
 
+
         //若需要匹配后缀且匹配成功，则返回真（keyword必然包含"*.txt"之类的后缀）；否则若关键字有效（包含非空的片段），则返回真（keyword无"*.txt"之类后缀，但包含有效关键字且全部匹配）。
+        //配合上述已经全部匹配关键字的逻辑，这个return的含义为：后缀和关键字均匹配成功则返回真；关键字为空或匹配失败则返回假。
+        // 若需要匹配ext，则返回ext是否匹配（实际为ext和关键词片段是否全部匹配）；否则返回关键词是否有效（关键词片段非空且是否全部匹配）
         return if(needMatchExt) extMatched else validKeyword
     }
 
