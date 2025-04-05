@@ -2445,15 +2445,18 @@ fun FilesInnerPage(
             },
         ))
 
-        val selectionModeMoreItemEnableList = (listOf(
-            {getSelectedFilesCount()>0}, //是否启用ignore
-            {getSelectedFilesCount()>0}, //是否启用remove from git
-            {getSelectedFilesCount()>0}, //是否启用details
-//            {selectedItems.value.indexOfFirst{it.isDir} != -1}  //enable import as repo. (if has dirs in selected items, then enable else disbale) (after clicked then check better than check at every time selected list change)
-            {getSelectedFilesCount()>0},  // import as repos
-            {getSelectedFilesCount()>0}, // init repo
+        val hasItemSelected = { getSelectedFilesCount() > 0 }
+        val hasDirSelected = { selectedItems.value.any { it.isDir } }
 
-            //是否启用import
+        val selectionModeMoreItemEnableList = (listOf(
+            hasItemSelected, //是否启用ignore
+            hasItemSelected, //是否启用remove from git
+            hasItemSelected, //是否启用details
+//            {selectedItems.value.indexOfFirst{it.isDir} != -1}  //enable import as repo. (if has dirs in selected items, then enable else disbale) (after clicked then check better than check at every time selected list change)
+            hasDirSelected,  // import as repos
+            hasDirSelected, // init repo
+
+            //是否启用import （这个实际上已经弃用了，挪顶栏了）
             {
                 //只要当前目录可读，就启用import
                 try {
@@ -2463,8 +2466,7 @@ fun FilesInnerPage(
                 }
             },
 
-            {getSelectedFilesCount()>0}, //是否启用export
-
+            hasItemSelected, //是否启用export
         ))
 
 
