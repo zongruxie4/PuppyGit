@@ -318,7 +318,7 @@
     <string name="recommend">建议</string>
     <string name="new_branch">新分支</string>
     <string name="last_commit">最后提交</string>
-    <string name="no_parent_for_compare">无父节点供比较</string>
+    <string name="no_parent_to_compare">无父节点可供比较</string>
     <string name="compare_to_parent">和父节点比较</string>
     <string name="file_size_over_limit">文件大小超过限制</string>
     <string name="content_size_over_limit">内容大小超过限制</string>
@@ -1224,5 +1224,9 @@
     <string name="push_delay_in_seconds">推送延迟（秒）</string>
     <string name="pull_interval_note">拉取时间间隔。例如：如果设置为5，那么在5秒内重新打开应用将不会重复执行拉取；如果设为-1，将禁用pull。</string>
     <string name="push_delay_note">推送时间间隔。例如：如果设置为5，那么推送将在离开应用5秒后执行；如果设为-1，将禁用push。</string>
+
+    <!-- new at 20250405 -->
+    <string name="load_all">加载全部</string>
+
 
 </resources>

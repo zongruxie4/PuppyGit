@@ -2101,7 +2101,7 @@ fun CommitListScreen(
                     val parents = thisObj.parentOidStrList
                     if (parents.isEmpty()) {  // 如果没父提交，例如最初的提交就没父提交，提示没parent可比较
                         //TODO 改成没父提交时列出当前提交的所有文件
-                        Msg.requireShowLongDuration(activityContext.getString(R.string.no_parent_for_compare))
+                        Msg.requireShowLongDuration(activityContext.getString(R.string.no_parent_to_compare))
                     } else {  //有父提交，取出第一个父提交和当前提交进行比较
                         //当前比较的描述信息的key，用来在界面显示这是在比较啥，值例如“和父提交比较”或者“比较两个提交”之类的
                         Cache.set(Cache.Key.treeToTreeChangeList_titleDescKey, activityContext.getString(R.string.compare_to_parent))

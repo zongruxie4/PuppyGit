@@ -144,8 +144,8 @@
     <string name="switch_repo">Переключить репозиторий</string>
     <string name="refresh">Обновить</string>
     <!--    <string name="go_to_index_page">Go to Index page</string>-->
-    <string name="no_repo_for_shown">Нет репозиториев для отображения</string>
-    <string name="end_of_the_list">--- Конец списка ---</string>
+    <string name="no_repo_for_shown">Нет Репозиториев Для Отображения</string>
+    <string name="end_of_the_list">--- Конец Списка ---</string>
     <string name="commit_selected_and_index_items_then_sync">Закоммитить выбранные и индексированные элементы, затем синхронизировать с удаленным репозиторием</string>
     <string name="commit_selected_and_index_items">Закоммитить выбранные и индексированные элементы</string>
     <string name="select_all">Выбрать все</string>
@@ -318,7 +318,7 @@
     <string name="recommend">Рекомендовано</string>
     <string name="new_branch">Новая ветка</string>
     <string name="last_commit">Последний коммит</string>
-    <string name="no_parent_for_compare">Нет родителя для сравнения</string>
+    <string name="no_parent_to_compare">Нет родителя для сравнения</string>
     <string name="compare_to_parent">Сравнить с родителем</string>
     <string name="file_size_over_limit">Размер файла превышает лимит</string>
     <string name="content_size_over_limit">Размер содержимого превышает лимит</string>
@@ -1249,5 +1249,9 @@
     <string name="push_delay_in_seconds">Задержка загрузки в секундах</string>
     <string name="pull_interval_note">Временной интервал для загрузки. Например, если установлено 5, приложение не будет выполнять загрузку повторно, если его перезапустили в течение 5 секунд; если установлено -1, загрузка будет отключена.</string>
     <string name="push_delay_note">Временная задержка для вытягивания. Например, если установлено 5, вытягивание выполнится после 5 секунд с момента выхода из приложения; если установлено -1, вытягивание будет отключено.</string>
+
+    <!-- new at 20250405 -->
+    <string name="load_all">Загрузить Все</string>
+
 
 </resources>

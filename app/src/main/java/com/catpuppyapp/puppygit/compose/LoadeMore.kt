@@ -28,14 +28,15 @@ import com.catpuppyapp.puppygit.ui.theme.Theme
 import com.catpuppyapp.puppygit.utils.UIHelper
 
 
-private val TAG = "LoadMore"
+// private const val TAG = "LoadMore"
 
 @Composable
 fun LoadMore(
     modifier: Modifier = Modifier,
     paddingValues: PaddingValues = PaddingValues(30.dp),
     text:String= stringResource(R.string.load_more),
-    loadToEndText:String= stringResource(R.string.load_to_end),
+//    loadToEndText:String= stringResource(R.string.load_to_end),
+    loadToEndText:String= stringResource(R.string.load_all),
     enableLoadMore:Boolean=true,
     enableAndShowLoadToEnd:Boolean=true,
     loadToEndOnClick:()->Unit={},

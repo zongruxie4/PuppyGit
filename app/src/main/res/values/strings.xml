@@ -144,8 +144,8 @@
     <string name="switch_repo">Switch Repository</string>
     <string name="refresh">Refresh</string>
 <!--    <string name="go_to_index_page">Go to Index page</string>-->
-    <string name="no_repo_for_shown">No Repo for shown</string>
-    <string name="end_of_the_list">--- End of the list ---</string>
+    <string name="no_repo_for_shown">No Repo For Shown</string>
+    <string name="end_of_the_list">--- End Of The List ---</string>
     <string name="commit_selected_and_index_items_then_sync">Commit selected and Index items then sync with Remote</string>
     <string name="commit_selected_and_index_items">Commit selected and Index items</string>
     <string name="select_all">Select All</string>
@@ -318,7 +318,7 @@
     <string name="recommend">Recommend</string>
     <string name="new_branch">New Branch</string>
     <string name="last_commit">Last Commit</string>
-    <string name="no_parent_for_compare">No parent for compare</string>
+    <string name="no_parent_to_compare">No parent to compare</string>
     <string name="compare_to_parent">Compare To Parent</string>
     <string name="file_size_over_limit">File size over limit</string>
     <string name="content_size_over_limit">Content size over limit</string>
@@ -1255,5 +1255,9 @@
     <string name="push_delay_in_seconds">Push Delay in seconds</string>
     <string name="pull_interval_note">Time interval for pull. e.g. if set to 5, the app will not do pull again if reopened within 5 seconds; if set to -1, will disable pull.</string>
     <string name="push_delay_note">Time delay for push. e.g. if set to 5, a push will execute after leaving the app for 5 seconds; if set to -1 will disable push.</string>
+
+    <!-- new at 20250405 -->
+    <string name="load_all">Load All</string>
+
 
 </resources>
