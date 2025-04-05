@@ -82,9 +82,9 @@ import com.catpuppyapp.puppygit.compose.ConfirmDialog
 import com.catpuppyapp.puppygit.compose.ConfirmDialog2
 import com.catpuppyapp.puppygit.compose.CopyScrollableColumn
 import com.catpuppyapp.puppygit.compose.CopyableDialog
-import com.catpuppyapp.puppygit.compose.CreateFileOrFolderDialog
 import com.catpuppyapp.puppygit.compose.CreateFileOrFolderDialog2
 import com.catpuppyapp.puppygit.compose.FileListItem
+import com.catpuppyapp.puppygit.compose.GitIgnoreDialog
 import com.catpuppyapp.puppygit.compose.LoadingText
 import com.catpuppyapp.puppygit.compose.MyCheckBox
 import com.catpuppyapp.puppygit.compose.MyCheckBox2
@@ -103,6 +103,7 @@ import com.catpuppyapp.puppygit.dev.initRepoFromFilesPageTestPassed
 import com.catpuppyapp.puppygit.dev.proFeatureEnabled
 import com.catpuppyapp.puppygit.dto.FileItemDto
 import com.catpuppyapp.puppygit.etc.Ret
+import com.catpuppyapp.puppygit.git.IgnoreItem
 import com.catpuppyapp.puppygit.git.ImportRepoResult
 import com.catpuppyapp.puppygit.play.pro.R
 import com.catpuppyapp.puppygit.screen.functions.filterModeActuallyEnabled
@@ -153,7 +154,6 @@ import com.catpuppyapp.puppygit.utils.state.mutableCustomStateListOf
 import com.catpuppyapp.puppygit.utils.state.mutableCustomStateOf
 import com.catpuppyapp.puppygit.utils.trimLineBreak
 import com.catpuppyapp.puppygit.utils.withMainContext
-import com.github.git24j.core.Index
 import java.io.File
 import kotlin.coroutines.cancellation.CancellationException
 
@@ -1602,7 +1602,7 @@ fun FilesInnerPage(
                 //注意：如果选中的文件在不同的目录下，可能会失效，因为这里仅通过第一个元素查找仓库，多数情况下不会有问题，因为选择文件默认只能在同一目录选（虽然没严格限制导致有办法跳过）
                 var repoWillUse = Libgit2Helper.findRepoByPath(selectedItems[0].fullPath)
                 if(repoWillUse == null) {
-                    Msg.requireShow(activityContext.getString(R.string.err_dir_is_not_a_git_repo))
+                    Msg.requireShowLongDuration(activityContext.getString(R.string.err_dir_is_not_a_git_repo))
                     //退出选择模式和刷新页面
 //                    filesPageQuitSelectionMode()
 //                    changeStateTriggerRefreshPage(needRefreshFilesPage)
@@ -2257,6 +2257,54 @@ fun FilesInnerPage(
     }
 
 
+    val showIgnoreDialog = rememberSaveable { mutableStateOf(false)}
+    if(showIgnoreDialog.value) {
+        val selectedItems = selectedItems.value
+
+        GitIgnoreDialog(
+            showIgnoreDialog = showIgnoreDialog,
+            loadingOn = loadingOn,
+            loadingOff = loadingOff,
+            activityContext = activityContext,
+            getRepository = {
+                try {
+                    var repoWillUse = Libgit2Helper.findRepoByPath(selectedItems[0].fullPath)
+                    if(repoWillUse == null) {
+                        Msg.requireShowLongDuration(activityContext.getString(R.string.err_dir_is_not_a_git_repo))
+                    }
+
+                    repoWillUse
+                }catch (e:Exception) {
+                    MyLog.e(TAG, "#getRepository err: ${e.stackTraceToString()}")
+                    Msg.requireShowLongDuration("err: ${e.localizedMessage}")
+
+                    null
+                }
+            },
+            getIgnoreItems = { repoWorkDirFullPath:String ->
+                //这里不用捕获异常，若出错，会在onCatch处理
+                val selectedItemList = selectedItems.toList()
+                if(selectedItemList.isEmpty()) {
+                    Msg.requireShowLongDuration(activityContext.getString(R.string.no_item_selected))
+                }
+
+                selectedItemList.map {
+                    IgnoreItem(pathspec = getFilePathUnderParent(repoWorkDirFullPath, it.fullPath), isFile = it.isFile)
+                }
+            },
+            onCatch = { e:Exception ->
+                val errMsg = e.localizedMessage
+                Msg.requireShowLongDuration("err: " + errMsg)
+                MyLog.e(TAG, "ignore files err: ${e.stackTraceToString()}")
+            },
+            onFinally = {
+                //因为有可能会添加 .gitignore 文件，所以需要刷新下页面
+                changeStateTriggerRefreshPage(needRefreshFilesPage)
+            }
+        )
+    }
+
+
 
     val countNumOnClickForSelectAndPasteModeBottomBar = {
 //        val sb = StringBuilder()
@@ -2351,8 +2399,10 @@ fun FilesInnerPage(
                 selectAll@{true},  //是否启用全选
             )
         }
+
         val selectionModeMoreItemTextList = (listOf(
-            stringResource(id = R.string.remove_from_git),  //列表显示顺序就是这里的排序，上到下
+            stringResource(id = R.string.ignore),
+            stringResource(id = R.string.remove_from_git),
             stringResource(id = R.string.details),
             if(proFeatureEnabled(importReposFromFilesTestPassed)) stringResource(id = R.string.import_as_repo) else "",  // empty string will be ignore when display menu items
             if(proFeatureEnabled(initRepoFromFilesPageTestPassed)) stringResource(id = R.string.init_repo) else "",
@@ -2361,6 +2411,9 @@ fun FilesInnerPage(
         ))
 
         val selectionModeMoreItemOnClickList = (listOf(
+            ignore@{
+                showIgnoreDialog.value = true
+            },
             removeFromGit@{
                 showRemoveFromGitDialog.value = true
             },
@@ -2393,6 +2446,7 @@ fun FilesInnerPage(
         ))
 
         val selectionModeMoreItemEnableList = (listOf(
+            {getSelectedFilesCount()>0}, //是否启用ignore
             {getSelectedFilesCount()>0}, //是否启用remove from git
             {getSelectedFilesCount()>0}, //是否启用details
 //            {selectedItems.value.indexOfFirst{it.isDir} != -1}  //enable import as repo. (if has dirs in selected items, then enable else disbale) (after clicked then check better than check at every time selected list change)

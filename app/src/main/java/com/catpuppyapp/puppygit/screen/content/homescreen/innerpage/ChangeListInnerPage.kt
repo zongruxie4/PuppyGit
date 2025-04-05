@@ -1655,13 +1655,13 @@ fun ChangeListInnerPage(
                         it
                     }
                 }catch (e:Exception) {
-                    MyLog.e(TAG, "getRepository err: ${e.stackTraceToString()}")
+                    MyLog.e(TAG, "#getRepository err: ${e.stackTraceToString()}")
                     Msg.requireShowLongDuration("err: ${e.localizedMessage}")
 
                     null
                 }
             },
-            getIgnoreItems = {
+            getIgnoreItems = { _:String ->  //参数是仓库workdir完整路径，是用来取仓库相对路径的，这里不需要，因为已经有仓库下相对路径
                 //这里不用捕获异常，若出错，会在onCatch处理
                 val selectedItemList = selectedItemList.value.toList()
                 if(selectedItemList.isEmpty()) {

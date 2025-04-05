@@ -22,7 +22,8 @@ fun GitIgnoreDialog(
     loadingOn: (String) -> Unit,
     loadingOff: () -> Unit,
     activityContext: Context,
-    getIgnoreItems: ()->List<IgnoreItem>,
+    //仓库完整路径可用来拆分相对路径
+    getIgnoreItems: (repoWorkDirFullPath:String)->List<IgnoreItem>,
     getRepository: () -> Repository?,
     onSuccess: suspend () -> Unit = { Msg.requireShow(activityContext.getString(R.string.success)) },
     onCatch: suspend (Exception)->Unit,
@@ -38,17 +39,19 @@ fun GitIgnoreDialog(
 
         doJobThenOffLoading(loadingOn, loadingOff, activityContext.getString(R.string.loading)) {
             try {
-                val items = getIgnoreItems()
-
-                if (items.isEmpty()) {
-                    return@doJobThenOffLoading
-                }
-
                 val repository = getRepository()
 
                 if(repository == null) {
                     return@doJobThenOffLoading
                 }
+
+
+                val items = getIgnoreItems(Libgit2Helper.getRepoWorkdirNoEndsWithSlash(repository))
+
+                if (items.isEmpty()) {
+                    return@doJobThenOffLoading
+                }
+
 
                 repository.use { repo ->
                     val repoIndex = repo.index()
