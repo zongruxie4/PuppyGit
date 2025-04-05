@@ -15,6 +15,8 @@ import com.catpuppyapp.puppygit.play.pro.R
 import com.catpuppyapp.puppygit.style.MyStyleKt
 import com.catpuppyapp.puppygit.utils.UIHelper
 import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
 
 
 @Composable
@@ -31,7 +33,7 @@ fun GoToTopAndGoToBottomFab(
     val goToTopFiltered = {UIHelper.switchBetweenTopAndLastVisiblePosition(scope, filterListState, filterListLastPosition)}
     val goToBottom = {UIHelper.scrollToItem(scope, listState, Int.MAX_VALUE)}
     val goToBottomFiltered = {UIHelper.scrollToItem(scope, filterListState, Int.MAX_VALUE)}
-    val hideButton = {showFab.value = false}
+    val hideButton = getHideButton(showFab, scope)
 
     GoToTopAndGoToBottomFab_Internal(
         filterModeOn = filterModeOn,
@@ -53,7 +55,7 @@ fun GoToTopAndGoToBottomFab(
 ) {
     val goToTop = {UIHelper.switchBetweenTopAndLastVisiblePosition(scope, listState, listLastPosition)}
     val goToBottom = {UIHelper.scrollToItem(scope, listState, Int.MAX_VALUE)}
-    val hideButton = {showFab.value = false}
+    val hideButton = getHideButton(showFab, scope)
 
     GoToTopAndGoToBottomFab_Internal(
         filterModeOn = false,
@@ -75,7 +77,7 @@ fun GoToTopAndGoToBottomFab(
 ) {
     val goToTop = {UIHelper.switchBetweenTopAndLastVisiblePosition(scope, listState, listLastPosition)}
     val goToBottom = {UIHelper.scrollTo(scope, listState, Int.MAX_VALUE)}
-    val hideButton = {showFab.value = false}
+    val hideButton = getHideButton(showFab, scope)
 
     GoToTopAndGoToBottomFab_Internal(
         filterModeOn = false,
@@ -132,6 +134,18 @@ private fun GoToTopAndGoToBottomFab_Internal(
             }
 
 //            pageScrolled.value = false
+        }
+    }
+}
+
+private fun getHideButton(showButton:MutableState<Boolean>, scope: CoroutineScope) :()->Unit {
+    return {
+        showButton.value = false
+
+        //隐藏10秒后自动重新显示
+        scope.launch {
+            delay(10_000) // 10s
+            showButton.value = true
         }
     }
 }
