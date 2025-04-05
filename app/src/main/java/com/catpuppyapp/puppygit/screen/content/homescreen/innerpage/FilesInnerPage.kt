@@ -1613,7 +1613,7 @@ fun FilesInnerPage(
 
                 // .use 的好处是用完会自动 close，省得手动关
                 repoWillUse.use { repo ->
-                    val repoWorkDirFullPath = File(Libgit2Helper.getRepoWorkdirNoEndsWithSlash(repo)).canonicalPath
+                    val repoWorkDirFullPath = Libgit2Helper.getRepoWorkdirNoEndsWithSlash(repo)
                     MyLog.d(TAG, "#RemoveFromGitDialog: will remove files from repo workdir: '${repoWorkDirFullPath}'")
 
                     val repoIndex = repo.index()

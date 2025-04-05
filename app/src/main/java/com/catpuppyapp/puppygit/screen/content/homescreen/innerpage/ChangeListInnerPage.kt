@@ -2913,7 +2913,7 @@ fun ChangeListInnerPage(
                                 try {
                                     //注意：如果选中的文件在不同的目录下，可能会失效，因为这里仅通过第一个元素查找仓库，多数情况下不会有问题，因为选择文件默认只能在同一目录选（虽然没严格限制导致有办法跳过）
                                     Repository.open(curRepoFromParentPage.fullSavePath).use { repo ->
-                                        val repoWorkDirFullPath = File(Libgit2Helper.getRepoWorkdirNoEndsWithSlash(repo)).canonicalPath
+                                        val repoWorkDirFullPath = Libgit2Helper.getRepoWorkdirNoEndsWithSlash(repo)
                                         MyLog.d(TAG, "#RemoveFromGitDialog: will remove files from repo workdir: '${repoWorkDirFullPath}'")
 
                                         val repoIndex = repo.index()

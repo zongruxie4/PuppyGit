@@ -12,7 +12,6 @@ import com.catpuppyapp.puppygit.data.entity.RepoEntity
 import com.catpuppyapp.puppygit.data.repository.CredentialRepository
 import com.catpuppyapp.puppygit.data.repository.RemoteRepository
 import com.catpuppyapp.puppygit.data.repository.RepoRepository
-import com.catpuppyapp.puppygit.dto.FileItemDto
 import com.catpuppyapp.puppygit.dto.RemoteDto
 import com.catpuppyapp.puppygit.dto.createCommitDto
 import com.catpuppyapp.puppygit.dto.createFileHistoryDto
@@ -477,8 +476,8 @@ class Libgit2Helper {
         }
 
         fun getRepoCanonicalPath(repo: Repository, itemUnderRepoRelativePath: String): String {
-            val slash = File.separator
-            return getRepoWorkdirNoEndsWithSlash(repo) + slash + (itemUnderRepoRelativePath.removePrefix(slash).removeSuffix(slash))
+            val slashChar = Cons.slashChar
+            return getRepoWorkdirNoEndsWithSlash(repo) + slashChar + (itemUnderRepoRelativePath.trim(slashChar))
         }
 
         fun getRepoPathSpecType(path: String): Int {
@@ -1649,7 +1648,13 @@ class Libgit2Helper {
 
 
         fun getRepoWorkdirNoEndsWithSlash(repo: Repository): String {
-            return repo.workdir()?.trimEnd(Cons.slashChar) ?: ""
+            return repo.workdir().let {
+                if(it == null) {
+                    ""
+                }else {
+                    File(it).canonicalPath
+                }
+            }
         }
 
         fun getRepoIgnoreFilePathNoEndsWithSlash(repo: Repository, createIfNonExists:Boolean = false): String {
@@ -5489,7 +5494,7 @@ class Libgit2Helper {
 
         fun getSubmoduleDtoList(repo:Repository, invalidUrlAlertText:String, predicate: (submoduleName: String) -> Boolean={true}):List<SubmoduleDto> {
             val parentWorkdirPathNoSlashSuffix = getRepoWorkdirNoEndsWithSlash(repo)
-            val parentDotGitModuleFile = File(parentWorkdirPathNoSlashSuffix, Cons.gitDotModules)
+//            val parentDotGitModuleFile = File(parentWorkdirPathNoSlashSuffix, Cons.gitDotModules)
             val list = mutableListOf<SubmoduleDto>()
 
             Submodule.foreach(repo) { sm, name ->
