@@ -102,8 +102,8 @@ class MyStyleKt{
     }
 
     object Editor {
-        val fontSize = 16.sp
-        val bottomBarHeight = 80.dp
+//        val fontSize = 16.sp
+//        val bottomBarHeight = 80.dp  //这是以前你个底栏高度，后来改用和其他页面一样的了 由 BottomBar.height 控制
 
         //高亮文本的背景颜色
         val highlightingBgColor = Color(0xFFFFEB3B)
@@ -117,13 +117,13 @@ class MyStyleKt{
         val height=60.dp
 
         //使用BottomBar的那个页面，需要padding出这个高度，否则列表内容会被BottomBar盖住
-        val outsideContentPadding = height+30.dp
+        val outsideContentPadding = height+20.dp
     }
 
 
     object Fab {
         fun getFabModifierForEditor(isMultipleSelectionMode:Boolean):Modifier {
-            return Modifier.imePadding().then(if(isMultipleSelectionMode) Modifier.padding(bottom = MyStyleKt.Editor.bottomBarHeight+20.dp) else Modifier)
+            return Modifier.imePadding().then(if(isMultipleSelectionMode) Modifier.padding(bottom = BottomBar.outsideContentPadding) else Modifier)
         }
 
         fun getFabModifier():Modifier {
