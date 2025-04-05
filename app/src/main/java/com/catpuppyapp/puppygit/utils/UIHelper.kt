@@ -1,6 +1,7 @@
 package com.catpuppyapp.puppygit.utils
 
 import android.content.Context
+import android.content.res.Configuration
 import android.util.DisplayMetrics
 import androidx.compose.foundation.ScrollState
 import androidx.compose.foundation.layout.WindowInsets
@@ -427,5 +428,13 @@ object UIHelper {
 
     fun guessLineHeight(fontSizeInPx: Float): Float {
         return fontSizeInPx * 1.5f
+    }
+
+    /**
+     * 检测是横屏还是竖屏：返回 true 则竖屏，false横屏，不一定准，有可能是 ORIENTATION_UNDEFINED，不过一般都准
+     */
+    @Composable
+    fun isPortrait(configuration: Configuration = LocalConfiguration.current):Boolean {
+        return configuration.orientation == Configuration.ORIENTATION_PORTRAIT
     }
 }

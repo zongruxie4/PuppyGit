@@ -105,6 +105,7 @@ import com.catpuppyapp.puppygit.utils.FsUtils
 import com.catpuppyapp.puppygit.utils.Msg
 import com.catpuppyapp.puppygit.utils.MyLog
 import com.catpuppyapp.puppygit.utils.PrefMan
+import com.catpuppyapp.puppygit.utils.UIHelper
 import com.catpuppyapp.puppygit.utils.changeStateTriggerRefreshPage
 import com.catpuppyapp.puppygit.utils.doJobThenOffLoading
 import com.catpuppyapp.puppygit.utils.generateRandomString
@@ -1102,7 +1103,7 @@ fun HomeScreen(
                         showFab = editorPreviewPageScrolled
                     )
                 } else if(currentHomeScreen.intValue == Cons.selectedItem_Editor && (editorIsPreviewModeOn.value.not() && editorPageShowingFileIsReady.value && editorPageShowingFilePath.value.isNotBlank() && editorPageIsEdited.value && !editorPageIsSaving.value && !editorReadOnlyMode.value)) {
-                    SmallFab(modifier = MyStyleKt.Fab.getFabModifierForEditor(editorPageTextEditorState.value.isMultipleSelectionMode),
+                    SmallFab(modifier = MyStyleKt.Fab.getFabModifierForEditor(editorPageTextEditorState.value.isMultipleSelectionMode, UIHelper.isPortrait()),
                         icon = Icons.Filled.Save, iconDesc = stringResource(id = R.string.save)
                     ) {
                         editorPageRequestFromParent.value = PageRequest.requireSave

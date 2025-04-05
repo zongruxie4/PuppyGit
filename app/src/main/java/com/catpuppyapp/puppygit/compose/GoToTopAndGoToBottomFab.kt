@@ -96,7 +96,7 @@ private fun GoToTopAndGoToBottomFab_Internal(
     scrollToBottomForFilterState:()->Unit,
     hideButton:()->Unit,
 ) {
-    Column(modifier = MyStyleKt.Fab.getFabModifier()) {
+    Column(modifier = MyStyleKt.Fab.getFabModifier(UIHelper.isPortrait())) {
         //show go to top
         SmallFab(
             icon = Icons.Filled.VerticalAlignTop, iconDesc = stringResource(id = R.string.go_to_top)

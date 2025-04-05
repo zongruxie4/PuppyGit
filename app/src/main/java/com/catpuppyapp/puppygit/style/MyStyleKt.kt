@@ -2,6 +2,7 @@ package com.catpuppyapp.puppygit.style
 
 import androidx.compose.foundation.layout.defaultMinSize
 import androidx.compose.foundation.layout.imePadding
+import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.text.selection.TextSelectionColors
@@ -122,13 +123,22 @@ class MyStyleKt{
 
 
     object Fab {
-        fun getFabModifierForEditor(isMultipleSelectionMode:Boolean):Modifier {
-            return Modifier.imePadding().then(if(isMultipleSelectionMode) Modifier.padding(bottom = BottomBar.outsideContentPadding) else Modifier)
+        fun getFabModifierForEditor(isMultipleSelectionMode:Boolean, isPortrait:Boolean):Modifier {
+            return addNavPaddingIfNeed(isPortrait, Modifier.imePadding().then(if(isMultipleSelectionMode) Modifier.padding(bottom = BottomBar.height) else Modifier))
         }
 
-        fun getFabModifier():Modifier {
-            //貌似Fab自带一点Padding，所以这里直接用BottomBar的高度即可，不需要再手动加padding
-            return Modifier.padding(end = 20.dp, bottom = BottomBar.height)
+        fun getFabModifier(isPortrait:Boolean):Modifier {
+            //貌似Fab自带一点Padding，所以这里直接用BottomBar的高度即可，不需要再额外加padding
+            return addNavPaddingIfNeed(isPortrait, Modifier.padding(bottom = BottomBar.height))
+        }
+
+        //若是横屏，添加导航栏padding，不然浮动按钮会被导航栏盖住
+        private fun addNavPaddingIfNeed(isPortrait:Boolean, modifier:Modifier = Modifier):Modifier {
+            return if(isPortrait) {
+                modifier
+            }else {
+                modifier.navigationBarsPadding()
+            }
         }
     }
 
