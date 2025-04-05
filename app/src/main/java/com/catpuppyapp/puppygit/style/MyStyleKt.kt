@@ -13,6 +13,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.catpuppyapp.puppygit.dto.DeviceWidthHeight
 import com.catpuppyapp.puppygit.ui.theme.Theme
 
 class MyStyleKt{
@@ -127,10 +128,10 @@ class MyStyleKt{
             return addNavPaddingIfNeed(isPortrait, Modifier.imePadding().then(if(isMultipleSelectionMode) Modifier.padding(bottom = BottomBar.height) else Modifier))
         }
 
-        fun getFabModifier(isPortrait:Boolean):Modifier {
+        fun getFabModifier(isPortrait:Boolean, deviceWidthHeight: DeviceWidthHeight):Modifier {
             //貌似Fab自带一点Padding，所以这里直接用BottomBar的高度即可，不需要再额外加padding
             // end 20dp 是为了避免浮动按钮盖住条目的三个点菜单按钮（例如Files页面，每个条目后面都有个3点菜单）
-            return addNavPaddingIfNeed(isPortrait, Modifier.padding(bottom = BottomBar.height, end = if(isPortrait) 30.dp else 65.dp))
+            return addNavPaddingIfNeed(isPortrait, Modifier.padding(bottom = BottomBar.height, end = (deviceWidthHeight.width * 0.1f).dp))
         }
 
         //若是横屏，添加导航栏padding，不然浮动按钮会被导航栏盖住
