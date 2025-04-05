@@ -116,15 +116,15 @@ public class Repository extends CAutoCloseable {
      */
     @Nonnull
     public static Repository open(@Nonnull Path path) {
-        AtomicLong outRepo = new AtomicLong();
-        int error = jniOpen(outRepo, path.toString());
-        Error.throwIfNeeded(error);
-        return new Repository(outRepo.get());
+        return open(path.toString());
     }
 
     @Nonnull
     public static Repository open(@Nonnull String path) {
-        return open(Paths.get(path));
+        AtomicLong outRepo = new AtomicLong();
+        int error = jniOpen(outRepo, path);
+        Error.throwIfNeeded(error);
+        return new Repository(outRepo.get());
     }
 
     /**

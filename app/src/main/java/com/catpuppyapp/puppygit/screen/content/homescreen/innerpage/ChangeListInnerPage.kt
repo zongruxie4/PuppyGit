@@ -66,6 +66,7 @@ import com.catpuppyapp.puppygit.compose.ConfirmDialog
 import com.catpuppyapp.puppygit.compose.ConfirmDialog2
 import com.catpuppyapp.puppygit.compose.CreatePatchSuccessDialog
 import com.catpuppyapp.puppygit.compose.CredentialSelector
+import com.catpuppyapp.puppygit.compose.GitIgnoreDialog
 import com.catpuppyapp.puppygit.compose.LoadingText
 import com.catpuppyapp.puppygit.compose.LongPressAbleIconBtn
 import com.catpuppyapp.puppygit.compose.MyCheckBox
@@ -90,6 +91,7 @@ import com.catpuppyapp.puppygit.dev.proFeatureEnabled
 import com.catpuppyapp.puppygit.dev.tagsTestPassed
 import com.catpuppyapp.puppygit.dev.treeToTreeBottomBarActAtLeastOneTestPassed
 import com.catpuppyapp.puppygit.etc.Ret
+import com.catpuppyapp.puppygit.git.IgnoreItem
 import com.catpuppyapp.puppygit.git.ImportRepoResult
 import com.catpuppyapp.puppygit.git.StatusTypeEntrySaver
 import com.catpuppyapp.puppygit.git.Upstream
@@ -1636,59 +1638,47 @@ fun ChangeListInnerPage(
 
     val showIgnoreDialog = rememberSaveable { mutableStateOf(false)}
     if(showIgnoreDialog.value) {
-        ConfirmDialog(
-            title = stringResource(R.string.ignore),
-            text = stringResource(R.string.will_ignore_selected_files_are_you_sure),
-            okTextColor = MyStyleKt.TextColor.danger(),  // 因为remove from git标红了，而ignore包含remove from git 操作，所以逻辑上也该标红，而且这些操作恢复起来比较麻烦，所以最好高亮确认，暗示用户谨慎操作
-            onCancel = { showIgnoreDialog.value = false }
-        ) {
-            showIgnoreDialog.value=false
+        val curRepo = curRepoFromParentPage.value
 
-            val curRepo = curRepoFromParentPage.value
-
-            doJobThenOffLoading(loadingOn, loadingOff, activityContext.getString(R.string.loading)) {
+        GitIgnoreDialog(
+            showIgnoreDialog = showIgnoreDialog,
+            loadingOn = loadingOn,
+            loadingOff = loadingOff,
+            activityContext = activityContext,
+            getRepository = {
                 try {
-                    val selectedItemList = selectedItemList.value.toList()
+                    Repository.open(curRepo.fullSavePath).let {
+                        if(it == null) {
+                            throw RuntimeException("resolve repo failed")
+                        }
 
-                    if(selectedItemList.isEmpty()) {
-                        Msg.requireShow(activityContext.getString(R.string.no_item_selected))
-                        return@doJobThenOffLoading  // 结束操作
+                        it
                     }
-
-                    Repository.open(curRepo.fullSavePath).use { repo ->
-                        val repoIndex = repo.index()
-                        //拼接 "\npath1\npath2\npath3...省略....\n"
-                        val linesWillIgnore = Cons.lineBreak +
-                                (selectedItemList.map {
-                                    // remove from git
-                                    Libgit2Helper.removeFromGit(it.relativePathUnderRepo, repoIndex, it.toFile().isFile)
-
-                                    //返回将添加到 .gitignore 的path
-                                    //相对路径前加/会从仓库根目录开始匹配，若不加杠，会匹配子目录，容易误匹配
-                                    Cons.slash + it.relativePathUnderRepo
-                                }.joinToString(Cons.lineBreak)) +
-                                Cons.lineBreak
-                        ;
-
-                        val ignoreFile = File(Libgit2Helper.getRepoIgnoreFilePathNoEndsWithSlash(repo, createIfNonExists = true))
-                        // 追加路径到仓库workdir下的 .gitignore
-                        FsUtils.appendTextToFile(ignoreFile, linesWillIgnore)
-
-                        //将repoIndex修改写入硬盘
-                        repoIndex.write()
-                    }
-
-                    Msg.requireShow(activityContext.getString(R.string.success))
                 }catch (e:Exception) {
-                    val errMsg = e.localizedMessage
-                    Msg.requireShowLongDuration("err: " + errMsg)
-                    createAndInsertError(curRepo.id, "ignore files err: $errMsg")
-                }finally {
-                    changeListRequireRefreshFromParentPage(curRepo)
+                    MyLog.e(TAG, "getRepository err: ${e.stackTraceToString()}")
+                    Msg.requireShowLongDuration("err: ${e.localizedMessage}")
+
+                    null
+                }
+            },
+            getIgnoreItems = {
+                //这里不用捕获异常，若出错，会在onCatch处理
+                val selectedItemList = selectedItemList.value.toList()
+                if(selectedItemList.isEmpty()) {
+                    Msg.requireShowLongDuration(activityContext.getString(R.string.no_item_selected))
                 }
 
+                selectedItemList.map { IgnoreItem(pathspec = it.relativePathUnderRepo, isFile = it.toFile().isFile) }
+            },
+            onCatch = { e:Exception ->
+                val errMsg = e.localizedMessage
+                Msg.requireShowLongDuration("err: " + errMsg)
+                createAndInsertError(curRepo.id, "ignore files err: $errMsg")
+            },
+            onFinally = {
+                changeListRequireRefreshFromParentPage(curRepo)
             }
-        }
+        )
     }
 
 
