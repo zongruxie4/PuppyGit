@@ -182,6 +182,10 @@ fun FileChooserScreen(
     val filesPageCurPathFileItemDto = mutableCustomStateOf(stateKeyTag, "filesPageCurPathFileItemDto") { FileItemDto() }
     val filesPageCurrentPathBreadCrumbList = mutableCustomStateListOf(keyTag = stateKeyTag, keyName = "filesPageCurrentPathBreadCrumbList", initValue = listOf<FileItemDto>())
 
+    //这个页面其实用不到这个变量，一直都是假
+    val filesPageKeepFilterResultOnce = rememberSaveable { mutableStateOf(false) }
+
+
     //上次滚动位置
     val filesLastPosition = rememberSaveable { mutableStateOf(0) }
     val fileListFilterLastPosition = rememberSaveable { mutableStateOf(0) }
@@ -334,8 +338,10 @@ fun FileChooserScreen(
             enableFilterState = filesPageEnableFilterState,
             filterList = filesPageFilterList,
             lastPosition = filesLastPosition,
+            keepFilterResultOnce = filesPageKeepFilterResultOnce,  //这个页面其实用不到这个变量
 
         )
+
     }
 }
 

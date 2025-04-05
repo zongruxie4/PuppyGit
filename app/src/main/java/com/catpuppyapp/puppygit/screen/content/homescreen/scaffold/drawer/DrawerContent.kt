@@ -12,6 +12,7 @@ import androidx.compose.material3.NavigationDrawerItemDefaults
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.MutableIntState
+import androidx.compose.runtime.MutableState
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Shape
 import androidx.compose.ui.graphics.vector.ImageVector
@@ -34,6 +35,8 @@ fun drawerContent(
     drawIconList: List<ImageVector>,
     refreshPageList:List<()->Unit>,
     showExit:Boolean, // 是否在末尾显示退出按钮
+    filesPageKeepFilterResultOnce:MutableState<Boolean>,
+
 ): @Composable() (ColumnScope.() -> Unit) =
     {
         var drawTextList = drawTextList
@@ -70,6 +73,11 @@ fun drawerContent(
                 label = { Text(text) },
                 selected = id == currentHomeScreen.intValue,
                 onClick = {
+                    //如果是从非Files页面点击Files，则不会触发过滤结果的刷新（隐藏feature：如果已经在Files页面，重新点击Files则会触发刷新）
+                    if(Cons.selectedItem_Files.let { id == it && currentHomeScreen.intValue != it }) {
+                        filesPageKeepFilterResultOnce.value = true
+                    }
+
                     refreshPageList[index]()
                     currentHomeScreen.intValue = id
                     scope.launch {

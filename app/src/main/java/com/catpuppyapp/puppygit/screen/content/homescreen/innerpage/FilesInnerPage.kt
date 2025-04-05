@@ -217,7 +217,8 @@ fun FilesInnerPage(
     currentPathBreadCrumbList:CustomStateListSaveable<FileItemDto>,
     enableFilterState:MutableState<Boolean>,
     filterList:CustomStateListSaveable<FileItemDto>,
-    lastPosition:MutableState<Int>
+    lastPosition:MutableState<Int>,
+    keepFilterResultOnce:MutableState<Boolean>
 ) {
     val inDarkTheme = Theme.inDarkTheme
 
@@ -2971,7 +2972,12 @@ fun FilesInnerPage(
                         selectedItems = selectedItems.value,
                     )
 
-                    triggerReFilter(filterResultNeedRefresh)
+                    //有些情况不用自动刷新用户体验更好，例如点击搜索结果，跳转到文本编辑器，再返回
+                    if(keepFilterResultOnce.value) {
+                        keepFilterResultOnce.value = false
+                    }else {
+                        triggerReFilter(filterResultNeedRefresh)
+                    }
 
                 }catch (e:Exception) {
                     Msg.requireShowLongDuration("init Files err: ${e.localizedMessage}")

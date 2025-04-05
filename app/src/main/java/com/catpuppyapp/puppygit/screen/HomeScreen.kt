@@ -67,7 +67,6 @@ import com.catpuppyapp.puppygit.data.entity.RepoEntity
 import com.catpuppyapp.puppygit.dto.FileItemDto
 import com.catpuppyapp.puppygit.dto.FileSimpleDto
 import com.catpuppyapp.puppygit.dto.UndoStack
-import com.catpuppyapp.puppygit.fileeditor.texteditor.state.TextEditorState
 import com.catpuppyapp.puppygit.fileeditor.texteditor.view.ScrollEvent
 import com.catpuppyapp.puppygit.git.StatusTypeEntrySaver
 import com.catpuppyapp.puppygit.play.pro.R
@@ -94,7 +93,6 @@ import com.catpuppyapp.puppygit.screen.content.homescreen.scaffold.title.ReposTi
 import com.catpuppyapp.puppygit.screen.content.homescreen.scaffold.title.ScrollableTitle
 import com.catpuppyapp.puppygit.screen.content.homescreen.scaffold.title.SimpleTitle
 import com.catpuppyapp.puppygit.screen.functions.ChangeListFunctions
-import com.catpuppyapp.puppygit.screen.functions.getEditorStateOnChange
 import com.catpuppyapp.puppygit.screen.functions.getInitTextEditorState
 import com.catpuppyapp.puppygit.screen.shared.FileChooserType
 import com.catpuppyapp.puppygit.screen.shared.FilePath
@@ -649,6 +647,8 @@ fun HomeScreen(
 
 
 
+    val filesPageKeepFilterResultOnce = rememberSaveable { mutableStateOf(false) }
+
     val requireEditorScrollToPreviewCurPos = rememberSaveable { mutableStateOf(false) }
     val requirePreviewScrollToEditorCurPos = rememberSaveable { mutableStateOf(false) }
     val editorPreviewPageScrolled = rememberSaveable { mutableStateOf(settingsSnapshot.value.showNaviButtons) }
@@ -823,7 +823,9 @@ fun HomeScreen(
                     drawIdList = drawIdList,
                     drawIconList = drawIconList,
                     refreshPageList = refreshPageList,
-                    showExit = true
+                    showExit = true,
+                    filesPageKeepFilterResultOnce = filesPageKeepFilterResultOnce,
+
                 )
             )
         },
@@ -1238,6 +1240,7 @@ fun HomeScreen(
                     enableFilterState = filesPageEnableFilterState,
                     filterList = filesPageFilterList,
                     lastPosition = filesLastPosition,
+                    keepFilterResultOnce = filesPageKeepFilterResultOnce,
 
                 )
             }
