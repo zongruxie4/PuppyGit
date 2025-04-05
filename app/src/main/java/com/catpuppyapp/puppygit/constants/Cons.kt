@@ -57,13 +57,13 @@ object Cons {
     val dateTimeFormatter_yyyyMMdd:DateTimeFormatter = DateTimeFormatter.ofPattern("yyyyMMdd")
     val dateTimeFormatter_yyyyMMddHHmm:DateTimeFormatter = DateTimeFormatter.ofPattern("yyyyMMddHHmm")
 
-    val allZeroOid = Oid.of("0000000000000000000000000000000000000000")  //40个0
-    val allZeroOidStr = "0000000000000000000000000000000000000000"  //40个0
-    val gitLocalWorktreeCommitHash = "local"  //代表worktree
-    val gitIndexCommitHash = "index"  //代表index
-    val gitHeadCommitHash = "HEAD"  //代表HEAD
+    const val git_AllZeroOidStr = "0000000000000000000000000000000000000000"  //40个0
+    val git_AllZeroOid: Oid = Oid.of(git_AllZeroOidStr)  //40个0
+    const val git_LocalWorktreeCommitHash = "local"  //代表worktree
+    const val git_IndexCommitHash = "index"  //代表index
+    const val git_HeadCommitHash = "HEAD"  //代表HEAD
 
-    val gitDotModules = ".gitmodules"
+    const val git_DotGitModules = ".gitmodules"
 
     //        const val defaultPageCount=50  //默认每页条目数
 

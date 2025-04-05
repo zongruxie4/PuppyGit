@@ -118,18 +118,18 @@ fun DiffScreen(
 
     val treeOid1Str = rememberSaveable { mutableStateOf(
         if(fromTo == Cons.gitDiffFromIndexToWorktree) {
-            Cons.gitIndexCommitHash
+            Cons.git_IndexCommitHash
         }else if(fromTo == Cons.gitDiffFromHeadToIndex) {
-            Cons.gitHeadCommitHash
+            Cons.git_HeadCommitHash
         }else{
             treeOid1Str
         }
     ) }
     val treeOid2Str = rememberSaveable { mutableStateOf(
         if(fromTo == Cons.gitDiffFromIndexToWorktree) {
-            Cons.gitLocalWorktreeCommitHash
+            Cons.git_LocalWorktreeCommitHash
         }else if(fromTo == Cons.gitDiffFromHeadToIndex) {
-            Cons.gitIndexCommitHash
+            Cons.git_IndexCommitHash
         }else {
             treeOid2Str
         }
@@ -380,7 +380,7 @@ fun DiffScreen(
     if(request.value == PageRequest.showDetails) {
         PageRequest.clearStateThenDoAct(request) {
             val sb = StringBuilder()
-            if(treeOid1Str.value != Cons.allZeroOidStr || treeOid2Str.value!=Cons.allZeroOidStr){
+            if(treeOid1Str.value != Cons.git_AllZeroOidStr || treeOid2Str.value!=Cons.git_AllZeroOidStr){
                 sb.append(activityContext.getString(R.string.comparing_label)+": ").appendLine("${Libgit2Helper.getShortOidStrByFull(treeOid1Str.value)}..${Libgit2Helper.getShortOidStrByFull(treeOid2Str.value)}").appendLine()
             }
             sb.append(activityContext.getString(R.string.name)+": ").appendLine(fileNameOnly.value).appendLine()

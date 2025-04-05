@@ -219,7 +219,7 @@ fun ReflogListScreen(
     }
 
     if(showCheckoutDialog.value) {
-        val id = (if(checkoutNew.value) curLongClickItem.value.idNew else curLongClickItem.value.idOld) ?: Cons.allZeroOid
+        val id = (if(checkoutNew.value) curLongClickItem.value.idNew else curLongClickItem.value.idOld) ?: Cons.git_AllZeroOid
 
         if(id.isNullOrEmptyOrZero) {  //id无效，关弹窗，显提示
             showCheckoutDialog.value = false
@@ -261,7 +261,7 @@ fun ReflogListScreen(
     }
 
     if (showResetDialog.value) {
-        val id = (if(resetNew.value) curLongClickItem.value.idNew else curLongClickItem.value.idOld) ?: Cons.allZeroOid
+        val id = (if(resetNew.value) curLongClickItem.value.idNew else curLongClickItem.value.idOld) ?: Cons.git_AllZeroOid
 
         if(id.isNullOrEmptyOrZero) {  //id无效，关弹窗，显提示
             showResetDialog.value = false
@@ -400,7 +400,7 @@ fun ReflogListScreen(
 
         if (showBottomSheet.value) {
             // title form: oldOid..newOid, means oldOid to newOid, eg abc1234..def1234
-            val title = Libgit2Helper.getShortOidStrByFull((curLongClickItem.value.idOld ?: Cons.allZeroOid).toString())+".."+Libgit2Helper.getShortOidStrByFull((curLongClickItem.value.idNew ?: Cons.allZeroOid).toString())
+            val title = Libgit2Helper.getShortOidStrByFull((curLongClickItem.value.idOld ?: Cons.git_AllZeroOid).toString())+".."+Libgit2Helper.getShortOidStrByFull((curLongClickItem.value.idNew ?: Cons.git_AllZeroOid).toString())
             BottomSheet(showBottomSheet, sheetState, title) {
                 BottomSheetItem(sheetState, showBottomSheet, stringResource(R.string.checkout_new)) {
                     // onClick()

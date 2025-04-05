@@ -60,7 +60,6 @@ import com.catpuppyapp.puppygit.utils.Msg
 import com.catpuppyapp.puppygit.utils.UIHelper
 import com.catpuppyapp.puppygit.utils.addPrefix
 import com.catpuppyapp.puppygit.utils.cache.Cache
-import com.catpuppyapp.puppygit.utils.changeStateTriggerRefreshPage
 import com.catpuppyapp.puppygit.utils.state.mutableCustomStateListOf
 import com.catpuppyapp.puppygit.utils.state.mutableCustomStateOf
 import com.github.git24j.core.Repository
@@ -92,9 +91,9 @@ fun TreeToTreeChangeListScreen(
     //因为title要改变这个值，所以用State
     val commit1OidStrState = rememberSaveable { mutableStateOf(commit1OidStr) }
     if(commit1OidStrState.value.isBlank()) {
-        commit1OidStrState.value = Cons.allZeroOid.toString()
+        commit1OidStrState.value = Cons.git_AllZeroOid.toString()
     }
-    val commit2OidStr = commit2OidStr.ifBlank { Cons.allZeroOid.toString() }
+    val commit2OidStr = commit2OidStr.ifBlank { Cons.git_AllZeroOid.toString() }
 
     val commitParentList = mutableCustomStateListOf(
         keyTag = stateKeyTag,

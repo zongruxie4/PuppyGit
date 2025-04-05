@@ -137,8 +137,8 @@ fun DiffCommitsDialog(
     ) ok@{  //onOk
         //关弹窗
         //如果为空，替换为 local (ps:界面有提示，输入框留空等于和worktree对比）
-        val commit1 = commit1.value.ifBlank { Cons.gitLocalWorktreeCommitHash }
-        val commit2 = commit2.value.ifBlank { Cons.gitLocalWorktreeCommitHash }
+        val commit1 = commit1.value.ifBlank { Cons.git_LocalWorktreeCommitHash }
+        val commit2 = commit2.value.ifBlank { Cons.git_LocalWorktreeCommitHash }
 
         if(Libgit2Helper.CommitUtil.isSameCommitHash(commit1, commit2)) {
             Msg.requireShow(activityContext.getString(R.string.num2_commits_same))
@@ -150,7 +150,7 @@ fun DiffCommitsDialog(
         //当前比较的描述信息的key，用来在界面显示这是在比较啥，值例如“和父提交比较”或者“比较两个提交”之类的
         Cache.set(Cache.Key.treeToTreeChangeList_titleDescKey, activityContext.getString(R.string.diff_commits))
         //不用parent，传无效的zero oid即可
-        val commitForQueryParents = Cons.allZeroOidStr
+        val commitForQueryParents = Cons.git_AllZeroOidStr
         // url 参数： 页面导航id/repoId/treeoid1/treeoid2/desckey
         navController.navigate(
             //注意是 parentTreeOid to thisObj.treeOid，也就是 旧提交to新提交，相当于 git diff abc...def，比较的是旧版到新版，新增或删除或修改了什么，反过来的话，新增删除之类的也就反了

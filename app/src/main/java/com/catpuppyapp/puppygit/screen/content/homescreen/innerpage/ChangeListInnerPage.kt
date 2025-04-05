@@ -108,7 +108,6 @@ import com.catpuppyapp.puppygit.settings.SettingsUtil
 import com.catpuppyapp.puppygit.style.MyStyleKt
 import com.catpuppyapp.puppygit.user.UserUtil
 import com.catpuppyapp.puppygit.utils.AppModel
-import com.catpuppyapp.puppygit.utils.FsUtils
 import com.catpuppyapp.puppygit.utils.Libgit2Helper
 import com.catpuppyapp.puppygit.utils.Msg
 import com.catpuppyapp.puppygit.utils.MyLog
@@ -133,7 +132,6 @@ import com.catpuppyapp.puppygit.utils.updateSelectedList
 import com.catpuppyapp.puppygit.utils.withMainContext
 import com.github.git24j.core.Repository
 import com.github.git24j.core.Repository.StateT
-import java.io.File
 
 private const val TAG = "ChangeListInnerPage"
 private const val stateKeyTag = "ChangeListInnerPage"
@@ -208,18 +206,18 @@ fun ChangeListInnerPage(
 //    }
 
     //避免导航的时候出现 “//” 导致导航失败
-    val commit1OidStr = commit1OidStr.ifBlank { Cons.allZeroOid.toString() }
-    val commit2OidStr = commit2OidStr.ifBlank { Cons.allZeroOid.toString() }
+    val commit1OidStr = commit1OidStr.ifBlank { Cons.git_AllZeroOidStr }
+    val commit2OidStr = commit2OidStr.ifBlank { Cons.git_AllZeroOidStr }
     val repoId = remember(repoId, curRepoFromParentPage.value.id) { derivedStateOf { if(repoId.isBlank()) curRepoFromParentPage.value.id else repoId } }.value  // must call .value, else derived block may not executing
 
 
-    val isDiffToLocal = fromTo == Cons.gitDiffFromIndexToWorktree || commit1OidStr==Cons.gitLocalWorktreeCommitHash || commit2OidStr==Cons.gitLocalWorktreeCommitHash
+    val isDiffToLocal = fromTo == Cons.gitDiffFromIndexToWorktree || commit1OidStr==Cons.git_LocalWorktreeCommitHash || commit2OidStr==Cons.git_LocalWorktreeCommitHash
     val isWorktreePage = fromTo == Cons.gitDiffFromIndexToWorktree
 
     // xxx diff to local, not local diff to xxx
     val localAtDiffRight = remember(fromTo, commit1OidStr, commit2OidStr, swap) { derivedStateOf {
         (fromTo == Cons.gitDiffFromIndexToWorktree
-                || (if(swap) commit1OidStr==Cons.gitLocalWorktreeCommitHash else commit2OidStr==Cons.gitLocalWorktreeCommitHash)
+                || (if(swap) commit1OidStr==Cons.git_LocalWorktreeCommitHash else commit2OidStr==Cons.git_LocalWorktreeCommitHash)
         )
     } }
 

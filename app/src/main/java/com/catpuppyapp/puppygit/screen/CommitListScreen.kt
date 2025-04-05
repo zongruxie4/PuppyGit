@@ -252,7 +252,7 @@ fun CommitListScreen(
     val nextCommitOid = mutableCustomStateOf<Oid>(
         keyTag = stateKeyTag,
         keyName = "nextCommitOid",
-        initValue = Cons.allZeroOid
+        initValue = Cons.git_AllZeroOid
     )
 
     /*
@@ -261,7 +261,7 @@ fun CommitListScreen(
     val headOidOfThisScreen = mutableCustomStateOf<Oid>(
         keyTag = stateKeyTag,
         keyName = "headOidOfThisScreen",
-        initValue = Cons.allZeroOid
+        initValue = Cons.git_AllZeroOid
     )
 
     //这个页面的滚动状态不用记住，每次点开重置也无所谓
@@ -489,7 +489,7 @@ fun CommitListScreen(
                         // revwalk必须与创建它的仓库一起使用，否则会报错，报什么"signed...prefix -..."之类的错误
                         repositoryForRevWalk.value = repo
                         revwalk.value = newRevwalk
-                        nextCommitOid.value = newRevwalk.next() ?: Cons.allZeroOid
+                        nextCommitOid.value = newRevwalk.next() ?: Cons.git_AllZeroOid
 
 //                    println("oldRepoInstance == repositoryForRevWalk.value:${oldRepoInstance == repositoryForRevWalk.value}")  // expect:false, output:false
                         // release memory
@@ -517,7 +517,7 @@ fun CommitListScreen(
                         )
 
                         //update state
-                        nextCommitOid.value = revwalk.value!!.next() ?: Cons.allZeroOid
+                        nextCommitOid.value = revwalk.value!!.next() ?: Cons.git_AllZeroOid
                         hasMore.value = !nextCommitOid.value.isNullOrEmptyOrZero
                         loadMoreText.value = if (hasMore.value) activityContext.getString(R.string.load_more) else activityContext.getString(R.string.end_of_the_list)
 
@@ -1811,8 +1811,8 @@ fun CommitListScreen(
                             //当前比较的描述信息的key，用来在界面显示这是在比较啥，值例如“和父提交比较”或者“比较两个提交”之类的
                             Cache.set(Cache.Key.treeToTreeChangeList_titleDescKey, activityContext.getString(R.string.compare_to_local))
                             //这里需要传当前commit，然后cl页面会用当前commit查出当前commit的parents
-                            val commit2 = Cons.gitLocalWorktreeCommitHash
-                            val commitForQueryParents = Cons.allZeroOidStr
+                            val commit2 = Cons.git_LocalWorktreeCommitHash
+                            val commitForQueryParents = Cons.git_AllZeroOidStr
                             // url 参数： 页面导航id/repoId/treeoid1/treeoid2/desckey
                             navController.navigate(
                                 //注意是 parentTreeOid to thisObj.treeOid，也就是 旧提交to新提交，相当于 git diff abc...def，比较的是旧版到新版，新增或删除或修改了什么，反过来的话，新增删除之类的也就反了
@@ -1841,7 +1841,7 @@ fun CommitListScreen(
 
                                     //当前比较的描述信息的key，用来在界面显示这是在比较啥，值例如“和父提交比较”或者“比较两个提交”之类的
                                     Cache.set(Cache.Key.treeToTreeChangeList_titleDescKey, activityContext.getString(R.string.compare_to_head))
-                                    val commitForQueryParents = Cons.allZeroOidStr
+                                    val commitForQueryParents = Cons.git_AllZeroOidStr
 
                                     withMainContext {
                                         // url 参数： 页面导航id/repoId/treeoid1/treeoid2/desckey

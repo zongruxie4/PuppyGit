@@ -174,7 +174,7 @@ fun FileHistoryScreen(
     val nextCommitOid = mutableCustomStateOf<Oid>(
         keyTag = stateKeyTag,
         keyName = "nextCommitOid",
-        initValue = Cons.allZeroOid
+        initValue = Cons.git_AllZeroOid
     )
 
     /*
@@ -183,7 +183,7 @@ fun FileHistoryScreen(
     val headOidOfThisScreen = mutableCustomStateOf<Oid>(
         keyTag = stateKeyTag,
         keyName = "headOidOfThisScreen",
-        initValue = Cons.allZeroOid
+        initValue = Cons.git_AllZeroOid
     )
 
     //这个页面的滚动状态不用记住，每次点开重置也无所谓
@@ -307,7 +307,7 @@ fun FileHistoryScreen(
                         // revwalk必须与创建它的仓库一起使用，否则会报错，报什么"signed...prefix -..."之类的错误
                         repositoryForRevWalk.value = repo
                         revwalk.value = newRevwalk
-                        nextCommitOid.value = newRevwalk.next() ?: Cons.allZeroOid
+                        nextCommitOid.value = newRevwalk.next() ?: Cons.git_AllZeroOid
 
 //                    println("oldRepoInstance == repositoryForRevWalk.value:${oldRepoInstance == repositoryForRevWalk.value}")  // expect:false, output:false
                         // release memory
@@ -338,7 +338,7 @@ fun FileHistoryScreen(
 
                         //update state
                         lastVersionEntryOid.value = retLastVersionEntryOid
-                        nextCommitOid.value = retNextCommitOid ?: Cons.allZeroOid
+                        nextCommitOid.value = retNextCommitOid ?: Cons.git_AllZeroOid
 //                        nextCommitOid.value = revwalk.value!!.next() ?: Cons.allZeroOid
 
                         hasMore.value = !nextCommitOid.value.isNullOrEmptyOrZero
@@ -1056,7 +1056,7 @@ fun FileHistoryScreen(
                     Cache.set(Cache.Key.diffScreen_diffableItemListKey, list.toList())
 
                     val commit1 = it.commitOidStr
-                    val commit2 = Cons.gitLocalWorktreeCommitHash
+                    val commit2 = Cons.git_LocalWorktreeCommitHash
 
                     val isSubm =0
                     val fileSize =0

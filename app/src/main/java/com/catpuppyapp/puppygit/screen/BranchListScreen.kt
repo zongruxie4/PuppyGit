@@ -1597,7 +1597,7 @@ fun BranchListScreen(
                                     Msg.requireShow(activityContext.getString(R.string.both_are_the_same))
                                 }else {   // necessary things are ready and local vs upstream ain't same, then , should go to diff page
                                     Cache.set(Cache.Key.treeToTreeChangeList_titleDescKey, activityContext.getString(R.string.compare_to_upstream))
-                                    val commitForQueryParents = Cons.allZeroOidStr
+                                    val commitForQueryParents = Cons.git_AllZeroOidStr
 
                                     // url 参数： 页面导航id/repoId/treeoid1/treeoid2/desckey
                                     navController.navigate(

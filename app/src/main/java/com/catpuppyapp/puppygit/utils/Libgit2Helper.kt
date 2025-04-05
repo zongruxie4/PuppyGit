@@ -97,14 +97,14 @@ class Libgit2Helper {
         }
 
         fun isLocalCommitHash(c:String):Boolean {
-            return c == Cons.gitLocalWorktreeCommitHash
+            return c == Cons.git_LocalWorktreeCommitHash
         }
 
         /**
          * 未检查是否全16进制字符，所以即使返回真也不一定是有效commit，但如果返回假，一定不是有效commit
          */
         fun mayGoodCommitHash(c:String):Boolean {
-            return c.isNotBlank() && c != Cons.allZeroOidStr
+            return c.isNotBlank() && c != Cons.git_AllZeroOidStr
         }
     }
 
@@ -5616,7 +5616,7 @@ class Libgit2Helper {
                 }
 
                 // delete submodule config in .gitmodules file
-                val gitmoduleFile = File(repoWorkDirPath, Cons.gitDotModules)
+                val gitmoduleFile = File(repoWorkDirPath, Cons.git_DotGitModules)
                 if (gitmoduleFile.exists()) {
                     MyLog.d(TAG, "will delete submodule key from submodule config at: ${gitmoduleFile.canonicalPath}")
 

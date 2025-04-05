@@ -981,9 +981,9 @@ object ChangeListFunctions {
 
             //获取输出文件，可能没创建，执行输出时会自动创建，重点是文件路径
             val (left: String, right: String) = if (fromTo == Cons.gitDiffFromIndexToWorktree) {
-                Pair(Cons.gitIndexCommitHash, Cons.gitLocalWorktreeCommitHash)
+                Pair(Cons.git_IndexCommitHash, Cons.git_LocalWorktreeCommitHash)
             } else if (fromTo == Cons.gitDiffFromHeadToIndex) {
-                Pair(Cons.gitHeadCommitHash, Cons.gitIndexCommitHash)
+                Pair(Cons.git_HeadCommitHash, Cons.git_IndexCommitHash)
             } else {
                 Pair(leftCommit, rightCommit)
             }
