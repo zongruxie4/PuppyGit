@@ -1641,6 +1641,15 @@ fun FilesInnerPage(
         }
     }
 
+
+    val updateFilterList = { getNewFilterList:(oldFilterList:List<FileItemDto>) -> List<FileItemDto> ->
+        val filterList = filterList.value
+        val newFilterList = getNewFilterList(filterList)
+        filterList.clear()
+        filterList.addAll(newFilterList)
+    }
+
+
     val showDelFileDialog = rememberSaveable { mutableStateOf(false)}
     val allCountForDelDialog = rememberSaveable { mutableStateOf(0)}
 //    val fileCountForDelDialog = rememberSaveable { mutableStateOf(0)}
@@ -1666,17 +1675,16 @@ fun FilesInnerPage(
             showDelFileDialog.value=false
             //执行删除
             doJobThenOffLoading (loadingOn = loadingOn, loadingOff=loadingOff) {
-                if(selectedItems.value.isEmpty()) {  //例如，我选择了文件，然后对文件执行了重命名，导致已选中条目被移除，就会发生选中条目列表为空或缺少了条目的情况
+                val selectedItems = selectedItems.value.toList()
+
+                if(selectedItems.isEmpty()) {
                     Msg.requireShow(activityContext.getString(R.string.no_item_selected))
-                    //退出选择模式和刷新页面
-                    filesPageQuitSelectionMode()
-                    changeStateTriggerRefreshPage(needRefreshFilesPage)
                     return@doJobThenOffLoading  // 结束操作
                 }
 
-                selectedItems.value.toList().forEach {
+                selectedItems.forEach {
                     val file = File(it.fullPath)
-                    // 如果要删除的路径包含.git，加个警告，但不阻止，用户非要删，我不管
+                    // 如果要删除的路径包含.git，记个警告log，但不阻止，用户非要删，我不管 （没必要警告，用户爱删就删，随便）
 //                    if(file.canonicalPath.contains(".git")) {
 //                        MyLog.w(TAG, "#DelFileDialog: may delete file under '.git' folder, fullPath will del is: '${file.canonicalPath}'")
 //                    }
@@ -1690,10 +1698,22 @@ fun FilesInnerPage(
                 Msg.requireShow(activityContext.getString(R.string.success))
                 //退出选择模式并刷新目录
                 filesPageQuitSelectionMode()
-                changeStateTriggerRefreshPage(needRefreshFilesPage)
+
+                if(enableFilterState.value.not()) {
+                    //这里不刷新页面也和过滤模式一样更新下列表其实也行，
+                    // 但是，其实有可能用户会把当前所在目录给删掉，
+                    // 只要通过面包屑进行跳转再选中当前目录，再通过面包屑返回当前目录，再删除即可
+                    // 这种情况一般不会触发，没必要严格限制，确保这里刷新页面，这样如果触发上述情况，当前目录就会正确显示为不可读，若不刷新页面仅更新列表，就会错误显示已经不存在的条目
+                    changeStateTriggerRefreshPage(needRefreshFilesPage)
+                }else {  //filter模式刷新会重新递归查找，太重量级，直接更新下过滤结果即可
+                    updateFilterList { oldList ->
+                        oldList.filter { selectedItems.contains(it).not() }
+                    }
+                }
             }
         }
     }
+
     val copyOrMoveOrExportFile = copyOrMoveOrExportFile@{ srcList:List<FileItemDto>, targetFullPath:String, requireDeleteSrc:Boolean ->
 //                if(pastMode.intValue == pastMode_Copy) {
 //                    //执行拷贝
