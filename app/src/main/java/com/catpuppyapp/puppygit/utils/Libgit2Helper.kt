@@ -1680,6 +1680,7 @@ class Libgit2Helper {
             isFile:Boolean
         ) {
             if (relativePathUnderRepo.isNotEmpty() && relativePathUnderRepo != ".git" && !relativePathUnderRepo.startsWith(".git/")) {  //starts with ".git/" 既可用于.git/目录名，也可用于其下的目录名，不过我测试过，如果是选中的.git目录，末尾没/，所以在判断路径是否等于.git那里就已经短路了
+//            if (relativePathUnderRepo.isNotEmpty()) {  // 其实不忽略.git也无所谓，但.git执行remove无效，所以还是忽略吧
                 Libgit2Helper.removeFromIndexThenWriteToDisk(
                     repoIndex,
                     Pair(isFile, relativePathUnderRepo),
