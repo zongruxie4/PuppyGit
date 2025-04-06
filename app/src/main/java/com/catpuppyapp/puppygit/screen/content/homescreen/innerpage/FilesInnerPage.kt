@@ -1751,25 +1751,27 @@ fun FilesInnerPage(
 
     if(showCopyOrMoveOrExportFileErrDialog.value) {
         val closeAndRefreshPage = {
+            //关弹窗
             showCopyOrMoveOrExportFileErrDialog.value = false
-            changeStateTriggerRefreshPage(needRefreshFilesPage)
-        }
-
-        CopyableDialog(
-            title = stringResource(R.string.error),
-            text = copyOrMoveOrExportFileErrMsg.value,
-            onCancel = closeAndRefreshPage
-        ) {
-            clipboardManager.setText(AnnotatedString(copyOrMoveOrExportFileErrMsg.value))
-            Msg.requireShow(activityContext.getString(R.string.copied))
 
             //清空下错误信息
             copyOrMoveOrExportFileErrMsg.value = ""
 
-            // (放弃了，不退出选择模式了，若操作失败，有可能会想用已选中的列表继续执行其他操作) 若执行到这，可能部分文件完成了移动或拷贝，需要刷新页面以看到最新变化
-//            filesPageQuitSelectionMode()  //退出选择模式是因为有可能部分已选中的条目可能已经被移动而失效了，懒得逐个检查，直接退出即可
+            //退出选择模式，然后刷新页面
+            filesPageQuitSelectionMode()  //退出选择模式是因为有可能部分已选中的条目可能已经被移动而失效了，懒得逐个检查，直接退出即可
+            changeStateTriggerRefreshPage(needRefreshFilesPage)
+        }
 
-            //关弹窗并刷新页面
+        val copyOrMoveOrExportFileErrMsg = copyOrMoveOrExportFileErrMsg.value
+        CopyableDialog(
+            title = stringResource(R.string.error),
+            text = copyOrMoveOrExportFileErrMsg,
+            onCancel = closeAndRefreshPage
+        ) {
+            clipboardManager.setText(AnnotatedString(copyOrMoveOrExportFileErrMsg))
+            Msg.requireShow(activityContext.getString(R.string.copied))
+
+            //这行最好放在拷贝msg后面，不然有可能先清空导致拷贝到空字符串
             closeAndRefreshPage()
         }
     }
