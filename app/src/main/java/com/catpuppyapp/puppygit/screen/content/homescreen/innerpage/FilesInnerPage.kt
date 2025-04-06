@@ -877,6 +877,8 @@ fun FilesInnerPage(
     }
 
 
+
+
     if(showRenameDialog.value) {
         ConfirmDialog(
             okBtnEnabled = !renameHasErr.value,
@@ -925,6 +927,9 @@ fun FilesInnerPage(
             onCancel = { showRenameDialog.value = false }
         ) {
             try {
+                val oldFileItemDto = renameFileItemDto.value // 旧文件
+                val renameFileItemDto = Unit // avoid mistake using
+
                 val newFileName = renameFileName.value.text
                 val fileOrFolderNameCheckRet = checkFileOrFolderNameAndTryCreateFile(newFileName, activityContext)
                 if(fileOrFolderNameCheckRet.hasError()) {  // 检测是否有坏字符，例如路径分隔符
@@ -932,7 +937,7 @@ fun FilesInnerPage(
                     renameErrText.value = fileOrFolderNameCheckRet.msg
 
                     //检测新旧文件名是否相同 以及 新文件名是否已经存在，两者都视为文件已存在
-                }else if( newFileName == renameFileItemDto.value.name || isPathExists(File(renameFileItemDto.value.fullPath).parent, newFileName)) {
+                }else if(newFileName == oldFileItemDto.name || isPathExists(File(oldFileItemDto.fullPath).parent, newFileName)) {
                     renameHasErr.value=true
                     renameErrText.value = activityContext.getString(R.string.file_already_exists)
                 }else {  //执行重命名文件
@@ -940,25 +945,41 @@ fun FilesInnerPage(
                     //执行重命名
                     doJobThenOffLoading(loadingOn = loadingOn, loadingOff=loadingOff) {
                         try {
-                            val oldFile = File(renameFileItemDto.value.fullPath)
-                            val newFile = File(File(renameFileItemDto.value.fullPath).parent, newFileName)
+                            val oldFile = File(oldFileItemDto.fullPath)
+                            val newFile = File(File(oldFileItemDto.fullPath).parent, newFileName)
                             val renameSuccess = oldFile.renameTo(newFile)
                             if(renameSuccess) {
-                                //重命名成功，把重命名之前的旧条目从选中列表移除，然后把改名后的新条目添加到列表（要不要改成：不管执行重命名失败还是成功，都一律移除？没必要啊，如果失败，名字又没变，移除干嘛？）
-                                if(selectedItems.value.remove(renameFileItemDto.value)) {  //移除旧条目。如果返回true，说明存在，则添加重命名后的新条目进列表；如果返回false，说明旧文件不在选中列表，不执行操作
-                                    val newNameDto = FileItemDto.genFileItemDtoByFile(newFile, activityContext)
-                                    selectedItems.value.add(newNameDto)
+                                val newNameDto = FileItemDto.genFileItemDtoByFile(newFile, activityContext)
+
+                                //更新已选中条目列表
+                                val selectedItems = selectedItems.value
+                                selectedItems.toList().forEachIndexed() { idx, item ->
+                                    if(item == oldFileItemDto) {
+                                        selectedItems[idx] = newNameDto
+                                    }
                                 }
-//                            selectedItems.requireRefreshView()
+
+
+                                //刷新页面 或 更新过滤列表
+                                if(enableFilterState.value.not()) {
+                                    changeStateTriggerRefreshPage(needRefreshFilesPage)
+                                }else {
+                                    val filterList = filterList.value
+                                    filterList.toList().forEachIndexed() { idx, item ->
+                                        if(item == oldFileItemDto) {
+                                            filterList[idx] = newNameDto
+                                        }
+                                    }
+                                }
+
+                                //提示用户成功
                                 Msg.requireShow(activityContext.getString(R.string.success))
                             }else {
                                 Msg.requireShow(activityContext.getString(R.string.error))
                             }
                         }catch (e:Exception) {
-                            Msg.requireShowLongDuration("rename failed:"+e.localizedMessage)
-                        }finally {
-                            //刷新页面
-                            changeStateTriggerRefreshPage(needRefreshFilesPage)
+                            Msg.requireShowLongDuration("rename failed: "+e.localizedMessage)
+                            MyLog.e(TAG, "rename failed: oldFile=${oldFileItemDto.fullPath}, newFileName=${newFileName}, err=${e.stackTraceToString()}")
                         }
 
                     }
@@ -1642,13 +1663,6 @@ fun FilesInnerPage(
     }
 
 
-    val updateFilterList = { getNewFilterList:(oldFilterList:List<FileItemDto>) -> List<FileItemDto> ->
-        val filterList = filterList.value
-        val newFilterList = getNewFilterList(filterList)
-        filterList.clear()
-        filterList.addAll(newFilterList)
-    }
-
 
     val showDelFileDialog = rememberSaveable { mutableStateOf(false)}
     val allCountForDelDialog = rememberSaveable { mutableStateOf(0)}
@@ -1706,9 +1720,8 @@ fun FilesInnerPage(
                     // 这种情况一般不会触发，没必要严格限制，确保这里刷新页面，这样如果触发上述情况，当前目录就会正确显示为不可读，若不刷新页面仅更新列表，就会错误显示已经不存在的条目
                     changeStateTriggerRefreshPage(needRefreshFilesPage)
                 }else {  //filter模式刷新会重新递归查找，太重量级，直接更新下过滤结果即可
-                    updateFilterList { oldList ->
-                        oldList.filter { selectedItems.contains(it).not() }
-                    }
+                    val filterList = filterList.value
+                    selectedItems.forEach { filterList.remove(it) }
                 }
             }
         }
