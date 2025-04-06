@@ -82,6 +82,7 @@ import com.catpuppyapp.puppygit.compose.ConfirmDialog
 import com.catpuppyapp.puppygit.compose.ConfirmDialog2
 import com.catpuppyapp.puppygit.compose.CopyScrollableColumn
 import com.catpuppyapp.puppygit.compose.CopyableDialog
+import com.catpuppyapp.puppygit.compose.CopyableDialog2
 import com.catpuppyapp.puppygit.compose.CreateFileOrFolderDialog2
 import com.catpuppyapp.puppygit.compose.FileListItem
 import com.catpuppyapp.puppygit.compose.GitIgnoreDialog
@@ -123,6 +124,7 @@ import com.catpuppyapp.puppygit.ui.theme.Theme
 import com.catpuppyapp.puppygit.utils.ActivityUtil
 import com.catpuppyapp.puppygit.utils.AppModel
 import com.catpuppyapp.puppygit.utils.FsUtils
+import com.catpuppyapp.puppygit.utils.FsUtils.PasteResult
 import com.catpuppyapp.puppygit.utils.Libgit2Helper
 import com.catpuppyapp.puppygit.utils.Msg
 import com.catpuppyapp.puppygit.utils.MyLog
@@ -511,7 +513,10 @@ fun FilesInnerPage(
             },
             onFinallyCallback={
                 showApplyAsPatchDialog.value=false
-                changeStateTriggerRefreshPage(needRefreshFilesPage)
+
+                if(enableFilterState.value.not()) {
+                    changeStateTriggerRefreshPage(needRefreshFilesPage)
+                }
             },
             onOkCallback={
                 Msg.requireShow(activityContext.getString(R.string.success))
@@ -1727,6 +1732,39 @@ fun FilesInnerPage(
         }
     }
 
+    val showCopyOrMoveOrExportFileErrDialog = rememberSaveable { mutableStateOf(false) }
+//    val copyOrMoveOrExportFileErrList = mutableCustomStateListOf(stateKeyTag, "copyOrMoveOrExportFileErrList") { mutableListOf<PasteResult>() }
+    val copyOrMoveOrExportFileErrMsg = rememberSaveable { mutableStateOf("") }
+    val initCopyOrMoveOrExportFileErrDialog = { errList: List<PasteResult> ->
+        val sb = StringBuilder()
+        val suffix = "\n\n--------------------\n\n"
+        sb.append("got ${errList.size} error(s):").append(suffix)
+        errList.forEach {
+            sb.append("srcPath: ${it.srcPath}").append("\n\n")
+            sb.append("targetPath: ${it.targetPath}").append("\n\n")
+            sb.append("errMsg: ${it.exception?.localizedMessage ?: "unknow err"}").append(suffix)
+        }
+
+        copyOrMoveOrExportFileErrMsg.value = sb.removeSuffix(suffix).toString()
+        showCopyOrMoveOrExportFileErrDialog.value = true
+    }
+
+    if(showCopyOrMoveOrExportFileErrDialog.value) {
+        CopyableDialog(
+            title = stringResource(R.string.error),
+            text = copyOrMoveOrExportFileErrMsg.value,
+            onCancel = { showCopyOrMoveOrExportFileErrDialog.value = false }
+        ) {
+            showCopyOrMoveOrExportFileErrDialog.value = false
+            clipboardManager.setText(AnnotatedString(copyOrMoveOrExportFileErrMsg.value))
+            Msg.requireShow(activityContext.getString(R.string.copied))
+
+            // 若执行到这，可能部分文件完成了移动或拷贝，需要刷新页面以看到最新变化
+            filesPageQuitSelectionMode()  //退出选择模式是因为有可能部分已选中的条目可能已经被移动而失效了，懒得逐个检查，直接退出即可
+            changeStateTriggerRefreshPage(needRefreshFilesPage)
+        }
+    }
+
     val copyOrMoveOrExportFile = copyOrMoveOrExportFile@{ srcList:List<FileItemDto>, targetFullPath:String, requireDeleteSrc:Boolean ->
 //                if(pastMode.intValue == pastMode_Copy) {
 //                    //执行拷贝
@@ -1743,11 +1781,13 @@ fun FilesInnerPage(
                     Msg.requireShow(activityContext.getString(R.string.no_item_selected))
                 }else if(ret.code == Ret.ErrCode.targetIsFileButExpectDir) {
                     Msg.requireShow(activityContext.getString(R.string.err_target_is_file_but_expect_dir))
+                }else {  //若有错误信息则显示错误信息弹窗
+                    val errList = ret.data
+                    if(errList != null && errList.isNotEmpty()) {
+                        initCopyOrMoveOrExportFileErrDialog(errList)
+                    }
                 }
 
-                //退出选择模式和刷新页面
-                filesPageQuitSelectionMode()
-                changeStateTriggerRefreshPage(needRefreshFilesPage)
                 return@doJobThenOffLoading
             }
 

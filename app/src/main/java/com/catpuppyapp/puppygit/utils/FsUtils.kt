@@ -424,8 +424,10 @@ object FsUtils {
         return target
     }
 
+    data class PasteResult(val srcPath: String, val targetPath:String, val exception:Exception?)
+
     //考虑要不要加个suspend？加suspend是因为拷贝大量文件时，有可能长时间阻塞，但实际上不加这方法也可运行
-    fun copyOrMoveOrExportFile(srcList:List<File>, destDir:File, requireDeleteSrc:Boolean):Ret<String?> {
+    fun copyOrMoveOrExportFile(srcList:List<File>, destDir:File, requireDeleteSrc:Boolean):Ret<List<PasteResult>?> {
         //其实不管拷贝还是移动都要先拷贝，区别在于移动后需要删除源目录
         //如果发现同名，添加到同名列表，弹窗询问是否覆盖。
 
@@ -439,12 +441,14 @@ object FsUtils {
             return Ret.createError(null, "target is a file but expect dir!", Ret.ErrCode.targetIsFileButExpectDir)
         }
 
-        var neverShowErr = true
+        val errList = mutableListOf<PasteResult>()
+
         //开始执行 拷贝 or 移动 or 导出
         srcList.forEach {
             val src = it
             var target:File? = null
 
+            //若某个条目执行操作失败，不会中止操作，会针对其他条目继续执行操作
             try {
                 //1 源不能不存在(例如，我在选择模式下对某个复制到“剪贴板”的文件执行了重命名，粘贴时就会出现源不存在的情况(这种情况实际已经解决，现在20240601选中文件后重命名会把已选中列表对应条目也更新))
                 //2 源和目标不能相同(否则会无限递归复制)
@@ -462,13 +466,8 @@ object FsUtils {
                 }
 
             }catch (e:Exception) {
-                MyLog.e(TAG, "#copyOrMoveOrExportFile() err: src=${src.canonicalPath}, target=${target?.canonicalPath}, err=${e.stackTraceToString()}")
-
-                // avoid copy many files get many toasts
-                if(neverShowErr) {
-                    neverShowErr=false
-                    Msg.requireShowLongDuration("err:${e.localizedMessage}")
-                }
+//                MyLog.e(TAG, "#copyOrMoveOrExportFile() err: src=${src.canonicalPath}, target=${target?.canonicalPath}, err=${e.stackTraceToString()}")
+                errList.add(PasteResult(src.canonicalPath, target?.canonicalPath?:"", e))
             }
         }
 
@@ -480,7 +479,11 @@ object FsUtils {
 //                }
 
         //显示成功提示
-        return Ret.createSuccess(null,"success")
+        return if(errList.isEmpty()) {
+            Ret.createSuccess(null)
+        }else {
+            Ret.createError(errList, "plz check the err list")
+        }
     }
 
     fun saveFile(fileFullPath:String, text:String, charset:Charset=Charsets.UTF_8) {
