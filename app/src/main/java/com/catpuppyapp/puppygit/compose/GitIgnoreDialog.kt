@@ -58,17 +58,20 @@ fun GitIgnoreDialog(
                 repository.use { repo ->
                     val repoIndex = repo.index()
 
+                    val lb = Cons.lineBreak
+                    val slash = Cons.slash
+
                     //拼接 "\npath1\npath2\npath3...省略....\n"
-                    val linesWillIgnore = Cons.lineBreak +
-                            (items.joinToString(Cons.lineBreak) {
+                    val linesWillIgnore = lb +
+                            (items.joinToString(lb) {
                                 // remove from git
-                                Libgit2Helper.removeFromGit(it.pathspec, repoIndex, it.isFile)
+                                Libgit2Helper.removeFromGit(repoIndex, it.pathspec, it.isFile)
 
                                 //返回将添加到 .gitignore 的path
                                 //相对路径前加/会从仓库根目录开始匹配，若不加杠，会匹配子目录，容易误匹配
-                                if (it.pathspec.startsWith(Cons.slashChar)) it.pathspec else (Cons.slash + it.pathspec)
+                                if (it.pathspec.startsWith(slash)) it.pathspec else (slash + it.pathspec)
                             }) +
-                            Cons.lineBreak
+                            lb
                     ;
 
                     val ignoreFile = File(Libgit2Helper.getRepoIgnoreFilePathNoEndsWithSlash(repo, createIfNonExists = true))

@@ -1676,8 +1676,8 @@ class Libgit2Helper {
          * 调用完后需要自行 index.write()以使修改生效
          */
         fun removeFromGit(
-            relativePathUnderRepo: String,
             repoIndex: Index,
+            relativePathUnderRepo: String,
             isFile:Boolean
         ) {
             // .git有可能是文件，所以不等于.git的条件不能省略，不然当.git是个文件时，就会对其执行remove了（不会出错但无意义）

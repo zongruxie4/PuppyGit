@@ -2919,7 +2919,7 @@ fun ChangeListInnerPage(
                                         //开始循环，删除所有选中文件
                                         selectedItemList.forEach {
                                             //存在有效仓库，且文件的仓库内相对路径不为空，且不是.git目录本身，且不是.git目录下的文件
-                                            Libgit2Helper.removeFromGit(it.relativePathUnderRepo, repoIndex, it.toFile().isFile)
+                                            Libgit2Helper.removeFromGit(repoIndex, it.relativePathUnderRepo, it.toFile().isFile)
                                         }
 
                                         //保存修改

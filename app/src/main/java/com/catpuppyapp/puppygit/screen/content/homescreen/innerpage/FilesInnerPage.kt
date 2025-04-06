@@ -1648,7 +1648,7 @@ fun FilesInnerPage(
                     selectedItems.forEach {
                         val relativePathUnderRepo = getFilePathUnderParent(repoWorkDirFullPath, it.fullPath)
                         //存在有效仓库，且文件的仓库内相对路径不为空，且不是.git目录本身，且不是.git目录下的文件
-                        Libgit2Helper.removeFromGit(relativePathUnderRepo, repoIndex, it.isFile)
+                        Libgit2Helper.removeFromGit(repoIndex, relativePathUnderRepo, it.isFile)
                     }
 
                     //保存修改
