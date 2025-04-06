@@ -2099,7 +2099,16 @@ fun FilesInnerPage(
 
                         Msg.requireShowLongDuration(replaceStringResList(activityContext.getString(R.string.n_inited), listOf(""+successCnt)))
                     }finally {
-                        changeStateTriggerRefreshPage(needRefreshFilesPage)
+                        if(enableFilterState.value.not()) {
+                            changeStateTriggerRefreshPage(needRefreshFilesPage)
+                        }else {
+                            val filterList = filterList.value
+                            filterList.toList().forEachIndexed { idx, item ->
+                                if(selctedDirs.contains(item.fullPath)) {
+                                    filterList[idx] = FileItemDto.genFileItemDtoByFile(File(item.fullPath), activityContext)
+                                }
+                            }
+                        }
                     }
                 }
             }
