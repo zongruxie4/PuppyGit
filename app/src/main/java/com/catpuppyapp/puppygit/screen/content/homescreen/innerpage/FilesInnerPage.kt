@@ -2297,9 +2297,14 @@ fun FilesInnerPage(
                 Msg.requireShowLongDuration("err: " + errMsg)
                 MyLog.e(TAG, "ignore files err: ${e.stackTraceToString()}")
             },
-            onFinally = {
-                //因为有可能会添加 .gitignore 文件，所以需要刷新下页面
-                changeStateTriggerRefreshPage(needRefreshFilesPage)
+            onFinally = { repoWorkDirFullPath ->
+                //过滤模式关闭 且 当前目录是仓库workdir根目录则刷新页面
+                //过滤模式不刷新页面：过滤模式涉及递归搜索，忽略文件没必要重新过滤，顶多遗漏一个新增的.gitignore文件，可以接受
+                //当前目录非仓库workdir根目录不刷新页面：因为只有仓库根目录可能的.gitignore文件可能会被创建或更新，所以只有当前目录为仓库workdir根目录，才有必要刷新
+                if(enableFilterState.value.not() && currentPath.value == repoWorkDirFullPath) {
+                    //因为有可能会添加 .gitignore 文件，所以需要刷新下页面
+                    changeStateTriggerRefreshPage(needRefreshFilesPage)
+                }
             }
         )
     }

@@ -27,7 +27,7 @@ fun GitIgnoreDialog(
     getRepository: () -> Repository?,
     onSuccess: suspend () -> Unit = { Msg.requireShow(activityContext.getString(R.string.success)) },
     onCatch: suspend (Exception)->Unit,
-    onFinally: suspend ()->Unit,
+    onFinally: suspend (repoWorkDirFullPath:String)->Unit,  //这个参数可用来判断是否需要刷新页面
 ) {
     ConfirmDialog(
         title = stringResource(R.string.ignore),
@@ -38,6 +38,7 @@ fun GitIgnoreDialog(
         showIgnoreDialog.value = false
 
         doJobThenOffLoading(loadingOn, loadingOff, activityContext.getString(R.string.loading)) {
+            var repoWorkDirFullPath = ""
             try {
                 val repository = getRepository()
 
@@ -45,8 +46,9 @@ fun GitIgnoreDialog(
                     return@doJobThenOffLoading
                 }
 
+                repoWorkDirFullPath = Libgit2Helper.getRepoWorkdirNoEndsWithSlash(repository)
 
-                val items = getIgnoreItems(Libgit2Helper.getRepoWorkdirNoEndsWithSlash(repository))
+                val items = getIgnoreItems(repoWorkDirFullPath)
 
                 if (items.isEmpty()) {
                     return@doJobThenOffLoading
@@ -81,7 +83,7 @@ fun GitIgnoreDialog(
             } catch (e: Exception) {
                 onCatch(e)
             } finally {
-                onFinally()
+                onFinally(repoWorkDirFullPath)
             }
 
         }
