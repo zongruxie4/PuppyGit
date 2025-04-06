@@ -1679,8 +1679,11 @@ class Libgit2Helper {
             repoIndex: Index,
             isFile:Boolean
         ) {
-            if (relativePathUnderRepo.isNotEmpty() && relativePathUnderRepo != ".git" && !relativePathUnderRepo.startsWith(".git/")) {  //starts with ".git/" 既可用于.git/目录名，也可用于其下的目录名，不过我测试过，如果是选中的.git目录，末尾没/，所以在判断路径是否等于.git那里就已经短路了
-//            if (relativePathUnderRepo.isNotEmpty()) {  // 其实不忽略.git也无所谓，但.git执行remove无效，所以还是忽略吧
+            // .git有可能是文件，所以不等于.git的条件不能省略，不然当.git是个文件时，就会对其执行remove了（不会出错但无意义）
+            // starts with ".git/" 也不能省略，这个判断适用于.git/目录下的路径
+            // 实际效果：如果选中的是.git目录（或文件）本身，相对路径末尾没/，所以在判断路径是否等于.git那里会短路，不会执行后面的starts with .git/ 判断，所以.git/其实仅适用于忽略.git内部的文件而无法忽略.git目录（或文件）本身
+            if (relativePathUnderRepo.isNotEmpty() && relativePathUnderRepo != ".git" && !relativePathUnderRepo.startsWith(".git/")) {
+//            if (relativePathUnderRepo.isNotEmpty()) {  // 其实不忽略.git也无所谓，但.git及其下文件执行remove from git无效，所以忽略更好
                 Libgit2Helper.removeFromIndexThenWriteToDisk(
                     repoIndex,
                     Pair(isFile, relativePathUnderRepo),
