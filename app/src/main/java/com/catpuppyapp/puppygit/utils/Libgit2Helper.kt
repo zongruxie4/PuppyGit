@@ -22,6 +22,7 @@ import com.catpuppyapp.puppygit.git.BranchNameAndTypeDto
 import com.catpuppyapp.puppygit.git.CommitDto
 import com.catpuppyapp.puppygit.git.DiffItemSaver
 import com.catpuppyapp.puppygit.git.FileHistoryDto
+import com.catpuppyapp.puppygit.git.IgnoreItem
 import com.catpuppyapp.puppygit.git.PatchFile
 import com.catpuppyapp.puppygit.git.PuppyHunkAndLines
 import com.catpuppyapp.puppygit.git.PuppyLine
@@ -1686,7 +1687,7 @@ class Libgit2Helper {
 //            if (relativePathUnderRepo.isNotEmpty()) {  // 其实不忽略.git也无所谓，但.git及其下文件执行remove from git无效，所以忽略更好
                 Libgit2Helper.removeFromIndexThenWriteToDisk(
                     repoIndex,
-                    Pair(isFile, relativePathUnderRepo),
+                    IgnoreItem(relativePathUnderRepo, isFile),
                     requireWriteToDisk = false  //这里不保存修改，等删完后统一保存修改
                 )  //最后一个值表示不希望调用的函数执行 index.write()，我删完列表后自己会执行，不需要每个条目都执行，所以传false请求调用的函数别执行index.write()
 
@@ -2475,7 +2476,7 @@ class Libgit2Helper {
 
         //pathSpecList，仓库路径下的相对路径列表
         //列表pair数据结构：(isFile, path)
-        fun removePathSpecListFromIndexThenWriteToDisk(repo: Repository, pathSpecList: List<Pair<Boolean, String>>) {
+        fun removePathSpecListFromIndexThenWriteToDisk(repo: Repository, pathSpecList: List<IgnoreItem>) {
             val repoIndex = repo.index()
             pathSpecList.forEach {
                 removeFromIndexThenWriteToDisk(repoIndex, it, requireWriteToDisk=false)  //最后一个值表示不希望调用的函数执行 index.write()，我删完列表后自己会执行，不需要每个条目都执行，所以传false请求调用的函数别执行index.write()
@@ -2487,8 +2488,10 @@ class Libgit2Helper {
         //pair数据结构：(isFile, path)
         // 参数 requireWriteToDisk 应用场景： 例如外部有个列表，想删完所有条目后写入一次，那调用这个方法时就可以传false，然后自己写入即可；如果是单次调用本方法，且希望本方法保存修改，则传true
         //如果移除的文件path是仓库.git目录下的，则不会从git移除文件，也不会报错，就跟没移过一样，所以调用此方法前不用手动排除.git目录下的文件
-        fun removeFromIndexThenWriteToDisk(index:Index, isFileAndPathSpec: Pair<Boolean, String>, requireWriteToDisk:Boolean=false) {
-            val (isFile, pathspec) = isFileAndPathSpec  //pathspec是仓库下相对路径
+        fun removeFromIndexThenWriteToDisk(index:Index, ignoreItem: IgnoreItem, requireWriteToDisk:Boolean=false) {
+            val isFile = ignoreItem.isFile
+            val pathspec = ignoreItem.pathspec  //pathspec是仓库下相对路径
+
             if(isFile) {  // 移除文件
                 index.removeByPath(pathspec)
             }else {  // 移除目录
