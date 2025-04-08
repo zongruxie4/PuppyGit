@@ -1,3 +1,12 @@
+1.0.9.9v75 - 20250408:
+- add turkish
+
+
+
+- 新增土耳其语
+
+---
+
 1.0.9.8v74 - 20250403:
 - add remove from git to ChangeList
 - improve Files filter logic
