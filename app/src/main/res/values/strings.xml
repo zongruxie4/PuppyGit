@@ -928,6 +928,7 @@
     <string name="lang_name_english" translatable="false">English</string>
     <string name="lang_name_russian" translatable="false">Русский</string>
     <string name="lang_name_chinese_simplified" translatable="false">中文(简体)</string>
+    <string name="lang_name_turkish" translatable="false">Türkçe</string>
 
 
     <string name="log_level">Log Level</string>

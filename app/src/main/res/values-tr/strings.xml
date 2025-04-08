@@ -880,9 +880,6 @@
     <string name="require_restart_app">Uygulamayı Yeniden Başlatma Gerektirir</string>
     <string name="language">Dil</string>
     <string name="unsupported">Desteklenmiyor</string>
-    <string name="lang_name_english" translatable="false">English</string>
-    <string name="lang_name_russian" translatable="false">Русский</string>
-    <string name="lang_name_chinese_simplified" translatable="false">中文(简体)</string>
     <string name="log_level">Günlük Seviyesi</string>
     <string name="warn">Uyarı</string>
     <string name="debug">Hata Ayıklama</string>
@@ -954,7 +951,7 @@
     <string name="show_change_type">Değişiklik Türünü Göster</string>
     <string name="replace">Değiştir</string>
     <string name="change_type">Değişiklik Türü</string>
-    <string name=" Warranty_by_line">Satıra Göre Gruplandır</string>
+    <string name="group_by_line">Satıra Göre Gruplandır</string>
     <string name="a_list_icon_lor_filter_commits_by_paths">Yollara göre işlemeleri filtrelemek için bir liste simgesi</string>
     <string name="filter_by_paths">Yollara Göre Filtrele</string>
     <string name="paths">Yollar</string>

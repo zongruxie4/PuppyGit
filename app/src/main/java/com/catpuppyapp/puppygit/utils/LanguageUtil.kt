@@ -16,7 +16,9 @@ object LanguageUtil {
         // order by a-z
         LangCode.en,
         LangCode.ru,
+        LangCode.tr,
         LangCode.zh_cn,
+
         // other language...
     )
 
@@ -63,6 +65,10 @@ object LanguageUtil {
 
         if(languageCode == LangCode.zh_cn) {
             return context.getString(R.string.lang_name_chinese_simplified)
+        }
+
+        if(languageCode == LangCode.tr) {
+            return context.getString(R.string.lang_name_turkish)
         }
 
         // add other language here
