@@ -12,7 +12,6 @@ import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.MutableState
-import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -29,9 +28,9 @@ import com.catpuppyapp.puppygit.compose.LongPressAbleIconBtn
 import com.catpuppyapp.puppygit.compose.SmallFab
 import com.catpuppyapp.puppygit.constants.Cons
 import com.catpuppyapp.puppygit.constants.PageRequest
+import com.catpuppyapp.puppygit.dev.bug_Editor_undoStackLostAfterRotateScreen_Fixed
 import com.catpuppyapp.puppygit.dto.FileSimpleDto
 import com.catpuppyapp.puppygit.dto.UndoStack
-import com.catpuppyapp.puppygit.fileeditor.texteditor.state.TextEditorState
 import com.catpuppyapp.puppygit.fileeditor.texteditor.view.ScrollEvent
 import com.catpuppyapp.puppygit.play.pro.R
 import com.catpuppyapp.puppygit.screen.content.homescreen.innerpage.EditorInnerPage
@@ -193,7 +192,14 @@ fun SubPageEditor(
 
     val editorShowUndoRedo = rememberSaveable{mutableStateOf(settingsTmp.editor.showUndoRedo)}
 //    val editorUndoStack = remember(editorPageShowingFilePath.value){ derivedStateOf { UndoStack(filePath = editorPageShowingFilePath.value.ioPath) } }
-    val editorUndoStack = remember { SharedState.subEditorUndoStack }
+//    val editorUndoStack = remember { SharedState.subEditorUndoStack }
+    val editorUndoStack = remember(editorPageShowingFilePath.value.ioPath) {
+        if(bug_Editor_undoStackLostAfterRotateScreen_Fixed) {
+            SharedState.subEditorUndoStack
+        }else {
+            mutableStateOf(UndoStack(editorPageShowingFilePath.value.ioPath))
+        }
+    }
 
 
     val showCloseDialog = rememberSaveable { mutableStateOf(false)}

@@ -433,8 +433,8 @@ fun EditorInnerPage(
 //        editorPageRequireOpenFilePath.value = editorPageShowingFilePath.value
         editorPageShowingFileIsReady.value = false  //设置文件状态为未就绪，显示loading界面，好像有bug，TODO 需要测试能不能正常显示loading，整个大文件，测试一下
 
-        //重载文件没必要清undo stack
-//        undoStack.value = null
+        //重载文件清undo stack
+        undoStack.value = UndoStack(editorPageShowingFilePath.value.ioPath)
 
         changeStateTriggerRefreshPage(needRefreshEditorPage)
     }
@@ -1406,8 +1406,6 @@ private suspend fun doInit(
             if(requireOpenFilePath != undoStack.value.filePath) {
                 undoStack.value = UndoStack(filePath = requireOpenFilePath)
             }
-        }else {
-            undoStack.value = UndoStack(filePath = requireOpenFilePath)
         }
 
         //清除错误信息，如果打开文件时出错，会重新设置错误信息

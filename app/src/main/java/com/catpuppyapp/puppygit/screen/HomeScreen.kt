@@ -64,6 +64,7 @@ import com.catpuppyapp.puppygit.constants.IntentCons
 import com.catpuppyapp.puppygit.constants.PageRequest
 import com.catpuppyapp.puppygit.constants.SingleSendHandleMethod
 import com.catpuppyapp.puppygit.data.entity.RepoEntity
+import com.catpuppyapp.puppygit.dev.bug_Editor_undoStackLostAfterRotateScreen_Fixed
 import com.catpuppyapp.puppygit.dto.FileItemDto
 import com.catpuppyapp.puppygit.dto.FileSimpleDto
 import com.catpuppyapp.puppygit.dto.UndoStack
@@ -546,7 +547,14 @@ fun HomeScreen(
     val editorOpenFileErr = rememberSaveable{mutableStateOf(false)}
     val editorShowUndoRedo = rememberSaveable{mutableStateOf(settingsSnapshot.value.editor.showUndoRedo)}
 //    val editorUndoStack = remember(editorPageShowingFilePath.value){ derivedStateOf { UndoStack(filePath = editorPageShowingFilePath.value.ioPath) } }
-    val editorUndoStack = remember { SharedState.editorUndoStack }
+//    val editorUndoStack = remember { SharedState.editorUndoStack }
+    val editorUndoStack = remember(editorPageShowingFilePath.value.ioPath) {
+        if(bug_Editor_undoStackLostAfterRotateScreen_Fixed) {
+            SharedState.editorUndoStack
+        }else {
+            mutableStateOf(UndoStack(editorPageShowingFilePath.value.ioPath))
+        }
+    }
 
 
     //给Files页面点击打开文件用的
