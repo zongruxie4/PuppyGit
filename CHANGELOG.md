@@ -1,9 +1,9 @@
 1.0.9.9v75 - 20250408:
-- add turkish
+- add turkish (pr #41, thx @mikropsoft)
 
 
 
-- 新增土耳其语
+- 新增土耳其语 (pr #41, thx @mikropsoft)
 
 ---
 

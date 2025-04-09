@@ -1,1 +1,1 @@
-- add turkish
+- add turkish (pr #41, thx @mikropsoft)
