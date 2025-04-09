@@ -54,7 +54,7 @@ jobs:
           export ppgit_c_lib_out=$GITHUB_WORKSPACE/app/src/main/jniLibs
           cd $GITHUB_WORKSPACE/lib_build_scripts
           rm -rf $ppgit_c_lib_out/*
-          bash 3_buildlibs_lg2_sha256.sh $ppgit_c_lib_out
+          bash 3_buildlibs_lg2_sha256_with_print_log.sh $ppgit_c_lib_out
       
       - name: "List C Libs"
         run: ls -R $GITHUB_WORKSPACE/app/src/main/jniLibs
