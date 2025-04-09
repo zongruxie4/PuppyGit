@@ -1,1 +1,4 @@
 - add turkish (pr #41, thx @mikropsoft)
+- fix Editor undo stack clear after rotate screen
+- fix resolve file path failed in some cases
+
