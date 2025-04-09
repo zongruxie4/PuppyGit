@@ -27,25 +27,27 @@ class FilePath(
         initIoPath()
     }
 
-    @IgnoredOnParcel
-    private val throwResolveUriFailed = {
+    // parcel的类最好别用lambda，有可能会出错
+    private fun throwResolveUriFailed():String {
         throw RuntimeException("resolve uri failed")
+
+        // for pass compile，不返回通不过编译
+        ""
     }
 
 
-    @IgnoredOnParcel
-    private val pathOrThrow = { tryThisPath :String ->
+    //这里必须用fun不能用lambda，否则会出错，判断不准，具体原因没测试，总之改成fun就行了，或者把lambda放到parcel类外应该也行（未测试）
+    private fun pathOrThrow(tryThisPath :String):String {
         val file = File(tryThisPath)
-        if (file.canRead()) {
+        return if (file.canRead()) {file.canRead()
             file.canonicalPath
         } else {
             throwResolveUriFailed()
         }
     }
 
-    @IgnoredOnParcel
-    private val readableCanonicalPathOrDefault = { file:File, default:String ->
-        file.let {
+    private fun readableCanonicalPathOrDefault(file:File, default:String):String {
+        return file.let {
             if(it.canRead()) {
                 it.canonicalPath
             }else {
