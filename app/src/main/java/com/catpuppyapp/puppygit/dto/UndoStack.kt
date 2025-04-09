@@ -162,4 +162,9 @@ data class UndoStack(
             null
         }
     }
+
+    override fun equals(other: Any?): Boolean {
+        //地址不同就当作不同对象
+        return this === other
+    }
 }

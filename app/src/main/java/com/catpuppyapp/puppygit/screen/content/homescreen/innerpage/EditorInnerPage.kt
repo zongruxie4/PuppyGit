@@ -166,7 +166,7 @@ fun EditorInnerPage(
 
     openDrawer:()->Unit,
     editorOpenFileErr:MutableState<Boolean>,
-    undoStack: State<UndoStack>,
+    undoStack: CustomStateSaveable<UndoStack>,
 
 ) {
     val scope = rememberCoroutineScope()
@@ -1289,7 +1289,7 @@ fun EditorInnerPage(
                         isSaving = isSaving,
                         isContentSnapshoted = editorPageIsContentSnapshoted,
                         lastTextEditorState = lastTextEditorState,
-                        undoStack = undoStack.value
+                        undoStack = undoStack
                     )
                 }catch (e:Exception) {
                     Msg.requireShowLongDuration("init Editor err: ${e.localizedMessage}")
@@ -1360,13 +1360,9 @@ private suspend fun doInit(
     isSaving:MutableState<Boolean>,
     isContentSnapshoted:MutableState<Boolean>,
     lastTextEditorState: CustomStateSaveable<TextEditorState>,
-    undoStack:UndoStack
+    undoStack:CustomStateSaveable<UndoStack>,
+
 ) {
-
-    //目前这个函数只有加载文件的逻辑，所以判断下，如果已加载，就直接返回，以后如果添加其他逻辑，把这行注释即可，其他不用改，因为加载文件前又做了一次此判断
-    if (editorPageShowingFileIsReady.value) return;
-
-
 
     //保存后不改变needrefresh就行了，没必要传这个变量
     //保存文件时会设置这个变量，因为保存的内容本来就是最新的，不需要重新加载
@@ -1403,7 +1399,10 @@ private suspend fun doInit(
 
         //执行到这里，一定有一个非空的文件路径
 
-
+        //若文件改变，更新undo stack
+        if(requireOpenFilePath != undoStack.value.filePath) {
+            undoStack.value = UndoStack(filePath = requireOpenFilePath)
+        }
 
         //清除错误信息，如果打开文件时出错，会重新设置错误信息
         editorPageClearShowingFileErrWhenLoading()
@@ -1506,7 +1505,7 @@ private suspend fun doInit(
                 onChanged = getEditorStateOnChange(
                     editorPageTextEditorState = editorPageTextEditorState,
                     lastTextEditorState = lastTextEditorState,
-                    undoStack = undoStack
+                    undoStack = undoStack.value
                 )
             )
 
