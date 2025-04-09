@@ -166,7 +166,7 @@ fun EditorInnerPage(
 
     openDrawer:()->Unit,
     editorOpenFileErr:MutableState<Boolean>,
-    undoStack: CustomStateSaveable<UndoStack>,
+    undoStack: MutableState<UndoStack>,
 
 ) {
     val scope = rememberCoroutineScope()
@@ -1360,7 +1360,7 @@ private suspend fun doInit(
     isSaving:MutableState<Boolean>,
     isContentSnapshoted:MutableState<Boolean>,
     lastTextEditorState: CustomStateSaveable<TextEditorState>,
-    undoStack:CustomStateSaveable<UndoStack>,
+    undoStack:MutableState<UndoStack>,
 
 ) {
 

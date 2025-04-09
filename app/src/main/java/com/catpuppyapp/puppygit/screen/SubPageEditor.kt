@@ -193,7 +193,7 @@ fun SubPageEditor(
 
     val editorShowUndoRedo = rememberSaveable{mutableStateOf(settingsTmp.editor.showUndoRedo)}
 //    val editorUndoStack = remember(editorPageShowingFilePath.value){ derivedStateOf { UndoStack(filePath = editorPageShowingFilePath.value.ioPath) } }
-    val editorUndoStack = mutableCustomStateOf(stateKeyTag, "editorUndoStack") { UndoStack(filePath = "") }
+    val editorUndoStack = remember { SharedState.subEditorUndoStack }
 
 
     val showCloseDialog = rememberSaveable { mutableStateOf(false)}

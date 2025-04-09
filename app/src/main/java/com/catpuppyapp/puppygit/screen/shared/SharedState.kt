@@ -2,6 +2,7 @@ package com.catpuppyapp.puppygit.screen.shared
 
 import androidx.compose.runtime.mutableStateOf
 import com.catpuppyapp.puppygit.constants.Cons
+import com.catpuppyapp.puppygit.dto.UndoStack
 import com.catpuppyapp.puppygit.git.StatusTypeEntrySaver
 
 object SharedState {
@@ -22,6 +23,8 @@ object SharedState {
     val editorPreviewNavStack = EditorPreviewNavStack("")
     val subEditorPreviewNavStack = EditorPreviewNavStack("")
 
+    val editorUndoStack = mutableStateOf(UndoStack(""))
+    val subEditorUndoStack = mutableStateOf(UndoStack(""))
 
     //用来在请求选择和执行选择的FileChooser页面之间共享选中的路径
     val fileChooser_DirPath = mutableStateOf("")  //如果用app内置 File Picker 选目录，用这个做state
