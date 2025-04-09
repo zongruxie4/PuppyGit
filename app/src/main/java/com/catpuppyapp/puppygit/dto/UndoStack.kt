@@ -4,16 +4,14 @@ import androidx.compose.runtime.MutableLongState
 import androidx.compose.runtime.mutableLongStateOf
 import com.catpuppyapp.puppygit.fileeditor.texteditor.state.TextEditorState
 import com.catpuppyapp.puppygit.utils.MyLog
-import com.catpuppyapp.puppygit.utils.doJobThenOffLoading
 import com.catpuppyapp.puppygit.utils.getSecFromTime
-import kotlinx.coroutines.delay
 import java.util.LinkedList
 import java.util.concurrent.locks.ReentrantLock
 import kotlin.concurrent.withLock
 
 private const val TAG = "UndoStack"
 
-data class UndoStack(
+class UndoStack(
     /**
     用来标记这是哪个文件的stack
      */
@@ -163,8 +161,4 @@ data class UndoStack(
         }
     }
 
-    override fun equals(other: Any?): Boolean {
-        //地址不同就当作不同对象
-        return this === other
-    }
 }
