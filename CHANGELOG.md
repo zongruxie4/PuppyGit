@@ -1,12 +1,10 @@
 1.0.9.9v75 - 20250408:
 - add turkish (pr #41, thx @mikropsoft)
-- fix Editor undo stack clear after rotate screen
 - fix resolve file path failed in some cases
 
 
 
 - 新增土耳其语 (pr #41, thx @mikropsoft)
-- 修复编辑器撤销栈在旋转屏幕后会清空的bug
 - 修复某些情况下解析文件路径失败的bug
 
 ---
