@@ -105,6 +105,9 @@ val bug_Editor_GoToColumnCantHideKeyboard_Fixed = false // editor，启动时或
 // 影响2：editor，定位到某行，列index被更新为其他行的index （推测有此问题，但测试很少，所以没注意到）
 val bug_Editor_WrongUpdateEditColumnIdx_Fixed = false
 
+//旋转屏幕，editor的undo stack会被清空，如果不清，会导致undo功能失效并且undo后编辑器的内容无法编辑，原因不明
+val bug_Editor_undoStackLostAfterRotateScreen_Fixed = false
+
 
 /**
  * 调试用的flag文件

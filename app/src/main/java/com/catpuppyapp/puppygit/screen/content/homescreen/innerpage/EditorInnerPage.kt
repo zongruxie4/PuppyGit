@@ -61,6 +61,7 @@ import com.catpuppyapp.puppygit.compose.OpenAsDialog
 import com.catpuppyapp.puppygit.constants.Cons
 import com.catpuppyapp.puppygit.constants.LineNum
 import com.catpuppyapp.puppygit.constants.PageRequest
+import com.catpuppyapp.puppygit.dev.bug_Editor_undoStackLostAfterRotateScreen_Fixed
 import com.catpuppyapp.puppygit.dto.FileSimpleDto
 import com.catpuppyapp.puppygit.dto.UndoStack
 import com.catpuppyapp.puppygit.fileeditor.texteditor.state.TextEditorState
@@ -1399,8 +1400,13 @@ private suspend fun doInit(
 
         //执行到这里，一定有一个非空的文件路径
 
-        //若文件改变，更新undo stack
-        if(requireOpenFilePath != undoStack.value.filePath) {
+
+        if(bug_Editor_undoStackLostAfterRotateScreen_Fixed) {
+            //若文件改变，更新undo stack
+            if(requireOpenFilePath != undoStack.value.filePath) {
+                undoStack.value = UndoStack(filePath = requireOpenFilePath)
+            }
+        }else {
             undoStack.value = UndoStack(filePath = requireOpenFilePath)
         }
 
