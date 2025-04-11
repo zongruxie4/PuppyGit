@@ -1,0 +1,1 @@
+- change BottomBar menu icon enable condition

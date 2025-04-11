@@ -1,3 +1,12 @@
+1.1.0.0v76 - 20250411:
+- change BottomBar menu icon enable condition
+
+
+
+- 修改底栏菜单按钮启用条件
+
+---
+
 1.0.9.9v75 - 20250408:
 - add turkish (pr #41, thx @mikropsoft)
 - fix resolve file path failed in some cases
