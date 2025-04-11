@@ -2561,8 +2561,6 @@ fun RepoInnerPage(
             iconDescTextList=selectionModeIconTextList,
             iconOnClickList=selectionModeIconOnClickList,
             iconEnableList=selectionModeIconEnableList,
-            enableMoreIcon=hasSelectedItems(),
-            visibleMoreIcon=true,
             moreItemTextList=selectionModeMoreItemTextList,
             moreItemOnClickList=selectionModeMoreItemOnClickList,
             moreItemEnableList = selectionModeMoreItemEnableList,

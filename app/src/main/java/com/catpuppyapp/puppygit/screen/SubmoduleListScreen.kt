@@ -1365,7 +1365,6 @@ fun SubmoduleListScreen(
                     iconDescTextList=iconTextList,
                     iconOnClickList=iconOnClickList,
                     iconEnableList=iconEnableList,
-                    enableMoreIcon=true,
                     moreItemTextList=moreItemTextList,
                     moreItemOnClickList=moreItemOnClickList,
                     moreItemEnableList = moreItemEnableList,

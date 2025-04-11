@@ -869,7 +869,6 @@ fun TagListScreen(
                     iconDescTextList=iconTextList,
                     iconOnClickList=iconOnClickList,
                     iconEnableList=iconEnableList,
-                    enableMoreIcon=true,
                     moreItemTextList=moreItemTextList,
                     moreItemOnClickList=moreItemOnClickList,
                     moreItemEnableList = moreItemEnableList,

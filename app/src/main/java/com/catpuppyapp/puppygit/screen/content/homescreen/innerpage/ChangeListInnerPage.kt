@@ -3187,7 +3187,6 @@ fun ChangeListInnerPage(
 
 
 //    val enableMoreIcon = fromTo != Cons.gitDiffFromTreeToTree
-                    val enableMoreIcon = true
                     //话说用这个diffFromTo变量来判断其实并非本意，但也勉强说得过去，因为worktree的changelist和index页面所需要diff的不同，所以，也可以这么写，其实本该还有一个FromHeadToWorktree的diff变量的，但在这里用不上
                     val moreItemTextList = (if(fromTo == Cons.gitDiffFromIndexToWorktree) listOf(
                         stringResource(R.string.accept_ours),
@@ -3291,7 +3290,6 @@ fun ChangeListInnerPage(
                         iconOnClickList=iconOnClickList,
                         iconEnableList=iconEnableList,
                         iconVisibleList = iconVisibleList,
-                        enableMoreIcon=enableMoreIcon,
                         moreItemTextList=moreItemTextList,
                         moreItemOnClickList=moreItemOnClickList,
                         moreItemEnableList = moreItemEnableList,

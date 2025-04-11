@@ -54,19 +54,21 @@ fun BottomBar(
     iconEnableList:List<()->Boolean>,
     iconVisibleList:List<()->Boolean> = listOf(),  //这个默认就用空list()让所有条目都可以显示就很好，不要把默认行为调整成启用则显示禁用则隐藏，因为这个按钮本来就只显示4、5个，用户可能会习惯按某个位置对应某个功能，若默认隐藏禁用按钮，可能会按错
 
+    // count number
+    getSelectedFilesCount:()->Int,
+    countNumOnClickEnabled:Boolean=false,
+    countNumOnClick:()->Unit={},
+
+
     // more menu
-    enableMoreIcon:Boolean,
-    visibleMoreIcon:Boolean = enableMoreIcon,  //默认情况启用即显示三点more图标，禁用即隐藏，不过也可分别控制显示和启用禁用。
     moreItemTextList:List<String>,
+    visibleMoreIcon:Boolean = moreItemTextList.isNotEmpty(),
+    enableMoreIcon:Boolean = visibleMoreIcon && getSelectedFilesCount() > 0,
     moreItemOnClickList:List<()->Unit>,
     moreItemEnableList:List<()->Boolean>,
     moreItemVisibleList:List<()->Boolean> = moreItemEnableList,  //这个菜单条目默认启用即显示，禁用即隐藏，这样感觉比较节省心智，因为有可能有很多菜单条目而且这个菜单用户一般是先看一下才会按，就算菜单条目变化一般也不会按错
     reverseMoreItemList:Boolean = false,
 
-    // count number
-    getSelectedFilesCount:()->Int,
-    countNumOnClickEnabled:Boolean=false,
-    countNumOnClick:()->Unit={},
 
 ) {
     val dropDownMenuExpendState = rememberSaveable { mutableStateOf(false) }
@@ -181,9 +183,8 @@ fun BottomBar(
                     }
                 }
 //                x 废弃，没必要，随列表滚动足矣）把more改成固定在右边不要随列表滚动怎么样？
-                //题外话：当时设计这个组件的时候没想到，其实用列表是否不为空来决定是否显示菜单图标就够了，不需要多一个开关变量
                 //menu
-                if (visibleMoreIcon && moreItemTextList.isNotEmpty()) {
+                if (visibleMoreIcon) {
                     //菜单得单独开一行，不然DropdownMenu就定位到外部菜单的最左边了，就偏离菜单图标了，单独开一行就可以定位到菜单图标那里，完美
                     Row(
                         verticalAlignment = Alignment.CenterVertically

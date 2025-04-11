@@ -601,7 +601,6 @@ fun FileEditor(
                         iconDescTextList=iconTextList,
                         iconOnClickList=iconOnClickList,
                         iconEnableList=iconEnableList,
-                        enableMoreIcon=false,
                         moreItemTextList= listOf(),
                         moreItemOnClickList= listOf(),
                         moreItemEnableList = listOf(),
