@@ -1174,7 +1174,8 @@ fun FileHistoryScreen(
                 }
                 curRepo.value = repoFromDb
                 val repoFullPath = repoFromDb.fullSavePath
-                titleInfo.value = getFileNameFromCanonicalPath(fileRelativePath) +": "+ repoFromDb.repoName ;
+                //"[fileName of RepoName]"
+                titleInfo.value = "[${getFileNameFromCanonicalPath(fileRelativePath)} of ${repoFromDb.repoName}]"
 
 //            val isDetached = dbIntToBool(repoFromDb.isDetached)
 
