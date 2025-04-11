@@ -25,13 +25,13 @@ fun RepoInfoDialog(
         ScrollableColumn {
             if(prependContent != null) {
                 prependContent()
-                Spacer(Modifier.height(10.dp))
+                RepoInfoDialogItemSpacer()
             }
 
             Row {
                 Text(stringResource(id = R.string.repo) + ": " + curRepo.repoName)
             }
-            Spacer(Modifier.height(10.dp))
+            RepoInfoDialogItemSpacer()
 
             if (dbIntToBool(curRepo.isDetached)) {
                 Row {
@@ -43,7 +43,7 @@ fun RepoInfoDialog(
                 }
 
                 if (curRepo.upstreamBranch.isNotBlank()) {
-                    Spacer(Modifier.height(10.dp))
+                    RepoInfoDialogItemSpacer()
 
                     Row {
                         Text(stringResource(R.string.upstream) + ": " + (curRepo.upstreamBranch))
@@ -51,16 +51,21 @@ fun RepoInfoDialog(
                 }
             }
 
-            Spacer(Modifier.height(10.dp))
+            RepoInfoDialogItemSpacer()
             Row {
                 Text(stringResource(R.string.repo_state) + ": " + (curRepo.gitRepoState?.name?:""))
             }
 
             if(appendContent != null) {
-                Spacer(Modifier.height(10.dp))
+                RepoInfoDialogItemSpacer()
                 appendContent()
             }
 
         }
     }
+}
+
+@Composable
+fun RepoInfoDialogItemSpacer() {
+    Spacer(Modifier.height(10.dp))
 }

@@ -72,6 +72,7 @@ import com.catpuppyapp.puppygit.compose.LongPressAbleIconBtn
 import com.catpuppyapp.puppygit.compose.MyCheckBox
 import com.catpuppyapp.puppygit.compose.MyLazyColumn
 import com.catpuppyapp.puppygit.compose.RepoInfoDialog
+import com.catpuppyapp.puppygit.compose.RepoInfoDialogItemSpacer
 import com.catpuppyapp.puppygit.compose.ScrollableColumn
 import com.catpuppyapp.puppygit.constants.Cons
 import com.catpuppyapp.puppygit.data.entity.RepoEntity
@@ -103,6 +104,7 @@ import com.catpuppyapp.puppygit.utils.createAndInsertError
 import com.catpuppyapp.puppygit.utils.doActIfIndexGood
 import com.catpuppyapp.puppygit.utils.doJobThenOffLoading
 import com.catpuppyapp.puppygit.utils.formatMinutesToUtc
+import com.catpuppyapp.puppygit.utils.getFileNameFromCanonicalPath
 import com.catpuppyapp.puppygit.utils.getRequestDataByState
 import com.catpuppyapp.puppygit.utils.isGoodIndexForList
 import com.catpuppyapp.puppygit.utils.replaceStringResList
@@ -631,7 +633,9 @@ fun FileHistoryScreen(
         RepoInfoDialog(
             curRepo = curRepo.value,
             showTitleInfoDialog = showTitleInfoDialog,
-            appendContent = {
+            prependContent = {
+                Text(stringResource(R.string.file_name)+": "+ getFileNameFromCanonicalPath(fileRelativePath))
+                RepoInfoDialogItemSpacer()
                 Text(stringResource(R.string.file_path)+": "+fileRelativePath)
             }
         )
@@ -1170,7 +1174,7 @@ fun FileHistoryScreen(
                 }
                 curRepo.value = repoFromDb
                 val repoFullPath = repoFromDb.fullSavePath
-                titleInfo.value = repoFromDb.repoName +": "+fileRelativePath
+                titleInfo.value = getFileNameFromCanonicalPath(fileRelativePath) +": "+ repoFromDb.repoName ;
 
 //            val isDetached = dbIntToBool(repoFromDb.isDetached)
 

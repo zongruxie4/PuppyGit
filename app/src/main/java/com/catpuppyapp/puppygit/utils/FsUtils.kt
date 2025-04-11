@@ -355,12 +355,13 @@ object FsUtils {
     }
 
     /**
-     * 这函数应该不会报错，但若担心可 runCatching{}
+     * 本函数适用于从"/"开头的绝对路径和非"/"开头的相对路径拆分去父路径和文件名
+     * 本函数应该不会报错，但若担心可 runCatching{}
      * @return Pair(parentPath, fileName), e.g. input "/abc/def/123", will return Pair("/abc/def/", "123")，并不会移除父路径末尾的'/'，所以可以直接把parentPath和新文件名拼接获得同目录下的新文件对象
      */
     fun splitParentAndName(canonicalPath:String):Pair<String, String> {
         // `File("/").name` return empty String, so if path equals rootPath, should return empty string as file name for compatible
-        if(canonicalPath == rootPath || canonicalPath.isBlank()) {
+        if(canonicalPath.isEmpty() || canonicalPath == rootPath) {
             return Pair(canonicalPath, "")
         }
 
@@ -368,10 +369,11 @@ object FsUtils {
         val lastSeparatorAt = canonicalPath.lastIndexOf('/')
         val fileNameStartAt = lastSeparatorAt+1
 
-        return if(fileNameStartAt >= canonicalPath.length) { //bad index, out of bound
-            // no file name yet, canonicalPath is "/" maybe
+        return if(fileNameStartAt >= canonicalPath.length) { //bad index, out of bound，执行到这，若此判断为真，"/"必然在路径末尾
+            // no file name yet, canonicalPath like "path/" or "/path/"  but is not "/", cause "/" already return when enter this function
             Pair(canonicalPath, "")
         } else {
+            //若是非 "/" 开头的相对路径，执行到这里，会返回 Pair("", fileName)
             Pair(canonicalPath.substring(0, fileNameStartAt), canonicalPath.substring(fileNameStartAt))
         }
     }

@@ -443,6 +443,7 @@ fun isSizeOverLimit(size:Long, limitMax:Long):Boolean {
 
 /**
  * return file name or empty string
+ * 适用于 "/"开头的绝对路径和非"/"开头的相对路径
  */
 fun getFileNameFromCanonicalPath(path:String) : String {
     return runCatching { FsUtils.splitParentAndName(path).second }.getOrDefault("")
