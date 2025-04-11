@@ -1187,10 +1187,7 @@ fun FileHistoryScreen(
                     }
                     val headOid = head.peel(GitObject.Type.COMMIT)?.id()
                     if (headOid == null || headOid.isNullOrEmptyOrZero) {
-                        MyLog.w(
-                            TAG,
-                            "#LaunchedEffect: head oid is null or invalid! repoId=$repoId}, headOid=${headOid.toString()}"
-                        )
+                        MyLog.w(TAG, "#LaunchedEffect: headOid is null or invalid! repoId=$repoId, headOid=$headOid")
                         return@job
                     }
 
