@@ -338,9 +338,10 @@ class TextEditorState private constructor(
                 init_selectedIndices = selectedIndices,
                 isMutableFields = true,
                 isMutableSelectedIndices = false,
-//                out_focusingLineIdx = newFocusingLineIdx,
-//                init_focusingLineIdx = focusingLineIdx,
                 targetIndex = lastNewSplitFieldIndex,
+
+                // 如果自定义位置有bug，就禁用下面的改用这个，注释option和columnStartIndexInclusive
+//                option = SelectionOption.FIRST_POSITION,
 
                 option = SelectionOption.CUSTOM,
                 columnStartIndexInclusive = if (oldTargetText == newTargetFirstText) {  //新旧第一行相等，定位到新内容最后一行末尾
@@ -350,11 +351,14 @@ class TextEditorState private constructor(
                     var ol = oldTargetText.length
                     var bothLen = Math.min(ol, nl)
                     while (bothLen-- > 0) {
-                        if(newTargetLastText[--nl] != oldTargetText[--ol]) break
+                        if(newTargetLastText[--nl] != oldTargetText[--ol]) {
+                            nl++
+                            break
+                        }
                     }
 
                     //要定位到倒数第一个不匹配的字符后面，所以需要加1
-                    nl + 1
+                    nl
                 },
             )
 
