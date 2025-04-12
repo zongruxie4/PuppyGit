@@ -4,6 +4,7 @@ import android.content.Context
 import android.util.Log
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.mutableStateOf
+import com.catpuppyapp.puppygit.constants.Cons
 import com.catpuppyapp.puppygit.play.pro.R
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.channels.BufferOverflow
@@ -57,7 +58,7 @@ object MyLog {
     private var isInited = false
 
     private var logDirPath = ""
-    private const val maxErrCount = 3
+    private const val maxErrCount = Cons.maxErrTryTimes
     private val writerJob: MutableState<Job?> = mutableStateOf(null)
 
     private var logDir:File?=null

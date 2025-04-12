@@ -2,6 +2,7 @@ package com.catpuppyapp.puppygit.utils
 
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.mutableStateOf
+import com.catpuppyapp.puppygit.constants.Cons
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.channels.BufferOverflow
 import kotlinx.coroutines.channels.Channel
@@ -33,7 +34,7 @@ object EditCache {
     private val timestampFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss") // 日志的输出格式
     private val fileNameTimeFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd") // 日志文件格式
     private var targetFile:File?=null
-    private const val maxErrCount = 3
+    private const val maxErrCount = Cons.maxErrTryTimes
     private var writerJob: MutableState<Job?> = mutableStateOf(null)
     private var writer:BufferedWriter?=null
 
