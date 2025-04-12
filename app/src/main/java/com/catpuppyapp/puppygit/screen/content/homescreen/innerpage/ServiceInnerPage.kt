@@ -563,7 +563,8 @@ fun ServiceInnerPage(
         }) {
             Column(modifier = Modifier.fillMaxWidth(itemLeftWidthForSwitcher)) {
                 Text(stringResource(R.string.progress_notification), fontSize = itemFontSize)
-                Text(stringResource(R.string.require_restart_service), fontSize = itemDescFontSize, fontWeight = FontWeight.Light, fontStyle = FontStyle.Italic)
+                //现在每次调用api都获取最新的settings，所以修改此项不再需要重启服务
+//                Text(stringResource(R.string.require_restart_service), fontSize = itemDescFontSize, fontWeight = FontWeight.Light, fontStyle = FontStyle.Italic)
             }
 
             Icon(

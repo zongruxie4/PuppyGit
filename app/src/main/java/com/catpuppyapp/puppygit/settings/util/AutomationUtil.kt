@@ -4,7 +4,7 @@ import android.content.ComponentName
 import android.content.Context
 import android.provider.Settings
 import com.catpuppyapp.puppygit.dto.AppInfo
-import com.catpuppyapp.puppygit.service.MyAccessibilityService
+import com.catpuppyapp.puppygit.service.AutomationService
 import com.catpuppyapp.puppygit.settings.AutomationSettings
 import com.catpuppyapp.puppygit.settings.SettingsUtil
 import com.catpuppyapp.puppygit.utils.MyLog
@@ -32,7 +32,7 @@ object AutomationUtil {
     fun isAccessibilityServiceEnabled(context: Context): Boolean? {
         return try {
             val enabledServices = Settings.Secure.getString(context.contentResolver, Settings.Secure.ENABLED_ACCESSIBILITY_SERVICES) ?: return false
-            val componentName = ComponentName(context, MyAccessibilityService::class.java).flattenToString()
+            val componentName = ComponentName(context, AutomationService::class.java).flattenToString()
 
             enabledServices.contains(componentName)
         }catch (e:Exception) {

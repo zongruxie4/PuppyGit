@@ -41,7 +41,7 @@
         android:requestLegacyExternalStorage="true"
         >
         <service
-            android:name="com.catpuppyapp.puppygit.service.MyAccessibilityService"
+            android:name="com.catpuppyapp.puppygit.service.AutomationService"
             android:permission="android.permission.BIND_ACCESSIBILITY_SERVICE"
             android:exported="true">
         <intent-filter>

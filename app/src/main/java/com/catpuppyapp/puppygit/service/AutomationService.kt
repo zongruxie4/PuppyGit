@@ -26,9 +26,9 @@ import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 
 
-class MyAccessibilityService: AccessibilityService() {
+class AutomationService: AccessibilityService() {
     companion object {
-        private const val TAG = "MyAccessibilityService"
+        private const val TAG = "AutomationService"
 
         private val lock = Mutex()
         // key is package name, value is true=app opened, false=app closed, null=app never open

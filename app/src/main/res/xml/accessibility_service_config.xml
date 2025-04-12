@@ -5,5 +5,5 @@
     android:accessibilityFeedbackType="feedbackAllMask"
     android:notificationTimeout="50"
     android:canRetrieveWindowContent="false"
-    android:settingsActivity="com.catpuppyapp.puppygit.service.MyAccessibilityService"
+    android:settingsActivity="com.catpuppyapp.puppygit.service.AutomationService"
     android:description="@string/accessibility_service_description"/>
