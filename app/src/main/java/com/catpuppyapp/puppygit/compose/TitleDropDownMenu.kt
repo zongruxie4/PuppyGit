@@ -29,6 +29,7 @@ fun <T> TitleDropDownMenu(
     dropDownMenuExpendState: MutableState<Boolean>,
     curSelectedItem:T,
     itemList: List<T>,
+    isItemSelected:(T)->Boolean,
     titleClickEnabled:Boolean,
     showHideMenuIconContentDescription:String,  // 这个可能是为视力不好的人设置的语音提示文字
     menuItemFormatter:(T)->String,
@@ -67,7 +68,10 @@ fun <T> TitleDropDownMenu(
             )
         },
         menuItem = {
-            Text(menuItemFormatter(it))
+            DropDownMenuItemText(
+                text = menuItemFormatter(it),
+                selected = isItemSelected(it)
+            )
         },
         titleOnLongClick = titleOnLongClick,
         itemOnClick = itemOnClick,

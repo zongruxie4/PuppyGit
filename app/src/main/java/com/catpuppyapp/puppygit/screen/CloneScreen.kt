@@ -67,6 +67,7 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import com.catpuppyapp.puppygit.compose.ClickableText
 import com.catpuppyapp.puppygit.compose.ConfirmDialog
+import com.catpuppyapp.puppygit.compose.DropDownMenuItemText
 import com.catpuppyapp.puppygit.compose.LoadingDialog
 import com.catpuppyapp.puppygit.compose.LongPressAbleIconBtn
 import com.catpuppyapp.puppygit.compose.MySelectionContainer
@@ -1043,9 +1044,8 @@ fun CloneScreen(
 //                            val curList = if(curCredentialType.intValue == Cons.dbCredentialTypeHttp) credentialHttpList else credentialSshList
                             val curList = allCredentialList
                             for(item in curList.value.toList()) {
-                                val itemText = if(item.id == selectedCredentialId.value) addPrefix(item.name) else item.name
                                 DropdownMenuItem(
-                                    text = { Text(itemText) },
+                                    text = { DropDownMenuItemText(text = item.name, selected = item.id == selectedCredentialId.value) },
                                     onClick = {
                                         selectedCredentialId.value = item.id
                                         selectedCredentialName.value = item.name
@@ -1059,9 +1059,11 @@ fun CloneScreen(
                     Row {
                         Text(stringResource(R.string.selected_credential))
                         Spacer(modifier = Modifier.width(10.dp))
-                        Text(text =selectedCredentialName.value,
-                            fontWeight = FontWeight.ExtraBold
 
+                        //和下拉菜单已选中条目的样式统一
+                        DropDownMenuItemText(
+                            text = selectedCredentialName.value,
+                            selected = true,
                         )
                     }
                 }

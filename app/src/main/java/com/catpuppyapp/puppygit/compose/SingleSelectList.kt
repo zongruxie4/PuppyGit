@@ -144,11 +144,9 @@ fun<T> SingleSelectList(
                         //列出其余条目
                         DropdownMenuItem(
                             text = {
-                                val selected = menuItemSelected(index, value)
-                                Text(
+                                DropDownMenuItemText(
                                     text = menuItemFormatter(index, value),
-                                    color = if(selected) MyStyleKt.DropDownMenu.selectedItemColor else Color.Unspecified,
-                                    fontWeight = if(selected) FontWeight.Bold else FontWeight.Normal,
+                                    selected = menuItemSelected(index, value)
                                 )
                             },
                             onClick ={

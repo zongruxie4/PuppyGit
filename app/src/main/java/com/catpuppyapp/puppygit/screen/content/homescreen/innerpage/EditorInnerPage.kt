@@ -1168,8 +1168,9 @@ fun EditorInnerPage(
                             }
 
                             HorizontalDivider()
+
                             DropdownMenuItem(
-                                text = { Text(stringResource(R.string.clear)) },
+                                text = { Text(text = stringResource(R.string.clear), color = MyStyleKt.TextColor.danger()) },
                                 onClick = {
                                     // close dropdown menu
                                     showRecentFilesList.value=false

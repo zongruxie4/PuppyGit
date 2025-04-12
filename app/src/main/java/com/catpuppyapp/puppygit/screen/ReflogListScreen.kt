@@ -324,9 +324,10 @@ fun ReflogListScreen(
                             showHideMenuIconContentDescription = stringResource(R.string.switch_reference),
                             titleFirstLineFormatter = { it },
                             titleSecondLineFormatter = { Libgit2Helper.getRepoOnBranchOrOnDetachedHash(curRepo.value) },
-                            menuItemFormatter= { if (it == refName.value) addPrefix(it) else it },
+                            menuItemFormatter= { it },
                             titleOnLongClick = { showTitleInfoDialog.value = true },
-                            itemOnClick = { switchRef(it) }
+                            itemOnClick = { switchRef(it) },
+                            isItemSelected = { it == refName.value }
                         )
                     }
                 },

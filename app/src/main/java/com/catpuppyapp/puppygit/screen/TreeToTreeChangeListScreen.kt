@@ -38,6 +38,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
+import com.catpuppyapp.puppygit.compose.DropDownMenuItemText
 import com.catpuppyapp.puppygit.compose.FilterTextField
 import com.catpuppyapp.puppygit.compose.GoToTopAndGoToBottomFab
 import com.catpuppyapp.puppygit.compose.LongPressAbleIconBtn
@@ -275,8 +276,8 @@ fun TreeToTreeChangeListScreen(
                             onDismissRequest = { showParentListDropDownMenu.value = false }
                         ) {
                             commitParentList.value.toList().forEach {
-                                val itemText = if(it == commit1OidStrState.value) addPrefix(Libgit2Helper.getShortOidStrByFull(it)) else Libgit2Helper.getShortOidStrByFull(it)
-                                DropdownMenuItem(text = { Text(text = itemText)},
+                                DropdownMenuItem(
+                                    text = { DropDownMenuItemText(text = Libgit2Helper.getShortOidStrByFull(it), selected = it == commit1OidStrState.value) },
                                     onClick = {
 
                                         // close menu

@@ -16,6 +16,7 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextOverflow
+import com.catpuppyapp.puppygit.compose.DropDownMenuItemText
 import com.catpuppyapp.puppygit.compose.RepoInfoDialog
 import com.catpuppyapp.puppygit.compose.TitleDropDownMenu
 import com.catpuppyapp.puppygit.data.entity.RepoEntity
@@ -133,8 +134,10 @@ fun ChangeListTitle(
                 )
             },
             menuItem = { r ->
-                //如果是当前条目，名字前加个星号
-                Text(if(r.id == changeListCurRepo.value.id) addPrefix(r.repoName) else r.repoName)
+                DropDownMenuItemText(
+                    text = r.repoName,
+                    selected = r.id == changeListCurRepo.value.id
+                )
             },
             titleOnLongClick = { showTitleInfoDialog.value = true },
             itemOnClick = { r ->
