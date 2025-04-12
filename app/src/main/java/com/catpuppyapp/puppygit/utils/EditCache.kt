@@ -1,5 +1,8 @@
 package com.catpuppyapp.puppygit.utils
 
+import androidx.compose.runtime.MutableState
+import androidx.compose.runtime.mutableStateOf
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.channels.BufferOverflow
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.sync.Mutex
@@ -30,11 +33,12 @@ object EditCache {
     private val timestampFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss") // 日志的输出格式
     private val fileNameTimeFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd") // 日志文件格式
     private var targetFile:File?=null
-
+    private const val maxErrCount = 3
+    private var writerJob: MutableState<Job?> = mutableStateOf(null)
     private var writer:BufferedWriter?=null
 
     private var isInited = false
-
+    private var cacheDirPath = ""
     private var cacheDir:File?=null
         get() {
             //没初始化
@@ -61,16 +65,16 @@ object EditCache {
         try {
             //这两个变量删除过期文件需要用，所以无论是否启用cache，都初始化这两个变量
             this.keepInDays = keepInDays
-            this.cacheDir = File(cacheDirPath)
+            this.cacheDirPath = cacheDirPath
 
             //只有启用cache才有必要初始化writer，否则根本不会写入文件，自然也不需要初始化writer
+            //及时禁用也不终止writer协程，不过调用write将不会执行操作
             enable = enableCache
-            if(enable) {
-                initWriter()
-                startWriter()
+            if(enableCache) {
                 isInited=true
+                startWriter()
             }else {
-                //禁用cache的情况下，不会初始化writer，所以初始化flag应该为假
+                //禁用cache的情况下，不会初始化writer，所以初始化flag应该为假，然后写入的时候会因为未init而不执行写入
                 isInited = false
             }
         }catch (e:Exception) {
@@ -82,33 +86,57 @@ object EditCache {
     }
 
     private fun startWriter() {
-        doJobThenOffLoading {
+        if(writerJob.value != null) {
+            return
+        }
+
+        writerJob.value = doJobThenOffLoading {
+            var (file, writer) = initWriter()
+
             //出错n次则不再执行
-            var errCountLimit = 3
+            var errCountLimit = maxErrCount
 
             while (errCountLimit > 0) {
-                try {
-                    writeLock.withLock {
+                writeLock.withLock {
+                    val textWillWrite = writeChannel.receive()
 
-                        val textWillWrite = writeChannel.receive()
+                    //尝试写入3次
+                    while (errCountLimit > 0) {
+                        try {
+                            //如果要写入的文件不存在，重新初始化writer，删除缓存后会发生这种情况，或者用户手动删除了PuppyGit-Data目录
+                            if (file.exists().not()) {
+                                //更新writer
+                                val pair = initWriter()
+                                file = pair.first
+                                writer = pair.second
+                            }
 
-                        //如果要写入的文件不存在，重新初始化writer，删除缓存后会发生这种情况，或者用户手动删除了PuppyGit-Data目录
-                        if (targetFile?.exists() != true) {
-                            initWriter()
+                            writer.write(textWillWrite+"\n")
+                            writer.flush()
+
+                            errCountLimit = maxErrCount
+                            break
+                        } catch (e: Exception) {
+                            errCountLimit--
+                            val pair = initWriter()
+                            file = pair.first
+                            writer = pair.second
+                            MyLog.e(TAG, "write to file err:${e.stackTraceToString()}")
                         }
-
-                        writer?.write(textWillWrite+"\n")
-                        writer?.flush()
                     }
-                } catch (e: Exception) {
-                    errCountLimit--
-                    MyLog.e(TAG, "write to file err:${e.stackTraceToString()}")
                 }
+
             }
 
-            writeChannel.close()
+            writerJob.value = null
+            // 这个不能close，有可能存在新的writer协程
+//            writeChannel.close()
         }
     }
+
+//    private fun targetFileExists():Boolean {
+//        return targetFile?.exists() == true
+//    }
 
     //获取随机文件名或者按日期获取文件名，按日期获取的就是一天一个，随机的就是每次启动app都创建一个不同的文件
     private fun getFileName(datePrefix: String = fileNameTimeFormatter.format(LocalDateTime.now()),
@@ -168,7 +196,7 @@ object EditCache {
         }
     }
 
-    private fun initWriter(){
+    private fun initWriter(): Pair<File, BufferedWriter>{
         val funName = "initWriter"
 
 //        //这里不要做检测，cacheDir如果是null，应立即报错，避免后续调用writer
@@ -177,10 +205,12 @@ object EditCache {
 //            return
 //        }
 
-        val dirsFile = cacheDir!!
+        val dirsFile = File(cacheDirPath)
         if (!dirsFile.exists()) {
             dirsFile.mkdirs()
         }
+
+        cacheDir = dirsFile
 
 
         //Log.i("创建文件","创建文件");
@@ -201,7 +231,7 @@ object EditCache {
             file.createNewFile()
         }
 
-        //如果writer不为null，先关流
+        //如果writer不为null，先关流，这样之前启动的writer协程最后会因为已关流无法写入而中止(未测试）
         try {
             writer?.close()
         }catch (e:Exception) {
@@ -211,7 +241,10 @@ object EditCache {
         //新开一个writer
         val append = true
         val filerWriter = FileWriter(file, append) // 后面这个参数代表是不是要接上文件中原来的数据，不进行覆盖
-        writer = filerWriter.buffered()
+        val newWriter = filerWriter.buffered()
+        writer = newWriter
+
+        return Pair(file, newWriter)
     }
 
     /**

@@ -62,6 +62,7 @@ import com.catpuppyapp.puppygit.style.MyStyleKt
 import com.catpuppyapp.puppygit.ui.theme.Theme
 import com.catpuppyapp.puppygit.utils.AppModel
 import com.catpuppyapp.puppygit.utils.ComposeHelper
+import com.catpuppyapp.puppygit.utils.EditCache
 import com.catpuppyapp.puppygit.utils.HashUtil
 import com.catpuppyapp.puppygit.utils.LanguageUtil
 import com.catpuppyapp.puppygit.utils.Lg2HomeUtils
@@ -80,6 +81,7 @@ import com.catpuppyapp.puppygit.utils.getStoragePermission
 import com.catpuppyapp.puppygit.utils.getValidTimeZoneOffsetRangeInMinutes
 import com.catpuppyapp.puppygit.utils.isValidOffsetInMinutes
 import com.catpuppyapp.puppygit.utils.replaceStringResList
+import com.catpuppyapp.puppygit.utils.snapshot.SnapshotUtil
 import com.catpuppyapp.puppygit.utils.state.mutableCustomStateListOf
 import com.catpuppyapp.puppygit.utils.state.mutableCustomStateOf
 import com.catpuppyapp.puppygit.utils.storagepaths.StoragePathsMan
@@ -922,14 +924,17 @@ fun SettingsInnerPage(
 
             //save
             enableEditCache.value = newValue
-            SettingsUtil.update {
+            val settings = SettingsUtil.update(requireReturnSnapshotOfUpdatedSettings = true) {
                 it.editor.editCacheEnable = newValue
-            }
+            }!!
+
+            //重新初始化EditCache
+            EditCache.init(keepInDays = settings.editor.editCacheKeepInDays, cacheDirPath = AppModel.getOrCreateEditCacheDir().canonicalPath, enableCache = newValue)
         }) {
             Column(modifier = Modifier.fillMaxWidth(itemLeftWidthForSwitcher)) {
                 Text(stringResource(R.string.edit_cache), fontSize = itemFontSize)
                 Text(replaceStringResList(stringResource(R.string.cache_your_input_into_editcache_dir_path), listOf("${Cons.defalutPuppyGitDataUnderAllReposDirName}/${Cons.defaultEditCacheDirName}")), fontSize = itemDescFontSize, fontWeight = FontWeight.Light)
-                Text(stringResource(R.string.require_restart_app), fontSize = itemDescFontSize, fontWeight = FontWeight.Light, fontStyle = FontStyle.Italic)
+//                Text(stringResource(R.string.require_restart_app), fontSize = itemDescFontSize, fontWeight = FontWeight.Light, fontStyle = FontStyle.Italic)
             }
 
             Icon(
@@ -947,12 +952,14 @@ fun SettingsInnerPage(
                 SettingsUtil.update {
                     it.editor.enableFileSnapshot = newValue
                 }
+
+                SnapshotUtil.update_enableFileSnapshotForEditor(newValue)
             }
         ) {
             Column(modifier = Modifier.fillMaxWidth(itemLeftWidthForSwitcher)) {
                 Text(stringResource(R.string.file_snapshot), fontSize = itemFontSize)
                 Text(stringResource(R.string.file_snapshot_desc), fontSize = itemDescFontSize, fontWeight = FontWeight.Light)
-                Text(stringResource(R.string.require_restart_app), fontSize = itemDescFontSize, fontWeight = FontWeight.Light, fontStyle = FontStyle.Italic)
+//                Text(stringResource(R.string.require_restart_app), fontSize = itemDescFontSize, fontWeight = FontWeight.Light, fontStyle = FontStyle.Italic)
 
             }
 
@@ -971,12 +978,14 @@ fun SettingsInnerPage(
                 SettingsUtil.update {
                     it.editor.enableContentSnapshot = newValue
                 }
+
+                SnapshotUtil.update_enableContentSnapshotForEditor(newValue)
             }
         ) {
             Column(modifier = Modifier.fillMaxWidth(itemLeftWidthForSwitcher)) {
                 Text(stringResource(R.string.content_snapshot), fontSize = itemFontSize)
                 Text(stringResource(R.string.content_snapshot_desc), fontSize = itemDescFontSize, fontWeight = FontWeight.Light)
-                Text(stringResource(R.string.require_restart_app), fontSize = itemDescFontSize, fontWeight = FontWeight.Light, fontStyle = FontStyle.Italic)
+//                Text(stringResource(R.string.require_restart_app), fontSize = itemDescFontSize, fontWeight = FontWeight.Light, fontStyle = FontStyle.Italic)
 
             }
 
@@ -1000,12 +1009,13 @@ fun SettingsInnerPage(
                 SettingsUtil.update {
                     it.diff.createSnapShotForOriginFileBeforeSave = newValue
                 }
+                SnapshotUtil.update_enableFileSnapshotForDiff(newValue)
             }
         ) {
             Column(modifier = Modifier.fillMaxWidth(itemLeftWidthForSwitcher)) {
                 Text(stringResource(R.string.file_snapshot), fontSize = itemFontSize)
                 Text(stringResource(R.string.file_snapshot_desc), fontSize = itemDescFontSize, fontWeight = FontWeight.Light)
-                Text(stringResource(R.string.require_restart_app), fontSize = itemDescFontSize, fontWeight = FontWeight.Light, fontStyle = FontStyle.Italic)
+//                Text(stringResource(R.string.require_restart_app), fontSize = itemDescFontSize, fontWeight = FontWeight.Light, fontStyle = FontStyle.Italic)
 
             }
 

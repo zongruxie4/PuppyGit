@@ -137,6 +137,7 @@ object FlagFileName {
      * 启用编辑缓存，存在此文件或设置项启用editcache开关开启则启用editcache。
      * if this file exists or settings editcache switch to on, then will enable editcache
      */
+    @Deprecated("use `settings.editor.editCacheEnable` instead")
     const val enableEditCache = "enableEditCache"
 
     /**

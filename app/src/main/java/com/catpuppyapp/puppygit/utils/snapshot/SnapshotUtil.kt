@@ -34,6 +34,18 @@ object SnapshotUtil:SnapshotCreator {
         enableFileSnapshotForDiff = enableFileSnapshotForDiffInitValue
     }
 
+    fun update_enableFileSnapshotForEditor(newValue:Boolean) {
+        enableFileSnapshotForEditor = newValue
+    }
+
+    fun update_enableContentSnapshotForEditor(newValue: Boolean) {
+        enableContentSnapshotForEditor = newValue
+    }
+
+    fun update_enableFileSnapshotForDiff(newValue: Boolean) {
+        enableFileSnapshotForDiff = newValue
+    }
+
 
     override fun createSnapshotByContentAndGetResult(
         srcFileName:String,

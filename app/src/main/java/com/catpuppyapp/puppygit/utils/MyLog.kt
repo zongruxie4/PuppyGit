@@ -5,6 +5,7 @@ import android.util.Log
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.mutableStateOf
 import com.catpuppyapp.puppygit.play.pro.R
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.channels.BufferOverflow
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.sync.Mutex
@@ -49,12 +50,15 @@ object MyLog {
     private val myLogSdf = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss") // 日志的输出格式
     private val logFileSdf = DateTimeFormatter.ofPattern("yyyy-MM-dd") // 日志文件格式
 
-    // the mutable can avoid coroutine caught a field, but the field changed the the coroutine still use former value
-    private var logWriter: MutableState<BufferedWriter?> = mutableStateOf(null)
-    private var logFile:MutableState<File?> = mutableStateOf(null)
+    private var logWriter: BufferedWriter? = null
+    private var logFile:File? = null
 
     //指示当前类是否完成初始化的变量，若未初始化，意味着没设置必须的参数，这时候无法记日志
-    private val isInited = mutableStateOf(false)
+    private var isInited = false
+
+    private var logDirPath = ""
+    private const val maxErrCount = 3
+    private val writerJob: MutableState<Job?> = mutableStateOf(null)
 
     private var logDir:File?=null
         get() {
@@ -84,14 +88,14 @@ object MyLog {
     //    public Context context;
     fun init(logKeepDays: Int= defaultLogKeepDays, logLevel: Char=defaultLogLevel, logDirPath:String) {
         try {
+            isInited = true
+
             logFilesKeepDays = logKeepDays
             myLogLevel = logLevel
-            logDir = File(logDirPath)
-            initLogWriter()
+            this.logDirPath = logDirPath
             startWriter()
-            isInited.value = true
         }catch (e:Exception) {
-            isInited.value = false
+            isInited = false
             try {
                 e.printStackTrace()
                 Log.e(TAG, "#init MyLog err:"+e.stackTraceToString())
@@ -102,52 +106,69 @@ object MyLog {
         }
     }
 
-    fun destroyer() {
-        writeChannel.close()
-
-        isInited.value = false
-    }
+//    fun destroyer() {
+//        writeChannel.close()
+//
+//        isInited = false
+//    }
 
     fun setLogLevel(level:Char) {
         myLogLevel = level
     }
 
-    fun setLogFileKeepDays(days:Int) {
-        logFilesKeepDays = days
-    }
+//    fun setLogFileKeepDays(days:Int) {
+//        logFilesKeepDays = days
+//    }
 
     private fun startWriter() {
-        doJobThenOffLoading {
-            var errCountLimit = 3
-            var closed = false
-            while (errCountLimit > 0 && closed.not()) {
-                try {
-                    //channel外面加互斥锁，这样就相当于一个公平锁了（带队列的互斥锁）,即使误开多个writer也不用担心冲突了
-                    writeLock.withLock {
-                        val textWillWrite = writeChannel.receive()
+        if(writerJob.value != null) {
+            return
+        }
 
-                        if (logFile.value?.exists() != true) {
-                            initLogWriter()
+        writerJob.value = doJobThenOffLoading {
+            var (file, writer) = initLogWriter()
+            var errCountLimit = maxErrCount
+            while (errCountLimit > 0) {
+                //channel外面加互斥锁，这样就相当于一个公平锁了（带队列的互斥锁）,即使误开多个writer也不用担心冲突了
+                writeLock.withLock {
+                    val textWillWrite = writeChannel.receive()
+
+                    while (errCountLimit > 0) {
+                        try {
+                            //用户可能会删除文件，删除文件其实还好，write时应该会自动创建（未测试），但用户搞不好连整个log目录都删除，所以还是需要判断下
+                            if (file.exists().not()) {
+                                val pair = initLogWriter()
+                                file = pair.first
+                                writer = pair.second
+                            }
+
+                            writer.write(textWillWrite + "\n")
+                            writer.flush()
+
+                            errCountLimit = maxErrCount
+                            break
+                        } catch (e: Exception) {
+                            errCountLimit--
+                            val pair = initLogWriter()
+                            file = pair.first
+                            writer = pair.second
+                            Log.e(TAG, "write to file err:${e.stackTraceToString()}")
                         }
-
-                        logWriter.value?.write(textWillWrite + "\n")
-                        logWriter.value?.flush()
                     }
-                } catch (e: Exception) {
-                    if(writeChannel.tryReceive().isClosed) {
-                        closed = true
-                    }
-                    errCountLimit--
-
-                    Log.e(TAG, "write to file err:${e.stackTraceToString()}")
                 }
+
+//            if(writeChannel.tryReceive().isClosed.not()) {
+//                writeChannel.close()
+//            }
             }
 
-            if(writeChannel.tryReceive().isClosed.not()) {
-                writeChannel.close()
-            }
+            writerJob.value = null
         }
     }
+
+//    private fun targetFileExist():Boolean{
+//        return logFile?.exists() == true
+//    }
 
     fun w(tag: String, msg: Any) { // 警告信息
         log(tag, msg.toString(), 'w')
@@ -198,7 +219,7 @@ object MyLog {
     private fun log(tag: String, msg: String, level: Char) {
         try {
             //如果未初始化MyLog，无法记日志，用安卓官方Log类打印下，然后返回
-            if(isInited.value.not()) {
+            if(isInited.not()) {
                 if(level == 'e') {
                     Log.e(tag, msg)
                 }else if(level == 'w') {
@@ -295,7 +316,7 @@ object MyLog {
     private suspend fun writeLogToFile(mylogtype: String, tag: String, text: String) { // 新建或打开日志文件
         try {
             val nowtime = LocalDateTime.now()
-            val needWriteMessage = myLogSdf.format(nowtime) + "    " + mylogtype + "    " + tag + "    " + text
+            val needWriteMessage = myLogSdf.format(nowtime) + "    " + mylogtype + "    " + tag + "    " + text;
 
             writeChannel.send(needWriteMessage)
 
@@ -310,13 +331,16 @@ object MyLog {
         }
     }
 
-    private fun initLogWriter(){
+    private fun initLogWriter():Pair<File, BufferedWriter>{
         val funName = "initLogWriter"
 
-        val dirsFile = logDir!!
+
+        val dirsFile = File(logDirPath)
         if (!dirsFile.exists()) {
             dirsFile.mkdirs()
         }
+
+        logDir = dirsFile
 
 
         //Log.i("创建文件","创建文件");
@@ -326,7 +350,7 @@ object MyLog {
             getLogFileName()
         ) // MYLOG_PATH_SDCARD_DIR
 
-        logFile.value = file
+        logFile = file
         //debug
 //            System.out.println("file.toString():::"+file.toString());
         //debug
@@ -337,7 +361,7 @@ object MyLog {
 
         //如果writer不为null，先关流
         try {
-            logWriter.value?.close()
+            logWriter?.close()
         }catch (e:Exception) {
             Log.e(TAG, "#$funName err:${e.stackTraceToString()}")
         }
@@ -345,7 +369,10 @@ object MyLog {
         //新开一个writer
         val append = true
         val filerWriter = FileWriter(file, append) // 后面这个参数代表是不是要接上文件中原来的数据，不进行覆盖
-        logWriter.value = filerWriter.buffered()
+        val newBufferedWriter = filerWriter.buffered()
+        logWriter = newBufferedWriter
+
+        return Pair(file, newBufferedWriter)
     }
 
     /**
