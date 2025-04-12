@@ -1,1 +1,3 @@
 - change BottomBar menu icon enable condition
+- fix: snapshot enable not work
+- fix: cursor of Editor placed wrong in some cases
