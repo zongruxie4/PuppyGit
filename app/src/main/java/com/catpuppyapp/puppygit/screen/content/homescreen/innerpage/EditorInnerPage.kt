@@ -191,6 +191,8 @@ fun EditorInnerPage(
         s
     }
 
+    val recentFilesLimit = remember(settings.editor.recentFilesLimit) { settings.editor.recentFilesLimit }
+
     val saveLock = remember(editorPageShowingFilePath.value.ioPath) { Cache.getOrPutByType(generateKeyForSaveLock(editorPageShowingFilePath.value.ioPath), default = { Mutex() }) }
 //    val saveLock = Mutex()  //其实这样也行，不过根据路径创建锁更严谨，跨页面也适用，比如如果首页的Editor正在保存，然后打开子页面，这时子页面必须等首页保存完成，但如果用这个和页面生命周期一样的锁，就无法实现那种效果了，但和页面生命周期一样的锁其实也够用
 
@@ -1119,7 +1121,7 @@ fun EditorInnerPage(
                                     Pair(FilePath(k).toFuckSafFile(activityContext).name, k)
                                 }.let {
                                     // limit list size to 10
-                                    it.subList(0, it.size.coerceAtMost(10))  // I think, recent file list, show 10 is good, if more, feels bad, to much files = no files, just make headache
+                                    it.subList(0, it.size.coerceAtMost(recentFilesLimit))  // I think, recent file list, show 10 is good, if more, feels bad, to much files = no files, just make headache
 
                                 }
 

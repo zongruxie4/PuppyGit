@@ -3,6 +3,7 @@ package com.catpuppyapp.puppygit.compose
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.defaultMinSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -15,6 +16,7 @@ import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.Text
@@ -24,8 +26,10 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.layout.onSizeChanged
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.IntSize
 import androidx.compose.ui.unit.dp
 import com.catpuppyapp.puppygit.style.MyStyleKt
@@ -125,44 +129,58 @@ fun<T> SingleSelectList(
             expanded = expandDropdownMenu.value,
             onDismissRequest = { expandDropdownMenu.value=false }
         ) {
-            for ((index, value) in optionsList.toList().withIndex()) {
+            val lastIndex = optionsList.size - 1
+            for ((index, value) in optionsList.withIndex()) {
                 //忽略当前显示条目
                 //不忽略了，没必要，显示的是选中条目，一点击，展开的菜单里是所有条目，也很合理
 //            if(k == selectedOption.intValue) {
 //                continue
 //            }
 
-                Row (
-                    horizontalArrangement = Arrangement.SpaceBetween
-                ){
-                    //列出其余条目
-                    DropdownMenuItem(
-                        text = { Text(if(menuItemSelected(index, value)) "*${menuItemFormatter(index, value)}" else menuItemFormatter(index, value)) },
-                        onClick ={
-                            expandDropdownMenu.value=false
+                Column {
+                    Row(
+                        horizontalArrangement = Arrangement.SpaceBetween
+                    ) {
+                        //列出其余条目
+                        DropdownMenuItem(
+                            text = {
+                                val selected = menuItemSelected(index, value)
+                                Text(
+                                    text = menuItemFormatter(index, value),
+                                    color = if(selected) MyStyleKt.DropDownMenu.selectedItemColor else Color.Unspecified,
+                                    fontWeight = if(selected) FontWeight.Bold else FontWeight.Normal,
+                                )
+                            },
+                            onClick ={
+                                expandDropdownMenu.value=false
 
-                            menuItemOnClick(index, value)
-                        },
-                        trailingIcon = {
-                            if(menuItemTrailIcon!=null) {
-                                IconButton(
-                                    enabled = menuItemTrailIconEnable(index, value),
-                                    onClick = {
-                                        menuItemTrailIconOnClick(index, value)
+                                menuItemOnClick(index, value)
+                            },
+                            trailingIcon = (
+                                    //如果icon不为null，返回一个compose，否则返回null
+                                    if(menuItemTrailIcon != null) ({
+                                        IconButton(
+                                            enabled = menuItemTrailIconEnable(index, value),
+                                            onClick = {
+                                                menuItemTrailIconOnClick(index, value)
+                                            }
+                                        ) {
+                                            Icon(
+                                                imageVector = menuItemTrailIcon,
+                                                contentDescription = menuItemTrailIconDescription
+                                            )
+                                        }
+                                    })else {
+                                        null
                                     }
-                                ) {
-                                    Icon(
-                                        imageVector = menuItemTrailIcon,
-                                        contentDescription = menuItemTrailIconDescription
-                                    )
-                                }
-                            }else {
-                                null
-                            }
-                        }
-                    )
+                            )
+                        )
 
+                    }
 
+                    if(index != lastIndex) {
+                        HorizontalDivider()
+                    }
                 }
 
             }

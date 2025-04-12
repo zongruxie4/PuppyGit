@@ -671,21 +671,21 @@ fun doJobThenOffLoading(
             try {
                 loadingOn(loadingText)
             }catch (e:Exception) {
-                Msg.requireShowLongDuration("loading on err:"+e.localizedMessage)
+                Msg.requireShowLongDuration("loadOn err:"+e.localizedMessage)
                 MyLog.e(TAG, "#doJobThenOffLoading(): #loadingOn error!\n" + e.stackTraceToString())
             }finally {
                 //执行操作
                 try {
                     job()
                 }catch (e:Exception) {
-                    Msg.requireShowLongDuration("do job err:"+e.localizedMessage)
+                    Msg.requireShowLongDuration("job err:"+e.localizedMessage)
                     MyLog.e(TAG, "#doJobThenOffLoading(): #job error!\n" + e.stackTraceToString())
                 }finally {
                     try {
                         //最后解除loading
                         loadingOff()  //x 20240426job被trycatch包裹，实际上这个已经是百分百会解除了，索性放到finally里，百分百解除的意义更明确)这个要不要放到finally里？要不然一出异常，loading就无法解除了，不过解除不了也好，省得用户误操作
                     }catch (e:Exception) {
-                        Msg.requireShowLongDuration("loading off err:"+e.localizedMessage)
+                        Msg.requireShowLongDuration("loadOff err:"+e.localizedMessage)
                         MyLog.e(TAG, "#doJobThenOffLoading(): #loadingOff error!\n" + e.stackTraceToString())
                     }
                 }

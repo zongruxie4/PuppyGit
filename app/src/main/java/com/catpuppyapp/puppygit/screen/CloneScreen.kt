@@ -104,8 +104,8 @@ import com.catpuppyapp.puppygit.utils.storagepaths.StoragePathsMan
 import com.catpuppyapp.puppygit.utils.withMainContext
 import java.io.File
 
-private val TAG = "CloneScreen"
-private val stateKeyTag = "CloneScreen"
+private const val TAG = "CloneScreen"
+private const val stateKeyTag = "CloneScreen"
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
