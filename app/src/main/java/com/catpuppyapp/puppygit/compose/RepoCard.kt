@@ -295,13 +295,17 @@ fun RepoCard(
                         //如果不写入数据库的临时中间状态 pushing/pulling 之类的 不为空，显示中间状态，否则显示写入数据库的持久状态
                         val tmpStatus = repoDto.tmpStatus
                         if(repoErr || repoNotReady || tmpStatus.isNotBlank() || repoDto.workStatus == Cons.dbRepoWorkStatusUpToDate) {  //不可点击的状态
+                            var nullNormalTrueUpToDateFalseError:Boolean? = null
+                            val text = if(repoErr || (repoDto.gitRepoState==null && tmpStatus.isBlank())) { nullNormalTrueUpToDateFalseError = false; stringResource(R.string.error) }else tmpStatus.ifBlank { nullNormalTrueUpToDateFalseError = true; stringResource(R.string.repo_status_uptodate) }
                             Text(
                                 //若tmpStatus不为空，显示；否则显示up-to-date。注：日后若添加更多状态，就不能这样简单判断了
-                                text = if(repoErr || (repoDto.gitRepoState==null && tmpStatus.isBlank())) stringResource(R.string.error) else tmpStatus.ifBlank { stringResource(R.string.repo_status_uptodate) },
+                                text = text,
                                 maxLines = 1,
                                 overflow = TextOverflow.Ellipsis,
                                 modifier = MyStyleKt.NormalText.modifier,
-                                fontWeight = FontWeight.Light
+                                fontWeight = FontWeight.Light,
+                                //出错，红色；已是最新，绿色；"加载中..."之类的非点击临时状态，默认颜色。
+                                color = if(nullNormalTrueUpToDateFalseError == null) Color.Unspecified else if(nullNormalTrueUpToDateFalseError == true) MyStyleKt.TextColor.highlighting_green else MyStyleKt.TextColor.error(),
 
                             )
                         } else {  //可点击的状态
