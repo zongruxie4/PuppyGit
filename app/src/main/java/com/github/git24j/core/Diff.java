@@ -1254,7 +1254,11 @@ public class Diff extends CAutoReleasable {
         NAME_ONLY(4),
         /** < like git diff --name-status */
         NAME_STATUS(5),
+        /**< git diff as used by git patch-id */
+        PATCH_ID(6),
+
         ;
+
         private final int _code;
 
         FormatT(int _code) {
