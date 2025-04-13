@@ -435,7 +435,8 @@ class SimilarCompareImpl: SimilarCompare {
             if(isWordSeparator(char)) {
                 wordMatching = false
 
-                if(spaceMatching) {
+                if(false) { //禁用连接邻近符号，提高匹配率，但内存占用可能更高，若想启用，禁用这行，启用下行即可
+//                if(spaceMatching) {  //会把挨着的符号连在一起，优点是省内存，缺点是降低匹配率，注意连在一起的不一定是相同字符，例如："), "，是有可能存在的，因为它们全都是word separator
                     spaceAndIndex!!.word.append(char)
                 }else {
                     spaceAndIndex = WordAndIndex(index = i)
