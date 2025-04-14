@@ -1120,8 +1120,6 @@ fun TextEditor(
 //                                    bgColor = bgColor,
                                     bgColor = Color.Unspecified,
                                     onUpdateText = { newText ->
-                                            //写入编辑缓存
-                                        EditCache.writeToFile(newText.text)
 
                                         doJobThenOffLoading {
                                             try{
@@ -1147,10 +1145,7 @@ fun TextEditor(
 //                                            lastScrollEvent = ScrollEvent(index)
                                     },
                                     onContainNewLine = cb@{ newText ->
-                                            //写入编辑缓存
-                                        EditCache.writeToFile(newText.text)
-
-                                        //这里为什么要判断这个东西？
+                                        //这里为什么要判断这个东西？无所谓，反正没毛病，不用改
                                         if (lastScrollEvent.value?.isConsumed == false) return@cb
 
                                         doJobThenOffLoading {
@@ -1170,9 +1165,6 @@ fun TextEditor(
 
                                     },
                                     onAddNewLine = cb@{ newText ->
-                                        //写入编辑缓存
-                                        EditCache.writeToFile(newText.text)
-
 
                                         if (lastScrollEvent.value?.isConsumed == false) return@cb
 

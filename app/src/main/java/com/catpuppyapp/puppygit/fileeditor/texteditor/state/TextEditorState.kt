@@ -13,6 +13,7 @@ import com.catpuppyapp.puppygit.fileeditor.texteditor.view.SearchPos
 import com.catpuppyapp.puppygit.fileeditor.texteditor.view.SearchPosResult
 import com.catpuppyapp.puppygit.screen.shared.FuckSafFile
 import com.catpuppyapp.puppygit.style.MyStyleKt
+import com.catpuppyapp.puppygit.utils.EditCache
 import com.catpuppyapp.puppygit.utils.FsUtils
 import com.catpuppyapp.puppygit.utils.Msg
 import com.catpuppyapp.puppygit.utils.MyLog
@@ -33,9 +34,9 @@ private const val TAG = "TextEditorState"
 private const val lb = "\n"
 private val lock = Mutex()
 
-private val targetIndexValidOrThrow = { targetIndex:Int, listSize:Int ->
+private fun targetIndexValidOrThrow(targetIndex:Int, listSize:Int) {
     if (targetIndex < 0 || targetIndex >= listSize) {
-        throw IndexOutOfBoundsException("targetIndex out of range($targetIndex)")
+        throw IndexOutOfBoundsException("targetIndex '$targetIndex' out of range '[0, $listSize)'")
     }
 }
 
@@ -306,8 +307,10 @@ class TextEditorState private constructor(
                 throw InvalidParameterException("textFieldValue doesn't contains newline")
             }
 
+            val newText = textFieldValue.text
+
             //分割当前行
-            val splitFieldValues = splitTextsByNL(textFieldValue)
+            val splitFieldValues = splitTextsByNL(newText)
 
             val newFields = fields.toMutableList()
 
@@ -362,8 +365,12 @@ class TextEditorState private constructor(
                 },
             )
 
+
+            //更新状态变量
             isContentEdited?.value=true
             editorPageIsContentSnapshoted?.value=false
+            EditCache.writeToFile(newText)
+
 
             val newState = internalCreate(
                 fields = sfiRet.fields,
@@ -383,18 +390,19 @@ class TextEditorState private constructor(
 
             targetIndexValidOrThrow(targetIndex, fields.size)
 
-            val splitPosition = textFieldValue.selection.start
-            if (splitPosition < 0 || textFieldValue.text.length < splitPosition) {
-                throw InvalidParameterException("splitPosition out of range($splitPosition)")
+            val splitPosition = textFieldValue.selection.start  //光标位置，有可能在行末尾，这时和text.length相等，并不会越界
+            val maxOfPosition = textFieldValue.text.length
+            if (splitPosition < 0 || splitPosition > maxOfPosition) {  //第2个判断没错，就是大于最大位置，不是大于等于，没写错，光标位置有可能在行末尾，这时其索引和text.length相等，所以只有大于才有问题
+                throw InvalidParameterException("splitPosition '$splitPosition' out of range '[0, $maxOfPosition]'")
             }
 
+            val newText = textFieldValue.text
             val firstStart = 0
             val firstEnd = if (splitPosition == 0) 0 else splitPosition
-            val first = textFieldValue.text.substring(firstStart, firstEnd)
+            val first = newText.substring(firstStart, firstEnd)
 
-            val secondStart = if (splitPosition == 0) 0 else splitPosition
-            val secondEnd = textFieldValue.text.count()
-            val second = textFieldValue.text.substring(secondStart, secondEnd)
+            val secondEnd = newText.length
+            val second = newText.substring(firstEnd, secondEnd)
 
             val firstValue = textFieldValue.copy(first)
             val newFields = fields.toMutableList()
@@ -443,12 +451,14 @@ class TextEditorState private constructor(
             targetIndexValidOrThrow(targetIndex, fields.size)
 
             if (textFieldValue.text.contains('\n')) {
-                throw InvalidParameterException("textFieldValue contains newline")
+                throw InvalidParameterException("textFieldValue contains newline")  // contains new line应调用splitNewLine
             }
+
+            val newText = textFieldValue.text
 
             val oldField = fields[targetIndex]
             //检查字段内容是否改变，由于没改变也会调用此方法，所以必须判断下才能知道内容是否改变
-            val contentChanged = oldField.value.text != textFieldValue.text  // 旧值 != 新值
+            val contentChanged = oldField.value.text != newText  // 旧值 != 新值
 
             //没什么意义，两者总是不相等，似乎相等根本不会触发updateField
 //            if(oldField.equals(textFieldValue)) {
@@ -462,6 +472,9 @@ class TextEditorState private constructor(
                 isContentEdited?.value = true
                 editorPageIsContentSnapshoted?.value = false
                 maybeNewId = newId()
+
+                //缓存新值
+                EditCache.writeToFile(newText)
             }
 
             //更新字段
@@ -988,18 +1001,12 @@ class TextEditorState private constructor(
         )
     }
 
-    private fun splitTextsByNL(textFieldValue: TextFieldValue): List<TextFieldValue> {
-        var position = 0
-        val splitTexts = textFieldValue.text.split("\n").map {
-            position += it.count()
-            it to position
-        }
-
-        return splitTexts.mapIndexed { index, pair ->
-            if (index == 0) {
-                TextFieldValue(pair.first, TextRange(pair.second))
-            } else {
-                TextFieldValue(pair.first, TextRange.Zero)
+    private fun splitTextsByNL(text: String): List<TextFieldValue> {
+        return text.split("\n").mapIndexed { index, text ->
+            if (index == 0) {  //第一行，光标在换行的位置
+                TextFieldValue(text, TextRange(text.length))
+            } else {  //后续行，光标在开头
+                TextFieldValue(text)
             }
         }
     }
