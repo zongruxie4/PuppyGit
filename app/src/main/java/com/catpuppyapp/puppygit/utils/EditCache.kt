@@ -53,23 +53,20 @@ object EditCache: DateNamedFileWriter(
      */
     fun writeToFile(text: String) {
         //只有 启用 且 完成初始化 才 缓存输入
-        if(enable.not() || isInited.not()) {
+        if(!enable || !isInited) {
             return
         }
 
-        //删掉尾部空白字符，开头空白字符不要删，因为开头有可能是缩进，但末尾的空白字符毫无意义，可删
-        val text = text.trimEnd()
-
-        //忽略空行
-        if (text.isBlank()) {
-            return
-        }
-
-        doJobThenOffLoading {
-            //若当前写入的内容和上次一样，跳过
-            if(lastSavedText.value == text) return@doJobThenOffLoading
-
+        doJob job@{
             try {
+                //删掉尾部空白字符，开头空白字符不要删，因为开头有可能是缩进，但末尾的空白字符毫无意义，可删
+                val text = text.trimEnd()
+
+                //若内容为空 或 和上次写入内容相同 则 跳过
+                if (text.isBlank() || text == lastSavedText.value) {
+                    return@job
+                }
+
                 lastSavedText.value = text
 
                 //初始化完毕并且启用cache，则写入内容到cache
@@ -78,7 +75,7 @@ object EditCache: DateNamedFileWriter(
 
                 sendMsgToWriter(nowTimestamp, needWriteMessage)
 
-            } catch (e: IOException) {
+            } catch (e: Exception) {
                 MyLog.e(TAG, "#writeToFile err:"+e.stackTraceToString())
             }
         }

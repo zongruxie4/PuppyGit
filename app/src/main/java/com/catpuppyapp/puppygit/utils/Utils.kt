@@ -698,6 +698,16 @@ fun doJobThenOffLoading(
     }
 
 }
+
+fun doJob(
+    coroutineDispatcher: CoroutineDispatcher = Dispatchers.IO,
+    job: suspend () -> Unit
+) :Job {
+    return CoroutineScope(coroutineDispatcher).launch {
+        job()
+    }
+}
+
 //fun doJobThenOffLoadingWith1Param(loadingOn:()->Unit={},loadingOff: ()->Unit={},job:suspend (Any)->Any, param:Any) {
 //    CoroutineScope(Dispatchers.IO).launch {
 //        try {
