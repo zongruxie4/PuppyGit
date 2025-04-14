@@ -181,8 +181,10 @@ open class DateNamedFileWriter(
      * 删除过期的日志文件
      */
     fun delExpiredFiles() { // 删除日志文件
+        val funName = "delExpiredFiles"
+
         try {
-            MyLog.i(TAG, "start: del expired '$fileNameTag' files")
+            MyLog.d(TAG, "#$funName, start: del expired '$fileNameTag' files")
 
             val dirPath = saveDir!! //获取日志路径
 
@@ -208,16 +210,16 @@ open class DateNamedFileWriter(
                     }
                 } catch (e: Exception) {
                     //日志类初始化完毕之后才执行此方法，所以，这里可以记录日志
-                    MyLog.e(TAG, "#delExpiredFiles: in for loop err: "+e.stackTraceToString())
+                    MyLog.e(TAG, "#$funName, looping err: "+e.stackTraceToString())
 //                    e.printStackTrace()
                     continue
                 }
             }
 
-            MyLog.i(TAG, "end: del expired '$fileNameTag' files")
+            MyLog.d(TAG, "#$funName, end: del expired '$fileNameTag' files")
 
         } catch (e: Exception) {
-            MyLog.e(TAG, "#delExpiredFiles: err: "+e.stackTraceToString())
+            MyLog.e(TAG, "#$funName, err: "+e.stackTraceToString())
         }
     }
 
