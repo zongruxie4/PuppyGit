@@ -3,7 +3,6 @@ package com.catpuppyapp.puppygit.utils
 import androidx.compose.runtime.mutableStateOf
 import com.catpuppyapp.puppygit.utils.base.DateNamedFileWriter
 import java.io.File
-import java.io.IOException
 import java.time.LocalDateTime
 
 private const val TAG = "EditCache"
@@ -76,7 +75,7 @@ object EditCache: DateNamedFileWriter(
                 sendMsgToWriter(nowTimestamp, needWriteMessage)
 
             } catch (e: Exception) {
-                MyLog.e(TAG, "#writeToFile err:"+e.stackTraceToString())
+                MyLog.e(TAG, "#writeToFile err: "+e.stackTraceToString())
             }
         }
     }

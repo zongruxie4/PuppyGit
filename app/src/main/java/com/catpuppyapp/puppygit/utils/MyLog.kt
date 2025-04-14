@@ -5,7 +5,6 @@ import android.util.Log
 import com.catpuppyapp.puppygit.play.pro.R
 import com.catpuppyapp.puppygit.utils.base.DateNamedFileWriter
 import java.io.File
-import java.io.IOException
 import java.time.LocalDateTime
 
 
@@ -201,9 +200,9 @@ object MyLog: DateNamedFileWriter(
 
             sendMsgToWriter(nowTimestamp, needWriteMessage)
 
-        } catch (e: IOException) {
+        } catch (e: Exception) {
             e.printStackTrace()
-            Log.e(TAG, "#writeLogToFile err:"+e.stackTraceToString())
+            Log.e(TAG, "#writeLogToFile err: "+e.stackTraceToString())
         }
     }
 
