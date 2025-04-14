@@ -1391,10 +1391,11 @@ fun HomeScreen(
                 SettingsInnerPage(
                     contentPadding = contentPadding,
                     needRefreshPage = needRefreshSettingsPage,
-//                    appContext = appContext,
                     openDrawer = openDrawer,
                     exitApp = exitApp,
                     listState = settingsListState,
+                    goToFilesPage = goToFilesPage,
+
                 )
             }else if(currentHomeScreen.intValue == Cons.selectedItem_About) {
                 //About页面是静态的，无需刷新

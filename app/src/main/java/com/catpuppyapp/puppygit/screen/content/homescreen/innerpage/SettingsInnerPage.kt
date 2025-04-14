@@ -44,6 +44,7 @@ import com.catpuppyapp.puppygit.compose.ClickableText
 import com.catpuppyapp.puppygit.compose.ConfirmDialog2
 import com.catpuppyapp.puppygit.compose.ConfirmDialog3
 import com.catpuppyapp.puppygit.compose.CopyableDialog
+import com.catpuppyapp.puppygit.compose.InLineFolderIcon
 import com.catpuppyapp.puppygit.compose.MyCheckBox
 import com.catpuppyapp.puppygit.compose.MySelectionContainer
 import com.catpuppyapp.puppygit.compose.PaddingRow
@@ -93,10 +94,11 @@ private const val TAG = "SettingsInnerPage"
 fun SettingsInnerPage(
     contentPadding: PaddingValues,
     needRefreshPage:MutableState<String>,
-//    appContext:Context,
     openDrawer:()->Unit,
     exitApp:()->Unit,
-    listState:ScrollState
+    listState:ScrollState,
+    goToFilesPage:(path:String)->Unit,
+
 ){
 
     // softkeyboard show/hidden relate start
@@ -808,7 +810,14 @@ fun SettingsInnerPage(
         }
         SettingsContent {
             Column(modifier = Modifier.fillMaxWidth(itemLeftWidthForSelector)) {
-                Text(stringResource(R.string.log_level), fontSize = itemFontSize)
+                Row(
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Text(stringResource(R.string.log_level), fontSize = itemFontSize)
+                    InLineFolderIcon {
+                        goToFilesPage(AppModel.getOrCreateLogDir().canonicalPath)
+                    }
+                }
 //                Text(stringResource(R.string.require_restart_app), fontSize = itemDescFontSize, fontWeight = FontWeight.Light, fontStyle = FontStyle.Italic)
             }
 
@@ -932,7 +941,14 @@ fun SettingsInnerPage(
             EditCache.init(enableCache = newValue, cacheDir = AppModel.getOrCreateEditCacheDir(), keepInDays = settings.editor.editCacheKeepInDays)
         }) {
             Column(modifier = Modifier.fillMaxWidth(itemLeftWidthForSwitcher)) {
-                Text(stringResource(R.string.edit_cache), fontSize = itemFontSize)
+                Row(
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Text(stringResource(R.string.edit_cache), fontSize = itemFontSize)
+                    InLineFolderIcon {
+                        goToFilesPage(AppModel.getOrCreateEditCacheDir().canonicalPath)
+                    }
+                }
                 Text(replaceStringResList(stringResource(R.string.cache_your_input_into_editcache_dir_path), listOf("${Cons.defalutPuppyGitDataUnderAllReposDirName}/${Cons.defaultEditCacheDirName}")), fontSize = itemDescFontSize, fontWeight = FontWeight.Light)
 //                Text(stringResource(R.string.require_restart_app), fontSize = itemDescFontSize, fontWeight = FontWeight.Light, fontStyle = FontStyle.Italic)
             }
@@ -957,7 +973,15 @@ fun SettingsInnerPage(
             }
         ) {
             Column(modifier = Modifier.fillMaxWidth(itemLeftWidthForSwitcher)) {
-                Text(stringResource(R.string.file_snapshot), fontSize = itemFontSize)
+                Row(
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Text(stringResource(R.string.file_snapshot), fontSize = itemFontSize)
+                    InLineFolderIcon {
+                        goToFilesPage(AppModel.getOrCreateFileSnapshotDir().canonicalPath)
+                    }
+                }
+
                 Text(stringResource(R.string.file_snapshot_desc), fontSize = itemDescFontSize, fontWeight = FontWeight.Light)
 //                Text(stringResource(R.string.require_restart_app), fontSize = itemDescFontSize, fontWeight = FontWeight.Light, fontStyle = FontStyle.Italic)
 
@@ -983,7 +1007,15 @@ fun SettingsInnerPage(
             }
         ) {
             Column(modifier = Modifier.fillMaxWidth(itemLeftWidthForSwitcher)) {
-                Text(stringResource(R.string.content_snapshot), fontSize = itemFontSize)
+                Row(
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Text(stringResource(R.string.content_snapshot), fontSize = itemFontSize)
+                    InLineFolderIcon {
+                        goToFilesPage(AppModel.getOrCreateFileSnapshotDir().canonicalPath)
+                    }
+                }
+
                 Text(stringResource(R.string.content_snapshot_desc), fontSize = itemDescFontSize, fontWeight = FontWeight.Light)
 //                Text(stringResource(R.string.require_restart_app), fontSize = itemDescFontSize, fontWeight = FontWeight.Light, fontStyle = FontStyle.Italic)
 
@@ -1013,7 +1045,15 @@ fun SettingsInnerPage(
             }
         ) {
             Column(modifier = Modifier.fillMaxWidth(itemLeftWidthForSwitcher)) {
-                Text(stringResource(R.string.file_snapshot), fontSize = itemFontSize)
+                Row(
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Text(stringResource(R.string.file_snapshot), fontSize = itemFontSize)
+                    InLineFolderIcon {
+                        goToFilesPage(AppModel.getOrCreateFileSnapshotDir().canonicalPath)
+                    }
+                }
+
                 Text(stringResource(R.string.file_snapshot_desc), fontSize = itemDescFontSize, fontWeight = FontWeight.Light)
 //                Text(stringResource(R.string.require_restart_app), fontSize = itemDescFontSize, fontWeight = FontWeight.Light, fontStyle = FontStyle.Italic)
 
