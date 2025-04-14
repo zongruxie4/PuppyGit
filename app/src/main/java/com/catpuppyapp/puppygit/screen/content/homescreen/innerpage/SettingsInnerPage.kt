@@ -929,7 +929,7 @@ fun SettingsInnerPage(
             }!!
 
             //重新初始化EditCache
-            EditCache.init(keepInDays = settings.editor.editCacheKeepInDays, cacheDirPath = AppModel.getOrCreateEditCacheDir().canonicalPath, enableCache = newValue)
+            EditCache.init(enableCache = newValue, cacheDirPath = AppModel.getOrCreateEditCacheDir().canonicalPath, keepInDays = settings.editor.editCacheKeepInDays)
         }) {
             Column(modifier = Modifier.fillMaxWidth(itemLeftWidthForSwitcher)) {
                 Text(stringResource(R.string.edit_cache), fontSize = itemFontSize)
