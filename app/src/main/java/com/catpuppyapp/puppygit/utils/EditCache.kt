@@ -1,5 +1,6 @@
 package com.catpuppyapp.puppygit.utils
 
+import androidx.compose.runtime.mutableStateOf
 import com.catpuppyapp.puppygit.utils.base.DateNamedFileWriter
 import java.io.File
 import java.io.IOException
@@ -15,6 +16,8 @@ object EditCache: DateNamedFileWriter(
 
     private var isInited = false
 
+    //用来检测是否重复，若重复则只存第一个
+    private var lastSavedText = mutableStateOf("")
 
     //    public Context context;
     fun init(enableCache:Boolean, cacheDir:File, keepInDays: Int=fileKeepDays) {
@@ -56,7 +59,12 @@ object EditCache: DateNamedFileWriter(
         }
 
         doJobThenOffLoading {
+            //若当前写入的内容和上次一样，跳过
+            if(lastSavedText.value == text) return@doJobThenOffLoading
+
             try {
+                lastSavedText.value = text
+
                 //初始化完毕并且启用cache，则写入内容到cache
                 val nowTimestamp = contentTimestampFormatter.format(LocalDateTime.now())
                 val needWriteMessage = "-------- $nowTimestamp :\n$text"
