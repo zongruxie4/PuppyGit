@@ -27,7 +27,7 @@ open class DateNamedFileWriter(
     private val fileNameTag:String,  //文件名标签，可用来区分这文件是干嘛的，例如带"2025-02-02#Log.txt"，#后面就是标签，而Log表明这文件记录的是日志
     private val fileExt:String=".txt",
     private val fileNameSeparator:String="#",
-    protected var fileKeepDays:Int = 3,
+    var fileKeepDays:Int = 3,
     channelBufferSize:Int = 50,  //队列设置大一些才有意义，不然跟互斥锁没差，话说kotlin里没公平锁吗？非得这么麻烦
     private val maxErrCount:Int = Cons.maxErrTryTimes
 ) {
@@ -181,7 +181,7 @@ open class DateNamedFileWriter(
     /**
      * 删除过期的日志文件
      */
-    protected fun delExpiredFiles() { // 删除日志文件
+    fun delExpiredFiles() { // 删除日志文件
         val funName = "delExpiredFiles"
 
         try {
