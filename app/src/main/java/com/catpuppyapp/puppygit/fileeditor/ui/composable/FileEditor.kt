@@ -75,6 +75,7 @@ import com.catpuppyapp.puppygit.screen.shared.FilePath
 import com.catpuppyapp.puppygit.settings.FileEditedPos
 import com.catpuppyapp.puppygit.style.MyStyleKt
 import com.catpuppyapp.puppygit.ui.theme.Theme
+import com.catpuppyapp.puppygit.utils.EditCache
 import com.catpuppyapp.puppygit.utils.Msg
 import com.catpuppyapp.puppygit.utils.MyLog
 import com.catpuppyapp.puppygit.utils.UIHelper
@@ -510,8 +511,19 @@ fun FileEditor(
                                 return@onPaste
                             }
 
+                            val text = try {
+                                clipboardManager.getText()?.text ?: ""
+                            }catch (e:Exception) {
+                                Msg.requireShowLongDuration("read clipboard err: ${e.localizedMessage}")
+                                MyLog.e(TAG, "read clipboard err: ${e.stackTraceToString()}")
+
+                                ""
+                            }
+
+                            EditCache.writeToFile(text)
+
                             doJobThenOffLoading {
-                                textEditorState.value.appendTextToLastSelectedLine(clipboardManager.getText()?.text ?: "")
+                                textEditorState.value.appendTextToLastSelectedLine(text)
                             }
 
                             Unit
