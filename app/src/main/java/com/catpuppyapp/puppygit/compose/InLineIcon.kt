@@ -3,6 +3,7 @@ package com.catpuppyapp.puppygit.compose
 import androidx.compose.foundation.layout.size
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ContentCopy
+import androidx.compose.material.icons.filled.Folder
 import androidx.compose.material.icons.filled.History
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
@@ -35,17 +36,6 @@ fun InLineIcon(
 
 
 @Composable
-fun InLineCommitHistoryIcon(
-    onClick: () -> Unit
-) {
-    InLineHistoryIcon(
-        tooltipText = stringResource(R.string.commit_history),
-    ){
-        onClick()
-    }
-}
-
-@Composable
 fun InLineCopyIcon(
     onClick: () -> Unit
 ) {
@@ -58,12 +48,25 @@ fun InLineCopyIcon(
 }
 
 @Composable
-private fun InLineHistoryIcon(
-    tooltipText: String,
+fun InLineHistoryIcon(
+    tooltipText: String = stringResource(R.string.commit_history),
     onClick: () -> Unit
 ) {
     InLineIcon(
         icon = Icons.Filled.History,
+        tooltipText = tooltipText,
+    ){
+        onClick()
+    }
+}
+
+@Composable
+fun InLineFolderIcon(
+    tooltipText: String = stringResource(R.string.show_in_files),
+    onClick: () -> Unit
+) {
+    InLineIcon(
+        icon = Icons.Filled.Folder,
         tooltipText = tooltipText,
     ){
         onClick()

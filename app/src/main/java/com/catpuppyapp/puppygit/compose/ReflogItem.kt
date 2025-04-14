@@ -110,7 +110,7 @@ fun ReflogItem(
                 Msg.requireShow(activityContext.getString(R.string.copied))
             }
 
-            InLineCommitHistoryIcon {
+            InLineHistoryIcon {
                 lastClickedItemKey.value = thisObj.getItemKey()
 
                 fromTagToCommitHistory(
@@ -140,7 +140,7 @@ fun ReflogItem(
                 Msg.requireShow(activityContext.getString(R.string.copied))
             }
 
-            InLineCommitHistoryIcon {
+            InLineHistoryIcon {
                 lastClickedItemKey.value = thisObj.getItemKey()
 
                 fromTagToCommitHistory(

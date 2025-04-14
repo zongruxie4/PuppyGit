@@ -118,7 +118,7 @@ fun StashItem(
                 Msg.requireShow(activityContext.getString(R.string.copied))
             }
 
-            InLineCommitHistoryIcon {
+            InLineHistoryIcon {
                 lastClickedItemKey.value = thisObj.getItemKey()
 
                 fromTagToCommitHistory(
