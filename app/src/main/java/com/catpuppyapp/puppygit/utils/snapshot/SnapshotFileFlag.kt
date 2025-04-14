@@ -1,10 +1,10 @@
 package com.catpuppyapp.puppygit.utils.snapshot
 
-private const val editorFileSnapShotPrefix = "ed_file_"
-private const val editorContentSnapShotPrefix = "ed_ctnt_"
-private const val diffFileSnapShotPrefix = "df_file_"
+private const val editorFileSnapShotPrefix = "edit_file"
+private const val editorContentSnapShotPrefix = "edit_ctnt"
+private const val diffFileSnapShotPrefix = "diff_file"
 
-// e.g. "ed_file__BS_maybefilename"
+// e.g. "edit_file_BS_maybefilename"
 enum class SnapshotFileFlag(val flag: String) {
     //其中file_ 代表快照是由文件创建的，content_代表文件是由用户修改过的内容创建的（就是在app内编辑还没保存到硬盘上的内容）
     //注：file_一般代表的是要写入的目标文件
