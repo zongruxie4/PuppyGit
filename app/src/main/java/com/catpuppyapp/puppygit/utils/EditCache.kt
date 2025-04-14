@@ -52,10 +52,13 @@ object EditCache: DateNamedFileWriter(
      * @param text  要写入的内容
      */
     fun writeToFile(text: String) {
-        //只有初始化成功且启用了edit cache的情况下，才记录cache
-        if(!isInited || !enable) {
+        //只有 启用 且 完成初始化 才 缓存输入
+        if(enable.not() || isInited.not()) {
             return
         }
+
+        //删掉尾部空白字符，开头空白字符不要删，因为开头有可能是缩进，但末尾的空白字符毫无意义，可删
+        val text = text.trimEnd()
 
         //忽略空行
         if (text.isBlank()) {
