@@ -20,26 +20,26 @@ import java.time.format.DateTimeFormatter
 
 
 open class DateNamedFileWriter(
-    val TAG:String,
-    private val fileNameTag:String,
+    private val logTagOfSubClass:String,  //日志tag
+    private val fileNameTag:String,  //文件名标签，可用来区分这文件是干嘛的，例如带"2025-02-02#Log.txt"，#后面就是标签，而Log表明这文件记录的是日志
     private val fileExt:String=".txt",
     private val fileNameSeparator:String="#",
-    var fileKeepDays:Int = 3,
-    private val channelBufferSize:Int = 50,  //队列设置大一些才有意义，不然跟互斥锁没差，话说kotlin里没公平锁吗？非得这么麻烦
+    protected var fileKeepDays:Int = 3,
+    channelBufferSize:Int = 50,  //队列设置大一些才有意义，不然跟互斥锁没差，话说kotlin里没公平锁吗？非得这么麻烦
     private val maxErrCount:Int = Cons.maxErrTryTimes
 ) {
     private val writeLock = Mutex()
-    val writeChannel = Channel<String> (capacity = channelBufferSize, onBufferOverflow = BufferOverflow.SUSPEND) { /* onUndeliveredElement, 未交付的元素会调用此方法，一般用来执行关流之类的善后操作，不过我这用不上 */ }
+    private val writeChannel = Channel<String> (capacity = channelBufferSize, onBufferOverflow = BufferOverflow.SUSPEND) { /* onUndeliveredElement, 未交付的元素会调用此方法，一般用来执行关流之类的善后操作，不过我这用不上 */ }
 
     private val fileNameDateFormatter:DateTimeFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd")
-    val contentTimestampFormatter:DateTimeFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss") // 日志的输出格式
+    protected val contentTimestampFormatter:DateTimeFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss") // 日志的输出格式
 
-    var fileWriter: BufferedWriter? = null
-    var file:File? = null
+    private var fileWriter: BufferedWriter? = null
+    protected var file:File? = null
 
     private val writerJob: MutableState<Job?> = mutableStateOf(null)
 
-    var saveDir:File?=null
+    private var saveDir:File?=null
         get() {
             //若field不为null，检查目录是否存在，若不存在则创建
             field?.let {
@@ -58,7 +58,7 @@ open class DateNamedFileWriter(
         this.fileKeepDays = fileKeepDays
     }
 
-    fun startWriter() {
+    protected fun startWriter() {
         if(writerJob.value != null) {
             return
         }
@@ -90,7 +90,7 @@ open class DateNamedFileWriter(
                             val pair = initWriter()
                             file = pair.first
                             writer = pair.second
-                            Log.e(TAG, "write to file err:${e.stackTraceToString()}")
+                            Log.e(logTagOfSubClass, "write to file err:${e.stackTraceToString()}")
                         }
                     }
                 }
@@ -102,11 +102,11 @@ open class DateNamedFileWriter(
     }
 
 
-    fun getDateFromFileName(fileName:String):String {
+    private fun getDateFromFileName(fileName:String):String {
         return try {
             fileName.split(this.fileNameSeparator)[0]
         }catch (e:Exception) {
-            Log.e(TAG, "#getDateFromFileName err: ${e.stackTraceToString()}")
+            Log.e(logTagOfSubClass, "#getDateFromFileName err: ${e.stackTraceToString()}")
             ""
         }
     }
@@ -118,13 +118,13 @@ open class DateNamedFileWriter(
     }
 
 
-    fun dateChanged(nowTimestamp:String, fileNameTimestamp:String):Boolean {
+    private fun dateChanged(nowTimestamp:String, fileNameTimestamp:String):Boolean {
         // e.g. "2025-02-12 01:00:00".startsWith("2025-02-12")，true代表日期没变，否则代表变了
         return nowTimestamp.startsWith(fileNameTimestamp).not()
     }
 
     //如果日期改变，关流（然后就会触发重新创建当前日期的文件）
-    fun closeWriterIfTimeChanged(nowTimestamp:String){
+    private fun closeWriterIfTimeChanged(nowTimestamp:String){
         file?.let {
             if(dateChanged(nowTimestamp, getDateFromFileName(it.name))) {
                 //关流，然后就会触发重新创建文件
@@ -134,7 +134,7 @@ open class DateNamedFileWriter(
     }
 
 
-    suspend fun sendMsgToWriter(nowTimestamp:String, msg:String){
+    protected suspend fun sendMsgToWriter(nowTimestamp:String, msg:String){
         //若日期改变，关流触发重新创建当前日期的文件
         closeWriterIfTimeChanged(nowTimestamp)
 
@@ -163,7 +163,7 @@ open class DateNamedFileWriter(
         try {
             fileWriter?.close()
         }catch (e:Exception) {
-            Log.e(TAG, "#$funName err:${e.stackTraceToString()}")
+            Log.e(logTagOfSubClass, "#$funName err:${e.stackTraceToString()}")
         }
 
         //新开一个writer
@@ -178,11 +178,11 @@ open class DateNamedFileWriter(
     /**
      * 删除过期的日志文件
      */
-    fun delExpiredFiles() { // 删除日志文件
+    protected fun delExpiredFiles() { // 删除日志文件
         val funName = "delExpiredFiles"
 
         try {
-            MyLog.d(TAG, "#$funName, start: del expired '$fileNameTag' files")
+            MyLog.d(logTagOfSubClass, "#$funName, start: del expired '$fileNameTag' files")
 
             val dirPath = saveDir!! //获取日志路径
 
@@ -208,16 +208,16 @@ open class DateNamedFileWriter(
                     }
                 } catch (e: Exception) {
                     //日志类初始化完毕之后才执行此方法，所以，这里可以记录日志
-                    MyLog.e(TAG, "#$funName, looping err: "+e.stackTraceToString())
+                    MyLog.e(logTagOfSubClass, "#$funName, looping err: "+e.stackTraceToString())
 //                    e.printStackTrace()
                     continue
                 }
             }
 
-            MyLog.d(TAG, "#$funName, end: del expired '$fileNameTag' files")
+            MyLog.d(logTagOfSubClass, "#$funName, end: del expired '$fileNameTag' files")
 
         } catch (e: Exception) {
-            MyLog.e(TAG, "#$funName, err: "+e.stackTraceToString())
+            MyLog.e(logTagOfSubClass, "#$funName, err: "+e.stackTraceToString())
         }
     }
 

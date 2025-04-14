@@ -10,8 +10,11 @@ import java.time.LocalDateTime
 
 
 //origin of this class(已改得面目全非了，看不看这链接意义不大了): https://www.cnblogs.com/changyiqiang/p/11225350.html
+
+private const val TAG = "MyLog"
+
 object MyLog: DateNamedFileWriter(
-    TAG = "MyLog",  //debug TAG
+    logTagOfSubClass = TAG,
     fileNameTag = "Log",
 ) {
 

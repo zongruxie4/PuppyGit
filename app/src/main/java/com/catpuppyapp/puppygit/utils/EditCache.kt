@@ -6,10 +6,12 @@ import java.io.File
 import java.io.IOException
 import java.time.LocalDateTime
 
+private const val TAG = "EditCache"
+
 object EditCache: DateNamedFileWriter(
-    TAG = "EditCache",  //debug TAG
+    logTagOfSubClass = TAG,
     fileNameTag = "EditCache",
-)  {
+) {
 
     private var enable = true  //是否启用EditCache。（这的赋值只是初始值，实际会在init方法里更新此值，那个值才是真正有效的，而init的值与设置项对应条目关联）
 
