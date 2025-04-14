@@ -431,7 +431,6 @@ object AppModel {
     suspend fun init_2() {
         val funName = "init_2"
         val applicationContext = AppModel.realAppContext
-        val editCacheDirPath = AppModel.editCacheDir.canonicalPath
 
         // one time task in one time app process life time
 
@@ -442,7 +441,7 @@ object AppModel {
         //设置 日志保存时间和日志等级，(考虑：以后把这个改成从配置文件读取相关设置项的值，另外，用runBlocking可以实现阻塞调用suspend方法查db，但不推荐)
         //            MyLog.init(saveDays=3, logLevel='w', logDirPath=AppModel.logDir.canonicalPath);
         MyLog.init(
-            logDirPath=AppModel.logDir.canonicalPath,
+            logDir=AppModel.getOrCreateLogDir(),
             logKeepDays=PrefMan.getInt(applicationContext, PrefMan.Key.logKeepDays, MyLog.fileKeepDays),
             logLevel=PrefMan.getChar(applicationContext, PrefMan.Key.logLevel, MyLog.myLogLevel),
         )
@@ -524,7 +523,11 @@ object AppModel {
         //初始化EditCache
         try {
             //当设置项中启用功能时，进一步检查是否存在disable文件，不存在则启用，否则禁用，这样做是为了方便在实现设置页面前进行测试，直接把功能设为开启，然后通过创建删除disable文件控制实际是否开启，测试很方便
-            EditCache.init(enableCache = settings.editor.editCacheEnable, cacheDirPath = editCacheDirPath, keepInDays = settings.editor.editCacheKeepInDays)
+            EditCache.init(
+                enableCache = settings.editor.editCacheEnable,
+                cacheDir = AppModel.getOrCreateEditCacheDir(),
+                keepInDays = settings.editor.editCacheKeepInDays
+            )
         }catch (e:Exception) {
             MyLog.e(TAG, "#$funName init EditCache err:"+e.stackTraceToString())
         }

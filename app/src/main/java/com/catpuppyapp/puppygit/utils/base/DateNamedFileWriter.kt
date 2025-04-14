@@ -39,8 +39,7 @@ open class DateNamedFileWriter(
 
     private val writerJob: MutableState<Job?> = mutableStateOf(null)
 
-    var saveDirPath = ""
-    private var saveDir:File?=null
+    var saveDir:File?=null
         get() {
             //若field不为null，检查目录是否存在，若不存在则创建
             field?.let {
@@ -54,6 +53,10 @@ open class DateNamedFileWriter(
             return field
         }
 
+    fun init(saveDir:File, fileKeepDays: Int = this.fileKeepDays) {
+        this.saveDir = saveDir
+        this.fileKeepDays = fileKeepDays
+    }
 
     fun startWriter() {
         if(writerJob.value != null) {
@@ -142,18 +145,13 @@ open class DateNamedFileWriter(
         val funName = "initWriter"
 
 
-        val dirsFile = File(saveDirPath)
+        val dirsFile = saveDir!!
         if (!dirsFile.exists()) {
             dirsFile.mkdirs()
         }
 
-        saveDir = dirsFile
 
-
-        val file = File(
-            dirsFile.getCanonicalPath(),
-            getFileName()
-        )
+        val file = File(dirsFile.getCanonicalPath(), getFileName())
 
         this.file = file
         if (!file.exists()) {

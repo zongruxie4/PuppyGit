@@ -1,6 +1,7 @@
 package com.catpuppyapp.puppygit.utils
 
 import com.catpuppyapp.puppygit.utils.base.DateNamedFileWriter
+import java.io.File
 import java.io.IOException
 import java.time.LocalDateTime
 
@@ -16,11 +17,10 @@ object EditCache: DateNamedFileWriter(
 
 
     //    public Context context;
-    fun init(enableCache:Boolean, cacheDirPath:String, keepInDays: Int=fileKeepDays) {
+    fun init(enableCache:Boolean, cacheDir:File, keepInDays: Int=fileKeepDays) {
         try {
             //这两个变量删除过期文件需要用，所以无论是否启用cache，都初始化这两个变量
-            fileKeepDays = keepInDays
-            saveDirPath = cacheDirPath
+            super.init(cacheDir, keepInDays)
 
             //只有启用cache才有必要初始化writer，否则根本不会写入文件，自然也不需要初始化writer
             //及时禁用也不终止writer协程，不过调用write将不会执行操作

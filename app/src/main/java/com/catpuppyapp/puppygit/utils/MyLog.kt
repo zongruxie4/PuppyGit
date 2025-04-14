@@ -4,6 +4,7 @@ import android.content.Context
 import android.util.Log
 import com.catpuppyapp.puppygit.play.pro.R
 import com.catpuppyapp.puppygit.utils.base.DateNamedFileWriter
+import java.io.File
 import java.io.IOException
 import java.time.LocalDateTime
 
@@ -36,13 +37,12 @@ object MyLog: DateNamedFileWriter(
      */
 
     //    public Context context;
-    fun init(logDirPath:String, logKeepDays: Int= fileKeepDays, logLevel: Char=myLogLevel) {
+    fun init(logDir:File, logKeepDays: Int= fileKeepDays, logLevel: Char=myLogLevel) {
         try {
             isInited = true
-
-            fileKeepDays = logKeepDays
             myLogLevel = logLevel
-            saveDirPath = logDirPath
+
+            super.init(logDir, logKeepDays)
             startWriter()
         }catch (e:Exception) {
             isInited = false
