@@ -296,6 +296,15 @@ object MyLog {
         }
     }
 
+    private fun getDateFromFileName(fileName:String):String {
+        return try {
+            fileName.split(LOG_NAME_SEPARATOR)[0]
+        }catch (e:Exception) {
+            Log.e(TAG, "#getDateFromFileName err: ${e.stackTraceToString()}")
+            ""
+        }
+    }
+
     private fun getLogFileName(): String {
         val datePrefix = logFileSdf.format(LocalDateTime.now())
         //eg: 2024-05-15#Log.txt
@@ -316,8 +325,16 @@ object MyLog {
      */
     private suspend fun writeLogToFile(mylogtype: String, tag: String, text: String) { // 新建或打开日志文件
         try {
-            val nowtime = LocalDateTime.now()
-            val needWriteMessage = myLogSdf.format(nowtime) + "    " + mylogtype + "    " + tag + "    " + text;
+            val timeStamp = myLogSdf.format(LocalDateTime.now())
+            val needWriteMessage = timeStamp + "    " + mylogtype + "    " + tag + "    " + text;
+
+
+            logFile?.let {
+                if(dateChanged(timeStamp, getDateFromFileName(it.name))) {
+                    //关流，然后就会触发重新创建文件
+                    logWriter?.close()
+                }
+            }
 
             writeChannel.send(needWriteMessage)
 
@@ -330,6 +347,11 @@ object MyLog {
             e.printStackTrace()
             Log.e(TAG, "#writeLogToFile err:"+e.stackTraceToString())
         }
+    }
+
+    private fun dateChanged(nowTimeStamp:String, writerFileTimeStamp:String):Boolean {
+        // e.g. "2025-02-12 01:00:00".startsWith("2025-02-12")，true代表日期没变，否则代表变了
+        return nowTimeStamp.startsWith(writerFileTimeStamp).not()
     }
 
     private fun initLogWriter():Pair<File, BufferedWriter>{
