@@ -19,8 +19,11 @@ import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
 
 
+/**
+ * 文件名带日期的writer，记日志用到这个类，例如根据日期创建文件，然后往里面追加内容
+ */
 open class DateNamedFileWriter(
-    private val logTagOfSubClass:String,  //日志tag
+    private val logTagOfSubClass:String,  //日志tag，因为这个类并不直接使用，往往作为工具类的基类，所以log tag用其子类的，这样能知道是哪个类发生了错误
     private val fileNameTag:String,  //文件名标签，可用来区分这文件是干嘛的，例如带"2025-02-02#Log.txt"，#后面就是标签，而Log表明这文件记录的是日志
     private val fileExt:String=".txt",
     private val fileNameSeparator:String="#",
