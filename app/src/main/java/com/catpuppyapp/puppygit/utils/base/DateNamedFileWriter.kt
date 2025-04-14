@@ -53,7 +53,7 @@ open class DateNamedFileWriter(
             return field
         }
 
-    fun init(saveDir:File, fileKeepDays: Int = this.fileKeepDays) {
+    protected fun init(saveDir:File, fileKeepDays: Int = this.fileKeepDays) {
         this.saveDir = saveDir
         this.fileKeepDays = fileKeepDays
     }

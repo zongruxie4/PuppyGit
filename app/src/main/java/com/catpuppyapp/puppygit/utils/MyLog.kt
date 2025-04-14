@@ -33,10 +33,8 @@ object MyLog: DateNamedFileWriter(
 
 
     /**
-     * this method should only do once
+     * 此函数可重复调用
      */
-
-    //    public Context context;
     fun init(logDir:File, logKeepDays: Int= fileKeepDays, logLevel: Char=myLogLevel) {
         try {
             isInited = true
@@ -206,19 +204,19 @@ object MyLog: DateNamedFileWriter(
         }
     }
 
-    fun getTextByLogLevel(level:String, appContext: Context):String {
+    fun getTextByLogLevel(level:String, context: Context):String {
         if(level == "e") {
-            return appContext.getString(R.string.error)
+            return context.getString(R.string.error)
         }else if(level=="w"){
-            return appContext.getString(R.string.warn)
+            return context.getString(R.string.warn)
         }else if(level=="i"){
-            return appContext.getString(R.string.info)
+            return context.getString(R.string.info)
         }else if(level=="d"){
-            return appContext.getString(R.string.debug)
+            return context.getString(R.string.debug)
         }else if(level=="v"){
-            return appContext.getString(R.string.verbose)
+            return context.getString(R.string.verbose)
         }else {
-            return appContext.getString(R.string.unknown)
+            return context.getString(R.string.unknown)
         }
     }
 

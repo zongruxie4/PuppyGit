@@ -19,7 +19,9 @@ object EditCache: DateNamedFileWriter(
     //用来检测是否重复，若重复则只存第一个
     private var lastSavedText = mutableStateOf("")
 
-    //    public Context context;
+    /**
+     * 此函数可重复调用
+     */
     fun init(enableCache:Boolean, cacheDir:File, keepInDays: Int=fileKeepDays) {
         try {
             //这两个变量删除过期文件需要用，所以无论是否启用cache，都初始化这两个变量
