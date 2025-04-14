@@ -29,7 +29,7 @@ open class DateNamedFileWriter(
     private val fileNameSeparator:String="#",
     var fileKeepDays:Int = 3,
     channelBufferSize:Int = 50,  //队列设置大一些才有意义，不然跟互斥锁没差，话说kotlin里没公平锁吗？非得这么麻烦
-    private val maxErrCount:Int = Cons.maxErrTryTimes
+    private val maxErrCount:Int = 5,  //若写入出错，最多重试次数，每次重试都会重新initWriter，若重试超过次数还是写入失败，将终止协程，再次执行类的init函数才会重新创建协程
 ) {
     private val writeLock = Mutex()
     private val writeChannel = Channel<String> (capacity = channelBufferSize, onBufferOverflow = BufferOverflow.SUSPEND) { /* onUndeliveredElement, 未交付的元素会调用此方法，一般用来执行关流之类的善后操作，不过我这用不上 */ }

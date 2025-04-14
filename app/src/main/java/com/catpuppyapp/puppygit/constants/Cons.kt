@@ -6,9 +6,6 @@ import java.time.format.DateTimeFormatter
 
 object Cons {
 
-    //有些操作出错会重试，可能会用到相同的重试次数，所以抽个变量出来
-    const val maxErrTryTimes = 5
-
     const val repoBusyStr = "Repo busy now, plz try again later." ;
     /**
      * 详情列表，条目分割线
