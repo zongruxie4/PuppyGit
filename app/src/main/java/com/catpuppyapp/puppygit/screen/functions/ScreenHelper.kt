@@ -194,7 +194,7 @@ fun <T> search(
  * 先遍历当前目录所有条目，然后再继续遍历当前目录的文件夹（广度优先），但不完全是广度优先，例如，可能会深入到第一个目录的最底部，才会继续第2个目录的第2层，真正的广度应该是一层一层的，先扫描第一层级目录，再第2层级，再第2层级，以此类推
  */
 fun recursiveFakeBreadthFirstSearch(
-    dir: File, target:MutableList<FileItemDto>,
+    dir: File,
     match: (srcIdx:Int, srcItem: File) -> Boolean,
     matchedCallback: (srcIdx:Int, srcItem: File) -> Unit,
     canceled: () -> Boolean
@@ -209,12 +209,10 @@ fun recursiveFakeBreadthFirstSearch(
     }
 
     val subdirs = mutableListOf<File>()
-    for(idx in files.indices) {
+    for((idx, f) in files.withIndex()) {
         if(canceled()) {
             return
         }
-
-        val f = files[idx]
 
         if(match(idx, f)) {
             matchedCallback(idx, f)
@@ -225,10 +223,54 @@ fun recursiveFakeBreadthFirstSearch(
         }
     }
 
+    //TODO 这里可改成基于协程的，性能应该至少能翻1倍，但要控制协程数量，4个左右就可以，不要太多，不然物理cpu核心占满，创建更多协程也没意义
     //遍历子目录
     for(sub in subdirs) {
-        recursiveFakeBreadthFirstSearch(dir = sub, target = target, match = match, matchedCallback=matchedCallback, canceled = canceled)
+        recursiveFakeBreadthFirstSearch(dir = sub, match = match, matchedCallback=matchedCallback, canceled = canceled)
     }
+}
+
+/**
+ * 真正的广度优先搜索，会一层一层查找，先第一层，再第2层，再第3层，直到最后一层目录
+ */
+fun recursiveRealBreadthFirstSearch(
+    dir: File,
+    match: (srcIdx:Int, srcItem: File) -> Boolean,
+    matchedCallback: (srcIdx:Int, srcItem: File) -> Unit,
+    canceled: () -> Boolean
+) {
+    if(canceled()) {
+        return
+    }
+
+    //忽略当前被搜索的目录，例如你在目录"PuppyGit"搜索关键字"PuppyGit"，这时并不希望匹配到当前目录本身
+    val ignorePath = dir.canonicalPath
+    val subdirs = mutableListOf(dir)
+
+    while (subdirs.isNotEmpty()) {
+        val subdirsCopy = subdirs.toList()
+        subdirs.clear()
+
+        for((idx, f) in subdirsCopy.withIndex()) {
+            if(canceled()) {
+                return
+            }
+
+            if(f.canonicalPath != ignorePath && match(idx, f)) {
+                matchedCallback(idx, f)
+            }
+
+            if(f.isDirectory) {
+                val files = f.listFiles()
+                if(files == null || files.isEmpty()) {
+                    continue
+                }
+
+                subdirs.addAll(files)
+            }
+        }
+    }
+
 }
 
 /**
