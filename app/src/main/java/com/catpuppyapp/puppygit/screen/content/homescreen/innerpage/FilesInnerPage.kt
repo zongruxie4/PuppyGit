@@ -110,7 +110,6 @@ import com.catpuppyapp.puppygit.screen.functions.filterModeActuallyEnabled
 import com.catpuppyapp.puppygit.screen.functions.filterTheList
 import com.catpuppyapp.puppygit.screen.functions.goToFileHistory
 import com.catpuppyapp.puppygit.screen.functions.initSearch
-import com.catpuppyapp.puppygit.screen.functions.realBreadthFirstSearch
 import com.catpuppyapp.puppygit.screen.functions.triggerReFilter
 import com.catpuppyapp.puppygit.screen.shared.FileChooserType
 import com.catpuppyapp.puppygit.screen.shared.FilePath
@@ -122,6 +121,7 @@ import com.catpuppyapp.puppygit.style.MyStyleKt
 import com.catpuppyapp.puppygit.ui.theme.Theme
 import com.catpuppyapp.puppygit.utils.ActivityUtil
 import com.catpuppyapp.puppygit.utils.AppModel
+import com.catpuppyapp.puppygit.utils.DirSearchUtil
 import com.catpuppyapp.puppygit.utils.FsUtils
 import com.catpuppyapp.puppygit.utils.FsUtils.PasteResult
 import com.catpuppyapp.puppygit.utils.Libgit2Helper
@@ -1467,7 +1467,7 @@ fun FilesInnerPage(
                             filterList.value.clear()
                             filesPageSearching.value = true
 
-                            realBreadthFirstSearch(
+                            DirSearchUtil.realBreadthFirstSearch(
                                 dir = curDir,
                                 match = match,
                                 matchedCallback = {idx, item -> filterList.value.add(FileItemDto.genFileItemDtoByFile(item, activityContext))},
