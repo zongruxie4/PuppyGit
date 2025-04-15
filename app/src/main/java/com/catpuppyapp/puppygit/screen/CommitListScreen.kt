@@ -216,6 +216,9 @@ fun CommitListScreen(
 //    println("branchShortNameOrShortHashByFullOid: "+branchShortNameOrShortHashByFullOid.value)
 //    assert(fullOid.value.isNotBlank())
 
+    //TODO 这channel其实非必须，可以修改成：把上次的load Job对象存下来，
+    // 离开页面时调用下job.cancel()即可，然后协程内部就会抛异常，可以直接在协程内部try catch到取消异常，不捕获也不会导致外部崩溃
+    // 但如果要让函数响应cancel()的话，必须设置调度点或者叫暂停点，死循环可能会长期占用cpu不响应调度，最简单设置调度点的方式就是delay(1)，另外channel.receive()等api也能响应job.cancel()
     val loadChannel = remember { Channel<Int>() }
 
 //    val sumPage = MockData.getCommitSum(repoId,branch)

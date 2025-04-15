@@ -3983,6 +3983,7 @@ class Libgit2Helper {
                     //这个检查和检查页数差不多，必须得在创建新dto之后及调用revwalk.next()之前，不然会漏条目
                     //check channel, may received terminal signal
                     if(++checkChannelCount > checkChannelFrequency) {
+                        //TODO 这个检测可以改成 delay(1) ，然后再外部希望终止任务时，调用下job.cancel()即可，另外delay(1)的作用是响应cancel()使代码块抛出canceledException()
                         val recv = loadChannel.tryReceive()
 //                        println("recv.toString(): ${recv.toString()}")
                         if(recv.isClosed){  // not failure meant success or closed

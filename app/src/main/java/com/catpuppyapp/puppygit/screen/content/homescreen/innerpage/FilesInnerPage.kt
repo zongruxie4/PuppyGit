@@ -3091,6 +3091,7 @@ fun FilesInnerPage(
 
 
     LaunchedEffect(needRefreshFilesPage.value) {
+        //如果只有协程的话，其实try catch没意义，协程内部不会往外抛异常；若没协程，trycatch有意义，不然若发生异常会抛到外部导致app崩溃
         try {
             //只有当目录改变时(需要刷新页面)，才需要执行initFilesPage，选择文件之类的操作不需要执行此操作
             doJobThenOffLoading(loadingOn, loadingOff, activityContext.getString(R.string.loading)) {
