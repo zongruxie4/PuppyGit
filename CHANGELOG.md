@@ -2,12 +2,14 @@
 - change BottomBar menu icon enable condition
 - fix: snapshot enable not work
 - fix: cursor of Editor placed wrong in some cases
+- optimize folder search
 
 
 
 - 修改底栏菜单按钮启用条件
 - 修复启用快照无效的bug
 - 修复某些情况下文本编辑器光标定位出错的bug
+- 优化文件夹搜索
 
 ---
 
