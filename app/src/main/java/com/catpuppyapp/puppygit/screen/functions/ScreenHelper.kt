@@ -11,7 +11,6 @@ import androidx.compose.ui.platform.ClipboardManager
 import com.catpuppyapp.puppygit.constants.Cons
 import com.catpuppyapp.puppygit.constants.LineNum
 import com.catpuppyapp.puppygit.constants.PageRequest
-import com.catpuppyapp.puppygit.dto.FileItemDto
 import com.catpuppyapp.puppygit.dto.UndoStack
 import com.catpuppyapp.puppygit.fileeditor.texteditor.state.TextEditorState
 import com.catpuppyapp.puppygit.play.pro.R
@@ -191,7 +190,13 @@ fun <T> search(
 }
 
 /**
- * 先遍历当前目录所有条目，然后再继续遍历当前目录的文件夹（广度优先），但不完全是广度优先，例如，可能会深入到第一个目录的最底部，才会继续第2个目录的第2层，真正的广度应该是一层一层的，先扫描第一层级目录，再第2层级，再第2层级，以此类推
+ * 虚假的广度优先搜索，针对顶级目录和普通过滤功能性能一样（所以凑合用了一段时间，感觉也够用），
+ * 但后续针对子目录的搜索并非广度优先，
+ * 实际会深入到一个子目录的最底层后才会查找
+ * 其他的子目录（同时每个子目录也同样会先对目录内所有文件和文件夹进行匹配，
+ * 再分别深入其子目录，这个过程是递归的），所以并非真正的广度优先搜索。
+ *
+ * 这个算是针对深度优先搜索做了一些优化使其针对顶层目录匹配的效率和单层级目录的过滤功能性能一样。
  */
 fun recursiveFakeBreadthFirstSearch(
     dir: File,
@@ -231,9 +236,11 @@ fun recursiveFakeBreadthFirstSearch(
 }
 
 /**
- * 真正的广度优先搜索，会一层一层查找，先第一层，再第2层，再第3层，直到最后一层目录
+ * 真正的广度优先搜索，会一层一层查找，先第一层，再第2层，再第3层，直到最后一层目录。
+ *
+ * 针对顶级目录的搜索和普通单层的过滤功能性能一样。
  */
-fun recursiveRealBreadthFirstSearch(
+fun realBreadthFirstSearch(
     dir: File,
     match: (srcIdx:Int, srcItem: File) -> Boolean,
     matchedCallback: (srcIdx:Int, srcItem: File) -> Unit,
