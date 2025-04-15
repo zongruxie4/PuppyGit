@@ -82,7 +82,6 @@ import com.catpuppyapp.puppygit.compose.ConfirmDialog
 import com.catpuppyapp.puppygit.compose.ConfirmDialog2
 import com.catpuppyapp.puppygit.compose.CopyScrollableColumn
 import com.catpuppyapp.puppygit.compose.CopyableDialog
-import com.catpuppyapp.puppygit.compose.CopyableDialog2
 import com.catpuppyapp.puppygit.compose.CreateFileOrFolderDialog2
 import com.catpuppyapp.puppygit.compose.FileListItem
 import com.catpuppyapp.puppygit.compose.GitIgnoreDialog
@@ -111,7 +110,7 @@ import com.catpuppyapp.puppygit.screen.functions.filterModeActuallyEnabled
 import com.catpuppyapp.puppygit.screen.functions.filterTheList
 import com.catpuppyapp.puppygit.screen.functions.goToFileHistory
 import com.catpuppyapp.puppygit.screen.functions.initSearch
-import com.catpuppyapp.puppygit.screen.functions.recursiveBreadthFirstSearch
+import com.catpuppyapp.puppygit.screen.functions.recursiveFakeBreadthFirstSearch
 import com.catpuppyapp.puppygit.screen.functions.triggerReFilter
 import com.catpuppyapp.puppygit.screen.shared.FileChooserType
 import com.catpuppyapp.puppygit.screen.shared.FilePath
@@ -1468,7 +1467,7 @@ fun FilesInnerPage(
                             filterList.value.clear()
                             filesPageSearching.value = true
 
-                            recursiveBreadthFirstSearch(
+                            recursiveFakeBreadthFirstSearch(
                                 dir = curDir,
                                 target = filterList.value,
                                 match = match,

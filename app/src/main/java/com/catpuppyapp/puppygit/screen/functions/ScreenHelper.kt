@@ -191,9 +191,9 @@ fun <T> search(
 }
 
 /**
- * 先遍历当前目录所有条目，然后再继续遍历当前目录的文件夹（广度优先）
+ * 先遍历当前目录所有条目，然后再继续遍历当前目录的文件夹（广度优先），但不完全是广度优先，例如，可能会深入到第一个目录的最底部，才会继续第2个目录的第2层，真正的广度应该是一层一层的，先扫描第一层级目录，再第2层级，再第2层级，以此类推
  */
-fun recursiveBreadthFirstSearch(
+fun recursiveFakeBreadthFirstSearch(
     dir: File, target:MutableList<FileItemDto>,
     match: (srcIdx:Int, srcItem: File) -> Boolean,
     matchedCallback: (srcIdx:Int, srcItem: File) -> Unit,
@@ -227,7 +227,7 @@ fun recursiveBreadthFirstSearch(
 
     //遍历子目录
     for(sub in subdirs) {
-        recursiveBreadthFirstSearch(dir = sub, target = target, match = match, matchedCallback=matchedCallback, canceled = canceled)
+        recursiveFakeBreadthFirstSearch(dir = sub, target = target, match = match, matchedCallback=matchedCallback, canceled = canceled)
     }
 }
 
