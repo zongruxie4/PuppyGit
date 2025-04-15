@@ -12,6 +12,8 @@ object DirSearchUtil {
      * 再分别深入其子目录，这个过程是递归的），所以并非真正的广度优先搜索。
      *
      * 这个算是针对深度优先搜索做了一些优化使其针对顶层目录匹配的效率和单层级目录的过滤功能性能一样。
+     *
+     * 这个函数的优点是容易做并发。
      */
     fun recursiveFakeBreadthFirstSearch(
         dir: File,
@@ -43,7 +45,7 @@ object DirSearchUtil {
             }
         }
 
-        //TODO 这里可改成基于协程的，性能应该至少能翻1倍，但要控制协程数量，4个左右就可以，不要太多，不然物理cpu核心占满，创建更多协程也没意义
+        //TODO 并发优化点：这里可改成基于协程的，性能应该至少能翻1倍，但要控制协程数量，4个左右就可以，不要太多，不然物理cpu核心占满，创建更多协程也没意义
         //遍历子目录
         for(sub in subdirs) {
             recursiveFakeBreadthFirstSearch(dir = sub, match = match, matchedCallback=matchedCallback, canceled = canceled)
@@ -54,6 +56,8 @@ object DirSearchUtil {
      * 真正的广度优先搜索，会一层一层查找，先第一层，再第2层，再第3层，直到最后一层目录。
      *
      * 针对顶级目录的搜索和普通单层的过滤功能性能一样。
+     *
+     * 这个函数不太适合做成并发的，也不是不能，就是有点麻烦，若想做可以尝试：准备弄几个并发协程就创建几个subDirs列表，然后平均往每个列表添加条目，再分发给协程去遍历，一般没必要做
      */
     fun realBreadthFirstSearch(
         dir: File,
@@ -65,34 +69,39 @@ object DirSearchUtil {
             return
         }
 
-        //忽略当前被搜索的目录，例如你在目录"PuppyGit"搜索关键字"PuppyGit"，这时并不希望匹配到当前目录本身
-        val ignorePath = dir.canonicalPath
-        val subdirs = mutableListOf(dir)
+        val subDirs = mutableListOf<File>()
+        addAllFilesToList(dir, subDirs)
 
-        while (subdirs.isNotEmpty()) {
-            val subdirsCopy = subdirs.toList()
-            subdirs.clear()
+        while (subDirs.isNotEmpty()) {
+            val subDirsCopy = subDirs.toList()
+            subDirs.clear()
 
-            for((idx, f) in subdirsCopy.withIndex()) {
+            for((idx, f) in subDirsCopy.withIndex()) {
                 if(canceled()) {
                     return
                 }
 
-                if(f.canonicalPath != ignorePath && match(idx, f)) {
+                if(match(idx, f)) {
                     matchedCallback(idx, f)
                 }
 
                 if(f.isDirectory) {
-                    val files = f.listFiles()
-                    if(files == null || files.isEmpty()) {
-                        continue
-                    }
-
-                    subdirs.addAll(files)
+                    addAllFilesToList(f, subDirs)
                 }
             }
         }
 
+    }
+
+    private fun addAllFilesToList(
+        dir:File,
+        subDirs:MutableList<File>,
+    ) {
+        dir.listFiles()?.let {
+            if(it.isNotEmpty()) {
+                subDirs.addAll(it)
+            }
+        }
     }
 
 }

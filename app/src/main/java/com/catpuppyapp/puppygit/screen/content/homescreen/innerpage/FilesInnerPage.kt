@@ -1479,9 +1479,7 @@ fun FilesInnerPage(
 
 
                 val listState = if(enableFilter) filterListState else curListState.value
-//                if(enableFilter) {  //更新filter列表state
-//                    filterListState.value = listState
-//                }
+
                 //更新是否启用filter
                 enableFilterState.value = enableFilter
 
