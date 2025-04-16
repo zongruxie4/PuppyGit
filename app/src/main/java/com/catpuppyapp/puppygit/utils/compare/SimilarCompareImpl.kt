@@ -30,6 +30,16 @@ class SimilarCompareImpl: SimilarCompare {
                 listOf(IndexStringPart(0, del.getLen(), emptyAsModified)))
         }
 
+        //比较地址，完全一样
+        if(add.identical(del)) {
+            return IndexModifyResult(
+                matched = true,
+                matchedByReverseSearch = false,
+                listOf(IndexStringPart(0, add.getLen(), false)),
+                listOf(IndexStringPart(0, del.getLen(), false))
+            )
+        }
+
         //忽略末尾 \n
         val addWillUse = if(ignoreEndOfNewLine) {
             add.getTextNoEndOfNewLine()

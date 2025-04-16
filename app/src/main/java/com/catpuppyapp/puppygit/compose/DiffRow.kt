@@ -39,6 +39,7 @@ import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import com.catpuppyapp.puppygit.constants.Cons
 import com.catpuppyapp.puppygit.constants.LineNum
+import com.catpuppyapp.puppygit.dev.DevFeature
 import com.catpuppyapp.puppygit.git.CompareLinePair
 import com.catpuppyapp.puppygit.git.CompareLinePairHelper
 import com.catpuppyapp.puppygit.git.CompareLinePairResult
@@ -442,6 +443,34 @@ fun DiffRow (
     val expandedMenu = rememberSaveable { mutableStateOf(false) }
 
 
+    //用来实现设置行为no matched和all matched
+    val compareLineToText = {contentOfLine:String, line:PuppyLine, text:String ->
+        doJobThenOffLoading {
+            val newcp = CompareLinePair(
+                line1 = contentOfLine,
+                line1OriginType = line.originType,
+                line1Num = line.lineNum,
+                line1Key = line.key,
+
+                //没有行号的文本，当作剪贴板内容来比较即可，懒得再添加其他类型了
+                line2 = text,
+                line2OriginType = CompareLinePairHelper.clipboardLineOriginType,
+                line2Num = CompareLinePairHelper.clipboardLineNum,
+                line2Key = CompareLinePairHelper.clipboardLineKey,
+            )
+
+            newcp.compare(
+                betterCompare = betterCompare,
+                matchByWords = matchByWords,
+                map = indexStringPartListMap.value
+            )
+
+            comparePairBuffer.value = CompareLinePair()
+
+            reForEachDiffContent()
+        }
+    }
+
     val compareToClipBoard = label@{ content:String, line:PuppyLine, trueContentToClipBoardFalseClipBoardToContent:Boolean ->
         if(content.isEmpty()) {
             Msg.requireShowLongDuration(activityContext.getString(R.string.can_t_compare_empty_line))
@@ -806,6 +835,28 @@ fun DiffRow (
                             expandedMenu.value = false
                         }
                     )
+
+                    if(AppModel.devModeOn) {
+                        DropdownMenuItem(
+                            text = { Text(DevFeature.setDiffRowToNoMatched)},
+                            onClick = {
+                                expandedMenu.value = false
+
+                                //空字符串有做处理，不会进行比较，所以得整成空行
+                                compareLineToText(content, line, "\n")
+                            }
+                        )
+
+                        DropdownMenuItem(
+                            text = { Text(DevFeature.setDiffRowToAllMatched)},
+                            onClick = {
+                                expandedMenu.value = false
+
+                                //自己和自己比较永远完全匹配，而且有做全等判断，仅比较地址，性能绝佳
+                                compareLineToText(content, line, content)
+                            }
+                        )
+                    }
                 }
             }
         }

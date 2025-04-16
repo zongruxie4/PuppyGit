@@ -1,8 +1,8 @@
 package com.catpuppyapp.puppygit.utils.compare.param
 
 abstract class CompareParam<T: CharSequence>(
-    private val chars:T,
-    private val length:Int,
+    val chars:T,
+    val length:Int,
 ) {
     fun getLen(): Int {
         return length
@@ -36,4 +36,8 @@ abstract class CompareParam<T: CharSequence>(
      * @return return the data without end of line break "\n", no promise copy data or just return a view(aka window) of origin data
      */
     abstract fun getTextNoEndOfNewLine():CompareParam<T>
+
+    fun identical(other:CompareParam<T>):Boolean {
+        return this.length == other.length && this.chars === other.chars
+    }
 }
