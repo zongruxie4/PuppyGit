@@ -1,4 +1,15 @@
-1.1.0.0v76 - 20250411:
+
+---
+
+1.1.0.1v77 - 20250416:
+- fix: long pressing DiffScreen line menu item will crash the app
+
+
+
+- 修复长按Diff页面行菜单项导致app崩溃的bug
+
+---
+1.1.0.0v76 - 20250415:
 - change BottomBar menu icon enable condition
 - fix: snapshot enable not work
 - fix: cursor of Editor placed wrong in some cases
