@@ -60,7 +60,6 @@ import com.catpuppyapp.puppygit.utils.replaceStringResList
 import com.catpuppyapp.puppygit.utils.state.CustomStateMapSaveable
 import com.catpuppyapp.puppygit.utils.state.CustomStateSaveable
 import com.github.git24j.core.Diff
-import com.github.git24j.core.Diff.Line
 
 
 /**
@@ -442,6 +441,66 @@ fun DiffRow (
     val expandedMenu = rememberSaveable { mutableStateOf(false) }
 
 
+    val compareToClipBoard = label@{ content:String, line:PuppyLine, trueContentToClipBoardFalseClipBoardToContent:Boolean ->
+        if(content.isEmpty()) {
+            Msg.requireShowLongDuration(activityContext.getString(R.string.can_t_compare_empty_line))
+            return@label
+        }
+
+        if(line.originType == Diff.Line.OriginType.CONTEXT.toString()) {
+            // context line no color, compare clipboard to it show nothing, nonsense
+            Msg.requireShowLongDuration(activityContext.getString(R.string.can_t_compare_clipboard_to_context_line))
+            return@label
+        }
+
+        val clipboardText = getClipboardText(clipboardManager)
+        if(clipboardText.isNullOrEmpty()) {
+            Msg.requireShowLongDuration(activityContext.getString(R.string.clipboard_is_empty))
+            return@label
+        }
+
+        Msg.requireShow(activityContext.getString(R.string.comparing))
+
+        doJobThenOffLoading {
+            val newcp = if(trueContentToClipBoardFalseClipBoardToContent){  // content to clipboard
+                CompareLinePair(
+                    line1 = content,
+                    line1OriginType = line.originType,
+                    line1Num = line.lineNum,
+                    line1Key = line.key,
+
+                    line2 = clipboardText,
+                    line2OriginType = CompareLinePairHelper.clipboardLineOriginType,
+                    line2Num = CompareLinePairHelper.clipboardLineNum,
+                    line2Key = CompareLinePairHelper.clipboardLineKey,
+                )
+            } else {  // clipboard to content
+                CompareLinePair(
+                    line1 = clipboardText,
+                    line1OriginType = CompareLinePairHelper.clipboardLineOriginType,
+                    line1Num = CompareLinePairHelper.clipboardLineNum,
+                    line1Key = CompareLinePairHelper.clipboardLineKey,
+
+                    line2 = content,
+                    line2OriginType = line.originType,
+                    line2Num = line.lineNum,
+                    line2Key = line.key,
+                )
+            }
+
+            newcp.compare(
+                betterCompare = betterCompare,
+                matchByWords = matchByWords,
+                map = indexStringPartListMap.value
+            )
+
+            comparePairBuffer.value = CompareLinePair()
+
+            reForEachDiffContent()
+        }
+
+    }
+
     // this check include `originType` check, it is redundant actually, because when into this page, the line originType always one of CONTEXT or ADDITION or DELETION,
     //  because ADD_EOFNL/DEL_EOFNL already trans to ADDITION/DELETION, and the CONTEXT_EOFNL is deleted, will not shown
 //    val enableLineActions = remember {
@@ -578,7 +637,7 @@ fun DiffRow (
                     // EOFNL status maybe wrong, before Edit or Del, must check it actually exists or is not, when edit line num is EOF and EOFNL is not exists, then prepend a LineBreak before users input
                     //编辑或删除前，如果行号是EOF，必须检查EOF NL是否实际存在，如果EOFNL不存在，则先添加一个空行，再写入用户的实际内容，如果执行删除EOF且文件末尾无空行，则不执行任何删除；
                     // 如果EOF为删除，则不用检查，点击恢复后直接在文件末尾添加一个空行即可
-                    if(line.originType == Line.OriginType.ADDITION.toString() || line.originType == Line.OriginType.CONTEXT.toString()){
+                    if(line.originType == Diff.Line.OriginType.ADDITION.toString() || line.originType == Diff.Line.OriginType.CONTEXT.toString()){
                         DropdownMenuItem(text = { Text(stringResource(R.string.edit))},
                             onClick = {
                                 initEditLineDialog(line.getContentNoLineBreak(), line.lineNum, null)
@@ -606,7 +665,7 @@ fun DiffRow (
                                 expandedMenu.value = false
                             }
                         )
-                    }else if(line.originType == Line.OriginType.DELETION.toString()) {
+                    }else if(line.originType == Diff.Line.OriginType.DELETION.toString()) {
                         // prepend(insert)
                         DropdownMenuItem(text = { Text(stringResource(R.string.restore))},
                             onClick = {
@@ -658,7 +717,7 @@ fun DiffRow (
 //                                    }
 
                                     // both are CONTEXT
-                                    if(line.originType == Line.OriginType.CONTEXT.toString() && cp.line1OriginType == line.originType) {
+                                    if(line.originType == Diff.Line.OriginType.CONTEXT.toString() && cp.line1OriginType == line.originType) {
                                         Msg.requireShow(activityContext.getString(R.string.can_t_compare_both_context_type_lines))
                                         return@label
                                     }
@@ -696,52 +755,21 @@ fun DiffRow (
                         )
 
 
-                        DropdownMenuItem(text = { Text(stringResource(R.string.compare_to_clipboard))},
-                            onClick = label@{
+                        DropdownMenuItem(
+                            text = { Text(stringResource(R.string.compare_to_clipboard)+" ->")},
+                            onClick = {
                                 expandedMenu.value = false
 
-                                if(content.isEmpty()) {
-                                    Msg.requireShow(activityContext.getString(R.string.can_t_compare_empty_line))
-                                    return@label
-                                }
-                                if(line.originType == Diff.Line.OriginType.CONTEXT.toString()) {
-                                    // context line no color, compare clipboard to it show nothing, nonsense
-                                    Msg.requireShow(activityContext.getString(R.string.can_t_compare_clipboard_to_context_line))
-                                    return@label
-                                }
+                                compareToClipBoard(content, line, true)
+                            }
+                        )
 
-                                val clipboardText = getClipboardText(clipboardManager)
-                                if(clipboardText.isNullOrEmpty()) {
-                                    Msg.requireShow(activityContext.getString(R.string.clipboard_is_empty))
-                                    return@label
-                                }
+                        DropdownMenuItem(
+                            text = { Text(stringResource(R.string.compare_to_clipboard)+" <-")},
+                            onClick = {
+                                expandedMenu.value = false
 
-                                Msg.requireShow(activityContext.getString(R.string.comparing))
-
-                                doJobThenOffLoading {
-                                    val newcp = CompareLinePair(
-                                        line1Num = CompareLinePairHelper.clipboardLineNum,
-                                        line1OriginType = CompareLinePairHelper.clipboardLineOriginType,
-                                        line1 = clipboardText,
-                                        line1Key = CompareLinePairHelper.clipboardLineKey,
-
-                                        line2 = content,
-                                        line2OriginType = line.originType,
-                                        line2Num = line.lineNum,
-                                        line2Key = line.key
-                                    )
-
-                                    newcp.compare(
-                                        betterCompare = betterCompare,
-                                        matchByWords = matchByWords,
-                                        map = indexStringPartListMap.value
-                                    )
-
-                                    comparePairBuffer.value = CompareLinePair()
-
-                                    reForEachDiffContent()
-                                }
-
+                                compareToClipBoard(content, line, false)
                             }
                         )
                     }
