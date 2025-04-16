@@ -112,8 +112,8 @@ class SimilarCompareImpl: SimilarCompare {
         requireBetterMatching: Boolean,
         treatNoWordMatchAsNoMatched:Boolean = true, //如果只有空格匹配，没单词匹配，当作无匹配
     ):IndexModifyResult {
-        val addWordSpacePair = getWordAndIndexList(add)
-        val delWordSpacePair = getWordAndIndexList(del)
+        val addWordSpacePair = getWordAndIndexList(add, requireBetterMatching)
+        val delWordSpacePair = getWordAndIndexList(del, requireBetterMatching)
 
         val addIter = NoCopyIterator(srcList = addWordSpacePair.words as MutableList)
         val delIter = NoCopyIterator(srcList = delWordSpacePair.words as MutableList)
@@ -418,7 +418,14 @@ class SimilarCompareImpl: SimilarCompare {
         return matched
     }
 
-    private fun<T:CharSequence> getWordAndIndexList(compareParam:CompareParam<T>):WordsSpacesPair {
+    private fun<T:CharSequence> getWordAndIndexList(compareParam:CompareParam<T>, requireBetterMatching: Boolean):WordsSpacesPair {
+        //拼接相邻的非单词字符（空格、标点符号）：
+        //若false，则禁用连接响相邻符号，高匹配率，高内存占用，低性能；
+        //若true，则启用连接相邻符号，低匹配率，低内存占用，高性能。
+        //注意：连在一起的不一定是相同字符，例如："), "，是有可能存在的，因为它们全都是word separator
+        //实际效果：实际上在内存和性能方面差别不大，主要差在匹配率，一般建议设为false（在ui上启用better matching即可）。
+        val concatNeighborNonWordChars = !requireBetterMatching;
+
         var wordMatching = false
         var spaceMatching = false
         var wordAndIndex:WordAndIndex? = null
@@ -435,8 +442,7 @@ class SimilarCompareImpl: SimilarCompare {
             if(isWordSeparator(char)) {
                 wordMatching = false
 
-                if(false) { //禁用连接邻近符号，提高匹配率，但内存占用可能更高，若想启用，禁用这行，启用下行即可
-//                if(spaceMatching) {  //会把挨着的符号连在一起，优点是省内存，缺点是降低匹配率，注意连在一起的不一定是相同字符，例如："), "，是有可能存在的，因为它们全都是word separator
+                if(concatNeighborNonWordChars && spaceMatching) {  //拼接相邻的非单词字符（空格、标点符号）
                     spaceAndIndex!!.word.append(char)
                 }else {
                     spaceAndIndex = WordAndIndex(index = i)

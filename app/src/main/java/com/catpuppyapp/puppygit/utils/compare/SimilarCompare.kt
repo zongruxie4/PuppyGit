@@ -21,7 +21,7 @@ interface SimilarCompare {
      * if `requireBetterMatching` is true,  matching:
      * add: 123a45, del:123b45,
      *
-     * in most case, when `requireBetterMatching` is true, means bad performance and good matching, in other word, when it is false, good performance and bad matching
+     * in most cases, when `requireBetterMatching` is true, means bad performance and good matching, in other word, when it is false, good performance and bad matching
      *
      * if `reverseMatchIfNeed`, maybe will try reverse matching when forward matching failed, if do reverse matching, the time complex may x2
      *
