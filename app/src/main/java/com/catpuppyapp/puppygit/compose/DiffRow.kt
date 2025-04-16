@@ -661,12 +661,14 @@ fun DiffRow (
                     onDismissRequest = { expandedMenu.value = false },
                     offset = DpOffset(x=150.dp, y=0.dp)
                 ) {
+                    //显示行修改类型和行号，例如 "+123"
+                    DropdownMenuItem(
+                        text = { Text(line.originType+lineNum)},
+                        enabled = false,
+                        onClick ={}
+                    )
+
                     if(enableLineActions) {
-                        DropdownMenuItem(
-                            text = { Text(line.originType+lineNum)},
-                            enabled = false,
-                            onClick ={}
-                        )
 
                         // EOFNL status maybe wrong, before Edit or Del, must check it actually exists or is not, when edit line num is EOF and EOFNL is not exists, then prepend a LineBreak before users input
                         //编辑或删除前，如果行号是EOF，必须检查EOF NL是否实际存在，如果EOFNL不存在，则先添加一个空行，再写入用户的实际内容，如果执行删除EOF且文件末尾无空行，则不执行任何删除；
