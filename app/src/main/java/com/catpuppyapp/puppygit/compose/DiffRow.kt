@@ -444,7 +444,8 @@ fun DiffRow (
 
 
     //用来实现设置行为no matched和all matched
-    val compareLineToText = {contentOfLine:String, line:PuppyLine, text:String ->
+    //不要用line.content替换contentOfLine，因为我搞不好有可能覆盖content的值
+    val compareLineToText = { contentOfLine:String, line:PuppyLine, text:String ->
         doJobThenOffLoading {
             val newcp = CompareLinePair(
                 line1 = contentOfLine,
@@ -471,7 +472,7 @@ fun DiffRow (
         }
     }
 
-    val compareToClipBoard = label@{ content:String, line:PuppyLine, trueContentToClipBoardFalseClipBoardToContent:Boolean ->
+    val compareToClipboard = label@{ content:String, line:PuppyLine, trueContentToClipboardFalseClipboardToContent:Boolean ->
         if(content.isEmpty()) {
             Msg.requireShowLongDuration(activityContext.getString(R.string.can_t_compare_empty_line))
             return@label
@@ -492,7 +493,7 @@ fun DiffRow (
         Msg.requireShow(activityContext.getString(R.string.comparing))
 
         doJobThenOffLoading {
-            val newcp = if(trueContentToClipBoardFalseClipBoardToContent){  // content to clipboard
+            val newcp = if(trueContentToClipboardFalseClipboardToContent){  // content to clipboard
                 CompareLinePair(
                     line1 = content,
                     line1OriginType = line.originType,
@@ -799,7 +800,7 @@ fun DiffRow (
                                 onClick = {
                                     expandedMenu.value = false
 
-                                    compareToClipBoard(content, line, true)
+                                    compareToClipboard(content, line, true)
                                 }
                             )
 
@@ -808,7 +809,7 @@ fun DiffRow (
                                 onClick = {
                                     expandedMenu.value = false
 
-                                    compareToClipBoard(content, line, false)
+                                    compareToClipboard(content, line, false)
                                 }
                             )
                         }
