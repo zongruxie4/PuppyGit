@@ -58,10 +58,12 @@ object SnapshotUtil:SnapshotCreator {
             return Ret.createSuccess(Pair(contentSnapshotDisable_FileNamePlaceHolder, contentSnapshotDisable_FilePathPlaceHolder))
         }
 
+        val funName = "createSnapshotByContentAndGetResult"
+
         try {
             if((trueUseContentFalseUseEditorState && fileContent!!.isNotEmpty()) || (trueUseContentFalseUseEditorState.not() && editorState!!.contentIsEmpty().not())) {
                 val (snapshotFileName, snapFileFullPath, snapFile) = getSnapshotFileNameAndFullPathAndFile(srcFileName, flag)
-                MyLog.w(TAG, "#createSnapshotByContentAndGetResult: will save snapFile to:" + snapFileFullPath)
+                MyLog.d(TAG, "#$funName: will save snapFile to: '$snapFileFullPath'")
                 val snapRet = if(trueUseContentFalseUseEditorState) {
                     FsUtils.saveFileAndGetResult(fileFullPath = snapFileFullPath, text = fileContent!!)
                 } else {
@@ -69,20 +71,20 @@ object SnapshotUtil:SnapshotCreator {
                 }
 
                 if(snapRet.hasError()) {
-                    MyLog.e(TAG, "#createSnapshotByContentAndGetResult: save snapFile '$snapshotFileName' failed:" + snapRet.msg)
+                    MyLog.e(TAG, "#$funName: save snapFile '$snapshotFileName' failed: ${snapRet.msg}")
                     return Ret.createError(null, snapRet.msg)
                 }else {
                     //把快照文件名和文件完整路径设置到snapRet里
                     return Ret.createSuccess(Pair(snapshotFileName, snapFileFullPath))
                 }
             }else {  //文件内容为空
-                val msg = "file content is empty, will not create snapshot for it"
-                MyLog.w(TAG, "#createSnapshotByContentAndGetResult: $msg")
+                val msg = "file content is empty, will not create snapshot for it($srcFileName)"
+                MyLog.d(TAG, "#$funName: $msg")
                 return Ret.createSuccess(null, msg, Ret.SuccessCode.fileContentIsEmptyNeedNotCreateSnapshot)
             }
         }catch (e:Exception) {
-            MyLog.e(TAG, "#createSnapshotByContentAndGetResult() err:" + e.stackTraceToString())
-            return Ret.createError(null, "save file snapshot failed:${e.localizedMessage}", Ret.ErrCode.saveFileErr)
+            MyLog.e(TAG, "#$funName() err: srcFileName=$srcFileName, err=${e.stackTraceToString()}")
+            return Ret.createError(null, "save file snapshot failed: ${e.localizedMessage}", Ret.ErrCode.saveFileErr)
         }
     }
 
@@ -96,21 +98,27 @@ object SnapshotUtil:SnapshotCreator {
             return Ret.createSuccess(Pair(fileSnapshotDisable_FileNamePlaceHolder, fileSnapshotDisable_FilePathPlaceHolder))  // 1是file name，2是file path
         }
 
+        val funName = "createSnapshotByFileAndGetResult"
+
+        var srcFileNameForLog = ""
+        var snapshotFileNameForLog = ""
         try {
             if(!srcFile.exists()) {
                 throw RuntimeException("`srcFile` doesn't exist!, path=${srcFile.canonicalPath}")
             }
 
             val srcFileName = srcFile.name
+            srcFileNameForLog = srcFileName
             val (snapshotFileName, snapFileFullPath, snapFile) = getSnapshotFileNameAndFullPathAndFile(srcFileName, flag)
+            snapshotFileNameForLog = snapshotFileName
 
-            MyLog.w(TAG, "#createSnapshotByFileAndGetResult: will save snapFile to:" + snapFileFullPath)
+            MyLog.d(TAG, "#$funName: will save snapFile to: '$snapFileFullPath'")
 
             // copy src to snap file
             srcFile.copyTo(snapFile.outputStream())
 
             if(!snapFile.exists()) {  //拷贝失败
-                MyLog.e(TAG, "#createSnapshotByFileAndGetResult: save snapFile '$snapshotFileName' failed!")
+                MyLog.e(TAG, "#$funName: save snapFile '$snapshotFileName' failed!")
                 throw RuntimeException("copy src to snapshot failed!")
             }else{  //拷贝成功
                 //把快照文件名设置到snapRet里
@@ -118,8 +126,8 @@ object SnapshotUtil:SnapshotCreator {
             }
 
         }catch (e:Exception) {
-            MyLog.e(TAG, "#createSnapshotByFileAndGetResult() err:" + e.stackTraceToString())
-            return Ret.createError(null, "save file snapshot failed:${e.localizedMessage}", Ret.ErrCode.saveFileErr)
+            MyLog.e(TAG, "#$funName() err: srcFileName=$srcFileNameForLog, snapshotFileName=$snapshotFileNameForLog, err=${e.stackTraceToString()}")
+            return Ret.createError(null, "save file snapshot failed: ${e.localizedMessage}", Ret.ErrCode.saveFileErr)
         }
     }
 
