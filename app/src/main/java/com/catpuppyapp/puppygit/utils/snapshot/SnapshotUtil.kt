@@ -150,16 +150,20 @@ object SnapshotUtil:SnapshotCreator {
     }
 
 
-    fun getANonexistsSnapshotFileName(srcFileName:String, flag: String):String {
+    private fun getANonexistsSnapshotFileName(srcFileName:String, flag: String):String {
         var count = 0
-        val limit = 30
+        val limit = 100
+
+        //精确到秒的时间戳。
+        // 由于这函数应该会在1秒内执行完毕，所以在循环内重复生成时间戳没什么意义，在外部生成一个即可
+        val timestamp = getNowInSecFormatted(Cons.dateTimeFormatterCompact)
 
         while(true) {
-            if(count++ > limit) {
+            if(count++ > limit) {  // should not happen
                 throw RuntimeException("err: generate snapshot filename failed")
             }
 
-            val fileName = genSnapshotFileName(srcFileName, flag)
+            val fileName = genSnapshotFileName(srcFileName, flag, timestamp, getShortUUID(6))
             //如果file.canRead()为假，file.exists()我记得也会返回假，所以就算没读取文件的权限，应该也不会卡循环
             if(!File(fileName).exists()) {
                 return fileName
@@ -173,10 +177,12 @@ object SnapshotUtil:SnapshotCreator {
     目标文件名（快照文件名）格式为：“srcNameIncludeExt(包含后缀名）-flag-年月日时分秒-6位随机uid.bak”
     例如："abc.txt-content_saveErrFallback-20240421012203-ace123"
      */
-    private fun genSnapshotFileName(srcFileName:String, flag: String, uidLen:Int=6):String {
+    private fun genSnapshotFileName(srcFileName:String, flag: String, timestamp:String, uid:String):String {
         //目标文件名（快照文件名）格式为：“srcNameIncludeExt(包含后缀名）-flag-年月日时分秒-6位随机uid.bak”
-        val sb = StringBuilder(srcFileName)
-        return sb.append("-").append(flag).append("-").append(getNowInSecFormatted(Cons.dateTimeFormatterCompact)).append("-").append(getShortUUID(len = uidLen)).append(".bak").toString()
+//        val sb = StringBuilder(srcFileName)
+//        return sb.append("-").append(flag).append("-").append(getNowInSecFormatted(Cons.dateTimeFormatterCompact)).append("-").append(getShortUUID(len = uidLen)).append(".bak").toString()
+
+        return "$srcFileName-$flag-$timestamp-$uid.bak"
     }
 
 }
