@@ -159,7 +159,8 @@ object SnapshotUtil:SnapshotCreator {
         val timestamp = getNowInSecFormatted(Cons.dateTimeFormatterCompact)
 
         while(true) {
-            if(count++ > limit) {  // should not happen
+            // 初始化n为0，然后 `++n > limit`会执行`limit`次，而`n++ > limit` 这种写法实际会执行 `limit+1` 次，不过其实在这，多那一次少那一次无所谓
+            if(++count > limit) {  // should not happen
                 throw RuntimeException("err: generate snapshot filename failed")
             }
 
