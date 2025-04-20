@@ -1,6 +1,15 @@
 
 ---
 
+1.1.0.2v78 - 20250420:
+- adjust CredentialManager UI
+
+
+
+- 调整凭据管理器UI
+
+---
+
 1.1.0.1v77 - 20250416:
 - fix: long pressing DiffScreen line menu item will crash the app
 
