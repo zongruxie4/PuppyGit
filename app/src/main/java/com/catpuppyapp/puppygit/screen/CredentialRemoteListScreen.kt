@@ -516,8 +516,8 @@ fun CredentialRemoteListScreen(
                             || it.remoteName.lowercase().contains(keyword)
                             || it.remoteFetchUrl.lowercase().contains(keyword)
                             || it.remotePushUrl.lowercase().contains(keyword)
-                            || it.getCredentialNameOrNone(activityContext).lowercase().contains(keyword)
-                            || it.getPushCredentialNameOrNone(activityContext).lowercase().contains(keyword)
+                            || it.getCredentialNameOrNone().lowercase().contains(keyword)
+                            || it.getPushCredentialNameOrNone().lowercase().contains(keyword)
 
                 }
             )
@@ -543,10 +543,10 @@ fun CredentialRemoteListScreen(
                     actIcon = if(isShowLink) Icons.Filled.LinkOff else Icons.Filled.Link,
                     actText = if(isShowLink) stringResource(R.string.unlink) else stringResource(R.string.link),
 
-                    //如果是 None页面 且 是关联模式 且 条目fetch和push凭据id都为空，则不需要显示unlink，因为在无凭据条目列表将条目unlink到无凭据没有意义，执行了也没效果
-                actAction = if(isNonePage && isShowLink && it.credentialId.isNullOrEmpty() && it.pushCredentialId.isNullOrEmpty()) null else ({
-                    //x 若半关联，可取消关联非None的选项，所以这个判断不对，上面的对) 若是None页面 且 关联模式 则不显示取消关联按钮，就算任一凭据已关联id不为空也不显示，因为本质上取消关联就是将已关联到当前凭据的条目关联到None凭据，而当前显示的就是已关联到None的条目，所以再取消关联没意义
-//                    actAction = if(isNonePage && isShowLink) null else ({
+                    //x 废弃，容易令人困惑) 如果是 None页面 且 是关联模式 且 条目fetch和push凭据id都为空，则不需要显示unlink，因为在无凭据条目列表将条目unlink到无凭据没有意义，执行了也没效果
+//                actAction = if(isNonePage && isShowLink && it.credentialId.isNullOrEmpty() && it.pushCredentialId.isNullOrEmpty()) null else ({
+                    //若半关联，可取消关联非None的选项，但从逻辑上说在None页面显示取消关联不合理，而且取消关联None可用关联到None替代且更加合理，所以，若None页面不显示unlink) 若是None页面 且 关联模式 则不显示取消关联按钮，就算任一凭据已关联id不为空也不显示，因为本质上取消关联就是将已关联到当前凭据的条目关联到None凭据，而当前显示的就是已关联到None的条目，所以再取消关联没意义
+                    actAction = if(isNonePage && isShowLink) null else ({
                         curItem.value = it
                         requireDoLink.value = !isShowLink
                         targetAll.value = false

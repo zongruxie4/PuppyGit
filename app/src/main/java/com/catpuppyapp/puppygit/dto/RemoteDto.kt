@@ -66,6 +66,6 @@ class RemoteDto {
         val scnone = SpecialCredential.NONE
 
         //若id无效（已删除凭据或空字符串关联NONE），则name为null，这时显示凭据名NONE；反之，若name不为null，则id有效，这时显示凭据名
-        return if(id == scmbd.credentialId) scmbd.name else (name ?: "[${scnone.name}]");
+        return if(id == scmbd.credentialId) scmbd.name else (name ?: scnone.name);
     }
 }

@@ -117,7 +117,7 @@ fun RemoteItemForCredential(
                 verticalAlignment = Alignment.CenterVertically,
             ){
                 Text(text = stringResource(R.string.fetch_linked) +": ")
-                Text(text = thisItem.getCredentialNameOrNone(activityContext),
+                Text(text = thisItem.getCredentialNameOrNone(),
                     maxLines = 1,
                     overflow = TextOverflow.Ellipsis,
                     fontWeight = FontWeight.Light
@@ -128,7 +128,7 @@ fun RemoteItemForCredential(
                 verticalAlignment = Alignment.CenterVertically,
             ){
                 Text(text = stringResource(R.string.push_linked) +": ")
-                Text(text = thisItem.getPushCredentialNameOrNone(activityContext),
+                Text(text = thisItem.getPushCredentialNameOrNone(),
                     maxLines = 1,
                     overflow = TextOverflow.Ellipsis,
                     fontWeight = FontWeight.Light

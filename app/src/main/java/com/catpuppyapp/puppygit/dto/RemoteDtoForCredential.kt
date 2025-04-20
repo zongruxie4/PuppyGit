@@ -14,16 +14,17 @@ import com.catpuppyapp.puppygit.utils.AppModel
     from remote as rem left join credential as cre on rem.credentialId=cre.id left join
     repo as rep on rep.id = rem.repoId
  */
-class RemoteDtoForCredential (var remoteId: String="",
-                              var remoteName:String="",
-                              var repoId:String="",
-                              var repoName:String="",
-                              var credentialId:String?="",  // fetch credential，之所以没明确叫fetchCredential是历史遗留问题，最初设计没考虑到把fetch和push凭据分开，因此只有一个credential字段
-                              var credentialName:String?="",
-                              var credentialType:Int= Cons.dbCredentialTypeHttp,
-                              var pushCredentialId:String?="",
-                              var pushCredentialName:String?="",
-                              var pushCredentialType:Int= Cons.dbCredentialTypeHttp,
+class RemoteDtoForCredential (
+    var remoteId: String="",
+    var remoteName:String="",
+    var repoId:String="",
+    var repoName:String="",
+    var credentialId:String?="",  // fetch credential，之所以没明确叫fetchCredential是历史遗留问题，最初设计没考虑到把fetch和push凭据分开，因此只有一个credential字段
+    var credentialName:String?="",
+    var credentialType:Int= Cons.dbCredentialTypeHttp,
+    var pushCredentialId:String?="",
+    var pushCredentialName:String?="",
+    var pushCredentialType:Int= Cons.dbCredentialTypeHttp,
 ) {
     /**
       fetch url,  is the Remote.url()
@@ -37,31 +38,21 @@ class RemoteDtoForCredential (var remoteId: String="",
     @Ignore
     var remotePushUrl:String=""
 
-    fun getCredentialNameOrNone(activityContext: Context):String {
-        return getFetchOrPushCredentialNameOrNone(activityContext, isFetch = true)
+    fun getCredentialNameOrNone():String {
+        return getFetchOrPushCredentialNameOrNone(isFetch = true)
     }
 
-    fun getPushCredentialNameOrNone(activityContext: Context):String {
-        return getFetchOrPushCredentialNameOrNone(activityContext, isFetch = false)
+    fun getPushCredentialNameOrNone():String {
+        return getFetchOrPushCredentialNameOrNone(isFetch = false)
     }
 
-    private fun getFetchOrPushCredentialNameOrNone(activityContext: Context, isFetch:Boolean):String {
-        val name = if(isFetch) {
-            if(credentialId == SpecialCredential.MatchByDomain.credentialId) {
-                SpecialCredential.MatchByDomain.name
-            }else {
-                credentialName
-            }
-        } else {
-            if(pushCredentialId == SpecialCredential.MatchByDomain.credentialId) {
-                SpecialCredential.MatchByDomain.name
-            }else {
-                pushCredentialName
-            }
-        }
+    private fun getFetchOrPushCredentialNameOrNone(isFetch:Boolean):String {
+        val id = if(isFetch) credentialId else pushCredentialId
+        val name = if(isFetch) credentialName else pushCredentialName
+        val scmbd = SpecialCredential.MatchByDomain
+        val scnone = SpecialCredential.NONE
 
-        //if凭据名为null或空字符串返回 "[None]" else返回凭据名
-        return if(name.isNullOrBlank()) "[${activityContext.getString(R.string.none)}]" else (""+name)
+        return if(id == scmbd.credentialId) scmbd.name else (name ?: scnone.name);
     }
 
 }
