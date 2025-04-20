@@ -7,6 +7,7 @@ import androidx.compose.material.icons.filled.Folder
 import androidx.compose.material.icons.filled.History
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.Dp
@@ -18,9 +19,11 @@ import com.catpuppyapp.puppygit.play.pro.R
 fun InLineIcon(
     icon: ImageVector,
     tooltipText: String,
-    iconContentDesc: String = tooltipText,
+    iconContentDesc: String? = tooltipText,
     iconModifier: Modifier = Modifier.size(16.dp),
     pressedCircleSize: Dp = 24.dp,
+    enabled: Boolean = true,
+    iconColor: Color? = null,
     onClick: () -> Unit
 ) {
     LongPressAbleIconBtn(
@@ -28,6 +31,8 @@ fun InLineIcon(
         icon = icon,
         iconContentDesc = iconContentDesc,
         iconModifier = iconModifier,
+        enabled = enabled,
+        iconColor = iconColor,
         pressedCircleSize = pressedCircleSize
     ) {
         onClick()

@@ -10,12 +10,15 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Download
 import androidx.compose.material.icons.filled.Edit
+import androidx.compose.material.icons.filled.Upload
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.MutableState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.res.stringResource
@@ -26,6 +29,7 @@ import com.catpuppyapp.puppygit.constants.Cons
 import com.catpuppyapp.puppygit.constants.SpecialCredential
 import com.catpuppyapp.puppygit.data.entity.CredentialEntity
 import com.catpuppyapp.puppygit.play.pro.R
+import com.catpuppyapp.puppygit.style.MyStyleKt
 import com.catpuppyapp.puppygit.utils.AppModel
 import com.catpuppyapp.puppygit.utils.UIHelper
 import com.catpuppyapp.puppygit.utils.getFormatTimeFromSec
@@ -106,15 +110,36 @@ fun CredentialItem(
                 verticalAlignment = Alignment.CenterVertically,
 
             ){
+                val linked = isLinkMode && (linkedFetchId==thisItem.id || linkedPushId==thisItem.id);
 
                 //如果关联模式，对已绑定的前面加个*
                 Text(text = stringResource(R.string.name) + ": ")
-                Text(text = (if(isLinkMode && (linkedFetchId==thisItem.id || linkedPushId==thisItem.id)) "*" else "") + thisItem.name,
+                Text(
+                    text = thisItem.name,
                     maxLines = 1,
                     overflow = TextOverflow.Ellipsis,
-                    fontWeight = FontWeight.Light
+                    fontWeight = if(linked) FontWeight.Bold else FontWeight.Light,
+                    color = if(linked) MyStyleKt.DropDownMenu.selectedItemColor else Color.Unspecified,
 
                 )
+
+                // linked fetch
+                if(isLinkMode && linkedFetchId==thisItem.id) {
+                    InLineIcon(
+                        icon = Icons.Filled.Download,
+                        tooltipText = stringResource(R.string.fetch),
+                        enabled = false,
+                    ) { }
+                }
+
+                // linked push
+                if(isLinkMode && linkedPushId==thisItem.id) {
+                    InLineIcon(
+                        icon = Icons.Filled.Upload,
+                        tooltipText = stringResource(R.string.push),
+                        enabled = false,
+                    ) { }
+                }
             }
 //
 //        Row (
