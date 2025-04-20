@@ -12,6 +12,7 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
@@ -19,7 +20,6 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import com.catpuppyapp.puppygit.dto.RemoteDtoForCredential
 import com.catpuppyapp.puppygit.play.pro.R
-import com.catpuppyapp.puppygit.style.MyStyleKt
 
 
 @Composable
@@ -27,6 +27,7 @@ fun RemoteItemForCredential(
     isShowLink:Boolean,
     idx:Int,
     thisItem:RemoteDtoForCredential,
+    actIcon:ImageVector,
     actText:String,
     showUrlDialog:(title:String, url:String) -> Unit,
     actAction:(()->Unit)?,
@@ -136,17 +137,18 @@ fun RemoteItemForCredential(
 
         }
 
-        if(actAction != null){
-            Column {
-                ClickableText (
-                    text = actText,
-                    modifier = MyStyleKt.ClickableText.modifier.clickable(onClick = {
-                        actAction()
-                    }),
-                    maxLines = 1,
-                    overflow = TextOverflow.Ellipsis,
-                    fontWeight = FontWeight.Light
-                )
+        if(actAction != null) {
+            Column(
+                horizontalAlignment = Alignment.CenterHorizontally,
+                verticalArrangement = Arrangement.Center
+            ) {
+                LongPressAbleIconBtn(
+                    tooltipText = actText,
+                    iconContentDesc = actText,
+                    icon = actIcon,
+                ) {
+                    actAction()
+                }
             }
         }
     }

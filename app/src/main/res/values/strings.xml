@@ -219,7 +219,7 @@
     <string name="abort_merge">Abort Merge</string>
     <string name="abort_merge_notice_text">Will try to restore the repository files to the state before the merge. Are you sure?</string>
     <string name="repo">Repo</string>
-    <string name="unlink">UnLink</string>
+    <string name="unlink">Unlink</string>
     <string name="link">Link</string>
     <string name="linked_remotes">Linked Remotes</string>
     <string name="unlinked_remotes">Unlinked Remotes</string>

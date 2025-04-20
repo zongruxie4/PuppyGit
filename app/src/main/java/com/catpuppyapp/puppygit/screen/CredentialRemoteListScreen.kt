@@ -478,6 +478,7 @@ fun CredentialRemoteListScreen(
                 isShowLink=isShowLink,
                 idx = idx, thisItem = it,
                 showUrlDialog = showUrlDialog,
+                actIcon = if(isShowLink) Icons.Filled.LinkOff else Icons.Filled.Link,
                 actText = if(isShowLink) stringResource(R.string.unlink) else stringResource(R.string.link),
 
                 //如果是 None页面 且 是关联模式 且 条目fetch和push凭据id都为空，则不需要显示unlink，因为在无凭据条目列表将条目unlink到无凭据没有意义，执行了也没效果
