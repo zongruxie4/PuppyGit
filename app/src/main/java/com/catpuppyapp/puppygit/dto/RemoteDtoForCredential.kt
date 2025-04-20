@@ -47,12 +47,7 @@ class RemoteDtoForCredential (
     }
 
     private fun getFetchOrPushCredentialNameOrNone(isFetch:Boolean):String {
-        val id = if(isFetch) credentialId else pushCredentialId
-        val name = if(isFetch) credentialName else pushCredentialName
-        val scmbd = SpecialCredential.MatchByDomain
-        val scnone = SpecialCredential.NONE
-
-        return if(id == scmbd.credentialId) scmbd.name else (name ?: scnone.name);
+        return getCredentialName(isFetch, credentialId, credentialName, pushCredentialId, pushCredentialName)
     }
 
 }

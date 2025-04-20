@@ -263,3 +263,19 @@ fun rawAppInfoToAppInfo(rawAppInfo: ApplicationInfo, packageManager: PackageMana
 
     return tmp
 }
+
+fun getCredentialName(
+    isFetch:Boolean,
+    fetchCredentialId:String?,
+    fetchCredentialName:String?,
+    pushCredentialId:String?,
+    pushCredentialName:String?
+):String {
+    val id = if(isFetch) fetchCredentialId else pushCredentialId
+    val name = if(isFetch) fetchCredentialName else pushCredentialName
+    val scmbd = SpecialCredential.MatchByDomain
+    val scnone = SpecialCredential.NONE
+
+    // 若id为match by domain的id则显示match by domain；否则，若name不为null则关联了有效的id，这时显示name；若name为null，则代表关联的凭据已被删除或者没关联凭据，这时实际处理时会当作无关联凭据，所以显示None
+    return if(id == scmbd.credentialId) scmbd.name else (name ?: scnone.name);
+}
