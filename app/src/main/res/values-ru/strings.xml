@@ -1253,5 +1253,8 @@
     <!-- new at 20250405 -->
     <string name="load_all">Загрузить Все</string>
 
+    <!-- new at 20250420 -->
+    <string name="link_all">Подключить Все</string>
+
 
 </resources>

@@ -1228,5 +1228,8 @@
     <!-- new at 20250405 -->
     <string name="load_all">加载全部</string>
 
+    <!-- new at 20250420 -->
+    <string name="link_all">关联所有</string>
+
 
 </resources>

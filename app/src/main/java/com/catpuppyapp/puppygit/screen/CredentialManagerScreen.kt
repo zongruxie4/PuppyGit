@@ -71,8 +71,8 @@ import com.catpuppyapp.puppygit.utils.state.mutableCustomStateListOf
 import com.catpuppyapp.puppygit.utils.state.mutableCustomStateOf
 
 
-private val TAG = "CredentialManagerScreen"
-private val stateKeyTag = "CredentialManagerScreen"
+private const val TAG = "CredentialManagerScreen"
+private const val stateKeyTag = "CredentialManagerScreen"
 
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalFoundationApi::class)
 @Composable

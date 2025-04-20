@@ -1159,4 +1159,9 @@
     <string name="pull_interval_note">Çekme için zaman aralığı. örneğin, 5\'e ayarlanırsa, uygulama 5 saniye içinde yeniden açılırsa tekrar çekme yapmaz; -1\'e ayarlanırsa çekme devre dışı bırakılır.</string>
     <string name="push_delay_note">İtme için zaman gecikmesi. örneğin, 5\'e ayarlanırsa, uygulamadan çıkıldıktan 5 saniye sonra itme yapılır; -1\'e ayarlanırsa itme devre dışı bırakılır.</string>
     <string name="load_all">Hepsini Yükle</string>
+
+    <!-- new at 20250420 -->
+    <string name="link_all">Tüm Bağla</string>
+
+
 </resources>

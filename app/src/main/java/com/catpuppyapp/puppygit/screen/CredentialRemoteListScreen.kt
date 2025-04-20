@@ -13,6 +13,7 @@ import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.AddLink
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.FilterAlt
+import androidx.compose.material.icons.filled.Link
 import androidx.compose.material.icons.filled.LinkOff
 import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -48,7 +49,6 @@ import com.catpuppyapp.puppygit.compose.MyLazyColumn
 import com.catpuppyapp.puppygit.compose.RemoteItemForCredential
 import com.catpuppyapp.puppygit.compose.ScrollableColumn
 import com.catpuppyapp.puppygit.compose.ScrollableRow
-import com.catpuppyapp.puppygit.constants.Cons
 import com.catpuppyapp.puppygit.constants.SpecialCredential
 import com.catpuppyapp.puppygit.data.entity.CredentialEntity
 import com.catpuppyapp.puppygit.dto.RemoteDtoForCredential
@@ -62,6 +62,7 @@ import com.catpuppyapp.puppygit.style.MyStyleKt
 import com.catpuppyapp.puppygit.utils.AppModel
 import com.catpuppyapp.puppygit.utils.Msg
 import com.catpuppyapp.puppygit.utils.MyLog
+import com.catpuppyapp.puppygit.utils.UIHelper
 import com.catpuppyapp.puppygit.utils.changeStateTriggerRefreshPage
 import com.catpuppyapp.puppygit.utils.createAndInsertError
 import com.catpuppyapp.puppygit.utils.doJobThenOffLoading
@@ -78,6 +79,8 @@ fun CredentialRemoteListScreen(
     isShowLink:Boolean,
     naviUp: () -> Unit,
 ) {
+    val (isShowLink, setIsShowLink) = rememberSaveable { mutableStateOf(isShowLink) }
+
     val clipboardManager = LocalClipboardManager.current
     val homeTopBarScrollBehavior = AppModel.homeTopBarScrollBehavior
     val navController = AppModel.navController
@@ -160,11 +163,11 @@ fun CredentialRemoteListScreen(
 
     if(showLinkOrUnLinkDialog.value) {
         LinkOrUnLinkCredentialAndRemoteDialog(
-            curItemInPage,
-            requireDoLink.value,
-            targetAll.value,
-            linkOrUnlinkDialogTitle.value,
-            curItem.value,
+            curItemInPage = curItemInPage,
+            requireDoLink = requireDoLink.value,
+            targetAll = targetAll.value,
+            title = linkOrUnlinkDialogTitle.value,
+            thisItem = curItem.value,
             onCancel = {showLinkOrUnLinkDialog.value=false},
             onFinallyCallback = {
                 showLinkOrUnLinkDialog.value=false
@@ -376,30 +379,33 @@ fun CredentialRemoteListScreen(
                                 changeStateTriggerRefreshPage(needRefresh)
                             }
 
-                            if (isShowLink) {
-                                LongPressAbleIconBtn(
-                                    tooltipText = stringResource(R.string.unlink_all),
-                                    icon = Icons.Filled.LinkOff,
-                                    iconContentDesc = stringResource(R.string.unlink_all),
-                                    enabled = list.value.isNotEmpty()
-                                ) {
+                            val linkOrUnLinkAll = if(isShowLink) stringResource(R.string.unlink_all) else stringResource(R.string.link_all)
+                            LongPressAbleIconBtn(
+                                tooltipText = linkOrUnLinkAll,
+                                icon = if(isShowLink) Icons.Filled.LinkOff else Icons.Filled.Link,
+                                iconContentDesc = linkOrUnLinkAll,
+                                enabled = list.value.isNotEmpty()
+                            ) {
 //                                showUnLinkAllDialog.value = true
 
-                                    requireDoLink.value = false
-                                    targetAll.value = true
-                                    linkOrUnlinkDialogTitle.value = activityContext.getString(R.string.unlink_all)
-                                    showLinkOrUnLinkDialog.value = true
-                                }
+                                requireDoLink.value = !isShowLink
+                                targetAll.value = true
+                                linkOrUnlinkDialogTitle.value = linkOrUnLinkAll
+                                showLinkOrUnLinkDialog.value = true
+                            }
 
-                                LongPressAbleIconBtn(
-                                    tooltipText = stringResource(R.string.create_link),  //新建关联（显示未关联列表）
-                                    icon = Icons.Filled.AddLink,
-                                    iconContentDesc = stringResource(R.string.create_link),
 
-                                    ) {
-                                    navController.navigate(Cons.nav_CredentialRemoteListScreen + "/" + credentialId + "/0")
-                                }
+                            LongPressAbleIconBtn(
+                                tooltipText = stringResource(R.string.create_link),
+                                icon = Icons.Filled.AddLink,
+                                iconContentDesc = stringResource(R.string.create_link),
+                                iconColor = UIHelper.getIconEnableColorOrNull(!isShowLink)
+                            ) {
+                                setIsShowLink(!isShowLink)
+                                changeStateTriggerRefreshPage(needRefresh)
 
+                                //x 已废弃，直接在相同页面切换关联和非关联模式了)跳转页面
+//                                    navController.navigate(Cons.nav_CredentialRemoteListScreen + "/" + credentialId + "/0")
                             }
                         }
 

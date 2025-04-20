@@ -261,4 +261,16 @@ class RemoteRepositoryImpl(private val dao: RemoteDao) : RemoteRepository {
         dao.subtractTimeOffset(offsetInSec)
     }
 
+    override suspend fun updateAllFetchAndPushCredentialId(fetchCredentialId: String, pushCredentialId: String) {
+        dao.updateAllFetchAndPushCredentialId(fetchCredentialId, pushCredentialId)
+    }
+
+    override suspend fun updateAllFetchCredentialId(fetchCredentialId: String) {
+        dao.updateAllFetchCredentialId(fetchCredentialId)
+    }
+
+    override suspend fun updateAllPushCredentialId(pushCredentialId: String) {
+        dao.updateAllPushCredentialId(pushCredentialId)
+    }
+
 }

@@ -1260,5 +1260,8 @@
     <!-- new at 20250405 -->
     <string name="load_all">Load All</string>
 
+    <!-- new at 20250420 -->
+    <string name="link_all">Link All</string>
+
 
 </resources>

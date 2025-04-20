@@ -78,6 +78,15 @@ interface RemoteDao {
     @Query("update remote set pushCredentialId = :newCredentialId where pushCredentialId = :oldCredentialId")
     suspend fun updatePushCredentialIdByCredentialId(oldCredentialId:String, newCredentialId:String)
 
+    @Query("update remote set credentialId = :fetchCredentialId , pushCredentialId = :pushCredentialId")
+    suspend fun updateAllFetchAndPushCredentialId(fetchCredentialId: String, pushCredentialId: String)
+
+    @Query("update remote set credentialId = :fetchCredentialId")
+    suspend fun updateAllFetchCredentialId(fetchCredentialId: String)
+
+    @Query("update remote set pushCredentialId = :pushCredentialId")
+    suspend fun updateAllPushCredentialId(pushCredentialId: String)
+
     /*
         var remoteId=""
         var remoteName=""

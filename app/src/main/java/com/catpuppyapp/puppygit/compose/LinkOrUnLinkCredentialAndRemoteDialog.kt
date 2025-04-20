@@ -34,7 +34,7 @@ fun LinkOrUnLinkCredentialAndRemoteDialog(
 
     AlertDialog(
         title = {
-            Text(if(title.isEmpty()) { if(requireDoLink) stringResource(R.string.link) else stringResource(R.string.unlink)} else {title})
+            Text(title.ifEmpty { if (requireDoLink) stringResource(R.string.link) else stringResource(R.string.unlink) })
         },
         text = {
             ScrollableColumn {
@@ -60,32 +60,42 @@ fun LinkOrUnLinkCredentialAndRemoteDialog(
                     val remoteDb = AppModel.dbContainer.remoteRepository
                     doJobThenOffLoading {
                         try {
+                            val targetCredentialId = if(requireDoLink) curCredentialId else "";
+
                             if(requireDoLink) {  //link
-                                //TODO 目前只实现了link single item，但实际上也可实现link all，sql写成类似`update remote set credentialId = :curCrendentialId, pushCredentialId = :curCredentialId` 就行了，日后可考虑实现
-                                if(fetchChecked.value && pushChecked.value) {
-                                    remoteDb.updateFetchAndPushCredentialIdByRemoteId(remoteId, curCredentialId, curCredentialId)
-                                }else if(fetchChecked.value) {
-                                    remoteDb.updateCredentialIdByRemoteId(remoteId, curCredentialId)
-                                }else {  //pushChecked.value is true
-                                    remoteDb.updatePushCredentialIdByRemoteId(remoteId, curCredentialId)
+                                if(targetAll) {
+                                    if(fetchChecked.value && pushChecked.value) {
+                                        remoteDb.updateAllFetchAndPushCredentialId(targetCredentialId, targetCredentialId)
+                                    }else if(fetchChecked.value) {
+                                        remoteDb.updateAllFetchCredentialId(targetCredentialId)
+                                    }else {  //pushChecked.value is true
+                                        remoteDb.updateAllPushCredentialId(targetCredentialId)
+                                    }
+                                }else {
+                                    if(fetchChecked.value && pushChecked.value) {
+                                        remoteDb.updateFetchAndPushCredentialIdByRemoteId(remoteId, targetCredentialId, targetCredentialId)
+                                    }else if(fetchChecked.value) {
+                                        remoteDb.updateCredentialIdByRemoteId(remoteId, targetCredentialId)
+                                    }else {  //pushChecked.value is true
+                                        remoteDb.updatePushCredentialIdByRemoteId(remoteId, targetCredentialId)
+                                    }
                                 }
                             }else {  // unlink
-                                val emptyId = ""
                                 if(targetAll) {  // unlink all by current credentialId
                                     if(fetchChecked.value && pushChecked.value) {
-                                        remoteDb.updateFetchAndPushCredentialIdByCredentialId(curCredentialId, curCredentialId, emptyId, emptyId)
+                                        remoteDb.updateFetchAndPushCredentialIdByCredentialId(curCredentialId, curCredentialId, targetCredentialId, targetCredentialId)
                                     }else if(fetchChecked.value) {
-                                        remoteDb.updateCredentialIdByCredentialId(curCredentialId, emptyId)
+                                        remoteDb.updateCredentialIdByCredentialId(curCredentialId, targetCredentialId)
                                     }else {  //pushChecked.value is true
-                                        remoteDb.updatePushCredentialIdByCredentialId(curCredentialId, emptyId)
+                                        remoteDb.updatePushCredentialIdByCredentialId(curCredentialId, targetCredentialId)
                                     }
                                 }else {  //unlink single item
                                     if(fetchChecked.value && pushChecked.value) {
-                                        remoteDb.updateFetchAndPushCredentialIdByRemoteId(remoteId, emptyId, emptyId)
+                                        remoteDb.updateFetchAndPushCredentialIdByRemoteId(remoteId, targetCredentialId, targetCredentialId)
                                     }else if(fetchChecked.value) {
-                                        remoteDb.updateCredentialIdByRemoteId(remoteId, emptyId)
+                                        remoteDb.updateCredentialIdByRemoteId(remoteId, targetCredentialId)
                                     }else {  //pushChecked.value is true
-                                        remoteDb.updatePushCredentialIdByRemoteId(remoteId, emptyId)
+                                        remoteDb.updatePushCredentialIdByRemoteId(remoteId, targetCredentialId)
                                     }
                                 }
                             }
