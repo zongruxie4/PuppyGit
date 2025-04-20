@@ -7,6 +7,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.res.stringResource
+import com.catpuppyapp.puppygit.constants.SpecialCredential
 import com.catpuppyapp.puppygit.data.entity.CredentialEntity
 import com.catpuppyapp.puppygit.dto.RemoteDtoForCredential
 import com.catpuppyapp.puppygit.play.pro.R
@@ -60,7 +61,7 @@ fun LinkOrUnLinkCredentialAndRemoteDialog(
                     val remoteDb = AppModel.dbContainer.remoteRepository
                     doJobThenOffLoading {
                         try {
-                            val targetCredentialId = if(requireDoLink) curCredentialId else "";
+                            val targetCredentialId = if(requireDoLink) curCredentialId else SpecialCredential.NONE.credentialId;
 
                             if(requireDoLink) {  //link
                                 if(targetAll) {

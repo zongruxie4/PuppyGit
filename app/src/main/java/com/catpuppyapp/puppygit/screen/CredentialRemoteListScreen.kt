@@ -2,14 +2,23 @@ package com.catpuppyapp.puppygit.screen
 
 import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.ExperimentalFoundationApi
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.combinedClickable
+import androidx.compose.foundation.interaction.MutableInteractionSource
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.rememberLazyListState
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.AddLink
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.FilterAlt
@@ -18,6 +27,7 @@ import androidx.compose.material.icons.filled.LinkOff
 import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.HorizontalDivider
+import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
@@ -29,6 +39,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.platform.LocalClipboardManager
@@ -49,6 +60,7 @@ import com.catpuppyapp.puppygit.compose.MyLazyColumn
 import com.catpuppyapp.puppygit.compose.RemoteItemForCredential
 import com.catpuppyapp.puppygit.compose.ScrollableColumn
 import com.catpuppyapp.puppygit.compose.ScrollableRow
+import com.catpuppyapp.puppygit.constants.Cons
 import com.catpuppyapp.puppygit.constants.SpecialCredential
 import com.catpuppyapp.puppygit.data.entity.CredentialEntity
 import com.catpuppyapp.puppygit.dto.RemoteDtoForCredential
@@ -88,7 +100,7 @@ fun CredentialRemoteListScreen(
     val scope = rememberCoroutineScope()
     val settings = remember { SettingsUtil.getSettingsSnapshot() }
 
-    val isNonePage = credentialId == SpecialCredential.NONE.credentialId
+    val isNonePage = credentialId == SpecialCredential.NONE.credentialId;
 
     //这个页面的滚动状态不用记住，每次点开重置也无所谓
     val listState = rememberLazyListState()
@@ -293,6 +305,10 @@ fun CredentialRemoteListScreen(
     val filterLastPosition = rememberSaveable { mutableStateOf(0) }
     val lastPosition = rememberSaveable { mutableStateOf(0) }
 
+    val goToCreateLinkPage = {
+        navController.navigate(Cons.nav_CredentialRemoteListScreen + "/" + credentialId + "/0")
+    }
+
     Scaffold(
         modifier = Modifier.nestedScroll(homeTopBarScrollBehavior.nestedScrollConnection),
         topBar = {
@@ -384,7 +400,7 @@ fun CredentialRemoteListScreen(
                                 tooltipText = linkOrUnLinkAll,
                                 icon = if(isShowLink) Icons.Filled.LinkOff else Icons.Filled.Link,
                                 iconContentDesc = linkOrUnLinkAll,
-                                enabled = list.value.isNotEmpty()
+                                enabled = (isShowLink.not() || isNonePage.not()) && list.value.isNotEmpty(),
                             ) {
 //                                showUnLinkAllDialog.value = true
 
@@ -395,18 +411,22 @@ fun CredentialRemoteListScreen(
                             }
 
 
-                            LongPressAbleIconBtn(
-                                tooltipText = stringResource(R.string.create_link),
-                                icon = Icons.Filled.AddLink,
-                                iconContentDesc = stringResource(R.string.create_link),
-                                iconColor = UIHelper.getIconEnableColorOrNull(!isShowLink)
-                            ) {
-                                setIsShowLink(!isShowLink)
-                                changeStateTriggerRefreshPage(needRefresh)
+                            if(isShowLink) {
+                                LongPressAbleIconBtn(
+                                    tooltipText = stringResource(R.string.create_link),
+                                    icon = Icons.Filled.Add,
+                                    iconContentDesc = stringResource(R.string.create_link),
+//                                    iconColor = UIHelper.getIconEnableColorOrNull(!isShowLink)
+                                ) {
+                                    //方案1：不跳转页面，直接在当前页面添加条目
+//                                setIsShowLink(!isShowLink)
+//                                changeStateTriggerRefreshPage(needRefresh)
 
-                                //x 已废弃，直接在相同页面切换关联和非关联模式了)跳转页面
-//                                    navController.navigate(Cons.nav_CredentialRemoteListScreen + "/" + credentialId + "/0")
+                                    //方案2：跳转页面 （感觉还是跳转页面然后添加条目更好）
+                                    goToCreateLinkPage()
+                                }
                             }
+
                         }
 
                     }
@@ -432,62 +452,106 @@ fun CredentialRemoteListScreen(
         }
     ) { contentPadding ->
 
-        //根据关键字过滤条目
-        val keyword = filterKeyword.value.text.lowercase()  //关键字
-        val enableFilter = filterModeActuallyEnabled(filterModeOn.value, keyword)
+        if(list.value.isEmpty()) {
 
-        val lastNeedRefresh = rememberSaveable { mutableStateOf("") }
-        val list = filterTheList(
-            needRefresh = filterResultNeedRefresh.value,
-            lastNeedRefresh = lastNeedRefresh,
-            enableFilter = enableFilter,
-            keyword = keyword,
-            lastKeyword = lastKeyword,
-            searching = searching,
-            token = token,
-            activityContext = activityContext,
-            filterList = filterList.value,
-            list = list.value,
-            resetSearchVars = resetSearchVars,
-            match = { idx:Int, it: RemoteDtoForCredential ->
-                it.repoName.lowercase().contains(keyword)
-                        || it.remoteName.lowercase().contains(keyword)
-                        || it.remoteFetchUrl.lowercase().contains(keyword)
-                        || it.remotePushUrl.lowercase().contains(keyword)
-                        || it.getCredentialNameOrNone(activityContext).lowercase().contains(keyword)
-                        || it.getPushCredentialNameOrNone(activityContext).lowercase().contains(keyword)
+            Column(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(contentPadding)
+                    .verticalScroll(rememberScrollState())
+
+                ,
+                verticalArrangement = Arrangement.Center,
+                horizontalAlignment = Alignment.CenterHorizontally,
+
+            ) {
+                if(isShowLink) {
+                    Column(modifier = Modifier.clickable(interactionSource = remember { MutableInteractionSource() }, indication = null) {
+                        goToCreateLinkPage()
+                    },
+                        verticalArrangement = Arrangement.Center,
+                        horizontalAlignment = Alignment.CenterHorizontally,
+                    ){
+                        Row{
+                            Icon(modifier = Modifier.size(50.dp),
+                                imageVector = Icons.Filled.Add,
+                                contentDescription = stringResource(R.string.create_link),
+                                tint = MyStyleKt.IconColor.normal
+                            )
+                        }
+                        Row {
+                            Text(text = stringResource(id = R.string.create_link),
+                                style = MyStyleKt.ClickableText.style,
+                                color = MyStyleKt.ClickableText.color,
+                                fontSize = MyStyleKt.TextSize.default
+                            )
+                        }
+                    }
+                }else {
+                    Text(stringResource(R.string.item_list_is_empty))
+                }
 
             }
-        )
+        }else {
 
-        val listState = if(enableFilter) filterListState else listState
+            //根据关键字过滤条目
+            val keyword = filterKeyword.value.text.lowercase()  //关键字
+            val enableFilter = filterModeActuallyEnabled(filterModeOn.value, keyword)
+
+            val lastNeedRefresh = rememberSaveable { mutableStateOf("") }
+            val list = filterTheList(
+                needRefresh = filterResultNeedRefresh.value,
+                lastNeedRefresh = lastNeedRefresh,
+                enableFilter = enableFilter,
+                keyword = keyword,
+                lastKeyword = lastKeyword,
+                searching = searching,
+                token = token,
+                activityContext = activityContext,
+                filterList = filterList.value,
+                list = list.value,
+                resetSearchVars = resetSearchVars,
+                match = { idx:Int, it: RemoteDtoForCredential ->
+                    it.repoName.lowercase().contains(keyword)
+                            || it.remoteName.lowercase().contains(keyword)
+                            || it.remoteFetchUrl.lowercase().contains(keyword)
+                            || it.remotePushUrl.lowercase().contains(keyword)
+                            || it.getCredentialNameOrNone(activityContext).lowercase().contains(keyword)
+                            || it.getPushCredentialNameOrNone(activityContext).lowercase().contains(keyword)
+
+                }
+            )
+
+            val listState = if(enableFilter) filterListState else listState
 //        if(enableFilter) {  //更新filter列表state
 //            filterListState.value = listState
 //        }
-        //更新是否启用filter
-        enableFilterState.value = enableFilter
+            //更新是否启用filter
+            enableFilterState.value = enableFilter
 
-        MyLazyColumn(
-            contentPadding = contentPadding,
-            list = list,
-            listState = listState,
-            requireForEachWithIndex = true,
-            requirePaddingAtBottom = true
-        ) { idx,it->
-            RemoteItemForCredential(
-                isShowLink=isShowLink,
-                idx = idx, thisItem = it,
-                showUrlDialog = showUrlDialog,
-                actIcon = if(isShowLink) Icons.Filled.LinkOff else Icons.Filled.Link,
-                actText = if(isShowLink) stringResource(R.string.unlink) else stringResource(R.string.link),
+            MyLazyColumn(
+                contentPadding = contentPadding,
+                list = list,
+                listState = listState,
+                requireForEachWithIndex = true,
+                requirePaddingAtBottom = true
+            ) { idx,it->
+                RemoteItemForCredential(
+                    isShowLink=isShowLink,
+                    idx = idx, thisItem = it,
+                    showUrlDialog = showUrlDialog,
+                    actIcon = if(isShowLink) Icons.Filled.LinkOff else Icons.Filled.Link,
+                    actText = if(isShowLink) stringResource(R.string.unlink) else stringResource(R.string.link),
 
-                //如果是 None页面 且 是关联模式 且 条目fetch和push凭据id都为空，则不需要显示unlink，因为在无凭据条目列表将条目unlink到无凭据没有意义，执行了也没效果
+                    //如果是 None页面 且 是关联模式 且 条目fetch和push凭据id都为空，则不需要显示unlink，因为在无凭据条目列表将条目unlink到无凭据没有意义，执行了也没效果
                 actAction = if(isNonePage && isShowLink && it.credentialId.isNullOrEmpty() && it.pushCredentialId.isNullOrEmpty()) null else ({
-                    curItem.value = it
-                    requireDoLink.value = !isShowLink
-                    targetAll.value = false
-                    linkOrUnlinkDialogTitle.value=if(requireDoLink.value) activityContext.getString(R.string.link) else activityContext.getString(R.string.unlink)  // (不建议，不方便记Err)若空字符串，将会自动根据requireDoLink的值决定使用link还是unlink作为title
-                    showLinkOrUnLinkDialog.value=true
+                    //x 若半关联，可取消关联非None的选项，所以这个判断不对，上面的对) 若是None页面 且 关联模式 则不显示取消关联按钮，就算任一凭据已关联id不为空也不显示，因为本质上取消关联就是将已关联到当前凭据的条目关联到None凭据，而当前显示的就是已关联到None的条目，所以再取消关联没意义
+//                    actAction = if(isNonePage && isShowLink) null else ({
+                        curItem.value = it
+                        requireDoLink.value = !isShowLink
+                        targetAll.value = false
+                        linkOrUnlinkDialogTitle.value=if(requireDoLink.value) activityContext.getString(R.string.link) else activityContext.getString(R.string.unlink)  // (不建议，不方便记Err)若空字符串，将会自动根据requireDoLink的值决定使用link还是unlink作为title
+                        showLinkOrUnLinkDialog.value=true
 
 //                if(isShowLink) {  //如果是显示已关联条目的页面，点击取关直接执行
 //                    doUnLink(it.remoteId)
@@ -500,12 +564,14 @@ fun CredentialRemoteListScreen(
 //                    }
 //                }
 
-                })
-            )
+                    })
+                )
 
-            HorizontalDivider()
+                HorizontalDivider()
 
+            }
         }
+
 
     }
 
