@@ -916,10 +916,10 @@ fun RemoteListScreen(
 
                     sb.appendLine()
                     sb.appendLine()
-                    sb.append(activityContext.getString(R.string.fetch_credential)+": "+(if(it.credentialId== SpecialCredential.MatchByDomain.credentialId) SpecialCredential.MatchByDomain.name else (it.credentialName?:"")))
+                    sb.append(activityContext.getString(R.string.fetch_credential)+": "+it.getLinkedFetchCredentialName())
                     sb.appendLine()
                     sb.appendLine()
-                    sb.append(activityContext.getString(R.string.push_credential)+": "+(if(it.pushCredentialId== SpecialCredential.MatchByDomain.credentialId) SpecialCredential.MatchByDomain.name else (it.pushCredentialName?:"")))
+                    sb.append(activityContext.getString(R.string.push_credential)+": "+it.getLinkedPushCredentialName())
                     sb.appendLine()
                     sb.appendLine()
                     sb.append(activityContext.getString(R.string.branch_mode)+": "+(if(it.branchMode == Cons.dbRemote_Fetch_BranchMode_All) activityContext.getString(R.string.all) else activityContext.getString(R.string.custom)))

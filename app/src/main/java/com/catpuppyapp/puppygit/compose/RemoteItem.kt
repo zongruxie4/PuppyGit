@@ -41,7 +41,6 @@ fun RemoteItem(
     val haptic = LocalHapticFeedback.current
     val activityContext = LocalContext.current
 
-    val noneCredentialStr = "["+stringResource(id = R.string.none)+"]"
 
     Column(
         //0.9f 占父元素宽度的百分之90
@@ -126,7 +125,7 @@ fun RemoteItem(
 
         ){
             Text(text = stringResource(R.string.fetch_credential) +": ")
-            Text(text = if(curObj.credentialId==SpecialCredential.MatchByDomain.credentialId) SpecialCredential.MatchByDomain.name else (curObj.credentialName?:noneCredentialStr),
+            Text(text = curObj.getLinkedFetchCredentialName(),
                 maxLines = 1,
                 overflow = TextOverflow.Ellipsis,
                 fontWeight = FontWeight.Light
@@ -138,7 +137,7 @@ fun RemoteItem(
 
         ){
             Text(text = stringResource(R.string.push_credential) +": ")
-            Text(text = if(curObj.pushCredentialId==SpecialCredential.MatchByDomain.credentialId) SpecialCredential.MatchByDomain.name else (curObj.pushCredentialName?:noneCredentialStr),
+            Text(text = curObj.getLinkedPushCredentialName(),
                 maxLines = 1,
                 overflow = TextOverflow.Ellipsis,
                 fontWeight = FontWeight.Light
