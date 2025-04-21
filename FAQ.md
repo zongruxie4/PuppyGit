@@ -5,12 +5,13 @@
 #### way 2: Long pressing the change list item to enable selection mode at ChangeList (btw: tap icon of item can enable it as well), then you can select all and commit/push/stage/revert/etc..., check the video: https://github.com/user-attachments/assets/32647093-9ee9-4eff-97e5-ee8ccf825105
 ---
 ## Question 17588197:
-#### Q: How remove a file from git? (git remove --cached)
+#### Q: How remove a file from git? (git rm --cached)
 #### A: You can remove a file from git at Files or ChangeList view, check this: https://github.com/user-attachments/assets/b8fdd6ca-56c2-410a-b95b-6671a5b71fce
 ---
 ## Question 16683267:
 #### Q: How ignore a file for repo? (git ignore)
-#### A: You can ignore a file from Files or ChangeList view, check this: <img src=https://github.com/user-attachments/assets/933069c2-31d0-4e59-9338-d3c6e6700d89 width=30% >
+#### A: You can ignore a file from Files or ChangeList view, check this: 
+#### <img src=https://github.com/user-attachments/assets/933069c2-31d0-4e59-9338-d3c6e6700d89 width=30% >
 ---
 ## Question 11805957:
 #### Q: How link credential and repo?
