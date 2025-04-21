@@ -308,7 +308,7 @@ fun CredentialManagerScreen(
 
                             }
                             if(remote.value.id.isNotEmpty()) {  //隐含 remoteId.isNotEmpty() 为 true
-                                titleSecondaryString.value = stringResource(id = R.string.link_mode)+": ["+remote.value.remoteName+":${curRepo.value.repoName}]"
+                                titleSecondaryString.value = "${stringResource(R.string.link_mode)}: [${remote.value.remoteName} of ${curRepo.value.repoName}]";
 
                                 ScrollableRow  {
                                     Text(
