@@ -1,3 +1,44 @@
+#### Q: How committing all changes?
+#### A: Two ways for it:
+#### way 1: You can click top bar 3-dots icon then click "Commit All"
+#### way 2: Long pressing the change list item to enable selection mode at ChangeList (btw: tap icon of item can enable it as well), then you can select all and commit/push/stage/revert/etc..., check the video: https://github.com/user-attachments/assets/32647093-9ee9-4eff-97e5-ee8ccf825105
+---
+#### Q: How remove a file from git? (git remove --cached)
+#### A: You can remove a file from git at Files or ChangeList view, check this: https://github.com/user-attachments/assets/b8fdd6ca-56c2-410a-b95b-6671a5b71fce
+---
+#### Q: How ignore a file for repo? (git ignore)
+#### A: You can ignore a file from Files or ChangeList view, check this: <img src=https://github.com/user-attachments/assets/933069c2-31d0-4e59-9338-d3c6e6700d89 width=30% >
+---
+#### Q: How link credential and repo?
+#### A: Actually the credential not linked to the repo, it linked to the remote of repo, the video show how to do it: https://github.com/user-attachments/assets/fa6f0daf-6030-41e1-9929-ec3b733a5759
+---
+#### Q: How restore a removed file?
+#### A: You only can restore a file if git was tracked it and create a commit include it: 
+#### method 1. You can find the commit which include the file then diff to local, then filter change list by file name, then you can restore it.
+#### method 2. You can create a file at same path with same name in Files view, then click the 3-dots icon, You will see "File History", click it, you will see all reversions of the file, then you can choose a version to restore
+---
+#### Q: How import an existed git repo?
+#### A: You can import repos from Files view, check the video: https://github.com/user-attachments/assets/411c36af-36da-4c76-b82a-8c2fb92c065d
+---
+#### Q: How pull/push when I entering/leaving my note app?
+#### A: You can plan a pull/push when entering/leaving any apps, even PuppyGit self, check the video: <a href=https://www.patreon.com/posts/puppygit-auto-122757321>Auto Sync Obsidian Vault</a><br>
+---
+#### Q: Why don't use sync instead of pull/push when entering/leaving an app?
+#### A: In my opinion, for automation action of entering/leaving app, "enter then pull" + "leave then push", better than "enter then sync" and "leave then sync", cause when you entering, a push is nonsense, when you leaving, a pull may make sense but it may make you ignore some changes from remote, so, a better way is throw a pushing err when remote branch changed, then notice users to pull the changes by hand, and check the changes then decide push right now or update some files before push.
+---
+#### Q: I need auto pull/push, but when I short-time leave the app, the auto pushing bother me!
+#### A: You can set a delay at Automation view of PuppyGit, then it will auto push after you leave the app over the delay time.
+---
+#### Q: I need auto pull/push, but when I short-time leave the app, the return, I don't want a pull again!
+#### A: You can set a pull interval at Automation view of PuppyGit, then it will and only will do a auto pull after you leave the app over the interval.
+---
+#### Q: What difference about fetch/merge/pull/push/sync? 
+#### A: fetch is download changes from remote repo; merge is merge two branches, it may cause files change; pull is fetch then merge it with local branch; push is upload local branch to remote repo; sync is pull then push.
+#### A: in my opinion, most time a separate pull and push better than a sync, cause the files may changed after a pull, so, after did a pull, you should check the changes then decide push right now or update some files before push.
+---
+#### Q: How let Tasker schedule a pull/push via PuppyGit?
+#### A: Go to Service view of PuppyGit, then go to app info view to allow PuppyGit run in background with no limit(depend system, maybe it called ignore battery optimize), then return PuppyGit and enable the service, it will start a http service, then you can call pull push from external apps,  e.g. tasker or even a browser, check the video: https://www.patreon.com/posts/puppygit-tasker-122757862
+---
 #### Q: what is the `PuppyGit-Data` folder?
 #### A: it saved app settings and file snapshot/tls certs/app settings
 ---
