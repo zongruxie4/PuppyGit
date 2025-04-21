@@ -735,7 +735,7 @@ class Libgit2Helper {
 
         fun getGitUrlType(gitUrl: String): Int {
             //这个条件一定要“只要不是http/https就是ssh”这种逻辑，因为http和https就两种，能穷举完，但ssh我不太了解，而且有的sshurl是用户名写最前面，匹配起来恶心得很！
-            return if(gitUrl.startsWith(Cons.gitUrlHttpStartStr) || gitUrl.startsWith(Cons.gitUrlHttpsStartStr)){
+            return if(gitUrl.lowercase().let { it.startsWith(Cons.gitUrlHttpsStartStr) || it.startsWith(Cons.gitUrlHttpStartStr) }) {
                 Cons.gitUrlTypeHttp
             }else {
                 Cons.gitUrlTypeSsh
@@ -3366,6 +3366,10 @@ class Libgit2Helper {
 
         fun isSshUrl(url:String):Boolean {
             return getGitUrlType(url) == Cons.gitUrlTypeSsh
+        }
+
+        fun isHttpUrl(url:String):Boolean {
+            return getGitUrlType(url) == Cons.gitUrlTypeHttp
         }
 
         //remote,例如：origin；branchFullRefSpec，例如：refs/heads/master

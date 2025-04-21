@@ -879,10 +879,10 @@ fun getHostFromSshUrl(sshUrl: String): String? {
 
 fun getDomainByUrl(url:String):String {
     try {
-        if(Libgit2Helper.isSshUrl(url)) {
-            return getHostFromSshUrl(url) ?: ""
-        }else { // http or https, only return host, no port
+        if(Libgit2Helper.isHttpUrl(url)) { // http or https, only return host, no port
             return URI.create(url).host ?: ""
+        }else { // ssh url
+            return getHostFromSshUrl(url) ?: ""
         }
     }catch (e:Exception) {
         MyLog.e(TAG, "#getDomainByUrl err: url=$url, err=${e.localizedMessage}")

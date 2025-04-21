@@ -2,10 +2,12 @@
 ---
 
 1.1.0.2v78 - 20250420:
+- fix: link credential to uppercase HTTPS git url not work
 - adjust CredentialManager UI
 
 
 
+- 修复当git url为大写HTTPS url时关联凭据无效的bug
 - 调整凭据管理器UI
 
 ---
