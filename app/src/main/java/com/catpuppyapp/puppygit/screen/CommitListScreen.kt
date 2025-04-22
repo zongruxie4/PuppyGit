@@ -1010,49 +1010,41 @@ fun CommitListScreen(
     val showItemDetails = { curCommit:CommitDto ->
         // onClick()
 //                    requireShowViewDialog(appContext.getString(R.string.view_hash), curCommit.value.oidStr)
+        val suffix = "\n\n"
         val sb = StringBuilder()
-        sb.appendLine("${activityContext.getString(R.string.hash)}: "+curCommit.oidStr)
-        sb.appendLine()
-        sb.appendLine("${activityContext.getString(R.string.author)}: "+ Libgit2Helper.getFormattedUsernameAndEmail(curCommit.author, curCommit.email))
-        sb.appendLine()
-        sb.appendLine("${activityContext.getString(R.string.committer)}: "+ Libgit2Helper.getFormattedUsernameAndEmail(curCommit.committerUsername, curCommit.committerEmail))
-        sb.appendLine()
+
+        sb.append("${activityContext.getString(R.string.hash)}: "+curCommit.oidStr).append(suffix)
+        sb.append("${activityContext.getString(R.string.author)}: "+ Libgit2Helper.getFormattedUsernameAndEmail(curCommit.author, curCommit.email)).append(suffix)
+        sb.append("${activityContext.getString(R.string.committer)}: "+ Libgit2Helper.getFormattedUsernameAndEmail(curCommit.committerUsername, curCommit.committerEmail)).append(suffix)
         //实际使用的时区偏移量
-        sb.appendLine("${activityContext.getString(R.string.date)}: "+curCommit.dateTime +" (${curCommit.getActuallyUsingTimeZoneUtcFormat(settings)})")
-        sb.appendLine()
+        sb.append("${activityContext.getString(R.string.date)}: "+curCommit.dateTime +" (${curCommit.getActuallyUsingTimeZoneUtcFormat(settings)})").append(suffix)
         // commit中携带的时区偏移量
-        sb.appendLine("${activityContext.getString(R.string.timezone)}: "+(formatMinutesToUtc(curCommit.originTimeOffsetInMinutes)))
-        sb.appendLine()
+        sb.append("${activityContext.getString(R.string.timezone)}: "+(formatMinutesToUtc(curCommit.originTimeOffsetInMinutes))).append(suffix)
 
         if(curCommit.branchShortNameList.isNotEmpty()){
-            sb.appendLine((if(curCommit.branchShortNameList.size > 1) activityContext.getString(R.string.branches) else activityContext.getString(R.string.branch)) +": "+curCommit.branchShortNameList.toString())
-            sb.appendLine()
+            sb.append((if(curCommit.branchShortNameList.size > 1) activityContext.getString(R.string.branches) else activityContext.getString(R.string.branch)) +": "+curCommit.branchShortNameList.toString()).append(suffix)
         }
         if(curCommit.tagShortNameList.isNotEmpty()) {
-            sb.appendLine((if(curCommit.tagShortNameList.size > 1) activityContext.getString(R.string.tags) else activityContext.getString(R.string.tag)) +": "+curCommit.tagShortNameList.toString())
-            sb.appendLine()
+            sb.append((if(curCommit.tagShortNameList.size > 1) activityContext.getString(R.string.tags) else activityContext.getString(R.string.tag)) +": "+curCommit.tagShortNameList.toString()).append(suffix)
         }
         if(curCommit.parentOidStrList.isNotEmpty()) {
-            sb.appendLine((if(curCommit.parentOidStrList.size > 1) activityContext.getString(R.string.parents) else activityContext.getString(R.string.parent)) +": "+curCommit.parentOidStrList.toString())
-            sb.appendLine()
+            sb.append((if(curCommit.parentOidStrList.size > 1) activityContext.getString(R.string.parents) else activityContext.getString(R.string.parent)) +": "+curCommit.parentOidStrList.toString()).append(suffix)
         }
 
         if(curCommit.hasOther()) {
-            sb.appendLine("${activityContext.getString(R.string.other)}: ${curCommit.getOther(activityContext, false)}")
-            sb.appendLine()
+            sb.append("${activityContext.getString(R.string.other)}: ${curCommit.getOther(activityContext, false)}").append(suffix)
         }
 
 
 
         //追加可过滤的flag
-        sb.appendLine("${Cons.flagStr}: ${curCommit.getOther(activityContext, true)}")
-        sb.appendLine()
+        sb.append("${Cons.flagStr}: ${curCommit.getOther(activityContext, true)}").append(suffix)
 
         //可变长度的commit msg放最后，以免太长滑半天滑不到底影响看其他条目
-        sb.appendLine("${activityContext.getString(R.string.msg)}: "+curCommit.msg)
-        sb.appendLine()
+        sb.append("${activityContext.getString(R.string.msg)}: "+curCommit.msg).append(suffix)
 
-        detailsString.value = sb.toString()
+        detailsString.value = sb.removeSuffix(suffix).toString()
+
         showDetailsDialog.value = true
     }
 
