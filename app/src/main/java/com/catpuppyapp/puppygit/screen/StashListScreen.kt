@@ -40,9 +40,11 @@ import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
+import com.catpuppyapp.puppygit.compose.AskGitUsernameAndEmailDialogWithSelection
 import com.catpuppyapp.puppygit.compose.BottomSheet
 import com.catpuppyapp.puppygit.compose.BottomSheetItem
 import com.catpuppyapp.puppygit.compose.ConfirmDialog
+import com.catpuppyapp.puppygit.compose.ConfirmDialog2
 import com.catpuppyapp.puppygit.compose.CopyableDialog
 import com.catpuppyapp.puppygit.compose.FilterTextField
 import com.catpuppyapp.puppygit.compose.GoToTopAndGoToBottomFab
@@ -299,9 +301,8 @@ fun StashListScreen(
     }
 
     if(showCreateDialog.value) {
-        ConfirmDialog(
+        ConfirmDialog2(
             title = stringResource(R.string.create),
-            okBtnText = stringResource(R.string.ok),
             requireShowTextCompose = true,
             textCompose = {
                 ScrollableColumn {
@@ -364,6 +365,81 @@ fun StashListScreen(
 
     val filterLastPosition = rememberSaveable { mutableStateOf(0) }
     val lastPosition = rememberSaveable { mutableStateOf(0) }
+
+
+
+    // username and email start
+    val repoOfSetUsernameAndEmailDialog = mutableCustomStateOf(stateKeyTag, "repoOfSetUsernameAndEmailDialog") { RepoEntity(id = "") }
+    val username = rememberSaveable { mutableStateOf("") }
+    val email = rememberSaveable { mutableStateOf("") }
+    val showUsernameAndEmailDialog = rememberSaveable { mutableStateOf(false) }
+    val afterSetUsernameAndEmailSuccessCallback = mutableCustomStateOf<(()->Unit)?>(stateKeyTag, "afterSetUsernameAndEmailSuccessCallback") { null }
+    val initSetUsernameAndEmailDialog = { targetRepo:RepoEntity, callback:(()->Unit)? ->
+        try {
+            Repository.open(targetRepo.fullSavePath).use { repo ->
+                //回显用户名和邮箱
+                val (usernameFromConfig, emailFromConfig) = Libgit2Helper.getGitUsernameAndEmail(repo)
+                username.value = usernameFromConfig
+                email.value = emailFromConfig
+            }
+
+            repoOfSetUsernameAndEmailDialog.value = targetRepo
+
+            afterSetUsernameAndEmailSuccessCallback.value = callback
+            showUsernameAndEmailDialog.value = true
+        }catch (e:Exception) {
+            Msg.requireShowLongDuration("init username and email dialog err: ${e.localizedMessage}")
+            MyLog.e(TAG, "#initSetUsernameAndEmailDialog err: ${e.stackTraceToString()}")
+        }
+    }
+
+    //若仓库有有效用户名和邮箱，执行task，否则弹窗设置用户名和邮箱，并在保存用户名和邮箱后调用task
+    val doTaskOrShowSetUsernameAndEmailDialog = { curRepo:RepoEntity, task:(()->Unit)? ->
+        try {
+            Repository.open(curRepo.fullSavePath).use { repo ->
+                if(Libgit2Helper.repoUsernameAndEmailInvaild(repo)) {
+                    Msg.requireShowLongDuration(activityContext.getString(R.string.plz_set_username_and_email_first))
+
+                    initSetUsernameAndEmailDialog(curRepo, task)
+                }else {
+                    task?.invoke()
+                }
+            }
+        }catch (e:Exception) {
+            Msg.requireShowLongDuration("err: ${e.localizedMessage}")
+            MyLog.e(TAG, "#doTaskOrShowSetUsernameAndEmailDialog err: ${e.stackTraceToString()}")
+        }
+    }
+
+    if(showUsernameAndEmailDialog.value) {
+        val curRepo = repoOfSetUsernameAndEmailDialog.value
+        val closeDialog = { showUsernameAndEmailDialog.value = false }
+
+        //请求用户设置用户名和邮箱的弹窗
+        AskGitUsernameAndEmailDialogWithSelection(
+            curRepo = curRepo,
+            username = username,
+            email = email,
+            closeDialog = closeDialog,
+            onErrorCallback = { e->
+                Msg.requireShowLongDuration("err: ${e.localizedMessage}")
+                MyLog.e(TAG, "set username and email err: ${e.stackTraceToString()}")
+            },
+            onFinallyCallback = {},
+            onSuccessCallback = {
+                //已经保存成功，调用回调
+
+                //取出callback
+                val successCallback = afterSetUsernameAndEmailSuccessCallback.value
+                afterSetUsernameAndEmailSuccessCallback.value = null
+
+                successCallback?.invoke()
+            },
+
+        )
+    }
+    // username and email end
+
 
     Scaffold(
         modifier = Modifier.nestedScroll(homeTopBarScrollBehavior.nestedScrollConnection),
@@ -453,10 +529,8 @@ fun StashListScreen(
                             icon =  Icons.Filled.Add,
                             iconContentDesc = stringResource(R.string.create),
                         ) {
-                            if(gitEmail.value.isBlank() || gitUsername.value.isBlank()) {
-                                Msg.requireShowLongDuration(activityContext.getString(R.string.plz_set_git_username_and_email_first))
-                            }else{
-                                showCreateDialog.value=true
+                            doTaskOrShowSetUsernameAndEmailDialog(curRepo.value) {
+                                showCreateDialog.value = true
                             }
                         }
                     }
