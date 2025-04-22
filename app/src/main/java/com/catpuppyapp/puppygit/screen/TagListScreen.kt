@@ -516,6 +516,37 @@ fun TagListScreen(
     val filterLastPosition = rememberSaveable { mutableStateOf(0) }
     val lastPosition = rememberSaveable { mutableStateOf(0) }
 
+
+    val showDetails = { selectedItemList:List<TagDto> ->
+        val sb = StringBuilder()
+        val itemSuffix = "\n\n"
+        val spliter = "--------------\n\n"
+
+        selectedItemList.forEach {
+            sb.append(activityContext.getString(R.string.name)).append(": ").append(it.shortName).append(itemSuffix)
+            sb.append(activityContext.getString(R.string.full_name)).append(": ").append(it.name).append(itemSuffix)
+            sb.append(activityContext.getString(R.string.target)).append(": ").append(it.targetFullOidStr).append(itemSuffix)
+            sb.append(activityContext.getString(R.string.type)).append(": ").append(it.getType(activityContext, false)).append(itemSuffix)
+
+            sb.append(Cons.flagStr).append(": ").append(it.getType(activityContext, true)).append(itemSuffix)
+
+            if(it.isAnnotated) {
+                sb.append(activityContext.getString(R.string.tag_oid)).append(": ").append(it.fullOidStr).append(itemSuffix)
+                sb.append(activityContext.getString(R.string.author)).append(": ").append(it.getFormattedTaggerNameAndEmail()).append(itemSuffix)
+                sb.append(activityContext.getString(R.string.date)).append(": ").append(it.getFormattedDate()+" (${it.getActuallyUsingTimeOffsetInUtcFormat()})").append(itemSuffix)
+                sb.append(activityContext.getString(R.string.timezone)).append(": ").append(formatMinutesToUtc(it.originTimeOffsetInMinutes)).append(itemSuffix)
+                sb.append(activityContext.getString(R.string.msg)).append(": ").append(it.msg).append(itemSuffix)
+            }
+
+
+            sb.append(spliter)
+        }
+
+        detailsString.value = sb.removeSuffix(itemSuffix+spliter).toString()
+
+        showDetailsDialog.value = true
+    }
+
     Scaffold(
         modifier = Modifier.nestedScroll(homeTopBarScrollBehavior.nestedScrollConnection),
         topBar = {
@@ -740,7 +771,7 @@ fun TagListScreen(
                 forEachCb = {},
             ){idx, it->
                 //长按会更新curObjInPage为被长按的条目
-                TagItem(it, lastClickedItemKey, shouldShowTimeZoneInfo, isItemInSelected, onLongClick = {
+                TagItem(it, lastClickedItemKey, shouldShowTimeZoneInfo, showDetails, isItemInSelected, onLongClick = {
                     if(multiSelectionMode.value) {  //多选模式
                         //在选择模式下长按条目，执行区域选择（连续选择一个范围）
                         UIHelper.doSelectSpan(idx, it,
@@ -811,33 +842,7 @@ fun TagListScreen(
                         initPushTagDialog()
                     },
                     details@{
-                        val sb = StringBuilder()
-                        val itemSuffix = "\n\n"
-                        val spliter = "--------------\n\n"
-
-                        selectedItemList.value.forEach {
-                            sb.append(activityContext.getString(R.string.name)).append(": ").append(it.shortName).append(itemSuffix)
-                            sb.append(activityContext.getString(R.string.full_name)).append(": ").append(it.name).append(itemSuffix)
-                            sb.append(activityContext.getString(R.string.target)).append(": ").append(it.targetFullOidStr).append(itemSuffix)
-                            sb.append(activityContext.getString(R.string.type)).append(": ").append(it.getType(activityContext, false)).append(itemSuffix)
-
-                            sb.append(Cons.flagStr).append(": ").append(it.getType(activityContext, true)).append(itemSuffix)
-
-                            if(it.isAnnotated) {
-                                sb.append(activityContext.getString(R.string.tag_oid)).append(": ").append(it.fullOidStr).append(itemSuffix)
-                                sb.append(activityContext.getString(R.string.author)).append(": ").append(it.getFormattedTaggerNameAndEmail()).append(itemSuffix)
-                                sb.append(activityContext.getString(R.string.date)).append(": ").append(it.getFormattedDate()+" (${it.getActuallyUsingTimeOffsetInUtcFormat()})").append(itemSuffix)
-                                sb.append(activityContext.getString(R.string.timezone)).append(": ").append(formatMinutesToUtc(it.originTimeOffsetInMinutes)).append(itemSuffix)
-                                sb.append(activityContext.getString(R.string.msg)).append(": ").append(it.msg).append(itemSuffix)
-                            }
-
-
-                            sb.append(spliter)
-                        }
-
-                        detailsString.value = sb.removeSuffix(itemSuffix+spliter).toString()
-
-                        showDetailsDialog.value = true
+                        showDetails(selectedItemList.value)
                     },
                     selectAll@{
 //                        val list = if(enableFilterState.value) filterList.value else list.value

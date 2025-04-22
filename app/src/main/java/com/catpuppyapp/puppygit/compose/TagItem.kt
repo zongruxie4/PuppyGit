@@ -35,7 +35,7 @@ fun TagItem(
     thisObj:TagDto,
     lastClickedItemKey:MutableState<String>,
     shouldShowTimeZoneInfo:Boolean,
-
+    showDetails:(List<TagDto>) -> Unit,
     isItemInSelected:(TagDto) -> Boolean,
     onLongClick:(TagDto)->Unit,
     onClick:(TagDto)->Unit
@@ -160,12 +160,9 @@ fun TagItem(
             ){
 
                 Text(text = stringResource(R.string.msg) +": ")
-                Text(text = thisObj.msg,
-                    maxLines = 1,
-                    overflow = TextOverflow.Ellipsis,
-                    fontWeight = FontWeight.Light
-
-                )
+                ClickableText(text = thisObj.msg) {
+                    showDetails(listOf(thisObj))
+                }
             }
         }
      }
