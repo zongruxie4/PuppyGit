@@ -1,0 +1,1 @@
+- adjust create stash and tag dialog

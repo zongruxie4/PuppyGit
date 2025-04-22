@@ -1,6 +1,15 @@
 
 ---
 
+1.1.0.3v79 - 20250422:
+- adjust create stash and tag dialog
+
+
+
+- 调整创建stash和tag的弹窗
+
+---
+
 1.1.0.2v78 - 20250420:
 - fix: link credential to uppercase HTTPS git url not work
 - adjust CredentialManager UI
