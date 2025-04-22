@@ -812,27 +812,30 @@ fun TagListScreen(
                     },
                     details@{
                         val sb = StringBuilder()
-                        val spliter = Cons.itemDetailSpliter
+                        val itemSuffix = "\n\n"
+                        val spliter = "--------------\n\n"
 
                         selectedItemList.value.forEach {
-                            sb.append(activityContext.getString(R.string.name)).append(": ").append(it.shortName).appendLine().appendLine()
-                            sb.append(activityContext.getString(R.string.full_name)).append(": ").append(it.name).appendLine().appendLine()
-                            sb.append(activityContext.getString(R.string.target)).append(": ").append(it.targetFullOidStr).appendLine().appendLine()
-                            sb.append(activityContext.getString(R.string.type)).append(": ").append(it.getType(activityContext, false)).appendLine().appendLine()
+                            sb.append(activityContext.getString(R.string.name)).append(": ").append(it.shortName).append(itemSuffix)
+                            sb.append(activityContext.getString(R.string.full_name)).append(": ").append(it.name).append(itemSuffix)
+                            sb.append(activityContext.getString(R.string.target)).append(": ").append(it.targetFullOidStr).append(itemSuffix)
+                            sb.append(activityContext.getString(R.string.type)).append(": ").append(it.getType(activityContext, false)).append(itemSuffix)
+
+                            sb.append(Cons.flagStr).append(": ").append(it.getType(activityContext, true)).append(itemSuffix)
+
                             if(it.isAnnotated) {
-                                sb.append(activityContext.getString(R.string.tag_oid)).append(": ").append(it.fullOidStr).appendLine().appendLine()
-                                sb.append(activityContext.getString(R.string.author)).append(": ").append(it.getFormattedTaggerNameAndEmail()).appendLine().appendLine()
-                                sb.append(activityContext.getString(R.string.date)).append(": ").append(it.getFormattedDate()+" (${it.getActuallyUsingTimeOffsetInUtcFormat()})").appendLine().appendLine()
-                                sb.append(activityContext.getString(R.string.timezone)).append(": ").append(formatMinutesToUtc(it.originTimeOffsetInMinutes)).appendLine().appendLine()
-                                sb.append(activityContext.getString(R.string.msg)).append(": ").append(it.msg).appendLine().appendLine()
+                                sb.append(activityContext.getString(R.string.tag_oid)).append(": ").append(it.fullOidStr).append(itemSuffix)
+                                sb.append(activityContext.getString(R.string.author)).append(": ").append(it.getFormattedTaggerNameAndEmail()).append(itemSuffix)
+                                sb.append(activityContext.getString(R.string.date)).append(": ").append(it.getFormattedDate()+" (${it.getActuallyUsingTimeOffsetInUtcFormat()})").append(itemSuffix)
+                                sb.append(activityContext.getString(R.string.timezone)).append(": ").append(formatMinutesToUtc(it.originTimeOffsetInMinutes)).append(itemSuffix)
+                                sb.append(activityContext.getString(R.string.msg)).append(": ").append(it.msg).append(itemSuffix)
                             }
 
-                            sb.append(Cons.flagStr).append(": ").append(it.getType(activityContext, true))
 
                             sb.append(spliter)
                         }
 
-                        detailsString.value = sb.removeSuffix(spliter).toString()
+                        detailsString.value = sb.removeSuffix(itemSuffix+spliter).toString()
 
                         showDetailsDialog.value = true
                     },

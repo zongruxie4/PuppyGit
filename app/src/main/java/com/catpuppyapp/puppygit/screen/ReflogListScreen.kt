@@ -485,16 +485,17 @@ fun ReflogListScreen(
         ){idx, it->
             //长按会更新curObjInPage为被长按的条目
             ReflogItem(repoId, showBottomSheet, curLongClickItem, lastClickedItemKey, shouldShowTimeZoneInfo, it) {  //onClick
+                val suffix = "\n\n"
                 val sb = StringBuilder()
-                sb.append(activityContext.getString(R.string.new_oid)).append(": ").append(it.idNew).appendLine().appendLine()
-                sb.append(activityContext.getString(R.string.old_oid)).append(": ").append(it.idOld).appendLine().appendLine()
-                sb.append(activityContext.getString(R.string.date)).append(": ").append(it.date+" (${formatMinutesToUtc(it.actuallyUsingTimeZoneOffsetInMinutes)})").appendLine().appendLine()
-                sb.append(activityContext.getString(R.string.timezone)).append(": ").append(formatMinutesToUtc(it.originTimeZoneOffsetInMinutes)).appendLine().appendLine()
-                sb.append(activityContext.getString(R.string.author)).append(": ").append(Libgit2Helper.getFormattedUsernameAndEmail(it.username, it.email)).appendLine().appendLine()
-                sb.append(activityContext.getString(R.string.msg)).append(": ").append(it.msg).appendLine().appendLine()
+                sb.append(activityContext.getString(R.string.new_oid)).append(": ").append(it.idNew).append(suffix)
+                sb.append(activityContext.getString(R.string.old_oid)).append(": ").append(it.idOld).append(suffix)
+                sb.append(activityContext.getString(R.string.date)).append(": ").append(it.date+" (${formatMinutesToUtc(it.actuallyUsingTimeZoneOffsetInMinutes)})").append(suffix)
+                sb.append(activityContext.getString(R.string.timezone)).append(": ").append(formatMinutesToUtc(it.originTimeZoneOffsetInMinutes)).append(suffix)
+                sb.append(activityContext.getString(R.string.author)).append(": ").append(Libgit2Helper.getFormattedUsernameAndEmail(it.username, it.email)).append(suffix)
+                sb.append(activityContext.getString(R.string.msg)).append(": ").append(it.msg).append(suffix)
 
 
-                detailsString.value = sb.toString()
+                detailsString.value = sb.removeSuffix(suffix).toString()
 
                 curClickItem.value = it
                 showDetailsDialog.value=true

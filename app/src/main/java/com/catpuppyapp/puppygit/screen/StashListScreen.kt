@@ -552,13 +552,14 @@ fun StashListScreen(
         ){idx, it->
             //长按会更新curObjInPage为被长按的条目
             StashItem(repoId, showBottomSheet, curObjInPage, idx, lastClickedItemKey, it) {  //onClick
+                val suffix = "\n\n"
                 val sb = StringBuilder()
-                sb.append(activityContext.getString(R.string.index)).append(": ").append(it.index).appendLine().appendLine()
-                sb.append(activityContext.getString(R.string.stash_id)).append(": ").append(it.stashId).appendLine().appendLine()
-                sb.append(activityContext.getString(R.string.msg)).append(": ").append(it.msg).appendLine().appendLine()
+                sb.append(activityContext.getString(R.string.index)).append(": ").append(it.index).append(suffix)
+                sb.append(activityContext.getString(R.string.stash_id)).append(": ").append(it.stashId).append(suffix)
+                sb.append(activityContext.getString(R.string.msg)).append(": ").append(it.msg).append(suffix)
 
 
-                detailsString.value = sb.toString()
+                detailsString.value = sb.removeSuffix(suffix).toString()
                 showDetailsDialog.value = true
             }
 
