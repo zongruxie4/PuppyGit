@@ -8,6 +8,7 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
@@ -26,15 +27,19 @@ import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.input.nestedscroll.nestedScroll
+import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.platform.LocalClipboardManager
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalHapticFeedback
+import androidx.compose.ui.platform.LocalView
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.input.TextFieldValue
@@ -54,6 +59,7 @@ import com.catpuppyapp.puppygit.compose.MyLazyColumn
 import com.catpuppyapp.puppygit.compose.RepoInfoDialog
 import com.catpuppyapp.puppygit.compose.ScrollableColumn
 import com.catpuppyapp.puppygit.compose.ScrollableRow
+import com.catpuppyapp.puppygit.compose.SoftkeyboardVisibleListener
 import com.catpuppyapp.puppygit.compose.StashItem
 import com.catpuppyapp.puppygit.constants.Cons
 import com.catpuppyapp.puppygit.data.entity.RepoEntity
@@ -86,6 +92,25 @@ fun StashListScreen(
     repoId:String,
     naviUp: () -> Boolean,
 ) {
+
+
+    // softkeyboard show/hidden relate start
+
+    val view = LocalView.current
+    val density = LocalDensity.current
+
+    val isKeyboardVisible = rememberSaveable { mutableStateOf(false) }
+    //indicate keyboard covered component
+    val isKeyboardCoveredComponent = rememberSaveable { mutableStateOf(false) }
+    // which component expect adjust heghit or padding when softkeyboard shown
+    val componentHeight = rememberSaveable { mutableIntStateOf(0) }
+    // the padding value when softkeyboard shown
+    val keyboardPaddingDp = rememberSaveable { mutableIntStateOf(0) }
+
+    // softkeyboard show/hidden relate end
+
+
+
     val homeTopBarScrollBehavior = AppModel.homeTopBarScrollBehavior
     val navController = AppModel.navController
     val activityContext = LocalContext.current
@@ -307,7 +332,17 @@ fun StashListScreen(
             textCompose = {
                 ScrollableColumn {
                     TextField(
-                        modifier = Modifier.fillMaxWidth(),
+                        modifier = Modifier.fillMaxWidth()
+                            .onGloballyPositioned { layoutCoordinates ->
+//                                println("layoutCoordinates.size.height:${layoutCoordinates.size.height}")
+                                // 获取组件的高度
+                                // unit is px ( i am not very sure)
+                                componentHeight.intValue = layoutCoordinates.size.height
+                            }
+                            .then(
+                                if (isKeyboardCoveredComponent.value) Modifier.padding(bottom = keyboardPaddingDp.intValue.dp) else Modifier
+                            )
+                        ,
 
                         value = stashMsgForCreateDialog.value,
                         onValueChange = {
@@ -678,4 +713,18 @@ fun StashListScreen(
         }
     }
 
+
+
+    SoftkeyboardVisibleListener(
+        view = view,
+        isKeyboardVisible = isKeyboardVisible,
+        isKeyboardCoveredComponent = isKeyboardCoveredComponent,
+        componentHeight = componentHeight,
+        keyboardPaddingDp = keyboardPaddingDp,
+        density = density,
+        skipCondition = {
+            //不显示弹窗的时候则忽略监听
+            showCreateDialog.value.not()
+        }
+    )
 }

@@ -120,6 +120,87 @@ fun TagListScreen(
 
     val inDarkTheme = Theme.inDarkTheme
 
+
+
+
+
+
+    // username and email start
+    val repoOfSetUsernameAndEmailDialog = mutableCustomStateOf(stateKeyTag, "repoOfSetUsernameAndEmailDialog") { RepoEntity(id = "") }
+    val username = rememberSaveable { mutableStateOf("") }
+    val email = rememberSaveable { mutableStateOf("") }
+    val showUsernameAndEmailDialog = rememberSaveable { mutableStateOf(false) }
+    val afterSetUsernameAndEmailSuccessCallback = mutableCustomStateOf<(()->Unit)?>(stateKeyTag, "afterSetUsernameAndEmailSuccessCallback") { null }
+    val initSetUsernameAndEmailDialog = { targetRepo:RepoEntity, callback:(()->Unit)? ->
+        try {
+            Repository.open(targetRepo.fullSavePath).use { repo ->
+                //回显用户名和邮箱
+                val (usernameFromConfig, emailFromConfig) = Libgit2Helper.getGitUsernameAndEmail(repo)
+                username.value = usernameFromConfig
+                email.value = emailFromConfig
+            }
+
+            repoOfSetUsernameAndEmailDialog.value = targetRepo
+
+            afterSetUsernameAndEmailSuccessCallback.value = callback
+            showUsernameAndEmailDialog.value = true
+        }catch (e:Exception) {
+            Msg.requireShowLongDuration("init username and email dialog err: ${e.localizedMessage}")
+            MyLog.e(TAG, "#initSetUsernameAndEmailDialog err: ${e.stackTraceToString()}")
+        }
+    }
+
+    //若仓库有有效用户名和邮箱，执行task，否则弹窗设置用户名和邮箱，并在保存用户名和邮箱后调用task
+    val doTaskOrShowSetUsernameAndEmailDialog = { curRepo:RepoEntity, task:(()->Unit)? ->
+        try {
+            Repository.open(curRepo.fullSavePath).use { repo ->
+                if(Libgit2Helper.repoUsernameAndEmailInvaild(repo)) {
+                    Msg.requireShowLongDuration(activityContext.getString(R.string.plz_set_username_and_email_first))
+
+                    initSetUsernameAndEmailDialog(curRepo, task)
+                }else {
+                    task?.invoke()
+                }
+            }
+        }catch (e:Exception) {
+            Msg.requireShowLongDuration("err: ${e.localizedMessage}")
+            MyLog.e(TAG, "#doTaskOrShowSetUsernameAndEmailDialog err: ${e.stackTraceToString()}")
+        }
+    }
+
+    if(showUsernameAndEmailDialog.value) {
+        val curRepo = repoOfSetUsernameAndEmailDialog.value
+        val closeDialog = { showUsernameAndEmailDialog.value = false }
+
+        //请求用户设置用户名和邮箱的弹窗
+        AskGitUsernameAndEmailDialogWithSelection(
+            curRepo = curRepo,
+            username = username,
+            email = email,
+            closeDialog = closeDialog,
+            onErrorCallback = { e->
+                Msg.requireShowLongDuration("err: ${e.localizedMessage}")
+                MyLog.e(TAG, "set username and email err: ${e.stackTraceToString()}")
+            },
+            onFinallyCallback = {},
+            onSuccessCallback = {
+                //已经保存成功，调用回调
+
+                //取出callback
+                val successCallback = afterSetUsernameAndEmailSuccessCallback.value
+                afterSetUsernameAndEmailSuccessCallback.value = null
+
+                successCallback?.invoke()
+            },
+
+            )
+    }
+    // username and email end
+
+
+
+
+
     //获取假数据
     val list = mutableCustomStateListOf(keyTag = stateKeyTag, keyName = "list", initValue = listOf<TagDto>())
 
@@ -154,8 +235,11 @@ fun TagListScreen(
     val initNewTagDialog = { hash:String ->
 //        hashOfNewTag.value = hash  //这里不重置hash值了，感觉不重置用户体验更好？
 
-        overwriteIfNameExistOfNewTag.value = false
-        showDialogOfNewTag.value = true
+        doTaskOrShowSetUsernameAndEmailDialog(curRepo.value) {
+            overwriteIfNameExistOfNewTag.value = false
+            showDialogOfNewTag.value = true
+        }
+
     }
 
     if(showDialogOfNewTag.value) {
@@ -549,78 +633,6 @@ fun TagListScreen(
     }
 
 
-    // username and email start
-    val repoOfSetUsernameAndEmailDialog = mutableCustomStateOf(stateKeyTag, "repoOfSetUsernameAndEmailDialog") { RepoEntity(id = "") }
-    val username = rememberSaveable { mutableStateOf("") }
-    val email = rememberSaveable { mutableStateOf("") }
-    val showUsernameAndEmailDialog = rememberSaveable { mutableStateOf(false) }
-    val afterSetUsernameAndEmailSuccessCallback = mutableCustomStateOf<(()->Unit)?>(stateKeyTag, "afterSetUsernameAndEmailSuccessCallback") { null }
-    val initSetUsernameAndEmailDialog = { targetRepo:RepoEntity, callback:(()->Unit)? ->
-        try {
-            Repository.open(targetRepo.fullSavePath).use { repo ->
-                //回显用户名和邮箱
-                val (usernameFromConfig, emailFromConfig) = Libgit2Helper.getGitUsernameAndEmail(repo)
-                username.value = usernameFromConfig
-                email.value = emailFromConfig
-            }
-
-            repoOfSetUsernameAndEmailDialog.value = targetRepo
-
-            afterSetUsernameAndEmailSuccessCallback.value = callback
-            showUsernameAndEmailDialog.value = true
-        }catch (e:Exception) {
-            Msg.requireShowLongDuration("init username and email dialog err: ${e.localizedMessage}")
-            MyLog.e(TAG, "#initSetUsernameAndEmailDialog err: ${e.stackTraceToString()}")
-        }
-    }
-
-    //若仓库有有效用户名和邮箱，执行task，否则弹窗设置用户名和邮箱，并在保存用户名和邮箱后调用task
-    val doTaskOrShowSetUsernameAndEmailDialog = { curRepo:RepoEntity, task:(()->Unit)? ->
-        try {
-            Repository.open(curRepo.fullSavePath).use { repo ->
-                if(Libgit2Helper.repoUsernameAndEmailInvaild(repo)) {
-                    Msg.requireShowLongDuration(activityContext.getString(R.string.plz_set_username_and_email_first))
-
-                    initSetUsernameAndEmailDialog(curRepo, task)
-                }else {
-                    task?.invoke()
-                }
-            }
-        }catch (e:Exception) {
-            Msg.requireShowLongDuration("err: ${e.localizedMessage}")
-            MyLog.e(TAG, "#doTaskOrShowSetUsernameAndEmailDialog err: ${e.stackTraceToString()}")
-        }
-    }
-
-    if(showUsernameAndEmailDialog.value) {
-        val curRepo = repoOfSetUsernameAndEmailDialog.value
-        val closeDialog = { showUsernameAndEmailDialog.value = false }
-
-        //请求用户设置用户名和邮箱的弹窗
-        AskGitUsernameAndEmailDialogWithSelection(
-            curRepo = curRepo,
-            username = username,
-            email = email,
-            closeDialog = closeDialog,
-            onErrorCallback = { e->
-                Msg.requireShowLongDuration("err: ${e.localizedMessage}")
-                MyLog.e(TAG, "set username and email err: ${e.stackTraceToString()}")
-            },
-            onFinallyCallback = {},
-            onSuccessCallback = {
-                //已经保存成功，调用回调
-
-                //取出callback
-                val successCallback = afterSetUsernameAndEmailSuccessCallback.value
-                afterSetUsernameAndEmailSuccessCallback.value = null
-
-                successCallback?.invoke()
-            },
-
-        )
-    }
-    // username and email end
-
 
 
     Scaffold(
@@ -718,10 +730,8 @@ fun TagListScreen(
                             icon =  Icons.Filled.Add,
                             iconContentDesc = stringResource(R.string.create_tag),
                         ) {
-                            doTaskOrShowSetUsernameAndEmailDialog(curRepo.value) {
-                                val hash = ""
-                                initNewTagDialog(hash)
-                            }
+                            val hash = ""
+                            initNewTagDialog(hash)
                         }
                     }
                 },
@@ -1046,5 +1056,6 @@ fun TagListScreen(
 //            ("LaunchedEffect: job cancelled")
         }
     }
+
 
 }

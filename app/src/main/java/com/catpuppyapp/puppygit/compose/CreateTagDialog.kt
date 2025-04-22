@@ -1,6 +1,5 @@
 package com.catpuppyapp.puppygit.compose
 
-import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
@@ -13,18 +12,21 @@ import androidx.compose.material3.TextField
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.MutableState
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.platform.LocalView
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import com.catpuppyapp.puppygit.data.entity.RepoEntity
 import com.catpuppyapp.puppygit.play.pro.R
 import com.catpuppyapp.puppygit.settings.SettingsUtil
 import com.catpuppyapp.puppygit.style.MyStyleKt
-import com.catpuppyapp.puppygit.utils.AppModel
 import com.catpuppyapp.puppygit.utils.Libgit2Helper
 import com.catpuppyapp.puppygit.utils.Msg
 import com.catpuppyapp.puppygit.utils.MyLog
@@ -36,19 +38,52 @@ import com.github.git24j.core.Repository
 private const val TAG = "CreateTagDialog"
 
 @Composable
-fun CreateTagDialog(showDialog:MutableState<Boolean>,
-                    curRepo:RepoEntity,
-                    tagName:MutableState<String>,
-                    commitHashShortOrLong:MutableState<String>,
+fun CreateTagDialog(
+    showDialog:MutableState<Boolean>,
+    curRepo:RepoEntity,
+    tagName:MutableState<String>,
+    commitHashShortOrLong:MutableState<String>,
 
-                    // annotation tag所需字段
-                    annotate:MutableState<Boolean>,
-                    tagMsg:MutableState<String>,
+    // annotation tag所需字段
+    annotate:MutableState<Boolean>,
+    tagMsg:MutableState<String>,
 
-                    force:MutableState<Boolean>,  // will override if tagName already exists
+    force:MutableState<Boolean>,  // will override if tagName already exists
 
-                    onOkDoneCallback:(newTagFullOidStr:String)->Unit
+    onOkDoneCallback:(newTagFullOidStr:String)->Unit
 ) {
+
+    // softkeyboard show/hidden relate start
+
+    val view = LocalView.current
+    val density = LocalDensity.current
+
+    val isKeyboardVisible = rememberSaveable { mutableStateOf(false) }
+    //indicate keyboard covered component
+    val isKeyboardCoveredComponent = rememberSaveable { mutableStateOf(false) }
+    // which component expect adjust heghit or padding when softkeyboard shown
+    val componentHeight = rememberSaveable { mutableIntStateOf(0) }
+    // the padding value when softkeyboard shown
+    val keyboardPaddingDp = rememberSaveable { mutableIntStateOf(0) }
+
+    // softkeyboard show/hidden relate end
+
+
+
+    SoftkeyboardVisibleListener(
+        view = view,
+        isKeyboardVisible = isKeyboardVisible,
+        isKeyboardCoveredComponent = isKeyboardCoveredComponent,
+        componentHeight = componentHeight,
+        keyboardPaddingDp = keyboardPaddingDp,
+        density = density,
+        //若在弹窗外部，则不显示弹窗时跳过监听；若在弹窗内部使用并且不显示弹窗时不执行此组件函数，则设为假即可，因为只要显示此弹窗就一定需要监听，因此skip应永远为假，不跳过。
+        skipCondition = { false }
+    )
+
+
+
+
     val activityContext = LocalContext.current
 
     val tagNameErrMsg = rememberSaveable { mutableStateOf("")}
@@ -59,7 +94,8 @@ fun CreateTagDialog(showDialog:MutableState<Boolean>,
 
     val settings = remember { SettingsUtil.getSettingsSnapshot() }
 
-    ConfirmDialog(title = activityContext.getString(R.string.new_tag),
+    ConfirmDialog2(
+        title = activityContext.getString(R.string.new_tag),
         requireShowTextCompose = true,
         textCompose = {
             //只能有一个节点，因为这个东西会在lambda后返回，而lambda只能有一个返回值，弄两个布局就乱了，和react组件只能有一个root div一个道理 。
@@ -151,7 +187,17 @@ fun CreateTagDialog(showDialog:MutableState<Boolean>,
                             // spacer
                         }
                         TextField(
-                            modifier = Modifier.fillMaxWidth(),
+                            modifier = Modifier.fillMaxWidth()
+                                .onGloballyPositioned { layoutCoordinates ->
+//                                println("layoutCoordinates.size.height:${layoutCoordinates.size.height}")
+                                    // 获取组件的高度
+                                    // unit is px ( i am not very sure)
+                                    componentHeight.intValue = layoutCoordinates.size.height
+                                }
+                                .then(
+                                    if (isKeyboardCoveredComponent.value) Modifier.padding(bottom = keyboardPaddingDp.intValue.dp) else Modifier
+                                )
+                            ,
 
                             value = tagMsg.value,
                             onValueChange = {
@@ -198,8 +244,6 @@ fun CreateTagDialog(showDialog:MutableState<Boolean>,
 
             }
         },
-        okBtnText = stringResource(id = R.string.ok),
-        cancelBtnText = stringResource(id = R.string.cancel),
         okBtnEnabled = tagNameErrMsg.value.isEmpty() && commitHashShortOrLongErrMsg.value.isEmpty() && tagMsgErrMsg.value.isEmpty() && (!annotate.value || (gitConfigUsername.value.isNotEmpty() && gitConfigEmail.value.isNotEmpty())),
         onCancel = {
             showDialog.value = false
@@ -290,4 +334,5 @@ fun CreateTagDialog(showDialog:MutableState<Boolean>,
             }
         }
     }
+
 }

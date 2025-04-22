@@ -66,6 +66,7 @@ import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.dp
+import com.catpuppyapp.puppygit.compose.AskGitUsernameAndEmailDialogWithSelection
 import com.catpuppyapp.puppygit.compose.BottomSheet
 import com.catpuppyapp.puppygit.compose.BottomSheetItem
 import com.catpuppyapp.puppygit.compose.CheckBoxNoteText
@@ -220,6 +221,84 @@ fun CommitListScreen(
     // 离开页面时调用下job.cancel()即可，然后协程内部就会抛异常，可以直接在协程内部try catch到取消异常，不捕获也不会导致外部崩溃
     // 但如果要让函数响应cancel()的话，必须设置调度点或者叫暂停点，死循环可能会长期占用cpu不响应调度，最简单设置调度点的方式就是delay(1)，另外channel.receive()等api也能响应job.cancel()
     val loadChannel = remember { Channel<Int>() }
+
+
+
+
+
+    // username and email start
+    val repoOfSetUsernameAndEmailDialog = mutableCustomStateOf(stateKeyTag, "repoOfSetUsernameAndEmailDialog") { RepoEntity(id = "") }
+    val username = rememberSaveable { mutableStateOf("") }
+    val email = rememberSaveable { mutableStateOf("") }
+    val showUsernameAndEmailDialog = rememberSaveable { mutableStateOf(false) }
+    val afterSetUsernameAndEmailSuccessCallback = mutableCustomStateOf<(()->Unit)?>(stateKeyTag, "afterSetUsernameAndEmailSuccessCallback") { null }
+    val initSetUsernameAndEmailDialog = { targetRepo:RepoEntity, callback:(()->Unit)? ->
+        try {
+            Repository.open(targetRepo.fullSavePath).use { repo ->
+                //回显用户名和邮箱
+                val (usernameFromConfig, emailFromConfig) = Libgit2Helper.getGitUsernameAndEmail(repo)
+                username.value = usernameFromConfig
+                email.value = emailFromConfig
+            }
+
+            repoOfSetUsernameAndEmailDialog.value = targetRepo
+
+            afterSetUsernameAndEmailSuccessCallback.value = callback
+            showUsernameAndEmailDialog.value = true
+        }catch (e:Exception) {
+            Msg.requireShowLongDuration("init username and email dialog err: ${e.localizedMessage}")
+            MyLog.e(TAG, "#initSetUsernameAndEmailDialog err: ${e.stackTraceToString()}")
+        }
+    }
+
+    //若仓库有有效用户名和邮箱，执行task，否则弹窗设置用户名和邮箱，并在保存用户名和邮箱后调用task
+    val doTaskOrShowSetUsernameAndEmailDialog = { curRepo:RepoEntity, task:(()->Unit)? ->
+        try {
+            Repository.open(curRepo.fullSavePath).use { repo ->
+                if(Libgit2Helper.repoUsernameAndEmailInvaild(repo)) {
+                    Msg.requireShowLongDuration(activityContext.getString(R.string.plz_set_username_and_email_first))
+
+                    initSetUsernameAndEmailDialog(curRepo, task)
+                }else {
+                    task?.invoke()
+                }
+            }
+        }catch (e:Exception) {
+            Msg.requireShowLongDuration("err: ${e.localizedMessage}")
+            MyLog.e(TAG, "#doTaskOrShowSetUsernameAndEmailDialog err: ${e.stackTraceToString()}")
+        }
+    }
+
+    if(showUsernameAndEmailDialog.value) {
+        val curRepo = repoOfSetUsernameAndEmailDialog.value
+        val closeDialog = { showUsernameAndEmailDialog.value = false }
+
+        //请求用户设置用户名和邮箱的弹窗
+        AskGitUsernameAndEmailDialogWithSelection(
+            curRepo = curRepo,
+            username = username,
+            email = email,
+            closeDialog = closeDialog,
+            onErrorCallback = { e->
+                Msg.requireShowLongDuration("err: ${e.localizedMessage}")
+                MyLog.e(TAG, "set username and email err: ${e.stackTraceToString()}")
+            },
+            onFinallyCallback = {},
+            onSuccessCallback = {
+                //已经保存成功，调用回调
+
+                //取出callback
+                val successCallback = afterSetUsernameAndEmailSuccessCallback.value
+                afterSetUsernameAndEmailSuccessCallback.value = null
+
+                successCallback?.invoke()
+            },
+
+            )
+    }
+    // username and email end
+
+
 
 //    val sumPage = MockData.getCommitSum(repoId,branch)
     //获取假数据
@@ -821,10 +900,12 @@ fun CommitListScreen(
 //    val requireUserInputHashOfNewTag = StateUtil.getRememberSaveableState(initValue = false)
     val annotateOfNewTag = rememberSaveable { mutableStateOf(false)}
     val initNewTagDialog = { hash:String ->
-        hashOfNewTag.value = hash  //把hash设置为当前选中的commit的hash
+        doTaskOrShowSetUsernameAndEmailDialog(curRepo.value) {
+            hashOfNewTag.value = hash  //把hash设置为当前选中的commit的hash
 
-        overwriteIfNameExistOfNewTag.value = false
-        showDialogOfNewTag.value = true
+            overwriteIfNameExistOfNewTag.value = false
+            showDialogOfNewTag.value = true
+        }
     }
     
     if(showDialogOfNewTag.value) {
