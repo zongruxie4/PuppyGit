@@ -1023,8 +1023,7 @@ fun CommitListScreen(
         // commit中携带的时区偏移量
         sb.appendLine("${activityContext.getString(R.string.timezone)}: "+(formatMinutesToUtc(curCommit.originTimeOffsetInMinutes)))
         sb.appendLine()
-        sb.appendLine("${activityContext.getString(R.string.msg)}: "+curCommit.msg)
-        sb.appendLine()
+
         if(curCommit.branchShortNameList.isNotEmpty()){
             sb.appendLine((if(curCommit.branchShortNameList.size > 1) activityContext.getString(R.string.branches) else activityContext.getString(R.string.branch)) +": "+curCommit.branchShortNameList.toString())
             sb.appendLine()
@@ -1047,6 +1046,10 @@ fun CommitListScreen(
 
         //追加可过滤的flag
         sb.appendLine("${Cons.flagStr}: ${curCommit.getOther(activityContext, true)}")
+        sb.appendLine()
+
+        //可变长度的commit msg放最后，以免太长滑半天滑不到底影响看其他条目
+        sb.appendLine("${activityContext.getString(R.string.msg)}: "+curCommit.msg)
         sb.appendLine()
 
         detailsString.value = sb.toString()
