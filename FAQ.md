@@ -1,3 +1,7 @@
+## Question 17917109:
+#### Q: Why my github password not work!?
+#### A: If you enabled the 2fa, you must create a personal access token instead of password, or you can use ssh instead of https.
+---
 ## Question 16544986:
 #### Q: How committing all changes?
 #### A: Two ways for it:
