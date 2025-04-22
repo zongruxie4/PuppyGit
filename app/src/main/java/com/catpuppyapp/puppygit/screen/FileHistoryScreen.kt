@@ -488,27 +488,22 @@ fun FileHistoryScreen(
     }
 
     val showItemDetails = { curObj:FileHistoryDto ->
-        // onClick()
-//                    requireShowViewDialog(appContext.getString(R.string.view_hash), curCommit.value.oidStr)
+        val suffix = "\n\n"
         val sb = StringBuilder()
-        sb.appendLine("${activityContext.getString(R.string.path)}: "+curObj.filePathUnderRepo).appendLine()
-        sb.appendLine("${activityContext.getString(R.string.commit_id)}: "+curObj.commitOidStr).appendLine()
-        sb.appendLine("${activityContext.getString(R.string.entry_id)}: "+curObj.treeEntryOidStr).appendLine()
-        sb.appendLine("${activityContext.getString(R.string.author)}: "+ Libgit2Helper.getFormattedUsernameAndEmail(curObj.authorUsername, curObj.authorEmail))
-        sb.appendLine()
-        sb.appendLine("${activityContext.getString(R.string.committer)}: "+ Libgit2Helper.getFormattedUsernameAndEmail(curObj.committerUsername, curObj.committerEmail))
-        sb.appendLine()
+
+        sb.append("${activityContext.getString(R.string.path)}: "+curObj.filePathUnderRepo).append(suffix)
+        sb.append("${activityContext.getString(R.string.commit_id)}: "+curObj.commitOidStr).append(suffix)
+        sb.append("${activityContext.getString(R.string.entry_id)}: "+curObj.treeEntryOidStr).append(suffix)
+        sb.append("${activityContext.getString(R.string.author)}: "+ Libgit2Helper.getFormattedUsernameAndEmail(curObj.authorUsername, curObj.authorEmail)).append(suffix)
+        sb.append("${activityContext.getString(R.string.committer)}: "+ Libgit2Helper.getFormattedUsernameAndEmail(curObj.committerUsername, curObj.committerEmail)).append(suffix)
         //实际使用的时区偏移量
-        sb.appendLine("${activityContext.getString(R.string.date)}: "+curObj.dateTime +" (${curObj.getActuallyUsingTimeZoneUtcFormat(settings)})")
-        sb.appendLine()
+        sb.append("${activityContext.getString(R.string.date)}: "+curObj.dateTime +" (${curObj.getActuallyUsingTimeZoneUtcFormat(settings)})").append(suffix)
         // commit中携带的时区偏移量
-        sb.appendLine("${activityContext.getString(R.string.timezone)}: "+(formatMinutesToUtc(curObj.originTimeOffsetInMinutes)))
-        sb.appendLine()
-        sb.appendLine("${activityContext.getString(R.string.msg)}: "+curObj.msg)
-        sb.appendLine()
+        sb.append("${activityContext.getString(R.string.timezone)}: "+(formatMinutesToUtc(curObj.originTimeOffsetInMinutes))).append(suffix)
+        sb.append("${activityContext.getString(R.string.msg)}: "+curObj.msg).append(suffix)
 
 
-        detailsString.value = sb.toString()
+        detailsString.value = sb.removeSuffix(suffix).toString()
         showDetailsDialog.value = true
     }
 
