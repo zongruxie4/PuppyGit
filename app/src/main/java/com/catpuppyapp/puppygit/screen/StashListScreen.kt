@@ -239,8 +239,6 @@ fun StashListScreen(
 
     val stashMsgForCreateDialog = rememberSaveable { mutableStateOf( "")}
 
-    val gitUsername = rememberSaveable { mutableStateOf("")}
-    val gitEmail = rememberSaveable { mutableStateOf( "")}
 
     if(showPopDialog.value) {
         ConfirmDialog(
@@ -367,17 +365,17 @@ fun StashListScreen(
         ) onOk@{
             showCreateDialog.value=false
 
-            val username = gitUsername.value
-            val email = gitEmail.value
-            if(username.isBlank() || email.isBlank()) {
-                Msg.requireShowLongDuration(activityContext.getString(R.string.plz_set_git_username_and_email_first))
-                return@onOk
-            }
 
             doJobThenOffLoading(loadingOn, loadingOff, activityContext.getString(R.string.loading)) {
                 try {
-                    val msg = stashMsgForCreateDialog.value.ifEmpty { Libgit2Helper.stashGenMsg() }
                     Repository.open(curRepo.value.fullSavePath).use { repo->
+                        val (username, email) = Libgit2Helper.getGitUsernameAndEmail(repo)
+                        if(username.isBlank() || email.isBlank()) {
+                            Msg.requireShowLongDuration(activityContext.getString(R.string.plz_set_git_username_and_email_first))
+                            return@doJobThenOffLoading
+                        }
+
+                        val msg = stashMsgForCreateDialog.value.ifEmpty { Libgit2Helper.stashGenMsg() }
                         Libgit2Helper.stashSave(repo, stasher = Libgit2Helper.createSignature(username, email, settings), msg=msg)
                     }
                     Msg.requireShow(activityContext.getString(R.string.success))
@@ -712,9 +710,6 @@ fun StashListScreen(
                         curRepo.value = repoFromDb
                         Repository.open(repoFromDb.fullSavePath).use {repo ->
                             Libgit2Helper.stashList(repo, list.value)
-                            val (username, email) = Libgit2Helper.getGitUsernameAndEmail(repo)
-                            gitUsername.value = username
-                            gitEmail.value = email
                         }
                     }
                 }

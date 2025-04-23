@@ -86,11 +86,11 @@ fun CreateTagDialog(
 
     val activityContext = LocalContext.current
 
-    val tagNameErrMsg = rememberSaveable { mutableStateOf("")}
-    val commitHashShortOrLongErrMsg = rememberSaveable { mutableStateOf("")}
-    val tagMsgErrMsg = rememberSaveable { mutableStateOf("")}
-    val gitConfigUsername = rememberSaveable { mutableStateOf( "")}
-    val gitConfigEmail = rememberSaveable { mutableStateOf( "")}
+    val tagNameErrMsg = rememberSaveable { mutableStateOf("") }
+    val commitHashShortOrLongErrMsg = rememberSaveable { mutableStateOf("") }
+    val tagMsgErrMsg = rememberSaveable { mutableStateOf("") }
+    val gitConfigUsername = rememberSaveable { mutableStateOf("") }
+    val gitConfigEmail = rememberSaveable { mutableStateOf("") }
 
     val settings = remember { SettingsUtil.getSettingsSnapshot() }
 
@@ -177,7 +177,7 @@ fun CreateTagDialog(
                 MyCheckBox(text = stringResource(R.string.annotate), value = annotate)
 
                 if(annotate.value) {
-                    if(gitConfigUsername.value.isEmpty() || gitConfigEmail.value.isEmpty()) {  //未设置用户名和邮箱
+                    if(gitConfigUsername.value.isBlank() || gitConfigEmail.value.isBlank()) {  //未设置用户名和邮箱
                         CheckBoxNoteText(
                             text = stringResource(R.string.err_must_set_username_and_email_before_create_annotate_tag),
                             color = MyStyleKt.TextColor.error()
@@ -244,7 +244,7 @@ fun CreateTagDialog(
 
             }
         },
-        okBtnEnabled = tagNameErrMsg.value.isEmpty() && commitHashShortOrLongErrMsg.value.isEmpty() && tagMsgErrMsg.value.isEmpty() && (!annotate.value || (gitConfigUsername.value.isNotEmpty() && gitConfigEmail.value.isNotEmpty())),
+        okBtnEnabled = tagNameErrMsg.value.isEmpty() && commitHashShortOrLongErrMsg.value.isEmpty() && tagMsgErrMsg.value.isEmpty() && (!annotate.value || (gitConfigUsername.value.isNotBlank() && gitConfigEmail.value.isNotBlank())),
         onCancel = {
             showDialog.value = false
         }
@@ -263,7 +263,7 @@ fun CreateTagDialog(
         if(annotate.value) {
             //annotate需要用到git config用户名和邮箱，检查下是否为空，其实本应由调用者检查，但这里也检查下
             //这里提示下即可，不需要设置红色的错误信息，因为当username或email为空且勾选了annotate时，已经在弹窗显示红色错误信息了
-            if(gitConfigUsername.value.isEmpty() || gitConfigEmail.value.isEmpty()) {
+            if(gitConfigUsername.value.isBlank() || gitConfigEmail.value.isBlank()) {
                 Msg.requireShowLongDuration(activityContext.getString(R.string.plz_set_git_username_and_email_first))
 //                showDialog.value=false
                 return@onOk
