@@ -56,6 +56,7 @@ import com.catpuppyapp.puppygit.compose.GoToTopAndGoToBottomFab
 import com.catpuppyapp.puppygit.compose.LoadingDialog
 import com.catpuppyapp.puppygit.compose.LongPressAbleIconBtn
 import com.catpuppyapp.puppygit.compose.MyLazyColumn
+import com.catpuppyapp.puppygit.compose.PageCenterIconButton
 import com.catpuppyapp.puppygit.compose.RepoInfoDialog
 import com.catpuppyapp.puppygit.compose.ScrollableColumn
 import com.catpuppyapp.puppygit.compose.ScrollableRow
@@ -617,62 +618,75 @@ fun StashListScreen(
             }
         }
 
+        if(list.value.isEmpty()) {
+            PageCenterIconButton(
+                onClick = {
+                    doTaskOrShowSetUsernameAndEmailDialog(curRepo.value) {
+                        showCreateDialog.value = true
+                    }
+                },
+                icon = Icons.Filled.Add,
+                iconDesc = stringResource(R.string.create),
+                text = stringResource(R.string.create)
+            )
+        }else {
+            //根据关键字过滤条目
+            val keyword = filterKeyword.value.text.lowercase()  //关键字
+            val enableFilter = filterModeActuallyEnabled(filterModeOn.value, keyword)
 
-        //根据关键字过滤条目
-        val keyword = filterKeyword.value.text.lowercase()  //关键字
-        val enableFilter = filterModeActuallyEnabled(filterModeOn.value, keyword)
-
-        val lastNeedRefresh = rememberSaveable { mutableStateOf("") }
-        val list = filterTheList(
-            needRefresh = filterResultNeedRefresh.value,
-            lastNeedRefresh = lastNeedRefresh,
-            enableFilter = enableFilter,
-            keyword = keyword,
-            lastKeyword = lastKeyword,
-            searching = searching,
-            token = token,
-            activityContext = activityContext,
-            filterList = filterList.value,
-            list = list.value,
-            resetSearchVars = resetSearchVars,
-            match = { idx:Int, it: StashDto ->
-                it.index.toString().lowercase().contains(keyword)
-                        || it.stashId.toString().lowercase().contains(keyword)
-                        || it.msg.lowercase().contains(keyword)
-            }
-        )
+            val lastNeedRefresh = rememberSaveable { mutableStateOf("") }
+            val list = filterTheList(
+                needRefresh = filterResultNeedRefresh.value,
+                lastNeedRefresh = lastNeedRefresh,
+                enableFilter = enableFilter,
+                keyword = keyword,
+                lastKeyword = lastKeyword,
+                searching = searching,
+                token = token,
+                activityContext = activityContext,
+                filterList = filterList.value,
+                list = list.value,
+                resetSearchVars = resetSearchVars,
+                match = { idx:Int, it: StashDto ->
+                    it.index.toString().lowercase().contains(keyword)
+                            || it.stashId.toString().lowercase().contains(keyword)
+                            || it.msg.lowercase().contains(keyword)
+                }
+            )
 
 
-        val listState = if(enableFilter) filterListState else listState
+            val listState = if(enableFilter) filterListState else listState
 //        if(enableFilter) {  //更新filter列表state
 //            filterListState.value = listState
 //        }
-        //更新是否启用filter
-        enableFilterState.value = enableFilter
+            //更新是否启用filter
+            enableFilterState.value = enableFilter
 
 
-        MyLazyColumn(
-            contentPadding = contentPadding,
-            list = list,
-            listState = listState,
-            requireForEachWithIndex = true,
-            requirePaddingAtBottom = true,
-            forEachCb = {},
-        ){idx, it->
-            //长按会更新curObjInPage为被长按的条目
-            StashItem(repoId, showBottomSheet, curObjInPage, idx, lastClickedItemKey, it) {  //onClick
-                val suffix = "\n\n"
-                val sb = StringBuilder()
-                sb.append(activityContext.getString(R.string.index)).append(": ").append(it.index).append(suffix)
-                sb.append(activityContext.getString(R.string.stash_id)).append(": ").append(it.stashId).append(suffix)
-                sb.append(activityContext.getString(R.string.msg)).append(": ").append(it.msg).append(suffix)
+            MyLazyColumn(
+                contentPadding = contentPadding,
+                list = list,
+                listState = listState,
+                requireForEachWithIndex = true,
+                requirePaddingAtBottom = true,
+                forEachCb = {},
+            ){idx, it->
+                //长按会更新curObjInPage为被长按的条目
+                StashItem(repoId, showBottomSheet, curObjInPage, idx, lastClickedItemKey, it) {  //onClick
+                    val suffix = "\n\n"
+                    val sb = StringBuilder()
+                    sb.append(activityContext.getString(R.string.index)).append(": ").append(it.index).append(suffix)
+                    sb.append(activityContext.getString(R.string.stash_id)).append(": ").append(it.stashId).append(suffix)
+                    sb.append(activityContext.getString(R.string.msg)).append(": ").append(it.msg).append(suffix)
 
 
-                detailsString.value = sb.removeSuffix(suffix).toString()
-                showDetailsDialog.value = true
+                    detailsString.value = sb.removeSuffix(suffix).toString()
+                    showDetailsDialog.value = true
+                }
+
+                HorizontalDivider()
             }
 
-            HorizontalDivider()
         }
 
     }
