@@ -4,11 +4,13 @@
 1.1.0.3v79 - 20250422:
 - adjust create stash and tag dialog
 - add Stash entry at ChangeList view
+- fix: navigate to some pages may got err
 
 
 
 - 调整创建stash和tag的弹窗
 - 在修改列表页面添加Stash管理器入口
+- 修复导航到某些页面可能报错的bug
 
 ---
 
