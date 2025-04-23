@@ -24,13 +24,13 @@ import com.catpuppyapp.puppygit.utils.MyLog
 import com.catpuppyapp.puppygit.utils.UIHelper
 import com.catpuppyapp.puppygit.utils.cache.Cache
 import com.catpuppyapp.puppygit.utils.doJobThenOffLoading
+import com.catpuppyapp.puppygit.utils.doJobWithMainContext
 import com.catpuppyapp.puppygit.utils.generateRandomString
 import com.catpuppyapp.puppygit.utils.getRandomUUID
 import com.catpuppyapp.puppygit.utils.replaceStringResList
 import com.catpuppyapp.puppygit.utils.state.CustomStateSaveable
 import com.catpuppyapp.puppygit.utils.withMainContext
 import kotlinx.coroutines.CoroutineScope
-import java.io.File
 
 private const val TAG = "ScreenHelper"
 
@@ -97,10 +97,9 @@ suspend fun goToFileHistoryByRelativePathWithMainContext(repoId:String, relative
 fun naviToFileHistoryByRelativePath(repoId:String, relativePathUnderRepo:String) {
     Cache.set(Cache.Key.fileHistory_fileRelativePathKey, relativePathUnderRepo)
     //go to file history page
-    AppModel.navController
-        .navigate(
-            Cons.nav_FileHistoryScreen + "/" + repoId
-        )
+    doJobWithMainContext {
+        AppModel.navController.navigate(Cons.nav_FileHistoryScreen + "/" + repoId)
+    }
 }
 
 fun getLoadText(loadedCount:Int, actuallyEnabledFilterMode:Boolean, activityContext:Context):String?{
@@ -131,7 +130,9 @@ fun openFileWithInnerSubPageEditor(filePath:String, mergeMode:Boolean, readOnly:
 
     AppModel.subEditorPreviewModeOnWhenDestroy.value = false
 
-    AppModel.navController.navigate(Cons.nav_SubPageEditor + "/$goToLine/$initMergeMode/$initReadOnly")
+    doJobWithMainContext {
+        AppModel.navController.navigate(Cons.nav_SubPageEditor + "/$goToLine/$initMergeMode/$initReadOnly")
+    }
 }
 
 
@@ -141,7 +142,10 @@ fun fromTagToCommitHistory(fullOid:String, shortName:String, repoId:String){
     Cache.set(Cache.Key.commitList_shortBranchNameKey, shortName)  //short hash or tag name or branch name
     val useFullOid = "1"
     val isHEAD = "0"
-    AppModel.navController.navigate(Cons.nav_CommitListScreen + "/" + repoId + "/" +useFullOid  + "/" + isHEAD)
+
+    doJobWithMainContext {
+        AppModel.navController.navigate(Cons.nav_CommitListScreen + "/" + repoId + "/" +useFullOid  + "/" + isHEAD)
+    }
 }
 
 
@@ -290,7 +294,9 @@ fun <T> filterTheList(
 fun newScrollState(initial:Int = 0):ScrollState = ScrollState(initial = initial)
 
 fun navToFileChooser(type: FileChooserType) {
-    AppModel.navController.navigate(Cons.nav_FileChooserScreen + "/" + type.code)
+    doJobWithMainContext {
+        AppModel.navController.navigate(Cons.nav_FileChooserScreen + "/" + type.code)
+    }
 }
 
 fun getFilesScreenTitle(currentPath:String, activityContext: Context):String {
