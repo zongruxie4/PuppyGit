@@ -2,7 +2,6 @@ package com.catpuppyapp.puppygit.screen.content.homescreen.innerpage
 
 import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -13,7 +12,6 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.foundation.rememberScrollState
@@ -71,6 +69,7 @@ import com.catpuppyapp.puppygit.compose.InternalFileChooser
 import com.catpuppyapp.puppygit.compose.MyCheckBox
 import com.catpuppyapp.puppygit.compose.MyLazyColumn
 import com.catpuppyapp.puppygit.compose.MySelectionContainer
+import com.catpuppyapp.puppygit.compose.PageCenterIconButton
 import com.catpuppyapp.puppygit.compose.RepoCard
 import com.catpuppyapp.puppygit.compose.ScrollableColumn
 import com.catpuppyapp.puppygit.compose.SelectedItemDialog
@@ -1842,29 +1841,15 @@ fun RepoInnerPage(
             horizontalAlignment = Alignment.CenterHorizontally,
 
         ) {
-            //interactionSource和indication的作用是隐藏按下时的背景半透明那个按压效果，很难看，所以隐藏
-            Column(modifier = Modifier.clickable(interactionSource = remember { MutableInteractionSource() }, indication = null) {
-                navController.navigate(Cons.nav_CloneScreen+"/null")  //不传repoId，就是null，等于新建模式
-            },
-                verticalArrangement = Arrangement.Center,
-                horizontalAlignment = Alignment.CenterHorizontally,
-            ){
-                Row{
-                    Icon(modifier = Modifier.size(50.dp),
-                        imageVector = Icons.Filled.Add,
-                        contentDescription = stringResource(R.string.add),
-                        tint = MyStyleKt.IconColor.normal
-                    )
-                }
-                Row {
-                    Text(text = stringResource(id = R.string.add_a_repo),
-                        style = MyStyleKt.ClickableText.style,
-                        color = MyStyleKt.ClickableText.color,
-                        fontSize = MyStyleKt.TextSize.default
-                    )
-                }
-            }
-
+            PageCenterIconButton(
+                onClick = {
+                    //不传repoId，就是null，等于新建模式
+                    navController.navigate(Cons.nav_CloneScreen+"/null")
+                },
+                icon = Icons.Filled.Add,
+                iconDesc = stringResource(R.string.add_a_repo),
+                text = stringResource(R.string.add_a_repo)
+            )
         }
     }
 

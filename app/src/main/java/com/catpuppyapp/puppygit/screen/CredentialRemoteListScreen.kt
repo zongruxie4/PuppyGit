@@ -2,9 +2,7 @@ package com.catpuppyapp.puppygit.screen
 
 import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.ExperimentalFoundationApi
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.combinedClickable
-import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -12,14 +10,12 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Add
-import androidx.compose.material.icons.filled.AddLink
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.FilterAlt
 import androidx.compose.material.icons.filled.Link
@@ -27,7 +23,6 @@ import androidx.compose.material.icons.filled.LinkOff
 import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.HorizontalDivider
-import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
@@ -57,6 +52,7 @@ import com.catpuppyapp.puppygit.compose.InfoDialog
 import com.catpuppyapp.puppygit.compose.LinkOrUnLinkCredentialAndRemoteDialog
 import com.catpuppyapp.puppygit.compose.LongPressAbleIconBtn
 import com.catpuppyapp.puppygit.compose.MyLazyColumn
+import com.catpuppyapp.puppygit.compose.PageCenterIconButton
 import com.catpuppyapp.puppygit.compose.RemoteItemForCredential
 import com.catpuppyapp.puppygit.compose.ScrollableColumn
 import com.catpuppyapp.puppygit.compose.ScrollableRow
@@ -74,7 +70,6 @@ import com.catpuppyapp.puppygit.style.MyStyleKt
 import com.catpuppyapp.puppygit.utils.AppModel
 import com.catpuppyapp.puppygit.utils.Msg
 import com.catpuppyapp.puppygit.utils.MyLog
-import com.catpuppyapp.puppygit.utils.UIHelper
 import com.catpuppyapp.puppygit.utils.changeStateTriggerRefreshPage
 import com.catpuppyapp.puppygit.utils.createAndInsertError
 import com.catpuppyapp.puppygit.utils.doJobThenOffLoading
@@ -466,27 +461,12 @@ fun CredentialRemoteListScreen(
 
             ) {
                 if(isShowLink) {
-                    Column(modifier = Modifier.clickable(interactionSource = remember { MutableInteractionSource() }, indication = null) {
-                        goToCreateLinkPage()
-                    },
-                        verticalArrangement = Arrangement.Center,
-                        horizontalAlignment = Alignment.CenterHorizontally,
-                    ){
-                        Row{
-                            Icon(modifier = Modifier.size(50.dp),
-                                imageVector = Icons.Filled.Add,
-                                contentDescription = stringResource(R.string.create_link),
-                                tint = MyStyleKt.IconColor.normal
-                            )
-                        }
-                        Row {
-                            Text(text = stringResource(id = R.string.create_link),
-                                style = MyStyleKt.ClickableText.style,
-                                color = MyStyleKt.ClickableText.color,
-                                fontSize = MyStyleKt.TextSize.default
-                            )
-                        }
-                    }
+                    PageCenterIconButton(
+                        onClick = goToCreateLinkPage,
+                        icon = Icons.Filled.Add,
+                        iconDesc = stringResource(R.string.create_link),
+                        text = stringResource(R.string.create_link)
+                    )
                 }else {
                     Text(stringResource(R.string.item_list_is_empty))
                 }
