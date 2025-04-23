@@ -2353,7 +2353,9 @@ fun RepoInnerPage(
             stash@{
                 val curRepo = selectedItems.value.first()
                 doActIfRepoGood(curRepo) {
-                    goToStashPage(curRepo.id)
+                    doJobThenOffLoading {
+                        goToStashPage(curRepo.id)
+                    }
                 }
             },
             reflog@{

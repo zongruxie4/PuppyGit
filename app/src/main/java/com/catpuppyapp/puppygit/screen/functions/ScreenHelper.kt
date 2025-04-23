@@ -364,6 +364,8 @@ fun getInitTextEditorState():TextEditorState {
     )
 }
 
-fun goToStashPage(repoId:String) {
-    AppModel.navController.navigate(Cons.nav_StashListScreen+"/"+repoId)
+suspend fun goToStashPage(repoId:String) {
+    withMainContext {
+        AppModel.navController.navigate(Cons.nav_StashListScreen+"/"+repoId)
+    }
 }
