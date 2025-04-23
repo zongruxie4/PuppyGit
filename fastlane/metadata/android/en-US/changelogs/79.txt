@@ -1,1 +1,2 @@
 - adjust create stash and tag dialog
+- add Stash entry at ChangeList view
