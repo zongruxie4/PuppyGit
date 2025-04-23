@@ -363,3 +363,7 @@ fun getInitTextEditorState():TextEditorState {
         onChanged = { i1, i2, i3->}
     )
 }
+
+fun goToStashPage(repoId:String) {
+    AppModel.navController.navigate(Cons.nav_StashListScreen+"/"+repoId)
+}

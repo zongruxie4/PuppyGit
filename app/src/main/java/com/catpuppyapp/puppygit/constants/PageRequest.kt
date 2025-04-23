@@ -24,6 +24,7 @@ object PageRequest {
 //    const val goToBranch ="goToBranch"  //goToBranch#branchName，#后面是要goto的分支名
 
 
+    const val goToStashPage = "goToStashPage"
     const val goToInnerDataStorage = "goToInnerDataStorage"
     const val goToExternalDataStorage = "goToExternalDataStorage"
     const val editorPreviewPageGoBack = "editorPreviewPageGoBack"

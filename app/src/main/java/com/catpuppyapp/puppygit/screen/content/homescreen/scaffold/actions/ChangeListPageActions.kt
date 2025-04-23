@@ -292,6 +292,21 @@ fun ChangeListPageActions(
 
             }
 
+            DropdownMenuItem(
+//                    enabled = enableRepoAction,
+//                        enabled = enableMenuItem,
+                enabled = true,
+
+                text = { Text(stringResource(R.string.stash)) },
+                onClick = {
+                    Cache.set(Cache.Key.changeListInnerPage_requireDoActFromParent, PageRequest.goToStashPage)
+                    requireDoActFromParentShowTextWhenDoingAct.value= activityContext.getString(R.string.loading)
+                    requireDoActFromParent.value = true
+                    enableAction.value=false
+
+                    dropDownMenuExpendState.value=false
+                }
+            )
 
             if(isWorktreePage) {
                 if(proFeatureEnabled(ignoreWorktreeFilesTestPassed)) {

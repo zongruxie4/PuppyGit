@@ -99,6 +99,7 @@ import com.catpuppyapp.puppygit.play.pro.R
 import com.catpuppyapp.puppygit.screen.functions.ChangeListFunctions
 import com.catpuppyapp.puppygit.screen.functions.filterModeActuallyEnabled
 import com.catpuppyapp.puppygit.screen.functions.filterTheList
+import com.catpuppyapp.puppygit.screen.functions.goToStashPage
 import com.catpuppyapp.puppygit.screen.functions.naviToFileHistoryByRelativePath
 import com.catpuppyapp.puppygit.screen.functions.openFileWithInnerSubPageEditor
 import com.catpuppyapp.puppygit.screen.functions.triggerReFilter
@@ -732,6 +733,8 @@ fun ChangeListInnerPage(
                     Msg.requireShowLongDuration(e.localizedMessage ?: "err")
                     MyLog.e(TAG, "get ignore file for repo '${curRepo.repoName}' err: ${e.stackTraceToString()}")
                 }
+            }else if(requireAct==PageRequest.goToStashPage) {
+                goToStashPage(curRepo.id)
             }else if(requireAct==PageRequest.showInRepos) {
                 goToRepoPage(repoId)
             }else if(requireAct==PageRequest.goParent) {

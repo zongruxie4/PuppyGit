@@ -84,6 +84,7 @@ import com.catpuppyapp.puppygit.git.Upstream
 import com.catpuppyapp.puppygit.play.pro.R
 import com.catpuppyapp.puppygit.screen.functions.filterModeActuallyEnabled
 import com.catpuppyapp.puppygit.screen.functions.filterTheList
+import com.catpuppyapp.puppygit.screen.functions.goToStashPage
 import com.catpuppyapp.puppygit.screen.functions.triggerReFilter
 import com.catpuppyapp.puppygit.screen.shared.SharedState
 import com.catpuppyapp.puppygit.server.bean.ConfigBean
@@ -2352,7 +2353,7 @@ fun RepoInnerPage(
             stash@{
                 val curRepo = selectedItems.value.first()
                 doActIfRepoGood(curRepo) {
-                    navController.navigate(Cons.nav_StashListScreen+"/"+curRepo.id)
+                    goToStashPage(curRepo.id)
                 }
             },
             reflog@{
