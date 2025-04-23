@@ -1831,27 +1831,16 @@ fun RepoInnerPage(
 //    }
 
     if (!isLoading.value && repoList.value.isEmpty()) {  //无仓库，显示添加按钮
-        Column(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(contentPadding)
-                .verticalScroll(rememberScrollState())
-
-                ,
-            verticalArrangement = Arrangement.Center,
-            horizontalAlignment = Alignment.CenterHorizontally,
-
-        ) {
-            PageCenterIconButton(
-                onClick = {
-                    //不传repoId，就是null，等于新建模式
-                    navController.navigate(Cons.nav_CloneScreen+"/null")
-                },
-                icon = Icons.Filled.Add,
-                iconDesc = stringResource(R.string.add_a_repo),
-                text = stringResource(R.string.add_a_repo)
-            )
-        }
+        PageCenterIconButton(
+            contentPadding = contentPadding,
+            onClick = {
+                //不传repoId，就是null，等于新建模式
+                navController.navigate(Cons.nav_CloneScreen+"/null")
+            },
+            icon = Icons.Filled.Add,
+            iconDesc = stringResource(R.string.add_a_repo),
+            text = stringResource(R.string.add_a_repo),
+        )
     }
 
 

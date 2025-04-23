@@ -448,30 +448,17 @@ fun CredentialRemoteListScreen(
     ) { contentPadding ->
 
         if(list.value.isEmpty()) {
-
-            Column(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .padding(contentPadding)
-                    .verticalScroll(rememberScrollState())
-
-                ,
-                verticalArrangement = Arrangement.Center,
-                horizontalAlignment = Alignment.CenterHorizontally,
-
-            ) {
-                if(isShowLink) {
-                    PageCenterIconButton(
-                        onClick = goToCreateLinkPage,
-                        icon = Icons.Filled.Add,
-                        iconDesc = stringResource(R.string.create_link),
-                        text = stringResource(R.string.create_link)
-                    )
-                }else {
+            PageCenterIconButton(
+                contentPadding = contentPadding,
+                onClick = goToCreateLinkPage,
+                icon = Icons.Filled.Add,
+                iconDesc = stringResource(R.string.create_link),
+                text = stringResource(R.string.create_link),
+                condition = isShowLink,
+                elseContent = {
                     Text(stringResource(R.string.item_list_is_empty))
                 }
-
-            }
+            )
         }else {
 
             //根据关键字过滤条目

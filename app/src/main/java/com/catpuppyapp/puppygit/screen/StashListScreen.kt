@@ -618,6 +618,7 @@ fun StashListScreen(
 
         if(list.value.isEmpty()) {
             PageCenterIconButton(
+                contentPadding = contentPadding,
                 onClick = {
                     doTaskOrShowSetUsernameAndEmailDialog(curRepo.value) {
                         showCreateDialog.value = true
@@ -625,7 +626,7 @@ fun StashListScreen(
                 },
                 icon = Icons.Filled.Add,
                 iconDesc = stringResource(R.string.create),
-                text = stringResource(R.string.create)
+                text = stringResource(R.string.create),
             )
         }else {
             //根据关键字过滤条目
