@@ -8,7 +8,7 @@ import androidx.compose.ui.Modifier
 import com.catpuppyapp.puppygit.style.MyStyleKt
 
 @Composable
-fun CheckBoxNoteRow(content: @Composable RowScope.()->Unit) {
+fun DefaultPaddingRow(content: @Composable RowScope.()->Unit) {
     Row(modifier = Modifier.padding(horizontal = MyStyleKt.defaultHorizontalPadding)) {
         content()
     }

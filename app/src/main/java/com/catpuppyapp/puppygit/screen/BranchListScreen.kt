@@ -54,7 +54,7 @@ import com.catpuppyapp.puppygit.compose.AskGitUsernameAndEmailDialogWithSelectio
 import com.catpuppyapp.puppygit.compose.BottomSheet
 import com.catpuppyapp.puppygit.compose.BottomSheetItem
 import com.catpuppyapp.puppygit.compose.BranchItem
-import com.catpuppyapp.puppygit.compose.CheckBoxNoteRow
+import com.catpuppyapp.puppygit.compose.DefaultPaddingRow
 import com.catpuppyapp.puppygit.compose.DefaultPaddingText
 import com.catpuppyapp.puppygit.compose.CheckoutDialog
 import com.catpuppyapp.puppygit.compose.CheckoutDialogFrom
@@ -737,7 +737,7 @@ fun BranchListScreen(
                         }
                         MyCheckBox(text = stringResource(R.string.del_upstream_too), value = delUpstreamToo)
                         if (delUpstreamToo.value) {  //如果能勾选这个选项其实基本就可以断定存在有效上游了
-                            CheckBoxNoteRow {
+                            DefaultPaddingRow {
                                 Text(text = stringResource(id = R.string.upstream) + ": ")
                                 Text(
                                     text = curObjInPage.value.upstream?.remoteBranchShortRefSpec ?: "",  //其实如果通过上面的判断，基本就能断定存在有效上游了，这里的?:空值判断只是以防万一
