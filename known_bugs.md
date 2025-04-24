@@ -1,3 +1,11 @@
+无法克隆ssh子模块 20250424：
+报错：failed to authenticate SSH session: Unable to extract public key from private key file: Unsupported private key file format
+
+但如果不是子模块的ssh仓库则可正常克隆，感觉应该不是很严重的bug，否则普通ssh url的仓库应该也无法克隆，改天看下libgit2源代码，看下是否好解决
+
+复现：添加ssh url的submodule，然后选择对应的sshkey凭据并克隆
+
+---
 偶发bug，难以复现，备忘 20250402：
 x 无法复现，检查逻辑，未发现问题，以后遇到再说吧) 换行bug：在行开头，回车，下次光标会在下一行第一个字后面，应在前面
 
