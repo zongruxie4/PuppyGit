@@ -38,23 +38,7 @@ fun InternalFileChooser(
     pathTextFieldLabel:String=stringResource(R.string.path),
     pathTextFieldPlaceHolder:String=stringResource(R.string.eg_storage_emulate_0_repos),
 ) {
-    Row(modifier = Modifier.padding(bottom = 15.dp).padding(horizontal = MyStyleKt.defaultHorizontalPadding)) {
-        ClickableText (
-            text = stringResource(R.string.please_grant_permission_before_you_add_a_storage_path),
-            overflow = TextOverflow.Visible,
-            fontWeight = FontWeight.Light,
-            modifier = MyStyleKt.ClickableText.modifierNoPadding.clickable {
-                val activity = activityContext as? Activity;
-
-                // grant permission for read/write external storage
-                if (activity == null) {
-                    Msg.requireShowLongDuration(activityContext.getString(R.string.please_go_to_system_settings_allow_manage_storage))
-                }else {
-                    activity.getStoragePermission()
-                }
-            },
-        )
-    }
+    GrantManageStoragePermissionClickableText(activityContext)
 
     TextField(
         modifier = Modifier.fillMaxWidth().padding(horizontal = MyStyleKt.defaultHorizontalPadding),

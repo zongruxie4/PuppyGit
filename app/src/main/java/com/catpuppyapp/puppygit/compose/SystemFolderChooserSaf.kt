@@ -1,5 +1,6 @@
 package com.catpuppyapp.puppygit.compose
 
+import android.content.Context
 import android.net.Uri
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.compose.foundation.layout.Arrangement
@@ -8,6 +9,7 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.MoreHoriz
 import androidx.compose.material3.Icon
@@ -22,6 +24,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import com.catpuppyapp.puppygit.play.pro.R
+import com.catpuppyapp.puppygit.style.MyStyleKt
 import com.catpuppyapp.puppygit.utils.AppModel
 import com.catpuppyapp.puppygit.utils.FsUtils
 import com.catpuppyapp.puppygit.utils.MyLog
@@ -35,6 +38,7 @@ private const val TAG = "SystemFolderChooserSaf"
  */
 @Composable
 fun SystemFolderChooserSaf(
+    activityContext: Context,  //必须从页面获取Activity，不要从弹窗获取，弹窗获取的context可能不能转换为Activity
     safEnabled:MutableState<Boolean>,
     safPath:MutableState<String>,
     nonSafPath:MutableState<String>,
@@ -62,7 +66,6 @@ fun SystemFolderChooserSaf(
     }
 ) {
 
-    val activityContext = LocalContext.current
 
     val chooseDirLauncher = rememberLauncherForActivityResult(MyOpenDocumentTree()) { uri ->
         if(uri != null){
@@ -75,28 +78,22 @@ fun SystemFolderChooserSaf(
     }
 
 
-    //这里不需要能滚动，应该由使用此组件的组件考虑是否能滚动
-    Column {
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.SpaceBetween
-        ) {
-            TextField(
-                modifier = Modifier.fillMaxWidth(.8f),
-                value = path.value,
-                maxLines = 6,
-                onValueChange = {
-                    path.value = it
-                },
-                label = {
-                    Text(pathTextFieldLabel)
-                },
-                placeholder = {
-                    Text(pathTextFieldPlaceHolder)
-                }
-            )
+    GrantManageStoragePermissionClickableText(activityContext)
 
+    TextField(
+        modifier = Modifier.fillMaxWidth().padding(horizontal = MyStyleKt.defaultHorizontalPadding),
+        value = path.value,
+        maxLines = 6,
+        onValueChange = {
+            path.value = it
+        },
+        label = {
+            Text(pathTextFieldLabel)
+        },
+        placeholder = {
+            Text(pathTextFieldPlaceHolder)
+        },
+        trailingIcon = {
             IconButton(
                 onClick = {
                     //show folder chooser
@@ -106,25 +103,25 @@ fun SystemFolderChooserSaf(
             ) {
                 Icon(imageVector = Icons.Filled.MoreHoriz, contentDescription = stringResource(R.string.three_dots_icon_for_choose_folder))
             }
-
         }
+    )
+
 
 
 //        Spacer(Modifier.height(15.dp))
 //        Text(stringResource(R.string.if_unable_choose_a_path_just_copy_paste_instead), fontWeight = FontWeight.Light)
 
-        if(showSafSwitchButton) {
-            Spacer(Modifier.height(15.dp))
-            MyCheckBox(text = stringResource(R.string.saf_mode), value = safEnabled, onValueChange = { newSafEnabledValue ->
-                path.value = if (newSafEnabledValue) {
-                    safPath.value
-                } else {
-                    nonSafPath.value
-                }
+    if(showSafSwitchButton) {
+        Spacer(Modifier.height(15.dp))
+        MyCheckBox(text = stringResource(R.string.saf_mode), value = safEnabled, onValueChange = { newSafEnabledValue ->
+            path.value = if (newSafEnabledValue) {
+                safPath.value
+            } else {
+                nonSafPath.value
+            }
 
-                safEnabled.value = newSafEnabledValue
-            })
-            DefaultPaddingText(stringResource(R.string.saf_mode_note))
-        }
+            safEnabled.value = newSafEnabledValue
+        })
+        DefaultPaddingText(stringResource(R.string.saf_mode_note))
     }
 }
