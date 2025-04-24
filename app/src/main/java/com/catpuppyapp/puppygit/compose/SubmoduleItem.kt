@@ -153,17 +153,17 @@ fun SubmoduleItem(
             )
         }
 
-        Row (
-            verticalAlignment = Alignment.CenterVertically,
-
-        ){
-
-            Text(text = stringResource(R.string.other) +": ")
-            Text(text = thisObj.getOther(),
-                maxLines = 1,
-                overflow = TextOverflow.Ellipsis,
-                fontWeight = FontWeight.Light,
-            )
+        if(thisObj.hasOther()) {
+            Row (
+                verticalAlignment = Alignment.CenterVertically,
+            ){
+                Text(text = stringResource(R.string.other) +": ")
+                Text(text = thisObj.getOther(),
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis,
+                    fontWeight = FontWeight.Light,
+                )
+            }
         }
 
      }

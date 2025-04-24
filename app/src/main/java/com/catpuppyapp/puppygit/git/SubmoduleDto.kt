@@ -45,7 +45,7 @@ data class SubmoduleDto (
     }
 
 
-    fun isRepoCloneAndShallow():Boolean {
+    fun isRepoClonedAndShallow():Boolean {
         return try {
             Repository.open(fullPath).use { Libgit2Helper.isRepoShallow(it) }
         }catch (_:Exception) {
@@ -53,10 +53,15 @@ data class SubmoduleDto (
         }
     }
 
+
+    fun hasOther():Boolean {
+        return isRepoClonedAndShallow()
+    }
+
     fun getOther(): String {
         if(otherText == null) {
             // for better filterable, these text should not localize
-            otherText = if(isRepoCloneAndShallow()) Cons.isShallowStr else Cons.notShallowStr
+            otherText = if(isRepoClonedAndShallow()) Cons.isShallowStr else Cons.notShallowStr
         }
 
         return otherText ?: ""
