@@ -841,7 +841,7 @@
     <string name="re_clone_submodules_warning_text">将会删除硬盘上的子模块然后重新克隆</string>
     <string name="recursive">递归</string>
     <string name="update">更新</string>
-    <string name="recursive_clone_submodule_nested_loop_warn">警告: 小心! 如果你的仓库包含嵌套循环将会无限克隆直到耗尽存储空间!!</string>
+    <string name="recursive_clone_submodule_nested_loop_warn">警告: 小心! 如果你的仓库包含嵌套循环，将会无限克隆直到耗尽存储空间!!</string>
     <string name="recursive_update_submodule_nested_loop_warn">警告: 小心! 请确保你的仓库不包含嵌套循环!!</string>
     <string name="no_submodules_found">未找到子模块</string>
     <string name="full_path">完整路径</string>
