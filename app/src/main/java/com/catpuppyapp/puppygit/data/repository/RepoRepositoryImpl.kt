@@ -107,8 +107,18 @@ class RepoRepositoryImpl(private val dao: RepoDao) : RepoRepository {
 //        println("抛异常我就不会被执行到了！！")
         //最后，删除仓库文件夹
         if(requireDelFilesOnDisk) {
-            val file = File(repoFullPath)
-            file.deleteRecursively()
+            // .git folder，有可能是个文件，存相对路径，指向文件夹，所以需要单独查一下
+            val repoGitDirPath = Repository.open(repoFullPath).use { repo ->
+                Libgit2Helper.getRepoGitDirPathNoEndsWithSlash(repo)
+            }
+
+            //因为.gitdir有可能在仓库路径下，所以需要先删除它
+            //git dir有可能不在仓库路径下，所以需要单独删除。(通常只有submodule是这样)
+            File(repoGitDirPath).deleteRecursively()
+
+            //删除仓库workdir
+            File(repoFullPath).deleteRecursively()
+
         }
 
         //log
