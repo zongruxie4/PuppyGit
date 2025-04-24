@@ -282,7 +282,7 @@ fun CheckoutDialog(
                         MyCheckBox(text = stringResource(R.string.overwrite_if_exist), value = overwriteIfExist)
                         if(overwriteIfExist.value) {
                             Row {
-                                CheckBoxNoteText(
+                                DefaultPaddingText(
                                     text = stringResource(R.string.will_overwrite_if_branch_already_exists),
                                 )
                             }
@@ -294,7 +294,7 @@ fun CheckoutDialog(
                         MyCheckBox(text = stringResource(R.string.dont_checkout), value = dontCheckout)
                         if(dontCheckout.value) {
                             Row {
-                                CheckBoxNoteText(
+                                DefaultPaddingText(
                                     text = stringResource(R.string.wont_checkout_only_create_branch),
                                 )
                             }
@@ -324,7 +324,7 @@ fun CheckoutDialog(
 
                     if(forceCheckout.value) {
                         Row {
-                            CheckBoxNoteText(
+                            DefaultPaddingText(
                                 text = stringResource(R.string.warn_force_checkout_will_overwrite_uncommitted_changes),
                                 color = MyStyleKt.TextColor.danger(),
                             )

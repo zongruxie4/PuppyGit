@@ -55,7 +55,7 @@ import com.catpuppyapp.puppygit.compose.BottomSheet
 import com.catpuppyapp.puppygit.compose.BottomSheetItem
 import com.catpuppyapp.puppygit.compose.BranchItem
 import com.catpuppyapp.puppygit.compose.CheckBoxNoteRow
-import com.catpuppyapp.puppygit.compose.CheckBoxNoteText
+import com.catpuppyapp.puppygit.compose.DefaultPaddingText
 import com.catpuppyapp.puppygit.compose.CheckoutDialog
 import com.catpuppyapp.puppygit.compose.CheckoutDialogFrom
 import com.catpuppyapp.puppygit.compose.ConfirmDialog
@@ -1223,7 +1223,7 @@ fun BranchListScreen(
                         MyCheckBox(text = stringResource(id = R.string.force), value = forcePublish)
 
                         if(forcePublish.value) {
-                            CheckBoxNoteText(
+                            DefaultPaddingText(
                                 text = stringResource(R.string.will_force_overwrite_remote_branch_even_it_is_ahead_to_local),
                                 color = MyStyleKt.TextColor.danger(),
                             )

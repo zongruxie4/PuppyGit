@@ -124,7 +124,7 @@ fun SystemFolderChooserSaf(
 
                 safEnabled.value = newSafEnabledValue
             })
-            CheckBoxNoteText(stringResource(R.string.saf_mode_note))
+            DefaultPaddingText(stringResource(R.string.saf_mode_note))
         }
     }
 }

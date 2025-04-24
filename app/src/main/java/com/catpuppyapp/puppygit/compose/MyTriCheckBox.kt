@@ -41,7 +41,7 @@ fun MyTriCheckBox(
             ){
                 onValueChange()
             }
-            .padding(horizontal = MyStyleKt.CheckoutBox.horizontalPadding),
+            .padding(horizontal = MyStyleKt.defaultHorizontalPadding),
         verticalAlignment = Alignment.CenterVertically
     ) {
         TriStateCheckbox(

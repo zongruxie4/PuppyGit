@@ -7,7 +7,6 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.MutableState
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import com.catpuppyapp.puppygit.data.entity.RepoEntity
 import com.catpuppyapp.puppygit.play.pro.R
@@ -56,7 +55,7 @@ fun ApplyPatchDialog(
 
                 MyCheckBox(stringResource(R.string.check_only), checkOnly)
                 if(checkOnly.value) {
-                    CheckBoxNoteText(stringResource(R.string.apply_patch_check_note))
+                    DefaultPaddingText(stringResource(R.string.apply_patch_check_note))
                 }
                 Spacer(modifier = Modifier.height(10.dp))
 

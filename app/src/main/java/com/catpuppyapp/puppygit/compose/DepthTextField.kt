@@ -10,8 +10,8 @@ import androidx.compose.runtime.MutableState
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.KeyboardType
-import androidx.compose.ui.unit.dp
 import com.catpuppyapp.puppygit.play.pro.R
+import com.catpuppyapp.puppygit.style.MyStyleKt
 import com.catpuppyapp.puppygit.user.UserUtil
 
 
@@ -22,7 +22,7 @@ fun DepthTextField(depth: MutableState<String>) {
     TextField(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(10.dp),
+            .padding(MyStyleKt.defaultHorizontalPadding),
 
         keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
         singleLine = true,

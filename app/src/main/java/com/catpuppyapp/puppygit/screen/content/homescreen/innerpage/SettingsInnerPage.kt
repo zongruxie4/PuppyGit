@@ -39,7 +39,7 @@ import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.catpuppyapp.puppygit.compose.CheckBoxNoteText
+import com.catpuppyapp.puppygit.compose.DefaultPaddingText
 import com.catpuppyapp.puppygit.compose.ClickableText
 import com.catpuppyapp.puppygit.compose.ConfirmDialog2
 import com.catpuppyapp.puppygit.compose.ConfirmDialog3
@@ -644,11 +644,11 @@ fun SettingsInnerPage(
                     MyCheckBox(stringResource(R.string.all_snapshots), cleanSnapshot)  // file snapshots and content snapshots all will be delete
                     MyCheckBox(stringResource(R.string.storage_paths), cleanStoragePath)
                     if(cleanStoragePath.value) {
-                        CheckBoxNoteText(stringResource(R.string.the_storage_path_are_the_paths_you_chosen_and_added_when_cloning_repo))
+                        DefaultPaddingText(stringResource(R.string.the_storage_path_are_the_paths_you_chosen_and_added_when_cloning_repo))
                     }
                     MyCheckBox(stringResource(R.string.file_opened_history), cleanFileOpenHistory)
                     if(cleanFileOpenHistory.value) {
-                        CheckBoxNoteText(stringResource(R.string.this_include_editor_opened_files_history_and_their_last_edited_position))
+                        DefaultPaddingText(stringResource(R.string.this_include_editor_opened_files_history_and_their_last_edited_position))
                     }
                 }
             },

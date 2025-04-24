@@ -39,7 +39,7 @@ fun MyCheckBox2(
                 onValueChange = { onValueChange(it) },  //话说这个it是不是新值，所以不反转原始值直接 value = it，不就行了？
                 role = Role.Checkbox
             )
-            .padding(horizontal = MyStyleKt.CheckoutBox.horizontalPadding),
+            .padding(horizontal = MyStyleKt.defaultHorizontalPadding),
         verticalAlignment = Alignment.CenterVertically
     ) {
         Checkbox(

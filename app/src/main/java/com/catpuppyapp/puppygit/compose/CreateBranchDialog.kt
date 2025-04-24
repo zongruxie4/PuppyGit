@@ -33,7 +33,6 @@ import com.catpuppyapp.puppygit.dev.proFeatureEnabled
 import com.catpuppyapp.puppygit.etc.Ret
 import com.catpuppyapp.puppygit.play.pro.R
 import com.catpuppyapp.puppygit.style.MyStyleKt
-import com.catpuppyapp.puppygit.utils.AppModel
 import com.catpuppyapp.puppygit.utils.Libgit2Helper
 import com.catpuppyapp.puppygit.utils.Msg
 import com.catpuppyapp.puppygit.utils.doJobThenOffLoading
@@ -192,7 +191,7 @@ fun CreateBranchDialog(
                     MyCheckBox(text = stringResource(R.string.overwrite_if_exist), value = overwriteIfExist)
                     if(overwriteIfExist.value) {
                         Row {
-                            CheckBoxNoteText(
+                            DefaultPaddingText(
                                 text = stringResource(R.string.will_overwrite_if_branch_already_exists),
                             )
                         }
@@ -212,7 +211,7 @@ fun CreateBranchDialog(
                         //如果勾选了force checkout，警告没提交的内容可能会丢失
                         if(forceCheckout.value) {
                             Row {
-                                CheckBoxNoteText(
+                                DefaultPaddingText(
                                     text = stringResource(R.string.warn_force_checkout_will_overwrite_uncommitted_changes),
                                     color = MyStyleKt.TextColor.danger()
                                 )

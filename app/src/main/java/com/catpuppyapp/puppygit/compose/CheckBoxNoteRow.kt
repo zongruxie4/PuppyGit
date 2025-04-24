@@ -9,7 +9,7 @@ import com.catpuppyapp.puppygit.style.MyStyleKt
 
 @Composable
 fun CheckBoxNoteRow(content: @Composable RowScope.()->Unit) {
-    Row(modifier = Modifier.padding(horizontal = MyStyleKt.CheckoutBox.horizontalPadding)) {
+    Row(modifier = Modifier.padding(horizontal = MyStyleKt.defaultHorizontalPadding)) {
         content()
     }
 }

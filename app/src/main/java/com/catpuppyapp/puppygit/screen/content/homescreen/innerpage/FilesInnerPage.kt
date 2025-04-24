@@ -76,7 +76,7 @@ import androidx.documentfile.provider.DocumentFile
 import com.catpuppyapp.puppygit.compose.ApplyPatchDialog
 import com.catpuppyapp.puppygit.compose.BottomBar
 import com.catpuppyapp.puppygit.compose.CardButton
-import com.catpuppyapp.puppygit.compose.CheckBoxNoteText
+import com.catpuppyapp.puppygit.compose.DefaultPaddingText
 import com.catpuppyapp.puppygit.compose.ClickableText
 import com.catpuppyapp.puppygit.compose.ConfirmDialog
 import com.catpuppyapp.puppygit.compose.ConfirmDialog2
@@ -1886,7 +1886,7 @@ fun FilesInnerPage(
                     Spacer(Modifier.height(20.dp))
 
                     MyCheckBox(stringResource(R.string.overwrite_if_exist), safImportExportOverwrite)
-                    CheckBoxNoteText(stringResource(R.string.overwrite_files_note))
+                    DefaultPaddingText(stringResource(R.string.overwrite_files_note))
                 }
             },
             onCancel = closeDialog,
@@ -2204,7 +2204,7 @@ fun FilesInnerPage(
                         Spacer(Modifier.height(5.dp))
 
                         if(isReposParentFolderForImport.value) {
-                            CheckBoxNoteText(stringResource(R.string.will_scan_repos_under_folders))
+                            DefaultPaddingText(stringResource(R.string.will_scan_repos_under_folders))
                         }
                     }
                 },

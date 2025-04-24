@@ -60,7 +60,7 @@ import androidx.compose.ui.unit.sp
 import com.catpuppyapp.puppygit.compose.AskGitUsernameAndEmailDialogWithSelection
 import com.catpuppyapp.puppygit.compose.BottomBar
 import com.catpuppyapp.puppygit.compose.ChangeListItem
-import com.catpuppyapp.puppygit.compose.CheckBoxNoteText
+import com.catpuppyapp.puppygit.compose.DefaultPaddingText
 import com.catpuppyapp.puppygit.compose.ClickableText
 import com.catpuppyapp.puppygit.compose.ConfirmDialog
 import com.catpuppyapp.puppygit.compose.ConfirmDialog2
@@ -1582,7 +1582,7 @@ fun ChangeListInnerPage(
                             append(shortTarget)
                         }
                     },
-                        modifier = Modifier.padding(horizontal = MyStyleKt.CheckoutBox.horizontalPadding)
+                        modifier = Modifier.padding(horizontal = MyStyleKt.defaultHorizontalPadding)
                     )
                     Text(text =  buildAnnotatedString {
                         append(stringResource(R.string.parent)+": ")
@@ -1590,11 +1590,11 @@ fun ChangeListInnerPage(
                             append(shortParent)
                         }
                     },
-                        modifier = Modifier.padding(horizontal = MyStyleKt.CheckoutBox.horizontalPadding)
+                        modifier = Modifier.padding(horizontal = MyStyleKt.defaultHorizontalPadding)
                     )
                     Spacer(modifier = Modifier.height(10.dp))
                     Text(text = stringResource(R.string.will_cherrypick_changes_of_selected_files_are_you_sure),
-                        modifier = Modifier.padding(horizontal = MyStyleKt.CheckoutBox.horizontalPadding)
+                        modifier = Modifier.padding(horizontal = MyStyleKt.defaultHorizontalPadding)
                     )
                     Spacer(modifier = Modifier.height(10.dp))
 
@@ -1777,15 +1777,15 @@ fun ChangeListInnerPage(
                                 append(Libgit2Helper.getShortOidStrByFull(checkoutTargetHash.value))
                             }
                         },
-                        modifier = Modifier.padding(horizontal = MyStyleKt.CheckoutBox.horizontalPadding)
+                        modifier = Modifier.padding(horizontal = MyStyleKt.defaultHorizontalPadding)
                         )
                     Spacer(modifier = Modifier.height(10.dp))
                     Text(text = stringResource(R.string.will_checkout_selected_files_are_you_sure),
-                        modifier = Modifier.padding(horizontal = MyStyleKt.CheckoutBox.horizontalPadding)
+                        modifier = Modifier.padding(horizontal = MyStyleKt.defaultHorizontalPadding)
                         )
                     MyCheckBox(text = stringResource(R.string.force), value = checkoutForce)
                     if(checkoutForce.value) {
-                        CheckBoxNoteText(
+                        DefaultPaddingText(
                             text = stringResource(R.string.if_local_has_uncommitted_changes_will_overwrite),
                             color = MyStyleKt.TextColor.danger(),
                         )
@@ -1974,14 +1974,14 @@ fun ChangeListInnerPage(
             requireShowTextCompose = true,
             textCompose = {
                 ScrollableColumn {
-                    Text(stringResource(R.string.will_try_import_selected_dirs_as_repos))
+                    DefaultPaddingText(stringResource(R.string.will_try_import_selected_dirs_as_repos))
                     Spacer(Modifier.height(15.dp))
 
 //                    Text(stringResource(R.string.will_import_selected_submodules_to_repos))
                     CredentialSelector(credentialList.value.toList(), selectedCredentialIdx)
 
                     Spacer(Modifier.height(10.dp))
-                    Text(stringResource(R.string.import_repos_link_credential_note), fontWeight = FontWeight.Light)
+                    DefaultPaddingText(stringResource(R.string.import_repos_link_credential_note))
                 }
             },
             onCancel = { showImportToReposDialog.value = false },

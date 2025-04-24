@@ -124,7 +124,7 @@ fun ResetDialog(
 
                     Text(text,
                         fontWeight = FontWeight.Light,
-                        modifier = Modifier.padding(horizontal = MyStyleKt.CheckoutBox.horizontalPadding)
+                        modifier = Modifier.padding(horizontal = MyStyleKt.defaultHorizontalPadding)
                     )
 
                     Spacer(modifier = Modifier.height(10.dp))

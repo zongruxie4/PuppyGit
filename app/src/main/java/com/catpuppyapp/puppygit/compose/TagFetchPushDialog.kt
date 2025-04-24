@@ -195,7 +195,7 @@ fun TagFetchPushDialog(
                         MyCheckBox(text = stringResource(id = R.string.force), value = force)
                         if(force.value) {  //显示勾选force后的覆盖提示
                             Row {
-                                CheckBoxNoteText(
+                                DefaultPaddingText(
                                     text = if(trueFetchFalsePush) stringResource(R.string.warn_remote_tag_override_local_tag)
                                             else stringResource(R.string.warn_local_tag_override_remote_tag)
                                     ,

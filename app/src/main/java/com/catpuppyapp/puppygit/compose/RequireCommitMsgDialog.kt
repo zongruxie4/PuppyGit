@@ -145,7 +145,7 @@ fun RequireCommitMsgDialog(
                         text = stringResource(R.string.origin_commit_msg),
                         fontWeight = FontWeight.Light,
                         modifier = MyStyleKt.ClickableText.modifierNoPadding
-                            .padding(horizontal = MyStyleKt.CheckoutBox.horizontalPadding)
+                            .padding(horizontal = MyStyleKt.defaultHorizontalPadding)
                             .clickable(onClick = {
                                 Repository.open(repoPath).use { repo ->
                                     val oldMsg = if (repoStateIsRebase) Libgit2Helper.rebaseGetCurCommitMsg(repo) else if(repoStateIsCherrypick) Libgit2Helper.getCherryPickHeadCommitMsg(repo) else Libgit2Helper.getHeadCommitMsg(repo)
@@ -167,7 +167,7 @@ fun RequireCommitMsgDialog(
                 }
 
                 if(overwriteAuthor.value){
-                    CheckBoxNoteText(text = stringResource(R.string.will_use_your_username_and_email_overwrite_original_commits_author_info))
+                    DefaultPaddingText(text = stringResource(R.string.will_use_your_username_and_email_overwrite_original_commits_author_info))
                 }
 
             }

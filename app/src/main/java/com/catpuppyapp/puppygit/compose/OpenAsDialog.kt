@@ -174,7 +174,7 @@ fun OpenAsDialog(readOnly: MutableState<Boolean>, fileName:String, filePath:Stri
                             onValueChange = { readOnly.value = !readOnly.value },
                             role = Role.Checkbox
                         )
-                        .padding(horizontal = MyStyleKt.CheckoutBox.horizontalPadding),
+                        .padding(horizontal = MyStyleKt.defaultHorizontalPadding),
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     Checkbox(

@@ -178,7 +178,7 @@ fun CreateTagDialog(
 
                 if(annotate.value) {
                     if(gitConfigUsername.value.isBlank() || gitConfigEmail.value.isBlank()) {  //未设置用户名和邮箱
-                        CheckBoxNoteText(
+                        DefaultPaddingText(
                             text = stringResource(R.string.err_must_set_username_and_email_before_create_annotate_tag),
                             color = MyStyleKt.TextColor.error()
                         )
@@ -235,7 +235,7 @@ fun CreateTagDialog(
 
                 if(force.value) {
                     Row {
-                        CheckBoxNoteText(
+                        DefaultPaddingText(
                             text = stringResource(R.string.warn_will_override_if_tag_name_already_exists),
                             color = MyStyleKt.TextColor.danger()
                         )

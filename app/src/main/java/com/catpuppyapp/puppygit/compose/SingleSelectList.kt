@@ -72,6 +72,7 @@ fun<T> SingleSelectList(
         //0.9f 占父元素宽度的百分之90
         modifier = outterModifier
             .padding(bottom = 10.dp)
+            .padding(horizontal = MyStyleKt.defaultHorizontalPadding)
             .clickable {
                 expandDropdownMenu.value = !expandDropdownMenu.value
             }
@@ -87,7 +88,7 @@ fun<T> SingleSelectList(
         )
 
     ) {
-        //用box的好处是如果整体宽度过小，不会把右边的健顶没，但箭头会和文本内容重叠
+        //用box的好处是如果整体宽度过小，不会把右边的箭头顶没，但箭头会和文本内容重叠
         Box(
             modifier = Modifier
                 .padding(horizontal = 10.dp)

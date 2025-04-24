@@ -16,7 +16,9 @@ import androidx.compose.ui.unit.sp
 import com.catpuppyapp.puppygit.dto.DeviceWidthHeight
 import com.catpuppyapp.puppygit.ui.theme.Theme
 
-class MyStyleKt{
+object MyStyleKt{
+    val defaultHorizontalPadding = 10.dp
+
 
     object ClickableText{
         val style: TextStyle = TextStyle(textDecoration = TextDecoration.Underline)
@@ -187,13 +189,13 @@ class MyStyleKt{
         val modifier = Modifier.size(size)
     }
 
+
     object CheckoutBox {
 //        val height = 56.dp
         val height = 40.dp
 
-//        val horizontalPadding = 16.dp
-        val horizontalPadding = 10.dp
     }
+
 
     object TopBar {
         val dropDownMenuTopPaddingSize = 70.dp
@@ -210,4 +212,5 @@ class MyStyleKt{
 
          val selectedItemColor = TextColor.highlighting_green
     }
+
 }

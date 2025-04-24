@@ -789,7 +789,7 @@ fun CloneScreen(
                             onValueChange = { onIsSingleBranchStateChange(!isSingleBranch) },
                             role = Role.Checkbox
                         )
-                        .padding(horizontal = MyStyleKt.CheckoutBox.horizontalPadding),
+                        .padding(horizontal = MyStyleKt.defaultHorizontalPadding),
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     Checkbox(

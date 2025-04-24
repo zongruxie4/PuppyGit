@@ -8,7 +8,6 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
@@ -60,7 +59,7 @@ import androidx.compose.ui.unit.sp
 import com.catpuppyapp.puppygit.compose.AskGitUsernameAndEmailDialog
 import com.catpuppyapp.puppygit.compose.AskGitUsernameAndEmailDialogWithSelection
 import com.catpuppyapp.puppygit.compose.BottomBar
-import com.catpuppyapp.puppygit.compose.CheckBoxNoteText
+import com.catpuppyapp.puppygit.compose.DefaultPaddingText
 import com.catpuppyapp.puppygit.compose.ClickableText
 import com.catpuppyapp.puppygit.compose.ConfirmDialog
 import com.catpuppyapp.puppygit.compose.ConfirmDialog2
@@ -456,7 +455,7 @@ fun RepoInnerPage(
                         Spacer(Modifier.height(5.dp))
 
                         if(isReposParentFolderForImport.value) {
-                            CheckBoxNoteText(stringResource(R.string.will_scan_repos_under_this_folder))
+                            DefaultPaddingText(stringResource(R.string.will_scan_repos_under_this_folder))
                         }
                     }
                 }
@@ -915,7 +914,7 @@ fun RepoInnerPage(
                                     },
                                     role = Role.Checkbox
                                 )
-                                .padding(horizontal = MyStyleKt.CheckoutBox.horizontalPadding),
+                                .padding(horizontal = MyStyleKt.defaultHorizontalPadding),
                             verticalAlignment = Alignment.CenterVertically
                         ) {
                             Checkbox(

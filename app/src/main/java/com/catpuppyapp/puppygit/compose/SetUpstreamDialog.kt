@@ -152,7 +152,7 @@ fun SetUpstreamDialog(
                             },
                             role = Role.Checkbox
                         )
-                        .padding(horizontal = MyStyleKt.CheckoutBox.horizontalPadding),
+                        .padding(horizontal = MyStyleKt.defaultHorizontalPadding),
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     Checkbox(
