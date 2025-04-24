@@ -1184,6 +1184,7 @@ fun SubmoduleListScreen(
                             || it.fullPath.lowercase().contains(keyword)
                             || it.targetHash.lowercase().contains(keyword)
                             || it.location.toString().lowercase().contains(keyword)
+                            || it.getOther().lowercase().contains(keyword)
                 }
             )
 

@@ -1884,12 +1884,12 @@ fun RepoInnerPage(
             resetSearchVars = resetSearchVars,
             match = { idx:Int, it: RepoEntity ->
                 it.repoName.lowercase().contains(keyword)
-                        || it.gitRepoState.toString().lowercase().contains(keyword)
+                        || it.parentRepoName.lowercase().contains(keyword)
                         || it.latestUncheckedErrMsg.lowercase().contains(keyword)
                         || it.tmpStatus.lowercase().contains(keyword)
                         || it.createErrMsg.lowercase().contains(keyword)
-                        || it.parentRepoName.lowercase().contains(keyword)
                         || it.getOther().lowercase().contains(keyword)
+                        || it.getRepoStateStr(activityContext).lowercase().contains(keyword)
             }
         )
 
