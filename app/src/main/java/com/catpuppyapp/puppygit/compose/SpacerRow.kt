@@ -8,7 +8,7 @@ import androidx.compose.ui.Modifier
 import com.catpuppyapp.puppygit.style.MyStyleKt
 
 @Composable
-fun PaddingRow(paddingValues: PaddingValues = PaddingValues(MyStyleKt.BottomBar.outsideContentPadding)) {
+fun SpacerRow(paddingValues: PaddingValues = PaddingValues(MyStyleKt.BottomBar.outsideContentPadding)) {
 //    Row(
 //        modifier = Modifier.padding(paddingValues).fillMaxSize(),
 //        horizontalArrangement = Arrangement.Center,

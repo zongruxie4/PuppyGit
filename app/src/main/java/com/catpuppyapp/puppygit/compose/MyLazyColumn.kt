@@ -11,7 +11,6 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
-import com.catpuppyapp.puppygit.utils.state.StateUtil
 
 //lazyColumn老出问题，不是并发修改异常就是索引越界，统一弄到这里方便修改和debug
 @Composable
@@ -88,7 +87,7 @@ fun <T> MyLazyColumn(
             }
 
             if(requirePaddingAtBottom) {
-                item { PaddingRow() }
+                item { SpacerRow() }
             }
         }
     }

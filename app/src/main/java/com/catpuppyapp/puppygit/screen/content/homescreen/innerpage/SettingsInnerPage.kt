@@ -47,7 +47,7 @@ import com.catpuppyapp.puppygit.compose.CopyableDialog
 import com.catpuppyapp.puppygit.compose.InLineFolderIcon
 import com.catpuppyapp.puppygit.compose.MyCheckBox
 import com.catpuppyapp.puppygit.compose.MySelectionContainer
-import com.catpuppyapp.puppygit.compose.PaddingRow
+import com.catpuppyapp.puppygit.compose.SpacerRow
 import com.catpuppyapp.puppygit.compose.PasswordTextFiled
 import com.catpuppyapp.puppygit.compose.ScrollableColumn
 import com.catpuppyapp.puppygit.compose.ScrollableRow
@@ -1199,7 +1199,7 @@ fun SettingsInnerPage(
             }
         }
 
-        PaddingRow()
+        SpacerRow()
     }
 
 

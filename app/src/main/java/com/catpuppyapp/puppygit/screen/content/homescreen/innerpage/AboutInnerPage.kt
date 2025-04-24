@@ -30,7 +30,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.catpuppyapp.puppygit.compose.ClickableText
-import com.catpuppyapp.puppygit.compose.PaddingRow
+import com.catpuppyapp.puppygit.compose.SpacerRow
 import com.catpuppyapp.puppygit.play.pro.R
 import com.catpuppyapp.puppygit.style.MyStyleKt
 import com.catpuppyapp.puppygit.utils.ActivityUtil
@@ -295,7 +295,7 @@ fun AboutInnerPage(
             }
         }
 
-        PaddingRow()
+        SpacerRow()
     }
 
 }

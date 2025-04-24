@@ -39,7 +39,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.catpuppyapp.puppygit.compose.ConfirmDialog2
 import com.catpuppyapp.puppygit.compose.InLineCopyIcon
-import com.catpuppyapp.puppygit.compose.PaddingRow
+import com.catpuppyapp.puppygit.compose.SpacerRow
 import com.catpuppyapp.puppygit.compose.SettingsContent
 import com.catpuppyapp.puppygit.compose.SettingsTitle
 import com.catpuppyapp.puppygit.compose.SoftkeyboardVisibleListener
@@ -622,7 +622,7 @@ fun ServiceInnerPage(
 //        }
 //
 
-        PaddingRow()
+        SpacerRow()
     }
 
 
