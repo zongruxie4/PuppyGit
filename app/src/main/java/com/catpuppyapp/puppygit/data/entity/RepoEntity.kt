@@ -9,7 +9,7 @@ import com.catpuppyapp.puppygit.constants.Cons
 import com.catpuppyapp.puppygit.constants.StorageDirCons
 import com.catpuppyapp.puppygit.data.entity.common.BaseFields
 import com.catpuppyapp.puppygit.etc.RepoPendingTask
-import com.catpuppyapp.puppygit.play.pro.R
+import com.catpuppyapp.puppygit.utils.Libgit2Helper
 import com.catpuppyapp.puppygit.utils.dbIntToBool
 import com.catpuppyapp.puppygit.utils.getSecFromTime
 import com.catpuppyapp.puppygit.utils.getShortUUID
@@ -159,6 +159,6 @@ data class RepoEntity(
     }
 
     fun getRepoStateStr(context: Context): String {
-        return gitRepoState?.toString() ?: context.getString(R.string.invalid)
+        return Libgit2Helper.getRepoStateStr(gitRepoState, context)
     }
 }

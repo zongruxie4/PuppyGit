@@ -6755,6 +6755,11 @@ class Libgit2Helper {
             return retList
         }
 
+
+        fun getRepoStateStr(gitRepoState: Repository.StateT?, context: Context): String {
+            return gitRepoState?.toString() ?: context.getString(R.string.invalid)
+        }
+
     }
 
 }
