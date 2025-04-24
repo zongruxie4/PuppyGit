@@ -109,12 +109,14 @@ class Libgit2Helper {
         }
     }
 
-    object ShallowManage{
-        val originShallow = "shallow"  //原始shallow文件名
-        val bak1 = "shallow.1.bak"  //用在代码里恢复的shallow文件
-        val bak2 = "shallow.2.bak"  //可手动用于恢复的shallow文件，主要是我用来测试的
+    object ShallowManage {
+        const val originShallow = "shallow"  //原始shallow文件名
+        const val bak1 = "shallow.1.bak"  //用在代码里恢复的shallow文件
+        const val bak2 = "shallow.2.bak"  //可手动用于恢复的shallow文件，主要是我用来测试的
 
-        fun createShallowBak(repoDotGitDir:String) {
+        fun createShallowBak(repo:Repository) {
+            val repoDotGitDir = Libgit2Helper.getRepoGitDirPathNoEndsWithSlash(repo)
+
             val originShallowFile = File(repoDotGitDir, originShallow)  // repo/.git/shallow
 
             val puppyGitDirUnderGitCanonicalPath = AppModel.PuppyGitUnderGitDirManager.getDir(repoDotGitDir).canonicalPath
@@ -124,7 +126,9 @@ class Libgit2Helper {
             originShallowFile.copyTo(bak2File, overwrite = true)
         }
 
-        fun restoreShallowFile(repoDotGitDir:String) {
+        fun restoreShallowFile(repo:Repository) {
+            val repoDotGitDir = Libgit2Helper.getRepoGitDirPathNoEndsWithSlash(repo)
+
             val originShallowFile = File(repoDotGitDir, originShallow)
 
             val puppyGitDirUnderGitCanonicalPath = AppModel.PuppyGitUnderGitDirManager.getDir(repoDotGitDir).canonicalPath
@@ -140,7 +144,9 @@ class Libgit2Helper {
             }
         }
 
-        fun deleteBak1(repoDotGitDir:String) {
+        fun deleteBak1(repo:Repository) {
+            val repoDotGitDir = Libgit2Helper.getRepoGitDirPathNoEndsWithSlash(repo)
+
             val puppyGitDirUnderGitCanonicalPath = AppModel.PuppyGitUnderGitDirManager.getDir(repoDotGitDir).canonicalPath
 
             val bak1File = File(puppyGitDirUnderGitCanonicalPath, bak1)
@@ -156,13 +162,20 @@ class Libgit2Helper {
         }
 
         //在提交页面显示仓库是否grafted的时候用到这个方法
-        fun getShallowOidList(repoDotGitDir: String):List<String> {
+        fun getShallowOidList(repo: Repository):List<String> {
+            val repoDotGitDir = Libgit2Helper.getRepoGitDirPathNoEndsWithSlash(repo)
+
             val originShallowFile = File(repoDotGitDir, originShallow)  // repo/.git/shallow
             if(!originShallowFile.exists()) {
                 return emptyList()
             }
             //返回原始文件中的非空行
             return originShallowFile.readLines().filter { it.isNotBlank() }
+        }
+
+        fun getShallowFile(repo:Repository):File {
+            val repoDotGitDir = Libgit2Helper.getRepoGitDirPathNoEndsWithSlash(repo)
+            return File(repoDotGitDir, originShallow)
         }
     }
 
@@ -2549,15 +2562,15 @@ class Libgit2Helper {
         ) {
             var repoIsShallow = isRepoShallow(repo)
 //            val repoGitDirPath = repo.workdir().pathString + File.separator + ".git"
-            val repoGitDirPath = getRepoGitDirPathNoEndsWithSlash(repo)
+//            val repoGitDirPath = getRepoGitDirPathNoEndsWithSlash(repo)
 
             //在fetch前检查仓库是否shallow，若是，备份shallow文件，之前仅在克隆仓库后处理，但在fetch前处理更合适，不然从外部导入仓库的话，普通的shallow仓库会在fetch后丢失shallow文件，导致报错
             if (repoIsShallow) {
                 //创建shallow文件备份，目前20240509 libgit2有bug
-                Libgit2Helper.ShallowManage.createShallowBak(repoGitDirPath)
+                Libgit2Helper.ShallowManage.createShallowBak(repo)
             }
 
-            val shallowFile = File(repoGitDirPath, "shallow")
+            val shallowFile = Libgit2Helper.ShallowManage.getShallowFile(repo)
 
             for(remoteAndCredentials in remoteList) {
                 try {
@@ -2616,12 +2629,12 @@ class Libgit2Helper {
                     //只有shallow file不存在才有可能需要恢复，若shallow file存在，则百分百不需要恢复
                     if(repoIsShallow && !shallowFile.exists()) {
                         if (requireUnshallow) {  //执行到这，说明仓库原本是shallow且请求unshallow，且fetch完后shallow文件不存在了，说明unshallow成功，所以可以删除bak1了
-                            ShallowManage.deleteBak1(repoGitDirPath)  //unshallow会删除shallow文件，我这再删除下 shallow.1.bak， 之后，就不会再恢复shallow文件了
+                            ShallowManage.deleteBak1(repo)  //unshallow会删除shallow文件，我这再删除下 shallow.1.bak， 之后，就不会再恢复shallow文件了
                             repoIsShallow=false  //更新shallow值，避免fetch多个remote时发生不必要的重入
                             MyLog.d(TAG, "deleted '${ShallowManage.bak1}' for repo '${repoFromDb.repoName}'")
                             //如果仓库最初是shallow，且没请求unshallow或请求了unshallow但操作失败，则恢复shallow文件
                         } else { //  实际条件为：仓库原本是shallow，且现在shallow文件没了，且没请求unshallow，说明fetch错误删除了shallow文件，恢复下
-                            ShallowManage.restoreShallowFile(repoGitDirPath)
+                            ShallowManage.restoreShallowFile(repo)
                             //注：这里不需要把repoIsShallow设为true，因为如果是false，根本不可能执行这个代码块
                         }
                     }
@@ -3904,7 +3917,7 @@ class Libgit2Helper {
 
             val repoIsShallow = isRepoShallow(repo)
 //            val shallowOidList = ShallowManage.getShallowOidList(repo.workdir().toString()+File.separator+".git")
-            val shallowOidList = ShallowManage.getShallowOidList(getRepoGitDirPathNoEndsWithSlash(repo))
+            val shallowOidList = ShallowManage.getShallowOidList(repo)
 
             val allTagList = getAllTags(repo, settings)
             return createCommitDto(commitOid, allBranchList, allTagList, commit, repoId, repoIsShallow, shallowOidList, settings)
@@ -3954,7 +3967,7 @@ class Libgit2Helper {
 
             val repoIsShallow = isRepoShallow(repo)
 //            val shallowOidList = ShallowManage.getShallowOidList(repo.workdir().toString()+File.separator+".git")
-            val shallowOidList = ShallowManage.getShallowOidList(getRepoGitDirPathNoEndsWithSlash(repo))
+            val shallowOidList = ShallowManage.getShallowOidList(repo)
 
             val allTagList = getAllTags(repo, settings)
 
@@ -6539,7 +6552,7 @@ class Libgit2Helper {
                                 repo2ndQuery.isShallow = boolToDbInt(isRepoShallow)
                                 if (isRepoShallow) {
                                     //创建shallow文件备份，目前20240509 libgit2有bug
-                                    Libgit2Helper.ShallowManage.createShallowBak(Libgit2Helper.getRepoGitDirPathNoEndsWithSlash(clonedRepo))
+                                    Libgit2Helper.ShallowManage.createShallowBak(clonedRepo)
                                 }
 
                                 //设置当前分支关联的上游分支，例如 main 关联的默认是 origin/main。下面两种方法都行，因为刚克隆的分支肯定有上游，所以用哪个都能取出值
