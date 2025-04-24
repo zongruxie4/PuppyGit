@@ -150,7 +150,7 @@ fun HomeScreen(
 
     val allRepoParentDir = AppModel.allRepoParentDir
 
-    val settingsSnapshot = mutableCustomStateOf(keyTag = stateKeyTag, keyName = "settingsSnapshot", initValue = SettingsUtil.getSettingsSnapshot())
+    val settingsSnapshot = remember { mutableStateOf(SettingsUtil.getSettingsSnapshot()) }
     val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = MyStyleKt.BottomSheet.skipPartiallyExpanded)
     val showBottomSheet = rememberSaveable { mutableStateOf(false)}
 
@@ -1428,25 +1428,26 @@ fun HomeScreen(
     // 第2个变量让负责渲染页面的线程知道我要用currentPage那个变量，以确保currentPage变化时能执行下面的代码块
     //ps: currentPage.intValue > 0可替换成别的，只要用到currentPage这个状态变量且永远为真即可。
     //ps: initDone 的值应该在初始化完之后就不要再更新了，一直为true即可，这样每次重新渲染页面都检查currentPage是否变化，如果变化就会保存到配置文件了
-    if(initDone.value && currentHomeScreen.intValue != Cons.selectedItem_Never && currentHomeScreen.intValue != Cons.selectedItem_Exit) {
-        SideEffect {
-            //检查下，如果页面变了，并且配置文件里设置为“记住上次退出页面”，就更新配置文件
-            if(settingsSnapshot.value.startPageMode == SettingsCons.startPageMode_rememberLastQuit) {  // is remember last quit mode
-                val curHomeScreenVal = currentHomeScreen.intValue
-//                if(debugModeOn) {
-//                    println("curPageVal before update:"+curHomeScreenVal)
-//                    println("settingsSnapshot.value.lastQuitPage:"+settingsSnapshot.value.lastQuitHomeScreen)
-//                }
-                if(curHomeScreenVal != settingsSnapshot.value.lastQuitHomeScreen) {  //currentHomeScreen not same with lastQuitPage, need update
-                    //先更新下状态值，避免重复进入此代码块 (或许不能完全避免，不过问题不大，顶多重复更新下配置文件)
-                    settingsSnapshot.value.lastQuitHomeScreen = curHomeScreenVal
+    LaunchedEffect(initDone.value, currentHomeScreen.intValue) {
+        val curHomeScreenVal = currentHomeScreen.intValue
 
-                    //保存最后切换的页面，然后返回最新配置文件快照
-                    settingsSnapshot.value = SettingsUtil.update(requireReturnSnapshotOfUpdatedSettings = true) {
-                        it.lastQuitHomeScreen = curHomeScreenVal
-                    }!!
-                }
-            }
+        if(settingsSnapshot.value.startPageMode == SettingsCons.startPageMode_rememberLastQuit
+            && curHomeScreenVal != settingsSnapshot.value.lastQuitHomeScreen
+            && initDone.value && currentHomeScreen.intValue != Cons.selectedItem_Never
+            && currentHomeScreen.intValue != Cons.selectedItem_Exit
+        ) {
+            //检查下，如果页面变了，并且配置文件里设置为“记住上次退出页面”，就更新配置文件
+            //currentHomeScreen not same with lastQuitPage, need update
+            //先更新下状态值，避免重复进入此代码块 (或许不能完全避免，不过问题不大，顶多重复更新下配置文件)
+            settingsSnapshot.value.lastQuitHomeScreen = curHomeScreenVal
+
+            //保存最后切换的页面，然后返回最新配置文件快照
+            settingsSnapshot.value = SettingsUtil.update(requireReturnSnapshotOfUpdatedSettings = true) {
+                it.lastQuitHomeScreen = curHomeScreenVal
+            }!!
+        }else {
+            // 仅更新设置项
+            settingsSnapshot.value = SettingsUtil.getSettingsSnapshot()
         }
 
     }
