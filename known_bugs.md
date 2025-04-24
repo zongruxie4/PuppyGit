@@ -1,4 +1,7 @@
-无法克隆ssh子模块 20250424：
+x 已解决）无法克隆ssh子模块 20250424：
+
+已解决：原因：把`凭据.name`当作private key传过去了，晕！
+
 报错：failed to authenticate SSH session: Unable to extract public key from private key file: Unsupported private key file format
 
 但如果不是子模块的ssh仓库则可正常克隆，感觉应该不是很严重的bug，否则普通ssh url的仓库应该也无法克隆，改天看下libgit2源代码，看下是否好解决
