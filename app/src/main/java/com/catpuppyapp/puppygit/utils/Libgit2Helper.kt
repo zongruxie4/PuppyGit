@@ -5678,12 +5678,15 @@ class Libgit2Helper {
             }
         }
 
+        fun needSetDepth(depth:Int):Boolean {
+            return depth > 0
+        }
 
         /**
          * should make sure when expect NONE credential, set `specifiedCredential` to null; if want to match by domain, set it to match by domain credential entity;
          *   if want to use specified credential but NONE and match by domain both, set it to expect credential
          */
-        suspend fun cloneSubmodules(repo:Repository, recursive:Boolean, specifiedCredential: CredentialEntity?, submoduleNameList:List<String>, credentialDb:CredentialRepository){
+        suspend fun cloneSubmodules(repo:Repository, recursive:Boolean, depth:Int, specifiedCredential: CredentialEntity?, submoduleNameList:List<String>, credentialDb:CredentialRepository) {
             val repoFullPathNoSlashSuffix = getRepoWorkdirNoEndsWithSlash(repo)
             submoduleNameList.forEach { name ->
                 // sync .gitmodules info(e.g. remoteUrl) to parent repos .git/config and submodules .git/config
@@ -5720,7 +5723,14 @@ class Libgit2Helper {
                 }
 
                 val updateOpts = Submodule.UpdateOptions.createDefault()
-                val callbacks = updateOpts.fetchOpts.callbacks
+                val fetchOpts = updateOpts.fetchOpts
+
+                // set depth for shallow clone, 仅当depth 大于0才有必要设置，若负数，无效，不必设置；若等于0，默认值，不必设置
+                if(needSetDepth(depth)) {
+                    fetchOpts.depth = depth
+                }
+
+                val callbacks = fetchOpts.callbacks
                 val smUrl = sm.url() ?: ""
 
                 //set credential
@@ -5815,7 +5825,7 @@ class Libgit2Helper {
                 // !! becareful with this, if repo contains nested-loops, will infinite clone !!
                 if(recursive) {
                     // does not support filter submodule's submodule, so predicate always return true when reach here
-                    cloneSubmodules(subRepo, recursive, specifiedCredential, getSubmoduleNameList(subRepo), credentialDb)
+                    cloneSubmodules(subRepo, recursive, depth, specifiedCredential, getSubmoduleNameList(subRepo), credentialDb)
                 }
             }
         }
@@ -6328,7 +6338,7 @@ class Libgit2Helper {
                         val savePath = repo2ndQuery.fullSavePath
                         val branch = repo2ndQuery.branch
                         val depth = repo2ndQuery.depth
-                        val hasDepth = depth > 0
+                        val hasDepth = needSetDepth(depth)
 
                         val options = Clone.Options.defaultOpts()
                         if (branch.isNotBlank()) {

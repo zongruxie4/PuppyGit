@@ -59,6 +59,7 @@ import com.catpuppyapp.puppygit.compose.ClickableText
 import com.catpuppyapp.puppygit.compose.ConfirmDialog2
 import com.catpuppyapp.puppygit.compose.CopyableDialog
 import com.catpuppyapp.puppygit.compose.CredentialSelector
+import com.catpuppyapp.puppygit.compose.DepthTextField
 import com.catpuppyapp.puppygit.compose.FilterTextField
 import com.catpuppyapp.puppygit.compose.GoToTopAndGoToBottomFab
 import com.catpuppyapp.puppygit.compose.LoadingDialog
@@ -93,6 +94,7 @@ import com.catpuppyapp.puppygit.utils.UIHelper
 import com.catpuppyapp.puppygit.utils.changeStateTriggerRefreshPage
 import com.catpuppyapp.puppygit.utils.createAndInsertError
 import com.catpuppyapp.puppygit.utils.doJobThenOffLoading
+import com.catpuppyapp.puppygit.utils.parseIntOrDefault
 import com.catpuppyapp.puppygit.utils.replaceStringResList
 import com.catpuppyapp.puppygit.utils.state.mutableCustomStateListOf
 import com.catpuppyapp.puppygit.utils.state.mutableCustomStateOf
@@ -750,6 +752,7 @@ fun SubmoduleListScreen(
         showCloneDialog.value = true
     }
 
+    val depth = rememberSaveable { mutableStateOf("") }
     val showUpdateDialog = rememberSaveable { mutableStateOf(false)}
     val recursiveUpdate = rememberSaveable { mutableStateOf(false)}
     val initUpdateDialog = {
@@ -768,6 +771,10 @@ fun SubmoduleListScreen(
 
                     Spacer(Modifier.height(5.dp))
 
+                    DepthTextField(depth)
+
+                    Spacer(Modifier.height(5.dp))
+
                     MyCheckBox(text = stringResource(R.string.recursive), value = recursiveClone)
                     if(recursiveClone.value) {
                         CheckBoxNoteText(stringResource(R.string.recursive_clone_submodule_nested_loop_warn), color = MyStyleKt.TextColor.danger())
@@ -783,8 +790,8 @@ fun SubmoduleListScreen(
 
             doJobThenOffLoading(loadingOn, loadingOff, activityContext.getString(R.string.cloning)) {
                 try {
-
                     val recursive = recursiveClone.value
+                    val depth = parseIntOrDefault(depth.value, null) ?: 0;
                     val willCloneList = selectedItemList.value.toList()
 //                val allItems = list.value
 //                val cloningStr = appContext.getString(R.string.cloning)
@@ -824,7 +831,7 @@ fun SubmoduleListScreen(
                             try {
 
                                 // clone submodule
-                                Libgit2Helper.cloneSubmodules(repo, recursive, specifiedCredential=credential, submoduleNameList= listOf(selectedItem.name), credentialDb=credentialDb)
+                                Libgit2Helper.cloneSubmodules(repo, recursive, depth, specifiedCredential=credential, submoduleNameList= listOf(selectedItem.name), credentialDb=credentialDb)
 
                             }catch (e:Exception) {
                                 val errPrefix = "clone '${selectedItem.name}' err: "

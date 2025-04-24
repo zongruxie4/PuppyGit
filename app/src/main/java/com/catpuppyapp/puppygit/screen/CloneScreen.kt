@@ -44,6 +44,7 @@ import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -67,6 +68,7 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import com.catpuppyapp.puppygit.compose.ClickableText
 import com.catpuppyapp.puppygit.compose.ConfirmDialog
+import com.catpuppyapp.puppygit.compose.DepthTextField
 import com.catpuppyapp.puppygit.compose.DropDownMenuItemText
 import com.catpuppyapp.puppygit.compose.LoadingDialog
 import com.catpuppyapp.puppygit.compose.LongPressAbleIconBtn
@@ -807,25 +809,8 @@ fun CloneScreen(
                 Spacer(modifier = Modifier.padding(spacerPadding))
 //      depth输入框开始
                 //20240414 测试 发现depth有问题，虽能成功克隆，但之后莫名其妙出问题提示找不到object id的概率非常大！而且在手机处理不了(不过电脑上的git虽也报错但能正常pull/push)，考虑过后，决定暂时放弃支持depth功能
-                TextField(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(10.dp),
+                DepthTextField(depth)
 
-                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
-                    singleLine = true,
-                    enabled = isPro,
-                    value = depth.value,
-                    onValueChange = {
-                        depth.value=it
-                    },
-                    label = {
-                        if(isPro) Text(stringResource(R.string.depth_optional)) else Text(stringResource(R.string.depth_optional_pro_only))
-                    },
-                    placeholder = {
-                        Text(stringResource(R.string.depth))
-                    }
-                )
                 Spacer(modifier = Modifier.padding(spacerPadding))
 
                 //depth输入框结束
@@ -1109,7 +1094,7 @@ fun CloneScreen(
                 //设置是否递归克隆
                 onIsRecursiveCloneStateChange(dbIntToBool(repo.isRecursiveCloneOn))
                 //depth只有大于0时设置才有意义
-                if (repo.depth > 0) {
+                if (Libgit2Helper.needSetDepth(repo.depth)) {
                     depth.value = "" + repo.depth
                 }
 
@@ -1181,4 +1166,3 @@ fun CloneScreen(
         )
 
 }
-
