@@ -1,6 +1,8 @@
 package com.catpuppyapp.puppygit.play.pro
 
+import android.app.Activity
 import android.content.Context
+import android.content.ContextWrapper
 import android.os.Bundle
 import android.widget.Toast
 import androidx.activity.ComponentActivity
@@ -42,12 +44,12 @@ import kotlinx.coroutines.delay
 
 private const val TAG = "MainActivity"
 
-// use `ActivityUtil.getCurrentActivity()` instead
-//fun Context.findActivity(): Activity? = when (this) {
-//    is Activity -> this
-//    is ContextWrapper -> baseContext.findActivity()
-//    else -> null
-//}
+fun Context.findActivity(): Activity? = when (this) {
+    is Activity -> this
+    is ContextWrapper -> baseContext.findActivity()
+    else -> null
+}
+
 ////
 //fun Context.setAppLocale(language: String): Context {
 //    val locale = Locale(language)
