@@ -685,7 +685,8 @@ fun CloneScreen(
 
             Row(modifier = Modifier
                 .fillMaxWidth()
-                .padding(10.dp),
+//                .padding(10.dp)
+                ,
 
                 horizontalArrangement = Arrangement.SpaceBetween,
                 verticalAlignment = Alignment.CenterVertically
