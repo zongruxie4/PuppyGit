@@ -119,7 +119,6 @@ fun CloneScreen(
 
     val activityContext = LocalContext.current
     val inDarkTheme = Theme.inDarkTheme
-    val activity = ActivityUtil.getCurrentActivity()
 
 
     val isEditMode = repoId != null && repoId.isNotBlank() && repoId != "null"
@@ -296,24 +295,7 @@ fun CloneScreen(
                         .fillMaxWidth()
                         .padding(5.dp)
                     ) {
-                        Row(modifier = Modifier.padding(bottom = 15.dp)) {
-                            ClickableText (
-                                text = stringResource(R.string.please_grant_permission_before_you_add_a_storage_path),
-                                overflow = TextOverflow.Visible,
-                                fontWeight = FontWeight.Light,
-                                modifier = MyStyleKt.ClickableText.modifier.clickable {
-                                    // grant permission for read/write external storage
-                                    if (activity == null) {
-                                        Msg.requireShowLongDuration(activityContext.getString(R.string.please_go_to_system_settings_allow_manage_storage))
-                                    }else {
-                                        activity.getStoragePermission()
-                                    }
-                                },
-                            )
-                        }
-
-                        InternalFileChooser(path = storagePathForAdd)
-
+                        InternalFileChooser(activityContext, path = storagePathForAdd)
                     }
                 }
             },
@@ -747,7 +729,7 @@ fun CloneScreen(
                     modifier = Modifier.size(MyStyleKt.defaultIconSize),
                     onClick = { showAddStoragePathDialog.value = true }
                 ) {
-                    Icon(imageVector = Icons.Filled.Add, contentDescription = stringResource(R.string.three_dots_icon_for_add_storage_path))
+                    Icon(imageVector = Icons.Filled.Add, contentDescription = stringResource(R.string.add_storage_path))
                 }
 
             }
