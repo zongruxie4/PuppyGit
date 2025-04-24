@@ -2422,6 +2422,8 @@ fun RepoInnerPage(
                 selectedItems.value.forEach {
                     sb.append(activityContext.getString(R.string.name)).append(": ").append(it.repoName).append(lb).append(lb)
                     sb.append(activityContext.getString(R.string.id)).append(": ").append(it.id)
+                    sb.append(activityContext.getString(R.string.state)).append(": ").append(it.getRepoStateStr(activityContext)).append(lb).append(lb)
+                    sb.append(activityContext.getString(R.string.other)).append(": ").append(it.getOther())
                     sb.append(spliter)
                 }
 

@@ -268,7 +268,8 @@ fun SubmoduleListScreen(
             .appendLine(activityContext.getString(R.string.location)+": "+item.location.toString()).appendLine()
             .appendLine(activityContext.getString(R.string.path)+": "+item.relativePathUnderParent).appendLine()
             .appendLine(activityContext.getString(R.string.full_path)+": "+item.fullPath).appendLine()
-            .append(activityContext.getString(R.string.status)+": "+item.getStatus(activityContext))
+            .appendLine(activityContext.getString(R.string.status)+": "+item.getStatus(activityContext)).appendLine()
+            .append(activityContext.getString(R.string.other)+": "+item.getOther())
 
         sb.toString()
 

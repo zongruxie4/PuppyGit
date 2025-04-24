@@ -216,7 +216,7 @@ fun RepoCard(
                             Text(text = stringResource(R.string.state) + ": ")
                             Text(
                                 //如果是detached，显示分支号，否则显示“本地分支:远程分支”
-                                text = repoDto.gitRepoState?.toString() ?: stringResource(R.string.invalid),  //状态为null显示错误，否则显示状态
+                                text = repoDto.getRepoStateStr(activityContext),  //状态为null显示错误，否则显示状态
                                 maxLines = 1,
                                 overflow = TextOverflow.Ellipsis,
                                 fontWeight = FontWeight.Light,

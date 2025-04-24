@@ -1,5 +1,6 @@
 package com.catpuppyapp.puppygit.data.entity
 
+import android.content.Context
 import androidx.room.Embedded
 import androidx.room.Entity
 import androidx.room.Ignore
@@ -8,6 +9,7 @@ import com.catpuppyapp.puppygit.constants.Cons
 import com.catpuppyapp.puppygit.constants.StorageDirCons
 import com.catpuppyapp.puppygit.data.entity.common.BaseFields
 import com.catpuppyapp.puppygit.etc.RepoPendingTask
+import com.catpuppyapp.puppygit.play.pro.R
 import com.catpuppyapp.puppygit.utils.dbIntToBool
 import com.catpuppyapp.puppygit.utils.getSecFromTime
 import com.catpuppyapp.puppygit.utils.getShortUUID
@@ -154,5 +156,9 @@ data class RepoEntity(
 
     fun equalsForSelected(other:RepoEntity):Boolean {
         return id == other.id
+    }
+
+    fun getRepoStateStr(context: Context): String {
+        return gitRepoState?.toString() ?: context.getString(R.string.invalid)
     }
 }
