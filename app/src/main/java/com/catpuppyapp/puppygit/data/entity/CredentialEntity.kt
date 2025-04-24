@@ -43,4 +43,6 @@ data class CredentialEntity(
 //        }
 //    }
 
+    fun maybeIsValid() = value.isNotEmpty() || pass.isNotEmpty();
+
 }

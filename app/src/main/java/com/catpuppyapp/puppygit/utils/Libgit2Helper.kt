@@ -272,10 +272,12 @@ class Libgit2Helper {
         private val repoLockMap:MutableMap<String, Mutex> = ConcurrentMap()
 
         //x DONE at 20241114) change this "credentialType" set by url
-        private val getCredentialCb = { credentialType:Int, usernameOrPrivateKey:String, passOrPassphrase:String ->
+        private fun getCredentialCb(credentialType:Int, credentialEntity:CredentialEntity): (url: String?, usernameFromUrl: String?, allowedTypes: Int?) -> Credential {
+            val usernameOrPrivateKey = credentialEntity.value
+            val passOrPassphrase = credentialEntity.pass
 
             //凭据认证回调函数的文档：https://libgit2.org/libgit2/#HEAD/group/callback/git_credential_acquire_cb
-            { url: String?, usernameFromUrl: String?, allowedTypes: Int? ->
+            return { url: String?, usernameFromUrl: String?, allowedTypes: Int? ->
                 //也可用allowedType判断决定返回什么类型的Credential，allowedTypes是个bitmask值，参考：libgit2 src/examples/common.c 函数 int cred_acquire_cb()
                 if (credentialType == Cons.dbCredentialTypeHttp) {  //type http
                     Credential.userpassPlaintextNew(
@@ -2614,7 +2616,7 @@ class Libgit2Helper {
                     val remoteFetchUrl = getRemoteFetchUrl(remote)
                     val callbacks = fetchOpts.callbacks
                     if(credential!=null) {  //如果不是null，设置下验证凭据的回调
-                        setCredentialCbForRemoteCallbacks(callbacks, getCredentialTypeByUrl(remoteFetchUrl), credential.value, credential.pass)
+                        setCredentialCbForRemoteCallbacks(callbacks, getCredentialTypeByUrl(remoteFetchUrl), credential)
                     }
 
                     setCertCheckCallback(remoteFetchUrl, callbacks)
@@ -2839,15 +2841,18 @@ class Libgit2Helper {
             fetchRemoteListForRepo(repo, remote, repoFromDb, refspecs=refspecs)
         }
 
-        fun setCredentialCbForRemoteCallbacks(remoteCallbacks: Remote.Callbacks, credentialType: Int, usernameOrPrivateKey:String, passOrPassphrase:String) {
+        fun setCredentialCbForRemoteCallbacks(remoteCallbacks: Remote.Callbacks, credentialType: Int, credentialEntity: CredentialEntity) {
 //            用户名和密码如果都为空就不用设置了，如果一个为空，还是要设置，有的可只设token，例如gitlab就是(电脑是，手机不知道行不行)；有的可只设private key，就是只有私钥没passphrase的情况，所以这两个可只有一个为空，但不能两个都为空，两个都为空就没有任何意义了。
 //            MyLog.d(TAG,"#setCredentialForFetchOptions(): username.isBlank():"+usernameOrPrivateKey.isBlank()+", passOrPassphrase.isBlank():"+passOrPassphrase.isBlank())
-            if(usernameOrPrivateKey.isBlank() && passOrPassphrase.isBlank()) {
+            if(credentialEntity.maybeIsValid()) {  //可能是有效凭据
+                remoteCallbacks.setCredAcquireCb(getCredentialCb(credentialType, credentialEntity))
+            }else {  //一定是无效凭据
+                //用户名和密码都是空字符串则不设置
                 MyLog.w(TAG, "#setCredentialCbForRemoteCallbacks(): call method with empty username/privatekey and password/passphrase")
-                return;
             }
-            remoteCallbacks.setCredAcquireCb(getCredentialCb(credentialType, usernameOrPrivateKey, passOrPassphrase))
         }
+
+
 
         fun setAllowUnknownHostsForCertificatesCheck(remoteCallbacks: Remote.Callbacks) {
             remoteCallbacks.setCertificateCheckCb { cert, valid, hostname ->
@@ -3334,7 +3339,7 @@ class Libgit2Helper {
 
             //如果凭据不为空，设置一下
             if(credential != null) {
-                setCredentialCbForRemoteCallbacks(callbacks, getCredentialTypeByUrl(pushUrl), credential.value, credential.pass)
+                setCredentialCbForRemoteCallbacks(callbacks, getCredentialTypeByUrl(pushUrl), credential)
             }
 
             setCertCheckCallback(pushUrl, callbacks)
@@ -5741,10 +5746,10 @@ class Libgit2Helper {
                         if(SpecialCredential.MatchByDomain.credentialId == specifiedCredential.id) {  // match by domain, need query
                             val credentialByDomain = credentialDb.getByIdWithDecryptAndMatchByDomain(specifiedCredential.id, smUrl)
                             if(credentialByDomain!=null) {
-                                callbacks.setCredAcquireCb(getCredentialCb(getCredentialTypeByUrl(smUrl), credentialByDomain.name, credentialByDomain.pass))
+                                callbacks.setCredAcquireCb(getCredentialCb(getCredentialTypeByUrl(smUrl), credentialByDomain))
                             }
                         }else {  // specified credential, no query need
-                            callbacks.setCredAcquireCb(getCredentialCb(getCredentialTypeByUrl(smUrl), specifiedCredential.name, specifiedCredential.pass))
+                            callbacks.setCredAcquireCb(getCredentialCb(getCredentialTypeByUrl(smUrl), specifiedCredential))
                         }
                     }
 
@@ -5879,10 +5884,10 @@ class Libgit2Helper {
                             if(SpecialCredential.MatchByDomain.credentialId == specifiedCredential.id) {  // match by domain, need query
                                 val credentialByDomain = credentialDb.getByIdWithDecryptAndMatchByDomain(specifiedCredential.id, smUrl)
                                 if(credentialByDomain!=null) {
-                                    callbacks.setCredAcquireCb(getCredentialCb(getCredentialTypeByUrl(smUrl), credentialByDomain.name, credentialByDomain.pass))
+                                    callbacks.setCredAcquireCb(getCredentialCb(getCredentialTypeByUrl(smUrl), credentialByDomain))
                                 }
                             }else {  // specified domain, no query need
-                                callbacks.setCredAcquireCb(getCredentialCb(getCredentialTypeByUrl(smUrl), specifiedCredential.name, specifiedCredential.pass))
+                                callbacks.setCredAcquireCb(getCredentialCb(getCredentialTypeByUrl(smUrl), specifiedCredential))
                             }
                         }
                     }catch (e:Exception) {
@@ -6390,10 +6395,8 @@ class Libgit2Helper {
                             val credentialFromDb = credentialDb.getByIdWithDecryptAndMatchByDomain(id = credentialId, url = repo2ndQuery.cloneUrl)
                             if (credentialFromDb != null) {
                                 val credentialType = Libgit2Helper.getCredentialTypeByUrl(cloneUrl)
-                                val usernameOrPrivateKey = credentialFromDb.value;
-                                val passOrPassphrase = credentialFromDb.pass;
                                 //设置验证凭据的回调
-                                Libgit2Helper.setCredentialCbForRemoteCallbacks(callbacks, credentialType, usernameOrPrivateKey, passOrPassphrase)
+                                Libgit2Helper.setCredentialCbForRemoteCallbacks(callbacks, credentialType, credentialFromDb)
 
 
 //                                    Libgit2Helper.setCredentialForFetchOptions(options.fetchOpts, credentialType, usernameOrPrivateKey, passOrPassphrase)
