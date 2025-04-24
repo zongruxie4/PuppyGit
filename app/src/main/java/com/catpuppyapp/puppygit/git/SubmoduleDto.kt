@@ -22,12 +22,10 @@ data class SubmoduleDto (
     var tempStatus:String = "",  // cloning... etc
 
 ) {
-    var otherText:String? = null;
+    private var otherText:String? = null;
 
     private fun getClonedText(activityContext:Context):String{
-
         return if(cloned) activityContext.getString(R.string.cloned) else activityContext.getString(R.string.not_clone)
-
     }
 
     fun getStatus(activityContext:Context):String {

@@ -1181,7 +1181,7 @@ fun SubmoduleListScreen(
                     it.name.lowercase().contains(keyword)
                             || it.remoteUrl.lowercase().contains(keyword)
                             || it.getStatus(activityContext).lowercase().contains(keyword)
-                            || it.fullPath.lowercase().contains(keyword)
+//                            || it.fullPath.lowercase().contains(keyword)  //完整路径肯定有相同前缀，仅相对路径（it.name）不同，所以仅过滤name即可，不需要过滤完整路径
                             || it.targetHash.lowercase().contains(keyword)
                             || it.location.toString().lowercase().contains(keyword)
                             || it.getOther().lowercase().contains(keyword)
