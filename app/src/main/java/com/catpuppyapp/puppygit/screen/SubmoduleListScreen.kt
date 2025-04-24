@@ -1179,7 +1179,7 @@ fun SubmoduleListScreen(
                 resetSearchVars = resetSearchVars,
                 match = { idx:Int, it: SubmoduleDto ->
                     it.name.lowercase().contains(keyword)
-                            || it.remoteUrl.contains(keyword)
+                            || it.remoteUrl.lowercase().contains(keyword)
                             || it.getStatus(activityContext).lowercase().contains(keyword)
                             || it.fullPath.lowercase().contains(keyword)
                             || it.targetHash.lowercase().contains(keyword)
