@@ -2,9 +2,11 @@ package com.catpuppyapp.puppygit.git
 
 import android.content.Context
 import androidx.compose.ui.graphics.Color
+import com.catpuppyapp.puppygit.constants.Cons
 import com.catpuppyapp.puppygit.play.pro.R
 import com.catpuppyapp.puppygit.style.MyStyleKt
-import com.catpuppyapp.puppygit.utils.AppModel
+import com.catpuppyapp.puppygit.utils.Libgit2Helper
+import com.github.git24j.core.Repository
 import com.github.git24j.core.Submodule
 
 data class SubmoduleDto (
@@ -20,6 +22,8 @@ data class SubmoduleDto (
     var tempStatus:String = "",  // cloning... etc
 
 ) {
+    var otherText:String? = null;
+
     private fun getClonedText(activityContext:Context):String{
 
         return if(cloned) activityContext.getString(R.string.cloned) else activityContext.getString(R.string.not_clone)
@@ -39,4 +43,23 @@ data class SubmoduleDto (
             Color.Unspecified
         }
     }
+
+
+    fun isRepoCloneAndShallow():Boolean {
+        return try {
+            Repository.open(fullPath).use { Libgit2Helper.isRepoShallow(it) }
+        }catch (_:Exception) {
+            false
+        }
+    }
+
+    fun getOther(): String {
+        if(otherText == null) {
+            // for better filterable, these text should not localize
+            otherText = if(isRepoCloneAndShallow()) Cons.isShallowStr else Cons.notShallowStr
+        }
+
+        return otherText ?: ""
+    }
+
 }
