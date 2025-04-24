@@ -3,11 +3,13 @@
 ---
 
 1.1.0.4v80 - 20250424:
+- fix: clone submodule err when require authentication
 - support shallow clone submodules
 - optimize code
 
 
 
+- 修复克隆子模块时关联凭据无效的bug
 - 支持浅克隆子模块
 - 优化代码
 
