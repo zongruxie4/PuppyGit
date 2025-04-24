@@ -1,4 +1,16 @@
 
+
+---
+
+1.1.0.4v80 - 20250424:
+- support shallow clone submodules
+- optimize code
+
+
+
+- 支持浅克隆子模块
+- 优化代码
+
 ---
 
 1.1.0.3v79 - 20250422:

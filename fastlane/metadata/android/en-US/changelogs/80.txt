@@ -1,0 +1,2 @@
+- support shallow clone submodules
+- optimize code
