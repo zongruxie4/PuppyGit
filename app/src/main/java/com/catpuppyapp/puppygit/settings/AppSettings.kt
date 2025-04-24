@@ -106,4 +106,10 @@ data class AppSettings(
 
 
     val automation: AutomationSettings = AutomationSettings(),
-)
+) {
+
+    override fun equals(other: Any?): Boolean {
+        //直接比较地址，避免比较内容，内容有可能过多，比较起来会耗较多时间
+        return this === other
+    }
+}
