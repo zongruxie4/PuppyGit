@@ -591,7 +591,7 @@ private fun RepoTitle(
         if(isSelectionMode) {
             Row(
                 modifier = Modifier
-                    .width(40.dp)
+                    .size(MyStyleKt.defaultIconSize)
                     .padding(end = 10.dp),
                 horizontalArrangement = Arrangement.End,
                 verticalAlignment = Alignment.CenterVertically

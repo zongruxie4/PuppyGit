@@ -11,6 +11,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.wrapContentSize
 import androidx.compose.foundation.rememberScrollState
@@ -692,8 +693,8 @@ fun CloneScreen(
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 SingleSelectList(
-                    outterModifier = Modifier.fillMaxWidth(.8f),
-                    dropDownMenuModifier = Modifier.fillMaxWidth(.8f),
+                    outterModifier = Modifier.fillMaxWidth(.9f),
+                    dropDownMenuModifier = Modifier.fillMaxWidth(.9f),
                     optionsList=storagePathList.value,
                     selectedOptionIndex=storagePathSelectedIndex,
                     selectedOptionValue = storagePathSelectedPath.value,
@@ -742,9 +743,10 @@ fun CloneScreen(
                     }
                 )
 
-                IconButton(onClick = {
-                    showAddStoragePathDialog.value = true
-                }) {
+                IconButton(
+                    modifier = Modifier.size(MyStyleKt.defaultIconSize),
+                    onClick = { showAddStoragePathDialog.value = true }
+                ) {
                     Icon(imageVector = Icons.Filled.Add, contentDescription = stringResource(R.string.three_dots_icon_for_add_storage_path))
                 }
 

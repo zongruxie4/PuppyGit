@@ -18,7 +18,7 @@ import com.catpuppyapp.puppygit.ui.theme.Theme
 
 object MyStyleKt{
     val defaultHorizontalPadding = 10.dp
-
+    val defaultIconSize = 40.dp
 
     object ClickableText{
         val style: TextStyle = TextStyle(textDecoration = TextDecoration.Underline)
