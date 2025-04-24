@@ -1,6 +1,5 @@
 package com.catpuppyapp.puppygit.screen.content.homescreen.innerpage
 
-import android.app.Activity
 import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.ScrollState
 import androidx.compose.foundation.clickable
@@ -39,15 +38,14 @@ import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.catpuppyapp.puppygit.compose.DefaultPaddingText
 import com.catpuppyapp.puppygit.compose.ClickableText
 import com.catpuppyapp.puppygit.compose.ConfirmDialog2
 import com.catpuppyapp.puppygit.compose.ConfirmDialog3
 import com.catpuppyapp.puppygit.compose.CopyableDialog
+import com.catpuppyapp.puppygit.compose.DefaultPaddingText
 import com.catpuppyapp.puppygit.compose.InLineFolderIcon
 import com.catpuppyapp.puppygit.compose.MyCheckBox
 import com.catpuppyapp.puppygit.compose.MySelectionContainer
-import com.catpuppyapp.puppygit.compose.SpacerRow
 import com.catpuppyapp.puppygit.compose.PasswordTextFiled
 import com.catpuppyapp.puppygit.compose.ScrollableColumn
 import com.catpuppyapp.puppygit.compose.ScrollableRow
@@ -55,13 +53,14 @@ import com.catpuppyapp.puppygit.compose.SettingsContent
 import com.catpuppyapp.puppygit.compose.SettingsTitle
 import com.catpuppyapp.puppygit.compose.SingleSelectList
 import com.catpuppyapp.puppygit.compose.SoftkeyboardVisibleListener
+import com.catpuppyapp.puppygit.compose.SpacerRow
 import com.catpuppyapp.puppygit.constants.Cons
 import com.catpuppyapp.puppygit.play.pro.R
-import com.catpuppyapp.puppygit.play.pro.findActivity
 import com.catpuppyapp.puppygit.settings.SettingsCons
 import com.catpuppyapp.puppygit.settings.SettingsUtil
 import com.catpuppyapp.puppygit.style.MyStyleKt
 import com.catpuppyapp.puppygit.ui.theme.Theme
+import com.catpuppyapp.puppygit.utils.ActivityUtil
 import com.catpuppyapp.puppygit.utils.AppModel
 import com.catpuppyapp.puppygit.utils.ComposeHelper
 import com.catpuppyapp.puppygit.utils.EditCache
@@ -79,7 +78,6 @@ import com.catpuppyapp.puppygit.utils.encrypt.MasterPassUtil
 import com.catpuppyapp.puppygit.utils.fileopenhistory.FileOpenHistoryMan
 import com.catpuppyapp.puppygit.utils.formatMinutesToUtc
 import com.catpuppyapp.puppygit.utils.getInvalidTimeZoneOffsetErrMsg
-import com.catpuppyapp.puppygit.utils.getStoragePermission
 import com.catpuppyapp.puppygit.utils.getValidTimeZoneOffsetRangeInMinutes
 import com.catpuppyapp.puppygit.utils.isValidOffsetInMinutes
 import com.catpuppyapp.puppygit.utils.replaceStringResList
@@ -1186,13 +1184,7 @@ fun SettingsInnerPage(
 
         SettingsTitle(stringResource(R.string.permissions))
         SettingsContent(onClick = {
-            // grant permission for read/write external storage
-            val activity = activityContext.findActivity()
-            if (activity == null) {
-                Msg.requireShowLongDuration(activityContext.getString(R.string.please_go_to_system_settings_allow_manage_storage))
-            }else {
-                activity.getStoragePermission()
-            }
+            ActivityUtil.getManageStoragePermissionOrShowFailedMsg(activityContext)
         }) {
             Column {
                 Text(stringResource(R.string.manage_storage), fontSize = itemFontSize)

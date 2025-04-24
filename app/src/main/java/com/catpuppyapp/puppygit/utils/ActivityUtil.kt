@@ -5,6 +5,8 @@ import android.content.Context
 import android.content.Intent
 import android.net.Uri
 import android.provider.Settings
+import com.catpuppyapp.puppygit.play.pro.R
+import com.catpuppyapp.puppygit.play.pro.findActivity
 
 
 object ActivityUtil {
@@ -63,5 +65,15 @@ object ActivityUtil {
 
     fun openThisAppInfoPage(context: Context) {
         openSpecifedAppInfoPage(context, AppModel.appPackageName)
+    }
+
+    fun getManageStoragePermissionOrShowFailedMsg(context: Context) {
+        val activity = context.findActivity()
+
+        if(activity == null) {
+            Msg.requireShowLongDuration(context.getString(R.string.please_go_to_system_settings_allow_manage_storage))
+        }else {
+            activity.getStoragePermission()
+        }
     }
 }
