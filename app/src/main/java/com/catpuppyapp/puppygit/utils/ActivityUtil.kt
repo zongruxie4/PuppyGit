@@ -5,17 +5,16 @@ import android.content.Context
 import android.content.Intent
 import android.net.Uri
 import android.provider.Settings
-import androidx.compose.runtime.Composable
-import androidx.compose.ui.platform.LocalContext
 
 
 object ActivityUtil {
 
-    @Composable
-    fun getCurrentActivity(): Activity? {
-        val context = LocalContext.current
-        return context as? Activity
-    }
+//    @Composable
+//    fun getCurrentActivity(): Activity? {
+//        val context = LocalContext.current
+        // 必须再递归查找一下，不然有可能无法转换为Activity，例如在弹窗获取LocalContext.current，可能就会无法直接转换为Activity
+//        return context.findActivity()
+//    }
 
     //貌似必须在主线程执行此方法
     //这个不一定能显示文件是否保存的toast

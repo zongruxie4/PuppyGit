@@ -36,9 +36,10 @@ private const val TAG = "SystemFolderChooserSaf"
 /**
  * A Folder Chooser depend System File Chooser, may not work if system removed internal file picker, in that case, can input path instead
  */
+@Deprecated("replace with `InternalFileChooser`")
 @Composable
 fun SystemFolderChooserSaf(
-    activityContext: Context,  //必须从页面获取Activity，不要从弹窗获取，弹窗获取的context可能不能转换为Activity
+    activityContext: Context,
     safEnabled:MutableState<Boolean>,
     safPath:MutableState<String>,
     nonSafPath:MutableState<String>,

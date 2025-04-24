@@ -12,6 +12,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import com.catpuppyapp.puppygit.play.pro.R
+import com.catpuppyapp.puppygit.play.pro.findActivity
 import com.catpuppyapp.puppygit.style.MyStyleKt
 import com.catpuppyapp.puppygit.utils.Msg
 import com.catpuppyapp.puppygit.utils.getStoragePermission
@@ -27,7 +28,7 @@ fun GrantManageStoragePermissionClickableText(activityContext: Context) {
             overflow = TextOverflow.Visible,
             fontWeight = FontWeight.Light,
             modifier = MyStyleKt.ClickableText.modifierNoPadding.clickable {
-                val activity = activityContext as? Activity;
+                val activity = activityContext.findActivity();
 
                 // grant permission for read/write external storage
                 if (activity == null) {

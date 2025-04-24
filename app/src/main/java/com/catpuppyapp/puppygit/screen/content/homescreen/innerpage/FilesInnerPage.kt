@@ -85,6 +85,7 @@ import com.catpuppyapp.puppygit.compose.CopyableDialog
 import com.catpuppyapp.puppygit.compose.CreateFileOrFolderDialog2
 import com.catpuppyapp.puppygit.compose.FileListItem
 import com.catpuppyapp.puppygit.compose.GitIgnoreDialog
+import com.catpuppyapp.puppygit.compose.GrantManageStoragePermissionClickableText
 import com.catpuppyapp.puppygit.compose.LoadingText
 import com.catpuppyapp.puppygit.compose.MyCheckBox
 import com.catpuppyapp.puppygit.compose.MyCheckBox2
@@ -230,7 +231,6 @@ fun FilesInnerPage(
     val haptic = LocalHapticFeedback.current
 
     val scope = rememberCoroutineScope()
-    val activity = ActivityUtil.getCurrentActivity()
     val clipboardManager = LocalClipboardManager.current
 
 
@@ -2180,22 +2180,7 @@ fun FilesInnerPage(
                         .fillMaxWidth()
                         .padding(5.dp)
                     ) {
-                        Row(modifier = Modifier.padding(bottom = 15.dp)) {
-                            ClickableText (
-                                text = stringResource(R.string.please_grant_permission_before_import_repo),
-                                overflow = TextOverflow.Visible,
-                                fontWeight = FontWeight.Light,
-                                modifier = MyStyleKt.ClickableText.modifier.clickable {
-                                    // grant permission for read/write external storage
-                                    if (activity == null) {
-                                        Msg.requireShowLongDuration(activityContext.getString(R.string.please_go_to_system_settings_allow_manage_storage))
-                                    } else {
-                                        activity.getStoragePermission()
-                                    }
-                                },
-                            )
-
-                        }
+                        GrantManageStoragePermissionClickableText(activityContext)
 
                         Spacer(Modifier.height(15.dp))
 

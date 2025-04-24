@@ -17,6 +17,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalView
 import androidx.core.view.WindowCompat
 import com.catpuppyapp.puppygit.play.pro.R
+import com.catpuppyapp.puppygit.play.pro.findActivity
 
 object Theme {
     val Orange = Color(0xFFFF5722)
@@ -111,9 +112,12 @@ fun PuppyGitAndroidTheme(
     val view = LocalView.current
     if (!view.isInEditMode) {
         SideEffect {
-            val window = (view.context as Activity).window
-            window.statusBarColor = colorScheme.primary.toArgb()
-            WindowCompat.getInsetsController(window, view).isAppearanceLightStatusBars = darkTheme
+            val activity = view.context.findActivity()
+            if(activity != null) {
+                val window = activity.window
+                window.statusBarColor = colorScheme.primary.toArgb()
+                WindowCompat.getInsetsController(window, view).isAppearanceLightStatusBars = darkTheme
+            }
         }
     }
 

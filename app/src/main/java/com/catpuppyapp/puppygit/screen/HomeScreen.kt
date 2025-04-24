@@ -71,6 +71,7 @@ import com.catpuppyapp.puppygit.dto.UndoStack
 import com.catpuppyapp.puppygit.fileeditor.texteditor.view.ScrollEvent
 import com.catpuppyapp.puppygit.git.StatusTypeEntrySaver
 import com.catpuppyapp.puppygit.play.pro.R
+import com.catpuppyapp.puppygit.play.pro.findActivity
 import com.catpuppyapp.puppygit.screen.content.homescreen.innerpage.AboutInnerPage
 import com.catpuppyapp.puppygit.screen.content.homescreen.innerpage.AutomationInnerPage
 import com.catpuppyapp.puppygit.screen.content.homescreen.innerpage.ChangeListInnerPage
@@ -144,7 +145,6 @@ fun HomeScreen(
     val homeTopBarScrollBehavior = AppModel.homeTopBarScrollBehavior
 //    val appContext = AppModel.appContext  //这个获取不了Activity!
     val activityContext = LocalContext.current  //这个能获取到
-    val activity = activityContext as? Activity
 
 //    val settingsTmp = remember { SettingsUtil.getSettingsSnapshot() }   //避免状态变量里的设置项过旧，重新获取一个
 
@@ -1480,7 +1480,7 @@ fun HomeScreen(
                     initDone.value = true
                 }
 
-
+                val activity = activityContext.findActivity()
                 //检查是否存在intent，如果存在，则切换到导入模式
                 if (activity != null) {
                     val intent = activity.intent

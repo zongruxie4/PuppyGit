@@ -57,6 +57,7 @@ import com.catpuppyapp.puppygit.compose.SingleSelectList
 import com.catpuppyapp.puppygit.compose.SoftkeyboardVisibleListener
 import com.catpuppyapp.puppygit.constants.Cons
 import com.catpuppyapp.puppygit.play.pro.R
+import com.catpuppyapp.puppygit.play.pro.findActivity
 import com.catpuppyapp.puppygit.settings.SettingsCons
 import com.catpuppyapp.puppygit.settings.SettingsUtil
 import com.catpuppyapp.puppygit.style.MyStyleKt
@@ -1186,7 +1187,7 @@ fun SettingsInnerPage(
         SettingsTitle(stringResource(R.string.permissions))
         SettingsContent(onClick = {
             // grant permission for read/write external storage
-            val activity = activityContext as? Activity
+            val activity = activityContext.findActivity()
             if (activity == null) {
                 Msg.requireShowLongDuration(activityContext.getString(R.string.please_go_to_system_settings_allow_manage_storage))
             }else {
