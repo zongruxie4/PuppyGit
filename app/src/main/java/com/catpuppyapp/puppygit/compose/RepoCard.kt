@@ -582,7 +582,7 @@ private fun RepoTitle(
         verticalAlignment = Alignment.CenterVertically
     ) {
         Row(
-            modifier = Modifier.fillMaxWidth(.6F),
+            modifier = Modifier.fillMaxWidth(.9F),
             verticalAlignment = Alignment.CenterVertically
         ) {
             RepoCardTitleText(repoDto.repoName)
@@ -591,7 +591,7 @@ private fun RepoTitle(
         if(isSelectionMode) {
             Row(
                 modifier = Modifier
-                    .fillMaxWidth(.4F)
+                    .width(40.dp)
                     .padding(end = 10.dp),
                 horizontalArrangement = Arrangement.End,
                 verticalAlignment = Alignment.CenterVertically
