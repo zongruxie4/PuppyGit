@@ -2,12 +2,16 @@ package com.catpuppyapp.puppygit.service
 
 import android.accessibilityservice.AccessibilityService
 import android.content.Context
+import android.content.Intent
+import android.content.IntentFilter
 import android.view.accessibility.AccessibilityEvent
 import android.view.inputmethod.InputMethodManager
+import com.catpuppyapp.puppygit.constants.Cons
 import com.catpuppyapp.puppygit.data.entity.RepoEntity
 import com.catpuppyapp.puppygit.notification.AutomationNotify
 import com.catpuppyapp.puppygit.notification.base.ServiceNotify
 import com.catpuppyapp.puppygit.notification.util.NotifyUtil
+import com.catpuppyapp.puppygit.receiver.ScreenOnOffReceiver
 import com.catpuppyapp.puppygit.server.bean.NotificationSender
 import com.catpuppyapp.puppygit.settings.AppSettings
 import com.catpuppyapp.puppygit.settings.SettingsUtil
@@ -33,11 +37,11 @@ class AutomationService: AccessibilityService() {
 
         private val lock = Mutex()
         // key is package name, value is true=app opened, false=app closed, null=app never open
-        private val targetPackageTrueOpenedFalseCloseNullNeverOpenedList = ConcurrentMap<String, Boolean>()
+        val targetPackageTrueOpenedFalseCloseNullNeverOpenedList = ConcurrentMap<String, Boolean>()
         // key is package name, value is time app last open time in millseconds, if null, means never open
 //        private val lastPullTime = ConcurrentMap<String, Long>()
         //app last leaving at, key is package name, value is time in millseconds
-        private val appLeaveTime = ConcurrentMap<String, Long>()
+        val appLeaveTime = ConcurrentMap<String, Long>()
 
         private var lastTargetPackageName = ""  // use to check enter/leave app
 
@@ -107,7 +111,7 @@ class AutomationService: AccessibilityService() {
         }
 
 
-        private suspend fun pushRepoList(
+        suspend fun pushRepoList(
             sessionId:String,
             settings: AppSettings,
             repoList:List<RepoEntity>,
@@ -150,6 +154,8 @@ class AutomationService: AccessibilityService() {
     }
 
 
+    private var screenOnOffReceiver:ScreenOnOffReceiver? = null
+
     override fun onCreate() {
         super.onCreate()
 
@@ -160,8 +166,41 @@ class AutomationService: AccessibilityService() {
             AppModel.init_2()
         }
 
-        MyLog.w(TAG, "#onCreate() finished")
+        registerScreenOnOffReceiver()
 
+        MyLog.d(TAG, "#onCreate() finished")
+
+    }
+
+    private fun registerScreenOnOffReceiver() {
+        try {
+            //接收屏幕熄灭和点量的广播，以在屏幕熄灭超时后执行push和pull
+            val filter = IntentFilter().apply {
+                addAction(Intent.ACTION_SCREEN_ON)
+                addAction(Intent.ACTION_SCREEN_OFF)
+            }
+
+            screenOnOffReceiver = ScreenOnOffReceiver().let {
+                registerReceiver(it, filter)
+                it
+            }
+        }catch (e:Exception) {
+            MyLog.e(TAG, "#registerScreenOnOffReceiver() err: ${e.stackTraceToString()}")
+        }
+    }
+
+    private fun unregisterScreenOnOffReceiver() {
+        try {
+            screenOnOffReceiver?.let { unregisterReceiver(it) }
+            screenOnOffReceiver = null
+        }catch (e:Exception) {
+            MyLog.e(TAG, "#unregisterScreenOnOffReceiver() err: ${e.stackTraceToString()}")
+        }
+    }
+
+    override fun onDestroy() {
+        super.onDestroy()
+        unregisterScreenOnOffReceiver()
     }
 
     override fun onAccessibilityEvent(event: AccessibilityEvent?) {
@@ -232,7 +271,7 @@ class AutomationService: AccessibilityService() {
                         MyLog.d(TAG, "target packageName '$packageName' opened, checking need pull or no....")
 
                         val targetOpened = targetPackageTrueOpenedFalseCloseNullNeverOpenedList[packageName] == true
-                        if(!targetOpened) { // was leave, now opened or first time opened （初次打开或离开又重新打开）
+                        if(!targetOpened) { // was leave, now opened or first time opened （初次打开或离开又重新打开）（还有一种可能是停留在当前app灭屏又亮屏，灭屏的需要在灭屏广播接收器里处理，直接设定成app离开就行）
                             targetPackageTrueOpenedFalseCloseNullNeverOpenedList[packageName] = true
                             MyLog.d(TAG, "target packageName '$packageName' opened, need do pull")
 
@@ -252,7 +291,7 @@ class AutomationService: AccessibilityService() {
                                 doJobThenOffLoading pullTask@{
                                     // pullIntervalInMillSec == 0 代表用户设置的pull间隔为0，无间隔，直接执行
                                     // lastLeaveAt == 0 代表没离开过，初次打开app，这时应该直接执行操作，不用检测间隔
-                                    // 最后一个条件是检测时间间隔
+                                    // 减法那个条件是检测时间间隔
                                     if(pullIntervalInMillSec == 0L || lastLeaveAt == 0L || (System.currentTimeMillis() - lastLeaveAt) > pullIntervalInMillSec) {
                                         pullRepoList(sessionId, settings, repoList)
                                     }
@@ -301,7 +340,7 @@ class AutomationService: AccessibilityService() {
 
                                                 while (true) {
                                                     // 每 2 秒检查一次是否需要push，虽然设置的单位是秒，但精度是2秒，避免太多无意义cpu空转，最多误差2秒，可接受
-                                                    delay(2000L)
+                                                    delay(Cons.pushDelayCheckFrquencyInMillSec)
 
                                                     // 若app重新打开 或者 app在当前任务启动后重新触发了离开（通过leave时间判断），则取消当前push任务
                                                     //这里的两个值必须每次都从map里获取最新的数据，因为map里的值会在每次离开app后更新

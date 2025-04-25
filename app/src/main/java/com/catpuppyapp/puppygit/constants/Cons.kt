@@ -6,6 +6,8 @@ import java.time.format.DateTimeFormatter
 
 object Cons {
 
+    const val pushDelayCheckFrquencyInMillSec = 2000L
+
     const val repoBusyStr = "Repo busy now, plz try again later." ;
     /**
      * 详情列表，条目分割线
