@@ -3,5 +3,9 @@
     <external-files-path name="internal" path="/" />
 
 <!--    share "/storage/emulated/0" , path returned by api `Environment.getExternalStorageDirectory()`-->
-    <external-path name="external" path="/"/>
+    <external-path name="external" path="/" />
+
+<!--    root，匹配所有路径，直接梭哈，不用管那个鸟黄色警号 "not allowed here" ，其实能用 -->
+    <root-path name="root" path="/" />
+
 </paths>
