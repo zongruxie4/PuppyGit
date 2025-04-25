@@ -98,6 +98,8 @@
             android:label="@string/app_name"
             android:theme="@style/Theme.PuppyGitAndroid"
             android:windowSoftInputMode="adjustResize"
+            android:launchMode="singleInstance"
+
             >
 
             <intent-filter>

@@ -664,6 +664,7 @@ object AppModel {
         //restore nav controller state
         //恢复上次导航状态，如果有的话，不然一旋转屏幕就强制回到顶级页面了，用户体验差
         if(AppModel.lastNavController != null) {
+            MyLog.d(TAG, "will restore navi stack")
             AppModel.navController.restoreState(AppModel.lastNavController!!.saveState())
         }
 
