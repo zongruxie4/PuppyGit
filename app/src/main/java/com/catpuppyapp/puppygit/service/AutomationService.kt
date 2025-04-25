@@ -261,7 +261,7 @@ class AutomationService: AccessibilityService() {
                         }else {
                             MyLog.d(TAG, "target packageName '$packageName' opened but no need do pull")
                         }
-                    }else { //不是我们关注的仓库
+                    }else { //不是我们关注的app
                         //设包名为空，这样就省得查配置文件和数据库了
                         AutoSrvCache.setCurPackageName("")
 
@@ -329,7 +329,7 @@ class AutomationService: AccessibilityService() {
                                                 //用要推送的仓库减当前显示的app关联的仓库，剩下的是需要推送的仓库，其他的待离开当前app后再计划推送
                                                 var repoList = repoList
                                                 val curShowingPackageName = AutoSrvCache.getCurPackageName()
-                                                if(curShowingPackageName.isNotEmpty()) {
+                                                if(curShowingPackageName.isNotBlank()) {
                                                     val repoListOfCurShowingPackage = AutomationUtil.getRepos(settings.automation, curShowingPackageName)
                                                     if(!repoListOfCurShowingPackage.isNullOrEmpty()) {
                                                         val newList = mutableListOf<RepoEntity>()

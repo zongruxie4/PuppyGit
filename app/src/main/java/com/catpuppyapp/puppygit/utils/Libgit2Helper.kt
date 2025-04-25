@@ -377,11 +377,11 @@ object Libgit2Helper {
 
 
 
-    private fun getRepoStatusList(repo:Repository,
-                                  showType:Status.ShowT = Status.ShowT.INDEX_AND_WORKDIR,
-                                  flags:EnumSet<Status.OptT> = getDefaultStatusOptTypeSet()
-    )
-            :StatusList {
+    private fun getRepoStatusList(
+        repo:Repository,
+        showType:Status.ShowT = Status.ShowT.INDEX_AND_WORKDIR,
+        flags:EnumSet<Status.OptT> = getDefaultStatusOptTypeSet()
+    ) :StatusList {
         val statusOpts: Status.Options = Status.Options.newDefault()
         statusOpts.show = showType.bit  //e.g. Status.ShowT.INDEX_AND_WORKDIR
         statusOpts.flags = flags;  // e.g. EnumSet.of(Status.OptT.OPT_INCLUDE_UNTRACKED, Status.OptT.OPT_RENAMES_HEAD_TO_INDEX, Status.OptT.OPT_SORT_CASE_INSENSITIVELY)
@@ -393,10 +393,10 @@ object Libgit2Helper {
         return StatusList.listNew(repo, statusOpts)
     }
 
-    fun getIndexStatusList(repo:Repository,
-                           flags:EnumSet<Status.OptT> = getDefaultStatusOptTypeSet()
-    )
-            :StatusList {
+    fun getIndexStatusList(
+        repo:Repository,
+        flags:EnumSet<Status.OptT> = getDefaultStatusOptTypeSet()
+    ) :StatusList {
 
         val repoStatusList = getRepoStatusList(repo, Status.ShowT.INDEX_ONLY, flags)
         //debug
@@ -450,18 +450,18 @@ object Libgit2Helper {
         return isEmpty
     }
 
-    fun getWorkdirStatusList(repo:Repository,
-                             flags:EnumSet<Status.OptT> = getDefaultStatusOptTypeSet()
-    )
-            :StatusList {
+    fun getWorkdirStatusList(
+        repo:Repository,
+        flags:EnumSet<Status.OptT> = getDefaultStatusOptTypeSet()
+    ) :StatusList {
         return getRepoStatusList(repo,Status.ShowT.WORKDIR_ONLY,flags)
     }
 
     @Deprecated("建议分别获取index和workdir的list，不要混在一起")
-    fun getIndexAndWorkdirStatusList(repo:Repository,
-                                     flags:EnumSet<Status.OptT> = getDefaultStatusOptTypeSet()
-    )
-            :StatusList {
+    fun getIndexAndWorkdirStatusList(
+        repo:Repository,
+        flags:EnumSet<Status.OptT> = getDefaultStatusOptTypeSet()
+    ) :StatusList {
         return getRepoStatusList(repo,Status.ShowT.INDEX_AND_WORKDIR,flags)
     }
 
