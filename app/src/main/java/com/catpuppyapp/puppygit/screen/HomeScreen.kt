@@ -445,7 +445,7 @@ fun HomeScreen(
 
     val editorPageShowingFileName = rememberSaveable { mutableStateOf<String?>(null) }
     val filesPageRequireImportFile = rememberSaveable { mutableStateOf( false)}
-    val intentConsumed = rememberSaveable { mutableStateOf(false)}  //此变量用来确保导入模式只启动一次，避免以导入模式进入app后，进入子页面再返回再次以导入模式进入Files页面
+    val intentConsumed = rememberSaveable { SharedState.intentConsumed }  //此变量用来确保导入模式只启动一次，避免以导入模式进入app后，进入子页面再返回再次以导入模式进入Files页面
     val filesPageRequireImportUriList = mutableCustomStateListOf(keyTag = stateKeyTag, keyName = "filesPageRequireImportUriList", initValue = listOf<Uri>())
     val filesPageCurrentPathFileList = mutableCustomStateListOf(keyTag = stateKeyTag, keyName = "filesPageCurrentPathFileList", initValue = listOf<FileItemDto>()) //路径字符串，用路径分隔符分隔后的list
     val filesPageRequestFromParent = rememberSaveable { mutableStateOf("")}

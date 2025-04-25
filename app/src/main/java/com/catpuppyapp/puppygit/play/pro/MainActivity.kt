@@ -27,6 +27,7 @@ import com.catpuppyapp.puppygit.jni.SshAskUserUnknownHostRequest
 import com.catpuppyapp.puppygit.screen.AppScreenNavigator
 import com.catpuppyapp.puppygit.screen.RequireMasterPasswordScreen
 import com.catpuppyapp.puppygit.screen.functions.KnownHostRequestStateMan
+import com.catpuppyapp.puppygit.screen.shared.SharedState
 import com.catpuppyapp.puppygit.ui.theme.PuppyGitAndroidTheme
 import com.catpuppyapp.puppygit.ui.theme.Theme
 import com.catpuppyapp.puppygit.user.UserUtil
@@ -168,6 +169,7 @@ class MainActivity : ComponentActivity() {
         if(intent.extras != null || intent.data != null) {
             MyLog.d(TAG, "will restart Activity with new intent")
 
+            SharedState.intentConsumed.value = false
             AppModel.navController.navigate(Cons.nav_HomeScreen)
             ActivityUtil.restartActivityByIntent(this, intent)
         }
