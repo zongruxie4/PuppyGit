@@ -1183,6 +1183,7 @@ object FsUtils {
     fun getRealPathFromUri(uri:Uri):String {
         return try {
             //直接用 !! 的话有可能err msg为空，所以这里手动创建个空指针异常
+            // 如果是系统的文件管理器的uri，那么uri.path一般是解码过的
             val uriPathString = uri.path ?: throw NullPointerException("`uri.path` is null")
 
             // 例如：uri为：content://com.android.externalstorage.documents/tree/primary%3ARepos, 则uri.path为 /tree/primary:Repos，但不保证一定是canonical path，可能中间出现两个 "//" 也可能有其他东西
