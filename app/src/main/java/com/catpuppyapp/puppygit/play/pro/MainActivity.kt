@@ -166,11 +166,14 @@ class MainActivity : ComponentActivity() {
     override fun onNewIntent(intent: Intent) {
         super.onNewIntent(intent)
 
+        //data 或 extras是必须条件，若两者任有其一，则此intent需要消费
         if(intent.extras != null || intent.data != null) {
             MyLog.d(TAG, "will restart Activity with new intent")
 
             SharedState.intentConsumed.value = false
+            //之前的栈可能会乱，不过无所谓
             AppModel.navController.navigate(Cons.nav_HomeScreen)
+            //用新intent重启Activity
             ActivityUtil.restartActivityByIntent(this, intent)
         }
     }

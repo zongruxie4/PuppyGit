@@ -461,6 +461,13 @@ fun HomeScreen(
         showAskHandleSingleSendMethod.value = false
     }
 
+    val initAskHandleSingleSendMethodDialog = {
+        //设为假以在用户作出选择后重新消费此intent
+        intentConsumed.value = false
+
+        showAskHandleSingleSendMethod.value = true
+    }
+
     val okAskHandleSingleSendMethod = { handleMethod:SingleSendHandleMethod ->
         howToDealWithSingleSend.value = handleMethod.code
         showAskHandleSingleSendMethod.value = false
@@ -1481,6 +1488,15 @@ fun HomeScreen(
                     val intent = activity.intent
 
                     if (intent != null) {
+
+                        //一进入代码块立即设为已消费，确保intent只被消费一次，不然你通过导入模式进来，一进二级页面，这变量没更新，
+                        // 会重新读取intent中的数据再次启动导入模式，其他使用intent的场景也有这个问题，
+                        // 比如点击service通知进入changelist页面，然后再切换到repos页面，
+                        // 再点进随便一个二级页面，再返回，又会重入此代码块，又回到changelist...
+                        val curIntentConsumed = intentConsumed.value
+                        intentConsumed.value = true
+                        val intentConsumed = Unit // avoid mistake using
+
                         // import file or jump to specified screen
                         val requireEditFile = Intent.ACTION_VIEW == intent.action || Intent.ACTION_EDIT == intent.action
                         val extras = intent.extras
@@ -1491,15 +1507,7 @@ fun HomeScreen(
                             //if need import files, go to Files, else go to page which matched to the page id in the extras
 
 
-                            if (!intentConsumed.value) {  //如果列表已经消费过一次，不重新导入，有可能通过系统分享菜单启动app，然后切换到后台，然后再从后台启动app会发生这种情况，但用户有可能已经在上次进入app后点击进入其他页面，所以这时再启动导入模式是不合逻辑的
-
-                                //一进入代码块立即设为已消费，确保intent只被消费一次，不然你通过导入模式进来，一进二级页面，这变量没更新，
-                                // 会重新读取intent中的数据再次启动导入模式，其他使用intent的场景也有这个问题，
-                                // 比如点击service通知进入changelist页面，然后再切换到repos页面，
-                                // 再点进随便一个二级页面，再返回，又会重入此代码块，又回到changelist...
-                                intentConsumed.value = true
-
-
+                            if (!curIntentConsumed) {  //如果列表已经消费过一次，不重新导入，有可能通过系统分享菜单启动app，然后切换到后台，然后再从后台启动app会发生这种情况，但用户有可能已经在上次进入app后点击进入其他页面，所以这时再启动导入模式是不合逻辑的
                                 //是否请求编辑文件
                                 if(requireEditFile) {
                                     val uri: Uri? = intent.data
@@ -1556,9 +1564,7 @@ fun HomeScreen(
                                 //导入单文件，需要弹窗询问一下，用户想导入文件还是想编辑文件
                                 if (uri != null) {
                                     if(howToDealWithSingleSend == SingleSendHandleMethod.NEED_ASK.code) {
-                                        //设为假，因为肯定要再入一次这个代码块
-                                        intentConsumed.value = false
-                                        showAskHandleSingleSendMethod.value = true
+                                        initAskHandleSingleSendMethodDialog()
                                         return@doJobThenOffLoading
                                     }else if(howToDealWithSingleSend == SingleSendHandleMethod.EDIT.code) {
                                         //由于直接导入时只有对uri的写权限，而且现在已经实现了专门针对文本文件的编辑功能，所以这里以导入作为edit入口的功能作废
