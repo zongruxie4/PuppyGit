@@ -4,10 +4,12 @@
 
 1.1.0.5v81 - 20250426:
 - fix: navigator state err cause app crashed
+- AutomationService: support auto push after screen off
 
 
 
 - 修复导航状态错误导致app崩溃的bug
+- 自动化服务：支持熄屏自动推送
 
 ---
 
