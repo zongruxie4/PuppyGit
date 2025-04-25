@@ -39,7 +39,9 @@ class ScreenOnOffReceiver : BroadcastReceiver() {
             }
 
             //灭屏，当作离开app，AutomationService会根据这些参数检测并决定是否执行pull
+            //这个决定进AutomationService的pull还是push，因为灭屏当作离开，所以设为离开，这样下次就会进pull代码块
             AutomationService.targetPackageTrueOpenedFalseCloseNullNeverOpenedList[lastPackage] = false
+            //这个决定用来判断是否超过设定的pull interval，若超过则会执行pull
             AutomationService.appLeaveTime[lastPackage] = nowInMillSec
 
             //创建push任务
