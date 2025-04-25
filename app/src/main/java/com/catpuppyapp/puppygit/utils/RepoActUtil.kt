@@ -45,6 +45,12 @@ object RepoActUtil {
 
     ){
         val funName = "syncRepoList"
+
+        if(repoList.isEmpty()) {
+            MyLog.d(TAG, "#$funName: target list is empty")
+            return
+        }
+
         val prefix = "sync"
         val db = AppModel.dbContainer
         val settings = SettingsUtil.getSettingsSnapshot()
@@ -153,6 +159,12 @@ object RepoActUtil {
         gitEmailFromUrl:String,  // leave empty to read from config
     ) {
         val funName = "pullRepoList"
+
+        if(repoList.isEmpty()) {
+            MyLog.d(TAG, "#$funName: target list is empty")
+            return
+        }
+
         val prefix = "pull"
         val db = AppModel.dbContainer
         val settings = SettingsUtil.getSettingsSnapshot()
@@ -308,6 +320,12 @@ object RepoActUtil {
 
     ) {
         val funName = "pushRepoList"
+
+        if(repoList.isEmpty()) {
+            MyLog.d(TAG, "#$funName: target list is empty")
+            return
+        }
+
         val prefix = "push"
         val db = AppModel.dbContainer
         val settings = SettingsUtil.getSettingsSnapshot()

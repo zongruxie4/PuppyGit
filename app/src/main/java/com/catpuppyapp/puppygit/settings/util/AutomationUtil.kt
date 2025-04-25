@@ -3,10 +3,12 @@ package com.catpuppyapp.puppygit.settings.util
 import android.content.ComponentName
 import android.content.Context
 import android.provider.Settings
+import com.catpuppyapp.puppygit.data.entity.RepoEntity
 import com.catpuppyapp.puppygit.dto.AppInfo
 import com.catpuppyapp.puppygit.service.AutomationService
 import com.catpuppyapp.puppygit.settings.AutomationSettings
 import com.catpuppyapp.puppygit.settings.SettingsUtil
+import com.catpuppyapp.puppygit.utils.AppModel
 import com.catpuppyapp.puppygit.utils.MyLog
 import com.catpuppyapp.puppygit.utils.getInstalledAppList
 
@@ -21,6 +23,17 @@ object AutomationUtil {
 
     fun getRepoIds(automationSettings: AutomationSettings, packageName:String):List<String> {
         return automationSettings.packageNameAndRepoIdsMap.get(packageName) ?: listOf()
+    }
+
+
+    suspend fun getRepos(automationSettings: AutomationSettings, packageName:String):List<RepoEntity>? {
+        //去重下id，以免重复，虽然一般不会重复
+        val bindRepoIds = getRepoIds(automationSettings, packageName).toSet()
+        if(bindRepoIds.isEmpty()) {
+            return null
+        }
+
+        return AppModel.dbContainer.repoRepository.getAll().filter { bindRepoIds.contains(it.id) }
     }
 
 

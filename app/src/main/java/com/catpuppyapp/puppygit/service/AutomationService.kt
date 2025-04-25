@@ -16,6 +16,7 @@ import com.catpuppyapp.puppygit.utils.AppModel
 import com.catpuppyapp.puppygit.utils.ContextUtil
 import com.catpuppyapp.puppygit.utils.MyLog
 import com.catpuppyapp.puppygit.utils.RepoActUtil
+import com.catpuppyapp.puppygit.utils.cache.AutoSrvCache
 import com.catpuppyapp.puppygit.utils.cache.NotifySenderMap
 import com.catpuppyapp.puppygit.utils.doJobThenOffLoading
 import com.catpuppyapp.puppygit.utils.generateRandomString
@@ -213,6 +214,11 @@ class AutomationService: AccessibilityService() {
                 return
             }
 
+            //更新当前显示的包名。
+            // 用途1：在push前会检查待push的仓库是否后当前显示的包名关联的仓库重叠，若重叠，仅push其他仓库，重叠的仓库待当前app退出后再push
+            // 其他用途暂时没有，以后有也不一定更新此注释
+            AutoSrvCache.setCurPackageName(packageName)
+
             doJobThenOffLoading {
                 val event = Unit  //覆盖外部event变量名，避免错误捕获
 
@@ -231,13 +237,8 @@ class AutomationService: AccessibilityService() {
                             targetPackageTrueOpenedFalseCloseNullNeverOpenedList[packageName] = true
                             MyLog.d(TAG, "target packageName '$packageName' opened, need do pull")
 
-                            val bindRepoIds = AutomationUtil.getRepoIds(settings.automation, packageName)
-                            if(bindRepoIds.isEmpty()) {
-                                return@withLock
-                            }
-                            val db = AppModel.dbContainer
-                            val repoList = db.repoRepository.getAll().filter { bindRepoIds.contains(it.id) }
-                            if(repoList.isEmpty()) {
+                            val repoList = AutomationUtil.getRepos(settings.automation, packageName)
+                            if(repoList.isNullOrEmpty()) {
                                 return@withLock
                             }
 
@@ -279,13 +280,8 @@ class AutomationService: AccessibilityService() {
                                 targetPackageTrueOpenedFalseCloseNullNeverOpenedList[lastOpenedTarget] = false
                                 appLeaveTime[lastOpenedTarget] = System.currentTimeMillis()
 
-                                val bindRepoIds = AutomationUtil.getRepoIds(settings.automation, lastOpenedTarget)
-                                if(bindRepoIds.isEmpty()) {
-                                    return@withLock
-                                }
-                                val db = AppModel.dbContainer
-                                val repoList = db.repoRepository.getAll().filter { bindRepoIds.contains(it.id) }
-                                if(repoList.isEmpty()) {
+                                val repoList = AutomationUtil.getRepos(settings.automation, lastOpenedTarget)
+                                if(repoList.isNullOrEmpty()) {
                                     return@withLock
                                 }
 
@@ -327,7 +323,43 @@ class AutomationService: AccessibilityService() {
                                         }
 
                                         if(!taskCanceled) {
-                                            pushRepoList(sessionId, settings, repoList)
+                                            //用要推送的仓库减当前显示的app关联的仓库，剩下的是需要推送的仓库，其他的待离开当前app后再计划推送
+                                            var repoList = repoList
+                                            val curShowingPackageName = AutoSrvCache.getCurPackageName()
+                                            if(curShowingPackageName.isNotEmpty()) {
+                                                val repoListOfCurShowingPackage = AutomationUtil.getRepos(settings.automation, curShowingPackageName)
+                                                if(!repoListOfCurShowingPackage.isNullOrEmpty()) {
+                                                    val newList = mutableListOf<RepoEntity>()
+
+                                                    //移除当前显示的app关联的仓库，同步剩余仓库
+                                                    repoList.forEach { r1 ->
+                                                        var contains = false
+
+                                                        for(r2 in repoListOfCurShowingPackage) {
+                                                            if(r1.id == r2.id) {
+                                                                contains = true
+                                                                break
+                                                            }
+                                                        }
+
+                                                        //添加要推送的仓库
+                                                        if(contains.not()) {
+                                                            newList.add(r1)
+                                                        }
+                                                    }
+
+                                                    repoList = newList
+                                                }
+                                            }
+
+                                            //其实这里检查不检查是否为空都行，因为最终执行操作的函数会判断，若空直接返回，不过检查下更好
+                                            if(repoList.isEmpty()) {
+                                                //因为在外部检查了若repoList为空则不启动协程，所以执行到这里如果列表为空，必然是当前app全面覆盖了要推送的仓库
+                                                MyLog.d(TAG, "push cancelled, current app full-covered target repoList, will do push after current app leave")
+                                            }else {
+                                                pushRepoList(sessionId, settings, repoList)
+                                            }
+
                                         }
                                     }
                                 }
