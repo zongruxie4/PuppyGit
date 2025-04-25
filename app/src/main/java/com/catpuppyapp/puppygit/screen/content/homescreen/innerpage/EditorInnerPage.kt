@@ -1266,7 +1266,8 @@ fun EditorInnerPage(
 
     //按Home切换到别的app再返回，检查如果当前文件已保存（已编辑为假），则重载
     LifecycleEventEffect(Lifecycle.Event.ON_RESUME) {
-        if(isEdited.value.not()) {
+        //如果显示重载确认弹窗，则不自动重载；如果未显示重载确认弹窗且文件未编辑（换句话说：已成功保存），则自动重载
+        if(showBackFromExternalAppAskReloadDialog.value.not() && isEdited.value.not()) {
             reloadFile()
         }
     }
