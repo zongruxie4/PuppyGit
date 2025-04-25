@@ -20,7 +20,7 @@ private const val TAG = "ScreenOnOffReceiver"
 
 class ScreenOnOffReceiver : BroadcastReceiver() {
     private var job = mutableStateOf<Job?>(null)
-    private var screenOffAtInMillSec = mutableLongStateOf(0L)
+//    private var screenOffAtInMillSec = mutableLongStateOf(0L)
 
 
     override fun onReceive(context: Context?, intent: Intent?) {
@@ -28,7 +28,7 @@ class ScreenOnOffReceiver : BroadcastReceiver() {
             //灭屏的推送必须得在这触发，因为无障碍监听屏幕切换无法监听到灭屏
 
             val nowInMillSec = System.currentTimeMillis()
-            screenOffAtInMillSec.longValue = nowInMillSec
+//            screenOffAtInMillSec.longValue = nowInMillSec
 
             // 屏幕熄灭
             MyLog.d(TAG, "Screen is OFF")
