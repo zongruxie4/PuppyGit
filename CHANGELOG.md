@@ -2,6 +2,15 @@
 
 ---
 
+1.1.0.5v81 - 20250426:
+- fix: navigator state err cause app crashed
+
+
+
+- 修复导航状态错误导致app崩溃的bug
+
+---
+
 1.1.0.4v80 - 20250424:
 - fix: clone submodule err when require authentication
 - support shallow clone submodules
