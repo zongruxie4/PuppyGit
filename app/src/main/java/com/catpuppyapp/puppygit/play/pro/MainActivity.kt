@@ -22,7 +22,6 @@ import androidx.compose.ui.platform.createLifecycleAwareWindowRecomposer
 import androidx.core.view.WindowCompat
 import com.catpuppyapp.puppygit.compose.LoadingText
 import com.catpuppyapp.puppygit.compose.SshUnknownHostDialog
-import com.catpuppyapp.puppygit.constants.Cons
 import com.catpuppyapp.puppygit.jni.SshAskUserUnknownHostRequest
 import com.catpuppyapp.puppygit.screen.AppScreenNavigator
 import com.catpuppyapp.puppygit.screen.RequireMasterPasswordScreen
@@ -31,7 +30,6 @@ import com.catpuppyapp.puppygit.screen.shared.SharedState
 import com.catpuppyapp.puppygit.ui.theme.PuppyGitAndroidTheme
 import com.catpuppyapp.puppygit.ui.theme.Theme
 import com.catpuppyapp.puppygit.user.UserUtil
-import com.catpuppyapp.puppygit.utils.ActivityUtil
 import com.catpuppyapp.puppygit.utils.AppModel
 import com.catpuppyapp.puppygit.utils.ContextUtil
 import com.catpuppyapp.puppygit.utils.Lg2HomeUtils
@@ -82,6 +80,11 @@ class MainActivity : ComponentActivity() {
         //20240519: end: 尝试解决谷歌自动测试时的bug，什么gms err之类的
 
         super.onCreate(savedInstanceState)
+
+        MyLog.d(TAG, "onCreate called")
+
+        //如果是初次创建Activity，onNewIntent不会被调用，只能在这里设置一下，要不然有可能漏外部传来的intent（分享文件、编辑文件）
+        SharedState.setNewIntent(intent)
 
         //打印广告id，需要google play service
 //        doJobThenOffLoading {
@@ -165,18 +168,10 @@ class MainActivity : ComponentActivity() {
 
     override fun onNewIntent(intent: Intent) {
         super.onNewIntent(intent)
-
-        //data 或 extras是必须条件，若两者任有其一，则此intent需要消费
-        if(intent.extras != null || intent.data != null) {
-            MyLog.d(TAG, "will restart Activity with new intent")
-
-            SharedState.intentConsumed.value = false
-            //之前的栈可能会乱，不过无所谓
-            AppModel.navController.navigate(Cons.nav_HomeScreen)
-            //用新intent重启Activity
-            ActivityUtil.restartActivityByIntent(this, intent)
-        }
+        MyLog.d(TAG, "#onNewIntent() called")
+        SharedState.setNewIntent(intent)
     }
+
 }
 
 

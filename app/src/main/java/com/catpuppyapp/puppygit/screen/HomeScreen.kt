@@ -224,7 +224,7 @@ fun HomeScreen(
 
 
     val subscriptionPageNeedRefresh = rememberSaveable { mutableStateOf("") }
-    val needRefreshHome = rememberSaveable { mutableStateOf("") }
+    val needRefreshHome = rememberSaveable { SharedState.homeScreenNeedRefresh }
 
     val swapForChangeListPage = rememberSaveable { mutableStateOf(false) }
 
@@ -1482,10 +1482,16 @@ fun HomeScreen(
                     initDone.value = true
                 }
 
-                val activity = activityContext.findActivity()
+//                val activity = activityContext.findActivity()
+//                MyLog.d(TAG, "activity==null: ${activity == null}")
                 //检查是否存在intent，如果存在，则切换到导入模式
-                if (activity != null) {
-                    val intent = activity.intent
+//                if (activity != null) {
+                if (true) {  //检查activity是否为null没意义了，若为null怎么会执行这个页面的这块代码？之前主要是需要通过activity获取intent，现在不用了，所以直接设为true即可，但为了方便日后修改，不删除此if代码块
+//                    val intent = activity.intent  //单例之后，这玩意老出问题，废弃了，改用状态变量获取
+
+                    val intent = SharedState.intent.value  //通过状态变量获取intent
+
+                    MyLog.d(TAG, "intent==null: ${intent == null}")
 
                     if (intent != null) {
 
@@ -1494,6 +1500,8 @@ fun HomeScreen(
                         // 比如点击service通知进入changelist页面，然后再切换到repos页面，
                         // 再点进随便一个二级页面，再返回，又会重入此代码块，又回到changelist...
                         val curIntentConsumed = intentConsumed.value
+                        MyLog.d(TAG, "curIntentConsumed: $curIntentConsumed, intent.action: ${intent.action}, intent.extras==null: ${intent.extras == null}, intent.data==null: ${intent.data == null}")
+
                         intentConsumed.value = true
                         val intentConsumed = Unit // avoid mistake using
 

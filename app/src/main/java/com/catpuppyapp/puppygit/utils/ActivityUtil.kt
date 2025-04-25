@@ -8,6 +8,7 @@ import android.provider.Settings
 import com.catpuppyapp.puppygit.play.pro.R
 import com.catpuppyapp.puppygit.play.pro.findActivity
 
+private const val TAG = "ActivityUtil"
 
 object ActivityUtil {
 
@@ -76,4 +77,5 @@ object ActivityUtil {
             activity.getStoragePermission()
         }
     }
+
 }

@@ -4,6 +4,7 @@ import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material3.DrawerValue
 import androidx.compose.material3.rememberDrawerState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.saveable.rememberSaveable
@@ -13,6 +14,7 @@ import com.catpuppyapp.puppygit.constants.Cons
 import com.catpuppyapp.puppygit.constants.LineNum
 import com.catpuppyapp.puppygit.screen.shared.DiffFromScreen
 import com.catpuppyapp.puppygit.screen.shared.FileChooserType
+import com.catpuppyapp.puppygit.screen.shared.SharedState
 import com.catpuppyapp.puppygit.utils.AppModel
 
 @Composable
@@ -47,6 +49,8 @@ fun AppScreenNavigator() {
 
     //x 20240419 已实现) 改成记住上次退出屏幕从配置文件读取
     val navStartScreen = Cons.nav_HomeScreen;
+
+    val gotNewIntent = rememberSaveable { SharedState.gotNewIntent }
 
     //TODO 添加一级页面的数据，编辑器打开的文件列表，都存到state里，并提供一个setter，
     // setter会更新内存里的数据和数据库里的数据，setter参考currentPage的setCurrentPage()，
@@ -264,5 +268,9 @@ fun AppScreenNavigator() {
             )
         }
 
+    }
+
+    LaunchedEffect(gotNewIntent.value) {
+        SharedState.requireHandleNewIntent()
     }
 }
