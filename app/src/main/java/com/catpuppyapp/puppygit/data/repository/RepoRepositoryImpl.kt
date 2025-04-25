@@ -107,7 +107,9 @@ class RepoRepositoryImpl(private val dao: RepoDao) : RepoRepository {
 //        println("抛异常我就不会被执行到了！！")
         //最后，删除仓库文件夹
         if(requireDelFilesOnDisk) {
-            Libgit2Helper.removeRepoFiles(repoFullPath)
+            // 如果能确定目标是submodule，则删除文件后创建空目录
+            //这里不要用parentRepoValid来判断，就用parentRepoId，因为就算id无效（比如父仓库先删除后导入导致id无效），只要id非空，其实就能证明当前仓库至少是其他仓库的submodule，所以应在删除后创建空目录占位置
+            Libgit2Helper.removeRepoFiles(repoFullPath, createEmptyWorkDirAfterRemove = item.parentRepoId.isNotBlank())
         }
 
         //log

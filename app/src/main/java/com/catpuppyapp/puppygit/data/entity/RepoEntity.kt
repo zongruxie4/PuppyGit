@@ -78,7 +78,8 @@ data class RepoEntity(
     //这个值用于创建仓库时初始化remote的singlebranch状态，之后就没用了，因为singlebranch是针对remote的，不是针对仓库的
     var isSingleBranch:Int=Cons.dbCommonFalse,
 
-    var parentRepoId:String="", // parentRepoId，若是submodule或submodule的submodule，则此值id为其父repo的id
+    // parentRepoId，若是submodule或submodule的submodule...以此类推，则此值id为其父repo id
+    var parentRepoId:String="",
 
     //当前分支是领先于上游还是落后于上游，仅在非detached HEAD状态下此值有意义
     var ahead:Int=0,
