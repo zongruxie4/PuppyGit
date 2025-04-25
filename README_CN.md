@@ -7,8 +7,9 @@
 ## 作者
 小狗Git由catpuppyapp的Bandeapart1964倾情奉献
 
-### 加星标并<a href=https://github.com/catpuppyapp/PuppyGit/blob/main/donate.md>捐赠</a>以给我提供支持，谢谢！
-### 感谢每个捐赠者和用户，让我觉得自己做了件有意义的事
+### 加星标并<a href=https://github.com/catpuppyapp/PuppyGit/blob/main/donate.md>捐赠</a>以给贫穷的开发者提供支持！这有助于此app持续维护！
+### 感谢每个捐赠者和用户，尤其是捐赠者！
+### 希望有一天能获得百万用户和很多捐赠！XD
 
 
 
