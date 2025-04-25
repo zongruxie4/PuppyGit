@@ -1264,6 +1264,13 @@ fun EditorInnerPage(
         )
     }
 
+    //按Home切换到别的app再返回，检查如果当前文件已保存（已编辑为假），则重载
+    LifecycleEventEffect(Lifecycle.Event.ON_RESUME) {
+        if(isEdited.value.not()) {
+            reloadFile()
+        }
+    }
+
     LaunchedEffect(needRefreshEditorPage.value) {
         try {
             //这里不需要loadingOn和loadingOff，靠editorPageShowingFileIsReady来判断是否加载完毕文件，历史遗留问题，这个页面的loading有点混乱
