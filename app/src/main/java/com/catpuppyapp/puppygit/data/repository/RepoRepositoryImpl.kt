@@ -107,21 +107,7 @@ class RepoRepositoryImpl(private val dao: RepoDao) : RepoRepository {
 //        println("抛异常我就不会被执行到了！！")
         //最后，删除仓库文件夹
         if(requireDelFilesOnDisk) {
-            //要删除的仓库有可能克隆失败或其他原因导致open仓库失败，所以需要try catch一下，若是有效仓库，就先删除其.git文件夹，否则就跳过，执行后面的删除 repo full path
-            kotlin.runCatching {
-                // .git folder，有可能是个文件，存相对路径，指向文件夹，所以需要单独查一下
-                val repoGitDirPath = Repository.open(repoFullPath).use { repo ->
-                    Libgit2Helper.getRepoGitDirPathNoEndsWithSlash(repo)
-                }
-
-                //因为.gitdir有可能在仓库路径下，所以需要先删除它
-                //git dir有可能不在仓库路径下，所以需要单独删除。(通常只有submodule是这样)
-                File(repoGitDirPath).deleteRecursively()
-            }
-
-            //删除仓库workdir
-            File(repoFullPath).deleteRecursively()
-
+            Libgit2Helper.removeRepoFiles(repoFullPath)
         }
 
         //log

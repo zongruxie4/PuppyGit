@@ -5578,6 +5578,65 @@ class Libgit2Helper {
             return list
         }
 
+        /**
+         * 注意：若.git是个文件而不是目录，那么这个方法仅在仓库有效时才移除.git文件指向的真实.git文件夹目录，
+         * 如果需要确保百分百清除.git目录无论仓库是否有效（比如克隆未完成导致仓库损坏），则建议使用`removeRepoFiles()`替代
+         */
+        fun removeRepoFilesForGoodRepo(workDirPath: String, createEmptyWorkDirAfterRemove:Boolean = false) {
+            //删除.git文件夹
+            //要删除的仓库有可能克隆失败或其他原因导致open仓库失败，所以需要try catch一下，若是有效仓库，就先删除其.git文件夹，否则就跳过，执行后面的删除 repo full path
+            kotlin.runCatching {
+                // .git folder，有可能是个文件，存相对路径，指向文件夹，所以需要单独查一下
+                val repoGitDirPath = Repository.open(workDirPath).use { repo ->
+                    Libgit2Helper.getRepoGitDirPathNoEndsWithSlash(repo)
+                }
+
+                //因为.gitdir有可能在仓库路径下，所以需要先删除它
+                //git dir有可能不在仓库路径下，所以需要单独删除。(通常只有submodule是这样)
+                File(repoGitDirPath).deleteRecursively()
+            }
+
+            //删除仓库workdir
+            File(workDirPath).let {
+                it.deleteRecursively()
+
+                if(createEmptyWorkDirAfterRemove) {
+                    it.mkdirs()
+                }
+            }
+        }
+
+        /**
+         * @param createEmptyWorkDirAfterRemove 在删除仓库workdir后创建空目录，一般用来在删除submodule之后避免报错，非submodule使用默认值false即可
+         */
+        fun removeRepoFiles(workDirPath: String, createEmptyWorkDirAfterRemove:Boolean = false) {
+            //delete .git folder of submodule
+            val dotGitDir = Libgit2Helper.getDotGitDirByWorkDirPath(workDirPath)
+            if (dotGitDir != null) {
+                MyLog.d(TAG, "dotGitDir.canonicalPath=${dotGitDir.canonicalPath}")
+
+                if (dotGitDir.exists()) {
+                    MyLog.d(TAG, "will delete .git folder at: ${dotGitDir.canonicalPath}")
+
+                    dotGitDir.deleteRecursively()
+                }
+            } else {
+                MyLog.d(TAG, "remove .git file err: .git file doesn't exists or doesn't include a valid path")
+            }
+
+            // delete workdir (note: must delete this after delete .git folder, because this will delete .git file, if order change, it will can't find .git folder, then .git folder will keep
+            val workdir = File(workDirPath)
+            if (workdir.exists()) {
+                MyLog.d(TAG, "will delete workdir files at: ${workdir.canonicalPath}")
+                workdir.deleteRecursively()
+
+                //如果请求删除目录后创建空workdir目录则创建
+                if(createEmptyWorkDirAfterRemove) {
+                    workdir.mkdirs()
+                }
+            }
+        }
+
 
         /**
          *  remove submodule info from .gitmodules
@@ -5598,37 +5657,11 @@ class Libgit2Helper {
         ){
             // del files on disk
             if (deleteFiles) {
-                val dotGitFile = File(submoduleFullPath, ".git")
-                //delete .git folder of submodule
-                val relativePathFromSmWorkdirToDotGitFolder = Libgit2Helper.readPathFromDotGitFile(dotGitFile)
-                if (relativePathFromSmWorkdirToDotGitFolder.isNotBlank()) {
-                    //absolute path + relative path = submodule's real .git folder path
-                    val dotGitRealFolder = File(submoduleFullPath, relativePathFromSmWorkdirToDotGitFolder)
-                    MyLog.d(TAG, "dotGitRealFolder.canonicalPath=${dotGitRealFolder.canonicalPath}")
-
-                    if (dotGitRealFolder.exists()) {
-                        MyLog.d(TAG, "will delete submodule .git folder at: ${dotGitRealFolder.canonicalPath}")
-
-                        dotGitRealFolder.deleteRecursively()
-                    }
-                } else {
-                    MyLog.d(TAG, "invalid path (blank) in dotGitFile, dotGitFile.exist=${dotGitFile.exists()}, dotGitFile.canonicalPath=${dotGitFile.canonicalPath}")
-                }
-
-                // delete workdir (note: must delete this after delete .git folder, because this will delete .git file, if order change, it will can't find .git folder, then .git folder will keep
-                val smWorkdir = File(submoduleFullPath)
-                if (smWorkdir.exists()) {
-                    MyLog.d(TAG, "will delete submodule workdir files at: ${smWorkdir.canonicalPath}")
-                    smWorkdir.deleteRecursively()
-
-                    // if not delete the config, re-create the submodule folder for avoid show submdules deleted in git status
-                    // smWorkdir.mkdir() should be fine too, but mkdirs() more reliable
-                    //如果没删配置文件，重新创建submodule文件夹不然会在git status(ChangeList)显示submodule已经被删除；
-                    // 如果连配置文件中的submodule条目一起删除，就不必保留目录了，不然就算提交了删除还是会在submodule页面有对应条目
-                    if(deleteConfigs.not()) {
-                        smWorkdir.mkdirs()
-                    }
-                }
+                // if not delete the config, re-create the submodule folder for avoid show submdules deleted in git status
+                // smWorkdir.mkdir() should be fine too, but mkdirs() more reliable
+                //如果没删配置文件，重新创建submodule文件夹不然会在git status(ChangeList)显示submodule已经被删除；
+                // 如果连配置文件中的submodule条目一起删除，就不必保留目录了，不然就算提交了删除还是会在submodule页面有对应条目
+                removeRepoFiles(submoduleFullPath, createEmptyWorkDirAfterRemove = deleteConfigs.not())
             }
 
 
@@ -5938,32 +5971,50 @@ class Libgit2Helper {
         /**
          * read path from .git file, content in .git file should like: "gitdir: ../../.git/modules/your/submodule/path",
          *  it's relative path to it's ".git" folder
+         *  格式：路径行以"gitdir:"开头，后面是相对或绝对路径
          */
-        fun readPathFromDotGitFile(dotGitFile:File):String {
+        fun getDotGitDirByWorkDirPath(workDirPath: String):File? {
             try {
-                MyLog.d(TAG, "#readPathFromDotGitFile: dotGitFile.canonicalPath=${dotGitFile.canonicalPath}")
+                val dotGitFile = File(workDirPath, ".git")
+
+                MyLog.d(TAG, "#getDotGitDirByWorkDirPath: dotGitFile.canonicalPath=${dotGitFile.canonicalPath}")
+
                 if(dotGitFile.exists().not()) {
-                    return ""
+                    return null
                 }
 
-                // content should like: "gitdir: ../../.git/modules/your/submodule/path"
-                val keyword = "gitdir: "
+                //本来就是.git目录，直接返回
+                if(dotGitFile.isDirectory) {
+                    return dotGitFile
+                }
 
+                // .git 文件，解析，取出.git文件夹路径
+                // content should like: "gitdir: ../../.git/modules/your/submodule/path"
+                val prefix = "gitdir:"
+
+                var gitDirPath:String? = null
                 dotGitFile.bufferedReader().use {
-                    var line = it.readLine()
-                    while (line != null) {
-                        val keywordIndex = line.indexOf(keyword)
-                        if(keywordIndex != -1) {
-                            return line.substring(keywordIndex+keyword.length)
+                    while (true) {
+                        var line = it.readLine() ?: break
+                        if(line.startsWith(prefix)) {
+                            gitDirPath = line.substring(prefix.length).trim()
+                            MyLog.d(TAG, "#getDotGitDirByWorkDirPath: got .git dir path from .git file: '$gitDirPath'")
+                            break
                         }
-                        line = it.readLine()
                     }
                 }
 
-                return ""
+                return gitDirPath.let {
+                    // null or emtpy, null; else if 绝对路径; else 相对路径
+                    if(it.isNullOrEmpty()) null else if(it.startsWith('/')) File(it) else File(dotGitFile.canonicalFile.parent!!, it)
+                }
             }catch (e:Exception) {
-                return ""
+                return null
             }
+        }
+
+        fun getDotGitDirPathByWorkDirPath(workDirPath:String):String? {
+            return getDotGitDirByWorkDirPath(workDirPath)?.canonicalPath
         }
 
         fun deleteSubmoduleInfoFromGitConfigFile(gitConfigOrGitModuleFile:File, smname:String) {
