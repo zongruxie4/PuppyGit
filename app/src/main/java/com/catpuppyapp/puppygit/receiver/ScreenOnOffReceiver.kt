@@ -27,22 +27,26 @@ class ScreenOnOffReceiver : BroadcastReceiver() {
         if (intent?.action == Intent.ACTION_SCREEN_OFF) {
             //灭屏的推送必须得在这触发，因为无障碍监听屏幕切换无法监听到灭屏
 
-            val nowInMillSec = System.currentTimeMillis()
+//            val nowInMillSec = System.currentTimeMillis()
 //            screenOffAtInMillSec.longValue = nowInMillSec
 
             // 屏幕熄灭
             MyLog.d(TAG, "Screen is OFF")
 
             val lastPackage = AutoSrvCache.getCurPackageName()
-            if(lastPackage.isBlank()) {
+            if(lastPackage.isBlank()) { // 若blank，代表并非我们关注的app，直接返回即可
                 return
             }
+
+
+            //执行到这代表灭屏时停留的app是我们关注的app，需要处理下
+
 
             //灭屏，当作离开app，AutomationService会根据这些参数检测并决定是否执行pull
             //这个决定进AutomationService的pull还是push，因为灭屏当作离开，所以设为离开，这样下次就会进pull代码块
             AutomationService.targetPackageTrueOpenedFalseCloseNullNeverOpenedList[lastPackage] = false
             //这个决定用来判断是否超过设定的pull interval，若超过则会执行pull
-            AutomationService.appLeaveTime[lastPackage] = nowInMillSec
+            AutomationService.appLeaveTime[lastPackage] = System.currentTimeMillis()
 
             //创建push任务
             job.value = doJob {
