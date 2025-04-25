@@ -7,7 +7,6 @@ import com.catpuppyapp.puppygit.etc.Ret
 import com.catpuppyapp.puppygit.server.bean.NotificationSender
 import com.catpuppyapp.puppygit.settings.AppSettings
 import com.catpuppyapp.puppygit.settings.SettingsUtil
-import com.catpuppyapp.puppygit.utils.Libgit2Helper.Companion.getAheadBehind
 import com.catpuppyapp.puppygit.utils.cache.NotifySenderMap
 import com.catpuppyapp.puppygit.utils.encrypt.MasterPassUtil
 import com.github.git24j.core.Oid
@@ -470,7 +469,7 @@ object RepoActUtil {
                 // 检查是否已发布是因为如果未发布则remoteOid无效，所以无法检查ahead和behind，
                 // 并且若未发布，无需force也可push，所以若未发布分支，不管是否带了force参数，都直接执行push即可。
                 if (!force && upstream.isPublished) {
-                    val (ahead, behind) = getAheadBehind(gitRepo, Oid.of(upstream.localOid), Oid.of(upstream.remoteOid))
+                    val (ahead, behind) = Libgit2Helper.getAheadBehind(gitRepo, Oid.of(upstream.localOid), Oid.of(upstream.remoteOid))
 
                     //非force push的情况下，如果本地落后远程，必然推送失败，所以就不用推了，直接报错
                     if (behind > 0) {  //本地落后远程（远程领先本地）

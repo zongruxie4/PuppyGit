@@ -15,8 +15,6 @@ import com.catpuppyapp.puppygit.server.bean.ConfigBean
 import com.catpuppyapp.puppygit.settings.AppSettings
 import com.catpuppyapp.puppygit.utils.AppModel
 import com.catpuppyapp.puppygit.utils.Libgit2Helper
-import com.catpuppyapp.puppygit.utils.Libgit2Helper.Companion.getParentRecordedTargetHashForSubmodule
-import com.catpuppyapp.puppygit.utils.Libgit2Helper.Companion.isValidGitRepo
 import com.catpuppyapp.puppygit.utils.genHttpHostPortStr
 import com.github.git24j.core.Commit
 import com.github.git24j.core.Oid
@@ -176,9 +174,9 @@ fun createSubmoduleDto(
         name = smName,
         relativePathUnderParent = smRelativePath,
         fullPath = smFullPath,
-        cloned = isValidGitRepo(smFullPath),
+        cloned = Libgit2Helper.isValidGitRepo(smFullPath),
         remoteUrl = smUrl,
-        targetHash = getParentRecordedTargetHashForSubmodule(sm),
+        targetHash = Libgit2Helper.getParentRecordedTargetHashForSubmodule(sm),
         tempStatus = if (smUrl.isBlank()) invalidUrlAlertText else "",
         location = Libgit2Helper.getSubmoduleLocation(sm)
     )

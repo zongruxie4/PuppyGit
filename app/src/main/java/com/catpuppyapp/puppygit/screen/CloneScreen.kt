@@ -1,7 +1,6 @@
 package com.catpuppyapp.puppygit.screen
 
 import android.util.Log
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -64,9 +63,7 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.text.input.VisualTransformation
-import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
-import com.catpuppyapp.puppygit.compose.ClickableText
 import com.catpuppyapp.puppygit.compose.ConfirmDialog
 import com.catpuppyapp.puppygit.compose.DepthTextField
 import com.catpuppyapp.puppygit.compose.DropDownMenuItemText
@@ -87,18 +84,15 @@ import com.catpuppyapp.puppygit.screen.shared.SharedState
 import com.catpuppyapp.puppygit.style.MyStyleKt
 import com.catpuppyapp.puppygit.ui.theme.Theme
 import com.catpuppyapp.puppygit.user.UserUtil
-import com.catpuppyapp.puppygit.utils.ActivityUtil
 import com.catpuppyapp.puppygit.utils.AppModel
 import com.catpuppyapp.puppygit.utils.FsUtils
 import com.catpuppyapp.puppygit.utils.Libgit2Helper
-import com.catpuppyapp.puppygit.utils.Libgit2Helper.Companion.getGitUrlType
 import com.catpuppyapp.puppygit.utils.Msg
 import com.catpuppyapp.puppygit.utils.boolToDbInt
 import com.catpuppyapp.puppygit.utils.checkFileOrFolderNameAndTryCreateFile
 import com.catpuppyapp.puppygit.utils.dbIntToBool
 import com.catpuppyapp.puppygit.utils.doJobThenOffLoading
 import com.catpuppyapp.puppygit.utils.getRepoNameFromGitUrl
-import com.catpuppyapp.puppygit.utils.getStoragePermission
 import com.catpuppyapp.puppygit.utils.isPathExists
 import com.catpuppyapp.puppygit.utils.state.mutableCustomStateListOf
 import com.catpuppyapp.puppygit.utils.state.mutableCustomStateOf
@@ -579,7 +573,7 @@ fun CloneScreen(
                     }
 
                     //获取当前凭据类型并检查是否发生了变化，如果变化，需要清些字段
-                    val newGitUrlType = getGitUrlType(it)  //获取当前url类型（http or ssh）
+                    val newGitUrlType = Libgit2Helper.getGitUrlType(it)  //获取当前url类型（http or ssh）
 
                     // 20240414 废弃ssh支持，修改开始
                     val newCredentialType = Libgit2Helper.getCredentialTypeByGitUrlType(newGitUrlType)  //根据url类型获取credential类型（http or ssh）  //ssh
@@ -1068,7 +1062,7 @@ fun CloneScreen(
                 val repoDb = AppModel.dbContainer.repoRepository
                 val credentialDb = AppModel.dbContainer.credentialRepository
                 val repo = repoDb.getById(repoId!!) ?: return@job
-                gitUrlType.intValue = getGitUrlType(repo.cloneUrl)  //更新下giturl type
+                gitUrlType.intValue = Libgit2Helper.getGitUrlType(repo.cloneUrl)  //更新下giturl type
                 gitUrl.value = repo.cloneUrl
                 repoName.value = TextFieldValue(repo.repoName)
                 branch.value = repo.branch
