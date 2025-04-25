@@ -9,6 +9,7 @@ import com.catpuppyapp.puppygit.service.AutomationService
 import com.catpuppyapp.puppygit.settings.AutomationSettings
 import com.catpuppyapp.puppygit.settings.SettingsUtil
 import com.catpuppyapp.puppygit.utils.AppModel
+import com.catpuppyapp.puppygit.utils.Libgit2Helper
 import com.catpuppyapp.puppygit.utils.MyLog
 import com.catpuppyapp.puppygit.utils.getInstalledAppList
 
@@ -33,7 +34,20 @@ object AutomationUtil {
             return null
         }
 
-        return AppModel.dbContainer.repoRepository.getAll().filter { bindRepoIds.contains(it.id) }
+        return try {
+            val repoList = AppModel.dbContainer.repoRepository.getAll(updateRepoInfo = false).filter { bindRepoIds.contains(it.id) }
+
+            //仅更新有可能用到的仓库的信息
+            repoList.forEach {
+                Libgit2Helper.updateRepoInfo(it)
+            }
+
+            repoList
+        } catch (e:Exception) {
+            MyLog.e(TAG, "#getRepos() err: packageName=$packageName, err=${e.stackTraceToString()}")
+
+            null
+        }
     }
 
 
