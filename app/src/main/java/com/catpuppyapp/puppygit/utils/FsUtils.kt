@@ -202,6 +202,7 @@ object FsUtils {
     /**
      * This function origin version(by sheimi maybe) from: https://github.com/maks/MGit/blob/66ec88b8a9873ba3334d2b6b213801a9e8d9d3c7/app/src/main/java/me/sheimi/android/utils/FsUtils.java#L119C24-L119C32
      */
+    @Deprecated("use `opeFile` instead")
     fun openFileEditFirstIfFailedThenTryView(context: Context, file: File): Ret<String?> {
         val uri = getUriForFile(context, file)
         val mimeType = getMimeType(uri.toString())
