@@ -144,6 +144,9 @@ import com.catpuppyapp.puppygit.utils.getShortUUID
 import com.catpuppyapp.puppygit.utils.getStoragePermission
 import com.catpuppyapp.puppygit.utils.getViewAndSortForPath
 import com.catpuppyapp.puppygit.utils.isPathExists
+import com.catpuppyapp.puppygit.utils.mime.MimeType
+import com.catpuppyapp.puppygit.utils.mime.guessFromFileName
+import com.catpuppyapp.puppygit.utils.mime.intentType
 import com.catpuppyapp.puppygit.utils.replaceStringResList
 import com.catpuppyapp.puppygit.utils.saf.MyOpenDocumentTree
 import com.catpuppyapp.puppygit.utils.saf.SafAndFileCmpUtil
@@ -1562,9 +1565,26 @@ fun FilesInnerPage(
                                     //已废弃：若文件在只读目录，默认以只读方式打开
                                     //  readOnlyForOpenAsDialog.value = FsUtils.isReadOnlyDir(it.fullPath)
 
-                                    openAsDialogFilePath.value = it.fullPath
-                                    showOpenInEditor.value=true
-                                    showOpenAsDialog.value=true
+                                    //猜测文件mime类型并打开，若失败，显示open as弹窗
+
+                                    //猜测app mimeType
+                                    val mimeType = MimeType.guessFromFileName(it.name).intentType
+
+                                    //请求外部打开（实际会显示支持此类型的app供用户选择）
+                                    val openSuccess = FsUtils.openFile(
+                                        activityContext,
+                                        it.toFile(),
+                                        mimeType,
+                                        readOnly = false
+                                    )
+
+                                    //若打开失败，显示弹窗，用户可选择具体以哪种类型打开
+                                    if (!openSuccess) {
+                                        openAsDialogFilePath.value = it.fullPath
+                                        showOpenInEditor.value=true
+
+                                        showOpenAsDialog.value=true
+                                    }
                                 }
                             } else {  // if(item.isDirectory) 点击目录，直接打开。
                                 //粘贴模式下点击被选中的文件夹无效，以免出现无限递归复制
