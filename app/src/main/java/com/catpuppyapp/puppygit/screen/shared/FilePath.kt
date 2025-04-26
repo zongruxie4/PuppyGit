@@ -14,6 +14,8 @@ import java.io.File
 
 private const val TAG = "FilePath"
 
+private const val emptyPath = ""
+
 private val knownSystemFilesManagerUris = listOf(
     "content://com.android.externalstorage.documents/tree/primary",
     "content://com.android.externalstorage.documents/document/primary",
@@ -44,22 +46,14 @@ class FilePath(
         initIoPath()
     }
 
-    // parcel的类最好别用lambda，有可能会出错
-    private fun throwResolveUriFailed():String {
-        throw RuntimeException("resolve uri failed")
-
-        // for pass compile，不返回通不过编译
-        ""
-    }
-
 
     //这里必须用fun不能用lambda，否则会出错，判断不准，具体原因没测试，总之改成fun就行了，或者把lambda放到parcel类外应该也行（未测试）
-    private fun pathOrThrow(tryThisPath :String):String {
+    private fun pathOrEmpty(tryThisPath :String):String {
         val file = File(tryThisPath)
         return if (file.canRead()) {file.canRead()
             file.canonicalPath
         } else {
-            throwResolveUriFailed()
+            emptyPath
         }
     }
 
@@ -75,51 +69,13 @@ class FilePath(
 
     private fun initIoPath() {
         ioPath = if(rawPathType == PathType.CONTENT_URI) {
-            var decodedPathAtOut:String = ""
-
+            //尝试匹配已知的uri，若匹配上，解析成绝对路径，否则返回rawPath
             try {
-                // try resolve "content://" to real path like "/storage/emulated/0/path"
-                val safUri = Uri.parse(rawPath)
-                MyLog.d(TAG, "in try: rawUri: $safUri, rawUriPath=${safUri.path}")
+                MyLog.d(TAG, "#initIoPath: type=CONTENT_URI, rawPath=$rawPath")
 
-                // uri.path是去掉authority（一般是包名）后的路径，例如：uri为：content://com.android.externalstorage.documents/tree/primary%3ARepos, 则uri.path为 /tree/primary:Repos
-                val uriPath = safUri?.path ?: ""
-
-                if(uriPath.isBlank()) {
-                    throwResolveUriFailed()
-                }
-
-
-                val decodedPath = decodeTheFuckingUriPath(uriPath)
-                decodedPathAtOut = decodedPath  //为了在catch里使用
-                MyLog.d(TAG, "in try: decodePath=$decodedPath")
-
-                //先直接尝试解码后的路径能否读取，若不能，检查是否是 file:// 或 /file:// 开头的路径，若不是，抛异常，然后尝试匹配已知的uri，若匹配上，解析成绝对路径，否则返回rawPath
-                val file = File(decodedPath)
-                if (file.canRead()) {
-                    file.canonicalPath
-                } else {
-                    val uriPath = decodedPath
-
-                    if (uriPath.startsWith(FsUtils.fileUriPathPrefix)) {
-                        pathOrThrow(uriPath.removePrefix(FsUtils.fileUriPathPrefix))
-                    } else {
-                        val slashPrefixFileUriPath = Cons.slash + FsUtils.fileUriPathPrefix  // "/file://"，质感文件的uri解码到最后再取出uri.path返回的就是这样的路径
-                        if (uriPath.startsWith(slashPrefixFileUriPath)) {
-                            pathOrThrow(uriPath.removePrefix(slashPrefixFileUriPath))
-                        }else {
-                            throwResolveUriFailed()
-                        }
-                    }
-                }
+                resolveFileSlashSlashUri().ifBlank { tryResolveKnownUriToRealPath() }.ifBlank { rawPath }
             }catch (_: Exception) {
-                try {
-                    MyLog.d(TAG, "in catch: rawPath=$rawPath, decoded uri.path: $decodedPathAtOut")
-
-                    tryResolveKnownUriToRealPath(rawPath)
-                }catch (_:Exception) {
-                    rawPath
-                }
+                rawPath
             }
         }else if(rawPathType == PathType.FILE_URI) {
             rawPath.removePrefix(FsUtils.fileUriPathPrefix)
@@ -132,38 +88,94 @@ class FilePath(
         ioPathType = PathType.getType(ioPath)
     }
 
-    private fun tryResolveKnownUriToRealPath(uriStr:String): String {
-        //这里是不是用上面try里解码后的path更好？不过后面的uri都是没编码的，解码其实多此一举...而且由于编码符号可能是文件名，所以解码反而有可能出错，虽然概率很低
+    //若解析失败返回空字符串
+    private fun tryResolveKnownUriToRealPath(): String {
+        val funName = "tryResolveKnownUriToRealPath"
 
-        //安卓系统自带的文件选择器选择/storage/emulated/0下的文件就会是这个路径
-        //这里不能以 / 结尾去匹配，因为primary后面可能是冒号或者%百分号开头的编码之类的玩意
+        return try {
+            //有的软件会先编码再发uri，例如 raival 的 文件管理器和material files(不过material files的uri没在这处理）
+            val uriStr = decodeTheFuckingUriPath(rawPath)
 
-        //安卓系统的自带文件管理器路径
-        val maybeCanGetPathFromUri = knownSystemFilesManagerUris.any { uriStr.startsWith(it) }
+            //安卓系统自带的文件选择器选择/storage/emulated/0下的文件就会是这个路径
+            //这里不能以 / 结尾去匹配，因为primary后面可能是冒号或者%百分号开头的编码之类的玩意
 
-        return if(maybeCanGetPathFromUri) {
-            readableCanonicalPathOrDefault(File(FsUtils.getRealPathFromUri(Uri.parse(rawPath))), rawPath)
-        } else {
-            //注意：匹配的时候尽量以 / 结尾，避免文件名包含前缀而匹配错误
-            //注意：匹配的时候尽量以 / 结尾，避免文件名包含前缀而匹配错误
-            //注意：匹配的时候尽量以 / 结尾，避免文件名包含前缀而匹配错误
-            //注意：匹配的时候尽量以 / 结尾，避免文件名包含前缀而匹配错误
+            //安卓系统的自带文件管理器路径
+            val maybeCanGetPathFromUri = knownSystemFilesManagerUris.any { uriStr.startsWith(it) }
 
-            var resolvedPath = ""
-            for (uriPrefix in knownUris) {
-                // try resolve markor uri to real path
-                val indexOfPrefix = uriStr.indexOf(uriPrefix)
-                // indexOf == 0, means `include` and `starsWith`, both are `true`
-                if(indexOfPrefix == 0) {
-                    // length-1 是为了保留之前的 "/"，如果不减1，还得自己在前面prepend一个 "/"
-                    resolvedPath = readableCanonicalPathOrDefault(File(uriStr.substring(uriPrefix.length-1)), "")
-                    if(resolvedPath.isNotBlank()) {
-                        break
+
+            if(maybeCanGetPathFromUri) {
+                readableCanonicalPathOrDefault(File(FsUtils.getRealPathFromUri(Uri.parse(rawPath))), emptyPath)
+            } else {
+                //注意：匹配的时候尽量以 / 结尾，避免文件名包含前缀而匹配错误
+                //注意：匹配的时候尽量以 / 结尾，避免文件名包含前缀而匹配错误
+                //注意：匹配的时候尽量以 / 结尾，避免文件名包含前缀而匹配错误
+                //注意：匹配的时候尽量以 / 结尾，避免文件名包含前缀而匹配错误
+
+                var resolvedPath = emptyPath
+                for (uriPrefix in knownUris) {
+                    // try resolve markor uri to real path
+                    val indexOfPrefix = uriStr.indexOf(uriPrefix)
+                    // indexOf == 0, means `include` and `starsWith`, both are `true`
+                    if(indexOfPrefix == 0) {
+                        // length-1 是为了保留之前的 "/"，如果不减1，还得自己在前面prepend一个 "/"
+                        resolvedPath = readableCanonicalPathOrDefault(File(uriStr.substring(uriPrefix.length-1)), emptyPath)
+                        if(resolvedPath.isNotBlank()) {
+                            break
+                        }
+                    }
+                }
+
+                resolvedPath
+            }
+        }catch (e:Exception) {
+            MyLog.e(TAG, "#$funName: resolved uri err: ${e.localizedMessage}")
+
+            emptyPath
+        }
+    }
+
+    //若解析失败，返回空字符串
+    private fun resolveFileSlashSlashUri():String {
+        val funName = "resolveFileSlashSlashUri"
+
+        return try {
+            // try resolve "content://" to real path like "/storage/emulated/0/path"
+            val safUri = Uri.parse(rawPath)
+            MyLog.d(TAG, "#$funName: safUri: $safUri, safUri.path=${safUri.path}")
+
+            // uri.path是去掉authority（一般是包名）后的路径，例如：uri为：content://com.android.externalstorage.documents/tree/primary%3ARepos, 则uri.path为 /tree/primary:Repos
+            val uriPath = safUri?.path ?: emptyPath
+
+            if(uriPath.isBlank()) {
+                emptyPath
+            }else {
+                val decodedPath = decodeTheFuckingUriPath(uriPath)
+                MyLog.d(TAG, "#$funName: decodePath=$decodedPath")
+
+                //先直接尝试解码后的路径能否读取，若不能，检查是否是 file:// 或 /file:// 开头的路径，若不是，抛异常
+                val file = File(decodedPath)
+
+                if (file.canRead()) {
+                    file.canonicalPath
+                } else {
+                    val uriPath = decodedPath
+
+                    if (uriPath.startsWith(FsUtils.fileUriPathPrefix)) {
+                        pathOrEmpty(uriPath.removePrefix(FsUtils.fileUriPathPrefix))
+                    } else {
+                        val slashPrefixFileUriPath = Cons.slash + FsUtils.fileUriPathPrefix  // "/file://"，质感文件的uri解码到最后再取出uri.path返回的就是这样的路径
+                        if (uriPath.startsWith(slashPrefixFileUriPath)) {
+                            pathOrEmpty(uriPath.removePrefix(slashPrefixFileUriPath))
+                        }else {
+                            emptyPath
+                        }
                     }
                 }
             }
+        }catch (e:Exception) {
+            MyLog.e(TAG, "#$funName: resolve uri err: ${e.localizedMessage}")
 
-            resolvedPath.ifBlank { rawPath }
+            emptyPath
         }
     }
 
