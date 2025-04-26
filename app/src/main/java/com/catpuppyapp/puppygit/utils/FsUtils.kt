@@ -138,8 +138,8 @@ object FsUtils {
             "audio/*",
             "video/*",
             "application/zip",  //暂时用zip代替归档文件(压缩文件)，因为压缩mime类型有好多个！用模糊的application/*支持的程序不多，只有zip支持的最多！而且解压程序一般会根据二进制内容判断具体类型，所以，用zip实际上效果不错
-//            "*/*",  //这个不知道会匹配到什么，期望匹配所有，但其实不然
-            binaryMimeType,  //当作字节流打开，反而比 */* 匹配的app多
+            "*/*",  //这个不知道会匹配到什么，期望匹配所有，但其实不一定，我测试 pixel确实几乎匹配所有，但在我的国产手机上，匹配很少，甚至无匹配
+//            binaryMimeType,  //当作字节流打开，在我的国产手机上反而比 */* 匹配的app多；但在pixel则相反
         )
 
         fun getTextList(activityContext:Context) :List<String> {

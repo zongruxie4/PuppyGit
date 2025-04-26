@@ -533,6 +533,13 @@ fun FilesInnerPage(
     val showOpenInEditor = rememberSaveable { mutableStateOf(false)}
     val fileNameForOpenAsDialog = remember{ derivedStateOf { getFileNameFromCanonicalPath(openAsDialogFilePath.value) } }
 
+    val initOpenAsDialog = { fileFullPath:String, showOpenInInnerTextEditor:Boolean ->
+        openAsDialogFilePath.value = fileFullPath
+        showOpenInEditor.value = showOpenInInnerTextEditor
+
+        showOpenAsDialog.value = true
+    }
+
     if(showOpenAsDialog.value) {
         OpenAsDialog(readOnly = readOnlyForOpenAsDialog, fileName = fileNameForOpenAsDialog.value, filePath = openAsDialogFilePath.value, showOpenInEditor = showOpenInEditor.value,
             openInEditor = {expectReadOnly:Boolean ->
@@ -698,10 +705,9 @@ fun FilesInnerPage(
         },
 
         openAs@{ item:FileItemDto ->
-//            readOnlyForOpenAsDialog.value = FsUtils.isReadOnlyDir(item.fullPath)
-            openAsDialogFilePath.value = item.fullPath
-            showOpenInEditor.value=false
-            showOpenAsDialog.value=true
+            val showInnerEditor = false
+            initOpenAsDialog(item.fullPath, showInnerEditor)
+
             Unit
         },
 //        editWith@{ item:FileItemDto ->
@@ -1567,23 +1573,31 @@ fun FilesInnerPage(
 
                                     //猜测文件mime类型并打开，若失败，显示open as弹窗
 
-                                    //猜测app mimeType
-                                    val mimeType = MimeType.guessFromFileName(it.name).intentType
+                                    val hasExtension = it.name.contains(".")
 
-                                    //请求外部打开（实际会显示支持此类型的app供用户选择）
-                                    val openSuccess = FsUtils.openFile(
-                                        activityContext,
-                                        it.toFile(),
-                                        mimeType,
-                                        readOnly = false
-                                    )
+                                    if(hasExtension) {  //有后缀名，根据后缀猜测文件类型
+                                        //猜测app mimeType
+                                        val mimeType = MimeType.guessFromFileName(it.name).intentType
 
-                                    //若打开失败，显示弹窗，用户可选择具体以哪种类型打开
-                                    if (!openSuccess) {
-                                        openAsDialogFilePath.value = it.fullPath
-                                        showOpenInEditor.value=true
+                                        //无后缀的会返回 */*
+                                        MyLog.d(TAG, "fileName=${it.name}, guessed mimeType=$mimeType")
 
-                                        showOpenAsDialog.value=true
+                                        //请求外部打开（实际会显示支持此类型的app供用户选择）
+                                        val openSuccess = FsUtils.openFile(
+                                            activityContext,
+                                            it.toFile(),
+                                            mimeType,
+                                            readOnly = false
+                                        )
+
+                                        //若打开失败，显示弹窗，用户可选择具体以哪种类型打开
+                                        if (!openSuccess) {
+                                            val showInnerEditor = true
+                                            initOpenAsDialog(it.fullPath, showInnerEditor)
+                                        }
+                                    }else { //无后缀名，让用户选择以哪种类型打开
+                                        val showInnerEditor = true
+                                        initOpenAsDialog(it.fullPath, showInnerEditor)
                                     }
                                 }
                             } else {  // if(item.isDirectory) 点击目录，直接打开。
