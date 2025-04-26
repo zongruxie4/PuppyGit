@@ -923,8 +923,9 @@ fun getViewAndSortForPath(path:String, settings:AppSettings) :Pair<Boolean, DirV
 /**
  * 获取文件扩展名或空字符串。
  * 注：若'.'在文件名开头或末尾或没有'.'，将返回空字符串；否则返回 ".txt" 之类的后缀名
+ * @return input "abc.txt", return ".txt"; input ".git", return ""; input "abc.", return ""
  */
-fun getFileExtOrEmpty(filename:String):String {
+fun getFileExtOrEmpty_treatStartWithDotNotAsExt(filename:String):String {
     val extIndex = filename.lastIndexOf('.')
 
     // <=0 is right, cause if extIndex==0, the . is first char, meaning it is a hidden file, not represent a ext name
@@ -932,8 +933,22 @@ fun getFileExtOrEmpty(filename:String):String {
     return if(extIndex <= 0 || extIndex == filename.lastIndex){
         ""
     }else{
-        //返回示例： .txt
 //        filename.substring(extIndex, filename.length)  //没必要指定第2个参数
+        filename.substring(extIndex)
+    }
+}
+
+/**
+ * 注意：如果是 ".git" 会返回后缀类型为 "git"
+ *
+ * @return input "abc.txt", return ".txt"; input ".git", return ".git"; input "abc.", return ""
+ */
+fun getFileExtOrEmpty(filename:String):String {
+    val extIndex = filename.lastIndexOf('.')
+
+    return if(extIndex < 0 || extIndex == filename.lastIndex) {
+        ""
+    }else {
         filename.substring(extIndex)
     }
 }
