@@ -258,6 +258,9 @@ private val extensionToMimeTypeMap = mapOf(
     "kpr" to "application/x-kpresenter",
     "kpt" to "application/x-kpresenter",
     "ksp" to "application/x-kspread",
+
+    "kt" to "text/x-java",  //这个是我(Bandeapart1964)添加的，目前没有kotlin文件的mime type，先用java的凑合吧
+
     "kwd" to "application/x-kword",
     "kwt" to "application/x-kword",
     "latex" to "application/x-latex",
