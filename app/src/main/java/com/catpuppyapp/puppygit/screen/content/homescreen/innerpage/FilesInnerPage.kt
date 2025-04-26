@@ -2025,7 +2025,7 @@ fun FilesInnerPage(
                                     )
 
                                     val spentTime = (System.currentTimeMillis() - startAt) / 1000  // 转换 毫秒 为 秒
-                                    safDiffResultStr.value = "spent time: $spentTime seconds\n\n------------\n\n $result"
+                                    safDiffResultStr.value = "spent time: $spentTime second(s)\n\n------------\n\n $result"
 
                                     Msg.requireShow(activityContext.getString(R.string.done))
                                 }catch (cancelled: CancellationException){
@@ -2054,7 +2054,6 @@ fun FilesInnerPage(
 
                         Row(
                             modifier = Modifier.fillMaxWidth(),
-                            horizontalArrangement = Arrangement.Center
                         ) {
                             Text(safDiffResultStr.value)
                         }

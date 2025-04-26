@@ -32,12 +32,14 @@ import java.io.FileWriter
 import java.io.InputStream
 import java.io.OutputStream
 import java.nio.charset.Charset
-import java.util.Locale
 import kotlin.coroutines.cancellation.CancellationException
 
 private const val TAG = "FsUtils"
 
 object FsUtils {
+
+    //字节流
+    const val binaryMimeType = "application/octet-stream"
 
     const val rootName = "root"
     const val rootPath = "/"
@@ -129,13 +131,15 @@ object FsUtils {
     }
 
     object FileMimeTypes {
+        // 注意： typeList和getTextList()必须对应！
         val typeList= listOf(
             "text/plain",
             "image/*",
             "audio/*",
             "video/*",
             "application/zip",  //暂时用zip代替归档文件(压缩文件)，因为压缩mime类型有好多个！用模糊的application/*支持的程序不多，只有zip支持的最多！而且解压程序一般会根据二进制内容判断具体类型，所以，用zip实际上效果不错
-            "*/*",
+//            "*/*",  //这个不知道会匹配到什么，期望匹配所有，但其实不然
+            binaryMimeType,  //当作字节流打开，反而比 */* 匹配的app多
         )
 
         fun getTextList(activityContext:Context) :List<String> {
@@ -145,6 +149,8 @@ object FsUtils {
                 activityContext.getString(R.string.file_open_as_type_audio),
                 activityContext.getString(R.string.file_open_as_type_video),
                 activityContext.getString(R.string.file_open_as_type_archive),
+
+                //这个明明写的是any，为什么翻译成other，当时怎么想的？
                 activityContext.getString(R.string.file_open_as_type_any),
             )
         }
@@ -153,10 +159,7 @@ object FsUtils {
 
     private fun getMimeType(url: String): String {
         var type: String? = null
-        val extension = MimeTypeMap.getFileExtensionFromUrl(
-            url
-                .lowercase(Locale.getDefault())
-        )
+        val extension = MimeTypeMap.getFileExtensionFromUrl(url.lowercase())
         if (extension != null) {
             val mime = MimeTypeMap.getSingleton()
             type = mime.getMimeTypeFromExtension(extension)
@@ -228,14 +231,28 @@ object FsUtils {
         try {
             val uri = getUriForFile(context, file)
 
-    //        val intent = if(readOnly) Intent(Intent.ACTION_VIEW) else Intent(Intent.ACTION_EDIT)
-            val intent = Intent(if(readOnly) Intent.ACTION_VIEW else Intent.ACTION_EDIT)
+            // 文件是否只读与Action匹配，更准确，但兼容性可能差点，很多app只支持ACTION_VIEW
+//            val intent = Intent(if(readOnly) Intent.ACTION_VIEW else Intent.ACTION_EDIT)
+
+            //ACTION_VIEW其实也能带写权限，具体取决于uri权限
+            val intent = Intent(Intent.ACTION_VIEW)  // 这个可能兼容性更好
+
+            MyLog.d(TAG, "#openFile(): require open: mimeType=$mimeType, uri=$uri")
+
             intent.setDataAndType(uri, mimeType)
             intent.setFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION or Intent.FLAG_ACTIVITY_NEW_TASK)
             //如果非read only，追加写权限
             if(!readOnly) {
                 intent.addFlags(Intent.FLAG_GRANT_WRITE_URI_PERMISSION)
             }
+
+
+            // 测试无效，废弃）for support open image by gallary app
+            // 另外，之前点图片无法选择图库是因为我的手机设置了默认图库，晕。。。。
+//            intent.addCategory(Intent.CATEGORY_DEFAULT)
+//            intent.addCategory(Intent.CATEGORY_OPENABLE)
+//            intent.addCategory(Intent.CATEGORY_BROWSABLE)
+
             context.startActivity(intent)
             return true
         } catch (e: Exception) {
@@ -284,40 +301,25 @@ object FsUtils {
 
     private fun createDirUnderPublicExternalDir(dirNameWillCreate: String, publicDir:File = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOCUMENTS)): Ret<File?> {
 
-        //经过我的测试，api 26，安卓8.0.0 并不能访问公开目录(Documents/Pictures)之类的，所以这个判断没什么卵用，就算通过了，也不一定能获取到公开目录，20240424改用saf导出文件了，saf从安卓4.0(ndk19)开始支持，兼容性更好
-        if(Build.VERSION.SDK_INT < Build.VERSION_CODES.O) {  //需要用到安卓8新增的 getExternalStoragePublicDirectory() api
-            return Ret.createError(null, "Doesn't support export file to public dir on android version lower than 8", Ret.ErrCode.doesntSupportAndroidVersion)
+        // 20240424改用saf导出文件了，saf从安卓4.0(ndk19)开始支持，兼容性更好
+        //经过我的测试，api 26，安卓8.0.0 并不能访问公开目录(Documents/Pictures)之类的，所以这个判断没什么卵用，就算通过了，也不一定能获取到公开目录，貌似至少安卓9才行
+        if(Build.VERSION.SDK_INT < Build.VERSION_CODES.P) {
+            return Ret.createError(null, "Doesn't support export file to public dir on android version lower than 9", Ret.ErrCode.doesntSupportAndroidVersion)
         }
 
         //注：getExternalStoragePublicDirectory() 这个api在8添加，在29弃用(deprecated)了，弃用了但没删除，所以应该也能用
-        val dir:File = File(publicDir.canonicalPath, dirNameWillCreate)
+        val dir = File(publicDir.canonicalPath, dirNameWillCreate)
 
 //        else {  //没测试，getExternalStorageDirectory() 应该需要权限
 //            File(Environment.getExternalStorageDirectory().toString() + "/" + FolderName)
 //        }
 
         // Make sure the path directory exists.
-        if(dir!=null) {
-            if(!dir.exists()) {
-                // Make it, if it doesn't exit
-                val success = dir.mkdirs()
-                if (success) {
-                    //不等于null且文件夹不存在且创建文件夹成功
-                    return Ret.createSuccess(dir, "create folder success!", Ret.SuccessCode.default)
-
-                }
-                //不等于null且文件夹不存在且创建文件夹失败
-                return Ret.createError(null, "create folder failed!", Ret.ErrCode.createFolderFailed)
-
-            }
-
-            //不等于null且文件夹存在
-            return Ret.createSuccess(dir, "open folder success!", Ret.SuccessCode.default)
-
+        return if(dir.exists() || dir.mkdirs()) { //文件夹存在或创建成功
+            Ret.createSuccess(dir, "open folder success!", Ret.SuccessCode.default)
+        }else { //文件夹不存在且创建文件夹失败
+            Ret.createError(null, "open folder failed!", Ret.ErrCode.openFolderFailed)
         }
-
-        //等于null
-        return Ret.createError(null, "open folder failed!", Ret.ErrCode.openFolderFailed)
 
     }
 
@@ -596,7 +598,7 @@ object FsUtils {
                     )
                 }
             }else {
-                val targetFile = targetDir.createFile("*/*", targetName)?:continue
+                val targetFile = targetDir.createFile(binaryMimeType, targetName)?:continue
 
                 val output = contentResolver.openOutputStream(targetFile.uri)?:continue
 

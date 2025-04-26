@@ -34,7 +34,8 @@ fun MimeType.Companion.guessFromExtension(extension: String): MimeType {
     return extensionToMimeTypeOverrideMap[extension]
         ?: MimeTypeMap.getSingleton().getMimeTypeFromExtensionCompat(extension)?.asMimeTypeOrNull()
 //        ?: TEXT_PLAIN  //如果文件类型未知，当作文本文件处理
-        ?: GENERIC  //如果文件类型未知，当作常规文件处理，GENERIC 调用 intentType 会返回 */*，由于我有open as弹窗，所以未知类型用户可选用内部编辑器打开或外部程序打开，操作我感觉还算方便，所以废弃“无匹配mime就当作text类型”的方案
+        ?: GENERIC  //如果文件类型未知，当作常规文件处理，GENERIC 调用 intentType 会返回 octet-stream那个类型，代表字节流，由于我有open as弹窗，所以未知类型用户可选用内部编辑器打开或外部程序打开，操作我感觉还算方便，所以废弃“无匹配mime就当作text类型”的方案
+//        ?: ANY  //如果文件类型未知，当作 */* 处理，这个好像匹配不如generic多，废弃
 }
 
 // @see https://android.googlesource.com/platform/external/mime-support/+/master/mime.types
