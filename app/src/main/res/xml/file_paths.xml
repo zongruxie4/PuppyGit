@@ -1,4 +1,9 @@
-<paths xmlns:android="http://schemas.android.com/apk/res/android">
+<?xml version="1.0" encoding="utf-8"?>
+<paths>
+<!--    注意：全部可用的external path可查看FileProvider源码-->
+<!--    注意：path="/" 或 path="."实际上没区别，因为path会和 xml tag代表的路径用File对象进行File(base, path)进行拼接，所以/和.对应的都是当前xml tag代表的目录的根目录-->
+
+
 <!--    share "/storage/emulated/0/Android/data/com.catpuppyapp.puppygit.play.pro/files" , path returned by api `context.getExternalFilesDir(null)`-->
     <external-files-path name="internal" path="/" />
 

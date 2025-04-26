@@ -14,6 +14,19 @@ import java.io.File
 
 private const val TAG = "FilePath"
 
+private val knownSystemFilesManagerUris = listOf(
+    "content://com.android.externalstorage.documents/tree/primary",
+    "content://com.android.externalstorage.documents/document/primary",
+
+    )
+
+private val knownUris = listOf(
+    "content://net.gsantner.markor.provider/external_files/",
+    "content://com.blacksquircle.ui.provider/root/",
+    "content://com.raival.compose.file.explorer.provider/storage_root/",
+
+    )
+
 @Parcelize
 class FilePath(
     private val rawPath:String,
@@ -101,50 +114,9 @@ class FilePath(
                 }
             }catch (_: Exception) {
                 try {
-                    val uri = Uri.parse(rawPath)
-                    val uriStr = uri.toString()
+                    MyLog.d(TAG, "in catch: rawPath=$rawPath, decoded uri.path: $decodedPathAtOut")
 
-                    //这里是不是用上面try里解码后的path更好？不过后面的uri都是没编码的，解码其实多此一举...而且由于编码符号可能是文件名，所以解码反而有可能出错，虽然概率很低
-
-                    //安卓系统自带的文件选择器选择/storage/emulated/0下的文件就会是这个路径
-                    //这里不能以 / 结尾去匹配，因为primary后面可能是冒号或者%百分号开头的编码之类的玩意
-                    val safExternalStoragePathPrefix = "content://com.android.externalstorage.documents/tree/primary"
-                    val systemFileManagerPathPrefix = "content://com.android.externalstorage.documents/document/primary"
-                    //安卓系统的自带文件管理器路径
-                    val maybeCanGetPathFromUri = uriStr.startsWith(safExternalStoragePathPrefix) || uriStr.startsWith(systemFileManagerPathPrefix)
-
-                    MyLog.d(TAG, "in catch: uriStr: $uriStr, rawUriPath: ${uri.path}, decodedPathAtOut: $decodedPathAtOut")
-
-                    if(maybeCanGetPathFromUri) {
-                        readableCanonicalPathOrDefault(File(FsUtils.getRealPathFromUri(uri)), rawPath)
-                    } else {
-                        //注意：匹配的时候尽量以 / 结尾，避免文件名包含前缀而匹配错误
-                        //注意：匹配的时候尽量以 / 结尾，避免文件名包含前缀而匹配错误
-                        //注意：匹配的时候尽量以 / 结尾，避免文件名包含前缀而匹配错误
-                        //注意：匹配的时候尽量以 / 结尾，避免文件名包含前缀而匹配错误
-
-                        // try resolve markor uri to real path
-                        val markorExternalUriPrefix = "content://net.gsantner.markor.provider/external_files/"
-                        val indexOfMarkorUriExternalPrefix = uriStr.indexOf(markorExternalUriPrefix)
-                        // indexOf == 0, means `include` and `starsWith`, both are `true`
-                        if(indexOfMarkorUriExternalPrefix == 0) {
-                            // length-1 是为了保留之前的 "/"，如果不减1，还得自己在前面prepend一个 "/"
-                            readableCanonicalPathOrDefault(File(uriStr.substring(markorExternalUriPrefix.length-1)), rawPath)
-                        }else{
-                            // try resolve `Squircle-CE` 的uri
-                            // e.g. "content://com.blacksquircle.ui.provider/root/storage/emulated/0/puppygit-repos/PuppyGit/app/src/main/java/com/catpuppyapp/puppygit/fileeditor/ui/composable/editor/EditorMenuIcon.kt"
-                            val squircleUriPrefix = "content://com.blacksquircle.ui.provider/root/"
-                            val indexOfPrefix = uriStr.indexOf(squircleUriPrefix)
-                            if(indexOfPrefix == 0) {
-                                readableCanonicalPathOrDefault(File(uriStr.substring(squircleUriPrefix.length-1)), rawPath)
-                            }else {
-                                rawPath
-                            }
-
-                        }
-                    }
-
-
+                    tryResolveKnownUriToRealPath(rawPath)
                 }catch (_:Exception) {
                     rawPath
                 }
@@ -158,6 +130,41 @@ class FilePath(
         }
 
         ioPathType = PathType.getType(ioPath)
+    }
+
+    private fun tryResolveKnownUriToRealPath(uriStr:String): String {
+        //这里是不是用上面try里解码后的path更好？不过后面的uri都是没编码的，解码其实多此一举...而且由于编码符号可能是文件名，所以解码反而有可能出错，虽然概率很低
+
+        //安卓系统自带的文件选择器选择/storage/emulated/0下的文件就会是这个路径
+        //这里不能以 / 结尾去匹配，因为primary后面可能是冒号或者%百分号开头的编码之类的玩意
+
+        //安卓系统的自带文件管理器路径
+        val maybeCanGetPathFromUri = knownSystemFilesManagerUris.any { uriStr.startsWith(it) }
+
+        return if(maybeCanGetPathFromUri) {
+            readableCanonicalPathOrDefault(File(FsUtils.getRealPathFromUri(Uri.parse(rawPath))), rawPath)
+        } else {
+            //注意：匹配的时候尽量以 / 结尾，避免文件名包含前缀而匹配错误
+            //注意：匹配的时候尽量以 / 结尾，避免文件名包含前缀而匹配错误
+            //注意：匹配的时候尽量以 / 结尾，避免文件名包含前缀而匹配错误
+            //注意：匹配的时候尽量以 / 结尾，避免文件名包含前缀而匹配错误
+
+            var resolvedPath = ""
+            for (uriPrefix in knownUris) {
+                // try resolve markor uri to real path
+                val indexOfPrefix = uriStr.indexOf(uriPrefix)
+                // indexOf == 0, means `include` and `starsWith`, both are `true`
+                if(indexOfPrefix == 0) {
+                    // length-1 是为了保留之前的 "/"，如果不减1，还得自己在前面prepend一个 "/"
+                    resolvedPath = readableCanonicalPathOrDefault(File(uriStr.substring(uriPrefix.length-1)), "")
+                    if(resolvedPath.isNotBlank()) {
+                        break
+                    }
+                }
+            }
+
+            resolvedPath.ifBlank { rawPath }
+        }
     }
 
     fun isEmpty():Boolean = ioPath.isEmpty()
