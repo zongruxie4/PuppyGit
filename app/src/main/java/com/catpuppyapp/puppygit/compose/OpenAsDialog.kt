@@ -20,6 +20,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.MutableState
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
@@ -47,22 +48,36 @@ import java.io.File
  * close: 关闭弹窗
  */
 @Composable
-fun OpenAsDialog(readOnly: MutableState<Boolean>, fileName:String, filePath:String, showOpenInEditor:Boolean=false, openInEditor:(expectReadOnly:Boolean)->Unit={}, openSuccessCallback:()->Unit={}, close:()->Unit) {
+fun OpenAsDialog(
+    readOnly: MutableState<Boolean>,
+    fileName:String,
+    filePath:String,
+    showOpenInEditor:Boolean=false,
+    openInEditor:(expectReadOnly:Boolean)->Unit={},
+    openSuccessCallback:()->Unit={},
+    close:()->Unit
+) {
 
     val activityContext = LocalContext.current
 
-    val mimeTypeList = FsUtils.FileMimeTypes.typeList.toMutableList()
-    val mimeTextList = FsUtils.FileMimeTypes.getTextList(activityContext).toMutableList()
+    val mimeTypeList = remember(fileName) {
+        FsUtils.FileMimeTypes.typeList.toMutableList().let {
+            //猜测文件mime类型
+            it.add(MimeType.guessFromFileName(fileName).intentType)  //我的app里只允许对文件使用 open as，所以这里的filePath必然是文件（除非有bug），所以这里调用guessFromPath()无需判断路径是否是文件夹，也不需要写若是文件夹则在末尾追加分隔符的逻辑
+            it
+        }
+    }
 
-    //添加一个根据文件名后缀打开的方式，不过可能不准
-//    mimeTypeList.add(FsUtils.getMimeTypeForFilePath(appContext, filePath))
-    mimeTypeList.add(MimeType.guessFromFileName(fileName).intentType)  //我的app里只允许对文件使用 open as，所以这里的filePath必然是文件（除非有bug），所以这里调用guessFromPath()无需判断路径是否是文件夹，也不需要写若是文件夹则在末尾追加分隔符的逻辑
-    mimeTextList.add(stringResource(R.string.file_open_as_by_extension))
+    val mimeTextList = remember {
+        FsUtils.FileMimeTypes.getTextList(activityContext).toMutableList().let {
+            //添加一个根据文件名后缀打开的方式，不过可能不准
+            it.add(activityContext.getString(R.string.file_open_as_by_extension))
+            it
+        }
+    }
 
 
-//    val inDarkTheme = Theme.inDarkTheme
 
-//    val color = if(inDarkTheme) Color.LightGray else Color.DarkGray
 
     val itemHeight = 50.dp
 
