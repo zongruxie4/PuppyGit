@@ -68,7 +68,6 @@ import com.catpuppyapp.puppygit.dto.UndoStack
 import com.catpuppyapp.puppygit.fileeditor.texteditor.view.ScrollEvent
 import com.catpuppyapp.puppygit.git.StatusTypeEntrySaver
 import com.catpuppyapp.puppygit.play.pro.R
-import com.catpuppyapp.puppygit.play.pro.findActivity
 import com.catpuppyapp.puppygit.screen.content.homescreen.innerpage.AboutInnerPage
 import com.catpuppyapp.puppygit.screen.content.homescreen.innerpage.AutomationInnerPage
 import com.catpuppyapp.puppygit.screen.content.homescreen.innerpage.ChangeListInnerPage
@@ -1506,7 +1505,8 @@ fun HomeScreen(
                         val intentConsumed = Unit // avoid mistake using
 
                         // import file or jump to specified screen
-                        val requireEditFile = Intent.ACTION_VIEW == intent.action || Intent.ACTION_EDIT == intent.action
+                        // 注意这个ACTION_VIEW其实也有可能是写权限，具体取决于flag，后面有做判断
+                        val requireEditFile = intent.action.let { it == Intent.ACTION_VIEW || it == Intent.ACTION_EDIT }
                         val extras = intent.extras
 
                         //importListConsumed 确保每个Activity的文件列表只被消费一次(20240706: 修复以导入模式启动app再进入子页面再返回会再次触发导入模式的bug)
