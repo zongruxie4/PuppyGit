@@ -131,30 +131,31 @@ object FsUtils {
     }
 
     object FileMimeTypes {
-        // 注意： typeList和getTextList()必须对应！
-        val typeList= listOf(
-            "text/plain",
-            "image/*",
-            "audio/*",
-            "video/*",
-            "application/zip",  //暂时用zip代替归档文件(压缩文件)，因为压缩mime类型有好多个！用模糊的application/*支持的程序不多，只有zip支持的最多！而且解压程序一般会根据二进制内容判断具体类型，所以，用zip实际上效果不错
-//            "*/*",  //这个不知道会匹配到什么，期望匹配所有，但其实不一定，我测试 pixel确实几乎匹配所有，但很多都是没什么卵用的app例如日历。。。但在我的国产手机上，匹配很少，甚至无匹配
-            binaryMimeType,  //当作字节流打开，在我的国产手机上反而比 */* 匹配的app多；但在pixel则相反，这个至少在任何手机上，都能多少匹配几个app，还是启用这个吧
+        data class MimeTypeAndDescText(
+            val type:String,
+            val descText:(context:Context) -> String,
         )
 
-        fun getTextList(activityContext:Context) :List<String> {
-            return listOf(
-                activityContext.getString(R.string.file_open_as_type_text),
-                activityContext.getString(R.string.file_open_as_type_image),
-                activityContext.getString(R.string.file_open_as_type_audio),
-                activityContext.getString(R.string.file_open_as_type_video),
-                activityContext.getString(R.string.file_open_as_type_archive),
+        // 注意： typeList和getTextList()必须对应！
+        val typeList = listOf(
+            MimeTypeAndDescText("text/plain") {it.getString(R.string.file_open_as_type_text)},
+            MimeTypeAndDescText("image/*") {it.getString(R.string.file_open_as_type_image)},
+            MimeTypeAndDescText("audio/*") {it.getString(R.string.file_open_as_type_audio)},
+            MimeTypeAndDescText("video/*") {it.getString(R.string.file_open_as_type_video)},
 
-                //这个明明写的是any，为什么翻译成other，当时怎么想的？
-                activityContext.getString(R.string.file_open_as_type_any),
-            )
-        }
+            //暂时用zip代替归档文件(压缩文件)，因为压缩mime类型有好多个！
+            // 用模糊的application/*支持的程序不多，只有zip支持的最多！
+            // 而且解压程序一般会根据二进制内容判断具体类型，所以，用zip实际上效果不错
+            MimeTypeAndDescText("application/zip") {it.getString(R.string.file_open_as_type_archive)},
 
+            //不知道具体类型的，当作二进制文件（字节流）打开，在我的国产手机上反而比 */* 匹配的app多；
+            // 但在pixel则相反，这个至少在任何手机上，都能多少匹配几个app，还是启用这个吧
+            MimeTypeAndDescText(binaryMimeType) {it.getString(R.string.file_open_as_type_other)},
+
+            //这个不知道会匹配到什么，期望匹配所有，但其实不一定，我测试 pixel确实几乎匹配所有，
+            // 但很多都是没什么卵用的app例如日历。。。但在我的国产手机上，匹配很少，甚至无匹配
+            MimeTypeAndDescText("*/*")  {it.getString(R.string.file_open_as_type_any)},
+        )
     }
 
     private fun getMimeType(url: String): String {

@@ -5,18 +5,13 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.wrapContentSize
 import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.selection.toggleable
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Card
-import androidx.compose.material3.Checkbox
-import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.MutableState
@@ -25,12 +20,11 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.semantics.Role
-import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
 import com.catpuppyapp.puppygit.play.pro.R
-import com.catpuppyapp.puppygit.style.MyStyleKt
 import com.catpuppyapp.puppygit.utils.FsUtils
 import com.catpuppyapp.puppygit.utils.Msg
 import com.catpuppyapp.puppygit.utils.mime.MimeType
@@ -62,46 +56,48 @@ fun OpenAsDialog(
 
     val mimeTypeList = remember(fileName) {
         FsUtils.FileMimeTypes.typeList.toMutableList().let {
-            //猜测文件mime类型
-            it.add(MimeType.guessFromFileName(fileName).intentType)  //我的app里只允许对文件使用 open as，所以这里的filePath必然是文件（除非有bug），所以这里调用guessFromPath()无需判断路径是否是文件夹，也不需要写若是文件夹则在末尾追加分隔符的逻辑
+            //添加一个根据文件名后缀打开的方式，不过可能不准
+            //我的app里只允许对文件使用 open as，所以这里的filePath必然是文件（除非有bug），所以这里调用guessFromPath()无需判断路径是否是文件夹，也不需要写若是文件夹则在末尾追加分隔符的逻辑
+            it.add(
+                FsUtils.FileMimeTypes.MimeTypeAndDescText(
+                    MimeType.guessFromFileName(fileName).intentType
+                ) { it.getString(R.string.file_open_as_by_extension) }
+            )
+
             it
         }
     }
 
-    val mimeTextList = remember {
-        FsUtils.FileMimeTypes.getTextList(activityContext).toMutableList().let {
-            //添加一个根据文件名后缀打开的方式，不过可能不准
-            it.add(activityContext.getString(R.string.file_open_as_by_extension))
-            it
-        }
-    }
 
 
 
 
     val itemHeight = 50.dp
+    val mimeTextWeight = FontWeight.Bold
+    val mimeTypeFontSize = 12.sp
 
     Dialog(onDismissRequest = { close() }) {
         Card(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(16.dp),
+            modifier = Modifier.fillMaxWidth()
+            ,
             shape = RoundedCornerShape(16.dp),
         ) {
             Column(modifier = Modifier
                 .fillMaxWidth()
+                .padding(10.dp)
                 .verticalScroll(rememberScrollState())
                 ,
             ) {
+                Spacer(modifier = Modifier.height(20.dp))
+
                 //文本
                 //图像
                 //音频
                 //视频
-                //其他(显示所有能打开的程序？)
+                //其他
+                //任意
                 //根据后缀名检测
                 if(showOpenInEditor) {
-                    Spacer(modifier = Modifier.height(20.dp))
-
                     Row(modifier = Modifier
                         .height(itemHeight)
                         .fillMaxWidth()
@@ -113,29 +109,11 @@ fun OpenAsDialog(
                             close()
                         }
                         ,
-                    ) {
-                        Column (modifier = Modifier.fillMaxSize()
-                                ,
-                               horizontalAlignment = Alignment.CenterHorizontally,
-                                verticalArrangement = Arrangement.Center
-                        ){
-                            Text(
-                                text = stringResource(R.string.open_in_editor),
-                                modifier = Modifier
-                                    .wrapContentSize(Alignment.Center),
-                                textAlign = TextAlign.Center,
-                            )
-                            //20240810：内置editor也支持read only了，所以不用显示此提示了，不过有例外：若是app内置禁止编辑的目录，则无视readonly值，强制启用readonly模式
-//                            Text(
-//                                text = "("+stringResource(R.string.will_ignore_read_only)+")",
-//                                modifier = Modifier
-//                                    .wrapContentSize(Alignment.Center),
-//                                textAlign = TextAlign.Center,
-//                                fontSize = 11.sp,
-//                                color = color
-//                            )
 
-                        }
+                        horizontalArrangement = Arrangement.Center,
+                        verticalAlignment = Alignment.CenterVertically,
+                    ) {
+                        Text(text = stringResource(R.string.open_in_editor), fontWeight = mimeTextWeight)
                     }
 
 //                    Spacer(modifier = Modifier.height(10.dp))
@@ -143,10 +121,10 @@ fun OpenAsDialog(
 //                    HorizontalDivider(color = color)
 
                 }
+
                 Spacer(modifier = Modifier.height(10.dp))
 
-                mimeTextList.forEachIndexed{ index, text ->
-                    val mimeType = mimeTypeList[index]
+                mimeTypeList.forEach { (mimeType, text) ->
                     Row(
                         modifier = Modifier
                             .height(itemHeight)
@@ -168,42 +146,26 @@ fun OpenAsDialog(
                                 close()
                             },
                     ) {
-                        Text(
-                            text = text,
-                            modifier = Modifier
-                                .fillMaxSize()
-                                .wrapContentSize(Alignment.Center),
-                            textAlign = TextAlign.Center,
-                        )
+                        Column(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalAlignment = Alignment.CenterHorizontally,
+                            verticalArrangement = Arrangement.Center
+                        ) {
+                            Text(text(activityContext), fontWeight = mimeTextWeight)
+
+                            Text(mimeType, fontSize = mimeTypeFontSize)
+                        }
+
                     }
+
+                    Spacer(modifier = Modifier.height(20.dp))
+
                 }
+
                 Spacer(modifier = Modifier.height(10.dp))
 
-                Row(
-                    Modifier
-                        .fillMaxWidth()
-                        .height(itemHeight)
-                        .toggleable(
-                            enabled = true,
-                            value = readOnly.value,
-                            onValueChange = { readOnly.value = !readOnly.value },
-                            role = Role.Checkbox
-                        )
-                        .padding(horizontal = MyStyleKt.defaultHorizontalPadding),
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    Checkbox(
-                        checked = readOnly.value,
-                        onCheckedChange = null // null recommended for accessibility with screenreaders
-                    )
+                MyCheckBox(stringResource(R.string.read_only), readOnly)
 
-                    Text(
-                        text = stringResource(R.string.read_only),
-                        style = MaterialTheme.typography.bodyLarge,
-                        modifier = Modifier.padding(start = 16.dp),
-                    )
-
-                }
                 Spacer(modifier = Modifier.height(20.dp))
 
             }

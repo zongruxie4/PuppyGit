@@ -460,7 +460,8 @@
     <string name="file_open_as_type_video">视频</string>
     <string name="file_open_as_type_archive">归档</string>
     <string name="file_open_as_type_directory">文件夹</string>
-    <string name="file_open_as_type_any">其他</string>
+    <string name="file_open_as_type_other">其他</string>
+    <string name="file_open_as_type_any">任意</string>
     <string name="file_open_as_by_extension">根据后缀</string>
     <string name="open_in_editor">在编辑器打开</string>
     <string name="open_as">打开方式</string>

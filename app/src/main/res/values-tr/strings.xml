@@ -446,7 +446,8 @@
     <string name="file_open_as_type_video">Video</string>
     <string name="file_open_as_type_archive">Arşiv</string>
     <string name="file_open_as_type_directory">Klasör</string>
-    <string name="file_open_as_type_any">Diğer</string>
+    <string name="file_open_as_type_other">Diğer</string>
+    <string name="file_open_as_type_any">Herhangi</string>
     <string name="file_open_as_by_extension">Uzantıya Göre</string>
     <string name="open_in_editor">Düzenleyicide Aç</string>
     <string name="open_as">Şununla Aç</string>

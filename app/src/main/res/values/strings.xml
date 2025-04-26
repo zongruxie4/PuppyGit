@@ -460,7 +460,8 @@
     <string name="file_open_as_type_video">Video</string>
     <string name="file_open_as_type_archive">Archive</string>
     <string name="file_open_as_type_directory">Folder</string>
-    <string name="file_open_as_type_any">Other</string>
+    <string name="file_open_as_type_other">Other</string>
+    <string name="file_open_as_type_any">Any</string>
     <string name="file_open_as_by_extension">By Extension</string>
     <string name="open_in_editor">Open in Editor</string>
     <string name="open_as">Open As</string>

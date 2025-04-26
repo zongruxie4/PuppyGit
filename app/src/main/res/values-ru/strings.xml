@@ -460,7 +460,8 @@
     <string name="file_open_as_type_video">Видео</string>
     <string name="file_open_as_type_archive">Архив</string>
     <string name="file_open_as_type_directory">Папка</string>
-    <string name="file_open_as_type_any">Другое</string>
+    <string name="file_open_as_type_other">Другое</string>
+    <string name="file_open_as_type_any">Любой</string>
     <string name="file_open_as_by_extension">По расширению</string>
     <string name="open_in_editor">Открыть в редакторе</string>
     <string name="open_as">Открыть как</string>
