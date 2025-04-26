@@ -26,7 +26,7 @@ import com.catpuppyapp.puppygit.jni.SshAskUserUnknownHostRequest
 import com.catpuppyapp.puppygit.screen.AppScreenNavigator
 import com.catpuppyapp.puppygit.screen.RequireMasterPasswordScreen
 import com.catpuppyapp.puppygit.screen.functions.KnownHostRequestStateMan
-import com.catpuppyapp.puppygit.screen.shared.SharedState
+import com.catpuppyapp.puppygit.screen.shared.IntentHandler
 import com.catpuppyapp.puppygit.ui.theme.PuppyGitAndroidTheme
 import com.catpuppyapp.puppygit.ui.theme.Theme
 import com.catpuppyapp.puppygit.user.UserUtil
@@ -84,7 +84,7 @@ class MainActivity : ComponentActivity() {
         MyLog.d(TAG, "onCreate called")
 
         //如果是初次创建Activity，onNewIntent不会被调用，只能在这里设置一下，要不然有可能漏外部传来的intent（分享文件、编辑文件）
-        SharedState.setNewIntent(intent)
+        IntentHandler.setNewIntent(intent)
 
         //打印广告id，需要google play service
 //        doJobThenOffLoading {
@@ -169,7 +169,7 @@ class MainActivity : ComponentActivity() {
     override fun onNewIntent(intent: Intent) {
         super.onNewIntent(intent)
         MyLog.d(TAG, "#onNewIntent() called")
-        SharedState.setNewIntent(intent)
+        IntentHandler.setNewIntent(intent)
     }
 
 }

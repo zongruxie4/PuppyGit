@@ -94,6 +94,7 @@ import com.catpuppyapp.puppygit.screen.functions.ChangeListFunctions
 import com.catpuppyapp.puppygit.screen.functions.getInitTextEditorState
 import com.catpuppyapp.puppygit.screen.shared.FileChooserType
 import com.catpuppyapp.puppygit.screen.shared.FilePath
+import com.catpuppyapp.puppygit.screen.shared.IntentHandler
 import com.catpuppyapp.puppygit.screen.shared.SharedState
 import com.catpuppyapp.puppygit.settings.SettingsCons
 import com.catpuppyapp.puppygit.settings.SettingsUtil
@@ -444,7 +445,7 @@ fun HomeScreen(
 
     val editorPageShowingFileName = rememberSaveable { mutableStateOf<String?>(null) }
     val filesPageRequireImportFile = rememberSaveable { mutableStateOf( false)}
-    val intentConsumed = rememberSaveable { SharedState.intentConsumed }  //此变量用来确保导入模式只启动一次，避免以导入模式进入app后，进入子页面再返回再次以导入模式进入Files页面
+    val intentConsumed = rememberSaveable { IntentHandler.intentConsumed }  //此变量用来确保导入模式只启动一次，避免以导入模式进入app后，进入子页面再返回再次以导入模式进入Files页面
     val filesPageRequireImportUriList = mutableCustomStateListOf(keyTag = stateKeyTag, keyName = "filesPageRequireImportUriList", initValue = listOf<Uri>())
     val filesPageCurrentPathFileList = mutableCustomStateListOf(keyTag = stateKeyTag, keyName = "filesPageCurrentPathFileList", initValue = listOf<FileItemDto>()) //路径字符串，用路径分隔符分隔后的list
     val filesPageRequestFromParent = rememberSaveable { mutableStateOf("")}
@@ -1488,7 +1489,7 @@ fun HomeScreen(
                 if (true) {  //检查activity是否为null没意义了，若为null怎么会执行这个页面的这块代码？之前主要是需要通过activity获取intent，现在不用了，所以直接设为true即可，但为了方便日后修改，不删除此if代码块
 //                    val intent = activity.intent  //单例之后，这玩意老出问题，废弃了，改用状态变量获取
 
-                    val intent = SharedState.intent.value  //通过状态变量获取intent
+                    val intent = IntentHandler.intent.value  //通过状态变量获取intent
 
                     MyLog.d(TAG, "intent==null: ${intent == null}")
 
