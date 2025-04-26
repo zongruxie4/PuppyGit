@@ -925,7 +925,7 @@ fun getViewAndSortForPath(path:String, settings:AppSettings) :Pair<Boolean, DirV
  * 注：若'.'在文件名开头或末尾或没有'.'，将返回空字符串；否则返回 ".txt" 之类的后缀名
  * @return input "abc.txt", return ".txt"; input ".git", return ""; input "abc.", return ""
  */
-fun getFileExtOrEmpty_treatStartWithDotNotAsExt(filename:String):String {
+fun getFileExtOrEmpty_treatStartWithDotAsNoExt(filename:String):String {
     val extIndex = filename.lastIndexOf('.')
 
     // <=0 is right, cause if extIndex==0, the . is first char, meaning it is a hidden file, not represent a ext name
