@@ -100,6 +100,7 @@ import com.catpuppyapp.puppygit.screen.functions.ChangeListFunctions
 import com.catpuppyapp.puppygit.screen.functions.filterModeActuallyEnabled
 import com.catpuppyapp.puppygit.screen.functions.filterTheList
 import com.catpuppyapp.puppygit.screen.functions.goToCommitListScreen
+import com.catpuppyapp.puppygit.screen.functions.goToDiffScreen
 import com.catpuppyapp.puppygit.screen.functions.goToStashPage
 import com.catpuppyapp.puppygit.screen.functions.naviToFileHistoryByRelativePath
 import com.catpuppyapp.puppygit.screen.functions.openFileWithInnerSubPageEditor
@@ -706,7 +707,6 @@ fun ChangeListInnerPage(
     if(requireDoActFromParent.value) {  // pull
         //先把开关关了，避免重复执行，当然，重复执行其实也没事，因为我做了处理
         requireDoActFromParent.value = false  //防止重复执行的第一重保险，立刻把状态变量改成假
-        MyLog.d(TAG, "requireDoActFromParent, act is:"+Cache.get(Cache.Key.changeListInnerPage_requireDoActFromParent))
         //执行操作
         doJobThenOffLoading(loadingOn,
             loadingOff={
@@ -714,6 +714,8 @@ fun ChangeListInnerPage(
                       enableActionFromParent.value=true  //重新启用顶栏的按钮
         }, requireDoActFromParentShowTextWhenDoingAct.value) {
             val requireAct = Cache.syncGetThenDel(Cache.Key.changeListInnerPage_requireDoActFromParent)
+            MyLog.d(TAG, "requireDoActFromParent, act is: "+requireAct)
+
             //防止重复执行的第二层保险，取出请求执行操作的key后就删除，这样即使状态变量没及时更新导致重复执行，执行到这时也会取出null而终止操作
 
             val curRepo = curRepoFromParentPage.value
@@ -2834,7 +2836,6 @@ fun ChangeListInnerPage(
                                 SharedState.homeChangeList_indexHasItem = changeListPageHasIndexItem
 
                                 //准备导航到diff页面的参数
-                                Cache.set(Cache.Key.diffScreen_underRepoPathKey, it.relativePathUnderRepo)
 //                                val diffableList = itemList.filter {item -> item.changeType == Cons.gitStatusModified || item.changeType == Cons.gitStatusNew || item.changeType == Cons.gitStatusDeleted}
                                 var indexAtDiffableList = -1
 
@@ -2854,29 +2855,28 @@ fun ChangeListInnerPage(
                                     }
                                 }
 
-                                Cache.set(Cache.Key.diffScreen_diffableItemListKey, diffableList)
-
                                 naviTarget.value = Cons.ChangeListNaviTarget_NoNeedReload
 
-                                //导航到diffScreen
-                                navController.navigate(
-                                    Cons.nav_DiffScreen +
-                                            "/" + it.repoIdFromDb +
-                                            //    "/" + encodeStrUri(item.relativePathUnderRepo) +
-                                            "/" + fromTo +
-                                            "/" + it.changeType +
-                                            "/" + it.fileSizeInBytes +
-                                            "/" + (if(swap) commit2OidStr else commit1OidStr) +
-                                            "/" + (if(swap) commit1OidStr else commit2OidStr) +
-                                            "/" + (if(it.itemType==Cons.gitItemTypeSubmodule) 1 else 0) +
-                                            "/" + (if(isDiffToLocal) 1 else 0)
-                                            + "/" + indexAtDiffableList
-                                            +"/" + (if(localAtDiffRight.value) 1 else 0)
-
-                                            +"/" + (if(fromTo == Cons.gitDiffFromIndexToWorktree) DiffFromScreen.HOME_CHANGELIST.code
-                                            else if(fromTo == Cons.gitDiffFromHeadToIndex) DiffFromScreen.INDEX.code
-                                            else DiffFromScreen.TREE_TO_TREE.code)
+                                goToDiffScreen(
+                                    relativePathUnderRepo = it.relativePathUnderRepo,
+                                    diffableListOfChangeList = diffableList,
+                                    diffableListOfFileHistory = null,
+                                    repoId = it.repoIdFromDb ,
+                                    fromTo = fromTo,
+                                    changeType = it.changeType ?:"",
+                                    fileSizeInBytes = it.fileSizeInBytes,
+                                    swap = swap,
+                                    commit1OidStr = commit1OidStr,
+                                    commit2OidStr = commit2OidStr,
+                                    isSubmodule = it.itemType==Cons.gitItemTypeSubmodule,
+                                    isDiffToLocal = isDiffToLocal,
+                                    curItemIndexAtDiffableList = indexAtDiffableList,
+                                    localAtDiffRight = localAtDiffRight.value,
+                                    fromScreen = (if(fromTo == Cons.gitDiffFromIndexToWorktree) DiffFromScreen.HOME_CHANGELIST.code
+                                    else if(fromTo == Cons.gitDiffFromHeadToIndex) DiffFromScreen.INDEX.code
+                                    else DiffFromScreen.TREE_TO_TREE.code),
                                 )
+
 
                             }
                         }

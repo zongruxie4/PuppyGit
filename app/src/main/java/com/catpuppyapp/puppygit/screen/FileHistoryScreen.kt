@@ -85,6 +85,7 @@ import com.catpuppyapp.puppygit.screen.functions.defaultTitleDoubleClick
 import com.catpuppyapp.puppygit.screen.functions.filterModeActuallyEnabled
 import com.catpuppyapp.puppygit.screen.functions.filterTheList
 import com.catpuppyapp.puppygit.screen.functions.getLoadText
+import com.catpuppyapp.puppygit.screen.functions.goToDiffScreen
 import com.catpuppyapp.puppygit.screen.functions.initSearch
 import com.catpuppyapp.puppygit.screen.functions.search
 import com.catpuppyapp.puppygit.screen.functions.triggerReFilter
@@ -866,8 +867,6 @@ fun FileHistoryScreen(
                         }
 
 
-                        Cache.set(Cache.Key.diffScreen_underRepoPathKey, fileRelativePath)
-                        Cache.set(Cache.Key.diffScreen_diffableItemListKey, list)
 
                         val previous = list[previousIndex]
                         val commit1 = previous.commitOidStr
@@ -877,26 +876,25 @@ fun FileHistoryScreen(
 //                    println("commit2:"+commit2)
 //                    println("fileRelativePath:"+fileRelativePath)
 
-                        val isSubm =0
-                        val isDiffToLocal = 0
-                        val localAtDiffRight = 0
-                        val fileSize = 0
+
 
                         //导航到diffScreen
-                        navController.navigate(
-                            Cons.nav_DiffScreen +
-                                    "/" + repoId+
-                                    //    "/" + encodeStrUri(item.relativePathUnderRepo) +
-                                    "/" + Cons.gitDiffFileHistoryFromTreeToTree +
-                                    "/" + Cons.gitStatusModified +
-                                    "/" + fileSize +
-                                    "/" + commit1 +
-                                    "/" + commit2 +
-                                    "/" + isSubm +
-                                    "/" + isDiffToLocal
-                                    + "/" + indexAtDiffableList
-                                    +"/" + localAtDiffRight
-                                    + "/" + DiffFromScreen.FILE_HISTORY.code
+                        goToDiffScreen(
+                            relativePathUnderRepo = fileRelativePath,
+                            diffableListOfChangeList = null,
+                            diffableListOfFileHistory = list,
+                            repoId = repoId,
+                            fromTo = Cons.gitDiffFileHistoryFromTreeToTree,
+                            changeType = Cons.gitStatusModified,
+                            fileSizeInBytes = 0,
+                            swap = false,
+                            commit1OidStr = commit1,
+                            commit2OidStr = commit2,
+                            isSubmodule = false,
+                            isDiffToLocal = false,
+                            curItemIndexAtDiffableList = indexAtDiffableList,
+                            localAtDiffRight = false,
+                            fromScreen = DiffFromScreen.FILE_HISTORY.code
                         )
                     }
 
@@ -1050,36 +1048,25 @@ fun FileHistoryScreen(
                 }
             ) { idx, it ->
                 FileHistoryItem(showBottomSheet, curObj, curObjIndex, idx, it, requireBlinkIdx, lastClickedItemKey, shouldShowTimeZoneInfo, showItemDetails) { thisObj ->
-                    Cache.set(Cache.Key.diffScreen_underRepoPathKey, fileRelativePath)
-                    val indexAtDiffableList = idx
-                    Cache.set(Cache.Key.diffScreen_diffableItemListKey, list.toList())
-
-                    val commit1 = it.commitOidStr
-                    val commit2 = Cons.git_LocalWorktreeCommitHash
-
-                    val isSubm =0
-                    val fileSize =0
-                    val isDiffToLocal = 1
-                    val localAtDiffRight = 1
-
                     Msg.requireShow(activityContext.getString(R.string.diff_to_local))
 
                     //导航到diffScreen
-                    navController.navigate(
-                        Cons.nav_DiffScreen +
-                                "/" + repoId+
-                                //    "/" + encodeStrUri(item.relativePathUnderRepo) +
-                                "/" + Cons.gitDiffFileHistoryFromTreeToLocal +
-                                "/" + Cons.gitStatusModified +
-                                "/" + fileSize +
-                                "/" + commit1 +
-                                "/" + commit2 +
-                                "/" + isSubm +
-                                "/" + isDiffToLocal
-                                + "/" + indexAtDiffableList
-                                +"/" + localAtDiffRight
-                                +"/"+ DiffFromScreen.FILE_HISTORY.code
-
+                    goToDiffScreen(
+                        relativePathUnderRepo = fileRelativePath,
+                        diffableListOfChangeList = null,
+                        diffableListOfFileHistory = list.toList(),
+                        repoId = repoId,
+                        fromTo = Cons.gitDiffFileHistoryFromTreeToLocal,
+                        changeType = Cons.gitStatusModified,
+                        fileSizeInBytes = 0,
+                        swap = false,
+                        commit1OidStr = it.commitOidStr,
+                        commit2OidStr = Cons.git_LocalWorktreeCommitHash,
+                        isSubmodule = false,
+                        isDiffToLocal = true,
+                        curItemIndexAtDiffableList = idx,
+                        localAtDiffRight = true,
+                        fromScreen = DiffFromScreen.FILE_HISTORY.code
                     )
 
                 }

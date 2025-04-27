@@ -13,7 +13,10 @@ import com.catpuppyapp.puppygit.constants.LineNum
 import com.catpuppyapp.puppygit.constants.PageRequest
 import com.catpuppyapp.puppygit.dto.UndoStack
 import com.catpuppyapp.puppygit.fileeditor.texteditor.state.TextEditorState
+import com.catpuppyapp.puppygit.git.FileHistoryDto
+import com.catpuppyapp.puppygit.git.StatusTypeEntrySaver
 import com.catpuppyapp.puppygit.play.pro.R
+import com.catpuppyapp.puppygit.screen.shared.DiffFromScreen
 import com.catpuppyapp.puppygit.screen.shared.FileChooserType
 import com.catpuppyapp.puppygit.screen.shared.FilePath
 import com.catpuppyapp.puppygit.screen.shared.SharedState
@@ -31,6 +34,7 @@ import com.catpuppyapp.puppygit.utils.getRandomUUID
 import com.catpuppyapp.puppygit.utils.replaceStringResList
 import com.catpuppyapp.puppygit.utils.state.CustomStateSaveable
 import com.catpuppyapp.puppygit.utils.withMainContext
+import com.github.git24j.core.Worktree
 import kotlinx.coroutines.CoroutineScope
 
 private const val TAG = "ScreenHelper"
@@ -399,3 +403,54 @@ fun goToCommitListScreen(repoId: String, fullOid:String, shortBranchName:String,
         AppModel.navController.navigate(Cons.nav_CommitListScreen + "/" + repoId +"/" + (if(useFullOid) "1" else "0") + "/" + (if(isHEAD) "1" else "0"))
     }
 }
+
+fun goToDiffScreen(
+    relativePathUnderRepo:String,
+    diffableListOfChangeList:List<StatusTypeEntrySaver>?,
+    diffableListOfFileHistory:List<FileHistoryDto>?,
+    repoId: String,
+    fromTo: String,
+    changeType:String,
+    fileSizeInBytes:Long,
+    swap:Boolean,
+    commit1OidStr:String,
+    commit2OidStr:String,
+    isSubmodule:Boolean,
+    isDiffToLocal:Boolean,
+    curItemIndexAtDiffableList:Int,
+    localAtDiffRight:Boolean,
+    fromScreen:String,
+){
+    doJobWithMainContext {
+        SharedState.diffScreen_relativePathUnderRepo.value = relativePathUnderRepo
+
+        SharedState.setDiffableListByFromTo(diffableListOfChangeList, fromTo)
+
+        if(diffableListOfFileHistory != null) {
+            SharedState.diffScreen_diffableItemList_of_FileHistory.let {
+                it.clear()
+                it.addAll(diffableListOfFileHistory)
+            }
+        }
+
+
+
+        AppModel.navController.navigate(
+            Cons.nav_DiffScreen +
+                    "/" + repoId +
+                    //    "/" + encodeStrUri(item.relativePathUnderRepo) +
+                    "/" + fromTo +
+                    "/" + changeType +
+                    "/" + fileSizeInBytes +
+                    "/" + (if(swap) commit2OidStr else commit1OidStr) +
+                    "/" + (if(swap) commit1OidStr else commit2OidStr) +
+                    "/" + (if(isSubmodule) 1 else 0) +
+                    "/" + (if(isDiffToLocal) 1 else 0)
+                    + "/" + curItemIndexAtDiffableList
+                    +"/" + (if(localAtDiffRight) 1 else 0)
+
+                    +"/" + fromScreen
+        )
+    }
+}
+
