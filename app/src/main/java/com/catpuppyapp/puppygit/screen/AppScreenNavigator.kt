@@ -128,8 +128,11 @@ fun AppScreenNavigator() {
                 naviUp = { navController.navigateUp() },
             )
         }
-//        composable(Cons.nav_DiffScreen + "/{repoId}/{relativePathUnderRepoEncoded}/{fromTo}/{changeType}") {
-        composable(Cons.nav_DiffScreen + "/{repoId}/{fromTo}/{changeType}/{fileSize}/{treeOid1Str}/{treeOid2Str}/{isSubmodule}/{isDiffToLocal}/{curItemIndexAtDiffableList}/{localAtDiffRight}/{fromScreen}") {
+        composable(Cons.nav_DiffScreen + "/{repoId}/{fromTo}/{changeType}/{fileSize}/{treeOid1Str}/{treeOid2Str}/{isSubmodule}/{isDiffToLocal}/{curItemIndexAtDiffableList}/{localAtDiffRight}/{fromScreen}/{relativePathCacheKey}/{diffableListOfChangeListCacheKey}/{diffableListOfFileHistoryCacheKey}") {
+            val relativePathCacheKey = it.arguments?.getString("relativePathCacheKey") ?: ""
+            val diffableListOfChangeListCacheKey = it.arguments?.getString("diffableListOfChangeListCacheKey") ?: ""
+            val diffableListOfFileHistoryCacheKey = it.arguments?.getString("diffableListOfFileHistoryCacheKey") ?: ""
+
             DiffScreen(
                 repoId = it.arguments?.getString("repoId") ?: "",
                 fromTo = it.arguments?.getString("fromTo") ?: "",
@@ -137,16 +140,25 @@ fun AppScreenNavigator() {
                 fileSize= it.arguments?.getString("fileSize")?.toLong() ?: 0L,
                 treeOid1Str = it.arguments?.getString("treeOid1Str") ?: "",
                 treeOid2Str = it.arguments?.getString("treeOid2Str") ?: "",
-                naviUp = { navController.navigateUp() },
                 isSubmodule = (it.arguments?.getString("isSubmodule")?.toInt() ?: 0) != 0,
                 localAtDiffRight = (it.arguments?.getString("localAtDiffRight")?.toInt() ?: 0) != 0,
                 isDiffToLocal = (it.arguments?.getString("isDiffToLocal")?.toInt() ?: 0) != 0,
                 fromScreen = DiffFromScreen.fromCode(it.arguments?.getString("fromScreen")!!)!!,
+                relativePathCacheKey = relativePathCacheKey,
+                diffableListOfChangeListCacheKey = diffableListOfChangeListCacheKey,
+                diffableListOfFileHistoryCacheKey = diffableListOfFileHistoryCacheKey,
                 curItemIndexAtDiffableItemList = try {
                     (it.arguments?.getString("curItemIndexAtDiffableList") ?: "").toInt()
                 }catch (_:Exception) {
                     -1
-                }
+                },
+                naviUp = {
+                    navController.navigateUp()
+
+                    NaviCache.del(relativePathCacheKey)
+                    NaviCache.del(diffableListOfChangeListCacheKey)
+                    NaviCache.del(diffableListOfFileHistoryCacheKey)
+                },
 
             )
         }

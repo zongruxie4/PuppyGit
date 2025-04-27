@@ -56,7 +56,7 @@ import com.catpuppyapp.puppygit.utils.Libgit2Helper
 import com.catpuppyapp.puppygit.utils.Msg
 import com.catpuppyapp.puppygit.utils.MyLog
 import com.catpuppyapp.puppygit.utils.StateRequestType
-import com.catpuppyapp.puppygit.utils.cache.Cache
+import com.catpuppyapp.puppygit.utils.cache.NaviCache
 import com.catpuppyapp.puppygit.utils.changeStateTriggerRefreshPage
 import com.catpuppyapp.puppygit.utils.createAndInsertError
 import com.catpuppyapp.puppygit.utils.doJobThenOffLoading
@@ -85,7 +85,10 @@ fun DiffScreen(
     curItemIndexAtDiffableItemList:Int,
     localAtDiffRight:Boolean,
     fromScreen: DiffFromScreen, // from which screen
-    naviUp: () -> Boolean,
+    relativePathCacheKey:String,
+    diffableListOfChangeListCacheKey:String,
+    diffableListOfFileHistoryCacheKey:String,
+    naviUp: () -> Unit,
 ) {
 
 //    val isWorkTree = fromTo == Cons.gitDiffFromIndexToWorktree
@@ -137,18 +140,18 @@ fun DiffScreen(
 
     //这个值存到状态变量里之后就不用管了，与页面共存亡即可，如果旋转屏幕也没事，返回rememberSaveable可恢复
 //    val relativePathUnderRepoDecoded = (Cache.Map.getThenDel(Cache.Map.Key.diffScreen_UnderRepoPath) as? String)?:""
-    val relativePathUnderRepoState = rememberSaveable { SharedState.diffScreen_relativePathUnderRepo }
+    val relativePathUnderRepoState = rememberSaveable { NaviCache.getByType<String>(relativePathCacheKey) ?: "" }
 
     val diffableItemList = mutableCustomStateListOf(stateKeyTag, "diffableItemList") {
         if(isFileHistoryTreeToLocal || isFileHistoryTreeToTree) {
             listOf()
         } else {
-            SharedState.getDiffableListByFromTo(fromTo)
+            NaviCache.getByType<List<StatusTypeEntrySaver>>(diffableListOfChangeListCacheKey) ?: listOf()
         }
     }
     val diffableItemListForFileHistory = mutableCustomStateListOf(stateKeyTag, "diffableItemListForFileHistory") {
         if(isFileHistoryTreeToLocal || isFileHistoryTreeToTree) {
-            SharedState.diffScreen_diffableItemList_of_FileHistory
+            NaviCache.getByType<List<FileHistoryDto>>(diffableListOfFileHistoryCacheKey) ?: listOf()
         }else {
             listOf()
         }

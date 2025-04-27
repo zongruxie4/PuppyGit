@@ -425,17 +425,13 @@ fun goToDiffScreen(
     fromScreen:String,
 ){
     doJobWithMainContext {
-        SharedState.diffScreen_relativePathUnderRepo.value = relativePathUnderRepo
+        val relativePathCacheKey = NaviCache.setThenReturnKey(relativePathUnderRepo)
 
-        SharedState.setDiffableListByFromTo(diffableListOfChangeList, fromTo)
-
-        if(diffableListOfFileHistory != null) {
-            SharedState.diffScreen_diffableItemList_of_FileHistory.let {
-                it.clear()
-                it.addAll(diffableListOfFileHistory)
-            }
-        }
-
+        //设置条目列表
+        val invalidCacheKey = getRandomUUID(10)
+        //等于null说明目标页面不需要此列表，所以不用设置
+        val diffableListOfChangeListCacheKey = if(diffableListOfChangeList != null) NaviCache.setThenReturnKey(diffableListOfChangeList) else invalidCacheKey;
+        val diffableListOfFileHistoryCacheKey = if(diffableListOfFileHistory != null) NaviCache.setThenReturnKey(diffableListOfFileHistory) else invalidCacheKey;
 
 
         AppModel.navController.navigate(
@@ -453,6 +449,10 @@ fun goToDiffScreen(
                     +"/" + (if(localAtDiffRight) 1 else 0)
 
                     +"/" + fromScreen
+
+                    +"/"+relativePathCacheKey
+                    +"/"+diffableListOfChangeListCacheKey
+                    +"/"+diffableListOfFileHistoryCacheKey
         )
     }
 }

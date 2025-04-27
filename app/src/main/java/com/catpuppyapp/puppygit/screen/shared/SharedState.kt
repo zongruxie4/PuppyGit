@@ -55,48 +55,48 @@ object SharedState {
 //    val commitList_fullOid = mutableStateOf("")
 //    val commitList_shortBranchName = mutableStateOf("")
 
-    val diffScreen_relativePathUnderRepo = mutableStateOf("")
+//    val diffScreen_relativePathUnderRepo = mutableStateOf("")
     //这个列表其实应该按页面区分，否则有可能冲突，不过问题不大并不会导致向前导航的时候出错，只是返回的时候会显示错误，改起来有点恶心，不想改
-    val diffScreen_diffableItemList_of_Worktree = mutableStateListOf<StatusTypeEntrySaver>()
-    val diffScreen_diffableItemList_of_Index = mutableStateListOf<StatusTypeEntrySaver>()
-    val diffScreen_diffableItemList_of_TreeToTree = mutableStateListOf<StatusTypeEntrySaver>()
-    val diffScreen_diffableItemList_of_FileHistory = mutableStateListOf<FileHistoryDto>()
-
-    fun setDiffableListByFromTo(
-        diffableListOfChangeList:List<StatusTypeEntrySaver>?,
-        fromTo: String
-    ) {
-        if(diffableListOfChangeList != null) {
-            if(fromTo == Cons.gitDiffFromIndexToWorktree) {
-                SharedState.diffScreen_diffableItemList_of_Worktree.let {
-                    it.clear()
-                    it.addAll(diffableListOfChangeList)
-                }
-            }else if(fromTo == Cons.gitDiffFromHeadToIndex) {
-                SharedState.diffScreen_diffableItemList_of_Index.let {
-                    it.clear()
-                    it.addAll(diffableListOfChangeList)
-                }
-            }else if(fromTo == Cons.gitDiffFromTreeToTree) {
-                SharedState.diffScreen_diffableItemList_of_TreeToTree.let {
-                    it.clear()
-                    it.addAll(diffableListOfChangeList)
-                }
-            }
-        }
-    }
-
-    fun getDiffableListByFromTo(fromTo: String):List<StatusTypeEntrySaver> {
-        return if(fromTo == Cons.gitDiffFromIndexToWorktree) {
-            SharedState.diffScreen_diffableItemList_of_Worktree
-        }else if(fromTo == Cons.gitDiffFromHeadToIndex) {
-            SharedState.diffScreen_diffableItemList_of_Index
-        }else if(fromTo == Cons.gitDiffFromTreeToTree) {
-            SharedState.diffScreen_diffableItemList_of_TreeToTree
-        }else {
-            listOf()
-        }
-    }
+//    val diffScreen_diffableItemList_of_Worktree = mutableStateListOf<StatusTypeEntrySaver>()
+//    val diffScreen_diffableItemList_of_Index = mutableStateListOf<StatusTypeEntrySaver>()
+//    val diffScreen_diffableItemList_of_TreeToTree = mutableStateListOf<StatusTypeEntrySaver>()
+//    val diffScreen_diffableItemList_of_FileHistory = mutableStateListOf<FileHistoryDto>()
+//
+//    fun setDiffableListByFromTo(
+//        diffableListOfChangeList:List<StatusTypeEntrySaver>?,
+//        fromTo: String
+//    ) {
+//        if(diffableListOfChangeList != null) {
+//            if(fromTo == Cons.gitDiffFromIndexToWorktree) {
+//                SharedState.diffScreen_diffableItemList_of_Worktree.let {
+//                    it.clear()
+//                    it.addAll(diffableListOfChangeList)
+//                }
+//            }else if(fromTo == Cons.gitDiffFromHeadToIndex) {
+//                SharedState.diffScreen_diffableItemList_of_Index.let {
+//                    it.clear()
+//                    it.addAll(diffableListOfChangeList)
+//                }
+//            }else if(fromTo == Cons.gitDiffFromTreeToTree) {
+//                SharedState.diffScreen_diffableItemList_of_TreeToTree.let {
+//                    it.clear()
+//                    it.addAll(diffableListOfChangeList)
+//                }
+//            }
+//        }
+//    }
+//
+//    fun getDiffableListByFromTo(fromTo: String):List<StatusTypeEntrySaver> {
+//        return if(fromTo == Cons.gitDiffFromIndexToWorktree) {
+//            SharedState.diffScreen_diffableItemList_of_Worktree
+//        }else if(fromTo == Cons.gitDiffFromHeadToIndex) {
+//            SharedState.diffScreen_diffableItemList_of_Index
+//        }else if(fromTo == Cons.gitDiffFromTreeToTree) {
+//            SharedState.diffScreen_diffableItemList_of_TreeToTree
+//        }else {
+//            listOf()
+//        }
+//    }
 
     val fileHistory_fileRelativePath = mutableStateOf("")
     val subPageEditor_filePath = mutableStateOf("")
