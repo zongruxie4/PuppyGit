@@ -31,7 +31,6 @@ import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.MutableIntState
 import androidx.compose.runtime.MutableState
-import androidx.compose.runtime.State
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.mutableLongStateOf
 import androidx.compose.runtime.mutableStateOf
@@ -205,7 +204,7 @@ fun EditorInnerPage(
     val editorPageShowingFileHasErr = rememberSaveable { mutableStateOf(false)}  //BasicTextField用的文本，用来存储打开的文件的所有内容
     val editorPageShowingFileErrMsg = rememberSaveable { mutableStateOf("")}  //BasicTextField用的文本，用来存储打开的文件的所有内容
 
-    val editorPageFileSavedSuccess = stringResource(R.string.file_saved)
+//    val editorPageFileSavedSuccess = stringResource(R.string.file_saved)
     val unknownErrStrRes = stringResource(R.string.unknown_err)
 
     //在编辑器弹出键盘用的，不过后来用simple editor库了，就不需要这个了
@@ -222,6 +221,9 @@ fun EditorInnerPage(
     val editorPageClearShowingFileErrWhenLoading = {
         editorPageShowingFileHasErr.value=false
         editorPageShowingFileErrMsg.value=""
+    }
+    val hasError = {
+        editorPageShowingFileHasErr.value
     }
 
     val saveFontSizeAndQuitAdjust = {
@@ -413,7 +415,8 @@ fun EditorInnerPage(
         }
     }
 
-    val reloadFile={
+    //强制重载，不检测修改时间
+    val reloadFile = { force:Boolean ->
         if(isSubPageMode) {
             AppModel.subEditorPreviewModeOnWhenDestroy.value = false
         }else {
@@ -428,17 +431,22 @@ fun EditorInnerPage(
         //设置当前文件为请求打开的文件，然后走打开文件流程
         isEdited.value=false
         isSaving.value=false
-
-        //确保重载：清空文件路径，这样和showingFilePath对比就永远不会为真，也就会百分百重载文件
-        editorPageShowingFileDto.value.fullPath=""
-
-//        editorPageRequireOpenFilePath.value = editorPageShowingFilePath.value
         editorPageShowingFileIsReady.value = false  //设置文件状态为未就绪，显示loading界面，好像有bug，TODO 需要测试能不能正常显示loading，整个大文件，测试一下
 
-        //重载文件清undo stack
-        undoStack.value = UndoStack(editorPageShowingFilePath.value.ioPath)
+        //非force有概率不会重载如果判断后认为文件没修改的话（根据大小和最后修改时间，不一定总是准）
+        if(force) {
+            //确保重载：清空文件路径，这样和showingFilePath对比就永远不会为真，也就会百分百重载文件
+            editorPageShowingFileDto.value.fullPath=""
+            //重载文件清undo stack
+            undoStack.value = UndoStack(editorPageShowingFilePath.value.ioPath)
+        }
 
         changeStateTriggerRefreshPage(needRefreshEditorPage)
+    }
+
+    val forceReloadFile={
+        val force = true
+        reloadFile(force)
     }
 
     //重新加载文件确认弹窗
@@ -472,7 +480,7 @@ fun EditorInnerPage(
             }
 
             //重载文件
-            reloadFile()
+            forceReloadFile()
         }else {
             // 编辑过文件，弹窗询问是否确认重载
             ConfirmDialog(
@@ -482,7 +490,7 @@ fun EditorInnerPage(
                 onCancel = { showReloadDialog.value=false }
             ) {
                 showReloadDialog.value=false
-                reloadFile()
+                forceReloadFile()
             }
         }
     }
@@ -550,7 +558,7 @@ fun EditorInnerPage(
 
             //reload文件
             showBackFromExternalAppAskReloadDialog.value=false
-            reloadFile()
+            forceReloadFile()
         }
     }
 
@@ -821,7 +829,7 @@ fun EditorInnerPage(
                 if(previewing != editorPageShowingFilePath.value.ioPath) {
                     editorPageShowingFilePath.value = FilePath(previewing)
                     keepPreviewNavStackOnce.value = true  //保留导航栈
-                    reloadFile()
+                    forceReloadFile()
                 }else {
                     quitPreviewMode()
                 }
@@ -1005,7 +1013,7 @@ fun EditorInnerPage(
                         icon =  Icons.Filled.Refresh,
                         iconContentDesc = stringResource(id = R.string.reload),
                     ) {
-                        reloadFile()
+                        forceReloadFile()
                     }
 
                     //只有顶级页面的editor才显示show in files
@@ -1085,7 +1093,7 @@ fun EditorInnerPage(
 //                            readOnlyMode.value = FsUtils.isReadOnlyDir(last)  //避免打开文件，退出app，直接从editor点击 open last然后可编辑本不应该允许编辑的app内置目录下的文件
 
                             editorPageShowingFilePath.value = FilePath(last)
-                            reloadFile()
+                            forceReloadFile()
                         }) noOkAct@{
                             Msg.requireShowLongDuration(activityContext.getString(R.string.file_not_found))
                         }
@@ -1160,7 +1168,7 @@ fun EditorInnerPage(
 //                        readOnlyMode.value = FsUtils.isReadOnlyDir(filePath)  //避免打开文件，退出app，直接从editor点击 open last然后可编辑本不应该允许编辑的app内置目录下的文件
 
                                         editorPageShowingFilePath.value = FilePath(filePath)
-                                        reloadFile()
+                                        forceReloadFile()
 
                                     }
                                 )
@@ -1290,7 +1298,9 @@ fun EditorInnerPage(
                 && editorPageShowingFilePath.value.isNotBlank()
                 && isEdited.value.not()
             ) {
-                reloadFile()
+                //非force如果检测最后修改时间和大小没变则不会重载，但如果之前打开出错，则会强制尝试重新加载文件，完美
+                val force = false
+                reloadFile(force)
             }
         }
     }
@@ -1324,7 +1334,8 @@ fun EditorInnerPage(
                         isSaving = isSaving,
                         isContentSnapshoted = editorPageIsContentSnapshoted,
                         lastTextEditorState = lastTextEditorState,
-                        undoStack = undoStack
+                        undoStack = undoStack,
+                        hasError = hasError
                     )
                 }catch (e:Exception) {
                     Msg.requireShowLongDuration("init Editor err: ${e.localizedMessage}")
@@ -1396,7 +1407,7 @@ private suspend fun doInit(
     isContentSnapshoted:MutableState<Boolean>,
     lastTextEditorState: CustomStateSaveable<TextEditorState>,
     undoStack:MutableState<UndoStack>,
-
+    hasError:()->Boolean,
 ) {
 
     //保存后不改变needrefresh就行了，没必要传这个变量
@@ -1442,11 +1453,35 @@ private suspend fun doInit(
             }
         }
 
-        //清除错误信息，如果打开文件时出错，会重新设置错误信息
-        editorPageClearShowingFileErrWhenLoading()
         //读取文件内容
         try {
             val file = FuckSafFile(activityContext, editorPageShowingFilePath)
+
+            //如果文件修改时间和大小没变，不重新加载文件
+            //x 废弃 20240503 subPage为什么要百分百重载呢？再说subPage本来就是百分百重载啊，因为一关页面再开不就重载了吗？没必要在这特意区分是否subPage！) subPage百分百重载文件；
+            // 注：从Files点击百分百重载，因为请求打开文件时清了dto
+            //如果打开文件没出错则检查是否已修改，否则不检查，强制重新加载
+            if(hasError().not()) {
+                val editorPageShowingFileDto = editorPageShowingFileDto.value
+
+                if (editorPageShowingFileDto.fullPath.isNotBlank() && editorPageShowingFileDto.fullPath == requireOpenFilePath) {
+                    val newDto = FileSimpleDto.genByFile(file)
+                    if (newDto.lastModifiedTime == editorPageShowingFileDto.lastModifiedTime
+                        && newDto.sizeInBytes == editorPageShowingFileDto.sizeInBytes
+                    ) {
+                        MyLog.d(TAG,"EditorInnerPage#loadFile: file '${editorPageShowingFileDto.name}' not change, skip reload")
+                        //文件可能没改变，放弃加载
+                        editorPageShowingFileIsReady.value = true
+                        return
+                    }
+                }
+            }
+
+
+            //清除错误信息，如果打开文件时出错，会重新设置错误信息
+            editorPageClearShowingFileErrWhenLoading()
+
+
             //如果文件不存在，抛异常，然后会显示错误信息给用户
             if (!file.exists()) {
                 //如果当前显示的内容不为空，为当前显示的内容创建个快照，然后抛异常
@@ -1496,22 +1531,7 @@ private suspend fun doInit(
 //                println("editorPageShowingFileDto.value.fullPath: "+editorPageShowingFileDto.value.fullPath)
 //            }
 
-            //如果文件修改时间和大小没变，不重新加载文件
-            //x 废弃 20240503 subPage为什么要百分百重载呢？再说subPage本来就是百分百重载啊，因为一关页面再开不就重载了吗？没必要在这特意区分是否subPage！) subPage百分百重载文件；
-            // 注：从Files点击百分百重载，因为请求打开文件时清了dto
-            if (editorPageShowingFileDto.value.fullPath.isNotBlank() && editorPageShowingFileDto.value.fullPath == requireOpenFilePath) {
-                val newDto = FileSimpleDto.genByFile(file)
-                if (newDto.lastModifiedTime == editorPageShowingFileDto.value.lastModifiedTime
-                    && newDto.sizeInBytes == editorPageShowingFileDto.value.sizeInBytes
-                ) {
-                    MyLog.d(TAG,"EditorInnerPage#loadFile: file '${editorPageShowingFileDto.value.name}' not change, skip reload")
-                    //文件可能没改变，放弃加载
-                    editorPageShowingFileIsReady.value = true
-                    return
-                }
-            }
-
-            //TODO 其实漏了一种情况，不过不是很重要而且发生的概率几乎为0，那就是：如果用户编辑了文件但没保存，
+            //(好像已经解决了？) TODO 其实漏了一种情况，不过不是很重要而且发生的概率几乎为0，那就是：如果用户编辑了文件但没保存，
             // 然后切换窗口，在外部修改文件，再切换回来，editor发现文件被修改过，这时会自动重载。
             // 问题就在于自动重载，应该改成询问用户是否重载，或者自动重载前先创建当前未保存内容的快照。
             // 但由于目前一切换出editor就自动保存了，
