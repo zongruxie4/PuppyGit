@@ -72,6 +72,8 @@ import com.catpuppyapp.puppygit.screen.functions.goToFileHistory
 import com.catpuppyapp.puppygit.screen.shared.EditorPreviewNavStack
 import com.catpuppyapp.puppygit.screen.shared.FilePath
 import com.catpuppyapp.puppygit.screen.shared.FuckSafFile
+import com.catpuppyapp.puppygit.screen.shared.MainActivityLifeCycle
+import com.catpuppyapp.puppygit.screen.shared.doActIfIsExpectLifeCycle
 import com.catpuppyapp.puppygit.settings.SettingsUtil
 import com.catpuppyapp.puppygit.style.MyStyleKt
 import com.catpuppyapp.puppygit.utils.AppModel
@@ -1256,53 +1258,70 @@ fun EditorInnerPage(
 
     val wasPaused = rememberSaveable { mutableStateOf(false) }
 
-    //按Home键把app切到后台时保存文件（准确地说是当前Activity失焦就自动保存，注意是Activity不是compose，这个函数监听的是Activity的生命周期事件)
+    //按Home键把app切到后台时保存文件，chatgpt弱智玩意告诉我这个东西监听的是Activity的生命周期，日，其实他妈的是Compose的！
+    // 这个东西监听的是Compose的生命周期，不是Activity的，若Compose所处的Activity的ON_PAUSE被触发，
+    // 此组件的一定会触发；若此组件的被触发，Activity的不一定触发，所以做个双重检测就稳了，他妈的我真是天才
     LifecycleEventEffect(Lifecycle.Event.ON_PAUSE) {
-        wasPaused.value = true
+        doActIfIsExpectLifeCycle(MainActivityLifeCycle.ON_PAUSE) {
+            wasPaused.value = true
 
-        val requireShowMsgToUser = true
+            val requireShowMsgToUser = true
 
-        val requireBackupContent = true
-        val requireBackupFile = true
-        val contentSnapshotFlag = SnapshotFileFlag.editor_content_OnPause
-        val fileSnapshotFlag = SnapshotFileFlag.editor_file_OnPause
+            val requireBackupContent = true
+            val requireBackupFile = true
+            val contentSnapshotFlag = SnapshotFileFlag.editor_content_OnPause
+            val fileSnapshotFlag = SnapshotFileFlag.editor_file_OnPause
 
-        doSimpleSafeFastSaveInCoroutine(
-            requireShowMsgToUser,
-            requireBackupContent,
-            requireBackupFile,
-            contentSnapshotFlag,
-            fileSnapshotFlag
-        )
+            doSimpleSafeFastSaveInCoroutine(
+                requireShowMsgToUser,
+                requireBackupContent,
+                requireBackupFile,
+                contentSnapshotFlag,
+                fileSnapshotFlag
+            )
+
+            //先调用保存文件再log，以免app崩溃时慢一拍导致没存上
+            MyLog.d(TAG, "#Lifecycle.Event.ON_PAUSE: will save file: ${editorPageShowingFilePath.value}")
+        }
+
+        MyLog.d(TAG, "#Lifecycle.Event.ON_PAUSE: called")
+
     }
 
     //按Home切换到别的app再返回，检查如果当前文件已保存（已编辑为假），则重载
     LifecycleEventEffect(Lifecycle.Event.ON_RESUME) {
-        val _wasPaused = wasPaused.value
-        wasPaused.value = false
-        val wasPaused = Unit  // avoid mistake use
+        doActIfIsExpectLifeCycle(MainActivityLifeCycle.ON_RESUME) {
+            val _wasPaused = wasPaused.value
+            wasPaused.value = false
+            val wasPaused = Unit  // avoid mistake use
 
-        //就算没切后台，只要切换到这个页面，就会执行一遍这个resume事件，所以得判断下，但paused和预期一样，所以可以依赖paused来判断
-        if(_wasPaused) {
-            //如果显示重载确认弹窗，则不自动重载；如果未显示重载确认弹窗且文件未编辑（换句话说：已成功保存），则自动重载
-            if(
-            //预览模式不一定在预览当前文件，就算在预览当前文件，感觉也没必要重载，
-            // 因为预览模式可能会频繁点击链接跳转到外部app再返回，
-            // 若返回则重载可能会比较频繁且没必要，而且用户要是想的话，总是可以手动重载
-                isPreviewModeOn.value.not()
+            //就算没切后台，只要切换到这个页面，就会执行一遍这个resume事件，所以得判断下，但paused和预期一样，所以可以依赖paused来判断
+            if(_wasPaused) {
+                //如果显示重载确认弹窗，则不自动重载；如果未显示重载确认弹窗且文件未编辑（换句话说：已成功保存），则自动重载
+                if(
+                //预览模式不一定在预览当前文件，就算在预览当前文件，感觉也没必要重载，
+                // 因为预览模式可能会频繁点击链接跳转到外部app再返回，
+                // 若返回则重载可能会比较频繁且没必要，而且用户要是想的话，总是可以手动重载
+                    isPreviewModeOn.value.not()
 
-                // 未在Editor点击 open as，用外部程序打开，显示询问是否重载的弹窗，
-                // 若显示此弹窗，用户可手动确认是否重载，所以没必要自动重载
-                && showBackFromExternalAppAskReloadDialog.value.not()
+                    // 未在Editor点击 open as，用外部程序打开，显示询问是否重载的弹窗，
+                    // 若显示此弹窗，用户可手动确认是否重载，所以没必要自动重载
+                    && showBackFromExternalAppAskReloadDialog.value.not()
 
-                && editorPageShowingFilePath.value.isNotBlank()
-                && isEdited.value.not()
-            ) {
-                //非force如果检测最后修改时间和大小没变则不会重载，但如果之前打开出错，则会强制尝试重新加载文件，完美
-                val force = false
-                reloadFile(force)
+                    && editorPageShowingFilePath.value.isNotBlank()
+                    && isEdited.value.not()
+                ) {
+                    //非force如果检测最后修改时间和大小没变则不会重载，但如果之前打开出错，则会强制尝试重新加载文件，完美
+                    val force = false
+                    reloadFile(force)
+
+                    MyLog.d(TAG, "#Lifecycle.Event.ON_RESUME: will reload file: ${editorPageShowingFilePath.value}")
+                }
             }
         }
+
+        MyLog.d(TAG, "#Lifecycle.Event.ON_RESUME: called")
+
     }
 
     LaunchedEffect(needRefreshEditorPage.value) {

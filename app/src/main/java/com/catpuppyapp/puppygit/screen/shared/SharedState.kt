@@ -9,6 +9,7 @@ import com.catpuppyapp.puppygit.git.StatusTypeEntrySaver
 private const val TAG = "SharedState"
 
 object SharedState {
+    val currentMainActivityLifeCycle = mutableStateOf(MainActivityLifeCycle.NONE.code)
     val homeScreenNeedRefresh = mutableStateOf("")
 
 

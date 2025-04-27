@@ -28,6 +28,8 @@ import com.catpuppyapp.puppygit.screen.AppScreenNavigator
 import com.catpuppyapp.puppygit.screen.RequireMasterPasswordScreen
 import com.catpuppyapp.puppygit.screen.functions.KnownHostRequestStateMan
 import com.catpuppyapp.puppygit.screen.shared.IntentHandler
+import com.catpuppyapp.puppygit.screen.shared.MainActivityLifeCycle
+import com.catpuppyapp.puppygit.screen.shared.SharedState
 import com.catpuppyapp.puppygit.ui.theme.PuppyGitAndroidTheme
 import com.catpuppyapp.puppygit.ui.theme.Theme
 import com.catpuppyapp.puppygit.user.UserUtil
@@ -175,6 +177,19 @@ class MainActivity : ComponentActivity() {
         super.onNewIntent(intent)
         MyLog.d(TAG, "#onNewIntent() called")
         IntentHandler.setNewIntent(intent)
+    }
+
+    override fun onPause() {
+        super.onPause()
+        MyLog.d(TAG, "onPause: called")
+        SharedState.currentMainActivityLifeCycle.value = MainActivityLifeCycle.ON_PAUSE.code
+    }
+
+    override fun onResume() {
+        super.onResume()
+        MyLog.d(TAG, "onResume: called")
+
+        SharedState.currentMainActivityLifeCycle.value = MainActivityLifeCycle.ON_RESUME.code
     }
 
 }
