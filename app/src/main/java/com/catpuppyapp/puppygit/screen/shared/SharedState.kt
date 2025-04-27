@@ -52,8 +52,8 @@ object SharedState {
 
 //    val treeToTreeChangeList_title = mutableStateOf("")
 
-    val commitList_fullOid = mutableStateOf("")
-    val commitList_shortBranchName = mutableStateOf("")
+//    val commitList_fullOid = mutableStateOf("")
+//    val commitList_shortBranchName = mutableStateOf("")
 
     val diffScreen_relativePathUnderRepo = mutableStateOf("")
     //这个列表其实应该按页面区分，否则有可能冲突，不过问题不大并不会导致向前导航的时候出错，只是返回的时候会显示错误，改起来有点恶心，不想改
