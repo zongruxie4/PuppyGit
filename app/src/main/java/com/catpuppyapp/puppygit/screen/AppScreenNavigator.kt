@@ -225,7 +225,9 @@ fun AppScreenNavigator() {
                 },
             )
         }
-        composable(Cons.nav_SubPageEditor+"/{goToLine}/{initMergeMode}/{initReadOnly}") {
+        composable(Cons.nav_SubPageEditor+"/{goToLine}/{initMergeMode}/{initReadOnly}/{filePathKey}") {
+            val filePathKey = it.arguments?.getString("filePathKey") ?: ""
+
             SubPageEditor(
 
                 goToLine = try {
@@ -237,8 +239,10 @@ fun AppScreenNavigator() {
                 initMergeMode = it.arguments?.getString("initMergeMode") == "1",  //传1开启mergeMode，否则关闭
                 initReadOnly = it.arguments?.getString("initReadOnly") == "1",  //传1开启read only，否则关闭
                 editorPageLastFilePath = editorPageLastFilePath,
+                filePathKey=filePathKey,
                 naviUp = {
                     navController.navigateUp()
+                    NaviCache.del(filePathKey)
                 },
             )
         }
@@ -275,11 +279,15 @@ fun AppScreenNavigator() {
             )
         }
 
-        composable(Cons.nav_FileHistoryScreen+"/{repoId}") {
+        composable(Cons.nav_FileHistoryScreen+"/{repoId}/{fileRelativePathKey}") {
+            val fileRelativePathKey = it.arguments?.getString("fileRelativePathKey") ?: ""
+
             FileHistoryScreen(
                 repoId = it.arguments?.getString("repoId") ?: "",
+                fileRelativePathKey = fileRelativePathKey,
                 naviUp = {
                     navController.navigateUp()
+                    NaviCache.del(fileRelativePathKey)
                 },
             )
         }

@@ -99,7 +99,7 @@ import com.catpuppyapp.puppygit.utils.Msg
 import com.catpuppyapp.puppygit.utils.MyLog
 import com.catpuppyapp.puppygit.utils.StateRequestType
 import com.catpuppyapp.puppygit.utils.UIHelper
-import com.catpuppyapp.puppygit.utils.cache.Cache
+import com.catpuppyapp.puppygit.utils.cache.NaviCache
 import com.catpuppyapp.puppygit.utils.changeStateTriggerRefreshPage
 import com.catpuppyapp.puppygit.utils.createAndInsertError
 import com.catpuppyapp.puppygit.utils.doActIfIndexGood
@@ -133,7 +133,8 @@ fun FileHistoryScreen(
 //    haptic:HapticFeedback,
 //    homeTopBarScrollBehavior: TopAppBarScrollBehavior,
     repoId: String,
-    naviUp: () -> Boolean,
+    fileRelativePathKey:String,
+    naviUp: () -> Unit,
 ) {
 
 
@@ -149,7 +150,7 @@ fun FileHistoryScreen(
 
     val loadChannel = remember { Channel<Int>() }
 
-    val fileRelativePath = rememberSaveable { SharedState.fileHistory_fileRelativePath.value }
+    val fileRelativePath = rememberSaveable { NaviCache.getByType<String>(fileRelativePathKey) ?: "" }
     val lastVersionEntryOid = rememberSaveable { mutableStateOf<String?>(null) }
 
 

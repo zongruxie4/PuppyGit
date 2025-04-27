@@ -98,10 +98,10 @@ suspend fun goToFileHistoryByRelativePathWithMainContext(repoId:String, relative
 }
 
 fun naviToFileHistoryByRelativePath(repoId:String, relativePathUnderRepo:String) {
-    SharedState.fileHistory_fileRelativePath.value = relativePathUnderRepo
+    val fileRelativePathKey = NaviCache.setThenReturnKey(relativePathUnderRepo)
     //go to file history page
     doJobWithMainContext {
-        AppModel.navController.navigate(Cons.nav_FileHistoryScreen + "/" + repoId)
+        AppModel.navController.navigate(Cons.nav_FileHistoryScreen + "/" + repoId+"/"+fileRelativePathKey)
     }
 }
 
@@ -132,14 +132,14 @@ fun openFileWithInnerSubPageEditor(
     goToLine:Int = LineNum.lastPosition,
 ) {
     doJobWithMainContext {
-        SharedState.subPageEditor_filePath.value = filePath
+        val filePathKey = NaviCache.setThenReturnKey(filePath)
 
         val initMergeMode = if(mergeMode) "1" else "0"
         val initReadOnly = if(readOnly) "1" else "0"
 
         AppModel.subEditorPreviewModeOnWhenDestroy.value = false
 
-        AppModel.navController.navigate(Cons.nav_SubPageEditor + "/$goToLine/$initMergeMode/$initReadOnly")
+        AppModel.navController.navigate(Cons.nav_SubPageEditor + "/$goToLine/$initMergeMode/$initReadOnly/$filePathKey")
     }
 }
 
