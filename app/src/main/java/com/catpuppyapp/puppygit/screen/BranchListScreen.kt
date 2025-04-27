@@ -90,6 +90,7 @@ import com.catpuppyapp.puppygit.play.pro.R
 import com.catpuppyapp.puppygit.screen.functions.defaultTitleDoubleClick
 import com.catpuppyapp.puppygit.screen.functions.filterModeActuallyEnabled
 import com.catpuppyapp.puppygit.screen.functions.filterTheList
+import com.catpuppyapp.puppygit.screen.functions.goToCommitListScreen
 import com.catpuppyapp.puppygit.screen.functions.goToTreeToTreeChangeList
 import com.catpuppyapp.puppygit.screen.functions.triggerReFilter
 import com.catpuppyapp.puppygit.settings.SettingsUtil
@@ -102,7 +103,6 @@ import com.catpuppyapp.puppygit.utils.Msg
 import com.catpuppyapp.puppygit.utils.MyLog
 import com.catpuppyapp.puppygit.utils.StateRequestType
 import com.catpuppyapp.puppygit.utils.UIHelper
-import com.catpuppyapp.puppygit.utils.cache.Cache
 import com.catpuppyapp.puppygit.utils.changeStateTriggerRefreshPage
 import com.catpuppyapp.puppygit.utils.createAndInsertError
 import com.catpuppyapp.puppygit.utils.dbIntToBool
@@ -1759,11 +1759,13 @@ fun BranchListScreen(
                 pageRequest = pageRequest
             ) {  //onClick
                 //点击条目跳转到分支的提交历史记录页面
-                Cache.set(Cache.Key.commitList_fullOidKey, it.oidStr)
-                Cache.set(Cache.Key.commitList_shortBranchNameKey, it.shortName)
-                val useFullOid = "1"
-                val isHEAD = if(it.isCurrent) "1" else "0"
-                navController.navigate(Cons.nav_CommitListScreen + "/" + repoId +"/" +useFullOid + "/" + isHEAD)
+                goToCommitListScreen(
+                    repoId = repoId,
+                    fullOid = it.oidStr,
+                    shortBranchName = it.shortName,
+                    useFullOid = true,
+                    isHEAD = it.isCurrent
+                )
             }
 
             HorizontalDivider()

@@ -115,6 +115,7 @@ import com.catpuppyapp.puppygit.screen.functions.initSearch
 import com.catpuppyapp.puppygit.screen.functions.maybeIsGoodKeyword
 import com.catpuppyapp.puppygit.screen.functions.search
 import com.catpuppyapp.puppygit.screen.functions.triggerReFilter
+import com.catpuppyapp.puppygit.screen.shared.SharedState
 import com.catpuppyapp.puppygit.settings.SettingsUtil
 import com.catpuppyapp.puppygit.style.MyStyleKt
 import com.catpuppyapp.puppygit.user.UserUtil
@@ -204,8 +205,8 @@ fun CommitListScreen(
     val scope = rememberCoroutineScope()
     val haptic = LocalHapticFeedback.current
 
-    val fullOidValue =  rememberSaveable { Cache.getByType(Cache.Key.commitList_fullOidKey) ?: "" }
-    val shortBranchName = rememberSaveable { Cache.getByType(Cache.Key.commitList_shortBranchNameKey) ?: "" }
+    val fullOidValue =  rememberSaveable { SharedState.commitList_fullOid.value }
+    val shortBranchName = rememberSaveable { SharedState.commitList_shortBranchName.value }
 
     //"main" or "origin/main", get by ref#shorthand(), don't use full branchName, such as "refs/remotes/origin/main", will cause resolve branch failed
     val fullOid = rememberSaveable { mutableStateOf(fullOidValue)}  //这个值需要更新，但最终是否使用，取决于常量 useFullOidParam

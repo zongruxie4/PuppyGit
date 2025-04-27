@@ -17,8 +17,6 @@ object Cache:CacheStoreImpl(){
 
         const val editorPageSaveLockPrefix = "editor_save_lock"
 
-        const val commitList_fullOidKey = "commitList_fullOidKey"
-        const val commitList_shortBranchNameKey = "commitList_shortBranchNameKey"
 
         const val diffScreen_underRepoPathKey = "diffScreen_underRepoPathKey"
         const val diffScreen_diffableItemListKey = "diffScreen_diffableItemListKey"

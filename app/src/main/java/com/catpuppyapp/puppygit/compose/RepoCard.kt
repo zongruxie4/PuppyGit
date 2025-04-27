@@ -42,6 +42,7 @@ import com.catpuppyapp.puppygit.constants.Cons
 import com.catpuppyapp.puppygit.constants.PageRequest
 import com.catpuppyapp.puppygit.data.entity.RepoEntity
 import com.catpuppyapp.puppygit.play.pro.R
+import com.catpuppyapp.puppygit.screen.functions.goToCommitListScreen
 import com.catpuppyapp.puppygit.style.MyStyleKt
 import com.catpuppyapp.puppygit.ui.theme.Theme
 import com.catpuppyapp.puppygit.utils.AppModel
@@ -271,12 +272,13 @@ fun RepoCard(
                                 overflow = TextOverflow.Ellipsis,
                                 modifier = MyStyleKt.ClickableText.modifier.clickable(enabled = repoStatusGood) {
                                     //打开当前仓库的提交记录页面，话说，那个树形怎么搞？可以先不搞树形，以后再弄
-                                    Cache.set(Cache.Key.commitList_fullOidKey, "")  //这里不需要传分支名，会通过HEAD解析当前分支
-                                    Cache.set(Cache.Key.commitList_shortBranchNameKey, "")
-                                    val useFullOid = "0"
-                                    val isHEAD= "1"
-                                    //注：如果fullOidKey传null，会变成字符串 "null"，然后查不出东西，返回空字符串，与其在导航组件取值时做处理，不如直接传空字符串，不做处理其实也行，只要“null“作为cache key取不出东西就行，但要是不做处理万一字符串"null"作为cache key能查出东西，就歇菜了，总之，走正常流程取得有效cache key，cache value传空字符串，即可
-                                    navController.navigate(Cons.nav_CommitListScreen + "/" + repoDto.id + "/" + useFullOid + "/" + isHEAD)
+                                    goToCommitListScreen(
+                                        repoId = repoDto.id,
+                                        fullOid = "",  //这里不需要传分支名，会通过HEAD解析当前分支
+                                        shortBranchName = "",
+                                        useFullOid = false,
+                                        isHEAD = true
+                                    )
                                 },
                                 fontWeight = FontWeight.Light
 

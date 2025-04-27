@@ -38,4 +38,7 @@ object SharedState {
 
     val treeToTreeChangeList_title = mutableStateOf("")
 
+    val commitList_fullOid = mutableStateOf("")
+    val commitList_shortBranchName = mutableStateOf("")
+
 }
