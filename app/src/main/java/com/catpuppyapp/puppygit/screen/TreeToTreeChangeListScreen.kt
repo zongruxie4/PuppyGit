@@ -117,7 +117,7 @@ fun TreeToTreeChangeListScreen(
     val settings = remember { SettingsUtil.getSettingsSnapshot() }
 
     //取出title desc，存到状态变量里，与页面共存亡就行
-    val titleDesc = rememberSaveable { mutableStateOf((Cache.getByType<String>(Cache.Key.treeToTreeChangeList_titleDescKey))?:"") }
+    val titleDesc = rememberSaveable { SharedState.treeToTreeChangeList_title }
 
     //替换成我的cusntomstateSaver，然后把所有实现parcellzier的类都取消实现parcellzier，改成用我的saver
 //    val curRepo = rememberSaveable{ mutableStateOf(RepoEntity()) }

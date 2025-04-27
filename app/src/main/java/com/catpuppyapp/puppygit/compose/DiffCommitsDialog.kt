@@ -26,6 +26,7 @@ import androidx.compose.ui.unit.dp
 import com.catpuppyapp.puppygit.constants.Cons
 import com.catpuppyapp.puppygit.data.entity.RepoEntity
 import com.catpuppyapp.puppygit.play.pro.R
+import com.catpuppyapp.puppygit.screen.shared.SharedState
 import com.catpuppyapp.puppygit.utils.AppModel
 import com.catpuppyapp.puppygit.utils.Libgit2Helper
 import com.catpuppyapp.puppygit.utils.Msg
@@ -148,7 +149,7 @@ fun DiffCommitsDialog(
         showDialog.value = false
 
         //当前比较的描述信息的key，用来在界面显示这是在比较啥，值例如“和父提交比较”或者“比较两个提交”之类的
-        Cache.set(Cache.Key.treeToTreeChangeList_titleDescKey, activityContext.getString(R.string.diff_commits))
+        SharedState.treeToTreeChangeList_title.value = activityContext.getString(R.string.diff_commits)
         //不用parent，传无效的zero oid即可
         val commitForQueryParents = Cons.git_AllZeroOidStr
         // url 参数： 页面导航id/repoId/treeoid1/treeoid2/desckey

@@ -36,5 +36,6 @@ object SharedState {
     val fileChooser_DirPath = mutableStateOf("")  //如果用app内置 File Picker 选目录，用这个做state
     val fileChooser_FilePath = mutableStateOf("")  //如果用app内置 File Picker 选文件，用这个做state
 
+    val treeToTreeChangeList_title = mutableStateOf("")
 
 }

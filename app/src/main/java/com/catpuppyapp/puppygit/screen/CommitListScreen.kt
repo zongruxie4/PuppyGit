@@ -114,6 +114,7 @@ import com.catpuppyapp.puppygit.screen.functions.initSearch
 import com.catpuppyapp.puppygit.screen.functions.maybeIsGoodKeyword
 import com.catpuppyapp.puppygit.screen.functions.search
 import com.catpuppyapp.puppygit.screen.functions.triggerReFilter
+import com.catpuppyapp.puppygit.screen.shared.SharedState
 import com.catpuppyapp.puppygit.settings.SettingsUtil
 import com.catpuppyapp.puppygit.style.MyStyleKt
 import com.catpuppyapp.puppygit.user.UserUtil
@@ -1888,7 +1889,7 @@ fun CommitListScreen(
                         BottomSheetItem(sheetState, showBottomSheet, stringResource(R.string.diff_to_local)) {
                             //                    diff to local，点击跳转到tree to tree页面，然后diff
                             //当前比较的描述信息的key，用来在界面显示这是在比较啥，值例如“和父提交比较”或者“比较两个提交”之类的
-                            Cache.set(Cache.Key.treeToTreeChangeList_titleDescKey, activityContext.getString(R.string.compare_to_local))
+                            SharedState.treeToTreeChangeList_title.value = activityContext.getString(R.string.compare_to_local)
                             //这里需要传当前commit，然后cl页面会用当前commit查出当前commit的parents
                             val commit2 = Cons.git_LocalWorktreeCommitHash
                             val commitForQueryParents = Cons.git_AllZeroOidStr
@@ -1919,7 +1920,7 @@ fun CommitListScreen(
                                     }
 
                                     //当前比较的描述信息的key，用来在界面显示这是在比较啥，值例如“和父提交比较”或者“比较两个提交”之类的
-                                    Cache.set(Cache.Key.treeToTreeChangeList_titleDescKey, activityContext.getString(R.string.compare_to_head))
+                                    SharedState.treeToTreeChangeList_title.value = activityContext.getString(R.string.compare_to_head)
                                     val commitForQueryParents = Cons.git_AllZeroOidStr
 
                                     withMainContext {
@@ -2183,7 +2184,7 @@ fun CommitListScreen(
                         Msg.requireShowLongDuration(activityContext.getString(R.string.no_parent_to_compare))
                     } else {  //有父提交，取出第一个父提交和当前提交进行比较
                         //当前比较的描述信息的key，用来在界面显示这是在比较啥，值例如“和父提交比较”或者“比较两个提交”之类的
-                        Cache.set(Cache.Key.treeToTreeChangeList_titleDescKey, activityContext.getString(R.string.compare_to_parent))
+                        SharedState.treeToTreeChangeList_title.value = activityContext.getString(R.string.compare_to_parent)
                         //这里需要传当前commit，然后cl页面会用当前commit查出当前commit的parents
                         val commit1 = parents[0]
                         val commit2 = thisObj.oidStr
