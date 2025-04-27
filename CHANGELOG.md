@@ -4,7 +4,7 @@
 
 1.1.0.6v82 - 20250427:
 - fix: Editor load file twice when open file
-- fix: compare to ref include '/' app will crash
+- fix: if compare to ref which include '/', then app will crash
 - fix: bugs of screen navigate
 
 
