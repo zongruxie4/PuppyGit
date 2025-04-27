@@ -1264,5 +1264,7 @@
     <!-- new at 20250420 -->
     <string name="link_all">Link All</string>
 
+    <!-- new at 20250427 -->
+    <string name="append_a_line">Append a line</string>
 
 </resources>

@@ -20,6 +20,7 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBackIos
 import androidx.compose.material.icons.automirrored.filled.ArrowForwardIos
+import androidx.compose.material.icons.automirrored.filled.KeyboardReturn
 import androidx.compose.material.icons.filled.CleaningServices
 import androidx.compose.material.icons.filled.ContentCopy
 import androidx.compose.material.icons.filled.ContentCut
@@ -478,6 +479,7 @@ fun FileEditor(
                     val iconList = listOf(
                         Icons.Filled.CleaningServices,  // clear line content
                         Icons.Filled.ContentPaste,
+                        Icons.AutoMirrored.Filled.KeyboardReturn,  // append a line
                         Icons.Filled.Delete,
                         Icons.Filled.ContentCut,
                         Icons.Filled.ContentCopy,
@@ -486,6 +488,7 @@ fun FileEditor(
                     val iconTextList = listOf(
                         stringResource(R.string.clear),
                         stringResource(R.string.paste),
+                        stringResource(R.string.append_a_line),
                         stringResource(R.string.delete),
                         stringResource(R.string.cut),
                         stringResource(R.string.copy),
@@ -524,6 +527,18 @@ fun FileEditor(
 
                             doJobThenOffLoading {
                                 textEditorState.value.appendTextToLastSelectedLine(text)
+                            }
+
+                            Unit
+                        },
+                        onAppendALine@{
+                            if (readOnlyMode) {
+                                Msg.requireShow(activityContext.getString(R.string.readonly_cant_edit))
+                                return@onAppendALine
+                            }
+
+                            doJobThenOffLoading {
+                                textEditorState.value.appendTextToLastSelectedLine("", forceAppend = true)
                             }
 
                             Unit
@@ -580,6 +595,7 @@ fun FileEditor(
                     val iconEnableList = listOf(
                         onClear@{ hasLineSelectedAndNotReadOnly },  // clear
                         onPaste@{ hasLineSelectedAndNotReadOnly && clipboardManager.hasText() },  // paste，必须 "剪贴板非空 且 选中某行" 才启用
+                        onAppendALine@{ hasLineSelectedAndNotReadOnly },  // append a line
                         onDelete@{ hasLineSelectedAndNotReadOnly },  // delete
                         onCut@{ hasLineSelectedAndNotReadOnly },  // cut
                         onCopy@{ hasLineSelected },  // copy

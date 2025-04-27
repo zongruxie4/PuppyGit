@@ -1386,7 +1386,7 @@ class TextEditorState private constructor(
     /**
      * 如果当前行为空行，用text替换当前行；否则追加到当前行后面
      */
-    suspend fun appendTextToLastSelectedLine(text: String) {
+    suspend fun appendTextToLastSelectedLine(text: String, forceAppend: Boolean = false) {
         //若取消注释这个，复制空行再粘贴会作废，除非在复制那里处理下，ifEmpty返回个空行，
         // 但是不如在这处理，直接忽略这个条件，
         // 然后用空字符串调用.lines()会得到一个空行，就符合复制一个空行粘贴一个空行的需求了，
@@ -1413,7 +1413,7 @@ class TextEditorState private constructor(
         val lines = text.lines()
 
         //目标若是空行则replace，否则append
-        val trueAppendFalseReplace = fields[lastSelectedIndexOfLine].value.text.isNotEmpty()
+        val trueAppendFalseReplace = if(forceAppend) true else fields[lastSelectedIndexOfLine].value.text.isNotEmpty()
 
         //执行添加，到这才真正修改Editor的数据
         appendOrReplaceFields(targetIndex = lastSelectedIndexOfLine, textFiledStates = lines.map { TextFieldState(value = TextFieldValue(text = it)) }, trueAppendFalseReplace = trueAppendFalseReplace)

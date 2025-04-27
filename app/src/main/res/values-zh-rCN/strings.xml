@@ -1233,4 +1233,7 @@
     <string name="link_all">关联所有</string>
 
 
+    <!-- new at 20250427 -->
+    <string name="append_a_line">追加一行</string>
+
 </resources>

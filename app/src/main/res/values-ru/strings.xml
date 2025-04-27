@@ -1257,5 +1257,7 @@
     <!-- new at 20250420 -->
     <string name="link_all">Подключить Все</string>
 
+    <!-- new at 20250427 -->
+    <string name="append_a_line">Добавить строку</string>
 
 </resources>
