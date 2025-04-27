@@ -94,7 +94,7 @@ fun DiffContent(
     fromTo: String,
     changeType: String,  //modification, new, del，之类的只有modification需要diff
     fileSize:Long,  //如果用来判断文件是否过大来决定是否加载的话，上级页面已经判断了，过大根本不会加载此组件，所以这变量可能没用，可以考虑以后显示下文件大小之类的？
-    naviUp: () -> Boolean,
+    naviUp: () -> Unit,
     dbContainer: AppContainer,
     contentPadding: PaddingValues,
     treeOid1Str:String,
@@ -982,7 +982,7 @@ private fun NaviButton(
     curItemIndex: MutableIntState,
     lastClickedItemKey: MutableState<String>,
     pageRequest:MutableState<String>,
-    naviUp:()->Boolean,
+    naviUp:()->Unit,
     switchItem: (StatusTypeEntrySaver, index: Int) -> Unit,
     switchItemForFileHistory: (FileHistoryDto, index: Int) -> Unit,
 ) {
