@@ -1259,5 +1259,6 @@
 
     <!-- new at 20250427 -->
     <string name="append_a_line">Добавить строку</string>
+    <string name="restart_app">Перезапуск Приложения</string>
 
 </resources>

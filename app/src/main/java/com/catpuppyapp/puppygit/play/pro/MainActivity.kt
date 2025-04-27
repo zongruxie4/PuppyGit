@@ -4,6 +4,7 @@ import android.app.Activity
 import android.content.Context
 import android.content.ContextWrapper
 import android.content.Intent
+import android.content.Intent.ACTION_MAIN
 import android.os.Bundle
 import android.widget.Toast
 import androidx.activity.ComponentActivity
@@ -319,6 +320,18 @@ private fun MainCompose() {
         }
     }
 
+}
+
+/**
+ * （没严格测试）不能传context，因为除非有悬浮窗权限，否则只有Activity可以启动Activity，Service之类的不行
+ */
+fun startMainActivity(fromActivity: Activity) {
+    val intent = Intent(ACTION_MAIN).apply {
+        addCategory(Intent.CATEGORY_LAUNCHER)
+        setClass(fromActivity, MainActivity::class.java)
+    }
+
+    fromActivity.startActivity(intent)
 }
 
 //@Preview(showBackground = true)

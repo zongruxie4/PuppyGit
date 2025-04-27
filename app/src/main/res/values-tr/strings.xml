@@ -1166,5 +1166,6 @@
 
     <!-- new at 20250427 -->
     <string name="append_a_line">Bir Satır Ekle</string>
+    <string name="restart_app">Uygulamayı Yeniden Başlatma</string>
 
 </resources>

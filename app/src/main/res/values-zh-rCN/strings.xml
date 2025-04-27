@@ -1235,5 +1235,6 @@
 
     <!-- new at 20250427 -->
     <string name="append_a_line">追加一行</string>
+    <string name="restart_app">重启App</string>
 
 </resources>

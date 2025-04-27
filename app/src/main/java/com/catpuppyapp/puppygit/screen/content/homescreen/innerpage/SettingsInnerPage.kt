@@ -1192,6 +1192,18 @@ fun SettingsInnerPage(
             }
         }
 
+        //一些用来测试的功能
+        if(devModeOn.value) {
+            SettingsTitle("Dev Zone")
+            SettingsContent(onClick = {
+                throw RuntimeException("App Crashed For Test Purpose")
+            }) {
+                Column {
+                    Text("Crash App", fontSize = itemFontSize)
+                }
+            }
+        }
+
         SpacerRow()
     }
 
