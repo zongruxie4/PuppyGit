@@ -1,3 +1,4 @@
 - fix: Editor load file twice when open file
 - fix: if compare to ref which include '/', then app will crash
 - fix: bugs of screen navigate
+- reduce memory use
