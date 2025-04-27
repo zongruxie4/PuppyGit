@@ -207,7 +207,7 @@ object AppModel {
     private lateinit var submoduleDotGitBackupDir: File
 
     /**
-     * 存储App当前主题，自动，明亮，暗黑，不过这变量好像实际没用到？
+     * 存储当前Activity的主题的状态变量，弄状态变量是为了实现切换主题后不需要重启即可生效
      */
     var theme:MutableState<String>? = null
 
