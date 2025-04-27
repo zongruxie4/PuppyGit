@@ -16,6 +16,7 @@ import com.catpuppyapp.puppygit.screen.shared.DiffFromScreen
 import com.catpuppyapp.puppygit.screen.shared.FileChooserType
 import com.catpuppyapp.puppygit.screen.shared.IntentHandler
 import com.catpuppyapp.puppygit.utils.AppModel
+import com.catpuppyapp.puppygit.utils.cache.NaviCache
 
 @Composable
 fun AppScreenNavigator() {
@@ -175,8 +176,10 @@ fun AppScreenNavigator() {
                 },
             )
         }
-        composable(Cons.nav_TreeToTreeChangeListScreen+"/{repoId}/{commit1OidStr}/{commit2OidStr}/{commitForQueryParents}") {
+        composable(Cons.nav_TreeToTreeChangeListScreen+"/{repoId}/{commit1OidStr}/{commit2OidStr}/{commitForQueryParents}/{titleCacheKey}") {
 //            val commitForQueryParents = it.arguments?.getString("commitForQueryParents") ?: ""
+
+            val titleCacheKey = it.arguments?.getString("titleCacheKey") ?: ""
 
             TreeToTreeChangeListScreen(
                 repoId = it.arguments?.getString("repoId") ?: "",
@@ -185,9 +188,10 @@ fun AppScreenNavigator() {
 
                 //若不需要查parents，则传all zero oid在url中占位即可。
                 commitForQueryParents = it.arguments?.getString("commitForQueryParents") ?: "",
-
+                titleCacheKey = titleCacheKey,
                 naviUp = {
                     navController.navigateUp()
+                    NaviCache.del(titleCacheKey)
                 },
             )
         }

@@ -16,7 +16,6 @@ import com.catpuppyapp.puppygit.fileeditor.texteditor.state.TextEditorState
 import com.catpuppyapp.puppygit.git.FileHistoryDto
 import com.catpuppyapp.puppygit.git.StatusTypeEntrySaver
 import com.catpuppyapp.puppygit.play.pro.R
-import com.catpuppyapp.puppygit.screen.shared.DiffFromScreen
 import com.catpuppyapp.puppygit.screen.shared.FileChooserType
 import com.catpuppyapp.puppygit.screen.shared.FilePath
 import com.catpuppyapp.puppygit.screen.shared.SharedState
@@ -26,7 +25,7 @@ import com.catpuppyapp.puppygit.utils.Libgit2Helper
 import com.catpuppyapp.puppygit.utils.Msg
 import com.catpuppyapp.puppygit.utils.MyLog
 import com.catpuppyapp.puppygit.utils.UIHelper
-import com.catpuppyapp.puppygit.utils.cache.Cache
+import com.catpuppyapp.puppygit.utils.cache.NaviCache
 import com.catpuppyapp.puppygit.utils.doJobThenOffLoading
 import com.catpuppyapp.puppygit.utils.doJobWithMainContext
 import com.catpuppyapp.puppygit.utils.generateRandomString
@@ -34,7 +33,6 @@ import com.catpuppyapp.puppygit.utils.getRandomUUID
 import com.catpuppyapp.puppygit.utils.replaceStringResList
 import com.catpuppyapp.puppygit.utils.state.CustomStateSaveable
 import com.catpuppyapp.puppygit.utils.withMainContext
-import com.github.git24j.core.Worktree
 import kotlinx.coroutines.CoroutineScope
 
 private const val TAG = "ScreenHelper"
@@ -389,12 +387,12 @@ suspend fun goToStashPage(repoId:String) {
 fun goToTreeToTreeChangeList(title:String, repoId: String, commit1:String, commit2:String, commitForQueryParents:String) {
     doJobWithMainContext {
         //当前比较的描述信息的key，用来在界面显示这是在比较啥，值例如“和父提交比较”或者“比较两个提交”之类的
-        SharedState.treeToTreeChangeList_title.value = title
+        val titleCacheKey = NaviCache.setThenReturnKey(title)
 
         // url 参数： 页面导航id/repoId/treeoid1/treeoid2/desckey
         AppModel.navController.navigate(
             //注意是 parentTreeOid to thisObj.treeOid，也就是 旧提交to新提交，相当于 git diff abc...def，比较的是旧版到新版，新增或删除或修改了什么，反过来的话，新增删除之类的也就反了
-            "${Cons.nav_TreeToTreeChangeListScreen}/$repoId/$commit1/$commit2/$commitForQueryParents"
+            "${Cons.nav_TreeToTreeChangeListScreen}/$repoId/$commit1/$commit2/$commitForQueryParents/$titleCacheKey"
         )
     }
 }

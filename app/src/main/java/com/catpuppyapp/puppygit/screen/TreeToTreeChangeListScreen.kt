@@ -59,13 +59,12 @@ import com.catpuppyapp.puppygit.utils.AppModel
 import com.catpuppyapp.puppygit.utils.Libgit2Helper
 import com.catpuppyapp.puppygit.utils.Msg
 import com.catpuppyapp.puppygit.utils.UIHelper
-import com.catpuppyapp.puppygit.utils.addPrefix
-import com.catpuppyapp.puppygit.utils.cache.Cache
+import com.catpuppyapp.puppygit.utils.cache.NaviCache
 import com.catpuppyapp.puppygit.utils.state.mutableCustomStateListOf
 import com.catpuppyapp.puppygit.utils.state.mutableCustomStateOf
 import com.github.git24j.core.Repository
 
-//for debug
+
 private const val TAG = "TreeToTreeChangeListScreen"
 private const val stateKeyTag = "TreeToTreeChangeListScreen"
 
@@ -86,6 +85,7 @@ fun TreeToTreeChangeListScreen(
     commit2OidStr:String,  // right
 
     commitForQueryParents:String,  // commit for query parents, if empty ,will not query parents for commits. ps: only need this param when compare to parents, other cases, should pass empty string
+    titleCacheKey:String,
     naviUp: () -> Unit
 ) {
     //避免导航出现 "//" 导致导航失败
@@ -117,7 +117,7 @@ fun TreeToTreeChangeListScreen(
     val settings = remember { SettingsUtil.getSettingsSnapshot() }
 
     //取出title desc，存到状态变量里，与页面共存亡就行
-    val titleDesc = rememberSaveable { SharedState.treeToTreeChangeList_title }
+    val titleDesc = rememberSaveable { mutableStateOf(NaviCache.getByType<String>(titleCacheKey) ?: "") }
 
     //替换成我的cusntomstateSaver，然后把所有实现parcellzier的类都取消实现parcellzier，改成用我的saver
 //    val curRepo = rememberSaveable{ mutableStateOf(RepoEntity()) }
