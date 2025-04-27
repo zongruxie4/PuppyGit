@@ -65,6 +65,7 @@ import com.catpuppyapp.puppygit.utils.Msg
 import com.catpuppyapp.puppygit.utils.MyLog
 import com.catpuppyapp.puppygit.utils.StateRequestType
 import com.catpuppyapp.puppygit.utils.UIHelper
+import com.catpuppyapp.puppygit.utils.cache.Cache
 import com.catpuppyapp.puppygit.utils.changeStateTriggerRefreshPage
 import com.catpuppyapp.puppygit.utils.compare.CmpUtil
 import com.catpuppyapp.puppygit.utils.compare.param.StringCompareParam
@@ -85,7 +86,7 @@ import com.github.git24j.core.Repository
 import kotlinx.coroutines.channels.Channel
 
 private const val TAG = "DiffContent"
-private const val stateKeyTag = "DiffContent"
+
 
 @Composable
 fun DiffContent(
@@ -126,6 +127,7 @@ fun DiffContent(
     pageRequest:MutableState<String>,
 
 ) {
+    val stateKeyTag = Cache.getSubPageKey("DiffContent")
 
     val navController = AppModel.navController
     val activityContext = LocalContext.current
@@ -270,6 +272,7 @@ fun DiffContent(
             Spacer(Modifier.height(100.dp))
 
             NaviButton(
+                stateKeyTag = stateKeyTag,
                 activityContext = activityContext,
                 curRepo = curRepo.value,
                 diffableItemList = diffableItemList,
@@ -794,6 +797,8 @@ fun DiffContent(
                         Spacer(Modifier.height(50.dp))
 
                         NaviButton(
+                            stateKeyTag = stateKeyTag,
+
                             activityContext = activityContext,
                             curRepo = curRepo.value,
                             diffableItemList = diffableItemList,
@@ -974,6 +979,7 @@ fun DiffContent(
 
 @Composable
 private fun NaviButton(
+    stateKeyTag:String,
     activityContext:Context,
     curRepo:RepoEntity,
     fromTo: String,

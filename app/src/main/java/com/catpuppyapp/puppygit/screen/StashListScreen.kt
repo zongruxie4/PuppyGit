@@ -77,6 +77,7 @@ import com.catpuppyapp.puppygit.utils.AppModel
 import com.catpuppyapp.puppygit.utils.Libgit2Helper
 import com.catpuppyapp.puppygit.utils.Msg
 import com.catpuppyapp.puppygit.utils.MyLog
+import com.catpuppyapp.puppygit.utils.cache.Cache
 import com.catpuppyapp.puppygit.utils.changeStateTriggerRefreshPage
 import com.catpuppyapp.puppygit.utils.createAndInsertError
 import com.catpuppyapp.puppygit.utils.doJobThenOffLoading
@@ -85,8 +86,6 @@ import com.catpuppyapp.puppygit.utils.state.mutableCustomStateOf
 import com.github.git24j.core.Repository
 
 private const val TAG = "StashListScreen"
-private const val stateKeyTag = "StashListScreen"
-
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalFoundationApi::class)
 @Composable
 fun StashListScreen(
@@ -94,6 +93,7 @@ fun StashListScreen(
     naviUp: () -> Boolean,
 ) {
 
+    val stateKeyTag = Cache.getSubPageKey("StashListScreen")
 
     // softkeyboard show/hidden relate start
 

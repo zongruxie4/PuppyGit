@@ -164,7 +164,6 @@ import kotlin.coroutines.cancellation.CancellationException
 
 
 private const val TAG = "FilesInnerPage"
-private const val stateKeyTag = "FilesInnerPage"
 
 //是否在底栏显示导入按钮，没必要，不用显示，导入是针对当前文件夹的，应该在顶栏显示
 //避免以后修改，保留代码，用开关变量控制是否显示
@@ -177,6 +176,8 @@ private const val showImportForBottomBar = false
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun FilesInnerPage(
+    stateKeyTag:String,
+
     naviUp:()->Unit,
     updateSelectedPath:(path:String) -> Unit,
     isFileChooser:Boolean,
@@ -225,6 +226,7 @@ fun FilesInnerPage(
     lastPosition:MutableState<Int>,
     keepFilterResultOnce:MutableState<Boolean>
 ) {
+
     val inDarkTheme = Theme.inDarkTheme
 
     val allRepoParentDir = AppModel.allRepoParentDir;

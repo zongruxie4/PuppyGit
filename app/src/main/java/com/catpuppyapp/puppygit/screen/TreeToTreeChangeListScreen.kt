@@ -61,6 +61,7 @@ import com.catpuppyapp.puppygit.utils.AppModel
 import com.catpuppyapp.puppygit.utils.Libgit2Helper
 import com.catpuppyapp.puppygit.utils.Msg
 import com.catpuppyapp.puppygit.utils.UIHelper
+import com.catpuppyapp.puppygit.utils.cache.Cache
 import com.catpuppyapp.puppygit.utils.cache.NaviCache
 import com.catpuppyapp.puppygit.utils.state.mutableCustomStateListOf
 import com.catpuppyapp.puppygit.utils.state.mutableCustomStateOf
@@ -68,7 +69,7 @@ import com.github.git24j.core.Repository
 
 
 private const val TAG = "TreeToTreeChangeListScreen"
-private const val stateKeyTag = "TreeToTreeChangeListScreen"
+
 
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalFoundationApi::class)
 @Composable
@@ -91,6 +92,8 @@ fun TreeToTreeChangeListScreen(
 
     naviUp: () -> Unit
 ) {
+    val stateKeyTag = Cache.getSubPageKey("TreeToTreeChangeListScreen")
+
     //避免导航出现 "//" 导致导航失败
     //因为title要改变这个值，所以用State
     val commit1OidStrState = rememberSaveable(commit1OidStrCacheKey) { mutableStateOf((NaviCache.getByType<String>(commit1OidStrCacheKey) ?:"").ifBlank { Cons.git_AllZeroOidStr }) }
@@ -409,6 +412,8 @@ fun TreeToTreeChangeListScreen(
         }
     ) { contentPadding ->
         ChangeListInnerPage(
+            stateKeyTag = Cache.combineKeys(stateKeyTag, "ChangeListInnerPage"),
+
             lastSearchKeyword=changeListLastSearchKeyword,
             searchToken=changeListSearchToken,
             searching=changeListSearching,

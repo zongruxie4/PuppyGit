@@ -79,6 +79,7 @@ import com.catpuppyapp.puppygit.utils.AppModel
 import com.catpuppyapp.puppygit.utils.Libgit2Helper
 import com.catpuppyapp.puppygit.utils.Msg
 import com.catpuppyapp.puppygit.utils.MyLog
+import com.catpuppyapp.puppygit.utils.cache.Cache
 import com.catpuppyapp.puppygit.utils.changeStateTriggerRefreshPage
 import com.catpuppyapp.puppygit.utils.createAndInsertError
 import com.catpuppyapp.puppygit.utils.doJobThenOffLoading
@@ -91,7 +92,6 @@ import com.github.git24j.core.Remote
 import com.github.git24j.core.Repository
 
 private const val TAG = "RemoteListScreen"
-private const val stateKeyTag = "RemoteListScreen"
 
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalFoundationApi::class)
 @Composable
@@ -104,6 +104,8 @@ fun RemoteListScreen(
     repoId:String,
     naviUp: () -> Boolean,
 ) {
+    val stateKeyTag = Cache.getSubPageKey("RemoteListScreen")
+
     val homeTopBarScrollBehavior = AppModel.homeTopBarScrollBehavior
     val activityContext = LocalContext.current
     val navController = AppModel.navController

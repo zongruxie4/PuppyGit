@@ -91,6 +91,7 @@ import com.catpuppyapp.puppygit.utils.Libgit2Helper
 import com.catpuppyapp.puppygit.utils.Msg
 import com.catpuppyapp.puppygit.utils.MyLog
 import com.catpuppyapp.puppygit.utils.UIHelper
+import com.catpuppyapp.puppygit.utils.cache.Cache
 import com.catpuppyapp.puppygit.utils.changeStateTriggerRefreshPage
 import com.catpuppyapp.puppygit.utils.createAndInsertError
 import com.catpuppyapp.puppygit.utils.doJobThenOffLoading
@@ -102,7 +103,6 @@ import com.catpuppyapp.puppygit.utils.updateSelectedList
 import com.github.git24j.core.Repository
 
 private const val TAG = "SubmoduleListScreen"
-private const val stateKeyTag = "SubmoduleListScreen"
 
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalFoundationApi::class)
 @Composable
@@ -110,6 +110,8 @@ fun SubmoduleListScreen(
     repoId:String,
     naviUp: () -> Boolean,
 ) {
+    val stateKeyTag = Cache.getSubPageKey("SubmoduleListScreen")
+
     val homeTopBarScrollBehavior = AppModel.homeTopBarScrollBehavior
     val navController = AppModel.navController
     val activityContext = LocalContext.current

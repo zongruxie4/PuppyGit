@@ -64,6 +64,7 @@ import com.catpuppyapp.puppygit.style.MyStyleKt
 import com.catpuppyapp.puppygit.utils.AppModel
 import com.catpuppyapp.puppygit.utils.Msg
 import com.catpuppyapp.puppygit.utils.MyLog
+import com.catpuppyapp.puppygit.utils.cache.Cache
 import com.catpuppyapp.puppygit.utils.changeStateTriggerRefreshPage
 import com.catpuppyapp.puppygit.utils.createAndInsertError
 import com.catpuppyapp.puppygit.utils.doJobThenOffLoading
@@ -72,7 +73,6 @@ import com.catpuppyapp.puppygit.utils.state.mutableCustomStateOf
 
 
 private const val TAG = "CredentialManagerScreen"
-private const val stateKeyTag = "CredentialManagerScreen"
 
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalFoundationApi::class)
 @Composable
@@ -86,9 +86,9 @@ fun CredentialManagerScreen(
 
     naviUp: () -> Boolean
 ) {
-//    SideEffect {
-//        Msg.msgNotifyHost()
-//    }
+
+    val stateKeyTag = Cache.getSubPageKey("CredentialManagerScreen")
+
 
     val homeTopBarScrollBehavior = AppModel.homeTopBarScrollBehavior
     val navController = AppModel.navController

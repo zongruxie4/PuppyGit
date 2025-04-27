@@ -37,8 +37,7 @@ import com.catpuppyapp.puppygit.utils.doJobThenOffLoading
 import com.catpuppyapp.puppygit.utils.replaceStringResList
 import com.github.git24j.core.Repository
 
-private val TAG = "SetBranchForRemoteDialog"
-private val stateKeyTag = "SetBranchForRemoteDialog"
+private const val TAG = "SetBranchForRemoteDialog"
 
 @Composable
 fun SetBranchForRemoteDialog(

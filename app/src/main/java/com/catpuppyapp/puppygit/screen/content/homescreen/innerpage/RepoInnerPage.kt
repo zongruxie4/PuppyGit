@@ -123,11 +123,12 @@ import kotlinx.coroutines.sync.withLock
 import java.io.File
 
 private const val TAG = "RepoInnerPage"
-private const val stateKeyTag = "RepoInnerPage"
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun RepoInnerPage(
+    stateKeyTag:String,
+
     requireInnerEditorOpenFile:(filePath:String, expectReadOnly:Boolean)->Unit,
 
     lastSearchKeyword:MutableState<String>,

@@ -1,5 +1,6 @@
 package com.catpuppyapp.puppygit.fileeditor.texteditor.view
 
+import android.os.Parcelable
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.ScrollState
 import androidx.compose.foundation.background
@@ -70,7 +71,6 @@ import com.catpuppyapp.puppygit.settings.FileEditedPos
 import com.catpuppyapp.puppygit.settings.SettingsUtil
 import com.catpuppyapp.puppygit.style.MyStyleKt
 import com.catpuppyapp.puppygit.ui.theme.Theme
-import com.catpuppyapp.puppygit.utils.EditCache
 import com.catpuppyapp.puppygit.utils.Msg
 import com.catpuppyapp.puppygit.utils.MyLog
 import com.catpuppyapp.puppygit.utils.UIHelper
@@ -78,36 +78,38 @@ import com.catpuppyapp.puppygit.utils.doJobThenOffLoading
 import com.catpuppyapp.puppygit.utils.fileopenhistory.FileOpenHistoryMan
 import com.catpuppyapp.puppygit.utils.replaceStringResList
 import com.catpuppyapp.puppygit.utils.state.CustomStateSaveable
-import com.catpuppyapp.puppygit.utils.state.mutableCustomStateOf
+import kotlinx.parcelize.Parcelize
 
 private const val TAG ="TextEditor"
-private const val stateKeyTag ="TextEditor"
 
+@Parcelize
 class ExpectConflictStrDto(
-    var settings: AppSettings = SettingsUtil.getSettingsSnapshot()
-) {
-    var curConflictStr: String = settings.editor.conflictStartStr
-    var curConflictStrMatched: Boolean = false
+    var conflictStartStr: String = "",
+    var conflictSplitStr: String = "",
+    var conflictEndStr: String = "",
 
+    var curConflictStr: String = conflictStartStr,
+    var curConflictStrMatched: Boolean = false,
+):Parcelable {
     fun reset() {
-        curConflictStr = settings.editor.conflictStartStr
+        curConflictStr = conflictStartStr
         curConflictStrMatched = false
     }
 
     fun getNextExpectConflictStr():String{
-        return if(curConflictStr == settings.editor.conflictStartStr) {
-            settings.editor.conflictSplitStr
-        }else if(curConflictStr == settings.editor.conflictSplitStr) {
-            settings.editor.conflictEndStr
+        return if(curConflictStr == conflictStartStr) {
+            conflictSplitStr
+        }else if(curConflictStr == conflictSplitStr) {
+            conflictEndStr
         }else { // curStr == settings.editor.conflictEndStr
-            settings.editor.conflictStartStr
+            conflictStartStr
         }
     }
 
     fun getCurAndNextExpect():Pair<Int,Int> {
-        val curExpect = if(curConflictStr.startsWith(settings.editor.conflictStartStr)){
+        val curExpect = if(curConflictStr.startsWith(conflictStartStr)){
             0
-        }else if(curConflictStr.startsWith(settings.editor.conflictSplitStr)) {
+        }else if(curConflictStr.startsWith(conflictSplitStr)) {
             1
         }else {
             2
@@ -211,20 +213,20 @@ fun TextEditor(
     //没找到合适的方法手动启用，因此默认启用，暂时没更改的场景
     val allowKeyboard = rememberSaveable { mutableStateOf(true) }
 
-    val expectConflictStrDto = mutableCustomStateOf(stateKeyTag, "expectConflict", ExpectConflictStrDto(settings=settings))
+    val expectConflictStrDto = rememberSaveable(settings.editor.conflictStartStr, settings.editor.conflictSplitStr, settings.editor.conflictEndStr) {
+        mutableStateOf(
+            ExpectConflictStrDto(
+                conflictStartStr = settings.editor.conflictStartStr,
+                conflictSplitStr = settings.editor.conflictSplitStr,
+                conflictEndStr = settings.editor.conflictEndStr
+            )
+        )
+    }
 
 
-    val nextSearchPos = mutableCustomStateOf(
-        keyTag = stateKeyTag,
-        keyName = "nextSearchPos",
-        initValue = SearchPos.NotFound
-    )
+    val nextSearchPos = rememberSaveable { mutableStateOf(SearchPos.NotFound) }
 
-    val lastFoundPos = mutableCustomStateOf(
-        keyTag = stateKeyTag,
-        keyName = "lastFoundPos",
-        initValue = SearchPos.NotFound
-    )
+    val lastFoundPos = rememberSaveable { mutableStateOf(SearchPos.NotFound) }
 
     val initSearchPos = {
         //把起始搜索位置设置为当前第一个可见行的第一列
@@ -1348,7 +1350,8 @@ data class ScrollEvent(
     }
 }
 
-data class SearchPos(var lineIndex:Int=-1, var columnIndex:Int=-1) {
+@Parcelize
+data class SearchPos(var lineIndex:Int=-1, var columnIndex:Int=-1):Parcelable {
     companion object{
         val NotFound = SearchPos(-1, -1)
     }

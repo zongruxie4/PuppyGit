@@ -83,6 +83,7 @@ import com.catpuppyapp.puppygit.utils.Libgit2Helper
 import com.catpuppyapp.puppygit.utils.Msg
 import com.catpuppyapp.puppygit.utils.MyLog
 import com.catpuppyapp.puppygit.utils.UIHelper
+import com.catpuppyapp.puppygit.utils.cache.Cache
 import com.catpuppyapp.puppygit.utils.changeStateTriggerRefreshPage
 import com.catpuppyapp.puppygit.utils.createAndInsertError
 import com.catpuppyapp.puppygit.utils.doActIfIndexGood
@@ -95,7 +96,6 @@ import com.catpuppyapp.puppygit.utils.updateSelectedList
 import com.github.git24j.core.Repository
 
 private const val TAG = "TagListScreen"
-private const val stateKeyTag = "TagListScreen"
 
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalFoundationApi::class)
 @Composable
@@ -109,6 +109,8 @@ fun TagListScreen(
 //    branch:String?,
     naviUp: () -> Boolean,
 ) {
+    val stateKeyTag = Cache.getSubPageKey("TagListScreen")
+
     val homeTopBarScrollBehavior = AppModel.homeTopBarScrollBehavior
     val navController = AppModel.navController
     val activityContext = LocalContext.current

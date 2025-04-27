@@ -32,7 +32,6 @@ import com.catpuppyapp.puppygit.utils.Libgit2Helper
 import com.catpuppyapp.puppygit.utils.Msg
 
 private const val TAG = "DiffCommitsDialog"
-private const val stateKeyTag = "DiffCommitsDialog"
 
 
 @OptIn(ExperimentalFoundationApi::class)

@@ -48,7 +48,6 @@ import com.catpuppyapp.puppygit.utils.UIHelper
 import com.catpuppyapp.puppygit.utils.doJobThenOffLoading
 import com.catpuppyapp.puppygit.utils.encrypt.MasterPassUtil
 
-private const val stateKeyTag = "RequireMasterPasswordScreen"
 private const val TAG = "RequireMasterPasswordScreen"
 
 @Composable

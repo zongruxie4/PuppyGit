@@ -70,6 +70,7 @@ import com.catpuppyapp.puppygit.style.MyStyleKt
 import com.catpuppyapp.puppygit.utils.AppModel
 import com.catpuppyapp.puppygit.utils.Msg
 import com.catpuppyapp.puppygit.utils.MyLog
+import com.catpuppyapp.puppygit.utils.cache.Cache
 import com.catpuppyapp.puppygit.utils.changeStateTriggerRefreshPage
 import com.catpuppyapp.puppygit.utils.createAndInsertError
 import com.catpuppyapp.puppygit.utils.doJobThenOffLoading
@@ -77,7 +78,6 @@ import com.catpuppyapp.puppygit.utils.state.mutableCustomStateListOf
 import com.catpuppyapp.puppygit.utils.state.mutableCustomStateOf
 
 private const val TAG = "CredentialRemoteListScreen"
-private const val stateKeyTag = "CredentialRemoteListScreen"
 
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalFoundationApi::class)
 @Composable
@@ -86,6 +86,8 @@ fun CredentialRemoteListScreen(
     isShowLink:Boolean,
     naviUp: () -> Unit,
 ) {
+    val stateKeyTag = Cache.getSubPageKey("CredentialRemoteListScreen")
+
     val (isShowLink, setIsShowLink) = rememberSaveable { mutableStateOf(isShowLink) }
 
     val clipboardManager = LocalClipboardManager.current

@@ -60,12 +60,12 @@ import androidx.compose.ui.unit.sp
 import com.catpuppyapp.puppygit.compose.AskGitUsernameAndEmailDialogWithSelection
 import com.catpuppyapp.puppygit.compose.BottomBar
 import com.catpuppyapp.puppygit.compose.ChangeListItem
-import com.catpuppyapp.puppygit.compose.DefaultPaddingText
 import com.catpuppyapp.puppygit.compose.ClickableText
 import com.catpuppyapp.puppygit.compose.ConfirmDialog
 import com.catpuppyapp.puppygit.compose.ConfirmDialog2
 import com.catpuppyapp.puppygit.compose.CreatePatchSuccessDialog
 import com.catpuppyapp.puppygit.compose.CredentialSelector
+import com.catpuppyapp.puppygit.compose.DefaultPaddingText
 import com.catpuppyapp.puppygit.compose.GitIgnoreDialog
 import com.catpuppyapp.puppygit.compose.LoadingText
 import com.catpuppyapp.puppygit.compose.LongPressAbleIconBtn
@@ -137,10 +137,11 @@ import com.github.git24j.core.Repository
 import com.github.git24j.core.Repository.StateT
 
 private const val TAG = "ChangeListInnerPage"
-private const val stateKeyTag = "ChangeListInnerPage"
 
 @Composable
 fun ChangeListInnerPage(
+    stateKeyTag:String,
+
     lastSearchKeyword:MutableState<String>,
     searchToken:MutableState<String>,
     searching:MutableState<Boolean>,

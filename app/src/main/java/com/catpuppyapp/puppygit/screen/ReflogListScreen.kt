@@ -61,7 +61,7 @@ import com.catpuppyapp.puppygit.utils.AppModel
 import com.catpuppyapp.puppygit.utils.Libgit2Helper
 import com.catpuppyapp.puppygit.utils.Msg
 import com.catpuppyapp.puppygit.utils.MyLog
-import com.catpuppyapp.puppygit.utils.addPrefix
+import com.catpuppyapp.puppygit.utils.cache.Cache
 import com.catpuppyapp.puppygit.utils.changeStateTriggerRefreshPage
 import com.catpuppyapp.puppygit.utils.doJobThenOffLoading
 import com.catpuppyapp.puppygit.utils.formatMinutesToUtc
@@ -70,10 +70,9 @@ import com.catpuppyapp.puppygit.utils.state.mutableCustomStateOf
 import com.catpuppyapp.puppygit.utils.time.TimeZoneUtil
 import com.github.git24j.core.Repository
 
-private val TAG = "ReflogListScreen"
-private val stateKeyTag = "ReflogListScreen"
+private const val TAG = "ReflogListScreen"
 
-@OptIn(ExperimentalMaterial3Api::class, ExperimentalFoundationApi::class)
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ReflogListScreen(
 //    context: Context,
@@ -85,6 +84,8 @@ fun ReflogListScreen(
 //    branch:String?,
     naviUp: () -> Boolean,
 ) {
+    val stateKeyTag = Cache.getSubPageKey("ReflogListScreen")
+
     val homeTopBarScrollBehavior = AppModel.homeTopBarScrollBehavior
     val navController = AppModel.navController
     val activityContext = LocalContext.current

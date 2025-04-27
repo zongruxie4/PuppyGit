@@ -44,6 +44,7 @@ import com.catpuppyapp.puppygit.style.MyStyleKt
 import com.catpuppyapp.puppygit.utils.AppModel
 import com.catpuppyapp.puppygit.utils.FsUtils
 import com.catpuppyapp.puppygit.utils.UIHelper
+import com.catpuppyapp.puppygit.utils.cache.Cache
 import com.catpuppyapp.puppygit.utils.cache.NaviCache
 import com.catpuppyapp.puppygit.utils.doJobThenOffLoading
 import com.catpuppyapp.puppygit.utils.generateRandomString
@@ -54,7 +55,6 @@ import kotlinx.coroutines.withContext
 
 //for debug
 private const val TAG = "SubPageEditor"
-private const val stateKeyTag = "SubPageEditor"
 
 
 //子页面版本editor
@@ -77,10 +77,9 @@ fun SubPageEditor(
     filePathKey:String,
     naviUp:()->Unit
 ) {
-//    val isTimeNaviUp = rememberSaveable { mutableStateOf(false) }
-//    if(isTimeNaviUp.value) {
-//        naviUp()
-//    }
+    val stateKeyTag = Cache.getSubPageKey("SubPageEditor")
+
+
 
     val naviUp = {
         AppModel.lastEditFile.value = ""
@@ -384,6 +383,7 @@ fun SubPageEditor(
         }
     ) { contentPadding ->
         EditorInnerPage(
+            stateKeyTag = Cache.combineKeys(stateKeyTag, "EditorInnerPage"),
             requireEditorScrollToPreviewCurPos = requireEditorScrollToPreviewCurPos,
             requirePreviewScrollToEditorCurPos = requirePreviewScrollToEditorCurPos,
             previewPageScrolled = editorPreviewPageScrolled,

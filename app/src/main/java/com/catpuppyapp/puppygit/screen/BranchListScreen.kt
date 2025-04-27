@@ -103,6 +103,7 @@ import com.catpuppyapp.puppygit.utils.Msg
 import com.catpuppyapp.puppygit.utils.MyLog
 import com.catpuppyapp.puppygit.utils.StateRequestType
 import com.catpuppyapp.puppygit.utils.UIHelper
+import com.catpuppyapp.puppygit.utils.cache.Cache
 import com.catpuppyapp.puppygit.utils.changeStateTriggerRefreshPage
 import com.catpuppyapp.puppygit.utils.createAndInsertError
 import com.catpuppyapp.puppygit.utils.dbIntToBool
@@ -116,7 +117,7 @@ import com.github.git24j.core.Branch
 import com.github.git24j.core.Repository
 
 private const val TAG = "BranchListScreen"
-private const val stateKeyTag = "BranchListScreen"
+
 
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalFoundationApi::class)
 @Composable
@@ -130,6 +131,8 @@ fun BranchListScreen(
 //    branch:String?,
     naviUp: () -> Boolean,
 ) {
+    val stateKeyTag = Cache.getSubPageKey("BranchListScreen")
+    
     val homeTopBarScrollBehavior = AppModel.homeTopBarScrollBehavior
     val navController = AppModel.navController
     val activityContext = LocalContext.current

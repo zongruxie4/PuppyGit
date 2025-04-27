@@ -51,13 +51,12 @@ import com.catpuppyapp.puppygit.play.pro.R
 import com.catpuppyapp.puppygit.screen.content.homescreen.scaffold.title.ScrollableTitle
 import com.catpuppyapp.puppygit.style.MyStyleKt
 import com.catpuppyapp.puppygit.utils.AppModel
+import com.catpuppyapp.puppygit.utils.cache.Cache
 import com.catpuppyapp.puppygit.utils.doJobThenOffLoading
 import com.catpuppyapp.puppygit.utils.state.mutableCustomStateOf
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 
-private val stateKeyTag = "CredentialNewOrEdit"
-private val TAG = "CredentialNewOrEdit"
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -65,6 +64,7 @@ fun CredentialNewOrEdit(
     credentialId: String?,  //编辑已存在条目的时候，用得着这个
     naviUp: () -> Unit,
 ) {
+    val stateKeyTag = Cache.getSubPageKey("CredentialNewOrEdit")
 
     val activityContext = LocalContext.current
 

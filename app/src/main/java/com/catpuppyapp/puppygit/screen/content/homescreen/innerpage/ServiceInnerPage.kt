@@ -61,11 +61,12 @@ import com.catpuppyapp.puppygit.utils.parseIntOrDefault
 import com.catpuppyapp.puppygit.utils.state.mutableCustomStateListOf
 import com.catpuppyapp.puppygit.utils.state.mutableCustomStateOf
 
-private const val stateKeyTag = "ServiceInnerPage"
 private const val TAG = "ServiceInnerPage"
 
 @Composable
 fun ServiceInnerPage(
+    stateKeyTag:String,
+
     contentPadding: PaddingValues,
     needRefreshPage:MutableState<String>,
 //    appContext:Context,

@@ -1,5 +1,9 @@
 package com.catpuppyapp.puppygit.utils.cache
 
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.saveable.rememberSaveable
+import com.catpuppyapp.puppygit.utils.getShortUUID
+
 /**
  * this is default cache instance
  */
@@ -16,7 +20,7 @@ object Cache:CacheStoreImpl(){
         const val repoTmpStatusPrefix = "repo_tmp_status"  // prefix+keyseparator+repoId，例如 "repo_tmp_status:a29388d9988"
 
         const val editorPageSaveLockPrefix = "editor_save_lock"
-
+        const val subPagesStateKeyPrefix = "sub_pages_key_prefix$keySeparator"
 
 //        const val diffScreen_underRepoPathKey = "diffScreen_underRepoPathKey"
 //        const val diffScreen_diffableItemListKey = "diffScreen_diffableItemListKey"
@@ -26,4 +30,23 @@ object Cache:CacheStoreImpl(){
 
     }
 
+    fun clearAllSubPagesStates() {
+        clearByKeyPrefix(Key.subPagesStateKeyPrefix)
+    }
+
+    @Composable
+    fun getSubPageKey(stateKeyTag:String):String {
+        // e.g. "sub_pages_key_prefix:DiffScreen:ak1idkjgkk"
+        return rememberSaveable { Key.subPagesStateKeyPrefix+stateKeyTag+ keySeparator+ getShortUUID() }
+    }
+
+    fun combineKeys(vararg keys: String):String {
+        val ret = StringBuilder()
+
+        for (key in keys) {
+            ret.append(key).append(keySeparator)
+        }
+
+        return ret.removeSuffix(keySeparator).toString()
+    }
 }

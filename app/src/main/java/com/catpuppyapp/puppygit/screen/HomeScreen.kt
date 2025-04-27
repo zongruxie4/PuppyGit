@@ -49,6 +49,8 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.TextRange
 import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.compose.LifecycleEventEffect
 import com.catpuppyapp.puppygit.compose.ConfirmDialog3
 import com.catpuppyapp.puppygit.compose.FilterTextField
 import com.catpuppyapp.puppygit.compose.GoToTopAndGoToBottomFab
@@ -105,6 +107,7 @@ import com.catpuppyapp.puppygit.utils.Msg
 import com.catpuppyapp.puppygit.utils.MyLog
 import com.catpuppyapp.puppygit.utils.PrefMan
 import com.catpuppyapp.puppygit.utils.UIHelper
+import com.catpuppyapp.puppygit.utils.cache.Cache
 import com.catpuppyapp.puppygit.utils.changeStateTriggerRefreshPage
 import com.catpuppyapp.puppygit.utils.doJobThenOffLoading
 import com.catpuppyapp.puppygit.utils.generateRandomString
@@ -1166,6 +1169,8 @@ fun HomeScreen(
             if(currentHomeScreen.intValue == Cons.selectedItem_Repos) {
 //                changeStateTriggerRefreshPage(needRefreshRepoPage)
                 RepoInnerPage(
+                    stateKeyTag = Cache.combineKeys(stateKeyTag, "RepoInnerPage"),
+
                     requireInnerEditorOpenFile = requireInnerEditorOpenFile,
                     lastSearchKeyword=reposLastSearchKeyword,
                     searchToken=reposSearchToken,
@@ -1211,6 +1216,7 @@ fun HomeScreen(
             else if(currentHomeScreen.intValue== Cons.selectedItem_Files) {
 //                changeStateTriggerRefreshPage(needRefreshFilesPage)
                 FilesInnerPage(
+                    stateKeyTag = Cache.combineKeys(stateKeyTag, "FilesInnerPage"),
                     naviUp = {},
                     updateSelectedPath = {},
                     isFileChooser = false,
@@ -1262,6 +1268,7 @@ fun HomeScreen(
 //                changeStateTriggerRefreshPage(needRefreshEditorPage)
 
                 EditorInnerPage(
+                    stateKeyTag = Cache.combineKeys(stateKeyTag, "EditorInnerPage"),
                     requireEditorScrollToPreviewCurPos = requireEditorScrollToPreviewCurPos,
                     requirePreviewScrollToEditorCurPos = requirePreviewScrollToEditorCurPos,
                     previewPageScrolled = editorPreviewPageScrolled,
@@ -1331,6 +1338,7 @@ fun HomeScreen(
 
                 //从抽屉菜单打开的changelist是对比worktree和index的文件，所以from是worktree
                 ChangeListInnerPage(
+                    stateKeyTag = Cache.combineKeys(stateKeyTag, "ChangeListInnerPage"),
                     lastSearchKeyword=changeListLastSearchKeyword,
                     searchToken=changeListSearchToken,
                     searching=changeListSearching,
@@ -1393,6 +1401,7 @@ fun HomeScreen(
 //                }
             }else if(currentHomeScreen.intValue == Cons.selectedItem_Settings) {
                 SettingsInnerPage(
+                    stateKeyTag = Cache.combineKeys(stateKeyTag, "SettingsInnerPage"),
                     contentPadding = contentPadding,
                     needRefreshPage = needRefreshSettingsPage,
                     openDrawer = openDrawer,
@@ -1408,6 +1417,7 @@ fun HomeScreen(
                 SubscriptionPage(contentPadding = contentPadding, needRefresh = subscriptionPageNeedRefresh, openDrawer = openDrawer)
             }else if(currentHomeScreen.intValue == Cons.selectedItem_Service) {
                 ServiceInnerPage(
+                    stateKeyTag = Cache.combineKeys(stateKeyTag, "ServiceInnerPage"),
                     contentPadding = contentPadding,
                     needRefreshPage = needRefreshServicePage,
                     openDrawer = openDrawer,
@@ -1416,6 +1426,7 @@ fun HomeScreen(
                 )
             }else if(currentHomeScreen.intValue == Cons.selectedItem_Automation) {
                 AutomationInnerPage(
+                    stateKeyTag = Cache.combineKeys(stateKeyTag, "AutomationInnerPage"),
                     contentPadding = contentPadding,
                     needRefreshPage = needRefreshAutomationPage,
                     listState = automationListState,
@@ -1654,6 +1665,13 @@ fun HomeScreen(
 
         }
     }
+
+
+    LifecycleEventEffect(Lifecycle.Event.ON_RESUME) {
+        //回到主页了，好，把所有其他子页面的状态变量全他妈清掉
+        Cache.clearAllSubPagesStates()
+    }
+
 
 }
 

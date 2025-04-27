@@ -88,7 +88,6 @@ import me.saket.swipe.SwipeAction
 import me.saket.swipe.SwipeableActionsBox
 
 private const val TAG = "FileEditor"
-private const val stateKeyTag = "FileEditor"
 
 @OptIn(ExperimentalFoundationApi::class)
 @Composable

@@ -103,12 +103,13 @@ import kotlinx.coroutines.sync.withLock
 import java.io.File
 
 private const val TAG = "EditorInnerPage"
-private const val stateKeyTag = "EditorInnerPage"
 
 private var justForSaveFileWhenDrawerOpen = getShortUUID()
 
 @Composable
 fun EditorInnerPage(
+    stateKeyTag:String,
+
     requireEditorScrollToPreviewCurPos:MutableState<Boolean>,
     requirePreviewScrollToEditorCurPos:MutableState<Boolean>,
     previewPageScrolled:MutableState<Boolean>,
@@ -171,6 +172,8 @@ fun EditorInnerPage(
     undoStack: MutableState<UndoStack>,
 
 ) {
+
+
     val scope = rememberCoroutineScope()
     val activityContext = LocalContext.current
     val clipboardManager = LocalClipboardManager.current

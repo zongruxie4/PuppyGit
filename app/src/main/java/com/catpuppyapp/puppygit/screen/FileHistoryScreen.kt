@@ -99,6 +99,7 @@ import com.catpuppyapp.puppygit.utils.Msg
 import com.catpuppyapp.puppygit.utils.MyLog
 import com.catpuppyapp.puppygit.utils.StateRequestType
 import com.catpuppyapp.puppygit.utils.UIHelper
+import com.catpuppyapp.puppygit.utils.cache.Cache
 import com.catpuppyapp.puppygit.utils.cache.NaviCache
 import com.catpuppyapp.puppygit.utils.changeStateTriggerRefreshPage
 import com.catpuppyapp.puppygit.utils.createAndInsertError
@@ -121,7 +122,6 @@ import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 
 private const val TAG = "FileHistoryScreen"
-private const val stateKeyTag = "FileHistoryScreen"
 
 
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalFoundationApi::class)
@@ -136,6 +136,7 @@ fun FileHistoryScreen(
     fileRelativePathKey:String,
     naviUp: () -> Unit,
 ) {
+    val stateKeyTag = Cache.getSubPageKey("FileHistoryScreen")
 
 
     //已处理这种情况，传参时传有效key，但把value设为空字符串，就解决了

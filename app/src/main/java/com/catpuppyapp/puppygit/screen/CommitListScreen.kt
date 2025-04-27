@@ -126,6 +126,7 @@ import com.catpuppyapp.puppygit.utils.MyLog
 import com.catpuppyapp.puppygit.utils.StateRequestType
 import com.catpuppyapp.puppygit.utils.UIHelper
 import com.catpuppyapp.puppygit.utils.boolToDbInt
+import com.catpuppyapp.puppygit.utils.cache.Cache
 import com.catpuppyapp.puppygit.utils.cache.NaviCache
 import com.catpuppyapp.puppygit.utils.changeStateTriggerRefreshPage
 import com.catpuppyapp.puppygit.utils.createAndInsertError
@@ -147,7 +148,6 @@ import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 
 private const val TAG = "CommitListScreen"
-private const val stateKeyTag = "CommitListScreen"
 
 //TODO 备忘：修改这个页面为可多选的形式，记得加一个 filterList remmeber变量，在过滤模式点击全选或span选择时，操作filterList
 
@@ -179,6 +179,10 @@ fun CommitListScreen(
     shortBranchNameCacheKey:String,  //我忘了，好像这个不一定是分支名，只是代表短名，tag短名应该也行
     naviUp: () -> Unit,
 ) {
+
+    val stateKeyTag = Cache.getSubPageKey("CommitListScreen")
+
+
     // softkeyboard show/hidden relate start
 
     val view = LocalView.current

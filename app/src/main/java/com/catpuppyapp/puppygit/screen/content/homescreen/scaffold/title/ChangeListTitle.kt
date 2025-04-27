@@ -34,7 +34,6 @@ import com.catpuppyapp.puppygit.utils.state.CustomStateListSaveable
 import com.catpuppyapp.puppygit.utils.state.CustomStateSaveable
 import kotlinx.coroutines.CoroutineScope
 
-//private val stateKeyTag = "ChangeListTitle"
 
 @Composable
 fun ChangeListTitle(

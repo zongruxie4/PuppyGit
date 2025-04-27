@@ -56,6 +56,7 @@ import com.catpuppyapp.puppygit.utils.Libgit2Helper
 import com.catpuppyapp.puppygit.utils.Msg
 import com.catpuppyapp.puppygit.utils.MyLog
 import com.catpuppyapp.puppygit.utils.StateRequestType
+import com.catpuppyapp.puppygit.utils.cache.Cache
 import com.catpuppyapp.puppygit.utils.cache.NaviCache
 import com.catpuppyapp.puppygit.utils.changeStateTriggerRefreshPage
 import com.catpuppyapp.puppygit.utils.createAndInsertError
@@ -69,7 +70,6 @@ import com.catpuppyapp.puppygit.utils.state.mutableCustomStateOf
 import java.io.File
 
 private const val TAG = "DiffScreen"
-private const val stateKeyTag = "DiffScreen"
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -90,6 +90,7 @@ fun DiffScreen(
     diffableListOfFileHistoryCacheKey:String,
     naviUp: () -> Unit,
 ) {
+    val stateKeyTag = Cache.getSubPageKey("DiffScreen")
 
 //    val isWorkTree = fromTo == Cons.gitDiffFromIndexToWorktree
     //废弃，改用diffContent里获取diffItem时动态计算了

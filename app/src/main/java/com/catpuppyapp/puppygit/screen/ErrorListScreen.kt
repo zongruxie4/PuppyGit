@@ -58,6 +58,7 @@ import com.catpuppyapp.puppygit.style.MyStyleKt
 import com.catpuppyapp.puppygit.utils.AppModel
 import com.catpuppyapp.puppygit.utils.Msg
 import com.catpuppyapp.puppygit.utils.MyLog
+import com.catpuppyapp.puppygit.utils.cache.Cache
 import com.catpuppyapp.puppygit.utils.changeStateTriggerRefreshPage
 import com.catpuppyapp.puppygit.utils.doJobThenOffLoading
 import com.catpuppyapp.puppygit.utils.state.mutableCustomStateListOf
@@ -65,7 +66,6 @@ import com.catpuppyapp.puppygit.utils.state.mutableCustomStateOf
 
 
 private const val TAG = "ErrorListScreen"
-private const val stateKeyTag = "ErrorListScreen"
 
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalFoundationApi::class)
 @Composable
@@ -78,6 +78,9 @@ fun ErrorListScreen(
     repoId:String,
     naviUp: () -> Boolean,
 ) {
+    val stateKeyTag = Cache.getSubPageKey("ErrorListScreen")
+
+
     val homeTopBarScrollBehavior = AppModel.homeTopBarScrollBehavior
     val activityContext = LocalContext.current
     val scope = rememberCoroutineScope()

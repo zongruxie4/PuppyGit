@@ -71,11 +71,12 @@ import com.catpuppyapp.puppygit.utils.state.mutableCustomStateOf
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
-private const val stateKeyTag = "AutomationInnerPage"
 private const val TAG = "AutomationInnerPage"
+
 
 @Composable
 fun AutomationInnerPage(
+    stateKeyTag:String,
     contentPadding: PaddingValues,
     needRefreshPage:MutableState<String>,
     listState: LazyListState,
@@ -84,6 +85,7 @@ fun AutomationInnerPage(
     openDrawer:()->Unit,
     exitApp:()->Unit,
 ){
+
     val scope = rememberCoroutineScope()
     val activityContext = LocalContext.current
 //    val clipboardManager = LocalClipboardManager.current

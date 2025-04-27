@@ -71,14 +71,14 @@ import com.catpuppyapp.puppygit.style.MyStyleKt
 import com.catpuppyapp.puppygit.utils.AppModel
 import com.catpuppyapp.puppygit.utils.Msg
 import com.catpuppyapp.puppygit.utils.MyLog
+import com.catpuppyapp.puppygit.utils.cache.Cache
 import com.catpuppyapp.puppygit.utils.changeStateTriggerRefreshPage
 import com.catpuppyapp.puppygit.utils.doJobThenOffLoading
 import com.catpuppyapp.puppygit.utils.state.mutableCustomStateListOf
 import com.catpuppyapp.puppygit.utils.state.mutableCustomStateOf
 
 
-private val TAG = "DomainCredentialListScreen"
-private val stateKeyTag = "DomainCredentialListScreen"
+private const val TAG = "DomainCredentialListScreen"
 
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalFoundationApi::class)
 @Composable
@@ -92,6 +92,7 @@ fun DomainCredentialListScreen(
 
     naviUp: () -> Boolean
 ) {
+    val stateKeyTag = Cache.getSubPageKey("DomainCredentialListScreen")
 
     val homeTopBarScrollBehavior = AppModel.homeTopBarScrollBehavior
     val navController = AppModel.navController

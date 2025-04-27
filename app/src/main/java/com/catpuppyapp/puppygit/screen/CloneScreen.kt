@@ -89,6 +89,7 @@ import com.catpuppyapp.puppygit.utils.FsUtils
 import com.catpuppyapp.puppygit.utils.Libgit2Helper
 import com.catpuppyapp.puppygit.utils.Msg
 import com.catpuppyapp.puppygit.utils.boolToDbInt
+import com.catpuppyapp.puppygit.utils.cache.Cache
 import com.catpuppyapp.puppygit.utils.checkFileOrFolderNameAndTryCreateFile
 import com.catpuppyapp.puppygit.utils.dbIntToBool
 import com.catpuppyapp.puppygit.utils.doJobThenOffLoading
@@ -101,7 +102,7 @@ import com.catpuppyapp.puppygit.utils.withMainContext
 import java.io.File
 
 private const val TAG = "CloneScreen"
-private const val stateKeyTag = "CloneScreen"
+
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -109,6 +110,8 @@ fun CloneScreen(
     repoId: String?,  //编辑已存在仓库的时候，用得着这个
     naviUp: () -> Boolean,
 ) {
+
+    val stateKeyTag = Cache.getSubPageKey("CloneScreen")
 
 
     val activityContext = LocalContext.current

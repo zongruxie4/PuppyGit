@@ -17,9 +17,6 @@ import com.github.git24j.core.Repository
 import java.io.File
 
 
-private const val TAG = "ApplyPatchDialog"
-private const val stateKeyTag = "ApplyPatchDialog"
-
 
 @Composable
 fun ApplyPatchDialog(

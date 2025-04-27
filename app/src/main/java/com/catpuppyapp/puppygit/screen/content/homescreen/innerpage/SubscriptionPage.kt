@@ -25,7 +25,7 @@ import com.catpuppyapp.puppygit.utils.ComposeHelper
 import com.catpuppyapp.puppygit.utils.Msg
 import com.catpuppyapp.puppygit.utils.MyLog
 
-private val TAG = "SubscriptionPage"
+private const val TAG = "SubscriptionPage"
 
 @Composable
 fun SubscriptionPage(contentPadding: PaddingValues, needRefresh: MutableState<String>, openDrawer: ()->Unit){

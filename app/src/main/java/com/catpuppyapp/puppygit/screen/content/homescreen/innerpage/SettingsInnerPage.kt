@@ -86,11 +86,12 @@ import com.catpuppyapp.puppygit.utils.state.mutableCustomStateListOf
 import com.catpuppyapp.puppygit.utils.state.mutableCustomStateOf
 import com.catpuppyapp.puppygit.utils.storagepaths.StoragePathsMan
 
-private const val stateKeyTag = "SettingsInnerPage"
 private const val TAG = "SettingsInnerPage"
 
 @Composable
 fun SettingsInnerPage(
+    stateKeyTag:String,
+
     contentPadding: PaddingValues,
     needRefreshPage:MutableState<String>,
     openDrawer:()->Unit,
