@@ -22,16 +22,15 @@ import androidx.compose.ui.unit.DpOffset
 import androidx.compose.ui.unit.dp
 import com.catpuppyapp.puppygit.compose.LongPressAbleIconBtn
 import com.catpuppyapp.puppygit.constants.Cons
-import com.catpuppyapp.puppygit.constants.LineNum
 import com.catpuppyapp.puppygit.constants.PageRequest
 import com.catpuppyapp.puppygit.dev.detailsDiffTestPassed
 import com.catpuppyapp.puppygit.dev.proFeatureEnabled
 import com.catpuppyapp.puppygit.play.pro.R
+import com.catpuppyapp.puppygit.screen.functions.openFileWithInnerSubPageEditor
 import com.catpuppyapp.puppygit.settings.SettingsUtil
 import com.catpuppyapp.puppygit.utils.AppModel
 import com.catpuppyapp.puppygit.utils.Msg
 import com.catpuppyapp.puppygit.utils.MyLog
-import com.catpuppyapp.puppygit.utils.cache.Cache
 import java.io.File
 
 private const val TAG = "DiffPageActions"
@@ -122,14 +121,9 @@ fun DiffPageActions(
             }
 
             //跳转到SubEditor页面
-            Cache.set(Cache.Key.subPageEditor_filePathKey, fileFullPath)
-            val goToLine = LineNum.lastPosition
-            val initMergeMode = "0"  //冲突条目无法进入diff页面，所以能预览diff定不是冲突条目，因此跳转到editor时应将mergemode初始化为假
-            val initReadOnly = "0"  //diff页面不可能显示app内置目录下的文件，所以一率可编辑
-
-            AppModel.subEditorPreviewModeOnWhenDestroy.value = false
-
-            navController.navigate(Cons.nav_SubPageEditor + "/$goToLine"+"/$initMergeMode"+"/$initReadOnly")
+            //冲突条目无法进入diff页面，所以能预览diff定不是冲突条目，因此跳转到editor时应将mergemode初始化为假
+            //diff页面不可能显示app内置目录下的文件，所以一率可编辑
+            openFileWithInnerSubPageEditor(filePath = fileFullPath, mergeMode = false, readOnly = false)
 
         }catch (e:Exception) {
             Msg.requireShowLongDuration("err:"+e.localizedMessage)

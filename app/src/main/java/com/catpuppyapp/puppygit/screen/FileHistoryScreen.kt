@@ -149,7 +149,7 @@ fun FileHistoryScreen(
 
     val loadChannel = remember { Channel<Int>() }
 
-    val fileRelativePath = rememberSaveable { Cache.getByType<String>(Cache.Key.fileHistory_fileRelativePathKey) ?:"" }
+    val fileRelativePath = rememberSaveable { SharedState.fileHistory_fileRelativePath.value }
     val lastVersionEntryOid = rememberSaveable { mutableStateOf<String?>(null) }
 
 

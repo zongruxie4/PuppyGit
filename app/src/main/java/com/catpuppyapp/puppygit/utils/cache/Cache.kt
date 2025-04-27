@@ -21,8 +21,8 @@ object Cache:CacheStoreImpl(){
 //        const val diffScreen_underRepoPathKey = "diffScreen_underRepoPathKey"
 //        const val diffScreen_diffableItemListKey = "diffScreen_diffableItemListKey"
 
-        const val fileHistory_fileRelativePathKey = "fileHistory_fileRelativePathKey"
-        const val subPageEditor_filePathKey = "subPageEditor_filePathKey"
+//        const val fileHistory_fileRelativePathKey = "fileHistory_fileRelativePathKey"
+//        const val subPageEditor_filePathKey = "subPageEditor_filePathKey"
 
     }
 

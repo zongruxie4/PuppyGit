@@ -100,7 +100,7 @@ suspend fun goToFileHistoryByRelativePathWithMainContext(repoId:String, relative
 }
 
 fun naviToFileHistoryByRelativePath(repoId:String, relativePathUnderRepo:String) {
-    Cache.set(Cache.Key.fileHistory_fileRelativePathKey, relativePathUnderRepo)
+    SharedState.fileHistory_fileRelativePath.value = relativePathUnderRepo
     //go to file history page
     doJobWithMainContext {
         AppModel.navController.navigate(Cons.nav_FileHistoryScreen + "/" + repoId)
@@ -127,15 +127,20 @@ fun getClipboardText(clipboardManager:ClipboardManager):String? {
     }
 }
 
-fun openFileWithInnerSubPageEditor(filePath:String, mergeMode:Boolean, readOnly:Boolean) {
-    Cache.set(Cache.Key.subPageEditor_filePathKey, filePath)
-    val goToLine = LineNum.lastPosition
-    val initMergeMode = if(mergeMode) "1" else "0"
-    val initReadOnly = if(readOnly) "1" else "0"
-
-    AppModel.subEditorPreviewModeOnWhenDestroy.value = false
-
+fun openFileWithInnerSubPageEditor(
+    filePath:String,
+    mergeMode:Boolean,
+    readOnly:Boolean,
+    goToLine:Int = LineNum.lastPosition,
+) {
     doJobWithMainContext {
+        SharedState.subPageEditor_filePath.value = filePath
+
+        val initMergeMode = if(mergeMode) "1" else "0"
+        val initReadOnly = if(readOnly) "1" else "0"
+
+        AppModel.subEditorPreviewModeOnWhenDestroy.value = false
+
         AppModel.navController.navigate(Cons.nav_SubPageEditor + "/$goToLine/$initMergeMode/$initReadOnly")
     }
 }

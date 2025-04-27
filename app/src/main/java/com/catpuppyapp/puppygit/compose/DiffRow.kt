@@ -46,6 +46,7 @@ import com.catpuppyapp.puppygit.git.CompareLinePairResult
 import com.catpuppyapp.puppygit.git.PuppyLine
 import com.catpuppyapp.puppygit.play.pro.R
 import com.catpuppyapp.puppygit.screen.functions.getClipboardText
+import com.catpuppyapp.puppygit.screen.functions.openFileWithInnerSubPageEditor
 import com.catpuppyapp.puppygit.screen.shared.FilePath
 import com.catpuppyapp.puppygit.settings.AppSettings
 import com.catpuppyapp.puppygit.style.MyStyleKt
@@ -150,7 +151,7 @@ fun DiffRow (
 //                        val lineTypeStr = getDiffLineTypeStr(line)
     val lineNumColor = if (inDarkTheme) MyStyleKt.TextColor.lineNum_forDiffInDarkTheme else MyStyleKt.TextColor.lineNum_forDiffInLightTheme
 
-    val lineNum = if(line.lineNum== LineNum.EOF.LINE_NUM) LineNum.EOF.TEXT else line.lineNum.toString()
+    val lineNum = if(line.lineNum == LineNum.EOF.LINE_NUM) LineNum.EOF.TEXT else line.lineNum.toString()
 //    var prefix = ""
     val content = line.content
     //我发现明明新旧都没末尾行，但是originType却是添加了末尾行 '>'， 很奇怪，所以把行相关的背景颜色改了，文字颜色一律灰色，另外，因为patch输出会包含 no new line at end 之类的东西，所以不需要我再特意添加那句话了
@@ -576,15 +577,13 @@ fun DiffRow (
             fontSize = lineNumSize.sp,
             fontFamily = FontFamily.Monospace, // 使用系统自带的等宽字体，不然那个+和-不等宽，看着难受
             modifier = Modifier.clickable {
-                Cache.set(Cache.Key.subPageEditor_filePathKey, fileFullPath)
-                //if jump line is EOF, should go to last line of file, but didn't know the line num, so set line num to a enough big number
-                val goToLine = if(lineNum == LineNum.EOF.TEXT) LineNum.EOF.LINE_NUM else lineNum
-                val initMergeMode = "0"  //能进diff页面说明没冲突，所以mergemode设为0
-                val initReadOnly = "0"  //app内置目录下的文件不可能在diff页面显示，所以在这把readonly设为0即可
-
-                AppModel.subEditorPreviewModeOnWhenDestroy.value = false
-
-                navController.navigate(Cons.nav_SubPageEditor +"/$goToLine"+"/$initMergeMode"+"/$initReadOnly")
+                openFileWithInnerSubPageEditor(
+                    filePath = fileFullPath,
+                    mergeMode = false,
+                    readOnly = false,
+                    //if jump line is EOF, should go to last line of file, but didn't know the line num, so set line num to a enough big number
+                    goToLine = if(lineNum == LineNum.EOF.TEXT) LineNum.EOF.LINE_NUM else line.lineNum
+                )
             }
 
                 //这个和changeType加行号(prefix)左边的padding构成完整每行左右padding

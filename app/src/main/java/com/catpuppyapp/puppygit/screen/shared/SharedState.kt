@@ -86,4 +86,7 @@ object SharedState {
         }
     }
 
+    val fileHistory_fileRelativePath = mutableStateOf("")
+    val subPageEditor_filePath = mutableStateOf("")
+
 }
