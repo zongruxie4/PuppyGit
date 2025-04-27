@@ -137,6 +137,19 @@
 
         </activity>
 
+        <activity
+            android:name=".CrashActivity"
+            android:exported="true"
+            android:theme="@style/Theme.PuppyGitAndroid"
+            android:windowSoftInputMode="adjustResize"
+        >
+            <intent-filter>
+                <action android:name="android.intent.action.VIEW" />
+                <category android:name="android.intent.category.DEFAULT" />
+            </intent-filter>
+
+        </activity>
+
 <!--            android:name="androidx.core.content.FileProvider"-->
         <provider
             android:name="com.catpuppyapp.puppygit.provider.MyFileProvider"

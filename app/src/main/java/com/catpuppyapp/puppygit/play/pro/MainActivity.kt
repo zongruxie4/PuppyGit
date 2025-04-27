@@ -117,7 +117,8 @@ class MainActivity : ComponentActivity() {
             CoroutineExceptionHandler { coroutineContext, throwable ->
                 try {
     //                throwable.printStackTrace();
-                    MyLog.e(TAG, "#$funName err: "+throwable.stackTraceToString())
+                    val errMsg = throwable.stackTraceToString()
+                    MyLog.e(TAG, "#$funName err: $errMsg")
 
                     //出错提示下用户就行，经我测试，画面会冻结，但数据不会丢，问题不大
                     showToast(applicationContext, getString(R.string.err_restart_app_may_resolve), Toast.LENGTH_LONG)  //测试了下，能显示Toast
@@ -125,6 +126,9 @@ class MainActivity : ComponentActivity() {
                     //不重新创建Activity的话，页面会freeze，按什么都没响应，不过系统导航键还是可用的
                     //重新创建不一定成功，有可能会返回桌面
 //                    ActivityUtil.restartActivityByIntent(this)
+
+                    //启动crash activity显示错误信息
+                    startCrashActivity(this, errMsg)
 
                     // 不重建Activity，直接退出
                     finish()
@@ -176,7 +180,7 @@ class MainActivity : ComponentActivity() {
 
 
 @Composable
-fun MainCompose() {
+private fun MainCompose() {
     val stateKeyTag = "MainCompose"
     val funName = "MainCompose"
 
