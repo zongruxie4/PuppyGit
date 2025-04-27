@@ -2,6 +2,15 @@
 
 ---
 
+1.1.0.6v82 - 20250427:
+- minor bug fixed
+
+
+
+- 小bug修正
+
+---
+
 1.1.0.5v81 - 20250426:
 - fix: navigator state err cause app crashed
 - AutomationService: support auto push after screen off
