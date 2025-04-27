@@ -16,6 +16,7 @@ import com.catpuppyapp.puppygit.fileeditor.texteditor.state.TextEditorState
 import com.catpuppyapp.puppygit.play.pro.R
 import com.catpuppyapp.puppygit.screen.shared.FileChooserType
 import com.catpuppyapp.puppygit.screen.shared.FilePath
+import com.catpuppyapp.puppygit.screen.shared.SharedState
 import com.catpuppyapp.puppygit.utils.AppModel
 import com.catpuppyapp.puppygit.utils.FsUtils
 import com.catpuppyapp.puppygit.utils.Libgit2Helper
@@ -373,5 +374,18 @@ fun getInitTextEditorState():TextEditorState {
 suspend fun goToStashPage(repoId:String) {
     withMainContext {
         AppModel.navController.navigate(Cons.nav_StashListScreen+"/"+repoId)
+    }
+}
+
+fun goToTreeToTreeChangeList(title:String, repoId: String, commit1:String, commit2:String, commitForQueryParents:String) {
+    doJobWithMainContext {
+        //当前比较的描述信息的key，用来在界面显示这是在比较啥，值例如“和父提交比较”或者“比较两个提交”之类的
+        SharedState.treeToTreeChangeList_title.value = title
+
+        // url 参数： 页面导航id/repoId/treeoid1/treeoid2/desckey
+        AppModel.navController.navigate(
+            //注意是 parentTreeOid to thisObj.treeOid，也就是 旧提交to新提交，相当于 git diff abc...def，比较的是旧版到新版，新增或删除或修改了什么，反过来的话，新增删除之类的也就反了
+            "${Cons.nav_TreeToTreeChangeListScreen}/$repoId/$commit1/$commit2/$commitForQueryParents"
+        )
     }
 }

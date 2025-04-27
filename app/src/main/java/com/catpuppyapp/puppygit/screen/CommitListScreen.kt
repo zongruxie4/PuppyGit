@@ -69,7 +69,6 @@ import androidx.compose.ui.unit.dp
 import com.catpuppyapp.puppygit.compose.AskGitUsernameAndEmailDialogWithSelection
 import com.catpuppyapp.puppygit.compose.BottomSheet
 import com.catpuppyapp.puppygit.compose.BottomSheetItem
-import com.catpuppyapp.puppygit.compose.DefaultPaddingText
 import com.catpuppyapp.puppygit.compose.CheckoutDialog
 import com.catpuppyapp.puppygit.compose.CheckoutDialogFrom
 import com.catpuppyapp.puppygit.compose.ClickableText
@@ -79,6 +78,7 @@ import com.catpuppyapp.puppygit.compose.ConfirmDialog2
 import com.catpuppyapp.puppygit.compose.CopyableDialog
 import com.catpuppyapp.puppygit.compose.CreatePatchSuccessDialog
 import com.catpuppyapp.puppygit.compose.CreateTagDialog
+import com.catpuppyapp.puppygit.compose.DefaultPaddingText
 import com.catpuppyapp.puppygit.compose.DiffCommitsDialog
 import com.catpuppyapp.puppygit.compose.FilterTextField
 import com.catpuppyapp.puppygit.compose.GoToTopAndGoToBottomFab
@@ -110,11 +110,11 @@ import com.catpuppyapp.puppygit.play.pro.R
 import com.catpuppyapp.puppygit.screen.functions.defaultTitleDoubleClick
 import com.catpuppyapp.puppygit.screen.functions.filterTheList
 import com.catpuppyapp.puppygit.screen.functions.getLoadText
+import com.catpuppyapp.puppygit.screen.functions.goToTreeToTreeChangeList
 import com.catpuppyapp.puppygit.screen.functions.initSearch
 import com.catpuppyapp.puppygit.screen.functions.maybeIsGoodKeyword
 import com.catpuppyapp.puppygit.screen.functions.search
 import com.catpuppyapp.puppygit.screen.functions.triggerReFilter
-import com.catpuppyapp.puppygit.screen.shared.SharedState
 import com.catpuppyapp.puppygit.settings.SettingsUtil
 import com.catpuppyapp.puppygit.style.MyStyleKt
 import com.catpuppyapp.puppygit.user.UserUtil
@@ -138,7 +138,6 @@ import com.catpuppyapp.puppygit.utils.replaceStringResList
 import com.catpuppyapp.puppygit.utils.state.mutableCustomStateListOf
 import com.catpuppyapp.puppygit.utils.state.mutableCustomStateOf
 import com.catpuppyapp.puppygit.utils.time.TimeZoneUtil
-import com.catpuppyapp.puppygit.utils.withMainContext
 import com.github.git24j.core.GitObject
 import com.github.git24j.core.Oid
 import com.github.git24j.core.Repository
@@ -1888,15 +1887,12 @@ fun CommitListScreen(
                     if(UserUtil.isPro() && (dev_EnableUnTestedFeature || commitsDiffToLocalTestPassed)) {
                         BottomSheetItem(sheetState, showBottomSheet, stringResource(R.string.diff_to_local)) {
                             //                    diff to local，点击跳转到tree to tree页面，然后diff
-                            //当前比较的描述信息的key，用来在界面显示这是在比较啥，值例如“和父提交比较”或者“比较两个提交”之类的
-                            SharedState.treeToTreeChangeList_title.value = activityContext.getString(R.string.compare_to_local)
-                            //这里需要传当前commit，然后cl页面会用当前commit查出当前commit的parents
-                            val commit2 = Cons.git_LocalWorktreeCommitHash
-                            val commitForQueryParents = Cons.git_AllZeroOidStr
-                            // url 参数： 页面导航id/repoId/treeoid1/treeoid2/desckey
-                            navController.navigate(
-                                //注意是 parentTreeOid to thisObj.treeOid，也就是 旧提交to新提交，相当于 git diff abc...def，比较的是旧版到新版，新增或删除或修改了什么，反过来的话，新增删除之类的也就反了
-                                "${Cons.nav_TreeToTreeChangeListScreen}/${curRepo.value.id}/${curCommit.value.oidStr}/$commit2/$commitForQueryParents"
+                            goToTreeToTreeChangeList(
+                                title = activityContext.getString(R.string.compare_to_local),
+                                repoId = curRepo.value.id,
+                                commit1 = curCommit.value.oidStr,
+                                commit2 = Cons.git_LocalWorktreeCommitHash,
+                                commitForQueryParents = Cons.git_AllZeroOidStr,
                             )
                         }
                     }
@@ -1920,16 +1916,15 @@ fun CommitListScreen(
                                     }
 
                                     //当前比较的描述信息的key，用来在界面显示这是在比较啥，值例如“和父提交比较”或者“比较两个提交”之类的
-                                    SharedState.treeToTreeChangeList_title.value = activityContext.getString(R.string.compare_to_head)
-                                    val commitForQueryParents = Cons.git_AllZeroOidStr
 
-                                    withMainContext {
-                                        // url 参数： 页面导航id/repoId/treeoid1/treeoid2/desckey
-                                        navController.navigate(
-                                            //注意是 parentTreeOid to thisObj.treeOid，也就是 旧提交to新提交，相当于 git diff abc...def，比较的是旧版到新版，新增或删除或修改了什么，反过来的话，新增删除之类的也就反了
-                                            "${Cons.nav_TreeToTreeChangeListScreen}/${curRepo.value.id}/$commit1/$commit2/$commitForQueryParents"
-                                        )
-                                    }
+
+                                    goToTreeToTreeChangeList(
+                                        title = activityContext.getString(R.string.compare_to_head),
+                                        repoId = curRepo.value.id,
+                                        commit1 = commit1,
+                                        commit2 = commit2,
+                                        commitForQueryParents = Cons.git_AllZeroOidStr,
+                                    )
 
                                 }
 
@@ -2183,16 +2178,13 @@ fun CommitListScreen(
                         //TODO 改成没父提交时列出当前提交的所有文件
                         Msg.requireShowLongDuration(activityContext.getString(R.string.no_parent_to_compare))
                     } else {  //有父提交，取出第一个父提交和当前提交进行比较
-                        //当前比较的描述信息的key，用来在界面显示这是在比较啥，值例如“和父提交比较”或者“比较两个提交”之类的
-                        SharedState.treeToTreeChangeList_title.value = activityContext.getString(R.string.compare_to_parent)
-                        //这里需要传当前commit，然后cl页面会用当前commit查出当前commit的parents
-                        val commit1 = parents[0]
                         val commit2 = thisObj.oidStr
-                        val commitForQueryParents = commit2
-                        // url 参数： 页面导航id/repoId/treeoid1/treeoid2/desckey
-                        navController.navigate(
-                            //注意是 parentTreeOid to thisObj.treeOid，也就是 旧提交to新提交，相当于 git diff abc...def，比较的是旧版到新版，新增或删除或修改了什么，反过来的话，新增删除之类的也就反了
-                            "${Cons.nav_TreeToTreeChangeListScreen}/${curRepo.value.id}/$commit1/$commit2/$commitForQueryParents"
+                        goToTreeToTreeChangeList(
+                            title = activityContext.getString(R.string.compare_to_parent),
+                            repoId = curRepo.value.id,
+                            commit1 = parents[0],
+                            commit2 = commit2,
+                            commitForQueryParents = commit2,
                         )
 
                     }

@@ -54,14 +54,14 @@ import com.catpuppyapp.puppygit.compose.AskGitUsernameAndEmailDialogWithSelectio
 import com.catpuppyapp.puppygit.compose.BottomSheet
 import com.catpuppyapp.puppygit.compose.BottomSheetItem
 import com.catpuppyapp.puppygit.compose.BranchItem
-import com.catpuppyapp.puppygit.compose.DefaultPaddingRow
-import com.catpuppyapp.puppygit.compose.DefaultPaddingText
 import com.catpuppyapp.puppygit.compose.CheckoutDialog
 import com.catpuppyapp.puppygit.compose.CheckoutDialogFrom
 import com.catpuppyapp.puppygit.compose.ConfirmDialog
 import com.catpuppyapp.puppygit.compose.ConfirmDialog2
 import com.catpuppyapp.puppygit.compose.CopyableDialog
 import com.catpuppyapp.puppygit.compose.CreateBranchDialog
+import com.catpuppyapp.puppygit.compose.DefaultPaddingRow
+import com.catpuppyapp.puppygit.compose.DefaultPaddingText
 import com.catpuppyapp.puppygit.compose.FilterTextField
 import com.catpuppyapp.puppygit.compose.GoToTopAndGoToBottomFab
 import com.catpuppyapp.puppygit.compose.LoadingDialog
@@ -90,8 +90,8 @@ import com.catpuppyapp.puppygit.play.pro.R
 import com.catpuppyapp.puppygit.screen.functions.defaultTitleDoubleClick
 import com.catpuppyapp.puppygit.screen.functions.filterModeActuallyEnabled
 import com.catpuppyapp.puppygit.screen.functions.filterTheList
+import com.catpuppyapp.puppygit.screen.functions.goToTreeToTreeChangeList
 import com.catpuppyapp.puppygit.screen.functions.triggerReFilter
-import com.catpuppyapp.puppygit.screen.shared.SharedState
 import com.catpuppyapp.puppygit.settings.SettingsUtil
 import com.catpuppyapp.puppygit.style.MyStyleKt
 import com.catpuppyapp.puppygit.ui.theme.Theme
@@ -1597,13 +1597,14 @@ fun BranchListScreen(
                                 if(commit1 == commit2) {  // local and upstream are the same, no need compare
                                     Msg.requireShow(activityContext.getString(R.string.both_are_the_same))
                                 }else {   // necessary things are ready and local vs upstream ain't same, then , should go to diff page
-                                    SharedState.treeToTreeChangeList_title.value = activityContext.getString(R.string.compare_to_upstream)
-                                    val commitForQueryParents = Cons.git_AllZeroOidStr
 
-                                    // url 参数： 页面导航id/repoId/treeoid1/treeoid2/desckey
-                                    navController.navigate(
-                                        //注意是 parentTreeOid to thisObj.treeOid，也就是 旧提交to新提交，相当于 git diff abc...def，比较的是旧版到新版，新增或删除或修改了什么，反过来的话，新增删除之类的也就反了
-                                        "${Cons.nav_TreeToTreeChangeListScreen}/${curRepo.value.id}/$commit1/$commit2/$commitForQueryParents"
+                                    //注意是 parentTreeOid to thisObj.treeOid，也就是 旧提交to新提交，相当于 git diff abc...def，比较的是旧版到新版，新增或删除或修改了什么，反过来的话，新增删除之类的也就反了
+                                    goToTreeToTreeChangeList(
+                                        title = activityContext.getString(R.string.compare_to_upstream),
+                                        repoId = curRepo.value.id,
+                                        commit1 = commit1,
+                                        commit2 = commit2,
+                                        commitForQueryParents = Cons.git_AllZeroOidStr,
                                     )
                                 }
 
