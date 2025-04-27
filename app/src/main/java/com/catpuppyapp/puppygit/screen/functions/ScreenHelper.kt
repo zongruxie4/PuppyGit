@@ -386,13 +386,16 @@ suspend fun goToStashPage(repoId:String) {
 
 fun goToTreeToTreeChangeList(title:String, repoId: String, commit1:String, commit2:String, commitForQueryParents:String) {
     doJobWithMainContext {
+        val commit1OidStrCacheKey = NaviCache.setThenReturnKey(commit1)
+        val commit2OidStrCacheKey = NaviCache.setThenReturnKey(commit2)
+        val commitForQueryParentsCacheKey = NaviCache.setThenReturnKey(commitForQueryParents)
         //当前比较的描述信息的key，用来在界面显示这是在比较啥，值例如“和父提交比较”或者“比较两个提交”之类的
         val titleCacheKey = NaviCache.setThenReturnKey(title)
 
         // url 参数： 页面导航id/repoId/treeoid1/treeoid2/desckey
         AppModel.navController.navigate(
             //注意是 parentTreeOid to thisObj.treeOid，也就是 旧提交to新提交，相当于 git diff abc...def，比较的是旧版到新版，新增或删除或修改了什么，反过来的话，新增删除之类的也就反了
-            "${Cons.nav_TreeToTreeChangeListScreen}/$repoId/$commit1/$commit2/$commitForQueryParents/$titleCacheKey"
+            "${Cons.nav_TreeToTreeChangeListScreen}/$repoId/$commit1OidStrCacheKey/$commit2OidStrCacheKey/$commitForQueryParentsCacheKey/$titleCacheKey"
         )
     }
 }

@@ -198,21 +198,27 @@ fun AppScreenNavigator() {
                 },
             )
         }
-        composable(Cons.nav_TreeToTreeChangeListScreen+"/{repoId}/{commit1OidStr}/{commit2OidStr}/{commitForQueryParents}/{titleCacheKey}") {
-//            val commitForQueryParents = it.arguments?.getString("commitForQueryParents") ?: ""
+        composable(Cons.nav_TreeToTreeChangeListScreen+"/{repoId}/{commit1OidStrCacheKey}/{commit2OidStrCacheKey}/{commitForQueryParentsCacheKey}/{titleCacheKey}") {
+            val commit1OidStrCacheKey = it.arguments?.getString("commit1OidStrCacheKey") ?: ""
+            val commit2OidStrCacheKey = it.arguments?.getString("commit2OidStrCacheKey") ?: ""
+            val commitForQueryParentsCacheKey = it.arguments?.getString("commitForQueryParentsCacheKey") ?: ""
 
             val titleCacheKey = it.arguments?.getString("titleCacheKey") ?: ""
 
             TreeToTreeChangeListScreen(
                 repoId = it.arguments?.getString("repoId") ?: "",
-                commit1OidStr=it.arguments?.getString("commit1OidStr") ?: "",
-                commit2OidStr=it.arguments?.getString("commit2OidStr") ?: "",
+                commit1OidStrCacheKey = commit1OidStrCacheKey,
+                commit2OidStrCacheKey = commit2OidStrCacheKey,
 
                 //若不需要查parents，则传all zero oid在url中占位即可。
-                commitForQueryParents = it.arguments?.getString("commitForQueryParents") ?: "",
+                commitForQueryParentsCacheKey = commitForQueryParentsCacheKey,
                 titleCacheKey = titleCacheKey,
                 naviUp = {
                     navController.navigateUp()
+
+                    NaviCache.del(commit1OidStrCacheKey)
+                    NaviCache.del(commit2OidStrCacheKey)
+                    NaviCache.del(commitForQueryParentsCacheKey)
                     NaviCache.del(titleCacheKey)
                 },
             )

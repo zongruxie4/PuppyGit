@@ -81,20 +81,21 @@ fun TreeToTreeChangeListScreen(
     repoId:String,
 
     // show differences of commit1 to commit2 (git cmd format: 'commit1..commit2', or 'left..right')
-    commit1OidStr:String,  // left
-    commit2OidStr:String,  // right
-
-    commitForQueryParents:String,  // commit for query parents, if empty ,will not query parents for commits. ps: only need this param when compare to parents, other cases, should pass empty string
+    //这个万一包含/呢，例如 'origin/main' 这种，所以为了避免导航出错，必须不用导航传参
+    commit1OidStrCacheKey:String,  // left
+    commit2OidStrCacheKey:String,  // right
+    commitForQueryParentsCacheKey:String,  // commit for query parents, if empty ,will not query parents for commits. ps: only need this param when compare to parents, other cases, should pass empty string
     titleCacheKey:String,
+
     naviUp: () -> Unit
 ) {
     //避免导航出现 "//" 导致导航失败
     //因为title要改变这个值，所以用State
-    val commit1OidStrState = rememberSaveable { mutableStateOf(commit1OidStr) }
-    if(commit1OidStrState.value.isBlank()) {
-        commit1OidStrState.value = Cons.git_AllZeroOid.toString()
-    }
-    val commit2OidStr = commit2OidStr.ifBlank { Cons.git_AllZeroOid.toString() }
+    val commit1OidStrState = rememberSaveable(commit1OidStrCacheKey) { mutableStateOf((NaviCache.getByType<String>(commit1OidStrCacheKey) ?:"").ifBlank { Cons.git_AllZeroOidStr }) }
+
+    val commit2OidStr = rememberSaveable(commit2OidStrCacheKey) { (NaviCache.getByType<String>(commit2OidStrCacheKey) ?:"").ifBlank { Cons.git_AllZeroOidStr } }
+
+    val commitForQueryParents = rememberSaveable(commitForQueryParentsCacheKey){ NaviCache.getByType<String>(commitForQueryParentsCacheKey) ?:"" }
 
     val commitParentList = mutableCustomStateListOf(
         keyTag = stateKeyTag,
