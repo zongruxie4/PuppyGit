@@ -17,6 +17,7 @@ import androidx.compose.material.icons.filled.SwapHoriz
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
@@ -43,6 +44,7 @@ import com.catpuppyapp.puppygit.compose.FilterTextField
 import com.catpuppyapp.puppygit.compose.GoToTopAndGoToBottomFab
 import com.catpuppyapp.puppygit.compose.LongPressAbleIconBtn
 import com.catpuppyapp.puppygit.compose.RepoInfoDialog
+import com.catpuppyapp.puppygit.compose.RepoInfoDialogItemSpacer
 import com.catpuppyapp.puppygit.constants.Cons
 import com.catpuppyapp.puppygit.data.entity.RepoEntity
 import com.catpuppyapp.puppygit.dev.commitsTreeToTreeDiffReverseTestPassed
@@ -203,6 +205,14 @@ fun TreeToTreeChangeListScreen(
                     stringResource(id = R.string.comparing_label) + ": " +Libgit2Helper.getLeftToRightDiffCommitsText(commit1OidStrState.value, commit2OidStr, swap.value)
                 )
             }
+
+            RepoInfoDialogItemSpacer()
+            Row { Text(stringResource(R.string.left)+": "+(if(swap.value) commit2OidStr else commit1OidStrState.value)) }
+            RepoInfoDialogItemSpacer()
+            Row { Text(stringResource(R.string.right)+": "+(if(swap.value) commit1OidStrState.value else commit2OidStr)) }
+            RepoInfoDialogItemSpacer()
+
+            HorizontalDivider()
         })
     }
 
