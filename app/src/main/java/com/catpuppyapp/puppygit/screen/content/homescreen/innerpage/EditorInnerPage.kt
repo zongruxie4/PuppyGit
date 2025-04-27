@@ -1246,8 +1246,12 @@ fun EditorInnerPage(
     }
 //    }
 
+    val wasPaused = rememberSaveable { mutableStateOf(false) }
+
     //按Home键把app切到后台时保存文件（准确地说是当前Activity失焦就自动保存，注意是Activity不是compose，这个函数监听的是Activity的生命周期事件)
     LifecycleEventEffect(Lifecycle.Event.ON_PAUSE) {
+        wasPaused.value = true
+
         val requireShowMsgToUser = true
 
         val requireBackupContent = true
@@ -1266,21 +1270,28 @@ fun EditorInnerPage(
 
     //按Home切换到别的app再返回，检查如果当前文件已保存（已编辑为假），则重载
     LifecycleEventEffect(Lifecycle.Event.ON_RESUME) {
-        //如果显示重载确认弹窗，则不自动重载；如果未显示重载确认弹窗且文件未编辑（换句话说：已成功保存），则自动重载
-        if(
+        val _wasPaused = wasPaused.value
+        wasPaused.value = false
+        val wasPaused = Unit  // avoid mistake use
+
+        //就算没切后台，只要切换到这个页面，就会执行一遍这个resume事件，所以得判断下，但paused和预期一样，所以可以依赖paused来判断
+        if(_wasPaused) {
+            //如果显示重载确认弹窗，则不自动重载；如果未显示重载确认弹窗且文件未编辑（换句话说：已成功保存），则自动重载
+            if(
             //预览模式不一定在预览当前文件，就算在预览当前文件，感觉也没必要重载，
             // 因为预览模式可能会频繁点击链接跳转到外部app再返回，
             // 若返回则重载可能会比较频繁且没必要，而且用户要是想的话，总是可以手动重载
-            isPreviewModeOn.value.not()
+                isPreviewModeOn.value.not()
 
-            // 未在Editor点击 open as，用外部程序打开，显示询问是否重载的弹窗，
-            // 若显示此弹窗，用户可手动确认是否重载，所以没必要自动重载
-            && showBackFromExternalAppAskReloadDialog.value.not()
+                // 未在Editor点击 open as，用外部程序打开，显示询问是否重载的弹窗，
+                // 若显示此弹窗，用户可手动确认是否重载，所以没必要自动重载
+                && showBackFromExternalAppAskReloadDialog.value.not()
 
-            && editorPageShowingFilePath.value.isNotBlank()
-            && isEdited.value.not()
-        ) {
-            reloadFile()
+                && editorPageShowingFilePath.value.isNotBlank()
+                && isEdited.value.not()
+            ) {
+                reloadFile()
+            }
         }
     }
 
