@@ -180,7 +180,6 @@ fun EditorInnerPage(
     val clipboardManager = LocalClipboardManager.current
 
     val exitApp = {
-        AppModel.clearEditorRestoreStates()
 
         AppModel.exitApp()
 
@@ -382,7 +381,6 @@ fun EditorInnerPage(
 //        showCloseDialog.value=false
 
 
-        AppModel.clearEditorRestoreStates()
 
 
 
@@ -422,11 +420,7 @@ fun EditorInnerPage(
 
     //强制重载，不检测修改时间
     val reloadFile = { force:Boolean ->
-        if(isSubPageMode) {
-            AppModel.subEditorPreviewModeOnWhenDestroy.value = false
-        }else {
-            AppModel.editorPreviewModeOnWhenDestroy.value = false
-        }
+
 
         quitPreviewMode()
 
@@ -747,11 +741,7 @@ fun EditorInnerPage(
 
                 previewLoadingOff()
 
-                if(isSubPageMode){
-                    AppModel.subEditorPreviewModeOnWhenDestroy.value = true
-                }else {
-                    AppModel.editorPreviewModeOnWhenDestroy.value = true
-                }
+
             }
         }
     }
@@ -1430,27 +1420,8 @@ private suspend fun doInit(
     if (!editorPageShowingFileIsReady.value) {  //从文件管理器跳转到editor 或 打开文件后从其他页面跳转到editor
         //准备文件路径，开始
         //优先打开从文件管理器跳转来的文件，如果不是跳转来的，打开之前显示的文件
-        //只要不是null就恢复，不判断是否为空，不然会有如下bug：子页面，打开文件，关闭（导致path被清空），旋转屏幕，文件又他妈打开了
-        MyLog.d(TAG, "AppModel.lastEditFileWhenDestroy.value: ${AppModel.lastEditFileWhenDestroy.value}")
-        AppModel.lastEditFileWhenDestroy.value?.let {
-            editorPageShowingFilePath.value = FilePath(it)
-            AppModel.lastEditFileWhenDestroy.value = null
-        }
 
 
-        //恢复undoStack
-        AppModel.editor_lastUndoStackWhenDestory.value?.let {
-            undoStack.copyFrom(it)
-            AppModel.editor_lastUndoStackWhenDestory.value = null
-        }
-
-
-
-
-        //保存上次打开文件路径
-        AppModel.lastEditFile.value = editorPageShowingFilePath.value.ioPath
-
-        MyLog.d(TAG, "AppModel.lastEditFile.value=${AppModel.lastEditFile.value}")
 
         //到这，文件路径就确定了
         val editorPageShowingFilePath = editorPageShowingFilePath.value
@@ -1474,9 +1445,7 @@ private suspend fun doInit(
                 undoStack.reset(requireOpenFilePath)
             }
 
-            //保存undoStack，这个代码和那个lastEditFile一样，理论上应该放到undoStack被确定后（作为左值被赋值），
-            // 但用reset取代了赋值，所以放到reset后，但reset并不重新赋值，所以其实放前面也行
-            AppModel.editor_lastUndoStack.value = undoStack
+
 
             val file = FuckSafFile(activityContext, editorPageShowingFilePath)
 
@@ -1639,16 +1608,7 @@ private suspend fun doInit(
             }
 
 
-            //旋转屏幕后恢复预览模式
-            if(isSubPage) {
-                if(AppModel.subEditorPreviewModeOnWhenDestroy.value) {
-                    isPreviewModeOn.value = true
-                    pageRequest.value = PageRequest.requireInitPreviewFromSubEditor
-                }
-            }else if(AppModel.editorPreviewModeOnWhenDestroy.value) {
-                isPreviewModeOn.value = true
-                pageRequest.value = PageRequest.requireInitPreview
-            }
+
 
         } catch (e: Exception) {
             editorPageShowingFileIsReady.value = false

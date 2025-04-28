@@ -137,7 +137,6 @@ fun openFileWithInnerSubPageEditor(
         val initMergeMode = if(mergeMode) "1" else "0"
         val initReadOnly = if(readOnly) "1" else "0"
 
-        AppModel.subEditorPreviewModeOnWhenDestroy.value = false
 
         AppModel.navController.navigate(Cons.nav_SubPageEditor + "/$goToLine/$initMergeMode/$initReadOnly/$filePathKey")
     }
