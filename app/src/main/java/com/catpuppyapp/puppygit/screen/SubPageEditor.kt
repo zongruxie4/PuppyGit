@@ -28,7 +28,6 @@ import com.catpuppyapp.puppygit.compose.LongPressAbleIconBtn
 import com.catpuppyapp.puppygit.compose.SmallFab
 import com.catpuppyapp.puppygit.constants.Cons
 import com.catpuppyapp.puppygit.constants.PageRequest
-import com.catpuppyapp.puppygit.dev.bug_Editor_undoStackLostAfterRotateScreen_Fixed
 import com.catpuppyapp.puppygit.dto.FileSimpleDto
 import com.catpuppyapp.puppygit.dto.UndoStack
 import com.catpuppyapp.puppygit.fileeditor.texteditor.view.ScrollEvent
@@ -194,13 +193,8 @@ fun SubPageEditor(
     val editorShowUndoRedo = rememberSaveable{mutableStateOf(settingsTmp.editor.showUndoRedo)}
 //    val editorUndoStack = remember(editorPageShowingFilePath.value){ derivedStateOf { UndoStack(filePath = editorPageShowingFilePath.value.ioPath) } }
 //    val editorUndoStack = remember { SharedState.subEditorUndoStack }
-    val editorUndoStack = remember(editorPageShowingFilePath.value.ioPath) {
-        if(bug_Editor_undoStackLostAfterRotateScreen_Fixed) {
-            UndoStack("")
-        }else {
-            UndoStack(editorPageShowingFilePath.value.ioPath)
-        }
-    }
+    val editorUndoStack = mutableCustomStateOf(stateKeyTag, "editorUndoStack") { UndoStack("") }
+
 
     val editorLoadLock = remember { Mutex() }
 
@@ -359,7 +353,7 @@ fun SubPageEditor(
                             adjustFontSizeMode=editorAdjustFontSizeMode,
                             adjustLineNumFontSizeMode=editorAdjustLineNumFontSizeMode,
                             showLineNum = editorShowLineNum,
-                            undoStack = editorUndoStack,
+                            undoStack = editorUndoStack.value,
                             showUndoRedo = editorShowUndoRedo
                         )
                     }
@@ -449,7 +443,7 @@ fun SubPageEditor(
             editorLastSavedFontSize = editorLastSavedFontSize,
             openDrawer = {}, //非顶级页面按返回键不需要打开抽屉
             editorOpenFileErr = editorOpenFileErr,
-            undoStack = editorUndoStack,
+            undoStack = editorUndoStack.value,
             loadLock = editorLoadLock
 
         )

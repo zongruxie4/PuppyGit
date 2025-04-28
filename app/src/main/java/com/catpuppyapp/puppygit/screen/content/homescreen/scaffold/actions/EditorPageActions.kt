@@ -191,9 +191,10 @@ fun EditorPageActions(
 
     if(enableMenuItem) {
         if(showUndoRedo.value) {
+            val enableUndo = remember(undoStack.undoStackIsEmpty()) { undoStack.undoStackIsEmpty().not() }
             val undoStr = stringResource(R.string.undo)
             LongPressAbleIconBtn(
-                enabled = undoStack.undoStackIsEmpty().not(),
+                enabled = enableUndo,
                 tooltipText = undoStr,
                 icon = Icons.AutoMirrored.Filled.Undo,
                 iconContentDesc = undoStr,
@@ -208,9 +209,10 @@ fun EditorPageActions(
                 editorPageRequest.value = PageRequest.requestUndo
             }
 
+            val enableRedo = remember(undoStack.redoStackIsEmpty()) { undoStack.redoStackIsEmpty().not() }
             val redoStr = stringResource(R.string.redo)
             LongPressAbleIconBtn(
-                enabled = undoStack.redoStackIsEmpty().not(),
+                enabled = enableRedo,
                 tooltipText = redoStr,
                 icon = Icons.AutoMirrored.Filled.Redo,
                 iconContentDesc = redoStr,

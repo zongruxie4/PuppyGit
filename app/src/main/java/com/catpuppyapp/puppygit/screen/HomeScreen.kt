@@ -63,7 +63,6 @@ import com.catpuppyapp.puppygit.constants.IntentCons
 import com.catpuppyapp.puppygit.constants.PageRequest
 import com.catpuppyapp.puppygit.constants.SingleSendHandleMethod
 import com.catpuppyapp.puppygit.data.entity.RepoEntity
-import com.catpuppyapp.puppygit.dev.bug_Editor_undoStackLostAfterRotateScreen_Fixed
 import com.catpuppyapp.puppygit.dto.FileItemDto
 import com.catpuppyapp.puppygit.dto.FileSimpleDto
 import com.catpuppyapp.puppygit.dto.UndoStack
@@ -557,13 +556,7 @@ fun HomeScreen(
     val editorShowUndoRedo = rememberSaveable{mutableStateOf(settingsSnapshot.value.editor.showUndoRedo)}
 //    val editorUndoStack = remember(editorPageShowingFilePath.value){ derivedStateOf { UndoStack(filePath = editorPageShowingFilePath.value.ioPath) } }
 //    val editorUndoStack = remember { SharedState.editorUndoStack }
-    val editorUndoStack = remember(editorPageShowingFilePath.value.ioPath) {
-        if(bug_Editor_undoStackLostAfterRotateScreen_Fixed) {
-            UndoStack("")
-        }else {
-            UndoStack(editorPageShowingFilePath.value.ioPath)
-        }
-    }
+    val editorUndoStack = mutableCustomStateOf(stateKeyTag, "editorUndoStack") { UndoStack("") }
 
     val editorLoadLock = remember { Mutex() }
 
@@ -1070,7 +1063,7 @@ fun HomeScreen(
                                 adjustFontSizeMode=editorAdjustFontSizeMode,
                                 adjustLineNumFontSizeMode=editorAdjustLineNumFontSizeMode,
                                 showLineNum = editorShowLineNum,
-                                undoStack = editorUndoStack,
+                                undoStack = editorUndoStack.value,
                                 showUndoRedo = editorShowUndoRedo
                             )
                         }else if(currentHomeScreen.intValue == Cons.selectedItem_ChangeList) {
@@ -1329,7 +1322,7 @@ fun HomeScreen(
                     editorLastSavedFontSize = editorLastSavedFontSize,
                     openDrawer = openDrawer,
                     editorOpenFileErr = editorOpenFileErr,
-                    undoStack = editorUndoStack,
+                    undoStack = editorUndoStack.value,
                     loadLock = editorLoadLock
 
                 )

@@ -60,7 +60,6 @@ import com.catpuppyapp.puppygit.compose.OpenAsDialog
 import com.catpuppyapp.puppygit.constants.Cons
 import com.catpuppyapp.puppygit.constants.LineNum
 import com.catpuppyapp.puppygit.constants.PageRequest
-import com.catpuppyapp.puppygit.dev.bug_Editor_undoStackLostAfterRotateScreen_Fixed
 import com.catpuppyapp.puppygit.dto.FileSimpleDto
 import com.catpuppyapp.puppygit.dto.UndoStack
 import com.catpuppyapp.puppygit.fileeditor.texteditor.state.TextEditorState
@@ -444,8 +443,9 @@ fun EditorInnerPage(
         if(force) {
             //确保重载：清空文件路径，这样和showingFilePath对比就永远不会为真，也就会百分百重载文件
             editorPageShowingFileDto.value.fullPath=""
-            //重载文件清undo stack
-            undoStack.reset(editorPageShowingFilePath.value.ioPath)
+
+            //重载文件清undo stack，后来修改了下，在加载文件时根据路径是否变化决定是否reset undo stack，所以不需要在这清了
+//            undoStack.reset(editorPageShowingFilePath.value.ioPath)
         }
 
         changeStateTriggerRefreshPage(needRefreshEditorPage)
@@ -1449,15 +1449,15 @@ private suspend fun doInit(
         //执行到这里，一定有一个非空的文件路径
 
 
-        if(bug_Editor_undoStackLostAfterRotateScreen_Fixed) {
+
+
+        //读取文件内容
+        try {
             //若文件改变，更新undo stack
             if(requireOpenFilePath != undoStack.filePath) {
                 undoStack.reset(requireOpenFilePath)
             }
-        }
 
-        //读取文件内容
-        try {
             val file = FuckSafFile(activityContext, editorPageShowingFilePath)
 
             //如果文件修改时间和大小没变，不重新加载文件
