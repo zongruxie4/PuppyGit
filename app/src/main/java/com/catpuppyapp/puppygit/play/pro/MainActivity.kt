@@ -197,8 +197,8 @@ class MainActivity : ComponentActivity() {
 
 @Composable
 private fun MainCompose() {
-    val stateKeyTag = "MainCompose"
-    val funName = "MainCompose"
+    val stateKeyTag = remember { "MainCompose" }
+    val funName = remember { "MainCompose" }
 
     val activityContext = LocalContext.current
     val loadingText = rememberSaveable { mutableStateOf(activityContext.getString(R.string.launching))}

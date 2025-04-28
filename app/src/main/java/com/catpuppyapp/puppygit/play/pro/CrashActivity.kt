@@ -18,6 +18,9 @@ import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalClipboardManager
@@ -28,6 +31,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.catpuppyapp.puppygit.compose.AppIcon
 import com.catpuppyapp.puppygit.compose.CardButton
+import com.catpuppyapp.puppygit.compose.GoToTopAndGoToBottomFab
 import com.catpuppyapp.puppygit.compose.MySelectionContainer
 import com.catpuppyapp.puppygit.compose.SpacerRow
 import com.catpuppyapp.puppygit.screen.content.homescreen.innerpage.reportBugsLink
@@ -84,18 +88,32 @@ class CrashActivity : ComponentActivity() {
 
 @Composable
 private fun MainCompose(activity: Activity, appContext: Context, errMsg: String, exit:()->Unit) {
-    val stateKeyTag = "MainCompose"
-    val funName = "MainCompose"
-
     val activityContext = LocalContext.current
     val clipboardManager = LocalClipboardManager.current
+    val scope = rememberCoroutineScope()
 
     val spacerHeight = 20.dp
     val errMsgZonePadding = 20.dp
 
-    Scaffold { contentPadding ->
+    val scrollState = rememberScrollState()
+    //设为true，默认显示fab，可临时隐藏，超时后将再次显示
+    val showFab = rememberSaveable { mutableStateOf(true) }
+    val lastScrollPosition = rememberSaveable { mutableStateOf(0) }
+
+    Scaffold(
+        floatingActionButton = {
+            if(showFab.value) {
+                GoToTopAndGoToBottomFab(
+                    scope = scope,
+                    listState = scrollState,
+                    listLastPosition = lastScrollPosition,
+                    showFab = showFab
+                )
+            }
+        }
+    ) { contentPadding ->
         Column(
-            modifier = Modifier.fillMaxSize().padding(contentPadding).verticalScroll(rememberScrollState()),
+            modifier = Modifier.fillMaxSize().padding(contentPadding).verticalScroll(scrollState),
             verticalArrangement = Arrangement.Center,
             horizontalAlignment = Alignment.CenterHorizontally,
 
