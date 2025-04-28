@@ -999,6 +999,12 @@ private fun NaviButton(
     val hasPrevious = previousIndex >= 0 && previousIndex < size
     val hasNext = nextIndex >= 0 && nextIndex < size
 
+    val noneText = stringResource(R.string.none)
+
+    val getItemTextByIdx:(Int)->String = { idx:Int ->
+        (if(isFileHistoryTreeToLocalOrTree) diffableItemListForFileHistory.getOrNull(idx)?.getCachedCommitShortOidStr() else diffableItemList.getOrNull(idx)?.fileName) ?: noneText
+    }
+
     Column(
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.Center
@@ -1286,8 +1292,8 @@ private fun NaviButton(
             //切换上个下个条目按钮
             CardButton(
                 text = replaceStringResList(stringResource(R.string.prev_filename), listOf(if(hasPrevious) {
-                    if(isFileHistoryTreeToLocalOrTree) diffableItemListForFileHistory[previousIndex].getCachedCommitShortOidStr() else diffableItemList[previousIndex].fileName
-                } else stringResource(R.string.none))),
+                    getItemTextByIdx(previousIndex)
+                } else noneText)),
                 enabled = hasPrevious
             ) {
                 if(isFileHistoryTreeToLocalOrTree) {
@@ -1300,11 +1306,18 @@ private fun NaviButton(
                     switchItem(item, previousIndex)
                 }
             }
+
             Spacer(Modifier.height(10.dp))
+
+            //当前条目
+            Text(getItemTextByIdx(curItemIndex.intValue))
+
+            Spacer(Modifier.height(10.dp))
+
             CardButton(
                 text = replaceStringResList(stringResource(R.string.next_filename), listOf(if(hasNext) {
-                    if(isFileHistoryTreeToLocalOrTree) diffableItemListForFileHistory[nextIndex].getCachedCommitShortOidStr() else diffableItemList[nextIndex].fileName
-                } else stringResource(R.string.none))),
+                    getItemTextByIdx(nextIndex)
+                } else noneText)),
                 enabled = hasNext
             ) {
                 if(isFileHistoryTreeToLocalOrTree) {
