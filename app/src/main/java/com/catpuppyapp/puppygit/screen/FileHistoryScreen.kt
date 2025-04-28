@@ -1152,12 +1152,9 @@ fun FileHistoryScreen(
             val actuallyListState = if(enableFilterState.value) filterListState else listState
             //最后一个else是TreeToTree
             val lastClickedItemKey = SharedState.fileHistory_LastClickedItemKey.value
-            for((index, item) in actuallyList.withIndex()) {
-                if(item.getItemKey() == lastClickedItemKey) {
-                    //滚动到当前条目前两个条目不然当前条目在顶端看着不太舒服
-                    UIHelper.scrollToItem(scope, actuallyListState, index-2)
-                    break
-                }
+
+            UIHelper.scrollByPredicate(scope, actuallyList, actuallyListState) { idx, item ->
+                item.getItemKey() == lastClickedItemKey
             }
 
 

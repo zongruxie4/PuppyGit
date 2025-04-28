@@ -3360,12 +3360,9 @@ fun ChangeListInnerPage(
                 val actuallyListState = if(enableFilterState.value) filterListState else itemListState
                 //最后一个else是TreeToTree
                 val lastClickedItemKey = if(fromTo == Cons.gitDiffFromIndexToWorktree) SharedState.homeChangeList_LastClickedItemKey.value else if(fromTo == Cons.gitDiffFromHeadToIndex) SharedState.index_LastClickedItemKey.value else SharedState.treeToTree_LastClickedItemKey.value
-                for((index, item) in actuallyList.withIndex()) {
-                    if(item.getItemKey() == lastClickedItemKey) {
-                        //滚动到当前条目前两个条目不然当前条目在顶端看着不太舒服
-                        UIHelper.scrollToItem(scope, actuallyListState, index-2)
-                        break
-                    }
+
+                UIHelper.scrollByPredicate(scope, actuallyList, actuallyListState) { idx, item ->
+                    item.getItemKey() == lastClickedItemKey
                 }
 
 
