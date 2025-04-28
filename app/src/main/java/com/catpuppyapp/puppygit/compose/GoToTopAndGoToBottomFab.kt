@@ -99,9 +99,9 @@ private fun GoToTopAndGoToBottomFab_Internal(
     scrollToBottomForFilterState:()->Unit,
     hideButton:()->Unit,
 ) {
-    val configure = LocalConfiguration.current
+    val configuration = LocalConfiguration.current
 
-    Column(modifier = MyStyleKt.Fab.getFabModifier(UIHelper.isPortrait(configure), UIHelper.getDeviceWidthHeightInDp(configure))) {
+    Column(modifier = MyStyleKt.Fab.getFabModifier(UIHelper.isPortrait(configuration), UIHelper.getDeviceWidthHeightInDp(configuration))) {
         //show go to top
         SmallFab(
             icon = Icons.Filled.VerticalAlignTop, iconDesc = stringResource(id = R.string.go_to_top)

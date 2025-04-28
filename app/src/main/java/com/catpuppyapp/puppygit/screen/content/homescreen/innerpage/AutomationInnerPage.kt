@@ -91,8 +91,8 @@ fun AutomationInnerPage(
     val activityContext = LocalContext.current
 //    val clipboardManager = LocalClipboardManager.current
 //    val haptic = LocalHapticFeedback.current
-    val configure = LocalConfiguration.current
-    val screenHeightDp = configure.screenHeightDp.dp
+    val configuration = LocalConfiguration.current
+    val screenHeightDp = configuration.screenHeightDp.dp
 
     //两个作用：1离开页面，返回后重新显示导航按钮；2在设置页面开启、关闭导航按钮后使其立即生效（因为remember离开页面就会销毁，所以每次重进页面都会读取最新的settings值）。
     //20250222: 其实这个pageScrolled现在已经仅代表是否显示navi buttons 了，跟是否滚动没关系了
