@@ -99,6 +99,7 @@
             android:theme="@style/Theme.PuppyGitAndroid"
             android:windowSoftInputMode="adjustResize"
             android:launchMode="singleInstance"
+            android:configChanges="orientation|screenSize|screenLayout|keyboardHidden"
 
             >
 
@@ -142,6 +143,8 @@
             android:exported="true"
             android:theme="@style/Theme.PuppyGitAndroid"
             android:windowSoftInputMode="adjustResize"
+            android:configChanges="orientation|screenSize|screenLayout|keyboardHidden"
+
         >
             <intent-filter>
                 <action android:name="android.intent.action.VIEW" />
