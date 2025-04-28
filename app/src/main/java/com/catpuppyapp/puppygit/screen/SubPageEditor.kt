@@ -37,8 +37,8 @@ import com.catpuppyapp.puppygit.screen.content.homescreen.innerpage.EditorInnerP
 import com.catpuppyapp.puppygit.screen.content.homescreen.scaffold.actions.EditorPageActions
 import com.catpuppyapp.puppygit.screen.content.homescreen.scaffold.title.EditorTitle
 import com.catpuppyapp.puppygit.screen.functions.getInitTextEditorState
+import com.catpuppyapp.puppygit.screen.shared.EditorPreviewNavStack
 import com.catpuppyapp.puppygit.screen.shared.FilePath
-import com.catpuppyapp.puppygit.screen.shared.SharedState
 import com.catpuppyapp.puppygit.settings.SettingsUtil
 import com.catpuppyapp.puppygit.style.MyStyleKt
 import com.catpuppyapp.puppygit.utils.AppModel
@@ -166,7 +166,7 @@ fun SubPageEditor(
         editorPreviewPathChanged.value = generateRandomString()
     }
 
-    val editorPreviewNavStack = mutableCustomStateOf(stateKeyTag, "editorPreviewNavStack") { SharedState.subEditorPreviewNavStack }
+    val editorPreviewNavStack = mutableCustomStateOf(stateKeyTag, "editorPreviewNavStack") { EditorPreviewNavStack("") }
 
     val editorQuitPreviewMode = {
         AppModel.subEditorPreviewModeOnWhenDestroy.value = false
@@ -196,9 +196,9 @@ fun SubPageEditor(
 //    val editorUndoStack = remember { SharedState.subEditorUndoStack }
     val editorUndoStack = remember(editorPageShowingFilePath.value.ioPath) {
         if(bug_Editor_undoStackLostAfterRotateScreen_Fixed) {
-            SharedState.subEditorUndoStack
+            UndoStack("")
         }else {
-            mutableStateOf(UndoStack(editorPageShowingFilePath.value.ioPath))
+            UndoStack(editorPageShowingFilePath.value.ioPath)
         }
     }
 
@@ -359,7 +359,7 @@ fun SubPageEditor(
                             adjustFontSizeMode=editorAdjustFontSizeMode,
                             adjustLineNumFontSizeMode=editorAdjustLineNumFontSizeMode,
                             showLineNum = editorShowLineNum,
-                            undoStack = editorUndoStack.value,
+                            undoStack = editorUndoStack,
                             showUndoRedo = editorShowUndoRedo
                         )
                     }

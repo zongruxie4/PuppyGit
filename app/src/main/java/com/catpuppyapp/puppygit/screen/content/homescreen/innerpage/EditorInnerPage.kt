@@ -171,7 +171,7 @@ fun EditorInnerPage(
 
     openDrawer:()->Unit,
     editorOpenFileErr:MutableState<Boolean>,
-    undoStack: MutableState<UndoStack>,
+    undoStack: UndoStack,
 
 ) {
 
@@ -445,7 +445,7 @@ fun EditorInnerPage(
             //确保重载：清空文件路径，这样和showingFilePath对比就永远不会为真，也就会百分百重载文件
             editorPageShowingFileDto.value.fullPath=""
             //重载文件清undo stack
-            undoStack.value = UndoStack(editorPageShowingFilePath.value.ioPath)
+            undoStack.reset(editorPageShowingFilePath.value.ioPath)
         }
 
         changeStateTriggerRefreshPage(needRefreshEditorPage)
@@ -1256,7 +1256,7 @@ fun EditorInnerPage(
             showLineNum=editorShowLineNum,
             lineNumFontSize=editorLineNumFontSize,
             fontSize=editorFontSize,
-            undoStack = undoStack.value
+            undoStack = undoStack
         )
     }
 //    }
@@ -1409,7 +1409,7 @@ private suspend fun doInit(
     isSaving:MutableState<Boolean>,
     isContentSnapshoted:MutableState<Boolean>,
     lastTextEditorState: CustomStateSaveable<TextEditorState>,
-    undoStack:MutableState<UndoStack>,
+    undoStack:UndoStack,
     hasError:()->Boolean,
 ) {
 
@@ -1451,8 +1451,8 @@ private suspend fun doInit(
 
         if(bug_Editor_undoStackLostAfterRotateScreen_Fixed) {
             //若文件改变，更新undo stack
-            if(requireOpenFilePath != undoStack.value.filePath) {
-                undoStack.value = UndoStack(filePath = requireOpenFilePath)
+            if(requireOpenFilePath != undoStack.filePath) {
+                undoStack.reset(requireOpenFilePath)
             }
         }
 
@@ -1566,7 +1566,7 @@ private suspend fun doInit(
                 onChanged = getEditorStateOnChange(
                     editorPageTextEditorState = editorPageTextEditorState,
                     lastTextEditorState = lastTextEditorState,
-                    undoStack = undoStack.value
+                    undoStack = undoStack
                 )
             )
 

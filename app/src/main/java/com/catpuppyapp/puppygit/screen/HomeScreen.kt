@@ -94,6 +94,7 @@ import com.catpuppyapp.puppygit.screen.content.homescreen.scaffold.title.Scrolla
 import com.catpuppyapp.puppygit.screen.content.homescreen.scaffold.title.SimpleTitle
 import com.catpuppyapp.puppygit.screen.functions.ChangeListFunctions
 import com.catpuppyapp.puppygit.screen.functions.getInitTextEditorState
+import com.catpuppyapp.puppygit.screen.shared.EditorPreviewNavStack
 import com.catpuppyapp.puppygit.screen.shared.FileChooserType
 import com.catpuppyapp.puppygit.screen.shared.FilePath
 import com.catpuppyapp.puppygit.screen.shared.IntentHandler
@@ -429,7 +430,7 @@ fun HomeScreen(
         updatePreviewPath_Internal(newPath)
         editorPreviewPathChanged.value = generateRandomString()
     }
-    val editorPreviewNavStack = mutableCustomStateOf(stateKeyTag, "editorPreviewNavStack") { SharedState.editorPreviewNavStack }
+    val editorPreviewNavStack = mutableCustomStateOf(stateKeyTag, "editorPreviewNavStack") { EditorPreviewNavStack("") }
 
     val editorQuitPreviewMode = {
         AppModel.editorPreviewModeOnWhenDestroy.value = false
@@ -558,9 +559,9 @@ fun HomeScreen(
 //    val editorUndoStack = remember { SharedState.editorUndoStack }
     val editorUndoStack = remember(editorPageShowingFilePath.value.ioPath) {
         if(bug_Editor_undoStackLostAfterRotateScreen_Fixed) {
-            SharedState.editorUndoStack
+            UndoStack("")
         }else {
-            mutableStateOf(UndoStack(editorPageShowingFilePath.value.ioPath))
+            UndoStack(editorPageShowingFilePath.value.ioPath)
         }
     }
 
@@ -1069,7 +1070,7 @@ fun HomeScreen(
                                 adjustFontSizeMode=editorAdjustFontSizeMode,
                                 adjustLineNumFontSizeMode=editorAdjustLineNumFontSizeMode,
                                 showLineNum = editorShowLineNum,
-                                undoStack = editorUndoStack.value,
+                                undoStack = editorUndoStack,
                                 showUndoRedo = editorShowUndoRedo
                             )
                         }else if(currentHomeScreen.intValue == Cons.selectedItem_ChangeList) {
