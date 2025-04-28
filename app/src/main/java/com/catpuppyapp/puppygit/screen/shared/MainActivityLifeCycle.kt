@@ -10,8 +10,9 @@ private val currentMainActivityLifeCycle = mutableStateOf(MainActivityLifeCycle.
 
 enum class MainActivityLifeCycle(val code: String) {
     NONE("NONE"),
-    ON_PAUSE("ON_PAUSE"),
+    ON_CREATE("ON_CREATE"),
     ON_RESUME("ON_RESUME"),
+    ON_PAUSE("ON_PAUSE"),
 
     ;
 
@@ -31,16 +32,21 @@ fun doActIfIsExpectLifeCycle(expectLifeCycle: MainActivityLifeCycle, nextLifeCyc
 
     if(currentMainActivityLifeCycle.value == expectLifeCycle) {
         //判断完立刻重置，确保一个事件只消费一次
-        setMainActivityLifeCycle(nextLifeCycle)
+        currentMainActivityLifeCycle.value = nextLifeCycle
 
         act()
     }
 }
 
+
+
 fun setMainActivityLifeCycle(lifeCycle: MainActivityLifeCycle) {
     currentMainActivityLifeCycle.value = lifeCycle
 }
 
-fun getMainActivityLifeCycle():MainActivityLifeCycle {
-    return currentMainActivityLifeCycle.value
+
+fun setByPredicate(lifeCycle: MainActivityLifeCycle, predicate: (current: MainActivityLifeCycle)->Boolean) {
+    if(predicate(currentMainActivityLifeCycle.value)) {
+        setMainActivityLifeCycle(lifeCycle)
+    }
 }

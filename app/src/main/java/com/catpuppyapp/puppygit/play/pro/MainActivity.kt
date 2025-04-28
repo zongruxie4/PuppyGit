@@ -29,6 +29,7 @@ import com.catpuppyapp.puppygit.screen.RequireMasterPasswordScreen
 import com.catpuppyapp.puppygit.screen.functions.KnownHostRequestStateMan
 import com.catpuppyapp.puppygit.screen.shared.IntentHandler
 import com.catpuppyapp.puppygit.screen.shared.MainActivityLifeCycle
+import com.catpuppyapp.puppygit.screen.shared.setByPredicate
 import com.catpuppyapp.puppygit.screen.shared.setMainActivityLifeCycle
 import com.catpuppyapp.puppygit.ui.theme.PuppyGitAndroidTheme
 import com.catpuppyapp.puppygit.ui.theme.Theme
@@ -81,10 +82,12 @@ class MainActivity : ComponentActivity() {
 //            .build();
 //        StrictMode.setThreadPolicy(threadPolicy);
         //20240519: end: 尝试解决谷歌自动测试时的bug，什么gms err之类的
+        MyLog.d(TAG, "#onCreate called")
 
         super.onCreate(savedInstanceState)
 
-        MyLog.d(TAG, "#onCreate called")
+        setMainActivityLifeCycle(MainActivityLifeCycle.ON_CREATE)
+
 
         //如果是初次创建Activity，onNewIntent不会被调用，只能在这里设置一下，要不然有可能漏外部传来的intent（分享文件、编辑文件）
         IntentHandler.setNewIntent(intent)
@@ -174,17 +177,34 @@ class MainActivity : ComponentActivity() {
     }
 
     override fun onNewIntent(intent: Intent) {
-        super.onNewIntent(intent)
         MyLog.d(TAG, "#onNewIntent() called")
+        super.onNewIntent(intent)
+
+        //Activity改单例了，得靠这个获取新intent
         IntentHandler.setNewIntent(intent)
     }
 
-    override fun onResume() {
-        super.onResume()
-        MyLog.d(TAG, "#onResume: called")
+    //这函数不能删，我做了处理，忽略on create后第一个on resume，依赖这个函数触发状态变化才能成功设置on resume
+    override fun onPause() {
+        MyLog.d(TAG, "#onPause: called")
+        super.onPause()
 
         // compose 可通过对应的get方法获取到 Activity 的生命周期事件
-        setMainActivityLifeCycle(MainActivityLifeCycle.ON_RESUME)
+        setMainActivityLifeCycle(MainActivityLifeCycle.ON_PAUSE)
+    }
+
+    override fun onResume() {
+        MyLog.d(TAG, "#onResume: called")
+        super.onResume()
+
+        // compose 可通过对应的get方法获取到 Activity 的生命周期事件
+        // 仅当 pause后才设置on resume以忽略on create时第一个 on resume事件从而避免 compose(例如EditorInnerPage)的 LaunchedEffect和生命周期函数被重复调用
+        // 会重复调用是因为Activity on create时会创建compose，然后就会触发LaunchedEffect，同时还会触发compose生命周期on resume，而切换到后台再切换回来时，
+        // 只会触发compose on resume，所以，忽略创建Activity时的第一个on resume就能避免重复触发了，换句话说，得先切到后台后再触发compose on resume才执行就没问题了
+        setByPredicate(MainActivityLifeCycle.ON_RESUME) {
+            //忽略创建Activity后的第一个 on resume 事件
+            it != MainActivityLifeCycle.ON_CREATE
+        }
     }
 
 }
