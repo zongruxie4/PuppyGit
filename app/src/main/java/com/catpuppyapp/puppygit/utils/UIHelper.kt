@@ -385,8 +385,8 @@ object UIHelper {
         return 392f
     }
 
-    fun getRepoItemsCountEachRow():Int {
-        val count = AppModel.deviceWidthHeight.width / getRepoItemWidth()
+    fun getRepoItemsCountEachRow(screenWidth: Float):Int {
+        val count = screenWidth / getRepoItemWidth()
         return count.toInt().coerceAtLeast(1)
     }
 

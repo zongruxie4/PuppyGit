@@ -46,6 +46,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalClipboardManager
+import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.res.vectorResource
@@ -188,7 +189,8 @@ fun RepoInnerPage(
 
     // 这两个变量不用 rememberSaveable，如果设备配置改变，就希望这两个值重新计算
     val itemWidth = remember { UIHelper.getRepoItemWidth() }
-    val repoCountEachRow = remember { UIHelper.getRepoItemsCountEachRow() }
+    val configure = LocalConfiguration.current
+    val repoCountEachRow = remember(configure.screenWidthDp) { UIHelper.getRepoItemsCountEachRow(configure.screenWidthDp.toFloat()) }
 
 
     val clipboardManager = LocalClipboardManager.current
