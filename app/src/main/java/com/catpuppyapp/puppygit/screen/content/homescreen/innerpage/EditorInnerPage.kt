@@ -1253,7 +1253,8 @@ fun EditorInnerPage(
 
     //按Home键把app切到后台时保存文件，chatgpt弱智玩意告诉我这个东西监听的是Activity的生命周期，日，其实他妈的是Compose的！
     // 这个东西监听的是Compose的生命周期，不是Activity的，若Compose所处的Activity的ON_PAUSE被触发，
-    // 此组件的一定会触发；若此组件的被触发，Activity的不一定触发，所以做个双重检测就稳了，他妈的我真是天才
+    // 此组件的一定会触发；若此组件的被触发，Activity的不一定触发。而且，由于compose是基于Activity创建的，
+    // 所以compose的on pause会先被调用，而Activity的之后才会调用，如果想要检测Activity的on_pause的话需要注意这一点。
     LifecycleEventEffect(Lifecycle.Event.ON_PAUSE) {
         val requireShowMsgToUser = true
 
@@ -1278,7 +1279,9 @@ fun EditorInnerPage(
     }
 
     //按Home切换到别的app再返回，检查如果当前文件已保存（已编辑为假），则重载
+    //和on pause触发顺序相反，Activity的on resume事件先调用，之后才调用compose的，因为必须得先有Activity才能有compose，后者依赖前者，所以销毁的时候，先销毁后面的，恢复的时候，先恢复前面的。
     LifecycleEventEffect(Lifecycle.Event.ON_RESUME) {
+        //检查，如果 Activity 的on resume事件刚被触发，说明用户刚从后台把app调出来，这时调用软重载文件（会检测变化若判断很可能无变化则不重载）
         doActIfIsExpectLifeCycle(MainActivityLifeCycle.ON_RESUME) {
             //如果显示重载确认弹窗，则不自动重载；如果未显示重载确认弹窗且文件未编辑（换句话说：已成功保存），则自动重载
             if(
