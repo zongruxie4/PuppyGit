@@ -6,6 +6,7 @@
 - fix: Editor load file twice when open file
 - fix: if compare to ref which include '/', then app will crash
 - fix: bugs of screen navigate
+- fix: rotation screen lost state
 - reduce memory use
 
 
@@ -13,6 +14,7 @@
 - 修复文本编辑器打开文件会加载两次的bug
 - 修复比较引用包含'/'时app会崩溃的bug
 - 修复页面导航相关的bug
+- 修复旋转屏幕会丢失状态的bug
 - 减少内存占用
 
 ---
