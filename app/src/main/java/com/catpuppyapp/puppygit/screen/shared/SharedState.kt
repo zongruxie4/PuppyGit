@@ -18,6 +18,7 @@ object SharedState {
     //用于在indexToWorkTree那个页面指示index是否有条目
     var homeChangeList_indexHasItem = mutableStateOf(false)
 
+    // index to worktree
     val homeChangeList_LastClickedItemKey = mutableStateOf(Cons.init_last_clicked_item_key)
     val index_LastClickedItemKey = mutableStateOf(Cons.init_last_clicked_item_key)
     val treeToTree_LastClickedItemKey = mutableStateOf(Cons.init_last_clicked_item_key)

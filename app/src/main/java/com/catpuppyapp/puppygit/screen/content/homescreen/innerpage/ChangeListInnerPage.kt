@@ -38,6 +38,7 @@ import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableLongStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -233,6 +234,8 @@ fun ChangeListInnerPage(
     val exitApp = AppModel.exitApp
     val dbContainer = AppModel.dbContainer
     val navController = AppModel.navController
+    val scope = rememberCoroutineScope()
+
 
     val settings = remember {
         val s = SettingsUtil.getSettingsSnapshot()
@@ -3346,10 +3349,25 @@ fun ChangeListInnerPage(
 
             //未切换仓库，但不需要重载（不过可能需要执行某些操作，例如 commit all）
             //if navi to Difference page or internal Editor then navi back, actually most time no need reload page
-            if(naviTarget.value == Cons.ChangeListNaviTarget_NoNeedReload){
+            if(naviTarget.value == Cons.ChangeListNaviTarget_NoNeedReload) {
                 //不管是否返回，反正消费过naviTarget一次后，就重置为初始值
                 // if navi back from Index, need refresh
                 naviTarget.value = Cons.ChangeListNaviTarget_InitValue
+
+
+                //滚动以使用户最后在Diff页面查看的条目可见
+                val actuallyList = if(enableFilterState.value) filterList.value else itemList.value
+                val actuallyListState = if(enableFilterState.value) filterListState else itemListState
+                //最后一个else是TreeToTree
+                val lastClickedItemKey = if(fromTo == Cons.gitDiffFromIndexToWorktree) SharedState.homeChangeList_LastClickedItemKey.value else if(fromTo == Cons.gitDiffFromHeadToIndex) SharedState.index_LastClickedItemKey.value else SharedState.treeToTree_LastClickedItemKey.value
+                for((index, item) in actuallyList.withIndex()) {
+                    if(item.getItemKey() == lastClickedItemKey) {
+                        //滚动到当前条目前两个条目不然当前条目在顶端看着不太舒服
+                        UIHelper.scrollToItem(scope, actuallyListState, index-2)
+                        break
+                    }
+                }
+
 
 
                 //执行到这个代码块一般是从Diff页面或者子页面文本编辑器(SubPageEditor)返回来的，

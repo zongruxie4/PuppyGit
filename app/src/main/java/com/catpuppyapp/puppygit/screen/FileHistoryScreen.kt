@@ -1146,6 +1146,22 @@ fun FileHistoryScreen(
                 needRefresh.value,
                 getThenDel = true
             )
+
+            //滚动以使用户最后在Diff页面查看的条目可见
+            val actuallyList = if(enableFilterState.value) filterList.value else list.value
+            val actuallyListState = if(enableFilterState.value) filterListState else listState
+            //最后一个else是TreeToTree
+            val lastClickedItemKey = SharedState.fileHistory_LastClickedItemKey.value
+            for((index, item) in actuallyList.withIndex()) {
+                if(item.getItemKey() == lastClickedItemKey) {
+                    //滚动到当前条目前两个条目不然当前条目在顶端看着不太舒服
+                    UIHelper.scrollToItem(scope, actuallyListState, index-2)
+                    break
+                }
+            }
+
+
+
             val forceReload = (requestType == StateRequestType.forceReload)
 
             if(forceReload || curRepo.value.id.isBlank() || headOidOfThisScreen.value.isNullOrEmptyOrZero) {
