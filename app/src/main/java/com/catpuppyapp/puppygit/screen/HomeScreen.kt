@@ -1666,7 +1666,9 @@ fun HomeScreen(
 
     LifecycleEventEffect(Lifecycle.Event.ON_RESUME) {
         //回到主页了，好，把所有其他子页面的状态变量全他妈清掉
-        Cache.clearAllSubPagesStates()
+        doJobThenOffLoading {
+            Cache.clearAllSubPagesStates()
+        }
     }
 
 
