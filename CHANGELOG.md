@@ -2,6 +2,17 @@
 
 ---
 
+1.1.0.7v83 - 20250428:
+- ChangeList and FileHistory screens: return from Diff screen will scroll list to make last viewed item visible
+- fix: on Tablet, Repos screen layout may become weired after rotated device
+
+
+
+- 修改列表和文件历史页面：从Diff页面返回后将滚动列表以使最后查看条目可见
+- 修复仓库页面布局在旋转屏幕后可能错乱的bug
+
+---
+
 1.1.0.6v82 - 20250427:
 - fix: Editor load file twice when open file
 - fix: if compare to ref which include '/', then app will crash
