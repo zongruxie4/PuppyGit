@@ -59,7 +59,8 @@ object AppModel {
      */
     var masterPassword:MutableState<String> = mutableStateOf("")
 
-    lateinit var deviceWidthHeight: DeviceWidthHeight
+    //废弃，改在compose里用 `LocalConfiguration.current` 获取当前配置再获取屏幕宽高，那样获取的是响应式的 （参考案例：仓库页面，旋转屏幕后会根据屏幕宽度重新计算每行条目数）
+//    lateinit var deviceWidthHeight: DeviceWidthHeight
 
     /**
      * 和日志的debug模式没直接关系，这个不影响日志等级，只是有些时候，开发模式下希望出错立刻抛异常，但对用户来说，这样体验不好，所以加个开关判断下
@@ -288,7 +289,7 @@ object AppModel {
 
         AppModel.devModeOn = PrefUtil.getDevMode(realAppContext)
 
-        AppModel.deviceWidthHeight = UIHelper.getDeviceWidthHeightInDp(realAppContext)
+//        AppModel.deviceWidthHeight = UIHelper.getDeviceWidthHeightInDp(realAppContext)
 
         AppModel.realAppContext = realAppContext
 

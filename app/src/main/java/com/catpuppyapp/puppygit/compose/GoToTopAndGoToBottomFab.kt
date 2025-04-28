@@ -9,7 +9,7 @@ import androidx.compose.material.icons.filled.VerticalAlignBottom
 import androidx.compose.material.icons.filled.VerticalAlignTop
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.MutableState
-import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.res.stringResource
 import com.catpuppyapp.puppygit.play.pro.R
 import com.catpuppyapp.puppygit.style.MyStyleKt
@@ -99,9 +99,9 @@ private fun GoToTopAndGoToBottomFab_Internal(
     scrollToBottomForFilterState:()->Unit,
     hideButton:()->Unit,
 ) {
-    val activityContext = LocalContext.current
+    val configure = LocalConfiguration.current
 
-    Column(modifier = MyStyleKt.Fab.getFabModifier(UIHelper.isPortrait(), UIHelper.getDeviceWidthHeightInDp(activityContext))) {
+    Column(modifier = MyStyleKt.Fab.getFabModifier(UIHelper.isPortrait(configure), UIHelper.getDeviceWidthHeightInDp(configure))) {
         //show go to top
         SmallFab(
             icon = Icons.Filled.VerticalAlignTop, iconDesc = stringResource(id = R.string.go_to_top)

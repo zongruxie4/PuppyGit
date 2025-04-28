@@ -40,39 +40,37 @@ object UIHelper {
 
     object Size {
         @Composable
-        fun height(): Int {
-            val configuration = LocalConfiguration.current
+        fun height(configuration:Configuration = LocalConfiguration.current): Int {
             return configuration.screenHeightDp
         }
         @Composable
-        fun width(): Int {
-            val configuration = LocalConfiguration.current
+        fun width(configuration:Configuration = LocalConfiguration.current): Int {
             return configuration.screenWidthDp
         }
         @Composable
-        fun heightDp(): Dp {
-            return height().dp
+        fun heightDp(configuration:Configuration = LocalConfiguration.current): Dp {
+            return height(configuration).dp
         }
         @Composable
-        fun widthDp():Dp {
-            return width().dp
+        fun widthDp(configuration:Configuration = LocalConfiguration.current):Dp {
+            return width(configuration).dp
         }
 
         //编辑器的虚拟空间，用来把最后一行顶上去的，返回一个Pair，值1是宽，值2是高
         @Composable
-        fun editorVirtualSpace():Pair<Dp, Dp> {
+        fun editorVirtualSpace(configuration:Configuration = LocalConfiguration.current):Pair<Dp, Dp> {
             //注：高度如果减的值太小，TopBar固定时，内容会被TopBar盖住，经我测试减100无论隐藏还是显示TopBar都能正常显示内容
-            return Pair(widthDp(), (height()-100).dp)
+            return Pair(widthDp(configuration), (height(configuration)-100).dp)
         }
 
         /**
          * 获取键盘高度。
          * 注：(?) 需要在Activity#onCreate()执行 `WindowCompat.setDecorFitsSystemWindows(window, false)` 才能获取到有效高度，
-         * 否则只能获取到0，但我没充分验证。
+         * 否则只能获取到0，但我没充分测试。
          */
         @Composable
-        fun getImeHeightInDp():Dp {
-            val imeHeightInDp = with(LocalDensity.current) { WindowInsets.ime.getBottom(this).toDp() }
+        fun getImeHeightInDp(density:Density = LocalDensity.current):Dp {
+            val imeHeightInDp = with(density) { WindowInsets.ime.getBottom(this).toDp() }
             return imeHeightInDp
         }
     }
@@ -373,12 +371,9 @@ object UIHelper {
     }
 
 
-    fun getDeviceWidthHeightInDp(context: Context): DeviceWidthHeight {
-        val metrics: DisplayMetrics = context.resources.displayMetrics
-        val widthInDp = metrics.widthPixels / metrics.density
-        val heightInDp = metrics.heightPixels / metrics.density
-        MyLog.d(TAG, "#getDeviceWidthHeightInDp: widthInDp=$widthInDp, heightInDp=$heightInDp")
-        return DeviceWidthHeight(widthInDp, heightInDp)
+    @Composable
+    fun getDeviceWidthHeightInDp(configuration: Configuration = LocalConfiguration.current): DeviceWidthHeight {
+        return DeviceWidthHeight(configuration.screenWidthDp.toFloat(), configuration.screenHeightDp.toFloat())
     }
 
     fun getRepoItemWidth(): Float {
