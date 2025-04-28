@@ -53,6 +53,17 @@ class UndoStack(
         redoLock = ReentrantLock(true)
     }
 
+    fun copyFrom(other:UndoStack) {
+        filePath = other.filePath
+        sizeLimit = other.sizeLimit
+        undoSaveIntervalInSec = other.undoSaveIntervalInSec
+        undoLastSaveAt.longValue = other.undoLastSaveAt.longValue
+        undoStack = other.undoStack
+        redoStack = other.redoStack
+        undoLock = other.undoLock
+        redoLock = other.redoLock
+    }
+
     fun undoStackIsEmpty():Boolean {
         return undoStack.isEmpty()
     }

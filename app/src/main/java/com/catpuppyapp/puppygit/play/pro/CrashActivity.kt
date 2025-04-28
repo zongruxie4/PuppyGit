@@ -55,7 +55,7 @@ class CrashActivity : ComponentActivity() {
 
         super.onCreate(savedInstanceState)
 
-        MyLog.d(TAG, "onCreate called")
+        MyLog.d(TAG, "#onCreate called")
 
         val errMsg = getErrMsg(intent)
 

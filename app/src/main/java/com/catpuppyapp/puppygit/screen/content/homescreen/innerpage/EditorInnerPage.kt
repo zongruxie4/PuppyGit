@@ -180,8 +180,7 @@ fun EditorInnerPage(
     val clipboardManager = LocalClipboardManager.current
 
     val exitApp = {
-        AppModel.lastEditFile.value = ""
-        AppModel.lastEditFileWhenDestroy.value = ""
+        AppModel.clearEditorRestoreStates()
 
         AppModel.exitApp()
 
@@ -383,8 +382,8 @@ fun EditorInnerPage(
 //        showCloseDialog.value=false
 
 
-        AppModel.lastEditFile.value = ""
-        AppModel.lastEditFileWhenDestroy.value = ""
+        AppModel.clearEditorRestoreStates()
+
 
 
 
@@ -1413,6 +1412,8 @@ private suspend fun doInit(
     hasError:()->Boolean,
 ) {
 
+    MyLog.d(TAG, "#doInit: editorPageShowingFilePath=${editorPageShowingFilePath.value}")
+
     //保存后不改变needrefresh就行了，没必要传这个变量
     //保存文件时会设置这个变量，因为保存的内容本来就是最新的，不需要重新加载
 //        if(pageRequest.value ==PageRequest.needNotReloadFile) {
@@ -1429,18 +1430,33 @@ private suspend fun doInit(
     if (!editorPageShowingFileIsReady.value) {  //从文件管理器跳转到editor 或 打开文件后从其他页面跳转到editor
         //准备文件路径，开始
         //优先打开从文件管理器跳转来的文件，如果不是跳转来的，打开之前显示的文件
-        if(editorPageShowingFilePath.value.isBlank()) {
-            editorPageShowingFilePath.value = FilePath(AppModel.lastEditFileWhenDestroy.value)
-            AppModel.lastEditFileWhenDestroy.value = ""
+        //只要不是null就恢复，不判断是否为空，不然会有如下bug：子页面，打开文件，关闭（导致path被清空），旋转屏幕，文件又他妈打开了
+        MyLog.d(TAG, "AppModel.lastEditFileWhenDestroy.value: ${AppModel.lastEditFileWhenDestroy.value}")
+        AppModel.lastEditFileWhenDestroy.value?.let {
+            editorPageShowingFilePath.value = FilePath(it)
+            AppModel.lastEditFileWhenDestroy.value = null
         }
+
+
+        //恢复undoStack
+        AppModel.editor_lastUndoStackWhenDestory.value?.let {
+            undoStack.copyFrom(it)
+            AppModel.editor_lastUndoStackWhenDestory.value = null
+        }
+
+
+
 
         //保存上次打开文件路径
         AppModel.lastEditFile.value = editorPageShowingFilePath.value.ioPath
+
+        MyLog.d(TAG, "AppModel.lastEditFile.value=${AppModel.lastEditFile.value}")
 
         //到这，文件路径就确定了
         val editorPageShowingFilePath = editorPageShowingFilePath.value
         val requireOpenFilePath = editorPageShowingFilePath.ioPath
         if (requireOpenFilePath.isBlank()) {
+            //这没必要清undoStack
             //这时页面会显示选择文件和打开上次文件，这里无需处理
             return
         }
@@ -1457,6 +1473,10 @@ private suspend fun doInit(
             if(requireOpenFilePath != undoStack.filePath) {
                 undoStack.reset(requireOpenFilePath)
             }
+
+            //保存undoStack，这个代码和那个lastEditFile一样，理论上应该放到undoStack被确定后（作为左值被赋值），
+            // 但用reset取代了赋值，所以放到reset后，但reset并不重新赋值，所以其实放前面也行
+            AppModel.editor_lastUndoStack.value = undoStack
 
             val file = FuckSafFile(activityContext, editorPageShowingFilePath)
 
@@ -1726,7 +1746,11 @@ private fun getBackHandler(
                 }
 
                 //保存文件后再按返回键则执行返回逻辑
-                if(!isSubPage) {  //一级页面
+                if(isSubPage) {  //作为子页面
+                    withMainContext {
+                        naviUp()
+                    }
+                }else {  //一级页面
                     //如果在两秒内按返回键，就会退出，否则会提示再按一次可退出程序
                     if (backStartSec.longValue > 0 && getSecFromTime() <= backStartSec.longValue) {  //大于0说明不是第一次执行此方法，那检测是上次获取的秒数，否则直接显示“再按一次退出app”的提示
                         exitApp()
@@ -1734,10 +1758,6 @@ private fun getBackHandler(
                         withMainContext {
                             showTextAndUpdateTimeForPressBackBtn()
                         }
-                    }
-                }else {  //作为子页面
-                    withMainContext {
-                        naviUp()
                     }
                 }
             }

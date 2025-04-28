@@ -368,7 +368,7 @@ fun HomeScreen(
     val repoFilterListState = rememberLazyListState()
 
     //当前展示的文件的canonicalPath
-    val editorPageShowingFilePath = rememberSaveable { mutableStateOf(FilePath("")) }
+    val editorPageShowingFilePath = rememberSaveable { mutableStateOf(FilePath(AppModel.lastEditFileWhenDestroy.value?:"")) }
 
     //当前展示的文件是否已经加载完毕
     val editorPageShowingFileIsReady = rememberSaveable { mutableStateOf(false)}

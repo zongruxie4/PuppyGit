@@ -8,6 +8,7 @@ import androidx.compose.material3.rememberTopAppBarState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.ui.graphics.ImageBitmap
 import androidx.compose.ui.graphics.asImageBitmap
 import androidx.core.graphics.drawable.toBitmap
@@ -20,6 +21,7 @@ import com.catpuppyapp.puppygit.data.AppDataContainer
 import com.catpuppyapp.puppygit.dev.FlagFileName
 import com.catpuppyapp.puppygit.dev.dev_EnableUnTestedFeature
 import com.catpuppyapp.puppygit.dto.DeviceWidthHeight
+import com.catpuppyapp.puppygit.dto.UndoStack
 import com.catpuppyapp.puppygit.jni.LibLoader
 import com.catpuppyapp.puppygit.notification.util.NotifyUtil
 import com.catpuppyapp.puppygit.play.pro.BuildConfig
@@ -105,22 +107,48 @@ object AppModel {
     // 废弃
 //    var lastNavState:Bundle? = null
 
+
+
+
+
+
+
+
+    // 旋转屏幕恢复状态的变量：开始
+    // 旋转屏幕，或其他非用户主动原因导致Activity销毁重建，需要恢复状态
     /**
+     * TODO bug ：因为所有页面共用一个变量，所以只能确保当前查看的页面被恢复，
+     *  是从其他Editor导航进来的，例如主页Editor->FileHistory->SubEditor，
+     *  则之前的导航路径上的Editor的路径可能都会失效，如果是子页面，会变成打开子页面文本编辑器时携带的路径，
+     *  如果是顶级页面，路径可能会被清空。
+     *  ps：这其实是他妈的傻逼 jetpack compose的bug，说什么rememberSaveable能在Activity重建后保留，保留你妈个逼！10次里至少他妈9次都会丢数据，另一次看运气，他妈的垃圾！
+     *
      * 编辑器最后编辑的文件，在Activity销毁时使用此变量更新`lastEditFileWhenDestroy`的值
      */
-    val lastEditFile:MutableState<String> = mutableStateOf("")
+    val lastEditFile:MutableState<String?> = mutableStateOf(null)
 
     /**
      * Activity销毁时最后编辑的文件，用来在旋转屏幕后恢复
      * 此变量应确保仅消费一次，不然可能会在不应该打开文件的时候打开文件
      */
-    val lastEditFileWhenDestroy:MutableState<String> = mutableStateOf("")
+    val lastEditFileWhenDestroy:MutableState<String?> = mutableStateOf(null)
+
+    val editor_lastUndoStack:MutableState<UndoStack?> = mutableStateOf(null)
+    val editor_lastUndoStackWhenDestory:MutableState<UndoStack?> = mutableStateOf(null)
 
     /**
      * 用来在旋转屏幕后恢复预览模式
      */
     val editorPreviewModeOnWhenDestroy:MutableState<Boolean> = mutableStateOf(false)
     val subEditorPreviewModeOnWhenDestroy:MutableState<Boolean> = mutableStateOf(false)
+
+    // 旋转屏幕恢复状态的变量：结束
+
+
+
+
+
+
 
     /**
      * 系统时区偏移量，单位: 分钟
@@ -398,7 +426,12 @@ object AppModel {
         if(initActivity) {
             AppModel.exitApp = {
                 //先清空再退出，不然退出后，下次启动，默认打开上次文件，如果上次文件会导致app崩溃，就死循环了
-                AppModel.lastEditFile.value = ""
+                AppModel.lastEditFile.value = null
+
+                //理论上退出app应清掉这玩意，但清不清其实应该不打紧
+                AppModel.editor_lastUndoStack.value = null
+
+
                 //重置切换屏幕后恢复预览模式的变量
                 AppModel.editorPreviewModeOnWhenDestroy.value = false
                 AppModel.subEditorPreviewModeOnWhenDestroy.value = false
@@ -664,7 +697,8 @@ object AppModel {
         //restore nav controller state
         //恢复上次导航状态，如果有的话，不然一旋转屏幕就强制回到顶级页面了，用户体验差
         if(AppModel.lastNavController != null) {
-            MyLog.d(TAG, "will restore navi stack")
+            MyLog.d(TAG, "#init_3: will restore navi stack")
+
             AppModel.navController.restoreState(AppModel.lastNavController!!.saveState())
         }
 
@@ -719,8 +753,23 @@ object AppModel {
         //改成在创建完后恢复并保存导航器状态了
 //            AppModel.lastNavState = AppModel.navController.saveState()
 
-        AppModel.lastEditFileWhenDestroy.value = AppModel.lastEditFile.value
+        MyLog.d(TAG, "#destroyer(): AppModel.lastEditFile.value=${AppModel.lastEditFile.value}")
+        MyLog.d(TAG, "#destroyer(): AppModel.editor_lastUndoStack.value=${AppModel.editor_lastUndoStack.value?.filePath}")
 
+        AppModel.lastEditFileWhenDestroy.value = AppModel.lastEditFile.value
+        AppModel.editor_lastUndoStackWhenDestory.value = AppModel.editor_lastUndoStack.value
+
+    }
+
+    /**
+     * 清掉旋转屏幕后用来恢复状态的变量
+     */
+    fun clearEditorRestoreStates() {
+        AppModel.lastEditFile.value = null
+        AppModel.lastEditFileWhenDestroy.value = null
+
+        AppModel.editor_lastUndoStack.value = null
+        AppModel.editor_lastUndoStackWhenDestory.value = null
     }
 
 

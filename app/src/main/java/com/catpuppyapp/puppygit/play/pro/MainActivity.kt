@@ -84,7 +84,7 @@ class MainActivity : ComponentActivity() {
 
         super.onCreate(savedInstanceState)
 
-        MyLog.d(TAG, "onCreate called")
+        MyLog.d(TAG, "#onCreate called")
 
         //如果是初次创建Activity，onNewIntent不会被调用，只能在这里设置一下，要不然有可能漏外部传来的intent（分享文件、编辑文件）
         IntentHandler.setNewIntent(intent)
