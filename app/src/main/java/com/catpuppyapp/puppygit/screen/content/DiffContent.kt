@@ -35,6 +35,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import com.catpuppyapp.puppygit.compose.CardButton
 import com.catpuppyapp.puppygit.compose.ConfirmDialog
@@ -1310,7 +1311,13 @@ private fun NaviButton(
             Spacer(Modifier.height(10.dp))
 
             //当前条目
-            Text(getItemTextByIdx(curItemIndex.intValue))
+            Text(
+                text = getItemTextByIdx(curItemIndex.intValue),
+//                fontWeight = FontWeight.Light,  //默认卡片字体细的，当前条目粗的更好看，不然都是细的，难看
+                overflow = TextOverflow.Ellipsis,
+                softWrap = false,
+                modifier = Modifier.padding(horizontal = 50.dp)
+            )
 
             Spacer(Modifier.height(10.dp))
 
