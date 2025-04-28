@@ -117,6 +117,7 @@ import com.catpuppyapp.puppygit.utils.state.mutableCustomStateOf
 import com.github.git24j.core.Repository.StateT
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
+import kotlinx.coroutines.sync.Mutex
 
 
 private const val TAG = "HomeScreen"
@@ -563,6 +564,7 @@ fun HomeScreen(
         }
     }
 
+    val editorLoadLock = remember { Mutex() }
 
     //给Files页面点击打开文件用的
     //第2个参数是期望值，只有当文件路径不属于app内置禁止edit的目录时才会使用那个值，否则强制开启readonly模式
@@ -1326,7 +1328,8 @@ fun HomeScreen(
                     editorLastSavedFontSize = editorLastSavedFontSize,
                     openDrawer = openDrawer,
                     editorOpenFileErr = editorOpenFileErr,
-                    undoStack = editorUndoStack
+                    undoStack = editorUndoStack,
+                    loadLock = editorLoadLock
 
                 )
 

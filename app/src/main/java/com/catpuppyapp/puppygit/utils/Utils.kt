@@ -26,6 +26,7 @@ import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.sync.Mutex
+import kotlinx.coroutines.sync.withLock
 import kotlinx.coroutines.withContext
 import java.io.File
 import java.net.URI
@@ -1112,4 +1113,28 @@ suspend fun isLocked(mutex: Mutex):Boolean {
     //先延迟一毫秒再检查，不然短时间内检查isLocked可能有误
     delay(1)
     return mutex.isLocked
+}
+
+suspend fun doActWithLockIfFree(mutex: Mutex, whoCalled:String, act: suspend ()->Unit) {
+    val logPrefix = "#doActWithLockIfFree, called by '$whoCalled'";
+
+    if(isLocked(mutex)) {
+        if(AppModel.devModeOn) {
+            MyLog.d(TAG, "$logPrefix: lock is busy, task will not run")
+        }
+
+        return
+    }
+
+    if(AppModel.devModeOn) {
+        MyLog.d(TAG, "$logPrefix: lock is free, will run task")
+    }
+
+    // run task
+    mutex.withLock { act() }
+
+    if(AppModel.devModeOn) {
+        MyLog.d(TAG, "$logPrefix: task completed")
+    }
+
 }

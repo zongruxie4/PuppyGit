@@ -51,6 +51,7 @@ import com.catpuppyapp.puppygit.utils.generateRandomString
 import com.catpuppyapp.puppygit.utils.state.mutableCustomStateOf
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.runBlocking
+import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.withContext
 
 //for debug
@@ -200,6 +201,8 @@ fun SubPageEditor(
             mutableStateOf(UndoStack(editorPageShowingFilePath.value.ioPath))
         }
     }
+
+    val editorLoadLock = remember { Mutex() }
 
 
     val showCloseDialog = rememberSaveable { mutableStateOf(false)}
@@ -446,7 +449,8 @@ fun SubPageEditor(
             editorLastSavedFontSize = editorLastSavedFontSize,
             openDrawer = {}, //非顶级页面按返回键不需要打开抽屉
             editorOpenFileErr = editorOpenFileErr,
-            undoStack = editorUndoStack
+            undoStack = editorUndoStack,
+            loadLock = editorLoadLock
 
         )
     }

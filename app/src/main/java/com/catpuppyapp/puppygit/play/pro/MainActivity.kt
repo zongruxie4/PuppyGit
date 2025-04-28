@@ -29,7 +29,7 @@ import com.catpuppyapp.puppygit.screen.RequireMasterPasswordScreen
 import com.catpuppyapp.puppygit.screen.functions.KnownHostRequestStateMan
 import com.catpuppyapp.puppygit.screen.shared.IntentHandler
 import com.catpuppyapp.puppygit.screen.shared.MainActivityLifeCycle
-import com.catpuppyapp.puppygit.screen.shared.SharedState
+import com.catpuppyapp.puppygit.screen.shared.setMainActivityLifeCycle
 import com.catpuppyapp.puppygit.ui.theme.PuppyGitAndroidTheme
 import com.catpuppyapp.puppygit.ui.theme.Theme
 import com.catpuppyapp.puppygit.user.UserUtil
@@ -179,17 +179,12 @@ class MainActivity : ComponentActivity() {
         IntentHandler.setNewIntent(intent)
     }
 
-    override fun onPause() {
-        super.onPause()
-        MyLog.d(TAG, "onPause: called")
-        SharedState.currentMainActivityLifeCycle.value = MainActivityLifeCycle.ON_PAUSE.code
-    }
-
     override fun onResume() {
         super.onResume()
-        MyLog.d(TAG, "onResume: called")
+        MyLog.d(TAG, "#onResume: called")
 
-        SharedState.currentMainActivityLifeCycle.value = MainActivityLifeCycle.ON_RESUME.code
+        // compose 可通过对应的get方法获取到 Activity 的生命周期事件
+        setMainActivityLifeCycle(MainActivityLifeCycle.ON_RESUME)
     }
 
 }
@@ -349,36 +344,3 @@ fun startMainActivity(fromActivity: Activity) {
     fromActivity.startActivity(intent)
 }
 
-//@Preview(showBackground = true)
-//@Composable
-//fun GreetingPreview() {
-//    PuppyGitAndroidTheme {
-//        Greeting("Android")
-//    }
-//}
-
-//一个演示方法
-//@Composable
-//fun MainScreen(navController: NavController) {
-//    LaunchedEffect(Unit) {
-//        println("LaunchedEffect: entered main")
-//        var i = 0
-//        // Just an example of coroutines usage
-//        // don't use this way to track screen disappearance
-//        // DisposableEffect is better for this
-//        try {
-//            while (true) {
-//                delay(1000)
-//                println("LaunchedEffect: ${i++} sec passed")
-//            }
-//        } catch (cancel: Exception) {
-//            println("LaunchedEffect: job cancelled")
-//        }
-//    }
-//    DisposableEffect(Unit) {
-//        println("DisposableEffect: entered main")
-//        onDispose {
-//            println("DisposableEffect: exited main")
-//        }
-//    }
-//}
