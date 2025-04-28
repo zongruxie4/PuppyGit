@@ -7,6 +7,7 @@
 - fix: if compare to ref which include '/', then app will crash
 - fix: bugs of screen navigate
 - fix: rotation screen lost state
+- show a crash Activity when compose crashed
 - reduce memory use
 
 
@@ -15,7 +16,11 @@
 - 修复比较引用包含'/'时app会崩溃的bug
 - 修复页面导航相关的bug
 - 修复旋转屏幕会丢失状态的bug
+- 在compose崩溃时显示一个崩溃页面
 - 减少内存占用
+
+
+注：app崩溃显示crash Activity的新功能忘了写到发行的changelog里，仅在此记录
 
 ---
 
