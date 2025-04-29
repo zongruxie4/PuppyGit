@@ -144,6 +144,8 @@ fun DiffScreen(
     val relativePathList = mutableCustomStateListOf(stateKeyTag, "relativePathList") { NaviCache.getByType<List<String>>(relativePathCacheKey) ?: listOf() }
     val relativePathUnderRepoState = relativePathList.value.getOrNull(0).let { rememberSaveable(it) { mutableStateOf(it ?: "") } }
 
+    val showMyFileHeader = rememberSaveable(relativePathList.value.size) { relativePathList.value.size > 1 }
+
     val diffableItemList = mutableCustomStateListOf(stateKeyTag, "diffableItemList") {
         if(isFileHistoryTreeToLocal || isFileHistoryTreeToTree) {
             listOf()
@@ -634,7 +636,7 @@ fun DiffScreen(
             fontSize=fontSize.intValue, lineNumSize=lineNumFontSize.intValue,
             groupDiffContentByLineNum=groupDiffContentByLineNum.value,switchItemForFileHistory=switchItemForFileHistory,
             enableSelectCompare = enableSelectCompare.value, lastClickedItemKey=lastClickedItemKey, pageRequest = request,
-            showMyFileHeader = diff多条目显示，单不显示
+            showMyFileHeader = showMyFileHeader
         )
 
 
