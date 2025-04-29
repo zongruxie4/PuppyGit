@@ -141,7 +141,8 @@ fun DiffScreen(
 
     //这个值存到状态变量里之后就不用管了，与页面共存亡即可，如果旋转屏幕也没事，返回rememberSaveable可恢复
 //    val relativePathUnderRepoDecoded = (Cache.Map.getThenDel(Cache.Map.Key.diffScreen_UnderRepoPath) as? String)?:""
-    val relativePathUnderRepoState = rememberSaveable { mutableStateOf(NaviCache.getByType<String>(relativePathCacheKey) ?: "") }
+    val relativePathList = mutableCustomStateListOf(stateKeyTag, "relativePathList") { NaviCache.getByType<List<String>>(relativePathCacheKey) ?: listOf() }
+    val relativePathUnderRepoState = relativePathList.value.getOrNull(0).let { rememberSaveable(it) { mutableStateOf(it ?: "") } }
 
     val diffableItemList = mutableCustomStateListOf(stateKeyTag, "diffableItemList") {
         if(isFileHistoryTreeToLocal || isFileHistoryTreeToTree) {
@@ -633,7 +634,7 @@ fun DiffScreen(
             fontSize=fontSize.intValue, lineNumSize=lineNumFontSize.intValue,
             groupDiffContentByLineNum=groupDiffContentByLineNum.value,switchItemForFileHistory=switchItemForFileHistory,
             enableSelectCompare = enableSelectCompare.value, lastClickedItemKey=lastClickedItemKey, pageRequest = request,
-            showMyFileHeader = true
+            showMyFileHeader = diff多条目显示，单不显示
         )
 
 
