@@ -232,6 +232,7 @@ fun DiffScreen(
     val diffItemMap = mutableCustomStateMapOf(keyTag = stateKeyTag, keyName = "diffItemMap") { mapOf<String, DiffItemSaver>() }
 
     val curItemIndex = rememberSaveable { mutableIntStateOf(curItemIndexAtDiffableItemList) }
+    val curItemIndexAtDiffableItemList = Unit  // avoid mistake using
 
 //    val curRepo = rememberSaveable { mutableStateOf(RepoEntity()) }
     val curRepo = mutableCustomStateOf(keyTag = stateKeyTag, keyName = "curRepo", initValue = RepoEntity())
@@ -748,8 +749,11 @@ fun DiffScreen(
                 contentPadding = contentPadding,
                 state = listState
             ) {
+                val diffableItemList = diffableItemList.value
 
-                for(diffableItem in diffableItemList.value) {
+                for((idx, diffableItem) in diffableItemList.withIndex()) {
+                    if(isSingleMode && idx != curItemIndex.intValue) continue;
+
                     val relativePath = diffableItem.base_getRelativePath()
                     val mapKey = relativePath
 
@@ -840,7 +844,7 @@ fun DiffScreen(
                                         stateKeyTag = stateKeyTag,
                                         activityContext = activityContext,
                                         curRepo = curRepo.value,
-                                        diffableItemList = diffableItemList.value,
+                                        diffableItemList = diffableItemList,
                                         curItemIndex = curItemIndex,
                                         switchItem = switchItem,
                                         fromTo = fromTo,
@@ -1433,7 +1437,7 @@ fun DiffScreen(
 
                                     activityContext = activityContext,
                                     curRepo = curRepo.value,
-                                    diffableItemList = diffableItemList.value,
+                                    diffableItemList = diffableItemList,
                                     curItemIndex = curItemIndex,
                                     switchItem = closeChannelThenSwitchItem,
                                     fromTo = fromTo,
