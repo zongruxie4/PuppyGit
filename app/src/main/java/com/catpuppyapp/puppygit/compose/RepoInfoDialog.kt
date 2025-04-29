@@ -11,6 +11,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import com.catpuppyapp.puppygit.constants.Cons
 import com.catpuppyapp.puppygit.data.entity.RepoEntity
@@ -78,7 +79,7 @@ fun RepoInfoDialogItemSpacer() {
 }
 
 @Composable
-fun ShortCommitInfo(title:String, name:String, commitDto:CommitDto, msgMaxLines:Int=3) {
+fun ShortCommitInfo(title:String, name:String, commitDto:CommitDto, msgMaxLines:Int=6) {
     if(title.isNotBlank()) {
         Row { Text(title, fontWeight = FontWeight.Bold) }
     }
@@ -98,7 +99,7 @@ fun ShortCommitInfo(title:String, name:String, commitDto:CommitDto, msgMaxLines:
         RepoInfoDialogItemSpacer()
         Row { Text(stringResource(R.string.date)+": "+commitDto.dateTime) }
         RepoInfoDialogItemSpacer()
-        Row { Text(stringResource(R.string.msg)+": "+commitDto.msg, maxLines = msgMaxLines) }
+        Row { Text(stringResource(R.string.msg)+": "+commitDto.msg, maxLines = msgMaxLines, overflow = TextOverflow.Ellipsis) }
     }
 }
 
