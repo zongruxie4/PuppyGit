@@ -4,8 +4,6 @@ import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material.icons.Icons
@@ -39,6 +37,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
+import com.catpuppyapp.puppygit.compose.CompareInfo
 import com.catpuppyapp.puppygit.compose.DropDownMenuItemText
 import com.catpuppyapp.puppygit.compose.FilterTextField
 import com.catpuppyapp.puppygit.compose.GoToTopAndGoToBottomFab
@@ -49,6 +48,7 @@ import com.catpuppyapp.puppygit.constants.Cons
 import com.catpuppyapp.puppygit.data.entity.RepoEntity
 import com.catpuppyapp.puppygit.dev.commitsTreeToTreeDiffReverseTestPassed
 import com.catpuppyapp.puppygit.dev.dev_EnableUnTestedFeature
+import com.catpuppyapp.puppygit.git.CommitDto
 import com.catpuppyapp.puppygit.git.StatusTypeEntrySaver
 import com.catpuppyapp.puppygit.play.pro.R
 import com.catpuppyapp.puppygit.screen.content.homescreen.innerpage.ChangeListInnerPage
@@ -195,27 +195,54 @@ fun TreeToTreeChangeListScreen(
     val showParentListDropDownMenu = rememberSaveable { mutableStateOf(false) }
 
     val showInfoDialog = rememberSaveable { mutableStateOf(false) }
+    val actuallyLeftName = rememberSaveable { mutableStateOf("") }
+    val actuallyRightName = rememberSaveable { mutableStateOf("") }
+    val actuallyLeftCommitDto = mutableCustomStateOf(stateKeyTag, "actuallyLeftCommitDto") { CommitDto() }
+    val actuallyRightCommitDto = mutableCustomStateOf(stateKeyTag, "actuallyRightCommitDto") { CommitDto() }
+    val initInfoDialog = {
+        runCatching {
+            val curRepo = changeListCurRepo.value
+            val repoId = curRepo.id
+            val actuallyLeftCommit = if(swap.value) commit2OidStr else commit1OidStrState.value
+            val actuallyRightCommit = if(swap.value) commit1OidStrState.value else commit2OidStr
+            actuallyLeftName.value = actuallyLeftCommit
+            actuallyRightName.value = actuallyRightCommit
+
+            Repository.open(curRepo.fullSavePath).use { repo->
+                val (left, right) = Libgit2Helper.getLeftRightCommitDto(repo, actuallyLeftCommit, actuallyRightCommit, repoId, settings)
+                actuallyLeftCommitDto.value = left
+                actuallyRightCommitDto.value = right
+            }
+        }
+
+        //出错一样显示，无所谓，顶多左右提交信息空白或有误
+        showInfoDialog.value = true
+    }
+
     if(showInfoDialog.value) {
         RepoInfoDialog(changeListCurRepo.value, showInfoDialog, prependContent = {
             Row {
-                Text(titleDesc.value, fontWeight = FontWeight.ExtraBold)
+                Text(titleDesc.value, fontWeight = FontWeight.Bold)
             }
 
-            Spacer(Modifier.height(15.dp))
 
-            Row {
-                Text(
-                    stringResource(id = R.string.comparing_label) + ": " +Libgit2Helper.getLeftToRightDiffCommitsText(commit1OidStrState.value, commit2OidStr, swap.value)
-                )
-            }
+            CompareInfo(
+                leftName = actuallyLeftName.value,
+                leftCommitDto = actuallyLeftCommitDto.value,
+                rightName = actuallyRightName.value,
+                rightCommitDto = actuallyRightCommitDto.value
+            )
 
-            RepoInfoDialogItemSpacer()
-            Row { Text(stringResource(R.string.left)+": "+(if(swap.value) commit2OidStr else commit1OidStrState.value)) }
-            RepoInfoDialogItemSpacer()
-            Row { Text(stringResource(R.string.right)+": "+(if(swap.value) commit1OidStrState.value else commit2OidStr)) }
             RepoInfoDialogItemSpacer()
 
             HorizontalDivider()
+            RepoInfoDialogItemSpacer()
+
+            //下面会显示仓库信息，这里弄个标题，看着和上面的样式比较搭
+            Row {
+                Text(stringResource(R.string.repo), fontWeight = FontWeight.Bold)
+            }
+
         })
     }
 
@@ -257,7 +284,7 @@ fun TreeToTreeChangeListScreen(
                             .widthIn(max = 200.dp)
                             .combinedClickable(onLongClick = {
                                 haptic.performHapticFeedback(HapticFeedbackType.LongPress)
-                                showInfoDialog.value = true
+                                initInfoDialog()
                             }) { //onClick
 
 //                                当比较模式为比较指定的两个提交时(无parents)，点击不会展开下拉菜单(和parents比较才会展开)

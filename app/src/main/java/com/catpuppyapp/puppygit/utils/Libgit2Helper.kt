@@ -15,6 +15,7 @@ import com.catpuppyapp.puppygit.data.repository.RepoRepository
 import com.catpuppyapp.puppygit.dto.RemoteDto
 import com.catpuppyapp.puppygit.dto.createCommitDto
 import com.catpuppyapp.puppygit.dto.createFileHistoryDto
+import com.catpuppyapp.puppygit.dto.createSimpleCommitDto
 import com.catpuppyapp.puppygit.dto.createSubmoduleDto
 import com.catpuppyapp.puppygit.etc.RepoPendingTask
 import com.catpuppyapp.puppygit.etc.Ret
@@ -3912,13 +3913,16 @@ object Libgit2Helper {
         if(commitOidStr.isBlank()) {
             return CommitDto()
         }
-        val commitOid = Oid.of(commitOidStr)
-        if(commitOid.isNullOrEmptyOrZero) {
-            return CommitDto()
+        //后面如果出错会返回这个dto
+        val errReturnDto = CommitDto(oidStr = commitOidStr, shortOidStr = getShortOidStrByFull(commitOidStr))
+
+        val commitOid = runCatching { Oid.of(commitOidStr) }.getOrNull()
+        if(commitOid == null || commitOid.isNullOrEmptyOrZero) {
+            return errReturnDto
         }
 
         val allBranchList = getBranchList(repo)
-        val commit = resolveCommitByHash(repo, commitOidStr)?:return CommitDto()
+        val commit = resolveCommitByHash(repo, commitOidStr)?:return errReturnDto
 
         val repoIsShallow = isRepoShallow(repo)
 //            val shallowOidList = ShallowManage.getShallowOidList(repo.workdir().toString()+File.separator+".git")
@@ -6814,5 +6818,51 @@ object Libgit2Helper {
         return gitRepoState?.toString() ?: context.getString(R.string.invalid)
     }
 
+    /**
+     * 获取简化的CommitDto，只包含必要信息，若传入代表index或worktree的假hash，会返回只包含对应字符串的dto
+     */
+    fun getSimpleCommitDto(repo:Repository, commitHashOrRef:String, repoId: String, settings: AppSettings): Ret<CommitDto?> {
+        return try {
+            //处理假hash： 全0 和 worktree 和 index
+            val commitDto = if(commitHashOrRef.let { it == Cons.git_AllZeroOidStr || it == Cons.git_LocalWorktreeCommitHash || it == Cons.git_IndexCommitHash }) {
+                CommitDto(oidStr = commitHashOrRef, shortOidStr = commitHashOrRef)
+            }else {
+                val ret = Libgit2Helper.resolveCommitByHashOrRef(repo, commitHashOrRef)
+                if(ret.hasError()) {
+                    throw (ret.exception ?: RuntimeException(ret.msg))
+                }
+
+                val commit = ret.data!!
+
+                createSimpleCommitDto(
+                    commitOid = commit.id(),
+                    commit = commit,
+                    repoId = repoId,
+                    settings
+                )
+            }
+
+            Ret.createSuccess(commitDto)
+        }catch (e:Exception) {
+            Msg.requireShowLongDuration("err: ${e.localizedMessage}")
+            MyLog.e(TAG, "#getSimpleCommitDto: query commit info err: ${e.stackTraceToString()}")
+
+            Ret.createError(null, "err: "+e.localizedMessage, exception = e)
+        }
+
+    }
+
+    /**
+     * @return Pair(leftCommit, rightCommit)
+     */
+    fun getLeftRightCommitDto(repo: Repository, leftHashOrRef:String, rightHashOrRef:String, repoId:String, settings: AppSettings):Pair<CommitDto, CommitDto> {
+        val leftRet = Libgit2Helper.getSimpleCommitDto(repo, commitHashOrRef = leftHashOrRef, repoId, settings)
+        val left = if(leftRet.hasError()) CommitDto(oidStr = leftHashOrRef, shortOidStr = Libgit2Helper.getShortOidStrByFull(leftHashOrRef)) else leftRet.data!!
+
+        val rightRet = Libgit2Helper.getSimpleCommitDto(repo, commitHashOrRef = rightHashOrRef, repoId, settings)
+        val right = if(rightRet.hasError()) CommitDto(oidStr = rightHashOrRef, shortOidStr = Libgit2Helper.getShortOidStrByFull(rightHashOrRef)) else rightRet.data!!
+
+        return Pair(left, right)
+    }
 
 }
