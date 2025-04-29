@@ -326,7 +326,7 @@ fun DiffScreen(
     val showDetailsDialog = rememberSaveable { mutableStateOf(false)}
     if(showDetailsDialog.value){
         CopyableDialog(
-            title = stringResource(id = R.string.details),
+            title = stringResource(R.string.details),
             text = detailsString.value,
             onCancel = { showDetailsDialog.value = false }
         ) {
@@ -384,9 +384,10 @@ fun DiffScreen(
     if(request.value == PageRequest.showDetails) {
         PageRequest.clearStateThenDoAct(request) {
             val sb = StringBuilder()
-            if(treeOid1Str.value != Cons.git_AllZeroOidStr || treeOid2Str.value!=Cons.git_AllZeroOidStr){
+            if(treeOid1Str.value != Cons.git_AllZeroOidStr || treeOid2Str.value != Cons.git_AllZeroOidStr) {
                 sb.append(activityContext.getString(R.string.comparing_label)+": ").appendLine("${Libgit2Helper.getShortOidStrByFull(treeOid1Str.value)}..${Libgit2Helper.getShortOidStrByFull(treeOid2Str.value)}").appendLine()
             }
+
             sb.append(activityContext.getString(R.string.name)+": ").appendLine(fileNameOnly.value).appendLine()
             if(isFileHistoryTreeToLocal){
                 sb.append(activityContext.getString(R.string.commit_id)+": ").appendLine(treeOid1Str.value).appendLine()

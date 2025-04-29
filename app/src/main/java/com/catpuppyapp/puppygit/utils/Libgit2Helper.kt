@@ -53,6 +53,7 @@ import com.github.git24j.core.Commit
 import com.github.git24j.core.Config
 import com.github.git24j.core.Credential
 import com.github.git24j.core.Diff
+import com.github.git24j.core.Diff.Line
 import com.github.git24j.core.FetchOptions
 import com.github.git24j.core.GitObject
 import com.github.git24j.core.Graph
@@ -1427,7 +1428,19 @@ object Libgit2Helper {
                     return diffItem
                 }
 
-                pLine.originType = ""+line.origin
+                line.origin.let {
+                    pLine.originType = it.toString()
+
+                    if(it == Line.OriginType.ADDITION) {
+                        diffItem.addedLines++
+                    }else if(it == Line.OriginType.DELETION) {
+                        diffItem.deletedLines++
+                    }
+
+                    Unit
+                }
+
+
                 pLine.oldLineNum= line.oldLineno /** Line number in old file or -1 for added line */
                 pLine.newLineNum=line.newLineno  /** Line number in new file or -1 for deleted line */
 
