@@ -633,7 +633,7 @@ fun DiffScreen(
             fontSize=fontSize.intValue, lineNumSize=lineNumFontSize.intValue,
             groupDiffContentByLineNum=groupDiffContentByLineNum.value,switchItemForFileHistory=switchItemForFileHistory,
             enableSelectCompare = enableSelectCompare.value, lastClickedItemKey=lastClickedItemKey, pageRequest = request,
-            showMyFileHeader = false
+            showMyFileHeader = true
         )
 
 
