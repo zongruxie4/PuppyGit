@@ -882,7 +882,7 @@ fun FileHistoryScreen(
 
                         //导航到diffScreen
                         goToDiffScreen(
-                            relativePathList = listOf(fileRelativePath),
+//                            relativePathList = listOf(fileRelativePath),
                             diffableListOfChangeList = null,
                             diffableListOfFileHistory = list,
                             repoId = repoId,
@@ -1054,7 +1054,7 @@ fun FileHistoryScreen(
 
                     //导航到diffScreen
                     goToDiffScreen(
-                        relativePathList = listOf(fileRelativePath),
+//                        relativePathList = listOf(fileRelativePath),
                         diffableListOfChangeList = null,
                         diffableListOfFileHistory = list.toList(),
                         repoId = repoId,

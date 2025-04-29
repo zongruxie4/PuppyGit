@@ -2862,7 +2862,7 @@ fun ChangeListInnerPage(
                                 naviTarget.value = Cons.ChangeListNaviTarget_NoNeedReload
 
                                 goToDiffScreen(
-                                    relativePathList = listOf(it.relativePathUnderRepo),
+//                                    relativePathList = listOf(it.relativePathUnderRepo),
                                     diffableListOfChangeList = diffableList,
                                     diffableListOfFileHistory = null,
                                     repoId = it.repoIdFromDb ,

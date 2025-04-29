@@ -410,7 +410,7 @@ fun goToCommitListScreen(repoId: String, fullOid:String, shortBranchName:String,
 }
 
 fun goToDiffScreen(
-    relativePathList:List<String>,
+//    relativePathList:List<String>,
     diffableListOfChangeList:List<StatusTypeEntrySaver>?,
     diffableListOfFileHistory:List<FileHistoryDto>?,
     repoId: String,
@@ -427,7 +427,7 @@ fun goToDiffScreen(
     fromScreen:String,
 ){
     doJobWithMainContext {
-        val relativePathCacheKey = NaviCache.setThenReturnKey(relativePathList)
+//        val relativePathCacheKey = NaviCache.setThenReturnKey(relativePathList)
 
         //设置条目列表
         val invalidCacheKey = getRandomUUID(10)
@@ -452,7 +452,7 @@ fun goToDiffScreen(
 
                     +"/" + fromScreen
 
-                    +"/"+relativePathCacheKey
+                    +"/"+"relativePathCacheKeyIsDeprecatedAfterSupportDiffMultiFiles"
                     +"/"+diffableListOfChangeListCacheKey
                     +"/"+diffableListOfFileHistoryCacheKey
         )

@@ -102,6 +102,7 @@ fun DiffScreen(
 
     val isFileHistoryTreeToLocal = fromTo == Cons.gitDiffFileHistoryFromTreeToLocal
     val isFileHistoryTreeToTree = fromTo == Cons.gitDiffFileHistoryFromTreeToTree
+    val isFileHistory = isFileHistoryTreeToLocal || isFileHistoryTreeToTree;
 
     val scope = rememberCoroutineScope()
     val settings = remember { SettingsUtil.getSettingsSnapshot() }
@@ -141,37 +142,53 @@ fun DiffScreen(
 
     //这个值存到状态变量里之后就不用管了，与页面共存亡即可，如果旋转屏幕也没事，返回rememberSaveable可恢复
 //    val relativePathUnderRepoDecoded = (Cache.Map.getThenDel(Cache.Map.Key.diffScreen_UnderRepoPath) as? String)?:""
-    val relativePathList = mutableCustomStateListOf(stateKeyTag, "relativePathList") { NaviCache.getByType<List<String>>(relativePathCacheKey) ?: listOf() }
-    val relativePathUnderRepoState = relativePathList.value.getOrNull(0).let { rememberSaveable(it) { mutableStateOf(it ?: "") } }
 
-    val showMyFileHeader = rememberSaveable(relativePathList.value.size) { relativePathList.value.size > 1 }
 
     val diffableItemList = mutableCustomStateListOf(stateKeyTag, "diffableItemList") {
-        if(isFileHistoryTreeToLocal || isFileHistoryTreeToTree) {
+        if(isFileHistory) {
             listOf()
         } else {
             NaviCache.getByType<List<StatusTypeEntrySaver>>(diffableListOfChangeListCacheKey) ?: listOf()
         }
     }
     val diffableItemListForFileHistory = mutableCustomStateListOf(stateKeyTag, "diffableItemListForFileHistory") {
-        if(isFileHistoryTreeToLocal || isFileHistoryTreeToTree) {
+        if(isFileHistory) {
             NaviCache.getByType<List<FileHistoryDto>>(diffableListOfFileHistoryCacheKey) ?: listOf()
         }else {
             listOf()
         }
     }
+
+    val getActuallyList:()->List<Any> = {
+        if(isFileHistory) {
+            diffableItemListForFileHistory.value
+        }else {
+            diffableItemList.value
+        }
+    }
+
     val curItemIndex = rememberSaveable { mutableIntStateOf(curItemIndexAtDiffableItemList) }
     val changeType = rememberSaveable { mutableStateOf(changeType) }
     val fileSize = rememberSaveable { mutableLongStateOf(fileSize) }
     val isSubmodule = rememberSaveable { mutableStateOf(isSubmodule) }
+
+
+    val showMyFileHeader = rememberSaveable(diffableItemList.value.size, diffableItemListForFileHistory.value.size) {
+        getActuallyList().size > 1
+    }
+    val relativePathUnderRepoState = rememberSaveable(curItemIndex.intValue) { mutableStateOf(getActuallyList().getOrNull(curItemIndex.intValue)?.let {
+        if(isFileHistory) (it as FileHistoryDto).filePathUnderRepo else (it as StatusTypeEntrySaver).relativePathUnderRepo
+    } ?: "") }
+
+
 
     val enableSelectCompare = rememberSaveable { mutableStateOf(changeType.value == Cons.gitStatusModified && settings.diff.enableSelectCompare) }
 
 
 //    val curRepo = rememberSaveable { mutableStateOf(RepoEntity()) }
     val curRepo = mutableCustomStateOf(keyTag = stateKeyTag, keyName = "curRepo", initValue = RepoEntity())
-    val fileNameOnly = remember{ derivedStateOf {  getFileNameFromCanonicalPath(relativePathUnderRepoState.value)} }
-    val fileParentPathOnly = remember{ derivedStateOf {getParentPathEndsWithSeparator(relativePathUnderRepoState.value)}}
+    val fileNameOnly = remember(relativePathUnderRepoState.value) { derivedStateOf {  getFileNameFromCanonicalPath(relativePathUnderRepoState.value)} }
+    val fileParentPathOnly = remember(relativePathUnderRepoState.value) { derivedStateOf {getParentPathEndsWithSeparator(relativePathUnderRepoState.value)}}
 
     //考虑将这个功能做成开关，所以用状态变量存其值
     //ps: 这个值要么做成可在设置页面关闭（当然，其他与预览diff不相关的页面也行，总之别做成只能在正在执行O(nm)的diff页面开关就行），要么就默认app启动后重置为关闭，绝对不能做成只能在预览diff的页面开关，不然万一O(nm)算法太慢卡死导致这个东西关不了就尴尬了
@@ -204,7 +221,7 @@ fun DiffScreen(
     val request = rememberSaveable { mutableStateOf("") }
 
     val listState = rememberLazyListState()
-    val fileFullPath = remember{ derivedStateOf{curRepo.value.fullSavePath + File.separator + relativePathUnderRepoState.value} }
+    val fileFullPath = remember(curRepo.value.fullSavePath, relativePathUnderRepoState.value) { derivedStateOf{curRepo.value.fullSavePath + File.separator + relativePathUnderRepoState.value} }
 
     val isFileAndExist = remember(fileFullPath.value) { derivedStateOf {
         val f= File(fileFullPath.value)
