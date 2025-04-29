@@ -494,11 +494,11 @@ fun DiffScreen(
             if(isFileHistoryTreeToLocal){
                 sb.append(activityContext.getString(R.string.commit_id)+": ").appendLine(treeOid1Str.value).appendLine()
                 // at here: curItemIndex is on FileHistory, which item got clicked
-                sb.append(activityContext.getString(R.string.entry_id)+": ").appendLine(diffableItemList.value[curItemIndex.intValue].getEntryId()).appendLine()
+                sb.append(activityContext.getString(R.string.entry_id)+": ").appendLine(diffableItemList.value[curItemIndex.intValue].base_getEntryId()).appendLine()
             }else if(isFileHistoryTreeToTree){
                 sb.append(activityContext.getString(R.string.commit_id)+": ").appendLine(treeOid2Str.value).appendLine()
                 // at here: curItemIndex is on FileHistory, which item got long pressed
-                sb.append(activityContext.getString(R.string.entry_id)+": ").appendLine(diffableItemList.value[curItemIndex.intValue].getEntryId()).appendLine()
+                sb.append(activityContext.getString(R.string.entry_id)+": ").appendLine(diffableItemList.value[curItemIndex.intValue].base_getEntryId()).appendLine()
             }else {
                 sb.append(activityContext.getString(R.string.change_type)+": ").appendLine(changeType.value).appendLine()
             }
@@ -558,11 +558,11 @@ fun DiffScreen(
     // 向下滚动监听，结束
 
     val switchItem = {newItem:DiffableItem, newItemIndex:Int->
-        changeType.value = newItem.getChangeType()
-        isSubmodule.value = newItem.getItemType() == Cons.gitItemTypeSubmodule
-        fileSize.longValue = newItem.getSizeInBytes()
-        relativePathUnderRepoState.value = newItem.getRelativePath()
-        treeOid1Str.value = newItem.getCommitId()
+        changeType.value = newItem.base_getChangeType()
+        isSubmodule.value = newItem.base_getItemType() == Cons.gitItemTypeSubmodule
+        fileSize.longValue = newItem.base_getSizeInBytes()
+        relativePathUnderRepoState.value = newItem.base_getRelativePath()
+        treeOid1Str.value = newItem.base_getCommitId()
 
         curItemIndex.intValue = newItemIndex
 
@@ -750,15 +750,15 @@ fun DiffScreen(
             ) {
 
                 for(diffableItem in diffableItemList.value) {
-                    val relativePath = diffableItem.getRelativePath()
+                    val relativePath = diffableItem.base_getRelativePath()
                     val mapKey = relativePath
 
                     //没diff条目的话，可能正在loading？
                     //就算没diff条目，也改显示个标题，证明有这么个条目存在
                     val diffItem = diffItemMap.value.get(mapKey)
 
-                    val isSubmodule = diffableItem.getItemType() == Cons.gitItemTypeSubmodule
-                    val changeType = diffableItem.getChangeType()
+                    val isSubmodule = diffableItem.base_getItemType() == Cons.gitItemTypeSubmodule
+                    val changeType = diffableItem.base_getChangeType()
                     val errMsg = errMsgMap.value.get(mapKey) ?: ""
                     val submoduleIsDirty = submoduleIsDirtyMap.value.get(mapKey) ?: false
                     val loading = loadingMap.value.get(mapKey) ?: (diffItem == null)
@@ -1477,8 +1477,8 @@ fun DiffScreen(
 
         willLoadList.forEach { item ->
 
-            val relativePath = item.getRelativePath()
-            val isSubmodule = item.getItemType() == Cons.gitItemTypeSubmodule;
+            val relativePath = item.base_getRelativePath()
+            val isSubmodule = item.base_getItemType() == Cons.gitItemTypeSubmodule;
             val mapKey = relativePath
             val channelForThisJob = loadingChannelMap.value.getOrPut(mapKey) { Channel() }
 
@@ -1670,7 +1670,7 @@ private fun NaviButton(
     val noneText = stringResource(R.string.none)
 
     val getItemTextByIdx:(Int)->String = { idx:Int ->
-        diffableItemList.getOrNull(idx)?.let { if(isFileHistoryTreeToLocalOrTree) it.getShortCommitId() else it.getFileName() } ?: noneText
+        diffableItemList.getOrNull(idx)?.let { if(isFileHistoryTreeToLocalOrTree) it.base_getShortCommitId() else it.base_getFileName() } ?: noneText
     }
 
     Column(
@@ -1867,7 +1867,7 @@ private fun NaviButton(
                             Msg.requireShowLongDuration(errMsg)
                             createAndInsertError(curRepo.id, errMsg)
 
-                            MyLog.e(TAG, "stage item '${targetItem.getRelativePath()}' for repo '${curRepo.repoName}' err: ${e.stackTraceToString()}")
+                            MyLog.e(TAG, "stage item '${targetItem.base_getRelativePath()}' for repo '${curRepo.repoName}' err: ${e.stackTraceToString()}")
                         }
                     }
                 }

@@ -57,45 +57,45 @@ class FileHistoryDto (
         return commitOidStr
     }
 
-    override fun getRelativePath(): String {
+    override fun base_getRelativePath(): String {
         return filePathUnderRepo
     }
 
-    override fun getItemType(): Int {
+    override fun base_getItemType(): Int {
         // File History 条目肯定是File，因为只能查看文件的 file history，dir和subm都没这玩意
         return Cons.gitItemTypeFile
     }
 
-    override fun getChangeType(): String {
+    override fun base_getChangeType(): String {
         //这个东西没这个状态，就用Modified凑和下吧
         return Cons.gitStatusModified
     }
 
-    override fun isChangeListItem(): Boolean {
+    override fun base_isChangeListItem(): Boolean {
         return false
     }
 
-    override fun isFileHistoryItem(): Boolean {
+    override fun base_isFileHistoryItem(): Boolean {
         return true
     }
 
-    override fun getEntryId(): String {
+    override fun base_getEntryId(): String {
         return treeEntryOidStr
     }
 
-    override fun getCommitId(): String {
+    override fun base_getCommitId(): String {
         return commitOidStr
     }
 
-    override fun getSizeInBytes(): Long {
+    override fun base_getSizeInBytes(): Long {
         return 0L
     }
 
-    override fun getFileName(): String {
-        return File(getRelativePath()).name
+    override fun base_getFileName(): String {
+        return File(base_getRelativePath()).name
     }
 
-    override fun getShortCommitId(): String {
+    override fun base_getShortCommitId(): String {
         return getCachedCommitShortOidStr()
     }
 }

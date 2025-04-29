@@ -88,43 +88,43 @@ class StatusTypeEntrySaver: DiffableItem {
         return File(canonicalPath)
     }
 
-    override fun getRelativePath(): String {
+    override fun base_getRelativePath(): String {
         return relativePathUnderRepo
     }
 
-    override fun getItemType(): Int {
+    override fun base_getItemType(): Int {
         return itemType
     }
 
-    override fun getChangeType(): String {
+    override fun base_getChangeType(): String {
         return changeType ?: ""
     }
 
-    override fun isChangeListItem(): Boolean {
+    override fun base_isChangeListItem(): Boolean {
         return true
     }
 
-    override fun isFileHistoryItem(): Boolean {
+    override fun base_isFileHistoryItem(): Boolean {
         return false
     }
 
-    override fun getEntryId(): String {
+    override fun base_getEntryId(): String {
         return ""
     }
 
-    override fun getCommitId(): String {
+    override fun base_getCommitId(): String {
         return ""
     }
 
-    override fun getSizeInBytes(): Long {
+    override fun base_getSizeInBytes(): Long {
         return fileSizeInBytes
     }
 
-    override fun getFileName(): String {
+    override fun base_getFileName(): String {
         return fileName
     }
 
-    override fun getShortCommitId(): String {
+    override fun base_getShortCommitId(): String {
         return ""
     }
 
