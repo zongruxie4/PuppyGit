@@ -55,14 +55,12 @@ import com.catpuppyapp.puppygit.utils.AppModel
 import com.catpuppyapp.puppygit.utils.FsUtils
 import com.catpuppyapp.puppygit.utils.Libgit2Helper
 import com.catpuppyapp.puppygit.utils.Msg
-import com.catpuppyapp.puppygit.utils.cache.Cache
 import com.catpuppyapp.puppygit.utils.compare.result.IndexStringPart
 import com.catpuppyapp.puppygit.utils.createAndInsertError
 import com.catpuppyapp.puppygit.utils.doJobThenOffLoading
 import com.catpuppyapp.puppygit.utils.replaceStringResList
-import com.catpuppyapp.puppygit.utils.state.CustomStateMapSaveable
-import com.catpuppyapp.puppygit.utils.state.CustomStateSaveable
 import com.github.git24j.core.Diff
+import io.ktor.util.collections.ConcurrentMap
 
 
 /**
@@ -84,11 +82,12 @@ fun DiffRow (
     showOriginType:Boolean,
     fontSize:Int,
     lineNumSize:Int,
-    comparePairBuffer:CustomStateSaveable<CompareLinePair>,
+    getComparePairBuffer:() -> CompareLinePair,
+    setComparePairBuffer: (CompareLinePair) -> Unit,
 //    comparePair:CustomStateSaveable<CompareLinePair>,
     betterCompare:Boolean,
     reForEachDiffContent:()->Unit,
-    indexStringPartListMap:CustomStateMapSaveable<String, CompareLinePairResult>,
+    indexStringPartListMap:ConcurrentMap<String, CompareLinePairResult>,
     enableSelectCompare: Boolean,
     matchByWords:Boolean,
     settings:AppSettings,
@@ -464,10 +463,10 @@ fun DiffRow (
             newcp.compare(
                 betterCompare = betterCompare,
                 matchByWords = matchByWords,
-                map = indexStringPartListMap.value
+                map = indexStringPartListMap
             )
 
-            comparePairBuffer.value = CompareLinePair()
+            setComparePairBuffer(CompareLinePair())
 
             reForEachDiffContent()
         }
@@ -523,10 +522,10 @@ fun DiffRow (
             newcp.compare(
                 betterCompare = betterCompare,
                 matchByWords = matchByWords,
-                map = indexStringPartListMap.value
+                map = indexStringPartListMap
             )
 
-            comparePairBuffer.value = CompareLinePair()
+            setComparePairBuffer(CompareLinePair())
 
             reForEachDiffContent()
         }
@@ -727,7 +726,7 @@ fun DiffRow (
 
                     if(enableSelectCompare) {
                         if(content.isNotEmpty()) {
-                            val cp = comparePairBuffer.value
+                            val cp = getComparePairBuffer()
                             val line1ready = cp.line1ReadyForCompare()
                             DropdownMenuItem(
                                 // disable compare for same line number
@@ -774,11 +773,11 @@ fun DiffRow (
                                             cp.compare(
                                                 betterCompare = betterCompare,
                                                 matchByWords = matchByWords,
-                                                map = indexStringPartListMap.value
+                                                map = indexStringPartListMap
                                             )
 
                                             // clear buffer
-                                            comparePairBuffer.value = CompareLinePair()
+                                            setComparePairBuffer(CompareLinePair())
 
                                             // re-render view
                                             reForEachDiffContent()
@@ -816,13 +815,13 @@ fun DiffRow (
                         }
 
 
-                        if(comparePairBuffer.value.isEmpty().not()) {
+                        if(getComparePairBuffer().isEmpty().not()) {
                             DropdownMenuItem(
                                 text = { Text(stringResource(R.string.clear_compare))},
                                 onClick = {
                                     expandedMenu.value = false
 
-                                    comparePairBuffer.value = CompareLinePair()
+                                    setComparePairBuffer(CompareLinePair())
                                 }
                             )
                         }

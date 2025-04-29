@@ -1,10 +1,12 @@
 package com.catpuppyapp.puppygit.git
 
+import com.catpuppyapp.puppygit.constants.Cons
 import com.catpuppyapp.puppygit.dto.ItemKey
 import com.catpuppyapp.puppygit.settings.AppSettings
 import com.catpuppyapp.puppygit.utils.Libgit2Helper
 import com.catpuppyapp.puppygit.utils.formatMinutesToUtc
 import com.catpuppyapp.puppygit.utils.readTimeZoneOffsetInMinutesFromSettingsOrDefault
+import java.io.File
 
 class FileHistoryDto (
 //    var fileName:String="",
@@ -21,7 +23,7 @@ class FileHistoryDto (
     var shortMsg:String="", //只包含第一行
     var msg: String="",  //完整commit信息
     var repoId:String="",  //数据库的repoId，用来判断当前是在操作哪个仓库
-): ItemKey {
+): DiffableItem {
 
     private var commitShortOidStr:String?=null
     private var treeEntryShortOidStr:String?=null
@@ -53,5 +55,47 @@ class FileHistoryDto (
 
     override fun getItemKey():String {
         return commitOidStr
+    }
+
+    override fun getRelativePath(): String {
+        return filePathUnderRepo
+    }
+
+    override fun getItemType(): Int {
+        // File History 条目肯定是File，因为只能查看文件的 file history，dir和subm都没这玩意
+        return Cons.gitItemTypeFile
+    }
+
+    override fun getChangeType(): String {
+        //这个东西没这个状态，就用Modified凑和下吧
+        return Cons.gitStatusModified
+    }
+
+    override fun isChangeListItem(): Boolean {
+        return false
+    }
+
+    override fun isFileHistoryItem(): Boolean {
+        return true
+    }
+
+    override fun getEntryId(): String {
+        return treeEntryOidStr
+    }
+
+    override fun getCommitId(): String {
+        return commitOidStr
+    }
+
+    override fun getSizeInBytes(): Long {
+        return 0L
+    }
+
+    override fun getFileName(): String {
+        return File(getRelativePath()).name
+    }
+
+    override fun getShortCommitId(): String {
+        return getCachedCommitShortOidStr()
     }
 }

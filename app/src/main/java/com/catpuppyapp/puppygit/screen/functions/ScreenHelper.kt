@@ -13,6 +13,7 @@ import com.catpuppyapp.puppygit.constants.LineNum
 import com.catpuppyapp.puppygit.constants.PageRequest
 import com.catpuppyapp.puppygit.dto.UndoStack
 import com.catpuppyapp.puppygit.fileeditor.texteditor.state.TextEditorState
+import com.catpuppyapp.puppygit.git.DiffableItem
 import com.catpuppyapp.puppygit.git.FileHistoryDto
 import com.catpuppyapp.puppygit.git.StatusTypeEntrySaver
 import com.catpuppyapp.puppygit.play.pro.R
@@ -411,50 +412,40 @@ fun goToCommitListScreen(repoId: String, fullOid:String, shortBranchName:String,
 
 fun goToDiffScreen(
 //    relativePathList:List<String>,
-    diffableListOfChangeList:List<StatusTypeEntrySaver>?,
-    diffableListOfFileHistory:List<FileHistoryDto>?,
+    diffableList:List<DiffableItem>,
     repoId: String,
     fromTo: String,
-    changeType:String,
-    fileSizeInBytes:Long,
-    swap:Boolean,
     commit1OidStr:String,
     commit2OidStr:String,
-    isSubmodule:Boolean,
     isDiffToLocal:Boolean,
     curItemIndexAtDiffableList:Int,
     localAtDiffRight:Boolean,
     fromScreen:String,
+    isMultiMode:Boolean,
 ){
     doJobWithMainContext {
 //        val relativePathCacheKey = NaviCache.setThenReturnKey(relativePathList)
 
         //设置条目列表
-        val invalidCacheKey = getRandomUUID(10)
+//        val invalidCacheKey = getRandomUUID(10)
         //等于null说明目标页面不需要此列表，所以不用设置
-        val diffableListOfChangeListCacheKey = if(diffableListOfChangeList != null) NaviCache.setThenReturnKey(diffableListOfChangeList) else invalidCacheKey;
-        val diffableListOfFileHistoryCacheKey = if(diffableListOfFileHistory != null) NaviCache.setThenReturnKey(diffableListOfFileHistory) else invalidCacheKey;
+        val diffableListCacheKey = NaviCache.setThenReturnKey(diffableList) ;
 
 
         AppModel.navController.navigate(
             Cons.nav_DiffScreen +
                     "/" + repoId +
-                    //    "/" + encodeStrUri(item.relativePathUnderRepo) +
                     "/" + fromTo +
-                    "/" + changeType +
-                    "/" + fileSizeInBytes +
-                    "/" + (if(swap) commit2OidStr else commit1OidStr) +
-                    "/" + (if(swap) commit1OidStr else commit2OidStr) +
-                    "/" + (if(isSubmodule) 1 else 0) +
+                    "/" + commit1OidStr +
+                    "/" + commit2OidStr +
                     "/" + (if(isDiffToLocal) 1 else 0)
                     + "/" + curItemIndexAtDiffableList
                     +"/" + (if(localAtDiffRight) 1 else 0)
 
                     +"/" + fromScreen
 
-                    +"/"+"relativePathCacheKeyIsDeprecatedAfterSupportDiffMultiFiles"
-                    +"/"+diffableListOfChangeListCacheKey
-                    +"/"+diffableListOfFileHistoryCacheKey
+                    +"/"+diffableListCacheKey
+                    +"/"+(if(isMultiMode) "1" else "0")
         )
     }
 }

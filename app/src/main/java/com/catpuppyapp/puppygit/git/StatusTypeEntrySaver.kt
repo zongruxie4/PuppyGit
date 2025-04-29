@@ -8,7 +8,7 @@ import com.catpuppyapp.puppygit.utils.mime.MimeType
 import com.catpuppyapp.puppygit.utils.mime.guessFromFileName
 import java.io.File
 
-class StatusTypeEntrySaver: ItemKey {
+class StatusTypeEntrySaver: DiffableItem {
     var repoIdFromDb:String="";
     var fileName:String="";
     var relativePathUnderRepo:String="";  //仓库下的相对路径，包含文件名
@@ -86,6 +86,46 @@ class StatusTypeEntrySaver: ItemKey {
 
     fun toFile(): File {
         return File(canonicalPath)
+    }
+
+    override fun getRelativePath(): String {
+        return relativePathUnderRepo
+    }
+
+    override fun getItemType(): Int {
+        return itemType
+    }
+
+    override fun getChangeType(): String {
+        return changeType ?: ""
+    }
+
+    override fun isChangeListItem(): Boolean {
+        return true
+    }
+
+    override fun isFileHistoryItem(): Boolean {
+        return false
+    }
+
+    override fun getEntryId(): String {
+        return ""
+    }
+
+    override fun getCommitId(): String {
+        return ""
+    }
+
+    override fun getSizeInBytes(): Long {
+        return fileSizeInBytes
+    }
+
+    override fun getFileName(): String {
+        return fileName
+    }
+
+    override fun getShortCommitId(): String {
+        return ""
     }
 
     override fun equals(other: Any?): Boolean {
