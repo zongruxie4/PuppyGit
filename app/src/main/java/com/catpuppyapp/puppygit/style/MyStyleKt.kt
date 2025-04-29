@@ -90,9 +90,7 @@ object MyStyleKt{
         val lineNum_forDiffInDarkTheme = Color(0xFF757575)
 
         val fontColor = Color.Unspecified
-        val secondaryFontColor = Color.Gray
         val darkThemeFontColor = Color.Gray
-        val darkThemeSecondaryFontColor = Color.DarkGray
 
         fun error() = if(Theme.inDarkTheme) Color(0xFFF53737) else Color.Red.copy(alpha = .8f)
 //        fun error() = Color.Red.copy(alpha = .8f)

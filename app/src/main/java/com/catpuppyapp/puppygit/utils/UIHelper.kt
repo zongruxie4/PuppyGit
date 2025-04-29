@@ -87,9 +87,10 @@ object UIHelper {
         return if(inDarkTheme) MyStyleKt.TextColor.disable_DarkTheme else MyStyleKt.TextColor.disable
     }
 
-    //不太重要的字体颜色
+
+    //给不太重要的文案用的颜色
     fun getSecondaryFontColor(inDarkTheme:Boolean=Theme.inDarkTheme): Color {
-        return if(inDarkTheme) MyStyleKt.TextColor.darkThemeSecondaryFontColor else MyStyleKt.TextColor.secondaryFontColor
+        return if(inDarkTheme) Color.DarkGray else Color.Gray
     }
 
     /**

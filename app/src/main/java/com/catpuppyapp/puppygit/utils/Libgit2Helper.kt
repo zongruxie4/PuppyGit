@@ -1267,7 +1267,7 @@ object Libgit2Helper {
         val funName = "getSingleDiffItem"
         MyLog.d(TAG, "#$funName(): relativePathUnderRepo=${relativePathUnderRepo}, fromTo=${fromTo}")
 
-        val diffItem = DiffItemSaver()
+        val diffItem = DiffItemSaver(relativePathUnderRepo = relativePathUnderRepo)
 
         val options = Diff.Options.create()
 

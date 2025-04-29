@@ -126,6 +126,7 @@ fun DiffContent(
     enableSelectCompare:Boolean,
     lastClickedItemKey:MutableState<String>,
     pageRequest:MutableState<String>,
+    showMyFileHeader:Boolean,  //显示添加删除了几行，由于有diff item对象本来就有hunk header之类的东西，所以名字加My以作区分
 
 ) {
     val stateKeyTag = Cache.getSubPageKey("DiffContent")
@@ -321,6 +322,25 @@ fun DiffContent(
                         }
                     }
                 }else {
+
+                    if(showMyFileHeader) {
+                        item {
+                            Row(
+                                modifier = Modifier.fillMaxWidth().padding(horizontal = 20.dp, vertical = 10.dp)
+                                ,
+                                horizontalArrangement = Arrangement.Center,
+                                verticalAlignment = Alignment.CenterVertically,
+                            ) {
+                                Text(
+                                    text = diffItem.getSummary(),
+                                    fontWeight = FontWeight.Light,
+                                    fontStyle = FontStyle.Italic,
+                                    color = UIHelper.getSecondaryFontColor()
+                                )
+                            }
+                        }
+                    }
+
                     val lastHunkIndex = diffItem.hunks.size - 1 ;
 
                     //顶部padding，要把这个颜色弄得和当前行的类型（context/add/del）弄得一样才不违和，但处理起来有点麻烦，算了

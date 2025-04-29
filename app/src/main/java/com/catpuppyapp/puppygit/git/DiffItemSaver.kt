@@ -10,6 +10,7 @@ import java.util.EnumSet
 import java.util.TreeMap
 
 data class DiffItemSaver (
+    var relativePathUnderRepo:String="",  //仓库下相对路径
     var keyForRefresh:String= getShortUUID(),
     var from:String= Cons.gitDiffFromIndexToWorktree,
 //    var fileHeader:String="";  // file好像没有header
@@ -30,8 +31,17 @@ data class DiffItemSaver (
 
 ){
 
-    fun getFormattedChangedLinesCount():String {
-        return "+$addedLines, -$deletedLines"
+    fun getSummary(fileNameLimit:Int = 50):String {
+        //获取文件名，如果超过限制长度则截断并在前面追加省略号
+        val fileRelativePath = relativePathUnderRepo.let {
+            if(it.length > fileNameLimit) {
+                "..."+it.reversed().substring(0, fileNameLimit).reversed()
+            }else {
+                it
+            }
+        }
+
+        return "+$addedLines, -$deletedLines: $fileRelativePath"
     }
 
     //获取实际生效的文件大小

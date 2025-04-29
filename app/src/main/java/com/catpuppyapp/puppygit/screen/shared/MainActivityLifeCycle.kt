@@ -32,7 +32,7 @@ fun doActIfIsExpectLifeCycle(expectLifeCycle: MainActivityLifeCycle, nextLifeCyc
 
     if(currentMainActivityLifeCycle.value == expectLifeCycle) {
         //判断完立刻重置，确保一个事件只消费一次
-        currentMainActivityLifeCycle.value = nextLifeCycle
+        setMainActivityLifeCycle(nextLifeCycle)
 
         act()
     }
