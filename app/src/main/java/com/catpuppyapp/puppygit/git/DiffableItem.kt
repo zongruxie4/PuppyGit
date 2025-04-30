@@ -48,6 +48,8 @@ data class DiffableItem(
     val compareLinePair:CompareLinePair = CompareLinePair(),
     val submoduleIsDirty:Boolean = false,
     val errMsg: String = "",
+    //是否可见，收起不可见，展开可见
+    val visible:Boolean = true,
 ):ItemKey {
     override fun getItemKey(): String {
         // else的是 isFileHistoryItem

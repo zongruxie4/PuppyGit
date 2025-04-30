@@ -2,6 +2,8 @@ package com.catpuppyapp.puppygit.screen
 
 import android.content.Context
 import androidx.activity.compose.BackHandler
+import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -15,6 +17,8 @@ import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.text.selection.DisableSelection
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.automirrored.filled.ArrowRight
+import androidx.compose.material.icons.filled.ArrowDropDown
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.HorizontalDivider
@@ -53,6 +57,7 @@ import com.catpuppyapp.puppygit.compose.DiffRow
 import com.catpuppyapp.puppygit.compose.FileHistoryRestoreDialog
 import com.catpuppyapp.puppygit.compose.FontSizeAdjuster
 import com.catpuppyapp.puppygit.compose.GoToTopAndGoToBottomFab
+import com.catpuppyapp.puppygit.compose.InLineIcon
 import com.catpuppyapp.puppygit.compose.LoadingDialog
 import com.catpuppyapp.puppygit.compose.LongPressAbleIconBtn
 import com.catpuppyapp.puppygit.compose.MySelectionContainer
@@ -761,15 +766,64 @@ fun DiffScreen(
                 for((idx, diffableItem) in diffableItemList.toList().withIndex()) {
                     if(isSingleMode && idx != curItemIndex.intValue) continue;
 
+                    val diffItem = diffableItem.diffItemSaver
+                    val changeType = diffableItem.changeType
+                    val visible = diffableItem.visible
+
+
+                    //这header得调一下，左边加个箭头点击能收起
+                    if (showMyFileHeader) {
+                        item {
+                            val switchVisible = {
+                                diffableItemList[idx] = diffableItem.copy(visible = visible.not())
+                            }
+                            // 貌似这里不能用rememberSaveable，会崩
+                            // 不知道为啥，无效，这逼玩意
+                            Row(
+                                modifier = Modifier
+                                    .background(MaterialTheme.colorScheme.surfaceDim)
+                                    .fillMaxWidth()
+//                                        .padding(horizontal = 20.dp, vertical = 10.dp)
+                                    .padding(10.dp)
+                                    .clickable { switchVisible() }
+                                ,
+                                horizontalArrangement = Arrangement.SpaceBetween,
+                                verticalAlignment = Alignment.CenterVertically,
+                            ) {
+                                Row(
+                                    verticalAlignment = Alignment.CenterVertically,
+                                ) {
+                                    InLineIcon(
+                                        icon = if(visible) Icons.Filled.ArrowDropDown else Icons.AutoMirrored.Filled.ArrowRight ,
+                                        tooltipText = "",
+                                        onClick = switchVisible
+                                    )
+
+                                    Text(
+                                        text = diffItem.getSummary(),
+//                                        fontWeight = FontWeight.Light,
+//                                        fontStyle = FontStyle.Italic,
+                                        color = UIHelper.getChangeTypeColor(changeType)
+                                    )
+                                }
+                            }
+                        }
+                    }
+
+                    //不显示的话，后面就不用管了，让用户看个标题栏就行
+                    if(!visible) {
+                        continue
+                    }
+
+
+
                     val relativePath = diffableItem.relativePath
 //                    val mapKey = relativePath
 
                     //没diff条目的话，可能正在loading？
                     //就算没diff条目，也改显示个标题，证明有这么个条目存在
-                    val diffItem = diffableItem.diffItemSaver
 
                     val isSubmodule = diffableItem.itemType == Cons.gitItemTypeSubmodule
-                    val changeType = diffableItem.changeType
                     val errMsg = diffableItem.errMsg
                     val submoduleIsDirty = diffableItem.submoduleIsDirty
                     val loading = diffableItem.loading
@@ -889,26 +943,6 @@ fun DiffScreen(
                             Unit
                         }
 
-
-                        //这header得调一下，左边加个箭头点击能收起
-                        if (showMyFileHeader) {
-                            item {
-                                Row(
-                                    modifier = Modifier
-                                        .fillMaxWidth()
-                                        .padding(horizontal = 20.dp, vertical = 10.dp),
-                                    horizontalArrangement = Arrangement.Center,
-                                    verticalAlignment = Alignment.CenterVertically,
-                                ) {
-                                    Text(
-                                        text = diffItem.getSummary(),
-                                        fontWeight = FontWeight.Light,
-                                        fontStyle = FontStyle.Italic,
-                                        color = UIHelper.getSecondaryFontColor()
-                                    )
-                                }
-                            }
-                        }
 
 
 
@@ -1445,25 +1479,27 @@ fun DiffScreen(
                             }
                         }
 
-                        item {
-                            DisableSelection {
-                                Spacer(Modifier.height(50.dp))
+                        if(isSingleMode) {
+                            item {
+                                DisableSelection {
+                                    Spacer(Modifier.height(50.dp))
 
-                                NaviButton(
-                                    stateKeyTag = stateKeyTag,
+                                    NaviButton(
+                                        stateKeyTag = stateKeyTag,
 
-                                    activityContext = activityContext,
-                                    curRepo = curRepo.value,
-                                    diffableItemList = diffableItemList,
-                                    curItemIndex = curItemIndex,
-                                    switchItem = closeChannelThenSwitchItem,
-                                    fromTo = fromTo,
-                                    naviUp = naviUp,
-                                    lastClickedItemKey = lastClickedItemKey,
-                                    pageRequest = pageRequest,
-                                )
+                                        activityContext = activityContext,
+                                        curRepo = curRepo.value,
+                                        diffableItemList = diffableItemList,
+                                        curItemIndex = curItemIndex,
+                                        switchItem = closeChannelThenSwitchItem,
+                                        fromTo = fromTo,
+                                        naviUp = naviUp,
+                                        lastClickedItemKey = lastClickedItemKey,
+                                        pageRequest = pageRequest,
+                                    )
 
-                                Spacer(Modifier.height(100.dp))
+                                    Spacer(Modifier.height(100.dp))
+                                }
                             }
                         }
                     }

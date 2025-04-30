@@ -49,9 +49,12 @@ fun LongPressAbleIconBtn(
     val haptic = LocalHapticFeedback.current
 
     val onLongClick:()->Unit = onLongClick ?:  {
-        //震动反馈，显示tooltip提示
-        haptic.performHapticFeedback(HapticFeedbackType.LongPress)
-        showToast(AppModel.realAppContext, tooltipText, Toast.LENGTH_SHORT)
+        //空白，代表不想显示提示文案
+        if(tooltipText.isNotEmpty()) {
+            //震动反馈，显示tooltip提示
+            haptic.performHapticFeedback(HapticFeedbackType.LongPress)
+            showToast(AppModel.realAppContext, tooltipText, Toast.LENGTH_SHORT)
+        }
     }
 
     LongPressAbleIconBtnToastVersion(context=activityContext, modifier=modifier,iconModifier=iconModifier,
