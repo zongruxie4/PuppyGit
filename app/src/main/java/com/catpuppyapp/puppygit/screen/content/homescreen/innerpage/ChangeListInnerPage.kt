@@ -2863,7 +2863,7 @@ fun ChangeListInnerPage(
 
                                 goToDiffScreen(
 //                                    relativePathList = listOf(it.relativePathUnderRepo),
-                                    diffableList = diffableList,
+                                    diffableList = diffableList.map { it.toDiffableItem() },
                                     repoId = it.repoIdFromDb,
                                     fromTo = fromTo,
                                     commit1OidStr = if(swap) commit2OidStr else commit1OidStr,

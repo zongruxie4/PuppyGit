@@ -8,7 +8,7 @@ import com.catpuppyapp.puppygit.utils.mime.MimeType
 import com.catpuppyapp.puppygit.utils.mime.guessFromFileName
 import java.io.File
 
-class StatusTypeEntrySaver: DiffableItem {
+class StatusTypeEntrySaver: ItemKey {
     var repoIdFromDb:String="";
     var fileName:String="";
     var relativePathUnderRepo:String="";  //仓库下的相对路径，包含文件名
@@ -88,45 +88,26 @@ class StatusTypeEntrySaver: DiffableItem {
         return File(canonicalPath)
     }
 
-    override fun base_getRelativePath(): String {
-        return relativePathUnderRepo
+
+    fun toDiffableItem():DiffableItem {
+        return DiffableItem(
+            repoIdFromDb = repoIdFromDb,
+            relativePath = relativePathUnderRepo,
+            itemType = itemType,
+            changeType = changeType?:"",
+            isChangeListItem = true,
+            isFileHistoryItem = false,
+
+            // FileHistory专有条目
+            entryId = "",
+            // FileHistory专有条目
+            commitId = "",
+
+            sizeInBytes = fileSizeInBytes,
+            shortCommitId = "",
+        )
     }
 
-    override fun base_getItemType(): Int {
-        return itemType
-    }
-
-    override fun base_getChangeType(): String {
-        return changeType ?: ""
-    }
-
-    override fun base_isChangeListItem(): Boolean {
-        return true
-    }
-
-    override fun base_isFileHistoryItem(): Boolean {
-        return false
-    }
-
-    override fun base_getEntryId(): String {
-        return ""
-    }
-
-    override fun base_getCommitId(): String {
-        return ""
-    }
-
-    override fun base_getSizeInBytes(): Long {
-        return fileSizeInBytes
-    }
-
-    override fun base_getFileName(): String {
-        return fileName
-    }
-
-    override fun base_getShortCommitId(): String {
-        return ""
-    }
 
     override fun equals(other: Any?): Boolean {
         if (this === other) return true

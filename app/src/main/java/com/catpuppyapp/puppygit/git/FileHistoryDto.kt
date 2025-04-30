@@ -23,7 +23,7 @@ class FileHistoryDto (
     var shortMsg:String="", //只包含第一行
     var msg: String="",  //完整commit信息
     var repoId:String="",  //数据库的repoId，用来判断当前是在操作哪个仓库
-): DiffableItem {
+): ItemKey {
 
     private var commitShortOidStr:String?=null
     private var treeEntryShortOidStr:String?=null
@@ -57,45 +57,25 @@ class FileHistoryDto (
         return commitOidStr
     }
 
-    override fun base_getRelativePath(): String {
-        return filePathUnderRepo
+
+
+    fun toDiffableItem():DiffableItem {
+        return DiffableItem(
+            repoIdFromDb = repoId,
+            relativePath = filePathUnderRepo,
+            itemType = Cons.gitItemTypeFile,
+            changeType = Cons.gitStatusModified,
+            isChangeListItem = false,
+            isFileHistoryItem = true,
+
+            // FileHistory专有条目
+            entryId = treeEntryOidStr,
+            // FileHistory专有条目
+            commitId = commitOidStr,
+
+            sizeInBytes = 0L,
+            shortCommitId = getCachedCommitShortOidStr(),
+        )
     }
 
-    override fun base_getItemType(): Int {
-        // File History 条目肯定是File，因为只能查看文件的 file history，dir和subm都没这玩意
-        return Cons.gitItemTypeFile
-    }
-
-    override fun base_getChangeType(): String {
-        //这个东西没这个状态，就用Modified凑和下吧
-        return Cons.gitStatusModified
-    }
-
-    override fun base_isChangeListItem(): Boolean {
-        return false
-    }
-
-    override fun base_isFileHistoryItem(): Boolean {
-        return true
-    }
-
-    override fun base_getEntryId(): String {
-        return treeEntryOidStr
-    }
-
-    override fun base_getCommitId(): String {
-        return commitOidStr
-    }
-
-    override fun base_getSizeInBytes(): Long {
-        return 0L
-    }
-
-    override fun base_getFileName(): String {
-        return File(base_getRelativePath()).name
-    }
-
-    override fun base_getShortCommitId(): String {
-        return getCachedCommitShortOidStr()
-    }
 }

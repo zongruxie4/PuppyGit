@@ -60,7 +60,6 @@ import com.catpuppyapp.puppygit.utils.createAndInsertError
 import com.catpuppyapp.puppygit.utils.doJobThenOffLoading
 import com.catpuppyapp.puppygit.utils.replaceStringResList
 import com.github.git24j.core.Diff
-import io.ktor.util.collections.ConcurrentMap
 
 
 /**
@@ -87,7 +86,7 @@ fun DiffRow (
 //    comparePair:CustomStateSaveable<CompareLinePair>,
     betterCompare:Boolean,
     reForEachDiffContent:()->Unit,
-    indexStringPartListMap:ConcurrentMap<String, CompareLinePairResult>,
+    indexStringPartListMap:MutableMap<String, CompareLinePairResult>,
     enableSelectCompare: Boolean,
     matchByWords:Boolean,
     settings:AppSettings,

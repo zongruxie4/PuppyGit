@@ -883,7 +883,7 @@ fun FileHistoryScreen(
                         //导航到diffScreen
                         goToDiffScreen(
 //                            relativePathList = listOf(fileRelativePath),
-                            diffableList = list,
+                            diffableList = list.map { it.toDiffableItem() },
                             repoId = repoId,
                             fromTo = Cons.gitDiffFileHistoryFromTreeToTree,
                             commit1OidStr = commit1,
@@ -1051,7 +1051,7 @@ fun FileHistoryScreen(
                     //导航到diffScreen
                     goToDiffScreen(
 //                        relativePathList = listOf(fileRelativePath),
-                        diffableList = list.toList(),
+                        diffableList = list.map { it.toDiffableItem() },
                         repoId = repoId,
                         fromTo = Cons.gitDiffFileHistoryFromTreeToLocal,
                         commit1OidStr = it.commitOidStr,

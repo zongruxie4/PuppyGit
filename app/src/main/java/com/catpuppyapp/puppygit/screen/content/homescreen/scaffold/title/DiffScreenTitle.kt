@@ -34,7 +34,7 @@ import kotlinx.coroutines.CoroutineScope
 fun DiffScreenTitle(
     fileName:String,
     filePath:String,
-    fileRelativePathUnderRepoState: MutableState<String>,
+    fileRelativePathUnderRepoState: String,
     listState: LazyListState,
     scope: CoroutineScope,
     request:MutableState<String>,
@@ -43,7 +43,7 @@ fun DiffScreenTitle(
     lastPosition:MutableState<Int>,
 ) {
 
-    if(fileRelativePathUnderRepoState.value.isNotBlank()) {
+    if(fileRelativePathUnderRepoState.isNotBlank()) {
 //        val haptic = LocalHapticFeedback.current
         Column(modifier = Modifier.widthIn(min=MyStyleKt.Title.clickableTitleMinWidth)
             .combinedClickable(

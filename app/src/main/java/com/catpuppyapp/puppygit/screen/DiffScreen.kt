@@ -31,6 +31,7 @@ import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableLongStateOf
+import androidx.compose.runtime.mutableStateMapOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
@@ -114,6 +115,8 @@ import com.github.git24j.core.Diff
 import com.github.git24j.core.Repository
 import io.ktor.util.collections.ConcurrentMap
 import kotlinx.coroutines.channels.Channel
+import kotlinx.coroutines.sync.Mutex
+import kotlinx.coroutines.sync.withLock
 import java.io.File
 
 private const val TAG = "DiffScreen"
@@ -200,6 +203,9 @@ fun DiffScreen(
 
     val needRefresh = rememberSaveable { mutableStateOf("DiffScreen_refresh_init_value_4kc9") }
 
+    //避免某些情况下并发赋值导致报错，不过我不确定 mutableStateList() 返回的 snapshotedList() 默认是不是并发按钮，如果是，就不需要这个锁，我记得好像不是？
+    val diffableListLock = remember { Mutex() }
+
     val diffableItemList = mutableCustomStateListOf(keyTag = stateKeyTag, keyName = "diffableItemList") {
         NaviCache.getByType<List<DiffableItem>>(diffableListCacheKey) ?: listOf()
     }
@@ -209,27 +215,27 @@ fun DiffScreen(
         diffableItemList.value
     }
 
-    val subDiffableItemList = mutableCustomStateListOf(keyTag = stateKeyTag, keyName = "subDiffableList") {
-        listOf<DiffableItem>()
+    val subDiffableItemList = mutableCustomStateListOf(keyTag = stateKeyTag, keyName = "subDiffableItemList") {
+        //里面存的是diffableList里的索引，用来加载指定条目的
+        listOf<Int>()
     }
-    val useSubList = rememberSaveable { mutableStateOf(false) }
+//    val useSubList = rememberSaveable { mutableStateOf(false) }
 
-    val requireRefreshSubList = { items:List<DiffableItem> ->
+    val requireRefreshSubList = { itemIndices:List<Int> ->
         subDiffableItemList.value.clear()
-        subDiffableItemList.value.addAll(items)
-        useSubList.value = true
+        subDiffableItemList.value.addAll(itemIndices)
 
         changeStateTriggerRefreshPage(needRefresh)
     }
 
     // key: relative path under repo, value: loading boolean
-    val loadingMap = mutableCustomStateMapOf(keyTag = stateKeyTag, keyName = "loadingMap", ) { mapOf<String, Boolean>() }
+//    val loadingMap = mutableCustomStateMapOf(keyTag = stateKeyTag, keyName = "loadingMap", ) { mapOf<String, Boolean>() }
     // key: relative path under repo, value: loading Channel
-    val loadingChannelMap = mutableCustomStateMapOf(keyTag = stateKeyTag, keyName = "loadingChannelMap", ) { mapOf<String, Channel<Int>>() }
+//    val loadingChannelMap = mutableCustomStateMapOf(keyTag = stateKeyTag, keyName = "loadingChannelMap", ) { mapOf<String, Channel<Int>>() }
 
 
 
-    val diffItemMap = mutableCustomStateMapOf(keyTag = stateKeyTag, keyName = "diffItemMap") { mapOf<String, DiffItemSaver>() }
+//    val diffItemMap = mutableCustomStateMapOf(keyTag = stateKeyTag, keyName = "diffItemMap") { mapOf<String, DiffItemSaver>() }
 
     val curItemIndex = rememberSaveable { mutableIntStateOf(curItemIndexAtDiffableItemList) }
     val curItemIndexAtDiffableItemList = Unit  // avoid mistake using
@@ -241,39 +247,41 @@ fun DiffScreen(
     val showMyFileHeader = isMultiMode
 
     //这些主要是用来在single mode时在当前页面显示的状态变量，在传给DiffContent时会直接使用列表里的对象的对应值；multi mode用不到这些，所以直接默认值就行，不用查list
-    val relativePathUnderRepoState = rememberSaveable(isMultiMode, curItemIndex.intValue) { mutableStateOf(
-        (if(isMultiMode) null else { diffableItemList.value.getOrNull(curItemIndex.intValue)?.let {
-                if(isFileHistory) (it as FileHistoryDto).filePathUnderRepo
-                else (it as StatusTypeEntrySaver).relativePathUnderRepo }
-        }) ?: "" ) };
+//    val relativePathUnderRepoState = rememberSaveable(isMultiMode, curItemIndex.intValue) { mutableStateOf(
+//        (if(isMultiMode) null else { diffableItemList.value.getOrNull(curItemIndex.intValue)?.let {
+//                if(isFileHistory) (it as FileHistoryDto).filePathUnderRepo
+//                else (it as StatusTypeEntrySaver).relativePathUnderRepo }
+//        }) ?: "" ) };
 
-    val changeType = rememberSaveable(isMultiMode, curItemIndex.intValue) { mutableStateOf(
-        (if(isMultiMode) null else diffableItemList.value.getOrNull(curItemIndex.intValue)?.let {
-        if(isFileHistory) Cons.gitStatusModified else (it as StatusTypeEntrySaver).changeType
-    }) ?: "") }
-    val fileSize = rememberSaveable(isMultiMode, curItemIndex.intValue) { mutableLongStateOf(
-        (if(isMultiMode) null else diffableItemList.value.getOrNull(curItemIndex.intValue)?.let {
-        if(isFileHistory) 0L else (it as StatusTypeEntrySaver).fileSizeInBytes
-    }) ?: 0L) }
-    val isSubmodule = rememberSaveable(isMultiMode, curItemIndex.intValue) { mutableStateOf(
-        ( if(isMultiMode) null else diffableItemList.value.getOrNull(curItemIndex.intValue)?.let {
-        if(isFileHistory) false else (it as StatusTypeEntrySaver).itemType == Cons.gitItemTypeSubmodule
-    }) ?: false) }
+//    val changeType = rememberSaveable(isMultiMode, curItemIndex.intValue) { mutableStateOf(
+//        (if(isMultiMode) null else diffableItemList.value.getOrNull(curItemIndex.intValue)?.let {
+//        if(isFileHistory) Cons.gitStatusModified else (it as StatusTypeEntrySaver).changeType
+//    }) ?: "") }
+//    val fileSize = rememberSaveable(isMultiMode, curItemIndex.intValue) { mutableLongStateOf(
+//        (if(isMultiMode) null else diffableItemList.value.getOrNull(curItemIndex.intValue)?.let {
+//        if(isFileHistory) 0L else (it as StatusTypeEntrySaver).fileSizeInBytes
+//    }) ?: 0L) }
+//    val isSubmodule = rememberSaveable(isMultiMode, curItemIndex.intValue) { mutableStateOf(
+//        ( if(isMultiMode) null else diffableItemList.value.getOrNull(curItemIndex.intValue)?.let {
+//        if(isFileHistory) false else (it as StatusTypeEntrySaver).itemType == Cons.gitItemTypeSubmodule
+//    }) ?: false) }
 
-    val enableSelectCompare = rememberSaveable(changeType.value) { mutableStateOf(changeType.value == Cons.gitStatusModified && settings.diff.enableSelectCompare) }
-    val fileNameOnly = remember(relativePathUnderRepoState.value) { derivedStateOf {  getFileNameFromCanonicalPath(relativePathUnderRepoState.value)} }
-    val fileParentPathOnly = remember(relativePathUnderRepoState.value) { derivedStateOf {getParentPathEndsWithSeparator(relativePathUnderRepoState.value)}}
-    val fileFullPath = remember(curRepo.value.fullSavePath, relativePathUnderRepoState.value) { derivedStateOf{ File(curRepo.value.fullSavePath, relativePathUnderRepoState.value).canonicalPath } }
+    //根据类型判断没什么必要，就算非modified类型，想比较也可以比较，所以后来改成仅根据设置项判断了
+//    val enableSelectCompare = rememberSaveable(changeType.value) { mutableStateOf(changeType.value == Cons.gitStatusModified && settings.diff.enableSelectCompare) }
+    val enableSelectCompare = rememberSaveable(settings.diff.enableSelectCompare) { mutableStateOf(settings.diff.enableSelectCompare) }
+//    val fileNameOnly = remember(relativePathUnderRepoState.value) { derivedStateOf {  getFileNameFromCanonicalPath(relativePathUnderRepoState.value)} }
+//    val fileParentPathOnly = remember(relativePathUnderRepoState.value) { derivedStateOf {getParentPathEndsWithSeparator(relativePathUnderRepoState.value)}}
+//    val fileFullPath = remember(curRepo.value.fullSavePath, relativePathUnderRepoState.value) { derivedStateOf{  } }
 
-    val isFileAndExist = remember(fileFullPath.value) { derivedStateOf {
-        File(fileFullPath.value).let { f ->
-            f.exists() && f.isFile
-        }
-    } }
+//    val isFileAndExist = remember(fileFullPath.value) { derivedStateOf {
+//        File(fileFullPath.value).let { f ->
+//            f.exists() && f.isFile
+//        }
+//    } }
 
     // "read-only" mode switchable, if is single, depend on condition; is is multi mode, 仅返回右边是否是local,然后会在遍历时和实际文件是否存在组成完整规则，决定当前条目是否只读
-    val readOnlySwitchable = remember(localAtDiffRight, fileFullPath.value) { derivedStateOf {
-        if(isSingleMode) localAtDiffRight && isFileAndExist.value else localAtDiffRight
+    val readOnlySwitchable = remember(localAtDiffRight) { derivedStateOf {
+        if(isSingleMode) localAtDiffRight else localAtDiffRight
     }}
 
     // cant switch = force readonly, else init value set to off
@@ -326,12 +334,17 @@ fun DiffScreen(
     // remember for make sure only have one instance bundle with a composable function's one life time
     //用remember是为了确保组件生命周期内只创建一个channel实例, 用 mutableStateOf() 是因为切换文件后需要创建新Channel
 //    val loadChannelLock = Mutex()
+
+
     val refreshPageIfComparingWithLocal={
         if(isDiffToLocal) {
             changeStateTriggerRefreshPage(needRefresh)
         }
     }
 
+    val getCurItem = {
+        diffableItemList.value.getOrNull(curItemIndex.intValue) ?: DiffableItem("an_invalid_DiffableItem_30bc0f41-63e8-461a-b48b-415d5584740d")
+    }
 
 
     val showBackFromExternalAppAskReloadDialog = rememberSaveable { mutableStateOf(false)}
@@ -370,7 +383,7 @@ fun DiffScreen(
             showCreatePatchDialog.value = false
 
             val curRepo = curRepo.value
-            val relativePathUnderRepo = relativePathUnderRepoState.value
+            val relativePathUnderRepo = getCurItem().relativePath
             val leftCommit = treeOid1Str.value
             val rightCommit = treeOid2Str.value
 
@@ -411,7 +424,7 @@ fun DiffScreen(
     val openAsDialogFilePath = rememberSaveable { mutableStateOf("")}
 //    val showOpenInEditor = StateUtil.getRememberSaveableState(initValue = false)
     if(showOpenAsDialog.value) {
-        OpenAsDialog(readOnly=readOnlyForOpenAsDialog,fileName=fileNameOnly.value, filePath = openAsDialogFilePath.value,
+        OpenAsDialog(readOnly=readOnlyForOpenAsDialog,fileName=getCurItem().getFileNameOnly(), filePath = openAsDialogFilePath.value,
             openSuccessCallback = {
                 //只有在worktree的diff页面才有必要显示弹窗，在index页面没必要显示，在diff commit的页面更没必要显示，因为若修改，肯定是修改worktree的文件，你在index页面就算重载也看不到修改后的内容，所以没必要提示
                 if(fromTo == Cons.gitDiffFromIndexToWorktree) {
@@ -453,7 +466,7 @@ fun DiffScreen(
             loadingOff = loadingOff,
             activityContext = activityContext,
             curRepo = curRepo,
-            fileRelativePath = relativePathUnderRepoState.value,
+            fileRelativePath = getCurItem().relativePath,
             repoId = repoId,
             onSuccess = {
                 if(isFileHistoryTreeToLocal) {
@@ -467,7 +480,7 @@ fun DiffScreen(
     if(pageRequest.value == PageRequest.showOpenAsDialog) {
         PageRequest.clearStateThenDoAct(pageRequest) {
 //            readOnlyForOpenAsDialog.value = FsUtils.isReadOnlyDir(fileFullPath.value)
-            openAsDialogFilePath.value = fileFullPath.value
+            openAsDialogFilePath.value = getCurItem().getFileFullPath(curRepo.value.fullSavePath)
             showOpenAsDialog.value=true
         }
     }
@@ -486,39 +499,40 @@ fun DiffScreen(
 
     if(pageRequest.value == PageRequest.showDetails) {
         PageRequest.clearStateThenDoAct(pageRequest) {
+            val suffix = "\n\n"
             val sb = StringBuilder()
             if(treeOid1Str.value != Cons.git_AllZeroOidStr || treeOid2Str.value != Cons.git_AllZeroOidStr) {
-                sb.append(activityContext.getString(R.string.comparing_label)+": ").appendLine("${Libgit2Helper.getShortOidStrByFull(treeOid1Str.value)}..${Libgit2Helper.getShortOidStrByFull(treeOid2Str.value)}").appendLine()
+                sb.append(activityContext.getString(R.string.comparing_label)+": ").append(Libgit2Helper.getLeftToRightDiffCommitsText(treeOid1Str.value, treeOid2Str.value, false)).append(suffix)
             }
 
-            sb.append(activityContext.getString(R.string.name)+": ").appendLine(fileNameOnly.value).appendLine()
-            if(isFileHistoryTreeToLocal){
-                sb.append(activityContext.getString(R.string.commit_id)+": ").appendLine(treeOid1Str.value).appendLine()
+            sb.append(activityContext.getString(R.string.name)+": ").append(getCurItem().getFileNameOnly()).append(suffix)
+            if(isFileHistoryTreeToLocal) {
+                sb.append(activityContext.getString(R.string.commit_id)+": ").append(treeOid1Str.value).append(suffix)
                 // at here: curItemIndex is on FileHistory, which item got clicked
-                sb.append(activityContext.getString(R.string.entry_id)+": ").appendLine(diffableItemList.value[curItemIndex.intValue].base_getEntryId()).appendLine()
-            }else if(isFileHistoryTreeToTree){
-                sb.append(activityContext.getString(R.string.commit_id)+": ").appendLine(treeOid2Str.value).appendLine()
+                sb.append(activityContext.getString(R.string.entry_id)+": ").append(diffableItemList.value[curItemIndex.intValue].entryId).append(suffix)
+            }else if(isFileHistoryTreeToTree) {
+                sb.append(activityContext.getString(R.string.commit_id)+": ").append(treeOid2Str.value).append(suffix)
                 // at here: curItemIndex is on FileHistory, which item got long pressed
-                sb.append(activityContext.getString(R.string.entry_id)+": ").appendLine(diffableItemList.value[curItemIndex.intValue].base_getEntryId()).appendLine()
+                sb.append(activityContext.getString(R.string.entry_id)+": ").append(diffableItemList.value[curItemIndex.intValue].entryId).append(suffix)
             }else {
-                sb.append(activityContext.getString(R.string.change_type)+": ").appendLine(changeType.value).appendLine()
+                sb.append(activityContext.getString(R.string.change_type)+": ").append(getCurItem().changeType).append(suffix)
             }
 
 
-            sb.append(activityContext.getString(R.string.path)+": ").appendLine(relativePathUnderRepoState.value).appendLine()
+            sb.append(activityContext.getString(R.string.path)+": ").append(getCurItem().relativePath).append(suffix)
 
-            sb.append(activityContext.getString(R.string.full_path)+": ").appendLine(fileFullPath.value)
+            val fileFullPath = getCurItem().getFileFullPath(curRepo.value.fullSavePath)
+            sb.append(activityContext.getString(R.string.full_path)+": ").append(fileFullPath).append(suffix)
 
-            val file = File(fileFullPath.value)
+            val file = File(fileFullPath)
             if(file.exists()) {
-                sb.appendLine()
                 if(file.isFile) {
-                    sb.append(activityContext.getString(R.string.size)+": ").appendLine(getHumanReadableSizeStr(file.length())).appendLine()
+                    sb.append(activityContext.getString(R.string.size)+": ").append(getHumanReadableSizeStr(file.length())).append(suffix)
                 }
-                sb.append(activityContext.getString(R.string.last_modified)+": ").appendLine(getFormattedLastModifiedTimeOfFile(file))
+                sb.append(activityContext.getString(R.string.last_modified)+": ").append(getFormattedLastModifiedTimeOfFile(file)).append(suffix)
             }
 
-            detailsString.value = sb.toString()
+            detailsString.value = sb.removeSuffix(suffix).toString()
             showDetailsDialog.value=true
         }
     }
@@ -558,12 +572,9 @@ fun DiffScreen(
 //    }.value
     // 向下滚动监听，结束
 
+    //newItem 可通过 newItemIndex 在 diffableList获得，这里传只是方便使用
     val switchItem = {newItem:DiffableItem, newItemIndex:Int->
-        changeType.value = newItem.base_getChangeType()
-        isSubmodule.value = newItem.base_getItemType() == Cons.gitItemTypeSubmodule
-        fileSize.longValue = newItem.base_getSizeInBytes()
-        relativePathUnderRepoState.value = newItem.base_getRelativePath()
-        treeOid1Str.value = newItem.base_getCommitId()
+        treeOid1Str.value = newItem.commitId
 
         curItemIndex.intValue = newItemIndex
 
@@ -598,15 +609,20 @@ fun DiffScreen(
     //由于有多个条目，状态也变成多个，统一遍历参数传来的那个列表，但每个条目的属性存到map里，以relative path为key查询
     // key=relativePath, value={key: line.key, value:CompareLinePairResult}
     //只要比较过，就一定有 CompareLinePairResult 这个对象，但不代表匹配成功，若 CompareLinePairResult 存的stringpartlist不为null，则匹配成功，否则匹配失败
-    val stringPairMapMap = mutableCustomStateMapOf(keyTag = stateKeyTag, keyName = "stringPairMapMap") { mapOf<String, ConcurrentMap<String, CompareLinePairResult>>() }
-    val comparePairBufferMap = mutableCustomStateMapOf(keyTag = stateKeyTag, keyName = "comparePairBufferMap") { mapOf<String, CompareLinePair>() }
-    val submoduleIsDirtyMap = mutableCustomStateMapOf(keyTag = stateKeyTag, keyName = "submoduleIsDirtyMap") { mapOf<String, Boolean>() }
-    val errMsgMap = mutableCustomStateMapOf(keyTag = stateKeyTag, keyName = "errMsgMap") { mapOf<String, String>() }
+//    val stringPairMapMap = mutableCustomStateMapOf(keyTag = stateKeyTag, keyName = "stringPairMapMap") { mapOf<String, ConcurrentMap<String, CompareLinePairResult>>() }
+//    val comparePairBufferMap = mutableCustomStateMapOf(keyTag = stateKeyTag, keyName = "comparePairBufferMap") { mapOf<String, CompareLinePair>() }
+//    val submoduleIsDirtyMap = mutableCustomStateMapOf(keyTag = stateKeyTag, keyName = "submoduleIsDirtyMap") { mapOf<String, Boolean>() }
+//    val errMsgMap = mutableCustomStateMapOf(keyTag = stateKeyTag, keyName = "errMsgMap") { mapOf<String, String>() }
 
     val reForEachDiffContent = { relativePath:String ->
-        diffItemMap.value.get(relativePath)?.let {
-            //改key触发刷新
-            diffItemMap.value.put(relativePath, it.copy(keyForRefresh = getShortUUID()))
+//        diffItemMap.value.get(relativePath)?.let {
+//           // 改key触发刷新
+//            diffItemMap.value.put(relativePath, it.copy(keyForRefresh = getShortUUID()))
+//        }
+
+        val index = diffableItemList.value.indexOfFirst { it.relativePath == relativePath }
+        if(index != -1) {
+            diffableItemList.value[index] = diffableItemList.value[index].copy()
         }
 
         Unit
@@ -634,13 +650,13 @@ fun DiffScreen(
                 ),
                 title = {
                     DiffScreenTitle(
-                        fileName = fileNameOnly.value,
-                        filePath = fileParentPathOnly.value,
-                        fileRelativePathUnderRepoState = relativePathUnderRepoState,
+                        fileName = getCurItem().getFileNameOnly(),
+                        filePath = getCurItem().getFileParentPathOnly(),
+                        fileRelativePathUnderRepoState = getCurItem().relativePath,
                         listState,
                         scope,
                         pageRequest,
-                        changeType.value,
+                        getCurItem().changeType,
                         readOnlyModeOn.value,
                         lastPosition
                     )
@@ -680,10 +696,10 @@ fun DiffScreen(
                     }else {
                         DiffPageActions(
                             fromTo=fromTo,
-                            changeType=changeType.value,
+                            changeType=getCurItem().changeType,
                             refreshPage = { changeStateTriggerRefreshPage(needRefresh) },
                             request = pageRequest,
-                            fileFullPath = fileFullPath.value,
+                            fileFullPath = getCurItem().getFileFullPath(curRepo.value.fullSavePath),
                             requireBetterMatchingForCompare = requireBetterMatchingForCompare,
                             readOnlyModeOn = readOnlyModeOn,
                             readOnlyModeSwitchable = readOnlySwitchable.value,
@@ -751,22 +767,22 @@ fun DiffScreen(
             ) {
                 val diffableItemList = diffableItemList.value
 
-                for((idx, diffableItem) in diffableItemList.withIndex()) {
+                for((idx, diffableItem) in diffableItemList.toList().withIndex()) {
                     if(isSingleMode && idx != curItemIndex.intValue) continue;
 
-                    val relativePath = diffableItem.base_getRelativePath()
-                    val mapKey = relativePath
+                    val relativePath = diffableItem.relativePath
+//                    val mapKey = relativePath
 
                     //没diff条目的话，可能正在loading？
                     //就算没diff条目，也改显示个标题，证明有这么个条目存在
-                    val diffItem = diffItemMap.value.get(mapKey)
+                    val diffItem = diffableItem.diffItemSaver
 
-                    val isSubmodule = diffableItem.base_getItemType() == Cons.gitItemTypeSubmodule
-                    val changeType = diffableItem.base_getChangeType()
-                    val errMsg = errMsgMap.value.get(mapKey) ?: ""
-                    val submoduleIsDirty = submoduleIsDirtyMap.value.get(mapKey) ?: false
-                    val loading = loadingMap.value.get(mapKey) ?: (diffItem == null)
-                    val loadChannel = loadingChannelMap.value.getOrPut(mapKey) { Channel() }
+                    val isSubmodule = diffableItem.itemType == Cons.gitItemTypeSubmodule
+                    val changeType = diffableItem.changeType
+                    val errMsg = diffableItem.errMsg
+                    val submoduleIsDirty = diffableItem.submoduleIsDirty
+                    val loading = diffableItem.loading
+                    val loadChannel = diffableItem.loadChannel
                     val fileChangeTypeIsModified = changeType == Cons.gitStatusModified
 
 
@@ -801,9 +817,9 @@ fun DiffScreen(
 
                     // {key: line.key, value:CompareLinePairResult}
                     //只要比较过，就一定有 CompareLinePairResult 这个对象，但不代表匹配成功，若 CompareLinePairResult 存的stringpartlist不为null，则匹配成功，否则匹配失败
-                    val indexStringPartListMapForComparePair = stringPairMapMap.value.getOrPut(mapKey) { ConcurrentMap() }
+                    val indexStringPartListMapForComparePair = diffableItem.stringPairMap
 //    val comparePair = mutableCustomStateOf(stateKeyTag, "comparePair") {CompareLinePair()}
-                    val comparePairBuffer = comparePairBufferMap.value.getOrPut(mapKey) { CompareLinePair() }
+                    val comparePairBuffer = diffableItem.compareLinePair
 
                     val isContentSizeOverLimit = diffItem?.isContentSizeOverLimit == true
                     //不支持预览二进制文件、超出限制大小、文件未修改
@@ -860,15 +876,21 @@ fun DiffScreen(
 
                         diffItem ?: continue;
 
+                        // item和index都是要切换的文件的，不是当前文件的
                         val closeChannelThenSwitchItem = { item: DiffableItem, index: Int ->
                             doJobThenOffLoading {
                                 // send close signal to old channel to abort loading
                                 try {
+                                    //注意：这里的代码是对的，没写错，这里因为要切换文件，所以关闭的是当前文件的loadChannel，
+                                    // 不是要切换的下一个文件的，所以这里不能关item的channel，
+                                    // 而是当前正在显示的这个对象的loadChannel
                                     loadChannel.close()
                                 } catch (_: Exception) {
                                 }
 
-                                loadingChannelMap.value.put(mapKey, Channel())
+                                //这里不用创建新 channel ，后面switch item时，会重载，重载时会创建新channel
+//                                loadingChannelMap.value.put(mapKey, Channel())
+//                                diffableItemList[index] = diffableItemList[index].copy()
 
 
                                 // switch new item
@@ -937,8 +959,10 @@ fun DiffScreen(
                             val fontSize = fontSize.value
                             val lastHunkIndex = diffItem.hunks.size - 1;
                             val lineNumSize = lineNumFontSize.intValue
-                            val getComparePairBuffer = { comparePairBufferMap.value.getOrPut(mapKey) {CompareLinePair()} }
-                            val setComparePairBuffer = { it:CompareLinePair -> comparePairBufferMap.value.put(mapKey , it); Unit }
+                            val getComparePairBuffer = { diffableItem.compareLinePair }
+                            val setComparePairBuffer = { newCompareLinePair:CompareLinePair ->
+                                diffableItemList[idx] = diffableItemList[idx].copy(compareLinePair = newCompareLinePair)
+                            }
 
                             val reForEachDiffContent = {reForEachDiffContent(relativePath)}
                             val enableSelectCompare = changeType == Cons.gitStatusModified && settings.diff.enableSelectCompare
@@ -1477,15 +1501,39 @@ fun DiffScreen(
         }
 
         //如果想只加载指定条目，可设置条目到sub列表，否则加载全部条目
-        val willLoadList = if(useSubList.value) subDiffableItemList.value else diffableItemList.value
+//        val willLoadList = if(useSubList.value) subDiffableItemList.value else diffableItemList.value
 
-        for((idx, item) in willLoadList.withIndex()) {
+        val subList = subDiffableItemList.value.toList()
+        subDiffableItemList.value.clear()  //确保用一次就清空，不然下次刷新还是只刷新这几个
+
+
+
+        val treeOid1Str = treeOid1Str.value
+        val treeOid2Str = treeOid2Str.value
+
+        //从数据库查询repo，记得用会自动调用close()的use代码块
+        val repoDb = dbContainer.repoRepository
+        val repoFromDb = repoDb.getById(repoId)
+        if(repoFromDb == null) {
+            MyLog.e(TAG, "#LaunchedEffect: query repo entity failed, repoId=$repoId")
+            return@LaunchedEffect
+        }
+
+        curRepo.value = repoFromDb
+
+        for((idx, item) in diffableItemList.value.toList().withIndex()) {
             if(isSingleMode && idx != curItemIndex.intValue) continue;
+            if(subList.isNotEmpty() && subList.contains(idx).not()) continue;
 
-            val relativePath = item.base_getRelativePath()
-            val isSubmodule = item.base_getItemType() == Cons.gitItemTypeSubmodule;
-            val mapKey = relativePath
-            val channelForThisJob = loadingChannelMap.value.getOrPut(mapKey) { Channel() }
+            //创建新条目前，把旧条目的loadChannel关了，否则如果之前的任务(加载diffItemSaver)未完成，不会取消，会继续执行
+            item.closeLoadChannel()
+            val item  = item.copyForLoading()  // loading时会改状态，所以需要创建个新的条目
+            diffableItemList.value[idx] = item  //更新 state list，不然页面可能不知道当前条目更改了，那你就只能继续看旧的了
+
+            val relativePath = item.relativePath
+            val isSubmodule = item.itemType == Cons.gitItemTypeSubmodule;
+//            val mapKey = relativePath
+            val channelForThisJob = item.loadChannel
 
     //      设置页面loading为true
     //      从数据库异步查询repo数据，调用diff方法获得diff内容，然后使用diff内容更新页面state
@@ -1493,32 +1541,25 @@ fun DiffScreen(
             doJobThenOffLoading launch@{
                 try {
                     // set loading
-                    loadingMap.value.put(mapKey, true)
+//                    loadingMap.value.put(mapKey, true)
+                    // reset before loading
 
                     // init
-                    val indexStringPartListMapForComparePair = stringPairMapMap.value.getOrPut(mapKey) { ConcurrentMap() }
-                    comparePairBufferMap.value.put(mapKey, CompareLinePair())
-                    submoduleIsDirtyMap.value.put(mapKey, false)
-                    errMsgMap.value.put(mapKey, "")
-                    indexStringPartListMapForComparePair.clear()
+//                    val indexStringPartListMapForComparePair = stringPairMapMap.value.getOrPut(mapKey) { ConcurrentMap() }
+//                    comparePairBufferMap.value.put(mapKey, CompareLinePair())
+//                    submoduleIsDirtyMap.value.put(mapKey, false)
+//                    errMsgMap.value.put(mapKey, "")
+//                    indexStringPartListMapForComparePair.clear()
 
-                    val treeOid1Str = treeOid1Str.value
-                    val treeOid2Str = treeOid2Str.value
-
-                    //从数据库查询repo，记得用会自动调用close()的use代码块
-                    val repoDb = dbContainer.repoRepository
-                    val repoFromDb = repoDb.getById(repoId)
 
                     if(channelForThisJob.tryReceive().isClosed) {
                         return@launch
                     }
 
-                    repoFromDb?:return@launch
 
-                    curRepo.value = repoFromDb
 
                     Repository.open(repoFromDb.fullSavePath).use { repo->
-                        if(fromTo == Cons.gitDiffFromTreeToTree || fromTo==Cons.gitDiffFileHistoryFromTreeToLocal || fromTo==Cons.gitDiffFileHistoryFromTreeToTree){  //从提交列表点击提交进入
+                        val diffItemSaver = if(fromTo == Cons.gitDiffFromTreeToTree || fromTo==Cons.gitDiffFileHistoryFromTreeToLocal || fromTo==Cons.gitDiffFileHistoryFromTreeToTree){  //从提交列表点击提交进入
                             val diffItemSaver = if(Libgit2Helper.CommitUtil.isLocalCommitHash(treeOid1Str) || Libgit2Helper.CommitUtil.isLocalCommitHash(treeOid2Str)) {  // tree to work tree, oid1 or oid2 is local, both local will cause err
                                 val reverse = Libgit2Helper.CommitUtil.isLocalCommitHash(treeOid1Str)
     //                                    println("1:$treeOid1Str, 2:$treeOid2Str, reverse=$reverse")
@@ -1556,7 +1597,8 @@ fun DiffScreen(
                                 return@launch
                             }
 
-                            diffItemMap.value.put(mapKey, diffItemSaver)
+//                            diffItemMap.value.put(mapKey, diffItemSaver)
+                            diffItemSaver
                         }else {  //indexToWorktree or headToIndex
                             val diffItemSaver = Libgit2Helper.getSingleDiffItem(
                                 repo,
@@ -1572,36 +1614,50 @@ fun DiffScreen(
                                 return@launch
                             }
 
-                            diffItemMap.value.put(mapKey, diffItemSaver)
+//                            diffItemMap.value.put(mapKey, diffItemSaver)
+                            diffItemSaver
                         }
 
                         // only when compare to work tree need check submodule is or is not dirty. because only non-dirty(clean) submodule can be stage to index, and can be commit to log.
-                        if(isDiffToLocal && isSubmodule) {
+                        val submdirty = if(isDiffToLocal && isSubmodule) {
                             val submdirty = Libgit2Helper.submoduleIsDirty(parentRepo = repo, submoduleName = relativePath)
 
                             if(channelForThisJob.tryReceive().isClosed) {
                                 return@launch
                             }
 
-                            submoduleIsDirtyMap.value.put(mapKey, submdirty)
+//                            submoduleIsDirtyMap.value.put(mapKey, submdirty)
+                            submdirty
+                        }else {
+                            false
+                        }
+
+                        //加载完毕，把加载的对象存上，更新loading状态，赋新实例给list，触发页面刷新
+                        diffableListLock.withLock {
+                            diffableItemList.value[idx] = item.copy(loading = false, submoduleIsDirty = submdirty, diffItemSaver = diffItemSaver)
                         }
 
                     }
 
-                    loadingMap.value.put(mapKey, false)
+//                    loadingMap.value.put(mapKey, false)
+
                 }catch (e:Exception) {
                     if(channelForThisJob.tryReceive().isClosed) {
                         return@launch
                     }
 
-                    val errMsg = errorStrRes + ":" + e.localizedMessage
+                    val errMsg = errorStrRes + ": " + e.localizedMessage
 
-                    errMsgMap.value.put(mapKey, errMsg)
-                    loadingMap.value.put(mapKey, false)
+//                    errMsgMap.value.put(mapKey, errMsg)
+//                    loadingMap.value.put(mapKey, false)
+                    diffableListLock.withLock {
+                        diffableItemList.value[idx] = item.copy(loading = false, errMsg = errMsg)
+                    }
+
 
     //                        Msg.requireShowLongDuration(errMsg)
                     createAndInsertError(repoId, errMsg)
-                    MyLog.e(TAG, "#LaunchedEffect err:"+e.stackTraceToString())
+                    MyLog.e(TAG, "#LaunchedEffect err: "+e.stackTraceToString())
                 }
 
             }
@@ -1617,11 +1673,8 @@ fun DiffScreen(
     DisposableEffect(Unit) {
         onDispose {
             doJobThenOffLoading {
-                loadingChannelMap.value.forEach { (k, v) ->
-                    v.close()
-                }
-
-                loadingChannelMap.value.clear()
+                //关闭所有的load channel
+                diffableItemList.value.forEach { it.closeLoadChannel() }
             }
         }
     }
@@ -1675,7 +1728,7 @@ private fun NaviButton(
     val noneText = stringResource(R.string.none)
 
     val getItemTextByIdx:(Int)->String = { idx:Int ->
-        diffableItemList.getOrNull(idx)?.let { if(isFileHistoryTreeToLocalOrTree) it.base_getShortCommitId() else it.base_getFileName() } ?: noneText
+        diffableItemList.getOrNull(idx)?.let { if(isFileHistoryTreeToLocalOrTree) it.shortCommitId else it.getFileNameOnly() } ?: noneText
     }
 
     Column(
@@ -1862,8 +1915,8 @@ private fun NaviButton(
 
                                 //下面处理页面相关的变量
 
-                                //从cl页面的列表移除条目
-                                SharedState.homeChangeList_itemList.remove(targetItem)
+                                //从cl页面的列表移除条目(根据仓库下相对路径移除）
+                                SharedState.homeChangeList_itemList.removeIf { it.relativePathUnderRepo == targetItem.relativePath }
                                 //cl页面设置索引有条目，因为上面stage成功了，所以大概率index至少有一个条目
                                 SharedState.homeChangeList_indexHasItem.value = true
                             }
@@ -1872,7 +1925,7 @@ private fun NaviButton(
                             Msg.requireShowLongDuration(errMsg)
                             createAndInsertError(curRepo.id, errMsg)
 
-                            MyLog.e(TAG, "stage item '${targetItem.base_getRelativePath()}' for repo '${curRepo.repoName}' err: ${e.stackTraceToString()}")
+                            MyLog.e(TAG, "stage item '${targetItem.relativePath}' for repo '${curRepo.repoName}' err: ${e.stackTraceToString()}")
                         }
                     }
                 }
