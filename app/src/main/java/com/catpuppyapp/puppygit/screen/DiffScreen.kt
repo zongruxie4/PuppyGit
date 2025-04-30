@@ -874,8 +874,6 @@ fun DiffScreen(
                         }
                     } else {  //文本类型且没超过大小且文件修改过，正常显示diff信息
 
-                        diffItem ?: continue;
-
                         // item和index都是要切换的文件的，不是当前文件的
                         val closeChannelThenSwitchItem = { item: DiffableItem, index: Int ->
                             doJobThenOffLoading {
