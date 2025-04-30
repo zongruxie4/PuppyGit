@@ -3964,7 +3964,7 @@ object Libgit2Helper {
     }
 
     //返回值 (nextOid, CommitDtoList)，nextOid就是CommitDtoList列表里最后一个元素之后的Oid，用来实现加载更多，如果不存在下一个元素，则是null，意味着已经遍历到提交树的最初提交了
-    fun getCommitList(
+    suspend fun getCommitList(
         repo: Repository,
         revwalk: Revwalk,
         initNext:Oid?,
@@ -4024,6 +4024,10 @@ object Libgit2Helper {
                 //check channel, may received terminal signal
                 if(++checkChannelCount > checkChannelFrequency) {
                     //TODO 这个检测可以改成 delay(1) ，然后再外部希望终止任务时，调用下job.cancel()即可，另外delay(1)的作用是响应cancel()使代码块抛出canceledException()
+                    //20250430：现在外部没靠job.cancel()取消任务，还是用的channel，不过加个delay没坏处，可响应compose 用的scope的取消“信号”，虽然我不确定compose销毁时是否会对scope.launch的任务调用cancel()。。。。。。
+                    delay(1)
+
+
                     val recv = loadChannel.tryReceive()
 //                        println("recv.toString(): ${recv.toString()}")
                     if(recv.isClosed){  // not failure meant success or closed
@@ -4056,7 +4060,7 @@ object Libgit2Helper {
      * @return 上一条目在树中的id，可能是null但仍有更多提交，因为如果提交中没有条目就会返回null，但不代表后续的提交中没有
      *
      */
-    fun getFileHistoryList(
+    suspend fun getFileHistoryList(
         repo: Repository,
         revwalk: Revwalk,
         initNext:Oid?,
@@ -4097,6 +4101,9 @@ object Libgit2Helper {
 //                    try {
                 //check channel, may received terminal signal
                 if(++checkChannelCount > checkChannelFrequency) {
+                    //响应job.cancel()或 （后面没测试过）compose销毁时对scope里执行的任务的取消请求
+                    delay(1)
+
                     val recv = loadChannel.tryReceive()
 //                        println("recv.toString(): ${recv.toString()}")
                     if(recv.isClosed){  // not failure meant success or closed
