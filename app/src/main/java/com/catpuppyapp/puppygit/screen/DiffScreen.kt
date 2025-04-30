@@ -748,6 +748,7 @@ fun DiffScreen(
 
         val loadingOnParent=loadingOn
         val loadingOffParent=loadingOff
+        val enableSelectCompare = enableSelectCompare.value;
 
         MySelectionContainer {
             LazyColumn(
@@ -940,7 +941,8 @@ fun DiffScreen(
                             }
                         } else {
                             val groupDiffContentByLineNum = groupDiffContentByLineNum.value
-                            val fileFullPath = File(curRepo.value.fullSavePath, relativePath).canonicalPath
+                            val itemFile = File(curRepo.value.fullSavePath, relativePath)
+                            val fileFullPath = itemFile.canonicalPath
 
                             val showOriginType = showOriginType.value
                             val showLineNum = showLineNum.value
@@ -953,7 +955,10 @@ fun DiffScreen(
                             }
 
                             val reForEachDiffContent = {reForEachDiffContent(relativePath)}
-                            val enableSelectCompare = changeType == Cons.gitStatusModified && settings.diff.enableSelectCompare
+                            // modified，并且设置项启用，则启用
+//                            val enableSelectCompare = changeType == Cons.gitStatusModified && enableSelectCompare.value;
+                            // 设置项启用则启用，不管文件类型，之前判断不是修改就禁用，但好像没必要啊，就算不是modified，也应该可选择比较，复制行之类的
+//                            val enableSelectCompare = enableSelectCompare.value;
 
                             //顶部padding，要把这个颜色弄得和当前行的类型（context/add/del）弄得一样才不违和，但处理起来有点麻烦，算了
 //                    item { Spacer(Modifier.height(3.dp)) }

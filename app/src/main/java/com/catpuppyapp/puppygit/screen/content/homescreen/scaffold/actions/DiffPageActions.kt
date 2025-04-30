@@ -15,6 +15,7 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
@@ -28,7 +29,6 @@ import com.catpuppyapp.puppygit.dev.proFeatureEnabled
 import com.catpuppyapp.puppygit.play.pro.R
 import com.catpuppyapp.puppygit.screen.functions.openFileWithInnerSubPageEditor
 import com.catpuppyapp.puppygit.settings.SettingsUtil
-import com.catpuppyapp.puppygit.utils.AppModel
 import com.catpuppyapp.puppygit.utils.Msg
 import com.catpuppyapp.puppygit.utils.MyLog
 import java.io.File
@@ -54,10 +54,12 @@ fun DiffPageActions(
     matchByWords:MutableState<Boolean>,
 ) {
 
-    val navController = AppModel.navController
+//    val navController = AppModel.navController
     val appContext= LocalContext.current
 
-    val fileChangeTypeIsModified = changeType == Cons.gitStatusModified
+    //这个变量相关的判断都没什么鸟用，都是禁用或启用都无所谓的，索性设为true了
+//    val fileChangeTypeIsModified = changeType == Cons.gitStatusModified
+    val fileChangeTypeIsModified = remember { true }
 
     val dropDownMenuExpendState = rememberSaveable { mutableStateOf(false) }
 
@@ -265,6 +267,7 @@ fun DiffPageActions(
             }
         )
 
+        //非modified也可以开关这些选项，就是可能没什么卵用，但如果用户手动选择两个行比较，就有卵用了
         if (fileChangeTypeIsModified && proFeatureEnabled(detailsDiffTestPassed)){
             DropdownMenuItem(
                 text = { Text(stringResource(R.string.better_compare)) },
