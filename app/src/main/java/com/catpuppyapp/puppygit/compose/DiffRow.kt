@@ -19,7 +19,7 @@ import androidx.compose.material3.TextField
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.platform.ClipboardManager
@@ -59,14 +59,20 @@ import com.catpuppyapp.puppygit.utils.compare.result.IndexStringPart
 import com.catpuppyapp.puppygit.utils.createAndInsertError
 import com.catpuppyapp.puppygit.utils.doJobThenOffLoading
 import com.catpuppyapp.puppygit.utils.replaceStringResList
+import com.catpuppyapp.puppygit.utils.state.mutableCustomStateOf
 import com.github.git24j.core.Diff
 
 
 /**
+ * 注意：这个组件会在LazyColumn的item里使用，所以不能用rememberSaveable，
+ * 否则有概率崩溃，报 "java.lang.ClassCastException" ，是个bug，参见：https://issuetracker.google.com/issues/181880855
+ *
+ *
  * @param stringPartList 如果用不到，可传null或使用默认值（null）
  */
 @Composable
 fun DiffRow (
+    stateKeyTag:String,
     index:Int,
     line:PuppyLine,
     stringPartList:List<IndexStringPart>? = null,
@@ -102,21 +108,22 @@ fun DiffRow (
     val lineClickable = enableLineActions || enableSelectCompare
 
 
-    val showEditLineDialog = rememberSaveable { mutableStateOf(false) }
-    val showRestoreLineDialog = rememberSaveable { mutableStateOf(false) }
+    //不能用默认的rememberSaveable，但能用重写了saver的
+    val showEditLineDialog = mutableCustomStateOf(keyTag = stateKeyTag, keyName = "showEditLineDialog") { false }
+    val showRestoreLineDialog = mutableCustomStateOf(keyTag = stateKeyTag, keyName = "showRestoreLineDialog") { false }
 
 //    println("diffrow: $stringPartList")
 
     val view = LocalView.current
     val density = LocalDensity.current
 
-    val isKeyboardVisible = rememberSaveable { mutableStateOf(false) }
+    val isKeyboardVisible = remember { mutableStateOf(false) }
     //indicate keyboard covered component
-    val isKeyboardCoveredComponent = rememberSaveable { mutableStateOf(false) }
+    val isKeyboardCoveredComponent = remember { mutableStateOf(false) }
     // which component expect adjust heghit or padding when softkeyboard shown
-    val componentHeight = rememberSaveable { mutableIntStateOf(0) }
+    val componentHeight = remember { mutableIntStateOf(0) }
     // the padding value when softkeyboard shown
-    val keyboardPaddingDp = rememberSaveable { mutableIntStateOf(0) }
+    val keyboardPaddingDp = remember { mutableIntStateOf(0) }
 
     // this code gen by chat-gpt, wow
     // except: this code may not work when use use a float keyboard or softkeyboard with single-hand mode
@@ -177,13 +184,14 @@ fun DiffRow (
     }
 
 
-    val lineContentOfEditLineDialog = rememberSaveable { mutableStateOf("") }
-    val lineNumOfEditLineDialog = rememberSaveable { mutableStateOf(LineNum.invalidButNotEof) }  // this is line number not index, should start from 1
-    val lineNumStrOfEditLineDialog = rememberSaveable { mutableStateOf("") }  // this is line number not index, should start from 1
+    val lineContentOfEditLineDialog = mutableCustomStateOf(keyTag = stateKeyTag, keyName = "lineContentOfEditLineDialog") { "" }
+    val lineNumOfEditLineDialog = mutableCustomStateOf(keyTag = stateKeyTag, keyName = "lineNumOfEditLineDialog") { LineNum.invalidButNotEof }  // this is line number not index, should start from 1
+    val lineNumStrOfEditLineDialog = mutableCustomStateOf(keyTag = stateKeyTag, keyName = "lineNumStrOfEditLineDialog") { "" }  // this is line number not index, should start from 1
 
-    val truePrependFalseAppendNullReplace = rememberSaveable { mutableStateOf<Boolean?>(null) }
-    val showDelLineDialog = rememberSaveable { mutableStateOf(false) }
-    val trueRestoreFalseReplace = rememberSaveable { mutableStateOf(false) }
+    //因为自定义存储器会把数据存到mutableState里，所以Cache里存的实际不是null，因此可以存null值
+    val truePrependFalseAppendNullReplace = mutableCustomStateOf<Boolean?>(keyTag = stateKeyTag, keyName = "truePrependFalseAppendNullReplace") { null }
+    val showDelLineDialog = mutableCustomStateOf(keyTag = stateKeyTag, keyName = "showDelLineDialog") { false }
+    val trueRestoreFalseReplace = mutableCustomStateOf(keyTag = stateKeyTag, keyName = "trueRestoreFalseReplace") { false }
 
     val initEditLineDialog = {content:String, lineNum:Int, prependOrApendOrReplace:Boolean? ->
         if(lineNum == LineNum.invalidButNotEof){
@@ -439,7 +447,7 @@ fun DiffRow (
         }
     }
 
-    val expandedMenu = rememberSaveable { mutableStateOf(false) }
+    val expandedMenu = mutableCustomStateOf(keyTag = stateKeyTag, keyName = "expandedMenu") { false }
 
 
     //用来实现设置行为no matched和all matched
