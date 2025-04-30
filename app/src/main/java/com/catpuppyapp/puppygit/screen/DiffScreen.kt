@@ -1479,131 +1479,132 @@ fun DiffScreen(
         //如果想只加载指定条目，可设置条目到sub列表，否则加载全部条目
         val willLoadList = if(useSubList.value) subDiffableItemList.value else diffableItemList.value
 
-        willLoadList.forEach { item ->
+        for((idx, item) in willLoadList.withIndex()) {
+            if(isSingleMode && idx != curItemIndex.intValue) continue;
 
             val relativePath = item.base_getRelativePath()
             val isSubmodule = item.base_getItemType() == Cons.gitItemTypeSubmodule;
             val mapKey = relativePath
             val channelForThisJob = loadingChannelMap.value.getOrPut(mapKey) { Channel() }
 
-        //      设置页面loading为true
-        //      从数据库异步查询repo数据，调用diff方法获得diff内容，然后使用diff内容更新页面state
-        //      最后设置页面loading 为false
-        doJobThenOffLoading launch@{
-            try {
-                // set loading
-                loadingMap.value.put(mapKey, true)
+    //      设置页面loading为true
+    //      从数据库异步查询repo数据，调用diff方法获得diff内容，然后使用diff内容更新页面state
+    //      最后设置页面loading 为false
+            doJobThenOffLoading launch@{
+                try {
+                    // set loading
+                    loadingMap.value.put(mapKey, true)
 
-                // init
-                val indexStringPartListMapForComparePair = stringPairMapMap.value.getOrPut(mapKey) { ConcurrentMap() }
-                comparePairBufferMap.value.put(mapKey, CompareLinePair())
-                submoduleIsDirtyMap.value.put(mapKey, false)
-                errMsgMap.value.put(mapKey, "")
-                indexStringPartListMapForComparePair.clear()
+                    // init
+                    val indexStringPartListMapForComparePair = stringPairMapMap.value.getOrPut(mapKey) { ConcurrentMap() }
+                    comparePairBufferMap.value.put(mapKey, CompareLinePair())
+                    submoduleIsDirtyMap.value.put(mapKey, false)
+                    errMsgMap.value.put(mapKey, "")
+                    indexStringPartListMapForComparePair.clear()
 
-                val treeOid1Str = treeOid1Str.value
-                val treeOid2Str = treeOid2Str.value
+                    val treeOid1Str = treeOid1Str.value
+                    val treeOid2Str = treeOid2Str.value
 
-                //从数据库查询repo，记得用会自动调用close()的use代码块
-                val repoDb = dbContainer.repoRepository
-                val repoFromDb = repoDb.getById(repoId)
+                    //从数据库查询repo，记得用会自动调用close()的use代码块
+                    val repoDb = dbContainer.repoRepository
+                    val repoFromDb = repoDb.getById(repoId)
 
-                if(channelForThisJob.tryReceive().isClosed) {
-                    return@launch
-                }
+                    if(channelForThisJob.tryReceive().isClosed) {
+                        return@launch
+                    }
 
-                repoFromDb?:return@launch
+                    repoFromDb?:return@launch
 
-                curRepo.value = repoFromDb
+                    curRepo.value = repoFromDb
 
-                Repository.open(repoFromDb.fullSavePath).use { repo->
-                    if(fromTo == Cons.gitDiffFromTreeToTree || fromTo==Cons.gitDiffFileHistoryFromTreeToLocal || fromTo==Cons.gitDiffFileHistoryFromTreeToTree){  //从提交列表点击提交进入
-                        val diffItemSaver = if(Libgit2Helper.CommitUtil.isLocalCommitHash(treeOid1Str) || Libgit2Helper.CommitUtil.isLocalCommitHash(treeOid2Str)) {  // tree to work tree, oid1 or oid2 is local, both local will cause err
-                            val reverse = Libgit2Helper.CommitUtil.isLocalCommitHash(treeOid1Str)
-//                                    println("1:$treeOid1Str, 2:$treeOid2Str, reverse=$reverse")
-                            val tree1 = Libgit2Helper.resolveTree(repo, if(reverse) treeOid2Str else treeOid1Str)
-                            Libgit2Helper.getSingleDiffItem(
+                    Repository.open(repoFromDb.fullSavePath).use { repo->
+                        if(fromTo == Cons.gitDiffFromTreeToTree || fromTo==Cons.gitDiffFileHistoryFromTreeToLocal || fromTo==Cons.gitDiffFileHistoryFromTreeToTree){  //从提交列表点击提交进入
+                            val diffItemSaver = if(Libgit2Helper.CommitUtil.isLocalCommitHash(treeOid1Str) || Libgit2Helper.CommitUtil.isLocalCommitHash(treeOid2Str)) {  // tree to work tree, oid1 or oid2 is local, both local will cause err
+                                val reverse = Libgit2Helper.CommitUtil.isLocalCommitHash(treeOid1Str)
+    //                                    println("1:$treeOid1Str, 2:$treeOid2Str, reverse=$reverse")
+                                val tree1 = Libgit2Helper.resolveTree(repo, if(reverse) treeOid2Str else treeOid1Str)
+                                Libgit2Helper.getSingleDiffItem(
+                                    repo,
+                                    relativePath,
+                                    fromTo,
+                                    tree1,
+                                    null,
+                                    reverse=reverse,
+                                    treeToWorkTree = true,
+                                    maxSizeLimit = settings.diff.diffContentSizeMaxLimit,
+                                    loadChannel = channelForThisJob,
+                                    checkChannelLinesLimit = settings.diff.loadDiffContentCheckAbortSignalLines,
+                                    checkChannelSizeLimit = settings.diff.loadDiffContentCheckAbortSignalSize,
+                                )
+                            }else { // tree to tree, no local(worktree)
+                                val tree1 = Libgit2Helper.resolveTree(repo, treeOid1Str)
+                                val tree2 = Libgit2Helper.resolveTree(repo, treeOid2Str)
+                                Libgit2Helper.getSingleDiffItem(
+                                    repo,
+                                    relativePath,
+                                    fromTo,
+                                    tree1,
+                                    tree2,
+                                    maxSizeLimit = settings.diff.diffContentSizeMaxLimit,
+                                    loadChannel = channelForThisJob,
+                                    checkChannelLinesLimit = settings.diff.loadDiffContentCheckAbortSignalLines,
+                                    checkChannelSizeLimit = settings.diff.loadDiffContentCheckAbortSignalSize,
+                                )
+                            }
+
+                            if(channelForThisJob.tryReceive().isClosed) {
+                                return@launch
+                            }
+
+                            diffItemMap.value.put(mapKey, diffItemSaver)
+                        }else {  //indexToWorktree or headToIndex
+                            val diffItemSaver = Libgit2Helper.getSingleDiffItem(
                                 repo,
                                 relativePath,
                                 fromTo,
-                                tree1,
-                                null,
-                                reverse=reverse,
-                                treeToWorkTree = true,
                                 maxSizeLimit = settings.diff.diffContentSizeMaxLimit,
                                 loadChannel = channelForThisJob,
                                 checkChannelLinesLimit = settings.diff.loadDiffContentCheckAbortSignalLines,
                                 checkChannelSizeLimit = settings.diff.loadDiffContentCheckAbortSignalSize,
                             )
-                        }else { // tree to tree, no local(worktree)
-                            val tree1 = Libgit2Helper.resolveTree(repo, treeOid1Str)
-                            val tree2 = Libgit2Helper.resolveTree(repo, treeOid2Str)
-                            Libgit2Helper.getSingleDiffItem(
-                                repo,
-                                relativePath,
-                                fromTo,
-                                tree1,
-                                tree2,
-                                maxSizeLimit = settings.diff.diffContentSizeMaxLimit,
-                                loadChannel = channelForThisJob,
-                                checkChannelLinesLimit = settings.diff.loadDiffContentCheckAbortSignalLines,
-                                checkChannelSizeLimit = settings.diff.loadDiffContentCheckAbortSignalSize,
-                            )
+
+                            if(channelForThisJob.tryReceive().isClosed) {
+                                return@launch
+                            }
+
+                            diffItemMap.value.put(mapKey, diffItemSaver)
                         }
 
-                        if(channelForThisJob.tryReceive().isClosed) {
-                            return@launch
+                        // only when compare to work tree need check submodule is or is not dirty. because only non-dirty(clean) submodule can be stage to index, and can be commit to log.
+                        if(isDiffToLocal && isSubmodule) {
+                            val submdirty = Libgit2Helper.submoduleIsDirty(parentRepo = repo, submoduleName = relativePath)
+
+                            if(channelForThisJob.tryReceive().isClosed) {
+                                return@launch
+                            }
+
+                            submoduleIsDirtyMap.value.put(mapKey, submdirty)
                         }
 
-                        diffItemMap.value.put(mapKey, diffItemSaver)
-                    }else {  //indexToWorktree or headToIndex
-                        val diffItemSaver = Libgit2Helper.getSingleDiffItem(
-                            repo,
-                            relativePath,
-                            fromTo,
-                            maxSizeLimit = settings.diff.diffContentSizeMaxLimit,
-                            loadChannel = channelForThisJob,
-                            checkChannelLinesLimit = settings.diff.loadDiffContentCheckAbortSignalLines,
-                            checkChannelSizeLimit = settings.diff.loadDiffContentCheckAbortSignalSize,
-                        )
-
-                        if(channelForThisJob.tryReceive().isClosed) {
-                            return@launch
-                        }
-
-                        diffItemMap.value.put(mapKey, diffItemSaver)
                     }
 
-                    // only when compare to work tree need check submodule is or is not dirty. because only non-dirty(clean) submodule can be stage to index, and can be commit to log.
-                    if(isDiffToLocal && isSubmodule) {
-                        val submdirty = Libgit2Helper.submoduleIsDirty(parentRepo = repo, submoduleName = relativePath)
-
-                        if(channelForThisJob.tryReceive().isClosed) {
-                            return@launch
-                        }
-
-                        submoduleIsDirtyMap.value.put(mapKey, submdirty)
+                    loadingMap.value.put(mapKey, false)
+                }catch (e:Exception) {
+                    if(channelForThisJob.tryReceive().isClosed) {
+                        return@launch
                     }
 
+                    val errMsg = errorStrRes + ":" + e.localizedMessage
+
+                    errMsgMap.value.put(mapKey, errMsg)
+                    loadingMap.value.put(mapKey, false)
+
+    //                        Msg.requireShowLongDuration(errMsg)
+                    createAndInsertError(repoId, errMsg)
+                    MyLog.e(TAG, "#LaunchedEffect err:"+e.stackTraceToString())
                 }
 
-                loadingMap.value.put(mapKey, false)
-            }catch (e:Exception) {
-                if(channelForThisJob.tryReceive().isClosed) {
-                    return@launch
-                }
-
-                val errMsg = errorStrRes + ":" + e.localizedMessage
-
-                errMsgMap.value.put(mapKey, errMsg)
-                loadingMap.value.put(mapKey, false)
-
-//                        Msg.requireShowLongDuration(errMsg)
-                createAndInsertError(repoId, errMsg)
-                MyLog.e(TAG, "#LaunchedEffect err:"+e.stackTraceToString())
             }
-
-        }
         }
 
 
