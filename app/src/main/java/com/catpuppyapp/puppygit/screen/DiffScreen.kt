@@ -12,6 +12,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.text.selection.DisableSelection
@@ -777,15 +778,17 @@ fun DiffScreen(
                             val switchVisible = {
                                 diffableItemList[idx] = diffableItem.copy(visible = visible.not())
                             }
-                            // 貌似这里不能用rememberSaveable，会崩
-                            // 不知道为啥，无效，这逼玩意
+
+                            HorizontalDivider()
+
+                            // LazyColumn里不能用rememberSaveable，会崩，用remember也有可能会不触发刷新，除非改外部的list触发遍历
                             Row(
                                 modifier = Modifier
+                                    .clickable { switchVisible() }
                                     .background(MaterialTheme.colorScheme.surfaceDim)
                                     .fillMaxWidth()
 //                                        .padding(horizontal = 20.dp, vertical = 10.dp)
                                     .padding(10.dp)
-                                    .clickable { switchVisible() }
                                 ,
                                 horizontalArrangement = Arrangement.SpaceBetween,
                                 verticalAlignment = Alignment.CenterVertically,
@@ -793,7 +796,11 @@ fun DiffScreen(
                                 Row(
                                     verticalAlignment = Alignment.CenterVertically,
                                 ) {
+                                    val iconSize = 26.dp
+                                    val pressedCircleSize = 34.dp
                                     InLineIcon(
+                                        iconModifier = Modifier.size(iconSize),
+                                        pressedCircleSize = pressedCircleSize,
                                         icon = if(visible) Icons.Filled.ArrowDropDown else Icons.AutoMirrored.Filled.ArrowRight ,
                                         tooltipText = "",
                                         onClick = switchVisible
@@ -807,6 +814,8 @@ fun DiffScreen(
                                     )
                                 }
                             }
+
+                            HorizontalDivider()
                         }
                     }
 
@@ -1480,7 +1489,7 @@ fun DiffScreen(
                                 }
 
                                 item {
-                                    //每个hunk之间显示个分割线
+                                //每个hunk之间显示个分割线，本来想弄成最后一个不显示，但判断索引不太好使，因为有的在上面就return了，索性都显示算了
                                     HorizontalDivider(
                                         modifier = Modifier.padding(vertical = 30.dp),
                                         thickness = 3.dp
@@ -1489,11 +1498,14 @@ fun DiffScreen(
                             }
                         }
 
+                        item {
+                            Spacer(Modifier.height(50.dp))
+                        }
+
+                        //切换上下文件和执行操作的按钮
                         if(isSingleMode) {
                             item {
                                 DisableSelection {
-                                    Spacer(Modifier.height(50.dp))
-
                                     NaviButton(
                                         stateKeyTag = stateKeyTag,
 
@@ -1508,9 +1520,12 @@ fun DiffScreen(
                                         pageRequest = pageRequest,
                                     )
 
-                                    Spacer(Modifier.height(100.dp))
                                 }
                             }
+                        }
+
+                        item {
+                            Spacer(Modifier.height(100.dp))
                         }
                     }
                 }
