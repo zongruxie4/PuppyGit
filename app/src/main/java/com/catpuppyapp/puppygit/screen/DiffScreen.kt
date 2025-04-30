@@ -792,12 +792,15 @@ fun DiffScreen(
 
                     //这header得调一下，左边加个箭头点击能收起
                     if (showMyFileHeader) {
+                        item{
+                            HorizontalDivider()
+                        }
+
                         item {
                             val switchVisible = {
                                 diffableItemList[idx] = diffableItem.copy(visible = visible.not())
                             }
 
-                            HorizontalDivider()
 
                             // LazyColumn里不能用rememberSaveable，会崩，用remember也有可能会不触发刷新，除非改外部的list触发遍历
                             Row(
@@ -836,6 +839,9 @@ fun DiffScreen(
                                 }
                             }
 
+                        }
+
+                        item{
                             HorizontalDivider()
                         }
                     }
