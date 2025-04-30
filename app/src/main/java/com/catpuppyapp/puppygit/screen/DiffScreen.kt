@@ -30,8 +30,6 @@ import androidx.compose.runtime.MutableIntState
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.mutableIntStateOf
-import androidx.compose.runtime.mutableLongStateOf
-import androidx.compose.runtime.mutableStateMapOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
@@ -69,10 +67,7 @@ import com.catpuppyapp.puppygit.dev.FlagFileName
 import com.catpuppyapp.puppygit.dev.detailsDiffTestPassed
 import com.catpuppyapp.puppygit.dev.proFeatureEnabled
 import com.catpuppyapp.puppygit.git.CompareLinePair
-import com.catpuppyapp.puppygit.git.CompareLinePairResult
-import com.catpuppyapp.puppygit.git.DiffItemSaver
 import com.catpuppyapp.puppygit.git.DiffableItem
-import com.catpuppyapp.puppygit.git.FileHistoryDto
 import com.catpuppyapp.puppygit.git.PuppyHunkAndLines
 import com.catpuppyapp.puppygit.git.PuppyLine
 import com.catpuppyapp.puppygit.git.StatusTypeEntrySaver
@@ -99,22 +94,17 @@ import com.catpuppyapp.puppygit.utils.compare.param.StringCompareParam
 import com.catpuppyapp.puppygit.utils.compare.result.IndexStringPart
 import com.catpuppyapp.puppygit.utils.createAndInsertError
 import com.catpuppyapp.puppygit.utils.doJobThenOffLoading
-import com.catpuppyapp.puppygit.utils.getFileNameFromCanonicalPath
 import com.catpuppyapp.puppygit.utils.getFormattedLastModifiedTimeOfFile
 import com.catpuppyapp.puppygit.utils.getHumanReadableSizeStr
-import com.catpuppyapp.puppygit.utils.getParentPathEndsWithSeparator
 import com.catpuppyapp.puppygit.utils.getRequestDataByState
-import com.catpuppyapp.puppygit.utils.getShortUUID
 import com.catpuppyapp.puppygit.utils.isGoodIndexForList
 import com.catpuppyapp.puppygit.utils.replaceStringResList
 import com.catpuppyapp.puppygit.utils.state.mutableCustomStateListOf
-import com.catpuppyapp.puppygit.utils.state.mutableCustomStateMapOf
 import com.catpuppyapp.puppygit.utils.state.mutableCustomStateOf
 import com.catpuppyapp.puppygit.utils.withMainContext
 import com.github.git24j.core.Diff
 import com.github.git24j.core.Repository
-import io.ktor.util.collections.ConcurrentMap
-import kotlinx.coroutines.channels.Channel
+import kotlinx.coroutines.launch
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 import java.io.File
@@ -1532,11 +1522,16 @@ fun DiffScreen(
             val isSubmodule = item.itemType == Cons.gitItemTypeSubmodule;
 //            val mapKey = relativePath
             val channelForThisJob = item.loadChannel
+            //这里不能用doJobThenOffLoading，会导致app崩溃
+            scope.launch {
+//                delay(5000) //scope.launch不会导致App界面线程阻塞
+//                throw RuntimeException("abc")  // scope.lauch必须妥善处理异常否则会导致App界面线程崩溃
 
     //      设置页面loading为true
     //      从数据库异步查询repo数据，调用diff方法获得diff内容，然后使用diff内容更新页面state
     //      最后设置页面loading 为false
-            doJobThenOffLoading launch@{
+                //这里用这个会导致app随机崩溃，报错："java.lang.ClassCastException: 包名.MainActivity cannot be cast to androidx.compose.runtime.saveable.SaveableHolder"
+//            doJobThenOffLoading launch@{
                 try {
                     // set loading
 //                    loadingMap.value.put(mapKey, true)
