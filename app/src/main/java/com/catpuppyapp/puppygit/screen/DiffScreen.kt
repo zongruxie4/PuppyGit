@@ -792,15 +792,16 @@ fun DiffScreen(
 
                     //这header得调一下，左边加个箭头点击能收起
                     if (showMyFileHeader) {
+
+                        val switchVisible = {
+                            diffableItemList[idx] = diffableItem.copy(visible = visible.not())
+                        }
+
                         item{
                             HorizontalDivider()
                         }
 
                         item {
-                            val switchVisible = {
-                                diffableItemList[idx] = diffableItem.copy(visible = visible.not())
-                            }
-
 
                             // LazyColumn里不能用rememberSaveable，会崩，用remember也有可能会不触发刷新，除非改外部的list触发遍历
                             Row(
@@ -828,6 +829,7 @@ fun DiffScreen(
                                         onClick = switchVisible
                                     )
 
+                                    把这个标题处理下，首先把文件名和添加删除了多少行分开，然后，文件名根据changeType决定颜色，添加和删除则是添加为绿色，删除为红色
                                     Text(
                                         text = diffItem.getSummary(),
 //                                        fontWeight = FontWeight.Light,
@@ -1993,6 +1995,7 @@ private fun NaviButton(
                             doActThenSwitchItemOrNaviBack(targetIndex) {
                                 // stage 条目
                                 Repository.open(curRepo.fullSavePath).use { repo ->
+                                    这里，有问题，检查所有调用as的地方，不要强转类型，检查使用了StatusTypeEntrySaver的哪些参数，放到父类里，然后父类里写个to子类的函数替换所有as强转类型的地方
                                     Libgit2Helper.stageStatusEntryAndWriteToDisk(repo, listOf(targetItem as StatusTypeEntrySaver))
                                 }
 
