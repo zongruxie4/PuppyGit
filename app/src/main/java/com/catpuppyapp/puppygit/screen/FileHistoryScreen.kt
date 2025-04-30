@@ -118,6 +118,7 @@ import com.github.git24j.core.Oid
 import com.github.git24j.core.Repository
 import com.github.git24j.core.Revwalk
 import kotlinx.coroutines.channels.Channel
+import kotlinx.coroutines.launch
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 
@@ -278,7 +279,7 @@ fun FileHistoryScreen(
 
         //加载更多
         //这个用scope，似乎会随页面释放而取消任务？不知道是否需要我检查CancelException？
-        doJobThenOffLoading job@{
+        scope.launch job@{
             loadLock.value.withLock {
                 loadMoreLoading.value = true
                 loadMoreText.value = activityContext.getString(R.string.loading)
