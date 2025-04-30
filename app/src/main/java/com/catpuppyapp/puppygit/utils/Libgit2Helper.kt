@@ -1244,7 +1244,7 @@ object Libgit2Helper {
 
     //x 加了个获取diff条目列表的函数，和这个配合即可，不用改这个函数了) 废案)写个获取一个列表的diffitem的方法，返回一个List<DiffItem>，然后把这个single方法内部调用列表方法，只不过列表里只设置一个条目，写单个和列表逻辑都一样，但列表更通用
     //获取某个文件新增多少行，删除多少行，以及新增和删除行的内容和行号
-    fun getSingleDiffItem(
+    suspend fun getSingleDiffItem(
         repo:Repository, relativePathUnderRepo:String, fromTo:String,
         // changeType:String, //changeType 用来判断要diff还是patch，如果是修改类型，用patch；若是新增和删除，用diff？好像不用，都用patch就行？patch貌似只要是改变的文件，都能处理，无论新增删除修改，但如果是没修改的就返回null
         tree1:Tree?=null, tree2:Tree?=null,
@@ -1396,6 +1396,9 @@ object Libgit2Helper {
             for(j in 0 until lineCnt) {
                 if(loadChannel!=null) {
                     if(++checkChannelLinesCount > checkChannelLinesLimit || checkChannelContentSizeCount>checkChannelSizeLimit) {
+                        // for make `job.cancel()` work
+                        delay(1)
+
                         val recv = loadChannel.tryReceive()
                         if(recv.isClosed){  // not failure meant success or closed
 //                                if(!recv.isClosed) {

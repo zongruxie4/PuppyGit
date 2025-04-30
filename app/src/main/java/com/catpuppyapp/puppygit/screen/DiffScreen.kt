@@ -802,7 +802,7 @@ fun DiffScreen(
                         }
 
                         item {
-
+                            把这个抽成 infobar，footer用同样的样式写
                             // LazyColumn里不能用rememberSaveable，会崩，用remember也有可能会不触发刷新，除非改外部的list触发遍历
                             Row(
                                 modifier = Modifier
