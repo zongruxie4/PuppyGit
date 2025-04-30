@@ -448,6 +448,56 @@ fun DiffScreen(
         }
     }
 
+    val initDetailsDialog = { itemIdx:Int ->
+        val curItem = diffableItemList.value.getOrNull(itemIdx)
+
+        val suffix = "\n\n"
+        val sb = StringBuilder()
+        if(treeOid1Str.value != Cons.git_AllZeroOidStr || treeOid2Str.value != Cons.git_AllZeroOidStr) {
+            sb.append(activityContext.getString(R.string.comparing_label)+": ").append(Libgit2Helper.getLeftToRightDiffCommitsText(treeOid1Str.value, treeOid2Str.value, false)).append(suffix)
+        }
+
+        //有效则显示条目信息，否则仅显示粗略信息
+        if(curItem != null) {
+            sb.append(activityContext.getString(R.string.name)+": ").append(curItem.getFileNameOnly()).append(suffix)
+
+
+            if(isFileHistoryTreeToLocal || isFileHistoryTreeToTree) {
+                // if isFileHistoryTreeToLocal==true: curItemIndex is on FileHistory, which item got clicked , else curItemIndex is on FileHistory, which got long pressed
+                //如果为true，则是从file history页面点击条目进来的，这时是 curItemIndex对应的条目 to local，所以当前提交是左边的提交也就是treeOid1Str；
+                // 否则，是长按file history通过diff to prev进来的，这时，实际上是 prev to curItemIndex对应的条目，所以当前提交是右边的提交，即treeOid2Str
+                val commitId = if(isFileHistoryTreeToLocal) treeOid1Str.value else treeOid2Str.value
+                sb.append(activityContext.getString(R.string.commit_id)+": ").append(commitId).append(suffix)
+                sb.append(activityContext.getString(R.string.entry_id)+": ").append(curItem.entryId).append(suffix)
+            }else {  // 从changelist进到diff页面
+                sb.append(activityContext.getString(R.string.change_type)+": ").append(curItem.changeType).append(suffix)
+            }
+
+
+            sb.append(activityContext.getString(R.string.path)+": ").append(curItem.relativePath).append(suffix)
+
+            val fileFullPath = curItem.getFileFullPath(curRepo.value.fullSavePath)
+            sb.append(activityContext.getString(R.string.full_path)+": ").append(fileFullPath).append(suffix)
+
+            val file = File(fileFullPath)
+            if(file.exists()) {
+                if(file.isFile) {
+                    sb.append(activityContext.getString(R.string.size)+": ").append(getHumanReadableSizeStr(file.length())).append(suffix)
+                }
+
+                sb.append(activityContext.getString(R.string.last_modified)+": ").append(getFormattedLastModifiedTimeOfFile(file)).append(suffix)
+            }
+
+        }
+
+
+
+        detailsString.value = sb.removeSuffix(suffix).toString()
+
+        showDetailsDialog.value=true
+    }
+
+
     val showRestoreDialog = rememberSaveable { mutableStateOf(false)}
     if(showRestoreDialog.value) {
         FileHistoryRestoreDialog(
@@ -493,43 +543,11 @@ fun DiffScreen(
         }
     }
 
+    //点击title显示详情会请求这里，本页面内部显示详情直接调init，不走这里
     if(pageRequest.value == PageRequest.showDetails) {
         PageRequest.clearStateThenDoAct(pageRequest) {
-            val suffix = "\n\n"
-            val sb = StringBuilder()
-            if(treeOid1Str.value != Cons.git_AllZeroOidStr || treeOid2Str.value != Cons.git_AllZeroOidStr) {
-                sb.append(activityContext.getString(R.string.comparing_label)+": ").append(Libgit2Helper.getLeftToRightDiffCommitsText(treeOid1Str.value, treeOid2Str.value, false)).append(suffix)
-            }
-
-            sb.append(activityContext.getString(R.string.name)+": ").append(getCurItem().getFileNameOnly()).append(suffix)
-            if(isFileHistoryTreeToLocal) {
-                sb.append(activityContext.getString(R.string.commit_id)+": ").append(treeOid1Str.value).append(suffix)
-                // at here: curItemIndex is on FileHistory, which item got clicked
-                sb.append(activityContext.getString(R.string.entry_id)+": ").append(diffableItemList.value[curItemIndex.intValue].entryId).append(suffix)
-            }else if(isFileHistoryTreeToTree) {
-                sb.append(activityContext.getString(R.string.commit_id)+": ").append(treeOid2Str.value).append(suffix)
-                // at here: curItemIndex is on FileHistory, which item got long pressed
-                sb.append(activityContext.getString(R.string.entry_id)+": ").append(diffableItemList.value[curItemIndex.intValue].entryId).append(suffix)
-            }else {
-                sb.append(activityContext.getString(R.string.change_type)+": ").append(getCurItem().changeType).append(suffix)
-            }
-
-
-            sb.append(activityContext.getString(R.string.path)+": ").append(getCurItem().relativePath).append(suffix)
-
-            val fileFullPath = getCurItem().getFileFullPath(curRepo.value.fullSavePath)
-            sb.append(activityContext.getString(R.string.full_path)+": ").append(fileFullPath).append(suffix)
-
-            val file = File(fileFullPath)
-            if(file.exists()) {
-                if(file.isFile) {
-                    sb.append(activityContext.getString(R.string.size)+": ").append(getHumanReadableSizeStr(file.length())).append(suffix)
-                }
-                sb.append(activityContext.getString(R.string.last_modified)+": ").append(getFormattedLastModifiedTimeOfFile(file)).append(suffix)
-            }
-
-            detailsString.value = sb.removeSuffix(suffix).toString()
-            showDetailsDialog.value=true
+            //传-1表示不需要弹窗显示条目相关信息
+            initDetailsDialog(if(isSingleMode) curItemIndex.intValue else -1)
         }
     }
 
@@ -793,6 +811,7 @@ fun DiffScreen(
                                 horizontalArrangement = Arrangement.SpaceBetween,
                                 verticalAlignment = Alignment.CenterVertically,
                             ) {
+                                //标题：显示文件名、添加了几行、删除了几行
                                 Row(
                                     verticalAlignment = Alignment.CenterVertically,
                                 ) {
@@ -810,7 +829,9 @@ fun DiffScreen(
                                         text = diffItem.getSummary(),
 //                                        fontWeight = FontWeight.Light,
 //                                        fontStyle = FontStyle.Italic,
-                                        color = UIHelper.getChangeTypeColor(changeType)
+                                        color = UIHelper.getChangeTypeColor(changeType),
+                                        modifier = Modifier.clickable {initDetailsDialog(idx)},
+
                                     )
                                 }
                             }
