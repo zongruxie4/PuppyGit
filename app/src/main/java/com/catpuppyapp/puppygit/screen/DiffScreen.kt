@@ -1040,7 +1040,8 @@ fun DiffScreen(
                                                         matchByWords = matchByWords.value,
                                                         settings = settings,
                                                         navController = navController,
-                                                        activityContext = activityContext
+                                                        activityContext = activityContext,
+                                                        stateKeyTag = stateKeyTag,
                                                     )
                                                 }
                                             } else {  // add or del
@@ -1080,7 +1081,9 @@ fun DiffScreen(
                                                                 matchByWords = matchByWords.value,
                                                                 settings = settings,
                                                                 navController = navController,
-                                                                activityContext = activityContext
+                                                                activityContext = activityContext,
+                                                                stateKeyTag = stateKeyTag,
+
                                                             )
                                                         }
                                                     }
@@ -1136,7 +1139,8 @@ fun DiffScreen(
                                                         matchByWords = matchByWords.value,
                                                         settings = settings,
                                                         navController = navController,
-                                                        activityContext = activityContext
+                                                        activityContext = activityContext,
+                                                        stateKeyTag = stateKeyTag,
                                                     )
                                                 }
                                             }
@@ -1242,7 +1246,8 @@ fun DiffScreen(
                                                             matchByWords = matchByWords.value,
                                                             settings = settings,
                                                             navController = navController,
-                                                            activityContext = activityContext
+                                                            activityContext = activityContext,
+                                                            stateKeyTag = stateKeyTag,
                                                         )
                                                     }
                                                 }
@@ -1274,7 +1279,8 @@ fun DiffScreen(
                                                             matchByWords = matchByWords.value,
                                                             settings = settings,
                                                             navController = navController,
-                                                            activityContext = activityContext
+                                                            activityContext = activityContext,
+                                                            stateKeyTag = stateKeyTag,
                                                         )
                                                     }
                                                 }
@@ -1331,7 +1337,8 @@ fun DiffScreen(
                                                         matchByWords = matchByWords.value,
                                                         settings = settings,
                                                         navController = navController,
-                                                        activityContext = activityContext
+                                                        activityContext = activityContext,
+                                                        stateKeyTag = stateKeyTag,
                                                     )
 
                                                 }
@@ -1375,7 +1382,8 @@ fun DiffScreen(
                                                         matchByWords = matchByWords.value,
                                                         settings = settings,
                                                         navController = navController,
-                                                        activityContext = activityContext
+                                                        activityContext = activityContext,
+                                                        stateKeyTag = stateKeyTag,
                                                     )
                                                 }
                                             }
@@ -1420,7 +1428,8 @@ fun DiffScreen(
                                                     matchByWords = matchByWords.value,
                                                     settings = settings,
                                                     navController = navController,
-                                                    activityContext = activityContext
+                                                    activityContext = activityContext,
+                                                    stateKeyTag = stateKeyTag,
                                                 )
                                             }
                                         }
@@ -1463,7 +1472,8 @@ fun DiffScreen(
                                                 matchByWords = matchByWords.value,
                                                 settings = settings,
                                                 navController = navController,
-                                                activityContext = activityContext
+                                                activityContext = activityContext,
+                                                stateKeyTag = stateKeyTag,
                                             )
                                         }
                                     }
