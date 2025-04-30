@@ -229,7 +229,7 @@ dependencies {
 //    implementation("androidx.compose.compiler:compiler-hosted:1.5.12")
 
     implementation("androidx.compose.material3:material3:1.3.2")
-    implementation ("androidx.compose.material:material-icons-extended:1.7.8")
+    implementation("androidx.compose.material:material-icons-extended:1.7.8")
 
 
     testImplementation("junit:junit:4.13.2")

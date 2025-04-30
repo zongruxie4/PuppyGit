@@ -55,6 +55,7 @@ import com.catpuppyapp.puppygit.utils.AppModel
 import com.catpuppyapp.puppygit.utils.FsUtils
 import com.catpuppyapp.puppygit.utils.Libgit2Helper
 import com.catpuppyapp.puppygit.utils.Msg
+import com.catpuppyapp.puppygit.utils.cache.Cache
 import com.catpuppyapp.puppygit.utils.compare.result.IndexStringPart
 import com.catpuppyapp.puppygit.utils.createAndInsertError
 import com.catpuppyapp.puppygit.utils.doJobThenOffLoading
@@ -100,6 +101,8 @@ fun DiffRow (
     activityContext:Context
 
 ) {
+    val stateKeyTag = Cache.getSubPageKey(stateKeyTag)
+
     // disable for EOF, the EOF showing sometimes false-added
     // 禁用EOF点击菜单，EOF有时候假添加，就是明明没有eof，但显示新增了eof，可能是libgit2 bug
     val isNotEof = line.lineNum != LineNum.EOF.LINE_NUM
