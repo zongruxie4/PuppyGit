@@ -118,7 +118,7 @@ fun EditorTitle(
                         Icon(
                             modifier = Modifier.size(12.dp).padding(end = 1.dp),
                             imageVector = if(isPreviewModeOn) Icons.Filled.RemoveRedEye else Icons.Filled.Lock,
-                            contentDescription = null,
+                            contentDescription = stringResource(R.string.read_only),
                         )
                     }
 

@@ -21,10 +21,8 @@ import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.automirrored.filled.ArrowRight
 import androidx.compose.material.icons.filled.ArrowDropDown
 import androidx.compose.material.icons.filled.Close
-import androidx.compose.material.icons.filled.Lock
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.HorizontalDivider
-import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
@@ -71,6 +69,7 @@ import com.catpuppyapp.puppygit.compose.LongPressAbleIconBtn
 import com.catpuppyapp.puppygit.compose.MySelectionContainer
 import com.catpuppyapp.puppygit.compose.OpenAsAskReloadDialog
 import com.catpuppyapp.puppygit.compose.OpenAsDialog
+import com.catpuppyapp.puppygit.compose.ReadOnlyIcon
 import com.catpuppyapp.puppygit.compose.ScrollableColumn
 import com.catpuppyapp.puppygit.constants.Cons
 import com.catpuppyapp.puppygit.constants.LineNum
@@ -976,11 +975,7 @@ fun DiffScreen(
                                     ) {
 
                                         if(readOnly) {
-                                            Icon(
-                                                modifier = Modifier.size(12.dp),
-                                                imageVector = Icons.Filled.Lock,
-                                                contentDescription = stringResource(R.string.read_only),
-                                            )
+                                            ReadOnlyIcon()
                                         }
 
                                         Text(
