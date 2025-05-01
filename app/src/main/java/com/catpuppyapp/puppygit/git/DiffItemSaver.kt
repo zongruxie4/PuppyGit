@@ -31,20 +31,7 @@ data class DiffItemSaver (
 
 ){
 
-    fun getFileNameEllipsis(fileNameLimit:Int):String {
-        //获取文件名，如果超过限制长度则截断并在前面追加省略号
-        return relativePathUnderRepo.let {
-            if(it.length > fileNameLimit) {
-                "...${it.reversed().substring(0, fileNameLimit).reversed()}"
-            }else {
-                it
-            }
-        }
-    }
 
-    fun getSummary(fileNameLimit:Int):String {
-        return "${getFileNameEllipsis(fileNameLimit)}: +$addedLines, -$deletedLines"
-    }
 
     //获取实际生效的文件大小
     //ps:如果想判断文件大小有无超过限制，用此方法返回值作为 isFileSizeOverLimit() 的入参做判断即可

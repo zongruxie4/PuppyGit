@@ -223,7 +223,8 @@ fun DiffScreen(
 
     val subDiffableItemList = mutableCustomStateListOf(keyTag = stateKeyTag, keyName = "subDiffableItemList") {
         //里面存的是diffableList里的索引，用来加载指定条目的
-        listOf<Int>()
+        //最初进入当前页面，只加载当前条目
+        listOf<Int>(curItemIndexAtDiffableItemList)
     }
 //    val useSubList = rememberSaveable { mutableStateOf(false) }
 
@@ -932,7 +933,14 @@ fun DiffScreen(
                         val readOnly = readOnlyModeOn.value || !diffableItemFile.exists()
 
                         val switchVisible = {
-                            diffableItemList[idx] = diffableItem.copy(visible = visible.not())
+                            val newVisible = visible.not()
+                            //切换条目
+                            diffableItemList[idx] = diffableItem.copy(visible = newVisible)
+
+                            //如果展开当前条目 且 当前条目未加载则加载(懒加载)
+                            if(newVisible && diffableItem.neverLoadedDifferences()) {
+                                requireRefreshSubList(listOf(idx))
+                            }
                         }
 
                         item{
@@ -981,11 +989,13 @@ fun DiffScreen(
                                         Text(
                                             text = buildAnnotatedString {
                                                 withStyle(style = SpanStyle(color = UIHelper.getChangeTypeColor(changeType))) {
-                                                    append(diffItem.getFileNameEllipsis(titleFileNameLenLimit)+": ")
+                                                    append(diffableItem.getFileNameEllipsis(titleFileNameLenLimit)+": ")
                                                 }
 
-                                                withStyle(style = SpanStyle(color = Theme.mdGreen)) { append("+"+diffItem.addedLines+", ") }
-                                                withStyle(style = SpanStyle(color = Theme.mdRed)) { append("-"+diffItem.deletedLines) }
+                                                if(diffableItem.maybeLoadedAtLeastOnce()) {
+                                                    withStyle(style = SpanStyle(color = Theme.mdGreen)) { append("+"+diffItem.addedLines+", ") }
+                                                    withStyle(style = SpanStyle(color = Theme.mdRed)) { append("-"+diffItem.deletedLines) }
+                                                }
                                             } ,
 
 
@@ -1065,7 +1075,7 @@ fun DiffScreen(
                         item {
                             DisableSelection {
                                 Column(
-                                    modifier = Modifier.padding(10.dp),
+                                    modifier = Modifier.padding(10.dp).fillMaxWidth().height(200.dp),
                                     verticalArrangement = Arrangement.Center,
                                     horizontalAlignment = Alignment.CenterHorizontally,
                                 ) {
@@ -1093,7 +1103,13 @@ fun DiffScreen(
                                     }
 
                                     Spacer(Modifier.height(100.dp))
+                                }
+                            }
+                        }
 
+                        if(isSingleMode) {
+                            item {
+                                DisableSelection{
                                     NaviButton(
                                         stateKeyTag = stateKeyTag,
                                         activityContext = activityContext,
@@ -1109,9 +1125,12 @@ fun DiffScreen(
                                         unstageItem = unstageItem,
                                         stageItem = stageItem,
                                     )
+
                                     Spacer(Modifier.height(100.dp))
+
                                 }
                             }
+
                         }
                     } else {  //文本类型且没超过大小且文件修改过，正常显示diff信息
 

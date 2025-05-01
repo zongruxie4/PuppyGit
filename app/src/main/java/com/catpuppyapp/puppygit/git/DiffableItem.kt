@@ -55,7 +55,7 @@ data class DiffableItem(
     val submoduleIsDirty:Boolean = false,
     val errMsg: String = "",
     //是否可见，收起不可见，展开可见
-    val visible:Boolean = true,
+    val visible:Boolean = false,
 ):ItemKey {
     companion object {
 
@@ -70,9 +70,21 @@ data class DiffableItem(
     }
 
 
+    fun getFileNameEllipsis(fileNameLimit:Int):String {
+        //获取文件名，如果超过限制长度则截断并在前面追加省略号
+        return relativePath.let {
+            if(it.length > fileNameLimit) {
+                "...${it.reversed().substring(0, fileNameLimit).reversed()}"
+            }else {
+                it
+            }
+        }
+    }
+
 
     fun copyForLoading():DiffableItem {
-        return copy(loading = true, stringPairMap = mutableStateMapOf(), compareLinePair = CompareLinePair(), submoduleIsDirty = false, errMsg = "", loadChannel = Channel())
+        // 注意：loading时会把条目设为可见，一般比较符合逻辑，若感觉有违和的地方，可改成传参控制
+        return copy(loading = true, visible = true, stringPairMap = mutableStateMapOf(), compareLinePair = CompareLinePair(), submoduleIsDirty = false, errMsg = "", loadChannel = Channel())
     }
 
     fun closeLoadChannel() {
@@ -113,5 +125,9 @@ data class DiffableItem(
     }
 
     fun toFile():File = File(fullPath)
+
+    fun neverLoadedDifferences() : Boolean = diffItemSaver.relativePathUnderRepo.isEmpty()
+
+    fun maybeLoadedAtLeastOnce() = !neverLoadedDifferences()
 
 }
