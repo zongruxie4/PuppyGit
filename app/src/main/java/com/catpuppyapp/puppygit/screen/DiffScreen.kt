@@ -42,6 +42,8 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.input.nestedscroll.nestedScroll
+import androidx.compose.ui.layout.onGloballyPositioned
+import androidx.compose.ui.layout.positionInRoot
 import androidx.compose.ui.platform.LocalClipboardManager
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalContext
@@ -116,7 +118,6 @@ import com.catpuppyapp.puppygit.utils.getRequestDataByState
 import com.catpuppyapp.puppygit.utils.isGoodIndexForList
 import com.catpuppyapp.puppygit.utils.replaceStringResList
 import com.catpuppyapp.puppygit.utils.state.mutableCustomStateListOf
-import com.catpuppyapp.puppygit.utils.state.mutableCustomStateMapOf
 import com.catpuppyapp.puppygit.utils.state.mutableCustomStateOf
 import com.catpuppyapp.puppygit.utils.withMainContext
 import com.github.git24j.core.Diff
@@ -166,6 +167,8 @@ fun DiffScreen(
     val density = LocalDensity.current
     val activityContext = LocalContext.current
     val navController = AppModel.navController
+
+//    val screenHeightPx = remember (configuration.screenHeightDp) { UIHelper.dpToPx(configuration.screenHeightDp, density) }
 
     val isFileHistoryTreeToLocal = fromTo == Cons.gitDiffFileHistoryFromTreeToLocal
     val isFileHistoryTreeToTree = fromTo == Cons.gitDiffFileHistoryFromTreeToTree
@@ -280,7 +283,7 @@ fun DiffScreen(
         val fontWidthPx = spToPx(Typography.bodyLarge.fontSize, density)
         try {
             //根据屏幕宽度计算标题栏能显示的最大文件名，最后除以几就是限制不要超过屏幕的几分之1
-            (scrWidthPx / fontWidthPx / 4).toInt()
+            (scrWidthPx / fontWidthPx / 3).toInt()
         }catch (e: Exception) {
             //这个不太危险，出错也没事，所以没必要记到error级别
             MyLog.w(TAG, "#titleFileNameLenLimit: calculate title font length limit err: ${e.localizedMessage}")
@@ -818,6 +821,10 @@ fun DiffScreen(
         Unit
     }
 
+    val updateCurrentViewingIdx = { viewingIndex:Int ->
+        curItemIndex.intValue = viewingIndex
+    }
+
     BackHandler(
         onBack = getBackHandler(
             naviUp = naviUp,
@@ -843,12 +850,12 @@ fun DiffScreen(
                         fileName = getCurItem().fileName,
                         fileParentPathOfRelativePath = getCurItem().fileParentPathOfRelativePath,
                         fileRelativePathUnderRepoState = getCurItem().relativePath,
-                        listState,
-                        scope,
-                        pageRequest,
-                        getCurItem().changeType,
-                        readOnlyModeOn.value,
-                        lastPosition
+                        listState = listState,
+                        scope = scope,
+                        request = pageRequest,
+                        changeType = getCurItem().changeType,
+                        readOnly = readOnlyModeOn.value,
+                        lastPosition = lastPosition
                     )
                 },
                 navigationIcon = {
@@ -1013,6 +1020,15 @@ fun DiffScreen(
                             // x 放弃，不写footer了）把这个抽成 infobar，footer用同样的样式写
                             // LazyColumn里不能用rememberSaveable，会崩，用remember也有可能会不触发刷新，除非改外部的list触发遍历
                             BarContainer(
+                                modifier = Modifier
+                                    .onGloballyPositioned { layoutCoordinates ->
+                                        val position = layoutCoordinates.positionInRoot()
+                                        //从屏幕上方消失了，就表示在看这个条目
+                                        if(position.y < 0) {
+                                            updateCurrentViewingIdx(idx)
+                                        }
+                                    }
+                                ,
                                 onClick = switchVisible
                             ) {
                                 //标题：显示文件名、添加了几行、删除了几行
@@ -1054,6 +1070,12 @@ fun DiffScreen(
 
                                     }
                                 }
+
+//                                DisposableEffect(Unit) {
+//                                    onDispose {
+//                                        updateCurrentViewingIdx(idx)
+//                                    }
+//                                }
                             }
 
                         }
