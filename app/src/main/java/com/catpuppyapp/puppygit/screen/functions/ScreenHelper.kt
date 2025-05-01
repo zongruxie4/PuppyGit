@@ -33,6 +33,7 @@ import com.catpuppyapp.puppygit.utils.replaceStringResList
 import com.catpuppyapp.puppygit.utils.state.CustomStateSaveable
 import com.catpuppyapp.puppygit.utils.withMainContext
 import kotlinx.coroutines.CoroutineScope
+import java.io.File
 
 private const val TAG = "ScreenHelper"
 
@@ -125,12 +126,19 @@ fun getClipboardText(clipboardManager:ClipboardManager):String? {
 }
 
 fun openFileWithInnerSubPageEditor(
+    context: Context,
     filePath:String,
     mergeMode:Boolean,
     readOnly:Boolean,
     goToLine:Int = LineNum.lastPosition,
+    onlyGoToWhenFileExists: Boolean = false
 ) {
-    doJobWithMainContext {
+    doJobWithMainContext job@{
+        if(onlyGoToWhenFileExists && File(filePath).exists().not()) {
+            Msg.requireShowLongDuration(context.getString(R.string.file_doesnt_exist))
+            return@job
+        }
+
         val filePathKey = NaviCache.setThenReturnKey(filePath)
 
         val initMergeMode = if(mergeMode) "1" else "0"

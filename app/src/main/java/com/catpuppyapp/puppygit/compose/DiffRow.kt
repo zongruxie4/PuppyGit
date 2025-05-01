@@ -589,6 +589,7 @@ fun DiffRow (
             fontFamily = FontFamily.Monospace, // 使用系统自带的等宽字体，不然那个+和-不等宽，看着难受
             modifier = Modifier.clickable {
                 openFileWithInnerSubPageEditor(
+                    context = activityContext,
                     filePath = fileFullPath,
                     mergeMode = false,
                     readOnly = false,

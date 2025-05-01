@@ -679,6 +679,7 @@ fun ChangeListInnerPage(
 
     val openFileWithInnerEditor = { filePath:String, initMergeMode:Boolean ->
         openFileWithInnerSubPageEditor(
+            context = activityContext,
             filePath = filePath,
             mergeMode = initMergeMode,
 

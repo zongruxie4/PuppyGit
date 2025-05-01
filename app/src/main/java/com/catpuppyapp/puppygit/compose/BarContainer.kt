@@ -43,9 +43,27 @@ fun BarContainer(
     ) {
         content()
 
+        /**
+         *     val icon:ImageVector,
+         *     val text:String,
+         *     val desc:String, // for accessbility
+         *     val enabled:()->Boolean,
+         *     val visible:()->Boolean,
+         *     val onClick:()->Unit,
+         */
         if(actions != null && actions.isNotEmpty()) {
             ScrollableRow {
+                for(a in actions) {
+                    if(a.visible().not()) continue
 
+                    LongPressAbleIconBtn(
+                        icon = a.icon,
+                        tooltipText = a.text,
+                        iconContentDesc = a.desc,
+                        enabled = a.enabled(),
+                        onClick = a.onClick
+                    )
+                }
             }
         }
     }

@@ -18,9 +18,15 @@ import androidx.compose.foundation.text.selection.DisableSelection
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.automirrored.filled.ArrowRight
+import androidx.compose.material.icons.automirrored.filled.OpenInNew
+import androidx.compose.material.icons.automirrored.filled.Undo
+import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.ArrowDropDown
 import androidx.compose.material.icons.filled.Close
+import androidx.compose.material.icons.filled.Difference
+import androidx.compose.material.icons.filled.FileOpen
 import androidx.compose.material.icons.filled.KeyboardDoubleArrowUp
+import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.MaterialTheme
@@ -82,6 +88,7 @@ import com.catpuppyapp.puppygit.dev.FlagFileName
 import com.catpuppyapp.puppygit.dev.detailsDiffTestPassed
 import com.catpuppyapp.puppygit.dev.proFeatureEnabled
 import com.catpuppyapp.puppygit.dto.IntBox
+import com.catpuppyapp.puppygit.dto.MenuIconBtnItem
 import com.catpuppyapp.puppygit.git.CompareLinePair
 import com.catpuppyapp.puppygit.git.DiffableItem
 import com.catpuppyapp.puppygit.git.PuppyHunkAndLines
@@ -113,6 +120,7 @@ import com.catpuppyapp.puppygit.utils.compare.param.StringCompareParam
 import com.catpuppyapp.puppygit.utils.compare.result.IndexStringPart
 import com.catpuppyapp.puppygit.utils.createAndInsertError
 import com.catpuppyapp.puppygit.utils.doJobThenOffLoading
+import com.catpuppyapp.puppygit.utils.doJobWithMainContext
 import com.catpuppyapp.puppygit.utils.getFormattedLastModifiedTimeOfFile
 import com.catpuppyapp.puppygit.utils.getHumanReadableSizeStr
 import com.catpuppyapp.puppygit.utils.getRequestDataByState
@@ -314,13 +322,15 @@ fun DiffScreen(
         }
 
         // cl页面会针对这个列表执行操作，不过若在index，不管列表有几个条目都总是提交index所有条目
-        if(fromScreen.code == DiffFromScreen.HOME_CHANGELIST.code) {
+        if(fromScreen == DiffFromScreen.HOME_CHANGELIST) {
             Cache.set(Cache.Key.diffableList_of_fromDiffScreenBackToWorkTreeChangeList, diffableItemList.value.map {it.toChangeListItem()})
-        }else if(fromScreen.code == DiffFromScreen.INDEX.code) {
+        }else if(fromScreen == DiffFromScreen.INDEX) {
             Cache.set(Cache.Key.diffableList_of_fromDiffScreenBackToIndexChangeList, diffableItemList.value.map {it.toChangeListItem()})
         }
 
-        naviUp()
+        doJobWithMainContext {
+            naviUp()
+        }
     }
 
 
@@ -329,6 +339,22 @@ fun DiffScreen(
 
     // single mode不显示header；multi 则为每个条目显示标题栏
     val showMyFileHeader = isMultiMode
+
+
+    //跳转到SubEditor页面
+    //冲突条目无法进入diff页面，所以能预览diff定不是冲突条目，因此跳转到editor时应将mergemode初始化为假
+    //diff页面不可能显示app内置目录下的文件，所以一率可编辑
+    val openFileWithInnerSubPageEditor = { filePath:String ->
+        openFileWithInnerSubPageEditor(
+            context = activityContext,
+            filePath = filePath,
+            mergeMode = false,
+            readOnly = false,
+            onlyGoToWhenFileExists = true
+        )
+
+    }
+
 
     //这些主要是用来在single mode时在当前页面显示的状态变量，在传给DiffContent时会直接使用列表里的对象的对应值；multi mode用不到这些，所以直接默认值就行，不用查list
 //    val relativePathUnderRepoState = rememberSaveable(isMultiMode, curItemIndex.intValue) { mutableStateOf(
@@ -375,38 +401,68 @@ fun DiffScreen(
     //配置文件启用了只读模式，或者被比较的右边的对象不是本地而强制启用只读模式
     val readOnlyModeOn = rememberSaveable(settings.diff.readOnly, readOnlySwitchable.value) { mutableStateOf(settings.diff.readOnly || readOnlySwitchable.value.not()) }
 
-    val removeTargetFromChangeList = {targetItem: StatusTypeEntrySaver ->
+    val removeTargetFromChangeList = {targetItems: List<StatusTypeEntrySaver> ->
         //从cl页面的列表移除条目(根据仓库下相对路径移除）
-        SharedState.homeChangeList_itemList.removeIf { it.relativePathUnderRepo == targetItem.relativePathUnderRepo }
+        SharedState.homeChangeList_itemList.removeIf {
+            targetItems.any {it2 -> it.relativePathUnderRepo == it2.relativePathUnderRepo}
+        }
     }
 
-    val stageItem:suspend (StatusTypeEntrySaver)->Unit= { targetItem ->
+
+    // hasIndex为null则不更新change list的index变量
+    val handleChangeListPageStuffs = { targetItems:List<StatusTypeEntrySaver> , hasIndex:Boolean?->
+
+        //从当前列表移除已操作完毕的条目
+        val noItems = if(targetItems.size == diffableItemList.value.size) {
+            //清空列表再执行返回上级页面，不然一些已经用不到的数据还会占用内存
+            diffableItemList.value.clear()
+            //如果对所有条目执行了操作，则需要返回上级页面，因为留在这也没什么好看的了
+            true
+        }else {
+            diffableItemList.value.removeIf { targetItems.any {it2-> it.relativePath == it2.relativePathUnderRepo} }
+            false
+        }
+
+
+        //更新cl页面状态变量
+        //从cl页面的列表移除条目
+        removeTargetFromChangeList(targetItems)
+        //cl页面设置索引有条目，因为上面stage成功了，所以大概率index至少有一个条目
+        hasIndex?.let {
+            SharedState.homeChangeList_indexHasItem.value = hasIndex
+        }
+
+        //若当前页面已经无条目则返回上级页面
+        if(noItems) {
+            naviUp()
+        }
+    }
+
+    val stageItem:suspend (List<StatusTypeEntrySaver>)->Unit= { targetItems ->
         val curRepo = curRepo.value
         try {
             // stage 条目
             Repository.open(curRepo.fullSavePath).use { repo ->
-                Libgit2Helper.stageStatusEntryAndWriteToDisk(repo, listOf(targetItem))
+                Libgit2Helper.stageStatusEntryAndWriteToDisk(repo, targetItems)
             }
 
             //执行到这里，实际上已经stage成功了
             Msg.requireShow(activityContext.getString(R.string.success))
 
-            //下面处理页面相关的变量
 
-            //从cl页面的列表移除条目
-            removeTargetFromChangeList(targetItem)
-            //cl页面设置索引有条目，因为上面stage成功了，所以大概率index至少有一个条目
-            SharedState.homeChangeList_indexHasItem.value = true
+            //下面处理cl页面相关的变量
+            handleChangeListPageStuffs(targetItems, true)
+
         }catch (e:Exception) {
             val errMsg = "err: ${e.localizedMessage}"
             Msg.requireShowLongDuration(errMsg)
             createAndInsertError(curRepo.id, errMsg)
 
-            MyLog.e(TAG, "stage item '${targetItem.relativePathUnderRepo}' for repo '${curRepo.repoName}' err: ${e.stackTraceToString()}")
+            MyLog.e(TAG, "stage items for repo '${curRepo.repoName}' err: ${e.stackTraceToString()}")
         }
     }
 
-    val revertItem:suspend (StatusTypeEntrySaver)->Unit = { targetItem ->
+    val revertItem:suspend (List<StatusTypeEntrySaver>)->Unit = { targetItems ->
         val curRepo = curRepo.value
 
         try {
@@ -414,12 +470,16 @@ fun DiffScreen(
             Repository.open(curRepo.fullSavePath).use { repo ->
                 val untrakcedFileList = mutableListOf<String>()  // untracked list，在我的app里这种修改类型显示为 "New"
                 val pathspecList = mutableListOf<String>()  // modified、deleted 列表
-                //新文件(Untracked)在index里不存在，若revert，只能删除文件，所以单独加到另一个列表
-                if(targetItem.changeType == Cons.gitStatusNew) {
-                    untrakcedFileList.add(targetItem.canonicalPath)  //删除文件，添加全路径（但其实用仓库内相对路径也行，只是需要把仓库路径和仓库下相对路径拼接一下，而这个全路径是我在查询status list的时候拼好的，所以直接用就行）
-                }else if(targetItem.changeType != Cons.gitStatusConflict){  //冲突条目不可revert！其余index中有的文件，也就是git tracked的文件，删除/修改 之类的，都可恢复为index中的状态
-                    pathspecList.add(targetItem.relativePathUnderRepo)
+
+                targetItems.forEach { targetItem->
+                    //新文件(Untracked)在index里不存在，若revert，只能删除文件，所以单独加到另一个列表
+                    if(targetItem.changeType == Cons.gitStatusNew) {
+                        untrakcedFileList.add(targetItem.canonicalPath)  //删除文件，添加全路径（但其实用仓库内相对路径也行，只是需要把仓库路径和仓库下相对路径拼接一下，而这个全路径是我在查询status list的时候拼好的，所以直接用就行）
+                    }else if(targetItem.changeType != Cons.gitStatusConflict){  //冲突条目不可revert！其余index中有的文件，也就是git tracked的文件，删除/修改 之类的，都可恢复为index中的状态
+                        pathspecList.add(targetItem.relativePathUnderRepo)
+                    }
                 }
+
                 //如果列表不为空，恢复文件
                 if(pathspecList.isNotEmpty()) {
                     Libgit2Helper.revertFilesToIndexVersion(repo, pathspecList)
@@ -434,60 +494,105 @@ fun DiffScreen(
             //操作完成，显示提示
             Msg.requireShow(activityContext.getString(R.string.success))
 
-            //切换下一条目，若没有，返回上级页面
-
-            //下面处理页面相关的变量
-
-            //从cl页面的列表移除条目
-            removeTargetFromChangeList(targetItem)
-
-            //cl页面设置索引有条目，因为上面添加成功了，所以大概率index至少有一个条目
-//                        SharedState.homeChangeList_indexHasItem.value = true  // revert不需要操作index
+            // revert不需要操作index，所以参数2设为null
+            handleChangeListPageStuffs(targetItems, null)
 
         }catch (e:Exception) {
             val errMsg = "err: ${e.localizedMessage}"
             Msg.requireShowLongDuration(errMsg)
             createAndInsertError(curRepo.id, errMsg)
 
-            MyLog.e(TAG, "revert item '${targetItem.relativePathUnderRepo}' for repo '${curRepo.repoName}' err: ${e.stackTraceToString()}")
+            MyLog.e(TAG, "revert items for repo '${curRepo.repoName}' err: ${e.stackTraceToString()}")
         }
     }
 
-    val unstageItem:suspend (StatusTypeEntrySaver)->Unit = { targetItem ->
+    // 参数是 relative path list
+    val unstageItem:suspend (List<StatusTypeEntrySaver>)->Unit = { targetItems ->
         val curRepo = curRepo.value
 
         try {
             //menu action: unstage
             Repository.open(curRepo.fullSavePath).use { repo ->
-                val refspecList = mutableListOf<String>()
-                // 准备refspecList
-                refspecList.add(targetItem.relativePathUnderRepo)
-
                 //do unstage
-                Libgit2Helper.unStageItems(repo, refspecList)
+                Libgit2Helper.unStageItems(repo, targetItems.map { it.relativePathUnderRepo })
             }
 
             //操作完成，显示提示
             Msg.requireShow(activityContext.getString(R.string.success))
 
-            //切换下一条目，若没有，返回上级页面
-
-            //下面处理页面相关的变量
-
-            //从cl页面的列表移除条目
-            removeTargetFromChangeList(targetItem)
-
-            //cl页面设置索引有条目，因为上面添加成功了，所以大概率index至少有一个条目
-//                        SharedState.homeChangeList_indexHasItem.value = true  // index页面unstage不需要管home页面那个changeList指示index是否有条目的那个变量
+            handleChangeListPageStuffs(targetItems, null)
         }catch (e:Exception) {
             val errMsg = "err: ${e.localizedMessage}"
             Msg.requireShowLongDuration(errMsg)
             createAndInsertError(curRepo.id, errMsg)
 
-            MyLog.e(TAG, "unstage item '${targetItem.relativePathUnderRepo}' for repo '${curRepo.repoName}' err: ${e.stackTraceToString()}")
+            MyLog.e(TAG, "unstage items for repo '${curRepo.repoName}' err: ${e.stackTraceToString()}")
         }
 
     }
+
+
+    val showRevertDialog = rememberSaveable { mutableStateOf(false) }
+    val showUnstageDialog = rememberSaveable { mutableStateOf(false) }
+    val revertDialogList = mutableCustomStateListOf(keyTag = stateKeyTag, keyName="revertDialogList") { listOf<StatusTypeEntrySaver>() }
+    val unstageDialogList = mutableCustomStateListOf(keyTag = stateKeyTag, keyName="unstageDialogList") { listOf<StatusTypeEntrySaver>() }
+    val revertCallback = remember { mutableStateOf<suspend ()->Unit>({}) }
+    val unstageCallback = remember { mutableStateOf<suspend ()->Unit>({}) }
+    val initRevertDialog = { items:List<StatusTypeEntrySaver>, callback:suspend ()->Unit ->
+        revertDialogList.value.apply {
+            clear()
+            addAll(items)
+        }
+        revertCallback.value = callback
+        showRevertDialog.value = true
+    }
+
+    val initUnstageDialog = { items:List<StatusTypeEntrySaver>, callback:suspend ()->Unit ->
+        unstageDialogList.value.apply {
+            clear()
+            addAll(items)
+        }
+        unstageCallback.value = callback
+        showUnstageDialog.value = true
+    }
+
+    //revert弹窗
+    if(showRevertDialog.value) {
+        ConfirmDialog(
+            title=stringResource(R.string.revert),
+            text=stringResource(R.string.are_you_sure),
+            okTextColor = MyStyleKt.TextColor.danger(),
+            onCancel = {showRevertDialog.value=false}
+        ) {  //onOk
+            showRevertDialog.value=false
+
+            doJobThenOffLoading {
+                revertItem(revertDialogList.value.toList())
+                revertCallback.value()
+            }
+        }
+    }
+
+    //unstage弹窗
+    if(showUnstageDialog.value) {
+        ConfirmDialog(
+            title=stringResource(R.string.unstage),
+            text=stringResource(R.string.are_you_sure),
+            okTextColor = MyStyleKt.TextColor.danger(),
+            onCancel = {showUnstageDialog.value=false}
+        ) {  //onOk
+            showUnstageDialog.value=false
+
+            doJobThenOffLoading {
+                unstageItem(unstageDialogList.value.toList())
+                unstageCallback.value()
+            }
+        }
+    }
+
+
+
+
 
     //考虑将这个功能做成开关，所以用状态变量存其值
     //ps: 这个值要么做成可在设置页面关闭（当然，其他与预览diff不相关的页面也行，总之别做成只能在正在执行O(nm)的diff页面开关就行），要么就默认app启动后重置为关闭，绝对不能做成只能在预览diff的页面开关，不然万一O(nm)算法太慢卡死导致这个东西关不了就尴尬了
@@ -626,7 +731,21 @@ fun DiffScreen(
     val showOpenAsDialog = rememberSaveable { mutableStateOf(false)}
     val readOnlyForOpenAsDialog = rememberSaveable { mutableStateOf(false)}
     val openAsDialogFilePath = rememberSaveable { mutableStateOf("")}
-//    val showOpenInEditor = StateUtil.getRememberSaveableState(initValue = false)
+
+    val initOpenAsDialog = { fileFullPath:String ->
+        try {
+            if(!File(fileFullPath).exists()) {
+                Msg.requireShowLongDuration(activityContext.getString(R.string.file_doesnt_exist))
+            }else {
+                openAsDialogFilePath.value = fileFullPath
+                showOpenAsDialog.value=true
+            }
+        }catch (e:Exception) {
+            Msg.requireShowLongDuration("err: "+e.localizedMessage)
+            MyLog.e(TAG, "'Open As' err: "+e.stackTraceToString())
+        }
+    }
+
     if(showOpenAsDialog.value) {
         OpenAsDialog(readOnly=readOnlyForOpenAsDialog,fileName=getCurItem().fileName, filePath = openAsDialogFilePath.value,
             openSuccessCallback = {
@@ -641,6 +760,8 @@ fun DiffScreen(
             showOpenAsDialog.value=false
         }
     }
+
+
 
     val detailsString = rememberSaveable { mutableStateOf("")}
     val showDetailsDialog = rememberSaveable { mutableStateOf(false)}
@@ -747,44 +868,14 @@ fun DiffScreen(
 
     if(pageRequest.value == PageRequest.showOpenAsDialog) {
         PageRequest.clearStateThenDoAct(pageRequest) {
-            try {
-                val fileFullPath = getCurItem().fullPath
-                if(!File(fileFullPath).exists()) {
-                    Msg.requireShowLongDuration(activityContext.getString(R.string.file_doesnt_exist))
-                }else {
-                    openAsDialogFilePath.value = fileFullPath
-                    showOpenAsDialog.value=true
-                }
-            }catch (e:Exception) {
-                Msg.requireShowLongDuration("err: "+e.localizedMessage)
-                MyLog.e(TAG, "'Open As' err: "+e.stackTraceToString())
-            }
-
+            initOpenAsDialog(getCurItem().fullPath)
         }
     }
 
     if(pageRequest.value == PageRequest.requireOpenInInnerEditor) {
         PageRequest.clearStateThenDoAct(pageRequest) {
-
             // go editor sub page
-            //        showToast(appContext,filePath)
-            try {
-                //如果文件不存在，提示然后返回
-                val fileFullPath = getCurItem().fullPath
-                if(!File(fileFullPath).exists()) {
-                    Msg.requireShowLongDuration(activityContext.getString(R.string.file_doesnt_exist))
-                }else {
-                    //跳转到SubEditor页面
-                    //冲突条目无法进入diff页面，所以能预览diff定不是冲突条目，因此跳转到editor时应将mergemode初始化为假
-                    //diff页面不可能显示app内置目录下的文件，所以一率可编辑
-                    openFileWithInnerSubPageEditor(filePath = fileFullPath, mergeMode = false, readOnly = false)
-                }
-
-            }catch (e:Exception) {
-                Msg.requireShowLongDuration("err: "+e.localizedMessage)
-                MyLog.e(TAG, "'Open in inner editor' err: "+e.stackTraceToString())
-            }
-
+            openFileWithInnerSubPageEditor(getCurItem().fullPath)
         }
     }
 
@@ -1127,7 +1218,137 @@ fun DiffScreen(
                                         }
                                     }
                                 ,
-                                onClick = switchVisible
+                                onClick = switchVisible,
+                                actions = if(fromScreen == DiffFromScreen.HOME_CHANGELIST) {
+                                       listOf(
+                                           // patch
+                                           MenuIconBtnItem(
+                                               icon = Icons.Filled.Difference,
+                                               text = stringResource(R.string.create_patch),
+                                               onClick = {
+                                                   initCreatePatchDialog(listOf(relativePath))
+                                               }
+
+                                           ),
+                                           // revert
+                                           MenuIconBtnItem(
+                                               icon = Icons.AutoMirrored.Filled.Undo,
+                                               text = stringResource(R.string.revert),
+                                               onClick = {
+                                                   initRevertDialog(listOf(diffableItem.toChangeListItem())) {}
+                                               }
+
+                                           ),
+
+                                           // stage
+                                           MenuIconBtnItem(
+                                               icon = Icons.Filled.Add,
+                                               text = stringResource(R.string.stage),
+                                               onClick = {
+                                                   doJobThenOffLoading {
+                                                        stageItem(listOf(diffableItem.toChangeListItem()))
+                                                   }
+                                               }
+
+                                           ),
+
+                                           // refresh
+                                           MenuIconBtnItem(
+                                               icon = Icons.Filled.Refresh,
+                                               text = stringResource(R.string.refresh),
+                                               onClick = {
+                                                   //点刷新若条目没展开，会展开
+                                                   val newItem = diffableItem.copy(visible = true)
+                                                   diffableItemList[idx] = newItem
+
+                                                   requireRefreshSubList(listOf(idx))
+                                               }
+
+                                           ),
+
+                                           // open
+                                           MenuIconBtnItem(
+                                               icon = Icons.Filled.FileOpen,
+                                               text = stringResource(R.string.open),
+                                               onClick = {
+                                                   openFileWithInnerSubPageEditor(diffableItem.fullPath)
+                                               }
+
+                                           ),
+
+                                           // open as
+                                           MenuIconBtnItem(
+                                               icon = Icons.AutoMirrored.Filled.OpenInNew,
+                                               text = stringResource(R.string.open_as),
+                                               onClick = {
+                                                   initOpenAsDialog(diffableItem.fullPath)
+                                               }
+
+                                           ),
+                                       )
+
+                                    }else if (fromScreen == DiffFromScreen.INDEX) {
+                                    listOf(
+
+                                        // patch
+                                        MenuIconBtnItem(
+                                            icon = Icons.Filled.Difference,
+                                            text = stringResource(R.string.create_patch),
+                                            onClick = {
+                                                initCreatePatchDialog(listOf(relativePath))
+                                            }
+
+                                        ),
+                                        // unstage
+                                        MenuIconBtnItem(
+                                            icon = Icons.AutoMirrored.Filled.Undo,
+                                            text = stringResource(R.string.revert),
+                                            onClick = {
+                                                initUnstageDialog(listOf(diffableItem.toChangeListItem())) {}
+                                            }
+
+                                        ),
+
+
+                                        // refresh
+                                        MenuIconBtnItem(
+                                            icon = Icons.Filled.Refresh,
+                                            text = stringResource(R.string.refresh),
+                                            onClick = {
+                                                //点刷新若条目没展开，会展开
+                                                val newItem = diffableItem.copy(visible = true)
+                                                diffableItemList[idx] = newItem
+
+                                                requireRefreshSubList(listOf(idx))
+                                            }
+
+                                        ),
+
+                                        // open
+                                        MenuIconBtnItem(
+                                            icon = Icons.Filled.FileOpen,
+                                            text = stringResource(R.string.open),
+                                            onClick = {
+                                                openFileWithInnerSubPageEditor(diffableItem.fullPath)
+                                            }
+
+                                        ),
+
+                                        // open as
+                                        MenuIconBtnItem(
+                                            icon = Icons.AutoMirrored.Filled.OpenInNew,
+                                            text = stringResource(R.string.open_as),
+                                            onClick = {
+                                                initOpenAsDialog(diffableItem.fullPath)
+                                            }
+
+                                        ),
+                                    )
+                                    }else {
+                                        listOf()
+                                    }
+
+                                ,
                             ) {
                                 //标题：显示文件名、添加了几行、删除了几行
                                 Row(
@@ -1286,8 +1507,8 @@ fun DiffScreen(
                                 DisableSelection{
                                     NaviButton(
                                         stateKeyTag = stateKeyTag,
-                                        activityContext = activityContext,
-                                        curRepo = curRepo.value,
+//                                        activityContext = activityContext,
+//                                        curRepo = curRepo.value,
                                         diffableItemList = diffableItemList,
                                         curItemIndex = curItemIndex,
                                         switchItem = switchItem,
@@ -1295,9 +1516,11 @@ fun DiffScreen(
                                         naviUp = naviUp,
                                         lastClickedItemKey = lastClickedItemKey,
                                         pageRequest = pageRequest,
-                                        revertItem = revertItem,
-                                        unstageItem = unstageItem,
+//                                        revertItem = revertItem,
+//                                        unstageItem = unstageItem,
                                         stageItem = stageItem,
+                                        initRevertDialog = initRevertDialog,
+                                        initUnstageDialog = initUnstageDialog
                                     )
 
                                     Spacer(Modifier.height(100.dp))
@@ -1918,8 +2141,8 @@ fun DiffScreen(
                                     NaviButton(
                                         stateKeyTag = stateKeyTag,
 
-                                        activityContext = activityContext,
-                                        curRepo = curRepo.value,
+//                                        activityContext = activityContext,
+//                                        curRepo = curRepo.value,
                                         diffableItemList = diffableItemList,
                                         curItemIndex = curItemIndex,
                                         switchItem = closeChannelThenSwitchItem,
@@ -1928,9 +2151,9 @@ fun DiffScreen(
                                         lastClickedItemKey = lastClickedItemKey,
                                         pageRequest = pageRequest,
 
-                                        revertItem = revertItem,
-                                        unstageItem = unstageItem,
                                         stageItem = stageItem,
+                                        initRevertDialog = initRevertDialog,
+                                        initUnstageDialog = initUnstageDialog
                                     )
 
                                 }
@@ -2234,16 +2457,18 @@ private fun getBackHandler(
 @Composable
 private fun NaviButton(
     stateKeyTag:String,
-    activityContext: Context,
-    curRepo:RepoEntity,
+//    activityContext: Context,
+//    curRepo:RepoEntity,
     fromTo: String,
     diffableItemList: MutableList<DiffableItem>,
     curItemIndex: MutableIntState,
     lastClickedItemKey: MutableState<String>,
     pageRequest:MutableState<String>,
-    revertItem:suspend (StatusTypeEntrySaver)->Unit,
-    unstageItem:suspend (StatusTypeEntrySaver)->Unit,
-    stageItem:suspend (StatusTypeEntrySaver)->Unit,
+//    revertItem:suspend (StatusTypeEntrySaver)->Unit,
+//    unstageItem:suspend (StatusTypeEntrySaver)->Unit,
+    stageItem:suspend (List<StatusTypeEntrySaver>)->Unit,
+    initRevertDialog:(items:List<StatusTypeEntrySaver>, callback:suspend ()->Unit)->Unit,
+    initUnstageDialog:(items:List<StatusTypeEntrySaver>, callback:suspend ()->Unit)->Unit,
     naviUp:()->Unit,
     switchItem: (DiffableItem, index: Int) -> Unit,
 ) {
@@ -2303,48 +2528,6 @@ private fun NaviButton(
 
             val targetItemState = mutableCustomStateOf(stateKeyTag, "targetItemState") { StatusTypeEntrySaver() }
             val targetIndexState = rememberSaveable { mutableIntStateOf(-1) }
-            val showRevertDialog = rememberSaveable { mutableStateOf(false) }
-            val showUnstageDialog = rememberSaveable { mutableStateOf(false) }
-
-            //revert弹窗
-            if(showRevertDialog.value) {
-                ConfirmDialog(
-                    title=stringResource(R.string.revert),
-                    text=stringResource(R.string.are_you_sure),
-                    okTextColor = MyStyleKt.TextColor.danger(),
-                    onCancel = {showRevertDialog.value=false}
-                ) {  //onOk
-                    showRevertDialog.value=false
-                    val targetItem = targetItemState.value
-                    val targetIndex = targetIndexState.intValue
-
-                    doJobThenOffLoading {
-                        doActThenSwitchItemOrNaviBack(targetIndex) {
-                            revertItem(targetItem)
-                        }
-                    }
-                }
-            }
-
-            //unstage弹窗
-            if(showUnstageDialog.value) {
-                ConfirmDialog(
-                    title=stringResource(R.string.unstage),
-                    text=stringResource(R.string.are_you_sure),
-                    okTextColor = MyStyleKt.TextColor.danger(),
-                    onCancel = {showUnstageDialog.value=false}
-                ) {  //onOk
-                    showUnstageDialog.value=false
-                    val targetItem = targetItemState.value
-                    val targetIndex = targetIndexState.intValue
-
-                    doJobThenOffLoading {
-                        doActThenSwitchItemOrNaviBack(targetIndex) {
-                            unstageItem(targetItem)
-                        }
-                    }
-                }
-            }
 
 
             //各种按钮
@@ -2365,7 +2548,7 @@ private fun NaviButton(
 
                     doJobThenOffLoading {
                         doActThenSwitchItemOrNaviBack(targetIndex) {
-                            stageItem(targetItem.toChangeListItem())
+                            stageItem(listOf(targetItem.toChangeListItem()))
                         }
                     }
                 }
@@ -2388,7 +2571,10 @@ private fun NaviButton(
                     targetItemState.value = targetItem.toChangeListItem()
                     targetIndexState.intValue = targetIndex
 
-                    showRevertDialog.value = true
+                    initRevertDialog(listOf(targetItemState.value)) {
+                        // callback
+                        doActThenSwitchItemOrNaviBack(targetIndexState.intValue) {}
+                    }
                 }
 
                 Spacer(Modifier.height(20.dp))
@@ -2408,7 +2594,9 @@ private fun NaviButton(
                     targetItemState.value = targetItem.toChangeListItem()
                     targetIndexState.intValue = targetIndex
 
-                    showUnstageDialog.value = true
+                    initUnstageDialog(listOf(targetItemState.value)) {
+                        doActThenSwitchItemOrNaviBack(targetIndexState.intValue) {}
+                    }
                 }
 
                 Spacer(Modifier.height(20.dp))
