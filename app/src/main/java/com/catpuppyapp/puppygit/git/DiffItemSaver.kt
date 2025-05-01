@@ -28,6 +28,7 @@ data class DiffItemSaver (
     var isFileModified:Boolean=false,
     var addedLines:Int=0,  //添加了多少行。（不包含EOF，因为那个东西判断不太准，有时候明明删了却显示添加，让人困惑，而且一个空行感觉好像意义不大？）
     var deletedLines:Int=0,  //删除了多少行
+    var allLines:Int=0,  //总共多少行，包含添加、删除、上下文，如果有eof，也包含eof
 
 ){
 

@@ -1446,6 +1446,7 @@ object Libgit2Helper {
                         diffItem.deletedLines++
                     }
 
+                    diffItem.allLines++
                     Unit
                 }
 

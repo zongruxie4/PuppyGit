@@ -79,6 +79,7 @@ import com.catpuppyapp.puppygit.data.entity.RepoEntity
 import com.catpuppyapp.puppygit.dev.FlagFileName
 import com.catpuppyapp.puppygit.dev.detailsDiffTestPassed
 import com.catpuppyapp.puppygit.dev.proFeatureEnabled
+import com.catpuppyapp.puppygit.dto.IntBox
 import com.catpuppyapp.puppygit.git.CompareLinePair
 import com.catpuppyapp.puppygit.git.DiffableItem
 import com.catpuppyapp.puppygit.git.PuppyHunkAndLines
@@ -115,6 +116,7 @@ import com.catpuppyapp.puppygit.utils.getRequestDataByState
 import com.catpuppyapp.puppygit.utils.isGoodIndexForList
 import com.catpuppyapp.puppygit.utils.replaceStringResList
 import com.catpuppyapp.puppygit.utils.state.mutableCustomStateListOf
+import com.catpuppyapp.puppygit.utils.state.mutableCustomStateMapOf
 import com.catpuppyapp.puppygit.utils.state.mutableCustomStateOf
 import com.catpuppyapp.puppygit.utils.withMainContext
 import com.github.git24j.core.Diff
@@ -210,6 +212,7 @@ fun DiffScreen(
 //    val relativePathUnderRepoDecoded = (Cache.Map.getThenDel(Cache.Map.Key.diffScreen_UnderRepoPath) as? String)?:""
 
     val needRefresh = rememberSaveable { mutableStateOf("DiffScreen_refresh_init_value_4kc9") }
+    val listState = rememberLazyListState()
 
     //避免某些情况下并发赋值导致报错，不过我不确定 mutableStateList() 返回的 snapshotedList() 默认是不是并发按钮，如果是，就不需要这个锁，我记得好像不是？
     val diffableListLock = remember { Mutex() }
@@ -217,6 +220,7 @@ fun DiffScreen(
     val diffableItemList = mutableCustomStateListOf(keyTag = stateKeyTag, keyName = "diffableItemList") {
         NaviCache.getByType<List<DiffableItem>>(diffableListCacheKey) ?: listOf()
     }
+
 
     //之前有两种类型的list，所以创建了这个函数，历史遗留问题
 //    val getActuallyList:()->List<DiffableItem> = {
@@ -230,9 +234,36 @@ fun DiffScreen(
     }
 
 
-//    val itemIdxAtLazyList = rememberSaveable { mutableStateOf(curItemIndexAtDiffableItemList) }
+    // key 是文件在仓库下的相对路径，value是文件在lazy column的索引
+//    val itemIdxAtLazyColumn_Map = mutableCustomStateMapOf(keyTag = stateKeyTag, keyName = "itemIdxAtLazyColumn_Map") { mapOf<String, Int>() }
 
-//    val indexAndListScrollTargetIndexMap = mutableCustomStateMapOf(keyTag = stateKeyTag, "indexAndListScrollTargetIndexMap") { mapOf<Int, Int>() }
+    val scrollToCurrentItemHeader = { relativePath:String ->
+//        val targetIdx = itemIdxAtLazyColumn_Map.value.get(relativePath)
+        val targetIdx = diffableItemList.value.toList().let {
+            var count = 0
+            for(i in it) {
+                if(relativePath == i.relativePath) {
+                    break
+                }
+
+                // 4 是footer 和 spacer占的item数
+                count += if(i.visible) {
+                    (i.diffItemSaver.allLines + 4 +i.diffItemSaver.hunks.size)
+                }else {
+                    1
+                }
+            }
+
+            count
+        }
+
+        if(AppModel.devModeOn) {
+            MyLog.d(TAG, "#scrollToCurrentItemHeader: targetIdx=$targetIdx")
+        }
+
+        UIHelper.scrollToItem(scope, listState, targetIdx)
+    }
+
     val firstTimeLoad = rememberSaveable { mutableStateOf(true) }
 
 //    val useSubList = rememberSaveable { mutableStateOf(false) }
@@ -463,7 +494,6 @@ fun DiffScreen(
 
     val pageRequest = rememberSaveable { mutableStateOf("") }
 
-    val listState = rememberLazyListState()
 
 
 
@@ -927,7 +957,10 @@ fun DiffScreen(
                 state = listState
             ) {
                 val diffableItemList = diffableItemList.value
-
+//                val itemIdxAtLazyColumn_Map = itemIdxAtLazyColumn_Map.value
+//                itemIdxAtLazyColumn_Map.clear()  //没必要清，存在的路径每次循环都会覆盖，不存在的路径也不可能跳转，所以，没必要清
+//                val itemsCount = IntBox(0)  //别用state系列变量，会死循环
+//                println("itemsCount.intValue: ${itemsCount.intValue}")
                 for((idx, diffableItem) in diffableItemList.toList().withIndex()) {
                     if(isSingleMode && idx != curItemIndex.intValue) continue;
 
@@ -935,6 +968,7 @@ fun DiffScreen(
                     val changeType = diffableItem.changeType
                     val visible = diffableItem.visible
                     val diffableItemFile = diffableItem.toFile()
+                    val relativePath = diffableItem.relativePath
 
                     // 启用了只读模式，或者当前文件不存在（不存在无法编辑，所以启用只读）
                     val readOnlyModeOn = readOnlyModeOn.value || !diffableItemFile.exists();
@@ -972,6 +1006,10 @@ fun DiffScreen(
                         // item里最好就一个root组件，还有，如果使用HorizontalDivider，最好将其放到单独item里，否则有可能崩溃
 
                         item {
+//                            itemsCount.intValue++
+
+//                            itemIdxAtLazyColumn_Map.put(relativePath, itemsCount.intValue)
+
                             // x 放弃，不写footer了）把这个抽成 infobar，footer用同样的样式写
                             // LazyColumn里不能用rememberSaveable，会崩，用remember也有可能会不触发刷新，除非改外部的list触发遍历
                             BarContainer(
@@ -1028,7 +1066,6 @@ fun DiffScreen(
 
 
 
-                    val relativePath = diffableItem.relativePath
 //                    val mapKey = relativePath
 
                     //没diff条目的话，可能正在loading？
@@ -1082,9 +1119,15 @@ fun DiffScreen(
                     //不支持预览二进制文件、超出限制大小、文件未修改
                     if (loadingFinishedButHasErr || unsupportedChangeType || loading || isBinary || isContentSizeOverLimit || fileNoChange) {
                         item {
+//                            itemsCount.intValue++
+
                             DisableSelection {
                                 Column(
-                                    modifier = Modifier.padding(10.dp).fillMaxWidth().height(200.dp),
+                                    modifier = Modifier
+                                        .padding(10.dp)
+                                        .fillMaxWidth()
+                                        .height(200.dp)
+                                    ,
                                     verticalArrangement = Arrangement.Center,
                                     horizontalAlignment = Alignment.CenterHorizontally,
                                 ) {
@@ -1118,6 +1161,8 @@ fun DiffScreen(
 
                         if(isSingleMode) {
                             item {
+//                                itemsCount.intValue++
+
                                 DisableSelection{
                                     NaviButton(
                                         stateKeyTag = stateKeyTag,
@@ -1173,6 +1218,8 @@ fun DiffScreen(
                         // show a notice make user know submodule has uncommitted changes
                         if (submoduleIsDirty) {
                             item {
+//                                itemsCount.intValue++
+
                                 Row(
                                     modifier = Modifier.fillMaxWidth(),
                                     horizontalArrangement = Arrangement.Center,
@@ -1186,6 +1233,8 @@ fun DiffScreen(
 
                         if (diffItem.hunks.isEmpty()) {
                             item {
+//                                itemsCount.intValue++
+
                                 Row(
                                     modifier = Modifier
                                         .fillMaxSize()
@@ -1241,6 +1290,8 @@ fun DiffScreen(
                                             // true or fake context
                                             if (line.originType == Diff.Line.OriginType.CONTEXT.toString()) {
                                                 item {
+//                                                    itemsCount.intValue++
+
                                                     DiffRow(
                                                         index = lineIndex,
                                                         line = line,
@@ -1281,6 +1332,8 @@ fun DiffScreen(
                                                     //若已经显示过，第2次再执行到这这个值就会是null，无需再显示，例如 add/del除了末尾换行符其他都一样，就会被转化为上下文，del先转换为上下文并显示了，等后面遍历到add时就无需再显示了
                                                     if (mergeAddDelLineResult.line != null) {
                                                         item {
+//                                                            itemsCount.intValue++
+
                                                             DiffRow(
                                                                 index = lineIndex,
                                                                 line = mergeAddDelLineResult.line,
@@ -1338,6 +1391,8 @@ fun DiffScreen(
                                                 }
 
                                                 item {
+//                                                    itemsCount.intValue++
+
                                                     DiffRow(
                                                         index = lineIndex,
                                                         line = line,
@@ -1371,7 +1426,8 @@ fun DiffScreen(
                                         }
                                     } else {  // grouped lines by line num
                                         //由于这个是一对一对的，所以如果第一行是一对，实际上两行都会有顶部padding，不过问题不大，看着不太难受
-                                        val lineIndex = mutableIntStateOf(-1) //必须用个什么东西包装一下，不然基本类型会被闭包捕获，值会错
+//                                        val lineIndex = mutableIntStateOf(-1) //必须用个什么东西包装一下，不然基本类型会被闭包捕获，值会错
+                                        val lineIndex = IntBox(-1) //必须用个什么东西包装一下，不然基本类型会被闭包捕获，值会错
                                         hunkAndLines.groupedLines.forEach printLine@{ (_lineNum: Int, lines: Map<String, PuppyLine>) ->
                                             lineIndex.intValue += 1;
                                             val lineIndex = lineIndex.intValue
@@ -1445,6 +1501,8 @@ fun DiffScreen(
 
                                                 if (del != null) {
                                                     item {
+//                                                        itemsCount.intValue++
+
                                                         DiffRow(
                                                             index = lineIndex,
                                                             line = del,
@@ -1478,6 +1536,8 @@ fun DiffScreen(
 
                                                 if (add != null) {
                                                     item {
+//                                                        itemsCount.intValue++
+
                                                         DiffRow(
                                                             index = lineIndex,
                                                             line = add,
@@ -1535,6 +1595,8 @@ fun DiffScreen(
                                                 //                                    lines.put(Diff.Line.OriginType.CONTEXT.toString(), newContextLineFromAddAndDelOnlyLineBreakDifference)
 
                                                 item {
+//                                                    itemsCount.intValue++
+
                                                     DiffRow(
                                                         index = lineIndex,
                                                         //随便拷贝下del或add（不拷贝只改类型也行但不推荐以免有坏影响）把类型改成context，就行了
@@ -1581,6 +1643,8 @@ fun DiffScreen(
                                             // true context
                                             if (context != null) {
                                                 item {
+//                                                    itemsCount.intValue++
+
                                                     //打印context
                                                     DiffRow(
                                                         index = lineIndex,
@@ -1628,6 +1692,8 @@ fun DiffScreen(
                                             || line.originType == Diff.Line.OriginType.CONTEXT.toString()
                                         ) {
                                             item {
+//                                                itemsCount.intValue++
+
                                                 DiffRow(
                                                     index = lineIndex,
                                                     line = line,
@@ -1670,6 +1736,8 @@ fun DiffScreen(
                                         val eofLine = hunkAndLines.lines.get(indexOfEOFNL)
                                         val fakeIndex = -1
                                         item {
+//                                            itemsCount.intValue++
+
                                             DiffRow(
                                                 // for now, the index only used to add top padding to first line, so passing a invalid fakeIndex is ok
                                                 index = fakeIndex,
@@ -1704,6 +1772,8 @@ fun DiffScreen(
                                 }
 
                                 item {
+//                                    itemsCount.intValue++
+
                                 //每个hunk之间显示个分割线，本来想弄成最后一个不显示，但判断索引不太好使，因为有的在上面就return了，索性都显示算了
                                     HorizontalDivider(
                                         modifier = Modifier.padding(vertical = 30.dp),
@@ -1714,12 +1784,16 @@ fun DiffScreen(
                         }
 
                         item {
+//                            itemsCount.intValue++
+
                             Spacer(Modifier.height(50.dp))
                         }
 
                         //切换上下文件和执行操作的按钮
                         if(isSingleMode) {
                             item {
+//                                itemsCount.intValue++
+
                                 DisableSelection {
                                     NaviButton(
                                         stateKeyTag = stateKeyTag,
@@ -1744,14 +1818,18 @@ fun DiffScreen(
                         }
 
                         item {
+//                            itemsCount.intValue++
+
                             Spacer(Modifier.height(100.dp))
                         }
 
                         if(isMultiMode) {
                             item {
+//                                itemsCount.intValue++
+
                                 BarContainer(
                                     horizontalArrangement = Arrangement.Center,
-                                    onClick = scrollToCurrentItemHeader
+                                    onClick = {scrollToCurrentItemHeader(relativePath)}
                                 ) {
                                     InLineIcon(
                                         iconModifier = Modifier.size(iconSize),
