@@ -1271,5 +1271,6 @@
     <!-- new at 20250501 -->
     <string name="expand_all">Expand All</string>
     <string name="collapse_all">Collapse All</string>
+    <string name="patch_mode">Patch Mode</string>
 
 </resources>

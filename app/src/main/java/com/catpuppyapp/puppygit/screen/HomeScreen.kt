@@ -541,6 +541,7 @@ fun HomeScreen(
     val editorPageSearchMode = rememberSaveable{mutableStateOf(false)}
     val editorPageSearchKeyword = mutableCustomStateOf(keyTag = stateKeyTag, keyName = "editorPageSearchKeyword", TextFieldValue(""))
     val editorPageMergeMode = rememberSaveable{mutableStateOf(false)}
+    val editorPagePatchMode = rememberSaveable(settingsSnapshot.value.editor.patchModeOn) { mutableStateOf(settingsSnapshot.value.editor.patchModeOn) }
     val editorReadOnlyMode = rememberSaveable{mutableStateOf(false)}
 
     val editorShowLineNum = rememberSaveable{mutableStateOf(settingsSnapshot.value.editor.showLineNum)}
@@ -1052,6 +1053,7 @@ fun HomeScreen(
                                 editorPageRequest = editorPageRequestFromParent,
                                 editorPageSearchMode=editorPageSearchMode,
                                 editorPageMergeMode=editorPageMergeMode,
+                                editorPagePatchMode=editorPagePatchMode,
                                 readOnlyMode = editorReadOnlyMode,
                                 editorSearchKeyword = editorPageSearchKeyword.value.text,
                                 isSubPageMode = false,
@@ -1311,6 +1313,7 @@ fun HomeScreen(
                     editorSearchKeyword = editorPageSearchKeyword,
                     readOnlyMode = editorReadOnlyMode,
                     editorMergeMode = editorPageMergeMode,
+                    editorPatchMode = editorPagePatchMode,
                     editorShowLineNum=editorShowLineNum,
                     editorLineNumFontSize=editorLineNumFontSize,
                     editorFontSize=editorFontSize,

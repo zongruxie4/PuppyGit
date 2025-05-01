@@ -139,6 +139,7 @@ fun SubPageEditor(
 
     //如果用户pro且功能测试通过，允许使用url传来的初始值，否则一律false
     val editorPageMergeMode = rememberSaveable{mutableStateOf(initMergeMode)}
+    val editorPagePatchMode = rememberSaveable(settings.editor.patchModeOn) { mutableStateOf(settings.editor.patchModeOn) }
 
     val editorPageRequestFromParent = rememberSaveable { mutableStateOf("")}
 
@@ -336,6 +337,7 @@ fun SubPageEditor(
                             editorPageRequest = editorPageRequestFromParent,
                             editorPageSearchMode = editorPageSearchMode,
                             editorPageMergeMode=editorPageMergeMode,
+                            editorPagePatchMode=editorPagePatchMode,
                             readOnlyMode = editorReadOnlyMode,
                             editorSearchKeyword = editorPageSearchKeyword.value.text,
                             isSubPageMode=true,
@@ -423,6 +425,7 @@ fun SubPageEditor(
             editorSearchKeyword = editorPageSearchKeyword,
             readOnlyMode = editorReadOnlyMode,
             editorMergeMode = editorPageMergeMode,
+            editorPatchMode = editorPagePatchMode,
 
             editorShowLineNum=editorShowLineNum,
             editorLineNumFontSize=editorLineNumFontSize,

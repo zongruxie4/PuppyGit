@@ -160,6 +160,7 @@ fun EditorInnerPage(
     editorSearchKeyword:CustomStateSaveable<TextFieldValue>,
     readOnlyMode:MutableState<Boolean>,
     editorMergeMode:MutableState<Boolean>,
+    editorPatchMode:MutableState<Boolean>,
     editorShowLineNum:MutableState<Boolean>,
     editorLineNumFontSize:MutableIntState,
     editorFontSize:MutableIntState,
@@ -194,7 +195,7 @@ fun EditorInnerPage(
         s
     }
 
-    val patchMode = remember(settings.editor.patchModeOn) { settings.editor.patchModeOn }
+
 
     val recentFilesLimit = remember(settings.editor.recentFilesLimit) { settings.editor.recentFilesLimit }
 
@@ -1249,7 +1250,7 @@ fun EditorInnerPage(
             lineNumFontSize=editorLineNumFontSize,
             fontSize=editorFontSize,
             undoStack = undoStack,
-            patchMode = patchMode,
+            patchMode = editorPatchMode.value,
         )
     }
 //    }

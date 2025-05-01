@@ -80,6 +80,7 @@ fun EditorPageActions(
     editorPageRequest:MutableState<String>,
     editorPageSearchMode:MutableState<Boolean>,
     editorPageMergeMode:MutableState<Boolean>,
+    editorPagePatchMode:MutableState<Boolean>,
     readOnlyMode:MutableState<Boolean>,
     editorSearchKeyword:String,
     isSubPageMode:Boolean,
@@ -388,6 +389,23 @@ fun EditorPageActions(
 
                 )
             }
+
+            DropdownMenuItem(
+                enabled = enableMenuItem,
+                text = { Text(stringResource(R.string.patch_mode)) },
+                trailingIcon = {
+                    Icon(
+                        imageVector = if(editorPagePatchMode.value) Icons.Filled.CheckBox else Icons.Filled.CheckBoxOutlineBlank,
+                        contentDescription = null
+                    )
+                },
+                onClick = {
+                    editorPagePatchMode.value = !editorPagePatchMode.value
+
+                    closeMenu()
+                }
+
+            )
 
             DropdownMenuItem(
                 //非readOnly目录才允许开启或关闭readonly状态，否则强制启用readonly状态且不允许关闭
