@@ -42,14 +42,15 @@ fun LongPressAbleIconBtn(
     haptic: HapticFeedback = LocalHapticFeedback.current,
     activityContext:Context =  LocalContext.current,
     pressedCircleSize:Dp = 40.0.dp,
-    onLongClick:(()->Unit)? = {
-        //空白，代表不想显示提示文案
-        if(tooltipText.isNotEmpty()) {
-            //震动反馈，显示tooltip提示
-            haptic.performHapticFeedback(HapticFeedbackType.LongPress)
-            showToast(AppModel.realAppContext, tooltipText, Toast.LENGTH_SHORT)
-        }
-    },
+
+    //空白提示文字，代表不想显示提示文案
+    onLongClick:(()->Unit)? = if(tooltipText.isEmpty()) null else ({
+        //震动反馈，显示tooltip提示
+        haptic.performHapticFeedback(HapticFeedbackType.LongPress)
+        showToast(AppModel.realAppContext, tooltipText, Toast.LENGTH_SHORT)
+
+    }),
+
     onClick: (()->Unit)? = null,
 ) {
     val iconColor = iconColor ?: LocalContentColor.current
