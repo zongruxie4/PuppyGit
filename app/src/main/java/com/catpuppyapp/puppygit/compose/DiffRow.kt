@@ -78,7 +78,7 @@ fun DiffRow (
     line:PuppyLine,
     stringPartList:List<IndexStringPart>? = null,
     fileFullPath:String,
-    isFileAndExist:Boolean,
+    enableLineEditActions:Boolean,
     clipboardManager: ClipboardManager,
     loadingOn:(String)->Unit,
     loadingOff:()->Unit,
@@ -106,11 +106,11 @@ fun DiffRow (
     // disable for EOF, the EOF showing sometimes false-added
     // 禁用EOF点击菜单，EOF有时候假添加，就是明明没有eof，但显示新增了eof，可能是libgit2 bug
     val isNotEof = line.lineNum != LineNum.EOF.LINE_NUM
-    // line edit 选项
-    val enableLineActions = isFileAndExist && isNotEof
+    // line edit 选项，对eof禁用（不过 拷贝 还是启用的）
+    val enableLineEditActions = enableLineEditActions && isNotEof
     val enableSelectCompare = enableSelectCompare && isNotEof
     val enableLineCopy = true
-    val lineClickable = enableLineCopy || enableLineActions || enableSelectCompare
+    val lineClickable = enableLineCopy || enableLineEditActions || enableSelectCompare
 
 
     //不能用默认的rememberSaveable，但能用重写了saver的
@@ -678,7 +678,7 @@ fun DiffRow (
                         onClick ={}
                     )
 
-                    if(enableLineActions) {
+                    if(enableLineEditActions) {
 
                         // EOFNL status maybe wrong, before Edit or Del, must check it actually exists or is not, when edit line num is EOF and EOFNL is not exists, then prepend a LineBreak before users input
                         //编辑或删除前，如果行号是EOF，必须检查EOF NL是否实际存在，如果EOFNL不存在，则先添加一个空行，再写入用户的实际内容，如果执行删除EOF且文件末尾无空行，则不执行任何删除；

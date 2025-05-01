@@ -112,5 +112,6 @@ data class DiffableItem(
         return fhi
     }
 
+    fun toFile():File = File(fullPath)
 
 }

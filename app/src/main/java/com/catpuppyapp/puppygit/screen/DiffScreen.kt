@@ -21,8 +21,10 @@ import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.automirrored.filled.ArrowRight
 import androidx.compose.material.icons.filled.ArrowDropDown
 import androidx.compose.material.icons.filled.Close
+import androidx.compose.material.icons.filled.Lock
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.HorizontalDivider
+import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
@@ -41,6 +43,7 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.platform.LocalClipboardManager
 import androidx.compose.ui.platform.LocalConfiguration
@@ -297,12 +300,15 @@ fun DiffScreen(
 //    } }
 
     // "read-only" mode switchable, if is single, depend on condition; is is multi mode, 仅返回右边是否是local,然后会在遍历时和实际文件是否存在组成完整规则，决定当前条目是否只读
+    // 不能切换，强制启用readonly
     val readOnlySwitchable = remember(localAtDiffRight) { derivedStateOf {
-        if(isSingleMode) localAtDiffRight else localAtDiffRight
+//        if(isSingleMode) localAtDiffRight else localAtDiffRight
+        localAtDiffRight
     }}
 
     // cant switch = force readonly, else init value set to off
     // 不能切换等于强制只读，否则初始值设为关闭只读模式
+    //配置文件启用了只读模式，或者被比较的右边的对象不是本地而强制启用只读模式
     val readOnlyModeOn = rememberSaveable(settings.diff.readOnly, readOnlySwitchable.value) { mutableStateOf(settings.diff.readOnly || readOnlySwitchable.value.not()) }
 
     val removeTargetFromChangeList = {targetItem: StatusTypeEntrySaver ->
@@ -919,10 +925,12 @@ fun DiffScreen(
                     val diffItem = diffableItem.diffItemSaver
                     val changeType = diffableItem.changeType
                     val visible = diffableItem.visible
-
+                    val diffableItemFile = diffableItem.toFile()
 
                     //这header得调一下，左边加个箭头点击能收起
                     if (showMyFileHeader) {
+                        // 启用了只读模式，或者当前文件不存在（不存在无法编辑，所以启用只读）
+                        val readOnly = readOnlyModeOn.value || !diffableItemFile.exists()
 
                         val switchVisible = {
                             diffableItemList[idx] = diffableItem.copy(visible = visible.not())
@@ -964,7 +972,16 @@ fun DiffScreen(
                                     //test
                                     Row(
                                         modifier = Modifier.clickable {initDetailsDialog(idx)},
+                                        verticalAlignment = Alignment.CenterVertically
                                     ) {
+
+                                        if(readOnly) {
+                                            Icon(
+                                                modifier = Modifier.size(12.dp),
+                                                imageVector = Icons.Filled.Lock,
+                                                contentDescription = stringResource(R.string.read_only),
+                                            )
+                                        }
 
                                         Text(
                                             text = buildAnnotatedString {
@@ -972,8 +989,8 @@ fun DiffScreen(
                                                     append(diffItem.getFileNameEllipsis(titleFileNameLenLimit)+": ")
                                                 }
 
-                                                withStyle(style = SpanStyle(color = UIHelper.getChangeTypeColor(Cons.gitStatusNew))) { append("+"+diffItem.addedLines+", ") }
-                                                withStyle(style = SpanStyle(color = UIHelper.getChangeTypeColor(Cons.gitStatusDeleted))) { append("-"+diffItem.deletedLines) }
+                                                withStyle(style = SpanStyle(color = Color(0xFF4CAF50))) { append("+"+diffItem.addedLines+", ") }
+                                                withStyle(style = SpanStyle(color = Color(0xFFF44336))) { append("-"+diffItem.deletedLines) }
                                             } ,
 
 
@@ -1024,10 +1041,11 @@ fun DiffScreen(
                     // only check when local as diff right(xxx..local)
                     // 若是文件且存在则启用
                     //用来检测是否启用 行点击菜单，但当时名字没起好，所以就叫这名了
-                    val isFileAndExist = if(localAtDiffRight.not() || readOnlyModeOn.value || isSubmodule || (changeType != Cons.gitStatusNew && changeType != Cons.gitStatusModified)) {
+                    val enableLineEditActions = if(localAtDiffRight.not() || readOnlyModeOn.value || isSubmodule || (changeType != Cons.gitStatusNew && changeType != Cons.gitStatusModified)) {
                             false
                         }else {
-                            File(curRepo.value.fullSavePath, relativePath).let { f ->
+                            //存在且是文件且不匹配if里不能编辑的情况，就能编辑
+                            diffableItemFile.let { f ->
                                 f.exists() && f.isFile
                             }
                         }
@@ -1204,7 +1222,7 @@ fun DiffScreen(
                                                         index = lineIndex,
                                                         line = line,
                                                         fileFullPath = fileFullPath,
-                                                        isFileAndExist = isFileAndExist,
+                                                        enableLineEditActions = enableLineEditActions,
                                                         clipboardManager = clipboardManager,
                                                         loadingOn = loadingOnParent,
                                                         loadingOff = loadingOffParent,
@@ -1244,7 +1262,7 @@ fun DiffScreen(
                                                                 index = lineIndex,
                                                                 line = mergeAddDelLineResult.line,
                                                                 fileFullPath = fileFullPath,
-                                                                isFileAndExist = isFileAndExist,
+                                                                enableLineEditActions = enableLineEditActions,
                                                                 clipboardManager = clipboardManager,
                                                                 loadingOn = loadingOnParent,
                                                                 loadingOff = loadingOffParent,
@@ -1302,7 +1320,7 @@ fun DiffScreen(
                                                         line = line,
                                                         fileFullPath = fileFullPath,
                                                         stringPartList = stringPartListWillUse,
-                                                        isFileAndExist = isFileAndExist,
+                                                        enableLineEditActions = enableLineEditActions,
                                                         clipboardManager = clipboardManager,
                                                         loadingOn = loadingOnParent,
                                                         loadingOff = loadingOffParent,
@@ -1409,7 +1427,7 @@ fun DiffScreen(
                                                             line = del,
                                                             stringPartList = delStringPartListWillUse,
                                                             fileFullPath = fileFullPath,
-                                                            isFileAndExist = isFileAndExist,
+                                                            enableLineEditActions = enableLineEditActions,
                                                             clipboardManager = clipboardManager,
                                                             loadingOn = loadingOnParent,
                                                             loadingOff = loadingOffParent,
@@ -1442,7 +1460,7 @@ fun DiffScreen(
                                                             line = add,
                                                             stringPartList = addStringPartListWillUse,
                                                             fileFullPath = fileFullPath,
-                                                            isFileAndExist = isFileAndExist,
+                                                            enableLineEditActions = enableLineEditActions,
                                                             clipboardManager = clipboardManager,
                                                             loadingOn = loadingOnParent,
                                                             loadingOff = loadingOffParent,
@@ -1500,7 +1518,7 @@ fun DiffScreen(
                                                         //这里del肯定不为null，因为 mergeDelAndAddToFakeContext 的条件包含了del和add都不为null
                                                         line = del!!.copy(originType = Diff.Line.OriginType.CONTEXT.toString()),
                                                         fileFullPath = fileFullPath,
-                                                        isFileAndExist = isFileAndExist,
+                                                        enableLineEditActions = enableLineEditActions,
                                                         clipboardManager = clipboardManager,
                                                         loadingOn = loadingOnParent,
                                                         loadingOff = loadingOffParent,
@@ -1545,7 +1563,7 @@ fun DiffScreen(
                                                         index = lineIndex,
                                                         line = context,
                                                         fileFullPath = fileFullPath,
-                                                        isFileAndExist = isFileAndExist,
+                                                        enableLineEditActions = enableLineEditActions,
                                                         clipboardManager = clipboardManager,
                                                         loadingOn = loadingOnParent,
                                                         loadingOff = loadingOffParent,
@@ -1591,7 +1609,7 @@ fun DiffScreen(
                                                     index = lineIndex,
                                                     line = line,
                                                     fileFullPath = fileFullPath,
-                                                    isFileAndExist = isFileAndExist,
+                                                    enableLineEditActions = enableLineEditActions,
                                                     clipboardManager = clipboardManager,
                                                     loadingOn = loadingOnParent,
                                                     loadingOff = loadingOffParent,
@@ -1635,7 +1653,7 @@ fun DiffScreen(
 
                                                 line = LineNum.EOF.transLineToEofLine(eofLine, add = eofLine.originType == Diff.Line.OriginType.ADD_EOFNL.toString()),
                                                 fileFullPath = fileFullPath,
-                                                isFileAndExist = isFileAndExist,
+                                                enableLineEditActions = enableLineEditActions,
                                                 clipboardManager = clipboardManager,
                                                 loadingOn = loadingOnParent,
                                                 loadingOff = loadingOffParent,
