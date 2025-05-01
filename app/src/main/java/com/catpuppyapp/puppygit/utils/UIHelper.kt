@@ -356,6 +356,10 @@ object UIHelper {
     }
 
 
+    fun getDividerColor(inDarkTheme: Boolean = Theme.inDarkTheme):Color {
+        return if (inDarkTheme) Color.DarkGray.copy(alpha = 0.2f) else Color.LightGray.copy(alpha = 0.2f)
+    }
+
     fun getChangeTypeColor(type: String):Color {
         if(type == Cons.gitStatusNew) {
             return if(Theme.inDarkTheme) MyStyleKt.ChangeListItemColor.changeTypeAdded_darkTheme else MyStyleKt.ChangeListItemColor.changeTypeAdded

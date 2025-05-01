@@ -384,7 +384,7 @@ fun FileEditor(
                             )
                             .bottomBorder(
                                 strokeWidth = 1.dp,
-                                color = if (inDarkTheme) Color.DarkGray.copy(alpha = 0.2f) else Color.LightGray.copy(alpha = 0.2f)
+                                color = UIHelper.getDividerColor()
                             )
                     ) {
                         if(showLineNum.value) {

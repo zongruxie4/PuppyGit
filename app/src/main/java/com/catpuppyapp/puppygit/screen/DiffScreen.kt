@@ -2,7 +2,9 @@ package com.catpuppyapp.puppygit.screen
 
 import android.content.Context
 import androidx.activity.compose.BackHandler
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -951,15 +953,26 @@ fun DiffScreen(
                             }
                         }
 
-                        item{
-                            HorizontalDivider()
-                        }
+                        // item里最好就一个root组件，还有，如果使用HorizontalDivider，最好将其放到单独item里，否则有可能崩溃
+                        // item里最好就一个root组件，还有，如果使用HorizontalDivider，最好将其放到单独item里，否则有可能崩溃
+                        // item里最好就一个root组件，还有，如果使用HorizontalDivider，最好将其放到单独item里，否则有可能崩溃
+                        // item里最好就一个root组件，还有，如果使用HorizontalDivider，最好将其放到单独item里，否则有可能崩溃
+                        // item里最好就一个root组件，还有，如果使用HorizontalDivider，最好将其放到单独item里，否则有可能崩溃
+                        // item里最好就一个root组件，还有，如果使用HorizontalDivider，最好将其放到单独item里，否则有可能崩溃
+                        // item里最好就一个root组件，还有，如果使用HorizontalDivider，最好将其放到单独item里，否则有可能崩溃
+                        // item里最好就一个root组件，还有，如果使用HorizontalDivider，最好将其放到单独item里，否则有可能崩溃
+                        // item里最好就一个root组件，还有，如果使用HorizontalDivider，最好将其放到单独item里，否则有可能崩溃
+                        // item里最好就一个root组件，还有，如果使用HorizontalDivider，最好将其放到单独item里，否则有可能崩溃
+                        // item里最好就一个root组件，还有，如果使用HorizontalDivider，最好将其放到单独item里，否则有可能崩溃
+                        // item里最好就一个root组件，还有，如果使用HorizontalDivider，最好将其放到单独item里，否则有可能崩溃
+                        // item里最好就一个root组件，还有，如果使用HorizontalDivider，最好将其放到单独item里，否则有可能崩溃
 
                         item {
                             // x 放弃，不写footer了）把这个抽成 infobar，footer用同样的样式写
                             // LazyColumn里不能用rememberSaveable，会崩，用remember也有可能会不触发刷新，除非改外部的list触发遍历
                             Row(
                                 modifier = Modifier
+                                    .border(BorderStroke(2.dp, UIHelper.getDividerColor()))
                                     .clickable { switchVisible() }
                                     .background(MaterialTheme.colorScheme.surfaceDim)
                                     .fillMaxWidth()
@@ -1013,10 +1026,6 @@ fun DiffScreen(
                                 }
                             }
 
-                        }
-
-                        item{
-                            HorizontalDivider()
                         }
                     }
 
@@ -1798,11 +1807,12 @@ fun DiffScreen(
             firstTimeLoad.value = false
 
             scope.launch {
-                //等下列表加载，不然对应条目还没加载出来呢，你就滚，不一定会滚到哪里去！
+                //等下列表加载，不然对应条目还没加载出来呢，你就滚，不一定会滚到哪！
                 delay(500)
                 // *3是因为每个条目显示header会使用3个item，原本是显示一个的，但lazy column有bug，如果把divider和row放一起，
                 // 且写成 item {row, divider} 这个顺序，滑动列表，会崩溃，所以只好把divider单独列出来了
-                UIHelper.scrollToItem(scope, listState, curItemIndex.intValue*3+1)
+//                UIHelper.scrollToItem(scope, listState, curItemIndex.intValue*3+1)
+                UIHelper.scrollToItem(scope, listState, curItemIndex.intValue)
             }
         }
 
