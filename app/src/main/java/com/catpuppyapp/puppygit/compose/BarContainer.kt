@@ -13,6 +13,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
+import com.catpuppyapp.puppygit.dto.MenuIconBtnItem
 import com.catpuppyapp.puppygit.utils.UIHelper
 
 @Composable
@@ -20,6 +21,7 @@ fun BarContainer(
     modifier: Modifier = Modifier,
     horizontalArrangement: Arrangement.Horizontal = Arrangement.SpaceBetween,
     verticalAlignment: Alignment.Vertical = Alignment.CenterVertically,
+    actions:List<MenuIconBtnItem>? = null,
     onClick: (()->Unit)? = null,
     content: @Composable ()->Unit,
 ) {
@@ -40,5 +42,11 @@ fun BarContainer(
         verticalAlignment = verticalAlignment,
     ) {
         content()
+
+        if(actions != null && actions.isNotEmpty()) {
+            ScrollableRow {
+
+            }
+        }
     }
 }

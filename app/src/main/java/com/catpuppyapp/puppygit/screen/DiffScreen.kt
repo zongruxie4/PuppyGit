@@ -640,6 +640,7 @@ fun DiffScreen(
         }
     }
 
+    //若itemIdx传-1表示不需要弹窗显示条目相关信息
     val initDetailsDialog = { itemIdx:Int ->
         val curItem = diffableItemList.value.getOrNull(itemIdx)
 
@@ -647,6 +648,10 @@ fun DiffScreen(
         val sb = StringBuilder()
         if(treeOid1Str.value != Cons.git_AllZeroOidStr || treeOid2Str.value != Cons.git_AllZeroOidStr) {
             sb.append(activityContext.getString(R.string.comparing_label)+": ").append(Libgit2Helper.getLeftToRightDiffCommitsText(treeOid1Str.value, treeOid2Str.value, false)).append(suffix)
+
+            // 显示数量，例如： "当前：1，总数：10"
+            sb.append(replaceStringResList(activityContext.getString(R.string.current_n_all_m), listOf(itemIdx+1, diffableItemList.value.size))).append(suffix)
+
         }
 
         //有效则显示条目信息，否则仅显示粗略信息
@@ -738,8 +743,7 @@ fun DiffScreen(
     //点击title显示详情会请求这里，本页面内部显示详情直接调init，不走这里
     if(pageRequest.value == PageRequest.showDetails) {
         PageRequest.clearStateThenDoAct(pageRequest) {
-            //传-1表示不需要弹窗显示条目相关信息
-            initDetailsDialog(if(isSingleMode) curItemIndex.intValue else -1)
+            initDetailsDialog(curItemIndex.intValue)
         }
     }
 
