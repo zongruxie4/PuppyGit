@@ -1,11 +1,15 @@
 package com.catpuppyapp.puppygit.dto
 
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.unit.Dp
+import androidx.compose.ui.unit.dp
 
 data class MenuIconBtnItem (
     val icon:ImageVector,
     val text:String,
     val desc:String = text, // for accessbility
+    val size:Dp = 20.dp,
+    val pressedCircleSize:Dp = size+8.dp,
     val enabled:()->Boolean={true},
     val visible:()->Boolean={true},
     val onClick:()->Unit,

@@ -8,6 +8,7 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
@@ -57,6 +58,8 @@ fun BarContainer(
                     if(a.visible().not()) continue
 
                     LongPressAbleIconBtn(
+                        iconModifier = modifier.size(a.size),
+                        pressedCircleSize = a.pressedCircleSize,
                         icon = a.icon,
                         tooltipText = a.text,
                         iconContentDesc = a.desc,

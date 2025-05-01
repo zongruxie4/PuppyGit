@@ -294,7 +294,7 @@ fun DiffScreen(
         val fontWidthPx = spToPx(Typography.bodyLarge.fontSize, density)
         try {
             //根据屏幕宽度计算标题栏能显示的最大文件名，最后除以几就是限制不要超过屏幕的几分之1
-            (scrWidthPx / fontWidthPx / 3).toInt()
+            (scrWidthPx / fontWidthPx / 2).toInt()
         }catch (e: Exception) {
             //这个不太危险，出错也没事，所以没必要记到error级别
             MyLog.w(TAG, "#titleFileNameLenLimit: calculate title font length limit err: ${e.localizedMessage}")
