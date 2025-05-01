@@ -1268,4 +1268,8 @@
     <string name="append_a_line">Append a line</string>
     <string name="restart_app">Restart App</string>
 
+    <!-- new at 20250501 -->
+    <string name="expand_all">Expand All</string>
+    <string name="collapse_all">Collapse All</string>
+
 </resources>

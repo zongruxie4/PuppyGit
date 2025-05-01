@@ -4,6 +4,8 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.OpenInNew
 import androidx.compose.material.icons.filled.CheckBox
 import androidx.compose.material.icons.filled.CheckBoxOutlineBlank
+import androidx.compose.material.icons.filled.DensitySmall
+import androidx.compose.material.icons.filled.Expand
 import androidx.compose.material.icons.filled.FileOpen
 import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.material.icons.filled.Refresh
@@ -27,16 +29,13 @@ import com.catpuppyapp.puppygit.constants.PageRequest
 import com.catpuppyapp.puppygit.dev.detailsDiffTestPassed
 import com.catpuppyapp.puppygit.dev.proFeatureEnabled
 import com.catpuppyapp.puppygit.play.pro.R
-import com.catpuppyapp.puppygit.screen.functions.openFileWithInnerSubPageEditor
 import com.catpuppyapp.puppygit.settings.SettingsUtil
-import com.catpuppyapp.puppygit.utils.Msg
-import com.catpuppyapp.puppygit.utils.MyLog
-import java.io.File
 
 private const val TAG = "DiffPageActions"
 
 @Composable
 fun DiffPageActions(
+    isMultiMode: Boolean,
     fromTo:String,
     changeType: String,
     refreshPage: () -> Unit,
@@ -55,7 +54,7 @@ fun DiffPageActions(
 ) {
 
 //    val navController = AppModel.navController
-    val appContext= LocalContext.current
+    val activityContext = LocalContext.current
 
     //这个变量相关的判断都没什么鸟用，都是禁用或启用都无所谓的，索性设为true了
 //    val fileChangeTypeIsModified = changeType == Cons.gitStatusModified
@@ -108,50 +107,45 @@ fun DiffPageActions(
         refreshPage()
     }
 
-    LongPressAbleIconBtn(
-        tooltipText = stringResource(R.string.open),
-        icon = Icons.Filled.FileOpen,
-        iconContentDesc = stringResource(id = R.string.open),
-    ) label@{
-        // go editor sub page
-//        showToast(appContext,filePath)
-        try {
-            //如果文件不存在，提示然后返回
-            if(!File(fileFullPath).exists()) {
-                Msg.requireShowLongDuration(appContext.getString(R.string.file_doesnt_exist))
-                return@label
-            }
+    if(isMultiMode){
 
-            //跳转到SubEditor页面
-            //冲突条目无法进入diff页面，所以能预览diff定不是冲突条目，因此跳转到editor时应将mergemode初始化为假
-            //diff页面不可能显示app内置目录下的文件，所以一率可编辑
-            openFileWithInnerSubPageEditor(filePath = fileFullPath, mergeMode = false, readOnly = false)
-
-        }catch (e:Exception) {
-            Msg.requireShowLongDuration("err:"+e.localizedMessage)
-            MyLog.e(TAG, "'Open' err:"+e.stackTraceToString())
+        LongPressAbleIconBtn(
+            tooltipText = stringResource(R.string.expand_all),
+            icon = Icons.Filled.Expand,
+            iconContentDesc = stringResource(R.string.expand_all),
+        ) label@{
+            request.value = PageRequest.expandAll
         }
 
-    }
+        LongPressAbleIconBtn(
+            tooltipText = stringResource(R.string.collapse_all),
+            icon = Icons.Filled.DensitySmall,
+            iconContentDesc = stringResource(R.string.collapse_all),
+        ) label@{
+            request.value = PageRequest.collapseAll
+        }
 
-    LongPressAbleIconBtn(
-        tooltipText = stringResource(R.string.open_as),
-        icon = Icons.AutoMirrored.Filled.OpenInNew,
-        iconContentDesc = stringResource(id = R.string.open_as),
-    ) label@{
-        try {
-            if(!File(fileFullPath).exists()) {
-                Msg.requireShowLongDuration(appContext.getString(R.string.file_doesnt_exist))
-                return@label
-            }
 
+    } else {
+        LongPressAbleIconBtn(
+            tooltipText = stringResource(R.string.open),
+            icon = Icons.Filled.FileOpen,
+            iconContentDesc = stringResource(id = R.string.open),
+        ) label@{
+            request.value = PageRequest.requireOpenInInnerEditor
+
+        }
+
+
+        LongPressAbleIconBtn(
+            tooltipText = stringResource(R.string.open_as),
+            icon = Icons.AutoMirrored.Filled.OpenInNew,
+            iconContentDesc = stringResource(id = R.string.open_as),
+        ) label@{
             //显示OpenAs弹窗
             request.value = PageRequest.showOpenAsDialog
-
-        }catch (e:Exception) {
-            Msg.requireShowLongDuration("err:"+e.localizedMessage)
-            MyLog.e(TAG, "'Open As' err:"+e.stackTraceToString())
         }
+
     }
 
     //menu icon

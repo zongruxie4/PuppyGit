@@ -91,6 +91,7 @@ import com.catpuppyapp.puppygit.play.pro.R
 import com.catpuppyapp.puppygit.screen.content.homescreen.scaffold.actions.DiffPageActions
 import com.catpuppyapp.puppygit.screen.content.homescreen.scaffold.title.DiffScreenTitle
 import com.catpuppyapp.puppygit.screen.functions.ChangeListFunctions
+import com.catpuppyapp.puppygit.screen.functions.openFileWithInnerSubPageEditor
 import com.catpuppyapp.puppygit.screen.shared.DiffFromScreen
 import com.catpuppyapp.puppygit.screen.shared.SharedState
 import com.catpuppyapp.puppygit.settings.SettingsCons
@@ -564,6 +565,13 @@ fun DiffScreen(
 
 
     val showCreatePatchDialog = rememberSaveable { mutableStateOf(false)}
+    val createPatchList = mutableCustomStateListOf(keyTag = stateKeyTag, keyName = "createPatchList") { listOf<String>() }
+    val initCreatePatchDialog = { relativePaths:List<String> ->
+        createPatchList.value.clear()
+        createPatchList.value.addAll(relativePaths)
+
+        showCreatePatchDialog.value=true
+    }
     if(showCreatePatchDialog.value) {
         ConfirmDialog(
             title = stringResource(R.string.create_patch),
@@ -578,9 +586,10 @@ fun DiffScreen(
             showCreatePatchDialog.value = false
 
             val curRepo = curRepo.value
-            val relativePathUnderRepo = getCurItem().relativePath
+//            val relativePathUnderRepo = getCurItem().relativePath
             val leftCommit = treeOid1Str.value
             val rightCommit = treeOid2Str.value
+            val createPatchList = createPatchList.value.toList()
 
             doJobThenOffLoading(loadingOn,loadingOff, activityContext.getString(R.string.creating_patch)) job@{
                 try {
@@ -589,7 +598,7 @@ fun DiffScreen(
                         leftCommit = leftCommit,
                         rightCommit = rightCommit,
                         fromTo = fromTo,
-                        relativePaths = listOf(relativePathUnderRepo)
+                        relativePaths = createPatchList
                     );
 
                     if(savePatchRet.success()) {
@@ -727,17 +736,77 @@ fun DiffScreen(
     }
 
 
-    if(pageRequest.value == PageRequest.showOpenAsDialog) {
-        PageRequest.clearStateThenDoAct(pageRequest) {
-//            readOnlyForOpenAsDialog.value = FsUtils.isReadOnlyDir(fileFullPath.value)
-            openAsDialogFilePath.value = getCurItem().fullPath
-            showOpenAsDialog.value=true
-        }
-    }
 
     if(pageRequest.value == PageRequest.createPatch) {
         PageRequest.clearStateThenDoAct(pageRequest) {
-            showCreatePatchDialog.value=true
+            //从顶栏发起的请求，针对所有条目
+            initCreatePatchDialog(diffableItemList.value.map { it.relativePath })
+        }
+    }
+
+
+    if(pageRequest.value == PageRequest.showOpenAsDialog) {
+        PageRequest.clearStateThenDoAct(pageRequest) {
+            try {
+                val fileFullPath = getCurItem().fullPath
+                if(!File(fileFullPath).exists()) {
+                    Msg.requireShowLongDuration(activityContext.getString(R.string.file_doesnt_exist))
+                }else {
+                    openAsDialogFilePath.value = fileFullPath
+                    showOpenAsDialog.value=true
+                }
+            }catch (e:Exception) {
+                Msg.requireShowLongDuration("err: "+e.localizedMessage)
+                MyLog.e(TAG, "'Open As' err: "+e.stackTraceToString())
+            }
+
+        }
+    }
+
+    if(pageRequest.value == PageRequest.requireOpenInInnerEditor) {
+        PageRequest.clearStateThenDoAct(pageRequest) {
+
+            // go editor sub page
+            //        showToast(appContext,filePath)
+            try {
+                //如果文件不存在，提示然后返回
+                val fileFullPath = getCurItem().fullPath
+                if(!File(fileFullPath).exists()) {
+                    Msg.requireShowLongDuration(activityContext.getString(R.string.file_doesnt_exist))
+                }else {
+                    //跳转到SubEditor页面
+                    //冲突条目无法进入diff页面，所以能预览diff定不是冲突条目，因此跳转到editor时应将mergemode初始化为假
+                    //diff页面不可能显示app内置目录下的文件，所以一率可编辑
+                    openFileWithInnerSubPageEditor(filePath = fileFullPath, mergeMode = false, readOnly = false)
+                }
+
+            }catch (e:Exception) {
+                Msg.requireShowLongDuration("err: "+e.localizedMessage)
+                MyLog.e(TAG, "'Open in inner editor' err: "+e.stackTraceToString())
+            }
+
+        }
+    }
+
+    val showOrHideAll = { show:Boolean ->
+        val indexList = mutableListOf<Int>()
+        val allExpandList = diffableItemList.value.mapIndexed {idx, it-> indexList.add(idx); it.copy(visible = show) }
+        diffableItemList.value.clear()
+        diffableItemList.value.addAll(allExpandList)
+
+        //刷新页面
+        requireRefreshSubList(indexList)
+    }
+
+    if(pageRequest.value == PageRequest.expandAll) {
+        PageRequest.clearStateThenDoAct(pageRequest) {
+            showOrHideAll(true)
+        }
+    }
+
+    if(pageRequest.value == PageRequest.collapseAll) {
+        PageRequest.clearStateThenDoAct(pageRequest) {
+            showOrHideAll(false)
         }
     }
 
@@ -918,6 +987,7 @@ fun DiffScreen(
                         FontSizeAdjuster(fontSize = lineNumFontSize, resetValue = SettingsCons.defaultLineNumFontSize)
                     }else {
                         DiffPageActions(
+                            isMultiMode = isMultiMode,
                             fromTo=fromTo,
                             changeType=getCurItem().changeType,
                             refreshPage = { changeStateTriggerRefreshPage(needRefresh) },

@@ -24,6 +24,9 @@ object PageRequest {
 //    const val goToBranch ="goToBranch"  //goToBranch#branchName，#后面是要goto的分支名
 
 
+    const val requireOpenInInnerEditor = "requireOpenInInnerEditor"
+    const val expandAll = "expandAll"
+    const val collapseAll = "collapseAll"
     const val goToStashPage = "goToStashPage"
     const val goToInnerDataStorage = "goToInnerDataStorage"
     const val goToExternalDataStorage = "goToExternalDataStorage"

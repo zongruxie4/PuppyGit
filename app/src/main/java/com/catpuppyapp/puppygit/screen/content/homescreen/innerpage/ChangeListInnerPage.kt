@@ -909,6 +909,7 @@ fun ChangeListInnerPage(
 
 
                         try {
+                            //如果是从DiffScreen返回带来的列表，仅针对在diff页面查看的条目执行操作
                             val listForStage = if(actFromDiffScreen_tmp) (Cache.getByType<List<StatusTypeEntrySaver>>(Cache.Key.diffableList_of_fromDiffScreenBackToWorkTreeChangeList)?:listOf()) else itemList.value.toList()
 
 
