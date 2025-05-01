@@ -1,6 +1,5 @@
 package com.catpuppyapp.puppygit.screen
 
-import android.content.Context
 import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -12,6 +11,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.text.selection.DisableSelection
@@ -128,7 +128,6 @@ import com.catpuppyapp.puppygit.utils.isGoodIndexForList
 import com.catpuppyapp.puppygit.utils.replaceStringResList
 import com.catpuppyapp.puppygit.utils.state.mutableCustomStateListOf
 import com.catpuppyapp.puppygit.utils.state.mutableCustomStateOf
-import com.catpuppyapp.puppygit.utils.withMainContext
 import com.github.git24j.core.Diff
 import com.github.git24j.core.Repository
 import kotlinx.coroutines.delay
@@ -916,6 +915,12 @@ fun DiffScreen(
         }
     }
 
+    if(pageRequest.value == PageRequest.goToCurItem) {
+        PageRequest.clearStateThenDoAct(pageRequest) {
+            scrollToCurrentItemHeader(getCurItem().relativePath)
+        }
+    }
+
 
 
 
@@ -1415,7 +1420,6 @@ fun DiffScreen(
                                     //文件名，添加行，删除行
                                     //test
                                     Row(
-                                        modifier = Modifier.clickable {initDetailsDialog(idx)},
                                         verticalAlignment = Alignment.CenterVertically
                                     ) {
 
@@ -1424,20 +1428,24 @@ fun DiffScreen(
                                         }
 
                                         Text(
+                                            modifier = Modifier.clickable { initDetailsDialog(idx) }.widthIn(min = MyStyleKt.Title.clickableTitleMinWidth),
                                             fontSize = MyStyleKt.Title.firstLineFontSizeSmall,
                                             text = buildAnnotatedString {
                                                 withStyle(style = SpanStyle(color = UIHelper.getChangeTypeColor(changeType))) {
                                                     append(diffableItem.getFileNameEllipsis(titleFileNameLenLimit)+": ")
                                                 }
-
-                                                if(diffableItem.maybeLoadedAtLeastOnce()) {
-                                                    withStyle(style = SpanStyle(color = Theme.mdGreen)) { append("+"+diffItem.addedLines+", ") }
-                                                    withStyle(style = SpanStyle(color = Theme.mdRed)) { append("-"+diffItem.deletedLines) }
-                                                }
                                             } ,
-
-
                                         )
+
+                                        if(diffableItem.maybeLoadedAtLeastOnce()) {
+                                            Text(
+                                                fontSize = MyStyleKt.Title.firstLineFontSizeSmall,
+                                                text = buildAnnotatedString {
+                                                        withStyle(style = SpanStyle(color = Theme.mdGreen)) { append("+"+diffItem.addedLines+", ") }
+                                                        withStyle(style = SpanStyle(color = Theme.mdRed)) { append("-"+diffItem.deletedLines) }
+                                                }
+                                            )
+                                        }
 
                                     }
                                 }

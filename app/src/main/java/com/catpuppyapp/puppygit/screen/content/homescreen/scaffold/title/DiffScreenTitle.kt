@@ -63,7 +63,13 @@ fun DiffScreenTitle(
                         },
                     ) {  //onClick
                         //show details , include file name and path
-                        request.value = PageRequest.showDetails
+
+                        //对于多选模式来说，点击顶栏回到当前条目标题，比显示详情有用，至于显示详情，可通过点击当前条目的标题栏文件名启用
+                        request.value = if(isMultiMode) {
+                            PageRequest.goToCurItem
+                        }else {
+                            PageRequest.showDetails
+                        }
                     }
             ) {
 
