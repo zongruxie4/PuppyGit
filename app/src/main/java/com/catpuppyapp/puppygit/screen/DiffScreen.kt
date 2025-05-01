@@ -236,8 +236,8 @@ fun DiffScreen(
         val scrWidthPx = dpToPx(configuration.screenWidthDp, density)
         val fontWidthPx = spToPx(Typography.bodyLarge.fontSize, density)
         try {
-            //根据屏幕宽度计算标题栏能显示的最大文件名，不要超过屏幕宽度的三分之1
-            (scrWidthPx / fontWidthPx / 3).toInt()
+            //根据屏幕宽度计算标题栏能显示的最大文件名，最后除以几就是限制不要超过屏幕的几分之1
+            (scrWidthPx / fontWidthPx / 4).toInt()
         }catch (e: Exception) {
             //这个不太危险，出错也没事，所以没必要记到error级别
             MyLog.w(TAG, "#titleFileNameLenLimit: calculate title font length limit err: ${e.localizedMessage}")
@@ -1174,7 +1174,7 @@ fun DiffScreen(
                             val reForEachDiffContent = {reForEachDiffContent(relativePath)}
                             // modified，并且设置项启用，则启用
                             val enableSelectCompare = changeType == Cons.gitStatusModified && enableSelectCompare;
-                            // x 放屁，有必要检查，非modified类型不会进行比较，所以显示的内容不会有差异，因此启用选择比较无意义) 设置项启用则启用，不管文件类型，之前判断不是修改就禁用，但好像没必要啊，就算不是modified，也应该可选择比较，复制行之类的
+                            // 设置项启用则启用，不管文件类型，就算是删除的文件也可使用菜单的拷贝功能，之前判断不是修改就禁用
 //                            val enableSelectCompare = enableSelectCompare.value;
 
                             //顶部padding，要把这个颜色弄得和当前行的类型（context/add/del）弄得一样才不违和，但处理起来有点麻烦，算了
