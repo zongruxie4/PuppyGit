@@ -22,7 +22,8 @@ import com.catpuppyapp.puppygit.play.pro.findActivity
 object Theme {
     val Orange = Color(0xFFFF5722)
     val darkLightBlue = Color(0xDF456464)
-
+    val mdGreen = Color(0xFF4CAF50)
+    val mdRed = Color(0xFFF44336)
 
 
     const val auto = 0

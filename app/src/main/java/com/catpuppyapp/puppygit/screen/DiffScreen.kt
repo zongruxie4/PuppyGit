@@ -43,7 +43,6 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.platform.LocalClipboardManager
 import androidx.compose.ui.platform.LocalConfiguration
@@ -94,6 +93,7 @@ import com.catpuppyapp.puppygit.screen.shared.SharedState
 import com.catpuppyapp.puppygit.settings.SettingsCons
 import com.catpuppyapp.puppygit.settings.SettingsUtil
 import com.catpuppyapp.puppygit.style.MyStyleKt
+import com.catpuppyapp.puppygit.ui.theme.Theme
 import com.catpuppyapp.puppygit.ui.theme.Typography
 import com.catpuppyapp.puppygit.utils.AppModel
 import com.catpuppyapp.puppygit.utils.Libgit2Helper
@@ -989,8 +989,8 @@ fun DiffScreen(
                                                     append(diffItem.getFileNameEllipsis(titleFileNameLenLimit)+": ")
                                                 }
 
-                                                withStyle(style = SpanStyle(color = Color(0xFF4CAF50))) { append("+"+diffItem.addedLines+", ") }
-                                                withStyle(style = SpanStyle(color = Color(0xFFF44336))) { append("-"+diffItem.deletedLines) }
+                                                withStyle(style = SpanStyle(color = Theme.mdGreen)) { append("+"+diffItem.addedLines+", ") }
+                                                withStyle(style = SpanStyle(color = Theme.mdRed)) { append("-"+diffItem.deletedLines) }
                                             } ,
 
 
