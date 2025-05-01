@@ -953,7 +953,9 @@ fun DiffScreen(
 
     //newItem 可通过 newItemIndex 在 diffableList获得，这里传只是方便使用
     val switchItem = {newItem:DiffableItem, newItemIndex:Int->
-        treeOid1Str.value = newItem.commitId
+        if(fromScreen == DiffFromScreen.FILE_HISTORY) {
+            treeOid1Str.value = newItem.commitId
+        }
 
         curItemIndex.intValue = newItemIndex
 
