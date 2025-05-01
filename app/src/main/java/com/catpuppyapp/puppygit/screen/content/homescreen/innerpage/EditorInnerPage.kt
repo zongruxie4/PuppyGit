@@ -896,7 +896,8 @@ fun EditorInnerPage(
         PageRequest.clearStateThenDoAct(requestFromParent) {
             val editorFilePath = editorPageShowingFilePath.value
             val currentFile = FuckSafFile(activityContext, if(isPreviewModeOn.value) FilePath(previewPath) else editorFilePath)
-            val fileReadable = currentFile.canRead()
+//            val fileReadable = currentFile.canRead()  // 注：saf的canRead()不准，所以弃用此判断
+            val fileReadable = true
             val fileName = editorPageShowingFileName ?: currentFile.name
             val fileSize = if(fileReadable) getHumanReadableSizeStr(currentFile.length()) else 0
             //仅文件可读且当前预览或编辑的文件与当前编辑的文件相同时才显示行数和字数
