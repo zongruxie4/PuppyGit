@@ -1291,7 +1291,7 @@ fun DiffScreen(
                                            ),
                                        )
 
-                                    }else if (fromScreen == DiffFromScreen.INDEX) {
+                                }else if (fromScreen == DiffFromScreen.INDEX) {
                                     listOf(
 
                                         // patch
@@ -1348,6 +1348,53 @@ fun DiffScreen(
 
                                         ),
                                     )
+                                    }else if(fromScreen == DiffFromScreen.TREE_TO_TREE){
+                                        listOf(
+
+                                            // patch
+                                            MenuIconBtnItem(
+                                                icon = Icons.Filled.Difference,
+                                                text = stringResource(R.string.create_patch),
+                                                onClick = {
+                                                    initCreatePatchDialog(listOf(relativePath))
+                                                }
+
+                                            ),
+
+                                            // refresh
+                                            MenuIconBtnItem(
+                                                icon = Icons.Filled.Refresh,
+                                                text = stringResource(R.string.refresh),
+                                                onClick = {
+                                                    //点刷新若条目没展开，会展开
+                                                    val newItem = diffableItem.copy(visible = true)
+                                                    diffableItemList[idx] = newItem
+
+                                                    requireRefreshSubList(listOf(idx))
+                                                }
+
+                                            ),
+
+                                            // open
+                                            MenuIconBtnItem(
+                                                icon = Icons.Filled.FileOpen,
+                                                text = stringResource(R.string.open),
+                                                onClick = {
+                                                    openFileWithInnerSubPageEditor(diffableItem.fullPath)
+                                                }
+
+                                            ),
+
+                                            // open as
+                                            MenuIconBtnItem(
+                                                icon = Icons.AutoMirrored.Filled.OpenInNew,
+                                                text = stringResource(R.string.open_as),
+                                                onClick = {
+                                                    initOpenAsDialog(diffableItem.fullPath)
+                                                }
+
+                                            ),
+                                        )
                                     }else {
                                         listOf()
                                     }
