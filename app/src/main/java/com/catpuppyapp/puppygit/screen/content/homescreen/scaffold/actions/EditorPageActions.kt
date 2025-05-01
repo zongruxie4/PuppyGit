@@ -400,7 +400,13 @@ fun EditorPageActions(
                     )
                 },
                 onClick = {
-                    editorPagePatchMode.value = !editorPagePatchMode.value
+                    val newValue = !editorPagePatchMode.value
+                    editorPagePatchMode.value = newValue
+
+                    //更新配置文件
+                    SettingsUtil.update {
+                        it.editor.patchModeOn = newValue
+                    }
 
                     closeMenu()
                 }
