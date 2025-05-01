@@ -2,9 +2,6 @@ package com.catpuppyapp.puppygit.screen
 
 import android.content.Context
 import androidx.activity.compose.BackHandler
-import androidx.compose.foundation.BorderStroke
-import androidx.compose.foundation.background
-import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -23,6 +20,7 @@ import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.automirrored.filled.ArrowRight
 import androidx.compose.material.icons.filled.ArrowDropDown
 import androidx.compose.material.icons.filled.Close
+import androidx.compose.material.icons.filled.KeyboardDoubleArrowUp
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.MaterialTheme
@@ -57,6 +55,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.dp
+import com.catpuppyapp.puppygit.compose.BarContainer
 import com.catpuppyapp.puppygit.compose.CardButton
 import com.catpuppyapp.puppygit.compose.ConfirmDialog
 import com.catpuppyapp.puppygit.compose.CopyableDialog
@@ -937,21 +936,26 @@ fun DiffScreen(
                     val visible = diffableItem.visible
                     val diffableItemFile = diffableItem.toFile()
 
+                    // 启用了只读模式，或者当前文件不存在（不存在无法编辑，所以启用只读）
+                    val readOnlyModeOn = readOnlyModeOn.value || !diffableItemFile.exists();
+
+                    val switchVisible = {
+                        val newVisible = visible.not()
+                        //切换条目
+                        diffableItemList[idx] = diffableItem.copy(visible = newVisible)
+
+                        //如果展开当前条目 且 当前条目未加载则加载(懒加载)
+                        if(newVisible && diffableItem.neverLoadedDifferences()) {
+                            requireRefreshSubList(listOf(idx))
+                        }
+                    }
+
+
+                    val iconSize = 26.dp
+                    val pressedCircleSize = 34.dp
+
                     //这header得调一下，左边加个箭头点击能收起
                     if (showMyFileHeader) {
-                        // 启用了只读模式，或者当前文件不存在（不存在无法编辑，所以启用只读）
-                        val readOnly = readOnlyModeOn.value || !diffableItemFile.exists()
-
-                        val switchVisible = {
-                            val newVisible = visible.not()
-                            //切换条目
-                            diffableItemList[idx] = diffableItem.copy(visible = newVisible)
-
-                            //如果展开当前条目 且 当前条目未加载则加载(懒加载)
-                            if(newVisible && diffableItem.neverLoadedDifferences()) {
-                                requireRefreshSubList(listOf(idx))
-                            }
-                        }
 
                         // item里最好就一个root组件，还有，如果使用HorizontalDivider，最好将其放到单独item里，否则有可能崩溃
                         // item里最好就一个root组件，还有，如果使用HorizontalDivider，最好将其放到单独item里，否则有可能崩溃
@@ -970,30 +974,18 @@ fun DiffScreen(
                         item {
                             // x 放弃，不写footer了）把这个抽成 infobar，footer用同样的样式写
                             // LazyColumn里不能用rememberSaveable，会崩，用remember也有可能会不触发刷新，除非改外部的list触发遍历
-                            Row(
-                                modifier = Modifier
-                                    .border(BorderStroke(2.dp, UIHelper.getDividerColor()))
-                                    .clickable { switchVisible() }
-                                    .background(MaterialTheme.colorScheme.surfaceDim)
-                                    .fillMaxWidth()
-//                                        .padding(horizontal = 20.dp, vertical = 10.dp)
-                                    .padding(10.dp)
-                                ,
-                                horizontalArrangement = Arrangement.SpaceBetween,
-                                verticalAlignment = Alignment.CenterVertically,
+                            BarContainer(
+                                onClick = switchVisible
                             ) {
                                 //标题：显示文件名、添加了几行、删除了几行
                                 Row(
                                     verticalAlignment = Alignment.CenterVertically,
                                 ) {
-                                    val iconSize = 26.dp
-                                    val pressedCircleSize = 34.dp
                                     InLineIcon(
                                         iconModifier = Modifier.size(iconSize),
                                         pressedCircleSize = pressedCircleSize,
                                         icon = if(visible) Icons.Filled.ArrowDropDown else Icons.AutoMirrored.Filled.ArrowRight ,
                                         tooltipText = "",
-                                        onClick = switchVisible
                                     )
 
                                     //文件名，添加行，删除行
@@ -1003,7 +995,7 @@ fun DiffScreen(
                                         verticalAlignment = Alignment.CenterVertically
                                     ) {
 
-                                        if(readOnly) {
+                                        if(readOnlyModeOn) {
                                             ReadOnlyIcon()
                                         }
 
@@ -1063,7 +1055,7 @@ fun DiffScreen(
                     // only check when local as diff right(xxx..local)
                     // 若是文件且存在则启用
                     //用来检测是否启用 行点击菜单，但当时名字没起好，所以就叫这名了
-                    val enableLineEditActions = if(localAtDiffRight.not() || readOnlyModeOn.value || isSubmodule || (changeType != Cons.gitStatusNew && changeType != Cons.gitStatusModified)) {
+                    val enableLineEditActions = if(localAtDiffRight.not() || readOnlyModeOn || isSubmodule || (changeType != Cons.gitStatusNew && changeType != Cons.gitStatusModified)) {
                             false
                         }else {
                             //存在且是文件且不匹配if里不能编辑的情况，就能编辑
@@ -1753,6 +1745,23 @@ fun DiffScreen(
 
                         item {
                             Spacer(Modifier.height(100.dp))
+                        }
+
+                        if(isMultiMode) {
+                            item {
+                                BarContainer(
+                                    horizontalArrangement = Arrangement.Center,
+                                    onClick = scrollToCurrentItemHeader
+                                ) {
+                                    InLineIcon(
+                                        iconModifier = Modifier.size(iconSize),
+                                        pressedCircleSize = pressedCircleSize,
+                                        icon = Icons.Filled.KeyboardDoubleArrowUp,
+                                        tooltipText = "",
+                                    )
+                                }
+                            }
+
                         }
                     }
                 }
