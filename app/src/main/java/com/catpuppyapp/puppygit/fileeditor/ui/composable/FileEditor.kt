@@ -125,6 +125,7 @@ fun FileEditor(
     searchMode:MutableState<Boolean>,
     searchKeyword:String,
     mergeMode:Boolean,
+    patchMode:Boolean,
     showLineNum:MutableState<Boolean>,
     lineNumFontSize:MutableIntState,
     fontSize:MutableIntState,
@@ -364,6 +365,7 @@ fun FileEditor(
                     searchMode = searchMode,
                     searchKeyword =searchKeyword,
                     mergeMode=mergeMode,
+                    patchMode=patchMode,
                     fontSize=fontSize,
                 ) { index, isSelected, innerTextField ->
                     // TextLine

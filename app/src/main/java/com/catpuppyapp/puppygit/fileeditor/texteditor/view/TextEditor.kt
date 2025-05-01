@@ -73,6 +73,7 @@ import com.catpuppyapp.puppygit.style.MyStyleKt
 import com.catpuppyapp.puppygit.ui.theme.Theme
 import com.catpuppyapp.puppygit.utils.Msg
 import com.catpuppyapp.puppygit.utils.MyLog
+import com.catpuppyapp.puppygit.utils.PatchUtil
 import com.catpuppyapp.puppygit.utils.UIHelper
 import com.catpuppyapp.puppygit.utils.doJobThenOffLoading
 import com.catpuppyapp.puppygit.utils.fileopenhistory.FileOpenHistoryMan
@@ -158,6 +159,7 @@ fun TextEditor(
     readOnlyMode:Boolean,
     searchMode:MutableState<Boolean>,
     mergeMode:Boolean,
+    patchMode:Boolean,
     searchKeyword:String,
     fontSize: MutableIntState,
 
@@ -1022,7 +1024,11 @@ fun TextEditor(
                 textEditorState.fields.forEachIndexed{ index, textFieldState ->
                     val curLineText = textFieldState.value.text
 
-                    val bgColor = if(mergeMode) {
+                    // patch开头的行（+ -）和merge开头的行（7个=号）并不冲突
+                    val patchColor = if(patchMode) PatchUtil.getColorOfLine(curLineText, inDarkTheme) else null;
+                    val bgColor = if(patchMode && patchColor != null) {
+                        patchColor
+                    } else if(mergeMode) {
                         UIHelper.getBackgroundColorForMergeConflictSplitText(
                             text = curLineText,
                             settings = settings,

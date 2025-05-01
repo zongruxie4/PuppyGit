@@ -194,6 +194,8 @@ fun EditorInnerPage(
         s
     }
 
+    val patchMode = remember(settings.editor.patchModeOn) { settings.editor.patchModeOn }
+
     val recentFilesLimit = remember(settings.editor.recentFilesLimit) { settings.editor.recentFilesLimit }
 
     val saveLock = remember(editorPageShowingFilePath.value.ioPath) { Cache.getOrPutByType(generateKeyForSaveLock(editorPageShowingFilePath.value.ioPath), default = { Mutex() }) }
@@ -1246,7 +1248,8 @@ fun EditorInnerPage(
             showLineNum=editorShowLineNum,
             lineNumFontSize=editorLineNumFontSize,
             fontSize=editorFontSize,
-            undoStack = undoStack
+            undoStack = undoStack,
+            patchMode = patchMode,
         )
     }
 //    }
