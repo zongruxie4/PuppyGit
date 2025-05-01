@@ -118,6 +118,7 @@ import com.catpuppyapp.puppygit.utils.state.mutableCustomStateOf
 import com.catpuppyapp.puppygit.utils.withMainContext
 import com.github.git24j.core.Diff
 import com.github.git24j.core.Repository
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
@@ -217,15 +218,22 @@ fun DiffScreen(
     }
 
     //之前有两种类型的list，所以创建了这个函数，历史遗留问题
-    val getActuallyList:()->List<DiffableItem> = {
-        diffableItemList.value
-    }
+//    val getActuallyList:()->List<DiffableItem> = {
+//        diffableItemList.value
+//    }
 
     val subDiffableItemList = mutableCustomStateListOf(keyTag = stateKeyTag, keyName = "subDiffableItemList") {
         //里面存的是diffableList里的索引，用来加载指定条目的
         //最初进入当前页面，只加载当前条目
         listOf<Int>(curItemIndexAtDiffableItemList)
     }
+
+
+//    val itemIdxAtLazyList = rememberSaveable { mutableStateOf(curItemIndexAtDiffableItemList) }
+
+//    val indexAndListScrollTargetIndexMap = mutableCustomStateMapOf(keyTag = stateKeyTag, "indexAndListScrollTargetIndexMap") { mapOf<Int, Int>() }
+    val firstTimeLoad = rememberSaveable { mutableStateOf(true) }
+
 //    val useSubList = rememberSaveable { mutableStateOf(false) }
 
     val requireRefreshSubList = { itemIndices:List<Int> ->
@@ -1784,6 +1792,19 @@ fun DiffScreen(
         }
 
         curRepo.value = repoFromDb
+
+        //初次进页面，滚动到目标条目，例如：点击了文件a进入的diff页面，则滚动到文件a那里
+        if(isMultiMode && firstTimeLoad.value) {
+            firstTimeLoad.value = false
+
+            scope.launch {
+                //等下列表加载，不然对应条目还没加载出来呢，你就滚，不一定会滚到哪里去！
+                delay(500)
+                // *3是因为每个条目显示header会使用3个item，原本是显示一个的，但lazy column有bug，如果把divider和row放一起，
+                // 且写成 item {row, divider} 这个顺序，滑动列表，会崩溃，所以只好把divider单独列出来了
+                UIHelper.scrollToItem(scope, listState, curItemIndex.intValue*3+1)
+            }
+        }
 
         for((idx, item) in diffableItemList.value.toList().withIndex()) {
             if(isSingleMode && idx != curItemIndex.intValue) continue;
