@@ -77,7 +77,7 @@ fun DiffScreenTitle(
                     }
 
                     Text(fileName,
-                        fontSize = 15.sp,
+                        fontSize = MyStyleKt.Title.firstLineFontSizeSmall,
                         maxLines=1,
                         overflow = TextOverflow.Ellipsis,  //可滚动条目永远不会over flow，所以这个在这其实没啥意义
                         color = changeTypeColor

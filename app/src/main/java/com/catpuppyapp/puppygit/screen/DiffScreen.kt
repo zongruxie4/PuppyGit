@@ -1424,6 +1424,7 @@ fun DiffScreen(
                                         }
 
                                         Text(
+                                            fontSize = MyStyleKt.Title.firstLineFontSizeSmall,
                                             text = buildAnnotatedString {
                                                 withStyle(style = SpanStyle(color = UIHelper.getChangeTypeColor(changeType))) {
                                                     append(diffableItem.getFileNameEllipsis(titleFileNameLenLimit)+": ")

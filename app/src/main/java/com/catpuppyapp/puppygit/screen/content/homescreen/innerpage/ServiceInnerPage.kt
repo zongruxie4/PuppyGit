@@ -376,13 +376,13 @@ fun ServiceInnerPage(
     BackHandler(enabled = isBackHandlerEnable.value, onBack = {backHandlerOnBack()})
     //back handler block end
 
-    val itemFontSize = 20.sp
-    val itemDescFontSize = 15.sp
-    val switcherIconSize = 60.dp
-    val selectorWidth = MyStyleKt.DropDownMenu.minWidth.dp
+    val itemFontSize = MyStyleKt.SettingsItem.itemFontSize
+    val itemDescFontSize = MyStyleKt.SettingsItem.itemDescFontSize
+    val switcherIconSize = MyStyleKt.SettingsItem.switcherIconSize
+    val selectorWidth = MyStyleKt.SettingsItem.selectorWidth
 
-    val itemLeftWidthForSwitcher = .8f
-    val itemLeftWidthForSelector = .6f
+    val itemLeftWidthForSwitcher = MyStyleKt.SettingsItem.itemLeftWidthForSwitcher
+    val itemLeftWidthForSelector = MyStyleKt.SettingsItem.itemLeftWidthForSelector
 
     Column(
         modifier = Modifier

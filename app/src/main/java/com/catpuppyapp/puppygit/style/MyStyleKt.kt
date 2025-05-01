@@ -154,11 +154,25 @@ object MyStyleKt{
         val lineHeight = 20.dp
 
         val firstLineFontSize = 18.sp
+        val firstLineFontSizeSmall = 15.sp
+
         //标题大字下面那行小字的字体大小
         val secondLineFontSize = 12.sp
 
         //可点击title的最小尺寸
         val clickableTitleMinWidth = 40.dp
+    }
+
+    object SettingsItem {
+
+        val itemFontSize = 20.sp
+        val itemDescFontSize = 15.sp
+        val switcherIconSize = 60.dp
+        val selectorWidth = MyStyleKt.DropDownMenu.minWidth.dp
+
+        val itemLeftWidthForSwitcher = .8f
+        val itemLeftWidthForSelector = .6f
+
     }
 
     object Padding {

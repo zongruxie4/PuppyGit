@@ -123,7 +123,7 @@ fun EditorTitle(
                     }
 
                     Text(text =fileName,
-                        fontSize = 15.sp,
+                        fontSize = MyStyleKt.Title.firstLineFontSizeSmall,
                         maxLines=1,
                         overflow = TextOverflow.Ellipsis,
                         color = if(editorPageMergeMode) MyStyleKt.TextColor.danger() else Color.Unspecified
