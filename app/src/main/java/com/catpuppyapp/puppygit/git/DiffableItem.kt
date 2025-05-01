@@ -65,8 +65,9 @@ data class DiffableItem(
     }
 
     override fun getItemKey(): String {
+        //这个必须和StatusTypeEntrySaver 还有 FileHistoryItem的itemkey一样，不然会无法定位上次点击条目
         // else的是 isFileHistoryItem
-        return if(isChangeListItem) repoIdFromDb+ relativePath+changeType+itemType else commitId
+        return if(isChangeListItem) StatusTypeEntrySaver.generateItemKey(repoIdFromDb, relativePath, changeType, itemType) else FileHistoryDto.generateItemKey(commitId)
     }
 
 

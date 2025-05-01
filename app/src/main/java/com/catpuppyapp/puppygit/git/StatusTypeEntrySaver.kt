@@ -148,7 +148,7 @@ class StatusTypeEntrySaver(): ItemKey {
     }
 
     override fun getItemKey():String {
-        return repoIdFromDb+ relativePathUnderRepo+changeType+itemType
+        return generateItemKey(repoIdFromDb, relativePathUnderRepo, changeType, itemType)
     }
 
     fun maybeIsFileAndExist():Boolean {
@@ -157,5 +157,12 @@ class StatusTypeEntrySaver(): ItemKey {
 
     fun maybeIsDirAndExist():Boolean {
         return itemType == Cons.gitItemTypeDir || itemType == Cons.gitItemTypeSubmodule || itemType != Cons.gitItemTypeFile
+    }
+
+    companion object {
+
+        fun generateItemKey(repoId:String, relativePath:String, changeType:String?, itemType:Int):String {
+            return repoId+ relativePath+changeType+itemType
+        }
     }
 }

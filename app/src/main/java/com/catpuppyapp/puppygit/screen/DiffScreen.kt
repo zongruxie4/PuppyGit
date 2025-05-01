@@ -225,6 +225,8 @@ fun DiffScreen(
     }
 
 
+
+
     //之前有两种类型的list，所以创建了这个函数，历史遗留问题
 //    val getActuallyList:()->List<DiffableItem> = {
 //        diffableItemList.value
@@ -302,6 +304,17 @@ fun DiffScreen(
 
     val curItemIndex = rememberSaveable { mutableIntStateOf(curItemIndexAtDiffableItemList) }
     val curItemIndexAtDiffableItemList = Unit  // avoid mistake using
+
+
+    val naviUp = {
+        //把当前条目设为上次点击条目，这样返回列表后就会滚动到在这个页面最后看的条目了
+        diffableItemList.value.getOrNull(curItemIndex.intValue)?.let {
+            lastClickedItemKey.value = it.getItemKey()
+        }
+
+        naviUp()
+    }
+
 
 //    val curRepo = rememberSaveable { mutableStateOf(RepoEntity()) }
     val curRepo = mutableCustomStateOf(keyTag = stateKeyTag, keyName = "curRepo", initValue = RepoEntity())

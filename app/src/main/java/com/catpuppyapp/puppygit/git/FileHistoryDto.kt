@@ -58,8 +58,9 @@ class FileHistoryDto (
 
 
     override fun getItemKey():String {
-        return commitOidStr
+        return generateItemKey(commitOidStr)
     }
+
 
 
 
@@ -86,6 +87,15 @@ class FileHistoryDto (
             fileParentPathOfRelativePath = fileParentPathOfRelativePath,
 
         )
+    }
+
+
+    companion object {
+        // 写这个是为了给diffable item调用
+        fun generateItemKey(commitOidStr:String ):String {
+            return commitOidStr
+        }
+
     }
 
 }
