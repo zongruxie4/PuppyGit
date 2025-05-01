@@ -106,9 +106,11 @@ fun DiffRow (
     // disable for EOF, the EOF showing sometimes false-added
     // 禁用EOF点击菜单，EOF有时候假添加，就是明明没有eof，但显示新增了eof，可能是libgit2 bug
     val isNotEof = line.lineNum != LineNum.EOF.LINE_NUM
+    // line edit 选项
     val enableLineActions = isFileAndExist && isNotEof
     val enableSelectCompare = enableSelectCompare && isNotEof
-    val lineClickable = enableLineActions || enableSelectCompare
+    val enableLineCopy = true
+    val lineClickable = enableLineCopy || enableLineActions || enableSelectCompare
 
 
     //不能用默认的rememberSaveable，但能用重写了saver的
@@ -735,28 +737,28 @@ fun DiffRow (
 
 
                     if(enableSelectCompare) {
-                        if(content.isNotEmpty()) {
-                            val cp = getComparePairBuffer()
-                            val line1ready = cp.line1ReadyForCompare()
-                            DropdownMenuItem(
-                                // disable compare for same line number
-                                enabled = content.isNotEmpty() && line.key != cp.line1Key,
-                                text = { Text(
-                                    if(line1ready) replaceStringResList(stringResource(R.string.compare_to_origintype_linenum), listOf(cp.line1OriginType + cp.line1Num))
-                                    else { stringResource(R.string.select_compare) }
-                                )},
-                                onClick = label@{
-                                    expandedMenu.value = false
+                        val cp = getComparePairBuffer()
+                        val line1ready = cp.line1ReadyForCompare()
+                        //这里不需要判断content.isNotEmpty()，因为只有eof才空，而eof会禁用此菜单项，所以只要显示此菜单项，就必定非eof非空字符串
+                        DropdownMenuItem(
+                            // disable compare for same line number
+                            enabled = line.key != cp.line1Key,
+                            text = { Text(
+                                if(line1ready) replaceStringResList(stringResource(R.string.compare_to_origintype_linenum), listOf(cp.line1OriginType + cp.line1Num))
+                                else { stringResource(R.string.select_compare) }
+                            )},
+                            onClick = label@{
+                                expandedMenu.value = false
 
-                                    if(content.isEmpty()) {
-                                        Msg.requireShow(activityContext.getString(R.string.can_t_compare_empty_line))
-                                        return@label
-                                    }
+                                if(content.isEmpty()) {
+                                    Msg.requireShow(activityContext.getString(R.string.can_t_compare_empty_line))
+                                    return@label
+                                }
 
-                                    if(line1ready) {
+                                if(line1ready) {
 
-                                        // (20241114 change to no check, force re-compare, cause sometimes, maybe "a compare to b" has difference result with "b compare to a")
-                                        // same line num already compared in normal procudure
+                                    // (20241114 change to no check, force re-compare, cause sometimes, maybe "a compare to b" has difference result with "b compare to a")
+                                    // same line num already compared in normal procudure
 //                                    if(line.lineNum == cp.line1Num && (
 //                                                (line.originType == OriginType.ADDITION.toString() && cp.line1OriginType == OriginType.DELETION.toString())
 //                                                        ||  (line.originType == OriginType.DELETION.toString() && cp.line1OriginType == OriginType.ADDITION.toString())
@@ -766,63 +768,62 @@ fun DiffRow (
 //                                        return@label
 //                                    }
 
-                                        // both are CONTEXT
-                                        if(line.originType == Diff.Line.OriginType.CONTEXT.toString() && cp.line1OriginType == line.originType) {
-                                            Msg.requireShow(activityContext.getString(R.string.can_t_compare_both_context_type_lines))
-                                            return@label
-                                        }
-
-                                        cp.line2 = content
-                                        cp.line2Num = line.lineNum
-                                        cp.line2OriginType = line.originType
-                                        cp.line2Key = line.key
-
-                                        Msg.requireShow(activityContext.getString(R.string.comparing))
-
-                                        doJobThenOffLoading {
-                                            cp.compare(
-                                                betterCompare = betterCompare,
-                                                matchByWords = matchByWords,
-                                                map = indexStringPartListMap
-                                            )
-
-                                            // clear buffer
-                                            setComparePairBuffer(CompareLinePair())
-
-                                            // re-render view
-                                            reForEachDiffContent()
-                                        }
-
-                                    }else {
-                                        cp.line1 = content
-                                        cp.line1Num = line.lineNum
-                                        cp.line1OriginType = line.originType
-                                        cp.line1Key = line.key
-                                        Msg.requireShow(replaceStringResList(activityContext.getString(R.string.added_line_for_compare), listOf(line.originType+lineNum)) )
+                                    // both are CONTEXT
+                                    if(line.originType == Diff.Line.OriginType.CONTEXT.toString() && cp.line1OriginType == line.originType) {
+                                        Msg.requireShow(activityContext.getString(R.string.can_t_compare_both_context_type_lines))
+                                        return@label
                                     }
 
+                                    cp.line2 = content
+                                    cp.line2Num = line.lineNum
+                                    cp.line2OriginType = line.originType
+                                    cp.line2Key = line.key
+
+                                    Msg.requireShow(activityContext.getString(R.string.comparing))
+
+                                    doJobThenOffLoading {
+                                        cp.compare(
+                                            betterCompare = betterCompare,
+                                            matchByWords = matchByWords,
+                                            map = indexStringPartListMap
+                                        )
+
+                                        // clear buffer
+                                        setComparePairBuffer(CompareLinePair())
+
+                                        // re-render view
+                                        reForEachDiffContent()
+                                    }
+
+                                }else {
+                                    cp.line1 = content
+                                    cp.line1Num = line.lineNum
+                                    cp.line1OriginType = line.originType
+                                    cp.line1Key = line.key
+                                    Msg.requireShow(replaceStringResList(activityContext.getString(R.string.added_line_for_compare), listOf(line.originType+lineNum)) )
                                 }
-                            )
+
+                            }
+                        )
 
 
-                            DropdownMenuItem(
-                                text = { Text(stringResource(R.string.compare_to_clipboard)+" ->")},
-                                onClick = {
-                                    expandedMenu.value = false
+                        DropdownMenuItem(
+                            text = { Text(stringResource(R.string.compare_to_clipboard)+" ->")},
+                            onClick = {
+                                expandedMenu.value = false
 
-                                    compareToClipboard(content, line, true)
-                                }
-                            )
+                                compareToClipboard(content, line, true)
+                            }
+                        )
 
-                            DropdownMenuItem(
-                                text = { Text(stringResource(R.string.compare_to_clipboard)+" <-")},
-                                onClick = {
-                                    expandedMenu.value = false
+                        DropdownMenuItem(
+                            text = { Text(stringResource(R.string.compare_to_clipboard)+" <-")},
+                            onClick = {
+                                expandedMenu.value = false
 
-                                    compareToClipboard(content, line, false)
-                                }
-                            )
-                        }
+                                compareToClipboard(content, line, false)
+                            }
+                        )
 
 
                         if(getComparePairBuffer().isEmpty().not()) {
@@ -837,15 +838,17 @@ fun DiffRow (
                         }
                     }
 
-                    DropdownMenuItem(
-                        text = { Text(stringResource(R.string.copy))},
-                        onClick = {
-                            clipboardManager.setText(AnnotatedString(content))
-                            Msg.requireShow(activityContext.getString(R.string.copied))
+                    if(enableLineCopy) {
+                        DropdownMenuItem(
+                            text = { Text(stringResource(R.string.copy))},
+                            onClick = {
+                                clipboardManager.setText(AnnotatedString(content))
+                                Msg.requireShow(activityContext.getString(R.string.copied))
 
-                            expandedMenu.value = false
-                        }
-                    )
+                                expandedMenu.value = false
+                            }
+                        )
+                    }
 
                     if(AppModel.devModeOn) {
                         DropdownMenuItem(
