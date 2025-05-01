@@ -4,8 +4,8 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.OpenInNew
 import androidx.compose.material.icons.filled.CheckBox
 import androidx.compose.material.icons.filled.CheckBoxOutlineBlank
+import androidx.compose.material.icons.filled.DensityLarge
 import androidx.compose.material.icons.filled.DensitySmall
-import androidx.compose.material.icons.filled.Expand
 import androidx.compose.material.icons.filled.FileOpen
 import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.material.icons.filled.Refresh
@@ -111,7 +111,7 @@ fun DiffPageActions(
 
         LongPressAbleIconBtn(
             tooltipText = stringResource(R.string.expand_all),
-            icon = Icons.Filled.Expand,
+            icon = Icons.Filled.DensityLarge,
             iconContentDesc = stringResource(R.string.expand_all),
         ) label@{
             request.value = PageRequest.expandAll
