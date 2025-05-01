@@ -33,7 +33,7 @@ import kotlinx.coroutines.CoroutineScope
 @Composable
 fun DiffScreenTitle(
     fileName:String,
-    filePath:String,
+    fileParentPathOfRelativePath:String,
     fileRelativePathUnderRepoState: String,
     listState: LazyListState,
     scope: CoroutineScope,
@@ -79,7 +79,7 @@ fun DiffScreenTitle(
 
             ScrollableRow  {
                 Text(
-                    text = filePath,
+                    text = fileParentPathOfRelativePath,
                     fontSize = 11.sp,
                     maxLines=1,
                     overflow = TextOverflow.Ellipsis,

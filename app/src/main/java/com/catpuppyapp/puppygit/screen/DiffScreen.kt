@@ -41,14 +41,18 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.platform.LocalClipboardManager
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.AnnotatedString
+import androidx.compose.ui.text.SpanStyle
+import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.dp
 import com.catpuppyapp.puppygit.compose.CardButton
 import com.catpuppyapp.puppygit.compose.ConfirmDialog
@@ -284,9 +288,119 @@ fun DiffScreen(
     // 不能切换等于强制只读，否则初始值设为关闭只读模式
     val readOnlyModeOn = rememberSaveable(settings.diff.readOnly, readOnlySwitchable.value) { mutableStateOf(settings.diff.readOnly || readOnlySwitchable.value.not()) }
 
+    val removeTargetFromChangeList = {targetItem: StatusTypeEntrySaver ->
+        //从cl页面的列表移除条目(根据仓库下相对路径移除）
+        SharedState.homeChangeList_itemList.removeIf { it.relativePathUnderRepo == targetItem.relativePathUnderRepo }
+    }
+
+    val stageItem:suspend (StatusTypeEntrySaver)->Unit= { targetItem ->
+        val curRepo = curRepo.value
+        try {
+            // stage 条目
+            Repository.open(curRepo.fullSavePath).use { repo ->
+                Libgit2Helper.stageStatusEntryAndWriteToDisk(repo, listOf(targetItem))
+            }
+
+            //执行到这里，实际上已经stage成功了
+            Msg.requireShow(activityContext.getString(R.string.success))
+
+            //下面处理页面相关的变量
+
+            //从cl页面的列表移除条目
+            removeTargetFromChangeList(targetItem)
+            //cl页面设置索引有条目，因为上面stage成功了，所以大概率index至少有一个条目
+            SharedState.homeChangeList_indexHasItem.value = true
+        }catch (e:Exception) {
+            val errMsg = "err: ${e.localizedMessage}"
+            Msg.requireShowLongDuration(errMsg)
+            createAndInsertError(curRepo.id, errMsg)
+
+            MyLog.e(TAG, "stage item '${targetItem.relativePathUnderRepo}' for repo '${curRepo.repoName}' err: ${e.stackTraceToString()}")
+        }
+    }
+
+    val revertItem:suspend (StatusTypeEntrySaver)->Unit = { targetItem ->
+        val curRepo = curRepo.value
+
+        try {
+            //取出数据库路径
+            Repository.open(curRepo.fullSavePath).use { repo ->
+                val untrakcedFileList = mutableListOf<String>()  // untracked list，在我的app里这种修改类型显示为 "New"
+                val pathspecList = mutableListOf<String>()  // modified、deleted 列表
+                //新文件(Untracked)在index里不存在，若revert，只能删除文件，所以单独加到另一个列表
+                if(targetItem.changeType == Cons.gitStatusNew) {
+                    untrakcedFileList.add(targetItem.canonicalPath)  //删除文件，添加全路径（但其实用仓库内相对路径也行，只是需要把仓库路径和仓库下相对路径拼接一下，而这个全路径是我在查询status list的时候拼好的，所以直接用就行）
+                }else if(targetItem.changeType != Cons.gitStatusConflict){  //冲突条目不可revert！其余index中有的文件，也就是git tracked的文件，删除/修改 之类的，都可恢复为index中的状态
+                    pathspecList.add(targetItem.relativePathUnderRepo)
+                }
+                //如果列表不为空，恢复文件
+                if(pathspecList.isNotEmpty()) {
+                    Libgit2Helper.revertFilesToIndexVersion(repo, pathspecList)
+                }
+                //如果untracked列表不为空，删除文件
+                if(untrakcedFileList.isNotEmpty()) {
+                    Libgit2Helper.rmUntrackedFiles(untrakcedFileList)
+                }
+            }
 
 
+            //操作完成，显示提示
+            Msg.requireShow(activityContext.getString(R.string.success))
 
+            //切换下一条目，若没有，返回上级页面
+
+            //下面处理页面相关的变量
+
+            //从cl页面的列表移除条目
+            removeTargetFromChangeList(targetItem)
+
+            //cl页面设置索引有条目，因为上面添加成功了，所以大概率index至少有一个条目
+//                        SharedState.homeChangeList_indexHasItem.value = true  // revert不需要操作index
+
+        }catch (e:Exception) {
+            val errMsg = "err: ${e.localizedMessage}"
+            Msg.requireShowLongDuration(errMsg)
+            createAndInsertError(curRepo.id, errMsg)
+
+            MyLog.e(TAG, "revert item '${targetItem.relativePathUnderRepo}' for repo '${curRepo.repoName}' err: ${e.stackTraceToString()}")
+        }
+    }
+
+    val unstageItem:suspend (StatusTypeEntrySaver)->Unit = { targetItem ->
+        val curRepo = curRepo.value
+
+        try {
+            //menu action: unstage
+            Repository.open(curRepo.fullSavePath).use { repo ->
+                val refspecList = mutableListOf<String>()
+                // 准备refspecList
+                refspecList.add(targetItem.relativePathUnderRepo)
+
+                //do unstage
+                Libgit2Helper.unStageItems(repo, refspecList)
+            }
+
+            //操作完成，显示提示
+            Msg.requireShow(activityContext.getString(R.string.success))
+
+            //切换下一条目，若没有，返回上级页面
+
+            //下面处理页面相关的变量
+
+            //从cl页面的列表移除条目
+            removeTargetFromChangeList(targetItem)
+
+            //cl页面设置索引有条目，因为上面添加成功了，所以大概率index至少有一个条目
+//                        SharedState.homeChangeList_indexHasItem.value = true  // index页面unstage不需要管home页面那个changeList指示index是否有条目的那个变量
+        }catch (e:Exception) {
+            val errMsg = "err: ${e.localizedMessage}"
+            Msg.requireShowLongDuration(errMsg)
+            createAndInsertError(curRepo.id, errMsg)
+
+            MyLog.e(TAG, "unstage item '${targetItem.relativePathUnderRepo}' for repo '${curRepo.repoName}' err: ${e.stackTraceToString()}")
+        }
+
+    }
 
     //考虑将这个功能做成开关，所以用状态变量存其值
     //ps: 这个值要么做成可在设置页面关闭（当然，其他与预览diff不相关的页面也行，总之别做成只能在正在执行O(nm)的diff页面开关就行），要么就默认app启动后重置为关闭，绝对不能做成只能在预览diff的页面开关，不然万一O(nm)算法太慢卡死导致这个东西关不了就尴尬了
@@ -339,7 +453,7 @@ fun DiffScreen(
     }
 
     val getCurItem = {
-        diffableItemList.value.getOrNull(curItemIndex.intValue) ?: DiffableItem("an_invalid_DiffableItem_30bc0f41-63e8-461a-b48b-415d5584740d")
+        diffableItemList.value.getOrNull(curItemIndex.intValue) ?: DiffableItem.anInvalidInstance()
     }
 
 
@@ -420,7 +534,7 @@ fun DiffScreen(
     val openAsDialogFilePath = rememberSaveable { mutableStateOf("")}
 //    val showOpenInEditor = StateUtil.getRememberSaveableState(initValue = false)
     if(showOpenAsDialog.value) {
-        OpenAsDialog(readOnly=readOnlyForOpenAsDialog,fileName=getCurItem().getFileNameOnly(), filePath = openAsDialogFilePath.value,
+        OpenAsDialog(readOnly=readOnlyForOpenAsDialog,fileName=getCurItem().fileName, filePath = openAsDialogFilePath.value,
             openSuccessCallback = {
                 //只有在worktree的diff页面才有必要显示弹窗，在index页面没必要显示，在diff commit的页面更没必要显示，因为若修改，肯定是修改worktree的文件，你在index页面就算重载也看不到修改后的内容，所以没必要提示
                 if(fromTo == Cons.gitDiffFromIndexToWorktree) {
@@ -459,7 +573,7 @@ fun DiffScreen(
 
         //有效则显示条目信息，否则仅显示粗略信息
         if(curItem != null) {
-            sb.append(activityContext.getString(R.string.name)+": ").append(curItem.getFileNameOnly()).append(suffix)
+            sb.append(activityContext.getString(R.string.name)+": ").append(curItem.fileName).append(suffix)
 
 
             if(isFileHistoryTreeToLocal || isFileHistoryTreeToTree) {
@@ -476,7 +590,7 @@ fun DiffScreen(
 
             sb.append(activityContext.getString(R.string.path)+": ").append(curItem.relativePath).append(suffix)
 
-            val fileFullPath = curItem.getFileFullPath(curRepo.value.fullSavePath)
+            val fileFullPath = curItem.fullPath
             sb.append(activityContext.getString(R.string.full_path)+": ").append(fileFullPath).append(suffix)
 
             val file = File(fileFullPath)
@@ -526,7 +640,7 @@ fun DiffScreen(
     if(pageRequest.value == PageRequest.showOpenAsDialog) {
         PageRequest.clearStateThenDoAct(pageRequest) {
 //            readOnlyForOpenAsDialog.value = FsUtils.isReadOnlyDir(fileFullPath.value)
-            openAsDialogFilePath.value = getCurItem().getFileFullPath(curRepo.value.fullSavePath)
+            openAsDialogFilePath.value = getCurItem().fullPath
             showOpenAsDialog.value=true
         }
     }
@@ -664,8 +778,8 @@ fun DiffScreen(
                 ),
                 title = {
                     DiffScreenTitle(
-                        fileName = getCurItem().getFileNameOnly(),
-                        filePath = getCurItem().getFileParentPathOnly(),
+                        fileName = getCurItem().fileName,
+                        fileParentPathOfRelativePath = getCurItem().fileParentPathOfRelativePath,
                         fileRelativePathUnderRepoState = getCurItem().relativePath,
                         listState,
                         scope,
@@ -713,7 +827,7 @@ fun DiffScreen(
                             changeType=getCurItem().changeType,
                             refreshPage = { changeStateTriggerRefreshPage(needRefresh) },
                             request = pageRequest,
-                            fileFullPath = getCurItem().getFileFullPath(curRepo.value.fullSavePath),
+                            fileFullPath = getCurItem().fullPath,
                             requireBetterMatchingForCompare = requireBetterMatchingForCompare,
                             readOnlyModeOn = readOnlyModeOn,
                             readOnlyModeSwitchable = readOnlySwitchable.value,
@@ -802,7 +916,7 @@ fun DiffScreen(
                         }
 
                         item {
-                            把这个抽成 infobar，footer用同样的样式写
+                            // x 放弃，不写footer了）把这个抽成 infobar，footer用同样的样式写
                             // LazyColumn里不能用rememberSaveable，会崩，用remember也有可能会不触发刷新，除非改外部的list触发遍历
                             Row(
                                 modifier = Modifier
@@ -829,15 +943,28 @@ fun DiffScreen(
                                         onClick = switchVisible
                                     )
 
-                                    把这个标题处理下，首先把文件名和添加删除了多少行分开，然后，文件名根据changeType决定颜色，添加和删除则是添加为绿色，删除为红色
-                                    Text(
-                                        text = diffItem.getSummary(),
-//                                        fontWeight = FontWeight.Light,
-//                                        fontStyle = FontStyle.Italic,
-                                        color = UIHelper.getChangeTypeColor(changeType),
+                                    //文件名，添加行，删除行
+                                    //test
+                                    Row(
                                         modifier = Modifier.clickable {initDetailsDialog(idx)},
+                                    ) {
 
-                                    )
+                                        Text(
+                                            text = buildAnnotatedString {
+                                                withStyle(style = SpanStyle(color = UIHelper.getChangeTypeColor(changeType))) {
+                                                    把标题栏能显示的最大文件名改成根据屏幕宽度计算，不要超过屏幕宽度的三分之1
+
+                                                    append(diffItem.getFileNameEllipsis()+": ")
+                                                }
+
+                                                withStyle(style = SpanStyle(color = Color.Green)) { append(diffItem.addedLines.toString()+", ") }
+                                                withStyle(style = SpanStyle(color = Color.Red)) { diffItem.deletedLines.toString() }
+                                            } ,
+
+
+                                        )
+
+                                    }
                                 }
                             }
 
@@ -950,6 +1077,9 @@ fun DiffScreen(
                                         naviUp = naviUp,
                                         lastClickedItemKey = lastClickedItemKey,
                                         pageRequest = pageRequest,
+                                        revertItem = revertItem,
+                                        unstageItem = unstageItem,
+                                        stageItem = stageItem,
                                     )
                                     Spacer(Modifier.height(100.dp))
                                 }
@@ -1547,6 +1677,10 @@ fun DiffScreen(
                                         naviUp = naviUp,
                                         lastClickedItemKey = lastClickedItemKey,
                                         pageRequest = pageRequest,
+
+                                        revertItem = revertItem,
+                                        unstageItem = unstageItem,
+                                        stageItem = stageItem,
                                     )
 
                                 }
@@ -1803,6 +1937,9 @@ private fun NaviButton(
     curItemIndex: MutableIntState,
     lastClickedItemKey: MutableState<String>,
     pageRequest:MutableState<String>,
+    revertItem:suspend (StatusTypeEntrySaver)->Unit,
+    unstageItem:suspend (StatusTypeEntrySaver)->Unit,
+    stageItem:suspend (StatusTypeEntrySaver)->Unit,
     naviUp:()->Unit,
     switchItem: (DiffableItem, index: Int) -> Unit,
 ) {
@@ -1816,7 +1953,7 @@ private fun NaviButton(
     val noneText = stringResource(R.string.none)
 
     val getItemTextByIdx:(Int)->String = { idx:Int ->
-        diffableItemList.getOrNull(idx)?.let { if(isFileHistoryTreeToLocalOrTree) it.shortCommitId else it.getFileNameOnly() } ?: noneText
+        diffableItemList.getOrNull(idx)?.let { if(isFileHistoryTreeToLocalOrTree) it.shortCommitId else it.fileName } ?: noneText
     }
 
     Column(
@@ -1840,7 +1977,7 @@ private fun NaviButton(
         if(size>0 && fromTo != Cons.gitDiffFileHistoryFromTreeToTree) {
 
             //准备好变量
-            val doActThenSwitchItemOrNaviBack:suspend (targetIndex:Int, act:()->Unit)->Unit = { targetIndex, act ->
+            val doActThenSwitchItemOrNaviBack:suspend (targetIndex:Int, act:suspend ()->Unit)->Unit = { targetIndex, act ->
                 act()
 
                 //如果存在下个条目或上个条目，跳转；否则返回上级页面
@@ -1878,48 +2015,8 @@ private fun NaviButton(
                     val targetIndex = targetIndexState.intValue
 
                     doJobThenOffLoading {
-                        try {
-                            doActThenSwitchItemOrNaviBack(targetIndex) {
-                                //取出数据库路径
-                                Repository.open(curRepo.fullSavePath).use { repo ->
-                                    val untrakcedFileList = mutableListOf<String>()  // untracked list，在我的app里这种修改类型显示为 "New"
-                                    val pathspecList = mutableListOf<String>()  // modified、deleted 列表
-                                    //新文件(Untracked)在index里不存在，若revert，只能删除文件，所以单独加到另一个列表
-                                    if(targetItem.changeType == Cons.gitStatusNew) {
-                                        untrakcedFileList.add(targetItem.canonicalPath)  //删除文件，添加全路径（但其实用仓库内相对路径也行，只是需要把仓库路径和仓库下相对路径拼接一下，而这个全路径是我在查询status list的时候拼好的，所以直接用就行）
-                                    }else if(targetItem.changeType != Cons.gitStatusConflict){  //冲突条目不可revert！其余index中有的文件，也就是git tracked的文件，删除/修改 之类的，都可恢复为index中的状态
-                                        pathspecList.add(targetItem.relativePathUnderRepo)
-                                    }
-                                    //如果列表不为空，恢复文件
-                                    if(pathspecList.isNotEmpty()) {
-                                        Libgit2Helper.revertFilesToIndexVersion(repo, pathspecList)
-                                    }
-                                    //如果untracked列表不为空，删除文件
-                                    if(untrakcedFileList.isNotEmpty()) {
-                                        Libgit2Helper.rmUntrackedFiles(untrakcedFileList)
-                                    }
-                                }
-
-
-                                //操作完成，显示提示
-                                Msg.requireShow(activityContext.getString(R.string.success))
-
-                                //切换下一条目，若没有，返回上级页面
-
-                                //下面处理页面相关的变量
-
-                                //从cl页面的列表移除条目
-                                SharedState.homeChangeList_itemList.remove(targetItem)
-                                //cl页面设置索引有条目，因为上面添加成功了，所以大概率index至少有一个条目
-//                        SharedState.homeChangeList_indexHasItem.value = true  // revert不需要操作index
-
-                            }
-                        }catch (e:Exception) {
-                            val errMsg = "err: ${e.localizedMessage}"
-                            Msg.requireShowLongDuration(errMsg)
-                            createAndInsertError(curRepo.id, errMsg)
-
-                            MyLog.e(TAG, "revert item '${targetItem.relativePathUnderRepo}' for repo '${curRepo.repoName}' err: ${e.stackTraceToString()}")
+                        doActThenSwitchItemOrNaviBack(targetIndex) {
+                            revertItem(targetItem)
                         }
                     }
                 }
@@ -1938,36 +2035,8 @@ private fun NaviButton(
                     val targetIndex = targetIndexState.intValue
 
                     doJobThenOffLoading {
-                        try {
-                            doActThenSwitchItemOrNaviBack(targetIndex) {
-                                //menu action: unstage
-                                Repository.open(curRepo.fullSavePath).use { repo ->
-                                    val refspecList = mutableListOf<String>()
-                                    // 准备refspecList
-                                    refspecList.add(targetItem.relativePathUnderRepo)
-
-                                    //do unstage
-                                    Libgit2Helper.unStageItems(repo, refspecList)
-                                }
-
-                                //操作完成，显示提示
-                                Msg.requireShow(activityContext.getString(R.string.success))
-
-                                //切换下一条目，若没有，返回上级页面
-
-                                //下面处理页面相关的变量
-
-                                //从cl页面的列表移除条目
-                                SharedState.homeChangeList_itemList.remove(targetItem)
-                                //cl页面设置索引有条目，因为上面添加成功了，所以大概率index至少有一个条目
-//                        SharedState.homeChangeList_indexHasItem.value = true  // index页面unstage不需要管home页面那个changeList指示index是否有条目的那个变量
-                            }
-                        }catch (e:Exception) {
-                            val errMsg = "err: ${e.localizedMessage}"
-                            Msg.requireShowLongDuration(errMsg)
-                            createAndInsertError(curRepo.id, errMsg)
-
-                            MyLog.e(TAG, "unstage item '${targetItem.relativePathUnderRepo}' for repo '${curRepo.repoName}' err: ${e.stackTraceToString()}")
+                        doActThenSwitchItemOrNaviBack(targetIndex) {
+                            unstageItem(targetItem)
                         }
                     }
                 }
@@ -1991,30 +2060,8 @@ private fun NaviButton(
                     }
 
                     doJobThenOffLoading {
-                        try {
-                            doActThenSwitchItemOrNaviBack(targetIndex) {
-                                // stage 条目
-                                Repository.open(curRepo.fullSavePath).use { repo ->
-                                    这里，有问题，检查所有调用as的地方，不要强转类型，检查使用了StatusTypeEntrySaver的哪些参数，放到父类里，然后父类里写个to子类的函数替换所有as强转类型的地方
-                                    Libgit2Helper.stageStatusEntryAndWriteToDisk(repo, listOf(targetItem as StatusTypeEntrySaver))
-                                }
-
-                                //执行到这里，实际上已经stage成功了
-                                Msg.requireShow(activityContext.getString(R.string.success))
-
-                                //下面处理页面相关的变量
-
-                                //从cl页面的列表移除条目(根据仓库下相对路径移除）
-                                SharedState.homeChangeList_itemList.removeIf { it.relativePathUnderRepo == targetItem.relativePath }
-                                //cl页面设置索引有条目，因为上面stage成功了，所以大概率index至少有一个条目
-                                SharedState.homeChangeList_indexHasItem.value = true
-                            }
-                        }catch (e:Exception) {
-                            val errMsg = "err: ${e.localizedMessage}"
-                            Msg.requireShowLongDuration(errMsg)
-                            createAndInsertError(curRepo.id, errMsg)
-
-                            MyLog.e(TAG, "stage item '${targetItem.relativePath}' for repo '${curRepo.repoName}' err: ${e.stackTraceToString()}")
+                        doActThenSwitchItemOrNaviBack(targetIndex) {
+                            stageItem(targetItem.toChangeListItem())
                         }
                     }
                 }
@@ -2034,7 +2081,7 @@ private fun NaviButton(
                         return@onClick
                     }
 
-                    targetItemState.value = targetItem as StatusTypeEntrySaver
+                    targetItemState.value = targetItem.toChangeListItem()
                     targetIndexState.intValue = targetIndex
 
                     showRevertDialog.value = true
@@ -2054,7 +2101,7 @@ private fun NaviButton(
                         return@onClick
                     }
 
-                    targetItemState.value = targetItem as StatusTypeEntrySaver
+                    targetItemState.value = targetItem.toChangeListItem()
                     targetIndexState.intValue = targetIndex
 
                     showUnstageDialog.value = true

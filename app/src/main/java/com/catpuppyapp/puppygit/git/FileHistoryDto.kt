@@ -9,9 +9,12 @@ import com.catpuppyapp.puppygit.utils.readTimeZoneOffsetInMinutesFromSettingsOrD
 import java.io.File
 
 class FileHistoryDto (
-//    var fileName:String="",
+    var fileName:String="",
     var filePathUnderRepo:String="",
-//    var fileFullPath:String="",
+    var fileFullPath:String="",
+    var fileParentPathOfRelativePath:String = "",  //文件在仓库下的相对路径的父路径，例如 abc/123.txt，文件名是123.txt，父路径是abc/
+
+
     var treeEntryOidStr:String="",
     var commitOidStr: String="",
     var dateTime: String="",
@@ -23,6 +26,7 @@ class FileHistoryDto (
     var shortMsg:String="", //只包含第一行
     var msg: String="",  //完整commit信息
     var repoId:String="",  //数据库的repoId，用来判断当前是在操作哪个仓库
+    var repoWorkDirPath:String="",
 ): ItemKey {
 
     private var commitShortOidStr:String?=null
@@ -75,6 +79,12 @@ class FileHistoryDto (
 
             sizeInBytes = 0L,
             shortCommitId = getCachedCommitShortOidStr(),
+
+            repoWorkDirPath = repoWorkDirPath,
+            fileName = fileName,
+            fullPath = fileFullPath,
+            fileParentPathOfRelativePath = fileParentPathOfRelativePath,
+
         )
     }
 

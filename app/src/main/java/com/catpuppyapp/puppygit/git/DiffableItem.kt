@@ -17,6 +17,12 @@ import java.io.File
 data class DiffableItem(
     val repoIdFromDb:String="",
     val relativePath:String = "",
+
+    val repoWorkDirPath:String="",
+    val fileName:String="",
+    val fullPath:String="",
+    val fileParentPathOfRelativePath:String="",  //文件在仓库下的相对路径的父路径，例如 abc/123.txt，文件名是123.txt，父路径是abc/
+
     val itemType:Int = Cons.gitItemTypeFile,
 
     // modified/new/deleted之类的，
@@ -51,22 +57,19 @@ data class DiffableItem(
     //是否可见，收起不可见，展开可见
     val visible:Boolean = true,
 ):ItemKey {
+    companion object {
+
+        fun anInvalidInstance(): DiffableItem {
+            return DiffableItem(repoIdFromDb = "an_invalid_DiffableItem_30bc0f41-63e8-461a-b48b-415d5584740d")
+        }
+    }
+
     override fun getItemKey(): String {
         // else的是 isFileHistoryItem
         return if(isChangeListItem) repoIdFromDb+ relativePath+changeType+itemType else commitId
     }
 
-    fun getFileNameOnly():String {
-        return getFileNameFromCanonicalPath(relativePath)
-    }
 
-    fun getFileParentPathOnly():String {
-        return getParentPathEndsWithSeparator(relativePath)
-    }
-
-    fun getFileFullPath(repoWorkDirPath:String):String {
-        return File(repoWorkDirPath, relativePath).canonicalPath
-    }
 
     fun copyForLoading():DiffableItem {
         return copy(loading = true, stringPairMap = mutableStateMapOf(), compareLinePair = CompareLinePair(), submoduleIsDirty = false, errMsg = "", loadChannel = Channel())
@@ -80,4 +83,34 @@ data class DiffableItem(
         // finalization logic
         closeLoadChannel()
     }
+
+    fun toChangeListItem(): StatusTypeEntrySaver {
+        val stes = StatusTypeEntrySaver()
+        stes.repoIdFromDb = repoIdFromDb
+        stes.fileName = fileName
+        stes.relativePathUnderRepo = relativePath
+        stes.changeType = changeType
+        stes.canonicalPath = fullPath
+        stes.fileParentPathOfRelativePath = fileParentPathOfRelativePath
+        stes.fileSizeInBytes = sizeInBytes
+        stes.itemType = itemType
+        stes.dirty = submoduleIsDirty
+        stes.repoWorkDirPath = repoWorkDirPath
+
+        return stes
+    }
+
+    fun toFileHistoryItem():FileHistoryDto {
+        val fhi = FileHistoryDto()
+        fhi.fileName = fileName
+        fhi.filePathUnderRepo = relativePath
+        fhi.fileFullPath = fullPath
+        fhi.fileParentPathOfRelativePath = fileParentPathOfRelativePath
+        fhi.commitOidStr = commitId
+        fhi.repoId = repoIdFromDb
+        fhi.repoWorkDirPath = repoWorkDirPath
+        return fhi
+    }
+
+
 }

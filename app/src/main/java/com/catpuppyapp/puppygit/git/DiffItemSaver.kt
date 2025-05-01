@@ -31,17 +31,19 @@ data class DiffItemSaver (
 
 ){
 
-    fun getSummary(fileNameLimit:Int = 20):String {
+    fun getFileNameEllipsis(fileNameLimit:Int):String {
         //获取文件名，如果超过限制长度则截断并在前面追加省略号
-        val fileRelativePath = relativePathUnderRepo.let {
+        return relativePathUnderRepo.let {
             if(it.length > fileNameLimit) {
                 "...${it.reversed().substring(0, fileNameLimit).reversed()}"
             }else {
                 it
             }
         }
+    }
 
-        return "$fileRelativePath: +$addedLines, -$deletedLines"
+    fun getSummary(fileNameLimit:Int):String {
+        return "${getFileNameEllipsis(fileNameLimit)}: +$addedLines, -$deletedLines"
     }
 
     //获取实际生效的文件大小

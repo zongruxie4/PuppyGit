@@ -8,10 +8,13 @@ import com.catpuppyapp.puppygit.utils.mime.MimeType
 import com.catpuppyapp.puppygit.utils.mime.guessFromFileName
 import java.io.File
 
-class StatusTypeEntrySaver: ItemKey {
+class StatusTypeEntrySaver(): ItemKey {
     var repoIdFromDb:String="";
     var fileName:String="";
     var relativePathUnderRepo:String="";  //仓库下的相对路径，包含文件名
+
+    var fileParentPathOfRelativePath:String="";  //文件在仓库下的相对路径的父路径，例如 abc/123.txt，文件名是123.txt，父路径是abc/
+    var repoWorkDirPath:String="";
 
     //modified, newfile,untracked, etc
     var changeType:String?=null;
@@ -105,6 +108,11 @@ class StatusTypeEntrySaver: ItemKey {
 
             sizeInBytes = fileSizeInBytes,
             shortCommitId = "",
+
+            repoWorkDirPath = repoWorkDirPath,
+            fileName = fileName,
+            fullPath = canonicalPath,
+            fileParentPathOfRelativePath = fileParentPathOfRelativePath,
         )
     }
 

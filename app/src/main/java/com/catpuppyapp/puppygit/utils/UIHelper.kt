@@ -22,7 +22,9 @@ import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.unit.Density
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.LayoutDirection
+import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import com.catpuppyapp.puppygit.constants.Cons
 import com.catpuppyapp.puppygit.dto.DeviceWidthHeight
 import com.catpuppyapp.puppygit.fileeditor.texteditor.view.ExpectConflictStrDto
@@ -414,16 +416,28 @@ object UIHelper {
         return LocalLayoutDirection.current == LayoutDirection.Rtl
     }
 
+    fun spToPx(sp: TextUnit, density: Density):Float {
+        return with(density) { sp.toPx() }
+    }
+
     fun spToPx(sp: Float, density: Density): Float {
-        return with(density) { sp.toSp().toPx() }
+        return spToPx(sp.sp, density)
     }
 
     fun spToPx(sp: Int, density: Density): Float {
-        return spToPx(sp.toFloat(), density)
+        return spToPx(sp.sp, density)
+    }
+
+    fun dpToPx(dp: Dp, density:Density): Float {
+        return with(density) { dp.toPx() }
+    }
+
+    fun dpToPx(dp:Float, density:Density): Float {
+        return dpToPx(dp.dp, density)
     }
 
     fun dpToPx(dp:Int, density:Density): Float {
-        return with(density) { dp.toDp().toPx() }
+        return dpToPx(dp.dp, density)
     }
 
     /**

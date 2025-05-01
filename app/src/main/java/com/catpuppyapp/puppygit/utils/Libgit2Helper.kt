@@ -82,6 +82,7 @@ import com.github.git24j.core.Tree
 import io.ktor.util.collections.ConcurrentMap
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 import java.io.File
@@ -434,12 +435,12 @@ object Libgit2Helper {
         // 1 存在冲突条目，上面返回的index列表有可能包含 conflict但是又没stage的文件，所以需要进一步检测
         // or
         // 2 不存在冲突条目，但onlyCheckEmpty为假，代表用户想获得不包含冲突条目的index列表
-        val (_, statusMap) = statusListToStatusMap(
+        val (_, statusMap) = runBlocking {statusListToStatusMap(
             repo,
             repoStatusList,
             repoId,
             Cons.gitDiffFromHeadToIndex
-        )
+        )}
         val indexListFromStatusMap = statusMap[Cons.gitStatusKeyIndex]
 
         //这次的值就准确了
@@ -543,7 +544,7 @@ object Libgit2Helper {
      * index时worktree的列表为空，反之，statuslist是worktree的列表时，index列表为空
      * 特殊情况：conflict条目在index和workdir两个列表都有，且条目一样
      * */
-    fun statusListToStatusMap(
+    suspend fun statusListToStatusMap(
         repo: Repository,
         statusList:StatusList,
         repoIdFromDb:String,
@@ -562,7 +563,7 @@ object Libgit2Helper {
         var isIndexChanged = false
 
         val submodulePathList = getSubmodulePathList(repo)  // submodule name == it's path, so this list is path list too
-
+        val repoWorkDirPath = getRepoWorkdirNoEndsWithSlash(repo)
 
         //until， 左闭右开，左包含，右不包含
         for (i in 0 until entryCnt)  {
@@ -597,6 +598,8 @@ object Libgit2Helper {
 //
 //                }
             val statusTypeSaver = StatusTypeEntrySaver()
+            statusTypeSaver.repoWorkDirPath = repoWorkDirPath
+
 //                statusTypeSaver.entry = entry  //这个会随着列表的释放而被释放，持有引用可能会变成空指针
             statusTypeSaver.repoIdFromDb = repoIdFromDb
 
@@ -615,7 +618,7 @@ object Libgit2Helper {
                     }
 
                 }else{
-                    MyLog.w(TAG, "#statusListToStatusMap: conflict item with empty path!")
+                    MyLog.w(TAG, "#statusListToStatusMap: conflict item with empty path!, repoWorkDir at '$repoWorkDirPath'")
                 }
             }else{
                 //判断index还是worktree，用不同的变量判断，然后把条目添加到不同的列表
@@ -685,6 +688,7 @@ object Libgit2Helper {
             statusTypeSaver.canonicalPath = canonicalPath
             statusTypeSaver.fileName = getFileNameFromCanonicalPath(canonicalPath)  // or File(canonicalPath).name
             statusTypeSaver.relativePathUnderRepo = path
+            statusTypeSaver.fileParentPathOfRelativePath = getParentPathEndsWithSeparator(path)
             statusTypeSaver.fileSizeInBytes = file?.size?.toLong()?:0L
 
             //目前：libgit2 1.7.1有bug，status获取已删除文件有可能大小为0(并非百分百，若index为空，有可能获取到已删除文件的真实大小)，但实际不为0，所以这里检查下，如果大小等于0且类型是删除，用diffTree查询一下
@@ -794,6 +798,7 @@ object Libgit2Helper {
         val diff = if(treeToWorkTree) Diff.treeToWorkdir(repo, tree1, options) else Diff.treeToTree(repo, tree1, tree2, options)
 
         val submodulePathList = getSubmodulePathList(repo)  // submodule name == it's path
+        val repoWorkDirPath = getRepoWorkdirNoEndsWithSlash(repo)
 
         diff.foreach(
             { delta: Diff.Delta, progress: Float ->
@@ -814,11 +819,12 @@ object Libgit2Helper {
 
                      */
                 val stes = StatusTypeEntrySaver()
+                stes.repoWorkDirPath = repoWorkDirPath
                 stes.repoIdFromDb = repoId
                 stes.relativePathUnderRepo = newFile.path  //不管新增还是删除还是重命名文件，新旧文件都有path而且都一样，所以用哪个都行
                 stes.canonicalPath = getRepoCanonicalPath(repo, stes.relativePathUnderRepo)
                 stes.fileName = getFileNameFromCanonicalPath(stes.relativePathUnderRepo)  //用相对路径或完整路径都能取出文件名
-
+                stes.fileParentPathOfRelativePath = getParentPathEndsWithSeparator(stes.relativePathUnderRepo)
                 // hm, if a folder was submodule dir, but users remove it, then create a same name file, the file type will become "type changed", and actually the file is not submodule anymore
                 //   so, here check the path is dir or not, if not, dont set type to submodule, but this check may will create many File objects, wasted memory......
 //                    stes.itemType= if(submodulePathList.contains(stes.relativePathUnderRepo) && File(stes.canonicalPath).isDirectory) Cons.gitItemTypeSubmodule else Cons.gitItemTypeFile
@@ -4099,6 +4105,9 @@ object Libgit2Helper {
 
         var checkChannelCount = 0
 
+
+        val repoWorkDirPath = getRepoWorkdirNoEndsWithSlash(repo)
+
         while (next!=null) {
             try {
 //                    try {
@@ -4169,6 +4178,7 @@ object Libgit2Helper {
                                     // 但不管怎样，遍历到提交历史末尾，必然会遗漏最后一个条目，需要在循环外处理（已经处理）
                                     if(lastLastCommit != null && lastLastEntryOidStr != null) {
                                         retList.add(createFileHistoryDto(
+                                            repoWorkDirPath = repoWorkDirPath,
                                             commitOidStr= lastLastCommit.id().toString(),
                                             treeEntryOidStr= lastLastEntryOidStr.toString(),
                                             commit=lastLastCommit,
@@ -4211,6 +4221,7 @@ object Libgit2Helper {
             //最后一个条目没存，存上
             if(lastCommit != null && lastVersionEntryOid != null) {
                 retList.add(createFileHistoryDto(
+                    repoWorkDirPath = repoWorkDirPath,
                     commitOidStr= lastCommit.id().toString(),
                     treeEntryOidStr= lastVersionEntryOid.toString(),
                     commit=lastCommit,
@@ -6820,7 +6831,7 @@ object Libgit2Helper {
 
         //转成index/worktree/conflict三个元素的map，每个key对应一个列表
         //这里忽略第一个代表是否更新index的值，因为后面会百分百查询index，所以无需判定
-        val (_, statusMap) = statusListToStatusMap(repo, rawStatusList, repoIdFromDb = repoId, Cons.gitDiffFromIndexToWorktree)
+        val (_, statusMap) = runBlocking {statusListToStatusMap(repo, rawStatusList, repoIdFromDb = repoId, Cons.gitDiffFromIndexToWorktree)}
 
         val retList = mutableListOf<StatusTypeEntrySaver>()
 

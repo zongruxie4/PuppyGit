@@ -16,10 +16,13 @@ import com.catpuppyapp.puppygit.settings.AppSettings
 import com.catpuppyapp.puppygit.utils.AppModel
 import com.catpuppyapp.puppygit.utils.Libgit2Helper
 import com.catpuppyapp.puppygit.utils.genHttpHostPortStr
+import com.catpuppyapp.puppygit.utils.getFileNameFromCanonicalPath
+import com.catpuppyapp.puppygit.utils.getParentPathEndsWithSeparator
 import com.github.git24j.core.Commit
 import com.github.git24j.core.Oid
 import com.github.git24j.core.Repository
 import com.github.git24j.core.Submodule
+import java.io.File
 
 fun createSimpleCommitDto(
     commitOid: Oid,
@@ -202,6 +205,7 @@ fun createSubmoduleDto(
 
 
 fun createFileHistoryDto(
+    repoWorkDirPath:String,
     commitOidStr: String,
     treeEntryOidStr:String,
     commit: Commit,
@@ -211,6 +215,10 @@ fun createFileHistoryDto(
 ): FileHistoryDto {
     val obj = FileHistoryDto()
 
+    obj.repoWorkDirPath = repoWorkDirPath
+    obj.fileParentPathOfRelativePath = getParentPathEndsWithSeparator(fileRelativePathUnderRepo)
+    obj.fileName = getFileNameFromCanonicalPath(fileRelativePathUnderRepo)
+    obj.fileFullPath = File(repoWorkDirPath, fileRelativePathUnderRepo).canonicalPath
     obj.filePathUnderRepo = fileRelativePathUnderRepo
     obj.treeEntryOidStr = treeEntryOidStr
     obj.commitOidStr = commitOidStr
