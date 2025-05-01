@@ -1944,6 +1944,7 @@ fun DiffScreen(
         curRepo.value = repoFromDb
 
         //初次进页面，滚动到目标条目，例如：点击了文件a进入的diff页面，则滚动到文件a那里
+        val firstLoad = firstTimeLoad.value
         if(isMultiMode && firstTimeLoad.value) {
             firstTimeLoad.value = false
 
@@ -1960,6 +1961,10 @@ fun DiffScreen(
         for((idx, item) in diffableItemList.value.toList().withIndex()) {
             if(isSingleMode && idx != curItemIndex.intValue) continue;
             if(subList.isNotEmpty() && subList.contains(idx).not()) continue;
+
+            //初次加载会把初始索引设置到subList里，这时条目未展开也一样加载并且只会加载一个条目，但是后续加载时则仅加载展开（visible)的条目，不可见的条目不会加载
+            //若想立刻加载所有，可通过顶栏的展开全部按钮，点一下，全展开，全加载
+            if(!firstLoad && !item.visible) continue;
 
             //创建新条目前，把旧条目的loadChannel关了，否则如果之前的任务(加载diffItemSaver)未完成，不会取消，会继续执行
             item.closeLoadChannel()
