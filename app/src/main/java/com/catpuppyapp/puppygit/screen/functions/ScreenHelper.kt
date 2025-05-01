@@ -14,12 +14,10 @@ import com.catpuppyapp.puppygit.constants.PageRequest
 import com.catpuppyapp.puppygit.dto.UndoStack
 import com.catpuppyapp.puppygit.fileeditor.texteditor.state.TextEditorState
 import com.catpuppyapp.puppygit.git.DiffableItem
-import com.catpuppyapp.puppygit.git.FileHistoryDto
-import com.catpuppyapp.puppygit.git.StatusTypeEntrySaver
 import com.catpuppyapp.puppygit.play.pro.R
+import com.catpuppyapp.puppygit.screen.shared.DiffFromScreen
 import com.catpuppyapp.puppygit.screen.shared.FileChooserType
 import com.catpuppyapp.puppygit.screen.shared.FilePath
-import com.catpuppyapp.puppygit.screen.shared.SharedState
 import com.catpuppyapp.puppygit.utils.AppModel
 import com.catpuppyapp.puppygit.utils.FsUtils
 import com.catpuppyapp.puppygit.utils.Libgit2Helper
@@ -431,6 +429,7 @@ fun goToDiffScreen(
         //等于null说明目标页面不需要此列表，所以不用设置
         val diffableListCacheKey = NaviCache.setThenReturnKey(diffableList) ;
 
+        val isMultiMode = if(fromScreen != DiffFromScreen.FILE_HISTORY.code) 1 else 0
 
         AppModel.navController.navigate(
             Cons.nav_DiffScreen +
@@ -445,7 +444,7 @@ fun goToDiffScreen(
                     +"/" + fromScreen
 
                     +"/"+diffableListCacheKey
-                    +"/"+(if(isMultiMode) "1" else "0")
+                    +"/"+isMultiMode
         )
     }
 }
