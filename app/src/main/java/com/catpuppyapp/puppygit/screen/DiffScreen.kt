@@ -312,6 +312,13 @@ fun DiffScreen(
             lastClickedItemKey.value = it.getItemKey()
         }
 
+        // cl页面会针对这个列表执行操作，不过若在index，不管列表有几个条目都总是提交index所有条目
+        if(fromScreen.code == DiffFromScreen.HOME_CHANGELIST.code) {
+            Cache.set(Cache.Key.diffableList_of_fromDiffScreenBackToWorkTreeChangeList, diffableItemList.value.map {it.toChangeListItem()})
+        }else if(fromScreen.code == DiffFromScreen.INDEX.code) {
+            Cache.set(Cache.Key.diffableList_of_fromDiffScreenBackToIndexChangeList, diffableItemList.value.map {it.toChangeListItem()})
+        }
+
         naviUp()
     }
 
@@ -1959,7 +1966,10 @@ fun DiffScreen(
         }
 
         for((idx, item) in diffableItemList.value.toList().withIndex()) {
+            //single mode仅加载当前查看的条目
             if(isSingleMode && idx != curItemIndex.intValue) continue;
+
+            //如果设置了子列表则只加载子列表条目
             if(subList.isNotEmpty() && subList.contains(idx).not()) continue;
 
             //初次加载会把初始索引设置到subList里，这时条目未展开也一样加载并且只会加载一个条目，但是后续加载时则仅加载展开（visible)的条目，不可见的条目不会加载

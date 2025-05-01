@@ -243,7 +243,7 @@ fun ChangeListInnerPage(
         s
     }
 
-
+    val actFromDiffScreen = rememberSaveable { mutableStateOf(false) }
 
     val doActWithLock:suspend (curRepo:RepoEntity, act: suspend ()->Unit) -> Unit =  { curRepo, act ->
         Libgit2Helper.doActWithRepoLock(
@@ -711,13 +711,16 @@ fun ChangeListInnerPage(
     if(requireDoActFromParent.value) {  // pull
         //先把开关关了，避免重复执行，当然，重复执行其实也没事，因为我做了处理
         requireDoActFromParent.value = false  //防止重复执行的第一重保险，立刻把状态变量改成假
+        val actFromDiffScreen_tmp = actFromDiffScreen.value
+        actFromDiffScreen.value = false
+
         //执行操作
         doJobThenOffLoading(loadingOn,
             loadingOff={
                       loadingOff() //解除loading
                       enableActionFromParent.value=true  //重新启用顶栏的按钮
         }, requireDoActFromParentShowTextWhenDoingAct.value) {
-            val requireAct = Cache.syncGetThenDel(Cache.Key.changeListInnerPage_requireDoActFromParent)
+            val requireAct = Cache.syncGetThenDel(Cache.Key.changeListInnerPage_requireDoActFromParent) ?: return@doJobThenOffLoading;
             MyLog.d(TAG, "requireDoActFromParent, act is: "+requireAct)
 
             //防止重复执行的第二层保险，取出请求执行操作的key后就删除，这样即使状态变量没及时更新导致重复执行，执行到这时也会取出null而终止操作
@@ -906,10 +909,11 @@ fun ChangeListInnerPage(
 
 
                         try {
-                            val listForStage = itemList.value.toList()
+                            val listForStage = if(actFromDiffScreen_tmp) (Cache.getByType<List<StatusTypeEntrySaver>>(Cache.Key.diffableList_of_fromDiffScreenBackToWorkTreeChangeList)?:listOf()) else itemList.value.toList()
+
 
                             if(AppModel.devModeOn) {
-                                MyLog.d(TAG, "listForStage.isEmpty() = ${listForStage.isEmpty()}")
+                                MyLog.d(TAG, "actFromDiffScreen=$actFromDiffScreen_tmp, listForStage.isEmpty() = ${listForStage.isEmpty()}")
                             }
 
                             // stage if need，不管是否stage，都一定会执行commit，因为就算index为空，也可amend commit
@@ -3369,6 +3373,10 @@ fun ChangeListInnerPage(
                 // 从diff页面返回可能会请求执行此操作，可针对 homeChangeList和indexChangeList执行此操作
                 if(requestType == StateRequestType.indexToWorkTree_CommitAll) {
                     Cache.set(Cache.Key.changeListInnerPage_requireDoActFromParent, PageRequest.indexToWorkTree_CommitAll)
+
+                    //目前20250501这个StateRequestType只从DiffScreen发到 worktree所以肯定是true
+                    actFromDiffScreen.value = true
+
                     requireDoActFromParentShowTextWhenDoingAct.value = activityContext.getString(R.string.committing)
                     requireDoActFromParent.value = true
 

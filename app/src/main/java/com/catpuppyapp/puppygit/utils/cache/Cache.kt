@@ -28,6 +28,8 @@ object Cache:CacheStoreImpl(){
 //        const val fileHistory_fileRelativePathKey = "fileHistory_fileRelativePathKey"
 //        const val subPageEditor_filePathKey = "subPageEditor_filePathKey"
 
+        val diffableList_of_fromDiffScreenBackToWorkTreeChangeList = "diffableList_of_fromDiffScreenBackToWorkTreeChangeList"
+        val diffableList_of_fromDiffScreenBackToIndexChangeList = "diffableList_of_fromDiffScreenBackToIndexChangeList"
     }
 
     fun clearAllSubPagesStates() {
