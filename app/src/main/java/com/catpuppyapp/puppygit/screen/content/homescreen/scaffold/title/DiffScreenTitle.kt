@@ -1,10 +1,12 @@
 package com.catpuppyapp.puppygit.screen.content.homescreen.scaffold.title
 
 import androidx.compose.foundation.ExperimentalFoundationApi
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.foundation.rememberScrollState
@@ -28,6 +30,8 @@ import kotlinx.coroutines.CoroutineScope
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun DiffScreenTitle(
+    isMultiMode:Boolean,
+    scrollToCurrentItemHeader:(relativePath:String)->Unit,
     fileName:String,
     fileParentPathOfRelativePath:String,
     fileRelativePathUnderRepoState: String,
@@ -41,42 +45,54 @@ fun DiffScreenTitle(
 
     if(fileRelativePathUnderRepoState.isNotBlank()) {
 //        val haptic = LocalHapticFeedback.current
-        Column(modifier = Modifier.widthIn(min=MyStyleKt.Title.clickableTitleMinWidth)
-            .combinedClickable(
-                //double click go to top of list
-                onDoubleClick = {
-                    defaultTitleDoubleClick(scope, listState, lastPosition)
-                },
-            ) {  //onClick
-                //show details , include file name and path
-                request.value = PageRequest.showDetails
-            }
+        Column(modifier = Modifier.then(
+                //多选模式下点击标题栏返回当前条目顶部
+                if(isMultiMode) {
+                    Modifier.fillMaxWidth().clickable { scrollToCurrentItemHeader(fileRelativePathUnderRepoState) }
+                }else{
+                    Modifier
+                }
+            )
         ) {
-            val changeTypeColor = UIHelper.getChangeTypeColor(changeType)
+            Column(
+                modifier = Modifier.widthIn(min=MyStyleKt.Title.clickableTitleMinWidth)
+                    .combinedClickable(
+                        //double click go to top of list
+                        onDoubleClick = {
+                            defaultTitleDoubleClick(scope, listState, lastPosition)
+                        },
+                    ) {  //onClick
+                        //show details , include file name and path
+                        request.value = PageRequest.showDetails
+                    }
+            ) {
 
-            Row(modifier = Modifier.horizontalScroll(rememberScrollState()),
-                verticalAlignment = Alignment.CenterVertically
-            ) {  //话说这名如果超了，在Row上加个滚动属性让用户能滚动查看，怎么样？（20240411加了，测试了下，勉强能用，还行，好！
-                if(readOnly) {
-                    ReadOnlyIcon()
+                val changeTypeColor = UIHelper.getChangeTypeColor(changeType)
+
+                Row(modifier = Modifier.horizontalScroll(rememberScrollState()),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {  //话说这名如果超了，在Row上加个滚动属性让用户能滚动查看，怎么样？（20240411加了，测试了下，勉强能用，还行，好！
+                    if(readOnly) {
+                        ReadOnlyIcon()
+                    }
+
+                    Text(fileName,
+                        fontSize = 15.sp,
+                        maxLines=1,
+                        overflow = TextOverflow.Ellipsis,  //可滚动条目永远不会over flow，所以这个在这其实没啥意义
+                        color = changeTypeColor
+                    )
                 }
 
-                Text(fileName,
-                    fontSize = 15.sp,
-                    maxLines=1,
-                    overflow = TextOverflow.Ellipsis,  //可滚动条目永远不会over flow，所以这个在这其实没啥意义
-                    color = changeTypeColor
-                )
-            }
-
-            ScrollableRow  {
-                Text(
-                    text = fileParentPathOfRelativePath,
-                    fontSize = 11.sp,
-                    maxLines=1,
-                    overflow = TextOverflow.Ellipsis,
-                    color = changeTypeColor
-                )
+                ScrollableRow  {
+                    Text(
+                        text = fileParentPathOfRelativePath,
+                        fontSize = 11.sp,
+                        maxLines=1,
+                        overflow = TextOverflow.Ellipsis,
+                        color = changeTypeColor
+                    )
+                }
             }
         }
 

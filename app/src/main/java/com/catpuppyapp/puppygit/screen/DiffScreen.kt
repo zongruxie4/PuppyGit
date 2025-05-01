@@ -847,6 +847,8 @@ fun DiffScreen(
                 ),
                 title = {
                     DiffScreenTitle(
+                        isMultiMode = isMultiMode,
+                        scrollToCurrentItemHeader = scrollToCurrentItemHeader,
                         fileName = getCurItem().fileName,
                         fileParentPathOfRelativePath = getCurItem().fileParentPathOfRelativePath,
                         fileRelativePathUnderRepoState = getCurItem().relativePath,
@@ -1022,10 +1024,12 @@ fun DiffScreen(
                             BarContainer(
                                 modifier = Modifier
                                     .onGloballyPositioned { layoutCoordinates ->
-                                        val position = layoutCoordinates.positionInRoot()
-                                        //从屏幕上方消失了，就表示在看这个条目
-                                        if(position.y < 0) {
-                                            updateCurrentViewingIdx(idx)
+                                        if(visible) {
+                                            val position = layoutCoordinates.positionInRoot()
+                                            //从屏幕上方消失了，就表示在看这个条目
+                                            if(position.y < 0) {
+                                                updateCurrentViewingIdx(idx)
+                                            }
                                         }
                                     }
                                 ,
@@ -1850,6 +1854,17 @@ fun DiffScreen(
 //                                itemsCount.intValue++
 
                                 BarContainer(
+                                    modifier = Modifier
+                                        .onGloballyPositioned { layoutCoordinates ->
+                                            if(visible) {
+                                                val position = layoutCoordinates.positionInRoot()
+                                                //从屏幕上方消失了，就表示在看这个条目
+                                                if(position.y < 0) {
+                                                    updateCurrentViewingIdx(idx)
+                                                }
+                                            }
+                                        }
+                                    ,
                                     horizontalArrangement = Arrangement.Center,
                                     onClick = {scrollToCurrentItemHeader(relativePath)}
                                 ) {
