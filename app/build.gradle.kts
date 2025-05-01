@@ -216,7 +216,10 @@ dependencies {
 //    implementation("org.danilopianini:khttp:1.6.2")
 
 //    implementation("androidx.compose.material3:material3-android:1.2.0-beta02")
+
+    //对应组件的实际版本号，参见：https://developer.android.com/develop/ui/compose/bom/bom-mapping
     val composeBom = platform("androidx.compose:compose-bom:2025.04.01")
+
     coreLibraryDesugaring("com.android.tools:desugar_jdk_libs:2.1.5")
     implementation("androidx.core:core-ktx:1.16.0")
     implementation("androidx.lifecycle:lifecycle-runtime-ktx:2.8.7")
@@ -229,8 +232,9 @@ dependencies {
 //    implementation("androidx.compose.compiler:compiler:1.5.12")
 //    implementation("androidx.compose.compiler:compiler-hosted:1.5.12")
 
-    implementation("androidx.compose.material3:material3:1.3.2")
-    implementation("androidx.compose.material:material-icons-extended:1.7.8")
+    //一般用composeBom里的默认版本就行，若想使用特定版本可在后面加 ":版本号"
+    implementation("androidx.compose.material3:material3")
+    implementation("androidx.compose.material:material-icons-extended")
 
 
     testImplementation(composeBom)
