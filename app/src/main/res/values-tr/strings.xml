@@ -1168,4 +1168,9 @@
     <string name="append_a_line">Bir Satır Ekle</string>
     <string name="restart_app">Uygulamayı Yeniden Başlatma</string>
 
+    <!-- new at 20250501 -->
+    <string name="expand_all">Tümünü Genişlet</string>
+    <string name="collapse_all">Tümünü Daralt</string>
+    <string name="patch_mode">Yamanlama Modu</string>
+
 </resources>

@@ -1237,4 +1237,10 @@
     <string name="append_a_line">追加一行</string>
     <string name="restart_app">重启App</string>
 
+
+    <!-- new at 20250501 -->
+    <string name="expand_all">展开全部</string>
+    <string name="collapse_all">收起全部</string>
+    <string name="patch_mode">补丁模式</string>
+
 </resources>
