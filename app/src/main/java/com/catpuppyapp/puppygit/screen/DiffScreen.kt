@@ -419,8 +419,10 @@ fun DiffScreen(
             //如果对所有条目执行了操作，则需要返回上级页面，因为留在这也没什么好看的了
             true
         }else {
-            diffableItemList.value.removeIf { targetItems.any {it2-> it.relativePath == it2.relativePathUnderRepo} }
-            false
+            diffableItemList.value.let { list ->
+                list.removeIf { targetItems.any { it2 -> it.relativePath == it2.relativePathUnderRepo } }
+                list.isEmpty()
+            }
         }
 
 
@@ -1507,6 +1509,9 @@ fun DiffScreen(
                                 DisableSelection{
                                     NaviButton(
                                         stateKeyTag = stateKeyTag,
+
+                                        isMultiMode = isMultiMode,
+                                        fromScreen = fromScreen,
 //                                        activityContext = activityContext,
 //                                        curRepo = curRepo.value,
                                         diffableItemList = diffableItemList,
@@ -2141,6 +2146,8 @@ fun DiffScreen(
                                     NaviButton(
                                         stateKeyTag = stateKeyTag,
 
+                                        isMultiMode = isMultiMode,
+                                        fromScreen = fromScreen,
 //                                        activityContext = activityContext,
 //                                        curRepo = curRepo.value,
                                         diffableItemList = diffableItemList,
@@ -2202,11 +2209,45 @@ fun DiffScreen(
 
 
 
+                //切换上下文件和执行操作的按钮
+                if(isMultiMode) {
+                    item {
+                        Spacer(Modifier.height(150.dp))
+                    }
+
+                    item {
+                        DisableSelection {
+                            NaviButton(
+                                stateKeyTag = stateKeyTag,
+
+                                isMultiMode = isMultiMode,
+                                fromScreen = fromScreen,
+
+//                                        activityContext = activityContext,
+//                                        curRepo = curRepo.value,
+                                diffableItemList = diffableItemList,
+                                curItemIndex = curItemIndex,
+                                switchItem = {p1, p2->},  // multi diff的操作都是针对当前页面所有条目的，所以不需要切换条目
+                                fromTo = fromTo,
+                                naviUp = naviUp,
+                                lastClickedItemKey = lastClickedItemKey,
+                                pageRequest = pageRequest,
+
+                                stageItem = stageItem,
+                                initRevertDialog = initRevertDialog,
+                                initUnstageDialog = initUnstageDialog
+                            )
+
+                        }
+                    }
+
+                    item {
+                        Spacer(Modifier.height(100.dp))
+                    }
+                }
+
             }
         }
-
-
-
 
 
     }
@@ -2456,6 +2497,8 @@ private fun getBackHandler(
 
 @Composable
 private fun NaviButton(
+    isMultiMode: Boolean,
+    fromScreen: DiffFromScreen,
     stateKeyTag:String,
 //    activityContext: Context,
 //    curRepo:RepoEntity,
@@ -2506,23 +2549,16 @@ private fun NaviButton(
         if(size>0 && fromTo != Cons.gitDiffFileHistoryFromTreeToTree) {
 
             //准备好变量
-            val doActThenSwitchItemOrNaviBack:suspend (targetIndex:Int, act:suspend ()->Unit)->Unit = { targetIndex, act ->
+            val doActThenSwitchItem:suspend (targetIndex:Int, act:suspend ()->Unit)->Unit = { targetIndex, act ->
                 act()
 
                 //如果存在下个条目或上个条目，跳转；否则返回上级页面
                 val nextOrPreviousIndex = if(hasNext) (nextIndex - 1) else previousIndex
                 if(nextOrPreviousIndex >= 0 && nextOrPreviousIndex < diffableItemList.size) {  // still has next or previous, switch to it
-                    //从列表移除当前条目
-                    diffableItemList.removeAt(targetIndex)
-
                     //切换条目
                     val item = diffableItemList[nextOrPreviousIndex]
                     lastClickedItemKey.value = item.getItemKey()
                     switchItem(item, nextOrPreviousIndex)
-                }else {  // no next or previous, go back parent page
-                    withMainContext {
-                        naviUp()
-                    }
                 }
             }
 
@@ -2547,8 +2583,12 @@ private fun NaviButton(
                     }
 
                     doJobThenOffLoading {
-                        doActThenSwitchItemOrNaviBack(targetIndex) {
-                            stageItem(listOf(targetItem.toChangeListItem()))
+                        if(isMultiMode) {
+                            stageItem(diffableItemList.map { it.toChangeListItem() })
+                        }else {
+                            doActThenSwitchItem(targetIndex) {
+                                stageItem(listOf(targetItem.toChangeListItem()))
+                            }
                         }
                     }
                 }
@@ -2571,9 +2611,13 @@ private fun NaviButton(
                     targetItemState.value = targetItem.toChangeListItem()
                     targetIndexState.intValue = targetIndex
 
-                    initRevertDialog(listOf(targetItemState.value)) {
-                        // callback
-                        doActThenSwitchItemOrNaviBack(targetIndexState.intValue) {}
+                    if(isMultiMode) {
+                        initRevertDialog(diffableItemList.map { it.toChangeListItem() }) {}
+                    }else {
+                        initRevertDialog(listOf(targetItemState.value)) {
+                            // callback
+                            doActThenSwitchItem(targetIndexState.intValue) {}
+                        }
                     }
                 }
 
@@ -2594,8 +2638,12 @@ private fun NaviButton(
                     targetItemState.value = targetItem.toChangeListItem()
                     targetIndexState.intValue = targetIndex
 
-                    initUnstageDialog(listOf(targetItemState.value)) {
-                        doActThenSwitchItemOrNaviBack(targetIndexState.intValue) {}
+                    if(isMultiMode) {
+                        initUnstageDialog(diffableItemList.map { it.toChangeListItem() }) {}
+                    }else {
+                        initUnstageDialog(listOf(targetItemState.value)) {
+                            doActThenSwitchItem(targetIndexState.intValue) {}
+                        }
                     }
                 }
 
@@ -2613,7 +2661,7 @@ private fun NaviButton(
 
 
                 CardButton(
-                    text = stringResource(R.string.commit_all),
+                    text = stringResource(R.string.commit),
                     enabled = true
                 ) {
                     changeStateTriggerRefreshPage(state, requestType)
@@ -2629,56 +2677,59 @@ private fun NaviButton(
 
             // 条目数和切换条目按钮
 
-            //当前是第几个条目，总共几个条目，这玩意必须和上一下一按钮在同一代码块并一起显示，要不然怪怪的
-            Row (
-                modifier = Modifier.fillMaxWidth(),
-                verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.Center
-            ){
+            if(isMultiMode.not()) {
+
+                //当前是第几个条目，总共几个条目，这玩意必须和上一下一按钮在同一代码块并一起显示，要不然怪怪的
+                Row (
+                    modifier = Modifier.fillMaxWidth(),
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.Center
+                ){
+                    Text(
+                        replaceStringResList(stringResource(R.string.current_n_all_m), listOf("" + (curItemIndex.intValue+1), "" + size)),
+                        fontWeight = FontWeight.Light,
+                        fontStyle = FontStyle.Italic,
+                        color = UIHelper.getSecondaryFontColor()
+                    )
+                }
+
+                //切换上个下个条目按钮
+                CardButton(
+                    text = replaceStringResList(stringResource(R.string.prev_filename), listOf(if(hasPrevious) {
+                        getItemTextByIdx(previousIndex)
+                    } else noneText)),
+                    enabled = hasPrevious
+                ) {
+                    val item = diffableItemList[previousIndex]
+                    lastClickedItemKey.value = item.getItemKey()
+                    switchItem(item, previousIndex)
+                }
+
+                Spacer(Modifier.height(10.dp))
+
+                //当前条目
                 Text(
-                    replaceStringResList(stringResource(R.string.current_n_all_m), listOf("" + (curItemIndex.intValue+1), "" + size)),
-                    fontWeight = FontWeight.Light,
-                    fontStyle = FontStyle.Italic,
-                    color = UIHelper.getSecondaryFontColor()
-                )
-            }
-
-            //切换上个下个条目按钮
-            CardButton(
-                text = replaceStringResList(stringResource(R.string.prev_filename), listOf(if(hasPrevious) {
-                    getItemTextByIdx(previousIndex)
-                } else noneText)),
-                enabled = hasPrevious
-            ) {
-                val item = diffableItemList[previousIndex]
-                lastClickedItemKey.value = item.getItemKey()
-                switchItem(item, previousIndex)
-            }
-
-            Spacer(Modifier.height(10.dp))
-
-            //当前条目
-            Text(
-                text = getItemTextByIdx(curItemIndex.intValue),
+                    text = getItemTextByIdx(curItemIndex.intValue),
 //                fontWeight = FontWeight.Light,  //默认卡片字体细的，当前条目粗的更好看，不然都是细的，难看
-                overflow = TextOverflow.Ellipsis,
-                softWrap = false,
-                modifier = Modifier.padding(horizontal = 50.dp)
-            )
+                    overflow = TextOverflow.Ellipsis,
+                    softWrap = false,
+                    modifier = Modifier.padding(horizontal = 50.dp)
+                )
 
-            Spacer(Modifier.height(10.dp))
+                Spacer(Modifier.height(10.dp))
 
-            CardButton(
-                text = replaceStringResList(stringResource(R.string.next_filename), listOf(if(hasNext) {
-                    getItemTextByIdx(nextIndex)
-                } else noneText)),
-                enabled = hasNext
-            ) {
-                val item = diffableItemList[nextIndex]
-                lastClickedItemKey.value = item.getItemKey()
-                switchItem(item, nextIndex)
+                CardButton(
+                    text = replaceStringResList(stringResource(R.string.next_filename), listOf(if(hasNext) {
+                        getItemTextByIdx(nextIndex)
+                    } else noneText)),
+                    enabled = hasNext
+                ) {
+                    val item = diffableItemList[nextIndex]
+                    lastClickedItemKey.value = item.getItemKey()
+                    switchItem(item, nextIndex)
+                }
             }
-        }
+            }
 
 
 //        Spacer(Modifier.height(150.dp))
