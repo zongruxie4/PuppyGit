@@ -87,7 +87,7 @@ import com.catpuppyapp.puppygit.data.entity.RepoEntity
 import com.catpuppyapp.puppygit.dev.FlagFileName
 import com.catpuppyapp.puppygit.dev.detailsDiffTestPassed
 import com.catpuppyapp.puppygit.dev.proFeatureEnabled
-import com.catpuppyapp.puppygit.dto.IntBox
+import com.catpuppyapp.puppygit.dto.Box
 import com.catpuppyapp.puppygit.dto.MenuIconBtnItem
 import com.catpuppyapp.puppygit.git.CompareLinePair
 import com.catpuppyapp.puppygit.git.DiffableItem
@@ -281,11 +281,17 @@ fun DiffScreen(
 
 //    val useSubList = rememberSaveable { mutableStateOf(false) }
 
+    //刷新部分条目，若传空索引list，不会执行任何操作
+    // 传非空list会刷新页面且仅重载指定索引的条目
+    //若对应条目在刷新前不可见，加载时会将其设为可见
     val requireRefreshSubList = { itemIndices:List<Int> ->
-        subDiffableItemList.value.clear()
-        subDiffableItemList.value.addAll(itemIndices)
+        if(itemIndices.isNotEmpty()) {
+            subDiffableItemList.value.clear()
+            //被添加到sub list的索引，对应的条目如果在刷新前不可见，刷新时会将其设为可见
+            subDiffableItemList.value.addAll(itemIndices)
 
-        changeStateTriggerRefreshPage(needRefresh)
+            changeStateTriggerRefreshPage(needRefresh)
+        }
     }
 
     val titleFileNameLenLimit = remember(configuration.screenWidthDp) { with(UIHelper) {
@@ -650,12 +656,26 @@ fun DiffScreen(
 
 
     val showBackFromExternalAppAskReloadDialog = rememberSaveable { mutableStateOf(false)}
+    val backFromExternalApp_ItemIdx = rememberSaveable { mutableIntStateOf(0) }
+    val initBackFromExtAppDialog = { itemIdx:Int ->
+        backFromExternalApp_ItemIdx.intValue = itemIdx
+        showBackFromExternalAppAskReloadDialog.value = true
+    }
     if(showBackFromExternalAppAskReloadDialog.value) {
         OpenAsAskReloadDialog(
             onCancel = { showBackFromExternalAppAskReloadDialog.value=false }
         ) { // doReload
             showBackFromExternalAppAskReloadDialog.value=false
-            changeStateTriggerRefreshPage(needRefresh)
+
+            val targetIdx = backFromExternalApp_ItemIdx.intValue
+            val target = diffableItemList.value.getOrNull(targetIdx)
+            //将目标展开并刷新
+            if(target != null) {
+                //加载条目时会自动展开并刷新
+                requireRefreshSubList(listOf(targetIdx))
+            }else {
+                Msg.requireShowLongDuration("reload err: index invalid")
+            }
         }
     }
 
@@ -731,29 +751,45 @@ fun DiffScreen(
 
     val showOpenAsDialog = rememberSaveable { mutableStateOf(false)}
     val readOnlyForOpenAsDialog = rememberSaveable { mutableStateOf(false)}
-    val openAsDialogFilePath = rememberSaveable { mutableStateOf("")}
+    val openAsDialogItem = mutableCustomStateOf(stateKeyTag, "openAsDialogItem") { DiffableItem() }
+    val openAsDialogItemIdx = rememberSaveable { mutableIntStateOf(0) }
 
-    val initOpenAsDialog = { fileFullPath:String ->
+    val initOpenAsDialog = { idx:Int ->
         try {
-            if(!File(fileFullPath).exists()) {
-                Msg.requireShowLongDuration(activityContext.getString(R.string.file_doesnt_exist))
+            val target = diffableItemList.value.getOrNull(idx)
+            //目标不存在
+            if(target == null) {
+                throw RuntimeException("index invalid")
             }else {
-                openAsDialogFilePath.value = fileFullPath
-                showOpenAsDialog.value=true
+               val fileFullPath = target.fullPath
+
+                //目标存在但文件不存在
+                if(!File(fileFullPath).exists()) {
+                    throw RuntimeException(activityContext.getString(R.string.file_doesnt_exist))
+                }else { //目标存在且文件存在
+                    openAsDialogItem.value = target
+                    openAsDialogItemIdx.intValue = idx
+
+                    showOpenAsDialog.value=true
+                }
             }
         }catch (e:Exception) {
-            Msg.requireShowLongDuration("err: "+e.localizedMessage)
-            MyLog.e(TAG, "'Open As' err: "+e.stackTraceToString())
+            val errPrefix = "'Open As' err: "
+            Msg.requireShowLongDuration(errPrefix+e.localizedMessage)
+            MyLog.e(TAG, errPrefix+e.stackTraceToString())
         }
     }
 
     if(showOpenAsDialog.value) {
-        OpenAsDialog(readOnly=readOnlyForOpenAsDialog,fileName=getCurItem().fileName, filePath = openAsDialogFilePath.value,
+        val openAsDialogItem = openAsDialogItem.value
+        OpenAsDialog(readOnly=readOnlyForOpenAsDialog,fileName=openAsDialogItem.fileName, filePath = openAsDialogItem.fullPath,
             openSuccessCallback = {
                 //只有在worktree的diff页面才有必要显示弹窗，在index页面没必要显示，在diff commit的页面更没必要显示，因为若修改，肯定是修改worktree的文件，你在index页面就算重载也看不到修改后的内容，所以没必要提示
-                if(fromTo == Cons.gitDiffFromIndexToWorktree) {
+//                if(isDiffToLocal || fromTo == Cons.gitDiffFromIndexToWorktree) {
+                if(isDiffToLocal) {
                     //如果请求外部打开成功，不管用户有无选择app（想实现成选择才询问是否重新加载，但无法判断）都询问是否重载文件
-                    showBackFromExternalAppAskReloadDialog.value=true  // 显示询问是否重载的弹窗
+                    // 显示询问是否重载的弹窗
+                    initBackFromExtAppDialog(openAsDialogItemIdx.intValue)
                 }
             }
         ) {
@@ -867,9 +903,10 @@ fun DiffScreen(
     }
 
 
+    //这个是页面顶栏请求的，现在只有单文件模式才用
     if(pageRequest.value == PageRequest.showOpenAsDialog) {
         PageRequest.clearStateThenDoAct(pageRequest) {
-            initOpenAsDialog(getCurItem().fullPath)
+            initOpenAsDialog(curItemIndex.intValue)
         }
     }
 
@@ -881,13 +918,26 @@ fun DiffScreen(
     }
 
     val showOrHideAll = { show:Boolean ->
-        val indexList = mutableListOf<Int>()
-        val allExpandList = diffableItemList.value.mapIndexed {idx, it-> indexList.add(idx); it.copy(visible = show) }
-        diffableItemList.value.clear()
-        diffableItemList.value.addAll(allExpandList)
-
         //刷新页面
-        requireRefreshSubList(indexList)
+        if(show) {  //展开当前未展开的条目并重载未初始化的条目的内容
+            //仅加载未展开条目，所以需要过滤下，用户如果想确保重载所有条目，先展开所有条目再点顶部刷新按钮即可
+            val hideAndNeverLoadedList = mutableListOf<Int>()
+            for((idx, it) in diffableItemList.value.toList().withIndex()) {
+                if(it.visible.not()) {
+                    if(it.neverLoadedDifferences()) {
+                        hideAndNeverLoadedList.add(idx)
+                    }else {  //当前条目虽然现在没展开，但是内容已经加载，仅展开，不重新加载
+                        diffableItemList.value[idx] = it.copy(visible = true)
+                    }
+                }
+            }
+
+            requireRefreshSubList(hideAndNeverLoadedList)
+        }else {  //隐藏所有条目，这个不用重载，直接把visible设下再更新下state list就可以了
+            val allHideList = diffableItemList.value.map {it.copy(visible = false) }
+            diffableItemList.value.clear()
+            diffableItemList.value.addAll(allHideList)
+        }
     }
 
     if(pageRequest.value == PageRequest.expandAll) {
@@ -1290,7 +1340,7 @@ fun DiffScreen(
                                                icon = Icons.AutoMirrored.Filled.OpenInNew,
                                                text = stringResource(R.string.open_as),
                                                onClick = {
-                                                   initOpenAsDialog(diffableItem.fullPath)
+                                                   initOpenAsDialog(idx)
                                                }
 
                                            ),
@@ -1348,7 +1398,7 @@ fun DiffScreen(
                                             icon = Icons.AutoMirrored.Filled.OpenInNew,
                                             text = stringResource(R.string.open_as),
                                             onClick = {
-                                                initOpenAsDialog(diffableItem.fullPath)
+                                                initOpenAsDialog(idx)
                                             }
 
                                         ),
@@ -1395,7 +1445,7 @@ fun DiffScreen(
                                                 icon = Icons.AutoMirrored.Filled.OpenInNew,
                                                 text = stringResource(R.string.open_as),
                                                 onClick = {
-                                                    initOpenAsDialog(diffableItem.fullPath)
+                                                    initOpenAsDialog(idx)
                                                 }
 
                                             ),
@@ -1833,10 +1883,10 @@ fun DiffScreen(
                                     } else {  // grouped lines by line num
                                         //由于这个是一对一对的，所以如果第一行是一对，实际上两行都会有顶部padding，不过问题不大，看着不太难受
 //                                        val lineIndex = mutableIntStateOf(-1) //必须用个什么东西包装一下，不然基本类型会被闭包捕获，值会错
-                                        val lineIndex = IntBox(-1) //必须用个什么东西包装一下，不然基本类型会被闭包捕获，值会错
+                                        val lineIndex = Box(-1) //必须用个什么东西包装一下，不然基本类型会被闭包捕获，值会错
                                         hunkAndLines.groupedLines.forEach printLine@{ (_lineNum: Int, lines: Map<String, PuppyLine>) ->
-                                            lineIndex.intValue += 1;
-                                            val lineIndex = lineIndex.intValue
+                                            lineIndex.value += 1;
+                                            val lineIndex = lineIndex.value
 
                                             //若非 新增行、删除行、上下文 ，不显示
                                             if (!(lines.contains(Diff.Line.OriginType.ADDITION.toString())
