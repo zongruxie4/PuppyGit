@@ -7,6 +7,7 @@ import androidx.compose.material.icons.filled.CheckBoxOutlineBlank
 import androidx.compose.material.icons.filled.DensityLarge
 import androidx.compose.material.icons.filled.DensitySmall
 import androidx.compose.material.icons.filled.FileOpen
+import androidx.compose.material.icons.filled.KeyboardDoubleArrowDown
 import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material.icons.filled.Restore
@@ -123,6 +124,14 @@ fun DiffPageActions(
             iconContentDesc = stringResource(R.string.collapse_all),
         ) label@{
             request.value = PageRequest.collapseAll
+        }
+
+        LongPressAbleIconBtn(
+            tooltipText = stringResource(R.string.go_to_bottom),
+            icon = Icons.Filled.KeyboardDoubleArrowDown,
+            iconContentDesc = stringResource(R.string.go_to_bottom),
+        ) label@{
+            request.value = PageRequest.goToBottomOfCurrentFile
         }
 
 

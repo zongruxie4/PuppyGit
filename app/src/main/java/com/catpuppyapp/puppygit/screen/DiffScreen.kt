@@ -250,9 +250,9 @@ fun DiffScreen(
     // key 是文件在仓库下的相对路径，value是文件在lazy column的索引
 //    val itemIdxAtLazyColumn_Map = mutableCustomStateMapOf(keyTag = stateKeyTag, keyName = "itemIdxAtLazyColumn_Map") { mapOf<String, Int>() }
 
-    val scrollToCurrentItemHeader = { relativePath:String ->
-//        val targetIdx = itemIdxAtLazyColumn_Map.value.get(relativePath)
-        val targetIdx = diffableItemList.value.toList().let {
+
+    val getTargetIdxOfLazyColumnByRelativePath = { relativePath:String ->
+        diffableItemList.value.toList().let {
             var count = 0
             for(i in it) {
                 if(relativePath == i.relativePath) {
@@ -269,6 +269,10 @@ fun DiffScreen(
 
             count
         }
+    }
+
+    val scrollToCurrentItemHeader = { relativePath:String ->
+        val targetIdx = getTargetIdxOfLazyColumnByRelativePath(relativePath)
 
         if(AppModel.devModeOn) {
             MyLog.d(TAG, "#scrollToCurrentItemHeader: targetIdx=$targetIdx")
@@ -899,6 +903,29 @@ fun DiffScreen(
         PageRequest.clearStateThenDoAct(pageRequest) {
             //从顶栏发起的请求，针对所有条目
             initCreatePatchDialog(diffableItemList.value.map { it.relativePath })
+        }
+    }
+
+    if(pageRequest.value == PageRequest.goToBottomOfCurrentFile) {
+        PageRequest.clearStateThenDoAct(pageRequest) {
+            val curItemRelativePath = getCurItem().relativePath
+            val diffableItemList = diffableItemList.value
+            val indexOfCurItem = diffableItemList.indexOfFirst { it.relativePath ==  curItemRelativePath }
+
+            //仅在索引有效时跳转
+            if(indexOfCurItem >= 0) {
+                //计算当前条目的尾部需要获取下个条目的头部，这样计算简单些
+                val nextItem = diffableItemList.getOrNull(indexOfCurItem + 1)
+                val targetIdx = if(nextItem == null) {  //若当前条目是最后一个条目，下个条目就会是null，这时滚动到页面末尾即可
+                    Int.MAX_VALUE
+                }else {
+                    // 获得当前条目底部索引（下个条目的头部索引 - 1）
+                    getTargetIdxOfLazyColumnByRelativePath(nextItem.relativePath) - 1
+                }
+
+                //跳转
+                UIHelper.scrollToItem(scope, listState, targetIdx)
+            }
         }
     }
 
