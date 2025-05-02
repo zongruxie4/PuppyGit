@@ -137,7 +137,7 @@ import java.io.File
 private const val TAG = "DiffScreen"
 
 //private const val defaultFileTitleFileNameLenLimit = 12
-private val fileTitleFileNameWidthLimit = 150.dp
+//private val fileTitleFileNameWidthLimit = 150.dp
 
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -302,6 +302,9 @@ fun DiffScreen(
 
     val titleFileNameFontSize = remember { MyStyleKt.Title.firstLineFontSizeSmall }
     val titleRelativePathFontSize = remember { MyStyleKt.Title.secondLineFontSize }
+
+    //标题长度限制到屏幕的一半
+    val fileTitleFileNameWidthLimit = remember(configuration.screenWidthDp) {(configuration.screenWidthDp / 2).dp}
 
 //    val titleFileNameLenLimit = remember(configuration.screenWidthDp) { with(UIHelper) {
 //        val scrWidthPx = dpToPx(configuration.screenWidthDp, density)
@@ -1394,60 +1397,67 @@ fun DiffScreen(
                                 val loadedAtLeastOnce = diffableItem.maybeLoadedAtLeastOnce()
                                 val colorOfChangeType = UIHelper.getChangeTypeColor(changeType)
 
-                                Column(
-                                    modifier = Modifier.widthIn(max = fileTitleFileNameWidthLimit)
+                                Row(
+                                    modifier = Modifier.widthIn(max = fileTitleFileNameWidthLimit),
+                                    verticalAlignment = Alignment.CenterVertically,
                                 ) {
-                                    Row {
-                                        //标题：显示文件名、添加了几行、删除了几行
-                                        ScrollableRow(
-                                            //点击文件名显示详情
-                                            //确保最小可点击范围，这个不能放到外面的row里，外面的row还算了下面添加删除行的长度，多半会超，所以就没意义了
-                                            modifier = Modifier.clickable { initDetailsDialog(idx) }.widthIn(min = MyStyleKt.Title.clickableTitleMinWidth),
+
+                                    //收起/展开 的箭头图标
+                                    InLineIcon(
+                                        iconModifier = Modifier.size(iconSize),
+                                        pressedCircleSize = pressedCircleSize,
+                                        icon = if(visible) Icons.Filled.ArrowDropDown else Icons.AutoMirrored.Filled.ArrowRight ,
+                                        tooltipText = "",
+                                    )
+
+
+                                    Column {
+                                        Row(
                                             verticalAlignment = Alignment.CenterVertically,
                                         ) {
-                                            InLineIcon(
-                                                iconModifier = Modifier.size(iconSize),
-                                                pressedCircleSize = pressedCircleSize,
-                                                icon = if(visible) Icons.Filled.ArrowDropDown else Icons.AutoMirrored.Filled.ArrowRight ,
-                                                tooltipText = "",
-                                            )
+                                            //标题：显示文件名、添加了几行、删除了几行
+                                            ScrollableRow(
+                                                //点击文件名显示详情
+                                                //确保最小可点击范围，这个不能放到外面的row里，外面的row还算了下面添加删除行的长度，多半会超，所以就没意义了
+                                                modifier = Modifier.clickable { initDetailsDialog(idx) }.widthIn(min = MyStyleKt.Title.clickableTitleMinWidth),
+                                            ) {
+                                                //显示：“文件名: +添加的行数, -删除的行数"，例如： "abc.txt: +1, -10"
 
-                                            //显示：“文件名: +添加的行数, -删除的行数"，例如： "abc.txt: +1, -10"
+
+                                                //如果只读，显示个图标让用户知道只读
+                                                if(readOnlyModeOn) {
+                                                    ReadOnlyIcon()
+                                                }
 
 
-                                            //如果只读，显示个图标让用户知道只读
-                                            if(readOnlyModeOn) {
-                                                ReadOnlyIcon()
+                                                Text(
+                                                    text = diffableItem.fileName + (if(loadedAtLeastOnce) ": " else "") ,
+                                                    fontSize = titleFileNameFontSize,
+                                                    color = colorOfChangeType,
+                                                )
                                             }
 
+                                            //如果加载过，则显示添加删除了多少行
+                                            if(loadedAtLeastOnce) {
+                                                Text(
+                                                    fontSize = titleFileNameFontSize,
+                                                    text = buildAnnotatedString {
+                                                        withStyle(style = SpanStyle(color = Theme.mdGreen)) { append("+"+diffItem.addedLines) }
+                                                        append(", ")
+                                                        withStyle(style = SpanStyle(color = Theme.mdRed)) { append("-"+diffItem.deletedLines) }
+                                                    }
+                                                )
+                                            }
+                                        }
 
+                                        //相对路径的父路径
+                                        ScrollableRow {
                                             Text(
-                                                text = diffableItem.fileName + (if(loadedAtLeastOnce) ": " else "") ,
-                                                fontSize = titleFileNameFontSize,
+                                                text = diffableItem.fileParentPathOfRelativePath,
+                                                fontSize = titleRelativePathFontSize,
                                                 color = colorOfChangeType,
                                             )
                                         }
-
-                                        //如果加载过，则显示添加删除了多少行
-                                        if(loadedAtLeastOnce) {
-                                            Text(
-                                                fontSize = titleFileNameFontSize,
-                                                text = buildAnnotatedString {
-                                                    withStyle(style = SpanStyle(color = Theme.mdGreen)) { append("+"+diffItem.addedLines) }
-                                                    append(", ")
-                                                    withStyle(style = SpanStyle(color = Theme.mdRed)) { append("-"+diffItem.deletedLines) }
-                                                }
-                                            )
-                                        }
-                                    }
-
-                                    //相对路径的父路径
-                                    ScrollableRow {
-                                        Text(
-                                            text = diffableItem.fileParentPathOfRelativePath,
-                                            fontSize = titleRelativePathFontSize,
-                                            color = colorOfChangeType,
-                                        )
                                     }
                                 }
 
