@@ -160,8 +160,8 @@ object MyStyleKt{
         val secondLineFontSize = 12.sp
 
         //可点击title的最小尺寸
-//        val clickableTitleMinWidth = 40.dp
-        val clickableTitleMinWidth = 50.dp
+        val clickableTitleMinWidth = 40.dp
+//        val clickableTitleMinWidth = 50.dp
     }
 
     object SettingsItem {

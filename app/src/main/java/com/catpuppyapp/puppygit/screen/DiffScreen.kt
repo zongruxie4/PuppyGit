@@ -306,12 +306,11 @@ fun DiffScreen(
         try {
             //根据屏幕宽度计算标题栏能显示的最大文件名，最后除以几就是限制不要超过屏幕的几分之1
             //最后除的数越大，显示的字数越少
-            (scrWidthPx / fontWidthPx / 1.5).toInt()
+            (scrWidthPx / fontWidthPx / 2).toInt()
         }catch (e: Exception) {
             //这个不太危险，出错也没事，所以没必要记到error级别
             MyLog.w(TAG, "#titleFileNameLenLimit: calculate title font length limit err: ${e.localizedMessage}")
-            //这个数字是我看自己屏幕算的，差不多占屏幕一半
-            22
+            18
         }
     } }
 
@@ -1503,8 +1502,6 @@ fun DiffScreen(
 
                                     //显示：“文件名: +添加的行数, -删除的行数"，例如： "abc.txt: +1, -10"
                                     Row(
-                                        //确保最小可点击范围
-                                        modifier = Modifier.widthIn(min = MyStyleKt.Title.clickableTitleMinWidth),
                                         verticalAlignment = Alignment.CenterVertically
                                     ) {
 
@@ -1517,11 +1514,16 @@ fun DiffScreen(
 
                                         Text(
                                             //点击文件名显示详情
-                                            modifier = Modifier.clickable { initDetailsDialog(idx) },
+                                            //确保最小可点击范围，这个不能放到外面的row里，外面的row还算了下面添加删除行的长度，多半会超，所以就没意义了
+                                            modifier = Modifier.clickable { initDetailsDialog(idx) }.widthIn(min = MyStyleKt.Title.clickableTitleMinWidth),
                                             fontSize = titleFontSize,
                                             text = buildAnnotatedString {
                                                 withStyle(style = SpanStyle(color = UIHelper.getChangeTypeColor(changeType))) {
                                                     append(diffableItem.getFileNameEllipsis(titleFileNameLenLimit))
+                                                }
+
+                                                if(loadedAtLeastOnce) {
+                                                    append(": ")
                                                 }
                                             } ,
                                         )
@@ -1531,7 +1533,6 @@ fun DiffScreen(
                                             Text(
                                                 fontSize = titleFontSize,
                                                 text = buildAnnotatedString {
-                                                    append(": ")
                                                     withStyle(style = SpanStyle(color = Theme.mdGreen)) { append("+"+diffItem.addedLines) }
                                                     append(", ")
                                                     withStyle(style = SpanStyle(color = Theme.mdRed)) { append("-"+diffItem.deletedLines) }
