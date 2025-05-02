@@ -2,6 +2,18 @@
 
 ---
 
+1.1.0.8v84 - 20250502:
+- re-design the Difference screen
+- fix few bugs
+
+
+
+- 重新设计差异页面
+- 修复bug
+
+
+---
+
 1.1.0.7v83 - 20250428:
 - ChangeList and FileHistory screens: return from Diff screen will scroll list to make last viewed item visible
 - fix: on Tablet, Repos screen layout may become weired after rotated device
