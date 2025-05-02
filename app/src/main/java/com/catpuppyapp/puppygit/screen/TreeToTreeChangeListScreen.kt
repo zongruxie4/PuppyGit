@@ -280,8 +280,6 @@ fun TreeToTreeChangeListScreen(
                     }else{
                         val titleText = Libgit2Helper.getLeftToRightDiffCommitsText(commit1OidStrState.value, commit2OidStr, swap.value)
                         Column(modifier = Modifier
-                            //外面的标题宽180.dp，这里的比外面的宽点，因为这个页面顶栏actions少
-                            .widthIn(max = 200.dp)
                             .combinedClickable(onLongClick = {
                                 haptic.performHapticFeedback(HapticFeedbackType.LongPress)
                                 initInfoDialog()
@@ -293,6 +291,8 @@ fun TreeToTreeChangeListScreen(
                                 }
 
                             }
+                            .widthIn(min = MyStyleKt.Title.clickableTitleMinWidth)
+
                         ) {
                             Row {
                                 Text(

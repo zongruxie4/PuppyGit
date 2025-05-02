@@ -55,7 +55,7 @@ fun DiffScreenTitle(
             )
         ) {
             Column(
-                modifier = Modifier.widthIn(min=MyStyleKt.Title.clickableTitleMinWidth)
+                modifier = Modifier
                     .combinedClickable(
                         //double click go to top of list
                         onDoubleClick = {
@@ -70,7 +70,7 @@ fun DiffScreenTitle(
                         }else {
                             PageRequest.showDetails
                         }
-                    }
+                    }.widthIn(min=MyStyleKt.Title.clickableTitleMinWidth)
             ) {
 
                 val changeTypeColor = UIHelper.getChangeTypeColor(changeType)
