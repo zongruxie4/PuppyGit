@@ -121,7 +121,13 @@ fun BarContainer(
                                 DropdownMenuItem(
                                     text = { Text(it.text) },
                                     enabled = it.enabled(),
-                                    onClick = it.onClick
+                                    onClick = {
+                                        it.onClick()
+
+                                        if(it.closeMenuAfterClick()) {
+                                            moreMenuExpandState.value = false
+                                        }
+                                    }
                                 )
                             }
                         }
