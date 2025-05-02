@@ -1508,22 +1508,27 @@ fun DiffScreen(
                                             ReadOnlyIcon()
                                         }
 
+                                        val loadedAtLeastOnce = diffableItem.maybeLoadedAtLeastOnce()
+
                                         Text(
                                             modifier = Modifier.clickable { initDetailsDialog(idx) }.widthIn(min = MyStyleKt.Title.clickableTitleMinWidth),
                                             fontSize = titleFontSize,
                                             text = buildAnnotatedString {
                                                 withStyle(style = SpanStyle(color = UIHelper.getChangeTypeColor(changeType))) {
                                                     append(diffableItem.getFileNameEllipsis(titleFileNameLenLimit))
+                                                    //这个得放这，如果顺便放下面的Text里，布局有时候会异常，变成"文件名    :+1,-2"这样，多些莫名其妙的空格
+                                                    if(loadedAtLeastOnce) {
+                                                        append(": ")
+                                                    }
                                                 }
                                             } ,
                                         )
 
                                         //如果加载过，则显示添加删除了多少行
-                                        if(diffableItem.maybeLoadedAtLeastOnce()) {
+                                        if(loadedAtLeastOnce) {
                                             Text(
                                                 fontSize = titleFontSize,
                                                 text = buildAnnotatedString {
-                                                        append(": ")
                                                         withStyle(style = SpanStyle(color = Theme.mdGreen)) { append("+"+diffItem.addedLines+", ") }
                                                         withStyle(style = SpanStyle(color = Theme.mdRed)) { append("-"+diffItem.deletedLines) }
                                                 }
