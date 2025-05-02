@@ -32,7 +32,8 @@ fun BarContainer(
     horizontalArrangement: Arrangement.Horizontal = Arrangement.SpaceBetween,
     verticalAlignment: Alignment.Vertical = Alignment.CenterVertically,
     actions:List<MenuIconBtnItem>? = null,
-    showMoreMenu: MutableState<Boolean>? = null,
+    showMoreIcon: Boolean = false,
+    moreMenuExpandState: MutableState<Boolean>? = null,
     moreMenuItems:List<MenuTextItem>? = null,
     onClick: (()->Unit)? = null,
     content: @Composable ()->Unit,
@@ -81,20 +82,22 @@ fun BarContainer(
             }
         }
 
-        if(showMoreMenu!=null && showMoreMenu.value) {
+        if(showMoreIcon) {
             // 菜单
             MenuIconBtnItem(
                 icon = Icons.Filled.MoreVert,
                 text = stringResource(R.string.menu),
                 onClick = {
-                    showMoreMenu.value = true
+                    if(moreMenuExpandState != null) {
+                        moreMenuExpandState.value = !moreMenuExpandState.value
+                    }
                 }
             )
 
-            if(moreMenuItems.isNullOrEmpty().not()) {
+            if(moreMenuExpandState != null && !moreMenuItems.isNullOrEmpty()) {
                 DropdownMenu(
-                    expanded = showMoreMenu.value,
-                    onDismissRequest = { showMoreMenu.value=false }
+                    expanded = moreMenuExpandState.value,
+                    onDismissRequest = { moreMenuExpandState.value = false }
                 ) {
                     for(it in moreMenuItems) {
                         if(it.visible().not()) continue;

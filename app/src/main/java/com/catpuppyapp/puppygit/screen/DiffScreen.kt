@@ -1296,7 +1296,7 @@ fun DiffScreen(
 //                            itemsCount.intValue++
 
 //                            itemIdxAtLazyColumn_Map.put(relativePath, itemsCount.intValue)
-                            val showMore = remember { mutableStateOf(false) }
+                            val moreMenuExpandState = remember { mutableStateOf(false) }
                             // x 放弃，不写footer了）把这个抽成 infobar，footer用同样的样式写
                             // LazyColumn里不能用rememberSaveable，会崩，用remember也有可能会不触发刷新，除非改外部的list触发遍历
                             BarContainer(
@@ -1312,7 +1312,8 @@ fun DiffScreen(
                                     }
                                 ,
                                 onClick = switchVisible,
-                                showMoreMenu = showMore,
+                                showMoreIcon = true,
+                                moreMenuExpandState = moreMenuExpandState,
                                 moreMenuItems = (if(fromScreen == DiffFromScreen.HOME_CHANGELIST) {
                                         mutableListOf(
                                             MenuTextItem(
