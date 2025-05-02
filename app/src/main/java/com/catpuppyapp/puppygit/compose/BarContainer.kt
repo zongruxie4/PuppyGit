@@ -20,6 +20,7 @@ import androidx.compose.runtime.MutableState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.unit.DpOffset
 import androidx.compose.ui.unit.dp
 import com.catpuppyapp.puppygit.dto.MenuIconBtnItem
 import com.catpuppyapp.puppygit.dto.MenuTextItem
@@ -109,6 +110,7 @@ fun BarContainer(
                     //菜单项，点击图标显示
                     if(moreMenuExpandState != null && !moreMenuItems.isNullOrEmpty()) {
                         DropdownMenu(
+                            offset = DpOffset(x = 30.dp, y = 0.dp),
                             expanded = moreMenuExpandState.value,
                             onDismissRequest = { moreMenuExpandState.value = false }
                         ) {
