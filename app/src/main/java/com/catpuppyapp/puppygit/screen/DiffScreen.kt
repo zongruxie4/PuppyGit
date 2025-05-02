@@ -1238,8 +1238,8 @@ fun DiffScreen(
                     }
 
 
-                    val iconSize = 26.dp
-                    val pressedCircleSize = 34.dp
+                    val iconSize = 30.dp
+                    val pressedCircleSize = 35.dp
 
                     //这header得调一下，左边加个箭头点击能收起
                     if (showMyFileHeader) {
