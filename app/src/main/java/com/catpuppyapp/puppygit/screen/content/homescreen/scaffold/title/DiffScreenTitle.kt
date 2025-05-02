@@ -75,9 +75,7 @@ fun DiffScreenTitle(
 
                 val changeTypeColor = UIHelper.getChangeTypeColor(changeType)
 
-                Row(modifier = Modifier.horizontalScroll(rememberScrollState()),
-                    verticalAlignment = Alignment.CenterVertically
-                ) {  //话说这名如果超了，在Row上加个滚动属性让用户能滚动查看，怎么样？（20240411加了，测试了下，勉强能用，还行，好！
+                ScrollableRow {
                     if(readOnly) {
                         ReadOnlyIcon()
                     }
@@ -93,7 +91,7 @@ fun DiffScreenTitle(
                 ScrollableRow  {
                     Text(
                         text = fileParentPathOfRelativePath,
-                        fontSize = 11.sp,
+                        fontSize = MyStyleKt.Title.secondLineFontSize,
                         maxLines=1,
                         overflow = TextOverflow.Ellipsis,
                         color = changeTypeColor

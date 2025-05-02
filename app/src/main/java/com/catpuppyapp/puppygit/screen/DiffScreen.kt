@@ -77,6 +77,7 @@ import com.catpuppyapp.puppygit.compose.OpenAsAskReloadDialog
 import com.catpuppyapp.puppygit.compose.OpenAsDialog
 import com.catpuppyapp.puppygit.compose.ReadOnlyIcon
 import com.catpuppyapp.puppygit.compose.ScrollableColumn
+import com.catpuppyapp.puppygit.compose.ScrollableRow
 import com.catpuppyapp.puppygit.constants.Cons
 import com.catpuppyapp.puppygit.constants.LineNum
 import com.catpuppyapp.puppygit.constants.PageRequest
@@ -135,7 +136,9 @@ import java.io.File
 
 private const val TAG = "DiffScreen"
 
-private const val defaultFileTitleFileNameLenLimit = 12
+//private const val defaultFileTitleFileNameLenLimit = 12
+private val fileTitleFileNameWidthLimit = 150.dp
+
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -297,21 +300,23 @@ fun DiffScreen(
         }
     }
 
-    val titleFontSize = remember { MyStyleKt.Title.firstLineFontSizeSmall }
-    val titleFileNameLenLimit = remember(configuration.screenWidthDp) { with(UIHelper) {
-        val scrWidthPx = dpToPx(configuration.screenWidthDp, density)
-        // title标题使用的字体大小
-        val fontWidthPx = spToPx(titleFontSize, density)
-        try {
-            //根据屏幕宽度计算标题栏能显示的最大文件名，最后除以几就是限制不要超过屏幕的几分之1
-            //最后除的数越大，显示的字数越少
-            (scrWidthPx / fontWidthPx / 2.2).toInt().coerceAtLeast(defaultFileTitleFileNameLenLimit)
-        }catch (e: Exception) {
-            //这个不太危险，出错也没事，所以没必要记到error级别
-            MyLog.w(TAG, "#titleFileNameLenLimit: calculate title font length limit err: ${e.localizedMessage}")
-            defaultFileTitleFileNameLenLimit
-        }
-    } }
+    val titleFileNameFontSize = remember { MyStyleKt.Title.firstLineFontSizeSmall }
+    val titleRelativePathFontSize = remember { MyStyleKt.Title.secondLineFontSize }
+
+//    val titleFileNameLenLimit = remember(configuration.screenWidthDp) { with(UIHelper) {
+//        val scrWidthPx = dpToPx(configuration.screenWidthDp, density)
+//        // title标题使用的字体大小
+//        val fontWidthPx = spToPx(titleFontSize, density)
+//        try {
+//            //根据屏幕宽度计算标题栏能显示的最大文件名，最后除以几就是限制不要超过屏幕的几分之1
+//            //最后除的数越大，显示的字数越少
+//            (scrWidthPx / fontWidthPx / 2.2).toInt().coerceAtLeast(defaultFileTitleFileNameLenLimit)
+//        }catch (e: Exception) {
+//            //这个不太危险，出错也没事，所以没必要记到error级别
+//            MyLog.w(TAG, "#titleFileNameLenLimit: calculate title font length limit err: ${e.localizedMessage}")
+//            defaultFileTitleFileNameLenLimit
+//        }
+//    } }
 
     // key: relative path under repo, value: loading boolean
 //    val loadingMap = mutableCustomStateMapOf(keyTag = stateKeyTag, keyName = "loadingMap", ) { mapOf<String, Boolean>() }
@@ -1386,49 +1391,47 @@ fun DiffScreen(
 
                                 ),
                             ) {
-                                //标题：显示文件名、添加了几行、删除了几行
-                                Row(
-                                    verticalAlignment = Alignment.CenterVertically,
+                                val loadedAtLeastOnce = diffableItem.maybeLoadedAtLeastOnce()
+                                val colorOfChangeType = UIHelper.getChangeTypeColor(changeType)
+
+                                Column(
+                                    modifier = Modifier.widthIn(max = fileTitleFileNameWidthLimit)
                                 ) {
-                                    InLineIcon(
-                                        iconModifier = Modifier.size(iconSize),
-                                        pressedCircleSize = pressedCircleSize,
-                                        icon = if(visible) Icons.Filled.ArrowDropDown else Icons.AutoMirrored.Filled.ArrowRight ,
-                                        tooltipText = "",
-                                    )
-
-                                    //显示：“文件名: +添加的行数, -删除的行数"，例如： "abc.txt: +1, -10"
-                                    Row(
-                                        verticalAlignment = Alignment.CenterVertically
-                                    ) {
-
-                                        //如果只读，显示个图标让用户知道只读
-                                        if(readOnlyModeOn) {
-                                            ReadOnlyIcon()
-                                        }
-
-                                        val loadedAtLeastOnce = diffableItem.maybeLoadedAtLeastOnce()
-
-                                        Text(
+                                    Row {
+                                        //标题：显示文件名、添加了几行、删除了几行
+                                        ScrollableRow(
                                             //点击文件名显示详情
                                             //确保最小可点击范围，这个不能放到外面的row里，外面的row还算了下面添加删除行的长度，多半会超，所以就没意义了
                                             modifier = Modifier.clickable { initDetailsDialog(idx) }.widthIn(min = MyStyleKt.Title.clickableTitleMinWidth),
-                                            fontSize = titleFontSize,
-                                            text = buildAnnotatedString {
-                                                withStyle(style = SpanStyle(color = UIHelper.getChangeTypeColor(changeType))) {
-                                                    append(diffableItem.getFileNameEllipsis(titleFileNameLenLimit))
-                                                }
+                                            verticalAlignment = Alignment.CenterVertically,
+                                        ) {
+                                            InLineIcon(
+                                                iconModifier = Modifier.size(iconSize),
+                                                pressedCircleSize = pressedCircleSize,
+                                                icon = if(visible) Icons.Filled.ArrowDropDown else Icons.AutoMirrored.Filled.ArrowRight ,
+                                                tooltipText = "",
+                                            )
 
-                                                if(loadedAtLeastOnce) {
-                                                    append(": ")
-                                                }
-                                            } ,
-                                        )
+                                            //显示：“文件名: +添加的行数, -删除的行数"，例如： "abc.txt: +1, -10"
+
+
+                                            //如果只读，显示个图标让用户知道只读
+                                            if(readOnlyModeOn) {
+                                                ReadOnlyIcon()
+                                            }
+
+
+                                            Text(
+                                                text = diffableItem.fileName + (if(loadedAtLeastOnce) ": " else "") ,
+                                                fontSize = titleFileNameFontSize,
+                                                color = colorOfChangeType,
+                                            )
+                                        }
 
                                         //如果加载过，则显示添加删除了多少行
                                         if(loadedAtLeastOnce) {
                                             Text(
-                                                fontSize = titleFontSize,
+                                                fontSize = titleFileNameFontSize,
                                                 text = buildAnnotatedString {
                                                     withStyle(style = SpanStyle(color = Theme.mdGreen)) { append("+"+diffItem.addedLines) }
                                                     append(", ")
@@ -1437,7 +1440,17 @@ fun DiffScreen(
                                             )
                                         }
                                     }
+
+                                    //相对路径的父路径
+                                    ScrollableRow {
+                                        Text(
+                                            text = diffableItem.fileParentPathOfRelativePath,
+                                            fontSize = titleRelativePathFontSize,
+                                            color = colorOfChangeType,
+                                        )
+                                    }
                                 }
+
                             }
                         }
                     }
