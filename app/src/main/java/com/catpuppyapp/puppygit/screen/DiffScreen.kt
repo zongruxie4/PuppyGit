@@ -1530,7 +1530,8 @@ fun DiffScreen(
                                                 fontSize = titleFontSize,
                                                 text = buildAnnotatedString {
                                                     append(": ")
-                                                    withStyle(style = SpanStyle(color = Theme.mdGreen)) { append("+"+diffItem.addedLines+", ") }
+                                                    withStyle(style = SpanStyle(color = Theme.mdGreen)) { append("+"+diffItem.addedLines) }
+                                                    append(", ")
                                                     withStyle(style = SpanStyle(color = Theme.mdRed)) { append("-"+diffItem.deletedLines) }
                                                 }
                                             )
