@@ -865,7 +865,7 @@ fun FilesInnerPage(
                         }
                         ){
                             Text(text = stringResource(R.string.you_can_click_here_copy_err_msg),
-                                style = MyStyleKt.ClickableText.style,
+                                style = MyStyleKt.ClickableText.getStyle(),
                                 color = MyStyleKt.ClickableText.color,
                             )
                         }

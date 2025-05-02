@@ -81,7 +81,7 @@ fun PageCenterIconButton(
         Row {
             Text(
                 text = text,
-                style = MyStyleKt.ClickableText.style,
+                style = MyStyleKt.ClickableText.getStyle(),
                 color = MyStyleKt.ClickableText.color,
                 fontSize = MyStyleKt.TextSize.default
             )

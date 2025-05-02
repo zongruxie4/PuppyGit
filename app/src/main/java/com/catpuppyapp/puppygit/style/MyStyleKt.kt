@@ -6,11 +6,11 @@ import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.text.selection.TextSelectionColors
+import androidx.compose.material3.LocalTextStyle
+import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.catpuppyapp.puppygit.dto.DeviceWidthHeight
@@ -21,7 +21,10 @@ object MyStyleKt{
     val defaultIconSize = 40.dp
 
     object ClickableText{
-        val style: TextStyle = TextStyle(textDecoration = TextDecoration.Underline)
+        @Composable
+        fun getStyle() = LocalTextStyle.current;  // 默认
+//        fun getStyle() = TextStyle(textDecoration = TextDecoration.Underline);  // 加下划线
+
         val color = Color(0xFF0096FF)
         val errColor = Color(0xFFFF5733)
         val minClickableSize = 25.dp
