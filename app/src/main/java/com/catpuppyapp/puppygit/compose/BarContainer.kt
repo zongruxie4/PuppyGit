@@ -52,7 +52,8 @@ fun BarContainer(
 ) {
     Row(
         modifier = modifier
-            .border(BorderStroke(2.dp, UIHelper.getDividerColor())).then(
+            .border(BorderStroke(2.dp, UIHelper.getDividerColor()))
+            .then(
                 if(onClick != null) {
                     Modifier.clickable { onClick() }
                 }else {

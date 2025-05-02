@@ -1412,35 +1412,33 @@ fun DiffScreen(
 
 
                                     Column {
-                                        Row(
-                                            verticalAlignment = Alignment.CenterVertically,
+                                        //标题：显示文件名、添加了几行、删除了几行
+                                        ScrollableRow(
+                                            //点击文件名显示详情
+                                            //确保最小可点击范围，这个不能放到外面的row里，外面的row还算了下面添加删除行的长度，多半会超，所以就没意义了
+                                            modifier = Modifier.clickable { initDetailsDialog(idx) }.widthIn(min = MyStyleKt.Title.clickableTitleMinWidth),
                                         ) {
-                                            //标题：显示文件名、添加了几行、删除了几行
-                                            ScrollableRow(
-                                                //点击文件名显示详情
-                                                //确保最小可点击范围，这个不能放到外面的row里，外面的row还算了下面添加删除行的长度，多半会超，所以就没意义了
-                                                modifier = Modifier.clickable { initDetailsDialog(idx) }.widthIn(min = MyStyleKt.Title.clickableTitleMinWidth),
-                                            ) {
-                                                //显示：“文件名: +添加的行数, -删除的行数"，例如： "abc.txt: +1, -10"
+                                            //显示：“文件名: +添加的行数, -删除的行数"，例如： "abc.txt: +1, -10"
 
 
-                                                //如果只读，显示个图标让用户知道只读
-                                                if(readOnlyModeOn) {
-                                                    ReadOnlyIcon()
-                                                }
-
-
-                                                Text(
-                                                    text = diffableItem.fileName + (if(loadedAtLeastOnce) ": " else "") ,
-                                                    fontSize = titleFileNameFontSize,
-                                                    color = colorOfChangeType,
-                                                )
+                                            //如果只读，显示个图标让用户知道只读
+                                            if(readOnlyModeOn) {
+                                                ReadOnlyIcon()
                                             }
 
-                                            //如果加载过，则显示添加删除了多少行
-                                            if(loadedAtLeastOnce) {
+
+                                            Text(
+                                                text = diffableItem.fileName,
+                                                fontSize = titleFileNameFontSize,
+                                                color = colorOfChangeType,
+                                            )
+                                        }
+
+                                        //如果加载过，则显示添加删除了多少行
+                                        if(loadedAtLeastOnce) {
+                                            ScrollableRow {
                                                 Text(
-                                                    fontSize = titleFileNameFontSize,
+                                                    fontSize = titleRelativePathFontSize,
                                                     text = buildAnnotatedString {
                                                         withStyle(style = SpanStyle(color = Theme.mdGreen)) { append("+"+diffItem.addedLines) }
                                                         append(", ")
