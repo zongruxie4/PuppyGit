@@ -19,14 +19,14 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.automirrored.filled.ArrowRight
 import androidx.compose.material.icons.automirrored.filled.OpenInNew
-import androidx.compose.material.icons.automirrored.filled.Undo
-import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.ArrowDropDown
 import androidx.compose.material.icons.filled.Close
-import androidx.compose.material.icons.filled.Difference
 import androidx.compose.material.icons.filled.FileOpen
 import androidx.compose.material.icons.filled.KeyboardDoubleArrowUp
+import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.material.icons.filled.Refresh
+import androidx.compose.material3.DropdownMenu
+import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.MaterialTheme
@@ -105,7 +105,6 @@ import com.catpuppyapp.puppygit.settings.SettingsCons
 import com.catpuppyapp.puppygit.settings.SettingsUtil
 import com.catpuppyapp.puppygit.style.MyStyleKt
 import com.catpuppyapp.puppygit.ui.theme.Theme
-import com.catpuppyapp.puppygit.ui.theme.Typography
 import com.catpuppyapp.puppygit.utils.AppModel
 import com.catpuppyapp.puppygit.utils.Libgit2Helper
 import com.catpuppyapp.puppygit.utils.Msg
@@ -1296,7 +1295,7 @@ fun DiffScreen(
 //                            itemsCount.intValue++
 
 //                            itemIdxAtLazyColumn_Map.put(relativePath, itemsCount.intValue)
-
+                            val showMore = remember { mutableStateOf(false) }
                             // x 放弃，不写footer了）把这个抽成 infobar，footer用同样的样式写
                             // LazyColumn里不能用rememberSaveable，会崩，用remember也有可能会不触发刷新，除非改外部的list触发遍历
                             BarContainer(
@@ -1312,182 +1311,51 @@ fun DiffScreen(
                                     }
                                 ,
                                 onClick = switchVisible,
-                                actions = if(fromScreen == DiffFromScreen.HOME_CHANGELIST) {
-                                       listOf(
-                                           // patch
-                                           MenuIconBtnItem(
-                                               icon = Icons.Filled.Difference,
-                                               text = stringResource(R.string.create_patch),
-                                               onClick = {
-                                                   initCreatePatchDialog(listOf(relativePath))
-                                               }
-
-                                           ),
-                                           // revert
-                                           MenuIconBtnItem(
-                                               icon = Icons.AutoMirrored.Filled.Undo,
-                                               text = stringResource(R.string.revert),
-                                               onClick = {
-                                                   initRevertDialog(listOf(diffableItem.toChangeListItem())) {}
-                                               }
-
-                                           ),
-
-                                           // stage
-                                           MenuIconBtnItem(
-                                               icon = Icons.Filled.Add,
-                                               text = stringResource(R.string.stage),
-                                               onClick = {
-                                                   doJobThenOffLoading {
-                                                        stageItem(listOf(diffableItem.toChangeListItem()))
-                                                   }
-                                               }
-
-                                           ),
-
-                                           // refresh
-                                           MenuIconBtnItem(
-                                               icon = Icons.Filled.Refresh,
-                                               text = stringResource(R.string.refresh),
-                                               onClick = {
-                                                   //点刷新若条目没展开，会展开
-                                                   //不需要在这设置，加载子列表时会设置
+                                actions = listOf(
+                                    // refresh
+                                    MenuIconBtnItem(
+                                        icon = Icons.Filled.Refresh,
+                                        text = stringResource(R.string.refresh),
+                                        onClick = {
+                                            //点刷新若条目没展开，会展开
+                                            //不需要在这设置，加载子列表时会设置
 //                                                   val newItem = diffableItem.copy(visible = true)
 //                                                   diffableItemList[idx] = newItem
 
-                                                   requireRefreshSubList(listOf(idx))
-                                               }
+                                            requireRefreshSubList(listOf(idx))
+                                        }
 
-                                           ),
+                                    ),
 
-                                           // open
-                                           MenuIconBtnItem(
-                                               icon = Icons.Filled.FileOpen,
-                                               text = stringResource(R.string.open),
-                                               onClick = {
-                                                   openFileWithInnerSubPageEditor(diffableItem.fullPath)
-                                               }
+                                    // open
+                                    MenuIconBtnItem(
+                                        icon = Icons.Filled.FileOpen,
+                                        text = stringResource(R.string.open),
+                                        onClick = {
+                                            openFileWithInnerSubPageEditor(diffableItem.fullPath)
+                                        }
 
-                                           ),
+                                    ),
 
-                                           // open as
-                                           MenuIconBtnItem(
-                                               icon = Icons.AutoMirrored.Filled.OpenInNew,
-                                               text = stringResource(R.string.open_as),
-                                               onClick = {
-                                                   initOpenAsDialog(idx)
-                                               }
+                                    // open as
+                                    MenuIconBtnItem(
+                                        icon = Icons.AutoMirrored.Filled.OpenInNew,
+                                        text = stringResource(R.string.open_as),
+                                        onClick = {
+                                            initOpenAsDialog(idx)
+                                        }
 
-                                           ),
-                                       )
+                                    ),
 
-                                }else if (fromScreen == DiffFromScreen.INDEX) {
-                                    listOf(
-
-                                        // patch
-                                        MenuIconBtnItem(
-                                            icon = Icons.Filled.Difference,
-                                            text = stringResource(R.string.create_patch),
-                                            onClick = {
-                                                initCreatePatchDialog(listOf(relativePath))
-                                            }
-
-                                        ),
-                                        // unstage
-                                        MenuIconBtnItem(
-                                            icon = Icons.AutoMirrored.Filled.Undo,
-                                            text = stringResource(R.string.revert),
-                                            onClick = {
-                                                initUnstageDialog(listOf(diffableItem.toChangeListItem())) {}
-                                            }
-
-                                        ),
-
-
-                                        // refresh
-                                        MenuIconBtnItem(
-                                            icon = Icons.Filled.Refresh,
-                                            text = stringResource(R.string.refresh),
-                                            onClick = {
-                                                //点刷新若条目没展开，会展开
-//                                                val newItem = diffableItem.copy(visible = true)
-//                                                diffableItemList[idx] = newItem
-
-                                                requireRefreshSubList(listOf(idx))
-                                            }
-
-                                        ),
-
-                                        // open
-                                        MenuIconBtnItem(
-                                            icon = Icons.Filled.FileOpen,
-                                            text = stringResource(R.string.open),
-                                            onClick = {
-                                                openFileWithInnerSubPageEditor(diffableItem.fullPath)
-                                            }
-
-                                        ),
-
-                                        // open as
-                                        MenuIconBtnItem(
-                                            icon = Icons.AutoMirrored.Filled.OpenInNew,
-                                            text = stringResource(R.string.open_as),
-                                            onClick = {
-                                                initOpenAsDialog(idx)
-                                            }
-
-                                        ),
-                                    )
-                                    }else if(fromScreen == DiffFromScreen.TREE_TO_TREE){
-                                        listOf(
-
-                                            // patch
-                                            MenuIconBtnItem(
-                                                icon = Icons.Filled.Difference,
-                                                text = stringResource(R.string.create_patch),
-                                                onClick = {
-                                                    initCreatePatchDialog(listOf(relativePath))
-                                                }
-
-                                            ),
-
-                                            // refresh
-                                            MenuIconBtnItem(
-                                                icon = Icons.Filled.Refresh,
-                                                text = stringResource(R.string.refresh),
-                                                onClick = {
-                                                    //点刷新若条目没展开，会展开
-//                                                    val newItem = diffableItem.copy(visible = true)
-//                                                    diffableItemList[idx] = newItem
-
-                                                    requireRefreshSubList(listOf(idx))
-                                                }
-
-                                            ),
-
-                                            // open
-                                            MenuIconBtnItem(
-                                                icon = Icons.Filled.FileOpen,
-                                                text = stringResource(R.string.open),
-                                                onClick = {
-                                                    openFileWithInnerSubPageEditor(diffableItem.fullPath)
-                                                }
-
-                                            ),
-
-                                            // open as
-                                            MenuIconBtnItem(
-                                                icon = Icons.AutoMirrored.Filled.OpenInNew,
-                                                text = stringResource(R.string.open_as),
-                                                onClick = {
-                                                    initOpenAsDialog(idx)
-                                                }
-
-                                            ),
-                                        )
-                                    }else {
-                                        listOf()
-                                    }
+                                    // 菜单
+                                    MenuIconBtnItem(
+                                        icon = Icons.Filled.MoreVert,
+                                        text = stringResource(R.string.menu),
+                                        onClick = {
+                                            showMore.value = true
+                                        }
+                                    ),
+                                )
 
                                 ,
                             ) {
@@ -1545,11 +1413,49 @@ fun DiffScreen(
                                     }
                                 }
 
-//                                DisposableEffect(Unit) {
-//                                    onDispose {
-//                                        updateCurrentViewingIdx(idx)
-//                                    }
-//                                }
+                                if(showMore.value) {
+                                    DropdownMenu(
+                                        expanded = showMore.value,
+                                        onDismissRequest = { showMore.value=false }
+                                    ) {
+                                        if(fromScreen == DiffFromScreen.HOME_CHANGELIST) {
+                                            DropdownMenuItem(
+                                                text = { Text(stringResource(R.string.stage)) },
+                                                onClick = {
+                                                    doJobThenOffLoading {
+                                                        stageItem(listOf(diffableItem.toChangeListItem()))
+                                                    }
+                                                }
+                                            )
+
+                                            DropdownMenuItem(
+                                                text = { Text(stringResource(R.string.revert)) },
+                                                onClick = {
+                                                    initRevertDialog(listOf(diffableItem.toChangeListItem())) {}
+                                                }
+                                            )
+
+                                        }else if(fromScreen == DiffFromScreen.INDEX) {
+                                            DropdownMenuItem(
+                                                text = { Text(stringResource(R.string.unstage)) },
+                                                onClick = {
+                                                    initUnstageDialog(listOf(diffableItem.toChangeListItem())) {}
+                                                }
+                                            )
+
+                                        }
+
+
+                                        //每个页面都显示导出patch
+                                        DropdownMenuItem(
+                                            text = { Text(stringResource(R.string.create_patch)) },
+                                            onClick = {
+                                                initCreatePatchDialog(listOf(relativePath))
+                                            }
+                                        )
+                                    }
+                                }
+
                             }
 
                         }
