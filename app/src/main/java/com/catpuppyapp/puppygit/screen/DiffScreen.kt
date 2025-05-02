@@ -1348,8 +1348,9 @@ fun DiffScreen(
                                                text = stringResource(R.string.refresh),
                                                onClick = {
                                                    //点刷新若条目没展开，会展开
-                                                   val newItem = diffableItem.copy(visible = true)
-                                                   diffableItemList[idx] = newItem
+                                                   //不需要在这设置，加载子列表时会设置
+//                                                   val newItem = diffableItem.copy(visible = true)
+//                                                   diffableItemList[idx] = newItem
 
                                                    requireRefreshSubList(listOf(idx))
                                                }
@@ -1406,8 +1407,8 @@ fun DiffScreen(
                                             text = stringResource(R.string.refresh),
                                             onClick = {
                                                 //点刷新若条目没展开，会展开
-                                                val newItem = diffableItem.copy(visible = true)
-                                                diffableItemList[idx] = newItem
+//                                                val newItem = diffableItem.copy(visible = true)
+//                                                diffableItemList[idx] = newItem
 
                                                 requireRefreshSubList(listOf(idx))
                                             }
@@ -1453,8 +1454,8 @@ fun DiffScreen(
                                                 text = stringResource(R.string.refresh),
                                                 onClick = {
                                                     //点刷新若条目没展开，会展开
-                                                    val newItem = diffableItem.copy(visible = true)
-                                                    diffableItemList[idx] = newItem
+//                                                    val newItem = diffableItem.copy(visible = true)
+//                                                    diffableItemList[idx] = newItem
 
                                                     requireRefreshSubList(listOf(idx))
                                                 }
