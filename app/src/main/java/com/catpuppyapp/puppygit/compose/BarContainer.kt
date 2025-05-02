@@ -35,6 +35,17 @@ fun BarContainer(
     showMoreIcon: Boolean = false,
     moreMenuExpandState: MutableState<Boolean>? = null,
     moreMenuItems:List<MenuTextItem>? = null,
+    moreMenuIconBtnItem: MenuIconBtnItem? = if(showMoreIcon) {
+        MenuIconBtnItem(
+            icon = Icons.Filled.MoreVert,
+            text = stringResource(R.string.menu),
+            onClick = {
+                if(moreMenuExpandState != null) {
+                    moreMenuExpandState.value = !moreMenuExpandState.value
+                }
+            }
+        )
+    }else null,
     onClick: (()->Unit)? = null,
     content: @Composable ()->Unit,
 ) {
@@ -82,17 +93,20 @@ fun BarContainer(
 
 
                 // 菜单
-                if(showMoreIcon) {
-                    MenuIconBtnItem(
-                        icon = Icons.Filled.MoreVert,
-                        text = stringResource(R.string.menu),
-                        onClick = {
-                            if(moreMenuExpandState != null) {
-                                moreMenuExpandState.value = !moreMenuExpandState.value
-                            }
-                        }
+                if(showMoreIcon && moreMenuIconBtnItem != null) {
+                    //菜单图标
+                    val a = moreMenuIconBtnItem
+                    LongPressAbleIconBtn(
+                        iconModifier = modifier.size(a.size),
+                        pressedCircleSize = a.pressedCircleSize,
+                        icon = a.icon,
+                        tooltipText = a.text,
+                        iconContentDesc = a.desc,
+                        enabled = a.enabled(),
+                        onClick = a.onClick
                     )
 
+                    //菜单项，点击图标显示
                     if(moreMenuExpandState != null && !moreMenuItems.isNullOrEmpty()) {
                         DropdownMenu(
                             expanded = moreMenuExpandState.value,
