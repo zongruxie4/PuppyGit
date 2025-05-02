@@ -144,8 +144,10 @@ private fun getHideButton(showButton:MutableState<Boolean>, scope: CoroutineScop
 
         //隐藏10秒后自动重新显示
         scope.launch {
-            delay(10_000) // 10s
-            showButton.value = true
+            runCatching {
+                delay(10_000) // 10s
+                showButton.value = true
+            }
         }
     }
 }

@@ -722,9 +722,11 @@ fun AutomationInnerPage(
     LaunchedEffect(Unit) {
         //定时检查状态，不然从无障碍页面返回后状态不会更新
         scope.launch {
-            while (true) {
-                updateServiceStatus()
-                delay(1000)
+            runCatching {
+                while (true) {
+                    updateServiceStatus()
+                    delay(1000)
+                }
             }
         }
     }

@@ -279,7 +279,7 @@ fun FileHistoryScreen(
 
         //加载更多
         //这个用scope，似乎会随页面释放而取消任务？不知道是否需要我检查CancelException？
-        scope.launch job@{
+        doJobThenOffLoading job@{
             loadLock.value.withLock {
                 loadMoreLoading.value = true
                 loadMoreText.value = activityContext.getString(R.string.loading)

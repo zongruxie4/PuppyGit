@@ -2355,12 +2355,14 @@ fun DiffScreen(
             firstTimeLoad.value = false
 
             scope.launch {
-                //等下列表加载，不然对应条目还没加载出来呢，你就滚，不一定会滚到哪！
-                delay(500)
-                // *3是因为每个条目显示header会使用3个item，原本是显示一个的，但lazy column有bug，如果把divider和row放一起，
-                // 且写成 item {row, divider} 这个顺序，滑动列表，会崩溃，所以只好把divider单独列出来了
+                runCatching {
+                    //等下列表加载，不然对应条目还没加载出来呢，你就滚，不一定会滚到哪！
+                    delay(500)
+                    // *3是因为每个条目显示header会使用3个item，原本是显示一个的，但lazy column有bug，如果把divider和row放一起，
+                    // 且写成 item {row, divider} 这个顺序，滑动列表，会崩溃，所以只好把divider单独列出来了
 //                UIHelper.scrollToItem(scope, listState, curItemIndex.intValue*3+1)
-                UIHelper.scrollToItem(scope, listState, curItemIndex.intValue)
+                    UIHelper.scrollToItem(scope, listState, curItemIndex.intValue)
+                }
             }
         }
 
@@ -2383,8 +2385,9 @@ fun DiffScreen(
             val isSubmodule = item.itemType == Cons.gitItemTypeSubmodule;
 //            val mapKey = relativePath
             val channelForThisJob = item.loadChannel
-            //这里不能用doJobThenOffLoading，会导致app崩溃
-            scope.launch {
+            //x 不会）后来发现是LazyColumn里使用rememberSaveable导致的，随机发生，是个bug，这里不能用doJobThenOffLoading，会导致app崩溃
+//            scope.launch {
+            doJobThenOffLoading launch@{
 //                delay(5000) //scope.launch不会导致App界面线程阻塞
 //                throw RuntimeException("abc")  // scope.lauch必须妥善处理异常否则会导致App界面线程崩溃
 
