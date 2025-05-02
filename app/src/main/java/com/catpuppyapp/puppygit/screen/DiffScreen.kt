@@ -138,6 +138,8 @@ import java.io.File
 
 private const val TAG = "DiffScreen"
 
+private const val defaultFileTitleFileNameLenLimit = 12
+
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun DiffScreen(
@@ -306,11 +308,11 @@ fun DiffScreen(
         try {
             //根据屏幕宽度计算标题栏能显示的最大文件名，最后除以几就是限制不要超过屏幕的几分之1
             //最后除的数越大，显示的字数越少
-            (scrWidthPx / fontWidthPx / 2).toInt()
+            (scrWidthPx / fontWidthPx / 2.4).toInt().coerceAtLeast(defaultFileTitleFileNameLenLimit)
         }catch (e: Exception) {
             //这个不太危险，出错也没事，所以没必要记到error级别
             MyLog.w(TAG, "#titleFileNameLenLimit: calculate title font length limit err: ${e.localizedMessage}")
-            18
+            defaultFileTitleFileNameLenLimit
         }
     } }
 

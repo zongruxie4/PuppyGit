@@ -15,8 +15,8 @@ data class MenuIconBtnItem (
     val onClick:()->Unit,
 ) {
     companion object {
-        val defaultIconSize = 25.dp
-        val defaultPressedCircleSize:Dp = 30.dp
+        val defaultIconSize = 22.dp
+        val defaultPressedCircleSize = 25.dp
 
     }
 }
