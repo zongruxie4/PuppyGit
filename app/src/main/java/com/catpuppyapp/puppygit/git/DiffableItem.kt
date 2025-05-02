@@ -131,4 +131,9 @@ data class DiffableItem(
 
     fun maybeLoadedAtLeastOnce() = !neverLoadedDifferences()
 
+    /**
+     * 当前文件是否在仓库根目录
+     */
+    fun atRootOfWorkDir() = fileParentPathOfRelativePath == "/";
+
 }

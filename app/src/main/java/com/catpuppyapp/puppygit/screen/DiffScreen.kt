@@ -1434,6 +1434,18 @@ fun DiffScreen(
                                             )
                                         }
 
+                                        //相对路径的父路径，若直接在仓库根目录则不显示，否则显示
+                                        if(diffableItem.atRootOfWorkDir().not()) {
+                                            ScrollableRow {
+                                                Text(
+                                                    text = diffableItem.fileParentPathOfRelativePath,
+                                                    fontSize = titleRelativePathFontSize,
+                                                    color = colorOfChangeType,
+                                                )
+                                            }
+                                        }
+
+
                                         //如果加载过，则显示添加删除了多少行
                                         if(loadedAtLeastOnce) {
                                             ScrollableRow {
@@ -1448,14 +1460,6 @@ fun DiffScreen(
                                             }
                                         }
 
-                                        //相对路径的父路径
-                                        ScrollableRow {
-                                            Text(
-                                                text = diffableItem.fileParentPathOfRelativePath,
-                                                fontSize = titleRelativePathFontSize,
-                                                color = colorOfChangeType,
-                                            )
-                                        }
                                     }
                                 }
 
