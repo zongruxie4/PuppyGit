@@ -298,16 +298,20 @@ fun DiffScreen(
         }
     }
 
+    val titleFontSize = remember { MyStyleKt.Title.secondLineFontSize }
     val titleFileNameLenLimit = remember(configuration.screenWidthDp) { with(UIHelper) {
         val scrWidthPx = dpToPx(configuration.screenWidthDp, density)
-        val fontWidthPx = spToPx(Typography.bodyLarge.fontSize, density)
+        // title标题使用的字体大小
+        val fontWidthPx = spToPx(titleFontSize, density)
         try {
             //根据屏幕宽度计算标题栏能显示的最大文件名，最后除以几就是限制不要超过屏幕的几分之1
-            (scrWidthPx / fontWidthPx / 2).toInt()
+            //最后除的数越大，显示的字数越少
+            (scrWidthPx / fontWidthPx / 1.5).toInt()
         }catch (e: Exception) {
             //这个不太危险，出错也没事，所以没必要记到error级别
             MyLog.w(TAG, "#titleFileNameLenLimit: calculate title font length limit err: ${e.localizedMessage}")
-            10
+            //这个数字是我看自己屏幕算的，差不多占屏幕一半
+            22
         }
     } }
 
@@ -1265,8 +1269,8 @@ fun DiffScreen(
                     }
 
 
-                    val iconSize = 30.dp
-                    val pressedCircleSize = 35.dp
+                    val iconSize = MenuIconBtnItem.defaultIconSize
+                    val pressedCircleSize = MenuIconBtnItem.defaultPressedCircleSize
 
                     //这header得调一下，左边加个箭头点击能收起
                     if (showMyFileHeader) {
@@ -1506,18 +1510,20 @@ fun DiffScreen(
 
                                         Text(
                                             modifier = Modifier.clickable { initDetailsDialog(idx) }.widthIn(min = MyStyleKt.Title.clickableTitleMinWidth),
-                                            fontSize = MyStyleKt.Title.firstLineFontSizeSmall,
+                                            fontSize = titleFontSize,
                                             text = buildAnnotatedString {
                                                 withStyle(style = SpanStyle(color = UIHelper.getChangeTypeColor(changeType))) {
-                                                    append(diffableItem.getFileNameEllipsis(titleFileNameLenLimit)+": ")
+                                                    append(diffableItem.getFileNameEllipsis(titleFileNameLenLimit))
                                                 }
                                             } ,
                                         )
 
+                                        //如果加载过，则显示添加删除了多少行
                                         if(diffableItem.maybeLoadedAtLeastOnce()) {
                                             Text(
-                                                fontSize = MyStyleKt.Title.firstLineFontSizeSmall,
+                                                fontSize = titleFontSize,
                                                 text = buildAnnotatedString {
+                                                        append(": ")
                                                         withStyle(style = SpanStyle(color = Theme.mdGreen)) { append("+"+diffItem.addedLines+", ") }
                                                         withStyle(style = SpanStyle(color = Theme.mdRed)) { append("-"+diffItem.deletedLines) }
                                                 }

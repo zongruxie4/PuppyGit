@@ -8,9 +8,15 @@ data class MenuIconBtnItem (
     val icon:ImageVector,
     val text:String,
     val desc:String = text, // for accessbility
-    val size:Dp = 20.dp,
-    val pressedCircleSize:Dp = size+8.dp,
+    val size:Dp = defaultIconSize,
+    val pressedCircleSize:Dp = defaultPressedCircleSize,
     val enabled:()->Boolean={true},
     val visible:()->Boolean={true},
     val onClick:()->Unit,
-)
+) {
+    companion object {
+        val defaultIconSize = 20.dp
+        val defaultPressedCircleSize:Dp = 28.dp
+
+    }
+}
