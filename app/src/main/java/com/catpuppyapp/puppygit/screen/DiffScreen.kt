@@ -1499,12 +1499,14 @@ fun DiffScreen(
                                         tooltipText = "",
                                     )
 
-                                    //文件名，添加行，删除行
-                                    //test
+                                    //显示：“文件名: +添加的行数, -删除的行数"，例如： "abc.txt: +1, -10"
                                     Row(
+                                        //确保最小可点击范围
+                                        modifier = Modifier.widthIn(min = MyStyleKt.Title.clickableTitleMinWidth),
                                         verticalAlignment = Alignment.CenterVertically
                                     ) {
 
+                                        //如果只读，显示个图标让用户知道只读
                                         if(readOnlyModeOn) {
                                             ReadOnlyIcon()
                                         }
@@ -1512,15 +1514,12 @@ fun DiffScreen(
                                         val loadedAtLeastOnce = diffableItem.maybeLoadedAtLeastOnce()
 
                                         Text(
-                                            modifier = Modifier.clickable { initDetailsDialog(idx) }.widthIn(min = MyStyleKt.Title.clickableTitleMinWidth),
+                                            //点击文件名显示详情
+                                            modifier = Modifier.clickable { initDetailsDialog(idx) },
                                             fontSize = titleFontSize,
                                             text = buildAnnotatedString {
                                                 withStyle(style = SpanStyle(color = UIHelper.getChangeTypeColor(changeType))) {
                                                     append(diffableItem.getFileNameEllipsis(titleFileNameLenLimit))
-                                                    //这个得放这，如果顺便放下面的Text里，布局有时候会异常，变成"文件名    :+1,-2"这样，多些莫名其妙的空格
-                                                    if(loadedAtLeastOnce) {
-                                                        append(": ")
-                                                    }
                                                 }
                                             } ,
                                         )
@@ -1530,8 +1529,9 @@ fun DiffScreen(
                                             Text(
                                                 fontSize = titleFontSize,
                                                 text = buildAnnotatedString {
-                                                        withStyle(style = SpanStyle(color = Theme.mdGreen)) { append("+"+diffItem.addedLines+", ") }
-                                                        withStyle(style = SpanStyle(color = Theme.mdRed)) { append("-"+diffItem.deletedLines) }
+                                                    append(": ")
+                                                    withStyle(style = SpanStyle(color = Theme.mdGreen)) { append("+"+diffItem.addedLines+", ") }
+                                                    withStyle(style = SpanStyle(color = Theme.mdRed)) { append("-"+diffItem.deletedLines) }
                                                 }
                                             )
                                         }
