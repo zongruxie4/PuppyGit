@@ -337,9 +337,11 @@ fun DiffScreen(
         // cl页面会针对这个列表执行操作，不过若在index，不管列表有几个条目都总是提交index所有条目
         if(fromScreen == DiffFromScreen.HOME_CHANGELIST) {
             Cache.set(Cache.Key.diffableList_of_fromDiffScreenBackToWorkTreeChangeList, diffableItemList.value.map {it.toChangeListItem()})
-        }else if(fromScreen == DiffFromScreen.INDEX) {
-            Cache.set(Cache.Key.diffableList_of_fromDiffScreenBackToIndexChangeList, diffableItemList.value.map {it.toChangeListItem()})
         }
+        // index用不到这个
+//        else if(fromScreen == DiffFromScreen.INDEX) {
+//            Cache.set(Cache.Key.diffableList_of_fromDiffScreenBackToIndexChangeList, diffableItemList.value.map {it.toChangeListItem()})
+//        }
 
         doJobWithMainContext {
             naviUp()
