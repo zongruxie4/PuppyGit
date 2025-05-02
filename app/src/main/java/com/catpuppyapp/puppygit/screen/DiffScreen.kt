@@ -89,6 +89,7 @@ import com.catpuppyapp.puppygit.dev.detailsDiffTestPassed
 import com.catpuppyapp.puppygit.dev.proFeatureEnabled
 import com.catpuppyapp.puppygit.dto.Box
 import com.catpuppyapp.puppygit.dto.MenuIconBtnItem
+import com.catpuppyapp.puppygit.dto.MenuTextItem
 import com.catpuppyapp.puppygit.git.CompareLinePair
 import com.catpuppyapp.puppygit.git.DiffableItem
 import com.catpuppyapp.puppygit.git.PuppyHunkAndLines
@@ -1311,6 +1312,47 @@ fun DiffScreen(
                                     }
                                 ,
                                 onClick = switchVisible,
+                                showMoreMenu = showMore,
+                                moreMenuItems = (if(fromScreen == DiffFromScreen.HOME_CHANGELIST) {
+                                        mutableListOf(
+                                            MenuTextItem(
+                                                text = stringResource(R.string.stage),
+                                                onClick = {
+                                                    doJobThenOffLoading {
+                                                        stageItem(listOf(diffableItem.toChangeListItem()))
+                                                    }
+                                                }
+                                            ),
+
+                                            MenuTextItem(
+                                                text = stringResource(R.string.revert),
+                                                onClick = {
+                                                    initRevertDialog(listOf(diffableItem.toChangeListItem())) {}
+                                                }
+                                            )
+                                        )
+                                    }else if(fromScreen == DiffFromScreen.INDEX) {
+                                        mutableListOf(
+                                            MenuTextItem(
+                                                text = stringResource(R.string.unstage),
+                                                onClick = {
+                                                    initUnstageDialog(listOf(diffableItem.toChangeListItem())) {}
+                                                }
+                                            )
+                                        )
+                                    }else {
+                                        mutableListOf<MenuTextItem>()
+                                }).apply {
+                                        add(
+                                            //每个页面都显示导出patch
+                                            MenuTextItem(
+                                                text = stringResource(R.string.create_patch),
+                                                onClick = {
+                                                    initCreatePatchDialog(listOf(relativePath))
+                                                }
+                                            )
+                                        )
+                                },
                                 actions = listOf(
                                     // refresh
                                     MenuIconBtnItem(
@@ -1324,7 +1366,6 @@ fun DiffScreen(
 
                                             requireRefreshSubList(listOf(idx))
                                         }
-
                                     ),
 
                                     // open
@@ -1334,7 +1375,6 @@ fun DiffScreen(
                                         onClick = {
                                             openFileWithInnerSubPageEditor(diffableItem.fullPath)
                                         }
-
                                     ),
 
                                     // open as
@@ -1344,20 +1384,9 @@ fun DiffScreen(
                                         onClick = {
                                             initOpenAsDialog(idx)
                                         }
-
                                     ),
 
-                                    // 菜单
-                                    MenuIconBtnItem(
-                                        icon = Icons.Filled.MoreVert,
-                                        text = stringResource(R.string.menu),
-                                        onClick = {
-                                            showMore.value = true
-                                        }
-                                    ),
-                                )
-
-                                ,
+                                ),
                             ) {
                                 //标题：显示文件名、添加了几行、删除了几行
                                 Row(
@@ -1409,55 +1438,9 @@ fun DiffScreen(
                                                 }
                                             )
                                         }
-
                                     }
                                 }
-
-                                if(showMore.value) {
-                                    DropdownMenu(
-                                        expanded = showMore.value,
-                                        onDismissRequest = { showMore.value=false }
-                                    ) {
-                                        if(fromScreen == DiffFromScreen.HOME_CHANGELIST) {
-                                            DropdownMenuItem(
-                                                text = { Text(stringResource(R.string.stage)) },
-                                                onClick = {
-                                                    doJobThenOffLoading {
-                                                        stageItem(listOf(diffableItem.toChangeListItem()))
-                                                    }
-                                                }
-                                            )
-
-                                            DropdownMenuItem(
-                                                text = { Text(stringResource(R.string.revert)) },
-                                                onClick = {
-                                                    initRevertDialog(listOf(diffableItem.toChangeListItem())) {}
-                                                }
-                                            )
-
-                                        }else if(fromScreen == DiffFromScreen.INDEX) {
-                                            DropdownMenuItem(
-                                                text = { Text(stringResource(R.string.unstage)) },
-                                                onClick = {
-                                                    initUnstageDialog(listOf(diffableItem.toChangeListItem())) {}
-                                                }
-                                            )
-
-                                        }
-
-
-                                        //每个页面都显示导出patch
-                                        DropdownMenuItem(
-                                            text = { Text(stringResource(R.string.create_patch)) },
-                                            onClick = {
-                                                initCreatePatchDialog(listOf(relativePath))
-                                            }
-                                        )
-                                    }
-                                }
-
                             }
-
                         }
                     }
 

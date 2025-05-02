@@ -9,12 +9,21 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.MoreVert
+import androidx.compose.material3.DropdownMenu
+import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.MutableState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import com.catpuppyapp.puppygit.dto.MenuIconBtnItem
+import com.catpuppyapp.puppygit.dto.MenuTextItem
+import com.catpuppyapp.puppygit.play.pro.R
 import com.catpuppyapp.puppygit.utils.UIHelper
 
 @Composable
@@ -23,6 +32,8 @@ fun BarContainer(
     horizontalArrangement: Arrangement.Horizontal = Arrangement.SpaceBetween,
     verticalAlignment: Alignment.Vertical = Alignment.CenterVertically,
     actions:List<MenuIconBtnItem>? = null,
+    showMoreMenu: MutableState<Boolean>? = null,
+    moreMenuItems:List<MenuTextItem>? = null,
     onClick: (()->Unit)? = null,
     content: @Composable ()->Unit,
 ) {
@@ -66,6 +77,34 @@ fun BarContainer(
                         enabled = a.enabled(),
                         onClick = a.onClick
                     )
+                }
+            }
+        }
+
+        if(showMoreMenu!=null && showMoreMenu.value) {
+            // 菜单
+            MenuIconBtnItem(
+                icon = Icons.Filled.MoreVert,
+                text = stringResource(R.string.menu),
+                onClick = {
+                    showMoreMenu.value = true
+                }
+            )
+
+            if(moreMenuItems.isNullOrEmpty().not()) {
+                DropdownMenu(
+                    expanded = showMoreMenu.value,
+                    onDismissRequest = { showMoreMenu.value=false }
+                ) {
+                    for(it in moreMenuItems) {
+                        if(it.visible().not()) continue;
+
+                        DropdownMenuItem(
+                            text = { Text(it.text) },
+                            enabled = it.enabled(),
+                            onClick = it.onClick
+                        )
+                    }
                 }
             }
         }
