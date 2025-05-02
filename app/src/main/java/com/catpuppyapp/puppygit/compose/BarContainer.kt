@@ -79,37 +79,39 @@ fun BarContainer(
                         onClick = a.onClick
                     )
                 }
+
+
+                // 菜单
+                if(showMoreIcon) {
+                    MenuIconBtnItem(
+                        icon = Icons.Filled.MoreVert,
+                        text = stringResource(R.string.menu),
+                        onClick = {
+                            if(moreMenuExpandState != null) {
+                                moreMenuExpandState.value = !moreMenuExpandState.value
+                            }
+                        }
+                    )
+
+                    if(moreMenuExpandState != null && !moreMenuItems.isNullOrEmpty()) {
+                        DropdownMenu(
+                            expanded = moreMenuExpandState.value,
+                            onDismissRequest = { moreMenuExpandState.value = false }
+                        ) {
+                            for(it in moreMenuItems) {
+                                if(it.visible().not()) continue;
+
+                                DropdownMenuItem(
+                                    text = { Text(it.text) },
+                                    enabled = it.enabled(),
+                                    onClick = it.onClick
+                                )
+                            }
+                        }
+                    }
+                }
             }
         }
 
-        if(showMoreIcon) {
-            // 菜单
-            MenuIconBtnItem(
-                icon = Icons.Filled.MoreVert,
-                text = stringResource(R.string.menu),
-                onClick = {
-                    if(moreMenuExpandState != null) {
-                        moreMenuExpandState.value = !moreMenuExpandState.value
-                    }
-                }
-            )
-
-            if(moreMenuExpandState != null && !moreMenuItems.isNullOrEmpty()) {
-                DropdownMenu(
-                    expanded = moreMenuExpandState.value,
-                    onDismissRequest = { moreMenuExpandState.value = false }
-                ) {
-                    for(it in moreMenuItems) {
-                        if(it.visible().not()) continue;
-
-                        DropdownMenuItem(
-                            text = { Text(it.text) },
-                            enabled = it.enabled(),
-                            onClick = it.onClick
-                        )
-                    }
-                }
-            }
-        }
     }
 }
