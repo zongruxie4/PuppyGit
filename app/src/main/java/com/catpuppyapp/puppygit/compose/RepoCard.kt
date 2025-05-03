@@ -635,7 +635,8 @@ private fun Preview() {
         itemSelected=false,
         titleOnClick={},
         goToFilesPage={},
-        requireBlinkIdx=remember { mutableIntStateOf(0) },
+        //如果和curRepoIndex的值匹配则会高亮显示当前条目，用来跳转时实现闪烁一下目标条目的效果，但在preview时只会高亮，然后就不灭了，一直维持高亮状态。。。
+        requireBlinkIdx=remember { mutableIntStateOf(-1) },
         pageRequest=remember { mutableStateOf("") },
         isSelectionMode=false,
         onClick={},
