@@ -8,9 +8,9 @@ import androidx.compose.material3.rememberTopAppBarState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
 import androidx.compose.ui.graphics.ImageBitmap
 import androidx.compose.ui.graphics.asImageBitmap
+import androidx.compose.ui.platform.LocalContext
 import androidx.core.graphics.drawable.toBitmap
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.rememberNavController
@@ -20,8 +20,6 @@ import com.catpuppyapp.puppygit.data.AppContainer
 import com.catpuppyapp.puppygit.data.AppDataContainer
 import com.catpuppyapp.puppygit.dev.FlagFileName
 import com.catpuppyapp.puppygit.dev.dev_EnableUnTestedFeature
-import com.catpuppyapp.puppygit.dto.DeviceWidthHeight
-import com.catpuppyapp.puppygit.dto.UndoStack
 import com.catpuppyapp.puppygit.jni.LibLoader
 import com.catpuppyapp.puppygit.notification.util.NotifyUtil
 import com.catpuppyapp.puppygit.play.pro.BuildConfig
@@ -841,5 +839,118 @@ object AppModel {
       }
 
       return systemTimeZoneOffsetInMinutes!!
+    }
+
+    @Composable
+    fun init_forPreview() {
+        val realAppContext = LocalContext.current
+
+        //set dbHolder ，如果以后使用依赖注入框架，这个需要修改
+        AppModel.dbContainer = AppDataContainer(realAppContext)
+        // run once in app process life time end
+
+        // every time run after Activity/Service destory and re create
+
+
+        AppModel.devModeOn = PrefUtil.getDevMode(realAppContext)
+
+//        AppModel.deviceWidthHeight = UIHelper.getDeviceWidthHeightInDp(realAppContext)
+
+        AppModel.realAppContext = realAppContext
+
+
+        //获取主密码 (若与AppSetings里记的hash不匹配，启动时会弹窗请求用户输入）
+        AppModel.masterPassword.value = MasterPassUtil.get(realAppContext)
+
+
+        // init Activity only variable
+//        if(initActivity) {
+//            AppModel.activityContext = activityContext;
+//        }
+//            AppModel.mainActivity = mainActivity  //忘了这个干嘛的了，后来反正没用了，IDE提示什么Activity内存泄漏之类的，所以就注释了
+
+        //设置app工作目录，如果获取不到目录，app无法工作，会在这抛出异常
+        val externalFilesDir = File("/test_android_preview")
+        val externalCacheDir = externalFilesDir
+        val innerDataDir = externalFilesDir
+        AppModel.externalFilesDir = externalFilesDir
+        AppModel.externalCacheDir = externalCacheDir
+        AppModel.innerDataDir = innerDataDir
+        AppModel.innerCacheDir = externalFilesDir
+        AppModel.externalDataDir = externalFilesDir
+
+
+//            AppModel.logDir = createLogDirIfNonexists(externalCacheDir, Cons.defaultLogDirName);
+
+        //20240527：禁用，sd相关 ，开始
+//            AppModel.internalStorageDirsParentDir = createDirIfNonexists(externalFilesDir, Cons.defaultInternalStorageDirsParentDirName)
+
+        //设置repodir
+//            AppModel.allRepoParentDir = createDirIfNonexists(AppModel.internalStorageDirsParentDir, StorageDirCons.DefaultStorageDir.repoStorage1.name)
+//            StorageDirCons.DefaultStorageDir.repoStorage1.fullPath = AppModel.allRepoParentDir.canonicalPath
+//
+//            //设置对用户可见的app工作目录
+//            AppModel.appDataUnderAllReposDir = createDirIfNonexists(AppModel.internalStorageDirsParentDir, StorageDirCons.DefaultStorageDir.puppyGitDataDir.name)
+//            StorageDirCons.DefaultStorageDir.puppyGitDataDir.fullPath = AppModel.appDataUnderAllReposDir.canonicalPath
+        //20240527：禁用，sd相关 ，结束
+
+
+        //与sd相关代码互斥，开始
+        //设置repodir
+        AppModel.allRepoParentDir = externalFilesDir
+        //test access external storage, passed
+//            AppModel.allRepoParentDir = createDirIfNonexists(File("/sdcard"), "puppygit-repos")
+
+
+        StorageDirCons.DefaultStorageDir.puppyGitRepos.fullPath = AppModel.allRepoParentDir.canonicalPath
+
+        //设置对用户可见的app工作目录
+        AppModel.appDataUnderAllReposDir = externalFilesDir
+        //与sd相关代码互斥，结束
+
+
+        //存放app内置证书的路径
+        AppModel.certBundleDir = externalFilesDir
+        AppModel.certUserDir = externalFilesDir
+
+
+        AppModel.fileSnapshotDir = externalFilesDir
+        //创建editor cache目录
+        AppModel.editCacheDir = externalFilesDir
+
+        //创建git pathch 导出目录
+        AppModel.patchDir = externalFilesDir
+
+        //create settings folder
+        AppModel.settingsDir = externalFilesDir
+
+        // log dir，必须在初始化log前初始化这个变量
+        AppModel.logDir = externalFilesDir
+        AppModel.submoduleDotGitBackupDir = externalFilesDir
+
+        //设置文件快照目录
+//            AppModel.fileSnapshotDir = createFileSnapshotDirIfNonexists(AppModel.allRepoParentDir, Cons.defaultFileSnapshotDirName)
+
+        //设置退出app的函数
+        AppModel.exitApp = {}
+
+
+        //debug mode相关变量
+        //必须先初始化此变量再去查询isDebugModeOn()
+//        AppModel.debugModeFlagFile = File(AppModel.appDataUnderAllReposDir, DebugModeManager.debugModeFlagFileName)  //debugMode检测模式是如果在特定目录下存在名为`debugModeFlagFileName`变量值的文件，则debugModeOn，否则off
+        //初始化debugModeOn。注：app运行期间若需修改此变量，应通过DebugModeManager来修改；获取则直接通过AppModel.debugModeOn来获取即可
+//        AppModel.debugModeOn = AppModel.isDebugModeFlagFileExists()  //TODO 在设置页面添加相关选项“开启调试模式”，开启则在上面的目录创建debugModeOn文件，否则删除文件，这样每次启动app就能通过检查文件是否存在来判断是否开了debugMode了。(btw: 因为要在Settings初始化之前就读取到这个变量，所以不能放到Settings里)
+
+
+        //for test unstable features
+        dev_EnableUnTestedFeature = try {
+            File(AppModel.appDataUnderAllReposDir, FlagFileName.enableUnTestedFeature).exists()
+        }catch (_:Exception) {
+            false
+        }
+
+//        runBlocking{AppModel.init_2()}
+        reloadTimeZone(AppSettings())
+        AppModel.init_3()
     }
 }

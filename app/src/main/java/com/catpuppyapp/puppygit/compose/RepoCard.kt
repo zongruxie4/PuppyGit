@@ -22,6 +22,7 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.MutableIntState
 import androidx.compose.runtime.MutableState
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
@@ -38,6 +39,7 @@ import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.catpuppyapp.puppygit.constants.Cons
 import com.catpuppyapp.puppygit.constants.PageRequest
@@ -51,11 +53,11 @@ import com.catpuppyapp.puppygit.utils.FsUtils
 import com.catpuppyapp.puppygit.utils.Libgit2Helper
 import com.catpuppyapp.puppygit.utils.Msg
 import com.catpuppyapp.puppygit.utils.UIHelper
-import com.catpuppyapp.puppygit.utils.cache.Cache
 import com.catpuppyapp.puppygit.utils.dbIntToBool
 import com.catpuppyapp.puppygit.utils.doJobThenOffLoading
 import com.catpuppyapp.puppygit.utils.getFormatTimeFromSec
 import com.catpuppyapp.puppygit.utils.state.CustomStateSaveable
+import com.catpuppyapp.puppygit.utils.state.mutableCustomStateOf
 import com.github.git24j.core.Repository
 import kotlinx.coroutines.delay
 
@@ -608,4 +610,39 @@ private fun RepoTitle(
         }
 
     }
+}
+
+@Preview
+@Composable
+private fun Preview() {
+    val repo = mutableCustomStateOf("test", "test", RepoEntity(
+        id="abc", repoName = "test", branch = "main", upstreamBranch = "origin/main", lastCommitHash = "a312345",
+    ).apply {
+        gitRepoState = Repository.StateT.NONE
+        fullSavePath = "test/workdir"
+        workStatus = Cons.dbRepoWorkStatusUpToDate
+    })
+    val context = LocalContext.current
+    AppModel.init_forPreview()
+    RepoCard(
+        itemWidth=392F,
+        requireFillMaxWidth=false,
+        showBottomSheet=remember {mutableStateOf(false)},
+        curRepo= repo,
+        curRepoIndex=remember { mutableIntStateOf(0) },
+        repoDto=repo.value,
+        repoDtoIndex=0,
+        itemSelected=false,
+        titleOnClick={},
+        goToFilesPage={},
+        requireBlinkIdx=remember { mutableIntStateOf(0) },
+        pageRequest=remember { mutableStateOf("") },
+        isSelectionMode=false,
+        onClick={},
+        onLongClick={},
+        copyErrMsg={},
+        requireDelRepo={},
+        doCloneSingle={},
+        workStatusOnclick={p1,p2->},
+    )
 }
