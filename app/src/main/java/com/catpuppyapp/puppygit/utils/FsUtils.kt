@@ -792,8 +792,7 @@ object FsUtils {
 
     }
 
-    //这个函数为了状态变量变化时能重新获取doSave，所以加了Composable？
-    @Composable
+
     fun getDoSaveForEditor(
         editorPageShowingFilePath: MutableState<FilePath>,
         editorPageLoadingOn: (String) -> Unit,
