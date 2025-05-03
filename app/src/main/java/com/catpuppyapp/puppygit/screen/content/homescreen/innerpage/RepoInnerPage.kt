@@ -116,6 +116,7 @@ import com.catpuppyapp.puppygit.utils.state.mutableCustomStateOf
 import com.catpuppyapp.puppygit.utils.strHasIllegalChars
 import com.catpuppyapp.puppygit.utils.updateSelectedList
 import com.github.git24j.core.Repository
+import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.sync.withLock
 import java.io.File
 
@@ -2755,6 +2756,15 @@ private fun updateRepoListByIndexOrId(newItem:RepoEntity, idx: Int, list:Mutable
  * 检查仓库是否有未提交修改并在检查完毕且页面没刷新时更新list中的对应条目
  */
 private fun checkGitStatusAndUpdateItemInList(item:RepoEntity, idx:Int, repoList:MutableList<RepoEntity>, loadingText:String, pageChanged:()->Boolean) {
+    val funName = "checkGitStatusAndUpdateItemInList"
+    val repoLock = Libgit2Helper.getRepoLock(item.id)
+
+    //这个检查很快，不会导致阻塞
+    if(runBlocking { isLocked(repoLock) }) {
+        MyLog.d(TAG, "#$funName: canceled check `git status`, because repo busy now")
+        return
+    }
+
     //用来粗略检查仓库是否已经改变
     val repoListSizeSnapshot = repoList.size
 
