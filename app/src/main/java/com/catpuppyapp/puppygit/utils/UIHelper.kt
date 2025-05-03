@@ -464,4 +464,7 @@ object UIHelper {
     fun isPortrait(configuration: Configuration = LocalConfiguration.current):Boolean {
         return configuration.orientation == Configuration.ORIENTATION_PORTRAIT
     }
+
+    fun getHunkColor(inDarkTheme: Boolean = Theme.inDarkTheme) = if(inDarkTheme) Color(0x368BB3DC) else Color(0x8098ABD5);
+
 }

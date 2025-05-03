@@ -1,6 +1,7 @@
 package com.catpuppyapp.puppygit.screen
 
 import androidx.activity.compose.BackHandler
+import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -123,7 +124,6 @@ import com.catpuppyapp.puppygit.utils.doJobWithMainContext
 import com.catpuppyapp.puppygit.utils.getFormattedLastModifiedTimeOfFile
 import com.catpuppyapp.puppygit.utils.getHumanReadableSizeStr
 import com.catpuppyapp.puppygit.utils.getRequestDataByState
-import com.catpuppyapp.puppygit.utils.isGoodIndexForList
 import com.catpuppyapp.puppygit.utils.replaceStringResList
 import com.catpuppyapp.puppygit.utils.state.mutableCustomStateListOf
 import com.catpuppyapp.puppygit.utils.state.mutableCustomStateOf
@@ -262,9 +262,10 @@ fun DiffScreen(
                     break
                 }
 
+                // hunks * 2是因为每个hunk都有一个header(diff结果的hunk header)和一个footer(我添加的作为分割线的footer)，总共两个items
                 // 4 是footer 和 spacer占的item数
                 count += if(i.visible) {
-                    (i.diffItemSaver.allLines + 4 +i.diffItemSaver.hunks.size)
+                    (i.diffItemSaver.hunks.size*2 + i.diffItemSaver.allLines + 4)
                 }else {
                     1
                 }
@@ -1674,6 +1675,21 @@ fun DiffScreen(
 
                                 //数据结构是一个hunk header N 个行
                                 diffItem.hunks.forEachIndexed { hunkIndex, hunkAndLines: PuppyHunkAndLines ->
+
+                                    // hunk header
+                                    item {
+                                        Row(
+                                            modifier = Modifier.background(UIHelper.getHunkColor()).fillMaxWidth().padding(horizontal = 20.dp, vertical = 10.dp)
+                                        ) {
+                                            Text(
+                                                text = hunkAndLines.hunk.cachedNoLineBreakHeader(),
+                                                fontStyle = FontStyle.Italic,
+                                                color = UIHelper.getFontColor(),
+                                            )
+                                        }
+                                    }
+
+
                                     if (fileChangeTypeIsModified && proFeatureEnabled(detailsDiffTestPassed)) {  //增量diff
                                         if (!groupDiffContentByLineNum || FlagFileName.flagFileExist(FlagFileName.disableGroupDiffContentByLineNum)) {
                                             //this method need use some caches, clear them before iterate lines
