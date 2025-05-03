@@ -15,32 +15,60 @@ import androidx.compose.material3.pulltorefresh.PullToRefreshState
 import androidx.compose.material3.pulltorefresh.pullToRefreshIndicator
 import androidx.compose.material3.pulltorefresh.rememberPullToRefreshState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import com.catpuppyapp.puppygit.play.pro.R
+import com.catpuppyapp.puppygit.utils.doJobThenOffLoading
+import kotlinx.coroutines.delay
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun PullToRefreshBox(
     onRefresh: () -> Unit,
-    isRefreshing: Boolean = false,  //因为我之前弄了其他的loading弹窗或文字，所以一般不需要这个东西指示是否loading，只要下拉刷新的功能就行了
+
+    //这个变量一般设为真或假，若设为null，代表不使用这个值，这时lading圆圈会在执行任务时默认转几下，然后就消失
+    //因为我之前弄了其他的loading弹窗或文字，所以一般不需要这个东西指示是否loading，只要下拉刷新的功能就行了
+    isRefreshing: Boolean? = null,
+
+
     modifier: Modifier = Modifier,
     content: @Composable ()->Unit,
 ) {
     val state = rememberPullToRefreshState()
 
+    val isRefreshRawValue = remember(isRefreshing) { isRefreshing }
+    val isRefreshing = remember(isRefreshing) { mutableStateOf(isRefreshing ?: false) }
+
+
+    //如果设为null，代表不依赖此组件显示loading，但好歹让圆圈转一下，意思意思，不然一拉就弹回去了，感觉很奇怪
+    val onRefresh = if(isRefreshRawValue == null) {
+        {
+            doJobThenOffLoading {
+                delay(2000)
+                isRefreshing.value = false
+            }
+
+            onRefresh()
+        }
+    }else {
+        onRefresh
+    }
+
+
     PullToRefreshBox(
-        isRefreshing = isRefreshing,
+        isRefreshing = isRefreshing.value,
         onRefresh = onRefresh,
         modifier = modifier,
         state = state,
         indicator = {
             MyCustomIndicator(
                 state = state,
-                isRefreshing = isRefreshing,
+                isRefreshing = isRefreshing.value,
                 modifier = Modifier.align(Alignment.TopCenter)
             )
         }
