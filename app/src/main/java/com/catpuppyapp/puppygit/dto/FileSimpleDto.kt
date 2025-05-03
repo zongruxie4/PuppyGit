@@ -1,5 +1,7 @@
 package com.catpuppyapp.puppygit.dto
 
+import android.content.Context
+import com.catpuppyapp.puppygit.screen.shared.FilePath
 import com.catpuppyapp.puppygit.screen.shared.FuckSafFile
 import com.catpuppyapp.puppygit.utils.MyLog
 import java.io.File
@@ -51,6 +53,10 @@ class FileSimpleDto {
         return "FileSimpleDto(name='$name', createTime=$createTime, lastModifiedTime=$lastModifiedTime, sizeInBytes=$sizeInBytes, isFile=$isFile, fullPath='$fullPath')"
     }
 
+    fun fileMayNotChanged(context:Context):Boolean {
+        val newDto = FileSimpleDto.genByFile(FuckSafFile(context, FilePath(fullPath)))
+        return newDto.lastModifiedTime == lastModifiedTime && newDto.sizeInBytes == sizeInBytes
+    }
 
     companion object {
         fun genByFile(file: FuckSafFile, timeUnit: TimeUnit=TimeUnit.MILLISECONDS):FileSimpleDto {
@@ -75,5 +81,7 @@ class FileSimpleDto {
                 MyLog.e(TAG, "#updateDto err: ${e.localizedMessage}")
             }
         }
+
+
     }
 }

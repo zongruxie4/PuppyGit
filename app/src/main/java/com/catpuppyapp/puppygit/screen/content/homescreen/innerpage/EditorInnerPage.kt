@@ -110,7 +110,7 @@ private var justForSaveFileWhenDrawerOpen = getShortUUID()
 fun EditorInnerPage(
     loadLock:Mutex,  // 避免重复加载的锁
     stateKeyTag:String,
-
+    editorPreviewFileDto: CustomStateSaveable<FileSimpleDto>,
     requireEditorScrollToPreviewCurPos:MutableState<Boolean>,
     requirePreviewScrollToEditorCurPos:MutableState<Boolean>,
     previewPageScrolled:MutableState<Boolean>,
@@ -669,12 +669,54 @@ fun EditorInnerPage(
         }
     }
 
+    val updatePreviewDto = { path:String ->
+        editorPreviewFileDto.value = FileSimpleDto.genByFile(FuckSafFile(activityContext, FilePath(path)))
+    }
+
+    val refreshPreviewPageNoCoroutine = j@{ previewPath:String, force:Boolean ->
+        if(force) {
+            mdText.value = FsUtils.readFile(previewPath)
+        }else {
+            val previewFileDto = editorPreviewFileDto.value
+            //检查文件是否更新了，若判断很可能没更新，则不重载
+            if (previewFileDto.fullPath.isNotBlank() && previewFileDto.fullPath == previewPath) {
+                if (previewFileDto.fileMayNotChanged(activityContext)) {
+                    MyLog.d(TAG,"EditorInnerPage#refreshPreviewPageNoCoroutine: file may not changed, skip reload, file path is '${previewPath}'")
+                    return@j
+                }
+            }
+
+            mdText.value = FsUtils.readFile(previewPath)
+        }
+
+        updatePreviewDto(previewPath)
+
+        //本来想顺便更新下editor state，太麻烦，那个editor的fields得处理，不能简单读下文件再赋值，而且退出preview模式已经做了重载检测，所以顶多这里载入一次，返回编辑模式再载入一次，可接受，不改了。
+
+    }
+
+    val refreshPreviewPage = { previewPath:String, force:Boolean ->
+        doJobThenOffLoading(
+            loadingOn = { previewLoadingOn() },
+            loadingOff = { previewLoadingOff() }
+        ) {
+            refreshPreviewPageNoCoroutine(previewPath, force)
+        }
+    }
     //用不着这个了，在内部处理了
 //    if(requestFromParent.value == PageRequest.backFromExternalAppAskReloadFile) {
 //        PageRequest.clearStateThenDoAct(requestFromParent) {
 //            showBackFromExternalAppAskReloadDialog.value=true
 //        }
 //    }
+
+    if(requestFromParent.value == PageRequest.reloadIfChanged) {
+        PageRequest.clearStateThenDoAct(requestFromParent) {
+            //这个一般是app自动检测的，非用户手动触发，所以若判断很可能文件没改变，就不必重载
+            val force = false
+            reloadFile(force)
+        }
+    }
 
     if(requestFromParent.value == PageRequest.requireSave) {
         PageRequest.clearStateThenDoAct(requestFromParent) {
@@ -693,6 +735,14 @@ fun EditorInnerPage(
     if(requestFromParent.value == PageRequest.editorPreviewPageGoForward) {
         PageRequest.clearStateThenDoAct(requestFromParent) {
             previewNavAhead()
+        }
+    }
+
+    if(requestFromParent.value == PageRequest.editor_RequireRefreshPreviewPage) {
+        PageRequest.clearStateThenDoAct(requestFromParent) {
+            //这个请求一般是点击刷新按钮或者下拉刷新，都是用户手动触发的，所以强制重载
+            val force = true
+            refreshPreviewPage(previewPath, force)
         }
     }
 
@@ -738,6 +788,9 @@ fun EditorInnerPage(
 //                mdText.value = editorPageTextEditorState.value.getAllText()
                 //如果要预览的路径和当前正在编辑的文件路径一样，直接使用内存中的数据；否则从文件读取
                 mdText.value = if(pathWillPreview == editorPageShowingFilePath) editorPageTextEditorState.value.getAllText() else FsUtils.readFile(pathWillPreview)
+
+                //每次更新mdText后，都更新下dto，用来快速检测文件是否改变
+                updatePreviewDto(pathWillPreview)
 //                mdText.value = FsUtils.readFile(path)
                 //开启预览模式
                 isPreviewModeOn.value = true
@@ -1216,6 +1269,7 @@ fun EditorInnerPage(
             previewNavBack = previewNavBack,
             previewNavAhead = previewNavAhead,
             previewNavStack = previewNavStack,
+            refreshPreviewPage = { requestFromParent.value = PageRequest.editor_RequireRefreshPreviewPage },
             previewLinkHandler = previewLinkHandler,
             previewLoading = previewLoading.value,
             mdText = mdText,
@@ -1289,24 +1343,26 @@ fun EditorInnerPage(
         //检查，如果 Activity 的on resume事件刚被触发，说明用户刚从后台把app调出来，这时调用软重载文件（会检测变化若判断很可能无变化则不重载）
         doActIfIsExpectLifeCycle(MainActivityLifeCycle.ON_RESUME) {
             //如果显示重载确认弹窗，则不自动重载；如果未显示重载确认弹窗且文件未编辑（换句话说：已成功保存），则自动重载
-            if(
-            //预览模式不一定在预览当前文件，就算在预览当前文件，感觉也没必要重载，
-            // 因为预览模式可能会频繁点击链接跳转到外部app再返回，
-            // 若返回则重载可能会比较频繁且没必要，而且用户要是想的话，总是可以手动重载
-                isPreviewModeOn.value.not()
+            if(isPreviewModeOn.value) {
+                //预览模式从后台返回，无脑重载，因为有可能用户仅用预览模式，但在外部用另一个软件编辑文件，切换着查看，所以总是重载
+                val force = false
+                refreshPreviewPage(previewPath, force)
 
+                MyLog.d(TAG, "#Lifecycle.Event.ON_RESUME: Preview Mode is On, will reload file: ${previewPath}")
+
+            }else if(
                 // 未在Editor点击 open as，用外部程序打开，显示询问是否重载的弹窗，
                 // 若显示此弹窗，用户可手动确认是否重载，所以没必要自动重载
-                && showBackFromExternalAppAskReloadDialog.value.not()
+                showBackFromExternalAppAskReloadDialog.value.not()
 
                 && editorPageShowingFilePath.value.isNotBlank()
-                && isEdited.value.not()
+                && isEdited.value.not()  //isEdited为假则代表已经保存当前的内容
             ) {
                 //非force如果检测最后修改时间和大小没变则不会重载，但如果之前打开出错，则会强制尝试重新加载文件，完美
                 val force = false
                 reloadFile(force)
 
-                MyLog.d(TAG, "#Lifecycle.Event.ON_RESUME: will reload file: ${editorPageShowingFilePath.value}")
+                MyLog.d(TAG, "#Lifecycle.Event.ON_RESUME: Edit Mode is On, will reload file: ${editorPageShowingFilePath.value}")
             }
         }
 
@@ -1463,13 +1519,9 @@ private suspend fun doInit(
             //如果打开文件没出错则检查是否已修改，否则不检查，强制重新加载
             if(hasError().not()) {
                 val editorPageShowingFileDto = editorPageShowingFileDto.value
-
                 if (editorPageShowingFileDto.fullPath.isNotBlank() && editorPageShowingFileDto.fullPath == requireOpenFilePath) {
-                    val newDto = FileSimpleDto.genByFile(file)
-                    if (newDto.lastModifiedTime == editorPageShowingFileDto.lastModifiedTime
-                        && newDto.sizeInBytes == editorPageShowingFileDto.sizeInBytes
-                    ) {
-                        MyLog.d(TAG,"EditorInnerPage#loadFile: file '${editorPageShowingFileDto.name}' not change, skip reload")
+                    if (editorPageShowingFileDto.fileMayNotChanged(activityContext)) {
+                        MyLog.d(TAG,"EditorInnerPage#loadFile: file may not changed, skip reload, file path is '${editorPageShowingFileDto.fullPath}'")
                         //文件可能没改变，放弃加载
                         editorPageShowingFileIsReady.value = true
                         return

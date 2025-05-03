@@ -367,6 +367,9 @@ fun HomeScreen(
     val filesFilterListState = rememberLazyListState()
     val repoFilterListState = rememberLazyListState()
 
+
+    val editorPreviewFileDto = mutableCustomStateOf(stateKeyTag, "editorPreviewFileDto") { FileSimpleDto() }
+
     //当前展示的文件的canonicalPath
     val editorPageShowingFilePath = rememberSaveable { mutableStateOf(FilePath("")) }
 
@@ -435,6 +438,8 @@ fun HomeScreen(
         editorBasePath.value = ""
         editorMdText.value = ""
         editorIsPreviewModeOn.value = false
+
+        editorPageRequestFromParent.value = PageRequest.reloadIfChanged
     }
 
     val editorInitPreviewMode = {
@@ -1265,6 +1270,8 @@ fun HomeScreen(
 
                 EditorInnerPage(
                     stateKeyTag = Cache.combineKeys(stateKeyTag, "EditorInnerPage"),
+
+                    editorPreviewFileDto = editorPreviewFileDto,
                     requireEditorScrollToPreviewCurPos = requireEditorScrollToPreviewCurPos,
                     requirePreviewScrollToEditorCurPos = requirePreviewScrollToEditorCurPos,
                     previewPageScrolled = editorPreviewPageScrolled,

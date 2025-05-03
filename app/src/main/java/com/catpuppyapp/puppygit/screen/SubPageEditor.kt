@@ -165,12 +165,16 @@ fun SubPageEditor(
         editorBasePath.value = ""
         editorMdText.value = ""
         editorIsPreviewModeOn.value = false
+
+        editorPageRequestFromParent.value = PageRequest.reloadIfChanged
     }
 
     val editorInitPreviewMode = {
         //请求执行一次保存，不然有可能切换
         editorPageRequestFromParent.value = PageRequest.requireInitPreviewFromSubEditor
     }
+
+    val editorPreviewFileDto = mutableCustomStateOf(stateKeyTag, "editorPreviewFileDto") { FileSimpleDto() }
 
 
     val settingsTmp = remember { SettingsUtil.getSettingsSnapshot() }  //避免状态变量里的设置项过旧，重新获取一个
@@ -375,6 +379,8 @@ fun SubPageEditor(
     ) { contentPadding ->
         EditorInnerPage(
             stateKeyTag = Cache.combineKeys(stateKeyTag, "EditorInnerPage"),
+
+            editorPreviewFileDto = editorPreviewFileDto,
             requireEditorScrollToPreviewCurPos = requireEditorScrollToPreviewCurPos,
             requirePreviewScrollToEditorCurPos = requirePreviewScrollToEditorCurPos,
             previewPageScrolled = editorPreviewPageScrolled,
