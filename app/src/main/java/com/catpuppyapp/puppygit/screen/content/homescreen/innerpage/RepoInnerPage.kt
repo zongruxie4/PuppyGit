@@ -2760,7 +2760,10 @@ private fun checkGitStatusAndUpdateItemInList(item:RepoEntity, idx:Int, repoList
     val repoLock = Libgit2Helper.getRepoLock(item.id)
 
     //这个检查很快，不会导致阻塞
-    if(runBlocking { isLocked(repoLock) }) {
+    //这里不需要检查lock，因为如果cl页面在执行操作，并不会影响这里的列表更新，虽然操作未完成的话状态有可能是错的，但这里的列表与那里的列表是完全独立的，
+    //所以这里只要确保这个页面没在执行操作就行了，而这个页面执行操作会通过RepoStatusUtil更新状态，所以只检查那个状态就行了
+//    if(runBlocking { isLocked(repoLock) }) {
+    if(RepoStatusUtil.getRepoStatus(item.id)?.isNotBlank() == true) {
         MyLog.d(TAG, "#$funName: canceled check `git status`, because repo busy now")
         return
     }
@@ -2774,6 +2777,7 @@ private fun checkGitStatusAndUpdateItemInList(item:RepoEntity, idx:Int, repoList
         val newRepo = item.copyAllFields()
 
         //更新临时状态
+        //这的状态直接更新到列表条目不会走 RepoStatusUtil 设置到Cache里，所以如果Cache里有其他状态，必然是其他任务设置的
         newRepo.tmpStatus = loadingText
 
         //列表列表条目
@@ -2788,8 +2792,8 @@ private fun checkGitStatusAndUpdateItemInList(item:RepoEntity, idx:Int, repoList
 
             MyLog.d(TAG, "#checkRepoGitStatus: repoName=${item.repoName}, repoId=${item.id}, needCommit=$needCommit, pageChanged=${pageChanged()}")
 
-            //如果页面没改变（没重新刷新），更新列表
-            if(!pageChanged()) {
+            //如果页面没改变（没重新刷新） 且 仓库没有在执行其他操作（例如 pull），则 更新列表
+            if(pageChanged().not() && RepoStatusUtil.getRepoStatus(item.id).let{ it == null || it.isBlank() }) {
                 val newRepo = item.copyAllFields()
                 //操作已经执行完毕，清空需要执行的操作
                 newRepo.pendingTask = RepoPendingTask.NONE

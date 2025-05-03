@@ -28,7 +28,7 @@ import com.catpuppyapp.puppygit.utils.cache.NaviCache
 import com.catpuppyapp.puppygit.utils.doJobThenOffLoading
 import com.catpuppyapp.puppygit.utils.doJobWithMainContext
 import com.catpuppyapp.puppygit.utils.generateRandomString
-import com.catpuppyapp.puppygit.utils.getRandomUUID
+import com.catpuppyapp.puppygit.utils.getShortUUID
 import com.catpuppyapp.puppygit.utils.replaceStringResList
 import com.catpuppyapp.puppygit.utils.state.CustomStateSaveable
 import com.catpuppyapp.puppygit.utils.withMainContext
@@ -239,7 +239,7 @@ fun generateNewTokenForSearch():String {
 }
 
 fun triggerReFilter(filterResultNeedRefresh:MutableState<String>) {
-    filterResultNeedRefresh.value = getRandomUUID()
+    filterResultNeedRefresh.value = getShortUUID()
 }
 
 @Composable
