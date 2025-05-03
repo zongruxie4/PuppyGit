@@ -7,12 +7,22 @@ import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.Notes
+import androidx.compose.material.icons.filled.AccessTime
+import androidx.compose.material.icons.filled.Delete
+import androidx.compose.material.icons.filled.EditNote
+import androidx.compose.material.icons.filled.History
+import androidx.compose.material.icons.filled.Info
+import androidx.compose.material.icons.filled.Replay
+import androidx.compose.material.icons.filled.WarningAmber
+import androidx.compose.material.icons.outlined.Home
+import androidx.compose.material.icons.outlined.SdStorage
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.HorizontalDivider
@@ -29,14 +39,15 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.hapticfeedback.HapticFeedback
 import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.platform.LocalClipboardManager
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.res.vectorResource
 import androidx.compose.ui.text.AnnotatedString
-import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
@@ -219,7 +230,13 @@ fun RepoCard(
                         Row(
                             verticalAlignment = Alignment.CenterVertically
                         ) {
-                            Text(text = stringResource(R.string.state) + ": ")
+//                            Text(text = stringResource(R.string.state) + ": ")
+
+                            InLineIcon(
+                                icon = Icons.Filled.Info,
+                                tooltipText = stringResource(R.string.state)
+                            )
+
                             Text(
                                 //如果是detached，显示分支号，否则显示“本地分支:远程分支”
                                 text = repoDto.getRepoStateStr(activityContext),  //状态为null显示错误，否则显示状态
@@ -235,7 +252,13 @@ fun RepoCard(
                         Row(
                             verticalAlignment = Alignment.CenterVertically
                         ) {
-                            Text(text = stringResource(R.string.repo_label_branch) + ": ")
+//                            Text(text = stringResource(R.string.repo_label_branch) + ": ")
+
+                            InLineIcon(
+                                icon = ImageVector.vectorResource(R.drawable.branch),
+                                tooltipText = stringResource(R.string.repo_label_branch)
+                            )
+
                             ClickableText (
                                 //如果是detached，显示分支号，否则显示“本地分支:远程分支”
                                 text = if(repoStatusGood) {if(dbIntToBool(repoDto.isDetached)) repoDto.lastCommitHash+"("+ stringResource(R.string.detached)+")" else repoDto.branch+":"+repoDto.upstreamBranch} else "",
@@ -254,7 +277,11 @@ fun RepoCard(
                     Row(
                         verticalAlignment = Alignment.CenterVertically
                     ) {
-                        Text(text = stringResource(R.string.repo_label_last_update_time) + ": ")
+//                        Text(text = stringResource(R.string.repo_label_last_update_time) + ": ")
+                        InLineIcon(
+                            icon = Icons.Filled.AccessTime,
+                            tooltipText = stringResource(R.string.repo_label_last_update_time)
+                        )
                         Text(
                             text = getFormatTimeFromSec(repoDto.lastUpdateTime),
                             maxLines = 1,
@@ -270,7 +297,12 @@ fun RepoCard(
                         Row(
                             verticalAlignment = Alignment.CenterVertically
                         ) {
-                            Text(text = stringResource(R.string.repo_label_last_commit) + ": ")
+//                            Text(text = stringResource(R.string.repo_label_last_commit) + ": ")
+
+                            InLineIcon(
+                                icon = Icons.Filled.History,
+                                tooltipText = stringResource(R.string.repo_label_last_commit)
+                            )
                             ClickableText (
                                 text = if(repoStatusGood) repoDto.lastCommitHash else "",
                                 maxLines = 1,
@@ -296,9 +328,12 @@ fun RepoCard(
                     Row(
                         verticalAlignment = Alignment.CenterVertically
                     ) {
-                        Text(text = stringResource(R.string.repo_label_status) + ": ")
+//                        Text(text = stringResource(R.string.repo_label_status) + ": ")
 
-
+                        InLineIcon(
+                            icon = Icons.Filled.Info,
+                            tooltipText = stringResource(R.string.repo_label_status)
+                        )
                         //如果不写入数据库的临时中间状态 pushing/pulling 之类的 不为空，显示中间状态，否则显示写入数据库的持久状态
                         val tmpStatus = repoDto.tmpStatus
                         if(repoErr || repoNotReady || tmpStatus.isNotBlank() || repoDto.workStatus == Cons.dbRepoWorkStatusUpToDate) {  //不可点击的状态
@@ -351,7 +386,11 @@ fun RepoCard(
                     Row(
                         verticalAlignment = Alignment.CenterVertically
                     ) {
-                        Text(text = stringResource(R.string.storage) + ": ")
+//                        Text(text = stringResource(R.string.storage) + ": ")
+                        InLineIcon(
+                            icon = Icons.Outlined.SdStorage,
+                            tooltipText = stringResource(R.string.storage)
+                        )
                         ClickableText (
                             text = FsUtils.getPathWithInternalOrExternalPrefix(fullPath = repoDto.fullSavePath),
                             maxLines = 1,
@@ -379,7 +418,11 @@ fun RepoCard(
                             //错误信息不用检测仓库状态，因为显示错误信息只需要数据库中有对应条目即可，而正常情况下，如果有有效的错误信息，必然有数据库条目
                             val hasUncheckedErr = repoDto.latestUncheckedErrMsg.isNotBlank()
 
-                            Text(text = stringResource(R.string.repo_label_error) + ": ")
+//                            Text(text = stringResource(R.string.repo_label_error) + ": ")
+                            InLineIcon(
+                                icon = Icons.Filled.WarningAmber,
+                                tooltipText = stringResource(R.string.repo_label_error)
+                            )
                             ClickableText (
                                 text = if (hasUncheckedErr) repoDto.latestUncheckedErrMsg else stringResource(R.string.repo_err_no_err_or_all_checked),
                                 maxLines = 1,
@@ -425,7 +468,11 @@ fun RepoCard(
                         Row(
                             verticalAlignment = Alignment.CenterVertically
                         ) {
-                            Text(text = stringResource(R.string.other) + ": ")
+//                            Text(text = stringResource(R.string.other) + ": ")
+                            InLineIcon(
+                                icon = Icons.AutoMirrored.Filled.Notes,
+                                tooltipText = stringResource(R.string.other)
+                            )
                             Text(
                                 text = repoDto.getOther(),
                                 maxLines = 1,
@@ -451,7 +498,11 @@ fun RepoCard(
                         Row(
                             verticalAlignment = Alignment.CenterVertically
                         ) {
-                            Text(text = stringResource(R.string.parent_repo) + ": ")
+//                            Text(text = stringResource(R.string.parent_repo) + ": ")
+                            InLineIcon(
+                                icon = Icons.Outlined.Home,
+                                tooltipText = stringResource(R.string.parent_repo)
+                            )
                             ClickableText(
                                 text = repoDto.parentRepoName,
                                 maxLines = 1,
@@ -468,6 +519,10 @@ fun RepoCard(
 
                 }
             }else {  // err repo card
+                val iconSize = remember {28.dp}
+                //按下图标，显示出的半透明阴影的size，通常是icon尺寸+8就行
+                val iconPressedSize = remember {36.dp}
+
                 Column(
                     modifier = Modifier.fillMaxWidth(),
                     horizontalAlignment = Alignment.CenterHorizontally,
@@ -490,58 +545,35 @@ fun RepoCard(
                         )
                     }
 
-                    Spacer(Modifier.height(10.dp))
-//
-//                Row(
-//                    modifier = Modifier.height(lineHeight.dp),
-//
-//                ) {
-//                    Text(text=stringResource(R.string.copy_msg),
-//                        style = MyStyleKt.ClickableText.style,
-//                        color = MyStyleKt.ClickableText.color,
-//                        fontWeight = defaultFontWeight,
-//                        modifier = MyStyleKt.ClickableText.modifier.clickable(onClick = {
-//                            copyErrMsg(repoDto.createErrMsg)
-//                        }),
-//                    )
-//                }
-
-                    Row(
-                        modifier = Modifier.height(lineHeight),
-
-                        ) {
-                        ClickableText (
-                            text = stringResource(R.string.retry),
-                            fontWeight = defaultFontWeight,
-                            modifier = MyStyleKt.ClickableText.modifier.clickable { doCloneSingle(repoDto) },
-                        )
-                    }
+//                    Spacer(Modifier.height(10.dp))
 
 
 
-                    Row(
-                        modifier = Modifier.height(lineHeight),
+                    ScrollableRow(
+                        modifier = Modifier.fillMaxWidth().padding(vertical = 20.dp),
+                        horizontalArrangement = Arrangement.SpaceEvenly
+                    ) {
+                        InLineIcon(
+                            icon = Icons.Filled.Delete,
+                            tooltipText = stringResource(R.string.del_repo),
+                            iconModifier = Modifier.size(iconSize),
+                            pressedCircleSize = iconPressedSize,
+                        ) { requireDelRepo(repoDto) }
 
-                        ) {
-                        ClickableText (
-                            text=stringResource(R.string.edit_repo),
-                            fontWeight = defaultFontWeight,
-                            modifier = MyStyleKt.ClickableText.modifier.clickable(onClick = {
-                                navController.navigate(Cons.nav_CloneScreen+"/"+repoDto.id)
-                            }),
-                        )
-                    }
-                    Row(
-                        modifier = Modifier.height(lineHeight),
+                        InLineIcon(
+                            icon = Icons.Filled.Replay,
+                            tooltipText = stringResource(R.string.retry),
+                            iconModifier = Modifier.size(iconSize),
+                            pressedCircleSize = iconPressedSize,
+                        ) { doCloneSingle(repoDto) }
 
-                        ) {
-                        ClickableText (
-                            text=stringResource(R.string.del_repo),
-                            fontWeight = defaultFontWeight,
-                            modifier = MyStyleKt.ClickableText.modifier.clickable(onClick = {
-                                requireDelRepo(repoDto)
-                            }),
-                        )
+                        InLineIcon(
+                            icon = Icons.Filled.EditNote,
+                            tooltipText = stringResource(R.string.edit_repo),
+                            iconModifier = Modifier.size(iconSize),
+                            pressedCircleSize = iconPressedSize,
+                        ) { navController.navigate(Cons.nav_CloneScreen+"/"+repoDto.id) }
+
                     }
                 }
             }
