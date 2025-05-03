@@ -102,6 +102,8 @@ fun RepoCard(
     val cardColor = UIHelper.defaultCardColor()
     val highlightColor = remember(inDarkTheme) {if(inDarkTheme) Color(0xFF9D9C9C) else Color(0xFFFFFFFF)}
 
+    val defaultFontWeight = remember { MyStyleKt.TextItem.defaultFontWeight() }
+
     val clipboardManager = LocalClipboardManager.current
     val viewDialogText = rememberSaveable { mutableStateOf("") }
     val showViewDialog = rememberSaveable { mutableStateOf(false) }
@@ -223,7 +225,7 @@ fun RepoCard(
                                 text = repoDto.getRepoStateStr(activityContext),  //状态为null显示错误，否则显示状态
                                 maxLines = 1,
                                 overflow = TextOverflow.Ellipsis,
-                                fontWeight = FontWeight.Light,
+                                fontWeight = defaultFontWeight,
                                 modifier = MyStyleKt.NormalText.modifier,
                             )
                         }
@@ -239,7 +241,7 @@ fun RepoCard(
                                 text = if(repoStatusGood) {if(dbIntToBool(repoDto.isDetached)) repoDto.lastCommitHash+"("+ stringResource(R.string.detached)+")" else repoDto.branch+":"+repoDto.upstreamBranch} else "",
                                 maxLines = 1,
                                 overflow = TextOverflow.Ellipsis,
-                                fontWeight = FontWeight.Light,
+                                fontWeight = defaultFontWeight,
                                 modifier = MyStyleKt.ClickableText.modifier.clickable(enabled = repoStatusGood) {
                                     navController.navigate(Cons.nav_BranchListScreen + "/" + repoDto.id)
                                 },
@@ -258,7 +260,7 @@ fun RepoCard(
                             maxLines = 1,
                             overflow = TextOverflow.Ellipsis,
                             modifier = MyStyleKt.NormalText.modifier,
-                            fontWeight = FontWeight.Light
+                            fontWeight = defaultFontWeight
 
 
                         )
@@ -283,7 +285,7 @@ fun RepoCard(
                                         isHEAD = true
                                     )
                                 },
-                                fontWeight = FontWeight.Light
+                                fontWeight = defaultFontWeight
 
                             )
                         }
@@ -308,7 +310,7 @@ fun RepoCard(
                                 maxLines = 1,
                                 overflow = TextOverflow.Ellipsis,
                                 modifier = MyStyleKt.NormalText.modifier,
-                                fontWeight = FontWeight.Light,
+                                fontWeight = defaultFontWeight,
                                 //出错，红色；已是最新，绿色；"加载中..."之类的非点击临时状态，默认颜色。
                                 color = if(nullNormalTrueUpToDateFalseError == null) Color.Unspecified else if(nullNormalTrueUpToDateFalseError == true) MyStyleKt.TextColor.highlighting_green else MyStyleKt.TextColor.error(),
 
@@ -340,7 +342,7 @@ fun RepoCard(
                                 modifier = MyStyleKt.ClickableText.modifier.clickable(enabled = repoStatusGood) {
                                     workStatusOnclick(repoDto, repoDto.workStatus)  //让父级页面自己写callback吧，省得传参
                                 },
-                                fontWeight = FontWeight.Light
+                                fontWeight = defaultFontWeight
 
                             )
                         }
@@ -363,7 +365,7 @@ fun RepoCard(
                             ) {  // on click
                                 goToFilesPage(repoDto.fullSavePath)
                             },
-                            fontWeight = FontWeight.Light
+                            fontWeight = defaultFontWeight
 
                         )
                     }
@@ -382,7 +384,7 @@ fun RepoCard(
                                 text = if (hasUncheckedErr) repoDto.latestUncheckedErrMsg else stringResource(R.string.repo_err_no_err_or_all_checked),
                                 maxLines = 1,
                                 color = if (hasUncheckedErr) MyStyleKt.ClickableText.errColor else MyStyleKt.ClickableText.color,
-                                fontWeight = FontWeight.Light,
+                                fontWeight = defaultFontWeight,
                                 modifier = MyStyleKt.ClickableText.modifier.combinedClickable(
                                     onLongClick = {
                                         //只有当错误信息不为空时才显示弹窗
@@ -438,7 +440,7 @@ fun RepoCard(
 //                                pageRequest.value = PageRequest.showOther
 //                            },
 
-                                fontWeight = FontWeight.Light
+                                fontWeight = defaultFontWeight
 
                             )
                         }
@@ -457,7 +459,7 @@ fun RepoCard(
                                     setCurRepo()
                                     pageRequest.value = PageRequest.goParent
                                 },
-                                fontWeight = FontWeight.Light
+                                fontWeight = defaultFontWeight
 
                             )
                         }
@@ -497,7 +499,7 @@ fun RepoCard(
 //                    Text(text=stringResource(R.string.copy_msg),
 //                        style = MyStyleKt.ClickableText.style,
 //                        color = MyStyleKt.ClickableText.color,
-//                        fontWeight = FontWeight.Light,
+//                        fontWeight = defaultFontWeight,
 //                        modifier = MyStyleKt.ClickableText.modifier.clickable(onClick = {
 //                            copyErrMsg(repoDto.createErrMsg)
 //                        }),
@@ -510,7 +512,7 @@ fun RepoCard(
                         ) {
                         ClickableText (
                             text = stringResource(R.string.retry),
-                            fontWeight = FontWeight.Light,
+                            fontWeight = defaultFontWeight,
                             modifier = MyStyleKt.ClickableText.modifier.clickable { doCloneSingle(repoDto) },
                         )
                     }
@@ -523,7 +525,7 @@ fun RepoCard(
                         ) {
                         ClickableText (
                             text=stringResource(R.string.edit_repo),
-                            fontWeight = FontWeight.Light,
+                            fontWeight = defaultFontWeight,
                             modifier = MyStyleKt.ClickableText.modifier.clickable(onClick = {
                                 navController.navigate(Cons.nav_CloneScreen+"/"+repoDto.id)
                             }),
@@ -535,7 +537,7 @@ fun RepoCard(
                         ) {
                         ClickableText (
                             text=stringResource(R.string.del_repo),
-                            fontWeight = FontWeight.Light,
+                            fontWeight = defaultFontWeight,
                             modifier = MyStyleKt.ClickableText.modifier.clickable(onClick = {
                                 requireDelRepo(repoDto)
                             }),

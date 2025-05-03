@@ -10,6 +10,7 @@ import androidx.compose.material3.LocalTextStyle
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -19,6 +20,17 @@ import com.catpuppyapp.puppygit.ui.theme.Theme
 object MyStyleKt{
     val defaultHorizontalPadding = 10.dp
     val defaultIconSize = 40.dp
+
+
+    object TextItem {
+        fun defaultFontWeight(): FontWeight? {
+            //难看，看不清，恶心！
+//            return FontWeight.Light
+
+            // Text 组件默认值
+            return null
+        }
+    }
 
     object ClickableText{
         @Composable
