@@ -108,8 +108,10 @@ private var justForSaveFileWhenDrawerOpen = getShortUUID()
 
 @Composable
 fun EditorInnerPage(
-    loadLock:Mutex,  // 避免重复加载的锁
     stateKeyTag:String,
+    loadLock:Mutex,  // 避免重复加载的锁
+
+    previewLoading:MutableState<Boolean>,
     editorPreviewFileDto: CustomStateSaveable<FileSimpleDto>,
     requireEditorScrollToPreviewCurPos:MutableState<Boolean>,
     requirePreviewScrollToEditorCurPos:MutableState<Boolean>,
@@ -603,7 +605,6 @@ fun EditorInnerPage(
 
     //若想重载文件但保留stack，重载前将此变量设为真，一次性有效
     val keepPreviewNavStackOnce = rememberSaveable { mutableStateOf(false) }
-    val previewLoading = rememberSaveable { mutableStateOf(false) }
     val previewLoadingOn = {
         previewLoading.value = true
     }

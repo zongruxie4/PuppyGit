@@ -304,7 +304,7 @@ fun FileEditor(
             if(isPreviewModeOn.value) {
                 PullToRefreshBox(
                     contentPadding = contentPadding,
-                    isRefreshing = previewLoading,
+//                    isRefreshing = previewLoading, //有bug，得传state，不然加载后这图标会留在原地，但要改的话里面代码得改，其他很多地方也都得改，我懒得改，索性直接禁用，用其他东西loading
                     onRefresh = { refreshPreviewPage() }
                 ) {
                     Column(

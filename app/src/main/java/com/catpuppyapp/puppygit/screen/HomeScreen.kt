@@ -521,8 +521,12 @@ fun HomeScreen(
     val loadingText = rememberSaveable { mutableStateOf(initLoadingText)}
 
     val editorPageIsLoading = rememberSaveable { mutableStateOf(false)}
-    if(editorPageIsLoading.value) {
-        LoadingDialog(loadingText.value)
+    val editorPagePreviewLoading = rememberSaveable { mutableStateOf(false) }
+    if(editorPageIsLoading.value || editorPagePreviewLoading.value) {
+        LoadingDialog(
+            // edit mode可能会设loading text，例如正在保存之类的；preview直接显示个普通的loading文案就行
+            if(editorPageIsLoading.value) loadingText.value else stringResource(R.string.loading)
+        )
     }
     val editorPageLoadingOn = {msg:String ->
         loadingText.value = msg
@@ -1271,6 +1275,7 @@ fun HomeScreen(
                 EditorInnerPage(
                     stateKeyTag = Cache.combineKeys(stateKeyTag, "EditorInnerPage"),
 
+                    previewLoading = editorPagePreviewLoading,
                     editorPreviewFileDto = editorPreviewFileDto,
                     requireEditorScrollToPreviewCurPos = requireEditorScrollToPreviewCurPos,
                     requirePreviewScrollToEditorCurPos = requirePreviewScrollToEditorCurPos,
