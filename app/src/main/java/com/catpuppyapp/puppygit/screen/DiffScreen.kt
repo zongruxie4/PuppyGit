@@ -1256,7 +1256,6 @@ fun DiffScreen(
         val enableSelectCompare = enableSelectCompare.value;
 
         PullToRefreshBox(
-            isRefreshing = false,
             onRefresh = { changeStateTriggerRefreshPage(needRefresh) }
         ) {
             MySelectionContainer {

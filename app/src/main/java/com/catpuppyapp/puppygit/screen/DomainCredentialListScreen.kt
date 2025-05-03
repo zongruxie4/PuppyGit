@@ -53,6 +53,7 @@ import com.catpuppyapp.puppygit.compose.InfoDialog
 import com.catpuppyapp.puppygit.compose.LoadingDialog
 import com.catpuppyapp.puppygit.compose.LongPressAbleIconBtn
 import com.catpuppyapp.puppygit.compose.MyLazyColumn
+import com.catpuppyapp.puppygit.compose.PullToRefreshBox
 import com.catpuppyapp.puppygit.compose.ScrollableColumn
 import com.catpuppyapp.puppygit.compose.ScrollableRow
 import com.catpuppyapp.puppygit.constants.Cons
@@ -363,6 +364,14 @@ fun DomainCredentialListScreen(
     val filterLastPosition = rememberSaveable { mutableStateOf(0) }
     val lastPosition = rememberSaveable { mutableStateOf(0) }
 
+    BackHandler {
+        if(filterModeOn.value) {
+            filterModeOn.value = false
+        } else {
+            naviUp()
+        }
+    }
+
     Scaffold(
         modifier = Modifier.nestedScroll(homeTopBarScrollBehavior.nestedScrollConnection),
         topBar = {
@@ -488,86 +497,86 @@ fun DomainCredentialListScreen(
         }
     ) { contentPadding ->
 
-        if(showBottomSheet.value) {
-            BottomSheet(showBottomSheet, sheetState, curCredential.value.domain) {
-                //改成在关联页面有这个功能了，在这就不显示了
-    //            BottomSheetItem(sheetState=sheetState, showBottomSheet=showBottomSheet, text=stringResource(R.string.unlink_all)){
-    //                //显示弹窗，询问将会与所有remotes解除关联，是否确定？
-    //            }
+        PullToRefreshBox(
+            onRefresh = { changeStateTriggerRefreshPage(needRefresh) }
+        ) {
 
-                BottomSheetItem(sheetState=sheetState, showBottomSheet=showBottomSheet, text=stringResource(R.string.delete), textColor = MyStyleKt.TextColor.danger()){
-                    showDeleteDialog.value=true
+            if(showBottomSheet.value) {
+                BottomSheet(showBottomSheet, sheetState, curCredential.value.domain) {
+                    //改成在关联页面有这个功能了，在这就不显示了
+                    //            BottomSheetItem(sheetState=sheetState, showBottomSheet=showBottomSheet, text=stringResource(R.string.unlink_all)){
+                    //                //显示弹窗，询问将会与所有remotes解除关联，是否确定？
+                    //            }
+
+                    BottomSheetItem(sheetState=sheetState, showBottomSheet=showBottomSheet, text=stringResource(R.string.delete), textColor = MyStyleKt.TextColor.danger()){
+                        showDeleteDialog.value=true
+                    }
                 }
+
             }
 
-        }
-
-        if (showLoadingDialog.value) {
-            LoadingDialog(text = loadingText.value)  //这个东西太阴间了，还是用LoadingText吧
+            if (showLoadingDialog.value) {
+                LoadingDialog(text = loadingText.value)  //这个东西太阴间了，还是用LoadingText吧
 //
 //            LoadingText(text = loadingText.value,contentPadding = contentPadding)
 
-        }else {
+            }else {
 
-            //根据关键字过滤条目
-            val keyword = filterKeyword.value.text.lowercase()  //关键字
-            val enableFilter = filterModeActuallyEnabled(filterModeOn.value, keyword)
+                //根据关键字过滤条目
+                val keyword = filterKeyword.value.text.lowercase()  //关键字
+                val enableFilter = filterModeActuallyEnabled(filterModeOn.value, keyword)
 
-            val lastNeedRefresh = rememberSaveable { mutableStateOf("") }
-            val list = filterTheList(
-                needRefresh = filterResultNeedRefresh.value,
-                lastNeedRefresh = lastNeedRefresh,
-                enableFilter = enableFilter,
-                keyword = keyword,
-                lastKeyword = lastKeyword,
-                searching = searching,
-                token = token,
-                activityContext = activityContext,
-                filterList = filterList.value,
-                list = list.value,
-                resetSearchVars = resetSearchVars,
-                match = { idx:Int, it: DomainCredentialDto ->
-                    it.domain.lowercase().contains(keyword) || (it.credName?.lowercase()?.contains(keyword) == true)
-                }
-            )
+                val lastNeedRefresh = rememberSaveable { mutableStateOf("") }
+                val list = filterTheList(
+                    needRefresh = filterResultNeedRefresh.value,
+                    lastNeedRefresh = lastNeedRefresh,
+                    enableFilter = enableFilter,
+                    keyword = keyword,
+                    lastKeyword = lastKeyword,
+                    searching = searching,
+                    token = token,
+                    activityContext = activityContext,
+                    filterList = filterList.value,
+                    list = list.value,
+                    resetSearchVars = resetSearchVars,
+                    match = { idx:Int, it: DomainCredentialDto ->
+                        it.domain.lowercase().contains(keyword) || (it.credName?.lowercase()?.contains(keyword) == true)
+                    }
+                )
 
-            val listState = if(enableFilter) filterListState else listState
+                val listState = if(enableFilter) filterListState else listState
 //            if(enableFilter) {  //更新filter列表state
 //                filterListState.value = listState
 //            }
-            //更新是否启用filter
-            enableFilterState.value = enableFilter
+                //更新是否启用filter
+                enableFilterState.value = enableFilter
 
-            MyLazyColumn(
-                contentPadding = contentPadding,
-                list = list,
-                listState = listState,
-                requireForEachWithIndex = true,
-                requirePaddingAtBottom = true
-            ) {idx, value->
-                DomainCredItem (showBottomSheet = showBottomSheet, curCredentialState = curCredential, idx = idx, thisItem = value, lastClickedItemKey = lastClickedItemKey) {
-                    initCreateOrEditDialog(
-                        isCreateParam = false,
-                        curDomainNameParam = value.domain,
-                        curDomainCredItemIdParam = value.domainCredId,
-                        curCredentialId=value.credId?:"",
-                        curSshCredentialId=value.sshCredId?:""
-                    )
+                MyLazyColumn(
+                    contentPadding = contentPadding,
+                    list = list,
+                    listState = listState,
+                    requireForEachWithIndex = true,
+                    requirePaddingAtBottom = true
+                ) {idx, value->
+                    DomainCredItem (showBottomSheet = showBottomSheet, curCredentialState = curCredential, idx = idx, thisItem = value, lastClickedItemKey = lastClickedItemKey) {
+                        initCreateOrEditDialog(
+                            isCreateParam = false,
+                            curDomainNameParam = value.domain,
+                            curDomainCredItemIdParam = value.domainCredId,
+                            curCredentialId=value.credId?:"",
+                            curSshCredentialId=value.sshCredId?:""
+                        )
+                    }
+
+                    HorizontalDivider()
+
                 }
-
-                HorizontalDivider()
-
             }
         }
+
     }
 
-    BackHandler {
-        if(filterModeOn.value) {
-            filterModeOn.value = false
-        } else {
-            naviUp()
-        }
-    }
+
 
     //compose创建时的副作用
     LaunchedEffect(needRefresh.value) {

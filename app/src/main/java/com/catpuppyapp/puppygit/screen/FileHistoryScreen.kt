@@ -71,6 +71,7 @@ import com.catpuppyapp.puppygit.compose.LoadingDialog
 import com.catpuppyapp.puppygit.compose.LongPressAbleIconBtn
 import com.catpuppyapp.puppygit.compose.MyCheckBox
 import com.catpuppyapp.puppygit.compose.MyLazyColumn
+import com.catpuppyapp.puppygit.compose.PullToRefreshBox
 import com.catpuppyapp.puppygit.compose.RepoInfoDialog
 import com.catpuppyapp.puppygit.compose.RepoInfoDialogItemSpacer
 import com.catpuppyapp.puppygit.compose.ScrollableColumn
@@ -661,6 +662,16 @@ fun FileHistoryScreen(
     val filterLastPosition = rememberSaveable { mutableStateOf(0) }
     val lastPosition = rememberSaveable { mutableStateOf(0) }
 
+
+    BackHandler {
+        if(filterModeOn_dontUseThisCheckFilterModeReallyEnabledOrNot.value) {
+            filterModeOn_dontUseThisCheckFilterModeReallyEnabledOrNot.value = false
+        } else {
+            naviUp()
+        }
+    }
+
+
     Scaffold(
         modifier = Modifier.nestedScroll(homeTopBarScrollBehavior.nestedScrollConnection),
         topBar = {
@@ -829,51 +840,55 @@ fun FileHistoryScreen(
         }
     ) { contentPadding ->
 
-        if(loadMoreLoading.value.not() && list.value.isEmpty()) {
-            Column(
-                modifier = Modifier
-                    //fillMaxSize 必须在最上面！要不然，文字不会显示在中间！
-                    .fillMaxSize()
-                    .padding(contentPadding)
-                    .padding(10.dp)
-                    .verticalScroll(rememberScrollState())
-                ,
-                verticalArrangement = Arrangement.Center,
-                horizontalAlignment = Alignment.CenterHorizontally,
-            ) {
-                Text(stringResource(R.string.file_hasnt_history_yet))
-            }
-        }else {
+        PullToRefreshBox(
+            onRefresh = { changeStateTriggerRefreshPage(needRefresh) }
+        ) {
+
+            if(loadMoreLoading.value.not() && list.value.isEmpty()) {
+                Column(
+                    modifier = Modifier
+                        //fillMaxSize 必须在最上面！要不然，文字不会显示在中间！
+                        .fillMaxSize()
+                        .padding(contentPadding)
+                        .padding(10.dp)
+                        .verticalScroll(rememberScrollState())
+                    ,
+                    verticalArrangement = Arrangement.Center,
+                    horizontalAlignment = Alignment.CenterHorizontally,
+                ) {
+                    Text(stringResource(R.string.file_hasnt_history_yet))
+                }
+            }else {
 //        val commitLen = 10;
-            if (showBottomSheet.value) {
+                if (showBottomSheet.value) {
 //            var commitOid = curCommit.value.oidStr
 //            if(commitOid.length > Cons.gitShortCommitHashRangeEndInclusive) {  //避免commitOid不够长导致抛异常，正常来说commitOid是40位，不会有问题，除非哪里出了问题
 //                commitOid = commitOid.substring(Cons.gitShortCommitHashRange)+"..."
 //            }
-                BottomSheet(showBottomSheet, sheetState, curObjShortOid.value) {
-                    BottomSheetItem(sheetState, showBottomSheet, stringResource(R.string.restore)) {
-                        showRestoreDialog.value = true
-                    }
-
-                    BottomSheetItem(sheetState, showBottomSheet, stringResource(R.string.diff_to_prev)) label@{
-                        val list = getActuallyList()
-                        val indexAtDiffableList = curObjIndex.intValue
-                        val previousIndex = indexAtDiffableList +1
-                        if(!isGoodIndexForList(previousIndex, list)) {
-                            if(hasMore.value) {
-                                Msg.requireShowLongDuration(activityContext.getString(R.string.plz_lode_more_then_try_again))
-                            }else {
-                                Msg.requireShowLongDuration(activityContext.getString(R.string.no_prev_to_compare))
-                            }
-
-                            return@label
+                    BottomSheet(showBottomSheet, sheetState, curObjShortOid.value) {
+                        BottomSheetItem(sheetState, showBottomSheet, stringResource(R.string.restore)) {
+                            showRestoreDialog.value = true
                         }
 
+                        BottomSheetItem(sheetState, showBottomSheet, stringResource(R.string.diff_to_prev)) label@{
+                            val list = getActuallyList()
+                            val indexAtDiffableList = curObjIndex.intValue
+                            val previousIndex = indexAtDiffableList +1
+                            if(!isGoodIndexForList(previousIndex, list)) {
+                                if(hasMore.value) {
+                                    Msg.requireShowLongDuration(activityContext.getString(R.string.plz_lode_more_then_try_again))
+                                }else {
+                                    Msg.requireShowLongDuration(activityContext.getString(R.string.no_prev_to_compare))
+                                }
+
+                                return@label
+                            }
 
 
-                        val previous = list[previousIndex]
-                        val commit1 = previous.commitOidStr
-                        val commit2 = curObj.value.commitOidStr
+
+                            val previous = list[previousIndex]
+                            val commit1 = previous.commitOidStr
+                            val commit2 = curObj.value.commitOidStr
 
 //                    println("commit1:"+commit1)
 //                    println("commit2:"+commit2)
@@ -881,26 +896,26 @@ fun FileHistoryScreen(
 
 
 
-                        //导航到diffScreen
-                        goToDiffScreen(
+                            //导航到diffScreen
+                            goToDiffScreen(
 //                            relativePathList = listOf(fileRelativePath),
-                            diffableList = list.map { it.toDiffableItem() },
-                            repoId = repoId,
-                            fromTo = Cons.gitDiffFileHistoryFromTreeToTree,
-                            commit1OidStr = commit1,
-                            commit2OidStr = commit2,
-                            isMultiMode = false,
-                            isDiffToLocal = false,
-                            curItemIndexAtDiffableList = indexAtDiffableList,
-                            localAtDiffRight = false,
-                            fromScreen = DiffFromScreen.FILE_HISTORY.code
-                        )
-                    }
+                                diffableList = list.map { it.toDiffableItem() },
+                                repoId = repoId,
+                                fromTo = Cons.gitDiffFileHistoryFromTreeToTree,
+                                commit1OidStr = commit1,
+                                commit2OidStr = commit2,
+                                isMultiMode = false,
+                                isDiffToLocal = false,
+                                curItemIndexAtDiffableList = indexAtDiffableList,
+                                localAtDiffRight = false,
+                                fromScreen = DiffFromScreen.FILE_HISTORY.code
+                            )
+                        }
 
 
-                    BottomSheetItem(sheetState, showBottomSheet, stringResource(R.string.details)) {
-                        showItemDetails(curObj.value)
-                    }
+                        BottomSheetItem(sheetState, showBottomSheet, stringResource(R.string.details)) {
+                            showItemDetails(curObj.value)
+                        }
 //
 //                if(UserUtil.isPro() && (dev_EnableUnTestedFeature || commitsDiffToLocalTestPassed)) {
 //                    BottomSheetItem(sheetState, showBottomSheet, stringResource(R.string.diff_to_local)) {
@@ -919,110 +934,122 @@ fun FileHistoryScreen(
 //                }
 
 
-                    //如果是filter模式，显示show in list以在列表揭示filter条目以查看前后提交（或者说上下文）
-                    if(enableFilterState.value) {
-                        BottomSheetItem(sheetState, showBottomSheet, stringResource(R.string.show_in_list)) {
-                            filterModeOn_dontUseThisCheckFilterModeReallyEnabledOrNot.value = false
-                            showBottomSheet.value = false
+                        //如果是filter模式，显示show in list以在列表揭示filter条目以查看前后提交（或者说上下文）
+                        if(enableFilterState.value) {
+                            BottomSheetItem(sheetState, showBottomSheet, stringResource(R.string.show_in_list)) {
+                                filterModeOn_dontUseThisCheckFilterModeReallyEnabledOrNot.value = false
+                                showBottomSheet.value = false
 
-                            doJobThenOffLoading {
+                                doJobThenOffLoading {
 //                            delay(100)  // wait rendering, may unnecessary yet
-                                val curItemIndex = curObjIndex.intValue  // 被长按的条目在 filterlist中的索引
-                                val idxList = filterIdxList.value  //取出存储filter索引和源列表索引的 index list，条目索引对应filter list条目索引，条目值对应的是源列表的真实索引
+                                    val curItemIndex = curObjIndex.intValue  // 被长按的条目在 filterlist中的索引
+                                    val idxList = filterIdxList.value  //取出存储filter索引和源列表索引的 index list，条目索引对应filter list条目索引，条目值对应的是源列表的真实索引
 
-                                doActIfIndexGood(curItemIndex, idxList) {  // it为当前被长按的条目在源列表中的真实索引
-                                    UIHelper.scrollToItem(scope, listState, it)  //在源列表中定位条目
-                                    requireBlinkIdx.intValue = it  //设置条目闪烁以便用户发现
+                                    doActIfIndexGood(curItemIndex, idxList) {  // it为当前被长按的条目在源列表中的真实索引
+                                        UIHelper.scrollToItem(scope, listState, it)  //在源列表中定位条目
+                                        requireBlinkIdx.intValue = it  //设置条目闪烁以便用户发现
+                                    }
                                 }
                             }
+
+                        }
+                    }
+                }
+
+                //根据关键字过滤条目
+                val keyword = filterKeyword.value.text.lowercase()  //关键字
+                val enableFilter = filterModeActuallyEnabled(filterModeOn_dontUseThisCheckFilterModeReallyEnabledOrNot.value, keyword)
+
+                val lastNeedRefresh = rememberSaveable { mutableStateOf("") }
+                val list = filterTheList(
+                    needRefresh = filterResultNeedRefresh.value,
+                    lastNeedRefresh = lastNeedRefresh,
+                    enableFilter = enableFilter,
+                    keyword = keyword,
+                    lastKeyword = lastKeyword,
+                    searching = searching,
+                    token = token,
+                    activityContext = activityContext,
+                    filterList = filterList.value,
+                    list = list.value,
+                    resetSearchVars = resetSearchVars,
+                    match = { idx, it -> true },
+                    lastListSize = lastListSize,
+                    filterIdxList = filterIdxList.value,
+                    customTask = {
+                        val canceled = initSearch(keyword = keyword, lastKeyword = lastKeyword, token = token)
+
+                        val match = { idx:Int, it: FileHistoryDto ->
+                            val found = it.treeEntryOidStr.lowercase().contains(keyword)
+                                    || it.authorEmail.lowercase().contains(keyword)
+                                    || it.authorUsername.lowercase().contains(keyword)
+                                    || it.committerEmail.lowercase().contains(keyword)
+                                    || it.committerUsername.lowercase().contains(keyword)
+                                    || it.dateTime.lowercase().contains(keyword)
+                                    || it.commitOidStr.lowercase().contains(keyword)
+                                    || it.msg.lowercase().contains(keyword)
+                                    || formatMinutesToUtc(it.originTimeOffsetInMinutes).lowercase().contains(keyword)
+
+
+                            found
                         }
 
+                        searching.value = true
+
+                        filterList.value.clear()
+                        search(
+                            src = list.value,
+                            match = match,
+                            matchedCallback = { idx, item ->
+                                filterList.value.add(item)
+                                filterIdxList.value.add(idx)
+                            },
+                            canceled = canceled)
                     }
-                }
-            }
-
-            //根据关键字过滤条目
-            val keyword = filterKeyword.value.text.lowercase()  //关键字
-            val enableFilter = filterModeActuallyEnabled(filterModeOn_dontUseThisCheckFilterModeReallyEnabledOrNot.value, keyword)
-
-            val lastNeedRefresh = rememberSaveable { mutableStateOf("") }
-            val list = filterTheList(
-                needRefresh = filterResultNeedRefresh.value,
-                lastNeedRefresh = lastNeedRefresh,
-                enableFilter = enableFilter,
-                keyword = keyword,
-                lastKeyword = lastKeyword,
-                searching = searching,
-                token = token,
-                activityContext = activityContext,
-                filterList = filterList.value,
-                list = list.value,
-                resetSearchVars = resetSearchVars,
-                match = { idx, it -> true },
-                lastListSize = lastListSize,
-                filterIdxList = filterIdxList.value,
-                customTask = {
-                    val canceled = initSearch(keyword = keyword, lastKeyword = lastKeyword, token = token)
-
-                    val match = { idx:Int, it: FileHistoryDto ->
-                        val found = it.treeEntryOidStr.lowercase().contains(keyword)
-                                || it.authorEmail.lowercase().contains(keyword)
-                                || it.authorUsername.lowercase().contains(keyword)
-                                || it.committerEmail.lowercase().contains(keyword)
-                                || it.committerUsername.lowercase().contains(keyword)
-                                || it.dateTime.lowercase().contains(keyword)
-                                || it.commitOidStr.lowercase().contains(keyword)
-                                || it.msg.lowercase().contains(keyword)
-                                || formatMinutesToUtc(it.originTimeOffsetInMinutes).lowercase().contains(keyword)
+                )
 
 
-                        found
-                    }
-
-                    searching.value = true
-
-                    filterList.value.clear()
-                    search(
-                        src = list.value,
-                        match = match,
-                        matchedCallback = { idx, item ->
-                            filterList.value.add(item)
-                            filterIdxList.value.add(idx)
-                        },
-                        canceled = canceled)
-                }
-            )
-
-
-            val listState = if(enableFilter) filterListState else listState
+                val listState = if(enableFilter) filterListState else listState
 //        if(enableFilter) {  //更新filter列表state
 //            filterListState.value = listState
 //        }
 
-            //更新是否启用filter
-            enableFilterState.value = enableFilter
+                //更新是否启用filter
+                enableFilterState.value = enableFilter
 
 
-            MyLazyColumn(
-                contentPadding = contentPadding,
-                list = list,
-                listState = listState,
-                requireForEachWithIndex = true,
-                requirePaddingAtBottom = false,
-                requireCustomBottom = true,
-                customBottom = {
-                    LoadMore(
-                        pageSize=pageSize,
-                        rememberPageSize=rememberPageSize,
-                        showSetPageSizeDialog=showSetPageSizeDialog,
-                        pageSizeForDialog=pageSizeForDialog,
-                        text = loadMoreText.value,
-                        btnUpsideText = getLoadText(list.size, enableFilter, activityContext),
-                        enableLoadMore = !loadMoreLoading.value && hasMore.value, enableAndShowLoadToEnd = !loadMoreLoading.value && hasMore.value,
-                        loadToEndOnClick = {
+                MyLazyColumn(
+                    contentPadding = contentPadding,
+                    list = list,
+                    listState = listState,
+                    requireForEachWithIndex = true,
+                    requirePaddingAtBottom = false,
+                    requireCustomBottom = true,
+                    customBottom = {
+                        LoadMore(
+                            pageSize=pageSize,
+                            rememberPageSize=rememberPageSize,
+                            showSetPageSizeDialog=showSetPageSizeDialog,
+                            pageSizeForDialog=pageSizeForDialog,
+                            text = loadMoreText.value,
+                            btnUpsideText = getLoadText(list.size, enableFilter, activityContext),
+                            enableLoadMore = !loadMoreLoading.value && hasMore.value, enableAndShowLoadToEnd = !loadMoreLoading.value && hasMore.value,
+                            loadToEndOnClick = {
+                                val firstLoad = false
+                                val forceReload = false
+                                val loadToEnd = true
+                                doLoadMore(
+                                    curRepo.value.fullSavePath,
+                                    nextCommitOid.value,
+                                    firstLoad,
+                                    forceReload,
+                                    loadToEnd
+                                )
+                            }
+                        ) {
                             val firstLoad = false
                             val forceReload = false
-                            val loadToEnd = true
+                            val loadToEnd = false
                             doLoadMore(
                                 curRepo.value.fullSavePath,
                                 nextCommitOid.value,
@@ -1030,71 +1057,71 @@ fun FileHistoryScreen(
                                 forceReload,
                                 loadToEnd
                             )
+
                         }
-                    ) {
-                        val firstLoad = false
-                        val forceReload = false
-                        val loadToEnd = false
-                        doLoadMore(
-                            curRepo.value.fullSavePath,
-                            nextCommitOid.value,
-                            firstLoad,
-                            forceReload,
-                            loadToEnd
-                        )
-
                     }
-                }
-            ) { idx, it ->
-                FileHistoryItem(showBottomSheet, curObj, curObjIndex, idx, it, requireBlinkIdx, lastClickedItemKey, shouldShowTimeZoneInfo, showItemDetails) { thisObj ->
-                    Msg.requireShow(activityContext.getString(R.string.diff_to_local))
+                ) { idx, it ->
+                    FileHistoryItem(showBottomSheet, curObj, curObjIndex, idx, it, requireBlinkIdx, lastClickedItemKey, shouldShowTimeZoneInfo, showItemDetails) { thisObj ->
+                        Msg.requireShow(activityContext.getString(R.string.diff_to_local))
 
-                    //导航到diffScreen
-                    goToDiffScreen(
+                        //导航到diffScreen
+                        goToDiffScreen(
 //                        relativePathList = listOf(fileRelativePath),
-                        diffableList = list.map { it.toDiffableItem() },
-                        repoId = repoId,
-                        fromTo = Cons.gitDiffFileHistoryFromTreeToLocal,
-                        commit1OidStr = it.commitOidStr,
-                        commit2OidStr = Cons.git_LocalWorktreeCommitHash,
-                        isMultiMode = false,
-                        isDiffToLocal = true,
-                        curItemIndexAtDiffableList = idx,
-                        localAtDiffRight = true,
-                        fromScreen = DiffFromScreen.FILE_HISTORY.code
-                    )
+                            diffableList = list.map { it.toDiffableItem() },
+                            repoId = repoId,
+                            fromTo = Cons.gitDiffFileHistoryFromTreeToLocal,
+                            commit1OidStr = it.commitOidStr,
+                            commit2OidStr = Cons.git_LocalWorktreeCommitHash,
+                            isMultiMode = false,
+                            isDiffToLocal = true,
+                            curItemIndexAtDiffableList = idx,
+                            localAtDiffRight = true,
+                            fromScreen = DiffFromScreen.FILE_HISTORY.code
+                        )
 
+                    }
+
+                    HorizontalDivider()
                 }
 
-                HorizontalDivider()
-            }
+                // filter mode 有可能查无条目，但是可继续加载更多，这时也应显示加载更多按钮
+                if(enableFilter && list.isEmpty()) {
+                    Column(
+                        modifier = Modifier
+                            .padding(contentPadding)
+                            .verticalScroll(rememberScrollState())
+                        ,
+                        horizontalAlignment = Alignment.CenterHorizontally,
+                        verticalArrangement = Arrangement.Center
+                    ) {
+                        Spacer(Modifier.height(50.dp))
+                        Text(stringResource(R.string.no_matched_item), fontWeight = FontWeight.Light)
 
-            // filter mode 有可能查无条目，但是可继续加载更多，这时也应显示加载更多按钮
-            if(enableFilter && list.isEmpty()) {
-                Column(
-                    modifier = Modifier
-                        .padding(contentPadding)
-                        .verticalScroll(rememberScrollState())
-                    ,
-                    horizontalAlignment = Alignment.CenterHorizontally,
-                    verticalArrangement = Arrangement.Center
-                ) {
-                    Spacer(Modifier.height(50.dp))
-                    Text(stringResource(R.string.no_matched_item), fontWeight = FontWeight.Light)
-
-                    LoadMore(
-                        modifier = Modifier.padding(top = 30.dp),
-                        pageSize=pageSize,
-                        rememberPageSize=rememberPageSize,
-                        showSetPageSizeDialog=showSetPageSizeDialog,
-                        pageSizeForDialog=pageSizeForDialog,
-                        text = loadMoreText.value,
-                        btnUpsideText = getLoadText(list.size, enableFilter, activityContext),
-                        enableLoadMore = !loadMoreLoading.value && hasMore.value, enableAndShowLoadToEnd = !loadMoreLoading.value && hasMore.value,
-                        loadToEndOnClick = {
+                        LoadMore(
+                            modifier = Modifier.padding(top = 30.dp),
+                            pageSize=pageSize,
+                            rememberPageSize=rememberPageSize,
+                            showSetPageSizeDialog=showSetPageSizeDialog,
+                            pageSizeForDialog=pageSizeForDialog,
+                            text = loadMoreText.value,
+                            btnUpsideText = getLoadText(list.size, enableFilter, activityContext),
+                            enableLoadMore = !loadMoreLoading.value && hasMore.value, enableAndShowLoadToEnd = !loadMoreLoading.value && hasMore.value,
+                            loadToEndOnClick = {
+                                val firstLoad = false
+                                val forceReload = false
+                                val loadToEnd = true
+                                doLoadMore(
+                                    curRepo.value.fullSavePath,
+                                    nextCommitOid.value,
+                                    firstLoad,
+                                    forceReload,
+                                    loadToEnd
+                                )
+                            }
+                        ) {
                             val firstLoad = false
                             val forceReload = false
-                            val loadToEnd = true
+                            val loadToEnd = false
                             doLoadMore(
                                 curRepo.value.fullSavePath,
                                 nextCommitOid.value,
@@ -1102,32 +1129,14 @@ fun FileHistoryScreen(
                                 forceReload,
                                 loadToEnd
                             )
-                        }
-                    ) {
-                        val firstLoad = false
-                        val forceReload = false
-                        val loadToEnd = false
-                        doLoadMore(
-                            curRepo.value.fullSavePath,
-                            nextCommitOid.value,
-                            firstLoad,
-                            forceReload,
-                            loadToEnd
-                        )
 
+                        }
                     }
                 }
             }
+
         }
 
-    }
-
-    BackHandler {
-        if(filterModeOn_dontUseThisCheckFilterModeReallyEnabledOrNot.value) {
-            filterModeOn_dontUseThisCheckFilterModeReallyEnabledOrNot.value = false
-        } else {
-            naviUp()
-        }
     }
 
     //compose创建时的副作用

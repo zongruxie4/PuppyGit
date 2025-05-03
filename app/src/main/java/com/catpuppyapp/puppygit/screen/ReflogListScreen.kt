@@ -41,6 +41,7 @@ import com.catpuppyapp.puppygit.compose.GoToTopAndGoToBottomFab
 import com.catpuppyapp.puppygit.compose.LoadingDialog
 import com.catpuppyapp.puppygit.compose.LongPressAbleIconBtn
 import com.catpuppyapp.puppygit.compose.MyLazyColumn
+import com.catpuppyapp.puppygit.compose.PullToRefreshBox
 import com.catpuppyapp.puppygit.compose.ReflogItem
 import com.catpuppyapp.puppygit.compose.RepoInfoDialog
 import com.catpuppyapp.puppygit.compose.ResetDialog
@@ -305,6 +306,14 @@ fun ReflogListScreen(
     val filterLastPosition = rememberSaveable { mutableStateOf(0) }
     val lastPosition = rememberSaveable { mutableStateOf(0) }
 
+    BackHandler {
+        if(filterModeOn.value) {
+            filterModeOn.value = false
+        } else {
+            naviUp()
+        }
+    }
+
     Scaffold(
         modifier = Modifier.nestedScroll(homeTopBarScrollBehavior.nestedScrollConnection),
         topBar = {
@@ -395,126 +404,125 @@ fun ReflogListScreen(
             }
         }
     ) { contentPadding ->
-        if (loading.value) {
+        PullToRefreshBox(
+            onRefresh = { changeStateTriggerRefreshPage(needRefresh) }
+        ) {
+
+
+            if (loading.value) {
 //            LoadingText(text = loadingText.value, contentPadding = contentPadding)
-            LoadingDialog(text = loadingText.value)
-        }
-
-        if (showBottomSheet.value) {
-            // title form: oldOid..newOid, means oldOid to newOid, eg abc1234..def1234
-            val title = Libgit2Helper.getShortOidStrByFull((curLongClickItem.value.idOld ?: Cons.git_AllZeroOid).toString())+".."+Libgit2Helper.getShortOidStrByFull((curLongClickItem.value.idNew ?: Cons.git_AllZeroOid).toString())
-            BottomSheet(showBottomSheet, sheetState, title) {
-                BottomSheetItem(sheetState, showBottomSheet, stringResource(R.string.checkout_new)) {
-                    // onClick()
-                    // 弹出确认框，询问是否确定执行checkout，可detach head，可创建分支，类似checkout remote branch
-                    //初始化弹窗默认选项
-                    checkoutNew.value = true
-
-                    val requireUserInputHash = false
-                    initCheckoutDialog(requireUserInputHash)
-                }
-                BottomSheetItem(sheetState, showBottomSheet, stringResource(R.string.checkout_old)) {
-                    // onClick()
-                    // 弹出确认框，询问是否确定执行checkout，可detach head，可创建分支，类似checkout remote branch
-                    //初始化弹窗默认选项
-                    checkoutNew.value = false
-
-                    val requireUserInputHash = false
-                    initCheckoutDialog(requireUserInputHash)
-                }
-
-                if(proFeatureEnabled(resetByHashTestPassed)) {
-                    BottomSheetItem(sheetState, showBottomSheet, stringResource(R.string.reset_new)) {
-                        resetNew.value=true
-                        showResetDialog.value = true
-                    }
-                    BottomSheetItem(sheetState, showBottomSheet, stringResource(R.string.reset_old)) {
-                        resetNew.value=false
-                        showResetDialog.value = true
-                    }
-                }
-
+                LoadingDialog(text = loadingText.value)
             }
-        }
 
+            if (showBottomSheet.value) {
+                // title form: oldOid..newOid, means oldOid to newOid, eg abc1234..def1234
+                val title = Libgit2Helper.getShortOidStrByFull((curLongClickItem.value.idOld ?: Cons.git_AllZeroOid).toString())+".."+Libgit2Helper.getShortOidStrByFull((curLongClickItem.value.idNew ?: Cons.git_AllZeroOid).toString())
+                BottomSheet(showBottomSheet, sheetState, title) {
+                    BottomSheetItem(sheetState, showBottomSheet, stringResource(R.string.checkout_new)) {
+                        // onClick()
+                        // 弹出确认框，询问是否确定执行checkout，可detach head，可创建分支，类似checkout remote branch
+                        //初始化弹窗默认选项
+                        checkoutNew.value = true
 
+                        val requireUserInputHash = false
+                        initCheckoutDialog(requireUserInputHash)
+                    }
+                    BottomSheetItem(sheetState, showBottomSheet, stringResource(R.string.checkout_old)) {
+                        // onClick()
+                        // 弹出确认框，询问是否确定执行checkout，可detach head，可创建分支，类似checkout remote branch
+                        //初始化弹窗默认选项
+                        checkoutNew.value = false
 
-        //有条目
-        //根据关键字过滤条目
-        val keyword = filterKeyword.value.text.lowercase()  //关键字
-        val enableFilter = filterModeActuallyEnabled(filterModeOn.value, keyword)
+                        val requireUserInputHash = false
+                        initCheckoutDialog(requireUserInputHash)
+                    }
 
-        val lastNeedRefresh = rememberSaveable { mutableStateOf("") }
-        val list = filterTheList(
-            needRefresh = filterResultNeedRefresh.value,
-            lastNeedRefresh = lastNeedRefresh,
-            enableFilter = enableFilter,
-            keyword = keyword,
-            lastKeyword = lastKeyword,
-            searching = searching,
-            token = token,
-            activityContext = activityContext,
-            filterList = filterList.value,
-            list = list.value,
-            resetSearchVars = resetSearchVars,
-            match = { idx:Int, it: ReflogEntryDto ->
-                it.username.lowercase().contains(keyword)
-                        || it.email.lowercase().contains(keyword)
-                        || it.date.lowercase().contains(keyword)
-                        || it.msg.lowercase().contains(keyword)
-                        || it.idNew.toString().lowercase().contains(keyword)
-                        || it.idOld.toString().lowercase().contains(keyword)
-                        || formatMinutesToUtc(it.originTimeZoneOffsetInMinutes).lowercase().contains(keyword)
+                    if(proFeatureEnabled(resetByHashTestPassed)) {
+                        BottomSheetItem(sheetState, showBottomSheet, stringResource(R.string.reset_new)) {
+                            resetNew.value=true
+                            showResetDialog.value = true
+                        }
+                        BottomSheetItem(sheetState, showBottomSheet, stringResource(R.string.reset_old)) {
+                            resetNew.value=false
+                            showResetDialog.value = true
+                        }
+                    }
+
+                }
             }
-        )
 
 
-        val listState = if(enableFilter) filterListState else listState
+
+            //有条目
+            //根据关键字过滤条目
+            val keyword = filterKeyword.value.text.lowercase()  //关键字
+            val enableFilter = filterModeActuallyEnabled(filterModeOn.value, keyword)
+
+            val lastNeedRefresh = rememberSaveable { mutableStateOf("") }
+            val list = filterTheList(
+                needRefresh = filterResultNeedRefresh.value,
+                lastNeedRefresh = lastNeedRefresh,
+                enableFilter = enableFilter,
+                keyword = keyword,
+                lastKeyword = lastKeyword,
+                searching = searching,
+                token = token,
+                activityContext = activityContext,
+                filterList = filterList.value,
+                list = list.value,
+                resetSearchVars = resetSearchVars,
+                match = { idx:Int, it: ReflogEntryDto ->
+                    it.username.lowercase().contains(keyword)
+                            || it.email.lowercase().contains(keyword)
+                            || it.date.lowercase().contains(keyword)
+                            || it.msg.lowercase().contains(keyword)
+                            || it.idNew.toString().lowercase().contains(keyword)
+                            || it.idOld.toString().lowercase().contains(keyword)
+                            || formatMinutesToUtc(it.originTimeZoneOffsetInMinutes).lowercase().contains(keyword)
+                }
+            )
+
+
+            val listState = if(enableFilter) filterListState else listState
 //        if(enableFilter) {  //更新filter列表state
 //            filterListState.value = listState
 //        }
-        //更新是否启用filter
-        enableFilterState.value = enableFilter
+            //更新是否启用filter
+            enableFilterState.value = enableFilter
 
-        MyLazyColumn(
-            contentPadding = contentPadding,
-            list = list,
-            listState = listState,
-            requireForEachWithIndex = true,
-            requirePaddingAtBottom = true,
-            forEachCb = {},
-        ){idx, it->
-            //长按会更新curObjInPage为被长按的条目
-            ReflogItem(repoId, showBottomSheet, curLongClickItem, lastClickedItemKey, shouldShowTimeZoneInfo, it) {  //onClick
-                val suffix = "\n\n"
-                val sb = StringBuilder()
-                sb.append(activityContext.getString(R.string.new_oid)).append(": ").append(it.idNew).append(suffix)
-                sb.append(activityContext.getString(R.string.old_oid)).append(": ").append(it.idOld).append(suffix)
-                sb.append(activityContext.getString(R.string.date)).append(": ").append(it.date+" (${formatMinutesToUtc(it.actuallyUsingTimeZoneOffsetInMinutes)})").append(suffix)
-                sb.append(activityContext.getString(R.string.timezone)).append(": ").append(formatMinutesToUtc(it.originTimeZoneOffsetInMinutes)).append(suffix)
-                sb.append(activityContext.getString(R.string.author)).append(": ").append(Libgit2Helper.getFormattedUsernameAndEmail(it.username, it.email)).append(suffix)
-                sb.append(activityContext.getString(R.string.msg)).append(": ").append(it.msg).append(suffix)
+            MyLazyColumn(
+                contentPadding = contentPadding,
+                list = list,
+                listState = listState,
+                requireForEachWithIndex = true,
+                requirePaddingAtBottom = true,
+                forEachCb = {},
+            ){idx, it->
+                //长按会更新curObjInPage为被长按的条目
+                ReflogItem(repoId, showBottomSheet, curLongClickItem, lastClickedItemKey, shouldShowTimeZoneInfo, it) {  //onClick
+                    val suffix = "\n\n"
+                    val sb = StringBuilder()
+                    sb.append(activityContext.getString(R.string.new_oid)).append(": ").append(it.idNew).append(suffix)
+                    sb.append(activityContext.getString(R.string.old_oid)).append(": ").append(it.idOld).append(suffix)
+                    sb.append(activityContext.getString(R.string.date)).append(": ").append(it.date+" (${formatMinutesToUtc(it.actuallyUsingTimeZoneOffsetInMinutes)})").append(suffix)
+                    sb.append(activityContext.getString(R.string.timezone)).append(": ").append(formatMinutesToUtc(it.originTimeZoneOffsetInMinutes)).append(suffix)
+                    sb.append(activityContext.getString(R.string.author)).append(": ").append(Libgit2Helper.getFormattedUsernameAndEmail(it.username, it.email)).append(suffix)
+                    sb.append(activityContext.getString(R.string.msg)).append(": ").append(it.msg).append(suffix)
 
 
-                detailsString.value = sb.removeSuffix(suffix).toString()
+                    detailsString.value = sb.removeSuffix(suffix).toString()
 
-                curClickItem.value = it
-                showDetailsDialog.value=true
+                    curClickItem.value = it
+                    showDetailsDialog.value=true
+                }
+
+                HorizontalDivider()
             }
 
-            HorizontalDivider()
+
         }
 
 
-
-    }
-
-    BackHandler {
-        if(filterModeOn.value) {
-          filterModeOn.value = false
-        } else {
-            naviUp()
-        }
     }
 
 

@@ -391,7 +391,6 @@ fun AutomationInnerPage(
     val itemLeftWidthForSelector = MyStyleKt.SettingsItem.itemLeftWidthForSelector
 
     PullToRefreshBox(
-        isRefreshing = false,
         onRefresh = { changeStateTriggerRefreshPage(needRefreshPage) },
 
     ) {

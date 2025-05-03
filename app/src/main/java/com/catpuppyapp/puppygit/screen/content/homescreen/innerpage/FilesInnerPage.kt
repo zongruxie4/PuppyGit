@@ -69,20 +69,18 @@ import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.TextFieldValue
-import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.DpOffset
 import androidx.compose.ui.unit.dp
 import androidx.documentfile.provider.DocumentFile
 import com.catpuppyapp.puppygit.compose.ApplyPatchDialog
 import com.catpuppyapp.puppygit.compose.BottomBar
 import com.catpuppyapp.puppygit.compose.CardButton
-import com.catpuppyapp.puppygit.compose.DefaultPaddingText
-import com.catpuppyapp.puppygit.compose.ClickableText
 import com.catpuppyapp.puppygit.compose.ConfirmDialog
 import com.catpuppyapp.puppygit.compose.ConfirmDialog2
 import com.catpuppyapp.puppygit.compose.CopyScrollableColumn
 import com.catpuppyapp.puppygit.compose.CopyableDialog
 import com.catpuppyapp.puppygit.compose.CreateFileOrFolderDialog2
+import com.catpuppyapp.puppygit.compose.DefaultPaddingText
 import com.catpuppyapp.puppygit.compose.FileListItem
 import com.catpuppyapp.puppygit.compose.GitIgnoreDialog
 import com.catpuppyapp.puppygit.compose.GrantManageStoragePermissionClickableText
@@ -90,9 +88,9 @@ import com.catpuppyapp.puppygit.compose.LoadingText
 import com.catpuppyapp.puppygit.compose.MyCheckBox
 import com.catpuppyapp.puppygit.compose.MyCheckBox2
 import com.catpuppyapp.puppygit.compose.MyLazyColumn
-import com.catpuppyapp.puppygit.compose.MyPullRefreshLazyColumn
 import com.catpuppyapp.puppygit.compose.MySelectionContainer
 import com.catpuppyapp.puppygit.compose.OpenAsDialog
+import com.catpuppyapp.puppygit.compose.PullToRefreshBox
 import com.catpuppyapp.puppygit.compose.ScrollableColumn
 import com.catpuppyapp.puppygit.compose.SelectedItemDialog
 import com.catpuppyapp.puppygit.constants.Cons
@@ -121,7 +119,6 @@ import com.catpuppyapp.puppygit.settings.SettingsUtil
 import com.catpuppyapp.puppygit.settings.enums.dirviewandsort.SortMethod
 import com.catpuppyapp.puppygit.style.MyStyleKt
 import com.catpuppyapp.puppygit.ui.theme.Theme
-import com.catpuppyapp.puppygit.utils.ActivityUtil
 import com.catpuppyapp.puppygit.utils.AppModel
 import com.catpuppyapp.puppygit.utils.DirSearchUtil
 import com.catpuppyapp.puppygit.utils.FsUtils
@@ -142,7 +139,6 @@ import com.catpuppyapp.puppygit.utils.getFilePathUnderParent
 import com.catpuppyapp.puppygit.utils.getHumanReadableSizeStr
 import com.catpuppyapp.puppygit.utils.getSecFromTime
 import com.catpuppyapp.puppygit.utils.getShortUUID
-import com.catpuppyapp.puppygit.utils.getStoragePermission
 import com.catpuppyapp.puppygit.utils.getViewAndSortForPath
 import com.catpuppyapp.puppygit.utils.isPathExists
 import com.catpuppyapp.puppygit.utils.mime.MimeType
@@ -1257,62 +1253,65 @@ fun FilesInnerPage(
     }
 
 
+    PullToRefreshBox(
+        onRefresh = { changeStateTriggerRefreshPage(needRefreshFilesPage) },
 
-    if(isLoading.value) {
+    ) {
+        if(isLoading.value) {
 //        LoadingDialog(loadingText.value)        //这个页面不适合用Dialog，页面会闪。
 
-        LoadingText(
-            text = loadingText.value,
-            contentPadding = contentPadding,
-            showCancel = cancellableActRunning.value,
-            onCancel = cancelAct,  //这里直接传函数即可，仅当showCancel为真，才有可能调用此函数，所以不用检查是否需要传null
-        )
-    }else {
-        Column(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(contentPadding)
+            LoadingText(
+                text = loadingText.value,
+                contentPadding = contentPadding,
+                showCancel = cancellableActRunning.value,
+                onCancel = cancelAct,  //这里直接传函数即可，仅当showCancel为真，才有可能调用此函数，所以不用检查是否需要传null
+            )
+        }else {
+            Column(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(contentPadding)
 //            .verticalScroll(StateUtil.getRememberScrollState())  //和LazyColumn不能共用
-        ) {
-            // bread crumb
-            if(currentPathBreadCrumbList.value.isEmpty()) {
-                Row (modifier = Modifier
-                    .padding(5.dp)
-                    .horizontalScroll(rememberScrollState())
-                ){
-                    // noop, dead code, 之前可能进这里，但后来给面包屑强制添加了root path，所以其实应该不可能执行这里的代码了
-                }
-            }else {
-                LazyRow(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .background(MaterialTheme.colorScheme.surfaceContainer)
+            ) {
+                // bread crumb
+                if(currentPathBreadCrumbList.value.isEmpty()) {
+                    Row (modifier = Modifier
                         .padding(5.dp)
-                    ,
-                    state = breadCrumbListState,
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    //面包屑 (breadcrumb)
-                    val breadList = currentPathBreadCrumbList.value.toList()
-                    breadList.forEachIndexed { idx, it ->
-                        item {
-                            val separator = Cons.slash
-                            val breadCrumbDropDownMenuExpendState = rememberSaveable { mutableStateOf(false)}
-                            val curItemIsRoot = idx==0  // root path '/'
+                        .horizontalScroll(rememberScrollState())
+                    ){
+                        // noop, dead code, 之前可能进这里，但后来给面包屑强制添加了root path，所以其实应该不可能执行这里的代码了
+                    }
+                }else {
+                    LazyRow(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .background(MaterialTheme.colorScheme.surfaceContainer)
+                            .padding(5.dp)
+                        ,
+                        state = breadCrumbListState,
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        //面包屑 (breadcrumb)
+                        val breadList = currentPathBreadCrumbList.value.toList()
+                        breadList.forEachIndexed { idx, it ->
+                            item {
+                                val separator = Cons.slash
+                                val breadCrumbDropDownMenuExpendState = rememberSaveable { mutableStateOf(false)}
+                                val curItemIsRoot = idx==0  // root path '/'
 //                            val curPathIsRoot = currentPath.value == separator
 //                            val curPathIsRootAndCurItemIsRoot = curPathIsRoot && curItemIsRoot
-                            val textColor = if(it.fullPath.startsWith(currentPath.value+separator)) Color.Gray else Color.Unspecified
+                                val textColor = if(it.fullPath.startsWith(currentPath.value+separator)) Color.Gray else Color.Unspecified
 
-                            //非根路径显示路径分割符
-                            if(curItemIsRoot.not()) {
-                                Text(text = Cons.arrowToRight, color = textColor, fontWeight = FontWeight.Light)
-                            }
+                                //非根路径显示路径分割符
+                                if(curItemIsRoot.not()) {
+                                    Text(text = Cons.arrowToRight, color = textColor, fontWeight = FontWeight.Light)
+                                }
 
-                            Text(
-                                text = it.name,
-                                color = textColor,
-                                fontWeight = if(it.fullPath == currentPath.value) FontWeight.Bold else FontWeight.Normal,
-                                modifier = Modifier.combinedClickable(
+                                Text(
+                                    text = it.name,
+                                    color = textColor,
+                                    fontWeight = if(it.fullPath == currentPath.value) FontWeight.Bold else FontWeight.Normal,
+                                    modifier = Modifier.combinedClickable(
                                         onLongClick = {  //long press will show menu for pressed path
                                             haptic.performHapticFeedback(HapticFeedbackType.LongPress)
                                             breadCrumbDropDownMenuExpendState.value = true
@@ -1324,317 +1323,317 @@ fun FilesInnerPage(
                                         //刷新页面（然后面包屑也会重新生成）
                                         changeStateTriggerRefreshPage(needRefreshFilesPage)
                                     }
-                                    .padding(horizontal = 10.dp)  //整宽点，好点击，不然名字很短，手按不到
-                            )
+                                        .padding(horizontal = 10.dp)  //整宽点，好点击，不然名字很短，手按不到
+                                )
 
 
-                            if(breadCrumbDropDownMenuExpendState.value){
-                                Column {
-                                    val enableMenuItem = true
-                                    //菜单列表
-                                    DropdownMenu(
-                                        offset = DpOffset(x=0.dp, y=20.dp),
-                                        expanded = breadCrumbDropDownMenuExpendState.value,
-                                        onDismissRequest = { breadCrumbDropDownMenuExpendState.value = false }
-                                    ) {
+                                if(breadCrumbDropDownMenuExpendState.value){
+                                    Column {
+                                        val enableMenuItem = true
+                                        //菜单列表
+                                        DropdownMenu(
+                                            offset = DpOffset(x=0.dp, y=20.dp),
+                                            expanded = breadCrumbDropDownMenuExpendState.value,
+                                            onDismissRequest = { breadCrumbDropDownMenuExpendState.value = false }
+                                        ) {
 
-                                        DropdownMenuItem(
-                                            enabled = enableMenuItem,
-                                            text = { Text(stringResource(R.string.copy_full_path)) },
-                                            onClick = {
-                                                breadCrumbDropDownMenuExpendState.value = false
-                                                copyThenShowCopied(it.fullPath)
+                                            DropdownMenuItem(
+                                                enabled = enableMenuItem,
+                                                text = { Text(stringResource(R.string.copy_full_path)) },
+                                                onClick = {
+                                                    breadCrumbDropDownMenuExpendState.value = false
+                                                    copyThenShowCopied(it.fullPath)
+                                                }
+                                            )
+
+
+                                            if(isFileChooser.not()) {
+                                                DropdownMenuItem(
+                                                    enabled = enableMenuItem,
+                                                    text = { Text(stringResource(R.string.copy_repo_relative_path)) },
+                                                    onClick = {
+                                                        breadCrumbDropDownMenuExpendState.value = false
+                                                        copyRepoRelativePath(it.fullPath)
+                                                    }
+                                                )
+                                                DropdownMenuItem(
+                                                    enabled = enableMenuItem,
+                                                    text = { Text(stringResource(R.string.import_as_repo)) },
+                                                    onClick = {
+                                                        breadCrumbDropDownMenuExpendState.value = false
+                                                        initImportAsRepoDialog(listOf(it.fullPath))
+                                                    }
+                                                )
+                                                DropdownMenuItem(
+                                                    enabled = enableMenuItem,
+                                                    text = { Text(stringResource(R.string.init_repo)) },
+                                                    onClick = {
+                                                        breadCrumbDropDownMenuExpendState.value = false
+                                                        initInitRepoDialog(listOf(it.fullPath))
+                                                    }
+                                                )
+                                                DropdownMenuItem(
+                                                    enabled = enableMenuItem,
+                                                    text = { Text(stringResource(R.string.show_in_repos)) },
+                                                    onClick = {
+                                                        breadCrumbDropDownMenuExpendState.value = false
+                                                        showInRepos(it.fullPath)
+                                                    }
+                                                )
+                                                DropdownMenuItem(
+                                                    enabled = enableMenuItem,
+                                                    text = { Text(stringResource(R.string.show_in_changelist)) },
+                                                    onClick = {
+                                                        breadCrumbDropDownMenuExpendState.value = false
+                                                        showInChangeList(it.fullPath)
+                                                    }
+                                                )
                                             }
-                                        )
 
 
-                                        if(isFileChooser.not()) {
                                             DropdownMenuItem(
                                                 enabled = enableMenuItem,
-                                                text = { Text(stringResource(R.string.copy_repo_relative_path)) },
+                                                text = { Text(stringResource(R.string.details)) },
                                                 onClick = {
                                                     breadCrumbDropDownMenuExpendState.value = false
-                                                    copyRepoRelativePath(it.fullPath)
-                                                }
-                                            )
-                                            DropdownMenuItem(
-                                                enabled = enableMenuItem,
-                                                text = { Text(stringResource(R.string.import_as_repo)) },
-                                                onClick = {
-                                                    breadCrumbDropDownMenuExpendState.value = false
-                                                    initImportAsRepoDialog(listOf(it.fullPath))
-                                                }
-                                            )
-                                            DropdownMenuItem(
-                                                enabled = enableMenuItem,
-                                                text = { Text(stringResource(R.string.init_repo)) },
-                                                onClick = {
-                                                    breadCrumbDropDownMenuExpendState.value = false
-                                                    initInitRepoDialog(listOf(it.fullPath))
-                                                }
-                                            )
-                                            DropdownMenuItem(
-                                                enabled = enableMenuItem,
-                                                text = { Text(stringResource(R.string.show_in_repos)) },
-                                                onClick = {
-                                                    breadCrumbDropDownMenuExpendState.value = false
-                                                    showInRepos(it.fullPath)
-                                                }
-                                            )
-                                            DropdownMenuItem(
-                                                enabled = enableMenuItem,
-                                                text = { Text(stringResource(R.string.show_in_changelist)) },
-                                                onClick = {
-                                                    breadCrumbDropDownMenuExpendState.value = false
-                                                    showInChangeList(it.fullPath)
+                                                    // bread crumb dto lack some info for faster loading, so need requrey a new dto when show details
+                                                    //面包屑的dto是缩水的，为了加载快而没查最后修改时间和大小等在面包屑用不到的信息，因此显示前需要重新查下dto
+                                                    initDetailsDialog(listOf(FileItemDto.genFileItemDtoByFile(File(it.fullPath), activityContext)))
                                                 }
                                             )
                                         }
-
-
-                                        DropdownMenuItem(
-                                            enabled = enableMenuItem,
-                                            text = { Text(stringResource(R.string.details)) },
-                                            onClick = {
-                                                breadCrumbDropDownMenuExpendState.value = false
-                                                // bread crumb dto lack some info for faster loading, so need requrey a new dto when show details
-                                                //面包屑的dto是缩水的，为了加载快而没查最后修改时间和大小等在面包屑用不到的信息，因此显示前需要重新查下dto
-                                                initDetailsDialog(listOf(FileItemDto.genFileItemDtoByFile(File(it.fullPath), activityContext)))
-                                            }
-                                        )
                                     }
                                 }
-                            }
 
+                            }
                         }
                     }
+
+                    //make breadCrumb always scroll to end for show current path
+                    val scrollToCurPath = remember {
+                        derivedStateOf {
+                            //若当前目录在面包屑中的条目不可见，滚动使其可见
+                            val indexOfCurPath = currentPathBreadCrumbList.value.indexOfFirst { it.fullPath == currentPath.value }
+                            if(indexOfCurPath != -1) {
+                                //滚动到当前条目前2个位置，不然当前条目在屏幕最左边，而比较顺眼的位置是最右边。。。。。不过滚动前2个位置只是粗略调整，没任何依据，如果当前文件夹名非常长的话，这样滚动就看不见了。。。。
+                                UIHelper.scrollToItem(scope, breadCrumbListState, indexOfCurPath-2)
+                            }
+                        }
+                    }.value;  //调用.value才会触发懒计算
                 }
 
-                //make breadCrumb always scroll to end for show current path
-                val scrollToCurPath = remember {
-                    derivedStateOf {
-                        //若当前目录在面包屑中的条目不可见，滚动使其可见
-                        val indexOfCurPath = currentPathBreadCrumbList.value.indexOfFirst { it.fullPath == currentPath.value }
-                        if(indexOfCurPath != -1) {
-                            //滚动到当前条目前2个位置，不然当前条目在屏幕最左边，而比较顺眼的位置是最右边。。。。。不过滚动前2个位置只是粗略调整，没任何依据，如果当前文件夹名非常长的话，这样滚动就看不见了。。。。
-                            UIHelper.scrollToItem(scope, breadCrumbListState, indexOfCurPath-2)
-                        }
+                // file list
+                // if has err, show err, else show file list
+                val isOpenDirErr = openDirErr.value.isNotBlank()
+                val folderIsEmpty = currentPathFileList.value.isEmpty()
+                if(isOpenDirErr || folderIsEmpty){
+                    Column(
+                        modifier = Modifier
+                            //fillMaxSize 必须在最上面！要不然，文字不会显示在中间！
+                            .fillMaxSize()
+                            .padding(contentPadding)
+                            .padding(10.dp)
+                            .verticalScroll(rememberScrollState())
+                        ,
+                        verticalArrangement = Arrangement.Center,
+                        horizontalAlignment = Alignment.CenterHorizontally,
+                    ) {
+                        if(isOpenDirErr){
+                            Text(openDirErr.value, color = MyStyleKt.TextColor.error())
+                        }else if(folderIsEmpty) {
+                            Text(stringResource(R.string.folder_is_empty))
+                        }  // else maybe
                     }
-                }.value;  //调用.value才会触发懒计算
-            }
+                }else {
+                    val keyword = filesPageSimpleFilterKeyWord.value.text.lowercase()  //关键字
+                    val enableFilter = filterModeActuallyEnabled(filterOn = filesPageSimpleFilterOn.value, keyword = keyword)
 
-            // file list
-            // if has err, show err, else show file list
-            val isOpenDirErr = openDirErr.value.isNotBlank()
-            val folderIsEmpty = currentPathFileList.value.isEmpty()
-            if(isOpenDirErr || folderIsEmpty){
-                Column(
-                    modifier = Modifier
-                        //fillMaxSize 必须在最上面！要不然，文字不会显示在中间！
-                        .fillMaxSize()
-                        .padding(contentPadding)
-                        .padding(10.dp)
-                        .verticalScroll(rememberScrollState())
-                    ,
-                    verticalArrangement = Arrangement.Center,
-                    horizontalAlignment = Alignment.CenterHorizontally,
-                ) {
-                    if(isOpenDirErr){
-                        Text(openDirErr.value, color = MyStyleKt.TextColor.error())
-                    }else if(folderIsEmpty) {
-                        Text(stringResource(R.string.folder_is_empty))
-                    }  // else maybe
-                }
-            }else {
-                val keyword = filesPageSimpleFilterKeyWord.value.text.lowercase()  //关键字
-                val enableFilter = filterModeActuallyEnabled(filterOn = filesPageSimpleFilterOn.value, keyword = keyword)
+                    val lastNeedRefresh = rememberSaveable { mutableStateOf("") }
+                    val currentPathFileList = filterTheList(
+                        needRefresh = filterResultNeedRefresh.value,
+                        lastNeedRefresh = lastNeedRefresh,
+                        enableFilter = enableFilter,
+                        keyword = keyword,
+                        lastKeyword = filesPageLastKeyword,
+                        searching = filesPageSearching,
+                        token = filesPageSearchToken,
+                        activityContext = activityContext,
+                        filterList = filterList.value,
+                        list = currentPathFileList.value,
+                        resetSearchVars = resetFilesSearchVars,
+                        match = { idx, it -> true },
+                        customTask = {
+                            val curDir = File(currentPath.value)
+                            if(curDir.canRead().not()) {  //目录不可读，提示下
+                                Msg.requireShow(activityContext.getString(R.string.err_read_path_failed))
+                            }else { //目录可读，执行搜索
+                                val canceled = initSearch(keyword = keyword, lastKeyword = filesPageLastKeyword, token = filesPageSearchToken)
 
-                val lastNeedRefresh = rememberSaveable { mutableStateOf("") }
-                val currentPathFileList = filterTheList(
-                    needRefresh = filterResultNeedRefresh.value,
-                    lastNeedRefresh = lastNeedRefresh,
-                    enableFilter = enableFilter,
-                    keyword = keyword,
-                    lastKeyword = filesPageLastKeyword,
-                    searching = filesPageSearching,
-                    token = filesPageSearchToken,
-                    activityContext = activityContext,
-                    filterList = filterList.value,
-                    list = currentPathFileList.value,
-                    resetSearchVars = resetFilesSearchVars,
-                    match = { idx, it -> true },
-                    customTask = {
-                        val curDir = File(currentPath.value)
-                        if(curDir.canRead().not()) {  //目录不可读，提示下
-                            Msg.requireShow(activityContext.getString(R.string.err_read_path_failed))
-                        }else { //目录可读，执行搜索
-                            val canceled = initSearch(keyword = keyword, lastKeyword = filesPageLastKeyword, token = filesPageSearchToken)
+                                val match = { idx:Int, it:File ->
+                                    val nameLowerCase = it.name.lowercase();
+                                    //匹配名称 或 "*.txt"之类的后缀
+                                    nameLowerCase.contains(keyword) || RegexUtil.matchWildcard(nameLowerCase, keyword)
+                                }
 
-                            val match = { idx:Int, it:File ->
-                                val nameLowerCase = it.name.lowercase();
-                                //匹配名称 或 "*.txt"之类的后缀
-                                nameLowerCase.contains(keyword) || RegexUtil.matchWildcard(nameLowerCase, keyword)
+                                filterList.value.clear()
+                                filesPageSearching.value = true
+
+                                DirSearchUtil.realBreadthFirstSearch(
+                                    dir = curDir,
+                                    match = match,
+                                    matchedCallback = {idx, item -> filterList.value.add(FileItemDto.genFileItemDtoByFile(item, activityContext))},
+                                    canceled = canceled
+                                )
                             }
-
-                            filterList.value.clear()
-                            filesPageSearching.value = true
-
-                            DirSearchUtil.realBreadthFirstSearch(
-                                dir = curDir,
-                                match = match,
-                                matchedCallback = {idx, item -> filterList.value.add(FileItemDto.genFileItemDtoByFile(item, activityContext))},
-                                canceled = canceled
-                            )
                         }
-                    }
-                )
+                    )
 
 
-                val listState = if(enableFilter) filterListState else curListState.value
+                    val listState = if(enableFilter) filterListState else curListState.value
 
-                //更新是否启用filter
-                enableFilterState.value = enableFilter
+                    //更新是否启用filter
+                    enableFilterState.value = enableFilter
 
-                MyPullRefreshLazyColumn(
-                    pull_isRefreshing = isLoading.value,
-                    pull_onRefresh = { changeStateTriggerRefreshPage(needRefreshFilesPage) },
-
-                    contentPadding = PaddingValues(0.dp),  //外部padding了
-                    list = currentPathFileList,
-                    listState = listState,
-                    requireForEachWithIndex = true,
-                    requirePaddingAtBottom =true
-                ) {index, it ->
-                    // 没测试，我看其他文件管理器针对目录都没open with，所以直接隐藏了) 需要测试：能否针对目录执行openwith？如果不能，对目录移除openwith选项
-                    FileListItem(
-                        fullPathOfTopNoEndSlash = if(enableFilter) currentPath.value else "",
-                        item = it,
-                        lastPathByPressBack = lastPathByPressBack.value,
-                        isPasteMode = isPasteMode,
-                        menuKeyTextList = if(it.isFile) fileMenuKeyTextList else dirMenuKeyTextList,
-                        menuKeyActList = if(it.isFile) fileMenuKeyActList else dirMenuKeyActList,
-                        iconOnClick={  //点击文件或文件夹图标时的回调函数
-                            if (isFileChooser.not() && !isPasteMode.value && !isImportMode.value) {
-                                switchItemSelected(it)
-                            }
-                        },
-                        switchItemSelected = switchItemSelected,
-                        isItemInSelected=isItemInSelected,
-                        itemOnLongClick = {
-                            if(isFileChooser.not()){
-                                //如果不是选择模式或粘贴模式，切换为选择模式
-                                if (!isFileSelectionMode.value && !isPasteMode.value && !isImportMode.value) {
-                                    haptic.performHapticFeedback(HapticFeedbackType.LongPress)
+                    MyLazyColumn(
+                        contentPadding = PaddingValues(0.dp),  //外部padding了
+                        list = currentPathFileList,
+                        listState = listState,
+                        requireForEachWithIndex = true,
+                        requirePaddingAtBottom =true
+                    ) { index, it ->
+                        // 没测试，我看其他文件管理器针对目录都没open with，所以直接隐藏了) 需要测试：能否针对目录执行openwith？如果不能，对目录移除openwith选项
+                        FileListItem(
+                            fullPathOfTopNoEndSlash = if(enableFilter) currentPath.value else "",
+                            item = it,
+                            lastPathByPressBack = lastPathByPressBack.value,
+                            isPasteMode = isPasteMode,
+                            menuKeyTextList = if(it.isFile) fileMenuKeyTextList else dirMenuKeyTextList,
+                            menuKeyActList = if(it.isFile) fileMenuKeyActList else dirMenuKeyActList,
+                            iconOnClick={  //点击文件或文件夹图标时的回调函数
+                                if (isFileChooser.not() && !isPasteMode.value && !isImportMode.value) {
                                     switchItemSelected(it)
+                                }
+                            },
+                            switchItemSelected = switchItemSelected,
+                            isItemInSelected=isItemInSelected,
+                            itemOnLongClick = {
+                                if(isFileChooser.not()){
+                                    //如果不是选择模式或粘贴模式，切换为选择模式
+                                    if (!isFileSelectionMode.value && !isPasteMode.value && !isImportMode.value) {
+                                        haptic.performHapticFeedback(HapticFeedbackType.LongPress)
+                                        switchItemSelected(it)
 
-                                    //如果处于选择模式，长按执行连续选择
-                                }else if(isFileSelectionMode.value && !isPasteMode.value && !isImportMode.value) {
-                                    haptic.performHapticFeedback(HapticFeedbackType.LongPress)
-                                    UIHelper.doSelectSpan(index, it,
-                                        //这里调用 toList() 是为了拷贝下源list，避免并发修改异常
-                                        selectedItems.value.toList(), currentPathFileList.toList(),
-                                        switchItemSelected,
-                                        selectItem
-                                    )
+                                        //如果处于选择模式，长按执行连续选择
+                                    }else if(isFileSelectionMode.value && !isPasteMode.value && !isImportMode.value) {
+                                        haptic.performHapticFeedback(HapticFeedbackType.LongPress)
+                                        UIHelper.doSelectSpan(index, it,
+                                            //这里调用 toList() 是为了拷贝下源list，避免并发修改异常
+                                            selectedItems.value.toList(), currentPathFileList.toList(),
+                                            switchItemSelected,
+                                            selectItem
+                                        )
+                                    }
                                 }
                             }
-                        }
-                    ) itemOnClick@{  //itemOnClick
-                        if (isFileSelectionMode.value) {  //选择模式，切换选择
-                            switchItemSelected(it)
-                        } else {  //非选择模式，若文件则在编辑器打开，否则在当前页面打开目录
+                        ) itemOnClick@{  //itemOnClick
+                            if (isFileSelectionMode.value) {  //选择模式，切换选择
+                                switchItemSelected(it)
+                            } else {  //非选择模式，若文件则在编辑器打开，否则在当前页面打开目录
 
-                            //关闭过滤模式的逻辑：如果是目录，一律关闭；如果是文件，判断是否用内部Editor打开，如果是关闭，否则不关闭。
-                            if (it.isFile) {
-                                //单选文件模式，点击文件后直接返回
-                                if(isFileChooser) {
-                                    if(fileChooserType == FileChooserType.SINGLE_FILE) {
-                                        updateSelectedPath(it.fullPath)
-                                        naviUp()
+                                //关闭过滤模式的逻辑：如果是目录，一律关闭；如果是文件，判断是否用内部Editor打开，如果是关闭，否则不关闭。
+                                if (it.isFile) {
+                                    //单选文件模式，点击文件后直接返回
+                                    if(isFileChooser) {
+                                        if(fileChooserType == FileChooserType.SINGLE_FILE) {
+                                            updateSelectedPath(it.fullPath)
+                                            naviUp()
+                                        }
+
+                                        //不管单选文件还是单选目录，只要是文件选择器页面，点文件后都不需要执行后续逻辑
+                                        return@itemOnClick
                                     }
 
-                                    //不管单选文件还是单选目录，只要是文件选择器页面，点文件后都不需要执行后续逻辑
-                                    return@itemOnClick
-                                }
+                                    //粘贴或导入模式下点击文件无效，除非先退出对应模式(不过没禁止通过三个点的菜单打开文件)
+                                    if(isPasteMode.value || isImportMode.value) {
+                                        return@itemOnClick
+                                    }
 
-                                //粘贴或导入模式下点击文件无效，除非先退出对应模式(不过没禁止通过三个点的菜单打开文件)
-                                if(isPasteMode.value || isImportMode.value) {
-                                    return@itemOnClick
-                                }
+                                    //检查文件大小，如果太大，拒绝打开，考虑下大小设多少合适。
+                                    // 如果是文本类型，用文本编辑器打开，其他类型弹窗提示用外部程序打开还是用文本编辑器打开
+                                    //goto editor page with file path
 
-                                //检查文件大小，如果太大，拒绝打开，考虑下大小设多少合适。
-                                // 如果是文本类型，用文本编辑器打开，其他类型弹窗提示用外部程序打开还是用文本编辑器打开
-                                //goto editor page with file path
+                                    //若匹配内部Editor关联文件类型，则打开
+                                    if(RegexUtil.matchWildcardList(it.name, settingsSnapshot.value.editor.fileAssociationList, ignoreCase = true)) {
+                                        //请求打开文件
+                                        val expectReadOnly = false
+                                        requireInnerEditorOpenFile(it.fullPath, expectReadOnly)
 
-                                //若匹配内部Editor关联文件类型，则打开
-                                if(RegexUtil.matchWildcardList(it.name, settingsSnapshot.value.editor.fileAssociationList, ignoreCase = true)) {
-                                    //请求打开文件
-                                    val expectReadOnly = false
-                                    requireInnerEditorOpenFile(it.fullPath, expectReadOnly)
+                                    }else {  //非关联类型，尝试用外部软件打开
 
-                                }else {  //非关联类型，尝试用外部软件打开
+                                        //已废弃：若文件在只读目录，默认以只读方式打开
+                                        //  readOnlyForOpenAsDialog.value = FsUtils.isReadOnlyDir(it.fullPath)
 
-                                    //已废弃：若文件在只读目录，默认以只读方式打开
-                                    //  readOnlyForOpenAsDialog.value = FsUtils.isReadOnlyDir(it.fullPath)
+                                        //猜测文件mime类型并打开，若失败，显示open as弹窗
 
-                                    //猜测文件mime类型并打开，若失败，显示open as弹窗
+                                        val hasExtension = it.name.contains(".")
 
-                                    val hasExtension = it.name.contains(".")
+                                        if(hasExtension) {  //有后缀名，根据后缀猜测文件类型
+                                            //猜测app mimeType
+                                            val mimeType = MimeType.guessFromFileName(it.name).intentType
 
-                                    if(hasExtension) {  //有后缀名，根据后缀猜测文件类型
-                                        //猜测app mimeType
-                                        val mimeType = MimeType.guessFromFileName(it.name).intentType
+                                            //无后缀的会返回 */*
+                                            MyLog.d(TAG, "fileName=${it.name}, guessed mimeType=$mimeType")
 
-                                        //无后缀的会返回 */*
-                                        MyLog.d(TAG, "fileName=${it.name}, guessed mimeType=$mimeType")
+                                            //请求外部打开（实际会显示支持此类型的app供用户选择）
+                                            val openSuccess = FsUtils.openFile(
+                                                activityContext,
+                                                it.toFile(),
+                                                mimeType,
+                                                readOnly = false
+                                            )
 
-                                        //请求外部打开（实际会显示支持此类型的app供用户选择）
-                                        val openSuccess = FsUtils.openFile(
-                                            activityContext,
-                                            it.toFile(),
-                                            mimeType,
-                                            readOnly = false
-                                        )
-
-                                        //若打开失败，显示弹窗，用户可选择具体以哪种类型打开
-                                        if (!openSuccess) {
+                                            //若打开失败，显示弹窗，用户可选择具体以哪种类型打开
+                                            if (!openSuccess) {
+                                                val showInnerEditor = true
+                                                initOpenAsDialog(it.fullPath, showInnerEditor)
+                                            }
+                                        }else { //无后缀名，让用户选择以哪种类型打开
                                             val showInnerEditor = true
                                             initOpenAsDialog(it.fullPath, showInnerEditor)
                                         }
-                                    }else { //无后缀名，让用户选择以哪种类型打开
-                                        val showInnerEditor = true
-                                        initOpenAsDialog(it.fullPath, showInnerEditor)
                                     }
-                                }
-                            } else {  // if(item.isDirectory) 点击目录，直接打开。
-                                //粘贴模式下点击被选中的文件夹无效，以免出现无限递归复制
-                                //导入模式不会选中PuppyGit app中的文件夹且所有文件夹都可点击，所以无需判断导入模式
-                                if(isPasteMode.value && isItemInSelected(it)) {
-                                    return@itemOnClick
-                                }
+                                } else {  // if(item.isDirectory) 点击目录，直接打开。
+                                    //粘贴模式下点击被选中的文件夹无效，以免出现无限递归复制
+                                    //导入模式不会选中PuppyGit app中的文件夹且所有文件夹都可点击，所以无需判断导入模式
+                                    if(isPasteMode.value && isItemInSelected(it)) {
+                                        return@itemOnClick
+                                    }
 
-                                //关闭过滤模式
+                                    //关闭过滤模式
 //                            filesPageFilterModeOff()
 
-                                filesPageSimpleFilterKeyWord.value = TextFieldValue("")  //清空过滤关键字
+                                    filesPageSimpleFilterKeyWord.value = TextFieldValue("")  //清空过滤关键字
 
-                                //打开目录
-                                currentPath.value = it.fullPath
-                                //更新面包屑，重组吧还是
+                                    //打开目录
+                                    currentPath.value = it.fullPath
+                                    //更新面包屑，重组吧还是
 //                                val willUpdateList = if(currentPathBreadCrumbList.intValue == 1) currentPathBreadCrumbList1 else currentPathBreadCrumbList2
 //                                willUpdateList.add(it)
-                                //刷新页面
-                                changeStateTriggerRefreshPage(needRefreshFilesPage)
+                                    //刷新页面
+                                    changeStateTriggerRefreshPage(needRefreshFilesPage)
+                                }
                             }
                         }
+
+                        HorizontalDivider()
                     }
-
-                    HorizontalDivider()
                 }
-            }
 
+            }
         }
+
     }
+
 
 
     //x 废弃，一旋转屏幕，弹窗也会关闭，所以无所谓) 这个应该用remember，因为屏幕一旋转，选中列表会被清空，所以，就算显示删除对话框，也不知道该删什么
