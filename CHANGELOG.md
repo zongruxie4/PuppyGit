@@ -4,11 +4,13 @@
 
 1.1.0.8v84 - 20250502:
 - re-design the Difference screen
+- adjust UI of Repo screen
 - fix few bugs
 
 
 
 - 重新设计差异页面
+- 仓库页面UI调整
 - 修复bug
 
 

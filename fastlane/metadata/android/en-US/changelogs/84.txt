@@ -1,2 +1,3 @@
 - re-design the Difference screen
+- adjust UI of Repo screen
 - fix few bugs
