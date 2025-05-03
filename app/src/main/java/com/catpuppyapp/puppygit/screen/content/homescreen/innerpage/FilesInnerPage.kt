@@ -90,6 +90,7 @@ import com.catpuppyapp.puppygit.compose.LoadingText
 import com.catpuppyapp.puppygit.compose.MyCheckBox
 import com.catpuppyapp.puppygit.compose.MyCheckBox2
 import com.catpuppyapp.puppygit.compose.MyLazyColumn
+import com.catpuppyapp.puppygit.compose.MyPullRefreshLazyColumn
 import com.catpuppyapp.puppygit.compose.MySelectionContainer
 import com.catpuppyapp.puppygit.compose.OpenAsDialog
 import com.catpuppyapp.puppygit.compose.ScrollableColumn
@@ -1494,7 +1495,10 @@ fun FilesInnerPage(
                 //更新是否启用filter
                 enableFilterState.value = enableFilter
 
-                MyLazyColumn(
+                MyPullRefreshLazyColumn(
+                    pull_isRefreshing = isLoading.value,
+                    pull_onRefresh = { changeStateTriggerRefreshPage(needRefreshFilesPage) },
+
                     contentPadding = PaddingValues(0.dp),  //外部padding了
                     list = currentPathFileList,
                     listState = listState,

@@ -49,6 +49,7 @@ import com.catpuppyapp.puppygit.compose.FilterTextField
 import com.catpuppyapp.puppygit.compose.ItemListIsEmpty
 import com.catpuppyapp.puppygit.compose.LoadingText
 import com.catpuppyapp.puppygit.compose.MySelectionContainer
+import com.catpuppyapp.puppygit.compose.PullToRefreshBox
 import com.catpuppyapp.puppygit.compose.RepoNameAndIdItem
 import com.catpuppyapp.puppygit.compose.SelectedUnSelectedDialog
 import com.catpuppyapp.puppygit.compose.SettingsContent
@@ -65,6 +66,7 @@ import com.catpuppyapp.puppygit.utils.AppModel
 import com.catpuppyapp.puppygit.utils.ComposeHelper
 import com.catpuppyapp.puppygit.utils.Msg
 import com.catpuppyapp.puppygit.utils.UIHelper
+import com.catpuppyapp.puppygit.utils.changeStateTriggerRefreshPage
 import com.catpuppyapp.puppygit.utils.doJobThenOffLoading
 import com.catpuppyapp.puppygit.utils.parseLongOrDefault
 import com.catpuppyapp.puppygit.utils.state.mutableCustomStateListOf
@@ -388,96 +390,102 @@ fun AutomationInnerPage(
     val itemLeftWidthForSwitcher = MyStyleKt.SettingsItem.itemLeftWidthForSwitcher
     val itemLeftWidthForSelector = MyStyleKt.SettingsItem.itemLeftWidthForSelector
 
-    LazyColumn(
-        modifier = Modifier
-            .fillMaxSize()
-        ,
+    PullToRefreshBox(
+        isRefreshing = false,
+        onRefresh = { changeStateTriggerRefreshPage(needRefreshPage) },
 
-        contentPadding = contentPadding,
-        state = listState,
     ) {
 
-        item {
-            SettingsContent(onClick = {
-                //跳转到无障碍服务页面
-                Msg.requireShowLongDuration(activityContext.getString(R.string.please_find_and_enable_disable_service_for_app))
+        LazyColumn(
+            modifier = Modifier
+                .fillMaxSize()
+            ,
 
-                ActivityUtil.openAccessibilitySettings(activityContext)
-            }) {
-                val runningStatus = runningStatus.value
-                Column(modifier = Modifier.fillMaxWidth(itemLeftWidthForSwitcher)) {
-                    Text(stringResource(R.string.status), fontSize = itemFontSize)
-                    Text(UIHelper.getRunningStateText(activityContext, runningStatus), fontSize = itemDescFontSize, fontWeight = FontWeight.Light, color = UIHelper.getRunningStateColor(runningStatus))
-                }
+            contentPadding = contentPadding,
+            state = listState,
+        ) {
 
-                Icon(
-                    modifier = Modifier.size(switcherIconSize),
-                    imageVector = UIHelper.getIconForSwitcher(runningStatus == true),
-                    contentDescription = UIHelper.getTextForSwitcher(activityContext, runningStatus),
-                    tint = UIHelper.getColorForSwitcher(runningStatus == true),
-                )
-            }
-        }
+            item {
+                SettingsContent(onClick = {
+                    //跳转到无障碍服务页面
+                    Msg.requireShowLongDuration(activityContext.getString(R.string.please_find_and_enable_disable_service_for_app))
 
-        item {
-            SettingsContent(onClick = {
-                val newValue = !progressNotify.value
+                    ActivityUtil.openAccessibilitySettings(activityContext)
+                }) {
+                    val runningStatus = runningStatus.value
+                    Column(modifier = Modifier.fillMaxWidth(itemLeftWidthForSwitcher)) {
+                        Text(stringResource(R.string.status), fontSize = itemFontSize)
+                        Text(UIHelper.getRunningStateText(activityContext, runningStatus), fontSize = itemDescFontSize, fontWeight = FontWeight.Light, color = UIHelper.getRunningStateColor(runningStatus))
+                    }
 
-                //save
-                progressNotify.value = newValue
-                SettingsUtil.update {
-                    it.automation.showNotifyWhenProgress = newValue
-                }
-            }) {
-                Column(modifier = Modifier.fillMaxWidth(itemLeftWidthForSwitcher)) {
-                    Text(stringResource(R.string.progress_notification), fontSize = itemFontSize)
-                }
-
-                Icon(
-                    modifier = Modifier.size(switcherIconSize),
-                    imageVector = UIHelper.getIconForSwitcher(progressNotify.value),
-                    contentDescription = if(progressNotify.value) stringResource(R.string.enable) else stringResource(R.string.disable),
-                    tint = UIHelper.getColorForSwitcher(progressNotify.value),
-                )
-            }
-
-
-        }
-
-        // pull interval
-        item {
-            SettingsContent(onClick = {
-                initPullIntervalOrPushDelayDialog(true)
-            }) {
-                Column {
-                    Text(stringResource(R.string.pull_interval), fontSize = itemFontSize)
-                    Text(pullIntervalInSec.value, fontSize = itemDescFontSize, fontWeight = FontWeight.Light)
+                    Icon(
+                        modifier = Modifier.size(switcherIconSize),
+                        imageVector = UIHelper.getIconForSwitcher(runningStatus == true),
+                        contentDescription = UIHelper.getTextForSwitcher(activityContext, runningStatus),
+                        tint = UIHelper.getColorForSwitcher(runningStatus == true),
+                    )
                 }
             }
 
-        }
+            item {
+                SettingsContent(onClick = {
+                    val newValue = !progressNotify.value
 
-        // push delay
-        item {
-            SettingsContent(onClick = {
-                initPullIntervalOrPushDelayDialog(false)
-            }) {
-                Column {
-                    Text(stringResource(R.string.push_delay), fontSize = itemFontSize)
-                    Text(pushDelayInSec.value, fontSize = itemDescFontSize, fontWeight = FontWeight.Light)
+                    //save
+                    progressNotify.value = newValue
+                    SettingsUtil.update {
+                        it.automation.showNotifyWhenProgress = newValue
+                    }
+                }) {
+                    Column(modifier = Modifier.fillMaxWidth(itemLeftWidthForSwitcher)) {
+                        Text(stringResource(R.string.progress_notification), fontSize = itemFontSize)
+                    }
+
+                    Icon(
+                        modifier = Modifier.size(switcherIconSize),
+                        imageVector = UIHelper.getIconForSwitcher(progressNotify.value),
+                        contentDescription = if(progressNotify.value) stringResource(R.string.enable) else stringResource(R.string.disable),
+                        tint = UIHelper.getColorForSwitcher(progressNotify.value),
+                    )
+                }
+
+
+            }
+
+            // pull interval
+            item {
+                SettingsContent(onClick = {
+                    initPullIntervalOrPushDelayDialog(true)
+                }) {
+                    Column {
+                        Text(stringResource(R.string.pull_interval), fontSize = itemFontSize)
+                        Text(pullIntervalInSec.value, fontSize = itemDescFontSize, fontWeight = FontWeight.Light)
+                    }
+                }
+
+            }
+
+            // push delay
+            item {
+                SettingsContent(onClick = {
+                    initPullIntervalOrPushDelayDialog(false)
+                }) {
+                    Column {
+                        Text(stringResource(R.string.push_delay), fontSize = itemFontSize)
+                        Text(pushDelayInSec.value, fontSize = itemDescFontSize, fontWeight = FontWeight.Light)
+                    }
                 }
             }
-        }
 
-        item {
-            SettingsContent(onClick = {
-                ActivityUtil.openUrl(activityContext, automationDocUrl)
-            }) {
-                Column {
-                    Text(stringResource(R.string.document), fontSize = itemFontSize)
+            item {
+                SettingsContent(onClick = {
+                    ActivityUtil.openUrl(activityContext, automationDocUrl)
+                }) {
+                    Column {
+                        Text(stringResource(R.string.document), fontSize = itemFontSize)
+                    }
                 }
             }
-        }
 
 //
 //        item {
@@ -529,177 +537,179 @@ fun AutomationInnerPage(
 //
 //        }
 
-        item {
-            Column(
-                modifier = Modifier
+            item {
+                Column(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(vertical = 20.dp, horizontal = 10.dp),
+
+                    horizontalAlignment = Alignment.CenterHorizontally,
+                    verticalArrangement = Arrangement.Center,
+                ) {
+                    Text(stringResource(R.string.app_list), fontSize = 30.sp, textAlign = TextAlign.Center)
+                    Spacer(Modifier.height(10.dp))
+                    Text(stringResource(R.string.will_auto_pull_push_linked_repos_when_selected_apps_enter_exit), textAlign = TextAlign.Center)
+                }
+
+            }
+
+            val addItemBarHeight = 40.dp
+            item {
+                Row(modifier = Modifier
                     .fillMaxWidth()
-                    .padding(vertical = 20.dp, horizontal = 10.dp),
+                    .padding(10.dp)) {
 
-                horizontalAlignment = Alignment.CenterHorizontally,
-                verticalArrangement = Arrangement.Center,
-            ) {
-                Text(stringResource(R.string.app_list), fontSize = 30.sp, textAlign = TextAlign.Center)
-                Spacer(Modifier.height(10.dp))
-                Text(stringResource(R.string.will_auto_pull_push_linked_repos_when_selected_apps_enter_exit), textAlign = TextAlign.Center)
-            }
-
-        }
-
-        val addItemBarHeight = 40.dp
-        item {
-            Row(modifier = Modifier
-                .fillMaxWidth()
-                .padding(10.dp)) {
-
-                //注意：这个过滤没开协程，直接在渲染线程过滤的，因为感觉用户应该不会装超过500个应用，就算真有500个，也很快就过滤完，所以感觉没必要加代码
-                //普通的过滤，加不加清空无所谓，一按返回就清空了，但这个常驻显示，得加个清空按钮
-                FilterTextField(filterKeyWord = appsFilterKeyword)
-            }
-
-        }
-
-        if(appListLoading.value){
-            item {
-                LoadingText(stringResource(R.string.loading), PaddingValues(top = addItemBarHeight+30.dp), enableScroll = false)
-            }
-        }
-
-        //根据关键字过滤条目
-        val k = appsFilterKeyword.value.text.lowercase()  //关键字
-        val enableFilter = maybeIsGoodKeyword(k)
-        val filteredAddedAppList = if(enableFilter){
-            val tmpList = filterApps(k, addedAppList.value)
-            tmpList
-        }else {
-            addedAppList.value
-        }
-
-        val filteredNotAddedAppList = if(enableFilter){
-            val tmpList = filterApps(k, notAddedAppList.value)
-            tmpList
-        }else {
-            notAddedAppList.value
-        }
-
-
-        // 旧版compose有bug，用else有可能会忽略条件，所以这里直接if判断下反条件
-        if(appListLoading.value.not()) {
-            item {
-                SettingsTitle(stringResource(R.string.selected_str)+"("+filteredAddedAppList.size+")")
-            }
-
-            if(filteredAddedAppList.isEmpty()) {
-                item {
-                    ItemListIsEmpty()
+                    //注意：这个过滤没开协程，直接在渲染线程过滤的，因为感觉用户应该不会装超过500个应用，就算真有500个，也很快就过滤完，所以感觉没必要加代码
+                    //普通的过滤，加不加清空无所谓，一按返回就清空了，但这个常驻显示，得加个清空按钮
+                    FilterTextField(filterKeyWord = appsFilterKeyword)
                 }
 
             }
 
-            if(filteredAddedAppList.isNotEmpty()) {
-                filteredAddedAppList.toList().forEach { appInfo ->
+            if(appListLoading.value){
+                item {
+                    LoadingText(stringResource(R.string.loading), PaddingValues(top = addItemBarHeight+30.dp), enableScroll = false)
+                }
+            }
+
+            //根据关键字过滤条目
+            val k = appsFilterKeyword.value.text.lowercase()  //关键字
+            val enableFilter = maybeIsGoodKeyword(k)
+            val filteredAddedAppList = if(enableFilter){
+                val tmpList = filterApps(k, addedAppList.value)
+                tmpList
+            }else {
+                addedAppList.value
+            }
+
+            val filteredNotAddedAppList = if(enableFilter){
+                val tmpList = filterApps(k, notAddedAppList.value)
+                tmpList
+            }else {
+                notAddedAppList.value
+            }
+
+
+            // 旧版compose有bug，用else有可能会忽略条件，所以这里直接if判断下反条件
+            if(appListLoading.value.not()) {
+                item {
+                    SettingsTitle(stringResource(R.string.selected_str)+"("+filteredAddedAppList.size+")")
+                }
+
+                if(filteredAddedAppList.isEmpty()) {
                     item {
-                        AppItem(
-                            appInfo = appInfo,
-                            trailIcons = {
-                                Row(
-                                    modifier = Modifier.fillMaxWidth(),
-                                    verticalAlignment = Alignment.CenterVertically,
-                                    horizontalArrangement = Arrangement.SpaceBetween
-                                ) {
-
-                                    Icon(
-                                        modifier=Modifier.clickable {
-                                            initSelectReposDialog(appInfo.packageName, appInfo.appName)
-                                        },
-                                        imageVector = Icons.Outlined.Settings,
-                                        contentDescription = stringResource(R.string.settings)
-                                    )
-
-                                    Icon(
-                                        modifier=Modifier.clickable {
-                                            addedAppList.value.remove(appInfo)
-
-                                            val tmp = notAddedAppList.value.toList()
-                                            //添加到未选中列表头部
-                                            notAddedAppList.value.clear()
-                                            notAddedAppList.value.add(appInfo)
-                                            notAddedAppList.value.addAll(tmp)
-
-                                            //保存，从列表移除
-                                            SettingsUtil.update {
-                                                it.automation.packageNameAndRepoIdsMap.remove(appInfo.packageName)
-                                            }
-                                        },
-                                        imageVector = Icons.Outlined.DeleteOutline,
-                                        contentDescription = stringResource(R.string.delete)
-                                    )
-                                }
-                            },
-                        )
-
-                        HorizontalDivider()
+                        ItemListIsEmpty()
                     }
 
                 }
+
+                if(filteredAddedAppList.isNotEmpty()) {
+                    filteredAddedAppList.toList().forEach { appInfo ->
+                        item {
+                            AppItem(
+                                appInfo = appInfo,
+                                trailIcons = {
+                                    Row(
+                                        modifier = Modifier.fillMaxWidth(),
+                                        verticalAlignment = Alignment.CenterVertically,
+                                        horizontalArrangement = Arrangement.SpaceBetween
+                                    ) {
+
+                                        Icon(
+                                            modifier=Modifier.clickable {
+                                                initSelectReposDialog(appInfo.packageName, appInfo.appName)
+                                            },
+                                            imageVector = Icons.Outlined.Settings,
+                                            contentDescription = stringResource(R.string.settings)
+                                        )
+
+                                        Icon(
+                                            modifier=Modifier.clickable {
+                                                addedAppList.value.remove(appInfo)
+
+                                                val tmp = notAddedAppList.value.toList()
+                                                //添加到未选中列表头部
+                                                notAddedAppList.value.clear()
+                                                notAddedAppList.value.add(appInfo)
+                                                notAddedAppList.value.addAll(tmp)
+
+                                                //保存，从列表移除
+                                                SettingsUtil.update {
+                                                    it.automation.packageNameAndRepoIdsMap.remove(appInfo.packageName)
+                                                }
+                                            },
+                                            imageVector = Icons.Outlined.DeleteOutline,
+                                            contentDescription = stringResource(R.string.delete)
+                                        )
+                                    }
+                                },
+                            )
+
+                            HorizontalDivider()
+                        }
+
+                    }
+                }
+
+
+                item {
+                    SettingsTitle(stringResource(R.string.unselected)+"("+filteredNotAddedAppList.size+")")
+                }
+
+                if(filteredNotAddedAppList.isEmpty()) {
+                    item {
+                        ItemListIsEmpty()
+                    }
+
+                }
+
+
+                if(filteredNotAddedAppList.isNotEmpty()) {
+                    filteredNotAddedAppList.toList().forEach { appInfo ->
+                        item {
+                            AppItem(
+                                appInfo = appInfo,
+                                trailIcons = {
+                                    Row(
+                                        modifier = Modifier.fillMaxWidth(),
+                                        verticalAlignment = Alignment.CenterVertically,
+                                        horizontalArrangement = Arrangement.End
+                                    ) {
+
+                                        Icon(
+                                            modifier=Modifier.clickable {
+                                                notAddedAppList.value.remove(appInfo)
+                                                //添加到已选中列表末尾
+                                                addedAppList.value.add(appInfo)
+
+                                                //保存，添加到列表
+                                                SettingsUtil.update {
+                                                    it.automation.packageNameAndRepoIdsMap.put(appInfo.packageName, listOf())
+                                                }
+                                            },
+                                            imageVector = Icons.Outlined.Add,
+                                            contentDescription = stringResource(R.string.add)
+                                        )
+                                    }
+
+                                },
+                            )
+
+                            HorizontalDivider()
+                        }
+                    }
+                }
             }
 
 
             item {
-                SettingsTitle(stringResource(R.string.unselected)+"("+filteredNotAddedAppList.size+")")
-            }
-
-            if(filteredNotAddedAppList.isEmpty()) {
-                item {
-                    ItemListIsEmpty()
-                }
-
-            }
-
-
-            if(filteredNotAddedAppList.isNotEmpty()) {
-                filteredNotAddedAppList.toList().forEach { appInfo ->
-                    item {
-                        AppItem(
-                            appInfo = appInfo,
-                            trailIcons = {
-                                Row(
-                                    modifier = Modifier.fillMaxWidth(),
-                                    verticalAlignment = Alignment.CenterVertically,
-                                    horizontalArrangement = Arrangement.End
-                                ) {
-
-                                    Icon(
-                                        modifier=Modifier.clickable {
-                                            notAddedAppList.value.remove(appInfo)
-                                            //添加到已选中列表末尾
-                                            addedAppList.value.add(appInfo)
-
-                                            //保存，添加到列表
-                                            SettingsUtil.update {
-                                                it.automation.packageNameAndRepoIdsMap.put(appInfo.packageName, listOf())
-                                            }
-                                        },
-                                        imageVector = Icons.Outlined.Add,
-                                        contentDescription = stringResource(R.string.add)
-                                    )
-                                }
-
-                            },
-                        )
-
-                        HorizontalDivider()
-                    }
-                }
+                //高点，不然输入包名后还得关键盘才看得到东西
+                Spacer(Modifier.height(screenHeightDp * 0.7f))
             }
         }
 
 
-        item {
-            //高点，不然输入包名后还得关键盘才看得到东西
-            Spacer(Modifier.height(screenHeightDp * 0.7f))
-        }
     }
-
 
     LaunchedEffect(needRefreshPage.value) {
         val newSettings = SettingsUtil.getSettingsSnapshot()

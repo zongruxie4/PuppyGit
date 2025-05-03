@@ -75,6 +75,7 @@ import com.catpuppyapp.puppygit.compose.LongPressAbleIconBtn
 import com.catpuppyapp.puppygit.compose.MySelectionContainer
 import com.catpuppyapp.puppygit.compose.OpenAsAskReloadDialog
 import com.catpuppyapp.puppygit.compose.OpenAsDialog
+import com.catpuppyapp.puppygit.compose.PullToRefreshBox
 import com.catpuppyapp.puppygit.compose.ReadOnlyIcon
 import com.catpuppyapp.puppygit.compose.ScrollableColumn
 import com.catpuppyapp.puppygit.compose.ScrollableRow
@@ -1254,84 +1255,88 @@ fun DiffScreen(
         val loadingOffParent=loadingOff
         val enableSelectCompare = enableSelectCompare.value;
 
-        MySelectionContainer {
-            LazyColumn(
-                modifier = Modifier.fillMaxSize(),
-                contentPadding = contentPadding,
-                state = listState
-            ) {
-                val diffableItemList = diffableItemList.value
+        PullToRefreshBox(
+            isRefreshing = false,
+            onRefresh = { changeStateTriggerRefreshPage(needRefresh) }
+        ) {
+            MySelectionContainer {
+                LazyColumn(
+                    modifier = Modifier.fillMaxSize(),
+                    contentPadding = contentPadding,
+                    state = listState
+                ) {
+                    val diffableItemList = diffableItemList.value
 //                val itemIdxAtLazyColumn_Map = itemIdxAtLazyColumn_Map.value
 //                itemIdxAtLazyColumn_Map.clear()  //没必要清，存在的路径每次循环都会覆盖，不存在的路径也不可能跳转，所以，没必要清
 //                val itemsCount = IntBox(0)  //别用state系列变量，会死循环
 //                println("itemsCount.intValue: ${itemsCount.intValue}")
-                for((idx, diffableItem) in diffableItemList.toList().withIndex()) {
-                    if(isSingleMode && idx != curItemIndex.intValue) continue;
+                    for((idx, diffableItem) in diffableItemList.toList().withIndex()) {
+                        if(isSingleMode && idx != curItemIndex.intValue) continue;
 
-                    val diffItem = diffableItem.diffItemSaver
-                    val changeType = diffableItem.changeType
-                    val visible = diffableItem.visible
-                    val diffableItemFile = diffableItem.toFile()
-                    val relativePath = diffableItem.relativePath
+                        val diffItem = diffableItem.diffItemSaver
+                        val changeType = diffableItem.changeType
+                        val visible = diffableItem.visible
+                        val diffableItemFile = diffableItem.toFile()
+                        val relativePath = diffableItem.relativePath
 
-                    // 启用了只读模式，或者当前文件不存在（不存在无法编辑，所以启用只读）
-                    val readOnlyModeOn = readOnlyModeOn.value || !diffableItemFile.exists();
+                        // 启用了只读模式，或者当前文件不存在（不存在无法编辑，所以启用只读）
+                        val readOnlyModeOn = readOnlyModeOn.value || !diffableItemFile.exists();
 
-                    val switchVisible = {
-                        val newVisible = visible.not()
-                        //切换条目
-                        diffableItemList[idx] = diffableItem.copy(visible = newVisible)
+                        val switchVisible = {
+                            val newVisible = visible.not()
+                            //切换条目
+                            diffableItemList[idx] = diffableItem.copy(visible = newVisible)
 
-                        //如果展开当前条目 且 当前条目未加载则加载(懒加载)
-                        if(newVisible && diffableItem.neverLoadedDifferences()) {
-                            requireRefreshSubList(listOf(idx))
+                            //如果展开当前条目 且 当前条目未加载则加载(懒加载)
+                            if(newVisible && diffableItem.neverLoadedDifferences()) {
+                                requireRefreshSubList(listOf(idx))
+                            }
                         }
-                    }
 
 
-                    val iconSize = MenuIconBtnItem.defaultIconSize
-                    val pressedCircleSize = MenuIconBtnItem.defaultPressedCircleSize
+                        val iconSize = MenuIconBtnItem.defaultIconSize
+                        val pressedCircleSize = MenuIconBtnItem.defaultPressedCircleSize
 
-                    //这header得调一下，左边加个箭头点击能收起
-                    if (showMyFileHeader) {
+                        //这header得调一下，左边加个箭头点击能收起
+                        if (showMyFileHeader) {
 
-                        // item里最好就一个root组件，还有，如果使用HorizontalDivider，最好将其放到单独item里，否则有可能崩溃
-                        // item里最好就一个root组件，还有，如果使用HorizontalDivider，最好将其放到单独item里，否则有可能崩溃
-                        // item里最好就一个root组件，还有，如果使用HorizontalDivider，最好将其放到单独item里，否则有可能崩溃
-                        // item里最好就一个root组件，还有，如果使用HorizontalDivider，最好将其放到单独item里，否则有可能崩溃
-                        // item里最好就一个root组件，还有，如果使用HorizontalDivider，最好将其放到单独item里，否则有可能崩溃
-                        // item里最好就一个root组件，还有，如果使用HorizontalDivider，最好将其放到单独item里，否则有可能崩溃
-                        // item里最好就一个root组件，还有，如果使用HorizontalDivider，最好将其放到单独item里，否则有可能崩溃
-                        // item里最好就一个root组件，还有，如果使用HorizontalDivider，最好将其放到单独item里，否则有可能崩溃
-                        // item里最好就一个root组件，还有，如果使用HorizontalDivider，最好将其放到单独item里，否则有可能崩溃
-                        // item里最好就一个root组件，还有，如果使用HorizontalDivider，最好将其放到单独item里，否则有可能崩溃
-                        // item里最好就一个root组件，还有，如果使用HorizontalDivider，最好将其放到单独item里，否则有可能崩溃
-                        // item里最好就一个root组件，还有，如果使用HorizontalDivider，最好将其放到单独item里，否则有可能崩溃
-                        // item里最好就一个root组件，还有，如果使用HorizontalDivider，最好将其放到单独item里，否则有可能崩溃
+                            // item里最好就一个root组件，还有，如果使用HorizontalDivider，最好将其放到单独item里，否则有可能崩溃
+                            // item里最好就一个root组件，还有，如果使用HorizontalDivider，最好将其放到单独item里，否则有可能崩溃
+                            // item里最好就一个root组件，还有，如果使用HorizontalDivider，最好将其放到单独item里，否则有可能崩溃
+                            // item里最好就一个root组件，还有，如果使用HorizontalDivider，最好将其放到单独item里，否则有可能崩溃
+                            // item里最好就一个root组件，还有，如果使用HorizontalDivider，最好将其放到单独item里，否则有可能崩溃
+                            // item里最好就一个root组件，还有，如果使用HorizontalDivider，最好将其放到单独item里，否则有可能崩溃
+                            // item里最好就一个root组件，还有，如果使用HorizontalDivider，最好将其放到单独item里，否则有可能崩溃
+                            // item里最好就一个root组件，还有，如果使用HorizontalDivider，最好将其放到单独item里，否则有可能崩溃
+                            // item里最好就一个root组件，还有，如果使用HorizontalDivider，最好将其放到单独item里，否则有可能崩溃
+                            // item里最好就一个root组件，还有，如果使用HorizontalDivider，最好将其放到单独item里，否则有可能崩溃
+                            // item里最好就一个root组件，还有，如果使用HorizontalDivider，最好将其放到单独item里，否则有可能崩溃
+                            // item里最好就一个root组件，还有，如果使用HorizontalDivider，最好将其放到单独item里，否则有可能崩溃
+                            // item里最好就一个root组件，还有，如果使用HorizontalDivider，最好将其放到单独item里，否则有可能崩溃
 
-                        item {
+                            item {
 //                            itemsCount.intValue++
 
 //                            itemIdxAtLazyColumn_Map.put(relativePath, itemsCount.intValue)
-                            val moreMenuExpandState = remember { mutableStateOf(false) }
-                            // x 放弃，不写footer了）把这个抽成 infobar，footer用同样的样式写
-                            // LazyColumn里不能用rememberSaveable，会崩，用remember也有可能会不触发刷新，除非改外部的list触发遍历
-                            BarContainer(
-                                modifier = Modifier
-                                    .onGloballyPositioned { layoutCoordinates ->
-                                        if(visible) {
-                                            val position = layoutCoordinates.positionInRoot()
-                                            //从屏幕上方消失了，就表示在看这个条目
-                                            if(position.y < 0) {
-                                                updateCurrentViewingIdx(idx)
+                                val moreMenuExpandState = remember { mutableStateOf(false) }
+                                // x 放弃，不写footer了）把这个抽成 infobar，footer用同样的样式写
+                                // LazyColumn里不能用rememberSaveable，会崩，用remember也有可能会不触发刷新，除非改外部的list触发遍历
+                                BarContainer(
+                                    modifier = Modifier
+                                        .onGloballyPositioned { layoutCoordinates ->
+                                            if(visible) {
+                                                val position = layoutCoordinates.positionInRoot()
+                                                //从屏幕上方消失了，就表示在看这个条目
+                                                if(position.y < 0) {
+                                                    updateCurrentViewingIdx(idx)
+                                                }
                                             }
                                         }
-                                    }
-                                ,
-                                onClick = switchVisible,
-                                showMoreIcon = true,
-                                moreMenuExpandState = moreMenuExpandState,
-                                moreMenuItems = (if(fromScreen == DiffFromScreen.HOME_CHANGELIST) {
+                                    ,
+                                    onClick = switchVisible,
+                                    showMoreIcon = true,
+                                    moreMenuExpandState = moreMenuExpandState,
+                                    moreMenuItems = (if(fromScreen == DiffFromScreen.HOME_CHANGELIST) {
                                         mutableListOf(
                                             MenuTextItem(
                                                 text = stringResource(R.string.stage),
@@ -1360,7 +1365,7 @@ fun DiffScreen(
                                         )
                                     }else {
                                         mutableListOf<MenuTextItem>()
-                                }).apply {
+                                    }).apply {
                                         add(
                                             //每个页面都显示导出patch
                                             MenuTextItem(
@@ -1370,149 +1375,149 @@ fun DiffScreen(
                                                 }
                                             )
                                         )
-                                },
-                                actions = listOf(
-                                    // refresh
-                                    MenuIconBtnItem(
-                                        icon = Icons.Filled.Refresh,
-                                        text = stringResource(R.string.refresh),
-                                        onClick = {
-                                            //点刷新若条目没展开，会展开
-                                            //不需要在这设置，加载子列表时会设置
+                                    },
+                                    actions = listOf(
+                                        // refresh
+                                        MenuIconBtnItem(
+                                            icon = Icons.Filled.Refresh,
+                                            text = stringResource(R.string.refresh),
+                                            onClick = {
+                                                //点刷新若条目没展开，会展开
+                                                //不需要在这设置，加载子列表时会设置
 //                                                   val newItem = diffableItem.copy(visible = true)
 //                                                   diffableItemList[idx] = newItem
 
-                                            requireRefreshSubList(listOf(idx))
-                                        }
-                                    ),
-
-                                    // open
-                                    MenuIconBtnItem(
-                                        icon = Icons.Filled.FileOpen,
-                                        text = stringResource(R.string.open),
-                                        onClick = {
-                                            openFileWithInnerSubPageEditor(diffableItem.fullPath)
-                                        }
-                                    ),
-
-                                    // open as
-                                    MenuIconBtnItem(
-                                        icon = Icons.AutoMirrored.Filled.OpenInNew,
-                                        text = stringResource(R.string.open_as),
-                                        onClick = {
-                                            initOpenAsDialog(idx)
-                                        }
-                                    ),
-
-                                ),
-                            ) {
-                                val loadedAtLeastOnce = diffableItem.maybeLoadedAtLeastOnce()
-                                val colorOfChangeType = UIHelper.getChangeTypeColor(changeType)
-
-                                Row(
-                                    modifier = Modifier.widthIn(max = fileTitleFileNameWidthLimit),
-                                    verticalAlignment = Alignment.CenterVertically,
-                                ) {
-
-                                    //收起/展开 的箭头图标
-                                    InLineIcon(
-                                        iconModifier = Modifier.size(iconSize),
-                                        pressedCircleSize = pressedCircleSize,
-                                        icon = if(visible) Icons.Filled.ArrowDropDown else Icons.AutoMirrored.Filled.ArrowRight ,
-                                        tooltipText = "",
-                                    )
-
-
-                                    Column {
-                                        //标题：显示文件名、添加了几行、删除了几行
-                                        ScrollableRow(
-                                            //点击文件名显示详情
-                                            //确保最小可点击范围，这个不能放到外面的row里，外面的row还算了下面添加删除行的长度，多半会超，所以就没意义了
-                                            modifier = Modifier.clickable { initDetailsDialog(idx) }.widthIn(min = MyStyleKt.Title.clickableTitleMinWidth),
-                                        ) {
-                                            //显示：“文件名: +添加的行数, -删除的行数"，例如： "abc.txt: +1, -10"
-
-
-                                            //如果只读，显示个图标让用户知道只读
-                                            if(readOnlyModeOn) {
-                                                ReadOnlyIcon()
+                                                requireRefreshSubList(listOf(idx))
                                             }
+                                        ),
+
+                                        // open
+                                        MenuIconBtnItem(
+                                            icon = Icons.Filled.FileOpen,
+                                            text = stringResource(R.string.open),
+                                            onClick = {
+                                                openFileWithInnerSubPageEditor(diffableItem.fullPath)
+                                            }
+                                        ),
+
+                                        // open as
+                                        MenuIconBtnItem(
+                                            icon = Icons.AutoMirrored.Filled.OpenInNew,
+                                            text = stringResource(R.string.open_as),
+                                            onClick = {
+                                                initOpenAsDialog(idx)
+                                            }
+                                        ),
+
+                                        ),
+                                ) {
+                                    val loadedAtLeastOnce = diffableItem.maybeLoadedAtLeastOnce()
+                                    val colorOfChangeType = UIHelper.getChangeTypeColor(changeType)
+
+                                    Row(
+                                        modifier = Modifier.widthIn(max = fileTitleFileNameWidthLimit),
+                                        verticalAlignment = Alignment.CenterVertically,
+                                    ) {
+
+                                        //收起/展开 的箭头图标
+                                        InLineIcon(
+                                            iconModifier = Modifier.size(iconSize),
+                                            pressedCircleSize = pressedCircleSize,
+                                            icon = if(visible) Icons.Filled.ArrowDropDown else Icons.AutoMirrored.Filled.ArrowRight ,
+                                            tooltipText = "",
+                                        )
 
 
-                                            Text(
-                                                text = diffableItem.fileName,
-                                                fontSize = titleFileNameFontSize,
-                                                color = colorOfChangeType,
-                                            )
-                                        }
+                                        Column {
+                                            //标题：显示文件名、添加了几行、删除了几行
+                                            ScrollableRow(
+                                                //点击文件名显示详情
+                                                //确保最小可点击范围，这个不能放到外面的row里，外面的row还算了下面添加删除行的长度，多半会超，所以就没意义了
+                                                modifier = Modifier.clickable { initDetailsDialog(idx) }.widthIn(min = MyStyleKt.Title.clickableTitleMinWidth),
+                                            ) {
+                                                //显示：“文件名: +添加的行数, -删除的行数"，例如： "abc.txt: +1, -10"
 
-                                        //相对路径的父路径，若直接在仓库根目录则不显示，否则显示
-                                        if(diffableItem.atRootOfWorkDir().not()) {
-                                            ScrollableRow {
+
+                                                //如果只读，显示个图标让用户知道只读
+                                                if(readOnlyModeOn) {
+                                                    ReadOnlyIcon()
+                                                }
+
+
                                                 Text(
-                                                    text = diffableItem.fileParentPathOfRelativePath,
-                                                    fontSize = titleRelativePathFontSize,
+                                                    text = diffableItem.fileName,
+                                                    fontSize = titleFileNameFontSize,
                                                     color = colorOfChangeType,
                                                 )
                                             }
-                                        }
 
-
-                                        //如果加载过，则显示添加删除了多少行
-                                        if(loadedAtLeastOnce) {
-                                            ScrollableRow {
-                                                Text(
-                                                    fontSize = titleRelativePathFontSize,
-                                                    text = buildAnnotatedString {
-                                                        withStyle(style = SpanStyle(color = Theme.mdGreen)) { append("+"+diffItem.addedLines) }
-                                                        append(", ")
-                                                        withStyle(style = SpanStyle(color = Theme.mdRed)) { append("-"+diffItem.deletedLines) }
-                                                    }
-                                                )
+                                            //相对路径的父路径，若直接在仓库根目录则不显示，否则显示
+                                            if(diffableItem.atRootOfWorkDir().not()) {
+                                                ScrollableRow {
+                                                    Text(
+                                                        text = diffableItem.fileParentPathOfRelativePath,
+                                                        fontSize = titleRelativePathFontSize,
+                                                        color = colorOfChangeType,
+                                                    )
+                                                }
                                             }
+
+
+                                            //如果加载过，则显示添加删除了多少行
+                                            if(loadedAtLeastOnce) {
+                                                ScrollableRow {
+                                                    Text(
+                                                        fontSize = titleRelativePathFontSize,
+                                                        text = buildAnnotatedString {
+                                                            withStyle(style = SpanStyle(color = Theme.mdGreen)) { append("+"+diffItem.addedLines) }
+                                                            append(", ")
+                                                            withStyle(style = SpanStyle(color = Theme.mdRed)) { append("-"+diffItem.deletedLines) }
+                                                        }
+                                                    )
+                                                }
+                                            }
+
                                         }
-
                                     }
-                                }
 
+                                }
                             }
                         }
-                    }
 
-                    //不显示的话，后面就不用管了，让用户看个标题栏就行
-                    if(!visible) {
-                        continue
-                    }
+                        //不显示的话，后面就不用管了，让用户看个标题栏就行
+                        if(!visible) {
+                            continue
+                        }
 
 
 
 //                    val mapKey = relativePath
 
-                    //没diff条目的话，可能正在loading？
-                    //就算没diff条目，也改显示个标题，证明有这么个条目存在
+                        //没diff条目的话，可能正在loading？
+                        //就算没diff条目，也改显示个标题，证明有这么个条目存在
 
-                    val isSubmodule = diffableItem.itemType == Cons.gitItemTypeSubmodule
-                    val errMsg = diffableItem.errMsg
-                    val submoduleIsDirty = diffableItem.submoduleIsDirty
-                    val loading = diffableItem.loading
-                    val loadChannel = diffableItem.loadChannel
-                    val fileChangeTypeIsModified = changeType == Cons.gitStatusModified
-
-
-                    //判断是否是支持预览的修改类型
-                    // 注意：冲突条目不能diff，会提示unmodified！所以支持预览冲突条目没意义，若支持的话，在当前判断条件后追加后面的代码即可: `|| changeType == Cons.gitStatusConflict`
-                    val isSupportedChangeType = (
-                            changeType == Cons.gitStatusModified
-                                    || changeType == Cons.gitStatusNew
-                                    || changeType == Cons.gitStatusDeleted
-                                    || changeType == Cons.gitStatusTypechanged  // e.g. submodule folder path change to a file, will show type changed, view this is ok
-                    )
+                        val isSubmodule = diffableItem.itemType == Cons.gitItemTypeSubmodule
+                        val errMsg = diffableItem.errMsg
+                        val submoduleIsDirty = diffableItem.submoduleIsDirty
+                        val loading = diffableItem.loading
+                        val loadChannel = diffableItem.loadChannel
+                        val fileChangeTypeIsModified = changeType == Cons.gitStatusModified
 
 
-                    // only check when local as diff right(xxx..local)
-                    // 若是文件且存在则启用
-                    //用来检测是否启用 行点击菜单，但当时名字没起好，所以就叫这名了
-                    val enableLineEditActions = if(localAtDiffRight.not() || readOnlyModeOn || isSubmodule || (changeType != Cons.gitStatusNew && changeType != Cons.gitStatusModified)) {
+                        //判断是否是支持预览的修改类型
+                        // 注意：冲突条目不能diff，会提示unmodified！所以支持预览冲突条目没意义，若支持的话，在当前判断条件后追加后面的代码即可: `|| changeType == Cons.gitStatusConflict`
+                        val isSupportedChangeType = (
+                                changeType == Cons.gitStatusModified
+                                        || changeType == Cons.gitStatusNew
+                                        || changeType == Cons.gitStatusDeleted
+                                        || changeType == Cons.gitStatusTypechanged  // e.g. submodule folder path change to a file, will show type changed, view this is ok
+                                )
+
+
+                        // only check when local as diff right(xxx..local)
+                        // 若是文件且存在则启用
+                        //用来检测是否启用 行点击菜单，但当时名字没起好，所以就叫这名了
+                        val enableLineEditActions = if(localAtDiffRight.not() || readOnlyModeOn || isSubmodule || (changeType != Cons.gitStatusNew && changeType != Cons.gitStatusModified)) {
                             false
                         }else {
                             //存在且是文件且不匹配if里不能编辑的情况，就能编辑
@@ -1524,216 +1529,386 @@ fun DiffScreen(
 
 
 
-                    val loadingFinishedButHasErr = (loading.not() && errMsg.isNotBlank())
-                    val unsupportedChangeType = !isSupportedChangeType
-                    val isBinary = diffItem?.flags?.contains(Diff.FlagT.BINARY) ?: false
-                    val fileNoChange = !(diffItem?.isFileModified ?: false)
+                        val loadingFinishedButHasErr = (loading.not() && errMsg.isNotBlank())
+                        val unsupportedChangeType = !isSupportedChangeType
+                        val isBinary = diffItem?.flags?.contains(Diff.FlagT.BINARY) ?: false
+                        val fileNoChange = !(diffItem?.isFileModified ?: false)
 
-                    // {key: line.key, value:CompareLinePairResult}
-                    //只要比较过，就一定有 CompareLinePairResult 这个对象，但不代表匹配成功，若 CompareLinePairResult 存的stringpartlist不为null，则匹配成功，否则匹配失败
-                    val indexStringPartListMapForComparePair = diffableItem.stringPairMap
+                        // {key: line.key, value:CompareLinePairResult}
+                        //只要比较过，就一定有 CompareLinePairResult 这个对象，但不代表匹配成功，若 CompareLinePairResult 存的stringpartlist不为null，则匹配成功，否则匹配失败
+                        val indexStringPartListMapForComparePair = diffableItem.stringPairMap
 //    val comparePair = mutableCustomStateOf(stateKeyTag, "comparePair") {CompareLinePair()}
-                    val comparePairBuffer = diffableItem.compareLinePair
+                        val comparePairBuffer = diffableItem.compareLinePair
 
-                    val isContentSizeOverLimit = diffItem?.isContentSizeOverLimit == true
-                    //不支持预览二进制文件、超出限制大小、文件未修改
-                    if (loadingFinishedButHasErr || unsupportedChangeType || loading || isBinary || isContentSizeOverLimit || fileNoChange) {
-                        item {
+                        val isContentSizeOverLimit = diffItem?.isContentSizeOverLimit == true
+                        //不支持预览二进制文件、超出限制大小、文件未修改
+                        if (loadingFinishedButHasErr || unsupportedChangeType || loading || isBinary || isContentSizeOverLimit || fileNoChange) {
+                            item {
 //                            itemsCount.intValue++
 
-                            DisableSelection {
-                                Column(
-                                    modifier = Modifier
-                                        .padding(10.dp)
-                                        .fillMaxWidth()
-                                        .height(200.dp)
-                                    ,
-                                    verticalArrangement = Arrangement.Center,
-                                    horizontalAlignment = Alignment.CenterHorizontally,
-                                ) {
-                                    MySelectionContainer {
-                                        Row {
-                                            if (loadingFinishedButHasErr) {
-                                                Text(text = errMsg, color = MyStyleKt.TextColor.error())
-                                            } else if (unsupportedChangeType) {
-                                                Text(text = stringResource(R.string.unknown_change_type))
-                                            } else if (loading) {
-                                                Text(stringResource(R.string.loading))
-                                            } else if (isBinary) {
-                                                Text(stringResource(R.string.doesnt_support_view_binary_file))
-                                            } else if (isContentSizeOverLimit) {
-                                                Text(text = stringResource(R.string.content_size_over_limit) + "(" + getHumanReadableSizeStr(settings.diff.diffContentSizeMaxLimit) + ")")
-                                            } else if (fileNoChange) {
-                                                if (isSubmodule && submoduleIsDirty) {  // submodule no diff for shown, give user a hint
-                                                    Text(stringResource(R.string.submodule_is_dirty_note))
-                                                } else {
-                                                    Text(stringResource(R.string.the_file_has_not_changed))
+                                DisableSelection {
+                                    Column(
+                                        modifier = Modifier
+                                            .padding(10.dp)
+                                            .fillMaxWidth()
+                                            .height(200.dp)
+                                        ,
+                                        verticalArrangement = Arrangement.Center,
+                                        horizontalAlignment = Alignment.CenterHorizontally,
+                                    ) {
+                                        MySelectionContainer {
+                                            Row {
+                                                if (loadingFinishedButHasErr) {
+                                                    Text(text = errMsg, color = MyStyleKt.TextColor.error())
+                                                } else if (unsupportedChangeType) {
+                                                    Text(text = stringResource(R.string.unknown_change_type))
+                                                } else if (loading) {
+                                                    Text(stringResource(R.string.loading))
+                                                } else if (isBinary) {
+                                                    Text(stringResource(R.string.doesnt_support_view_binary_file))
+                                                } else if (isContentSizeOverLimit) {
+                                                    Text(text = stringResource(R.string.content_size_over_limit) + "(" + getHumanReadableSizeStr(settings.diff.diffContentSizeMaxLimit) + ")")
+                                                } else if (fileNoChange) {
+                                                    if (isSubmodule && submoduleIsDirty) {  // submodule no diff for shown, give user a hint
+                                                        Text(stringResource(R.string.submodule_is_dirty_note))
+                                                    } else {
+                                                        Text(stringResource(R.string.the_file_has_not_changed))
+                                                    }
                                                 }
                                             }
+
                                         }
 
+                                        Spacer(Modifier.height(100.dp))
                                     }
-
-                                    Spacer(Modifier.height(100.dp))
                                 }
                             }
-                        }
 
-                        if(isSingleMode) {
-                            item {
+                            if(isSingleMode) {
+                                item {
 //                                itemsCount.intValue++
 
-                                DisableSelection{
-                                    NaviButton(
-                                        stateKeyTag = stateKeyTag,
+                                    DisableSelection{
+                                        NaviButton(
+                                            stateKeyTag = stateKeyTag,
 
-                                        isMultiMode = isMultiMode,
-                                        fromScreen = fromScreen,
+                                            isMultiMode = isMultiMode,
+                                            fromScreen = fromScreen,
 //                                        activityContext = activityContext,
 //                                        curRepo = curRepo.value,
-                                        diffableItemList = diffableItemList,
-                                        curItemIndex = curItemIndex,
-                                        switchItem = switchItem,
-                                        fromTo = fromTo,
-                                        naviUp = naviUp,
-                                        lastClickedItemKey = lastClickedItemKey,
-                                        pageRequest = pageRequest,
+                                            diffableItemList = diffableItemList,
+                                            curItemIndex = curItemIndex,
+                                            switchItem = switchItem,
+                                            fromTo = fromTo,
+                                            naviUp = naviUp,
+                                            lastClickedItemKey = lastClickedItemKey,
+                                            pageRequest = pageRequest,
 //                                        revertItem = revertItem,
 //                                        unstageItem = unstageItem,
-                                        stageItem = stageItem,
-                                        initRevertDialog = initRevertDialog,
-                                        initUnstageDialog = initUnstageDialog
-                                    )
+                                            stageItem = stageItem,
+                                            initRevertDialog = initRevertDialog,
+                                            initUnstageDialog = initUnstageDialog
+                                        )
 
-                                    Spacer(Modifier.height(100.dp))
+                                        Spacer(Modifier.height(100.dp))
 
+                                    }
                                 }
-                            }
 
-                        }
-                    } else {  //文本类型且没超过大小且文件修改过，正常显示diff信息
-                        // show a notice make user know submodule has uncommitted changes
-                        if (submoduleIsDirty) {
-                            item {
+                            }
+                        } else {  //文本类型且没超过大小且文件修改过，正常显示diff信息
+                            // show a notice make user know submodule has uncommitted changes
+                            if (submoduleIsDirty) {
+                                item {
 //                                itemsCount.intValue++
 
-                                Row(
-                                    modifier = Modifier.fillMaxWidth(),
-                                    horizontalArrangement = Arrangement.Center,
-                                    verticalAlignment = Alignment.CenterVertically
+                                    Row(
+                                        modifier = Modifier.fillMaxWidth(),
+                                        horizontalArrangement = Arrangement.Center,
+                                        verticalAlignment = Alignment.CenterVertically
 
-                                ) {
-                                    Text(stringResource(R.string.submodule_is_dirty_note_short), fontWeight = FontWeight.Light, fontStyle = FontStyle.Italic)
+                                    ) {
+                                        Text(stringResource(R.string.submodule_is_dirty_note_short), fontWeight = FontWeight.Light, fontStyle = FontStyle.Italic)
+                                    }
                                 }
                             }
-                        }
 
-                        if (diffItem.hunks.isEmpty()) {
-                            item {
+                            if (diffItem.hunks.isEmpty()) {
+                                item {
 //                                itemsCount.intValue++
 
-                                Row(
-                                    modifier = Modifier
-                                        .fillMaxSize()
-                                        .padding(vertical = 100.dp),
-                                    horizontalArrangement = Arrangement.Center,
-                                    verticalAlignment = Alignment.CenterVertically
+                                    Row(
+                                        modifier = Modifier
+                                            .fillMaxSize()
+                                            .padding(vertical = 100.dp),
+                                        horizontalArrangement = Arrangement.Center,
+                                        verticalAlignment = Alignment.CenterVertically
 
-                                ) {
-                                    Text(stringResource(R.string.file_is_empty), fontWeight = FontWeight.Light, fontStyle = FontStyle.Italic)
+                                    ) {
+                                        Text(stringResource(R.string.file_is_empty), fontWeight = FontWeight.Light, fontStyle = FontStyle.Italic)
+                                    }
                                 }
-                            }
-                        } else {
-                            val groupDiffContentByLineNum = groupDiffContentByLineNum.value
-                            val itemFile = File(curRepo.value.fullSavePath, relativePath)
-                            val fileFullPath = itemFile.canonicalPath
+                            } else {
+                                val groupDiffContentByLineNum = groupDiffContentByLineNum.value
+                                val itemFile = File(curRepo.value.fullSavePath, relativePath)
+                                val fileFullPath = itemFile.canonicalPath
 
-                            val showOriginType = showOriginType.value
-                            val showLineNum = showLineNum.value
-                            val fontSize = fontSize.value
-                            val lastHunkIndex = diffItem.hunks.size - 1;
-                            val lineNumSize = lineNumFontSize.intValue
-                            val getComparePairBuffer = { diffableItem.compareLinePair }
-                            val setComparePairBuffer = { newCompareLinePair:CompareLinePair ->
-                                diffableItemList[idx] = diffableItemList[idx].copy(compareLinePair = newCompareLinePair)
-                            }
+                                val showOriginType = showOriginType.value
+                                val showLineNum = showLineNum.value
+                                val fontSize = fontSize.value
+                                val lastHunkIndex = diffItem.hunks.size - 1;
+                                val lineNumSize = lineNumFontSize.intValue
+                                val getComparePairBuffer = { diffableItem.compareLinePair }
+                                val setComparePairBuffer = { newCompareLinePair:CompareLinePair ->
+                                    diffableItemList[idx] = diffableItemList[idx].copy(compareLinePair = newCompareLinePair)
+                                }
 
-                            val reForEachDiffContent = {reForEachDiffContent(relativePath)}
-                            // modified，并且设置项启用，则启用
-                            val enableSelectCompare = changeType == Cons.gitStatusModified && enableSelectCompare;
-                            // 设置项启用则启用，不管文件类型，就算是删除的文件也可使用菜单的拷贝功能，之前判断不是修改就禁用
+                                val reForEachDiffContent = {reForEachDiffContent(relativePath)}
+                                // modified，并且设置项启用，则启用
+                                val enableSelectCompare = changeType == Cons.gitStatusModified && enableSelectCompare;
+                                // 设置项启用则启用，不管文件类型，就算是删除的文件也可使用菜单的拷贝功能，之前判断不是修改就禁用
 //                            val enableSelectCompare = enableSelectCompare.value;
 
-                            //顶部padding，要把这个颜色弄得和当前行的类型（context/add/del）弄得一样才不违和，但处理起来有点麻烦，算了
+                                //顶部padding，要把这个颜色弄得和当前行的类型（context/add/del）弄得一样才不违和，但处理起来有点麻烦，算了
 //                    item { Spacer(Modifier.height(3.dp)) }
 
-                            //数据结构是一个hunk header N 个行
-                            diffItem.hunks.forEachIndexed { hunkIndex, hunkAndLines: PuppyHunkAndLines ->
-                                if (fileChangeTypeIsModified && proFeatureEnabled(detailsDiffTestPassed)) {  //增量diff
-                                    if (!groupDiffContentByLineNum || FlagFileName.flagFileExist(FlagFileName.disableGroupDiffContentByLineNum)) {
-                                        //this method need use some caches, clear them before iterate lines
-                                        //这种方式需要使用缓存，每次遍历lines前都需要先清下缓存，否则可能多显示或少显示某些行
-                                        hunkAndLines.clearCachesForShown()
+                                //数据结构是一个hunk header N 个行
+                                diffItem.hunks.forEachIndexed { hunkIndex, hunkAndLines: PuppyHunkAndLines ->
+                                    if (fileChangeTypeIsModified && proFeatureEnabled(detailsDiffTestPassed)) {  //增量diff
+                                        if (!groupDiffContentByLineNum || FlagFileName.flagFileExist(FlagFileName.disableGroupDiffContentByLineNum)) {
+                                            //this method need use some caches, clear them before iterate lines
+                                            //这种方式需要使用缓存，每次遍历lines前都需要先清下缓存，否则可能多显示或少显示某些行
+                                            hunkAndLines.clearCachesForShown()
 
-                                        hunkAndLines.lines.forEachIndexed printLine@{ lineIndex, line: PuppyLine ->
-                                            //若非 新增行、删除行、上下文 ，不显示
-                                            if (line.originType != Diff.Line.OriginType.ADDITION.toString()
-                                                && line.originType != Diff.Line.OriginType.DELETION.toString()
-                                                && line.originType != Diff.Line.OriginType.CONTEXT.toString()
-                                            ) {
-                                                return@printLine
-                                            }
+                                            hunkAndLines.lines.forEachIndexed printLine@{ lineIndex, line: PuppyLine ->
+                                                //若非 新增行、删除行、上下文 ，不显示
+                                                if (line.originType != Diff.Line.OriginType.ADDITION.toString()
+                                                    && line.originType != Diff.Line.OriginType.DELETION.toString()
+                                                    && line.originType != Diff.Line.OriginType.CONTEXT.toString()
+                                                ) {
+                                                    return@printLine
+                                                }
 
-                                            // true or fake context
-                                            if (line.originType == Diff.Line.OriginType.CONTEXT.toString()) {
-                                                item {
+                                                // true or fake context
+                                                if (line.originType == Diff.Line.OriginType.CONTEXT.toString()) {
+                                                    item {
 //                                                    itemsCount.intValue++
 
-                                                    DiffRow(
-                                                        index = lineIndex,
-                                                        line = line,
-                                                        fileFullPath = fileFullPath,
-                                                        enableLineEditActions = enableLineEditActions,
-                                                        clipboardManager = clipboardManager,
-                                                        loadingOn = loadingOnParent,
-                                                        loadingOff = loadingOffParent,
-                                                        refreshPage = refreshPageIfComparingWithLocal,
-                                                        repoId = repoId,
-                                                        showOriginType = showOriginType,
-                                                        showLineNum = showLineNum,
-                                                        fontSize = fontSize,
-                                                        lineNumSize = lineNumSize,
-                                                        getComparePairBuffer = getComparePairBuffer,
-                                                        setComparePairBuffer = setComparePairBuffer,
-                                                        betterCompare = requireBetterMatchingForCompare.value,
-                                                        reForEachDiffContent = reForEachDiffContent,
-                                                        indexStringPartListMap = indexStringPartListMapForComparePair,
-                                                        enableSelectCompare = enableSelectCompare,
-                                                        matchByWords = matchByWords.value,
-                                                        settings = settings,
-                                                        navController = navController,
-                                                        activityContext = activityContext,
-                                                        stateKeyTag = stateKeyTag,
-                                                    )
-                                                }
-                                            } else {  // add or del
+                                                        DiffRow(
+                                                            index = lineIndex,
+                                                            line = line,
+                                                            fileFullPath = fileFullPath,
+                                                            enableLineEditActions = enableLineEditActions,
+                                                            clipboardManager = clipboardManager,
+                                                            loadingOn = loadingOnParent,
+                                                            loadingOff = loadingOffParent,
+                                                            refreshPage = refreshPageIfComparingWithLocal,
+                                                            repoId = repoId,
+                                                            showOriginType = showOriginType,
+                                                            showLineNum = showLineNum,
+                                                            fontSize = fontSize,
+                                                            lineNumSize = lineNumSize,
+                                                            getComparePairBuffer = getComparePairBuffer,
+                                                            setComparePairBuffer = setComparePairBuffer,
+                                                            betterCompare = requireBetterMatchingForCompare.value,
+                                                            reForEachDiffContent = reForEachDiffContent,
+                                                            indexStringPartListMap = indexStringPartListMapForComparePair,
+                                                            enableSelectCompare = enableSelectCompare,
+                                                            matchByWords = matchByWords.value,
+                                                            settings = settings,
+                                                            navController = navController,
+                                                            activityContext = activityContext,
+                                                            stateKeyTag = stateKeyTag,
+                                                        )
+                                                    }
+                                                } else {  // add or del
 
-                                                // fake context
-                                                // ignore which lines has ADD and DEL 2 types, but only difference at has '\n' or has not
-                                                // 合并只有末尾是否有换行符的添加和删除行为context等于显示一个没修改的行，既然没修改，直接不显示不就行了？反正本来就自带context，顶多差一行
-                                                //随便拷贝下del或add（不拷贝只改类型也行但不推荐以免有坏影响）把类型改成context，就行了
-                                                //如果已经显示过，第2次获取result.data会是null，这时就不用再显示了
-                                                val mergeAddDelLineResult = hunkAndLines.needShowAddOrDelLineAsContext(line.lineNum)
-                                                //需要把add和del行转换为上下文行，这种情况发生在 add和del行仅一个有末尾换行符另一个没有时
-                                                if (mergeAddDelLineResult.needShowAsContext) {
-                                                    //若已经显示过，第2次再执行到这这个值就会是null，无需再显示，例如 add/del除了末尾换行符其他都一样，就会被转化为上下文，del先转换为上下文并显示了，等后面遍历到add时就无需再显示了
-                                                    if (mergeAddDelLineResult.line != null) {
-                                                        item {
+                                                    // fake context
+                                                    // ignore which lines has ADD and DEL 2 types, but only difference at has '\n' or has not
+                                                    // 合并只有末尾是否有换行符的添加和删除行为context等于显示一个没修改的行，既然没修改，直接不显示不就行了？反正本来就自带context，顶多差一行
+                                                    //随便拷贝下del或add（不拷贝只改类型也行但不推荐以免有坏影响）把类型改成context，就行了
+                                                    //如果已经显示过，第2次获取result.data会是null，这时就不用再显示了
+                                                    val mergeAddDelLineResult = hunkAndLines.needShowAddOrDelLineAsContext(line.lineNum)
+                                                    //需要把add和del行转换为上下文行，这种情况发生在 add和del行仅一个有末尾换行符另一个没有时
+                                                    if (mergeAddDelLineResult.needShowAsContext) {
+                                                        //若已经显示过，第2次再执行到这这个值就会是null，无需再显示，例如 add/del除了末尾换行符其他都一样，就会被转化为上下文，del先转换为上下文并显示了，等后面遍历到add时就无需再显示了
+                                                        if (mergeAddDelLineResult.line != null) {
+                                                            item {
 //                                                            itemsCount.intValue++
+
+                                                                DiffRow(
+                                                                    index = lineIndex,
+                                                                    line = mergeAddDelLineResult.line,
+                                                                    fileFullPath = fileFullPath,
+                                                                    enableLineEditActions = enableLineEditActions,
+                                                                    clipboardManager = clipboardManager,
+                                                                    loadingOn = loadingOnParent,
+                                                                    loadingOff = loadingOffParent,
+                                                                    refreshPage = refreshPageIfComparingWithLocal,
+                                                                    repoId = repoId,
+                                                                    showOriginType = showOriginType,
+                                                                    showLineNum = showLineNum,
+                                                                    fontSize = fontSize,
+                                                                    lineNumSize = lineNumSize,
+
+                                                                    getComparePairBuffer = getComparePairBuffer,
+                                                                    setComparePairBuffer = setComparePairBuffer,
+                                                                    betterCompare = requireBetterMatchingForCompare.value,
+                                                                    reForEachDiffContent = reForEachDiffContent,
+                                                                    indexStringPartListMap = indexStringPartListMapForComparePair,
+                                                                    enableSelectCompare = enableSelectCompare,
+                                                                    matchByWords = matchByWords.value,
+                                                                    settings = settings,
+                                                                    navController = navController,
+                                                                    activityContext = activityContext,
+                                                                    stateKeyTag = stateKeyTag,
+
+                                                                    )
+                                                            }
+                                                        }
+
+                                                        return@printLine
+                                                    }
+
+
+                                                    //                                val pair = comparePair.value
+                                                    // use pair
+                                                    val compareResult = indexStringPartListMapForComparePair[line.key]
+                                                    val stringPartListWillUse = if (compareResult == null) {
+                                                        //没发现选择比较的结果，比较下实际相同行号不同类型（add、del）的行
+                                                        val modifyResult = hunkAndLines.getModifyResult(
+                                                            lineNum = line.lineNum,
+                                                            requireBetterMatchingForCompare = requireBetterMatchingForCompare.value,
+                                                            matchByWords = matchByWords.value
+                                                        )
+
+                                                        if (modifyResult?.matched == true) {
+                                                            if (line.originType == Diff.Line.OriginType.ADDITION.toString()) modifyResult.add else modifyResult.del
+                                                        } else {
+                                                            null
+                                                        }
+
+                                                    } else {
+                                                        compareResult.stringPartList
+                                                    }
+
+                                                    item {
+//                                                    itemsCount.intValue++
+
+                                                        DiffRow(
+                                                            index = lineIndex,
+                                                            line = line,
+                                                            fileFullPath = fileFullPath,
+                                                            stringPartList = stringPartListWillUse,
+                                                            enableLineEditActions = enableLineEditActions,
+                                                            clipboardManager = clipboardManager,
+                                                            loadingOn = loadingOnParent,
+                                                            loadingOff = loadingOffParent,
+                                                            refreshPage = refreshPageIfComparingWithLocal,
+                                                            repoId = repoId,
+                                                            showOriginType = showOriginType,
+                                                            showLineNum = showLineNum,
+                                                            fontSize = fontSize,
+                                                            lineNumSize = lineNumSize,
+
+                                                            getComparePairBuffer = getComparePairBuffer,
+                                                            setComparePairBuffer = setComparePairBuffer,
+                                                            betterCompare = requireBetterMatchingForCompare.value,
+                                                            reForEachDiffContent = reForEachDiffContent,
+                                                            indexStringPartListMap = indexStringPartListMapForComparePair,
+                                                            enableSelectCompare = enableSelectCompare,
+                                                            matchByWords = matchByWords.value,
+                                                            settings = settings,
+                                                            navController = navController,
+                                                            activityContext = activityContext,
+                                                            stateKeyTag = stateKeyTag,
+                                                        )
+                                                    }
+                                                }
+                                            }
+                                        } else {  // grouped lines by line num
+                                            //由于这个是一对一对的，所以如果第一行是一对，实际上两行都会有顶部padding，不过问题不大，看着不太难受
+//                                        val lineIndex = mutableIntStateOf(-1) //必须用个什么东西包装一下，不然基本类型会被闭包捕获，值会错
+                                            val lineIndex = Box(-1) //必须用个什么东西包装一下，不然基本类型会被闭包捕获，值会错
+                                            hunkAndLines.groupedLines.forEach printLine@{ (_lineNum: Int, lines: Map<String, PuppyLine>) ->
+                                                lineIndex.value += 1;
+                                                val lineIndex = lineIndex.value
+
+                                                //若非 新增行、删除行、上下文 ，不显示
+                                                if (!(lines.contains(Diff.Line.OriginType.ADDITION.toString())
+                                                            || lines.contains(Diff.Line.OriginType.DELETION.toString())
+                                                            || lines.contains(Diff.Line.OriginType.CONTEXT.toString())
+                                                            )
+                                                ) {
+                                                    return@printLine
+                                                }
+
+
+                                                val add = lines.get(Diff.Line.OriginType.ADDITION.toString())
+                                                val del = lines.get(Diff.Line.OriginType.DELETION.toString())
+                                                val context = lines.get(Diff.Line.OriginType.CONTEXT.toString())
+                                                //(deprecated:) 若 context del add同时存在，打印顺序为 context/del/add，不过不太可能3个同时存在，顶多两个同时存在
+                                                //20250224 change: 若 context del add同时存在，打印顺序为 del/add/context ，不过不太可能3个同时存在，顶多两个同时存在
+                                                val mergeDelAndAddToFakeContext = add != null && del != null && add.getContentNoLineBreak().equals(del.getContentNoLineBreak());
+
+
+                                                // show `del` and `add` or `fake context `start
+                                                if (mergeDelAndAddToFakeContext.not()) {  //分别显示add和del
+                                                    //show `del` and `add` start
+                                                    //                            val pair = comparePair.value
+                                                    //不存在的key是为了使返回值为null
+                                                    val addCompareLinePairResult = indexStringPartListMapForComparePair.get(add?.key ?: "nonexist keyadd")
+                                                    val delCompareLinePairResult = indexStringPartListMapForComparePair.get(del?.key ?: "nonexist keydel")
+                                                    var addUsedPair = false
+                                                    var delUsedPair = false
+
+                                                    var delStringPartListWillUse: List<IndexStringPart>? = null
+                                                    var addStringPartListWillUse: List<IndexStringPart>? = null
+
+                                                    if (delCompareLinePairResult != null && del != null) {
+                                                        delUsedPair = true
+                                                        delStringPartListWillUse = delCompareLinePairResult.stringPartList
+                                                    }
+
+                                                    if (addCompareLinePairResult != null && add != null) {
+                                                        addUsedPair = true
+                                                        addStringPartListWillUse = addCompareLinePairResult.stringPartList
+                                                    }
+
+
+                                                    if (del != null && add != null && (delUsedPair.not() || addUsedPair.not())) {
+                                                        val modifyResult2 = CmpUtil.compare(
+                                                            add = StringCompareParam(add.content, add.content.length),
+                                                            del = StringCompareParam(del.content, del.content.length),
+
+                                                            //为true则对比更精细，但是，时间复杂度乘积式增加，不开 O(n)， 开了 O(nm)
+                                                            requireBetterMatching = requireBetterMatchingForCompare.value,
+                                                            matchByWords = matchByWords.value,
+
+                                                            //                                    swap = true
+                                                        )
+
+                                                        if (modifyResult2.matched) {
+                                                            if (delUsedPair.not()) {
+                                                                delStringPartListWillUse = modifyResult2.del
+                                                            }
+
+                                                            if (addUsedPair.not()) {
+                                                                addStringPartListWillUse = modifyResult2.add
+                                                            }
+
+                                                        }
+                                                    }
+
+
+                                                    if (del != null) {
+                                                        item {
+//                                                        itemsCount.intValue++
 
                                                             DiffRow(
                                                                 index = lineIndex,
-                                                                line = mergeAddDelLineResult.line,
+                                                                line = del,
+                                                                stringPartList = delStringPartListWillUse,
                                                                 fileFullPath = fileFullPath,
                                                                 enableLineEditActions = enableLineEditActions,
                                                                 clipboardManager = clipboardManager,
@@ -1757,44 +1932,174 @@ fun DiffScreen(
                                                                 navController = navController,
                                                                 activityContext = activityContext,
                                                                 stateKeyTag = stateKeyTag,
-
                                                             )
                                                         }
                                                     }
 
-                                                    return@printLine
-                                                }
+                                                    if (add != null) {
+                                                        item {
+//                                                        itemsCount.intValue++
 
+                                                            DiffRow(
+                                                                index = lineIndex,
+                                                                line = add,
+                                                                stringPartList = addStringPartListWillUse,
+                                                                fileFullPath = fileFullPath,
+                                                                enableLineEditActions = enableLineEditActions,
+                                                                clipboardManager = clipboardManager,
+                                                                loadingOn = loadingOnParent,
+                                                                loadingOff = loadingOffParent,
+                                                                refreshPage = refreshPageIfComparingWithLocal,
+                                                                repoId = repoId,
+                                                                showOriginType = showOriginType,
+                                                                showLineNum = showLineNum,
+                                                                fontSize = fontSize,
+                                                                lineNumSize = lineNumSize,
 
-                                                //                                val pair = comparePair.value
-                                                // use pair
-                                                val compareResult = indexStringPartListMapForComparePair[line.key]
-                                                val stringPartListWillUse = if (compareResult == null) {
-                                                    //没发现选择比较的结果，比较下实际相同行号不同类型（add、del）的行
-                                                    val modifyResult = hunkAndLines.getModifyResult(
-                                                        lineNum = line.lineNum,
-                                                        requireBetterMatchingForCompare = requireBetterMatchingForCompare.value,
-                                                        matchByWords = matchByWords.value
-                                                    )
-
-                                                    if (modifyResult?.matched == true) {
-                                                        if (line.originType == Diff.Line.OriginType.ADDITION.toString()) modifyResult.add else modifyResult.del
-                                                    } else {
-                                                        null
+                                                                getComparePairBuffer = getComparePairBuffer,
+                                                                setComparePairBuffer = setComparePairBuffer,
+                                                                betterCompare = requireBetterMatchingForCompare.value,
+                                                                reForEachDiffContent = reForEachDiffContent,
+                                                                indexStringPartListMap = indexStringPartListMapForComparePair,
+                                                                enableSelectCompare = enableSelectCompare,
+                                                                matchByWords = matchByWords.value,
+                                                                settings = settings,
+                                                                navController = navController,
+                                                                activityContext = activityContext,
+                                                                stateKeyTag = stateKeyTag,
+                                                            )
+                                                        }
                                                     }
 
-                                                } else {
-                                                    compareResult.stringPartList
+                                                    // show `del` and `add` end
+
+                                                } else if (context == null) { //需要合并add和del且没有 real context，显示个fake context
+                                                    //如果mergeDelAndAddToFakeContext为假，且context!=null，则不会进入此代码块，这时，context和add和del去掉末尾换行符后的内容应该是一样的，所以不需要进入此代码块，直接执行后面代码显示真正的context即可
+                                                    // 但正常来说这种情况并不会发生，因为如果同时存在add和del，不太可能再次出现相同行号的context，就算出现，其内容也必然和add一样，而这时又分两种情况：1 add和del一样，那么add del context三者相同，直接显示context即可；
+                                                    // 2 add和del不同，则正常显示add和del和context，但这时add和context显示的内容是相同的，会重复，不过问题不大
+
+                                                    // show `fake context` start (就是那种add和del一个有换行符一个没有，其他都一样的情况，这种情况显示一个context文本取代两个看起来完全一样的add和del，但这个context其实是假的，不是真的)
+                                                    //只有在第一次执行比较时才执行此检查，且一旦转换，add和del行将消失，变成相同行号的上下文行
+                                                    //潜在bug：如果存在一个行号，同时有add/del/context 3种类型的行号且 add和del 仅末尾行号不同，而和context内容上有不同，就会有bug，会少显示add del行的内容，不过，应该不会存在这种情况
+
+                                                    //解决：两行除了末尾换行符没任何区别的情况仍显示diff的bug（有红有绿但没区别，令人迷惑）
+                                                    //如果转换成context，其实就不能触发select compare了，不过并没bug，因为如果转换为context，一开始就转换了，后面就不会再有选择行比较了？不对，有bug，必须得把原先的添加和删除类型的行删掉，换成一个上下文行，这样才能在之后选择比较行时无bug，我已经处理了
+
+                                                    //添加和删除行仅一个有换行符，另一个没有，当作没区别，移除添加和删除类型，并添加一个新的上下文行
+                                                    //转换后的行有无换行符无所谓，DiffRow显示前会先移除末尾的换行符
+                                                    //不能remove，不然切换group by line后，会有问题
+                                                    //                                lines.remove(Diff.Line.OriginType.ADDITION.toString())
+                                                    //                                lines.remove(Diff.Line.OriginType.DELETION.toString())
+
+                                                    //如果已经存在真context，就不显示这个假context了，否则显示
+                                                    //这里可以假设 add 和 context 是一样的，所以如果add和del一样，其实隐含了add == del == context，因此若context已经显示，就不需要再显示了
+                                                    //                                    val newContextLineFromAddAndDelOnlyLineBreakDifference = del.copy(originType = Diff.Line.OriginType.CONTEXT.toString())
+                                                    //                                    lines.put(Diff.Line.OriginType.CONTEXT.toString(), newContextLineFromAddAndDelOnlyLineBreakDifference)
+
+                                                    item {
+//                                                    itemsCount.intValue++
+
+                                                        DiffRow(
+                                                            index = lineIndex,
+                                                            //随便拷贝下del或add（不拷贝只改类型也行但不推荐以免有坏影响）把类型改成context，就行了
+                                                            //这里del肯定不为null，因为 mergeDelAndAddToFakeContext 的条件包含了del和add都不为null
+                                                            line = del!!.copy(originType = Diff.Line.OriginType.CONTEXT.toString()),
+                                                            fileFullPath = fileFullPath,
+                                                            enableLineEditActions = enableLineEditActions,
+                                                            clipboardManager = clipboardManager,
+                                                            loadingOn = loadingOnParent,
+                                                            loadingOff = loadingOffParent,
+                                                            refreshPage = refreshPageIfComparingWithLocal,
+                                                            repoId = repoId,
+                                                            showOriginType = showOriginType,
+                                                            showLineNum = showLineNum,
+                                                            fontSize = fontSize,
+                                                            lineNumSize = lineNumSize,
+
+                                                            getComparePairBuffer = getComparePairBuffer,
+                                                            setComparePairBuffer = setComparePairBuffer,
+                                                            betterCompare = requireBetterMatchingForCompare.value,
+                                                            reForEachDiffContent = reForEachDiffContent,
+                                                            indexStringPartListMap = indexStringPartListMapForComparePair,
+                                                            enableSelectCompare = enableSelectCompare,
+                                                            matchByWords = matchByWords.value,
+                                                            settings = settings,
+                                                            navController = navController,
+                                                            activityContext = activityContext,
+                                                            stateKeyTag = stateKeyTag,
+                                                        )
+
+                                                    }
+
+
+                                                    //add和del合并成fake context了，同时没有真context需要显示，return，加载下一行
+                                                    return@printLine
+
+                                                    // show `fake context` end
+
                                                 }
 
-                                                item {
+                                                // show `del` and `add` or `fake context `start
+
+                                                // show real `context` start
+                                                // true context
+                                                if (context != null) {
+                                                    item {
 //                                                    itemsCount.intValue++
+
+                                                        //打印context
+                                                        DiffRow(
+                                                            index = lineIndex,
+                                                            line = context,
+                                                            fileFullPath = fileFullPath,
+                                                            enableLineEditActions = enableLineEditActions,
+                                                            clipboardManager = clipboardManager,
+                                                            loadingOn = loadingOnParent,
+                                                            loadingOff = loadingOffParent,
+                                                            refreshPage = refreshPageIfComparingWithLocal,
+                                                            repoId = repoId,
+                                                            showOriginType = showOriginType,
+                                                            showLineNum = showLineNum,
+                                                            fontSize = fontSize,
+                                                            lineNumSize = lineNumSize,
+
+                                                            getComparePairBuffer = getComparePairBuffer,
+                                                            setComparePairBuffer = setComparePairBuffer,
+                                                            betterCompare = requireBetterMatchingForCompare.value,
+                                                            reForEachDiffContent = reForEachDiffContent,
+                                                            indexStringPartListMap = indexStringPartListMapForComparePair,
+                                                            enableSelectCompare = enableSelectCompare,
+                                                            matchByWords = matchByWords.value,
+                                                            settings = settings,
+                                                            navController = navController,
+                                                            activityContext = activityContext,
+                                                            stateKeyTag = stateKeyTag,
+                                                        )
+                                                    }
+                                                }
+
+                                                // show real `context` end
+
+                                            }
+
+                                        }
+
+
+                                    } else { //普通预览，非pro或关闭细节compare时走这里
+                                        //遍历行
+                                        hunkAndLines.lines.forEachIndexed printLine@{ lineIndex, line: PuppyLine ->
+                                            //若非 新增行、删除行、上下文 ，不显示
+                                            if (line.originType == Diff.Line.OriginType.ADDITION.toString()
+                                                || line.originType == Diff.Line.OriginType.DELETION.toString()
+                                                || line.originType == Diff.Line.OriginType.CONTEXT.toString()
+                                            ) {
+                                                item {
+//                                                itemsCount.intValue++
 
                                                     DiffRow(
                                                         index = lineIndex,
                                                         line = line,
                                                         fileFullPath = fileFullPath,
-                                                        stringPartList = stringPartListWillUse,
                                                         enableLineEditActions = enableLineEditActions,
                                                         clipboardManager = clipboardManager,
                                                         loadingOn = loadingOnParent,
@@ -1821,279 +2126,25 @@ fun DiffScreen(
                                                 }
                                             }
                                         }
-                                    } else {  // grouped lines by line num
-                                        //由于这个是一对一对的，所以如果第一行是一对，实际上两行都会有顶部padding，不过问题不大，看着不太难受
-//                                        val lineIndex = mutableIntStateOf(-1) //必须用个什么东西包装一下，不然基本类型会被闭包捕获，值会错
-                                        val lineIndex = Box(-1) //必须用个什么东西包装一下，不然基本类型会被闭包捕获，值会错
-                                        hunkAndLines.groupedLines.forEach printLine@{ (_lineNum: Int, lines: Map<String, PuppyLine>) ->
-                                            lineIndex.value += 1;
-                                            val lineIndex = lineIndex.value
-
-                                            //若非 新增行、删除行、上下文 ，不显示
-                                            if (!(lines.contains(Diff.Line.OriginType.ADDITION.toString())
-                                                        || lines.contains(Diff.Line.OriginType.DELETION.toString())
-                                                        || lines.contains(Diff.Line.OriginType.CONTEXT.toString())
-                                                        )
-                                            ) {
-                                                return@printLine
-                                            }
-
-
-                                            val add = lines.get(Diff.Line.OriginType.ADDITION.toString())
-                                            val del = lines.get(Diff.Line.OriginType.DELETION.toString())
-                                            val context = lines.get(Diff.Line.OriginType.CONTEXT.toString())
-                                            //(deprecated:) 若 context del add同时存在，打印顺序为 context/del/add，不过不太可能3个同时存在，顶多两个同时存在
-                                            //20250224 change: 若 context del add同时存在，打印顺序为 del/add/context ，不过不太可能3个同时存在，顶多两个同时存在
-                                            val mergeDelAndAddToFakeContext = add != null && del != null && add.getContentNoLineBreak().equals(del.getContentNoLineBreak());
-
-
-                                            // show `del` and `add` or `fake context `start
-                                            if (mergeDelAndAddToFakeContext.not()) {  //分别显示add和del
-                                                //show `del` and `add` start
-                                                //                            val pair = comparePair.value
-                                                //不存在的key是为了使返回值为null
-                                                val addCompareLinePairResult = indexStringPartListMapForComparePair.get(add?.key ?: "nonexist keyadd")
-                                                val delCompareLinePairResult = indexStringPartListMapForComparePair.get(del?.key ?: "nonexist keydel")
-                                                var addUsedPair = false
-                                                var delUsedPair = false
-
-                                                var delStringPartListWillUse: List<IndexStringPart>? = null
-                                                var addStringPartListWillUse: List<IndexStringPart>? = null
-
-                                                if (delCompareLinePairResult != null && del != null) {
-                                                    delUsedPair = true
-                                                    delStringPartListWillUse = delCompareLinePairResult.stringPartList
-                                                }
-
-                                                if (addCompareLinePairResult != null && add != null) {
-                                                    addUsedPair = true
-                                                    addStringPartListWillUse = addCompareLinePairResult.stringPartList
-                                                }
-
-
-                                                if (del != null && add != null && (delUsedPair.not() || addUsedPair.not())) {
-                                                    val modifyResult2 = CmpUtil.compare(
-                                                        add = StringCompareParam(add.content, add.content.length),
-                                                        del = StringCompareParam(del.content, del.content.length),
-
-                                                        //为true则对比更精细，但是，时间复杂度乘积式增加，不开 O(n)， 开了 O(nm)
-                                                        requireBetterMatching = requireBetterMatchingForCompare.value,
-                                                        matchByWords = matchByWords.value,
-
-                                                        //                                    swap = true
-                                                    )
-
-                                                    if (modifyResult2.matched) {
-                                                        if (delUsedPair.not()) {
-                                                            delStringPartListWillUse = modifyResult2.del
-                                                        }
-
-                                                        if (addUsedPair.not()) {
-                                                            addStringPartListWillUse = modifyResult2.add
-                                                        }
-
-                                                    }
-                                                }
-
-
-                                                if (del != null) {
-                                                    item {
-//                                                        itemsCount.intValue++
-
-                                                        DiffRow(
-                                                            index = lineIndex,
-                                                            line = del,
-                                                            stringPartList = delStringPartListWillUse,
-                                                            fileFullPath = fileFullPath,
-                                                            enableLineEditActions = enableLineEditActions,
-                                                            clipboardManager = clipboardManager,
-                                                            loadingOn = loadingOnParent,
-                                                            loadingOff = loadingOffParent,
-                                                            refreshPage = refreshPageIfComparingWithLocal,
-                                                            repoId = repoId,
-                                                            showOriginType = showOriginType,
-                                                            showLineNum = showLineNum,
-                                                            fontSize = fontSize,
-                                                            lineNumSize = lineNumSize,
-
-                                                            getComparePairBuffer = getComparePairBuffer,
-                                                            setComparePairBuffer = setComparePairBuffer,
-                                                            betterCompare = requireBetterMatchingForCompare.value,
-                                                            reForEachDiffContent = reForEachDiffContent,
-                                                            indexStringPartListMap = indexStringPartListMapForComparePair,
-                                                            enableSelectCompare = enableSelectCompare,
-                                                            matchByWords = matchByWords.value,
-                                                            settings = settings,
-                                                            navController = navController,
-                                                            activityContext = activityContext,
-                                                            stateKeyTag = stateKeyTag,
-                                                        )
-                                                    }
-                                                }
-
-                                                if (add != null) {
-                                                    item {
-//                                                        itemsCount.intValue++
-
-                                                        DiffRow(
-                                                            index = lineIndex,
-                                                            line = add,
-                                                            stringPartList = addStringPartListWillUse,
-                                                            fileFullPath = fileFullPath,
-                                                            enableLineEditActions = enableLineEditActions,
-                                                            clipboardManager = clipboardManager,
-                                                            loadingOn = loadingOnParent,
-                                                            loadingOff = loadingOffParent,
-                                                            refreshPage = refreshPageIfComparingWithLocal,
-                                                            repoId = repoId,
-                                                            showOriginType = showOriginType,
-                                                            showLineNum = showLineNum,
-                                                            fontSize = fontSize,
-                                                            lineNumSize = lineNumSize,
-
-                                                            getComparePairBuffer = getComparePairBuffer,
-                                                            setComparePairBuffer = setComparePairBuffer,
-                                                            betterCompare = requireBetterMatchingForCompare.value,
-                                                            reForEachDiffContent = reForEachDiffContent,
-                                                            indexStringPartListMap = indexStringPartListMapForComparePair,
-                                                            enableSelectCompare = enableSelectCompare,
-                                                            matchByWords = matchByWords.value,
-                                                            settings = settings,
-                                                            navController = navController,
-                                                            activityContext = activityContext,
-                                                            stateKeyTag = stateKeyTag,
-                                                        )
-                                                    }
-                                                }
-
-                                                // show `del` and `add` end
-
-                                            } else if (context == null) { //需要合并add和del且没有 real context，显示个fake context
-                                                //如果mergeDelAndAddToFakeContext为假，且context!=null，则不会进入此代码块，这时，context和add和del去掉末尾换行符后的内容应该是一样的，所以不需要进入此代码块，直接执行后面代码显示真正的context即可
-                                                // 但正常来说这种情况并不会发生，因为如果同时存在add和del，不太可能再次出现相同行号的context，就算出现，其内容也必然和add一样，而这时又分两种情况：1 add和del一样，那么add del context三者相同，直接显示context即可；
-                                                // 2 add和del不同，则正常显示add和del和context，但这时add和context显示的内容是相同的，会重复，不过问题不大
-
-                                                // show `fake context` start (就是那种add和del一个有换行符一个没有，其他都一样的情况，这种情况显示一个context文本取代两个看起来完全一样的add和del，但这个context其实是假的，不是真的)
-                                                //只有在第一次执行比较时才执行此检查，且一旦转换，add和del行将消失，变成相同行号的上下文行
-                                                //潜在bug：如果存在一个行号，同时有add/del/context 3种类型的行号且 add和del 仅末尾行号不同，而和context内容上有不同，就会有bug，会少显示add del行的内容，不过，应该不会存在这种情况
-
-                                                //解决：两行除了末尾换行符没任何区别的情况仍显示diff的bug（有红有绿但没区别，令人迷惑）
-                                                //如果转换成context，其实就不能触发select compare了，不过并没bug，因为如果转换为context，一开始就转换了，后面就不会再有选择行比较了？不对，有bug，必须得把原先的添加和删除类型的行删掉，换成一个上下文行，这样才能在之后选择比较行时无bug，我已经处理了
-
-                                                //添加和删除行仅一个有换行符，另一个没有，当作没区别，移除添加和删除类型，并添加一个新的上下文行
-                                                //转换后的行有无换行符无所谓，DiffRow显示前会先移除末尾的换行符
-                                                //不能remove，不然切换group by line后，会有问题
-                                                //                                lines.remove(Diff.Line.OriginType.ADDITION.toString())
-                                                //                                lines.remove(Diff.Line.OriginType.DELETION.toString())
-
-                                                //如果已经存在真context，就不显示这个假context了，否则显示
-                                                //这里可以假设 add 和 context 是一样的，所以如果add和del一样，其实隐含了add == del == context，因此若context已经显示，就不需要再显示了
-                                                //                                    val newContextLineFromAddAndDelOnlyLineBreakDifference = del.copy(originType = Diff.Line.OriginType.CONTEXT.toString())
-                                                //                                    lines.put(Diff.Line.OriginType.CONTEXT.toString(), newContextLineFromAddAndDelOnlyLineBreakDifference)
-
-                                                item {
-//                                                    itemsCount.intValue++
-
-                                                    DiffRow(
-                                                        index = lineIndex,
-                                                        //随便拷贝下del或add（不拷贝只改类型也行但不推荐以免有坏影响）把类型改成context，就行了
-                                                        //这里del肯定不为null，因为 mergeDelAndAddToFakeContext 的条件包含了del和add都不为null
-                                                        line = del!!.copy(originType = Diff.Line.OriginType.CONTEXT.toString()),
-                                                        fileFullPath = fileFullPath,
-                                                        enableLineEditActions = enableLineEditActions,
-                                                        clipboardManager = clipboardManager,
-                                                        loadingOn = loadingOnParent,
-                                                        loadingOff = loadingOffParent,
-                                                        refreshPage = refreshPageIfComparingWithLocal,
-                                                        repoId = repoId,
-                                                        showOriginType = showOriginType,
-                                                        showLineNum = showLineNum,
-                                                        fontSize = fontSize,
-                                                        lineNumSize = lineNumSize,
-
-                                                        getComparePairBuffer = getComparePairBuffer,
-                                                        setComparePairBuffer = setComparePairBuffer,
-                                                        betterCompare = requireBetterMatchingForCompare.value,
-                                                        reForEachDiffContent = reForEachDiffContent,
-                                                        indexStringPartListMap = indexStringPartListMapForComparePair,
-                                                        enableSelectCompare = enableSelectCompare,
-                                                        matchByWords = matchByWords.value,
-                                                        settings = settings,
-                                                        navController = navController,
-                                                        activityContext = activityContext,
-                                                        stateKeyTag = stateKeyTag,
-                                                    )
-
-                                                }
-
-
-                                                //add和del合并成fake context了，同时没有真context需要显示，return，加载下一行
-                                                return@printLine
-
-                                                // show `fake context` end
-
-                                            }
-
-                                            // show `del` and `add` or `fake context `start
-
-                                            // show real `context` start
-                                            // true context
-                                            if (context != null) {
-                                                item {
-//                                                    itemsCount.intValue++
-
-                                                    //打印context
-                                                    DiffRow(
-                                                        index = lineIndex,
-                                                        line = context,
-                                                        fileFullPath = fileFullPath,
-                                                        enableLineEditActions = enableLineEditActions,
-                                                        clipboardManager = clipboardManager,
-                                                        loadingOn = loadingOnParent,
-                                                        loadingOff = loadingOffParent,
-                                                        refreshPage = refreshPageIfComparingWithLocal,
-                                                        repoId = repoId,
-                                                        showOriginType = showOriginType,
-                                                        showLineNum = showLineNum,
-                                                        fontSize = fontSize,
-                                                        lineNumSize = lineNumSize,
-
-                                                        getComparePairBuffer = getComparePairBuffer,
-                                                        setComparePairBuffer = setComparePairBuffer,
-                                                        betterCompare = requireBetterMatchingForCompare.value,
-                                                        reForEachDiffContent = reForEachDiffContent,
-                                                        indexStringPartListMap = indexStringPartListMapForComparePair,
-                                                        enableSelectCompare = enableSelectCompare,
-                                                        matchByWords = matchByWords.value,
-                                                        settings = settings,
-                                                        navController = navController,
-                                                        activityContext = activityContext,
-                                                        stateKeyTag = stateKeyTag,
-                                                    )
-                                                }
-                                            }
-
-                                            // show real `context` end
-
-                                        }
-
                                     }
 
 
-                                } else { //普通预览，非pro或关闭细节compare时走这里
-                                    //遍历行
-                                    hunkAndLines.lines.forEachIndexed printLine@{ lineIndex, line: PuppyLine ->
-                                        //若非 新增行、删除行、上下文 ，不显示
-                                        if (line.originType == Diff.Line.OriginType.ADDITION.toString()
-                                            || line.originType == Diff.Line.OriginType.DELETION.toString()
-                                            || line.originType == Diff.Line.OriginType.CONTEXT.toString()
-                                        ) {
+                                    //EOF_NL only appear at last hunk, so better check index avoid non-sense iterate
+                                    if (hunkIndex == lastHunkIndex) {
+                                        // if delete EOFNL or add EOFNL , show it
+                                        val indexOfEOFNL =
+                                            hunkAndLines.lines.indexOfFirst { it.originType == Diff.Line.OriginType.ADD_EOFNL.toString() || it.originType == Diff.Line.OriginType.DEL_EOFNL.toString() }
+                                        if (indexOfEOFNL != -1) {  // found originType EOFNL
+                                            val eofLine = hunkAndLines.lines.get(indexOfEOFNL)
+                                            val fakeIndex = -1
                                             item {
-//                                                itemsCount.intValue++
+//                                            itemsCount.intValue++
 
                                                 DiffRow(
-                                                    index = lineIndex,
-                                                    line = line,
+                                                    // for now, the index only used to add top padding to first line, so passing a invalid fakeIndex is ok
+                                                    index = fakeIndex,
+
+                                                    line = LineNum.EOF.transLineToEofLine(eofLine, add = eofLine.originType == Diff.Line.OriginType.ADD_EOFNL.toString()),
                                                     fileFullPath = fileFullPath,
                                                     enableLineEditActions = enableLineEditActions,
                                                     clipboardManager = clipboardManager,
@@ -2121,182 +2172,139 @@ fun DiffScreen(
                                             }
                                         }
                                     }
+
+                                    item {
+//                                    itemsCount.intValue++
+
+                                        //每个hunk之间显示个分割线，本来想弄成最后一个不显示，但判断索引不太好使，因为有的在上面就return了，索性都显示算了
+                                        HorizontalDivider(
+                                            modifier = Modifier.padding(vertical = 30.dp),
+                                            thickness = 3.dp
+                                        )
+                                    }
                                 }
+                            }
 
+                            item {
+//                            itemsCount.intValue++
 
-                                //EOF_NL only appear at last hunk, so better check index avoid non-sense iterate
-                                if (hunkIndex == lastHunkIndex) {
-                                    // if delete EOFNL or add EOFNL , show it
-                                    val indexOfEOFNL =
-                                        hunkAndLines.lines.indexOfFirst { it.originType == Diff.Line.OriginType.ADD_EOFNL.toString() || it.originType == Diff.Line.OriginType.DEL_EOFNL.toString() }
-                                    if (indexOfEOFNL != -1) {  // found originType EOFNL
-                                        val eofLine = hunkAndLines.lines.get(indexOfEOFNL)
-                                        val fakeIndex = -1
-                                        item {
-//                                            itemsCount.intValue++
+                                Spacer(Modifier.height(50.dp))
+                            }
 
-                                            DiffRow(
-                                                // for now, the index only used to add top padding to first line, so passing a invalid fakeIndex is ok
-                                                index = fakeIndex,
+                            //切换上下文件和执行操作的按钮
+                            if(isSingleMode) {
+                                item {
+//                                itemsCount.intValue++
 
-                                                line = LineNum.EOF.transLineToEofLine(eofLine, add = eofLine.originType == Diff.Line.OriginType.ADD_EOFNL.toString()),
-                                                fileFullPath = fileFullPath,
-                                                enableLineEditActions = enableLineEditActions,
-                                                clipboardManager = clipboardManager,
-                                                loadingOn = loadingOnParent,
-                                                loadingOff = loadingOffParent,
-                                                refreshPage = refreshPageIfComparingWithLocal,
-                                                repoId = repoId,
-                                                showOriginType = showOriginType,
-                                                showLineNum = showLineNum,
-                                                fontSize = fontSize,
-                                                lineNumSize = lineNumSize,
+                                    DisableSelection {
+                                        NaviButton(
+                                            stateKeyTag = stateKeyTag,
 
-                                                getComparePairBuffer = getComparePairBuffer,
-                                                setComparePairBuffer = setComparePairBuffer,
-                                                betterCompare = requireBetterMatchingForCompare.value,
-                                                reForEachDiffContent = reForEachDiffContent,
-                                                indexStringPartListMap = indexStringPartListMapForComparePair,
-                                                enableSelectCompare = enableSelectCompare,
-                                                matchByWords = matchByWords.value,
-                                                settings = settings,
-                                                navController = navController,
-                                                activityContext = activityContext,
-                                                stateKeyTag = stateKeyTag,
-                                            )
-                                        }
+                                            isMultiMode = isMultiMode,
+                                            fromScreen = fromScreen,
+//                                        activityContext = activityContext,
+//                                        curRepo = curRepo.value,
+                                            diffableItemList = diffableItemList,
+                                            curItemIndex = curItemIndex,
+                                            switchItem = switchItem,
+                                            fromTo = fromTo,
+                                            naviUp = naviUp,
+                                            lastClickedItemKey = lastClickedItemKey,
+                                            pageRequest = pageRequest,
+
+                                            stageItem = stageItem,
+                                            initRevertDialog = initRevertDialog,
+                                            initUnstageDialog = initUnstageDialog
+                                        )
+
+                                    }
+                                }
+                            }
+
+                            item {
+//                            itemsCount.intValue++
+
+                                Spacer(Modifier.height(100.dp))
+                            }
+
+                            if(isMultiMode) {
+                                item {
+//                                itemsCount.intValue++
+
+                                    BarContainer(
+                                        modifier = Modifier
+                                            .onGloballyPositioned { layoutCoordinates ->
+                                                if(visible) {
+                                                    val position = layoutCoordinates.positionInRoot()
+                                                    //从屏幕上方消失了，就表示在看这个条目
+                                                    if(position.y < 0) {
+                                                        updateCurrentViewingIdx(idx)
+                                                    }
+                                                }
+                                            }
+                                        ,
+                                        horizontalArrangement = Arrangement.Center,
+                                        onClick = {scrollToCurrentItemHeader(relativePath)}
+                                    ) {
+                                        InLineIcon(
+                                            iconModifier = Modifier.size(iconSize),
+                                            pressedCircleSize = pressedCircleSize,
+                                            icon = Icons.Filled.KeyboardDoubleArrowUp,
+                                            tooltipText = "",
+                                        )
                                     }
                                 }
 
-                                item {
-//                                    itemsCount.intValue++
-
-                                //每个hunk之间显示个分割线，本来想弄成最后一个不显示，但判断索引不太好使，因为有的在上面就return了，索性都显示算了
-                                    HorizontalDivider(
-                                        modifier = Modifier.padding(vertical = 30.dp),
-                                        thickness = 3.dp
-                                    )
-                                }
                             }
+                        }
+                    }
+
+
+
+
+
+                    //切换上下文件和执行操作的按钮
+                    if(isMultiMode) {
+                        item {
+                            Spacer(Modifier.height(150.dp))
                         }
 
                         item {
-//                            itemsCount.intValue++
+                            DisableSelection {
+                                NaviButton(
+                                    stateKeyTag = stateKeyTag,
 
-                            Spacer(Modifier.height(50.dp))
-                        }
+                                    isMultiMode = isMultiMode,
+                                    fromScreen = fromScreen,
 
-                        //切换上下文件和执行操作的按钮
-                        if(isSingleMode) {
-                            item {
-//                                itemsCount.intValue++
-
-                                DisableSelection {
-                                    NaviButton(
-                                        stateKeyTag = stateKeyTag,
-
-                                        isMultiMode = isMultiMode,
-                                        fromScreen = fromScreen,
 //                                        activityContext = activityContext,
 //                                        curRepo = curRepo.value,
-                                        diffableItemList = diffableItemList,
-                                        curItemIndex = curItemIndex,
-                                        switchItem = switchItem,
-                                        fromTo = fromTo,
-                                        naviUp = naviUp,
-                                        lastClickedItemKey = lastClickedItemKey,
-                                        pageRequest = pageRequest,
+                                    diffableItemList = diffableItemList,
+                                    curItemIndex = curItemIndex,
+                                    switchItem = {p1, p2, p3->},  // multi diff的操作都是针对当前页面所有条目的，所以不需要切换条目
+                                    fromTo = fromTo,
+                                    naviUp = naviUp,
+                                    lastClickedItemKey = lastClickedItemKey,
+                                    pageRequest = pageRequest,
 
-                                        stageItem = stageItem,
-                                        initRevertDialog = initRevertDialog,
-                                        initUnstageDialog = initUnstageDialog
-                                    )
+                                    stageItem = stageItem,
+                                    initRevertDialog = initRevertDialog,
+                                    initUnstageDialog = initUnstageDialog
+                                )
 
-                                }
                             }
                         }
 
                         item {
-//                            itemsCount.intValue++
-
                             Spacer(Modifier.height(100.dp))
                         }
-
-                        if(isMultiMode) {
-                            item {
-//                                itemsCount.intValue++
-
-                                BarContainer(
-                                    modifier = Modifier
-                                        .onGloballyPositioned { layoutCoordinates ->
-                                            if(visible) {
-                                                val position = layoutCoordinates.positionInRoot()
-                                                //从屏幕上方消失了，就表示在看这个条目
-                                                if(position.y < 0) {
-                                                    updateCurrentViewingIdx(idx)
-                                                }
-                                            }
-                                        }
-                                    ,
-                                    horizontalArrangement = Arrangement.Center,
-                                    onClick = {scrollToCurrentItemHeader(relativePath)}
-                                ) {
-                                    InLineIcon(
-                                        iconModifier = Modifier.size(iconSize),
-                                        pressedCircleSize = pressedCircleSize,
-                                        icon = Icons.Filled.KeyboardDoubleArrowUp,
-                                        tooltipText = "",
-                                    )
-                                }
-                            }
-
-                        }
                     }
+
                 }
-
-
-
-
-
-                //切换上下文件和执行操作的按钮
-                if(isMultiMode) {
-                    item {
-                        Spacer(Modifier.height(150.dp))
-                    }
-
-                    item {
-                        DisableSelection {
-                            NaviButton(
-                                stateKeyTag = stateKeyTag,
-
-                                isMultiMode = isMultiMode,
-                                fromScreen = fromScreen,
-
-//                                        activityContext = activityContext,
-//                                        curRepo = curRepo.value,
-                                diffableItemList = diffableItemList,
-                                curItemIndex = curItemIndex,
-                                switchItem = {p1, p2, p3->},  // multi diff的操作都是针对当前页面所有条目的，所以不需要切换条目
-                                fromTo = fromTo,
-                                naviUp = naviUp,
-                                lastClickedItemKey = lastClickedItemKey,
-                                pageRequest = pageRequest,
-
-                                stageItem = stageItem,
-                                initRevertDialog = initRevertDialog,
-                                initUnstageDialog = initUnstageDialog
-                            )
-
-                        }
-                    }
-
-                    item {
-                        Spacer(Modifier.height(100.dp))
-                    }
-                }
-
             }
         }
+
+
 
 
     }
