@@ -2284,6 +2284,7 @@ fun ChangeListInnerPage(
 
 
     PullToRefreshBox(
+        contentPadding = contentPadding,
         onRefresh = { changeListRequireRefreshFromParentPage(curRepoFromParentPage.value) },
 
     ) {

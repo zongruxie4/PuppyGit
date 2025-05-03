@@ -1820,6 +1820,7 @@ fun CommitListScreen(
     ) { contentPadding ->
 
         PullToRefreshBox(
+            contentPadding = contentPadding,
             onRefresh = { fullyRefresh() }
         ) {
             if(loadMoreLoading.value.not() && list.value.isEmpty()) {

@@ -367,6 +367,7 @@ fun ErrorListScreen(
         }
 
         PullToRefreshBox(
+            contentPadding = contentPadding,
             onRefresh = { changeStateTriggerRefreshPage(needRefresh) }
         ) {
 

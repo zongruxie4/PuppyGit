@@ -1128,6 +1128,7 @@ fun SubmoduleListScreen(
         }
     ) { contentPadding ->
         PullToRefreshBox(
+            contentPadding = contentPadding,
             onRefresh = { changeStateTriggerRefreshPage(needRefresh) }
         ) {
 

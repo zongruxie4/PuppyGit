@@ -865,6 +865,7 @@ fun RemoteListScreen(
         }
 
         PullToRefreshBox(
+            contentPadding = contentPadding,
             onRefresh = { changeStateTriggerRefreshPage(needRefresh) }
         ) {
 

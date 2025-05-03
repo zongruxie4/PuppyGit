@@ -303,6 +303,7 @@ fun FileEditor(
         Box(modifier = Modifier.fillMaxSize()) {
             if(isPreviewModeOn.value) {
                 PullToRefreshBox(
+                    contentPadding = contentPadding,
                     isRefreshing = previewLoading,
                     onRefresh = { refreshPreviewPage() }
                 ) {

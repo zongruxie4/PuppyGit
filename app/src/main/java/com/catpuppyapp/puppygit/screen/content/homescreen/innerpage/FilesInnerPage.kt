@@ -1254,6 +1254,7 @@ fun FilesInnerPage(
 
 
     PullToRefreshBox(
+        contentPadding = contentPadding,
         onRefresh = { changeStateTriggerRefreshPage(needRefreshFilesPage) },
 
     ) {

@@ -1812,6 +1812,7 @@ fun RepoInnerPage(
 //    }
 
     PullToRefreshBox(
+        contentPadding = contentPadding,
         onRefresh = { changeStateTriggerRefreshPage(needRefreshRepoPage) }
     ) {
 

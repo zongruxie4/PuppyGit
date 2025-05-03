@@ -459,6 +459,7 @@ fun CredentialRemoteListScreen(
     ) { contentPadding ->
 
         PullToRefreshBox(
+            contentPadding = contentPadding,
             onRefresh = { changeStateTriggerRefreshPage(needRefresh) }
         ) {
             if(list.value.isEmpty()) {

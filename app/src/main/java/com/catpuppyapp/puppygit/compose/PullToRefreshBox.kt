@@ -3,6 +3,8 @@ package com.catpuppyapp.puppygit.compose
 import androidx.compose.animation.Crossfade
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Refresh
@@ -29,6 +31,7 @@ import kotlinx.coroutines.delay
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun PullToRefreshBox(
+    contentPadding: PaddingValues,
     onRefresh: () -> Unit,
 
     //这个变量一般设为真或假，若设为null，代表不使用这个值，这时lading圆圈会在执行任务时默认转几下，然后就消失
@@ -50,7 +53,7 @@ fun PullToRefreshBox(
         {
             doJobThenOffLoading {
                 isRefreshing.value = true
-                delay(2000)
+                delay(1000)
                 isRefreshing.value = false
             }
 
@@ -70,7 +73,7 @@ fun PullToRefreshBox(
             MyCustomIndicator(
                 state = state,
                 isRefreshing = isRefreshing.value,
-                modifier = Modifier.align(Alignment.TopCenter)
+                modifier = Modifier.align(Alignment.TopCenter).padding(contentPadding)
             )
         }
     ) {
@@ -97,7 +100,7 @@ private fun MyCustomIndicator(
         Crossfade(
             targetState = isRefreshing,
             animationSpec = tween(),
-            modifier = Modifier.align(Alignment.Center)
+            modifier = Modifier.align(Alignment.Center).padding(10.dp)
         ) { refreshing ->
             if (refreshing) {
                 CircularProgressIndicator()

@@ -1499,6 +1499,7 @@ fun BranchListScreen(
         }
     ) { contentPadding ->
         PullToRefreshBox(
+            contentPadding = contentPadding,
             onRefresh = { changeStateTriggerRefreshPage(needRefresh) },
 
         ) {

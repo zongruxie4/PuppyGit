@@ -841,6 +841,7 @@ fun FileHistoryScreen(
     ) { contentPadding ->
 
         PullToRefreshBox(
+            contentPadding = contentPadding,
             onRefresh = { changeStateTriggerRefreshPage(needRefresh) }
         ) {
 

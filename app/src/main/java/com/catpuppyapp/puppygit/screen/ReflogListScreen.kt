@@ -405,6 +405,7 @@ fun ReflogListScreen(
         }
     ) { contentPadding ->
         PullToRefreshBox(
+            contentPadding = contentPadding,
             onRefresh = { changeStateTriggerRefreshPage(needRefresh) }
         ) {
 
