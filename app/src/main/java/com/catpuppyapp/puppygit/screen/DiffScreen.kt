@@ -1045,16 +1045,28 @@ fun DiffScreen(
 //    }.value
     // 向下滚动监听，结束
 
+    // newItem和newItemIndex都是要切换的文件的，不是当前文件的
     //newItem 可通过 newItemIndex 在 diffableList获得，这里传只是方便使用
-    val switchItem = {newItem:DiffableItem, newItemIndex:Int->
-        if(fromScreen == DiffFromScreen.FILE_HISTORY) {
-            treeOid1Str.value = newItem.commitId
+    val switchItem = {oldItem:DiffableItem?, newItem:DiffableItem, newItemIndex:Int->
+        doJobThenOffLoading {
+            // send close signal to old channel to abort loading
+            oldItem?.closeLoadChannel()
+
+
+            // switch to new item
+            if(fromScreen == DiffFromScreen.FILE_HISTORY) {
+                treeOid1Str.value = newItem.commitId
+            }
+
+            curItemIndex.intValue = newItemIndex
+
+            changeStateTriggerRefreshPage(needRefresh, requestType = StateRequestType.requireGoToTop)
         }
 
-        curItemIndex.intValue = newItemIndex
-
-        changeStateTriggerRefreshPage(needRefresh, requestType = StateRequestType.requireGoToTop)
+        Unit
     }
+
+
 
 
     val saveFontSizeAndQuitAdjust = {
@@ -1600,34 +1612,6 @@ fun DiffScreen(
 
                         }
                     } else {  //文本类型且没超过大小且文件修改过，正常显示diff信息
-
-                        // item和index都是要切换的文件的，不是当前文件的
-                        val closeChannelThenSwitchItem = { item: DiffableItem, index: Int ->
-                            doJobThenOffLoading {
-                                // send close signal to old channel to abort loading
-                                try {
-                                    //注意：这里的代码是对的，没写错，这里因为要切换文件，所以关闭的是当前文件的loadChannel，
-                                    // 不是要切换的下一个文件的，所以这里不能关item的channel，
-                                    // 而是当前正在显示的这个对象的loadChannel
-                                    loadChannel.close()
-                                } catch (_: Exception) {
-                                }
-
-                                //这里不用创建新 channel ，后面switch item时，会重载，重载时会创建新channel
-//                                loadingChannelMap.value.put(mapKey, Channel())
-//                                diffableItemList[index] = diffableItemList[index].copy()
-
-
-                                // switch new item
-                                switchItem(item, index)
-                            }
-
-                            Unit
-                        }
-
-
-
-
                         // show a notice make user know submodule has uncommitted changes
                         if (submoduleIsDirty) {
                             item {
@@ -2217,7 +2201,7 @@ fun DiffScreen(
 //                                        curRepo = curRepo.value,
                                         diffableItemList = diffableItemList,
                                         curItemIndex = curItemIndex,
-                                        switchItem = closeChannelThenSwitchItem,
+                                        switchItem = switchItem,
                                         fromTo = fromTo,
                                         naviUp = naviUp,
                                         lastClickedItemKey = lastClickedItemKey,
@@ -2292,7 +2276,7 @@ fun DiffScreen(
 //                                        curRepo = curRepo.value,
                                 diffableItemList = diffableItemList,
                                 curItemIndex = curItemIndex,
-                                switchItem = {p1, p2->},  // multi diff的操作都是针对当前页面所有条目的，所以不需要切换条目
+                                switchItem = {p1, p2, p3->},  // multi diff的操作都是针对当前页面所有条目的，所以不需要切换条目
                                 fromTo = fromTo,
                                 naviUp = naviUp,
                                 lastClickedItemKey = lastClickedItemKey,
@@ -2378,7 +2362,9 @@ fun DiffScreen(
 
             //创建新条目前，把旧条目的loadChannel关了，否则如果之前的任务(加载diffItemSaver)未完成，不会取消，会继续执行
             item.closeLoadChannel()
-            val item  = item.copyForLoading()  // loading时会改状态，所以需要创建个新的条目
+
+            // loading时会改状态，所以需要创建个新的条目
+            val item  = item.copyForLoading()
             diffableItemList.value[idx] = item  //更新 state list，不然页面可能不知道当前条目更改了，那你就只能继续看旧的了
 
             val relativePath = item.relativePath
@@ -2580,7 +2566,7 @@ private fun NaviButton(
     initRevertDialog:(items:List<StatusTypeEntrySaver>, callback:suspend ()->Unit)->Unit,
     initUnstageDialog:(items:List<StatusTypeEntrySaver>, callback:suspend ()->Unit)->Unit,
     naviUp:()->Unit,
-    switchItem: (DiffableItem, index: Int) -> Unit,
+    switchItem: (oldItem: DiffableItem?, newItem:DiffableItem, newItemIndex: Int) -> Unit,
 ) {
     val isFileHistoryTreeToLocalOrTree = fromTo==Cons.gitDiffFileHistoryFromTreeToLocal || fromTo==Cons.gitDiffFileHistoryFromTreeToTree
     val size = diffableItemList.size
@@ -2614,22 +2600,30 @@ private fun NaviButton(
 
 
         if(size>0 && fromTo != Cons.gitDiffFileHistoryFromTreeToTree) {
+            val getCurItem = {
+                val targetItem = diffableItemList.getOrNull(curItemIndex.intValue)
 
-            //准备好变量
-            val doActThenSwitchItem:suspend (targetIndex:Int, act:suspend ()->Unit)->Unit = { targetIndex, act ->
+                if(targetItem == null) {
+                    Msg.requireShowLongDuration("err: bad index ${curItemIndex.intValue}")
+                }
+
+                targetItem
+            }
+
+            //执行操作，然后如果存在下个条目或上个条目，跳转；（??否则返回上级页面??（貌似实现multi mode后，不在这里决定是否跳转回上级页面了，而是在执行的操作里判断，所以这里只剩切换条目的逻辑了））
+            val doActThenSwitchItem:suspend (targetIndex:Int, targetItem: DiffableItem?, act:suspend ()->Unit)->Unit = { targetIndex, targetItem, act ->
                 act()
 
-                //如果存在下个条目或上个条目，跳转；否则返回上级页面
                 val nextOrPreviousIndex = if(hasNext) (nextIndex - 1) else previousIndex
                 if(nextOrPreviousIndex >= 0 && nextOrPreviousIndex < diffableItemList.size) {  // still has next or previous, switch to it
                     //切换条目
-                    val item = diffableItemList[nextOrPreviousIndex]
-                    lastClickedItemKey.value = item.getItemKey()
-                    switchItem(item, nextOrPreviousIndex)
+                    val nextOrPrevious = diffableItemList[nextOrPreviousIndex]
+                    lastClickedItemKey.value = nextOrPrevious.getItemKey()
+                    switchItem(targetItem, nextOrPrevious, nextOrPreviousIndex)
                 }
             }
 
-            val targetItemState = mutableCustomStateOf(stateKeyTag, "targetItemState") { StatusTypeEntrySaver() }
+            val targetChangeListItemState = mutableCustomStateOf(stateKeyTag, "targetChangeListItemState") { StatusTypeEntrySaver() }
             val targetIndexState = rememberSaveable { mutableIntStateOf(-1) }
 
 
@@ -2640,20 +2634,15 @@ private fun NaviButton(
                 CardButton(
                     text = stringResource(R.string.stage),
                     enabled = true
-                ) doStage@{
+                ) onClick@{
                     val targetIndex = curItemIndex.intValue
-                    val targetItem = if(isGoodIndexForList(targetIndex, diffableItemList)) diffableItemList[targetIndex] else null
-
-                    if(targetItem == null) {
-                        Msg.requireShow("err: bad index $targetIndex")
-                        return@doStage
-                    }
+                    val targetItem = getCurItem() ?: return@onClick
 
                     doJobThenOffLoading {
                         if(isMultiMode) {
                             stageItem(diffableItemList.map { it.toChangeListItem() })
                         }else {
-                            doActThenSwitchItem(targetIndex) {
+                            doActThenSwitchItem(targetIndex, targetItem) {
                                 stageItem(listOf(targetItem.toChangeListItem()))
                             }
                         }
@@ -2668,22 +2657,17 @@ private fun NaviButton(
                     enabled = true
                 ) onClick@{
                     val targetIndex = curItemIndex.intValue
-                    val targetItem = if(isGoodIndexForList(targetIndex, diffableItemList)) diffableItemList[targetIndex] else null
+                    val targetItem = getCurItem() ?: return@onClick
 
-                    if(targetItem == null) {
-                        Msg.requireShow("err: bad index $targetIndex")
-                        return@onClick
-                    }
-
-                    targetItemState.value = targetItem.toChangeListItem()
+                    targetChangeListItemState.value = targetItem.toChangeListItem()
                     targetIndexState.intValue = targetIndex
 
                     if(isMultiMode) {
                         initRevertDialog(diffableItemList.map { it.toChangeListItem() }) {}
                     }else {
-                        initRevertDialog(listOf(targetItemState.value)) {
+                        initRevertDialog(listOf(targetChangeListItemState.value)) {
                             // callback
-                            doActThenSwitchItem(targetIndexState.intValue) {}
+                            doActThenSwitchItem(targetIndexState.intValue, targetItem) {}
                         }
                     }
                 }
@@ -2695,21 +2679,16 @@ private fun NaviButton(
                     enabled = true
                 ) onClick@{
                     val targetIndex = curItemIndex.intValue
-                    val targetItem = if(isGoodIndexForList(targetIndex, diffableItemList)) diffableItemList[targetIndex] else null
+                    val targetItem = getCurItem() ?: return@onClick
 
-                    if(targetItem == null) {
-                        Msg.requireShow("err: bad index $targetIndex")
-                        return@onClick
-                    }
-
-                    targetItemState.value = targetItem.toChangeListItem()
+                    targetChangeListItemState.value = targetItem.toChangeListItem()
                     targetIndexState.intValue = targetIndex
 
                     if(isMultiMode) {
                         initUnstageDialog(diffableItemList.map { it.toChangeListItem() }) {}
                     }else {
-                        initUnstageDialog(listOf(targetItemState.value)) {
-                            doActThenSwitchItem(targetIndexState.intValue) {}
+                        initUnstageDialog(listOf(targetChangeListItemState.value)) {
+                            doActThenSwitchItem(targetIndexState.intValue, targetItem) {}
                         }
                     }
                 }
@@ -2769,7 +2748,7 @@ private fun NaviButton(
                 ) {
                     val item = diffableItemList[previousIndex]
                     lastClickedItemKey.value = item.getItemKey()
-                    switchItem(item, previousIndex)
+                    switchItem(getCurItem(), item, previousIndex)
                 }
 
                 Spacer(Modifier.height(10.dp))
@@ -2793,10 +2772,10 @@ private fun NaviButton(
                 ) {
                     val item = diffableItemList[nextIndex]
                     lastClickedItemKey.value = item.getItemKey()
-                    switchItem(item, nextIndex)
+                    switchItem(getCurItem(), item, nextIndex)
                 }
             }
-            }
+        }
 
 
 //        Spacer(Modifier.height(150.dp))
