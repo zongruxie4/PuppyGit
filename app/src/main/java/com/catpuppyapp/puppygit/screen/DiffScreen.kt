@@ -228,7 +228,7 @@ fun DiffScreen(
     val needRefresh = rememberSaveable { mutableStateOf("DiffScreen_refresh_init_value_4kc9") }
     val listState = rememberLazyListState()
 
-    //避免某些情况下并发赋值导致报错，不过我不确定 mutableStateList() 返回的 snapshotedList() 默认是不是并发按钮，如果是，就不需要这个锁，我记得好像不是？
+    //避免高强度并发赋值导致报错，虽然一般没事，但墨菲定律，你懂的
     val diffableListLock = remember { Mutex() }
 
     val diffableItemList = mutableCustomStateListOf(keyTag = stateKeyTag, keyName = "diffableItemList") {
