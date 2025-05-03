@@ -2358,7 +2358,7 @@ fun DiffScreen(
             //初次加载会把初始索引设置到subList里，这时条目未展开也一样加载并且只会加载一个条目，但是后续加载时则仅加载展开（visible)的条目，不可见的条目不会加载
             //若想立刻加载所有，可通过顶栏的展开全部按钮再点刷新
             //仅加载指定列表条目(即使不可见，也加载，加载前会设为可见)，若指定列表为空，则只加载展开的条目
-            if((subList.isNotEmpty() && subList.contains(idx).not()) || (subList.isEmpty() && !item.visible)) continue;
+            if(!isSingleMode && ((subList.isNotEmpty() && subList.contains(idx).not()) || (subList.isEmpty() && !item.visible))) continue;
 
             //创建新条目前，把旧条目的loadChannel关了，否则如果之前的任务(加载diffItemSaver)未完成，不会取消，会继续执行
             item.closeLoadChannel()
