@@ -424,8 +424,9 @@ fun EditorInnerPage(
     //强制重载，不检测修改时间
     val reloadFile = { force:Boolean ->
 
-
-        quitPreviewMode()
+        // reload没必要退出预览模式啊，要不你就检测下如果当前是预览模式就别reload edit模式的文件，
+        // 要不就无视，直接加载，但没必要退出；反之，退出预览模式时会检查是否需要重载文件
+//        quitPreviewMode()
 
 //        showReloadDialog.value=false
 
