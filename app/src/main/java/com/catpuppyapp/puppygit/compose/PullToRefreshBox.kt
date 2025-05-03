@@ -49,6 +49,7 @@ fun PullToRefreshBox(
     val onRefresh = if(isRefreshRawValue == null) {
         {
             doJobThenOffLoading {
+                isRefreshing.value = true
                 delay(2000)
                 isRefreshing.value = false
             }
