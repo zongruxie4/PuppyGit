@@ -25,8 +25,8 @@ import com.catpuppyapp.puppygit.play.pro.R
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun PullToRefreshBox(
-    isRefreshing: Boolean,
     onRefresh: () -> Unit,
+    isRefreshing: Boolean = false,  //因为我之前弄了其他的loading弹窗或文字，所以一般不需要这个东西指示是否loading，只要下拉刷新的功能就行了
     modifier: Modifier = Modifier,
     content: @Composable ()->Unit,
 ) {

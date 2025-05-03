@@ -98,8 +98,8 @@ fun <T> MyLazyColumn(
 @Composable
 fun <T> MyPullRefreshLazyColumn(
     // pull to refresh 组件的参数
-    pull_isRefreshing: Boolean,
     pull_onRefresh: () -> Unit,
+    pull_isRefreshing: Boolean = false,
     pull_Modifier: Modifier = Modifier,
 
     // lazy column的参数
@@ -119,8 +119,8 @@ fun <T> MyPullRefreshLazyColumn(
     forEachIndexedCb: @Composable (Int, T) -> Unit
 ) {
     PullToRefreshBox(
-        isRefreshing = pull_isRefreshing,
         onRefresh = pull_onRefresh,
+        isRefreshing = pull_isRefreshing,
         modifier = pull_Modifier,
     ) {
         MyLazyColumn (
