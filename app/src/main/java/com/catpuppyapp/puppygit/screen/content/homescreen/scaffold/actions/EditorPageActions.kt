@@ -14,6 +14,7 @@ import androidx.compose.material.icons.filled.CheckBoxOutlineBlank
 import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.Home
 import androidx.compose.material.icons.filled.MoreVert
+import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.Icon
@@ -138,6 +139,14 @@ fun EditorPageActions(
             icon = Icons.AutoMirrored.Filled.ArrowForwardIos,
         ) {
             editorPageRequest.value = PageRequest.editorPreviewPageGoForward
+        }
+
+        LongPressAbleIconBtn(
+            enabled = true,
+            tooltipText = stringResource(R.string.refresh),
+            icon = Icons.Filled.Refresh,
+        ) {
+            editorPageRequest.value = PageRequest.editor_RequireRefreshPreviewPage
         }
 
         return  //返回，以免显示菜单项

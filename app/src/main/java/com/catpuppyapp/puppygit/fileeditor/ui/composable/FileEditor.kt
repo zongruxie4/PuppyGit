@@ -62,6 +62,7 @@ import androidx.compose.ui.unit.sp
 import com.catpuppyapp.puppygit.compose.BottomBar
 import com.catpuppyapp.puppygit.compose.ConfirmDialog
 import com.catpuppyapp.puppygit.compose.MarkDownContainer
+import com.catpuppyapp.puppygit.compose.PullToRefreshBox
 import com.catpuppyapp.puppygit.compose.SelectedItemDialog3
 import com.catpuppyapp.puppygit.compose.SwipeIcon
 import com.catpuppyapp.puppygit.constants.PageRequest
@@ -98,6 +99,7 @@ fun FileEditor(
     previewNavBack:()->Unit,
     previewNavAhead:()->Unit,
     previewNavStack:CustomStateSaveable<EditorPreviewNavStack>,
+    refreshPreviewPage:()->Unit,
 
     previewLoading:Boolean,
     mdText:MutableState<String>,
@@ -300,27 +302,33 @@ fun FileEditor(
 
         Box(modifier = Modifier.fillMaxSize()) {
             if(isPreviewModeOn.value) {
-                Column(
-                    modifier = Modifier
-                        //fillMaxSize 必须在最上面！要不然，文字不会显示在中间！
-                        .fillMaxSize()
-                        .padding(contentPadding)
-                        .verticalScroll(curPreviewScrollState)
-                    ,
+                PullToRefreshBox(
+                    isRefreshing = previewLoading,
+                    onRefresh = { refreshPreviewPage() }
                 ) {
-                    Spacer(Modifier.height(topPadding))
+                    Column(
+                        modifier = Modifier
+                            //fillMaxSize 必须在最上面！要不然，文字不会显示在中间！
+                            .fillMaxSize()
+                            .padding(contentPadding)
+                            .verticalScroll(curPreviewScrollState)
+                        ,
+                    ) {
+                        Spacer(Modifier.height(topPadding))
 
-                    MarkDownContainer(
-                        modifier = Modifier.padding(horizontal = 10.dp),
-                        content = mdText.value,
-                        basePathNoEndSlash = basePath.value,
-                        fontSize = fontSize.intValue, //和编辑器字体大小保持一致
-                        onLinkClicked = { link ->
-                            previewLinkHandler(link)
-                        }
-                    )
+                        MarkDownContainer(
+                            modifier = Modifier.padding(horizontal = 10.dp),
+                            content = mdText.value,
+                            basePathNoEndSlash = basePath.value,
+                            fontSize = fontSize.intValue, //和编辑器字体大小保持一致
+                            onLinkClicked = { link ->
+                                previewLinkHandler(link)
+                            }
+                        )
 
-                    Spacer(Modifier.height(30.dp))
+                        Spacer(Modifier.height(30.dp))
+                    }
+
                 }
 
                 LaunchedEffect(Unit) {
