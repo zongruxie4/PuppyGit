@@ -11,6 +11,7 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.MutableIntState
 import androidx.compose.runtime.MutableState
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.hapticfeedback.HapticFeedbackType
@@ -24,6 +25,7 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import com.catpuppyapp.puppygit.git.CommitDto
 import com.catpuppyapp.puppygit.play.pro.R
+import com.catpuppyapp.puppygit.style.MyStyleKt
 import com.catpuppyapp.puppygit.utils.Libgit2Helper
 import com.catpuppyapp.puppygit.utils.Msg
 import com.catpuppyapp.puppygit.utils.UIHelper
@@ -61,6 +63,9 @@ fun CommitItem(
         curCommit.value = commitDto
         curCommitIdx.intValue = idx
     }
+
+    val defaultFontWeight = remember { MyStyleKt.TextItem.defaultFontWeight() }
+    
 
 //    println("IDX::::::::::"+idx)
     Column(
@@ -120,7 +125,7 @@ fun CommitItem(
             Text(text = commitDto.shortOidStr,
                 maxLines = 1,
                 overflow = TextOverflow.Ellipsis,
-                fontWeight = FontWeight.Light
+                fontWeight = defaultFontWeight
 
             )
 
@@ -138,7 +143,7 @@ fun CommitItem(
 //            Text(text = commitDto.email,
 //                maxLines = 1,
 //                overflow = TextOverflow.Ellipsis,
-//                fontWeight = FontWeight.Light
+//                fontWeight = defaultFontWeight
 //
 //            )
 //        }
@@ -150,7 +155,7 @@ fun CommitItem(
             Text(text = Libgit2Helper.getFormattedUsernameAndEmail(commitDto.author, commitDto.email),
                 maxLines = 1,
                 overflow = TextOverflow.Ellipsis,
-                fontWeight = FontWeight.Light
+                fontWeight = defaultFontWeight
 
             )
         }
@@ -164,7 +169,7 @@ fun CommitItem(
                 Text(text = Libgit2Helper.getFormattedUsernameAndEmail(commitDto.committerUsername, commitDto.committerEmail),
                     maxLines = 1,
                     overflow = TextOverflow.Ellipsis,
-                    fontWeight = FontWeight.Light
+                    fontWeight = defaultFontWeight
 
                 )
             }
@@ -179,7 +184,7 @@ fun CommitItem(
             Text(text = if(shouldShowTimeZoneInfo) TimeZoneUtil.appendUtcTimeZoneText(commitDto.dateTime, commitDto.originTimeOffsetInMinutes) else commitDto.dateTime,
                 maxLines = 1,
                 overflow = TextOverflow.Ellipsis,
-                fontWeight = FontWeight.Light
+                fontWeight = defaultFontWeight
 
             )
         }
@@ -204,7 +209,7 @@ fun CommitItem(
                 Text(text = commitDto.branchShortNameList.toString(),
                     maxLines = 1,
                     overflow = TextOverflow.Ellipsis,
-                    fontWeight = FontWeight.Light
+                    fontWeight = defaultFontWeight
 
                 )
             }
@@ -221,7 +226,7 @@ fun CommitItem(
                 Text(text = commitDto.tagShortNameList.toString(),
                     maxLines = 1,
                     overflow = TextOverflow.Ellipsis,
-                    fontWeight = FontWeight.Light
+                    fontWeight = defaultFontWeight
 
                 )
             }
@@ -238,7 +243,7 @@ fun CommitItem(
                 Text(text = commitDto.parentShortOidStrList.toString(),
                     maxLines = 1,
                     overflow = TextOverflow.Ellipsis,
-                    fontWeight = FontWeight.Light
+                    fontWeight = defaultFontWeight
 
                 )
             }
@@ -253,7 +258,7 @@ fun CommitItem(
                 Text(text = commitDto.getOther(activityContext, false),
                     maxLines = 1,
                     overflow = TextOverflow.Ellipsis,
-                    fontWeight = FontWeight.Light
+                    fontWeight = defaultFontWeight
                 )
             }
 

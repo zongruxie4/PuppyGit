@@ -11,6 +11,7 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.MutableIntState
 import androidx.compose.runtime.MutableState
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.hapticfeedback.HapticFeedbackType
@@ -24,6 +25,7 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import com.catpuppyapp.puppygit.git.FileHistoryDto
 import com.catpuppyapp.puppygit.play.pro.R
+import com.catpuppyapp.puppygit.style.MyStyleKt
 import com.catpuppyapp.puppygit.utils.Libgit2Helper
 import com.catpuppyapp.puppygit.utils.Msg
 import com.catpuppyapp.puppygit.utils.UIHelper
@@ -62,6 +64,8 @@ fun FileHistoryItem(
         curCommit.value = dto
         curCommitIdx.intValue = idx
     }
+    
+    val defaultFontWeight = remember { MyStyleKt.TextItem.defaultFontWeight() }
 
 //    println("IDX::::::::::"+idx)
     Column(
@@ -122,7 +126,7 @@ fun FileHistoryItem(
                 text = dto.getCachedCommitShortOidStr(),
                 maxLines = 1,
                 overflow = TextOverflow.Ellipsis,
-                fontWeight = FontWeight.Light
+                fontWeight = defaultFontWeight
 
             )
 
@@ -142,7 +146,7 @@ fun FileHistoryItem(
                 text = dto.getCachedTreeEntryShortOidStr(),
                 maxLines = 1,
                 overflow = TextOverflow.Ellipsis,
-                fontWeight = FontWeight.Light
+                fontWeight = defaultFontWeight
 
             )
 
@@ -160,7 +164,7 @@ fun FileHistoryItem(
 //            Text(text = FileHistoryDto.email,
 //                maxLines = 1,
 //                overflow = TextOverflow.Ellipsis,
-//                fontWeight = FontWeight.Light
+//                fontWeight = defaultFontWeight
 //
 //            )
 //        }
@@ -173,7 +177,7 @@ fun FileHistoryItem(
                 text = Libgit2Helper.getFormattedUsernameAndEmail(dto.authorUsername, dto.authorEmail),
                 maxLines = 1,
                 overflow = TextOverflow.Ellipsis,
-                fontWeight = FontWeight.Light
+                fontWeight = defaultFontWeight
 
             )
         }
@@ -188,7 +192,7 @@ fun FileHistoryItem(
                     text = Libgit2Helper.getFormattedUsernameAndEmail(dto.committerUsername, dto.committerEmail),
                     maxLines = 1,
                     overflow = TextOverflow.Ellipsis,
-                    fontWeight = FontWeight.Light
+                    fontWeight = defaultFontWeight
 
                 )
             }
@@ -204,7 +208,7 @@ fun FileHistoryItem(
                 text = if(shouldShowTimeZoneInfo) TimeZoneUtil.appendUtcTimeZoneText(dto.dateTime, dto.originTimeOffsetInMinutes) else dto.dateTime,
                 maxLines = 1,
                 overflow = TextOverflow.Ellipsis,
-                fontWeight = FontWeight.Light
+                fontWeight = defaultFontWeight
 
             )
         }

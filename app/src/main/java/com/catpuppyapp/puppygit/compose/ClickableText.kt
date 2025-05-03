@@ -18,7 +18,7 @@ fun ClickableText(text:String, onClick:(()->Unit)?) {
         text = text,
         maxLines = 1,
         overflow = TextOverflow.Ellipsis,
-        fontWeight = FontWeight.Light,
+        fontWeight = MyStyleKt.TextItem.defaultFontWeight(),
         style = MyStyleKt.ClickableText.getStyle(),
         color = MyStyleKt.ClickableText.color,
         fontSize = 16.sp,

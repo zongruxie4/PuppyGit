@@ -11,6 +11,7 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.MutableIntState
 import androidx.compose.runtime.MutableState
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -59,6 +60,9 @@ fun BranchItem(
         //设置当前条目
         curObjFromParent.value = thisObj
     }
+
+    val defaultFontWeight = remember { MyStyleKt.TextItem.defaultFontWeight() }
+    
 
     Column(
         //0.9f 占父元素宽度的百分之90
@@ -115,7 +119,7 @@ fun BranchItem(
             Text(text = thisObj.shortName,
                 maxLines = 1,
                 overflow = TextOverflow.Ellipsis,
-                fontWeight = if(thisObj.isCurrent) FontWeight.ExtraBold else FontWeight.Light,
+                fontWeight = if(thisObj.isCurrent) FontWeight.ExtraBold else defaultFontWeight,
                 color = if(thisObj.isCurrent) MyStyleKt.TextColor.highlighting_green else Color.Unspecified
             )
         }
@@ -130,7 +134,7 @@ fun BranchItem(
             Text(text = thisObj.shortOidStr,
                 maxLines = 1,
                 overflow = TextOverflow.Ellipsis,
-                fontWeight = FontWeight.Light
+                fontWeight = defaultFontWeight
 
             )
 
@@ -150,7 +154,7 @@ fun BranchItem(
 //                Text(text = if (thisObj.isCurrent) stringResource(R.string.yes) else stringResource(R.string.no),
 //                    maxLines = 1,
 //                    overflow = TextOverflow.Ellipsis,
-//                    fontWeight = FontWeight.Light
+//                    fontWeight = defaultFontWeight
 //
 //                )
 //            }
@@ -165,7 +169,7 @@ fun BranchItem(
             Text(text = thisObj.getTypeString(activityContext, false),
                 maxLines = 1,
                 overflow = TextOverflow.Ellipsis,
-                fontWeight = FontWeight.Light
+                fontWeight = defaultFontWeight
 
             )
         }
@@ -184,7 +188,7 @@ fun BranchItem(
 //                    text = if (thisObj.upstream!!.isPublished) stringResource(R.string.yes) else stringResource(R.string.no),
 //                    maxLines = 1,
 //                    overflow = TextOverflow.Ellipsis,
-//                    fontWeight = FontWeight.Light
+//                    fontWeight = defaultFontWeight
 //
 //                )
 //            }
@@ -215,7 +219,7 @@ fun BranchItem(
                         text = thisObj.getAheadBehind(activityContext, false),
                         maxLines = 1,
                         overflow = TextOverflow.Ellipsis,
-                        fontWeight = FontWeight.Light
+                        fontWeight = defaultFontWeight
 
                     )
                 }
@@ -232,7 +236,7 @@ fun BranchItem(
                 Text(text = thisObj.symbolicTargetShortName,
                     maxLines = 1,
                     overflow = TextOverflow.Ellipsis,
-                    fontWeight = FontWeight.Light
+                    fontWeight = defaultFontWeight
 
                 )
             }
@@ -246,7 +250,7 @@ fun BranchItem(
             Text(text = thisObj.getOther(activityContext, false),
                 maxLines = 1,
                 overflow = TextOverflow.Ellipsis,
-                fontWeight = FontWeight.Light
+                fontWeight = defaultFontWeight
 
             )
         }

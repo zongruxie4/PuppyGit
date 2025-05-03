@@ -18,6 +18,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
+import com.catpuppyapp.puppygit.style.MyStyleKt
 import com.catpuppyapp.puppygit.ui.theme.Theme
 import com.catpuppyapp.puppygit.utils.UIHelper
 
@@ -40,7 +41,6 @@ fun CardButton(
         content = {
             Text(
                 text = text,
-                fontWeight = FontWeight.Light,
                 maxLines = 1,
                 softWrap = false,
                 overflow = TextOverflow.Ellipsis,

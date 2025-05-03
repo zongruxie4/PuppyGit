@@ -11,6 +11,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.MutableState
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.hapticfeedback.HapticFeedbackType
@@ -22,6 +23,7 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import com.catpuppyapp.puppygit.git.SubmoduleDto
 import com.catpuppyapp.puppygit.play.pro.R
+import com.catpuppyapp.puppygit.style.MyStyleKt
 import com.catpuppyapp.puppygit.utils.Libgit2Helper
 import com.catpuppyapp.puppygit.utils.UIHelper
 
@@ -38,6 +40,8 @@ fun SubmoduleItem(
 ) {
     val activityContext = LocalContext.current
     val haptic = LocalHapticFeedback.current
+
+    val defaultFontWeight = remember { MyStyleKt.TextItem.defaultFontWeight() }
 
     Column(
         //0.9f 占父元素宽度的百分之90
@@ -86,7 +90,7 @@ fun SubmoduleItem(
             Text(text = thisObj.name,
                 maxLines = 1,
                 overflow = TextOverflow.Ellipsis,
-                fontWeight = FontWeight.Light
+                fontWeight = defaultFontWeight
 
             )
         }
@@ -99,7 +103,7 @@ fun SubmoduleItem(
             Text(text = thisObj.remoteUrl,
                 maxLines = 1,
                 overflow = TextOverflow.Ellipsis,
-                fontWeight = FontWeight.Light
+                fontWeight = defaultFontWeight
 
             )
         }
@@ -112,7 +116,7 @@ fun SubmoduleItem(
             Text(text = thisObj.relativePathUnderParent,
                 maxLines = 1,
                 overflow = TextOverflow.Ellipsis,
-                fontWeight = FontWeight.Light
+                fontWeight = defaultFontWeight
             )
         }
 
@@ -124,7 +128,7 @@ fun SubmoduleItem(
             Text(text = Libgit2Helper.getShortOidStrByFull(thisObj.targetHash),
                 maxLines = 1,
                 overflow = TextOverflow.Ellipsis,
-                fontWeight = FontWeight.Light
+                fontWeight = defaultFontWeight
             )
         }
         Row (
@@ -135,7 +139,7 @@ fun SubmoduleItem(
             Text(text = thisObj.location.toString(),
                 maxLines = 1,
                 overflow = TextOverflow.Ellipsis,
-                fontWeight = FontWeight.Light
+                fontWeight = defaultFontWeight
             )
         }
 
@@ -148,7 +152,7 @@ fun SubmoduleItem(
             Text(text = thisObj.getStatus(activityContext),
                 maxLines = 1,
                 overflow = TextOverflow.Ellipsis,
-                fontWeight = FontWeight.Light,
+                fontWeight = defaultFontWeight,
                 color = thisObj.getStatusColor()
             )
         }
@@ -161,7 +165,7 @@ fun SubmoduleItem(
                 Text(text = thisObj.getOther(),
                     maxLines = 1,
                     overflow = TextOverflow.Ellipsis,
-                    fontWeight = FontWeight.Light,
+                    fontWeight = defaultFontWeight,
                 )
             }
         }

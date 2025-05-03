@@ -11,6 +11,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.MutableState
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.hapticfeedback.HapticFeedbackType
@@ -24,6 +25,7 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import com.catpuppyapp.puppygit.git.TagDto
 import com.catpuppyapp.puppygit.play.pro.R
+import com.catpuppyapp.puppygit.style.MyStyleKt
 import com.catpuppyapp.puppygit.utils.Msg
 import com.catpuppyapp.puppygit.utils.UIHelper
 import com.catpuppyapp.puppygit.utils.time.TimeZoneUtil
@@ -45,6 +47,8 @@ fun TagItem(
     val activityContext = LocalContext.current
 
     val haptic = LocalHapticFeedback.current
+
+    val defaultFontWeight = remember { MyStyleKt.TextItem.defaultFontWeight() }
 
     Column(
         //0.9f 占父元素宽度的百分之90
@@ -93,7 +97,7 @@ fun TagItem(
             Text(text = thisObj.shortName,
                 maxLines = 1,
                 overflow = TextOverflow.Ellipsis,
-                fontWeight = FontWeight.Light
+                fontWeight = defaultFontWeight
 
             )
         }
@@ -108,7 +112,7 @@ fun TagItem(
             Text(text = thisObj.getCachedTargetShortOidStr(),
                 maxLines = 1,
                 overflow = TextOverflow.Ellipsis,
-                fontWeight = FontWeight.Light
+                fontWeight = defaultFontWeight
             )
 
             InLineCopyIcon {
@@ -125,7 +129,7 @@ fun TagItem(
             Text(text = thisObj.getType(activityContext, false),
                 maxLines = 1,
                 overflow = TextOverflow.Ellipsis,
-                fontWeight = FontWeight.Light
+                fontWeight = defaultFontWeight
             )
         }
 
@@ -139,7 +143,7 @@ fun TagItem(
                 Text(text = thisObj.getFormattedTaggerNameAndEmail(),
                     maxLines = 1,
                     overflow = TextOverflow.Ellipsis,
-                    fontWeight = FontWeight.Light
+                    fontWeight = defaultFontWeight
 
                 )
             }
@@ -151,7 +155,7 @@ fun TagItem(
                 Text(text = if(shouldShowTimeZoneInfo) TimeZoneUtil.appendUtcTimeZoneText(thisObj.getFormattedDate(), thisObj.originTimeOffsetInMinutes) else thisObj.getFormattedDate(),
                     maxLines = 1,
                     overflow = TextOverflow.Ellipsis,
-                    fontWeight = FontWeight.Light
+                    fontWeight = defaultFontWeight
 
                 )
             }
