@@ -217,6 +217,13 @@ dependencies {
 
 //    implementation("androidx.compose.material3:material3-android:1.2.0-beta02")
 
+
+
+
+    //启动屏幕
+    implementation("androidx.core:core-splashscreen:1.0.1")
+
+
     //对应组件的实际版本号，参见：https://developer.android.com/develop/ui/compose/bom/bom-mapping
     val composeBom = platform("androidx.compose:compose-bom:2025.04.00")
 
