@@ -669,8 +669,8 @@ fun EditorInnerPage(
         }
     }
 
-    val updatePreviewDto = { path:String ->
-        editorPreviewFileDto.value = FileSimpleDto.genByFile(FuckSafFile(activityContext, FilePath(path)))
+    val updatePreviewDto = { previewPath:String ->
+        editorPreviewFileDto.value = FileSimpleDto.genByFile(FuckSafFile(activityContext, FilePath(previewPath)))
     }
 
     val refreshPreviewPageNoCoroutine = j@{ previewPath:String, force:Boolean ->
