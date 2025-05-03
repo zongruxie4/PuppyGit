@@ -53,7 +53,7 @@ fun PullToRefreshBox(
         {
             doJobThenOffLoading {
                 isRefreshing.value = true
-                delay(1000)
+                delay(500)
                 isRefreshing.value = false
             }
 
