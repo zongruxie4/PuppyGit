@@ -381,6 +381,21 @@ fun FileEditor(
                     Row(
 //                horizontalArrangement = Arrangement.spacedBy(4.dp),
                         modifier = Modifier
+                            //底线
+                            .bottomBorder(
+                                strokeWidth = 1.dp,
+                                color = UIHelper.getDividerColor()
+                            )
+                            //每行左边的修改类型指示器，显示当前行是新增的还是修改的
+                            .drawBehind {
+                                drawLine(
+                                    color = currentField.getColorOfChangeType(inDarkTheme),
+                                    strokeWidth = 5.dp.toPx(),  //宽度
+                                    //起始和结束点，单位应该是px
+                                    start = Offset(0f, 0f),
+                                    end = Offset(0f, size.height),
+                                )
+                            }
                             .fillMaxWidth()
                             .background(
                                 getBackgroundColor(
@@ -396,10 +411,6 @@ fun FileEditor(
                             .then(
                                 //给第一行top加点padding，不然离上面太近，难受
                                 if(index == 0) Modifier.padding(top = topPadding) else Modifier
-                            )
-                            .bottomBorder(
-                                strokeWidth = 1.dp,
-                                color = UIHelper.getDividerColor()
                             )
                     ) {
 
@@ -427,10 +438,8 @@ fun FileEditor(
                                 }
                             }
                         ) {
-                            //行修改类型指示器，显示当前行是新增的还是修改的
-                            //整个空格，不然不显示
-                            //这里不能用 `color = 颜色`，不生效，就得用modifier设背景色
-                            Text(" ", modifier = Modifier.padding(end = 5.dp).background(currentField.getColorOfChangeType(inDarkTheme)))
+                            //充当行号修改类型指示器和行号之间的padding，不然会重叠
+                            Text("", modifier = Modifier.padding(end = 5.dp))
 
 
                             //行号
