@@ -398,71 +398,76 @@ fun FileEditor(
                                 color = UIHelper.getDividerColor()
                             )
                     ) {
-                        //行修改类型指示器，显示当前行是新增的还是修改的
-//                          //      .padding()
-                        Row(modifier = Modifier.padding(end = if (showLineNum.value) 2.dp else 5.dp)) {
+
+                        Row(
+                            modifier = Modifier.combinedClickable(
+                                onLongClick = {
+                                    if (textEditorState.value.isMultipleSelectionMode) {
+                                        haptic.performHapticFeedback(HapticFeedbackType.LongPress)
+
+                                        doJobThenOffLoading {
+                                            textEditorState.value.selectFieldSpan(targetIndex = index)
+                                        }
+                                    }
+                                }
+                            ) {
+                                //如果是行选择模式，选中当前点击的行如果不是行选择模式；进入行选择模式
+                                if (textEditorState.value.isMultipleSelectionMode) {
+                                    //选中/取消选中 当前点击的行
+                                    doJobThenOffLoading {
+                                        textEditorState.value.selectField(targetIndex = index)
+                                    }
+
+                                } else { // 非行选择模式，启动行选择模式 (multiple selection mode on)
+                                    enableSelectMode(index)
+                                }
+                            }
+                        ) {
+                            //行修改类型指示器，显示当前行是新增的还是修改的
                             //整个空格，不然不显示
                             //这里不能用 `color = 颜色`，不生效，就得用modifier设背景色
-                            Text(" ", modifier = Modifier.background(currentField.getColorOfChangeType(inDarkTheme)))
-                        }
+                            Text(" ", modifier = Modifier.padding(end = 5.dp).background(currentField.getColorOfChangeType(inDarkTheme)))
 
 
-                        if(showLineNum.value) {
-                            Box (
-                                //让行号和选择图标居中
+                            //行号
+                            if(showLineNum.value) {
+                                Box (
+                                    //让行号和选择图标居中
 //                    horizontalAlignment = Alignment.CenterHorizontally
-                            ){
-                                // TextLine Number
-                                Text(
-                                    modifier = Modifier.align(Alignment.TopCenter),
-                                    text = getLineNumber(index),
-                                    color = if(inDarkTheme) MyStyleKt.TextColor.lineNum_forEditorInDarkTheme else MyStyleKt.TextColor.lineNum_forEditorInLightTheme,
-                                    fontSize = lineNumFontSize.intValue.sp,
-                                    fontFamily = FontFamily.Monospace,  //等宽字体，和diff页面的行号保持一致
-                                    //行号居中
-                                    // modifier = Modifier.align(Alignment.CenterVertically)
-                                )
+                                ){
+                                    // TextLine Number
+                                    Text(
+                                        modifier = Modifier.align(Alignment.TopCenter),
+                                        text = getLineNumber(index),
+                                        color = if(inDarkTheme) MyStyleKt.TextColor.lineNum_forEditorInDarkTheme else MyStyleKt.TextColor.lineNum_forEditorInLightTheme,
+                                        fontSize = lineNumFontSize.intValue.sp,
+                                        fontFamily = FontFamily.Monospace,  //等宽字体，和diff页面的行号保持一致
+                                        //行号居中
+                                        // modifier = Modifier.align(Alignment.CenterVertically)
+                                    )
 
-                                // TextField Menu Icon
-                                FieldIcon(
+                                    // TextField Menu Icon
+                                    FieldIcon(
 //                                    isMultipleSelection = textEditorState.value.isMultipleSelectionMode,
-                                    focused = index == textEditorState.value.focusingLineIdx,
+                                        focused = index == textEditorState.value.focusingLineIdx,
 
-                                    //是否聚焦本行（三道横线图标）禁用了，不管了，维护这个状态太烦
+                                        //是否聚焦本行（三道横线图标）禁用了，不管了，维护这个状态太烦
 //                                    focused = false,
 
-                                    modifier = Modifier
-                                        .size(12.dp)
-                                        .padding(top = 1.dp)
-                                        .align(Alignment.BottomCenter)
-                                        .focusable(false)  //这不是我加的，是compose text editor原作者加的，不知道这个focusable(false)有什么用，是想让这个图标在用键盘导航时不聚焦吗？但实际还是能聚焦啊，所以可能和这个无关，那这个到底什么作用？
-                                        .combinedClickable(
-                                            onLongClick = {
-                                                if (textEditorState.value.isMultipleSelectionMode) {
-                                                    haptic.performHapticFeedback(HapticFeedbackType.LongPress)
+                                        modifier = Modifier
+                                            .size(12.dp)
+                                            .padding(top = 1.dp)
+                                            .align(Alignment.BottomCenter)
+                                            .focusable(false)  //这个focusable不是我加的，是compose text editor原作者加的，不知道这个focusable(false)有什么用，是想让这个图标在用键盘导航时不聚焦吗？但实际还是能聚焦啊，所以可能和这个无关，那这个到底什么作用？
 
-                                                    doJobThenOffLoading {
-                                                        textEditorState.value.selectFieldSpan(targetIndex = index)
-                                                    }
-                                                }
-                                            }
-                                        ) {
-                                            //如果是行选择模式，选中当前点击的行如果不是行选择模式；进入行选择模式
-                                            if (textEditorState.value.isMultipleSelectionMode) {
-                                                //选中/取消选中 当前点击的行
-                                                doJobThenOffLoading {
-                                                    textEditorState.value.selectField(targetIndex = index)
-                                                }
 
-                                            } else { // 非行选择模式，启动行选择模式 (multiple selection mode on)
-                                                enableSelectMode(index)
-                                            }
-                                        }
+                                    )
 
-                                )
-
+                                }
                             }
                         }
+
+
 
                         // TextField
                         innerTextField(
