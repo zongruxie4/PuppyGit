@@ -376,7 +376,7 @@ fun FileEditor(
                     mergeMode=mergeMode,
                     patchMode=patchMode,
                     fontSize=fontSize,
-                ) { index, isSelected, innerTextField ->
+                ) { index, isSelected, currentField, innerTextField ->
                     // TextLine
                     Row(
 //                horizontalArrangement = Arrangement.spacedBy(4.dp),
@@ -388,7 +388,7 @@ fun FileEditor(
                                     textEditorState.value.isMultipleSelectionMode
                                 )
                             )
-                            .padding(start = (if (showLineNum.value) 2.dp else 5.dp), end = 5.dp)
+                            .padding(end = 5.dp)
                             .then(
                                 //给第一行top加点padding，不然离上面太近，难受
                                 if(index == 0) Modifier.padding(top = topPadding) else Modifier
@@ -398,6 +398,15 @@ fun FileEditor(
                                 color = UIHelper.getDividerColor()
                             )
                     ) {
+                        //行修改类型指示器，显示当前行是新增的还是修改的
+//                          //      .padding()
+                        Row(modifier = Modifier.padding(end = if (showLineNum.value) 2.dp else 5.dp)) {
+                            //整个空格，不然不显示
+                            //这里不能用 `color = 颜色`，不生效，就得用modifier设背景色
+                            Text(" ", modifier = Modifier.background(currentField.getColorOfChangeType(inDarkTheme)))
+                        }
+
+
                         if(showLineNum.value) {
                             Box (
                                 //让行号和选择图标居中

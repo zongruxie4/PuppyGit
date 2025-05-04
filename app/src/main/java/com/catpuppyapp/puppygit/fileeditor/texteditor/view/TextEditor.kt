@@ -64,6 +64,7 @@ import com.catpuppyapp.puppygit.dto.UndoStack
 import com.catpuppyapp.puppygit.fileeditor.texteditor.state.FindDirection
 import com.catpuppyapp.puppygit.fileeditor.texteditor.state.SelectionOption
 import com.catpuppyapp.puppygit.fileeditor.texteditor.state.TextEditorState
+import com.catpuppyapp.puppygit.fileeditor.texteditor.state.TextFieldState
 import com.catpuppyapp.puppygit.play.pro.R
 import com.catpuppyapp.puppygit.screen.shared.FilePath
 import com.catpuppyapp.puppygit.settings.AppSettings
@@ -125,6 +126,7 @@ class ExpectConflictStrDto(
 typealias DecorationBoxComposable = @Composable (
     index: Int,
     isSelected: Boolean,
+    currentField: TextFieldState,
     innerTextField: @Composable (modifier: Modifier) -> Unit
 ) -> Unit
 
@@ -163,7 +165,7 @@ fun TextEditor(
     searchKeyword:String,
     fontSize: MutableIntState,
 
-    decorationBox: DecorationBoxComposable = { _, _, innerTextField -> innerTextField(Modifier) },
+    decorationBox: DecorationBoxComposable = { _, _, _, innerTextField -> innerTextField(Modifier) },
 ) {
 
     val density = LocalDensity.current
@@ -1077,7 +1079,8 @@ fun TextEditor(
 
                         decorationBox(
                             index,
-                            textFieldState.isSelected
+                            textFieldState.isSelected,
+                            textFieldState,
                         ) { modifier ->
                             // FileEditor里的innerTextFiled()会执行这的代码
                             Box(

@@ -299,6 +299,7 @@ class TextEditorState private constructor(
 
     }
 
+
     suspend fun splitNewLine(targetIndex: Int, textFieldValue: TextFieldValue) {
         lock.withLock {
             targetIndexValidOrThrow(targetIndex, fields.size)
@@ -312,15 +313,23 @@ class TextEditorState private constructor(
             //分割当前行
             val splitFieldValues = splitTextsByNL(newText)
 
+            //创建新字段集合
             val newFields = fields.toMutableList()
 
+            //处理第一行
             val splitFirstLine = splitFieldValues.first()
-            newFields[targetIndex] = newFields[targetIndex].copy(value = splitFirstLine, isSelected = false)
+            val oldLine = newFields[targetIndex]
+            newFields[targetIndex] = oldLine.copy(value = splitFirstLine, isSelected = false).apply {
+                // this是拷贝了新内容的新字段，如果新字段的文本和旧字段的文本不同，说明内容改变了，更新changeType，否则不用更新
+                if(this.value.text != oldLine.value.text) {
+                    updateLineChangeTypeIfNone(LineChangeType.UPDATED)
+                }
+            }
 
-
-            //追加新行（第一行可能有之前行的后半段内容）
+            //追加新行（注意：新行从第二行开始，并且，如果新行是从旧行的中间分割的，则新行的第一行可能有旧行的后半段内容）
             val newSplitFieldValues = splitFieldValues.subList(1, splitFieldValues.count())
-            val newSplitFieldStates = newSplitFieldValues.map { TextFieldState(value = it, isSelected = false) }
+            //把新内容转换成text field对象，其类型必然是NEW，因为是新增的
+            val newSplitFieldStates = newSplitFieldValues.map { TextFieldState(value = it, isSelected = false, changeType = LineChangeType.NEW) }
 
             //addAll若待插入值，最大值是size，不会越界，若超过就越了
             newFields.addAll(targetIndex + 1, newSplitFieldStates)
@@ -467,19 +476,26 @@ class TextEditorState private constructor(
 
             var maybeNewId = fieldsId
 
+            val newFields = fields.toMutableList()
+
+            val updatedField = newFields[targetIndex].copy(value = textFieldValue);
+
             //判断文本是否相等，注意：就算文本不相等也不能在这返回，不然页面显示有问题，比如光标位置会无法更新
-            if(contentChanged) {
+            newFields[targetIndex] = if(contentChanged) {
                 isContentEdited?.value = true
                 editorPageIsContentSnapshoted?.value = false
                 maybeNewId = newId()
 
                 //缓存新值
                 EditCache.writeToFile(newText)
+
+                //更新当前行状态为已修改
+                updatedField.apply { updateLineChangeTypeIfNone(LineChangeType.UPDATED) }
+            }else {
+                updatedField
             }
 
-            //更新字段
-            val newFields = fields.toMutableList()
-            newFields[targetIndex] = newFields[targetIndex].copy(value = textFieldValue)
+
 
             val newState = internalCreate(
                 fields = newFields,
