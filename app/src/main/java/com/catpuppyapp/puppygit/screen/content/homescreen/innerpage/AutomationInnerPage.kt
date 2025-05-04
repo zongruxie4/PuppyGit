@@ -12,6 +12,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.foundation.rememberScrollState
@@ -602,6 +603,8 @@ fun AutomationInnerPage(
 
                 }
 
+                val iconEndPadding = 5.dp
+
                 if(filteredAddedAppList.isNotEmpty()) {
                     filteredAddedAppList.toList().forEach { appInfo ->
                         item {
@@ -609,9 +612,9 @@ fun AutomationInnerPage(
                                 appInfo = appInfo,
                                 trailIcons = {
                                     Row(
-                                        modifier = Modifier.fillMaxWidth(),
+                                        modifier = Modifier.fillMaxWidth().padding(end = iconEndPadding),
                                         verticalAlignment = Alignment.CenterVertically,
-                                        horizontalArrangement = Arrangement.SpaceBetween
+                                        horizontalArrangement = Arrangement.End
                                     ) {
 
                                         Icon(
@@ -621,6 +624,8 @@ fun AutomationInnerPage(
                                             imageVector = Icons.Outlined.Settings,
                                             contentDescription = stringResource(R.string.settings)
                                         )
+
+                                        Spacer(modifier = Modifier.width(30.dp))
 
                                         Icon(
                                             modifier=Modifier.clickable {
@@ -670,7 +675,7 @@ fun AutomationInnerPage(
                                 appInfo = appInfo,
                                 trailIcons = {
                                     Row(
-                                        modifier = Modifier.fillMaxWidth(),
+                                        modifier = Modifier.fillMaxWidth().padding(end = iconEndPadding),
                                         verticalAlignment = Alignment.CenterVertically,
                                         horizontalArrangement = Arrangement.End
                                     ) {

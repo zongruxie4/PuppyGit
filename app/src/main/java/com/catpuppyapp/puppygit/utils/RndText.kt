@@ -44,7 +44,7 @@ object RndText {
         "https://paypal.me/catpuppyapp",
         "https://paypal.me/catpuppyapp",
         "https://paypal.me/catpuppyapp",
-        "凡所有相，皆是虚妄",
+        "凡所有相，皆为虚妄",
         "🥰💖💘💝",
 
     );
