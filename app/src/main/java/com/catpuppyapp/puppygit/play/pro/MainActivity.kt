@@ -9,18 +9,29 @@ import android.os.Bundle
 import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.ExperimentalComposeUiApi
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalClipboardManager
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.compositionContext
 import androidx.compose.ui.platform.createLifecycleAwareWindowRecomposer
+import androidx.compose.ui.text.AnnotatedString
+import androidx.compose.ui.unit.sp
 import androidx.core.view.WindowCompat
+import com.catpuppyapp.puppygit.compose.CopyableDialog2
 import com.catpuppyapp.puppygit.compose.LoadingText
 import com.catpuppyapp.puppygit.compose.SshUnknownHostDialog
 import com.catpuppyapp.puppygit.jni.SshAskUserUnknownHostRequest
@@ -37,8 +48,10 @@ import com.catpuppyapp.puppygit.user.UserUtil
 import com.catpuppyapp.puppygit.utils.AppModel
 import com.catpuppyapp.puppygit.utils.ContextUtil
 import com.catpuppyapp.puppygit.utils.Lg2HomeUtils
+import com.catpuppyapp.puppygit.utils.Msg
 import com.catpuppyapp.puppygit.utils.MyLog
 import com.catpuppyapp.puppygit.utils.PrefMan
+import com.catpuppyapp.puppygit.utils.RndText
 import com.catpuppyapp.puppygit.utils.doJobThenOffLoading
 import com.catpuppyapp.puppygit.utils.showToast
 import com.catpuppyapp.puppygit.utils.state.mutableCustomStateListOf
@@ -215,6 +228,7 @@ private fun MainCompose() {
     val stateKeyTag = remember { "MainCompose" }
     val funName = remember { "MainCompose" }
 
+    val clipboardManager = LocalClipboardManager.current
     val activityContext = LocalContext.current
     val loadingText = rememberSaveable { mutableStateOf(activityContext.getString(R.string.launching))}
 
@@ -254,7 +268,28 @@ private fun MainCompose() {
     }
 
 
+    val showRandomLoadingTextDialog = rememberSaveable { mutableStateOf(false) }
+    if(showRandomLoadingTextDialog.value) {
+        CopyableDialog2(
+            requireShowTextCompose = true,
+            textCompose = {
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.Center,
+                ) {
+                    Text(text = loadingText.value, fontSize = 20.sp)
+                }
+            },
+//            onDismiss = {},  //x 算了，这个弹窗不重要，应该设置的关闭比保持开启更容易才合理) 避免如果有人想点文字，狂点屏幕，然后显示弹窗，但点到外部，弹窗消失，所以把这个dismiss函数设为空
+            onCancel = { showRandomLoadingTextDialog.value = false }
+        ) {
+            showRandomLoadingTextDialog.value=false
 
+            clipboardManager.setText(AnnotatedString(loadingText.value))
+            Msg.requireShow(activityContext.getString(R.string.copied))
+        }
+    }
 
     //初始化完成显示app界面，否则显示loading界面
     if(isInitDone.value) {
@@ -268,10 +303,19 @@ private fun MainCompose() {
 //        LoadingDialog(loadingText.value)
 //        LoadingDialog()
 
-        //TODO 把文字loading替换成有App Logo 的精美画面
+        //x 废弃，安卓12以上有专门的splash屏幕，已经设置，以下看文字吧，不弄图标了免得和12的冲突，显示两次就尴尬了）xTODO 把文字loading替换成有App Logo 的精美画面
         //这里用Scaffold是因为其会根据系统是否暗黑模式调整背景色，就不需要我自己判断了
         Scaffold { contentPadding ->
-            LoadingText(contentPadding = contentPadding, text = loadingText.value)
+            LoadingText(
+                contentPadding = contentPadding,
+                text = {
+                    // 点文本可弹窗显示文本并可拷贝，不过一般人应该不会点，如果加载快也很难点到
+                    Text(
+                        text = loadingText.value,
+                        modifier = Modifier.clickable { showRandomLoadingTextDialog.value = true },
+                    )
+                }
+            )
         }
     }
 
@@ -279,6 +323,10 @@ private fun MainCompose() {
     LaunchedEffect(Unit) {
 //        println("LaunchedEffect传Unit只会执行一次，由于maincompose是app其他compose的根基，不会被反复创建销毁，所以maincompose里的launchedEffect只会执行一次，可以用来执行读取配置文件之类的初始化操作")
         try {
+
+            //获取随机 loading text
+            loadingText.value = RndText.getOne();
+
 //        读取配置文件，初始化状态之类的操作，初始化时显示一个loading页面，完成后更新状态变量，接着加载app页面
             //初始化完成之后，设置变量，显示应用界面
             doJobThenOffLoading {
@@ -294,7 +342,9 @@ private fun MainCompose() {
 
                 //如果无需主密码，直接在这检查是否需要迁移密码，一般迁移密码发生在加密解密器升级之后，可能换了实现，之类的
                 if(requireMasterPassword.value.not()) {
-                    loadingText.value = activityContext.getString(R.string.checking_creds_migration)
+                    //更新下loading文案
+//                    loadingText.value = activityContext.getString(R.string.checking_creds_migration)
+
                     AppModel.dbContainer.credentialRepository.migrateEncryptVerIfNeed(AppModel.masterPassword.value)
                 }
 
