@@ -6901,4 +6901,7 @@ object Libgit2Helper {
         return Pair(left, right)
     }
 
+    //把msg中的\n换成空格，让\r消失，这样就没换行符了，方便单行显示尽量多的内容
+    fun zipOneLineMsg(msg:String) = msg.replace('\n', ' ').replace("\r", "");
+
 }

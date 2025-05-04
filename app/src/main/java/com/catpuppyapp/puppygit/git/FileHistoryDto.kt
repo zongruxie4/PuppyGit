@@ -31,6 +31,7 @@ class FileHistoryDto (
 
     private var commitShortOidStr:String?=null
     private var treeEntryShortOidStr:String?=null
+    private var cached_OneLineMsg:String? = null
 
     fun authorAndCommitterAreSame():Boolean {
         return authorUsername==committerUsername && authorEmail==committerEmail
@@ -88,6 +89,9 @@ class FileHistoryDto (
 
         )
     }
+
+    fun getCachedOneLineMsg(): String = (cached_OneLineMsg ?: Libgit2Helper.zipOneLineMsg(msg).let { cached_OneLineMsg = it; it });
+
 
 
     companion object {

@@ -165,7 +165,9 @@ class PuppyHunk {
 
     private var cachedHeader:String? = null
 
+    //若不trimEnd()，末尾有空行，影响排版，感觉像多了padding，不好看
     fun cachedNoLineBreakHeader() = (cachedHeader ?: header.trimEnd().let { cachedHeader = it; it });
+
 }
 
 data class PuppyLine (

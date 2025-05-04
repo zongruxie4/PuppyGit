@@ -4,6 +4,7 @@ import android.content.Context
 import com.catpuppyapp.puppygit.play.pro.R
 import com.catpuppyapp.puppygit.settings.AppSettings
 import com.catpuppyapp.puppygit.utils.AppModel
+import com.catpuppyapp.puppygit.utils.Libgit2Helper
 import com.catpuppyapp.puppygit.utils.formatMinutesToUtc
 import com.catpuppyapp.puppygit.utils.readTimeZoneOffsetInMinutesFromSettingsOrDefault
 
@@ -29,6 +30,7 @@ class CommitDto (
 
     private var otherMsg:String?=null
     private var otherMsgSearchableText:String?=null
+    private var cached_OneLineMsg:String? = null
 
     fun hasOther():Boolean {
         return isGrafted || isMerged()
@@ -96,6 +98,8 @@ class CommitDto (
 
         return formatMinutesToUtc(minuteOffset)
     }
+
+    fun getCachedOneLineMsg(): String = (cached_OneLineMsg ?: Libgit2Helper.zipOneLineMsg(msg).let { cached_OneLineMsg = it; it });
 
 }
 
