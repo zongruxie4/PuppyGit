@@ -20,6 +20,7 @@ import com.catpuppyapp.puppygit.constants.Cons
 import com.catpuppyapp.puppygit.constants.StorageDirCons
 import com.catpuppyapp.puppygit.data.AppContainer
 import com.catpuppyapp.puppygit.data.AppDataContainer
+import com.catpuppyapp.puppygit.dev.DevFeature
 import com.catpuppyapp.puppygit.dev.FlagFileName
 import com.catpuppyapp.puppygit.dev.dev_EnableUnTestedFeature
 import com.catpuppyapp.puppygit.jni.LibLoader
@@ -475,6 +476,7 @@ object AppModel {
         // now this only for init "know_hosts" for ssh
         Lg2HomeUtils.init(AppModel.appDataUnderAllReposDir, applicationContext)
 
+        DevFeature.singleDiffState.value = settings.devSettings.singleDiffOn
 
         //实际上，在20241205之后发布的版本都不会再执行此函数了，改成用主密码了，以后默认密码就写死了，不会再改，版本号也不会再变，自然也不再需要迁移
         //执行会suspend的初始化操作

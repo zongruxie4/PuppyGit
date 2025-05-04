@@ -11,6 +11,7 @@ import androidx.compose.ui.platform.ClipboardManager
 import com.catpuppyapp.puppygit.constants.Cons
 import com.catpuppyapp.puppygit.constants.LineNum
 import com.catpuppyapp.puppygit.constants.PageRequest
+import com.catpuppyapp.puppygit.dev.DevFeature
 import com.catpuppyapp.puppygit.dto.UndoStack
 import com.catpuppyapp.puppygit.fileeditor.texteditor.state.TextEditorState
 import com.catpuppyapp.puppygit.git.DiffableItem
@@ -437,7 +438,8 @@ fun goToDiffScreen(
         //等于null说明目标页面不需要此列表，所以不用设置
         val diffableListCacheKey = NaviCache.setThenReturnKey(diffableList) ;
 
-        val isMultiMode = if(fromScreen != DiffFromScreen.FILE_HISTORY.code) 1 else 0
+//        val isMultiMode = if(fromScreen != DiffFromScreen.FILE_HISTORY.code) 1 else 0
+        val isMultiMode = if(fromScreen != DiffFromScreen.FILE_HISTORY.code) DevFeature.singleDiffState.value else 0;
 
         AppModel.navController.navigate(
             Cons.nav_DiffScreen +

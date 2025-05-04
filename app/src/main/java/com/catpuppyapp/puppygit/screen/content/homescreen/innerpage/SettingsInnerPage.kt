@@ -55,6 +55,7 @@ import com.catpuppyapp.puppygit.compose.SingleSelectList
 import com.catpuppyapp.puppygit.compose.SoftkeyboardVisibleListener
 import com.catpuppyapp.puppygit.compose.SpacerRow
 import com.catpuppyapp.puppygit.constants.Cons
+import com.catpuppyapp.puppygit.dev.DevFeature
 import com.catpuppyapp.puppygit.play.pro.R
 import com.catpuppyapp.puppygit.settings.SettingsCons
 import com.catpuppyapp.puppygit.settings.SettingsUtil
@@ -237,6 +238,8 @@ fun SettingsInnerPage(
     val cleanFileOpenHistory = rememberSaveable { mutableStateOf(false) }
 
     val allowUnknownHosts = rememberSaveable { mutableStateOf(settingsState.value.sshSetting.allowUnknownHosts) }
+    val dev_singleDiffOn = rememberSaveable { DevFeature.singleDiffState }
+
 //    val showResetKnownHostsDialog = rememberSaveable { mutableStateOf(false) }
     val showForgetHostKeysDialog = rememberSaveable { mutableStateOf(false) }
     if(showForgetHostKeysDialog.value) {
@@ -1197,6 +1200,26 @@ fun SettingsInnerPage(
         if(devModeOn.value) {
             SettingsTitle("Dev Zone")
 
+            // single diff
+            SettingsContent(
+                onClick = {
+                    DevFeature.updateSingleDiffValue(!dev_singleDiffOn.value)
+                }
+            ) {
+                Column(modifier = Modifier.fillMaxWidth(itemLeftWidthForSwitcher)) {
+                    Text(DevFeature.singleDiffNoPrefix, fontSize = itemFontSize)
+                }
+
+                Icon(
+                    modifier = Modifier.size(switcherIconSize),
+                    imageVector = UIHelper.getIconForSwitcher(dev_singleDiffOn.value),
+                    contentDescription = if(dev_singleDiffOn.value) stringResource(R.string.enable) else stringResource(R.string.disable),
+                    tint = UIHelper.getColorForSwitcher(dev_singleDiffOn.value),
+
+                )
+            }
+
+            // crash the app
             SettingsContent(onClick = {
                 throw RuntimeException("App Crashed For Test Purpose")
             }) {

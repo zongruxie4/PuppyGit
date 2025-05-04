@@ -106,6 +106,10 @@ data class AppSettings(
 
 
     val automation: AutomationSettings = AutomationSettings(),
+
+    val devSettings: DevSettings = DevSettings(),
+
+
 ) {
 
     override fun equals(other: Any?): Boolean {
