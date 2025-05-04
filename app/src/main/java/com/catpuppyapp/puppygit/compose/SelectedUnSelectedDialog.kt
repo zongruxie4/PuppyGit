@@ -73,7 +73,7 @@ fun <T> SelectedUnSelectedList(
 ) {
     MySelectionContainer {
         if(loading) {
-            LoadingTextBase(modifier = Modifier.fillMaxWidth(.5f).padding(top=30.dp), text = { Text(stringResource(R.string.loading)) })
+            LoadingTextBase(modifier = Modifier.fillMaxWidth().padding(top=20.dp), text = { Text(stringResource(R.string.loading)) })
         }else {
             Column(
                 modifier = Modifier.fillMaxWidth(),
