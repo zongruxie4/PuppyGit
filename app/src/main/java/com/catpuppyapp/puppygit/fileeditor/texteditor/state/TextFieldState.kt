@@ -4,6 +4,13 @@ import androidx.compose.runtime.Stable
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.input.TextFieldValue
 
+
+private val lineChangeType_NEW_dark =  Color(0xFF33691E)
+private val lineChangeType_NEW =  Color(0xFF8BC34A)
+private val lineChangeType_UPDATED_dark =  Color(0xFF0277BD)
+private val lineChangeType_UPDATED = Color(0xFF03A9F4)
+
+
 //这个stable注解，我看了下应该符合条件，若更新状态出问题，可取消注解试试
 @Stable
 class TextFieldState(
@@ -70,15 +77,16 @@ class TextFieldState(
         }
     }
 
+
     fun getColorOfChangeType(inDarkTheme: Boolean):Color {
         return if(changeType == LineChangeType.NEW) {
-            if(inDarkTheme) Color(0xFF33691E) else Color(0xFF8BC34A)
+            if(inDarkTheme) lineChangeType_NEW_dark else lineChangeType_NEW
         }else if(changeType == LineChangeType.UPDATED) {
-            if(inDarkTheme) Color(0xFF0277BD) else Color(0xFF03A9F4)
+            if(inDarkTheme) lineChangeType_UPDATED_dark else lineChangeType_UPDATED
         }else {
+            //和背景颜色一样，所以等应该看不出差别，如果能显示出差异，可改成透明
             Color.Unspecified
         }
-
     }
 }
 
