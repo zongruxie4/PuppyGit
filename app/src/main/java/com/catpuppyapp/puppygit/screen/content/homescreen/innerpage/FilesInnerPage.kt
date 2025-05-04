@@ -66,6 +66,7 @@ import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.text.AnnotatedString
+import androidx.compose.ui.text.TextRange
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.TextFieldValue
@@ -688,7 +689,7 @@ fun FilesInnerPage(
 
     val renameFile = {item:FileItemDto ->
         renameFileItemDto.value = item  // 旧item
-        renameFileName.value = TextFieldValue(item.name)  //旧文件名
+        renameFileName.value = TextFieldValue(item.name, selection = TextRange(0, item.name.length))  //旧文件名
 
         renameHasErr.value = false  //初始化为没错误，不然会显示上次报的错，比如“文件名已存在！”
         renameErrText.value = ""  //初始化错误信息为空，理由同上
