@@ -127,6 +127,8 @@ typealias DecorationBoxComposable = @Composable (
     index: Int,
     isSelected: Boolean,
     currentField: TextFieldState,
+    focusingIdx:Int,
+    isMultiSelectionMode: Boolean,
     innerTextField: @Composable (modifier: Modifier) -> Unit
 ) -> Unit
 
@@ -165,7 +167,7 @@ fun TextEditor(
     searchKeyword:String,
     fontSize: MutableIntState,
 
-    decorationBox: DecorationBoxComposable = { _, _, _, innerTextField -> innerTextField(Modifier) },
+    decorationBox: DecorationBoxComposable = { _, _, _, _,_, innerTextField -> innerTextField(Modifier) },
 ) {
 
     val density = LocalDensity.current
@@ -1081,6 +1083,11 @@ fun TextEditor(
                             index,
                             textFieldState.isSelected,
                             textFieldState,
+
+                            //用来判断是否选中当前行，若选中则加背景颜色，如果为null就当作-1，-1为无效索引，这样就不会选中任何行
+                            textEditorState.focusingLineIdx ?: -1,
+                            textEditorState.isMultipleSelectionMode,
+
                         ) { modifier ->
                             // FileEditor里的innerTextFiled()会执行这的代码
                             Box(

@@ -376,7 +376,7 @@ fun FileEditor(
                     mergeMode=mergeMode,
                     patchMode=patchMode,
                     fontSize=fontSize,
-                ) { index, isSelected, currentField, innerTextField ->
+                ) { index, isSelected, currentField, focusingIdx, isMultiSelectionMode, innerTextField ->
                     // TextLine
                     Row(
 //                horizontalArrangement = Arrangement.spacedBy(4.dp),
@@ -384,8 +384,12 @@ fun FileEditor(
                             .fillMaxWidth()
                             .background(
                                 getBackgroundColor(
-                                    isSelected,
-                                    textEditorState.value.isMultipleSelectionMode
+                                    isSelected = isSelected,
+                                    isMultiSelectionMode = isMultiSelectionMode,
+                                    currentIdx = index,
+                                    focusingIdx = focusingIdx,
+                                    inDarkTheme = inDarkTheme,
+
                                 )
                             )
                             .padding(end = 5.dp)
@@ -677,11 +681,14 @@ private fun getLineNumber(index: Int): String {
 }
 
 @Composable
-private fun getBackgroundColor(isSelected: Boolean, isMultiSelectionMode:Boolean): Color {
+private fun getBackgroundColor(isSelected: Boolean, isMultiSelectionMode:Boolean, currentIdx:Int, focusingIdx:Int, inDarkTheme:Boolean, ): Color {
 //    return if (isSelected) Color(0x806456A5) else Color.White
 //    return if (isSelected) MaterialTheme.colorScheme.primaryContainer else Color.Unspecified
     return if (isMultiSelectionMode  &&  isSelected) {
         MaterialTheme.colorScheme.primaryContainer
+    }else if(isMultiSelectionMode.not() && currentIdx == focusingIdx) {
+        //选中行颜色
+        if(inDarkTheme) Color(0x4D737373) else Color(0x7AD2D2D2)
     } else {
         Color.Unspecified
     }
