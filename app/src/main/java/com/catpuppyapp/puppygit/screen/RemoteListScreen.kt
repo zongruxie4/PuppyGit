@@ -50,7 +50,7 @@ import com.catpuppyapp.puppygit.compose.CopyableDialog
 import com.catpuppyapp.puppygit.compose.CreateRemoteDialog
 import com.catpuppyapp.puppygit.compose.FilterTextField
 import com.catpuppyapp.puppygit.compose.GoToTopAndGoToBottomFab
-import com.catpuppyapp.puppygit.compose.LoadingText
+import com.catpuppyapp.puppygit.compose.LoadingTextSimple
 import com.catpuppyapp.puppygit.compose.LongPressAbleIconBtn
 import com.catpuppyapp.puppygit.compose.MyLazyColumn
 import com.catpuppyapp.puppygit.compose.PullToRefreshBox
@@ -870,7 +870,7 @@ fun RemoteListScreen(
         ) {
 
             if(isLoading.value) {
-                LoadingText(contentPadding = contentPadding, text = loadingText.value)
+                LoadingTextSimple(contentPadding = contentPadding, text = loadingText.value)
             }else {
                 //根据关键字过滤条目
                 val keyword = filterKeyword.value.text.lowercase()  //关键字

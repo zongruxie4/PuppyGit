@@ -84,7 +84,7 @@ import com.catpuppyapp.puppygit.compose.DefaultPaddingText
 import com.catpuppyapp.puppygit.compose.FileListItem
 import com.catpuppyapp.puppygit.compose.GitIgnoreDialog
 import com.catpuppyapp.puppygit.compose.GrantManageStoragePermissionClickableText
-import com.catpuppyapp.puppygit.compose.LoadingText
+import com.catpuppyapp.puppygit.compose.LoadingTextCancellable
 import com.catpuppyapp.puppygit.compose.MyCheckBox
 import com.catpuppyapp.puppygit.compose.MyCheckBox2
 import com.catpuppyapp.puppygit.compose.MyLazyColumn
@@ -1261,7 +1261,7 @@ fun FilesInnerPage(
         if(isLoading.value) {
 //        LoadingDialog(loadingText.value)        //这个页面不适合用Dialog，页面会闪。
 
-            LoadingText(
+            LoadingTextCancellable(
                 text = loadingText.value,
                 contentPadding = contentPadding,
                 showCancel = cancellableActRunning.value,

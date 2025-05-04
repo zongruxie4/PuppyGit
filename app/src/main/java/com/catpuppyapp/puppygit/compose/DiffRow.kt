@@ -274,6 +274,7 @@ fun DiffRow (
                 }
             },
             okBtnText = stringResource(R.string.save),
+            cancelTextColor = MyStyleKt.TextColor.danger(),
             onCancel = {showEditLineDialog.value = false}
         ) {
             showEditLineDialog.value = false
@@ -413,6 +414,8 @@ fun DiffRow (
                 }
             },
             okBtnText = if(trueRestoreFalseReplace.value) stringResource(R.string.restore) else stringResource(R.string.replace),
+            cancelTextColor = MyStyleKt.TextColor.danger(),
+
             onCancel = {showRestoreLineDialog.value = false}
         ) {
             showRestoreLineDialog.value = false

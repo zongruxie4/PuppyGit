@@ -44,7 +44,7 @@ import com.catpuppyapp.puppygit.compose.FilterTextField
 import com.catpuppyapp.puppygit.compose.GoToTopAndGoToBottomFab
 import com.catpuppyapp.puppygit.compose.InfoDialog
 import com.catpuppyapp.puppygit.compose.LinkOrUnLinkCredentialAndRemoteDialog
-import com.catpuppyapp.puppygit.compose.LoadingText
+import com.catpuppyapp.puppygit.compose.LoadingTextSimple
 import com.catpuppyapp.puppygit.compose.LongPressAbleIconBtn
 import com.catpuppyapp.puppygit.compose.MyLazyColumn
 import com.catpuppyapp.puppygit.compose.PullToRefreshBox
@@ -446,7 +446,7 @@ fun CredentialManagerScreen(
             if (showLoadingDialog.value) {
 //            LoadingDialog()  //这个东西太阴间了，还是用LoadingText吧
 
-                LoadingText(text = loadingText.value,contentPadding = contentPadding)
+                LoadingTextSimple(text = loadingText.value, contentPadding = contentPadding)
 
             }else {
 

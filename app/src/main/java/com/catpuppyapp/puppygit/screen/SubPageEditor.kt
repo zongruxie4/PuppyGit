@@ -221,13 +221,6 @@ fun SubPageEditor(
 //        changeStateTriggerRefreshPage(needRefreshEditorPage)
     }
 
-    if(isLoading.value || editorPagePreviewLoading.value) {
-        LoadingDialog(
-            // edit mode可能会设loading text，例如正在保存之类的；preview直接显示个普通的loading文案就行
-            if(isLoading.value) loadingText.value else stringResource(R.string.loading)
-        )
-    }
-
     val doSave:suspend ()->Unit = FsUtils.getDoSaveForEditor(
         editorPageShowingFilePath = editorPageShowingFilePath,
         editorPageLoadingOn = loadingOn,
@@ -381,6 +374,16 @@ fun SubPageEditor(
             }
         }
     ) { contentPadding ->
+
+
+        if(isLoading.value || editorPagePreviewLoading.value) {
+            LoadingDialog(
+                // edit mode可能会设loading text，例如正在保存之类的；preview直接显示个普通的loading文案就行
+                if(isLoading.value) loadingText.value else stringResource(R.string.loading)
+            )
+        }
+
+
         EditorInnerPage(
             stateKeyTag = Cache.combineKeys(stateKeyTag, "EditorInnerPage"),
 

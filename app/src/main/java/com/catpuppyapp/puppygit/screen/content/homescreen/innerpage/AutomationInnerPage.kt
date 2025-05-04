@@ -47,7 +47,7 @@ import com.catpuppyapp.puppygit.compose.AppItem
 import com.catpuppyapp.puppygit.compose.ConfirmDialog2
 import com.catpuppyapp.puppygit.compose.FilterTextField
 import com.catpuppyapp.puppygit.compose.ItemListIsEmpty
-import com.catpuppyapp.puppygit.compose.LoadingText
+import com.catpuppyapp.puppygit.compose.LoadingTextUnScrollable
 import com.catpuppyapp.puppygit.compose.MySelectionContainer
 import com.catpuppyapp.puppygit.compose.PullToRefreshBox
 import com.catpuppyapp.puppygit.compose.RepoNameAndIdItem
@@ -566,32 +566,31 @@ fun AutomationInnerPage(
 
             }
 
-            if(appListLoading.value){
+            if(appListLoading.value) {
                 item {
-                    LoadingText(stringResource(R.string.loading), PaddingValues(top = addItemBarHeight+30.dp), enableScroll = false)
+                    LoadingTextUnScrollable(stringResource(R.string.loading), PaddingValues(top = addItemBarHeight+30.dp, bottom = 30.dp))
                 }
-            }
-
-            //根据关键字过滤条目
-            val k = appsFilterKeyword.value.text.lowercase()  //关键字
-            val enableFilter = maybeIsGoodKeyword(k)
-            val filteredAddedAppList = if(enableFilter){
-                val tmpList = filterApps(k, addedAppList.value)
-                tmpList
             }else {
-                addedAppList.value
-            }
+                // 旧版compose有bug，用else有可能会忽略条件，如果这里有问题可直接改成if判断相反条件
 
-            val filteredNotAddedAppList = if(enableFilter){
-                val tmpList = filterApps(k, notAddedAppList.value)
-                tmpList
-            }else {
-                notAddedAppList.value
-            }
+                //根据关键字过滤条目
+                val k = appsFilterKeyword.value.text.lowercase()  //关键字
+                val enableFilter = maybeIsGoodKeyword(k)
+                val filteredAddedAppList = if(enableFilter){
+                    val tmpList = filterApps(k, addedAppList.value)
+                    tmpList
+                }else {
+                    addedAppList.value
+                }
+
+                val filteredNotAddedAppList = if(enableFilter){
+                    val tmpList = filterApps(k, notAddedAppList.value)
+                    tmpList
+                }else {
+                    notAddedAppList.value
+                }
 
 
-            // 旧版compose有bug，用else有可能会忽略条件，所以这里直接if判断下反条件
-            if(appListLoading.value.not()) {
                 item {
                     SettingsTitle(stringResource(R.string.selected_str)+"("+filteredAddedAppList.size+")")
                 }

@@ -69,6 +69,7 @@ import com.catpuppyapp.puppygit.compose.CredentialSelector
 import com.catpuppyapp.puppygit.compose.DefaultPaddingText
 import com.catpuppyapp.puppygit.compose.GitIgnoreDialog
 import com.catpuppyapp.puppygit.compose.LoadingText
+import com.catpuppyapp.puppygit.compose.LoadingTextSimple
 import com.catpuppyapp.puppygit.compose.LongPressAbleIconBtn
 import com.catpuppyapp.puppygit.compose.MyCheckBox
 import com.catpuppyapp.puppygit.compose.MyLazyColumn
@@ -2290,7 +2291,7 @@ fun ChangeListInnerPage(
     ) {
         if(isLoading.value) {
             //LoadingText默认开启滚动，所以无需处理(ps 滚动是为了显隐顶栏
-            LoadingText(text = loadingText.value, contentPadding = contentPadding)
+            LoadingTextSimple(text = loadingText.value, contentPadding = contentPadding)
         }else {
             if(hasError.value){  //有错误则显示错误（例如无仓库、无效树id都会导致出错）
                 Column(
