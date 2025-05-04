@@ -444,6 +444,14 @@ object UIHelper {
         return dpToPx(dp.dp, density)
     }
 
+    fun pxToDp(px:Float, density:Density): Dp {
+        return with(density) { px.toDp() }
+    }
+
+    fun pxToDp(px:Int, density:Density): Dp {
+        return with(density) { px.toDp() }
+    }
+
     /**
      * well, no promise this offset can send you to expect position, but maybe closer ;)
      */

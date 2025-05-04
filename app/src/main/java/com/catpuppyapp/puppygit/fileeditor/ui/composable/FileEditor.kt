@@ -15,6 +15,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
@@ -356,6 +357,9 @@ fun FileEditor(
                 }
             } else {
 
+                val bottomLineWidth = remember { 1.dp }
+                val changeTypeWidth = remember { 10.dp }
+
                 TextEditor(
                     undoStack = undoStack,
                     curPreviewScrollState = curPreviewScrollState,
@@ -383,9 +387,9 @@ fun FileEditor(
                         modifier = Modifier
                             //底线
                             .fieldBorder(
-                                bottomLineWidth = 1.dp,
+                                bottomLineWidth = bottomLineWidth,
                                 color = UIHelper.getDividerColor(),
-                                changeTypeLineWidth = 5.dp,
+                                changeTypeLineWidth = changeTypeWidth,
                                 changeTypeColor = currentField.getColorOfChangeType(inDarkTheme),
                             )
                             .fillMaxWidth()
@@ -431,7 +435,7 @@ fun FileEditor(
                             }
                         ) {
                             //充当行号修改类型指示器和行号之间的padding，不然会重叠
-                            Text("", modifier = Modifier.padding(end = 5.dp))
+                            Text("", modifier = Modifier.width(if(showLineNum.value) changeTypeWidth-3.dp else changeTypeWidth))
 
 
                             //行号
@@ -697,7 +701,12 @@ private fun getBackgroundColor(isSelected: Boolean, isMultiSelectionMode:Boolean
 }
 
 @SuppressLint("ModifierFactoryUnreferencedReceiver")
-private fun Modifier.fieldBorder(bottomLineWidth: Dp, color: Color, changeTypeLineWidth:Dp, changeTypeColor: Color) = composed(
+private fun Modifier.fieldBorder(
+    bottomLineWidth: Dp,
+    color: Color,
+    changeTypeLineWidth:Dp,
+    changeTypeColor: Color,
+) = composed(
     factory = {
         val density = LocalDensity.current
         val bottomLineWidthPx = density.run { bottomLineWidth.toPx() }
