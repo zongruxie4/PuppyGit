@@ -416,12 +416,25 @@ class TextEditorState private constructor(
             val firstValue = textFieldValue.copy(first)
             val newFields = fields.toMutableList()
 
-            val firstState = newFields[targetIndex].copy(value = firstValue, isSelected = false)
-            newFields[targetIndex] = firstState
+            //更新第一行
+            val oldField = newFields[targetIndex]
+            newFields[targetIndex] = oldField.copy(value = firstValue, isSelected = false).apply {
+                // 如果新内容不等于旧内容，说明发生了修改
+                // 注：这两个内容都不包含换行符
+                if(this.value.text != oldField.value.text) {
+                    updateLineChangeTypeIfNone(LineChangeType.UPDATED)
+                }
+            }
 
-            val secondValue = TextFieldValue(second, TextRange.Zero)
-            val secondState = TextFieldState(value = secondValue, isSelected = false)
-            newFields.add(targetIndex + 1, secondState)
+            //添加第2行
+            newFields.add(
+                targetIndex + 1,
+                TextFieldState(
+                    value = TextFieldValue(second, TextRange.Zero),
+                    isSelected = false,
+                    changeType = LineChangeType.NEW
+                )
+            )
 
 
 //            val newFocusingLineIdx = mutableStateOf(focusingLineIdx)
