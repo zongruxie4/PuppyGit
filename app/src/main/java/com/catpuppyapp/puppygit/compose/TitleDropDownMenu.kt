@@ -7,6 +7,7 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowLeft
@@ -20,8 +21,10 @@ import androidx.compose.runtime.MutableState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.hapticfeedback.HapticFeedbackType
+import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.unit.dp
 import com.catpuppyapp.puppygit.style.MyStyleKt
 
 @Composable
@@ -101,10 +104,12 @@ fun <T> TitleDropDownMenu(
     itemOnClick: (T)->Unit
 ) {
     val haptic = LocalHapticFeedback.current
+    //最多占屏幕宽度一半
+    val itemWidth = (LocalConfiguration.current.screenWidthDp / 2).dp
 
     Box(
         modifier = Modifier
-            .fillMaxWidth()
+            .width(itemWidth)
             .combinedClickable(
                 enabled = titleClickEnabled,
                 onLongClick = {  //长按显示仓库名和分支名
@@ -152,6 +157,7 @@ fun <T> TitleDropDownMenu(
         for (i in itemList.toList()) {
             //列出条目
             DropdownMenuItem(
+                modifier = Modifier.width(itemWidth),
                 text = { menuItem(i) },
                 onClick = {
                     itemOnClick(i)
