@@ -2881,7 +2881,6 @@ fun ChangeListInnerPage(
                                         fromTo = fromTo,
                                         commit1OidStr = if(swap) commit2OidStr else commit1OidStr,
                                         commit2OidStr = if(swap) commit1OidStr else commit2OidStr,
-                                        isMultiMode = false,
                                         isDiffToLocal = isDiffToLocal,
                                         curItemIndexAtDiffableList = indexAtDiffableList,
                                         localAtDiffRight = localAtDiffRight.value,

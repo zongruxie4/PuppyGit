@@ -428,8 +428,7 @@ fun goToDiffScreen(
     curItemIndexAtDiffableList:Int,
     localAtDiffRight:Boolean,
     fromScreen:String,
-    isMultiMode:Boolean,
-){
+) {
     doJobWithMainContext {
 //        val relativePathCacheKey = NaviCache.setThenReturnKey(relativePathList)
 
@@ -439,7 +438,7 @@ fun goToDiffScreen(
         val diffableListCacheKey = NaviCache.setThenReturnKey(diffableList) ;
 
 //        val isMultiMode = if(fromScreen != DiffFromScreen.FILE_HISTORY.code) 1 else 0
-        val isMultiMode = if(fromScreen != DiffFromScreen.FILE_HISTORY.code) DevFeature.state_singleDiff.value.not() else 0;
+        val isMultiMode:Boolean = if(fromScreen != DiffFromScreen.FILE_HISTORY.code) DevFeature.state_singleDiff.value.not() else false;
 
         AppModel.navController.navigate(
             Cons.nav_DiffScreen +
@@ -454,7 +453,7 @@ fun goToDiffScreen(
                     +"/" + fromScreen
 
                     +"/"+diffableListCacheKey
-                    +"/"+isMultiMode
+                    +"/"+(if(isMultiMode) 1 else 0)
         )
     }
 }
