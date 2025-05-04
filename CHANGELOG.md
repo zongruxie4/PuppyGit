@@ -6,12 +6,16 @@
 - re-design the Difference screen
 - adjust UI of Repo screen
 - fix few bugs
+- improve UI
+- show random loading text when launching
 
 
 
 - 重新设计差异页面
 - 仓库页面UI调整
 - 修复bug
+- 提升UI
+- 启动时显示随机加载文本
 
 
 ---
