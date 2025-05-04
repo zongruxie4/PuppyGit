@@ -8,12 +8,9 @@ import androidx.compose.material3.rememberTopAppBarState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.mutableStateOf
-import androidx.compose.ui.graphics.ImageBitmap
-import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.vectorResource
-import androidx.core.graphics.drawable.toBitmap
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.rememberNavController
 import com.catpuppyapp.puppygit.constants.Cons
@@ -480,7 +477,7 @@ object AppModel {
 
         //开始：初始化开发者功能设置项
         DevFeature.singleDiffState.value = settings.devSettings.singleDiffOn
-        DevFeature.showMatchedAllAtDiffState.value = settings.devSettings.showMatchedAllAtDiff
+        DevFeature.state_showMatchedAllAtDiff.value = settings.devSettings.showMatchedAllAtDiff
         //结束：初始化开发者功能设置项
 
 

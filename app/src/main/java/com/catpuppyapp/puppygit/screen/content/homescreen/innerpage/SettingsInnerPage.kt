@@ -37,7 +37,6 @@ import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import com.catpuppyapp.puppygit.compose.ClickableText
 import com.catpuppyapp.puppygit.compose.ConfirmDialog2
 import com.catpuppyapp.puppygit.compose.ConfirmDialog3
@@ -239,7 +238,7 @@ fun SettingsInnerPage(
 
     val allowUnknownHosts = rememberSaveable { mutableStateOf(settingsState.value.sshSetting.allowUnknownHosts) }
     val dev_singleDiffOn = rememberSaveable { DevFeature.singleDiffState }
-    val dev_showMatchedAllAtDiff = rememberSaveable { DevFeature.showMatchedAllAtDiffState }
+    val dev_showMatchedAllAtDiff = rememberSaveable { DevFeature.state_showMatchedAllAtDiff }
 
 //    val showResetKnownHostsDialog = rememberSaveable { mutableStateOf(false) }
     val showForgetHostKeysDialog = rememberSaveable { mutableStateOf(false) }

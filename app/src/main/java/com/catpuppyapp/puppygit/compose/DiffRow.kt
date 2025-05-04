@@ -51,7 +51,6 @@ import com.catpuppyapp.puppygit.screen.shared.FilePath
 import com.catpuppyapp.puppygit.settings.AppSettings
 import com.catpuppyapp.puppygit.style.MyStyleKt
 import com.catpuppyapp.puppygit.ui.theme.Theme
-import com.catpuppyapp.puppygit.utils.AppModel
 import com.catpuppyapp.puppygit.utils.FsUtils
 import com.catpuppyapp.puppygit.utils.Libgit2Helper
 import com.catpuppyapp.puppygit.utils.Msg
@@ -852,7 +851,7 @@ fun DiffRow (
                     }
 
                     //开发者选项，一般用不到
-                    if(DevFeature.showMatchedAllAtDiffState.value) {
+                    if(DevFeature.state_showMatchedAllAtDiff.value) {
                         //让选中行变成无匹配的状态的颜色（对空行无效）
                         DropdownMenuItem(
                             text = { Text(DevFeature.setDiffRowToNoMatched)},

@@ -35,11 +35,11 @@ object DevFeature {
     val setDiffRowToNoMatched = appendDevPrefix("No Matched")
     val setDiffRowToAllMatched = appendDevPrefix("All Matched")
     const val str_showMatchedAllAtDiff = "Show Matched All at Diff Screen"
-    val showMatchedAllAtDiffState = mutableStateOf(false)
+    val state_showMatchedAllAtDiff = mutableStateOf(false)
 
     fun updateShowMatchedAllAtDiffScreenValue(newValue: Boolean) {
         //更新状态变量，使用的时候就不用查配置文件了
-        showMatchedAllAtDiffState.value = newValue
+        state_showMatchedAllAtDiff.value = newValue
 
         //写入配置文件
         SettingsUtil.update {
