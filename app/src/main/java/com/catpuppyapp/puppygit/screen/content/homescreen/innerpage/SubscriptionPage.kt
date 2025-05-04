@@ -33,7 +33,8 @@ fun SubscriptionPage(contentPadding: PaddingValues, needRefresh: MutableState<St
     val activityContext = LocalContext.current
     val exitApp = AppModel.exitApp;
 
-    val appIcon = AppModel.getAppIcon(activityContext)
+    //这个页面暂时没用了，如果有用的话，也不要自己获取图标，改用AppIcon组件
+//    val appIcon = AppModel.getAppIcon(activityContext)
 
     val clipboardManager = LocalClipboardManager.current
 

@@ -10,7 +10,9 @@ import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.ui.graphics.ImageBitmap
 import androidx.compose.ui.graphics.asImageBitmap
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.vectorResource
 import androidx.core.graphics.drawable.toBitmap
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.rememberNavController
@@ -23,9 +25,11 @@ import com.catpuppyapp.puppygit.dev.dev_EnableUnTestedFeature
 import com.catpuppyapp.puppygit.jni.LibLoader
 import com.catpuppyapp.puppygit.notification.util.NotifyUtil
 import com.catpuppyapp.puppygit.play.pro.BuildConfig
+import com.catpuppyapp.puppygit.play.pro.R
 import com.catpuppyapp.puppygit.service.HttpService
 import com.catpuppyapp.puppygit.settings.AppSettings
 import com.catpuppyapp.puppygit.settings.SettingsUtil
+import com.catpuppyapp.puppygit.ui.theme.Theme
 import com.catpuppyapp.puppygit.utils.app.upgrade.migrator.AppMigrator
 import com.catpuppyapp.puppygit.utils.app.upgrade.migrator.AppVersionMan
 import com.catpuppyapp.puppygit.utils.cert.CertMan
@@ -645,8 +649,10 @@ object AppModel {
 
 
 
-    fun getAppIcon(context: Context) :ImageBitmap{
-        return context.packageManager.getApplicationIcon(appPackageName).toBitmap().asImageBitmap()
+    @Composable
+    fun getAppIcon(context: Context, inDarkTheme:Boolean = Theme.inDarkTheme) : ImageVector{
+//        return context.packageManager.getApplicationIcon(appPackageName).toBitmap().asImageBitmap()
+        return ImageVector.vectorResource(if(inDarkTheme)  R.drawable.icon_dark_foreground else R.drawable.icon_light_foreground)
     }
 
     fun getAppVersionCode():Int {

@@ -33,6 +33,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
+import com.catpuppyapp.puppygit.compose.AppIcon
 import com.catpuppyapp.puppygit.compose.ClearMasterPasswordDialog
 import com.catpuppyapp.puppygit.compose.ClickableText
 import com.catpuppyapp.puppygit.compose.MySelectionContainer
@@ -134,9 +135,7 @@ fun RequireMasterPasswordScreen(
     ) {
         Spacer(modifier = Modifier.height(30.dp))
 
-        Image(bitmap = AppModel.getAppIcon(activityContext), contentDescription = stringResource(R.string.app_icon),
-            modifier = Modifier.size(100.dp)
-            )
+        AppIcon(modifier = Modifier.size(100.dp))
 
         Spacer(modifier = Modifier.height(30.dp))
 
