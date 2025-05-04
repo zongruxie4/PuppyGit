@@ -16,13 +16,13 @@ object DevFeature {
 
 
     // single diff
-    const val singleDiffNoPrefix = "Single Diff"
-    val singleDiff = appendDevPrefix(singleDiffNoPrefix)
-    val singleDiffState = mutableStateOf(false)
+    const val str_singleDiff = "Single Diff"
+    val singleDiff = appendDevPrefix(str_singleDiff)
+    val state_singleDiff = mutableStateOf(false)
 
     fun updateSingleDiffValue(newValue: Boolean) {
         //更新状态变量，使用的时候就不用查配置文件了
-        singleDiffState.value = newValue
+        state_singleDiff.value = newValue
 
         //写入配置文件
         SettingsUtil.update {

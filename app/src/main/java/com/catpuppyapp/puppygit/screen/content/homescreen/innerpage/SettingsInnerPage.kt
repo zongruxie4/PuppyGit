@@ -237,7 +237,7 @@ fun SettingsInnerPage(
     val cleanFileOpenHistory = rememberSaveable { mutableStateOf(false) }
 
     val allowUnknownHosts = rememberSaveable { mutableStateOf(settingsState.value.sshSetting.allowUnknownHosts) }
-    val dev_singleDiffOn = rememberSaveable { DevFeature.singleDiffState }
+    val dev_singleDiffOn = rememberSaveable { DevFeature.state_singleDiff }
     val dev_showMatchedAllAtDiff = rememberSaveable { DevFeature.state_showMatchedAllAtDiff }
 
 //    val showResetKnownHostsDialog = rememberSaveable { mutableStateOf(false) }
@@ -1207,7 +1207,7 @@ fun SettingsInnerPage(
                 }
             ) {
                 Column(modifier = Modifier.fillMaxWidth(itemLeftWidthForSwitcher)) {
-                    Text(DevFeature.singleDiffNoPrefix, fontSize = itemFontSize)
+                    Text(DevFeature.str_singleDiff, fontSize = itemFontSize)
                 }
 
                 Icon(
