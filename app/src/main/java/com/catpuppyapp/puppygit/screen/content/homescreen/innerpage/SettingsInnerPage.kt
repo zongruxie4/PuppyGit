@@ -239,6 +239,7 @@ fun SettingsInnerPage(
 
     val allowUnknownHosts = rememberSaveable { mutableStateOf(settingsState.value.sshSetting.allowUnknownHosts) }
     val dev_singleDiffOn = rememberSaveable { DevFeature.singleDiffState }
+    val dev_showMatchedAllAtDiff = rememberSaveable { DevFeature.showMatchedAllAtDiffState }
 
 //    val showResetKnownHostsDialog = rememberSaveable { mutableStateOf(false) }
     val showForgetHostKeysDialog = rememberSaveable { mutableStateOf(false) }
@@ -1215,6 +1216,27 @@ fun SettingsInnerPage(
                     imageVector = UIHelper.getIconForSwitcher(dev_singleDiffOn.value),
                     contentDescription = if(dev_singleDiffOn.value) stringResource(R.string.enable) else stringResource(R.string.disable),
                     tint = UIHelper.getColorForSwitcher(dev_singleDiffOn.value),
+
+                )
+            }
+
+            // single diff
+            SettingsContent(
+                onClick = {
+                    DevFeature.updateShowMatchedAllAtDiffScreenValue(!dev_showMatchedAllAtDiff.value)
+                }
+            ) {
+                val itemEnabled = dev_showMatchedAllAtDiff.value
+
+                Column(modifier = Modifier.fillMaxWidth(itemLeftWidthForSwitcher)) {
+                    Text(DevFeature.str_showMatchedAllAtDiff, fontSize = itemFontSize)
+                }
+
+                Icon(
+                    modifier = Modifier.size(switcherIconSize),
+                    imageVector = UIHelper.getIconForSwitcher(itemEnabled),
+                    contentDescription = if(itemEnabled) stringResource(R.string.enable) else stringResource(R.string.disable),
+                    tint = UIHelper.getColorForSwitcher(itemEnabled),
 
                 )
             }

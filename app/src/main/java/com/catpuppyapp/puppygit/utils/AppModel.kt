@@ -476,7 +476,14 @@ object AppModel {
         // now this only for init "know_hosts" for ssh
         Lg2HomeUtils.init(AppModel.appDataUnderAllReposDir, applicationContext)
 
+
+
+        //开始：初始化开发者功能设置项
         DevFeature.singleDiffState.value = settings.devSettings.singleDiffOn
+        DevFeature.showMatchedAllAtDiffState.value = settings.devSettings.showMatchedAllAtDiff
+        //结束：初始化开发者功能设置项
+
+
 
         //实际上，在20241205之后发布的版本都不会再执行此函数了，改成用主密码了，以后默认密码就写死了，不会再改，版本号也不会再变，自然也不再需要迁移
         //执行会suspend的初始化操作
