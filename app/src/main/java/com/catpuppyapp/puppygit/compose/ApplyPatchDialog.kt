@@ -54,49 +54,11 @@ fun ApplyPatchDialog(
                 if(checkOnly.value) {
                     DefaultPaddingText(stringResource(R.string.apply_patch_check_note))
                 }
+
                 Spacer(modifier = Modifier.height(10.dp))
-
-//
-//                MyLazyColumn(
-//                    modifier = Modifier.heightIn(max=150.dp),
-//                    requireUseParamModifier = true,
-//                    contentPadding = PaddingValues(0.dp),
-//                    list = repoList.value,
-//                    listState = StateUtil.getRememberLazyListState(),
-//                    requireForEachWithIndex = true,
-//                    requirePaddingAtBottom =false
-//                ) {k, it ->
-//                    Row(
-//                        Modifier
-//                            .fillMaxWidth()
-//                            .heightIn(min = MyStyleKt.RadioOptions.minHeight)
-//
-//                            .selectable(
-//                                selected = it.id == selectedRepo.value.id,
-//                                onClick = {
-//                                    //更新选择值
-//                                    selectedRepo.value = it
-//                                },
-//                                role = Role.RadioButton
-//                            )
-//                            .padding(horizontal = 10.dp),
-//                        verticalAlignment = Alignment.CenterVertically
-//                    ) {
-//                        RadioButton(
-//                            selected = it.id == selectedRepo.value.id,
-//                            onClick = null // null recommended for accessibility with screenreaders
-//                        )
-//                        Text(
-//                            text = it.repoName,
-//                            style = MaterialTheme.typography.bodyLarge,
-//                            modifier = Modifier.padding(start = 10.dp)
-//                        )
-//                    }
-//
-//                }
-
             }
         },
+        okBtnText = stringResource(R.string.apply),
         onCancel = { onCancel() }
     ) {  // onOK
 

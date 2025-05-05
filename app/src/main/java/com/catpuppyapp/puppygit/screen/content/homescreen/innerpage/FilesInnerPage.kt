@@ -479,6 +479,8 @@ fun FilesInnerPage(
     val allRepoList = mutableCustomStateListOf(stateKeyTag, "allRepoList", listOf<RepoEntity>())
     val initApplyAsPatchDialog = {patchFileFullPath:String ->
         doJobThenOffLoading job@{
+            //TODO 这里如果仓库特别多，查特别慢，用户会有卡住的感觉，最好优化下，先显示弹窗，
+            // 然后在弹窗显示个loading...，加载完成前不能点击确定，但能点击取消，不过一般不会卡住，所以，优化的必要好像不大...
             val repoDb = AppModel.dbContainer.repoRepository
             val listFromDb = repoDb.getReadyRepoList(requireSyncRepoInfoWithGit = false)
 
@@ -490,8 +492,9 @@ fun FilesInnerPage(
             allRepoList.value.clear()
             allRepoList.value.addAll(listFromDb)
 
-            // if selectedRepo not in list, select first
-            if(listFromDb.indexOfFirst { selectedRepo.value.id == it.id } == -1) {
+            val selectedRepoId = selectedRepo.value.id
+            // if selectedRepo not in list(例如之前选过，然后被删除了), select first
+            if(listFromDb.indexOfFirst { selectedRepoId == it.id } < 0) {
                 selectedRepo.value = listFromDb[0]
             }
 
