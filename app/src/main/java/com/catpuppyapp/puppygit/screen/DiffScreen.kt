@@ -2244,7 +2244,7 @@ fun DiffScreen(
                             item {
 //                            itemsCount.intValue++
 
-                                Spacer(Modifier.height(30.dp))
+                                Spacer(Modifier.height(if(isSingleMode) 100.dp else 30.dp))
                             }
 
                             if(isMultiMode) {
@@ -2270,7 +2270,8 @@ fun DiffScreen(
                                             horizontalAlignment = Alignment.CenterHorizontally,
                                             verticalArrangement = Arrangement.Center,
                                         ) {
-                                            Text(diffableItem.fileName, fontSize = MyStyleKt.Title.secondLineFontSize, color = colorOfChangeType)
+                                            ScrollableRow(Modifier.fillMaxWidth()) { Text(diffableItem.fileName, fontSize = MyStyleKt.Title.secondLineFontSize, color = colorOfChangeType) }
+
                                             InLineIcon(
                                                 iconModifier = Modifier.size(iconSize),
                                                 pressedCircleSize = pressedCircleSize,
