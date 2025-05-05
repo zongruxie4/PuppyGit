@@ -2270,7 +2270,16 @@ fun DiffScreen(
                                             horizontalAlignment = Alignment.CenterHorizontally,
                                             verticalArrangement = Arrangement.Center,
                                         ) {
-                                            ScrollableRow(Modifier.fillMaxWidth()) { Text(diffableItem.fileName, fontSize = MyStyleKt.Title.secondLineFontSize, color = colorOfChangeType) }
+                                            ScrollableRow(
+                                                modifier = Modifier.fillMaxWidth(),
+                                                horizontalArrangement = Arrangement.Center,
+                                            ) {
+                                                Text(
+                                                    text = diffableItem.fileName,
+                                                    fontSize = MyStyleKt.Title.secondLineFontSize,
+                                                    color = colorOfChangeType
+                                                )
+                                            }
 
                                             InLineIcon(
                                                 iconModifier = Modifier.size(iconSize),
