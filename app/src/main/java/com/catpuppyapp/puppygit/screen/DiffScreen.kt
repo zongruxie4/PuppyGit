@@ -2243,7 +2243,7 @@ fun DiffScreen(
                             item {
 //                            itemsCount.intValue++
 
-                                Spacer(Modifier.height(100.dp))
+                                Spacer(Modifier.height(30.dp))
                             }
 
                             if(isMultiMode) {
