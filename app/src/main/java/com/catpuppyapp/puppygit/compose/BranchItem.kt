@@ -120,7 +120,7 @@ fun BranchItem(
                 maxLines = 1,
                 overflow = TextOverflow.Ellipsis,
                 fontWeight = if(thisObj.isCurrent) FontWeight.ExtraBold else defaultFontWeight,
-                color = if(thisObj.isCurrent) MyStyleKt.TextColor.highlighting_green else Color.Unspecified
+                color = if(thisObj.isCurrent) MyStyleKt.DropDownMenu.selectedItemColor() else Color.Unspecified
             )
         }
 

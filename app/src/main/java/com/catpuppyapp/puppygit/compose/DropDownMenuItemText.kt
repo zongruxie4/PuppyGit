@@ -11,7 +11,7 @@ import com.catpuppyapp.puppygit.style.MyStyleKt
 fun DropDownMenuItemText(text:String, selected:Boolean) {
     Text(
         text = text,
-        color = if(selected) MyStyleKt.DropDownMenu.selectedItemColor else Color.Unspecified,
-        fontWeight = if(selected) FontWeight.Bold else null,  //注意默认是 null，不是 Normal，实测默认的字体比Normal粗
+        color = if(selected) MyStyleKt.DropDownMenu.selectedItemColor() else Color.Unspecified,
+        fontWeight = if(selected) FontWeight.ExtraBold else null,  //注意默认是 null，不是 Normal，实测默认的字体比Normal粗
     )
 }

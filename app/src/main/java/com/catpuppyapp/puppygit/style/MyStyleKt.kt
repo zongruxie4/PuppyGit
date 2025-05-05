@@ -7,6 +7,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.text.selection.TextSelectionColors
 import androidx.compose.material3.LocalTextStyle
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -239,7 +240,9 @@ object MyStyleKt{
          // 单位是dp，但为了灵活性，这里就不写dp了，只写数字
          const val minWidth = 160
 
-         val selectedItemColor = TextColor.highlighting_green
+         @Composable
+         fun selectedItemColor() = MaterialTheme.colorScheme.primary;
+//         val selectedItemColor = TextColor.highlighting_green
     }
 
 }

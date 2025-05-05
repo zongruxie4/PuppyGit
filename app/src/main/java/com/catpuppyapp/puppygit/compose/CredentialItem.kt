@@ -123,7 +123,7 @@ fun CredentialItem(
                     maxLines = 1,
                     overflow = TextOverflow.Ellipsis,
                     fontWeight = if(linked) FontWeight.ExtraBold else defaultFontWeight,
-                    color = if(linked) MyStyleKt.DropDownMenu.selectedItemColor else Color.Unspecified,
+                    color = if(linked) MyStyleKt.DropDownMenu.selectedItemColor() else Color.Unspecified,
 
                 )
 
