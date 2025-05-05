@@ -1,6 +1,7 @@
 package com.catpuppyapp.puppygit.dev
 
 import android.content.Context
+import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.mutableStateOf
 import com.catpuppyapp.puppygit.settings.SettingsUtil
 import com.catpuppyapp.puppygit.utils.PrefUtil
@@ -52,16 +53,24 @@ object DevFeature {
 
 
     // random launching text
-    const val str_showRandomLaunchingText = "Show Random Launching Text"
-    val state_showRandomLaunchingText = mutableStateOf(false)
+    val showRandomLaunchingText = object : DevItem<Boolean>(text = "Show Random Launching Text", state = mutableStateOf(false)) {
+        override fun update(newValue: Boolean, context: Context?) {
+            //更新状态变量，使用的时候就不用查配置文件了
+            state.value = newValue
 
-    fun updateShowRandomLaunchingText(context: Context, newValue: Boolean) {
-        //更新状态变量，使用的时候就不用查配置文件了
-        state_showRandomLaunchingText.value = newValue
+            //写入配置文件
+            PrefUtil.setShowRandomLaunchingText(context!!, newValue)
+        }
 
-        //写入配置文件
-        PrefUtil.setShowRandomLaunchingText(context, newValue)
+
     }
 
+}
 
+abstract class DevItem<T>(
+    val text:String,
+    val state: MutableState<T>,
+) {
+    // context如果需要可以传，不需要可以不传
+    abstract fun update(newValue:T, context: Context? = null)
 }

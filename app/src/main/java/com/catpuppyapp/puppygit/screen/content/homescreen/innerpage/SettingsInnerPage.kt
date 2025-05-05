@@ -239,7 +239,7 @@ fun SettingsInnerPage(
     val allowUnknownHosts = rememberSaveable { mutableStateOf(settingsState.value.sshSetting.allowUnknownHosts) }
     val dev_singleDiffOn = rememberSaveable { DevFeature.state_singleDiff }
     val dev_showMatchedAllAtDiff = rememberSaveable { DevFeature.state_showMatchedAllAtDiff }
-    val dev_showRandomLaunchingText = rememberSaveable { DevFeature.state_showRandomLaunchingText }
+    val dev_showRandomLaunchingText = rememberSaveable { DevFeature.showRandomLaunchingText.state }
 
 //    val showResetKnownHostsDialog = rememberSaveable { mutableStateOf(false) }
     val showForgetHostKeysDialog = rememberSaveable { mutableStateOf(false) }
@@ -1244,13 +1244,13 @@ fun SettingsInnerPage(
             // show random launching text when app loading
             SettingsContent(
                 onClick = {
-                    DevFeature.updateShowRandomLaunchingText(activityContext, !dev_showRandomLaunchingText.value)
+                    DevFeature.showRandomLaunchingText.update(!dev_showRandomLaunchingText.value, activityContext)
                 }
             ) {
                 val itemEnabled = dev_showRandomLaunchingText.value
 
                 Column(modifier = Modifier.fillMaxWidth(itemLeftWidthForSwitcher)) {
-                    Text(DevFeature.str_showRandomLaunchingText, fontSize = itemFontSize)
+                    Text(DevFeature.showRandomLaunchingText.text, fontSize = itemFontSize)
                 }
 
                 Icon(

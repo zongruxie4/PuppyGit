@@ -326,7 +326,7 @@ private fun MainCompose() {
         try {
 
             //获取随机 loading text
-            if(DevFeature.state_showRandomLaunchingText.value) {
+            if(DevFeature.showRandomLaunchingText.state.value) {
                 loadingText.value = RndText.getOne();
             }
 

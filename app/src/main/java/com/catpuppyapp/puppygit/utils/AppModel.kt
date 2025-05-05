@@ -288,7 +288,7 @@ object AppModel {
 
 
         AppModel.devModeOn = PrefUtil.getDevMode(realAppContext)
-        DevFeature.state_showRandomLaunchingText.value = PrefUtil.getShowRandomLaunchingText(realAppContext)
+        DevFeature.showRandomLaunchingText.state.value = PrefUtil.getShowRandomLaunchingText(realAppContext)
 
 //        AppModel.deviceWidthHeight = UIHelper.getDeviceWidthHeightInDp(realAppContext)
 
