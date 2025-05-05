@@ -3,25 +3,47 @@ package com.catpuppyapp.puppygit.utils.pref
 import android.content.Context
 
 object PrefUtil {
+    private const val trueStr = "1"
+    private const val falseStr = "0"
+
+
+    private fun getBoolean(context:Context, key:String, default: Boolean): Boolean {
+        return PrefMan.get(context, key, if(default) trueStr else falseStr) != falseStr
+    }
+
+    private fun setBoolean(context: Context, key:String, newValue:Boolean) {
+        PrefMan.set(context, key, if(newValue) trueStr else falseStr)
+    }
+
+    // dev mode
+
     /**
      * 更新dev模式
      */
     fun setDevMode(context: Context, enable:Boolean) {
-        PrefMan.set(context, PrefMan.Key.devModeOn, if(enable) "1" else "0")
+        setBoolean(context, PrefMan.Key.devModeOn, enable)
     }
 
     /**
-     * 获取是否启用了dev模式
+     * 获取是否启用了dev模式，初始值为禁用
      */
     fun getDevMode(context: Context):Boolean {
-        return PrefMan.get(context, PrefMan.Key.devModeOn, "0") != "0"
+        return getBoolean(context, PrefMan.Key.devModeOn, false)
     }
+
+
+    // show random launching text
 
     fun setShowRandomLaunchingText(context: Context, enable:Boolean) {
-        PrefMan.set(context, PrefMan.Key.showRandomLaunchingText, if(enable) "1" else "0")
+        setBoolean(context, PrefMan.Key.showRandomLaunchingText, enable)
     }
 
+    /**
+     * 启动时是否显示随机加载文本，初始值为显示
+     */
     fun getShowRandomLaunchingText(context: Context): Boolean {
-        return PrefMan.get(context, PrefMan.Key.showRandomLaunchingText, "1") != "0"
+        return getBoolean(context, PrefMan.Key.showRandomLaunchingText, true)
     }
+
+
 }
