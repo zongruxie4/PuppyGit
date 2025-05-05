@@ -1297,6 +1297,8 @@ fun DiffScreen(
                             }
                         }
 
+                        val colorOfChangeType = UIHelper.getChangeTypeColor(changeType)
+
 
                         val iconSize = MenuIconBtnItem.defaultIconSize
                         val pressedCircleSize = MenuIconBtnItem.defaultPressedCircleSize
@@ -1416,7 +1418,6 @@ fun DiffScreen(
                                         ),
                                 ) {
                                     val loadedAtLeastOnce = diffableItem.maybeLoadedAtLeastOnce()
-                                    val colorOfChangeType = UIHelper.getChangeTypeColor(changeType)
 
                                     Row(
                                         modifier = Modifier.widthIn(max = fileTitleFileNameWidthLimit),
@@ -2265,12 +2266,18 @@ fun DiffScreen(
                                         horizontalArrangement = Arrangement.Center,
                                         onClick = {scrollToCurrentItemHeader(relativePath)}
                                     ) {
-                                        InLineIcon(
-                                            iconModifier = Modifier.size(iconSize),
-                                            pressedCircleSize = pressedCircleSize,
-                                            icon = Icons.Filled.KeyboardDoubleArrowUp,
-                                            tooltipText = "",
-                                        )
+                                        Column(
+                                            horizontalAlignment = Alignment.CenterHorizontally,
+                                            verticalArrangement = Arrangement.Center,
+                                        ) {
+                                            Text(diffableItem.fileName, fontSize = MyStyleKt.Title.secondLineFontSize, color = colorOfChangeType)
+                                            InLineIcon(
+                                                iconModifier = Modifier.size(iconSize),
+                                                pressedCircleSize = pressedCircleSize,
+                                                icon = Icons.Filled.KeyboardDoubleArrowUp,
+                                                tooltipText = "",
+                                            )
+                                        }
                                     }
                                 }
 
