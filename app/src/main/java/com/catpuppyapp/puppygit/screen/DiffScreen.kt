@@ -2276,7 +2276,7 @@ fun DiffScreen(
                                             ) {
                                                 Text(
                                                     text = diffableItem.fileName,
-                                                    fontSize = MyStyleKt.Title.secondLineFontSize,
+                                                    fontSize = titleFileNameFontSize,
                                                     color = colorOfChangeType
                                                 )
                                             }
@@ -2285,7 +2285,7 @@ fun DiffScreen(
                                                 iconModifier = Modifier.size(iconSize),
                                                 pressedCircleSize = pressedCircleSize,
                                                 icon = Icons.Filled.KeyboardDoubleArrowUp,
-                                                tooltipText = "",
+                                                tooltipText = "",  // empty to disable long pressed show toast
                                             )
                                         }
                                     }
