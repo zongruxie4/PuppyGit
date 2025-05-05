@@ -45,6 +45,7 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.layout.positionInRoot
@@ -167,6 +168,8 @@ fun DiffScreen(
 
 
     val isSingleMode = isMultiMode.not();
+
+    val inDarkTheme = remember(Theme.inDarkTheme) { Theme.inDarkTheme }
 
 //    val isWorkTree = fromTo == Cons.gitDiffFromIndexToWorktree
     //废弃，改用diffContent里获取diffItem时动态计算了
@@ -1472,7 +1475,7 @@ fun DiffScreen(
                                                         text = buildAnnotatedString {
                                                             withStyle(style = SpanStyle(color = Theme.mdGreen)) { append("+"+diffItem.addedLines) }
                                                             append(", ")
-                                                            withStyle(style = SpanStyle(color = Theme.mdRed)) { append("-"+diffItem.deletedLines) }
+                                                            withStyle(style = SpanStyle(color = if(inDarkTheme) Color.Gray else Color.DarkGray)) { append("-"+diffItem.deletedLines) }
                                                         }
                                                     )
                                                 }

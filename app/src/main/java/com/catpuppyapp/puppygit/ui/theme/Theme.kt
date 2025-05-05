@@ -1,6 +1,5 @@
 package com.catpuppyapp.puppygit.ui.theme
 
-import android.app.Activity
 import android.content.Context
 import android.os.Build
 import androidx.compose.foundation.isSystemInDarkTheme
