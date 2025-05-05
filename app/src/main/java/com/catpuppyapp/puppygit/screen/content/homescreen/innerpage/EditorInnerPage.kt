@@ -528,7 +528,7 @@ fun EditorInnerPage(
 
     val showRecentFilesList = rememberSaveable { mutableStateOf(false) }
     // Pair(fileName, fileFullPath)
-    val recentFileList = mutableCustomStateListOf(stateKeyTag, "recentFileList") { listOf<Pair<String, String>>() }
+    val recentFileList = mutableCustomStateListOf(stateKeyTag, "recentFileList") { listOf<Pair<String, FilePath>>() }
 
 
 
@@ -1160,43 +1160,54 @@ fun EditorInnerPage(
                         tooltipText = stringResource(R.string.recent_files),
                         icon = Icons.AutoMirrored.Filled.List,
                         iconContentDesc = stringResource(id = R.string.recent_files),
-                    ) onclick@{
+                    ) {
                         try {
                             val historyMap = FileOpenHistoryMan.getHistory().storage
-                            if (historyMap.isEmpty()) {
-                                Msg.requireShowLongDuration(activityContext.getString(R.string.recent_files_is_empty))
-                                recentFileList.value.clear()
-                                return@onclick
-                            }
 
                             val recentFiles = historyMap
                                 // sort
                                 .toSortedMap({ k1, k2 ->
+                                    //从自己的对象查自己的key，肯定有对象，所以后面直接双叹号断言非空
                                     val v1 = historyMap.get(k1)!!
                                     val v2 = historyMap.get(k2)!!
                                     // lastUsedTime descend sort
                                     if (v1.lastUsedTime > v2.lastUsedTime) -1 else 1
-                                })
-                                // map to list
-                                .map { (k, v) ->
-                                    //如果从外部app请求本app打开文件，然后对方app没允许获取永久uri权限，那么下次重启本app后，这个文件名有可能会变成空白，除非请求打开的路径可以解析出相应的绝对路径，那样本app就会使用绝对路径访问文件，就是 "/storage/emulate/0" 那种路径，这时文件名就不会有错了，除非用户没授权访问外部存储
-                                    // Pair(fileName, fileFullPath)
-                                    Pair(FilePath(k).toFuckSafFile(activityContext).name, k)
-                                }.let {
-                                    // limit list size to 10
-                                    it.subList(0, it.size.coerceAtMost(recentFilesLimit))  // I think, recent file list, show 10 is good, if more, feels bad, to much files = no files, just make headache
+                                }).let { sortedMap ->
+                                    val list = mutableListOf<Pair<String, FilePath>>()
+                                    for((k, _lastEditPos) in sortedMap) {
+                                        if(list.size >= recentFilesLimit) {
+                                            break
+                                        }
 
+                                        val filePath = FilePath(k)
+                                        val fileName = filePath.toFuckSafFile(activityContext).name
+                                        //若文件名为空，说明失去读写权限了，不添加到列表
+                                        if(fileName.isNotEmpty()) {
+                                            //如果从外部app请求本app打开文件，然后对方app没允许获取永久uri权限，那么下次重启本app后，这个文件名有可能会变成空白，除非请求打开的路径可以解析出相应的绝对路径，那样本app就会使用绝对路径访问文件，就是 "/storage/emulate/0" 那种路径，这时文件名就不会有错了，除非用户没授权访问外部存储
+                                            // Pair(fileName, FilePath对象)
+                                            list.add(Pair(fileName, filePath))
+                                        }
+                                    }
+
+                                    list
+                                };
+
+                            // add sorted list to state list
+                            recentFileList.value.let {
+                                it.clear()
+                                it.addAll(recentFiles)
+
+                                if (it.isEmpty()) {
+                                    Msg.requireShowLongDuration(activityContext.getString(R.string.recent_files_is_empty))
+                                }else {
+                                    // show list
+                                    showRecentFilesList.value = true
                                 }
+                            }
 
-                            // add sorted list to page state variable
-                            recentFileList.value.clear()
-                            recentFileList.value.addAll(recentFiles)
-
-                            // show list
-                            showRecentFilesList.value = true
                         }catch (e:Exception) {
                             Msg.requireShowLongDuration(e.localizedMessage ?: "get recent files err")
-                            MyLog.e(TAG, "Recent Files onclick err: ${e.stackTraceToString()}")
+                            MyLog.e(TAG, "Recent Files onClick err: ${e.stackTraceToString()}")
                         }
                     }
 
@@ -1222,7 +1233,7 @@ fun EditorInnerPage(
 //                                editorMergeMode.value = false  //此值在这无需重置
 //                        readOnlyMode.value = FsUtils.isReadOnlyDir(filePath)  //避免打开文件，退出app，直接从editor点击 open last然后可编辑本不应该允许编辑的app内置目录下的文件
 
-                                        editorPageShowingFilePath.value = FilePath(filePath)
+                                        editorPageShowingFilePath.value = filePath
                                         forceReloadFile()
 
                                     }
