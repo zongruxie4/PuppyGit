@@ -33,6 +33,8 @@ import com.catpuppyapp.puppygit.utils.app.upgrade.migrator.AppVersionMan
 import com.catpuppyapp.puppygit.utils.cert.CertMan
 import com.catpuppyapp.puppygit.utils.encrypt.MasterPassUtil
 import com.catpuppyapp.puppygit.utils.fileopenhistory.FileOpenHistoryMan
+import com.catpuppyapp.puppygit.utils.pref.PrefMan
+import com.catpuppyapp.puppygit.utils.pref.PrefUtil
 import com.catpuppyapp.puppygit.utils.saf.SafUtil
 import com.catpuppyapp.puppygit.utils.snapshot.SnapshotUtil
 import com.catpuppyapp.puppygit.utils.storagepaths.StoragePathsMan

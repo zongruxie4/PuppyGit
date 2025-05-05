@@ -51,7 +51,7 @@ import com.catpuppyapp.puppygit.utils.ContextUtil
 import com.catpuppyapp.puppygit.utils.Lg2HomeUtils
 import com.catpuppyapp.puppygit.utils.Msg
 import com.catpuppyapp.puppygit.utils.MyLog
-import com.catpuppyapp.puppygit.utils.PrefMan
+import com.catpuppyapp.puppygit.utils.pref.PrefMan
 import com.catpuppyapp.puppygit.utils.RndText
 import com.catpuppyapp.puppygit.utils.doJobThenOffLoading
 import com.catpuppyapp.puppygit.utils.showToast

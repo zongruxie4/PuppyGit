@@ -1,4 +1,4 @@
-package com.catpuppyapp.puppygit.utils
+package com.catpuppyapp.puppygit.utils.pref
 
 import android.app.Activity.MODE_PRIVATE
 import android.content.Context

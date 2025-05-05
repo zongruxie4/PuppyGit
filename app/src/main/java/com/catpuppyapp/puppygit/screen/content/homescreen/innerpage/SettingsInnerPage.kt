@@ -69,8 +69,8 @@ import com.catpuppyapp.puppygit.utils.LanguageUtil
 import com.catpuppyapp.puppygit.utils.Lg2HomeUtils
 import com.catpuppyapp.puppygit.utils.Msg
 import com.catpuppyapp.puppygit.utils.MyLog
-import com.catpuppyapp.puppygit.utils.PrefMan
-import com.catpuppyapp.puppygit.utils.PrefUtil
+import com.catpuppyapp.puppygit.utils.pref.PrefMan
+import com.catpuppyapp.puppygit.utils.pref.PrefUtil
 import com.catpuppyapp.puppygit.utils.StrListUtil
 import com.catpuppyapp.puppygit.utils.UIHelper
 import com.catpuppyapp.puppygit.utils.doJobThenOffLoading

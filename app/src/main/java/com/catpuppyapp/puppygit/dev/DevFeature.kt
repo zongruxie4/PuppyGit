@@ -4,7 +4,7 @@ import android.content.Context
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.mutableStateOf
 import com.catpuppyapp.puppygit.settings.SettingsUtil
-import com.catpuppyapp.puppygit.utils.PrefUtil
+import com.catpuppyapp.puppygit.utils.pref.PrefUtil
 
 object DevFeature {
     private const val prefix = "Dev: "
