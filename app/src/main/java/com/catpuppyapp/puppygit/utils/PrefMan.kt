@@ -55,6 +55,13 @@ object PrefMan {
          * 0 disable, 1 enable, default 0
          */
         const val devModeOn = "devModeOn"
+
+
+        /**
+         * 启动app时显示随机加载文本, 0 disable, 1 enable, default 1
+         */
+        const val  showRandomLaunchingText = "showRandomLaunchingText"
+
     }
 
     private fun getPrefs(appContext: Context) = appContext.getSharedPreferences(fileName, MODE_PRIVATE)

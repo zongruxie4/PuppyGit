@@ -1,7 +1,9 @@
 package com.catpuppyapp.puppygit.dev
 
+import android.content.Context
 import androidx.compose.runtime.mutableStateOf
 import com.catpuppyapp.puppygit.settings.SettingsUtil
+import com.catpuppyapp.puppygit.utils.PrefUtil
 
 object DevFeature {
     private const val prefix = "Dev: "
@@ -46,5 +48,20 @@ object DevFeature {
             it.devSettings.showMatchedAllAtDiff = newValue
         }
     }
+
+
+
+    // random launching text
+    const val str_showRandomLaunchingText = "Show Random Launching Text"
+    val state_showRandomLaunchingText = mutableStateOf(false)
+
+    fun updateShowRandomLaunchingText(context: Context, newValue: Boolean) {
+        //更新状态变量，使用的时候就不用查配置文件了
+        state_showRandomLaunchingText.value = newValue
+
+        //写入配置文件
+        PrefUtil.setShowRandomLaunchingText(context, newValue)
+    }
+
 
 }

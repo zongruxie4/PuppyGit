@@ -239,6 +239,7 @@ fun SettingsInnerPage(
     val allowUnknownHosts = rememberSaveable { mutableStateOf(settingsState.value.sshSetting.allowUnknownHosts) }
     val dev_singleDiffOn = rememberSaveable { DevFeature.state_singleDiff }
     val dev_showMatchedAllAtDiff = rememberSaveable { DevFeature.state_showMatchedAllAtDiff }
+    val dev_showRandomLaunchingText = rememberSaveable { DevFeature.state_showRandomLaunchingText }
 
 //    val showResetKnownHostsDialog = rememberSaveable { mutableStateOf(false) }
     val showForgetHostKeysDialog = rememberSaveable { mutableStateOf(false) }
@@ -1219,7 +1220,7 @@ fun SettingsInnerPage(
                 )
             }
 
-            // single diff
+            // line menu item, matched all and no-matched all
             SettingsContent(
                 onClick = {
                     DevFeature.updateShowMatchedAllAtDiffScreenValue(!dev_showMatchedAllAtDiff.value)
@@ -1229,6 +1230,27 @@ fun SettingsInnerPage(
 
                 Column(modifier = Modifier.fillMaxWidth(itemLeftWidthForSwitcher)) {
                     Text(DevFeature.str_showMatchedAllAtDiff, fontSize = itemFontSize)
+                }
+
+                Icon(
+                    modifier = Modifier.size(switcherIconSize),
+                    imageVector = UIHelper.getIconForSwitcher(itemEnabled),
+                    contentDescription = if(itemEnabled) stringResource(R.string.enable) else stringResource(R.string.disable),
+                    tint = UIHelper.getColorForSwitcher(itemEnabled),
+
+                )
+            }
+
+            // show random launching text when app loading
+            SettingsContent(
+                onClick = {
+                    DevFeature.updateShowRandomLaunchingText(activityContext, !dev_showRandomLaunchingText.value)
+                }
+            ) {
+                val itemEnabled = dev_showRandomLaunchingText.value
+
+                Column(modifier = Modifier.fillMaxWidth(itemLeftWidthForSwitcher)) {
+                    Text(DevFeature.str_showRandomLaunchingText, fontSize = itemFontSize)
                 }
 
                 Icon(
