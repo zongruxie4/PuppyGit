@@ -3,19 +3,17 @@
 ---
 
 1.1.0.8v84 - 20250502:
-- re-design the Difference screen
-- adjust UI of Repo screen
-- fix few bugs
-- improve UI
+- Differences screen support multi files
 - show random loading text when launching
+- improve UI
+- fix bugs
 
 
 
-- 重新设计差异页面
-- 仓库页面UI调整
-- 修复bug
-- 提升UI
+- 差异页面支持多文件
 - 启动时显示随机加载文本
+- 提升UI
+- 修复bug
 
 
 ---

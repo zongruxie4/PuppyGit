@@ -1,5 +1,4 @@
-- re-design the Difference screen
-- adjust UI of Repo screen
-- fix few bugs
-- improve UI
+- Differences screen support multi files
 - show random loading text when launching
+- improve UI
+- fix bugs
