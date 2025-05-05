@@ -298,6 +298,8 @@ class AutomationService: AccessibilityService() {
                                         pullRepoList(sessionId, settings, repoList)
                                     }
                                 }
+                            }else {
+                                MyLog.d(TAG, "pull interval less than 0, pull canceled")
                             }
                         }else {
                             MyLog.d(TAG, "target packageName '$packageName' opened but no need do pull")
@@ -407,6 +409,8 @@ class AutomationService: AccessibilityService() {
 
                                             }
                                         }
+                                    }else {
+                                        MyLog.d(TAG, "push delay less than 0, push canceled")
                                     }
 
                                 }else {
