@@ -102,6 +102,7 @@ import com.catpuppyapp.puppygit.dev.applyPatchTestPassed
 import com.catpuppyapp.puppygit.dev.importReposFromFilesTestPassed
 import com.catpuppyapp.puppygit.dev.initRepoFromFilesPageTestPassed
 import com.catpuppyapp.puppygit.dev.proFeatureEnabled
+import com.catpuppyapp.puppygit.dto.Box
 import com.catpuppyapp.puppygit.dto.FileItemDto
 import com.catpuppyapp.puppygit.etc.Ret
 import com.catpuppyapp.puppygit.git.IgnoreItem
@@ -133,6 +134,7 @@ import com.catpuppyapp.puppygit.utils.cache.Cache
 import com.catpuppyapp.puppygit.utils.changeStateTriggerRefreshPage
 import com.catpuppyapp.puppygit.utils.checkFileOrFolderNameAndTryCreateFile
 import com.catpuppyapp.puppygit.utils.createAndInsertError
+import com.catpuppyapp.puppygit.utils.doJob
 import com.catpuppyapp.puppygit.utils.doJobThenOffLoading
 import com.catpuppyapp.puppygit.utils.getFileExtOrEmpty
 import com.catpuppyapp.puppygit.utils.getFileNameFromCanonicalPath
@@ -157,6 +159,8 @@ import com.catpuppyapp.puppygit.utils.state.mutableCustomStateListOf
 import com.catpuppyapp.puppygit.utils.state.mutableCustomStateOf
 import com.catpuppyapp.puppygit.utils.trimLineBreak
 import com.catpuppyapp.puppygit.utils.withMainContext
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.delay
 import java.io.File
 import kotlin.coroutines.cancellation.CancellationException
 
@@ -475,7 +479,8 @@ fun FilesInnerPage(
 
 
     val showApplyAsPatchDialog = rememberSaveable { mutableStateOf(false)}
-    val loadingRepoList = rememberSaveable { mutableStateOf(false)}
+    val loadingRepoList = rememberSaveable { mutableStateOf(false) }
+    val loadingRepoListJob = remember { Box<Job?>(null) }  //如果不remember，这个值会被反复赋值，导致之前存的任务被冲掉
     val fileFullPathForApplyAsPatch =  rememberSaveable { mutableStateOf("")}
     val allRepoList = mutableCustomStateListOf(stateKeyTag, "allRepoList", listOf<RepoEntity>())
     val initApplyAsPatchDialog = { patchFileFullPath:String ->
@@ -486,28 +491,38 @@ fun FilesInnerPage(
 
         loadingRepoList.value = true
 
-        doJobThenOffLoading(
-            loadingOff = {loadingRepoList.value = false}
-        ) job@{
-            //从db查仓库列表
-            val repoDb = AppModel.dbContainer.repoRepository
-            //这里不需要查底层仓库信息，实际上只需要仓库完整路径，如果有必要还可以优化下，改成只查name 和 fullpath，不查整个repo entity
-            val listFromDb = repoDb.getReadyRepoList(requireSyncRepoInfoWithGit = false)
+        loadingRepoListJob.value = doJob job@{
+            val result = runCatching {
+//                delay(10_000)  // test
 
-            //存到状态变量
-            allRepoList.value.apply {
-                clear()
-                addAll(listFromDb)
+                //从db查仓库列表
+                val repoDb = AppModel.dbContainer.repoRepository
+                //这里不需要查底层仓库信息，实际上只需要仓库完整路径，如果有必要还可以优化下，改成只查name 和 fullpath，不查整个repo entity
+                val listFromDb = repoDb.getReadyRepoList(requireSyncRepoInfoWithGit = false)
+
+                delay(1)  //调度点，响应job.cancel()
+
+                //存到状态变量
+                allRepoList.value.apply {
+                    clear()
+                    addAll(listFromDb)
+                }
+
+
+                //检查当前选中的仓库是否仍有效
+                // if selectedRepo not in list(例如之前选过，然后被删除了), select first
+                val selectedRepoId = selectedRepo.value.id
+                if(listFromDb.indexOfFirst { selectedRepoId == it.id } < 0) {
+                    selectedRepo.value = listFromDb[0]
+                }
+
+                delay(1)
+                loadingRepoList.value = false
             }
 
-
-            //检查当前选中的仓库是否仍有效
-            // if selectedRepo not in list(例如之前选过，然后被删除了), select first
-            val selectedRepoId = selectedRepo.value.id
-            if(listFromDb.indexOfFirst { selectedRepoId == it.id } < 0) {
-                selectedRepo.value = listFromDb[0]
+            if(result.isFailure) {
+                MyLog.e(TAG, "loading repo list for ApplyAsPatchDialog err: ${result.exceptionOrNull()?.localizedMessage}")
             }
-
         }
 
         fileFullPathForApplyAsPatch.value = patchFileFullPath
@@ -521,7 +536,16 @@ fun FilesInnerPage(
             patchFileFullPath = fileFullPathForApplyAsPatch.value,
             repoList = allRepoList.value,
             loadingRepoList = loadingRepoList.value,
-            onCancel={showApplyAsPatchDialog.value=false},
+            onCancel={
+                showApplyAsPatchDialog.value=false;
+
+                //取消加载仓库的job，因为用户可能在加载完之前就关了弹窗，若不取消，
+                // 就还在加载，这时用户如果再点应用仓库，两个任务会冲突，
+                // 第2个没执行完，第1个执行完，用户会看到上次加载出的仓库，
+                // 然后等会仓库列表又会刷新，因为这时第2个任务执行完了。。。
+                // 总之为了避免问题，这里取消下上次的job，减少出问题的概率（但理论上并不能完全避免）
+                runCatching { loadingRepoListJob.value?.cancel() }
+             },
             onErrCallback={ e, selectedRepoId->
                 val errMsgPrefix = "apply patch err: err="
                 Msg.requireShowLongDuration(e.localizedMessage ?: errMsgPrefix)
