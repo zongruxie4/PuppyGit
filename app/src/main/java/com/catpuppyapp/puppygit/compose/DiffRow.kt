@@ -854,7 +854,7 @@ fun DiffRow (
                     }
 
                     //开发者选项，一般用不到
-                    if(DevFeature.state_showMatchedAllAtDiff.value) {
+                    if(DevFeature.showMatchedAllAtDiff.state.value) {
                         //让选中行变成无匹配的状态的颜色（对空行无效）
                         DropdownMenuItem(
                             text = { Text(DevFeature.setDiffRowToNoMatched)},

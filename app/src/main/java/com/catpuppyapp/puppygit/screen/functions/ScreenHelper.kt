@@ -438,7 +438,7 @@ fun goToDiffScreen(
         val diffableListCacheKey = NaviCache.setThenReturnKey(diffableList) ;
 
 //        val isMultiMode = if(fromScreen != DiffFromScreen.FILE_HISTORY.code) 1 else 0
-        val isMultiMode:Boolean = if(fromScreen != DiffFromScreen.FILE_HISTORY.code) DevFeature.state_singleDiff.value.not() else false;
+        val isMultiMode:Boolean = if(fromScreen != DiffFromScreen.FILE_HISTORY.code) DevFeature.singleDiff.state.value.not() else false;
 
         AppModel.navController.navigate(
             Cons.nav_DiffScreen +

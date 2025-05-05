@@ -237,8 +237,8 @@ fun SettingsInnerPage(
     val cleanFileOpenHistory = rememberSaveable { mutableStateOf(false) }
 
     val allowUnknownHosts = rememberSaveable { mutableStateOf(settingsState.value.sshSetting.allowUnknownHosts) }
-    val dev_singleDiffOn = rememberSaveable { DevFeature.state_singleDiff }
-    val dev_showMatchedAllAtDiff = rememberSaveable { DevFeature.state_showMatchedAllAtDiff }
+    val dev_singleDiffOn = rememberSaveable { DevFeature.singleDiff.state }
+    val dev_showMatchedAllAtDiff = rememberSaveable { DevFeature.showMatchedAllAtDiff.state }
     val dev_showRandomLaunchingText = rememberSaveable { DevFeature.showRandomLaunchingText.state }
 
 //    val showResetKnownHostsDialog = rememberSaveable { mutableStateOf(false) }
@@ -1204,11 +1204,11 @@ fun SettingsInnerPage(
             // single diff
             SettingsContent(
                 onClick = {
-                    DevFeature.updateSingleDiffValue(!dev_singleDiffOn.value)
+                    DevFeature.singleDiff.update(!dev_singleDiffOn.value)
                 }
             ) {
                 Column(modifier = Modifier.fillMaxWidth(itemLeftWidthForSwitcher)) {
-                    Text(DevFeature.str_singleDiff, fontSize = itemFontSize)
+                    Text(DevFeature.singleDiff.text, fontSize = itemFontSize)
                 }
 
                 Icon(
@@ -1223,13 +1223,13 @@ fun SettingsInnerPage(
             // line menu item, matched all and no-matched all
             SettingsContent(
                 onClick = {
-                    DevFeature.updateShowMatchedAllAtDiffScreenValue(!dev_showMatchedAllAtDiff.value)
+                    DevFeature.showMatchedAllAtDiff.update(!dev_showMatchedAllAtDiff.value)
                 }
             ) {
                 val itemEnabled = dev_showMatchedAllAtDiff.value
 
                 Column(modifier = Modifier.fillMaxWidth(itemLeftWidthForSwitcher)) {
-                    Text(DevFeature.str_showMatchedAllAtDiff, fontSize = itemFontSize)
+                    Text(DevFeature.showMatchedAllAtDiff.text, fontSize = itemFontSize)
                 }
 
                 Icon(

@@ -18,18 +18,19 @@ object DevFeature {
     val external_data_storage = appendDevPrefix("External Data") // app 在 外部存储路径/Android/data/data 下的私有目录
 
 
+
+    // dev settings items: start
+
     // single diff
-    const val str_singleDiff = "Single Diff"
-    val singleDiff = appendDevPrefix(str_singleDiff)
-    val state_singleDiff = mutableStateOf(false)
+    val singleDiff = object : DevItem<Boolean>(text = "Single Diff", state = mutableStateOf(false)) {
+        override fun update(newValue: Boolean, context: Context?) {
+            //更新状态变量，使用的时候就不用查配置文件了
+            state.value = newValue
 
-    fun updateSingleDiffValue(newValue: Boolean) {
-        //更新状态变量，使用的时候就不用查配置文件了
-        state_singleDiff.value = newValue
-
-        //写入配置文件
-        SettingsUtil.update {
-            it.devSettings.singleDiffOn = newValue
+            //写入配置文件
+            SettingsUtil.update {
+                it.devSettings.singleDiffOn = newValue
+            }
         }
     }
 
@@ -37,18 +38,18 @@ object DevFeature {
     // matched all for selected compare at diff screen
     val setDiffRowToNoMatched = appendDevPrefix("No Matched")
     val setDiffRowToAllMatched = appendDevPrefix("All Matched")
-    const val str_showMatchedAllAtDiff = "Show Matched All at Diff Screen"
-    val state_showMatchedAllAtDiff = mutableStateOf(false)
+    val showMatchedAllAtDiff = object : DevItem<Boolean>(text = "Show Matched All at Diff Screen", state = mutableStateOf(false)) {
+        override fun update(newValue: Boolean, context: Context?) {
+            //更新状态变量，使用的时候就不用查配置文件了
+            state.value = newValue
 
-    fun updateShowMatchedAllAtDiffScreenValue(newValue: Boolean) {
-        //更新状态变量，使用的时候就不用查配置文件了
-        state_showMatchedAllAtDiff.value = newValue
-
-        //写入配置文件
-        SettingsUtil.update {
-            it.devSettings.showMatchedAllAtDiff = newValue
+            //写入配置文件
+            SettingsUtil.update {
+                it.devSettings.showMatchedAllAtDiff = newValue
+            }
         }
     }
+
 
 
 
@@ -61,9 +62,9 @@ object DevFeature {
             //写入配置文件
             PrefUtil.setShowRandomLaunchingText(context!!, newValue)
         }
-
-
     }
+
+    // dev settings items: end
 
 }
 
