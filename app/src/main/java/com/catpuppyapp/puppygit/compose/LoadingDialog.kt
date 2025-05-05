@@ -15,7 +15,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
@@ -32,12 +32,10 @@ import com.catpuppyapp.puppygit.ui.theme.Theme
  * 注：这个放不放到Scaffold里好像无所谓，加载圆圈的背景颜色我已经根据是否darkTheme调了，大背景好像没什么好调的因为是半透明的
  */
 @Composable
-fun LoadingDialog(text:String?=null) {
-    val activityContext = LocalContext.current
-
-    val text = text ?: activityContext.getString(R.string.loading)
+fun LoadingDialog(text:String = stringResource(R.string.loading)) {
 
     val inDarkTheme = Theme.inDarkTheme
+
     Dialog(
         onDismissRequest = {/* showLoadingDialog.value = false */ },
         DialogProperties(dismissOnBackPress = false, dismissOnClickOutside = false)

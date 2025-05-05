@@ -241,10 +241,6 @@ fun FileHistoryScreen(
         showLoadingDialog.value=false
     }
 
-    if (showLoadingDialog.value) {
-        LoadingDialog(loadingText.value)
-    }
-
 //    val loadingMore = StateUtil.getRememberSaveableState(initValue = false)
 //    val hasMore = {
 //        nextCommitOid.value != null &&
@@ -844,6 +840,12 @@ fun FileHistoryScreen(
             contentPadding = contentPadding,
             onRefresh = { changeStateTriggerRefreshPage(needRefresh) }
         ) {
+
+
+            if (showLoadingDialog.value) {
+                LoadingDialog(loadingText.value)
+            }
+
 
             if(loadMoreLoading.value.not() && list.value.isEmpty()) {
                 Column(

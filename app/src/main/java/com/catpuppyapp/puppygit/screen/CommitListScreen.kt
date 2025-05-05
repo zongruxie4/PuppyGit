@@ -504,10 +504,6 @@ fun CommitListScreen(
         showLoadingDialog.value=false
     }
 
-    if (showLoadingDialog.value) {
-        LoadingDialog(loadingText.value)
-    }
-
 //    val loadingMore = StateUtil.getRememberSaveableState(initValue = false)
 //    val hasMore = {
 //        nextCommitOid.value != null &&
@@ -1823,6 +1819,11 @@ fun CommitListScreen(
             contentPadding = contentPadding,
             onRefresh = { fullyRefresh() }
         ) {
+
+            if (showLoadingDialog.value) {
+                LoadingDialog(loadingText.value)
+            }
+
             if(loadMoreLoading.value.not() && list.value.isEmpty()) {
                 Column(
                     modifier = Modifier
