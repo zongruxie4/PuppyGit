@@ -475,32 +475,43 @@ fun FilesInnerPage(
 
 
     val showApplyAsPatchDialog = rememberSaveable { mutableStateOf(false)}
+    val loadingRepoList = rememberSaveable { mutableStateOf(false)}
     val fileFullPathForApplyAsPatch =  rememberSaveable { mutableStateOf("")}
     val allRepoList = mutableCustomStateListOf(stateKeyTag, "allRepoList", listOf<RepoEntity>())
-    val initApplyAsPatchDialog = {patchFileFullPath:String ->
-        doJobThenOffLoading job@{
-            //TODO 这里如果仓库特别多，查特别慢，用户会有卡住的感觉，最好优化下，先显示弹窗，
-            // 然后在弹窗显示个loading...，加载完成前不能点击确定，但能点击取消，不过一般不会卡住，所以，优化的必要好像不大...
+    val initApplyAsPatchDialog = { patchFileFullPath:String ->
+        //这里如果仓库特别多，查特别慢，用户会有卡住的感觉，所以先显示弹窗，
+        // 然后在弹窗显示个loading...，加载完成前不能点击确定，但能点击取消，
+        // 同时异步查仓库列表，查完后再在弹窗显示就行了
+
+
+        loadingRepoList.value = true
+
+        doJobThenOffLoading(
+            loadingOff = {loadingRepoList.value = false}
+        ) job@{
+            //从db查仓库列表
             val repoDb = AppModel.dbContainer.repoRepository
+            //这里不需要查底层仓库信息，实际上只需要仓库完整路径，如果有必要还可以优化下，改成只查name 和 fullpath，不查整个repo entity
             val listFromDb = repoDb.getReadyRepoList(requireSyncRepoInfoWithGit = false)
 
-            if(listFromDb.isEmpty()) {
-                Msg.requireShowLongDuration(activityContext.getString(R.string.repo_list_is_empty))
-                return@job
+            //存到状态变量
+            allRepoList.value.apply {
+                clear()
+                addAll(listFromDb)
             }
 
-            allRepoList.value.clear()
-            allRepoList.value.addAll(listFromDb)
 
-            val selectedRepoId = selectedRepo.value.id
+            //检查当前选中的仓库是否仍有效
             // if selectedRepo not in list(例如之前选过，然后被删除了), select first
+            val selectedRepoId = selectedRepo.value.id
             if(listFromDb.indexOfFirst { selectedRepoId == it.id } < 0) {
                 selectedRepo.value = listFromDb[0]
             }
 
-            fileFullPathForApplyAsPatch.value = patchFileFullPath
-            showApplyAsPatchDialog.value = true
         }
+
+        fileFullPathForApplyAsPatch.value = patchFileFullPath
+        showApplyAsPatchDialog.value = true
     }
     if(showApplyAsPatchDialog.value) {
         ApplyPatchDialog(
@@ -509,6 +520,7 @@ fun FilesInnerPage(
             selectedRepo=selectedRepo,
             patchFileFullPath = fileFullPathForApplyAsPatch.value,
             repoList = allRepoList.value,
+            loadingRepoList = loadingRepoList.value,
             onCancel={showApplyAsPatchDialog.value=false},
             onErrCallback={ e, selectedRepoId->
                 val errMsgPrefix = "apply patch err: err="
