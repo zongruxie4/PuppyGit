@@ -662,7 +662,7 @@ fun setErrMsgForTriggerNotify(hasErrState:MutableState<Boolean>,errMsgState:Muta
 fun doJobThenOffLoading(
     loadingOn: (String)->Unit={},
     loadingOff: ()->Unit={},
-    loadingText: String="Loading...",  //这个最好别使用appContext.getString(R.string.loading)，万一appContext都还没初始化就调用此方法，会报错，不过目前20240426为止，只有在appContext赋值给AppModel对应字段后才会调用此方法，所以实际上没我担心的这个问题，根本不会发生
+    loadingText: String="Loading…",  //这个最好别使用appContext.getString(R.string.loading)，万一appContext都还没初始化就调用此方法，会报错，不过目前20240426为止，只有在appContext赋值给AppModel对应字段后才会调用此方法，所以实际上没我担心的这个问题，根本不会发生
     coroutineDispatcher: CoroutineDispatcher = Dispatchers.IO,
     job: suspend ()->Unit
 ): Job? {
@@ -744,7 +744,7 @@ fun replaceStringResList(strRes:String, strWillReplacedList:List<Any?>):String {
 }
 
 fun getStrShorterThanLimitLength(src:String, limit:Int=12):String {
-    return if(src.length<limit) src else src.substring(0, limit)+"..."
+    return if(src.length > limit) src.substring(0, limit)+"…" else src
 }
 
 suspend fun createAndInsertError(repoId:String, errMsg: String) {
