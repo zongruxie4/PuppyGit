@@ -2200,7 +2200,7 @@ fun DiffScreen(
 
                     //切换上下文件和执行操作的按钮
                     item {
-                        Spacer(Modifier.height(150.dp))
+                        Spacer(Modifier.height(if(isMultiMode) 150.dp else 50.dp))
                     }
 
                     item {
