@@ -1485,10 +1485,8 @@ fun DiffScreen(
                                                             append(", ")
                                                         }
 
-                                                        //若不在仓库workdir根目录则显示相对路径（仅当前文件的父路径，以/结尾，无文件名）
-                                                        if(diffableItem.atRootOfWorkDir().not()) {
-                                                            withStyle(style = SpanStyle(color = colorOfChangeType)) { append(diffableItem.fileParentPathOfRelativePath) }
-                                                        }
+                                                        //当前文件的父路径，以/结尾，无文件名，若文件在仓库根目录则为/
+                                                        withStyle(style = SpanStyle(color = colorOfChangeType)) { append(diffableItem.fileParentPathOfRelativePath) }
                                                     }
                                                 )
                                             }
