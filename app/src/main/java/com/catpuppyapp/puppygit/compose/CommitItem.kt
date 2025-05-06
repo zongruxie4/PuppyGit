@@ -206,7 +206,7 @@ fun CommitItem(
             ){
 
                 Text(text = (if(commitDto.branchShortNameList.size > 1) stringResource(R.string.branches) else stringResource(R.string.branch)) +": ")
-                Text(text = commitDto.branchShortNameList.toString(),
+                Text(text = commitDto.cachedBranchShortNameList(),
                     maxLines = 1,
                     overflow = TextOverflow.Ellipsis,
                     fontWeight = defaultFontWeight
@@ -223,7 +223,7 @@ fun CommitItem(
             ){
 
                 Text(text = (if(commitDto.tagShortNameList.size > 1) stringResource(R.string.tags) else stringResource(R.string.tag)) +": ")
-                Text(text = commitDto.tagShortNameList.toString(),
+                Text(text = commitDto.cachedTagShortNameList(),
                     maxLines = 1,
                     overflow = TextOverflow.Ellipsis,
                     fontWeight = defaultFontWeight
@@ -240,7 +240,7 @@ fun CommitItem(
             ){
 
                 Text(text = (if(commitDto.parentShortOidStrList.size > 1) stringResource(R.string.parents) else stringResource(R.string.parent)) +": ")
-                Text(text = commitDto.parentShortOidStrList.toString(),
+                Text(text = commitDto.cachedParentShortOidStrList(),
                     maxLines = 1,
                     overflow = TextOverflow.Ellipsis,
                     fontWeight = defaultFontWeight

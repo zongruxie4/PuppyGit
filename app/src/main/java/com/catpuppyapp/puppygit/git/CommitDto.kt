@@ -31,6 +31,12 @@ class CommitDto (
     private var otherMsg:String?=null
     private var otherMsgSearchableText:String?=null
     private var cached_OneLineMsg:String? = null
+    private var cached_BranchShortNameList:String? = null
+    private var cached_TagShortNameList:String? = null
+    private var cached_ParentShortOidStrList:String? = null
+    private var cached_LineSeparated_BranchShortNameList:String? = null
+    private var cached_LineSeparated_TagShortNameList:String? = null
+    private var cached_LineSeparated_ParentShortOidStrList:String? = null
 
     fun hasOther():Boolean {
         return isGrafted || isMerged()
@@ -100,6 +106,13 @@ class CommitDto (
     }
 
     fun getCachedOneLineMsg(): String = (cached_OneLineMsg ?: Libgit2Helper.zipOneLineMsg(msg).let { cached_OneLineMsg = it; it });
+    fun cachedBranchShortNameList():String = cached_BranchShortNameList ?: branchShortNameList.joinToString { it }.let { cached_BranchShortNameList=it; it };
+    fun cachedTagShortNameList():String = cached_TagShortNameList ?: tagShortNameList.joinToString { it }.let { cached_TagShortNameList=it; it };
+    fun cachedParentShortOidStrList():String = cached_ParentShortOidStrList ?: parentShortOidStrList.joinToString { it }.let { cached_ParentShortOidStrList=it; it };
+
+    fun cachedLineSeparatedBranchList():String = cached_LineSeparated_BranchShortNameList ?: branchShortNameList.joinToString(separator = "\n", prefix = "\n") { it }.let { cached_LineSeparated_BranchShortNameList=it; it };
+    fun cachedLineSeparatedTagList():String = cached_LineSeparated_TagShortNameList ?: tagShortNameList.joinToString(separator = "\n", prefix = "\n") { it }.let { cached_LineSeparated_TagShortNameList=it; it };
+    fun cachedLineSeparatedParentFullOidList():String = cached_LineSeparated_ParentShortOidStrList ?: parentShortOidStrList.joinToString(separator = "\n", prefix = "\n") { it }.let { cached_LineSeparated_ParentShortOidStrList=it; it };
 
 }
 

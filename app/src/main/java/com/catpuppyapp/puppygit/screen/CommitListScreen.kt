@@ -1123,13 +1123,13 @@ fun CommitListScreen(
         sb.append("${activityContext.getString(R.string.timezone)}: "+(formatMinutesToUtc(curCommit.originTimeOffsetInMinutes))).append(suffix)
 
         if(curCommit.branchShortNameList.isNotEmpty()){
-            sb.append((if(curCommit.branchShortNameList.size > 1) activityContext.getString(R.string.branches) else activityContext.getString(R.string.branch)) +": "+curCommit.branchShortNameList.toString()).append(suffix)
+            sb.append((if(curCommit.branchShortNameList.size > 1) activityContext.getString(R.string.branches) else activityContext.getString(R.string.branch)) +": "+curCommit.cachedLineSeparatedBranchList()).append(suffix)
         }
         if(curCommit.tagShortNameList.isNotEmpty()) {
-            sb.append((if(curCommit.tagShortNameList.size > 1) activityContext.getString(R.string.tags) else activityContext.getString(R.string.tag)) +": "+curCommit.tagShortNameList.toString()).append(suffix)
+            sb.append((if(curCommit.tagShortNameList.size > 1) activityContext.getString(R.string.tags) else activityContext.getString(R.string.tag)) +": "+curCommit.cachedLineSeparatedTagList()).append(suffix)
         }
         if(curCommit.parentOidStrList.isNotEmpty()) {
-            sb.append((if(curCommit.parentOidStrList.size > 1) activityContext.getString(R.string.parents) else activityContext.getString(R.string.parent)) +": "+curCommit.parentOidStrList.toString()).append(suffix)
+            sb.append((if(curCommit.parentOidStrList.size > 1) activityContext.getString(R.string.parents) else activityContext.getString(R.string.parent)) +": "+curCommit.cachedLineSeparatedParentFullOidList()).append(suffix)
         }
 
         if(curCommit.hasOther()) {
