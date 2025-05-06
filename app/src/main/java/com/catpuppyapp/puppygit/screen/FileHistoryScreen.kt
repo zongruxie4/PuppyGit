@@ -878,7 +878,11 @@ fun FileHistoryScreen(
                         }
 
                         BottomSheetItem(sheetState, showBottomSheet, stringResource(R.string.diff_to_prev)) label@{
-                            val list = getActuallyList()
+//                            val list = getActuallyList()
+                            //这里是和当前版本的上一版比较看当前版本相比上一版做了哪些修改，
+                            // 这个上一版应该是完整文件历史中当前版本的上一版，而不是过滤结果中上一版
+                            // 所以这里不用判断是否开启过滤模式，直接使用原始列表即可
+                            val list = list.value
                             val indexAtDiffableList = curObjIndex.intValue
                             val previousIndex = indexAtDiffableList +1
                             if(!isGoodIndexForList(previousIndex, list)) {
