@@ -3,6 +3,14 @@ package com.catpuppyapp.puppygit.utils
 import androidx.compose.ui.graphics.Color
 
 object PatchUtil {
+    private val color_fileHeader_dark = Color(0xFF4D4414)
+    private val color_fileHeader = Color(0xFFC7BB81)
+    private val color_add_dark = Color(0xFF1B5E20)
+    private val color_add = Color(0xFF81C784)
+    private val color_del_dark = Color(0xFF484848)
+    private val color_del = Color(0xFFA2A2A2)
+    private val color_hunkHeader_dark = Color(0xFF01579B)
+    private val color_hunkHeader = Color(0xFF81B1C7)
 
     // 判断一段字符串有没有可能是 patch文件的内容。（也有叫diff文件的，总之就是git 导出的patch）
     fun maybeIsPatchLine(str:String) = isFileHeader(str) || isAdd(str) || isDelete(str) || isHunkHeader(str);
@@ -14,27 +22,27 @@ object PatchUtil {
 
     fun getColorOfLine(str: String, inDarkTheme:Boolean):Color? = if(isFileHeader(str)) {
         if(inDarkTheme) {
-            Color(0xFF4D4414)
+            color_fileHeader_dark
         }else {
-            Color(0xFFC7BB81)
+            color_fileHeader
         }
     } else if(isAdd(str)) {
         if(inDarkTheme) {
-            Color(0xFF1B5E20)
+            color_add_dark
         }else {
-            Color(0xFF81C784)
+            color_add
         }
     }  else if(isDelete(str)) {
         if(inDarkTheme) {
-            Color(0xFF484848)
+            color_del_dark
         }else {
-            Color(0xFFA2A2A2)
+            color_del
         }
     } else if(isHunkHeader(str)) {
         if(inDarkTheme) {
-            Color(0xFF01579B)
+            color_hunkHeader_dark
         }else {
-            Color(0xFF81B1C7)
+            color_hunkHeader
         }
     }else null;
 
