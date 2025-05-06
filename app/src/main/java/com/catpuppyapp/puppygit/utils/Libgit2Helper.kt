@@ -4157,6 +4157,7 @@ object Libgit2Helper {
                                 val entryOidStr = entryOid.toString()
                                 if(entryOidStr != lastVersionEntryOid) {
                                     //这两个如果一个为null另一个不为null，必然会漏条目，不应该存在这个状态，若发生，肯定哪里出错了，抛个异常
+                                    //开发模式如果启用，执行一个错误检测。（如果出错，条目可能会显示错，不过问题并不是特别严重，所以不强制抛异常）
                                     if(AppModel.devModeOn) {
                                         if((lastCommit==null && lastVersionEntryOid!=null)
                                             || (lastCommit!=null && lastVersionEntryOid==null)
@@ -4191,32 +4192,28 @@ object Libgit2Helper {
                                             commitList = commitList,
                                         ))
 
-                                        commitList.clear()
 
-                                        //添加提交到拥有当前entry id的列表
-                                        // 一个修订版本可能被多个commit引用，例如你修改了文件a，
-                                        // 然后提交，然后再创建提交但没修改文件a，
-                                        // 这时这些提交引用的是同一个entry id代表的条目
-                                        commitList.add(commit.id().toString())
-
-
+                                        //如果在这break，next没更新，定不为null，
+                                        // 所以不会进入循环后面的添加最后一个条目的代码块
                                         if(++count >= pageSize) {
                                             break
                                         }
+
+                                        commitList.clear()
 
                                     }
 
                                 }else {
                                     //条目id一样，更新下提交id
                                     lastCommit = commit
-
-                                    //添加提交到拥有当前entry id的列表
-                                    // 一个修订版本可能被多个commit引用，例如你修改了文件a，
-                                    // 然后提交，然后再创建提交但没修改文件a，
-                                    // 这时这些提交引用的是同一个entry id代表的条目
-                                    commitList.add(commit.id().toString())
-
                                 }
+
+                                //添加提交到拥有当前entry id的列表
+                                // 一个修订版本可能被多个commit引用，例如你修改了文件a，
+                                // 然后提交，然后再创建提交但没修改文件a，
+                                // 这时这些提交引用的是同一个entry id代表的条目
+                                commitList.add(commit.id().toString())
+
                             }
 
                         }
@@ -4257,10 +4254,12 @@ object Libgit2Helper {
                     commitList = commitList
                 ))
 
-                commitList.clear()
             }
 
         }
+
+        //无所谓，gc会出手
+//        commitList.clear()
 
 //            return FileHistoryQueryResult(hasMore, lastVersionEntryOid)
         return Pair(lastVersionEntryOid, next)
