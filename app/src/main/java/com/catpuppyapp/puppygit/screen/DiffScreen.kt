@@ -1480,9 +1480,9 @@ fun DiffScreen(
                                                         //若已加载过diff内容则显示添加和删除了多少行
                                                         if(loadedAtLeastOnce) {
                                                             withStyle(style = SpanStyle(color = Theme.mdGreen)) { append("+"+diffItem.addedLines) }
-                                                            append(", ")
-                                                            withStyle(style = SpanStyle(color = if(inDarkTheme) Color.Gray else Color.DarkGray)) { append("-"+diffItem.deletedLines) }
-                                                            append(", ")
+                                                            withStyle(style = SpanStyle(color = Theme.Gray1)) { append(", ") }
+                                                            withStyle(style = SpanStyle(color = Theme.Gray2)) { append("-"+diffItem.deletedLines) }
+                                                            withStyle(style = SpanStyle(color = Theme.Gray1)) { append(", ") }
                                                         }
 
                                                         //当前文件的父路径，以/结尾，无文件名，若文件在仓库根目录则为/
