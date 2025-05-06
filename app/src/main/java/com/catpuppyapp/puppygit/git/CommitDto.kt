@@ -36,7 +36,7 @@ class CommitDto (
     private var cached_ParentShortOidStrList:String? = null
     private var cached_LineSeparated_BranchShortNameList:String? = null
     private var cached_LineSeparated_TagShortNameList:String? = null
-    private var cached_LineSeparated_ParentShortOidStrList:String? = null
+    private var cached_LineSeparated_ParentFullOidStrList:String? = null
 
     fun hasOther():Boolean {
         return isGrafted || isMerged()
@@ -112,7 +112,7 @@ class CommitDto (
 
     fun cachedLineSeparatedBranchList():String = cached_LineSeparated_BranchShortNameList ?: branchShortNameList.joinToString(separator = "\n", prefix = "\n") { it }.let { cached_LineSeparated_BranchShortNameList=it; it };
     fun cachedLineSeparatedTagList():String = cached_LineSeparated_TagShortNameList ?: tagShortNameList.joinToString(separator = "\n", prefix = "\n") { it }.let { cached_LineSeparated_TagShortNameList=it; it };
-    fun cachedLineSeparatedParentFullOidList():String = cached_LineSeparated_ParentShortOidStrList ?: parentShortOidStrList.joinToString(separator = "\n", prefix = "\n") { it }.let { cached_LineSeparated_ParentShortOidStrList=it; it };
+    fun cachedLineSeparatedParentFullOidList():String = cached_LineSeparated_ParentFullOidStrList ?: parentOidStrList.joinToString(separator = "\n", prefix = "\n") { it }.let { cached_LineSeparated_ParentFullOidStrList=it; it };
 
 }
 
