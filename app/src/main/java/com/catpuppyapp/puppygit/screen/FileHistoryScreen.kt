@@ -859,7 +859,7 @@ fun FileHistoryScreen(
                     verticalArrangement = Arrangement.Center,
                     horizontalAlignment = Alignment.CenterHorizontally,
                 ) {
-                    Text(stringResource(R.string.file_hasnt_history_yet))
+                    Text(stringResource(if(loadMoreLoading.value) R.string.loading else R.string.file_hasnt_history_yet))
                 }
             }else {
 //        val commitLen = 10;

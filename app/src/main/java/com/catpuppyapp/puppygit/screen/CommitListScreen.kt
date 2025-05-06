@@ -1836,7 +1836,7 @@ fun CommitListScreen(
                     verticalArrangement = Arrangement.Center,
                     horizontalAlignment = Alignment.CenterHorizontally,
                 ) {
-                    Text(stringResource(R.string.commit_history_is_empty))
+                    Text(stringResource(if(loadMoreLoading.value) R.string.loading else R.string.commit_history_is_empty))
                 }
             }else {
 
