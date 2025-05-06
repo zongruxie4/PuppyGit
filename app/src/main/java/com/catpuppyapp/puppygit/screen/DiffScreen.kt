@@ -265,11 +265,16 @@ fun DiffScreen(
                     break
                 }
 
-                // hunks * 2是因为每个hunk都有一个header(diff结果的hunk header)和一个footer(我添加的作为分割线的footer)，总共两个items
-                // 4 是footer 和 spacer占的item数
                 count += if(i.visible) {
-                    (i.diffItemSaver.hunks.size*2 + i.diffItemSaver.allLines + 4)
+                    // file header 和 footer 和 用于填充的spacer占的item数
+                    // 1 header + 1 spacers + 1 footer
+                    val fileHeaderAndFooterAndSpacer = 3
+                    // hunks * 2是因为每个hunk都有一个header(diff结果的hunk header)和一个spliter，总共两个items
+                    val hunksHeadersAndSpliters = i.diffItemSaver.hunks.size * 2;
+                    // noDiffItemAvailable 只占1个条目，submoduleIsDirty 需要多加1个条目
+                    (hunksHeadersAndSpliters + i.diffItemSaver.allLines + fileHeaderAndFooterAndSpacer) + (if(i.noDiffItemAvailable || i.submoduleIsDirty) 1 else 0)
                 }else {
+                    //只有 file header
                     1
                 }
             }
@@ -1456,30 +1461,28 @@ fun DiffScreen(
                                                 )
                                             }
 
-                                            //相对路径的父路径，若直接在仓库根目录则不显示，否则显示
-                                            if(diffableItem.atRootOfWorkDir().not()) {
-                                                ScrollableRow {
-                                                    Text(
-                                                        text = diffableItem.fileParentPathOfRelativePath,
-                                                        fontSize = titleRelativePathFontSize,
-                                                        color = colorOfChangeType,
-                                                    )
-                                                }
-                                            }
+
 
 
                                             //如果加载过，则显示添加删除了多少行
-                                            if(loadedAtLeastOnce) {
-                                                ScrollableRow {
-                                                    Text(
-                                                        fontSize = titleRelativePathFontSize,
-                                                        text = buildAnnotatedString {
+                                            ScrollableRow {
+                                                Text(
+                                                    fontSize = titleRelativePathFontSize,
+                                                    text = buildAnnotatedString {
+                                                        //若已加载过diff内容则显示添加和删除了多少行
+                                                        if(loadedAtLeastOnce) {
                                                             withStyle(style = SpanStyle(color = Theme.mdGreen)) { append("+"+diffItem.addedLines) }
                                                             append(", ")
                                                             withStyle(style = SpanStyle(color = if(inDarkTheme) Color.Gray else Color.DarkGray)) { append("-"+diffItem.deletedLines) }
+                                                            append(", ")
                                                         }
-                                                    )
-                                                }
+
+                                                        //若不在仓库workdir根目录则显示相对路径（仅当前文件的父路径，以/结尾，无文件名）
+                                                        if(diffableItem.atRootOfWorkDir().not()) {
+                                                            withStyle(style = SpanStyle(color = colorOfChangeType)) { append(diffableItem.fileParentPathOfRelativePath) }
+                                                        }
+                                                    }
+                                                )
                                             }
 
                                         }
@@ -1509,14 +1512,6 @@ fun DiffScreen(
                         val fileChangeTypeIsModified = changeType == Cons.gitStatusModified
 
 
-                        //判断是否是支持预览的修改类型
-                        // 注意：冲突条目不能diff，会提示unmodified！所以支持预览冲突条目没意义，若支持的话，在当前判断条件后追加后面的代码即可: `|| changeType == Cons.gitStatusConflict`
-                        val isSupportedChangeType = (
-                                changeType == Cons.gitStatusModified
-                                        || changeType == Cons.gitStatusNew
-                                        || changeType == Cons.gitStatusDeleted
-                                        || changeType == Cons.gitStatusTypechanged  // e.g. submodule folder path change to a file, will show type changed, view this is ok
-                                )
 
 
                         // only check when local as diff right(xxx..local)
@@ -1534,111 +1529,54 @@ fun DiffScreen(
 
 
 
-                        val loadingFinishedButHasErr = (loading.not() && errMsg.isNotBlank())
-                        val unsupportedChangeType = !isSupportedChangeType
-                        val isBinary = diffItem?.flags?.contains(Diff.FlagT.BINARY) ?: false
-                        val fileNoChange = !(diffItem?.isFileModified ?: false)
-
-                        // {key: line.key, value:CompareLinePairResult}
-                        //只要比较过，就一定有 CompareLinePairResult 这个对象，但不代表匹配成功，若 CompareLinePairResult 存的stringpartlist不为null，则匹配成功，否则匹配失败
-                        val indexStringPartListMapForComparePair = diffableItem.stringPairMap
-//    val comparePair = mutableCustomStateOf(stateKeyTag, "comparePair") {CompareLinePair()}
-                        val comparePairBuffer = diffableItem.compareLinePair
-
-                        val isContentSizeOverLimit = diffItem?.isContentSizeOverLimit == true
-                        //不支持预览二进制文件、超出限制大小、文件未修改
-                        if (loadingFinishedButHasErr || unsupportedChangeType || loading || isBinary || isContentSizeOverLimit || fileNoChange) {
+                        //不支持预览二进制文件、超出限制大小、文件未修改，等
+                        if (diffableItem.noDiffItemAvailable) {
                             item {
 //                            itemsCount.intValue++
 
                                 DisableSelection {
                                     Column(
                                         modifier = Modifier
-                                            .padding(10.dp)
                                             .fillMaxWidth()
                                             .height(200.dp)
+                                            .padding(10.dp)
                                         ,
                                         verticalArrangement = Arrangement.Center,
                                         horizontalAlignment = Alignment.CenterHorizontally,
                                     ) {
                                         MySelectionContainer {
-                                            Row {
-                                                if (loadingFinishedButHasErr) {
-                                                    Text(text = errMsg, color = MyStyleKt.TextColor.error())
-                                                } else if (unsupportedChangeType) {
-                                                    Text(text = stringResource(R.string.unknown_change_type))
-                                                } else if (loading) {
-                                                    Text(stringResource(R.string.loading))
-                                                } else if (isBinary) {
-                                                    Text(stringResource(R.string.doesnt_support_view_binary_file))
-                                                } else if (isContentSizeOverLimit) {
-                                                    Text(text = stringResource(R.string.content_size_over_limit) + "(" + getHumanReadableSizeStr(settings.diff.diffContentSizeMaxLimit) + ")")
-                                                } else if (fileNoChange) {
-                                                    if (isSubmodule && submoduleIsDirty) {  // submodule no diff for shown, give user a hint
-                                                        Text(stringResource(R.string.submodule_is_dirty_note))
-                                                    } else {
-                                                        Text(stringResource(R.string.the_file_has_not_changed))
-                                                    }
-                                                }
-                                            }
-
+                                            diffableItem.whyNoDiffItem?.invoke()
                                         }
 
-                                        Spacer(Modifier.height(100.dp))
                                     }
                                 }
-                            }
-
-                            if(isSingleMode) {
-                                item {
-//                                itemsCount.intValue++
-
-                                    DisableSelection{
-                                        NaviButton(
-                                            stateKeyTag = stateKeyTag,
-
-                                            isMultiMode = isMultiMode,
-                                            fromScreen = fromScreen,
-//                                        activityContext = activityContext,
-//                                        curRepo = curRepo.value,
-                                            diffableItemList = diffableItemList,
-                                            curItemIndex = curItemIndex,
-                                            switchItem = switchItem,
-                                            fromTo = fromTo,
-                                            naviUp = naviUp,
-                                            lastClickedItemKey = lastClickedItemKey,
-                                            pageRequest = pageRequest,
-//                                        revertItem = revertItem,
-//                                        unstageItem = unstageItem,
-                                            stageItem = stageItem,
-                                            initRevertDialog = initRevertDialog,
-                                            initUnstageDialog = initUnstageDialog
-                                        )
-
-                                        Spacer(Modifier.height(100.dp))
-
-                                    }
-                                }
-
                             }
                         } else {  //文本类型且没超过大小且文件修改过，正常显示diff信息
+
+                            // {key: line.key, value:CompareLinePairResult}
+                            //只要比较过，就一定有 CompareLinePairResult 这个对象，但不代表匹配成功，若 CompareLinePairResult 存的stringpartlist不为null，则匹配成功，否则匹配失败
+                            val indexStringPartListMapForComparePair = diffableItem.stringPairMap
+                            //    val comparePair = mutableCustomStateOf(stateKeyTag, "comparePair") {CompareLinePair()}
+                            val comparePairBuffer = diffableItem.compareLinePair
+
+
+
+                            //这个显示在正常的内容顶部，占一行，不能挪到上面的if里
                             // show a notice make user know submodule has uncommitted changes
                             if (submoduleIsDirty) {
                                 item {
-//                                itemsCount.intValue++
-
-                                    Row(
-                                        modifier = Modifier.fillMaxWidth(),
+                                    ScrollableRow (
+                                        modifier = Modifier.fillMaxWidth().padding(vertical = 2.dp),
                                         horizontalArrangement = Arrangement.Center,
-                                        verticalAlignment = Alignment.CenterVertically
-
                                     ) {
                                         Text(stringResource(R.string.submodule_is_dirty_note_short), fontWeight = FontWeight.Light, fontStyle = FontStyle.Italic)
                                     }
                                 }
                             }
 
-                            if (diffItem.hunks.isEmpty()) {
+//                            if (diffItem.hunks.isEmpty()) {
+                            // 测完可删
+                            if (false) {
                                 item {
 //                                itemsCount.intValue++
 
@@ -2205,136 +2143,98 @@ fun DiffScreen(
                                 }
                             }
 
+
+                        }
+
+                        item {
+                            Spacer(Modifier.height(if(isSingleMode) 150.dp else 80.dp))
+                        }
+
+                        if(isMultiMode) {
                             item {
-//                            itemsCount.intValue++
-
-                                Spacer(Modifier.height(50.dp))
-                            }
-
-                            //切换上下文件和执行操作的按钮
-                            if(isSingleMode) {
-                                item {
 //                                itemsCount.intValue++
 
-                                    DisableSelection {
-                                        NaviButton(
-                                            stateKeyTag = stateKeyTag,
-
-                                            isMultiMode = isMultiMode,
-                                            fromScreen = fromScreen,
-//                                        activityContext = activityContext,
-//                                        curRepo = curRepo.value,
-                                            diffableItemList = diffableItemList,
-                                            curItemIndex = curItemIndex,
-                                            switchItem = switchItem,
-                                            fromTo = fromTo,
-                                            naviUp = naviUp,
-                                            lastClickedItemKey = lastClickedItemKey,
-                                            pageRequest = pageRequest,
-
-                                            stageItem = stageItem,
-                                            initRevertDialog = initRevertDialog,
-                                            initUnstageDialog = initUnstageDialog
-                                        )
-
-                                    }
-                                }
-                            }
-
-                            item {
-//                            itemsCount.intValue++
-
-                                Spacer(Modifier.height(if(isSingleMode) 100.dp else 30.dp))
-                            }
-
-                            if(isMultiMode) {
-                                item {
-//                                itemsCount.intValue++
-
-                                    BarContainer(
-                                        modifier = Modifier
-                                            .onGloballyPositioned { layoutCoordinates ->
-                                                if(visible) {
-                                                    val position = layoutCoordinates.positionInRoot()
-                                                    //从屏幕上方消失了，就表示在看这个条目
-                                                    if(position.y < 0) {
-                                                        updateCurrentViewingIdx(idx)
-                                                    }
+                                BarContainer(
+                                    modifier = Modifier
+                                        .onGloballyPositioned { layoutCoordinates ->
+                                            if(visible) {
+                                                val position = layoutCoordinates.positionInRoot()
+                                                //从屏幕上方消失了，就表示在看这个条目
+                                                if(position.y < 0) {
+                                                    updateCurrentViewingIdx(idx)
                                                 }
                                             }
-                                        ,
-                                        horizontalArrangement = Arrangement.Center,
-                                        onClick = {scrollToCurrentItemHeader(relativePath)}
+                                        }
+                                    ,
+                                    horizontalArrangement = Arrangement.Center,
+                                    onClick = {scrollToCurrentItemHeader(relativePath)}
+                                ) {
+                                    Column(
+                                        horizontalAlignment = Alignment.CenterHorizontally,
+                                        verticalArrangement = Arrangement.Center,
                                     ) {
-                                        Column(
-                                            horizontalAlignment = Alignment.CenterHorizontally,
-                                            verticalArrangement = Arrangement.Center,
+                                        ScrollableRow(
+                                            modifier = Modifier.fillMaxWidth(),
+                                            horizontalArrangement = Arrangement.Center,
                                         ) {
-                                            ScrollableRow(
-                                                modifier = Modifier.fillMaxWidth(),
-                                                horizontalArrangement = Arrangement.Center,
-                                            ) {
-                                                Text(
-                                                    text = diffableItem.fileName,
-                                                    fontSize = titleFileNameFontSize,
-                                                    color = colorOfChangeType
-                                                )
-                                            }
-
-                                            InLineIcon(
-                                                iconModifier = Modifier.size(iconSize),
-                                                pressedCircleSize = pressedCircleSize,
-                                                icon = Icons.Filled.KeyboardDoubleArrowUp,
-                                                tooltipText = "",  // empty to disable long pressed show toast
+                                            Text(
+                                                text = diffableItem.fileName,
+                                                fontSize = titleFileNameFontSize,
+                                                color = colorOfChangeType
                                             )
                                         }
+
+                                        InLineIcon(
+                                            iconModifier = Modifier.size(iconSize),
+                                            pressedCircleSize = pressedCircleSize,
+                                            icon = Icons.Filled.KeyboardDoubleArrowUp,
+                                            tooltipText = "",  // empty to disable long pressed show toast
+                                        )
                                     }
                                 }
-
                             }
+
                         }
                     }
-
-
-
 
 
                     //切换上下文件和执行操作的按钮
-                    if(isMultiMode) {
-                        item {
-                            Spacer(Modifier.height(150.dp))
-                        }
+                    item {
+                        Spacer(Modifier.height(150.dp))
+                    }
 
-                        item {
-                            DisableSelection {
-                                NaviButton(
-                                    stateKeyTag = stateKeyTag,
+                    item {
+                        DisableSelection {
+                            NaviButton(
+                                stateKeyTag = stateKeyTag,
 
-                                    isMultiMode = isMultiMode,
-                                    fromScreen = fromScreen,
+                                isMultiMode = isMultiMode,
+                                fromScreen = fromScreen,
 
 //                                        activityContext = activityContext,
 //                                        curRepo = curRepo.value,
-                                    diffableItemList = diffableItemList,
-                                    curItemIndex = curItemIndex,
-                                    switchItem = {p1, p2, p3->},  // multi diff的操作都是针对当前页面所有条目的，所以不需要切换条目
-                                    fromTo = fromTo,
-                                    naviUp = naviUp,
-                                    lastClickedItemKey = lastClickedItemKey,
-                                    pageRequest = pageRequest,
+                                diffableItemList = diffableItemList,
+                                curItemIndex = curItemIndex,
+                                switchItem = {p1, p2, p3->},  // multi diff的操作都是针对当前页面所有条目的，所以不需要切换条目
+                                fromTo = fromTo,
+                                naviUp = naviUp,
+                                lastClickedItemKey = lastClickedItemKey,
+                                pageRequest = pageRequest,
 
-                                    stageItem = stageItem,
-                                    initRevertDialog = initRevertDialog,
-                                    initUnstageDialog = initUnstageDialog
-                                )
+                                stageItem = stageItem,
+                                initRevertDialog = initRevertDialog,
+                                initUnstageDialog = initUnstageDialog
+                            )
 
-                            }
-                        }
-
-                        item {
-                            Spacer(Modifier.height(100.dp))
                         }
                     }
+
+                    item {
+                        Spacer(Modifier.height(100.dp))
+                    }
+
+
+
 
                 }
             }
@@ -2426,7 +2326,7 @@ fun DiffScreen(
     //      最后设置页面loading 为false
                 //这里用这个会导致app随机崩溃，报错："java.lang.ClassCastException: 包名.MainActivity cannot be cast to androidx.compose.runtime.saveable.SaveableHolder"
 //            doJobThenOffLoading launch@{
-                try {
+                val loadedDiffableItem = try {
                     // set loading
 //                    loadingMap.value.put(mapKey, true)
                     // reset before loading
@@ -2519,14 +2419,10 @@ fun DiffScreen(
                             false
                         }
 
-                        //加载完毕，把加载的对象存上，更新loading状态，赋新实例给list，触发页面刷新
-                        diffableListLock.withLock {
-                            diffableItemList.value[idx] = item.copy(loading = false, submoduleIsDirty = submdirty, diffItemSaver = diffItemSaver)
-                        }
 
+                        item.copy(loading = false, submoduleIsDirty = submdirty, diffItemSaver = diffItemSaver)
                     }
 
-//                    loadingMap.value.put(mapKey, false)
 
                 }catch (e:Exception) {
                     if(channelForThisJob.tryReceive().isClosed) {
@@ -2535,17 +2431,78 @@ fun DiffScreen(
 
                     val errMsg = errorStrRes + ": " + e.localizedMessage
 
-//                    errMsgMap.value.put(mapKey, errMsg)
-//                    loadingMap.value.put(mapKey, false)
-                    diffableListLock.withLock {
-                        diffableItemList.value[idx] = item.copy(loading = false, errMsg = errMsg)
-                    }
 
-
-    //                        Msg.requireShowLongDuration(errMsg)
                     createAndInsertError(repoId, errMsg)
                     MyLog.e(TAG, "#LaunchedEffect err: "+e.stackTraceToString())
+
+                    item.copy(loading = false, errMsg = errMsg)
                 }
+
+
+                val loading = loadedDiffableItem.loading
+                val errMsg = loadedDiffableItem.errMsg
+                val changeType = item.changeType
+                val diffItem = loadedDiffableItem.diffItemSaver
+                val submoduleIsDirty = loadedDiffableItem.submoduleIsDirty
+
+                //判断是否是支持预览的修改类型
+                // 注意：冲突条目不能diff，会提示unmodified！所以支持预览冲突条目没意义，若支持的话，在当前判断条件后追加后面的代码即可: `|| changeType == Cons.gitStatusConflict`
+                val isSupportedChangeType = (
+                        changeType == Cons.gitStatusModified
+                                || changeType == Cons.gitStatusNew
+                                || changeType == Cons.gitStatusDeleted
+                                || changeType == Cons.gitStatusTypechanged  // e.g. submodule folder path change to a file, will show type changed, view this is ok
+                        )
+
+                val loadingFinishedButHasErr = (loading.not() && errMsg.isNotBlank())
+                val unsupportedChangeType = !isSupportedChangeType
+                val isBinary = diffItem?.flags?.contains(Diff.FlagT.BINARY) ?: false
+                val fileNoChange = !(diffItem?.isFileModified ?: false)
+                val isContentSizeOverLimit = diffItem?.isContentSizeOverLimit == true
+                val noHunks = loadedDiffableItem.diffItemSaver.hunks.isEmpty();
+
+                loadedDiffableItem.noDiffItemAvailable = loading || loadingFinishedButHasErr || unsupportedChangeType || isBinary || fileNoChange || isContentSizeOverLimit || noHunks;
+
+                if (loadedDiffableItem.noDiffItemAvailable) {
+                    //这个顺序很重要，不然可能在loading的时候显示其他信息，类似之前提交历史页面的判断没弄好，导致在loading时显示列表为空
+
+                    loadedDiffableItem.whyNoDiffItem_msg = if (loading) {
+                        activityContext.getString(R.string.loading)
+                    } else if (loadingFinishedButHasErr) {
+                        errMsg
+                    } else if (unsupportedChangeType) {
+                        activityContext.getString(R.string.unknown_change_type)
+                    } else if (isBinary) {
+                        activityContext.getString(R.string.doesnt_support_view_binary_file)
+                    } else if (fileNoChange) {
+                        if (isSubmodule && submoduleIsDirty) {  // submodule no diff for shown, give user a hint
+                            activityContext.getString(R.string.submodule_is_dirty_note)
+                        } else {
+                            activityContext.getString(R.string.the_file_has_not_changed)
+                        }
+                    } else if (isContentSizeOverLimit) {
+                        activityContext.getString(R.string.content_size_over_limit) + "(" + getHumanReadableSizeStr(settings.diff.diffContentSizeMaxLimit) + ")"
+                    } else if(noHunks) {
+                        activityContext.getString(R.string.file_is_empty)
+                    } else "";
+
+                    //组件，用来在当前页面展示的
+                    loadedDiffableItem.whyNoDiffItem = {
+                        Row {
+                            Text(
+                                text = loadedDiffableItem.whyNoDiffItem_msg,
+                                color = if(loadingFinishedButHasErr) MyStyleKt.TextColor.error() else Color.Unspecified,
+                            )
+                        }
+                    }
+                }
+
+
+                //加载完毕，把加载的对象存上，更新loading状态，赋新实例给list，触发页面刷新
+                diffableListLock.withLock {
+                    diffableItemList.value[idx] = loadedDiffableItem
+                }
+
 
             }
         }

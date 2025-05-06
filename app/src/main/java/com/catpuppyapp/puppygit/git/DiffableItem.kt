@@ -1,13 +1,10 @@
 package com.catpuppyapp.puppygit.git
 
+import androidx.compose.runtime.Composable
 import androidx.compose.runtime.mutableStateMapOf
 import androidx.compose.runtime.snapshots.SnapshotStateMap
 import com.catpuppyapp.puppygit.constants.Cons
 import com.catpuppyapp.puppygit.dto.ItemKey
-import com.catpuppyapp.puppygit.utils.Msg
-import com.catpuppyapp.puppygit.utils.getFileNameFromCanonicalPath
-import com.catpuppyapp.puppygit.utils.getParentPathEndsWithSeparator
-import io.ktor.util.collections.ConcurrentMap
 import kotlinx.coroutines.channels.Channel
 import java.io.File
 
@@ -56,6 +53,13 @@ data class DiffableItem(
     val errMsg: String = "",
     //是否可见，收起不可见，展开可见
     val visible:Boolean = false,
+
+    //暂时或真的没有diffitem可用，例如hunks为空、正在加载，之类的，这个就会为真
+    var noDiffItemAvailable:Boolean = false,
+    //自定义显示为什么没有diff item的组件，里面应该包含理由
+    var whyNoDiffItem:(@Composable ()->Unit)? = null,
+    //仅包含理由
+    var whyNoDiffItem_msg:String = "",
 ):ItemKey {
     companion object {
 
