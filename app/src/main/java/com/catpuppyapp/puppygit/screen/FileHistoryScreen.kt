@@ -60,6 +60,7 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import com.catpuppyapp.puppygit.compose.BottomSheet
 import com.catpuppyapp.puppygit.compose.BottomSheetItem
+import com.catpuppyapp.puppygit.compose.CommitListDialog
 import com.catpuppyapp.puppygit.compose.ConfirmDialog2
 import com.catpuppyapp.puppygit.compose.CopyableDialog
 import com.catpuppyapp.puppygit.compose.CreatePatchSuccessDialog
@@ -552,40 +553,15 @@ fun FileHistoryScreen(
         showCommitListDialog.value = true
     }
     if(showCommitListDialog.value) {
-        val closeDialog = {showCommitListDialog.value = false}
         val item = fileHistoryDtoOfCommitListDialog.value
-        ConfirmDialog2(
+        CommitListDialog(
             title = stringResource(R.string.commits),
-            requireShowTextCompose = true,
-            textCompose = {
-                DisableSelection {
-                    MySelectionContainer {
-                        Column {
-                            //用 \n 是为了在复制文本的时候包含换行符
-                            Row {
-                                Text(stringResource(R.string.entry_id)+": ", fontWeight = FontWeight.ExtraBold)
-                                Text(item.treeEntryOidStr+"\n")
-                            }
-
-                            HorizontalDivider()
-                            Text("\n${stringResource(R.string.commits)}: \n", fontWeight = FontWeight.ExtraBold)
-
-                            LazyColumn(
-                                modifier = Modifier.fillMaxWidth(),
-//                                horizontalAlignment = Alignment.CenterHorizontally,
-                            ) {
-                                item.commitList.forEach {
-                                    item { Text(it+"\n") }
-                                }
-                            }
-                        }
-                    }
-                }
-            },
-            onCancel = closeDialog,
-            cancelBtnText = stringResource(R.string.close),
-            showOk = false
-        ) {}
+            firstLineLabel = stringResource(R.string.entry_id),
+            firstLineText = item.treeEntryOidStr,
+            commitListLabel = stringResource(R.string.commits),
+            commits = item.commitList,
+            closeDialog = {showCommitListDialog.value = false}
+        )
     }
 
     // 向下滚动监听，开始
