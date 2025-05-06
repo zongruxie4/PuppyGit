@@ -848,6 +848,8 @@ fun DiffScreen(
         val sb = StringBuilder()
         if(treeOid1Str.value != Cons.git_AllZeroOidStr || treeOid2Str.value != Cons.git_AllZeroOidStr) {
             sb.append(activityContext.getString(R.string.comparing_label)+": ").append(Libgit2Helper.getLeftToRightDiffCommitsText(treeOid1Str.value, treeOid2Str.value, false)).append(suffix)
+            sb.append(activityContext.getString(R.string.left)+": ").append(treeOid1Str.value).append(suffix)
+            sb.append(activityContext.getString(R.string.right)+": ").append(treeOid2Str.value).append(suffix)
 
             // 显示数量，例如： "当前：1，总数：10"
             sb.append(replaceStringResList(activityContext.getString(R.string.current_n_all_m), listOf(itemIdx+1, diffableItemList.value.size))).append(suffix)
