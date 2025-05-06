@@ -1822,7 +1822,7 @@ fun CommitListScreen(
                 LoadingDialog(loadingText.value)
             }
 
-            if(loadMoreLoading.value.not() && list.value.isEmpty()) {
+            if(list.value.isEmpty()) {
                 Column(
                     modifier = Modifier
                         //fillMaxSize 必须在最上面！要不然，文字不会显示在中间！
