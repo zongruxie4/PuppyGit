@@ -48,6 +48,7 @@ fun FileHistoryItem(
     shouldShowTimeZoneInfo:Boolean,
 
     showItemDetails:(FileHistoryDto)->Unit,
+    showCommits:(FileHistoryDto)->Unit,
     onClick:(FileHistoryDto)->Unit={}
 ) {
 
@@ -212,6 +213,18 @@ fun FileHistoryItem(
 
             )
         }
+
+        Row(
+            verticalAlignment = Alignment.CenterVertically,
+
+        ) {
+            //包含当前entry id的所有提交
+            Text(text = stringResource(R.string.commits) + ": ")
+            ClickableText(dto.cachedShortCommitListStr()) {
+                showCommits(dto)
+            }
+        }
+
         Row(
             verticalAlignment = Alignment.CenterVertically,
         ) {

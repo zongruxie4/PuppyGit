@@ -211,10 +211,12 @@ fun createFileHistoryDto(
     commit: Commit,
     repoId: String,
     fileRelativePathUnderRepo:String,
-    settings: AppSettings
+    settings: AppSettings,
+    commitList: List<String>,
 ): FileHistoryDto {
     val obj = FileHistoryDto()
 
+    obj.commitList = commitList.toList()
     obj.repoWorkDirPath = repoWorkDirPath
     obj.fileParentPathOfRelativePath = getParentPathEndsWithSeparator(fileRelativePathUnderRepo)
     obj.fileName = getFileNameFromCanonicalPath(fileRelativePathUnderRepo)

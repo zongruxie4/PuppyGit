@@ -16,7 +16,7 @@ class FileHistoryDto (
 
 
     var treeEntryOidStr:String="",
-    var commitOidStr: String="",
+    var commitOidStr: String="",  //最初引入此版本的提交
     var dateTime: String="",
     var originTimeOffsetInMinutes:Int = 0,  // commit的时间偏移量，单位分钟 (btw 实际上是 commit使用的是commit对象中的committer signature中的时间和偏移量)
     var authorUsername: String="",  // username
@@ -27,11 +27,17 @@ class FileHistoryDto (
     var msg: String="",  //完整commit信息
     var repoId:String="",  //数据库的repoId，用来判断当前是在操作哪个仓库
     var repoWorkDirPath:String="",
+
+    //所有包含此entry id的提交的oid列表
+    // 降序，最后一个条目即是最初引入此版本的提交，也就是当前对象的`commitOidStr`的值，如果不是，就代表有bug
+    var commitList:List<String> = listOf(),
 ): ItemKey {
 
     private var commitShortOidStr:String?=null
     private var treeEntryShortOidStr:String?=null
     private var cached_OneLineMsg:String? = null
+    private var cached_ShortCommitListStr:String? = null
+
 
     fun authorAndCommitterAreSame():Boolean {
         return authorUsername==committerUsername && authorEmail==committerEmail
@@ -91,6 +97,8 @@ class FileHistoryDto (
     }
 
     fun getCachedOneLineMsg(): String = (cached_OneLineMsg ?: Libgit2Helper.zipOneLineMsg(msg).let { cached_OneLineMsg = it; it });
+
+    fun cachedShortCommitListStr(): String = cached_ShortCommitListStr ?: commitList.joinToString { Libgit2Helper.getShortOidStrByFull(it) }.let { cached_ShortCommitListStr=it; it };
 
 
 

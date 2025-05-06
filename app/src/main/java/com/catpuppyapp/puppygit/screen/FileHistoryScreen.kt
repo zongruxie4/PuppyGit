@@ -12,9 +12,11 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.foundation.text.selection.DisableSelection
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
@@ -71,6 +73,7 @@ import com.catpuppyapp.puppygit.compose.LoadingDialog
 import com.catpuppyapp.puppygit.compose.LongPressAbleIconBtn
 import com.catpuppyapp.puppygit.compose.MyCheckBox
 import com.catpuppyapp.puppygit.compose.MyLazyColumn
+import com.catpuppyapp.puppygit.compose.MySelectionContainer
 import com.catpuppyapp.puppygit.compose.PullToRefreshBox
 import com.catpuppyapp.puppygit.compose.RepoInfoDialog
 import com.catpuppyapp.puppygit.compose.RepoInfoDialogItemSpacer
@@ -119,7 +122,6 @@ import com.github.git24j.core.Oid
 import com.github.git24j.core.Repository
 import com.github.git24j.core.Revwalk
 import kotlinx.coroutines.channels.Channel
-import kotlinx.coroutines.launch
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 
@@ -532,11 +534,58 @@ fun FileHistoryScreen(
         sb.append("${activityContext.getString(R.string.date)}: "+curObj.dateTime +" (${curObj.getActuallyUsingTimeZoneUtcFormat(settings)})").append(suffix)
         // commit中携带的时区偏移量
         sb.append("${activityContext.getString(R.string.timezone)}: "+(formatMinutesToUtc(curObj.originTimeOffsetInMinutes))).append(suffix)
+
+        //这个commits 可能会很长，可能上千个提交都包含同一个文件的同一版本，所以不在这显示，因为msg的长度同样无法确定，如果两个都很长，就完犊子了，想看哪个都费劲
+//        sb.append("${activityContext.getString(R.string.commits)}: "+curObj.commitList).append(suffix)
+
         sb.append("${activityContext.getString(R.string.msg)}: "+curObj.msg).append(suffix)
 
 
         detailsString.value = sb.removeSuffix(suffix).toString()
         showDetailsDialog.value = true
+    }
+
+    val fileHistoryDtoOfCommitListDialog = mutableCustomStateOf(stateKeyTag, "fileHistoryDtoOfCommitListDialog") { FileHistoryDto() }
+    val showCommitListDialog = rememberSaveable { mutableStateOf(false) }
+    val showCommits = { curObj:FileHistoryDto ->
+        fileHistoryDtoOfCommitListDialog.value = curObj
+        showCommitListDialog.value = true
+    }
+    if(showCommitListDialog.value) {
+        val closeDialog = {showCommitListDialog.value = false}
+        val item = fileHistoryDtoOfCommitListDialog.value
+        ConfirmDialog2(
+            title = stringResource(R.string.commits),
+            requireShowTextCompose = true,
+            textCompose = {
+                DisableSelection {
+                    MySelectionContainer {
+                        Column {
+                            //用 \n 是为了在复制文本的时候包含换行符
+                            Row {
+                                Text(stringResource(R.string.entry_id)+": ", fontWeight = FontWeight.ExtraBold)
+                                Text(item.treeEntryOidStr+"\n")
+                            }
+
+                            HorizontalDivider()
+                            Text("\n${stringResource(R.string.commits)}: \n", fontWeight = FontWeight.ExtraBold)
+
+                            LazyColumn(
+                                modifier = Modifier.fillMaxWidth(),
+//                                horizontalAlignment = Alignment.CenterHorizontally,
+                            ) {
+                                item.commitList.forEach {
+                                    item { Text(it+"\n") }
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+            onCancel = closeDialog,
+            cancelBtnText = stringResource(R.string.close),
+            showOk = false
+        ) {}
     }
 
     // 向下滚动监听，开始
@@ -991,12 +1040,13 @@ fun FileHistoryScreen(
 
                         val match = { idx:Int, it: FileHistoryDto ->
                             val found = it.treeEntryOidStr.lowercase().contains(keyword)
+                                    || it.commitOidStr.lowercase().contains(keyword)
+                                    || (it.commitList.find { commitOidStr -> commitOidStr.equals(keyword, ignoreCase = true) } != null)
                                     || it.authorEmail.lowercase().contains(keyword)
                                     || it.authorUsername.lowercase().contains(keyword)
                                     || it.committerEmail.lowercase().contains(keyword)
                                     || it.committerUsername.lowercase().contains(keyword)
                                     || it.dateTime.lowercase().contains(keyword)
-                                    || it.commitOidStr.lowercase().contains(keyword)
                                     || it.msg.lowercase().contains(keyword)
                                     || formatMinutesToUtc(it.originTimeOffsetInMinutes).lowercase().contains(keyword)
 
@@ -1071,7 +1121,7 @@ fun FileHistoryScreen(
                         }
                     }
                 ) { idx, it ->
-                    FileHistoryItem(showBottomSheet, curObj, curObjIndex, idx, it, requireBlinkIdx, lastClickedItemKey, shouldShowTimeZoneInfo, showItemDetails) { thisObj ->
+                    FileHistoryItem(showBottomSheet, curObj, curObjIndex, idx, it, requireBlinkIdx, lastClickedItemKey, shouldShowTimeZoneInfo, showItemDetails, showCommits) { thisObj ->
                         Msg.requireShow(activityContext.getString(R.string.diff_to_local))
 
                         //导航到diffScreen

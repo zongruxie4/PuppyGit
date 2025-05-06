@@ -4109,6 +4109,8 @@ object Libgit2Helper {
 
         val repoWorkDirPath = getRepoWorkdirNoEndsWithSlash(repo)
 
+        val commitList = mutableListOf<String>()
+
         while (next!=null) {
             try {
 //                    try {
@@ -4185,8 +4187,17 @@ object Libgit2Helper {
                                             commit=lastLastCommit,
                                             repoId=repoId,
                                             fileRelativePathUnderRepo=fileRelativePathUnderRepo,
-                                            settings = settings
+                                            settings = settings,
+                                            commitList = commitList,
                                         ))
+
+                                        commitList.clear()
+
+                                        //添加提交到拥有当前entry id的列表
+                                        // 一个修订版本可能被多个commit引用，例如你修改了文件a，
+                                        // 然后提交，然后再创建提交但没修改文件a，
+                                        // 这时这些提交引用的是同一个entry id代表的条目
+                                        commitList.add(commit.id().toString())
 
 
                                         if(++count >= pageSize) {
@@ -4198,6 +4209,13 @@ object Libgit2Helper {
                                 }else {
                                     //条目id一样，更新下提交id
                                     lastCommit = commit
+
+                                    //添加提交到拥有当前entry id的列表
+                                    // 一个修订版本可能被多个commit引用，例如你修改了文件a，
+                                    // 然后提交，然后再创建提交但没修改文件a，
+                                    // 这时这些提交引用的是同一个entry id代表的条目
+                                    commitList.add(commit.id().toString())
+
                                 }
                             }
 
@@ -4216,11 +4234,18 @@ object Libgit2Helper {
         }
 
         //到提交列表末尾了但还没存上最后一个条目（最后一个条目一定会遗漏，必须处理）
+        // 会遗漏的原因： 因为会一直查找到下一个版本才能知道当前版本最初是在哪个提交创建的并存上对应提交，
+        // 而提交列表的尽头就是没有提交，所以最后一个版本一定会遗漏，因此需要单独处理下，
+        // 除非改成存文件每个版本的最新提交，那样就不会遗漏了，但不符合直觉，因为那样显示的提交并非引入当前版本的提交,
+        // 不过这样好像如果最后一个版本刚好就是最后一个提交就不会漏了
         if(next == null) {
             //处理可能没存储的最后一个条目
 
             //最后一个条目没存，存上
             if(lastCommit != null && lastVersionEntryOid != null) {
+                //这里不用再添加，因为在上面添加提交号到列表的代码在判断entry id是否相等前面，所以最后一个提交必然被添加过了
+//                commitList.add(lastCommit.id().toString())
+
                 retList.add(createFileHistoryDto(
                     repoWorkDirPath = repoWorkDirPath,
                     commitOidStr= lastCommit.id().toString(),
@@ -4228,8 +4253,11 @@ object Libgit2Helper {
                     commit=lastCommit,
                     repoId=repoId,
                     fileRelativePathUnderRepo=fileRelativePathUnderRepo,
-                    settings = settings
+                    settings = settings,
+                    commitList = commitList
                 ))
+
+                commitList.clear()
             }
 
         }
