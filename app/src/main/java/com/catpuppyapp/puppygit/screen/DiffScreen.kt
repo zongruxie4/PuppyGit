@@ -846,15 +846,19 @@ fun DiffScreen(
 
         val suffix = "\n\n"
         val sb = StringBuilder()
-        if(treeOid1Str.value != Cons.git_AllZeroOidStr || treeOid2Str.value != Cons.git_AllZeroOidStr) {
-            sb.append(activityContext.getString(R.string.comparing_label)+": ").append(Libgit2Helper.getLeftToRightDiffCommitsText(treeOid1Str.value, treeOid2Str.value, false)).append(suffix)
-            sb.append(activityContext.getString(R.string.left)+": ").append(treeOid1Str.value).append(suffix)
-            sb.append(activityContext.getString(R.string.right)+": ").append(treeOid2Str.value).append(suffix)
 
-            // 显示数量，例如： "当前：1，总数：10"
-            sb.append(replaceStringResList(activityContext.getString(R.string.current_n_all_m), listOf(itemIdx+1, diffableItemList.value.size))).append(suffix)
+        //这个判断好像没什么卵用，之前是在这个if代码块里显示的左、右提交信息，后来感觉没什么判断的必要，就注释这个if了
+//        if(treeOid1Str.value != Cons.git_AllZeroOidStr || treeOid2Str.value != Cons.git_AllZeroOidStr) {
+//        }
 
-        }
+
+        sb.append(activityContext.getString(R.string.comparing_label)+": ").append(Libgit2Helper.getLeftToRightDiffCommitsText(treeOid1Str.value, treeOid2Str.value, false)).append(suffix)
+        sb.append(activityContext.getString(R.string.left)+": ").append(treeOid1Str.value).append(suffix)
+        sb.append(activityContext.getString(R.string.right)+": ").append(treeOid2Str.value).append(suffix)
+
+        // 显示数量，例如： "当前：1，总数：10"
+        sb.append(replaceStringResList(activityContext.getString(R.string.current_n_all_m), listOf(itemIdx+1, diffableItemList.value.size))).append(suffix)
+
 
         //有效则显示条目信息，否则仅显示粗略信息
         if(curItem != null) {
@@ -866,9 +870,11 @@ fun DiffScreen(
                 //如果为true，则是从file history页面点击条目进来的，这时是 curItemIndex对应的条目 to local，所以当前提交是左边的提交也就是treeOid1Str；
                 // 否则，是长按file history通过diff to prev进来的，这时，实际上是 prev to curItemIndex对应的条目，所以当前提交是右边的提交，即treeOid2Str
                 val commitId = if(isFileHistoryTreeToLocal) treeOid1Str.value else treeOid2Str.value
+                //这两个都是用户在文件历史列表点击或长按的条目的属性
                 sb.append(activityContext.getString(R.string.commit_id)+": ").append(commitId).append(suffix)
                 sb.append(activityContext.getString(R.string.entry_id)+": ").append(curItem.entryId).append(suffix)
             }else {  // 从changelist进到diff页面
+                // cl 如果和index或worktree比较，无entry id，但如果和提交比较其实是有entry id的，不过一般没必要显示
                 sb.append(activityContext.getString(R.string.change_type)+": ").append(curItem.changeType).append(suffix)
             }
 
