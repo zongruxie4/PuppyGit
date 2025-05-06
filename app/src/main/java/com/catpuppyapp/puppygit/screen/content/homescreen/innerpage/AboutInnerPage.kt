@@ -223,7 +223,7 @@ fun AboutInnerPage(
         ) {
 //            Text(text = stringResource(R.string.contact_author)+":")
             ClickableText(
-                text = stringResource(R.string.donate),
+                text = "💖"+stringResource(R.string.donate)+"💖",
                 modifier = MyStyleKt.ClickableText.modifierNoPadding.clickable {
 //                    copy(authorMail)
                     ActivityUtil.openUrl(activityContext, donateLink)
