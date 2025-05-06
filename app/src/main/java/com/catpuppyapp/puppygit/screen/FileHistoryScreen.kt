@@ -228,6 +228,59 @@ fun FileHistoryScreen(
     val needRefresh = rememberSaveable { mutableStateOf("FileHistory_refresh_init_value_c2k8")}
 
 
+    //filter相关，开始
+
+    val filterKeyword = mutableCustomStateOf(
+        keyTag = stateKeyTag,
+        keyName = "filterKeyword",
+        initValue = TextFieldValue("")
+    )
+    // should use `enableFilterState` check filter mode really work or not, cause even this value true,
+    // but maybe no filter text inputted, then actually filter mode still not really working
+    val filterModeOn_dontUseThisCheckFilterModeReallyEnabledOrNot = rememberSaveable { mutableStateOf(false) }
+
+    //存储符合过滤条件的条目在源列表中的真实索引。本列表索引对应filter list条目索引，值对应原始列表索引
+    val filterIdxList = mutableCustomStateListOf(
+        keyTag = stateKeyTag,
+        keyName = "filterIdxList",
+        listOf<Int>()
+    )
+    val filterList = mutableCustomStateListOf(
+        keyTag = stateKeyTag,
+        keyName = "filterList",
+        listOf<FileHistoryDto>()
+    )
+
+    //filter相关，结束
+
+    val filterListState = rememberLazyListState()
+    val enableFilterState = rememberSaveable { mutableStateOf(false)}
+
+    val getActuallyList = {
+        if(enableFilterState.value) {
+            filterList.value
+        }else{
+            list.value
+        }
+    }
+
+
+    val getActuallyListState = {
+        if(enableFilterState.value) filterListState else listState
+    }
+
+    // 两个用途：1点击刷新按钮后回到列表顶部 2放到刷新按钮旁边，用户滚动到底部后，想回到顶部，可点击这个按钮
+    val goToTop = {
+        UIHelper.scrollToItem(scope, getActuallyListState(), 0)
+    }
+
+    val forceReload = {
+        goToTop()
+        changeStateTriggerRefreshPage(needRefresh, StateRequestType.forceReload)
+    }
+
+
+
     val loadingStrRes = stringResource(R.string.loading)
     val loadingText = rememberSaveable { mutableStateOf(loadingStrRes)}
     val showLoadingDialog = rememberSaveable { mutableStateOf(false)}
@@ -407,31 +460,6 @@ fun FileHistoryScreen(
 //    }
 
 
-    //filter相关，开始
-
-    val filterKeyword = mutableCustomStateOf(
-        keyTag = stateKeyTag,
-        keyName = "filterKeyword",
-        initValue = TextFieldValue("")
-    )
-    // should use `enableFilterState` check filter mode really work or not, cause even this value true,
-    // but maybe no filter text inputted, then actually filter mode still not really working
-    val filterModeOn_dontUseThisCheckFilterModeReallyEnabledOrNot = rememberSaveable { mutableStateOf(false) }
-
-    //存储符合过滤条件的条目在源列表中的真实索引。本列表索引对应filter list条目索引，值对应原始列表索引
-    val filterIdxList = mutableCustomStateListOf(
-        keyTag = stateKeyTag,
-        keyName = "filterIdxList",
-        listOf<Int>()
-    )
-    val filterList = mutableCustomStateListOf(
-        keyTag = stateKeyTag,
-        keyName = "filterList",
-        listOf<FileHistoryDto>()
-    )
-
-    //filter相关，结束
-
 
     // start: search states
     val lastListSize = rememberSaveable { mutableIntStateOf(0) }
@@ -513,10 +541,6 @@ fun FileHistoryScreen(
 
     val requireBlinkIdx = rememberSaveable{mutableIntStateOf(-1)}
     val lastClickedItemKey = rememberSaveable{ SharedState.fileHistory_LastClickedItemKey }
-
-//    val filterListState =mutableCustomStateOf(keyTag = stateKeyTag, keyName = "filterListState", LazyListState(0,0))
-    val filterListState = rememberLazyListState()
-    val enableFilterState = rememberSaveable { mutableStateOf(false)}
 
     val diffCommitsDialogCommit1 = rememberSaveable { mutableStateOf("")}
     val diffCommitsDialogCommit2 = rememberSaveable { mutableStateOf("")}
@@ -637,24 +661,6 @@ fun FileHistoryScreen(
         )
     }
 
-    val getActuallyList = {
-        if(enableFilterState.value) {
-            filterList.value
-        }else{
-            list.value
-        }
-    }
-
-
-    val getActuallyListState = {
-        if(enableFilterState.value) filterListState else listState
-    }
-
-    // 两个用途：1点击刷新按钮后回到列表顶部 2放到刷新按钮旁边，用户滚动到底部后，想回到顶部，可点击这个按钮
-    val goToTop = {
-        UIHelper.scrollToItem(scope, getActuallyListState(), 0)
-    }
-
     val filterLastPosition = rememberSaveable { mutableStateOf(0) }
     val lastPosition = rememberSaveable { mutableStateOf(0) }
 
@@ -770,11 +776,7 @@ fun FileHistoryScreen(
                                 enabled = true,
 
                             ) {
-                                goToTop()
-                                changeStateTriggerRefreshPage(
-                                    needRefresh,
-                                    StateRequestType.forceReload
-                                )
+                                forceReload()
                             }
 
                             if((proFeatureEnabled(commitsDiffCommitsTestPassed) || proFeatureEnabled(resetByHashTestPassed))) {
@@ -838,7 +840,7 @@ fun FileHistoryScreen(
 
         PullToRefreshBox(
             contentPadding = contentPadding,
-            onRefresh = { changeStateTriggerRefreshPage(needRefresh) }
+            onRefresh = { forceReload() }
         ) {
 
 
