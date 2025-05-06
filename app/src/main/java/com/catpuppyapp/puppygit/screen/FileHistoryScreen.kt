@@ -274,7 +274,7 @@ fun FileHistoryScreen(
         UIHelper.scrollToItem(scope, getActuallyListState(), 0)
     }
 
-    val forceReload = {
+    val fullyRefresh = {
         goToTop()
         changeStateTriggerRefreshPage(needRefresh, StateRequestType.forceReload)
     }
@@ -336,6 +336,9 @@ fun FileHistoryScreen(
 
                 try {
                     if (firstLoad || forceReload || repositoryForRevWalk.value==null || revwalk.value==null) {
+                        //需要重置这个值，不然查询会漏条目
+                        lastVersionEntryOid.value = null
+
                         // do reset: clear list and release old repo instance
                         //如果是第一次加载或刷新页面（重新初始化页面），清下列表
                         // if is first load or refresh page, clear list
@@ -379,17 +382,17 @@ fun FileHistoryScreen(
                     }else {
                         //start travel commit history
                         val (retLastVersionEntryOid, retNextCommitOid) = Libgit2Helper.getFileHistoryList(
-                            repo,
-                            revwalk.value!!,
-                            nextCommitOid.value,
-                            repoId,
-                            if(loadToEnd) Int.MAX_VALUE else pageSize.value,
+                            repo = repo,
+                            revwalk = revwalk.value!!,
+                            initNext = nextCommitOid.value,
+                            repoId = repoId,
+                            pageSize = if(loadToEnd) Int.MAX_VALUE else pageSize.value,
                             retList = list.value,  //直接赋值给状态列表了，若性能差，可实现一个批量添加机制，比如查出50个条目添加一次，之类的
                             loadChannel = loadChannel,
                             checkChannelFrequency = settings.commitHistoryLoadMoreCheckAbortSignalFrequency,
                             lastVersionEntryOid = lastVersionEntryOid.value,
                             fileRelativePathUnderRepo = fileRelativePath,
-                            settings
+                            settings = settings
                         )
 
                         //update state
@@ -776,7 +779,7 @@ fun FileHistoryScreen(
                                 enabled = true,
 
                             ) {
-                                forceReload()
+                                fullyRefresh()
                             }
 
                             if((proFeatureEnabled(commitsDiffCommitsTestPassed) || proFeatureEnabled(resetByHashTestPassed))) {
@@ -840,7 +843,7 @@ fun FileHistoryScreen(
 
         PullToRefreshBox(
             contentPadding = contentPadding,
-            onRefresh = { forceReload() }
+            onRefresh = { fullyRefresh() }
         ) {
 
 
