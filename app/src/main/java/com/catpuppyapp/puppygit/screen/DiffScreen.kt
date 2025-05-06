@@ -2207,20 +2207,15 @@ fun DiffScreen(
                         DisableSelection {
                             NaviButton(
                                 stateKeyTag = stateKeyTag,
-
                                 isMultiMode = isMultiMode,
                                 fromScreen = fromScreen,
-
-//                                        activityContext = activityContext,
-//                                        curRepo = curRepo.value,
                                 diffableItemList = diffableItemList,
                                 curItemIndex = curItemIndex,
-                                switchItem = {p1, p2, p3->},  // multi diff的操作都是针对当前页面所有条目的，所以不需要切换条目
+                                switchItem = switchItem,
                                 fromTo = fromTo,
                                 naviUp = naviUp,
                                 lastClickedItemKey = lastClickedItemKey,
                                 pageRequest = pageRequest,
-
                                 stageItem = stageItem,
                                 initRevertDialog = initRevertDialog,
                                 initUnstageDialog = initUnstageDialog
