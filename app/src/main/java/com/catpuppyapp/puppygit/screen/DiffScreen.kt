@@ -2147,7 +2147,7 @@ fun DiffScreen(
                         }
 
                         item {
-                            Spacer(Modifier.height(if(isSingleMode) 150.dp else 80.dp))
+                            Spacer(Modifier.height(80.dp))
                         }
 
                         if(isMultiMode) {
