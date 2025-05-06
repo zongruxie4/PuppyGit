@@ -229,6 +229,45 @@ fun CommitListScreen(
     val loadChannel = remember { Channel<Int>() }
 
 
+    //filter相关，开始
+    val filterKeyword = mutableCustomStateOf(
+        keyTag = stateKeyTag,
+        keyName = "filterKeyword",
+        initValue = TextFieldValue("")
+    )
+    val filterModeOn_dontUseThisCheckFilterModeReallyEnabledOrNot = rememberSaveable { mutableStateOf(false) }
+    // indicate filter really working
+    val enableFilterState = rememberSaveable { mutableStateOf(false)}
+
+    //存储符合过滤条件的条目在源列表中的真实索引。本列表索引对应filter list条目索引，值对应原始列表索引
+    val filterIdxList = mutableCustomStateListOf(
+        keyTag = stateKeyTag,
+        keyName = "filterIdxList",
+        listOf<Int>()
+    )
+
+    //filter相关，结束
+
+    val filterListState = rememberLazyListState()
+    val listState = rememberLazyListState()
+
+    val getActuallyListState = {
+        if(enableFilterState.value) filterListState else listState
+    }
+    // 两个用途：1点击刷新按钮后回到列表顶部 2放到刷新按钮旁边，用户滚动到底部后，想回到顶部，可点击这个按钮
+    val goToTop = {
+        UIHelper.scrollToItem(scope, getActuallyListState(), 0)
+    }
+
+    val filterLastPosition = rememberSaveable { mutableStateOf(0) }
+    val lastPosition = rememberSaveable { mutableStateOf(0) }
+    val needRefresh = rememberSaveable { mutableStateOf("CommitList_refresh_init_value_et5c")}
+
+    val fullyRefresh = {
+        goToTop()
+        changeStateTriggerRefreshPage(needRefresh, StateRequestType.forceReload)
+    }
+
 
 
 
@@ -352,9 +391,8 @@ fun CommitListScreen(
         initValue = Cons.git_AllZeroOid
     )
 
-    //这个页面的滚动状态不用记住，每次点开重置也无所谓
-    val listState = rememberLazyListState()
-    //如果再多几个"mode"，就改用字符串判断，直接把mode含义写成常量
+
+
     val showTopBarMenu = rememberSaveable { mutableStateOf(false)}
     val showDiffCommitDialog = rememberSaveable { mutableStateOf(false)}
     val isSearchingMode = rememberSaveable { mutableStateOf(false)}
@@ -488,7 +526,6 @@ fun CommitListScreen(
     val hasMore = rememberSaveable { mutableStateOf(false)}
 
 
-    val needRefresh = rememberSaveable { mutableStateOf("CommitList_refresh_init_value_et5c")}
 
 
     val loadingStrRes = stringResource(R.string.loading)
@@ -749,7 +786,7 @@ fun CommitListScreen(
 
                     Msg.requireShow(activityContext.getString(R.string.success))
 
-                    changeStateTriggerRefreshPage(needRefresh, StateRequestType.forceReload)
+                    fullyRefresh()
                 }catch (e:Exception) {
                     Msg.requireShowLongDuration(e.localizedMessage ?:"err")
                     createAndInsertError(curRepo.value.id, "do squash err: ${e.localizedMessage}")
@@ -874,25 +911,6 @@ fun CommitListScreen(
     }
 
 
-    //filter相关，开始
-    val filterKeyword = mutableCustomStateOf(
-        keyTag = stateKeyTag,
-        keyName = "filterKeyword",
-        initValue = TextFieldValue("")
-    )
-    val filterModeOn_dontUseThisCheckFilterModeReallyEnabledOrNot = rememberSaveable { mutableStateOf(false) }
-    // indicate filter really working
-    val enableFilterState = rememberSaveable { mutableStateOf(false)}
-
-    //存储符合过滤条件的条目在源列表中的真实索引。本列表索引对应filter list条目索引，值对应原始列表索引
-    val filterIdxList = mutableCustomStateListOf(
-        keyTag = stateKeyTag,
-        keyName = "filterIdxList",
-        listOf<Int>()
-    )
-
-    //filter相关，结束
-
 
     val nameOfNewTag = rememberSaveable { mutableStateOf("")}
     val overwriteIfNameExistOfNewTag = rememberSaveable { mutableStateOf(false)}  // force
@@ -948,7 +966,7 @@ fun CommitListScreen(
 
             }
 
-//            changeStateTriggerRefreshPage(needRefresh)  //创建tag后没必要刷新整个页面，更新对应commit即可
+              //创建tag后没必要刷新整个页面，更新对应commit即可
         }
     }
 
@@ -988,7 +1006,7 @@ fun CommitListScreen(
             loadingOff = loadingOff,
             onlyUpdateCurItem = useFullOid,
             updateCurItem = {curItemIdx, fullOid-> updateCurCommitInfo(curRepo.value.fullSavePath, curItemIdx, fullOid, list.value)},
-            refreshPage = { changeStateTriggerRefreshPage(needRefresh, StateRequestType.forceReload) },
+            refreshPage = { fullyRefresh() },
             curCommitIndex = if(enableFilterState.value) -1 else curCommitIndex.intValue,  //若开了filter模式，则一律在原始列表重新查找条目索引（传无效索引-1即可触发查找），不然可能会更新错条目
             findCurItemIdxInList = { fullOid->
                 list.value.toList().indexOfFirst { it.oidStr == fullOid }
@@ -1018,7 +1036,7 @@ fun CommitListScreen(
                 if(!useFullOid || isHEAD) {  // from repoCard tap commit hash in this page or from branch list tap branch of HEAD, will in this if block
                     //从分支页面进这个页面，不会强制重刷列表，但如果当前显示的分支是仓库的当前分支(被HEAD指向)，那如果reset hard 成功，就得更新下提交列表，于是，就通过更新fullOid来重设当前页面的起始hash
                     fullOid.value=curCommit.value.oidStr  // only make sense when come this page from branch list page with condition `useFullOid==true && isCurrent==true`,update it for show latest commit list of current branch of repo when hard reset success.
-                    changeStateTriggerRefreshPage(needRefresh, StateRequestType.forceReload)
+                    fullyRefresh()
                 }else {  //useFullOid==true && isCurrent==false, from branch list page tap a branch item which is not pointed by HEAD(isCurrent==false), will in this block
                     val curCommitIdx = if(enableFilterState.value) {
                         try {  //取出当前长按条目在源列表中的索引
@@ -1137,7 +1155,6 @@ fun CommitListScreen(
     val requireBlinkIdx = rememberSaveable{mutableIntStateOf(-1)}
 
 //    val filterListState =mutableCustomStateOf(keyTag = stateKeyTag, keyName = "filterListState", LazyListState(0,0))
-    val filterListState = rememberLazyListState()
 //    val firstVisible = remember { derivedStateOf { if(enableFilterState.value) filterListState.value.firstVisibleItemIndex else listState.firstVisibleItemIndex } }
 //    ScrollListener(
 //        nowAt = firstVisible.value,
@@ -1568,25 +1585,6 @@ fun CommitListScreen(
 
     val lastClickedItemKey = rememberSaveable{mutableStateOf(Cons.init_last_clicked_item_key)}
 
-
-    val getActuallyListState = {
-        if(enableFilterState.value) filterListState else listState
-    }
-    // 两个用途：1点击刷新按钮后回到列表顶部 2放到刷新按钮旁边，用户滚动到底部后，想回到顶部，可点击这个按钮
-    val goToTop = {
-        UIHelper.scrollToItem(scope, getActuallyListState(), 0)
-    }
-
-    val filterLastPosition = rememberSaveable { mutableStateOf(0) }
-    val lastPosition = rememberSaveable { mutableStateOf(0) }
-
-    val fullyRefresh = {
-        goToTop()
-        changeStateTriggerRefreshPage(
-            needRefresh,
-            StateRequestType.forceReload
-        )
-    }
 
 
     BackHandler {
