@@ -1538,8 +1538,7 @@ fun DiffScreen(
                                     Column(
                                         modifier = Modifier
                                             .fillMaxWidth()
-                                            .height(200.dp)
-                                            .padding(10.dp)
+                                            .padding(vertical = 100.dp, horizontal = 20.dp)
                                         ,
                                         verticalArrangement = Arrangement.Center,
                                         horizontalAlignment = Alignment.CenterHorizontally,
@@ -1549,6 +1548,8 @@ fun DiffScreen(
                                         }
 
                                     }
+
+                                    HunkDivider()
                                 }
                             }
                         } else {  //文本类型且没超过大小且文件修改过，正常显示diff信息
@@ -2119,10 +2120,7 @@ fun DiffScreen(
 //                                    itemsCount.intValue++
 
                                     //每个hunk之间显示个分割线，本来想弄成最后一个不显示，但判断索引不太好使，因为有的在上面就return了，索性都显示算了
-                                    HorizontalDivider(
-                                        modifier = Modifier.padding(vertical = 30.dp),
-                                        thickness = 3.dp
-                                    )
+                                    HunkDivider()
                                 }
                             }
 
@@ -2760,4 +2758,12 @@ private fun NaviButton(
 //        Spacer(Modifier.height(150.dp))
 
     }
+}
+
+@Composable
+private fun HunkDivider() {
+    HorizontalDivider(
+        modifier = Modifier.padding(vertical = 30.dp),
+        thickness = 3.dp
+    )
 }
