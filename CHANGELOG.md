@@ -1,6 +1,14 @@
 
 
 ---
+1.1.0.9v85 - 20250506:
+- minor bugs fixed
+
+
+
+- 小bug修正
+
+---
 
 1.1.0.8v84 - 20250502:
 - Differences screen support multi files
