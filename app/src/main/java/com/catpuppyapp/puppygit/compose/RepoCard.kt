@@ -21,8 +21,8 @@ import androidx.compose.material.icons.filled.History
 import androidx.compose.material.icons.filled.Info
 import androidx.compose.material.icons.filled.Replay
 import androidx.compose.material.icons.filled.WarningAmber
+import androidx.compose.material.icons.outlined.Folder
 import androidx.compose.material.icons.outlined.Home
-import androidx.compose.material.icons.outlined.SdStorage
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.HorizontalDivider
@@ -73,6 +73,9 @@ import com.github.git24j.core.Repository
 import kotlinx.coroutines.delay
 
 
+/**
+ * 注意：除了比较重要的关于仓库状态的那行以外，其他都用尽量 outlined 那种图标，这样一看卡片，注意力就会首先看到状态
+ */
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun RepoCard(
@@ -388,7 +391,7 @@ fun RepoCard(
                     ) {
 //                        Text(text = stringResource(R.string.storage) + ": ")
                         InLineIcon(
-                            icon = Icons.Outlined.SdStorage,
+                            icon = Icons.Outlined.Folder,
                             tooltipText = stringResource(R.string.storage)
                         )
                         ClickableText (
