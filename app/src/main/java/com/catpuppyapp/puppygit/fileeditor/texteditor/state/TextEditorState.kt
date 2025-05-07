@@ -32,7 +32,6 @@ import java.security.InvalidParameterException
 
 private const val TAG = "TextEditorState"
 private const val lb = "\n"
-private val lock = Mutex()
 
 private fun targetIndexValidOrThrow(targetIndex:Int, listSize:Int) {
     if (targetIndex < 0 || targetIndex >= listSize) {
@@ -63,6 +62,7 @@ class TextEditorState private constructor(
     val onChanged: (newState:TextEditorState, trueSaveToUndoFalseRedoNullNoSave:Boolean?, clearRedoStack:Boolean) -> Unit,
 
 ) {
+    private val lock = Mutex()
 
     fun copy(
         fieldsId: String = this.fieldsId,
