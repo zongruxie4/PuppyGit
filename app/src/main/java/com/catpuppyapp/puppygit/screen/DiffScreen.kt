@@ -1162,15 +1162,12 @@ fun DiffScreen(
                     DiffScreenTitle(
                         isMultiMode = isMultiMode,
                         scrollToCurrentItemHeader = scrollToCurrentItemHeader,
-                        fileName = getCurItem().fileName,
-                        fileParentPathOfRelativePath = getCurItem().fileParentPathOfRelativePath,
-                        fileRelativePathUnderRepoState = getCurItem().relativePath,
                         listState = listState,
                         scope = scope,
                         request = pageRequest,
-                        changeType = getCurItem().changeType,
                         readOnly = readOnlyModeOn.value,
-                        lastPosition = lastPosition
+                        lastPosition = lastPosition,
+                        curItem = getCurItem()
                     )
                 },
                 navigationIcon = {
@@ -1477,18 +1474,7 @@ fun DiffScreen(
                                             ScrollableRow {
                                                 Text(
                                                     fontSize = titleRelativePathFontSize,
-                                                    text = buildAnnotatedString {
-                                                        //若已加载过diff内容则显示添加和删除了多少行
-                                                        if(loadedAtLeastOnce) {
-                                                            withStyle(style = SpanStyle(color = Theme.mdGreen)) { append("+"+diffItem.addedLines) }
-                                                            withStyle(style = SpanStyle(color = Theme.Gray1)) { append(", ") }
-                                                            withStyle(style = SpanStyle(color = Theme.Gray2)) { append("-"+diffItem.deletedLines) }
-                                                            withStyle(style = SpanStyle(color = Theme.Gray1)) { append(", ") }
-                                                        }
-
-                                                        //当前文件的父路径，以/结尾，无文件名，若文件在仓库根目录则为/
-                                                        withStyle(style = SpanStyle(color = colorOfChangeType)) { append(diffableItem.fileParentPathOfRelativePath) }
-                                                    }
+                                                    text = diffableItem.getAnnotatedAddDeletedAndParentPathString(colorOfChangeType)
                                                 )
                                             }
 

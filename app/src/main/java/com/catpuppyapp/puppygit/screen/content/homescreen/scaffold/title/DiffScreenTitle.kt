@@ -3,24 +3,20 @@ package com.catpuppyapp.puppygit.screen.content.homescreen.scaffold.title
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.combinedClickable
-import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.lazy.LazyListState
-import androidx.compose.foundation.rememberScrollState
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.MutableState
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextOverflow
-import androidx.compose.ui.unit.sp
 import com.catpuppyapp.puppygit.compose.ReadOnlyIcon
 import com.catpuppyapp.puppygit.compose.ScrollableRow
 import com.catpuppyapp.puppygit.constants.PageRequest
+import com.catpuppyapp.puppygit.git.DiffableItem
 import com.catpuppyapp.puppygit.play.pro.R
 import com.catpuppyapp.puppygit.screen.functions.defaultTitleDoubleClick
 import com.catpuppyapp.puppygit.style.MyStyleKt
@@ -32,23 +28,24 @@ import kotlinx.coroutines.CoroutineScope
 fun DiffScreenTitle(
     isMultiMode:Boolean,
     scrollToCurrentItemHeader:(relativePath:String)->Unit,
-    fileName:String,
-    fileParentPathOfRelativePath:String,
-    fileRelativePathUnderRepoState: String,
     listState: LazyListState,
     scope: CoroutineScope,
     request:MutableState<String>,
-    changeType:String,
     readOnly:Boolean,
     lastPosition:MutableState<Int>,
+    curItem: DiffableItem,
 ) {
 
-    if(fileRelativePathUnderRepoState.isNotBlank()) {
+    val fileName = curItem.fileName
+    val changeType = curItem.changeType
+    val relativePath = curItem.relativePath
+
+    if(relativePath.isNotEmpty()) {
 //        val haptic = LocalHapticFeedback.current
         Column(modifier = Modifier.then(
                 //多选模式下点击标题栏返回当前条目顶部
                 if(isMultiMode) {
-                    Modifier.fillMaxWidth().clickable { scrollToCurrentItemHeader(fileRelativePathUnderRepoState) }
+                    Modifier.fillMaxWidth().clickable { scrollToCurrentItemHeader(relativePath) }
                 }else{
                     Modifier
                 }
@@ -90,7 +87,7 @@ fun DiffScreenTitle(
 
                 ScrollableRow  {
                     Text(
-                        text = fileParentPathOfRelativePath,
+                        text = curItem.getAnnotatedAddDeletedAndParentPathString(changeTypeColor),
                         fontSize = MyStyleKt.Title.secondLineFontSize,
                         maxLines=1,
                         overflow = TextOverflow.Ellipsis,

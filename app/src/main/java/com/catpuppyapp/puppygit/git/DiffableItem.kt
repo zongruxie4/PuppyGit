@@ -3,8 +3,14 @@ package com.catpuppyapp.puppygit.git
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.mutableStateMapOf
 import androidx.compose.runtime.snapshots.SnapshotStateMap
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.text.AnnotatedString
+import androidx.compose.ui.text.SpanStyle
+import androidx.compose.ui.text.buildAnnotatedString
+import androidx.compose.ui.text.withStyle
 import com.catpuppyapp.puppygit.constants.Cons
 import com.catpuppyapp.puppygit.dto.ItemKey
+import com.catpuppyapp.puppygit.ui.theme.Theme
 import kotlinx.coroutines.channels.Channel
 import java.io.File
 
@@ -140,4 +146,19 @@ data class DiffableItem(
      */
     fun atRootOfWorkDir() = fileParentPathOfRelativePath == "/";
 
+    // 这个颜色其实可以自己获取，但调用本方法的地方都已经获取了这个颜色，所以索性直接传参了
+    fun getAnnotatedAddDeletedAndParentPathString(colorOfChangeType: Color): AnnotatedString {
+        return buildAnnotatedString {
+            //若已加载过diff内容则显示添加和删除了多少行
+            if(maybeLoadedAtLeastOnce()) {
+                withStyle(style = SpanStyle(color = Theme.mdGreen)) { append("+"+diffItemSaver.addedLines) }
+                withStyle(style = SpanStyle(color = Theme.Gray1)) { append(", ") }
+                withStyle(style = SpanStyle(color = Theme.Gray2)) { append("-"+diffItemSaver.deletedLines) }
+                withStyle(style = SpanStyle(color = Theme.Gray1)) { append(", ") }
+            }
+
+            //当前文件的父路径，以/结尾，无文件名，若文件在仓库根目录则为/
+            withStyle(style = SpanStyle(color = colorOfChangeType)) { append(fileParentPathOfRelativePath) }
+        }
+    }
 }
