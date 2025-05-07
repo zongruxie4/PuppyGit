@@ -26,16 +26,19 @@ import androidx.compose.ui.input.key.KeyEventType
 import androidx.compose.ui.input.key.onPreviewKeyEvent
 import androidx.compose.ui.input.key.type
 import androidx.compose.ui.text.TextRange
-import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.unit.sp
 import com.catpuppyapp.puppygit.dev.bug_Editor_WrongUpdateEditColumnIdx_Fixed
 import com.catpuppyapp.puppygit.fileeditor.texteditor.state.TextFieldState
 import com.catpuppyapp.puppygit.ui.theme.Theme
-import com.catpuppyapp.puppygit.utils.UIHelper
+import com.catpuppyapp.puppygit.utils.MyLog
+
+
+private const val TAG = "MyTextField"
+
 
 @Composable
-internal fun TextField(
+internal fun MyTextField(
     focusThisLine:Boolean,
     textFieldState: TextFieldState,
     enabled: Boolean,
@@ -115,7 +118,7 @@ internal fun TextField(
                 val b3 = onPreviewUpKeyEvent(event, selection) { onUpFocus() }
                 if (b3) return@onPreviewKeyEvent true
 
-                val b4 = onPreviewEnterKeyEvent(event) { onAddNewLine(currentTextField) }
+                val b4 = onPreviewEnterKeyEvent(event) { onAddNewLine(currentTextField.copy(text = insertNewLineAtCursor(value))) }
                 if (b4) return@onPreviewKeyEvent true
 
                 val b5 = onPreviewTabKeyEvent(event) { onDownFocus() }
@@ -215,3 +218,30 @@ private fun onPreviewEnterKeyEvent(
     invoke()
     return true
 }
+
+private fun insertNewLineAtCursor(textFieldValue: TextFieldValue):String {
+    val splitPosition = textFieldValue.selection.start  //光标位置，有可能在行末尾，这时和text.length相等，并不会越界
+    val maxOfPosition = textFieldValue.text.length
+
+    //这个情况不应该发生
+    if (splitPosition < 0 || splitPosition > maxOfPosition) {  //第2个判断没错，就是大于最大位置，不是大于等于，没写错，光标位置有可能在行末尾，这时其索引和text.length相等，所以只有大于才有问题
+        val errMsg = "splitPosition '$splitPosition' out of range '[0, $maxOfPosition]'";
+        MyLog.e(TAG, "#getNewTextOfLine: $errMsg")
+        throw RuntimeException(errMsg)
+    }
+
+    // 在光标位置插入个换行符然后返回就行了
+    return textFieldValue.text.let {
+        val sb = StringBuilder()
+        sb.append(it.substring(0, splitPosition))
+        sb.append("\n")
+
+        //这里不需要判断，string.substring() 可用的startIndex最大值即为string.length，
+        // 若是length，会返回空字符串，与期望一致
+        sb.append(it.substring(splitPosition))
+
+        sb.toString()
+    }
+
+}
+
