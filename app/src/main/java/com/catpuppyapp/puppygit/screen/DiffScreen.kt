@@ -270,7 +270,8 @@ fun DiffScreen(
                     // 1 header + 1 spacers + 1 footer
                     val fileHeaderAndFooterAndSpacer = 3
                     // hunks * 2是因为每个hunk都有一个header(diff结果的hunk header)和一个spliter，总共两个items
-                    val hunksHeadersAndSpliters = i.diffItemSaver.hunks.size * 2;
+                    // 最后减1是因为最后一个hunk不会显示末尾的spliter，因为有文件的footer兜底，所以到最后一个hunk就不需要显示分割线了
+                    val hunksHeadersAndSpliters = i.diffItemSaver.hunks.size * 2 - 1;
                     // noDiffItemAvailable 只占1个条目，submoduleIsDirty 需要多加1个条目
                     (hunksHeadersAndSpliters + i.diffItemSaver.allLines + fileHeaderAndFooterAndSpacer) + (if(i.noDiffItemAvailable || i.submoduleIsDirty) 1 else 0)
                 }else {
@@ -1555,7 +1556,10 @@ fun DiffScreen(
 
                                     }
 
-                                    HunkDivider()
+                                    //多文件模式有footer，不需要显示
+                                    if(isSingleMode) {
+                                        HunkDivider()
+                                    }
                                 }
                             }
                         } else {  //文本类型且没超过大小且文件修改过，正常显示diff信息
@@ -2122,11 +2126,12 @@ fun DiffScreen(
                                     }
                                 }
 
-                                item {
-//                                    itemsCount.intValue++
-
-                                    //每个hunk之间显示个分割线，本来想弄成最后一个不显示，但判断索引不太好使，因为有的在上面就return了，索性都显示算了
-                                    HunkDivider()
+                                // multi files diff 不显示最后一个hunk spliter，因为有文件footer作分割了，没必要显示
+                                if(isSingleMode || idx != lastHunkIndex) {
+                                    item {
+                                        //每个hunk之间显示个分割线，本来想弄成最后一个不显示，但判断索引不太好使，因为有的在上面就return了，索性都显示算了
+                                        HunkDivider()
+                                    }
                                 }
                             }
 
