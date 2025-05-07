@@ -650,13 +650,27 @@ class TextEditorState private constructor(
 
             val newFields = fields.toMutableList()
 
-            val toText = newFields[targetIndex - 1].value.text
-            val fromText = newFields[targetIndex].value.text
+            val toField = newFields[targetIndex - 1]
+            val fromField = newFields[targetIndex]
+            val toText = toField.value.text
+            val fromText = fromField.value.text
 
             val concatText = toText + fromText
-            val concatSelection = TextRange(toText.count())
+            val concatSelection = TextRange(toText.count())  // end of `toText`
             val concatTextFieldValue = TextFieldValue(text = concatText, selection = concatSelection)
-            val toTextFieldState = newFields[targetIndex - 1].copy(value = concatTextFieldValue, isSelected = false)
+            val toTextFieldState = newFields[targetIndex - 1].copy(value = concatTextFieldValue, isSelected = false).apply {
+                val newChangeType = if(toText.isEmpty() && fromText.isNotEmpty()) {
+                    fromField.changeType
+                }else if(toText.isNotEmpty() && fromText.isEmpty()) {
+                    toField.changeType
+                }else if(toText.isEmpty() && fromText.isEmpty()) {
+                    toField.changeType
+                }else { // if(toText.isNotEmpty() && fromText.isNotEmpty())
+                    if(toField.changeType == LineChangeType.NONE) LineChangeType.UPDATED else toField.changeType
+                }
+
+                updateLineChangeType(newChangeType)
+            }
 
             newFields[targetIndex - 1] = toTextFieldState
 
