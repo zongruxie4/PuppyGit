@@ -37,6 +37,7 @@ import com.catpuppyapp.puppygit.git.SubmoduleDto
 import com.catpuppyapp.puppygit.git.TagDto
 import com.catpuppyapp.puppygit.git.Upstream
 import com.catpuppyapp.puppygit.jni.LibgitTwo
+import com.catpuppyapp.puppygit.jni.SaveBlobRet
 import com.catpuppyapp.puppygit.jni.SaveBlobRetCode
 import com.catpuppyapp.puppygit.jni.SshAskUserUnknownHostRequest
 import com.catpuppyapp.puppygit.play.pro.R
@@ -6936,12 +6937,15 @@ object Libgit2Helper {
     /**
      * @param refOrHash 长短引用名或hash皆可，但最好是长的，越完整越好，不易混淆
      */
-    fun saveFileOfCommitToPath(repo:Repository, refOrHash:String, relativePath:String, savePath:String): SaveBlobRetCode {
-        val tree = resolveTree(repo, refOrHash) ?: return SaveBlobRetCode.ERR_RESOLVE_TREE_FAILED
-        val entry = getEntryOrNullByPathOrName(tree, relativePath, byName = false) ?: return SaveBlobRetCode.ERR_RESOLVE_ENTRY_FAILED
+    fun saveFileOfCommitToPath(repo:Repository, refOrHash:String, relativePath:String, genFilePath:(entry:Tree.Entry)->String): SaveBlobRet {
+        val tree = resolveTree(repo, refOrHash) ?: return SaveBlobRet(code = SaveBlobRetCode.ERR_RESOLVE_TREE_FAILED)
+        val entry = getEntryOrNullByPathOrName(tree, relativePath, byName = false) ?: return SaveBlobRet(code = SaveBlobRetCode.ERR_RESOLVE_ENTRY_FAILED)
 
-        val blob = Blob.lookup(repo, entry.id()) ?: return SaveBlobRetCode.ERR_RESOLVE_BLOB_FAILED
+        return saveEntryToPath(repo, entry, genFilePath(entry))
+    }
 
-        return LibgitTwo.saveBlobToPath(blob, savePath)
+    fun saveEntryToPath(repo:Repository, entry:Tree.Entry, savePath:String): SaveBlobRet {
+        val blob = Blob.lookup(repo, entry.id()) ?: return SaveBlobRet(code = SaveBlobRetCode.ERR_RESOLVE_BLOB_FAILED)
+        return SaveBlobRet(code = LibgitTwo.saveBlobToPath(blob, savePath), savePath = savePath)
     }
 }
