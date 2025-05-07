@@ -30,12 +30,15 @@ data class DiffItemSaver (
     var deletedLines:Int=0,  //删除了多少行
     var allLines:Int=0,  //总共多少行，包含添加、删除、上下文，如果有eof，也包含eof
 
-    var type: DiffItemSaverType = DiffItemSaverType.TEXT,
 
-    /**
-        把blob文件存到本地的path，一般存到缓存目录供临时查看
-     */
-    var blobSavePath:String="",
+
+    // 比较的左右两边的文件的类型，如果是图片，则按图片预览，若都是text，则按text预览
+    var oldFileType: DiffItemSaverType = DiffItemSaverType.TEXT,
+    var newFileType: DiffItemSaverType = DiffItemSaverType.TEXT,
+
+    // 把blob文件存到本地的path，一般存到缓存目录供临时查看，预览图片时会用到
+    var oldBlobSavePath:String="",
+    var newBlobSavePath:String="",
 ){
 
 
