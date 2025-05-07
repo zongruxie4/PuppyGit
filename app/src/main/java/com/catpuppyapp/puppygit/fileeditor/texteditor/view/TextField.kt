@@ -8,6 +8,7 @@ import android.view.KeyEvent.KEYCODE_TAB
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.text.BasicTextField
+import androidx.compose.material3.LocalTextStyle
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.MutableIntState
@@ -52,7 +53,7 @@ internal fun TextField(
     searchMode:Boolean,   //因为更新光标有bug，会在搜索时错误更新编辑列导致搜索卡在原地，所以才传这个参数，否则用不到
     mergeMode:Boolean,
     fontSize:MutableIntState,
-    bgColor:Color,
+    bgColor:Color = Color.Unspecified,
 ) {
 
     //写法1
@@ -88,7 +89,7 @@ internal fun TextField(
             if (it.text.contains('\n')) onContainNewLine(it) else onUpdateText(it)
         },
         //字体样式:字体颜色、字体大小、背景颜色等
-        textStyle = TextStyle.Default.copy(fontSize = fontSize.intValue.sp, color = UIHelper.getFontColor(inDarkTheme),
+        textStyle = LocalTextStyle.current.copy(fontSize = fontSize.intValue.sp, color = UIHelper.getFontColor(inDarkTheme),
             background = bgColor
         ),
         //光标颜色

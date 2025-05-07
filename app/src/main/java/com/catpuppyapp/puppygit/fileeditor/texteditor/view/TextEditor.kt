@@ -1136,7 +1136,7 @@ fun TextEditor(
                                     focusRequester = focusRequester,
                                     fontSize = fontSize,
 //                                    bgColor = bgColor,
-                                    bgColor = Color.Unspecified,
+//                                    bgColor = Color.Unspecified,
                                     onUpdateText = { newText ->
 
                                         doJobThenOffLoading {

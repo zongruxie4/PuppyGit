@@ -323,6 +323,7 @@ fun FileEditor(
                             content = mdText.value,
                             basePathNoEndSlash = basePath.value,
                             fontSize = fontSize.intValue, //和编辑器字体大小保持一致
+                            fontColor = UIHelper.getFontColor(inDarkTheme),
                             onLinkClicked = { link ->
                                 previewLinkHandler(link)
                             }
