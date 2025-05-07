@@ -295,6 +295,8 @@ fun FileEditor(
     )
 
 
+    val fontColor = remember(inDarkTheme) { UIHelper.getFontColor(inDarkTheme) }
+
     SwipeableActionsBox(
         startActions = listOf(leftToRightAct),
         endActions = listOf(rightToLeftAct),
@@ -323,7 +325,7 @@ fun FileEditor(
                             content = mdText.value,
                             basePathNoEndSlash = basePath.value,
                             fontSize = fontSize.intValue, //和编辑器字体大小保持一致
-                            fontColor = UIHelper.getFontColor(inDarkTheme),
+                            fontColor = fontColor,
                             onLinkClicked = { link ->
                                 previewLinkHandler(link)
                             }
@@ -381,6 +383,7 @@ fun FileEditor(
                     mergeMode=mergeMode,
                     patchMode=patchMode,
                     fontSize=fontSize,
+                    fontColor = fontColor,
                 ) { index, isSelected, currentField, focusingIdx, isMultiSelectionMode, innerTextField ->
                     // TextLine
                     Row(

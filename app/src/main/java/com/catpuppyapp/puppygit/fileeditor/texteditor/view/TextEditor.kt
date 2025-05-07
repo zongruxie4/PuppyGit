@@ -166,6 +166,7 @@ fun TextEditor(
     patchMode:Boolean,
     searchKeyword:String,
     fontSize: MutableIntState,
+    fontColor: Color,
 
     decorationBox: DecorationBoxComposable = { _, _, _, _,_, innerTextField -> innerTextField(Modifier) },
 ) {
@@ -1134,7 +1135,8 @@ fun TextEditor(
                                     textFieldState = textFieldState,
                                     enabled = !textEditorState.isMultipleSelectionMode && !readOnlyMode,
                                     focusRequester = focusRequester,
-                                    fontSize = fontSize,
+                                    fontSize = fontSize.intValue,
+                                    fontColor = fontColor,
 //                                    bgColor = bgColor,
 //                                    bgColor = Color.Unspecified,
                                     onUpdateText = { newText ->

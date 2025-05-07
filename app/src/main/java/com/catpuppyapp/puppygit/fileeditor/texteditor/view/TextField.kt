@@ -52,7 +52,8 @@ internal fun TextField(
     lastEditedColumnIndexState:MutableIntState,
     searchMode:Boolean,   //因为更新光标有bug，会在搜索时错误更新编辑列导致搜索卡在原地，所以才传这个参数，否则用不到
     mergeMode:Boolean,
-    fontSize:MutableIntState,
+    fontSize:Int,
+    fontColor:Color,
     bgColor:Color = Color.Unspecified,
 ) {
 
@@ -89,7 +90,7 @@ internal fun TextField(
             if (it.text.contains('\n')) onContainNewLine(it) else onUpdateText(it)
         },
         //字体样式:字体颜色、字体大小、背景颜色等
-        textStyle = LocalTextStyle.current.copy(fontSize = fontSize.intValue.sp, color = UIHelper.getFontColor(inDarkTheme),
+        textStyle = LocalTextStyle.current.copy(fontSize = fontSize.sp, color = fontColor,
             background = bgColor
         ),
         //光标颜色
