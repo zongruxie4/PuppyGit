@@ -10,6 +10,7 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.defaultMinSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.material3.DropdownMenu
@@ -27,10 +28,14 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import coil.compose.AsyncImage
+import coil.decode.SvgDecoder
+import coil.request.ImageRequest
 import com.catpuppyapp.puppygit.constants.Cons
 import com.catpuppyapp.puppygit.play.pro.R
 import com.catpuppyapp.puppygit.dto.FileItemDto
@@ -60,10 +65,13 @@ fun FileListItem(
     itemOnLongClick:(FileItemDto)->Unit,
     itemOnClick:(FileItemDto)->Unit,
 ){
+    val activityContext = LocalContext.current
+
     val inDarkTheme = Theme.inDarkTheme
     val alpha = 0.6f
     val iconColor = if(item.isHidden) LocalContentColor.current.copy(alpha = alpha) else LocalContentColor.current
     val fontColor = if(item.isHidden) {if(inDarkTheme) Color.White.copy(alpha = alpha) else Color.Black.copy(alpha = alpha)} else Color.Unspecified
+
 
     Row(
         modifier = Modifier
@@ -115,13 +123,27 @@ fun FileListItem(
                 checked = isItemInSelected(item),
                 onCheckedChange = {
                     iconOnClick()
-                }) {
-                Icon(
+                },
+            ) {
+                //如果是图片，显示缩略图，否则显示图标
+                if(item.mime.type == "image") {
+                    AsyncImage(
+                        model = ImageRequest.Builder(activityContext)
+                            .data(item.fullPath)
+                            .size(100, 100)
+                            .decoderFactory(SvgDecoder.Factory())
+                            .build(),
+                        contentDescription = null,
+                        modifier = Modifier.size(50.dp)
+                    )
+                }else {
+                    Icon(
 //                    imageVector = if (item.isFile) Icons.Outlined.InsertDriveFile else Icons.Filled.Folder,
-                    imageVector = item.mime.iconRes,
-                    contentDescription = stringResource(R.string.file_or_folder_icon),
-                    tint =iconColor
-                )
+                        imageVector = item.mime.iconRes,
+                        contentDescription = stringResource(R.string.file_or_folder_icon),
+                        tint =iconColor
+                    )
+                }
             }
             Spacer(modifier = Modifier.padding(10.dp))
             Column {

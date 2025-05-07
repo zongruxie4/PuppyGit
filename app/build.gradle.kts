@@ -122,6 +122,7 @@ android {
 dependencies {
     // start: temporary markdown dependencies, remove when 'compose-markdown' support custom coilStore(for load image from relative path)
     val markwonVersion = "4.6.2"
+    val coilVersion = "2.6.0"
     implementation("androidx.appcompat:appcompat:1.7.0")
     implementation("io.noties.markwon:core:$markwonVersion")
     implementation("io.noties.markwon:ext-strikethrough:$markwonVersion")
@@ -130,10 +131,13 @@ dependencies {
     implementation("io.noties.markwon:linkify:$markwonVersion")
     implementation("io.noties.markwon:ext-tasklist:$markwonVersion")
     implementation("com.github.jeziellago:Markwon:58aa5aba6a")
-    api("io.coil-kt:coil:2.6.0")
-    api("io.coil-kt:coil-gif:2.6.0")
     // end: temporary markdown dependencies
 
+    // 文件管理器显示图片缩略图
+    implementation("io.coil-kt:coil:$coilVersion")
+    implementation("io.coil-kt:coil-compose:$coilVersion")
+    implementation("io.coil-kt:coil-gif:$coilVersion")
+    implementation("io.coil-kt:coil-svg:$coilVersion")
 
     // markdown preview support, enable this after it support load relative path resources
 //    implementation("com.github.jeziellago:compose-markdown:change_to_the_latest_version")
