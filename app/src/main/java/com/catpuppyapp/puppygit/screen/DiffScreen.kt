@@ -2772,17 +2772,3 @@ private fun HunkDivider() {
         thickness = 3.dp
     )
 }
-
-// 用 list.removeIf() 有可能移除错条目，所以改用这种方式移除了
-private fun <T> removeByCondition(list: MutableList<T>, condition:(T)->Boolean) {
-    val newList = mutableListOf<T>()
-
-    for(item in list.toList()) {
-        if(!condition(item)) {
-            newList.add(item)
-        }
-    }
-
-    list.clear()
-    list.addAll(newList)
-}
