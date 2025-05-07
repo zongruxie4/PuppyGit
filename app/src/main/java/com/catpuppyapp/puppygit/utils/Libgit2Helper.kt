@@ -6933,8 +6933,11 @@ object Libgit2Helper {
     //把msg中的\n换成空格，让\r消失，这样就没换行符了，方便单行显示尽量多的内容
     fun zipOneLineMsg(msg:String) = msg.replace('\n', ' ').replace("\r", "");
 
-    fun saveFileOfCommitToPath(repo:Repository, commitOidStr:String, relativePath:String, savePath:String): SaveBlobRetCode {
-        val tree = resolveTree(repo, commitOidStr) ?: return SaveBlobRetCode.ERR_RESOLVE_TREE_FAILED
+    /**
+     * @param refOrHash 长短引用名或hash皆可，但最好是长的，越完整越好，不易混淆
+     */
+    fun saveFileOfCommitToPath(repo:Repository, refOrHash:String, relativePath:String, savePath:String): SaveBlobRetCode {
+        val tree = resolveTree(repo, refOrHash) ?: return SaveBlobRetCode.ERR_RESOLVE_TREE_FAILED
         val entry = getEntryOrNullByPathOrName(tree, relativePath, byName = false) ?: return SaveBlobRetCode.ERR_RESOLVE_ENTRY_FAILED
 
         val blob = Blob.lookup(repo, entry.id()) ?: return SaveBlobRetCode.ERR_RESOLVE_BLOB_FAILED
