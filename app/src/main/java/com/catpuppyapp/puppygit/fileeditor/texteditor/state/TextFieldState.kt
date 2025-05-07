@@ -77,6 +77,10 @@ class TextFieldState(
         }
     }
 
+    fun updateLineChangeType(targetChangeType: LineChangeType) {
+        changeType = targetChangeType
+    }
+
 
     fun getColorOfChangeType(inDarkTheme: Boolean):Color {
         return if(changeType == LineChangeType.NEW) {

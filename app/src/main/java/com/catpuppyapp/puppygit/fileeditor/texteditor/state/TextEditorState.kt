@@ -318,18 +318,38 @@ class TextEditorState private constructor(
 
             //处理第一行
             val splitFirstLine = splitFieldValues.first()
+            // 如果第一行为空，则说明在旧行的开头插入了换行符，可能是粘贴了多行，也可能是输入或粘贴了单行，这两种情况有个共同点，
+            // 就是新内容的最后一行就是旧内容本身，而且这一行的changeType状态应该保持不变
+            val newLineAtOldLineHead = splitFirstLine.text.isEmpty()
             val oldLine = newFields[targetIndex]
             newFields[targetIndex] = oldLine.copy(value = splitFirstLine, isSelected = false).apply {
-                // this是拷贝了新内容的新字段，如果新字段的文本和旧字段的文本不同，说明内容改变了，更新changeType，否则不用更新
-                if(this.value.text != oldLine.value.text) {
-                    updateLineChangeTypeIfNone(LineChangeType.UPDATED)
-                }
+                if(newLineAtOldLineHead) {  //在旧行头部添加了一换行符
+                    // 如果新行开头是空行，必然是新行，所以强制更新而不用if none则更新
+                    updateLineChangeType(LineChangeType.NEW)
+
+                    //这里用oldLine或this的changeType都行，因为 this是oldLine的copy，而且没有拷贝changeType，所以他们两个的changeType应该相同，但从逻辑上来说，应该用oldLine的
+                }else if(oldLine.changeType == LineChangeType.NONE && this.value.text != oldLine.value.text) {  //为真则是在旧行中间添加的换行符，否则是在旧行末尾（无需处理，维持旧行changeType即可）
+                    // this是拷贝了新内容的新字段，如果新字段的文本和旧字段的文本不同，说明内容改变了，更新changeType，否则不用更新
+                    updateLineChangeType(LineChangeType.UPDATED)
+                } // else 在旧行末尾添加了换行符，无需处理
             }
 
             //追加新行（注意：新行从第二行开始，并且，如果新行是从旧行的中间分割的，则新行的第一行可能有旧行的后半段内容）
             val newSplitFieldValues = splitFieldValues.subList(1, splitFieldValues.count())
             //把新内容转换成text field对象，其类型必然是NEW，因为是新增的
             val newSplitFieldStates = newSplitFieldValues.map { TextFieldState(value = it, isSelected = false, changeType = LineChangeType.NEW) }
+
+            //如果是从头部插入的新行，则需要检查最后一行的内容是否和旧行的内容相同，如果相同，其changeType应维持旧行，否则改成updated，但不管怎么，它都不应该是NEW，因为本质上它是原来的旧行修改而来的
+            if(newLineAtOldLineHead) {
+                newSplitFieldStates[newSplitFieldStates.size - 1].apply {
+                    //注意这里是强制更新行changeType，因为上面已经更新成NEW了，这里如果不强制，则无法更新
+                    updateLineChangeType(oldLine.changeType)
+                    //在旧行的基础上，决定最终状态
+                    if(oldLine.changeType == LineChangeType.NONE && this.value.text != oldLine.value.text) {
+                        updateLineChangeType(LineChangeType.UPDATED)
+                    }
+                }
+            }
 
             //addAll若待插入值，最大值是size，不会越界，若超过就越了
             newFields.addAll(targetIndex + 1, newSplitFieldStates)
@@ -394,78 +414,85 @@ class TextEditorState private constructor(
     }
 
 
-    suspend fun splitAtCursor(targetIndex: Int, textFieldValue: TextFieldValue) {
-        lock.withLock {
-
-            targetIndexValidOrThrow(targetIndex, fields.size)
-
-            val splitPosition = textFieldValue.selection.start  //光标位置，有可能在行末尾，这时和text.length相等，并不会越界
-            val maxOfPosition = textFieldValue.text.length
-            if (splitPosition < 0 || splitPosition > maxOfPosition) {  //第2个判断没错，就是大于最大位置，不是大于等于，没写错，光标位置有可能在行末尾，这时其索引和text.length相等，所以只有大于才有问题
-                throw InvalidParameterException("splitPosition '$splitPosition' out of range '[0, $maxOfPosition]'")
-            }
-
-            val newText = textFieldValue.text
-            val firstStart = 0
-            val firstEnd = if (splitPosition == 0) 0 else splitPosition
-            val first = newText.substring(firstStart, firstEnd)
-
-            val secondEnd = newText.length
-            val second = newText.substring(firstEnd, secondEnd)
-
-            val firstValue = textFieldValue.copy(first)
-            val newFields = fields.toMutableList()
-
-            //更新第一行
-            val oldField = newFields[targetIndex]
-            newFields[targetIndex] = oldField.copy(value = firstValue, isSelected = false).apply {
-                // 如果新内容不等于旧内容，说明发生了修改
-                // 注：这两个内容都不包含换行符
-                if(this.value.text != oldField.value.text) {
-                    updateLineChangeTypeIfNone(LineChangeType.UPDATED)
-                }
-            }
-
-            //添加第2行
-            newFields.add(
-                targetIndex + 1,
-                TextFieldState(
-                    value = TextFieldValue(second, TextRange.Zero),
-                    isSelected = false,
-                    changeType = LineChangeType.NEW
-                )
-            )
-
-
-//            val newFocusingLineIdx = mutableStateOf(focusingLineIdx)
-//            val newSelectedIndices = selectedIndices.toMutableList()
-
-            val sfiRet = selectFieldInternal(
-                init_fields = newFields,
-                init_selectedIndices = selectedIndices,
-                isMutableFields = true,
-                isMutableSelectedIndices = false,
-//                out_focusingLineIdx = newFocusingLineIdx,
-//                init_focusingLineIdx = focusingLineIdx,
-
-                targetIndex = targetIndex + 1
-            )
-
-
-            isContentEdited?.value=true
-            editorPageIsContentSnapshoted?.value=false
-
-            val newState = internalCreate(
-                fields = sfiRet.fields,
-                fieldsId = newId(),
-                selectedIndices = sfiRet.selectedIndices,
-                isMultipleSelectionMode = isMultipleSelectionMode,
-                focusingLineIdx = sfiRet.focusingLineIdx
-            )
-
-            onChanged(newState, true, true)
-        }
-    }
+//    @Deprecated("这个和splitNewLine一样，可转化为splitNewLien处理，省得维护两个相同的逻辑，头疼")
+//    suspend fun splitAtCursor(targetIndex: Int, textFieldValue: TextFieldValue) {
+//        lock.withLock {
+//
+//            targetIndexValidOrThrow(targetIndex, fields.size)
+//
+//            val splitPosition = textFieldValue.selection.start  //光标位置，有可能在行末尾，这时和text.length相等，并不会越界
+//            val maxOfPosition = textFieldValue.text.length
+//            if (splitPosition < 0 || splitPosition > maxOfPosition) {  //第2个判断没错，就是大于最大位置，不是大于等于，没写错，光标位置有可能在行末尾，这时其索引和text.length相等，所以只有大于才有问题
+//                throw InvalidParameterException("splitPosition '$splitPosition' out of range '[0, $maxOfPosition]'")
+//            }
+//
+//            val newText = textFieldValue.text
+//            val firstStart = 0
+//            val firstEnd = if (splitPosition == 0) 0 else splitPosition
+//            val first = newText.substring(firstStart, firstEnd)
+//
+//            val newLineAtOldLineHead = first.isEmpty()  // or `firstEnd == 0`
+//
+//            val secondEnd = newText.length
+//            val second = newText.substring(firstEnd, secondEnd)
+//
+//            val firstValue = textFieldValue.copy(first)
+//            val newFields = fields.toMutableList()
+//
+//            //更新第一行
+//            val oldField = newFields[targetIndex]
+//            newFields[targetIndex] = oldField.copy(value = firstValue, isSelected = false).apply {
+//                if(newLineAtOldLineHead) {
+//                    updateLineChangeType(LineChangeType.NEW)
+//                }else if(this.value.text != oldField.value.text) {
+//                    // 如果新内容不等于旧内容，说明发生了修改
+//                    // 注：这两个内容都不包含换行符
+//                    updateLineChangeTypeIfNone(LineChangeType.UPDATED)
+//                }  // else，就是在旧行末尾插入了换行符，保持当前行changeType不变即可，无需修改
+//            }
+//
+//            //添加第2行
+//            newFields.add(
+//                targetIndex + 1,
+//                TextFieldState(
+//                    value = TextFieldValue(second, TextRange.Zero),
+//                    isSelected = false,
+//                ).apply {
+//                    if(新旧text相等则使用原changetype，否则使用新的)
+//                    updateLineChangeTypeIfNone(if(newLineAtOldLineHead) this.changeType else LineChangeType.NEW)
+//                }
+//            )
+//
+//
+////            val newFocusingLineIdx = mutableStateOf(focusingLineIdx)
+////            val newSelectedIndices = selectedIndices.toMutableList()
+//
+//            val sfiRet = selectFieldInternal(
+//                init_fields = newFields,
+//                init_selectedIndices = selectedIndices,
+//                isMutableFields = true,
+//                isMutableSelectedIndices = false,
+////                out_focusingLineIdx = newFocusingLineIdx,
+////                init_focusingLineIdx = focusingLineIdx,
+//
+//                targetIndex = targetIndex + 1
+//            )
+//
+//
+//            isContentEdited?.value=true
+//            editorPageIsContentSnapshoted?.value=false
+//
+//            val newState = internalCreate(
+//                fields = sfiRet.fields,
+//                fieldsId = newId(),
+//                selectedIndices = sfiRet.selectedIndices,
+//                isMultipleSelectionMode = isMultipleSelectionMode,
+//                focusingLineIdx = sfiRet.focusingLineIdx
+//            )
+//
+//            onChanged(newState, true, true)
+//        }
+//    }
 
 
     suspend fun updateField(targetIndex: Int, textFieldValue: TextFieldValue) {
