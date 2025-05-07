@@ -30,6 +30,12 @@ data class DiffItemSaver (
     var deletedLines:Int=0,  //删除了多少行
     var allLines:Int=0,  //总共多少行，包含添加、删除、上下文，如果有eof，也包含eof
 
+    var type: DiffItemSaverType = DiffItemSaverType.TEXT,
+
+    /**
+        把blob文件存到本地的path，一般存到缓存目录供临时查看
+     */
+    var blobSavePath:String="",
 ){
 
 
@@ -263,4 +269,9 @@ data class PuppyLine (
     }
 
 
+}
+
+enum class DiffItemSaverType {
+    TEXT,
+    IMG,
 }
