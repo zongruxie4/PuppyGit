@@ -2127,7 +2127,7 @@ fun DiffScreen(
                                 }
 
                                 // multi files diff 不显示最后一个hunk spliter，因为有文件footer作分割了，没必要显示
-                                if(isSingleMode || idx != lastHunkIndex) {
+                                if(isSingleMode || hunkIndex != lastHunkIndex) {
                                     item {
                                         //每个hunk之间显示个分割线，本来想弄成最后一个不显示，但判断索引不太好使，因为有的在上面就return了，索性都显示算了
                                         HunkDivider()
