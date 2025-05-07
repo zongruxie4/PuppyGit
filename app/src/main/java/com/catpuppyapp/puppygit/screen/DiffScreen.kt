@@ -435,11 +435,9 @@ fun DiffScreen(
 
     val removeTargetFromChangeList = {targetItems: List<StatusTypeEntrySaver> ->
         //从cl页面的列表移除条目(根据仓库下相对路径移除）
-//        SharedState.homeChangeList_itemList.removeIf {
-//            targetItems.any {it2 -> it.relativePathUnderRepo == it2.relativePathUnderRepo}
-//        }
-
-        removeByCondition(SharedState.homeChangeList_itemList) { item -> targetItems.any { item.relativePathUnderRepo == it.relativePathUnderRepo } }
+        SharedState.homeChangeList_itemList.removeIf {
+            targetItems.any {it2 -> it.relativePathUnderRepo == it2.relativePathUnderRepo}
+        }
     }
 
 
@@ -453,16 +451,21 @@ fun DiffScreen(
             //如果对所有条目执行了操作，则需要返回上级页面，因为留在这也没什么好看的了
             true
         }else {
-            //这个removeIf有时候不会触发页面刷新，或者，明明移除的是条目a，但在页面里却少了条目b。。。，所以不用remove if 了
-//            diffableItemList.value.let { list ->
-//                list.removeIf { targetItems.any { it2 -> it.relativePath == it2.relativePathUnderRepo } }
-//                list.isEmpty()
-//            }
+            //bug: 有时候移除的是条目a，但在页面里却少了条目b，虽然操作没错但显示错了，原因不明
+            val listIsEmpty = diffableItemList.value.let { list ->
+                list.removeIf { targetItems.any { it2 -> it.relativePath == it2.relativePathUnderRepo } }
+                list.isEmpty()
+            }
 
+            //拷贝每个条目，触发页面显示最新列表，不然有可能显示错
+            if(listIsEmpty.not()) {
+                val copyList = diffableItemList.value.toList()
+                for((idx,item) in copyList.withIndex()) {
+                    diffableItemList.value[idx] = item.copy()
+                }
+            }
 
-            removeByCondition(diffableItemList.value) { item -> targetItems.any { item.relativePath == it.relativePathUnderRepo } }
-
-            diffableItemList.value.isEmpty()
+            listIsEmpty
         }
 
 
