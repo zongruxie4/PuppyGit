@@ -10,7 +10,6 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.defaultMinSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.material3.DropdownMenu
@@ -33,16 +32,12 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import coil.compose.AsyncImage
-import coil.decode.SvgDecoder
-import coil.request.ImageRequest
 import com.catpuppyapp.puppygit.constants.Cons
-import com.catpuppyapp.puppygit.play.pro.R
 import com.catpuppyapp.puppygit.dto.FileItemDto
+import com.catpuppyapp.puppygit.play.pro.R
 import com.catpuppyapp.puppygit.ui.theme.Theme
 import com.catpuppyapp.puppygit.utils.UIHelper
 import com.catpuppyapp.puppygit.utils.getParentPathEndsWithSeparator
-import com.catpuppyapp.puppygit.utils.mime.iconRes
 
 
 @OptIn(ExperimentalFoundationApi::class)
@@ -125,25 +120,12 @@ fun FileListItem(
                     iconOnClick()
                 },
             ) {
-                //如果是图片，显示缩略图，否则显示图标
-                if(item.mime.type == "image") {
-                    AsyncImage(
-                        model = ImageRequest.Builder(activityContext)
-                            .data(item.fullPath)
-                            .size(100, 100)
-                            .decoderFactory(SvgDecoder.Factory())
-                            .build(),
-                        contentDescription = null,
-                        modifier = Modifier.size(50.dp)
-                    )
-                }else {
-                    Icon(
-//                    imageVector = if (item.isFile) Icons.Outlined.InsertDriveFile else Icons.Filled.Folder,
-                        imageVector = item.mime.iconRes,
-                        contentDescription = stringResource(R.string.file_or_folder_icon),
-                        tint =iconColor
-                    )
-                }
+                IconOfItem(
+                    fileName = item.name,
+                    filePath = item.fullPath,
+                    context = activityContext,
+                    iconColor = iconColor
+                )
             }
             Spacer(modifier = Modifier.padding(10.dp))
             Column {
