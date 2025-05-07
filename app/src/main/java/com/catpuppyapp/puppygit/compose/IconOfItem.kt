@@ -5,6 +5,7 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.material3.Icon
 import androidx.compose.material3.LocalContentColor
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
@@ -13,7 +14,7 @@ import coil.compose.AsyncImage
 import coil.decode.SvgDecoder
 import coil.request.ImageRequest
 import com.catpuppyapp.puppygit.utils.mime.MimeType
-import com.catpuppyapp.puppygit.utils.mime.guessFromFileName
+import com.catpuppyapp.puppygit.utils.mime.guessFromFile
 import com.catpuppyapp.puppygit.utils.mime.iconRes
 import java.io.File
 
@@ -32,10 +33,12 @@ fun IconOfItem(
     defaultIconWhenLoadFailed: ImageVector? = null,
 
 ) {
-    //如果是图片，显示缩略图，否则显示图标
-    val mime = MimeType.guessFromFileName(fileName)
+    val file = remember(filePath) { File(filePath) }
 
-    if(mime.type == "image" && File(filePath).let{ it.exists() && it.isFile }) {
+    //如果是图片，显示缩略图，否则显示图标
+    val mime = MimeType.guessFromFile(file)
+
+    if(mime.type == "image" && file.let{ it.exists() && it.isFile }) {
         AsyncImage(
             model = ImageRequest.Builder(context)
                 .data(filePath)
