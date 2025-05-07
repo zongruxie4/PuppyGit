@@ -27,6 +27,7 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.res.vectorResource
 import androidx.compose.ui.unit.Dp
@@ -67,6 +68,7 @@ fun ChangeListItem(
 //    val appContext = AppModel.appContext
 //    val haptic = AppModel.haptic
 
+    val activityContext = LocalContext.current
     val itemIsDir = item.itemType == Cons.gitItemTypeDir || item.itemType == Cons.gitItemTypeSubmodule
 
 
@@ -132,10 +134,13 @@ fun ChangeListItem(
 
                 }
             ) {
-                Icon(
-//                    imageVector = Icons.Outlined.InsertDriveFile,
-                    imageVector = if(item.changeType == Cons.gitStatusDeleted) ImageVector.vectorResource(R.drawable.outline_unknown_document_24) else if(itemIsDir) Icons.Filled.Folder else item.getMime().iconRes,
-                    contentDescription = if(item.changeType == Cons.gitStatusDeleted) null else if(itemIsDir) stringResource(R.string.folder_icon) else stringResource(R.string.file_icon)
+                IconOfItem(
+                    fileName = item.fileName,
+                    filePath = item.canonicalPath,
+                    context = activityContext,
+                    //最后的else返回null并不是不显示图片，组件内部会判断若为null则使用mime对应的图标
+                    defaultIconWhenLoadFailed = if(item.changeType == Cons.gitStatusDeleted) ImageVector.vectorResource(R.drawable.outline_unknown_document_24) else if(itemIsDir) Icons.Filled.Folder else null,
+                    contentDescription = if(item.changeType == Cons.gitStatusDeleted) null else if(itemIsDir) stringResource(R.string.folder_icon) else stringResource(R.string.file_icon),
                 )
             }
 

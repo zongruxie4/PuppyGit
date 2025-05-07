@@ -124,7 +124,8 @@ fun FileListItem(
                     fileName = item.name,
                     filePath = item.fullPath,
                     context = activityContext,
-                    iconColor = iconColor
+                    contentDescription = if(item.isDir) stringResource(R.string.folder_icon) else stringResource(R.string.file_icon),
+                    iconColor = iconColor,
                 )
             }
             Spacer(modifier = Modifier.padding(10.dp))
