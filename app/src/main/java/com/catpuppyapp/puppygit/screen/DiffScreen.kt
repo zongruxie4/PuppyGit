@@ -435,9 +435,11 @@ fun DiffScreen(
 
     val removeTargetFromChangeList = {targetItems: List<StatusTypeEntrySaver> ->
         //从cl页面的列表移除条目(根据仓库下相对路径移除）
-        SharedState.homeChangeList_itemList.removeIf {
-            targetItems.any {it2 -> it.relativePathUnderRepo == it2.relativePathUnderRepo}
-        }
+//        SharedState.homeChangeList_itemList.removeIf {
+//            targetItems.any {it2 -> it.relativePathUnderRepo == it2.relativePathUnderRepo}
+//        }
+
+        removeByCondition(SharedState.homeChangeList_itemList) { item -> targetItems.any { item.relativePathUnderRepo == it.relativePathUnderRepo } }
     }
 
 
@@ -451,10 +453,16 @@ fun DiffScreen(
             //如果对所有条目执行了操作，则需要返回上级页面，因为留在这也没什么好看的了
             true
         }else {
-            diffableItemList.value.let { list ->
-                list.removeIf { targetItems.any { it2 -> it.relativePath == it2.relativePathUnderRepo } }
-                list.isEmpty()
-            }
+            //这个removeIf有时候不会触发页面刷新，或者，明明移除的是条目a，但在页面里却少了条目b。。。，所以不用remove if 了
+//            diffableItemList.value.let { list ->
+//                list.removeIf { targetItems.any { it2 -> it.relativePath == it2.relativePathUnderRepo } }
+//                list.isEmpty()
+//            }
+
+
+            removeByCondition(diffableItemList.value) { item -> targetItems.any { item.relativePath == it.relativePathUnderRepo } }
+
+            diffableItemList.value.isEmpty()
         }
 
 
@@ -2763,4 +2771,18 @@ private fun HunkDivider() {
         modifier = Modifier.padding(vertical = 30.dp),
         thickness = 3.dp
     )
+}
+
+// 用 list.removeIf() 有可能移除错条目，所以改用这种方式移除了
+private fun <T> removeByCondition(list: MutableList<T>, condition:(T)->Boolean) {
+    val newList = mutableListOf<T>()
+
+    for(item in list.toList()) {
+        if(!condition(item)) {
+            newList.add(item)
+        }
+    }
+
+    list.clear()
+    list.addAll(newList)
 }
