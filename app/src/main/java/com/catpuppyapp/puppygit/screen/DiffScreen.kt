@@ -1288,8 +1288,8 @@ fun DiffScreen(
 //                itemIdxAtLazyColumn_Map.clear()  //没必要清，存在的路径每次循环都会覆盖，不存在的路径也不可能跳转，所以，没必要清
 //                val itemsCount = IntBox(0)  //别用state系列变量，会死循环
 //                println("itemsCount.intValue: ${itemsCount.intValue}")
-                    for((idx, diffableItem) in diffableItemList.toList().withIndex()) {
-                        if(isSingleMode && idx != curItemIndex.intValue) continue;
+                    for((diffableItemIdx, diffableItem) in diffableItemList.toList().withIndex()) {
+                        if(isSingleMode && diffableItemIdx != curItemIndex.intValue) continue;
 
                         val diffItem = diffableItem.diffItemSaver
                         val changeType = diffableItem.changeType
@@ -1303,11 +1303,11 @@ fun DiffScreen(
                         val switchVisible = {
                             val newVisible = visible.not()
                             //切换条目
-                            diffableItemList[idx] = diffableItem.copy(visible = newVisible)
+                            diffableItemList[diffableItemIdx] = diffableItem.copy(visible = newVisible)
 
                             //如果展开当前条目 且 当前条目未加载则加载(懒加载)
                             if(newVisible && diffableItem.neverLoadedDifferences()) {
-                                requireRefreshSubList(listOf(idx))
+                                requireRefreshSubList(listOf(diffableItemIdx))
                             }
                         }
 
@@ -1348,7 +1348,7 @@ fun DiffScreen(
                                                 val position = layoutCoordinates.positionInRoot()
                                                 //从屏幕上方消失了，就表示在看这个条目
                                                 if(position.y < 0) {
-                                                    updateCurrentViewingIdx(idx)
+                                                    updateCurrentViewingIdx(diffableItemIdx)
                                                 }
                                             }
                                         }
@@ -1407,7 +1407,7 @@ fun DiffScreen(
 //                                                   val newItem = diffableItem.copy(visible = true)
 //                                                   diffableItemList[idx] = newItem
 
-                                                requireRefreshSubList(listOf(idx))
+                                                requireRefreshSubList(listOf(diffableItemIdx))
                                             }
                                         ),
 
@@ -1425,7 +1425,7 @@ fun DiffScreen(
                                             icon = Icons.AutoMirrored.Filled.OpenInNew,
                                             text = stringResource(R.string.open_as),
                                             onClick = {
-                                                initOpenAsDialog(idx)
+                                                initOpenAsDialog(diffableItemIdx)
                                             }
                                         ),
 
@@ -1452,7 +1452,7 @@ fun DiffScreen(
                                             ScrollableRow(
                                                 //点击文件名显示详情
                                                 //确保最小可点击范围，这个不能放到外面的row里，外面的row还算了下面添加删除行的长度，多半会超，所以就没意义了
-                                                modifier = Modifier.clickable { initDetailsDialog(idx) }.widthIn(min = MyStyleKt.Title.clickableTitleMinWidth),
+                                                modifier = Modifier.clickable { initDetailsDialog(diffableItemIdx) }.widthIn(min = MyStyleKt.Title.clickableTitleMinWidth),
                                             ) {
                                                 //显示：“文件名: +添加的行数, -删除的行数"，例如： "abc.txt: +1, -10"
 
@@ -1598,7 +1598,7 @@ fun DiffScreen(
                             val lineNumSize = lineNumFontSize.intValue
                             val getComparePairBuffer = { diffableItem.compareLinePair }
                             val setComparePairBuffer = { newCompareLinePair:CompareLinePair ->
-                                diffableItemList[idx] = diffableItemList[idx].copy(compareLinePair = newCompareLinePair)
+                                diffableItemList[diffableItemIdx] = diffableItemList[diffableItemIdx].copy(compareLinePair = newCompareLinePair)
                             }
 
                             val reForEachDiffContent = {reForEachDiffContent(relativePath)}
@@ -2153,7 +2153,7 @@ fun DiffScreen(
                                                 val position = layoutCoordinates.positionInRoot()
                                                 //从屏幕上方消失了，就表示在看这个条目
                                                 if(position.y < 0) {
-                                                    updateCurrentViewingIdx(idx)
+                                                    updateCurrentViewingIdx(diffableItemIdx)
                                                 }
                                             }
                                         }
