@@ -387,3 +387,34 @@ JNIEXPORT jobject JNICALL J_MAKE_METHOD(LibgitTwo_jniGetDataOfSshCert)(JNIEnv *e
     }
 
 }
+
+
+JNIEXPORT jint JNICALL J_MAKE_METHOD(LibgitTwo_jniSaveBlobToPath)(JNIEnv *env, jclass callerJavaClass, jlong blobPtr, jstring savePath)
+{
+    git_blob* blob = (git_blob *)blobPtr;
+
+    // 字节流
+    //这blob data不用释放文档说的：“this pointer is owned internally by the object and shall not be free'd” ,
+    // 参见：https://libgit2.org/docs/reference/main/blob/git_blob_rawcontent.html
+    const char* blob_data = git_blob_rawcontent(blob);
+    size_t blob_size = git_blob_rawsize(blob);
+
+    //转换路径为c字符串
+    char* c_savePath = j_copy_of_jstring(env, savePath, true);
+    if(c_savePath == NULL) {
+        free(c_savePath);
+        return -1;
+    }
+
+    //写入文件
+    FILE *output_file = fopen(c_savePath, "wb");
+    fwrite(blob_data, 1, blob_size, output_file);
+
+
+    // clean up
+    fclose(output_file);
+    free(c_savePath);
+
+    return 0;
+}
+

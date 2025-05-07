@@ -1,5 +1,6 @@
 package com.catpuppyapp.puppygit.jni
 
+import com.github.git24j.core.Blob
 import java.nio.charset.StandardCharsets
 
 object LibgitTwo {
@@ -60,6 +61,13 @@ object LibgitTwo {
      */
     external fun jniEntryByName(treePtr: Long, filename: String?): Long?
     external fun jniGetDataOfSshCert(certPtr: Long, hostname:String): SshCert?
+
+    private external fun jniSaveBlobToPath(blobPtr:Long, savePath:String): Int
+
+    fun saveBlobToPath(blob: Blob, savePath: String): SaveBlobRetCode {
+        val retCode = jniSaveBlobToPath(blob.rawPointer, savePath)
+        return SaveBlobRetCode.fromCode(retCode)!!
+    }
 
     fun getContent(contentLen: Int, content: String): String {
         // content.length() is "chars count", not "bytes count"!

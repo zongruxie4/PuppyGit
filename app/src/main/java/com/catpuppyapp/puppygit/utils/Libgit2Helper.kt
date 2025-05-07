@@ -37,6 +37,7 @@ import com.catpuppyapp.puppygit.git.SubmoduleDto
 import com.catpuppyapp.puppygit.git.TagDto
 import com.catpuppyapp.puppygit.git.Upstream
 import com.catpuppyapp.puppygit.jni.LibgitTwo
+import com.catpuppyapp.puppygit.jni.SaveBlobRetCode
 import com.catpuppyapp.puppygit.jni.SshAskUserUnknownHostRequest
 import com.catpuppyapp.puppygit.play.pro.R
 import com.catpuppyapp.puppygit.screen.functions.KnownHostRequestStateMan
@@ -45,6 +46,7 @@ import com.catpuppyapp.puppygit.settings.SettingsUtil
 import com.catpuppyapp.puppygit.style.MyStyleKt
 import com.github.git24j.core.AnnotatedCommit
 import com.github.git24j.core.Apply
+import com.github.git24j.core.Blob
 import com.github.git24j.core.Branch
 import com.github.git24j.core.Checkout
 import com.github.git24j.core.Cherrypick
@@ -6931,4 +6933,12 @@ object Libgit2Helper {
     //把msg中的\n换成空格，让\r消失，这样就没换行符了，方便单行显示尽量多的内容
     fun zipOneLineMsg(msg:String) = msg.replace('\n', ' ').replace("\r", "");
 
+    fun saveFileOfCommitToPath(repo:Repository, commitOidStr:String, relativePath:String, savePath:String): SaveBlobRetCode {
+        val tree = resolveTree(repo, commitOidStr) ?: return SaveBlobRetCode.ERR_RESOLVE_TREE_FAILED
+        val entry = getEntryOrNullByPathOrName(tree, relativePath, byName = false) ?: return SaveBlobRetCode.ERR_RESOLVE_ENTRY_FAILED
+
+        val blob = Blob.lookup(repo, entry.id()) ?: return SaveBlobRetCode.ERR_RESOLVE_BLOB_FAILED
+
+        return LibgitTwo.saveBlobToPath(blob, savePath)
+    }
 }
