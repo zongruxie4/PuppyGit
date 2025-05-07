@@ -1589,6 +1589,8 @@ fun DiffScreen(
                             }
 
 
+                            //TODO 实现预览图片需要在这做判断，如果两边有一个是img，就用DiffImg预览，DiffImg内部检查，哪边是图片就预览哪边，另一边如果是文本类型，就打印文本，如果不是就提示不支持的类型。
+
 
                             val groupDiffContentByLineNum = groupDiffContentByLineNum.value
                             val itemFile = File(curRepo.value.fullSavePath, relativePath)
