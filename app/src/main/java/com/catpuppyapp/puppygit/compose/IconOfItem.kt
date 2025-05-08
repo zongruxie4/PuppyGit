@@ -2,6 +2,7 @@ package com.catpuppyapp.puppygit.compose
 
 import android.content.Context
 import androidx.compose.foundation.Image
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.size
 import androidx.compose.material3.Icon
 import androidx.compose.material3.LocalContentColor
@@ -15,6 +16,7 @@ import androidx.compose.ui.unit.dp
 import coil.compose.AsyncImage
 import coil.decode.SvgDecoder
 import coil.request.ImageRequest
+import com.catpuppyapp.puppygit.ui.theme.Theme
 import com.catpuppyapp.puppygit.utils.apkIconOrNull
 import com.catpuppyapp.puppygit.utils.mime.MimeType
 import com.catpuppyapp.puppygit.utils.mime.guessFromFile
@@ -75,6 +77,9 @@ fun IconOfItem(
 @Composable
 private fun ShowThumbnail(context:Context, filePath:String, contentDescription: String?, loadErrShowThisIcon: ImageVector) {
     val fallback = rememberVectorPainter(loadErrShowThisIcon)
+    val inDarkTheme = remember { Theme.inDarkTheme }
+
+    // 另一种加载出错显示后备图片的方法是不给asyncImage设后备图片，或设成透明，然后用Box在AsyncImage前面显示后备图片，由于Box是浮动的，所以若目标图片没成功加载，就会看到后备图片
 
     AsyncImage(
         model = ImageRequest.Builder(context)
@@ -83,7 +88,7 @@ private fun ShowThumbnail(context:Context, filePath:String, contentDescription: 
             .decoderFactory(SvgDecoder.Factory())
             .build(),
         contentDescription = contentDescription,
-        modifier = Modifier.size(iconModifierSize),  //.clip(RectangleShape)，想弄成正方形，但没卵用，算了
+        modifier = Modifier.size(iconModifierSize).background(if(inDarkTheme) Color.DarkGray else Color.White),  //.clip(RectangleShape)，想弄成正方形，但没卵用，算了
         error = fallback,
         placeholder = fallback,
         fallback = fallback,
