@@ -157,7 +157,7 @@ fun ChangeListItem(
         //每个条目都有自己的菜单项，这样有点费资源哈，不过实现起来最简单，如果只用一个菜单项也行，但难点在于把菜单项定位到点菜单按钮的地方
         val dropDownMenuExpendState = rememberSaveable { mutableStateOf(false) }  // typo: "Expend" should be "Expand"
 
-        Row {
+        ListItemTrailingIconRow {
             //三点图标
             IconButton(onClick = { dropDownMenuExpendState.value = true }) {
                 Icon(

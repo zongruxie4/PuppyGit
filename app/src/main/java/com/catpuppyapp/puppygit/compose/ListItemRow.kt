@@ -21,7 +21,7 @@ fun ListItemRow(
             .padding(5.dp)
             .fillMaxWidth(.85F),
         verticalAlignment = Alignment.CenterVertically,
-        horizontalArrangement = Arrangement.SpaceBetween
+        horizontalArrangement = Arrangement.Start
 
     ){
         content()
