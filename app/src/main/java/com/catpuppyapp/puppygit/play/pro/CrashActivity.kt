@@ -34,12 +34,12 @@ import com.catpuppyapp.puppygit.compose.CardButton
 import com.catpuppyapp.puppygit.compose.GoToTopAndGoToBottomFab
 import com.catpuppyapp.puppygit.compose.MySelectionContainer
 import com.catpuppyapp.puppygit.compose.SpacerRow
+import com.catpuppyapp.puppygit.constants.IntentCons
 import com.catpuppyapp.puppygit.screen.content.homescreen.innerpage.reportBugsLink
 import com.catpuppyapp.puppygit.style.MyStyleKt
 import com.catpuppyapp.puppygit.ui.theme.PuppyGitAndroidTheme
 import com.catpuppyapp.puppygit.ui.theme.Theme
 import com.catpuppyapp.puppygit.utils.ActivityUtil
-import com.catpuppyapp.puppygit.utils.AppModel
 import com.catpuppyapp.puppygit.utils.ContextUtil
 import com.catpuppyapp.puppygit.utils.MyLog
 import com.catpuppyapp.puppygit.utils.pref.PrefMan
@@ -51,8 +51,8 @@ private const val TAG = "CrashActivity"
 
 class CrashActivity : ComponentActivity() {
     companion object {
-        const val ACTION_SHOW_ERR_MSG = AppModel.appPackageName +".SHOW_ERR_MSG"
-        const val INTENT_EXTRA_KEY_ERR_MSG = "errMsg"
+        val ACTION_SHOW_ERR_MSG = IntentCons.Action.SHOW_ERR_MSG
+        const val INTENT_EXTRA_KEY_ERR_MSG = IntentCons.ExtrasKey.errMsg
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
