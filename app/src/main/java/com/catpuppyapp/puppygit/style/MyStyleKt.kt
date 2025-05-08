@@ -158,8 +158,11 @@ object MyStyleKt{
             return if(isPortrait) {
                 modifier
             }else {
-                //这个加不加好像无所谓，旧版compose我记得需要手动加，但新版貌似默认加了，所以不用加了
+                //平板不管横屏竖屏，导航键都在底部，所以如果在平板，这个navigationBarsPadding()会有问题，底部很高，右边没差，但期望的是横屏时右边加padding错开导航键，所以用这个判断不准
 //                modifier.navigationBarsPadding()
+
+                  // 这个padding加得少和没加一样，加得多离屏幕边缘太远，索性不加了
+//                modifier.padding(end = 5.dp)
                 modifier
             }
         }
