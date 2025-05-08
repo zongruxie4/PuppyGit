@@ -2,21 +2,18 @@ package com.catpuppyapp.puppygit.compose
 
 import android.content.Context
 import androidx.compose.foundation.Image
-import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.size
-import androidx.compose.material3.Icon
 import androidx.compose.material3.LocalContentColor
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
-import androidx.compose.ui.graphics.vector.rememberVectorPainter
 import androidx.compose.ui.unit.dp
 import coil.compose.AsyncImage
 import coil.decode.SvgDecoder
 import coil.request.ImageRequest
-import com.catpuppyapp.puppygit.ui.theme.Theme
 import com.catpuppyapp.puppygit.utils.apkIconOrNull
 import com.catpuppyapp.puppygit.utils.mime.MimeType
 import com.catpuppyapp.puppygit.utils.mime.guessFromFile
@@ -25,6 +22,7 @@ import java.io.File
 
 private const val iconSizeInPx = 100
 private val iconModifierSize = 50.dp
+private val defaultIconModifier = Modifier.size(iconModifierSize)
 
 
 @Composable
@@ -39,6 +37,7 @@ fun IconOfItem(
 
     //若为null，将根据mime类型获取对应图标
     defaultIconWhenLoadFailed: ImageVector? = null,
+    modifier: Modifier = defaultIconModifier,
 
 ) {
     val file = remember(filePath) { File(filePath) }
@@ -49,7 +48,7 @@ fun IconOfItem(
 
     //图片类型
     if(mime.type == "image" && file.let{ it.exists() && it.isFile }) {
-        ShowThumbnail(context, filePath, contentDescription, mime.iconRes)
+        ShowThumbnail(context, filePath, contentDescription, mime.iconRes, iconColor, modifier)
 
         return
     }
@@ -60,6 +59,7 @@ fun IconOfItem(
             Image(
                 apkIcon,
                 contentDescription = contentDescription,
+                modifier = modifier,
             )
 
             return
@@ -67,35 +67,42 @@ fun IconOfItem(
     }
 
 
-    Icon(
-        imageVector = defaultIconWhenLoadFailed ?: mime.iconRes,
-        contentDescription = contentDescription,
-        tint = iconColor,
-        modifier = Modifier.size(iconModifierSize)
-    )
+
+    ShowIcon(defaultIconWhenLoadFailed ?: mime.iconRes, contentDescription, iconColor, modifier)
+
 }
 
 @Composable
-private fun ShowThumbnail(context:Context, filePath:String, contentDescription: String?, loadErrShowThisIcon: ImageVector) {
-    val fallback = rememberVectorPainter(loadErrShowThisIcon)
-    val inDarkTheme = remember { Theme.inDarkTheme }
+private fun ShowThumbnail(
+    context:Context,
+    filePath:String,
+    contentDescription: String?,
+    fallbackIcon: ImageVector,
+    fallbackIconColor: Color,
+    modifier: Modifier
+) {
+    val loadErr = remember { mutableStateOf(false) }
 
-    // 另一种加载出错显示后备图片的方法是不给asyncImage设后备图片，或设成透明，然后用Box在AsyncImage前面显示后备图片，由于Box是浮动的，所以若目标图片没成功加载，就会看到后备图片
-
-    AsyncImage(
-        model = ImageRequest.Builder(context)
-            .data(filePath)
-            .size(iconSizeInPx)
-            .decoderFactory(SvgDecoder.Factory())
-            .build(),
-        contentDescription = contentDescription,
-        //加background是为了使图片清楚，不然有的svg全黑，背景全黑，看不见，还有就是为了图片加载失败时，让后备图片的颜色清晰，后备图片貌似不能设置颜色，只有黑色，所以想看清必须设置个背景颜色
-        modifier = Modifier.size(iconModifierSize).background(if(inDarkTheme) Color.DarkGray else Color.White),  //.clip(RectangleShape)，想弄成正方形，但没卵用，算了
-        error = fallback,
-        placeholder = fallback,
-        fallback = fallback,
-
-        //加载出错时给图片着色，这样不行，会影响正常加载的图片的颜色
-//        colorFilter = ColorFilter.tint(LocalContentColor.current)
-    )
+    if(loadErr.value) {
+        ShowIcon(fallbackIcon, contentDescription, fallbackIconColor, modifier)
+    }else {
+        AsyncImage(
+            model = ImageRequest.Builder(context)
+                .data(filePath)
+                .size(iconSizeInPx)
+                .decoderFactory(SvgDecoder.Factory())
+                .build(),
+            contentDescription = contentDescription,
+            modifier = modifier,  //.clip(RectangleShape)，想弄成正方形，但没卵用，算了
+            onError = {
+                loadErr.value = true
+            },
+            onLoading = {
+                loadErr.value = false
+            },
+            onSuccess = {
+                loadErr.value = false
+            }
+        )
+    }
 }
