@@ -7,7 +7,6 @@ import android.net.Uri
 import android.os.Build
 import android.os.Environment
 import android.webkit.MimeTypeMap
-import androidx.compose.runtime.Composable
 import androidx.compose.runtime.MutableLongState
 import androidx.compose.runtime.MutableState
 import androidx.core.content.FileProvider
@@ -17,6 +16,7 @@ import com.catpuppyapp.puppygit.constants.LineNum
 import com.catpuppyapp.puppygit.dto.FileSimpleDto
 import com.catpuppyapp.puppygit.etc.Ret
 import com.catpuppyapp.puppygit.fileeditor.texteditor.state.TextEditorState
+import com.catpuppyapp.puppygit.play.pro.BuildConfig
 import com.catpuppyapp.puppygit.play.pro.R
 import com.catpuppyapp.puppygit.screen.shared.FilePath
 import com.catpuppyapp.puppygit.screen.shared.FuckSafFile
@@ -174,18 +174,18 @@ object FsUtils {
         return type
     }
 
-    @Deprecated("instead by MimeType#guessXXX serials function")
-    fun getMimeTypeForFilePath(context: Context, fullPathOfFile:String): String {
-        val file = File(fullPathOfFile)
-        return getMimeType(getUriForFile(context, file).toString())
-    }
+//    @Deprecated("instead by MimeType#guessXXX serials function")
+//    fun getMimeTypeForFilePath(context: Context, fullPathOfFile:String): String {
+//        val file = File(fullPathOfFile)
+//        return getMimeType(getUriForFile(context, file).toString())
+//    }
 
     /**
      * get authority for gen uri for file
      * note: the value must same as provider.android:authorities in AndroidManifest.xml
      */
     fun getAuthorityOfUri():String {
-        return AppModel.appPackageName + ".provider"
+        return BuildConfig.FILE_PROVIDIER_AUTHORITY
     }
 
     fun getUriForFile(context: Context, file: File):Uri {

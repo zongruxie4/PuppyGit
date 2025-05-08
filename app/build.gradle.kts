@@ -43,6 +43,14 @@ android {
         versionCode = 85
         versionName = "1.1.0.9"
 
+
+        //这两个file provider的值必须一样
+        //可以在代码里用`BuildConfig.变量名`使用的值
+        // 4个引号的原因：三个是raw string，另外一个是为了赋值变量时包含引号，不然会直接裸值替换上去，就不是String类型了
+        buildConfigField("String", "FILE_PROVIDIER_AUTHORITY", """"$applicationId.file_provider"""")
+        //可以在xml里用“@string/变量名”使用的值，目前在 `AndroidManifest.xml` 里使用了
+        resValue("string", "file_provider_authority", "$applicationId.file_provider")
+
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         vectorDrawables {
             useSupportLibrary = true
