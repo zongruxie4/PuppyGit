@@ -1,6 +1,15 @@
 
 
 ---
+1.1.1.0v86 - 20250508:
+- minor bugs fixed
+
+
+
+- 小bug修正
+
+
+---
 1.1.0.9v85 - 20250508:
 - show icon for apks and images in the file list
 - minor bugs fixed
