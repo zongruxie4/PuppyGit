@@ -1,11 +1,13 @@
 
 
 ---
-1.1.0.9v85 - 20250506:
+1.1.0.9v85 - 20250508:
+- show icon for apks and images in the file list
 - minor bugs fixed
 
 
 
+- 文件列表显示apk和图片文件的图标
 - 小bug修正
 
 ---
