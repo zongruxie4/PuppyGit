@@ -70,7 +70,8 @@ fun IconOfItem(
     Icon(
         imageVector = defaultIconWhenLoadFailed ?: mime.iconRes,
         contentDescription = contentDescription,
-        tint = iconColor
+        tint = iconColor,
+        modifier = Modifier.size(iconModifierSize)
     )
 }
 
@@ -88,6 +89,7 @@ private fun ShowThumbnail(context:Context, filePath:String, contentDescription: 
             .decoderFactory(SvgDecoder.Factory())
             .build(),
         contentDescription = contentDescription,
+        //加background是为了使图片清楚，不然有的svg全黑，背景全黑，看不见，还有就是为了图片加载失败时，让后备图片的颜色清晰，后备图片貌似不能设置颜色，只有黑色，所以想看清必须设置个背景颜色
         modifier = Modifier.size(iconModifierSize).background(if(inDarkTheme) Color.DarkGray else Color.White),  //.clip(RectangleShape)，想弄成正方形，但没卵用，算了
         error = fallback,
         placeholder = fallback,
