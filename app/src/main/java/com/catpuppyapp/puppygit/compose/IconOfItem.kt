@@ -21,7 +21,7 @@ import com.catpuppyapp.puppygit.utils.mime.iconRes
 import java.io.File
 
 private const val iconSizeInPx = 100
-private val iconModifierSize = 50.dp
+private val iconModifierSize = 30.dp
 private val defaultIconModifier = Modifier.size(iconModifierSize)
 
 
