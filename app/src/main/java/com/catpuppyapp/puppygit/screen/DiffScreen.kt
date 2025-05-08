@@ -442,50 +442,51 @@ fun DiffScreen(
 
 
     // hasIndex为null则不更新change list的index变量
-    val handleChangeListPageStuffs = { targetItems:List<StatusTypeEntrySaver> , hasIndex:Boolean?->
-
-        //从当前列表移除已操作完毕的条目
-        val noItems = if(targetItems.size == diffableItemList.value.size) {
-            //清空列表再执行返回上级页面，不然一些已经用不到的数据还会占用内存
-            diffableItemList.value.clear()
-            //如果对所有条目执行了操作，则需要返回上级页面，因为留在这也没什么好看的了
-            true
-        }else {
-            //bug: 有时候移除的是条目a，但在页面里却少了条目b，虽然操作没错但显示错了，原因不明
-            val listIsEmpty = diffableItemList.value.let { list ->
-                list.removeIf { targetItems.any { it2 -> it.relativePath == it2.relativePathUnderRepo } }
-                list.isEmpty()
-            }
-
-            // 拷贝的效果：经过我的测试，bug有所缓解，但没完全解决，现状是：在index，multi files diff模式，
-            // 在文件标题栏unstage单条目后还是有可能页面不刷新，但是，通过下拉或顶栏按钮刷新或展开收起条目后，
-            // 列表会更新为最新状态，unstage的条目会消失，比之前强点，之前就算点刷新按钮，
-            // 列表依然显示已经移除的条目，必须返回上级页面再进入才能正常。
-            // 简而言之：修改之后，现在操作条目后，列表依然有可能错误显示已经移除的条目，但刷新后正常；修改之前，出错了刷新也没用。
-
-            //拷贝每个条目，触发页面显示最新列表，不然有可能显示错
-            if(listIsEmpty.not()) {
-                val copyList = diffableItemList.value.toList()
-                for((idx,item) in copyList.withIndex()) {
-                    diffableItemList.value[idx] = item.copy()
+    val handleChangeListPageStuffs:suspend (targetItems:List<StatusTypeEntrySaver> , hasIndex:Boolean?) ->Unit = { targetItems, hasIndex ->
+        diffableListLock.withLock {
+            //从当前列表移除已操作完毕的条目
+            val noItems = if(targetItems.size == diffableItemList.value.size) {
+                //清空列表再执行返回上级页面，不然一些已经用不到的数据还会占用内存
+                diffableItemList.value.clear()
+                //如果对所有条目执行了操作，则需要返回上级页面，因为留在这也没什么好看的了
+                true
+            }else {
+                //bug: 有时候移除的是条目a，但在页面里却少了条目b，虽然操作没错但显示错了，原因不明
+                val listIsEmpty = diffableItemList.value.let { list ->
+                    list.removeIf { targetItems.any { it2 -> it.relativePath == it2.relativePathUnderRepo } }
+                    list.isEmpty()
                 }
+
+                // 拷贝的效果：经过我的测试，bug有所缓解，但没完全解决，现状是：在index，multi files diff模式，
+                // 在文件标题栏unstage单条目后还是有可能页面不刷新，但是，通过下拉或顶栏按钮刷新或展开收起条目后，
+                // 列表会更新为最新状态，unstage的条目会消失，比之前强点，之前就算点刷新按钮，
+                // 列表依然显示已经移除的条目，必须返回上级页面再进入才能正常。
+                // 简而言之：修改之后，现在操作条目后，列表依然有可能错误显示已经移除的条目，但刷新后正常；修改之前，出错了刷新也没用。
+
+                //拷贝每个条目，触发页面显示最新列表，不然有可能显示错
+                if(listIsEmpty.not()) {
+                    val copyList = diffableItemList.value.toList()
+                    for((idx,item) in copyList.withIndex()) {
+                        diffableItemList.value[idx] = item.copy()
+                    }
+                }
+
+                listIsEmpty
             }
 
-            listIsEmpty
-        }
 
+            //更新cl页面状态变量
+            //从cl页面的列表移除条目
+            removeTargetFromChangeList(targetItems)
+            //cl页面设置索引有条目，因为上面stage成功了，所以大概率index至少有一个条目
+            hasIndex?.let {
+                SharedState.homeChangeList_indexHasItem.value = hasIndex
+            }
 
-        //更新cl页面状态变量
-        //从cl页面的列表移除条目
-        removeTargetFromChangeList(targetItems)
-        //cl页面设置索引有条目，因为上面stage成功了，所以大概率index至少有一个条目
-        hasIndex?.let {
-            SharedState.homeChangeList_indexHasItem.value = hasIndex
-        }
-
-        //若当前页面已经无条目则返回上级页面
-        if(noItems) {
-            naviUp()
+            //若当前页面已经无条目则返回上级页面
+            if(noItems) {
+                naviUp()
+            }
         }
     }
 
