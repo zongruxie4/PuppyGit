@@ -10,6 +10,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.graphics.vector.rememberVectorPainter
 import androidx.compose.ui.unit.dp
 import coil.compose.AsyncImage
 import coil.decode.SvgDecoder
@@ -46,7 +47,7 @@ fun IconOfItem(
 
     //图片类型
     if(mime.type == "image" && file.let{ it.exists() && it.isFile }) {
-        ShowThumbnail(context, filePath, contentDescription)
+        ShowThumbnail(context, filePath, contentDescription, mime.iconRes)
 
         return
     }
@@ -72,7 +73,9 @@ fun IconOfItem(
 }
 
 @Composable
-private fun ShowThumbnail(context:Context, filePath:String, contentDescription: String?) {
+private fun ShowThumbnail(context:Context, filePath:String, contentDescription: String?, loadErrShowThisIcon: ImageVector) {
+    val fallback = rememberVectorPainter(loadErrShowThisIcon)
+
     AsyncImage(
         model = ImageRequest.Builder(context)
             .data(filePath)
@@ -80,6 +83,12 @@ private fun ShowThumbnail(context:Context, filePath:String, contentDescription: 
             .decoderFactory(SvgDecoder.Factory())
             .build(),
         contentDescription = contentDescription,
-        modifier = Modifier.size(iconModifierSize)
+        modifier = Modifier.size(iconModifierSize),  //.clip(RectangleShape)，想弄成正方形，但没卵用，算了
+        error = fallback,
+        placeholder = fallback,
+        fallback = fallback,
+
+        //加载出错时给图片着色，这样不行，会影响正常加载的图片的颜色
+//        colorFilter = ColorFilter.tint(LocalContentColor.current)
     )
 }
