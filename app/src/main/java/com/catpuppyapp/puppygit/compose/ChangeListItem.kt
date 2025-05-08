@@ -100,15 +100,7 @@ fun ChangeListItem(
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.Start
     ) {
-        Row(
-            modifier = Modifier
-                .defaultMinSize(minWidth = Dp.Unspecified, minHeight = 50.dp)
-                .padding(5.dp)
-                .fillMaxWidth(.9F),
-            verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.Start
-
-        ) {
+        ListItemRow{
             //在左侧加个复选框，会影响布局，有缺陷，别用了
 //                                    if(isFileSelectionMode.value) {
 //                                        IconToggleButton(checked = JSONObject(selFilePathListJsonObjStr.value).has(item.name), onCheckedChange = {
@@ -144,7 +136,8 @@ fun ChangeListItem(
                 )
             }
 
-            Spacer(modifier = Modifier.padding(10.dp))
+            Spacer(modifier = Modifier.padding(5.dp))
+
             Column {
                 val changeTypeColor = UIHelper.getChangeTypeColor(item.changeType ?: "")
 
