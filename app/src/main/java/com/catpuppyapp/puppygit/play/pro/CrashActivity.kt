@@ -39,6 +39,7 @@ import com.catpuppyapp.puppygit.style.MyStyleKt
 import com.catpuppyapp.puppygit.ui.theme.PuppyGitAndroidTheme
 import com.catpuppyapp.puppygit.ui.theme.Theme
 import com.catpuppyapp.puppygit.utils.ActivityUtil
+import com.catpuppyapp.puppygit.utils.AppModel
 import com.catpuppyapp.puppygit.utils.ContextUtil
 import com.catpuppyapp.puppygit.utils.MyLog
 import com.catpuppyapp.puppygit.utils.pref.PrefMan
@@ -49,6 +50,10 @@ private const val TAG = "CrashActivity"
 
 
 class CrashActivity : ComponentActivity() {
+    companion object {
+        const val ACTION_SHOW_ERR_MSG = AppModel.appPackageName +".SHOW_ERR_MSG"
+        const val INTENT_EXTRA_KEY_ERR_MSG = "errMsg"
+    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         val funName = "onCreate"
@@ -174,11 +179,10 @@ private fun MainCompose(activity: Activity, appContext: Context, errMsg: String,
 
 }
 
-private const val errMsgKey = "errMsg"
 fun startCrashActivity(fromActivity: Activity, errMsg:String) {
-    val intent = Intent(Intent.ACTION_VIEW).apply {
+    val intent = Intent(CrashActivity.ACTION_SHOW_ERR_MSG).apply {
         //携带错误信息
-        putExtra(errMsgKey, errMsg)
+        putExtra(CrashActivity.INTENT_EXTRA_KEY_ERR_MSG, errMsg)
         setClass(fromActivity, CrashActivity::class.java)
     }
 
@@ -186,5 +190,5 @@ fun startCrashActivity(fromActivity: Activity, errMsg:String) {
 }
 
 private fun getErrMsg(intent: Intent):String {
-    return intent.extras?.getString(errMsgKey) ?: ""
+    return intent.extras?.getString(CrashActivity.INTENT_EXTRA_KEY_ERR_MSG) ?: ""
 }

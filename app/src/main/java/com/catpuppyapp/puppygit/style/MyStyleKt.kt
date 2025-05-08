@@ -2,7 +2,6 @@ package com.catpuppyapp.puppygit.style
 
 import androidx.compose.foundation.layout.defaultMinSize
 import androidx.compose.foundation.layout.imePadding
-import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.text.selection.TextSelectionColors

@@ -140,16 +140,14 @@
 
         <activity
             android:name=".CrashActivity"
-            android:exported="true"
+            android:exported="false"
+            android:label="Crashed"
             android:theme="@style/Theme.PuppyGitAndroid"
             android:windowSoftInputMode="adjustResize"
             android:configChanges="orientation|screenSize|screenLayout|keyboardHidden|smallestScreenSize"
 
         >
-            <intent-filter>
-                <action android:name="android.intent.action.VIEW" />
-                <category android:name="android.intent.category.DEFAULT" />
-            </intent-filter>
+
 
         </activity>
 
