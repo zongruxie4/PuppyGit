@@ -57,7 +57,7 @@
             android:name="com.catpuppyapp.puppygit.service.HttpService"
             android:foregroundServiceType="specialUse"
             android:enabled="true"
-            android:exported="false" />
+            android:exported="true" />
 
         <service
             android:name="com.catpuppyapp.puppygit.service.TileHttpService"
