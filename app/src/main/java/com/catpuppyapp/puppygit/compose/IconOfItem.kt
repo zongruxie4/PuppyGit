@@ -1,6 +1,7 @@
 package com.catpuppyapp.puppygit.compose
 
 import android.content.Context
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.size
 import androidx.compose.material3.Icon
 import androidx.compose.material3.LocalContentColor
@@ -13,10 +14,14 @@ import androidx.compose.ui.unit.dp
 import coil.compose.AsyncImage
 import coil.decode.SvgDecoder
 import coil.request.ImageRequest
+import com.catpuppyapp.puppygit.utils.apkIconOrNull
 import com.catpuppyapp.puppygit.utils.mime.MimeType
 import com.catpuppyapp.puppygit.utils.mime.guessFromFile
 import com.catpuppyapp.puppygit.utils.mime.iconRes
 import java.io.File
+
+private const val iconSizeInPx = 100
+private val iconModifierSize = 50.dp
 
 
 @Composable
@@ -36,23 +41,45 @@ fun IconOfItem(
     val file = remember(filePath) { File(filePath) }
 
     //如果是图片，显示缩略图，否则显示图标
+    // guessFromFile()会判断是否是文件夹，guessFromFileName()则不会，为了能为文件夹正常显示图标，这里应用用guessFromFile()
     val mime = MimeType.guessFromFile(file)
 
+    //图片类型
     if(mime.type == "image" && file.let{ it.exists() && it.isFile }) {
-        AsyncImage(
-            model = ImageRequest.Builder(context)
-                .data(filePath)
-                .size(100, 100)
-                .decoderFactory(SvgDecoder.Factory())
-                .build(),
-            contentDescription = contentDescription,
-            modifier = Modifier.size(50.dp)
-        )
-    }else {
-        Icon(
-            imageVector = defaultIconWhenLoadFailed ?: mime.iconRes,
-            contentDescription = contentDescription,
-            tint = iconColor
-        )
+        ShowThumbnail(context, filePath, contentDescription)
+
+        return
     }
+
+    if(mime == MimeType.APK) {
+        val apkIcon = apkIconOrNull(context, filePath, iconSizeInPx)
+        if(apkIcon != null) {
+            Image(
+                apkIcon,
+                contentDescription = contentDescription,
+            )
+
+            return
+        }
+    }
+
+
+    Icon(
+        imageVector = defaultIconWhenLoadFailed ?: mime.iconRes,
+        contentDescription = contentDescription,
+        tint = iconColor
+    )
+}
+
+@Composable
+private fun ShowThumbnail(context:Context, filePath:String, contentDescription: String?) {
+    AsyncImage(
+        model = ImageRequest.Builder(context)
+            .data(filePath)
+            .size(iconSizeInPx)
+            .decoderFactory(SvgDecoder.Factory())
+            .build(),
+        contentDescription = contentDescription,
+        modifier = Modifier.size(iconModifierSize)
+    )
 }

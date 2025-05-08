@@ -7,7 +7,10 @@ import android.content.pm.PackageManager
 import android.os.Build
 import android.widget.Toast
 import androidx.compose.runtime.MutableState
+import androidx.compose.ui.graphics.ImageBitmap
+import androidx.compose.ui.graphics.asImageBitmap
 import androidx.core.content.ContextCompat
+import androidx.core.graphics.drawable.toBitmapOrNull
 import com.catpuppyapp.puppygit.constants.Cons
 import com.catpuppyapp.puppygit.data.entity.ErrorEntity
 import com.catpuppyapp.puppygit.data.entity.RepoEntity
@@ -1137,4 +1140,32 @@ suspend fun doActWithLockIfFree(mutex: Mutex, whoCalled:String, act: suspend ()-
         MyLog.d(TAG, "$logPrefix: task completed")
     }
 
+}
+
+fun apkIconOrNull(context:Context, apkPath:String, iconSizeInPx:Int): ImageBitmap? {
+    return try {
+        val pm = context.packageManager
+
+        //未考证：第2个参数是个flag值，可获取附加信息，如不需要可设为0
+//        val appInfo = pm.getPackageArchiveInfo(apkPath, PackageManager.GET_ACTIVITIES)!!
+        val appInfo = pm.getPackageArchiveInfo(apkPath, 0)!!
+
+        // https://stackoverflow.com/a/14313280
+        appInfo.applicationInfo!!.let {
+            // 这两行是关键
+            it.sourceDir = apkPath
+            it.publicSourceDir = apkPath
+
+            // appName
+//            val appName = it.loadLabel(pm).toString()
+
+            // appIcon
+            it.loadIcon(pm).toBitmapOrNull(width = iconSizeInPx, height = iconSizeInPx)!!.asImageBitmap()
+        }
+
+    }catch (e: Exception) {
+        MyLog.d(TAG, "#apkIconOrNull err: ${e.stackTraceToString()}")
+
+        null
+    }
 }
