@@ -136,7 +136,7 @@ fun ChangeListItem(
                 )
             }
 
-            Spacer(modifier = Modifier.padding(5.dp))
+            ListItemSpacer()
 
             Column {
                 val changeTypeColor = UIHelper.getChangeTypeColor(item.changeType ?: "")

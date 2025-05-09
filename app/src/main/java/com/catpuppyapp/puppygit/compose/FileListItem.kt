@@ -119,7 +119,7 @@ fun FileListItem(
                 )
             }
 
-            Spacer(modifier = Modifier.padding(5.dp))
+            ListItemSpacer()
 
             Column {
                 Row {

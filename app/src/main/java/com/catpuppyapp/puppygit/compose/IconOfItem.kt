@@ -10,6 +10,8 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.graphics.vector.rememberVectorPainter
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.unit.dp
 import coil.compose.AsyncImage
 import coil.decode.SvgDecoder
@@ -21,8 +23,10 @@ import com.catpuppyapp.puppygit.utils.mime.iconRes
 import java.io.File
 
 private const val iconSizeInPx = 100
-private val iconModifierSize = 30.dp
+private val iconModifierSize = 50.dp
+private val thumbnailModifierSize = 50.dp
 private val defaultIconModifier = Modifier.size(iconModifierSize)
+private val defaultThumbnailModifier = Modifier.size(thumbnailModifierSize)
 
 
 @Composable
@@ -37,7 +41,8 @@ fun IconOfItem(
 
     //若为null，将根据mime类型获取对应图标
     defaultIconWhenLoadFailed: ImageVector? = null,
-    modifier: Modifier = defaultIconModifier,
+    iconModifier: Modifier = defaultIconModifier,
+    thumbnailModifier: Modifier = defaultThumbnailModifier,
 
 ) {
     val file = remember(filePath) { File(filePath) }
@@ -48,7 +53,7 @@ fun IconOfItem(
 
     //图片类型
     if(mime.type == "image" && file.let{ it.exists() && it.isFile }) {
-        ShowThumbnail(context, filePath, contentDescription, mime.iconRes, iconColor, modifier)
+        ShowThumbnail(context, filePath, contentDescription, mime.iconRes, iconColor, thumbnailModifier)
 
         return
     }
@@ -59,7 +64,7 @@ fun IconOfItem(
             Image(
                 apkIcon,
                 contentDescription = contentDescription,
-                modifier = modifier,
+                modifier = thumbnailModifier,
             )
 
             return
@@ -68,7 +73,7 @@ fun IconOfItem(
 
 
 
-    ShowIcon(defaultIconWhenLoadFailed ?: mime.iconRes, contentDescription, iconColor, modifier)
+    ShowIcon(defaultIconWhenLoadFailed ?: mime.iconRes, contentDescription, iconColor, iconModifier)
 
 }
 
@@ -93,6 +98,8 @@ private fun ShowThumbnail(
                 .decoderFactory(SvgDecoder.Factory())
                 .build(),
             contentDescription = contentDescription,
+            contentScale = ContentScale.Crop,  //超过容器宽高则居中裁剪
+            placeholder = rememberVectorPainter(fallbackIcon),  // show while loading
             modifier = modifier,  //.clip(RectangleShape)，想弄成正方形，但没卵用，算了
             onError = {
                 loadErr.value = true
