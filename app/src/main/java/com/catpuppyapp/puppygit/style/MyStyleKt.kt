@@ -141,7 +141,9 @@ object MyStyleKt{
         val outsideContentPadding = height+20.dp
 
         // fab自带点padding，所以不光不需要加，还需要减点，但不能减到负数，不然用作padding值时会报错
-        val fabBottomPadding = height-10.dp
+//        val fabBottomPadding = height-10.dp
+        //后来发现还是不要减高度比较好，不然和底栏距离太近，难受
+        val fabBottomPadding = height
     }
 
 
