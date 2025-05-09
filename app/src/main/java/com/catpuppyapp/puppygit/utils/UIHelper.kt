@@ -475,13 +475,14 @@ object UIHelper {
     fun getHunkColor(inDarkTheme: Boolean = Theme.inDarkTheme) = if(inDarkTheme) Color(0x368BB3DC) else Color(0x8098ABD5);
 
 
+    // 需要加点偏移量不然会太高
     @Composable
-    fun getSoftkeyboardHeightInDp(density: Density = LocalDensity.current): Dp {
+    fun getSoftkeyboardHeightInDp(density: Density = LocalDensity.current, offset: Int = -100): Dp {
         // 获取键盘高度，单位px
         val keyboardHeight = WindowInsets.ime.getBottom(density)
 
         // 将键盘高度转换为 dp
-        return with(density) { keyboardHeight.toDp() }
-
+        return with(density) { (keyboardHeight+offset).coerceAtLeast(0).toDp() }
     }
+
 }

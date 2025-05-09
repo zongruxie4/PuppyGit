@@ -19,6 +19,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.catpuppyapp.puppygit.dto.DeviceWidthHeight
 import com.catpuppyapp.puppygit.ui.theme.Theme
+import com.catpuppyapp.puppygit.utils.UIHelper
 
 object MyStyleKt{
     val defaultHorizontalPadding = 10.dp
@@ -145,9 +146,22 @@ object MyStyleKt{
 
 
     object Fab {
+
+        @Composable
         fun getFabModifierForEditor(isMultipleSelectionMode:Boolean, isPortrait:Boolean):Modifier {
+            val kbHeight = UIHelper.getSoftkeyboardHeightInDp()
+
             //多选模式不会显示键盘，就算显示也无法编辑文本内容，所以不需要ime padding
-            return addNavPaddingIfNeed(isPortrait, if(isMultipleSelectionMode) Modifier.padding(bottom = BottomBar.height) else Modifier.imePadding())
+            return addNavPaddingIfNeed(
+                isPortrait,
+
+                //如果显示软键盘，则使用软键盘高度，否则，如果是多选模式，加BottomBar padding，否则不额外加padding
+                if(kbHeight.value > 0) {  //显示软键盘
+                    Modifier.padding(bottom = kbHeight)
+                }else {  //不显示软键盘
+                    if(isMultipleSelectionMode) Modifier.padding(bottom = BottomBar.height) else Modifier
+                }
+            )
         }
 
         // go to top/bottom fab使用的这个modifier
