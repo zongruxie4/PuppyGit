@@ -5,11 +5,14 @@ import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.text.selection.TextSelectionColors
+import androidx.compose.material3.IconButtonDefaults
+import androidx.compose.material3.IconToggleButtonColors
 import androidx.compose.material3.LocalTextStyle
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
@@ -250,6 +253,21 @@ object MyStyleKt{
          @Composable
          fun selectedItemColor() = MaterialTheme.colorScheme.primary;
 //         val selectedItemColor = TextColor.highlighting_green
+    }
+
+    object ToggleButton {
+
+        fun defaultShape() = RectangleShape;
+
+        @Composable
+        fun defaultColors(): IconToggleButtonColors {
+            //容器颜色都改成透明
+            return IconButtonDefaults.filledTonalIconToggleButtonColors().copy(
+                containerColor = Color.Transparent,
+                checkedContainerColor = Color.Transparent,
+                disabledContainerColor = Color.Transparent
+            )
+        }
     }
 
 }
