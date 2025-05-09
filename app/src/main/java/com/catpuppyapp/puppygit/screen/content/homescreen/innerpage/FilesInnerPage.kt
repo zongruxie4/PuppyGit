@@ -131,6 +131,7 @@ import com.catpuppyapp.puppygit.utils.MyLog
 import com.catpuppyapp.puppygit.utils.RegexUtil
 import com.catpuppyapp.puppygit.utils.UIHelper
 import com.catpuppyapp.puppygit.utils.cache.Cache
+import com.catpuppyapp.puppygit.utils.cache.ThumbCache
 import com.catpuppyapp.puppygit.utils.changeStateTriggerRefreshPage
 import com.catpuppyapp.puppygit.utils.checkFileOrFolderNameAndTryCreateFile
 import com.catpuppyapp.puppygit.utils.createAndInsertError
@@ -3235,6 +3236,10 @@ private suspend fun doInit(
 //    currentPathBreadCrumbList1: SnapshotStateList<FileItemDto>,
 //    currentPathBreadCrumbList2: SnapshotStateList<FileItemDto>
 ){
+
+    //清空缩略图缓存
+    ThumbCache.clear()
+
 
     //无选中条目则退出选择模式
     if(isFileChooser.not() && selectedItems.isEmpty()) {

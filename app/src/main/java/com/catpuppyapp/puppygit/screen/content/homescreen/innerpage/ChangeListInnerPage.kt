@@ -120,6 +120,7 @@ import com.catpuppyapp.puppygit.utils.MyLog
 import com.catpuppyapp.puppygit.utils.StateRequestType
 import com.catpuppyapp.puppygit.utils.UIHelper
 import com.catpuppyapp.puppygit.utils.cache.Cache
+import com.catpuppyapp.puppygit.utils.cache.ThumbCache
 import com.catpuppyapp.puppygit.utils.createAndInsertError
 import com.catpuppyapp.puppygit.utils.dbIntToBool
 import com.catpuppyapp.puppygit.utils.doJobThenOffLoading
@@ -3546,6 +3547,10 @@ private suspend fun changeListInit(
 //    scope:CoroutineScope
 ){
     val funName = "changeListInit"
+
+    //清缩略图缓存
+    ThumbCache.clear()
+
 
     val tmpCommit1 = commit1OidStr
     val commit1OidStr = if(swap) commit2OidStr else commit1OidStr

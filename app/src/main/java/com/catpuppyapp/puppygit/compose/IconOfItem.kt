@@ -19,6 +19,7 @@ import coil.compose.AsyncImage
 import coil.decode.SvgDecoder
 import coil.request.ImageRequest
 import com.catpuppyapp.puppygit.utils.apkIconOrNull
+import com.catpuppyapp.puppygit.utils.cache.ThumbCache
 import com.catpuppyapp.puppygit.utils.doJobThenOffLoading
 import com.catpuppyapp.puppygit.utils.getVideoThumbnail
 import com.catpuppyapp.puppygit.utils.mime.MimeType
@@ -68,6 +69,7 @@ fun IconOfItem(
     //视频类型
     if(mime.type == "video" && file.let{ it.exists() && it.isFile }) {
         ShowThumbnailOrFallback(
+            filePath,
             contentDescription,
             mime.iconRes,
             iconColor,
@@ -80,6 +82,7 @@ fun IconOfItem(
 
     if(mime == MimeType.APK) {
         ShowThumbnailOrFallback(
+            filePath,
             contentDescription,
             mime.iconRes,
             iconColor,
@@ -136,13 +139,14 @@ private fun ShowThumbnailForImage(
 
 @Composable
 private fun ShowThumbnailOrFallback(
+    filePath: String,
     contentDescription: String?,
     fallbackIcon: ImageVector,
     fallbackIconColor: Color,
     modifier: Modifier,
     loadThumbnail: suspend ()-> ImageBitmap?,
 ) {
-    val thumbnail = remember { mutableStateOf<ImageBitmap?>(null) }
+    val thumbnail = remember { mutableStateOf<ImageBitmap?>(ThumbCache.getThumb(filePath)) }
 
     thumbnail.value.let {
         if(it == null) {
@@ -158,8 +162,18 @@ private fun ShowThumbnailOrFallback(
     }
 
     DisposableEffect (Unit) {
-        val job = doJobThenOffLoading {
-            thumbnail.value = loadThumbnail()
+        val job = if(thumbnail.value == null) {
+            doJobThenOffLoading {
+                thumbnail.value = loadThumbnail().let {
+                    if(it != null) {
+                        ThumbCache.cacheIt(filePath, it)
+                    }
+
+                    it
+                }
+            }
+        }else {
+            null
         }
 
         onDispose {
