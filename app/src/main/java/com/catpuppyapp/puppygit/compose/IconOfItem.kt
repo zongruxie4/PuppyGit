@@ -31,8 +31,8 @@ import java.io.File
 private const val iconSizeInPx = 100
 private val iconModifierSize = 50.dp
 private val thumbnailModifierSize = 50.dp
-private val defaultIconModifier = Modifier.size(iconModifierSize).clip(RectangleShape)
-private val defaultThumbnailModifier = Modifier.size(thumbnailModifierSize).clip(RectangleShape)
+private val defaultIconModifier = Modifier.size(iconModifierSize)
+private val defaultThumbnailModifier = Modifier.size(thumbnailModifierSize)
 private val contentScale = ContentScale.Crop
 
 
