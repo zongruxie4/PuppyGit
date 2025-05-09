@@ -1143,13 +1143,15 @@ suspend fun doActWithLockIfFree(mutex: Mutex, whoCalled:String, act: suspend ()-
 
 }
 
-fun apkIconOrNull(context:Context, apkPath:String, iconSizeInPx:Int): ImageBitmap? {
+suspend fun apkIconOrNull(context:Context, apkPath:String, iconSizeInPx:Int): ImageBitmap? {
     return try {
         val pm = context.packageManager
 
         //未考证：第2个参数是个flag值，可获取附加信息，如不需要可设为0
 //        val appInfo = pm.getPackageArchiveInfo(apkPath, PackageManager.GET_ACTIVITIES)!!
         val appInfo = pm.getPackageArchiveInfo(apkPath, 0)!!
+
+        delay(1)
 
         // https://stackoverflow.com/a/14313280
         appInfo.applicationInfo!!.let {
@@ -1161,27 +1163,40 @@ fun apkIconOrNull(context:Context, apkPath:String, iconSizeInPx:Int): ImageBitma
 //            val appName = it.loadLabel(pm).toString()
 
             // appIcon
-            it.loadIcon(pm).toBitmapOrNull(width = iconSizeInPx, height = iconSizeInPx)!!.asImageBitmap()
+            val icon = it.loadIcon(pm).toBitmapOrNull(width = iconSizeInPx, height = iconSizeInPx)!!.asImageBitmap()
+
+            delay(1)
+
+            icon
         }
 
     }catch (e: Exception) {
-        MyLog.d(TAG, "#apkIconOrNull() err: ${e.stackTraceToString()}")
-
+//        MyLog.d(TAG, "#apkIconOrNull() err: ${e.stackTraceToString()}")
+        //这种日志没什么好记的，就算获取失败，我也没什么好改的，简单打印下错误信息就行
+        e.printStackTrace()
         null
     }
 }
 
-fun getVideoThumbnail(videoPath: String): ImageBitmap? {
+suspend fun getVideoThumbnail(videoPath: String): ImageBitmap? {
     return try {
         val retriever = MediaMetadataRetriever()
+
+        delay(1)
+
         try {
             // 设置数据源
             retriever.setDataSource(videoPath)
             // 获取缩略图，参数为时间戳（单位为微秒），可以设置为0获取视频的第一帧
             // 假设常见的每秒24帧，获取第1200帧，就是50000000微秒
-            retriever.getFrameAtTime(50000000, MediaMetadataRetriever.OPTION_CLOSEST_SYNC)!!.asImageBitmap()
+            val frame = retriever.getFrameAtTime(50000000, MediaMetadataRetriever.OPTION_CLOSEST_SYNC)!!.asImageBitmap()
+
+            delay(1)
+
+            frame
         } catch (e: Exception) {
-            MyLog.d(TAG, "#getVideoThumbnail() err: ${e.stackTraceToString()}")
+//            MyLog.d(TAG, "#getVideoThumbnail() err: ${e.stackTraceToString()}")
+            e.printStackTrace()
             null
         } finally {
             retriever.release()

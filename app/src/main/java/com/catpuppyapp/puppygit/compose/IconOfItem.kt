@@ -5,14 +5,12 @@ import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.size
 import androidx.compose.material3.LocalContentColor
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.ImageBitmap
-import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.graphics.vector.rememberVectorPainter
 import androidx.compose.ui.layout.ContentScale
@@ -62,29 +60,34 @@ fun IconOfItem(
 
     //图片类型
     if(mime.type == "image" && file.let{ it.exists() && it.isFile }) {
-        ShowThumbnail(context, filePath, contentDescription, mime.iconRes, iconColor, thumbnailModifier)
+        ShowThumbnailForImage(context, filePath, contentDescription, mime.iconRes, iconColor, thumbnailModifier)
 
         return
     }
 
     //视频类型
     if(mime.type == "video" && file.let{ it.exists() && it.isFile }) {
-        ShowVideoThumbnail(context, filePath, contentDescription, mime.iconRes, iconColor, thumbnailModifier)
+        ShowThumbnailOrFallback(
+            contentDescription,
+            mime.iconRes,
+            iconColor,
+            thumbnailModifier,
+            loadThumbnail = { getVideoThumbnail(filePath) }
+        )
 
         return
     }
 
     if(mime == MimeType.APK) {
-        val apkIcon = apkIconOrNull(context, filePath, iconSizeInPx)
-        if(apkIcon != null) {
-            Image(
-                apkIcon,
-                contentDescription = contentDescription,
-                modifier = thumbnailModifier,
-            )
+        ShowThumbnailOrFallback(
+            contentDescription,
+            mime.iconRes,
+            iconColor,
+            thumbnailModifier,
+            loadThumbnail = { apkIconOrNull(context, filePath, iconSizeInPx) }
+        )
 
-            return
-        }
+        return
     }
 
 
@@ -94,7 +97,7 @@ fun IconOfItem(
 }
 
 @Composable
-private fun ShowThumbnail(
+private fun ShowThumbnailForImage(
     context:Context,
     filePath:String,
     contentDescription: String?,
@@ -132,13 +135,12 @@ private fun ShowThumbnail(
 
 
 @Composable
-private fun ShowVideoThumbnail(
-    context:Context,
-    filePath:String,
+private fun ShowThumbnailOrFallback(
     contentDescription: String?,
     fallbackIcon: ImageVector,
     fallbackIconColor: Color,
-    modifier: Modifier
+    modifier: Modifier,
+    loadThumbnail: suspend ()-> ImageBitmap?,
 ) {
     val thumbnail = remember { mutableStateOf<ImageBitmap?>(null) }
 
@@ -155,9 +157,13 @@ private fun ShowVideoThumbnail(
         }
     }
 
-    LaunchedEffect(Unit) {
-        doJobThenOffLoading {
-            thumbnail.value = getVideoThumbnail(filePath)
+    DisposableEffect (Unit) {
+        val job = doJobThenOffLoading {
+            thumbnail.value = loadThumbnail()
+        }
+
+        onDispose {
+            runCatching { job?.cancel() }
         }
     }
 }
