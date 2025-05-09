@@ -58,6 +58,8 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.focus.FocusRequester
+import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.platform.LocalClipboardManager
@@ -408,13 +410,15 @@ fun FilesInnerPage(
     }
 
     val showGoToPathDialog = rememberSaveable { mutableStateOf(false)}
-    val pathToGo = rememberSaveable { mutableStateOf("")}
+    val pathToGo = mutableCustomStateOf(stateKeyTag, "pathToGo") { TextFieldValue("") }
     if(showGoToPathDialog.value) {
+        val focusRequester = remember { FocusRequester() }
+
         val goToDialogOnOk = {
             showGoToPathDialog.value = false
 
             //取出用户输入的path 和 当前路径（用来跳转相对路径）
-            val pathToGoRaw = pathToGo.value
+            val pathToGoRaw = pathToGo.value.text
             val currentPath = currentPath.value
 
             doJobThenOffLoading {
@@ -434,7 +438,7 @@ fun FilesInnerPage(
                     if(f.canRead()) {
                         goToPath(f.canonicalPath)
                     }else {
-                        Msg.requireShow(activityContext.getString(R.string.cant_read_path))
+                        Msg.requireShowLongDuration(activityContext.getString(R.string.cant_read_path))
                     }
                 }
 
@@ -448,7 +452,7 @@ fun FilesInnerPage(
             textCompose = {
                 ScrollableColumn {
                     TextField(
-                        modifier = Modifier.fillMaxWidth(),
+                        modifier = Modifier.fillMaxWidth().focusRequester(focusRequester),
                         value = pathToGo.value,
 //                        singleLine = true,
                         onValueChange = {
@@ -467,7 +471,7 @@ fun FilesInnerPage(
                     )
                 }
             },
-            okBtnEnabled = pathToGo.value.isNotBlank(),
+            okBtnEnabled = pathToGo.value.text.isNotBlank(),
             okBtnText = stringResource(id = R.string.go),
             cancelBtnText = stringResource(id = R.string.cancel),
             title = stringResource(R.string.go_to),
@@ -475,6 +479,8 @@ fun FilesInnerPage(
         ) {
             goToDialogOnOk()
         }
+
+        LaunchedEffect(Unit) { runCatching { focusRequester.requestFocus() } }
     }
 
 
@@ -933,6 +939,8 @@ fun FilesInnerPage(
 
 
     if(showRenameDialog.value) {
+        val focusRequester = remember { FocusRequester() }
+
         ConfirmDialog(
             okBtnEnabled = !renameHasErr.value,
             cancelBtnText = stringResource(id = R.string.cancel),
@@ -945,6 +953,7 @@ fun FilesInnerPage(
                           modifier = Modifier
                               .fillMaxWidth()
                               .padding(10.dp)
+                              .focusRequester(focusRequester)
                           ,
                           value = renameFileName.value,
                           singleLine = true,
@@ -1040,9 +1049,11 @@ fun FilesInnerPage(
             }catch (outE:Exception) {
                 renameHasErr.value = true
                 renameErrText.value = outE.localizedMessage ?: errorStrRes
-                MyLog.e(TAG, "RenameDialog in Files Page err:"+outE.stackTraceToString())
+                MyLog.e(TAG, "#RenameDialog err: "+outE.stackTraceToString())
             }
         }
+
+        LaunchedEffect(Unit) { runCatching { focusRequester.requestFocus() } }
     }
 
 
@@ -3100,7 +3111,10 @@ fun FilesInnerPage(
 
     if(filesPageRequestFromParent.value==PageRequest.goToPath) {
         PageRequest.clearStateThenDoAct(filesPageRequestFromParent) {
-//            显示弹窗，输入路径，跳转
+            //全选文本
+            pathToGo.value = pathToGo.value.let { it.copy(selection = TextRange(0, it.text.length)) }
+
+            // 显示弹窗，输入路径，跳转
             showGoToPathDialog.value = true
         }
     }
