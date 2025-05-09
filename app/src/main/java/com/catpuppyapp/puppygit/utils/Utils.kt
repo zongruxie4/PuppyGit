@@ -4,6 +4,7 @@ import android.content.ClipData
 import android.content.ClipboardManager
 import android.content.Context
 import android.content.pm.PackageManager
+import android.media.MediaMetadataRetriever
 import android.os.Build
 import android.widget.Toast
 import androidx.compose.runtime.MutableState
@@ -1164,8 +1165,29 @@ fun apkIconOrNull(context:Context, apkPath:String, iconSizeInPx:Int): ImageBitma
         }
 
     }catch (e: Exception) {
-        MyLog.d(TAG, "#apkIconOrNull err: ${e.stackTraceToString()}")
+        MyLog.d(TAG, "#apkIconOrNull() err: ${e.stackTraceToString()}")
 
+        null
+    }
+}
+
+fun getVideoThumbnail(videoPath: String): ImageBitmap? {
+    return try {
+        val retriever = MediaMetadataRetriever()
+        try {
+            // 设置数据源
+            retriever.setDataSource(videoPath)
+            // 获取缩略图，参数为时间戳（单位为微秒），可以设置为0获取视频的第一帧
+            // 假设常见的每秒24帧，获取第1200帧，就是50000000微秒
+            retriever.getFrameAtTime(50000000, MediaMetadataRetriever.OPTION_CLOSEST_SYNC)!!.asImageBitmap()
+        } catch (e: Exception) {
+            MyLog.d(TAG, "#getVideoThumbnail() err: ${e.stackTraceToString()}")
+            null
+        } finally {
+            retriever.release()
+        }
+    }catch (e: Exception) {
+        e.printStackTrace()
         null
     }
 }
