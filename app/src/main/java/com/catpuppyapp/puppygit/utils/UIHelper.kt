@@ -2,7 +2,6 @@ package com.catpuppyapp.puppygit.utils
 
 import android.content.Context
 import android.content.res.Configuration
-import android.util.DisplayMetrics
 import androidx.compose.foundation.ScrollState
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.ime
@@ -475,4 +474,14 @@ object UIHelper {
 
     fun getHunkColor(inDarkTheme: Boolean = Theme.inDarkTheme) = if(inDarkTheme) Color(0x368BB3DC) else Color(0x8098ABD5);
 
+
+    @Composable
+    fun getSoftkeyboardHeightInDp(density: Density = LocalDensity.current): Dp {
+        // 获取键盘高度，单位px
+        val keyboardHeight = WindowInsets.ime.getBottom(density)
+
+        // 将键盘高度转换为 dp
+        return with(density) { keyboardHeight.toDp() }
+
+    }
 }
