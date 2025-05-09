@@ -1,6 +1,14 @@
 
 
 ---
+1.1.1.1v87 - 20250509:
+- Files now display thumbnail for video
+
+
+
+- 文件管理器现在可以为视频显示缩略图了
+
+---
 1.1.1.0v86 - 20250508:
 - minor bugs fixed
 
