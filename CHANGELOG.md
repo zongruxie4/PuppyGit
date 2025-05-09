@@ -1,6 +1,15 @@
 
 
 ---
+1.1.1.2v88 - 20250510:
+- popup keyboard when rename file and go to path at Files
+
+
+
+- 在文件管理器重命名文件和跳转路径时弹出键盘
+
+
+---
 1.1.1.1v87 - 20250509:
 - Files now display thumbnail for video
 
