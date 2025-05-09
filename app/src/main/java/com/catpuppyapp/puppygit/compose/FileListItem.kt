@@ -101,9 +101,7 @@ fun FileListItem(
 //                                        }
 //                                    }
 
-            FilledTonalIconToggleButton(
-                shape = MyStyleKt.ToggleButton.defaultShape(),
-                colors = MyStyleKt.ToggleButton.defaultColors(),
+            ListItemToggleButton(
 
 //                enabled = fromTo!=Cons.gitDiffFromTreeToTree,  //diff提交时，禁用点击图标启动长按模式，按钮会变灰色，太难看了，弃用
                 checked = isItemInSelected(item),

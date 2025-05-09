@@ -105,9 +105,7 @@ fun ChangeListItem(
 //                                        }
 //                                    }
 
-            FilledTonalIconToggleButton(
-                shape = MyStyleKt.ToggleButton.defaultShape(),
-                colors = MyStyleKt.ToggleButton.defaultColors(),
+            ListItemToggleButton(
 
 //                enabled = fromTo!=Cons.gitDiffFromTreeToTree,  //diff提交时，禁用点击图标启动长按模式，按钮会变灰色，太难看了，弃用，改成点击后判断是否需要执行操作了，若不需要直接返回
                 checked = isItemInSelected(item),
@@ -116,9 +114,9 @@ fun ChangeListItem(
 //                    }
 
                     // tree to tree页面且底栏功能未测试通过，直接返回，不显示底栏
-                    if(fromTo == Cons.gitDiffFromTreeToTree && !proFeatureEnabled(treeToTreeBottomBarActAtLeastOneTestPassed())) {
-                        return@cc
-                    }
+//                    if(fromTo == Cons.gitDiffFromTreeToTree && !proFeatureEnabled(treeToTreeBottomBarActAtLeastOneTestPassed())) {
+//                        return@cc
+//                    }
 
                     switchItemSelected(item)
 
