@@ -33,6 +33,7 @@ private val iconModifierSize = 50.dp
 private val thumbnailModifierSize = 50.dp
 private val defaultIconModifier = Modifier.size(iconModifierSize).clip(RectangleShape)
 private val defaultThumbnailModifier = Modifier.size(thumbnailModifierSize).clip(RectangleShape)
+private val contentScale = ContentScale.Crop
 
 
 @Composable
@@ -113,7 +114,7 @@ private fun ShowThumbnail(
                 .decoderFactory(SvgDecoder.Factory())
                 .build(),
             contentDescription = contentDescription,
-            contentScale = ContentScale.Crop,  //超过容器宽高则居中裁剪
+            contentScale = contentScale,  //超过容器宽高则居中裁剪
             placeholder = rememberVectorPainter(fallbackIcon),  // show while loading
             modifier = modifier,  //.clip(RectangleShape)，想弄成正方形，但没卵用，算了
             onError = {
@@ -149,6 +150,7 @@ private fun ShowVideoThumbnail(
                 it,
                 contentDescription = contentDescription,
                 modifier = modifier,
+                contentScale = contentScale,
             )
         }
     }
