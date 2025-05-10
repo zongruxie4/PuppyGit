@@ -177,7 +177,7 @@ fun EditorInnerPage(
 
 ) {
     // inner page严格来说和普通组件地位一样，所以应该用componentKey
-    val stateKeyTag = Cache.getComponentKey(stateKeyTag, "EditorInnerPage")
+    val stateKeyTag = Cache.getComponentKey(stateKeyTag, TAG)
 
     val scope = rememberCoroutineScope()
     val activityContext = LocalContext.current

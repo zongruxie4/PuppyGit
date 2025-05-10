@@ -205,6 +205,7 @@ fun ChangeListInnerPage(
     lastClickedItemKey:MutableState<String>
 
 ) {
+    val stateKeyTag = Cache.getComponentKey(stateKeyTag, TAG)
 
     // for detect page changed, avoid loading repo1, switched repo2, repo2 loaded, then repo1 loaded, page show wrong items of repo1
 //    val pageId = remember {

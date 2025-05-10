@@ -231,6 +231,7 @@ fun FilesInnerPage(
     lastPosition:MutableState<Int>,
     keepFilterResultOnce:MutableState<Boolean>
 ) {
+    val stateKeyTag = Cache.getComponentKey(stateKeyTag, TAG)
 
     val inDarkTheme = Theme.inDarkTheme
 

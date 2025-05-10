@@ -67,6 +67,7 @@ import com.catpuppyapp.puppygit.utils.AppModel
 import com.catpuppyapp.puppygit.utils.ComposeHelper
 import com.catpuppyapp.puppygit.utils.Msg
 import com.catpuppyapp.puppygit.utils.UIHelper
+import com.catpuppyapp.puppygit.utils.cache.Cache
 import com.catpuppyapp.puppygit.utils.changeStateTriggerRefreshPage
 import com.catpuppyapp.puppygit.utils.doJobThenOffLoading
 import com.catpuppyapp.puppygit.utils.parseLongOrDefault
@@ -89,6 +90,7 @@ fun AutomationInnerPage(
     openDrawer:()->Unit,
     exitApp:()->Unit,
 ){
+    val stateKeyTag = Cache.getComponentKey(stateKeyTag, TAG)
 
     val scope = rememberCoroutineScope()
     val activityContext = LocalContext.current

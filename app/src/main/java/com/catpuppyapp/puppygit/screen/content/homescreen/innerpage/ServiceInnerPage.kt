@@ -55,6 +55,7 @@ import com.catpuppyapp.puppygit.utils.Msg
 import com.catpuppyapp.puppygit.utils.MyLog
 import com.catpuppyapp.puppygit.utils.StrListUtil
 import com.catpuppyapp.puppygit.utils.UIHelper
+import com.catpuppyapp.puppygit.utils.cache.Cache
 import com.catpuppyapp.puppygit.utils.changeStateTriggerRefreshPage
 import com.catpuppyapp.puppygit.utils.doJobThenOffLoading
 import com.catpuppyapp.puppygit.utils.genHttpHostPortStr
@@ -75,6 +76,7 @@ fun ServiceInnerPage(
     exitApp:()->Unit,
     listState:ScrollState
 ){
+    val stateKeyTag = Cache.getComponentKey(stateKeyTag, TAG)
 
     // softkeyboard show/hidden relate start
 
