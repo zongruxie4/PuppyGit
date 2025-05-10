@@ -347,6 +347,10 @@ fun EditorInnerPage(
 
                         if(ret.success()) {
                             isEdited.value=false
+
+                            //更新用于判断是否重载的dto，不然每次修改内容再切到后台保存后再回来都会重载
+                            editorPageShowingFileDto.value = FileSimpleDto.genByFile(editorPageShowingFilePath.value.toFuckSafFile(activityContext))
+
                             MyLog.d(TAG, "#doSimpleSafeFastSaveInCoroutine: file saved")
                             if(requireShowMsgToUser){
                                 Msg.requireShow(activityContext.getString(R.string.file_saved))
