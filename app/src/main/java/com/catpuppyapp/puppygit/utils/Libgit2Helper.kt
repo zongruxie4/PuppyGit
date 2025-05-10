@@ -563,6 +563,9 @@ object Libgit2Helper {
 
         //Pair第1个参数代表本函数是否更新了index，第2个代表返回的数据。
     ):Pair<Boolean, Map<String,List<StatusTypeEntrySaver>>> {
+        val debugExeTime_Start = System.currentTimeMillis()
+        MyLog.d(TAG, "new change list load method: start at $debugExeTime_Start")
+
         //按路径名排序
         val index:MutableList<StatusTypeEntrySaver> = ArrayList()
         val workdir:MutableList<StatusTypeEntrySaver> =ArrayList()
@@ -716,6 +719,11 @@ object Libgit2Helper {
         resultMap[Cons.gitStatusKeyWorkdir] = workdir
         resultMap[Cons.gitStatusKeyConflict] = conflict
 
+
+
+        val debugExeTime_End = System.currentTimeMillis()
+        MyLog.d(TAG, "new change list load method: end at $debugExeTime_End, spent: ${debugExeTime_End - debugExeTime_Start}")
+
         return Pair(isIndexChanged, resultMap);
     }
 
@@ -753,6 +761,10 @@ object Libgit2Helper {
 
             )
         }
+
+
+        val debugExeTime_Start = System.currentTimeMillis()
+        MyLog.d(TAG, "legacy change list load method: start at: $debugExeTime_Start")
 
 
         //按路径名排序
@@ -952,6 +964,10 @@ object Libgit2Helper {
         resultMap[Cons.gitStatusKeyIndex] = index
         resultMap[Cons.gitStatusKeyWorkdir] = workdir
         resultMap[Cons.gitStatusKeyConflict] = conflict
+
+
+        val debugExeTime_End = System.currentTimeMillis()
+        MyLog.d(TAG, "legacy change list load method: end at $debugExeTime_End, spent: ${debugExeTime_End - debugExeTime_Start}")
 
         return Pair(isIndexChanged, resultMap);
     }
