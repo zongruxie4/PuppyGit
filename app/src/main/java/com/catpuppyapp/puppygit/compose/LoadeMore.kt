@@ -2,6 +2,7 @@ package com.catpuppyapp.puppygit.compose
 
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
@@ -92,32 +93,41 @@ fun LoadMore(
                 )
 
             ) {
-                Row(
+                Box(
                     modifier = Modifier
-                        .fillMaxWidth(.85f)
+                        .fillMaxWidth()
                         .height(buttonHeight.dp)
                     ,
 
-                    horizontalArrangement = Arrangement.Center,
-                    verticalAlignment = Alignment.CenterVertically
                 ) {
-                    Text(text = text,
-                        color = if(enableLoadMore) MyStyleKt.TextColor.enable else if(inDarkTheme) MyStyleKt.TextColor.disable_DarkTheme else MyStyleKt.TextColor.disable
-                    )
+                    Row (
+                        modifier = Modifier.align(Alignment.Center),
+                        horizontalArrangement = Arrangement.Center,
+                        verticalAlignment = Alignment.CenterVertically,
+                    ) {
+                        Text(text = text,
+                            color = if(enableLoadMore) MyStyleKt.TextColor.enable else if(inDarkTheme) MyStyleKt.TextColor.disable_DarkTheme else MyStyleKt.TextColor.disable
+                        )
+                    }
+
+
+                    Row(
+                        modifier = Modifier.align(Alignment.CenterEnd).padding(end = 10.dp),
+                    ) {
+                        LongPressAbleIconBtn(
+                            tooltipText = stringResource(R.string.set_page_size),
+                            icon =  Icons.Filled.Settings,
+                            iconContentDesc = stringResource(R.string.set_page_size),
+                        ) {
+                            initSetPageSizeDialog()
+                        }
+                    }
                 }
 
             }
 
 
-            LongPressAbleIconBtn(
-                tooltipText = stringResource(R.string.set_page_size),
-                icon =  Icons.Filled.Settings,
-                iconContentDesc = stringResource(R.string.set_page_size),
-//                iconModifier = Modifier.fillMaxWidth(.2f),
-//                enabled = currentPage.intValue>1,
-            ) {
-                initSetPageSizeDialog()
-            }
+
 
         }
 
