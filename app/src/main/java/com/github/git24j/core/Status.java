@@ -31,6 +31,9 @@ public class Status {
     /** size_t git_status_list_entrycount(git_status_list *statuslist); */
     static native int jniListEntrycount(long statuslist);
 
+    @Nullable
+    static native long[] jniGetStatusEntryRawPointers(long statuslist);
+
     /** void git_status_list_free(git_status_list *statuslist); */
     static native void jniListFree(long statuslist);
 
@@ -411,10 +414,20 @@ public class Status {
             }
             return new Entry(ptr);
         }
+
+        /**
+         *
+         * @return a Entry ptr list, use `new Entry(ptr)` to create its instance
+        */
+        public long[] entryRawPointers() {
+            long[] ptrs = jniGetStatusEntryRawPointers(getRawPointer());
+
+            return (ptrs == null) ? new long[0] : ptrs;
+        }
     }
 
     public static class Entry extends CAutoReleasable {
-        protected Entry(long rawPtr) {
+        public Entry(long rawPtr) {
             super(true, rawPtr);
         }
 

@@ -54,6 +54,26 @@ JNIEXPORT jint JNICALL J_MAKE_METHOD(Status_jniListEntrycount)(JNIEnv *env, jcla
     return r;
 }
 
+JNIEXPORT jlongArray JNICALL J_MAKE_METHOD(Status_jniGetStatusEntryRawPointers)(JNIEnv *env, jclass obj, jlong statuslistPtr) {
+    git_status_list* listPtr = (git_status_list *)statuslistPtr;
+    size_t length = git_status_list_entrycount(listPtr);
+
+    // create jlongArray
+    jlongArray resultArray = (*env)->NewLongArray(env, length);
+    if (resultArray == NULL) {
+        return NULL; // mem assign failed
+    }
+
+    jsize jlongSize = sizeof(jlong);
+
+    for(int i=0; i < length; i++) {
+        (*env)->SetLongArrayRegion(env, resultArray, i, jlongSize, git_status_byindex(listPtr, i));
+    }
+
+    // 返回数组
+    return resultArray;
+}
+
 /** const git_status_entry * git_status_byindex(git_status_list *statuslist, size_t idx); */
 JNIEXPORT jlong JNICALL J_MAKE_METHOD(Status_jniByindex)(JNIEnv *env, jclass obj, jlong statuslistPtr, jint idx)
 {

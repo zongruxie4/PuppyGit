@@ -471,18 +471,20 @@ object Libgit2Helper {
         return getRepoStatusList(repo,Status.ShowT.INDEX_AND_WORKDIR,flags)
     }
 
-    @Deprecated("改用 repo.index().hasConflicts() 了")
-    private fun hasConflictItemInStatusList(statusList:StatusList):Boolean {
-        val entryCnt: Int = statusList.entryCount()
-        //until， 左闭右开，左包含，右不包含
-        for (i in 0 until entryCnt)  {
-            val entry = statusList.byIndex(i)
-            if(entry.status.contains(Status.StatusT.CONFLICTED)){
-                return true
-            }
-        }
-        return false;
-    }
+
+//    @Deprecated("改用 repo.index().hasConflicts() 了")
+//    private fun hasConflictItemInStatusList(statusList:StatusList):Boolean {
+//        val entryCnt: Int = statusList.entryCount()
+//        //until， 左闭右开，左包含，右不包含
+//        for (i in 0 until entryCnt)  {
+//            val entry = statusList.byIndex(i)
+//            if(entry.status.contains(Status.StatusT.CONFLICTED)){
+//                return true
+//            }
+//        }
+//        return false;
+//    }
+
 
     fun hasConflictItemInRepo(repo:Repository):Boolean {
         /*
@@ -568,9 +570,10 @@ object Libgit2Helper {
         val submodulePathList = getSubmodulePathList(repo)  // submodule name == it's path, so this list is path list too
         val repoWorkDirPath = getRepoWorkdirNoEndsWithSlash(repo)
 
+        val allEntryPtrs = statusList.entryRawPointers()
         //until， 左闭右开，左包含，右不包含
-        for (i in 0 until entryCnt)  {
-            val entry = statusList.byIndex(i)
+        for (i in allEntryPtrs)  {
+            val entry = Status.Entry(i)
 
             var delta = entry.indexToWorkdir  //changelist page
             if(fromTo == Cons.gitDiffFromHeadToIndex){  //indexpage
