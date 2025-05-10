@@ -54,6 +54,11 @@ class FileSimpleDto {
     }
 
     fun fileMayNotChanged(context:Context):Boolean {
+        //无效路径当作修改过，返回false
+        if(fullPath.isBlank()) {
+            return false
+        }
+
         val newDto = FileSimpleDto.genByFile(FuckSafFile(context, FilePath(fullPath)))
         return newDto.lastModifiedTime == lastModifiedTime && newDto.sizeInBytes == sizeInBytes
     }

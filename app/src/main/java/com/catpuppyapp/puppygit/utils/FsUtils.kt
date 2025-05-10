@@ -865,6 +865,7 @@ object FsUtils {
                     //文件存在，检查是否修改过，如果修改过，创建快照，如果创建快照失败，为当前显示的内容创建快照
                     val newDto = FileSimpleDto.genByFile(targetFile)
                     //这里没必要确保dto和newDto的路径一样，创建快照的条件要宽松一些，哪怕多创建几个也比少创建几个强。（这里后面的fullPath判断其实有点多余，这里代表当前正在显示的文件读取时的初始dto，路径应和newDto的始终一致，这个dto用来判断是否重载，作为判断是否已经创建快照的dto，要不然创建完快照一更新它，再进editor的初始化代码块时，会错误认为当前显示的文件已经是最新，而不重新加载文件）
+                    //判断文件是否被外部修改过，如果修改过，则进一步判断当前已创建的快照是否和修改过的文件匹配，若不匹配则创建快照
                     if(newDto.sizeInBytes!=editorPageFileDto.value.sizeInBytes || newDto.lastModifiedTime!=editorPageFileDto.value.lastModifiedTime || newDto.fullPath!=editorPageFileDto.value.fullPath) {
                         //判断已创建快照的文件信息是否和目前硬盘上的文件信息一致，注意最后一个条件判断fullPath不相同也创建快照，在这判断的话就无需在外部更新dto信息了，直接路径不一样，创建快照，更新文件信息（包含路径）就行了，而且当路径不匹配时newDto所代表的文件是save to 的对象，其内容将被覆盖，理应创建快照
                         if(snapshotedFileInfo.value.sizeInBytes != newDto.sizeInBytes || snapshotedFileInfo.value.lastModifiedTime!=newDto.lastModifiedTime || snapshotedFileInfo.value.fullPath!=newDto.fullPath) {
