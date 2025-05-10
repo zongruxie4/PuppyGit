@@ -588,8 +588,33 @@ JNIEXPORT jobjectArray JNICALL J_MAKE_METHOD(LibgitTwo_jniGetStatusEntries)(JNIE
     //填充数组
     for(int i=0; i < length; i++) {
         git_status_entry* entry = git_status_byindex(listPtr, i);
+
+        // 如果光查 index to worktree，那head to index就是NULL，反之亦然
         git_diff_delta * head2IndexDelta = entry->head_to_index;
         git_diff_delta * index2WorkDirDelta = entry->index_to_workdir;
+
+        jstring index2WorkDirDeltaOldFilePath = NULL;
+        jstring index2WorkDirDeltaNewFilePath = NULL;
+        jlong index2WorkDirDeltaOldFileSize = 0;
+        jlong index2WorkDirDeltaNewFileSize = 0;
+        if(index2WorkDirDelta != NULL) {
+            index2WorkDirDeltaOldFilePath = (*env)->NewStringUTF(env, index2WorkDirDelta->old_file.path);
+            index2WorkDirDeltaNewFilePath = (*env)->NewStringUTF(env, index2WorkDirDelta->new_file.path);
+            index2WorkDirDeltaOldFileSize = index2WorkDirDelta->old_file.size;
+            index2WorkDirDeltaNewFileSize = index2WorkDirDelta->new_file.size;
+        }
+
+        jstring head2IndexDeltaOldFilePath = NULL;
+        jstring head2IndexDeltaNewFilePath = NULL;
+        jlong head2IndexDeltaOldFileSize = 0;
+        jlong head2IndexDeltaNewFileSize = 0;
+        if(head2IndexDelta != NULL) {
+            head2IndexDeltaOldFilePath = (*env)->NewStringUTF(env, head2IndexDelta->old_file.path);
+            head2IndexDeltaNewFilePath = (*env)->NewStringUTF(env, head2IndexDelta->new_file.path);
+            head2IndexDeltaOldFileSize = head2IndexDelta->old_file.size;
+            head2IndexDeltaNewFileSize = head2IndexDelta->new_file.size;
+        }
+
 
         (*env)->SetObjectArrayElement(
                 env,
@@ -611,15 +636,15 @@ JNIEXPORT jobjectArray JNICALL J_MAKE_METHOD(LibgitTwo_jniGetStatusEntries)(JNIE
 
                     entryStatusFlagField,
 
-                    (*env)->NewStringUTF(env, index2WorkDirDelta->old_file.path),
-                    (*env)->NewStringUTF(env, index2WorkDirDelta->new_file.path),
-                    (*env)->NewStringUTF(env, head2IndexDelta->old_file.path),
-                    (*env)->NewStringUTF(env, head2IndexDelta->new_file.path),
+                    index2WorkDirDeltaOldFilePath,
+                    index2WorkDirDeltaNewFilePath,
+                    head2IndexDeltaOldFilePath,
+                    head2IndexDeltaNewFilePath,
 
-                    index2WorkDirDelta->old_file.size,
-                    index2WorkDirDelta->new_file.size,
-                    head2IndexDelta->old_file.size,
-                    head2IndexDelta->new_file.size,
+                    index2WorkDirDeltaOldFileSize,
+                    index2WorkDirDeltaNewFileSize,
+                    head2IndexDeltaOldFileSize,
+                    head2IndexDeltaNewFileSize,
 
                     entry->status
                 )
