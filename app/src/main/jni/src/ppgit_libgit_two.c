@@ -18,21 +18,26 @@ JNIEXPORT jstring JNICALL J_MAKE_METHOD(LibgitTwo_hello)(JNIEnv *env, jclass typ
 
 
 /*  辅助方法 start */
+//这个需要释放本地引用，最好释放，不释放应该也会自动释放，但自己控制更好，避免自动释放太慢导致变量表占满
 static jclass findClass(JNIEnv *env, const char *name) {
     jclass localClass = (*env)->FindClass(env, name);
     if (!localClass) {
         ALOGE("Failed to find class '%s'", name);
         abort();
     }
-    jclass globalClass = (*env)->NewGlobalRef(env, localClass);
-    (*env)->DeleteLocalRef(env, localClass);
-    if (!globalClass) {
-        ALOGE("Failed to create a global reference for '%s'", name);
-        abort();
-    }
-    return globalClass;
+    return localClass;
+
+    //如果启用，每次调用此方法都会创建全局引用，若不释放，浪费内存，而且全局引用有数量限制，满了再建就报错了
+//    jclass globalClass = (*env)->NewGlobalRef(env, localClass);
+//    (*env)->DeleteLocalRef(env, localClass);
+//    if (!globalClass) {
+//        ALOGE("Failed to create a global reference for '%s'", name);
+//        abort();
+//    }
+//    return globalClass;
 }
 
+//这个不需要释放
 static jfieldID findField(JNIEnv *env, jclass clazz, const char *name, const char *signature) {
     jfieldID field = (*env)->GetFieldID(env, clazz, name, signature);
     if (!field) {
@@ -42,6 +47,7 @@ static jfieldID findField(JNIEnv *env, jclass clazz, const char *name, const cha
     return field;
 }
 
+//这个不需要释放
 static jmethodID findMethod(JNIEnv *env, jclass clazz, const char *name, const char *signature) {
     jmethodID method = (*env)->GetMethodID(env, clazz, name, signature);
     if (!method) {
@@ -319,21 +325,17 @@ void bytesToHexString(const unsigned char *bytes, size_t length, char *hexString
     hexString[length * 2] = '\0'; // 确保字符串以 null 结尾
 }
 
-jclass sshCertClassCache = NULL;
 
 /**
  * see: https://libgit2.org/libgit2/#v1.7.2/type/git_cert_hostkey
  */
 jobject createSshCert(git_cert_hostkey *certHostKey, jstring hostname, JNIEnv *env) {
     // 获取 SshCert 类
-    jclass sshCertClass = sshCertClassCache;
-    if(sshCertClass == NULL) {
-        sshCertClassCache = findClass(env, J_CLZ_PREFIX "SshCert");
-        sshCertClass = sshCertClassCache;
-    }
+    jclass sshCertClass = findClass(env, J_CLZ_PREFIX "SshCert");
+
 
     // 获取构造函数
-    jmethodID constructor = (*env)->GetMethodID(env, sshCertClass, "<init>", "(Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;)V");
+    jmethodID constructor = findMethod(env, sshCertClass, "<init>", "(Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;)V");
 
     // 每个字节需要2个字符 + 1 个 null 终止符('\0')
     char *md5Str[16*2+1];
@@ -375,6 +377,7 @@ jobject createSshCert(git_cert_hostkey *certHostKey, jstring hostname, JNIEnv *e
             (*env)->NewStringUTF(env, (const char *) hostKeyStr)
     );
 
+    (*env)->DeleteLocalRef(env, sshCertClass);
 
     return sshCertObject;
 }
@@ -448,6 +451,7 @@ JNIEXPORT jlongArray JNICALL J_MAKE_METHOD(LibgitTwo_jniGetStatusEntryRawPointer
 jobject createStatusEntryDto(
         JNIEnv *env,
         jclass statusEntryDtoClass,
+        jmethodID constructor,
 
         jstring indexToWorkDirOldFilePath,
         jstring indexToWorkDirNewFilePath,
@@ -461,11 +465,6 @@ jobject createStatusEntryDto(
 
         jint statusFlag
 ) {
-    // 获取构造函数 ID
-    jmethodID constructor = (*env)->GetMethodID(env, statusEntryDtoClass, "<init>", "(Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;JJJJI)V");
-    if (constructor == NULL) {
-        return NULL; // 构造函数未找到
-    }
 
     // 创建 StatusEntryDto 对象
     return (*env)->NewObject(
@@ -494,11 +493,10 @@ JNIEXPORT jobjectArray JNICALL J_MAKE_METHOD(LibgitTwo_jniGetStatusEntries)(JNIE
     size_t length = git_status_list_entrycount(listPtr);
 
     // 获取 StatusEntryDto 类的引用
-    jclass statusEntryDtoClass = statusEntryDtoClassCache;
-    if (!statusEntryDtoClass) {
-        statusEntryDtoClassCache = findClass(env, J_CLZ_PREFIX "StatusEntryDto");
-        statusEntryDtoClass = statusEntryDtoClassCache;
-    }
+    jclass statusEntryDtoClass = findClass(env, J_CLZ_PREFIX "StatusEntryDto");
+
+    // 获取构造函数 ID
+    jmethodID constructor = findMethod(env, statusEntryDtoClass, "<init>", "(Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;JJJJI)V");
 
     // 创建 StatusEntryDto 对象的数组
     jobjectArray statusEntryDtoArray = (*env)->NewObjectArray(env, length, statusEntryDtoClass, NULL);
@@ -548,6 +546,7 @@ JNIEXPORT jobjectArray JNICALL J_MAKE_METHOD(LibgitTwo_jniGetStatusEntries)(JNIE
                 createStatusEntryDto(
                     env,
                     statusEntryDtoClass,
+                    constructor,
 
                     index2WorkDirDeltaOldFilePath,
                     index2WorkDirDeltaNewFilePath,
@@ -564,6 +563,11 @@ JNIEXPORT jobjectArray JNICALL J_MAKE_METHOD(LibgitTwo_jniGetStatusEntries)(JNIE
         );
 
     }
+
+    (*env)->DeleteLocalRef(env, statusEntryDtoClass);
+
+    //构造器属于method，method和field都不用释放，若释放会报错
+//    (*env)->DeleteLocalRef(env, constructor);
 
     // 返回数组
     return statusEntryDtoArray;
