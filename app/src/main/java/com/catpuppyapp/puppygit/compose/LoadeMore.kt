@@ -40,10 +40,11 @@ fun LoadMore(
     enableLoadMore:Boolean=true,
     enableAndShowLoadToEnd:Boolean=true,
     loadToEndOnClick:()->Unit={},
-    pageSize:MutableState<Int>,
-    rememberPageSize:MutableState<Boolean>,
-    showSetPageSizeDialog:MutableState<Boolean>,
-    pageSizeForDialog:MutableState<String>,
+//    pageSize:MutableState<Int>,
+//    rememberPageSize:MutableState<Boolean>,
+//    showSetPageSizeDialog:MutableState<Boolean>,
+//    pageSizeForDialog:MutableState<String>,
+    initSetPageSizeDialog:()->Unit,
     btnUpsideText:String?=null, // text at upside of buttons, usually show count of items etc...
     onClick:()->Unit
 ) {
@@ -115,8 +116,7 @@ fun LoadMore(
 //                iconModifier = Modifier.fillMaxWidth(.2f),
 //                enabled = currentPage.intValue>1,
             ) {
-                pageSizeForDialog.value = ""+pageSize.value
-                showSetPageSizeDialog.value = true
+                initSetPageSizeDialog()
             }
 
         }

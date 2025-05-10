@@ -9,14 +9,10 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.text.KeyboardOptions
-import androidx.compose.foundation.text.selection.DisableSelection
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
@@ -31,7 +27,6 @@ import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextField
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.material3.rememberModalBottomSheetState
@@ -53,15 +48,14 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.AnnotatedString
+import androidx.compose.ui.text.TextRange
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import com.catpuppyapp.puppygit.compose.BottomSheet
 import com.catpuppyapp.puppygit.compose.BottomSheetItem
 import com.catpuppyapp.puppygit.compose.CommitListDialog
-import com.catpuppyapp.puppygit.compose.ConfirmDialog2
 import com.catpuppyapp.puppygit.compose.CopyableDialog
 import com.catpuppyapp.puppygit.compose.CreatePatchSuccessDialog
 import com.catpuppyapp.puppygit.compose.DiffCommitsDialog
@@ -72,13 +66,11 @@ import com.catpuppyapp.puppygit.compose.GoToTopAndGoToBottomFab
 import com.catpuppyapp.puppygit.compose.LoadMore
 import com.catpuppyapp.puppygit.compose.LoadingDialog
 import com.catpuppyapp.puppygit.compose.LongPressAbleIconBtn
-import com.catpuppyapp.puppygit.compose.MyCheckBox
 import com.catpuppyapp.puppygit.compose.MyLazyColumn
-import com.catpuppyapp.puppygit.compose.MySelectionContainer
 import com.catpuppyapp.puppygit.compose.PullToRefreshBox
 import com.catpuppyapp.puppygit.compose.RepoInfoDialog
 import com.catpuppyapp.puppygit.compose.RepoInfoDialogItemSpacer
-import com.catpuppyapp.puppygit.compose.ScrollableColumn
+import com.catpuppyapp.puppygit.compose.SetPageSizeDialog
 import com.catpuppyapp.puppygit.constants.Cons
 import com.catpuppyapp.puppygit.data.entity.RepoEntity
 import com.catpuppyapp.puppygit.dev.commitsDiffCommitsTestPassed
@@ -611,68 +603,23 @@ fun FileHistoryScreen(
     }
 
 
-    val invalidPageSize = -1
-    val minPageSize = 1  // make sure it bigger than `invalidPageSize`
 
-    val isInvalidPageSize = { ps:Int ->
-        ps < minPageSize
-    }
 
     val showSetPageSizeDialog = rememberSaveable { mutableStateOf(false) }
-    val pageSizeForDialog = rememberSaveable { mutableStateOf(""+pageSize.value) }
+    val pageSizeForDialog = mutableCustomStateOf(stateKeyTag, "pageSizeForDialog") { TextFieldValue("") }
+
+    val initSetPageSizeDialog = {
+        pageSizeForDialog.value = pageSize.value.toString().let { TextFieldValue(it, selection = TextRange(0, it.length)) }
+        showSetPageSizeDialog.value = true
+    }
 
     if(showSetPageSizeDialog.value) {
-        ConfirmDialog2(
-            title = stringResource(R.string.page_size),
-            requireShowTextCompose = true,
-            textCompose = {
-                ScrollableColumn {
-                    TextField(
-                        modifier = Modifier.fillMaxWidth(),
-
-                        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
-
-                        value = pageSizeForDialog.value,
-                        singleLine = true,
-                        onValueChange = {
-                            pageSizeForDialog.value = it
-                        },
-                        label = {
-                            Text(stringResource(R.string.page_size))
-                        },
-                    )
-
-                    Spacer(Modifier.height(10.dp))
-
-                    MyCheckBox(text= stringResource(R.string.remember), rememberPageSize)
-                }
-            },
-            onCancel = {showSetPageSizeDialog.value=false}
-        ) {
-            showSetPageSizeDialog.value=false
-
-            try {
-                val newPageSize = try {
-                    pageSizeForDialog.value.toInt()
-                }catch (_:Exception) {
-                    Msg.requireShow(activityContext.getString(R.string.invalid_number))
-                    invalidPageSize
-                }
-
-                if(!isInvalidPageSize(newPageSize)) {
-                    pageSize.value = newPageSize
-
-                    if(rememberPageSize.value) {
-                        SettingsUtil.update {
-                            it.fileHistoryPageSize = newPageSize
-                        }
-                    }
-                }
-
-            }catch (e:Exception) {
-                MyLog.e(TAG, "#SetPageSizeDialog err: ${e.localizedMessage}")
-            }
-        }
+        SetPageSizeDialog(
+            pageSize = pageSizeForDialog,
+            rememberPageSize = rememberPageSize,
+            trueCommitHistoryFalseFileHistory = false,
+            closeDialog = {showSetPageSizeDialog.value=false}
+        )
     }
 
     val showTitleInfoDialog = rememberSaveable { mutableStateOf(false) }
@@ -830,8 +777,7 @@ fun FileHistoryScreen(
                                     DropdownMenuItem(
                                         text = { Text(stringResource(R.string.page_size)) },
                                         onClick = {
-                                            pageSizeForDialog.value = ""+pageSize.value
-                                            showSetPageSizeDialog.value = true
+                                            initSetPageSizeDialog()
 
                                             //关闭顶栏菜单
                                             showTopBarMenu.value = false
@@ -1062,11 +1008,9 @@ fun FileHistoryScreen(
                     requirePaddingAtBottom = false,
                     requireCustomBottom = true,
                     customBottom = {
+
                         LoadMore(
-                            pageSize=pageSize,
-                            rememberPageSize=rememberPageSize,
-                            showSetPageSizeDialog=showSetPageSizeDialog,
-                            pageSizeForDialog=pageSizeForDialog,
+                            initSetPageSizeDialog = initSetPageSizeDialog,
                             text = loadMoreText.value,
                             btnUpsideText = getLoadText(list.size, enableFilter, activityContext),
                             enableLoadMore = !loadMoreLoading.value && hasMore.value, enableAndShowLoadToEnd = !loadMoreLoading.value && hasMore.value,
@@ -1134,10 +1078,7 @@ fun FileHistoryScreen(
 
                         LoadMore(
                             modifier = Modifier.padding(top = 30.dp),
-                            pageSize=pageSize,
-                            rememberPageSize=rememberPageSize,
-                            showSetPageSizeDialog=showSetPageSizeDialog,
-                            pageSizeForDialog=pageSizeForDialog,
+                            initSetPageSizeDialog = initSetPageSizeDialog,
                             text = loadMoreText.value,
                             btnUpsideText = getLoadText(list.size, enableFilter, activityContext),
                             enableLoadMore = !loadMoreLoading.value && hasMore.value, enableAndShowLoadToEnd = !loadMoreLoading.value && hasMore.value,

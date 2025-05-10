@@ -15,7 +15,6 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
@@ -59,9 +58,9 @@ import androidx.compose.ui.platform.LocalView
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.SpanStyle
+import androidx.compose.ui.text.TextRange
 import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.text.withStyle
@@ -92,6 +91,7 @@ import com.catpuppyapp.puppygit.compose.PullToRefreshBox
 import com.catpuppyapp.puppygit.compose.RepoInfoDialog
 import com.catpuppyapp.puppygit.compose.ResetDialog
 import com.catpuppyapp.puppygit.compose.ScrollableColumn
+import com.catpuppyapp.puppygit.compose.SetPageSizeDialog
 import com.catpuppyapp.puppygit.compose.SingleSelectList
 import com.catpuppyapp.puppygit.compose.SoftkeyboardVisibleListener
 import com.catpuppyapp.puppygit.constants.Cons
@@ -1514,68 +1514,21 @@ fun CommitListScreen(
 
 
 
-    val invalidPageSize = -1
-    val minPageSize = 1  // make sure it bigger than `invalidPageSize`
+    val showSetPageSizeDialog = rememberSaveable { mutableStateOf(false) }
+    val pageSizeForDialog =mutableCustomStateOf(stateKeyTag, "pageSizeForDialog") { TextFieldValue("") }
 
-    val isInvalidPageSize = { ps:Int ->
-        ps < minPageSize
+    val initSetPageSizeDialog = {
+        pageSizeForDialog.value = pageSize.value.toString().let { TextFieldValue(it, selection = TextRange(0, it.length)) }
+        showSetPageSizeDialog.value = true
     }
 
-    val showSetPageSizeDialog = rememberSaveable { mutableStateOf(false) }
-    val pageSizeForDialog = rememberSaveable { mutableStateOf(""+pageSize.value) }
-
     if(showSetPageSizeDialog.value) {
-        ConfirmDialog2(
-            title = stringResource(R.string.page_size),
-            requireShowTextCompose = true,
-            textCompose = {
-                ScrollableColumn {
-                    TextField(
-                        modifier = Modifier.fillMaxWidth(),
-
-                        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
-
-                        value = pageSizeForDialog.value,
-                        singleLine = true,
-                        onValueChange = {
-                            pageSizeForDialog.value = it
-                        },
-                        label = {
-                            Text(stringResource(R.string.page_size))
-                        },
-                    )
-
-                    Spacer(Modifier.height(10.dp))
-
-                    MyCheckBox(text= stringResource(R.string.remember), rememberPageSize)
-                }
-            },
-            onCancel = {showSetPageSizeDialog.value=false}
-        ) {
-            showSetPageSizeDialog.value=false
-
-            try {
-                val newPageSize = try {
-                    pageSizeForDialog.value.toInt()
-                }catch (_:Exception) {
-                    Msg.requireShow(activityContext.getString(R.string.invalid_number))
-                    invalidPageSize
-                }
-
-                if(!isInvalidPageSize(newPageSize)) {
-                    pageSize.value = newPageSize
-
-                    if(rememberPageSize.value) {
-                        SettingsUtil.update {
-                            it.commitHistoryPageSize = newPageSize
-                        }
-                    }
-                }
-
-            }catch (e:Exception) {
-                MyLog.e(TAG, "#SetPageSizeDialog err: ${e.localizedMessage}")
-            }
-        }
+        SetPageSizeDialog(
+            pageSize = pageSizeForDialog,
+            rememberPageSize = rememberPageSize,
+            trueCommitHistoryFalseFileHistory = true,
+            closeDialog = {showSetPageSizeDialog.value=false}
+        )
     }
 
     val showTitleInfoDialog = rememberSaveable { mutableStateOf(false) }
@@ -1777,8 +1730,7 @@ fun CommitListScreen(
                                     DropdownMenuItem(
                                         text = { Text(stringResource(R.string.page_size)) },
                                         onClick = {
-                                            pageSizeForDialog.value = ""+pageSize.value
-                                            showSetPageSizeDialog.value = true
+                                            initSetPageSizeDialog()
 
                                             //关闭顶栏菜单
                                             showTopBarMenu.value = false
@@ -2160,10 +2112,7 @@ fun CommitListScreen(
                     requireCustomBottom = true,
                     customBottom = {
                         LoadMore(
-                            pageSize=pageSize,
-                            rememberPageSize=rememberPageSize,
-                            showSetPageSizeDialog=showSetPageSizeDialog,
-                            pageSizeForDialog=pageSizeForDialog,
+                            initSetPageSizeDialog = initSetPageSizeDialog,
                             text = loadMoreText.value,
                             enableLoadMore = !loadMoreLoading.value && hasMore.value, enableAndShowLoadToEnd = !loadMoreLoading.value && hasMore.value,
                             btnUpsideText = getLoadText(list.size, enableFilter, activityContext),
@@ -2229,10 +2178,7 @@ fun CommitListScreen(
 
                         LoadMore(
                             modifier = Modifier.padding(top = 30.dp),
-                            pageSize=pageSize,
-                            rememberPageSize=rememberPageSize,
-                            showSetPageSizeDialog=showSetPageSizeDialog,
-                            pageSizeForDialog=pageSizeForDialog,
+                            initSetPageSizeDialog = initSetPageSizeDialog,
                             text = loadMoreText.value,
                             btnUpsideText = getLoadText(list.size, enableFilter, activityContext),
                             enableLoadMore = !loadMoreLoading.value && hasMore.value, enableAndShowLoadToEnd = !loadMoreLoading.value && hasMore.value,
