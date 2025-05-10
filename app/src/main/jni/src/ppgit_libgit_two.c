@@ -448,17 +448,6 @@ JNIEXPORT jlongArray JNICALL J_MAKE_METHOD(LibgitTwo_jniGetStatusEntryRawPointer
 jobject createStatusEntryDto(
         JNIEnv *env,
         jclass statusEntryDtoClass,
-        jfieldID indexToWorkDirOldFilePathField,
-        jfieldID indexToWorkDirNewFilePathField,
-        jfieldID headToIndexOldFilePathField,
-        jfieldID headToIndexNewFilePathField,
-
-        jfieldID indexToWorkDirOldFileSizeField,
-        jfieldID indexToWorkDirNewFileSizeField,
-        jfieldID headToIndexOldFileSizeField,
-        jfieldID headToIndexNewFileSizeField,
-
-        jfieldID entryStatusFlagField,
 
         jstring indexToWorkDirOldFilePath,
         jstring indexToWorkDirNewFilePath,
@@ -473,47 +462,32 @@ jobject createStatusEntryDto(
         jint statusFlag
 ) {
     // 获取构造函数 ID
-    jmethodID constructor = (*env)->GetMethodID(env, statusEntryDtoClass, "<init>", "()V");
+    jmethodID constructor = (*env)->GetMethodID(env, statusEntryDtoClass, "<init>", "(Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;J;J;J;J;I;)V");
     if (constructor == NULL) {
         return NULL; // 构造函数未找到
     }
 
     // 创建 StatusEntryDto 对象
-    jobject statusEntryDtoObject = (*env)->NewObject(env, statusEntryDtoClass, constructor);
-    if (statusEntryDtoObject == NULL) {
-        return NULL; // 对象创建失败
-    }
+    return (*env)->NewObject(
+            env,
+            statusEntryDtoClass,
+            constructor,
 
-    // 设置字段值
-    (*env)->SetObjectField(env, statusEntryDtoObject, indexToWorkDirOldFilePathField, indexToWorkDirOldFilePath);
-    (*env)->SetObjectField(env, statusEntryDtoObject, indexToWorkDirNewFilePathField, indexToWorkDirNewFilePath);
-    (*env)->SetObjectField(env, statusEntryDtoObject, headToIndexOldFilePathField, headToIndexOldFilePath);
-    (*env)->SetObjectField(env, statusEntryDtoObject, headToIndexNewFilePathField, headToIndexNewFilePath);
+            indexToWorkDirOldFilePath,
+            indexToWorkDirNewFilePath,
+            headToIndexOldFilePath,
+            headToIndexNewFilePath,
 
-    (*env)->SetLongField(env, statusEntryDtoObject, indexToWorkDirOldFileSizeField, indexToWorkDirOldFileSize);
-    (*env)->SetLongField(env, statusEntryDtoObject, indexToWorkDirNewFileSizeField, indexToWorkDirNewFileSize);
-    (*env)->SetLongField(env, statusEntryDtoObject, headToIndexOldFileSizeField, headToIndexOldFileSize);
-    (*env)->SetLongField(env, statusEntryDtoObject, headToIndexNewFileSizeField, headToIndexNewFileSize);
+            indexToWorkDirOldFileSize,
+            indexToWorkDirNewFileSize,
+            headToIndexOldFileSize,
+            headToIndexNewFileSize,
 
-    (*env)->SetIntField(env, statusEntryDtoObject, entryStatusFlagField, statusFlag);
-
-    // 返回对象
-    return statusEntryDtoObject;
+            statusFlag
+    );
 }
 
 jclass statusEntryDtoClassCache = NULL;
-
-jfieldID indexToWorkDirOldFilePathFieldCache = NULL;
-jfieldID indexToWorkDirNewFilePathFieldCache = NULL;
-jfieldID headToIndexOldFilePathFieldCache = NULL;
-jfieldID headToIndexNewFilePathFieldCache = NULL;
-
-jfieldID indexToWorkDirOldFileSizeFieldCache = NULL;
-jfieldID indexToWorkDirNewFileSizeFieldCache = NULL;
-jfieldID headToIndexOldFileSizeFieldCache = NULL;
-jfieldID headToIndexNewFileSizeFieldCache = NULL;
-
-jfieldID entryStatusFlagFieldCache = NULL;
 
 JNIEXPORT jobjectArray JNICALL J_MAKE_METHOD(LibgitTwo_jniGetStatusEntries)(JNIEnv *env, jclass obj, jlong statusListPtr) {
     git_status_list* listPtr = (git_status_list *)statusListPtr;
@@ -534,61 +508,6 @@ JNIEXPORT jobjectArray JNICALL J_MAKE_METHOD(LibgitTwo_jniGetStatusEntries)(JNIE
 
 
 
-    // 获取字段 ID
-    jfieldID indexToWorkDirOldFilePathField = indexToWorkDirOldFilePathFieldCache;
-    if(!indexToWorkDirOldFilePathField) {
-        indexToWorkDirOldFilePathFieldCache = findField(env, statusEntryDtoClass, "indexToWorkDirOldFilePath", "Ljava/lang/String;");
-        indexToWorkDirOldFilePathField = indexToWorkDirOldFilePathFieldCache;
-    }
-
-    jfieldID indexToWorkDirNewFilePathField = indexToWorkDirNewFilePathFieldCache;
-    if(!indexToWorkDirNewFilePathField) {
-        indexToWorkDirNewFilePathFieldCache = findField(env, statusEntryDtoClass, "indexToWorkDirNewFilePath", "Ljava/lang/String;");
-        indexToWorkDirNewFilePathField = indexToWorkDirNewFilePathFieldCache;
-    }
-
-    jfieldID headToIndexOldFilePathField = headToIndexOldFilePathFieldCache;
-    if(!headToIndexOldFilePathField) {
-        headToIndexOldFilePathFieldCache = findField(env, statusEntryDtoClass, "headToIndexOldFilePath", "Ljava/lang/String;");
-        headToIndexOldFilePathField = headToIndexOldFilePathFieldCache;
-    }
-
-    jfieldID headToIndexNewFilePathField = headToIndexNewFilePathFieldCache;
-    if(!headToIndexNewFilePathField) {
-        headToIndexNewFilePathFieldCache = findField(env, statusEntryDtoClass, "headToIndexNewFilePath", "Ljava/lang/String;");
-        headToIndexNewFilePathField = headToIndexNewFilePathFieldCache;
-    }
-
-    jfieldID indexToWorkDirOldFileSizeField = indexToWorkDirOldFileSizeFieldCache;
-    if(!indexToWorkDirOldFileSizeField) {
-        indexToWorkDirOldFileSizeFieldCache = findField(env, statusEntryDtoClass, "indexToWorkDirOldFileSize", "J");
-        indexToWorkDirOldFileSizeField = indexToWorkDirOldFileSizeFieldCache;
-    }
-
-    jfieldID indexToWorkDirNewFileSizeField = indexToWorkDirNewFileSizeFieldCache;
-    if(!indexToWorkDirNewFileSizeField) {
-        indexToWorkDirNewFileSizeFieldCache = findField(env, statusEntryDtoClass, "indexToWorkDirNewFileSize", "J");
-        indexToWorkDirNewFileSizeField = indexToWorkDirNewFileSizeFieldCache;
-    }
-
-    jfieldID headToIndexOldFileSizeField = headToIndexOldFileSizeFieldCache;
-    if(!headToIndexOldFileSizeField) {
-        headToIndexOldFileSizeFieldCache = findField(env, statusEntryDtoClass, "headToIndexOldFileSize", "J");
-        headToIndexOldFileSizeField = headToIndexOldFileSizeFieldCache;
-    }
-
-    jfieldID headToIndexNewFileSizeField = headToIndexNewFileSizeFieldCache;
-    if(!headToIndexNewFileSizeField) {
-        headToIndexNewFileSizeFieldCache = findField(env, statusEntryDtoClass, "headToIndexNewFileSize", "J");
-        headToIndexNewFileSizeField = headToIndexNewFileSizeFieldCache;
-    }
-
-
-    jfieldID entryStatusFlagField = entryStatusFlagFieldCache;
-    if(!entryStatusFlagField) {
-        entryStatusFlagFieldCache = findField(env, statusEntryDtoClass, "entryStatusFlag", "I");
-        entryStatusFlagField = entryStatusFlagFieldCache;
-    }
 
 
     //填充数组
@@ -629,18 +548,6 @@ JNIEXPORT jobjectArray JNICALL J_MAKE_METHOD(LibgitTwo_jniGetStatusEntries)(JNIE
                 createStatusEntryDto(
                     env,
                     statusEntryDtoClass,
-
-                    indexToWorkDirOldFilePathField,
-                    indexToWorkDirNewFilePathField,
-                    headToIndexOldFilePathField,
-                    headToIndexNewFilePathField,
-
-                    indexToWorkDirOldFileSizeField,
-                    indexToWorkDirNewFileSizeField,
-                    headToIndexOldFileSizeField,
-                    headToIndexNewFileSizeField,
-
-                    entryStatusFlagField,
 
                     index2WorkDirDeltaOldFilePath,
                     index2WorkDirDeltaNewFilePath,
