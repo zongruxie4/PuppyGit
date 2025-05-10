@@ -469,9 +469,7 @@ fun EditorInnerPage(
             //检查源文件是否被外部修改过，若修改过，创建快照，然后再重载
             val newDto = FileSimpleDto.genByFile(editorPageShowingFilePath.value.toFuckSafFile(activityContext))
 
-            if (newDto.lastModifiedTime != editorPageShowingFileDto.value.lastModifiedTime
-                || newDto.sizeInBytes != editorPageShowingFileDto.value.sizeInBytes
-            ) {
+            if (newDto != editorPageShowingFileDto.value) {
                 val fileName = editorPageShowingFileDto.value.name
                 MyLog.d(TAG,"#showReloadDialog: file '${fileName}' may changed by external, will save content snapshot before reload")
 //                val content = editorPageTextEditorState.value.getAllText()
@@ -546,9 +544,7 @@ fun EditorInnerPage(
             //检查源文件是否被外部修改过，若修改过，创建快照，然后再重载
             val newDto = FileSimpleDto.genByFile(editorPageShowingFilePath.value.toFuckSafFile(activityContext))
 
-            if (newDto.lastModifiedTime != editorPageShowingFileDto.value.lastModifiedTime
-                || newDto.sizeInBytes != editorPageShowingFileDto.value.sizeInBytes
-            ) {
+            if (newDto != editorPageShowingFileDto.value) {
                 val fileName = editorPageShowingFileDto.value.name
                 MyLog.d(TAG,"#showBackFromExternalAppAskReloadDialog: file '${fileName}' may changed by external, will save content snapshot before reload")
 //                val content = editorPageTextEditorState.value.getAllText()
@@ -680,23 +676,25 @@ fun EditorInnerPage(
         editorPreviewFileDto.value = FileSimpleDto.genByFile(FuckSafFile(activityContext, FilePath(previewPath)))
     }
 
-    val refreshPreviewPageNoCoroutine = j@{ previewPath:String, force:Boolean ->
-        if(force) {
-            mdText.value = FsUtils.readFile(previewPath)
+    val refreshPreviewPageNoCoroutine = { previewPath:String, force:Boolean ->
+        val needRefresh = if(force) {
+            true
         }else {
-            val previewFileDto = editorPreviewFileDto.value
+            val newDto = FileSimpleDto.genByFile(FuckSafFile(activityContext, FilePath(previewPath)))
+            val oldDto = editorPreviewFileDto.value
             //检查文件是否更新了，若判断很可能没更新，则不重载
-            if (previewFileDto.fullPath.isNotBlank() && previewFileDto.fullPath == previewPath) {
-                if (previewFileDto.fileMayNotChanged(activityContext)) {
-                    MyLog.d(TAG,"EditorInnerPage#refreshPreviewPageNoCoroutine: file may not changed, skip reload, file path is '${previewPath}'")
-                    return@j
-                }
+            if (newDto == oldDto) {
+                MyLog.d(TAG,"EditorInnerPage#refreshPreviewPageNoCoroutine: file may not changed, skip reload, file path is '${previewPath}'")
+                false
+            }else {
+                true
             }
-
-            mdText.value = FsUtils.readFile(previewPath)
         }
 
-        updatePreviewDto(previewPath)
+        if(needRefresh) {
+            mdText.value = FsUtils.readFile(previewPath)
+            updatePreviewDto(previewPath)
+        }
 
         //本来想顺便更新下editor state，太麻烦，那个editor的fields得处理，不能简单读下文件再赋值，而且退出preview模式已经做了重载检测，所以顶多这里载入一次，返回编辑模式再载入一次，可接受，不改了。
 
@@ -1537,14 +1535,14 @@ private suspend fun doInit(
             // 注：从Files点击百分百重载，因为请求打开文件时清了dto
             //如果打开文件没出错则检查是否已修改，否则不检查，强制重新加载
             if(hasError().not()) {
-                val editorPageShowingFileDto = editorPageShowingFileDto.value
-                if (editorPageShowingFileDto.fullPath.isNotBlank() && editorPageShowingFileDto.fullPath == requireOpenFilePath) {
-                    if (editorPageShowingFileDto.fileMayNotChanged(activityContext)) {
-                        MyLog.d(TAG,"EditorInnerPage#loadFile: file may not changed, skip reload, file path is '${editorPageShowingFileDto.fullPath}'")
-                        //文件可能没改变，放弃加载
-                        editorPageShowingFileIsReady.value = true
-                        return
-                    }
+                val newDto = FileSimpleDto.genByFile(FuckSafFile(activityContext, FilePath(requireOpenFilePath)))
+                val oldDto = editorPageShowingFileDto.value
+
+                if (newDto == oldDto) {
+                    MyLog.d(TAG,"EditorInnerPage#loadFile: file may not changed, skip reload, file path is '${requireOpenFilePath}'")
+                    //文件可能没改变，放弃加载
+                    editorPageShowingFileIsReady.value = true
+                    return
                 }
             }
 

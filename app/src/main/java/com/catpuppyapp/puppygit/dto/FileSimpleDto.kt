@@ -1,7 +1,5 @@
 package com.catpuppyapp.puppygit.dto
 
-import android.content.Context
-import com.catpuppyapp.puppygit.screen.shared.FilePath
 import com.catpuppyapp.puppygit.screen.shared.FuckSafFile
 import com.catpuppyapp.puppygit.utils.MyLog
 import java.io.File
@@ -11,58 +9,14 @@ private const val TAG = "FileSimpleDto"
 /**
  * 只包含能粗略判断文件是否修改过的字段，用来在切换编辑器时判断是否需要重载文件
  */
-class FileSimpleDto {
-    var name=""
-    var createTime=0L
-    var lastModifiedTime=0L
-    var sizeInBytes =0L
-    var isFile = true
-    var fullPath = ""
-
-    fun toFile():File {
-        return File(fullPath)
-    }
-
-    override fun equals(other: Any?): Boolean {
-        if (this === other) return true
-        if (javaClass != other?.javaClass) return false
-
-        other as FileSimpleDto
-
-        if (name != other.name) return false
-        if (createTime != other.createTime) return false
-        if (lastModifiedTime != other.lastModifiedTime) return false
-        if (sizeInBytes != other.sizeInBytes) return false
-        if (isFile != other.isFile) return false
-        if (fullPath != other.fullPath) return false
-
-        return true
-    }
-
-    override fun hashCode(): Int {
-        var result = name.hashCode()
-        result = 31 * result + createTime.hashCode()
-        result = 31 * result + lastModifiedTime.hashCode()
-        result = 31 * result + sizeInBytes.hashCode()
-        result = 31 * result + isFile.hashCode()
-        result = 31 * result + fullPath.hashCode()
-        return result
-    }
-
-    override fun toString(): String {
-        return "FileSimpleDto(name='$name', createTime=$createTime, lastModifiedTime=$lastModifiedTime, sizeInBytes=$sizeInBytes, isFile=$isFile, fullPath='$fullPath')"
-    }
-
-    fun fileMayNotChanged(context:Context):Boolean {
-        //无效路径当作修改过，返回false
-        if(fullPath.isBlank()) {
-            return false
-        }
-
-        val newDto = FileSimpleDto.genByFile(FuckSafFile(context, FilePath(fullPath)))
-        return newDto.lastModifiedTime == lastModifiedTime && newDto.sizeInBytes == sizeInBytes
-    }
-
+data class FileSimpleDto(
+    var name:String="",
+    var createTime:Long=0L,
+    var lastModifiedTime:Long=0L,
+    var sizeInBytes:Long =0L,
+    var isFile: Boolean = true,
+    var fullPath:String = "",
+) {
     companion object {
         fun genByFile(file: FuckSafFile, timeUnit: TimeUnit=TimeUnit.MILLISECONDS):FileSimpleDto {
             val fdto = FileSimpleDto()
@@ -86,7 +40,12 @@ class FileSimpleDto {
                 MyLog.e(TAG, "#updateDto err: ${e.localizedMessage}")
             }
         }
-
-
     }
+
+
+    fun toFile():File {
+        return File(fullPath)
+    }
+
+
 }
