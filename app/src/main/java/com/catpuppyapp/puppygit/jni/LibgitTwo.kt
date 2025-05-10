@@ -107,7 +107,7 @@ object LibgitTwo {
     /**
      * 在c里先遍历完，把所有jni操作都在c执行，然后存到java里，看性能会不会提升，有点用内存换性能的意思
      */
-    fun getStatusEntrys(statusListPtr:Long):Array<StatusEntryDto> {
+    fun getStatusEntries(statusListPtr:Long): Array<StatusEntryDto> {
         val ptrs = jniGetStatusEntries(statusListPtr)
 
         return ptrs ?: arrayOf()

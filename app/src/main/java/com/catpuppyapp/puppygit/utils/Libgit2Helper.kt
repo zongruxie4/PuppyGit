@@ -575,7 +575,7 @@ object Libgit2Helper {
         val submodulePathList = getSubmodulePathList(repo)  // submodule name == it's path, so this list is path list too
         val repoWorkDirPath = getRepoWorkdirNoEndsWithSlash(repo)
 
-        val allStatusEntryDtos = LibgitTwo.getStatusEntrys(statusList.rawPointer)
+        val allStatusEntryDtos = LibgitTwo.getStatusEntries(statusList.rawPointer)
         val trueIndex2WorktreeFalseHead2Index = fromTo == Cons.gitDiffFromIndexToWorktree;
         //until， 左闭右开，左包含，右不包含
         for (i in allStatusEntryDtos)  {

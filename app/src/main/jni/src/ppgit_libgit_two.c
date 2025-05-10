@@ -80,7 +80,7 @@ static void throwException(JNIEnv *env, jclass exceptionClass, jmethodID constru
 static jclass getLibgitTwoExceptionClass(JNIEnv *env) {
     static jclass exceptionClass = NULL;
     if (!exceptionClass) {
-        exceptionClass = findClass(env, "com/catpuppyapp/puppygit/jni/LibGitTwoException");
+        exceptionClass = findClass(env, J_CLZ_PREFIX "LibGitTwoException");
     }
     return exceptionClass;
 }
@@ -319,12 +319,18 @@ void bytesToHexString(const unsigned char *bytes, size_t length, char *hexString
     hexString[length * 2] = '\0'; // 确保字符串以 null 结尾
 }
 
+jclass sshCertClassCache = NULL;
+
 /**
  * see: https://libgit2.org/libgit2/#v1.7.2/type/git_cert_hostkey
  */
 jobject createSshCert(git_cert_hostkey *certHostKey, jstring hostname, JNIEnv *env) {
     // 获取 SshCert 类
-    jclass sshCertClass = (*env)->FindClass(env, J_CLZ_PREFIX "SshCert");
+    jclass sshCertClass = sshCertClassCache;
+    if(sshCertClass == NULL) {
+        sshCertClassCache = findClass(env, J_CLZ_PREFIX "SshCert");
+        sshCertClass = sshCertClassCache;
+    }
 
     // 获取构造函数
     jmethodID constructor = (*env)->GetMethodID(env, sshCertClass, "<init>", "(Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;)V");
@@ -516,7 +522,7 @@ JNIEXPORT jobjectArray JNICALL J_MAKE_METHOD(LibgitTwo_jniGetStatusEntries)(JNIE
     // 获取 StatusEntryDto 类的引用
     jclass statusEntryDtoClass = statusEntryDtoClassCache;
     if (!statusEntryDtoClass) {
-        statusEntryDtoClassCache = (*env)->FindClass(env, "com/catpuppyapp/puppygit/jni/StatusEntryDto");
+        statusEntryDtoClassCache = findClass(env, J_CLZ_PREFIX "StatusEntryDto");
         statusEntryDtoClass = statusEntryDtoClassCache;
     }
 
@@ -531,56 +537,56 @@ JNIEXPORT jobjectArray JNICALL J_MAKE_METHOD(LibgitTwo_jniGetStatusEntries)(JNIE
     // 获取字段 ID
     jfieldID indexToWorkDirOldFilePathField = indexToWorkDirOldFilePathFieldCache;
     if(!indexToWorkDirOldFilePathField) {
-        indexToWorkDirOldFilePathFieldCache = (*env)->GetFieldID(env, statusEntryDtoClass, "indexToWorkDirOldFilePath", "Ljava/lang/String;");
+        indexToWorkDirOldFilePathFieldCache = findField(env, statusEntryDtoClass, "indexToWorkDirOldFilePath", "Ljava/lang/String;");
         indexToWorkDirOldFilePathField = indexToWorkDirOldFilePathFieldCache;
     }
 
     jfieldID indexToWorkDirNewFilePathField = indexToWorkDirNewFilePathFieldCache;
     if(!indexToWorkDirNewFilePathField) {
-        indexToWorkDirNewFilePathFieldCache = (*env)->GetFieldID(env, statusEntryDtoClass, "indexToWorkDirNewFilePath", "Ljava/lang/String;");
+        indexToWorkDirNewFilePathFieldCache = findField(env, statusEntryDtoClass, "indexToWorkDirNewFilePath", "Ljava/lang/String;");
         indexToWorkDirNewFilePathField = indexToWorkDirNewFilePathFieldCache;
     }
 
     jfieldID headToIndexOldFilePathField = headToIndexOldFilePathFieldCache;
     if(!headToIndexOldFilePathField) {
-        headToIndexOldFilePathFieldCache = (*env)->GetFieldID(env, statusEntryDtoClass, "headToIndexOldFilePath", "Ljava/lang/String;");
+        headToIndexOldFilePathFieldCache = findField(env, statusEntryDtoClass, "headToIndexOldFilePath", "Ljava/lang/String;");
         headToIndexOldFilePathField = headToIndexOldFilePathFieldCache;
     }
 
     jfieldID headToIndexNewFilePathField = headToIndexNewFilePathFieldCache;
     if(!headToIndexNewFilePathField) {
-        headToIndexNewFilePathFieldCache = (*env)->GetFieldID(env, statusEntryDtoClass, "headToIndexNewFilePath", "Ljava/lang/String;");
+        headToIndexNewFilePathFieldCache = findField(env, statusEntryDtoClass, "headToIndexNewFilePath", "Ljava/lang/String;");
         headToIndexNewFilePathField = headToIndexNewFilePathFieldCache;
     }
 
     jfieldID indexToWorkDirOldFileSizeField = indexToWorkDirOldFileSizeFieldCache;
     if(!indexToWorkDirOldFileSizeField) {
-        indexToWorkDirOldFileSizeFieldCache = (*env)->GetFieldID(env, statusEntryDtoClass, "indexToWorkDirOldFileSize", "J");
+        indexToWorkDirOldFileSizeFieldCache = findField(env, statusEntryDtoClass, "indexToWorkDirOldFileSize", "J");
         indexToWorkDirOldFileSizeField = indexToWorkDirOldFileSizeFieldCache;
     }
 
     jfieldID indexToWorkDirNewFileSizeField = indexToWorkDirNewFileSizeFieldCache;
     if(!indexToWorkDirNewFileSizeField) {
-        indexToWorkDirNewFileSizeFieldCache = (*env)->GetFieldID(env, statusEntryDtoClass, "indexToWorkDirNewFileSize", "J");
+        indexToWorkDirNewFileSizeFieldCache = findField(env, statusEntryDtoClass, "indexToWorkDirNewFileSize", "J");
         indexToWorkDirNewFileSizeField = indexToWorkDirNewFileSizeFieldCache;
     }
 
     jfieldID headToIndexOldFileSizeField = headToIndexOldFileSizeFieldCache;
     if(!headToIndexOldFileSizeField) {
-        headToIndexOldFileSizeFieldCache = (*env)->GetFieldID(env, statusEntryDtoClass, "headToIndexOldFileSize", "J");
+        headToIndexOldFileSizeFieldCache = findField(env, statusEntryDtoClass, "headToIndexOldFileSize", "J");
         headToIndexOldFileSizeField = headToIndexOldFileSizeFieldCache;
     }
 
     jfieldID headToIndexNewFileSizeField = headToIndexNewFileSizeFieldCache;
     if(!headToIndexNewFileSizeField) {
-        headToIndexNewFileSizeFieldCache = (*env)->GetFieldID(env, statusEntryDtoClass, "headToIndexNewFileSize", "J");
+        headToIndexNewFileSizeFieldCache = findField(env, statusEntryDtoClass, "headToIndexNewFileSize", "J");
         headToIndexNewFileSizeField = headToIndexNewFileSizeFieldCache;
     }
 
 
     jfieldID entryStatusFlagField = entryStatusFlagFieldCache;
     if(!entryStatusFlagField) {
-        entryStatusFlagFieldCache = (*env)->GetFieldID(env, statusEntryDtoClass, "entryStatusFlag", "I");
+        entryStatusFlagFieldCache = findField(env, statusEntryDtoClass, "entryStatusFlag", "I");
         entryStatusFlagField = entryStatusFlagFieldCache;
     }
 
