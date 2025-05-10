@@ -10,12 +10,12 @@ class StatusEntryDto {
     val headToIndexNewFilePath:String? = ""
 
     //文件大小，单位字节
-    val indexToWorkDirOldFileSize:Long? = 0L
-    val indexToWorkDirNewFileSize:Long? = 0L
-    val headToIndexOldFileSize:Long? = 0L
-    val headToIndexNewFileSize:Long? = 0L
+    val indexToWorkDirOldFileSize:Long = 0L
+    val indexToWorkDirNewFileSize:Long = 0L
+    val headToIndexOldFileSize:Long = 0L
+    val headToIndexNewFileSize:Long = 0L
 
-    val entryStatusFlag: Int? = 0
+    val entryStatusFlag: Int = 0
 
 
     fun statusFlagToSet() = IBitEnum.parse<Status.StatusT?>(entryStatusFlag ?: 0, Status.StatusT::class.java);

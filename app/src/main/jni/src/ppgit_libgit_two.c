@@ -555,32 +555,32 @@ JNIEXPORT jobjectArray JNICALL J_MAKE_METHOD(LibgitTwo_jniGetStatusEntries)(JNIE
 
     jfieldID indexToWorkDirOldFileSizeField = indexToWorkDirOldFileSizeFieldCache;
     if(!indexToWorkDirOldFileSizeField) {
-        indexToWorkDirOldFileSizeFieldCache = (*env)->GetFieldID(env, statusEntryDtoClass, "indexToWorkDirOldFileSize", "Ljava/lang/Long;");
+        indexToWorkDirOldFileSizeFieldCache = (*env)->GetFieldID(env, statusEntryDtoClass, "indexToWorkDirOldFileSize", "J");
         indexToWorkDirOldFileSizeField = indexToWorkDirOldFileSizeFieldCache;
     }
 
     jfieldID indexToWorkDirNewFileSizeField = indexToWorkDirNewFileSizeFieldCache;
     if(!indexToWorkDirNewFileSizeField) {
-        indexToWorkDirNewFileSizeFieldCache = (*env)->GetFieldID(env, statusEntryDtoClass, "indexToWorkDirNewFileSize", "Ljava/lang/Long;");
+        indexToWorkDirNewFileSizeFieldCache = (*env)->GetFieldID(env, statusEntryDtoClass, "indexToWorkDirNewFileSize", "J");
         indexToWorkDirNewFileSizeField = indexToWorkDirNewFileSizeFieldCache;
     }
 
     jfieldID headToIndexOldFileSizeField = headToIndexOldFileSizeFieldCache;
     if(!headToIndexOldFileSizeField) {
-        headToIndexOldFileSizeFieldCache = (*env)->GetFieldID(env, statusEntryDtoClass, "headToIndexOldFileSize", "Ljava/lang/Long;");
+        headToIndexOldFileSizeFieldCache = (*env)->GetFieldID(env, statusEntryDtoClass, "headToIndexOldFileSize", "J");
         headToIndexOldFileSizeField = headToIndexOldFileSizeFieldCache;
     }
 
     jfieldID headToIndexNewFileSizeField = headToIndexNewFileSizeFieldCache;
     if(!headToIndexNewFileSizeField) {
-        headToIndexNewFileSizeFieldCache = (*env)->GetFieldID(env, statusEntryDtoClass, "headToIndexNewFileSize", "Ljava/lang/Long;");
+        headToIndexNewFileSizeFieldCache = (*env)->GetFieldID(env, statusEntryDtoClass, "headToIndexNewFileSize", "J");
         headToIndexNewFileSizeField = headToIndexNewFileSizeFieldCache;
     }
 
 
     jfieldID entryStatusFlagField = entryStatusFlagFieldCache;
     if(!entryStatusFlagField) {
-        entryStatusFlagFieldCache = (*env)->GetFieldID(env, statusEntryDtoClass, "entryStatusFlag", "Ljava/lang/Integer;");
+        entryStatusFlagFieldCache = (*env)->GetFieldID(env, statusEntryDtoClass, "entryStatusFlag", "I");
         entryStatusFlagField = entryStatusFlagFieldCache;
     }
 
