@@ -43,6 +43,8 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.focus.FocusRequester
+import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalClipboardManager
 import androidx.compose.ui.platform.LocalConfiguration
@@ -51,6 +53,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.res.vectorResource
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.text.AnnotatedString
+import androidx.compose.ui.text.TextRange
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.unit.dp
@@ -969,9 +972,11 @@ fun RepoInnerPage(
     }
 
     val showRenameDialog = rememberSaveable { mutableStateOf(false)}
-    val repoNameForRenameDialog = rememberSaveable { mutableStateOf( "")}
+    val repoNameForRenameDialog = mutableCustomStateOf(stateKeyTag, "repoNameForRenameDialog") { TextFieldValue("") }
     val errMsgForRenameDialog = rememberSaveable { mutableStateOf("")}
     if(showRenameDialog.value) {
+        val focusRequester = remember { FocusRequester() }
+
         val curRepo = curRepo.value
 
         ConfirmDialog(
@@ -982,6 +987,7 @@ fun RepoInnerPage(
                     TextField(
                         modifier = Modifier
                             .fillMaxWidth()
+                            .focusRequester(focusRequester)
                         ,
                         value = repoNameForRenameDialog.value,
                         singleLine = true,
@@ -1016,10 +1022,10 @@ fun RepoInnerPage(
             },
             okBtnText = stringResource(R.string.ok),
             cancelBtnText = stringResource(R.string.cancel),
-            okBtnEnabled = repoNameForRenameDialog.value.isNotBlank() && errMsgForRenameDialog.value.isEmpty() && repoNameForRenameDialog.value != curRepo.repoName,
+            okBtnEnabled = repoNameForRenameDialog.value.text.isNotBlank() && errMsgForRenameDialog.value.isEmpty() && repoNameForRenameDialog.value.text != curRepo.repoName,
             onCancel = {showRenameDialog.value = false}
         ) {
-            val newName = repoNameForRenameDialog.value
+            val newName = repoNameForRenameDialog.value.text
             val repoId = curRepo.id
 
             doJobThenOffLoading {
@@ -1051,6 +1057,8 @@ fun RepoInnerPage(
                 }
             }
         }
+
+        LaunchedEffect(Unit) { runCatching { focusRequester.requestFocus() } }
     }
 
 
@@ -2274,7 +2282,7 @@ fun RepoInnerPage(
                 curRepo.value = selectedRepo
 
                 // init rename dialog
-                repoNameForRenameDialog.value = selectedRepo.repoName
+                repoNameForRenameDialog.value = TextFieldValue(text = selectedRepo.repoName, selection = TextRange(0, selectedRepo.repoName.length))
                 errMsgForRenameDialog.value = ""
                 showRenameDialog.value = true
             },
