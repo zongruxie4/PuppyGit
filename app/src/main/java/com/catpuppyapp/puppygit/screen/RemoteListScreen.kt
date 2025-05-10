@@ -104,7 +104,7 @@ fun RemoteListScreen(
     repoId:String,
     naviUp: () -> Boolean,
 ) {
-    val stateKeyTag = Cache.getSubPageKey("RemoteListScreen")
+    val stateKeyTag = Cache.getSubPageKey(TAG)
 
     val homeTopBarScrollBehavior = AppModel.homeTopBarScrollBehavior
     val activityContext = LocalContext.current

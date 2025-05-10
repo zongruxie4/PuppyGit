@@ -181,7 +181,7 @@ fun CommitListScreen(
     naviUp: () -> Unit,
 ) {
 
-    val stateKeyTag = Cache.getSubPageKey("CommitListScreen")
+    val stateKeyTag = Cache.getSubPageKey(TAG)
 
 
     // softkeyboard show/hidden relate start

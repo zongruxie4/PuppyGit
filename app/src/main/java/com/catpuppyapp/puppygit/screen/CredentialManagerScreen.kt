@@ -88,7 +88,7 @@ fun CredentialManagerScreen(
     naviUp: () -> Boolean
 ) {
 
-    val stateKeyTag = Cache.getSubPageKey("CredentialManagerScreen")
+    val stateKeyTag = Cache.getSubPageKey(TAG)
 
 
     val homeTopBarScrollBehavior = AppModel.homeTopBarScrollBehavior

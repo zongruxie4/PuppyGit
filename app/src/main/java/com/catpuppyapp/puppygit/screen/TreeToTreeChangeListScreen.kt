@@ -92,7 +92,7 @@ fun TreeToTreeChangeListScreen(
 
     naviUp: () -> Unit
 ) {
-    val stateKeyTag = Cache.getSubPageKey("TreeToTreeChangeListScreen")
+    val stateKeyTag = Cache.getSubPageKey(TAG)
 
     //避免导航出现 "//" 导致导航失败
     //因为title要改变这个值，所以用State

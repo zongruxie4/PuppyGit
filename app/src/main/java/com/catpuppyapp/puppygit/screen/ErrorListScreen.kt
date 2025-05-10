@@ -79,7 +79,7 @@ fun ErrorListScreen(
     repoId:String,
     naviUp: () -> Boolean,
 ) {
-    val stateKeyTag = Cache.getSubPageKey("ErrorListScreen")
+    val stateKeyTag = Cache.getSubPageKey(TAG)
 
 
     val activityContext = LocalContext.current

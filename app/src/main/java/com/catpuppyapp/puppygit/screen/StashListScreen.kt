@@ -94,7 +94,7 @@ fun StashListScreen(
     naviUp: () -> Boolean,
 ) {
 
-    val stateKeyTag = Cache.getSubPageKey("StashListScreen")
+    val stateKeyTag = Cache.getSubPageKey(TAG)
 
     // softkeyboard show/hidden relate start
 

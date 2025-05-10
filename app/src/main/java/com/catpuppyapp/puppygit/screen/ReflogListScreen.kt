@@ -85,7 +85,7 @@ fun ReflogListScreen(
 //    branch:String?,
     naviUp: () -> Boolean,
 ) {
-    val stateKeyTag = Cache.getSubPageKey("ReflogListScreen")
+    val stateKeyTag = Cache.getSubPageKey(TAG)
 
     val homeTopBarScrollBehavior = AppModel.homeTopBarScrollBehavior
     val navController = AppModel.navController

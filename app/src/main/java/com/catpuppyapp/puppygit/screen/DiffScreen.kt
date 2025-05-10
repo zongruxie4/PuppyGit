@@ -164,7 +164,7 @@ fun DiffScreen(
     //这参数没用了
 //    val relativePathCacheKey = Unit // for avoid mistake using
 
-    val stateKeyTag = Cache.getSubPageKey("DiffScreen")
+    val stateKeyTag = Cache.getSubPageKey(TAG)
 
 
     val isSingleMode = isMultiMode.not();

@@ -136,7 +136,7 @@ fun FileEditor(
     fontSize:MutableIntState,
     undoStack: UndoStack
 ) {
-    val stateKeyTag = Cache.getComponentKey(stateKeyTag, "FileEditor")
+    val stateKeyTag = Cache.getComponentKey(stateKeyTag, TAG)
 
     val activityContext = LocalContext.current
     val haptic = LocalHapticFeedback.current

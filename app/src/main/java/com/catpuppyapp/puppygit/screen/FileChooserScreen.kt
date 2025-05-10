@@ -54,7 +54,7 @@ fun FileChooserScreen(
     type: FileChooserType,
     naviUp: () -> Unit
 ) {
-    val stateKeyTag = Cache.getSubPageKey("FileChooserScreen")
+    val stateKeyTag = Cache.getSubPageKey(TAG)
 
     val isFileChooser = remember { true }
 

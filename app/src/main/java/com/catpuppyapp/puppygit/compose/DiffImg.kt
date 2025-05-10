@@ -48,7 +48,7 @@ fun DiffImg(
     requireOpenAs:(filePath:String)->Unit,
     fromScreen: DiffFromScreen,
 ) {
-    val stateKeyTag = Cache.getComponentKey(stateKeyTag, "DiffImg")
+    val stateKeyTag = Cache.getComponentKey(stateKeyTag, TAG)
 
     val activityContext = LocalContext.current
 

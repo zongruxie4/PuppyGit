@@ -93,7 +93,7 @@ fun DomainCredentialListScreen(
 
     naviUp: () -> Boolean
 ) {
-    val stateKeyTag = Cache.getSubPageKey("DomainCredentialListScreen")
+    val stateKeyTag = Cache.getSubPageKey(TAG)
 
     val homeTopBarScrollBehavior = AppModel.homeTopBarScrollBehavior
     val navController = AppModel.navController

@@ -63,6 +63,8 @@ import com.catpuppyapp.puppygit.utils.state.mutableCustomStateOf
 import com.github.git24j.core.Diff
 
 
+private const val TAG = "DiffRow"
+
 /**
  * 注意：这个组件会在LazyColumn的item里使用，所以不能用rememberSaveable，
  * 否则有概率崩溃，报 "java.lang.ClassCastException" ，是个bug，参见：https://issuetracker.google.com/issues/181880855
@@ -100,7 +102,7 @@ fun DiffRow (
     activityContext:Context
 
 ) {
-    val stateKeyTag = Cache.getComponentKey(stateKeyTag, "DiffRow")
+    val stateKeyTag = Cache.getComponentKey(stateKeyTag, TAG)
 
     // disable for EOF, the EOF showing sometimes false-added
     // 禁用EOF点击菜单，EOF有时候假添加，就是明明没有eof，但显示新增了eof，可能是libgit2 bug

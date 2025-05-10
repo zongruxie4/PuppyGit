@@ -111,7 +111,7 @@ fun SubmoduleListScreen(
     repoId:String,
     naviUp: () -> Boolean,
 ) {
-    val stateKeyTag = Cache.getSubPageKey("SubmoduleListScreen")
+    val stateKeyTag = Cache.getSubPageKey(TAG)
 
     val homeTopBarScrollBehavior = AppModel.homeTopBarScrollBehavior
     val navController = AppModel.navController

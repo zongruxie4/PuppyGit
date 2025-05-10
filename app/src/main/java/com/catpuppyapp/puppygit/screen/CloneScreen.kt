@@ -111,7 +111,7 @@ fun CloneScreen(
     naviUp: () -> Boolean,
 ) {
 
-    val stateKeyTag = Cache.getSubPageKey("CloneScreen")
+    val stateKeyTag = Cache.getSubPageKey(TAG)
 
 
     val activityContext = LocalContext.current

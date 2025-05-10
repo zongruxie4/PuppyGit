@@ -57,6 +57,7 @@ import com.catpuppyapp.puppygit.utils.state.mutableCustomStateOf
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 
+private const val TAG = "CredentialNewOrEdit"
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -64,7 +65,7 @@ fun CredentialNewOrEdit(
     credentialId: String?,  //编辑已存在条目的时候，用得着这个
     naviUp: () -> Unit,
 ) {
-    val stateKeyTag = Cache.getSubPageKey("CredentialNewOrEdit")
+    val stateKeyTag = Cache.getSubPageKey(TAG)
 
     val activityContext = LocalContext.current
 

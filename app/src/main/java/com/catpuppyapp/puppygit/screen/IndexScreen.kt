@@ -53,7 +53,7 @@ fun IndexScreen(
     naviUp: () -> Unit
 ) {
 
-    val stateKeyTag = Cache.getSubPageKey("IndexScreen")
+    val stateKeyTag = Cache.getSubPageKey(TAG)
 
     val navController = AppModel.navController
     val homeTopBarScrollBehavior = AppModel.homeTopBarScrollBehavior

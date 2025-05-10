@@ -132,7 +132,7 @@ fun BranchListScreen(
 //    branch:String?,
     naviUp: () -> Boolean,
 ) {
-    val stateKeyTag = Cache.getSubPageKey("BranchListScreen")
+    val stateKeyTag = Cache.getSubPageKey(TAG)
     
     val homeTopBarScrollBehavior = AppModel.homeTopBarScrollBehavior
     val navController = AppModel.navController

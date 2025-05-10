@@ -178,7 +178,7 @@ fun TextEditor(
 
     decorationBox: DecorationBoxComposable = { _, _, _, _,_, innerTextField -> innerTextField(Modifier) },
 ) {
-    val stateKeyTag = Cache.getComponentKey(stateKeyTag, "TextEditor")
+    val stateKeyTag = Cache.getComponentKey(stateKeyTag, TAG)
 
     val density = LocalDensity.current
     val deviceConfiguration = LocalConfiguration.current

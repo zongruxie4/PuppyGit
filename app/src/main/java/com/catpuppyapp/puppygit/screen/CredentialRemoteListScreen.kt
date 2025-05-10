@@ -87,7 +87,7 @@ fun CredentialRemoteListScreen(
     isShowLink:Boolean,
     naviUp: () -> Unit,
 ) {
-    val stateKeyTag = Cache.getSubPageKey("CredentialRemoteListScreen")
+    val stateKeyTag = Cache.getSubPageKey(TAG)
 
     val (isShowLink, setIsShowLink) = rememberSaveable { mutableStateOf(isShowLink) }
 

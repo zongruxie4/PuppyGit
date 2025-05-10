@@ -77,7 +77,7 @@ fun SubPageEditor(
     filePathKey:String,
     naviUp:()->Unit
 ) {
-    val stateKeyTag = Cache.getSubPageKey("SubPageEditor")
+    val stateKeyTag = Cache.getSubPageKey(TAG)
 
 
 

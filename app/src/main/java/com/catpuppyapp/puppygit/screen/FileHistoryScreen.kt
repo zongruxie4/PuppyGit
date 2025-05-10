@@ -141,7 +141,7 @@ fun FileHistoryScreen(
     fileRelativePathKey:String,
     naviUp: () -> Unit,
 ) {
-    val stateKeyTag = Cache.getSubPageKey("FileHistoryScreen")
+    val stateKeyTag = Cache.getSubPageKey(TAG)
 
 
     //已处理这种情况，传参时传有效key，但把value设为空字符串，就解决了
