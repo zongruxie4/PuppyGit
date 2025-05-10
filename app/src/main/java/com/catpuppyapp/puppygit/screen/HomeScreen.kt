@@ -1176,7 +1176,8 @@ fun HomeScreen(
             if(currentHomeScreen.intValue == Cons.selectedItem_Repos) {
 //                changeStateTriggerRefreshPage(needRefreshRepoPage)
                 RepoInnerPage(
-                    stateKeyTag = Cache.combineKeys(stateKeyTag, "RepoInnerPage"),
+//                    stateKeyTag = Cache.combineKeys(stateKeyTag, "RepoInnerPage"),
+                    stateKeyTag = stateKeyTag,
 
                     requireInnerEditorOpenFile = requireInnerEditorOpenFile,
                     lastSearchKeyword=reposLastSearchKeyword,
@@ -1223,7 +1224,9 @@ fun HomeScreen(
             else if(currentHomeScreen.intValue== Cons.selectedItem_Files) {
 //                changeStateTriggerRefreshPage(needRefreshFilesPage)
                 FilesInnerPage(
-                    stateKeyTag = Cache.combineKeys(stateKeyTag, "FilesInnerPage"),
+//                    stateKeyTag = Cache.combineKeys(stateKeyTag, "FilesInnerPage"),
+                    stateKeyTag = stateKeyTag,
+
                     naviUp = {},
                     updateSelectedPath = {},
                     isFileChooser = false,
@@ -1275,7 +1278,8 @@ fun HomeScreen(
 //                changeStateTriggerRefreshPage(needRefreshEditorPage)
 
                 EditorInnerPage(
-                    stateKeyTag = Cache.combineKeys(stateKeyTag, "EditorInnerPage"),
+//                    stateKeyTag = Cache.combineKeys(stateKeyTag, "EditorInnerPage"),
+                    stateKeyTag = stateKeyTag,
 
                     previewLoading = editorPagePreviewLoading,
                     editorPreviewFileDto = editorPreviewFileDto,
@@ -1350,7 +1354,9 @@ fun HomeScreen(
 
                 //从抽屉菜单打开的changelist是对比worktree和index的文件，所以from是worktree
                 ChangeListInnerPage(
-                    stateKeyTag = Cache.combineKeys(stateKeyTag, "ChangeListInnerPage"),
+//                    stateKeyTag = Cache.combineKeys(stateKeyTag, "ChangeListInnerPage"),
+                    stateKeyTag = stateKeyTag,
+
                     lastSearchKeyword=changeListLastSearchKeyword,
                     searchToken=changeListSearchToken,
                     searching=changeListSearching,
@@ -1413,7 +1419,9 @@ fun HomeScreen(
 //                }
             }else if(currentHomeScreen.intValue == Cons.selectedItem_Settings) {
                 SettingsInnerPage(
-                    stateKeyTag = Cache.combineKeys(stateKeyTag, "SettingsInnerPage"),
+//                    stateKeyTag = Cache.combineKeys(stateKeyTag, "SettingsInnerPage"),
+                    stateKeyTag = stateKeyTag,
+
                     contentPadding = contentPadding,
                     needRefreshPage = needRefreshSettingsPage,
                     openDrawer = openDrawer,
@@ -1429,7 +1437,9 @@ fun HomeScreen(
                 SubscriptionPage(contentPadding = contentPadding, needRefresh = subscriptionPageNeedRefresh, openDrawer = openDrawer)
             }else if(currentHomeScreen.intValue == Cons.selectedItem_Service) {
                 ServiceInnerPage(
-                    stateKeyTag = Cache.combineKeys(stateKeyTag, "ServiceInnerPage"),
+//                    stateKeyTag = Cache.combineKeys(stateKeyTag, "ServiceInnerPage"),
+                    stateKeyTag = stateKeyTag,
+
                     contentPadding = contentPadding,
                     needRefreshPage = needRefreshServicePage,
                     openDrawer = openDrawer,
@@ -1438,7 +1448,9 @@ fun HomeScreen(
                 )
             }else if(currentHomeScreen.intValue == Cons.selectedItem_Automation) {
                 AutomationInnerPage(
-                    stateKeyTag = Cache.combineKeys(stateKeyTag, "AutomationInnerPage"),
+//                    stateKeyTag = Cache.combineKeys(stateKeyTag, "AutomationInnerPage"),
+                    stateKeyTag = stateKeyTag,
+
                     contentPadding = contentPadding,
                     needRefreshPage = needRefreshAutomationPage,
                     listState = automationListState,

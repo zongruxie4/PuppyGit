@@ -385,7 +385,9 @@ fun SubPageEditor(
 
 
         EditorInnerPage(
-            stateKeyTag = Cache.combineKeys(stateKeyTag, "EditorInnerPage"),
+//            stateKeyTag = Cache.combineKeys(stateKeyTag, "EditorInnerPage"),
+            stateKeyTag = stateKeyTag,
+
 
             previewLoading = editorPagePreviewLoading,
             editorPreviewFileDto = editorPreviewFileDto,

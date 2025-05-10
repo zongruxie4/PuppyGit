@@ -36,6 +36,8 @@ object Cache:CacheStoreImpl(){
         clearByKeyPrefix(Key.subPagesStateKeyPrefix)
     }
 
+
+    // 自定义状态存储器key相关函数：开始
     @Composable
     fun getSubPageKey(stateKeyTag:String):String {
         // e.g. "sub_pages_key_prefix:DiffScreen:ak1idkjgkk"
@@ -47,9 +49,12 @@ object Cache:CacheStoreImpl(){
     // 每个组件都应该有各自的stateKeyTag，子组件若需要，往下传递即可
     @Composable
     fun getComponentKey(parentKey:String, stateKeyTag:String): String {
-        // e.g. "sub_pages_key_prefix:DiffScreen:ak1idkjgkk:DiffRow:13idgiwkfd"
+        // e.g. 子页面："sub_pages_key_prefix:DiffScreen:ak1idkjgkk:DiffRow:13idgiwkfd"
+        //      顶级页面："HomeScreen:abcdef12345:DiffRow:abcdef12345"
         return rememberSaveable { parentKey+stateKeyTag+ keySeparator+ getShortUUID() }
     }
+    // 自定义状态存储器key相关函数：结束
+
 
     fun combineKeys(vararg keys: String):String {
         val ret = StringBuilder()

@@ -228,7 +228,9 @@ fun IndexScreen(
 //        val commitParentList = remember { mutableStateListOf<String>() }
 
         ChangeListInnerPage(
-            stateKeyTag = Cache.combineKeys(stateKeyTag, "ChangeListInnerPage"),
+//            stateKeyTag = Cache.combineKeys(stateKeyTag, "ChangeListInnerPage"),
+            stateKeyTag = stateKeyTag,
+
             lastSearchKeyword=changeListLastSearchKeyword,
             searchToken=changeListSearchToken,
             searching=changeListSearching,

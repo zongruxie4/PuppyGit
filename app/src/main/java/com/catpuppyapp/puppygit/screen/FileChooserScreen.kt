@@ -297,7 +297,8 @@ fun FileChooserScreen(
 
 //                changeStateTriggerRefreshPage(needRefreshFilesPage)
         FilesInnerPage(
-            stateKeyTag = Cache.combineKeys(stateKeyTag, "FilesInnerPage"),
+//            stateKeyTag = Cache.combineKeys(stateKeyTag, "FilesInnerPage"),
+            stateKeyTag = stateKeyTag,
             naviUp = naviUp,
             updateSelectedPath = updateSelectedPath,
             isFileChooser = isFileChooser,
