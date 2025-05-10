@@ -570,7 +570,7 @@ object Libgit2Helper {
         val funName = "statusListToStatusMap_LoadListInJni"
 
         val debugExeTime_Start = System.currentTimeMillis()
-        MyLog.d(TAG, "#$funName(): change list load method: start at $debugExeTime_Start")
+        MyLog.w(TAG, "#$funName(): change list load method: start at $debugExeTime_Start")
 
         //按路径名排序
         val index:MutableList<StatusTypeEntrySaver> = ArrayList()
@@ -728,7 +728,7 @@ object Libgit2Helper {
 
 
         val debugExeTime_End = System.currentTimeMillis()
-        MyLog.d(TAG, "#$funName(): change list load method: end at $debugExeTime_End, spent: ${debugExeTime_End - debugExeTime_Start}")
+        MyLog.w(TAG, "#$funName(): change list load method: end at $debugExeTime_End, spent: ${debugExeTime_End - debugExeTime_Start}")
 
         return Pair(isIndexChanged, resultMap);
     }
@@ -758,7 +758,7 @@ object Libgit2Helper {
         val funName = "statusListToStatusMap_legacy"
 
         val debugExeTime_Start = System.currentTimeMillis()
-        MyLog.d(TAG, "#$funName(): change list load method: start at: $debugExeTime_Start")
+        MyLog.w(TAG, "#$funName(): change list load method: start at: $debugExeTime_Start")
 
 
         //按路径名排序
@@ -961,7 +961,7 @@ object Libgit2Helper {
 
 
         val debugExeTime_End = System.currentTimeMillis()
-        MyLog.d(TAG, "#$funName(): change list load method: end at $debugExeTime_End, spent: ${debugExeTime_End - debugExeTime_Start}")
+        MyLog.w(TAG, "#$funName(): change list load method: end at $debugExeTime_End, spent: ${debugExeTime_End - debugExeTime_Start}")
 
         return Pair(isIndexChanged, resultMap);
     }
