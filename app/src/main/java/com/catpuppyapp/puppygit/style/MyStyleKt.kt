@@ -20,6 +20,7 @@ import androidx.compose.ui.unit.sp
 import com.catpuppyapp.puppygit.dto.DeviceWidthHeight
 import com.catpuppyapp.puppygit.ui.theme.Theme
 import com.catpuppyapp.puppygit.utils.UIHelper
+import com.catpuppyapp.puppygit.utils.fabBasePadding
 
 object MyStyleKt{
     val defaultHorizontalPadding = 10.dp
@@ -151,28 +152,35 @@ object MyStyleKt{
 
         @Composable
         fun getFabModifierForEditor(isMultipleSelectionMode:Boolean, isPortrait:Boolean):Modifier {
-            val kbHeight = UIHelper.getSoftkeyboardHeightInDp()
+            val naviPadding = UIHelper.getNaviBarsPadding()
+            //如果底部有导航栏，脚手架的fab会自动加padding，这时为了避免太高，需要减去navibar高度；否则不需要（不然键盘会盖住fab）
+            val kbOffset = naviPadding.calculateBottomPadding().value.toInt().let { if(it == 0) 0 else -it }
+            val kbHeight = UIHelper.getSoftkeyboardHeightInDp(offsetInDp = kbOffset)
 
             //多选模式不会显示键盘，就算显示也无法编辑文本内容，所以不需要ime padding
             return addNavPaddingIfNeed(
                 isPortrait,
 
                 //如果显示软键盘，则使用软键盘高度，否则，如果是多选模式，加BottomBar padding，否则不额外加padding
-                if(kbHeight.value > 0) {  //显示软键盘
-                    Modifier.padding(bottom = kbHeight)
-                }else {  //不显示软键盘
-                    if(isMultipleSelectionMode) Modifier.padding(bottom = BottomBar.height) else Modifier
-                }
+                Modifier.fabBasePadding().then(
+                    if(kbHeight.value > 0) {  //显示软键盘
+                        Modifier.padding(bottom = kbHeight)
+                    }else {  //不显示软键盘
+                        if(isMultipleSelectionMode) Modifier.padding(bottom = BottomBar.height) else Modifier
+                    }
+                )
             )
         }
 
         // go to top/bottom fab使用的这个modifier
+        @Composable
         fun getFabModifier(isPortrait:Boolean, deviceWidthHeight: DeviceWidthHeight):Modifier {
             //貌似Fab自带一点Padding，所以这里直接用BottomBar的高度即可，不需要再额外加padding
             // end 20dp 是为了避免浮动按钮盖住条目的三个点菜单按钮（例如Files页面，每个条目后面都有个3点菜单）
 //            return addNavPaddingIfNeed(isPortrait, Modifier.padding(bottom = BottomBar.height, end = (deviceWidthHeight.width * 0.1f).dp))
+            // 底部加padding是为了高过多选模式的bottom bar，并不是所有页面都有多选模式的底栏，但懒得判断了，直接加固定高度
             // end 30.dp 是为了避免遮盖列表条目的菜单按钮
-            return addNavPaddingIfNeed(isPortrait, Modifier.padding(bottom = BottomBar.fabBottomPadding, end = 30.dp))
+            return addNavPaddingIfNeed(isPortrait, Modifier.fabBasePadding().padding(bottom = BottomBar.fabBottomPadding, end = 30.dp))
         }
 
         //若是横屏，添加导航栏padding，不然浮动按钮会被导航栏盖住
@@ -181,6 +189,7 @@ object MyStyleKt{
                 modifier
             }else {
                 //平板不管横屏竖屏，导航键都在底部，所以如果在平板，这个navigationBarsPadding()会有问题，底部很高，右边没差，但期望的是横屏时右边加padding错开导航键，所以用这个判断不准
+                //这个不需要了，我自己做了处理，完美兼容平板
 //                modifier.navigationBarsPadding()
 
                   // 这个padding加得少和没加一样，加得多离屏幕边缘太远，索性不加了

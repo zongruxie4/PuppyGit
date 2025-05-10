@@ -3,8 +3,10 @@ package com.catpuppyapp.puppygit.utils
 import android.content.Context
 import android.content.res.Configuration
 import androidx.compose.foundation.ScrollState
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.ime
+import androidx.compose.foundation.layout.navigationBars
 import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.CheckBox
@@ -477,12 +479,35 @@ object UIHelper {
 
     // 需要加点偏移量不然会太高
     @Composable
-    fun getSoftkeyboardHeightInDp(density: Density = LocalDensity.current, offsetInDp: Int = -100): Dp {
+    fun getSoftkeyboardHeightInDp(density: Density = LocalDensity.current, offsetInDp: Int = 0): Dp {
         // 获取键盘高度，单位px
         val keyboardHeight = WindowInsets.ime.getBottom(density).coerceAtLeast(0)
 
         // 将键盘高度转换为 dp
         return with(density) { (keyboardHeight.toDp().value.toInt() + offsetInDp).coerceAtLeast(0).dp }
+    }
+
+
+    @Composable
+    fun getNaviBarsPadding(
+        density: Density = LocalDensity.current,
+        direction: LayoutDirection=LocalLayoutDirection.current,
+    ): PaddingValues {
+
+        val naviBarsTopHeight = WindowInsets.navigationBars.getTop(density).coerceAtLeast(0)
+        val naviBarsBottomHeight = WindowInsets.navigationBars.getBottom(density).coerceAtLeast(0)
+        val naviBarsLeftHeight = WindowInsets.navigationBars.getLeft(density, direction).coerceAtLeast(0)
+        val naviBarsRightHeight = WindowInsets.navigationBars.getRight(density, direction).coerceAtLeast(0)
+
+        return with(density) {
+            PaddingValues(
+                top = naviBarsTopHeight.toDp(),
+                bottom = naviBarsBottomHeight.toDp(),
+                start = naviBarsLeftHeight.toDp(),
+                end = naviBarsRightHeight.toDp(),
+            )
+        }
+
     }
 
 }
