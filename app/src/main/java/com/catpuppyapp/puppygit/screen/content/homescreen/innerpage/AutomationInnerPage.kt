@@ -35,9 +35,12 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.focus.FocusRequester
+import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.TextRange
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.TextFieldValue
@@ -272,23 +275,25 @@ fun AutomationInnerPage(
 
     val pullIntervalInSec = rememberSaveable { mutableStateOf(settingsState.value.automation.pullIntervalInSec.toString()) }
     val pushDelayInSec = rememberSaveable { mutableStateOf(settingsState.value.automation.pushDelayInSec.toString()) }
-    val pullIntervalOrPushDelayInSecBuf = rememberSaveable { mutableStateOf("") }
+    val pullIntervalOrPushDelayInSecBuf = mutableCustomStateOf(stateKeyTag, "pullIntervalOrPushDelayInSecBuf") { TextFieldValue("") }
     val truePullIntervalFalsePushDelay = rememberSaveable { mutableStateOf(false) }
     val showSetPullInternalOrPushDelayDialog = rememberSaveable { mutableStateOf(false) }
 
     val initPullIntervalOrPushDelayDialog = { isPullInterval:Boolean ->
         if(isPullInterval) {
             truePullIntervalFalsePushDelay.value = true
-            pullIntervalOrPushDelayInSecBuf.value = pullIntervalInSec.value
+            pullIntervalOrPushDelayInSecBuf.value = pullIntervalInSec.value.let { TextFieldValue(text = it, selection = TextRange(0, it.length)) }
         }else {
             truePullIntervalFalsePushDelay.value = false
-            pullIntervalOrPushDelayInSecBuf.value = pushDelayInSec.value
+            pullIntervalOrPushDelayInSecBuf.value = pushDelayInSec.value.let { TextFieldValue(text = it, selection = TextRange(0, it.length)) }
         }
 
         showSetPullInternalOrPushDelayDialog.value = true
     }
 
     if(showSetPullInternalOrPushDelayDialog.value) {
+        val focusRequester = remember { FocusRequester() }
+
         val truePullIntervalFalsePushDelay = truePullIntervalFalsePushDelay.value
 
         val title = if(truePullIntervalFalsePushDelay) stringResource(R.string.pull_interval) else stringResource(R.string.push_delay)
@@ -301,6 +306,7 @@ fun AutomationInnerPage(
                 Column(
                     modifier= Modifier
                         .fillMaxWidth()
+                        .focusRequester(focusRequester)
                         .verticalScroll(rememberScrollState())
                     ,
                 ) {
@@ -346,7 +352,7 @@ fun AutomationInnerPage(
 
             doJobThenOffLoading {
                 //解析
-                val newValue = parseLongOrDefault(pullIntervalOrPushDelayInSecBuf.value, default = null)
+                val newValue = parseLongOrDefault(pullIntervalOrPushDelayInSecBuf.value.text, default = null)
 
                 //检查
                 //注：只要解析成功，正数、负数、0，均可：正数，延迟指定时间执行；负数，不执行；0，立即执行。
@@ -374,6 +380,9 @@ fun AutomationInnerPage(
                 Msg.requireShow(activityContext.getString(R.string.saved))
             }
         }
+
+        LaunchedEffect(Unit) { runCatching { focusRequester.requestFocus() } }
+
     }
 
 
