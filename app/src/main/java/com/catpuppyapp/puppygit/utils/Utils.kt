@@ -642,13 +642,14 @@ fun isRepoReadyAndPathExist(r: RepoEntity?): Boolean {
         return false
     }
 
-    if (r.workStatus != Cons.dbRepoWorkStatusNotReadyNeedClone
-        && r.workStatus != Cons.dbRepoWorkStatusNotReadyNeedInit
+    if (Libgit2Helper.isRepoStatusReady(r)
         && r.isActive == Cons.dbCommonTrue
         && r.fullSavePath.isNotBlank()
+
+        //过滤地址有效但仓库无效的仓库
+        && r.gitRepoState != null
     ) {
-        val f = File(r.fullSavePath)
-        if (f.exists()) {
+        if (File(r.fullSavePath).exists()) {
             return true;
         }
     }
