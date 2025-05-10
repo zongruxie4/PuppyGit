@@ -60,6 +60,7 @@ import com.github.git24j.core.Diff.Line
 import com.github.git24j.core.FetchOptions
 import com.github.git24j.core.GitObject
 import com.github.git24j.core.Graph
+import com.github.git24j.core.IBitEnum
 import com.github.git24j.core.Index
 import com.github.git24j.core.Merge
 import com.github.git24j.core.Oid
@@ -549,6 +550,187 @@ object Libgit2Helper {
      * index时worktree的列表为空，反之，statuslist是worktree的列表时，index列表为空
      * 特殊情况：conflict条目在index和workdir两个列表都有，且条目一样
      * */
+    suspend fun statusListToStatusMap_LoadListInJni(
+        repo: Repository,
+        statusList:StatusList,
+        repoIdFromDb:String,
+
+        //只有可能是index to worktree或head to index
+        fromTo: String,
+
+        removeNonExistsConflictItems:Boolean=true
+
+        //Pair第1个参数代表本函数是否更新了index，第2个代表返回的数据。
+    ):Pair<Boolean, Map<String,List<StatusTypeEntrySaver>>> {
+        //按路径名排序
+        val index:MutableList<StatusTypeEntrySaver> = ArrayList()
+        val workdir:MutableList<StatusTypeEntrySaver> =ArrayList()
+        val conflict:MutableList<StatusTypeEntrySaver> = ArrayList()
+
+        val entryCnt: Int = statusList.entryCount()
+        val repoIndex = repo.index()
+        var isIndexChanged = false
+
+        val submodulePathList = getSubmodulePathList(repo)  // submodule name == it's path, so this list is path list too
+        val repoWorkDirPath = getRepoWorkdirNoEndsWithSlash(repo)
+
+        val allStatusEntryDtos = LibgitTwo.getStatusEntrys(statusList.rawPointer)
+        val trueIndex2WorktreeFalseHead2Index = fromTo == Cons.gitDiffFromIndexToWorktree;
+        //until， 左闭右开，左包含，右不包含
+        for (i in allStatusEntryDtos)  {
+            val oldFilePath = (if(trueIndex2WorktreeFalseHead2Index) i.indexToWorkDirOldFilePath else i.headToIndexOldFilePath) ?: ""
+            val newFilePath = (if(trueIndex2WorktreeFalseHead2Index) i.indexToWorkDirNewFilePath else i.headToIndexNewFilePath) ?: ""
+            var path= newFilePath
+            var fileSize = (if(trueIndex2WorktreeFalseHead2Index) i.indexToWorkDirNewFileSize else i.headToIndexNewFileSize) ?: 0L
+
+            val status = i.statusFlagToSet();  //status有可能有多个状态，例如：同时包含INDEX_NEW和WT_MODIFIED两种状态
+
+            //忽略的文件一般不需要包含，查询的时候就没查，应该没有状态为忽略的文件
+//                if(status.contains(Status.StatusT.IGNORED)) {
+//
+//                }
+            val statusTypeSaver = StatusTypeEntrySaver()
+            statusTypeSaver.repoWorkDirPath = repoWorkDirPath
+
+//                statusTypeSaver.entry = entry  //这个会随着列表的释放而被释放，持有引用可能会变成空指针
+            statusTypeSaver.repoIdFromDb = repoIdFromDb
+
+            if(status.contains(Status.StatusT.CONFLICTED)) {  //index或worktree都会包含冲突条目
+                val mustPath = newFilePath.ifEmpty { oldFilePath }
+                if(mustPath.isNotEmpty()) {
+                    val f = File(getRepoWorkdirNoEndsWithSlash(repo), mustPath)
+                    if(!f.exists() && removeNonExistsConflictItems){
+                        MyLog.w(TAG, "#statusListToStatusMap: removed a Non-exists conflict item from git, file '$mustPath' may delete after it become conflict item")
+
+                        repoIndex.conflictRemove(mustPath)
+                        isIndexChanged = true
+                    }else {
+                        statusTypeSaver.changeType=Cons.gitStatusConflict
+                        conflict.add(statusTypeSaver)
+                    }
+
+                }else{
+                    MyLog.w(TAG, "#statusListToStatusMap: conflict item with empty path!, repoWorkDir at '$repoWorkDirPath'")
+                }
+            }else{
+                //判断index还是worktree，用不同的变量判断，然后把条目添加到不同的列表
+                if(fromTo == Cons.gitDiffFromHeadToIndex) {  //index
+                    if(status.contains(Status.StatusT.INDEX_NEW)){
+                        statusTypeSaver.changeType=Cons.gitStatusNew
+                        index.add(statusTypeSaver)
+                    }else if(status.contains(Status.StatusT.INDEX_DELETED)){
+//                            println("newFIle:::"+newFile?.size?:0) // 0，无法获取已删除文件的大小，但提交后再diff，就能获取到大小了，可能是bug
+//                            println("oldFile:::"+oldFile?.size?:0)  // 0
+                        fileSize = i.headToIndexOldFileSize ?: 0L
+                        path=oldFilePath
+                        statusTypeSaver.changeType=Cons.gitStatusDeleted
+                        index.add(statusTypeSaver)
+                    }else if(status.contains(Status.StatusT.INDEX_MODIFIED)){
+                        statusTypeSaver.changeType=Cons.gitStatusModified
+                        index.add(statusTypeSaver)
+                    }else if(status.contains(Status.StatusT.INDEX_RENAMED)){
+                        statusTypeSaver.changeType=Cons.gitStatusRenamed
+                        index.add(statusTypeSaver)
+                    }else if(status.contains(Status.StatusT.INDEX_TYPECHANGE)){
+                        statusTypeSaver.changeType=Cons.gitStatusTypechanged
+                        index.add(statusTypeSaver)
+                    }
+
+                }else {  // worktree
+                    if(status.contains(Status.StatusT.WT_NEW)){ //untracked
+                        statusTypeSaver.changeType=Cons.gitStatusNew
+                        workdir.add(statusTypeSaver)
+                    }else if(status.contains(Status.StatusT.WT_DELETED)){
+                        //如果类型是删除，把file和path替换成旧文件的，不然文件大小会是0
+                        fileSize = i.indexToWorkDirOldFileSize ?: 0L
+                        path=oldFilePath
+                        statusTypeSaver.changeType=Cons.gitStatusDeleted
+                        workdir.add(statusTypeSaver)
+                    }else if(status.contains(Status.StatusT.WT_MODIFIED)){
+                        statusTypeSaver.changeType=Cons.gitStatusModified
+                        workdir.add(statusTypeSaver)
+                    }else if(status.contains(Status.StatusT.WT_RENAMED)){
+                        statusTypeSaver.changeType=Cons.gitStatusRenamed
+                        workdir.add(statusTypeSaver)
+                    }else if(status.contains(Status.StatusT.WT_TYPECHANGE)){
+                        statusTypeSaver.changeType=Cons.gitStatusTypechanged
+                        workdir.add(statusTypeSaver)
+                    }
+
+                }
+            }
+
+
+
+            //为目录递归添加文件
+            //xTODO 先改成检测status的时候把submodule排除
+            //xTODO(未来实现submodule的时候再做这个): 需要区分submodule和文件夹，如果是submodule，不遍历StatusEntry.itemType为submodule，当作文件夹条目列出来且不可diff
+            //xTODO: 如果path是个路径: 递归遍历，把里面所有文件都作为一个条目添加到map，每个条目的type都和路径的type一样，例如文件夹是untracked，则里面 所有的条目都是untracked
+            val canonicalPath = getRepoCanonicalPath(repo,path)
+            val fileType = getRepoPathSpecType(path)
+//                statusTypeSaver.itemType = fileType
+
+//                statusTypeSaver.itemType= if(submodulePathList.contains(path) && File(canonicalPath).isDirectory) Cons.gitItemTypeSubmodule else fileType
+            statusTypeSaver.itemType= if(submodulePathList.contains(path)) Cons.gitItemTypeSubmodule else fileType
+
+            if(statusTypeSaver.itemType == Cons.gitItemTypeSubmodule) {
+                statusTypeSaver.dirty = submoduleIsDirty(repo, path)
+            }
+
+            statusTypeSaver.canonicalPath = canonicalPath
+            statusTypeSaver.fileName = getFileNameFromCanonicalPath(canonicalPath)  // or File(canonicalPath).name
+            statusTypeSaver.relativePathUnderRepo = path
+            statusTypeSaver.fileParentPathOfRelativePath = getParentPathEndsWithSeparator(path)
+            statusTypeSaver.fileSizeInBytes = fileSize
+
+            //目前：libgit2 1.7.1有bug，status获取已删除文件有可能大小为0(并非百分百，若index为空，有可能获取到已删除文件的真实大小)，但实际不为0，所以这里检查下，如果大小等于0且类型是删除，用diffTree查询一下
+            //这两个判断条件没一个多余，大小为0的检测的作用是日后如果libgit2修复了获取删除文件大小错误的bug，就不会在执行此方法了，代码不用改动，又或者偶然能获取到正常文件大小，则不需要再多余查询，所以第1个条件必须
+            //第2个条件是因为我暂时只发现类型为删除的文件获取大小异常，所以其他类型不用检测，若日后发现其他类型也有问题，再改判断条件即可
+            if(statusTypeSaver.fileSizeInBytes==0L && statusTypeSaver.changeType == Cons.gitStatusDeleted) {
+                val diffItem = getSingleDiffItem(
+                    repo,
+                    statusTypeSaver.relativePathUnderRepo,
+                    fromTo,
+                    onlyCheckFileSize = true,
+
+                    // only check file size, most time very fast, no need set channel, the channel only require when loading a huge content
+                    loadChannel = null,
+                    checkChannelLinesLimit = -1,
+                    checkChannelSizeLimit = -1L,
+//                        loadChannelLock = null,
+                )
+                statusTypeSaver.fileSizeInBytes = diffItem.getEfficientFileSize()
+            }
+
+
+
+        }
+
+        if(isIndexChanged) {
+            repoIndex.write()
+        }
+
+        val resultMap:MutableMap<String,MutableList<StatusTypeEntrySaver>> = HashMap()
+        resultMap[Cons.gitStatusKeyIndex] = index
+        resultMap[Cons.gitStatusKeyWorkdir] = workdir
+        resultMap[Cons.gitStatusKeyConflict] = conflict
+
+        return Pair(isIndexChanged, resultMap);
+    }
+
+
+    /**return:
+     * {
+     *      index:{path:status, ...},
+     *      workdir:{path:status, ...},
+     *      conflict:{path:status}
+     * }，
+     * 注：untracked属于workdir
+     *
+     * 根据fromTo判断是index还是worktree的status list，然后往对应集合填条目(历史遗留问题，所以有index和work两个列表，其实有一个就行)。
+     * index时worktree的列表为空，反之，statuslist是worktree的列表时，index列表为空
+     * 特殊情况：conflict条目在index和workdir两个列表都有，且条目一样
+     * */
     suspend fun statusListToStatusMap(
         repo: Repository,
         statusList:StatusList,
@@ -570,10 +752,9 @@ object Libgit2Helper {
         val submodulePathList = getSubmodulePathList(repo)  // submodule name == it's path, so this list is path list too
         val repoWorkDirPath = getRepoWorkdirNoEndsWithSlash(repo)
 
-        val allEntryPtrs = statusList.entryRawPointers()
         //until， 左闭右开，左包含，右不包含
-        for (i in allEntryPtrs)  {
-            val entry = Status.Entry(i)
+        for (i in 0 until entryCnt)  {
+            val entry = statusList.byIndex(i)
 
             var delta = entry.indexToWorkdir  //changelist page
             if(fromTo == Cons.gitDiffFromHeadToIndex){  //indexpage
