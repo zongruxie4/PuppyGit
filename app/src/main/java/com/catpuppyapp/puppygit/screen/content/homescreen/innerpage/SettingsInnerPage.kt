@@ -242,6 +242,7 @@ fun SettingsInnerPage(
     val dev_singleDiffOn = rememberSaveable { DevFeature.singleDiff.state }
     val dev_showMatchedAllAtDiff = rememberSaveable { DevFeature.showMatchedAllAtDiff.state }
     val dev_showRandomLaunchingText = rememberSaveable { DevFeature.showRandomLaunchingText.state }
+    val dev_legacyChangeListLoadMethod = rememberSaveable { DevFeature.legacyChangeListLoadMethod.state }
 
 //    val showResetKnownHostsDialog = rememberSaveable { mutableStateOf(false) }
     val showForgetHostKeysDialog = rememberSaveable { mutableStateOf(false) }
@@ -1253,6 +1254,27 @@ fun SettingsInnerPage(
 
                 Column(modifier = Modifier.fillMaxWidth(itemLeftWidthForSwitcher)) {
                     Text(DevFeature.showRandomLaunchingText.text, fontSize = itemFontSize)
+                }
+
+                Icon(
+                    modifier = Modifier.size(switcherIconSize),
+                    imageVector = UIHelper.getIconForSwitcher(itemEnabled),
+                    contentDescription = if(itemEnabled) stringResource(R.string.enable) else stringResource(R.string.disable),
+                    tint = UIHelper.getColorForSwitcher(itemEnabled),
+
+                )
+            }
+
+            // legacy change list load method
+            SettingsContent(
+                onClick = {
+                    DevFeature.legacyChangeListLoadMethod.update(!dev_legacyChangeListLoadMethod.value, activityContext)
+                }
+            ) {
+                val itemEnabled = dev_legacyChangeListLoadMethod.value
+
+                Column(modifier = Modifier.fillMaxWidth(itemLeftWidthForSwitcher)) {
+                    Text(DevFeature.legacyChangeListLoadMethod.text, fontSize = itemFontSize)
                 }
 
                 Icon(

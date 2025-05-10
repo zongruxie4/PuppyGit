@@ -66,6 +66,20 @@ object DevFeature {
 
     // dev settings items: end
 
+    // 旧change list 加载方法: start
+    val legacyChangeListLoadMethod = object : DevItem<Boolean>(text = "Legacy ChangeList Load Method", state = mutableStateOf(false)) {
+        override fun update(newValue: Boolean, context: Context?) {
+            //更新状态变量，使用的时候就不用查配置文件了
+            state.value = newValue
+
+            //写入配置文件
+            SettingsUtil.update { it.devSettings.legacyChangeListLoadMethod = newValue }
+        }
+    }
+
+    // 旧change list 加载方法: end
+
+
 }
 
 abstract class DevItem<T>(
