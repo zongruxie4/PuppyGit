@@ -176,7 +176,8 @@ fun EditorInnerPage(
     undoStack: UndoStack,
 
 ) {
-
+    // inner page严格来说和普通组件地位一样，所以应该用componentKey
+    val stateKeyTag = Cache.getComponentKey(stateKeyTag, "EditorInnerPage")
 
     val scope = rememberCoroutineScope()
     val activityContext = LocalContext.current
@@ -1276,6 +1277,7 @@ fun EditorInnerPage(
         val fileEditedPos = FileOpenHistoryMan.get(fileFullPath.ioPath)
 
         FileEditor(
+            stateKeyTag = stateKeyTag,
             requireEditorScrollToPreviewCurPos = requireEditorScrollToPreviewCurPos,
             requirePreviewScrollToEditorCurPos = requirePreviewScrollToEditorCurPos,
             isSubPageMode = isSubPageMode,

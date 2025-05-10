@@ -82,6 +82,7 @@ import com.catpuppyapp.puppygit.utils.EditCache
 import com.catpuppyapp.puppygit.utils.Msg
 import com.catpuppyapp.puppygit.utils.MyLog
 import com.catpuppyapp.puppygit.utils.UIHelper
+import com.catpuppyapp.puppygit.utils.cache.Cache
 import com.catpuppyapp.puppygit.utils.doJobThenOffLoading
 import com.catpuppyapp.puppygit.utils.replaceStringResList
 import com.catpuppyapp.puppygit.utils.state.CustomStateSaveable
@@ -94,6 +95,7 @@ private const val TAG = "FileEditor"
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun FileEditor(
+    stateKeyTag:String,
     requireEditorScrollToPreviewCurPos:MutableState<Boolean>,
     requirePreviewScrollToEditorCurPos:MutableState<Boolean>,
     isSubPageMode:Boolean,
@@ -134,6 +136,8 @@ fun FileEditor(
     fontSize:MutableIntState,
     undoStack: UndoStack
 ) {
+    val stateKeyTag = Cache.getComponentKey(stateKeyTag, "FileEditor")
+
     val activityContext = LocalContext.current
     val haptic = LocalHapticFeedback.current
     val density = LocalDensity.current
@@ -364,6 +368,7 @@ fun FileEditor(
                 val changeTypeWidth = remember { 10.dp }
 
                 TextEditor(
+                    stateKeyTag = stateKeyTag,
                     undoStack = undoStack,
                     curPreviewScrollState = curPreviewScrollState,
                     requireEditorScrollToPreviewCurPos = requireEditorScrollToPreviewCurPos,

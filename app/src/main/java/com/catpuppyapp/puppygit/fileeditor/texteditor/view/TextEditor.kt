@@ -40,6 +40,7 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusRequester
+import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.platform.LocalConfiguration
@@ -49,9 +50,11 @@ import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.platform.LocalTextInputService
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.TextRange
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
+import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.unit.dp
 import com.catpuppyapp.puppygit.compose.AcceptButtons
 import com.catpuppyapp.puppygit.compose.ClickableText
@@ -77,10 +80,12 @@ import com.catpuppyapp.puppygit.utils.Msg
 import com.catpuppyapp.puppygit.utils.MyLog
 import com.catpuppyapp.puppygit.utils.PatchUtil
 import com.catpuppyapp.puppygit.utils.UIHelper
+import com.catpuppyapp.puppygit.utils.cache.Cache
 import com.catpuppyapp.puppygit.utils.doJobThenOffLoading
 import com.catpuppyapp.puppygit.utils.fileopenhistory.FileOpenHistoryMan
 import com.catpuppyapp.puppygit.utils.replaceStringResList
 import com.catpuppyapp.puppygit.utils.state.CustomStateSaveable
+import com.catpuppyapp.puppygit.utils.state.mutableCustomStateOf
 import kotlinx.parcelize.Parcelize
 
 private const val TAG ="TextEditor"
@@ -146,6 +151,8 @@ private val customTextSelectionColors_hideCursorHandle = MyStyleKt.TextSelection
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun TextEditor(
+    stateKeyTag:String,
+
     undoStack:UndoStack,
     curPreviewScrollState: ScrollState,
     requireEditorScrollToPreviewCurPos:MutableState<Boolean>,
@@ -171,6 +178,7 @@ fun TextEditor(
 
     decorationBox: DecorationBoxComposable = { _, _, _, _,_, innerTextField -> innerTextField(Modifier) },
 ) {
+    val stateKeyTag = Cache.getComponentKey(stateKeyTag, "TextEditor")
 
     val density = LocalDensity.current
     val deviceConfiguration = LocalConfiguration.current
@@ -198,7 +206,7 @@ fun TextEditor(
 //    val focusRequesters = remember { mutableStateListOf<FocusRequester>() }  //不能用list，滚动两下页面就会报错
 
     val settings = remember { SettingsUtil.getSettingsSnapshot() }
-    val conflictKeyword = remember { mutableStateOf(settings.editor.conflictStartStr) }
+    val conflictKeyword = remember(settings.editor.conflictStartStr) { mutableStateOf(settings.editor.conflictStartStr) }
 
 
 
@@ -207,7 +215,7 @@ fun TextEditor(
 //    var lastFirstVisibleLineIndexState  by remember { mutableIntStateOf(lastEditedPos.firstVisibleLineIndex) }
 
     val showGoToLineDialog  = rememberSaveable { mutableStateOf(false) }
-    val goToLineValue  = rememberSaveable { mutableStateOf("") }
+    val goToLineValue  = mutableCustomStateOf(stateKeyTag, "goToLineValue") { TextFieldValue("") }
     val lastVisibleLineState  = rememberSaveable { mutableStateOf(0) }
 
     //是否显示光标拖手(cursor handle
@@ -383,6 +391,7 @@ fun TextEditor(
     }
     if(requestFromParent.value==PageRequest.goToLine) {
         PageRequest.clearStateThenDoAct(requestFromParent) {
+            goToLineValue.value = goToLineValue.value.let { it.copy(selection = TextRange(0, it.text.length)) }
             showGoToLineDialog.value=true
         }
     }
@@ -546,6 +555,8 @@ fun TextEditor(
     }
 
     if(showGoToLineDialog.value) {
+        val focusRequester = remember { FocusRequester() }
+
         val firstLine = "1"
         val lastLine = ""+textEditorState.fields.size
         val lineNumRange = "$firstLine-$lastLine"
@@ -563,11 +574,12 @@ fun TextEditor(
                         modifier = Modifier
                             .fillMaxWidth()
                             .padding(10.dp)
+                            .focusRequester(focusRequester)
                         ,
                         keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number, imeAction = ImeAction.Go),
                         keyboardActions = KeyboardActions(onGo = {
                             showGoToLineDialog.value = false
-                            doGoToLine(goToLineValue.value)
+                            doGoToLine(goToLineValue.value.text)
                         }),
                         singleLine = true,
 
@@ -595,7 +607,7 @@ fun TextEditor(
                         ClickableText(
                             text = stringResource(R.string.first_line),
                             modifier = MyStyleKt.ClickableText.modifier.clickable {
-                                goToLineValue.value = firstLine
+                                goToLineValue.value = TextFieldValue(firstLine)
                             },
                             fontWeight = FontWeight.Light
                         )
@@ -605,7 +617,7 @@ fun TextEditor(
                         ClickableText(
                             text = stringResource(R.string.last_line),
                             modifier = MyStyleKt.ClickableText.modifier.clickable {
-                                goToLineValue.value = lastLine
+                                goToLineValue.value = TextFieldValue(lastLine)
                             },
                             fontWeight = FontWeight.Light
                         )
@@ -617,14 +629,16 @@ fun TextEditor(
 
 
             },
-            okBtnEnabled = goToLineValue.value.isNotBlank(),
+            okBtnEnabled = goToLineValue.value.text.isNotBlank(),
             okBtnText = stringResource(id = R.string.go),
             cancelBtnText = stringResource(id = R.string.cancel),
             onCancel = { showGoToLineDialog.value = false }
         ) {
             showGoToLineDialog.value = false
-            doGoToLine(goToLineValue.value)
+            doGoToLine(goToLineValue.value.text)
         }
+
+        LaunchedEffect(Unit) { runCatching { focusRequester.requestFocus() } }
     }
 
 //    val scrollTo = { lineIndex:Int ->

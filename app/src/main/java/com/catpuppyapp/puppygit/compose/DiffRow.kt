@@ -100,7 +100,7 @@ fun DiffRow (
     activityContext:Context
 
 ) {
-    val stateKeyTag = Cache.getSubPageKey(stateKeyTag)
+    val stateKeyTag = Cache.getComponentKey(stateKeyTag, "DiffRow")
 
     // disable for EOF, the EOF showing sometimes false-added
     // 禁用EOF点击菜单，EOF有时候假添加，就是明明没有eof，但显示新增了eof，可能是libgit2 bug

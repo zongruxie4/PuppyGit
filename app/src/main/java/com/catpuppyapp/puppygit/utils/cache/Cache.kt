@@ -42,6 +42,15 @@ object Cache:CacheStoreImpl(){
         return rememberSaveable { Key.subPagesStateKeyPrefix+stateKeyTag+ keySeparator+ getShortUUID() }
     }
 
+    // 给组件用的，一个页面可能有多个组件，每个都需要单独生成，会"继承"父组件的stateKeyTag，
+    // 是否会在返回顶级页面清理取决于其父组件是否是顶级页面，由parentKey(即父组件的stateKeyTag)判断
+    // 每个组件都应该有各自的stateKeyTag，子组件若需要，往下传递即可
+    @Composable
+    fun getComponentKey(parentKey:String, stateKeyTag:String): String {
+        // e.g. "sub_pages_key_prefix:DiffScreen:ak1idkjgkk:DiffRow:13idgiwkfd"
+        return rememberSaveable { parentKey+stateKeyTag+ keySeparator+ getShortUUID() }
+    }
+
     fun combineKeys(vararg keys: String):String {
         val ret = StringBuilder()
 
