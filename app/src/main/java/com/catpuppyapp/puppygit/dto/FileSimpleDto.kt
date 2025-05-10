@@ -1,8 +1,9 @@
 package com.catpuppyapp.puppygit.dto
 
+import android.content.Context
+import com.catpuppyapp.puppygit.screen.shared.FilePath
 import com.catpuppyapp.puppygit.screen.shared.FuckSafFile
 import com.catpuppyapp.puppygit.utils.MyLog
-import java.io.File
 import java.util.concurrent.TimeUnit
 
 private const val TAG = "FileSimpleDto"
@@ -43,8 +44,13 @@ data class FileSimpleDto(
     }
 
 
-    fun toFile():File {
-        return File(fullPath)
+//  避免错误传saf uri进来，禁用这方法了
+//    fun toFile():File {
+//        return File(fullPath)
+//    }
+
+    fun toFuckSafFile(context:Context?): FuckSafFile {
+        return FuckSafFile(context, FilePath(fullPath))
     }
 
 
