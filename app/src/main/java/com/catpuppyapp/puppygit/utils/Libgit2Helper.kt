@@ -12,6 +12,7 @@ import com.catpuppyapp.puppygit.data.entity.RepoEntity
 import com.catpuppyapp.puppygit.data.repository.CredentialRepository
 import com.catpuppyapp.puppygit.data.repository.RemoteRepository
 import com.catpuppyapp.puppygit.data.repository.RepoRepository
+import com.catpuppyapp.puppygit.dev.DevFeature
 import com.catpuppyapp.puppygit.dto.RemoteDto
 import com.catpuppyapp.puppygit.dto.createCommitDto
 import com.catpuppyapp.puppygit.dto.createFileHistoryDto
@@ -740,6 +741,20 @@ object Libgit2Helper {
 
         //Pair第1个参数代表本函数是否更新了index，第2个代表返回的数据。
     ):Pair<Boolean, Map<String,List<StatusTypeEntrySaver>>> {
+
+        //如果不使用旧的加载方式，就用新的
+        if(!DevFeature.legacyChangeListLoadMethod.state.value) {
+            return statusListToStatusMap_LoadListInJni(
+                        repo,
+                        statusList,
+                        repoIdFromDb,
+                        fromTo,
+                        removeNonExistsConflictItems,
+
+            )
+        }
+
+
         //按路径名排序
         val index:MutableList<StatusTypeEntrySaver> = ArrayList()
         val workdir:MutableList<StatusTypeEntrySaver> =ArrayList()
