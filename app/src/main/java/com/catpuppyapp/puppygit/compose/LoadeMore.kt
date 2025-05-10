@@ -16,7 +16,6 @@ import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.MutableState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
@@ -57,6 +56,8 @@ fun LoadMore(
 
     val buttonHeight = 50
 
+    // 文字的padding，避免太靠近卡片内部边缘
+    val textLineModifier = Modifier.padding(horizontal = 10.dp)
 
 
     Column(modifier= Modifier
@@ -101,7 +102,7 @@ fun LoadMore(
 
                 ) {
                     Row (
-                        modifier = Modifier.align(Alignment.Center),
+                        modifier = textLineModifier.align(Alignment.Center),
                         horizontalArrangement = Arrangement.Center,
                         verticalAlignment = Alignment.CenterVertically,
                     ) {
@@ -134,6 +135,7 @@ fun LoadMore(
         if(enableAndShowLoadToEnd) {
             Spacer(modifier = Modifier.height(20.dp))
 
+
             Card(
                 //0.9f 占父元素宽度的百分之90
                 modifier = Modifier
@@ -150,7 +152,7 @@ fun LoadMore(
 
             ) {
                 Row(
-                    modifier = Modifier
+                    modifier = textLineModifier
                         .fillMaxWidth()
                         .height(buttonHeight.dp)
                     ,
@@ -163,6 +165,7 @@ fun LoadMore(
                 }
 
             }
+
         }
 
         Spacer(modifier = Modifier.height(95.dp))
