@@ -26,8 +26,6 @@ extern "C"
     /** size_t git_status_list_entrycount(git_status_list *statuslist); */
     JNIEXPORT jint JNICALL J_MAKE_METHOD(Status_jniListEntrycount)(JNIEnv *env, jclass obj, jlong statuslistPtr);
 
-    JNIEXPORT jlongArray JNICALL J_MAKE_METHOD(Status_jniGetStatusEntryRawPointers)(JNIEnv *env, jclass obj, jlong statuslistPtr);
-
     /** const git_status_entry * git_status_byindex(git_status_list *statuslist, size_t idx); */
     JNIEXPORT jlong JNICALL J_MAKE_METHOD(Status_jniByindex)(JNIEnv *env, jclass obj, jlong statuslistPtr, jint idx);
 
