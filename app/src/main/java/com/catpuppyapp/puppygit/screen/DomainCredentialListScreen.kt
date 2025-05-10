@@ -586,7 +586,9 @@ fun DomainCredentialListScreen(
         // don't use this way to track screen disappearance
         // DisposableEffect is better for this
         try {
-            doJobThenOffLoading(loadingOn = loadingOn, loadingOff = loadingOff, loadingText=activityContext.getString(R.string.loading)) job@{
+//            doJobThenOffLoading(loadingOn = loadingOn, loadingOff = loadingOff, loadingText=activityContext.getString(R.string.loading)) job@{
+            doJobThenOffLoading {
+
                 list.value.clear()
                 credentialList.value.clear()
 

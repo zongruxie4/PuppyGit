@@ -1058,8 +1058,8 @@ fun CloneScreen(
         //      从数据库异步查询repo数据，更新页面state
         //      设置页面loading 为false
         doJobThenOffLoading(
-            loadingOn = { showLoadingDialog.value = true },
-            loadingOff = { showLoadingDialog.value = false }
+//            loadingOn = { showLoadingDialog.value = true },
+//            loadingOff = { showLoadingDialog.value = false }
         ) job@{
             if (isEditMode) {  //如果是编辑模式，查询仓库信息
                 val repoDb = AppModel.dbContainer.repoRepository

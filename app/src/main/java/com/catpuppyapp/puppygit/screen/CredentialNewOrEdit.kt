@@ -458,8 +458,8 @@ fun CredentialNewOrEdit(
         //      从数据库异步查询repo数据，更新页面state
         //      设置页面loading 为false
         doJobThenOffLoading(
-            loadingOn = { showLoadingDialog.value = true },
-            loadingOff = { showLoadingDialog.value = false }
+//            loadingOn = { showLoadingDialog.value = true },
+//            loadingOff = { showLoadingDialog.value = false }
         ) job@{
             // 废弃，没必要重置，只重置这个状态，其他状态不重置，万一按钮隐藏了但密码状态为显示？怎么办？根本没必要重置，让这个变量个其他变量生命周期和初始状态都一致即可）重置此变量，避免错误显示查看密码按钮。
 //         //   oldPassIsEmpty.value = false

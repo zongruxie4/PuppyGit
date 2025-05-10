@@ -1417,7 +1417,9 @@ fun SubmoduleListScreen(
                 refreshId != needRefresh.value
             }
 
-            doJobThenOffLoading(loadingOn = loadingOn, loadingOff = loadingOff, loadingText = activityContext.getString(R.string.loading)) {
+//            doJobThenOffLoading(loadingOn = loadingOn, loadingOff = loadingOff, loadingText = activityContext.getString(R.string.loading)) {
+            doJobThenOffLoading {
+                
                 list.value.clear()  //先清一下list，然后可能添加也可能不添加
                 credentialList.value.clear()
 

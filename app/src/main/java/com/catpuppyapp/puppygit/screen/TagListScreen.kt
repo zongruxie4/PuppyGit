@@ -1008,7 +1008,8 @@ fun TagListScreen(
                 refreshId != needRefresh.value
             }
 
-            doJobThenOffLoading(loadingOn = loadingOn, loadingOff = loadingOff, loadingText = activityContext.getString(R.string.loading)) {
+//            doJobThenOffLoading(loadingOn = loadingOn, loadingOff = loadingOff, loadingText = activityContext.getString(R.string.loading)) {
+            doJobThenOffLoading {
                 list.value.clear()  //先清一下list，然后可能添加也可能不添加
 
                 if(!repoId.isNullOrBlank()) {
@@ -1064,7 +1065,6 @@ fun TagListScreen(
             }
         } catch (e: Exception) {
             MyLog.e(TAG, "#LaunchedEffect() err:"+e.stackTraceToString())
-//            ("LaunchedEffect: job cancelled")
         }
     }
 
