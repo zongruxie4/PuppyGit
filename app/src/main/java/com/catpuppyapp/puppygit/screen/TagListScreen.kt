@@ -56,6 +56,7 @@ import com.catpuppyapp.puppygit.compose.ClickableText
 import com.catpuppyapp.puppygit.compose.CopyableDialog
 import com.catpuppyapp.puppygit.compose.CreateTagDialog
 import com.catpuppyapp.puppygit.compose.FilterTextField
+import com.catpuppyapp.puppygit.compose.FullScreenScrollableColumn
 import com.catpuppyapp.puppygit.compose.GoToTopAndGoToBottomFab
 import com.catpuppyapp.puppygit.compose.LoadingDialog
 import com.catpuppyapp.puppygit.compose.LongPressAbleIconBtn
@@ -646,7 +647,13 @@ fun TagListScreen(
         }
     }
 
-
+    val isInitLoading = rememberSaveable { mutableStateOf(true) }
+    val initLoadingOn = { msg:String ->
+        isInitLoading.value = true
+    }
+    val initLoadingOff = {
+        isInitLoading.value = false
+    }
 
 
     Scaffold(
@@ -781,52 +788,35 @@ fun TagListScreen(
 
 
             if(list.value.isEmpty()) {  //无条目，显示可创建或fetch
-                Column(
-                    modifier = Modifier
-                        .fillMaxSize()
-                        .padding(contentPadding)
-//                        .padding(bottom = 80.dp)  //不要在这加padding，如果想加，应在底部加个padding row
-                        .verticalScroll(rememberScrollState())
-                    ,
-                    verticalArrangement = Arrangement.Center,
-                    horizontalAlignment = Alignment.CenterHorizontally,
-
-                    ) {
-                    Row(
-                        modifier = Modifier
-                            .padding(top = 10.dp)
-                        ,
-                    ) {
-                        Text(
-                            text = stringResource(R.string.no_tags_found),
-                        )
-                    }
-                    Row(
-                        modifier = Modifier
-                            .padding(top = 10.dp)
-                        ,
-                        horizontalArrangement = Arrangement.Center,
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        ClickableText(
-                            text = stringResource(R.string.fetch),
-                            modifier = MyStyleKt.ClickableText.modifierNoPadding
-                                .clickable {
-                                    initFetchTagDialog()
-                                },
-                        )
-                        Text(
-                            text =  " "+stringResource(R.string.or_str)+" ",
-                        )
-                        ClickableText(
-                            text =  stringResource(R.string.create),
-                            modifier = MyStyleKt.ClickableText.modifierNoPadding
-                                .clickable {
-                                    val hash = ""
-                                    initNewTagDialog(hash)
-                                }
-                            ,
-                        )
+                FullScreenScrollableColumn(contentPadding) {
+                    if(isInitLoading.value) {
+                        Text(text = stringResource(R.string.loading))
+                    }else {
+                        Row(modifier = Modifier.padding(top = 10.dp)) {
+                            Text(text = stringResource(R.string.no_tags_found))
+                        }
+                        Row(modifier = Modifier.padding(top = 10.dp),
+                            horizontalArrangement = Arrangement.Center,
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            ClickableText(
+                                text = stringResource(R.string.fetch),
+                                modifier = MyStyleKt.ClickableText.modifierNoPadding
+                                    .clickable {
+                                        initFetchTagDialog()
+                                    },
+                            )
+                            Text(text =  " "+stringResource(R.string.or_str)+" ")
+                            ClickableText(
+                                text =  stringResource(R.string.create),
+                                modifier = MyStyleKt.ClickableText.modifierNoPadding
+                                    .clickable {
+                                        val hash = ""
+                                        initNewTagDialog(hash)
+                                    }
+                                ,
+                            )
+                        }
                     }
                 }
 
@@ -1009,7 +999,7 @@ fun TagListScreen(
             }
 
 //            doJobThenOffLoading(loadingOn = loadingOn, loadingOff = loadingOff, loadingText = activityContext.getString(R.string.loading)) {
-            doJobThenOffLoading {
+            doJobThenOffLoading(initLoadingOn, initLoadingOff) {
                 list.value.clear()  //先清一下list，然后可能添加也可能不添加
 
                 if(!repoId.isNullOrBlank()) {

@@ -29,17 +29,7 @@ fun PageCenterIconButton(
     elseContent: @Composable ()->Unit = {},  // condition为false显示此内容
     content: @Composable () ->Unit,  // condition为true显示此内容
 ) {
-    Column(
-        modifier = Modifier
-            .fillMaxSize()
-            .padding(contentPadding)
-            .verticalScroll(rememberScrollState())
-
-        ,
-        verticalArrangement = Arrangement.Center,
-        horizontalAlignment = Alignment.CenterHorizontally,
-
-    ) {
+    FullScreenScrollableColumn(contentPadding) {
         if(condition) {
             //interactionSource和indication的作用是隐藏按下时的背景半透明那个按压效果，很难看，所以隐藏
             Column(modifier = Modifier.clickable(interactionSource = remember { MutableInteractionSource() }, indication = null) {

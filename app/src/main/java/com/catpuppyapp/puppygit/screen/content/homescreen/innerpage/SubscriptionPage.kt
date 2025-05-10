@@ -53,9 +53,9 @@ fun SubscriptionPage(contentPadding: PaddingValues, needRefresh: MutableState<St
 
 
     Column (modifier = Modifier
+        .fillMaxSize()
         .padding(contentPadding)
         .padding(top = 10.dp)
-        .fillMaxSize()
         .verticalScroll(rememberScrollState())
         ,
         horizontalAlignment = Alignment.CenterHorizontally,

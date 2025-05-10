@@ -48,6 +48,7 @@ import com.catpuppyapp.puppygit.compose.ConfirmDialog2
 import com.catpuppyapp.puppygit.compose.CredentialSelector
 import com.catpuppyapp.puppygit.compose.DomainCredItem
 import com.catpuppyapp.puppygit.compose.FilterTextField
+import com.catpuppyapp.puppygit.compose.FullScreenScrollableColumn
 import com.catpuppyapp.puppygit.compose.GoToTopAndGoToBottomFab
 import com.catpuppyapp.puppygit.compose.InfoDialog
 import com.catpuppyapp.puppygit.compose.LoadingDialog
@@ -372,6 +373,16 @@ fun DomainCredentialListScreen(
         }
     }
 
+
+    val isInitLoading = rememberSaveable { mutableStateOf(true) }
+    val initLoadingOn = { msg:String ->
+        isInitLoading.value = true
+    }
+    val initLoadingOff = {
+        isInitLoading.value = false
+    }
+
+
     Scaffold(
         modifier = Modifier.nestedScroll(homeTopBarScrollBehavior.nestedScrollConnection),
         topBar = {
@@ -523,54 +534,61 @@ fun DomainCredentialListScreen(
 
             }else {
 
-                //根据关键字过滤条目
-                val keyword = filterKeyword.value.text.lowercase()  //关键字
-                val enableFilter = filterModeActuallyEnabled(filterModeOn.value, keyword)
-
-                val lastNeedRefresh = rememberSaveable { mutableStateOf("") }
-                val list = filterTheList(
-                    needRefresh = filterResultNeedRefresh.value,
-                    lastNeedRefresh = lastNeedRefresh,
-                    enableFilter = enableFilter,
-                    keyword = keyword,
-                    lastKeyword = lastKeyword,
-                    searching = searching,
-                    token = token,
-                    activityContext = activityContext,
-                    filterList = filterList.value,
-                    list = list.value,
-                    resetSearchVars = resetSearchVars,
-                    match = { idx:Int, it: DomainCredentialDto ->
-                        it.domain.lowercase().contains(keyword) || (it.credName?.lowercase()?.contains(keyword) == true)
+                if(list.value.isEmpty()) {
+                    FullScreenScrollableColumn(contentPadding) {
+                        Text(stringResource(if(isInitLoading.value) R.string.loading else R.string.item_list_is_empty))
                     }
-                )
+                }else {
 
-                val listState = if(enableFilter) filterListState else listState
+                    //根据关键字过滤条目
+                    val keyword = filterKeyword.value.text.lowercase()  //关键字
+                    val enableFilter = filterModeActuallyEnabled(filterModeOn.value, keyword)
+
+                    val lastNeedRefresh = rememberSaveable { mutableStateOf("") }
+                    val list = filterTheList(
+                        needRefresh = filterResultNeedRefresh.value,
+                        lastNeedRefresh = lastNeedRefresh,
+                        enableFilter = enableFilter,
+                        keyword = keyword,
+                        lastKeyword = lastKeyword,
+                        searching = searching,
+                        token = token,
+                        activityContext = activityContext,
+                        filterList = filterList.value,
+                        list = list.value,
+                        resetSearchVars = resetSearchVars,
+                        match = { idx:Int, it: DomainCredentialDto ->
+                            it.domain.lowercase().contains(keyword) || (it.credName?.lowercase()?.contains(keyword) == true)
+                        }
+                    )
+
+                    val listState = if(enableFilter) filterListState else listState
 //            if(enableFilter) {  //更新filter列表state
 //                filterListState.value = listState
 //            }
-                //更新是否启用filter
-                enableFilterState.value = enableFilter
+                    //更新是否启用filter
+                    enableFilterState.value = enableFilter
 
-                MyLazyColumn(
-                    contentPadding = contentPadding,
-                    list = list,
-                    listState = listState,
-                    requireForEachWithIndex = true,
-                    requirePaddingAtBottom = true
-                ) {idx, value->
-                    DomainCredItem (showBottomSheet = showBottomSheet, curCredentialState = curCredential, idx = idx, thisItem = value, lastClickedItemKey = lastClickedItemKey) {
-                        initCreateOrEditDialog(
-                            isCreateParam = false,
-                            curDomainNameParam = value.domain,
-                            curDomainCredItemIdParam = value.domainCredId,
-                            curCredentialId=value.credId?:"",
-                            curSshCredentialId=value.sshCredId?:""
-                        )
+                    MyLazyColumn(
+                        contentPadding = contentPadding,
+                        list = list,
+                        listState = listState,
+                        requireForEachWithIndex = true,
+                        requirePaddingAtBottom = true
+                    ) {idx, value->
+                        DomainCredItem (showBottomSheet = showBottomSheet, curCredentialState = curCredential, idx = idx, thisItem = value, lastClickedItemKey = lastClickedItemKey) {
+                            initCreateOrEditDialog(
+                                isCreateParam = false,
+                                curDomainNameParam = value.domain,
+                                curDomainCredItemIdParam = value.domainCredId,
+                                curCredentialId=value.credId?:"",
+                                curSshCredentialId=value.sshCredId?:""
+                            )
+                        }
+
+                        HorizontalDivider()
+
                     }
-
-                    HorizontalDivider()
-
                 }
             }
         }
@@ -587,7 +605,7 @@ fun DomainCredentialListScreen(
         // DisposableEffect is better for this
         try {
 //            doJobThenOffLoading(loadingOn = loadingOn, loadingOff = loadingOff, loadingText=activityContext.getString(R.string.loading)) job@{
-            doJobThenOffLoading {
+            doJobThenOffLoading(initLoadingOn, initLoadingOff) {
 
                 list.value.clear()
                 credentialList.value.clear()

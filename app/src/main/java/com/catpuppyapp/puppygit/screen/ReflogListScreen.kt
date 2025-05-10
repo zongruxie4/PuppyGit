@@ -37,6 +37,7 @@ import com.catpuppyapp.puppygit.compose.CheckoutDialog
 import com.catpuppyapp.puppygit.compose.CheckoutDialogFrom
 import com.catpuppyapp.puppygit.compose.CopyableDialog
 import com.catpuppyapp.puppygit.compose.FilterTextField
+import com.catpuppyapp.puppygit.compose.FullScreenScrollableColumn
 import com.catpuppyapp.puppygit.compose.GoToTopAndGoToBottomFab
 import com.catpuppyapp.puppygit.compose.LoadingDialog
 import com.catpuppyapp.puppygit.compose.LongPressAbleIconBtn
@@ -314,6 +315,15 @@ fun ReflogListScreen(
         }
     }
 
+
+    val isInitLoading = rememberSaveable { mutableStateOf(true) }
+    val initLoadingOn = { msg:String ->
+        isInitLoading.value = true
+    }
+    val initLoadingOff = {
+        isInitLoading.value = false
+    }
+
     Scaffold(
         modifier = Modifier.nestedScroll(homeTopBarScrollBehavior.nestedScrollConnection),
         topBar = {
@@ -452,74 +462,80 @@ fun ReflogListScreen(
                 }
             }
 
-
-
-            //有条目
-            //根据关键字过滤条目
-            val keyword = filterKeyword.value.text.lowercase()  //关键字
-            val enableFilter = filterModeActuallyEnabled(filterModeOn.value, keyword)
-
-            val lastNeedRefresh = rememberSaveable { mutableStateOf("") }
-            val list = filterTheList(
-                needRefresh = filterResultNeedRefresh.value,
-                lastNeedRefresh = lastNeedRefresh,
-                enableFilter = enableFilter,
-                keyword = keyword,
-                lastKeyword = lastKeyword,
-                searching = searching,
-                token = token,
-                activityContext = activityContext,
-                filterList = filterList.value,
-                list = list.value,
-                resetSearchVars = resetSearchVars,
-                match = { idx:Int, it: ReflogEntryDto ->
-                    it.username.lowercase().contains(keyword)
-                            || it.email.lowercase().contains(keyword)
-                            || it.date.lowercase().contains(keyword)
-                            || it.msg.lowercase().contains(keyword)
-                            || it.idNew.toString().lowercase().contains(keyword)
-                            || it.idOld.toString().lowercase().contains(keyword)
-                            || formatMinutesToUtc(it.originTimeZoneOffsetInMinutes).lowercase().contains(keyword)
+            if(list.value.isEmpty()) {
+                FullScreenScrollableColumn(contentPadding) {
+                    Text(stringResource(if(isInitLoading.value) R.string.loading else R.string.item_list_is_empty))
                 }
-            )
+            }else {
+
+                //有条目
+                //根据关键字过滤条目
+                val keyword = filterKeyword.value.text.lowercase()  //关键字
+                val enableFilter = filterModeActuallyEnabled(filterModeOn.value, keyword)
+
+                val lastNeedRefresh = rememberSaveable { mutableStateOf("") }
+                val list = filterTheList(
+                    needRefresh = filterResultNeedRefresh.value,
+                    lastNeedRefresh = lastNeedRefresh,
+                    enableFilter = enableFilter,
+                    keyword = keyword,
+                    lastKeyword = lastKeyword,
+                    searching = searching,
+                    token = token,
+                    activityContext = activityContext,
+                    filterList = filterList.value,
+                    list = list.value,
+                    resetSearchVars = resetSearchVars,
+                    match = { idx:Int, it: ReflogEntryDto ->
+                        it.username.lowercase().contains(keyword)
+                                || it.email.lowercase().contains(keyword)
+                                || it.date.lowercase().contains(keyword)
+                                || it.msg.lowercase().contains(keyword)
+                                || it.idNew.toString().lowercase().contains(keyword)
+                                || it.idOld.toString().lowercase().contains(keyword)
+                                || formatMinutesToUtc(it.originTimeZoneOffsetInMinutes).lowercase().contains(keyword)
+                    }
+                )
 
 
-            val listState = if(enableFilter) filterListState else listState
+                val listState = if(enableFilter) filterListState else listState
 //        if(enableFilter) {  //更新filter列表state
 //            filterListState.value = listState
 //        }
-            //更新是否启用filter
-            enableFilterState.value = enableFilter
+                //更新是否启用filter
+                enableFilterState.value = enableFilter
 
-            MyLazyColumn(
-                contentPadding = contentPadding,
-                list = list,
-                listState = listState,
-                requireForEachWithIndex = true,
-                requirePaddingAtBottom = true,
-                forEachCb = {},
-            ){idx, it->
-                //长按会更新curObjInPage为被长按的条目
-                ReflogItem(repoId, showBottomSheet, curLongClickItem, lastClickedItemKey, shouldShowTimeZoneInfo, it) {  //onClick
-                    val suffix = "\n\n"
-                    val sb = StringBuilder()
-                    sb.append(activityContext.getString(R.string.new_oid)).append(": ").append(it.idNew).append(suffix)
-                    sb.append(activityContext.getString(R.string.old_oid)).append(": ").append(it.idOld).append(suffix)
-                    sb.append(activityContext.getString(R.string.date)).append(": ").append(it.date+" (${formatMinutesToUtc(it.actuallyUsingTimeZoneOffsetInMinutes)})").append(suffix)
-                    sb.append(activityContext.getString(R.string.timezone)).append(": ").append(formatMinutesToUtc(it.originTimeZoneOffsetInMinutes)).append(suffix)
-                    sb.append(activityContext.getString(R.string.author)).append(": ").append(Libgit2Helper.getFormattedUsernameAndEmail(it.username, it.email)).append(suffix)
-                    sb.append(activityContext.getString(R.string.msg)).append(": ").append(it.msg).append(suffix)
+                MyLazyColumn(
+                    contentPadding = contentPadding,
+                    list = list,
+                    listState = listState,
+                    requireForEachWithIndex = true,
+                    requirePaddingAtBottom = true,
+                    forEachCb = {},
+                ){idx, it->
+                    //长按会更新curObjInPage为被长按的条目
+                    ReflogItem(repoId, showBottomSheet, curLongClickItem, lastClickedItemKey, shouldShowTimeZoneInfo, it) {  //onClick
+                        val suffix = "\n\n"
+                        val sb = StringBuilder()
+                        sb.append(activityContext.getString(R.string.new_oid)).append(": ").append(it.idNew).append(suffix)
+                        sb.append(activityContext.getString(R.string.old_oid)).append(": ").append(it.idOld).append(suffix)
+                        sb.append(activityContext.getString(R.string.date)).append(": ").append(it.date+" (${formatMinutesToUtc(it.actuallyUsingTimeZoneOffsetInMinutes)})").append(suffix)
+                        sb.append(activityContext.getString(R.string.timezone)).append(": ").append(formatMinutesToUtc(it.originTimeZoneOffsetInMinutes)).append(suffix)
+                        sb.append(activityContext.getString(R.string.author)).append(": ").append(Libgit2Helper.getFormattedUsernameAndEmail(it.username, it.email)).append(suffix)
+                        sb.append(activityContext.getString(R.string.msg)).append(": ").append(it.msg).append(suffix)
 
 
-                    detailsString.value = sb.removeSuffix(suffix).toString()
+                        detailsString.value = sb.removeSuffix(suffix).toString()
 
-                    curClickItem.value = it
-                    showDetailsDialog.value=true
+                        curClickItem.value = it
+                        showDetailsDialog.value=true
+                    }
+
+                    HorizontalDivider()
                 }
 
-                HorizontalDivider()
-            }
 
+            }
 
         }
 
@@ -532,7 +548,7 @@ fun ReflogListScreen(
         try {
             //这个加载很快，没必要显示loading
 //            doJobThenOffLoading(loadingOn = loadingOn, loadingOff = loadingOff, loadingText = defaultLoadingText) {
-            doJobThenOffLoading {
+            doJobThenOffLoading(initLoadingOn, initLoadingOff) {
                 list.value.clear()  //先清一下list，然后可能添加也可能不添加
                 allRefList.value.clear()
 

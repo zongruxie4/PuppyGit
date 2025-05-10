@@ -555,8 +555,8 @@ fun CloneScreen(
         }
 
         Column (modifier = Modifier
-            .padding(contentPadding)
             .fillMaxSize()
+            .padding(contentPadding)
             .verticalScroll(listState)
             .padding(bottom = MyStyleKt.Padding.PageBottom)  //这个padding是为了使密码框不在底部，类似vscode中文件的最后一行也可滑到屏幕中间一样的意义
         ){

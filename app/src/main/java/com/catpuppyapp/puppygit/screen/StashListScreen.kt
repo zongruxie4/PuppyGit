@@ -52,6 +52,7 @@ import com.catpuppyapp.puppygit.compose.ConfirmDialog
 import com.catpuppyapp.puppygit.compose.ConfirmDialog2
 import com.catpuppyapp.puppygit.compose.CopyableDialog
 import com.catpuppyapp.puppygit.compose.FilterTextField
+import com.catpuppyapp.puppygit.compose.FullScreenScrollableColumn
 import com.catpuppyapp.puppygit.compose.GoToTopAndGoToBottomFab
 import com.catpuppyapp.puppygit.compose.LoadingDialog
 import com.catpuppyapp.puppygit.compose.LongPressAbleIconBtn
@@ -476,6 +477,14 @@ fun StashListScreen(
     // username and email end
 
 
+    val isInitLoading = rememberSaveable { mutableStateOf(true) }
+    val initLoadingOn = { msg:String ->
+        isInitLoading.value = true
+    }
+    val initLoadingOff = {
+        isInitLoading.value = false
+    }
+
     BackHandler {
         if(filterModeOn.value) {
             filterModeOn.value = false
@@ -631,17 +640,23 @@ fun StashListScreen(
             }
 
             if(list.value.isEmpty()) {
-                PageCenterIconButton(
-                    contentPadding = contentPadding,
-                    onClick = {
-                        doTaskOrShowSetUsernameAndEmailDialog(curRepo.value) {
-                            showCreateDialog.value = true
-                        }
-                    },
-                    icon = Icons.Filled.Add,
-                    iconDesc = stringResource(R.string.create),
-                    text = stringResource(R.string.create),
-                )
+                if(isInitLoading.value) {
+                    FullScreenScrollableColumn(contentPadding) {
+                        Text(text = stringResource(R.string.loading))
+                    }
+                }else {
+                    PageCenterIconButton(
+                        contentPadding = contentPadding,
+                        onClick = {
+                            doTaskOrShowSetUsernameAndEmailDialog(curRepo.value) {
+                                showCreateDialog.value = true
+                            }
+                        },
+                        icon = Icons.Filled.Add,
+                        iconDesc = stringResource(R.string.create),
+                        text = stringResource(R.string.create),
+                    )
+                }
             }else {
                 //根据关键字过滤条目
                 val keyword = filterKeyword.value.text.lowercase()  //关键字
@@ -711,7 +726,7 @@ fun StashListScreen(
     LaunchedEffect(needRefresh.value) {
         try {
 //            doJobThenOffLoading(loadingOn = loadingOn, loadingOff = loadingOff, loadingText = activityContext.getString(R.string.loading)) {
-            doJobThenOffLoading {
+            doJobThenOffLoading(initLoadingOn, initLoadingOff) {
 
                 list.value.clear()  //先清一下list，然后可能添加也可能不添加
 

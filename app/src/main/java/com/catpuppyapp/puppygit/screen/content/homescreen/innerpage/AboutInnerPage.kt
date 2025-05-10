@@ -99,9 +99,9 @@ fun AboutInnerPage(
 
     Column(
         modifier = Modifier
+            .fillMaxSize()
             .padding(contentPadding)
             .padding(top = 10.dp)
-            .fillMaxSize()
             .verticalScroll(listState)
         ,
         horizontalAlignment = Alignment.CenterHorizontally,

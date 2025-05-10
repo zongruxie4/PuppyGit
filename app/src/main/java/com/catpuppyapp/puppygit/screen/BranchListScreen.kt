@@ -63,6 +63,7 @@ import com.catpuppyapp.puppygit.compose.CreateBranchDialog
 import com.catpuppyapp.puppygit.compose.DefaultPaddingRow
 import com.catpuppyapp.puppygit.compose.DefaultPaddingText
 import com.catpuppyapp.puppygit.compose.FilterTextField
+import com.catpuppyapp.puppygit.compose.FullScreenScrollableColumn
 import com.catpuppyapp.puppygit.compose.GoToTopAndGoToBottomFab
 import com.catpuppyapp.puppygit.compose.LoadingDialog
 import com.catpuppyapp.puppygit.compose.LongPressAbleIconBtn
@@ -1355,6 +1356,14 @@ fun BranchListScreen(
 
     val filterResultNeedRefresh = rememberSaveable { mutableStateOf("") }
 
+    val isInitLoading = rememberSaveable { mutableStateOf(true) }
+    val initLoadingOn = { msg:String ->
+        isInitLoading.value = true
+    }
+    val initLoadingOff = {
+        isInitLoading.value = false
+    }
+
     Scaffold(
         modifier = Modifier.nestedScroll(homeTopBarScrollBehavior.nestedScrollConnection),
         topBar = {
@@ -1714,80 +1723,87 @@ fun BranchListScreen(
             }
 
 
-            //根据关键字过滤条目
-            val keyword = filterKeyword.value.text.lowercase()  //关键字
-            val enableFilter = filterModeActuallyEnabled(filterOn = filterModeOn.value, keyword = keyword)
-
-            val lastNeedRefresh = rememberSaveable { mutableStateOf("") }
-            val list = filterTheList(
-                needRefresh = filterResultNeedRefresh.value,
-                lastNeedRefresh = lastNeedRefresh,
-                enableFilter = enableFilter,
-                keyword = keyword,
-                lastKeyword = lastKeyword,
-                searching = searching,
-                token = token,
-                activityContext = activityContext,
-                filterList = filterList.value,
-                list = list.value,
-                resetSearchVars = resetSearchVars,
-                match = { idx: Int, it: BranchNameAndTypeDto ->
-                    it.fullName.lowercase().contains(keyword)
-                            || it.oidStr.lowercase().contains(keyword)
-                            || it.symbolicTargetFullName.lowercase().contains(keyword)
-                            || it.getUpstreamShortName(activityContext).lowercase().contains(keyword)
-
-                            //如果加这个，一搜"remote"会把关联了远程分支的本地分支也显示出来，因为这些分支的上游完整名是 "refs/remotes/....."，其中包含了关键字"remote"
-                            // || it.getUpstreamFullName(activityContext).lowercase().contains(k)
-
-                            || it.getOther(activityContext, false).lowercase().contains(keyword)
-                            || it.getOther(activityContext, true).lowercase().contains(keyword)
-                            || it.getTypeString(activityContext, false).lowercase().contains(keyword)
-                            || it.getTypeString(activityContext, true).lowercase().contains(keyword)
-                            || it.getAheadBehind(activityContext, false).lowercase().contains(keyword)
-                            || it.getAheadBehind(activityContext, true).lowercase().contains(keyword)
+            if(list.value.isEmpty()) {
+                FullScreenScrollableColumn(contentPadding) {
+                    Text(stringResource(if(isInitLoading.value) R.string.loading else R.string.item_list_is_empty))
                 }
-            )
+            }else {
+                //根据关键字过滤条目
+                val keyword = filterKeyword.value.text.lowercase()  //关键字
+                val enableFilter = filterModeActuallyEnabled(filterOn = filterModeOn.value, keyword = keyword)
+
+                val lastNeedRefresh = rememberSaveable { mutableStateOf("") }
+                val list = filterTheList(
+                    needRefresh = filterResultNeedRefresh.value,
+                    lastNeedRefresh = lastNeedRefresh,
+                    enableFilter = enableFilter,
+                    keyword = keyword,
+                    lastKeyword = lastKeyword,
+                    searching = searching,
+                    token = token,
+                    activityContext = activityContext,
+                    filterList = filterList.value,
+                    list = list.value,
+                    resetSearchVars = resetSearchVars,
+                    match = { idx: Int, it: BranchNameAndTypeDto ->
+                        it.fullName.lowercase().contains(keyword)
+                                || it.oidStr.lowercase().contains(keyword)
+                                || it.symbolicTargetFullName.lowercase().contains(keyword)
+                                || it.getUpstreamShortName(activityContext).lowercase().contains(keyword)
+
+                                //如果加这个，一搜"remote"会把关联了远程分支的本地分支也显示出来，因为这些分支的上游完整名是 "refs/remotes/....."，其中包含了关键字"remote"
+                                // || it.getUpstreamFullName(activityContext).lowercase().contains(k)
+
+                                || it.getOther(activityContext, false).lowercase().contains(keyword)
+                                || it.getOther(activityContext, true).lowercase().contains(keyword)
+                                || it.getTypeString(activityContext, false).lowercase().contains(keyword)
+                                || it.getTypeString(activityContext, true).lowercase().contains(keyword)
+                                || it.getAheadBehind(activityContext, false).lowercase().contains(keyword)
+                                || it.getAheadBehind(activityContext, true).lowercase().contains(keyword)
+                    }
+                )
 
 
-            val listState = if(enableFilter) filterListState else listState
+                val listState = if(enableFilter) filterListState else listState
 //        if(enableFilter) {  //更新filter列表state
 //            filterListState.value = listState
 //        }
 
-            //更新是否启用filter
-            enableFilterState.value = enableFilter
+                //更新是否启用filter
+                enableFilterState.value = enableFilter
 
 
-            MyLazyColumn (
-                contentPadding = contentPadding,
-                list = list,
-                listState = listState,
-                requireForEachWithIndex = true,
-                requirePaddingAtBottom = true,
-                forEachCb = {},
-            ){idx, it->
-                //长按会更新curObjInPage为被长按的条目
-                BranchItem(
-                    showBottomSheet = showBottomSheet,
-                    curObjFromParent = curObjInPage,
-                    idx = idx,
-                    thisObj = it,
-                    requireBlinkIdx = requireBlinkIdx,
-                    lastClickedItemKey = lastClickedItemKey,
-                    pageRequest = pageRequest
-                ) {  //onClick
-                    //点击条目跳转到分支的提交历史记录页面
-                    goToCommitListScreen(
-                        repoId = repoId,
-                        fullOid = it.oidStr,
-                        shortBranchName = it.shortName,
-                        useFullOid = true,
-                        isHEAD = it.isCurrent
-                    )
+                MyLazyColumn (
+                    contentPadding = contentPadding,
+                    list = list,
+                    listState = listState,
+                    requireForEachWithIndex = true,
+                    requirePaddingAtBottom = true,
+                    forEachCb = {},
+                ){idx, it->
+                    //长按会更新curObjInPage为被长按的条目
+                    BranchItem(
+                        showBottomSheet = showBottomSheet,
+                        curObjFromParent = curObjInPage,
+                        idx = idx,
+                        thisObj = it,
+                        requireBlinkIdx = requireBlinkIdx,
+                        lastClickedItemKey = lastClickedItemKey,
+                        pageRequest = pageRequest
+                    ) {  //onClick
+                        //点击条目跳转到分支的提交历史记录页面
+                        goToCommitListScreen(
+                            repoId = repoId,
+                            fullOid = it.oidStr,
+                            shortBranchName = it.shortName,
+                            useFullOid = true,
+                            isHEAD = it.isCurrent
+                        )
+                    }
+
+                    HorizontalDivider()
                 }
 
-                HorizontalDivider()
             }
 
         }
@@ -1798,7 +1814,7 @@ fun BranchListScreen(
     LaunchedEffect(needRefresh.value) {
         try {
 //            doJobThenOffLoading(loadingOn = loadingOn, loadingOff = loadingOff, loadingText = activityContext.getString(R.string.loading)) {
-            doJobThenOffLoading {
+            doJobThenOffLoading(initLoadingOn, initLoadingOff) {
                 list.value.clear()  //先清一下list，然后可能添加也可能不添加
 
                 if(!repoId.isNullOrBlank()) {

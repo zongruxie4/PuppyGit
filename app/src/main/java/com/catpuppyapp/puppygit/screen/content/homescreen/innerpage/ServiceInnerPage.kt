@@ -412,8 +412,8 @@ fun ServiceInnerPage(
 
         Column(
             modifier = Modifier
-                .padding(contentPadding)
                 .fillMaxSize()
+                .padding(contentPadding)
                 .verticalScroll(listState)
         ) {
             SettingsContent(onClick = {

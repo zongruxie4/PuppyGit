@@ -754,8 +754,8 @@ fun SettingsInnerPage(
 
     Column(
         modifier = Modifier
-            .padding(contentPadding)
             .fillMaxSize()
+            .padding(contentPadding)
             .verticalScroll(listState)
     ) {
         SettingsTitle(stringResource(R.string.general))
