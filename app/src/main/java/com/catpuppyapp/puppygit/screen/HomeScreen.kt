@@ -121,7 +121,7 @@ import kotlinx.coroutines.sync.Mutex
 
 
 private const val TAG = "HomeScreen"
-private const val stateKeyTag = "HomeScreen"
+private const val stateKeyTag = TAG
 
 
 @OptIn(ExperimentalMaterial3Api::class)
