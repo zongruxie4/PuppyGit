@@ -462,7 +462,7 @@ jobject createStatusEntryDto(
         jint statusFlag
 ) {
     // 获取构造函数 ID
-    jmethodID constructor = (*env)->GetMethodID(env, statusEntryDtoClass, "<init>", "(Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;J;J;J;J;I;)V");
+    jmethodID constructor = (*env)->GetMethodID(env, statusEntryDtoClass, "<init>", "(Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;JJJJI)V");
     if (constructor == NULL) {
         return NULL; // 构造函数未找到
     }
