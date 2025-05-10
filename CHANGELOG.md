@@ -3,10 +3,14 @@
 ---
 1.1.1.2v88 - 20250510:
 - popup keyboard when rename file and go to path at Files
+- optimize Editor reload check logic
+- Editor: fix change type indicator position wrong when RTL layout enabled
 
 
 
 - 在文件管理器重命名文件和跳转路径时弹出键盘
+- 优化文本编辑器重载检测逻辑
+- 文本编辑器：修复修改类型指示器在RTL布局下位置错误
 
 
 ---
