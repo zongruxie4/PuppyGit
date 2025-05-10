@@ -22,9 +22,12 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.focus.FocusRequester
+import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.platform.LocalClipboardManager
 import androidx.compose.ui.platform.LocalContext
@@ -32,9 +35,11 @@ import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalView
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.AnnotatedString
+import androidx.compose.ui.text.TextRange
 import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
+import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.unit.dp
 import com.catpuppyapp.puppygit.compose.ConfirmDialog2
 import com.catpuppyapp.puppygit.compose.InLineCopyIcon
@@ -241,19 +246,22 @@ fun ServiceInnerPage(
 
 
     val listenHost = rememberSaveable { mutableStateOf(settingsState.value.httpService.listenHost) }
-    val listenHostBuf = rememberSaveable { mutableStateOf(listenHost.value) }
+    val listenHostBuf = mutableCustomStateOf(stateKeyTag, "listenHostBuf") { TextFieldValue("") }
     val showSetHostDialog = rememberSaveable { mutableStateOf(false) }
     val initSetHostDialog = {
-        listenHostBuf.value = listenHost.value
+        listenHostBuf.value = listenHost.value.let { TextFieldValue(text = it, selection = TextRange(0, it.length)) }
         showSetHostDialog.value=true
     }
     if(showSetHostDialog.value) {
+        val focusRequester = remember { FocusRequester() }
+
         ConfirmDialog2(title = stringResource(R.string.host),
             requireShowTextCompose = true,
             textCompose = {
                 Column(
                     modifier= Modifier
                         .fillMaxWidth()
+                        .focusRequester(focusRequester)
                         .verticalScroll(rememberScrollState())
                     ,
                 ) {
@@ -284,7 +292,7 @@ fun ServiceInnerPage(
             showSetHostDialog.value = false
             doJobThenOffLoading {
                 //解析
-                val newValue = listenHostBuf.value
+                val newValue = listenHostBuf.value.text
 
                 //检查
                 if(newValue.isBlank()) {
@@ -301,25 +309,31 @@ fun ServiceInnerPage(
                 Msg.requireShow(activityContext.getString(R.string.saved))
             }
         }
+
+        LaunchedEffect(Unit) { runCatching { focusRequester.requestFocus() } }
+
     }
 
     val listenPort = rememberSaveable { mutableStateOf(settingsState.value.httpService.listenPort.toString()) }
-    val listenPortBuf = rememberSaveable { mutableStateOf(listenPort.value) }
+    val listenPortBuf = mutableCustomStateOf(stateKeyTag, "listenPortBuf") { TextFieldValue("") }
     val showSetPortDialog = rememberSaveable { mutableStateOf(false) }
 
     val initSetPortDialog = {
-        listenPortBuf.value = listenPort.value
+        listenPortBuf.value = listenPort.value.let { TextFieldValue(text = it, selection = TextRange(0, it.length)) }
 
         showSetPortDialog.value = true
     }
 
     if(showSetPortDialog.value) {
+        val focusRequester = remember { FocusRequester() }
+
         ConfirmDialog2(title = stringResource(R.string.port),
             requireShowTextCompose = true,
             textCompose = {
                 Column(
                     modifier= Modifier
                         .fillMaxWidth()
+                        .focusRequester(focusRequester)
                         .verticalScroll(rememberScrollState())
                     ,
                 ) {
@@ -351,7 +365,7 @@ fun ServiceInnerPage(
             showSetPortDialog.value = false
             doJobThenOffLoading {
                 //解析
-                val newValue = parseIntOrDefault(listenPortBuf.value, default = null)
+                val newValue = parseIntOrDefault(listenPortBuf.value.text, default = null)
 
                 //检查
                 if(newValue == null || newValue < 0 || newValue > 65535) {
@@ -368,6 +382,9 @@ fun ServiceInnerPage(
                 Msg.requireShow(activityContext.getString(R.string.saved))
             }
         }
+
+        LaunchedEffect(Unit) { runCatching { focusRequester.requestFocus() } }
+
     }
 
 
