@@ -551,6 +551,10 @@ object Libgit2Helper {
      * index时worktree的列表为空，反之，statuslist是worktree的列表时，index列表为空
      * 特殊情况：conflict条目在index和workdir两个列表都有，且条目一样
      * */
+    @Deprecated("实测这方法比原来的慢，不建议使用，实际上会先在jni循环一轮，" +
+            "再在java里循环一轮，只有当jni耗时超过在c里循环一轮的耗时时，这种方式才有可能提升性能，" +
+            "但实际上，没什么效果，建议保留这个方法，但默认禁用即可，别删除，" +
+            "以后要是有精力，改成全在jni里创建对象试试，只用一轮循环，性能可能会超过legacy的方法")
     suspend fun statusListToStatusMap_LoadListInJni(
         repo: Repository,
         statusList:StatusList,
@@ -563,8 +567,10 @@ object Libgit2Helper {
 
         //Pair第1个参数代表本函数是否更新了index，第2个代表返回的数据。
     ):Pair<Boolean, Map<String,List<StatusTypeEntrySaver>>> {
+        val funName = "statusListToStatusMap_LoadListInJni"
+
         val debugExeTime_Start = System.currentTimeMillis()
-        MyLog.d(TAG, "new change list load method: start at $debugExeTime_Start")
+        MyLog.d(TAG, "#$funName(): change list load method: start at $debugExeTime_Start")
 
         //按路径名排序
         val index:MutableList<StatusTypeEntrySaver> = ArrayList()
@@ -604,7 +610,7 @@ object Libgit2Helper {
                 if(mustPath.isNotEmpty()) {
                     val f = File(getRepoWorkdirNoEndsWithSlash(repo), mustPath)
                     if(!f.exists() && removeNonExistsConflictItems){
-                        MyLog.w(TAG, "#statusListToStatusMap: removed a Non-exists conflict item from git, file '$mustPath' may delete after it become conflict item")
+                        MyLog.w(TAG, "#$funName(): removed a Non-exists conflict item from git, file '$mustPath' may delete after it become conflict item")
 
                         repoIndex.conflictRemove(mustPath)
                         isIndexChanged = true
@@ -614,7 +620,7 @@ object Libgit2Helper {
                     }
 
                 }else{
-                    MyLog.w(TAG, "#statusListToStatusMap: conflict item with empty path!, repoWorkDir at '$repoWorkDirPath'")
+                    MyLog.w(TAG, "#$funName(): conflict item with empty path!, repoWorkDir at '$repoWorkDirPath'")
                 }
             }else{
                 //判断index还是worktree，用不同的变量判断，然后把条目添加到不同的列表
@@ -722,7 +728,7 @@ object Libgit2Helper {
 
 
         val debugExeTime_End = System.currentTimeMillis()
-        MyLog.d(TAG, "new change list load method: end at $debugExeTime_End, spent: ${debugExeTime_End - debugExeTime_Start}")
+        MyLog.d(TAG, "#$funName(): change list load method: end at $debugExeTime_End, spent: ${debugExeTime_End - debugExeTime_Start}")
 
         return Pair(isIndexChanged, resultMap);
     }
@@ -740,7 +746,7 @@ object Libgit2Helper {
      * index时worktree的列表为空，反之，statuslist是worktree的列表时，index列表为空
      * 特殊情况：conflict条目在index和workdir两个列表都有，且条目一样
      * */
-    suspend fun statusListToStatusMap(
+    suspend fun statusListToStatusMap_legacy(
         repo: Repository,
         statusList:StatusList,
         repoIdFromDb:String,
@@ -749,22 +755,10 @@ object Libgit2Helper {
 
         //Pair第1个参数代表本函数是否更新了index，第2个代表返回的数据。
     ):Pair<Boolean, Map<String,List<StatusTypeEntrySaver>>> {
-
-        //如果不使用旧的加载方式，就用新的
-        if(!DevFeature.legacyChangeListLoadMethod.state.value) {
-            return statusListToStatusMap_LoadListInJni(
-                        repo,
-                        statusList,
-                        repoIdFromDb,
-                        fromTo,
-                        removeNonExistsConflictItems,
-
-            )
-        }
-
+        val funName = "statusListToStatusMap_legacy"
 
         val debugExeTime_Start = System.currentTimeMillis()
-        MyLog.d(TAG, "legacy change list load method: start at: $debugExeTime_Start")
+        MyLog.d(TAG, "#$funName(): change list load method: start at: $debugExeTime_Start")
 
 
         //按路径名排序
@@ -822,7 +816,7 @@ object Libgit2Helper {
                 if(mustPath.isNotEmpty()) {
                     val f = File(getRepoWorkdirNoEndsWithSlash(repo), mustPath)
                     if(!f.exists() && removeNonExistsConflictItems){
-                        MyLog.w(TAG, "#statusListToStatusMap: removed a Non-exists conflict item from git, file '$mustPath' may delete after it become conflict item")
+                        MyLog.w(TAG, "#$funName(): removed a Non-exists conflict item from git, file '$mustPath' may delete after it become conflict item")
 
                         repoIndex.conflictRemove(mustPath)
                         isIndexChanged = true
@@ -832,7 +826,7 @@ object Libgit2Helper {
                     }
 
                 }else{
-                    MyLog.w(TAG, "#statusListToStatusMap: conflict item with empty path!, repoWorkDir at '$repoWorkDirPath'")
+                    MyLog.w(TAG, "#$funName(): conflict item with empty path!, repoWorkDir at '$repoWorkDirPath'")
                 }
             }else{
                 //判断index还是worktree，用不同的变量判断，然后把条目添加到不同的列表
@@ -967,10 +961,48 @@ object Libgit2Helper {
 
 
         val debugExeTime_End = System.currentTimeMillis()
-        MyLog.d(TAG, "legacy change list load method: end at $debugExeTime_End, spent: ${debugExeTime_End - debugExeTime_Start}")
+        MyLog.d(TAG, "#$funName(): change list load method: end at $debugExeTime_End, spent: ${debugExeTime_End - debugExeTime_Start}")
 
         return Pair(isIndexChanged, resultMap);
     }
+
+
+    suspend fun statusListToStatusMap(
+        repo: Repository,
+        statusList:StatusList,
+        repoIdFromDb:String,
+        fromTo: String,
+        removeNonExistsConflictItems:Boolean=true
+
+        //Pair第1个参数代表本函数是否更新了index，第2个代表返回的数据。
+    ):Pair<Boolean, Map<String,List<StatusTypeEntrySaver>>> {
+
+        //如果不使用旧的加载方式，就用新的
+        return if(DevFeature.legacyChangeListLoadMethod.state.value) {
+            MyLog.d(TAG, "will use change list load method: `statusListToStatusMap_legacy`")
+
+            statusListToStatusMap_legacy(
+                repo,
+                statusList,
+                repoIdFromDb,
+                fromTo,
+                removeNonExistsConflictItems,
+
+            )
+        }else {
+            MyLog.d(TAG, "will use change list load method: `statusListToStatusMap_LoadListInJni`")
+
+            statusListToStatusMap_LoadListInJni(
+                repo,
+                statusList,
+                repoIdFromDb,
+                fromTo,
+                removeNonExistsConflictItems,
+
+            )
+        }
+    }
+
 
     fun getGitUrlType(gitUrl: String): Int {
         //这个条件一定要“只要不是http/https就是ssh”这种逻辑，因为http和https就两种，能穷举完，但ssh我不太了解，而且有的sshurl是用户名写最前面，匹配起来恶心得很！
