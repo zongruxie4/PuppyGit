@@ -80,8 +80,7 @@ static void throwException(JNIEnv *env, jclass exceptionClass, jmethodID constru
 static jclass getLibgitTwoExceptionClass(JNIEnv *env) {
     static jclass exceptionClass = NULL;
     if (!exceptionClass) {
-        exceptionClass = findClass(env,
-                                   "com/catpuppyapp/puppygit/jni/LibGitTwoException");
+        exceptionClass = findClass(env, "com/catpuppyapp/puppygit/jni/LibGitTwoException");
     }
     return exceptionClass;
 }
@@ -503,10 +502,10 @@ jfieldID indexToWorkDirNewFilePathFieldCache = NULL;
 jfieldID headToIndexOldFilePathFieldCache = NULL;
 jfieldID headToIndexNewFilePathFieldCache = NULL;
 
-jfieldID indexToWorkDirOldFileSizeCache = NULL;
-jfieldID indexToWorkDirNewFileSizeCache = NULL;
-jfieldID headToIndexOldFileSizeCache = NULL;
-jfieldID headToIndexNewFileSizeCache = NULL;
+jfieldID indexToWorkDirOldFileSizeFieldCache = NULL;
+jfieldID indexToWorkDirNewFileSizeFieldCache = NULL;
+jfieldID headToIndexOldFileSizeFieldCache = NULL;
+jfieldID headToIndexNewFileSizeFieldCache = NULL;
 
 jfieldID entryStatusFlagFieldCache = NULL;
 
@@ -554,28 +553,28 @@ JNIEXPORT jobjectArray JNICALL J_MAKE_METHOD(LibgitTwo_jniGetStatusEntries)(JNIE
         headToIndexNewFilePathField = headToIndexNewFilePathFieldCache;
     }
 
-    jfieldID indexToWorkDirOldFileSize = indexToWorkDirOldFileSizeCache;
-    if(!indexToWorkDirOldFileSize) {
-        indexToWorkDirOldFileSizeCache = (*env)->GetFieldID(env, statusEntryDtoClass, "indexToWorkDirOldFileSize", "Ljava/lang/Long;");
-        indexToWorkDirOldFileSize = indexToWorkDirOldFileSizeCache;
+    jfieldID indexToWorkDirOldFileSizeField = indexToWorkDirOldFileSizeFieldCache;
+    if(!indexToWorkDirOldFileSizeField) {
+        indexToWorkDirOldFileSizeFieldCache = (*env)->GetFieldID(env, statusEntryDtoClass, "indexToWorkDirOldFileSize", "Ljava/lang/Long;");
+        indexToWorkDirOldFileSizeField = indexToWorkDirOldFileSizeFieldCache;
     }
 
-    jfieldID indexToWorkDirNewFileSize = indexToWorkDirNewFileSizeCache;
-    if(!indexToWorkDirNewFileSize) {
-        indexToWorkDirNewFileSizeCache = (*env)->GetFieldID(env, statusEntryDtoClass, "indexToWorkDirNewFileSize", "Ljava/lang/Long;");
-        indexToWorkDirNewFileSize = indexToWorkDirNewFileSizeCache;
+    jfieldID indexToWorkDirNewFileSizeField = indexToWorkDirNewFileSizeFieldCache;
+    if(!indexToWorkDirNewFileSizeField) {
+        indexToWorkDirNewFileSizeFieldCache = (*env)->GetFieldID(env, statusEntryDtoClass, "indexToWorkDirNewFileSize", "Ljava/lang/Long;");
+        indexToWorkDirNewFileSizeField = indexToWorkDirNewFileSizeFieldCache;
     }
 
-    jfieldID headToIndexOldFileSize = headToIndexOldFileSizeCache;
-    if(!headToIndexOldFileSize) {
-        headToIndexOldFileSizeCache = (*env)->GetFieldID(env, statusEntryDtoClass, "headToIndexOldFileSize", "Ljava/lang/Long;");
-        headToIndexOldFileSize = headToIndexOldFileSizeCache;
+    jfieldID headToIndexOldFileSizeField = headToIndexOldFileSizeFieldCache;
+    if(!headToIndexOldFileSizeField) {
+        headToIndexOldFileSizeFieldCache = (*env)->GetFieldID(env, statusEntryDtoClass, "headToIndexOldFileSize", "Ljava/lang/Long;");
+        headToIndexOldFileSizeField = headToIndexOldFileSizeFieldCache;
     }
 
-    jfieldID headToIndexNewFileSize = headToIndexNewFileSizeCache;
-    if(!headToIndexNewFileSize) {
-        headToIndexNewFileSizeCache = (*env)->GetFieldID(env, statusEntryDtoClass, "headToIndexNewFileSize", "Ljava/lang/Long;");
-        headToIndexNewFileSize = headToIndexNewFileSizeCache;
+    jfieldID headToIndexNewFileSizeField = headToIndexNewFileSizeFieldCache;
+    if(!headToIndexNewFileSizeField) {
+        headToIndexNewFileSizeFieldCache = (*env)->GetFieldID(env, statusEntryDtoClass, "headToIndexNewFileSize", "Ljava/lang/Long;");
+        headToIndexNewFileSizeField = headToIndexNewFileSizeFieldCache;
     }
 
 
@@ -605,10 +604,10 @@ JNIEXPORT jobjectArray JNICALL J_MAKE_METHOD(LibgitTwo_jniGetStatusEntries)(JNIE
                     headToIndexOldFilePathField,
                     headToIndexNewFilePathField,
 
-                    indexToWorkDirOldFileSize,
-                    indexToWorkDirNewFileSize,
-                    headToIndexOldFileSize,
-                    headToIndexNewFileSize,
+                    indexToWorkDirOldFileSizeField,
+                    indexToWorkDirNewFileSizeField,
+                    headToIndexOldFileSizeField,
+                    headToIndexNewFileSizeField,
 
                     entryStatusFlagField,
 
