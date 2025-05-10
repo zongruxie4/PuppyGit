@@ -1275,6 +1275,14 @@ fun SettingsInnerPage(
 
                 Column(modifier = Modifier.fillMaxWidth(itemLeftWidthForSwitcher)) {
                     Text(DevFeature.legacyChangeListLoadMethod.text, fontSize = itemFontSize)
+
+                    // desc
+                    DevFeature.legacyChangeListLoadMethod.desc.let {
+                        if(it.isNotBlank()) {
+                            Text(it, fontSize = itemDescFontSize, fontWeight = FontWeight.Light)
+                        }
+                    }
+
                 }
 
                 Icon(

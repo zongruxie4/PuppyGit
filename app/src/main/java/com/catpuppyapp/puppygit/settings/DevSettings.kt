@@ -15,7 +15,8 @@ data class DevSettings (
      * 若为true，使用之前加载changelist的方法，多jni，少数据拷贝，循环一次；
      * 若为false，使用少jni调用，多数据拷贝，多循环一次的方法。
      *
-     * 内存占用和性能都没严格测试，不好说，不过除非git status条目特别多，几万个之类的，否则差别应该不大。
+     * 还是之前的方法比较快，白写了，写的时候忽略了很重要的一点“检测是否有文件修改是最耗时的，而不是加载修改列表本身”，
+     * 然而检测修改这块完全是c写的，java这边根本没有优化空间，而c那边恐怕也接近极限了，所以其实没什么好优化的，还是用legacy方法比较好。
      */
-    var legacyChangeListLoadMethod: Boolean = false,
+    var legacyChangeListLoadMethod: Boolean = true,
 )
