@@ -22,7 +22,7 @@ object DevFeature {
     // dev settings items: start
 
     // single diff
-    val singleDiff = object : DevItem<Boolean>(text = "Single Diff", state = mutableStateOf(false)) {
+    val singleDiff = object : DevItem<Boolean>(text = "Single Diff", state = mutableStateOf(false), desc="Enable for better performance") {
         override fun update(newValue: Boolean, context: Context?) {
             //更新状态变量，使用的时候就不用查配置文件了
             state.value = newValue

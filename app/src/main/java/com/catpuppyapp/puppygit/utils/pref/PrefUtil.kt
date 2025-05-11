@@ -39,10 +39,10 @@ object PrefUtil {
     }
 
     /**
-     * 启动时是否显示随机加载文本，初始值为显示
+     * 启动时是否显示随机加载文本，默认禁用
      */
     fun getShowRandomLaunchingText(context: Context): Boolean {
-        return getBoolean(context, PrefMan.Key.showRandomLaunchingText, true)
+        return getBoolean(context, PrefMan.Key.showRandomLaunchingText, false)
     }
 
 

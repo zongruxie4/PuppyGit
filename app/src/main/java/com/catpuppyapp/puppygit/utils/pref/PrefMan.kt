@@ -8,7 +8,8 @@ import android.content.SharedPreferences
  * 最好用applicationContext存取变量，没特别原因，因为applicationContext生命周期比activityContext长，不过应该存取的都是同一个文件，所以问题不大
  */
 object PrefMan {
-    private val fileName = "settings"
+    //配置文件名"${fileName}.xml"
+    private const val fileName = "settings"
 
     object Key {
         /**
@@ -58,7 +59,7 @@ object PrefMan {
 
 
         /**
-         * 启动app时显示随机加载文本, 0 disable, 1 enable, default 1
+         * 启动app时显示随机加载文本, 0 disable, 1 enable, default 0
          */
         const val  showRandomLaunchingText = "showRandomLaunchingText"
 
