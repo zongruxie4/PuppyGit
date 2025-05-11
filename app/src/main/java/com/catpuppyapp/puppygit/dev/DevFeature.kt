@@ -38,7 +38,8 @@ object DevFeature {
     // matched all for selected compare at diff screen
     val setDiffRowToNoMatched = appendDevPrefix("No Matched")
     val setDiffRowToAllMatched = appendDevPrefix("All Matched")
-    val showMatchedAllAtDiff = object : DevItem<Boolean>(text = "Show Matched All at Diff Screen", state = mutableStateOf(false)) {
+    //这里的state的默认值其实无所谓，每次启动app都会初始化DevSettings里对应的值，所以若想改初始值，应去改那里，而不是这里
+    val showMatchedAllAtDiff = object : DevItem<Boolean>(text = "Show Matched All at Diff Screen", state = mutableStateOf(true)) {
         override fun update(newValue: Boolean, context: Context?) {
             //更新状态变量，使用的时候就不用查配置文件了
             state.value = newValue

@@ -9,7 +9,7 @@ data class DevSettings (
     /**
      * Diff页面，行选项（select compare那个菜单），显示`匹配所有/不匹配所有`选项
      */
-    var showMatchedAllAtDiff: Boolean = false,
+    var showMatchedAllAtDiff: Boolean = true,
 
     /**
      * 若为true，使用之前加载changelist的方法，多jni，少数据拷贝，循环一次；
