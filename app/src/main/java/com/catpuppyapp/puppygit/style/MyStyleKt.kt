@@ -66,10 +66,10 @@ object MyStyleKt{
         val changeTypeAdded_darkTheme = Color(0xFF78ab78)
         val changeTypeModified = Color(0xFF2B6FC2)
         val changeTypeModified_darkTheme = Color(0xFF5A9AD9)
-        val changeTypeDeleted = Color(0xFF5E5E5E)
-        val changeTypeDeleted_darkTheme = Color(0xFF8A8A8A)
-        val changeTypeConflict = Color(0xFFBE4040)
-        val changeTypeConflict_darkTheme = Color(0xFFBE4040)
+        val changeTypeDeleted = Color(0xFFBE4040)
+        val changeTypeDeleted_darkTheme = Color(0xFFBE4040)
+        val changeTypeConflict = Color(0xFF8A40BE)
+        val changeTypeConflict_darkTheme = Color(0xFF8E40BE)
 
         /**
          * DiffScreen background color
@@ -113,16 +113,17 @@ object MyStyleKt{
         val lineNum_forDiffInLightTheme = Color.Gray
         val lineNum_forDiffInDarkTheme = Color(0xFF4D4D4D)
 
+        // 有匹配的背景颜色
         val hasMatchedAddedLineBgColorForDiffInLightTheme = Color(0x1B2F9B09)
         val hasMatchedAddedLineBgColorForDiffInDarkTheme = Color(0x12016505)
-        val hasMatchedDeletedLineBgColorForDiffInLightTheme = Color(0x1E707070)
-        val hasMatchedDeletedLineBgColorForDiffInDarkTheme = Color(0x0C888888)
+        val hasMatchedDeletedLineBgColorForDiffInLightTheme = Color(0x1E640000)
+        val hasMatchedDeletedLineBgColorForDiffInDarkTheme = Color(0x17910000)
 
         // 无匹配的背景颜色
         val addedLineBgColorForDiffInLightTheme = Color(0x45089613)
         val addedLineBgColorForDiffInDarkTheme = Color(0x31009B0B)
-        val deletedLineBgColorForDiffInLightTheme = Color(0x3B838383)
-        val deletedLineBgColorForDiffInDarkTheme = Color(0x46626262)
+        val deletedLineBgColorForDiffInLightTheme = Color(0x3B7E0000)
+        val deletedLineBgColorForDiffInDarkTheme = Color(0x489F0303)
 
         val fontColor = Color.Unspecified
         val darkThemeFontColor = Color.Gray

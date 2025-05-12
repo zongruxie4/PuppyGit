@@ -22,7 +22,7 @@ object Theme {
     val Orange = Color(0xFFFF5722)
     val darkLightBlue = Color(0xDF456464)
     val mdGreen = Color(0xFF13831C)
-    val mdRed = Color(0xFFF44336)
+    val mdRed = Color(0xFFAD2A2A)
     val Gray1 = Color(0xFF8C8C8C)
     val Gray2 = Color(0xFF7C7C7C)
 
