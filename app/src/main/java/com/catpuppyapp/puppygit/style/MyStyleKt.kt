@@ -102,8 +102,12 @@ object MyStyleKt{
         val highlighting_green =Color(0xFF1FAB26)
 
         //Editor font color
-        private val lineNum_forEditorInLightTheme = Color.LightGray
+        private val lineNum_forEditorInLightTheme = Color.Gray
         private val lineNum_forEditorInDarkTheme = Color.DarkGray
+
+        // 行号背景色
+        private val lineNumBg_forEditorInLightTheme = Color(0xFFE7E7E7)
+        private val lineNumBg_forEditorInDarkTheme = Color(0xFF232323)
 //        val lineNum_forEditorInDarkTheme = Color(0xFF535353)
 
         //DiffContent font color
@@ -120,6 +124,10 @@ object MyStyleKt{
 
         fun lineNumColor(inDarkTheme:Boolean = Theme.inDarkTheme):Color {
             return if(inDarkTheme) lineNum_forEditorInDarkTheme else lineNum_forEditorInLightTheme
+        }
+
+        fun lineNumBgColor(inDarkTheme:Boolean = Theme.inDarkTheme):Color {
+            return if(inDarkTheme) lineNumBg_forEditorInDarkTheme else lineNumBg_forEditorInLightTheme
         }
     }
 

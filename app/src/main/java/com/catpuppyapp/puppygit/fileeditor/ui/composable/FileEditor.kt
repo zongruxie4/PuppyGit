@@ -411,14 +411,13 @@ fun FileEditor(
                                 )
                             )
                             .padding(end = 5.dp)
-                            .then(
-                                //给第一行top加点padding，不然离上面太近，难受
-                                if(index == 0) Modifier.padding(top = topPadding) else Modifier
-                            )
+
                     ) {
 
+                        // 行号
                         Row(
-                            modifier = Modifier.combinedClickable(
+                            modifier = Modifier.background(MyStyleKt.TextColor.lineNumBgColor(inDarkTheme))
+                                .combinedClickable(
                                 onLongClick = {
                                     if (textEditorState.value.isMultipleSelectionMode) {
                                         haptic.performHapticFeedback(HapticFeedbackType.LongPress)
@@ -440,6 +439,10 @@ fun FileEditor(
                                     enableSelectMode(index)
                                 }
                             }
+                                .padding(horizontal = 10.dp)
+
+                                //给第一行top加点padding，不然离上面太近，难受
+                                .addTopPaddingIfIsFirstLine(index, topPadding)
                         ) {
                             //充当行号修改类型指示器和行号之间的padding，不然会重叠
                             Text("", modifier = Modifier.width(if(showLineNum.value) changeTypeWidth-3.dp else changeTypeWidth))
@@ -458,40 +461,6 @@ fun FileEditor(
                                     // modifier = Modifier.align(Alignment.CenterVertically)
                                 )
 
-//                                Box (
-                                    //让行号和选择图标居中
-//                    horizontalAlignment = Alignment.CenterHorizontally
-//                                ){
-                                    // TextLine Number
-//                                    Text(
-//                                        modifier = Modifier.align(Alignment.Center),
-//                                        text = getLineNumber(index),
-//                                        color = if(inDarkTheme) MyStyleKt.TextColor.lineNum_forEditorInDarkTheme else MyStyleKt.TextColor.lineNum_forEditorInLightTheme,
-//                                        fontSize = lineNumFontSize.intValue.sp,
-//                                        fontFamily = FontFamily.Monospace,  //等宽字体，和diff页面的行号保持一致
-//                                        //行号居中
-//                                        // modifier = Modifier.align(Alignment.CenterVertically)
-//                                    )
-
-                                    // 不需要这玩意了，选中的行有覆盖整行的背景色
-                                    // TextField Menu Icon
-//                                    FieldIcon(
-////                                    isMultipleSelection = textEditorState.value.isMultipleSelectionMode,
-//                                        focused = index == textEditorState.value.focusingLineIdx,
-//
-//                                        //是否聚焦本行（三道横线图标）禁用了，不管了，维护这个状态太烦
-////                                    focused = false,
-//
-//                                        modifier = Modifier
-//                                            .size(12.dp)
-//                                            .padding(top = 1.dp)
-//                                            .align(Alignment.BottomCenter)
-//                                            .focusable(false)  //这个focusable不是我加的，是compose text editor原作者加的，不知道这个focusable(false)有什么用，是想让这个图标在用键盘导航时不聚焦吗？但实际还是能聚焦啊，所以可能和这个无关，那这个到底什么作用？
-//
-//
-//                                    )
-
-//                                }
                             }
                         }
 
@@ -502,6 +471,9 @@ fun FileEditor(
                             Modifier
                                 .weight(0.9f, true)
                                 .align(Alignment.CenterVertically)
+
+                                //给第一行top加点padding，不然离上面太近，难受
+                                .addTopPaddingIfIsFirstLine(index, topPadding)
                         )
 
 
@@ -757,3 +729,7 @@ private fun Modifier.fieldBorder(
     }
 }
 
+@Composable
+private fun Modifier.addTopPaddingIfIsFirstLine(index:Int, topPadding:Dp):Modifier {
+    return if(index == 0) padding(top = topPadding) else this
+}
