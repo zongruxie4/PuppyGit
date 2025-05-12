@@ -110,8 +110,8 @@ object MyStyleKt{
 //        val lineNum_forEditorInDarkTheme = Color(0xFF535353)
 
         //DiffContent font color
-        val lineNum_forDiffInLightTheme = Color.DarkGray
-        val lineNum_forDiffInDarkTheme = Color(0xFF757575)
+        val lineNum_forDiffInLightTheme = Color.Gray
+        val lineNum_forDiffInDarkTheme = Color(0xFF4D4D4D)
 
         val hasMatchedAddedLineBgColorForDiffInLightTheme = Color(0x1B2F9B09)
         val hasMatchedAddedLineBgColorForDiffInDarkTheme = Color(0x12016505)
