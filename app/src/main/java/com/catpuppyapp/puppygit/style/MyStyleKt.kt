@@ -103,7 +103,7 @@ object MyStyleKt{
 
         //Editor font color
         private val lineNum_forEditorInLightTheme = Color.Gray
-        private val lineNum_forEditorInDarkTheme = Color.DarkGray
+        private val lineNum_forEditorInDarkTheme = Color(0xFF5D5D5D)
 
         // 行号背景色
         private val lineNumBg_forEditorInLightTheme = Color(0xFFE7E7E7)
