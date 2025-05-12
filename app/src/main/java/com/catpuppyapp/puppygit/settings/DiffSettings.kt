@@ -34,7 +34,7 @@ data class DiffSettings (
 
 
     var showLineNum:Boolean=true,
-    var showOriginType:Boolean=false,
+    var showOriginType:Boolean=true,
     var fontSize:Int = SettingsCons.defaultFontSize,  //字体大小，单位sp
     var lineNumFontSize:Int = SettingsCons.defaultLineNumFontSize,  //行号字体大小
 
