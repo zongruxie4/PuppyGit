@@ -1,7 +1,6 @@
 package com.catpuppyapp.puppygit.style
 
 import androidx.compose.foundation.layout.defaultMinSize
-import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.text.selection.TextSelectionColors
@@ -113,6 +112,17 @@ object MyStyleKt{
         //DiffContent font color
         val lineNum_forDiffInLightTheme = Color.DarkGray
         val lineNum_forDiffInDarkTheme = Color(0xFF757575)
+
+        val hasMatchedAddedLineBgColorForDiffInLightTheme = Color(0x1B2F9B09)
+        val hasMatchedAddedLineBgColorForDiffInDarkTheme = Color(0x12016505)
+        val hasMatchedDeletedLineBgColorForDiffInLightTheme = Color(0x1E707070)
+        val hasMatchedDeletedLineBgColorForDiffInDarkTheme = Color(0x0C888888)
+
+        // 无匹配的背景颜色
+        val addedLineBgColorForDiffInLightTheme = Color(0x45089613)
+        val addedLineBgColorForDiffInDarkTheme = Color(0x25009B0B)
+        val deletedLineBgColorForDiffInLightTheme = Color(0x32838383)
+        val deletedLineBgColorForDiffInDarkTheme = Color(0x46626262)
 
         val fontColor = Color.Unspecified
         val darkThemeFontColor = Color.Gray

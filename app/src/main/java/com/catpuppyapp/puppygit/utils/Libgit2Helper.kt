@@ -46,6 +46,7 @@ import com.catpuppyapp.puppygit.screen.functions.KnownHostRequestStateMan
 import com.catpuppyapp.puppygit.settings.AppSettings
 import com.catpuppyapp.puppygit.settings.SettingsUtil
 import com.catpuppyapp.puppygit.style.MyStyleKt
+import com.catpuppyapp.puppygit.ui.theme.Theme
 import com.github.git24j.core.AnnotatedCommit
 import com.github.git24j.core.Apply
 import com.github.git24j.core.Blob
@@ -1859,11 +1860,33 @@ object Libgit2Helper {
         return diffItem
     }
 
+
+    fun getMatchedTextBgColorForDiff(inDarkTheme:Boolean = Theme.inDarkTheme, line: PuppyLine):Color {
+        if(line.originType == Diff.Line.OriginType.ADDITION.toString()) {  //添加行
+            return if(inDarkTheme) MyStyleKt.TextColor.hasMatchedAddedLineBgColorForDiffInDarkTheme else MyStyleKt.TextColor.hasMatchedAddedLineBgColorForDiffInLightTheme
+        }else if(line.originType == Diff.Line.OriginType.DELETION.toString()) {  //删除行
+            return if(inDarkTheme) MyStyleKt.TextColor.hasMatchedDeletedLineBgColorForDiffInDarkTheme else MyStyleKt.TextColor.hasMatchedDeletedLineBgColorForDiffInLightTheme
+        }else if(line.originType == Diff.Line.OriginType.HUNK_HDR.toString()) {  //hunk header
+            // 注：后来hunk header并没用这的颜色
+            return Color.Gray
+        }else if(line.originType == Diff.Line.OriginType.CONTEXT.toString()) {  //上下文
+            return Color.Unspecified
+        }else if(line.originType == Diff.Line.OriginType.CONTEXT_EOFNL.toString()) {  //新旧文件都没末尾行
+            return Color.Unspecified
+        }else if(line.originType == Diff.Line.OriginType.ADD_EOFNL.toString()) {  //添加了末尾行
+            return Color.Unspecified
+        }else if(line.originType == Diff.Line.OriginType.DEL_EOFNL.toString()) {  //删除了末尾行
+            return Color.Unspecified
+        }else {  // unknown
+            return Color.Unspecified
+        }
+    }
+
     fun getDiffLineBgColor(line:PuppyLine, inDarkTheme: Boolean):Color{
         if(line.originType == Diff.Line.OriginType.ADDITION.toString()) {  //添加行
-            return if(inDarkTheme) MyStyleKt.ChangeListItemColor.bg_added_darkTheme else MyStyleKt.ChangeListItemColor.bg_added
+            return if(inDarkTheme) MyStyleKt.TextColor.addedLineBgColorForDiffInDarkTheme else MyStyleKt.TextColor.addedLineBgColorForDiffInLightTheme
         }else if(line.originType == Diff.Line.OriginType.DELETION.toString()) {  //删除行
-            return if(inDarkTheme) MyStyleKt.ChangeListItemColor.bg_deleted_darkTheme else MyStyleKt.ChangeListItemColor.bg_deleted
+            return if(inDarkTheme) MyStyleKt.TextColor.deletedLineBgColorForDiffInDarkTheme else MyStyleKt.TextColor.deletedLineBgColorForDiffInLightTheme
         }else if(line.originType == Diff.Line.OriginType.HUNK_HDR.toString()) {  //hunk header
             // 注：后来hunk header并没用这的颜色
             return Color.Gray
