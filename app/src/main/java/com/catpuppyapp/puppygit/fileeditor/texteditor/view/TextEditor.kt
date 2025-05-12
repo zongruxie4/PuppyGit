@@ -131,6 +131,7 @@ class ExpectConflictStrDto(
 
 typealias DecorationBoxComposable = @Composable (
     index: Int,
+    size: Int,  // list.size
     isSelected: Boolean,
     currentField: TextFieldState,
     focusingIdx:Int,
@@ -176,7 +177,7 @@ fun TextEditor(
     fontSize: MutableIntState,
     fontColor: Color,
 
-    decorationBox: DecorationBoxComposable = { _, _, _, _,_, innerTextField -> innerTextField(Modifier) },
+    decorationBox: DecorationBoxComposable = { _, _, _, _, _,_, innerTextField -> innerTextField(Modifier) },
 ) {
     val stateKeyTag = Cache.getComponentKey(stateKeyTag, TAG)
 
@@ -1040,6 +1041,8 @@ fun TextEditor(
                 modifier = modifier.fillMaxSize(),
                 contentPadding = contentPaddingValues
             ) {
+                val size = textEditorState.fields.size
+
                 //fields本身就是toList()出来的，无需再toList()
                 textEditorState.fields.forEachIndexed{ index, textFieldState ->
                     val curLineText = textFieldState.value.text
@@ -1097,6 +1100,7 @@ fun TextEditor(
 
                         decorationBox(
                             index,
+                            size,
                             textFieldState.isSelected,
                             textFieldState,
 
