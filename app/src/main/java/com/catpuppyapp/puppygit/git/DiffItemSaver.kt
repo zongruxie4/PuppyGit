@@ -30,6 +30,9 @@ data class DiffItemSaver (
     var deletedLines:Int=0,  //删除了多少行
     var allLines:Int=0,  //总共多少行，包含添加、删除、上下文，如果有eof，也包含eof
 
+    //最大的行号。（用来算行号padding的）
+    var maxLineNum:Int=0,
+    var hasEofLine:Boolean = false,
 
 
     // 比较的左右两边的文件的类型，如果是图片，则按图片预览，若都是text，则按text预览

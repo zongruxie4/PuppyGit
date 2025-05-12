@@ -1632,6 +1632,8 @@ fun DiffScreen(
                                     }
                                 }
 
+                                //如果有EOF且最大行号不如EOF length长就设为eof的长度
+                                val lineNumExpectLength = diffItem.maxLineNum.toString().length.let { if(diffItem.hasEofLine) it.coerceAtLeast(LineNum.EOF.TEXT.length) else it }
 
                                 if (fileChangeTypeIsModified && proFeatureEnabled(detailsDiffTestPassed)) {  //增量diff
                                     if (!groupDiffContentByLineNum || FlagFileName.flagFileExist(FlagFileName.disableGroupDiffContentByLineNum)) {
@@ -1655,6 +1657,7 @@ fun DiffScreen(
 
                                                     DiffRow(
                                                         index = lineIndex,
+                                                        lineNumExpectLength = lineNumExpectLength,
                                                         line = line,
                                                         fileFullPath = fileFullPath,
                                                         enableLineEditActions = enableLineEditActions,
@@ -1697,6 +1700,7 @@ fun DiffScreen(
 
                                                             DiffRow(
                                                                 index = lineIndex,
+                                                                lineNumExpectLength = lineNumExpectLength,
                                                                 line = mergeAddDelLineResult.line,
                                                                 fileFullPath = fileFullPath,
                                                                 enableLineEditActions = enableLineEditActions,
@@ -1756,6 +1760,7 @@ fun DiffScreen(
 
                                                     DiffRow(
                                                         index = lineIndex,
+                                                        lineNumExpectLength = lineNumExpectLength,
                                                         line = line,
                                                         fileFullPath = fileFullPath,
                                                         stringPartList = stringPartListWillUse,
@@ -1866,6 +1871,7 @@ fun DiffScreen(
 
                                                         DiffRow(
                                                             index = lineIndex,
+                                                            lineNumExpectLength = lineNumExpectLength,
                                                             line = del,
                                                             stringPartList = delStringPartListWillUse,
                                                             fileFullPath = fileFullPath,
@@ -1901,6 +1907,7 @@ fun DiffScreen(
 
                                                         DiffRow(
                                                             index = lineIndex,
+                                                            lineNumExpectLength = lineNumExpectLength,
                                                             line = add,
                                                             stringPartList = addStringPartListWillUse,
                                                             fileFullPath = fileFullPath,
@@ -1960,6 +1967,7 @@ fun DiffScreen(
 
                                                     DiffRow(
                                                         index = lineIndex,
+                                                        lineNumExpectLength = lineNumExpectLength,
                                                         //随便拷贝下del或add（不拷贝只改类型也行但不推荐以免有坏影响）把类型改成context，就行了
                                                         //这里del肯定不为null，因为 mergeDelAndAddToFakeContext 的条件包含了del和add都不为null
                                                         line = del!!.copy(originType = Diff.Line.OriginType.CONTEXT.toString()),
@@ -2009,6 +2017,7 @@ fun DiffScreen(
                                                     //打印context
                                                     DiffRow(
                                                         index = lineIndex,
+                                                        lineNumExpectLength = lineNumExpectLength,
                                                         line = context,
                                                         fileFullPath = fileFullPath,
                                                         enableLineEditActions = enableLineEditActions,
@@ -2057,6 +2066,7 @@ fun DiffScreen(
 
                                                 DiffRow(
                                                     index = lineIndex,
+                                                    lineNumExpectLength = lineNumExpectLength,
                                                     line = line,
                                                     fileFullPath = fileFullPath,
                                                     enableLineEditActions = enableLineEditActions,
@@ -2103,6 +2113,7 @@ fun DiffScreen(
                                                 // for now, the index only used to add top padding to first line, so passing a invalid fakeIndex is ok
                                                 index = fakeIndex,
 
+                                                lineNumExpectLength = lineNumExpectLength,
                                                 line = LineNum.EOF.transLineToEofLine(eofLine, add = eofLine.originType == Diff.Line.OriginType.ADD_EOFNL.toString()),
                                                 fileFullPath = fileFullPath,
                                                 enableLineEditActions = enableLineEditActions,

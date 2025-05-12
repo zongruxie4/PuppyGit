@@ -58,6 +58,7 @@ import com.catpuppyapp.puppygit.utils.cache.Cache
 import com.catpuppyapp.puppygit.utils.compare.result.IndexStringPart
 import com.catpuppyapp.puppygit.utils.createAndInsertError
 import com.catpuppyapp.puppygit.utils.doJobThenOffLoading
+import com.catpuppyapp.puppygit.utils.paddingLineNumber
 import com.catpuppyapp.puppygit.utils.replaceStringResList
 import com.catpuppyapp.puppygit.utils.state.mutableCustomStateOf
 import com.github.git24j.core.Diff
@@ -77,6 +78,7 @@ fun DiffRow (
     stateKeyTag:String,
     index:Int,
     line:PuppyLine,
+    lineNumExpectLength:Int,
     stringPartList:List<IndexStringPart>? = null,
     fileFullPath:String,
     enableLineEditActions:Boolean,
@@ -162,7 +164,8 @@ fun DiffRow (
 //                        val lineTypeStr = getDiffLineTypeStr(line)
     val lineNumColor = MyStyleKt.TextColor.lineNumColor(inDarkTheme)
 
-    val lineNum = if(line.lineNum == LineNum.EOF.LINE_NUM) LineNum.EOF.TEXT else line.lineNum.toString()
+    val lineNum = paddingLineNumber(if(line.lineNum == LineNum.EOF.LINE_NUM) LineNum.EOF.TEXT else line.lineNum.toString(), lineNumExpectLength)
+
 //    var prefix = ""
     val content = line.content
     //我发现明明新旧都没末尾行，但是originType却是添加了末尾行 '>'， 很奇怪，所以把行相关的背景颜色改了，文字颜色一律灰色，另外，因为patch输出会包含 no new line at end 之类的东西，所以不需要我再特意添加那句话了

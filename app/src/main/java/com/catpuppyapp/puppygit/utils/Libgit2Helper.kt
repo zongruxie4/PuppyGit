@@ -1694,6 +1694,8 @@ object Libgit2Helper {
                         diffItem.addedLines++
                     }else if(it == Line.OriginType.DELETION) {
                         diffItem.deletedLines++
+                    }else if(it == Line.OriginType.ADD_EOFNL || it == Line.OriginType.DEL_EOFNL || it == Line.OriginType.CONTEXT_EOFNL) {
+                        diffItem.hasEofLine = true
                     }
 
                     diffItem.allLines++
@@ -1709,7 +1711,9 @@ object Libgit2Helper {
                 puppyAndRawLineList.add(Pair(pLine, line))
 //                    pLine.content = line.content
 //                    pLine.content = LibgitTwo.getContent(line.contentLen, LibgitTwo.jniLineGetContent(line.rawPointer))
-                pLine.lineNum = getLineNum(pLine)
+                //获取行号以及更新最大行号（用来对齐行号那列）
+                pLine.lineNum = getLineNum(pLine).let { if(it > diffItem.maxLineNum) diffItem.maxLineNum = it; it }
+
                 //不知道为什么全是1
                 pLine.howManyLines = line.numLines
 //

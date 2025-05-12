@@ -464,7 +464,7 @@ fun FileEditor(
                                 val expectLength = size.toString().length
 
                                 Text(
-                                    text = paddingLineNumber(index, expectLength),
+                                    text = paddingLineNumber((index+1).toString(), expectLength),
                                     color = MyStyleKt.TextColor.lineNumColor(inDarkTheme),
                                     fontSize = lineNumFontSize.intValue.sp,
                                     fontFamily = FontFamily.Monospace,  //等宽字体，和diff页面的行号保持一致
