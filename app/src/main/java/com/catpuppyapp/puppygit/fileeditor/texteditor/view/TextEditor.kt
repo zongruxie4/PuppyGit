@@ -1099,7 +1099,7 @@ fun TextEditor(
                         textEditorState.focusingLineIdx ?: -1,
                         textEditorState.isMultipleSelectionMode,
 
-                        ) { modifier ->
+                    ) { modifier ->
                         // FileEditor里的innerTextFiled()会执行这的代码
                         Box(
                             modifier = modifier

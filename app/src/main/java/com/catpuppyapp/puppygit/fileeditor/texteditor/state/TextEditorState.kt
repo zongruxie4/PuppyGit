@@ -950,11 +950,7 @@ class TextEditorState private constructor(
             SelectionOption.NONE -> target.value.selection
             SelectionOption.FIRST_POSITION -> TextRange.Zero
             SelectionOption.LAST_POSITION -> {
-                if (target.value.text.lastIndex != -1) {
-                    TextRange(target.value.text.lastIndex + 1)
-                } else {
-                    TextRange.Zero
-                }
+                TextRange(target.value.text.length)
             }
         }
 
