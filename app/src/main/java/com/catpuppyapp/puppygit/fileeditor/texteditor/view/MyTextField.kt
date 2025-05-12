@@ -15,6 +15,7 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.MutableIntState
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusRequester
@@ -44,7 +45,6 @@ internal fun MyTextField(
     focusThisLine:Boolean,
     textFieldState: TextFieldState,
     enabled: Boolean,
-    focusRequester: FocusRequester,
     onUpdateText: (TextFieldValue) -> Unit,
     onContainNewLine: (TextFieldValue) -> Unit,
     onAddNewLine: (TextFieldValue) -> Unit,
@@ -61,6 +61,7 @@ internal fun MyTextField(
     fontColor:Color,
     bgColor:Color = Color.Unspecified,
 ) {
+    val focusRequester = remember { FocusRequester() }
 
     //写法1
 //    val currentTextField = remember { mutableStateOf(textFieldState) }  //重组不会重新执行

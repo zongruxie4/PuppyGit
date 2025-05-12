@@ -203,7 +203,7 @@ fun TextEditor(
 //    val textEditorState by rememberUpdatedState(newValue = textEditorState)
     val (virtualWidth, virtualHeight) = UIHelper.Size.editorVirtualSpace()
 
-    val focusRequesters = remember { mutableStateMapOf<Int, FocusRequester>() }
+//    val focusRequesters = remember { mutableStateMapOf<Int, FocusRequester>() }
 //    val focusRequesters = remember { mutableStateListOf<FocusRequester>() }  //不能用list，滚动两下页面就会报错
 
     val settings = remember { SettingsUtil.getSettingsSnapshot() }
@@ -1075,20 +1075,6 @@ fun TextEditor(
                 //很多时候改了内容，但没改id，懒得一个个改了，直接弃用id作key，让compose自己判断什么时候需要重组，有问题再说
 //                    item(key = textFieldState.id) {
                 item {
-                    val focusRequester = remember { FocusRequester() }
-
-                    DisposableEffect(Unit) {
-                        focusRequesters[index] = focusRequester
-                        onDispose LazyColumnItemOnDispose@{
-                            try {
-                                focusRequesters.remove(index)
-
-                            }catch (e:Exception) {
-                                MyLog.e(TAG, "#LazyColumnItemOnDispose@: `focusRequesters.remove(index)` err: "+e.stackTraceToString())
-                            }
-                        }
-                    }
-
                     decorationBox(
                         index,
                         size,
@@ -1144,7 +1130,6 @@ fun TextEditor(
                                 needShowCursorHandle = needShowCursorHandle,
                                 textFieldState = textFieldState,
                                 enabled = !textEditorState.isMultipleSelectionMode && !readOnlyMode,
-                                focusRequester = focusRequester,
                                 fontSize = fontSize.intValue,
                                 fontColor = fontColor,
 //                                    bgColor = bgColor,
