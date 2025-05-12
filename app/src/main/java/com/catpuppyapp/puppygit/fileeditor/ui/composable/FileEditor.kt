@@ -85,6 +85,7 @@ import com.catpuppyapp.puppygit.utils.UIHelper
 import com.catpuppyapp.puppygit.utils.addTopPaddingIfIsFirstLine
 import com.catpuppyapp.puppygit.utils.cache.Cache
 import com.catpuppyapp.puppygit.utils.doJobThenOffLoading
+import com.catpuppyapp.puppygit.utils.paddingLineNumber
 import com.catpuppyapp.puppygit.utils.replaceStringResList
 import com.catpuppyapp.puppygit.utils.state.CustomStateSaveable
 import kotlinx.coroutines.runBlocking
@@ -463,7 +464,7 @@ fun FileEditor(
                                 val expectLength = size.toString().length
 
                                 Text(
-                                    text = getLineNumber(index, expectLength),
+                                    text = paddingLineNumber(index, expectLength),
                                     color = MyStyleKt.TextColor.lineNumColor(inDarkTheme),
                                     fontSize = lineNumFontSize.intValue.sp,
                                     fontFamily = FontFamily.Monospace,  //等宽字体，和diff页面的行号保持一致
@@ -702,11 +703,6 @@ fun FileEditor(
         }
     }
 
-}
-
-private fun getLineNumber(index: Int, expectLength:Int): String {
-    return (index + 1).toString().padStart(expectLength, ' ')
-//    return (index + 1).toString()
 }
 
 @Composable

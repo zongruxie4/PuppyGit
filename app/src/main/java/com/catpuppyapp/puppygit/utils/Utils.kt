@@ -1207,3 +1207,10 @@ suspend fun getVideoThumbnail(videoPath: String): ImageBitmap? {
         null
     }
 }
+
+
+fun paddingLineNumber(index: Int, expectLength:Int): String {
+    return (index + 1).toString().padStart(expectLength, ' ')
+//    return (index + 1).toString()
+}
+
