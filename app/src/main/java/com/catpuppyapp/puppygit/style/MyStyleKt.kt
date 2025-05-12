@@ -105,8 +105,8 @@ object MyStyleKt{
         private val lineNum_forEditorInDarkTheme = Color(0xFF5D5D5D)
 
         // 行号背景色
-        private val lineNumBg_forEditorInLightTheme = Color(0xFFE7E7E7)
-        private val lineNumBg_forEditorInDarkTheme = Color(0xFF232323)
+        private val lineNumBg_forEditorInLightTheme = Color(0x65E7E7E7)
+        private val lineNumBg_forEditorInDarkTheme = Color(0x1B414141)
 //        val lineNum_forEditorInDarkTheme = Color(0xFF535353)
 
         //DiffContent font color
@@ -120,8 +120,8 @@ object MyStyleKt{
 
         // 无匹配的背景颜色
         val addedLineBgColorForDiffInLightTheme = Color(0x45089613)
-        val addedLineBgColorForDiffInDarkTheme = Color(0x25009B0B)
-        val deletedLineBgColorForDiffInLightTheme = Color(0x32838383)
+        val addedLineBgColorForDiffInDarkTheme = Color(0x31009B0B)
+        val deletedLineBgColorForDiffInLightTheme = Color(0x3B838383)
         val deletedLineBgColorForDiffInDarkTheme = Color(0x46626262)
 
         val fontColor = Color.Unspecified
