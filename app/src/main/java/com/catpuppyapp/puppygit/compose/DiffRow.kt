@@ -594,21 +594,23 @@ fun DiffRow (
             color = lineNumColor,
             fontSize = lineNumSize.sp,
             fontFamily = FontFamily.Monospace, // 使用系统自带的等宽字体，不然那个+和-不等宽，看着难受
-            modifier = Modifier.clickable {
-                openFileWithInnerSubPageEditor(
-                    context = activityContext,
-                    filePath = fileFullPath,
-                    mergeMode = false,
-                    readOnly = false,
-                    //if jump line is EOF, should go to last line of file, but didn't know the line num, so set line num to a enough big number
-                    goToLine = if(lineNum == LineNum.EOF.TEXT) LineNum.EOF.LINE_NUM else line.lineNum
-                )
-            }
+            modifier = Modifier
+//                .background(MyStyleKt.TextColor.lineNumBgColor(inDarkTheme))
+                .clickable {
+                    openFileWithInnerSubPageEditor(
+                        context = activityContext,
+                        filePath = fileFullPath,
+                        mergeMode = false,
+                        readOnly = false,
+                        //if jump line is EOF, should go to last line of file, but didn't know the line num, so set line num to a enough big number
+                        goToLine = if(lineNum == LineNum.EOF.TEXT) LineNum.EOF.LINE_NUM else line.lineNum
+                    )
+                }
 
                 //这个和changeType加行号(prefix)左边的padding构成完整每行左右padding
                 //如果有前缀，padding小点，否则大点
                 //这个放到clickable后面，这样点击padding区域也可触发onClick
-            .padding(start = (if(prefix.isNotEmpty()) 2.dp else 5.dp))
+                .padding(start = (if(prefix.isNotEmpty()) 2.dp else 5.dp))
 
         )
 
