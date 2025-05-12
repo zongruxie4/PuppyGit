@@ -3,17 +3,17 @@ package com.catpuppyapp.puppygit.fileeditor.ui.composable
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.combinedClickable
-import androidx.compose.foundation.focusable
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.foundation.verticalScroll
@@ -45,6 +45,7 @@ import androidx.compose.ui.draw.drawBehind
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.hapticfeedback.HapticFeedbackType
+import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.platform.LocalClipboardManager
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalContext
@@ -69,7 +70,6 @@ import com.catpuppyapp.puppygit.dto.UndoStack
 import com.catpuppyapp.puppygit.fileeditor.texteditor.state.TextEditorState
 import com.catpuppyapp.puppygit.fileeditor.texteditor.view.ScrollEvent
 import com.catpuppyapp.puppygit.fileeditor.texteditor.view.TextEditor
-import com.catpuppyapp.puppygit.fileeditor.ui.composable.editor.FieldIcon
 import com.catpuppyapp.puppygit.play.pro.R
 import com.catpuppyapp.puppygit.screen.shared.EditorPreviewNavStack
 import com.catpuppyapp.puppygit.screen.shared.FilePath
@@ -80,6 +80,7 @@ import com.catpuppyapp.puppygit.utils.EditCache
 import com.catpuppyapp.puppygit.utils.Msg
 import com.catpuppyapp.puppygit.utils.MyLog
 import com.catpuppyapp.puppygit.utils.UIHelper
+import com.catpuppyapp.puppygit.utils.addTopPaddingIfIsFirstLine
 import com.catpuppyapp.puppygit.utils.cache.Cache
 import com.catpuppyapp.puppygit.utils.doJobThenOffLoading
 import com.catpuppyapp.puppygit.utils.replaceStringResList
@@ -362,8 +363,9 @@ fun FileEditor(
                 }
             } else {
 
+                val showLineNum = showLineNum.value
                 val bottomLineWidth = remember { 1.dp }
-                val changeTypeWidth = remember { 10.dp }
+                val changeTypeWidth = remember(showLineNum) { if(showLineNum) 5.dp else 10.dp }
 
                 TextEditor(
                     stateKeyTag = stateKeyTag,
@@ -388,17 +390,15 @@ fun FileEditor(
                     fontSize=fontSize,
                     fontColor = fontColor,
                 ) { index, size, isSelected, currentField, focusingIdx, isMultiSelectionMode, innerTextField ->
+                    //用来让行号背景填充整行高度
+                    val lineHeight = remember { mutableStateOf(0.dp) }
+
                     // TextLine
                     Row(
-//                horizontalArrangement = Arrangement.spacedBy(4.dp),
                         modifier = Modifier
-                            //底线
-                            .fieldBorder(
-                                bottomLineWidth = bottomLineWidth,
-                                color = UIHelper.getDividerColor(),
-                                changeTypeLineWidth = changeTypeWidth,
-                                changeTypeColor = currentField.getColorOfChangeType(inDarkTheme),
-                            )
+                            .onGloballyPositioned {
+                                lineHeight.value = UIHelper.pxToDp(it.size.height, density)
+                            }
                             .fillMaxWidth()
                             .background(
                                 getBackgroundColor(
@@ -416,7 +416,10 @@ fun FileEditor(
 
                         // 行号
                         Row(
-                            modifier = Modifier.background(MyStyleKt.TextColor.lineNumBgColor(inDarkTheme))
+                            modifier = Modifier
+                                .background(MyStyleKt.TextColor.lineNumBgColor(inDarkTheme))
+                                //让行号占满整行高度
+                                .height(lineHeight.value)
                                 .combinedClickable(
                                 onLongClick = {
                                     if (textEditorState.value.isMultipleSelectionMode) {
@@ -439,17 +442,15 @@ fun FileEditor(
                                     enableSelectMode(index)
                                 }
                             }
-                                .padding(horizontal = 10.dp)
+                            .addTopPaddingIfIsFirstLine(index, topPadding)
+                            ,
 
-                                //给第一行top加点padding，不然离上面太近，难受
-                                .addTopPaddingIfIsFirstLine(index, topPadding)
+                            //让行号从右向左对齐，如果对短行号加了空格padding并且字体等宽其实这个可选
+                            horizontalArrangement = Arrangement.End,
                         ) {
-                            //充当行号修改类型指示器和行号之间的padding，不然会重叠
-                            Text("", modifier = Modifier.width(if(showLineNum.value) changeTypeWidth-3.dp else changeTypeWidth))
-
 
                             //行号
-                            if(showLineNum.value) {
+                            if(showLineNum) {
                                 val expectLength = size.toString().length
 
                                 Text(
@@ -457,11 +458,32 @@ fun FileEditor(
                                     color = MyStyleKt.TextColor.lineNumColor(inDarkTheme),
                                     fontSize = lineNumFontSize.intValue.sp,
                                     fontFamily = FontFamily.Monospace,  //等宽字体，和diff页面的行号保持一致
-                                    //行号居中
-                                    // modifier = Modifier.align(Alignment.CenterVertically)
+
+                                    //右边加点padding给修改类型指示器，左边加点padding给和屏幕边缘拉开距离
+                                    modifier = Modifier.padding(start = 5.dp, end = changeTypeWidth)
                                 )
 
                             }
+
+
+                            //行修改类型指示器
+                            Row(modifier = Modifier
+//                                .width(if(showLineNum) changeTypeWidth-3.dp else 10.dp)
+                                .width(changeTypeWidth)
+                                //整行高度显示
+                                .fillMaxHeight()
+                                //画修改类型指示条
+                                .fieldBorder(
+                                    bottomLineWidth = bottomLineWidth,
+                                    color = UIHelper.getDividerColor(),
+                                    changeTypeLineWidth = changeTypeWidth,
+                                    changeTypeColor = currentField.getColorOfChangeType(inDarkTheme),
+                                    trueDrawBottomFalseDrawChangeTypeIndicator = false,
+                                )
+                            ){
+                                Spacer(Modifier.width(1.dp))
+                            }
+
                         }
 
 
@@ -469,11 +491,19 @@ fun FileEditor(
                         // TextField
                         innerTextField(
                             Modifier
-                                .weight(0.9f, true)
+                                .weight(0.9f, true) //这东西有什么用？
                                 .align(Alignment.CenterVertically)
 
                                 //给第一行top加点padding，不然离上面太近，难受
                                 .addTopPaddingIfIsFirstLine(index, topPadding)
+                                //底线
+                                .fieldBorder(
+                                    bottomLineWidth = bottomLineWidth,
+                                    color = UIHelper.getDividerColor(),
+                                    changeTypeLineWidth = changeTypeWidth,
+                                    changeTypeColor = currentField.getColorOfChangeType(inDarkTheme),
+                                    trueDrawBottomFalseDrawChangeTypeIndicator = true,
+                                )
                         )
 
 
@@ -697,6 +727,7 @@ private fun Modifier.fieldBorder(
     color: Color,
     changeTypeLineWidth:Dp,
     changeTypeColor: Color,
+    trueDrawBottomFalseDrawChangeTypeIndicator:Boolean,
 ) :Modifier {
     val density = LocalDensity.current
     val bottomLineWidthPx = with(density) { bottomLineWidth.toPx() }
@@ -707,29 +738,26 @@ private fun Modifier.fieldBorder(
         val height = size.height
         val bottomLineHeight = height - bottomLineWidthPx / 2
 
-        // 底线
-        drawLine(
-            color = color,
-            start = Offset(x = 0f, y = bottomLineHeight),
-            end = Offset(x = width, y = bottomLineHeight),
-            strokeWidth = bottomLineWidthPx
-        )
+        if(trueDrawBottomFalseDrawChangeTypeIndicator) {
+            // 底线
+            drawLine(
+                color = color,
+                start = Offset(x = 0f, y = bottomLineHeight),
+                end = Offset(x = width, y = bottomLineHeight),
+                strokeWidth = bottomLineWidthPx
+            )
+        }else {
+            // 每行左边的修改类型指示器，显示当前行是新增的还是修改的
+            val startX = if(isRtl) width else 0f
+            
+            drawLine(
+                color = changeTypeColor,
+                strokeWidth = changeTypeLineWidth.toPx(),  //宽度
+                //起始和结束点，单位应该是px
+                start = Offset(startX, 0f),
+                end = Offset(startX, height),
+            )
+        }
 
-
-        // 每行左边的修改类型指示器，显示当前行是新增的还是修改的
-        val startX = if (isRtl) width else 0f
-
-        drawLine(
-            color = changeTypeColor,
-            strokeWidth = changeTypeLineWidth.toPx(),  //宽度
-            //起始和结束点，单位应该是px
-            start = Offset(startX, 0f),
-            end = Offset(startX, height),
-        )
     }
-}
-
-@Composable
-private fun Modifier.addTopPaddingIfIsFirstLine(index:Int, topPadding:Dp):Modifier {
-    return if(index == 0) padding(top = topPadding) else this
 }

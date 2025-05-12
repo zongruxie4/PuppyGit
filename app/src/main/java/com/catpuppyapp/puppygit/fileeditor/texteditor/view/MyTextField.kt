@@ -102,6 +102,7 @@ internal fun MyTextField(
         modifier = modifier
             .fillMaxWidth()
             .wrapContentHeight()
+//            .padding(start = 5.dp)
 //            .focusTarget()  //如果加这个，按一次返回会先解除focus，然后才会退出，操作有些繁琐，我感觉不加比较好
             .focusRequester(focusRequester)
             .onFocusChanged { if (it.isFocused) onFocus() }

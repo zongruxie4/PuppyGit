@@ -7,6 +7,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.unit.Density
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
 
@@ -28,3 +29,10 @@ fun Modifier.fabBasePadding(
         }
     )
 }
+
+
+@Composable
+fun Modifier.addTopPaddingIfIsFirstLine(index:Int, topPadding:Dp):Modifier {
+    return if(index == 0) padding(top = topPadding) else this
+}
+
