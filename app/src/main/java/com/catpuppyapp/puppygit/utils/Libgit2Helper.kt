@@ -4869,7 +4869,7 @@ object Libgit2Helper {
             //这里不插入了，因为这个函数经常调用的关系，如果仓库一更新错且没及时处理，会生成很多调错误记录
 //                createAndInsertError(repoFromDb.id, "update repo info err!")
             //不过log还是要记下的
-            MyLog.e(TAG, "#$funName() failed!, repoId=${repoFromDb.id}, repo.toString()=${repoFromDb.toString()}\n Exception is:${e.stackTraceToString()}")
+            MyLog.d(TAG, "#$funName() failed: repoId=${repoFromDb.id}, repo.toString()=${repoFromDb.toString()}\n Exception is: ${e.stackTraceToString()}")
         }
     }
 
