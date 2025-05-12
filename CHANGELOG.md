@@ -1,6 +1,15 @@
 
 
 ---
+1.1.1.3v89 - 20250513:
+- adjust Editor style
+
+
+
+- 调整文本编辑器样式
+
+
+---
 1.1.1.2v88 - 20250510:
 - popup keyboard when rename file and go to path at Files
 - optimize Editor reload check logic
