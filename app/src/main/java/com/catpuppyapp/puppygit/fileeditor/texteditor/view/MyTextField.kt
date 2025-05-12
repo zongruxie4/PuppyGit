@@ -32,6 +32,7 @@ import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.catpuppyapp.puppygit.dev.bug_Editor_WrongUpdateEditColumnIdx_Fixed
+import com.catpuppyapp.puppygit.dto.Box
 import com.catpuppyapp.puppygit.fileeditor.texteditor.state.TextFieldState
 import com.catpuppyapp.puppygit.ui.theme.Theme
 import com.catpuppyapp.puppygit.utils.MyLog
@@ -42,6 +43,7 @@ private const val TAG = "MyTextField"
 
 @Composable
 internal fun MyTextField(
+    ignoreFocusOnce: Box<Boolean>,
     focusThisLine:Boolean,
     textFieldState: TextFieldState,
     enabled: Boolean,
@@ -134,8 +136,12 @@ internal fun MyTextField(
 
 
     if(focusThisLine) {
-        LaunchedEffect(Unit) {
-            focusRequester.requestFocus()
+        if(ignoreFocusOnce.value) {
+            ignoreFocusOnce.value = false
+        }else {
+            LaunchedEffect(Unit) {
+                focusRequester.requestFocus()
+            }
         }
     }
 
@@ -229,7 +235,7 @@ private fun insertNewLineAtCursor(textFieldValue: TextFieldValue):String {
 
     //这个情况不应该发生
     if (splitPosition < 0 || splitPosition > maxOfPosition) {  //第2个判断没错，就是大于最大位置，不是大于等于，没写错，光标位置有可能在行末尾，这时其索引和text.length相等，所以只有大于才有问题
-        val errMsg = "splitPosition '$splitPosition' out of range '[0, $maxOfPosition]'";
+        val errMsg = "splitPosition '$splitPosition' out of range '[0, $maxOfPosition]'"
         MyLog.e(TAG, "#getNewTextOfLine: $errMsg")
         throw RuntimeException(errMsg)
     }

@@ -60,6 +60,7 @@ import com.catpuppyapp.puppygit.compose.OpenAsDialog
 import com.catpuppyapp.puppygit.constants.Cons
 import com.catpuppyapp.puppygit.constants.LineNum
 import com.catpuppyapp.puppygit.constants.PageRequest
+import com.catpuppyapp.puppygit.dto.Box
 import com.catpuppyapp.puppygit.dto.FileSimpleDto
 import com.catpuppyapp.puppygit.dto.UndoStack
 import com.catpuppyapp.puppygit.fileeditor.texteditor.state.TextEditorState
@@ -198,7 +199,9 @@ fun EditorInnerPage(
         s
     }
 
-
+    //初始值不用忽略，因为打开文件后默认focusing line idx为null，所以这个值是否忽略并没意义
+    //这个值不能用state，不然修改state后会重组，然后又触发聚焦，就没意义了
+    val ignoreFocusOnce = remember { Box(false) }
 
     val recentFilesLimit = remember(settings.editor.recentFilesLimit) { settings.editor.recentFilesLimit }
 
@@ -1280,6 +1283,8 @@ fun EditorInnerPage(
 
         FileEditor(
             stateKeyTag = stateKeyTag,
+
+            ignoreFocusOnce = ignoreFocusOnce,
             requireEditorScrollToPreviewCurPos = requireEditorScrollToPreviewCurPos,
             requirePreviewScrollToEditorCurPos = requirePreviewScrollToEditorCurPos,
             isSubPageMode = isSubPageMode,
@@ -1395,6 +1400,7 @@ fun EditorInnerPage(
                 doActWithLockIfFree(loadLock, "EditorInnerPage#Init") {
                     doInit(
                         requirePreviewScrollToEditorCurPos = requirePreviewScrollToEditorCurPos,
+                        ignoreFocusOnce = ignoreFocusOnce,
                         isPreviewModeOn = isPreviewModeOn,
                         previewPath = previewPath,
                         updatePreviewPath = updatePreviewPath,
@@ -1458,6 +1464,7 @@ fun EditorInnerPage(
 
 private suspend fun doInit(
     requirePreviewScrollToEditorCurPos: MutableState<Boolean>,
+    ignoreFocusOnce: Box<Boolean>,
     isPreviewModeOn: MutableState<Boolean>,
     previewPath: String,
     updatePreviewPath: (String)->Unit,
@@ -1617,6 +1624,9 @@ private suspend fun doInit(
 
             editorPageIsInitDone.value=false
             editorLastScrollEvent.value=null
+
+            // 创建新textEditorState则把这个值重置为初始值
+            ignoreFocusOnce.value = false
 
             //读取文件内容
 //            editorPageTextEditorState.value = TextEditorState.create(FsUtils.readFile(requireOpenFilePath))

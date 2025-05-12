@@ -32,6 +32,7 @@ import androidx.compose.material.icons.filled.SelectAll
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.MutableIntState
 import androidx.compose.runtime.MutableState
@@ -66,6 +67,7 @@ import com.catpuppyapp.puppygit.compose.PullToRefreshBox
 import com.catpuppyapp.puppygit.compose.SelectedItemDialog3
 import com.catpuppyapp.puppygit.compose.SwipeIcon
 import com.catpuppyapp.puppygit.constants.PageRequest
+import com.catpuppyapp.puppygit.dto.Box
 import com.catpuppyapp.puppygit.dto.UndoStack
 import com.catpuppyapp.puppygit.fileeditor.texteditor.state.TextEditorState
 import com.catpuppyapp.puppygit.fileeditor.texteditor.view.ScrollEvent
@@ -95,6 +97,8 @@ private const val TAG = "FileEditor"
 @Composable
 fun FileEditor(
     stateKeyTag:String,
+
+    ignoreFocusOnce:Box<Boolean>,
     requireEditorScrollToPreviewCurPos:MutableState<Boolean>,
     requirePreviewScrollToEditorCurPos:MutableState<Boolean>,
     isSubPageMode:Boolean,
@@ -239,8 +243,8 @@ fun FileEditor(
         } else {
             initPreviewMode()
 
-            //避免切到预览再切回来后自动弹键盘
-            textEditorState.value = textEditorState.value.copy(focusingLineIdx = null)
+            //避免切到预览再切回来后自动弹键盘 (后来设置了忽略聚焦一次，不需要用这个了)
+//            textEditorState.value = textEditorState.value.copy(focusingLineIdx = null)
         }
     }
 
@@ -361,12 +365,19 @@ fun FileEditor(
                 }
             } else {
 
+                DisposableEffect(Unit) {
+                    // 避免离开页面又切换回来后弹键盘
+                    onDispose { ignoreFocusOnce.value = true }
+                }
+
                 val showLineNum = showLineNum.value
                 val bottomLineWidth = remember { 1.dp }
                 val changeTypeWidth = remember(showLineNum) { if(showLineNum) 5.dp else 10.dp }
 
                 TextEditor(
                     stateKeyTag = stateKeyTag,
+
+                    ignoreFocusOnce = ignoreFocusOnce,
                     undoStack = undoStack,
                     curPreviewScrollState = curPreviewScrollState,
                     requireEditorScrollToPreviewCurPos = requireEditorScrollToPreviewCurPos,
@@ -419,28 +430,28 @@ fun FileEditor(
                                 //让行号占满整行高度
                                 .height(lineHeight.value)
                                 .combinedClickable(
-                                onLongClick = {
-                                    if (textEditorState.value.isMultipleSelectionMode) {
-                                        haptic.performHapticFeedback(HapticFeedbackType.LongPress)
+                                    onLongClick = {
+                                        if (textEditorState.value.isMultipleSelectionMode) {
+                                            haptic.performHapticFeedback(HapticFeedbackType.LongPress)
 
-                                        doJobThenOffLoading {
-                                            textEditorState.value.selectFieldSpan(targetIndex = index)
+                                            doJobThenOffLoading {
+                                                textEditorState.value.selectFieldSpan(targetIndex = index)
+                                            }
                                         }
                                     }
-                                }
-                            ) {
-                                //如果是行选择模式，选中当前点击的行如果不是行选择模式；进入行选择模式
-                                if (textEditorState.value.isMultipleSelectionMode) {
-                                    //选中/取消选中 当前点击的行
-                                    doJobThenOffLoading {
-                                        textEditorState.value.selectField(targetIndex = index)
-                                    }
+                                ) {
+                                    //如果是行选择模式，选中当前点击的行如果不是行选择模式；进入行选择模式
+                                    if (textEditorState.value.isMultipleSelectionMode) {
+                                        //选中/取消选中 当前点击的行
+                                        doJobThenOffLoading {
+                                            textEditorState.value.selectField(targetIndex = index)
+                                        }
 
-                                } else { // 非行选择模式，启动行选择模式 (multiple selection mode on)
-                                    enableSelectMode(index)
+                                    } else { // 非行选择模式，启动行选择模式 (multiple selection mode on)
+                                        enableSelectMode(index)
+                                    }
                                 }
-                            }
-                            .addTopPaddingIfIsFirstLine(index, topPadding)
+                                .addTopPaddingIfIsFirstLine(index, topPadding)
                             ,
 
                             //让行号从右向左对齐，如果对短行号加了空格padding并且字体等宽其实这个可选
