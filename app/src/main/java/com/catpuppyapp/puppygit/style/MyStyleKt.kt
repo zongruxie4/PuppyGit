@@ -111,8 +111,8 @@ object MyStyleKt{
 //        val lineNum_forEditorInDarkTheme = Color(0xFF535353)
 
         //DiffContent font color
-//        val lineNum_forDiffInLightTheme = Color.DarkGray
-//        val lineNum_forDiffInDarkTheme = Color(0xFF757575)
+        val lineNum_forDiffInLightTheme = Color.DarkGray
+        val lineNum_forDiffInDarkTheme = Color(0xFF757575)
 
         val fontColor = Color.Unspecified
         val darkThemeFontColor = Color.Gray
@@ -124,6 +124,10 @@ object MyStyleKt{
 
         fun lineNumColor(inDarkTheme:Boolean = Theme.inDarkTheme):Color {
             return if(inDarkTheme) lineNum_forEditorInDarkTheme else lineNum_forEditorInLightTheme
+        }
+
+        fun lineNumColorForDiff(inDarkTheme:Boolean = Theme.inDarkTheme):Color {
+            return if(inDarkTheme) lineNum_forDiffInDarkTheme else lineNum_forDiffInLightTheme
         }
 
         fun lineNumBgColor(inDarkTheme:Boolean = Theme.inDarkTheme):Color {
