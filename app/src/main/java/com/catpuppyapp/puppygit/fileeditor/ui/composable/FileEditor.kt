@@ -473,12 +473,9 @@ fun FileEditor(
                                 //整行高度显示
                                 .fillMaxHeight()
                                 //画修改类型指示条
-                                .fieldBorder(
-                                    bottomLineWidth = bottomLineWidth,
-                                    color = UIHelper.getDividerColor(),
+                                .changeTypeIndicator(
                                     changeTypeLineWidth = changeTypeWidth,
                                     changeTypeColor = currentField.getColorOfChangeType(inDarkTheme),
-                                    trueDrawBottomFalseDrawChangeTypeIndicator = false,
                                 )
                             ){
                                 Spacer(Modifier.width(1.dp))
@@ -497,12 +494,9 @@ fun FileEditor(
                                 //给第一行top加点padding，不然离上面太近，难受
                                 .addTopPaddingIfIsFirstLine(index, topPadding)
                                 //底线
-                                .fieldBorder(
+                                .bottomLine(
                                     bottomLineWidth = bottomLineWidth,
                                     color = UIHelper.getDividerColor(),
-                                    changeTypeLineWidth = changeTypeWidth,
-                                    changeTypeColor = currentField.getColorOfChangeType(inDarkTheme),
-                                    trueDrawBottomFalseDrawChangeTypeIndicator = true,
                                 )
                         )
 
@@ -722,42 +716,53 @@ private fun getBackgroundColor(isSelected: Boolean, isMultiSelectionMode:Boolean
 }
 
 @Composable
-private fun Modifier.fieldBorder(
+private fun Modifier.bottomLine(
     bottomLineWidth: Dp,
-    color: Color,
-    changeTypeLineWidth:Dp,
-    changeTypeColor: Color,
-    trueDrawBottomFalseDrawChangeTypeIndicator:Boolean,
+    color: Color
 ) :Modifier {
     val density = LocalDensity.current
     val bottomLineWidthPx = with(density) { bottomLineWidth.toPx() }
-    val isRtl = UIHelper.isRtlLayout()
 
     return drawBehind {
         val width = size.width
         val height = size.height
         val bottomLineHeight = height - bottomLineWidthPx / 2
 
-        if(trueDrawBottomFalseDrawChangeTypeIndicator) {
-            // 底线
-            drawLine(
-                color = color,
-                start = Offset(x = 0f, y = bottomLineHeight),
-                end = Offset(x = width, y = bottomLineHeight),
-                strokeWidth = bottomLineWidthPx
-            )
-        }else {
-            // 每行左边的修改类型指示器，显示当前行是新增的还是修改的
-            val startX = if(isRtl) width else 0f
-            
-            drawLine(
-                color = changeTypeColor,
-                strokeWidth = changeTypeLineWidth.toPx(),  //宽度
-                //起始和结束点，单位应该是px
-                start = Offset(startX, 0f),
-                end = Offset(startX, height),
-            )
-        }
+        // 底线
+        drawLine(
+            color = color,
+            start = Offset(x = 0f, y = bottomLineHeight),
+            end = Offset(x = width, y = bottomLineHeight),
+            strokeWidth = bottomLineWidthPx
+        )
+
+    }
+}
+
+
+@Composable
+private fun Modifier.changeTypeIndicator(
+    changeTypeLineWidth:Dp,
+    changeTypeColor: Color,
+) :Modifier {
+//    val density = LocalDensity.current
+    val isRtl = UIHelper.isRtlLayout()
+
+    return drawBehind {
+        val width = size.width
+        val height = size.height
+
+
+        // 每行左边的修改类型指示器，显示当前行是新增的还是修改的
+        val startX = if(isRtl) width else 0f
+
+        drawLine(
+            color = changeTypeColor,
+            strokeWidth = changeTypeLineWidth.toPx(),  //宽度
+            //起始和结束点，单位应该是px
+            start = Offset(startX, 0f),
+            end = Offset(startX, height),
+        )
 
     }
 }
