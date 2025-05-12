@@ -159,7 +159,7 @@ fun DiffRow (
     val inDarkTheme = Theme.inDarkTheme
     //libgit2会把连续行整合到一起，这里用getLines()获取拆分后的行
 //                    puppyLineBase.getLines().forEach { line ->
-    val color = Libgit2Helper.getDiffLineBgColor(line, inDarkTheme)
+    val bgColor = Libgit2Helper.getDiffLineBgColor(line, inDarkTheme)
     val textColor = Libgit2Helper.getDiffLineTextColor(line, inDarkTheme)
 //                        val lineTypeStr = getDiffLineTypeStr(line)
     val lineNumColor = MyStyleKt.TextColor.lineNumColorForDiff(inDarkTheme)
@@ -574,7 +574,7 @@ fun DiffRow (
             .fillMaxWidth()
             //如果是经过compare的添加或删除行，背景半透明，然后真修改的内容用不透明，这样就能突出真修改的内容
             //alpha值越大越不透明
-            .background(if (useStringPartList) color.copy(alpha = 0.4f) else color)
+            .background(if (useStringPartList) bgColor.copy(alpha = 0.4f) else bgColor)
             .padding(linePadding)
 //            .background(color)
 //                            .clickable {
@@ -627,7 +627,7 @@ fun DiffRow (
                         val textNoLineSeparator = if(idx == lastIndex) text.removeSuffix(Cons.lineBreak) else text
 
                         if(it.modified) {  //为修改的内容设置高亮颜色
-                            withStyle(style = SpanStyle(background = color)) {
+                            withStyle(style = SpanStyle(background = bgColor)) {
                                 append(textNoLineSeparator)
                             }
                         }else {  //没修改的内容不用设置颜色，直接用默认的背景色即可
