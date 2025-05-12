@@ -63,6 +63,7 @@ import com.catpuppyapp.puppygit.constants.IntentCons
 import com.catpuppyapp.puppygit.constants.PageRequest
 import com.catpuppyapp.puppygit.constants.SingleSendHandleMethod
 import com.catpuppyapp.puppygit.data.entity.RepoEntity
+import com.catpuppyapp.puppygit.dto.Box
 import com.catpuppyapp.puppygit.dto.FileItemDto
 import com.catpuppyapp.puppygit.dto.FileSimpleDto
 import com.catpuppyapp.puppygit.dto.UndoStack
@@ -522,6 +523,10 @@ fun HomeScreen(
 
     val editorPageIsLoading = rememberSaveable { mutableStateOf(false)}
     val editorPagePreviewLoading = rememberSaveable { mutableStateOf(false) }
+
+    //初始值不用忽略，因为打开文件后默认focusing line idx为null，所以这个值是否忽略并没意义
+    //这个值不能用state，不然修改state后会重组，然后又触发聚焦，就没意义了
+    val editorIgnoreFocusOnce = remember { Box(false) }
 
     val editorPageLoadingOn = {msg:String ->
         loadingText.value = msg
@@ -1280,7 +1285,7 @@ fun HomeScreen(
                 EditorInnerPage(
 //                    stateKeyTag = Cache.combineKeys(stateKeyTag, "EditorInnerPage"),
                     stateKeyTag = stateKeyTag,
-
+                    ignoreFocusOnce = editorIgnoreFocusOnce,
                     previewLoading = editorPagePreviewLoading,
                     editorPreviewFileDto = editorPreviewFileDto,
                     requireEditorScrollToPreviewCurPos = requireEditorScrollToPreviewCurPos,

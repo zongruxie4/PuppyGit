@@ -110,8 +110,9 @@ private var justForSaveFileWhenDrawerOpen = getShortUUID()
 @Composable
 fun EditorInnerPage(
     stateKeyTag:String,
-    loadLock:Mutex,  // 避免重复加载的锁
 
+    loadLock:Mutex,  // 避免重复加载的锁
+    ignoreFocusOnce:Box<Boolean>,
     previewLoading:MutableState<Boolean>,
     editorPreviewFileDto: CustomStateSaveable<FileSimpleDto>,
     requireEditorScrollToPreviewCurPos:MutableState<Boolean>,
@@ -199,9 +200,6 @@ fun EditorInnerPage(
         s
     }
 
-    //初始值不用忽略，因为打开文件后默认focusing line idx为null，所以这个值是否忽略并没意义
-    //这个值不能用state，不然修改state后会重组，然后又触发聚焦，就没意义了
-    val ignoreFocusOnce = remember { Box(false) }
 
     val recentFilesLimit = remember(settings.editor.recentFilesLimit) { settings.editor.recentFilesLimit }
 
@@ -1454,8 +1452,8 @@ fun EditorInnerPage(
             //保存最后打开文件路径
             saveLastOpenPath(editorPageShowingFilePath.value.ioPath)
 
-            //避免离开编辑器再回来自动弹键盘
-            editorPageTextEditorState.value = editorPageTextEditorState.value.copy(focusingLineIdx = null)
+            //避免离开编辑器再回来自动弹键盘(改用ignore focus once控制了，不需要这个了)
+//            editorPageTextEditorState.value = editorPageTextEditorState.value.copy(focusingLineIdx = null)
 
         // ///////////            editorPageShowingFilePath.value = ""
         }

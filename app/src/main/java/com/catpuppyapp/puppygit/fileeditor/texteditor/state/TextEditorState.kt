@@ -1296,7 +1296,7 @@ class TextEditorState private constructor(
                     isContentEdited = isContentEdited,
                     editorPageIsContentSnapshoted = editorPageIsContentSnapshoted,
                     onChanged = onChanged,
-                    focusingLineIdx = null, //全删了就一行都不用聚焦了
+                    focusingLineIdx = null, //全删了就一行都不用聚焦了，不过其实还会保留一行供输入，想聚焦可以自己点下那一行
                 )
             }else {
                 //非全删，创建新状态，不要影响选择模式，要不然有的情况自动退选择模式，有的不退，容易让人感到混乱
