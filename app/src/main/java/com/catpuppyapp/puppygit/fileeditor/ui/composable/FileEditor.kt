@@ -447,39 +447,49 @@ fun FileEditor(
 
                             //行号
                             if(showLineNum.value) {
-                                Box (
+                                Text(
+                                    text = getLineNumber(index),
+                                    color = MyStyleKt.TextColor.lineNumColor(inDarkTheme),
+                                    fontSize = lineNumFontSize.intValue.sp,
+                                    fontFamily = FontFamily.Monospace,  //等宽字体，和diff页面的行号保持一致
+                                    //行号居中
+                                    // modifier = Modifier.align(Alignment.CenterVertically)
+                                )
+
+//                                Box (
                                     //让行号和选择图标居中
 //                    horizontalAlignment = Alignment.CenterHorizontally
-                                ){
+//                                ){
                                     // TextLine Number
-                                    Text(
-                                        modifier = Modifier.align(Alignment.TopCenter),
-                                        text = getLineNumber(index),
-                                        color = if(inDarkTheme) MyStyleKt.TextColor.lineNum_forEditorInDarkTheme else MyStyleKt.TextColor.lineNum_forEditorInLightTheme,
-                                        fontSize = lineNumFontSize.intValue.sp,
-                                        fontFamily = FontFamily.Monospace,  //等宽字体，和diff页面的行号保持一致
-                                        //行号居中
-                                        // modifier = Modifier.align(Alignment.CenterVertically)
-                                    )
+//                                    Text(
+//                                        modifier = Modifier.align(Alignment.Center),
+//                                        text = getLineNumber(index),
+//                                        color = if(inDarkTheme) MyStyleKt.TextColor.lineNum_forEditorInDarkTheme else MyStyleKt.TextColor.lineNum_forEditorInLightTheme,
+//                                        fontSize = lineNumFontSize.intValue.sp,
+//                                        fontFamily = FontFamily.Monospace,  //等宽字体，和diff页面的行号保持一致
+//                                        //行号居中
+//                                        // modifier = Modifier.align(Alignment.CenterVertically)
+//                                    )
 
+                                    // 不需要这玩意了，选中的行有覆盖整行的背景色
                                     // TextField Menu Icon
-                                    FieldIcon(
-//                                    isMultipleSelection = textEditorState.value.isMultipleSelectionMode,
-                                        focused = index == textEditorState.value.focusingLineIdx,
+//                                    FieldIcon(
+////                                    isMultipleSelection = textEditorState.value.isMultipleSelectionMode,
+//                                        focused = index == textEditorState.value.focusingLineIdx,
+//
+//                                        //是否聚焦本行（三道横线图标）禁用了，不管了，维护这个状态太烦
+////                                    focused = false,
+//
+//                                        modifier = Modifier
+//                                            .size(12.dp)
+//                                            .padding(top = 1.dp)
+//                                            .align(Alignment.BottomCenter)
+//                                            .focusable(false)  //这个focusable不是我加的，是compose text editor原作者加的，不知道这个focusable(false)有什么用，是想让这个图标在用键盘导航时不聚焦吗？但实际还是能聚焦啊，所以可能和这个无关，那这个到底什么作用？
+//
+//
+//                                    )
 
-                                        //是否聚焦本行（三道横线图标）禁用了，不管了，维护这个状态太烦
-//                                    focused = false,
-
-                                        modifier = Modifier
-                                            .size(12.dp)
-                                            .padding(top = 1.dp)
-                                            .align(Alignment.BottomCenter)
-                                            .focusable(false)  //这个focusable不是我加的，是compose text editor原作者加的，不知道这个focusable(false)有什么用，是想让这个图标在用键盘导航时不聚焦吗？但实际还是能聚焦啊，所以可能和这个无关，那这个到底什么作用？
-
-
-                                    )
-
-                                }
+//                                }
                             }
                         }
 

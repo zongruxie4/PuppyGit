@@ -160,7 +160,7 @@ fun DiffRow (
     val color = Libgit2Helper.getDiffLineBgColor(line, inDarkTheme)
     val textColor = Libgit2Helper.getDiffLineTextColor(line, inDarkTheme)
 //                        val lineTypeStr = getDiffLineTypeStr(line)
-    val lineNumColor = if (inDarkTheme) MyStyleKt.TextColor.lineNum_forDiffInDarkTheme else MyStyleKt.TextColor.lineNum_forDiffInLightTheme
+    val lineNumColor = MyStyleKt.TextColor.lineNumColor(inDarkTheme)
 
     val lineNum = if(line.lineNum == LineNum.EOF.LINE_NUM) LineNum.EOF.TEXT else line.lineNum.toString()
 //    var prefix = ""

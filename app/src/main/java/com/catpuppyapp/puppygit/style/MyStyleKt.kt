@@ -102,12 +102,13 @@ object MyStyleKt{
         val highlighting_green =Color(0xFF1FAB26)
 
         //Editor font color
-        val lineNum_forEditorInLightTheme = Color.DarkGray
-        val lineNum_forEditorInDarkTheme = Color(0xFF535353)
+        private val lineNum_forEditorInLightTheme = Color.LightGray
+        private val lineNum_forEditorInDarkTheme = Color.DarkGray
+//        val lineNum_forEditorInDarkTheme = Color(0xFF535353)
 
         //DiffContent font color
-        val lineNum_forDiffInLightTheme = Color.DarkGray
-        val lineNum_forDiffInDarkTheme = Color(0xFF757575)
+//        val lineNum_forDiffInLightTheme = Color.DarkGray
+//        val lineNum_forDiffInDarkTheme = Color(0xFF757575)
 
         val fontColor = Color.Unspecified
         val darkThemeFontColor = Color.Gray
@@ -116,6 +117,10 @@ object MyStyleKt{
 //        fun error() = Color.Red.copy(alpha = .8f)
 
         fun danger() = error()
+
+        fun lineNumColor(inDarkTheme:Boolean = Theme.inDarkTheme):Color {
+            return if(inDarkTheme) lineNum_forEditorInDarkTheme else lineNum_forEditorInLightTheme
+        }
     }
 
     object TextSize {
