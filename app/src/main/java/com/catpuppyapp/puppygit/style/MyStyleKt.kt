@@ -75,14 +75,14 @@ object MyStyleKt{
         /**
          * DiffScreen background color
          */
-        val added = Color(0xFF78ab78)
-        val added_darkTheme = Color(0xFF204820)
-        val modified = Color(0xFF5A9AD9)
-        val modified_darkTheme = Color(0xFF183653)
-        val deleted = Color(0xFF8A8A8A)
-        val deleted_darkTheme = Color(0xFF4F4F4F)
-        val conflict = Color(0xFFBE4040)
-        val conflict_darkTheme = Color(0xFF692525)
+        val bg_added = Color(0xFF78ab78)
+        val bg_added_darkTheme = Color(0xFF204820)
+        val bg_deleted = Color(0xFF8A8A8A)
+        val bg_deleted_darkTheme = Color(0xFF4F4F4F)
+        val bg_modified = Color(0xFF5A9AD9)
+        val bg_modified_darkTheme = Color(0xFF183653)
+        val bg_conflict = Color(0xFFBE4040)
+        val bg_conflict_darkTheme = Color(0xFF692525)
 //        val conflict = Color(0xFF913FA8)
 //        val conflict_darkTheme = Color(0xFF621E75)
 

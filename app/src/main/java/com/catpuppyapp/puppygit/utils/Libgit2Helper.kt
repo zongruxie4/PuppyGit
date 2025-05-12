@@ -1861,10 +1861,11 @@ object Libgit2Helper {
 
     fun getDiffLineBgColor(line:PuppyLine, inDarkTheme: Boolean):Color{
         if(line.originType == Diff.Line.OriginType.ADDITION.toString()) {  //添加行
-            return if(inDarkTheme) MyStyleKt.ChangeListItemColor.added_darkTheme else MyStyleKt.ChangeListItemColor.added
+            return if(inDarkTheme) MyStyleKt.ChangeListItemColor.bg_added_darkTheme else MyStyleKt.ChangeListItemColor.bg_added
         }else if(line.originType == Diff.Line.OriginType.DELETION.toString()) {  //删除行
-            return if(inDarkTheme) MyStyleKt.ChangeListItemColor.deleted_darkTheme else MyStyleKt.ChangeListItemColor.deleted
+            return if(inDarkTheme) MyStyleKt.ChangeListItemColor.bg_deleted_darkTheme else MyStyleKt.ChangeListItemColor.bg_deleted
         }else if(line.originType == Diff.Line.OriginType.HUNK_HDR.toString()) {  //hunk header
+            // 注：后来hunk header并没用这的颜色
             return Color.Gray
         }else if(line.originType == Diff.Line.OriginType.CONTEXT.toString()) {  //上下文
             return Color.Unspecified
@@ -1878,6 +1879,7 @@ object Libgit2Helper {
             return Color.Unspecified
         }
     }
+
     fun getDiffLineTextColor(line:PuppyLine, inDarkTheme:Boolean):Color{
         if(line.originType == Diff.Line.OriginType.ADDITION.toString()) {  //添加行
             return UIHelper.getFontColor(inDarkTheme)
