@@ -1,21 +1,20 @@
 package com.catpuppyapp.puppygit.screen
 
 import androidx.compose.foundation.ExperimentalFoundationApi
-import androidx.compose.foundation.combinedClickable
-import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.automirrored.filled.ArrowLeft
+import androidx.compose.material.icons.filled.ArrowDropDown
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.FilterAlt
 import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material.icons.filled.SwapHoriz
-import androidx.compose.material3.DropdownMenu
-import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.HorizontalDivider
+import androidx.compose.material3.Icon
+import androidx.compose.material3.LocalContentColor
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
@@ -28,7 +27,6 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalHapticFeedback
@@ -36,7 +34,6 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.text.style.TextOverflow
-import androidx.compose.ui.unit.dp
 import com.catpuppyapp.puppygit.compose.CompareInfo
 import com.catpuppyapp.puppygit.compose.DropDownMenuItemText
 import com.catpuppyapp.puppygit.compose.FilterTextField
@@ -44,6 +41,7 @@ import com.catpuppyapp.puppygit.compose.GoToTopAndGoToBottomFab
 import com.catpuppyapp.puppygit.compose.LongPressAbleIconBtn
 import com.catpuppyapp.puppygit.compose.RepoInfoDialog
 import com.catpuppyapp.puppygit.compose.RepoInfoDialogItemSpacer
+import com.catpuppyapp.puppygit.compose.TitleDropDownMenu
 import com.catpuppyapp.puppygit.constants.Cons
 import com.catpuppyapp.puppygit.data.entity.RepoEntity
 import com.catpuppyapp.puppygit.dev.commitsTreeToTreeDiffReverseTestPassed
@@ -277,68 +275,72 @@ fun TreeToTreeChangeListScreen(
                 title = {
                     if(changeListPageFilterModeOn.value) {
                         FilterTextField(filterKeyWord = changeListPageFilterKeyWord, loading = changeListSearching.value)
-                    }else{
+                    }else {
                         val titleText = Libgit2Helper.getLeftToRightDiffCommitsText(commit1OidStrState.value, commit2OidStr, swap.value)
-                        Column(modifier = Modifier
-                            .combinedClickable(onLongClick = {
-                                haptic.performHapticFeedback(HapticFeedbackType.LongPress)
-                                initInfoDialog()
-                            }) { //onClick
+                        val titleSecondLineText = "[${changeListCurRepo.value.repoName}]"
+                        // 判断父提交是否有效，实现如果是和父提交比较，则可展开下拉菜单，否则不能
+                        val expandable = Libgit2Helper.CommitUtil.mayGoodCommitHash(commitForQueryParents)
 
-//                                当比较模式为比较指定的两个提交时(无parents)，点击不会展开下拉菜单(和parents比较才会展开)
-                                if (Libgit2Helper.CommitUtil.mayGoodCommitHash(commitForQueryParents)) {
-                                    showParentListDropDownMenu.value = true
-                                }
-
-                            }
-                            .widthIn(min = MyStyleKt.Title.clickableTitleMinWidth)
-
-                        ) {
-                            Row {
+                        TitleDropDownMenu(
+                            dropDownMenuExpendState = showParentListDropDownMenu,
+                            curSelectedItem = commit1OidStrState.value,
+                            itemList = commitParentList.value.toList(),
+                            titleClickEnabled = true,
+                            switchDropDownMenuShowHide = { showParentListDropDownMenu.apply { value = !value } },
+                            titleFirstLine = {
                                 Text(
                                     text = titleText,
                                     maxLines = 1,
                                     overflow = TextOverflow.Ellipsis,
-                                    fontSize = MyStyleKt.Title.firstLineFontSize
+                                    fontSize = MyStyleKt.Title.firstLineFontSize,
                                 )
-                            }
-                            Row {
-                                Text(text = "["+changeListCurRepo.value.repoName+"]",
+                            },
+                            titleSecondLine = {
+                                Text(
+                                    text = titleSecondLineText,
                                     maxLines = 1,
                                     overflow = TextOverflow.Ellipsis,
-                                    fontSize = MyStyleKt.Title.secondLineFontSize
+                                    fontSize = MyStyleKt.Title.secondLineFontSize,
                                 )
-                            }
-
-                        }
-
-                        DropdownMenu(
-                            expanded = showParentListDropDownMenu.value,
-                            onDismissRequest = { showParentListDropDownMenu.value = false }
-                        ) {
-                            commitParentList.value.toList().forEach {
-                                DropdownMenuItem(
-                                    text = { DropDownMenuItemText(text = Libgit2Helper.getShortOidStrByFull(it), selected = it == commit1OidStrState.value) },
-                                    onClick = {
-
-                                        // close menu
-                                        showParentListDropDownMenu.value=false
-
-                                        val curRepo = changeListCurRepo.value
-
-                                        //切换父提交则退出选择模式(现在20240420没用，但日后可能在TreeToTree页面也添加多选功能，比如可选择文件checkout or hard reset到worktree之类的，所以这里先把需要退出选择模式的逻辑写上)(20240818有用了)
-                                        if(commit1OidStrState.value != it) {
-                                            changeListIsFileSelectionMode.value=false  //退出选择模式
-                                            changeListPageSelectedItemList.value.clear() //清空已选条目
-                                        }
-
-                                        commit1OidStrState.value=it
-
-                                        changeListRequireRefreshFromParentPage(curRepo)
-                                    }
+                            },
+                            titleRightIcon = {
+                                Icon(
+                                    imageVector = if (showParentListDropDownMenu.value) Icons.Filled.ArrowDropDown else Icons.AutoMirrored.Filled.ArrowLeft,
+                                    contentDescription = stringResource(R.string.switch_item),
+//                                    tint = LocalContentColor.current
                                 )
-                            }
-                        }
+                            },
+                            menuItem = { it ->
+                                DropDownMenuItemText(
+                                    text = Libgit2Helper.getShortOidStrByFull(it),
+                                    selected = it == commit1OidStrState.value
+                                )
+                            },
+                            titleOnLongClick = { initInfoDialog() },
+                            itemOnClick = {
+                                // close menu
+                                showParentListDropDownMenu.value=false
+
+                                val curRepo = changeListCurRepo.value
+
+                                //切换父提交则退出选择模式(现在20240420没用，但日后可能在TreeToTree页面也添加多选功能，比如可选择文件checkout or hard reset到worktree之类的，所以这里先把需要退出选择模式的逻辑写上)(20240818有用了)
+                                if(commit1OidStrState.value != it) {
+                                    changeListIsFileSelectionMode.value=false  //退出选择模式
+                                    changeListPageSelectedItemList.value.clear() //清空已选条目
+                                }
+
+                                commit1OidStrState.value=it
+
+                                changeListRequireRefreshFromParentPage(curRepo)
+                            },
+                            titleOnClick = {
+                                // 当比较模式为比较指定的两个提交时(无parents)，点击不会展开下拉菜单(和parents比较才会展开)
+                                if (expandable) {
+                                    showParentListDropDownMenu.value = true
+                                }
+                            },
+                            showExpandIcon = expandable
+                        )
                     }
 
                 },
@@ -483,37 +485,8 @@ fun TreeToTreeChangeListScreen(
             filterList = changeListFilterList,
             lastClickedItemKey = changeListLastClickedItemKey
 
-
-
-//            isDiffToHead=isDiffToHead
-
         )
 
     }
-//    }
-
-    //compose创建时的副作用
-//    LaunchedEffect(currentPage.intValue) {
-//    LaunchedEffect(commit1OidStrState.value + commit2OidStr) {
-//        try {
-//            doJobThenOffLoading {
-//                Repository.open(curRepo)
-//            }
-//        } catch (cancel: Exception) {
-////            ("LaunchedEffect: job cancelled")
-//        }
-//    }
-//
-//
-//    //compose被销毁时执行的副作用
-//    DisposableEffect(Unit) {
-////        ("DisposableEffect: entered main")
-//        onDispose {
-////            ("DisposableEffect: exited main")
-//        }
-//    }
 
 }
-
-
-

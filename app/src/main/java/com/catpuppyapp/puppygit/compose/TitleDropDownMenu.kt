@@ -6,7 +6,6 @@ import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.material.icons.Icons
@@ -89,7 +88,10 @@ fun <T> TitleDropDownMenu(
     dropDownMenuExpendState: MutableState<Boolean>,
     curSelectedItem:T,
     itemList: List<T>,
+
+    // 这个是长按和点按共同的enabled
     titleClickEnabled:Boolean,
+
     switchDropDownMenuShowHide:()->Unit = {
         dropDownMenuExpendState.value = !dropDownMenuExpendState.value
     },
@@ -101,11 +103,19 @@ fun <T> TitleDropDownMenu(
     titleRightIcon:@Composable (T)->Unit,  // icon at the title text right
     menuItem:@Composable (T)->Unit,
     titleOnLongClick:(T)->Unit,
-    itemOnClick: (T)->Unit
+
+    //展开的菜单的条目的onClick
+    itemOnClick: (T)->Unit,
+
+    titleOnClick: ()->Unit = { switchDropDownMenuShowHide() },  //切换下拉菜单显示隐藏
+    showExpandIcon: Boolean = true,
 ) {
     val haptic = LocalHapticFeedback.current
     //最多占屏幕宽度一半
     val itemWidth = (LocalConfiguration.current.screenWidthDp / 2).dp
+
+    val iconWidth = 30.dp
+    val textWidth = if(showExpandIcon) itemWidth - iconWidth else itemWidth
 
     Box(
         modifier = Modifier
@@ -118,12 +128,12 @@ fun <T> TitleDropDownMenu(
                     titleOnLongClick(curSelectedItem)
                 }
             ) { // onClick
-                switchDropDownMenuShowHide()  //切换下拉菜单显示隐藏
+                titleOnClick()
             },
     ) {
         Column(
             modifier = Modifier
-                .fillMaxWidth(.8f)
+                .width(textWidth)
                 .align(Alignment.CenterStart)
         ) {
             Row(
@@ -142,14 +152,18 @@ fun <T> TitleDropDownMenu(
             }
         }
 
-        Column(
-            modifier = Modifier
-                .fillMaxWidth(.2f)
-                .align(Alignment.CenterEnd)
-        ) {
-            titleRightIcon(curSelectedItem)
+        if(showExpandIcon) {
+            Column(
+                modifier = Modifier
+                    .width(iconWidth)
+                    .align(Alignment.CenterEnd)
+            ) {
+                titleRightIcon(curSelectedItem)
+            }
         }
     }
+
+    //下拉菜单
     DropdownMenu(
         expanded = dropDownMenuExpendState.value,
         onDismissRequest = { closeDropDownMenu() }
