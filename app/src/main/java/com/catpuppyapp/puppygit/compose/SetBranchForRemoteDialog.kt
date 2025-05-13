@@ -57,7 +57,7 @@ fun SetBranchForRemoteDialog(
 
     AlertDialog(
         title = {
-            Text(text = activityContext.getString(R.string.set_branch_mode))
+            DialogTitle(activityContext.getString(R.string.set_branch_mode))
         },
         text = {
             ScrollableColumn {

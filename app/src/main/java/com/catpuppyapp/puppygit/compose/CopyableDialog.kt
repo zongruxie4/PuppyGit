@@ -121,7 +121,7 @@ fun CopyableDialog2(
                     if(requireShowTitleCompose) {
                         titleCompose()
                     }else {
-                        Text(title)
+                        DialogTitle(title)
                     }
 
                 }

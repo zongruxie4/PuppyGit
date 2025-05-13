@@ -87,7 +87,7 @@ fun RequireCommitMsgDialog(
 
     AlertDialog(
         title = {
-            Text(stringResource(R.string.commit_message))
+            DialogTitle(stringResource(R.string.commit_message))
         },
         text = {
             ScrollableColumn {
