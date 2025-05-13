@@ -12,8 +12,8 @@ import androidx.compose.material.icons.automirrored.filled.Label
 import androidx.compose.material.icons.automirrored.filled.Message
 import androidx.compose.material.icons.filled.AccountTree
 import androidx.compose.material.icons.filled.CalendarMonth
+import androidx.compose.material.icons.filled.Commit
 import androidx.compose.material.icons.filled.Info
-import androidx.compose.material.icons.filled.Numbers
 import androidx.compose.material.icons.filled.Person
 import androidx.compose.material.icons.outlined.Person
 import androidx.compose.material3.Text
@@ -130,8 +130,8 @@ fun CommitItem(
 
         ){
             InLineIcon(
-                icon = Icons.Filled.Numbers,
-                tooltipText = stringResource(R.string.hash)
+                icon = Icons.Filled.Commit,
+                tooltipText = stringResource(R.string.commit)
             )
 
 //            Text(text = stringResource(R.string.hash) +": ")

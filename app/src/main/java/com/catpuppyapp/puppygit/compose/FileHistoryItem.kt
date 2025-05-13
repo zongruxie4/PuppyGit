@@ -7,6 +7,14 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.Message
+import androidx.compose.material.icons.filled.CalendarMonth
+import androidx.compose.material.icons.filled.Commit
+import androidx.compose.material.icons.filled.Person
+import androidx.compose.material.icons.filled.Storage
+import androidx.compose.material.icons.filled.ViewCompact
+import androidx.compose.material.icons.outlined.Person
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.MutableIntState
@@ -20,7 +28,6 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.AnnotatedString
-import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import com.catpuppyapp.puppygit.git.FileHistoryDto
@@ -120,9 +127,15 @@ fun FileHistoryItem(
         Row(
             verticalAlignment = Alignment.CenterVertically,
 
-            ) {
+        ) {
 
-            Text(text = stringResource(R.string.commit_id) + ": ")
+            InLineIcon(
+                icon = Icons.Filled.Commit,
+                tooltipText = stringResource(R.string.commit_id)
+            )
+
+//            Text(text = stringResource(R.string.commit_id) + ": ")
+
             Text(
                 text = dto.getCachedCommitShortOidStr(),
                 maxLines = 1,
@@ -140,9 +153,15 @@ fun FileHistoryItem(
         Row(
             verticalAlignment = Alignment.CenterVertically,
 
-            ) {
+        ) {
 
-            Text(text = stringResource(R.string.entry_id) + ": ")
+            InLineIcon(
+                icon = Icons.Filled.Storage,
+                tooltipText = stringResource(R.string.entry_id)
+            )
+
+//            Text(text = stringResource(R.string.entry_id) + ": ")
+
             Text(
                 text = dto.getCachedTreeEntryShortOidStr(),
                 maxLines = 1,
@@ -172,8 +191,15 @@ fun FileHistoryItem(
         Row(
             verticalAlignment = Alignment.CenterVertically,
 
-            ) {
-            Text(text = stringResource(R.string.author) + ": ")
+        ) {
+
+            InLineIcon(
+                icon = Icons.Filled.Person,
+                tooltipText = stringResource(R.string.author)
+            )
+
+//            Text(text = stringResource(R.string.author) + ": ")
+
             Text(
                 text = Libgit2Helper.getFormattedUsernameAndEmail(dto.authorUsername, dto.authorEmail),
                 maxLines = 1,
@@ -188,7 +214,14 @@ fun FileHistoryItem(
             Row(
                 verticalAlignment = Alignment.CenterVertically,
             ) {
-                Text(text = stringResource(R.string.committer) + ": ")
+
+                InLineIcon(
+                    icon = Icons.Outlined.Person,
+                    tooltipText = stringResource(R.string.committer)
+                )
+
+//                Text(text = stringResource(R.string.committer) + ": ")
+
                 Text(
                     text = Libgit2Helper.getFormattedUsernameAndEmail(dto.committerUsername, dto.committerEmail),
                     maxLines = 1,
@@ -202,9 +235,15 @@ fun FileHistoryItem(
         Row(
             verticalAlignment = Alignment.CenterVertically,
 
-            ) {
+        ) {
 
-            Text(text = stringResource(R.string.date) + ": ")
+            InLineIcon(
+                icon = Icons.Filled.CalendarMonth,
+                tooltipText = stringResource(R.string.date)
+            )
+
+//            Text(text = stringResource(R.string.date) + ": ")
+
             Text(
                 text = if(shouldShowTimeZoneInfo) TimeZoneUtil.appendUtcTimeZoneText(dto.dateTime, dto.originTimeOffsetInMinutes) else dto.dateTime,
                 maxLines = 1,
@@ -218,8 +257,15 @@ fun FileHistoryItem(
             verticalAlignment = Alignment.CenterVertically,
 
         ) {
+
+            InLineIcon(
+                icon = Icons.Filled.ViewCompact,
+                tooltipText = stringResource(R.string.commits)
+            )
+
             //包含当前entry id的所有提交
-            Text(text = stringResource(R.string.commits) + ": ")
+//            Text(text = stringResource(R.string.commits) + ": ")
+
             ClickableText(dto.cachedShortCommitListStr()) {
                 showCommits(dto)
             }
@@ -229,7 +275,14 @@ fun FileHistoryItem(
             verticalAlignment = Alignment.CenterVertically,
         ) {
 
-            Text(text = stringResource(R.string.msg) + ": ")
+            InLineIcon(
+                icon = Icons.AutoMirrored.Filled.Message,
+                tooltipText = stringResource(R.string.msg)
+            )
+
+
+//            Text(text = stringResource(R.string.msg) + ": ")
+
             ClickableText(dto.getCachedOneLineMsg()) {
                 lastClickedItemKey.value = dto.getItemKey()
 
