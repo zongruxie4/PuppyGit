@@ -4895,6 +4895,10 @@ object Libgit2Helper {
                 //在末尾返回个东西，要不然上面的ifelse在use代码块最后，ide提示表达式if缺else返回值有问题之类的
 //                    Unit
 
+                // 仓库有效，但没创建任何提交呢
+                if(head == null) {
+                    repoFromDb.workStatus = Cons.dbRepoWorkStatusNoHEAD
+                }
             }
 
             //检查是否有临时状态，syncing之类的，如果有存上，临时状态的设置和清除都由操作执行者承担，比如syncing状态，谁doSync谁设这个状态和清这个状态

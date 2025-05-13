@@ -371,6 +371,9 @@ fun RepoCard(
                                             stringResource(R.string.repo_status_need_pull)
                                         } else if (repoDto.workStatus == Cons.dbRepoWorkStatusNeedPush) {
                                             stringResource(R.string.repo_status_need_push)
+                                        }else if (repoDto.workStatus == Cons.dbRepoWorkStatusNoHEAD) {
+                                            //便于用户理解，不提示no head，提示no commit
+                                            stringResource(R.string.no_commit)
                                         } else {
                                             ""  // 未克隆仓库可能会抵达这里
                                         }

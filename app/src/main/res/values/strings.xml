@@ -1273,4 +1273,8 @@
     <string name="collapse_all">Collapse All</string>
     <string name="patch_mode">Patch Mode</string>
 
+    <!-- new at 20250513 -->
+    <string name="no_commit">No Commit</string>
+    <string name="repo_no_commit_note">Your repo have not any commit yet, please create some files then commit them.</string>
+
 </resources>

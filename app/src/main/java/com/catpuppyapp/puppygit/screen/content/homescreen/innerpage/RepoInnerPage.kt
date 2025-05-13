@@ -65,6 +65,7 @@ import com.catpuppyapp.puppygit.compose.DefaultPaddingText
 import com.catpuppyapp.puppygit.compose.ConfirmDialog
 import com.catpuppyapp.puppygit.compose.ConfirmDialog2
 import com.catpuppyapp.puppygit.compose.CopyableDialog
+import com.catpuppyapp.puppygit.compose.CopyableDialog2
 import com.catpuppyapp.puppygit.compose.InternalFileChooser
 import com.catpuppyapp.puppygit.compose.MyCheckBox
 import com.catpuppyapp.puppygit.compose.MyLazyColumn
@@ -1756,6 +1757,22 @@ fun RepoInnerPage(
         doActIfRepoGoodOrElse(curRepo, act, {})
     }
 
+    // No HEAD，但怕用户看不懂，所以说 no commit
+    val showNoCommitDialog = rememberSaveable { mutableStateOf(false) }
+
+    // 传仓库对象，现在用不到，日后可能用到
+    val initNoCommitDialog = {curRepo:RepoEntity ->
+        showNoCommitDialog.value = true
+    }
+
+    if(showNoCommitDialog.value) {
+        CopyableDialog2(
+            text = stringResource(R.string.repo_no_commit_note),
+            onCancel = { showNoCommitDialog.value = false },
+            //隐藏ok键
+            okCompose = {}
+        ) { }  // ok不执行操作，反正已经隐藏了
+    }
 
     val invalidIdx = remember { -1 }
 
@@ -2055,6 +2072,10 @@ fun RepoInnerPage(
                                         }
                                     }
                                 }
+                            }else if (status == Cons.dbRepoWorkStatusNoHEAD) {
+                                val curRepo = clickedRepo
+
+                                initNoCommitDialog(curRepo)
                             }
                         }
                     }
