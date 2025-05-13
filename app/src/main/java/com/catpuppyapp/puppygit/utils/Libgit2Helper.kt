@@ -1628,8 +1628,9 @@ object Libgit2Helper {
             return diffItem
         }
         var contentLenSum =0L
-        //用来存储puppyLine和rawLine对，这样可以实现先统计大小，若没超，则取line content，否则不取的逻辑
-        val puppyAndRawLineList = mutableListOf<Pair<PuppyLine, Diff.Line>>()
+
+        // x 废弃，一方面不限制大小了，另一方面就算取一下性能也不会有多大影响）用来存储puppyLine和rawLine对，这样可以实现先统计大小，若没超，则取line content，否则不取的逻辑
+//        val puppyAndRawLineList = mutableListOf<Pair<PuppyLine, Diff.Line>>()
 
         var checkChannelLinesCount = 0
         var checkChannelContentSizeCount = 0L
@@ -1708,9 +1709,11 @@ object Libgit2Helper {
 
 //                    pLine.rawContent = line.content
                 //添加pLine和rawLine到集合，如果大小没超限制，之后会取出rawLine的内容到pLine
-                puppyAndRawLineList.add(Pair(pLine, line))
-//                    pLine.content = line.content
+//                puppyAndRawLineList.add(Pair(pLine, line))
+
+                    pLine.content = line.content
 //                    pLine.content = LibgitTwo.getContent(line.contentLen, LibgitTwo.jniLineGetContent(line.rawPointer))
+
                 //获取行号以及更新最大行号（用来对齐行号那列）
                 pLine.lineNum = getLineNum(pLine).let { if(it > diffItem.maxLineNum) diffItem.maxLineNum = it; it }
 
@@ -1756,9 +1759,9 @@ object Libgit2Helper {
         diffItem.isContentSizeOverLimit = false
         //既然总大小没超，就取下内容吧
         //rawLine的生命周期好像和diff一样，而diff的生命周期在这个方法代码块内，所以在这取rawLine应该不会出现内存错误吧？大概吧，有待时间考验。
-        for((puppyLine, rawLine) in puppyAndRawLineList) {
-            puppyLine.content = rawLine.content
-        }
+//        for((puppyLine, rawLine) in puppyAndRawLineList) {
+//            puppyLine.content = rawLine.content
+//        }
 
 //            println("getSingleDiffItem返回了")
 //            if(debugModeOn) {
