@@ -796,7 +796,7 @@
     <string name="path_under_repo">Depo Altındaki Yol</string>
     <string name="submodules">Alt Modüller</string>
     <string name="cloned">Klonlandı</string>
-    <string name="not_clone">Klonlanmadı</string>
+    <string name="not_cloned">Klonlanmadı</string>
     <string name="will_clone_selected_submodules_are_you_sure">Seçilen alt modüller klonlanacak, emin misiniz?</string>
     <string name="re_clone">Yeniden Klonla</string>
     <string name="re_clone_submodules_warning_text">Diskteki alt modül dosyalarını silecek ve ardından tekrar klonlayacak</string>

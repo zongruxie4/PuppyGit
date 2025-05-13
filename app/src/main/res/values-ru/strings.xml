@@ -836,7 +836,7 @@
     <string name="path_under_repo">Путь внутри репозитория</string>
     <string name="submodules">Субмодули</string>
     <string name="cloned">Клонировано</string>
-    <string name="not_clone">Не клонировано</string>
+    <string name="not_cloned">Не клонировано</string>
     <string name="will_clone_selected_submodules_are_you_sure">Будут клонированы выбранные субмодули, вы уверены?</string>
     <string name="re_clone">Переклонировать</string>
     <string name="re_clone_submodules_warning_text">Будут удалены файлы субмодулей на диске, затем они будут переклонированы</string>

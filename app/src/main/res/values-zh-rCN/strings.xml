@@ -836,7 +836,7 @@
     <string name="path_under_repo">仓库下路径</string>
     <string name="submodules">子模块</string>
     <string name="cloned">已克隆</string>
-    <string name="not_clone">未克隆</string>
+    <string name="not_cloned">未克隆</string>
     <string name="will_clone_selected_submodules_are_you_sure">将会克隆选中的子模块，你确定吗？</string>
     <string name="re_clone">重新克隆</string>
     <string name="re_clone_submodules_warning_text">将会删除硬盘上的子模块然后重新克隆</string>
