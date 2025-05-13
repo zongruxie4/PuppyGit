@@ -1,4 +1,11 @@
 
+---
+x 修改所有列表条目的label文本为图标 20250513：
+x 废弃，改了怕用户分不清新旧提交，不知道操作的目标是的哪个）reflogs
+x 废弃，这页面很少用，没必要改）stashes
+x 废弃，改了看图标看不出含义）remotes
+
+x 页面：tag/file history/commit history/branch/submodule
 
 ---
 x fix bugs 20250510:
