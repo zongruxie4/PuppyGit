@@ -1793,10 +1793,10 @@ fun DiffScreen(
                                     } else {  // grouped lines by line num
                                         //由于这个是一对一对的，所以如果第一行是一对，实际上两行都会有顶部padding，不过问题不大，看着不太难受
 //                                        val lineIndex = mutableIntStateOf(-1) //必须用个什么东西包装一下，不然基本类型会被闭包捕获，值会错
-                                        val lineIndex = Box(-1) //必须用个什么东西包装一下，不然基本类型会被闭包捕获，值会错
+//                                        val lineIndex = Box(-1) //必须用个什么东西包装一下，不然基本类型会被闭包捕获，值会错
                                         hunkAndLines.groupedLines.forEach printLine@{ (_lineNum: Int, lines: Map<String, PuppyLine>) ->
-                                            lineIndex.value += 1;
-                                            val lineIndex = lineIndex.value
+//                                            lineIndex.value += 1;
+//                                            val lineIndex = lineIndex.value
 
                                             //若非 新增行、删除行、上下文 ，不显示
                                             if (!(lines.contains(Diff.Line.OriginType.ADDITION.toString())
@@ -1870,7 +1870,7 @@ fun DiffScreen(
 //                                                        itemsCount.intValue++
 
                                                         DiffRow(
-                                                            index = lineIndex,
+                                                            index = del.fakeIndexOfGroupedLine,
                                                             lineNumExpectLength = lineNumExpectLength,
                                                             line = del,
                                                             stringPartList = delStringPartListWillUse,
@@ -1906,7 +1906,7 @@ fun DiffScreen(
 //                                                        itemsCount.intValue++
 
                                                         DiffRow(
-                                                            index = lineIndex,
+                                                            index = add.fakeIndexOfGroupedLine,
                                                             lineNumExpectLength = lineNumExpectLength,
                                                             line = add,
                                                             stringPartList = addStringPartListWillUse,
@@ -1966,7 +1966,7 @@ fun DiffScreen(
 //                                                    itemsCount.intValue++
 
                                                     DiffRow(
-                                                        index = lineIndex,
+                                                        index = del.fakeIndexOfGroupedLine,
                                                         lineNumExpectLength = lineNumExpectLength,
                                                         //随便拷贝下del或add（不拷贝只改类型也行但不推荐以免有坏影响）把类型改成context，就行了
                                                         //这里del肯定不为null，因为 mergeDelAndAddToFakeContext 的条件包含了del和add都不为null
@@ -2016,7 +2016,7 @@ fun DiffScreen(
 
                                                     //打印context
                                                     DiffRow(
-                                                        index = lineIndex,
+                                                        index = context.fakeIndexOfGroupedLine,
                                                         lineNumExpectLength = lineNumExpectLength,
                                                         line = context,
                                                         fileFullPath = fileFullPath,

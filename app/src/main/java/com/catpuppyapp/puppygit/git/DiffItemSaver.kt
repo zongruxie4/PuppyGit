@@ -51,6 +51,27 @@ data class DiffItemSaver (
     fun getEfficientFileSize():Long {
         return if(newFileSize>0) newFileSize else oldFileSize
     }
+
+
+    /**
+     * 为line生成假索引，有可能会用来判断一些东西，目前只用来在预览diff内容时首行加top padding
+     */
+    fun generateFakeIndexForGroupedLines() {
+        var index = -1
+
+        for(h in hunks) {
+            for((_, lines) in h.groupedLines) {
+                //顺序是context/del/add
+                lines.get(Diff.Line.OriginType.CONTEXT.toString())?.let { it.fakeIndexOfGroupedLine = ++index }
+                lines.get(Diff.Line.OriginType.CONTEXT_EOFNL.toString())?.let { it.fakeIndexOfGroupedLine = ++index }
+                lines.get(Diff.Line.OriginType.DELETION.toString())?.let { it.fakeIndexOfGroupedLine = ++index }
+                lines.get(Diff.Line.OriginType.DEL_EOFNL.toString())?.let { it.fakeIndexOfGroupedLine = ++index }
+                lines.get(Diff.Line.OriginType.ADDITION.toString())?.let { it.fakeIndexOfGroupedLine = ++index }
+                lines.get(Diff.Line.OriginType.ADD_EOFNL.toString())?.let { it.fakeIndexOfGroupedLine = ++index }
+
+            }
+        }
+    }
 }
 
 class PuppyHunkAndLines {
@@ -184,6 +205,10 @@ class PuppyHunk {
 
 data class PuppyLine (
     var key:String = getShortUUID(),
+
+    // group line时，按行号把不同origin type的都放一组，实际上没索引，所以用这个生成一个索引替代
+    var fakeIndexOfGroupedLine:Int = 0,
+
     var originType:String="",  //这个当初实现的时候考虑不周，既然原始类型是char我为什么要用String存呢？
     var oldLineNum:Int=-1,
     var newLineNum:Int=-1,

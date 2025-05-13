@@ -1539,9 +1539,8 @@ object Libgit2Helper {
         MyLog.d(TAG, "#$funName: options.flags = $opFlags")
         options.pathSpec = arrayOf(relativePathUnderRepo) //set only diff a single file
 
-        lateinit var diff:Diff;
-        if(fromTo == Cons.gitDiffFromIndexToWorktree) {
-            diff = Diff.indexToWorkdir(repo, null, options)
+        val diff = if(fromTo == Cons.gitDiffFromIndexToWorktree) {
+            Diff.indexToWorkdir(repo, null, options)
 
         }else if(fromTo == Cons.gitDiffFromHeadToIndex) {
             val headTree:Tree? = resolveHeadTree(repo)
@@ -1550,7 +1549,7 @@ object Libgit2Helper {
                 return DiffItemSaver()
             }
 
-            diff = Diff.treeToIndex(repo, headTree, repo.index(), options)
+            Diff.treeToIndex(repo, headTree, repo.index(), options)
         }
 
         // 这个实际上被TreeToTree模式取代了：先解析head传给本函数，再设置treeToWorkTree为true，就行了
@@ -1568,7 +1567,7 @@ object Libgit2Helper {
             // tree to tree
             MyLog.d(TAG, "#$funName(): require diff from tree to tree, tree1Oid=${tree1?.id().toString()}, tree2Oid=${tree2?.id().toString()}, reverse=$reverse")
 //                println("treeToWorkTree:${treeToWorkTree},  tree1Oid=${tree1?.id().toString()}, tree2Oid=${tree2?.id().toString()}, reverse=$reverse")
-            diff = if(treeToWorkTree) Diff.treeToWorkdir(repo, tree1, options) else Diff.treeToTree(repo, tree1, tree2, options)
+            if(treeToWorkTree) Diff.treeToWorkdir(repo, tree1, options) else Diff.treeToTree(repo, tree1, tree2, options)
         }
 
 
@@ -1750,6 +1749,9 @@ object Libgit2Helper {
             }
         }
 
+        //为grouped lines生成假索引
+        diffItem.generateFakeIndexForGroupedLines()
+
         //执行到这，说明contentLen总和没超过限制，否则早在循环里就返回了
         diffItem.isContentSizeOverLimit = false
         //既然总大小没超，就取下内容吧
@@ -1799,6 +1801,9 @@ object Libgit2Helper {
 //                0
 //            }
 
+        // foreach diff对象性能可能更好些，我记得libgit2源代码里patch的生成就是用的diff foreach，可通过返回值来终止foreach，
+        // 但这个都是callback，写起来有点恶心，最重要的是目前生成diff内容的性能并不差，所以没必要改用这个
+        // 如果日后生成diff内容成为性能瓶颈的话，可以改用这个，或许能提升
 ////           (不对，用patch输出也不对劲，patch和diff.foreach()还有patch.print()，基本上，都一样) 这个东西不能用来输出，乱七八糟，和git diff输出也不一样，实际上，git diff输出是patch（不知道算不算格式，类似一个事实上的diff规范），git diff的输出可以当作patch的输入用来更新文件
 //            diff.foreach(
 //                { delta: Diff.Delta, progress: Float ->

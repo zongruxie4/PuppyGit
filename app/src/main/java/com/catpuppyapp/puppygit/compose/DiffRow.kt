@@ -566,12 +566,20 @@ fun DiffRow (
 //    prefix = prefix.removeSuffix(Cons.lineBreak)
 //    content = content.removeSuffix(Cons.lineBreak)
 
-    //首行加顶部padding，其余不加，按行分组时，首行若是一对 add/del，两个都会加顶部padding，但看起来感觉并不难受，所以不用改，就这样吧
+    //首行加顶部padding，其余不加
+    // x 已经解决，给每个行计算了虚拟的索引，然后就解决了）按行分组时，首行若是一对 add/del，两个都会加顶部padding，但看起来感觉并不难受，所以不用改，就这样吧
     val linePadding = if(index == 0) PaddingValues(top = 5.dp, end = 5.dp) else PaddingValues(end = 5.dp)
 
 
     Row(
         modifier = Modifier
+            .then(
+                if (lineClickable) {
+                    Modifier.clickable { expandedMenu.value = true }
+                } else {
+                    Modifier
+                }
+            )
             .fillMaxWidth()
             //如果是经过compare的添加或删除行，背景半透明，然后真修改的内容用不透明，这样就能突出真修改的内容
             //alpha值越大越不透明
@@ -642,15 +650,8 @@ fun DiffRow (
                 softWrap = true,
                 fontSize = fontSize.sp,
 
-                modifier= Modifier
-                    .fillMaxWidth()
-                    .then(
-                        if (lineClickable) {
-                            Modifier.clickable { expandedMenu.value = true }
-                        } else {
-                            Modifier
-                        }
-                    )
+
+
             )
         }else {
             //文本内容
@@ -660,15 +661,8 @@ fun DiffRow (
                 overflow = TextOverflow.Visible,
                 softWrap = true,
                 fontSize = fontSize.sp,
-                modifier= Modifier
-                    .fillMaxWidth()
-                    .then(
-                        if (lineClickable) {
-                            Modifier.clickable { expandedMenu.value = true }
-                        } else {
-                            Modifier
-                        }
-                    )
+
+
             )
 
         }
