@@ -8,11 +8,11 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.InsertDriveFile
 import androidx.compose.material.icons.automirrored.filled.Message
 import androidx.compose.material.icons.filled.CalendarMonth
 import androidx.compose.material.icons.filled.Commit
 import androidx.compose.material.icons.filled.Person
-import androidx.compose.material.icons.filled.Storage
 import androidx.compose.material.icons.filled.ViewCompact
 import androidx.compose.material.icons.outlined.Person
 import androidx.compose.material3.Text
@@ -156,7 +156,7 @@ fun FileHistoryItem(
         ) {
 
             InLineIcon(
-                icon = Icons.Filled.Storage,
+                icon = Icons.AutoMirrored.Filled.InsertDriveFile,
                 tooltipText = stringResource(R.string.entry_id)
             )
 
@@ -257,13 +257,13 @@ fun FileHistoryItem(
             verticalAlignment = Alignment.CenterVertically,
 
         ) {
+            //包含当前entry id的所有提交
 
             InLineIcon(
                 icon = Icons.Filled.ViewCompact,
                 tooltipText = stringResource(R.string.commits)
             )
 
-            //包含当前entry id的所有提交
 //            Text(text = stringResource(R.string.commits) + ": ")
 
             ClickableText(dto.cachedShortCommitListStr()) {
