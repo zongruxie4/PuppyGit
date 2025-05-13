@@ -7,6 +7,15 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.Label
+import androidx.compose.material.icons.automirrored.filled.Message
+import androidx.compose.material.icons.filled.AccountTree
+import androidx.compose.material.icons.filled.CalendarMonth
+import androidx.compose.material.icons.filled.Info
+import androidx.compose.material.icons.filled.Numbers
+import androidx.compose.material.icons.filled.Person
+import androidx.compose.material.icons.outlined.Person
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.MutableIntState
@@ -14,13 +23,14 @@ import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.platform.LocalClipboardManager
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.res.vectorResource
 import androidx.compose.ui.text.AnnotatedString
-import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import com.catpuppyapp.puppygit.git.CommitDto
@@ -119,8 +129,12 @@ fun CommitItem(
             verticalAlignment = Alignment.CenterVertically,
 
         ){
+            InLineIcon(
+                icon = Icons.Filled.Numbers,
+                tooltipText = stringResource(R.string.hash)
+            )
 
-            Text(text = stringResource(R.string.hash) +": ")
+//            Text(text = stringResource(R.string.hash) +": ")
 
             Text(text = commitDto.shortOidStr,
                 maxLines = 1,
@@ -151,7 +165,14 @@ fun CommitItem(
             verticalAlignment = Alignment.CenterVertically,
 
         ){
-            Text(text = stringResource(R.string.author) +": ")
+
+            InLineIcon(
+                icon = Icons.Filled.Person,
+                tooltipText = stringResource(R.string.author)
+            )
+
+//            Text(text = stringResource(R.string.author) +": ")
+
             Text(text = Libgit2Helper.getFormattedUsernameAndEmail(commitDto.author, commitDto.email),
                 maxLines = 1,
                 overflow = TextOverflow.Ellipsis,
@@ -165,7 +186,14 @@ fun CommitItem(
             Row (
                 verticalAlignment = Alignment.CenterVertically,
             ){
-                Text(text = stringResource(R.string.committer) +": ")
+
+                InLineIcon(
+                    icon = Icons.Outlined.Person,
+                    tooltipText = stringResource(R.string.committer)
+                )
+
+//                Text(text = stringResource(R.string.committer) +": ")
+
                 Text(text = Libgit2Helper.getFormattedUsernameAndEmail(commitDto.committerUsername, commitDto.committerEmail),
                     maxLines = 1,
                     overflow = TextOverflow.Ellipsis,
@@ -178,9 +206,15 @@ fun CommitItem(
         Row (
             verticalAlignment = Alignment.CenterVertically,
 
-            ){
+        ){
 
-            Text(text = stringResource(R.string.date) +": ")
+            InLineIcon(
+                icon = Icons.Filled.CalendarMonth,
+                tooltipText = stringResource(R.string.date)
+            )
+
+//            Text(text = stringResource(R.string.date) +": ")
+
             Text(text = if(shouldShowTimeZoneInfo) TimeZoneUtil.appendUtcTimeZoneText(commitDto.dateTime, commitDto.originTimeOffsetInMinutes) else commitDto.dateTime,
                 maxLines = 1,
                 overflow = TextOverflow.Ellipsis,
@@ -191,7 +225,14 @@ fun CommitItem(
         Row (
             verticalAlignment = Alignment.CenterVertically,
         ){
-            Text(text = stringResource(R.string.msg) +": ")
+
+            InLineIcon(
+                icon = Icons.AutoMirrored.Filled.Message,
+                tooltipText = stringResource(R.string.msg)
+            )
+
+//            Text(text = stringResource(R.string.msg) +": ")
+
             ClickableText(commitDto.getCachedOneLineMsg()) {
                 lastClickedItemKey.value = commitDto.oidStr
 
@@ -205,7 +246,13 @@ fun CommitItem(
 
             ){
 
-                Text(text = (if(commitDto.branchShortNameList.size > 1) stringResource(R.string.branches) else stringResource(R.string.branch)) +": ")
+                InLineIcon(
+                    icon = ImageVector.vectorResource(R.drawable.branch),
+                    tooltipText = (if(commitDto.branchShortNameList.size > 1) stringResource(R.string.branches) else stringResource(R.string.branch))
+                )
+
+//                Text(text = (if(commitDto.branchShortNameList.size > 1) stringResource(R.string.branches) else stringResource(R.string.branch)) +": ")
+
                 Text(text = commitDto.cachedBranchShortNameList(),
                     maxLines = 1,
                     overflow = TextOverflow.Ellipsis,
@@ -222,7 +269,13 @@ fun CommitItem(
 
             ){
 
-                Text(text = (if(commitDto.tagShortNameList.size > 1) stringResource(R.string.tags) else stringResource(R.string.tag)) +": ")
+                InLineIcon(
+                    icon = Icons.AutoMirrored.Filled.Label,
+                    tooltipText = (if(commitDto.tagShortNameList.size > 1) stringResource(R.string.tags) else stringResource(R.string.tag))
+                )
+
+//                Text(text = (if(commitDto.tagShortNameList.size > 1) stringResource(R.string.tags) else stringResource(R.string.tag)) +": ")
+
                 Text(text = commitDto.cachedTagShortNameList(),
                     maxLines = 1,
                     overflow = TextOverflow.Ellipsis,
@@ -239,7 +292,13 @@ fun CommitItem(
 
             ){
 
-                Text(text = (if(commitDto.parentShortOidStrList.size > 1) stringResource(R.string.parents) else stringResource(R.string.parent)) +": ")
+                InLineIcon(
+                    icon = Icons.Filled.AccountTree,
+                    tooltipText = (if(commitDto.parentShortOidStrList.size > 1) stringResource(R.string.parents) else stringResource(R.string.parent))
+                )
+
+//                Text(text = (if(commitDto.parentShortOidStrList.size > 1) stringResource(R.string.parents) else stringResource(R.string.parent)) +": ")
+
                 Text(text = commitDto.cachedParentShortOidStrList(),
                     maxLines = 1,
                     overflow = TextOverflow.Ellipsis,
@@ -254,7 +313,14 @@ fun CommitItem(
             Row (
                 verticalAlignment = Alignment.CenterVertically,
             ){
-                Text(text = stringResource(R.string.other)+": ")
+
+                InLineIcon(
+                    icon = Icons.Filled.Info,
+                    tooltipText = stringResource(R.string.other)
+                )
+
+//                Text(text = stringResource(R.string.other)+": ")
+
                 Text(text = commitDto.getOther(activityContext, false),
                     maxLines = 1,
                     overflow = TextOverflow.Ellipsis,

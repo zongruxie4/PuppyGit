@@ -2684,7 +2684,7 @@ fun ChangeListInnerPage(
                                             icon = Icons.AutoMirrored.Filled.Label,
                                             iconContentDesc = stringResource(R.string.tags),
 
-                                            ) {  //go to tags page
+                                        ) {  //go to tags page
                                             navController.navigate(Cons.nav_TagListScreen + "/" + repoId)
                                         }
 
