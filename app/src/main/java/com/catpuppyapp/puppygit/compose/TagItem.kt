@@ -7,6 +7,13 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.Label
+import androidx.compose.material.icons.automirrored.filled.Message
+import androidx.compose.material.icons.filled.CalendarMonth
+import androidx.compose.material.icons.filled.Category
+import androidx.compose.material.icons.filled.History
+import androidx.compose.material.icons.filled.Person
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -20,7 +27,6 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.AnnotatedString
-import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import com.catpuppyapp.puppygit.git.TagDto
@@ -92,8 +98,13 @@ fun TagItem(
             verticalAlignment = Alignment.CenterVertically,
 
         ){
+            InLineIcon(
+                icon = Icons.AutoMirrored.Filled.Label,
+                tooltipText = stringResource(R.string.tag)
+            )
 
-            Text(text = stringResource(R.string.name) +": ")
+//            Text(text = stringResource(R.string.name) +": ")
+
             Text(text = thisObj.shortName,
                 maxLines = 1,
                 overflow = TextOverflow.Ellipsis,
@@ -107,7 +118,12 @@ fun TagItem(
 
         ){
 
-            Text(text = stringResource(R.string.target) +": ")
+            InLineIcon(
+                icon = Icons.Filled.History,
+                tooltipText = stringResource(R.string.target)
+            )
+
+//            Text(text = stringResource(R.string.target) +": ")
 
             Text(text = thisObj.getCachedTargetShortOidStr(),
                 maxLines = 1,
@@ -125,7 +141,14 @@ fun TagItem(
 
         ){
 
-            Text(text = stringResource(R.string.type) +": ")
+
+            InLineIcon(
+                icon = Icons.Filled.Category,
+                tooltipText = stringResource(R.string.type)
+            )
+
+//            Text(text = stringResource(R.string.type) +": ")
+
             Text(text = thisObj.getType(activityContext, false),
                 maxLines = 1,
                 overflow = TextOverflow.Ellipsis,
@@ -139,7 +162,14 @@ fun TagItem(
                 verticalAlignment = Alignment.CenterVertically,
             ){
 
-                Text(text = stringResource(R.string.tagger) +": ")
+
+                InLineIcon(
+                    icon = Icons.Filled.Person,
+                    tooltipText = stringResource(R.string.tagger)
+                )
+
+//                Text(text = stringResource(R.string.tagger) +": ")
+
                 Text(text = thisObj.getFormattedTaggerNameAndEmail(),
                     maxLines = 1,
                     overflow = TextOverflow.Ellipsis,
@@ -151,7 +181,14 @@ fun TagItem(
                 verticalAlignment = Alignment.CenterVertically,
             ){
 
-                Text(text = stringResource(R.string.date) +": ")
+
+                InLineIcon(
+                    icon = Icons.Filled.CalendarMonth,
+                    tooltipText = stringResource(R.string.date)
+                )
+
+//                Text(text = stringResource(R.string.date) +": ")
+
                 Text(text = if(shouldShowTimeZoneInfo) TimeZoneUtil.appendUtcTimeZoneText(thisObj.getFormattedDate(), thisObj.originTimeOffsetInMinutes) else thisObj.getFormattedDate(),
                     maxLines = 1,
                     overflow = TextOverflow.Ellipsis,
@@ -163,7 +200,13 @@ fun TagItem(
                 verticalAlignment = Alignment.CenterVertically,
             ){
 
-                Text(text = stringResource(R.string.msg) +": ")
+                InLineIcon(
+                    icon = Icons.AutoMirrored.Filled.Message,
+                    tooltipText = stringResource(R.string.msg)
+                )
+
+//                Text(text = stringResource(R.string.msg) +": ")
+
                 ClickableText(text = thisObj.msg) {
                     showDetails(listOf(thisObj))
                 }
