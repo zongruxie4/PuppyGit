@@ -7,6 +7,13 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Cloud
+import androidx.compose.material.icons.filled.Commit
+import androidx.compose.material.icons.filled.Folder
+import androidx.compose.material.icons.filled.GridView
+import androidx.compose.material.icons.filled.Info
+import androidx.compose.material.icons.filled.LocationOn
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -18,7 +25,6 @@ import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import com.catpuppyapp.puppygit.git.SubmoduleDto
@@ -86,7 +92,14 @@ fun SubmoduleItem(
             verticalAlignment = Alignment.CenterVertically,
 
         ){
-            Text(text = stringResource(R.string.name) +": ")
+
+            InLineIcon(
+                icon = Icons.Filled.GridView,
+                tooltipText = stringResource(R.string.submodule)
+            )
+
+//            Text(text = stringResource(R.string.name) +": ")
+
             Text(text = thisObj.name,
                 maxLines = 1,
                 overflow = TextOverflow.Ellipsis,
@@ -99,7 +112,14 @@ fun SubmoduleItem(
             verticalAlignment = Alignment.CenterVertically,
 
         ){
-            Text(text = stringResource(R.string.url) +": ")
+
+            InLineIcon(
+                icon = Icons.Filled.Cloud,
+                tooltipText = stringResource(R.string.url)
+            )
+
+//            Text(text = stringResource(R.string.url) +": ")
+
             Text(text = thisObj.remoteUrl,
                 maxLines = 1,
                 overflow = TextOverflow.Ellipsis,
@@ -112,7 +132,14 @@ fun SubmoduleItem(
             verticalAlignment = Alignment.CenterVertically,
 
         ){
-            Text(text = stringResource(R.string.path) +": ")
+
+            InLineIcon(
+                icon = Icons.Filled.Folder,
+                tooltipText = stringResource(R.string.path)
+            )
+
+//            Text(text = stringResource(R.string.path) +": ")
+
             Text(text = thisObj.relativePathUnderParent,
                 maxLines = 1,
                 overflow = TextOverflow.Ellipsis,
@@ -124,7 +151,14 @@ fun SubmoduleItem(
             verticalAlignment = Alignment.CenterVertically,
 
         ){
-            Text(text = stringResource(R.string.target) +": ")
+
+            InLineIcon(
+                icon = Icons.Filled.Commit,
+                tooltipText = stringResource(R.string.target)
+            )
+
+//            Text(text = stringResource(R.string.target) +": ")
+
             Text(text = Libgit2Helper.getShortOidStrByFull(thisObj.targetHash),
                 maxLines = 1,
                 overflow = TextOverflow.Ellipsis,
@@ -135,7 +169,14 @@ fun SubmoduleItem(
             verticalAlignment = Alignment.CenterVertically,
 
         ){
-            Text(text = stringResource(R.string.location) +": ")
+
+            InLineIcon(
+                icon = Icons.Filled.LocationOn,
+                tooltipText = stringResource(R.string.location)
+            )
+
+//            Text(text = stringResource(R.string.location) +": ")
+
             Text(text = thisObj.location.toString(),
                 maxLines = 1,
                 overflow = TextOverflow.Ellipsis,
@@ -148,7 +189,13 @@ fun SubmoduleItem(
 
         ){
 
-            Text(text = stringResource(R.string.status) +": ")
+            InLineIcon(
+                icon = Icons.Filled.Info,
+                tooltipText = stringResource(R.string.status)
+            )
+
+//            Text(text = stringResource(R.string.status) +": ")
+
             Text(text = thisObj.getStatus(activityContext),
                 maxLines = 1,
                 overflow = TextOverflow.Ellipsis,
@@ -161,7 +208,14 @@ fun SubmoduleItem(
             Row (
                 verticalAlignment = Alignment.CenterVertically,
             ){
-                Text(text = stringResource(R.string.other) +": ")
+
+                InLineIcon(
+                    icon = Icons.Filled.Info,
+                    tooltipText = stringResource(R.string.other)
+                )
+
+//                Text(text = stringResource(R.string.other) +": ")
+
                 Text(text = thisObj.getOther(),
                     maxLines = 1,
                     overflow = TextOverflow.Ellipsis,

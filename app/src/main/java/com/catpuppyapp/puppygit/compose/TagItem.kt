@@ -12,7 +12,7 @@ import androidx.compose.material.icons.automirrored.filled.Label
 import androidx.compose.material.icons.automirrored.filled.Message
 import androidx.compose.material.icons.filled.CalendarMonth
 import androidx.compose.material.icons.filled.Category
-import androidx.compose.material.icons.filled.History
+import androidx.compose.material.icons.filled.Commit
 import androidx.compose.material.icons.filled.Person
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
@@ -119,7 +119,7 @@ fun TagItem(
         ){
 
             InLineIcon(
-                icon = Icons.Filled.History,
+                icon = Icons.Filled.Commit,
                 tooltipText = stringResource(R.string.target)
             )
 
