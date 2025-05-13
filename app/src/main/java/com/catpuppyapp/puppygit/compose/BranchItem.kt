@@ -7,6 +7,12 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Category
+import androidx.compose.material.icons.filled.Cloud
+import androidx.compose.material.icons.filled.History
+import androidx.compose.material.icons.filled.Info
+import androidx.compose.material.icons.filled.Link
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.MutableIntState
@@ -15,11 +21,13 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.platform.LocalClipboardManager
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.res.vectorResource
 import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
@@ -114,8 +122,12 @@ fun BranchItem(
             verticalAlignment = Alignment.CenterVertically,
 
         ){
+            InLineIcon(
+                icon = ImageVector.vectorResource(R.drawable.branch),
+                tooltipText = stringResource(R.string.branch)
+            )
+//            Text(text = stringResource(R.string.name) +": ")
 
-            Text(text = stringResource(R.string.name) +": ")
             Text(text = thisObj.shortName,
                 maxLines = 1,
                 overflow = TextOverflow.Ellipsis,
@@ -129,7 +141,11 @@ fun BranchItem(
 
         ){
 
-            Text(text = stringResource(R.string.last_commit) +": ")
+            InLineIcon(
+                icon = Icons.Filled.History,
+                tooltipText = stringResource(R.string.last_commit)
+            )
+//            Text(text = stringResource(R.string.last_commit) +": ")
 
             Text(text = thisObj.shortOidStr,
                 maxLines = 1,
@@ -163,9 +179,14 @@ fun BranchItem(
         Row (
             verticalAlignment = Alignment.CenterVertically,
 
-            ){
+        ){
+            InLineIcon(
+                icon = Icons.Filled.Category,
+                tooltipText = stringResource(R.string.type)
+            )
 
-            Text(text = stringResource(R.string.type) +": ")
+//            Text(text = stringResource(R.string.type) +": ")
+
             Text(text = thisObj.getTypeString(activityContext, false),
                 maxLines = 1,
                 overflow = TextOverflow.Ellipsis,
@@ -200,7 +221,14 @@ fun BranchItem(
                 Row(
                     verticalAlignment = Alignment.CenterVertically,
                 ) {
-                    Text(text = stringResource(R.string.upstream) + ": ")
+
+                    InLineIcon(
+                        icon = Icons.Filled.Cloud,
+                        tooltipText = stringResource(R.string.upstream)
+                    )
+
+//                    Text(text = stringResource(R.string.upstream) + ": ")
+
                     ClickableText(thisObj.getUpstreamShortName(activityContext)) {
                         lastClickedItemKey.value = thisObj.fullName
 
@@ -214,7 +242,13 @@ fun BranchItem(
                 Row(
                     verticalAlignment = Alignment.CenterVertically,
                 ) {
-                    Text(text = stringResource(R.string.status) + ": ")
+                    InLineIcon(
+                        icon = Icons.Filled.Info,
+                        tooltipText = stringResource(R.string.status)
+                    )
+
+//                    Text(text = stringResource(R.string.status) + ": ")
+
                     Text(
                         text = thisObj.getAheadBehind(activityContext, false),
                         maxLines = 1,
@@ -232,7 +266,13 @@ fun BranchItem(
             Row (
                 verticalAlignment = Alignment.CenterVertically,
             ){
-                Text(text = stringResource(R.string.symbolic_target) +": ")
+                InLineIcon(
+                    icon = Icons.Filled.Link,
+                    tooltipText = stringResource(R.string.symbolic_target)
+                )
+
+//                Text(text = stringResource(R.string.symbolic_target) +": ")
+
                 Text(text = thisObj.symbolicTargetShortName,
                     maxLines = 1,
                     overflow = TextOverflow.Ellipsis,
@@ -246,7 +286,13 @@ fun BranchItem(
             verticalAlignment = Alignment.CenterVertically,
         ){
 
-            Text(text = stringResource(R.string.other) +": ")
+            InLineIcon(
+                icon = Icons.Filled.Info,
+                tooltipText = stringResource(R.string.other)
+            )
+
+//            Text(text = stringResource(R.string.other) +": ")
+
             Text(text = thisObj.getOther(activityContext, false),
                 maxLines = 1,
                 overflow = TextOverflow.Ellipsis,
