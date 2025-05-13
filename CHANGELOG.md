@@ -3,10 +3,12 @@
 ---
 1.1.1.3v89 - 20250513:
 - adjust Editor style
+- improve UI for some screens
 
 
 
 - 调整文本编辑器样式
+- 提升一些页面的UI
 
 
 ---
