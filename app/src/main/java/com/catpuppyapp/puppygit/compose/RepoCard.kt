@@ -15,9 +15,9 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.Notes
 import androidx.compose.material.icons.filled.AccessTime
+import androidx.compose.material.icons.filled.Commit
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.EditNote
-import androidx.compose.material.icons.filled.History
 import androidx.compose.material.icons.filled.Info
 import androidx.compose.material.icons.filled.Replay
 import androidx.compose.material.icons.filled.WarningAmber
@@ -303,7 +303,7 @@ fun RepoCard(
 //                            Text(text = stringResource(R.string.repo_label_last_commit) + ": ")
 
                             InLineIcon(
-                                icon = Icons.Filled.History,
+                                icon = Icons.Filled.Commit,
                                 tooltipText = stringResource(R.string.repo_label_last_commit)
                             )
                             ClickableText (

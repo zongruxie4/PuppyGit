@@ -127,6 +127,9 @@ import java.io.File
 
 private const val TAG = "RepoInnerPage"
 
+private const val invalidIdx = -1
+
+
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun RepoInnerPage(
@@ -1759,22 +1762,25 @@ fun RepoInnerPage(
 
     // No HEAD，但怕用户看不懂，所以说 no commit
     val showNoCommitDialog = rememberSaveable { mutableStateOf(false) }
+    val repoNameOfNoCommitDialog = rememberSaveable { mutableStateOf("") }
 
     // 传仓库对象，现在用不到，日后可能用到
     val initNoCommitDialog = {curRepo:RepoEntity ->
+        repoNameOfNoCommitDialog.value = curRepo.repoName
         showNoCommitDialog.value = true
     }
 
     if(showNoCommitDialog.value) {
         CopyableDialog2(
+            title = repoNameOfNoCommitDialog.value,
             text = stringResource(R.string.repo_no_commit_note),
             onCancel = { showNoCommitDialog.value = false },
+            cancelBtnText = stringResource(R.string.ok),
             //隐藏ok键
             okCompose = {}
         ) { }  // ok不执行操作，反正已经隐藏了
     }
 
-    val invalidIdx = remember { -1 }
 
     val showSelectedItemsShortDetailsDialog = rememberSaveable { mutableStateOf(false)}
 //    val selectedItemsShortDetailsStr = rememberSaveable { mutableStateOf("")}
