@@ -1173,4 +1173,8 @@
     <string name="collapse_all">Tümünü Daralt</string>
     <string name="patch_mode">Yamanlama Modu</string>
 
+    <!-- new at 20250513 -->
+    <string name="no_commit">Hiç Commit Yok</string>
+    <string name="repo_no_commit_note">Repo\'nuzda henüz hiçbir commit yok, lütfen bazı dosyalar oluşturun ve ardından bunları commit edin.</string>
+
 </resources>

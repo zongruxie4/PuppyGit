@@ -1267,4 +1267,8 @@
     <string name="collapse_all">Свернуть все</string>
     <string name="patch_mode">Режим патча</string>
 
+    <!-- new at 20250513 -->
+    <string name="no_commit">Нет коммитов</string>
+    <string name="repo_no_commit_note">В вашем репозитории еще нет коммитов, пожалуйста, создайте файлы и затем коммитить их.</string>
+
 </resources>

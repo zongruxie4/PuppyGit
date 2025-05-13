@@ -1243,4 +1243,9 @@
     <string name="collapse_all">收起全部</string>
     <string name="patch_mode">补丁模式</string>
 
+
+    <!-- new at 20250513 -->
+    <string name="no_commit">无提交</string>
+    <string name="repo_no_commit_note">你的仓库没有提交，请创建一些文件并提交它们。</string>
+
 </resources>
