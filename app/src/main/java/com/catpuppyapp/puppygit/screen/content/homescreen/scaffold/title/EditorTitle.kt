@@ -16,6 +16,7 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.MutableState
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -37,6 +38,7 @@ import com.catpuppyapp.puppygit.screen.shared.EditorPreviewNavStack
 import com.catpuppyapp.puppygit.screen.shared.FilePath
 import com.catpuppyapp.puppygit.screen.shared.FuckSafFile
 import com.catpuppyapp.puppygit.style.MyStyleKt
+import com.catpuppyapp.puppygit.ui.theme.Theme
 import com.catpuppyapp.puppygit.utils.FsUtils
 import com.catpuppyapp.puppygit.utils.state.CustomStateSaveable
 import kotlinx.coroutines.CoroutineScope
@@ -66,6 +68,8 @@ fun EditorTitle(
 ) {
     val haptic = LocalHapticFeedback.current
     val activityContext = LocalContext.current
+
+    val inDarkTheme = remember { Theme.inDarkTheme }
 
     if(editorPageShowingFilePath.value.isNotBlank()) {
         val fileName = if(isPreviewModeOn && editorPageShowingFilePath.value.ioPath != previewingPath) FuckSafFile(activityContext, FilePath(previewingPath)).name else if(editorPageShowingFileName.isNullOrEmpty()) FuckSafFile(activityContext, editorPageShowingFilePath.value).name else editorPageShowingFileName
@@ -126,7 +130,7 @@ fun EditorTitle(
                         fontSize = MyStyleKt.Title.firstLineFontSizeSmall,
                         maxLines=1,
                         overflow = TextOverflow.Ellipsis,
-                        color = if(editorPageMergeMode) MyStyleKt.TextColor.danger() else Color.Unspecified
+                        color = if(editorPageMergeMode) MyStyleKt.ChangeListItemColor.getConflictColor(inDarkTheme) else Color.Unspecified
                     )
                 }
                 ScrollableRow  {

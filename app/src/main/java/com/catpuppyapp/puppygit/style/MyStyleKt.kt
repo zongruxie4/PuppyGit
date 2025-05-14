@@ -85,6 +85,11 @@ object MyStyleKt{
 //        val conflict = Color(0xFF913FA8)
 //        val conflict_darkTheme = Color(0xFF621E75)
 
+
+
+        fun getConflictColor(inDarkTheme: Boolean = Theme.inDarkTheme): Color {
+            return if(inDarkTheme) changeTypeConflict_darkTheme else changeTypeConflict
+        }
     }
 
     object IconColor {
