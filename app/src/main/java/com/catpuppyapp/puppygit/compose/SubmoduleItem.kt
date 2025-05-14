@@ -8,6 +8,7 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.Notes
 import androidx.compose.material.icons.filled.Cloud
 import androidx.compose.material.icons.filled.Commit
 import androidx.compose.material.icons.filled.Folder
@@ -210,7 +211,7 @@ fun SubmoduleItem(
             ){
 
                 InLineIcon(
-                    icon = Icons.Filled.Info,
+                    icon = Icons.AutoMirrored.Filled.Notes,
                     tooltipText = stringResource(R.string.other)
                 )
 
