@@ -1090,7 +1090,7 @@ fun TextEditor(
                     ) { modifier ->
                         // FileEditor里的innerTextFiled()会执行这的代码
                         Box(
-                            modifier = modifier
+                            modifier = Modifier
                                 .background(bgColor)
                                 .combinedClickable(
                                     //不显示点击效果（闪烁动画）
@@ -1115,7 +1115,7 @@ fun TextEditor(
                                         textEditorState.selectField(targetIndex = index)
 
                                     }
-                                }
+                                }.then(modifier)
                         ) {
                             MyTextField(
                                 ignoreFocusOnce = ignoreFocusOnce,

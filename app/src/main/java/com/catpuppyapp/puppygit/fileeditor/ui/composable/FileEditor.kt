@@ -498,6 +498,7 @@ fun FileEditor(
                                     yStartOffsetInPx = if(index == 0) firstLineTopPaddingInPx else 0f
                                 )
                             ){
+                                //这个东西原本应该是用来增加行号和修改类型指示器间距的，但现在好像没用了
                                 Spacer(Modifier.width(1.dp))
                             }
 
