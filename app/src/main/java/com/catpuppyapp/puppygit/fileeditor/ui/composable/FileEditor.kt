@@ -253,8 +253,6 @@ fun FileEditor(
 //    val curTime = rememberSaveable { mutableLongStateOf(0) }
 
 
-    //内容顶部padding
-    val topPadding = remember { 5.dp }
 
     //只需要contentPadding的上和下，不然横屏会因为底部导航栏而有偏差
     val swipeIconModifier = Modifier.padding(top = contentPadding.calculateTopPadding(), bottom = contentPadding.calculateBottomPadding()).padding(horizontal = 10.dp)
@@ -324,7 +322,10 @@ fun FileEditor(
                             .verticalScroll(curPreviewScrollState)
                         ,
                     ) {
-                        Spacer(Modifier.height(topPadding))
+                        //内容顶部padding，为了和editor的首行top padding高度保持一致，所以调用了相同的函数，
+                        // 其中0代表索引0，索引0代表firstLine，firstLine则会加top padding
+                        // 预览md的内容都是一整块，没有索引，所以这个顶部padding是固定添加的
+                        Spacer(Modifier.addTopPaddingIfIsFirstLine(0))
 
                         MarkDownContainer(
                             modifier = Modifier.padding(horizontal = 10.dp),
@@ -452,7 +453,7 @@ fun FileEditor(
                                         enableSelectMode(index)
                                     }
                                 }
-                                .addTopPaddingIfIsFirstLine(index, topPadding)
+                                .addTopPaddingIfIsFirstLine(index)
                             ,
 
                             //让行号从右向左对齐，如果对短行号加了空格padding并且字体等宽其实这个可选
@@ -502,7 +503,7 @@ fun FileEditor(
                                 .align(Alignment.CenterVertically)
 
                                 //给第一行top加点padding，不然离上面太近，难受
-                                .addTopPaddingIfIsFirstLine(index, topPadding)
+                                .addTopPaddingIfIsFirstLine(index)
                                 //底线
                                 .bottomLine(
                                     bottomLineWidth = bottomLineWidth,

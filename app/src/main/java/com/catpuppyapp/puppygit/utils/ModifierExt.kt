@@ -32,7 +32,7 @@ fun Modifier.fabBasePadding(
 
 
 @Composable
-fun Modifier.addTopPaddingIfIsFirstLine(index:Int, topPadding:Dp):Modifier {
+fun Modifier.addTopPaddingIfIsFirstLine(index:Int, topPadding:Dp=5.dp):Modifier {
     return if(index == 0) padding(top = topPadding) else this
 }
 
