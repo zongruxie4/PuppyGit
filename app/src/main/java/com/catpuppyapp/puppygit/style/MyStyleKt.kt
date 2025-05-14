@@ -72,16 +72,16 @@ object MyStyleKt{
         val changeTypeConflict_darkTheme = Color(0xFF8E40BE)
 
         /**
-         * DiffScreen background color
+         * x 废弃，用TextColor里的条目替代了）DiffScreen background color
          */
-        val bg_added = Color(0xFF78ab78)
-        val bg_added_darkTheme = Color(0xFF204820)
-        val bg_deleted = Color(0xFF8A8A8A)
-        val bg_deleted_darkTheme = Color(0xFF4F4F4F)
-        val bg_modified = Color(0xFF5A9AD9)
-        val bg_modified_darkTheme = Color(0xFF183653)
-        val bg_conflict = Color(0xFFBE4040)
-        val bg_conflict_darkTheme = Color(0xFF692525)
+//        val bg_added = Color(0xFF78ab78)
+//        val bg_added_darkTheme = Color(0xFF204820)
+//        val bg_deleted = Color(0xFF8A8A8A)
+//        val bg_deleted_darkTheme = Color(0xFF4F4F4F)
+//        val bg_modified = Color(0xFF5A9AD9)
+//        val bg_modified_darkTheme = Color(0xFF183653)
+//        val bg_conflict = Color(0xFFBE4040)
+//        val bg_conflict_darkTheme = Color(0xFF692525)
 //        val conflict = Color(0xFF913FA8)
 //        val conflict_darkTheme = Color(0xFF621E75)
 
@@ -114,17 +114,17 @@ object MyStyleKt{
         private val lineNumBg_forEditorInDarkTheme = Color(0x1B414141)
 //        val lineNum_forEditorInDarkTheme = Color(0xFF535353)
 
-        //DiffContent font color
+        //DiffContent line number color
         val lineNum_forDiffInLightTheme = Color.Gray
         val lineNum_forDiffInDarkTheme = Color(0xFF4D4D4D)
 
-        // 有匹配的背景颜色
+        // DiffScreen: 有匹配的背景颜色
         val hasMatchedAddedLineBgColorForDiffInLightTheme = Color(0x1B2F9B09)
         val hasMatchedAddedLineBgColorForDiffInDarkTheme = Color(0x12016505)
         val hasMatchedDeletedLineBgColorForDiffInLightTheme = Color(0x1E640000)
         val hasMatchedDeletedLineBgColorForDiffInDarkTheme = Color(0x17910000)
 
-        // 无匹配的背景颜色
+        // DiffScreen: 无匹配的背景颜色
         val addedLineBgColorForDiffInLightTheme = Color(0x45089613)
         val addedLineBgColorForDiffInDarkTheme = Color(0x31009B0B)
         val deletedLineBgColorForDiffInLightTheme = Color(0x3B7E0000)
