@@ -6,6 +6,7 @@ import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.IntrinsicSize
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -405,14 +406,16 @@ fun FileEditor(
                     fontColor = fontColor,
                 ) { index, size, isSelected, currentField, focusingIdx, isMultiSelectionMode, innerTextField ->
                     //用来让行号背景填充整行高度
-                    val lineHeight = remember { mutableStateOf(0.dp) }
+//                    val lineHeight = remember { mutableStateOf(0.dp) }
 
                     // TextLine
                     Row(
                         modifier = Modifier
-                            .onGloballyPositioned {
-                                lineHeight.value = UIHelper.pxToDp(it.size.height, density)
-                            }
+//                            .onGloballyPositioned { lineHeight.value = UIHelper.pxToDp(it.size.height, density) }
+                            //如果不加这个东西，下面行号那列fillMaxHeight() not work，原因不明，说实话我不知道这玩意是干嘛的
+                            // IntrinsicSize.Max 这个主意来自：https://stackoverflow.com/a/76362040
+                            .height(IntrinsicSize.Max)
+
                             .fillMaxWidth()
                             .background(
                                 getBackgroundColor(
@@ -433,7 +436,8 @@ fun FileEditor(
                             modifier = Modifier
                                 .background(MyStyleKt.TextColor.lineNumBgColor(inDarkTheme))
                                 //让行号占满整行高度
-                                .height(lineHeight.value)
+//                                .height(lineHeight.value)
+                                .fillMaxHeight()
                                 .combinedClickable(
                                     onLongClick = {
                                         if (textEditorState.value.isMultipleSelectionMode) {
