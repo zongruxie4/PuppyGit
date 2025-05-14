@@ -1168,6 +1168,10 @@ fun DiffScreen(
 
     val lastPosition = rememberSaveable { mutableStateOf(0) }
 
+    //当只读模式开启或文件不存在则视为只读模式实际开启，这时在点击行的菜单里不显示编辑、恢复之类可修改文件的选项
+    val fileActuallyReadOnly = { diffableItem: DiffableItem -> readOnlyModeOn.value || !diffableItem.toFile().exists()}
+
+
     Scaffold(
         modifier = Modifier.nestedScroll(homeTopBarScrollBehavior.nestedScrollConnection),
         topBar = {
@@ -1177,15 +1181,17 @@ fun DiffScreen(
                     titleContentColor = MaterialTheme.colorScheme.primary,
                 ),
                 title = {
+                    val curItem = getCurItem()
+
                     DiffScreenTitle(
                         isMultiMode = isMultiMode,
                         scrollToCurrentItemHeader = scrollToCurrentItemHeader,
                         listState = listState,
                         scope = scope,
                         request = pageRequest,
-                        readOnly = readOnlyModeOn.value,
+                        readOnly = fileActuallyReadOnly(curItem),
                         lastPosition = lastPosition,
-                        curItem = getCurItem()
+                        curItem = curItem
                     )
                 },
                 navigationIcon = {
@@ -1313,7 +1319,7 @@ fun DiffScreen(
                         val relativePath = diffableItem.relativePath
 
                         // 启用了只读模式，或者当前文件不存在（不存在无法编辑，所以启用只读）
-                        val readOnlyModeOn = readOnlyModeOn.value || !diffableItemFile.exists();
+                        val readOnlyModeOn = fileActuallyReadOnly(diffableItem)
 
                         val switchVisible = {
                             val newVisible = visible.not()
