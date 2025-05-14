@@ -20,7 +20,7 @@ private val knownSystemFilesManagerUris = listOf(
     "content://com.android.externalstorage.documents/tree/primary",
     "content://com.android.externalstorage.documents/document/primary",
 
-    )
+)
 
 // 这里的uri前缀末尾必须带 '/'，因为转换为绝对路径时会移动索引以使用uri中的/，如果不带/的话，得特殊处理
 private val knownUris = listOf(
@@ -30,9 +30,9 @@ private val knownUris = listOf(
 
     //支持解析我自己的app的uri，很有必要，因为有时候在app内点击未知类型，
     // 再打开，这时候可以选择我的app，但给到Editor的路径却是uri，脱裤子放屁，多此一举，所以解析下
-    "content://com.catpuppyapp.puppygit.play.pro.provider/root/",
+    "content://${FsUtils.getAuthorityOfUri()}/root/",
 
-    )
+)
 
 @Parcelize
 class FilePath(
