@@ -905,6 +905,7 @@ fun HomeScreen(
                             )
                         } else if (currentHomeScreen.intValue == Cons.selectedItem_Editor) {
                             EditorTitle(
+                                patchModeOn = editorPagePatchMode.value,
                                 previewNavStack = editorPreviewNavStack.value,
                                 previewingPath = editorPreviewPath,
                                 isPreviewModeOn = editorIsPreviewModeOn.value,
