@@ -10,6 +10,7 @@ import androidx.compose.ui.unit.Density
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
+import com.catpuppyapp.puppygit.style.MyStyleKt
 
 
 @Composable
@@ -32,7 +33,7 @@ fun Modifier.fabBasePadding(
 
 
 @Composable
-fun Modifier.addTopPaddingIfIsFirstLine(index:Int, topPadding:Dp=5.dp):Modifier {
+fun Modifier.addTopPaddingIfIsFirstLine(index:Int, topPadding:Dp = MyStyleKt.Padding.firstLineTopPaddingValuesInDp):Modifier {
     return if(index == 0) padding(top = topPadding) else this
 }
 

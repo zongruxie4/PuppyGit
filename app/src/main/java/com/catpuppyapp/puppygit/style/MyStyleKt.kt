@@ -262,6 +262,10 @@ object MyStyleKt{
 
     object Padding {
         val PageBottom=500.dp
+
+        // editor和diff页面的首行顶部padding
+        val firstLineTopPaddingValuesInDp = 5.dp
+
     }
 
     object TextSelectionColor {

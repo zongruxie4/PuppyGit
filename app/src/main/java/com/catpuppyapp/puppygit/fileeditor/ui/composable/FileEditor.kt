@@ -154,6 +154,9 @@ fun FileEditor(
     val clipboardManager = LocalClipboardManager.current
     val keyboardController = LocalSoftwareKeyboardController.current
 
+    val firstLineTopPaddingInPx = with(density) { -(MyStyleKt.Padding.firstLineTopPaddingValuesInDp.toPx()) }
+
+
     val showDeleteDialog = rememberSaveable { mutableStateOf(false) }
 //    val editableController by rememberTextEditorController(textEditorState.value, onChanged = { onChanged(it) }, isContentChanged, editorPageIsContentSnapshoted)
 
@@ -487,6 +490,8 @@ fun FileEditor(
                                 .changeTypeIndicator(
                                     changeTypeLineWidth = changeTypeWidth,
                                     changeTypeColor = currentField.getColorOfChangeType(inDarkTheme),
+                                    // 如果是第一行，需要加上顶部padding值，不然会有一段空白，不好看
+                                    yStartOffsetInPx = if(index == 0) firstLineTopPaddingInPx else 0f
                                 )
                             ){
                                 Spacer(Modifier.width(1.dp))
@@ -750,6 +755,7 @@ private fun Modifier.bottomLine(
 private fun Modifier.changeTypeIndicator(
     changeTypeLineWidth:Dp,
     changeTypeColor: Color,
+    yStartOffsetInPx:Float,
 ) :Modifier {
 //    val density = LocalDensity.current
     val isRtl = UIHelper.isRtlLayout()
@@ -766,7 +772,7 @@ private fun Modifier.changeTypeIndicator(
             color = changeTypeColor,
             strokeWidth = changeTypeLineWidth.toPx(),  //宽度
             //起始和结束点，单位应该是px
-            start = Offset(startX, 0f),
+            start = Offset(startX, yStartOffsetInPx),
             end = Offset(startX, height),
         )
 
