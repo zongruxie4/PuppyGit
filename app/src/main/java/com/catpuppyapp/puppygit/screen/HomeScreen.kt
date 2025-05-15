@@ -104,6 +104,7 @@ import com.catpuppyapp.puppygit.settings.SettingsUtil
 import com.catpuppyapp.puppygit.style.MyStyleKt
 import com.catpuppyapp.puppygit.utils.AppModel
 import com.catpuppyapp.puppygit.utils.FsUtils
+import com.catpuppyapp.puppygit.utils.Libgit2Helper
 import com.catpuppyapp.puppygit.utils.Msg
 import com.catpuppyapp.puppygit.utils.MyLog
 import com.catpuppyapp.puppygit.utils.pref.PrefMan
@@ -178,10 +179,10 @@ fun HomeScreen(
     }
 //    val changeListCurRepo = rememberSaveable{ mutableStateOf(RepoEntity()) }
     val changeListCurRepo = mutableCustomStateOf(keyTag = stateKeyTag, keyName = "changeListCurRepo", initValue = RepoEntity(id=""))  //id=空，表示无效仓库
-    val changeListIsShowRepoList = rememberSaveable { mutableStateOf(false)}
-    val changeListShowRepoList = {
-        changeListIsShowRepoList.value=true
-    }
+//    val changeListIsShowRepoList = rememberSaveable { mutableStateOf(false)}
+//    val changeListShowRepoList = { changeListIsShowRepoList.value=true }
+    // 此变量仅在回调使用，与页面是否重新渲染无关，所以不需要用state
+    val changeListCachedEditorPath = remember { Box<String>("") }
     val changeListIsFileSelectionMode = rememberSaveable { mutableStateOf(false)}
     val changeListPageNoRepo = rememberSaveable { mutableStateOf(false)}
     val changeListPageHasNoConflictItems = rememberSaveable { mutableStateOf(false)}
@@ -785,15 +786,41 @@ fun HomeScreen(
 //        Icons.Filled.Subscriptions
     )
 
-    val refreshPageList = listOf(
-        refreshRepoPage@{ changeStateTriggerRefreshPage(needRefreshRepoPage) },
-        refreshFilesPage@{ changeStateTriggerRefreshPage(needRefreshFilesPage) },
-        refreshEditorPage@{ editorPageShowingFileIsReady.value=false; changeStateTriggerRefreshPage(needRefreshEditorPage) },
-        refreshChangeListPage@{changeListRequireRefreshFromParentPage(changeListCurRepo.value)},
-        refreshServicePage@{ refreshServicePage() },
-        refreshAutomationPage@{ refreshAutomationPage() },
-        refreshSettingsPage@{ refreshSettingsPage() },
-        refreshAboutPage@{}, //About页面静态的，不需要刷新
+    // 抽屉条目点击回调
+    val drawerItemOnClick = listOf(
+        clickRepoPage@{ changeStateTriggerRefreshPage(needRefreshRepoPage) },
+        clickFilesPage@{ changeStateTriggerRefreshPage(needRefreshFilesPage) },
+        clickEditorPage@{ editorPageShowingFileIsReady.value=false; changeStateTriggerRefreshPage(needRefreshEditorPage) },
+        clickChangeListPage@{
+            doJobThenOffLoading {
+                // 取出editor正在编辑的文件路径，如果有关联的仓库，切换到cl页面时会定位到对应仓库
+                val editorShowingPath = editorPageShowingFilePath.value.ioPath
+                val editorPageShowingFilePath = Unit  // avoid mistake using
+                val oldChangeListCachedEditorPath = changeListCachedEditorPath.value
+                changeListCachedEditorPath.value = editorShowingPath
+                val changeListCachedEditorPath = Unit
+
+
+                //后面cached路径和当前路径是否相等的判断是为了实现同一路径仅跳转一次的机制，避免跳转了一次，非用户期望，用户手动切换仓库后，再立刻cl页面，返回后再跳转
+                if(editorShowingPath.isNotBlank() && oldChangeListCachedEditorPath != editorShowingPath) {
+                    Libgit2Helper.findRepoByPath(editorShowingPath)?.use { repo ->
+                        val repoPath = Libgit2Helper.getRepoWorkdirNoEndsWithSlash(repo)
+                        // 仓库不ready不会在cl页面显示，所以设`onlyReturnReadyRepo`为true；在cl页面会重新查询仓库底层信息，所以这里不需要查，所以设`requireSyncRepoInfoWithGit`为false
+                        val repoFromDb = AppModel.dbContainer.repoRepository.getByFullSavePath(repoPath, onlyReturnReadyRepo = true, requireSyncRepoInfoWithGit = false)
+                        repoFromDb?.let { changeListCurRepo.value = it }
+                    }
+                }
+
+                // 刷新ChangeList页面
+                changeListRequireRefreshFromParentPage(changeListCurRepo.value)
+            }
+
+            Unit
+        },
+        clickServicePage@{ refreshServicePage() },
+        clickAutomationPage@{ refreshAutomationPage() },
+        clickSettingsPage@{ refreshSettingsPage() },
+        clickAboutPage@{}, //About页面静态的，不需要刷新
 //        {},  //Subscription页面
     )
 
@@ -843,7 +870,7 @@ fun HomeScreen(
                     drawTextList = drawTextList,
                     drawIdList = drawIdList,
                     drawIconList = drawIconList,
-                    refreshPageList = refreshPageList,
+                    drawerItemOnClick = drawerItemOnClick,
                     showExit = true,
                     filesPageKeepFilterResultOnce = filesPageKeepFilterResultOnce,
 

@@ -23,6 +23,7 @@ import com.catpuppyapp.puppygit.screen.shared.FuckSafFile
 import com.catpuppyapp.puppygit.settings.AppSettings
 import com.catpuppyapp.puppygit.settings.DirViewAndSort
 import com.catpuppyapp.puppygit.settings.SettingsUtil
+import com.github.git24j.core.Repository
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -640,6 +641,13 @@ fun getParentPathEndsWithSeparator(path:String, trueWhenNoParentReturnSeparatorF
 fun isRepoReadyAndPathExist(r: RepoEntity?): Boolean {
     if(r==null) {
         return false
+    }
+
+    //首先把仓库的gitRepoState更新一下，不然万一没更新状态，gitRepoState会是null，会导致后面误判仓库无效
+    runCatching {
+        Repository.open(r.fullSavePath)?.use { repo->
+            r.gitRepoState = repo.state()
+        }
     }
 
     if (Libgit2Helper.isRepoStatusReady(r)

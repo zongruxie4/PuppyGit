@@ -3573,11 +3573,11 @@ private suspend fun changeListInit(
     //不能清id或fullSavePath，会导致误判仓库无效，然后重新查一个
 //            tmpCurRepo.id=""
 //            tmpCurRepo.fullSavePath=""
-    //重置下信息，后面会重新从db查询
-    val tmpCurRepo = curRepoFromParentPage.value
-    tmpCurRepo.lastCommitHash=""
-    tmpCurRepo.branch=""
-    tmpCurRepo.upstreamBranch=""
+    //x 20250515更新： 不知道重置这东西有什么鸟用，不重置了) 重置下信息，后面会重新从db查询
+//    val tmpCurRepo = curRepoFromParentPage.value
+//    tmpCurRepo.lastCommitHash=""
+//    tmpCurRepo.branch=""
+//    tmpCurRepo.upstreamBranch=""
 
 
     //先清空列表
