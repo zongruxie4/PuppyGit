@@ -4351,6 +4351,8 @@ object Libgit2Helper {
                                 //因为是倒序，所以这里需要一直从头插入
                                 //继承来的节点，必然startAtHere为假，但如果endAtHere为真，则不需要画输出线，因此isEmpty为真，
                                 // 后续会在为当前节点的父节点查找输出位置时尽可能占用在这里isEmpty为真的输出节点
+
+                                这里有问题
                                 drawOutputs.add(0, curNode.let{ it.copy(startAtHere = it.circleAtHere) })
 
                                 MyLog.v(TAG, "#$funName: commitDrawNodeInfo inputs to outputs: hash=${c.oidStr}, node=$curNode")
@@ -4362,6 +4364,7 @@ object Libgit2Helper {
 
                     //将当前节点的父提交信息和继承来的节点列表合并
                     if(c.parentOidStrList.isNotEmpty()) {
+                        遍历父节点有问题，例如有两条线，但父节点只有一个，会漏，或者信息会错
                         for ((idx, p) in c.parentOidStrList.withIndex()) {
                             val existedOutput = drawOutputs.getOrNull(idx)
                             if(existedOutput == null) {  //开辟新赛道
@@ -4378,13 +4381,16 @@ object Libgit2Helper {
                                 val indexForParent = DrawCommitNode.getAnInsertableIndex(drawOutputs)
                                 drawOutputs.add(indexForParent, newNode)
                             }else {  //更新已存在的节点信息
-                                drawOutputs[idx] = existedOutput.copy(
+                                drawOutputs[idx] = existedOutput.let{it.copy(
                                     outputIsEmpty = false,
                                     endAtHere = false,
                                     circleAtHere = false,
-                                    fromCommitHash = c.oidStr,
-                                    toCommitHash = p,
-                                )
+
+                                    这里有问题，不该在这更新这个东西
+                                    //如果是在当前节点结束的节点，则更新其from to信息，否则使用原来的即可
+                                    fromCommitHash = if(it.circleAtHere) c.oidStr else it.fromCommitHash,
+                                    toCommitHash = if(it.circleAtHere) p else it.toCommitHash,
+                                )}
                             }
 
                         }
