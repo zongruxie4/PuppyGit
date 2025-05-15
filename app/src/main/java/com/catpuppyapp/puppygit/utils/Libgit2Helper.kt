@@ -4279,6 +4279,7 @@ object Libgit2Helper {
         // 这个只是用来缓存节点信息的不需要用state变量，普通的mutabellist即可，但需要加锁确保不会并发冲突（提交历史页面查询时已加锁）
         draw_lastOutputNodes: Box<List<DrawCommitNode>>,
     ) {
+        val funName = "getCommitList"
 //            if(debugModeOn) {
 //                MyLog.d(TAG, "#getCommitList: startOid="+startOid.toString())
 //            }
@@ -4309,6 +4310,7 @@ object Libgit2Helper {
                 val commit = resolveCommitByHash(repo, nextStr)
                 if(commit!=null) {
                     val c = createCommitDto(next, allBranchList, allTagList, commit, repoId, repoIsShallow, shallowOidList, settings)
+                    val commit = Unit
 
                     //添加绘图节点信息
                     val drawInputs = mutableListOf<DrawCommitNode>()
@@ -4349,38 +4351,24 @@ object Libgit2Helper {
                                 // 后续会在为当前节点的父节点查找输出位置时尽可能占用在这里isEmpty为真的输出节点
                                 drawOutputs.add(0, curNode.copy(startAtHere = false, isEmpty = curNode.endAtHere))
 
+                                MyLog.v(TAG, "#$funName: commitDrawNodeInfo inputs to outputs: hash=${c.oidStr}, node=$curNode")
+
                                 break
                             }
                         }
                     }
 
-                    //添加当前节点自己的输出节点信息
-                    drawOutputs.add(0, DrawCommitNode(
-                        isEmpty = false,
-                        endAtHere = false,
-                        startAtHere = true,
 
-                        //HEAD的第一个提交
-                        circleAtHere = drawInputs.isEmpty(),
-
-                        fromCommitHash = c.oidStr,
-
-                        //如果是最后一个节点可能没有父节点，不过最后一个节点会在循环结束后清空输出列表，
-                        // 所以这里处理与否其实无所谓，就算断言parentOidStrLit一定至少有一个元素也行，但实际上如果仓库信息有误（例如错误设置了父节点信息），
-                        // 这个断言就会失效，为了避免仓库崩溃，所以这里还是做下非空判断，就算仓库信息有误也不至于崩溃
-                        toCommitHash = c.parentOidStrList.getOrNull(0) ?:""
-                    ))
-
-                    //添加父提交信息，因为第一个已经添加了，所以只有在父节点大于1个时才需要添加其余的
-                    if(c.parentOidStrList.size > 1) {
-                        for (i in IntRange(1, c.parentOidStrList.size-1)) {
+                    //添加当前节点的父提交信息
+                    if(c.parentOidStrList.isNotEmpty()) {
+                        for ((idx, p) in c.parentOidStrList.withIndex()) {
                             val newNode = DrawCommitNode(
                                 isEmpty = false,
                                 endAtHere = false,
                                 startAtHere = true,
-                                circleAtHere = false,
+                                circleAtHere = idx == 0 && drawInputs.isEmpty(),  // 如果是HEAD first commit，inputs为空，则在这画圆圈，否则由上面的输入节点画
                                 fromCommitHash = c.oidStr,
-                                toCommitHash = c.parentOidStrList.getOrNull(i) ?:""
+                                toCommitHash = p
                             )
 
                             val indexForParent = DrawCommitNode.getAnInsertableIndex(drawOutputs)
@@ -4408,7 +4396,7 @@ object Libgit2Helper {
                     retList.add(c)
                     count++
                 }else {
-                    MyLog.e(TAG, "#getCommitList(): resolve commit failed, target=$nextStr")
+                    MyLog.e(TAG, "#$funName(): resolve commit failed, target=$nextStr")
                 }
 
 
@@ -4436,7 +4424,7 @@ object Libgit2Helper {
 //                                loadChannel.close()
 ////                                println("close成功了")
 //                            }
-                        MyLog.d(TAG, "#getCommitList: abort by terminate signal")
+                        MyLog.d(TAG, "#$funName: abort by terminate signal")
                         break
                     }else {
                         checkChannelCount = 0
@@ -4447,7 +4435,7 @@ object Libgit2Helper {
                 //更新迭代器
                 next = revwalk.next()
             }catch (e:Exception) {
-//                    MyLog.e(TAG, "#getCommitList():err:"+e.stackTraceToString())
+//                    MyLog.e(TAG, "#$funName():err:"+e.stackTraceToString())
                 throw e
             }
 
