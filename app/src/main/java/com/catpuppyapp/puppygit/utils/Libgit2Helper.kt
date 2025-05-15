@@ -13,6 +13,7 @@ import com.catpuppyapp.puppygit.data.repository.CredentialRepository
 import com.catpuppyapp.puppygit.data.repository.RemoteRepository
 import com.catpuppyapp.puppygit.data.repository.RepoRepository
 import com.catpuppyapp.puppygit.dev.DevFeature
+import com.catpuppyapp.puppygit.dto.Box
 import com.catpuppyapp.puppygit.dto.RemoteDto
 import com.catpuppyapp.puppygit.dto.createCommitDto
 import com.catpuppyapp.puppygit.dto.createFileHistoryDto
@@ -23,6 +24,7 @@ import com.catpuppyapp.puppygit.etc.Ret
 import com.catpuppyapp.puppygit.git.BranchNameAndTypeDto
 import com.catpuppyapp.puppygit.git.CommitDto
 import com.catpuppyapp.puppygit.git.DiffItemSaver
+import com.catpuppyapp.puppygit.git.DrawCommitNode
 import com.catpuppyapp.puppygit.git.FileHistoryDto
 import com.catpuppyapp.puppygit.git.IgnoreItem
 import com.catpuppyapp.puppygit.git.PatchFile
@@ -4271,7 +4273,11 @@ object Libgit2Helper {
         loadChannel:Channel<Int>,
         // load to this count, check once channel
         checkChannelFrequency:Int,
-        settings:AppSettings
+        settings:AppSettings,
+
+        // 上个节点的output nodes就是当前节点的input
+        // 这个只是用来缓存节点信息的不需要用state变量，普通的mutabellist即可，但需要加锁确保不会并发冲突（提交历史页面查询时已加锁）
+        draw_lastOutputNodes: Box<List<DrawCommitNode>>,
     ) {
 //            if(debugModeOn) {
 //                MyLog.d(TAG, "#getCommitList: startOid="+startOid.toString())
@@ -4294,6 +4300,8 @@ object Libgit2Helper {
         var checkChannelCount = 0
 
         var next = initNext
+        var lastCommit: CommitDto? = null
+
         while (next != null) {
             try {
                 //创建dto
@@ -4301,6 +4309,73 @@ object Libgit2Helper {
                 val commit = resolveCommitByHash(repo, nextStr)
                 if(commit!=null) {
                     val c = createCommitDto(next, allBranchList, allTagList, commit, repoId, repoIsShallow, shallowOidList, settings)
+
+                    //添加绘图节点信息
+                    val drawInputs = mutableListOf<DrawCommitNode>()
+                    for (node in draw_lastOutputNodes.value) {
+                        val newNode = node.copy(endAtHere = node.toCommitHash == c.oidStr)
+
+                        drawInputs.add(newNode)
+                    }
+
+                    //添加从上个节点继承来的节点信息，例如没完成的线，需要继续画，就会在这添加上
+                    var drawOutputs = mutableListOf<DrawCommitNode>()
+                    //把列表末尾输出节点为空且不在列表中间的条目移除
+                    //例如：1非空，2空，3非空，4空，5空。将移除4和5，但保留1、2、3，虽然2也为空，但其在非空元素中间，所以需要占位
+                    if(drawInputs.isNotEmpty()) {
+                        for(reservedIdx in IntRange(drawInputs.size-1, 0)) {
+                            //碰到第一个不为空，把0到那个位置的条目全添加上，结束
+                            if(drawInputs[reservedIdx].isEmpty.not()) {
+                                drawOutputs = drawInputs.subList(0, reservedIdx+1)
+
+                                break
+                            }
+                        }
+                    }
+
+                    //添加当前节点自己的输出节点信息
+                    drawOutputs.add(0, DrawCommitNode(
+                        isEmpty = false,
+                        endAtHere = false,
+                        fromCommitHash = c.oidStr,
+
+                        //如果是最后一个节点可能没有父节点，不过最后一个节点会在循环结束后清空输出列表，
+                        // 所以这里处理与否其实无所谓，就算断言parentOidStrLit一定至少有一个元素也行，但实际上如果仓库信息有误（例如错误设置了父节点信息），
+                        // 这个断言就会失效，为了避免仓库崩溃，所以这里还是做下非空判断，就算仓库信息有误也不至于崩溃
+                        toCommitHash = c.parentOidStrList.getOrNull(0) ?:""
+                    ))
+
+                    //添加父提交信息，因为第一个已经添加了，所以只有在父节点大于1个时才需要添加其余的
+                    if(c.parentOidStrList.size > 1) {
+                        for (i in IntRange(1, c.parentOidStrList.size-1)) {
+                            val newNode = DrawCommitNode(
+                                isEmpty = false,
+                                endAtHere = false,
+                                fromCommitHash = c.oidStr,
+                                toCommitHash = c.parentOidStrList.getOrNull(i) ?:""
+                            )
+
+                            val indexForParent = DrawCommitNode.getAnInsertableIndex(drawOutputs)
+                            //这里不要用 [] 来添加元素，填list.size会越界，但如果用add则最大有效值为list.size
+                            drawOutputs.add(indexForParent, newNode)
+
+                        }
+
+                    }
+
+
+
+
+                    //更新上次节点信息
+                    // 因为draw commit node对象是不可变的，所以这里不用拷贝列表，直接赋值就行了
+                    draw_lastOutputNodes.value = drawOutputs
+
+                    // 尘埃落定，添加到 commit dto
+                    c.draw_inputs = drawInputs
+                    c.draw_outputs = drawOutputs
+
+                    lastCommit = c
+
                     //添加元素
                     retList.add(c)
                     count++
@@ -4348,6 +4423,13 @@ object Libgit2Helper {
                 throw e
             }
 
+        }
+
+        //到提交历史末尾了，不会再有更多输出节点了，但之前有添加，所以这里需要清空下
+        if(next == null && lastCommit != null) {
+            // 如果到提交历史末尾，清空输出节点列表。
+            // （这里已经考虑了shallow仓库的情况，线会画到条目中间就断掉（因为后面没东西了），但不一定会连接到当前节点的圆圈（取决于这条线的来源是否是当前节点的子节点）。
+            lastCommit.draw_outputs = listOf()
         }
     }
 

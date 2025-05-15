@@ -25,7 +25,11 @@ class CommitDto (
     var repoId:String="",  //数据库的repoId，用来判断当前是在操作哪个仓库
     var treeOidStr:String="",  //提交树的oid和commit的oid不一样哦
     var isGrafted:Boolean=false,  // shallow root，此值为true，参考pcgit，在打印shallow仓库时，会对shallow root添加grafted标识，不过需要注意，一个提交列表可能有多个isGrafted，这种情况发生于多个grafted是同一个提交的父提交的情况，换句话说，那个子提交是由多个父提交合并来的
-    var tagShortNameList:MutableList<String> = mutableListOf()
+    var tagShortNameList:MutableList<String> = mutableListOf(),
+
+    // draw graph related
+    var draw_inputs: List<DrawCommitNode> = listOf(),
+    var draw_outputs: List<DrawCommitNode> = listOf(),
 ) {
 
     private var otherMsg:String?=null

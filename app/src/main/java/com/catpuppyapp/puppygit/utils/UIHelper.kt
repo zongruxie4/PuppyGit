@@ -36,6 +36,7 @@ import com.catpuppyapp.puppygit.ui.theme.Theme
 import com.github.git24j.core.Repository
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
+import kotlin.random.Random
 
 private const val TAG = "UIHelper"
 
@@ -508,6 +509,33 @@ object UIHelper {
             )
         }
 
+    }
+
+    // 返回的对象可以用于 `Color(这个函数的返回值)` 来创建Color对象
+    // 参数为null的将随机生成其值
+    private fun getRandomColorIntValue(alpha:Int? = null, red:Int? = null, green:Int? = null, blue:Int? = null): Int {
+        val alpha = alpha ?: Random.nextInt(256) // 0-255
+        val red = red ?: Random.nextInt(256)   // 0-255
+        val green = green ?: Random.nextInt(256) // 0-255
+        val blue = blue ?: Random.nextInt(256)  // 0-255
+
+        return (alpha shl 24) or (red shl 16) or (green shl 8) or blue
+    }
+
+    fun getRandomColor(
+        alpha:Int? = null,
+        red:Int? = null,
+        green:Int? = null,
+        blue:Int? = null
+    ):Color {
+        return Color(
+            getRandomColorIntValue(
+                alpha?.coerceAtLeast(0)?.coerceAtMost(255),
+                red?.coerceAtLeast(0)?.coerceAtMost(255),
+                green?.coerceAtLeast(0)?.coerceAtMost(255),
+                blue?.coerceAtLeast(0)?.coerceAtMost(255)
+            )
+        )
     }
 
 }

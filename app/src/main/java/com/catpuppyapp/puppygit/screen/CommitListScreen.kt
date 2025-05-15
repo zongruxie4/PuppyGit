@@ -105,8 +105,10 @@ import com.catpuppyapp.puppygit.dev.diffToHeadTestPassed
 import com.catpuppyapp.puppygit.dev.proFeatureEnabled
 import com.catpuppyapp.puppygit.dev.resetByHashTestPassed
 import com.catpuppyapp.puppygit.dev.tagsTestPassed
+import com.catpuppyapp.puppygit.dto.Box
 import com.catpuppyapp.puppygit.etc.Ret
 import com.catpuppyapp.puppygit.git.CommitDto
+import com.catpuppyapp.puppygit.git.DrawCommitNode
 import com.catpuppyapp.puppygit.play.pro.R
 import com.catpuppyapp.puppygit.screen.functions.defaultTitleDoubleClick
 import com.catpuppyapp.puppygit.screen.functions.filterTheList
@@ -552,6 +554,10 @@ fun CommitListScreen(
     val revwalk = mutableCustomStateOf<Revwalk?>(stateKeyTag, "revwalk", null)
     val repositoryForRevWalk = mutableCustomStateOf<Repository?>(stateKeyTag, "repositoryForRevWalk", null)
     val loadLock = mutableCustomStateOf<Mutex>(stateKeyTag, "loadLock", Mutex())
+    val draw_lastOutputNodes = remember { Box<List<DrawCommitNode>>(listOf()) }
+    val resetDrawNodesInfo = {
+        draw_lastOutputNodes.value = listOf()
+    }
 
     val doLoadMore = doLoadMore@{ repoFullPath: String, oid: Oid, firstLoad: Boolean, forceReload: Boolean, loadToEnd:Boolean ->
         //第一次查询的时候是用head oid查询的，所以不会在这里返回
@@ -575,7 +581,8 @@ fun CommitListScreen(
         }
 
         //加载更多
-        //这个如果用scope.launch，似乎会随页面释放而取消任务？不知道是否需要我检查CancelException？
+        // x 不推荐用scope.launch，有可能卡住) 这个如果用scope.launch，似乎会随页面释放而取消任务，正在执行中的代码会在调度点抛出任务已取消异常，
+        // 但是，若用scope.launch，页面有可能短暂卡住，不如用io协程流畅
         doJobThenOffLoading job@{
             loadLock.value.withLock {
                 loadMoreLoading.value = true
@@ -587,6 +594,9 @@ fun CommitListScreen(
                         //如果是第一次加载或刷新页面（重新初始化页面），清下列表
                         // if is first load or refresh page, clear list
                         list.value.clear()
+
+                        //重置绘图节点信息
+                        resetDrawNodesInfo()
 
                         // close old repo, release resource
                         repositoryForRevWalk.value?.close()
@@ -634,7 +644,8 @@ fun CommitListScreen(
                             retList = list.value,  //直接赋值给状态列表了，若性能差，可实现一个批量添加机制，比如查出50个条目添加一次，之类的
                             loadChannel = loadChannel,
                             checkChannelFrequency = settings.commitHistoryLoadMoreCheckAbortSignalFrequency,
-                            settings
+                            settings,
+                            draw_lastOutputNodes,
                         )
 
                         //update state
