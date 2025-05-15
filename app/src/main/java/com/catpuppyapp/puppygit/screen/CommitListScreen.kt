@@ -206,7 +206,7 @@ fun CommitListScreen(
     //画提交树相关变量：开始
 
     //线和线之间间距
-    val lineDistanceInPx = remember(density) { with(density){ 8.dp.toPx() } }
+    val lineDistanceInPx = remember(density) { with(density){ 20.dp.toPx() } }
 
     //圆圈半径
     val nodeCircleRadiusInPx = remember(density) { with(density){ 5.dp.toPx() } }

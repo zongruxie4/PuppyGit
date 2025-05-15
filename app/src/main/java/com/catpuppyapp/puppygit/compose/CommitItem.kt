@@ -361,8 +361,29 @@ private fun Modifier.drawNode(
 ):Modifier {
 
     return drawBehind {
-        val verticalCenter = size.height/2
+        val verticalHeight = size.height
+        // 条目垂直中间线（高度的一半）
+        val verticalCenter = verticalHeight/2
+        var inputLineStartX = nodeCircleStartOffsetX
 
+        //输入线
+        c.draw_inputs.forEachIndexed { idx, node->
+            inputLineStartX += (idx * lineDistanceInPx)
+
+            //如果节点在此结束，则连接到当前节点，否则垂直向下
+            val endX = if(node.endAtHere) nodeCircleStartOffsetX else inputLineStartX
+
+            drawLine(
+                color = Color.Blue,
+                strokeWidth = nodeLineWidthInPx,  //宽度
+                //起始和结束点，单位应该是px
+                start = Offset(inputLineStartX, 0f),
+                end = Offset(endX, verticalCenter),
+            )
+        }
+
+
+        // 画代表当前提交的圆圈
         drawCircle(
             color = Color.Blue, // 圆圈颜色
             radius = nodeCircleRadiusInPx, // 半径
@@ -370,13 +391,25 @@ private fun Modifier.drawNode(
         )
 
 
-        drawLine(
-            color = Color.Blue,
-            strokeWidth = nodeLineWidthInPx,  //宽度
-            //起始和结束点，单位应该是px
-            start = Offset(nodeCircleStartOffsetX, 0f),
-            end = Offset(nodeCircleStartOffsetX, size.height),
-        )
+        var outputLineStartX = nodeCircleStartOffsetX
+
+        //输出线
+        c.draw_outputs.forEachIndexed { idx, node->
+            outputLineStartX += (idx * lineDistanceInPx)
+
+            if(node.isEmpty.not()) {
+                //如果节点在此结束，则连接到当前节点，否则垂直向下
+                val startX = if(node.startAtHere) nodeCircleStartOffsetX else outputLineStartX
+
+                drawLine(
+                    color = Color.Blue,
+                    strokeWidth = nodeLineWidthInPx,  //宽度
+                    //起始和结束点，单位应该是px
+                    start = Offset(startX, verticalCenter),
+                    end = Offset(outputLineStartX, verticalHeight),
+                )
+            }
+        }
 
     }
 }

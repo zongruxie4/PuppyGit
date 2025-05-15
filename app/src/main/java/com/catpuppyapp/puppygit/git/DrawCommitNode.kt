@@ -35,8 +35,11 @@ data class DrawCommitNode (
     // 如果当前节点有多个parent，可占用空节点的位置
     val isEmpty:Boolean,
 
-    //这个节点是否在当前commit结束（线连接到圆圈）
+    //这条线是否在当前commit结束（线连接到圆圈）
     val endAtHere:Boolean,
+
+    //这条线是否从当前提交开始（从圆圈起始）
+    val startAtHere:Boolean,
 
     //线的颜色
 //    val color: Color,

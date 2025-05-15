@@ -4322,11 +4322,17 @@ object Libgit2Helper {
                     var drawOutputs = mutableListOf<DrawCommitNode>()
                     //把列表末尾输出节点为空且不在列表中间的条目移除
                     //例如：1非空，2空，3非空，4空，5空。将移除4和5，但保留1、2、3，虽然2也为空，但其在非空元素中间，所以需要占位
+                    var hasInputLineToOutput = false
                     if(drawInputs.isNotEmpty()) {
+                        //倒序遍历，碰到第一个需要画输出线的开始添加其余条目
                         for(reservedIdx in IntRange(drawInputs.size-1, 0)) {
-                            //碰到第一个不为空，把0到那个位置的条目全添加上，结束
-                            if(drawInputs[reservedIdx].isEmpty.not()) {
-                                drawOutputs = drawInputs.subList(0, reservedIdx+1)
+                            val curNode = drawInputs[reservedIdx]
+                            if(hasInputLineToOutput || curNode.endAtHere.not()) {
+                                hasInputLineToOutput = true
+                                //因为是倒序，所以这里需要一直从头插入
+                                //继承来的节点，必然startAtHere为假，但如果endAtHere为真，则不需要画输出线，因此isEmpty为真，
+                                // 后续会在为当前节点的父节点查找输出位置时尽可能占用在这里isEmpty为真的输出节点
+                                drawOutputs.add(0, curNode.copy(startAtHere = false, isEmpty = curNode.endAtHere))
 
                                 break
                             }
@@ -4337,6 +4343,7 @@ object Libgit2Helper {
                     drawOutputs.add(0, DrawCommitNode(
                         isEmpty = false,
                         endAtHere = false,
+                        startAtHere = true,
                         fromCommitHash = c.oidStr,
 
                         //如果是最后一个节点可能没有父节点，不过最后一个节点会在循环结束后清空输出列表，
@@ -4351,6 +4358,7 @@ object Libgit2Helper {
                             val newNode = DrawCommitNode(
                                 isEmpty = false,
                                 endAtHere = false,
+                                startAtHere = true,
                                 fromCommitHash = c.oidStr,
                                 toCommitHash = c.parentOidStrList.getOrNull(i) ?:""
                             )
