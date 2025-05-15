@@ -4352,8 +4352,13 @@ object Libgit2Helper {
                                 //继承来的节点，必然startAtHere为假，但如果endAtHere为真，则不需要画输出线，因此isEmpty为真，
                                 // 后续会在为当前节点的父节点查找输出位置时尽可能占用在这里isEmpty为真的输出节点
 
-                                这里有问题
-                                drawOutputs.add(0, curNode.let{ it.copy(startAtHere = it.circleAtHere) })
+                                drawOutputs.add(0, curNode.let{
+                                    if(it.circleAtHere) { //嫡传
+                                        it.copy(startAtHere = it.circleAtHere, fromCommitHash = c.oidStr, toCommitHash = c.parentOidStrList.getOrNull(0) ?:"")
+                                    }else {  //庶出
+                                        it.copy()
+                                    }
+                                })
 
                                 MyLog.v(TAG, "#$funName: commitDrawNodeInfo inputs to outputs: hash=${c.oidStr}, node=$curNode")
 
@@ -4363,36 +4368,25 @@ object Libgit2Helper {
 
 
                     //将当前节点的父提交信息和继承来的节点列表合并
-                    if(c.parentOidStrList.isNotEmpty()) {
-                        遍历父节点有问题，例如有两条线，但父节点只有一个，会漏，或者信息会错
-                        for ((idx, p) in c.parentOidStrList.withIndex()) {
-                            val existedOutput = drawOutputs.getOrNull(idx)
-                            if(existedOutput == null) {  //开辟新赛道
-                                val newNode = DrawCommitNode(
-                                    outputIsEmpty = false,
-                                    endAtHere = false,
-                                    startAtHere = true,
-                                    circleAtHere = idx == 0 && drawInputs.isEmpty(),  // 如果是HEAD first commit，inputs为空，则在这画圆圈，否则由上面的输入节点画
-                                    fromCommitHash = c.oidStr,
-                                    toCommitHash = p
-                                )
+                    //第一个节点已经被上面画圈的节点处理了，这里只需处理剩下的，每个都是开辟新赛道
+                    //parents.size大于1是针对后续提交，inputs为空是针对当前提交树第一个提交，第一个提交没有input，所以需要特别处理下，让它在中间画圈并顺利延伸下去
+                    if(c.parentOidStrList.size > 1 || drawInputs.isEmpty()) {
+                        for (idx in (if(drawInputs.isEmpty()) 0 else 1)..<c.parentOidStrList.size) {
+                            val p = c.parentOidStrList[idx]
+                            //开辟新赛道
+                            val newNode = DrawCommitNode(
+                                outputIsEmpty = false,
+                                endAtHere = false,
+                                startAtHere = true,
+                                circleAtHere = idx == 0 && drawInputs.isEmpty(),  // 如果是HEAD first commit，inputs为空，则在这画圆圈，否则由上面的输入节点画
+                                fromCommitHash = c.oidStr,
+                                toCommitHash = p
+                            )
 
-                                //这个索引必然在圆圈的右边，不可能在左边，除非哪里不对
-                                val indexForParent = DrawCommitNode.getAnInsertableIndex(drawOutputs)
-                                drawOutputs.add(indexForParent, newNode)
-                            }else {  //更新已存在的节点信息
-                                drawOutputs[idx] = existedOutput.let{it.copy(
-                                    outputIsEmpty = false,
-                                    endAtHere = false,
-                                    circleAtHere = false,
-
-                                    这里有问题，不该在这更新这个东西
-                                    //如果是在当前节点结束的节点，则更新其from to信息，否则使用原来的即可
-                                    fromCommitHash = if(it.circleAtHere) c.oidStr else it.fromCommitHash,
-                                    toCommitHash = if(it.circleAtHere) p else it.toCommitHash,
-                                )}
-                            }
-
+                            //这个索引必然在圆圈的右边，不可能在左边，因为第一个匹配当前节点的节点有画圈的权利，
+                            // 后续的都汇合到圆圈，所以如果用empty节点，必然是画圈之后才有
+                            val indexForParent = DrawCommitNode.getAnInsertableIndex(drawOutputs)
+                            drawOutputs.add(indexForParent, newNode)
                         }
 
                     }
