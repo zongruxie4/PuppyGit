@@ -35,6 +35,9 @@ data class DrawCommitNode (
     // 如果当前节点有多个parent，可占用空节点的位置
     val isEmpty:Boolean,
 
+    //需要在这个节点这一列画个圈
+    val circleAtHere:Boolean,
+
     //这条线是否在当前commit结束（线连接到圆圈）
     val endAtHere:Boolean,
 

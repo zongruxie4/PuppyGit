@@ -366,12 +366,14 @@ private fun Modifier.drawNode(
         val verticalCenter = verticalHeight/2
         var inputLineStartX = nodeCircleStartOffsetX
 
+        var circleEndX = inputLineStartX
+
         //输入线
         c.draw_inputs.forEachIndexed { idx, node->
             inputLineStartX += (idx * lineDistanceInPx)
 
-            //如果节点在此结束，则连接到当前节点，否则垂直向下
-            val endX = if(node.endAtHere) nodeCircleStartOffsetX else inputLineStartX
+            //如果节点在此结束，则连接到当前节点的圆圈，否则垂直向下
+            val endX = if(node.endAtHere) circleEndX else inputLineStartX
 
             drawLine(
                 color = Color.Blue,
@@ -380,15 +382,18 @@ private fun Modifier.drawNode(
                 start = Offset(inputLineStartX, 0f),
                 end = Offset(endX, verticalCenter),
             )
+
+            if(node.circleAtHere) {
+                circleEndX = endX
+                // 画代表当前提交的圆圈
+                drawCircle(
+                    color = Color.Blue, // 圆圈颜色
+                    radius = nodeCircleRadiusInPx, // 半径
+                    center = Offset(endX, verticalCenter) // 圆心
+                )
+            }
         }
 
-
-        // 画代表当前提交的圆圈
-        drawCircle(
-            color = Color.Blue, // 圆圈颜色
-            radius = nodeCircleRadiusInPx, // 半径
-            center = Offset(nodeCircleStartOffsetX, verticalCenter) // 圆心
-        )
 
 
         var outputLineStartX = nodeCircleStartOffsetX
@@ -399,7 +404,7 @@ private fun Modifier.drawNode(
 
             if(node.isEmpty.not()) {
                 //如果节点在此结束，则连接到当前节点，否则垂直向下
-                val startX = if(node.startAtHere) nodeCircleStartOffsetX else outputLineStartX
+                val startX = if(node.startAtHere) circleEndX else outputLineStartX
 
                 drawLine(
                     color = Color.Blue,

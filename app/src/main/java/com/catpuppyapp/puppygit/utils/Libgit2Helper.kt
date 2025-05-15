@@ -4312,9 +4312,24 @@ object Libgit2Helper {
 
                     //添加绘图节点信息
                     val drawInputs = mutableListOf<DrawCommitNode>()
-                    for (node in draw_lastOutputNodes.value) {
-                        val newNode = node.copy(endAtHere = node.toCommitHash == c.oidStr)
+                    var circleAt = -1
+                    for ((idx, node) in draw_lastOutputNodes.value.withIndex()) {
+                        val circleAtHere = node.toCommitHash == c.oidStr
+                        val newNode = if(circleAtHere) {
+                            if(circleAt == -1) {  //还没被别人画圈，自己先画上
+                                circleAt = idx
+                                //这条线要继续传香火，所有后续目标一致的线都要和它合流
+                                node.copy(circleAtHere = true, endAtHere = false)
+                            }else {  // 圈被别人画了，这条线没活路了
+                                //这条线已经走到了尽头，最终会连接到圆圈，与圆圈所在的线融为一体，
+                                // 如果有同时期的线仍然存活并且没有后生抢占地位，它曾战斗过的队列将继续以空白的形式流传下去
+                                node.copy(circleAtHere = false, endAtHere = true)
+                            }
+                        }else {  //这条线气数未尽，依然可以特立独行，并且还能至少再战一个回合
+                            node.copy(circleAtHere = false, endAtHere = false)
+                        }
 
+                        //载入史册
                         drawInputs.add(newNode)
                     }
 
@@ -4344,6 +4359,7 @@ object Libgit2Helper {
                         isEmpty = false,
                         endAtHere = false,
                         startAtHere = true,
+                        circleAtHere = false,
                         fromCommitHash = c.oidStr,
 
                         //如果是最后一个节点可能没有父节点，不过最后一个节点会在循环结束后清空输出列表，
@@ -4359,6 +4375,7 @@ object Libgit2Helper {
                                 isEmpty = false,
                                 endAtHere = false,
                                 startAtHere = true,
+                                circleAtHere = false,
                                 fromCommitHash = c.oidStr,
                                 toCommitHash = c.parentOidStrList.getOrNull(i) ?:""
                             )
