@@ -4359,7 +4359,10 @@ object Libgit2Helper {
                         isEmpty = false,
                         endAtHere = false,
                         startAtHere = true,
-                        circleAtHere = false,
+
+                        //HEAD的第一个提交
+                        circleAtHere = drawInputs.isEmpty(),
+
                         fromCommitHash = c.oidStr,
 
                         //如果是最后一个节点可能没有父节点，不过最后一个节点会在循环结束后清空输出列表，

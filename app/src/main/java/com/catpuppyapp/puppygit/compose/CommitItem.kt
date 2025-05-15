@@ -403,6 +403,16 @@ private fun Modifier.drawNode(
             outputLineStartX += (idx * lineDistanceInPx)
 
             if(node.isEmpty.not()) {
+                //如果需要在这画圈，必然是HEAD第一个提交
+                if(node.circleAtHere) {
+                    // 画代表当前提交的圆圈
+                    drawCircle(
+                        color = Color.Blue, // 圆圈颜色
+                        radius = nodeCircleRadiusInPx, // 半径
+                        center = Offset(circleEndX, verticalCenter) // 圆心
+                    )
+                }
+
                 //如果节点在此结束，则连接到当前节点，否则垂直向下
                 val startX = if(node.startAtHere) circleEndX else outputLineStartX
 
