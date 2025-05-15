@@ -4321,14 +4321,14 @@ object Libgit2Helper {
                             if(circleAt == -1) {  //还没被别人画圈，自己先画上
                                 circleAt = idx
                                 //这条线要继续传香火，所有后续目标一致的线都要和它合流
-                                node.copy(circleAtHere = true, endAtHere = false)
+                                node.copy(circleAtHere = true, endAtHere = false, outputIsEmpty = false)
                             }else {  // 圈被别人画了，这条线没活路了
                                 //这条线已经走到了尽头，最终会连接到圆圈，与圆圈所在的线融为一体，
                                 // 如果有同时期的线仍然存活并且没有后生抢占地位，它曾战斗过的队列将继续以空白的形式流传下去
-                                node.copy(circleAtHere = false, endAtHere = true)
+                                node.copy(circleAtHere = false, endAtHere = true, outputIsEmpty = true)
                             }
                         }else {  //这条线气数未尽，依然可以特立独行，并且还能至少再战一个回合
-                            node.copy(circleAtHere = false, endAtHere = false)
+                            node.copy(circleAtHere = false, endAtHere = false, outputIsEmpty = false)
                         }
 
                         //载入史册
@@ -4349,7 +4349,7 @@ object Libgit2Helper {
                                 //因为是倒序，所以这里需要一直从头插入
                                 //继承来的节点，必然startAtHere为假，但如果endAtHere为真，则不需要画输出线，因此isEmpty为真，
                                 // 后续会在为当前节点的父节点查找输出位置时尽可能占用在这里isEmpty为真的输出节点
-                                drawOutputs.add(0, curNode.copy(startAtHere = false, isEmpty = curNode.endAtHere))
+                                drawOutputs.add(0, curNode.let{ it.copy(startAtHere = false, outputIsEmpty = curNode.endAtHere)})
 
                                 MyLog.v(TAG, "#$funName: commitDrawNodeInfo inputs to outputs: hash=${c.oidStr}, node=$curNode")
 
@@ -4363,7 +4363,7 @@ object Libgit2Helper {
                     if(c.parentOidStrList.isNotEmpty()) {
                         for ((idx, p) in c.parentOidStrList.withIndex()) {
                             val newNode = DrawCommitNode(
-                                isEmpty = false,
+                                outputIsEmpty = false,
                                 endAtHere = false,
                                 startAtHere = true,
                                 circleAtHere = idx == 0 && drawInputs.isEmpty(),  // 如果是HEAD first commit，inputs为空，则在这画圆圈，否则由上面的输入节点画

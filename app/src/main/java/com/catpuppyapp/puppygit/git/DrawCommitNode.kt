@@ -33,7 +33,7 @@ data class DrawCommitNode (
     //如果当前节点endAtHere但其位于列表中间，
     // 前后皆有条目，则此节点仍保持，但仅占位，不再绘制线条，
     // 如果当前节点有多个parent，可占用空节点的位置
-    val isEmpty:Boolean,
+    val outputIsEmpty:Boolean,
 
     //需要在这个节点这一列画个圈
     val circleAtHere:Boolean,
@@ -65,7 +65,7 @@ data class DrawCommitNode (
          */
         fun getAnInsertableIndex(list:List<DrawCommitNode>):Int {
             for((idx, node) in list.withIndex()) {
-                if(node.isEmpty) {
+                if(node.outputIsEmpty) {
                     return idx
                 }
             }

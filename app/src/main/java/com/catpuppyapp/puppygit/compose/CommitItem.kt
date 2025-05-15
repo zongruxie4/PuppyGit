@@ -402,7 +402,7 @@ private fun Modifier.drawNode(
         c.draw_outputs.forEachIndexed { idx, node->
             outputLineStartX += (idx * lineDistanceInPx)
 
-            if(node.isEmpty.not()) {
+            if(node.outputIsEmpty.not()) {
                 //如果需要在这画圈，必然是HEAD第一个提交
                 if(node.circleAtHere) {
                     // 画代表当前提交的圆圈
