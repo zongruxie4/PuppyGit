@@ -23,6 +23,9 @@ import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.drawBehind
+import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.platform.LocalClipboardManager
@@ -32,6 +35,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.res.vectorResource
 import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.unit.Density
 import androidx.compose.ui.unit.dp
 import com.catpuppyapp.puppygit.git.CommitDto
 import com.catpuppyapp.puppygit.play.pro.R
@@ -48,6 +52,11 @@ import kotlinx.coroutines.delay
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun CommitItem(
+    density: Density,
+    nodeCircleRadiusInPx:Float,
+    nodeCircleStartOffsetX:Float,
+    nodeLineWidthInPx:Float,
+    lineDistanceInPx:Float,
     showBottomSheet: MutableState<Boolean>,
     curCommit: CustomStateSaveable<CommitDto>,
     curCommitIdx:MutableIntState,
@@ -82,6 +91,15 @@ fun CommitItem(
         //0.9f 占父元素宽度的百分之90
         modifier = Modifier
             .fillMaxWidth()
+            .drawNode(
+                c = commitDto,
+                density = density,
+                nodeCircleRadiusInPx = nodeCircleRadiusInPx,
+                nodeCircleStartOffsetX = nodeCircleStartOffsetX,
+                nodeLineWidthInPx = nodeLineWidthInPx,
+                lineDistanceInPx = lineDistanceInPx,
+
+            )
 //            .defaultMinSize(minHeight = 100.dp)
             .combinedClickable(
                 enabled = true,
@@ -329,5 +347,36 @@ fun CommitItem(
             }
 
         }
+    }
+}
+
+private fun Modifier.drawNode(
+    c: CommitDto,
+    density: Density,
+    nodeCircleRadiusInPx:Float,
+    nodeCircleStartOffsetX:Float,
+    nodeLineWidthInPx:Float,
+    // 线和线之前的间距
+    lineDistanceInPx:Float,
+):Modifier {
+
+    return drawBehind {
+        val verticalCenter = size.height/2
+
+        drawCircle(
+            color = Color.Blue, // 圆圈颜色
+            radius = nodeCircleRadiusInPx, // 半径
+            center = Offset(nodeCircleStartOffsetX, verticalCenter) // 圆心
+        )
+
+
+        drawLine(
+            color = Color.Blue,
+            strokeWidth = nodeLineWidthInPx,  //宽度
+            //起始和结束点，单位应该是px
+            start = Offset(nodeCircleStartOffsetX, 0f),
+            end = Offset(nodeCircleStartOffsetX, size.height),
+        )
+
     }
 }

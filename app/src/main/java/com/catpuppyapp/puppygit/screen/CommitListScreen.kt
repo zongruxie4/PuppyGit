@@ -201,6 +201,12 @@ fun CommitListScreen(
 
     // softkeyboard show/hidden relate end
 
+    val nodeCircleRadiusInPx = remember(density) { with(density){ 5.dp.toPx() } }
+    val nodeCircleStartOffsetX = remember(nodeCircleRadiusInPx) { nodeCircleRadiusInPx*2 }
+    val nodeLineWidthInPx = remember(density) { with(density){ 2.5.dp.toPx() } }
+    val lineDistanceInPx = remember(density) { with(density){ 5.dp.toPx() } }
+
+
 
     //已处理这种情况，传参时传有效key，但把value设为空字符串，就解决了
 //    println("fullOidKey.isEmpty()="+fullOidKey.isEmpty())  //expect true when nav from repoCard, result: is not empty yet
@@ -2154,7 +2160,22 @@ fun CommitListScreen(
                         }
                     }
                 ) { idx, it ->
-                    CommitItem(showBottomSheet, curCommit, curCommitIndex, idx, it, requireBlinkIdx, lastClickedItemKey, shouldShowTimeZoneInfo, showItemDetails) { thisObj ->
+                    CommitItem(
+                        density = density,
+                        nodeCircleRadiusInPx = nodeCircleRadiusInPx,
+                        nodeCircleStartOffsetX = nodeCircleStartOffsetX,
+                        nodeLineWidthInPx = nodeLineWidthInPx,
+                        lineDistanceInPx = lineDistanceInPx,
+                        showBottomSheet = showBottomSheet,
+                        curCommit = curCommit,
+                        curCommitIdx = curCommitIndex,
+                        idx = idx,
+                        commitDto = it,
+                        requireBlinkIdx = requireBlinkIdx,
+                        lastClickedItemKey = lastClickedItemKey,
+                        shouldShowTimeZoneInfo = shouldShowTimeZoneInfo,
+                        showItemDetails = showItemDetails
+                    ) { thisObj ->
                         val parents = thisObj.parentOidStrList
                         if (parents.isEmpty()) {  // 如果没父提交，例如最初的提交就没父提交，提示没parent可比较
                             //TODO 改成没父提交时列出当前提交的所有文件
