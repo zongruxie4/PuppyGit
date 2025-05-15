@@ -61,7 +61,7 @@ data class DrawCommitNode (
 
     companion object {
         /**
-         * 找一个可插入的节点，如果中间有empty，会返回中间节点，否则返回-1
+         * 找一个可插入的节点，如果中间有empty，会返回中间节点，否则返回 list.size，返回size是因为可直接 list.add(size, element)往末尾插入元素
          */
         fun getAnInsertableIndex(list:List<DrawCommitNode>):Int {
             for((idx, node) in list.withIndex()) {

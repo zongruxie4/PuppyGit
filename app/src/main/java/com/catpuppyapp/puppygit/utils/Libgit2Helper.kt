@@ -4349,7 +4349,7 @@ object Libgit2Helper {
                                 //因为是倒序，所以这里需要一直从头插入
                                 //继承来的节点，必然startAtHere为假，但如果endAtHere为真，则不需要画输出线，因此isEmpty为真，
                                 // 后续会在为当前节点的父节点查找输出位置时尽可能占用在这里isEmpty为真的输出节点
-                                drawOutputs.add(0, curNode.let{ it.copy(startAtHere = false, outputIsEmpty = curNode.endAtHere)})
+                                drawOutputs.add(0, curNode.let{ it.copy(startAtHere = it.circleAtHere) })
 
                                 MyLog.v(TAG, "#$funName: commitDrawNodeInfo inputs to outputs: hash=${c.oidStr}, node=$curNode")
 
@@ -4359,21 +4359,32 @@ object Libgit2Helper {
                     }
 
 
-                    //添加当前节点的父提交信息
+                    //将当前节点的父提交信息和继承来的节点列表合并
                     if(c.parentOidStrList.isNotEmpty()) {
                         for ((idx, p) in c.parentOidStrList.withIndex()) {
-                            val newNode = DrawCommitNode(
-                                outputIsEmpty = false,
-                                endAtHere = false,
-                                startAtHere = true,
-                                circleAtHere = idx == 0 && drawInputs.isEmpty(),  // 如果是HEAD first commit，inputs为空，则在这画圆圈，否则由上面的输入节点画
-                                fromCommitHash = c.oidStr,
-                                toCommitHash = p
-                            )
+                            val existedOutput = drawOutputs.getOrNull(idx)
+                            if(existedOutput == null) {  //开辟新赛道
+                                val newNode = DrawCommitNode(
+                                    outputIsEmpty = false,
+                                    endAtHere = false,
+                                    startAtHere = true,
+                                    circleAtHere = idx == 0 && drawInputs.isEmpty(),  // 如果是HEAD first commit，inputs为空，则在这画圆圈，否则由上面的输入节点画
+                                    fromCommitHash = c.oidStr,
+                                    toCommitHash = p
+                                )
 
-                            val indexForParent = DrawCommitNode.getAnInsertableIndex(drawOutputs)
-                            //这里不要用 [] 来添加元素，填list.size会越界，但如果用add则最大有效值为list.size
-                            drawOutputs.add(indexForParent, newNode)
+                                //这个索引必然在圆圈的右边，不可能在左边，除非哪里不对
+                                val indexForParent = DrawCommitNode.getAnInsertableIndex(drawOutputs)
+                                drawOutputs.add(indexForParent, newNode)
+                            }else {  //更新已存在的节点信息
+                                drawOutputs[idx] = existedOutput.copy(
+                                    outputIsEmpty = false,
+                                    endAtHere = false,
+                                    circleAtHere = false,
+                                    fromCommitHash = c.oidStr,
+                                    toCommitHash = p,
+                                )
+                            }
 
                         }
 
