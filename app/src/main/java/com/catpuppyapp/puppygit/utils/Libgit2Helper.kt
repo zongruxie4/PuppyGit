@@ -4354,9 +4354,9 @@ object Libgit2Helper {
 
                                 drawOutputs.add(0, curNode.let{
                                     if(it.circleAtHere) { //嫡传
-                                        it.copy(startAtHere = it.circleAtHere, fromCommitHash = c.oidStr, toCommitHash = c.parentOidStrList.getOrNull(0) ?:"")
-                                    }else {  //庶出
-                                        it.copy()
+                                        it.copy(startAtHere = true, fromCommitHash = c.oidStr, toCommitHash = c.parentOidStrList.getOrNull(0) ?:"")
+                                    }else {  //旁支
+                                        it.copy(startAtHere = false)
                                     }
                                 })
 
