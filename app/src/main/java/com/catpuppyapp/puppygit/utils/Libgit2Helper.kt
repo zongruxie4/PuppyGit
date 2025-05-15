@@ -4341,9 +4341,11 @@ object Libgit2Helper {
                     //例如：1非空，2空，3非空，4空，5空。将移除4和5，但保留1、2、3，虽然2也为空，但其在非空元素中间，所以需要占位
                     var hasInputLineToOutput = false
                     if(drawInputs.isNotEmpty()) {
+                        var reservedIdx = drawInputs.size;
                         //倒序遍历，碰到第一个需要画输出线的开始添加其余条目
-                        for(reservedIdx in IntRange(drawInputs.size-1, 0)) {
+                        while(--reservedIdx >= 0) {
                             val curNode = drawInputs[reservedIdx]
+
                             if(hasInputLineToOutput || curNode.endAtHere.not()) {
                                 hasInputLineToOutput = true
                                 //因为是倒序，所以这里需要一直从头插入
@@ -4353,7 +4355,6 @@ object Libgit2Helper {
 
                                 MyLog.v(TAG, "#$funName: commitDrawNodeInfo inputs to outputs: hash=${c.oidStr}, node=$curNode")
 
-                                break
                             }
                         }
                     }
