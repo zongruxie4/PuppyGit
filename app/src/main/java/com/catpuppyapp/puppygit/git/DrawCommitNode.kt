@@ -7,19 +7,21 @@ import com.catpuppyapp.puppygit.utils.UIHelper
 import io.ktor.util.collections.ConcurrentMap
 
 
+private const val alpha = 35;
+
 // 避免并发冲突，没用普通的list
 private val cachedColors = ConcurrentMap<Int, Color>().apply {
-    0 to Color(0x8027D9A5)
-    1 to Color(0x805C27D9)
-    2 to Color(0x80D92792)
-    3 to Color(0x804ED927)
-    4 to Color(0x80D927C1)
-    5 to Color(0x80D96527)
-    6 to Color(0x806B27D9)
-    7 to Color(0x80CDD927)
-    8 to Color(0x80279BD9)
-    9 to Color(0x805627D9)
-    10 to Color(0x80D327D9)
+    put(0, Color(red = 0x0, green = 0x36, blue = 0x24, alpha = alpha))
+    put(1, Color(red = 0x1E, green = 0xBD, blue = 0xA4, alpha = alpha))
+    put(2, Color(red = 0xB, green = 0x1C, blue = 0xB6, alpha = alpha))
+    put(3, Color(red = 0xB, green = 0xB6, blue = 0x27, alpha = alpha))
+    put(4, Color(red = 0xB6, green = 0xB, blue = 0x4F, alpha = alpha))
+    put(5, Color(red = 0x11, green = 0xB, blue = 0xB6, alpha = alpha))
+    put(6, Color(red = 0xB6, green = 0x3B, blue = 0xB, alpha = alpha))
+    put(7, Color(red = 0x16, green = 0xB, blue = 0xB6, alpha = alpha))
+    put(8, Color(red = 0x66, green = 0xA, blue = 0x88, alpha = alpha))
+    put(9, Color(red = 0x1C, green = 0x4C, blue = 0xC7, alpha = alpha))
+    put(10, Color(red = 0x25, green = 0xB6, blue = 0xB, alpha = alpha))
 }
 
 
@@ -76,7 +78,7 @@ data class DrawCommitNode (
         fun getNodeColorByIndex(i: Int): Color {
             //缓存颜色的集合得是可变的，运行时如果发现颜色索引不存在，会插入个新颜色存进去
             // alpha越大越不透明，范围 0-255，128是半透明
-            return cachedColors.get(i) ?: UIHelper.getRandomColor(alpha = 128).let {
+            return cachedColors.get(i) ?: UIHelper.getRandomColor(alpha = alpha).let {
                 cachedColors.set(i, it)
 
                 it
