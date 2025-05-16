@@ -379,8 +379,8 @@ private fun Modifier.drawNode(
 
         // 条目垂直中间线（高度的一半）
         val verticalCenter = verticalHeight/2
-        var inputLineStartX = getInitStartX(isRtl, startOffSetX, nodeCircleStartOffsetX)
-
+        var initInputLineStartX = getInitStartX(isRtl, startOffSetX, nodeCircleStartOffsetX)
+        var inputLineStartX = initInputLineStartX
         var circleEndX = Box(inputLineStartX)
 
         var lastStartX = 0F;
@@ -390,9 +390,9 @@ private fun Modifier.drawNode(
             lastStartX = inputLineStartX
 
             if(isRtl) {
-                inputLineStartX += (idx * lineDistanceInPx)
+                inputLineStartX = initInputLineStartX + (idx * lineDistanceInPx)
             }else {
-                inputLineStartX -= (idx * lineDistanceInPx)
+                inputLineStartX = initInputLineStartX - (idx * lineDistanceInPx)
             }
 
 
@@ -433,16 +433,17 @@ private fun Modifier.drawNode(
 
 
 
-        var outputLineStartX = getInitStartX(isRtl, startOffSetX, nodeCircleStartOffsetX)
+        var initOutputLineStartX = getInitStartX(isRtl, startOffSetX, nodeCircleStartOffsetX)
+        var outputLineStartX = initOutputLineStartX
 
         //输出线
         c.draw_outputs.forEachIndexed { idx, node->
             lastStartX = outputLineStartX
 
             if(isRtl) {
-                outputLineStartX += (idx * lineDistanceInPx)
+                outputLineStartX = initOutputLineStartX + (idx * lineDistanceInPx)
             }else {
-                outputLineStartX -= (idx * lineDistanceInPx)
+                outputLineStartX = initOutputLineStartX - (idx * lineDistanceInPx)
             }
 
             if(node.outputIsEmpty.not()) {
