@@ -4394,8 +4394,14 @@ object Libgit2Helper {
 
                             //这个索引必然在圆圈的右边，不可能在左边，因为第一个匹配当前节点的节点有画圈的权利，
                             // 后续的都汇合到圆圈，所以如果用empty节点，必然是画圈之后才有
-                            val indexForParent = DrawCommitNode.getAnInsertableIndex(drawOutputs)
-                            drawOutputs.add(indexForParent, newNode)
+                            DrawCommitNode.getAnInsertableIndex(drawOutputs).let {
+                                //根据索引是否有效决定替换还是追加
+                                if(it >= 0) {  //索引有效，替换
+                                    drawOutputs[it] = newNode
+                                }else {  //索引无效，无空位，追加到末尾
+                                    drawOutputs.add(newNode)
+                                }
+                            }
                         }
 
                     }

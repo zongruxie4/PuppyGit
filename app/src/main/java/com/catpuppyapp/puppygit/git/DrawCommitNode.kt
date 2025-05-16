@@ -63,7 +63,7 @@ data class DrawCommitNode (
 
     companion object {
         /**
-         * 找一个可插入的节点，如果中间有empty，会返回中间节点，否则返回 list.size，返回size是因为可直接 list.add(size, element)往末尾插入元素
+         * 找一个可插入的节点，如果中间有empty节点，会返回那个节点的索引（占它的位置，继续画线），否则返回 -1
          */
         fun getAnInsertableIndex(list:List<DrawCommitNode>):Int {
             for((idx, node) in list.withIndex()) {
@@ -72,7 +72,7 @@ data class DrawCommitNode (
                 }
             }
 
-            return list.size
+            return -1
         }
 
         fun getNodeColorByIndex(i: Int): Color {
