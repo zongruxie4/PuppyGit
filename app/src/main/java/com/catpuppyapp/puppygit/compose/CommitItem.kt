@@ -38,6 +38,7 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.Density
 import androidx.compose.ui.unit.dp
 import com.catpuppyapp.puppygit.git.CommitDto
+import com.catpuppyapp.puppygit.git.DrawCommitNode
 import com.catpuppyapp.puppygit.play.pro.R
 import com.catpuppyapp.puppygit.style.MyStyleKt
 import com.catpuppyapp.puppygit.utils.Libgit2Helper
@@ -375,8 +376,10 @@ private fun Modifier.drawNode(
             //如果节点在此结束，则连接到当前节点的圆圈，否则垂直向下
             val endX = if(node.endAtHere) circleEndX else inputLineStartX
 
+            val color = DrawCommitNode.getNodeColorByIndex(idx)
+
             drawLine(
-                color = Color.Blue,
+                color = color,
                 strokeWidth = nodeLineWidthInPx,  //宽度
                 //起始和结束点，单位应该是px
                 start = Offset(inputLineStartX, 0f),
@@ -387,7 +390,7 @@ private fun Modifier.drawNode(
                 circleEndX = endX
                 // 画代表当前提交的圆圈
                 drawCircle(
-                    color = Color.Blue, // 圆圈颜色
+                    color = color, // 圆圈颜色
                     radius = nodeCircleRadiusInPx, // 半径
                     center = Offset(endX, verticalCenter) // 圆心
                 )
@@ -403,11 +406,13 @@ private fun Modifier.drawNode(
             outputLineStartX += (idx * lineDistanceInPx)
 
             if(node.outputIsEmpty.not()) {
+                val color = DrawCommitNode.getNodeColorByIndex(idx)
+
                 //如果需要在这画圈，必然是HEAD第一个提交
                 if(node.circleAtHere) {
                     // 画代表当前提交的圆圈
                     drawCircle(
-                        color = Color.Blue, // 圆圈颜色
+                        color = color, // 圆圈颜色
                         radius = nodeCircleRadiusInPx, // 半径
                         center = Offset(circleEndX, verticalCenter) // 圆心
                     )
@@ -417,7 +422,7 @@ private fun Modifier.drawNode(
                 val startX = if(node.startAtHere) circleEndX else outputLineStartX
 
                 drawLine(
-                    color = Color.Blue,
+                    color = color,
                     strokeWidth = nodeLineWidthInPx,  //宽度
                     //起始和结束点，单位应该是px
                     start = Offset(startX, verticalCenter),
