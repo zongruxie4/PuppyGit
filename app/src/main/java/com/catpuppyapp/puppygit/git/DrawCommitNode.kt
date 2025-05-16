@@ -2,7 +2,9 @@ package com.catpuppyapp.puppygit.git
 
 import androidx.compose.runtime.Immutable
 import androidx.compose.runtime.Stable
+import androidx.compose.ui.graphics.BlendMode
 import androidx.compose.ui.graphics.Color
+import com.catpuppyapp.puppygit.dto.Box
 import com.catpuppyapp.puppygit.utils.UIHelper
 import io.ktor.util.collections.ConcurrentMap
 
@@ -50,6 +52,11 @@ data class DrawCommitNode (
     //这条线是否从当前提交开始（从圆圈起始）
     val startAtHere:Boolean,
 
+    //最多只有一层，合并节点列表的条目不可能包含合并节点列表
+    // 合流的节点起点(fromCommitHash)可能不同，但终点(toCommitHash)一定相同
+    //是否和上条线合流，仅适用于只有一个节点长度的短流
+    val mergedList:List<DrawCommitNode>,
+
     //线的颜色
 //    val color: Color,
 
@@ -66,17 +73,37 @@ data class DrawCommitNode (
 //    fun isLine() = isNode().not();
 
     companion object {
+        val colorBlendMode = BlendMode.SrcAtop
+
         /**
          * 找一个可插入的节点，如果中间有empty节点，会返回那个节点的索引（占它的位置，继续画线），否则返回 -1
          */
-        fun getAnInsertableIndex(list:List<DrawCommitNode>):Int {
+        fun getAnInsertableIndex(list:List<DrawCommitNode>, toCommitHash: String):InsertablePosition {
+            var index = -1
+
+            var afterTheCircle = false
+            var isMergedToPrevious = false
+
+
             for((idx, node) in list.withIndex()) {
-                if(node.outputIsEmpty) {
-                    return idx
+                //可插入的索引位置必须在当前画圈的线的后面，例如画圈在索引2，则可插入位置必须大于2
+                if(afterTheCircle.not()) {
+                    afterTheCircle = node.circleAtHere
+                    continue
+                }
+
+                if(node.outputIsEmpty
+                    || (node.toCommitHash == toCommitHash).let { isMergedToPrevious = it; it }
+                ) {
+                    index = idx
+                    break
                 }
             }
 
-            return -1
+            return InsertablePosition(
+                isMergedToPrevious,
+                index
+            )
         }
 
         fun getNodeColorByIndex(i: Int): Color {
@@ -88,5 +115,28 @@ data class DrawCommitNode (
                 it
             }
         }
+
+        fun transOutputNodesToInputs(node: DrawCommitNode, currentCommitOidStr:String, idx:Int, circleAt:Box<Int>): DrawCommitNode {
+            return if(node.outputIsEmpty) {  // outputIsEmpty的，在上个节点就断了，保留只是为了占位置，设个flag，到时候计算位置时会加上它
+                node.copy(inputIsEmpty = true)
+            }else if(node.toCommitHash == currentCommitOidStr) {  // circleAtHere ，需要在这个线上画圈
+                if(circleAt.value == -1) {  //还没被别人画圈，自己先画上
+                    circleAt.value = idx
+                    //这条线要继续传香火，所有后续目标一致的线都要和它合流
+                    node.copy(circleAtHere = true, endAtHere = false, outputIsEmpty = false, startAtHere = false)
+                }else {  // 圈被别人画了，这条线没活路了
+                    //这条线已经走到了尽头，最终会连接到圆圈，与圆圈所在的线融为一体，
+                    // 如果有同时期的线仍然存活并且没有后生抢占地位，它曾战斗过的队列将继续以空白的形式流传下去
+                    node.copy(circleAtHere = false, endAtHere = true, outputIsEmpty = true, startAtHere = false)
+                }
+            }else {  //这条线气数未尽，依然可以特立独行，并且还能至少再战一个回合
+                node.copy(circleAtHere = false, endAtHere = false, outputIsEmpty = false, startAtHere = false)
+            }
+        }
     }
 }
+
+class InsertablePosition(
+    val isMergedToPrevious:Boolean,
+    val index:Int,
+)

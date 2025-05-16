@@ -4314,23 +4314,30 @@ object Libgit2Helper {
 
                     //添加绘图节点信息
                     val drawInputs = mutableListOf<DrawCommitNode>()
-                    var circleAt = -1
+                    var circleAt = Box(-1)
                     for ((idx, node) in draw_lastOutputNodes.value.withIndex()) {
-                        val newNode = if(node.outputIsEmpty) {  // outputIsEmpty的，在上个节点就断了，保留只是为了占位置，设个flag，到时候计算位置时会加上它
-                            node.copy(inputIsEmpty = true)
-                        }else if(node.toCommitHash == c.oidStr) {  // circleAtHere ，需要在这个线上画圈
-                            if(circleAt == -1) {  //还没被别人画圈，自己先画上
-                                circleAt = idx
-                                //这条线要继续传香火，所有后续目标一致的线都要和它合流
-                                node.copy(circleAtHere = true, endAtHere = false, outputIsEmpty = false)
-                            }else {  // 圈被别人画了，这条线没活路了
-                                //这条线已经走到了尽头，最终会连接到圆圈，与圆圈所在的线融为一体，
-                                // 如果有同时期的线仍然存活并且没有后生抢占地位，它曾战斗过的队列将继续以空白的形式流传下去
-                                node.copy(circleAtHere = false, endAtHere = true, outputIsEmpty = true)
+                        // 更新当前节点
+                        val newNode = DrawCommitNode.transOutputNodesToInputs(
+                            idx = idx,
+                            node = node,
+                            currentCommitOidStr = c.oidStr,
+                            circleAt = circleAt,
+                        ).let {
+                            val newMergedList = mutableListOf<DrawCommitNode>()
+                            //更新合流节点，主要是为了更新子节点的endAt值
+                            it.mergedList.forEachIndexed{ idx, node->
+                                //更新子节点的值为父节点的
+                                newMergedList.add(
+                                    // circleAtHere也更新，如果有多个流汇合到一个圆圈，应该加重
+                                    // 最后一个startAtHere，因为这条线是上个节点输出的，所以肯定不是当前节点start的
+                                    node.copy(circleAtHere = it.circleAtHere, endAtHere = it.endAtHere, outputIsEmpty = it.outputIsEmpty, startAtHere = false)
+                                )
                             }
-                        }else {  //这条线气数未尽，依然可以特立独行，并且还能至少再战一个回合
-                            node.copy(circleAtHere = false, endAtHere = false, outputIsEmpty = false)
+
+                            it.copy(mergedList = newMergedList)
+//                            it
                         }
+
 
                         //载入史册
                         drawInputs.add(newNode)
@@ -4363,7 +4370,9 @@ object Libgit2Helper {
                                             null
                                         }
                                     }else {  //旁支
-                                        it.copy(startAtHere = false)
+                                        //已经在转换上个节点的输出为当前节点的输入的时候把startAtHere设为false了，所以这里无需再拷贝
+//                                        it.copy(startAtHere = false)
+                                        it
                                     }
                                 }
 
@@ -4393,6 +4402,7 @@ object Libgit2Helper {
                                 inputIsEmpty = false,
                                 endAtHere = false,
                                 startAtHere = true,
+                                mergedList = listOf(),
                                 circleAtHere = idx == 0 && drawInputs.isEmpty(),  // 如果是HEAD first commit，inputs为空，则在这画圆圈，否则由上面的输入节点画
                                 fromCommitHash = c.oidStr,
                                 toCommitHash = p,
@@ -4400,10 +4410,15 @@ object Libgit2Helper {
 
                             //这个索引必然在圆圈的右边，不可能在左边，因为第一个匹配当前节点的节点有画圈的权利，
                             // 后续的都汇合到圆圈，所以如果用empty节点，必然是画圈之后才有
-                            DrawCommitNode.getAnInsertableIndex(drawOutputs).let {
+                            DrawCommitNode.getAnInsertableIndex(drawOutputs, p).let { pos ->
                                 //根据索引是否有效决定替换还是追加
-                                if(it >= 0) {  //索引有效，替换
-                                    drawOutputs[it] = newNode
+                                if(pos.index >= 0) {  //索引有效，替换
+                                    drawOutputs[pos.index] = if (pos.isMergedToPrevious) { //非空节点，但画线时可和前一条线合并
+                                        //合流：若合流，当前线会和上一条线合并
+                                        drawOutputs[pos.index].let { it.copy(mergedList = it.mergedList.toMutableList().apply { add(newNode) }) }
+                                    }else { //空节点
+                                        newNode
+                                    }
                                 }else {  //索引无效，无空位，追加到末尾
                                     drawOutputs.add(newNode)
                                 }

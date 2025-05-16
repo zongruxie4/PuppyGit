@@ -25,7 +25,6 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.drawBehind
 import androidx.compose.ui.geometry.Offset
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.platform.LocalClipboardManager
@@ -380,8 +379,12 @@ private fun Modifier.drawNode(
 
         var circleEndX = inputLineStartX
 
+        var lastStartX = 0F;
+
         //输入线
         c.draw_inputs.forEachIndexed { idx, node->
+            lastStartX = inputLineStartX
+
             if(isRtl) {
                 inputLineStartX += (idx * lineDistanceInPx)
             }else {
@@ -397,17 +400,35 @@ private fun Modifier.drawNode(
 
                 drawLine(
                     color = color,
+                    blendMode = DrawCommitNode.colorBlendMode,
+
                     strokeWidth = nodeLineWidthInPx,  //宽度
                     //起始和结束点，单位应该是px
                     start = Offset(inputLineStartX, 0f),
                     end = Offset(endX, verticalCenter),
                 )
 
+                node.mergedList.forEachIndexed { mergedIdx, mergedNode ->
+                    //合流的节点起点未必相同，但必然拥有相同的终点（toCommitHash），所以它们可以共用endX，无需再次计算，再次计算的话反而可能不对，因为子节点跳过了更新endAtHere的那段代码
+                    val endX = if(mergedNode.endAtHere) circleEndX else inputLineStartX
+
+                    drawLine(
+                        color = color,
+                        blendMode = DrawCommitNode.colorBlendMode,
+
+                        strokeWidth = nodeLineWidthInPx,  //宽度
+                        //起始和结束点，单位应该是px
+                        start = Offset(inputLineStartX, 0f),
+                        end = Offset(endX, verticalCenter),
+                    )
+                }
+
                 if(node.circleAtHere) {
                     circleEndX = endX
                     // 画代表当前提交的圆圈
                     drawCircle(
                         color = color, // 圆圈颜色
+                        blendMode = DrawCommitNode.colorBlendMode,
                         radius = nodeCircleRadiusInPx, // 半径
                         center = Offset(endX, verticalCenter) // 圆心
                     )
@@ -422,6 +443,8 @@ private fun Modifier.drawNode(
 
         //输出线
         c.draw_outputs.forEachIndexed { idx, node->
+            lastStartX = outputLineStartX
+
             if(isRtl) {
                 outputLineStartX += (idx * lineDistanceInPx)
             }else {
@@ -436,6 +459,7 @@ private fun Modifier.drawNode(
                     // 画代表当前提交的圆圈
                     drawCircle(
                         color = color, // 圆圈颜色
+                        blendMode = DrawCommitNode.colorBlendMode,
                         radius = nodeCircleRadiusInPx, // 半径
                         center = Offset(circleEndX, verticalCenter) // 圆心
                     )
@@ -446,11 +470,26 @@ private fun Modifier.drawNode(
 
                 drawLine(
                     color = color,
+                    blendMode = DrawCommitNode.colorBlendMode,
                     strokeWidth = nodeLineWidthInPx,  //宽度
                     //起始和结束点，单位应该是px
                     start = Offset(startX, verticalCenter),
                     end = Offset(outputLineStartX, verticalHeight),
                 )
+
+                node.mergedList.forEachIndexed { mergedIdx, mergedNode ->
+                    //合流的节点不一定和父节点起点一样，父节点有可能起点自当前节点，也可能起点自更上层节点，所以这个startX必须分别计算
+                    val startX = if(mergedNode.startAtHere) circleEndX else outputLineStartX
+
+                    drawLine(
+                        color = color,
+                        blendMode = DrawCommitNode.colorBlendMode,
+                        strokeWidth = nodeLineWidthInPx,  //宽度
+                        //起始和结束点，单位应该是px
+                        start = Offset(startX, verticalCenter),
+                        end = Offset(outputLineStartX, verticalHeight),
+                    )
+                }
             }
         }
 
