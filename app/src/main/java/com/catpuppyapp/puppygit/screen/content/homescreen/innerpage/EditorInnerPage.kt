@@ -63,6 +63,7 @@ import com.catpuppyapp.puppygit.constants.PageRequest
 import com.catpuppyapp.puppygit.dto.Box
 import com.catpuppyapp.puppygit.dto.FileSimpleDto
 import com.catpuppyapp.puppygit.dto.UndoStack
+import com.catpuppyapp.puppygit.etc.PathType
 import com.catpuppyapp.puppygit.fileeditor.texteditor.state.TextEditorState
 import com.catpuppyapp.puppygit.fileeditor.texteditor.view.ScrollEvent
 import com.catpuppyapp.puppygit.fileeditor.ui.composable.FileEditor
@@ -991,7 +992,7 @@ fun EditorInnerPage(
 
 
 
-    val ifLastPathOkThenDoOkActElseDoNoOkAct:((String) -> Unit, (String) ->Unit)->Unit = { okAct:(last:String)->Unit, noOkAct:(last:String)->Unit ->
+    val ifLastPathOkThenDoOkActElseDoNoOkAct:(okAct:(last: FuckSafFile)->Unit, noOkAct:(last:String)->Unit)->Unit = { okAct, noOkAct ->
         var last = lastFilePath.value
         if(last.isBlank()) {  //如果内存中有上次关闭文件的路径，直接使用，否则从配置文件加载
             last = SettingsUtil.getSettingsSnapshot().editor.lastEditedFilePath
@@ -999,8 +1000,9 @@ fun EditorInnerPage(
 
         //如果查无上次打开文件，吐司提示 "last file not found!"；否则打开文件
         //x 废弃，应在设置页面添加一个手动清除编辑器记录的位置信息的功能而不是一出异常就清除) 注：这里不要判断文件是否存在，留到reload时判断，在那里如果发现文件不存在将清除文件的上次编辑位置等信息
-        if(last.isNotBlank() && File(last).exists()) {
-            okAct(last)
+        var fuckSafFile: FuckSafFile? = null
+        if(last.isNotBlank() && FuckSafFile(activityContext, FilePath(last)).let { fuckSafFile = it; it.exists() }) {
+            okAct(fuckSafFile!!)
         }else {
            noOkAct(last)
         }
@@ -1123,10 +1125,15 @@ fun EditorInnerPage(
                             iconModifier = iconModifier,
                             tooltipText = stringResource(R.string.show_last_in_files),
                             icon =  Icons.Filled.DocumentScanner,
-                            iconContentDesc = stringResource(id = R.string.show_last_in_files),
+                            iconContentDesc = stringResource(R.string.show_last_in_files),
                         ) {
                             ifLastPathOkThenDoOkActElseDoNoOkAct(okAct@{ last ->
-                                goToFilesPage(last)
+                                if(last.path.ioPathType == PathType.ABSOLUTE) {  // '/'开头的绝对路径
+                                    goToFilesPage(last.path.ioPath)
+                                }else {  // saf uri，"content://"开头的玩意之类的
+                                    // 文件管理器无法定位到非 / 开头的绝对路径，提示下路径无效即可
+                                    Msg.requireShowLongDuration(activityContext.getString(R.string.file_path_invalid))
+                                }
                             }) noOkAct@{
                                 Msg.requireShowLongDuration(activityContext.getString(R.string.file_not_found))
                             }
@@ -1151,7 +1158,7 @@ fun EditorInnerPage(
 //                                editorMergeMode.value = false  //此值在这无需重置
 //                            readOnlyMode.value = FsUtils.isReadOnlyDir(last)  //避免打开文件，退出app，直接从editor点击 open last然后可编辑本不应该允许编辑的app内置目录下的文件
 
-                            editorPageShowingFilePath.value = FilePath(last)
+                            editorPageShowingFilePath.value = last.path
                             forceReloadFile()
                         }) noOkAct@{
                             Msg.requireShowLongDuration(activityContext.getString(R.string.file_not_found))
