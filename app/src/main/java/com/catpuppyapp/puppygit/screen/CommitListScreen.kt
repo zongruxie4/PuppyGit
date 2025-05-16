@@ -214,13 +214,13 @@ fun CommitListScreen(
     //画提交树相关变量：开始
 
     //线和线之间间距
-    val lineDistanceInPx = remember(density) { with(density){ 20.dp.toPx() } }
+    val lineDistanceInPx = remember(density) { with(density){ 30.dp.toPx() } }
 
     //圆圈半径
     val nodeCircleRadiusInPx = remember(density) { with(density){ 10.dp.toPx() } }
 
     //设圆圈x轴起始点为圆圈半径的2倍
-    val nodeCircleStartOffsetX = remember(nodeCircleRadiusInPx) { nodeCircleRadiusInPx*2 }
+    val nodeCircleStartOffsetX = remember(nodeCircleRadiusInPx) { nodeCircleRadiusInPx*1.2f }
 
     //设圆圈x轴起始点为线和线间距
 //    val nodeCircleStartOffsetX = remember(lineDistanceInPx) { lineDistanceInPx }
