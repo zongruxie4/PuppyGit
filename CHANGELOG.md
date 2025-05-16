@@ -1,6 +1,17 @@
 
 
 ---
+1.1.1.4v90 - 20250516:
+- support viewing commit history graphically
+- support force push with lease
+
+
+
+- 支持图形化预览提交历史
+- 强制推送支持with lease
+
+
+---
 1.1.1.3v89 - 20250513:
 - adjust Editor style
 - improve UI for some screens
