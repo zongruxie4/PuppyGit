@@ -724,7 +724,7 @@ private fun getBackgroundColor(isSelected: Boolean, isMultiSelectionMode:Boolean
         MaterialTheme.colorScheme.primaryContainer
     }else if(isMultiSelectionMode.not() && currentIdx == focusingIdx) {
         //选中行颜色
-        if(inDarkTheme) Color(0x4D737373) else Color(0x7AD2D2D2)
+        if(inDarkTheme) Color(0x20484848) else Color(0x2AB9B9B9)
     } else {
         Color.Unspecified
     }
