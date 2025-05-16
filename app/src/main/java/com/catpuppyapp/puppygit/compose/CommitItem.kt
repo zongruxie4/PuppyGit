@@ -363,7 +363,10 @@ private fun Modifier.drawNode(
     lineDistanceInPx:Float,
 ):Modifier {
 
+    //把线画右边
     val isRtl = UIHelper.isRtlLayout()
+    //把线画左边
+//    val isRtl = !UIHelper.isRtlLayout()
 
     return drawBehind {
         val horizontalWidth = size.width

@@ -7,18 +7,19 @@ import com.catpuppyapp.puppygit.utils.UIHelper
 import io.ktor.util.collections.ConcurrentMap
 
 
-private const val alpha = 35;
+// 0-255，越小越透明
+private const val alpha = 128;
 
 // 避免并发冲突，没用普通的list
 private val cachedColors = ConcurrentMap<Int, Color>().apply {
-    put(0, Color(red = 0x0, green = 0x36, blue = 0x24, alpha = alpha))
-    put(1, Color(red = 0x1E, green = 0xBD, blue = 0xA4, alpha = alpha))
-    put(2, Color(red = 0xB, green = 0x1C, blue = 0xB6, alpha = alpha))
-    put(3, Color(red = 0xB, green = 0xB6, blue = 0x27, alpha = alpha))
-    put(4, Color(red = 0xB6, green = 0xB, blue = 0x4F, alpha = alpha))
-    put(5, Color(red = 0x11, green = 0xB, blue = 0xB6, alpha = alpha))
+    put(0, Color(red = 0xF, green = 0xA2, blue = 0x72, alpha = alpha))
+    put(1, Color(red = 0x1E, green = 0x33, blue = 0xBD, alpha = alpha))
+    put(2, Color(red = 0x4D, green = 0xB6, blue = 0xB, alpha = alpha))
+    put(3, Color(red = 0xB6, green = 0xB, blue = 0x69, alpha = alpha))
+    put(4, Color(red = 0xB6, green = 0x55, blue = 0xB, alpha = alpha))
+    put(5, Color(red = 0x5C, green = 0x18, blue = 0x8C, alpha = alpha))
     put(6, Color(red = 0xB6, green = 0x3B, blue = 0xB, alpha = alpha))
-    put(7, Color(red = 0x16, green = 0xB, blue = 0xB6, alpha = alpha))
+    put(7, Color(red = 0x3B, green = 0xAB, blue = 0x95, alpha = alpha))
     put(8, Color(red = 0x66, green = 0xA, blue = 0x88, alpha = alpha))
     put(9, Color(red = 0x1C, green = 0x4C, blue = 0xC7, alpha = alpha))
     put(10, Color(red = 0x25, green = 0xB6, blue = 0xB, alpha = alpha))
