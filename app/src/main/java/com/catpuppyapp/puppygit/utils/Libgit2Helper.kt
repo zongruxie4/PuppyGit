@@ -380,7 +380,10 @@ object Libgit2Helper {
 
     private fun getDefaultRevwalkSortMode():EnumSet<SortT>{
         return EnumSet.of(
-            SortT.NONE, //git默认的git log输出顺序？
+//            SortT.NONE, //git默认的git log输出顺序？这个纯按时间排序，有可能父节点会跑到子节点上面，画图不要用这个
+
+            SortT.TOPOLOGICAL, //这个可以保证子节点全出来后才加载父节点
+            SortT.TIME,  //按时间降序，可和topological配合使用，既不会颠倒父子关系，又能尽量保证新的在上面，几乎完美
         )
     }
 
