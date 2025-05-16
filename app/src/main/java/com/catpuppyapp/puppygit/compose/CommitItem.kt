@@ -25,6 +25,8 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.drawBehind
 import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.drawscope.DrawScope
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.platform.LocalClipboardManager
@@ -36,6 +38,7 @@ import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.Density
 import androidx.compose.ui.unit.dp
+import com.catpuppyapp.puppygit.dto.Box
 import com.catpuppyapp.puppygit.git.CommitDto
 import com.catpuppyapp.puppygit.git.DrawCommitNode
 import com.catpuppyapp.puppygit.play.pro.R
@@ -47,6 +50,7 @@ import com.catpuppyapp.puppygit.utils.doJobThenOffLoading
 import com.catpuppyapp.puppygit.utils.state.CustomStateSaveable
 import com.catpuppyapp.puppygit.utils.time.TimeZoneUtil
 import kotlinx.coroutines.delay
+import kotlin.Float
 
 
 @OptIn(ExperimentalFoundationApi::class)
@@ -377,7 +381,7 @@ private fun Modifier.drawNode(
         val verticalCenter = verticalHeight/2
         var inputLineStartX = getInitStartX(isRtl, startOffSetX, nodeCircleStartOffsetX)
 
-        var circleEndX = inputLineStartX
+        var circleEndX = Box(inputLineStartX)
 
         var lastStartX = 0F;
 
@@ -394,43 +398,33 @@ private fun Modifier.drawNode(
 
             if(node.inputIsEmpty.not()) {
                 //如果节点在此结束，则连接到当前节点的圆圈，否则垂直向下
-                val endX = if(node.endAtHere) circleEndX else inputLineStartX
+
 
                 val color = DrawCommitNode.getNodeColorByIndex(idx)
 
-                drawLine(
-                    color = color,
-                    blendMode = DrawCommitNode.colorBlendMode,
-
-                    strokeWidth = nodeLineWidthInPx,  //宽度
-                    //起始和结束点，单位应该是px
-                    start = Offset(inputLineStartX, 0f),
-                    end = Offset(endX, verticalCenter),
+                //画当前节点
+                drawInputLinesAndCircle(
+                    node,
+                    nodeCircleRadiusInPx,
+                    nodeLineWidthInPx,
+                    inputLineStartX,
+                    verticalCenter,
+                    color,
+                    circleEndX
                 )
 
-                node.mergedList.forEachIndexed { mergedIdx, mergedNode ->
-                    //合流的节点起点未必相同，但必然拥有相同的终点（toCommitHash），所以它们可以共用endX，无需再次计算，再次计算的话反而可能不对，因为子节点跳过了更新endAtHere的那段代码
-                    val endX = if(mergedNode.endAtHere) circleEndX else inputLineStartX
 
-                    drawLine(
-                        color = color,
-                        blendMode = DrawCommitNode.colorBlendMode,
 
-                        strokeWidth = nodeLineWidthInPx,  //宽度
-                        //起始和结束点，单位应该是px
-                        start = Offset(inputLineStartX, 0f),
-                        end = Offset(endX, verticalCenter),
-                    )
-                }
-
-                if(node.circleAtHere) {
-                    circleEndX = endX
-                    // 画代表当前提交的圆圈
-                    drawCircle(
-                        color = color, // 圆圈颜色
-                        blendMode = DrawCommitNode.colorBlendMode,
-                        radius = nodeCircleRadiusInPx, // 半径
-                        center = Offset(endX, verticalCenter) // 圆心
+                //画合流节点
+                node.mergedList.forEach { node ->
+                    drawInputLinesAndCircle(
+                        node,
+                        nodeCircleRadiusInPx,
+                        nodeLineWidthInPx,
+                        inputLineStartX,
+                        verticalCenter,
+                        color,
+                        circleEndX
                     )
                 }
             }
@@ -454,41 +448,31 @@ private fun Modifier.drawNode(
             if(node.outputIsEmpty.not()) {
                 val color = DrawCommitNode.getNodeColorByIndex(idx)
 
-                //如果需要在这画圈，必然是HEAD第一个提交
-                if(node.circleAtHere) {
-                    // 画代表当前提交的圆圈
-                    drawCircle(
-                        color = color, // 圆圈颜色
-                        blendMode = DrawCommitNode.colorBlendMode,
-                        radius = nodeCircleRadiusInPx, // 半径
-                        center = Offset(circleEndX, verticalCenter) // 圆心
-                    )
-                }
-
-                //如果节点在此结束，则连接到当前节点，否则垂直向下
-                val startX = if(node.startAtHere) circleEndX else outputLineStartX
-
-                drawLine(
-                    color = color,
-                    blendMode = DrawCommitNode.colorBlendMode,
-                    strokeWidth = nodeLineWidthInPx,  //宽度
-                    //起始和结束点，单位应该是px
-                    start = Offset(startX, verticalCenter),
-                    end = Offset(outputLineStartX, verticalHeight),
+                //画当前节点
+                drawOutputLinesAndCircle(
+                    node,
+                    nodeCircleRadiusInPx,
+                    nodeLineWidthInPx,
+                    outputLineStartX,
+                    verticalHeight,
+                    verticalCenter,
+                    color,
+                    circleEndX
                 )
 
-                node.mergedList.forEachIndexed { mergedIdx, mergedNode ->
-                    //合流的节点不一定和父节点起点一样，父节点有可能起点自当前节点，也可能起点自更上层节点，所以这个startX必须分别计算
-                    val startX = if(mergedNode.startAtHere) circleEndX else outputLineStartX
-
-                    drawLine(
-                        color = color,
-                        blendMode = DrawCommitNode.colorBlendMode,
-                        strokeWidth = nodeLineWidthInPx,  //宽度
-                        //起始和结束点，单位应该是px
-                        start = Offset(startX, verticalCenter),
-                        end = Offset(outputLineStartX, verticalHeight),
+                //画合流节点
+                node.mergedList.forEach { node ->
+                    drawOutputLinesAndCircle(
+                        node,
+                        nodeCircleRadiusInPx,
+                        nodeLineWidthInPx,
+                        outputLineStartX,
+                        verticalHeight,
+                        verticalCenter,
+                        color,
+                        circleEndX
                     )
+
                 }
             }
         }
@@ -498,4 +482,74 @@ private fun Modifier.drawNode(
 
 private fun getInitStartX(isRtl: Boolean, startOffSetX: Float, nodeCircleStartOffsetX: Float): Float {
     return if(isRtl) startOffSetX + nodeCircleStartOffsetX else (startOffSetX - nodeCircleStartOffsetX)
+}
+
+
+private fun DrawScope.drawInputLinesAndCircle(
+    node: DrawCommitNode,
+    nodeCircleRadiusInPx:Float,
+    nodeLineWidthInPx:Float,
+    inputLineStartX:Float,
+    verticalCenter:Float,
+    color:Color,
+    circleEndX:Box<Float>
+) {
+    val endX = if(node.endAtHere) circleEndX.value else inputLineStartX
+
+    drawLine(
+        color = color,
+        blendMode = DrawCommitNode.colorBlendMode,
+
+        strokeWidth = nodeLineWidthInPx,  //宽度
+        //起始和结束点，单位应该是px
+        start = Offset(inputLineStartX, 0f),
+        end = Offset(endX, verticalCenter),
+    )
+
+    if(node.circleAtHere) {
+        circleEndX.value = endX
+        // 画代表当前提交的圆圈
+        drawCircle(
+            color = color, // 圆圈颜色
+            blendMode = DrawCommitNode.colorBlendMode,
+            radius = nodeCircleRadiusInPx, // 半径
+            center = Offset(endX, verticalCenter) // 圆心
+        )
+    }
+}
+
+private fun DrawScope.drawOutputLinesAndCircle(
+    node: DrawCommitNode,
+    nodeCircleRadiusInPx:Float,
+    nodeLineWidthInPx:Float,
+    outputLineStartX:Float,
+    verticalHeight:Float,
+    verticalCenter:Float,
+    color:Color,
+    circleEndX:Box<Float>
+) {
+
+    //如果需要在这画圈，必然是HEAD第一个提交
+    if(node.circleAtHere) {
+        // 画代表当前提交的圆圈
+        drawCircle(
+            color = color, // 圆圈颜色
+            blendMode = DrawCommitNode.colorBlendMode,
+            radius = nodeCircleRadiusInPx, // 半径
+            center = Offset(circleEndX.value, verticalCenter) // 圆心
+        )
+    }
+
+    //如果节点在此结束，则连接到当前节点，否则垂直向下
+    val startX = if(node.startAtHere) circleEndX.value else outputLineStartX
+
+    drawLine(
+        color = color,
+        blendMode = DrawCommitNode.colorBlendMode,
+        strokeWidth = nodeLineWidthInPx,  //宽度
+        //起始和结束点，单位应该是px
+        start = Offset(startX, verticalCenter),
+        end = Offset(outputLineStartX, verticalHeight),
+    )
+
 }
