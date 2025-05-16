@@ -4352,13 +4352,22 @@ object Libgit2Helper {
                                 //继承来的节点，必然startAtHere为假，但如果endAtHere为真，则不需要画输出线，因此isEmpty为真，
                                 // 后续会在为当前节点的父节点查找输出位置时尽可能占用在这里isEmpty为真的输出节点
 
-                                drawOutputs.add(0, curNode.let{
+                                val outputNode = curNode.let{
                                     if(it.circleAtHere) { //嫡传
-                                        it.copy(startAtHere = true, fromCommitHash = c.oidStr, toCommitHash = c.parentOidStrList.getOrNull(0) ?:"")
+                                        val firstParent = c.parentOidStrList.getOrNull(0)
+                                        if(firstParent != null) {  // 如果一个parent都没有，那就代表不需要延续了，到头了，完了
+                                            it.copy(startAtHere = true, fromCommitHash = c.oidStr, toCommitHash = firstParent)
+                                        }else {
+                                            null
+                                        }
                                     }else {  //旁支
                                         it.copy(startAtHere = false)
                                     }
-                                })
+                                }
+
+                                if(outputNode != null) {
+                                    drawOutputs.add(0, outputNode)
+                                }
 
                                 MyLog.v(TAG, "#$funName: commitDrawNodeInfo inputs to outputs: hash=${c.oidStr}, node=$curNode")
 
@@ -4453,12 +4462,13 @@ object Libgit2Helper {
 
         }
 
+        // 已在循环内部处理，这里直接赋空如果提交树结构有误，其实会显示错，比如某个节点到空节点如果还能延伸，尽管是错的，应该如实画出来，但如果在这简单赋空，就不会画出来了
         //到提交历史末尾了，不会再有更多输出节点了，但之前有添加，所以这里需要清空下
-        if(next == null && lastCommit != null) {
-            // 如果到提交历史末尾，清空输出节点列表。
-            // （这里已经考虑了shallow仓库的情况，线会画到条目中间就断掉（因为后面没东西了），但不一定会连接到当前节点的圆圈（取决于这条线的来源是否是当前节点的子节点）。
-            lastCommit.draw_outputs = listOf()
-        }
+//        if(next == null && lastCommit != null) {
+//            // 如果到提交历史末尾，清空输出节点列表。
+//            // （这里已经考虑了shallow仓库的情况，线会画到条目中间就断掉（因为后面没东西了），但不一定会连接到当前节点的圆圈（取决于这条线的来源是否是当前节点的子节点）。
+//            lastCommit.draw_outputs = listOf()
+//        }
     }
 
 
