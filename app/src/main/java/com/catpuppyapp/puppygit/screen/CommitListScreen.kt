@@ -1847,6 +1847,27 @@ fun CommitListScreen(
 //                commitOid = commitOid.substring(Cons.gitShortCommitHashRange)+"..."
 //            }
                     BottomSheet(showBottomSheet, sheetState, curCommit.value.shortOidStr) {
+
+                        //如果是filter模式，显示show in list以在列表揭示filter条目以查看前后提交（或者说上下文）
+                        if(enableFilterState.value) {
+                            BottomSheetItem(sheetState, showBottomSheet, stringResource(R.string.show_in_list)) {
+                                filterModeOn_dontUseThisCheckFilterModeReallyEnabledOrNot.value = false
+                                showBottomSheet.value = false
+
+                                doJobThenOffLoading {
+//                            delay(100)  // wait rendering, may unnecessary yet
+                                    val curItemIndex = curCommitIndex.intValue  // 被长按的条目在 filterlist中的索引
+                                    val idxList = filterIdxList.value  //取出存储filter索引和源列表索引的 index list，条目索引对应filter list条目索引，条目值对应的是源列表的真实索引
+
+                                    doActIfIndexGood(curItemIndex, idxList) {  // it为当前被长按的条目在源列表中的真实索引
+                                        UIHelper.scrollToItem(scope, listState, it)  //在源列表中定位条目
+                                        requireBlinkIdx.intValue = it  //设置条目闪烁以便用户发现
+                                    }
+                                }
+                            }
+
+                        }
+
                         BottomSheetItem(sheetState, showBottomSheet, stringResource(R.string.checkout)) {
                             // onClick()
                             // 弹出确认框，询问是否确定执行checkout，可detach head，可创建分支，类似checkout remote branch
@@ -1981,25 +2002,7 @@ fun CommitListScreen(
                         }
 
 
-                        //如果是filter模式，显示show in list以在列表揭示filter条目以查看前后提交（或者说上下文）
-                        if(enableFilterState.value) {
-                            BottomSheetItem(sheetState, showBottomSheet, stringResource(R.string.show_in_list)) {
-                                filterModeOn_dontUseThisCheckFilterModeReallyEnabledOrNot.value = false
-                                showBottomSheet.value = false
 
-                                doJobThenOffLoading {
-//                            delay(100)  // wait rendering, may unnecessary yet
-                                    val curItemIndex = curCommitIndex.intValue  // 被长按的条目在 filterlist中的索引
-                                    val idxList = filterIdxList.value  //取出存储filter索引和源列表索引的 index list，条目索引对应filter list条目索引，条目值对应的是源列表的真实索引
-
-                                    doActIfIndexGood(curItemIndex, idxList) {  // it为当前被长按的条目在源列表中的真实索引
-                                        UIHelper.scrollToItem(scope, listState, it)  //在源列表中定位条目
-                                        requireBlinkIdx.intValue = it  //设置条目闪烁以便用户发现
-                                    }
-                                }
-                            }
-
-                        }
 //                BottomSheetItem(sheetState, showBottomSheet, stringResource(R.string.create_branch)){
 //                // TODO (日后再考虑是否实现这个) (这个选项个特点是“仅创建分支，但不checkout”，感觉意义不是很大，而且可以通过“先detach head检出commit，在去分支页面创建分支并不勾选checkout”来曲线实现)弹出确认框，提示基于当前commit创建分支，并有一个checkout勾选框，如果确定，则创建分支（并checkout(如果勾选了的话)）
 //                }
