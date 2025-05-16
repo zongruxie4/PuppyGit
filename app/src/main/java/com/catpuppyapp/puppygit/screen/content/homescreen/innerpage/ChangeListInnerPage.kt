@@ -24,6 +24,7 @@ import androidx.compose.material.icons.filled.Folder
 import androidx.compose.material.icons.filled.History
 import androidx.compose.material.icons.filled.Inventory
 import androidx.compose.material.icons.filled.LibraryAdd
+import androidx.compose.material.icons.filled.Merge
 import androidx.compose.material.icons.filled.SelectAll
 import androidx.compose.material.icons.filled.Upload
 import androidx.compose.material.icons.outlined.Check
@@ -2455,59 +2456,63 @@ fun ChangeListInnerPage(
                                                 verticalAlignment = Alignment.CenterVertically,
                                                 horizontalArrangement = Arrangement.Center
                                             ) {
-                                                ClickableText(
-                                                    text = stringResource(R.string.merge),
-                                                    fontSize = fontSizeOfPullPushSync,
-                                                    modifier = MyStyleKt.ClickableText.modifierNoPadding.clickable {
-                                                        val curRepo = curRepoFromParentPage.value
+                                                LongPressAbleIconBtn(
+                                                    iconModifier = iconModifier,
+                                                    tooltipText = stringResource(R.string.merge),
+                                                    icon = Icons.Filled.Merge ,
+                                                    iconContentDesc = stringResource(R.string.merge),
+                                                ) {
+                                                    val curRepo = curRepoFromParentPage.value
 
-                                                        doTaskOrShowSetUsernameAndEmailDialog(curRepo) {
-                                                            doJobThenOffLoading(loadingOn, loadingOff, activityContext.getString(R.string.merging)) {
-                                                                doActWithLock(curRepo) {
-                                                                    ChangeListFunctions.doMerge(
-                                                                        requireCloseBottomBar = true,
-                                                                        upstreamParam = null,
-                                                                        showMsgIfHasConflicts = true,
-                                                                        trueMergeFalseRebase = true,
-                                                                        curRepoFromParentPage = curRepo,
-                                                                        requireShowToast = requireShowToast,
-                                                                        activityContext = activityContext,
-                                                                        loadingText = loadingText,
-                                                                        bottomBarActDoneCallback = bottomBarActDoneCallback
-                                                                    )
-                                                                }
+                                                    doTaskOrShowSetUsernameAndEmailDialog(curRepo) {
+                                                        doJobThenOffLoading(loadingOn, loadingOff, activityContext.getString(R.string.merging)) {
+                                                            doActWithLock(curRepo) {
+                                                                ChangeListFunctions.doMerge(
+                                                                    requireCloseBottomBar = true,
+                                                                    upstreamParam = null,
+                                                                    showMsgIfHasConflicts = true,
+                                                                    trueMergeFalseRebase = true,
+                                                                    curRepoFromParentPage = curRepo,
+                                                                    requireShowToast = requireShowToast,
+                                                                    activityContext = activityContext,
+                                                                    loadingText = loadingText,
+                                                                    bottomBarActDoneCallback = bottomBarActDoneCallback
+                                                                )
                                                             }
                                                         }
                                                     }
-                                                )
+                                                }
 
-                                                Text(text = splitSign, modifier = Modifier.padding(horizontal = splitHorizonPadding))
 
-                                                ClickableText(
-                                                    text = stringResource(R.string.rebase),
-                                                    fontSize = fontSizeOfPullPushSync,
-                                                    modifier = MyStyleKt.ClickableText.modifierNoPadding.clickable {
-                                                        val curRepo = curRepoFromParentPage.value
+//                                                Text(text = splitSign, modifier = Modifier.padding(horizontal = splitHorizonPadding))
 
-                                                        doTaskOrShowSetUsernameAndEmailDialog(curRepo) {
-                                                            doJobThenOffLoading(loadingOn, loadingOff, activityContext.getString(R.string.rebasing)) {
-                                                                doActWithLock(curRepo) {
-                                                                    ChangeListFunctions.doMerge(
-                                                                        requireCloseBottomBar = true,
-                                                                        upstreamParam = null,
-                                                                        showMsgIfHasConflicts = true,
-                                                                        trueMergeFalseRebase = false,
-                                                                        curRepoFromParentPage = curRepo,
-                                                                        requireShowToast = requireShowToast,
-                                                                        activityContext = activityContext,
-                                                                        loadingText = loadingText,
-                                                                        bottomBarActDoneCallback = bottomBarActDoneCallback
-                                                                    )
-                                                                }
+                                                LongPressAbleIconBtn(
+                                                    iconModifier = iconModifier,
+                                                    tooltipText = stringResource(R.string.rebase),
+                                                    icon = ImageVector.vectorResource(R.drawable.git_rebase),
+                                                    iconContentDesc = stringResource(R.string.rebase),
+                                                ) {
+                                                    val curRepo = curRepoFromParentPage.value
+
+                                                    doTaskOrShowSetUsernameAndEmailDialog(curRepo) {
+                                                        doJobThenOffLoading(loadingOn, loadingOff, activityContext.getString(R.string.rebasing)) {
+                                                            doActWithLock(curRepo) {
+                                                                ChangeListFunctions.doMerge(
+                                                                    requireCloseBottomBar = true,
+                                                                    upstreamParam = null,
+                                                                    showMsgIfHasConflicts = true,
+                                                                    trueMergeFalseRebase = false,
+                                                                    curRepoFromParentPage = curRepo,
+                                                                    requireShowToast = requireShowToast,
+                                                                    activityContext = activityContext,
+                                                                    loadingText = loadingText,
+                                                                    bottomBarActDoneCallback = bottomBarActDoneCallback
+                                                                )
                                                             }
                                                         }
                                                     }
-                                                )
+                                                }
+
                                             }
                                         }
 
@@ -2532,7 +2537,7 @@ fun ChangeListInnerPage(
                                             icon = syncIcon ,
                                             iconContentDesc = syncText,
 
-                                            ) {
+                                        ) {
                                             val curRepo = curRepoFromParentPage.value
 
                                             doTaskOrShowSetUsernameAndEmailDialog(curRepo) {
