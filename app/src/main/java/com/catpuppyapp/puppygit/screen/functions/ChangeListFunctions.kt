@@ -512,7 +512,10 @@ object ChangeListFunctions {
         activityContext:Context,
         loadingText:MutableState<String>,
         bottomBarActDoneCallback:(String, RepoEntity)->Unit,
-        dbContainer: AppContainer
+        dbContainer: AppContainer,
+        forcePush_pushWithLease: Boolean = false,
+        forcePush_expectedRefspecForLease:String = "",
+
     ) : Boolean {
         try {
 //            MyLog.d(TAG, "#doPush: start")
@@ -534,7 +537,43 @@ object ChangeListFunctions {
                 }
                 MyLog.d(TAG, "#doPush: upstream.remote="+upstream!!.remote+", upstream.branchFullRefSpec="+upstream!!.branchRefsHeadsFullRefSpec)
 
-                loadingText.value = activityContext.getString(R.string.pushing)
+                //如果是force push with lease，检查下提交是否和期望匹配
+                if(force && forcePush_pushWithLease) {
+                    loadingText.value = activityContext.getString(R.string.checking)
+
+                    //解析本地引用的值
+                    val expectedCommitOidRet = Libgit2Helper.resolveCommitByHashOrRef(repo, forcePush_expectedRefspecForLease)
+
+                    if(expectedCommitOidRet.hasError()) {
+                        throw RuntimeException("force push with lease canceled: resolve expected refspec failed, expected refspec is `$forcePush_expectedRefspecForLease`")
+                    }
+
+                    MyLog.d(TAG, "#doPush: force push with lease: expectedCommitOid=${expectedCommitOidRet.data}")
+
+                    //查下要推送的分支的remote的fetch凭据，然后更新下要推送的分支的本地引用，再和fetch之前查出的提交hash比较，若不一样，则取消推送
+                    val credential = Libgit2Helper.getRemoteCredential(
+                        dbContainer.remoteRepository,
+                        dbContainer.credentialRepository,
+                        curRepoFromParentPage.id,
+                        upstream!!.remote,
+                        trueFetchFalsePush = true
+                    )
+
+                    // fetch
+                    Libgit2Helper.fetchRemoteForRepo(repo, upstream.remote, credential, curRepoFromParentPage)
+
+                    //查fetch后的数据
+                    val latestUpstreamOid = Libgit2Helper.resolveCommitOidByRef(repo, upstream.remoteBranchRefsRemotesFullRefSpec)
+                    val expectedEqualsToLatest = expectedCommitOidRet.data!!.id() == latestUpstreamOid
+
+                    MyLog.d(TAG, "#doPush: force push with lease: upstream.remoteBranchRefsRemotesFullRefSpec=${upstream.remoteBranchRefsRemotesFullRefSpec}, latestUpstreamOid=$latestUpstreamOid, expectedCommitOid=${expectedCommitOidRet.data}, expectedCommitOid==latestUpstreamOid is `$expectedEqualsToLatest`")
+
+                    if(!expectedEqualsToLatest) {
+                        throw RuntimeException("force push canceled: upstream didn't match the expected refspec")
+                    }
+                }
+
+                loadingText.value = activityContext.getString(if(force) R.string.force_pushing else R.string.pushing)
 
                 //执行到这里，必定有上游，push
                 val credential = Libgit2Helper.getRemoteCredential(

@@ -10,6 +10,7 @@ import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyListState
@@ -29,6 +30,7 @@ import androidx.compose.material.icons.outlined.Check
 import androidx.compose.material.icons.outlined.SelectAll
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextField
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.MutableIntState
@@ -68,7 +70,6 @@ import com.catpuppyapp.puppygit.compose.CreatePatchSuccessDialog
 import com.catpuppyapp.puppygit.compose.CredentialSelector
 import com.catpuppyapp.puppygit.compose.DefaultPaddingText
 import com.catpuppyapp.puppygit.compose.GitIgnoreDialog
-import com.catpuppyapp.puppygit.compose.LoadingText
 import com.catpuppyapp.puppygit.compose.LoadingTextSimple
 import com.catpuppyapp.puppygit.compose.LongPressAbleIconBtn
 import com.catpuppyapp.puppygit.compose.MyCheckBox
@@ -139,6 +140,7 @@ import com.catpuppyapp.puppygit.utils.updateSelectedList
 import com.catpuppyapp.puppygit.utils.withMainContext
 import com.github.git24j.core.Repository
 import com.github.git24j.core.Repository.StateT
+
 
 private const val TAG = "ChangeListInnerPage"
 
@@ -618,24 +620,69 @@ fun ChangeListInnerPage(
     }
 
 
-    val showPushForceDialog = rememberSaveable { mutableStateOf(false)}
-    if(showPushForceDialog.value) {
+    val forcePush_ShowDialog = rememberSaveable { mutableStateOf(false) }
+    val forcePush_pushWithLease = rememberSaveable { mutableStateOf(false) }
+    val forcePush_expectedRefspecForLease = rememberSaveable { mutableStateOf("") }
+    val forcePush_curRepo = mutableCustomStateOf(stateKeyTag, "forcePush_curRepo") { RepoEntity(id="") }
+    val initForcePushDialog = {
+        val curRepo = curRepoFromParentPage.value
+
+        //默认设为upstream，会先查本地upstream的值，再fetch，再检查，若匹配，则推送，若用户改成别的引用则按用户改的来检查是否与fetch后的upstrem的最新提交匹配
+        forcePush_expectedRefspecForLease.value = curRepo.upstreamBranch
+
+        forcePush_curRepo.value = curRepo
+
+        forcePush_pushWithLease.value = false
+
+        forcePush_ShowDialog.value = true
+    }
+
+    if(forcePush_ShowDialog.value) {
         ConfirmDialog2(
-            title = stringResource(id = R.string.push_force),
+            title = stringResource(R.string.push_force),
             requireShowTextCompose = true,
             textCompose = {
                 ScrollableColumn {
-                    Text(stringResource(id = R.string.will_force_overwrite_remote_branch_even_it_is_ahead_to_local),
+                    DefaultPaddingText(
+                        stringResource(R.string.will_force_overwrite_remote_branch_even_it_is_ahead_to_local),
                         color = MyStyleKt.TextColor.danger()
                     )
+
+                    Spacer(Modifier.height(15.dp))
+
+                    // push with lease
+                    MyCheckBox(stringResource(R.string.with_lease), forcePush_pushWithLease)
+                    if(forcePush_pushWithLease.value) {
+                        TextField(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(horizontal = MyStyleKt.defaultHorizontalPadding),
+                            value = forcePush_expectedRefspecForLease.value,
+                            maxLines = 1,
+                            onValueChange = {
+                                forcePush_expectedRefspecForLease.value = it
+                            },
+                            label = {
+                                Text(stringResource(R.string.expected_refspec))
+                            },
+                        )
+
+                        Spacer(Modifier.height(10.dp))
+
+                        DefaultPaddingText(stringResource(R.string.push_force_with_lease_note))
+                    }
                 }
             },
             okTextColor = MyStyleKt.TextColor.danger(),
-            onCancel = { showPushForceDialog.value = false }
+            okBtnText = stringResource(R.string.push),
+            okBtnEnabled = forcePush_pushWithLease.value.not() || forcePush_expectedRefspecForLease.value.isNotEmpty(),
+            onCancel = { forcePush_ShowDialog.value = false }
         ) {
-            showPushForceDialog.value = false
+            forcePush_ShowDialog.value = false
 
-            val curRepo = curRepoFromParentPage.value
+            val curRepo = forcePush_curRepo.value
+            val forcePush_pushWithLease = forcePush_pushWithLease.value
+            val forcePush_expectedRefspecForLease = forcePush_expectedRefspecForLease.value
 
             doJobThenOffLoading(
                 loadingOn,  //注：这函数内会自动禁用顶栏按钮，无需手动 `enableActionFromParent.value=false`
@@ -654,7 +701,9 @@ fun ChangeListInnerPage(
                             activityContext = activityContext,
                             loadingText = loadingText,
                             bottomBarActDoneCallback = bottomBarActDoneCallback,
-                            dbContainer = dbContainer
+                            dbContainer = dbContainer,
+                            forcePush_pushWithLease = forcePush_pushWithLease,
+                            forcePush_expectedRefspecForLease = forcePush_expectedRefspecForLease,
                         )
 
                         if(success) {
@@ -898,7 +947,7 @@ fun ChangeListInnerPage(
                         }
 
                     }else if(requireAct == PageRequest.pushForce) {
-                        showPushForceDialog.value = true
+                        initForcePushDialog()
                     }else if(requireAct == PageRequest.mergeAbort) {
                         initMergeAbortDialog()
                     }else if(requireAct == PageRequest.stageAll) {

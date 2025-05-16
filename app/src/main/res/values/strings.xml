@@ -1277,4 +1277,14 @@
     <string name="no_commit">No Commit</string>
     <string name="repo_no_commit_note">Your repo have not any commit yet, please create some files then commit them.</string>
 
+    <!-- new at 20250516 -->
+    <!-- this is git push force-with-lease feature, I am not sure, but I guess it shouldn't translate -->
+    <string name="with_lease" translatable="false">with-lease</string>
+    <!-- this is git refspec, shouldn't translate also -->
+    <string name="refspec" translatable="false">refspec</string>
+
+    <string name="expected_refspec">Expected refspec</string>
+    <string name="push_force_with_lease_note">will only force push when upstream\'s latest commit same as expected</string>
+    <string name="checking">Checking…</string>
+
 </resources>
