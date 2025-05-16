@@ -548,7 +548,10 @@ object ChangeListFunctions {
                         throw RuntimeException("force push with lease canceled: resolve expected refspec failed, expected refspec is `$forcePush_expectedRefspecForLease`")
                     }
 
-                    MyLog.d(TAG, "#doPush: force push with lease: expectedCommitOid=${expectedCommitOidRet.data}")
+                    val expectedCommitOidStr = expectedCommitOidRet.data!!.id()!!.toString()
+
+                    //fetch前打印下期望的oid
+                    MyLog.d(TAG, "#doPush: force push with lease: expectedCommitOid=$expectedCommitOidStr")
 
                     //查下要推送的分支的remote的fetch凭据，然后更新下要推送的分支的本地引用，再和fetch之前查出的提交hash比较，若不一样，则取消推送
                     val credential = Libgit2Helper.getRemoteCredential(
@@ -562,7 +565,6 @@ object ChangeListFunctions {
                     // fetch
                     Libgit2Helper.fetchRemoteForRepo(repo, upstream.remote, credential, curRepoFromParentPage)
 
-                    val expectedCommitOidStr = expectedCommitOidRet.data!!.id()!!.toString()
 
                     //查fetch后的数据
                     val latestUpstreamOidStr = Libgit2Helper.resolveCommitOidByRef(repo, upstream.remoteBranchRefsRemotesFullRefSpec).toString()
