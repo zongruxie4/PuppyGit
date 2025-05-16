@@ -66,7 +66,7 @@ fun FilterTextField(
             value = filterKeyWord.value,
             onValueChange = { onValueChange(it) },
             placeholder = { Text(placeholderText) },
-            singleLine = singleLine,
+//            singleLine = singleLine,
             trailingIcon = trailIcon,
             // label = {Text(title)}
 
