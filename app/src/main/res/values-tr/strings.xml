@@ -1177,4 +1177,8 @@
     <string name="no_commit">Hiç Commit Yok</string>
     <string name="repo_no_commit_note">Repo\'nuzda henüz hiçbir commit yok, lütfen bazı dosyalar oluşturun ve ardından bunları commit edin.</string>
 
+    <!-- new at 20250516 -->
+    <string name="expected_refspec">Beklenen Refspec</string>
+    <string name="push_force_with_lease_note">Yalnızca upstream\'in en son commit\'i beklenenle aynı olduğunda zorla itme yapılacak</string>
+    <string name="checking">Kontrol ediliyor…</string>
 </resources>

@@ -1248,4 +1248,10 @@
     <string name="no_commit">无提交</string>
     <string name="repo_no_commit_note">你的仓库没有提交，请创建一些文件并提交它们。</string>
 
+
+    <!-- new at 20250516 -->
+    <string name="expected_refspec">期望的 Refspec</string>
+    <string name="push_force_with_lease_note">仅当上游最新提交和期望一致时才会执行强制推送</string>
+    <string name="checking">正在检查…</string>
+
 </resources>

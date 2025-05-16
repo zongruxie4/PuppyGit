@@ -1281,10 +1281,10 @@
     <!-- this is git push force-with-lease feature, I am not sure, but I guess it shouldn't translate -->
     <string name="with_lease" translatable="false">with-lease</string>
     <!-- this is git refspec, shouldn't translate also -->
-    <string name="refspec" translatable="false">refspec</string>
+    <string name="refspec" translatable="false">Refspec</string>
 
-    <string name="expected_refspec">Expected refspec</string>
-    <string name="push_force_with_lease_note">will only force push when upstream\'s latest commit same as expected</string>
+    <string name="expected_refspec">Expected Refspec</string>
+    <string name="push_force_with_lease_note">Will only force push when upstream\'s latest commit is the same as expected</string>
     <string name="checking">Checking…</string>
 
 </resources>
