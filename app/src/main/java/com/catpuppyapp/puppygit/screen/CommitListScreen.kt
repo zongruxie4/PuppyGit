@@ -217,7 +217,7 @@ fun CommitListScreen(
     val lineDistanceInPx = remember(density) { with(density){ 30.dp.toPx() } }
 
     //圆圈半径
-    val nodeCircleRadiusInPx = remember(density) { with(density){ 10.dp.toPx() } }
+    val nodeCircleRadiusInPx = remember(density) { with(density){ 8.dp.toPx() } }
 
     //设圆圈x轴起始点为圆圈半径的2倍
     val nodeCircleStartOffsetX = remember(nodeCircleRadiusInPx) { nodeCircleRadiusInPx*1.2f }
@@ -226,7 +226,7 @@ fun CommitListScreen(
 //    val nodeCircleStartOffsetX = remember(lineDistanceInPx) { lineDistanceInPx }
 
     //线宽度
-    val nodeLineWidthInPx = remember(density) { with(density){ 8.dp.toPx() } }
+    val nodeLineWidthInPx = remember(density) { with(density){ 5.dp.toPx() } }
 
     //画提交树相关变量：结束
 
