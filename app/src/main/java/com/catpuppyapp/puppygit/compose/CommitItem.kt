@@ -385,32 +385,32 @@ private fun Modifier.drawNode(
                 inputLineStartX -= (idx * lineDistanceInPx)
             }
 
-            if(node.inputIsEmpty) {
-                return@forEachIndexed
-            }
 
-            //如果节点在此结束，则连接到当前节点的圆圈，否则垂直向下
-            val endX = if(node.endAtHere) circleEndX else inputLineStartX
+            if(node.inputIsEmpty.not()) {
+                //如果节点在此结束，则连接到当前节点的圆圈，否则垂直向下
+                val endX = if(node.endAtHere) circleEndX else inputLineStartX
 
-            val color = DrawCommitNode.getNodeColorByIndex(idx)
+                val color = DrawCommitNode.getNodeColorByIndex(idx)
 
-            drawLine(
-                color = color,
-                strokeWidth = nodeLineWidthInPx,  //宽度
-                //起始和结束点，单位应该是px
-                start = Offset(inputLineStartX, 0f),
-                end = Offset(endX, verticalCenter),
-            )
-
-            if(node.circleAtHere) {
-                circleEndX = endX
-                // 画代表当前提交的圆圈
-                drawCircle(
-                    color = color, // 圆圈颜色
-                    radius = nodeCircleRadiusInPx, // 半径
-                    center = Offset(endX, verticalCenter) // 圆心
+                drawLine(
+                    color = color,
+                    strokeWidth = nodeLineWidthInPx,  //宽度
+                    //起始和结束点，单位应该是px
+                    start = Offset(inputLineStartX, 0f),
+                    end = Offset(endX, verticalCenter),
                 )
+
+                if(node.circleAtHere) {
+                    circleEndX = endX
+                    // 画代表当前提交的圆圈
+                    drawCircle(
+                        color = color, // 圆圈颜色
+                        radius = nodeCircleRadiusInPx, // 半径
+                        center = Offset(endX, verticalCenter) // 圆心
+                    )
+                }
             }
+
         }
 
 
