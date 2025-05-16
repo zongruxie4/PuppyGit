@@ -562,14 +562,16 @@ object ChangeListFunctions {
                     // fetch
                     Libgit2Helper.fetchRemoteForRepo(repo, upstream.remote, credential, curRepoFromParentPage)
 
-                    //查fetch后的数据
-                    val latestUpstreamOid = Libgit2Helper.resolveCommitOidByRef(repo, upstream.remoteBranchRefsRemotesFullRefSpec)
-                    val expectedEqualsToLatest = expectedCommitOidRet.data!!.id() == latestUpstreamOid
+                    val expectedCommitOidStr = expectedCommitOidRet.data!!.id()!!.toString()
 
-                    MyLog.d(TAG, "#doPush: force push with lease: upstream.remoteBranchRefsRemotesFullRefSpec=${upstream.remoteBranchRefsRemotesFullRefSpec}, latestUpstreamOid=$latestUpstreamOid, expectedCommitOid=${expectedCommitOidRet.data}, expectedCommitOid==latestUpstreamOid is `$expectedEqualsToLatest`")
+                    //查fetch后的数据
+                    val latestUpstreamOidStr = Libgit2Helper.resolveCommitOidByRef(repo, upstream.remoteBranchRefsRemotesFullRefSpec).toString()
+                    val expectedEqualsToLatest = expectedCommitOidStr == latestUpstreamOidStr
+
+                    MyLog.d(TAG, "#doPush: force push with lease: upstream.remoteBranchRefsRemotesFullRefSpec=${upstream.remoteBranchRefsRemotesFullRefSpec}, latestUpstreamOid=$latestUpstreamOidStr, expectedCommitOid=$expectedCommitOidStr, expectedCommitOid==latestUpstreamOid is `$expectedEqualsToLatest`")
 
                     if(!expectedEqualsToLatest) {
-                        throw RuntimeException("force push canceled: upstream didn't match the expected refspec")
+                        throw RuntimeException("force push canceled: upstream didn't match the expected refspec, upstream is `$latestUpstreamOidStr`, expected is `$expectedCommitOidStr`")
                     }
                 }
 
