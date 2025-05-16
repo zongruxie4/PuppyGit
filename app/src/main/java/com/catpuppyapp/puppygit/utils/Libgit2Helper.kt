@@ -4330,7 +4330,7 @@ object Libgit2Helper {
                                 newMergedList.add(
                                     // circleAtHere也更新，如果有多个流汇合到一个圆圈，应该加重
                                     // 最后一个startAtHere，因为这条线是上个节点输出的，所以肯定不是当前节点start的
-                                    node.copy(circleAtHere = it.circleAtHere, endAtHere = it.endAtHere, outputIsEmpty = it.outputIsEmpty, startAtHere = false)
+                                    node.copy(circleAtHere = it.circleAtHere, endAtHere = it.endAtHere, outputIsEmpty = it.outputIsEmpty, startAtHere = it.startAtHere)
                                 )
                             }
 
@@ -4370,8 +4370,8 @@ object Libgit2Helper {
                                             null
                                         }
                                     }else {  //旁支
-                                        //已经在转换上个节点的输出为当前节点的输入的时候把startAtHere设为false了，所以这里无需再拷贝
 //                                        it.copy(startAtHere = false)
+                                        //已经在转换上个节点的输出为当前节点的输入的时候把startAtHere设为false了，所以这里无需再拷贝
                                         it
                                     }
                                 }
@@ -4414,7 +4414,7 @@ object Libgit2Helper {
                                 //根据索引是否有效决定替换还是追加
                                 if(pos.index >= 0) {  //索引有效，替换
                                     drawOutputs[pos.index] = if (pos.isMergedToPrevious) { //非空节点，但画线时可和前一条线合并
-                                        //合流：若合流，当前线会和上一条线合并
+                                        //合流：若合流，当前线会和上一条线合并。代码实现上就直接把当前节点添加到对应位置的节点的mergedList就行了，类似sub节点
                                         drawOutputs[pos.index].let { it.copy(mergedList = it.mergedList.toMutableList().apply { add(newNode) }) }
                                     }else { //空节点
                                         newNode
