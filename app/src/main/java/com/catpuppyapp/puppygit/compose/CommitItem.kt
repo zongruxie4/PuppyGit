@@ -351,6 +351,8 @@ fun CommitItem(
     }
 }
 
+
+@Composable
 private fun Modifier.drawNode(
     c: CommitDto,
     density: Density,
@@ -361,17 +363,27 @@ private fun Modifier.drawNode(
     lineDistanceInPx:Float,
 ):Modifier {
 
+    val isRtl = UIHelper.isRtlLayout()
+
     return drawBehind {
+        val horizontalWidth = size.width
         val verticalHeight = size.height
+
+        val startOffSetX = if(isRtl) 0f else horizontalWidth
+
         // 条目垂直中间线（高度的一半）
         val verticalCenter = verticalHeight/2
-        var inputLineStartX = nodeCircleStartOffsetX
+        var inputLineStartX = getInitStartX(isRtl, startOffSetX, nodeCircleStartOffsetX)
 
         var circleEndX = inputLineStartX
 
         //输入线
         c.draw_inputs.forEachIndexed { idx, node->
-            inputLineStartX += (idx * lineDistanceInPx)
+            if(isRtl) {
+                inputLineStartX += (idx * lineDistanceInPx)
+            }else {
+                inputLineStartX -= (idx * lineDistanceInPx)
+            }
 
             //如果节点在此结束，则连接到当前节点的圆圈，否则垂直向下
             val endX = if(node.endAtHere) circleEndX else inputLineStartX
@@ -399,11 +411,15 @@ private fun Modifier.drawNode(
 
 
 
-        var outputLineStartX = nodeCircleStartOffsetX
+        var outputLineStartX = getInitStartX(isRtl, startOffSetX, nodeCircleStartOffsetX)
 
         //输出线
         c.draw_outputs.forEachIndexed { idx, node->
-            outputLineStartX += (idx * lineDistanceInPx)
+            if(isRtl) {
+                outputLineStartX += (idx * lineDistanceInPx)
+            }else {
+                outputLineStartX -= (idx * lineDistanceInPx)
+            }
 
             if(node.outputIsEmpty.not()) {
                 val color = DrawCommitNode.getNodeColorByIndex(idx)
@@ -432,4 +448,8 @@ private fun Modifier.drawNode(
         }
 
     }
+}
+
+private fun getInitStartX(isRtl: Boolean, startOffSetX: Float, nodeCircleStartOffsetX: Float): Float {
+    return if(isRtl) startOffSetX + nodeCircleStartOffsetX else (startOffSetX - nodeCircleStartOffsetX)
 }
