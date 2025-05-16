@@ -2458,36 +2458,6 @@ fun ChangeListInnerPage(
                                             ) {
                                                 LongPressAbleIconBtn(
                                                     iconModifier = iconModifier,
-                                                    tooltipText = stringResource(R.string.merge),
-                                                    icon = Icons.Filled.Merge ,
-                                                    iconContentDesc = stringResource(R.string.merge),
-                                                ) {
-                                                    val curRepo = curRepoFromParentPage.value
-
-                                                    doTaskOrShowSetUsernameAndEmailDialog(curRepo) {
-                                                        doJobThenOffLoading(loadingOn, loadingOff, activityContext.getString(R.string.merging)) {
-                                                            doActWithLock(curRepo) {
-                                                                ChangeListFunctions.doMerge(
-                                                                    requireCloseBottomBar = true,
-                                                                    upstreamParam = null,
-                                                                    showMsgIfHasConflicts = true,
-                                                                    trueMergeFalseRebase = true,
-                                                                    curRepoFromParentPage = curRepo,
-                                                                    requireShowToast = requireShowToast,
-                                                                    activityContext = activityContext,
-                                                                    loadingText = loadingText,
-                                                                    bottomBarActDoneCallback = bottomBarActDoneCallback
-                                                                )
-                                                            }
-                                                        }
-                                                    }
-                                                }
-
-
-//                                                Text(text = splitSign, modifier = Modifier.padding(horizontal = splitHorizonPadding))
-
-                                                LongPressAbleIconBtn(
-                                                    iconModifier = iconModifier,
                                                     tooltipText = stringResource(R.string.rebase),
                                                     icon = ImageVector.vectorResource(R.drawable.git_rebase),
                                                     iconContentDesc = stringResource(R.string.rebase),
@@ -2502,6 +2472,35 @@ fun ChangeListInnerPage(
                                                                     upstreamParam = null,
                                                                     showMsgIfHasConflicts = true,
                                                                     trueMergeFalseRebase = false,
+                                                                    curRepoFromParentPage = curRepo,
+                                                                    requireShowToast = requireShowToast,
+                                                                    activityContext = activityContext,
+                                                                    loadingText = loadingText,
+                                                                    bottomBarActDoneCallback = bottomBarActDoneCallback
+                                                                )
+                                                            }
+                                                        }
+                                                    }
+                                                }
+
+//                                               // Text(text = splitSign, modifier = Modifier.padding(horizontal = splitHorizonPadding))
+
+                                                LongPressAbleIconBtn(
+                                                    iconModifier = iconModifier,
+                                                    tooltipText = stringResource(R.string.merge),
+                                                    icon = Icons.Filled.Merge ,
+                                                    iconContentDesc = stringResource(R.string.merge),
+                                                ) {
+                                                    val curRepo = curRepoFromParentPage.value
+
+                                                    doTaskOrShowSetUsernameAndEmailDialog(curRepo) {
+                                                        doJobThenOffLoading(loadingOn, loadingOff, activityContext.getString(R.string.merging)) {
+                                                            doActWithLock(curRepo) {
+                                                                ChangeListFunctions.doMerge(
+                                                                    requireCloseBottomBar = true,
+                                                                    upstreamParam = null,
+                                                                    showMsgIfHasConflicts = true,
+                                                                    trueMergeFalseRebase = true,
                                                                     curRepoFromParentPage = curRepo,
                                                                     requireShowToast = requireShowToast,
                                                                     activityContext = activityContext,
