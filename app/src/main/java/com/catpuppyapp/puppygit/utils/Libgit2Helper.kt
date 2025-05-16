@@ -4316,8 +4316,9 @@ object Libgit2Helper {
                     val drawInputs = mutableListOf<DrawCommitNode>()
                     var circleAt = -1
                     for ((idx, node) in draw_lastOutputNodes.value.withIndex()) {
-                        val circleAtHere = node.toCommitHash == c.oidStr
-                        val newNode = if(circleAtHere) {
+                        val newNode = if(node.outputIsEmpty) {  // outputIsEmpty的，在上个节点就断了，保留只是为了占位置，设个flag，到时候计算位置时会加上它
+                            node.copy(inputIsEmpty = true)
+                        }else if(node.toCommitHash == c.oidStr) {  // circleAtHere ，需要在这个线上画圈
                             if(circleAt == -1) {  //还没被别人画圈，自己先画上
                                 circleAt = idx
                                 //这条线要继续传香火，所有后续目标一致的线都要和它合流
@@ -4355,9 +4356,10 @@ object Libgit2Helper {
                                 val outputNode = curNode.let{
                                     if(it.circleAtHere) { //嫡传
                                         val firstParent = c.parentOidStrList.getOrNull(0)
-                                        if(firstParent != null) {  // 如果一个parent都没有，那就代表不需要延续了，到头了，完了
-                                            it.copy(startAtHere = true, fromCommitHash = c.oidStr, toCommitHash = firstParent)
-                                        }else {
+                                        if(firstParent != null) {  //有parent
+                                            // 这条要传香火的，肯定是要画输出线的，所以outputIsEmpty必然为假，并且这条线一定需要在下个节点输入，所以其inputIsEmpty也必然为假
+                                            it.copy(startAtHere = true, fromCommitHash = c.oidStr, toCommitHash = firstParent, outputIsEmpty = false, inputIsEmpty = false)
+                                        }else {  // 如果一个parent都没有，那就代表不需要延续了，到头了，完了
                                             null
                                         }
                                     }else {  //旁支
@@ -4375,6 +4377,9 @@ object Libgit2Helper {
                         }
                     }
 
+//                    if(c.oidStr == "d7700e8d7b036a84cc35cb2a607d5222b93ad61d") {
+//                        println("out phase1:::::$drawOutputs")
+//                    }
 
                     //将当前节点的父提交信息和继承来的节点列表合并
                     //第一个节点已经被上面画圈的节点处理了，这里只需处理剩下的，每个都是开辟新赛道
@@ -4385,11 +4390,12 @@ object Libgit2Helper {
                             //开辟新赛道
                             val newNode = DrawCommitNode(
                                 outputIsEmpty = false,
+                                inputIsEmpty = false,
                                 endAtHere = false,
                                 startAtHere = true,
                                 circleAtHere = idx == 0 && drawInputs.isEmpty(),  // 如果是HEAD first commit，inputs为空，则在这画圆圈，否则由上面的输入节点画
                                 fromCommitHash = c.oidStr,
-                                toCommitHash = p
+                                toCommitHash = p,
                             )
 
                             //这个索引必然在圆圈的右边，不可能在左边，因为第一个匹配当前节点的节点有画圈的权利，
@@ -4406,7 +4412,9 @@ object Libgit2Helper {
 
                     }
 
-
+//                    if(c.oidStr == "d7700e8d7b036a84cc35cb2a607d5222b93ad61d") {
+//                        println("out phase2:::::$drawOutputs")
+//                    }
 
 
                     //更新上次节点信息

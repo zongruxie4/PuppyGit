@@ -37,6 +37,9 @@ data class DrawCommitNode (
     // 如果当前节点有多个parent，可占用空节点的位置
     val outputIsEmpty:Boolean,
 
+    //不需要画线，仅占位
+    val inputIsEmpty:Boolean,
+
     //需要在这个节点这一列画个圈
     val circleAtHere:Boolean,
 

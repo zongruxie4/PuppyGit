@@ -385,6 +385,10 @@ private fun Modifier.drawNode(
                 inputLineStartX -= (idx * lineDistanceInPx)
             }
 
+            if(node.inputIsEmpty) {
+                return@forEachIndexed
+            }
+
             //如果节点在此结束，则连接到当前节点的圆圈，否则垂直向下
             val endX = if(node.endAtHere) circleEndX else inputLineStartX
 
