@@ -576,7 +576,7 @@ object Libgit2Helper {
         val funName = "statusListToStatusMap_LoadListInJni"
 
         val debugExeTime_Start = System.currentTimeMillis()
-        MyLog.w(TAG, "#$funName(): change list load method: start at $debugExeTime_Start")
+        MyLog.d(TAG, "#$funName(): change list load method: start at $debugExeTime_Start")
 
         //按路径名排序
         val index:MutableList<StatusTypeEntrySaver> = ArrayList()
@@ -734,7 +734,7 @@ object Libgit2Helper {
 
 
         val debugExeTime_End = System.currentTimeMillis()
-        MyLog.w(TAG, "#$funName(): change list load method: end at $debugExeTime_End, spent: ${debugExeTime_End - debugExeTime_Start}")
+        MyLog.d(TAG, "#$funName(): change list load method: end at $debugExeTime_End, spent: ${debugExeTime_End - debugExeTime_Start}")
 
         return Pair(isIndexChanged, resultMap);
     }
@@ -764,7 +764,7 @@ object Libgit2Helper {
         val funName = "statusListToStatusMap_legacy"
 
         val debugExeTime_Start = System.currentTimeMillis()
-        MyLog.w(TAG, "#$funName(): change list load method: start at: $debugExeTime_Start")
+        MyLog.d(TAG, "#$funName(): change list load method: start at: $debugExeTime_Start")
 
 
         //按路径名排序
@@ -967,12 +967,14 @@ object Libgit2Helper {
 
 
         val debugExeTime_End = System.currentTimeMillis()
-        MyLog.w(TAG, "#$funName(): change list load method: end at $debugExeTime_End, spent: ${debugExeTime_End - debugExeTime_Start}")
+        MyLog.d(TAG, "#$funName(): change list load method: end at $debugExeTime_End, spent: ${debugExeTime_End - debugExeTime_Start}")
 
         return Pair(isIndexChanged, resultMap);
     }
 
 
+    //如果想优化 ChangeList 加载速度，改这没用，这个函数很快，性能瓶颈不在于此，而在于加载最初的status list的`StatusList.listNew()`，
+    // 那个函数需要检测仓库内文件是否有修改，然后生成修改列表，效率最低，但很难优化，尤其仓库有很多文件的情况下，无解
     suspend fun statusListToStatusMap(
         repo: Repository,
         statusList:StatusList,
@@ -982,6 +984,8 @@ object Libgit2Helper {
 
         //Pair第1个参数代表本函数是否更新了index，第2个代表返回的数据。
     ):Pair<Boolean, Map<String,List<StatusTypeEntrySaver>>> {
+
+        // 这俩函数性能差不多，看来在java调jni并不太拖累性能，所以建议用legacy，久经考验
 
         //如果不使用旧的加载方式，就用新的
         return if(DevFeature.legacyChangeListLoadMethod.state.value) {
