@@ -38,6 +38,7 @@ import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.mutableIntStateOf
@@ -54,6 +55,7 @@ import androidx.compose.ui.platform.LocalClipboardManager
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalHapticFeedback
+import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.platform.LocalView
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.AnnotatedString
@@ -64,6 +66,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.text.withStyle
+import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
 import com.catpuppyapp.puppygit.compose.AskGitUsernameAndEmailDialogWithSelection
 import com.catpuppyapp.puppygit.compose.BottomSheet
@@ -415,6 +418,7 @@ fun CommitListScreen(
 //    }
     val settings = remember { SettingsUtil.getSettingsSnapshot() }
     val shouldShowTimeZoneInfo = remember { TimeZoneUtil.shouldShowTimeZoneInfo(settings) }
+    val commitHistoryRTL = remember { settings.commitHistoryRTL }
 
     //page size for load more
     val pageSize = rememberSaveable{ mutableStateOf(settings.commitHistoryPageSize) }
@@ -2204,24 +2208,39 @@ fun CommitListScreen(
                 enableFilterState.value = enableFilter
 
 
+                CompositionLocalProvider(
+                    LocalLayoutDirection.provides(if(commitHistoryRTL) LayoutDirection.Rtl else LayoutDirection.Ltr)
+                ) {
 
-                MyLazyColumn(
-                    contentPadding = contentPadding,
-                    list = list,
-                    listState = listState,
-                    requireForEachWithIndex = true,
-                    requirePaddingAtBottom = false,
-                    requireCustomBottom = true,
-                    customBottom = {
-                        LoadMore(
-                            initSetPageSizeDialog = initSetPageSizeDialog,
-                            text = loadMoreText.value,
-                            enableLoadMore = !loadMoreLoading.value && hasMore.value, enableAndShowLoadToEnd = !loadMoreLoading.value && hasMore.value,
-                            btnUpsideText = getLoadText(list.size, enableFilter, activityContext),
-                            loadToEndOnClick = {
+                    MyLazyColumn(
+                        contentPadding = contentPadding,
+                        list = list,
+                        listState = listState,
+                        requireForEachWithIndex = true,
+                        requirePaddingAtBottom = false,
+                        requireCustomBottom = true,
+                        customBottom = {
+                            LoadMore(
+                                initSetPageSizeDialog = initSetPageSizeDialog,
+                                text = loadMoreText.value,
+                                enableLoadMore = !loadMoreLoading.value && hasMore.value, enableAndShowLoadToEnd = !loadMoreLoading.value && hasMore.value,
+                                btnUpsideText = getLoadText(list.size, enableFilter, activityContext),
+                                loadToEndOnClick = {
+                                    val firstLoad = false
+                                    val forceReload = false
+                                    val loadToEnd = true
+                                    doLoadMore(
+                                        curRepo.value.fullSavePath,
+                                        nextCommitOid.value,
+                                        firstLoad,
+                                        forceReload,
+                                        loadToEnd
+                                    )
+                                }
+                            ) {
                                 val firstLoad = false
                                 val forceReload = false
-                                val loadToEnd = true
+                                val loadToEnd = false
                                 doLoadMore(
                                     curRepo.value.fullSavePath,
                                     nextCommitOid.value,
@@ -2229,80 +2248,80 @@ fun CommitListScreen(
                                     forceReload,
                                     loadToEnd
                                 )
+
                             }
+                        }
+                    ) { idx, it ->
+                        CommitItem(
+                            density = density,
+                            nodeCircleRadiusInPx = nodeCircleRadiusInPx,
+                            nodeCircleStartOffsetX = nodeCircleStartOffsetX,
+                            nodeLineWidthInPx = nodeLineWidthInPx,
+                            lineDistanceInPx = lineDistanceInPx,
+                            showBottomSheet = showBottomSheet,
+                            curCommit = curCommit,
+                            curCommitIdx = curCommitIndex,
+                            idx = idx,
+                            commitDto = it,
+                            requireBlinkIdx = requireBlinkIdx,
+                            lastClickedItemKey = lastClickedItemKey,
+                            shouldShowTimeZoneInfo = shouldShowTimeZoneInfo,
+                            showItemDetails = showItemDetails
+                        ) { thisObj ->
+                            val parents = thisObj.parentOidStrList
+                            if (parents.isEmpty()) {  // 如果没父提交，例如最初的提交就没父提交，提示没parent可比较
+                                //TODO 改成没父提交时列出当前提交的所有文件
+                                Msg.requireShowLongDuration(activityContext.getString(R.string.no_parent_to_compare))
+                            } else {  //有父提交，取出第一个父提交和当前提交进行比较
+                                val commit2 = thisObj.oidStr
+                                goToTreeToTreeChangeList(
+                                    title = activityContext.getString(R.string.compare_to_parent),
+                                    repoId = curRepo.value.id,
+                                    commit1 = parents[0],
+                                    commit2 = commit2,
+                                    commitForQueryParents = commit2,
+                                )
+
+                            }
+                        }
+                        HorizontalDivider()
+                    }
+
+                    // filter mode 有可能查无条目，但是可继续加载更多，这时也应显示加载更多按钮
+                    if(enableFilter && list.isEmpty()) {
+                        Column(
+                            modifier = Modifier
+                                .padding(contentPadding)
+                                .verticalScroll(rememberScrollState())
+                            ,
+                            horizontalAlignment = Alignment.CenterHorizontally,
+                            verticalArrangement = Arrangement.Center
                         ) {
-                            val firstLoad = false
-                            val forceReload = false
-                            val loadToEnd = false
-                            doLoadMore(
-                                curRepo.value.fullSavePath,
-                                nextCommitOid.value,
-                                firstLoad,
-                                forceReload,
-                                loadToEnd
-                            )
+                            Spacer(Modifier.height(50.dp))
+                            Text(stringResource(if(searching.value) R.string.loading else R.string.no_matched_item), fontWeight = FontWeight.Light)
 
-                        }
-                    }
-                ) { idx, it ->
-                    CommitItem(
-                        density = density,
-                        nodeCircleRadiusInPx = nodeCircleRadiusInPx,
-                        nodeCircleStartOffsetX = nodeCircleStartOffsetX,
-                        nodeLineWidthInPx = nodeLineWidthInPx,
-                        lineDistanceInPx = lineDistanceInPx,
-                        showBottomSheet = showBottomSheet,
-                        curCommit = curCommit,
-                        curCommitIdx = curCommitIndex,
-                        idx = idx,
-                        commitDto = it,
-                        requireBlinkIdx = requireBlinkIdx,
-                        lastClickedItemKey = lastClickedItemKey,
-                        shouldShowTimeZoneInfo = shouldShowTimeZoneInfo,
-                        showItemDetails = showItemDetails
-                    ) { thisObj ->
-                        val parents = thisObj.parentOidStrList
-                        if (parents.isEmpty()) {  // 如果没父提交，例如最初的提交就没父提交，提示没parent可比较
-                            //TODO 改成没父提交时列出当前提交的所有文件
-                            Msg.requireShowLongDuration(activityContext.getString(R.string.no_parent_to_compare))
-                        } else {  //有父提交，取出第一个父提交和当前提交进行比较
-                            val commit2 = thisObj.oidStr
-                            goToTreeToTreeChangeList(
-                                title = activityContext.getString(R.string.compare_to_parent),
-                                repoId = curRepo.value.id,
-                                commit1 = parents[0],
-                                commit2 = commit2,
-                                commitForQueryParents = commit2,
-                            )
-
-                        }
-                    }
-                    HorizontalDivider()
-                }
-
-                // filter mode 有可能查无条目，但是可继续加载更多，这时也应显示加载更多按钮
-                if(enableFilter && list.isEmpty()) {
-                    Column(
-                        modifier = Modifier
-                            .padding(contentPadding)
-                            .verticalScroll(rememberScrollState())
-                        ,
-                        horizontalAlignment = Alignment.CenterHorizontally,
-                        verticalArrangement = Arrangement.Center
-                    ) {
-                        Spacer(Modifier.height(50.dp))
-                        Text(stringResource(if(searching.value) R.string.loading else R.string.no_matched_item), fontWeight = FontWeight.Light)
-
-                        LoadMore(
-                            modifier = Modifier.padding(top = 30.dp),
-                            initSetPageSizeDialog = initSetPageSizeDialog,
-                            text = loadMoreText.value,
-                            btnUpsideText = getLoadText(list.size, enableFilter, activityContext),
-                            enableLoadMore = !loadMoreLoading.value && hasMore.value, enableAndShowLoadToEnd = !loadMoreLoading.value && hasMore.value,
-                            loadToEndOnClick = {
+                            LoadMore(
+                                modifier = Modifier.padding(top = 30.dp),
+                                initSetPageSizeDialog = initSetPageSizeDialog,
+                                text = loadMoreText.value,
+                                btnUpsideText = getLoadText(list.size, enableFilter, activityContext),
+                                enableLoadMore = !loadMoreLoading.value && hasMore.value, enableAndShowLoadToEnd = !loadMoreLoading.value && hasMore.value,
+                                loadToEndOnClick = {
+                                    val firstLoad = false
+                                    val forceReload = false
+                                    val loadToEnd = true
+                                    doLoadMore(
+                                        curRepo.value.fullSavePath,
+                                        nextCommitOid.value,
+                                        firstLoad,
+                                        forceReload,
+                                        loadToEnd
+                                    )
+                                }
+                            ) {
                                 val firstLoad = false
                                 val forceReload = false
-                                val loadToEnd = true
+                                val loadToEnd = false
                                 doLoadMore(
                                     curRepo.value.fullSavePath,
                                     nextCommitOid.value,
@@ -2310,19 +2329,8 @@ fun CommitListScreen(
                                     forceReload,
                                     loadToEnd
                                 )
-                            }
-                        ) {
-                            val firstLoad = false
-                            val forceReload = false
-                            val loadToEnd = false
-                            doLoadMore(
-                                curRepo.value.fullSavePath,
-                                nextCommitOid.value,
-                                firstLoad,
-                                forceReload,
-                                loadToEnd
-                            )
 
+                            }
                         }
                     }
                 }
