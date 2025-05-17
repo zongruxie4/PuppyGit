@@ -23,6 +23,7 @@ import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -67,6 +68,8 @@ import com.catpuppyapp.puppygit.utils.genHttpHostPortStr
 import com.catpuppyapp.puppygit.utils.parseIntOrDefault
 import com.catpuppyapp.puppygit.utils.state.mutableCustomStateListOf
 import com.catpuppyapp.puppygit.utils.state.mutableCustomStateOf
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
 
 private const val TAG = "ServiceInnerPage"
 
@@ -100,10 +103,12 @@ fun ServiceInnerPage(
 
     val activityContext = LocalContext.current
     val clipboardManager = LocalClipboardManager.current
+    val scope = rememberCoroutineScope()
 
     val settingsState = mutableCustomStateOf(stateKeyTag, "settingsState", SettingsUtil.getSettingsSnapshot())
 
     val runningStatus = rememberSaveable { mutableStateOf(HttpService.isRunning()) }
+    val updateRunningStatus = { runningStatus.value = HttpService.isRunning() }
     val launchOnAppStartup = rememberSaveable { mutableStateOf(settingsState.value.httpService.launchOnAppStartup) }
     val launchOnSystemStartUp = rememberSaveable { mutableStateOf(HttpService.launchOnSystemStartUpEnabled(activityContext)) }
     val progressNotify = rememberSaveable { mutableStateOf(settingsState.value.httpService.showNotifyWhenProgress) }
@@ -657,7 +662,19 @@ fun ServiceInnerPage(
 
     LaunchedEffect(needRefreshPage.value) {
         settingsState.value = SettingsUtil.getSettingsSnapshot()
-        runningStatus.value = HttpService.isRunning()
+        updateRunningStatus()
+    }
+
+    LaunchedEffect(Unit) {
+        //定时检查状态，不然从通知栏关了服务后还得刷新下页面才能看到最新状态
+        scope.launch {
+            runCatching {
+                while (true) {
+                    updateRunningStatus()
+                    delay(1000)
+                }
+            }
+        }
     }
 
 
