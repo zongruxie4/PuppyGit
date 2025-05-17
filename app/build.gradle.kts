@@ -256,11 +256,13 @@ dependencies {
     implementation("androidx.compose.material:material-icons-extended")
 
 
-    implementation(platform("io.github.Rosemoe.sora-editor:bom:0.23.5"))
-    implementation("io.github.Rosemoe.sora-editor:editor")
-    implementation("io.github.Rosemoe.sora-editor:language-textmate")
-    implementation("io.github.Rosemoe.sora-editor:language-java")
-    implementation("io.github.Rosemoe.sora-editor:language-treesitter")
+    // sora editor:
+    // https://github.com/Rosemoe/sora-editor/blob/main/README.zh-cn.md
+//    implementation(platform("io.github.Rosemoe.sora-editor:bom:0.23.5"))
+//    implementation("io.github.Rosemoe.sora-editor:editor")
+//    implementation("io.github.Rosemoe.sora-editor:language-textmate")
+//    implementation("io.github.Rosemoe.sora-editor:language-java")
+//    implementation("io.github.Rosemoe.sora-editor:language-treesitter")
 
 
     testImplementation(composeBom)
