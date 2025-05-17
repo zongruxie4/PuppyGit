@@ -77,6 +77,7 @@ import com.catpuppyapp.puppygit.compose.MyCheckBox
 import com.catpuppyapp.puppygit.compose.MyLazyColumn
 import com.catpuppyapp.puppygit.compose.MySelectionContainer
 import com.catpuppyapp.puppygit.compose.OpenAsDialog
+import com.catpuppyapp.puppygit.compose.PaddingText
 import com.catpuppyapp.puppygit.compose.PullToRefreshBox
 import com.catpuppyapp.puppygit.compose.RequireCommitMsgDialog
 import com.catpuppyapp.puppygit.compose.ScrollableColumn
@@ -644,10 +645,13 @@ fun ChangeListInnerPage(
             requireShowTextCompose = true,
             textCompose = {
                 ScrollableColumn {
-                    DefaultPaddingText(
-                        stringResource(R.string.will_force_overwrite_remote_branch_even_it_is_ahead_to_local),
-                        color = MyStyleKt.TextColor.danger()
-                    )
+                    MySelectionContainer {
+                        PaddingText(
+                            stringResource(R.string.will_force_overwrite_remote_branch_even_it_is_ahead_to_local),
+                            color = MyStyleKt.TextColor.danger(),
+                            fontWeight = null, // 默认字体宽度
+                        )
+                    }
 
                     Spacer(Modifier.height(15.dp))
 
@@ -670,7 +674,9 @@ fun ChangeListInnerPage(
 
                         Spacer(Modifier.height(10.dp))
 
-                        DefaultPaddingText(stringResource(R.string.push_force_with_lease_note))
+                        MySelectionContainer {
+                            DefaultPaddingText(stringResource(R.string.push_force_with_lease_note))
+                        }
                     }
                 }
             },

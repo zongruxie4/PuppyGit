@@ -16,17 +16,21 @@ import com.catpuppyapp.puppygit.style.MyStyleKt
 fun PaddingText(
     text:String,
     color: Color = Color.Unspecified,
-    paddingValues: PaddingValues = PaddingValues(horizontal = MyStyleKt.defaultHorizontalPadding)
+    paddingValues: PaddingValues = PaddingValues(horizontal = MyStyleKt.defaultHorizontalPadding),
+    fontWeight: FontWeight? = FontWeight.Light,
 ) {
     Text(
         text = text,
         color = color,
-        fontWeight = FontWeight.Light,
+        fontWeight = fontWeight,
         modifier = Modifier.padding(paddingValues)
     )
 }
 
 @Composable
-fun DefaultPaddingText(text:String, color: Color = Color.Unspecified) {
+fun DefaultPaddingText(
+    text:String,
+    color: Color = Color.Unspecified
+) {
     PaddingText(text, color)
 }
