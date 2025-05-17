@@ -16,7 +16,7 @@ private const val alpha = 128;
 private val cachedColors = ConcurrentMap<Int, Color>().apply {
     put(0, Color(red = 0xF, green = 0xA2, blue = 0x72, alpha = alpha))
     put(1, Color(red = 0x2E, green = 0x39, blue = 0x9F, alpha = alpha))
-    put(2, Color(red = 0x4D, green = 0xB6, blue = 0xB, alpha = alpha))
+    put(2, Color(red = 0xB6, green = 0x9F, blue = 0xB, alpha = alpha))
     put(3, Color(red = 0xB6, green = 0xB, blue = 0x69, alpha = alpha))
     put(4, Color(red = 0xB6, green = 0x55, blue = 0xB, alpha = alpha))
     put(5, Color(red = 0x5C, green = 0x18, blue = 0x8C, alpha = alpha))
@@ -62,6 +62,7 @@ data class DrawCommitNode (
     //这条线是否从当前提交开始（从圆圈起始）
     val startAtHere:Boolean,
 
+    //这个merged并不是合并分支，而是由于toCommitHash一样而合并在一起的线，目标一样，所以“合流”了，以节省屏幕空间
     //最多只有一层，合并节点列表的条目不可能包含合并节点列表，因为添加到这个列表的都是新创建的当前节点的父节点。（真庆幸不需要多层嵌套）
     // 合流的节点起点(fromCommitHash)可能不同，但终点(toCommitHash)一定相同
     //是否和上条线合流，仅适用于只有一个节点长度的短流
@@ -89,7 +90,8 @@ data class DrawCommitNode (
         return "from: $fromCommitHash\nto: $toCommitHash\ncircleAtHere: $circleAtHere\nstartAtHere: $startAtHere\nendAtHere: $endAtHere\ninputIsEmpty: $inputIsEmpty\noutputIsEmpty: $outputIsEmpty\n\n"+(
                 if(mergedList.isEmpty()) "" else {
                     val sb = StringBuilder()
-                    sb.append("\nmergedList:\n")
+                    // 合流
+                    sb.append("\nConfluences:\n")
 
                     mergedList.forEach {
                         sb.append(it.toStringForView())
