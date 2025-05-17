@@ -7,7 +7,6 @@ import android.view.KeyEvent.KEYCODE_ENTER
 import android.view.KeyEvent.KEYCODE_TAB
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.material3.LocalTextStyle
 import androidx.compose.runtime.Composable
@@ -106,7 +105,7 @@ internal fun MyTextField(
 
         modifier = modifier
             .fillMaxWidth()
-            .wrapContentHeight()
+//            .wrapContentHeight()
             .padding(start = 2.dp)
 //            .focusTarget()  //如果加这个，按一次返回会先解除focus，然后才会退出，操作有些繁琐，我感觉不加比较好
             .focusRequester(focusRequester)
