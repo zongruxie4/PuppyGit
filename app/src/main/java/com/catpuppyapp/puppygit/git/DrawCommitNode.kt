@@ -89,8 +89,9 @@ data class DrawCommitNode (
         return "from: $fromCommitHash\nto: $toCommitHash\ncircleAtHere: $circleAtHere\nstartAtHere: $startAtHere\nendAtHere: $endAtHere\ninputIsEmpty: $inputIsEmpty\noutputIsEmpty: $outputIsEmpty\n\n"+(
                 if(mergedList.isEmpty()) "" else {
                     val sb = StringBuilder()
+                    sb.append("\nmergedList:\n")
 
-                    "mergedList:\n"+mergedList.forEach {
+                    mergedList.forEach {
                         sb.append(it.toStringForView())
                     }
 

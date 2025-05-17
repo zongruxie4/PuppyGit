@@ -89,6 +89,7 @@ import com.catpuppyapp.puppygit.compose.LongPressAbleIconBtn
 import com.catpuppyapp.puppygit.compose.MyCheckBox
 import com.catpuppyapp.puppygit.compose.MyLazyColumn
 import com.catpuppyapp.puppygit.compose.MySelectionContainer
+import com.catpuppyapp.puppygit.compose.PrintNodesInfo
 import com.catpuppyapp.puppygit.compose.PullToRefreshBox
 import com.catpuppyapp.puppygit.compose.RepoInfoDialog
 import com.catpuppyapp.puppygit.compose.ResetDialog
@@ -1155,8 +1156,6 @@ fun CommitListScreen(
     }
     if(showNodesInfoDialog.value) {
         val commitOfNodesInfo = commitOfNodesInfo.value
-        val thickness = remember {5.dp}
-        val spacerHeight = remember {10.dp}
 
         CopyableDialog2(
             title = stringResource(R.string.nodes),
@@ -1166,31 +1165,20 @@ fun CommitListScreen(
                     val hasOutputs = commitOfNodesInfo.draw_outputs.isNotEmpty()
 
                     if(commitOfNodesInfo.draw_inputs.isNotEmpty()) {
-                        //用 "\n" 是为了复制时保持格式，不然一复制就变成一行了
-                        Text("Inputs\n", fontWeight = FontWeight.ExtraBold)
-                        commitOfNodesInfo.draw_inputs.forEachIndexed { idx, it->
-                            HorizontalDivider(thickness = thickness, color = DrawCommitNode.getNodeColorByIndex(idx))
-                            Spacer(Modifier.height(spacerHeight))
-                            Text(it.toStringForView())
-                        }
-
-
-                        //如果有输出，就在输入末尾加个换行符，增加间隔，不然看着太挤
-                        if(hasOutputs) {
-                            Text("\n")
-                        }
+                        PrintNodesInfo(
+                            title = "Inputs",
+                            nodes = commitOfNodesInfo.draw_inputs,
+                            appendEndNewLine = hasOutputs,
+                        )
                     }
 
 
-
                     if(hasOutputs) {
-                        Text("Outputs\n", fontWeight = FontWeight.ExtraBold)
-                        commitOfNodesInfo.draw_outputs.forEachIndexed { idx, it->
-                            HorizontalDivider(thickness = thickness, color = DrawCommitNode.getNodeColorByIndex(idx))
-                            Spacer(Modifier.height(spacerHeight))
-
-                            Text(it.toStringForView())
-                        }
+                        PrintNodesInfo(
+                            title = "Outputs",
+                            nodes = commitOfNodesInfo.draw_outputs,
+                            appendEndNewLine = false,
+                        )
                     }
                 }
             },
