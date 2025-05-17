@@ -827,7 +827,7 @@ fun CloneScreen(
 
             HorizontalDivider(modifier = Modifier.padding(spacerPadding))
             //choose credential
-            Column(modifier = Modifier.selectableGroup(),
+            Column(modifier = Modifier.padding(top=10.dp).selectableGroup(),
             ) {
                 //如果对应类型的集合为空，就不显示“选择凭据”选项了
 //                val skipSelect = (curCredentialType.intValue == Cons.dbCredentialTypeHttp && credentialHttpList.value.isEmpty()) || (curCredentialType.intValue==Cons.dbCredentialTypeSsh && credentialSshList.value.isEmpty())
@@ -990,6 +990,7 @@ fun CloneScreen(
                 Column(
                     modifier = Modifier
                         .fillMaxWidth()
+                        .padding(10.dp)
 //                        .wrapContentSize(Alignment.Center)
                     ,
 
