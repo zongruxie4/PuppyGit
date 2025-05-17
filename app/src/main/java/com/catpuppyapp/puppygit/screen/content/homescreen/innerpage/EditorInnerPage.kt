@@ -66,7 +66,6 @@ import com.catpuppyapp.puppygit.dto.UndoStack
 import com.catpuppyapp.puppygit.etc.PathType
 import com.catpuppyapp.puppygit.fileeditor.texteditor.state.TextEditorState
 import com.catpuppyapp.puppygit.fileeditor.texteditor.view.ScrollEvent
-import com.catpuppyapp.puppygit.fileeditor.ui.composable.FileEditor
 import com.catpuppyapp.puppygit.play.pro.R
 import com.catpuppyapp.puppygit.screen.functions.getEditorStateOnChange
 import com.catpuppyapp.puppygit.screen.functions.goToFileHistory
@@ -76,6 +75,7 @@ import com.catpuppyapp.puppygit.screen.shared.FuckSafFile
 import com.catpuppyapp.puppygit.screen.shared.MainActivityLifeCycle
 import com.catpuppyapp.puppygit.screen.shared.doActIfIsExpectLifeCycle
 import com.catpuppyapp.puppygit.settings.SettingsUtil
+import com.catpuppyapp.puppygit.soraeditor.MyCodeEditor
 import com.catpuppyapp.puppygit.style.MyStyleKt
 import com.catpuppyapp.puppygit.utils.AppModel
 import com.catpuppyapp.puppygit.utils.FsUtils
@@ -98,11 +98,12 @@ import com.catpuppyapp.puppygit.utils.snapshot.SnapshotFileFlag
 import com.catpuppyapp.puppygit.utils.snapshot.SnapshotUtil
 import com.catpuppyapp.puppygit.utils.state.CustomStateSaveable
 import com.catpuppyapp.puppygit.utils.state.mutableCustomStateListOf
+import com.catpuppyapp.puppygit.utils.state.mutableCustomStateOf
 import com.catpuppyapp.puppygit.utils.withMainContext
+import io.github.rosemoe.sora.text.Content
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
-import java.io.File
 
 private const val TAG = "EditorInnerPage"
 
@@ -1291,53 +1292,66 @@ fun EditorInnerPage(
         val fileFullPath = editorPageShowingFilePath.value
         val fileEditedPos = FileOpenHistoryMan.get(fileFullPath.ioPath)
 
-        FileEditor(
+        val editorContent = mutableCustomStateOf(stateKeyTag, "editorContent") { Content() }
+        val scrollState = rememberScrollState()
+
+        MyCodeEditor(
             stateKeyTag = stateKeyTag,
-
-            ignoreFocusOnce = ignoreFocusOnce,
-            requireEditorScrollToPreviewCurPos = requireEditorScrollToPreviewCurPos,
-            requirePreviewScrollToEditorCurPos = requirePreviewScrollToEditorCurPos,
-            isSubPageMode = isSubPageMode,
-            previewNavBack = previewNavBack,
-            previewNavAhead = previewNavAhead,
-            previewNavStack = previewNavStack,
-            refreshPreviewPage = { requestFromParent.value = PageRequest.editor_RequireRefreshPreviewPage },
-            previewLinkHandler = previewLinkHandler,
-            previewLoading = previewLoading.value,
-            mdText = mdText,
-            basePath = basePath,
-
-            isPreviewModeOn = isPreviewModeOn,
-            quitPreviewMode = quitPreviewMode,
-            initPreviewMode = initPreviewMode,
-
-            openDrawer = openDrawer,
-            editorPageShowingFileName = editorPageShowingFileName,
-            requestFromParent = requestFromParent,
-            fileFullPath = fileFullPath,
-            lastEditedPos = fileEditedPos,
-            textEditorState = editorPageTextEditorState,
-
-            contentPadding = contentPadding,
-            //如果外部Column进行Padding了，这里padding传0即可
-//            contentPadding = PaddingValues(0.dp),
-
-            isContentEdited = isEdited,   //谁调用onChanged，谁检查内容是否改变
-            editorLastScrollEvent=editorLastScrollEvent,
-            editorListState=editorListState,
-            editorPageIsInitDone = editorPageIsInitDone,
-            editorPageIsContentSnapshoted = editorPageIsContentSnapshoted,
-            goToLine=goToLine,
-            readOnlyMode=readOnlyMode.value,
-            searchMode = editorSearchMode,
-            searchKeyword=editorSearchKeyword.value.text,
-            mergeMode=editorMergeMode.value,
-            showLineNum=editorShowLineNum,
-            lineNumFontSize=editorLineNumFontSize,
-            fontSize=editorFontSize,
-            undoStack = undoStack,
-            patchMode = editorPatchMode.value,
+            modifier = Modifier
+                .fillMaxSize()
+                .verticalScroll(scrollState)
+                .padding(contentPadding)
+            ,
+            content = editorContent
         )
+
+//        FileEditor(
+//            stateKeyTag = stateKeyTag,
+//
+//            ignoreFocusOnce = ignoreFocusOnce,
+//            requireEditorScrollToPreviewCurPos = requireEditorScrollToPreviewCurPos,
+//            requirePreviewScrollToEditorCurPos = requirePreviewScrollToEditorCurPos,
+//            isSubPageMode = isSubPageMode,
+//            previewNavBack = previewNavBack,
+//            previewNavAhead = previewNavAhead,
+//            previewNavStack = previewNavStack,
+//            refreshPreviewPage = { requestFromParent.value = PageRequest.editor_RequireRefreshPreviewPage },
+//            previewLinkHandler = previewLinkHandler,
+//            previewLoading = previewLoading.value,
+//            mdText = mdText,
+//            basePath = basePath,
+//
+//            isPreviewModeOn = isPreviewModeOn,
+//            quitPreviewMode = quitPreviewMode,
+//            initPreviewMode = initPreviewMode,
+//
+//            openDrawer = openDrawer,
+//            editorPageShowingFileName = editorPageShowingFileName,
+//            requestFromParent = requestFromParent,
+//            fileFullPath = fileFullPath,
+//            lastEditedPos = fileEditedPos,
+//            textEditorState = editorPageTextEditorState,
+//
+//            contentPadding = contentPadding,
+//            //如果外部Column进行Padding了，这里padding传0即可
+////            contentPadding = PaddingValues(0.dp),
+//
+//            isContentEdited = isEdited,   //谁调用onChanged，谁检查内容是否改变
+//            editorLastScrollEvent=editorLastScrollEvent,
+//            editorListState=editorListState,
+//            editorPageIsInitDone = editorPageIsInitDone,
+//            editorPageIsContentSnapshoted = editorPageIsContentSnapshoted,
+//            goToLine=goToLine,
+//            readOnlyMode=readOnlyMode.value,
+//            searchMode = editorSearchMode,
+//            searchKeyword=editorSearchKeyword.value.text,
+//            mergeMode=editorMergeMode.value,
+//            showLineNum=editorShowLineNum,
+//            lineNumFontSize=editorLineNumFontSize,
+//            fontSize=editorFontSize,
+//            undoStack = undoStack,
+//            patchMode = editorPatchMode.value,
+//        )
     }
 //    }
 
