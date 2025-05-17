@@ -11,7 +11,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.Notes
 import androidx.compose.material.icons.filled.Category
 import androidx.compose.material.icons.filled.Cloud
-import androidx.compose.material.icons.filled.History
+import androidx.compose.material.icons.filled.Commit
 import androidx.compose.material.icons.filled.Info
 import androidx.compose.material.icons.filled.Link
 import androidx.compose.material3.Text
@@ -143,7 +143,7 @@ fun BranchItem(
         ){
 
             InLineIcon(
-                icon = Icons.Filled.History,
+                icon = Icons.Filled.Commit,
                 tooltipText = stringResource(R.string.last_commit)
             )
 //            Text(text = stringResource(R.string.last_commit) +": ")
