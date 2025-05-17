@@ -160,7 +160,7 @@ fun SubmoduleItem(
 
 //            Text(text = stringResource(R.string.target) +": ")
 
-            Text(text = Libgit2Helper.getShortOidStrByFull(thisObj.targetHash),
+            Text(text = thisObj.getShortTargetHashCached(),
                 maxLines = 1,
                 overflow = TextOverflow.Ellipsis,
                 fontWeight = defaultFontWeight
