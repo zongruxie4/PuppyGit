@@ -2291,7 +2291,7 @@ fun CommitListScreen(
                         verticalArrangement = Arrangement.Center
                     ) {
                         Spacer(Modifier.height(50.dp))
-                        Text(stringResource(R.string.no_matched_item), fontWeight = FontWeight.Light)
+                        Text(stringResource(if(searching.value) R.string.loading else R.string.no_matched_item), fontWeight = FontWeight.Light)
 
                         LoadMore(
                             modifier = Modifier.padding(top = 30.dp),
