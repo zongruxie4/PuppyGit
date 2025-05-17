@@ -9,12 +9,12 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.Notes
-import androidx.compose.material.icons.filled.Cloud
 import androidx.compose.material.icons.filled.Commit
-import androidx.compose.material.icons.filled.Folder
-import androidx.compose.material.icons.filled.GridView
 import androidx.compose.material.icons.filled.Info
-import androidx.compose.material.icons.filled.LocationOn
+import androidx.compose.material.icons.outlined.Cloud
+import androidx.compose.material.icons.outlined.Folder
+import androidx.compose.material.icons.outlined.GridView
+import androidx.compose.material.icons.outlined.LocationOn
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -95,7 +95,7 @@ fun SubmoduleItem(
         ){
 
             InLineIcon(
-                icon = Icons.Filled.GridView,
+                icon = Icons.Outlined.GridView,
                 tooltipText = stringResource(R.string.submodule)
             )
 
@@ -115,7 +115,7 @@ fun SubmoduleItem(
         ){
 
             InLineIcon(
-                icon = Icons.Filled.Cloud,
+                icon = Icons.Outlined.Cloud,
                 tooltipText = stringResource(R.string.url)
             )
 
@@ -135,7 +135,7 @@ fun SubmoduleItem(
         ){
 
             InLineIcon(
-                icon = Icons.Filled.Folder,
+                icon = Icons.Outlined.Folder,
                 tooltipText = stringResource(R.string.path)
             )
 
@@ -172,7 +172,7 @@ fun SubmoduleItem(
         ){
 
             InLineIcon(
-                icon = Icons.Filled.LocationOn,
+                icon = Icons.Outlined.LocationOn,
                 tooltipText = stringResource(R.string.location)
             )
 
