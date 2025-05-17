@@ -992,6 +992,7 @@ fun EditorInnerPage(
 
 
 
+    //如果可能ok，返回的是FuckSafFile，否则返回路径
     val ifLastPathOkThenDoOkActElseDoNoOkAct:(okAct:(last: FuckSafFile)->Unit, noOkAct:(last:String)->Unit)->Unit = { okAct, noOkAct ->
         var last = lastFilePath.value
         if(last.isBlank()) {  //如果内存中有上次关闭文件的路径，直接使用，否则从配置文件加载
@@ -1000,9 +1001,13 @@ fun EditorInnerPage(
 
         //如果查无上次打开文件，吐司提示 "last file not found!"；否则打开文件
         //x 废弃，应在设置页面添加一个手动清除编辑器记录的位置信息的功能而不是一出异常就清除) 注：这里不要判断文件是否存在，留到reload时判断，在那里如果发现文件不存在将清除文件的上次编辑位置等信息
-        var fuckSafFile: FuckSafFile? = null
-        if(last.isNotBlank() && FuckSafFile(activityContext, FilePath(last)).let { fuckSafFile = it; it.exists() }) {
-            okAct(fuckSafFile!!)
+//        var fuckSafFile: FuckSafFile? = null
+//        if(last.isNotBlank() && FuckSafFile(activityContext, FilePath(last)).let { fuckSafFile = it; it.exists() }) {
+
+        //这个根据我的体验，少检测少废话，直接打开，有错直接展示在editor页面体验最好，
+        // 不然吐丝提示文件未找到，我根本不知道是哪个鸟文件找不到
+        if(last.isNotBlank()) {
+            okAct(FuckSafFile(activityContext, FilePath(last)))
         }else {
            noOkAct(last)
         }
@@ -1132,7 +1137,7 @@ fun EditorInnerPage(
                                     goToFilesPage(last.path.ioPath)
                                 }else {  // saf uri，"content://"开头的玩意之类的
                                     // 文件管理器无法定位到非 / 开头的绝对路径，提示下路径无效即可
-                                    Msg.requireShowLongDuration(activityContext.getString(R.string.file_path_invalid))
+                                    Msg.requireShowLongDuration(activityContext.getString(R.string.file_path_invalid)+": "+last.path.ioPath)
                                 }
                             }) noOkAct@{
                                 Msg.requireShowLongDuration(activityContext.getString(R.string.file_not_found))
