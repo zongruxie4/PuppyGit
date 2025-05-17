@@ -15,7 +15,7 @@ private const val alpha = 128;
 // 避免并发冲突，没用普通的list
 private val cachedColors = ConcurrentMap<Int, Color>().apply {
     put(0, Color(red = 0xF, green = 0xA2, blue = 0x72, alpha = alpha))
-    put(1, Color(red = 0x1E, green = 0x33, blue = 0xBD, alpha = alpha))
+    put(1, Color(red = 0x2E, green = 0x39, blue = 0x9F, alpha = alpha))
     put(2, Color(red = 0x4D, green = 0xB6, blue = 0xB, alpha = alpha))
     put(3, Color(red = 0xB6, green = 0xB, blue = 0x69, alpha = alpha))
     put(4, Color(red = 0xB6, green = 0x55, blue = 0xB, alpha = alpha))
@@ -25,6 +25,16 @@ private val cachedColors = ConcurrentMap<Int, Color>().apply {
     put(8, Color(red = 0x66, green = 0xA, blue = 0x88, alpha = alpha))
     put(9, Color(red = 0x1C, green = 0x4C, blue = 0xC7, alpha = alpha))
     put(10, Color(red = 0x25, green = 0xB6, blue = 0xB, alpha = alpha))
+    put(11, Color(red = 0xB6, green = 0x91, blue = 0xB, alpha = alpha))
+    put(12, Color(red = 0xB6, green = 0xB, blue = 0x91, alpha = alpha))
+    put(13, Color(red = 0xB, green = 0xB6, blue = 0x9C, alpha = alpha))
+    put(14, Color(red = 0x9C, green = 0xB6, blue = 0xB, alpha = alpha))
+    put(15, Color(red = 0x30, green = 0xB, blue = 0xB6, alpha = alpha))
+    put(16, Color(red = 0xB, green = 0x9C, blue = 0xB6, alpha = alpha))
+    put(17, Color(red = 0x5B, green = 0xB, blue = 0xB6, alpha = alpha))
+    put(18, Color(red = 0xB6, green = 0xB, blue = 0x4F, alpha = alpha))
+    put(19, Color(red = 0xB, green = 0xB6, blue = 0xB0, alpha = alpha))
+    put(20, Color(red = 0xB6, green = 0x4F, blue = 0xB, alpha = alpha))
 }
 
 
