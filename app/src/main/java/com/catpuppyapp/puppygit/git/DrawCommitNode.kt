@@ -82,6 +82,29 @@ data class DrawCommitNode (
     // 不是node就是line，line就是直接顺着路径往下画，中间没圆圈的那种
 //    fun isLine() = isNode().not();
 
+
+
+
+    fun toStringForView():String {
+        return "from: $fromCommitHash\nto: $toCommitHash\ncircleAtHere: $circleAtHere\nstartAtHere: $startAtHere\nendAtHere: $endAtHere\ninputIsEmpty: $inputIsEmpty\noutputIsEmpty: $outputIsEmpty\n\n"+(
+                if(mergedList.isEmpty()) "" else {
+                    val sb = StringBuilder()
+
+                    "mergedList:\n"+mergedList.forEach {
+                        sb.append(it.toStringForView())
+                    }
+
+                    sb.toString()
+                }
+        )
+    }
+
+
+
+
+
+
+
     companion object {
         val colorBlendMode = BlendMode.SrcAtop
 

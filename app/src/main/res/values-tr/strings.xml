@@ -1181,4 +1181,6 @@
     <string name="expected_refspec">Beklenen Refspec</string>
     <string name="push_force_with_lease_note">Yalnızca upstream\'in en son commit\'i beklenenle aynı olduğunda zorla itme yapılacak</string>
     <string name="checking">Kontrol ediliyor…</string>
+    <string name="nodes">Düğümler</string>
+
 </resources>

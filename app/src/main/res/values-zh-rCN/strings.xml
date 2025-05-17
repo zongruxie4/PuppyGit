@@ -1253,5 +1253,6 @@
     <string name="expected_refspec">期望的 Refspec</string>
     <string name="push_force_with_lease_note">仅当上游最新提交和期望一致时才会执行强制推送</string>
     <string name="checking">正在检查…</string>
+    <string name="nodes">节点</string>
 
 </resources>

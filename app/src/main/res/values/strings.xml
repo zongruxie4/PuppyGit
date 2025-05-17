@@ -1286,5 +1286,6 @@
     <string name="expected_refspec">Expected Refspec</string>
     <string name="push_force_with_lease_note">Will only force push when upstream\'s latest commit is the same as expected</string>
     <string name="checking">Checking…</string>
+    <string name="nodes">Nodes</string>
 
 </resources>

@@ -74,7 +74,9 @@ import com.catpuppyapp.puppygit.compose.ClickableText
 import com.catpuppyapp.puppygit.compose.CommitItem
 import com.catpuppyapp.puppygit.compose.ConfirmDialog
 import com.catpuppyapp.puppygit.compose.ConfirmDialog2
+import com.catpuppyapp.puppygit.compose.CopyScrollableColumn
 import com.catpuppyapp.puppygit.compose.CopyableDialog
+import com.catpuppyapp.puppygit.compose.CopyableDialog2
 import com.catpuppyapp.puppygit.compose.CreatePatchSuccessDialog
 import com.catpuppyapp.puppygit.compose.CreateTagDialog
 import com.catpuppyapp.puppygit.compose.DefaultPaddingText
@@ -1144,6 +1146,61 @@ fun CommitListScreen(
 
     }
 
+    val showNodesInfoDialog = rememberSaveable { mutableStateOf(false) }
+    val commitOfNodesInfo = mutableCustomStateOf(stateKeyTag, "commitOfNodesInfo") { CommitDto() }
+    val showNodesInfo = { curCommit:CommitDto ->
+        commitOfNodesInfo.value = curCommit
+
+        showNodesInfoDialog.value = true
+    }
+    if(showNodesInfoDialog.value) {
+        val commitOfNodesInfo = commitOfNodesInfo.value
+        val thickness = remember {5.dp}
+        val spacerHeight = remember {10.dp}
+
+        CopyableDialog2(
+            title = stringResource(R.string.nodes),
+            requireShowTextCompose = true,
+            textCompose = {
+                CopyScrollableColumn {
+                    val hasOutputs = commitOfNodesInfo.draw_outputs.isNotEmpty()
+
+                    if(commitOfNodesInfo.draw_inputs.isNotEmpty()) {
+                        //用 "\n" 是为了复制时保持格式，不然一复制就变成一行了
+                        Text("Inputs\n", fontWeight = FontWeight.ExtraBold)
+                        commitOfNodesInfo.draw_inputs.forEachIndexed { idx, it->
+                            HorizontalDivider(thickness = thickness, color = DrawCommitNode.getNodeColorByIndex(idx))
+                            Spacer(Modifier.height(spacerHeight))
+                            Text(it.toStringForView())
+                        }
+
+
+                        //如果有输出，就在输入末尾加个换行符，增加间隔，不然看着太挤
+                        if(hasOutputs) {
+                            Text("\n")
+                        }
+                    }
+
+
+
+                    if(hasOutputs) {
+                        Text("Outputs\n", fontWeight = FontWeight.ExtraBold)
+                        commitOfNodesInfo.draw_outputs.forEachIndexed { idx, it->
+                            HorizontalDivider(thickness = thickness, color = DrawCommitNode.getNodeColorByIndex(idx))
+                            Spacer(Modifier.height(spacerHeight))
+
+                            Text(it.toStringForView())
+                        }
+                    }
+                }
+            },
+            onCancel = { showNodesInfoDialog.value = false },
+            cancelBtnText = stringResource(R.string.close),
+            okCompose = {},
+            onOk = {}
+        )
+    }
+
     val showDetailsDialog = rememberSaveable { mutableStateOf( false)}
     val detailsString = rememberSaveable { mutableStateOf( "")}
     if(showDetailsDialog.value) {
@@ -1919,10 +1976,6 @@ fun CommitListScreen(
                             }
                         }
 
-                        BottomSheetItem(sheetState, showBottomSheet, stringResource(R.string.details)){
-                            showItemDetails(curCommit.value)
-                        }
-
                         BottomSheetItem(sheetState, showBottomSheet, stringResource(R.string.diff)) {
                             diffCommitsDialogCommit1.value = curCommit.value.oidStr
 
@@ -2001,6 +2054,14 @@ fun CommitListScreen(
                             }
                         }
 
+
+                        BottomSheetItem(sheetState, showBottomSheet, stringResource(R.string.details)){
+                            showItemDetails(curCommit.value)
+                        }
+
+                        BottomSheetItem(sheetState, showBottomSheet, stringResource(R.string.nodes)){
+                            showNodesInfo(curCommit.value)
+                        }
 
 
 //                BottomSheetItem(sheetState, showBottomSheet, stringResource(R.string.create_branch)){
