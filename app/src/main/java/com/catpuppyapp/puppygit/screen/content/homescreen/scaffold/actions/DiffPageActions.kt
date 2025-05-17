@@ -68,7 +68,7 @@ fun DiffPageActions(
 //    ){
 //        LongPressAbleIconBtn(
 //            tooltipText = stringResource(R.string.better_but_slow_compare),
-//            icon = Icons.Filled.Compare,
+//            icon = Icons.Filled.没合适的图标,
 //            iconContentDesc = stringResource(R.string.better_but_slow_compare),
 //            iconColor = UIHelper.getIconEnableColorOrNull(requireBetterMatchingForCompare.value),
 //            enabled = true,

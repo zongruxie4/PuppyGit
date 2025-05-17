@@ -20,6 +20,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.automirrored.filled.List
 import androidx.compose.material.icons.filled.Close
+import androidx.compose.material.icons.filled.Compare
 import androidx.compose.material.icons.filled.Error
 import androidx.compose.material.icons.filled.FilterAlt
 import androidx.compose.material.icons.filled.MoreVert
@@ -418,7 +419,7 @@ fun CommitListScreen(
 //    }
     val settings = remember { SettingsUtil.getSettingsSnapshot() }
     val shouldShowTimeZoneInfo = remember { TimeZoneUtil.shouldShowTimeZoneInfo(settings) }
-    val commitHistoryRTL = remember { settings.commitHistoryRTL }
+    val commitHistoryRTL = remember { mutableStateOf(settings.commitHistoryRTL) }
 
     //page size for load more
     val pageSize = rememberSaveable{ mutableStateOf(settings.commitHistoryPageSize) }
@@ -1768,10 +1769,11 @@ fun CommitListScreen(
                             ) {
                                 fullyRefresh()
                             }
+
                             LongPressAbleIconBtn(
-                                tooltipText = stringResource(R.string.checkout_to),
+                                tooltipText = stringResource(R.string.checkout),
                                 icon = Icons.Filled.MoveToInbox,
-                                iconContentDesc = stringResource(id = R.string.checkout_to),
+                                iconContentDesc = stringResource(R.string.checkout),
                                 enabled = true,
 
                             ) {
@@ -1779,6 +1781,19 @@ fun CommitListScreen(
                                 initCheckoutDialogComposableVersion(
                                     requireUserInputHash
                                 )
+                            }
+
+
+                            LongPressAbleIconBtn(
+                                tooltipText = stringResource(R.string.reverse),
+                                icon = Icons.Filled.Compare,
+                                iconContentDesc = stringResource(R.string.reverse),
+                                enabled = true,
+                                iconColor = UIHelper.getIconEnableColorOrNull(commitHistoryRTL.value),
+                            ) {
+                                val newValue = !commitHistoryRTL.value
+                                commitHistoryRTL.value = newValue
+                                SettingsUtil.update { it.commitHistoryRTL = newValue }
                             }
 
                             if((proFeatureEnabled(commitsDiffCommitsTestPassed) || proFeatureEnabled(resetByHashTestPassed))) {
@@ -2209,7 +2224,7 @@ fun CommitListScreen(
 
 
                 CompositionLocalProvider(
-                    LocalLayoutDirection.provides(if(commitHistoryRTL) LayoutDirection.Rtl else LayoutDirection.Ltr)
+                    LocalLayoutDirection.provides(if(commitHistoryRTL.value) LayoutDirection.Rtl else LayoutDirection.Ltr)
                 ) {
 
                     MyLazyColumn(

@@ -116,7 +116,7 @@ data class AppSettings(
      * 提交历史页面是否使用RTL布局，因为提交树默认是镜像的，但我又实在不想单独写了提交树页面，
      * 所以添加一个按钮，点击可切换左右布局，RTL开启时提交树就可变成非镜像的了
      */
-    val commitHistoryRTL: Boolean = false,
+    var commitHistoryRTL: Boolean = false,
 
 ) {
 
