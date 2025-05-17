@@ -511,30 +511,42 @@ object UIHelper {
 
     }
 
-    // 返回的对象可以用于 `Color(这个函数的返回值)` 来创建Color对象
+
     // 参数为null的将随机生成其值
-    private fun getRandomColorIntValue(alpha:Int? = null, red:Int? = null, green:Int? = null, blue:Int? = null): Int {
-        val alpha = alpha ?: Random.nextInt(256) // 0-255
-        val red = red ?: Random.nextInt(256)   // 0-255
-        val green = green ?: Random.nextInt(256) // 0-255
-        val blue = blue ?: Random.nextInt(256)  // 0-255
-
-        return (alpha shl 24) or (red shl 16) or (green shl 8) or blue
-    }
-
     fun getRandomColor(
         alpha:Int? = null,
         red:Int? = null,
         green:Int? = null,
         blue:Int? = null
     ):Color {
+        val alpha = alpha ?: Random.nextInt(256) // 0-255
+        val red = red ?: Random.nextInt(256)   // 0-255
+        val green = green ?: Random.nextInt(256) // 0-255
+        val blue = blue ?: Random.nextInt(256)  // 0-255
+
         return Color(
-            getRandomColorIntValue(
-                alpha?.coerceAtLeast(0)?.coerceAtMost(255),
-                red?.coerceAtLeast(0)?.coerceAtMost(255),
-                green?.coerceAtLeast(0)?.coerceAtMost(255),
-                blue?.coerceAtLeast(0)?.coerceAtMost(255)
-            )
+            alpha = alpha,
+            red = red,
+            green = green,
+            blue = blue,
+        )
+    }
+
+    fun getRandomColorForDrawNode(
+        alpha:Int,
+
+        // 避免生成黑色或白色
+        range: IntRange = 40..201,
+    ):Color {
+        val red = Random.nextInt(range.start, range.endInclusive)
+        val green = Random.nextInt(range.start, range.endInclusive)
+        val blue = Random.nextInt(range.start, range.endInclusive)
+
+        return Color(
+            alpha = alpha,
+            red = red,
+            green = green,
+            blue = blue,
         )
     }
 

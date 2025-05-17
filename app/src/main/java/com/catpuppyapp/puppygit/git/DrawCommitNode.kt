@@ -112,7 +112,7 @@ data class DrawCommitNode (
         fun getNodeColorByIndex(i: Int): Color {
             //缓存颜色的集合得是可变的，运行时如果发现颜色索引不存在，会插入个新颜色存进去
             // alpha越大越不透明，范围 0-255，128是半透明
-            return cachedColors.get(i) ?: UIHelper.getRandomColor(alpha = alpha).let {
+            return cachedColors.get(i) ?: UIHelper.getRandomColorForDrawNode(alpha = alpha).let {
                 cachedColors.set(i, it)
 
                 it
