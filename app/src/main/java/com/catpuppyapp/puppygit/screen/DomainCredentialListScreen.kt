@@ -528,69 +528,67 @@ fun DomainCredentialListScreen(
 
             }
 
-//            if (showLoadingDialog.value) {
-            if (false) {
-                LoadingDialog(text = loadingText.value)  //这个东西太阴间了，还是用LoadingText吧
-//
-//            LoadingText(text = loadingText.value,contentPadding = contentPadding)
 
+//            if (showLoadingDialog.value) {
+//                LoadingDialog(text = loadingText.value)  //这个东西太阴间了，还是用LoadingText吧
+//            }
+
+
+
+            if(list.value.isEmpty()) {
+                FullScreenScrollableColumn(contentPadding) {
+                    Text(stringResource(if(isInitLoading.value) R.string.loading else R.string.item_list_is_empty))
+                }
             }else {
 
-                if(list.value.isEmpty()) {
-                    FullScreenScrollableColumn(contentPadding) {
-                        Text(stringResource(if(isInitLoading.value) R.string.loading else R.string.item_list_is_empty))
+                //根据关键字过滤条目
+                val keyword = filterKeyword.value.text.lowercase()  //关键字
+                val enableFilter = filterModeActuallyEnabled(filterModeOn.value, keyword)
+
+                val lastNeedRefresh = rememberSaveable { mutableStateOf("") }
+                val list = filterTheList(
+                    needRefresh = filterResultNeedRefresh.value,
+                    lastNeedRefresh = lastNeedRefresh,
+                    enableFilter = enableFilter,
+                    keyword = keyword,
+                    lastKeyword = lastKeyword,
+                    searching = searching,
+                    token = token,
+                    activityContext = activityContext,
+                    filterList = filterList.value,
+                    list = list.value,
+                    resetSearchVars = resetSearchVars,
+                    match = { idx:Int, it: DomainCredentialDto ->
+                        it.domain.lowercase().contains(keyword) || (it.credName?.lowercase()?.contains(keyword) == true)
                     }
-                }else {
+                )
 
-                    //根据关键字过滤条目
-                    val keyword = filterKeyword.value.text.lowercase()  //关键字
-                    val enableFilter = filterModeActuallyEnabled(filterModeOn.value, keyword)
-
-                    val lastNeedRefresh = rememberSaveable { mutableStateOf("") }
-                    val list = filterTheList(
-                        needRefresh = filterResultNeedRefresh.value,
-                        lastNeedRefresh = lastNeedRefresh,
-                        enableFilter = enableFilter,
-                        keyword = keyword,
-                        lastKeyword = lastKeyword,
-                        searching = searching,
-                        token = token,
-                        activityContext = activityContext,
-                        filterList = filterList.value,
-                        list = list.value,
-                        resetSearchVars = resetSearchVars,
-                        match = { idx:Int, it: DomainCredentialDto ->
-                            it.domain.lowercase().contains(keyword) || (it.credName?.lowercase()?.contains(keyword) == true)
-                        }
-                    )
-
-                    val listState = if(enableFilter) filterListState else listState
+                val listState = if(enableFilter) filterListState else listState
 //            if(enableFilter) {  //更新filter列表state
 //                filterListState.value = listState
 //            }
-                    //更新是否启用filter
-                    enableFilterState.value = enableFilter
+                //更新是否启用filter
+                enableFilterState.value = enableFilter
 
-                    MyLazyColumn(
-                        contentPadding = contentPadding,
-                        list = list,
-                        listState = listState,
-                        requireForEachWithIndex = true,
-                        requirePaddingAtBottom = true
-                    ) {idx, value->
-                        DomainCredItem (showBottomSheet = showBottomSheet, curCredentialState = curCredential, idx = idx, thisItem = value, lastClickedItemKey = lastClickedItemKey) {
-                            initCreateOrEditDialog(
-                                isCreateParam = false,
-                                curDomainNameParam = value.domain,
-                                curDomainCredItemIdParam = value.domainCredId,
-                                curCredentialId=value.credId?:"",
-                                curSshCredentialId=value.sshCredId?:""
-                            )
-                        }
-
-                        HorizontalDivider()
-
+                MyLazyColumn(
+                    contentPadding = contentPadding,
+                    list = list,
+                    listState = listState,
+                    requireForEachWithIndex = true,
+                    requirePaddingAtBottom = true
+                ) {idx, value->
+                    DomainCredItem (showBottomSheet = showBottomSheet, curCredentialState = curCredential, idx = idx, thisItem = value, lastClickedItemKey = lastClickedItemKey) {
+                        initCreateOrEditDialog(
+                            isCreateParam = false,
+                            curDomainNameParam = value.domain,
+                            curDomainCredItemIdParam = value.domainCredId,
+                            curCredentialId=value.credId?:"",
+                            curSshCredentialId=value.sshCredId?:""
+                        )
                     }
+
+                    HorizontalDivider()
+
                 }
             }
         }
