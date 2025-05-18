@@ -732,7 +732,7 @@
     <string name="invalid_path">invalid path</string>
     <string name="path">Path</string>
     <string name="overwrite_if_exist">Overwrite If Exist</string>
-    <string name="will_overwrite_if_branch_already_exists">will overwrite if branch already exists</string>
+    <string name="will_overwrite_if_branch_already_exists">Will overwrite if branch already exists</string>
     <string name="just_checkout">Just Checkout</string>
     <string name="checkout_new">Checkout New</string>
     <string name="checkout_old">Checkout Old</string>

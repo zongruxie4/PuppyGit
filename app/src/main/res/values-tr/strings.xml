@@ -701,7 +701,7 @@
     <string name="invalid_path">geçersiz yol</string>
     <string name="path">Yol</string>
     <string name="overwrite_if_exist">Varsa Üzerine Yaz</string>
-    <string name="will_overwrite_if_branch_already_exists">dal zaten varsa üzerine yazılacak</string>
+    <string name="will_overwrite_if_branch_already_exists">Dal zaten varsa üzerine yazılacak</string>
     <string name="just_checkout">Sadece Çıkış Yap</string>
     <string name="checkout_new">Yeni Çıkış Yap</string>
     <string name="checkout_old">Eski Çıkış Yap</string>
