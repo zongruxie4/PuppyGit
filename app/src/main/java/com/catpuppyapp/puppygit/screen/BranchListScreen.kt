@@ -1268,7 +1268,7 @@ fun BranchListScreen(
                 val forcePush_pushWithLease = forcePush_pushWithLease.value
                 val forcePush_expectedRefspecForLease = forcePush_expectedRefspecForLease.value
 
-                doJobThenOffLoading(loadingOn, loadingOff, activityContext.getString(R.string.pushing)) {
+                doJobThenOffLoading(loadingOn, loadingOff, activityContext.getString(R.string.loading)) {
                     try {
 
                         val dbContainer = AppModel.dbContainer
@@ -1286,6 +1286,7 @@ fun BranchListScreen(
 
                             }
 
+                            loadingText.value = activityContext.getString(if(force) R.string.force_pushing else R.string.pushing)
 
                             // push
                             val credential = Libgit2Helper.getRemoteCredential(
