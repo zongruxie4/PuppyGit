@@ -66,6 +66,7 @@ import com.catpuppyapp.puppygit.compose.ConfirmDialog
 import com.catpuppyapp.puppygit.compose.ConfirmDialog2
 import com.catpuppyapp.puppygit.compose.CopyableDialog
 import com.catpuppyapp.puppygit.compose.CopyableDialog2
+import com.catpuppyapp.puppygit.compose.FullScreenScrollableColumn
 import com.catpuppyapp.puppygit.compose.InternalFileChooser
 import com.catpuppyapp.puppygit.compose.MyCheckBox
 import com.catpuppyapp.puppygit.compose.MyLazyColumn
@@ -1851,17 +1852,23 @@ fun RepoInnerPage(
         onRefresh = { changeStateTriggerRefreshPage(needRefreshRepoPage) }
     ) {
 
-        if (!isLoading.value && repoList.value.isEmpty()) {  //无仓库，显示添加按钮
-            PageCenterIconButton(
-                contentPadding = contentPadding,
-                onClick = {
-                    //不传repoId，就是null，等于新建模式
-                    navController.navigate(Cons.nav_CloneScreen+"/null")
-                },
-                icon = Icons.Filled.Add,
-                iconDesc = stringResource(R.string.add_a_repo),
-                text = stringResource(R.string.add_a_repo),
-            )
+        if (repoList.value.isEmpty()) {  //无仓库，显示添加按钮
+            if(isLoading.value) {
+                FullScreenScrollableColumn(contentPadding) {
+                    Text(stringResource(R.string.loading))
+                }
+            }else {
+                PageCenterIconButton(
+                    contentPadding = contentPadding,
+                    onClick = {
+                        //不传repoId，就是null，等于新建模式
+                        navController.navigate(Cons.nav_CloneScreen+"/null")
+                    },
+                    icon = Icons.Filled.Add,
+                    iconDesc = stringResource(R.string.add_a_repo),
+                    text = stringResource(R.string.add_a_repo),
+                )
+            }
         }
 
 
