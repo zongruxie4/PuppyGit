@@ -1287,5 +1287,6 @@
     <string name="push_force_with_lease_note">Will only force push when upstream\'s latest commit is the same as expected</string>
     <string name="checking">Checking…</string>
     <string name="nodes">Nodes</string>
+    <string name="note_pat_instead_of_password">Note: If you enabled 2FA, you must use a personal access token instead of the password, and the token must have Read and Write Contents permissions of your Repository.</string>
 
 </resources>

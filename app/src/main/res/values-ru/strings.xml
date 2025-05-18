@@ -1276,5 +1276,6 @@
     <string name="push_force_with_lease_note">Принудительная отправка будет выполнена только если последний коммит на upstream совпадает с ожидаемым</string>
     <string name="checking">Проверка…</string>
     <string name="nodes">Узлы</string>
+    <string name="note_pat_instead_of_password">Примечание: Если вы включили 2FA, вы должны использовать персональный токен доступа вместо пароля, и токен должен иметь разрешения на чтение и запись содержимого вашего репозитория.</string>
 
 </resources>

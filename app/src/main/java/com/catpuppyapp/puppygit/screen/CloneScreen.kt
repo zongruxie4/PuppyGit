@@ -64,6 +64,7 @@ import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.unit.dp
 import com.catpuppyapp.puppygit.compose.ConfirmDialog
+import com.catpuppyapp.puppygit.compose.DefaultPaddingText
 import com.catpuppyapp.puppygit.compose.DepthTextField
 import com.catpuppyapp.puppygit.compose.DropDownMenuItemText
 import com.catpuppyapp.puppygit.compose.InternalFileChooser
@@ -827,7 +828,9 @@ fun CloneScreen(
 
             HorizontalDivider(modifier = Modifier.padding(spacerPadding))
             //choose credential
-            Column(modifier = Modifier.padding(top=10.dp).selectableGroup(),
+            Column(modifier = Modifier
+                .padding(top = 10.dp)
+                .selectableGroup(),
             ) {
                 //如果对应类型的集合为空，就不显示“选择凭据”选项了
 //                val skipSelect = (curCredentialType.intValue == Cons.dbCredentialTypeHttp && credentialHttpList.value.isEmpty()) || (curCredentialType.intValue==Cons.dbCredentialTypeSsh && credentialSshList.value.isEmpty())
@@ -986,6 +989,14 @@ fun CloneScreen(
                         }
                     }
                 )
+
+                // 若是http，提示用户可能需要用token替代密码
+                if(curCredentialType.intValue == Cons.dbCredentialTypeHttp) {
+                    MySelectionContainer {
+                        DefaultPaddingText(stringResource(R.string.note_pat_instead_of_password))
+                    }
+                }
+
             }else if(credentialSelectedOption == optNumSelectCredential) {
                 Column(
                     modifier = Modifier
