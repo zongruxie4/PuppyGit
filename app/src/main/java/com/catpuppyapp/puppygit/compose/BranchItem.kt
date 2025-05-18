@@ -230,7 +230,7 @@ fun BranchItem(
 
 //                    Text(text = stringResource(R.string.upstream) + ": ")
 
-                    ClickableText(thisObj.getUpstreamShortName(activityContext)) {
+                    SingleLineClickableText(thisObj.getUpstreamShortName(activityContext)) {
                         lastClickedItemKey.value = thisObj.fullName
 
                         setCurObj()

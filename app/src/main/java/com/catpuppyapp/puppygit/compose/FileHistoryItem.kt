@@ -266,7 +266,7 @@ fun FileHistoryItem(
 
 //            Text(text = stringResource(R.string.commits) + ": ")
 
-            ClickableText(dto.cachedShortCommitListStr()) {
+            SingleLineClickableText(dto.cachedShortCommitListStr()) {
                 showCommits(dto)
             }
         }
@@ -283,7 +283,7 @@ fun FileHistoryItem(
 
 //            Text(text = stringResource(R.string.msg) + ": ")
 
-            ClickableText(dto.getCachedOneLineMsg()) {
+            SingleLineClickableText(dto.getCachedOneLineMsg()) {
                 lastClickedItemKey.value = dto.getItemKey()
 
                 updateCurObjState()

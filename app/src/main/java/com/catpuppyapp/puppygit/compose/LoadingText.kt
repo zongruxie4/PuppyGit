@@ -105,7 +105,7 @@ fun LoadingTextCancellable(
             if(showCancel) {
                 Spacer(Modifier.height(10.dp))
 
-                ClickableText(cancelText) {
+                SingleLineClickableText(cancelText) {
                     onCancel()
                 }
             }

@@ -32,7 +32,6 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.MutableIntState
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.mutableIntStateOf
-import androidx.compose.runtime.mutableStateMapOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
@@ -64,7 +63,6 @@ import com.catpuppyapp.puppygit.constants.LineNum
 import com.catpuppyapp.puppygit.constants.PageRequest
 import com.catpuppyapp.puppygit.dev.bug_Editor_GoToColumnCantHideKeyboard_Fixed
 import com.catpuppyapp.puppygit.dev.bug_Editor_SelectColumnRangeOfLine_Fixed
-import com.catpuppyapp.puppygit.dto.Box
 import com.catpuppyapp.puppygit.dto.UndoStack
 import com.catpuppyapp.puppygit.fileeditor.texteditor.state.FindDirection
 import com.catpuppyapp.puppygit.fileeditor.texteditor.state.SelectionOption

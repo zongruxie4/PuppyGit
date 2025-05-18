@@ -255,7 +255,7 @@ fun CommitItem(
 
 //            Text(text = stringResource(R.string.msg) +": ")
 
-            ClickableText(commitDto.getCachedOneLineMsg()) {
+            SingleLineClickableText(commitDto.getCachedOneLineMsg()) {
                 lastClickedItemKey.value = commitDto.oidStr
 
                 updateCurObjState()

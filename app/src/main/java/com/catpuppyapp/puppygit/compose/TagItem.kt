@@ -207,7 +207,7 @@ fun TagItem(
 
 //                Text(text = stringResource(R.string.msg) +": ")
 
-                ClickableText(text = thisObj.msg) {
+                SingleLineClickableText(text = thisObj.msg) {
                     showDetails(listOf(thisObj))
                 }
             }
