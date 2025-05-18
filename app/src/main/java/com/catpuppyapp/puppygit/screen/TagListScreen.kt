@@ -2,7 +2,6 @@ package com.catpuppyapp.puppygit.screen
 
 import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.ExperimentalFoundationApi
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -15,6 +14,7 @@ import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Download
+import androidx.compose.material.icons.filled.Downloading
 import androidx.compose.material.icons.filled.FilterAlt
 import androidx.compose.material.icons.filled.Info
 import androidx.compose.material.icons.filled.Refresh
@@ -49,7 +49,6 @@ import com.catpuppyapp.puppygit.compose.AskGitUsernameAndEmailDialogWithSelectio
 import com.catpuppyapp.puppygit.compose.BottomBar
 import com.catpuppyapp.puppygit.compose.CheckoutDialog
 import com.catpuppyapp.puppygit.compose.CheckoutDialogFrom
-import com.catpuppyapp.puppygit.compose.ClickableText
 import com.catpuppyapp.puppygit.compose.CopyableDialog
 import com.catpuppyapp.puppygit.compose.CreateTagDialog
 import com.catpuppyapp.puppygit.compose.FilterTextField
@@ -796,23 +795,20 @@ fun TagListScreen(
                             horizontalArrangement = Arrangement.Center,
                             verticalAlignment = Alignment.CenterVertically
                         ) {
-                            ClickableText(
-                                text = stringResource(R.string.fetch),
-                                modifier = MyStyleKt.ClickableText.modifierNoPadding
-                                    .clickable {
-                                        initFetchTagDialog()
-                                    },
-                            )
-                            Text(text =  " "+stringResource(R.string.or_str)+" ")
-                            ClickableText(
-                                text =  stringResource(R.string.create),
-                                modifier = MyStyleKt.ClickableText.modifierNoPadding
-                                    .clickable {
-                                        val hash = ""
-                                        initNewTagDialog(hash)
-                                    }
-                                ,
-                            )
+                            LongPressAbleIconBtn(
+                                icon = Icons.Filled.Downloading,
+                                tooltipText = stringResource(R.string.fetch),
+                            ) {
+                                initFetchTagDialog()
+                            }
+
+                            LongPressAbleIconBtn(
+                                icon = Icons.Filled.Add,
+                                tooltipText =  stringResource(R.string.create),
+                            ) {
+                                val hash = ""
+                                initNewTagDialog(hash)
+                            }
                         }
                     }
                 }
