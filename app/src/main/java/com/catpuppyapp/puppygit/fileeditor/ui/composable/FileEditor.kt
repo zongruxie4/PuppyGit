@@ -635,7 +635,7 @@ fun FileEditor(
                             }
 
                             clipboardManager.setText(AnnotatedString(textEditorState.value.getSelectedText()))
-                            Msg.requireShow(replaceStringResList(activityContext.getString(R.string.n_lines_copied), listOf(selectedLinesNum.toString())), )
+                            Msg.requireShow(replaceStringResList(activityContext.getString(R.string.n_lines_copied), listOf(selectedLinesNum.toString())) + " (CUT)")
                             deleteLines()
                         },
                         onCopy@{
