@@ -5,6 +5,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.FilterAlt
+import androidx.compose.material.icons.filled.Key
 import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material3.DropdownMenu
@@ -71,6 +72,14 @@ fun RepoPageActions(
     }
 
     LongPressAbleIconBtn(
+        tooltipText = stringResource(R.string.credential_manager),
+        icon = Icons.Filled.Key,
+        iconContentDesc = stringResource(R.string.credential_manager),
+    ) {
+        navController.navigate(Cons.nav_CredentialManagerScreen+"/${Cons.dbInvalidNonEmptyId}")
+    }
+
+    LongPressAbleIconBtn(
         tooltipText = stringResource(R.string.clone),
         icon = Icons.Filled.Add,
         iconContentDesc = stringResource(id = R.string.clone),
@@ -119,13 +128,15 @@ fun RepoPageActions(
                     showGlobalUsernameAndEmailDialog.value=true
                 }
             )
-            DropdownMenuItem(
-                text = { Text(stringResource(R.string.credential_manager)) },
-                onClick = {
-                    closeMenu()
-                    navController.navigate(Cons.nav_CredentialManagerScreen+"/${Cons.dbInvalidNonEmptyId}")
-                }
-            )
+
+//            DropdownMenuItem(
+//                text = { Text(stringResource(R.string.credential_manager)) },
+//                onClick = {
+//                    closeMenu()
+//                    navController.navigate(Cons.nav_CredentialManagerScreen+"/${Cons.dbInvalidNonEmptyId}")
+//                }
+//            )
+
         }
     }
 }

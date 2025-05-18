@@ -139,7 +139,7 @@ object Cons {
 
     //一个无效的非空id。应用场景：有时候页面根据导航url中的id是否为空来决定是否启用某些功能，但url中如果传空字符串会出现"//"这样的字符串导致导航出错，可以用缓存key解决，但那样还要查缓存或者检查key是否有效，不如直接创建一个无效的导航id
     //为避免导航出错，这里不应该有 / 之类的字符
-    const val dbInvalidNonEmptyId = "xyz"  //无效id的长度比默认生成的uuid短，且包含非hex字符，且不包含会导致url解析出错的字符，就够了，没必要弄很长
+    const val dbInvalidNonEmptyId = "xyz"  //无效id的长度比默认生成的随机id短，且不包含会导致url解析出错的字符，就够了，没必要弄很长
 
     //代表布尔值
     const val dbCommonFalse=0;
