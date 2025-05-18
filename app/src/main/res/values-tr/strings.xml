@@ -1182,6 +1182,6 @@
     <string name="push_force_with_lease_note">Yalnızca upstream\'in en son commit\'i beklenenle aynı olduğunda zorla itme yapılacak</string>
     <string name="checking">Kontrol ediliyor…</string>
     <string name="nodes">Düğümler</string>
-    <string name="note_pat_instead_of_password">Not: Eğer 2FA\'yı etkinleştirdiyseniz, şifre yerine kişisel erişim belirteci kullanmalısınız ve belirteç, Depo içeriği için Okuma ve Yazma izinlerine sahip olmalıdır.</string>
+    <string name="note_pat_instead_of_password">Not: Eğer 2FA\'yı etkinleştirdiyseniz, parola yerine Kişisel Erişim Jetonu (Personal Access Token) kullanmanız gerekir. Bu jetonun, depo içeriği (Contents) ve iş akışları (Workflows) üzerinde okuma ve yazma izinlerine sahip olması gerekmektedir.</string>
 
 </resources>
