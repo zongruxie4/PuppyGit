@@ -109,18 +109,18 @@ fun DomainCredentialListScreen(
     val listState = rememberLazyListState()
     val curCredential = mutableCustomStateOf(keyTag = stateKeyTag, keyName = "curCredential", initValue = DomainCredentialDto())
     val needRefresh = rememberSaveable { mutableStateOf("")}
-    val showLoadingDialog = rememberSaveable { mutableStateOf(SharedState.defaultLadingValue)}
+//    val showLoadingDialog = rememberSaveable { mutableStateOf(SharedState.defaultLadingValue)}
 
     val loadingStrRes = stringResource(R.string.loading)
     val loadingText = rememberSaveable { mutableStateOf( loadingStrRes)}
-    val loadingOn = {text:String ->
-        loadingText.value=text
-        showLoadingDialog.value=true
-    }
-    val loadingOff = {
-        showLoadingDialog.value=false
-        loadingText.value=""
-    }
+//    val loadingOn = {text:String ->
+//        loadingText.value=text
+//        showLoadingDialog.value=true
+//    }
+//    val loadingOff = {
+//        showLoadingDialog.value=false
+//        loadingText.value=""
+//    }
 
     val remote =mutableCustomStateOf(keyTag = stateKeyTag, keyName = "remote", initValue = RemoteEntity(id=""))
     val curRepo =mutableCustomStateOf(keyTag = stateKeyTag, keyName = "curRepo", initValue = RepoEntity(id=""))
@@ -528,7 +528,8 @@ fun DomainCredentialListScreen(
 
             }
 
-            if (showLoadingDialog.value) {
+//            if (showLoadingDialog.value) {
+            if (false) {
                 LoadingDialog(text = loadingText.value)  //这个东西太阴间了，还是用LoadingText吧
 //
 //            LoadingText(text = loadingText.value,contentPadding = contentPadding)
