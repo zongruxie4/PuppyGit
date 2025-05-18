@@ -64,7 +64,6 @@ import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.unit.dp
 import com.catpuppyapp.puppygit.compose.ConfirmDialog
-import com.catpuppyapp.puppygit.compose.DefaultPaddingText
 import com.catpuppyapp.puppygit.compose.DepthTextField
 import com.catpuppyapp.puppygit.compose.DropDownMenuItemText
 import com.catpuppyapp.puppygit.compose.InternalFileChooser
@@ -72,6 +71,7 @@ import com.catpuppyapp.puppygit.compose.LoadingDialog
 import com.catpuppyapp.puppygit.compose.LongPressAbleIconBtn
 import com.catpuppyapp.puppygit.compose.MySelectionContainer
 import com.catpuppyapp.puppygit.compose.SingleSelectList
+import com.catpuppyapp.puppygit.compose.TokenInsteadOfPasswordHint
 import com.catpuppyapp.puppygit.constants.Cons
 import com.catpuppyapp.puppygit.constants.SpecialCredential
 import com.catpuppyapp.puppygit.data.entity.CredentialEntity
@@ -992,9 +992,7 @@ fun CloneScreen(
 
                 // 若是http，提示用户可能需要用token替代密码
                 if(curCredentialType.intValue == Cons.dbCredentialTypeHttp) {
-                    MySelectionContainer {
-                        DefaultPaddingText(stringResource(R.string.note_pat_instead_of_password))
-                    }
+                    TokenInsteadOfPasswordHint()
                 }
 
             }else if(credentialSelectedOption == optNumSelectCredential) {
