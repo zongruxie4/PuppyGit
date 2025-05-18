@@ -1288,5 +1288,6 @@
     <string name="checking">Checking…</string>
     <string name="nodes">Nodes</string>
     <string name="note_pat_instead_of_password">Note: If you have enabled 2FA, you must use a Personal Access Token instead of the password. The token must have read and write permissions for repository contents and workflows.</string>
+    <string name="graphic">Graphic</string>
 
 </resources>

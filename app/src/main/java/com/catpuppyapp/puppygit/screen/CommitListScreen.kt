@@ -19,6 +19,8 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.automirrored.filled.List
+import androidx.compose.material.icons.filled.CheckBox
+import androidx.compose.material.icons.filled.CheckBoxOutlineBlank
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Compare
 import androidx.compose.material.icons.filled.Error
@@ -420,6 +422,7 @@ fun CommitListScreen(
     val settings = remember { SettingsUtil.getSettingsSnapshot() }
     val shouldShowTimeZoneInfo = rememberSaveable { TimeZoneUtil.shouldShowTimeZoneInfo(settings) }
     val commitHistoryRTL = rememberSaveable { mutableStateOf(settings.commitHistoryRTL) }
+    val commitHistoryGraphic = rememberSaveable { mutableStateOf(settings.commitHistoryGraphic) }
 
     //page size for load more
     val pageSize = rememberSaveable{ mutableStateOf(settings.commitHistoryPageSize) }
@@ -1843,6 +1846,24 @@ fun CommitListScreen(
                                     }
 
                                     DropdownMenuItem(
+                                        text = { Text(stringResource(R.string.graphic)) },
+                                        trailingIcon = {
+                                            Icon(
+                                                imageVector = if(commitHistoryGraphic.value) Icons.Filled.CheckBox else Icons.Filled.CheckBoxOutlineBlank,
+                                                contentDescription = null
+                                            )
+                                        },
+                                        onClick = {
+                                            val newValue = !commitHistoryGraphic.value
+                                            commitHistoryGraphic.value = newValue
+                                            SettingsUtil.update { it.commitHistoryGraphic = newValue }
+
+                                            //关闭顶栏菜单
+                                            showTopBarMenu.value = false
+                                        }
+                                    )
+
+                                    DropdownMenuItem(
                                         text = { Text(stringResource(R.string.page_size)) },
                                         onClick = {
                                             initSetPageSizeDialog()
@@ -2269,6 +2290,7 @@ fun CommitListScreen(
                         }
                     ) { idx, it ->
                         CommitItem(
+                            commitHistoryGraphic = commitHistoryGraphic.value,
                             density = density,
                             nodeCircleRadiusInPx = nodeCircleRadiusInPx,
                             nodeCircleStartOffsetX = nodeCircleStartOffsetX,

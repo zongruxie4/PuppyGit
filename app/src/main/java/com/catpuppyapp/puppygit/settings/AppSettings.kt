@@ -118,6 +118,11 @@ data class AppSettings(
      */
     var commitHistoryRTL: Boolean = false,
 
+    /**
+     * 是否显示提交历史树形图
+     */
+    var commitHistoryGraphic: Boolean = true,
+
 ) {
 
     override fun equals(other: Any?): Boolean {
