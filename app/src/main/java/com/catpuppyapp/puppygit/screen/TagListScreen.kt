@@ -13,7 +13,6 @@ import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Delete
-import androidx.compose.material.icons.filled.Download
 import androidx.compose.material.icons.filled.Downloading
 import androidx.compose.material.icons.filled.FilterAlt
 import androidx.compose.material.icons.filled.Info
@@ -736,7 +735,7 @@ fun TagListScreen(
 
                         LongPressAbleIconBtn(
                             tooltipText = stringResource(R.string.fetch_tags),
-                            icon =  Icons.Filled.Download,
+                            icon =  Icons.Filled.Downloading,
                             iconContentDesc = stringResource(R.string.fetch_tags),
                         ) {
                             initFetchTagDialog()
