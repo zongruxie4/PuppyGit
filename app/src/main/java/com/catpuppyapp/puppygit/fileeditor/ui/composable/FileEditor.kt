@@ -88,6 +88,7 @@ import com.catpuppyapp.puppygit.utils.cache.Cache
 import com.catpuppyapp.puppygit.utils.doJobThenOffLoading
 import com.catpuppyapp.puppygit.utils.paddingLineNumber
 import com.catpuppyapp.puppygit.utils.replaceStringResList
+import com.catpuppyapp.puppygit.utils.state.CustomBoxSaveable
 import com.catpuppyapp.puppygit.utils.state.CustomStateSaveable
 import kotlinx.coroutines.runBlocking
 import me.saket.swipe.SwipeAction
@@ -100,7 +101,7 @@ private const val TAG = "FileEditor"
 fun FileEditor(
     stateKeyTag:String,
 
-    ignoreFocusOnce:Box<Boolean>,
+    ignoreFocusOnce: CustomBoxSaveable<Boolean>,
     requireEditorScrollToPreviewCurPos:MutableState<Boolean>,
     requirePreviewScrollToEditorCurPos:MutableState<Boolean>,
     isSubPageMode:Boolean,

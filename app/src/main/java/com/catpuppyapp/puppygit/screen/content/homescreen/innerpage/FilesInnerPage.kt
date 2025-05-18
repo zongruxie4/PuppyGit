@@ -158,6 +158,7 @@ import com.catpuppyapp.puppygit.utils.saf.SafUtil
 import com.catpuppyapp.puppygit.utils.showToast
 import com.catpuppyapp.puppygit.utils.state.CustomStateListSaveable
 import com.catpuppyapp.puppygit.utils.state.CustomStateSaveable
+import com.catpuppyapp.puppygit.utils.state.mutableCustomBoxOf
 import com.catpuppyapp.puppygit.utils.state.mutableCustomStateListOf
 import com.catpuppyapp.puppygit.utils.state.mutableCustomStateOf
 import com.catpuppyapp.puppygit.utils.trimLineBreak
@@ -488,7 +489,7 @@ fun FilesInnerPage(
 
     val showApplyAsPatchDialog = rememberSaveable { mutableStateOf(false)}
     val loadingRepoList = rememberSaveable { mutableStateOf(false) }
-    val loadingRepoListJob = remember { Box<Job?>(null) }  //如果不remember，这个值会被反复赋值，导致之前存的任务被冲掉
+    val loadingRepoListJob = mutableCustomBoxOf<Job?>(stateKeyTag, "loadingRepoListJob") { null }  //如果不remember，这个值会被反复赋值，导致之前存的任务被冲掉
     val fileFullPathForApplyAsPatch =  rememberSaveable { mutableStateOf("")}
     val allRepoList = mutableCustomStateListOf(stateKeyTag, "allRepoList", listOf<RepoEntity>())
     val initApplyAsPatchDialog = { patchFileFullPath:String ->

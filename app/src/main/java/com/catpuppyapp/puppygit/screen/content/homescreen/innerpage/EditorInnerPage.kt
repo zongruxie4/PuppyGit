@@ -60,7 +60,6 @@ import com.catpuppyapp.puppygit.compose.OpenAsDialog
 import com.catpuppyapp.puppygit.constants.Cons
 import com.catpuppyapp.puppygit.constants.LineNum
 import com.catpuppyapp.puppygit.constants.PageRequest
-import com.catpuppyapp.puppygit.dto.Box
 import com.catpuppyapp.puppygit.dto.FileSimpleDto
 import com.catpuppyapp.puppygit.dto.UndoStack
 import com.catpuppyapp.puppygit.etc.PathType
@@ -96,6 +95,7 @@ import com.catpuppyapp.puppygit.utils.isFileSizeOverLimit
 import com.catpuppyapp.puppygit.utils.showToast
 import com.catpuppyapp.puppygit.utils.snapshot.SnapshotFileFlag
 import com.catpuppyapp.puppygit.utils.snapshot.SnapshotUtil
+import com.catpuppyapp.puppygit.utils.state.CustomBoxSaveable
 import com.catpuppyapp.puppygit.utils.state.CustomStateSaveable
 import com.catpuppyapp.puppygit.utils.state.mutableCustomStateListOf
 import com.catpuppyapp.puppygit.utils.withMainContext
@@ -112,7 +112,7 @@ fun EditorInnerPage(
     stateKeyTag:String,
 
     loadLock:Mutex,  // 避免重复加载的锁
-    ignoreFocusOnce:Box<Boolean>,
+    ignoreFocusOnce: CustomBoxSaveable<Boolean>,
     previewLoading:MutableState<Boolean>,
     editorPreviewFileDto: CustomStateSaveable<FileSimpleDto>,
     requireEditorScrollToPreviewCurPos:MutableState<Boolean>,
@@ -1473,7 +1473,7 @@ fun EditorInnerPage(
 
 private suspend fun doInit(
     requirePreviewScrollToEditorCurPos: MutableState<Boolean>,
-    ignoreFocusOnce: Box<Boolean>,
+    ignoreFocusOnce: CustomBoxSaveable<Boolean>,
     isPreviewModeOn: MutableState<Boolean>,
     previewPath: String,
     updatePreviewPath: (String)->Unit,

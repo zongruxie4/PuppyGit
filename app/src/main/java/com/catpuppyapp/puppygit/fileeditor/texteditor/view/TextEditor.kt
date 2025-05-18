@@ -85,6 +85,7 @@ import com.catpuppyapp.puppygit.utils.cache.Cache
 import com.catpuppyapp.puppygit.utils.doJobThenOffLoading
 import com.catpuppyapp.puppygit.utils.fileopenhistory.FileOpenHistoryMan
 import com.catpuppyapp.puppygit.utils.replaceStringResList
+import com.catpuppyapp.puppygit.utils.state.CustomBoxSaveable
 import com.catpuppyapp.puppygit.utils.state.CustomStateSaveable
 import com.catpuppyapp.puppygit.utils.state.mutableCustomStateOf
 import kotlinx.parcelize.Parcelize
@@ -155,7 +156,7 @@ private val customTextSelectionColors_hideCursorHandle = MyStyleKt.TextSelection
 fun TextEditor(
     stateKeyTag:String,
 
-    ignoreFocusOnce:Box<Boolean>,
+    ignoreFocusOnce: CustomBoxSaveable<Boolean>,
     undoStack:UndoStack,
     curPreviewScrollState: ScrollState,
     requireEditorScrollToPreviewCurPos:MutableState<Boolean>,

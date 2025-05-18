@@ -48,6 +48,7 @@ import com.catpuppyapp.puppygit.utils.cache.Cache
 import com.catpuppyapp.puppygit.utils.cache.NaviCache
 import com.catpuppyapp.puppygit.utils.doJobThenOffLoading
 import com.catpuppyapp.puppygit.utils.generateRandomString
+import com.catpuppyapp.puppygit.utils.state.mutableCustomBoxOf
 import com.catpuppyapp.puppygit.utils.state.mutableCustomStateOf
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.runBlocking
@@ -180,7 +181,7 @@ fun SubPageEditor(
 
     //初始值不用忽略，因为打开文件后默认focusing line idx为null，所以这个值是否忽略并没意义
     //这个值不能用state，不然修改state后会重组，然后又触发聚焦，就没意义了
-    val editorIgnoreFocusOnce = remember { Box(false) }
+    val editorIgnoreFocusOnce = mutableCustomBoxOf(stateKeyTag, "editorIgnoreFocusOnce") { false }
 
 
     val settingsTmp = remember { SettingsUtil.getSettingsSnapshot() }  //避免状态变量里的设置项过旧，重新获取一个

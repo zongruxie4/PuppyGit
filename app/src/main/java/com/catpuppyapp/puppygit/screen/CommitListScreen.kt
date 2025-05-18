@@ -112,7 +112,6 @@ import com.catpuppyapp.puppygit.dev.diffToHeadTestPassed
 import com.catpuppyapp.puppygit.dev.proFeatureEnabled
 import com.catpuppyapp.puppygit.dev.resetByHashTestPassed
 import com.catpuppyapp.puppygit.dev.tagsTestPassed
-import com.catpuppyapp.puppygit.dto.Box
 import com.catpuppyapp.puppygit.etc.Ret
 import com.catpuppyapp.puppygit.git.CommitDto
 import com.catpuppyapp.puppygit.git.DrawCommitNode
@@ -146,6 +145,7 @@ import com.catpuppyapp.puppygit.utils.formatMinutesToUtc
 import com.catpuppyapp.puppygit.utils.getRequestDataByState
 import com.catpuppyapp.puppygit.utils.isGoodIndexForList
 import com.catpuppyapp.puppygit.utils.replaceStringResList
+import com.catpuppyapp.puppygit.utils.state.mutableCustomBoxOf
 import com.catpuppyapp.puppygit.utils.state.mutableCustomStateListOf
 import com.catpuppyapp.puppygit.utils.state.mutableCustomStateOf
 import com.catpuppyapp.puppygit.utils.time.TimeZoneUtil
@@ -601,7 +601,7 @@ fun CommitListScreen(
     val revwalk = mutableCustomStateOf<Revwalk?>(stateKeyTag, "revwalk", null)
     val repositoryForRevWalk = mutableCustomStateOf<Repository?>(stateKeyTag, "repositoryForRevWalk", null)
     val loadLock = mutableCustomStateOf<Mutex>(stateKeyTag, "loadLock", Mutex())
-    val draw_lastOutputNodes = remember { Box<List<DrawCommitNode>>(listOf()) }
+    val draw_lastOutputNodes = mutableCustomBoxOf(stateKeyTag, "draw_lastOutputNodes") { listOf<DrawCommitNode>() }
     val resetDrawNodesInfo = {
         draw_lastOutputNodes.value = listOf()
     }

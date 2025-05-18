@@ -31,10 +31,10 @@ import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.catpuppyapp.puppygit.dev.bug_Editor_WrongUpdateEditColumnIdx_Fixed
-import com.catpuppyapp.puppygit.dto.Box
 import com.catpuppyapp.puppygit.fileeditor.texteditor.state.TextFieldState
 import com.catpuppyapp.puppygit.ui.theme.Theme
 import com.catpuppyapp.puppygit.utils.MyLog
+import com.catpuppyapp.puppygit.utils.state.CustomBoxSaveable
 
 
 private const val TAG = "MyTextField"
@@ -42,7 +42,7 @@ private const val TAG = "MyTextField"
 
 @Composable
 internal fun MyTextField(
-    ignoreFocusOnce: Box<Boolean>,
+    ignoreFocusOnce: CustomBoxSaveable<Boolean>,
     focusThisLine:Boolean,
     textFieldState: TextFieldState,
     enabled: Boolean,

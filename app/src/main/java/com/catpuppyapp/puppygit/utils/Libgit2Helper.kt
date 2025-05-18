@@ -49,6 +49,7 @@ import com.catpuppyapp.puppygit.settings.AppSettings
 import com.catpuppyapp.puppygit.settings.SettingsUtil
 import com.catpuppyapp.puppygit.style.MyStyleKt
 import com.catpuppyapp.puppygit.ui.theme.Theme
+import com.catpuppyapp.puppygit.utils.state.CustomBoxSaveable
 import com.github.git24j.core.AnnotatedCommit
 import com.github.git24j.core.Apply
 import com.github.git24j.core.Blob
@@ -4284,7 +4285,7 @@ object Libgit2Helper {
 
         // 上个节点的output nodes就是当前节点的input
         // 这个只是用来缓存节点信息的不需要用state变量，普通的mutabellist即可，但需要加锁确保不会并发冲突（提交历史页面查询时已加锁）
-        draw_lastOutputNodes: Box<List<DrawCommitNode>>,
+        draw_lastOutputNodes: CustomBoxSaveable<List<DrawCommitNode>>,
     ) {
         val funName = "getCommitList"
 //            if(debugModeOn) {

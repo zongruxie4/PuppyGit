@@ -114,6 +114,7 @@ import com.catpuppyapp.puppygit.utils.changeStateTriggerRefreshPage
 import com.catpuppyapp.puppygit.utils.doJobThenOffLoading
 import com.catpuppyapp.puppygit.utils.generateRandomString
 import com.catpuppyapp.puppygit.utils.saf.SafUtil
+import com.catpuppyapp.puppygit.utils.state.mutableCustomBoxOf
 import com.catpuppyapp.puppygit.utils.state.mutableCustomStateListOf
 import com.catpuppyapp.puppygit.utils.state.mutableCustomStateOf
 import com.github.git24j.core.Repository.StateT
@@ -182,7 +183,7 @@ fun HomeScreen(
 //    val changeListIsShowRepoList = rememberSaveable { mutableStateOf(false)}
 //    val changeListShowRepoList = { changeListIsShowRepoList.value=true }
     // 此变量仅在回调使用，与页面是否重新渲染无关，所以不需要用state
-    val changeListCachedEditorPath = remember { Box<String>("") }
+    val changeListCachedEditorPath = mutableCustomBoxOf(stateKeyTag, "changeListCachedEditorPath") { "" }
     val changeListIsFileSelectionMode = rememberSaveable { mutableStateOf(false)}
     val changeListPageNoRepo = rememberSaveable { mutableStateOf(false)}
     val changeListPageHasNoConflictItems = rememberSaveable { mutableStateOf(false)}
@@ -527,7 +528,7 @@ fun HomeScreen(
 
     //初始值不用忽略，因为打开文件后默认focusing line idx为null，所以这个值是否忽略并没意义
     //这个值不能用state，不然修改state后会重组，然后又触发聚焦，就没意义了
-    val editorIgnoreFocusOnce = remember { Box(false) }
+    val editorIgnoreFocusOnce = mutableCustomBoxOf(stateKeyTag, "editorIgnoreFocusOnce") { false }
 
     val editorPageLoadingOn = {msg:String ->
         loadingText.value = msg
