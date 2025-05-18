@@ -516,10 +516,10 @@ fun FileEditor(
                                 //给第一行top加点padding，不然离上面太近，难受
                                 .addTopPaddingIfIsFirstLine(index)
                                 //底线
-                                .bottomLine(
-                                    bottomLineWidth = bottomLineWidth,
-                                    color = UIHelper.getDividerColor(),
-                                )
+//                                .bottomLine(
+//                                    bottomLineWidth = bottomLineWidth,
+//                                    color = UIHelper.getDividerColor(),
+//                                )
                         )
 
 
