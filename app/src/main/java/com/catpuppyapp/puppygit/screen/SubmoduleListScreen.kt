@@ -1016,7 +1016,7 @@ fun SubmoduleListScreen(
     }
 
 
-    val isInitLoading = rememberSaveable { mutableStateOf(SharedState.defaultLadingValue) }
+    val isInitLoading = rememberSaveable { mutableStateOf(SharedState.defaultLoadingValue) }
     val initLoadingOn = { msg:String ->
         isInitLoading.value = true
     }

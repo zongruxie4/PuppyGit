@@ -128,7 +128,7 @@ fun AutomationInnerPage(
 
     val addedAppList = mutableCustomStateListOf(stateKeyTag, "addedAppList") { listOf<AppInfo>() }
     val notAddedAppList = mutableCustomStateListOf(stateKeyTag, "notAddedAppList") { listOf<AppInfo>() }
-    val appListLoading = rememberSaveable { mutableStateOf(SharedState.defaultLadingValue) }
+    val appListLoading = rememberSaveable { mutableStateOf(SharedState.defaultLoadingValue) }
 
     val progressNotify = rememberSaveable { mutableStateOf(settingsState.value.automation.showNotifyWhenProgress) }
 //    val errNotify = rememberSaveable { mutableStateOf(settingsState.value.automation.showNotifyWhenErr) }

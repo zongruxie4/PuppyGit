@@ -122,7 +122,6 @@ import com.catpuppyapp.puppygit.utils.state.mutableCustomStateOf
 import com.catpuppyapp.puppygit.utils.strHasIllegalChars
 import com.catpuppyapp.puppygit.utils.updateSelectedList
 import com.github.git24j.core.Repository
-import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.sync.withLock
 import java.io.File
 
@@ -215,7 +214,7 @@ fun RepoInnerPage(
 
     val requireBlinkIdx = rememberSaveable{mutableIntStateOf(-1)}
 
-    val isLoading = rememberSaveable { mutableStateOf(SharedState.defaultLadingValue)}
+    val isLoading = rememberSaveable { mutableStateOf(SharedState.defaultLoadingValue)}
     val loadingText = rememberSaveable { mutableStateOf(activityContext.getString(R.string.loading))}
     val loadingOn = {text:String->
         loadingText.value = text

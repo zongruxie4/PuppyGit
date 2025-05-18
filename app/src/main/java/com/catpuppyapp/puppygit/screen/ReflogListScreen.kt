@@ -1,7 +1,6 @@
 package com.catpuppyapp.puppygit.screen
 
 import androidx.activity.compose.BackHandler
-import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material.icons.Icons
@@ -317,7 +316,7 @@ fun ReflogListScreen(
     }
 
 
-    val isInitLoading = rememberSaveable { mutableStateOf(SharedState.defaultLadingValue) }
+    val isInitLoading = rememberSaveable { mutableStateOf(SharedState.defaultLoadingValue) }
     val initLoadingOn = { msg:String ->
         isInitLoading.value = true
     }

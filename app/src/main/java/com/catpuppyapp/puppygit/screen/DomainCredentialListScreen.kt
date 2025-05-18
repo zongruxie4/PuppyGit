@@ -51,7 +51,6 @@ import com.catpuppyapp.puppygit.compose.FilterTextField
 import com.catpuppyapp.puppygit.compose.FullScreenScrollableColumn
 import com.catpuppyapp.puppygit.compose.GoToTopAndGoToBottomFab
 import com.catpuppyapp.puppygit.compose.InfoDialog
-import com.catpuppyapp.puppygit.compose.LoadingDialog
 import com.catpuppyapp.puppygit.compose.LongPressAbleIconBtn
 import com.catpuppyapp.puppygit.compose.MyLazyColumn
 import com.catpuppyapp.puppygit.compose.PullToRefreshBox
@@ -375,7 +374,7 @@ fun DomainCredentialListScreen(
     }
 
 
-    val isInitLoading = rememberSaveable { mutableStateOf(SharedState.defaultLadingValue) }
+    val isInitLoading = rememberSaveable { mutableStateOf(SharedState.defaultLoadingValue) }
     val initLoadingOn = { msg:String ->
         isInitLoading.value = true
     }

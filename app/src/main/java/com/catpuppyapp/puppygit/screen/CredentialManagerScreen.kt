@@ -108,7 +108,7 @@ fun CredentialManagerScreen(
     val listState = rememberLazyListState()
     val curCredential = mutableCustomStateOf(keyTag = stateKeyTag, keyName = "curCredential", initValue = CredentialEntity(id=""))
     val needRefresh = rememberSaveable { mutableStateOf("")}
-    val showLoadingDialog = rememberSaveable { mutableStateOf(SharedState.defaultLadingValue)}
+    val showLoadingDialog = rememberSaveable { mutableStateOf(SharedState.defaultLoadingValue)}
 
     val loadingStrRes = stringResource(R.string.loading)
     val loadingText = rememberSaveable { mutableStateOf(loadingStrRes)}

@@ -9,7 +9,7 @@ private const val TAG = "SharedState"
 
 object SharedState {
     // 若false，有时候会不显示loading，效果不好
-    const val defaultLadingValue = true
+    const val defaultLoadingValue = true
 
     val homeScreenNeedRefresh = mutableStateOf("")
 
