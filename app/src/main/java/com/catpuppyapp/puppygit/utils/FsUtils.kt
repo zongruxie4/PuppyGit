@@ -1149,7 +1149,7 @@ object FsUtils {
      */
     fun getAppCeilingPaths():List<String> {
         return listOf(
-            // usually is "/storage/emulated/0"
+            // usually is "/storage/emulated/0"，这个cover了 "外部存储/Android/data/包名" 那个目录
             getExternalStorageRootPathNoEndsWithSeparator(),
             // "/data/data/app.package.name"
             AppModel.innerDataDir.canonicalPath,

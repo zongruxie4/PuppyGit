@@ -418,8 +418,8 @@ fun CommitListScreen(
 //        mutableStateOf(getHolder(stateKeyTag, "list",  mutableListOf<CommitDto>()))
 //    }
     val settings = remember { SettingsUtil.getSettingsSnapshot() }
-    val shouldShowTimeZoneInfo = remember { TimeZoneUtil.shouldShowTimeZoneInfo(settings) }
-    val commitHistoryRTL = remember { mutableStateOf(settings.commitHistoryRTL) }
+    val shouldShowTimeZoneInfo = rememberSaveable { TimeZoneUtil.shouldShowTimeZoneInfo(settings) }
+    val commitHistoryRTL = rememberSaveable { mutableStateOf(settings.commitHistoryRTL) }
 
     //page size for load more
     val pageSize = rememberSaveable{ mutableStateOf(settings.commitHistoryPageSize) }

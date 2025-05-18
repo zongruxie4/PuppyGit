@@ -108,6 +108,7 @@ private fun ShowThumbnailForImage(
     fallbackIconColor: Color,
     modifier: Modifier
 ) {
+    // 这个要在lazy column里用，所以最好别用rememberSaveable
     val loadErr = remember { mutableStateOf(false) }
 
     if(loadErr.value) {

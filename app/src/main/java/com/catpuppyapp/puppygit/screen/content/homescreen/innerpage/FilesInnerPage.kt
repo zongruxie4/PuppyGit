@@ -1942,7 +1942,7 @@ fun FilesInnerPage(
     }
     // saf import export 共享这些状态
     val safImportExportOverwrite = rememberSaveable { mutableStateOf(false) }
-    val choosenSafUri = remember { mutableStateOf<Uri?>(null) }
+    val choosenSafUri = mutableCustomStateOf<Uri?>(stateKeyTag, "choosenSafUri") { null }
 
     val chooseDirLauncher = rememberLauncherForActivityResult(MyOpenDocumentTree()) { uri ->
         //执行导出
@@ -3547,7 +3547,7 @@ private fun getBackHandler(
 
 ): () -> Unit {
     val backStartSec =  rememberSaveable { mutableLongStateOf(0) }
-    val ceilingPaths = remember { FsUtils.getAppCeilingPaths() }
+    val ceilingPaths = rememberSaveable { FsUtils.getAppCeilingPaths() }
 
     val pressBackAgainForExitText = stringResource(R.string.press_back_again_to_exit);
     val showTextAndUpdateTimeForPressBackBtn = {

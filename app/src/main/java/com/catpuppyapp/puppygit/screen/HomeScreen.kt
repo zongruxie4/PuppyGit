@@ -568,7 +568,7 @@ fun HomeScreen(
 //    val editorUndoStack = remember { SharedState.editorUndoStack }
     val editorUndoStack = mutableCustomStateOf(stateKeyTag, "editorUndoStack") { UndoStack("") }
 
-    val editorLoadLock = remember { Mutex() }
+    val editorLoadLock = mutableCustomBoxOf(stateKeyTag, "editorLoadLock") { Mutex() }.value
 
     //给Files页面点击打开文件用的
     //第2个参数是期望值，只有当文件路径不属于app内置禁止edit的目录时才会使用那个值，否则强制开启readonly模式

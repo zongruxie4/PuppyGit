@@ -126,6 +126,7 @@ import com.catpuppyapp.puppygit.utils.getFormattedLastModifiedTimeOfFile
 import com.catpuppyapp.puppygit.utils.getHumanReadableSizeStr
 import com.catpuppyapp.puppygit.utils.getRequestDataByState
 import com.catpuppyapp.puppygit.utils.replaceStringResList
+import com.catpuppyapp.puppygit.utils.state.mutableCustomBoxOf
 import com.catpuppyapp.puppygit.utils.state.mutableCustomStateListOf
 import com.catpuppyapp.puppygit.utils.state.mutableCustomStateOf
 import com.github.git24j.core.Diff
@@ -232,7 +233,7 @@ fun DiffScreen(
     val listState = rememberLazyListState()
 
     //避免高强度并发赋值导致报错，虽然一般没事，但墨菲定律，你懂的
-    val diffableListLock = remember { Mutex() }
+    val diffableListLock = mutableCustomBoxOf<Mutex>(stateKeyTag, "diffableListLock", Mutex()).value
 
     val diffableItemList = mutableCustomStateListOf(keyTag = stateKeyTag, keyName = "diffableItemList") {
         NaviCache.getByType<List<DiffableItem>>(diffableListCacheKey) ?: listOf()

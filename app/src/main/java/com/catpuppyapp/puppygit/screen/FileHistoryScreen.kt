@@ -167,7 +167,7 @@ fun FileHistoryScreen(
 //        mutableStateOf(getHolder(stateKeyTag, "list",  mutableListOf<CommitDto>()))
 //    }
     val settings = remember { SettingsUtil.getSettingsSnapshot() }
-    val shouldShowTimeZoneInfo = remember { TimeZoneUtil.shouldShowTimeZoneInfo(settings) }
+    val shouldShowTimeZoneInfo = rememberSaveable { TimeZoneUtil.shouldShowTimeZoneInfo(settings) }
 
     //page size for load more
     val pageSize = rememberSaveable{ mutableStateOf(settings.fileHistoryPageSize) }

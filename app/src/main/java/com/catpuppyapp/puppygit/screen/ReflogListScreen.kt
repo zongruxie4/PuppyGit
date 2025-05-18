@@ -97,7 +97,7 @@ fun ReflogListScreen(
     val inDarkTheme = Theme.inDarkTheme
 
     val settings = remember { SettingsUtil.getSettingsSnapshot() }
-    val shouldShowTimeZoneInfo = remember { TimeZoneUtil.shouldShowTimeZoneInfo(settings) }
+    val shouldShowTimeZoneInfo = rememberSaveable { TimeZoneUtil.shouldShowTimeZoneInfo(settings) }
 
     val refName = rememberSaveable { mutableStateOf(Cons.gitHeadStr) }
 

@@ -91,7 +91,7 @@ fun SubPageEditor(
 //    val appContext = AppModel.appContext  //这个获取不了Activity!
     val activityContext = LocalContext.current  //这个能获取到
     val scope = rememberCoroutineScope()
-    val allRepoParentDir = AppModel.allRepoParentDir
+//    val allRepoParentDir = AppModel.allRepoParentDir
     val settings = remember { SettingsUtil.getSettingsSnapshot() }
 
 //    val changeListRefreshRequiredByParentPage= StateUtil.getRememberSaveableState(initValue = "")
@@ -184,7 +184,7 @@ fun SubPageEditor(
     val editorIgnoreFocusOnce = mutableCustomBoxOf(stateKeyTag, "editorIgnoreFocusOnce") { false }
 
 
-    val settingsTmp = remember { SettingsUtil.getSettingsSnapshot() }  //避免状态变量里的设置项过旧，重新获取一个
+    val settingsTmp = settings  //之前在这重新获取了一个，后来发现没必要，为避免改变量名，这直接赋值算了
     val editorShowLineNum = rememberSaveable{mutableStateOf(settingsTmp.editor.showLineNum)}
     val editorLineNumFontSize = rememberSaveable { mutableIntStateOf(settingsTmp.editor.lineNumFontSize)}
     val editorFontSize = rememberSaveable { mutableIntStateOf(settingsTmp.editor.fontSize)}
@@ -200,7 +200,7 @@ fun SubPageEditor(
     val editorUndoStack = mutableCustomStateOf(stateKeyTag, "editorUndoStack") { UndoStack("") }
 
 
-    val editorLoadLock = remember { Mutex() }
+    val editorLoadLock = mutableCustomBoxOf(stateKeyTag, "editorLoadLock") { Mutex() }.value
 
 
     val showCloseDialog = rememberSaveable { mutableStateOf(false)}
