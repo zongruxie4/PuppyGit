@@ -270,167 +270,99 @@ fun CredentialNewOrEdit(
             LoadingDialog(loadingText.value)
         }
 
-        Column (modifier = Modifier
-            .fillMaxSize()
-            .padding(contentPadding)
-            .verticalScroll(listState)
-            .padding(bottom = MyStyleKt.Padding.PageBottom)  //这个padding是为了使密码框不在底部，类似vscode中文件的最后一行也可滑到屏幕中间一样的意义
-        ){
+        Column (
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(contentPadding)
+                .verticalScroll(listState)
+                .padding(bottom = MyStyleKt.Padding.PageBottom)  //这个padding是为了使密码框不在底部，类似vscode中文件的最后一行也可滑到屏幕中间一样的意义
+            ,
+        ) {
 
-                //显示新建credential的输入框
-                TextField(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(10.dp)
-                        .focusRequester(focusRequesterCredentialName)
-                    ,
-                    isError = showCredentialNameAlreadyExistsErr.value,
-                    supportingText = {
-                        if (showCredentialNameAlreadyExistsErr.value) {
-                            Text(
-                                modifier = Modifier.fillMaxWidth(),
-                                text = stringResource(R.string.credential_name_exists_err),
-                                color = MaterialTheme.colorScheme.error
-                            )
-                        }
-                    },
-                    trailingIcon = {
-                        if (showCredentialNameAlreadyExistsErr.value)
-                            Icon(imageVector=Icons.Filled.Error,
-                                contentDescription= stringResource(R.string.credential_name_exists_err),
-                                tint = MaterialTheme.colorScheme.error)
-                    },
-                    singleLine = true,
-
-                    value = credentialName.value,
-                    onValueChange = {
-                        updateCredentialName(it)
-                    },
-                    label = {
-                        Text(stringResource(R.string.credential_name))
-                    },
-                    placeholder = {
-                        Text(stringResource(R.string.credential_name_placeholder))
+            //显示新建credential的输入框
+            TextField(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(10.dp)
+                    .focusRequester(focusRequesterCredentialName)
+                ,
+                isError = showCredentialNameAlreadyExistsErr.value,
+                supportingText = {
+                    if (showCredentialNameAlreadyExistsErr.value) {
+                        Text(
+                            modifier = Modifier.fillMaxWidth(),
+                            text = stringResource(R.string.credential_name_exists_err),
+                            color = MaterialTheme.colorScheme.error
+                        )
                     }
-                )
-//            Row (modifier = Modifier.padding(10.dp)){
-//                Text(text = stringResource(id = R.string.type)+":")
-//            }
-//            for ((k, optext) in radioOptions.toList().withIndex()) {
-//                Row(
-//                    Modifier
-//                        .fillMaxWidth()
-//                        .heightIn(min = MyStyleKt.RadioOptions.minHeight)
-//
-//                        .selectable(
-//                            selected = credentialSelectedOption.intValue == k,
-//                            onClick = {
-//                                //更新选择值
-//                                credentialSelectedOption.intValue = k
-//                                if (k == optNumHttp) {
-//                                    credentialType.intValue = Cons.dbCredentialTypeHttp
-//                                } else {
-//                                    credentialType.intValue = Cons.dbCredentialTypeSsh
-//                                }
-//                            },
-//                            role = Role.RadioButton
-//                        )
-//                        .padding(horizontal = 10.dp),
-//                    verticalAlignment = Alignment.CenterVertically
-//                ) {
-//                    RadioButton(
-//                        selected = credentialSelectedOption.intValue == k,
-//                        onClick = null // null recommended for accessibility with screenreaders
-//                    )
-//                    Text(
-//                        text = optext,
-//                        style = MaterialTheme.typography.bodyLarge,
-//                        modifier = Modifier.padding(start = 10.dp)
-//                    )
-//                }
-//            }
+                },
+                trailingIcon = {
+                    if (showCredentialNameAlreadyExistsErr.value)
+                        Icon(imageVector=Icons.Filled.Error,
+                            contentDescription= stringResource(R.string.credential_name_exists_err),
+                            tint = MaterialTheme.colorScheme.error)
+                },
+                singleLine = true,
+
+                value = credentialName.value,
+                onValueChange = {
+                    updateCredentialName(it)
+                },
+                label = {
+                    Text(stringResource(R.string.credential_name))
+                },
+                placeholder = {
+                    Text(stringResource(R.string.credential_name_placeholder))
+                }
+            )
 
             TextField(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(10.dp)
-                    //如果type是ssh，让private-key输入框高点
-//                    if(credentialType.intValue == Cons.dbCredentialTypeSsh) {
-//                        Modifier
-//                            .fillMaxWidth()
-//                            .heightIn(min = 300.dp, max = 300.dp)
-//                            .padding(10.dp)
-//
-//                    }else{
-//                        Modifier
-//                            .fillMaxWidth()
-//                            .padding(10.dp)
-//                    }
-                    ,
-                    //如果是http的密码框，整成单行即可
-//                    singleLine = credentialType.intValue != Cons.dbCredentialTypeSsh,
+                // 可能输入private key，但最多6行，不然占屏幕太多，滚着麻烦
+                maxLines = 6,
 
-                    value = credentialVal.value,
-                    onValueChange = {
-                        credentialVal.value=it
-                    },
-                    label = {
-                        Text(stringResource(R.string.username_or_private_key))
-//                        if(credentialType.intValue == Cons.dbCredentialTypeHttp) {
-//                            Text(stringResource(R.string.username_or_private_key))
-//                            Text(stringResource(R.string.username))
-//                        }else{
-//                            Text(stringResource(R.string.private_key))
-//                        }
-                    },
-//                    placeholder = {
-//                        if(credentialType.intValue == Cons.dbCredentialTypeHttp) {
-//                            Text(stringResource(R.string.username))
-//                        }else{
-//                            Text(stringResource(R.string.paste_your_private_key_here))
-//                        }
-//                    }
-                )
-                TextField(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(10.dp),
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(10.dp)
+                        ,
+                value = credentialVal.value,
+                onValueChange = {
+                    credentialVal.value=it
+                },
+                label = {
+                    Text(stringResource(R.string.username_or_private_key))
+                },
+
+            )
+
+            TextField(
+                //密码最多一行
+                maxLines = 1,
+
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(10.dp),
 //                    singleLine = true,
-                    value = credentialPass.value,
-                    onValueChange = {
-                        credentialPass.value=it
-                    },
-                    label = {
-                        Text(stringResource(R.string.password_or_passphrase))
-//
-//                        if(credentialType.intValue == Cons.dbCredentialTypeHttp) {
-//                            Text(stringResource(R.string.password_or_passphrase))
-////                            Text(stringResource(R.string.password))
-//                        }else{
-//                            Text(stringResource(R.string.passphrase_if_have))
-//                        }
-                    },
-//                    placeholder = {
-//                        if(credentialType.intValue == Cons.dbCredentialTypeHttp) {
-//                            Text(stringResource(R.string.password))
-//                        }else{
-//                            Text(stringResource(R.string.input_passphrase_if_have))
-//                        }
-//                    },
-                    visualTransformation = if (passwordVisible.value) VisualTransformation.None else PasswordVisualTransformation(),
-                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password),
-                    trailingIcon = {
-                        if(!isEditMode.value || oldPassIsEmpty.value) {  //只有新建模式能查看密码，编辑模式不许看，避免被人偷看已保存的密码
-                            IconButton(onClick = { passwordVisible.value = !passwordVisible.value }) {
-                                Icon(
-                                    imageVector = if (passwordVisible.value) Icons.Filled.Visibility else Icons.Filled.VisibilityOff,
-                                    contentDescription = if (passwordVisible.value) stringResource(R.string.an_opened_eye) else stringResource(R.string.a_closed_eye)
-                                )
-                            }
+                value = credentialPass.value,
+                onValueChange = {
+                    credentialPass.value=it
+                },
+                label = {
+                    Text(stringResource(R.string.password_or_passphrase))
+                },
+                visualTransformation = if (passwordVisible.value) VisualTransformation.None else PasswordVisualTransformation(),
+                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password),
+                trailingIcon = {
+                    if(!isEditMode.value || oldPassIsEmpty.value) {  //只有新建模式能查看密码，编辑模式不许看，避免被人偷看已保存的密码
+                        IconButton(onClick = { passwordVisible.value = !passwordVisible.value }) {
+                            Icon(
+                                imageVector = if (passwordVisible.value) Icons.Filled.Visibility else Icons.Filled.VisibilityOff,
+                                contentDescription = if (passwordVisible.value) stringResource(R.string.an_opened_eye) else stringResource(R.string.a_closed_eye)
+                            )
                         }
                     }
+                }
 
-                )
+            )
 
             //编辑模式且密码不为空会显示加密后的密码，用户看了那个长度可能会傻眼，所以给个提示
             if(isEditMode.value && oldPassIsEmpty.value.not()) {
