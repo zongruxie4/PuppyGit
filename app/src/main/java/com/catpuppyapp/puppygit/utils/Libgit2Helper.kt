@@ -49,6 +49,7 @@ import com.catpuppyapp.puppygit.settings.AppSettings
 import com.catpuppyapp.puppygit.settings.SettingsUtil
 import com.catpuppyapp.puppygit.style.MyStyleKt
 import com.catpuppyapp.puppygit.ui.theme.Theme
+import com.catpuppyapp.puppygit.utils.cache.CommitCache
 import com.catpuppyapp.puppygit.utils.state.CustomBoxSaveable
 import com.github.git24j.core.AnnotatedCommit
 import com.github.git24j.core.Apply
@@ -4309,154 +4310,168 @@ object Libgit2Helper {
         var checkChannelCount = 0
 
         var next = initNext
-        var lastCommit: CommitDto? = null
+//        var lastCommit: CommitDto? = null
 
         while (next != null) {
             try {
                 //创建dto
                 val nextStr = next.toString()
-                val commit = resolveCommitByHash(repo, nextStr)
-                if(commit!=null) {
-                    val c = createCommitDto(next, allBranchList, allTagList, commit, repoId, repoIsShallow, shallowOidList, settings)
-                    val commit = Unit
+                var commitDto = CommitCache.getCachedDataOrNull(repoId, nextStr)
 
-                    //添加绘图节点信息
-                    val drawInputs = mutableListOf<DrawCommitNode>()
-                    var circleAt = Box(-1)
-                    for ((idx, node) in draw_lastOutputNodes.value.withIndex()) {
-                        // 更新当前节点
-                        val newNode = DrawCommitNode.transOutputNodesToInputs(
-                            idx = idx,
-                            node = node,
-                            currentCommitOidStr = c.oidStr,
-                            circleAt = circleAt,
-                        ).let {
-                            val newMergedList = mutableListOf<DrawCommitNode>()
-                            //更新合流节点，主要是为了更新子节点的endAt值
-                            it.mergedList.forEachIndexed{ idx, node->
-                                //更新子节点的值为父节点的
-                                newMergedList.add(
-                                    // circleAtHere也更新，如果有多个流汇合到一个圆圈，应该加重
-                                    // 最后一个startAtHere，因为这条线是上个节点输出的，所以肯定不是当前节点start的
-                                    node.copy(circleAtHere = it.circleAtHere, endAtHere = it.endAtHere, outputIsEmpty = it.outputIsEmpty, startAtHere = it.startAtHere)
-                                )
-                            }
+//                if(commitDto != null) {
+//                    println("命中缓存")
+//                }
 
-                            it.copy(mergedList = newMergedList)
+                // 没命中缓存，创建新对象，然后缓存上
+                if(commitDto == null) {
+                    val commit = resolveCommitByHash(repo, nextStr)
+                    if(commit != null) {
+                        val c = createCommitDto(next, allBranchList, allTagList, commit, repoId, repoIsShallow, shallowOidList, settings)
+                        val commit = Unit
+
+                        //添加绘图节点信息
+                        val drawInputs = mutableListOf<DrawCommitNode>()
+                        var circleAt = Box(-1)
+                        for ((idx, node) in draw_lastOutputNodes.value.withIndex()) {
+                            // 更新当前节点
+                            val newNode = DrawCommitNode.transOutputNodesToInputs(
+                                idx = idx,
+                                node = node,
+                                currentCommitOidStr = c.oidStr,
+                                circleAt = circleAt,
+                            ).let {
+                                val newMergedList = mutableListOf<DrawCommitNode>()
+                                //更新合流节点，主要是为了更新子节点的endAt值
+                                it.mergedList.forEachIndexed{ idx, node->
+                                    //更新子节点的值为父节点的
+                                    newMergedList.add(
+                                        // circleAtHere也更新，如果有多个流汇合到一个圆圈，应该加重
+                                        // 最后一个startAtHere，因为这条线是上个节点输出的，所以肯定不是当前节点start的
+                                        node.copy(circleAtHere = it.circleAtHere, endAtHere = it.endAtHere, outputIsEmpty = it.outputIsEmpty, startAtHere = it.startAtHere)
+                                    )
+                                }
+
+                                it.copy(mergedList = newMergedList)
 //                            it
+                            }
+
+
+                            //载入史册
+                            drawInputs.add(newNode)
                         }
 
+                        //添加从上个节点继承来的节点信息，例如没完成的线，需要继续画，就会在这添加上
+                        var drawOutputs = mutableListOf<DrawCommitNode>()
+                        //把列表末尾输出节点为空且不在列表中间的条目移除
+                        //例如：1非空，2空，3非空，4空，5空。将移除4和5，但保留1、2、3，虽然2也为空，但其在非空元素中间，所以需要占位
+                        var hasInputLineToOutput = false
+                        if(drawInputs.isNotEmpty()) {
+                            var reservedIdx = drawInputs.size;
+                            //倒序遍历，碰到第一个需要画输出线的开始添加其余条目
+                            while(--reservedIdx >= 0) {
+                                val curNode = drawInputs[reservedIdx]
 
-                        //载入史册
-                        drawInputs.add(newNode)
-                    }
+                                if(hasInputLineToOutput || curNode.endAtHere.not()) {
+                                    hasInputLineToOutput = true
+                                    //因为是倒序，所以这里需要一直从头插入
+                                    //继承来的节点，必然startAtHere为假，但如果endAtHere为真，则不需要画输出线，因此isEmpty为真，
+                                    // 后续会在为当前节点的父节点查找输出位置时尽可能占用在这里isEmpty为真的输出节点
 
-                    //添加从上个节点继承来的节点信息，例如没完成的线，需要继续画，就会在这添加上
-                    var drawOutputs = mutableListOf<DrawCommitNode>()
-                    //把列表末尾输出节点为空且不在列表中间的条目移除
-                    //例如：1非空，2空，3非空，4空，5空。将移除4和5，但保留1、2、3，虽然2也为空，但其在非空元素中间，所以需要占位
-                    var hasInputLineToOutput = false
-                    if(drawInputs.isNotEmpty()) {
-                        var reservedIdx = drawInputs.size;
-                        //倒序遍历，碰到第一个需要画输出线的开始添加其余条目
-                        while(--reservedIdx >= 0) {
-                            val curNode = drawInputs[reservedIdx]
-
-                            if(hasInputLineToOutput || curNode.endAtHere.not()) {
-                                hasInputLineToOutput = true
-                                //因为是倒序，所以这里需要一直从头插入
-                                //继承来的节点，必然startAtHere为假，但如果endAtHere为真，则不需要画输出线，因此isEmpty为真，
-                                // 后续会在为当前节点的父节点查找输出位置时尽可能占用在这里isEmpty为真的输出节点
-
-                                val outputNode = curNode.let{
-                                    if(it.circleAtHere) { //嫡传
-                                        val firstParent = c.parentOidStrList.getOrNull(0)
-                                        if(firstParent != null) {  //有parent
-                                            // 这条要传香火的，肯定是要画输出线的，所以outputIsEmpty必然为假，并且这条线一定需要在下个节点输入，所以其inputIsEmpty也必然为假
-                                            it.copy(startAtHere = true, fromCommitHash = c.oidStr, toCommitHash = firstParent, outputIsEmpty = false, inputIsEmpty = false)
-                                        }else {  // 如果一个parent都没有，那就代表不需要延续了，到头了，完了
-                                            null
-                                        }
-                                    }else {  //旁支
+                                    val outputNode = curNode.let{
+                                        if(it.circleAtHere) { //嫡传
+                                            val firstParent = c.parentOidStrList.getOrNull(0)
+                                            if(firstParent != null) {  //有parent
+                                                // 这条要传香火的，肯定是要画输出线的，所以outputIsEmpty必然为假，并且这条线一定需要在下个节点输入，所以其inputIsEmpty也必然为假
+                                                it.copy(startAtHere = true, fromCommitHash = c.oidStr, toCommitHash = firstParent, outputIsEmpty = false, inputIsEmpty = false)
+                                            }else {  // 如果一个parent都没有，那就代表不需要延续了，到头了，完了
+                                                null
+                                            }
+                                        }else {  //旁支
 //                                        it.copy(startAtHere = false)
-                                        //已经在转换上个节点的输出为当前节点的输入的时候把startAtHere设为false了，所以这里无需再拷贝
-                                        it
+                                            //已经在转换上个节点的输出为当前节点的输入的时候把startAtHere设为false了，所以这里无需再拷贝
+                                            it
+                                        }
                                     }
+
+                                    if(outputNode != null) {
+                                        drawOutputs.add(0, outputNode)
+                                    }
+
+                                    MyLog.v(TAG, "#$funName: commitDrawNodeInfo inputs to outputs: hash=${c.oidStr}, node=$curNode")
+
                                 }
-
-                                if(outputNode != null) {
-                                    drawOutputs.add(0, outputNode)
-                                }
-
-                                MyLog.v(TAG, "#$funName: commitDrawNodeInfo inputs to outputs: hash=${c.oidStr}, node=$curNode")
-
                             }
                         }
-                    }
 
 //                    if(c.oidStr == "d7700e8d7b036a84cc35cb2a607d5222b93ad61d") {
 //                        println("out phase1:::::$drawOutputs")
 //                    }
 
-                    //将当前节点的父提交信息和继承来的节点列表合并
-                    //第一个节点已经被上面画圈的节点处理了，这里只需处理剩下的，每个都是开辟新赛道
-                    //parents.size大于1是针对后续提交，inputs为空是针对当前提交树第一个提交，第一个提交没有input，所以需要特别处理下，让它在中间画圈并顺利延伸下去
-                    if(c.parentOidStrList.size > 1 || drawInputs.isEmpty()) {
-                        for (idx in (if(drawInputs.isEmpty()) 0 else 1)..<c.parentOidStrList.size) {
-                            val p = c.parentOidStrList[idx]
-                            //开辟新赛道
-                            val newNode = DrawCommitNode(
-                                outputIsEmpty = false,
-                                inputIsEmpty = false,
-                                endAtHere = false,
-                                startAtHere = true,
-                                mergedList = listOf(),
-                                circleAtHere = idx == 0 && drawInputs.isEmpty(),  // 如果是HEAD first commit，inputs为空，则在这画圆圈，否则由上面的输入节点画
-                                fromCommitHash = c.oidStr,
-                                toCommitHash = p,
-                            )
+                        //将当前节点的父提交信息和继承来的节点列表合并
+                        //第一个节点已经被上面画圈的节点处理了，这里只需处理剩下的，每个都是开辟新赛道
+                        //parents.size大于1是针对后续提交，inputs为空是针对当前提交树第一个提交，第一个提交没有input，所以需要特别处理下，让它在中间画圈并顺利延伸下去
+                        if(c.parentOidStrList.size > 1 || drawInputs.isEmpty()) {
+                            for (idx in (if(drawInputs.isEmpty()) 0 else 1)..<c.parentOidStrList.size) {
+                                val p = c.parentOidStrList[idx]
+                                //开辟新赛道
+                                val newNode = DrawCommitNode(
+                                    outputIsEmpty = false,
+                                    inputIsEmpty = false,
+                                    endAtHere = false,
+                                    startAtHere = true,
+                                    mergedList = listOf(),
+                                    circleAtHere = idx == 0 && drawInputs.isEmpty(),  // 如果是HEAD first commit，inputs为空，则在这画圆圈，否则由上面的输入节点画
+                                    fromCommitHash = c.oidStr,
+                                    toCommitHash = p,
+                                )
 
-                            //这个索引必然在圆圈的右边，不可能在左边，因为第一个匹配当前节点的节点有画圈的权利，
-                            // 后续的都汇合到圆圈，所以如果用empty节点，必然是画圈之后才有
-                            DrawCommitNode.getAnInsertableIndex(drawOutputs, p).let { pos ->
-                                //根据索引是否有效决定替换还是追加
-                                if(pos.index >= 0) {  //索引有效，替换
-                                    drawOutputs[pos.index] = if (pos.isMergedToPrevious) { //非空节点，但画线时可和前一条线合并
-                                        //合流：若合流，当前线会和上一条线合并。代码实现上就直接把当前节点添加到对应位置的节点的mergedList就行了，类似sub节点
-                                        drawOutputs[pos.index].let { it.copy(mergedList = it.mergedList.toMutableList().apply { add(newNode) }) }
-                                    }else { //空节点
-                                        newNode
+                                //这个索引必然在圆圈的右边，不可能在左边，因为第一个匹配当前节点的节点有画圈的权利，
+                                // 后续的都汇合到圆圈，所以如果用empty节点，必然是画圈之后才有
+                                DrawCommitNode.getAnInsertableIndex(drawOutputs, p).let { pos ->
+                                    //根据索引是否有效决定替换还是追加
+                                    if(pos.index >= 0) {  //索引有效，替换
+                                        drawOutputs[pos.index] = if (pos.isMergedToPrevious) { //非空节点，但画线时可和前一条线合并
+                                            //合流：若合流，当前线会和上一条线合并。代码实现上就直接把当前节点添加到对应位置的节点的mergedList就行了，类似sub节点
+                                            drawOutputs[pos.index].let { it.copy(mergedList = it.mergedList.toMutableList().apply { add(newNode) }) }
+                                        }else { //空节点
+                                            newNode
+                                        }
+                                    }else {  //索引无效，无空位，追加到末尾
+                                        drawOutputs.add(newNode)
                                     }
-                                }else {  //索引无效，无空位，追加到末尾
-                                    drawOutputs.add(newNode)
                                 }
                             }
-                        }
 
-                    }
+                        }
 
 //                    if(c.oidStr == "d7700e8d7b036a84cc35cb2a607d5222b93ad61d") {
 //                        println("out phase2:::::$drawOutputs")
 //                    }
 
 
-                    //更新上次节点信息
-                    // 因为draw commit node对象是不可变的，所以这里不用拷贝列表，直接赋值就行了
-                    draw_lastOutputNodes.value = drawOutputs
+                        //更新上次节点信息
+                        // 因为draw commit node对象是不可变的，所以这里不用拷贝列表，直接赋值就行了
+                        draw_lastOutputNodes.value = drawOutputs
 
-                    // 尘埃落定，添加到 commit dto
-                    c.draw_inputs = drawInputs
-                    c.draw_outputs = drawOutputs
+                        // 尘埃落定，添加到 commit dto
+                        c.draw_inputs = drawInputs
+                        c.draw_outputs = drawOutputs
 
-                    lastCommit = c
-
-                    //添加元素
-                    retList.add(c)
-                    count++
-                }else {
-                    MyLog.e(TAG, "#$funName(): resolve commit failed, target=$nextStr")
+                        //赋值并缓存对象
+                        commitDto = c
+                        CommitCache.cacheIt(repoId, c.oidStr, c)
+                    }else {
+                        MyLog.e(TAG, "#$funName(): resolve commit failed, target=$nextStr")
+                    }
                 }
 
+                if(commitDto != null) {
+//                    lastCommit = commitDto
+
+                    //添加元素
+                    retList.add(commitDto)
+                    count++
+                }
 
 
                 //检查是否需要终止
