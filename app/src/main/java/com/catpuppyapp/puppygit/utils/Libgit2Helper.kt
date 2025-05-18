@@ -7405,14 +7405,20 @@ object Libgit2Helper {
         repoEntity: RepoEntity,
         repo: Repository,
         forcePush_expectedRefspecForLease:String,
-        remoteName:String,
-        remoteBranchRefsRemotesFullRefSpec:String,
+        upstream:Upstream?,
 
     ) {
+        if(upstream == null) {
+            throw RuntimeException("force push with lease canceled: upstream is null")
+        }
+
         val funName = "forcePushLeaseCheckPassedOrThrow"
 
         val dbContainer = AppModel.dbContainer
         val repoId = repoEntity.id
+
+        val remoteName = upstream.remote
+        val remoteBranchRefsRemotesFullRefSpec = upstream.remoteBranchRefsRemotesFullRefSpec
 
         //解析本地引用的值
         val expectedCommitOidRet = Libgit2Helper.resolveCommitByHashOrRef(repo, forcePush_expectedRefspecForLease)

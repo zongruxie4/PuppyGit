@@ -193,6 +193,8 @@ fun CreateBranchDialog(
                         Row {
                             DefaultPaddingText(
                                 text = stringResource(R.string.will_overwrite_if_branch_already_exists),
+                                color = MyStyleKt.TextColor.danger(),
+
                             )
                         }
 

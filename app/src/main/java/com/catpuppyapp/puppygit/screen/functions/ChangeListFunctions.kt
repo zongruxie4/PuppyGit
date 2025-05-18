@@ -546,8 +546,7 @@ object ChangeListFunctions {
                         repoEntity = curRepoFromParentPage,
                         repo = repo,
                         forcePush_expectedRefspecForLease = forcePush_expectedRefspecForLease,
-                        remoteName = upstream.remote,
-                        remoteBranchRefsRemotesFullRefSpec = upstream.remoteBranchRefsRemotesFullRefSpec
+                        upstream = upstream,
                     )
 
                 }

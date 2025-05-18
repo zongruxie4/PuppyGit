@@ -43,7 +43,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.platform.LocalClipboardManager
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.font.FontWeight
@@ -63,6 +62,7 @@ import com.catpuppyapp.puppygit.compose.CreateBranchDialog
 import com.catpuppyapp.puppygit.compose.DefaultPaddingRow
 import com.catpuppyapp.puppygit.compose.DefaultPaddingText
 import com.catpuppyapp.puppygit.compose.FilterTextField
+import com.catpuppyapp.puppygit.compose.ForcePushWithLeaseCheckBox
 import com.catpuppyapp.puppygit.compose.FullScreenScrollableColumn
 import com.catpuppyapp.puppygit.compose.GoToTopAndGoToBottomFab
 import com.catpuppyapp.puppygit.compose.LoadingDialog
@@ -97,7 +97,6 @@ import com.catpuppyapp.puppygit.screen.functions.goToTreeToTreeChangeList
 import com.catpuppyapp.puppygit.screen.functions.triggerReFilter
 import com.catpuppyapp.puppygit.settings.SettingsUtil
 import com.catpuppyapp.puppygit.style.MyStyleKt
-import com.catpuppyapp.puppygit.ui.theme.Theme
 import com.catpuppyapp.puppygit.user.UserUtil
 import com.catpuppyapp.puppygit.utils.AppModel
 import com.catpuppyapp.puppygit.utils.Libgit2Helper
@@ -136,12 +135,13 @@ fun BranchListScreen(
     val stateKeyTag = Cache.getSubPageKey(TAG)
     
     val homeTopBarScrollBehavior = AppModel.homeTopBarScrollBehavior
-    val navController = AppModel.navController
+//    val navController = AppModel.navController
     val activityContext = LocalContext.current
-    val haptic = LocalHapticFeedback.current
+//    val haptic = LocalHapticFeedback.current
+//    val density = LocalDensity.current
     val scope = rememberCoroutineScope()
 
-    val inDarkTheme = Theme.inDarkTheme
+//    val inDarkTheme = Theme.inDarkTheme
 
     val settings = remember { SettingsUtil.getSettingsSnapshot() }
 
@@ -1192,6 +1192,9 @@ fun BranchListScreen(
 
     val showPublishDialog = rememberSaveable { mutableStateOf(false)}
     val forcePublish = rememberSaveable { mutableStateOf(false)}
+    val forcePush_pushWithLease = rememberSaveable { mutableStateOf(false) }
+    val forcePush_expectedRefspecForLease = rememberSaveable { mutableStateOf("") }
+
     if(showPublishDialog.value) {
         val curBranch = curObjInPage.value
         val upstream = curBranch.upstream
@@ -1224,32 +1227,71 @@ fun BranchListScreen(
 
                         Spacer(modifier = Modifier.height(10.dp))
                         Text(text = stringResource(R.string.will_push_local_branch_to_remote_are_you_sure))
-                        Spacer(modifier = Modifier.height(10.dp))
 
-                        MyCheckBox(text = stringResource(id = R.string.force), value = forcePublish)
+                        //如果上游已经发布，则显示force push选项
+                        // 注意：不要改成无脑显示force，不然有可能错误覆盖别人的提交，
+                        // 例如：你本地没分支a，你发布前没fetch，别人push了分支a，
+                        // 你勾选了force，就会错误覆盖，但如果本地没有有效上游则禁用force，这样就不会错误覆盖了
+                        if(upstream != null && upstream.isPublished) {
+                            Spacer(modifier = Modifier.height(10.dp))
+                            MyCheckBox(text = stringResource(R.string.force), value = forcePublish)
 
-                        if(forcePublish.value) {
-                            DefaultPaddingText(
-                                text = stringResource(R.string.will_force_overwrite_remote_branch_even_it_is_ahead_to_local),
-                                color = MyStyleKt.TextColor.danger(),
-                            )
+                            //如果勾选force，显示注意事项和push with lease选项
+                            if(forcePublish.value) {
+                                DefaultPaddingText(
+                                    text = stringResource(R.string.will_force_overwrite_remote_branch_even_it_is_ahead_to_local),
+                                    color = MyStyleKt.TextColor.danger(),
+                                )
+
+                                Spacer(Modifier.height(15.dp))
+
+                                // force push with lease
+                                ForcePushWithLeaseCheckBox(forcePush_pushWithLease, forcePush_expectedRefspecForLease)
+
+                                //不需要额外加，不知道是不是新版compose做了处理，好像键盘盖不住输入框了
+                                //勾选的太多，还有输入框，若显示软键盘则加点底部padding，不然可能键盘盖住字
+//                                if(forcePush_pushWithLease.value) {
+//                                    Spacer(Modifier.height(80.dp))
+//                                }
+                            }
                         }
                     }
                 },
+                okBtnEnabled = forcePublish.value.not() || forcePush_pushWithLease.value.not() || forcePush_expectedRefspecForLease.value.isNotEmpty(),
                 onCancel = { showPublishDialog.value=false}
             ) {
                 showPublishDialog.value=false
+
+                val curRepo = curRepo.value
+                val repoId = curRepo.id
                 val force = forcePublish.value
+                val forcePush_pushWithLease = forcePush_pushWithLease.value
+                val forcePush_expectedRefspecForLease = forcePush_expectedRefspecForLease.value
 
                 doJobThenOffLoading(loadingOn, loadingOff, activityContext.getString(R.string.pushing)) {
                     try {
 
                         val dbContainer = AppModel.dbContainer
-                        Repository.open(curRepo.value.fullSavePath).use { repo->
+                        Repository.open(curRepo.fullSavePath).use { repo->
+                            // lease check
+                            if(force && forcePush_pushWithLease) {
+                                loadingText.value = activityContext.getString(R.string.checking)
+
+                                Libgit2Helper.forcePushLeaseCheckPassedOrThrow(
+                                    repoEntity = curRepo,
+                                    repo = repo,
+                                    forcePush_expectedRefspecForLease = forcePush_expectedRefspecForLease,
+                                    upstream = upstream,
+                                )
+
+                            }
+
+
+                            // push
                             val credential = Libgit2Helper.getRemoteCredential(
                                 dbContainer.remoteRepository,
                                 dbContainer.credentialRepository,
-                                curRepo.value.id,
+                                repoId,
                                 upstream!!.remote,
                                 trueFetchFalsePush = false
                             )
@@ -1258,12 +1300,12 @@ fun BranchListScreen(
 
                             // 更新修改workstatus的时间，只更新时间就行，状态会在查询repo时更新
                             val repoDb = AppModel.dbContainer.repoRepository
-                            repoDb.updateLastUpdateTime(curRepo.value.id, getSecFromTime())
+                            repoDb.updateLastUpdateTime(repoId, getSecFromTime())
 
                             Msg.requireShow(activityContext.getString(R.string.success))
                         }
                     }catch (e:Exception) {
-                        showErrAndSaveLog(TAG, "#PublishBranchDialog(force=$force) err:"+e.stackTraceToString(), "Publish branch error:"+e.localizedMessage, Msg.requireShowLongDuration, curRepo.value.id)
+                        showErrAndSaveLog(TAG, "#PublishBranchDialog(force=$force) err:"+e.stackTraceToString(), "Publish branch error:"+e.localizedMessage, Msg.requireShowLongDuration, repoId)
                     }finally {
                         changeStateTriggerRefreshPage(needRefresh)
                     }
@@ -1601,7 +1643,15 @@ fun BranchListScreen(
                                 enabled = curObjInPage.value.type == Branch.BranchType.LOCAL
                             ){
                                 doTaskOrShowSetUpstream(curObjInPage.value) {
+                                    // force push with lease选项
+                                    //默认设为upstream，会先查本地upstream的值，再fetch，再检查，若匹配，则推送，若用户改成别的引用则按用户改的来检查是否与fetch后的upstrem的最新提交匹配
+                                    forcePush_expectedRefspecForLease.value = curObjInPage.value.upstream?.remoteBranchShortRefSpec ?: ""
+                                    //默认不勾选 with lease
+                                    forcePush_pushWithLease.value = false
+                                    // 默认不勾选强制推送
                                     forcePublish.value = false
+
+                                    //显示弹窗
                                     showPublishDialog.value = true
                                 }
                             }
