@@ -368,7 +368,7 @@
     <string name="import_has_err">Import has err</string>
     <string name="import_success">Import success</string>
     <string name="import_failed">Import failed</string>
-    <string name="you_can_click_here_copy_err_msg">You can click HERE copy err msg to clipboard</string>
+    <string name="you_can_click_here_copy_err_msg">You can click HERE to copy err msg</string>
     <string name="err_msg">err msg</string>
     <string name="file_not_found">File Not Found!</string>
     <string name="do_you_want_save_before_close_file">Do you want to save before close file?</string>
