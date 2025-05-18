@@ -7398,4 +7398,58 @@ object Libgit2Helper {
         val blob = Blob.lookup(repo, entry.id()) ?: return SaveBlobRet(code = SaveBlobRetCode.ERR_RESOLVE_BLOB_FAILED)
         return SaveBlobRet(code = LibgitTwo.saveBlobToPath(blob, savePath), savePath = savePath)
     }
+
+
+    //force push with lease check, if not passed, will throw exception
+    suspend fun forcePushLeaseCheckPassedOrThrow(
+        repoEntity: RepoEntity,
+        repo: Repository,
+        forcePush_expectedRefspecForLease:String,
+        remoteName:String,
+        remoteBranchRefsRemotesFullRefSpec:String,
+
+    ) {
+        val funName = "forcePushLeaseCheckPassedOrThrow"
+
+        val dbContainer = AppModel.dbContainer
+        val repoId = repoEntity.id
+
+        //解析本地引用的值
+        val expectedCommitOidRet = Libgit2Helper.resolveCommitByHashOrRef(repo, forcePush_expectedRefspecForLease)
+
+        if(expectedCommitOidRet.hasError()) {
+            throw RuntimeException("force push with lease canceled: resolve expected refspec failed, expected refspec is `$forcePush_expectedRefspecForLease`")
+        }
+
+        val expectedCommitOidStr = expectedCommitOidRet.data!!.id()!!.toString()
+
+        //fetch前打印下期望的oid
+        MyLog.d(TAG, "#$funName: force push with lease: expectedCommitOid=$expectedCommitOidStr")
+
+        //查下要推送的分支的remote的fetch凭据，然后更新下要推送的分支的本地引用，再和fetch之前查出的提交hash比较，若不一样，则取消推送
+        val credential = Libgit2Helper.getRemoteCredential(
+            dbContainer.remoteRepository,
+            dbContainer.credentialRepository,
+            repoId,
+            remoteName,
+            trueFetchFalsePush = true
+        )
+
+        // fetch
+        Libgit2Helper.fetchRemoteForRepo(repo, remoteName, credential, repoEntity)
+
+
+        //查fetch后的数据
+        val latestUpstreamOidStr = Libgit2Helper.resolveCommitOidByRef(repo, remoteBranchRefsRemotesFullRefSpec).toString()
+        // upstream oid str is null-string-able, but expected oid string is not null or null-string-able,
+        //  so if both are equals, the upstream oid must not null able, hence here no more null-check needed
+        // 两个若相等，两者必然都非null
+        val expectedEqualsToLatest = expectedCommitOidStr == latestUpstreamOidStr
+
+        MyLog.d(TAG, "#$funName: force push with lease: upstream.remoteBranchRefsRemotesFullRefSpec=${remoteBranchRefsRemotesFullRefSpec}, latestUpstreamOid=$latestUpstreamOidStr, expectedCommitOid=$expectedCommitOidStr, expectedCommitOid==latestUpstreamOid is `$expectedEqualsToLatest`")
+
+        if(!expectedEqualsToLatest) {
+            throw RuntimeException("force push canceled: upstream didn't match the expected refspec, upstream is `$latestUpstreamOidStr`, expected is `$expectedCommitOidStr`")
+        }
+    }
 }

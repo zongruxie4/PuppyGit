@@ -70,6 +70,7 @@ import com.catpuppyapp.puppygit.compose.ConfirmDialog2
 import com.catpuppyapp.puppygit.compose.CreatePatchSuccessDialog
 import com.catpuppyapp.puppygit.compose.CredentialSelector
 import com.catpuppyapp.puppygit.compose.DefaultPaddingText
+import com.catpuppyapp.puppygit.compose.ForcePushWithLeaseCheckBox
 import com.catpuppyapp.puppygit.compose.GitIgnoreDialog
 import com.catpuppyapp.puppygit.compose.LoadingTextSimple
 import com.catpuppyapp.puppygit.compose.LongPressAbleIconBtn
@@ -655,29 +656,8 @@ fun ChangeListInnerPage(
 
                     Spacer(Modifier.height(15.dp))
 
-                    // push with lease
-                    MyCheckBox(stringResource(R.string.with_lease), forcePush_pushWithLease)
-                    if(forcePush_pushWithLease.value) {
-                        TextField(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .padding(horizontal = MyStyleKt.defaultHorizontalPadding),
-                            value = forcePush_expectedRefspecForLease.value,
-                            maxLines = 1,
-                            onValueChange = {
-                                forcePush_expectedRefspecForLease.value = it
-                            },
-                            label = {
-                                Text(stringResource(R.string.expected_refspec))
-                            },
-                        )
+                    ForcePushWithLeaseCheckBox(forcePush_pushWithLease, forcePush_expectedRefspecForLease)
 
-                        Spacer(Modifier.height(10.dp))
-
-                        MySelectionContainer {
-                            DefaultPaddingText(stringResource(R.string.push_force_with_lease_note))
-                        }
-                    }
                 }
             },
             okTextColor = MyStyleKt.TextColor.danger(),
