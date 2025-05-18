@@ -30,7 +30,7 @@ fun ForcePushWithLeaseCheckBox(
                 .fillMaxWidth()
                 .padding(horizontal = MyStyleKt.defaultHorizontalPadding),
             value = forcePush_expectedRefspecForLease.value,
-            maxLines = 1,
+            singleLine = true,
             onValueChange = {
                 forcePush_expectedRefspecForLease.value = it
             },
