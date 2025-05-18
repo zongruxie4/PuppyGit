@@ -335,13 +335,14 @@ fun CredentialNewOrEdit(
             )
 
             TextField(
-                //密码最多一行
-                maxLines = 1,
-
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(10.dp),
-//                    singleLine = true,
+                    .padding(10.dp)
+                ,
+
+                //密码最多一行，singleLine和maxLines = 1不完全相同，singleLine还做了更多处理，有的情况无所谓，两者皆可，但这里最好用singleLine
+                singleLine = true,
+
                 value = credentialPass.value,
                 onValueChange = {
                     credentialPass.value=it
