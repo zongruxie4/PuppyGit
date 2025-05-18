@@ -246,7 +246,8 @@ fun RepoCard(
                                 maxLines = 1,
                                 overflow = TextOverflow.Ellipsis,
                                 fontWeight = defaultFontWeight,
-                                modifier = MyStyleKt.NormalText.modifier,
+                                modifier = MyStyleKt.ClickableText.modifier,
+
                             )
                         }
                     }
@@ -289,7 +290,7 @@ fun RepoCard(
                             text = getFormatTimeFromSec(repoDto.lastUpdateTime),
                             maxLines = 1,
                             overflow = TextOverflow.Ellipsis,
-                            modifier = MyStyleKt.NormalText.modifier,
+                            modifier = MyStyleKt.ClickableText.modifier,
                             fontWeight = defaultFontWeight
 
 
@@ -347,7 +348,7 @@ fun RepoCard(
                                 text = text,
                                 maxLines = 1,
                                 overflow = TextOverflow.Ellipsis,
-                                modifier = MyStyleKt.NormalText.modifier,
+                                modifier = MyStyleKt.ClickableText.modifier,
                                 fontWeight = defaultFontWeight,
                                 //出错，红色；已是最新，绿色；"加载中..."之类的非点击临时状态，默认颜色。
                                 color = if(nullNormalTrueUpToDateFalseError == null) Color.Unspecified else if(nullNormalTrueUpToDateFalseError == true) MyStyleKt.TextColor.highlighting_green else MyStyleKt.TextColor.error(),
@@ -493,7 +494,9 @@ fun RepoCard(
 //                                pageRequest.value = PageRequest.showOther
 //                            },
 
-                                fontWeight = defaultFontWeight
+                                fontWeight = defaultFontWeight,
+                                modifier = MyStyleKt.ClickableText.modifier,
+
 
                             )
                         }

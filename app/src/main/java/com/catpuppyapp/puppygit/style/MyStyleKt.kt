@@ -52,12 +52,13 @@ object MyStyleKt{
 
         val textAlign = TextAlign.Center
     }
-    object NormalText{
+
+//    object NormalText{
 //        val modifier = Modifier.padding(start = 1.dp,top=15.dp, bottom = 0.dp, end=1.dp)
         //defaultMinSize为了确保基本的可点击范围，避免分支名字很小点不到的情况发生
-        val modifier = Modifier.padding(start = 3.dp,top=0.dp, bottom = 0.dp, end=1.dp).defaultMinSize(25.dp)
+//        val modifier = Modifier.padding(start = 3.dp,top=0.dp, bottom = 0.dp, end=1.dp).defaultMinSize(25.dp)
 //        val fontSize = 15.sp
-    }
+//    }
 
     object ChangeListItemColor {
         /**
