@@ -226,8 +226,8 @@ fun CommitListScreen(
     //圆圈半径
     val nodeCircleRadiusInPx = remember(density) { with(density){ 8.dp.toPx() } }
 
-    //设圆圈x轴起始点为圆圈半径的2倍
-    val nodeCircleStartOffsetX = remember(nodeCircleRadiusInPx) { nodeCircleRadiusInPx*1.2f }
+    //设圆圈x轴起始点为圆圈半径的n倍（一般在2倍以内即可）
+    val nodeCircleStartOffsetX = remember(nodeCircleRadiusInPx) { nodeCircleRadiusInPx*1.8f }
 
     //设圆圈x轴起始点为线和线间距
 //    val nodeCircleStartOffsetX = remember(lineDistanceInPx) { lineDistanceInPx }
