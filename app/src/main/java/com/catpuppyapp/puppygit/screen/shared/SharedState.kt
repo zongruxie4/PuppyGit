@@ -8,7 +8,8 @@ import com.catpuppyapp.puppygit.git.StatusTypeEntrySaver
 private const val TAG = "SharedState"
 
 object SharedState {
-    const val defaultLadingValue = false
+    // 若false，有时候会不显示loading，效果不好
+    const val defaultLadingValue = true
 
     val homeScreenNeedRefresh = mutableStateOf("")
 
