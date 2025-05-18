@@ -962,7 +962,8 @@ fun CommitListScreen(
         doActIfIndexGood(curCommitIdx, list) {
             Repository.open(repoFullPath).use { repo ->
                 val reQueriedCommitInfo = Libgit2Helper.getSingleCommit(repo, repoId, commitOid, settings)
-                list[curCommitIdx] = reQueriedCommitInfo
+                val oldCommit = list[curCommitIdx]
+                list[curCommitIdx] = reQueriedCommitInfo.copy(draw_inputs = oldCommit.draw_inputs, draw_outputs=oldCommit.draw_outputs)
             }
         }
 
