@@ -151,15 +151,20 @@ private fun onPreviewDelKeyEvent(
     selection: TextRange,
     invoke: () -> Unit
 ): Boolean {
+    //只响应按下key不响应松开
     val isKeyDown = event.type == KeyEventType.KeyDown
     if (!isKeyDown) return false
 
+    //不是删除不响应
     val isDelKey = event.nativeKeyEvent.keyCode == KEYCODE_DEL
     if (!isDelKey) return false
 
+    //没删除到行开头不响应，这时由TextField负责更新数据，
+    // 若删除到行开头则需要在TextFiled外部将当前TextField从列表移除，所以需要外部处理
     val isEmpty = selection == TextRange.Zero
     if (!isEmpty) return false
 
+    //处理事件
     invoke()
     return true
 }

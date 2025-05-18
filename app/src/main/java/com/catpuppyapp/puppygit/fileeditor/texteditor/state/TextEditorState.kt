@@ -655,7 +655,8 @@ class TextEditorState private constructor(
             val toText = toField.value.text
             val fromText = fromField.value.text
 
-            val concatText = toText + fromText
+            val concatText = StringBuilder(toText.length + fromText.length).append(toText).append(fromText).toString()
+
             val concatSelection = TextRange(toText.count())  // end of `toText`
             val concatTextFieldValue = TextFieldValue(text = concatText, selection = concatSelection)
             val toTextFieldState = newFields[targetIndex - 1].copy(value = concatTextFieldValue, isSelected = false).apply {
