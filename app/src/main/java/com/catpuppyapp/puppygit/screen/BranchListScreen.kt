@@ -95,6 +95,7 @@ import com.catpuppyapp.puppygit.screen.functions.filterTheList
 import com.catpuppyapp.puppygit.screen.functions.goToCommitListScreen
 import com.catpuppyapp.puppygit.screen.functions.goToTreeToTreeChangeList
 import com.catpuppyapp.puppygit.screen.functions.triggerReFilter
+import com.catpuppyapp.puppygit.screen.shared.SharedState
 import com.catpuppyapp.puppygit.settings.SettingsUtil
 import com.catpuppyapp.puppygit.style.MyStyleKt
 import com.catpuppyapp.puppygit.user.UserUtil
@@ -1399,7 +1400,7 @@ fun BranchListScreen(
 
     val filterResultNeedRefresh = rememberSaveable { mutableStateOf("") }
 
-    val isInitLoading = rememberSaveable { mutableStateOf(true) }
+    val isInitLoading = rememberSaveable { mutableStateOf(SharedState.defaultLadingValue) }
     val initLoadingOn = { msg:String ->
         isInitLoading.value = true
     }

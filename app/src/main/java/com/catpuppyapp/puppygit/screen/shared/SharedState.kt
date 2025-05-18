@@ -2,13 +2,14 @@ package com.catpuppyapp.puppygit.screen.shared
 
 import androidx.compose.runtime.mutableStateOf
 import com.catpuppyapp.puppygit.constants.Cons
-import com.catpuppyapp.puppygit.dto.UndoStack
 import com.catpuppyapp.puppygit.git.StatusTypeEntrySaver
 
 
 private const val TAG = "SharedState"
 
 object SharedState {
+    const val defaultLadingValue = false
+
     val homeScreenNeedRefresh = mutableStateOf("")
 
 

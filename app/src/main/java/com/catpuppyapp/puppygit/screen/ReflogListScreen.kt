@@ -56,6 +56,7 @@ import com.catpuppyapp.puppygit.play.pro.R
 import com.catpuppyapp.puppygit.screen.functions.filterModeActuallyEnabled
 import com.catpuppyapp.puppygit.screen.functions.filterTheList
 import com.catpuppyapp.puppygit.screen.functions.triggerReFilter
+import com.catpuppyapp.puppygit.screen.shared.SharedState
 import com.catpuppyapp.puppygit.settings.SettingsUtil
 import com.catpuppyapp.puppygit.style.MyStyleKt
 import com.catpuppyapp.puppygit.ui.theme.Theme
@@ -316,7 +317,7 @@ fun ReflogListScreen(
     }
 
 
-    val isInitLoading = rememberSaveable { mutableStateOf(true) }
+    val isInitLoading = rememberSaveable { mutableStateOf(SharedState.defaultLadingValue) }
     val initLoadingOn = { msg:String ->
         isInitLoading.value = true
     }

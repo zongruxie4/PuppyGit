@@ -214,7 +214,7 @@ fun RepoInnerPage(
 
     val requireBlinkIdx = rememberSaveable{mutableIntStateOf(-1)}
 
-    val isLoading = rememberSaveable { mutableStateOf(true)}
+    val isLoading = rememberSaveable { mutableStateOf(SharedState.defaultLadingValue)}
     val loadingText = rememberSaveable { mutableStateOf(activityContext.getString(R.string.loading))}
     val loadingOn = {text:String->
         loadingText.value = text

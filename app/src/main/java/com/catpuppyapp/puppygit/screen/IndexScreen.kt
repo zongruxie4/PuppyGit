@@ -129,7 +129,7 @@ fun IndexScreen(
 //    val changeListRequirePush = rememberSaveable { mutableStateOf(false) }
     val requireDoActFromParent = rememberSaveable { mutableStateOf(false)}
     val requireDoActFromParentShowTextWhenDoingAct = rememberSaveable { mutableStateOf("")}
-    val enableAction = rememberSaveable { mutableStateOf( true)}
+    val enableAction = rememberSaveable { mutableStateOf(true)}
     val repoState = rememberSaveable{mutableIntStateOf(Repository.StateT.NONE.bit)}  //初始状态是NONE，后面会在ChangeListInnerPage检查并更新状态，只要一创建innerpage或刷新（重新执行init），就会更新此状态
     val fromTo = Cons.gitDiffFromHeadToIndex
     val changeListPageItemList = mutableCustomStateListOf(keyTag = stateKeyTag, keyName = "changeListPageItemList", initValue = listOf<StatusTypeEntrySaver>())
