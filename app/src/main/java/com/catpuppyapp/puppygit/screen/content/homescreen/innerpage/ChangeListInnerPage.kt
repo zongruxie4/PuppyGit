@@ -873,7 +873,7 @@ fun ChangeListInnerPage(
                                     dbContainer = dbContainer
                                 )
                             }catch (e:Exception){
-                                showErrAndSaveLog(TAG,"require Sync(Rebase) error:"+e.stackTraceToString(), activityContext.getString(R.string.sync_rebase_failed)+":"+e.localizedMessage, requireShowToast,curRepo.id)
+                                showErrAndSaveLog(TAG,"require Sync(Rebase) error: "+e.stackTraceToString(), activityContext.getString(R.string.sync_rebase_failed)+": "+e.localizedMessage, requireShowToast,curRepo.id)
                             }finally {
                                 changeListRequireRefreshFromParentPage(curRepo)
                             }
@@ -899,7 +899,7 @@ fun ChangeListInnerPage(
                                 requireShowToast(activityContext.getString(R.string.fetch_failed))
                             }
                         }catch (e:Exception){
-                            showErrAndSaveLog(TAG,"require fetch error:"+e.stackTraceToString(), activityContext.getString(R.string.fetch_failed)+":"+e.localizedMessage, requireShowToast, curRepo.id)
+                            showErrAndSaveLog(TAG,"require fetch error: "+e.stackTraceToString(), activityContext.getString(R.string.fetch_failed)+": "+e.localizedMessage, requireShowToast, curRepo.id)
                         }finally {
                             //刷新页面
                             changeListRequireRefreshFromParentPage(curRepo)
@@ -939,7 +939,7 @@ fun ChangeListInnerPage(
                         try {
                             doStageAll(curRepo)
                         }catch (e:Exception){
-                            showErrAndSaveLog(TAG,"require stage_all error:"+e.stackTraceToString(), activityContext.getString(R.string.stage_all_failed)+":"+e.localizedMessage, requireShowToast, curRepo.id)
+                            showErrAndSaveLog(TAG,"require stage_all error: "+e.stackTraceToString(), activityContext.getString(R.string.stage_all_failed)+": "+e.localizedMessage, requireShowToast, curRepo.id)
                         }finally {
                             changeListRequireRefreshFromParentPage(curRepo)
                         }
@@ -992,7 +992,7 @@ fun ChangeListInnerPage(
                             )
 
                         }catch (e:Exception){
-                            showErrAndSaveLog(TAG,"require commit all error:"+e.stackTraceToString(), activityContext.getString(R.string.commit_err)+":"+e.localizedMessage, requireShowToast, curRepo.id)
+                            showErrAndSaveLog(TAG,"require commit all error: "+e.stackTraceToString(), activityContext.getString(R.string.commit_err)+": "+e.localizedMessage, requireShowToast, curRepo.id)
                         }
                     }else if(requireAct == PageRequest.commit) {
                         try {
@@ -1070,7 +1070,7 @@ fun ChangeListInnerPage(
 
                             }
                         }catch (e:Exception){
-                            showErrAndSaveLog(TAG,"require Continue Merge error:"+e.stackTraceToString(), activityContext.getString(R.string.continue_merge_err)+":"+e.localizedMessage, requireShowToast,repoId)
+                            showErrAndSaveLog(TAG,"require Continue Merge error: "+e.stackTraceToString(), activityContext.getString(R.string.continue_merge_err)+": "+e.localizedMessage, requireShowToast,repoId)
                         }
                     }else if(requireAct == PageRequest.rebaseContinue) {
                         try {
@@ -1103,7 +1103,7 @@ fun ChangeListInnerPage(
 //                        showPushForCommitDialog=showPushForCommitDialog
                             )
                         }catch (e:Exception){
-                            showErrAndSaveLog(TAG,"require Rebase Continue error:"+e.stackTraceToString(), activityContext.getString(R.string.rebase_continue_err)+":"+e.localizedMessage, requireShowToast,repoId)
+                            showErrAndSaveLog(TAG,"require Rebase Continue error: "+e.stackTraceToString(), activityContext.getString(R.string.rebase_continue_err)+": "+e.localizedMessage, requireShowToast,repoId)
                         }
                     }else if(requireAct == PageRequest.rebaseSkip) {
                         initRebaseSkipDialog(curRepo)
@@ -1142,7 +1142,7 @@ fun ChangeListInnerPage(
 //                        showPushForCommitDialog=showPushForCommitDialog
                             )
                         }catch (e:Exception){
-                            showErrAndSaveLog(TAG,"require Cherrypick Continue error:"+e.stackTraceToString(), activityContext.getString(R.string.cherrypick_continue_err)+":"+e.localizedMessage, requireShowToast,repoId)
+                            showErrAndSaveLog(TAG,"require Cherrypick Continue error: "+e.stackTraceToString(), activityContext.getString(R.string.cherrypick_continue_err)+": "+e.localizedMessage, requireShowToast,repoId)
                         }
                     }else if(requireAct == PageRequest.cherrypickAbort) {
                         initCherrypickAbortDialog()
@@ -1221,8 +1221,8 @@ fun ChangeListInnerPage(
                     } catch (e: Exception) {
                         showErrAndSaveLog(
                             TAG,
-                            "require Rebase Skip error:" + e.stackTraceToString(),
-                            activityContext.getString(R.string.rebase_skip_err) + ":" + e.localizedMessage,
+                            "require Rebase Skip error: " + e.stackTraceToString(),
+                            activityContext.getString(R.string.rebase_skip_err) + ": " + e.localizedMessage,
                             requireShowToast,
                             repoId
                         )
@@ -1293,8 +1293,8 @@ fun ChangeListInnerPage(
                         } catch (e: Exception) {
                             showErrAndSaveLog(
                                 TAG,
-                                "require Rebase Abort error:" + e.stackTraceToString(),
-                                activityContext.getString(R.string.rebase_abort_err) + ":" + e.localizedMessage,
+                                "require Rebase Abort error: " + e.stackTraceToString(),
+                                activityContext.getString(R.string.rebase_abort_err) + ": " + e.localizedMessage,
                                 requireShowToast,
                                 repoId
                             )
@@ -1319,8 +1319,8 @@ fun ChangeListInnerPage(
                         } catch (e: Exception) {
                             showErrAndSaveLog(
                                 TAG,
-                                "require Cherrypick Abort error:" + e.stackTraceToString(),
-                                activityContext.getString(R.string.cherrypick_abort_err) + ":" + e.localizedMessage,
+                                "require Cherrypick Abort error: " + e.stackTraceToString(),
+                                activityContext.getString(R.string.cherrypick_abort_err) + ": " + e.localizedMessage,
                                 requireShowToast,
                                 repoId
                             )

@@ -349,7 +349,7 @@ fun ErrorListScreen(
 
         // bottom sheet放不放pull to refresh box都行，不会冲突
         if(showBottomSheet.value) {
-            BottomSheet(showBottomSheet, sheetState, stringResource(R.string.id)+":"+curObjInState.value.id) {
+            BottomSheet(showBottomSheet, sheetState, stringResource(R.string.id)+": "+curObjInState.value.id) {
 //                BottomSheetItem(sheetState=sheetState, showBottomSheet=showBottomSheet, text=stringResource(R.string.view_msg)){
 //                    //弹窗显示错误信息，可复制
 //                }

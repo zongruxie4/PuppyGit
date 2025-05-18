@@ -894,10 +894,10 @@ fun FilesInnerPage(
                 MySelectionContainer {
                     ScrollableColumn {
                         Row {
-                            Text(text = stringResource(R.string.import_success)+":"+successImportCount.value)
+                            Text(text = stringResource(R.string.import_success)+": "+successImportCount.value)
                         }
                         Row {
-                            Text(text = stringResource(R.string.import_failed)+":"+failedImportCount.value)
+                            Text(text = stringResource(R.string.import_failed)+": "+failedImportCount.value)
                         }
                         Spacer(modifier = Modifier.height(20.dp))
 
