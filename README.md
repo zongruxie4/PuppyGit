@@ -58,7 +58,7 @@ see:<br>
 
 
 ## Screenshots
-![release_screenshot](https://github.com/user-attachments/assets/ba9183e3-2207-455e-ad5b-acffb6534c03)
+![release_screenshot](./image-assets/screenshots/ppgit_tablet_and_phone_small_size.jpg)
 
 
 
