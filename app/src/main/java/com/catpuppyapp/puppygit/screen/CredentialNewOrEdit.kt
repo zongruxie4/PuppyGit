@@ -4,6 +4,7 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.text.KeyboardOptions
@@ -275,7 +276,8 @@ fun CredentialNewOrEdit(
                 .fillMaxSize()
                 .padding(contentPadding)
                 .verticalScroll(listState)
-                .padding(bottom = MyStyleKt.Padding.PageBottom)  //这个padding是为了使密码框不在底部，类似vscode中文件的最后一行也可滑到屏幕中间一样的意义
+                .imePadding()
+                .padding(bottom = MyStyleKt.Padding.PageBottom)
             ,
         ) {
 

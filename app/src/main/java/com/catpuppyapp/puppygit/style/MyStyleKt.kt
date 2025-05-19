@@ -268,7 +268,8 @@ object MyStyleKt{
     }
 
     object Padding {
-        val PageBottom=500.dp
+        //这个padding是为了使密码框不在最底部，看着顺眼点
+        val PageBottom = 50.dp
 
         // editor和diff页面的首行顶部padding
         val firstLineTopPaddingValuesInDp = 5.dp
