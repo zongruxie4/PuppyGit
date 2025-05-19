@@ -301,7 +301,7 @@ object AppModel {
         //注册通知渠道
         NotifyUtil.initAllNotify(realAppContext)
 
-        //获取主密码 (若与AppSetings里记的hash不匹配，启动时会弹窗请求用户输入）
+        //获取主密码 (若与AppSettings里记的hash不匹配，启动时会弹窗请求用户输入）
         AppModel.masterPassword.value = MasterPassUtil.get(realAppContext)
 
 
