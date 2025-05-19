@@ -612,7 +612,8 @@ fun SettingsInnerPage(
 
                     //更新下主密码状态，让用户知道更新成功了
                     masterPassEnabled.value = AppModel.masterPasswordEnabled()
-                    masterPassStatus.value = if(masterPassEnabled.value) activityContext.getString(R.string.updated) else activityContext.getString(R.string.disabled)
+                    //若最新状态为启用，则检查是否请求旧密码，若请求，则是更新了密码，否则是创建了新密码；若状态为禁用，则代表已禁用主密码
+                    masterPassStatus.value = activityContext.getString(if(masterPassEnabled.value) { if(requireOldPass) R.string.updated else R.string.enabled } else R.string.disabled)
 
                     //更新当前页面的settings state，不然不切换页面或退出app会无法验证旧密码
                     settingsState.value = newSettings

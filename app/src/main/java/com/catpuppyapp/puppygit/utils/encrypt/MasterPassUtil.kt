@@ -22,7 +22,7 @@ object MasterPassUtil {
 
     private fun encode(masterPass:String):String {
         if(masterPass.isEmpty()) {
-            return ""
+            return masterPass
         }
 
         return masterPass.encodeBase64()
@@ -43,7 +43,7 @@ object MasterPassUtil {
      *
      * @return 返回包含最新密码hash的设置项，由于设置项更新有一定延迟，所以若不在这里返回，可能无法及时更新页面的settings对象
      */
-    fun save(appContext: Context, newMasterPass: String): AppSettings {
+    fun save(appContext: Context = AppModel.realAppContext, newMasterPass: String): AppSettings {
         //存编码后的值
         PrefMan.set(appContext, PrefMan.Key.masterPass, encode(newMasterPass))
 
@@ -72,6 +72,13 @@ object MasterPassUtil {
             MyLog.e(TAG, "get() failed: ${e.stackTraceToString()}")
             return ""
         }
+    }
+
+    /**
+     * 忘记密码时用来清除主密码，后果是用旧密码加密的凭据密码不再可用，直到更新后用新密码重新加密
+     */
+    fun clear(appContext: Context = AppModel.realAppContext) {
+        save(appContext, "")
     }
 
 }
