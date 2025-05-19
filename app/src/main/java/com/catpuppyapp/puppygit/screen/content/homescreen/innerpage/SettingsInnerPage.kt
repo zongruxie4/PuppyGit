@@ -521,8 +521,9 @@ fun SettingsInnerPage(
                     MySelectionContainer {
                         Column {
                             DefaultPaddingText(stringResource(R.string.leave_new_password_empty_if_dont_want_to_use_master_password), color = MyStyleKt.TextColor.highlighting_green)
+
                             if(newMasterPassword.value.isNotEmpty()) {
-                                Spacer(Modifier.padding(10.dp))
+                                Spacer(Modifier.height(10.dp))
                                 DefaultPaddingText(stringResource(R.string.please_make_sure_you_can_remember_your_master_password), color = MyStyleKt.TextColor.danger())
                             }
                         }
