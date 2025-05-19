@@ -10,7 +10,7 @@ import io.ktor.util.collections.ConcurrentMap
 
 
 // 0-255，越小越透明
-private const val alpha = 128;
+private const val alpha = 64;
 
 // 避免并发冲突，没用普通的list
 private val cachedColors = ConcurrentMap<Int, Color>().apply {
