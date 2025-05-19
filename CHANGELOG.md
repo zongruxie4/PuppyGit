@@ -1,7 +1,16 @@
 
 
 ---
-1.1.1.4v90 - 20250516:
+1.1.1.5v91 - 20250519:
+- fix: bugs related to the master password updating
+
+
+
+- 修复更新主密码相关的bug
+
+
+---
+1.1.1.4v90 - 20250519:
 - support viewing commit history graphically
 - support force push with lease
 
