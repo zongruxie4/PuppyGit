@@ -1277,6 +1277,6 @@
     <string name="checking">Проверка…</string>
     <string name="nodes">Узлы</string>
     <string name="note_pat_instead_of_password">Примечание: Если у вас включена двухфакторная аутентификация (2FA), вместо пароля необходимо использовать персональный токен доступа (Personal Access Token). Токен должен иметь права на чтение и запись содержимого репозитория и рабочих процессов.</string>
-    <string name="graphic">Графика</string>
+    <string name="graph">Граф</string>
 
 </resources>

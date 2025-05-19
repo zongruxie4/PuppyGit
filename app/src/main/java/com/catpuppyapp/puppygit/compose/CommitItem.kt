@@ -56,7 +56,7 @@ import kotlin.Float
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun CommitItem(
-    commitHistoryGraphic:Boolean,
+    commitHistoryGraph:Boolean,
     density: Density,
     nodeCircleRadiusInPx:Float,
     nodeCircleStartOffsetX:Float,
@@ -97,7 +97,7 @@ fun CommitItem(
         modifier = Modifier
             .fillMaxWidth()
             .drawNode(
-                commitHistoryGraphic = commitHistoryGraphic,
+                commitHistoryGraph = commitHistoryGraph,
                 c = commitDto,
                 density = density,
                 nodeCircleRadiusInPx = nodeCircleRadiusInPx,
@@ -359,7 +359,7 @@ fun CommitItem(
 
 @Composable
 private fun Modifier.drawNode(
-    commitHistoryGraphic:Boolean,
+    commitHistoryGraph:Boolean,
     c: CommitDto,
     density: Density,
     nodeCircleRadiusInPx:Float,
@@ -369,7 +369,7 @@ private fun Modifier.drawNode(
     lineDistanceInPx:Float,
 ):Modifier {
 
-    if(commitHistoryGraphic.not()) return this;
+    if(commitHistoryGraph.not()) return this;
 
     //把线画右边
     val isRtl = UIHelper.isRtlLayout()

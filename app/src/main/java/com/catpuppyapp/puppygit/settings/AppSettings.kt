@@ -121,7 +121,7 @@ data class AppSettings(
     /**
      * 是否显示提交历史树形图
      */
-    var commitHistoryGraphic: Boolean = true,
+    var commitHistoryGraph: Boolean = true,
 
 ) {
 

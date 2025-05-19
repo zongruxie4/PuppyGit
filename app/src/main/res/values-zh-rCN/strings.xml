@@ -1255,6 +1255,6 @@
     <string name="checking">正在检查…</string>
     <string name="nodes">节点</string>
     <string name="note_pat_instead_of_password">注意: 如果你启用了2FA，则必须使用个人访问令牌(Personal Access Token)替代密码，且令牌必须拥有读、写仓库内容(Contents)和工作流(Workflows)的权限。</string>
-    <string name="graphic">图形</string>
+    <string name="graph">图示</string>
 
 </resources>

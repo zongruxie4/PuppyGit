@@ -19,8 +19,6 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.automirrored.filled.List
-import androidx.compose.material.icons.filled.CheckBox
-import androidx.compose.material.icons.filled.CheckBoxOutlineBlank
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Compare
 import androidx.compose.material.icons.filled.Error
@@ -423,7 +421,7 @@ fun CommitListScreen(
     val settings = remember { SettingsUtil.getSettingsSnapshot() }
     val shouldShowTimeZoneInfo = rememberSaveable { TimeZoneUtil.shouldShowTimeZoneInfo(settings) }
     val commitHistoryRTL = rememberSaveable { mutableStateOf(settings.commitHistoryRTL) }
-    val commitHistoryGraphic = rememberSaveable { mutableStateOf(settings.commitHistoryGraphic) }
+    val commitHistoryGraph = rememberSaveable { mutableStateOf(settings.commitHistoryGraph) }
 
     //page size for load more
     val pageSize = rememberSaveable{ mutableStateOf(settings.commitHistoryPageSize) }
@@ -1847,14 +1845,14 @@ fun CommitListScreen(
                                     }
 
                                     DropdownMenuItem(
-                                        text = { Text(stringResource(R.string.graphic)) },
+                                        text = { Text(stringResource(R.string.graph)) },
                                         trailingIcon = {
-                                            SimpleCheckBox(commitHistoryGraphic.value)
+                                            SimpleCheckBox(commitHistoryGraph.value)
                                         },
                                         onClick = {
-                                            val newValue = !commitHistoryGraphic.value
-                                            commitHistoryGraphic.value = newValue
-                                            SettingsUtil.update { it.commitHistoryGraphic = newValue }
+                                            val newValue = !commitHistoryGraph.value
+                                            commitHistoryGraph.value = newValue
+                                            SettingsUtil.update { it.commitHistoryGraph = newValue }
 
                                             //关闭顶栏菜单
                                             showTopBarMenu.value = false
@@ -2288,7 +2286,7 @@ fun CommitListScreen(
                         }
                     ) { idx, it ->
                         CommitItem(
-                            commitHistoryGraphic = commitHistoryGraphic.value,
+                            commitHistoryGraph = commitHistoryGraph.value,
                             density = density,
                             nodeCircleRadiusInPx = nodeCircleRadiusInPx,
                             nodeCircleStartOffsetX = nodeCircleStartOffsetX,
