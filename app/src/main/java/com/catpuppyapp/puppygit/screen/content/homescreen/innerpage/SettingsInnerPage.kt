@@ -515,18 +515,16 @@ fun SettingsInnerPage(
                         PasswordTextFiled(oldMasterPassword, oldMasterPasswordVisible, stringResource(R.string.old_password), errMsg = oldMasterPasswordErrMsg)
                     }
 
-                    Spacer(Modifier.height(15.dp))
-
                     // new password
-                    PasswordTextFiled(newMasterPassword, newMasterPasswordVisible, stringResource(R.string.new_password), errMsg = newMasterPasswordErrMsg, paddingValues = PaddingValues(start = 10.dp, end = 10.dp, top = 10.dp, bottom = 2.dp))
-                    Row(modifier = Modifier.padding(horizontal = 10.dp)) {
-                        Text(stringResource(R.string.leave_new_password_empty_if_dont_want_to_use_master_password), color = MyStyleKt.TextColor.highlighting_green)
-                    }
+                    PasswordTextFiled(newMasterPassword, newMasterPasswordVisible, stringResource(R.string.new_password), errMsg = newMasterPasswordErrMsg)
 
-                    if(newMasterPassword.value.isNotEmpty()) {
-                        Spacer(Modifier.height(10.dp))
-                        Row(modifier = Modifier.padding(horizontal = 10.dp)) {
-                            Text(stringResource(R.string.please_make_sure_you_can_remember_your_master_password), color = MyStyleKt.TextColor.danger())
+                    MySelectionContainer {
+                        Column {
+                            DefaultPaddingText(stringResource(R.string.leave_new_password_empty_if_dont_want_to_use_master_password), color = MyStyleKt.TextColor.highlighting_green)
+                            if(newMasterPassword.value.isNotEmpty()) {
+                                Spacer(Modifier.padding(10.dp))
+                                DefaultPaddingText(stringResource(R.string.please_make_sure_you_can_remember_your_master_password), color = MyStyleKt.TextColor.danger())
+                            }
                         }
                     }
                 }
