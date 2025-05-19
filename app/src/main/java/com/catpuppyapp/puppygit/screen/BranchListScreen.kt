@@ -746,10 +746,12 @@ fun BranchListScreen(
                         if (delUpstreamToo.value) {  //如果能勾选这个选项其实基本就可以断定存在有效上游了
                             DefaultPaddingRow {
                                 Text(text = stringResource(id = R.string.upstream) + ": ")
-                                Text(
-                                    text = curObjInPage.value.upstream?.remoteBranchShortRefSpec ?: "",  //其实如果通过上面的判断，基本就能断定存在有效上游了，这里的?:空值判断只是以防万一
-                                    fontWeight = FontWeight.ExtraBold
-                                )
+                                MySelectionContainer {
+                                    Text(
+                                        text = curObjInPage.value.upstream?.remoteBranchShortRefSpec ?: "",  //其实如果通过上面的判断，基本就能断定存在有效上游了，这里的?:空值判断只是以防万一
+                                        fontWeight = FontWeight.ExtraBold
+                                    )
+                                }
                             }
 
                             MyCheckBox(text = stringResource(R.string.push), value = delUpstreamPush)
