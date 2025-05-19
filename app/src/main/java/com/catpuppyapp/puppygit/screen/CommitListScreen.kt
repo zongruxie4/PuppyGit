@@ -101,6 +101,7 @@ import com.catpuppyapp.puppygit.compose.RepoInfoDialog
 import com.catpuppyapp.puppygit.compose.ResetDialog
 import com.catpuppyapp.puppygit.compose.ScrollableColumn
 import com.catpuppyapp.puppygit.compose.SetPageSizeDialog
+import com.catpuppyapp.puppygit.compose.SimpleCheckBox
 import com.catpuppyapp.puppygit.compose.SingleSelectList
 import com.catpuppyapp.puppygit.compose.SoftkeyboardVisibleListener
 import com.catpuppyapp.puppygit.constants.Cons
@@ -1848,10 +1849,7 @@ fun CommitListScreen(
                                     DropdownMenuItem(
                                         text = { Text(stringResource(R.string.graphic)) },
                                         trailingIcon = {
-                                            Icon(
-                                                imageVector = if(commitHistoryGraphic.value) Icons.Filled.CheckBox else Icons.Filled.CheckBoxOutlineBlank,
-                                                contentDescription = null
-                                            )
+                                            SimpleCheckBox(commitHistoryGraphic.value)
                                         },
                                         onClick = {
                                             val newValue = !commitHistoryGraphic.value

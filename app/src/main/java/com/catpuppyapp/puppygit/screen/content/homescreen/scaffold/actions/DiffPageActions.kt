@@ -25,6 +25,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.DpOffset
 import androidx.compose.ui.unit.dp
 import com.catpuppyapp.puppygit.compose.LongPressAbleIconBtn
+import com.catpuppyapp.puppygit.compose.SimpleCheckBox
 import com.catpuppyapp.puppygit.constants.Cons
 import com.catpuppyapp.puppygit.constants.PageRequest
 import com.catpuppyapp.puppygit.dev.detailsDiffTestPassed
@@ -212,10 +213,7 @@ fun DiffPageActions(
         DropdownMenuItem(
             text = { Text(stringResource(R.string.show_line_num)) },
             trailingIcon = {
-                Icon(
-                    imageVector = if(showLineNum.value) Icons.Filled.CheckBox else Icons.Filled.CheckBoxOutlineBlank,
-                    contentDescription = null
-                )
+                SimpleCheckBox(showLineNum.value)
             },
             onClick = {
                 showLineNum.value = !showLineNum.value
@@ -233,10 +231,7 @@ fun DiffPageActions(
         DropdownMenuItem(
             text = { Text(stringResource(R.string.show_change_type)) },
             trailingIcon = {
-                Icon(
-                    imageVector = if(showOriginType.value) Icons.Filled.CheckBox else Icons.Filled.CheckBoxOutlineBlank,
-                    contentDescription = null
-                )
+                SimpleCheckBox(showOriginType.value)
             },
             onClick = {
                 showOriginType.value = !showOriginType.value
@@ -254,10 +249,7 @@ fun DiffPageActions(
         DropdownMenuItem(
             text = { Text(stringResource(R.string.group_by_line)) },
             trailingIcon = {
-                Icon(
-                    imageVector = if(groupDiffContentByLineNum.value) Icons.Filled.CheckBox else Icons.Filled.CheckBoxOutlineBlank,
-                    contentDescription = null
-                )
+                SimpleCheckBox(groupDiffContentByLineNum.value)
             },
             onClick = {
                 groupDiffContentByLineNum.value = !groupDiffContentByLineNum.value
@@ -275,10 +267,7 @@ fun DiffPageActions(
             DropdownMenuItem(
                 text = { Text(stringResource(R.string.better_compare)) },
                 trailingIcon = {
-                    Icon(
-                        imageVector = if(requireBetterMatchingForCompare.value) Icons.Filled.CheckBox else Icons.Filled.CheckBoxOutlineBlank,
-                        contentDescription = null
-                    )
+                    SimpleCheckBox(requireBetterMatchingForCompare.value)
                 },
                 onClick = {
                     requireBetterMatchingForCompare.value = !requireBetterMatchingForCompare.value
@@ -294,10 +283,7 @@ fun DiffPageActions(
             DropdownMenuItem(
                 text = { Text(stringResource(R.string.match_by_words)) },
                 trailingIcon = {
-                    Icon(
-                        imageVector = if(matchByWords.value) Icons.Filled.CheckBox else Icons.Filled.CheckBoxOutlineBlank,
-                        contentDescription = null
-                    )
+                    SimpleCheckBox(matchByWords.value)
                 },
                 onClick = {
                     matchByWords.value = !matchByWords.value
@@ -316,10 +302,7 @@ fun DiffPageActions(
             enabled = readOnlyModeSwitchable,
             text = { Text(stringResource(R.string.read_only)) },
             trailingIcon = {
-                Icon(
-                    imageVector = if(readOnlyModeOn.value) Icons.Filled.CheckBox else Icons.Filled.CheckBoxOutlineBlank,
-                    contentDescription = null
-                )
+                SimpleCheckBox(readOnlyModeOn.value)
             },
             onClick = {
                 readOnlyModeOn.value = !readOnlyModeOn.value
@@ -337,10 +320,7 @@ fun DiffPageActions(
             enabled = fileChangeTypeIsModified,
             text = { Text(stringResource(R.string.select_compare)) },
             trailingIcon = {
-                Icon(
-                    imageVector = if(enableSelectCompare.value) Icons.Filled.CheckBox else Icons.Filled.CheckBoxOutlineBlank,
-                    contentDescription = null
-                )
+                SimpleCheckBox(enableSelectCompare.value)
             },
             onClick = {
                 enableSelectCompare.value = !enableSelectCompare.value

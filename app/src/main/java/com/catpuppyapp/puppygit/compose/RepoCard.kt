@@ -644,10 +644,9 @@ private fun RepoTitle(
                 horizontalArrangement = Arrangement.End,
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                Icon(
+                SimpleCheckBox(
+                    enabled = itemSelected,
                     modifier = Modifier.size(25.dp),
-                    imageVector = UIHelper.getCheckBoxByState(itemSelected),
-                    contentDescription = null,
                 )
             }
         }

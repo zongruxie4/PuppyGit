@@ -431,11 +431,14 @@ fun AutomationInnerPage(
                         Text(UIHelper.getRunningStateText(activityContext, runningStatus), fontSize = itemDescFontSize, fontWeight = FontWeight.Light, color = UIHelper.getRunningStateColor(runningStatus))
                     }
 
+                    //此值有可能为null，所以用等于true来判断是否真为true
+                    val isRunning = runningStatus == true;
+
                     Icon(
                         modifier = Modifier.size(switcherIconSize),
-                        imageVector = UIHelper.getIconForSwitcher(runningStatus == true),
+                        imageVector = UIHelper.getIconForSwitcher(isRunning),
                         contentDescription = UIHelper.getTextForSwitcher(activityContext, runningStatus),
-                        tint = UIHelper.getColorForSwitcher(runningStatus == true),
+                        tint = UIHelper.getColorForSwitcher(isRunning),
                     )
                 }
             }
