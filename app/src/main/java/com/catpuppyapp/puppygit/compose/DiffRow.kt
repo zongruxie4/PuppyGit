@@ -96,7 +96,7 @@ fun DiffRow (
     setComparePairBuffer: (CompareLinePair) -> Unit,
 //    comparePair:CustomStateSaveable<CompareLinePair>,
     betterCompare:Boolean,
-    reForEachDiffContent:()->Unit,
+    reForEachDiffContent:()->Unit,  //这变量没什么用了，但暂且保留位置以免日后有用。之所以没用了是因为现在修改 pair buffer后就会拷贝元素更新list，附带刷新效果了
     indexStringPartListMap:MutableMap<String, CompareLinePairResult>,
     enableSelectCompare: Boolean,
     matchByWords:Boolean,
@@ -488,7 +488,7 @@ fun DiffRow (
 
             setComparePairBuffer(CompareLinePair())
 
-            reForEachDiffContent()
+//            reForEachDiffContent()
         }
     }
 
@@ -547,7 +547,7 @@ fun DiffRow (
 
             setComparePairBuffer(CompareLinePair())
 
-            reForEachDiffContent()
+//            reForEachDiffContent()
         }
 
     }
@@ -800,7 +800,7 @@ fun DiffRow (
                                         setComparePairBuffer(CompareLinePair())
 
                                         // re-render view
-                                        reForEachDiffContent()
+//                                        reForEachDiffContent()
                                     }
 
                                 }else {
