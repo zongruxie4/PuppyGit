@@ -1,6 +1,14 @@
 
 
 ---
+1.1.1.8v94 - 20250520:
+- remove unused function
+
+
+
+- 移除无用函数
+
+---
 1.1.1.7v93 - 20250520:
 - fix: dialog button disable color invalid in some cases
 - add easter egg at About page
