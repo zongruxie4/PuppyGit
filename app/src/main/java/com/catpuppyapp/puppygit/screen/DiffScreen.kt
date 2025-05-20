@@ -1139,19 +1139,19 @@ fun DiffScreen(
 //    val submoduleIsDirtyMap = mutableCustomStateMapOf(keyTag = stateKeyTag, keyName = "submoduleIsDirtyMap") { mapOf<String, Boolean>() }
 //    val errMsgMap = mutableCustomStateMapOf(keyTag = stateKeyTag, keyName = "errMsgMap") { mapOf<String, String>() }
 
-    val reForEachDiffContent = { relativePath:String ->
-//        diffItemMap.value.get(relativePath)?.let {
-//           // 改key触发刷新
-//            diffItemMap.value.put(relativePath, it.copy(keyForRefresh = getShortUUID()))
+//    val reForEachDiffContent = { relativePath:String ->
+////        diffItemMap.value.get(relativePath)?.let {
+////           // 改key触发刷新
+////            diffItemMap.value.put(relativePath, it.copy(keyForRefresh = getShortUUID()))
+////        }
+//
+//        val index = diffableItemList.value.indexOfFirst { it.relativePath == relativePath }
+//        if(index != -1) {
+//            diffableItemList.value[index] = diffableItemList.value[index].copy()
 //        }
-
-        val index = diffableItemList.value.indexOfFirst { it.relativePath == relativePath }
-        if(index != -1) {
-            diffableItemList.value[index] = diffableItemList.value[index].copy()
-        }
-
-        Unit
-    }
+//
+//        Unit
+//    }
 
     val updateCurrentViewingIdx = { viewingIndex:Int ->
         curItemIndex.intValue = viewingIndex
@@ -1614,7 +1614,9 @@ fun DiffScreen(
                                 diffableItemList[diffableItemIdx] = diffableItemList[diffableItemIdx].copy(compareLinePair = newCompareLinePair)
                             }
 
-                            val reForEachDiffContent = {reForEachDiffContent(relativePath)}
+//                            val reForEachDiffContent = {reForEachDiffContent(relativePath)}
+                            val reForEachDiffContent = {}  //这函数用不到了，但先保留，日后若有用取消注释相关方法即可
+
                             // modified，并且设置项启用，则启用
                             val enableSelectCompare = changeType == Cons.gitStatusModified && enableSelectCompare;
                             // 设置项启用则启用，不管文件类型，就算是删除的文件也可使用菜单的拷贝功能，之前判断不是修改就禁用
