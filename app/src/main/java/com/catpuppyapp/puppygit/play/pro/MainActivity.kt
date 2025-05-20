@@ -339,8 +339,10 @@ private fun MainCompose() {
 //                assert(!MyLog.isInited)
                 //test
 
+                //初始化AppSettings、MyLog等
                 AppModel.init_2()
 
+                //因为主密码需要用到AppSettings设置项，所以需要在init_2之后再调用才准
                 requireMasterPassword.value = AppModel.requireMasterPassword()
 
                 //如果无需主密码，直接在这检查是否需要迁移密码，一般迁移密码发生在加密解密器升级之后，可能换了实现，之类的

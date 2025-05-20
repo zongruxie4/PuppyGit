@@ -40,6 +40,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.dp
+import com.catpuppyapp.puppygit.compose.ClearMasterPasswordDialog
 import com.catpuppyapp.puppygit.compose.ClickableText
 import com.catpuppyapp.puppygit.compose.ConfirmDialog2
 import com.catpuppyapp.puppygit.compose.ConfirmDialog3
@@ -289,7 +290,7 @@ fun SettingsInnerPage(
                 ScrollableColumn {
                     Text(stringResource(R.string.below_credential_password_update_failed))
                     Spacer(Modifier.height(10.dp))
-                    Text(updateMasterPassFailedListStr.value)
+                    Text(updateMasterPassFailedListStr.value, fontWeight = FontWeight.ExtraBold)
                 }
             },
             onCancel = { showFailedUpdateMasterPasswordsCredentialList.value = false }
@@ -514,7 +515,7 @@ fun SettingsInnerPage(
         // 所以，修改主密码时若存在旧密码则应强制验证旧密码，
         // 代码实现上就把以前的逻辑 “若存在并已缓存旧密码就不需要用户再输入” 反转下，变成 “若存在主密码，则强制用户重新输入” 就行，
         // 或者“如果启用了主密码则必须输入旧密码”，也行。
-        val requireOldPass = AppModel.masterPasswordEnabled()  //若设置了主密码，则需要验证旧密码才能设新的
+        val requireOldPass = masterPassEnabled.value  //若设置了主密码，则需要验证旧密码才能设新的
 
         ConfirmDialog2(
             title = stringResource(R.string.set_master_password),
@@ -626,6 +627,23 @@ fun SettingsInnerPage(
         }
     }
 
+
+    val showClearMasterPasswordDialog = rememberSaveable { mutableStateOf(false) }
+    if(showClearMasterPasswordDialog.value) {
+        ClearMasterPasswordDialog(
+            onCancel = {showClearMasterPasswordDialog.value = false},
+            onOk = {
+                showClearMasterPasswordDialog.value = false
+
+                //把master pass状态设为禁用
+                masterPassEnabled.value = false
+                masterPassStatus.value = activityContext.getString(R.string.disabled)
+
+                //提示成功
+                Msg.requireShow(activityContext.getString(R.string.success))
+            }
+        )
+    }
 
 //    val showForgetMasterPasswordDialog = rememberSaveable { mutableStateOf(false) }
 
@@ -1197,6 +1215,19 @@ fun SettingsInnerPage(
 
             }
         }
+
+        //如果有主密码，显示个忘记密码，点击弹窗询问是否清空密码
+        if(masterPassEnabled.value) {
+            SettingsContent(onClick = {
+                //显示弹窗
+                showClearMasterPasswordDialog.value = true
+            }) {
+                Column {
+                    Text(stringResource(R.string.i_forgot_my_master_password), fontSize = itemFontSize)
+                }
+            }
+        }
+
 
 //        SettingsContent(onClick = {
 //            oldMasterPassword.value = ""
