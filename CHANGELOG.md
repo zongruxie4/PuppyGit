@@ -2,10 +2,12 @@
 
 ---
 1.1.1.7v93 - 20250520:
+- fix: dialog button disable color invalid in some cases
 - add easter egg at About page
 
 
 
+- 修复某些情况弹窗按钮禁用时颜色失效
 - 关于页面添加彩蛋
 
 
