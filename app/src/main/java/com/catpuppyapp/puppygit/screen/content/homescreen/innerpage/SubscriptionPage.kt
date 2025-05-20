@@ -4,7 +4,9 @@ import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
@@ -55,12 +57,12 @@ fun SubscriptionPage(contentPadding: PaddingValues, needRefresh: MutableState<St
     Column (modifier = Modifier
         .fillMaxSize()
         .padding(contentPadding)
-        .padding(top = 10.dp)
         .verticalScroll(rememberScrollState())
         ,
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.Center
     ){
+        Spacer(Modifier.height(10.dp))
 //        //图标，app名，contact
 //        Image(bitmap = appIcon, contentDescription = stringResource(id = R.string.app_icon))
 //        if(Billing.productDetailsList==null || Billing.productDetailsList?.value?.isEmpty() == true) {

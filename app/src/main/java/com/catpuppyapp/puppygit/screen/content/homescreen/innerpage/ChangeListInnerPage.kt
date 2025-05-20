@@ -2363,7 +2363,7 @@ fun ChangeListInnerPage(
                         verticalArrangement = Arrangement.Center,
                         horizontalAlignment = Alignment.CenterHorizontally,
 
-                        ) {
+                    ) {
                         if(fromTo == Cons.gitDiffFromIndexToWorktree) {  //worktree
                             Text(text = stringResource(id = R.string.work_tree_clean))
                             Row(
@@ -2395,11 +2395,11 @@ fun ChangeListInnerPage(
                                 val splitHorizonPadding = 10.dp
 
                                 Column(
-                                    modifier = Modifier
-                                        .padding(top = 10.dp),
                                     horizontalAlignment = Alignment.CenterHorizontally,
                                     verticalArrangement = Arrangement.Center
                                 ) {
+                                    Spacer(Modifier.height(10.dp))
+
                                     //领先或落后或上游无效，显示 "click here to sync" (ps: 上游无效也显示是因为worktree页面的sync可创建上游)
                                     if (curRepoOnUi.ahead != 0 || curRepoOnUi.behind != 0
                                         //上游为空，显示sync
