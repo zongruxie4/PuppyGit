@@ -685,7 +685,7 @@ object AppModel {
         val funName = "getStringByResKey"
         try {
             val res = context.resources
-            val resType = "string"  //TODO 需要测试是否支持多语言
+            val resType = "string"  //TODO 是否需要改 string-语言后缀 才能支持多语言？感觉应该不用，是否支持多语言应该取决于 Context，不过我没测试过
             return res.getString(res.getIdentifier(resKey, resType, appPackageName))
 
         }catch (e:Exception) {
