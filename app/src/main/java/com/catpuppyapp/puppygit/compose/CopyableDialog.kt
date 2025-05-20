@@ -1,6 +1,5 @@
 package com.catpuppyapp.puppygit.compose
 
-import androidx.compose.foundation.text.selection.DisableSelection
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
@@ -9,7 +8,6 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
 import com.catpuppyapp.puppygit.play.pro.R
 import com.catpuppyapp.puppygit.utils.doJobThenOffLoading
-
 
 
 @Composable
@@ -116,26 +114,21 @@ fun CopyableDialog2(
             //避免和外部的selection冲突导致长按选择文本时app崩溃
             // 例如，旧版的compose（新版不是不崩，只是我没测试过，不确定），
             // 外部组件用selection container包了整个屏幕，然后显示弹窗，然后长按弹窗内文字，就会崩溃
-            DisableSelection {
-                MySelectionContainer {
-                    if(requireShowTitleCompose) {
-                        titleCompose()
-                    }else {
-                        DialogTitle(title)
-                    }
-
+            MySelectionContainer {
+                if(requireShowTitleCompose) {
+                    titleCompose()
+                }else {
+                    DialogTitle(title)
                 }
             }
         },
         text = {
-            DisableSelection {
-                MySelectionContainer {
-                    if(requireShowTextCompose) {
-                        textCompose()
-                    }else {
-                        ScrollableColumn {
-                            Text(text)
-                        }
+            MySelectionContainer {
+                if(requireShowTextCompose) {
+                    textCompose()
+                }else {
+                    ScrollableColumn {
+                        Text(text)
                     }
                 }
             }

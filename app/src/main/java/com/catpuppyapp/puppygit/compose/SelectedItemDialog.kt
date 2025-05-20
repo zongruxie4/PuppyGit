@@ -1,12 +1,14 @@
 package com.catpuppyapp.puppygit.compose
 
 
+import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxScope
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.RowScope
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.DeleteOutline
 import androidx.compose.material3.HorizontalDivider
@@ -145,7 +147,6 @@ fun <T> SelectedItemDialog3(
 
     //自定义text
     text:@Composable RowScope.(T) -> Unit,
-    textContainerModifier: BoxScope.() -> Modifier = { Modifier.fillMaxWidth(.8f).padding(start = 5.dp).align(Alignment.CenterStart) },
     textFormatterForCopy:(T)->String,
 
     //清空条目列表
@@ -165,7 +166,7 @@ fun <T> SelectedItemDialog3(
         title = title,
         text = {
             Row(
-                modifier = textContainerModifier(),
+                modifier = Modifier.fillMaxWidth(.8f).padding(start = 5.dp).align(Alignment.CenterStart).horizontalScroll(rememberScrollState()),
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 text(it)
