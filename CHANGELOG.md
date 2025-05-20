@@ -1,6 +1,15 @@
 
 
 ---
+1.1.1.6v92 - 20250520:
+- add forget master password option in settings
+
+
+
+- 在设置页面添加忘记主密码的选项
+
+
+---
 1.1.1.5v91 - 20250519:
 - fix: bugs related to the master password updating
 
