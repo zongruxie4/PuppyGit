@@ -109,12 +109,15 @@ fun AboutInnerPage(
         modifier = Modifier
             .fillMaxSize()
             .padding(contentPadding)
-            .padding(top = 10.dp)
             .verticalScroll(listState)
         ,
         horizontalAlignment = Alignment.CenterHorizontally,
+
+        //垂直应从上到下，不需要居中
 //        verticalArrangement = Arrangement.Center
-    ){
+    ) {
+        Spacer(Modifier.height(10.dp))
+
         //图标，app名，contact
         Row(
             modifier = Modifier.fillMaxWidth(),
