@@ -667,6 +667,11 @@ object AppModel {
         return ImageVector.vectorResource(if(inDarkTheme)  R.drawable.icon_dark_foreground else R.drawable.icon_light_foreground)
     }
 
+    @Composable
+    fun getMonoChromeAppIcon(context: Context): ImageVector {
+        return ImageVector.vectorResource(R.drawable.ic_launcher_monochrome)
+    }
+
     fun getAppVersionCode():Int {
         return BuildConfig.VERSION_CODE
     }
