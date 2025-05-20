@@ -81,7 +81,7 @@ object LanguageUtil {
     }
 
     /**
-     * e.g. input zh-rCN return Pair("zh", "CN")
+     * e.g. input "zh-rCN" return Pair("zh", "CN")
      */
     fun splitLanguageCode(languageCode:String):Pair<String,String> {
         val codes = languageCode.split("-r")

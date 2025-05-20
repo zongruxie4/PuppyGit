@@ -685,7 +685,11 @@ object AppModel {
         val funName = "getStringByResKey"
         try {
             val res = context.resources
-            val resType = "string"  //TODO 是否需要改 string-语言后缀 才能支持多语言？感觉应该不用，是否支持多语言应该取决于 Context，不过我没测试过
+            //TODO 是否需要改为 "string-语言后缀" 才能支持多语言？感觉应该不用，
+            // 是否支持多语言应该取决于 Context 里设置的Locale，不过我没测试过
+            // (ps: 已在MainActivity 用 attachBaseContext设置了Local，
+            // 还有，每个Service和Activity都需要单独设置)
+            val resType = "string"
             return res.getString(res.getIdentifier(resKey, resType, appPackageName))
 
         }catch (e:Exception) {
