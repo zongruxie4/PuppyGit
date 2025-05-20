@@ -78,7 +78,7 @@ fun ConfirmDialog2(
                 ) {
                     Text(
                         text = okBtnText,
-                        color = okTextColor,
+                        color = if(okBtnEnabled) okTextColor else Color.Unspecified,
                     )
                 }
 

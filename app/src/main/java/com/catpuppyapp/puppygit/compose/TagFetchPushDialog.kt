@@ -217,7 +217,7 @@ fun TagFetchPushDialog(
                 onClick = { onOk(force.value) },
                 enabled = enableOk
             ) {
-                Text(text = stringResource(if(requireDel) R.string.delete else if(trueFetchFalsePush) R.string.fetch else R.string.push), color = if(requireDel) MyStyleKt.TextColor.danger() else Color.Unspecified)
+                Text(text = stringResource(if(requireDel) R.string.delete else if(trueFetchFalsePush) R.string.fetch else R.string.push), color = if(enableOk && requireDel) MyStyleKt.TextColor.danger() else Color.Unspecified)
             }
         },
         dismissButton = {

@@ -153,8 +153,9 @@ fun SetBranchForRemoteDialog(
         confirmButton = {
             TextButton(
                 enabled = isAll.value || branchCsvStr.value.isNotBlank(),
-                onClick = { onOk(remoteName, isAll.value, branchCsvStr.value) }) {
-                Text(text = activityContext.getString(R.string.save))
+                onClick = { onOk(remoteName, isAll.value, branchCsvStr.value) }
+            ) {
+                Text(text = stringResource(R.string.save))
             }
         }
     )

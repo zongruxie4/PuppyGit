@@ -71,7 +71,7 @@ fun CopyableDialog(
             ) {
                 Text(
                     text = okBtnText,
-                    color = okTextColor,
+                    color = if(okBtnEnabled) okTextColor else Color.Unspecified,
                 )
             }
         },
@@ -162,7 +162,7 @@ fun CopyableDialog2(
                 ) {
                     Text(
                         text = okBtnText,
-                        color = okTextColor,
+                        color = if(okBtnEnabled) okTextColor else Color.Unspecified,
                     )
                 }
             }else {
