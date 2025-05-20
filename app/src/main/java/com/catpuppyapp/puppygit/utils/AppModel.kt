@@ -668,8 +668,8 @@ object AppModel {
     }
 
     @Composable
-    fun getMonoChromeAppIcon(context: Context): ImageVector {
-        return ImageVector.vectorResource(R.drawable.ic_launcher_monochrome)
+    fun getAppIconMonoChrome(context: Context): ImageVector {
+        return ImageVector.vectorResource(R.drawable.icon_monochrome)
     }
 
     fun getAppVersionCode():Int {

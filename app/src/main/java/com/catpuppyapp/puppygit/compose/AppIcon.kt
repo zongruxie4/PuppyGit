@@ -28,6 +28,6 @@ fun AppIconMonoChrome(
     tint: Color = LocalContentColor.current,
 ) {
     val context = LocalContext.current
-    val appIcon = AppModel.getMonoChromeAppIcon(context)
+    val appIcon = AppModel.getAppIconMonoChrome(context)
     Icon(appIcon, contentDescription = stringResource(R.string.app_icon), modifier = modifier, tint = tint)
 }
