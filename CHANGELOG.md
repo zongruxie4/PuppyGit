@@ -1,6 +1,15 @@
 
 
 ---
+1.1.1.7v93 - 20250520:
+- add easter egg at About page
+
+
+
+- 关于页面添加彩蛋
+
+
+---
 1.1.1.6v92 - 20250520:
 - add forget master password option in settings
 
