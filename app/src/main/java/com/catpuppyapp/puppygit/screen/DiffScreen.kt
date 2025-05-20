@@ -1615,7 +1615,7 @@ fun DiffScreen(
                             }
 
 //                            val reForEachDiffContent = {reForEachDiffContent(relativePath)}
-                            val reForEachDiffContent = {}  //这函数用不到了，但先保留，日后若有用取消注释相关方法即可
+//                            val reForEachDiffContent = {}  //这函数用不到了，但先保留，日后若有用取消注释相关方法即可
 
                             // modified，并且设置项启用，则启用
                             val enableSelectCompare = changeType == Cons.gitStatusModified && enableSelectCompare;
@@ -1682,7 +1682,7 @@ fun DiffScreen(
                                                         getComparePairBuffer = getComparePairBuffer,
                                                         setComparePairBuffer = setComparePairBuffer,
                                                         betterCompare = requireBetterMatchingForCompare.value,
-                                                        reForEachDiffContent = reForEachDiffContent,
+//                                                        reForEachDiffContent = reForEachDiffContent,
                                                         indexStringPartListMap = indexStringPartListMapForComparePair,
                                                         enableSelectCompare = enableSelectCompare,
                                                         matchByWords = matchByWords.value,
@@ -1726,7 +1726,7 @@ fun DiffScreen(
                                                                 getComparePairBuffer = getComparePairBuffer,
                                                                 setComparePairBuffer = setComparePairBuffer,
                                                                 betterCompare = requireBetterMatchingForCompare.value,
-                                                                reForEachDiffContent = reForEachDiffContent,
+//                                                                reForEachDiffContent = reForEachDiffContent,
                                                                 indexStringPartListMap = indexStringPartListMapForComparePair,
                                                                 enableSelectCompare = enableSelectCompare,
                                                                 matchByWords = matchByWords.value,
@@ -1787,7 +1787,7 @@ fun DiffScreen(
                                                         getComparePairBuffer = getComparePairBuffer,
                                                         setComparePairBuffer = setComparePairBuffer,
                                                         betterCompare = requireBetterMatchingForCompare.value,
-                                                        reForEachDiffContent = reForEachDiffContent,
+//                                                        reForEachDiffContent = reForEachDiffContent,
                                                         indexStringPartListMap = indexStringPartListMapForComparePair,
                                                         enableSelectCompare = enableSelectCompare,
                                                         matchByWords = matchByWords.value,
@@ -1898,7 +1898,7 @@ fun DiffScreen(
                                                             getComparePairBuffer = getComparePairBuffer,
                                                             setComparePairBuffer = setComparePairBuffer,
                                                             betterCompare = requireBetterMatchingForCompare.value,
-                                                            reForEachDiffContent = reForEachDiffContent,
+//                                                            reForEachDiffContent = reForEachDiffContent,
                                                             indexStringPartListMap = indexStringPartListMapForComparePair,
                                                             enableSelectCompare = enableSelectCompare,
                                                             matchByWords = matchByWords.value,
@@ -1934,7 +1934,7 @@ fun DiffScreen(
                                                             getComparePairBuffer = getComparePairBuffer,
                                                             setComparePairBuffer = setComparePairBuffer,
                                                             betterCompare = requireBetterMatchingForCompare.value,
-                                                            reForEachDiffContent = reForEachDiffContent,
+//                                                            reForEachDiffContent = reForEachDiffContent,
                                                             indexStringPartListMap = indexStringPartListMapForComparePair,
                                                             enableSelectCompare = enableSelectCompare,
                                                             matchByWords = matchByWords.value,
@@ -1995,7 +1995,7 @@ fun DiffScreen(
                                                         getComparePairBuffer = getComparePairBuffer,
                                                         setComparePairBuffer = setComparePairBuffer,
                                                         betterCompare = requireBetterMatchingForCompare.value,
-                                                        reForEachDiffContent = reForEachDiffContent,
+//                                                        reForEachDiffContent = reForEachDiffContent,
                                                         indexStringPartListMap = indexStringPartListMapForComparePair,
                                                         enableSelectCompare = enableSelectCompare,
                                                         matchByWords = matchByWords.value,
@@ -2043,7 +2043,7 @@ fun DiffScreen(
                                                         getComparePairBuffer = getComparePairBuffer,
                                                         setComparePairBuffer = setComparePairBuffer,
                                                         betterCompare = requireBetterMatchingForCompare.value,
-                                                        reForEachDiffContent = reForEachDiffContent,
+//                                                        reForEachDiffContent = reForEachDiffContent,
                                                         indexStringPartListMap = indexStringPartListMapForComparePair,
                                                         enableSelectCompare = enableSelectCompare,
                                                         matchByWords = matchByWords.value,
@@ -2092,7 +2092,7 @@ fun DiffScreen(
                                                     getComparePairBuffer = getComparePairBuffer,
                                                     setComparePairBuffer = setComparePairBuffer,
                                                     betterCompare = requireBetterMatchingForCompare.value,
-                                                    reForEachDiffContent = reForEachDiffContent,
+//                                                    reForEachDiffContent = reForEachDiffContent,
                                                     indexStringPartListMap = indexStringPartListMapForComparePair,
                                                     enableSelectCompare = enableSelectCompare,
                                                     matchByWords = matchByWords.value,
@@ -2139,7 +2139,7 @@ fun DiffScreen(
                                                 getComparePairBuffer = getComparePairBuffer,
                                                 setComparePairBuffer = setComparePairBuffer,
                                                 betterCompare = requireBetterMatchingForCompare.value,
-                                                reForEachDiffContent = reForEachDiffContent,
+//                                                reForEachDiffContent = reForEachDiffContent,
                                                 indexStringPartListMap = indexStringPartListMapForComparePair,
                                                 enableSelectCompare = enableSelectCompare,
                                                 matchByWords = matchByWords.value,
