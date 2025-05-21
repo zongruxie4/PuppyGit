@@ -18,9 +18,9 @@ fun FullScreenScrollableColumn(
 ) {
     Column(
         modifier = Modifier
+            .verticalScroll(rememberScrollState())
             .fillMaxSize()
             .padding(contentPadding)
-            .verticalScroll(rememberScrollState())
 
         ,
         verticalArrangement = Arrangement.Center,

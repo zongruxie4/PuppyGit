@@ -31,12 +31,10 @@ fun LoadingText(
     text:(@Composable ()->Unit)? = null,
 ) {
     LoadingTextBase(
-        modifier = Modifier
+        //默认启用滚动，不然滚动 隐藏/显示 的顶栏无法触发 隐藏/显示
+        modifier = (if (scrollState != null) Modifier.verticalScroll(scrollState) else Modifier)
             .fillMaxSize()
             .padding(contentPadding)
-
-            //默认启用滚动，不然滚动 隐藏/显示 的顶栏无法触发 隐藏/显示
-            .then(if (scrollState != null) Modifier.verticalScroll(scrollState) else Modifier)
         ,
         horizontalAlignment = horizontalAlignment,
         verticalArrangement = verticalArrangement,

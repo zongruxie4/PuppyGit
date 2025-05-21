@@ -858,9 +858,9 @@ fun HomeScreen(
 //                modifier= if(drawerState.isOpen) Modifier.fillMaxWidth(.8F) else Modifier,
                 //之前是250dp，显示不全广告，改成320了，正好能显示全
                 modifier= Modifier
+                    .verticalScroll(rememberScrollState())
                     .fillMaxHeight()
                     .widthIn(max = 320.dp)
-                    .verticalScroll(rememberScrollState())
                 ,
                 drawerShape = RectangleShape,
                 content = drawerContent(

@@ -118,7 +118,11 @@ private fun MainCompose(activity: Activity, appContext: Context, errMsg: String,
         }
     ) { contentPadding ->
         Column(
-            modifier = Modifier.fillMaxSize().padding(contentPadding).verticalScroll(scrollState),
+            modifier = Modifier
+                .verticalScroll(scrollState)
+                .fillMaxSize()
+                .padding(contentPadding)
+            ,
             verticalArrangement = Arrangement.Center,
             horizontalAlignment = Alignment.CenterHorizontally,
 

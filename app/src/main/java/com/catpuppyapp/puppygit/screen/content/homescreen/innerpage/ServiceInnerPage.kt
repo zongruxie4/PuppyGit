@@ -265,9 +265,9 @@ fun ServiceInnerPage(
             textCompose = {
                 Column(
                     modifier= Modifier
+                        .verticalScroll(rememberScrollState())
                         .fillMaxWidth()
                         .focusRequester(focusRequester)
-                        .verticalScroll(rememberScrollState())
                     ,
                 ) {
                     TextField(
@@ -337,9 +337,9 @@ fun ServiceInnerPage(
             textCompose = {
                 Column(
                     modifier= Modifier
+                        .verticalScroll(rememberScrollState())
                         .fillMaxWidth()
                         .focusRequester(focusRequester)
-                        .verticalScroll(rememberScrollState())
                     ,
                 ) {
                     TextField(
@@ -417,9 +417,9 @@ fun ServiceInnerPage(
 
         Column(
             modifier = Modifier
+                .verticalScroll(listState)
                 .fillMaxSize()
                 .padding(contentPadding)
-                .verticalScroll(listState)
         ) {
             SettingsContent(onClick = {
                 val newValue = !runningStatus.value

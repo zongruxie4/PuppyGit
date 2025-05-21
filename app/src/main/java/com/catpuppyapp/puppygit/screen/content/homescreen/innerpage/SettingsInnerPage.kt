@@ -373,8 +373,8 @@ fun SettingsInnerPage(
             textCompose = {
                 Column(
                     modifier= Modifier
-                        .fillMaxWidth()
                         .verticalScroll(rememberScrollState())
+                        .fillMaxWidth()
                     ,
                 ) {
                     MyCheckBox(stringResource(R.string.follow_system), timeZone_followSystemBuf)
@@ -792,9 +792,9 @@ fun SettingsInnerPage(
 
     Column(
         modifier = Modifier
+            .verticalScroll(listState)
             .fillMaxSize()
             .padding(contentPadding)
-            .verticalScroll(listState)
     ) {
         SettingsTitle(stringResource(R.string.general))
 

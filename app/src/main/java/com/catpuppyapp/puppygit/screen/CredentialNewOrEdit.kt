@@ -273,9 +273,9 @@ fun CredentialNewOrEdit(
 
         Column (
             modifier = Modifier
+                .verticalScroll(listState)
                 .fillMaxSize()
                 .padding(contentPadding)
-                .verticalScroll(listState)
                 .imePadding()
                 .padding(bottom = MyStyleKt.Padding.PageBottom)
             ,

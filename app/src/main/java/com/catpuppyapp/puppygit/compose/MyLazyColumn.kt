@@ -35,9 +35,9 @@ fun <T> MyLazyColumn(
                     modifier
                 }else {
                     Modifier
+                        .verticalScroll(rememberScrollState())
                         .fillMaxSize()
                         .padding(contentPadding)
-                        .verticalScroll(rememberScrollState())
                 }
             ,
         ) {

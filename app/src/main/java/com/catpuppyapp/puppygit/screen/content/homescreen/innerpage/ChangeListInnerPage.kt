@@ -2355,10 +2355,10 @@ fun ChangeListInnerPage(
                 if(itemList.value.isEmpty()) {  //列表为空
                     Column(
                         modifier = Modifier
+                            .verticalScroll(rememberScrollState())
                             .fillMaxSize()
                             .padding(contentPadding)
 //                        .padding(bottom = 80.dp)  //不要在这加padding，如果想加，应在底部加个padding row
-                            .verticalScroll(rememberScrollState())
                         ,
                         verticalArrangement = Arrangement.Center,
                         horizontalAlignment = Alignment.CenterHorizontally,

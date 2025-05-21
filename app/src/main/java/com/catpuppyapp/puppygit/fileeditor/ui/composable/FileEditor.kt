@@ -319,10 +319,10 @@ fun FileEditor(
                 ) {
                     Column(
                         modifier = Modifier
+                            .verticalScroll(curPreviewScrollState)
                             //fillMaxSize 必须在最上面！要不然，文字不会显示在中间！
                             .fillMaxSize()
                             .padding(contentPadding)
-                            .verticalScroll(curPreviewScrollState)
                         ,
                     ) {
                         //内容顶部padding，为了和editor的首行top padding高度保持一致，所以调用了相同的函数，

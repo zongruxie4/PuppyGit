@@ -121,10 +121,10 @@ fun RequireMasterPasswordScreen(
     Scaffold { contentPadding ->
         Column(
             modifier = Modifier
+                .verticalScroll(rememberScrollState())
                 //fillMaxSize 必须在最上面！要不然，文字不会显示在中间！
                 .fillMaxSize()
                 .padding(contentPadding)
-                .verticalScroll(rememberScrollState())
                 .imePadding()
 //            .padding(bottom = MyStyleKt.Padding.PageBottom)
             ,

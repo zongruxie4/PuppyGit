@@ -1069,8 +1069,8 @@ fun FileHistoryScreen(
                 if(enableFilter && list.isEmpty()) {
                     Column(
                         modifier = Modifier
-                            .padding(contentPadding)
                             .verticalScroll(rememberScrollState())
+                            .padding(contentPadding)
                         ,
                         horizontalAlignment = Alignment.CenterHorizontally,
                         verticalArrangement = Arrangement.Center
