@@ -68,6 +68,7 @@ import com.catpuppyapp.puppygit.compose.CreatePatchSuccessDialog
 import com.catpuppyapp.puppygit.compose.CredentialSelector
 import com.catpuppyapp.puppygit.compose.DefaultPaddingText
 import com.catpuppyapp.puppygit.compose.ForcePushWithLeaseCheckBox
+import com.catpuppyapp.puppygit.compose.FullScreenScrollableColumn
 import com.catpuppyapp.puppygit.compose.GitIgnoreDialog
 import com.catpuppyapp.puppygit.compose.LoadingTextSimple
 import com.catpuppyapp.puppygit.compose.LongPressAbleIconBtn
@@ -2353,16 +2354,10 @@ fun ChangeListInnerPage(
                 val curRepoUpstreamOnUi = curRepoUpstream.value
 
                 if(itemList.value.isEmpty()) {  //列表为空
-                    Column(
-                        modifier = Modifier
-                            .baseVerticalScrollablePageModifier(contentPadding, rememberScrollState())
-                        ,
-                        verticalArrangement = Arrangement.Center,
-                        horizontalAlignment = Alignment.CenterHorizontally,
+                    FullScreenScrollableColumn(contentPadding) {
 
-                    ) {
                         if(fromTo == Cons.gitDiffFromIndexToWorktree) {  //worktree
-                            Text(text = stringResource(id = R.string.work_tree_clean))
+                            Text(text = stringResource(R.string.work_tree_clean))
                             Row(
                                 modifier = Modifier
                                     .padding(top = 10.dp)
