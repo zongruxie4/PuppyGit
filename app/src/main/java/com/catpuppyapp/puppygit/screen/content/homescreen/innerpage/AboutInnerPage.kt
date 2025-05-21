@@ -107,17 +107,16 @@ fun AboutInnerPage(
 
     Column(
         modifier = Modifier
+            .verticalScroll(listState)
             .fillMaxSize()
             .padding(contentPadding)
-            .verticalScroll(listState)
+            .padding(10.dp)
         ,
         horizontalAlignment = Alignment.CenterHorizontally,
 
         //垂直应从上到下，不需要居中
 //        verticalArrangement = Arrangement.Center
     ) {
-        Spacer(Modifier.height(10.dp))
-
         //图标，app名，contact
         Row(
             modifier = Modifier.fillMaxWidth(),
