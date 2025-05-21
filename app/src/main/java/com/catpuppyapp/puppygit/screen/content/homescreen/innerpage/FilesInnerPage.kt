@@ -1487,12 +1487,13 @@ fun FilesInnerPage(
                             //fillMaxSize 必须在最上面！要不然，文字不会显示在中间！
                             .fillMaxSize()
                             .padding(contentPadding)
-                            .padding(10.dp)
                             .verticalScroll(rememberScrollState())
                         ,
                         verticalArrangement = Arrangement.Center,
                         horizontalAlignment = Alignment.CenterHorizontally,
                     ) {
+                        Spacer(Modifier.height(10.dp))
+
                         if(isOpenDirErr){
                             Text(openDirErr.value, color = MyStyleKt.TextColor.error())
                         }else if(folderIsEmpty) {

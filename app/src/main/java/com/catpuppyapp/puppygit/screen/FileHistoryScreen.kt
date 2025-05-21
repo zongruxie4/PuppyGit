@@ -827,12 +827,13 @@ fun FileHistoryScreen(
                         //fillMaxSize 必须在最上面！要不然，文字不会显示在中间！
                         .fillMaxSize()
                         .padding(contentPadding)
-                        .padding(10.dp)
                         .verticalScroll(rememberScrollState())
                     ,
                     verticalArrangement = Arrangement.Center,
                     horizontalAlignment = Alignment.CenterHorizontally,
                 ) {
+                    Spacer(Modifier.height(10.dp))
+
                     Text(stringResource(if(loadMoreLoading.value) R.string.loading else R.string.file_hasnt_history_yet))
                 }
             }else {

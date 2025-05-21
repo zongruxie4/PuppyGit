@@ -1912,13 +1912,13 @@ fun CommitListScreen(
                         //fillMaxSize 必须在最上面！要不然，文字不会显示在中间！
                         .fillMaxSize()
                         .padding(contentPadding)
-                        .padding(10.dp)
                         .verticalScroll(rememberScrollState())
                     ,
                     verticalArrangement = Arrangement.Center,
                     horizontalAlignment = Alignment.CenterHorizontally,
                 ) {
-                    Text(stringResource(if(loadMoreLoading.value) R.string.loading else R.string.commit_history_is_empty))
+                    Spacer(Modifier.height(10.dp))
+                    Text(stringResource(if(loadMoreLoading.value) R.string.loading else R.string.commit_history_is_empty), modifier=Modifier.padding(10.dp))
                 }
             }else {
 

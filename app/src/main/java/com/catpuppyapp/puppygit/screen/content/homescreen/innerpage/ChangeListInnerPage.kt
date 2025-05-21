@@ -2334,18 +2334,19 @@ fun ChangeListInnerPage(
                     modifier = Modifier
                         .fillMaxSize()
                         .padding(contentPadding)
-                        .padding(bottom = 80.dp)
-                        .padding(10.dp)
                         .verticalScroll(rememberScrollState())
 
                     ,
                     verticalArrangement = Arrangement.Center,
                     horizontalAlignment = Alignment.CenterHorizontally,
 
-                    ) {
+                ) {
+                    Spacer(Modifier.height(10.dp))
+
                     MySelectionContainer {
-                        Text(errMsg.value, color = MyStyleKt.TextColor.error())
+                        Text(errMsg.value, color = MyStyleKt.TextColor.error(), modifier=Modifier.padding(10.dp))
                     }
+
                 }
             }else {  //有仓库，但条目列表为空，可能没修改的东西，这时显示仓库是否clean是否和远程同步等信息
                 // onUi是为了和在callback里区分，callback函数应该通过状态变量获取最新值
