@@ -42,6 +42,7 @@ import com.catpuppyapp.puppygit.ui.theme.Theme
 import com.catpuppyapp.puppygit.utils.ActivityUtil
 import com.catpuppyapp.puppygit.utils.ContextUtil
 import com.catpuppyapp.puppygit.utils.MyLog
+import com.catpuppyapp.puppygit.utils.baseVerticalScrollablePageModifier
 import com.catpuppyapp.puppygit.utils.pref.PrefMan
 import com.catpuppyapp.puppygit.utils.showToast
 
@@ -119,11 +120,8 @@ private fun MainCompose(activity: Activity, appContext: Context, errMsg: String,
     ) { contentPadding ->
         Column(
             modifier = Modifier
-                .verticalScroll(scrollState)
-                .fillMaxSize()
-                .padding(contentPadding)
+                .baseVerticalScrollablePageModifier(contentPadding, scrollState)
             ,
-            verticalArrangement = Arrangement.Center,
             horizontalAlignment = Alignment.CenterHorizontally,
 
         ) {

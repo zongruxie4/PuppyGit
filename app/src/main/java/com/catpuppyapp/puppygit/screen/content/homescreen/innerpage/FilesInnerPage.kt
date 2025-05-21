@@ -133,6 +133,7 @@ import com.catpuppyapp.puppygit.utils.Msg
 import com.catpuppyapp.puppygit.utils.MyLog
 import com.catpuppyapp.puppygit.utils.RegexUtil
 import com.catpuppyapp.puppygit.utils.UIHelper
+import com.catpuppyapp.puppygit.utils.baseVerticalScrollablePageModifier
 import com.catpuppyapp.puppygit.utils.cache.Cache
 import com.catpuppyapp.puppygit.utils.cache.ThumbCache
 import com.catpuppyapp.puppygit.utils.changeStateTriggerRefreshPage
@@ -1490,10 +1491,7 @@ fun FilesInnerPage(
                 if(hasErr || folderIsEmpty){
                     Column(
                         modifier = Modifier
-                            .verticalScroll(errScrollState)
-                            //fillMaxSize 必须在最上面！要不然，文字不会显示在中间！
-                            .fillMaxSize()
-                            .padding(contentPadding)
+                            .baseVerticalScrollablePageModifier(contentPadding, errScrollState)
                             .padding(10.dp)
                         ,
                         verticalArrangement = Arrangement.Center,
@@ -2275,9 +2273,9 @@ fun FilesInnerPage(
                 requireShowTextCompose = true,
                 textCompose = {
                     Column(modifier = Modifier
-                        .verticalScroll(rememberScrollState())
                         .fillMaxWidth()
                         .padding(5.dp)
+                        .verticalScroll(rememberScrollState())
                     ) {
                         GrantManageStoragePermissionClickableText(activityContext)
 

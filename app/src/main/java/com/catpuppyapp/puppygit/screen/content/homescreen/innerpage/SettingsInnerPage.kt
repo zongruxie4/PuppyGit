@@ -76,6 +76,7 @@ import com.catpuppyapp.puppygit.utils.Msg
 import com.catpuppyapp.puppygit.utils.MyLog
 import com.catpuppyapp.puppygit.utils.StrListUtil
 import com.catpuppyapp.puppygit.utils.UIHelper
+import com.catpuppyapp.puppygit.utils.baseVerticalScrollablePageModifier
 import com.catpuppyapp.puppygit.utils.cache.Cache
 import com.catpuppyapp.puppygit.utils.doJobThenOffLoading
 import com.catpuppyapp.puppygit.utils.encrypt.MasterPassUtil
@@ -373,8 +374,8 @@ fun SettingsInnerPage(
             textCompose = {
                 Column(
                     modifier= Modifier
-                        .verticalScroll(rememberScrollState())
                         .fillMaxWidth()
+                        .verticalScroll(rememberScrollState())
                     ,
                 ) {
                     MyCheckBox(stringResource(R.string.follow_system), timeZone_followSystemBuf)
@@ -792,9 +793,7 @@ fun SettingsInnerPage(
 
     Column(
         modifier = Modifier
-            .verticalScroll(listState)
-            .fillMaxSize()
-            .padding(contentPadding)
+            .baseVerticalScrollablePageModifier(contentPadding, listState)
     ) {
         SettingsTitle(stringResource(R.string.general))
 

@@ -135,6 +135,7 @@ import com.catpuppyapp.puppygit.utils.Msg
 import com.catpuppyapp.puppygit.utils.MyLog
 import com.catpuppyapp.puppygit.utils.StateRequestType
 import com.catpuppyapp.puppygit.utils.UIHelper
+import com.catpuppyapp.puppygit.utils.baseVerticalScrollablePageModifier
 import com.catpuppyapp.puppygit.utils.boolToDbInt
 import com.catpuppyapp.puppygit.utils.cache.Cache
 import com.catpuppyapp.puppygit.utils.cache.NaviCache
@@ -1909,11 +1910,7 @@ fun CommitListScreen(
             if(list.value.isEmpty()) {
                 Column(
                     modifier = Modifier
-                        //滚动需在最上，不然滚动时屏幕会白边
-                        .verticalScroll(rememberScrollState())
-                        //fillMaxSize 必须在最上面！要不然，文字不会显示在中间！
-                        .fillMaxSize()
-                        .padding(contentPadding)
+                        .baseVerticalScrollablePageModifier(contentPadding, rememberScrollState())
                         .padding(10.dp)
                     ,
                     verticalArrangement = Arrangement.Center,
@@ -2326,11 +2323,9 @@ fun CommitListScreen(
                     if(enableFilter && list.isEmpty()) {
                         Column(
                             modifier = Modifier
-                                .verticalScroll(rememberScrollState())
-                                .padding(contentPadding)
+                                .baseVerticalScrollablePageModifier(contentPadding, rememberScrollState())
                             ,
                             horizontalAlignment = Alignment.CenterHorizontally,
-                            verticalArrangement = Arrangement.Center
                         ) {
                             Spacer(Modifier.height(50.dp))
                             Text(stringResource(if(searching.value) R.string.loading else R.string.no_matched_item), fontWeight = FontWeight.Light)

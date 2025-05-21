@@ -10,12 +10,10 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.Label
 import androidx.compose.material.icons.filled.DoneAll
@@ -122,6 +120,7 @@ import com.catpuppyapp.puppygit.utils.Msg
 import com.catpuppyapp.puppygit.utils.MyLog
 import com.catpuppyapp.puppygit.utils.StateRequestType
 import com.catpuppyapp.puppygit.utils.UIHelper
+import com.catpuppyapp.puppygit.utils.baseVerticalScrollablePageModifier
 import com.catpuppyapp.puppygit.utils.cache.Cache
 import com.catpuppyapp.puppygit.utils.cache.ThumbCache
 import com.catpuppyapp.puppygit.utils.createAndInsertError
@@ -2335,11 +2334,9 @@ fun ChangeListInnerPage(
             if(hasError.value){  //有错误则显示错误（例如无仓库、无效树id都会导致出错）
                 Column(
                     modifier = Modifier
-                        .verticalScroll(errScrollState)
-                        .fillMaxSize()
-                        .padding(contentPadding)
-                        .padding(bottom = 80.dp)
+                        .baseVerticalScrollablePageModifier(contentPadding, errScrollState)
                         .padding(10.dp)
+                        .padding(bottom = 80.dp)
 
                     ,
                     verticalArrangement = Arrangement.Center,
@@ -2358,10 +2355,7 @@ fun ChangeListInnerPage(
                 if(itemList.value.isEmpty()) {  //列表为空
                     Column(
                         modifier = Modifier
-                            .verticalScroll(rememberScrollState())
-                            .fillMaxSize()
-                            .padding(contentPadding)
-//                        .padding(bottom = 80.dp)  //不要在这加padding，如果想加，应在底部加个padding row
+                            .baseVerticalScrollablePageModifier(contentPadding, rememberScrollState())
                         ,
                         verticalArrangement = Arrangement.Center,
                         horizontalAlignment = Alignment.CenterHorizontally,

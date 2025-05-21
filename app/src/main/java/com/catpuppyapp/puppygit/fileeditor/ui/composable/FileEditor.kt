@@ -17,7 +17,6 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyListState
-import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBackIos
 import androidx.compose.material.icons.automirrored.filled.ArrowForwardIos
@@ -82,6 +81,7 @@ import com.catpuppyapp.puppygit.utils.Msg
 import com.catpuppyapp.puppygit.utils.MyLog
 import com.catpuppyapp.puppygit.utils.UIHelper
 import com.catpuppyapp.puppygit.utils.addTopPaddingIfIsFirstLine
+import com.catpuppyapp.puppygit.utils.baseVerticalScrollablePageModifier
 import com.catpuppyapp.puppygit.utils.cache.Cache
 import com.catpuppyapp.puppygit.utils.doJobThenOffLoading
 import com.catpuppyapp.puppygit.utils.paddingLineNumber
@@ -319,10 +319,7 @@ fun FileEditor(
                 ) {
                     Column(
                         modifier = Modifier
-                            .verticalScroll(curPreviewScrollState)
-                            //fillMaxSize 必须在最上面！要不然，文字不会显示在中间！
-                            .fillMaxSize()
-                            .padding(contentPadding)
+                            .baseVerticalScrollablePageModifier(contentPadding, curPreviewScrollState)
                         ,
                     ) {
                         //内容顶部padding，为了和editor的首行top padding高度保持一致，所以调用了相同的函数，

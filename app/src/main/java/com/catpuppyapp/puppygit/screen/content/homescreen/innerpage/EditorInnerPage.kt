@@ -81,6 +81,7 @@ import com.catpuppyapp.puppygit.utils.FsUtils
 import com.catpuppyapp.puppygit.utils.Msg
 import com.catpuppyapp.puppygit.utils.MyLog
 import com.catpuppyapp.puppygit.utils.UIHelper
+import com.catpuppyapp.puppygit.utils.baseVerticalScrollablePageModifier
 import com.catpuppyapp.puppygit.utils.cache.Cache
 import com.catpuppyapp.puppygit.utils.changeStateTriggerRefreshPage
 import com.catpuppyapp.puppygit.utils.doActWithLockIfFree
@@ -1027,9 +1028,8 @@ fun EditorInnerPage(
     ){
         Column(
             modifier = Modifier
-                .verticalScroll(rememberScrollState())
-                .fillMaxSize()
-                .padding(contentPadding)
+                .baseVerticalScrollablePageModifier(contentPadding, rememberScrollState())
+
                 .padding(10.dp)
             ,
             verticalArrangement = Arrangement.Center,

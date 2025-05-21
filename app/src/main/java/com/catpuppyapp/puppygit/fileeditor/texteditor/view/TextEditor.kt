@@ -567,8 +567,8 @@ fun TextEditor(
             textCompose = {
                 Column(
                     modifier= Modifier
-                        .verticalScroll(rememberScrollState())
                         .fillMaxWidth()
+                        .verticalScroll(rememberScrollState())
                     ,
                 ) {
 

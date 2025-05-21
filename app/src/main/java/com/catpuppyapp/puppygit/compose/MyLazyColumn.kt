@@ -3,14 +3,13 @@ package com.catpuppyapp.puppygit.compose
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyListScope
 import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.verticalScroll
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import com.catpuppyapp.puppygit.utils.baseVerticalScrollablePageModifier
 
 //lazyColumn老出问题，不是并发修改异常就是索引越界，统一弄到这里方便修改和debug
 @Composable
@@ -34,10 +33,7 @@ fun <T> MyLazyColumn(
         Column(modifier =if(requireUseParamModifier) {
                     modifier
                 }else {
-                    Modifier
-                        .verticalScroll(rememberScrollState())
-                        .fillMaxSize()
-                        .padding(contentPadding)
+                    Modifier.baseVerticalScrollablePageModifier(contentPadding, rememberScrollState())
                 }
             ,
         ) {

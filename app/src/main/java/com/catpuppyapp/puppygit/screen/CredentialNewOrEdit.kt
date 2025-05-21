@@ -52,6 +52,7 @@ import com.catpuppyapp.puppygit.play.pro.R
 import com.catpuppyapp.puppygit.screen.content.homescreen.scaffold.title.ScrollableTitle
 import com.catpuppyapp.puppygit.style.MyStyleKt
 import com.catpuppyapp.puppygit.utils.AppModel
+import com.catpuppyapp.puppygit.utils.baseVerticalScrollablePageModifier
 import com.catpuppyapp.puppygit.utils.cache.Cache
 import com.catpuppyapp.puppygit.utils.doJobThenOffLoading
 import com.catpuppyapp.puppygit.utils.state.mutableCustomStateOf
@@ -273,11 +274,9 @@ fun CredentialNewOrEdit(
 
         Column (
             modifier = Modifier
-                .verticalScroll(listState)
-                .fillMaxSize()
-                .padding(contentPadding)
-                .imePadding()
+                .baseVerticalScrollablePageModifier(contentPadding, listState)
                 .padding(bottom = MyStyleKt.Padding.PageBottom)
+                .imePadding()
             ,
         ) {
 

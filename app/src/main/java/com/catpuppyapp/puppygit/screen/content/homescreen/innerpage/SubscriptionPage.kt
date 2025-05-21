@@ -24,6 +24,7 @@ import com.catpuppyapp.puppygit.utils.AppModel
 import com.catpuppyapp.puppygit.utils.ComposeHelper
 import com.catpuppyapp.puppygit.utils.Msg
 import com.catpuppyapp.puppygit.utils.MyLog
+import com.catpuppyapp.puppygit.utils.baseVerticalScrollablePageModifier
 
 private const val TAG = "SubscriptionPage"
 
@@ -52,14 +53,12 @@ fun SubscriptionPage(contentPadding: PaddingValues, needRefresh: MutableState<St
 
 
 
-    Column (modifier = Modifier
-        .verticalScroll(rememberScrollState())
-        .fillMaxSize()
-        .padding(contentPadding)
-        .padding(10.dp)
+    Column (
+        modifier = Modifier
+            .baseVerticalScrollablePageModifier(contentPadding, rememberScrollState())
+            .padding(10.dp)
         ,
         horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.Center
     ){
 //        //图标，app名，contact
 //        Image(bitmap = appIcon, contentDescription = stringResource(id = R.string.app_icon))

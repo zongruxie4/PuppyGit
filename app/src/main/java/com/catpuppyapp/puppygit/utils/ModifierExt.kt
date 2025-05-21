@@ -1,7 +1,10 @@
 package com.catpuppyapp.puppygit.utils
 
+import androidx.compose.foundation.ScrollState
 import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalDensity
@@ -37,3 +40,12 @@ fun Modifier.addTopPaddingIfIsFirstLine(index:Int, topPadding:Dp = MyStyleKt.Pad
     return if(index == 0) padding(top = topPadding) else this
 }
 
+private fun Modifier.basePageModifier(contentPadding: PaddingValues):Modifier {
+    //这个顺序不能换，fillMaxSize必须在padding和滚动前面，不然居中会作废
+    return fillMaxSize()
+        .padding(contentPadding)
+}
+
+fun Modifier.baseVerticalScrollablePageModifier(contentPadding: PaddingValues, scrollState: ScrollState):Modifier {
+    return basePageModifier(contentPadding).verticalScroll(scrollState)
+}

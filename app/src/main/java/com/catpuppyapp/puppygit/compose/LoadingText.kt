@@ -32,9 +32,10 @@ fun LoadingText(
 ) {
     LoadingTextBase(
         //默认启用滚动，不然滚动 隐藏/显示 的顶栏无法触发 隐藏/显示
-        modifier = (if (scrollState != null) Modifier.verticalScroll(scrollState) else Modifier)
+        modifier = Modifier
             .fillMaxSize()
             .padding(contentPadding)
+            .then(if(scrollState != null) Modifier.verticalScroll(scrollState) else Modifier)
         ,
         horizontalAlignment = horizontalAlignment,
         verticalArrangement = verticalArrangement,

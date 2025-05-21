@@ -61,6 +61,7 @@ import com.catpuppyapp.puppygit.utils.Msg
 import com.catpuppyapp.puppygit.utils.MyLog
 import com.catpuppyapp.puppygit.utils.StrListUtil
 import com.catpuppyapp.puppygit.utils.UIHelper
+import com.catpuppyapp.puppygit.utils.baseVerticalScrollablePageModifier
 import com.catpuppyapp.puppygit.utils.cache.Cache
 import com.catpuppyapp.puppygit.utils.changeStateTriggerRefreshPage
 import com.catpuppyapp.puppygit.utils.doJobThenOffLoading
@@ -265,9 +266,9 @@ fun ServiceInnerPage(
             textCompose = {
                 Column(
                     modifier= Modifier
-                        .verticalScroll(rememberScrollState())
                         .fillMaxWidth()
                         .focusRequester(focusRequester)
+                        .verticalScroll(rememberScrollState())
                     ,
                 ) {
                     TextField(
@@ -337,9 +338,9 @@ fun ServiceInnerPage(
             textCompose = {
                 Column(
                     modifier= Modifier
-                        .verticalScroll(rememberScrollState())
                         .fillMaxWidth()
                         .focusRequester(focusRequester)
+                        .verticalScroll(rememberScrollState())
                     ,
                 ) {
                     TextField(
@@ -417,9 +418,7 @@ fun ServiceInnerPage(
 
         Column(
             modifier = Modifier
-                .verticalScroll(listState)
-                .fillMaxSize()
-                .padding(contentPadding)
+                .baseVerticalScrollablePageModifier(contentPadding, listState)
         ) {
             SettingsContent(onClick = {
                 val newValue = !runningStatus.value

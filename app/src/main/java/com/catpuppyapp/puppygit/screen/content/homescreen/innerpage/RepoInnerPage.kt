@@ -434,10 +434,11 @@ fun RepoInnerPage(
             requireShowTextCompose = true,
             textCompose = {
                 MySelectionContainer {
-                    Column(modifier = Modifier
-                        .verticalScroll(rememberScrollState())
-                        .fillMaxWidth()
-                        .padding(5.dp)
+                    Column(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(5.dp)
+                            .verticalScroll(rememberScrollState())
                     ) {
                         InternalFileChooser(activityContext, path = importRepoPath)
 

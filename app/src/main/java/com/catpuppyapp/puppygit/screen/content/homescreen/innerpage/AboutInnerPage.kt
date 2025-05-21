@@ -40,6 +40,7 @@ import com.catpuppyapp.puppygit.utils.ActivityUtil
 import com.catpuppyapp.puppygit.utils.AppModel
 import com.catpuppyapp.puppygit.utils.ComposeHelper
 import com.catpuppyapp.puppygit.utils.UIHelper
+import com.catpuppyapp.puppygit.utils.baseVerticalScrollablePageModifier
 
 
 const val authorMail = "luckyclover33xx@gmail.com"
@@ -107,9 +108,7 @@ fun AboutInnerPage(
 
     Column(
         modifier = Modifier
-            .verticalScroll(listState)
-            .fillMaxSize()
-            .padding(contentPadding)
+            .baseVerticalScrollablePageModifier(contentPadding, listState)
             .padding(10.dp)
         ,
         horizontalAlignment = Alignment.CenterHorizontally,

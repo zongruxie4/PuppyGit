@@ -306,9 +306,9 @@ fun AutomationInnerPage(
             textCompose = {
                 Column(
                     modifier= Modifier
-                        .verticalScroll(rememberScrollState())
                         .fillMaxWidth()
                         .focusRequester(focusRequester)
+                        .verticalScroll(rememberScrollState())
                     ,
                 ) {
                     val padding = 10.dp

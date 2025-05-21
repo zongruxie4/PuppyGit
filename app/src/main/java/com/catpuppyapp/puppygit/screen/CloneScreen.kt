@@ -89,6 +89,7 @@ import com.catpuppyapp.puppygit.utils.AppModel
 import com.catpuppyapp.puppygit.utils.FsUtils
 import com.catpuppyapp.puppygit.utils.Libgit2Helper
 import com.catpuppyapp.puppygit.utils.Msg
+import com.catpuppyapp.puppygit.utils.baseVerticalScrollablePageModifier
 import com.catpuppyapp.puppygit.utils.boolToDbInt
 import com.catpuppyapp.puppygit.utils.cache.Cache
 import com.catpuppyapp.puppygit.utils.checkFileOrFolderNameAndTryCreateFile
@@ -289,9 +290,9 @@ fun CloneScreen(
             textCompose = {
                 MySelectionContainer {
                     Column(modifier = Modifier
-                        .verticalScroll(rememberScrollState())
                         .fillMaxWidth()
                         .padding(5.dp)
+                        .verticalScroll(rememberScrollState())
                     ) {
                         InternalFileChooser(activityContext, path = storagePathForAdd)
                     }
@@ -557,11 +558,9 @@ fun CloneScreen(
 
         Column (
             modifier = Modifier
-                .verticalScroll(listState)
-                .fillMaxSize()
-                .padding(contentPadding)
-                .imePadding()
+                .baseVerticalScrollablePageModifier(contentPadding, listState)
                 .padding(bottom = MyStyleKt.Padding.PageBottom)
+                .imePadding()
             ,
         ) {
             TextField(

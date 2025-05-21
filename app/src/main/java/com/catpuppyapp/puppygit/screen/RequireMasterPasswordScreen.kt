@@ -44,6 +44,7 @@ import com.catpuppyapp.puppygit.utils.AppModel
 import com.catpuppyapp.puppygit.utils.HashUtil
 import com.catpuppyapp.puppygit.utils.MyLog
 import com.catpuppyapp.puppygit.utils.UIHelper
+import com.catpuppyapp.puppygit.utils.baseVerticalScrollablePageModifier
 import com.catpuppyapp.puppygit.utils.doJobThenOffLoading
 import com.catpuppyapp.puppygit.utils.encrypt.MasterPassUtil
 
@@ -121,12 +122,9 @@ fun RequireMasterPasswordScreen(
     Scaffold { contentPadding ->
         Column(
             modifier = Modifier
-                .verticalScroll(rememberScrollState())
-                //fillMaxSize 必须在最上面！要不然，文字不会显示在中间！
-                .fillMaxSize()
-                .padding(contentPadding)
+                .baseVerticalScrollablePageModifier(contentPadding, rememberScrollState())
+                .padding(10.dp)
                 .imePadding()
-//            .padding(bottom = MyStyleKt.Padding.PageBottom)
             ,
             verticalArrangement = Arrangement.Center,
             horizontalAlignment = Alignment.CenterHorizontally
