@@ -896,7 +896,9 @@ fun HomeScreen(
 
         val filesPageErrScrollState = rememberScrollState()
         val filesPageOpenDirErr = rememberSaveable { mutableStateOf("") }
-        val filesPageHasErr = {filesPageOpenDirErr.value.isNotBlank()}
+        val filesPageGetErr = { filesPageOpenDirErr.value }
+        val filesPageSetErr = { errMsg:String -> filesPageOpenDirErr.value = errMsg }
+        val filesPageHasErr = { filesPageOpenDirErr.value.isNotBlank() }
 
 
         val changeListErrScrollState = rememberScrollState()
@@ -1290,8 +1292,10 @@ fun HomeScreen(
                     stateKeyTag = stateKeyTag,
 
                     errScrollState = filesPageErrScrollState,
-                    openDirErr = filesPageOpenDirErr,
+                    getErr = filesPageGetErr,
+                    setErr = filesPageSetErr,
                     hasErr = filesPageHasErr,
+
 
                     naviUp = {},
                     updateSelectedPath = {},

@@ -186,7 +186,8 @@ fun FilesInnerPage(
     stateKeyTag:String,
 
     errScrollState: ScrollState,
-    openDirErr: MutableState<String>,
+    getErr: ()->String,
+    setErr: (String)->Unit,
     hasErr:()->Boolean,  // 让父组件知道是否出错了，以此来决定go to top/bottom操作哪个listState
 
     naviUp:()->Unit,
@@ -1481,12 +1482,12 @@ fun FilesInnerPage(
                     }.value;  //调用.value才会触发懒计算
                 }
 
-                // file list
-                // if has err, show err, else show file list
-                val isOpenDirErr = hasErr()
-                val folderIsEmpty = currentPathFileList.value.isEmpty()
+
                 // foler is empty不算错误，只是省得再写个column，所以放这判断，显示时不会像错误一样红色
-                if(isOpenDirErr || folderIsEmpty){
+                val folderIsEmpty = currentPathFileList.value.isEmpty()
+                val hasErr = hasErr()
+                // if has err, show err, else show file list
+                if(hasErr || folderIsEmpty){
                     Column(
                         modifier = Modifier
                             .verticalScroll(errScrollState)
@@ -1498,8 +1499,8 @@ fun FilesInnerPage(
                         verticalArrangement = Arrangement.Center,
                         horizontalAlignment = Alignment.CenterHorizontally,
                     ) {
-                        if(isOpenDirErr){
-                            Text(openDirErr.value, color = MyStyleKt.TextColor.error())
+                        if(hasErr){
+                            Text(getErr(), color = MyStyleKt.TextColor.error())
                         }else if(folderIsEmpty) {
                             Text(stringResource(R.string.folder_is_empty))
                         }  // else maybe
@@ -3197,7 +3198,7 @@ fun FilesInnerPage(
                         isImportedMode = isImportMode,
                         selectItem=selectItem,
                         filesPageRequestFromParent = filesPageRequestFromParent,
-                        openDirErr = openDirErr,
+                        setErr = setErr,
                         viewAndSortState = viewAndSortState,
                         viewAndSortOnlyForThisFolderState = onlyForThisFolderState,
                         curPathFileItemDto = curPathFileItemDto,
@@ -3246,7 +3247,7 @@ private suspend fun doInit(
     isImportedMode:MutableState<Boolean>,
     selectItem:(FileItemDto) ->Unit,
     filesPageRequestFromParent:MutableState<String>,
-    openDirErr:MutableState<String>,
+    setErr:(String)->Unit,
     viewAndSortState:CustomStateSaveable<DirViewAndSort>,
     viewAndSortOnlyForThisFolderState:MutableState<Boolean>,
     curPathFileItemDto:CustomStateSaveable<FileItemDto>,
@@ -3529,7 +3530,7 @@ private suspend fun doInit(
 
     // set err if has
 //        if(!File(currentPath.value).canRead()) {  // can't read dir, usually no permission for dir or dir doesn't exist
-    openDirErr.value = if(currentDir.canRead() && currentDir.isDirectory) "" else activityContext.getString(R.string.err_read_path_failed)
+    setErr(if(currentDir.canRead() && currentDir.isDirectory) "" else activityContext.getString(R.string.err_read_path_failed))
 
 }
 

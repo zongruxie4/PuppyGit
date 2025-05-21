@@ -215,8 +215,10 @@ fun FileChooserScreen(
 
     val filesPageErrScrollState = rememberScrollState()
     val filesErrLastPosition = rememberSaveable { mutableStateOf(0) }
-    val openDirErr = rememberSaveable { mutableStateOf("") }
-    val hasErr = {openDirErr.value.isNotBlank()}
+    val filesPageOpenDirErr = rememberSaveable { mutableStateOf("") }
+    val filesPageGetErr = { filesPageOpenDirErr.value }
+    val filesPageSetErr = { errMsg:String -> filesPageOpenDirErr.value = errMsg }
+    val filesPageHasErr = { filesPageOpenDirErr.value.isNotBlank() }
 
     Scaffold(
         modifier = Modifier.nestedScroll(homeTopBarScrollBehavior.nestedScrollConnection),
@@ -287,7 +289,7 @@ fun FileChooserScreen(
         },
         floatingActionButton = {
             if(filesPageScrolled.value) {
-                if(hasErr()) {
+                if(filesPageHasErr()) {
                     GoToTopAndGoToBottomFab(
                         scope = scope,
                         listState = filesPageErrScrollState,
@@ -314,8 +316,9 @@ fun FileChooserScreen(
             stateKeyTag = stateKeyTag,
 
             errScrollState = filesPageErrScrollState,
-            openDirErr = openDirErr,
-            hasErr = hasErr,
+            getErr = filesPageGetErr,
+            setErr = filesPageSetErr,
+            hasErr = filesPageHasErr,
 
             naviUp = naviUp,
             updateSelectedPath = updateSelectedPath,
