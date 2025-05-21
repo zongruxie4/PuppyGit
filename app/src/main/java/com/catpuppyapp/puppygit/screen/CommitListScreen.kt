@@ -1909,16 +1909,17 @@ fun CommitListScreen(
             if(list.value.isEmpty()) {
                 Column(
                     modifier = Modifier
+                        //滚动需在最上，不然滚动时屏幕会白边
+                        .verticalScroll(rememberScrollState())
                         //fillMaxSize 必须在最上面！要不然，文字不会显示在中间！
                         .fillMaxSize()
                         .padding(contentPadding)
-                        .verticalScroll(rememberScrollState())
+                        .padding(10.dp)
                     ,
                     verticalArrangement = Arrangement.Center,
                     horizontalAlignment = Alignment.CenterHorizontally,
                 ) {
-                    Spacer(Modifier.height(10.dp))
-                    Text(stringResource(if(loadMoreLoading.value) R.string.loading else R.string.commit_history_is_empty), modifier=Modifier.padding(10.dp))
+                    Text(stringResource(if(loadMoreLoading.value) R.string.loading else R.string.commit_history_is_empty))
                 }
             }else {
 

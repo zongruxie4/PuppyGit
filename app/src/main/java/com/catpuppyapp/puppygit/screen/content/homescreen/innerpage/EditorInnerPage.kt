@@ -1027,15 +1027,14 @@ fun EditorInnerPage(
     ){
         Column(
             modifier = Modifier
+                .verticalScroll(rememberScrollState())
                 .fillMaxSize()
                 .padding(contentPadding)
-                .verticalScroll(rememberScrollState())
+                .padding(10.dp)
             ,
             verticalArrangement = Arrangement.Center,
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            Spacer(Modifier.height(10.dp))
-
             val fontSize = MyStyleKt.TextSize.default
             val iconModifier = MyStyleKt.Icon.modifier
 

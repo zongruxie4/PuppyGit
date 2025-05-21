@@ -2332,21 +2332,20 @@ fun ChangeListInnerPage(
             if(hasError.value){  //有错误则显示错误（例如无仓库、无效树id都会导致出错）
                 Column(
                     modifier = Modifier
+                        .verticalScroll(rememberScrollState())
                         .fillMaxSize()
                         .padding(contentPadding)
-                        .verticalScroll(rememberScrollState())
+                        .padding(bottom = 80.dp)
+                        .padding(10.dp)
 
                     ,
                     verticalArrangement = Arrangement.Center,
                     horizontalAlignment = Alignment.CenterHorizontally,
 
                 ) {
-                    Spacer(Modifier.height(10.dp))
-
                     MySelectionContainer {
-                        Text(errMsg.value, color = MyStyleKt.TextColor.error(), modifier=Modifier.padding(10.dp))
+                        Text(errMsg.value, color = MyStyleKt.TextColor.error())
                     }
-
                 }
             }else {  //有仓库，但条目列表为空，可能没修改的东西，这时显示仓库是否clean是否和远程同步等信息
                 // onUi是为了和在callback里区分，callback函数应该通过状态变量获取最新值
