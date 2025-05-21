@@ -1,6 +1,15 @@
 
 
 ---
+1.1.1.9v95 - 20250521:
+- optimize line change type update logic for Editor
+
+
+
+- 优化文本编辑器行修改状态的更新逻辑
+
+
+---
 1.1.1.8v94 - 20250520:
 - remove unused function
 - fix: go to top/bottom buttons not work when showing err message
