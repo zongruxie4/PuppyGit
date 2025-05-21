@@ -46,8 +46,9 @@ object MyStyleKt{
         val minClickableSize = 25.dp
 //        val modifier = Modifier.padding(start = 1.dp,top=15.dp, bottom = 0.dp, end=1.dp)
         //defaultMinSize为了确保基本的可点击范围，避免分支名字很小点不到的情况发生
-        val modifier = Modifier.padding(start = 3.dp,top=0.dp, bottom = 0.dp, end=1.dp).defaultMinSize(minClickableSize)
         val modifierNoPadding = Modifier.defaultMinSize(minClickableSize)
+        val modifier = modifierNoPadding
+//        val modifier = Modifier.padding(start = 3.dp,top=0.dp, bottom = 0.dp, end=1.dp).defaultMinSize(minClickableSize)
         val fontSize = 16.sp
 
         val textAlign = TextAlign.Center
