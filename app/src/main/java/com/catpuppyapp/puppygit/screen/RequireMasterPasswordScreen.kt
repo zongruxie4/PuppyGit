@@ -131,7 +131,7 @@ fun RequireMasterPasswordScreen(
         ) {
 //        Spacer(modifier = Modifier.height(30.dp))
 
-            AppIcon(modifier = Modifier.size(100.dp))
+            AppIcon()
 
             Spacer(modifier = Modifier.height(30.dp))
 
@@ -145,7 +145,10 @@ fun RequireMasterPasswordScreen(
                 label = stringResource(R.string.master_password),
                 placeholder = stringResource(R.string.input_your_master_password),
                 focusRequest = focusRequest,
-                paddingValues = PaddingValues(start = 10.dp, end = 10.dp, top = 10.dp),
+
+                // 左右padding外部column加了，所以这里只需加垂直padding
+                paddingValues = PaddingValues(vertical = 10.dp),
+
                 errMsg = errMsg,
                 enabled = loading.value.not(),
                 keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password, imeAction = ImeAction.Go),
@@ -154,13 +157,12 @@ fun RequireMasterPasswordScreen(
                 })
             )
 
-            Spacer(Modifier.height(10.dp))
 
             ClickableText(
                 text = stringResource(R.string.i_forgot_my_master_password),
                 color = if(loading.value) UIHelper.getDisableTextColor() else MyStyleKt.ClickableText.color,
                 fontWeight = FontWeight.Light,
-                modifier = MyStyleKt.ClickableText.modifier.clickable(
+                modifier = MyStyleKt.ClickableText.modifierNoPadding.clickable(
                     enabled = loading.value.not(),
                     onClick = { showClearMasterPasswordDialog.value = true }
                 ),
@@ -193,7 +195,7 @@ fun RequireMasterPasswordScreen(
         try {
             focusRequest.requestFocus()
         }catch (e:Exception) {
-            MyLog.e(TAG, "request focus failed: ${e.stackTraceToString()}")
+            MyLog.d(TAG, "request focus failed: ${e.stackTraceToString()}")
         }
     }
 
