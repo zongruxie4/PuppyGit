@@ -3,6 +3,7 @@ package com.catpuppyapp.puppygit.screen
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.lazy.rememberLazyListState
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.automirrored.filled.ArrowLeft
@@ -264,6 +265,11 @@ fun TreeToTreeChangeListScreen(
     // end: search states
 
 
+    val changeListErrScrollState = rememberScrollState()
+    val changeListHasErr = rememberSaveable { mutableStateOf(false) }
+    val changeListErrLastPosition = rememberSaveable { mutableStateOf(0) }
+
+
     Scaffold(
         modifier = Modifier.nestedScroll(homeTopBarScrollBehavior.nestedScrollConnection),
         topBar = {
@@ -428,21 +434,33 @@ fun TreeToTreeChangeListScreen(
         },
         floatingActionButton = {
             if(changelistPageScrolled.value) {
-                GoToTopAndGoToBottomFab(
-                    filterModeOn = changeListPageFilterModeOn.value,
-                    scope = scope,
-                    filterListState = changelistFilterListState,
-                    listState = changeListPageItemListState,
-                    filterListLastPosition = filterLastPosition,
-                    listLastPosition = lastPosition,
-                    showFab = changelistPageScrolled
-                )
+                if(changeListHasErr.value) {
+                    GoToTopAndGoToBottomFab(
+                        scope = scope,
+                        listState = changeListErrScrollState,
+                        listLastPosition = changeListErrLastPosition,
+                        showFab = changelistPageScrolled
+                    )
+                }else {
+                    GoToTopAndGoToBottomFab(
+                        filterModeOn = changeListPageFilterModeOn.value,
+                        scope = scope,
+                        filterListState = changelistFilterListState,
+                        listState = changeListPageItemListState,
+                        filterListLastPosition = filterLastPosition,
+                        listLastPosition = lastPosition,
+                        showFab = changelistPageScrolled
+                    )
+                }
             }
         }
     ) { contentPadding ->
         ChangeListInnerPage(
 //            stateKeyTag = Cache.combineKeys(stateKeyTag, "ChangeListInnerPage"),
             stateKeyTag = stateKeyTag,
+
+            errScrollState= changeListErrScrollState,
+            hasError = changeListHasErr,
 
             lastSearchKeyword=changeListLastSearchKeyword,
             searchToken=changeListSearchToken,

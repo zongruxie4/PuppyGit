@@ -3,10 +3,12 @@
 ---
 1.1.1.8v94 - 20250520:
 - remove unused function
+- fix: go to top/bottom buttons not work when showing err message
 
 
 
 - 移除无用函数
+- 修复：回到顶部和底部按钮在页面显示错误信息时无效
 
 ---
 1.1.1.7v93 - 20250520:

@@ -3,6 +3,7 @@ package com.catpuppyapp.puppygit.screen.content.homescreen.innerpage
 import android.content.Context
 import android.widget.Toast
 import androidx.activity.compose.BackHandler
+import androidx.compose.foundation.ScrollState
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -148,6 +149,9 @@ private const val TAG = "ChangeListInnerPage"
 @Composable
 fun ChangeListInnerPage(
     stateKeyTag:String,
+
+    errScrollState: ScrollState,
+    hasError: MutableState<Boolean>,  // 让父组件知道是否出错了，以此来决定go to top/bottom操作哪个listState
 
     lastSearchKeyword:MutableState<String>,
     searchToken:MutableState<String>,
@@ -2236,7 +2240,6 @@ fun ChangeListInnerPage(
     //这个页面，显示就是启用，禁用就不需要显示，所以直接把enableList作为visibleList即可
     val menuKeyVisibleList:List<(StatusTypeEntrySaver)->Boolean> = menuKeyEnableList
 
-    val hasError = rememberSaveable { mutableStateOf(false)}
     val errMsg = rememberSaveable { mutableStateOf("")}
     val setErrMsg = {msg:String ->
         errMsg.value = msg
@@ -2332,7 +2335,7 @@ fun ChangeListInnerPage(
             if(hasError.value){  //有错误则显示错误（例如无仓库、无效树id都会导致出错）
                 Column(
                     modifier = Modifier
-                        .verticalScroll(rememberScrollState())
+                        .verticalScroll(errScrollState)
                         .fillMaxSize()
                         .padding(contentPadding)
                         .padding(bottom = 80.dp)

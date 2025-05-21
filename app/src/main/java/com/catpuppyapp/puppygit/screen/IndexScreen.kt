@@ -1,6 +1,7 @@
 package com.catpuppyapp.puppygit.screen
 
 import androidx.compose.foundation.lazy.rememberLazyListState
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Close
@@ -110,6 +111,10 @@ fun IndexScreen(
 
     val swap =rememberSaveable { mutableStateOf(false)}
 
+    val changeListErrScrollState = rememberScrollState()
+    val changeListHasErr = rememberSaveable { mutableStateOf(false) }
+    val changeListErrLastPosition = rememberSaveable { mutableStateOf(0) }
+
 //    val editorPageRequireOpenFilePath = rememberSaveable{ mutableStateOf("") } // canonicalPath
 ////    val needRefreshFilesPage = rememberSaveable { mutableStateOf(false) }
 //    val needRefreshFilesPage = rememberSaveable { mutableStateOf("") }
@@ -211,15 +216,24 @@ fun IndexScreen(
         },
         floatingActionButton = {
             if(changelistPageScrolled.value) {
-                GoToTopAndGoToBottomFab(
-                    filterModeOn = changeListPageFilterModeOn.value,
-                    scope = scope,
-                    filterListState = changelistFilterListState,
-                    listState = changeListPageItemListState,
-                    filterListLastPosition = filterLastPosition,
-                    listLastPosition = lastPosition,
-                    showFab = changelistPageScrolled
-                )
+                if(changeListHasErr.value) {
+                    GoToTopAndGoToBottomFab(
+                        scope = scope,
+                        listState = changeListErrScrollState,
+                        listLastPosition = changeListErrLastPosition,
+                        showFab = changelistPageScrolled
+                    )
+                }else {
+                    GoToTopAndGoToBottomFab(
+                        filterModeOn = changeListPageFilterModeOn.value,
+                        scope = scope,
+                        filterListState = changelistFilterListState,
+                        listState = changeListPageItemListState,
+                        filterListLastPosition = filterLastPosition,
+                        listLastPosition = lastPosition,
+                        showFab = changelistPageScrolled
+                    )
+                }
 
             }
         }
@@ -230,6 +244,9 @@ fun IndexScreen(
         ChangeListInnerPage(
 //            stateKeyTag = Cache.combineKeys(stateKeyTag, "ChangeListInnerPage"),
             stateKeyTag = stateKeyTag,
+
+            errScrollState = changeListErrScrollState,
+            hasError = changeListHasErr,
 
             lastSearchKeyword=changeListLastSearchKeyword,
             searchToken=changeListSearchToken,

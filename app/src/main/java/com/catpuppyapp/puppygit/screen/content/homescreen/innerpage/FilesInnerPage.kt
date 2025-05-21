@@ -6,6 +6,7 @@ import android.widget.Toast
 import androidx.activity.compose.BackHandler
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.compose.foundation.ExperimentalFoundationApi
+import androidx.compose.foundation.ScrollState
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.combinedClickable
@@ -183,6 +184,10 @@ private const val showImportForBottomBar = false
 @Composable
 fun FilesInnerPage(
     stateKeyTag:String,
+
+    errScrollState: ScrollState,
+    openDirErr: MutableState<String>,
+    hasErr:()->Boolean,  // 让父组件知道是否出错了，以此来决定go to top/bottom操作哪个listState
 
     naviUp:()->Unit,
     updateSelectedPath:(path:String) -> Unit,
@@ -840,7 +845,6 @@ fun FilesInnerPage(
     val successImportCount = rememberSaveable{mutableIntStateOf(0)}
     val failedImportCount = rememberSaveable{mutableIntStateOf(0)}
 
-    val openDirErr = rememberSaveable { mutableStateOf("")}
 
     val getListState:(String)->LazyListState = { path:String ->
         // key有点太长了
@@ -1326,7 +1330,7 @@ fun FilesInnerPage(
                 modifier = Modifier
                     .fillMaxSize()
                     .padding(contentPadding)
-//            .verticalScroll(StateUtil.getRememberScrollState())  //和LazyColumn不能共用
+
             ) {
                 // bread crumb
                 if(currentPathBreadCrumbList.value.isEmpty()) {
@@ -1479,12 +1483,13 @@ fun FilesInnerPage(
 
                 // file list
                 // if has err, show err, else show file list
-                val isOpenDirErr = openDirErr.value.isNotBlank()
+                val isOpenDirErr = hasErr()
                 val folderIsEmpty = currentPathFileList.value.isEmpty()
+                // foler is empty不算错误，只是省得再写个column，所以放这判断，显示时不会像错误一样红色
                 if(isOpenDirErr || folderIsEmpty){
                     Column(
                         modifier = Modifier
-                            .verticalScroll(rememberScrollState())
+                            .verticalScroll(errScrollState)
                             //fillMaxSize 必须在最上面！要不然，文字不会显示在中间！
                             .fillMaxSize()
                             .padding(contentPadding)

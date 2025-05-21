@@ -63,7 +63,6 @@ import com.catpuppyapp.puppygit.constants.IntentCons
 import com.catpuppyapp.puppygit.constants.PageRequest
 import com.catpuppyapp.puppygit.constants.SingleSendHandleMethod
 import com.catpuppyapp.puppygit.data.entity.RepoEntity
-import com.catpuppyapp.puppygit.dto.Box
 import com.catpuppyapp.puppygit.dto.FileItemDto
 import com.catpuppyapp.puppygit.dto.FileSimpleDto
 import com.catpuppyapp.puppygit.dto.UndoStack
@@ -107,12 +106,12 @@ import com.catpuppyapp.puppygit.utils.FsUtils
 import com.catpuppyapp.puppygit.utils.Libgit2Helper
 import com.catpuppyapp.puppygit.utils.Msg
 import com.catpuppyapp.puppygit.utils.MyLog
-import com.catpuppyapp.puppygit.utils.pref.PrefMan
 import com.catpuppyapp.puppygit.utils.UIHelper
 import com.catpuppyapp.puppygit.utils.cache.Cache
 import com.catpuppyapp.puppygit.utils.changeStateTriggerRefreshPage
 import com.catpuppyapp.puppygit.utils.doJobThenOffLoading
 import com.catpuppyapp.puppygit.utils.generateRandomString
+import com.catpuppyapp.puppygit.utils.pref.PrefMan
 import com.catpuppyapp.puppygit.utils.saf.SafUtil
 import com.catpuppyapp.puppygit.utils.state.mutableCustomBoxOf
 import com.catpuppyapp.puppygit.utils.state.mutableCustomStateListOf
@@ -892,6 +891,17 @@ fun HomeScreen(
         val serviceLastPosition = rememberSaveable { mutableStateOf(0) }
         val automationLastPosition = rememberSaveable { mutableStateOf(0) }
 
+        val filesErrLastPosition = rememberSaveable { mutableStateOf(0) }
+        val changeListErrLastPosition = rememberSaveable { mutableStateOf(0) }
+
+        val filesPageErrScrollState = rememberScrollState()
+        val filesPageOpenDirErr = rememberSaveable { mutableStateOf("") }
+        val filesPageHasErr = {filesPageOpenDirErr.value.isNotBlank()}
+
+
+        val changeListErrScrollState = rememberScrollState()
+        val changeListHasErr = rememberSaveable { mutableStateOf(false) }
+
 
         Scaffold(
             modifier = Modifier.nestedScroll(homeTopBarScrollBehavior.nestedScrollConnection),
@@ -1159,15 +1169,24 @@ fun HomeScreen(
                         editorPageRequestFromParent.value = PageRequest.requireSave
                     }
                 }else if(currentHomeScreen.intValue == Cons.selectedItem_ChangeList && changelistPageScrolled.value) {
-                    GoToTopAndGoToBottomFab(
-                        filterModeOn = changeListPageFilterModeOn.value,
-                        scope = scope,
-                        filterListState = changelistFilterListState,
-                        listState = changeListPageItemListState,
-                        filterListLastPosition = changeListFilterLastPosition,
-                        listLastPosition = changeListLastPosition,
-                        showFab = changelistPageScrolled
-                    )
+                    if(changeListHasErr.value) {
+                        GoToTopAndGoToBottomFab(
+                            scope = scope,
+                            listState = changeListErrScrollState,
+                            listLastPosition = changeListErrLastPosition,
+                            showFab = changelistPageScrolled
+                        )
+                    }else {
+                        GoToTopAndGoToBottomFab(
+                            filterModeOn = changeListPageFilterModeOn.value,
+                            scope = scope,
+                            filterListState = changelistFilterListState,
+                            listState = changeListPageItemListState,
+                            filterListLastPosition = changeListFilterLastPosition,
+                            listLastPosition = changeListLastPosition,
+                            showFab = changelistPageScrolled
+                        )
+                    }
 
                 }else if(currentHomeScreen.intValue == Cons.selectedItem_Repos && repoPageScrolled.value) {
                     GoToTopAndGoToBottomFab(
@@ -1181,15 +1200,24 @@ fun HomeScreen(
                     )
 
                 }else if(currentHomeScreen.intValue == Cons.selectedItem_Files && filesPageScrolled.value) {
-                    GoToTopAndGoToBottomFab(
-                        filterModeOn = filesPageSimpleFilterOn.value,
-                        scope = scope,
-                        filterListState = filesFilterListState,
-                        listState = filesPageListState.value,
-                        filterListLastPosition = fileListFilterLastPosition,
-                        listLastPosition = filesLastPosition,
-                        showFab = filesPageScrolled
-                    )
+                    if(filesPageHasErr()) {
+                        GoToTopAndGoToBottomFab(
+                            scope = scope,
+                            listState = filesPageErrScrollState,
+                            listLastPosition = filesErrLastPosition,
+                            showFab = filesPageScrolled
+                        )
+                    }else {
+                        GoToTopAndGoToBottomFab(
+                            filterModeOn = filesPageSimpleFilterOn.value,
+                            scope = scope,
+                            filterListState = filesFilterListState,
+                            listState = filesPageListState.value,
+                            filterListLastPosition = fileListFilterLastPosition,
+                            listLastPosition = filesLastPosition,
+                            showFab = filesPageScrolled
+                        )
+                    }
                 }else if(currentHomeScreen.intValue == Cons.selectedItem_Automation && automationPageScrolled.value) {
                     GoToTopAndGoToBottomFab(
                         scope = scope,
@@ -1260,6 +1288,10 @@ fun HomeScreen(
                 FilesInnerPage(
 //                    stateKeyTag = Cache.combineKeys(stateKeyTag, "FilesInnerPage"),
                     stateKeyTag = stateKeyTag,
+
+                    errScrollState = filesPageErrScrollState,
+                    openDirErr = filesPageOpenDirErr,
+                    hasErr = filesPageHasErr,
 
                     naviUp = {},
                     updateSelectedPath = {},
@@ -1390,6 +1422,9 @@ fun HomeScreen(
                 ChangeListInnerPage(
 //                    stateKeyTag = Cache.combineKeys(stateKeyTag, "ChangeListInnerPage"),
                     stateKeyTag = stateKeyTag,
+
+                    errScrollState = changeListErrScrollState,
+                    hasError = changeListHasErr,
 
                     lastSearchKeyword=changeListLastSearchKeyword,
                     searchToken=changeListSearchToken,
