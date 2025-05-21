@@ -320,8 +320,9 @@ class TextEditorState private constructor(
             val splitFirstLine = splitFieldValues.first()
             // 如果第一行为空，则说明在旧行的开头插入了换行符，可能是粘贴了多行，也可能是输入或粘贴了单行，这两种情况有个共同点，
             // 就是新内容的最后一行就是旧内容本身，而且这一行的changeType状态应该保持不变
-            val newLineAtOldLineHead = splitFirstLine.text.isEmpty()
             val oldLine = newFields[targetIndex]
+            //这里加oldLine text 非空判断是为了使旧行为空时按回车让旧行changeType保持不变，追加的行为新增
+            val newLineAtOldLineHead = oldLine.value.text.isNotEmpty() && splitFirstLine.text.isEmpty()
             newFields[targetIndex] = oldLine.copy(value = splitFirstLine, isSelected = false).apply {
                 if(newLineAtOldLineHead) {  //在旧行头部添加了一换行符
                     // 如果新行开头是空行，必然是新行，所以强制更新而不用if none则更新
@@ -563,6 +564,15 @@ class TextEditorState private constructor(
                 return
             }
 
+            val originTextFiledStates = textFiledStates
+            // update change type
+            val textFiledStates = originTextFiledStates.toMutableList()
+            for((idx, f) in originTextFiledStates.withIndex()) {
+                //先全初始化为new，如果是replace，首行状态后面会和旧行比较来判断是修改还是新增还是没变
+                textFiledStates[idx] = f.copy(changeType = LineChangeType.NEW)
+            }
+
+
             //若超过size，追加到末尾
             val targetIndex = if(trueAppendFalseReplace) targetIndex+1 else targetIndex
 
@@ -578,7 +588,13 @@ class TextEditorState private constructor(
                 //如果是replace，保留之前行的选择状态
                 //到这才能确定索引没越界，所以在这取而不是在if else之前取
                 if(trueAppendFalseReplace.not()) {
-                    targetLineSelected = newFields[targetIndex].isSelected
+                    //replace: 保留旧行选择状态，后面会恢复旧行选择状态
+                    val oldFirstLine = newFields[targetIndex]
+                    targetLineSelected = oldFirstLine.isSelected
+
+                    //replace: 如果新旧首行相同，维持旧行changeType；否则更新为UPDATED
+                    val newFirstLine = textFiledStates.first()
+                    textFiledStates[0] = newFirstLine.copy(changeType = if(oldFirstLine.value.text == newFirstLine.value.text) oldFirstLine.changeType else LineChangeType.UPDATED)
                 }
 
                 newFields.addAll(targetIndex, textFiledStates)
