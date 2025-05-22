@@ -1085,7 +1085,7 @@ class TextEditorState private constructor(
     }
 
     private fun splitTextsByNL(text: String): List<TextFieldValue> {
-        return text.split("\n").mapIndexed { index, text ->
+        return text.lines().mapIndexed { index, text ->
             if (index == 0) {  //第一行，光标在换行的位置
                 TextFieldValue(text, TextRange(text.length))
             } else {  //后续行，光标在开头
