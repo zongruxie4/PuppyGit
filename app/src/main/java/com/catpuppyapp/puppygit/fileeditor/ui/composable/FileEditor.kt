@@ -581,7 +581,7 @@ fun FileEditor(
                             }
 
                             val clipboardText = getClipboardText(clipboardManager)
-                            if(clipboardText.isNullOrEmpty()) {
+                            if(clipboardText == null) {
                                 Msg.requireShowLongDuration(activityContext.getString(R.string.clipboard_is_empty))
                                 return@onPaste
                             }
