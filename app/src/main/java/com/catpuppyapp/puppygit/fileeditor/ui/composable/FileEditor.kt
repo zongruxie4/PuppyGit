@@ -603,7 +603,7 @@ fun FileEditor(
                             }
 
                             doJobThenOffLoading {
-                                textEditorState.value.appendTextToLastSelectedLine("", forceAppend = true)
+                                textEditorState.value.appendTextToLastSelectedLine("")
                             }
 
                             Unit

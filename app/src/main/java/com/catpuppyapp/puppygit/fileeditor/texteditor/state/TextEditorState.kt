@@ -1467,9 +1467,10 @@ class TextEditorState private constructor(
     }
 
     /**
-     * 如果当前行为空行，用text替换当前行；否则追加到当前行后面
+     * 若forceAppend为假：如果当前行为空行，用text替换当前行；否则追加到当前行后面。
+     * 若forceAppend为真：强制追加，无论当前行是否为空行。
      */
-    suspend fun appendTextToLastSelectedLine(text: String, forceAppend: Boolean = false) {
+    suspend fun appendTextToLastSelectedLine(text: String, forceAppend: Boolean = true) {
         //若取消注释这个，复制空行再粘贴会作废，除非在复制那里处理下，ifEmpty返回个空行，
         // 但是不如在这处理，直接忽略这个条件，
         // 然后用空字符串调用.lines()会得到一个空行，就符合复制一个空行粘贴一个空行的需求了，
