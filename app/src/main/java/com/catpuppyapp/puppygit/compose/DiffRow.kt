@@ -545,7 +545,8 @@ fun DiffRow (
                 map = indexStringPartListMap
             )
 
-            setComparePairBuffer(CompareLinePair())
+            //和剪贴板比较不需要清空compare pair
+//            setComparePairBuffer(CompareLinePair())
 
 //            reForEachDiffContent()
         }
