@@ -554,23 +554,19 @@ class TextEditorState private constructor(
     }
 
 
-    suspend fun appendOrReplaceFields(targetIndex: Int, textFiledStates: List<TextFieldState>, trueAppendFalseReplace:Boolean) {
+    suspend fun appendOrReplaceFields(targetIndex: Int, text: String, trueAppendFalseReplace:Boolean) {
         lock.withLock {
-            if(textFiledStates.isEmpty()) {
-                return
-            }
-
             if(targetIndex < 0) {
                 return
             }
 
-            val originTextFiledStates = textFiledStates
-            // update change type
-            val textFiledStates = originTextFiledStates.toMutableList()
-            for((idx, f) in originTextFiledStates.withIndex()) {
-                //先全初始化为new，如果是replace，首行状态后面会和旧行比较来判断是修改还是新增还是没变
-                textFiledStates[idx] = f.copy(changeType = LineChangeType.NEW)
-            }
+            val textFiledStates = mutableListOf<TextFieldState>()
+
+
+            // 创建对象并更新 change type
+            //changeType: 先全初始化为new，如果是replace，首行状态后面会和旧行比较来判断是修改还是新增还是没变
+            text.lines().forEach { textFiledStates.add(TextFieldState(value = TextFieldValue(text = it), changeType = LineChangeType.NEW)) }
+
 
 
             //若超过size，追加到末尾
@@ -1494,13 +1490,13 @@ class TextEditorState private constructor(
 
 
         //空字符串会拆分出一个空行，一个"\n"会拆分出两个空行
-        val lines = text.lines()
+//        val lines = text.lines()
 
         //目标若是空行则replace，否则append
         val trueAppendFalseReplace = if(forceAppend) true else fields[lastSelectedIndexOfLine].value.text.isNotEmpty()
 
         //执行添加，到这才真正修改Editor的数据
-        appendOrReplaceFields(targetIndex = lastSelectedIndexOfLine, textFiledStates = lines.map { TextFieldState(value = TextFieldValue(text = it)) }, trueAppendFalseReplace = trueAppendFalseReplace)
+        appendOrReplaceFields(targetIndex = lastSelectedIndexOfLine, text = text, trueAppendFalseReplace = trueAppendFalseReplace)
 
     }
 
