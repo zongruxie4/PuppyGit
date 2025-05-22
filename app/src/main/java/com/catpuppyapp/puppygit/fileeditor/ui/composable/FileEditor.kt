@@ -71,6 +71,7 @@ import com.catpuppyapp.puppygit.fileeditor.texteditor.state.TextEditorState
 import com.catpuppyapp.puppygit.fileeditor.texteditor.view.ScrollEvent
 import com.catpuppyapp.puppygit.fileeditor.texteditor.view.TextEditor
 import com.catpuppyapp.puppygit.play.pro.R
+import com.catpuppyapp.puppygit.screen.functions.getClipboardText
 import com.catpuppyapp.puppygit.screen.shared.EditorPreviewNavStack
 import com.catpuppyapp.puppygit.screen.shared.FilePath
 import com.catpuppyapp.puppygit.settings.FileEditedPos
@@ -579,19 +580,16 @@ fun FileEditor(
                                 return@onPaste
                             }
 
-                            val text = try {
-                                clipboardManager.getText()?.text ?: ""
-                            }catch (e:Exception) {
-                                Msg.requireShowLongDuration("read clipboard err: ${e.localizedMessage}")
-                                MyLog.e(TAG, "read clipboard err: ${e.stackTraceToString()}")
-
-                                ""
+                            val clipboardText = getClipboardText(clipboardManager)
+                            if(clipboardText.isNullOrEmpty()) {
+                                Msg.requireShowLongDuration(activityContext.getString(R.string.clipboard_is_empty))
+                                return@onPaste
                             }
 
-                            EditCache.writeToFile(text)
+                            EditCache.writeToFile(clipboardText)
 
                             doJobThenOffLoading {
-                                textEditorState.value.appendTextToLastSelectedLine(text)
+                                textEditorState.value.appendTextToLastSelectedLine(clipboardText)
                             }
 
                             Unit
@@ -659,7 +657,8 @@ fun FileEditor(
                     val hasLineSelectedAndNotReadOnly = hasLineSelected && readOnlyMode.not()
                     val iconEnableList = listOf(
                         onClear@{ hasLineSelectedAndNotReadOnly },  // clear
-                        onPaste@{ hasLineSelectedAndNotReadOnly && clipboardManager.hasText() },  // paste，必须 "剪贴板非空 且 选中某行" 才启用
+//                        onPaste@{ hasLineSelectedAndNotReadOnly && clipboardManager.hasText() },  // paste，必须 "剪贴板非空 且 选中某行" 才启用
+                        onPaste@{ hasLineSelectedAndNotReadOnly },  // paste，只要 "选中某行" 就启用，执行时再检查剪贴板是否为空
                         onAppendALine@{ hasLineSelectedAndNotReadOnly },  // append a line
                         onDelete@{ hasLineSelectedAndNotReadOnly },  // delete
                         onCut@{ hasLineSelectedAndNotReadOnly },  // cut
