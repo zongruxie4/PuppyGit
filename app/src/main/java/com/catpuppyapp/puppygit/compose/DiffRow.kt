@@ -493,10 +493,10 @@ fun DiffRow (
     }
 
     val compareToClipboard = label@{ content:String, line:PuppyLine, trueContentToClipboardFalseClipboardToContent:Boolean ->
-        if(content.isEmpty()) {
-            Msg.requireShowLongDuration(activityContext.getString(R.string.can_t_compare_empty_line))
-            return@label
-        }
+//        if(content.isEmpty()) {
+//            Msg.requireShowLongDuration(activityContext.getString(R.string.can_t_compare_empty_line))
+//            return@label
+//        }
 
         if(line.originType == Diff.Line.OriginType.CONTEXT.toString()) {
             // context line no color, compare clipboard to it show nothing, nonsense
@@ -505,7 +505,7 @@ fun DiffRow (
         }
 
         val clipboardText = getClipboardText(clipboardManager)
-        if(clipboardText.isNullOrEmpty()) {
+        if(clipboardText == null) {
             Msg.requireShowLongDuration(activityContext.getString(R.string.clipboard_is_empty))
             return@label
         }
@@ -758,10 +758,10 @@ fun DiffRow (
                             onClick = label@{
                                 expandedMenu.value = false
 
-                                if(content.isEmpty()) {
-                                    Msg.requireShow(activityContext.getString(R.string.can_t_compare_empty_line))
-                                    return@label
-                                }
+//                                if(content.isEmpty()) {
+//                                    Msg.requireShow(activityContext.getString(R.string.can_t_compare_empty_line))
+//                                    return@label
+//                                }
 
                                 if(line1ready) {
 
