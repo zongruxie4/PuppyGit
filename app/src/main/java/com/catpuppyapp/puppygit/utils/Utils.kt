@@ -745,12 +745,12 @@ private fun replaceStringRes(strRes:String, placeHolderCount:Int, strWillReplace
     return strRes.replace(Cons.placeholderPrefixForStrRes+placeHolderCount, strWillReplaced)
 }
 //替换string resource 中的placeholder为目标字符
-fun replaceStringResList(strRes:String, strWillReplacedList:List<Any?>):String {
+fun replaceStringResList(strRes:String, strWillReplacedList:List<String>):String {
     var ret=strRes
     for((idx, str) in strWillReplacedList.withIndex()) {
         val idxPlus1 = idx+1
 
-        ret = replaceStringRes(ret, idxPlus1, str.toString())
+        ret = replaceStringRes(ret, idxPlus1, str)
     }
 
     return ret;

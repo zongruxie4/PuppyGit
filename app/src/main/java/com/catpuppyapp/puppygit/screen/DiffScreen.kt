@@ -877,7 +877,7 @@ fun DiffScreen(
         sb.append(activityContext.getString(R.string.right)+": ").append(treeOid2Str.value).append(suffix)
 
         // 显示数量，例如： "当前：1，总数：10"
-        sb.append(replaceStringResList(activityContext.getString(R.string.current_n_all_m), listOf(itemIdx+1, diffableItemList.value.size))).append(suffix)
+        sb.append(replaceStringResList(activityContext.getString(R.string.current_n_all_m), listOf((itemIdx+1).toString(), diffableItemList.value.size.toString()))).append(suffix)
 
 
         //有效则显示条目信息，否则仅显示粗略信息
