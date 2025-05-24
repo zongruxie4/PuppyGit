@@ -3,10 +3,12 @@
 ---
 1.1.2.0v96 - 20250524:
 - long press commit hash in RepoCard will copy it
+- support filter Repo list by storage path and update time
 
 
 
 - 长按仓库卡片提交hash可拷贝
+- 仓库列表支持按完整路径和更新时间过滤
 
 
 
