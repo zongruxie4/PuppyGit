@@ -50,12 +50,12 @@ import com.catpuppyapp.puppygit.utils.doJobThenOffLoading
 import com.catpuppyapp.puppygit.utils.state.CustomStateSaveable
 import com.catpuppyapp.puppygit.utils.time.TimeZoneUtil
 import kotlinx.coroutines.delay
-import kotlin.Float
 
 
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun CommitItem(
+    drawLocalAheadUpstreamCount: Int,
     commitHistoryGraph:Boolean,
     density: Density,
     nodeCircleRadiusInPx:Float,
@@ -97,6 +97,8 @@ fun CommitItem(
         modifier = Modifier
             .fillMaxWidth()
             .drawNode(
+                commitItemIdx = idx,
+                drawLocalAheadUpstreamCount = drawLocalAheadUpstreamCount,
                 commitHistoryGraph = commitHistoryGraph,
                 c = commitDto,
                 density = density,
@@ -129,7 +131,7 @@ fun CommitItem(
 //            .background(if(idx%2==0)  Color.Transparent else CommitListSwitchColor)
             .then(
                 //如果是请求闪烁的索引，闪烁一下
-                if (requireBlinkIdx.intValue != -1 && requireBlinkIdx.intValue==idx) {
+                if (requireBlinkIdx.intValue != -1 && requireBlinkIdx.intValue == idx) {
                     val highlightColor = Modifier.background(UIHelper.getHighlightingBackgroundColor())
                     //高亮2s后解除
                     doJobThenOffLoading {
@@ -137,7 +139,7 @@ fun CommitItem(
                         requireBlinkIdx.intValue = -1  //解除高亮
                     }
                     highlightColor
-                } else if(commitDto.oidStr == lastClickedItemKey.value){
+                } else if (commitDto.oidStr == lastClickedItemKey.value) {
                     Modifier.background(UIHelper.getLastClickedColor())
                 } else {
                     Modifier
@@ -359,6 +361,8 @@ fun CommitItem(
 
 @Composable
 private fun Modifier.drawNode(
+    commitItemIdx:Int,
+    drawLocalAheadUpstreamCount: Int,
     commitHistoryGraph:Boolean,
     c: CommitDto,
     density: Density,
@@ -375,6 +379,8 @@ private fun Modifier.drawNode(
     val isRtl = UIHelper.isRtlLayout()
     //把线画左边
 //    val isRtl = !UIHelper.isRtlLayout()
+
+
 
     return drawBehind {
         val horizontalWidth = size.width
@@ -405,7 +411,7 @@ private fun Modifier.drawNode(
                 //如果节点在此结束，则连接到当前节点的圆圈，否则垂直向下
 
 
-                val color = DrawCommitNode.getNodeColorByIndex(idx)
+                val color = getColor(idx, commitItemIdx, drawLocalAheadUpstreamCount)
 
                 //画当前节点
                 drawInputLinesAndCircle(
@@ -452,7 +458,7 @@ private fun Modifier.drawNode(
             }
 
             if(node.outputIsEmpty.not()) {
-                val color = DrawCommitNode.getNodeColorByIndex(idx)
+                val color = getColor(idx, commitItemIdx, drawLocalAheadUpstreamCount)
 
                 //画当前节点
                 drawOutputLinesAndCircle(
@@ -482,8 +488,8 @@ private fun Modifier.drawNode(
                 }
             }
         }
-
     }
+
 }
 
 private fun getInitStartX(isRtl: Boolean, startOffSetX: Float, nodeCircleStartOffsetX: Float): Float {
@@ -558,4 +564,20 @@ private fun DrawScope.drawOutputLinesAndCircle(
         end = Offset(outputLineStartX, verticalHeight),
     )
 
+}
+
+
+/**
+ * @param lineIdx 第几根线的索引，从0开始
+ * @param commitItemIdx 第几个提交的索引，从0开始
+ * @param drawLocalAheadUpstreamCount 本地领先远程几个提交，大于0则用不同于当前线的颜色显示对应数量的提交
+ */
+private fun getColor(lineIdx: Int, commitItemIdx:Int, drawLocalAheadUpstreamCount:Int) :Color {
+    //给本地领先远程的提交使用特殊的颜色
+    //第一条线 且 抵达上游分支 前的提交，使用不同于当前索引的颜色
+    return if(lineIdx == 0 && commitItemIdx < drawLocalAheadUpstreamCount) {
+        DrawCommitNode.localAheadUpstreamColor
+    }else {
+        DrawCommitNode.getNodeColorByIndex(lineIdx)
+    }
 }

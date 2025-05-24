@@ -109,7 +109,12 @@ data class DrawCommitNode (
 
 
     companion object {
+        //设为SrcAtop使颜色叠加时变重
         val colorBlendMode = BlendMode.SrcAtop
+
+        //未推送到上游的提交的线的颜色，此线必须不同于cache color 索引 0 的颜色
+        val localAheadUpstreamColor = Color(red = 0xA1, green = 0x29, blue = 0x1E, alpha = alpha)
+
 
         /**
          * 找output节点找一个已存在的可插入的列，如果中间有empty节点，会返回那个节点的索引（占它的位置，继续画线），否则返回 -1

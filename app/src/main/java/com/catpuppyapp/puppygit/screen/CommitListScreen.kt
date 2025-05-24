@@ -151,6 +151,7 @@ import com.catpuppyapp.puppygit.utils.state.mutableCustomBoxOf
 import com.catpuppyapp.puppygit.utils.state.mutableCustomStateListOf
 import com.catpuppyapp.puppygit.utils.state.mutableCustomStateOf
 import com.catpuppyapp.puppygit.utils.time.TimeZoneUtil
+import com.github.git24j.core.Branch
 import com.github.git24j.core.GitObject
 import com.github.git24j.core.Oid
 import com.github.git24j.core.Repository
@@ -609,6 +610,10 @@ fun CommitListScreen(
         draw_lastOutputNodes.value = listOf()
     }
 
+    //显示本地分支历史记录时，此值存储本地领先远程的提交数，这些提交线将用不同于已推送的提交的颜色显示（同一条线，两种颜色）
+    // 注：由于此变量不会在渲染时修改，所以可以用state，若在渲染时需要修改此变量则需要改用自定义存储器的rememberSaveable Box来避免循环渲染
+    val drawLocalAheadUpstreamCount = rememberSaveable { mutableStateOf(0) }
+
     val doLoadMore = doLoadMore@{ repoFullPath: String, oid: Oid, firstLoad: Boolean, forceReload: Boolean, loadToEnd:Boolean ->
         //第一次查询的时候是用head oid查询的，所以不会在这里返回
         //用全0oid替代null
@@ -647,6 +652,36 @@ fun CommitListScreen(
 
                         //重置绘图节点信息
                         resetDrawNodesInfo()
+
+                        //先初始化为0，若有必要，后面会更新
+                        drawLocalAheadUpstreamCount.value = 0
+
+                        runCatching {
+                            //如果是当前浏览的是本地分支的提交记录并且其存在有效的上游分支，检查是否领先上游分支，若领先，领先的提交将会在同一条线上用另一种颜色显示
+                            Repository.open(repoFullPath).use { repo ->
+                                //有短分支参数则用，无则使用仓库对象里的分支名
+                                val shortBranchName = shortBranchName.ifEmpty { curRepo.value.branch }
+
+                                //因为只有本地分支需要显示这个差异，所以这里只需解析本地分支
+                                val localBranchOrNull = Libgit2Helper.resolveBranch(repo, shortBranchName, Branch.BranchType.LOCAL)
+                                //在浏览本地分支的提交历史记录
+                                if(localBranchOrNull != null) {
+                                    val upstream = Libgit2Helper.getUpstreamOfBranch(repo, shortBranchName)
+                                    if(upstream.isPublished) {
+                                        val upstreamCommitRet = Libgit2Helper.resolveCommitByHashOrRef(repo, upstream.remoteBranchRefsRemotesFullRefSpec)
+                                        if(upstreamCommitRet.success()) {
+                                            val (ahead, behind) = Libgit2Helper.getAheadBehind(repo, oid, upstreamCommitRet.data!!.id())
+                                            //若本地领先远程且不落后
+                                            if(ahead > 0 && behind == 0) {
+                                                //需要绘制领先的提交的线的颜色的节点数
+                                                drawLocalAheadUpstreamCount.value = ahead
+                                            }
+                                        }
+                                    }
+                                }
+
+                            }
+                        }
 
                         // close old repo, release resource
                         repositoryForRevWalk.value?.close()
@@ -2284,6 +2319,7 @@ fun CommitListScreen(
                         }
                     ) { idx, it ->
                         CommitItem(
+                            drawLocalAheadUpstreamCount = drawLocalAheadUpstreamCount.value,
                             commitHistoryGraph = commitHistoryGraph.value,
                             density = density,
                             nodeCircleRadiusInPx = nodeCircleRadiusInPx,

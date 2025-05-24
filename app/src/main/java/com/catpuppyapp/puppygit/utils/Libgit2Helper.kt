@@ -4074,7 +4074,8 @@ object Libgit2Helper {
             val resolved =  Commit.lookupPrefix(repo, shortOrLongHash)
             return resolved
         }catch (e:Exception) {
-            MyLog.e(TAG, "#resolveCommitByHash() error, param is (shortOrLongHash=$shortOrLongHash):\nerr is:"+e.stackTraceToString())
+            //这个解析经常错，也不太重要，所以改成debug等级了
+            MyLog.d(TAG, "#resolveCommitByHash() error, param is (shortOrLongHash=$shortOrLongHash):\nerr is:"+e.stackTraceToString())
             return null
         }
     }
