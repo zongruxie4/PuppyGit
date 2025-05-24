@@ -4,11 +4,13 @@
 1.1.2.0v96 - 20250524:
 - long press commit hash in RepoCard will copy it
 - support filter Repo list by storage path and update time
+- support import local Repo from top bar of Repos screen
 
 
 
 - 长按仓库卡片提交hash可拷贝
 - 仓库列表支持按完整路径和更新时间过滤
+- 支持从仓库页面的顶栏菜单导入本地仓库
 
 
 
