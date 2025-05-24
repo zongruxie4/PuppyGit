@@ -308,23 +308,14 @@ fun RepoCard(
                                 tooltipText = stringResource(R.string.repo_label_last_commit)
                             )
                             ClickableText (
-                                text = if(repoStatusGood) repoDto.lastCommitHashShort else "",
+                                text = if(repoStatusGood) repoDto.lastCommitHashShort ?: "" else "",
                                 maxLines = 1,
                                 overflow = TextOverflow.Ellipsis,
                                 modifier = MyStyleKt.ClickableText.modifier.combinedClickable(
                                     enabled = repoStatusGood,
                                     onLongClick = {
                                         haptic.performHapticFeedback(HapticFeedbackType.LongPress)
-
-                                        runCatching {
-                                            Repository.open(repoDto.fullSavePath).use { repo->
-                                                copyAndShowCopied(
-                                                    activityContext,
-                                                    clipboardManager,
-                                                    Libgit2Helper.resolveHEAD(repo)?.id()?.toString()?:repoDto.lastCommitHashShort
-                                                )
-                                            }
-                                        }
+                                        copyAndShowCopied(activityContext, clipboardManager, repoDto.lastCommitHash)
                                     }
                                 ) {
                                     //打开当前仓库的提交记录页面，话说，那个树形怎么搞？可以先不搞树形，以后再弄
