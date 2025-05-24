@@ -1,6 +1,16 @@
 
 
 ---
+1.1.2.0v96 - 20250524:
+- long press commit hash in RepoCard will copy it
+
+
+
+- 长按仓库卡片提交hash可拷贝
+
+
+
+---
 1.1.1.9v95 - 20250521:
 - optimize line change type update logic for Editor
 

@@ -1,0 +1,1 @@
+- long press commit hash in RepoCard will copy it
