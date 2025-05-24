@@ -3875,7 +3875,7 @@ object Libgit2Helper {
     }
 
     fun getShortOidStrByFull(oidStr:String):String{
-        if(oidStr.length > Cons.gitShortCommitHashRangeEndInclusive) {
+        if(oidStr.length > Cons.gitShortCommitHashRange.endInclusive) {
             return oidStr.substring(Cons.gitShortCommitHashRange)
         }
         return oidStr
@@ -4779,7 +4779,7 @@ object Libgit2Helper {
 
     //如果仓库detached HEAD，显示 [仓库名 on hash(Detached)] ； 否则显示 [仓库名 on 分支名]
     fun getRepoOnBranchOrOnDetachedHash(repo:RepoEntity):String {
-        return if(dbIntToBool(repo.isDetached)) "[${repo.repoName} on ${repo.lastCommitHash}(Detached)]" else "[${repo.repoName} on ${repo.branch}]"
+        return if(dbIntToBool(repo.isDetached)) "[${repo.repoName} on ${repo.lastCommitHashShort}(Detached)]" else "[${repo.repoName} on ${repo.branch}]"
     }
 
     //ps: 长hash用来checkout；短hash用来记到数据库(不过现在每次查数据库的仓库信息后都会从git仓库更新hash，所以这个字段实际已废弃)
@@ -5001,7 +5001,8 @@ object Libgit2Helper {
                 //查询仓库最新信息
                 val head = resolveHEAD(repo)
                 repoFromDb.branch = head?.shorthand()?:""
-                repoFromDb.lastCommitHash = getShortOidStrByFull(head?.id()?.toString() ?: "")  // no commit hash will show empty str
+                repoFromDb.lastCommitHash = head?.id()?.toString() ?: ""  // no commit hash will show empty str
+                repoFromDb.lastCommitHashShort = getShortOidStrByFull(repoFromDb.lastCommitHash)
                 repoFromDb.isDetached = boolToDbInt(repo.headDetached())
                 if(!dbIntToBool(repoFromDb.isDetached)) {  //只有非detached才有upstream
                     //这里并不是最终的workStatus值，后面还会检查是否有冲突，如果有会再更新
@@ -7093,7 +7094,8 @@ object Libgit2Helper {
                                 //分支短名
                                 repo2ndQuery.branch = headRef.shorthand()
                                 //提交短id
-                                repo2ndQuery.lastCommitHash = Libgit2Helper.getShortOidStrByFull(headRef.id().toString())
+                                repo2ndQuery.lastCommitHash = headRef.id()?.toString() ?: ""
+                                repo2ndQuery.lastCommitHashShort = Libgit2Helper.getShortOidStrByFull(repo2ndQuery.lastCommitHash)
                             }
 //                                    }  //如果用户填了branch且克隆成功，那branch是绝对正确的，这里就不需要更新repo2ndQuery的branch字段了
 //                                    else {  //用户填了branch的情况

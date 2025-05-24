@@ -237,9 +237,8 @@ object Cons {
     //可替换remote和branch为你期望的值
     const val gitFetchRefSpecRemoteAndBranchReplacer = "+refs/heads/$gitBranchPlaceholder:refs/remotes/$gitRemotePlaceholder/$gitBranchPlaceholder"
 
-    val gitShortCommitHashRangeStart = 0
-    val gitShortCommitHashRangeEndInclusive = 6
-    val gitShortCommitHashRange = IntRange(start=gitShortCommitHashRangeStart, endInclusive=gitShortCommitHashRangeEndInclusive)  //0到6，共7位，git默认7位，但jetbrains的ide短CommitHash是8位，我本来用的8位，但git默认是7位，所以，想了想，我还是用7位吧
+
+    val gitShortCommitHashRange = IntRange(start=0, endInclusive=6)  //0到6，共7位，git默认7位，但jetbrains的ide短CommitHash是8位，我本来用的8位，但git默认是7位，所以，想了想，我还是用7位吧
 
     const val gitWellKnownSshUserName = "git"
     //git 相关变量结束

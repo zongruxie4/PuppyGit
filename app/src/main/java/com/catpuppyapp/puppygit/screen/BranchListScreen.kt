@@ -1879,7 +1879,7 @@ fun BranchListScreen(
                         Repository.open(repoFromDb.fullSavePath).use {repo ->
                             curRepoIsDetached.value = repo.headDetached()
                             //更新用来显示的值
-                            repoCurrentActiveBranchOrShortDetachedHashForShown.value = if(curRepoIsDetached.value) repoFromDb.lastCommitHash else repoFromDb.branch;
+                            repoCurrentActiveBranchOrShortDetachedHashForShown.value = if(curRepoIsDetached.value) repoFromDb.lastCommitHashShort else repoFromDb.branch;
                             if(!curRepoIsDetached.value) { //分支长引用名，只有在非detached时，才用到这个变量
                                 repoCurrentActiveBranchFullRefForDoAct.value = Libgit2Helper.resolveHEAD(repo)?.name()?:""
                             }

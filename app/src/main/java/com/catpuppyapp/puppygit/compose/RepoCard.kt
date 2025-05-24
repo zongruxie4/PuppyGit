@@ -265,7 +265,7 @@ fun RepoCard(
 
                             ClickableText (
                                 //如果是detached，显示分支号，否则显示“本地分支:远程分支”
-                                text = if(repoStatusGood) {if(dbIntToBool(repoDto.isDetached)) repoDto.lastCommitHash+"("+ stringResource(R.string.detached)+")" else repoDto.branch+":"+repoDto.upstreamBranch} else "",
+                                text = if(repoStatusGood) {if(dbIntToBool(repoDto.isDetached)) repoDto.lastCommitHashShort+"("+ stringResource(R.string.detached)+")" else repoDto.branch+":"+repoDto.upstreamBranch} else "",
                                 maxLines = 1,
                                 overflow = TextOverflow.Ellipsis,
                                 fontWeight = defaultFontWeight,
@@ -308,7 +308,7 @@ fun RepoCard(
                                 tooltipText = stringResource(R.string.repo_label_last_commit)
                             )
                             ClickableText (
-                                text = if(repoStatusGood) repoDto.lastCommitHash else "",
+                                text = if(repoStatusGood) repoDto.lastCommitHashShort else "",
                                 maxLines = 1,
                                 overflow = TextOverflow.Ellipsis,
                                 modifier = MyStyleKt.ClickableText.modifier.combinedClickable(
@@ -321,7 +321,7 @@ fun RepoCard(
                                                 copyAndShowCopied(
                                                     activityContext,
                                                     clipboardManager,
-                                                    Libgit2Helper.resolveHEAD(repo)?.id()?.toString()?:repoDto.lastCommitHash
+                                                    Libgit2Helper.resolveHEAD(repo)?.id()?.toString()?:repoDto.lastCommitHashShort
                                                 )
                                             }
                                         }

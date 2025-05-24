@@ -319,7 +319,7 @@ fun TagListScreen(
             refreshPage = { oldHeadCommitOid, isDetached ->
                 //更新下仓库信息以使title在仓库为detached HEAD时显示出reset后的hash。非detached HEAD时只是更新分支指向的提交号分支本身不变，所以不用更新
                 if(isDetached) {
-                    curRepo.value = curRepo.value.copy(isDetached= Cons.dbCommonTrue, lastCommitHash = Libgit2Helper.getShortOidStrByFull(item.targetFullOidStr))
+                    curRepo.value = curRepo.value.copy(isDetached= Cons.dbCommonTrue, lastCommitHash = item.targetFullOidStr).apply { lastCommitHashShort = Libgit2Helper.getShortOidStrByFull(lastCommitHash) }
                 }
             }
         )

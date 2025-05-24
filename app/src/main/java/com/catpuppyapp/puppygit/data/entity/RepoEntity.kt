@@ -42,7 +42,7 @@ data class RepoEntity(
 
     //分支短名
     var branch: String = "",  //如果仓库没detached HEAD，这个是分支名，如果detached，这个是短commit hash，可以通过git24j的相关函数判断仓库是否处于detached HEAD状态，或者在detached时直接使用 lastCommitHash 的值也行
-    var lastCommitHash: String = "",  //最后提交的hash，短
+    var lastCommitHash: String = "",  //最后提交的完整hash
     var isDetached:Int=Cons.dbCommonFalse,
     var upstreamBranch:String="",  // eg: origin/main
 
@@ -127,6 +127,17 @@ data class RepoEntity(
      */
     @Ignore
     var pendingTask:RepoPendingTask=RepoPendingTask.NONE
+
+    @Ignore
+    var lastCommitHashShort:String? = null  //最后提交hash，短
+        get() {
+            val tmp =  field
+            if(tmp != null && lastCommitHash.startsWith(tmp)) {
+                return tmp
+            }
+
+            return Libgit2Helper.getShortOidStrByFull(lastCommitHash).let { field = it; it }
+        }
 
     /**
      * 拷贝所有字段，包括不在data class构造器的字段
