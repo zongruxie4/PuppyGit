@@ -26,7 +26,6 @@ import androidx.compose.material.icons.outlined.Home
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.HorizontalDivider
-import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -64,6 +63,7 @@ import com.catpuppyapp.puppygit.utils.FsUtils
 import com.catpuppyapp.puppygit.utils.Libgit2Helper
 import com.catpuppyapp.puppygit.utils.Msg
 import com.catpuppyapp.puppygit.utils.UIHelper
+import com.catpuppyapp.puppygit.utils.copyAndShowCopied
 import com.catpuppyapp.puppygit.utils.dbIntToBool
 import com.catpuppyapp.puppygit.utils.doJobThenOffLoading
 import com.catpuppyapp.puppygit.utils.getFormatTimeFromSec
@@ -311,7 +311,22 @@ fun RepoCard(
                                 text = if(repoStatusGood) repoDto.lastCommitHash else "",
                                 maxLines = 1,
                                 overflow = TextOverflow.Ellipsis,
-                                modifier = MyStyleKt.ClickableText.modifier.clickable(enabled = repoStatusGood) {
+                                modifier = MyStyleKt.ClickableText.modifier.combinedClickable(
+                                    enabled = repoStatusGood,
+                                    onLongClick = {
+                                        haptic.performHapticFeedback(HapticFeedbackType.LongPress)
+
+                                        runCatching {
+                                            Repository.open(repoDto.fullSavePath).use { repo->
+                                                copyAndShowCopied(
+                                                    activityContext,
+                                                    clipboardManager,
+                                                    Libgit2Helper.resolveHEAD(repo)?.id()?.toString()?:repoDto.lastCommitHash
+                                                )
+                                            }
+                                        }
+                                    }
+                                ) {
                                     //打开当前仓库的提交记录页面，话说，那个树形怎么搞？可以先不搞树形，以后再弄
                                     goToCommitListScreen(
                                         repoId = repoDto.id,

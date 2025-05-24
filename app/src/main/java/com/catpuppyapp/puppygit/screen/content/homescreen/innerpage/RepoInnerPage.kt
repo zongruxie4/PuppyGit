@@ -1930,6 +1930,9 @@ fun RepoInnerPage(
                 resetSearchVars = resetSearchVars,
                 match = { idx:Int, it: RepoEntity ->
                     it.repoName.lowercase().contains(keyword)
+                            || it.branch.lowercase().contains(keyword)
+                            || it.lastCommitHash.lowercase().contains(keyword)
+                            || it.upstreamBranch.lowercase().contains(keyword)
                             || it.parentRepoName.lowercase().contains(keyword)
                             || it.latestUncheckedErrMsg.lowercase().contains(keyword)
                             || it.tmpStatus.lowercase().contains(keyword)

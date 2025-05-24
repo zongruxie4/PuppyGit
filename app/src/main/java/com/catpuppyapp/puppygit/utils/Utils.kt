@@ -10,6 +10,7 @@ import android.widget.Toast
 import androidx.compose.runtime.MutableState
 import androidx.compose.ui.graphics.ImageBitmap
 import androidx.compose.ui.graphics.asImageBitmap
+import androidx.compose.ui.text.AnnotatedString
 import androidx.core.content.ContextCompat
 import androidx.core.graphics.drawable.toBitmapOrNull
 import com.catpuppyapp.puppygit.constants.Cons
@@ -1088,6 +1089,15 @@ fun copyTextToClipboard(context: Context, text: String, label:String="label") {
     val clipboard = context.getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
     val clip = ClipData.newPlainText(label, text) // 创建剪贴板数据
     clipboard.setPrimaryClip(clip) // 设置剪贴板内容
+}
+
+fun copyAndShowCopied(
+    context:Context,
+    clipboardManager: androidx.compose.ui.platform.ClipboardManager,
+    text:String
+) {
+    clipboardManager.setText(AnnotatedString(text))
+    Msg.requireShow(context.getString(R.string.copied))
 }
 
 fun genHttpHostPortStr(host:String, port:String, https:Boolean = false) : String {
