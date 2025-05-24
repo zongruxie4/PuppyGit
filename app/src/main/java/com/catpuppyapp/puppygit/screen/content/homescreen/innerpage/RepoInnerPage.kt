@@ -110,6 +110,7 @@ import com.catpuppyapp.puppygit.utils.dbIntToBool
 import com.catpuppyapp.puppygit.utils.doActIfIndexGood
 import com.catpuppyapp.puppygit.utils.doJobThenOffLoading
 import com.catpuppyapp.puppygit.utils.genHttpHostPortStr
+import com.catpuppyapp.puppygit.utils.getFormatTimeFromSec
 import com.catpuppyapp.puppygit.utils.getSecFromTime
 import com.catpuppyapp.puppygit.utils.isLocked
 import com.catpuppyapp.puppygit.utils.isRepoReadyAndPathExist
@@ -1934,6 +1935,8 @@ fun RepoInnerPage(
                             || it.lastCommitHash.lowercase().contains(keyword)
                             || it.upstreamBranch.lowercase().contains(keyword)
                             || it.parentRepoName.lowercase().contains(keyword)
+                            || it.fullSavePath.lowercase().contains(keyword)
+                            || getFormatTimeFromSec(it.lastUpdateTime).lowercase().contains(keyword)
                             || it.latestUncheckedErrMsg.lowercase().contains(keyword)
                             || it.tmpStatus.lowercase().contains(keyword)
                             || it.createErrMsg.lowercase().contains(keyword)
