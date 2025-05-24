@@ -111,15 +111,18 @@ fun RepoPageActions(
             expanded = dropDownMenuExpendState.value,
             onDismissRequest = { closeMenu() }
         ) {
-            if(AppModel.devModeOn && proFeatureEnabled(importRepoTestPassed)) {
-                DropdownMenuItem(
-                    text = { Text(DevFeature.appendDevPrefix(stringResource(R.string.import_repo))) },
-                    onClick = {
-                        closeMenu()
-                        showImportRepoDialog.value = true
-                    }
-                )
-            }
+            //之前觉得这里的功能和文件管理页面的导入仓库重复就设为开发者功能了，
+            // 但至少有过两个用户问怎么导入本地仓库，他们都觉得导入应该在仓库顶栏，索性加回来了
+//            if(AppModel.devModeOn && proFeatureEnabled(importRepoTestPassed)) {
+            DropdownMenuItem(
+//                text = { Text(DevFeature.appendDevPrefix(stringResource(R.string.import_repo))) },
+                text = { Text(stringResource(R.string.import_repo)) },
+                onClick = {
+                    closeMenu()
+                    showImportRepoDialog.value = true
+                }
+            )
+//            }
 
             DropdownMenuItem(
                 text = { Text(stringResource(R.string.user_info)) },
