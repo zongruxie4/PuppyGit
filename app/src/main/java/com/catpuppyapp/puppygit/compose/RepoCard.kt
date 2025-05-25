@@ -655,7 +655,7 @@ private fun RepoTitle(
             ) {
                 SimpleCheckBox(
                     enabled = itemSelected,
-                    modifier = Modifier.size(25.dp),
+                    modifier = MyStyleKt.Icon.modifier,
                 )
             }
         }

@@ -314,7 +314,8 @@ object MyStyleKt{
     }
 
     object BottomSheet{
-        val skipPartiallyExpanded = true
+        // true则菜单直接展开，否则需要拉一下才展开
+        const val skipPartiallyExpanded = true
     }
 
      object DropDownMenu {
