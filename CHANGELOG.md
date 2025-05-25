@@ -1,6 +1,14 @@
 
 
 ---
+1.1.2.1v97 - 20250525:
+- support compare left/right commit to local at commits changelist
+
+
+- 在提交的修改列表支持比较左侧/右侧提交和本地文件差异
+
+
+---
 1.1.2.0v96 - 20250524:
 - long press commit hash in RepoCard will copy it
 - support filter Repo list by storage path and update time
