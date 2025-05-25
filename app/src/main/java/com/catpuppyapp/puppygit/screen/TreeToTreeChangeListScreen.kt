@@ -485,7 +485,7 @@ fun TreeToTreeChangeListScreen(
             selectedItemList = changeListPageSelectedItemList,
             commit1OidStr=commit1OidStrState.value,
             commit2OidStr=commit2OidStr,
-            commitParentList = commitParentList,
+            commitParentList = commitParentList.value,
             repoId=repoId,
             changeListPageNoRepo=changeListPageNoRepo,
             hasNoConflictItems = changeListPageHasNoConflictItems,  //这选项是worktree和Index页面用的，TreeToTree其实用不到这个选项，只是占位

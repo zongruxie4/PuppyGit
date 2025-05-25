@@ -1430,6 +1430,9 @@ fun HomeScreen(
                     errScrollState = changeListErrScrollState,
                     hasError = changeListHasErr,
 
+                    commit1OidStr = Cons.git_IndexCommitHash,
+                    commit2OidStr = Cons.git_LocalWorktreeCommitHash,
+
                     lastSearchKeyword=changeListLastSearchKeyword,
                     searchToken=changeListSearchToken,
                     searching=changeListSearching,

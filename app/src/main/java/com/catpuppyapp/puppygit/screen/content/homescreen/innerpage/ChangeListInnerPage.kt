@@ -175,14 +175,12 @@ fun ChangeListInnerPage(
     itemList: CustomStateListSaveable<StatusTypeEntrySaver>,
     itemListState: LazyListState,
     selectedItemList:CustomStateListSaveable<StatusTypeEntrySaver>,
+
+    commit1OidStr:String,
+    commit2OidStr:String,
+
     //只有fromTo是tree to tree时才有这些条目，开始
-    commit1OidStr:String="",
-    commit2OidStr:String="",
-    commitParentList:CustomStateListSaveable<String> = mutableCustomStateListOf(
-        keyTag = stateKeyTag,
-        keyName = "commitParentList",
-        initValue = listOf<String>()
-    ),
+    commitParentList:MutableList<String> = mutableListOf<String>(),
 
     repoId:String="",
     //只有fromTo是tree to tree时才有这些条目，结束
@@ -227,7 +225,8 @@ fun ChangeListInnerPage(
     val repoId = remember(repoId, curRepoFromParentPage.value.id) { derivedStateOf { if(repoId.isBlank()) curRepoFromParentPage.value.id else repoId } }.value  // must call .value, else derived block may not executing
 
 
-    val isDiffToLocal = fromTo == Cons.gitDiffFromIndexToWorktree || commit1OidStr==Cons.git_LocalWorktreeCommitHash || commit2OidStr==Cons.git_LocalWorktreeCommitHash
+//    val isDiffToLocal = fromTo == Cons.gitDiffFromIndexToWorktree || commit1OidStr==Cons.git_LocalWorktreeCommitHash || commit2OidStr==Cons.git_LocalWorktreeCommitHash
+    val isDiffToLocal = commit1OidStr==Cons.git_LocalWorktreeCommitHash || commit2OidStr==Cons.git_LocalWorktreeCommitHash
     val isWorktreePage = fromTo == Cons.gitDiffFromIndexToWorktree
 
     // xxx diff to local, not local diff to xxx
@@ -1174,6 +1173,10 @@ fun ChangeListInnerPage(
         }else {
             commit1OidStr
         }
+    }
+
+    val getActuallyList = {
+        if(enableFilterState.value) filterList.value else itemList.value
     }
 
     if(showRebaseSkipDialog.value) {
@@ -2147,6 +2150,52 @@ fun ChangeListInnerPage(
     }
 
 
+    fun diffFiles(curItem:StatusTypeEntrySaver, itemListOrFilterList:List<StatusTypeEntrySaver>, commit1OidStr:String, commit2OidStr:String, fromTo:String) {
+
+        //用来实现在diff页面stage条目后将其从cl页面移除。ps 由于filterList是由itemList产生的，所以，这里这里直接操作itemList才对，否则，无法显示最新的修改
+//                                SharedState.homeChangeList_itemList = if(enableFilter) filterList.value else itemList.value
+        SharedState.homeChangeList_itemList = itemList.value
+        SharedState.homeChangeList_indexHasItem = changeListPageHasIndexItem
+
+        //准备导航到diff页面的参数
+//                                val diffableList = itemList.filter {item -> item.changeType == Cons.gitStatusModified || item.changeType == Cons.gitStatusNew || item.changeType == Cons.gitStatusDeleted}
+        var indexAtDiffableList = -1
+
+        val diffableList = mutableListOf<StatusTypeEntrySaver>()
+        // if filter mode on, this item list is filter list, logically, no changed required
+        // 如果开启过滤模式，这个列表会是过滤后的列表，符合逻辑，不用修改
+        val itemCopy = itemListOrFilterList.toList()
+        for(idx in itemCopy.indices) {
+            val item = itemCopy[idx]
+            //非冲突类型的条目一律添加，包括submodules
+            if(item.changeType != Cons.gitStatusConflict) {
+                diffableList.add(item)
+
+                if(item == curItem) {
+                    indexAtDiffableList = diffableList.lastIndex
+                }
+            }
+        }
+
+        naviTarget.value = Cons.ChangeListNaviTarget_NoNeedReload
+
+        goToDiffScreen(
+//                                    relativePathList = listOf(it.relativePathUnderRepo),
+            diffableList = diffableList.map { it.toDiffableItem() },
+            repoId = curItem.repoIdFromDb,
+            fromTo = fromTo,
+            commit1OidStr = commit1OidStr,
+            commit2OidStr = commit2OidStr,
+            isDiffToLocal = commit1OidStr==Cons.git_LocalWorktreeCommitHash || commit2OidStr==Cons.git_LocalWorktreeCommitHash,
+            curItemIndexAtDiffableList = indexAtDiffableList,
+            localAtDiffRight = commit2OidStr==Cons.git_LocalWorktreeCommitHash,
+            fromScreen = (if(fromTo == Cons.gitDiffFromIndexToWorktree) DiffFromScreen.HOME_CHANGELIST.code
+            else if(fromTo == Cons.gitDiffFromHeadToIndex) DiffFromScreen.INDEX.code
+            else DiffFromScreen.TREE_TO_TREE.code),
+        )
+
+
+    }
 
 
     val goToSub = { item:StatusTypeEntrySaver ->
@@ -2164,6 +2213,11 @@ fun ChangeListInnerPage(
         stringResource(R.string.open),
         stringResource(R.string.open_as),
         stringResource(R.string.show_in_files),
+
+        // left to local，相当于比较父提交和local，right to local，相当于比较当前提交和local
+        stringResource(R.string.left)+".."+stringResource(R.string.local),
+        stringResource(R.string.right)+".."+stringResource(R.string.local),
+
         stringResource(R.string.file_history),
         stringResource(R.string.copy_full_path),
         stringResource(R.string.copy_repo_relative_path),
@@ -2203,6 +2257,24 @@ fun ChangeListInnerPage(
 
             goToFilesPage(item.canonicalPath)
         },
+        leftToLocal@{
+            diffFiles(
+                curItem = it,
+                itemListOrFilterList = getActuallyList(),
+                commit1OidStr = getCommitLeft(),
+                commit2OidStr = Cons.git_LocalWorktreeCommitHash,
+                fromTo = Cons.gitDiffFromTreeToTree
+            )
+        },
+        rightToLocal@{
+            diffFiles(
+                curItem = it,
+                itemListOrFilterList = getActuallyList(),
+                commit1OidStr = getCommitRight(),
+                commit2OidStr = Cons.git_LocalWorktreeCommitHash,
+                fromTo = Cons.gitDiffFromTreeToTree
+            )
+        },
         fileHistory@{item:StatusTypeEntrySaver ->
             naviToFileHistoryByRelativePath(repoId, item.relativePathUnderRepo)
         },
@@ -2230,6 +2302,8 @@ fun ChangeListInnerPage(
 
         //只有worktree的cl页面支持在Files页面显示文件，index页面由于是二级页面，跳转不了，干脆禁用了
         showInFilesEnabled@{fromTo == Cons.gitDiffFromIndexToWorktree},  //对所有条目都启用showInFiles，不过会在点击后检查文件是否存在，若不存在不会跳转
+        leftToLocal@{ fromTo == Cons.gitDiffFromTreeToTree },
+        rightToLocal@{ fromTo == Cons.gitDiffFromTreeToTree },
         fileHistoryEnabled@{it.maybeIsFileAndExist()},
         copyFullPath@{true},
         copyRepoRelativePath@{true},
@@ -2879,48 +2953,13 @@ fun ChangeListInnerPage(
 //                            }
                                 else {  //非冲突条目，预览diff
 
-                                    //用来实现在diff页面stage条目后将其从cl页面移除。ps 由于filterList是由itemList产生的，所以，这里这里直接操作itemList才对，否则，无法显示最新的修改
-//                                SharedState.homeChangeList_itemList = if(enableFilter) filterList.value else itemList.value
-                                    SharedState.homeChangeList_itemList = itemList.value
-                                    SharedState.homeChangeList_indexHasItem = changeListPageHasIndexItem
-
-                                    //准备导航到diff页面的参数
-//                                val diffableList = itemList.filter {item -> item.changeType == Cons.gitStatusModified || item.changeType == Cons.gitStatusNew || item.changeType == Cons.gitStatusDeleted}
-                                    var indexAtDiffableList = -1
-
-                                    val diffableList = mutableListOf<StatusTypeEntrySaver>()
-                                    // if filter mode on, this item list is filter list, logically, no changed required
-                                    // 如果开启过滤模式，这个列表会是过滤后的列表，符合逻辑，不用修改
-                                    val itemCopy = itemListOrFilterList.toList()
-                                    for(idx in itemCopy.indices) {
-                                        val item = itemCopy[idx]
-                                        //非冲突类型的条目一律添加，包括submodules
-                                        if(item.changeType != Cons.gitStatusConflict) {
-                                            diffableList.add(item)
-
-                                            if(item == it) {
-                                                indexAtDiffableList = diffableList.lastIndex
-                                            }
-                                        }
-                                    }
-
-                                    naviTarget.value = Cons.ChangeListNaviTarget_NoNeedReload
-
-                                    goToDiffScreen(
-//                                    relativePathList = listOf(it.relativePathUnderRepo),
-                                        diffableList = diffableList.map { it.toDiffableItem() },
-                                        repoId = it.repoIdFromDb,
-                                        fromTo = fromTo,
-                                        commit1OidStr = if(swap) commit2OidStr else commit1OidStr,
-                                        commit2OidStr = if(swap) commit1OidStr else commit2OidStr,
-                                        isDiffToLocal = isDiffToLocal,
-                                        curItemIndexAtDiffableList = indexAtDiffableList,
-                                        localAtDiffRight = localAtDiffRight.value,
-                                        fromScreen = (if(fromTo == Cons.gitDiffFromIndexToWorktree) DiffFromScreen.HOME_CHANGELIST.code
-                                        else if(fromTo == Cons.gitDiffFromHeadToIndex) DiffFromScreen.INDEX.code
-                                        else DiffFromScreen.TREE_TO_TREE.code),
+                                    diffFiles(
+                                        curItem = it,
+                                        itemListOrFilterList = itemListOrFilterList,
+                                        commit1OidStr = getCommitLeft(),
+                                        commit2OidStr = getCommitRight(),
+                                        fromTo = fromTo
                                     )
-
 
                                 }
                             }
@@ -3064,7 +3103,7 @@ fun ChangeListInnerPage(
                         )else listOf( //  if(fromTo == Cons.gitDiffFromTreeToTree)
                             enableImportAsRepo, // import as repo
                             selectedListIsNotEmpty,  // checkout
-                            {commitParentList.value.isNotEmpty() && selectedListIsNotEmpty()},  // cherrypick，只有存在parents的情况下才可cherrypick
+                            {commitParentList.isNotEmpty() && selectedListIsNotEmpty()},  // cherrypick，只有存在parents的情况下才可cherrypick
                             selectedListIsNotEmpty,  // create patch
                             {true}  // select all
                         )
@@ -3215,7 +3254,7 @@ fun ChangeListInnerPage(
                                 cherrypick@{
                                     val curRepo = curRepoFromParentPage.value
                                     //必须是和parents diff才能cherrypick
-                                    if(commitParentList.value.isNotEmpty()) {
+                                    if(commitParentList.isNotEmpty()) {
                                         initCherrypickDialog(curRepo)
                                     }else {
                                         Msg.requireShowLongDuration(activityContext.getString(R.string.cherrypick_only_work_for_diff_to_parents))
@@ -3560,7 +3599,7 @@ private suspend fun changeListInit(
     repoState: MutableIntState,
     commit1OidStr:String,  //只有fromTo是tree to tree时才用到这两个tree oid
     commit2OidStr:String,
-    commitParentList: CustomStateListSaveable<String>,
+    commitParentList: MutableList<String>,
     repoId:String,
     setErrMsg:(String)->Unit,
     clearErrMsg:()->Unit,
@@ -3716,7 +3755,7 @@ private suspend fun changeListInit(
                 itemList.value.addAll(cl)
 
                 //和local比较不需要parents list
-                commitParentList.value.clear()
+                commitParentList.clear()
             }else {  // tree to tree，两个tree都不是local(worktree)
                 val tree1 = Libgit2Helper.resolveTree(repo, commit1OidStr)
                 if(tree1==null) {
@@ -3751,8 +3790,8 @@ private suspend fun changeListInit(
                         return
                     }
 
-                    commitParentList.value.clear()
-                    commitParentList.value.addAll(parentList)
+                    commitParentList.clear()
+                    commitParentList.addAll(parentList)
                 }
             }
 

@@ -248,6 +248,9 @@ fun IndexScreen(
             errScrollState = changeListErrScrollState,
             hasError = changeListHasErr,
 
+            commit1OidStr = Cons.git_HeadCommitHash,
+            commit2OidStr = Cons.git_IndexCommitHash,
+
             lastSearchKeyword=changeListLastSearchKeyword,
             searchToken=changeListSearchToken,
             searching=changeListSearching,
