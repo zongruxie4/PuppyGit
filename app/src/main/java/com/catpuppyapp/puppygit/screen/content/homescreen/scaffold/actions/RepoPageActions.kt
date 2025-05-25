@@ -40,9 +40,8 @@ fun RepoPageActions(
      */
 
 
-    val dropDownMenuExpendState = rememberSaveable { mutableStateOf(false)}
+    val dropDownMenuExpandState = rememberSaveable { mutableStateOf(false)}
 
-    val closeMenu = {dropDownMenuExpendState.value = false}
 
     LongPressAbleIconBtn(
         tooltipText = stringResource(R.string.filter),
@@ -84,12 +83,12 @@ fun RepoPageActions(
             icon = Icons.Filled.Add,
             iconContentDesc = stringResource(R.string.clone),
         ) {
-            dropDownMenuExpendState.value = !dropDownMenuExpendState.value
+            dropDownMenuExpandState.value = !dropDownMenuExpandState.value
         }
 
         AddRepoDropDownMenu(
-            showMenu = dropDownMenuExpendState.value,
-            closeMenu = { dropDownMenuExpendState.value = false },
+            showMenu = dropDownMenuExpandState.value,
+            closeMenu = { dropDownMenuExpandState.value = false },
             importOnClick = {
                 showImportRepoDialog.value = true
             }

@@ -187,9 +187,9 @@ fun EditorPageActions(
     }
 
 
-    val dropDownMenuExpendState = rememberSaveable { mutableStateOf(false)}
+    val dropDownMenuExpandState = rememberSaveable { mutableStateOf(false) }
 
-    val closeMenu = {dropDownMenuExpendState.value = false}
+    val closeMenu = {dropDownMenuExpandState.value = false}
 
     val enableMenuItem = editorPageShowingFilePath.value.isNotBlank()
 
@@ -274,7 +274,7 @@ fun EditorPageActions(
             iconContentDesc = stringResource(R.string.menu),
             onClick = {
                 //切换菜单展开状态
-                dropDownMenuExpendState.value = !dropDownMenuExpendState.value
+                dropDownMenuExpandState.value = !dropDownMenuExpandState.value
             }
         )
     }
@@ -285,7 +285,7 @@ fun EditorPageActions(
 
         //菜单列表
         DropdownMenu(
-            expanded = dropDownMenuExpendState.value,
+            expanded = dropDownMenuExpandState.value,
             onDismissRequest = { closeMenu() }
         ) {
             DropdownMenuItem(

@@ -129,7 +129,7 @@ fun CredentialNewOrEdit(
 
     val passwordVisible = rememberSaveable { mutableStateOf(false)}
 
-//    val dropDownMenuExpendState = rememberSaveable{ mutableStateOf(false) }
+//    val dropDownMenuExpandState = rememberSaveable{ mutableStateOf(false) }
 
 //    val showRepoNameAlreadyExistsErr = rememberSaveable { mutableStateOf(false) }
     val showCredentialNameAlreadyExistsErr = rememberSaveable { mutableStateOf(false)}

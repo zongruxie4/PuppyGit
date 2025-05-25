@@ -2,8 +2,6 @@ package com.catpuppyapp.puppygit.screen.content.homescreen.scaffold.actions
 
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.OpenInNew
-import androidx.compose.material.icons.filled.CheckBox
-import androidx.compose.material.icons.filled.CheckBoxOutlineBlank
 import androidx.compose.material.icons.filled.DensityLarge
 import androidx.compose.material.icons.filled.DensitySmall
 import androidx.compose.material.icons.filled.FileOpen
@@ -13,7 +11,6 @@ import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material.icons.filled.Restore
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
-import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.MutableState
@@ -62,7 +59,7 @@ fun DiffPageActions(
 //    val fileChangeTypeIsModified = changeType == Cons.gitStatusModified
     val fileChangeTypeIsModified = remember { true }
 
-    val dropDownMenuExpendState = rememberSaveable { mutableStateOf(false) }
+    val dropDownMenuExpandState = rememberSaveable { mutableStateOf(false) }
 
 //    if (fileChangeTypeIsModified && UserUtil.isPro()
 //        && (dev_EnableUnTestedFeature || detailsDiffTestPassed)
@@ -168,15 +165,15 @@ fun DiffPageActions(
         iconContentDesc = stringResource(R.string.menu),
         onClick = {
             //切换菜单展开状态
-            dropDownMenuExpendState.value = !dropDownMenuExpendState.value
+            dropDownMenuExpandState.value = !dropDownMenuExpandState.value
         }
     )
 
     // menu items
     DropdownMenu(
         offset = DpOffset(x=100.dp, y=8.dp),
-        expanded = dropDownMenuExpendState.value,
-        onDismissRequest = { dropDownMenuExpendState.value=false }
+        expanded = dropDownMenuExpandState.value,
+        onDismissRequest = { dropDownMenuExpandState.value=false }
     ) {
 
         DropdownMenuItem(
@@ -184,7 +181,7 @@ fun DiffPageActions(
             onClick = {
                 request.value = PageRequest.createPatch
 
-                dropDownMenuExpendState.value = false
+                dropDownMenuExpandState.value = false
             }
 
         )
@@ -194,7 +191,7 @@ fun DiffPageActions(
             onClick = {
                 adjustFontSizeModeOn.value = true
 
-                dropDownMenuExpendState.value = false
+                dropDownMenuExpandState.value = false
             }
 
         )
@@ -205,7 +202,7 @@ fun DiffPageActions(
             onClick = {
                 adjustLineNumSizeModeOn.value = true
 
-                dropDownMenuExpendState.value = false
+                dropDownMenuExpandState.value = false
             }
 
         )
@@ -222,7 +219,7 @@ fun DiffPageActions(
                     it.diff.showLineNum = showLineNum.value
                 }
 
-                dropDownMenuExpendState.value = false
+                dropDownMenuExpandState.value = false
             }
 
         )
@@ -240,7 +237,7 @@ fun DiffPageActions(
                     it.diff.showOriginType = showOriginType.value
                 }
 
-                dropDownMenuExpendState.value = false
+                dropDownMenuExpandState.value = false
             }
 
         )
@@ -258,7 +255,7 @@ fun DiffPageActions(
                     it.diff.groupDiffContentByLineNum = groupDiffContentByLineNum.value
                 }
 
-                dropDownMenuExpendState.value = false
+                dropDownMenuExpandState.value = false
             }
         )
 
@@ -276,7 +273,7 @@ fun DiffPageActions(
                         it.diff.enableBetterButSlowCompare = requireBetterMatchingForCompare.value
                     }
 
-                    dropDownMenuExpendState.value = false
+                    dropDownMenuExpandState.value = false
                 }
             )
 
@@ -292,7 +289,7 @@ fun DiffPageActions(
                         it.diff.matchByWords = matchByWords.value
                     }
 
-                    dropDownMenuExpendState.value = false
+                    dropDownMenuExpandState.value = false
                 }
             )
 
@@ -311,7 +308,7 @@ fun DiffPageActions(
                     it.diff.readOnly = readOnlyModeOn.value
                 }
 
-                dropDownMenuExpendState.value = false
+                dropDownMenuExpandState.value = false
             }
 
         )
@@ -329,7 +326,7 @@ fun DiffPageActions(
                     it.diff.enableSelectCompare = enableSelectCompare.value
                 }
 
-                dropDownMenuExpendState.value = false
+                dropDownMenuExpandState.value = false
             }
 
         )

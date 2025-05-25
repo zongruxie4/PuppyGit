@@ -5,7 +5,6 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.heightIn
@@ -191,7 +190,7 @@ fun CloneScreen(
 
     val passwordVisible =rememberSaveable { mutableStateOf(false)}
 
-    val dropDownMenuExpendState = rememberSaveable { mutableStateOf(false)}
+    val dropDownMenuExpandState = rememberSaveable { mutableStateOf(false)}
 
     val showRepoNameAlreadyExistsErr = rememberSaveable { mutableStateOf(false)}
     val showCredentialNameAlreadyExistsErr =rememberSaveable { mutableStateOf(false)}
@@ -1014,13 +1013,13 @@ fun CloneScreen(
                 ){
 
                     Row {  //让按钮和下拉菜单近点
-                        Button(onClick = { dropDownMenuExpendState.value = true }) {
+                        Button(onClick = { dropDownMenuExpandState.value = true }) {
                             Text(stringResource(R.string.tap_for_select_credential))
                         }
                         //查询所有凭据，显示下拉选择框(selector)
                         DropdownMenu(
-                            expanded = dropDownMenuExpendState.value,
-                            onDismissRequest = { dropDownMenuExpendState.value = false }
+                            expanded = dropDownMenuExpandState.value,
+                            onDismissRequest = { dropDownMenuExpandState.value = false }
                         ) {
 //                            val curList = if(curCredentialType.intValue == Cons.dbCredentialTypeHttp) credentialHttpList else credentialSshList
                             val curList = allCredentialList
@@ -1030,7 +1029,7 @@ fun CloneScreen(
                                     onClick = {
                                         selectedCredentialId.value = item.id
                                         selectedCredentialName.value = item.name
-                                        dropDownMenuExpendState.value=false
+                                        dropDownMenuExpandState.value=false
                                     }
                                 )
 

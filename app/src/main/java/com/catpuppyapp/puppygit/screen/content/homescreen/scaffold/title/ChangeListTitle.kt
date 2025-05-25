@@ -58,7 +58,7 @@ fun ChangeListTitle(
 
     val inDarkTheme = Theme.inDarkTheme
 
-    val dropDownMenuExpendState = rememberSaveable { mutableStateOf(false)}
+    val dropDownMenuExpandState = rememberSaveable { mutableStateOf(false)}
 
     val showTitleInfoDialog = rememberSaveable { mutableStateOf(false)}
     if(showTitleInfoDialog.value) {
@@ -74,11 +74,11 @@ fun ChangeListTitle(
 
 
     val switchDropDownMenu = {
-        if(dropDownMenuExpendState.value) {  // need close
-            dropDownMenuExpendState.value = false
+        if(dropDownMenuExpandState.value) {  // need close
+            dropDownMenuExpandState.value = false
         } else {  // need open
             changeStateTriggerRefreshPage(needReQueryRepoList)
-            dropDownMenuExpendState.value = true
+            dropDownMenuExpandState.value = true
         }
     }
 
@@ -98,7 +98,7 @@ fun ChangeListTitle(
         )
     }else {
         TitleDropDownMenu(
-            dropDownMenuExpendState = dropDownMenuExpendState,
+            dropDownMenuExpandState = dropDownMenuExpandState,
             curSelectedItem = changeListCurRepo.value,
             itemList = repoList.value.toList(),
             titleClickEnabled = enableAction,
@@ -127,7 +127,7 @@ fun ChangeListTitle(
             },
             titleRightIcon = {
                 Icon(
-                    imageVector = if (dropDownMenuExpendState.value) Icons.Filled.ArrowDropDown else Icons.AutoMirrored.Filled.ArrowLeft,
+                    imageVector = if (dropDownMenuExpandState.value) Icons.Filled.ArrowDropDown else Icons.AutoMirrored.Filled.ArrowLeft,
                     contentDescription = stringResource(R.string.switch_repo),
                     tint = if (enableAction) LocalContentColor.current else UIHelper.getDisableBtnColor(inDarkTheme)
                 )

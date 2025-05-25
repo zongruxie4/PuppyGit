@@ -15,7 +15,6 @@ import androidx.compose.material.icons.filled.SwapHoriz
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
-import androidx.compose.material3.LocalContentColor
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
@@ -288,7 +287,7 @@ fun TreeToTreeChangeListScreen(
                         val expandable = Libgit2Helper.CommitUtil.mayGoodCommitHash(commitForQueryParents)
 
                         TitleDropDownMenu(
-                            dropDownMenuExpendState = showParentListDropDownMenu,
+                            dropDownMenuExpandState = showParentListDropDownMenu,
                             curSelectedItem = commit1OidStrState.value,
                             itemList = commitParentList.value.toList(),
                             titleClickEnabled = true,

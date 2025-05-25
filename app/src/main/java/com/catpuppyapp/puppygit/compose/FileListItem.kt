@@ -11,7 +11,6 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
-import androidx.compose.material3.FilledTonalIconToggleButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.LocalContentColor
@@ -30,7 +29,6 @@ import androidx.compose.ui.unit.sp
 import com.catpuppyapp.puppygit.constants.Cons
 import com.catpuppyapp.puppygit.dto.FileItemDto
 import com.catpuppyapp.puppygit.play.pro.R
-import com.catpuppyapp.puppygit.style.MyStyleKt
 import com.catpuppyapp.puppygit.ui.theme.Theme
 import com.catpuppyapp.puppygit.utils.UIHelper
 import com.catpuppyapp.puppygit.utils.getParentPathEndsWithSeparator
@@ -149,18 +147,18 @@ fun FileListItem(
 
         }
         //每个条目都有自己的菜单项，这样有点费资源哈，不过实现起来最简单，如果只用一个菜单项也行，但难点在于把菜单项定位到点菜单按钮的地方
-        val dropDownMenuExpendState = rememberSaveable { mutableStateOf(false) }
+        val dropDownMenuExpandState = rememberSaveable { mutableStateOf(false) }
 
         ListItemTrailingIconRow{
-            IconButton(onClick = { dropDownMenuExpendState.value = true }) {
+            IconButton(onClick = { dropDownMenuExpandState.value = true }) {
                 Icon(
                     imageVector = Icons.Filled.MoreVert,
                     contentDescription = stringResource(R.string.file_or_folder_menu)
                 )
             }
             DropdownMenu(
-                expanded = dropDownMenuExpendState.value,
-                onDismissRequest = { dropDownMenuExpendState.value = false }
+                expanded = dropDownMenuExpandState.value,
+                onDismissRequest = { dropDownMenuExpandState.value = false }
             ) {
                 for ((idx,v) in menuKeyTextList.withIndex()) {
                     //忽略空白选项，这样未启用的feature就可直接用空白替代了，方便
@@ -174,7 +172,7 @@ fun FileListItem(
                             //调用onClick()
                             menuKeyActList[idx](item)
                             //关闭菜单
-                            dropDownMenuExpendState.value = false
+                            dropDownMenuExpandState.value = false
                         }
                     )
 

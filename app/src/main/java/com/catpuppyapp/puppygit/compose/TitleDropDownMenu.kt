@@ -28,7 +28,7 @@ import com.catpuppyapp.puppygit.style.MyStyleKt
 
 @Composable
 fun <T> TitleDropDownMenu(
-    dropDownMenuExpendState: MutableState<Boolean>,
+    dropDownMenuExpandState: MutableState<Boolean>,
     curSelectedItem:T,
     itemList: List<T>,
     isItemSelected:(T)->Boolean,
@@ -41,7 +41,7 @@ fun <T> TitleDropDownMenu(
     itemOnClick: (T)->Unit
 ) {
     TitleDropDownMenu(
-        dropDownMenuExpendState = dropDownMenuExpendState,
+        dropDownMenuExpandState = dropDownMenuExpandState,
         curSelectedItem = curSelectedItem,
         itemList = itemList,
         titleClickEnabled = titleClickEnabled,
@@ -65,7 +65,7 @@ fun <T> TitleDropDownMenu(
         },
         titleRightIcon = {
             Icon(
-                imageVector = if (dropDownMenuExpendState.value) Icons.Filled.ArrowDropDown else Icons.AutoMirrored.Filled.ArrowLeft,
+                imageVector = if (dropDownMenuExpandState.value) Icons.Filled.ArrowDropDown else Icons.AutoMirrored.Filled.ArrowLeft,
                 contentDescription = showHideMenuIconContentDescription,
             )
         },
@@ -85,7 +85,7 @@ fun <T> TitleDropDownMenu(
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun <T> TitleDropDownMenu(
-    dropDownMenuExpendState: MutableState<Boolean>,
+    dropDownMenuExpandState: MutableState<Boolean>,
     curSelectedItem:T,
     itemList: List<T>,
 
@@ -93,10 +93,10 @@ fun <T> TitleDropDownMenu(
     titleClickEnabled:Boolean,
 
     switchDropDownMenuShowHide:()->Unit = {
-        dropDownMenuExpendState.value = !dropDownMenuExpendState.value
+        dropDownMenuExpandState.value = !dropDownMenuExpandState.value
     },
     closeDropDownMenu:()->Unit  = {
-        dropDownMenuExpendState.value = false
+        dropDownMenuExpandState.value = false
     },
     titleFirstLine:@Composable (T)->Unit,
     titleSecondLine:@Composable (T)->Unit,
@@ -165,7 +165,7 @@ fun <T> TitleDropDownMenu(
 
     //下拉菜单
     DropdownMenu(
-        expanded = dropDownMenuExpendState.value,
+        expanded = dropDownMenuExpandState.value,
         onDismissRequest = { closeDropDownMenu() }
     ) {
         for (i in itemList.toList()) {

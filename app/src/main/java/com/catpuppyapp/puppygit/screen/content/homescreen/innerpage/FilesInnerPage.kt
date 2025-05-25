@@ -105,7 +105,6 @@ import com.catpuppyapp.puppygit.dev.applyPatchTestPassed
 import com.catpuppyapp.puppygit.dev.importReposFromFilesTestPassed
 import com.catpuppyapp.puppygit.dev.initRepoFromFilesPageTestPassed
 import com.catpuppyapp.puppygit.dev.proFeatureEnabled
-import com.catpuppyapp.puppygit.dto.Box
 import com.catpuppyapp.puppygit.dto.FileItemDto
 import com.catpuppyapp.puppygit.etc.Ret
 import com.catpuppyapp.puppygit.git.IgnoreItem
@@ -1357,7 +1356,7 @@ fun FilesInnerPage(
                         breadList.forEachIndexed { idx, it ->
                             item {
                                 val separator = Cons.slash
-                                val breadCrumbDropDownMenuExpendState = rememberSaveable { mutableStateOf(false)}
+                                val breadCrumbDropDownMenuExpandState = rememberSaveable { mutableStateOf(false) }
                                 val curItemIsRoot = idx==0  // root path '/'
 //                            val curPathIsRoot = currentPath.value == separator
 //                            val curPathIsRootAndCurItemIsRoot = curPathIsRoot && curItemIsRoot
@@ -1375,7 +1374,7 @@ fun FilesInnerPage(
                                     modifier = Modifier.combinedClickable(
                                         onLongClick = {  //long press will show menu for pressed path
                                             haptic.performHapticFeedback(HapticFeedbackType.LongPress)
-                                            breadCrumbDropDownMenuExpendState.value = true
+                                            breadCrumbDropDownMenuExpandState.value = true
                                         }
                                     ) { //onClick
                                         //点击跳转路径
@@ -1388,21 +1387,21 @@ fun FilesInnerPage(
                                 )
 
 
-                                if(breadCrumbDropDownMenuExpendState.value){
+                                if(breadCrumbDropDownMenuExpandState.value){
                                     Column {
                                         val enableMenuItem = true
                                         //菜单列表
                                         DropdownMenu(
                                             offset = DpOffset(x=0.dp, y=20.dp),
-                                            expanded = breadCrumbDropDownMenuExpendState.value,
-                                            onDismissRequest = { breadCrumbDropDownMenuExpendState.value = false }
+                                            expanded = breadCrumbDropDownMenuExpandState.value,
+                                            onDismissRequest = { breadCrumbDropDownMenuExpandState.value = false }
                                         ) {
 
                                             DropdownMenuItem(
                                                 enabled = enableMenuItem,
                                                 text = { Text(stringResource(R.string.copy_full_path)) },
                                                 onClick = {
-                                                    breadCrumbDropDownMenuExpendState.value = false
+                                                    breadCrumbDropDownMenuExpandState.value = false
                                                     copyThenShowCopied(it.fullPath)
                                                 }
                                             )
@@ -1413,7 +1412,7 @@ fun FilesInnerPage(
                                                     enabled = enableMenuItem,
                                                     text = { Text(stringResource(R.string.copy_repo_relative_path)) },
                                                     onClick = {
-                                                        breadCrumbDropDownMenuExpendState.value = false
+                                                        breadCrumbDropDownMenuExpandState.value = false
                                                         copyRepoRelativePath(it.fullPath)
                                                     }
                                                 )
@@ -1421,7 +1420,7 @@ fun FilesInnerPage(
                                                     enabled = enableMenuItem,
                                                     text = { Text(stringResource(R.string.import_as_repo)) },
                                                     onClick = {
-                                                        breadCrumbDropDownMenuExpendState.value = false
+                                                        breadCrumbDropDownMenuExpandState.value = false
                                                         initImportAsRepoDialog(listOf(it.fullPath))
                                                     }
                                                 )
@@ -1429,7 +1428,7 @@ fun FilesInnerPage(
                                                     enabled = enableMenuItem,
                                                     text = { Text(stringResource(R.string.init_repo)) },
                                                     onClick = {
-                                                        breadCrumbDropDownMenuExpendState.value = false
+                                                        breadCrumbDropDownMenuExpandState.value = false
                                                         initInitRepoDialog(listOf(it.fullPath))
                                                     }
                                                 )
@@ -1437,7 +1436,7 @@ fun FilesInnerPage(
                                                     enabled = enableMenuItem,
                                                     text = { Text(stringResource(R.string.show_in_repos)) },
                                                     onClick = {
-                                                        breadCrumbDropDownMenuExpendState.value = false
+                                                        breadCrumbDropDownMenuExpandState.value = false
                                                         showInRepos(it.fullPath)
                                                     }
                                                 )
@@ -1445,7 +1444,7 @@ fun FilesInnerPage(
                                                     enabled = enableMenuItem,
                                                     text = { Text(stringResource(R.string.show_in_changelist)) },
                                                     onClick = {
-                                                        breadCrumbDropDownMenuExpendState.value = false
+                                                        breadCrumbDropDownMenuExpandState.value = false
                                                         showInChangeList(it.fullPath)
                                                     }
                                                 )
@@ -1456,7 +1455,7 @@ fun FilesInnerPage(
                                                 enabled = enableMenuItem,
                                                 text = { Text(stringResource(R.string.details)) },
                                                 onClick = {
-                                                    breadCrumbDropDownMenuExpendState.value = false
+                                                    breadCrumbDropDownMenuExpandState.value = false
                                                     // bread crumb dto lack some info for faster loading, so need requrey a new dto when show details
                                                     //面包屑的dto是缩水的，为了加载快而没查最后修改时间和大小等在面包屑用不到的信息，因此显示前需要重新查下dto
                                                     initDetailsDialog(listOf(FileItemDto.genFileItemDtoByFile(File(it.fullPath), activityContext)))

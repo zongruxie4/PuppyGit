@@ -88,7 +88,6 @@ import com.catpuppyapp.puppygit.git.Upstream
 import com.catpuppyapp.puppygit.play.pro.R
 import com.catpuppyapp.puppygit.screen.functions.filterModeActuallyEnabled
 import com.catpuppyapp.puppygit.screen.functions.filterTheList
-import com.catpuppyapp.puppygit.screen.functions.goToCloneScreen
 import com.catpuppyapp.puppygit.screen.functions.goToStashPage
 import com.catpuppyapp.puppygit.screen.functions.triggerReFilter
 import com.catpuppyapp.puppygit.screen.shared.SharedState
@@ -1861,26 +1860,25 @@ fun RepoInnerPage(
                     Text(stringResource(R.string.loading))
                 }
             }else {
-                // 忽然发现应该是 expand 不是 expend
-                val dropDownMenuExpendState = rememberSaveable { mutableStateOf(false) }
+                val dropDownMenuExpandState = rememberSaveable { mutableStateOf(false) }
 
                 PageCenterIconButton(
                     contentPadding = contentPadding,
                     onClick = {
-                        dropDownMenuExpendState.value = !dropDownMenuExpendState.value
+                        dropDownMenuExpandState.value = !dropDownMenuExpandState.value
 
                         //由于弹窗有隐形遮罩，所以其实点击设为true即可，不需要设为切换，
                         // 之后就算再点图标，其实也不会点到图标上而是点到遮罩上，
                         // 而是会触发弹窗的on dismiss，然后隐藏弹窗
-//                        dropDownMenuExpendState.value = true
+//                        dropDownMenuExpandState.value = true
                     },
                     icon = Icons.Filled.Add,
                     iconDesc = stringResource(R.string.add_a_repo),
                     text = stringResource(R.string.add_a_repo),
                     attachContent = {
                         AddRepoDropDownMenu(
-                            showMenu = dropDownMenuExpendState.value,
-                            closeMenu = { dropDownMenuExpendState.value = false },
+                            showMenu = dropDownMenuExpandState.value,
+                            closeMenu = { dropDownMenuExpandState.value = false },
                             importOnClick = {
                                 showImportRepoDialog.value = true
                             }

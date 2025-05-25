@@ -298,7 +298,7 @@ fun ReflogListScreen(
         )
     }
 
-    val dropDownMenuExpendState = rememberSaveable { mutableStateOf(false)}
+    val dropDownMenuExpandState = rememberSaveable { mutableStateOf(false) }
     val switchRef = { newRef: String ->
         refName.value = newRef
         changeStateTriggerRefreshPage(needRefresh)
@@ -337,7 +337,7 @@ fun ReflogListScreen(
                         FilterTextField(filterKeyWord = filterKeyword, loading = searching.value)
                     }else {
                         TitleDropDownMenu(
-                            dropDownMenuExpendState = dropDownMenuExpendState,
+                            dropDownMenuExpandState = dropDownMenuExpandState,
                             curSelectedItem = refName.value,
                             itemList = allRefList.value,
                             titleClickEnabled = true,
