@@ -12,8 +12,8 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
-import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import com.catpuppyapp.puppygit.constants.Cons
 import com.catpuppyapp.puppygit.data.entity.RepoEntity
 import com.catpuppyapp.puppygit.git.CommitDto
@@ -80,9 +80,9 @@ fun RepoInfoDialogItemSpacer() {
 }
 
 @Composable
-fun ShortCommitInfo(title:String, name:String, commitDto:CommitDto, titleFontSize: TextUnit, msgMaxLines:Int=6) {
+fun ShortCommitInfo(title:String, name:String, commitDto:CommitDto, msgMaxLines:Int=6) {
     if(title.isNotBlank()) {
-        Row { Text(title, fontSize=titleFontSize, fontWeight = FontWeight.Bold) }
+        Row { InDialogTitle(title) }
     }
 
     RepoInfoDialogItemSpacer()
@@ -107,7 +107,7 @@ fun ShortCommitInfo(title:String, name:String, commitDto:CommitDto, titleFontSiz
 }
 
 @Composable
-fun CompareInfo(leftName:String, leftCommitDto: CommitDto, rightName:String, rightCommitDto: CommitDto, titleFontSize: TextUnit) {
+fun CompareInfo(leftName:String, leftCommitDto: CommitDto, rightName:String, rightCommitDto: CommitDto) {
     Row {
         Text(
             stringResource(R.string.comparing_label) + ": " +Libgit2Helper.getLeftToRightDiffCommitsText(leftName, rightName, false)
@@ -119,11 +119,19 @@ fun CompareInfo(leftName:String, leftCommitDto: CommitDto, rightName:String, rig
     HorizontalDivider()
 
     RepoInfoDialogItemSpacer()
-    ShortCommitInfo(stringResource(R.string.left), leftName, leftCommitDto, titleFontSize)
+    ShortCommitInfo(stringResource(R.string.left), leftName, leftCommitDto)
     RepoInfoDialogItemSpacer()
 
     HorizontalDivider()
 
     RepoInfoDialogItemSpacer()
-    ShortCommitInfo(stringResource(R.string.right), rightName, rightCommitDto, titleFontSize)
+    ShortCommitInfo(stringResource(R.string.right), rightName, rightCommitDto)
+}
+
+/**
+ * 弹窗内部的标题文本，一般比普通文本大些
+ */
+@Composable
+fun InDialogTitle(text:String) {
+    Text(text, fontSize = 17.sp, fontWeight = FontWeight.Bold)
 }
