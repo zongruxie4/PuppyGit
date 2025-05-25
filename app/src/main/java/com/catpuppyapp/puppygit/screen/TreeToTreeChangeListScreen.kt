@@ -34,6 +34,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.unit.sp
 import com.catpuppyapp.puppygit.compose.CompareInfo
 import com.catpuppyapp.puppygit.compose.DropDownMenuItemText
 import com.catpuppyapp.puppygit.compose.FilterTextField
@@ -219,16 +220,19 @@ fun TreeToTreeChangeListScreen(
 
     if(showInfoDialog.value) {
         RepoInfoDialog(changeListCurRepo.value, showInfoDialog, prependContent = {
+            val titleFontSize = 17.sp
             Row {
-                Text(titleDesc.value, fontWeight = FontWeight.Bold)
+                Text(titleDesc.value, fontSize = titleFontSize, fontWeight = FontWeight.Bold)
             }
 
+            RepoInfoDialogItemSpacer()
 
             CompareInfo(
                 leftName = actuallyLeftName.value,
                 leftCommitDto = actuallyLeftCommitDto.value,
                 rightName = actuallyRightName.value,
-                rightCommitDto = actuallyRightCommitDto.value
+                rightCommitDto = actuallyRightCommitDto.value,
+                titleFontSize = titleFontSize,
             )
 
             RepoInfoDialogItemSpacer()
@@ -238,7 +242,7 @@ fun TreeToTreeChangeListScreen(
 
             //下面会显示仓库信息，这里弄个标题，看着和上面的样式比较搭
             Row {
-                Text(stringResource(R.string.repo), fontWeight = FontWeight.Bold)
+                Text(stringResource(R.string.repo), fontSize = titleFontSize, fontWeight = FontWeight.Bold)
             }
 
         })

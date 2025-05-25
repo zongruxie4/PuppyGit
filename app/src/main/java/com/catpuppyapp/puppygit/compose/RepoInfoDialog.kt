@@ -12,6 +12,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.dp
 import com.catpuppyapp.puppygit.constants.Cons
 import com.catpuppyapp.puppygit.data.entity.RepoEntity
@@ -79,10 +80,12 @@ fun RepoInfoDialogItemSpacer() {
 }
 
 @Composable
-fun ShortCommitInfo(title:String, name:String, commitDto:CommitDto, msgMaxLines:Int=6) {
+fun ShortCommitInfo(title:String, name:String, commitDto:CommitDto, titleFontSize: TextUnit, msgMaxLines:Int=6) {
     if(title.isNotBlank()) {
-        Row { Text(title, fontWeight = FontWeight.Bold) }
+        Row { Text(title, fontSize=titleFontSize, fontWeight = FontWeight.Bold) }
     }
+
+    RepoInfoDialogItemSpacer()
 
     // name用来显示条目名字，例如用户在比较引用 origin/a 和 main 的差异，这两个就是name，name一般是用户输入的，比如在diff弹窗输入的引用名或hash，
     // 如果不加这个参数，解析之后会变成commit hash，用户可能不知道在比较什么
@@ -104,7 +107,7 @@ fun ShortCommitInfo(title:String, name:String, commitDto:CommitDto, msgMaxLines:
 }
 
 @Composable
-fun CompareInfo(leftName:String, leftCommitDto: CommitDto, rightName:String, rightCommitDto: CommitDto) {
+fun CompareInfo(leftName:String, leftCommitDto: CommitDto, rightName:String, rightCommitDto: CommitDto, titleFontSize: TextUnit) {
     Row {
         Text(
             stringResource(R.string.comparing_label) + ": " +Libgit2Helper.getLeftToRightDiffCommitsText(leftName, rightName, false)
@@ -116,11 +119,11 @@ fun CompareInfo(leftName:String, leftCommitDto: CommitDto, rightName:String, rig
     HorizontalDivider()
 
     RepoInfoDialogItemSpacer()
-    ShortCommitInfo(stringResource(R.string.left), leftName, leftCommitDto)
+    ShortCommitInfo(stringResource(R.string.left), leftName, leftCommitDto, titleFontSize)
     RepoInfoDialogItemSpacer()
 
     HorizontalDivider()
 
     RepoInfoDialogItemSpacer()
-    ShortCommitInfo(stringResource(R.string.right), rightName, rightCommitDto)
+    ShortCommitInfo(stringResource(R.string.right), rightName, rightCommitDto, titleFontSize)
 }
