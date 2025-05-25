@@ -24,6 +24,8 @@ import com.catpuppyapp.puppygit.utils.fabBasePadding
 object MyStyleKt{
     val defaultHorizontalPadding = 10.dp
     val defaultIconSize = 40.dp
+    val defaultIconSizeSmaller = 30.dp
+    val defaultIconSizeLarger = 60.dp
 
 
     object TextItem {

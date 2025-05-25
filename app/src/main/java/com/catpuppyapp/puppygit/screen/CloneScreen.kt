@@ -728,10 +728,13 @@ fun CloneScreen(
                 )
 
                 IconButton(
-                    modifier = Modifier.size(MyStyleKt.defaultIconSize),
                     onClick = { showAddStoragePathDialog.value = true }
                 ) {
-                    Icon(imageVector = Icons.Filled.Add, contentDescription = stringResource(R.string.add_storage_path))
+                    Icon(
+                        imageVector = Icons.Filled.Add,
+                        contentDescription = stringResource(R.string.add_storage_path),
+                        modifier = Modifier.size(MyStyleKt.defaultIconSizeSmaller)
+                    )
                 }
 
             }
