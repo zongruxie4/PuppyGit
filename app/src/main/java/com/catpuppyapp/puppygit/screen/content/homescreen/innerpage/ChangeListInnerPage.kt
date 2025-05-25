@@ -13,7 +13,6 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyListState
-import androidx.compose.foundation.rememberScrollState
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.Label
 import androidx.compose.material.icons.filled.DoneAll
@@ -2215,8 +2214,8 @@ fun ChangeListInnerPage(
         stringResource(R.string.show_in_files),
 
         // left to local，相当于比较父提交和local，right to local，相当于比较当前提交和local
-        stringResource(R.string.left)+".."+stringResource(R.string.local),
-        stringResource(R.string.right)+".."+stringResource(R.string.local),
+        Libgit2Helper.getLeftToRightFullHash(stringResource(R.string.left), stringResource(R.string.local)) ,
+        Libgit2Helper.getLeftToRightFullHash(stringResource(R.string.right), stringResource(R.string.local)) ,
 
         stringResource(R.string.file_history),
         stringResource(R.string.copy_full_path),

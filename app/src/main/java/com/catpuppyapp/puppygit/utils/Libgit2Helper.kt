@@ -6893,6 +6893,10 @@ object Libgit2Helper {
         }
     }
 
+    fun getLeftToRightFullHash(left:String, right:String):String {
+        return "$left..$right"
+    }
+
     fun getRepoLock(repoId:String):Mutex {
         return repoLockMap.getOrPut(repoId) {
             //这锁不可重入
