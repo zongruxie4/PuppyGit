@@ -55,6 +55,7 @@ import com.catpuppyapp.puppygit.constants.Cons
 import com.catpuppyapp.puppygit.constants.PageRequest
 import com.catpuppyapp.puppygit.data.entity.RepoEntity
 import com.catpuppyapp.puppygit.play.pro.R
+import com.catpuppyapp.puppygit.screen.functions.goToCloneScreen
 import com.catpuppyapp.puppygit.screen.functions.goToCommitListScreen
 import com.catpuppyapp.puppygit.style.MyStyleKt
 import com.catpuppyapp.puppygit.ui.theme.Theme
@@ -587,7 +588,9 @@ fun RepoCard(
                             tooltipText = stringResource(R.string.edit_repo),
                             iconModifier = Modifier.size(iconSize),
                             pressedCircleSize = iconPressedSize,
-                        ) { navController.navigate(Cons.nav_CloneScreen+"/"+repoDto.id) }
+                        ) {
+                            goToCloneScreen(repoDto.id)
+                        }
 
                     }
                 }

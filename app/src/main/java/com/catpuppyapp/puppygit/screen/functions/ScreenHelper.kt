@@ -458,3 +458,13 @@ fun goToDiffScreen(
     }
 }
 
+/**
+ * repoId 若为空字符串则代表新建，否则编辑已存在仓库
+ */
+fun goToCloneScreen(repoId: String="") {
+    doJobWithMainContext {
+        AppModel.navController.navigate(
+            Cons.nav_CloneScreen+"/${repoId.ifBlank { Cons.dbInvalidNonEmptyId }}"
+        )
+    }
+}

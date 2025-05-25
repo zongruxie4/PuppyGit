@@ -109,7 +109,10 @@ private const val TAG = "CloneScreen"
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun CloneScreen(
-    repoId: String?,  //编辑已存在仓库的时候，用得着这个
+    // if id is blank or null path to "CloneScreen/null", else path to "CloneScreen/repoId"
+    //repoId传null，等于新建模式；非null repoId则代表编辑对应repo
+    repoId: String,
+
     naviUp: () -> Boolean,
 ) {
 
@@ -120,7 +123,7 @@ fun CloneScreen(
     val inDarkTheme = Theme.inDarkTheme
 
 
-    val isEditMode = repoId != null && repoId.isNotBlank() && repoId != "null"
+    val isEditMode = repoId.isNotBlank() && repoId != Cons.dbInvalidNonEmptyId
     val repoFromDb = mutableCustomStateOf(keyTag=stateKeyTag, keyName = "repoFromDb", initValue = RepoEntity(id = ""))
     //克隆完成后更新此变量，然后在重新渲染时直接返回。（注：因为无法在coroutine里调用naviUp()，所以才这样实现“存储完成返回上级页面”的功能）
 //    val isTimeNaviUp = rememberSaveable { mutableStateOf(false) }
@@ -1077,7 +1080,11 @@ fun CloneScreen(
             if (isEditMode) {  //如果是编辑模式，查询仓库信息
                 val repoDb = AppModel.dbContainer.repoRepository
                 val credentialDb = AppModel.dbContainer.credentialRepository
-                val repo = repoDb.getById(repoId!!) ?: return@job
+                val repo = repoDb.getById(repoId)
+                if(repo == null) {
+                    Msg.requireShowLongDuration(activityContext.getString(R.string.repo_id_invalid))
+                    return@job
+                }
                 gitUrlType.intValue = Libgit2Helper.getGitUrlType(repo.cloneUrl)  //更新下giturl type
                 gitUrl.value = repo.cloneUrl
                 repoName.value = TextFieldValue(repo.repoName)

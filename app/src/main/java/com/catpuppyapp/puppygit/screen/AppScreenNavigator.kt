@@ -124,7 +124,7 @@ fun AppScreenNavigator() {
         }
         composable(Cons.nav_CloneScreen + "/{repoId}") {
             CloneScreen(
-                it.arguments?.getString("repoId"),
+                it.arguments?.getString("repoId") ?: "",
                 naviUp = { navController.navigateUp() },
             )
         }

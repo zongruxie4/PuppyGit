@@ -52,6 +52,7 @@ fun PageCenterIconButton(
     text:String,
     elseContent: @Composable () -> Unit = {},  //这参数别放最后，避免和另一个重载版本的content搞混
     condition: Boolean = true,
+    attachContent: @Composable () -> Unit = {},
 ) {
     // condition为true显示图标和文字，否则显示其他内容
     PageCenterIconButton(contentPadding = contentPadding, condition = condition, elseContent = elseContent, onClick = onClick) {
@@ -72,5 +73,7 @@ fun PageCenterIconButton(
                 fontSize = MyStyleKt.TextSize.default
             )
         }
+
+        attachContent()
     }
 }
