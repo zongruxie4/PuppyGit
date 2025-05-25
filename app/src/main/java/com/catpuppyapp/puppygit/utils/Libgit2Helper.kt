@@ -6885,11 +6885,18 @@ object Libgit2Helper {
         return false
     }
 
-    fun getLeftToRightDiffCommitsText(left:String, right:String, swap:Boolean):String{
+    fun maybeIsHash(str:String):Boolean {
+        return Cons.gitSha1HashRegex.matches(str)
+    }
+
+    fun getLeftToRightDiffCommitsText(left:String, right:String, swap:Boolean):String {
+        val right = if(maybeIsHash(right)) Libgit2Helper.getShortOidStrByFull(right) else right
+        val left = if(maybeIsHash(left)) Libgit2Helper.getShortOidStrByFull(left) else left
+
         return if (swap) {
-            Libgit2Helper.getShortOidStrByFull(right) + ".." + Libgit2Helper.getShortOidStrByFull(left)
+            getLeftToRightFullHash(right, left)
         } else {
-            Libgit2Helper.getShortOidStrByFull(left) + ".." + Libgit2Helper.getShortOidStrByFull(right)
+            getLeftToRightFullHash(left, right)
         }
     }
 

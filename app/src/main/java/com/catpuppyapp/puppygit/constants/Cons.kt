@@ -239,6 +239,11 @@ object Cons {
 
 
     val gitShortCommitHashRange = IntRange(start=0, endInclusive=6)  //0到6，共7位，git默认7位，但jetbrains的ide短CommitHash是8位，我本来用的8位，但git默认是7位，所以，想了想，我还是用7位吧
+    const val maxGitSha1HashStrLength = 40
+    // [7,40] 位，16进制字符，小写字母，当然，小于7位也可能是hash，但小于7位根本没必要截断显示，所以这里不判断是否小于7位
+    //主要用来在截断hash时判断一个字符串是否是hash，若是则截断，若不是（例如origin/main），则不截断
+    //String.toRegex()会调用Regex()，然后调用Pattern.compile()生成Pattern实例，而Pattern实例是线程安全的，所以，toRegex()生成的对象也是线程安全的
+    val gitSha1HashRegex = "^[0-9a-f]{${gitShortCommitHashRange.endInclusive+1},$maxGitSha1HashStrLength}$".toRegex();
 
     const val gitWellKnownSshUserName = "git"
     //git 相关变量结束
