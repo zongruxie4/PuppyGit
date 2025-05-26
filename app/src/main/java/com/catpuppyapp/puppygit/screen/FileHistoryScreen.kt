@@ -8,12 +8,10 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Close
@@ -58,7 +56,6 @@ import com.catpuppyapp.puppygit.compose.BottomSheetItem
 import com.catpuppyapp.puppygit.compose.CommitListDialog
 import com.catpuppyapp.puppygit.compose.CopyableDialog
 import com.catpuppyapp.puppygit.compose.CreatePatchSuccessDialog
-import com.catpuppyapp.puppygit.compose.DiffCommitsDialog
 import com.catpuppyapp.puppygit.compose.FileHistoryItem
 import com.catpuppyapp.puppygit.compose.FileHistoryRestoreDialog
 import com.catpuppyapp.puppygit.compose.FilterTextField
@@ -193,7 +190,6 @@ fun FileHistoryScreen(
     val listState = rememberLazyListState()
     //如果再多几个"mode"，就改用字符串判断，直接把mode含义写成常量
     val showTopBarMenu = rememberSaveable { mutableStateOf(false)}
-    val showDiffCommitDialog = rememberSaveable { mutableStateOf(false)}
     val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = MyStyleKt.BottomSheet.skipPartiallyExpanded)
     val showBottomSheet = rememberSaveable { mutableStateOf(false)}
 //    val curCommit = rememberSaveable{ mutableStateOf(CommitDto()) }
@@ -562,16 +558,6 @@ fun FileHistoryScreen(
     val requireBlinkIdx = rememberSaveable{mutableIntStateOf(-1)}
     val lastClickedItemKey = rememberSaveable{ SharedState.fileHistory_LastClickedItemKey }
 
-    val diffCommitsDialogCommit1 = rememberSaveable { mutableStateOf("")}
-    val diffCommitsDialogCommit2 = rememberSaveable { mutableStateOf("")}
-    if(showDiffCommitDialog.value) {
-        DiffCommitsDialog(
-            showDiffCommitDialog,
-            diffCommitsDialogCommit1,
-            diffCommitsDialogCommit2,
-            curRepo.value
-        )
-    }
 
 
     val savePatchPath= rememberSaveable { mutableStateOf("")}
