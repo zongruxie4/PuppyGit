@@ -3709,6 +3709,9 @@ private suspend fun changeListInit(
 //                    }
 //                }
 
+        //先清空parent list，后面若需要，会查询，另外，和local比较不需要parents list
+        commitParentList.clear()
+
         Repository.open(repoFromDb.fullSavePath).use { repo ->
             //查询head然后检查是否diff to head
 //                    val headCommitRet = Libgit2Helper.getHeadCommit(repo)
@@ -3721,8 +3724,14 @@ private suspend fun changeListInit(
 //                    }
 
 
-            //如果1或2是worktree ( local )，则用 treeToWorkTree 函数
-            if(Libgit2Helper.CommitUtil.isLocalCommitHash(commit1OidStr)
+            //获取ChangeList，若commitForQueryParents有效，则查询parent list
+
+            //两个提交相同，changeList肯定为空
+            if(commit1OidStr == commit2OidStr) {
+                itemList.value.clear()
+
+                //如果1或2是worktree ( local )，则用 treeToWorkTree 函数
+            } else if(Libgit2Helper.CommitUtil.isLocalCommitHash(commit1OidStr)
                 || Libgit2Helper.CommitUtil.isLocalCommitHash(commit2OidStr)
             ) {  // tree to worktree
                 //如果1是 "local" 则需要反转比较的两个提交对象
@@ -3753,8 +3762,6 @@ private suspend fun changeListInit(
                 itemList.value.clear()
                 itemList.value.addAll(cl)
 
-                //和local比较不需要parents list
-                commitParentList.clear()
             }else {  // tree to tree，两个tree都不是local(worktree)
                 val tree1 = Libgit2Helper.resolveTree(repo, commit1OidStr)
                 if(tree1==null) {
@@ -3789,7 +3796,6 @@ private suspend fun changeListInit(
                         return
                     }
 
-                    commitParentList.clear()
                     commitParentList.addAll(parentList)
                 }
             }

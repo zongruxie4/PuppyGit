@@ -244,6 +244,8 @@ object Cons {
     //主要用来在截断hash时判断一个字符串是否是hash，若是则截断，若不是（例如origin/main），则不截断
     //String.toRegex()会调用Regex()，然后调用Pattern.compile()生成Pattern实例，而Pattern实例是线程安全的，所以，toRegex()生成的对象也是线程安全的
     val gitSha1HashRegex = "^[0-9a-f]{${gitShortCommitHashRange.endInclusive+1},$maxGitSha1HashStrLength}$".toRegex();
+    //这个也是hash regex，但限制长度为 [1,40]
+    val gitSha1HashMinLen1Regex = "^[0-9a-f]{1,$maxGitSha1HashStrLength}$".toRegex();
 
     const val gitWellKnownSshUserName = "git"
     //git 相关变量结束

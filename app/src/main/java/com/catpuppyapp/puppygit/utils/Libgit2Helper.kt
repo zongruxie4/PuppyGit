@@ -115,10 +115,10 @@ object Libgit2Helper {
         }
 
         /**
-         * 未检查是否全16进制字符，所以即使返回真也不一定是有效commit，但如果返回假，一定不是有效commit
+         * 即使返回真也不一定是有效commit，只是格式可能正确罢了，但如果返回假，一定不是有效commit
          */
         fun mayGoodCommitHash(c:String):Boolean {
-            return c.isNotBlank() && c != Cons.git_AllZeroOidStr
+            return c.isNotBlank() && c != Cons.git_AllZeroOidStr && Cons.gitSha1HashMinLen1Regex.matches(c)
         }
     }
 
