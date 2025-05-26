@@ -699,7 +699,7 @@
     <string name="push_force_failed">Push(Force) Failed</string>
     <string name="push_force_success">Push(Force) Success</string>
     <string name="compare_to_head">Compare to HEAD</string>
-    <!-- due to "Compare" is too long, but in some menu items, better use a shorter word for display well, so, I use "Diff" instead of it -->
+    <!-- due to "Compare to HEAD" is too long, but in some menu items, better use a shorter word for display well, so, I use "Diff to HEAD" instead of it -->
     <string name="diff_to_head">Diff To HEAD</string>
     <string name="cherrypick">Cherrypick</string>
     <string name="create_patch">Create Patch</string>
