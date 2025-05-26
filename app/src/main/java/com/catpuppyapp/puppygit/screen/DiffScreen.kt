@@ -92,6 +92,7 @@ import com.catpuppyapp.puppygit.dto.Box
 import com.catpuppyapp.puppygit.dto.MenuIconBtnItem
 import com.catpuppyapp.puppygit.dto.MenuTextItem
 import com.catpuppyapp.puppygit.git.CompareLinePair
+import com.catpuppyapp.puppygit.git.DiffItemSaver
 import com.catpuppyapp.puppygit.git.DiffableItem
 import com.catpuppyapp.puppygit.git.PuppyHunkAndLines
 import com.catpuppyapp.puppygit.git.PuppyLine
@@ -2359,7 +2360,11 @@ fun DiffScreen(
 
 
                     Repository.open(repoFromDb.fullSavePath).use { repo->
-                        val diffItemSaver = if(fromTo == Cons.gitDiffFromTreeToTree || fromTo==Cons.gitDiffFileHistoryFromTreeToLocal || fromTo==Cons.gitDiffFileHistoryFromTreeToTree){  //从提交列表点击提交进入
+                        val diffItemSaver = if(treeOid1Str == treeOid2Str) {
+//                            println("两个hash一样，老铁！")
+                            //两hash一样，不可能有差异，返回空结果即可
+                            DiffItemSaver()
+                        } else if(fromTo == Cons.gitDiffFromTreeToTree || fromTo==Cons.gitDiffFileHistoryFromTreeToLocal || fromTo==Cons.gitDiffFileHistoryFromTreeToTree){  //从提交列表点击提交进入
                             val diffItemSaver = if(Libgit2Helper.CommitUtil.isLocalCommitHash(treeOid1Str) || Libgit2Helper.CommitUtil.isLocalCommitHash(treeOid2Str)) {  // tree to work tree, oid1 or oid2 is local, both local will cause err
                                 val reverse = Libgit2Helper.CommitUtil.isLocalCommitHash(treeOid1Str)
     //                                    println("1:$treeOid1Str, 2:$treeOid2Str, reverse=$reverse")
