@@ -200,6 +200,7 @@ class MainActivity : ComponentActivity() {
         // 也不需要载入文件，所以这里无论如何都不需要再执行editor的on resume
         if(IntentHandler.needConsume(intent)) {
             setMainActivityLifeCycle(MainActivityLifeCycle.IGNORE_ONCE_ON_RESUME)
+            MyLog.d(TAG, "has new intent need consume, will cancel ON_RESUME event once for editor")
         }
 
         //Activity改单例了，得靠这个获取新intent
