@@ -120,10 +120,13 @@ import com.github.git24j.core.Repository.StateT
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.sync.Mutex
+import kotlinx.coroutines.sync.withLock
 
 
 private const val TAG = "HomeScreen"
 private const val stateKeyTag = TAG
+
+private val refreshLock = Mutex()
 
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -1573,196 +1576,199 @@ fun HomeScreen(
         //test
 
         doJobThenOffLoading {
-            try {
-                //有时候明明设置过了还会显示欢迎弹窗，做些额外判断看看好不好用
-                if(showWelcomeToNewUser.value) {
-                    val newSettings = SettingsUtil.getSettingsSnapshot()
-                    if(PrefMan.isFirstUse(activityContext) && newSettings.globalGitConfig.username.isEmpty() && newSettings.globalGitConfig.email.isEmpty()) {
-                        showSetGlobalGitUsernameAndEmailDialog.value = true
-                    }else {
-                        closeWelcome()
-                    }
-                }
+            refreshLock.withLock {
 
-                //恢复上次退出页面
-                val startPageMode = settingsSnapshot.value.startPageMode
-                if (startPageMode == SettingsCons.startPageMode_rememberLastQuit) {
-                    //从配置文件恢复上次退出页面
-                    currentHomeScreen.intValue = settingsSnapshot.value.lastQuitHomeScreen
-                    //设置初始化完成，之后就会通过更新页面值的代码来在页面值变化时更新配置文件中的值了
-                    initDone.value = true
-                }
+                try {
+                    //有时候明明设置过了还会显示欢迎弹窗，做些额外判断看看好不好用
+                    if(showWelcomeToNewUser.value) {
+                        val newSettings = SettingsUtil.getSettingsSnapshot()
+                        if(PrefMan.isFirstUse(activityContext) && newSettings.globalGitConfig.username.isEmpty() && newSettings.globalGitConfig.email.isEmpty()) {
+                            showSetGlobalGitUsernameAndEmailDialog.value = true
+                        }else {
+                            closeWelcome()
+                        }
+                    }
+
+                    //恢复上次退出页面
+                    val startPageMode = settingsSnapshot.value.startPageMode
+                    if (startPageMode == SettingsCons.startPageMode_rememberLastQuit) {
+                        //从配置文件恢复上次退出页面
+                        currentHomeScreen.intValue = settingsSnapshot.value.lastQuitHomeScreen
+                        //设置初始化完成，之后就会通过更新页面值的代码来在页面值变化时更新配置文件中的值了
+                        initDone.value = true
+                    }
 
 //                val activity = activityContext.findActivity()
 //                MyLog.d(TAG, "activity==null: ${activity == null}")
-                //检查是否存在intent，如果存在，则切换到导入模式
+                    //检查是否存在intent，如果存在，则切换到导入模式
 //                if (activity != null) {
-                if (true) {  //检查activity是否为null没意义了，若为null怎么会执行这个页面的这块代码？之前主要是需要通过activity获取intent，现在不用了，所以直接设为true即可，但为了方便日后修改，不删除此if代码块
+                    if (true) {  //检查activity是否为null没意义了，若为null怎么会执行这个页面的这块代码？之前主要是需要通过activity获取intent，现在不用了，所以直接设为true即可，但为了方便日后修改，不删除此if代码块
 //                    val intent = activity.intent  //单例之后，这玩意老出问题，废弃了，改用状态变量获取
 
-                    val intent = IntentHandler.intent.value  //通过状态变量获取intent
+                        val intent = IntentHandler.intent.value  //通过状态变量获取intent
 
-                    MyLog.d(TAG, "intent==null: ${intent == null}")
+                        MyLog.d(TAG, "intent==null: ${intent == null}")
 
-                    if (intent != null) {
+                        if (intent != null) {
 
-                        //一进入代码块立即设为已消费，确保intent只被消费一次，不然你通过导入模式进来，一进二级页面，这变量没更新，
-                        // 会重新读取intent中的数据再次启动导入模式，其他使用intent的场景也有这个问题，
-                        // 比如点击service通知进入changelist页面，然后再切换到repos页面，
-                        // 再点进随便一个二级页面，再返回，又会重入此代码块，又回到changelist...
-                        val curIntentConsumed = intentConsumed.value
-                        MyLog.d(TAG, "curIntentConsumed: $curIntentConsumed, intent.action: ${intent.action}, intent.extras==null: ${intent.extras == null}, intent.data==null: ${intent.data == null}")
+                            //一进入代码块立即设为已消费，确保intent只被消费一次，不然你通过导入模式进来，一进二级页面，这变量没更新，
+                            // 会重新读取intent中的数据再次启动导入模式，其他使用intent的场景也有这个问题，
+                            // 比如点击service通知进入changelist页面，然后再切换到repos页面，
+                            // 再点进随便一个二级页面，再返回，又会重入此代码块，又回到changelist...
+                            val curIntentConsumed = intentConsumed.value
+                            MyLog.d(TAG, "curIntentConsumed: $curIntentConsumed, intent.action: ${intent.action}, intent.extras==null: ${intent.extras == null}, intent.data==null: ${intent.data == null}")
 
-                        intentConsumed.value = true
-                        val intentConsumed = Unit // avoid mistake using
+                            intentConsumed.value = true
+                            val intentConsumed = Unit // avoid mistake using
 
-                        // import file or jump to specified screen
-                        // 注意这个ACTION_VIEW其实也有可能是写权限，具体取决于flag，后面有做判断
-                        val requireEditFile = intent.action.let { it == Intent.ACTION_VIEW || it == Intent.ACTION_EDIT }
-                        val extras = intent.extras
+                            // import file or jump to specified screen
+                            // 注意这个ACTION_VIEW其实也有可能是写权限，具体取决于flag，后面有做判断
+                            val requireEditFile = intent.action.let { it == Intent.ACTION_VIEW || it == Intent.ACTION_EDIT }
+                            val extras = intent.extras
 
-                        //importListConsumed 确保每个Activity的文件列表只被消费一次(20240706: 修复以导入模式启动app再进入子页面再返回会再次触发导入模式的bug)
-                        if (requireEditFile || extras != null) {
-                            //if need import files, go to Files, else go to page which matched to the page id in the extras
-                            //if need import files, go to Files, else go to page which matched to the page id in the extras
+                            //importListConsumed 确保每个Activity的文件列表只被消费一次(20240706: 修复以导入模式启动app再进入子页面再返回会再次触发导入模式的bug)
+                            if (requireEditFile || extras != null) {
+                                //if need import files, go to Files, else go to page which matched to the page id in the extras
+                                //if need import files, go to Files, else go to page which matched to the page id in the extras
 
 
-                            if (!curIntentConsumed) {  //如果列表已经消费过一次，不重新导入，有可能通过系统分享菜单启动app，然后切换到后台，然后再从后台启动app会发生这种情况，但用户有可能已经在上次进入app后点击进入其他页面，所以这时再启动导入模式是不合逻辑的
-                                //是否请求编辑文件
-                                if(requireEditFile) {
-                                    val uri: Uri? = intent.data
-                                    if(uri != null) {
-                                        //若无写权限，则以只读方式打开
-                                        val expectReadOnly = (intent.flags and Intent.FLAG_GRANT_WRITE_URI_PERMISSION) == 0
+                                if (!curIntentConsumed) {  //如果列表已经消费过一次，不重新导入，有可能通过系统分享菜单启动app，然后切换到后台，然后再从后台启动app会发生这种情况，但用户有可能已经在上次进入app后点击进入其他页面，所以这时再启动导入模式是不合逻辑的
+                                    //是否请求编辑文件
+                                    if(requireEditFile) {
+                                        val uri: Uri? = intent.data
+                                        if(uri != null) {
+                                            //若无写权限，则以只读方式打开
+                                            val expectReadOnly = (intent.flags and Intent.FLAG_GRANT_WRITE_URI_PERMISSION) == 0
 
-                                        //请求获取永久访问权限，不然重启手机后会丢失权限，文件名等文件信息都会无法读取，最近文件列表的文件名会变成空白
-                                        //注：如果成功从content中guess出绝对路径，则这个权限有无就无所谓了，
-                                        // 不过万一获取不了呢？所以还是尝试take uri永久rw权限，
-                                        // 但是，多数app让外部打开时，其实都不会给你永久权限，所以这个take可能多数情况下都会返回失败。
-                                        val contentResolver = activityContext.contentResolver
-                                        if(expectReadOnly) {
-                                            SafUtil.takePersistableReadOnlyPermission(contentResolver, uri)
-                                        }else {
-                                            SafUtil.takePersistableRWPermission(contentResolver, uri)
+                                            //请求获取永久访问权限，不然重启手机后会丢失权限，文件名等文件信息都会无法读取，最近文件列表的文件名会变成空白
+                                            //注：如果成功从content中guess出绝对路径，则这个权限有无就无所谓了，
+                                            // 不过万一获取不了呢？所以还是尝试take uri永久rw权限，
+                                            // 但是，多数app让外部打开时，其实都不会给你永久权限，所以这个take可能多数情况下都会返回失败。
+                                            val contentResolver = activityContext.contentResolver
+                                            if(expectReadOnly) {
+                                                SafUtil.takePersistableReadOnlyPermission(contentResolver, uri)
+                                            }else {
+                                                SafUtil.takePersistableRWPermission(contentResolver, uri)
+                                            }
+
+                                            requireInnerEditorOpenFile(uri.toString(), expectReadOnly)
+
+                                            return@doJobThenOffLoading
                                         }
+                                    }
 
-                                        requireInnerEditorOpenFile(uri.toString(), expectReadOnly)
-
+                                    if(extras == null) {
                                         return@doJobThenOffLoading
                                     }
-                                }
-
-                                if(extras == null) {
-                                    return@doJobThenOffLoading
-                                }
 
 
-                                //执行到已经排除外部app请求让本app编辑文件，还剩三种可能：
-                                // 1. action 为 SEND，导入或编辑单文件
-                                // 2. action 为 SEND_MULTIPLE，导入多文件
-                                // 3. 请求打开指定页面，从通知栏点通知信息时会用到这个逻辑，p.s. 这个是直接通过类跳转的，我不确定action是什么
+                                    //执行到已经排除外部app请求让本app编辑文件，还剩三种可能：
+                                    // 1. action 为 SEND，导入或编辑单文件
+                                    // 2. action 为 SEND_MULTIPLE，导入多文件
+                                    // 3. 请求打开指定页面，从通知栏点通知信息时会用到这个逻辑，p.s. 这个是直接通过类跳转的，我不确定action是什么
 
-                                //检查是否需要启动导入模式（用户可通过系统分享菜单文件到app以启动此模式）
-                                var importFiles = false  // after jump to Files, it will be set to true, else keep false
-                                //20240706: fixed: if import mode in app then go to any sub page then back, will duplicate import files list
-                                //20240706: 修复以导入模式启动app后跳转到任意子页面再返回，导入文件列表重复的bug
-                                filesPageRequireImportUriList.value.clear()
+                                    //检查是否需要启动导入模式（用户可通过系统分享菜单文件到app以启动此模式）
+                                    var importFiles = false  // after jump to Files, it will be set to true, else keep false
+                                    //20240706: fixed: if import mode in app then go to any sub page then back, will duplicate import files list
+                                    //20240706: 修复以导入模式启动app后跳转到任意子页面再返回，导入文件列表重复的bug
+                                    filesPageRequireImportUriList.value.clear()
 
-                                //获取单文件，对应 action SEND
-                                val uri = try {
-                                    extras.getParcelable<Uri>(Intent.EXTRA_STREAM)  //如果没条目，会警告并打印异常信息，然后返回null
-                                } catch (e: Exception) {
-                                    null
-                                }
+                                    //获取单文件，对应 action SEND
+                                    val uri = try {
+                                        extras.getParcelable<Uri>(Intent.EXTRA_STREAM)  //如果没条目，会警告并打印异常信息，然后返回null
+                                    } catch (e: Exception) {
+                                        null
+                                    }
 
-                                //过去导入单文件会询问是否编辑，若想测试，可取消这行注释
+                                    //过去导入单文件会询问是否编辑，若想测试，可取消这行注释
 //                                val howToDealWithSingleSend = howToDealWithSingleSend.value
 
-                                //目前已经实现了专门的编辑，这里只有 import 一种可能了
-                                val howToDealWithSingleSend = SingleSendHandleMethod.IMPORT.code
+                                    //目前已经实现了专门的编辑，这里只有 import 一种可能了
+                                    val howToDealWithSingleSend = SingleSendHandleMethod.IMPORT.code
 
-                                //导入单文件，需要弹窗询问一下，用户想导入文件还是想编辑文件
-                                if (uri != null) {
-                                    if(howToDealWithSingleSend == SingleSendHandleMethod.NEED_ASK.code) {
-                                        initAskHandleSingleSendMethodDialog()
-                                        return@doJobThenOffLoading
-                                    }else if(howToDealWithSingleSend == SingleSendHandleMethod.EDIT.code) {
-                                        //由于直接导入时只有对uri的写权限，而且现在已经实现了专门针对文本文件的编辑功能，所以这里以导入作为edit入口的功能作废
-                                        val uriStr = uri.toString()
+                                    //导入单文件，需要弹窗询问一下，用户想导入文件还是想编辑文件
+                                    if (uri != null) {
+                                        if(howToDealWithSingleSend == SingleSendHandleMethod.NEED_ASK.code) {
+                                            initAskHandleSingleSendMethodDialog()
+                                            return@doJobThenOffLoading
+                                        }else if(howToDealWithSingleSend == SingleSendHandleMethod.EDIT.code) {
+                                            //由于直接导入时只有对uri的写权限，而且现在已经实现了专门针对文本文件的编辑功能，所以这里以导入作为edit入口的功能作废
+                                            val uriStr = uri.toString()
 
-                                        val expectReadOnly = false
-                                        val fileName = null  //直接传null即可，会自动获取文件名，做了处理，兼容"content://"和"file://"
-                                        requireInnerEditorOpenFileWithFileName(uriStr, expectReadOnly, fileName)
+                                            val expectReadOnly = false
+                                            val fileName = null  //直接传null即可，会自动获取文件名，做了处理，兼容"content://"和"file://"
+                                            requireInnerEditorOpenFileWithFileName(uriStr, expectReadOnly, fileName)
 
-                                        return@doJobThenOffLoading
-                                    }else if(howToDealWithSingleSend == SingleSendHandleMethod.IMPORT.code) {
-                                        //导入文件，添加到列表，然后继续执行后面的代码块就行
-                                        filesPageRequireImportUriList.value.add(uri)
-                                    }
-                                }
-
-
-                                //获取多文件，对应 action SEND_MULTIPLE
-                                val uriList = try {
-                                    extras.getParcelableArrayList<Uri>(Intent.EXTRA_STREAM) ?: listOf()
-                                } catch (e: Exception) {
-                                    listOf()
-                                }
-                                if (uriList.isNotEmpty()) {
-                                    filesPageRequireImportUriList.value.addAll(uriList)
-                                }
-
-                                if (filesPageRequireImportUriList.value.isNotEmpty()) {
-                                    //请求Files页面导入文件
-                                    filesPageRequireImportFile.value = true
-                                    currentHomeScreen.intValue = Cons.selectedItem_Files  //跳转到Files页面
-
-                                    //20250218: fix bug: 导入单文件时若本来就在Files页面，不会显示导入文件的底栏，必须手动刷新一下，或者离开此页面再返回才会显示
-                                    changeStateTriggerRefreshPage(needRefreshFilesPage)
-
-                                    importFiles = true
-                                }
-
-
-                                //导入文件完了，下面检查是否跳转页面
-
-
-                                //导入模式启动，页面已经跳转到Files，后面不用检查了
-                                if(importFiles) {
-                                    return@doJobThenOffLoading
-                                }
-
-                                //如果没有导入文件，检查是否需要跳转页面
-
-                                //如果intent携带了启动页面和仓库，使用
-                                val startPage = extras.getString(IntentCons.ExtrasKey.startPage) ?: ""
-                                val startRepoId = extras.getString(IntentCons.ExtrasKey.startRepoId) ?: ""
-
-                                if (startPage.isNotBlank()) {
-                                    if (startPage == Cons.selectedItem_ChangeList.toString()) {
-                                        var startRepo = changeListCurRepo.value
-                                        if (startRepoId.isNotBlank()) {  //参数中携带的目标仓库id，查一下子，有就有，没就拉倒
-                                            startRepo = AppModel.dbContainer.repoRepository.let { it.getById(startRepoId) ?: it.getByName(startRepoId) ?: startRepo }
+                                            return@doJobThenOffLoading
+                                        }else if(howToDealWithSingleSend == SingleSendHandleMethod.IMPORT.code) {
+                                            //导入文件，添加到列表，然后继续执行后面的代码块就行
+                                            filesPageRequireImportUriList.value.add(uri)
                                         }
-
-                                        goToChangeListPage(startRepo)
-                                    }else if(startPage == Cons.selectedItem_Repos.toString()) {
-                                        goToRepoPage(startRepoId)
-                                    }else if(startPage == Cons.selectedItem_Service.toString()) {
-                                        goToServicePage()
                                     }
-                                    // else if go to other page maybe
-                                }
-                            }
 
+
+                                    //获取多文件，对应 action SEND_MULTIPLE
+                                    val uriList = try {
+                                        extras.getParcelableArrayList<Uri>(Intent.EXTRA_STREAM) ?: listOf()
+                                    } catch (e: Exception) {
+                                        listOf()
+                                    }
+                                    if (uriList.isNotEmpty()) {
+                                        filesPageRequireImportUriList.value.addAll(uriList)
+                                    }
+
+                                    if (filesPageRequireImportUriList.value.isNotEmpty()) {
+                                        //请求Files页面导入文件
+                                        filesPageRequireImportFile.value = true
+                                        currentHomeScreen.intValue = Cons.selectedItem_Files  //跳转到Files页面
+
+                                        //20250218: fix bug: 导入单文件时若本来就在Files页面，不会显示导入文件的底栏，必须手动刷新一下，或者离开此页面再返回才会显示
+                                        changeStateTriggerRefreshPage(needRefreshFilesPage)
+
+                                        importFiles = true
+                                    }
+
+
+                                    //导入文件完了，下面检查是否跳转页面
+
+
+                                    //导入模式启动，页面已经跳转到Files，后面不用检查了
+                                    if(importFiles) {
+                                        return@doJobThenOffLoading
+                                    }
+
+                                    //如果没有导入文件，检查是否需要跳转页面
+
+                                    //如果intent携带了启动页面和仓库，使用
+                                    val startPage = extras.getString(IntentCons.ExtrasKey.startPage) ?: ""
+                                    val startRepoId = extras.getString(IntentCons.ExtrasKey.startRepoId) ?: ""
+
+                                    if (startPage.isNotBlank()) {
+                                        if (startPage == Cons.selectedItem_ChangeList.toString()) {
+                                            var startRepo = changeListCurRepo.value
+                                            if (startRepoId.isNotBlank()) {  //参数中携带的目标仓库id，查一下子，有就有，没就拉倒
+                                                startRepo = AppModel.dbContainer.repoRepository.let { it.getById(startRepoId) ?: it.getByName(startRepoId) ?: startRepo }
+                                            }
+
+                                            goToChangeListPage(startRepo)
+                                        }else if(startPage == Cons.selectedItem_Repos.toString()) {
+                                            goToRepoPage(startRepoId)
+                                        }else if(startPage == Cons.selectedItem_Service.toString()) {
+                                            goToServicePage()
+                                        }
+                                        // else if go to other page maybe
+                                    }
+                                }
+
+                            }
                         }
                     }
+                } catch (e: Exception) {
+                    MyLog.e(TAG, "#LaunchedEffect: init home err: " + e.stackTraceToString())
+                    Msg.requireShowLongDuration("init home err: " + e.localizedMessage)
                 }
-            } catch (e: Exception) {
-                MyLog.e(TAG, "#LaunchedEffect: init home err: " + e.stackTraceToString())
-                Msg.requireShowLongDuration("init home err: " + e.localizedMessage)
-            }
 
+            }
         }
     }
 
