@@ -1712,33 +1712,34 @@ fun BranchListScreen(
                     }
 
                     BottomSheetItem(sheetState, showBottomSheet, stringResource(R.string.details)){
+                        val suffix = "\n\n"
                         val sb = StringBuilder()
                         val it = curObjInPage.value
-                        sb.append(activityContext.getString(R.string.name)).append(": ").append(it.shortName).appendLine().appendLine()
-                        sb.append(activityContext.getString(R.string.full_name)).append(": ").append(it.fullName).appendLine().appendLine()
-                        sb.append(activityContext.getString(R.string.last_commit)).append(": ").append(it.shortOidStr).appendLine().appendLine()
-                        sb.append(activityContext.getString(R.string.last_commit_full_oid)).append(": ").append(it.oidStr).appendLine().appendLine()
-                        sb.append(activityContext.getString(R.string.type)).append(": ").append(it.getTypeString(activityContext, false)).appendLine().appendLine()
+                        sb.append(activityContext.getString(R.string.name)).append(": ").append(it.shortName).append(suffix)
+                        sb.append(activityContext.getString(R.string.full_name)).append(": ").append(it.fullName).append(suffix)
+                        sb.append(activityContext.getString(R.string.last_commit)).append(": ").append(it.shortOidStr).append(suffix)
+                        sb.append(activityContext.getString(R.string.last_commit_full_oid)).append(": ").append(it.oidStr).append(suffix)
+                        sb.append(activityContext.getString(R.string.type)).append(": ").append(it.getTypeString(activityContext, false)).append(suffix)
                         if(it.type==Branch.BranchType.LOCAL) {
-                            sb.append(activityContext.getString(R.string.upstream)).append(": ").append(it.getUpstreamShortName(activityContext)).appendLine().appendLine()
+                            sb.append(activityContext.getString(R.string.upstream)).append(": ").append(it.getUpstreamShortName(activityContext)).append(suffix)
                             if(it.isUpstreamValid()) {
-                                sb.append(activityContext.getString(R.string.upstream_full_name)).append(": ").append(it.getUpstreamFullName(activityContext)).appendLine().appendLine()
-                                sb.append(activityContext.getString(R.string.status)).append(": ").append(it.getAheadBehind(activityContext, false)).appendLine().appendLine()
+                                sb.append(activityContext.getString(R.string.upstream_full_name)).append(": ").append(it.getUpstreamFullName(activityContext)).append(suffix)
+                                sb.append(activityContext.getString(R.string.status)).append(": ").append(it.getAheadBehind(activityContext, false)).append(suffix)
                             }
                         }
 
                         if(it.isSymbolic) {
-                            sb.append(activityContext.getString(R.string.symbolic_target)).append(": ").append(it.symbolicTargetShortName).appendLine().appendLine()
-                            sb.append(activityContext.getString(R.string.symbolic_target_full_name)).append(": ").append(it.symbolicTargetFullName).appendLine().appendLine()
+                            sb.append(activityContext.getString(R.string.symbolic_target)).append(": ").append(it.symbolicTargetShortName).append(suffix)
+                            sb.append(activityContext.getString(R.string.symbolic_target_full_name)).append(": ").append(it.symbolicTargetFullName).append(suffix)
                         }
 
-                        sb.append(activityContext.getString(R.string.other)).append(": ").append(it.getOther(activityContext, false)).appendLine().appendLine()
+                        sb.append(activityContext.getString(R.string.other)).append(": ").append(it.getOther(activityContext, false)).append(suffix)
 
 
 
-                        sb.append(Cons.flagStr).append(": ").append(it.getTypeString(activityContext, true)).append("; ${it.getAheadBehind(activityContext, true)}").append("; ${it.getOther(activityContext, true)}").appendLine().appendLine()
+                        sb.append(Cons.flagStr).append(": ").append(it.getTypeString(activityContext, true)).append("; ${it.getAheadBehind(activityContext, true)}").append("; ${it.getOther(activityContext, true)}").append(suffix)
 
-                        detailsString.value = sb.toString()
+                        detailsString.value = sb.removeSuffix(suffix).toString()
 
                         showDetailsDialog.value = true
                     }
