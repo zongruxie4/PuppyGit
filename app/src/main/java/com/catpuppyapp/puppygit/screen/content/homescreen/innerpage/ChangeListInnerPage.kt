@@ -3741,7 +3741,7 @@ private suspend fun changeListInit(
                     val tree2 = Libgit2Helper.resolveTree(repo, commit2OidStr)
                     if(tree2==null) {
                         MyLog.w(TAG, "#$funName, tree to tree diff, query tree2 err! commit2OidStr=$commit2OidStr")
-                        setErrMsg(activityContext.getString(R.string.error_invalid_commit_hash)+" '$commit2OidStr', (err at: 12778089)")
+                        setErrMsg(activityContext.getString(R.string.error_invalid_commit_hash)+" '$commit2OidStr', (err at: 3277)")
                         return
                     }
                     Libgit2Helper.getTreeToTreeChangeList(repo, repoId, tree2, null, reverse=true, treeToWorkTree = true)
@@ -3749,7 +3749,7 @@ private suspend fun changeListInit(
                     val tree1 = Libgit2Helper.resolveTree(repo, commit1OidStr)
                     if(tree1==null) {
                         MyLog.w(TAG, "#$funName, tree to tree diff, query tree1 err! commit1OidStr=$commit1OidStr")
-                        setErrMsg(activityContext.getString(R.string.error_invalid_commit_hash)+" '$commit1OidStr', (err at: 12269378)")
+                        setErrMsg(activityContext.getString(R.string.error_invalid_commit_hash)+" '$commit1OidStr', (err at: 1826)")
                         return
                     }
                     Libgit2Helper.getTreeToTreeChangeList(repo, repoId, tree1, null, reverse=false, treeToWorkTree = true)
@@ -3766,13 +3766,13 @@ private suspend fun changeListInit(
                 val tree1 = Libgit2Helper.resolveTree(repo, commit1OidStr)
                 if(tree1==null) {
                     MyLog.w(TAG, "#$funName, tree to tree diff, query tree1 err! commit1OidStr=$commit1OidStr")
-                    setErrMsg(activityContext.getString(R.string.error_invalid_commit_hash)+" '$commit1OidStr', (err at: 11458622)")
+                    setErrMsg(activityContext.getString(R.string.error_invalid_commit_hash)+" '$commit1OidStr', (err at: 5145)")
                     return
                 }
                 val tree2 = Libgit2Helper.resolveTree(repo, commit2OidStr)
                 if(tree2==null) {
                     MyLog.w(TAG, "#$funName, tree to tree diff, query tree2 err! commit2OidStr=$commit2OidStr")
-                    setErrMsg(activityContext.getString(R.string.error_invalid_commit_hash)+" '$commit2OidStr', (err at: 11289845)")
+                    setErrMsg(activityContext.getString(R.string.error_invalid_commit_hash)+" '$commit2OidStr', (err at: 7136)")
                     return
                 }
                 val treeToTreeChangeList = Libgit2Helper.getTreeToTreeChangeList(repo, repoId, tree1, tree2);
