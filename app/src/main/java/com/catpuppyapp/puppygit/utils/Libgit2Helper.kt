@@ -1558,9 +1558,9 @@ object Libgit2Helper {
 
         }else if(fromTo == Cons.gitDiffFromHeadToIndex) {
             val headTree:Tree? = resolveHeadTree(repo)
-            if(headTree==null) {
+            if(headTree == null) {
                 MyLog.w(TAG, "#$funName(): require diff from head to index, but resolve HEAD tree failed!")
-                return diffItem
+                throw RuntimeException("resolve 'HEAD Tree' failed")
             }
 
             Diff.treeToIndex(repo, headTree, repo.index(), options)
@@ -1581,7 +1581,21 @@ object Libgit2Helper {
             // tree to tree
             MyLog.d(TAG, "#$funName(): require diff from tree to tree, tree1Oid=${tree1?.id().toString()}, tree2Oid=${tree2?.id().toString()}, reverse=$reverse")
 //                println("treeToWorkTree:${treeToWorkTree},  tree1Oid=${tree1?.id().toString()}, tree2Oid=${tree2?.id().toString()}, reverse=$reverse")
-            if(treeToWorkTree) Diff.treeToWorkdir(repo, tree1, options) else Diff.treeToTree(repo, tree1, tree2, options)
+            if(treeToWorkTree) {
+                if(tree1 == null) {
+                    throw RuntimeException("tree1 is null")
+                }
+                Diff.treeToWorkdir(repo, tree1, options)
+            } else {
+                if(tree1 == null) {
+                    throw RuntimeException("tree1 is null")
+                }
+                if(tree2 == null) {
+                    throw RuntimeException("tree2 is null")
+                }
+
+                Diff.treeToTree(repo, tree1, tree2, options)
+            }
         }
 
 
