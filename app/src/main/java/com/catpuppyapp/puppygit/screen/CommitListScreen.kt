@@ -447,7 +447,6 @@ fun CommitListScreen(
 
 
     val showTopBarMenu = rememberSaveable { mutableStateOf(false)}
-    val showDiffCommitDialog = rememberSaveable { mutableStateOf(false)}
     val isSearchingMode = rememberSaveable { mutableStateOf(false)}
     val isShowSearchResultMode = rememberSaveable { mutableStateOf(false)}
 //    val searchKeyword = rememberSaveable { mutableStateOf("")}
@@ -1329,15 +1328,41 @@ fun CommitListScreen(
     // 向下滚动监听，结束
 
 
-    val diffCommitsDialogCommit1 = rememberSaveable { mutableStateOf("")}
-    val diffCommitsDialogCommit2 = rememberSaveable { mutableStateOf("")}
+    val showDiffCommitDialog = rememberSaveable { mutableStateOf(false) }
+    val diffCommitsDialogCommit1 = mutableCustomStateOf(stateKeyTag, "diffCommitsDialogCommit1") { TextFieldValue("") }
+    val diffCommitsDialogCommit2 = mutableCustomStateOf(stateKeyTag, "diffCommitsDialogCommit2") { TextFieldValue("") }
+    val diffCommitsDialogTrueFocusCommit1FalseFocus2 = rememberSaveable { mutableStateOf(false) }
     if(showDiffCommitDialog.value) {
         DiffCommitsDialog(
-            showDiffCommitDialog,
-            diffCommitsDialogCommit1,
-            diffCommitsDialogCommit2,
-            curRepo.value
+            showDialog = showDiffCommitDialog,
+            commit1 = diffCommitsDialogCommit1,
+            commit2 = diffCommitsDialogCommit2,
+            trueFocusCommit1FalseFocus2 = diffCommitsDialogTrueFocusCommit1FalseFocus2.value,
+            curRepo = curRepo.value,
         )
+    }
+
+    val initDiffCommitsDialog = { commit1:String?, commit2:String?, focus1:Boolean ->
+        if(commit1 != null) {
+            diffCommitsDialogCommit1.value = TextFieldValue(commit1)
+        }
+
+        if(commit2 != null) {
+            diffCommitsDialogCommit2.value = TextFieldValue(commit2)
+        }
+
+        if(focus1) {
+            diffCommitsDialogCommit1.apply {
+                value = value.copy(selection = TextRange(0, value.text.length))
+            }
+        }else {
+            diffCommitsDialogCommit2.apply {
+                value = value.copy(selection = TextRange(0, value.text.length))
+            }
+        }
+
+        diffCommitsDialogTrueFocusCommit1FalseFocus2.value = focus1
+        showDiffCommitDialog.value = true
     }
 
 
@@ -1860,7 +1885,7 @@ fun CommitListScreen(
                                         DropdownMenuItem(
                                             text = { Text(stringResource(R.string.diff_commits)) },
                                             onClick = {
-                                                showDiffCommitDialog.value = true
+                                                initDiffCommitsDialog(null, null, true)
 
                                                 //关闭顶栏菜单
                                                 showTopBarMenu.value = false
@@ -2035,9 +2060,8 @@ fun CommitListScreen(
                         }
 
                         BottomSheetItem(sheetState, showBottomSheet, stringResource(R.string.diff)) {
-                            diffCommitsDialogCommit1.value = curCommit.value.oidStr
-
-                            showDiffCommitDialog.value = true
+                            // 把当前提交号填入第1个输入框，然后，聚焦第2个输入框
+                            initDiffCommitsDialog(curCommit.value.oidStr, null, false)
                         }
 
                         if(UserUtil.isPro() && (dev_EnableUnTestedFeature || commitsDiffToLocalTestPassed)) {
