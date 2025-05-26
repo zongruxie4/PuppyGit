@@ -2055,36 +2055,46 @@ fun CommitListScreen(
 
                         if(proFeatureEnabled(diffToHeadTestPassed)) {
                             BottomSheetItem(sheetState, showBottomSheet, stringResource(R.string.diff_to_head)) {
-                                doJobThenOffLoading job@{
-                                    Repository.open(curRepo.value.fullSavePath).use { repo->
-                                        //这里需要传当前commit，然后cl页面会用当前commit查出当前commit的parents
-                                        val commit2Ret = Libgit2Helper.getHeadCommit(repo)
-                                        if(commit2Ret.hasError()) {
-                                            Msg.requireShowLongDuration(commit2Ret.msg)
-                                            return@job
-                                        }
+                                //直接跳转到t2t页面，再解析HEAD
+                                goToTreeToTreeChangeList(
+                                    title = activityContext.getString(R.string.compare_to_head),
+                                    repoId = curRepo.value.id,
+                                    commit1 = curCommit.value.oidStr,
+                                    commit2 = Cons.git_HeadCommitHash,
+                                    commitForQueryParents = Cons.git_AllZeroOidStr,
+                                )
 
-                                        val commit2 = commit2Ret.data!!.id().toString()
-                                        val commit1 = curCommit.value.oidStr
-                                        if(commit2 == commit1) {  //避免 Compare HEAD to HEAD
-                                            Msg.requireShowLongDuration(activityContext.getString(R.string.num2_commits_same))
-                                            return@job
-                                        }
-
-                                        //当前比较的描述信息的key，用来在界面显示这是在比较啥，值例如“和父提交比较”或者“比较两个提交”之类的
-
-
-                                        goToTreeToTreeChangeList(
-                                            title = activityContext.getString(R.string.compare_to_head),
-                                            repoId = curRepo.value.id,
-                                            commit1 = commit1,
-                                            commit2 = commit2,
-                                            commitForQueryParents = Cons.git_AllZeroOidStr,
-                                        )
-
-                                    }
-
-                                }
+                                // 解析HEAD为提交hash，再跳转到t2t页面
+//                                doJobThenOffLoading job@{
+//                                    Repository.open(curRepo.value.fullSavePath).use { repo->
+//                                        //这里需要传当前commit，然后cl页面会用当前commit查出当前commit的parents
+//                                        val commit2Ret = Libgit2Helper.getHeadCommit(repo)
+//                                        if(commit2Ret.hasError()) {
+//                                            Msg.requireShowLongDuration(commit2Ret.msg)
+//                                            return@job
+//                                        }
+//
+//                                        val commit2 = commit2Ret.data!!.id().toString()
+//                                        val commit1 = curCommit.value.oidStr
+//                                        if(commit2 == commit1) {  //避免 Compare HEAD to HEAD
+//                                            Msg.requireShowLongDuration(activityContext.getString(R.string.num2_commits_same))
+//                                            return@job
+//                                        }
+//
+//                                        //当前比较的描述信息的key，用来在界面显示这是在比较啥，值例如“和父提交比较”或者“比较两个提交”之类的
+//
+//
+//                                        goToTreeToTreeChangeList(
+//                                            title = activityContext.getString(R.string.compare_to_head),
+//                                            repoId = curRepo.value.id,
+//                                            commit1 = commit1,
+//                                            commit2 = commit2,
+//                                            commitForQueryParents = Cons.git_AllZeroOidStr,
+//                                        )
+//
+//                                    }
+//
+//                                }
                             }
                         }
 
