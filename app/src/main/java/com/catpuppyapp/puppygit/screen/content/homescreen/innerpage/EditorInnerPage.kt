@@ -153,7 +153,11 @@ fun EditorInnerPage(
     naviUp: () -> Unit,
     requestFromParent:MutableState<String>,
     editorPageShowingFileDto:CustomStateSaveable<FileSimpleDto>,
+
+    //这个不是showingPath的上个值，这个是editor最后打开的文件，
+    // 就是点 open last 时用到的那个变量。可能在关闭文件时才会更新此值（记不清了）
     lastFilePath:MutableState<String>,
+
     editorLastScrollEvent:CustomStateSaveable<ScrollEvent?>,
     editorListState:LazyListState,
     editorPageIsInitDone:MutableState<Boolean>,
