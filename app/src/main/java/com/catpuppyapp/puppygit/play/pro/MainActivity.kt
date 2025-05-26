@@ -194,6 +194,14 @@ class MainActivity : ComponentActivity() {
         MyLog.d(TAG, "#onNewIntent() called")
         super.onNewIntent(intent)
 
+        // 如果intent需要消费，取消执行本次editor on resume事件，
+        // 因为如果需要载入新文件，home screen会触发，
+        // 如果需要导入文件或者跳转到非editor页面，
+        // 也不需要载入文件，所以这里无论如何都不需要再执行editor的on resume
+        if(IntentHandler.needConsume(intent)) {
+            setMainActivityLifeCycle(MainActivityLifeCycle.IGNORE_ONCE_ON_RESUME)
+        }
+
         //Activity改单例了，得靠这个获取新intent
         IntentHandler.setNewIntent(intent)
     }
@@ -217,7 +225,7 @@ class MainActivity : ComponentActivity() {
         // 只会触发compose on resume，所以，忽略创建Activity时的第一个on resume就能避免重复触发了，换句话说，得先切到后台后再触发compose on resume才执行就没问题了
         setByPredicate(MainActivityLifeCycle.ON_RESUME) {
             //忽略创建Activity后的第一个 on resume 事件
-            it != MainActivityLifeCycle.ON_CREATE
+            it != MainActivityLifeCycle.ON_CREATE && it != MainActivityLifeCycle.IGNORE_ONCE_ON_RESUME
         }
     }
 

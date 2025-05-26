@@ -13,7 +13,7 @@ enum class MainActivityLifeCycle(val code: String) {
     ON_CREATE("ON_CREATE"),
     ON_RESUME("ON_RESUME"),
     ON_PAUSE("ON_PAUSE"),
-
+    IGNORE_ONCE_ON_RESUME("IGNORE_ONCE_ON_RESUME")
     ;
 
 
