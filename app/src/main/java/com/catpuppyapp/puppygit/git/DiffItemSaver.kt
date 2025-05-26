@@ -12,7 +12,7 @@ import java.util.TreeMap
 data class DiffItemSaver (
     var relativePathUnderRepo:String="",  //仓库下相对路径
     var keyForRefresh:String= getShortUUID(),
-    var from:String= Cons.gitDiffFromIndexToWorktree,
+    var fromTo:String= Cons.gitDiffFromIndexToWorktree,
 //    var fileHeader:String="";  // file好像没有header
     var oldFileOid:String="",
     var newFileOid:String="",
