@@ -1278,6 +1278,6 @@
     <string name="nodes">Узлы</string>
     <string name="note_pat_instead_of_password">Примечание: Если у вас включена двухфакторная аутентификация (2FA), вместо пароля необходимо использовать персональный токен доступа (Personal Access Token). Токен должен иметь права на чтение и запись содержимого репозитория и рабочих процессов.</string>
     <string name="graph">Граф</string>
-    <string name="commit_msg_template">Commit Msg Template</string>
+    <string name="commit_msg_template">Шаблон сообщения коммита</string>
 
 </resources>
