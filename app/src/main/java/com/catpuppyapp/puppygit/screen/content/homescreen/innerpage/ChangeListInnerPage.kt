@@ -231,7 +231,7 @@ fun ChangeListInnerPage(
     // xxx diff to local, not local diff to xxx
     val localAtDiffRight = remember(fromTo, commit1OidStr, commit2OidStr, swap) { derivedStateOf {
         (fromTo == Cons.gitDiffFromIndexToWorktree
-                || (if(swap) commit1OidStr==Cons.git_LocalWorktreeCommitHash else commit2OidStr==Cons.git_LocalWorktreeCommitHash)
+                || (if(swap) commit1OidStr==Cons.git_LocalWorktreeCommitHash else (commit2OidStr==Cons.git_LocalWorktreeCommitHash))
         )
     } }
 

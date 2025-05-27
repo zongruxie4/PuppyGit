@@ -107,7 +107,9 @@ object Libgit2Helper {
     object CommitUtil{
         //输入两个提交号后用此方法检测，若一样则提示用户且不进行diff
         fun isSameCommitHash(h1:String, h2:String):Boolean {
-            return h1.startsWith(h2) || h2.startsWith(h1)
+            // 不能用starts with，不然输入引用时会误判，例如：h1=main, h2=main_2，会误判两个引用一样
+            // return h1.startsWith(h2) || h2.startsWith(h1)
+            return h1 == h2
         }
 
         fun isLocalCommitHash(c:String):Boolean {
