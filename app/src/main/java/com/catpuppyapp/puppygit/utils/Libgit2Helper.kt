@@ -48,6 +48,7 @@ import com.catpuppyapp.puppygit.screen.functions.KnownHostRequestStateMan
 import com.catpuppyapp.puppygit.settings.AppSettings
 import com.catpuppyapp.puppygit.settings.SettingsUtil
 import com.catpuppyapp.puppygit.style.MyStyleKt
+import com.catpuppyapp.puppygit.template.CommitMsgTemplateUtil
 import com.catpuppyapp.puppygit.ui.theme.Theme
 import com.catpuppyapp.puppygit.utils.cache.CommitCache
 import com.catpuppyapp.puppygit.utils.state.CustomBoxSaveable
@@ -2339,7 +2340,12 @@ object Libgit2Helper {
         itemList: List<StatusTypeEntrySaver>?,
         msgTemplate:String,
     ): Ret<String?> {
-
+        return try {
+            Ret.createSuccess(CommitMsgTemplateUtil.replace(repo, itemList, msgTemplate))
+        }catch (e: Exception) {
+            MyLog.e(TAG, "#genCommitMsgByTemplate err: ${e.stackTraceToString()}")
+            Ret.createError(null, e.localizedMessage ?: "err", exception = e)
+        }
     }
 
     //注：这的itemList只是用来生成commit msg，实际提交的条目列表还是从index取，所以不用担心这列表数据陈旧导致提交错文件
