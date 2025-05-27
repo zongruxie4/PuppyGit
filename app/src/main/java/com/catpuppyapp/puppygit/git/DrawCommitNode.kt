@@ -5,12 +5,19 @@ import androidx.compose.runtime.Stable
 import androidx.compose.ui.graphics.BlendMode
 import androidx.compose.ui.graphics.Color
 import com.catpuppyapp.puppygit.dto.Box
+import com.catpuppyapp.puppygit.ui.theme.Theme
 import com.catpuppyapp.puppygit.utils.UIHelper
 import io.ktor.util.collections.ConcurrentMap
 
 
 // 0-255，越小越透明
 private const val alpha = 80;
+// alpha / 255 * 100，把int的alpha换算成百分比小数
+private const val alphaFloat = alpha / 255f * 100f;
+
+// 本地领先远程的未推送的节点的线的颜色
+private val unPushedColorLight = Color.Gray.copy(alpha = alphaFloat)
+private val unPushedColorDark = Color.Gray.copy(alpha = alphaFloat)
 
 // 避免并发冲突，没用普通的list
 private val cachedColors = ConcurrentMap<Int, Color>().apply {
@@ -113,7 +120,7 @@ data class DrawCommitNode (
         val colorBlendMode = BlendMode.SrcAtop
 
         //未推送到上游的提交的线的颜色，此线必须不同于cache color 索引 0 的颜色
-        val localAheadUpstreamColor = Color(red = 0xA1, green = 0x29, blue = 0x1E, alpha = alpha)
+        fun localAheadUpstreamColor(inDarkTheme:Boolean = Theme.inDarkTheme) = if(inDarkTheme) unPushedColorDark else unPushedColorLight;
 
 
         /**

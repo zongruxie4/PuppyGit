@@ -576,7 +576,7 @@ private fun getColor(lineIdx: Int, commitItemIdx:Int, drawLocalAheadUpstreamCoun
     //给本地领先远程的提交使用特殊的颜色
     //第一条线 且 抵达上游分支 前的提交，使用不同于当前索引的颜色
     return if(lineIdx == 0 && commitItemIdx < drawLocalAheadUpstreamCount) {
-        DrawCommitNode.localAheadUpstreamColor
+        DrawCommitNode.localAheadUpstreamColor()
     }else {
         DrawCommitNode.getNodeColorByIndex(lineIdx)
     }
