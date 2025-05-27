@@ -1647,6 +1647,7 @@ object Libgit2Helper {
         // 执行到文件就肯定修改过，oid也肯定不一样
         //文件没有改变
         if(diffItem.oldFileOid == diffItem.newFileOid) {
+            diffItem.changeType = Cons.gitStatusUnmodified
             diffItem.isFileModified = false
             return diffItem
         }

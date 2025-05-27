@@ -2482,6 +2482,7 @@ fun DiffScreen(
                 // 注意：冲突条目不能diff，会提示unmodified！所以支持预览冲突条目没意义，若支持的话，在当前判断条件后追加后面的代码即可: `|| changeType == Cons.gitStatusConflict`
                 val isSupportedChangeType = (
                         changeType == Cons.gitStatusModified
+                                || changeType == Cons.gitStatusUnmodified
                                 || changeType == Cons.gitStatusNew
                                 || changeType == Cons.gitStatusDeleted
                                 || changeType == Cons.gitStatusTypechanged  // e.g. submodule folder path change to a file, will show type changed, view this is ok

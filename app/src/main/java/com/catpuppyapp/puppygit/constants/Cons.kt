@@ -267,6 +267,7 @@ object Cons {
     const val gitFetchAllBranchSign = "*"
 
     //git status
+    const val gitStatusUnmodified = "Unmodified"  //未修改，未加载修改内容，或两个对象完全一样时，就会是这样，只能在Diff页面看到这个状态，因为cl页面不会列出未修改的文件
     const val gitStatusModified = "Modified"
     const val gitStatusNew = "New"  //most time this same as untracked
     //        const val gitStatusUntracked = "Untracked"  //untracked

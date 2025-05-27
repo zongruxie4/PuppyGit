@@ -46,8 +46,8 @@ data class DiffItemSaver (
     var oldBlobSavePath:String="",
     var newBlobSavePath:String="",
 
-    //根据delta比较出来的实际的修改类型
-    var changeType:String = Cons.gitStatusModified,
+    //根据delta比较出来的实际的修改类型，最终在diff页面显示的修改类型以这个为准
+    var changeType:String = Cons.gitStatusUnmodified,
 ){
 
 
