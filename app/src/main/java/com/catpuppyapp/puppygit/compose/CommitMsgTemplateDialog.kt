@@ -70,9 +70,16 @@ fun CommitMsgTemplateDialog(
                 MySelectionContainer {
                     Column {
                         CommitMsgTemplateUtil.apply {
-                            phList.forEach {
+                            val phListLastIndex = phList.size-1
+
+                            phList.forEachIndexed {idx, it ->
                                 PlaceHolder(it) {
                                     autoType(it.pattern)
+                                }
+
+                                //加点间距
+                                if(idx != phListLastIndex) {
+                                    Spacer(Modifier.height(10.dp))
                                 }
                             }
 
