@@ -3,9 +3,13 @@
 ---
 1.1.2.1v97 - 20250525:
 - support compare left/right commit to local at commits changelist
+- support set commit msg template
+- fix: compare two difference commits mis-considered they are same
 
 
 - 在提交的修改列表支持比较左侧/右侧提交和本地文件差异
+- 支持设置提交信息模板
+- 修复比较提交时误判两个不同的提交为相同
 
 
 ---
