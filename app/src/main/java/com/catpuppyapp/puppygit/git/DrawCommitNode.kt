@@ -12,12 +12,12 @@ import io.ktor.util.collections.ConcurrentMap
 
 // 0-255，越小越透明
 private const val alpha = 80;
-// alpha / 255 * 100，把int的alpha换算成百分比小数
-private const val alphaFloat = alpha / 255f * 100f;
+// alpha / 255，把int的alpha换算成小数
+private const val alphaFloat = alpha / 255f;
 
 // 本地领先远程的未推送的节点的线的颜色
 private val unPushedColorLight = Color.Gray.copy(alpha = alphaFloat)
-private val unPushedColorDark = Color.Gray.copy(alpha = alphaFloat)
+private val unPushedColorDark = Color.LightGray.copy(alpha = alphaFloat)
 
 // 避免并发冲突，没用普通的list
 private val cachedColors = ConcurrentMap<Int, Color>().apply {
