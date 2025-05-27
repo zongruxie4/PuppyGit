@@ -36,10 +36,9 @@ private const val TAG = "DiffPageActions"
 fun DiffPageActions(
     isMultiMode: Boolean,
     fromTo:String,
-    changeType: String,
     refreshPage: () -> Unit,
     request:MutableState<String>,
-    fileFullPath:String,
+//    fileFullPath:String,
     requireBetterMatchingForCompare:MutableState<Boolean>,
     readOnlyModeOn:MutableState<Boolean>,  // `readOnlyMode` was named `copyMode`，当时想的是只能拷贝不能编辑，所以叫拷贝模式，但后来发现这不就是只读模式吗，所以就改成只读模式了
     readOnlyModeSwitchable:Boolean,
@@ -53,7 +52,7 @@ fun DiffPageActions(
 ) {
 
 //    val navController = AppModel.navController
-    val activityContext = LocalContext.current
+//    val activityContext = LocalContext.current
 
     //这个变量相关的判断都没什么鸟用，都是禁用或启用都无所谓的，索性设为true了
 //    val fileChangeTypeIsModified = changeType == Cons.gitStatusModified

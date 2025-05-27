@@ -2282,7 +2282,9 @@ fun ChangeListInnerPage(
                     itemListOrFilterList = getActuallyList(),
                     commit1OidStr = Cons.git_IndexCommitHash,
                     commit2OidStr = Cons.git_LocalWorktreeCommitHash,
-                    fromTo = Cons.gitDiffFromIndexToWorktree
+
+                    // 这里不能用 index to worktree，不然会显示提交、暂存之类的菜单项，在index显示这些，容易混乱，让人分不清到底从哪个页面来的
+                    fromTo = Cons.gitDiffFromTreeToTree
                 )
             }else {
                 diffFiles(

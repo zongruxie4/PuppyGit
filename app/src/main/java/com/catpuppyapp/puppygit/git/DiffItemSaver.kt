@@ -45,6 +45,9 @@ data class DiffItemSaver (
     // 把blob文件存到本地的path，一般存到缓存目录供临时查看，预览图片时会用到
     var oldBlobSavePath:String="",
     var newBlobSavePath:String="",
+
+    //根据delta比较出来的实际的修改类型
+    var changeType:String = Cons.gitStatusModified,
 ){
 
 

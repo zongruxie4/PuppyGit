@@ -1633,6 +1633,15 @@ object Libgit2Helper {
         diffItem.oldFileOid = oldFile.id.toString()
         diffItem.newFileOid = newFile.id.toString()
 
+        //判断文件实际的修改类型
+        if(diffItem.oldFileOid == Cons.git_AllZeroOidStr && diffItem.newFileOid != Cons.git_AllZeroOidStr) {
+            diffItem.changeType = Cons.gitStatusNew
+        } else if(diffItem.oldFileOid != Cons.git_AllZeroOidStr && diffItem.newFileOid == Cons.git_AllZeroOidStr) {
+            diffItem.changeType = Cons.gitStatusDeleted
+        } else {
+            diffItem.changeType = Cons.gitStatusModified
+        }
+
         //这个判断可能没有意义，因为如果文件未修改，就不会有delta，在上面Patch.fromDiff()的时候就索引越界了，
         // 或者在更前面获取numDeltas的时候就获取到0，然后进入文件未修改的判断，然后就返回了，根本不会执行到这，
         // 执行到文件就肯定修改过，oid也肯定不一样

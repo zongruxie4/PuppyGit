@@ -896,7 +896,7 @@ fun DiffScreen(
                 sb.append(activityContext.getString(R.string.entry_id)+": ").append(curItem.entryId).append(suffix)
             }else {  // 从changelist进到diff页面
                 // cl 如果和index或worktree比较，无entry id，但如果和提交比较其实是有entry id的，不过一般没必要显示
-                sb.append(activityContext.getString(R.string.change_type)+": ").append(curItem.changeType).append(suffix)
+                sb.append(activityContext.getString(R.string.change_type)+": ").append(curItem.diffItemSaver.changeType).append(suffix)
             }
 
 
@@ -1232,10 +1232,9 @@ fun DiffScreen(
                         DiffPageActions(
                             isMultiMode = isMultiMode,
                             fromTo=fromTo,
-                            changeType=getCurItem().changeType,
                             refreshPage = { changeStateTriggerRefreshPage(needRefresh) },
                             request = pageRequest,
-                            fileFullPath = getCurItem().fullPath,
+//                            fileFullPath = getCurItem().fullPath,
                             requireBetterMatchingForCompare = requireBetterMatchingForCompare,
                             readOnlyModeOn = readOnlyModeOn,
                             readOnlyModeSwitchable = readOnlySwitchable.value,
@@ -1315,7 +1314,7 @@ fun DiffScreen(
                         if(isSingleMode && diffableItemIdx != curItemIndex.intValue) continue;
 
                         val diffItem = diffableItem.diffItemSaver
-                        val changeType = diffableItem.changeType
+                        val changeType = diffableItem.diffItemSaver.changeType
                         val visible = diffableItem.visible
                         val diffableItemFile = diffableItem.toFile()
                         val relativePath = diffableItem.relativePath
@@ -2374,14 +2373,21 @@ fun DiffScreen(
                         } else if(fromTo == Cons.gitDiffFromTreeToTree || fromTo==Cons.gitDiffFileHistoryFromTreeToLocal || fromTo==Cons.gitDiffFileHistoryFromTreeToTree){  //从提交列表点击提交进入
                             val diffItemSaver = if(Libgit2Helper.CommitUtil.isLocalCommitHash(treeOid1Str) || Libgit2Helper.CommitUtil.isLocalCommitHash(treeOid2Str)) {  // tree to work tree, oid1 or oid2 is local, both local will cause err
                                 val reverse = Libgit2Helper.CommitUtil.isLocalCommitHash(treeOid1Str)
-                                val tree1 = Libgit2Helper.resolveTree(repo, if(reverse) treeOid2Str else treeOid1Str)
+
+                                //前面已经确定了有个是local，再判断下是否有个是index，若是，就是实际上的 index to worktree
+                                val isActuallyIndexToLocal = if(reverse) treeOid2Str == Cons.git_IndexCommitHash else (treeOid1Str == Cons.git_IndexCommitHash);
+                                val tree1 = if(isActuallyIndexToLocal) {
+                                    null
+                                }else {
+                                    Libgit2Helper.resolveTree(repo, if(reverse) treeOid2Str else treeOid1Str)
+                                }
 
                                 MyLog.d(TAG, "treeOid1Str:$treeOid1Str, treeOid2Str:$treeOid2Str, reverse=$reverse")
 
                                 Libgit2Helper.getSingleDiffItem(
                                     repo,
                                     relativePath,
-                                    fromTo,
+                                    if(isActuallyIndexToLocal) Cons.gitDiffFromIndexToWorktree else fromTo,
                                     tree1,
                                     null,
                                     reverse=reverse,
@@ -2468,7 +2474,7 @@ fun DiffScreen(
 
                 val loading = loadedDiffableItem.loading
                 val errMsg = loadedDiffableItem.errMsg
-                val changeType = item.changeType
+                val changeType = item.diffItemSaver.changeType
                 val diffItem = loadedDiffableItem.diffItemSaver
                 val submoduleIsDirty = loadedDiffableItem.submoduleIsDirty
 

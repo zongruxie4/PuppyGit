@@ -37,7 +37,7 @@ fun DiffScreenTitle(
 ) {
 
     val fileName = curItem.fileName
-    val changeType = curItem.changeType
+    val changeType = curItem.diffItemSaver.changeType
     val relativePath = curItem.relativePath
 
     if(relativePath.isNotEmpty()) {
