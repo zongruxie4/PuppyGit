@@ -15,12 +15,19 @@ object CommitMsgTemplateUtil {
     val datePlaceHolder = PlaceHolder(pattern = "{{date}}", example = "2024-05-20")
     // HH:mm:ss
     val timePlaceHolder = PlaceHolder(pattern = "{{time}}", example = "22:10:05")
-
-    val fileNameListPlaceHolder = PlaceHolder(pattern = "{{fileNameList}}", example = "file1.txt, file2.txt")
-
     val usernamePlaceHolder = PlaceHolder(pattern = "{{username}}", example = "Tony")
-
     val emailPlaceHolder = PlaceHolder(pattern = "{{email}}", example = "tony@example.com")
+    val filesCountPlaceHolder = PlaceHolder(pattern = "{{filesCount}}", example = "5")
+    val fileNamesPlaceHolder = PlaceHolder(pattern = "{{fileNames}}", example = "file1.txt, file2.txt")
+
+    val phList = listOf(
+        datePlaceHolder,
+        timePlaceHolder,
+        usernamePlaceHolder,
+        emailPlaceHolder,
+        filesCountPlaceHolder,
+        fileNamesPlaceHolder,
+    )
 
     fun replace(
         repo:Repository,
@@ -31,14 +38,15 @@ object CommitMsgTemplateUtil {
         val now = getSecFromTime()
         return msgTemplate.replace(datePlaceHolder.pattern, getFormatTimeFromSec(now, dateFormatter))
             .replace(timePlaceHolder.pattern, getFormatTimeFromSec(now, timeFormatter))
-            .replace(fileNameListPlaceHolder.pattern,
+            .replace(usernamePlaceHolder.pattern, username)
+            .replace(emailPlaceHolder.pattern, email)
+            .replace(filesCountPlaceHolder.pattern, ""+(itemList?.size?:0))
+            .replace(fileNamesPlaceHolder.pattern,
                 if(itemList.isNullOrEmpty()) {
                     ""
                 }else {
                     itemList.joinToString(", ") { it.fileName }
                 }
             )
-            .replace(usernamePlaceHolder.pattern, username)
-            .replace(emailPlaceHolder.pattern, email)
     }
 }

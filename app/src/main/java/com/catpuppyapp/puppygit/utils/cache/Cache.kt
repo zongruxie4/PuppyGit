@@ -16,11 +16,13 @@ object Cache:CacheStoreImpl(){
         //            val changeListInnerPage_RequirePull = "cliprpul";
 //            val changeListInnerPage_RequirePush = "cliprpus";
 //            val changeListInnerPage_RequireSync = "cliprsyn";
-        const val changeListInnerPage_requireDoActFromParent = "cliprdafp";
+        const val changeListInnerPage_requireDoActFromParent = "changeListInnerPage_requireDoActFromParent";
         const val repoTmpStatusPrefix = "repo_tmp_status"  // prefix+keyseparator+repoId，例如 "repo_tmp_status:a29388d9988"
 
         const val editorPageSaveLockPrefix = "editor_save_lock"
-        const val subPagesStateKeyPrefix = "sub_pages_key_prefix$keySeparator"
+
+        //子页面状态变量的前缀，例如：DiffScreen的stateKeyTag遵循如下格式："sub_page:DiffScreen:随机编号"
+        const val subPagesStateKeyPrefix = "sub_page_state"
 
 //        const val diffScreen_underRepoPathKey = "diffScreen_underRepoPathKey"
 //        const val diffScreen_diffableItemListKey = "diffScreen_diffableItemListKey"
@@ -33,7 +35,7 @@ object Cache:CacheStoreImpl(){
     }
 
     fun clearAllSubPagesStates() {
-        clearByKeyPrefix(Key.subPagesStateKeyPrefix)
+        clearByKeyPrefix(Key.subPagesStateKeyPrefix+keySeparator)
     }
 
 
@@ -50,7 +52,7 @@ object Cache:CacheStoreImpl(){
     @Composable
     fun getSubPageKey(stateKeyTag:String):String {
         // e.g. "sub_pages_key_prefix:DiffScreen:ak1idkjgkk"
-        return rememberSaveable { Key.subPagesStateKeyPrefix+stateKeyTag+ keySeparator+ getShortUUID() }
+        return rememberSaveable { StringBuilder(Key.subPagesStateKeyPrefix).append(keySeparator).append(stateKeyTag).append(keySeparator).append(getShortUUID()).toString() }
     }
 
     /**
@@ -63,7 +65,7 @@ object Cache:CacheStoreImpl(){
     fun getComponentKey(parentKey:String, stateKeyTag:String): String {
         // e.g. 子页面："sub_pages_key_prefix:DiffScreen:ak1idkjgkk:DiffRow:13idgiwkfd"
         //      顶级页面："HomeScreen:abcdef12345:DiffRow:abcdef12345"
-        return rememberSaveable { parentKey+stateKeyTag+ keySeparator+ getShortUUID() }
+        return rememberSaveable { StringBuilder(parentKey).append(keySeparator).append(stateKeyTag).append(keySeparator).append(getShortUUID()).toString() }
     }
     // 自定义状态存储器key相关函数：结束
 

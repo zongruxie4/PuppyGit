@@ -2321,13 +2321,27 @@ object Libgit2Helper {
         itemList: List<StatusTypeEntrySaver>?,
         msgTemplate:String,
     ): Ret<String?> {
+        val repoState = repo.state()
+        var actuallyItemList = itemList
+        if(actuallyItemList.isNullOrEmpty()) { //如果itemList为null或一个元素都没有，查询一下实际的index列表
+            val (isIndexEmpty, indexItemList) = checkIndexIsEmptyAndGetIndexList(repo, "", onlyCheckEmpty = false)  //这里期望获得列表，所以仅检查空传假
+            if(repoState!=Repository.StateT.MERGE && (isIndexEmpty || indexItemList.isNullOrEmpty())) {  //如果实际的index没条目，直接返回错误
+                MyLog.w(TAG, "#genCommitMsg() error: repoState=$repoState, isIndexEmpty = "+isIndexEmpty+", indexItemList.isNullOrEmpty() = "+indexItemList.isNullOrEmpty())
+                return Ret.createError(null, "index is Empty!",Ret.ErrCode.indexIsEmpty)
+            }
+
+            //执行到这index一定是有东西的，或者是解决冲突的提交，index空也无所谓
+            actuallyItemList = indexItemList?: emptyList()
+        }
+
+        //生成提交信息
         return if(msgTemplate.isBlank()) {
-            genCommitMsgLegacy(repo, itemList)
+            genCommitMsgLegacy(repo, repoState, actuallyItemList)
         }else {
-            genCommitMsgByTemplate(repo, itemList, msgTemplate).let { ret ->
+            genCommitMsgByTemplate(repo, actuallyItemList, msgTemplate).let { ret ->
                 //如果根据模板生成的是空内容，重新生成传统的提交信息
                 if(ret.data.let { it == null || it.isBlank() }) {
-                    genCommitMsgLegacy(repo, itemList)
+                    genCommitMsgLegacy(repo, repoState, actuallyItemList)
                 }else {
                     ret
                 }
@@ -2351,21 +2365,10 @@ object Libgit2Helper {
     //注：这的itemList只是用来生成commit msg，实际提交的条目列表还是从index取，所以不用担心这列表数据陈旧导致提交错文件
     private fun genCommitMsgLegacy(
         repo:Repository,
-        itemList: List<StatusTypeEntrySaver>?,
+        repoState: Repository.StateT?,
+        //实际的条目列表，本函数不会再从index查询，如果无条目，可传空列表
+        actuallyItemList: List<StatusTypeEntrySaver>,
     ): Ret<String?> {
-        val repoState = repo.state()
-        var actuallyItemList = itemList
-        if(actuallyItemList.isNullOrEmpty()) { //如果itemList为null或一个元素都没有，查询一下实际的index列表
-            val (isIndexEmpty, indexItemList) = checkIndexIsEmptyAndGetIndexList(repo, "", onlyCheckEmpty = false)  //这里期望获得列表，所以仅检查空传假
-            if(repoState!=Repository.StateT.MERGE && (isIndexEmpty || indexItemList.isNullOrEmpty())) {  //如果实际的index没条目，直接返回错误
-                MyLog.w(TAG, "#genCommitMsg() error: repoState=$repoState, isIndexEmpty = "+isIndexEmpty+", indexItemList.isNullOrEmpty() = "+indexItemList.isNullOrEmpty())
-                return Ret.createError(null, "index is Empty!",Ret.ErrCode.indexIsEmpty)
-            }
-
-            //执行到这index一定是有东西的，或者是解决冲突的提交，index空也无所谓
-            actuallyItemList = indexItemList?: emptyList()
-        }
-
         val limitCharsLen = 200;  //提交信息字符数长度限制
         var count = 0;  //文件记数，用来计算超字符数长度限制后还有几个文件名没追加上
 

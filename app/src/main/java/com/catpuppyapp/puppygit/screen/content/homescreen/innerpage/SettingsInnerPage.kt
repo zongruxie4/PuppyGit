@@ -42,6 +42,7 @@ import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.dp
 import com.catpuppyapp.puppygit.compose.ClearMasterPasswordDialog
 import com.catpuppyapp.puppygit.compose.ClickableText
+import com.catpuppyapp.puppygit.compose.CommitMsgTemplateDialog
 import com.catpuppyapp.puppygit.compose.ConfirmDialog2
 import com.catpuppyapp.puppygit.compose.ConfirmDialog3
 import com.catpuppyapp.puppygit.compose.CopyableDialog
@@ -234,6 +235,14 @@ fun SettingsInnerPage(
     }
 
 //    val groupContentByLineNum = rememberSaveable { mutableStateOf(settingsState.value.diff.groupDiffContentByLineNum) }
+
+    val showCommitMsgTemplateDialog = rememberSaveable { mutableStateOf(false) }
+    if(showCommitMsgTemplateDialog.value) {
+        CommitMsgTemplateDialog(
+            stateKeyTag = stateKeyTag,
+            closeDialog = { showCommitMsgTemplateDialog.value = false }
+        )
+    }
 
     val showCleanDialog = rememberSaveable { mutableStateOf(false) }
     val cleanCacheFolder = rememberSaveable { mutableStateOf(true) }
@@ -952,6 +961,13 @@ fun SettingsInnerPage(
 //                Text(stringResource(R.string.timezone_when_viewing_commits), fontSize = itemDescFontSize, fontWeight = FontWeight.Light)
 
             }
+        }
+
+
+        SettingsContent(onClick = {
+            showCommitMsgTemplateDialog.value = true
+        }) {
+            Text(stringResource(R.string.commit_msg_template), fontSize = itemFontSize)
         }
 
 
