@@ -19,6 +19,7 @@ import androidx.compose.ui.text.style.TextOverflow
 import com.catpuppyapp.puppygit.compose.DropDownMenuItemText
 import com.catpuppyapp.puppygit.compose.RepoInfoDialog
 import com.catpuppyapp.puppygit.compose.TitleDropDownMenu
+import com.catpuppyapp.puppygit.constants.Cons
 import com.catpuppyapp.puppygit.data.entity.RepoEntity
 import com.catpuppyapp.puppygit.play.pro.R
 import com.catpuppyapp.puppygit.style.MyStyleKt
@@ -62,7 +63,13 @@ fun ChangeListTitle(
 
     val showTitleInfoDialog = rememberSaveable { mutableStateOf(false)}
     if(showTitleInfoDialog.value) {
-        RepoInfoDialog(changeListCurRepo.value, showTitleInfoDialog)
+        RepoInfoDialog(
+            curRepo = changeListCurRepo.value,
+            showTitleInfoDialog = showTitleInfoDialog,
+            prependContent = {
+                Text(stringResource(R.string.comparing_label)+": "+ Libgit2Helper.getLeftToRightFullHash(Cons.git_IndexCommitHash, Cons.git_LocalWorktreeCommitHash))
+            }
+        )
     }
 
 
