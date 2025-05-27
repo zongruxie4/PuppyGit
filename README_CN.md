@@ -9,7 +9,6 @@
 ## 作者
 小狗Git由catpuppyapp的Bandeapart1964倾情奉献
 
-### 长久以来，没人关心安卓git用户的体验，所有安卓git客户端体验都很糟糕，但现在我关心，所以我写了小狗git，过去的git客户端都已随风消逝，未来有一天，小狗git也会一样，但在那之前，just enjoy it。
 ### 加星标并<a href=https://github.com/catpuppyapp/PuppyGit/blob/main/donate.md>捐赠</a>以给贫穷的开发者提供支持！这有助于此app持续维护！
 ### 感谢每个捐赠者和用户，尤其是捐赠者！
 ### 希望有一天能获得百万用户和很多捐赠！XD
