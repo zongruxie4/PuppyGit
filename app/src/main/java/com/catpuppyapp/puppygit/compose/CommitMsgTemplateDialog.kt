@@ -39,7 +39,7 @@ fun CommitMsgTemplateDialog(
             template.apply {
                 value = value.copy(
                     //在光标处插入text
-                    text = value.text.replaceRange(value.selection.let { IntRange(it.start.coerceAtMost(it.end), (it.end.coerceAtLeast(it.start))-1) }, text),
+                    text = value.text.replaceRange(value.selection.let { it.start.coerceAtMost(it.end) }, value.selection.let { it.end.coerceAtLeast(it.start) }, text),
                     //将光标移动到刚插入的text后面
                     selection = TextRange(value.selection.let {it.start.coerceAtMost(it.end)} + text.length)
                 )
