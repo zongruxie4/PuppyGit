@@ -1410,7 +1410,7 @@ fun EditorInnerPage(
         // doJobThenOffLoading(loadingOn, loadingOff, appContext.getString(R.string.loading)){
         doJobThenOffLoading {
             try {
-                doActWithLockIfFree(loadLock, "EditorInnerPage#Init") {
+                doActWithLockIfFree(loadLock, "EditorInnerPage#Init#${needRefreshEditorPage.value}#${editorPageShowingFilePath.value.ioPath}") {
                     doInit(
                         requirePreviewScrollToEditorCurPos = requirePreviewScrollToEditorCurPos,
                         ignoreFocusOnce = ignoreFocusOnce,
