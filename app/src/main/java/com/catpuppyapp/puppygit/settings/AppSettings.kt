@@ -123,6 +123,11 @@ data class AppSettings(
      */
     var commitHistoryGraph: Boolean = true,
 
+    /**
+     * 提交信息模板，若为空，将自动生成，否则将根据模板自动生成提交信息，但有些特殊情况，比如merge或amend时，可能不会遵循模板
+     */
+    var commitMsgTemplate:String = "",
+
 ) {
 
     override fun equals(other: Any?): Boolean {

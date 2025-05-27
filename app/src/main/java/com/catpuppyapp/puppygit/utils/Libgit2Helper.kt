@@ -2315,8 +2315,38 @@ object Libgit2Helper {
         return Pair(username, email)
     }
 
+    fun genCommitMsg(
+        repo:Repository,
+        itemList: List<StatusTypeEntrySaver>?,
+        msgTemplate:String,
+    ): Ret<String?> {
+        return if(msgTemplate.isBlank()) {
+            genCommitMsgLegacy(repo, itemList)
+        }else {
+            genCommitMsgByTemplate(repo, itemList, msgTemplate).let { ret ->
+                //如果根据模板生成的是空内容，重新生成传统的提交信息
+                if(ret.data.let { it == null || it.isBlank() }) {
+                    genCommitMsgLegacy(repo, itemList)
+                }else {
+                    ret
+                }
+            }
+        }
+    }
+
+    private fun genCommitMsgByTemplate(
+        repo:Repository,
+        itemList: List<StatusTypeEntrySaver>?,
+        msgTemplate:String,
+    ): Ret<String?> {
+
+    }
+
     //注：这的itemList只是用来生成commit msg，实际提交的条目列表还是从index取，所以不用担心这列表数据陈旧导致提交错文件
-    fun genCommitMsg(repo:Repository, itemList: List<StatusTypeEntrySaver>?=null): Ret<String?> {
+    private fun genCommitMsgLegacy(
+        repo:Repository,
+        itemList: List<StatusTypeEntrySaver>?,
+    ): Ret<String?> {
         val repoState = repo.state()
         var actuallyItemList = itemList
         if(actuallyItemList.isNullOrEmpty()) { //如果itemList为null或一个元素都没有，查询一下实际的index列表
@@ -2579,7 +2609,7 @@ object Libgit2Helper {
                 // amend, msg null, then use origin commit msg，如果原始提交信息也是空字符串呢？无所谓，正常来说不会，就算会，只要能提交，也没差，rebase/cherrypick时也可能有同样的问题，即使假设提交信息为空会提交失败也很好解决，只要用户手动填入一个提交信息就行了
                 null
             }else {  //生成提交信息
-                val genCommitMsgRet = genCommitMsg(repo, indexItemList)
+                val genCommitMsgRet = genCommitMsg(repo, indexItemList, settings.commitMsgTemplate)
 
                 var cmtmsg = genCommitMsgRet.data
                 if(genCommitMsgRet.hasError() || cmtmsg.isNullOrBlank()) {
