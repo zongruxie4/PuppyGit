@@ -3758,23 +3758,28 @@ private suspend fun changeListInit(
             ) {  // tree to worktree
                 //如果1是 "local" 则需要反转比较的两个提交对象
                 val reverse = Libgit2Helper.CommitUtil.isLocalCommitHash(commit1OidStr)
+                val leftCommit = if(reverse) commit2OidStr else commit1OidStr
 
-                val cl = if(reverse) {  //commit1 是local，解析commit2为tree2，把tree2作为参数1然后传reverse为true，这时就可比较 workTreeToTree 了
-                    val tree2 = Libgit2Helper.resolveTree(repo, commit2OidStr)
-                    if(tree2==null) {
-                        MyLog.w(TAG, "#$funName, tree to tree diff, query tree2 err! commit2OidStr=$commit2OidStr")
-                        setErrMsg(activityContext.getString(R.string.error_invalid_commit_hash)+" '$commit2OidStr', (err at: 3277)")
-                        return
-                    }
-                    Libgit2Helper.getTreeToTreeChangeList(repo, repoId, tree2, null, reverse=true, treeToWorkTree = true)
-                }else {  //commit2 是local，解析commit1为tree1，tree2传null，反转传false
-                    val tree1 = Libgit2Helper.resolveTree(repo, commit1OidStr)
-                    if(tree1==null) {
-                        MyLog.w(TAG, "#$funName, tree to tree diff, query tree1 err! commit1OidStr=$commit1OidStr")
-                        setErrMsg(activityContext.getString(R.string.error_invalid_commit_hash)+" '$commit1OidStr', (err at: 1826)")
-                        return
-                    }
-                    Libgit2Helper.getTreeToTreeChangeList(repo, repoId, tree1, null, reverse=false, treeToWorkTree = true)
+                val isActuallyIndexToLocal = leftCommit == Cons.git_IndexCommitHash;
+
+
+                val tree = if(isActuallyIndexToLocal) {
+                    null
+                } else {
+                    Libgit2Helper.resolveTree(repo, leftCommit)
+                }
+
+                if(isActuallyIndexToLocal.not() && tree == null) {
+                    MyLog.w(TAG, "#$funName, tree to tree diff, query tree err! leftCommit=$leftCommit")
+                    setErrMsg(activityContext.getString(R.string.error_invalid_commit_hash)+" '$leftCommit', (err at: 3277)")
+                    return
+                }
+
+                val cl = if(isActuallyIndexToLocal) {
+                    val wtStatusList = Libgit2Helper.getWorkdirStatusList(repo)
+                    Libgit2Helper.getWorktreeChangeList(repo, wtStatusList, repoId)
+                } else {
+                    Libgit2Helper.getTreeToTreeChangeList(repo, repoId, tree!!, null, reverse=reverse, treeToWorkTree = true)
                 }
 
                 if(repoChanged()) {
