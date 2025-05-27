@@ -273,7 +273,7 @@ fun FileChooserScreen(
                 actions = {
                     FilesPageActions(
                         isFileChooser = isFileChooser,
-                        showCreateFileOrFolderDialog = showCreateFileOrFolderDialog,
+//                        showCreateFileOrFolderDialog = showCreateFileOrFolderDialog,
                         refreshPage = refreshPage,
                         filterOn = filesPageFilterOn,
                         filesPageGetFilterMode = filesPageGetFilterMode,

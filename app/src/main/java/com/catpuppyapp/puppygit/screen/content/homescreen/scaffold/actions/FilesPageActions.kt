@@ -29,7 +29,7 @@ import com.catpuppyapp.puppygit.utils.state.CustomStateSaveable
 @Composable
 fun FilesPageActions(
     isFileChooser:Boolean,
-    showCreateFileOrFolderDialog: MutableState<Boolean>,
+//    showCreateFileOrFolderDialog: MutableState<Boolean>,
     refreshPage: () -> Unit,
     filterOn: () -> Unit,
     filesPageGetFilterMode:()->Int,

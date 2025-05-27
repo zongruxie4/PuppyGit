@@ -181,13 +181,15 @@ fun DiffCommitsDialog(
 
     LaunchedEffect(Unit) {
         scope.launch {
-            //不delay的话，聚焦有可能失败
-            delay(500)
+            runCatching {
+                //不delay的话，聚焦有可能失败
+                delay(500)
 
-            if(trueFocusCommit1FalseFocus2) {
-                commit1FocusRequest.requestFocus()
-            } else {
-                commit2FocusRequest.requestFocus()
+                if(trueFocusCommit1FalseFocus2) {
+                    commit1FocusRequest.requestFocus()
+                } else {
+                    commit2FocusRequest.requestFocus()
+                }
             }
         }
     }

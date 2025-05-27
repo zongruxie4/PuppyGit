@@ -1066,7 +1066,7 @@ fun FilesInnerPage(
 
     val createFileOrFolderErrMsg = rememberSaveable { mutableStateOf("")}
 
-    val fileNameForCreateDialog = rememberSaveable { mutableStateOf("")}
+    val fileNameForCreateDialog = mutableCustomStateOf(stateKeyTag, "fileNameForCreateDialog") { TextFieldValue("") }
 //    val fileTypeOptionsForCreateDialog = remember {listOf(activityContext.getString(R.string.file), activityContext.getString(R.string.folder))}  // idx: 0 1
 //    val selectedFileTypeOptionForCreateDialog = rememberSaveable{mutableIntStateOf(0)}
 
@@ -1102,7 +1102,7 @@ fun FilesInnerPage(
                             if (isCreateSuccess) {  //创建成功
                                 Msg.requireShow(successStrRes)  //提示成功
                                 createFileOrFolderErrMsg.value=""  //清空错误信息
-                                fileNameForCreateDialog.value=""  //清空文件名
+                                fileNameForCreateDialog.value = TextFieldValue("")  //清空文件名
 
                                 //若创建的目录，创建完毕后打开
                                 if(isDir) {
@@ -3085,6 +3085,11 @@ fun FilesInnerPage(
 
     if(filesPageRequestFromParent.value==PageRequest.createFileOrFolder) {
         PageRequest.clearStateThenDoAct(filesPageRequestFromParent) {
+            //选中文本
+            fileNameForCreateDialog.apply {
+                value = value.copy(selection = TextRange(0, value.text.length))
+            }
+
             //显示新建文件或文件夹的弹窗，弹窗里可选择是创建文件还是文件夹
             createFileOrFolderErrMsg.value=""  //初始化错误信息为空
             showCreateFileOrFolderDialog.value = true  //显示弹窗
