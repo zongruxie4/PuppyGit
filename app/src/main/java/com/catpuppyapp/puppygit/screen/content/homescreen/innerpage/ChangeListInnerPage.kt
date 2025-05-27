@@ -2214,8 +2214,8 @@ fun ChangeListInnerPage(
         stringResource(R.string.show_in_files),
 
         // left to local，相当于比较父提交和local，right to local，相当于比较当前提交和local
-        Libgit2Helper.getLeftToRightFullHash(stringResource(R.string.left), stringResource(R.string.local)) ,
-        Libgit2Helper.getLeftToRightFullHash(stringResource(R.string.right), stringResource(R.string.local)) ,
+        Libgit2Helper.getLeftToRightFullHash(if(fromTo == Cons.gitDiffFromHeadToIndex) Cons.git_HeadCommitHash else stringResource(R.string.left), stringResource(R.string.local)) ,
+        Libgit2Helper.getLeftToRightFullHash(if(fromTo == Cons.gitDiffFromHeadToIndex) stringResource(R.string.index) else stringResource(R.string.right), stringResource(R.string.local)) ,
 
         stringResource(R.string.file_history),
         stringResource(R.string.copy_full_path),
@@ -2257,22 +2257,42 @@ fun ChangeListInnerPage(
             goToFilesPage(item.canonicalPath)
         },
         leftToLocal@{
-            diffFiles(
-                curItem = it,
-                itemListOrFilterList = getActuallyList(),
-                commit1OidStr = getCommitLeft(),
-                commit2OidStr = Cons.git_LocalWorktreeCommitHash,
-                fromTo = Cons.gitDiffFromTreeToTree
-            )
+            if(fromTo == Cons.gitDiffFromHeadToIndex) {
+                diffFiles(
+                    curItem = it,
+                    itemListOrFilterList = getActuallyList(),
+                    commit1OidStr = Cons.git_HeadCommitHash,
+                    commit2OidStr = Cons.git_LocalWorktreeCommitHash,
+                    fromTo = Cons.gitDiffFromTreeToTree
+                )
+            }else {
+                diffFiles(
+                    curItem = it,
+                    itemListOrFilterList = getActuallyList(),
+                    commit1OidStr = getCommitLeft(),
+                    commit2OidStr = Cons.git_LocalWorktreeCommitHash,
+                    fromTo = Cons.gitDiffFromTreeToTree
+                )
+            }
         },
         rightToLocal@{
-            diffFiles(
-                curItem = it,
-                itemListOrFilterList = getActuallyList(),
-                commit1OidStr = getCommitRight(),
-                commit2OidStr = Cons.git_LocalWorktreeCommitHash,
-                fromTo = Cons.gitDiffFromTreeToTree
-            )
+            if(fromTo == Cons.gitDiffFromHeadToIndex) {
+                diffFiles(
+                    curItem = it,
+                    itemListOrFilterList = getActuallyList(),
+                    commit1OidStr = Cons.git_IndexCommitHash,
+                    commit2OidStr = Cons.git_LocalWorktreeCommitHash,
+                    fromTo = Cons.gitDiffFromIndexToWorktree
+                )
+            }else {
+                diffFiles(
+                    curItem = it,
+                    itemListOrFilterList = getActuallyList(),
+                    commit1OidStr = getCommitRight(),
+                    commit2OidStr = Cons.git_LocalWorktreeCommitHash,
+                    fromTo = Cons.gitDiffFromTreeToTree
+                )
+            }
         },
         fileHistory@{item:StatusTypeEntrySaver ->
             naviToFileHistoryByRelativePath(repoId, item.relativePathUnderRepo)
@@ -2301,8 +2321,8 @@ fun ChangeListInnerPage(
 
         //只有worktree的cl页面支持在Files页面显示文件，index页面由于是二级页面，跳转不了，干脆禁用了
         showInFilesEnabled@{fromTo == Cons.gitDiffFromIndexToWorktree},  //对所有条目都启用showInFiles，不过会在点击后检查文件是否存在，若不存在不会跳转
-        leftToLocal@{ fromTo == Cons.gitDiffFromTreeToTree },
-        rightToLocal@{ fromTo == Cons.gitDiffFromTreeToTree },
+        leftToLocal@{ fromTo == Cons.gitDiffFromTreeToTree || fromTo == Cons.gitDiffFromHeadToIndex },
+        rightToLocal@{ fromTo == Cons.gitDiffFromTreeToTree || fromTo == Cons.gitDiffFromHeadToIndex },
         fileHistoryEnabled@{it.maybeIsFileAndExist()},
         copyFullPath@{true},
         copyRepoRelativePath@{true},
