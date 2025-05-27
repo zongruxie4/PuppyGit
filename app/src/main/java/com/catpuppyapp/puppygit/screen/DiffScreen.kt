@@ -1528,7 +1528,11 @@ fun DiffScreen(
                         val submoduleIsDirty = diffableItem.submoduleIsDirty
                         val loading = diffableItem.loading
                         val loadChannel = diffableItem.loadChannel
-                        val fileChangeTypeIsModified = changeType == Cons.gitStatusModified
+//                        val fileChangeTypeIsModified = changeType == Cons.gitStatusModified
+
+                        //不管什么change type，都应该走详情diff，因为允许 "左/右 to local" 后，changeType可能不准。
+                        // 例如：一个文件的 changeType 是 New，但点击条目的 left to local后，可能会有修改，所以实际的change type可能会变成 modified
+                        val fileChangeTypeIsModified = true
 
 
 
@@ -1536,7 +1540,9 @@ fun DiffScreen(
                         // only check when local as diff right(xxx..local)
                         // 若是文件且存在则启用
                         //用来检测是否启用 行点击菜单，但当时名字没起好，所以就叫这名了
-                        val enableLineEditActions = if(localAtDiffRight.not() || readOnlyModeOn || isSubmodule || (changeType != Cons.gitStatusNew && changeType != Cons.gitStatusModified)) {
+//                        val enableLineEditActions = if(localAtDiffRight.not() || readOnlyModeOn || isSubmodule || (changeType != Cons.gitStatusNew && changeType != Cons.gitStatusModified)) {
+                        // 允许比较左/右 to local后，检测 change type没意义了，所以不用检测了，只要实际存在就应该可编辑
+                        val enableLineEditActions = if(localAtDiffRight.not() || readOnlyModeOn || isSubmodule) {
                             false
                         }else {
                             //存在且是文件且不匹配if里不能编辑的情况，就能编辑
@@ -1619,7 +1625,7 @@ fun DiffScreen(
 //                            val reForEachDiffContent = {}  //这函数用不到了，但先保留，日后若有用取消注释相关方法即可
 
                             // modified，并且设置项启用，则启用
-                            val enableSelectCompare = changeType == Cons.gitStatusModified && enableSelectCompare;
+                            val enableSelectCompare = fileChangeTypeIsModified && enableSelectCompare;
                             // 设置项启用则启用，不管文件类型，就算是删除的文件也可使用菜单的拷贝功能，之前判断不是修改就禁用
 //                            val enableSelectCompare = enableSelectCompare.value;
 
