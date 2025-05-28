@@ -3294,7 +3294,7 @@ object Libgit2Helper {
 
         //这里不用像merge一样检查是否有冲突，因为仓库有可能状态为rebase但不存在任何冲突，例如你执行为rebase.next没提交或提交完成，然后手机突然关机、app进程突然被杀掉，等，都有可能导致那种情况发生。
         if(state == null || (state != Repository.StateT.NONE)) {
-            return Ret.createError(null, "err:repo state is not 'NONE'", Ret.ErrCode.rebaseFailedByRepoStateIsNotNone)
+            return Ret.createError(null, "repo state is not 'NONE'", Ret.ErrCode.rebaseFailedByRepoStateIsNotNone)
         }
 
 //            val ourHeadRef = repo.head()
@@ -5469,7 +5469,7 @@ object Libgit2Helper {
     fun cherrypick(repo:Repository, targetCommitFullHash:String, parentCommitFullHash:String="", pathSpecList: List<String>?=null, cherrypickOpts:Cherrypick.Options? = null, autoCommit:Boolean = true, settings: AppSettings):Ret<Oid?> {
         val state = repo.state()
         if(state == null || (state != Repository.StateT.NONE)) {
-            return Ret.createError(null, "err:repo state is not 'NONE'")
+            return Ret.createError(null, "repo state is not 'NONE'")
         }
 
         //这个检查是可选的，checkout 设为safe时 index/worktree如果有东西就会中止操作
