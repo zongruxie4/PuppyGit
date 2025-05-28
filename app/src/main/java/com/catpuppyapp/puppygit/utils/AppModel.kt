@@ -30,6 +30,7 @@ import com.catpuppyapp.puppygit.settings.SettingsUtil
 import com.catpuppyapp.puppygit.ui.theme.Theme
 import com.catpuppyapp.puppygit.utils.app.upgrade.migrator.AppMigrator
 import com.catpuppyapp.puppygit.utils.app.upgrade.migrator.AppVersionMan
+import com.catpuppyapp.puppygit.utils.cache.Cache
 import com.catpuppyapp.puppygit.utils.cache.CommitCache
 import com.catpuppyapp.puppygit.utils.cert.CertMan
 import com.catpuppyapp.puppygit.utils.encrypt.MasterPassUtil
@@ -701,8 +702,13 @@ object AppModel {
 
     // app销毁时调用此函数，其实就是把这函数扔 Activity 的destoryer()里了
     fun destroyer() {
-        //退出app清提交缓存
-        runBlocking { CommitCache.clear() }
+        runCatching {
+            //退出app清提交缓存
+            runBlocking { CommitCache.clear() }
+
+            //清文件管理器页面列表滚动状态缓存
+            Cache.clearFilesListStates()
+        }
     }
 
 

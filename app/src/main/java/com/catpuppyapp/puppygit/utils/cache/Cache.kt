@@ -1,5 +1,6 @@
 package com.catpuppyapp.puppygit.utils.cache
 
+import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.saveable.rememberSaveable
 import com.catpuppyapp.puppygit.utils.getShortUUID
@@ -11,6 +12,7 @@ object Cache:CacheStoreImpl(){
     const val keySeparator = ":"
 
     object Key {
+        const val filesListStateKeyPrefix = "FilesPageListState"
 //        val changeListInnerPage_SavePatchPath = "cl_patchsavepath"
 //        val changeListInnerPage_RequireDoSyncAfterCommit = "cliprdsac"  //这个其实改用状态变量能达到同样的效果
         //            val changeListInnerPage_RequirePull = "cliprpul";
@@ -34,12 +36,39 @@ object Cache:CacheStoreImpl(){
 //        val diffableList_of_fromDiffScreenBackToIndexChangeList = "diffableList_of_fromDiffScreenBackToIndexChangeList"
     }
 
+    private fun getFilesListStateKey(path:String):String {
+        return Key.filesListStateKeyPrefix+keySeparator+path
+    }
+
+    fun clearFilesListStates() {
+        clearByKeyPrefix(Key.filesListStateKeyPrefix+keySeparator)
+    }
+
+    fun getFilesListStateByPath(path:String): LazyListState {
+        // key有点太长了
+        val key = getFilesListStateKey(path)
+
+        val restoreListState = Cache.getByType<LazyListState>(key)
+
+        // 有则恢复，无则新建
+        return if(restoreListState == null) {
+            val newListState = LazyListState(0,0)
+            Cache.set(key, newListState)
+            newListState
+        }else{
+            restoreListState
+        }
+    }
+
+
+
+    // 自定义状态存储器key相关函数：开始
+
     fun clearAllSubPagesStates() {
         clearByKeyPrefix(Key.subPagesStateKeyPrefix+keySeparator)
     }
 
 
-    // 自定义状态存储器key相关函数：开始
     /**
      * 给子页面生成stateKeyTag的函数，这个函数最关键的操作是给【加子页面key前缀 和 给子页面生成随机id】，
      * 前缀的作用是用来清理内存时标识哪些是子页面的状态，具体实现就是在返回顶级页面后子页面已经全部弹出导航栈，这时就清理所有包含子页面前缀的key，释放内存；

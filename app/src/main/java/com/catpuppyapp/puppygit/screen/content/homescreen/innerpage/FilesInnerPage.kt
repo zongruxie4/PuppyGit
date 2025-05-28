@@ -848,17 +848,9 @@ fun FilesInnerPage(
 
 
     val getListState:(String)->LazyListState = { path:String ->
-        // key有点太长了
-        val key = "FilesPageListState:"+path
-        val restoreListState = Cache.getByType<LazyListState>(key)
-        if(restoreListState==null){
-            val newListState = LazyListState(0,0)
-            Cache.set(key, newListState)
-            newListState
-        }else{
-            restoreListState
-        }
+        Cache.getFilesListStateByPath(path)
     }
+
     val breadCrumbListState = rememberLazyListState()
 
     //back handler block start
