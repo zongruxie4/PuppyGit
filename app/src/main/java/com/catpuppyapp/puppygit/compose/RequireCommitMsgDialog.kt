@@ -114,7 +114,7 @@ fun RequireCommitMsgDialog(
                 }
 
                 TextField(
-                    maxLines = 6,
+                    maxLines = MyStyleKt.defaultMultiLineTextFieldMaxLines,
                     modifier = Modifier.fillMaxWidth()
                         .onGloballyPositioned { layoutCoordinates ->
 //                                println("layoutCoordinates.size.height:${layoutCoordinates.size.height}")

@@ -2,13 +2,11 @@ package com.catpuppyapp.puppygit.screen
 
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.text.KeyboardOptions
-import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Check
@@ -319,7 +317,7 @@ fun CredentialNewOrEdit(
 
             TextField(
                 // 可能输入private key，但最多6行，不然占屏幕太多，滚着麻烦
-                maxLines = 6,
+                maxLines = MyStyleKt.defaultMultiLineTextFieldMaxLines,
 
                 modifier = Modifier
                     .fillMaxWidth()

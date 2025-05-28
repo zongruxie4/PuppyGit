@@ -54,7 +54,7 @@ fun CommitMsgTemplateDialog(
         textCompose = {
             ScrollableColumn {
                 TextField(
-                    maxLines = 6,
+                    maxLines = MyStyleKt.defaultMultiLineTextFieldMaxLines,
                     modifier = Modifier
                         .fillMaxWidth()
                         .padding(MyStyleKt.defaultHorizontalPadding),

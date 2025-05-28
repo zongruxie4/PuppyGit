@@ -27,6 +27,9 @@ object MyStyleKt{
     val defaultIconSizeSmaller = 30.dp
     val defaultIconSizeLarger = 60.dp
 
+    // 多行的 TextFiled 的默认最大行数（maxLines的值）
+    const val defaultMultiLineTextFieldMaxLines = 6
+
 
     object TextItem {
         fun defaultFontWeight(): FontWeight? {
