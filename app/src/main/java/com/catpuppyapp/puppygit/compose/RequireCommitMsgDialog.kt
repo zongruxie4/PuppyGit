@@ -67,6 +67,10 @@ fun RequireCommitMsgDialog(
     }
 
     //勾选amend时用此变量替代commitMsg
+    //由于判断amend是否勾选的布尔值在外部，
+    // 所以，有可能存在显示弹窗前就设amend为真的情况，
+    // 那样就会变成amend勾选但amendMsg为空的情况，
+    // 这时，可点"加载原始提交信息" 或 切换一下amend勾选状态 来载入上个提交信息
     val amendMsg = mutableCustomStateOf(stateKeyTag, "amendMsg") { TextFieldValue("") }
     val getCommitMsg = {
         if(amend.value) amendMsg.value.text else commitMsg.value.text
@@ -154,9 +158,9 @@ fun RequireCommitMsgDialog(
 
                 //repo状态正常才显示amend，rebase和merge时不会显示
                 if(repoState == Repository.StateT.NONE.bit) {
-                    MyCheckBox(text = stringResource(R.string.amend), value = amend, onValueChange = {
-                        //如果是初次切换amend，设置提交信息为上个提交的信息
-                        if(amendMsgAlreadySetOnce.value.not()) {
+                    MyCheckBox(text = stringResource(R.string.amend), value = amend, onValueChange = { amendOn ->
+                        //如果新状态为启用amend 且 是初次启用amend 且 当前amendMsg为空，则 设置提交信息为上个提交(HEAD)的信息
+                        if(amendOn && amendMsgAlreadySetOnce.value.not() && amendMsg.value.text.isEmpty()) {
                             amendMsgAlreadySetOnce.value = true
 
                             runCatching {
@@ -167,7 +171,7 @@ fun RequireCommitMsgDialog(
                         }
 
                         //更新 checkbox 状态
-                        amend.value = !amend.value
+                        amend.value = amendOn
                     })
                 }
 
