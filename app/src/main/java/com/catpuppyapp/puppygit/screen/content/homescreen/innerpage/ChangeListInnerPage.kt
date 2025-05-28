@@ -508,7 +508,7 @@ fun ChangeListInnerPage(
     val showCommitMsgDialog = rememberSaveable { mutableStateOf(false)}
     val amendCommit = rememberSaveable { mutableStateOf(false)}
     val overwriteAuthor = rememberSaveable { mutableStateOf(false)}
-    val commitMsg = rememberSaveable { mutableStateOf("")}
+    val commitMsg = mutableCustomStateOf(stateKeyTag, "commitMsg") { TextFieldValue("") }
     val indexIsEmptyForCommitDialog = rememberSaveable { mutableStateOf(false)}
     val commitBtnTextForCommitDialog = rememberSaveable { mutableStateOf("") }
 //    val showPushForCommitDialog = rememberSaveable { mutableStateOf(false)}
@@ -1427,6 +1427,7 @@ fun ChangeListInnerPage(
         val curRepo = curRepoFromParentPage.value
         val repoIsNotDetached = !dbIntToBool(curRepo.isDetached)
         RequireCommitMsgDialog(
+            stateKeyTag = stateKeyTag,
             curRepo = curRepo,
             repoPath = curRepo.fullSavePath,
             repoState=repoState.intValue,
@@ -1441,7 +1442,7 @@ fun ChangeListInnerPage(
                 showCommitMsgDialog.value = false  //关闭弹窗
 
                 val cmtMsg = msgOrAmendMsg  //存上实际的提交信息，若勾选Amend实际值就是amendMsg的值否则是commitMsg的值
-                commitMsg.value = "" //清空提交信息状态
+                commitMsg.value = TextFieldValue("") //清空提交信息状态
 
                 doJobThenOffLoading(loadingOn, loadingOff,activityContext.getString(R.string.committing)) {
                     doActWithLock(curRepo) {

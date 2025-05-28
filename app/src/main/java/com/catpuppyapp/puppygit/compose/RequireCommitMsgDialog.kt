@@ -22,22 +22,31 @@ import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalView
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.unit.dp
 import com.catpuppyapp.puppygit.data.entity.RepoEntity
 import com.catpuppyapp.puppygit.play.pro.R
 import com.catpuppyapp.puppygit.style.MyStyleKt
 import com.catpuppyapp.puppygit.utils.Libgit2Helper
+import com.catpuppyapp.puppygit.utils.cache.Cache
+import com.catpuppyapp.puppygit.utils.state.CustomStateSaveable
+import com.catpuppyapp.puppygit.utils.state.mutableCustomBoxOf
+import com.catpuppyapp.puppygit.utils.state.mutableCustomStateOf
 import com.github.git24j.core.Repository
+
+private const val TAG = "RequireCommitMsgDialog"
 
 
 @Composable
 fun RequireCommitMsgDialog(
+    stateKeyTag:String,
+
     curRepo:RepoEntity,
     repoPath:String,
     repoState:Int,
     overwriteAuthor:MutableState<Boolean>,
     amend:MutableState<Boolean>,
-    commitMsg: MutableState<String>,
+    commitMsg: CustomStateSaveable<TextFieldValue>,
     indexIsEmptyForCommitDialog:MutableState<Boolean>,
     showPush:Boolean,
     showSync:Boolean,
@@ -45,6 +54,8 @@ fun RequireCommitMsgDialog(
     onOk: (curRepo: RepoEntity, msg:String, requirePush:Boolean, requireSync:Boolean) -> Unit,
     onCancel: (curRepo: RepoEntity) -> Unit,
 ) {
+    val stateKeyTag = Cache.getComponentKey(stateKeyTag, TAG)
+
     val activityContext = LocalContext.current
 
     val repoStateIsRebase= repoState == Repository.StateT.REBASE_MERGE.bit
@@ -56,10 +67,13 @@ fun RequireCommitMsgDialog(
     }
 
     //勾选amend时用此变量替代commitMsg
-    val amendMsg = rememberSaveable { mutableStateOf(commitMsg.value)}
+    val amendMsg = mutableCustomStateOf(stateKeyTag, "amendMsg") { TextFieldValue("") }
     val getCommitMsg = {
-        if(amend.value) amendMsg.value else commitMsg.value
+        if(amend.value) amendMsg.value.text else commitMsg.value.text
     }
+
+    //确保amend msg只在初次切换amend状态时获取一次
+    val amendMsgAlreadySetOnce = mutableCustomBoxOf(stateKeyTag, "amendMsgAlreadySetOnce") { false }
 
 
     val view = LocalView.current
@@ -100,6 +114,7 @@ fun RequireCommitMsgDialog(
                 }
 
                 TextField(
+                    maxLines = 6,
                     modifier = Modifier.fillMaxWidth()
                         .onGloballyPositioned { layoutCoordinates ->
 //                                println("layoutCoordinates.size.height:${layoutCoordinates.size.height}")
@@ -137,9 +152,23 @@ fun RequireCommitMsgDialog(
                     }
                 }
 
-                //repo状态正常才显示amend
+                //repo状态正常才显示amend，rebase和merge时不会显示
                 if(repoState == Repository.StateT.NONE.bit) {
-                    MyCheckBox(text = stringResource(R.string.amend), value = amend)
+                    MyCheckBox(text = stringResource(R.string.amend), value = amend, onValueChange = {
+                        //如果是初次切换amend，设置提交信息为上个提交的信息
+                        if(amendMsgAlreadySetOnce.value.not()) {
+                            amendMsgAlreadySetOnce.value = true
+
+                            runCatching {
+                                Repository.open(repoPath).use { repo ->
+                                    amendMsg.value = TextFieldValue(Libgit2Helper.getHeadCommitMsg(repo))
+                                }
+                            }
+                        }
+
+                        //更新 checkbox 状态
+                        amend.value = !amend.value
+                    })
                 }
 
                 //正常来说这两个不会同时为真
@@ -156,9 +185,9 @@ fun RequireCommitMsgDialog(
                                         val oldMsg = if (repoStateIsRebase) Libgit2Helper.rebaseGetCurCommitMsg(repo) else if(repoStateIsCherrypick) Libgit2Helper.getCherryPickHeadCommitMsg(repo) else Libgit2Helper.getHeadCommitMsg(repo)
 
                                         if(amend.value) {
-                                            amendMsg.value = oldMsg
+                                            amendMsg.value = TextFieldValue(oldMsg)
                                         }else {
-                                            commitMsg.value = oldMsg
+                                            commitMsg.value = TextFieldValue(oldMsg)
                                         }
                                     }
                                 })
