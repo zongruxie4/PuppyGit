@@ -93,7 +93,9 @@ fun RequireCommitMsgDialog(
             ScrollableColumn {
                 if(repoState==Repository.StateT.NONE.bit && amend.value.not() && indexIsEmptyForCommitDialog.value) {
                     Row(modifier = Modifier.padding(5.dp)) {
-                        Text(text = stringResource(R.string.warn_index_is_empty_will_create_a_empty_commit), color = MyStyleKt.TextColor.danger())
+                        MySelectionContainer {
+                            Text(text = stringResource(R.string.warn_index_is_empty_will_create_a_empty_commit), color = MyStyleKt.TextColor.danger())
+                        }
                     }
                 }
 
@@ -128,9 +130,11 @@ fun RequireCommitMsgDialog(
 
                 Spacer(modifier = Modifier.height(10.dp))
                 Row {
-                    Text(text = "("+getMsgEmptyNote()+")",
-                        color = MyStyleKt.TextColor.highlighting_green
-                    )
+                    MySelectionContainer {
+                        Text(text = "("+getMsgEmptyNote()+")",
+                            color = MyStyleKt.TextColor.highlighting_green
+                        )
+                    }
                 }
 
                 //repo状态正常才显示amend
@@ -140,24 +144,26 @@ fun RequireCommitMsgDialog(
 
                 //正常来说这两个不会同时为真
                 if(repoStateIsRebase || repoStateIsCherrypick || amend.value) {
-                    ClickableText(
+                    MySelectionContainer {
+                        ClickableText(
 //                        text = if(repoStateIsRebase || repoStateIsCherrypick || amend.value) stringResource(R.string.origin_commit_msg) else stringResource(R.string.last_commit_msg),
-                        text = stringResource(R.string.origin_commit_msg),
-                        fontWeight = FontWeight.Light,
-                        modifier = MyStyleKt.ClickableText.modifierNoPadding
-                            .padding(horizontal = MyStyleKt.defaultHorizontalPadding)
-                            .clickable(onClick = {
-                                Repository.open(repoPath).use { repo ->
-                                    val oldMsg = if (repoStateIsRebase) Libgit2Helper.rebaseGetCurCommitMsg(repo) else if(repoStateIsCherrypick) Libgit2Helper.getCherryPickHeadCommitMsg(repo) else Libgit2Helper.getHeadCommitMsg(repo)
+                            text = stringResource(R.string.origin_commit_msg),
+                            fontWeight = FontWeight.Light,
+                            modifier = MyStyleKt.ClickableText.modifierNoPadding
+                                .padding(horizontal = MyStyleKt.defaultHorizontalPadding)
+                                .clickable(onClick = {
+                                    Repository.open(repoPath).use { repo ->
+                                        val oldMsg = if (repoStateIsRebase) Libgit2Helper.rebaseGetCurCommitMsg(repo) else if(repoStateIsCherrypick) Libgit2Helper.getCherryPickHeadCommitMsg(repo) else Libgit2Helper.getHeadCommitMsg(repo)
 
-                                    if(amend.value) {
-                                        amendMsg.value = oldMsg
-                                    }else {
-                                        commitMsg.value = oldMsg
+                                        if(amend.value) {
+                                            amendMsg.value = oldMsg
+                                        }else {
+                                            commitMsg.value = oldMsg
+                                        }
                                     }
-                                }
-                            })
-                    )
+                                })
+                        )
+                    }
                 }
 
 
@@ -167,7 +173,9 @@ fun RequireCommitMsgDialog(
                 }
 
                 if(overwriteAuthor.value){
-                    DefaultPaddingText(text = stringResource(R.string.will_use_your_username_and_email_overwrite_original_commits_author_info))
+                    MySelectionContainer {
+                        DefaultPaddingText(text = stringResource(R.string.will_use_your_username_and_email_overwrite_original_commits_author_info))
+                    }
                 }
 
             }
